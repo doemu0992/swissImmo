@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schaden melden</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5 mb-5">
+        <div class="card p-4 shadow-sm border-0">
+            <h2 class="text-center mb-4">🛠 Schaden melden</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-danger w-100 mt-3">Absenden</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
