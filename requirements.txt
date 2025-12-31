@@ -1,0 +1,4 @@
+Django>=4.2
+django-ckeditor>=6.5
+WeasyPrint>=57.0
+Pillow>=9.5
