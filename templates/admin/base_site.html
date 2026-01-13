@@ -1,0 +1,22 @@
+{% extends "admin/base.html" %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs" style="background: white; border-bottom: 1px solid #ccc; padding: 8px 15px; font-size: 12px; color: #0056b3;">
+    <span style="color:#666;">📍 Pfad:</span>
+    <a href="{% url 'admin:index' %}" style="text-decoration:none; color:#0056b3;">Home</a>
+
+    {% if title %}
+        &rsaquo;
+        {% if original.einheit %}
+             <a href="#" style="text-decoration:none; color:#0056b3;">{{ original.einheit.liegenschaft.mandant }}</a> &rsaquo;
+             <a href="#" style="text-decoration:none; color:#0056b3;">{{ original.einheit.liegenschaft }}</a> &rsaquo;
+             <a href="#" style="text-decoration:none; color:#0056b3;">{{ original.einheit }}</a> &rsaquo;
+        {% elif original.liegenschaft %}
+             <a href="#" style="text-decoration:none; color:#0056b3;">{{ original.liegenschaft.mandant }}</a> &rsaquo;
+             <a href="#" style="text-decoration:none; color:#0056b3;">{{ original.liegenschaft }}</a> &rsaquo;
+        {% endif %}
+
+        <span style="color:#333; font-weight:bold;">{{ title }}</span>
+    {% endif %}
+</div>
+{% endblock %}

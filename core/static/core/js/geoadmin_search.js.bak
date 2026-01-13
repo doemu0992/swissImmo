@@ -1,0 +1,71 @@
+(function($) {
+    $(document).ready(function() {
+        const $strasse = $('#id_strasse');
+        const $plz = $('#id_plz');
+        const $ort = $('#id_ort');
+        const $kanton = $('#id_kanton');
+        const $egid = $('#id_egid');
+
+        if (!$strasse.length) return;
+
+        // Container für Ergebnisse
+        const $results = $('<div id="search-results"></div>').css({
+            'position': 'absolute',
+            'background': 'white',
+            'border': '1px solid #ccc',
+            'width': $strasse.outerWidth(),
+            'z-index': 1000,
+            'color': 'black'
+        });
+        $strasse.after($results);
+
+        $strasse.on('input', function() {
+            const query = $(this).val();
+            if (query.length < 3) { $results.empty(); return; }
+
+            $.getJSON(`https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=${encodeURIComponent(query)}&type=locations&origins=address&limit=5`, function(data) {
+                $results.empty();
+                if (data.results) {
+                    data.results.forEach(function(res) {
+                        const attr = res.attrs;
+                        const cleanLabel = attr.label.replace(/<[^>]*>?/gm, '');
+
+                        const $item = $('<div class="result-item"></div>')
+                            .text(cleanLabel)
+                            .css({'padding': '10px', 'cursor': 'pointer', 'border-bottom': '1px solid #eee'});
+
+                        $item.on('click', function() {
+                            // Strasse & Nr aus 'detail' (ist sauberer)
+                            $strasse.val(attr.detail.replace(/<[^>]*>?/gm, ''));
+
+                            // EGID direkt setzen
+                            if (attr.egid) $egid.val(attr.egid);
+
+                            // Kanton setzen
+                            if (attr.kantone) $kanton.val(attr.kantone.toUpperCase());
+
+                            // PLZ und Ort aus Label extrahieren (Format: "Strasse Nr, PLZ Ort")
+                            const parts = cleanLabel.split(',');
+                            if (parts.length >= 2) {
+                                const plzOrt = parts[parts.length - 1].trim().split(' ');
+                                if (plzOrt.length >= 2) {
+                                    $plz.val(plzOrt[0]);
+                                    $ort.val(plzOrt.slice(1).join(' '));
+                                }
+                            }
+                            $results.empty();
+                        });
+                        $results.append($item);
+                    });
+                }
+            });
+        });
+
+        // Schließen bei Klick außerhalb
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#id_strasse, #search-results').length) {
+                $results.empty();
+            }
+        });
+    });
+})(django.jQuery || jQuery);

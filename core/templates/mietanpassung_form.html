@@ -1,0 +1,85 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .calc-box { background: #f8f9fa; padding: 15px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; }
+    .row { display: flex; justify-content: space-between; gap: 20px; }
+    .col { flex: 1; }
+    .btn-calc { background: #607d8b; color: white; border: none; padding: 10px; width: 100%; cursor: pointer; border-radius: 4px; margin-top: 10px; }
+    .btn-calc:hover { background: #455a64; }
+    input[type="number"], input[type="text"], textarea { width: 100%; box-sizing: border-box; padding: 5px; }
+</style>
+
+<div id="content-main" style="max-width: 900px; margin: 0 auto; padding: 20px;">
+    <h1>Mietzins-Rechner</h1>
+    <h3 style="color: #666; margin-top: 0;">{{ mieter.vorname }} {{ mieter.nachname }} ({{ vertrag.einheit.bezeichnung }})</h3>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.differenz }} {{ form.total_prozent }}
+
+        <div class="row">
+            <div class="col calc-box">
+                <h3 style="margin-top:0;">1. Grundlagen</h3>
+
+                <div style="display:flex; gap:10px;">
+                    <div><label>{{ form.alt_zins.label }}</label>{{ form.alt_zins }}</div>
+                    <div><label>{{ form.neu_zins.label }}</label>{{ form.neu_zins }}</div>
+                </div>
+                <br>
+                <div style="display:flex; gap:10px;">
+                    <div><label>{{ form.alt_index.label }}</label>{{ form.alt_index }}</div>
+                    <div><label>{{ form.neu_index.label }}</label>{{ form.neu_index }}</div>
+                </div>
+                <br>
+                <div style="display:flex; gap:10px;">
+                    <div><label>{{ form.alt_miete.label }}</label>{{ form.alt_miete }}</div>
+                    <div><label>{{ form.alt_nk.label }}</label>{{ form.alt_nk }}</div>
+                </div>
+
+                <button type="submit" name="action" value="recalculate" class="btn-calc">
+                    🔄 Neu berechnen (Aktualisieren)
+                </button>
+            </div>
+
+            <div class="col calc-box" style="background: #e8f5e9; border-color: #c8e6c9;">
+                <h3 style="margin-top:0; color: #2e7d32;">2. Ergebnis</h3>
+
+                <label><strong>{{ form.neue_miete.label }} (CHF)</strong></label>
+                {{ form.neue_miete }}
+                <p class="help">Automatisch gerundet auf 5 Rp.</p>
+
+                <label>{{ form.neue_nk.label }}</label>
+                {{ form.neue_nk }}
+            </div>
+        </div>
+
+        <div class="calc-box">
+            <h3 style="margin-top:0;">3. Abschluss</h3>
+            <div class="row">
+                <div class="col">
+                    <label>{{ form.datum_wirksam.label }}</label>
+                    {{ form.datum_wirksam }}
+                </div>
+                <div class="col" style="flex: 2;">
+                    <label>{{ form.begruendung.label }}</label>
+                    {{ form.begruendung }}
+                </div>
+            </div>
+
+            <hr>
+
+            <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                <button type="submit" name="action" value="brief" class="button" style="background-color: #ff9800; padding: 10px 20px;">
+                    📄 Begleitbrief erstellen
+                </button>
+
+                <button type="submit" name="action" value="formular" class="button" style="background-color: #2196f3; padding: 10px 20px;">
+                    🏛️ Amtliches Formular erstellen
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

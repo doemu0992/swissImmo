@@ -2,3 +2,5 @@ Django>=4.2
 django-ckeditor>=6.5
 WeasyPrint>=57.0
 Pillow>=9.5
+swiss-qr-bill>=0.0.31
+django-jazzmin

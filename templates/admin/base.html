@@ -1,0 +1,179 @@
+{% load i18n static %}<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
+<html lang="{{ LANGUAGE_CODE|default:"de" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+<head>
+<title>{% block title %}SwissImmo Verwaltung{% endblock %}</title>
+<link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}">
+{% block extrastyle %}{% endblock %}
+{% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% block stylesheet_rtl %}{% static "admin/css/rtl.css" %}{% endblock %}">{% endif %}
+{% block extrahead %}{% endblock %}
+{% block responsive %}
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/responsive.css" %}">
+{% endblock %}
+{% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE">{% endblock %}
+
+<style>
+    /* GRUNDLAYOUT */
+    html, body { height: 100%; margin: 0; padding: 0; display: flex; flex-direction: column; }
+    #container { flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+    #header { background: #417690; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+    #header a { color: #fff; }
+    #main-wrapper { display: flex; flex: 1; width: 100%; overflow: hidden; }
+
+    .custom-sidebar { width: 380px; min-width: 380px; background: #fdfdfd; border-right: 1px solid #ccc; display: flex; flex-direction: column; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 13px; }
+    .sidebar-content { flex: 1; overflow-y: auto; padding: 10px; }
+    .content-area { flex: 1; padding: 20px 40px; overflow-y: auto; min-width: 0; }
+
+    .tree-ul { list-style: none; padding-left: 18px; margin: 0; border-left: 1px solid #e0e0e0; }
+    .tree-item { text-decoration: none; color: #333; display: block; padding: 3px 5px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tree-item:hover { background-color: #e6f2ff; color: #0056b3; }
+
+    .lvl-komponente { font-size: 0.9em; color: #d35400; font-weight: 500; }
+    .lvl-detail { font-size: 0.9em; color: #555; }
+
+    /* Basis-Style für Buttons */
+    .add-btn {
+        display: inline-block; color: white !important; border-radius: 50%; width: 16px; height: 16px;
+        line-height: 16px; text-align: center; font-weight: bold; font-size: 11px;
+        margin-left: 5px; text-decoration: none;
+    }
+
+    .icon { width: 16px; display: inline-block; text-align: center; margin-right: 4px; opacity: 0.8; }
+
+    details > summary { list-style: none; cursor: pointer; padding: 4px; border-radius: 3px; user-select: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    details > summary:hover { background-color: #f0f0f0; }
+    details > summary::after { content: '▶'; font-size: 9px; float: right; color: #999; margin-top: 3px; transition: transform 0.2s; }
+    details[open] > summary::after { transform: rotate(90deg); }
+    .summary-mandant { font-weight: bold; background: #eee; border-bottom: 1px solid #ccc; margin-top:10px; color: #333; }
+    .summary-objekt { color: #000; font-weight: 500; }
+</style>
+</head>
+
+<body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}" data-admin-utc-offset="{% now "Z" %}">
+
+<div id="container">
+    {% if not is_popup %}
+    <div id="header">
+        <div id="branding"><h1 id="site-name"><a href="{% url 'admin:index' %}">SwissImmo Verwaltung</a></h1></div>
+        <div id="user-tools" style="text-align:right;">Willkommen, <strong>{% firstof user.get_short_name user.get_username %}</strong>. / <a href="{% url 'admin:logout' %}">Abmelden</a></div>
+    </div>
+    {% endif %}
+
+    <div id="main-wrapper">
+        {% if not is_popup %}
+        <div class="custom-sidebar">
+            <div style="padding:10px; border-bottom:2px solid #417690; background:#fff;">
+                <a href="/admin/" style="text-decoration:none; color:#333; font-weight:bold; font-size:14px;">📂 Immobilien-Stamm</a>
+                <br><a href="/dashboard/" style="font-size:11px; color:#007bff; text-decoration:none;">Zum Dashboard wechseln</a>
+            </div>
+
+            <div class="sidebar-content">
+            {% if custom_admin_nav %}
+                <ul style="padding:0; margin:0; list-style:none;">
+                {% for mandant in custom_admin_nav %}
+                    <li style="margin-bottom:5px;">
+                        <details id="mandant-{{ mandant.id }}" open>
+                            <summary class="summary-mandant"><span onclick="window.location='/admin/core/mandant/{{ mandant.id }}/change/'; event.preventDefault();" style="cursor:pointer;">🏢 {{ mandant.firma_oder_name }}</span></summary>
+                            <ul class="tree-ul">
+                            {% for lieg in mandant.liegenschaften.all %}
+                                <li style="margin-top:5px;">
+                                    <a href="/admin/core/liegenschaft/{{ lieg.id }}/change/" class="tree-item lvl-lieg">📍 {{ lieg.strasse }}</a>
+                                    <ul class="tree-ul">
+                                    {% for einheit in lieg.einheiten.all %}
+                                        <li style="margin-top:2px;">
+                                            <details id="einheit-{{ einheit.id }}">
+                                                <summary class="summary-objekt">
+                                                    <span onclick="window.location='/admin/core/einheit/{{ einheit.id }}/change/'; event.preventDefault();" style="cursor:pointer;">🏠 {{ einheit.bezeichnung }}</span>
+                                                    <span style="font-weight:normal; font-size:0.9em; color:#666; margin-left:5px;">{{ einheit.navigation_label }}</span>
+                                                </summary>
+                                                <ul class="tree-ul" style="border-left: 1px dotted #999; margin-left:5px;">
+
+                                                    <li style="margin-top:2px; margin-bottom:5px;">
+                                                        <a href="/admin/core/einheit/{{ einheit.id }}/change/" class="tree-item lvl-komponente"><span class="icon">🏷️</span> Komponenten</a>
+                                                    </li>
+
+                                                    <li style="margin-top:5px; border-top:1px solid #eee; padding-top:2px; font-size:11px; color:#666; font-weight:bold;">
+                                                        VERHÄLTNISSE
+                                                        <a href="/admin/core/mietvertrag/add/?einheit={{ einheit.id }}" class="add-btn" title="Neuer Mietvertrag" onclick="event.stopPropagation();" style="background-color:#28a745;">+</a>
+                                                        <a href="/admin/core/leerstand/add/?einheit={{ einheit.id }}" class="add-btn" title="Leerstand erfassen" onclick="event.stopPropagation();" style="background-color:#fd7e14; margin-left:2px;">L</a>
+                                                    </li>
+
+                                                    {% if einheit.vertraege.exists %}
+                                                        {% for vertrag in einheit.vertraege.all %}
+                                                            <li style="margin-top:2px; display:flex; align-items:center;">
+                                                                <a href="/admin/core/mietvertrag/{{ vertrag.id }}/change/" class="tree-item lvl-detail" {% if vertrag.aktiv %}style="color:green; flex-grow:1;"{% else %}style="color:#ccc; text-decoration:line-through; flex-grow:1;"{% endif %}>
+                                                                    <span class="icon">👤</span> {{ vertrag.mieter }} <span style="font-size:0.85em; color:#888;">(ab {{ vertrag.beginn|date:"d.m.y" }})</span>
+                                                                </a>
+                                                                <a href="{% url 'generate_pdf' vertrag.id %}" target="_blank" title="Drucken" style="text-decoration:none; margin-right:5px;">🖨️</a>
+                                                            </li>
+                                                        {% endfor %}
+                                                    {% endif %}
+
+                                                    {% if einheit.leerstaende.exists %}
+                                                        {% for leer in einheit.leerstaende.all %}
+                                                            <li style="margin-top:2px;">
+                                                                <a href="/admin/core/leerstand/{{ leer.id }}/change/" class="tree-item lvl-detail" style="color:#d35400;">
+                                                                    <span class="icon">⏳</span> <i>{{ leer.get_grund_display }}</i> <span style="font-size:0.85em;">(ab {{ leer.beginn|date:"d.m.y" }})</span>
+                                                                </a>
+                                                            </li>
+                                                        {% endfor %}
+                                                    {% endif %}
+
+                                                    {% if not einheit.vertraege.exists and not einheit.leerstaende.exists %}
+                                                        <li><span class="tree-item" style="color:red; font-size:0.85em;">⚠️ Keine Daten</span></li>
+                                                    {% endif %}
+
+                                                    <li style="margin-top:5px; border-top:1px solid #eee; padding-top:2px; font-size:11px; color:#666; font-weight:bold;">
+                                                        GERÄTE ({{ einheit.geraete.count }})
+                                                        <a href="/admin/core/geraet/add/?einheit={{ einheit.id }}" class="add-btn" title="Gerät hinzufügen" onclick="event.stopPropagation();" style="background-color:#28a745;">+</a>
+                                                    </li>
+                                                    {% if einheit.geraete.exists %}
+                                                        <ul style="list-style:none; padding-left:10px;">
+                                                            {% for geraet in einheit.geraete.all %}
+                                                            <li><a href="/admin/core/geraet/{{ geraet.id }}/change/" class="tree-item lvl-detail">🔹 {{ geraet.typ }}</a></li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% endif %}
+
+                                                </ul>
+                                            </details>
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endfor %}
+                            </ul>
+                        </details>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="content-area">
+            {% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}</div>{% endblock %}
+            {% block messages %}{% if messages %}<ul class="messagelist">{% for message in messages %}<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>{% endfor %}</ul>{% endif %}{% endblock %}
+            <div id="content" class="{% block coltype %}colM{% endblock %}">{% block pretitle %}{% endblock %}{% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}{% block content %}{% endblock %}{% block sidebar %}{% endblock %}<br class="clear"></div>
+        </div>
+    </div>
+    {% block footer %}<div id="footer"></div>{% endblock %}
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const allDetails = document.querySelectorAll("details");
+    allDetails.forEach(el => {
+        const id = el.getAttribute("id");
+        if(id) {
+            const savedState = localStorage.getItem("tree_" + id);
+            if(savedState === "closed") el.removeAttribute("open"); else if (savedState === "open") el.setAttribute("open", "");
+            el.addEventListener("toggle", function() { localStorage.setItem("tree_" + id, el.open ? "open" : "closed"); });
+        }
+    });
+});
+</script>
+</body>
+</html>

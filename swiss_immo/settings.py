@@ -3,26 +3,22 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# WICHTIG: Auf dem Server später ändern, für jetzt okay
+# WARNHINWEIS: In Produktion ändern!
 SECRET_KEY = 'django-insecure-bitte-in-pythonanywhere-ändern'
 DEBUG = True
 
-# Erlaubt erstmal alle Hosts für das Setup
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['swissimmo.pythonanywhere.com', '127.0.0.1', 'localhost']
 CSRF_TRUSTED_ORIGINS = ['https://*.pythonanywhere.com']
 
 INSTALLED_APPS = [
+    # 'jazzmin',  # <-- WICHTIG: JAZZMIN MUSS AUS SEIN FÜR DIE BAUM-ANSICHT
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # Externe Apps
     'ckeditor',
-    
-    # Deine App
     'core',
 ]
 
@@ -41,7 +37,7 @@ ROOT_URLCONF = 'swiss_immo.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -49,6 +45,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # Das muss drin bleiben für den Baum:
+                'core.context_processors.admin_baum_navigation',
             ],
         },
     },
@@ -81,10 +79,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CKEDITOR_CONFIGS = {
-    'default': {
-        'toolbar': 'full',
-        'height': 300,
-        'width': '100%',
-    },
-}
+CKEDITOR_CONFIGS = {'default': {'toolbar': 'full', 'height': 300, 'width': '100%',},}
+
+# ==========================================
+# DOCUSEAL KONFIGURATION
+# ==========================================
+DOCUSEAL_API_KEY = "s9v8zN4fR55aLMxLQjV9M4TitPi6Bztc6mxPxvjbCMR"
+DOCUSEAL_URL = "https://api.docuseal.com"

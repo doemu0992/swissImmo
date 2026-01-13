@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>Nebenkostenabrechnung</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 10pt;
+            margin: 0; padding: 0;
+        }
+        .page-content {
+            padding: 20mm;
+            padding-bottom: 110mm; /* Platz für QR Code unten reservieren */
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; border-bottom: 2px solid black; padding: 5px; }
+        td { border-bottom: 1px solid #ddd; padding: 5px; }
+
+        /* QR CODE CONTAINER - FIXIERT UNTEN */
+        .qr-section {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 210mm;
+            height: 105mm;
+            z-index: 1000;
+            /* Hintergrund weiß, damit er Text überdeckt falls nötig */
+            background-color: white;
+        }
+
+        /* Das Bild muss den Container füllen */
+        .qr-section img {
+            width: 210mm;
+            height: 105mm;
+            display: block;
+        }
+
+        .page-break { page-break-after: always; }
+    </style>
+</head>
+<body>
+
+{% for a in abrechnungen %}
+    <div class="page-break">
+        <div class="page-content">
+            <div style="color:green; font-size:9px; border:1px solid green; display:inline-block; margin-bottom:10px;">
+                STATUS: PNG BILD MODUS
+            </div>
+
+            <h2>Nebenkostenabrechnung</h2>
+            <p><strong>Mieter:</strong> {{ a.mieter }}</p>
+
+            <table>
+                <tr><th>Text</th><th style="text-align:right">Betrag</th></tr>
+                {% for d in a.details %}
+                <tr><td>{{ d.text }}</td><td style="text-align:right">{{ d.anteil|floatformat:2 }}</td></tr>
+                {% endfor %}
+                <tr><td><strong>Saldo</strong></td><td style="text-align:right"><strong>{{ a.saldo|floatformat:2 }}</strong></td></tr>
+            </table>
+
+            <p>Bitte begleichen Sie den offenen Betrag.</p>
+
+            {% if a.qr_error %}
+                <div style="color:red; border:2px solid red; padding:10px; margin-top:20px;">
+                    FEHLER: {{ a.qr_error }}
+                </div>
+            {% elif a.qr_data_uri %}
+                <div style="margin-top:20px; color:green;">
+                    QR-Code wurde erstellt (siehe unten am Seitenrand).
+                </div>
+
+                <div class="qr-section">
+                    <img src="{{ a.qr_data_uri }}" alt="QR Code">
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+{% endfor %}
+
+</body>
+</html>
