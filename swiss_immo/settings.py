@@ -1,11 +1,18 @@
 from pathlib import Path
 import os
+from dotenv import load_dotenv  # WICHTIG: Paket zum Laden der .env Datei
+
+# Lädt die .env Datei aus dem Hauptordner
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# WARNHINWEIS: In Produktion ändern!
-SECRET_KEY = 'django-insecure-bitte-in-pythonanywhere-ändern'
-DEBUG = True
+# --- SICHERHEITSEINSTELLUNGEN ---
+# Holt den Schlüssel aus der .env Datei (Fallback nur für lokale Tests)
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key')
+
+# Liest DEBUG aus der .env (Standard: True, falls nicht gesetzt)
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['swissimmo.pythonanywhere.com', '127.0.0.1', 'localhost']
 CSRF_TRUSTED_ORIGINS = ['https://*.pythonanywhere.com']
@@ -82,7 +89,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CKEDITOR_CONFIGS = {'default': {'toolbar': 'full', 'height': 300, 'width': '100%',},}
 
 # ==========================================
-# DOCUSEAL KONFIGURATION
+# DOCUSEAL KONFIGURATION (SECURE)
 # ==========================================
-DOCUSEAL_API_KEY = "s9v8zN4fR55aLMxLQjV9M4TitPi6Bztc6mxPxvjbCMR"
+# Holt den API Key sicher aus der .env Datei
+DOCUSEAL_API_KEY = os.getenv('DOCUSEAL_API_KEY')
 DOCUSEAL_URL = "https://api.docuseal.com"
+
+# ==============================================
+# E-MAIL KONFIGURATION (BREVO SMTP - SECURE)
+# ==============================================
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp-relay.brevo.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+# Holt Login-Daten sicher aus der .env Datei
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')

@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Immobilien Service Portal{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Bereich */
+        .navbar-custom {
+            background-color: #417690; /* Dein Admin-Blau */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px 0;
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: bold;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Hauptinhalt */
+        .main-content {
+            flex: 1;
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
+
+        /* Formular Karten Styles */
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            background: white;
+            overflow: hidden;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: #417690;
+            border-color: #417690;
+        }
+        .btn-primary:hover {
+            background-color: #2f586f;
+            border-color: #2f586f;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            background: white;
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid #eee;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-custom">
+        <div class="container">
+            <span class="navbar-brand">
+                🏢 Immobilien Service Portal
+            </span>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+
+        {% if messages %}
+            <div style="max-width: 800px; margin: 0 auto 20px auto;">
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+
+    </div>
+
+    <footer>
+        &copy; {% now "Y" %} SwissImmo Verwaltung
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

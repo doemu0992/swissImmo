@@ -1,0 +1,140 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+<style>
+    .chat-wrapper { display: flex; gap: 20px; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+    /* Chat Fenster */
+    .chat-box { flex: 2; display: flex; flex-direction: column; background: #fff; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; }
+    .chat-history { padding: 20px; background: #f5f5f5; height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+
+    .msg { padding: 12px 16px; border-radius: 12px; max-width: 80%; line-height: 1.5; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .msg-in { align-self: flex-start; background: #fff; border-bottom-left-radius: 2px; }
+    .msg-out { align-self: flex-end; background: #dcf8c6; border-bottom-right-radius: 2px; } /* WhatsApp Grün Stil */
+    .msg-internal { align-self: flex-end; background: #fff3cd; border: 1px solid #ffeeba; }
+
+    .msg-meta { font-size: 0.75em; color: #999; margin-bottom: 4px; display: block; }
+
+    .chat-footer { padding: 15px; background: #fff; border-top: 1px solid #eee; }
+
+    /* Sidebar Details */
+    .details-box { flex: 1; background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 20px; font-size: 13px; height: fit-content; }
+    .details-box h3 { margin-top: 0; border-bottom: 2px solid #417690; padding-bottom: 10px; color: #417690; }
+    .info-row { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+    .label { font-weight: bold; color: #555; display: block; }
+
+    .status-badge { display: inline-block; padding: 5px 10px; border-radius: 4px; color: white; font-weight: bold; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="ticket-header" style="padding: 20px 20px 0 20px; display: flex; justify-content: space-between; align-items: center;">
+    <h1 style="margin:0;">Ticket #{{ ticket.id }}: {{ ticket.titel }}</h1>
+
+    <form method="post" style="background:#fff; padding:10px; border:1px solid #ccc; border-radius:5px;">
+        {% csrf_token %}
+        <input type="hidden" name="status_update" value="true">
+        <label for="status" style="font-weight:bold; margin-right:5px;">Status:</label>
+        <select name="status" id="status" onchange="this.form.submit()" style="padding: 5px;">
+            {% for key, label in STATUS_CHOICES %}
+                <option value="{{ key }}" {% if ticket.status == key %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+<div class="chat-wrapper">
+
+    <div class="chat-box">
+        <div class="chat-history">
+            <div class="msg msg-in" style="border-left: 4px solid #417690;">
+                <span class="msg-meta">ORIGINAL MELDUNG ({{ ticket.erstellt_am|date:"d.m.Y H:i" }})</span>
+                {{ ticket.beschreibung|linebreaksbr }}
+            </div>
+
+            {% for msg in ticket.nachrichten.all %}
+                <div class="msg {% if msg.is_intern %}msg-internal{% elif msg.is_von_verwaltung %}msg-out{% else %}msg-in{% endif %}">
+                    <span class="msg-meta">
+                        {% if msg.is_intern %}🔒 INTERNE NOTIZ{% else %}{{ msg.absender_name }}{% endif %}
+                        • {{ msg.erstellt_am|date:"d.m.Y H:i" }}
+                    </span>
+                    {{ msg.nachricht|linebreaksbr }}
+
+                    {% if msg.datei %}
+                        <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(0,0,0,0.05);">
+                            📎 <a href="{{ msg.datei.url }}" target="_blank">Anhang öffnen</a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="chat-footer">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div style="margin-bottom: 10px;">
+                    {{ form.nachricht }}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        {{ form.datei }}
+                        <br>
+                        <label style="color: #a00; font-weight: bold; margin-top: 5px; display: inline-block;">
+                            <input type="checkbox" name="is_intern"> 🔒 Nur interne Notiz
+                        </label>
+                    </div>
+                    <button type="submit" class="button" style="background:#417690; padding: 10px 25px; font-size: 14px;">Senden</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="details-box">
+        <h3>📋 Ticket Details</h3>
+
+        {% if ticket.foto %}
+            <div style="margin-bottom: 20px; text-align: center;">
+                <a href="{{ ticket.foto.url }}" target="_blank">
+                    <img src="{{ ticket.foto.url }}" style="max-width: 100%; border-radius: 5px; border: 1px solid #ddd;" alt="Beweisfoto">
+                </a>
+                <div style="font-size: 10px; color: #999; margin-top: 5px;">Klicken zum Vergrößern</div>
+            </div>
+        {% endif %}
+
+        <div class="info-row">
+            <span class="label">Priorität:</span>
+            {{ ticket.get_prioritaet_display }}
+        </div>
+        <div class="info-row">
+            <span class="label">Zutritt:</span>
+            {{ ticket.get_zutritt_display }}
+        </div>
+
+        <br>
+        <h3>👤 Mieter Info</h3>
+        {% if ticket.gemeldet_von %}
+            <div class="info-row">
+                <span class="label">Name:</span>
+                <a href="/admin/core/mieter/{{ ticket.gemeldet_von.id }}/change/">{{ ticket.gemeldet_von.vorname }} {{ ticket.gemeldet_von.nachname }}</a>
+            </div>
+            <div class="info-row">
+                <span class="label">Adresse:</span>
+                {{ ticket.gemeldet_von.strasse }}<br>{{ ticket.gemeldet_von.plz }} {{ ticket.gemeldet_von.ort }}
+            </div>
+        {% endif %}
+
+        <div class="info-row">
+            <span class="label">Kontakt (Ticket):</span>
+            📞 {{ ticket.mieter_telefon }}<br>
+            📧 <a href="mailto:{{ ticket.mieter_email }}">{{ ticket.mieter_email }}</a>
+        </div>
+
+        <br>
+        <h3>🔗 Link teilen</h3>
+        <input type="text" value="{{ request.scheme }}://{{ request.get_host }}{% url 'ticket_detail_public' ticket.uuid %}" style="width: 100%; font-size: 11px; padding: 5px; border: 1px solid #ccc;" readonly onclick="this.select()">
+    </div>
+
+</div>
+{% endblock %}

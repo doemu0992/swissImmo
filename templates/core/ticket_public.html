@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <strong>📌 Ticket Details</strong>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ ticket.titel }} <small class="text-muted">#{{ ticket.id }}</small></h5>
+
+                <div class="mb-3">
+                    <span class="badge bg-{% if ticket.status == 'erledigt' %}success{% elif ticket.status == 'neu' %}danger{% else %}warning text-dark{% endif %}">
+                        {{ ticket.get_status_display }}
+                    </span>
+                    <span class="badge bg-secondary">{{ ticket.erstellt_am|date:"d.m.Y" }}</span>
+                </div>
+
+                <p class="card-text">{{ ticket.beschreibung }}</p>
+
+                {% if ticket.foto %}
+                    <hr>
+                    <strong>📸 Foto vom Schaden:</strong>
+                    <br>
+                    <a href="{{ ticket.foto.url }}" target="_blank">
+                        <img src="{{ ticket.foto.url }}" class="img-fluid rounded mt-2" style="max-height: 200px; width: 100%; object-fit: cover;" alt="Schaden Foto">
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-light">
+                <strong>👤 Ihre Daten</strong>
+            </div>
+            <div class="card-body small text-muted">
+                {% if ticket.gemeldet_von %}
+                    <p><strong>Name:</strong> {{ ticket.gemeldet_von.vorname }} {{ ticket.gemeldet_von.nachname }}</p>
+                    <p><strong>Adresse:</strong> {{ ticket.gemeldet_von.strasse }}, {{ ticket.gemeldet_von.ort }}</p>
+                {% else %}
+                    <p><em>Kein Mieter-Profil verknüpft</em></p>
+                {% endif %}
+                <p><strong>Kontakt E-Mail:</strong> {{ ticket.mieter_email }}</p>
+                <p><strong>Telefon:</strong> {{ ticket.mieter_telefon }}</p>
+                <p><strong>Zutritt:</strong> {{ ticket.get_zutritt_display }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <strong>💬 Verlauf & Antworten</strong>
+            </div>
+
+            <div class="card-body bg-light" style="max-height: 500px; overflow-y: auto;">
+                <div class="d-flex justify-content-end mb-3">
+                    <div class="bg-primary text-white p-3 rounded shadow-sm" style="max-width: 80%; border-bottom-right-radius: 0;">
+                        <small class="d-block text-white-50 mb-1">Meldung ({{ ticket.erstellt_am|date:"d.m.Y H:i" }})</small>
+                        {{ ticket.beschreibung|linebreaksbr }}
+                    </div>
+                </div>
+
+                {% for msg in chat %}
+                    <div class="d-flex mb-3 {% if msg.is_von_verwaltung %}justify-content-start{% else %}justify-content-end{% endif %}">
+
+                        <div class="p-3 rounded shadow-sm"
+                             style="max-width: 80%;
+                                    {% if msg.is_von_verwaltung %}background: white; border-bottom-left-radius: 0;{% else %}background: #0d6efd; color: white; border-bottom-right-radius: 0;{% endif %}">
+
+                            <small class="d-block mb-1 {% if msg.is_von_verwaltung %}text-muted{% else %}text-white-50{% endif %}">
+                                <strong>{{ msg.absender_name }}</strong> • {{ msg.erstellt_am|date:"d.m.Y H:i" }}
+                            </small>
+
+                            {{ msg.nachricht|linebreaksbr }}
+
+                            {% if msg.datei %}
+                                <div class="mt-2 pt-2 border-top">
+                                    📎 <a href="{{ msg.datei.url }}" target="_blank" style="{% if not msg.is_von_verwaltung %}color: white;{% endif %}">Anhang öffnen</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if ticket.status != 'erledigt' %}
+            <div class="card-footer bg-white p-3">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-2">
+                        {{ form.nachricht }}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="small">
+                            {{ form.datei }}
+                        </div>
+                        <button type="submit" class="btn btn-success px-4">Senden ➤</button>
+                    </div>
+                </form>
+            </div>
+            {% else %}
+            <div class="card-footer bg-light text-center text-muted">
+                Ticket ist erledigt. Keine Antwort mehr möglich.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

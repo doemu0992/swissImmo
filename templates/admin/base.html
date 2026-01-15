@@ -121,7 +121,30 @@
                                                         {% endfor %}
                                                     {% endif %}
 
-                                                    {% if not einheit.vertraege.exists and not einheit.leerstaende.exists %}
+                                                    <li style="margin-top:5px; border-top:1px solid #eee; padding-top:2px; font-size:11px; color:#666; font-weight:bold;">
+                                                        TICKETS ({{ einheit.schaeden.count }})
+                                                        <a href="/admin/core/schadenmeldung/add/?betroffene_einheit={{ einheit.id }}" class="add-btn" title="Ticket erstellen" onclick="event.stopPropagation();" style="background-color:#dc3545;">+</a>
+                                                    </li>
+                                                    {% if einheit.schaeden.exists %}
+                                                        <ul style="list-style:none; padding-left:10px;">
+                                                        {% for ticket in einheit.schaeden.all %}
+                                                            <li style="margin-top:2px;">
+                                                                <a href="/admin/core/schadenmeldung/{{ ticket.id }}/change/" class="tree-item lvl-detail" style="display:flex; justify-content:space-between; align-items:center;">
+                                                                    <span style="overflow:hidden; text-overflow:ellipsis;">
+                                                                        <span class="icon">🛠️</span> {{ ticket.titel|truncatechars:18 }}
+                                                                    </span>
+                                                                    <span style="width:8px; height:8px; border-radius:50%; display:inline-block; background-color:
+                                                                        {% if ticket.status == 'neu' %}red
+                                                                        {% elif ticket.status == 'in_bearbeitung' %}orange
+                                                                        {% elif ticket.status == 'erledigt' %}green
+                                                                        {% else %}blue{% endif %};" title="{{ ticket.get_status_display }}">
+                                                                    </span>
+                                                                </a>
+                                                            </li>
+                                                        {% endfor %}
+                                                        </ul>
+                                                    {% endif %}
+                                                    {% if not einheit.vertraege.exists and not einheit.leerstaende.exists and not einheit.schaeden.exists %}
                                                         <li><span class="tree-item" style="color:red; font-size:0.85em;">⚠️ Keine Daten</span></li>
                                                     {% endif %}
 

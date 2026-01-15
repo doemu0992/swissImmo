@@ -1,0 +1,206 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Mietvertrag Garage/Parkplatz</title>
+    <style>
+        @page {
+            size: a4 portrait;
+            margin: 2.5cm;
+            @frame footer_frame {
+                -pdf-frame-content: footerContent;
+                bottom: 1cm;
+                margin-left: 2.5cm;
+                margin-right: 2.5cm;
+                height: 1cm;
+            }
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.3;
+            color: #000;
+        }
+
+        h1 {
+            font-size: 16pt;
+            border-bottom: 1px solid #000;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-size: 12pt;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            background-color: #eee;
+            padding: 5px;
+            font-weight: bold;
+        }
+
+        p { margin-bottom: 10px; text-align: justify; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        td {
+            padding: 4px;
+            vertical-align: top;
+        }
+
+        .label { font-weight: bold; width: 35%; }
+        .value { width: 65%; }
+        .amount { text-align: right; font-family: "Courier New", Courier, monospace; }
+
+        /* DocuSeal Spezifikationen */
+        .docuseal-wrapper {
+            font-family: "Courier New", Courier, monospace;
+            font-size: 10pt;
+            color: #000000;
+            white-space: nowrap;
+        }
+
+        .small-print { font-size: 8pt; color: #555; }
+        .indent { margin-left: 20px; }
+    </style>
+</head>
+<body>
+
+    <h1>Mietvertrag für Garage und Abstellplatz</h1>
+    <p class="small-print">Gestützt auf die Bestimmungen des Schweizerischen Obligationenrechts.</p>
+
+    <h2>1. Vertragsparteien</h2>
+    <table style="border: 1px solid #ccc; margin-bottom: 20px;">
+        <tr>
+            <td class="label">Vermieter:</td>
+            <td class="value">
+                {% if mandant %}
+                    <strong>{{ mandant.firma_oder_name }}</strong><br>
+                    {{ mandant.strasse }}<br>
+                    {{ mandant.plz }} {{ mandant.ort }}
+                {% else %}
+                    <strong>(Kein Eigentümer hinterlegt)</strong>
+                {% endif %}
+
+                {% if liegenschaft.verwaltung %}
+                    <br><br>
+                    <span class="small-print">Vertreten durch Verwaltung:</span><br>
+                    <strong>{{ liegenschaft.verwaltung.firma }}</strong>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td class="label">Mieter:</td>
+            <td class="value">
+                <strong>{{ mieter.vorname }} {{ mieter.nachname }}</strong><br>
+                {{ mieter.strasse }}<br>
+                {{ mieter.plz }} {{ mieter.ort }}
+            </td>
+        </tr>
+    </table>
+
+    <div class="indent small-print">
+        Geburtsdatum: {{ mieter.geburtsdatum|date:"d.m.Y"|default:"-" }}<br>
+        Zivilstand: {{ mieter.get_zivilstand_display }}<br>
+        Heimatort/Nationalität: {{ mieter.heimatort|default:"CH" }}<br>
+        AHV-Nr.: {{ mieter.ahv_nummer|default:"-" }}
+    </div>
+
+    <h2>2. Mietobjekt</h2>
+    <p>Der Vermieter vermietet dem Mieter folgende Objekte auf dem Grundstück an der <strong>{{ liegenschaft.strasse }}</strong> in <strong>{{ liegenschaft.plz }} {{ liegenschaft.ort }}</strong>:</p>
+
+    <div class="indent" style="margin-bottom: 10px;">
+        • <strong>{{ einheit.bezeichnung }}</strong> ({{ einheit.get_typ_display }})
+    </div>
+
+    <h2>3. Mietzins</h2>
+    <p>Der monatliche Mietzins beträgt für das Objekt:</p>
+    <table border="1" bordercolor="#ccc" cellpadding="4">
+        <tr style="background-color: #e0e0e0; font-weight:bold;">
+            <td>Total Brutto (pro Monat)</td>
+            <td class="amount">CHF {{ brutto_fmt }}</td>
+        </tr>
+    </table>
+    <p class="small-print">(Brutto inkl. allfälliger Nebenkosten).</p>
+
+    <p>Der Mietzins ist jeweils monatlich im Voraus, spätestens bis zum ersten Tag des Monats, auf das vom Vermieter bezeichnete Konto zu überweisen.</p>
+
+    {% if liegenschaft.iban %}
+    <div class="indent small-print" style="border: 1px dashed #ccc; padding: 5px; width: fit-content;">
+        <strong>Zahlungsverbindung:</strong><br>
+        Bank: {{ liegenschaft.bank_name }}<br>
+        IBAN: {{ liegenschaft.iban }}
+    </div>
+    {% endif %}
+
+    <h2>4. Mietbeginn und Dauer</h2>
+    <p>Das Mietverhältnis beginnt am: <strong>{{ vertrag.beginn|date:"d.m.Y"|default:"(Datum fehlt!)" }}</strong></p>
+    <p>Der Vertrag wird auf unbestimmte Zeit abgeschlossen.</p>
+
+    <h2>5. Kündigung</h2>
+    <p>Die Kündigungsfrist beträgt <strong>1 Monat</strong>. Die Kündigung kann auf das Ende jedes Monats erfolgen. Die Kündigung muss schriftlich erfolgen und spätestens am letzten Tag vor Beginn der Kündigungsfrist beim Empfänger eintreffen.</p>
+
+    <h2>6. Sorgfaltspflicht und Nutzung</h2>
+    <p>Das Mietobjekt darf ausschliesslich zum Einstellen von motorisierten Fahrzeugen sowie dazugehörigem Zubehör (z.B. Reifen) genutzt werden.</p>
+    <p>Die Lagerung von feuergefährlichen Stoffen oder sonstigen Gegenständen, die nicht zum direkten Fahrzeugbetrieb gehören, ist untersagt.</p>
+    <p>Der Mieter verpflichtet sich, das Mietobjekt sorgfältig zu gebrauchen und sauber zu halten.</p>
+    <p>Kleinere Reinigungsarbeiten und der "Kleine Unterhalt" (z.B. Glühbirnenwechsel, Beseitigung von Ölspuren) gehen zu Lasten des Mieters.</p>
+    <p>Eine Untervermietung ist nur mit schriftlicher Zustimmung des Vermieters gestattet.</p>
+
+    <h2>7. Besondere Vereinbarungen</h2>
+    <p>Der Mieter bestätigt, die Schlüssel (bzw. Handsender) für das Mietobjekt bei Mietbeginn zu erhalten.</p>
+
+    <br><br>
+
+    <div style="page-break-inside: avoid; margin-top: 20px;">
+        <p>Ort, Datum: ___________________________________</p>
+        <br>
+
+        <table style="width: 100%;">
+            <tr>
+                <td style="width: 50%; vertical-align: bottom; padding-right: 15px;">
+                    {% if unterschrift_path %}
+                        <img src="{{ unterschrift_path }}" style="width: 140px; height: auto;">
+                    {% else %}
+                        <br><br><br>
+                    {% endif %}
+                    <div style="border-top: 1px solid black; width: 100%;"></div>
+                    <p style="font-size: 9pt;">
+                        Der Vermieter<br>
+                        <span style="font-size: 8pt;">({% if mandant %}{{ mandant.firma_oder_name }}{% else %}Verwaltung{% endif %})</span>
+                    </p>
+                </td>
+
+                <td style="width: 50%; vertical-align: bottom; padding-left: 15px;">
+
+                    <div class="docuseal-wrapper">
+                        {% verbatim %}{{Unterschrift_Mieter;role=Mieter;type=signature}}{% endverbatim %}
+                    </div>
+
+                    <div style="height: 5px;"></div>
+                    <div style="border-top: 1px solid black; width: 100%;"></div>
+                    <p style="font-size: 9pt;">
+                        Der Mieter: {{ mieter.vorname }} {{ mieter.nachname }}<br>
+                        <span style="color: #999; font-size: 8pt;">(Gelesen und akzeptiert)</span>
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="footerContent">
+        <p class="footer" style="border-top: 1px solid #eee; padding-top: 5px; font-size: 8pt; color: #777;">
+            Seite <pdf:pagenumber> von <pdf:pagecount> |
+            Vertrags-ID: {{ vertrag.id }} |
+            Erstellt am: {{ heute|date:"d.m.Y" }} |
+            Objekt: {{ einheit.bezeichnung }}
+        </p>
+    </div>
+
+</body>
+</html>

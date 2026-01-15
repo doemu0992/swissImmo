@@ -3,48 +3,36 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
-# Import der Views aus core/views.py
-from core.views import (
-    dashboard_view,
-    mietzins_anpassung_view,
-    schaden_melden_public,
-    abrechnung_pdf_view,
-    generate_pdf_view,            # PDF Generierung (Manuell)
-    send_via_docuseal,            # Versand Funktion (DocuSeal API)
-    docuseal_webhook,             # Webhook (Rückmeldung)
-    generiere_amtliches_formular
-)
+# Views importieren
+from core.views.dashboard import dashboard_view
+from core.views.contracts import mietzins_anpassung_view, generiere_amtliches_formular
+from core.views.issues import ticket_erstellen, ticket_detail_public, ticket_detail_admin # NEU
+from core.views.pdf import abrechnung_pdf_view, generate_pdf_view
+from core.views.docuseal import send_via_docuseal, docuseal_webhook
 
 urlpatterns = [
-    # Admin-Bereich
+    # Admin
     path('admin/', admin.site.urls),
 
-    # Dashboard (Startseite)
+    # Dashboard
     path('', dashboard_view, name='index'),
     path('dashboard/', dashboard_view, name='dashboard'),
 
-    # Prozesse & Formulare
+    # Prozesse: Mietzins
     path('mietzins/<int:vertrag_id>/', mietzins_anpassung_view, name='mietzins_anpassung'),
-    path('schaden/melden/', schaden_melden_public, name='schaden_melden'),
+    path('formular/amtlich/<int:vertrag_id>/', generiere_amtliches_formular, name='amtliches_formular'),
 
-    # PDF Generierung (Lokal Download für NK-Abrechnung)
+    # Prozesse: Tickets & Chat (NEU)
+    path('schaden/melden/', ticket_erstellen, name='ticket_erstellen'),
+    path('ticket/status/<uuid:uuid>/', ticket_detail_public, name='ticket_detail_public'),
+    path('ticket/admin/<int:pk>/', ticket_detail_admin, name='ticket_detail_admin'),
+
+    # PDFs
     path('pdf/abrechnung/<int:pk>/', abrechnung_pdf_view, name='abrechnung_pdf'),
-
-    # ==========================================
-    # MIETVERTRAG & DOCUSEAL
-    # ==========================================
-
-    # 1. PDF Ansehen/Downloaden (Manuell)
     path('vertrag/<int:vertrag_id>/pdf/', generate_pdf_view, name='generate_pdf'),
 
-    # 2. SENDEN via API
+    # DocuSeal
     path('vertrag/<int:vertrag_id>/senden/', send_via_docuseal, name='send_docuseal'),
-
-    # 3. WEBHOOK
-    # KORREKTUR: Pfad muss 'docuseal/webhook/' sein, damit er zur DocuSeal-Einstellung passt
     path('docuseal/webhook/', docuseal_webhook, name='docuseal_webhook'),
-
-    # Helper / Platzhalter
-    path('formular/amtlich/<int:vertrag_id>/', generiere_amtliches_formular, name='amtliches_formular'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

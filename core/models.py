@@ -1,5 +1,6 @@
 import os
 import datetime
+import uuid
 from itertools import chain
 from django.db import models
 from django.utils import timezone
@@ -10,17 +11,16 @@ STANDARD_REF_ZINS = 1.75
 STANDARD_LIK_PUNKTE = 107.1
 
 def get_smart_upload_path(instance, filename):
+    """Speichert Dateien in Unterordnern nach Datum (YYYY-MM-DD)"""
     heute = datetime.date.today().strftime("%Y-%m-%d")
     return os.path.join("uploads", heute, filename)
 
 # ==============================================================================
-# 1. VERWALTUNG (Deine Firma / "Crew")
+# 1. VERWALTUNG & MANDANTEN
 # ==============================================================================
+
 class Verwaltung(models.Model):
-    """
-    Hier werden deine Firmendaten gespeichert, die im Vertrag unter
-    'Vertreten durch' erscheinen.
-    """
+    """Deine Firma / Crew"""
     firma = models.CharField("Firmenname", max_length=100)
     strasse = models.CharField("Strasse & Nr.", max_length=100)
     plz = models.CharField("PLZ", max_length=10)
@@ -37,9 +37,7 @@ class Verwaltung(models.Model):
     def __str__(self): return self.firma
 
 class Mandant(models.Model):
-    """
-    Der Eigentümer der Liegenschaft.
-    """
+    """Der Eigentümer der Liegenschaft"""
     firma_oder_name = models.CharField("Name / Firma (Eigentümer)", max_length=100)
     strasse = models.CharField("Strasse (Eigentümer)", max_length=100, blank=True)
     plz = models.CharField("PLZ", max_length=10, blank=True)
@@ -52,8 +50,6 @@ class Mandant(models.Model):
 
 class Liegenschaft(models.Model):
     mandant = models.ForeignKey(Mandant, on_delete=models.CASCADE, related_name='liegenschaften', null=True, blank=True)
-
-    # Verknüpfung zur Verwaltung (Wer betreut das Haus?)
     verwaltung = models.ForeignKey(Verwaltung, on_delete=models.SET_NULL, null=True, blank=True, related_name='liegenschaften', verbose_name="Zuständige Verwaltung")
 
     strasse = models.CharField("Strasse & Nr.", max_length=200)
@@ -76,18 +72,22 @@ class Liegenschaft(models.Model):
 class Einheit(models.Model):
     TYP_CHOICES = [('whg', 'Wohnung'), ('gew', 'Gewerbe'), ('pp', 'Parkplatz'), ('bas', 'Bastelraum')]
     POS_CHOICES = [('links', 'links'), ('rechts', 'rechts'), ('mitte', 'mitte'), ('hinten', 'hinten'), ('vorne', 'vorne'), ('oben', 'oben'), ('unten', 'unten')]
+
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='einheiten')
     ewid = models.CharField("EWID", max_length=20, blank=True, null=True)
     bezeichnung = models.CharField("Objektbezeichnung", max_length=50)
     typ = models.CharField("Typ", max_length=10, choices=TYP_CHOICES, default='whg')
     etage = models.CharField("Etage", max_length=20, blank=True)
     position = models.CharField("Position", max_length=20, choices=POS_CHOICES, blank=True)
+
     zimmer = models.DecimalField("Anz. Zimmer", max_digits=3, decimal_places=1, null=True, blank=True)
     flaeche_m2 = models.DecimalField("Fläche (m²)", max_digits=6, decimal_places=2, null=True, blank=True)
     wertquote = models.IntegerField("Wertquote (‰)", default=0)
+
     nettomiete_aktuell = models.DecimalField("Soll-Miete (Netto)", max_digits=8, decimal_places=2, default=0.00)
     nebenkosten_aktuell = models.DecimalField("Soll-Nebenkosten", max_digits=6, decimal_places=2, default=0.00)
     nk_abrechnungsart = models.CharField("NK-Art", max_length=20, default='pauschal', choices=[('akonto', 'Akonto'), ('pauschal', 'Pauschal')])
+
     ref_zinssatz = models.DecimalField("Basis Ref.Zins", max_digits=4, decimal_places=2, default=STANDARD_REF_ZINS)
     lik_punkte = models.DecimalField("Basis LIK", max_digits=6, decimal_places=1, default=STANDARD_LIK_PUNKTE)
 
@@ -108,7 +108,7 @@ class Einheit(models.Model):
         return sorted(chain(self.vertraege.all(), self.leerstaende.all()), key=lambda x: x.beginn, reverse=True)
 
 # ==============================================================================
-# 2. PERSONEN
+# 2. PERSONEN (Mieter & Handwerker)
 # ==============================================================================
 
 class Mieter(models.Model):
@@ -119,9 +119,11 @@ class Mieter(models.Model):
     geburtsdatum = models.DateField("Geburtsdatum", null=True, blank=True)
     heimatort = models.CharField("Heimatort", max_length=100, blank=True)
     zivilstand = models.CharField("Zivilstand", max_length=20, choices=ZIVILSTAND_CHOICES, default='ledig')
+
     strasse = models.CharField("Strasse (Aktuell)", max_length=200, blank=True)
     plz = models.CharField("PLZ (Aktuell)", max_length=10, blank=True)
     ort = models.CharField("Ort (Aktuell)", max_length=100, blank=True)
+
     telefon = models.CharField(max_length=30, blank=True)
     email = models.EmailField(blank=True)
     partner_name = models.CharField("Partner / Solidarhafter", max_length=200, blank=True)
@@ -132,10 +134,12 @@ class Mieter(models.Model):
 class Handwerker(models.Model):
     firma = models.CharField(max_length=100)
     kontaktperson = models.CharField(max_length=100, blank=True)
-    gewerk = models.CharField(max_length=100)
+    gewerk = models.CharField(max_length=100, help_text="z.B. Sanitär, Elektriker, Maler")
     telefon = models.CharField(max_length=30, blank=True)
     email = models.EmailField(blank=True)
     iban = models.CharField(max_length=34, blank=True)
+
+    class Meta: verbose_name = "Handwerker"; verbose_name_plural = "Handwerker"
     def __str__(self): return f"{self.firma} ({self.gewerk})"
 
 # ==============================================================================
@@ -149,14 +153,17 @@ class Mietvertrag(models.Model):
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='vertraege')
     beginn = models.DateField()
     ende = models.DateField(null=True, blank=True)
+
     netto_mietzins = models.DecimalField(max_digits=8, decimal_places=2)
     nebenkosten = models.DecimalField(max_digits=6, decimal_places=2)
     kautions_betrag = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+
     basis_referenzzinssatz = models.DecimalField(max_digits=4, decimal_places=2, default=STANDARD_REF_ZINS)
     basis_lik_punkte = models.DecimalField(max_digits=6, decimal_places=1, default=STANDARD_LIK_PUNKTE)
+
     aktiv = models.BooleanField(default=True)
 
-    # DocuSeal
+    # DocuSeal / E-Signing
     sign_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='offen')
     jotform_submission_id = models.CharField("DocuSeal ID", max_length=100, blank=True, null=True)
     pdf_datei = models.FileField(upload_to='vertraege_pdfs/', blank=True, null=True)
@@ -174,7 +181,7 @@ class Mietvertrag(models.Model):
             self.einheit.leerstaende.filter(Q(ende__isnull=True)|Q(ende__gte=self.beginn), beginn__lt=self.beginn).update(ende=self.beginn - datetime.timedelta(days=1))
 
 # ==============================================================================
-# 4. SONSTIGES (Wichtig für Admin!)
+# 4. PROZESSE & TICKETS
 # ==============================================================================
 
 class Leerstand(models.Model):
@@ -183,19 +190,89 @@ class Leerstand(models.Model):
     beginn = models.DateField("Beginn"); ende = models.DateField("Ende", null=True, blank=True)
     grund = models.CharField("Grund", max_length=50, choices=GRUND_CHOICES, default='mietersuche')
     bemerkung = models.TextField(blank=True)
+
+    class Meta: verbose_name = "Leerstand"; verbose_name_plural = "Leerstände"
+
     def save(self, *args, **kwargs):
         is_new = self.pk is None
         super().save(*args, **kwargs)
         if is_new: self.einheit.vertraege.filter(aktiv=True).update(ende=self.beginn - datetime.timedelta(days=1), aktiv=False)
 
+# --- TICKETSYSTEM / SCHADENMELDUNG ---
+
 class SchadenMeldung(models.Model):
-    STATUS = [('neu', 'Neu'), ('beauftragt', 'Beauftragt'), ('erledigt', 'Erledigt')]
-    liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE)
-    einheit = models.ForeignKey(Einheit, on_delete=models.SET_NULL, null=True, blank=True)
-    gemeldet_von = models.ForeignKey(Mieter, on_delete=models.SET_NULL, null=True, blank=True)
-    betreff = models.CharField(max_length=200); beschreibung = models.TextField(); foto = models.ImageField(upload_to=get_smart_upload_path, blank=True, null=True)
-    status = models.CharField(max_length=20, choices=STATUS, default='neu')
+    STATUS_CHOICES = [
+        ('neu', 'Neu'),
+        ('in_bearbeitung', 'In Bearbeitung'),
+        ('warte_auf_mieter', 'Warte auf Mieter'),
+        ('beauftragt', 'Handwerker beauftragt'),
+        ('erledigt', 'Erledigt')
+    ]
+    PRIORITAET_CHOICES = [('niedrig', 'Niedrig'), ('mittel', 'Mittel'), ('hoch', 'Hoch')]
+    ZUTRITT_CHOICES = [
+        ('telefon', 'Termin via Telefon'),
+        ('passpartout', 'Passpartout (Schlüssel vorhanden)'),
+    ]
+
+    # WICHTIG: UUID ist wieder aktiv!
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
+    # Zuordnung
+    liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='schaeden')
+    betroffene_einheit = models.ForeignKey(Einheit, on_delete=models.SET_NULL, null=True, blank=True, related_name='schaeden')
+    gemeldet_von = models.ForeignKey(Mieter, on_delete=models.SET_NULL, null=True, blank=True, related_name='gemeldete_schaeden')
+
+    # Der beauftragte Handwerker
+    handwerker = models.ForeignKey(Handwerker, on_delete=models.SET_NULL, null=True, blank=True, related_name='auftraege', verbose_name="Beauftragter Handwerker")
+
+    # Inhalt
+    titel = models.CharField("Titel / Schaden", max_length=200)
+    beschreibung = models.TextField("Beschreibung")
+    foto = models.ImageField(upload_to=get_smart_upload_path, blank=True, null=True)
+
+    # Kontakt & Zutritt
+    mieter_email = models.EmailField("Mieter E-Mail (Kontakt)", blank=True)
+    mieter_telefon = models.CharField("Mieter Telefon (Kontakt)", max_length=30, blank=True)
+    zutritt = models.CharField("Zutritt / Termin", max_length=20, choices=ZUTRITT_CHOICES, default='telefon')
+
+    # Meta
+    prioritaet = models.CharField("Priorität", max_length=20, choices=PRIORITAET_CHOICES, default='mittel')
+    status = models.CharField("Status", max_length=20, choices=STATUS_CHOICES, default='neu')
     erstellt_am = models.DateTimeField(auto_now_add=True)
+    aktualisiert_am = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Ticket / Schaden"
+        verbose_name_plural = "Tickets / Schäden"
+        ordering = ['-erstellt_am']
+
+    def __str__(self):
+        return f"Ticket #{self.id}: {self.titel}"
+
+
+class TicketNachricht(models.Model):
+    """
+    Speichert den Chat-Verlauf zu einem Ticket
+    """
+    ticket = models.ForeignKey(SchadenMeldung, on_delete=models.CASCADE, related_name='nachrichten')
+
+    # Wer hat geschrieben?
+    absender_name = models.CharField(max_length=100)
+    is_intern = models.BooleanField(default=False, help_text="Interne Notiz (Mieter sieht das nicht)")
+    is_von_verwaltung = models.BooleanField(default=False, help_text="True = Von Verwaltung, False = Von Mieter")
+
+    nachricht = models.TextField()
+    datei = models.FileField(upload_to='ticket_anhang/', blank=True, null=True)
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['erstellt_am']
+        verbose_name = "Ticket Nachricht"
+        verbose_name_plural = "Ticket Nachrichten"
+
+# ==============================================================================
+# 5. GEBÄUDEVERWALTUNG & DOKUMENTE
+# ==============================================================================
 
 class Unterhalt(models.Model):
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE)
@@ -205,20 +282,25 @@ class Unterhalt(models.Model):
     beleg = models.FileField(upload_to=get_smart_upload_path, blank=True, null=True)
     art = models.CharField(max_length=50, choices=[('reparatur', 'Reparatur'), ('renovation', 'Renovation'), ('investition', 'Investition')], default='reparatur')
 
+    class Meta: verbose_name = "Unterhalt"; verbose_name_plural = "Unterhalt"
+
 class Zaehler(models.Model):
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='zaehler')
     typ = models.CharField(max_length=20, choices=[('strom', 'Strom'), ('wasser', 'Wasser'), ('heizung', 'Heizung')])
     zaehler_nummer = models.CharField(max_length=50); standort = models.CharField(max_length=100, blank=True)
     def __str__(self): return f"{self.typ} {self.zaehler_nummer}"
+    class Meta: verbose_name = "Zähler"; verbose_name_plural = "Zähler"
 
 class ZaehlerStand(models.Model):
     zaehler = models.ForeignKey(Zaehler, on_delete=models.CASCADE, related_name='staende')
     datum = models.DateField(default=timezone.now); wert = models.DecimalField(max_digits=10, decimal_places=2)
+    class Meta: verbose_name = "Zählerstand"; verbose_name_plural = "Zählerstände"
 
 class Geraet(models.Model):
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='geraete')
     typ = models.CharField("Gerätetyp", max_length=50); marke = models.CharField(max_length=50); modell = models.CharField(max_length=100, blank=True)
     installations_datum = models.DateField(null=True, blank=True); garantie_bis = models.DateField(null=True, blank=True)
+    class Meta: verbose_name = "Gerät"; verbose_name_plural = "Geräte"
 
 class Dokument(models.Model):
     mandant = models.ForeignKey(Mandant, on_delete=models.SET_NULL, null=True, blank=True)
@@ -231,6 +313,9 @@ class Dokument(models.Model):
     datei = models.FileField(upload_to=get_smart_upload_path)
     kategorie = models.CharField(max_length=50, choices=[('vertrag', 'Vertrag'), ('Mietvertrag', 'Mietvertrag'), ('protokoll', 'Protokoll'), ('korrespondenz', 'Korrespondenz'), ('sonstiges', 'Sonstiges')])
     erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta: verbose_name = "Dokument"; verbose_name_plural = "Dokumente"
+
     def save(self, *args, **kwargs):
         if not self.bezeichnung and self.titel: self.bezeichnung = self.titel
         super().save(*args, **kwargs)
@@ -240,23 +325,28 @@ class AbrechnungsPeriode(models.Model):
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='abrechnungen')
     bezeichnung = models.CharField("Titel", max_length=100); start_datum = models.DateField(); ende_datum = models.DateField(); abgeschlossen = models.BooleanField(default=False)
     def __str__(self): return self.bezeichnung
+    class Meta: verbose_name = "Abrechnungsperiode"; verbose_name_plural = "Abrechnungsperioden"
 
 class NebenkostenBeleg(models.Model):
     periode = models.ForeignKey(AbrechnungsPeriode, on_delete=models.CASCADE, related_name='belege')
     datum = models.DateField(); text = models.CharField(max_length=200); kategorie = models.CharField(max_length=100, choices=[('heizung', 'Heizung'), ('wasser', 'Wasser'), ('hauswart', 'Hauswart'), ('strom', 'Allgemeinstrom'), ('admin', 'Verwaltung')])
     betrag = models.DecimalField(max_digits=10, decimal_places=2); verteilschluessel = models.CharField(max_length=50, default='m2'); beleg_scan = models.FileField(upload_to=get_smart_upload_path, blank=True, null=True)
+    class Meta: verbose_name = "Nebenkostenbeleg"; verbose_name_plural = "Nebenkostenbelege"
 
 class MietzinsAnpassung(models.Model):
     vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE)
     neuer_referenzzinssatz = models.DecimalField(max_digits=4, decimal_places=2); neuer_lik_index = models.DecimalField(max_digits=6, decimal_places=1); neue_miete = models.DecimalField(max_digits=8, decimal_places=2)
     datum_wirksam = models.DateField(); datum_erstellt = models.DateField(auto_now_add=True); pdf_datei = models.FileField(upload_to='mietzinsanpassungen/', blank=True, null=True)
+    class Meta: verbose_name = "Mietzinsanpassung"; verbose_name_plural = "Mietzinsanpassungen"
 
 class Schluessel(models.Model):
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE)
     schluessel_nummer = models.CharField(max_length=50); funktion = models.CharField(max_length=100, blank=True)
     def __str__(self): return f"{self.schluessel_nummer} ({self.funktion})"
+    class Meta: verbose_name = "Schlüssel"; verbose_name_plural = "Schlüssel"
 
 class SchluesselAusgabe(models.Model):
     schluessel = models.ForeignKey(Schluessel, on_delete=models.CASCADE, related_name='ausgaben')
     mieter = models.ForeignKey(Mieter, on_delete=models.SET_NULL, null=True, blank=True); handwerker = models.ForeignKey(Handwerker, on_delete=models.SET_NULL, null=True, blank=True)
     ausgegeben_am = models.DateField(default=timezone.now); rueckgabe_am = models.DateField(null=True, blank=True); bemerkung = models.CharField(max_length=200, blank=True)
+    class Meta: verbose_name = "Schlüsselausgabe"; verbose_name_plural = "Schlüsselausgaben"
