@@ -5,8 +5,7 @@ from django.utils.html import format_html, mark_safe
 from django.urls import reverse
 from django.db.models import Sum
 
-# WICHTIG: Import der Hilfsfunktionen aus utils.py (Plan B Logik)
-# Stelle sicher, dass core/utils.py existiert und die Funktionen hat!
+# Import der Hilfsfunktionen aus utils.py
 from core.utils import get_egid_from_address, get_units_from_bfs
 
 from .models import (
@@ -93,7 +92,6 @@ class AbrechnungAdmin(admin.ModelAdmin):
 
     def live_preview_tabelle(self, obj):
         if not obj.pk: return "Bitte erst speichern."
-        # Hinweis: Diese Methode muss im Model existieren, sonst hier entfernen!
         if hasattr(obj, 'generiere_abrechnung_preview'):
             try:
                 data = obj.generiere_abrechnung_preview()
@@ -114,7 +112,6 @@ class LiegenschaftAdmin(admin.ModelAdmin):
     search_fields = ('strasse', 'ort', 'egid')
     inlines = [EinheitInline, UnterhaltLiegenschaftInline]
 
-    # Hier wird dein JS geladen
     class Media:
         js = ('js/admin_address.js',)
         css = {'all': ('admin/css/forms.css',)}
@@ -128,12 +125,10 @@ class LiegenschaftAdmin(admin.ModelAdmin):
 
     def einheiten_count(self, obj): return obj.einheiten.count()
 
-    # --- PLAN B IMPORT LOGIK ---
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
 
         try:
-            # 1. EGID finden
             if not obj.egid:
                 found = get_egid_from_address(obj.strasse, obj.plz, obj.ort)
                 if found:
@@ -141,21 +136,17 @@ class LiegenschaftAdmin(admin.ModelAdmin):
                     obj.save()
                     messages.info(request, f"EGID automatisch gefunden: {obj.egid}")
 
-            # 2. Import (nur wenn noch keine Einheiten da sind)
             if obj.egid and obj.einheiten.count() == 0:
                 data_list = get_units_from_bfs(obj.egid)
-
                 created_count = 0
                 baujahr_gefunden = None
 
                 for item in data_list:
-                    # Spezial-Behandlung für Baujahr (Meta-Info)
                     if item.get('is_meta'):
                         if item.get('baujahr'):
                             baujahr_gefunden = item['baujahr']
                         continue
 
-                    # Platzhalter-Wohnung anlegen
                     Einheit.objects.create(
                         liegenschaft=obj,
                         bezeichnung=item['bezeichnung'],
@@ -167,7 +158,6 @@ class LiegenschaftAdmin(admin.ModelAdmin):
                     )
                     created_count += 1
 
-                # Baujahr speichern
                 if baujahr_gefunden:
                     obj.baujahr = baujahr_gefunden
                     obj.save()
@@ -185,7 +175,6 @@ class LiegenschaftAdmin(admin.ModelAdmin):
 class EinheitAdmin(admin.ModelAdmin):
     list_display = ('bezeichnung', 'liegenschaft', 'typ', 'zimmer', 'etage', 'status_text')
     list_filter = ('liegenschaft', 'typ'); search_fields = ('bezeichnung', 'ewid')
-    # Hier habe ich EinheitBildInline entfernt, da das Modell fehlt
     inlines = [MietvertragInline, ZaehlerInline, GeraetInline, UnterhaltEinheitInline, SchadenEinheitInline, DokumentEinheitInline]
 
     fieldsets = (
@@ -195,10 +184,15 @@ class EinheitAdmin(admin.ModelAdmin):
     )
     def status_text(self, obj): return format_html('<span style="color:green;">Vermietet</span>') if obj.aktiver_vertrag else format_html('<span style="color:red;">Leerstand</span>')
 
+# ==========================================
+# WICHTIG: Hier sind die reparierten Buttons!
+# ==========================================
 @admin.register(Mietvertrag)
 class MietvertragAdmin(admin.ModelAdmin):
-    list_display = ('mieter', 'einheit', 'beginn', 'aktiv')
-    list_filter = ('sign_status', 'aktiv'); inlines = [DokumentVertragInline]
+    # Jetzt wieder mit Status, PDF und DocuSeal-Buttons
+    list_display = ('mieter', 'einheit', 'beginn', 'status_badge', 'aktiv', 'pdf_vorschau_btn', 'docuseal_action_btn')
+    list_filter = ('sign_status', 'aktiv')
+    inlines = [DokumentVertragInline]
 
     fieldsets = (
         ('Parteien', {'fields': ('mieter', 'einheit')}),
@@ -207,13 +201,35 @@ class MietvertragAdmin(admin.ModelAdmin):
         ('DocuSeal', {'fields': ('pdf_datei',)})
     )
 
-    def pdf_vorschau_btn(self, obj): return format_html('<a href="{}" target="_blank" class="button">PDF</a>', reverse('generate_pdf', args=[obj.id])) if obj.id else "-"
+    # Bunter Status-Badge
+    def status_badge(self, obj):
+        colors = {'offen': '#999', 'gesendet': 'orange', 'unterzeichnet': 'green'}
+        return format_html('<span style="color:white; background-color:{}; padding:3px 8px; border-radius:4px;">{}</span>', colors.get(obj.sign_status, 'black'), obj.get_sign_status_display())
+    status_badge.short_description = "Status"
+
+    # PDF Button
+    def pdf_vorschau_btn(self, obj):
+        if obj.id:
+            return format_html('<a href="{}" target="_blank" class="button">PDF Vorschau</a>', reverse('generate_pdf', args=[obj.id]))
+        return "-"
+    pdf_vorschau_btn.short_description = "PDF"
+
+    # DocuSeal Button
+    def docuseal_action_btn(self, obj):
+        if obj.sign_status == 'offen':
+            return format_html('<a href="{}" class="button" style="background:#447e9b; color:white;">Senden</a>', reverse('send_docuseal', args=[obj.id]))
+        elif obj.sign_status == 'gesendet':
+            return format_html('<span style="color:orange;">Warten auf Unterschrift...</span>')
+        elif obj.pdf_datei:
+            return format_html('<a href="{}" target="_blank" style="color:green; font-weight:bold;">✅ Signiert</a>', obj.pdf_datei.url)
+        return "-"
+    docuseal_action_btn.short_description = "E-Signing"
 
 @admin.register(SchadenMeldung)
 class SchadenMeldungAdmin(admin.ModelAdmin):
     list_display = ('titel', 'status', 'prioritaet', 'betroffene_einheit')
     list_filter = ('status', 'prioritaet')
-    inlines = [TicketNachrichtInline] # Nachrichten direkt im Ticket bearbeiten
+    inlines = [TicketNachrichtInline]
 
     fieldsets = (
         ('Status', {'fields': ('status', 'prioritaet')}),
@@ -273,7 +289,5 @@ class SchluesselAdmin(admin.ModelAdmin):
 class MietzinsAnpassungAdmin(admin.ModelAdmin):
     pass
 
-# Einfache Registrierung für Modelle ohne eigene Klasse
 admin.site.register(Leerstand)
 admin.site.register(SchluesselAusgabe)
-# TicketNachricht ist via Inline im SchadenMeldungAdmin sichtbar, muss nicht extra registriert werden
