@@ -185,12 +185,12 @@ class EinheitAdmin(admin.ModelAdmin):
     def status_text(self, obj): return format_html('<span style="color:green;">Vermietet</span>') if obj.aktiver_vertrag else format_html('<span style="color:red;">Leerstand</span>')
 
 # ==========================================
-# WICHTIG: Hier sind die reparierten Buttons!
+# MIETVERTRAG: Jetzt mit QR-CODE Button!
 # ==========================================
 @admin.register(Mietvertrag)
 class MietvertragAdmin(admin.ModelAdmin):
-    # Jetzt wieder mit Status, PDF und DocuSeal-Buttons
-    list_display = ('mieter', 'einheit', 'beginn', 'status_badge', 'aktiv', 'pdf_vorschau_btn', 'docuseal_action_btn')
+    # Liste erweitert um 'qr_code_btn'
+    list_display = ('mieter', 'einheit', 'beginn', 'status_badge', 'aktiv', 'pdf_vorschau_btn', 'docuseal_action_btn', 'qr_code_btn')
     list_filter = ('sign_status', 'aktiv')
     inlines = [DokumentVertragInline]
 
@@ -224,6 +224,17 @@ class MietvertragAdmin(admin.ModelAdmin):
             return format_html('<a href="{}" target="_blank" style="color:green; font-weight:bold;">✅ Signiert</a>', obj.pdf_datei.url)
         return "-"
     docuseal_action_btn.short_description = "E-Signing"
+
+    # NEU: Der rote QR-Rechnung Button
+    def qr_code_btn(self, obj):
+        if obj.aktiv:
+            url = reverse('qr_rechnung_pdf', args=[obj.id])
+            return format_html(
+                '<a href="{}" target="_blank" class="button" style="background-color:#d63031; color:white; font-weight:bold;">🇨🇭 QR</a>',
+                url
+            )
+        return "-"
+    qr_code_btn.short_description = "Rechnung"
 
 @admin.register(SchadenMeldung)
 class SchadenMeldungAdmin(admin.ModelAdmin):

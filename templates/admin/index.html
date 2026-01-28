@@ -1,0 +1,28 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+{% load dashboard_tags %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    /* Versteckt die Standard-Sidebar */
+    #content-related { display: none !important; }
+    #content-main { width: 100% !important; float: none !important; }
+    .app-list-header { margin-top: 40px; border-bottom: 2px solid #eee; padding-bottom: 10px; font-size: 18px; color: #333; }
+    
+    /* Dashboard Container Styling */
+    .dashboard-container { margin-bottom: 40px; }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="dashboard-container">
+        {% render_dashboard_stats %}
+    </div>
+
+    <h2 class="app-list-header">Verwaltung & Apps</h2>
+    
+    <div id="content-main">
+        {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+    </div>
+{% endblock %}

@@ -118,6 +118,12 @@ class Mieter(models.Model):
     nachname = models.CharField(max_length=100)
     geburtsdatum = models.DateField("Geburtsdatum", null=True, blank=True)
     heimatort = models.CharField("Heimatort", max_length=100, blank=True)
+
+    # --- NEU HINZUGEFÜGT ---
+    nationalitaet = models.CharField("Nationalität", max_length=50, blank=True, default='Schweiz')
+    ahv_nummer = models.CharField("AHV-Nummer", max_length=20, blank=True, help_text="756.xxxx.xxxx.xx")
+    # -----------------------
+
     zivilstand = models.CharField("Zivilstand", max_length=20, choices=ZIVILSTAND_CHOICES, default='ledig')
 
     strasse = models.CharField("Strasse (Aktuell)", max_length=200, blank=True)

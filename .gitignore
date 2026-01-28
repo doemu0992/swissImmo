@@ -1,9 +1,12 @@
-__pycache__/
-*.py[cod]
-venv/
-env/
+# Sicherheit (NIEMALS hochladen)
 .env
 db.sqlite3
+
+# Python Müll
+__pycache__/
+*.pyc
+
+# Ordner die wir nicht im Code brauchen
 media/
 staticfiles/
-.DS_Store
+.virtualenvs/

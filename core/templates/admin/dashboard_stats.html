@@ -1,0 +1,170 @@
+{% load static %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    /* Modernes Dashboard Styling */
+    .dash-container { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin-bottom: 40px; }
+    
+    /* KPI Grid */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    
+    .kpi-card { 
+        background: white; padding: 25px; border-radius: 12px; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+        display: flex; align-items: center; justify-content: space-between;
+        transition: transform 0.2s;
+        border-bottom: 4px solid transparent;
+    }
+    .kpi-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+    
+    .kpi-text h3 { margin: 0; font-size: 13px; text-transform: uppercase; color: #888; letter-spacing: 1px; font-weight: 600; }
+    .kpi-text .value { font-size: 26px; font-weight: 800; color: #2c3e50; margin-top: 5px; }
+    .kpi-text .sub { font-size: 12px; color: #aaa; margin-top: 2px; }
+    
+    .kpi-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+
+    /* Varianten */
+    .is-money { border-bottom-color: #27ae60; }
+    .is-money .kpi-icon { background: #eafaf1; color: #27ae60; }
+    
+    .is-warn { border-bottom-color: #f39c12; }
+    .is-warn .kpi-icon { background: #fef5e7; color: #f39c12; }
+    
+    .is-danger { border-bottom-color: #c0392b; }
+    .is-danger .kpi-icon { background: #fdedec; color: #c0392b; }
+    
+    .is-info { border-bottom-color: #3498db; }
+    .is-info .kpi-icon { background: #ebf5fb; color: #3498db; }
+
+    /* Main Area */
+    .main-area { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+    @media (max-width: 900px) { .main-area { grid-template-columns: 1fr; } }
+
+    .content-box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .content-box h2 { margin-top: 0; font-size: 18px; color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+
+    /* Tabelle */
+    .modern-table { width: 100%; border-collapse: collapse; }
+    .modern-table td { padding: 12px 0; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
+    .modern-table tr:last-child td { border-bottom: none; }
+    .badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; color: white; text-transform: uppercase; }
+    .bg-hoch { background: #e74c3c; } .bg-mittel { background: #f1c40f; color: #333; } .bg-niedrig { background: #2ecc71; }
+    .action-link { color: #3498db; text-decoration: none; font-weight: bold; }
+</style>
+
+<div class="dash-container">
+    
+    <div class="kpi-grid">
+        <div class="kpi-card is-money">
+            <div class="kpi-text">
+                <h3>Soll-Miete</h3>
+                <div class="value">CHF {{ total_miete }}</div>
+                <div class="sub">Monatliches Volumen</div>
+            </div>
+            <div class="kpi-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+        </div>
+
+        <div class="kpi-card {% if leerstand_count > 0 %}is-warn{% else %}is-money{% endif %}">
+            <div class="kpi-text">
+                <h3>Leerstand</h3>
+                <div class="value">{{ leerstand_count }} Einh.</div>
+                <div class="sub">Quote: {{ leerstand_prozent }}%</div>
+            </div>
+            <div class="kpi-icon"><i class="fa-solid fa-house-chimney-crack"></i></div>
+        </div>
+
+        <div class="kpi-card {% if offene_tickets_count > 0 %}is-danger{% else %}is-money{% endif %}">
+            <div class="kpi-text">
+                <h3>Offene Tickets</h3>
+                <div class="value">{{ offene_tickets_count }}</div>
+                <div class="sub">Zu erledigen</div>
+            </div>
+            <div class="kpi-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+        </div>
+        
+        <div class="kpi-card is-info">
+            <div class="kpi-text">
+                <h3>Portfolio</h3>
+                <div class="value">{{ total_objekte }}</div>
+                <div class="sub">Liegenschaften</div>
+            </div>
+            <div class="kpi-icon"><i class="fa-solid fa-city"></i></div>
+        </div>
+    </div>
+
+    <div class="main-area">
+        
+        <div class="content-box">
+            <h2><i class="fa-solid fa-chart-pie"></i> Umsatz nach Liegenschaft</h2>
+            <div style="height: 300px; position: relative;">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <div class="content-box">
+            <h2><i class="fa-solid fa-bell"></i> Neueste Tickets</h2>
+            {% if neueste_tickets %}
+                <table class="modern-table">
+                    {% for t in neueste_tickets %}
+                    <tr>
+                        <td>
+                            <div style="font-weight:600; color:#2c3e50;">{{ t.titel|truncatechars:25 }}</div>
+                            <div style="font-size:12px; color:#95a5a6;">{{ t.liegenschaft.strasse }}</div>
+                        </td>
+                        <td><span class="badge bg-{{ t.prioritaet }}">{{ t.prioritaet }}</span></td>
+                        <td style="text-align:right;"><a href="{% url 'admin:core_schadenmeldung_change' t.id %}" class="action-link">➜</a></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <div style="text-align:center; padding: 20px; color:#aaa;">
+                    <i class="fa-solid fa-check-circle" style="font-size:30px; margin-bottom:10px;"></i><br>
+                    Alles erledigt!
+                </div>
+            {% endif %}
+            
+            {% if leerstaende_liste %}
+            <div style="margin-top: 30px;">
+                <h2 style="font-size:14px; margin-bottom:10px; border:none; color:#e67e22;"><i class="fa-solid fa-triangle-exclamation"></i> Leerstände (Top 5)</h2>
+                <table class="modern-table">
+                    {% for u in leerstaende_liste %}
+                    <tr>
+                        <td>{{ u.bezeichnung }}<br><small style="color:#999">{{ u.liegenschaft.strasse }}</small></td>
+                        <td style="text-align:right;"><a href="{% url 'admin:core_einheit_change' u.id %}" class="action-link">Vermieten</a></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ chart_labels|safe }},
+                datasets: [{
+                    label: 'Soll-Miete (CHF)',
+                    data: {{ chart_data|safe }},
+                    backgroundColor: '#3498db',
+                    borderRadius: 5,
+                    barThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    });
+</script>
