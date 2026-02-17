@@ -6,12 +6,30 @@ from django.db import models
 from django.utils import timezone
 from django.db.models import Sum, Q
 
-# --- KONFIGURATION ---
-STANDARD_REF_ZINS = 1.75
-STANDARD_LIK_PUNKTE = 107.1
+# --- HELPER FUNCTIONS FOR DYNAMIC DEFAULTS ---
+# These run only when a NEW record is created.
+
+def get_current_ref_zins():
+    """Fetches current Reference Rate from Verwaltung settings or returns default 1.75"""
+    try:
+        # Import inside function to avoid circular import issues
+        from .models import Verwaltung
+        v = Verwaltung.objects.first()
+        return v.aktueller_referenzzinssatz if v else 1.75
+    except:
+        return 1.75
+
+def get_current_lik():
+    """Fetches current CPI/LIK from Verwaltung settings or returns default 107.1"""
+    try:
+        from .models import Verwaltung
+        v = Verwaltung.objects.first()
+        return v.aktueller_lik_punkte if v else 107.1
+    except:
+        return 107.1
 
 def get_smart_upload_path(instance, filename):
-    """Speichert Dateien in Unterordnern nach Datum (YYYY-MM-DD)"""
+    """Saves files in subfolders by date (YYYY-MM-DD)"""
     heute = datetime.date.today().strftime("%Y-%m-%d")
     return os.path.join("uploads", heute, filename)
 
@@ -29,6 +47,17 @@ class Verwaltung(models.Model):
     email = models.EmailField("E-Mail", blank=True)
     webseite = models.URLField("Webseite", blank=True)
     logo = models.ImageField(upload_to="logos/", blank=True, null=True)
+
+    # --- AUTOMATIC MARKET DATA ---
+    aktueller_referenzzinssatz = models.DecimalField(
+        "Aktueller Ref.Zins", max_digits=4, decimal_places=2, default=1.75,
+        help_text="Offizieller Satz vom BWO (für NEUE Verträge)"
+    )
+    aktueller_lik_punkte = models.DecimalField(
+        "Aktueller LIK", max_digits=6, decimal_places=1, default=107.1,
+        help_text="Landesindex der Konsumentenpreise (Punkte) (für NEUE Verträge)"
+    )
+    letztes_update_marktdaten = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Meine Verwaltung"
@@ -88,8 +117,9 @@ class Einheit(models.Model):
     nebenkosten_aktuell = models.DecimalField("Soll-Nebenkosten", max_digits=6, decimal_places=2, default=0.00)
     nk_abrechnungsart = models.CharField("NK-Art", max_length=20, default='pauschal', choices=[('akonto', 'Akonto'), ('pauschal', 'Pauschal')])
 
-    ref_zinssatz = models.DecimalField("Basis Ref.Zins", max_digits=4, decimal_places=2, default=STANDARD_REF_ZINS)
-    lik_punkte = models.DecimalField("Basis LIK", max_digits=6, decimal_places=1, default=STANDARD_LIK_PUNKTE)
+    # DYNAMIC DEFAULTS APPLIED HERE
+    ref_zinssatz = models.DecimalField("Basis Ref.Zins", max_digits=4, decimal_places=2, default=get_current_ref_zins)
+    lik_punkte = models.DecimalField("Basis LIK", max_digits=6, decimal_places=1, default=get_current_lik)
 
     class Meta: verbose_name = "Einheit"; verbose_name_plural = "Einheiten"
     def __str__(self): return f"{self.liegenschaft.strasse} - {self.bezeichnung}"
@@ -119,10 +149,8 @@ class Mieter(models.Model):
     geburtsdatum = models.DateField("Geburtsdatum", null=True, blank=True)
     heimatort = models.CharField("Heimatort", max_length=100, blank=True)
 
-    # --- NEU HINZUGEFÜGT ---
     nationalitaet = models.CharField("Nationalität", max_length=50, blank=True, default='Schweiz')
     ahv_nummer = models.CharField("AHV-Nummer", max_length=20, blank=True, help_text="756.xxxx.xxxx.xx")
-    # -----------------------
 
     zivilstand = models.CharField("Zivilstand", max_length=20, choices=ZIVILSTAND_CHOICES, default='ledig')
 
@@ -164,8 +192,19 @@ class Mietvertrag(models.Model):
     nebenkosten = models.DecimalField(max_digits=6, decimal_places=2)
     kautions_betrag = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
 
-    basis_referenzzinssatz = models.DecimalField(max_digits=4, decimal_places=2, default=STANDARD_REF_ZINS)
-    basis_lik_punkte = models.DecimalField(max_digits=6, decimal_places=1, default=STANDARD_LIK_PUNKTE)
+    # DYNAMIC DEFAULTS APPLIED HERE - Safe for existing contracts
+    basis_referenzzinssatz = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=get_current_ref_zins,
+        help_text="Zinssatz bei Vertragsabschluss (wird fixiert)"
+    )
+    basis_lik_punkte = models.DecimalField(
+        max_digits=6,
+        decimal_places=1,
+        default=get_current_lik,
+        help_text="LIK Punkte bei Vertragsabschluss (wird fixiert)"
+    )
 
     aktiv = models.BooleanField(default=True)
 
@@ -206,12 +245,38 @@ class Leerstand(models.Model):
 
 # --- TICKETSYSTEM / SCHADENMELDUNG ---
 
+# NEU: Das Zwischen-Modell für 1 Ticket <-> Mehrere Handwerker
+class HandwerkerAuftrag(models.Model):
+    STATUS_CHOICES = [
+        ('offen', 'Offen / Beauftragt'),
+        ('terminiert', 'Termin vereinbart'),
+        ('erledigt', 'Arbeiten erledigt'),
+        ('storniert', 'Storniert')
+    ]
+
+    # Wir nutzen Strings ('SchadenMeldung'), weil die Klasse erst weiter unten definiert wird
+    ticket = models.ForeignKey('SchadenMeldung', on_delete=models.CASCADE, related_name='handwerker_auftraege')
+    handwerker = models.ForeignKey(Handwerker, on_delete=models.CASCADE, related_name='auftraege')
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='offen')
+    beauftragt_am = models.DateTimeField(auto_now_add=True)
+    abgeschlossen_am = models.DateTimeField(null=True, blank=True)
+    bemerkung = models.TextField(blank=True, help_text="Interner Kommentar zum Auftrag")
+
+    class Meta:
+        verbose_name = "Handwerker-Auftrag"
+        verbose_name_plural = "Handwerker-Aufträge"
+
+    def __str__(self):
+        return f"{self.handwerker.firma} ({self.get_status_display()})"
+
+
 class SchadenMeldung(models.Model):
     STATUS_CHOICES = [
         ('neu', 'Neu'),
         ('in_bearbeitung', 'In Bearbeitung'),
         ('warte_auf_mieter', 'Warte auf Mieter'),
-        ('beauftragt', 'Handwerker beauftragt'),
+        # 'beauftragt' entfernen wir hier als globalen Status, oder lassen ihn als "In Bearbeitung"
         ('erledigt', 'Erledigt')
     ]
     PRIORITAET_CHOICES = [('niedrig', 'Niedrig'), ('mittel', 'Mittel'), ('hoch', 'Hoch')]
@@ -220,30 +285,34 @@ class SchadenMeldung(models.Model):
         ('passpartout', 'Passpartout (Schlüssel vorhanden)'),
     ]
 
-    # WICHTIG: UUID ist wieder aktiv!
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-
-    # Zuordnung
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='schaeden')
     betroffene_einheit = models.ForeignKey(Einheit, on_delete=models.SET_NULL, null=True, blank=True, related_name='schaeden')
     gemeldet_von = models.ForeignKey(Mieter, on_delete=models.SET_NULL, null=True, blank=True, related_name='gemeldete_schaeden')
 
-    # Der beauftragte Handwerker
-    handwerker = models.ForeignKey(Handwerker, on_delete=models.SET_NULL, null=True, blank=True, related_name='auftraege', verbose_name="Beauftragter Handwerker")
+    # ACHTUNG: 'beauftragter_handwerker' wurde entfernt!
+    # Wir nutzen jetzt die Tabelle 'HandwerkerAuftrag' (siehe oben)
 
-    # Inhalt
     titel = models.CharField("Titel / Schaden", max_length=200)
     beschreibung = models.TextField("Beschreibung")
     foto = models.ImageField(upload_to=get_smart_upload_path, blank=True, null=True)
 
-    # Kontakt & Zutritt
-    mieter_email = models.EmailField("Mieter E-Mail (Kontakt)", blank=True)
-    mieter_telefon = models.CharField("Mieter Telefon (Kontakt)", max_length=30, blank=True)
+    # Kontaktinfos
+    email_melder = models.EmailField("E-Mail Melder", blank=True, null=True)
+    tel_melder = models.CharField("Telefon Melder", max_length=50, blank=True, null=True)
+
+    # Veraltete Felder (Legacy)
+    mieter_email = models.EmailField("Mieter E-Mail (Legacy)", blank=True)
+    mieter_telefon = models.CharField("Mieter Telefon (Legacy)", max_length=30, blank=True)
+
     zutritt = models.CharField("Zutritt / Termin", max_length=20, choices=ZUTRITT_CHOICES, default='telefon')
 
-    # Meta
     prioritaet = models.CharField("Priorität", max_length=20, choices=PRIORITAET_CHOICES, default='mittel')
     status = models.CharField("Status", max_length=20, choices=STATUS_CHOICES, default='neu')
+
+    # --- NEU: Status für Notification (Badge) ---
+    gelesen = models.BooleanField(default=False, help_text="False = Neu/Ungelesen für Admin")
+
     erstellt_am = models.DateTimeField(auto_now_add=True)
     aktualisiert_am = models.DateTimeField(auto_now=True)
 
@@ -257,24 +326,41 @@ class SchadenMeldung(models.Model):
 
 
 class TicketNachricht(models.Model):
-    """
-    Speichert den Chat-Verlauf zu einem Ticket
-    """
     ticket = models.ForeignKey(SchadenMeldung, on_delete=models.CASCADE, related_name='nachrichten')
-
-    # Wer hat geschrieben?
     absender_name = models.CharField(max_length=100)
-    is_intern = models.BooleanField(default=False, help_text="Interne Notiz (Mieter sieht das nicht)")
-    is_von_verwaltung = models.BooleanField(default=False, help_text="True = Von Verwaltung, False = Von Mieter")
+
+    # NEU: Typisierung der Nachricht für die Historie
+    TYP_CHOICES = [
+        ('mail_antwort', '📩 Antwort per Mail (Eingang)'),
+        ('antwort_senden', '📤 Antwort an Melder (per E-Mail)'),
+        ('handwerker_mail', '🔨 E-Mail an Handwerker'), # <--- NEU
+        ('notiz_intern', '🔒 Interne Notiz'),
+        ('system', '⚙️ System-Log'),
+        ('chat', '💬 Nachricht')
+    ]
+    typ = models.CharField(max_length=20, choices=TYP_CHOICES, default='chat')
+
+    # --- NEUE FELDER ---
+    cc_email = models.CharField("CC (Optional)", max_length=200, blank=True, help_text="E-Mail für Kopie")
+
+    # Hier wählst du den Handwerker aus:
+    empfaenger_handwerker = models.ForeignKey('Handwerker', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Empfänger (Handwerker)", help_text="Nur nötig bei 'E-Mail an Handwerker'")
+
+    # --- NEU: Status für Notification (Badge) ---
+    gelesen = models.BooleanField(default=False)
+
+    # Alte Felder
+    is_intern = models.BooleanField(default=False, help_text="Interne Notiz (Legacy)")
+    is_von_verwaltung = models.BooleanField(default=False, help_text="Legacy")
 
     nachricht = models.TextField()
     datei = models.FileField(upload_to='ticket_anhang/', blank=True, null=True)
     erstellt_am = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['erstellt_am']
-        verbose_name = "Ticket Nachricht"
-        verbose_name_plural = "Ticket Nachrichten"
+        ordering = ['-erstellt_am'] # Neueste Nachrichten zuerst
+        verbose_name = "Historie / Nachricht"
+        verbose_name_plural = "Historie / Nachrichten"
 
 # ==============================================================================
 # 5. GEBÄUDEVERWALTUNG & DOKUMENTE
@@ -287,7 +373,6 @@ class Unterhalt(models.Model):
     datum = models.DateField(default=timezone.now); kosten = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     beleg = models.FileField(upload_to=get_smart_upload_path, blank=True, null=True)
     art = models.CharField(max_length=50, choices=[('reparatur', 'Reparatur'), ('renovation', 'Renovation'), ('investition', 'Investition')], default='reparatur')
-
     class Meta: verbose_name = "Unterhalt"; verbose_name_plural = "Unterhalt"
 
 class Zaehler(models.Model):
@@ -321,7 +406,6 @@ class Dokument(models.Model):
     erstellt_am = models.DateTimeField(auto_now_add=True)
 
     class Meta: verbose_name = "Dokument"; verbose_name_plural = "Dokumente"
-
     def save(self, *args, **kwargs):
         if not self.bezeichnung and self.titel: self.bezeichnung = self.titel
         super().save(*args, **kwargs)
@@ -339,10 +423,29 @@ class NebenkostenBeleg(models.Model):
     betrag = models.DecimalField(max_digits=10, decimal_places=2); verteilschluessel = models.CharField(max_length=50, default='m2'); beleg_scan = models.FileField(upload_to=get_smart_upload_path, blank=True, null=True)
     class Meta: verbose_name = "Nebenkostenbeleg"; verbose_name_plural = "Nebenkostenbelege"
 
+# UPDATED: More details for tracking changes
 class MietzinsAnpassung(models.Model):
-    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE)
-    neuer_referenzzinssatz = models.DecimalField(max_digits=4, decimal_places=2); neuer_lik_index = models.DecimalField(max_digits=6, decimal_places=1); neue_miete = models.DecimalField(max_digits=8, decimal_places=2)
-    datum_wirksam = models.DateField(); datum_erstellt = models.DateField(auto_now_add=True); pdf_datei = models.FileField(upload_to='mietzinsanpassungen/', blank=True, null=True)
+    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='anpassungen')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    # Old values
+    alter_netto_mietzins = models.DecimalField(max_digits=10, decimal_places=2)
+    alter_referenzzinssatz = models.DecimalField(max_digits=4, decimal_places=2)
+    alter_lik_index = models.DecimalField(max_digits=5, decimal_places=1)
+
+    # New values
+    neuer_referenzzinssatz = models.DecimalField(max_digits=4, decimal_places=2)
+    neuer_lik_index = models.DecimalField(max_digits=5, decimal_places=1)
+
+    # Calculation details
+    erhoehung_prozent_total = models.DecimalField(max_digits=5, decimal_places=2)
+    neuer_netto_mietzins = models.DecimalField(max_digits=10, decimal_places=2)
+
+    wirksam_ab = models.DateField()
+    begruendung = models.TextField(default="Anpassung an Referenzzinssatz und Teuerung")
+
+    def __str__(self): return f"Anpassung {self.vertrag} per {self.wirksam_ab}"
+
     class Meta: verbose_name = "Mietzinsanpassung"; verbose_name_plural = "Mietzinsanpassungen"
 
 class Schluessel(models.Model):

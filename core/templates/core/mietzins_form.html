@@ -1,0 +1,197 @@
+{% extends "unfold/layouts/base.html" %}
+
+{% block content %}
+<div class="p-4 max-w-6xl mx-auto">
+
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Mietzins anpassen</h1>
+            <p class="text-gray-500 text-sm mt-1">
+                Vertrag: <span class="font-bold">{{ vertrag.mieter.vorname }} {{ vertrag.mieter.nachname }}</span>
+                ({{ vertrag.einheit.bezeichnung }})
+            </p>
+        </div>
+        <a href="/admin/core/mietvertrag/" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded shadow-sm text-sm font-medium transition">
+            &larr; Zurück
+        </a>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <input type="hidden" id="id_alter_zins" value="{{ alt_zins|stringformat:'.2f' }}">
+        <input type="hidden" id="id_alter_lik" value="{{ alt_lik|stringformat:'.1f' }}">
+        <input type="hidden" id="id_alte_miete" value="{{ vertrag.netto_mietzins|stringformat:'.2f' }}">
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="bg-gray-50 dark:bg-gray-700/50 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+                    <h3 class="font-bold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-500">tune</span> 1. Vergleichsgrundlagen
+                    </h3>
+                </div>
+
+                <div class="p-6 space-y-6">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Referenzzinssatz</label>
+                        <div class="flex items-center gap-4">
+                            <div class="w-1/2">
+                                <span class="text-xs text-gray-500 block mb-1">Alt</span>
+                                <input type="text" value="{{ alt_zins }}%" readonly class="w-full bg-gray-100 text-gray-500 border-gray-200 rounded px-3 py-2 text-sm">
+                            </div>
+                            <div class="w-1/2">
+                                <span class="text-xs text-blue-600 font-bold block mb-1">Neu</span>
+                                <div class="relative">
+                                    <input type="number" step="0.01" id="id_neuer_zins" name="neuer_zins" value="{{ neu_zins|stringformat:'.2f' }}"
+                                           class="w-full border-blue-300 focus:ring-blue-500 focus:border-blue-500 rounded px-3 py-2 font-bold text-gray-800">
+                                    <span class="absolute right-3 top-2 text-gray-400 text-sm">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-100"></div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Landesindex (LIK)</label>
+                        <div class="flex items-center gap-4">
+                            <div class="w-1/2">
+                                <span class="text-xs text-gray-500 block mb-1">Alt</span>
+                                <input type="text" value="{{ alt_lik }}" readonly class="w-full bg-gray-100 text-gray-500 border-gray-200 rounded px-3 py-2 text-sm">
+                            </div>
+                            <div class="w-1/2">
+                                <span class="text-xs text-blue-600 font-bold block mb-1">Neu</span>
+                                <div class="relative">
+                                    <input type="number" step="0.1" id="id_neuer_lik" name="neuer_lik" value="{{ neu_lik|stringformat:'.1f' }}"
+                                           class="w-full border-blue-300 focus:ring-blue-500 focus:border-blue-500 rounded px-3 py-2 font-bold text-gray-800">
+                                    <span class="absolute right-3 top-2 text-gray-400 text-sm">Pt.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-100"></div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Pauschale Kostensteigerung</label>
+                        <div class="w-1/2 relative">
+                            <input type="number" step="0.1" id="id_kosten_prozent" value="0.5"
+                                   class="w-full border-gray-300 rounded px-3 py-2 text-gray-800">
+                            <span class="absolute right-3 top-2 text-gray-400 text-sm">%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 dark:bg-gray-800 rounded-lg shadow-sm border border-blue-100 dark:border-gray-700 flex flex-col">
+                <div class="px-6 py-4 border-b border-blue-100 dark:border-gray-700">
+                    <h3 class="font-bold text-blue-800 dark:text-blue-400 flex items-center gap-2">
+                        <span class="material-symbols-outlined">calculate</span> 2. Ergebnis & Vorschau
+                    </h3>
+                </div>
+
+                <div class="p-6 flex-grow flex flex-col">
+                    <div class="bg-white/60 p-3 rounded border border-blue-100 text-xs text-gray-500 mb-6">
+                        Berechnung: <span id="debug_zins">0</span>% (Zins) +
+                        <span id="debug_lik">0</span>% (Teuerung) +
+                        <span id="debug_kosten">0</span>% (Kosten)
+                        = <strong class="text-gray-800"><span id="debug_prozent">0.00</span>% Total</strong>
+                    </div>
+
+                    <div class="flex items-end justify-between mb-8">
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Aktuell Netto</p>
+                            <p class="text-xl text-gray-400">CHF {{ vertrag.netto_mietzins }}</p>
+                        </div>
+                        <div class="text-gray-300 pb-2">&rarr;</div>
+                        <div class="text-right">
+                            <p class="text-xs font-bold text-emerald-600 uppercase mb-1">Neuer Vorschlag</p>
+                            <div class="relative">
+                                <input type="number" step="0.05" id="id_neue_miete" name="neue_miete"
+                                       value="{{ vorschlag_miete|stringformat:'.2f' }}"
+                                       class="text-right text-2xl font-bold text-emerald-600 bg-transparent border-b-2 border-emerald-500 focus:outline-none w-40 p-1">
+                                <span class="absolute left-0 bottom-2 text-emerald-600/50 font-bold text-sm">CHF</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Wirksam ab</label>
+                            <input type="date" name="wirksam_ab" value="{{ wirksam_datum }}" class="w-full border-gray-300 rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Begründung</label>
+                            <textarea name="begruendung" rows="2" class="w-full border-gray-300 rounded px-3 py-2 text-sm bg-white">Anpassung an Referenzzinssatz und Teuerung</textarea>
+                        </div>
+
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded shadow-lg transition flex justify-center items-center gap-2 mt-4">
+                            <span class="material-symbols-outlined">picture_as_pdf</span>
+                            PDF Generieren & Speichern
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const elAlterZins = document.getElementById('id_alter_zins');
+    const elNeuerZins = document.getElementById('id_neuer_zins');
+    const elAlterLik = document.getElementById('id_alter_lik');
+    const elNeuerLik = document.getElementById('id_neuer_lik');
+    const elKosten = document.getElementById('id_kosten_prozent');
+    const elAlteMiete = document.getElementById('id_alte_miete');
+    const elNeueMiete = document.getElementById('id_neue_miete');
+
+    const debugProzent = document.getElementById('debug_prozent');
+    const debugZins = document.getElementById('debug_zins');
+    const debugLik = document.getElementById('debug_lik');
+    const debugKosten = document.getElementById('debug_kosten');
+
+    function berechneMiete() {
+        let altZins = parseFloat(elAlterZins.value) || 0;
+        let neuZins = parseFloat(elNeuerZins.value) || 0;
+        let altLik = parseFloat(elAlterLik.value) || 0;
+        let neuLik = parseFloat(elNeuerLik.value) || 0;
+        let kostenPsch = parseFloat(elKosten.value) || 0;
+        let alteMiete = parseFloat(elAlteMiete.value) || 0;
+
+        let deltaZins = (neuZins - altZins) / 0.25;
+        let zinsAufschlag = deltaZins * 3.0;
+
+        let likAufschlag = 0;
+        if (altLik > 0) {
+            likAufschlag = ((neuLik - altLik) / altLik) * 100 * 0.4;
+        }
+
+        let totalProzent = zinsAufschlag + likAufschlag + kostenPsch;
+        let betragAufschlag = alteMiete * (totalProzent / 100);
+        let neueMieteRaw = alteMiete + betragAufschlag;
+        let neueMieteGerundet = Math.round(neueMieteRaw * 20) / 20;
+
+        elNeueMiete.value = neueMieteGerundet.toFixed(2);
+
+        if(debugProzent) {
+            debugProzent.innerText = totalProzent.toFixed(2);
+            debugZins.innerText = zinsAufschlag.toFixed(2);
+            debugLik.innerText = likAufschlag.toFixed(2);
+            debugKosten.innerText = kostenPsch.toFixed(2);
+        }
+    }
+
+    const inputs = [elNeuerZins, elNeuerLik, elKosten];
+    inputs.forEach(input => {
+        if(input) {
+            input.addEventListener('input', berechneMiete);
+            input.addEventListener('change', berechneMiete);
+        }
+    });
+
+    berechneMiete();
+});
+</script>
+{% endblock %}

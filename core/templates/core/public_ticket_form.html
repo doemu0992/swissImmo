@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Service | SwissImmo</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; margin: 0; }
+        .icon-card { transition: all 0.2s ease; }
+        .icon-card:active { transform: scale(0.95); background-color: #eff6ff; border-color: #3b82f6; }
+        [x-cloak] { display: none !important; }
+
+        /* Custom Checkbox Style */
+        .time-checkbox:checked + div {
+            background-color: #eff6ff; border-color: #3b82f6; color: #1d4ed8;
+        }
+
+        /* Loader */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #ffffff; z-index: 9999;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            font-family: sans-serif; color: #666;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #e5e7eb;
+            border-top: 4px solid #2563eb; border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center py-6 px-4 md:px-8">
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <span>Service Portal wird geladen...</span>
+    </div>
+
+    <div x-data="ticketWizard()" x-cloak
+         @x-init="document.getElementById('loader').style.display='none'"
+         class="w-full max-w-md md:max-w-4xl lg:max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden min-h-[700px] flex flex-col relative transition-all duration-300">
+
+        <div class="bg-blue-600 p-6 md:p-8 text-center text-white relative z-10 shadow-md">
+            <h1 class="text-xl md:text-3xl font-bold mb-2">Service Portal</h1>
+            <p class="text-blue-100 text-xs md:text-sm uppercase tracking-wide opacity-90">{{ liegenschaft.strasse }}, {{ liegenschaft.ort }}</p>
+
+            <button x-show="step > 1" @click="goBack()"
+                    class="absolute left-4 top-6 md:top-8 p-2 rounded-full hover:bg-blue-500 transition">
+                <span class="material-symbols-outlined text-xl md:text-2xl">arrow_back</span>
+            </button>
+
+            <div class="flex justify-center gap-2 mt-6" x-show="step < 4">
+                <div class="h-1.5 rounded-full transition-all duration-300" :class="step >= 1 ? 'w-6 bg-white' : 'w-2 bg-blue-400'"></div>
+                <div class="h-1.5 rounded-full transition-all duration-300" :class="step >= 2 ? 'w-6 bg-white' : 'w-2 bg-blue-400'"></div>
+                <div class="h-1.5 rounded-full transition-all duration-300" :class="step >= 3 ? 'w-6 bg-white' : 'w-2 bg-blue-400'"></div>
+                <div class="h-1.5 rounded-full transition-all duration-300" :class="step >= 4 ? 'w-6 bg-white' : 'w-2 bg-blue-400'"></div>
+            </div>
+        </div>
+
+        <div class="flex-grow p-5 md:p-10 overflow-y-auto bg-gray-50/50">
+
+            {% if success %}
+            <div class="h-full flex flex-col items-center justify-center text-center animate-fade-in">
+                <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                    <span class="material-symbols-outlined text-6xl">check_circle</span>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Vielen Dank!</h2>
+                <p class="text-gray-500 mb-8 md:text-lg">Wir haben Ihre Meldung erhalten und eine Bestätigung per E-Mail gesendet.</p>
+                <a href="" class="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 hover:shadow-xl transition">
+                    Zurück zum Start
+                </a>
+            </div>
+            {% else %}
+
+            <div x-show="step === 1" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-10">
+                <h2 class="text-center text-gray-800 font-bold text-lg md:text-2xl mb-8">Wie können wir helfen?</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                    <template x-for="cat in categories">
+                        <div @click="selectCategory(cat.id)" class="icon-card cursor-pointer bg-white border border-gray-100 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md h-40 md:h-48">
+                            <span class="material-symbols-outlined text-4xl md:text-5xl text-blue-500" x-text="cat.icon"></span>
+                            <span class="text-sm md:text-base font-semibold text-gray-600 text-center" x-text="cat.name"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div x-show="step === 2" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-10">
+                <h2 class="text-center text-gray-800 font-bold text-lg md:text-2xl mb-8">Welcher Bereich?</h2>
+                <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
+                    <template x-for="r in rooms">
+                        <div @click="selectRoom(r.name)" class="icon-card cursor-pointer bg-white border border-gray-100 rounded-xl p-3 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md h-28 md:h-32 text-center">
+                            <span class="material-symbols-outlined text-3xl md:text-4xl text-gray-400" x-text="r.icon"></span>
+                            <span class="text-xs md:text-sm font-medium text-gray-600 leading-tight" x-text="r.name"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div x-show="step === 3" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-10">
+                <h2 class="text-center text-gray-800 font-bold text-lg md:text-2xl mb-2">Was ist betroffen?</h2>
+                <p class="text-center text-xs md:text-sm text-gray-400 mb-8 uppercase tracking-widest" x-text="room"></p>
+                <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
+                    <template x-for="obj in getCurrentObjects()">
+                        <div @click="selectObject(obj)" class="icon-card cursor-pointer bg-white border border-gray-100 rounded-xl p-2 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md h-28 md:h-32 text-center">
+                            <span class="material-symbols-outlined text-3xl md:text-4xl text-blue-400" x-text="obj.icon"></span>
+                            <span class="text-xs md:text-sm font-medium text-gray-600 leading-tight" x-text="obj.name"></span>
+                        </div>
+                    </template>
+                    <div @click="selectObject({name: 'Sonstiges', isAppliance: false})" class="icon-card cursor-pointer bg-gray-50 border border-gray-200 border-dashed rounded-xl p-2 flex flex-col items-center justify-center gap-2 h-28 md:h-32 text-center">
+                        <span class="material-symbols-outlined text-3xl md:text-4xl text-gray-400">more_horiz</span>
+                        <span class="text-xs md:text-sm font-medium text-gray-500">Anderes</span>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="step === 4" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-10">
+
+                <form method="post" enctype="multipart/form-data" class="md:w-3/4 md:mx-auto space-y-8">
+                    {% csrf_token %}
+                    <input type="hidden" name="titel" :value="generateTitleInput()">
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-blue-600">person</span> Ihre Kontaktdaten
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="md:col-span-2 sm:w-1/3">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Anrede *</label>
+                                <select name="anrede" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                                    <option value="Frau">Frau</option>
+                                    <option value="Herr">Herr</option>
+                                    <option value="Firma">Firma</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Vorname *</label>
+                                <input type="text" name="vorname" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nachname *</label>
+                                <input type="text" name="nachname" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">E-Mail *</label>
+                                <input type="email" name="email" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Telefon *</label>
+                                <input type="tel" name="telefon" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Betroffene Einheit (Optional)</label>
+                            <div class="relative">
+                                <select name="einheit_id" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none">
+                                    <option value="">-- Bitte wählen --</option>
+                                    {% for einheit in einheiten %}
+                                        <option value="{{ einheit.id }}">{{ einheit.bezeichnung }} ({{ einheit.mieter_namen }})</option>
+                                    {% endfor %}
+                                </select>
+                                <span class="material-symbols-outlined absolute right-3 top-3 text-gray-400 pointer-events-none">expand_more</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Erreichbarkeit (für Handwerker)</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="cursor-pointer">
+                                    <input type="checkbox" name="erreichbarkeit" value="08:00 - 10:00" class="hidden time-checkbox">
+                                    <div class="border border-gray-300 rounded-lg py-2 text-center text-sm text-gray-600 hover:bg-gray-50 transition select-none">08:00 - 10:00</div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="checkbox" name="erreichbarkeit" value="10:00 - 12:00" class="hidden time-checkbox">
+                                    <div class="border border-gray-300 rounded-lg py-2 text-center text-sm text-gray-600 hover:bg-gray-50 transition select-none">10:00 - 12:00</div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="checkbox" name="erreichbarkeit" value="14:00 - 16:00" class="hidden time-checkbox">
+                                    <div class="border border-gray-300 rounded-lg py-2 text-center text-sm text-gray-600 hover:bg-gray-50 transition select-none">14:00 - 16:00</div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="checkbox" name="erreichbarkeit" value="16:00 - 18:00" class="hidden time-checkbox">
+                                    <div class="border border-gray-300 rounded-lg py-2 text-center text-sm text-gray-600 hover:bg-gray-50 transition select-none">16:00 - 18:00</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-blue-600">build</span> Details zur Meldung
+                            </h3>
+                            <div class="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full" x-text="generateTitleDisplay()"></div>
+                        </div>
+
+                        <div x-show="isAppliance" class="bg-yellow-50 p-4 rounded-xl border border-yellow-100 mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-yellow-700 uppercase mb-1">Marke / Hersteller</label>
+                                <input type="text" name="hersteller" class="w-full border-yellow-200 bg-white rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-yellow-700 uppercase mb-1">Seriennummer</label>
+                                <input type="text" name="seriennummer" class="w-full border-yellow-200 bg-white rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Beschreibung *</label>
+                            <textarea name="beschreibung" required rows="3" placeholder="Bitte beschreiben Sie das Problem kurz..." class="w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Foto (Optional)</label>
+                            <label class="flex items-center gap-3 w-full p-3 border border-gray-200 rounded-xl cursor-pointer bg-gray-50 hover:bg-white transition shadow-sm">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                                    <span class="material-symbols-outlined">camera_alt</span>
+                                </div>
+                                <div class="flex-grow">
+                                    <span class="text-sm font-medium text-gray-700" x-text="fileName || 'Foto aufnehmen oder hochladen'"></span>
+                                </div>
+                                <input type="file" name="foto" accept="image/*" capture="environment" class="hidden" @change="fileSelected($event)">
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-700 hover:shadow-xl transition transform active:scale-[0.99] flex justify-center items-center gap-2 text-lg">
+                        <span>Meldung absenden</span>
+                        <span class="material-symbols-outlined">send</span>
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <script>
+        setTimeout(() => { const l = document.getElementById('loader'); if(l) l.style.display = 'none'; }, 3000);
+
+        function ticketWizard() {
+            return {
+                step: 1, category: '', room: '', objectName: '', isAppliance: false, fileName: '',
+
+                // DATA
+                categories: [
+                    { id: 'Schaden', name: 'Schadensmeldung', icon: 'broken_image' },
+                    { id: 'Anfrage', name: 'Allgemeine Anfrage', icon: 'help_outline' },
+                    { id: 'Schlüssel', name: 'Schlüsselbestellung', icon: 'key' },
+                    { id: 'Admin', name: 'Frage zu Dokumenten', icon: 'description' }
+                ],
+                rooms: [
+                    { name: 'Küche', icon: 'kitchen' }, { name: 'Bad', icon: 'bathtub' }, { name: 'Korridor', icon: 'hallway' },
+                    { name: 'Zimmer', icon: 'bed' }, { name: 'Reduit', icon: 'inventory_2' }, { name: 'Balkon/Terrasse', icon: 'balcony' },
+                    { name: 'Treppenhaus', icon: 'stairs' }, { name: 'Waschküche', icon: 'local_laundry_service' }, { name: 'Keller', icon: 'warehouse' },
+                    { name: 'Estrich', icon: 'roofing' }, { name: 'Veloraum', icon: 'pedal_bike' }, { name: 'Briefkasten', icon: 'mark_as_unread' }
+                ],
+                standardItems: [
+                    { name: 'Licht', icon: 'lightbulb', isAppliance: false }, { name: 'Steckdose', icon: 'power', isAppliance: false },
+                    { name: 'Fenster', icon: 'window', isAppliance: false }, { name: 'Storen/Markise', icon: 'blinds', isAppliance: false },
+                    { name: 'Boden', icon: 'texture', isAppliance: false }, { name: 'Wand', icon: 'wallpaper', isAppliance: false },
+                    { name: 'Decke', icon: 'roofing', isAppliance: false }
+                ],
+                objectMap: {
+                    'Küche': [
+                        { name: 'Kühlschrank', icon: 'kitchen', isAppliance: true }, { name: 'Geschirrspüler', icon: 'dishwasher_gen', isAppliance: true },
+                        { name: 'Dampfabzug', icon: 'air', isAppliance: true }, { name: 'Kochherd', icon: 'grid_view', isAppliance: true },
+                        { name: 'Backofen/Steamer', icon: 'microwave', isAppliance: true }, { name: 'Spülbecken', icon: 'water_drop', isAppliance: false }
+                    ],
+                    'Bad': [
+                        { name: 'Lavabo', icon: 'water_drop', isAppliance: false }, { name: 'WC', icon: 'wc', isAppliance: false },
+                        { name: 'Dusche', icon: 'shower', isAppliance: false }, { name: 'Badewanne', icon: 'bathtub', isAppliance: false },
+                        { name: 'Spiegelschrank', icon: 'shelves', isAppliance: false }, { name: 'Lüftung', icon: 'mode_fan', isAppliance: false }
+                    ],
+                    'Waschküche': [
+                        { name: 'Waschmaschine', icon: 'local_laundry_service', isAppliance: true }, { name: 'Tumbler', icon: 'mode_fan', isAppliance: true },
+                        { name: 'Secomat', icon: 'air', isAppliance: true }
+                    ],
+                    'Korridor': [
+                        { name: 'Gegensprechanlage', icon: 'call', isAppliance: false }, { name: 'Eingangstür', icon: 'door_front', isAppliance: false },
+                        { name: 'Wandschrank', icon: 'door_sliding', isAppliance: false }
+                    ],
+                    'Treppenhaus': [
+                        { name: 'Geländer', icon: 'fence', isAppliance: false }, { name: 'Lift', icon: 'elevator', isAppliance: false },
+                        { name: 'Eingangstür', icon: 'door_front', isAppliance: false }
+                    ]
+                },
+
+                getCurrentObjects() {
+                    let specific = this.objectMap[this.room] || [];
+                    return [...specific, ...this.standardItems];
+                },
+                selectCategory(cat) {
+                    this.category = cat;
+                    if (cat === 'Schaden') this.step = 2; else { this.room = ''; this.objectName = ''; this.step = 4; }
+                },
+                selectRoom(r) { this.room = r; this.step = 3; },
+                selectObject(obj) { this.objectName = obj.name; this.isAppliance = obj.isAppliance; this.step = 4; },
+                goBack() { if (this.step === 4 && this.category !== 'Schaden') this.step = 1; else this.step--; },
+                generateTitleDisplay() {
+                    if (this.objectName) return `${this.category} > ${this.room} > ${this.objectName}`;
+                    if (this.room) return `${this.category} > ${this.room}`;
+                    return this.category;
+                },
+                generateTitleInput() {
+                    if (this.objectName) return `${this.category}: ${this.room} - ${this.objectName}`;
+                    return this.category;
+                },
+                fileSelected(event) {
+                    const file = event.target.files[0];
+                    if (file) this.fileName = "📸 " + file.name;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

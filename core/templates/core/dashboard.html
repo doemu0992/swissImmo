@@ -1,0 +1,196 @@
+{% extends "unfold/layouts/base.html" %}
+{% load i18n static %}
+
+{% block content %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+<style>
+    /* Globaler Fix für die Schriftart */
+    body, .unfold-font { font-family: 'Inter', sans-serif !important; }
+
+    /* Icon-Fix: Verhindert das Verblassen und erzwingt kräftige Farben */
+    .material-symbols-outlined {
+        font-family: 'Material Symbols Outlined' !important;
+        display: inline-block;
+        vertical-align: middle;
+        opacity: 1 !important; /* Verhindert das Verblassen durch das Theme */
+    }
+
+    /* Spezifische Farben für die Kachel-Icons im Hintergrund - Kräftiger eingestellt */
+    .icon-bg-emerald { color: #10b981 !important; opacity: 0.5 !important; }
+    .icon-bg-red { color: #ef4444 !important; opacity: 0.5 !important; }
+    .icon-bg-amber { color: #f59e0b !important; opacity: 0.5 !important; }
+    .icon-bg-blue { color: #3b82f6 !important; opacity: 0.5 !important; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="p-6">
+
+    <div class="mb-8 flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white mb-2 tracking-tight">Immobilien Cockpit 🚀</h1>
+            <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Tagesaktueller Status Ihrer Verwaltung.</p>
+        </div>
+        <div class="hidden sm:block">
+            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full border border-blue-200">Live Daten</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all p-6 border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+            <div class="absolute top-2 right-2 p-2">
+                <i class="material-symbols-outlined text-6xl icon-bg-emerald">payments</i>
+            </div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Soll-Miete (Monat)</p>
+            <h3 class="text-3xl font-black text-gray-800 dark:text-white">CHF {{ total_income|floatformat:0 }}</h3>
+            <div class="text-xs text-emerald-600 mt-2 font-bold flex items-center gap-1">
+                <i class="material-symbols-outlined text-sm !opacity-100">trending_up</i> inkl. Nebenkosten
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all p-6 border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+            <div class="absolute top-2 right-2 p-2">
+                <i class="material-symbols-outlined text-6xl icon-bg-red">home_work</i>
+            </div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Leerstand</p>
+            <h3 class="text-3xl font-black text-gray-800 dark:text-white">{{ leerstand_prozent }}%</h3>
+            <div class="text-xs text-red-500 mt-2 font-bold flex items-center gap-1">
+                <i class="material-symbols-outlined text-sm !opacity-100">error</i> {{ leerstand_count }} Einheiten leer
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all p-6 border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+            <div class="absolute top-2 right-2 p-2">
+                <i class="material-symbols-outlined text-6xl icon-bg-amber">build</i>
+            </div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Offene Tickets</p>
+            <h3 class="text-3xl font-black text-gray-800 dark:text-white">{{ offene_tickets }}</h3>
+            <div class="text-xs text-amber-600 mt-2 font-bold flex items-center gap-1">
+                <i class="material-symbols-outlined text-sm !opacity-100">priority_high</i> {{ kritische_tickets }} Kritisch
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all p-6 border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+            <div class="absolute top-2 right-2 p-2">
+                <i class="material-symbols-outlined text-6xl icon-bg-blue">apartment</i>
+            </div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Portfolio</p>
+            <h3 class="text-3xl font-black text-gray-800 dark:text-white">{{ total_units }}</h3>
+            <div class="text-xs text-blue-600 mt-2 font-bold flex items-center gap-1">
+                <i class="material-symbols-outlined text-sm !opacity-100">inventory_2</i> Einheiten gesamt
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <h4 class="text-lg font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
+                    <i class="material-symbols-outlined text-gray-400">pie_chart</i> Belegungsstatus
+                </h4>
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    <div class="w-full md:w-1/2 h-64">
+                        <canvas id="occupancyChart"></canvas>
+                    </div>
+                    <div class="w-full md:w-1/2 space-y-3">
+                        <div class="p-5 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+                            <span class="text-xs font-bold text-gray-400 uppercase mb-4 block text-center">Aktionen</span>
+                            <div class="space-y-2">
+                                <a href="{% url 'admin:core_mietvertrag_add' %}" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition shadow-sm">
+                                    <i class="material-symbols-outlined text-sm !opacity-100">add</i> Neuer Vertrag
+                                </a>
+                                <a href="{% url 'ticket_erstellen' %}" target="_blank" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-lg text-sm font-bold transition shadow-sm">
+                                    <i class="material-symbols-outlined text-sm !opacity-100">public</i> Schaden melden
+                                </a>
+                                <div class="h-px bg-gray-200 dark:bg-gray-700 my-2"></div>
+                                <a href="{% url 'index' %}" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-sm font-medium transition">
+                                    <i class="material-symbols-outlined text-sm !opacity-100">home</i> Startseite
+                                </a>
+                                <a href="/admin/" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-sm font-medium transition">
+                                    <i class="material-symbols-outlined text-sm !opacity-100">apps</i> Klassische Ansicht
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <h4 class="text-lg font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
+                    <i class="material-symbols-outlined text-gray-400">bar_chart</i> Tickets nach Status
+                </h4>
+                <div class="h-64">
+                    <canvas id="ticketChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-8">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div class="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                    <h4 class="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                        <i class="material-symbols-outlined text-amber-500 !opacity-100">alarm</i> Auslaufend (90 Tage)
+                    </h4>
+                </div>
+                <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                    {% if auslaufende_vertraege %}
+                        {% for v in auslaufende_vertraege %}
+                        <div class="p-4 hover:bg-blue-50 dark:hover:bg-gray-700 transition group">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-bold text-gray-800 dark:text-white text-sm">{{ v.mieter.nachname }}</p>
+                                    <p class="text-xs text-gray-500">{{ v.einheit.bezeichnung }}</p>
+                                </div>
+                                <span class="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded font-bold border border-amber-200">{{ v.ende|date:"d.m.Y" }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="p-8 text-center text-gray-500 text-sm italic">
+                            Keine Verträge laufen aus.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
+    // Doughnut Chart
+    new Chart(document.getElementById('occupancyChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Vermietet', 'Leerstand'],
+            datasets: [{
+                data: [{{ vermietet_count }}, {{ leerstand_count }}],
+                backgroundColor: ['#10b981', '#ef4444'],
+                borderWidth: 0
+            }]
+        },
+        options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } }
+    });
+
+    // Bar Chart
+    new Chart(document.getElementById('ticketChart'), {
+        type: 'bar',
+        data: {
+            labels: JSON.parse('{{ chart_ticket_labels|safe }}'),
+            datasets: [{
+                label: 'Tickets',
+                data: JSON.parse('{{ chart_ticket_data|safe }}'),
+                backgroundColor: '#3b82f6',
+                borderRadius: 4
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+</script>
+{% endblock %}
