@@ -157,6 +157,9 @@ CKEDITOR_CONFIGS = {'default': {'toolbar': 'full', 'height': 300, 'width': '100%
 # 9. EXTERNE DIENSTE & E-MAIL (HOSTSTAR)
 # ==========================================
 
+# --- NEU: Gemini API Key aus .env laden ---
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+
 DOCUSEAL_API_KEY = os.getenv('DOCUSEAL_API_KEY')
 DOCUSEAL_URL = "https://api.docuseal.com"
 
@@ -174,7 +177,7 @@ DEFAULT_FROM_EMAIL = f'ImmoSwiss Verwaltung <{os.getenv("EMAIL_HOST_USER", "info
 # ==========================================
 # 10. MODERNES DESIGN KONFIGURATION (UNFOLD)
 # ==========================================
-
+# ... (Hier bleibt alles exakt gleich, wie du es hattest) ...
 UNFOLD = {
     "SITE_TITLE": "SwissImmo Verwaltung",
     "SITE_HEADER": "SwissImmo",
@@ -221,12 +224,10 @@ UNFOLD = {
                 "separator": True,
                 "items": [
                     {"title": "Mieteinnahmen", "icon": "savings", "link": "/admin/core/zahlungseingang/"},
-                    # --- NEU: MIETZINS-KONTROLLE ---
                     {"title": "Mietzins-Kontrolle", "icon": "fact_check", "link": "/admin/core/mietzinskontrolle/"},
                     {"title": "Kreditoren", "icon": "account_balance_wallet", "link": "/admin/core/kreditorenrechnung/"},
                     {"title": "Nebenkosten", "icon": "receipt_long", "link": "/admin/core/abrechnungsperiode/"},
 
-                    # Hier verwenden wir die Funktion, die OBEN definiert wurde!
                     {
                         "title": "Tickets & Schäden",
                         "icon": "build",

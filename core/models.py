@@ -6,6 +6,7 @@ import uuid
 from decimal import Decimal
 from django.db import models
 from django.utils import timezone
+from django.conf import settings  # <--- NEU: Für den sicheren API-Key Import
 
 # --- GOOGLE AI IMPORT ---
 try:
@@ -68,11 +69,9 @@ class Liegenschaft(models.Model):
     ort = models.CharField("Ort", max_length=100)
     egid = models.CharField("EGID", max_length=20, blank=True, null=True)
 
-    # --- DIESE FELDER SIND JETZT DABEI ---
     baujahr = models.IntegerField("Baujahr", null=True, blank=True)
     kataster_nummer = models.CharField("Kataster-Nr.", max_length=50, blank=True)
     versicherungswert = models.DecimalField("Versicherungswert", max_digits=12, decimal_places=2, null=True, blank=True)
-    # ------------------------------------
 
     kanton = models.CharField("Kanton", max_length=2, blank=True)
     bank_name = models.CharField("Bankname", max_length=100, blank=True)
@@ -88,11 +87,9 @@ class Einheit(models.Model):
     bezeichnung = models.CharField("Objektbezeichnung", max_length=50)
     typ = models.CharField("Typ", max_length=10, choices=TYP_CHOICES, default='whg')
 
-    # --- DIESE FELDER SIND JETZT DABEI ---
     ewid = models.CharField("EWID", max_length=20, blank=True, null=True)
     etage = models.CharField("Etage", max_length=50, blank=True)
     wertquote = models.DecimalField("Wertquote", max_digits=6, decimal_places=2, default=10.00)
-    # ------------------------------------
 
     zimmer = models.DecimalField("Anz. Zimmer", max_digits=3, decimal_places=1, null=True, blank=True)
     flaeche_m2 = models.DecimalField("Fläche (m²)", max_digits=6, decimal_places=2, null=True, blank=True)
@@ -190,8 +187,8 @@ class NebenkostenBeleg(models.Model):
             return
 
         try:
-            # 1. API Schlüssel
-            genai.configure(api_key="AIzaSyBDdF-2rAcwX9tt9HSTIDyimLekUePu4Qo")
+            # --- SICHERHEITS-FIX: Key aus Settings laden ---
+            genai.configure(api_key=settings.GEMINI_API_KEY)
 
             # --- DYNAMISCHE MODELL-SUCHE (Jetzt wirklich im Code!) ---
             available_models = []
@@ -483,8 +480,8 @@ class KreditorenRechnung(models.Model):
 
         chosen_model = "Unbekannt"
         try:
-            # Nutzt deinen hinterlegten Key
-            genai.configure(api_key="AIzaSyBDdF-2rAcwX9tt9HSTIDyimLekUePu4Qo")
+            # --- SICHERHEITS-FIX: Key aus Settings laden ---
+            genai.configure(api_key=settings.GEMINI_API_KEY)
 
             # --- DYNAMISCHE MODELL-SUCHE (Jetzt auch für Kreditoren!) ---
             available_models = []
