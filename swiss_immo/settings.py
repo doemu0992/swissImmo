@@ -46,6 +46,10 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['www.immoswiss.app', 'swissimmo.pythonanywhere.com', '127.0.0.1', 'localhost']
 CSRF_TRUSTED_ORIGINS = ['https://*.pythonanywhere.com', 'https://www.immoswiss.app']
 
+# --- WICHTIG FÜR PYTHONANYWHERE (FIX FÜR CSRF FEHLER) ---
+# Sagt Django, dass es HTTPS ist, wenn der Proxy (PythonAnywhere) das sagt.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # ==========================================
 # 4. APPS
 # ==========================================
@@ -114,6 +118,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        # --- FIX: Gibt der Datenbank 30 Sekunden Zeit für die KI ---
+        'OPTIONS': {
+            'timeout': 30,
+        }
     }
 }
 
@@ -212,6 +220,10 @@ UNFOLD = {
                 "title": "Finanzen & Service",
                 "separator": True,
                 "items": [
+                    {"title": "Mieteinnahmen", "icon": "savings", "link": "/admin/core/zahlungseingang/"},
+                    # --- NEU: MIETZINS-KONTROLLE ---
+                    {"title": "Mietzins-Kontrolle", "icon": "fact_check", "link": "/admin/core/mietzinskontrolle/"},
+                    {"title": "Kreditoren", "icon": "account_balance_wallet", "link": "/admin/core/kreditorenrechnung/"},
                     {"title": "Nebenkosten", "icon": "receipt_long", "link": "/admin/core/abrechnungsperiode/"},
 
                     # Hier verwenden wir die Funktion, die OBEN definiert wurde!
@@ -223,12 +235,14 @@ UNFOLD = {
                     },
 
                     {"title": "Handwerker", "icon": "engineering", "link": "/admin/core/handwerker/"},
+                    {"title": "Erfolgsrechnung", "icon": "analytics", "link": "/admin/core/jahresabschluss/"},
                 ],
             },
             {
                 "title": "System",
                 "separator": True,
                 "items": [
+                    {"title": "Kontenplan", "icon": "account_balance", "link": "/admin/core/buchungskonto/"},
                     {"title": "Einstellungen (Verwaltung)", "icon": "settings", "link": "/admin/core/verwaltung/"},
                     {"title": "Mandanten", "icon": "admin_panel_settings", "link": "/admin/core/mandant/"},
                     {"title": "Benutzer & Rechte", "icon": "lock", "link": "/admin/auth/user/"},

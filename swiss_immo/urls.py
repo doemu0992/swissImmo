@@ -19,8 +19,8 @@ from core.views.contracts import mietzins_anpassung_view, generiere_amtliches_fo
 # 4. Ticket System
 from core.views.issues import ticket_erstellen, ticket_detail_public, ticket_detail_admin
 
-# 5. PDF (Hier haben wir qr_rechnung_pdf ENTFERNT, da es in der Datei fehlt)
-from core.views.pdf import generate_pdf_view
+# 5. PDF (HIER HABEN WIR DEINE QR-FUNKTION WIEDER HINZUGEFÜGT!)
+from core.views.pdf import generate_pdf_view, qr_rechnung_pdf
 
 # 6. DocuSeal
 from core.views.docuseal import send_via_docuseal, docuseal_webhook
@@ -54,8 +54,9 @@ urlpatterns = [
     path('abrechnung/<int:periode_id>/pdf/', abrechnung_pdf_view, name='abrechnung_pdf'),
     path('abrechnung/<int:periode_id>/send-mail/', send_abrechnung_email_view, name='abrechnung_send_mail'),
 
-    # HINWEIS: Die QR-Rechnung URL wurde entfernt, da die Funktion fehlt
-    # path('qr-rechnung/<int:vertrag_id>/', qr_rechnung_pdf, name='qr_rechnung_pdf'),
+    # --- NEU: HIER IST DEINE QR RECHNUNG WIEDER AKTIV ---
+    # Wichtig: name='generate_qr' muss mit admin.py übereinstimmen!
+    path('vertrag/<int:vertrag_id>/qr/', qr_rechnung_pdf, name='generate_qr'),
 
     # --- DOCUSEAL ---
     path('vertrag/<int:vertrag_id>/senden/', send_via_docuseal, name='send_docuseal'),

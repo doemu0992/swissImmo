@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 from django import forms
 from django.contrib import admin
 from django.contrib import messages
@@ -7,7 +8,7 @@ from django.urls import reverse
 from django.db.models import Sum
 from django.template.defaultfilters import date as _date
 from django.forms.widgets import TextInput
-from django.shortcuts import redirect  # <--- NEU: Wichtig für den Reload!
+from django.shortcuts import redirect
 
 # --- IMPORTS FÜR EMAIL ---
 from django.core.mail import EmailMessage
@@ -30,7 +31,9 @@ from .models import (
     Dokument, MietzinsAnpassung, Geraet, Unterhalt,
     Zaehler, ZaehlerStand, AbrechnungsPeriode, NebenkostenBeleg,
     Verwaltung, Mandant, Leerstand, TicketNachricht,
-    HandwerkerAuftrag
+    HandwerkerAuftrag,
+    # --- SAUBERER IMPORT FÜR BUCHHALTUNG ---
+    Buchungskonto, KreditorenRechnung, Zahlungseingang, Jahresabschluss, MietzinsKontrolle
 )
 
 # ==========================================
@@ -85,7 +88,7 @@ class EinheitInline(TabularInline):
 
 class MietvertragInline(TabularInline):
     model = Mietvertrag; extra = 0
-    fields = ('mieter', 'beginn', 'netto_mietzins', 'aktiv')
+    fields = ('mieter', 'beginn', 'netto_mietzins', 'nebenkosten', 'aktiv')
     tab = True
 
 class DokumentVertragInline(TabularInline):
@@ -201,7 +204,7 @@ class AbrechnungAdmin(ModelAdmin):
 
     fieldsets = (
         ('Stammdaten', {'fields': ('liegenschaft', 'bezeichnung', ('start_datum', 'ende_datum'), 'abgeschlossen')}),
-        ('Vorschau', {'fields': ('live_preview_tabelle',)})
+        ('Vorschau (Live)', {'fields': ('live_preview_tabelle',)})
     )
     readonly_fields = ('live_preview_tabelle',)
 
@@ -211,16 +214,50 @@ class AbrechnungAdmin(ModelAdmin):
     def live_preview_tabelle(self, obj):
         if not obj.pk: return "Bitte erst speichern."
         try: ergebnis = berechne_abrechnung(obj.pk)
-        except Exception as e: return f"Fehler: {e}"
-        if 'error' in ergebnis: return format_html('<span style="color:red;">{}</span>', ergebnis['error'])
+        except Exception as e: return f"Fehler bei Berechnung: {e}"
+
+        if 'error' in ergebnis: return format_html('<span style="color:red; font-weight:bold;">{}</span>', ergebnis.get('error', 'Unbekannter Fehler'))
+
         data = ergebnis.get('abrechnungen', [])
         total = ergebnis.get('total_kosten', 0)
-        html = f"<div class='mb-4 font-bold'>Total: CHF {total:,.2f}</div><table class='min-w-full text-sm text-left text-gray-500'>"
-        html += "<thead class='text-xs uppercase bg-gray-50'><tr><th>Mieter</th><th>Objekt</th><th>Kosten</th><th>Akonto</th><th>Saldo</th></tr></thead><tbody>"
+
+        html = f"<div class='mb-4 font-bold text-lg'>Total zu verteilen: CHF {total:,.2f}</div>"
+        html += "<div class='overflow-x-auto'><table class='w-full text-sm text-left text-gray-500 dark:text-gray-400 border rounded-lg'>"
+        html += "<thead class='text-xs uppercase bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300'><tr>"
+        html += "<th class='px-4 py-3'>Einheit</th>"
+        html += "<th class='px-4 py-3'>Name / Typ</th>"
+        html += "<th class='px-4 py-3'>Zeitraum</th>"
+        html += "<th class='px-4 py-3 text-right'>Kosten</th>"
+        html += "<th class='px-4 py-3 text-right'>Akonto</th>"
+        html += "<th class='px-4 py-3 text-right'>Saldo</th>"
+        html += "</tr></thead><tbody class='divide-y divide-gray-200 dark:divide-gray-700'>"
+
         for row in data:
-            color = "text-red-600" if row['nachzahlung'] else "text-emerald-600"
-            html += f"<tr class='bg-white border-b'><td class='px-4 py-2'>{row['mieter']}</td><td class='px-4 py-2'>{row['einheit']}</td><td class='px-4 py-2'>{row['kosten_anteil']:.2f}</td><td class='px-4 py-2'>{row['akonto_bezahlt']:.2f}</td><td class='px-4 py-2 font-bold {color}'>{row['saldo']:.2f}</td></tr>"
-        return mark_safe(html + "</tbody></table>")
+            is_nachzahlung = row.get('nachzahlung', False)
+            color_saldo = "text-red-600 font-bold" if is_nachzahlung else "text-emerald-600 font-bold"
+            bg_row = "bg-red-50 dark:bg-red-900/10" if row.get('typ') == 'leerstand' else "bg-white dark:bg-gray-800"
+
+            von = row.get('von')
+            bis = row.get('bis')
+            zeitraum = f"{von} - {bis} ({row.get('tage', 0)} Tage)" if von != '-' else "n/a"
+
+            html += f"<tr class='{bg_row} hover:bg-gray-50 dark:hover:bg-gray-700'>"
+            html += f"<td class='px-4 py-2 font-medium'>{row.get('einheit', '-')}</td>"
+            html += f"<td class='px-4 py-2'>{row.get('name', 'Unbekannt')}</td>"
+            html += f"<td class='px-4 py-2 text-xs text-gray-500'>{zeitraum}</td>"
+            html += f"<td class='px-4 py-2 text-right'>{row.get('kosten_anteil', 0):.2f}</td>"
+            html += f"<td class='px-4 py-2 text-right'>{row.get('akonto', 0):.2f}</td>"
+            html += f"<td class='px-4 py-2 text-right {color_saldo}'>{row.get('saldo', 0):.2f}</td>"
+            html += "</tr>"
+
+        html += "</tbody></table></div>"
+
+        diff = ergebnis.get('differenz', 0)
+        if diff != 0:
+             html += f"<div class='mt-2 text-xs text-amber-600 font-bold'>⚠️ Rundungsdifferenz: {diff} CHF</div>"
+
+        return mark_safe(html)
+
     live_preview_tabelle.short_description = "Vorschau"
 
 @admin.register(Liegenschaft)
@@ -264,7 +301,7 @@ class EinheitAdmin(ModelAdmin):
 
 @admin.register(Mietvertrag)
 class MietvertragAdmin(ModelAdmin):
-    list_display = ('mieter', 'einheit', 'beginn', 'netto_mietzins', 'status_badge_display', 'potenzial_preview', 'aktiv', 'pdf_vorschau_btn', 'docuseal_action_btn', 'calc_btn')
+    list_display = ('mieter', 'einheit', 'beginn', 'netto_mietzins', 'status_badge_display', 'potenzial_preview', 'aktiv', 'pdf_vorschau_btn', 'qr_rechnung_btn', 'docuseal_action_btn', 'calc_btn')
     list_filter = ('sign_status', 'aktiv'); list_filter_submit = True
     inlines = [DokumentVertragInline]
     fieldsets = (('Parteien', {'fields': ('mieter', 'einheit')}), ('Vertrag', {'fields': ('beginn', 'ende', 'aktiv', 'sign_status')}), ('Konditionen', {'fields': ('netto_mietzins', 'nebenkosten', 'kautions_betrag', 'basis_referenzzinssatz', 'basis_lik_punkte')}), ('DocuSeal', {'fields': ('pdf_datei',)}))
@@ -302,7 +339,21 @@ class MietvertragAdmin(ModelAdmin):
         try: v = Verwaltung.objects.first(); i['basis_referenzzinssatz'] = v.aktueller_referenzzinssatz; i['basis_lik_punkte'] = v.aktueller_lik_punkte
         except: pass
         return i
+
     def pdf_vorschau_btn(self, obj): return format_html('<a href="{}" target="_blank">📄</a>', reverse('generate_pdf', args=[obj.id])) if obj.id else "-"
+
+    def qr_rechnung_btn(self, obj):
+        if not obj.id: return "-"
+        try:
+            url = reverse('generate_qr', args=[obj.id])
+            import datetime
+            aktueller_monat = datetime.date.today().strftime('%m/%Y')
+            js_onclick = f"var m=prompt('Für welchen Monat soll die QR-Rechnung erstellt werden? (MM/YYYY)', '{aktueller_monat}'); if(m){{ window.open('{url}?monat=' + encodeURIComponent(m), '_blank'); }} return false;"
+            return format_html('<a href="#" onclick="{}" class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-xs font-bold border border-indigo-300">🔳 QR</a>', js_onclick)
+        except Exception:
+            return "URL fehlt"
+    qr_rechnung_btn.short_description = "QR-Schein"
+
     def calc_btn(self, obj): return format_html('<a href="{}" target="_blank" class="text-indigo-600 font-bold">Zins</a>', reverse('mietzins_anpassung', args=[obj.id])) if obj.aktiv else "-"
 
 @admin.register(SchadenMeldung)
@@ -372,19 +423,14 @@ class MieterAdmin(ModelAdmin):
 @admin.register(Verwaltung)
 class VerwaltungAdmin(ModelAdmin):
     list_display = ('firma', 'aktueller_referenzzinssatz', 'aktueller_lik_punkte')
-
-    # Der Button oben rechts
     actions_detail = ["check_rates_now"]
-
     fieldsets = (('Stammdaten', {'fields': ('firma', 'strasse', 'plz', 'ort', 'logo')}), ('Marktdaten', {'fields': ('aktueller_referenzzinssatz', 'aktueller_lik_punkte')}))
 
-    # FIX: Hier wurde der Redirect hinzugefügt
     @action(description="🔄 Marktdaten prüfen", url_path="check-rates")
     def check_rates_now(self, request, object_id=None, **kwargs):
         msg, err = update_verwaltung_rates()
         if err: messages.error(request, f"Fehler: {err}")
         else: messages.success(request, msg)
-        # Zurück zur Seite leiten, von der man kam (Reload)
         return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
 @admin.register(Mandant)
@@ -408,3 +454,237 @@ class TicketNachrichtAdmin(ModelAdmin):
     def nachricht_anzeige(self, obj): return format_html('<div style="white-space: pre-wrap;">{}</div>', obj.nachricht)
 
 admin.site.register([MietzinsAnpassung, Leerstand, SchluesselAusgabe])
+
+# ==========================================
+# BUCHHALTUNG & KREDITOREN
+# ==========================================
+
+@admin.register(Buchungskonto)
+class BuchungskontoAdmin(ModelAdmin):
+    list_display = ('nummer', 'bezeichnung', 'typ')
+    search_fields = ('nummer', 'bezeichnung')
+    list_filter = ('typ',)
+
+    actions_list = ["load_standard_accounts"]
+
+    @action(description="📚 Schweizer Kontenplan laden", url_path="load-accounts")
+    def load_standard_accounts(self, request):
+        standard_konten = [
+            ('1020', 'Bankguthaben', 'bilanz'),
+            ('1100', 'Forderungen (Ausstehende Mieten)', 'bilanz'),
+            ('1600', 'Immobilien / Liegenschaften', 'bilanz'),
+            ('2000', 'Verbindlichkeiten (Kreditoren)', 'bilanz'),
+            ('2300', 'Rückstellungen (Sanierung)', 'bilanz'),
+
+            ('3000', 'Mietertrag Wohnungen', 'ertrag'),
+            ('3010', 'Mietertrag Gewerbe', 'ertrag'),
+            ('3020', 'Mietertrag Parkplätze', 'ertrag'),
+            ('3400', 'Nebenkosten Akonto-Einnahmen', 'ertrag'),
+
+            ('4000', 'Material- und Warenaufwand', 'aufwand'),
+            ('4200', 'Heizmaterial / Energieaufwand', 'aufwand'),
+            ('4210', 'Wasser / Abwasser', 'aufwand'),
+            ('4220', 'Allgemeinstrom', 'aufwand'),
+            ('4300', 'Hauswartung & Reinigung', 'aufwand'),
+            ('4400', 'Unterhalt & Reparaturen Gebäude', 'aufwand'),
+            ('4410', 'Serviceabos (Lift, Heizung)', 'aufwand'),
+            ('4420', 'Gartenunterhalt / Umgebung', 'aufwand'),
+            ('6500', 'Verwaltungshonorar', 'aufwand'),
+            ('6520', 'Versicherungen (Gebäude, Haftpflicht)', 'aufwand'),
+            ('6530', 'Steuern, Abgaben, Gebühren', 'aufwand'),
+            ('6800', 'Abschreibungen', 'aufwand'),
+            ('6900', 'Finanzaufwand (Hypothekarzinsen, Spesen)', 'aufwand'),
+        ]
+
+        count = 0
+        for nr, bez, typ in standard_konten:
+            obj, created = Buchungskonto.objects.get_or_create(
+                nummer=nr,
+                defaults={'bezeichnung': bez, 'typ': typ}
+            )
+            if created:
+                count += 1
+
+        messages.success(request, f"✅ {count} Standard-Konten wurden erfolgreich angelegt!")
+        return redirect(request.META.get('HTTP_REFERER', '/admin/core/buchungskonto/'))
+
+@admin.register(KreditorenRechnung)
+class KreditorenRechnungAdmin(ModelAdmin):
+    list_display = ('lieferant', 'datum', 'betrag', 'status', 'liegenschaft', 'einheit')
+    list_filter = ('status', 'liegenschaft', 'konto')
+    search_fields = ('lieferant', 'iban', 'referenz')
+    readonly_fields = ('fehlermeldung',)
+    list_editable = ('status',)
+
+    fieldsets = (
+        ('KI-Scanner', {
+            'fields': ('beleg_scan', 'fehlermeldung')
+        }),
+        ('Buchhaltung & Zuweisung', {
+            'fields': ('status', 'liegenschaft', 'einheit', 'konto')
+        }),
+        ('Rechnungsdetails (Auto-Fill durch KI)', {
+            'fields': ('lieferant', 'datum', 'faellig_am', 'betrag', 'iban', 'referenz')
+        }),
+    )
+
+# ==========================================
+# DEBITOREN & MIETEINNAHMEN
+# ==========================================
+
+@admin.register(Zahlungseingang)
+class ZahlungseingangAdmin(ModelAdmin):
+    list_display = ('vertrag', 'buchungs_monat_format', 'datum_eingang', 'betrag', 'konto', 'liegenschaft')
+    list_filter = ('liegenschaft', 'buchungs_monat', 'konto')
+    search_fields = ('vertrag__mieter__nachname', 'vertrag__mieter__vorname', 'bemerkung')
+    date_hierarchy = 'datum_eingang'
+
+    fieldsets = (
+        ('Zuweisung', {
+            'fields': ('vertrag', 'buchungs_monat', 'konto')
+        }),
+        ('Zahlungsdetails', {
+            'fields': ('datum_eingang', 'betrag', 'bemerkung')
+        }),
+    )
+
+    def buchungs_monat_format(self, obj):
+        return obj.buchungs_monat.strftime('%m/%Y') if obj.buchungs_monat else "-"
+    buchungs_monat_format.short_description = "Für Monat"
+
+# ==========================================
+# ERFOLGSRECHNUNG & AUSWERTUNGEN
+# ==========================================
+
+@admin.register(Jahresabschluss)
+class JahresabschlussAdmin(ModelAdmin):
+    list_display = ('liegenschaft', 'jahr')
+    list_filter = ('liegenschaft', 'jahr')
+
+    fieldsets = (
+        ('Basisdaten', {'fields': ('liegenschaft', 'jahr', 'notizen')}),
+        ('Finanzbericht (Live kalkuliert)', {'fields': ('bericht_anzeige',)}),
+    )
+    readonly_fields = ('bericht_anzeige',)
+
+    def bericht_anzeige(self, obj):
+        if not obj.pk:
+            return "Bitte wähle eine Liegenschaft und ein Jahr und klicke auf Speichern, um den Bericht zu laden."
+
+        einnahmen = Zahlungseingang.objects.filter(
+            liegenschaft=obj.liegenschaft,
+            datum_eingang__year=obj.jahr
+        ).values('konto__nummer', 'konto__bezeichnung').annotate(total=Sum('betrag')).order_by('konto__nummer')
+
+        total_ertrag = sum(e['total'] for e in einnahmen if e['total'])
+
+        ausgaben = KreditorenRechnung.objects.filter(
+            liegenschaft=obj.liegenschaft,
+            datum__year=obj.jahr,
+            status__in=['freigegeben', 'bezahlt']
+        ).values('konto__nummer', 'konto__bezeichnung').annotate(total=Sum('betrag')).order_by('konto__nummer')
+
+        total_aufwand = sum(a['total'] for a in ausgaben if a['total'])
+
+        gewinn = total_ertrag - total_aufwand
+        color_gewinn = "text-emerald-600" if gewinn >= 0 else "text-red-600"
+
+        html = f"<div class='max-w-3xl'><h3 class='text-xl font-bold mb-4'>Erfolgsrechnung {obj.jahr}</h3>"
+
+        html += "<h4 class='font-bold text-emerald-700 mt-4 mb-2'>Erträge (Einnahmen)</h4>"
+        html += "<table class='w-full text-sm border-collapse mb-4'><tbody>"
+        for e in einnahmen:
+            konto_nr = e['konto__nummer'] if e['konto__nummer'] else '---'
+            konto_bez = e['konto__bezeichnung'] if e['konto__bezeichnung'] else 'Ohne Konto'
+            html += f"<tr class='border-b border-gray-200 dark:border-gray-700'><td class='py-2 text-gray-500 w-24'>{konto_nr}</td><td class='py-2'>{konto_bez}</td><td class='py-2 text-right'>CHF {e['total']:,.2f}</td></tr>"
+        html += f"<tr class='font-bold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-400'><td colspan='2' class='py-2 px-2 rounded-l'>Total Ertrag</td><td class='py-2 px-2 text-right rounded-r'>CHF {total_ertrag:,.2f}</td></tr>"
+        html += "</tbody></table>"
+
+        html += "<h4 class='font-bold text-red-700 mt-6 mb-2'>Aufwand (Ausgaben)</h4>"
+        html += "<table class='w-full text-sm border-collapse mb-4'><tbody>"
+        for a in ausgaben:
+            konto_nr = a['konto__nummer'] if a['konto__nummer'] else '---'
+            konto_bez = a['konto__bezeichnung'] if a['konto__bezeichnung'] else 'Ohne Konto'
+            html += f"<tr class='border-b border-gray-200 dark:border-gray-700'><td class='py-2 text-gray-500 w-24'>{konto_nr}</td><td class='py-2'>{konto_bez}</td><td class='py-2 text-right'>CHF {a['total']:,.2f}</td></tr>"
+        html += f"<tr class='font-bold bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-400'><td colspan='2' class='py-2 px-2 rounded-l'>Total Aufwand</td><td class='py-2 px-2 text-right rounded-r'>CHF {total_aufwand:,.2f}</td></tr>"
+        html += "</tbody></table>"
+
+        html += f"<div class='mt-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg flex justify-between items-center text-lg font-bold'><span>Liegenschaftserfolg (Gewinn)</span><span class='{color_gewinn}'>CHF {gewinn:,.2f}</span></div></div>"
+
+        return mark_safe(html)
+
+    bericht_anzeige.short_description = "Auswertung"
+
+
+# ==========================================
+# MIETZINS-KONTROLLE (DEBITOREN SCANNER)
+# ==========================================
+
+@admin.register(MietzinsKontrolle)
+class MietzinsKontrolleAdmin(ModelAdmin):
+    list_display = ('liegenschaft', 'monat_format')
+    list_filter = ('liegenschaft',)
+
+    fieldsets = (
+        ('Prüfung', {'fields': ('liegenschaft', 'monat', 'notizen')}),
+        ('Scanner-Ergebnis (Live)', {'fields': ('kontroll_bericht',)}),
+    )
+    readonly_fields = ('kontroll_bericht',)
+
+    def monat_format(self, obj):
+        return obj.monat.strftime('%m/%Y') if obj.monat else "-"
+    monat_format.short_description = "Geprüfter Monat"
+
+    def kontroll_bericht(self, obj):
+        if not obj.pk:
+            return "Bitte wähle eine Liegenschaft und einen Monat und klicke auf Speichern, um den Scanner zu starten."
+
+        # Holen aller aktiven Verträge für diese Liegenschaft
+        vertraege = Mietvertrag.objects.filter(
+            einheit__liegenschaft=obj.liegenschaft,
+            aktiv=True,
+            beginn__lte=obj.monat
+        )
+
+        html = f"<div class='max-w-4xl'><h3 class='text-xl font-bold mb-4'>Soll/Ist Abgleich für {obj.monat.strftime('%m/%Y')}</h3>"
+        html += "<table class='w-full text-sm border-collapse mb-4'><thead><tr class='bg-gray-100 dark:bg-gray-800 text-left'><th class='p-2'>Einheit</th><th class='p-2'>Mieter</th><th class='p-2 text-right'>Soll (Miete+NK)</th><th class='p-2 text-right'>Ist (Bezahlt)</th><th class='p-2 text-right'>Offen</th><th class='p-2'>Status</th></tr></thead><tbody>"
+
+        total_soll = Decimal('0.00')
+        total_ist = Decimal('0.00')
+
+        for vertrag in vertraege:
+            # 1. Was der Mieter zahlen muss
+            soll = vertrag.netto_mietzins + vertrag.nebenkosten
+            total_soll += soll
+
+            # 2. Was der Mieter wirklich gezahlt hat
+            zahlungen = Zahlungseingang.objects.filter(
+                vertrag=vertrag,
+                buchungs_monat=obj.monat
+            ).aggregate(total=Sum('betrag'))['total'] or Decimal('0.00')
+
+            total_ist += zahlungen
+
+            # 3. Differenz
+            diff = soll - zahlungen
+
+            # 4. Ampel
+            if diff <= 0:
+                status = "<span class='text-emerald-600 font-bold'>✅ Bezahlt</span>"
+                row_bg = ""
+            elif zahlungen == 0:
+                status = "<span class='text-red-600 font-bold'>❌ Keine Zahlung</span>"
+                row_bg = "bg-red-50 dark:bg-red-900/10"
+            else:
+                status = "<span class='text-amber-600 font-bold'>⚠️ Teilzahlung</span>"
+                row_bg = "bg-amber-50 dark:bg-amber-900/10"
+
+            html += f"<tr class='border-b {row_bg} border-gray-200 dark:border-gray-700'><td class='p-2'>{vertrag.einheit.bezeichnung}</td><td class='p-2 font-medium'>{vertrag.mieter}</td><td class='p-2 text-right'>CHF {soll:,.2f}</td><td class='p-2 text-right'>CHF {zahlungen:,.2f}</td><td class='p-2 text-right font-bold'>CHF {diff:,.2f}</td><td class='p-2'>{status}</td></tr>"
+
+        # Abschlusszeile
+        html += f"<tr class='font-bold bg-gray-200 dark:bg-gray-700'><td colspan='2' class='p-2'>GESAMT</td><td class='p-2 text-right'>CHF {total_soll:,.2f}</td><td class='p-2 text-right'>CHF {total_ist:,.2f}</td><td class='p-2 text-right text-red-600'>CHF {(total_soll-total_ist):,.2f}</td><td></td></tr>"
+        html += "</tbody></table></div>"
+
+        return mark_safe(html)
+
+    kontroll_bericht.short_description = "Scanner Ergebnis"
