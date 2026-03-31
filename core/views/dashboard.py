@@ -1,3 +1,7 @@
+from portfolio.models import Einheit
+from rentals.models import Mietvertrag, Leerstand
+from tickets.models import SchadenMeldung
+
 from django.shortcuts import render
 from django.db.models import Sum, Count, Q
 from django.contrib.admin.views.decorators import staff_member_required
@@ -5,7 +9,6 @@ import datetime
 from decimal import Decimal
 
 # Modelle importieren
-from core.models import Einheit, Mietvertrag, SchadenMeldung, Liegenschaft
 
 @staff_member_required
 def dashboard_view(request):

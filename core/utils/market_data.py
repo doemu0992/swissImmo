@@ -118,7 +118,7 @@ def update_verwaltung_rates():
     Diese Funktion wird vom Admin-Button aufgerufen.
     """
     try:
-        from core.models import Verwaltung
+        from crm.models import Verwaltung
     except ImportError:
         return "Systemfehler (Import)", []
 

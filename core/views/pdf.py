@@ -1,3 +1,8 @@
+from crm.models import Verwaltung, Mandant, Mieter
+from portfolio.models import Liegenschaft
+from rentals.models import Mietvertrag, Leerstand
+from finance.models import AbrechnungsPeriode
+
 import os
 import io
 import tempfile
@@ -20,7 +25,6 @@ from reportlab.lib.units import mm
 from reportlab.lib import colors
 import reportlab.lib.utils
 
-from core.models import AbrechnungsPeriode, Mietvertrag, Verwaltung
 
 try:
     from swiss_qr_bill import QRBill, Bill, Address

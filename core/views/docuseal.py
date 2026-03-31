@@ -1,3 +1,6 @@
+from crm.models import Verwaltung, Mieter
+from rentals.models import Mietvertrag, Dokument
+
 import os
 import io
 import base64
@@ -21,7 +24,6 @@ from django.contrib.staticfiles import finders
 from xhtml2pdf import pisa
 
 # Models importieren
-from core.models import Mietvertrag, Dokument
 
 logger = logging.getLogger(__name__)
 

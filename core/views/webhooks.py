@@ -1,7 +1,8 @@
+from tickets.models import SchadenMeldung, TicketNachricht
+
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from core.models import SchadenMeldung, TicketNachricht
 import re
 
 @csrf_exempt

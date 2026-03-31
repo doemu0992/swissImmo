@@ -1,3 +1,6 @@
+from crm.models import Verwaltung, Mieter
+from tickets.models import SchadenMeldung
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.urls import reverse
@@ -7,7 +10,6 @@ from django.conf import settings
 from django.core.mail import send_mail
 
 # Imports
-from core.models import SchadenMeldung, TicketNachricht
 from core.forms import SchadenForm, NachrichtForm
 
 # --- 1. TICKET ERSTELLEN (Bleibt gleich, nur zur Vollständigkeit) ---

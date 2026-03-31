@@ -21,8 +21,7 @@ load_dotenv(env_path)
 
 def badge_ticket_count(request):
     """Zählt ungelesene Tickets + neue Nachrichten für Sidebar-Badge"""
-    # Import INNERHALB der Funktion, um Zirkelbezüge beim Start zu vermeiden
-    from core.models import SchadenMeldung, TicketNachricht
+    from tickets.models import SchadenMeldung, TicketNachricht
 
     try:
         # 1. Ungelesene Tickets
@@ -46,7 +45,6 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['www.immoswiss.app', 'swissimmo.pythonanywhere.com', '127.0.0.1', 'localhost']
 CSRF_TRUSTED_ORIGINS = ['https://*.pythonanywhere.com', 'https://www.immoswiss.app']
 
-# --- WICHTIG FÜR PYTHONANYWHERE (FIX FÜR CSRF FEHLER) ---
 # Sagt Django, dass es HTTPS ist, wenn der Proxy (PythonAnywhere) das sagt.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -61,8 +59,13 @@ INSTALLED_APPS = [
     "unfold.contrib.forms",
     "unfold.contrib.import_export",
 
-    # --- Deine App ---
-    'core',
+    # --- Deine Apps (NEUE ARCHITEKTUR) ---
+    'core',        # utils & views
+    'crm',         # Personendaten & Firmen
+    'portfolio',   # Liegenschaften & Einheiten
+    'rentals',     # Verträge & Leerstände
+    'finance',     # Rechnungen & Buchhaltung
+    'tickets',     # Schadensmeldungen
 
     # --- Standard Django ---
     'django.contrib.admin',
@@ -118,7 +121,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-        # --- FIX: Gibt der Datenbank 30 Sekunden Zeit für die KI ---
+        # Gibt der Datenbank 30 Sekunden Zeit für die KI
         'OPTIONS': {
             'timeout': 30,
         }
@@ -154,34 +157,36 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CKEDITOR_CONFIGS = {'default': {'toolbar': 'full', 'height': 300, 'width': '100%',},}
 
 # ==========================================
-# 9. EXTERNE DIENSTE & E-MAIL (HOSTSTAR)
+# 9. EXTERNE DIENSTE & E-MAIL
 # ==========================================
 
-# --- NEU: Gemini API Key aus .env laden ---
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-
 DOCUSEAL_API_KEY = os.getenv('DOCUSEAL_API_KEY')
 DOCUSEAL_URL = "https://api.docuseal.com"
 
-# --- SMTP KONFIGURATION (HOSTSTAR) ---
+# SMTP KONFIGURATION (HOSTSTAR)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'lx37.hoststar.hosting'       # Hoststar Server
-EMAIL_PORT = 587                      # TLS Port
-EMAIL_USE_TLS = True                  # Verschlüsselung aktivieren
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')      # Lädt info@immoswiss.app aus .env
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD') # Lädt Passwort aus .env
-
-# Standard Absender
+EMAIL_HOST = 'lx37.hoststar.hosting'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = f'ImmoSwiss Verwaltung <{os.getenv("EMAIL_HOST_USER", "info@immoswiss.app")}>'
 
 # ==========================================
 # 10. MODERNES DESIGN KONFIGURATION (UNFOLD)
 # ==========================================
-# ... (Hier bleibt alles exakt gleich, wie du es hattest) ...
+
 UNFOLD = {
     "SITE_TITLE": "SwissImmo Verwaltung",
     "SITE_HEADER": "SwissImmo",
-    "SITE_URL": "/admin/dashboard/",
+    "SITE_URL": reverse_lazy("admin_dashboard"),
+    "SITE_ICON": "real_estate_agent",
+
+    # --- NEU: FAIRWALTER DESIGN STYLE SHEET ---
+    "STYLES": [
+        lambda request: static("css/fairwalter_theme.css"),
+    ],
 
     "COLORS": {
         "primary": {
@@ -203,50 +208,56 @@ UNFOLD = {
         "show_all_applications": False,
         "navigation": [
             {
-                "title": "Übersicht",
+                "title": "Schreibtisch",
                 "separator": True,
                 "items": [
-                    {"title": "Cockpit 🚀", "icon": "dashboard", "link": "/admin/dashboard/"},
-                ],
-            },
-            {
-                "title": "Verwaltung",
-                "separator": True,
-                "items": [
-                    {"title": "Liegenschaften", "icon": "domain", "link": "/admin/core/liegenschaft/"},
-                    {"title": "Einheiten", "icon": "meeting_room", "link": "/admin/core/einheit/"},
-                    {"title": "Mieter", "icon": "people", "link": "/admin/core/mieter/"},
-                    {"title": "Verträge", "icon": "description", "link": "/admin/core/mietvertrag/"},
-                ],
-            },
-            {
-                "title": "Finanzen & Service",
-                "separator": True,
-                "items": [
-                    {"title": "Mieteinnahmen", "icon": "savings", "link": "/admin/core/zahlungseingang/"},
-                    {"title": "Mietzins-Kontrolle", "icon": "fact_check", "link": "/admin/core/mietzinskontrolle/"},
-                    {"title": "Kreditoren", "icon": "account_balance_wallet", "link": "/admin/core/kreditorenrechnung/"},
-                    {"title": "Nebenkosten", "icon": "receipt_long", "link": "/admin/core/abrechnungsperiode/"},
-
+                    {"title": "Cockpit 🚀", "icon": "dashboard", "link": reverse_lazy("admin_dashboard")},
                     {
                         "title": "Tickets & Schäden",
                         "icon": "build",
-                        "link": "/admin/core/schadenmeldung/",
+                        "link": reverse_lazy("admin:tickets_schadenmeldung_changelist"),
                         "badge": badge_ticket_count,
                     },
-
-                    {"title": "Handwerker", "icon": "engineering", "link": "/admin/core/handwerker/"},
-                    {"title": "Erfolgsrechnung", "icon": "analytics", "link": "/admin/core/jahresabschluss/"},
+                ],
+            },
+            {
+                "title": "Portfolio & Vermietung",
+                "separator": True,
+                "items": [
+                    {"title": "Liegenschaften", "icon": "domain", "link": reverse_lazy("admin:portfolio_liegenschaft_changelist")},
+                    {"title": "Mietobjekte", "icon": "meeting_room", "link": reverse_lazy("admin:portfolio_einheit_changelist")},
+                    {"title": "Mietverträge", "icon": "contract", "link": reverse_lazy("admin:rentals_mietvertrag_changelist")},
+                    {"title": "Mietzinsanpassungen", "icon": "trending_up", "link": reverse_lazy("admin:rentals_mietzinsanpassung_changelist")},
+                    {"title": "Leerstände", "icon": "key_off", "link": reverse_lazy("admin:rentals_leerstand_changelist")},
+                ],
+            },
+            {
+                "title": "CRM & Kontakte",
+                "separator": True,
+                "items": [
+                    {"title": "Mieter", "icon": "groups", "link": reverse_lazy("admin:crm_mieter_changelist")},
+                    {"title": "Handwerker", "icon": "engineering", "link": reverse_lazy("admin:crm_handwerker_changelist")},
+                    {"title": "Mandanten (Eigentümer)", "icon": "business_center", "link": reverse_lazy("admin:crm_mandant_changelist")},
+                ],
+            },
+            {
+                "title": "Finanzen",
+                "separator": True,
+                "items": [
+                    {"title": "Mieteinnahmen", "icon": "savings", "link": reverse_lazy("admin:finance_zahlungseingang_changelist")},
+                    {"title": "Mietzins-Kontrolle", "icon": "fact_check", "link": reverse_lazy("admin:finance_mietzinskontrolle_changelist")},
+                    {"title": "Kreditoren", "icon": "account_balance_wallet", "link": reverse_lazy("admin:finance_kreditorenrechnung_changelist")},
+                    {"title": "Nebenkosten", "icon": "receipt_long", "link": reverse_lazy("admin:finance_abrechnungsperiode_changelist")},
+                    {"title": "Erfolgsrechnung", "icon": "analytics", "link": reverse_lazy("admin:finance_jahresabschluss_changelist")},
                 ],
             },
             {
                 "title": "System",
                 "separator": True,
                 "items": [
-                    {"title": "Kontenplan", "icon": "account_balance", "link": "/admin/core/buchungskonto/"},
-                    {"title": "Einstellungen (Verwaltung)", "icon": "settings", "link": "/admin/core/verwaltung/"},
-                    {"title": "Mandanten", "icon": "admin_panel_settings", "link": "/admin/core/mandant/"},
-                    {"title": "Benutzer & Rechte", "icon": "lock", "link": "/admin/auth/user/"},
+                    {"title": "Kontenplan", "icon": "account_balance", "link": reverse_lazy("admin:finance_buchungskonto_changelist")},
+                    {"title": "Eigene Verwaltung", "icon": "settings", "link": reverse_lazy("admin:crm_verwaltung_changelist")},
+                    {"title": "Benutzer & Rechte", "icon": "lock", "link": reverse_lazy("admin:auth_user_changelist")},
                 ],
             },
         ],

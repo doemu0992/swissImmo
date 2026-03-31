@@ -113,7 +113,7 @@
                             <div style="font-size:12px; color:#95a5a6;">{{ t.liegenschaft.strasse }}</div>
                         </td>
                         <td><span class="badge bg-{{ t.prioritaet }}">{{ t.prioritaet }}</span></td>
-                        <td style="text-align:right;"><a href="{% url 'admin:core_schadenmeldung_change' t.id %}" class="action-link">➜</a></td>
+                        <td style="text-align:right;"><a href="{% url 'admin:tickets_schadenmeldung_change' t.id %}" class="action-link">➜</a></td>
                     </tr>
                     {% endfor %}
                 </table>
@@ -131,7 +131,7 @@
                     {% for u in leerstaende_liste %}
                     <tr>
                         <td>{{ u.bezeichnung }}<br><small style="color:#999">{{ u.liegenschaft.strasse }}</small></td>
-                        <td style="text-align:right;"><a href="{% url 'admin:core_einheit_change' u.id %}" class="action-link">Vermieten</a></td>
+                        <td style="text-align:right;"><a href="{% url 'admin:portfolio_einheit_change' u.id %}" class="action-link">Vermieten</a></td>
                     </tr>
                     {% endfor %}
                 </table>

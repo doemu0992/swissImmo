@@ -61,7 +61,7 @@ def update_verwaltung_rates():
     """
     Führt das Update auf dem Verwaltung-Objekt aus.
     """
-    from core.models import Verwaltung
+    from crm.models import Verwaltung
 
     data, errors = fetch_market_rates()
     verwaltung = Verwaltung.objects.first()

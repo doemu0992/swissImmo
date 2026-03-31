@@ -1,10 +1,14 @@
+from crm.models import Verwaltung
+from portfolio.models import Einheit
+from rentals.models import Mietvertrag, Leerstand
+from tickets.models import SchadenMeldung
+
 from django.db.models import Sum, Count, Q
 from django.utils import timezone
 from decimal import Decimal
 import datetime
 
 # Modelle importieren
-from core.models import Einheit, SchadenMeldung, Mietvertrag, Verwaltung
 from core.mietrecht_logic import berechne_mietpotenzial
 
 def dashboard_callback(request, context):

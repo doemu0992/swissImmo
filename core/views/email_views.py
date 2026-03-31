@@ -1,3 +1,8 @@
+from crm.models import Verwaltung, Mieter
+from portfolio.models import Liegenschaft, Einheit
+from rentals.models import Mietvertrag, Leerstand
+from finance.models import AbrechnungsPeriode
+
 import io
 import datetime
 from django.core.mail import EmailMessage
@@ -13,7 +18,6 @@ from reportlab.lib.units import mm
 from reportlab.lib import colors
 
 # Eigene Imports
-from core.models import AbrechnungsPeriode, Verwaltung, Mietvertrag
 from core.utils.billing import berechne_abrechnung
 from core.utils.qr_code import draw_qr_bill
 

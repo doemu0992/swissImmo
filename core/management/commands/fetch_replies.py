@@ -1,3 +1,6 @@
+from crm.models import Verwaltung
+from tickets.models import SchadenMeldung, TicketNachricht
+
 import imaplib
 import email
 import re
@@ -8,7 +11,6 @@ from email.header import decode_header
 from django.core.management.base import BaseCommand
 from django.db import connections
 from django.utils.html import strip_tags
-from core.models import SchadenMeldung, TicketNachricht
 
 class Command(BaseCommand):
     help = 'Holt Antworten von reply@immoswiss.app ab (Brechstangen-Methode)'

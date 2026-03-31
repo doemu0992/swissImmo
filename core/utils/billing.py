@@ -1,7 +1,10 @@
+from portfolio.models import Liegenschaft
+from rentals.models import Leerstand
+from finance.models import AbrechnungsPeriode
+
 import datetime
 from decimal import Decimal
 from django.db.models import Sum, Q
-from core.models import AbrechnungsPeriode, Einheit, Mietvertrag, NebenkostenBeleg
 
 def berechne_abrechnung(periode_id):
     """

@@ -16,7 +16,7 @@ from django.conf import settings
 
 # --- UNFOLD IMPORT ---
 from unfold.admin import ModelAdmin, TabularInline, StackedInline
-from unfold.decorators import action
+from unfold.decorators import action, display
 
 # --- EIGENE IMPORTS ---
 from core.gwr import get_egid_from_address, get_units_from_bfs
@@ -25,16 +25,14 @@ from core.utils.billing import berechne_abrechnung
 from core.utils.email_service import send_handyman_notification
 from core.mietrecht_logic import berechne_mietpotenzial
 
-from .models import (
-    Liegenschaft, Einheit, Mieter, Mietvertrag,
-    Handwerker, SchadenMeldung, Schluessel, SchluesselAusgabe,
-    Dokument, MietzinsAnpassung, Geraet, Unterhalt,
-    Zaehler, ZaehlerStand, AbrechnungsPeriode, NebenkostenBeleg,
-    Verwaltung, Mandant, Leerstand, TicketNachricht,
-    HandwerkerAuftrag,
-    # --- SAUBERER IMPORT FÜR BUCHHALTUNG ---
-    Buchungskonto, KreditorenRechnung, Zahlungseingang, Jahresabschluss, MietzinsKontrolle
-)
+# ==========================================
+# --- NEUE MODELL IMPORTS ---
+# ==========================================
+from crm.models import Verwaltung, Mandant, Mieter, Handwerker
+from portfolio.models import Liegenschaft, Einheit, Zaehler, ZaehlerStand, Geraet, Unterhalt, Schluessel, SchluesselAusgabe
+from rentals.models import Mietvertrag, MietzinsAnpassung, Leerstand, Dokument
+from tickets.models import SchadenMeldung, HandwerkerAuftrag, TicketNachricht
+from finance.models import Buchungskonto, KreditorenRechnung, Zahlungseingang, Jahresabschluss, MietzinsKontrolle, AbrechnungsPeriode, NebenkostenBeleg
 
 # ==========================================
 # 0. WIDGET FÜR CC-FELD
@@ -84,7 +82,7 @@ class EinheitInline(TabularInline):
     readonly_fields = ('detail_link',)
     tab = True
     def detail_link(self, obj):
-        return format_html('<a href="{}" target="_blank" class="text-blue-600 hover:text-blue-900">✏️</a>', reverse("admin:core_einheit_change", args=[obj.id])) if obj.id else "-"
+        return format_html('<a href="{}" target="_blank" class="text-blue-600 hover:text-blue-900">✏️</a>', reverse("admin:portfolio_einheit_change", args=[obj.id])) if obj.id else "-"
 
 class MietvertragInline(TabularInline):
     model = Mietvertrag; extra = 0
@@ -292,16 +290,22 @@ class LiegenschaftAdmin(ModelAdmin):
 
 @admin.register(Einheit)
 class EinheitAdmin(ModelAdmin):
-    list_display = ('bezeichnung', 'liegenschaft', 'typ', 'zimmer', 'status_text')
+    list_display = ('bezeichnung', 'liegenschaft', 'typ', 'zimmer', 'get_status_badge') # ANGEPASST
     list_filter = ('liegenschaft', 'typ'); list_filter_submit = True
     inlines = [MietvertragInline, ZaehlerInline, GeraetInline, UnterhaltEinheitInline, SchadenEinheitInline, DokumentEinheitInline]
     fieldsets = (('Basis', {'fields': ('liegenschaft', 'bezeichnung', 'typ', 'ewid')}), ('Details', {'fields': (('etage', 'zimmer'), 'flaeche_m2', 'wertquote')}), ('Finanzen', {'fields': ('nettomiete_aktuell', 'nebenkosten_aktuell', 'nk_abrechnungsart')}))
 
-    def status_text(self, obj): return format_html('<span class="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded">Vermietet</span>') if obj.aktiver_vertrag else format_html('<span class="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded">Leerstand</span>')
+    # --- NEU: FAIRWALTER BADGE FÜR EINHEIT ---
+    @display(description="Status", label=True)
+    def get_status_badge(self, obj):
+        if obj.aktiver_vertrag:
+            return "Vermietet", "success"
+        return "Leerstand", "danger"
 
 @admin.register(Mietvertrag)
 class MietvertragAdmin(ModelAdmin):
-    list_display = ('mieter', 'einheit', 'beginn', 'netto_mietzins', 'status_badge_display', 'potenzial_preview', 'aktiv', 'pdf_vorschau_btn', 'qr_rechnung_btn', 'docuseal_action_btn', 'calc_btn')
+    # ANGEPASST: get_status_badge eingefügt, alte Methode entfernt
+    list_display = ('mieter', 'einheit', 'beginn', 'netto_mietzins', 'get_status_badge', 'potenzial_preview', 'aktiv', 'pdf_vorschau_btn', 'qr_rechnung_btn', 'docuseal_action_btn', 'calc_btn')
     list_filter = ('sign_status', 'aktiv'); list_filter_submit = True
     inlines = [DokumentVertragInline]
     fieldsets = (('Parteien', {'fields': ('mieter', 'einheit')}), ('Vertrag', {'fields': ('beginn', 'ende', 'aktiv', 'sign_status')}), ('Konditionen', {'fields': ('netto_mietzins', 'nebenkosten', 'kautions_betrag', 'basis_referenzzinssatz', 'basis_lik_punkte')}), ('DocuSeal', {'fields': ('pdf_datei',)}))
@@ -314,10 +318,16 @@ class MietvertragAdmin(ModelAdmin):
                 Dokument.objects.create(titel=f"Mietvertrag {obj.mieter}", kategorie='vertrag', vertrag=obj, mieter=obj.mieter, einheit=obj.einheit, datei=obj.pdf_datei)
                 messages.success(request, "✅ Vertrag archiviert.")
 
-    def status_badge_display(self, obj):
-        colors = {'offen': 'bg-gray-100', 'gesendet': 'bg-yellow-50', 'unterzeichnet': 'bg-green-50'}
-        return format_html('<span class="px-2 py-1 rounded text-xs font-bold {}">{}</span>', colors.get(obj.sign_status, 'bg-gray-100'), obj.get_sign_status_display())
-    status_badge_display.short_description = "Status"
+    # --- NEU: FAIRWALTER BADGE FÜR MIETVERTRAG ---
+    @display(description="Signatur Status", label=True)
+    def get_status_badge(self, obj):
+        if obj.sign_status == 'offen':
+            return "Offen", "info"
+        elif obj.sign_status == 'gesendet':
+            return "Gesendet", "warning"
+        elif obj.sign_status == 'unterzeichnet':
+            return "Unterzeichnet", "success"
+        return obj.sign_status, "info"
 
     def potenzial_preview(self, obj):
         v = Verwaltung.objects.first()
@@ -358,12 +368,38 @@ class MietvertragAdmin(ModelAdmin):
 
 @admin.register(SchadenMeldung)
 class SchadenMeldungAdmin(ModelAdmin):
-    list_display = ('id_status_badge', 'titel', 'status', 'prioritaet', 'handwerker_count_preview', 'erstellt_am')
+    # ANGEPASST: Badges eingefügt
+    list_display = ('id_status_badge', 'titel', 'get_status_badge', 'get_prioritaet_badge', 'handwerker_count_preview', 'erstellt_am')
     list_display_links = ('id_status_badge', 'titel')
     list_filter = ('status', 'prioritaet'); list_filter_submit = True
     inlines = [HandwerkerAuftragInline, TicketHistoryInline, TicketInputInline]
     fieldsets = (('Status', {'fields': ('status', 'prioritaet', 'gelesen')}), ('Meldung', {'fields': ('titel', 'beschreibung', 'foto')}), ('Kontakt Melder', {'fields': ('gemeldet_von', 'email_melder', 'tel_melder', 'betroffene_einheit')}))
     readonly_fields = ('erstellt_am',)
+
+    # --- NEU: FAIRWALTER BADGE FÜR STATUS (TICKET) ---
+    @display(description="Status", label=True)
+    def get_status_badge(self, obj):
+        # Passe die Strings an die Choices deines Models an, falls sie anders heissen.
+        if obj.status == 'neu':
+            return "Neu", "danger"
+        elif obj.status == 'in_bearbeitung':
+            return "In Bearbeitung", "warning"
+        elif obj.status == 'erledigt':
+            return "Erledigt", "success"
+        elif obj.status == 'abgelehnt':
+            return "Abgelehnt", "info"
+        return obj.status, "info"
+
+    # --- NEU: FAIRWALTER BADGE FÜR PRIO (TICKET) ---
+    @display(description="Prio", label=True)
+    def get_prioritaet_badge(self, obj):
+        if obj.prioritaet == 'hoch':
+            return "Hoch", "danger"
+        elif obj.prioritaet == 'mittel':
+            return "Mittel", "warning"
+        elif obj.prioritaet == 'tief':
+            return "Tief", "info"
+        return obj.prioritaet, "success"
 
     def id_status_badge(self, obj):
         ungelesene = obj.nachrichten.filter(gelesen=False).exclude(typ='system').exists()
@@ -506,15 +542,27 @@ class BuchungskontoAdmin(ModelAdmin):
                 count += 1
 
         messages.success(request, f"✅ {count} Standard-Konten wurden erfolgreich angelegt!")
-        return redirect(request.META.get('HTTP_REFERER', '/admin/core/buchungskonto/'))
+        return redirect(request.META.get('HTTP_REFERER', '/admin/finance/buchungskonto/'))
 
 @admin.register(KreditorenRechnung)
 class KreditorenRechnungAdmin(ModelAdmin):
-    list_display = ('lieferant', 'datum', 'betrag', 'status', 'liegenschaft', 'einheit')
+    # ANGEPASST: Badge eingefügt
+    list_display = ('lieferant', 'datum', 'betrag', 'get_status_badge', 'liegenschaft', 'einheit')
     list_filter = ('status', 'liegenschaft', 'konto')
     search_fields = ('lieferant', 'iban', 'referenz')
     readonly_fields = ('fehlermeldung',)
-    list_editable = ('status',)
+    list_editable = ('status',) # Vorsicht: In Unfold klappt list_editable nicht immer perfekt mit Custom Badges zusammen, lass es testweise drin!
+
+    # --- NEU: FAIRWALTER BADGE FÜR KREDITOREN ---
+    @display(description="Status", label=True)
+    def get_status_badge(self, obj):
+        if obj.status == 'neu':
+            return "Neu / Scannen", "danger"
+        elif obj.status == 'freigegeben':
+            return "Freigegeben", "warning"
+        elif obj.status == 'bezahlt':
+            return "Bezahlt", "success"
+        return obj.status, "info"
 
     fieldsets = (
         ('KI-Scanner', {
@@ -615,7 +663,6 @@ class JahresabschlussAdmin(ModelAdmin):
 
     bericht_anzeige.short_description = "Auswertung"
 
-
 # ==========================================
 # MIETZINS-KONTROLLE (DEBITOREN SCANNER)
 # ==========================================
@@ -639,7 +686,6 @@ class MietzinsKontrolleAdmin(ModelAdmin):
         if not obj.pk:
             return "Bitte wähle eine Liegenschaft und einen Monat und klicke auf Speichern, um den Scanner zu starten."
 
-        # Holen aller aktiven Verträge für diese Liegenschaft
         vertraege = Mietvertrag.objects.filter(
             einheit__liegenschaft=obj.liegenschaft,
             aktiv=True,
@@ -653,22 +699,17 @@ class MietzinsKontrolleAdmin(ModelAdmin):
         total_ist = Decimal('0.00')
 
         for vertrag in vertraege:
-            # 1. Was der Mieter zahlen muss
             soll = vertrag.netto_mietzins + vertrag.nebenkosten
             total_soll += soll
 
-            # 2. Was der Mieter wirklich gezahlt hat
             zahlungen = Zahlungseingang.objects.filter(
                 vertrag=vertrag,
                 buchungs_monat=obj.monat
             ).aggregate(total=Sum('betrag'))['total'] or Decimal('0.00')
 
             total_ist += zahlungen
-
-            # 3. Differenz
             diff = soll - zahlungen
 
-            # 4. Ampel
             if diff <= 0:
                 status = "<span class='text-emerald-600 font-bold'>✅ Bezahlt</span>"
                 row_bg = ""
@@ -681,7 +722,6 @@ class MietzinsKontrolleAdmin(ModelAdmin):
 
             html += f"<tr class='border-b {row_bg} border-gray-200 dark:border-gray-700'><td class='p-2'>{vertrag.einheit.bezeichnung}</td><td class='p-2 font-medium'>{vertrag.mieter}</td><td class='p-2 text-right'>CHF {soll:,.2f}</td><td class='p-2 text-right'>CHF {zahlungen:,.2f}</td><td class='p-2 text-right font-bold'>CHF {diff:,.2f}</td><td class='p-2'>{status}</td></tr>"
 
-        # Abschlusszeile
         html += f"<tr class='font-bold bg-gray-200 dark:bg-gray-700'><td colspan='2' class='p-2'>GESAMT</td><td class='p-2 text-right'>CHF {total_soll:,.2f}</td><td class='p-2 text-right'>CHF {total_ist:,.2f}</td><td class='p-2 text-right text-red-600'>CHF {(total_soll-total_ist):,.2f}</td><td></td></tr>"
         html += "</tbody></table></div>"
 

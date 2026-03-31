@@ -1,7 +1,10 @@
+from crm.models import Mieter
+from portfolio.models import Liegenschaft, Einheit
+from finance.models import AbrechnungsPeriode
+
 import datetime
 from decimal import Decimal
 from django.db.models import Sum
-from core.models import AbrechnungsPeriode, Einheit, Mietvertrag, NebenkostenBeleg
 
 def berechne_abrechnung(periode_id):
     """

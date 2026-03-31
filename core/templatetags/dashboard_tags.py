@@ -1,8 +1,12 @@
 from django import template
 from django.db.models import Sum
-from core.models import Liegenschaft, Einheit, SchadenMeldung, Mietvertrag
 from django.utils import timezone
 import json
+
+# --- NEUE IMPORTS AUS DEN AUFGETEILTEN APPS ---
+from portfolio.models import Liegenschaft, Einheit
+from tickets.models import SchadenMeldung
+from rentals.models import Mietvertrag
 
 register = template.Library()
 

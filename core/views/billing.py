@@ -1,3 +1,7 @@
+from crm.models import Verwaltung, Mieter
+from portfolio.models import Liegenschaft
+from rentals.models import Mietvertrag
+
 import io
 import datetime
 from django.shortcuts import get_object_or_404
@@ -12,7 +16,6 @@ from reportlab.lib.units import mm
 from reportlab.lib import colors
 import reportlab.lib.utils
 
-from core.models import Mietvertrag, Verwaltung
 
 def format_iban(iban):
     """Formatiert IBAN in 4er Blöcke für bessere Lesbarkeit"""

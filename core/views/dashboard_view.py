@@ -1,3 +1,8 @@
+from crm.models import Verwaltung
+from portfolio.models import Einheit
+from rentals.models import Mietvertrag
+from tickets.models import SchadenMeldung
+
 from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Sum, Count, Q
@@ -6,7 +11,6 @@ from decimal import Decimal
 import json
 import datetime
 
-from core.models import Einheit, Mietvertrag, SchadenMeldung, Verwaltung
 
 @staff_member_required
 def custom_dashboard_view(request):

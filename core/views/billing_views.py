@@ -1,3 +1,8 @@
+from crm.models import Verwaltung, Mieter
+from portfolio.models import Liegenschaft
+from rentals.models import Leerstand
+from finance.models import AbrechnungsPeriode
+
 import io
 import datetime  # <--- DIESE ZEILE HAT GEFEHLT
 from django.shortcuts import get_object_or_404
@@ -8,7 +13,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 
-from core.models import AbrechnungsPeriode, Verwaltung
 from core.utils.billing import berechne_abrechnung
 from core.utils.qr_code import draw_qr_bill
 

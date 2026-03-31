@@ -1,5 +1,8 @@
 from django import forms
-from .models import SchadenMeldung, TicketNachricht, Liegenschaft
+
+# --- NEUE IMPORTS ---
+from tickets.models import SchadenMeldung, TicketNachricht
+from portfolio.models import Liegenschaft
 
 # ==============================================================================
 # 1. MIETZINSANPASSUNG

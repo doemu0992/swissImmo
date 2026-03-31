@@ -1,5 +1,6 @@
+from rentals.models import Mietvertrag, Dokument
+
 from django.core.management.base import BaseCommand
-from core.models import Mietvertrag, Dokument
 
 class Command(BaseCommand):
     help = 'Erstellt fehlende Dokumenten-Einträge für bereits unterschriebene Verträge'

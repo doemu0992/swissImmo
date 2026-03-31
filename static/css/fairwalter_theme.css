@@ -1,0 +1,102 @@
+/* static/css/fairwalter_theme.css */
+
+/* 1. Import der Inter-Schriftart - Der Goldstandard für moderne Schweizer Software */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Basis-Styling für den gesamten Body */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    background-color: #f9fafb !important; /* Sehr helles Grau für den Hintergrund erzeugt Tiefe zu den weißen Karten */
+    color: #111827 !important;
+}
+
+/* 2. Fieldsets als "Cards" (Karten-Design wie Fairwalter) */
+/* Das gruppiert deine Eingabefelder in schicken weißen Boxen */
+fieldset.module {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important; /* Subtile graue Trennlinie */
+    border-radius: 12px !important;       /* Abgerundete Ecken für den modernen Look */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+    padding: 1.5rem !important;
+    margin-bottom: 2rem !important;
+}
+
+/* Styling der Überschriften innerhalb der Karten */
+fieldset.module h2 {
+    background: transparent !important;
+    color: #111827 !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    text-transform: none !important;
+    letter-spacing: -0.025em !important;
+    padding-bottom: 0.75rem !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+    margin-bottom: 1.25rem !important;
+}
+
+/* 3. Inlines (Tabellen für verknüpfte Daten wie Einheiten oder Zähler) */
+.inline-group {
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    overflow: hidden; /* Damit die runden Ecken auch bei Tabellen funktionieren */
+    background: #ffffff !important;
+    margin-top: 2rem !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+.inline-group h2 {
+    background: #f9fafb !important;
+    padding: 1rem 1.25rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* 4. Tabellen-Header Styling (Listenansicht) */
+thead th {
+    background-color: #f9fafb !important;
+    color: #4b5563 !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em !important;
+    padding: 0.75rem 1rem !important;
+}
+
+/* 5. Formular-Eingabefelder (Inputs) */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+select,
+textarea {
+    border-radius: 8px !important; /* Weichere Ecken für Inputs */
+    border: 1px solid #d1d5db !important;
+    padding: 0.5rem 0.75rem !important;
+    background-color: #ffffff !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+/* Fokus-Effekt wie bei Fairwalter (Blauer Ring) */
+input:focus, select:focus, textarea:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
+    outline: none !important;
+}
+
+/* 6. Buttons im Admin-Bereich (Speichern etc.) */
+.submit-row {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    padding: 1rem !important;
+    margin-top: 2rem !important;
+}
+
+/* Styling für die Badges/Pillen in der Sidebar */
+.unfold-badge {
+    border-radius: 9999px !important;
+    font-weight: 600 !important;
+}

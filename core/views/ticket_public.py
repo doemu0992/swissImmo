@@ -1,3 +1,8 @@
+from crm.models import Verwaltung
+from portfolio.models import Liegenschaft, Einheit
+from rentals.models import Mietvertrag, Leerstand
+from tickets.models import SchadenMeldung
+
 import io
 import segno
 from django.shortcuts import render, get_object_or_404, redirect
@@ -9,7 +14,6 @@ from reportlab.lib.units import mm
 from reportlab.lib import colors
 from reportlab.lib.utils import ImageReader
 
-from core.models import Liegenschaft, SchadenMeldung, Einheit, Mietvertrag
 from core.utils.email_service import send_ticket_receipt
 
 # ==========================================

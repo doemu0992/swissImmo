@@ -1,5 +1,7 @@
+from crm.models import Verwaltung
+from rentals.models import Mietvertrag
+
 from django.core.management.base import BaseCommand
-from core.models import Mietvertrag, Verwaltung
 from core.mietrecht_logic import berechne_mietpotenzial
 import sys
 

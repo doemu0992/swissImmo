@@ -1,3 +1,7 @@
+from crm.models import Verwaltung
+from rentals.models import Mietvertrag, MietzinsAnpassung
+from core.utils import get_current_ref_zins, get_current_lik
+
 import io
 import datetime
 from decimal import Decimal, InvalidOperation
@@ -12,10 +16,8 @@ from reportlab.lib.units import mm
 from reportlab.lib import colors
 
 # Eigene Modelle
-from core.models import Mietvertrag, MietzinsAnpassung, Verwaltung
 
 # Hilfsfunktionen für Marktdaten
-from core.models import get_current_ref_zins, get_current_lik
 
 def parse_decimal(value):
     """Hilfsfunktion: Verwandelt Eingaben sicher in Decimal-Zahlen."""
