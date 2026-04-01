@@ -217,7 +217,7 @@ class ZahlungseingangAdmin(ModelAdmin):
 
 
 # ==========================================
-# 5. WEITERE BUCHHALTUNGS-ADMINS
+# 5. WEITERE BUCHHALTUNGS-ADMINS (SaaS Upgrade)
 # ==========================================
 
 @admin.register(Buchungskonto)
@@ -227,9 +227,18 @@ class BuchungskontoAdmin(ModelAdmin):
     list_filter = ('typ',)
     actions_list = ["load_standard_accounts"]
 
+    fieldsets = (
+        ('Konto Definition', {'fields': ('nummer', 'bezeichnung', 'typ')}),
+    )
+
     @display(description="Konto", ordering="nummer")
     def konto_profil(self, obj):
-        return format_html('<span class="font-mono text-gray-500 mr-2">{}</span> <span class="font-bold">{}</span>', getattr(obj, 'nummer', ''), getattr(obj, 'bezeichnung', ''))
+        return format_html(
+            '<div class="flex items-center gap-2">'
+            '<span class="px-2 py-1 bg-gray-100 text-gray-600 font-mono text-xs rounded border border-gray-200">{}</span>'
+            '<span class="font-bold text-gray-800">{}</span>'
+            '</div>', getattr(obj, 'nummer', ''), getattr(obj, 'bezeichnung', '')
+        )
 
     @display(description="Typ", label=True)
     def typ_badge(self, obj):
@@ -254,14 +263,50 @@ class BuchungskontoAdmin(ModelAdmin):
 
 @admin.register(Jahresabschluss)
 class JahresabschlussAdmin(ModelAdmin):
-    list_display = ('liegenschaft', 'jahr')
+    list_display = ('abschluss_profil', 'liegenschaft', 'schnell_aktionen')
     list_filter = ('liegenschaft', 'jahr')
-    fieldsets = (('Basisdaten', {'fields': ('liegenschaft', 'jahr', 'notizen')}), ('Bericht', {'fields': ('bericht_anzeige',)}))
+
+    fieldsets = (
+        ('Basisdaten', {'fields': ('liegenschaft', 'jahr', 'notizen')}),
+        ('Bericht', {'fields': ('bericht_anzeige',)})
+    )
     readonly_fields = ('bericht_anzeige',)
 
-    def bericht_anzeige(self, obj): return "Gespeichert." # (Logik bleibt intern im Model / vereinfacht für Ansicht)
+    @display(description="Erfolgsrechnung", ordering="-jahr")
+    def abschluss_profil(self, obj):
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 text-lg shadow-sm">📈</div>'
+            '<div><div class="font-bold text-gray-900">Jahresabschluss {}</div></div>'
+            '</div>', obj.jahr
+        )
+
+    def bericht_anzeige(self, obj):
+        return format_html('<div class="p-4 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">Bericht erfolgreich generiert und im System gespeichert.</div>')
+
+    @display(description="Aktionen")
+    def schnell_aktionen(self, obj):
+        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 px-2 py-1 rounded text-xs font-semibold">Details</a>', reverse('admin:finance_jahresabschluss_change', args=[obj.id]))
 
 @admin.register(MietzinsKontrolle)
 class MietzinsKontrolleAdmin(ModelAdmin):
-    list_display = ('liegenschaft', 'monat')
+    list_display = ('kontrolle_profil', 'liegenschaft', 'schnell_aktionen')
     list_filter = ('liegenschaft',)
+
+    fieldsets = (
+        ('Überprüfung', {'fields': ('liegenschaft', 'monat', 'notizen')}),
+    )
+
+    @display(description="Scanner-Lauf", ordering="-monat")
+    def kontrolle_profil(self, obj):
+        monat = obj.monat.strftime('%m/%Y') if obj.monat else "Unbekannt"
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 text-lg shadow-sm">🔍</div>'
+            '<div><div class="font-bold text-gray-900">Mietzins-Scanner</div><div class="text-xs text-gray-500">{}</div></div>'
+            '</div>', monat
+        )
+
+    @display(description="Aktionen")
+    def schnell_aktionen(self, obj):
+        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 px-2 py-1 rounded text-xs font-semibold">Bearbeiten</a>', reverse('admin:finance_mietzinskontrolle_change', args=[obj.id]))

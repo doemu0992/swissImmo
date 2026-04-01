@@ -33,39 +33,272 @@ for m in models_to_fix:
         pass
 
 # ==========================================
-# 1. INLINES (SaaS-Tabs)
+# 1. INLINES (SaaS-Tabs für Liegenschaft)
 # ==========================================
 
 class EinheitInline(TabularInline):
     model = Einheit
     extra = 0
     tab = True
-    fields = ('detail_link', 'bezeichnung', 'flaeche_m2', 'nettomiete_aktuell')
-    readonly_fields = ('detail_link',)
+    fields = ('einheit_profil', 'flaeche_m2', 'miet_info', 'status_badge', 'detail_link')
+    readonly_fields = ('einheit_profil', 'miet_info', 'status_badge', 'detail_link')
+
+    @display(description="Mietobjekt")
+    def einheit_profil(self, obj):
+        if not obj.pk: return "-"
+        icon = "🏠" if obj.typ == 'whg' else "🚗" if obj.typ in ['pp', 'gar'] else "🏬"
+        typ_name = obj.get_typ_display()
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-teal-50 text-teal-700 text-sm ring-1 ring-inset ring-teal-600/20">{}</div>'
+            '<div><div class="font-bold text-gray-900">{}</div><div class="text-[10px] text-gray-500 uppercase tracking-wide">{}</div></div>'
+            '</div>', icon, obj.bezeichnung, typ_name
+        )
+
+    @display(description="Finanzen (Brutto)")
+    def miet_info(self, obj):
+        if not obj.pk: return "-"
+        total = (getattr(obj, 'nettomiete_aktuell', 0) or 0) + (getattr(obj, 'nebenkosten_aktuell', 0) or 0)
+        return format_html('<span class="font-semibold text-gray-900">CHF {:,.2f}</span>', total)
+
+    @display(description="Status")
+    def status_badge(self, obj):
+        if not obj.pk: return "-"
+        if getattr(obj, 'aktiver_vertrag', False):
+            return format_html('<span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Vermietet</span>')
+        return format_html('<span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Leerstand</span>')
+
+    @display(description="Aktion")
     def detail_link(self, obj):
-        if obj.id: return format_html('<a href="{}" target="_blank" class="text-blue-600 hover:text-blue-900 font-bold">✏️ Öffnen</a>', reverse("admin:portfolio_einheit_change", args=[obj.id]))
+        if obj.id:
+            return format_html('<a href="{}" class="text-teal-600 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse("admin:portfolio_einheit_change", args=[obj.id]))
         return "-"
+
+    def has_add_permission(self, request, obj=None): return False
 
 class UnterhaltLiegenschaftInline(TabularInline):
     model = Unterhalt
     extra = 0
     tab = True
-    verbose_name = "Unterhalt / Reparatur"
-    verbose_name_plural = "🛠️ Unterhaltshistorie"
+    verbose_name = "Unterhalt Gebäude"
+    verbose_name_plural = "🛠️ Unterhaltshistorie (Allgemein)"
+    fields = ('unterhalt_profil', 'datum', 'kosten_info', 'detail_link')
+    readonly_fields = ('unterhalt_profil', 'kosten_info', 'detail_link')
+
     def get_queryset(self, request):
         return super().get_queryset(request).filter(einheit__isnull=True)
 
+    @display(description="Auftrags-Titel")
+    def unterhalt_profil(self, obj):
+        if not obj.pk: return "-"
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50 text-amber-700 text-sm ring-1 ring-inset ring-amber-600/20">🛠️</div>'
+            '<div class="font-bold text-gray-900">{}</div>'
+            '</div>', obj.titel
+        )
+
+    @display(description="Kosten")
+    def kosten_info(self, obj):
+        if not obj.pk: return "-"
+        return format_html('<span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-bold text-red-700 ring-1 ring-inset ring-red-600/10">CHF {:,.2f}</span>', obj.kosten)
+
+    @display(description="Aktion")
+    def detail_link(self, obj):
+        if obj.id: return format_html('<a href="{}" class="text-amber-600 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">📄 Details</a>', reverse("admin:portfolio_unterhalt_change", args=[obj.id]))
+        return "-"
+
+    def has_add_permission(self, request, obj=None): return False
+
+# ==========================================
+# 2. INLINES (SaaS-Tabs für Wohnung/Einheit)
+# ==========================================
+
+class MietvertragInline(TabularInline):
+    model = Mietvertrag
+    extra = 0
+    tab = True
+    verbose_name = "Mietvertrag"
+    verbose_name_plural = "🤝 Mietverträge"
+    fields = ('vertrag_profil', 'laufzeit', 'finanzen', 'status_badge', 'detail_link')
+    readonly_fields = ('vertrag_profil', 'laufzeit', 'finanzen', 'status_badge', 'detail_link')
+
+    @display(description="Mieter")
+    def vertrag_profil(self, obj):
+        if not obj.pk: return "-"
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-700 text-sm ring-1 ring-inset ring-blue-600/20">👤</div>'
+            '<div class="font-bold text-gray-900">{}</div>'
+            '</div>', obj.mieter
+        )
+    @display(description="Beginn")
+    def laufzeit(self, obj):
+        return obj.beginn.strftime('%d.%m.%Y') if obj.pk and obj.beginn else "-"
+    @display(description="Mietzins (Brutto)")
+    def finanzen(self, obj):
+        if not obj.pk: return "-"
+        total = (obj.netto_mietzins or 0) + (obj.nebenkosten or 0)
+        return format_html('<span class="font-semibold text-gray-900">CHF {:,.2f}</span>', total)
+    @display(description="Status")
+    def status_badge(self, obj):
+        if not obj.pk: return "-"
+        if getattr(obj, 'aktiv', False): return format_html('<span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Aktiv</span>')
+        return format_html('<span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-600/10">Inaktiv</span>')
+    @display(description="Aktion")
+    def detail_link(self, obj):
+        if obj.id: return format_html('<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">📄 Vertrag öffnen</a>', reverse("admin:rentals_mietvertrag_change", args=[obj.id]))
+        return "-"
+    def has_add_permission(self, request, obj=None): return False
+
+class ZaehlerInline(TabularInline):
+    model = Zaehler
+    extra = 0
+    tab = True
+    verbose_name = "Zähler"
+    verbose_name_plural = "⚡ Zähler (Strom/Wasser/Heizung)"
+    fields = ('zaehler_profil', 'detail_link')
+    readonly_fields = ('zaehler_profil', 'detail_link')
+
+    @display(description="Zähler Details")
+    def zaehler_profil(self, obj):
+        if not obj.pk: return "-"
+        icon = "⚡" if obj.typ == 'strom' else "💧" if obj.typ == 'wasser' else "🔥"
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 text-gray-700 text-sm ring-1 ring-inset ring-gray-600/20">{}</div>'
+            '<div><div class="font-bold text-gray-900">{}</div><div class="text-[10px] text-gray-500 uppercase tracking-wide">Zähler-Nr: {}</div></div>'
+            '</div>', icon, obj.get_typ_display(), obj.zaehler_nummer
+        )
+    @display(description="Aktion")
+    def detail_link(self, obj):
+        if obj.id: return format_html('<a href="{}" class="text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Ablesen / Details</a>', reverse("admin:portfolio_zaehler_change", args=[obj.id]))
+        return "-"
+    def has_add_permission(self, request, obj=None): return False
+
+class GeraetInline(TabularInline):
+    model = Geraet
+    extra = 0
+    tab = True
+    verbose_name = "Gerät"
+    verbose_name_plural = "🔌 Haushaltsgeräte"
+    fields = ('geraet_profil', 'garantie_badge', 'detail_link')
+    readonly_fields = ('geraet_profil', 'garantie_badge', 'detail_link')
+
+    @display(description="Gerät & Modell")
+    def geraet_profil(self, obj):
+        if not obj.pk: return "-"
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 text-sm ring-1 ring-inset ring-slate-600/20">🔌</div>'
+            '<div><div class="font-bold text-gray-900">{} {}</div><div class="text-[10px] text-gray-500 uppercase tracking-wide">Modell: {}</div></div>'
+            '</div>', getattr(obj, 'marke', ''), getattr(obj, 'typ', ''), getattr(obj, 'modell', '-')
+        )
+    @display(description="Garantie")
+    def garantie_badge(self, obj):
+        if not obj.pk: return "-"
+        from django.utils import timezone
+        if obj.garantie_bis:
+            if obj.garantie_bis >= timezone.now().date():
+                return format_html('<span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Bis {}</span>', obj.garantie_bis.strftime('%d.%m.%Y'))
+            return format_html('<span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Abgelaufen</span>')
+        return "-"
+    @display(description="Aktion")
+    def detail_link(self, obj):
+        if obj.id: return format_html('<a href="{}" class="text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Details</a>', reverse("admin:portfolio_geraet_change", args=[obj.id]))
+        return "-"
+    def has_add_permission(self, request, obj=None): return False
+
+class UnterhaltEinheitInline(TabularInline):
+    model = Unterhalt
+    extra = 0
+    fk_name = "einheit"
+    tab = True
+    verbose_name = "Reparatur"
+    verbose_name_plural = "🛠️ Reparaturen (Objekt)"
+    fields = ('unterhalt_profil', 'datum', 'kosten_info', 'detail_link')
+    readonly_fields = ('unterhalt_profil', 'kosten_info', 'detail_link')
+
+    @display(description="Auftrag")
+    def unterhalt_profil(self, obj):
+        if not obj.pk: return "-"
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50 text-amber-700 text-sm ring-1 ring-inset ring-amber-600/20">🛠️</div>'
+            '<div class="font-bold text-gray-900">{}</div>'
+            '</div>', obj.titel
+        )
+    @display(description="Kosten")
+    def kosten_info(self, obj):
+        if not obj.pk: return "-"
+        return format_html('<span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-bold text-red-700 ring-1 ring-inset ring-red-600/10">CHF {:,.2f}</span>', obj.kosten)
+    @display(description="Aktion")
+    def detail_link(self, obj):
+        if obj.id: return format_html('<a href="{}" class="text-amber-600 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">📄 Details</a>', reverse("admin:portfolio_unterhalt_change", args=[obj.id]))
+        return "-"
+    def has_add_permission(self, request, obj=None): return False
+
+class SchadenEinheitInline(TabularInline):
+    model = SchadenMeldung
+    extra = 0
+    fk_name = "betroffene_einheit"
+    tab = True
+    verbose_name = "Schadensmeldung"
+    verbose_name_plural = "🎫 Schadensmeldungen (Tickets)"
+    fields = ('ticket_profil', 'status_badge', 'detail_link')
+    readonly_fields = ('ticket_profil', 'status_badge', 'detail_link')
+
+    @display(description="Ticket")
+    def ticket_profil(self, obj):
+        if not obj.pk: return "-"
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-50 text-rose-700 text-sm ring-1 ring-inset ring-rose-600/20">🚨</div>'
+            '<div><div class="font-bold text-gray-900">{}</div><div class="text-[10px] text-gray-500 uppercase">Gemeldet: {}</div></div>'
+            '</div>', obj.titel, obj.erstellt_am.strftime('%d.%m.%Y') if obj.erstellt_am else "-"
+        )
+    @display(description="Status")
+    def status_badge(self, obj):
+        if not obj.pk: return "-"
+        if obj.status == 'erledigt': return format_html('<span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Erledigt</span>')
+        return format_html('<span class="inline-flex items-center rounded-md bg-rose-50 px-2 py-1 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-600/10">In Bearbeitung</span>')
+    @display(description="Aktion")
+    def detail_link(self, obj):
+        if obj.id: return format_html('<a href="{}" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">🎫 Öffnen</a>', reverse("admin:tickets_schadenmeldung_change", args=[obj.id]))
+        return "-"
+    def has_add_permission(self, request, obj=None): return False
+
+class DokumentEinheitInline(TabularInline):
+    model = Dokument
+    extra = 0
+    fk_name = "einheit"
+    tab = True
+    verbose_name = "Dokument"
+    verbose_name_plural = "📄 Dokumente & Pläne"
+    fields = ('doc_profil', 'detail_link')
+    readonly_fields = ('doc_profil', 'detail_link')
+
+    @display(description="Dokument")
+    def doc_profil(self, obj):
+        if not obj.pk: return "-"
+        kategorie = obj.get_kategorie_display() if hasattr(obj, 'get_kategorie_display') else getattr(obj, 'kategorie', '')
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 text-sm ring-1 ring-inset ring-indigo-600/20">📄</div>'
+            '<div><div class="font-bold text-gray-900">{}</div><div class="text-[10px] text-gray-500 uppercase">{}</div></div>'
+            '</div>', obj.bezeichnung, kategorie
+        )
+    @display(description="Aktion")
+    def detail_link(self, obj):
+        if obj.id: return format_html('<a href="{}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">⬇️ Ansehen</a>', reverse("admin:rentals_dokument_change", args=[obj.id]))
+        return "-"
+    def has_add_permission(self, request, obj=None): return False
+
 class ZaehlerStandInline(TabularInline): model = ZaehlerStand; extra = 1; ordering = ('-datum',); tab = True
-class MietvertragInline(TabularInline): model = Mietvertrag; extra = 0; fields = ('mieter', 'beginn', 'netto_mietzins', 'nebenkosten', 'aktiv'); tab = True
-class ZaehlerInline(TabularInline): model = Zaehler; extra = 0; tab=True
-class GeraetInline(TabularInline): model = Geraet; extra = 0; tab=True
-class UnterhaltEinheitInline(TabularInline): model = Unterhalt; extra = 0; fk_name = "einheit"; tab=True
-class DokumentEinheitInline(TabularInline): model = Dokument; extra = 0; fk_name = "einheit"; tab=True
-class SchadenEinheitInline(TabularInline): model = SchadenMeldung; extra = 0; fk_name = "betroffene_einheit"; tab=True
 class SchluesselAusgabeInline(TabularInline): model = SchluesselAusgabe; extra = 0; tab=True
 
 # ==========================================
-# 2. LIEGENSCHAFT ADMIN
+# 3. LIEGENSCHAFT ADMIN
 # ==========================================
 
 @admin.register(Liegenschaft)
@@ -108,35 +341,18 @@ class LiegenschaftAdmin(ModelAdmin):
         address_query = urllib.parse.quote(f"{obj.strasse}, {obj.plz} {obj.ort}")
         map_url = f"https://maps.google.com/maps?q={address_query}&t=&z=15&ie=UTF8&iwloc=&output=embed"
 
-        # --- NEU: Split-Screen Layout (Links KPIs, Rechts Karte) ---
         html = f"""
         <style>
-            /* Hack, um Unfolds Breitenlimit zu sprengen */
             #content-main form > div, form .max-w-5xl, form .max-w-4xl, form .max-w-3xl, form .max-w-2xl {{ max-width: 100% !important; width: 100% !important; }}
             fieldset.map-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
             fieldset.map-fieldset > div, fieldset.map-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
             fieldset.map-fieldset label {{ display: none !important; }}
-
-            /* Unser neues Grid für den Header */
-            .liegenschaft-header-grid {{
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-                width: 100%;
-                margin-bottom: 2rem;
-            }}
-            /* Auf großen Bildschirmen: 350px für die KPIs, der Rest für die Karte */
-            @media (min-width: 1024px) {{
-                .liegenschaft-header-grid {{
-                    grid-template-columns: 350px 1fr;
-                }}
-            }}
+            .liegenschaft-header-grid {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }}
+            @media (min-width: 1024px) {{ .liegenschaft-header-grid {{ grid-template-columns: 350px 1fr; }} }}
         </style>
 
         <div class="liegenschaft-header-grid">
-
             <div style="display: flex; flex-direction: column; gap: 1rem;">
-
                 <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
                     <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #eef2ff; color: #4f46e5; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">🏢</div>
                     <div style="overflow: hidden;">
@@ -150,18 +366,15 @@ class LiegenschaftAdmin(ModelAdmin):
                         <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Einheiten</span>
                         <span style="font-size: 1.25rem; font-weight: 700; color: #111827;">{einheiten_count}</span>
                     </div>
-
                     <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
                         <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Baujahr</span>
                         <span style="font-size: 1.25rem; font-weight: 700; color: #111827;">{baujahr}</span>
                     </div>
-
                     <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; grid-column: span 2;">
                         <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">EGID</span>
                         <span style="font-size: 1.25rem; font-weight: 700; color: #4f46e5;">{egid}</span>
                     </div>
                 </div>
-
             </div>
 
             <div style="width: 100%; height: 100%; min-height: 250px; background-color: #e5e7eb; border-radius: 12px; overflow: hidden; border: 1px solid #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
@@ -174,12 +387,10 @@ class LiegenschaftAdmin(ModelAdmin):
                     allowfullscreen>
                 </iframe>
             </div>
-
         </div>
         """
         return mark_safe(html)
 
-    # --- Listenansicht (Unverändert) ---
     @display(description="Liegenschaft", ordering="strasse")
     def liegenschaft_profil(self, obj):
         egid = getattr(obj, 'egid', '')
@@ -218,7 +429,7 @@ class LiegenschaftAdmin(ModelAdmin):
         except Exception as e: messages.error(request, f"GWR Fehler: {e}")
 
 # ==========================================
-# 3. EINHEIT ADMIN
+# 4. EINHEIT ADMIN
 # ==========================================
 
 @admin.register(Einheit)
@@ -260,15 +471,115 @@ class EinheitAdmin(ModelAdmin):
     def schnell_aktionen(self, obj): return format_html('<a href="{}" class="text-teal-600 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-2 py-1 rounded text-xs font-semibold transition-colors">Bearbeiten</a>', reverse('admin:portfolio_einheit_change', args=[obj.id]))
 
 # ==========================================
-# 4. WEITERE ADMINS
+# 5. WEITERE ADMINS (SaaS Upgrade)
 # ==========================================
 
 @admin.register(Zaehler)
-class ZaehlerAdmin(ModelAdmin): list_display = ('typ', 'zaehler_nummer', 'einheit'); inlines = [ZaehlerStandInline]
+class ZaehlerAdmin(ModelAdmin):
+    list_display = ('zaehler_profil', 'standort_info', 'schnell_aktionen')
+    list_filter = ('typ', 'einheit__liegenschaft')
+    inlines = [ZaehlerStandInline]
+
+    fieldsets = (
+        ('Zähler-Stammdaten', {'fields': ('typ', 'zaehler_nummer', 'standort')}),
+        ('Zuweisung', {'fields': ('einheit',)})
+    )
+
+    @display(description="Zähler & Typ", ordering="zaehler_nummer")
+    def zaehler_profil(self, obj):
+        icon = "⚡" if obj.typ == 'strom' else "💧" if obj.typ == 'wasser' else "🔥"
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-9 h-9 rounded-xl bg-gray-100 text-gray-700 text-lg shadow-sm">{}</div>'
+            '<div><div class="font-bold text-gray-900">{}</div><div class="text-xs text-gray-500">Nr: {}</div></div>'
+            '</div>', icon, obj.get_typ_display(), obj.zaehler_nummer
+        )
+
+    @display(description="Zuweisung")
+    def standort_info(self, obj):
+        if obj.einheit: return format_html('<span class="text-xs text-gray-600">🏠 {}</span>', obj.einheit.bezeichnung)
+        return "-"
+
+    @display(description="Aktionen")
+    def schnell_aktionen(self, obj):
+        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 px-2 py-1 rounded text-xs font-semibold">Bearbeiten</a>', reverse('admin:portfolio_zaehler_change', args=[obj.id]))
+
 @admin.register(Geraet)
-class GeraetAdmin(ModelAdmin): list_display = ('typ', 'marke', 'einheit')
+class GeraetAdmin(ModelAdmin):
+    list_display = ('geraet_profil', 'garantie_badge', 'schnell_aktionen')
+    list_filter = ('einheit__liegenschaft',)
+
+    fieldsets = (
+        ('Geräte-Details', {'fields': (('typ', 'marke'), 'modell', ('installations_datum', 'garantie_bis'))}),
+        ('Zuweisung', {'fields': ('einheit',)})
+    )
+
+    @display(description="Gerät & Marke", ordering="typ")
+    def geraet_profil(self, obj):
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-100 text-slate-700 text-lg shadow-sm">🔌</div>'
+            '<div><div class="font-bold text-gray-900">{} {}</div><div class="text-xs text-gray-500">Modell: {}</div></div>'
+            '</div>', getattr(obj, 'marke', ''), getattr(obj, 'typ', ''), getattr(obj, 'modell', '-')
+        )
+
+    @display(description="Garantie-Status", label=True)
+    def garantie_badge(self, obj):
+        from django.utils import timezone
+        if obj.garantie_bis:
+            if obj.garantie_bis >= timezone.now().date(): return f"Bis {obj.garantie_bis.strftime('%d.%m.%Y')}", "success"
+            return "Abgelaufen", "danger"
+        return "Unbekannt", "info"
+
+    @display(description="Aktionen")
+    def schnell_aktionen(self, obj):
+        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 px-2 py-1 rounded text-xs font-semibold">Bearbeiten</a>', reverse('admin:portfolio_geraet_change', args=[obj.id]))
+
 @admin.register(Unterhalt)
-class UnterhaltAdmin(ModelAdmin): list_display = ('titel', 'datum', 'kosten')
+class UnterhaltAdmin(ModelAdmin):
+    list_display = ('unterhalt_profil', 'kosten_info', 'schnell_aktionen')
+    list_filter = ('liegenschaft',)
+
+    fieldsets = (
+        ('Arbeiten', {'fields': ('titel', 'datum', 'kosten', 'beleg')}),
+        ('Zuweisung', {'fields': ('liegenschaft', 'einheit')})
+    )
+
+    @display(description="Unterhalt & Datum", ordering="-datum")
+    def unterhalt_profil(self, obj):
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-9 h-9 rounded-xl bg-amber-100 text-amber-700 text-lg shadow-sm">🛠️</div>'
+            '<div><div class="font-bold text-gray-900">{}</div><div class="text-xs text-gray-500">📅 {}</div></div>'
+            '</div>', obj.titel, obj.datum.strftime('%d.%m.%Y')
+        )
+
+    @display(description="Kosten")
+    def kosten_info(self, obj):
+        return format_html('<span class="font-bold text-red-600">CHF {:,.2f}</span>', obj.kosten)
+
+    @display(description="Aktionen")
+    def schnell_aktionen(self, obj):
+        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 px-2 py-1 rounded text-xs font-semibold">Bearbeiten</a>', reverse('admin:portfolio_unterhalt_change', args=[obj.id]))
+
 @admin.register(Schluessel)
-class SchluesselAdmin(ModelAdmin): list_display = ('schluessel_nummer', 'liegenschaft'); inlines = [SchluesselAusgabeInline]
-admin.site.register(SchluesselAusgabe)
+class SchluesselAdmin(ModelAdmin):
+    list_display = ('schluessel_profil', 'liegenschaft', 'schnell_aktionen')
+    inlines = [SchluesselAusgabeInline]
+
+    @display(description="Schlüssel-ID", ordering="schluessel_nummer")
+    def schluessel_profil(self, obj):
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-100 text-zinc-700 text-lg shadow-sm">🔑</div>'
+            '<div><div class="font-bold text-gray-900">{}</div></div>'
+            '</div>', obj.schluessel_nummer
+        )
+
+    @display(description="Aktionen")
+    def schnell_aktionen(self, obj):
+        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 px-2 py-1 rounded text-xs font-semibold">Bearbeiten</a>', reverse('admin:portfolio_schluessel_change', args=[obj.id]))
+
+@admin.register(SchluesselAusgabe)
+class SchluesselAusgabeAdmin(ModelAdmin):
+    pass
