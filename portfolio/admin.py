@@ -23,6 +23,16 @@ except ImportError:
     get_units_from_bfs = None
 
 # ==========================================
+# 0. SICHERHEITS-CHECK (Gegen Reload-Abstürze)
+# ==========================================
+models_to_fix = [Liegenschaft, Einheit, Zaehler, Schluessel, Geraet, Unterhalt, SchluesselAusgabe]
+for m in models_to_fix:
+    try:
+        admin.site.unregister(m)
+    except admin.sites.NotRegistered:
+        pass
+
+# ==========================================
 # 1. INLINES (SaaS-Tabs)
 # ==========================================
 
@@ -67,10 +77,10 @@ class LiegenschaftAdmin(ModelAdmin):
 
     readonly_fields = ('liegenschaft_full_header',)
 
-    # WICHTIG: Hier haben wir jetzt ein Fieldset NUR für den Header ganz oben
     fieldsets = (
         (None, {
             'fields': ('liegenschaft_full_header',),
+            'classes': ('map-fieldset',),
         }),
         ('Zuständigkeit & Standort', {
             'fields': (
@@ -96,45 +106,70 @@ class LiegenschaftAdmin(ModelAdmin):
         baujahr = getattr(obj, 'baujahr', '-')
 
         address_query = urllib.parse.quote(f"{obj.strasse}, {obj.plz} {obj.ort}")
-        # Korrigierte Google Maps URL (Sicherer Embed-Link)
         map_url = f"https://maps.google.com/maps?q={address_query}&t=&z=15&ie=UTF8&iwloc=&output=embed"
 
+        # --- NEU: Split-Screen Layout (Links KPIs, Rechts Karte) ---
         html = f"""
-        <div style="display: flex; flex-direction: row; background: white; border-radius: 1rem; overflow: hidden; border: 1px solid #e5e7eb; min-height: 380px; width: 100%; margin-bottom: 1.5rem;">
+        <style>
+            /* Hack, um Unfolds Breitenlimit zu sprengen */
+            #content-main form > div, form .max-w-5xl, form .max-w-4xl, form .max-w-3xl, form .max-w-2xl {{ max-width: 100% !important; width: 100% !important; }}
+            fieldset.map-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
+            fieldset.map-fieldset > div, fieldset.map-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
+            fieldset.map-fieldset label {{ display: none !important; }}
 
-            <div style="padding: 2rem; border-right: 1px solid #f3f4f6; background-color: #f9fafb; display: flex; flex-direction: column; justify-content: space-between; width: 300px; flex-shrink: 0;">
-                <div>
-                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-                        <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #eef2ff; color: #4f46e5; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">🏢</div>
-                        <div style="overflow: hidden;">
-                            <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{obj.strasse}</h2>
-                            <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">{obj.plz} {obj.ort}</p>
-                        </div>
-                    </div>
+            /* Unser neues Grid für den Header */
+            .liegenschaft-header-grid {{
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                width: 100%;
+                margin-bottom: 2rem;
+            }}
+            /* Auf großen Bildschirmen: 350px für die KPIs, der Rest für die Karte */
+            @media (min-width: 1024px) {{
+                .liegenschaft-header-grid {{
+                    grid-template-columns: 350px 1fr;
+                }}
+            }}
+        </style>
 
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                        <div style="background: white; padding: 1rem; border-radius: 0.75rem; border: 1px solid #f3f4f6; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                            <span style="font-size: 0.65rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em;">Einheiten</span>
-                            <span style="font-size: 1.125rem; font-weight: 700; color: #111827;">{einheiten_count}</span>
-                        </div>
-                        <div style="background: white; padding: 1rem; border-radius: 0.75rem; border: 1px solid #f3f4f6; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                            <span style="font-size: 0.65rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em;">Baujahr</span>
-                            <span style="font-size: 1.125rem; font-weight: 700; color: #111827;">{baujahr}</span>
-                        </div>
-                        <div style="background: white; padding: 1rem; border-radius: 0.75rem; border: 1px solid #f3f4f6; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                            <span style="font-size: 0.65rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em;">EGID</span>
-                            <span style="font-size: 1rem; font-weight: 700; color: #4f46e5;">{egid}</span>
-                        </div>
+        <div class="liegenschaft-header-grid">
+
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
+                    <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #eef2ff; color: #4f46e5; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">🏢</div>
+                    <div style="overflow: hidden;">
+                        <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{obj.strasse}</h2>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px;">{obj.plz} {obj.ort}</p>
                     </div>
                 </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
+                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Einheiten</span>
+                        <span style="font-size: 1.25rem; font-weight: 700; color: #111827;">{einheiten_count}</span>
+                    </div>
+
+                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
+                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Baujahr</span>
+                        <span style="font-size: 1.25rem; font-weight: 700; color: #111827;">{baujahr}</span>
+                    </div>
+
+                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; grid-column: span 2;">
+                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">EGID</span>
+                        <span style="font-size: 1.25rem; font-weight: 700; color: #4f46e5;">{egid}</span>
+                    </div>
+                </div>
+
             </div>
 
-            <div style="flex-grow: 1; position: relative; background: #f3f4f6;">
+            <div style="width: 100%; height: 100%; min-height: 250px; background-color: #e5e7eb; border-radius: 12px; overflow: hidden; border: 1px solid #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <iframe
                     width="100%"
                     height="100%"
                     frameborder="0"
-                    style="border:0; position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+                    style="border:0;"
                     src="{map_url}"
                     allowfullscreen>
                 </iframe>
@@ -218,7 +253,8 @@ class EinheitAdmin(ModelAdmin):
         return format_html(html + '</div>' if html != '<div class="flex flex-wrap gap-1.5">' else '<span class="text-xs text-gray-400">-</span>')
 
     @display(description="Status", label=True)
-    def get_status_badge(self, obj): return "Vermietet", "success" if obj.aktiver_vertrag else "danger"
+    def get_status_badge(self, obj):
+        return ("Vermietet", "success") if getattr(obj, 'aktiver_vertrag', False) else ("Leerstand", "danger")
 
     @display(description="Aktionen")
     def schnell_aktionen(self, obj): return format_html('<a href="{}" class="text-teal-600 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-2 py-1 rounded text-xs font-semibold transition-colors">Bearbeiten</a>', reverse('admin:portfolio_einheit_change', args=[obj.id]))
