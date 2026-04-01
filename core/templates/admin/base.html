@@ -75,35 +75,35 @@
                 {% for mandant in custom_admin_nav %}
                     <li style="margin-bottom:5px;">
                         <details id="mandant-{{ mandant.id }}" open>
-                            <summary class="summary-mandant"><span onclick="window.location='/admin/core/mandant/{{ mandant.id }}/change/'; event.preventDefault();" style="cursor:pointer;">🏢 {{ mandant.firma_oder_name }}</span></summary>
+                            <summary class="summary-mandant"><span onclick="window.location='/admin/crm/mandant/{{ mandant.id }}/change/'; event.preventDefault();" style="cursor:pointer;">🏢 {{ mandant.firma_oder_name }}</span></summary>
                             <ul class="tree-ul">
                             {% for lieg in mandant.liegenschaften.all %}
                                 <li style="margin-top:5px;">
-                                    <a href="/admin/core/liegenschaft/{{ lieg.id }}/change/" class="tree-item lvl-lieg">📍 {{ lieg.strasse }}</a>
+                                    <a href="/admin/portfolio/liegenschaft/{{ lieg.id }}/change/" class="tree-item lvl-lieg">📍 {{ lieg.strasse }}</a>
                                     <ul class="tree-ul">
                                     {% for einheit in lieg.einheiten.all %}
                                         <li style="margin-top:2px;">
                                             <details id="einheit-{{ einheit.id }}">
                                                 <summary class="summary-objekt">
-                                                    <span onclick="window.location='/admin/core/einheit/{{ einheit.id }}/change/'; event.preventDefault();" style="cursor:pointer;">🏠 {{ einheit.bezeichnung }}</span>
+                                                    <span onclick="window.location='/admin/portfolio/einheit/{{ einheit.id }}/change/'; event.preventDefault();" style="cursor:pointer;">🏠 {{ einheit.bezeichnung }}</span>
                                                     <span style="font-weight:normal; font-size:0.9em; color:#666; margin-left:5px;">{{ einheit.navigation_label }}</span>
                                                 </summary>
                                                 <ul class="tree-ul" style="border-left: 1px dotted #999; margin-left:5px;">
 
                                                     <li style="margin-top:2px; margin-bottom:5px;">
-                                                        <a href="/admin/core/einheit/{{ einheit.id }}/change/" class="tree-item lvl-komponente"><span class="icon">🏷️</span> Komponenten</a>
+                                                        <a href="/admin/portfolio/einheit/{{ einheit.id }}/change/" class="tree-item lvl-komponente"><span class="icon">🏷️</span> Komponenten</a>
                                                     </li>
 
                                                     <li style="margin-top:5px; border-top:1px solid #eee; padding-top:2px; font-size:11px; color:#666; font-weight:bold;">
                                                         VERHÄLTNISSE
-                                                        <a href="/admin/core/mietvertrag/add/?einheit={{ einheit.id }}" class="add-btn" title="Neuer Mietvertrag" onclick="event.stopPropagation();" style="background-color:#28a745;">+</a>
-                                                        <a href="/admin/core/leerstand/add/?einheit={{ einheit.id }}" class="add-btn" title="Leerstand erfassen" onclick="event.stopPropagation();" style="background-color:#fd7e14; margin-left:2px;">L</a>
+                                                        <a href="/admin/rentals/mietvertrag/add/?einheit={{ einheit.id }}" class="add-btn" title="Neuer Mietvertrag" onclick="event.stopPropagation();" style="background-color:#28a745;">+</a>
+                                                        <a href="/admin/rentals/leerstand/add/?einheit={{ einheit.id }}" class="add-btn" title="Leerstand erfassen" onclick="event.stopPropagation();" style="background-color:#fd7e14; margin-left:2px;">L</a>
                                                     </li>
 
                                                     {% if einheit.vertraege.exists %}
                                                         {% for vertrag in einheit.vertraege.all %}
                                                             <li style="margin-top:2px; display:flex; align-items:center;">
-                                                                <a href="/admin/core/mietvertrag/{{ vertrag.id }}/change/" class="tree-item lvl-detail" {% if vertrag.aktiv %}style="color:green; flex-grow:1;"{% else %}style="color:#ccc; text-decoration:line-through; flex-grow:1;"{% endif %}>
+                                                                <a href="/admin/rentals/mietvertrag/{{ vertrag.id }}/change/" class="tree-item lvl-detail" {% if vertrag.aktiv %}style="color:green; flex-grow:1;"{% else %}style="color:#ccc; text-decoration:line-through; flex-grow:1;"{% endif %}>
                                                                     <span class="icon">👤</span> {{ vertrag.mieter }} <span style="font-size:0.85em; color:#888;">(ab {{ vertrag.beginn|date:"d.m.y" }})</span>
                                                                 </a>
                                                                 <a href="{% url 'generate_pdf' vertrag.id %}" target="_blank" title="Drucken" style="text-decoration:none; margin-right:5px;">🖨️</a>
@@ -114,7 +114,7 @@
                                                     {% if einheit.leerstaende.exists %}
                                                         {% for leer in einheit.leerstaende.all %}
                                                             <li style="margin-top:2px;">
-                                                                <a href="/admin/core/leerstand/{{ leer.id }}/change/" class="tree-item lvl-detail" style="color:#d35400;">
+                                                                <a href="/admin/rentals/leerstand/{{ leer.id }}/change/" class="tree-item lvl-detail" style="color:#d35400;">
                                                                     <span class="icon">⏳</span> <i>{{ leer.get_grund_display }}</i> <span style="font-size:0.85em;">(ab {{ leer.beginn|date:"d.m.y" }})</span>
                                                                 </a>
                                                             </li>
@@ -127,12 +127,12 @@
 
                                                     <li style="margin-top:5px; border-top:1px solid #eee; padding-top:2px; font-size:11px; color:#666; font-weight:bold;">
                                                         GERÄTE ({{ einheit.geraete.count }})
-                                                        <a href="/admin/core/geraet/add/?einheit={{ einheit.id }}" class="add-btn" title="Gerät hinzufügen" onclick="event.stopPropagation();" style="background-color:#28a745;">+</a>
+                                                        <a href="/admin/portfolio/geraet/add/?einheit={{ einheit.id }}" class="add-btn" title="Gerät hinzufügen" onclick="event.stopPropagation();" style="background-color:#28a745;">+</a>
                                                     </li>
                                                     {% if einheit.geraete.exists %}
                                                         <ul style="list-style:none; padding-left:10px;">
                                                             {% for geraet in einheit.geraete.all %}
-                                                            <li><a href="/admin/core/geraet/{{ geraet.id }}/change/" class="tree-item lvl-detail">🔹 {{ geraet.typ }}</a></li>
+                                                            <li><a href="/admin/portfolio/geraet/{{ geraet.id }}/change/" class="tree-item lvl-detail">🔹 {{ geraet.typ }}</a></li>
                                                             {% endfor %}
                                                         </ul>
                                                     {% endif %}

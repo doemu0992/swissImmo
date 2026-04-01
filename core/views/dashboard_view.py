@@ -1,86 +1,47 @@
-from crm.models import Verwaltung
-from portfolio.models import Einheit
-from rentals.models import Mietvertrag
-from tickets.models import SchadenMeldung
-
 from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
-from django.db.models import Sum, Count, Q
-from django.utils import timezone
-from decimal import Decimal
-import json
-import datetime
+from django.db.models import Sum
 
+# Moderne App-Architektur Importe
+from portfolio.models import Liegenschaft, Einheit
+from rentals.models import Mietvertrag
+from tickets.models import SchadenMeldung
 
 @staff_member_required
 def custom_dashboard_view(request):
     """
-    Lädt die Daten für das Immobilien-Cockpit.
+    Modernes SaaS-Cockpit mit den wichtigsten KPIs für die Immobilienbewirtschaftung.
     """
-    # --- 1. FINANZEN (Soll-Miete) ---
-    aktive_vertraege = Mietvertrag.objects.filter(aktiv=True)
-    total_netto = aktive_vertraege.aggregate(Sum('netto_mietzins'))['netto_mietzins__sum'] or Decimal('0.00')
-    total_nk = aktive_vertraege.aggregate(Sum('nebenkosten'))['nebenkosten__sum'] or Decimal('0.00')
-    total_income = total_netto + total_nk
-
-    # --- 2. LEERSTAND ---
+    # 1. PORTFOLIO KPIs
+    total_liegenschaften = Liegenschaft.objects.count()
     total_einheiten = Einheit.objects.count()
-    # Wir zählen Einheiten, die mindestens einen aktiven Vertrag haben
-    vermietet_count = aktive_vertraege.values('einheit').distinct().count()
-    leerstand_count = total_einheiten - vermietet_count
 
-    # Schutz vor negativen Zahlen (Daten-Inkonsistenz)
-    if leerstand_count < 0: leerstand_count = 0
-    if vermietet_count > total_einheiten: vermietet_count = total_einheiten
+    # 2. VERMIETUNG & LEERSTAND
+    aktive_vertraege = Mietvertrag.objects.filter(aktiv=True).count()
+    leerstaende = total_einheiten - aktive_vertraege if total_einheiten > 0 else 0
+    leerstands_quote = (leerstaende / total_einheiten * 100) if total_einheiten > 0 else 0
 
-    leerstand_prozent = 0
-    if total_einheiten > 0:
-        leerstand_prozent = round((leerstand_count / total_einheiten) * 100, 1)
+    # 3. FINANZEN (Monatliche Soll-Miete)
+    monatliche_soll_miete = Mietvertrag.objects.filter(aktiv=True).aggregate(
+        total_netto=Sum('netto_mietzins'),
+        total_nk=Sum('nebenkosten')
+    )
+    soll_total = (monatliche_soll_miete['total_netto'] or 0) + (monatliche_soll_miete['total_nk'] or 0)
 
-    # --- 3. TICKETS ---
-    # Alles was nicht erledigt/abgeschlossen ist
-    offene_tickets = SchadenMeldung.objects.exclude(status__in=['erledigt', 'abgeschlossen']).count()
-    kritische_tickets = SchadenMeldung.objects.filter(prioritaet='hoch').exclude(status__in=['erledigt', 'abgeschlossen']).count()
+    # 4. PENDENZEN / TICKETS
+    offene_tickets = SchadenMeldung.objects.exclude(status='erledigt').count()
+    neuste_tickets = SchadenMeldung.objects.all().order_by('-erstellt_am')[:5]
 
-    # --- 4. CHARTS VORBEREITUNG (JSON) ---
-    # Wir gruppieren die Tickets nach Status für das Balkendiagramm
-    ticket_stats = SchadenMeldung.objects.values('status').annotate(count=Count('status'))
-
-    # Labels schön formatieren (z.B. "in_bearbeitung" -> "In Bearbeitung")
-    labels = [item['status'].replace('_', ' ').title() for item in ticket_stats]
-    data = [item['count'] for item in ticket_stats]
-
-    # --- 5. AUSLAUFENDE VERTRÄGE (90 Tage) ---
-    heute = datetime.date.today()
-    in_90_tagen = heute + datetime.timedelta(days=90)
-    auslaufende_vertraege = Mietvertrag.objects.filter(
-        aktiv=True,
-        ende__isnull=False,
-        ende__lte=in_90_tagen,
-        ende__gte=heute
-    ).order_by('ende')
-
-    # --- CONTEXT ZUSAMMENBAUEN ---
     context = {
-        # Navigation Unfold (Damit die Sidebar aktiv bleibt)
         'title': 'Cockpit',
-        'site_title': 'SwissImmo Verwaltung',
-
-        # KPI Karten
-        'total_income': total_income,
-        'total_units': total_einheiten,
-        'vermietet_count': vermietet_count,
-        'leerstand_count': leerstand_count,
-        'leerstand_prozent': leerstand_prozent,
+        'total_liegenschaften': total_liegenschaften,
+        'total_einheiten': total_einheiten,
+        'aktive_vertraege': aktive_vertraege,
+        'leerstaende': leerstaende,
+        'leerstands_quote': round(leerstands_quote, 1),
+        'soll_total': soll_total,
         'offene_tickets': offene_tickets,
-        'kritische_tickets': kritische_tickets,
-
-        # Listen
-        'auslaufende_vertraege': auslaufende_vertraege,
-
-        # Charts (Als JSON String für JavaScript)
-        'chart_ticket_labels': json.dumps(labels),
-        'chart_ticket_data': json.dumps(data),
+        'neuste_tickets': neuste_tickets,
     }
 
-    return render(request, 'core/dashboard.html', context)
+    return render(request, 'admin/dashboard_stats.html', context)

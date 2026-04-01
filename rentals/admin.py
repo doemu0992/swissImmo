@@ -1,30 +1,26 @@
 from django.contrib import admin
-from django.utils.html import format_html
+from django.utils.html import format_html, mark_safe
 from django.urls import reverse
-from django.shortcuts import redirect
 from django.contrib import messages
+import datetime
 
 # Unfold Imports
 from unfold.admin import ModelAdmin, TabularInline
-from unfold.decorators import action, display
+from unfold.decorators import display
 
-# Deine Modelle
+# Lokale Modelle (Rentals)
 from .models import Mietvertrag, MietzinsAnpassung, Leerstand, Dokument
-from crm.models import Verwaltung # Für Referenzzinssatz-Logik
-from core.mietrecht_logic import berechne_mietpotenzial # Falls vorhanden
+from crm.models import Verwaltung
+
+# Helper-Funktion
+try:
+    from core.mietrecht_logic import berechne_mietpotenzial
+except ImportError:
+    berechne_mietpotenzial = None
+
 
 # ==========================================
-# 0. SICHERHEITS-CHECK (Bereinigung für PythonAnywhere)
-# ==========================================
-models_to_fix = [Mietvertrag, MietzinsAnpassung, Leerstand, Dokument]
-for m in models_to_fix:
-    try:
-        admin.site.unregister(m)
-    except admin.sites.NotRegistered:
-        pass
-
-# ==========================================
-# 1. INLINES
+# 0. INLINES
 # ==========================================
 
 class DokumentVertragInline(TabularInline):
@@ -36,115 +32,201 @@ class DokumentVertragInline(TabularInline):
     tab = True
 
     def vorschau_btn(self, obj):
-        if obj.datei:
-            return format_html('<a href="{}" target="_blank" class="text-emerald-600 font-bold">📄 PDF</a>', obj.datei.url)
+        if getattr(obj, 'datei', None):
+            return format_html('<a href="{}" target="_blank" class="text-emerald-600 font-bold text-xs">📄 PDF ansehen</a>', obj.datei.url)
         return "-"
 
+
 # ==========================================
-# 2. MIETVERTRAG ADMIN
+# 1. MIETVERTRAG ADMIN (SaaS-Look)
 # ==========================================
 
 @admin.register(Mietvertrag)
 class MietvertragAdmin(ModelAdmin):
-    # Liste mit Fairwalter-Badges
-    list_display = (
-        'mieter', 'einheit', 'beginn', 'netto_mietzins',
-        'get_status_badge', 'potenzial_preview', 'aktiv',
-        'pdf_quick_link'
-    )
-    list_filter = ('sign_status', 'aktiv', 'einheit__liegenschaft')
-    search_fields = ('mieter__nachname', 'mieter__vorname', 'vertragsnummer')
+    list_display = ('vertrag_profil', 'finanzen_info', 'laufzeit_info', 'docuseal_badge', 'schnell_aktionen')
+    list_filter = ('sign_status', 'aktiv')
+    list_filter_submit = True
+    search_fields = ('mieter__vorname', 'mieter__nachname', 'einheit__bezeichnung')
     inlines = [DokumentVertragInline]
 
-    # Karten-Layout für den Vertrag
     fieldsets = (
-        ('Parteien & Objekt', {
-            'fields': (('mieter', 'einheit'), 'aktiv'),
-        }),
-        ('Vertragslaufzeit', {
-            'fields': (('beginn', 'ende'), 'sign_status'),
-        }),
-        ('Finanzielle Konditionen', {
-            'fields': (
-                ('netto_mietzins', 'nebenkosten'),
-                'kautions_betrag'
-            ),
-        }),
-        ('Gesetzliche Grundlagen (Mietrecht)', {
-            'fields': (
-                ('basis_referenzzinssatz', 'basis_lik_punkte'),
-            ),
-        }),
-        ('Digitale Signatur (DocuSeal)', {
-            'fields': ('pdf_datei',),
-        }),
+        ('Parteien', {'fields': ('mieter', 'einheit')}),
+        ('Vertrag', {'fields': ('beginn', 'ende', 'aktiv', 'sign_status')}),
+        ('Konditionen', {'fields': ('netto_mietzins', 'nebenkosten', 'kautions_betrag', 'basis_referenzzinssatz', 'basis_lik_punkte')}),
+        ('DocuSeal & PDF', {'fields': ('pdf_datei',)})
     )
 
-    # --- FAIRWALTER HEADER BUTTONS ---
-    actions_detail = [
-        "action_generate_pdf",
-        "action_send_docuseal",
-        "action_mietzins_rechner",
-        "action_qr_rechnung"
-    ]
+    @display(description="Mietvertrag", ordering="mieter")
+    def vertrag_profil(self, obj):
+        mieter_name = str(getattr(obj, 'mieter', 'Unbekannt'))
+        einheit_name = str(getattr(obj.einheit, 'bezeichnung', 'Keine Einheit')) if getattr(obj, 'einheit', None) else 'Keine Einheit'
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-100 text-blue-700 text-xl shadow-sm ring-1 ring-inset ring-blue-600/10">📄</div>'
+            '<div><div class="font-bold text-gray-900 leading-tight">{}</div><div class="text-xs text-gray-500 mt-0.5">🏠 {}</div></div>'
+            '</div>',
+            mieter_name, einheit_name
+        )
 
-    @action(description="📄 PDF Vertrag erstellen", url_path="generate-pdf")
-    def action_generate_pdf(self, request, object_id):
-        return redirect(reverse('generate_pdf', args=[object_id]))
+    @display(description="Mietzins (Brutto)")
+    def finanzen_info(self, obj):
+        # HIER IST DER FIX: Zahlenwerte sichern und vorab mit f-Strings formatieren
+        netto = float(getattr(obj, 'netto_mietzins', 0) or 0)
+        nk = float(getattr(obj, 'nebenkosten', 0) or 0)
+        brutto = netto + nk
 
-    @action(description="✍️ Per DocuSeal senden", url_path="send-docuseal")
-    def action_send_docuseal(self, request, object_id):
-        return redirect(reverse('send_docuseal', args=[object_id]))
+        return format_html(
+            '<div class="flex flex-col gap-1">'
+            '<span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 w-max">CHF {}</span>'
+            '<span class="text-[10px] text-gray-500">N: {} | NK: {}</span>'
+            '</div>',
+            f"{brutto:.2f}", f"{netto:.2f}", f"{nk:.2f}"
+        )
 
-    @action(description="📈 Mietzins-Rechner", url_path="calc-rent")
-    def action_mietzins_rechner(self, request, object_id):
-        return redirect(reverse('mietzins_anpassung', args=[object_id]))
+    @display(description="Laufzeit & Status")
+    def laufzeit_info(self, obj):
+        beginn = obj.beginn.strftime('%d.%m.%Y') if getattr(obj, 'beginn', None) else "-"
+        aktiv = getattr(obj, 'aktiv', False)
+        aktiv_html = '<span class="text-xs font-bold text-emerald-600">● Aktiv</span>' if aktiv else '<span class="text-xs font-bold text-red-500">○ Aufgelöst</span>'
+        return format_html(
+            '<div class="flex flex-col gap-0.5">'
+            '{}'
+            '<span class="text-xs text-gray-500">Ab {}</span>'
+            '</div>',
+            mark_safe(aktiv_html), beginn
+        )
 
-    @action(description="🔳 QR-Einzahlungsschein", url_path="qr-bill")
-    def action_qr_rechnung(self, request, object_id):
-        return redirect(reverse('generate_qr', args=[object_id]))
+    @display(description="Unterschrift", label=True)
+    def docuseal_badge(self, obj):
+        status = getattr(obj, 'sign_status', 'offen')
+        if status == 'offen': return "Ausstehend", "danger"
+        elif status == 'gesendet': return "Gesendet", "warning"
+        elif status == 'unterzeichnet': return "Signiert", "success"
+        return status, "info"
 
-    # --- BADGES & PREVIEWS ---
+    @display(description="Aktionen")
+    def schnell_aktionen(self, obj):
+        edit_url = reverse('admin:rentals_mietvertrag_change', args=[obj.id])
+        pdf_url = reverse('generate_pdf', args=[obj.id]) if obj.id else '#'
+        calc_url = reverse('mietzins_anpassung', args=[obj.id]) if getattr(obj, 'aktiv', False) else '#'
 
-    @display(description="Status", label=True)
-    def get_status_badge(self, obj):
-        if obj.sign_status == 'unterzeichnet':
-            return "Unterzeichnet", "success"
-        elif obj.sign_status == 'gesendet':
-            return "In Signatur", "warning"
-        return "Entwurf", "info"
+        return format_html(
+            '<div class="flex gap-1.5">'
+            '<a href="{}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded text-xs font-semibold transition-colors">Bearbeiten</a>'
+            '<a href="{}" target="_blank" class="text-gray-600 bg-gray-50 hover:bg-gray-200 px-2 py-1 rounded text-xs transition-colors">🖨️ PDF</a>'
+            '<a href="{}" target="_blank" class="text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded text-xs transition-colors">📈 Zins</a>'
+            '</div>',
+            edit_url, pdf_url, calc_url
+        )
 
-    @display(description="Potenzial")
-    def potenzial_preview(self, obj):
-        try:
-            v = Verwaltung.objects.first()
-            if not v or not berechne_mietpotenzial: return "-"
-            res = berechne_mietpotenzial(obj, v.aktueller_referenzzinssatz, v.aktueller_lik_punkte)
-            color = "text-emerald-600" if res['action'] == 'UP' else "text-red-600"
-            return format_html('<span class="font-bold {}">{} CHF</span>', color, res['delta_chf'])
-        except:
-            return "-"
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if getattr(obj, 'sign_status', '') == 'unterzeichnet' and getattr(obj, 'pdf_datei', None):
+            exists = Dokument.objects.filter(vertrag=obj, kategorie='vertrag').exists()
+            if not exists:
+                Dokument.objects.create(titel=f"Mietvertrag {obj.mieter}", kategorie='vertrag', vertrag=obj, mieter=obj.mieter, einheit=obj.einheit, datei=obj.pdf_datei)
+                messages.success(request, "✅ Vertrag archiviert.")
 
-    def pdf_quick_link(self, obj):
-        if obj.id:
-            return format_html('<a href="{}" target="_blank">📄</a>', reverse('generate_pdf', args=[obj.id]))
-        return "-"
 
 # ==========================================
-# 3. WEITERE MODULE
+# 2. LEERSTAND ADMIN (SaaS-Look)
+# ==========================================
+
+@admin.register(Leerstand)
+class LeerstandAdmin(ModelAdmin):
+    list_display = ('leerstand_profil', 'dauer_info', 'schnell_aktionen')
+
+    @display(description="Objekt & Grund", ordering="einheit__bezeichnung")
+    def leerstand_profil(self, obj):
+        einheit = getattr(obj, 'einheit', None)
+        einheit_name = einheit.bezeichnung if einheit else "Unbekannt"
+        grund = obj.get_grund_display() if hasattr(obj, 'get_grund_display') else getattr(obj, 'grund', '-')
+
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-10 h-10 rounded-xl bg-red-100 text-red-700 text-xl shadow-sm ring-1 ring-inset ring-red-600/10">⏳</div>'
+            '<div><div class="font-bold text-gray-900 leading-tight">{}</div><div class="text-[11px] font-medium text-red-600 mt-0.5 bg-red-50 px-1.5 rounded w-max">{}</div></div>'
+            '</div>',
+            einheit_name, grund
+        )
+
+    @display(description="Zeitraum")
+    def dauer_info(self, obj):
+        beginn = obj.beginn.strftime('%d.%m.%Y') if getattr(obj, 'beginn', None) else "-"
+        ende = obj.ende.strftime('%d.%m.%Y') if getattr(obj, 'ende', None) else "Laufend"
+        return format_html('<span class="text-sm font-medium text-gray-700">{} – {}</span>', beginn, ende)
+
+    @display(description="Aktionen")
+    def schnell_aktionen(self, obj):
+        return format_html(
+            '<a href="{}" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-2 py-1 rounded text-xs font-semibold transition-colors">Bearbeiten</a>',
+            reverse('admin:rentals_leerstand_change', args=[obj.id])
+        )
+
+
+# ==========================================
+# 3. MIETZINSANPASSUNG ADMIN (SaaS-Look)
 # ==========================================
 
 @admin.register(MietzinsAnpassung)
 class MietzinsAnpassungAdmin(ModelAdmin):
-    list_display = ('vertrag', 'datum_wirksamkeit', 'alter_zins', 'neuer_zins', 'status')
-    list_filter = ('status',)
+    list_display = ('anpassung_profil', 'datum_info', 'status_badge', 'schnell_aktionen')
 
-@admin.register(Leerstand)
-class LeerstandAdmin(ModelAdmin):
-    list_display = ('einheit', 'von_datum', 'bis_datum', 'grund')
-    list_filter = ('grund', 'einheit__liegenschaft')
+    @display(description="Vertrag & Änderung")
+    def anpassung_profil(self, obj):
+        vertrag = getattr(obj, 'vertrag', None)
+        mieter = str(vertrag.mieter) if vertrag else "Unbekannt"
+
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-10 h-10 rounded-xl bg-teal-100 text-teal-700 text-xl shadow-sm ring-1 ring-inset ring-teal-600/10">📈</div>'
+            '<div><div class="font-bold text-gray-900 leading-tight">{}</div><div class="text-[11px] text-gray-500 mt-0.5">ID: #{}</div></div>'
+            '</div>',
+            mieter, obj.id
+        )
+
+    @display(description="Wirksam ab")
+    def datum_info(self, obj):
+        datum = getattr(obj, 'wirksam_ab', None) or getattr(obj, 'datum_wirksam', None)
+        datum_str = datum.strftime('%d.%m.%Y') if datum else "-"
+        return format_html('<span class="text-sm font-medium text-gray-700">{}</span>', datum_str)
+
+    @display(description="Status", label=True)
+    def status_badge(self, obj):
+        status = getattr(obj, 'status', 'erstellt')
+        if status == 'erstellt': return "Erstellt", "info"
+        elif status == 'gesendet': return "Gesendet", "warning"
+        elif status == 'akzeptiert': return "Akzeptiert", "success"
+        return status, "info"
+
+    @display(description="Aktionen")
+    def schnell_aktionen(self, obj):
+        return format_html(
+            '<a href="{}" class="text-teal-600 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-2 py-1 rounded text-xs font-semibold transition-colors">Bearbeiten</a>',
+            reverse('admin:rentals_mietzinsanpassung_change', args=[obj.id])
+        )
+
+
+# ==========================================
+# 4. DOKUMENTE ADMIN
+# ==========================================
 
 @admin.register(Dokument)
 class DokumentAdmin(ModelAdmin):
-    list_display = ('bezeichnung', 'kategorie', 'erstellt_am')
+    list_display = ('dokument_profil', 'kategorie_badge')
     list_filter = ('kategorie',)
+
+    @display(description="Dokument")
+    def dokument_profil(self, obj):
+        titel = getattr(obj, 'titel', getattr(obj, 'bezeichnung', 'Unbekanntes Dokument'))
+        return format_html(
+            '<div class="flex items-center gap-2">'
+            '<span class="text-lg">📎</span> <span class="font-medium text-gray-800">{}</span>'
+            '</div>',
+            titel
+        )
+
+    @display(description="Kategorie", label=True)
+    def kategorie_badge(self, obj):
+        kat = getattr(obj, 'kategorie', 'Sonstiges')
+        return kat, "info"
