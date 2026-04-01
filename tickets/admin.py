@@ -1,243 +1,274 @@
 from django.contrib import admin
 from django.utils.html import format_html, mark_safe
-from django.template.defaultfilters import date as _date
-from django.forms.widgets import TextInput
-from django.core.mail import EmailMessage
 from django.urls import reverse
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.template.defaultfilters import date as _date
 
 # Unfold Imports
 from unfold.admin import ModelAdmin, TabularInline, StackedInline
-from unfold.decorators import display
+from unfold.decorators import action, display
 
-# Lokale Modelle (Tickets)
+# Modelle
 from .models import SchadenMeldung, HandwerkerAuftrag, TicketNachricht
 
-# Externe Utils
-try:
-    from core.utils.email_service import send_handyman_notification
-except ImportError:
-    send_handyman_notification = None
-
 # ==========================================
-# 0. WIDGET FÜR CC-FELD (Chat)
+# 0. SICHERHEITS-CHECK
 # ==========================================
-class UnfoldDatalistWidget(TextInput):
-    def __init__(self, data_list=None, name=None, attrs=None, *args, **kwargs):
-        unfold_style = (
-            "border block w-full max-w-2xl px-3 py-2 text-sm rounded-md shadow-sm "
-            "focus:ring focus:ring-primary-300 focus:border-primary-600 "
-            "border-gray-200 bg-white text-gray-500 "
-            "dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:focus:border-primary-600"
-        )
-        default_attrs = {'class': unfold_style}
-        if attrs:
-            default_attrs.update(attrs)
-        super().__init__(attrs=default_attrs, *args, **kwargs)
-        self._name = name
-        self._list = data_list or []
-        self.attrs.update({'list': f'list__{self._name}', 'autocomplete': 'off'})
-
-    def render(self, name, value, attrs=None, renderer=None):
-        text_html = super().render(name, value, attrs, renderer)
-        data_list_id = f'list__{self._name}'
-        options = ''
-        for email, label in self._list:
-            if email:
-                options += f'<option value="{email}">{label}</option>'
-        datalist_html = f'<datalist id="{data_list_id}">{options}</datalist>'
-        return mark_safe(text_html + datalist_html)
+models_to_fix = [SchadenMeldung, HandwerkerAuftrag, TicketNachricht]
+for m in models_to_fix:
+    try:
+        admin.site.unregister(m)
+    except admin.sites.NotRegistered:
+        pass
 
 # ==========================================
 # 1. INLINES (Chat & Aufträge)
 # ==========================================
-
-class HandwerkerAuftragInline(TabularInline):
-    model = HandwerkerAuftrag
-    extra = 0
-    fields = ('handwerker', 'status', 'bemerkung', 'beauftragt_am')
-    readonly_fields = ('beauftragt_am',)
-    tab = True
-    verbose_name = "Beauftragter Handwerker"
-    verbose_name_plural = "🛠️ Beauftragte Handwerker / Aufträge"
 
 class TicketHistoryInline(StackedInline):
     model = TicketNachricht
     extra = 0
     fk_name = "ticket"
     tab = True
-    verbose_name = "Eintrag"
-    verbose_name_plural = "📜 Verlauf & Historie"
+    verbose_name = "Nachricht / Notiz"
+    verbose_name_plural = "💬 Kommunikationsverlauf"
+
+    # Wir zeigen nur das formatierte Chat-Feld
     fields = ('timeline_entry',)
     readonly_fields = ('timeline_entry',)
 
     def timeline_entry(self, obj):
+        if not obj.pk: return "-"
+
+        # Farben und Icons je nach Typ der Nachricht
         if obj.typ == 'system':
-            icon, bg_color = "⚙️", "bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700"
-            title = f"System: {obj.absender_name}"
-        elif obj.typ == 'mail_antwort':
-            icon, bg_color = "📩", "bg-white border-l-4 border-l-yellow-400 border-gray-200 shadow-sm dark:bg-gray-800"
-            title = f"Von: {obj.absender_name} (E-Mail)"
+            icon, bg_color, text_color = "⚙️", "bg-gray-50 border-gray-200", "text-gray-800"
+            title = f"System-Meldung: {obj.absender_name}"
         elif obj.typ == 'antwort_senden':
-            icon, bg_color = "📤", "bg-blue-50 border-blue-200 shadow-sm dark:bg-blue-900/20"
-            title = f"Gesendet an Melder: {obj.absender_name}"
+            icon, bg_color, text_color = "📤", "bg-blue-50 border-blue-200", "text-blue-900"
+            title = f"Antwort an Mieter: {obj.absender_name}"
         elif obj.typ == 'handwerker_mail':
-            icon, bg_color = "🔨", "bg-orange-50 border-orange-200 shadow-sm dark:bg-orange-900/20"
-            hw_name = obj.empfaenger_handwerker.firma if obj.empfaenger_handwerker else obj.absender_name
-            title = f"Gesendet an Handwerker: {hw_name}"
+            icon, bg_color, text_color = "🔨", "bg-orange-50 border-orange-200", "text-orange-900"
+            title = f"Auftrag an Handwerker: {obj.absender_name}"
         else:
-            icon, bg_color = "📝", "bg-yellow-50 border-yellow-200 shadow-sm dark:bg-yellow-900/20"
+            icon, bg_color, text_color = "📝", "bg-yellow-50 border-yellow-200", "text-yellow-900"
             title = f"Interne Notiz: {obj.absender_name}"
 
         date_str = _date(obj.erstellt_am, "d.m.Y H:i")
-        THRESHOLD, unique_id = 300, f"msg_{obj.id}"
 
-        if len(obj.nachricht) > THRESHOLD:
-            nachricht_html = f'<div id="{unique_id}" style="max-height: 80px; overflow: hidden; white-space: pre-wrap;">{obj.nachricht}</div>' \
-                             f'<div id="btn_{unique_id}" onclick="var el=document.getElementById(\'{unique_id}\'); if(el.style.maxHeight!==\'none\'){{el.style.maxHeight=\'none\'; this.innerHTML=\'🔼 Weniger\';}}else{{el.style.maxHeight=\'80px\'; this.innerHTML=\'🔽 Mehr\';}}" class="mt-2 text-blue-600 text-xs cursor-pointer font-bold">🔽 Mehr anzeigen</div>'
-        else:
-            nachricht_html = f'<div style="white-space: pre-wrap;">{obj.nachricht}</div>'
+        html = format_html(
+            '<div class="{} rounded-xl border p-4 text-sm mb-3 shadow-sm">'
+            '<div class="flex justify-between border-b border-black/5 pb-2 mb-3">'
+            '<div class="font-bold flex items-center gap-2"><span class="text-lg">{}</span> <span class="{}">{}</span></div>'
+            '<span class="text-xs text-gray-500 font-medium">{}</span>'
+            '</div>'
+            '<div class="whitespace-pre-wrap leading-relaxed text-gray-700">{}</div>'
+            '</div>',
+            bg_color, icon, text_color, title, date_str, obj.nachricht
+        )
+        return mark_safe(html)
 
-        html = f'<div class="{bg_color} rounded-lg border p-4 text-sm mb-4"><div class="flex justify-between border-b pb-2 mb-2"><b>{icon} {title}</b><span class="text-xs">{date_str}</span></div>{nachricht_html}'
-        if obj.datei: html += f'<div class="mt-2 pt-2 border-t"><a href="{obj.datei.url}" target="_blank" class="text-blue-600">📎 Anhang</a></div>'
-        return mark_safe(html + "</div>")
-
-    timeline_entry.short_description = "Inhalt"
     def has_add_permission(self, request, obj=None): return False
-    def has_change_permission(self, request, obj=None): return False
-    def has_delete_permission(self, request, obj=None): return False
 
-class TicketInputInline(StackedInline):
-    model = TicketNachricht; extra = 1; fk_name = "ticket"; tab = True
-    verbose_name_plural = "✏️ Neue Nachricht / E-Mail verfassen"
-    fields = ('typ', 'empfaenger_handwerker', 'cc_email', 'nachricht', 'datei')
-    class Media: js = ('js/admin_ticket_logic.js',)
+class HandwerkerAuftragInline(TabularInline):
+    model = HandwerkerAuftrag
+    extra = 0
+    tab = True
+    verbose_name = "Auftrag"
+    verbose_name_plural = "🛠️ Handwerker-Aufträge"
 
-    def get_queryset(self, request): return super().get_queryset(request).none()
+    fields = ('auftrag_profil', 'status_badge', 'detail_link')
+    readonly_fields = ('auftrag_profil', 'status_badge', 'detail_link')
 
-    def get_formset(self, request, obj=None, **kwargs):
-        formset = super().get_formset(request, obj, **kwargs)
-        if obj:
-            suggestions = []
-            if obj.email_melder: suggestions.append((obj.email_melder, f"Melder: {obj.email_melder}"))
-            for a in obj.handwerker_auftraege.all():
-                if a.handwerker.email: suggestions.append((a.handwerker.email, f"HW: {a.handwerker.firma}"))
-            formset.form.base_fields['cc_email'].widget = UnfoldDatalistWidget(data_list=suggestions, name='cc_list')
-        return formset
+    @display(description="Handwerker")
+    def auftrag_profil(self, obj):
+        if not obj.pk: return "-"
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-50 text-orange-700 text-sm ring-1 ring-inset ring-orange-600/20">🔨</div>'
+            '<div class="font-bold text-gray-900">{}</div>'
+            '</div>', obj.handwerker
+        )
 
-    def has_add_permission(self, request, obj=None): return True
-    def has_change_permission(self, request, obj=None): return False
-    def has_delete_permission(self, request, obj=None): return False
+    @display(description="Status")
+    def status_badge(self, obj):
+        if not obj.pk: return "-"
+        if obj.status == 'erledigt': return format_html('<span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Erledigt</span>')
+        return format_html('<span class="inline-flex items-center rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/10">Offen</span>')
+
+    @display(description="Aktion")
+    def detail_link(self, obj):
+        if obj.id: return format_html('<a href="{}" class="text-orange-600 hover:text-orange-900 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">📄 Details</a>', reverse("admin:tickets_handwerkerauftrag_change", args=[obj.id]))
+        return "-"
+
+    def has_add_permission(self, request, obj=None): return False
+
 
 # ==========================================
-# 2. HAUPT ADMINS (SaaS-Look)
+# 2. SCHADENMELDUNG ADMIN
 # ==========================================
 
 @admin.register(SchadenMeldung)
 class SchadenMeldungAdmin(ModelAdmin):
-    list_display = ('ticket_profil', 'status_prio_info', 'handwerker_info', 'datum_info', 'schnell_aktionen')
-    list_filter = ('status', 'prioritaet', 'gelesen')
-    list_filter_submit = True
-    search_fields = ('titel', 'email_melder', 'id')
-    inlines = [HandwerkerAuftragInline, TicketHistoryInline, TicketInputInline]
+    list_display = ('ticket_profil', 'einheit_info', 'prioritaet_badge', 'status_badge', 'schnell_aktionen')
+    list_filter = ('status', 'prioritaet', 'betroffene_einheit__liegenschaft')
+    search_fields = ('titel', 'beschreibung', 'email_melder')
+    inlines = [HandwerkerAuftragInline, TicketHistoryInline]
+
+    readonly_fields = ('ticket_full_header',)
 
     fieldsets = (
-        ('Status', {'fields': ('status', 'prioritaet', 'gelesen')}),
-        ('Meldung', {'fields': ('titel', 'beschreibung', 'foto')}),
-        ('Kontakt Melder', {'fields': ('gemeldet_von', 'email_melder', 'tel_melder', 'betroffene_einheit')})
+        (None, {
+            'fields': ('ticket_full_header',),
+            'classes': ('header-fieldset',),
+        }),
+        ('Meldung & Beschreibung', {'fields': ('titel', 'beschreibung', 'foto')}),
+        ('Status & Steuerung', {'fields': (('status', 'prioritaet'), 'gelesen')}),
+        ('Kontaktinformationen', {'fields': (('gemeldet_von', 'betroffene_einheit'), ('email_melder', 'tel_melder'))}),
     )
-    readonly_fields = ('erstellt_am',)
 
-    @display(description="Ticket & Melder", ordering="-id")
+    # --- HEADER BUTTONS ---
+    actions_detail = ["action_mark_done", "action_create_note"]
+
+    @action(description="✅ Als erledigt markieren", url_path="mark-done")
+    def action_mark_done(self, request, object_id):
+        obj = self.get_object(request, object_id)
+        obj.status = 'erledigt'
+        obj.save()
+        messages.success(request, "Ticket wurde erfolgreich geschlossen.")
+        return redirect(request.META.get('HTTP_REFERER'))
+
+    @action(description="📝 Neue Notiz / Antwort", url_path="add-note")
+    def action_create_note(self, request, object_id):
+        url = reverse('admin:tickets_ticketnachricht_add') + f"?ticket={object_id}"
+        return redirect(url)
+
+
+    # --- DASHBOARD HEADER ---
+    @display(description="")
+    def ticket_full_header(self, obj):
+        if not obj.pk:
+            return format_html('<div class="p-4 bg-rose-50 text-rose-700 rounded-xl font-bold border border-rose-100">✨ Neues Ticket erstellen</div>')
+
+        einheit_name = str(getattr(obj, 'betroffene_einheit', 'Allgemein'))
+        erstellt = obj.erstellt_am.strftime('%d.%m.%Y %H:%M') if obj.erstellt_am else "-"
+
+        # Prio Logik
+        if obj.prioritaet == 'hoch': prio_color, prio_text = "#dc2626", "🚨 HOCH"
+        elif obj.prioritaet == 'mittel': prio_color, prio_text = "#d97706", "⚠️ MITTEL"
+        else: prio_color, prio_text = "#059669", "🟢 TIEF"
+
+        # Status Logik
+        if obj.status == 'neu': stat_color, stat_text = "#dc2626", "NEU"
+        elif obj.status == 'in_bearbeitung': stat_color, stat_text = "#d97706", "IN BEARBEITUNG"
+        else: stat_color, stat_text = "#059669", "ERLEDIGT"
+
+        html = f"""
+        <style>
+            fieldset.header-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
+            fieldset.header-fieldset > div, fieldset.header-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
+            fieldset.header-fieldset label {{ display: none !important; }}
+        </style>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; width: 100%; margin-bottom: 2rem;">
+            <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem; grid-column: span 2;">
+                <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #fff1f2; color: #e11d48; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">🎫</div>
+                <div style="overflow: hidden;">
+                    <h2 style="font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{obj.titel}</h2>
+                    <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px;">Ticket #{obj.id} • Gemeldet am {erstellt}</p>
+                </div>
+            </div>
+
+            <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
+                <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Betroffenes Objekt</span>
+                <span style="font-size: 1.125rem; font-weight: 700; color: #111827;">{einheit_name}</span>
+            </div>
+
+            <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
+                <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Priorität</span>
+                <span style="font-size: 1.125rem; font-weight: 700; color: {prio_color};">{prio_text}</span>
+            </div>
+
+            <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
+                <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Status</span>
+                <span style="font-size: 1.125rem; font-weight: 700; color: {stat_color};">{stat_text}</span>
+            </div>
+        </div>
+        """
+        return mark_safe(html)
+
+    # --- Listenansicht Formatierungen ---
+    @display(description="Ticket", ordering="-erstellt_am")
     def ticket_profil(self, obj):
-        prio = getattr(obj, 'prioritaet', 'mittel')
-        icon = "🚨" if prio == 'hoch' else "🛠️"
-        bg_color = "bg-red-100 text-red-700 ring-red-600/10" if prio == 'hoch' else "bg-gray-100 text-gray-700 ring-gray-600/10"
-
-        melder = getattr(obj, 'email_melder', None) or (obj.gemeldet_von.email if getattr(obj, 'gemeldet_von', None) else "Unbekannt")
-        titel = getattr(obj, 'titel', 'Ohne Titel')
-
-        ungelesene = obj.nachrichten.filter(gelesen=False).exclude(typ='system').exists() if obj.id else False
-        dot = '<span class="absolute -top-1 -right-1 flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span></span>' if (not obj.gelesen or ungelesene) else ''
+        erstellt = obj.erstellt_am.strftime('%d.%m.%Y') if obj.erstellt_am else "-"
+        gelesen_indicator = "" if getattr(obj, 'gelesen', True) else '<span class="w-2 h-2 rounded-full bg-blue-600 absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2"></span>'
 
         return format_html(
             '<div class="flex items-center gap-3">'
-            '<div class="relative flex items-center justify-center w-10 h-10 rounded-xl {} text-xl shadow-sm ring-1 ring-inset">{} {}</div>'
+            '<div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-rose-100 text-rose-700 text-xl shadow-sm ring-1 ring-inset ring-rose-600/10">🎫{}</div>'
             '<div><div class="font-bold text-gray-900 leading-tight">{}</div><div class="text-xs text-gray-500 mt-0.5">#{} • {}</div></div>'
             '</div>',
-            bg_color, icon, mark_safe(dot), titel, obj.id, melder
+            mark_safe(gelesen_indicator), obj.titel[:40] + ('...' if len(obj.titel) > 40 else ''), obj.id, erstellt
         )
 
-    @display(description="Status & Prio")
-    def status_prio_info(self, obj):
-        st = getattr(obj, 'status', 'neu')
-        if st == 'neu': st_html = '<span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-[11px] font-semibold text-red-700 ring-1 ring-inset ring-red-600/10">Neu</span>'
-        elif st == 'in_bearbeitung': st_html = '<span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/10">In Bearbeitung</span>'
-        elif st == 'erledigt': st_html = '<span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/10">Erledigt</span>'
-        elif st == 'abgelehnt': st_html = '<span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-[11px] font-semibold text-gray-600 ring-1 ring-inset ring-gray-500/10">Abgelehnt</span>'
-        else: st_html = f'<span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-[11px] font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{st}</span>'
+    @display(description="Betroffenes Objekt", ordering="betroffene_einheit")
+    def einheit_info(self, obj):
+        if obj.betroffene_einheit:
+            return format_html('<span class="text-sm font-medium text-gray-700">🏠 {}</span>', obj.betroffene_einheit.bezeichnung)
+        return format_html('<span class="text-sm font-medium text-gray-500">Allgemein</span>')
 
-        pr = getattr(obj, 'prioritaet', 'mittel')
-        if pr == 'hoch': pr_html = '<span class="text-red-600 font-bold">🔥 Hoch</span>'
-        elif pr == 'mittel': pr_html = '<span class="text-amber-600 font-bold">⚡ Mittel</span>'
-        else: pr_html = '<span class="text-blue-500 font-bold">🧊 Tief</span>'
+    @display(description="Priorität", label=True, ordering="prioritaet")
+    def prioritaet_badge(self, obj):
+        if obj.prioritaet == 'hoch': return "HOCH", "danger"
+        elif obj.prioritaet == 'mittel': return "MITTEL", "warning"
+        return "TIEF", "success"
 
-        return format_html('<div class="flex flex-col gap-1 items-start">{}<span class="text-[10px]">{}</span></div>', mark_safe(st_html), mark_safe(pr_html))
-
-    @display(description="Aufträge")
-    def handwerker_info(self, obj):
-        cnt = obj.handwerker_auftraege.count() if obj.id else 0
-        if cnt > 0:
-            return format_html('<span class="inline-flex items-center rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20">👷 {} beauftragt</span>', cnt)
-        return format_html('<span class="text-xs text-gray-400">-</span>')
-
-    @display(description="Erstellt am", ordering="erstellt_am")
-    def datum_info(self, obj):
-        datum = getattr(obj, 'erstellt_am', None)
-        return datum.strftime('%d.%m.%Y') if datum else "-"
+    @display(description="Status", label=True, ordering="status")
+    def status_badge(self, obj):
+        if obj.status == 'neu': return "NEU", "danger"
+        elif obj.status == 'in_bearbeitung': return "IN BEARBEITUNG", "warning"
+        return "ERLEDIGT", "success"
 
     @display(description="Aktionen")
     def schnell_aktionen(self, obj):
         edit_url = reverse('admin:tickets_schadenmeldung_change', args=[obj.id])
         return format_html(
-            '<a href="{}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded text-xs font-semibold transition-colors">Ticket öffnen</a>',
+            '<a href="{}" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">🎫 Öffnen</a>',
             edit_url
         )
 
-    # --- Die E-Mail Logik aus deinem alten Code (Bleibt unangetastet) ---
-    def change_view(self, request, object_id, form_url='', extra_context=None):
-        if object_id:
-            try:
-                ticket = SchadenMeldung.objects.get(pk=object_id)
-                if not ticket.gelesen: ticket.gelesen = True; ticket.save()
-                ticket.nachrichten.filter(gelesen=False).exclude(typ='system').update(gelesen=True)
-            except: pass
-        return super().change_view(request, object_id, form_url, extra_context)
 
-    def save_formset(self, request, form, formset, change):
-        instances = formset.save(commit=False)
-        for instance in instances:
-            if isinstance(instance, HandwerkerAuftrag):
-                if instance.pk is None:
-                    instance.save()
-                    TicketNachricht.objects.create(ticket=instance.ticket, absender_name="System", typ='system', nachricht=f"Handwerker '{instance.handwerker.firma}' beauftragt.")
-                    if instance.ticket.email_melder and send_handyman_notification: send_handyman_notification(instance)
-                instance.save()
-            elif isinstance(instance, TicketNachricht):
-                if instance.pk is None:
-                    cc_list = [e.strip() for e in instance.cc_email.split(',')] if getattr(instance, 'cc_email', None) else []
-                    if instance.typ == 'antwort_senden':
-                        empfaenger = instance.ticket.email_melder or (instance.ticket.gemeldet_von.email if instance.ticket.gemeldet_von else None)
-                        if empfaenger:
-                            EmailMessage(subject=f"Re: Ticket #{instance.ticket.id}", body=f"{instance.nachricht}\n\n--\nVerwaltung", from_email='reply@immoswiss.app', to=[empfaenger], cc=cc_list, reply_to=['reply@immoswiss.app']).send(fail_silently=True)
-                            instance.absender_name = "Verwaltung (Gesendet)"; instance.gelesen = True
-                    elif instance.typ == 'handwerker_mail' and instance.empfaenger_handwerker and instance.empfaenger_handwerker.email:
-                        EmailMessage(subject=f"Ticket #{instance.ticket.id}", body=f"{instance.nachricht}\n\n--\nVerwaltung", from_email='reply@immoswiss.app', to=[instance.empfaenger_handwerker.email], cc=cc_list, reply_to=['reply@immoswiss.app']).send(fail_silently=True)
-                        instance.absender_name = f"Verwaltung (an {instance.empfaenger_handwerker.firma})"; instance.gelesen = True
-                instance.save()
-        formset.save_m2m()
+# ==========================================
+# 3. WEITERE ADMINS (Handwerkerauftrag & Nachricht)
+# ==========================================
+
+@admin.register(HandwerkerAuftrag)
+class HandwerkerAuftragAdmin(ModelAdmin):
+    list_display = ('auftrag_profil', 'ticket_info', 'status_badge')
+    list_filter = ('status', 'handwerker')
+
+    @display(description="Auftrag", ordering="handwerker")
+    def auftrag_profil(self, obj):
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-10 h-10 rounded-xl bg-orange-100 text-orange-700 text-xl shadow-sm ring-1 ring-inset ring-orange-600/10">🔨</div>'
+            '<div><div class="font-bold text-gray-900 leading-tight">{}</div><div class="text-xs text-gray-500 mt-0.5">Beauftragt: {}</div></div>'
+            '</div>',
+            obj.handwerker, obj.beauftragt_am.strftime('%d.%m.%Y') if getattr(obj, 'beauftragt_am', None) else "-"
+        )
+
+    @display(description="Ticket")
+    def ticket_info(self, obj):
+        if obj.ticket: return format_html('<a href="{}" class="text-blue-600 font-medium hover:text-blue-800 transition-colors">🎫 Ticket #{}</a>', reverse('admin:tickets_schadenmeldung_change', args=[obj.ticket.id]), obj.ticket.id)
+        return "-"
+
+    @display(description="Status", label=True)
+    def status_badge(self, obj):
+        if obj.status == 'erledigt': return "Erledigt", "success"
+        return "Offen", "warning"
 
 @admin.register(TicketNachricht)
 class TicketNachrichtAdmin(ModelAdmin):
-    list_display = ('ticket', 'absender_name', 'erstellt_am')
-    readonly_fields = ['nachricht_anzeige']
-    def nachricht_anzeige(self, obj): return format_html('<div style="white-space: pre-wrap;">{}</div>', obj.nachricht)
+    list_display = ('ticket', 'typ', 'absender_name', 'erstellt_am')
+    list_filter = ('typ',)
