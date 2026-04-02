@@ -60,12 +60,12 @@ INSTALLED_APPS = [
     "unfold.contrib.import_export",
 
     # --- Deine Apps (NEUE ARCHITEKTUR) ---
-    'core',        # utils & views
-    'crm',         # Personendaten & Firmen
-    'portfolio',   # Liegenschaften & Einheiten
-    'rentals',     # Verträge & Leerstände
-    'finance',     # Rechnungen & Buchhaltung
-    'tickets',     # Schadensmeldungen
+    'core',         # utils & views
+    'crm',          # Personendaten & Firmen
+    'portfolio',    # Liegenschaften & Einheiten
+    'rentals',      # Verträge & Leerstände
+    'finance',      # Rechnungen & Buchhaltung
+    'tickets',      # Schadensmeldungen
 
     # --- Standard Django ---
     'django.contrib.admin',
@@ -121,7 +121,6 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-        # Gibt der Datenbank 30 Sekunden Zeit für die KI
         'OPTIONS': {
             'timeout': 30,
         }
@@ -183,9 +182,13 @@ UNFOLD = {
     "SITE_URL": reverse_lazy("admin_dashboard"),
     "SITE_ICON": "real_estate_agent",
 
-    # --- NEU: FAIRWALTER DESIGN STYLE SHEET ---
+    # --- GLOBALER CLEAN-LOOK (RAHMENLOS) & INLINE-EDITING ---
     "STYLES": [
         lambda request: static("css/fairwalter_theme.css"),
+        lambda request: static("css/custom_admin.css") + "?v=999",   # Der Cache-Zerstörer für CSS
+    ],
+    "SCRIPTS": [
+        lambda request: static("js/section_toggle.js") + "?v=999",   # Der Cache-Zerstörer für JS
     ],
 
     "COLORS": {

@@ -1,0 +1,58 @@
+/* static/css/custom_admin.css */
+
+/* Versteckt die globale Django "Sichern" Leiste am unteren Rand in Detail-Formularen */
+.submit-row {
+    display: none !important;
+}
+
+/* Verhindert Button-Glitches im Edit-Modus (JS-Skript) */
+.edit-mode-container button {
+    appearance: none;
+}
+
+/* =====================================================================
+   DER ENDGÜLTIGE FIX FÜR DIE RAHMEN IN ALLEN UNFOLD-TABELLEN
+   (Sowohl in Hauptlisten/Changelists als auch in Inlines)
+   ===================================================================== */
+
+/* 1. Zerstört die Rahmen, Farben und Schatten der verschachtelten Unfold-Divs überall! */
+#result_list td div.readonly,
+#result_list th div.readonly,
+.inline-related td div.readonly,
+td.field-tabular div.readonly {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* 2. Entfernt das graue Padding der innersten Text-Elemente */
+#result_list td div.readonly > div,
+#result_list th div.readonly > div,
+.inline-related td div.readonly > div,
+td.field-tabular div.readonly > div {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* 3. Macht alle Tabellen-Zellen (Hauptliste + Inlines) vertikal mittig und luftig */
+#result_list td,
+#result_list th,
+.inline-related td,
+.inline-related th {
+    vertical-align: middle !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
+
+/* 4. Hover-Effekt für Tabellen-Zeilen (falls Unfold das mal wieder blockiert) */
+#result_list tbody tr:hover td,
+#result_list tbody tr:hover th,
+.inline-related tbody tr:hover td,
+.inline-related tbody tr:hover th {
+    background-color: #f9fafb !important;
+}

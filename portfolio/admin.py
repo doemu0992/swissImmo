@@ -40,8 +40,8 @@ class EinheitInline(TabularInline):
     model = Einheit
     extra = 0
     tab = True
-    fields = ('einheit_profil', 'flaeche_m2', 'miet_info', 'status_badge', 'detail_link')
-    readonly_fields = ('einheit_profil', 'miet_info', 'status_badge', 'detail_link')
+    fields = ('einheit_profil', 'flaeche_info', 'miet_info', 'status_badge', 'detail_link')
+    readonly_fields = ('einheit_profil', 'flaeche_info', 'miet_info', 'status_badge', 'detail_link')
 
     @display(description="Mietobjekt")
     def einheit_profil(self, obj):
@@ -54,6 +54,11 @@ class EinheitInline(TabularInline):
             '<div><div class="font-bold text-gray-900">{}</div><div class="text-[10px] text-gray-500 uppercase tracking-wide">{}</div></div>'
             '</div>', icon, obj.bezeichnung, typ_name
         )
+
+    @display(description="Fläche")
+    def flaeche_info(self, obj):
+        if not obj.pk or not getattr(obj, 'flaeche_m2', None): return "-"
+        return format_html('<span class="text-sm font-medium text-gray-700">{} m²</span>', obj.flaeche_m2)
 
     @display(description="Finanzen (Brutto)")
     def miet_info(self, obj):
@@ -75,6 +80,9 @@ class EinheitInline(TabularInline):
         return "-"
 
     def has_add_permission(self, request, obj=None): return False
+    def has_change_permission(self, request, obj=None): return False
+    def has_delete_permission(self, request, obj=None): return False
+
 
 class UnterhaltLiegenschaftInline(TabularInline):
     model = Unterhalt
@@ -82,8 +90,8 @@ class UnterhaltLiegenschaftInline(TabularInline):
     tab = True
     verbose_name = "Unterhalt Gebäude"
     verbose_name_plural = "🛠️ Unterhaltshistorie (Allgemein)"
-    fields = ('unterhalt_profil', 'datum', 'kosten_info', 'detail_link')
-    readonly_fields = ('unterhalt_profil', 'kosten_info', 'detail_link')
+    fields = ('unterhalt_profil', 'datum_info', 'kosten_info', 'detail_link')
+    readonly_fields = ('unterhalt_profil', 'datum_info', 'kosten_info', 'detail_link')
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(einheit__isnull=True)
@@ -98,6 +106,11 @@ class UnterhaltLiegenschaftInline(TabularInline):
             '</div>', obj.titel
         )
 
+    @display(description="Datum")
+    def datum_info(self, obj):
+        if not obj.pk or not obj.datum: return "-"
+        return format_html('<span class="text-sm text-gray-600">{}</span>', obj.datum.strftime('%d.%m.%Y'))
+
     @display(description="Kosten")
     def kosten_info(self, obj):
         if not obj.pk: return "-"
@@ -109,6 +122,9 @@ class UnterhaltLiegenschaftInline(TabularInline):
         return "-"
 
     def has_add_permission(self, request, obj=None): return False
+    def has_change_permission(self, request, obj=None): return False
+    def has_delete_permission(self, request, obj=None): return False
+
 
 # ==========================================
 # 2. INLINES (SaaS-Tabs für Wohnung/Einheit)
@@ -149,7 +165,10 @@ class MietvertragInline(TabularInline):
     def detail_link(self, obj):
         if obj.id: return format_html('<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">📄 Vertrag öffnen</a>', reverse("admin:rentals_mietvertrag_change", args=[obj.id]))
         return "-"
+
     def has_add_permission(self, request, obj=None): return False
+    def has_change_permission(self, request, obj=None): return False
+    def has_delete_permission(self, request, obj=None): return False
 
 class ZaehlerInline(TabularInline):
     model = Zaehler
@@ -174,7 +193,10 @@ class ZaehlerInline(TabularInline):
     def detail_link(self, obj):
         if obj.id: return format_html('<a href="{}" class="text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Ablesen / Details</a>', reverse("admin:portfolio_zaehler_change", args=[obj.id]))
         return "-"
+
     def has_add_permission(self, request, obj=None): return False
+    def has_change_permission(self, request, obj=None): return False
+    def has_delete_permission(self, request, obj=None): return False
 
 class GeraetInline(TabularInline):
     model = Geraet
@@ -207,7 +229,10 @@ class GeraetInline(TabularInline):
     def detail_link(self, obj):
         if obj.id: return format_html('<a href="{}" class="text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Details</a>', reverse("admin:portfolio_geraet_change", args=[obj.id]))
         return "-"
+
     def has_add_permission(self, request, obj=None): return False
+    def has_change_permission(self, request, obj=None): return False
+    def has_delete_permission(self, request, obj=None): return False
 
 class UnterhaltEinheitInline(TabularInline):
     model = Unterhalt
@@ -216,8 +241,8 @@ class UnterhaltEinheitInline(TabularInline):
     tab = True
     verbose_name = "Reparatur"
     verbose_name_plural = "🛠️ Reparaturen (Objekt)"
-    fields = ('unterhalt_profil', 'datum', 'kosten_info', 'detail_link')
-    readonly_fields = ('unterhalt_profil', 'kosten_info', 'detail_link')
+    fields = ('unterhalt_profil', 'datum_info', 'kosten_info', 'detail_link')
+    readonly_fields = ('unterhalt_profil', 'datum_info', 'kosten_info', 'detail_link')
 
     @display(description="Auftrag")
     def unterhalt_profil(self, obj):
@@ -228,15 +253,25 @@ class UnterhaltEinheitInline(TabularInline):
             '<div class="font-bold text-gray-900">{}</div>'
             '</div>', obj.titel
         )
+
+    @display(description="Datum")
+    def datum_info(self, obj):
+        if not obj.pk or not obj.datum: return "-"
+        return format_html('<span class="text-sm text-gray-600">{}</span>', obj.datum.strftime('%d.%m.%Y'))
+
     @display(description="Kosten")
     def kosten_info(self, obj):
         if not obj.pk: return "-"
         return format_html('<span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-bold text-red-700 ring-1 ring-inset ring-red-600/10">CHF {:,.2f}</span>', obj.kosten)
+
     @display(description="Aktion")
     def detail_link(self, obj):
         if obj.id: return format_html('<a href="{}" class="text-amber-600 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">📄 Details</a>', reverse("admin:portfolio_unterhalt_change", args=[obj.id]))
         return "-"
+
     def has_add_permission(self, request, obj=None): return False
+    def has_change_permission(self, request, obj=None): return False
+    def has_delete_permission(self, request, obj=None): return False
 
 class SchadenEinheitInline(TabularInline):
     model = SchadenMeldung
@@ -266,7 +301,10 @@ class SchadenEinheitInline(TabularInline):
     def detail_link(self, obj):
         if obj.id: return format_html('<a href="{}" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">🎫 Öffnen</a>', reverse("admin:tickets_schadenmeldung_change", args=[obj.id]))
         return "-"
+
     def has_add_permission(self, request, obj=None): return False
+    def has_change_permission(self, request, obj=None): return False
+    def has_delete_permission(self, request, obj=None): return False
 
 class DokumentEinheitInline(TabularInline):
     model = Dokument
@@ -292,10 +330,22 @@ class DokumentEinheitInline(TabularInline):
     def detail_link(self, obj):
         if obj.id: return format_html('<a href="{}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">⬇️ Ansehen</a>', reverse("admin:rentals_dokument_change", args=[obj.id]))
         return "-"
-    def has_add_permission(self, request, obj=None): return False
 
-class ZaehlerStandInline(TabularInline): model = ZaehlerStand; extra = 1; ordering = ('-datum',); tab = True
-class SchluesselAusgabeInline(TabularInline): model = SchluesselAusgabe; extra = 0; tab=True
+    def has_add_permission(self, request, obj=None): return False
+    def has_change_permission(self, request, obj=None): return False
+    def has_delete_permission(self, request, obj=None): return False
+
+class ZaehlerStandInline(TabularInline):
+    model = ZaehlerStand
+    extra = 1
+    ordering = ('-datum',)
+    tab = True
+
+class SchluesselAusgabeInline(TabularInline):
+    model = SchluesselAusgabe
+    extra = 0
+    tab = True
+
 
 # ==========================================
 # 3. LIEGENSCHAFT ADMIN
@@ -306,7 +356,6 @@ class LiegenschaftAdmin(ModelAdmin):
     list_display = ('liegenschaft_profil', 'standort_info', 'portfolio_stats', 'schnell_aktionen')
     search_fields = ('strasse', 'ort', 'egid')
     inlines = [EinheitInline, UnterhaltLiegenschaftInline]
-    class Media: js = ('js/admin_address.js',)
 
     readonly_fields = ('liegenschaft_full_header',)
 
@@ -518,8 +567,8 @@ class GeraetAdmin(ModelAdmin):
     def geraet_profil(self, obj):
         return format_html(
             '<div class="flex items-center gap-3">'
-            '<div class="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-100 text-slate-700 text-lg shadow-sm">🔌</div>'
-            '<div><div class="font-bold text-gray-900">{} {}</div><div class="text-xs text-gray-500">Modell: {}</div></div>'
+            '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 text-sm ring-1 ring-inset ring-slate-600/20">🔌</div>'
+            '<div><div class="font-bold text-gray-900">{} {}</div><div class="text-[10px] text-gray-500 uppercase tracking-wide">Modell: {}</div></div>'
             '</div>', getattr(obj, 'marke', ''), getattr(obj, 'typ', ''), getattr(obj, 'modell', '-')
         )
 
