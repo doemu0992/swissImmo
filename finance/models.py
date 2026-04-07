@@ -1,16 +1,18 @@
 # finance/models.py
 import json
 import datetime
+import mimetypes
 from decimal import Decimal
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
 
-# --- NEUER IMPORT FÜR DAS AKTUELLE SDK ---
 try:
     from google import genai
+    from google.genai import types
 except ImportError:
     genai = None
+    types = None
 
 class Buchungskonto(models.Model):
     nummer = models.CharField("Kontonummer", max_length=10, unique=True)
@@ -64,16 +66,21 @@ class NebenkostenBeleg(models.Model):
 
     def analyze_pdf_with_ai(self):
         if not self.beleg_scan: return
-        if not genai:
+        if not genai or not types:
             self.text = "SYSTEM-FEHLER: Das 'google-genai' Paket fehlt!"
             return
 
         try:
-            # --- NEUER CLIENT-AUFRUF ---
             client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
-            # --- DATEI HOCHLADEN ---
-            beleg_file = client.files.upload(file=self.beleg_scan.path)
+            # 1. Dateityp ermitteln (PDF, JPG, PNG)
+            mime_type, _ = mimetypes.guess_type(self.beleg_scan.path)
+            if not mime_type:
+                mime_type = 'application/pdf'
+
+            # 2. Datei direkt als Bytes einlesen
+            with open(self.beleg_scan.path, "rb") as f:
+                doc_data = f.read()
 
             prompt = (
                 "Du bist ein professioneller Buchhalter für Schweizer Immobilien. "
@@ -83,16 +90,14 @@ class NebenkostenBeleg(models.Model):
                 "\"lieferant\": \"Müller Sanitär AG\", \"kategorie\": \"hauswart\"}"
             )
 
-            # --- GENERIERUNG (fest auf 1.5-flash gesetzt für mehr Speed) ---
+            # 3. Direkt Inline senden (Viel schneller, keine 404 Fehler mehr!)
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
-                contents=[beleg_file, prompt]
+                model='gemini-1.5-pro',
+                contents=[
+                    types.Part.from_bytes(data=doc_data, mime_type=mime_type),
+                    prompt
+                ]
             )
-
-            # --- AUFRÄUMEN ---
-            try:
-                client.files.delete(name=beleg_file.name)
-            except: pass
 
             raw_json = response.text.replace('```json', '').replace('```', '').strip()
             data = json.loads(raw_json)
@@ -158,14 +163,19 @@ class KreditorenRechnung(models.Model):
         db_table = 'core_kreditorenrechnung'
 
     def analyze_invoice_with_ai(self):
-        if not self.beleg_scan or not genai: return
+        if not self.beleg_scan or not genai or not types: return
 
         try:
-            # --- NEUER CLIENT-AUFRUF ---
             client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
-            # --- DATEI HOCHLADEN ---
-            beleg_file = client.files.upload(file=self.beleg_scan.path)
+            # 1. Dateityp ermitteln
+            mime_type, _ = mimetypes.guess_type(self.beleg_scan.path)
+            if not mime_type:
+                mime_type = 'application/pdf'
+
+            # 2. Datei direkt als Bytes einlesen
+            with open(self.beleg_scan.path, "rb") as f:
+                doc_data = f.read()
 
             prompt = (
                 "Du bist ein professioneller Buchhalter in der Schweiz. "
@@ -176,16 +186,14 @@ class KreditorenRechnung(models.Model):
                 "\"referenz\": \"123456789012345678901234567\"}"
             )
 
-            # --- GENERIERUNG ---
+            # 3. Direkt Inline senden
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
-                contents=[beleg_file, prompt]
+                model='gemini-1.5-pro',
+                contents=[
+                    types.Part.from_bytes(data=doc_data, mime_type=mime_type),
+                    prompt
+                ]
             )
-
-            # --- AUFRÄUMEN ---
-            try:
-                client.files.delete(name=beleg_file.name)
-            except: pass
 
             raw_json = response.text.replace('```json', '').replace('```', '').strip()
             data = json.loads(raw_json)
