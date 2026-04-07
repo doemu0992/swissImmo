@@ -81,9 +81,9 @@ class AbrechnungAdmin(ModelAdmin):
 
         return format_html(
             '<div class="flex gap-1.5">'
-            '<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded text-xs font-semibold transition-colors">Bearbeiten</a>'
-            '<a href="{}" target="_blank" class="text-gray-600 bg-gray-50 hover:bg-gray-200 px-2 py-1 rounded text-xs transition-colors">📄 PDF</a>'
-            '<a href="{}" onclick="return confirm(\'Alle senden?\')" class="text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded text-xs transition-colors">📩 Senden</a>'
+            '<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>'
+            '<a href="{}" target="_blank" class="text-gray-600 bg-gray-50 hover:bg-gray-200 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">📄 PDF</a>'
+            '<a href="{}" onclick="return confirm(\'Alle senden?\')" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">📩 Senden</a>'
             '</div>',
             edit_url, pdf_url, mail_url
         )
@@ -168,7 +168,7 @@ class KreditorenRechnungAdmin(ModelAdmin):
 
     @display(description="Aktionen")
     def schnell_aktionen(self, obj):
-        return format_html('<a href="{}" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-2 py-1 rounded text-xs font-semibold transition-colors">Bearbeiten</a>',
+        return format_html('<a href="{}" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>',
             reverse('admin:finance_kreditorenrechnung_change', args=[obj.id]))
 
 
@@ -212,12 +212,12 @@ class ZahlungseingangAdmin(ModelAdmin):
 
     @display(description="Aktionen")
     def schnell_aktionen(self, obj):
-        return format_html('<a href="{}" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded text-xs font-semibold transition-colors">Bearbeiten</a>',
+        return format_html('<a href="{}" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>',
             reverse('admin:finance_zahlungseingang_change', args=[obj.id]))
 
 
 # ==========================================
-# 5. WEITERE BUCHHALTUNGS-ADMINS (SaaS Upgrade)
+# 5. WEITERE BUCHHALTUNGS-ADMINS
 # ==========================================
 
 @admin.register(Buchungskonto)
@@ -286,7 +286,7 @@ class JahresabschlussAdmin(ModelAdmin):
 
     @display(description="Aktionen")
     def schnell_aktionen(self, obj):
-        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 px-2 py-1 rounded text-xs font-semibold">Details</a>', reverse('admin:finance_jahresabschluss_change', args=[obj.id]))
+        return format_html('<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse('admin:finance_jahresabschluss_change', args=[obj.id]))
 
 @admin.register(MietzinsKontrolle)
 class MietzinsKontrolleAdmin(ModelAdmin):
@@ -309,4 +309,4 @@ class MietzinsKontrolleAdmin(ModelAdmin):
 
     @display(description="Aktionen")
     def schnell_aktionen(self, obj):
-        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 px-2 py-1 rounded text-xs font-semibold">Bearbeiten</a>', reverse('admin:finance_mietzinskontrolle_change', args=[obj.id]))
+        return format_html('<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse('admin:finance_mietzinskontrolle_change', args=[obj.id]))

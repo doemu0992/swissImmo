@@ -1,70 +1,94 @@
 /* static/css/fairwalter_theme.css */
 
-/* 1. Import der Inter-Schriftart - Der Goldstandard für moderne Schweizer Software */
+/* 1. Import der Inter-Schriftart */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* Basis-Styling für den gesamten Body */
+/* =====================================================================
+   GLOBALE DESIGN-VARIABLEN (SwissImmo Master-Theme)
+   ===================================================================== */
+:root {
+    --si-primary: #2563eb;       /* Modernes SwissImmo Blau */
+    --si-primary-hover: #1d4ed8; /* Etwas dunkleres Blau für Hover */
+    --si-bg: #f8fafc;            /* Frisches, kühles Hellgrau für den Hintergrund */
+    --si-card-bg: #ffffff;       /* Reinweiss für die Karten */
+    --si-border: #e2e8f0;        /* Sanfte Rahmenfarbe */
+    --si-text-main: #0f172a;     /* Fast Schwarz für gute Lesbarkeit */
+    --si-text-muted: #64748b;    /* Graue Texte (z.B. Tabellenköpfe) */
+    --si-radius: 12px;           /* Globaler Radius für alle Boxen */
+    --si-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* =====================================================================
+   BASIS & TYPOGRAFIE
+   ===================================================================== */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-    background-color: #f9fafb !important; /* Sehr helles Grau für den Hintergrund erzeugt Tiefe zu den weißen Karten */
-    color: #111827 !important;
+    background-color: var(--si-bg) !important;
+    color: var(--si-text-main) !important;
 }
 
-/* 2. Fieldsets als "Cards" (Karten-Design wie Fairwalter) */
-/* Das gruppiert deine Eingabefelder in schicken weißen Boxen */
-fieldset.module {
-    background: #ffffff !important;
-    border: 1px solid #e5e7eb !important; /* Subtile graue Trennlinie */
-    border-radius: 12px !important;       /* Abgerundete Ecken für den modernen Look */
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+/* =====================================================================
+   KARTEN-DESIGN FÜR ALLE ABSCHNITTE (Fieldsets & Inlines)
+   ===================================================================== */
+fieldset.module,
+.unfold-card,
+.inline-group {
+    background: var(--si-card-bg) !important;
+    border: 1px solid var(--si-border) !important;
+    border-radius: var(--si-radius) !important;
+    box-shadow: var(--si-shadow) !important;
     padding: 1.5rem !important;
     margin-bottom: 2rem !important;
+    overflow: hidden; /* Wichtig für Inlines mit runden Ecken */
 }
 
-/* Styling der Überschriften innerhalb der Karten */
-fieldset.module h2 {
+/* Reduziertes Padding für Inline-Tabellen (damit sie bündig abschließen) */
+.inline-group {
+    padding: 0 !important;
+}
+
+/* Einheitliche Überschriften in den Karten */
+fieldset.module h2,
+.inline-group h2 {
     background: transparent !important;
-    color: #111827 !important;
+    color: var(--si-text-main) !important;
     font-weight: 700 !important;
     font-size: 1rem !important;
     text-transform: none !important;
     letter-spacing: -0.025em !important;
-    padding-bottom: 0.75rem !important;
-    border-bottom: 1px solid #f3f4f6 !important;
+    padding: 0 0 1rem 0 !important;
+    border-bottom: 1px solid var(--si-border) !important;
     margin-bottom: 1.25rem !important;
 }
 
-/* 3. Inlines (Tabellen für verknüpfte Daten wie Einheiten oder Zähler) */
-.inline-group {
-    border: 1px solid #e5e7eb !important;
-    border-radius: 12px !important;
-    overflow: hidden; /* Damit die runden Ecken auch bei Tabellen funktionieren */
-    background: #ffffff !important;
-    margin-top: 2rem !important;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
-}
-
 .inline-group h2 {
-    background: #f9fafb !important;
-    padding: 1rem 1.25rem !important;
-    font-size: 0.875rem !important;
-    font-weight: 600 !important;
-    color: #374151 !important;
-    border-bottom: 1px solid #e5e7eb !important;
+    padding: 1rem 1.5rem !important;
+    margin-bottom: 0 !important;
+    background: #f8fafc !important; /* Leicht grauer Header für Tabellen-Karten */
 }
 
-/* 4. Tabellen-Header Styling (Listenansicht) */
+/* =====================================================================
+   TABELLEN (Listenansicht & Verknüpfte Inlines)
+   ===================================================================== */
 thead th {
-    background-color: #f9fafb !important;
-    color: #4b5563 !important;
+    background-color: var(--si-bg) !important;
+    color: var(--si-text-muted) !important;
     font-weight: 600 !important;
     text-transform: uppercase !important;
     font-size: 0.75rem !important;
     letter-spacing: 0.05em !important;
     padding: 0.75rem 1rem !important;
+    border-bottom: 1px solid var(--si-border) !important;
 }
 
-/* 5. Formular-Eingabefelder (Inputs) */
+/* Tabellen in Inlines (z.B. Einheiten in Liegenschaft) rahmenlos machen */
+.inline-related table {
+    border: none !important;
+}
+
+/* =====================================================================
+   FORMULAR-FELDER (Inputs)
+   ===================================================================== */
 input[type="text"],
 input[type="number"],
 input[type="email"],
@@ -72,31 +96,37 @@ input[type="password"],
 input[type="date"],
 select,
 textarea {
-    border-radius: 8px !important; /* Weichere Ecken für Inputs */
-    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    border: 1px solid var(--si-border) !important;
     padding: 0.5rem 0.75rem !important;
-    background-color: #ffffff !important;
+    background-color: var(--si-card-bg) !important;
     transition: all 0.2s ease-in-out !important;
 }
 
-/* Fokus-Effekt wie bei Fairwalter (Blauer Ring) */
+/* Fokus-Effekt (SwissImmo Blaues Leuchten) */
 input:focus, select:focus, textarea:focus {
-    border-color: #3b82f6 !important;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
+    border-color: var(--si-primary) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
     outline: none !important;
 }
 
-/* 6. Buttons im Admin-Bereich (Speichern etc.) */
+/* =====================================================================
+   BUTTONS & BADGES
+   ===================================================================== */
+/* Styling der Speichern-Leiste */
 .submit-row {
-    background: #ffffff !important;
-    border: 1px solid #e5e7eb !important;
-    border-radius: 12px !important;
+    background: var(--si-card-bg) !important;
+    border: 1px solid var(--si-border) !important;
+    border-radius: var(--si-radius) !important;
     padding: 1rem !important;
     margin-top: 2rem !important;
+    box-shadow: var(--si-shadow) !important;
 }
 
-/* Styling für die Badges/Pillen in der Sidebar */
+/* Pillen in der Sidebar */
 .unfold-badge {
     border-radius: 9999px !important;
     font-weight: 600 !important;
+    background-color: var(--si-primary) !important;
+    color: white !important;
 }

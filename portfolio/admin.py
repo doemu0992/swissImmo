@@ -1,3 +1,4 @@
+# portfolio/admin.py
 from django.contrib import admin
 from django.utils.html import format_html, mark_safe
 from django.urls import reverse
@@ -25,7 +26,7 @@ except ImportError:
 # ==========================================
 # 0. SICHERHEITS-CHECK (Gegen Reload-Abstürze)
 # ==========================================
-models_to_fix = [Liegenschaft, Einheit, Zaehler, Schluessel, Geraet, Unterhalt, SchluesselAusgabe]
+models_to_fix = [Liegenschaft, Einheit, Zaehler, Schluessel, Geraet, Unterhalt, SchluesselAusgabe, ZaehlerStand]
 for m in models_to_fix:
     try:
         admin.site.unregister(m)
@@ -396,32 +397,33 @@ class LiegenschaftAdmin(ModelAdmin):
             fieldset.map-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
             fieldset.map-fieldset > div, fieldset.map-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
             fieldset.map-fieldset label {{ display: none !important; }}
-            .liegenschaft-header-grid {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }}
-            @media (min-width: 1024px) {{ .liegenschaft-header-grid {{ grid-template-columns: 350px 1fr; }} }}
+            .master-header-grid {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }}
+            @media (min-width: 1024px) {{ .master-header-grid {{ grid-template-columns: 350px 1fr; }} }}
         </style>
 
-        <div class="liegenschaft-header-grid">
+        <div class="master-header-grid">
             <div style="display: flex; flex-direction: column; gap: 1rem;">
                 <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
                     <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #eef2ff; color: #4f46e5; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">🏢</div>
                     <div style="overflow: hidden;">
                         <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{obj.strasse}</h2>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px;">{obj.plz} {obj.ort}</p>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 4px;">🏢 Liegenschaft</p>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px;">📍 {obj.plz} {obj.ort}</p>
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
                         <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Einheiten</span>
-                        <span style="font-size: 1.25rem; font-weight: 700; color: #111827;">{einheiten_count}</span>
+                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827;">{einheiten_count}</span>
                     </div>
                     <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
                         <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Baujahr</span>
-                        <span style="font-size: 1.25rem; font-weight: 700; color: #111827;">{baujahr}</span>
+                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827;">{baujahr}</span>
                     </div>
                     <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; grid-column: span 2;">
                         <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">EGID</span>
-                        <span style="font-size: 1.25rem; font-weight: 700; color: #4f46e5;">{egid}</span>
+                        <span style="font-size: 1.15rem; font-weight: 700; color: #4f46e5;">{egid}</span>
                     </div>
                 </div>
             </div>
@@ -456,7 +458,12 @@ class LiegenschaftAdmin(ModelAdmin):
     def schnell_aktionen(self, obj):
         edit_url = reverse('admin:portfolio_liegenschaft_change', args=[obj.id])
         qr_url = reverse('hallway_poster', args=[obj.id]) if obj.id else '#'
-        return format_html('<div class="flex gap-2"><a href="{}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded text-xs font-semibold transition-colors">Bearbeiten</a><a href="{}" target="_blank" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded text-xs font-semibold transition-colors">🖨️ QR Aushang</a></div>', edit_url, qr_url)
+        return format_html(
+            '<div class="flex gap-2">'
+            '<a href="{}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>'
+            '<a href="{}" target="_blank" class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">🖨️ QR Aushang</a>'
+            '</div>', edit_url, qr_url
+        )
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
@@ -488,11 +495,111 @@ class EinheitAdmin(ModelAdmin):
     inlines = [MietvertragInline, ZaehlerInline, GeraetInline, UnterhaltEinheitInline, SchadenEinheitInline, DokumentEinheitInline]
     search_fields = ('bezeichnung', 'liegenschaft__strasse')
 
+    readonly_fields = ('einheit_full_header',)
+
     fieldsets = (
+        (None, {
+            'fields': ('einheit_full_header',),
+            'classes': ('map-fieldset',),
+        }),
         ('Basis', {'fields': ('liegenschaft', 'bezeichnung', ('typ', 'ewid'))}),
         ('Details', {'fields': (('etage', 'zimmer'), ('flaeche_m2', 'wertquote'))}),
-        ('Finanzen', {'fields': (('nettomiete_aktuell', 'nebenkosten_aktuell'), 'nk_abrechnungsart')})
+        ('Finanzen', {'fields': (('nettomiete_aktuell', 'nebenkosten_aktuell'), 'nk_abrechnungsart', ('ref_zinssatz', 'lik_punkte'))})
     )
+
+    @display(description="")
+    def einheit_full_header(self, obj):
+        if not obj.pk:
+            return format_html('<div class="p-4 bg-teal-50 text-teal-700 rounded-xl font-bold border border-teal-100">✨ Neue Einheit anlegen</div>')
+
+        # Typ und Icon
+        typ_display = obj.get_typ_display()
+        icon = "🏠" if obj.typ == 'whg' else "🚗" if obj.typ in ['pp', 'gar'] else "🏬" if obj.typ == 'com' else "🚪"
+
+        # Liegenschaft Adresse für Map & Header
+        lieg_obj = getattr(obj, 'liegenschaft', None)
+        liegenschaft_str = lieg_obj.strasse if lieg_obj else "Keine Liegenschaft"
+
+        # Finanzen
+        netto = float(getattr(obj, 'nettomiete_aktuell', 0) or 0)
+        nk = float(getattr(obj, 'nebenkosten_aktuell', 0) or 0)
+        brutto = netto + nk
+
+        # Details
+        zimmer = getattr(obj, 'zimmer', '-')
+        flaeche = getattr(obj, 'flaeche_m2', '-')
+        etage = getattr(obj, 'etage', '-')
+
+        # Status & Mieter
+        aktiver_vertrag = getattr(obj, 'aktiver_vertrag', None)
+        if aktiver_vertrag:
+            status_text = "Vermietet"
+            status_color = "#059669" # Grün
+            mieter_info = str(aktiver_vertrag.mieter)
+        else:
+            status_text = "Leerstand"
+            status_color = "#dc2626" # Rot
+            mieter_info = "Kein Mieter"
+
+        # Map URL
+        if lieg_obj and getattr(lieg_obj, 'strasse', None):
+            address_query = urllib.parse.quote(f"{lieg_obj.strasse}, {lieg_obj.plz} {lieg_obj.ort}")
+            map_url = f"https://maps.google.com/maps?q={address_query}&t=&z=15&ie=UTF8&iwloc=&output=embed"
+        else:
+            map_url = "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed"
+
+        # HTML
+        html = f"""
+        <style>
+            #content-main form > div, form .max-w-5xl, form .max-w-4xl, form .max-w-3xl, form .max-w-2xl {{ max-width: 100% !important; width: 100% !important; }}
+            fieldset.map-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
+            fieldset.map-fieldset > div, fieldset.map-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
+            fieldset.map-fieldset label {{ display: none !important; }}
+            .master-header-grid {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }}
+            @media (min-width: 1024px) {{ .master-header-grid {{ grid-template-columns: 350px 1fr; }} }}
+        </style>
+
+        <div class="master-header-grid">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
+                    <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #f0fdfa; color: #0d9488; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">{icon}</div>
+                    <div style="overflow: hidden;">
+                        <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{obj.bezeichnung}</h2>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 4px;">{icon} {typ_display}</p>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px;">📍 {liegenschaft_str}</p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
+                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Soll-Miete</span>
+                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827;">CHF {brutto:,.0f}</span>
+                    </div>
+                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
+                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Status</span>
+                        <span style="font-size: 1.15rem; font-weight: 700; color: {status_color};">{status_text}</span>
+                    </div>
+                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; grid-column: span 2;">
+                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Eckdaten & Mieter</span>
+                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{zimmer} Zi. / {flaeche} m²</span>
+                        <span style="font-size: 0.8rem; font-weight: 500; color: #4b5563; margin-top: 4px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👤 {mieter_info}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="width: 100%; height: 100%; min-height: 250px; background-color: #e5e7eb; border-radius: 12px; overflow: hidden; border: 1px solid #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <iframe
+                    width="100%"
+                    height="100%"
+                    frameborder="0"
+                    style="border:0;"
+                    src="{map_url}"
+                    allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+        """
+        return mark_safe(html)
 
     @display(description="Mietobjekt", ordering="bezeichnung")
     def einheit_profil(self, obj):
@@ -517,7 +624,9 @@ class EinheitAdmin(ModelAdmin):
         return ("Vermietet", "success") if getattr(obj, 'aktiver_vertrag', False) else ("Leerstand", "danger")
 
     @display(description="Aktionen")
-    def schnell_aktionen(self, obj): return format_html('<a href="{}" class="text-teal-600 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-2 py-1 rounded text-xs font-semibold transition-colors">Bearbeiten</a>', reverse('admin:portfolio_einheit_change', args=[obj.id]))
+    def schnell_aktionen(self, obj):
+        return format_html('<a href="{}" class="text-teal-600 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse('admin:portfolio_einheit_change', args=[obj.id]))
+
 
 # ==========================================
 # 5. WEITERE ADMINS (SaaS Upgrade)
@@ -551,7 +660,7 @@ class ZaehlerAdmin(ModelAdmin):
 
     @display(description="Aktionen")
     def schnell_aktionen(self, obj):
-        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 px-2 py-1 rounded text-xs font-semibold">Bearbeiten</a>', reverse('admin:portfolio_zaehler_change', args=[obj.id]))
+        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse('admin:portfolio_zaehler_change', args=[obj.id]))
 
 @admin.register(Geraet)
 class GeraetAdmin(ModelAdmin):
@@ -582,7 +691,7 @@ class GeraetAdmin(ModelAdmin):
 
     @display(description="Aktionen")
     def schnell_aktionen(self, obj):
-        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 px-2 py-1 rounded text-xs font-semibold">Bearbeiten</a>', reverse('admin:portfolio_geraet_change', args=[obj.id]))
+        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse('admin:portfolio_geraet_change', args=[obj.id]))
 
 @admin.register(Unterhalt)
 class UnterhaltAdmin(ModelAdmin):
@@ -609,12 +718,16 @@ class UnterhaltAdmin(ModelAdmin):
 
     @display(description="Aktionen")
     def schnell_aktionen(self, obj):
-        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 px-2 py-1 rounded text-xs font-semibold">Bearbeiten</a>', reverse('admin:portfolio_unterhalt_change', args=[obj.id]))
+        return format_html('<a href="{}" class="text-amber-600 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse('admin:portfolio_unterhalt_change', args=[obj.id]))
 
 @admin.register(Schluessel)
 class SchluesselAdmin(ModelAdmin):
     list_display = ('schluessel_profil', 'liegenschaft', 'schnell_aktionen')
     inlines = [SchluesselAusgabeInline]
+
+    fieldsets = (
+        ('Schlüssel Details', {'fields': ('liegenschaft', 'schluessel_nummer')}),
+    )
 
     @display(description="Schlüssel-ID", ordering="schluessel_nummer")
     def schluessel_profil(self, obj):
@@ -627,8 +740,33 @@ class SchluesselAdmin(ModelAdmin):
 
     @display(description="Aktionen")
     def schnell_aktionen(self, obj):
-        return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 px-2 py-1 rounded text-xs font-semibold">Bearbeiten</a>', reverse('admin:portfolio_schluessel_change', args=[obj.id]))
+        return format_html('<a href="{}" class="text-zinc-600 hover:text-zinc-900 bg-zinc-50 hover:bg-zinc-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse('admin:portfolio_schluessel_change', args=[obj.id]))
 
 @admin.register(SchluesselAusgabe)
 class SchluesselAusgabeAdmin(ModelAdmin):
-    pass
+    list_display = ('ausgabe_profil', 'datum_info', 'schnell_aktionen')
+
+    fieldsets = (
+        ('Zuweisung', {'fields': ('schluessel', 'mieter', 'handwerker')}),
+        ('Zeitraum', {'fields': ('ausgegeben_am', 'rueckgabe_am')})
+    )
+
+    @display(description="Schlüssel & Person", ordering="-ausgegeben_am")
+    def ausgabe_profil(self, obj):
+        person = obj.mieter if obj.mieter else obj.handwerker if obj.handwerker else "Unbekannt"
+        return format_html(
+            '<div class="flex items-center gap-3">'
+            '<div class="flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-100 text-zinc-700 text-lg shadow-sm">🗝️</div>'
+            '<div><div class="font-bold text-gray-900">{}</div><div class="text-xs text-gray-500">Schlüssel: {}</div></div>'
+            '</div>', person, obj.schluessel.schluessel_nummer if obj.schluessel else "Unbekannt"
+        )
+
+    @display(description="Zeitraum")
+    def datum_info(self, obj):
+        von = obj.ausgegeben_am.strftime('%d.%m.%Y') if obj.ausgegeben_am else "-"
+        bis = obj.rueckgabe_am.strftime('%d.%m.%Y') if obj.rueckgabe_am else "Im Besitz"
+        return format_html('<span class="text-sm text-gray-600">{} – {}</span>', von, bis)
+
+    @display(description="Aktionen")
+    def schnell_aktionen(self, obj):
+        return format_html('<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse('admin:portfolio_schluesselausgabe_change', args=[obj.id]))

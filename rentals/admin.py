@@ -1,9 +1,12 @@
+# rentals/admin.py
+import urllib.parse
 from django.contrib import admin
 from django.utils.html import format_html, mark_safe
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib import messages
-import datetime
+from django.db.models import Sum
+from datetime import date
 
 # Unfold Imports
 from unfold.admin import ModelAdmin, TabularInline
@@ -28,6 +31,7 @@ for m in models_to_fix:
         admin.site.unregister(m)
     except admin.sites.NotRegistered:
         pass
+
 
 # ==========================================
 # 1. INLINES (SaaS-Tabs)
@@ -88,7 +92,8 @@ class MietvertragAdmin(ModelAdmin):
     fieldsets = (
         (None, {
             'fields': ('vertrag_full_header',),
-            'classes': ('header-fieldset',), # CSS Hook für breites Layout
+            # FIX: Zwingend .map-fieldset verwenden, damit das Layout 1:1 wie bei Liegenschaften funktioniert!
+            'classes': ('map-fieldset',),
         }),
         ('Vertragsparteien & Objekt', {'fields': ('mieter', 'einheit')}),
         ('Laufzeit & Status', {'fields': (('beginn', 'ende'), ('aktiv', 'sign_status'))}),
@@ -122,41 +127,99 @@ class MietvertragAdmin(ModelAdmin):
         nk = float(getattr(obj, 'nebenkosten', 0) or 0)
         brutto = netto + nk
         mieter_name = str(getattr(obj, 'mieter', 'Unbekannt'))
+
+        # Einheit und Liegenschaft sicher abrufen
         einheit_name = str(getattr(obj.einheit, 'bezeichnung', '-')) if getattr(obj, 'einheit', None) else '-'
+        lieg_obj = getattr(obj.einheit, 'liegenschaft', None) if getattr(obj, 'einheit', None) else None
+        liegenschaft_name = str(getattr(lieg_obj, 'strasse', '-')) if lieg_obj else '-'
+
         beginn = obj.beginn.strftime('%d.%m.%Y') if getattr(obj, 'beginn', None) else "-"
 
         aktiv_color = "#059669" if getattr(obj, 'aktiv', False) else "#dc2626"
-        aktiv_text = "Aktiv" if getattr(obj, 'aktiv', False) else "Inaktiv / Aufgelöst"
+        aktiv_text = "Aktiv" if getattr(obj, 'aktiv', False) else "Inaktiv"
+
+        # --- MIETERKONTO STATUS BERECHNEN ---
+        heute = date.today()
+        aktueller_monat = heute.replace(day=1)
+        monat_str = aktueller_monat.strftime('%m/%Y')
+
+        if not getattr(obj, 'aktiv', False):
+            konto_status = "Inaktiv"
+            konto_color = "#6b7280" # Grau
+            konto_icon = "⏸️"
+        else:
+            zahlungen_aktuell = obj.zahlungen.filter(buchungs_monat=aktueller_monat).aggregate(Sum('betrag'))['betrag__sum'] or 0
+            zahlungen_aktuell = float(zahlungen_aktuell)
+
+            if zahlungen_aktuell >= brutto:
+                konto_status = "Bezahlt"
+                konto_color = "#059669" # Grün
+                konto_icon = "✅"
+            elif zahlungen_aktuell > 0:
+                konto_status = f"Teilz. ({zahlungen_aktuell:,.0f})"
+                konto_color = "#d97706" # Orange
+                konto_icon = "⚠️"
+            else:
+                konto_status = "Offen"
+                konto_color = "#dc2626" # Rot
+                konto_icon = "⏳"
+
+        # --- GOOGLE MAPS URL GENERIEREN ---
+        if lieg_obj and getattr(lieg_obj, 'strasse', None) and getattr(lieg_obj, 'ort', None):
+            address_query = urllib.parse.quote(f"{lieg_obj.strasse}, {lieg_obj.plz} {lieg_obj.ort}")
+            map_url = f"https://maps.google.com/maps?q={address_query}&t=&z=15&ie=UTF8&iwloc=&output=embed"
+        else:
+            map_url = "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed"
 
         html = f"""
         <style>
-            fieldset.header-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
-            fieldset.header-fieldset > div, fieldset.header-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
-            fieldset.header-fieldset label {{ display: none !important; }}
+            #content-main form > div, form .max-w-5xl, form .max-w-4xl, form .max-w-3xl, form .max-w-2xl {{ max-width: 100% !important; width: 100% !important; }}
+            fieldset.map-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
+            fieldset.map-fieldset > div, fieldset.map-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
+            fieldset.map-fieldset label {{ display: none !important; }}
+            .liegenschaft-header-grid {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }}
+            @media (min-width: 1024px) {{ .liegenschaft-header-grid {{ grid-template-columns: 350px 1fr; }} }}
         </style>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; width: 100%; margin-bottom: 2rem;">
-            <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem; grid-column: span 2;">
-                <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #eff6ff; color: #3b82f6; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">👤</div>
-                <div style="overflow: hidden;">
-                    <h2 style="font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{mieter_name}</h2>
-                    <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px;">🏠 {einheit_name}</p>
+        <div class="liegenschaft-header-grid">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
+                    <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #eff6ff; color: #3b82f6; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">👤</div>
+                    <div style="overflow: hidden;">
+                        <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{mieter_name}</h2>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 4px;">🏠 {einheit_name}</p>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px;">📍 {liegenschaft_name}</p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
+                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Bruttomiete</span>
+                        <span style="font-size: 1.25rem; font-weight: 700; color: #111827;">{brutto:,.0f}.-</span>
+                    </div>
+                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
+                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Status</span>
+                        <span style="font-size: 1.25rem; font-weight: 700; color: {aktiv_color};">{aktiv_text}</span>
+                    </div>
+                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; grid-column: span 2;">
+                        <div>
+                            <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; display: block;">Mietkonto ({monat_str})</span>
+                            <span style="font-size: 1.25rem; font-weight: 700; color: {konto_color};">{konto_status}</span>
+                        </div>
+                        <div style="font-size: 1.5rem;">{konto_icon}</div>
+                    </div>
                 </div>
             </div>
 
-            <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Bruttomiete</span>
-                <span style="font-size: 1.25rem; font-weight: 700; color: #111827;">CHF {brutto:,.2f}</span>
-            </div>
-
-            <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Vertragsbeginn</span>
-                <span style="font-size: 1.25rem; font-weight: 700; color: #111827;">{beginn}</span>
-            </div>
-
-            <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Status</span>
-                <span style="font-size: 1.25rem; font-weight: 700; color: {aktiv_color};">{aktiv_text}</span>
+            <div style="width: 100%; height: 100%; min-height: 250px; background-color: #e5e7eb; border-radius: 12px; overflow: hidden; border: 1px solid #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <iframe
+                    width="100%"
+                    height="100%"
+                    frameborder="0"
+                    style="border:0;"
+                    src="{map_url}"
+                    allowfullscreen>
+                </iframe>
             </div>
         </div>
         """
@@ -216,9 +279,9 @@ class MietvertragAdmin(ModelAdmin):
         calc_url = reverse('mietzins_anpassung', args=[obj.id]) if getattr(obj, 'aktiv', False) else '#'
         return format_html(
             '<div class="flex gap-1.5">'
-            '<a href="{}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded text-xs font-semibold transition-colors">Bearbeiten</a>'
-            '<a href="{}" target="_blank" class="text-gray-600 bg-gray-50 hover:bg-gray-200 px-2 py-1 rounded text-xs transition-colors">🖨️ PDF</a>'
-            '<a href="{}" target="_blank" class="text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded text-xs transition-colors">📈 Zins</a>'
+            '<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>'
+            '<a href="{}" target="_blank" class="text-gray-600 bg-gray-50 hover:bg-gray-200 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">🖨️ PDF</a>'
+            '<a href="{}" target="_blank" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">📈 Zins</a>'
             '</div>',
             edit_url, pdf_url, calc_url
         )
@@ -239,6 +302,18 @@ class MietvertragAdmin(ModelAdmin):
 @admin.register(Leerstand)
 class LeerstandAdmin(ModelAdmin):
     list_display = ('leerstand_profil', 'dauer_info', 'schnell_aktionen')
+
+    fieldsets = (
+        ("Leerstand Details", {
+            "fields": ("einheit", "grund")
+        }),
+        ("Dauer", {
+            "fields": ("beginn", "ende")
+        }),
+        ("Zusätzliche Informationen", {
+            "fields": ("bemerkung",)
+        }),
+    )
 
     @display(description="Objekt & Grund", ordering="einheit__bezeichnung")
     def leerstand_profil(self, obj):
@@ -263,7 +338,7 @@ class LeerstandAdmin(ModelAdmin):
     @display(description="Aktionen")
     def schnell_aktionen(self, obj):
         return format_html(
-            '<a href="{}" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-2 py-1 rounded text-xs font-semibold transition-colors">Bearbeiten</a>',
+            '<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>',
             reverse('admin:rentals_leerstand_change', args=[obj.id])
         )
 
@@ -274,7 +349,22 @@ class LeerstandAdmin(ModelAdmin):
 
 @admin.register(MietzinsAnpassung)
 class MietzinsAnpassungAdmin(ModelAdmin):
-    list_display = ('anpassung_profil', 'datum_info', 'status_badge', 'schnell_aktionen')
+    list_display = ('anpassung_profil', 'datum_info', 'schnell_aktionen')
+
+    fieldsets = (
+        ("Vertrag & Wirksamkeit", {
+            "fields": ("vertrag", "wirksam_ab")
+        }),
+        ("Mietzins (Neu vs. Alt)", {
+            "fields": ("neuer_netto_mietzins", "alter_netto_mietzins", "erhoehung_prozent_total")
+        }),
+        ("Basis-Parameter (Neu vs. Alt)", {
+            "fields": ("neuer_referenzzinssatz", "alter_referenzzinssatz", "neuer_lik_index", "alter_lik_index")
+        }),
+        ("Zusatz", {
+            "fields": ("begruendung",)
+        }),
+    )
 
     @display(description="Vertrag & Änderung")
     def anpassung_profil(self, obj):
@@ -291,22 +381,14 @@ class MietzinsAnpassungAdmin(ModelAdmin):
 
     @display(description="Wirksam ab")
     def datum_info(self, obj):
-        datum = getattr(obj, 'wirksam_ab', None) or getattr(obj, 'datum_wirksam', None)
+        datum = getattr(obj, 'wirksam_ab', None)
         datum_str = datum.strftime('%d.%m.%Y') if datum else "-"
         return format_html('<span class="text-sm font-medium text-gray-700">{}</span>', datum_str)
-
-    @display(description="Status", label=True)
-    def status_badge(self, obj):
-        status = getattr(obj, 'status', 'erstellt')
-        if status == 'erstellt': return "Erstellt", "info"
-        elif status == 'gesendet': return "Gesendet", "warning"
-        elif status == 'akzeptiert': return "Akzeptiert", "success"
-        return status, "info"
 
     @display(description="Aktionen")
     def schnell_aktionen(self, obj):
         return format_html(
-            '<a href="{}" class="text-teal-600 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-2 py-1 rounded text-xs font-semibold transition-colors">Bearbeiten</a>',
+            '<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>',
             reverse('admin:rentals_mietzinsanpassung_change', args=[obj.id])
         )
 
@@ -317,8 +399,17 @@ class MietzinsAnpassungAdmin(ModelAdmin):
 
 @admin.register(Dokument)
 class DokumentAdmin(ModelAdmin):
-    list_display = ('dokument_profil', 'kategorie_badge')
+    list_display = ('dokument_profil', 'kategorie_badge', 'schnell_aktionen')
     list_filter = ('kategorie',)
+
+    fieldsets = (
+        ("Dokumenten-Details", {
+            "fields": ("titel", "bezeichnung", "kategorie", "datei")
+        }),
+        ("Verknüpfungen", {
+            "fields": ("mandant", "liegenschaft", "einheit", "mieter", "vertrag")
+        }),
+    )
 
     @display(description="Dokument")
     def dokument_profil(self, obj):
@@ -334,3 +425,10 @@ class DokumentAdmin(ModelAdmin):
     def kategorie_badge(self, obj):
         kat = getattr(obj, 'kategorie', 'Sonstiges')
         return kat, "info"
+
+    @display(description="Aktionen")
+    def schnell_aktionen(self, obj):
+        return format_html(
+            '<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>',
+            reverse('admin:rentals_dokument_change', args=[obj.id])
+        )

@@ -184,7 +184,7 @@ UNFOLD = {
 
     # --- GLOBALER CLEAN-LOOK (RAHMENLOS) & INLINE-EDITING ---
     "STYLES": [
-        lambda request: static("css/fairwalter_theme.css"),
+        lambda request: static("css/fairwalter_theme.css") + "?v=2",
         lambda request: static("css/custom_admin.css") + "?v=999",   # Der Cache-Zerstörer für CSS
     ],
     "SCRIPTS": [
