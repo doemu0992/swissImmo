@@ -6,8 +6,9 @@ from django.db import models
 from django.utils import timezone
 from django.conf import settings
 
+# --- NEUER IMPORT FÜR DAS AKTUELLE SDK ---
 try:
-    import google.generativeai as genai
+    from google import genai
 except ImportError:
     genai = None
 
@@ -64,25 +65,16 @@ class NebenkostenBeleg(models.Model):
     def analyze_pdf_with_ai(self):
         if not self.beleg_scan: return
         if not genai:
-            self.text = "SYSTEM-FEHLER: Das 'google-generativeai' Paket fehlt!"
+            self.text = "SYSTEM-FEHLER: Das 'google-genai' Paket fehlt!"
             return
 
         try:
-            genai.configure(api_key=settings.GEMINI_API_KEY)
-            available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+            # --- NEUER CLIENT-AUFRUF ---
+            client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
-            chosen_model = next((name for name in available_models if '1.5-flash' in name), None)
-            if not chosen_model: chosen_model = next((name for name in available_models if 'vision' in name or 'gemini-1.0-pro' in name), None)
-            if not chosen_model and available_models: chosen_model = available_models[0]
+            # --- DATEI HOCHLADEN ---
+            beleg_file = client.files.upload(file=self.beleg_scan.path)
 
-            if not chosen_model:
-                self.text = "KI-FEHLER: Keine passenden Modelle gefunden."
-                return
-
-            model = genai.GenerativeModel(chosen_model)
-            beleg_file = genai.upload_file(self.beleg_scan.path)
-
-            # --- Formatierter Prompt ohne Unterbrüche ---
             prompt = (
                 "Du bist ein professioneller Buchhalter für Schweizer Immobilien. "
                 "Analysiere den angehängten Beleg (Rechnung/Quittung). "
@@ -91,9 +83,15 @@ class NebenkostenBeleg(models.Model):
                 "\"lieferant\": \"Müller Sanitär AG\", \"kategorie\": \"hauswart\"}"
             )
 
-            response = model.generate_content([beleg_file, prompt])
+            # --- GENERIERUNG (fest auf 1.5-flash gesetzt für mehr Speed) ---
+            response = client.models.generate_content(
+                model='gemini-1.5-flash',
+                contents=[beleg_file, prompt]
+            )
 
-            try: beleg_file.delete()
+            # --- AUFRÄUMEN ---
+            try:
+                client.files.delete(name=beleg_file.name)
             except: pass
 
             raw_json = response.text.replace('```json', '').replace('```', '').strip()
@@ -116,7 +114,7 @@ class NebenkostenBeleg(models.Model):
                         break
             if not regel_angewendet: self.kategorie = ermittelte_kategorie
         except Exception as e:
-            self.text = f"KI-FEHLER ({chosen_model}): {str(e)}"[:250]
+            self.text = f"KI-FEHLER: {str(e)}"[:250]
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -161,22 +159,14 @@ class KreditorenRechnung(models.Model):
 
     def analyze_invoice_with_ai(self):
         if not self.beleg_scan or not genai: return
-        chosen_model = "Unbekannt"
+
         try:
-            genai.configure(api_key=settings.GEMINI_API_KEY)
-            available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-            chosen_model = next((name for name in available_models if '1.5-flash' in name), None)
-            if not chosen_model: chosen_model = next((name for name in available_models if 'vision' in name or 'flash' in name), None)
-            if not chosen_model and available_models: chosen_model = available_models[0]
+            # --- NEUER CLIENT-AUFRUF ---
+            client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
-            if not chosen_model:
-                self.fehlermeldung = "KI-FEHLER: Keine passenden Modelle gefunden."
-                return
+            # --- DATEI HOCHLADEN ---
+            beleg_file = client.files.upload(file=self.beleg_scan.path)
 
-            model = genai.GenerativeModel(chosen_model)
-            beleg_file = genai.upload_file(self.beleg_scan.path)
-
-            # --- Formatierter Prompt ohne Unterbrüche ---
             prompt = (
                 "Du bist ein professioneller Buchhalter in der Schweiz. "
                 "Analysiere diese Kreditorenrechnung. Antworte AUSSCHLIESSLICH im JSON-Format. "
@@ -186,9 +176,15 @@ class KreditorenRechnung(models.Model):
                 "\"referenz\": \"123456789012345678901234567\"}"
             )
 
-            response = model.generate_content([beleg_file, prompt])
+            # --- GENERIERUNG ---
+            response = client.models.generate_content(
+                model='gemini-1.5-flash',
+                contents=[beleg_file, prompt]
+            )
 
-            try: beleg_file.delete()
+            # --- AUFRÄUMEN ---
+            try:
+                client.files.delete(name=beleg_file.name)
             except: pass
 
             raw_json = response.text.replace('```json', '').replace('```', '').strip()
@@ -203,7 +199,7 @@ class KreditorenRechnung(models.Model):
 
             self.fehlermeldung = "KI-Scan erfolgreich"
         except Exception as e:
-            self.fehlermeldung = f"KI-FEHLER ({chosen_model}): {str(e)}"[:250]
+            self.fehlermeldung = f"KI-FEHLER: {str(e)}"[:250]
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
