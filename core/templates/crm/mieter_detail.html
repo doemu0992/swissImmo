@@ -1,0 +1,146 @@
+{% extends 'modern_base.html' %}
+
+{% block content %}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 fade-enter-active">
+
+    <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'mieter_liste' %}" x-target="main-content" class="text-gray-400 hover:text-indigo-600 transition-colors" title="Zurück zur Liste">
+                <i class="bi bi-arrow-left-circle-fill" style="font-size: 2rem;"></i>
+            </a>
+            <div class="flex items-center gap-4">
+                {% if mieter.is_company %}
+                    <div class="flex-shrink-0 w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-2xl border border-slate-200">🏢</div>
+                {% else %}
+                    <div class="flex-shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center text-indigo-700 font-black text-xl border border-indigo-200">
+                        {{ mieter.vorname|first|default:"-" }}{{ mieter.nachname|first|default:"-" }}
+                    </div>
+                {% endif %}
+
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800">
+                        {% if mieter.is_company %}{{ mieter.firma }}{% else %}{{ mieter.vorname }} {{ mieter.nachname }}{% endif %}
+                    </h2>
+                    <p class="text-gray-500 mt-1">
+                        {% if mieter.is_company %}Firmenkunde{% else %}Privatperson{% endif %} <span class="mx-2">|</span> ID: #{{ mieter.id }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <form method="POST" action="{% url 'mieter_detail' mieter.pk %}" x-target="main-content" onsubmit="return confirm('Diesen Mieter wirklich löschen?');">
+                {% csrf_token %}
+                <input type="hidden" name="delete_mieter" value="1">
+                <button type="submit" class="bg-red-50 text-red-600 px-4 py-2.5 rounded-xl font-bold hover:bg-red-100 transition-colors shadow-sm" title="Löschen">🗑️</button>
+            </form>
+            <a href="?edit=1" x-target="main-content" class="bg-indigo-50 text-indigo-600 px-5 py-2.5 rounded-xl font-bold hover:bg-indigo-100 transition-colors shadow-sm flex items-center gap-2" style="text-decoration: none;">
+                ✏️ Bearbeiten
+            </a>
+        </div>
+    </div>
+
+    <h3 class="text-xl font-bold text-gray-800 mb-4">Kontaktdaten</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+
+        <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <div class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">E-Mail Adresse</div>
+            <div class="font-medium break-words">
+                {% if mieter.email %}
+                    <a href="mailto:{{ mieter.email }}" class="text-indigo-600 hover:text-indigo-800 hover:underline transition-colors flex items-center gap-2" style="text-decoration: none;">✉️ {{ mieter.email }}</a>
+                {% else %}<span class="text-gray-400">-</span>{% endif %}
+            </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <div class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">Telefonnummer</div>
+            <div class="font-medium">
+                {% if mieter.telefon %}
+                    <a href="tel:{{ mieter.telefon }}" class="text-indigo-600 hover:text-indigo-800 hover:underline transition-colors flex items-center gap-2" style="text-decoration: none;">📞 {{ mieter.telefon }}</a>
+                {% else %}<span class="text-gray-400">-</span>{% endif %}
+            </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 col-span-2">
+            <div class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">Postadresse</div>
+            <div class="font-medium">
+                {% if mieter.strasse or mieter.ort %}
+                    <a href="https://maps.google.com/?q={{ mieter.strasse|urlencode }},{{ mieter.plz|urlencode }}+{{ mieter.ort|urlencode }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 hover:underline transition-colors flex items-start gap-2" style="text-decoration: none;">
+                        📍 <span>{{ mieter.strasse|default:"-" }}<br>{{ mieter.plz|default:"" }} {{ mieter.ort|default:"" }}</span>
+                    </a>
+                {% else %}<span class="text-gray-400">-</span>{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <h3 class="text-xl font-bold text-gray-800 mb-4">Verknüpfte Mietverträge</h3>
+    <div class="overflow-hidden rounded-xl border border-gray-200">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Objekt</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Mietbeginn</th>
+                    <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Mietzins (Brutto)</th>
+                    <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Status</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+                {% for vertrag in vertraege %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-bold text-gray-900">{{ vertrag.einheit.bezeichnung }}</div>
+                        <div class="text-xs text-gray-500 mt-0.5">{{ vertrag.einheit.liegenschaft.strasse }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{{ vertrag.beginn|date:"d.m.Y"|default:"-" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-black text-gray-900">CHF {{ vertrag.netto_mietzins|add:vertrag.nebenkosten|default_if_none:"0"|floatformat:2 }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        {% if vertrag.aktiv %}<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Aktiv</span>
+                        {% else %}<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20">Inaktiv</span>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">Keine Verträge gefunden.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if form %}
+<div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden fade-enter-active" style="margin: 20px;">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <h3 class="text-xl font-bold text-gray-900">Mieter bearbeiten</h3>
+            <a href="{% url 'mieter_detail' mieter.pk %}" x-target="main-content" class="text-gray-400 hover:text-red-500 text-2xl font-bold" style="text-decoration: none;">&times;</a>
+        </div>
+
+        <form method="POST" action="{% url 'mieter_detail' mieter.pk %}" x-target="main-content">
+            {% csrf_token %}
+            <input type="hidden" name="save_mieter" value="1">
+
+            <div class="p-6 grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto" x-data="{ isCompany: {% if form.instance.is_company %}true{% else %}false{% endif %} }">
+                <div class="col-span-2 flex items-center gap-3 p-4 bg-indigo-50 rounded-xl border border-indigo-100 mb-2">
+                    {{ form.is_company }}
+                    <label for="{{ form.is_company.id_for_label }}" class="font-bold text-indigo-900 cursor-pointer select-none">Mieter ist eine Firma / juristische Person</label>
+                </div>
+                <div class="col-span-2" x-show="isCompany" x-transition><label class="block text-sm font-bold text-gray-700 mb-1">Firmenname</label>{{ form.firma }}</div>
+                <div class="col-span-1" x-show="!isCompany" x-transition><label class="block text-sm font-bold text-gray-700 mb-1">Vorname</label>{{ form.vorname }}</div>
+                <div class="col-span-1" x-show="!isCompany" x-transition><label class="block text-sm font-bold text-gray-700 mb-1">Nachname</label>{{ form.nachname }}</div>
+
+                <div class="col-span-2"><hr class="border-gray-100 my-2"></div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">E-Mail</label>{{ form.email }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Telefon</label>{{ form.telefon }}</div>
+                <div class="col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1">Strasse & Nr.</label>{{ form.strasse }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">PLZ</label>{{ form.plz }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Ort</label>{{ form.ort }}</div>
+            </div>
+
+            <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <a href="{% url 'mieter_detail' mieter.pk %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl" style="text-decoration: none;">Abbrechen</a>
+                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm">Speichern</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

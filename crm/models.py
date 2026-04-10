@@ -17,7 +17,7 @@ class Verwaltung(models.Model):
     class Meta:
         verbose_name = "Meine Verwaltung"
         verbose_name_plural = "Meine Verwaltung"
-        db_table = 'core_verwaltung'  # <--- SICHERT DEINE DATEN!
+        db_table = 'core_verwaltung'
 
     def __str__(self): return self.firma
 
@@ -41,9 +41,13 @@ class Mandant(models.Model):
     def __str__(self): return self.firma_oder_name
 
 class Mieter(models.Model):
-    anrede = models.CharField("Anrede", max_length=20, default='Herr')
-    vorname = models.CharField("Vorname", max_length=100)
-    nachname = models.CharField("Nachname", max_length=100)
+    # NEU: Firmen-Integration
+    is_company = models.BooleanField("Ist eine Firma?", default=False)
+    firma = models.CharField("Firmenname", max_length=150, blank=True)
+
+    anrede = models.CharField("Anrede", max_length=20, default='Herr', blank=True)
+    vorname = models.CharField("Vorname", max_length=100, blank=True)
+    nachname = models.CharField("Nachname", max_length=100, blank=True)
     telefon = models.CharField("Telefon", max_length=30, blank=True)
     email = models.EmailField("E-Mail", blank=True)
     strasse = models.CharField("Strasse & Nr.", max_length=200, blank=True)
@@ -59,7 +63,10 @@ class Mieter(models.Model):
         verbose_name_plural = "Mieter"
         db_table = 'core_mieter'
 
-    def __str__(self): return f"{self.nachname} {self.vorname}"
+    def __str__(self):
+        if self.is_company and self.firma:
+            return self.firma
+        return f"{self.nachname} {self.vorname}".strip()
 
 class Handwerker(models.Model):
     firma = models.CharField("Firma", max_length=100)

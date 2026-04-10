@@ -56,3 +56,17 @@ td.field-tabular div.readonly > div {
 .inline-related tbody tr:hover th {
     background-color: #f9fafb !important;
 }
+
+/* --- CUSTOM HEADERS (CRM & Portfolio) --- */
+#content-main form > div, form .max-w-5xl, form .max-w-4xl, form .max-w-3xl, form .max-w-2xl { max-width: 100% !important; width: 100% !important; }
+fieldset.map-fieldset { max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }
+fieldset.map-fieldset > div, fieldset.map-fieldset .form-row { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }
+fieldset.map-fieldset label { display: none !important; }
+
+/* Grid für das Master-Layout der Dashboards */
+.master-header-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }
+@media (min-width: 1024px) { .master-header-grid { grid-template-columns: 350px 1fr; } }
+
+/* Rentals Header Grid (Für den Mietvertrag) */
+.liegenschaft-header-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }
+@media (min-width: 1024px) { .liegenschaft-header-grid { grid-template-columns: 350px 1fr; } }

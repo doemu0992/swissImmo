@@ -7,8 +7,10 @@ class Mietvertrag(models.Model):
     STATUS_CHOICES = [('offen', 'Offen'), ('gesendet', 'Versendet'), ('unterzeichnet', 'Unterzeichnet')]
     mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, related_name='vertraege')
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='vertraege')
-    beginn = models.DateField(); ende = models.DateField(null=True, blank=True)
-    netto_mietzins = models.DecimalField(max_digits=8, decimal_places=2); nebenkosten = models.DecimalField(max_digits=6, decimal_places=2)
+    beginn = models.DateField()
+    ende = models.DateField(null=True, blank=True)
+    netto_mietzins = models.DecimalField(max_digits=8, decimal_places=2)
+    nebenkosten = models.DecimalField(max_digits=6, decimal_places=2)
     basis_referenzzinssatz = models.DecimalField(max_digits=4, decimal_places=2, default=get_current_ref_zins)
     basis_lik_punkte = models.DecimalField(max_digits=6, decimal_places=1, default=get_current_lik)
     aktiv = models.BooleanField(default=True)
@@ -23,12 +25,30 @@ class Mietvertrag(models.Model):
 
     def __str__(self): return f"{self.mieter} - {self.einheit}"
 
+    # 🔥 NEU: Überschreiben der save() Methode für die DocuSeal Automatik 🔥
+    def save(self, *args, **kwargs):
+        # 1. Zuerst den Vertrag ganz normal speichern
+        super().save(*args, **kwargs)
+
+        # 2. Wenn DocuSeal das PDF geliefert hat und der Status 'unterzeichnet' ist, wird es archiviert!
+        if self.sign_status == 'unterzeichnet' and self.pdf_datei:
+            # Wir prüfen, ob das Dokument nicht vielleicht schon archiviert wurde (damit es keine Duplikate gibt)
+            exists = Dokument.objects.filter(vertrag=self, kategorie='vertrag').exists()
+            if not exists:
+                Dokument.objects.create(
+                    titel=f"Mietvertrag {self.mieter}",
+                    kategorie='vertrag',
+                    vertrag=self,
+                    mieter=self.mieter,
+                    einheit=self.einheit,
+                    datei=self.pdf_datei
+                )
+
 class MietzinsAnpassung(models.Model):
     vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='anpassungen')
     wirksam_ab = models.DateField()
     neuer_netto_mietzins = models.DecimalField(max_digits=10, decimal_places=2)
 
-    # --- NEUE FELDER FÜR DIE HISTORIE ---
     alter_netto_mietzins = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     alter_referenzzinssatz = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     alter_lik_index = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
@@ -43,8 +63,10 @@ class MietzinsAnpassung(models.Model):
 
 class Leerstand(models.Model):
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='leerstaende')
-    beginn = models.DateField(); ende = models.DateField(null=True, blank=True)
-    grund = models.CharField(max_length=50, default='mietersuche'); bemerkung = models.TextField(blank=True)
+    beginn = models.DateField()
+    ende = models.DateField(null=True, blank=True)
+    grund = models.CharField(max_length=50, default='mietersuche')
+    bemerkung = models.TextField(blank=True)
 
     class Meta:
         verbose_name = "Leerstand"
@@ -56,7 +78,8 @@ class Dokument(models.Model):
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, null=True, blank=True)
     mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, null=True, blank=True)
     vertrag = models.ForeignKey(Mietvertrag, on_delete=models.SET_NULL, null=True, blank=True, related_name='dokumente')
-    bezeichnung = models.CharField(max_length=200, default="Dokument"); titel = models.CharField(max_length=200, blank=True)
+    bezeichnung = models.CharField(max_length=200, default="Dokument")
+    titel = models.CharField(max_length=200, blank=True)
     datei = models.FileField(upload_to=get_smart_upload_path)
     kategorie = models.CharField(max_length=50, choices=[('vertrag', 'Vertrag'), ('protokoll', 'Protokoll'), ('korrespondenz', 'Korrespondenz'), ('sonstiges', 'Sonstiges')])
     erstellt_am = models.DateTimeField(auto_now_add=True)

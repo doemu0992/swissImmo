@@ -15,8 +15,6 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
 
-# Eigene Modelle
-
 # Hilfsfunktionen für Marktdaten
 
 def parse_decimal(value):
@@ -57,9 +55,9 @@ def mietzins_anpassung_view(request, vertrag_id):
         absender_ort = f"{verwaltung.plz} {verwaltung.ort}"
 
 
-    # Aktuelle Marktdaten für Vorschau
-    aktueller_zins = get_current_ref_zins()
-    aktueller_lik = get_current_lik()
+    # 🔥 FIX: Die externen Daten sofort in Decimal umwandeln! 🔥
+    aktueller_zins = parse_decimal(get_current_ref_zins())
+    aktueller_lik = parse_decimal(get_current_lik())
 
     # --- WENN FORMULAR GESENDET WURDE (POST) ---
     if request.method == 'POST':
@@ -164,7 +162,6 @@ def mietzins_anpassung_view(request, vertrag_id):
             c.drawString(20*mm, y_text, begruendung)
 
         # --- RECHTSMITTELBELEHRUNG (Fixiert auf 70mm Höhe) ---
-        # Damit ist genug Abstand zur Begründung oben und zur Unterschrift unten
         c.setFont("Helvetica-Bold", 9)
         c.drawString(20*mm, 70*mm, "Rechtsmittelbelehrung:")
         c.setFont("Helvetica", 9)
@@ -176,18 +173,12 @@ def mietzins_anpassung_view(request, vertrag_id):
         c.setFont("Helvetica", 11)
         c.drawString(20*mm, y_sign_start, "Freundliche Grüsse")
 
-        # UNTERSCHRIFT BILD (Platzieren zwischen Gruss und Name)
         if unterschrift_pfad:
             try:
-                # Wir zeichnen das Bild unterhalb des Grusses
-                # y = y_sign_start - 25mm -> Bildunterkante bei 20mm
-                # x = 20mm (linksbündig mit Text)
                 c.drawImage(unterschrift_pfad, 20*mm, y_sign_start - 25*mm, width=50*mm, preserveAspectRatio=True, mask='auto')
             except Exception as e:
                 pass
 
-        # NAME (Ganz unten bei 15mm)
-        # So ist sichergestellt, dass der Name unter dem Bild steht
         c.drawString(20*mm, 15*mm, absender_name)
 
         c.showPage()

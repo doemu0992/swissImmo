@@ -23,8 +23,6 @@ from django.contrib.staticfiles import finders
 
 from xhtml2pdf import pisa
 
-# Models importieren
-
 logger = logging.getLogger(__name__)
 
 # --- Helper Funktionen ---
@@ -37,18 +35,15 @@ def link_callback(uri, rel):
     """
     Sicherer Link-Callback, der absolute Pfade (für Unterschriften) erlaubt.
     """
-    # 1. Ist es bereits ein absoluter Pfad auf der Festplatte?
     if os.path.isfile(uri):
         return uri
 
-    # 2. Relative Pfade via Static Finders
     if not uri.startswith('/') and not uri.startswith('http'):
         result = finders.find(uri)
         if result:
             if isinstance(result, (list, tuple)): result = result[0]
             return result
 
-    # 3. Standard Django URL Auflösung
     sUrl, sRoot = settings.STATIC_URL, settings.STATIC_ROOT
     mUrl, mRoot = settings.MEDIA_URL, settings.MEDIA_ROOT
 
@@ -81,31 +76,25 @@ def send_via_docuseal(request, vertrag_id):
 
     # 2. PDF Generieren
     try:
-        # DATEN LADEN
         einheit = vertrag.einheit
         liegenschaft = einheit.liegenschaft
         mandant = liegenschaft.mandant
 
-        # TEMPLATE AUSWAHL (Garage vs. Wohnung)
         if einheit.typ in ['pp', 'bas', 'gar']:
             template_path = 'core/mietvertrag_garage.html'
         else:
             template_path = 'core/mietvertrag_pdf.html'
 
-        # UNTERSCHRIFT FINDEN
         unterschrift_path = None
         if mandant and mandant.unterschrift_bild:
             try:
-                # Absoluter Pfad für xhtml2pdf
                 unterschrift_path = mandant.unterschrift_bild.path
             except: pass
 
         if not unterschrift_path:
-            # Fallback
             dummy = finders.find("img/unterschrift_dummy.png")
             if dummy: unterschrift_path = dummy
 
-        # ZAHLEN FORMATIEREN
         netto = vertrag.netto_mietzins or 0
         nk = vertrag.nebenkosten or 0
         brutto = netto + nk
@@ -134,9 +123,6 @@ def send_via_docuseal(request, vertrag_id):
         if pisa_status.err: raise Exception(f"Pisa Error: {pisa_status.err}")
         pdf_value = pdf_file.getvalue()
 
-        if len(pdf_value) < 1000:
-            logger.warning(f"PDF ist klein ({len(pdf_value)} bytes).")
-
     except Exception as e:
         logger.error(f"PDF Gen Error: {e}")
         messages.error(request, f"❌ PDF Fehler: {str(e)}")
@@ -162,9 +148,6 @@ def send_via_docuseal(request, vertrag_id):
                         "type": "signature",
                         "role": "Mieter",
                         "required": True,
-                        # ACHTUNG: Koordinaten ("areas") sind optional, wenn Text-Tags im HTML verwendet werden.
-                        # Da wir im Template {{Unterschrift...}} nutzen, sollte DocuSeal das erkennen.
-                        # Wir lassen die Koordinaten als Fallback drin, passen aber auf Seite 1 auf.
                         "areas": [{"x": 300, "y": 650, "w": 180, "h": 60, "page": 2}]
                     }]
                 }
@@ -181,16 +164,9 @@ def send_via_docuseal(request, vertrag_id):
         response = requests.post(url, headers=headers, json=payload)
 
         if response.status_code in [200, 201]:
-            data = response.json()
-            if isinstance(data, list): data = data[0]
-
-            new_id = str(data.get('id'))
-            if hasattr(vertrag, 'jotform_submission_id'):
-                vertrag.jotform_submission_id = new_id
-                vertrag.sign_status = 'gesendet'
-                vertrag.save()
-
-            messages.success(request, f"✅ Vertrag an {vertrag.mieter.email} gesendet (ID: {new_id})")
+            vertrag.sign_status = 'gesendet'
+            vertrag.save()
+            messages.success(request, f"✅ Vertrag an {vertrag.mieter.email} gesendet")
         else:
             raise Exception(f"API Fehler {response.status_code}: {response.text}")
 
@@ -200,51 +176,51 @@ def send_via_docuseal(request, vertrag_id):
 
     return redirect(request.META.get('HTTP_REFERER', 'admin:index'))
 
+
+# 🔥 HIER IST DER REPARIERTE WEBHOOK 🔥
 @csrf_exempt
 def docuseal_webhook(request):
     if request.method == 'POST':
         try:
             payload = json.loads(request.body)
             event_type = payload.get('event_type')
-            data = payload.get('data', {})
 
-            sub_id = str(data.get('id'))
-            vertrag = Mietvertrag.objects.filter(jotform_submission_id=sub_id).first()
+            # Reagieren, sobald fertig unterschrieben wurde
+            if event_type == 'submission.completed':
+                data = payload.get('data', {})
+                name = data.get('name', '') # z.B. "Mietvertrag 3"
 
-            if not vertrag: return HttpResponse("OK", status=200)
+                # 1. Vertrags-ID sicher extrahieren
+                try:
+                    vertrag_id = int(name.replace("Mietvertrag", "").strip())
+                    vertrag = Mietvertrag.objects.get(id=vertrag_id)
+                except (ValueError, Mietvertrag.DoesNotExist):
+                    logger.error(f"DocuSeal: Vertrag nicht gefunden für '{name}'")
+                    return HttpResponse("OK", status=200)
 
-            status_api = data.get('status', 'unknown')
-            if status_api == 'completed': vertrag.sign_status = 'unterzeichnet'
-            elif status_api == 'declined': vertrag.sign_status = 'abgelehnt'
-            vertrag.save()
-
-            if event_type == 'submission.completed' or status_api == 'completed':
+                # 2. PDF Download Link holen
                 doc_url = data.get('combined_document_url')
                 if not doc_url and data.get('documents'):
                     docs = data.get('documents')
                     if len(docs) > 0: doc_url = docs[0].get('url')
 
                 if doc_url:
+                    # 3. PDF herunterladen
                     r = requests.get(doc_url)
                     if r.status_code == 200:
                         filename = f"Unterschrieben_Mietvertrag_{vertrag.id}.pdf"
-                        file_content = ContentFile(r.content, name=filename)
 
-                        vertrag.pdf_datei.save(filename, file_content, save=False)
+                        # 4. Speichern! Da wir die Auto-Archivierung im Model haben,
+                        # reicht es, das PDF zuzuweisen und .save() aufzurufen.
+                        vertrag.pdf_datei.save(filename, ContentFile(r.content), save=False)
                         vertrag.sign_status = 'unterzeichnet'
                         vertrag.save()
 
-                        Dokument.objects.create(
-                            kategorie='Mietvertrag',
-                            bezeichnung=f"Vertrag (Unterschrieben)",
-                            datei=ContentFile(r.content, name=filename),
-                            vertrag=vertrag,
-                            liegenschaft=vertrag.einheit.liegenschaft,
-                            mandant=vertrag.einheit.liegenschaft.mandant
-                        )
+                        logger.info(f"Vertrag {vertrag.id} erfolgreich via Webhook archiviert.")
 
             return HttpResponse("OK", status=200)
         except Exception as e:
             logger.error(f"Webhook Error: {e}")
             return HttpResponse("Error", status=500)
+
     return HttpResponse("Method not allowed", status=405)

@@ -1,0 +1,195 @@
+{% extends 'modern_base.html' %}
+
+{% block content %}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 fade-enter-active">
+
+    <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'ticket_liste' %}" x-target="main-content" class="text-gray-400 hover:text-indigo-600 transition-colors" title="Zurück">
+                <i class="bi bi-arrow-left-circle-fill" style="font-size: 2rem;"></i>
+            </a>
+            <div>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-3xl font-bold text-gray-800">{{ ticket.titel }}</h2>
+                    {% if ticket.prioritaet == 'hoch' %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-red-50 text-red-700 border border-red-200">HOCH</span>{% endif %}
+                    {% if ticket.status == 'erledigt' %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">ERLEDIGT</span>{% endif %}
+                </div>
+                <p class="text-gray-500 mt-1">Ticket #{{ ticket.id }} <span class="mx-2">|</span> Gemeldet am {{ ticket.erstellt_am|date:"d.m.Y H:i" }}</p>
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <form method="POST" action="{% url 'ticket_detail' ticket.pk %}" x-target="main-content" onsubmit="return confirm('Ticket löschen?');">
+                {% csrf_token %}
+                <input type="hidden" name="delete_ticket" value="1">
+                <button type="submit" class="bg-red-50 text-red-600 px-4 py-2.5 rounded-xl font-bold hover:bg-red-100 transition-colors shadow-sm" title="Löschen">🗑️</button>
+            </form>
+            <a href="?edit=1" x-target="main-content" class="bg-indigo-50 text-indigo-600 px-5 py-2.5 rounded-xl font-bold hover:bg-indigo-100 transition-colors shadow-sm flex items-center gap-2" style="text-decoration: none;">
+                ✏️ Bearbeiten & Status
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 border-b border-gray-200 pb-2">Informationen</h3>
+
+                <div class="mb-4">
+                    <div class="text-xs text-gray-500 mb-1">Ort des Schadens</div>
+                    <div class="font-bold text-gray-900">{{ ticket.betroffene_einheit.bezeichnung|default:"Allgemein" }}</div>
+                    <div class="text-sm text-gray-600">{{ ticket.liegenschaft.strasse }}</div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="text-xs text-gray-500 mb-1">Melder</div>
+                    {% if ticket.gemeldet_von %}
+                        <div class="font-bold text-indigo-600">{{ ticket.gemeldet_von }}</div>
+                        {% if ticket.gemeldet_von.telefon %}<div class="text-sm text-gray-600">📞 {{ ticket.gemeldet_von.telefon }}</div>{% endif %}
+                    {% else %}
+                        <div class="font-bold text-gray-900">{{ ticket.email_melder|default:"Unbekannt" }}</div>
+                        <div class="text-sm text-gray-600">{{ ticket.tel_melder|default:"" }}</div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <div class="text-xs text-gray-500 mb-1">Zutritts-Info</div>
+                    <div class="text-sm font-medium text-gray-800 bg-white border border-gray-200 p-2 rounded-lg">{{ ticket.get_zutritt_display }}</div>
+                </div>
+            </div>
+
+            <div class="bg-orange-50 rounded-xl p-6 border border-orange-100">
+                <div class="flex justify-between items-center mb-4 border-b border-orange-200 pb-2">
+                    <h3 class="text-sm font-bold text-orange-900 uppercase tracking-wider">🔨 Handwerker</h3>
+                    <a href="?new_auftrag=1" x-target="main-content" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white px-2 py-1 rounded shadow-sm" style="text-decoration: none;">+ Zuweisen</a>
+                </div>
+
+                <div class="space-y-3">
+                    {% for auftrag in auftraege %}
+                    <div class="bg-white border border-orange-200 rounded-lg p-3 shadow-sm">
+                        <div class="font-bold text-gray-800 text-sm mb-1">{{ auftrag.handwerker }}</div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-gray-500">{{ auftrag.beauftragt_am|date:"d.m.y" }}</span>
+                            {% if auftrag.status == 'erledigt' %}
+                                <span class="text-emerald-600 font-bold">Erledigt</span>
+                            {% else %}
+                                <span class="text-orange-600 font-bold">Offen</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-xs text-orange-700/60 text-center py-2 font-medium">Noch kein Handwerker beauftragt.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if ticket.foto %}
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Beweisfoto</h3>
+                <a href="{{ ticket.foto.url }}" target="_blank">
+                    <img src="{{ ticket.foto.url }}" alt="Schaden" class="w-full rounded-lg shadow-sm hover:opacity-80 transition-opacity">
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="lg:col-span-2 flex flex-col h-[700px]">
+
+            <div class="bg-amber-50 border border-amber-100 rounded-xl p-5 mb-6">
+                <div class="font-bold text-amber-800 mb-2 flex items-center gap-2"><span>📝</span> Problembeschreibung</div>
+                <div class="text-amber-900 whitespace-pre-wrap">{{ ticket.beschreibung }}</div>
+            </div>
+
+            <div class="flex-grow overflow-y-auto pr-2 space-y-4 mb-4">
+                {% for msg in nachrichten %}
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 shadow-sm">
+                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 pb-2">
+                        <div class="font-bold {% if msg.typ == 'system' %}text-indigo-600{% else %}text-gray-800{% endif %} text-sm">
+                            {% if msg.typ == 'system' %}⚙️{% else %}💬{% endif %} {{ msg.absender_name }}
+                            {% if msg.is_intern %}<span class="text-[10px] bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded ml-2">Intern</span>{% endif %}
+                        </div>
+                        <div class="text-xs text-gray-500">{{ msg.erstellt_am|date:"d.m.y H:i" }}</div>
+                    </div>
+                    <div class="text-gray-700 text-sm whitespace-pre-wrap {% if msg.typ == 'system' %}font-bold{% endif %}">{{ msg.nachricht }}</div>
+                </div>
+                {% empty %}
+                <div class="text-center text-gray-400 py-8 text-sm">Noch keine Notizen oder Antworten.</div>
+                {% endfor %}
+            </div>
+
+            <form method="POST" action="{% url 'ticket_detail' ticket.pk %}" x-target="main-content" class="mt-auto bg-white border border-gray-200 rounded-xl p-2 flex gap-2 shadow-inner">
+                {% csrf_token %}
+                <input type="hidden" name="add_message" value="1">
+                <input type="text" name="nachricht" placeholder="Interne Notiz oder Antwort hinzufügen..." required class="flex-grow p-3 outline-none text-sm bg-transparent">
+                <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition-colors">Senden</button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% if form %}
+<div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden fade-enter-active" style="margin: 20px;">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <h3 class="text-xl font-bold text-gray-900">Ticket bearbeiten & Status</h3>
+            <a href="{% url 'ticket_detail' ticket.pk %}" x-target="main-content" class="text-gray-400 hover:text-red-500 text-2xl font-bold" style="text-decoration: none;">×</a>
+        </div>
+        <form method="POST" action="{% url 'ticket_detail' ticket.pk %}" x-target="main-content">
+            {% csrf_token %}
+            <input type="hidden" name="save_ticket" value="1">
+            <div class="p-6 grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
+                <div class="col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1">Titel / Problem</label>{{ form.titel }}</div>
+
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Liegenschaft</label>{{ form.liegenschaft }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Einheit</label>{{ form.betroffene_einheit }}</div>
+
+                <div class="col-span-2"><hr class="border-gray-100 my-2"></div>
+
+                <div class="col-span-1">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Status</label>
+                    <div class="p-1 border border-indigo-200 rounded-xl bg-indigo-50">{{ form.status }}</div>
+                </div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Priorität</label>{{ form.prioritaet }}</div>
+
+                <div class="col-span-2"><hr class="border-gray-100 my-2"></div>
+
+                <div class="col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1">Beschreibung</label>{{ form.beschreibung }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Zutritt</label>{{ form.zutritt }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Mieter (Melder)</label>{{ form.gemeldet_von }}</div>
+            </div>
+            <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <a href="{% url 'ticket_detail' ticket.pk %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl" style="text-decoration: none;">Abbrechen</a>
+                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm">Speichern</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% if request.GET.new_auftrag %}
+<div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden fade-enter-active" style="margin: 20px;">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-orange-50">
+            <h3 class="text-xl font-bold text-orange-900">🔨 Handwerker zuweisen</h3>
+            <a href="{% url 'ticket_detail' ticket.pk %}" x-target="main-content" class="text-gray-400 hover:text-red-500 text-2xl font-bold" style="text-decoration: none;">×</a>
+        </div>
+        <form method="POST" action="{% url 'ticket_detail' ticket.pk %}" x-target="main-content">
+            {% csrf_token %}
+            <input type="hidden" name="add_auftrag" value="1">
+            <div class="p-6 space-y-4">
+                <div><label class="block text-sm font-bold text-gray-700 mb-1">Handwerker auswählen</label>{{ auftrag_form.handwerker }}</div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-1">Status</label>{{ auftrag_form.status }}</div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-1">Bemerkung (Intern)</label>{{ auftrag_form.bemerkung }}</div>
+            </div>
+            <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <a href="{% url 'ticket_detail' ticket.pk %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl" style="text-decoration: none;">Abbrechen</a>
+                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm">Beauftragen</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

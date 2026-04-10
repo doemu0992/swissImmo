@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.db.models import Sum
+from django.template.loader import render_to_string
 from datetime import date
 import urllib.parse
 
@@ -195,115 +196,34 @@ class MieterAdmin(ModelAdmin):
         if not obj.pk:
             return format_html('<div class="p-4 bg-blue-50 text-blue-700 rounded-xl font-bold border border-blue-100">✨ Neuen Mieter anlegen</div>')
 
-        vorname = getattr(obj, 'vorname', '')
-        nachname = getattr(obj, 'nachname', '')
-        mieter_name = f"{vorname} {nachname}".strip()
-
-        email_val = getattr(obj, 'email', '')
-        telefon_val = getattr(obj, 'telefon', '')
-
-        email_html = f'<a href="mailto:{email_val}" class="hover:text-blue-600 transition-colors" style="text-decoration: none;">{email_val}</a>' if email_val else '-'
-        telefon_html = f'<a href="tel:{telefon_val}" class="hover:text-blue-600 transition-colors" style="text-decoration: none;">{telefon_val}</a>' if telefon_val else '-'
-
         aktive_vertraege = obj.vertraege.filter(aktiv=True)
-        anzahl_vertraege = aktive_vertraege.count()
+        total_brutto = sum([(float(v.netto_mietzins or 0) + float(v.nebenkosten or 0)) for v in aktive_vertraege])
+        aktueller_monat = date.today().replace(day=1)
 
-        total_brutto = 0
-        for vertrag in aktive_vertraege:
-            total_brutto += float(getattr(vertrag, 'netto_mietzins', 0) or 0) + float(getattr(vertrag, 'nebenkosten', 0) or 0)
-
-        heute = date.today()
-        aktueller_monat = heute.replace(day=1)
-        monat_str = aktueller_monat.strftime('%m/%Y')
-
-        if anzahl_vertraege == 0:
-            konto_status = "Kein aktiver Vertrag"
-            konto_color = "#6b7280"
-            konto_icon = "⏸️"
+        if aktive_vertraege.count() == 0:
+            k_status, k_color, k_icon = "Kein aktiver Vertrag", "#6b7280", "⏸️"
         else:
-            zahlungen_aktuell = 0
-            for vertrag in aktive_vertraege:
-                z = vertrag.zahlungen.filter(buchungs_monat=aktueller_monat).aggregate(Sum('betrag'))['betrag__sum'] or 0
-                zahlungen_aktuell += float(z)
-
-            if zahlungen_aktuell >= total_brutto:
-                konto_status = "Alles bezahlt"
-                konto_color = "#059669"
-                konto_icon = "✅"
-            elif zahlungen_aktuell > 0:
-                konto_status = f"Teilz. ({zahlungen_aktuell:,.0f})"
-                konto_color = "#d97706"
-                konto_icon = "⚠️"
-            else:
-                konto_status = "Offen"
-                konto_color = "#dc2626"
-                konto_icon = "⏳"
+            z_aktuell = sum([float(v.zahlungen.filter(buchungs_monat=aktueller_monat).aggregate(Sum('betrag'))['betrag__sum'] or 0) for v in aktive_vertraege])
+            if z_aktuell >= total_brutto: k_status, k_color, k_icon = "Alles bezahlt", "#059669", "✅"
+            elif z_aktuell > 0: k_status, k_color, k_icon = f"Teilz. ({z_aktuell:,.0f})", "#d97706", "⚠️"
+            else: k_status, k_color, k_icon = "Offen", "#dc2626", "⏳"
 
         offene_tickets = SchadenMeldung.objects.filter(gemeldet_von=obj).exclude(status='erledigt').count()
-        ticket_color = "#dc2626" if offene_tickets > 0 else "#059669"
-        ticket_text = f"{offene_tickets} Tickets" if offene_tickets > 0 else "Keine Probleme"
-        ticket_icon = "🚨" if offene_tickets > 0 else "✅"
+        addr_query = urllib.parse.quote(f"{obj.strasse}, {obj.plz} {obj.ort}") if getattr(obj, 'strasse', None) else ""
 
-        if getattr(obj, 'strasse', None) and getattr(obj, 'ort', None):
-            address_query = urllib.parse.quote(f"{obj.strasse}, {obj.plz} {obj.ort}")
-            map_url = f"https://maps.google.com/maps?q={address_query}&t=&z=15&ie=UTF8&iwloc=&output=embed"
-        else:
-            map_url = "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed"
-
-        html = f"""
-        <style>
-            #content-main form > div, form .max-w-5xl, form .max-w-4xl, form .max-w-3xl, form .max-w-2xl {{ max-width: 100% !important; width: 100% !important; }}
-            fieldset.map-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
-            fieldset.map-fieldset > div, fieldset.map-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
-            fieldset.map-fieldset label {{ display: none !important; }}
-            .master-header-grid {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }}
-            @media (min-width: 1024px) {{ .master-header-grid {{ grid-template-columns: 350px 1fr; }} }}
-        </style>
-
-        <div class="master-header-grid">
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
-                    <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #eff6ff; color: #3b82f6; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">👤</div>
-                    <div style="overflow: hidden;">
-                        <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{mieter_name}</h2>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">✉️ {email_html}</p>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📞 {telefon_html}</p>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Mietobjekte</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827;">{anzahl_vertraege} Aktiv</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Gesamt-Miete</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827;">CHF {total_brutto:,.0f}</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Konto ({monat_str})</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: {konto_color}; white-space: nowrap;">{konto_icon} {konto_status}</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Support</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: {ticket_color}; white-space: nowrap;">{ticket_icon} {ticket_text}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div style="width: 100%; height: 100%; min-height: 250px; background-color: #e5e7eb; border-radius: 12px; overflow: hidden; border: 1px solid #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                <iframe
-                    width="100%"
-                    height="100%"
-                    frameborder="0"
-                    style="border:0;"
-                    src="{map_url}"
-                    allowfullscreen>
-                </iframe>
-            </div>
-        </div>
-        """
-        return mark_safe(html)
+        context = {
+            'obj': obj,
+            'mieter_name': f"{getattr(obj, 'vorname', '')} {getattr(obj, 'nachname', '')}".strip(),
+            'anzahl_vertraege': aktive_vertraege.count(),
+            'total_brutto': total_brutto,
+            'monat_str': aktueller_monat.strftime('%m/%Y'),
+            'konto_status': k_status, 'konto_color': k_color, 'konto_icon': k_icon,
+            'ticket_color': "#dc2626" if offene_tickets > 0 else "#059669",
+            'ticket_icon': "🚨" if offene_tickets > 0 else "✅",
+            'ticket_text': f"{offene_tickets} Tickets" if offene_tickets > 0 else "Keine Probleme",
+            'map_url': f"https://maps.google.com/maps?q={addr_query}&t=&z=15&ie=UTF8&iwloc=&output=embed" if addr_query else "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed",
+        }
+        return mark_safe(render_to_string('admin/crm/mieter_header.html', context))
 
     @display(description="Mieter Profil", ordering="nachname")
     def mieter_profil(self, obj):
@@ -358,91 +278,24 @@ class HandwerkerAdmin(ModelAdmin):
 
     @display(description="")
     def handwerker_full_header(self, obj):
-        if not obj.pk:
-            return format_html('<div class="p-4 bg-orange-50 text-orange-700 rounded-xl font-bold border border-orange-100">✨ Neuen Handwerker anlegen</div>')
+        if not obj.pk: return format_html('<div class="p-4 bg-orange-50 text-orange-700 rounded-xl font-bold border border-orange-100">✨ Neuen Handwerker anlegen</div>')
 
-        firma = getattr(obj, 'firma', 'Unbekannt')
-        gewerk = getattr(obj, 'gewerk', '-')
-        iban = getattr(obj, 'iban', '-') or '-'
+        gewerk = getattr(obj, 'gewerk', '')
+        icon = "💧" if "sanitär" in str(gewerk).lower() else "⚡" if "elektro" in str(gewerk).lower() else "🎨" if "maler" in str(gewerk).lower() else "🔧"
+        schluessel = obj.schluesselausgabe_set.filter(rueckgabe_am__isnull=True).count() if hasattr(obj, 'schluesselausgabe_set') else 0
+        addr_query = urllib.parse.quote(f"{obj.strasse}, {obj.plz} {obj.ort}") if getattr(obj, 'strasse', None) else ""
 
-        email_val = getattr(obj, 'email', '')
-        telefon_val = getattr(obj, 'telefon', '')
-
-        email_html = f'<a href="mailto:{email_val}" class="hover:text-blue-600 transition-colors" style="text-decoration: none;">{email_val}</a>' if email_val else '-'
-        telefon_html = f'<a href="tel:{telefon_val}" class="hover:text-blue-600 transition-colors" style="text-decoration: none;">{telefon_val}</a>' if telefon_val else '-'
-
-        icon = "🔧"
-        if "sanitär" in str(gewerk).lower(): icon = "💧"
-        elif "elektro" in str(gewerk).lower(): icon = "⚡"
-        elif "maler" in str(gewerk).lower(): icon = "🎨"
-
-        # Schlüssel prüfen
-        schluessel_count = obj.schluesselausgabe_set.filter(rueckgabe_am__isnull=True).count() if hasattr(obj, 'schluesselausgabe_set') else 0
-        schluessel_text = f"{schluessel_count} im Besitz" if schluessel_count > 0 else "Keine"
-        schluessel_color = "#d97706" if schluessel_count > 0 else "#059669"
-
-        # Map URL (Falls jemals Adresse in DB hinzugefügt wird)
-        strasse = getattr(obj, 'strasse', None)
-        ort = getattr(obj, 'ort', None)
-        plz = getattr(obj, 'plz', None)
-
-        if strasse and ort:
-            address_query = urllib.parse.quote(f"{strasse}, {plz or ''} {ort}")
-            map_url = f"https://maps.google.com/maps?q={address_query}&t=&z=15&ie=UTF8&iwloc=&output=embed"
-        else:
-            map_url = "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed"
-
-        html = f"""
-        <style>
-            #content-main form > div, form .max-w-5xl, form .max-w-4xl, form .max-w-3xl, form .max-w-2xl {{ max-width: 100% !important; width: 100% !important; }}
-            fieldset.map-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
-            fieldset.map-fieldset > div, fieldset.map-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
-            fieldset.map-fieldset label {{ display: none !important; }}
-            .master-header-grid {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }}
-            @media (min-width: 1024px) {{ .master-header-grid {{ grid-template-columns: 350px 1fr; }} }}
-        </style>
-
-        <div class="master-header-grid">
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
-                    <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #fff7ed; color: #ea580c; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">{icon}</div>
-                    <div style="overflow: hidden;">
-                        <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{firma}</h2>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">✉️ {email_html}</p>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📞 {telefon_html}</p>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Gewerk</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{gewerk}</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Schlüssel</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: {schluessel_color}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🔑 {schluessel_text}</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; grid-column: span 2;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">IBAN</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827; font-family: monospace;">{iban}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div style="width: 100%; height: 100%; min-height: 250px; background-color: #e5e7eb; border-radius: 12px; overflow: hidden; border: 1px solid #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative;">
-                <iframe
-                    width="100%"
-                    height="100%"
-                    frameborder="0"
-                    style="border:0;"
-                    src="{map_url}"
-                    allowfullscreen>
-                </iframe>
-                {'' if strasse else '<div style="position:absolute; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; background:rgba(243,244,246,0.8); font-weight:bold; color:#6b7280;">Keine Adresse in Datenbank</div>'}
-            </div>
-        </div>
-        """
-        return mark_safe(html)
+        context = {
+            'obj': obj,
+            'firma': getattr(obj, 'firma', 'Unbekannt'),
+            'gewerk': gewerk or '-',
+            'iban': getattr(obj, 'iban', '-') or '-',
+            'icon': icon,
+            'schluessel_text': f"{schluessel} im Besitz" if schluessel > 0 else "Keine",
+            'schluessel_color': "#d97706" if schluessel > 0 else "#059669",
+            'map_url': f"https://maps.google.com/maps?q={addr_query}&t=&z=15&ie=UTF8&iwloc=&output=embed" if addr_query else "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed",
+        }
+        return mark_safe(render_to_string('admin/crm/handwerker_header.html', context))
 
     @display(description="Handwerker & Gewerk", ordering="firma")
     def handwerker_profil(self, obj):
@@ -502,82 +355,19 @@ class MandantAdmin(ModelAdmin):
 
     @display(description="")
     def mandant_full_header(self, obj):
-        if not obj.pk:
-            return format_html('<div class="p-4 bg-purple-50 text-purple-700 rounded-xl font-bold border border-purple-100">✨ Neuen Mandanten anlegen</div>')
+        if not obj.pk: return format_html('<div class="p-4 bg-purple-50 text-purple-700 rounded-xl font-bold border border-purple-100">✨ Neuen Mandanten anlegen</div>')
 
-        name = getattr(obj, 'firma_oder_name', 'Unbekannt')
-        bank = getattr(obj, 'bank_name', '-') or '-'
-        strasse = getattr(obj, 'strasse', '')
-        plz = getattr(obj, 'plz', '')
-        ort = getattr(obj, 'ort', '')
+        addr_query = urllib.parse.quote(f"{obj.strasse}, {obj.plz} {obj.ort}") if getattr(obj, 'strasse', None) else ""
 
-        email_val = getattr(obj, 'email', '')
-        telefon_val = getattr(obj, 'telefon', '')
-
-        email_html = f'<a href="mailto:{email_val}" class="hover:text-blue-600 transition-colors" style="text-decoration: none;">{email_val}</a>' if email_val else '-'
-        telefon_html = f'<a href="tel:{telefon_val}" class="hover:text-blue-600 transition-colors" style="text-decoration: none;">{telefon_val}</a>' if telefon_val else '-'
-
-        liegenschaften_count = obj.liegenschaften.count() if hasattr(obj, 'liegenschaften') else 0
-
-        if strasse and ort:
-            address_query = urllib.parse.quote(f"{strasse}, {plz} {ort}")
-            map_url = f"https://maps.google.com/maps?q={address_query}&t=&z=15&ie=UTF8&iwloc=&output=embed"
-            map_info = f"📍 {strasse}, {plz} {ort}"
-        else:
-            map_url = "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed"
-            map_info = "📍 Keine Adresse"
-
-        html = f"""
-        <style>
-            #content-main form > div, form .max-w-5xl, form .max-w-4xl, form .max-w-3xl, form .max-w-2xl {{ max-width: 100% !important; width: 100% !important; }}
-            fieldset.map-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
-            fieldset.map-fieldset > div, fieldset.map-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
-            fieldset.map-fieldset label {{ display: none !important; }}
-            .master-header-grid {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }}
-            @media (min-width: 1024px) {{ .master-header-grid {{ grid-template-columns: 350px 1fr; }} }}
-        </style>
-
-        <div class="master-header-grid">
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
-                    <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #faf5ff; color: #9333ea; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">🏢</div>
-                    <div style="overflow: hidden;">
-                        <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{name}</h2>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">✉️ {email_html}</p>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📞 {telefon_html}</p>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Portfolio</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827;">{liegenschaften_count} Gebäude</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Bank</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{bank}</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; grid-column: span 2;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Hauptsitz</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{map_info}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div style="width: 100%; height: 100%; min-height: 250px; background-color: #e5e7eb; border-radius: 12px; overflow: hidden; border: 1px solid #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative;">
-                <iframe
-                    width="100%"
-                    height="100%"
-                    frameborder="0"
-                    style="border:0;"
-                    src="{map_url}"
-                    allowfullscreen>
-                </iframe>
-                {'' if strasse else '<div style="position:absolute; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; background:rgba(243,244,246,0.8); font-weight:bold; color:#6b7280;">Keine Adresse hinterlegt</div>'}
-            </div>
-        </div>
-        """
-        return mark_safe(html)
+        context = {
+            'obj': obj,
+            'name': getattr(obj, 'firma_oder_name', 'Unbekannt'),
+            'bank': getattr(obj, 'bank_name', '-') or '-',
+            'liegenschaften_count': obj.liegenschaften.count() if hasattr(obj, 'liegenschaften') else 0,
+            'map_info': f"📍 {obj.strasse}, {obj.plz} {obj.ort}" if addr_query else "📍 Keine Adresse",
+            'map_url': f"https://maps.google.com/maps?q={addr_query}&t=&z=15&ie=UTF8&iwloc=&output=embed" if addr_query else "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed",
+        }
+        return mark_safe(render_to_string('admin/crm/mandant_header.html', context))
 
     @display(description="Mandant / Eigentümer", ordering="firma_oder_name")
     def mandant_profil(self, obj):
@@ -636,82 +426,19 @@ class VerwaltungAdmin(ModelAdmin):
 
     @display(description="")
     def verwaltung_full_header(self, obj):
-        if not obj.pk:
-            return format_html('<div class="p-4 bg-slate-50 text-slate-700 rounded-xl font-bold border border-slate-100">✨ Neue Verwaltung anlegen</div>')
+        if not obj.pk: return format_html('<div class="p-4 bg-slate-50 text-slate-700 rounded-xl font-bold border border-slate-100">✨ Neue Verwaltung anlegen</div>')
 
-        firma = getattr(obj, 'firma', 'Unbekannt')
-        ref_zins = getattr(obj, 'aktueller_referenzzinssatz', '-')
-        lik = getattr(obj, 'aktueller_lik_punkte', '-')
+        addr_query = urllib.parse.quote(f"{obj.strasse}, {obj.plz} {obj.ort}") if getattr(obj, 'strasse', None) else ""
 
-        email_val = getattr(obj, 'email', '')
-        telefon_val = getattr(obj, 'telefon', '')
-
-        email_html = f'<a href="mailto:{email_val}" class="hover:text-blue-600 transition-colors" style="text-decoration: none;">{email_val}</a>' if email_val else '-'
-        telefon_html = f'<a href="tel:{telefon_val}" class="hover:text-blue-600 transition-colors" style="text-decoration: none;">{telefon_val}</a>' if telefon_val else '-'
-
-        strasse = getattr(obj, 'strasse', '')
-        plz = getattr(obj, 'plz', '')
-        ort = getattr(obj, 'ort', '')
-
-        if strasse and ort:
-            address_query = urllib.parse.quote(f"{strasse}, {plz} {ort}")
-            map_url = f"https://maps.google.com/maps?q={address_query}&t=&z=15&ie=UTF8&iwloc=&output=embed"
-            map_info = f"📍 {strasse}, {plz} {ort}"
-        else:
-            map_url = "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed"
-            map_info = "📍 Keine Adresse"
-
-        html = f"""
-        <style>
-            #content-main form > div, form .max-w-5xl, form .max-w-4xl, form .max-w-3xl, form .max-w-2xl {{ max-width: 100% !important; width: 100% !important; }}
-            fieldset.map-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
-            fieldset.map-fieldset > div, fieldset.map-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
-            fieldset.map-fieldset label {{ display: none !important; }}
-            .master-header-grid {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }}
-            @media (min-width: 1024px) {{ .master-header-grid {{ grid-template-columns: 350px 1fr; }} }}
-        </style>
-
-        <div class="master-header-grid">
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
-                    <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #f8fafc; color: #475569; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">⚙️</div>
-                    <div style="overflow: hidden;">
-                        <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{firma}</h2>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">✉️ {email_html}</p>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📞 {telefon_html}</p>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Ref-Zins</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827;">{ref_zins} %</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">LIK</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827;">{lik}</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; grid-column: span 2;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Hauptsitz</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{map_info}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div style="width: 100%; height: 100%; min-height: 250px; background-color: #e5e7eb; border-radius: 12px; overflow: hidden; border: 1px solid #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative;">
-                <iframe
-                    width="100%"
-                    height="100%"
-                    frameborder="0"
-                    style="border:0;"
-                    src="{map_url}"
-                    allowfullscreen>
-                </iframe>
-                {'' if strasse else '<div style="position:absolute; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; background:rgba(243,244,246,0.8); font-weight:bold; color:#6b7280;">Keine Adresse hinterlegt</div>'}
-            </div>
-        </div>
-        """
-        return mark_safe(html)
+        context = {
+            'obj': obj,
+            'firma': getattr(obj, 'firma', 'Unbekannt'),
+            'ref_zins': getattr(obj, 'aktueller_referenzzinssatz', '-'),
+            'lik': getattr(obj, 'aktueller_lik_punkte', '-'),
+            'map_info': f"📍 {obj.strasse}, {obj.plz} {obj.ort}" if addr_query else "📍 Keine Adresse",
+            'map_url': f"https://maps.google.com/maps?q={addr_query}&t=&z=15&ie=UTF8&iwloc=&output=embed" if addr_query else "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed",
+        }
+        return mark_safe(render_to_string('admin/crm/verwaltung_header.html', context))
 
     @display(description="Standort")
     def standort_info(self, obj): return getattr(obj, 'ort', '-')

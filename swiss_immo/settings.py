@@ -215,6 +215,7 @@ UNFOLD = {
                 "separator": True,
                 "items": [
                     {"title": "Cockpit 🚀", "icon": "dashboard", "link": reverse_lazy("admin_dashboard")},
+                    {"title": "SaaS Portal ✨", "icon": "rocket_launch", "link": reverse_lazy("liegenschaft_liste")},
                     {
                         "title": "Tickets & Schäden",
                         "icon": "build",

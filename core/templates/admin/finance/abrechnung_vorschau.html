@@ -1,0 +1,46 @@
+{% if error %}
+    <span style="color:red; font-weight:bold;">{{ error }}</span>
+{% else %}
+    <div class='mb-4 font-bold text-lg text-gray-800'>Total zu verteilen: CHF {{ total|floatformat:2 }}</div>
+
+    <div class='overflow-x-auto shadow-sm ring-1 ring-black ring-opacity-5 rounded-lg'>
+        <table class='min-w-full divide-y divide-gray-300'>
+            <thead class='bg-gray-50'>
+                <tr>
+                    <th scope="col" class='px-4 py-3.5 text-left text-sm font-semibold text-gray-900'>Einheit</th>
+                    <th scope="col" class='px-4 py-3.5 text-left text-sm font-semibold text-gray-900'>Name / Typ</th>
+                    <th scope="col" class='px-4 py-3.5 text-left text-sm font-semibold text-gray-900'>Zeitraum</th>
+                    <th scope="col" class='px-4 py-3.5 text-right text-sm font-semibold text-gray-900'>Kosten</th>
+                    <th scope="col" class='px-4 py-3.5 text-right text-sm font-semibold text-gray-900'>Akonto</th>
+                    <th scope="col" class='px-4 py-3.5 text-right text-sm font-semibold text-gray-900'>Saldo</th>
+                </tr>
+            </thead>
+            <tbody class='divide-y divide-gray-200 bg-white'>
+                {% for row in data %}
+                    <tr class='{% if row.typ == "leerstand" %}bg-red-50{% else %}hover:bg-gray-50{% endif %} transition-colors'>
+                        <td class='whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900'>{{ row.einheit|default:"-" }}</td>
+                        <td class='whitespace-nowrap px-4 py-3 text-sm text-gray-500'>{{ row.name|default:"Unbekannt" }}</td>
+                        <td class='whitespace-nowrap px-4 py-3 text-sm text-gray-500'>
+                            {% if row.von != '-' %}
+                                {{ row.von }} - {{ row.bis }} <span class="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">({{ row.tage }} T.)</span>
+                            {% else %}
+                                n/a
+                            {% endif %}
+                        </td>
+                        <td class='whitespace-nowrap px-4 py-3 text-sm text-gray-500 text-right'>{{ row.kosten_anteil|floatformat:2 }}</td>
+                        <td class='whitespace-nowrap px-4 py-3 text-sm text-gray-500 text-right'>{{ row.akonto|floatformat:2 }}</td>
+                        <td class='whitespace-nowrap px-4 py-3 text-sm text-right font-bold {% if row.nachzahlung %}text-red-600{% else %}text-emerald-600{% endif %}'>
+                            {{ row.saldo|floatformat:2 }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if differenz != 0 %}
+        <div class='mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md flex items-center gap-2 text-sm text-amber-800 font-medium'>
+            <span>⚠️</span> Rundungsdifferenz: {{ differenz|floatformat:2 }} CHF
+        </div>
+    {% endif %}
+{% endif %}

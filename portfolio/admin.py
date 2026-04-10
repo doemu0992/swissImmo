@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.utils.html import format_html, mark_safe
 from django.urls import reverse
 from django.contrib import messages
+from django.template.loader import render_to_string
 import urllib.parse
 
 # Unfold Imports
@@ -384,63 +385,19 @@ class LiegenschaftAdmin(ModelAdmin):
         if not obj.pk:
             return format_html('<div class="p-4 bg-indigo-50 text-indigo-700 rounded-xl font-bold border border-indigo-100">✨ Neue Liegenschaft anlegen</div>')
 
-        einheiten_count = obj.einheiten.count()
-        egid = getattr(obj, 'egid', 'Fehlt')
-        baujahr = getattr(obj, 'baujahr', '-')
+        addr_query = urllib.parse.quote(f"{obj.strasse}, {obj.plz} {obj.ort}") if getattr(obj, 'strasse', None) else ""
 
-        address_query = urllib.parse.quote(f"{obj.strasse}, {obj.plz} {obj.ort}")
-        map_url = f"https://maps.google.com/maps?q={address_query}&t=&z=15&ie=UTF8&iwloc=&output=embed"
-
-        html = f"""
-        <style>
-            #content-main form > div, form .max-w-5xl, form .max-w-4xl, form .max-w-3xl, form .max-w-2xl {{ max-width: 100% !important; width: 100% !important; }}
-            fieldset.map-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
-            fieldset.map-fieldset > div, fieldset.map-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
-            fieldset.map-fieldset label {{ display: none !important; }}
-            .master-header-grid {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }}
-            @media (min-width: 1024px) {{ .master-header-grid {{ grid-template-columns: 350px 1fr; }} }}
-        </style>
-
-        <div class="master-header-grid">
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
-                    <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #eef2ff; color: #4f46e5; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">🏢</div>
-                    <div style="overflow: hidden;">
-                        <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{obj.strasse}</h2>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 4px;">🏢 Liegenschaft</p>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px;">📍 {obj.plz} {obj.ort}</p>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Einheiten</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827;">{einheiten_count}</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Baujahr</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827;">{baujahr}</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; grid-column: span 2;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">EGID</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #4f46e5;">{egid}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div style="width: 100%; height: 100%; min-height: 250px; background-color: #e5e7eb; border-radius: 12px; overflow: hidden; border: 1px solid #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                <iframe
-                    width="100%"
-                    height="100%"
-                    frameborder="0"
-                    style="border:0;"
-                    src="{map_url}"
-                    allowfullscreen>
-                </iframe>
-            </div>
-        </div>
-        """
-        return mark_safe(html)
+        context = {
+            'obj': obj,
+            'strasse': getattr(obj, 'strasse', 'Unbekannt'),
+            'plz': getattr(obj, 'plz', ''),
+            'ort': getattr(obj, 'ort', ''),
+            'einheiten_count': obj.einheiten.count(),
+            'egid': getattr(obj, 'egid', 'Fehlt') or 'Fehlt',
+            'baujahr': getattr(obj, 'baujahr', '-'),
+            'map_url': f"https://maps.google.com/maps?q={addr_query}&t=&z=15&ie=UTF8&iwloc=&output=embed" if addr_query else "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed",
+        }
+        return mark_safe(render_to_string('admin/portfolio/liegenschaft_header.html', context))
 
     @display(description="Liegenschaft", ordering="strasse")
     def liegenschaft_profil(self, obj):
@@ -512,94 +469,24 @@ class EinheitAdmin(ModelAdmin):
         if not obj.pk:
             return format_html('<div class="p-4 bg-teal-50 text-teal-700 rounded-xl font-bold border border-teal-100">✨ Neue Einheit anlegen</div>')
 
-        # Typ und Icon
-        typ_display = obj.get_typ_display()
-        icon = "🏠" if obj.typ == 'whg' else "🚗" if obj.typ in ['pp', 'gar'] else "🏬" if obj.typ == 'com' else "🚪"
-
-        # Liegenschaft Adresse für Map & Header
         lieg_obj = getattr(obj, 'liegenschaft', None)
-        liegenschaft_str = lieg_obj.strasse if lieg_obj else "Keine Liegenschaft"
-
-        # Finanzen
-        netto = float(getattr(obj, 'nettomiete_aktuell', 0) or 0)
-        nk = float(getattr(obj, 'nebenkosten_aktuell', 0) or 0)
-        brutto = netto + nk
-
-        # Details
-        zimmer = getattr(obj, 'zimmer', '-')
-        flaeche = getattr(obj, 'flaeche_m2', '-')
-        etage = getattr(obj, 'etage', '-')
-
-        # Status & Mieter
         aktiver_vertrag = getattr(obj, 'aktiver_vertrag', None)
-        if aktiver_vertrag:
-            status_text = "Vermietet"
-            status_color = "#059669" # Grün
-            mieter_info = str(aktiver_vertrag.mieter)
-        else:
-            status_text = "Leerstand"
-            status_color = "#dc2626" # Rot
-            mieter_info = "Kein Mieter"
+        addr_query = urllib.parse.quote(f"{lieg_obj.strasse}, {lieg_obj.plz} {lieg_obj.ort}") if lieg_obj and getattr(lieg_obj, 'strasse', None) else ""
 
-        # Map URL
-        if lieg_obj and getattr(lieg_obj, 'strasse', None):
-            address_query = urllib.parse.quote(f"{lieg_obj.strasse}, {lieg_obj.plz} {lieg_obj.ort}")
-            map_url = f"https://maps.google.com/maps?q={address_query}&t=&z=15&ie=UTF8&iwloc=&output=embed"
-        else:
-            map_url = "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed"
-
-        # HTML
-        html = f"""
-        <style>
-            #content-main form > div, form .max-w-5xl, form .max-w-4xl, form .max-w-3xl, form .max-w-2xl {{ max-width: 100% !important; width: 100% !important; }}
-            fieldset.map-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
-            fieldset.map-fieldset > div, fieldset.map-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
-            fieldset.map-fieldset label {{ display: none !important; }}
-            .master-header-grid {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }}
-            @media (min-width: 1024px) {{ .master-header-grid {{ grid-template-columns: 350px 1fr; }} }}
-        </style>
-
-        <div class="master-header-grid">
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
-                    <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #f0fdfa; color: #0d9488; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">{icon}</div>
-                    <div style="overflow: hidden;">
-                        <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{obj.bezeichnung}</h2>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 4px;">{icon} {typ_display}</p>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px;">📍 {liegenschaft_str}</p>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Soll-Miete</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827;">CHF {brutto:,.0f}</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Status</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: {status_color};">{status_text}</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; grid-column: span 2;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Eckdaten & Mieter</span>
-                        <span style="font-size: 1.15rem; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{zimmer} Zi. / {flaeche} m²</span>
-                        <span style="font-size: 0.8rem; font-weight: 500; color: #4b5563; margin-top: 4px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👤 {mieter_info}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div style="width: 100%; height: 100%; min-height: 250px; background-color: #e5e7eb; border-radius: 12px; overflow: hidden; border: 1px solid #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                <iframe
-                    width="100%"
-                    height="100%"
-                    frameborder="0"
-                    style="border:0;"
-                    src="{map_url}"
-                    allowfullscreen>
-                </iframe>
-            </div>
-        </div>
-        """
-        return mark_safe(html)
+        context = {
+            'obj': obj,
+            'icon': "🏠" if obj.typ == 'whg' else "🚗" if obj.typ in ['pp', 'gar'] else "🏬" if obj.typ == 'com' else "🚪",
+            'typ_display': obj.get_typ_display(),
+            'liegenschaft_str': lieg_obj.strasse if lieg_obj else "Keine Liegenschaft",
+            'brutto': float(getattr(obj, 'nettomiete_aktuell', 0) or 0) + float(getattr(obj, 'nebenkosten_aktuell', 0) or 0),
+            'zimmer': getattr(obj, 'zimmer', '-'),
+            'flaeche': getattr(obj, 'flaeche_m2', '-'),
+            'status_text': "Vermietet" if aktiver_vertrag else "Leerstand",
+            'status_color': "#059669" if aktiver_vertrag else "#dc2626",
+            'mieter_info': str(aktiver_vertrag.mieter) if aktiver_vertrag else "Kein Mieter",
+            'map_url': f"https://maps.google.com/maps?q={addr_query}&t=&z=15&ie=UTF8&iwloc=&output=embed" if addr_query else "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed",
+        }
+        return mark_safe(render_to_string('admin/portfolio/einheit_header.html', context))
 
     @display(description="Mietobjekt", ordering="bezeichnung")
     def einheit_profil(self, obj):

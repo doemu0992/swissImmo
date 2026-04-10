@@ -3,24 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SwissImmo Cockpit</title>
+    <title>SwissImmo SaaS Portal</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/@imacws/alpine-ajax@0.10.2/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6; /* Modernes Hellgrau */
+            background-color: #f3f4f6;
             color: #1f2937;
         }
 
         /* --- SIDEBAR --- */
         .sidebar {
             width: 260px;
-            background: #1e293b; /* Dunkles Slate-Blau */
+            background: #1e293b;
             min-height: 100vh;
             position: fixed;
             top: 0; left: 0;
@@ -57,7 +61,6 @@
         }
         .nav-link i { font-size: 1.2rem; }
 
-        /* Rubriken Titel in Sidebar */
         .nav-label {
             text-transform: uppercase;
             font-size: 0.75rem;
@@ -71,61 +74,14 @@
 
         /* --- MAIN CONTENT --- */
         .main-content {
-            margin-left: 260px; /* Breite der Sidebar */
+            margin-left: 260px;
             padding: 30px;
         }
 
-        /* --- CARDS --- */
-        .stat-card {
-            background: white;
-            border-radius: 16px;
-            padding: 25px;
-            border: none;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        /* Lade-Indikator für Alpine AJAX */
+        [x-sync] { transition: opacity 0.2s ease; }
+        .ajax-loading [x-sync] { opacity: 0.5; pointer-events: none; }
 
-        .icon-box {
-            width: 50px; height: 50px;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-        }
-        .bg-soft-blue { background: #e0f2fe; color: #0284c7; }
-        .bg-soft-green { background: #dcfce7; color: #16a34a; }
-        .bg-soft-red { background: #fee2e2; color: #dc2626; }
-        .bg-soft-purple { background: #f3e8ff; color: #9333ea; }
-
-        .stat-value { font-size: 2rem; font-weight: 700; margin-bottom: 5px; }
-        .stat-label { color: #64748b; font-size: 0.9rem; font-weight: 500; }
-
-        /* --- TABLE & LISTS --- */
-        .content-panel {
-            background: white;
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
-        }
-        .panel-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 15px;
-        }
-        .btn-primary-custom {
-            background: #2563eb; border: none; padding: 10px 20px;
-            border-radius: 8px; font-weight: 600;
-            transition: background 0.2s;
-        }
-        .btn-primary-custom:hover { background: #1d4ed8; }
-
-        /* Responsive */
         @media (max-width: 992px) {
             .sidebar { width: 70px; padding: 20px 10px; }
             .nav-link span, .brand span, .nav-label { display: none; }
@@ -134,61 +90,59 @@
         }
     </style>
 </head>
-<body>
+<body x-data @ajax:before="document.body.classList.add('ajax-loading')" @ajax:success="document.body.classList.remove('ajax-loading')" @ajax:error="document.body.classList.remove('ajax-loading')">
 
     <nav class="sidebar">
-        <a href="/" class="brand">
+        <a href="{% url 'admin_dashboard' %}" class="brand">
             <i class="bi bi-buildings-fill"></i>
             <span>SwissImmo</span>
         </a>
 
-        <div class="nav-label">Übersicht</div>
-        <a href="/" class="nav-link active">
-            <i class="bi bi-speedometer2"></i> <span>Cockpit</span>
+        <div class="nav-label">SaaS Portal (Neu)</div>
+
+        <a href="{% url 'liegenschaft_liste' %}" x-target="main-content" class="nav-link text-info font-bold">
+            <i class="bi bi-rocket-takeoff"></i> <span>Liegenschaften</span>
         </a>
 
-        <div class="nav-label">Verwaltung</div>
-        <a href="/admin/core/liegenschaft/" class="nav-link">
-            <i class="bi bi-house-door"></i> <span>Liegenschaften</span>
-        </a>
-        <a href="/admin/core/einheit/" class="nav-link">
-            <i class="bi bi-door-open"></i> <span>Einheiten</span>
-        </a>
-        <a href="/admin/core/mieter/" class="nav-link">
+        <a href="{% url 'mieter_liste' %}" x-target="main-content" class="nav-link text-info font-bold">
             <i class="bi bi-people"></i> <span>Mieter</span>
         </a>
-        <a href="/admin/core/mietvertrag/" class="nav-link">
+
+        <a href="{% url 'mietvertrag_liste' %}" x-target="main-content" class="nav-link text-info font-bold">
             <i class="bi bi-file-text"></i> <span>Verträge</span>
         </a>
 
-        <div class="nav-label">Finanzen & Service</div>
-        <a href="/admin/core/abrechnungsperiode/" class="nav-link">
-            <i class="bi bi-calculator"></i> <span>Nebenkosten</span>
-        </a>
-        <a href="/admin/core/schadenmeldung/" class="nav-link">
+        <a href="{% url 'ticket_liste' %}" x-target="main-content" class="nav-link text-info font-bold">
             <i class="bi bi-tools"></i> <span>Tickets</span>
         </a>
 
+        <a href="{% url 'abrechnung_liste' %}" x-target="main-content" class="nav-link text-info font-bold">
+            <i class="bi bi-calculator"></i> <span>Abrechnungen</span>
+        </a>
+
+        <div class="nav-label">Klassisches Backend</div>
+        <a href="{% url 'admin:portfolio_einheit_changelist' %}" class="nav-link">
+            <i class="bi bi-door-open"></i> <span>Einheiten</span>
+        </a>
+
         <div class="nav-label">System</div>
-        <a href="/admin/" class="nav-link">
-            <i class="bi bi-gear"></i> <span>Datenbank Admin</span>
+        <a href="{% url 'admin_dashboard' %}" class="nav-link">
+            <i class="bi bi-speedometer2"></i> <span>Admin-Cockpit</span>
         </a>
-        <a href="/admin/logout/" class="nav-link" style="color:#ef4444;">
-            <i class="bi bi-box-arrow-left"></i> <span>Abmelden</span>
-        </a>
+        <form method="post" action="{% url 'admin:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="nav-link" style="color:#ef4444; background:none; border:none; width:100%; text-align:left;">
+                <i class="bi bi-box-arrow-left"></i> <span>Abmelden</span>
+            </button>
+        </form>
     </nav>
 
-    <div class="main-content">
-        <div style="display:flex; justify-content:space-between; margin-bottom:30px; align-items:center;">
-            <div>
-                <h2 style="font-weight:700; margin:0;">Dashboard</h2>
-                <p style="color:#64748b; margin:0;">Willkommen zurück, Admin</p>
-            </div>
-            <div>
-                </div>
-        </div>
+    <div class="main-content" id="main-content" x-sync>
+        {% block content %}
+        {% endblock %}
 
-        {% block dashboard_content %}{% endblock %}
+        {% block dashboard_content %}
+        {% endblock %}
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

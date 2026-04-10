@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.db.models import Sum
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.template.loader import render_to_string
 
 # Unfold Imports
 from unfold.admin import ModelAdmin, TabularInline
@@ -91,31 +92,20 @@ class AbrechnungAdmin(ModelAdmin):
     def live_preview_tabelle(self, obj):
         if not obj.pk: return "Bitte erst speichern."
         if not berechne_abrechnung: return "Berechnungsmodul fehlt."
-        try: ergebnis = berechne_abrechnung(obj.pk)
-        except Exception as e: return f"Fehler bei Berechnung: {e}"
 
-        if 'error' in ergebnis: return format_html('<span style="color:red; font-weight:bold;">{}</span>', ergebnis.get('error', 'Unbekannter Fehler'))
-        data = ergebnis.get('abrechnungen', [])
-        total = ergebnis.get('total_kosten', 0)
+        try:
+            ergebnis = berechne_abrechnung(obj.pk)
+        except Exception as e:
+            return f"Fehler bei Berechnung: {e}"
 
-        html = f"<div class='mb-4 font-bold text-lg'>Total zu verteilen: CHF {total:,.2f}</div>"
-        html += "<div class='overflow-x-auto'><table class='w-full text-sm text-left text-gray-500 dark:text-gray-400 border rounded-lg'>"
-        html += "<thead class='text-xs uppercase bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300'><tr>"
-        html += "<th class='px-4 py-3'>Einheit</th><th class='px-4 py-3'>Name / Typ</th><th class='px-4 py-3'>Zeitraum</th><th class='px-4 py-3 text-right'>Kosten</th><th class='px-4 py-3 text-right'>Akonto</th><th class='px-4 py-3 text-right'>Saldo</th></tr></thead><tbody class='divide-y divide-gray-200 dark:divide-gray-700'>"
+        context = {
+            'error': ergebnis.get('error') if 'error' in ergebnis else None,
+            'data': ergebnis.get('abrechnungen', []),
+            'total': ergebnis.get('total_kosten', 0),
+            'differenz': ergebnis.get('differenz', 0),
+        }
 
-        for row in data:
-            is_nachzahlung = row.get('nachzahlung', False)
-            color_saldo = "text-red-600 font-bold" if is_nachzahlung else "text-emerald-600 font-bold"
-            bg_row = "bg-red-50 dark:bg-red-900/10" if row.get('typ') == 'leerstand' else "bg-white dark:bg-gray-800"
-            von, bis = row.get('von'), row.get('bis')
-            zeitraum = f"{von} - {bis} ({row.get('tage', 0)} T.)" if von != '-' else "n/a"
-
-            html += f"<tr class='{bg_row} hover:bg-gray-50 dark:hover:bg-gray-700'><td class='px-4 py-2 font-medium'>{row.get('einheit', '-')}</td><td class='px-4 py-2'>{row.get('name', 'Unbekannt')}</td><td class='px-4 py-2 text-xs text-gray-500'>{zeitraum}</td><td class='px-4 py-2 text-right'>{row.get('kosten_anteil', 0):.2f}</td><td class='px-4 py-2 text-right'>{row.get('akonto', 0):.2f}</td><td class='px-4 py-2 text-right {color_saldo}'>{row.get('saldo', 0):.2f}</td></tr>"
-        html += "</tbody></table></div>"
-
-        diff = ergebnis.get('differenz', 0)
-        if diff != 0: html += f"<div class='mt-2 text-xs text-amber-600 font-bold'>⚠️ Rundungsdifferenz: {diff} CHF</div>"
-        return mark_safe(html)
+        return mark_safe(render_to_string('admin/finance/abrechnung_vorschau.html', context))
     live_preview_tabelle.short_description = "Vorschau"
 
 

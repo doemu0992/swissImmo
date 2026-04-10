@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -55,7 +55,6 @@ urlpatterns = [
     path('abrechnung/<int:periode_id>/send-mail/', send_abrechnung_email_view, name='abrechnung_send_mail'),
 
     # --- QR RECHNUNG ---
-    # Wichtig: name='generate_qr' muss mit admin.py übereinstimmen!
     path('vertrag/<int:vertrag_id>/qr/', qr_rechnung_pdf, name='generate_qr'),
 
     # --- DOCUSEAL ---
@@ -65,5 +64,14 @@ urlpatterns = [
     # --- QR CODE SYSTEM (Aushang) ---
     path('report/<int:liegenschaft_id>/', public_ticket_view, name='public_report'),
     path('liegenschaft/<int:liegenschaft_id>/poster/', generate_hallway_poster, name='hallway_poster'),
+
+    # ==========================================
+    # NEUES SAAS FRONTEND (SPA)
+    # ==========================================
+    path('portfolio/', include('portfolio.urls')),
+    path('crm/', include('crm.urls')),
+    path('rentals/', include('rentals.urls')),
+    path('tickets/', include('tickets.urls')),
+    path('finance/', include('finance.urls')),  # <--- 🔥 HIER IST DIE NEUE ZEILE FÜR DIE FINANZEN 🔥
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

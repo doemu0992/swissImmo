@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.db.models import Sum
+from django.template.loader import render_to_string
 from datetime import date
 
 # Unfold Imports
@@ -133,17 +134,16 @@ class MietvertragAdmin(ModelAdmin):
         lieg_obj = getattr(obj.einheit, 'liegenschaft', None) if getattr(obj, 'einheit', None) else None
         liegenschaft_name = str(getattr(lieg_obj, 'strasse', '-')) if lieg_obj else '-'
 
-        beginn = obj.beginn.strftime('%d.%m.%Y') if getattr(obj, 'beginn', None) else "-"
-
-        aktiv_color = "#059669" if getattr(obj, 'aktiv', False) else "#dc2626"
-        aktiv_text = "Aktiv" if getattr(obj, 'aktiv', False) else "Inaktiv"
+        aktiv = getattr(obj, 'aktiv', False)
+        aktiv_color = "#059669" if aktiv else "#dc2626"
+        aktiv_text = "Aktiv" if aktiv else "Inaktiv"
 
         # --- MIETERKONTO STATUS BERECHNEN ---
         heute = date.today()
         aktueller_monat = heute.replace(day=1)
         monat_str = aktueller_monat.strftime('%m/%Y')
 
-        if not getattr(obj, 'aktiv', False):
+        if not aktiv:
             konto_status = "Inaktiv"
             konto_color = "#6b7280" # Grau
             konto_icon = "⏸️"
@@ -166,64 +166,25 @@ class MietvertragAdmin(ModelAdmin):
 
         # --- GOOGLE MAPS URL GENERIEREN ---
         if lieg_obj and getattr(lieg_obj, 'strasse', None) and getattr(lieg_obj, 'ort', None):
-            address_query = urllib.parse.quote(f"{lieg_obj.strasse}, {lieg_obj.plz} {lieg_obj.ort}")
-            map_url = f"https://maps.google.com/maps?q={address_query}&t=&z=15&ie=UTF8&iwloc=&output=embed"
+            addr_query = urllib.parse.quote(f"{lieg_obj.strasse}, {lieg_obj.plz} {lieg_obj.ort}")
         else:
-            map_url = "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed"
+            addr_query = ""
 
-        html = f"""
-        <style>
-            #content-main form > div, form .max-w-5xl, form .max-w-4xl, form .max-w-3xl, form .max-w-2xl {{ max-width: 100% !important; width: 100% !important; }}
-            fieldset.map-fieldset {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; grid-column: 1 / -1 !important; }}
-            fieldset.map-fieldset > div, fieldset.map-fieldset .form-row {{ max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; }}
-            fieldset.map-fieldset label {{ display: none !important; }}
-            .liegenschaft-header-grid {{ display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; margin-bottom: 2rem; }}
-            @media (min-width: 1024px) {{ .liegenschaft-header-grid {{ grid-template-columns: 350px 1fr; }} }}
-        </style>
-
-        <div class="liegenschaft-header-grid">
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem;">
-                    <div style="display: flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; background: #eff6ff; color: #3b82f6; border-radius: 0.75rem; font-size: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); flex-shrink: 0;">👤</div>
-                    <div style="overflow: hidden;">
-                        <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{mieter_name}</h2>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 4px;">🏠 {einheit_name}</p>
-                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0; margin-top: 2px;">📍 {liegenschaft_name}</p>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Bruttomiete</span>
-                        <span style="font-size: 1.25rem; font-weight: 700; color: #111827;">{brutto:,.0f}.-</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Status</span>
-                        <span style="font-size: 1.25rem; font-weight: 700; color: {aktiv_color};">{aktiv_text}</span>
-                    </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; grid-column: span 2;">
-                        <div>
-                            <span style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; display: block;">Mietkonto ({monat_str})</span>
-                            <span style="font-size: 1.25rem; font-weight: 700; color: {konto_color};">{konto_status}</span>
-                        </div>
-                        <div style="font-size: 1.5rem;">{konto_icon}</div>
-                    </div>
-                </div>
-            </div>
-
-            <div style="width: 100%; height: 100%; min-height: 250px; background-color: #e5e7eb; border-radius: 12px; overflow: hidden; border: 1px solid #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                <iframe
-                    width="100%"
-                    height="100%"
-                    frameborder="0"
-                    style="border:0;"
-                    src="{map_url}"
-                    allowfullscreen>
-                </iframe>
-            </div>
-        </div>
-        """
-        return mark_safe(html)
+        context = {
+            'obj': obj,
+            'mieter_name': mieter_name,
+            'einheit_name': einheit_name,
+            'liegenschaft_name': liegenschaft_name,
+            'brutto': brutto,
+            'aktiv_text': aktiv_text,
+            'aktiv_color': aktiv_color,
+            'monat_str': monat_str,
+            'konto_status': konto_status,
+            'konto_color': konto_color,
+            'konto_icon': konto_icon,
+            'map_url': f"https://maps.google.com/maps?q={addr_query}&t=&z=15&ie=UTF8&iwloc=&output=embed" if addr_query else "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed",
+        }
+        return mark_safe(render_to_string('admin/rentals/mietvertrag_header.html', context))
 
     # --- Listenansicht Formatierungen ---
     @display(description="Mietvertrag", ordering="mieter")

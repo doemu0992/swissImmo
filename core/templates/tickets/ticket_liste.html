@@ -1,0 +1,98 @@
+{% extends 'modern_base.html' %}
+
+{% block content %}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 fade-enter-active">
+    <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-800">Reparaturen & Tickets</h2>
+
+        <div class="flex items-center gap-4 w-1/2 justify-end">
+            <form action="{% url 'ticket_liste' %}" method="GET" x-target="main-content" class="w-2/3">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><span class="text-gray-400">🔍</span></div>
+                    <input type="text" name="q" value="{{ search_query }}" @input.debounce.500ms="$el.form.requestSubmit()" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 outline-none" placeholder="Ticket suchen...">
+                </div>
+            </form>
+            <a href="?new=1" x-target="main-content" class="bg-indigo-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-2 whitespace-nowrap" style="text-decoration: none;">
+                ➕ <span class="hidden md:inline">Neues Ticket</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="overflow-hidden rounded-xl border border-gray-200">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Ticket</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Objekt</th>
+                    <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Prio</th>
+                    <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Status</th>
+                    <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Datum</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+                {% for ticket in tickets %}
+                <tr class="hover:bg-gray-50 transition-colors cursor-pointer {% if not ticket.gelesen %}bg-blue-50/30{% endif %}" onclick="document.getElementById('ticket-{{ ticket.id }}').click();">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <a id="ticket-{{ ticket.id }}" href="{% url 'ticket_detail' ticket.id %}" x-target="main-content" class="font-bold text-gray-900 hover:text-indigo-600 flex items-center gap-2" style="text-decoration: none;">
+                            {% if not ticket.gelesen %}<span class="w-2 h-2 rounded-full bg-blue-600"></span>{% endif %}
+                            {{ ticket.titel|truncatechars:40 }}
+                        </a>
+                        <div class="text-xs text-gray-500 mt-0.5">Von: {% if ticket.gemeldet_von %}{{ ticket.gemeldet_von }}{% else %}{{ ticket.email_melder|default:"Unbekannt" }}{% endif %}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-medium text-gray-900">{{ ticket.betroffene_einheit.bezeichnung|default:"Allgemein" }}</div>
+                        <div class="text-xs text-gray-500">{{ ticket.liegenschaft.strasse }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        {% if ticket.prioritaet == 'hoch' %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-red-50 text-red-700 border border-red-200">HOCH</span>
+                        {% elif ticket.prioritaet == 'mittel' %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200">MITTEL</span>
+                        {% else %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">TIEF</span>{% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        {% if ticket.status == 'neu' %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-red-50 text-red-700 border border-red-200">NEU</span>
+                        {% elif ticket.status == 'in_bearbeitung' %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200">IN BEARBEITUNG</span>
+                        {% elif ticket.status == 'warte_auf_mieter' %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">WARTE AUF MIETER</span>
+                        {% else %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">ERLEDIGT</span>{% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">{{ ticket.erstellt_am|date:"d.m.y" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="px-6 py-12 text-center text-gray-500">Keine Tickets gefunden. Entspann dich! ☕</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if form %}
+<div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden fade-enter-active" style="margin: 20px;">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <h3 class="text-xl font-bold text-gray-900">Neues Ticket erstellen</h3>
+            <a href="{% url 'ticket_liste' %}" x-target="main-content" class="text-gray-400 hover:text-red-500 text-2xl font-bold" style="text-decoration: none;">×</a>
+        </div>
+        <form method="POST" action="{% url 'ticket_liste' %}" x-target="main-content">
+            {% csrf_token %}
+            <input type="hidden" name="save_new_ticket" value="1">
+            <div class="p-6 grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
+                <div class="col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1">Titel / Problem</label>{{ form.titel }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Liegenschaft</label>{{ form.liegenschaft }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Einheit</label>{{ form.betroffene_einheit }}</div>
+
+                <div class="col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1">Beschreibung</label>{{ form.beschreibung }}</div>
+
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Mieter (Melder)</label>{{ form.gemeldet_von }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Zutritt / Termin</label>{{ form.zutritt }}</div>
+
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Priorität</label>{{ form.prioritaet }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Status</label>{{ form.status }}</div>
+            </div>
+            <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <a href="{% url 'ticket_liste' %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl" style="text-decoration: none;">Abbrechen</a>
+                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm">Ticket Erstellen</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

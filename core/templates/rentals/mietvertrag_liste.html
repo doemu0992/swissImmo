@@ -1,0 +1,110 @@
+{% extends 'modern_base.html' %}
+
+{% block content %}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 fade-enter-active">
+    <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-800">Mietverträge</h2>
+
+        <div class="flex items-center gap-4 w-1/2 justify-end">
+            <form action="{% url 'mietvertrag_liste' %}" method="GET" x-target="main-content" class="w-2/3">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><span class="text-gray-400">🔍</span></div>
+                    <input type="text" name="q" value="{{ search_query }}" @input.debounce.500ms="$el.form.requestSubmit()" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 outline-none" placeholder="Mieter oder Objekt suchen...">
+                </div>
+            </form>
+
+            <a href="?new=1" x-target="main-content" class="bg-indigo-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-2 whitespace-nowrap" style="text-decoration: none;">
+                ➕ <span class="hidden md:inline">Neuer Vertrag</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="overflow-hidden rounded-xl border border-gray-200">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Mieter</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Objekt</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Dauer</th>
+                    <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Miete (Brutto)</th>
+                    <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Status</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+                {% for vertrag in vertraege %}
+                <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="document.getElementById('link-{{ vertrag.id }}').click();">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <a id="link-{{ vertrag.id }}" href="{% url 'mietvertrag_detail' vertrag.id %}" x-target="main-content" class="font-bold text-indigo-600 hover:text-indigo-800" style="text-decoration: none;">
+                            {% if vertrag.mieter.is_company %}{{ vertrag.mieter.firma }}{% else %}{{ vertrag.mieter.vorname }} {{ vertrag.mieter.nachname }}{% endif %}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-medium text-gray-900">{{ vertrag.einheit.bezeichnung }}</div>
+                        <div class="text-xs text-gray-500">{{ vertrag.einheit.liegenschaft.strasse }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {{ vertrag.beginn|date:"d.m.Y" }} – {% if vertrag.ende %}{{ vertrag.ende|date:"d.m.Y" }}{% else %}<span class="text-gray-400">Unbefristet</span>{% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-black text-gray-900">
+                        CHF {{ vertrag.netto_mietzins|add:vertrag.nebenkosten|default_if_none:"0"|floatformat:2 }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        {% if vertrag.aktiv %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Aktiv</span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20">Beendet</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="px-6 py-12 text-center text-gray-500">Keine Verträge gefunden.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if form %}
+<div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden fade-enter-active" style="margin: 20px;">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <h3 class="text-xl font-bold text-gray-900">Neuen Vertrag anlegen</h3>
+            <a href="{% url 'mietvertrag_liste' %}" x-target="main-content" class="text-gray-400 hover:text-red-500 text-2xl font-bold" style="text-decoration: none;">×</a>
+        </div>
+        <form method="POST" action="{% url 'mietvertrag_liste' %}" x-target="main-content">
+            {% csrf_token %}
+            <input type="hidden" name="save_new_vertrag" value="1">
+            <div class="p-6 grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Mieter</label>{{ form.mieter }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Mietobjekt (Einheit)</label>{{ form.einheit }}</div>
+
+                <div class="col-span-2"><hr class="border-gray-100 my-2"></div>
+
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Mietbeginn</label>{{ form.beginn }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Vertragsende (Optional)</label>{{ form.ende }}</div>
+
+                <div class="col-span-2"><hr class="border-gray-100 my-2"></div>
+
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Netto-Mietzins (CHF)</label>{{ form.netto_mietzins }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Akonto Nebenkosten (CHF)</label>{{ form.nebenkosten }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Mietkaution (CHF)</label>{{ form.kautions_betrag }}</div>
+
+                <div class="col-span-2"><hr class="border-gray-100 my-2"></div>
+
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Ref. Zinssatz (%)</label>{{ form.basis_referenzzinssatz }}</div>
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">LIK Punkte</label>{{ form.basis_lik_punkte }}</div>
+
+                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Signatur-Status</label>{{ form.sign_status }}</div>
+                <div class="col-span-1 flex items-center gap-3 mt-6">
+                    {{ form.aktiv }}<label for="{{ form.aktiv.id_for_label }}" class="font-bold text-gray-700 cursor-pointer">Vertrag ist aktiv</label>
+                </div>
+            </div>
+            <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <a href="{% url 'mietvertrag_liste' %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl" style="text-decoration: none;">Abbrechen</a>
+                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm">Vertrag Erstellen</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
