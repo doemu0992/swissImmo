@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.contrib import messages
 from .models import Mietvertrag, MietzinsAnpassung, Dokument
 from .forms import MietvertragForm
+from .services import archiviere_vertrag_wenn_unterzeichnet
 
 def mietvertrag_liste(request):
     form = None
@@ -48,20 +49,10 @@ def mietvertrag_detail(request, pk):
             if form.is_valid():
                 gespeicherter_vertrag = form.save()
 
-                # --- NEU: DOCUSEAL / PDF ARCHIVIERUNGS-LOGIK AUS DEM ALTEN ADMIN ---
-                if gespeicherter_vertrag.sign_status == 'unterzeichnet' and gespeicherter_vertrag.pdf_datei:
-                    exists = Dokument.objects.filter(vertrag=gespeicherter_vertrag, kategorie='vertrag').exists()
-                    if not exists:
-                        Dokument.objects.create(
-                            titel=f"Mietvertrag {gespeicherter_vertrag.mieter}",
-                            kategorie='vertrag',
-                            vertrag=gespeicherter_vertrag,
-                            mieter=gespeicherter_vertrag.mieter,
-                            einheit=gespeicherter_vertrag.einheit,
-                            datei=gespeicherter_vertrag.pdf_datei
-                        )
-                        messages.success(request, "✅ Vertrag wurde automatisch im Archiv abgelegt.")
-                # ---------------------------------------------------------------------
+                # --- Service aufrufen statt Logik in der View ---
+                wurde_archiviert = archiviere_vertrag_wenn_unterzeichnet(gespeicherter_vertrag)
+                if wurde_archiviert:
+                    messages.success(request, "✅ Vertrag wurde automatisch im Archiv abgelegt.")
 
                 return redirect('mietvertrag_detail', pk=pk)
 

@@ -4,13 +4,7 @@ from django.db.models import Q
 from django.contrib import messages
 from .models import Liegenschaft, Einheit
 from .forms import LiegenschaftForm, EinheitForm
-
-# Import der GWR-Schnittstelle (vom Bund)
-try:
-    from core.gwr import get_egid_from_address, get_units_from_bfs
-except ImportError:
-    get_egid_from_address = None
-    get_units_from_bfs = None
+from .services import sync_liegenschaft_with_gwr, get_liegenschaft_stats
 
 def liegenschaft_liste(request):
     form = None
@@ -21,44 +15,19 @@ def liegenschaft_liste(request):
             if form.is_valid():
                 neue_liegenschaft = form.save()
 
-                # --- NEU: DIE EGID MAGIE (Aus der admin.py übernommen) ---
-                if get_egid_from_address and get_units_from_bfs:
-                    try:
-                        # 1. EGID über die Adresse finden, falls nicht manuell eingegeben
-                        if not neue_liegenschaft.egid:
-                            found = get_egid_from_address(neue_liegenschaft.strasse, neue_liegenschaft.plz, neue_liegenschaft.ort)
-                            if found:
-                                neue_liegenschaft.egid = found
-                                neue_liegenschaft.save()
-                                messages.info(request, f"EGID gefunden: {neue_liegenschaft.egid}")
+                # --- Service Aufruf: Die EGID & BFS Magie ---
+                sync_result = sync_liegenschaft_with_gwr(neue_liegenschaft)
 
-                        # 2. Einheiten vom Bundesamt (BFS) laden
-                        if neue_liegenschaft.egid and neue_liegenschaft.einheiten.count() == 0:
-                            data = get_units_from_bfs(neue_liegenschaft.egid)
-                            cnt = 0
-                            for i in data:
-                                if i.get('is_meta'):
-                                    if i.get('baujahr'):
-                                        neue_liegenschaft.baujahr = i['baujahr']
-                                        neue_liegenschaft.save()
-                                    continue
-                                Einheit.objects.create(
-                                    liegenschaft=neue_liegenschaft,
-                                    bezeichnung=i['bezeichnung'],
-                                    ewid=i['ewid'],
-                                    zimmer=i['zimmer'],
-                                    etage=i['etage'],
-                                    flaeche_m2=i['flaeche'],
-                                    typ='whg'
-                                )
-                                cnt += 1
-                            if cnt > 0:
-                                messages.success(request, f"Erfolg: {cnt} Wohnungen automatisch vom Bund geladen!")
-                    except Exception as e:
-                        messages.error(request, f"Fehler beim EGID Import: {e}")
-                # --- ENDE EGID MAGIE ---
+                if sync_result.get('error'):
+                    messages.error(request, f"Fehler beim EGID Import: {sync_result['error']}")
+                else:
+                    if sync_result.get('egid_found'):
+                        messages.info(request, f"EGID automatisch gefunden: {sync_result['egid_found']}")
+                    if sync_result.get('units_created') > 0:
+                        messages.success(request, f"Erfolg: {sync_result['units_created']} Wohnungen automatisch vom Bund geladen!")
 
                 return redirect('liegenschaft_liste')
+
     elif request.GET.get('new'):
         form = LiegenschaftForm()
 
@@ -133,17 +102,18 @@ def liegenschaft_detail(request, pk):
     elif request.GET.get('new_einheit'):
         einheit_form = EinheitForm()
 
-    # --- Bestehende Logik ---
+    # --- Daten für das Template aufbereiten ---
     einheiten = liegenschaft.einheiten.all().order_by('bezeichnung')
-    total_einheiten = einheiten.count()
-    vermietet = sum(1 for e in einheiten if getattr(e, 'aktiver_vertrag', False))
-    leerstand = total_einheiten - vermietet
-    soll_miete = sum(float(getattr(e, 'nettomiete_aktuell', 0) or 0) + float(getattr(e, 'nebenkosten_aktuell', 0) or 0) for e in einheiten)
-    ist_miete = sum(float(getattr(e, 'nettomiete_aktuell', 0) or 0) + float(getattr(e, 'nebenkosten_aktuell', 0) or 0) for e in einheiten if getattr(e, 'aktiver_vertrag', False))
+
+    # Auslagerung der Statistik-Berechnung in den Service
+    stats = get_liegenschaft_stats(liegenschaft)
 
     context = {
-        'liegenschaft': liegenschaft, 'einheiten': einheiten,
-        'stats': {'total': total_einheiten, 'vermietet': vermietet, 'leerstand': leerstand, 'soll_miete': soll_miete, 'ist_miete': ist_miete},
-        'form': form, 'einheit_form': einheit_form, 'active_einheit_id': active_einheit_id,
+        'liegenschaft': liegenschaft,
+        'einheiten': einheiten,
+        'stats': stats,
+        'form': form,
+        'einheit_form': einheit_form,
+        'active_einheit_id': active_einheit_id,
     }
     return render(request, 'portfolio/liegenschaft_detail.html', context)

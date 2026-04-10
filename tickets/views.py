@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from .models import SchadenMeldung, TicketNachricht, HandwerkerAuftrag
 from .forms import SchadenMeldungForm, HandwerkerAuftragForm
+from .services import add_chat_message, create_handwerker_auftrag
 
 def ticket_liste(request):
     form = None
@@ -51,38 +52,19 @@ def ticket_detail(request, pk):
                 form.save()
                 return redirect('ticket_detail', pk=pk)
 
-        # 2. Chat-Nachricht senden
+        # 2. Chat-Nachricht senden (Über Service)
         elif 'add_message' in request.POST:
             nachricht_text = request.POST.get('nachricht')
             if nachricht_text:
-                TicketNachricht.objects.create(
-                    ticket=ticket,
-                    absender_name="Verwaltung",
-                    typ='chat',
-                    nachricht=nachricht_text,
-                    is_von_verwaltung=True
-                )
-                if ticket.status == 'neu':
-                    ticket.status = 'in_bearbeitung'
-                    ticket.save()
+                add_chat_message(ticket, nachricht_text)
             return redirect('ticket_detail', pk=pk)
 
-        # 3. 🔥 NEU: Handwerker beauftragen 🔥
+        # 3. Handwerker beauftragen (Über Service)
         elif 'add_auftrag' in request.POST:
             auftrag_form = HandwerkerAuftragForm(request.POST)
             if auftrag_form.is_valid():
                 neuer_auftrag = auftrag_form.save(commit=False)
-                neuer_auftrag.ticket = ticket
-                neuer_auftrag.save()
-
-                # Optionale Automatik: Postet eine System-Meldung in den Chat
-                TicketNachricht.objects.create(
-                    ticket=ticket,
-                    absender_name="System",
-                    typ='system',
-                    nachricht=f"Handwerker beauftragt: {neuer_auftrag.handwerker}",
-                    is_intern=True
-                )
+                create_handwerker_auftrag(ticket, neuer_auftrag.handwerker, neuer_auftrag.bemerkung)
                 return redirect('ticket_detail', pk=pk)
 
         # 4. Ticket löschen

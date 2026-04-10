@@ -1,4 +1,7 @@
 # crm/models.py
+import io
+from PIL import Image
+from django.core.files.base import ContentFile
 from django.db import models
 
 class Verwaltung(models.Model):
@@ -40,11 +43,36 @@ class Mandant(models.Model):
 
     def __str__(self): return self.firma_oder_name
 
+    def save(self, *args, **kwargs):
+        """Entfernt den weissen Hintergrund aus der Unterschrift vor dem Speichern."""
+        if self.unterschrift_bild:
+            try:
+                img = Image.open(self.unterschrift_bild)
+                img = img.convert("RGBA")
+                datas = img.getdata()
+
+                newData = []
+                for item in datas:
+                    # Macht weisse/fast-weisse Pixel transparent (Toleranzwert 200)
+                    if item[0] > 200 and item[1] > 200 and item[2] > 200:
+                        newData.append((255, 255, 255, 0))
+                    else:
+                        newData.append(item)
+
+                img.putdata(newData)
+                buffer = io.BytesIO()
+                img.save(buffer, format="PNG")
+
+                filename = f"sig_{self.id}.png"
+                self.unterschrift_bild.save(filename, ContentFile(buffer.getvalue()), save=False)
+            except Exception as e:
+                print(f"Fehler bei Hintergrund-Entfernung: {e}")
+
+        super().save(*args, **kwargs)
+
 class Mieter(models.Model):
-    # NEU: Firmen-Integration
     is_company = models.BooleanField("Ist eine Firma?", default=False)
     firma = models.CharField("Firmenname", max_length=150, blank=True)
-
     anrede = models.CharField("Anrede", max_length=20, default='Herr', blank=True)
     vorname = models.CharField("Vorname", max_length=100, blank=True)
     nachname = models.CharField("Nachname", max_length=100, blank=True)

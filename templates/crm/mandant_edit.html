@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto p-6 bg-white shadow-md rounded">
+    <h1 class="text-2xl font-bold mb-6">Mandant bearbeiten & Unterschrift leisten</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label class="block font-bold">Firma / Name</label>
+            <input type="text" name="firma_oder_name" value="{{ mandant.firma_oder_name }}" class="w-full border p-2 rounded">
+        </div>
+
+        <div class="mb-4">
+            <label class="block font-bold mb-2">Unterschrift zeichnen (mit Maus oder Finger)</label>
+            <div class="border rounded bg-gray-50 overflow-hidden" style="width: 100%; height: 200px;">
+                <canvas id="signature-pad" class="w-full h-full cursor-crosshair"></canvas>
+            </div>
+            <input type="hidden" name="signature_data" id="signature_data">
+            <div class="mt-2 flex gap-4">
+                <button type="button" onclick="signaturePad.clear()" class="text-sm text-red-600 hover:underline">Zeichnung löschen</button>
+            </div>
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700">Speichern</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script>
+    const canvas = document.getElementById('signature-pad');
+    const signaturePad = new SignaturePad(canvas, {
+        minWidth: 1,
+        maxWidth: 3,
+        penColor: "rgb(0, 0, 0)"
+    });
+    const hiddenInput = document.getElementById('signature_data');
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!signaturePad.isEmpty()) {
+            hiddenInput.value = signaturePad.toDataURL('image/png');
+        }
+    });
+
+    // Resize Canvas für Tablet-Support
+    function resizeCanvas() {
+        const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        signaturePad.clear();
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+</script>
+{% endblock %}

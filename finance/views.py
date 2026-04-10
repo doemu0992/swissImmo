@@ -4,11 +4,7 @@ from django.db.models import Q, Sum
 from django.contrib import messages
 from .models import AbrechnungsPeriode, NebenkostenBeleg
 from .forms import AbrechnungsPeriodeForm, NebenkostenBelegForm
-
-try:
-    from core.utils.billing import berechne_abrechnung
-except ImportError:
-    berechne_abrechnung = None
+from .services import berechne_abrechnung  # <-- Sauberer, direkter Import aus dem Service
 
 def abrechnung_liste(request):
     form = None
@@ -67,7 +63,7 @@ def abrechnung_detail(request, pk):
                 messages.success(request, "Beleg gespeichert!")
                 return redirect('abrechnung_detail', pk=pk)
             else:
-                show_new_modal = True # Modal bei Fehler offen lassen!
+                show_new_modal = True
 
         # 3. BELEG BEARBEITEN
         elif 'save_edit_beleg' in request.POST:
@@ -79,7 +75,7 @@ def abrechnung_detail(request, pk):
                 messages.success(request, "Beleg aktualisiert!")
                 return redirect('abrechnung_detail', pk=pk)
             else:
-                edit_beleg_id = beleg_id # Modal bei Fehler offen lassen!
+                edit_beleg_id = beleg_id
 
         # 4. BELEG LÖSCHEN
         elif 'delete_beleg' in request.POST:
@@ -98,14 +94,13 @@ def abrechnung_detail(request, pk):
         form = AbrechnungsPeriodeForm(instance=periode)
 
     belege = periode.belege.all().order_by('-datum')
-    total_belege = belege.aggregate(Sum('betrag'))['betrag__sum'] or 0
+    total_belege = belege.aggregate(Sum('betrag'))['betrag__sum'] or Decimal('0.00')
 
-    ergebnis = {}
-    if berechne_abrechnung:
-        try:
-            ergebnis = berechne_abrechnung(periode.pk)
-        except Exception as e:
-            ergebnis = {'error': str(e)}
+    # Den neuen Service sauber und direkt aufrufen
+    try:
+        ergebnis = berechne_abrechnung(periode.pk)
+    except Exception as e:
+        ergebnis = {'error': str(e)}
 
     context = {
         'periode': periode,
