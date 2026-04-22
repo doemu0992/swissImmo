@@ -10,8 +10,8 @@ from django.conf.urls.static import static
 # 1. Landing Page & Public Tickets (Das QR-Code Formular)
 from core.views.ticket_public import public_ticket_view, generate_hallway_poster, index_view
 
-# 2. Das neue Admin-Cockpit
-from core.views.dashboard_view import custom_dashboard_view
+# 2. Das neue Admin-Cockpit (KORRIGIERT: update_market_data_view hinzugefügt)
+from core.views.dashboard_view import dashboard_view, update_market_data_view
 
 # 3. Verträge & Mietzins (Restliche Legacy-Views aus Core)
 from core.views.contracts import mietzins_anpassung_view, generiere_amtliches_formular
@@ -30,8 +30,9 @@ urlpatterns = [
     # --- STARTSEITE ---
     path('', index_view, name='index'),
 
-    # --- DASHBOARD ---
-    path('admin/dashboard/', custom_dashboard_view, name='admin_dashboard'),
+    # --- DASHBOARD & SYSTEM ---
+    path('admin/dashboard/', dashboard_view, name='admin_dashboard'),
+    path('admin/update-marktdaten/', update_market_data_view, name='update_marktdaten'),
 
     # --- ADMIN ---
     path('admin/', admin.site.urls),
@@ -62,6 +63,6 @@ urlpatterns = [
     path('portfolio/', include('portfolio.urls')),
     path('crm/', include('crm.urls')),
     path('rentals/', include('rentals.urls')),
-    path('tickets/', include('tickets.urls')), # Hierüber laufen jetzt die ganzen Ticket-Detail Ansichten!
+    path('tickets/', include('tickets.urls')),
     path('finance/', include('finance.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

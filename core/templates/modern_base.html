@@ -6,13 +6,15 @@
     <title>SwissImmo SaaS Portal</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script defer src="https://cdn.jsdelivr.net/npm/@imacws/alpine-ajax@0.10.2/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 
     <style>
         body {
@@ -34,41 +36,47 @@
         }
         .brand {
             font-size: 1.4rem;
-            font-weight: 700;
+            font-weight: 900;
             margin-bottom: 40px;
             display: flex;
             align-items: center;
             gap: 10px;
             color: #fff;
             text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .brand:hover {
+            opacity: 0.8;
+            color: #fff;
         }
         .nav-link {
             color: #94a3b8;
             padding: 12px 15px;
-            border-radius: 8px;
+            border-radius: 12px;
             margin-bottom: 5px;
             display: flex;
             align-items: center;
             gap: 12px;
             transition: all 0.2s;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
         .nav-link:hover, .nav-link.active {
             background: #334155;
             color: white;
-            transform: translateX(5px);
+            transform: translateX(4px);
         }
         .nav-link i { font-size: 1.2rem; }
 
         .nav-label {
             text-transform: uppercase;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #64748b;
-            margin-top: 25px;
-            margin-bottom: 10px;
+            margin-top: 30px;
+            margin-bottom: 12px;
             padding-left: 15px;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: 0.05em;
         }
 
@@ -85,53 +93,64 @@
         @media (max-width: 992px) {
             .sidebar { width: 70px; padding: 20px 10px; }
             .nav-link span, .brand span, .nav-label { display: none; }
-            .main-content { margin-left: 70px; }
+            .main-content { margin-left: 70px; padding: 20px; }
             .nav-link { justify-content: center; }
         }
     </style>
 </head>
 <body x-data @ajax:before="document.body.classList.add('ajax-loading')" @ajax:success="document.body.classList.remove('ajax-loading')" @ajax:error="document.body.classList.remove('ajax-loading')">
 
-    <nav class="sidebar">
-        <a href="{% url 'admin_dashboard' %}" class="brand">
-            <i class="bi bi-buildings-fill"></i>
+    <nav class="sidebar shadow-xl">
+        <a href="{% url 'admin_dashboard' %}" x-target="main-content" class="brand">
+            <i class="bi bi-buildings-fill text-indigo-400"></i>
             <span>SwissImmo</span>
         </a>
 
-        <div class="nav-label">SaaS Portal (Neu)</div>
+        <div class="nav-label">Immobilien</div>
 
-        <a href="{% url 'liegenschaft_liste' %}" x-target="main-content" class="nav-link text-info font-bold">
+        <a href="{% url 'liegenschaft_liste' %}" x-target="main-content" class="nav-link hover:text-white">
             <i class="bi bi-rocket-takeoff"></i> <span>Liegenschaften</span>
         </a>
 
-        <a href="{% url 'mieter_liste' %}" x-target="main-content" class="nav-link text-info font-bold">
-            <i class="bi bi-people"></i> <span>Mieter</span>
+        <a href="{% url 'mieter_liste' %}" x-target="main-content" class="nav-link hover:text-white">
+            <i class="bi bi-people"></i> <span>Mieter & Kontakte</span>
         </a>
 
-        <a href="{% url 'mietvertrag_liste' %}" x-target="main-content" class="nav-link text-info font-bold">
-            <i class="bi bi-file-text"></i> <span>Verträge</span>
+        <a href="{% url 'mietvertrag_liste' %}" x-target="main-content" class="nav-link hover:text-white">
+            <i class="bi bi-file-text"></i> <span>Mietverträge</span>
         </a>
 
-        <a href="{% url 'ticket_liste' %}" x-target="main-content" class="nav-link text-info font-bold">
-            <i class="bi bi-tools"></i> <span>Tickets</span>
+        <a href="{% url 'ticket_liste' %}" x-target="main-content" class="nav-link hover:text-white">
+            <i class="bi bi-tools"></i> <span>Tickets & Mängel</span>
         </a>
 
-        <a href="{% url 'abrechnung_liste' %}" x-target="main-content" class="nav-link text-info font-bold">
-            <i class="bi bi-calculator"></i> <span>Abrechnungen</span>
+        <div class="nav-label">Finanzen</div>
+
+        <a href="{% url 'mietzins_kontrolle' %}" x-target="main-content" class="nav-link hover:text-white">
+            <i class="bi bi-shield-check"></i> <span>Miet-Kontrolle</span>
         </a>
 
-        <div class="nav-label">Klassisches Backend</div>
-        <a href="{% url 'admin:portfolio_einheit_changelist' %}" class="nav-link">
-            <i class="bi bi-door-open"></i> <span>Einheiten</span>
+        <a href="{% url 'zahlung_liste' %}" x-target="main-content" class="nav-link hover:text-white">
+            <i class="bi bi-cash-stack"></i> <span>Mieteinnahmen</span>
+        </a>
+
+        <a href="{% url 'abrechnung_liste' %}" x-target="main-content" class="nav-link hover:text-white">
+            <i class="bi bi-calculator"></i> <span>Nebenkosten</span>
         </a>
 
         <div class="nav-label">System</div>
-        <a href="{% url 'admin_dashboard' %}" class="nav-link">
+
+        <a href="{% url 'admin_dashboard' %}" x-target="main-content" class="nav-link hover:text-white">
             <i class="bi bi-speedometer2"></i> <span>Admin-Cockpit</span>
         </a>
-        <form method="post" action="{% url 'admin:logout' %}">
+
+        <a href="{% url 'settings' %}" x-target="main-content" class="nav-link hover:text-white">
+            <i class="bi bi-gear-fill"></i> <span>Einstellungen</span>
+        </a>
+
+        <form method="post" action="{% url 'admin:logout' %}" class="mt-4">
             {% csrf_token %}
-            <button type="submit" class="nav-link" style="color:#ef4444; background:none; border:none; width:100%; text-align:left;">
+            <button type="submit" class="nav-link text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 w-full text-left">
                 <i class="bi bi-box-arrow-left"></i> <span>Abmelden</span>
             </button>
         </form>

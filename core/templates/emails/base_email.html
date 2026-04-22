@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 40px 20px; color: #1f2937; -webkit-font-smoothing: antialiased; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .header { padding: 35px 30px; text-align: center; border-bottom: 1px solid #f3f4f6; background-color: #ffffff; }
+        .header img { max-height: 60px; max-width: 250px; }
+        .content { padding: 40px 30px; line-height: 1.6; font-size: 16px; }
+        .button { display: inline-block; padding: 14px 28px; background-color: #4f46e5; color: #ffffff !important; text-decoration: none; border-radius: 10px; font-weight: bold; margin: 25px 0; letter-spacing: 0.5px; }
+        .button:hover { background-color: #4338ca; }
+        .alert-red { background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 15px 20px; margin: 25px 0; border-radius: 0 8px 8px 0; }
+        .alert-green { background-color: #ecfdf5; border-left: 4px solid #10b981; padding: 15px 20px; margin: 25px 0; border-radius: 0 8px 8px 0; }
+        .footer { padding: 25px 30px; background-color: #f9fafb; font-size: 13px; color: #6b7280; text-align: center; border-top: 1px solid #f3f4f6; line-height: 1.5; }
+        .footer a { color: #4f46e5; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            {% if logo_url %}
+                <img src="{{ logo_url }}" alt="{{ firma_name }}">
+            {% else %}
+                <h2 style="margin:0; color:#111827; font-weight: 900; letter-spacing: -0.5px;">{{ firma_name }}</h2>
+            {% endif %}
+        </div>
+
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+
+        <div class="footer">
+            &copy; {% now "Y" %} <strong>{{ firma_name }}</strong><br>
+            {{ strasse }}, {{ plz }} {{ ort }}<br>
+            <a href="mailto:{{ email }}">{{ email }}</a> | {{ telefon }}
+        </div>
+    </div>
+</body>
+</html>

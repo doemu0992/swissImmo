@@ -1,18 +1,48 @@
 # crm/forms.py
 from django import forms
-from .models import Mieter
+from .models import Mieter, Verwaltung, Mandant, Handwerker
 
 class MieterForm(forms.ModelForm):
     class Meta:
         model = Mieter
-        fields = ['is_company', 'firma', 'anrede', 'vorname', 'nachname', 'email', 'telefon', 'strasse', 'plz', 'ort']
+        fields = '__all__'
         widgets = {
-            # Checkbox für AlpineJS präparieren
-            'is_company': forms.CheckboxInput(attrs={'class': 'w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer', 'x-model': 'isCompany'}),
+            'is_company': forms.CheckboxInput(attrs={'class': 'rounded text-indigo-600 focus:ring-indigo-500'}),
+            'geburtsdatum': forms.DateInput(attrs={'type': 'date'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field_name, field in self.fields.items():
-            if field_name != 'is_company':
-                field.widget.attrs['class'] = 'bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-all outline-none'
+        for field in self.fields.values():
+            if not isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'w-full p-2.5 rounded-xl border border-gray-200 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50/50'})
+
+class VerwaltungForm(forms.ModelForm):
+    class Meta:
+        model = Verwaltung
+        fields = ['firma', 'strasse', 'plz', 'ort', 'telefon', 'email', 'iban', 'logo', 'unterschrift_bild']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'w-full p-2.5 rounded-xl border border-gray-200 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50/50'})
+
+class MandantForm(forms.ModelForm):
+    class Meta:
+        model = Mandant
+        fields = ['firma_oder_name', 'kontaktperson', 'strasse', 'plz', 'ort', 'telefon', 'email', 'bank_name', 'iban', 'unterschrift_bild']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'w-full p-2.5 rounded-xl border border-gray-200 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50/50'})
+
+class HandwerkerForm(forms.ModelForm):
+    class Meta:
+        model = Handwerker
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'w-full p-2.5 rounded-xl border border-gray-200 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50/50'})

@@ -1,143 +1,192 @@
 {% extends 'modern_base.html' %}
 
 {% block content %}
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 fade-enter-active">
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 fade-enter-active">
 
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
         <div class="flex items-center gap-4">
             <a href="{% url 'mieter_liste' %}" x-target="main-content" class="text-gray-400 hover:text-indigo-600 transition-colors" title="Zurück zur Liste">
                 <i class="bi bi-arrow-left-circle-fill" style="font-size: 2rem;"></i>
             </a>
             <div class="flex items-center gap-4">
                 {% if mieter.is_company %}
-                    <div class="flex-shrink-0 w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-2xl border border-slate-200">🏢</div>
+                    <div class="flex-shrink-0 w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 text-2xl border border-slate-200 shadow-inner">🏢</div>
                 {% else %}
-                    <div class="flex-shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center text-indigo-700 font-black text-xl border border-indigo-200">
+                    <div class="flex-shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-indigo-100 to-blue-50 flex items-center justify-center text-indigo-700 font-black text-xl border border-indigo-200 shadow-inner">
                         {{ mieter.vorname|first|default:"-" }}{{ mieter.nachname|first|default:"-" }}
                     </div>
                 {% endif %}
 
                 <div>
-                    <h2 class="text-3xl font-bold text-gray-800">
+                    <h2 class="text-3xl font-black text-gray-900 tracking-tight">
                         {% if mieter.is_company %}{{ mieter.firma }}{% else %}{{ mieter.vorname }} {{ mieter.nachname }}{% endif %}
                     </h2>
-                    <p class="text-gray-500 mt-1">
-                        {% if mieter.is_company %}Firmenkunde{% else %}Privatperson{% endif %} <span class="mx-2">|</span> ID: #{{ mieter.id }}
-                    </p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
+                            {% if mieter.is_company %}Firmenkunde{% else %}Privatperson{% endif %}
+                        </span>
+                        <span class="text-gray-400 text-sm">| ID: #{{ mieter.id }}</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="flex gap-2">
-            <form method="POST" action="{% url 'mieter_detail' mieter.pk %}" x-target="main-content" onsubmit="return confirm('Diesen Mieter wirklich löschen?');">
+        <div class="flex flex-wrap gap-2">
+            <form method="POST" action="{% url 'mieter_detail' mieter.pk %}" x-target="main-content" onsubmit="return confirm('Diesen Mieter wirklich löschen?');" class="inline">
                 {% csrf_token %}
                 <input type="hidden" name="delete_mieter" value="1">
-                <button type="submit" class="bg-red-50 text-red-600 px-4 py-2.5 rounded-xl font-bold hover:bg-red-100 transition-colors shadow-sm" title="Löschen">🗑️</button>
+                <button type="submit" class="bg-white border border-gray-200 text-red-500 px-4 py-2 rounded-xl font-bold text-sm hover:bg-red-50 transition-colors shadow-sm" title="Löschen">
+                    <i class="bi bi-trash"></i> Löschen
+                </button>
             </form>
-            <a href="?edit=1" x-target="main-content" class="bg-indigo-50 text-indigo-600 px-5 py-2.5 rounded-xl font-bold hover:bg-indigo-100 transition-colors shadow-sm flex items-center gap-2" style="text-decoration: none;">
-                ✏️ Bearbeiten
+            <a href="?edit=1" x-target="main-content" class="bg-indigo-50 text-indigo-600 px-5 py-2 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors shadow-sm flex items-center gap-2" style="text-decoration: none;">
+                <i class="bi bi-pencil-square"></i> Bearbeiten
             </a>
         </div>
     </div>
 
-    <h3 class="text-xl font-bold text-gray-800 mb-4">Kontaktdaten</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-
-        <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-            <div class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">E-Mail Adresse</div>
-            <div class="font-medium break-words">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+        <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100 relative overflow-hidden">
+            <i class="bi bi-envelope-at absolute -right-4 -bottom-4 text-gray-200 text-6xl"></i>
+            <div class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-2 relative z-10">E-Mail Adresse</div>
+            <div class="font-bold text-sm break-words relative z-10">
                 {% if mieter.email %}
-                    <a href="mailto:{{ mieter.email }}" class="text-indigo-600 hover:text-indigo-800 hover:underline transition-colors flex items-center gap-2" style="text-decoration: none;">✉️ {{ mieter.email }}</a>
-                {% else %}<span class="text-gray-400">-</span>{% endif %}
+                    <a href="mailto:{{ mieter.email }}" class="text-indigo-600 hover:text-indigo-800 transition-colors" style="text-decoration: none;">{{ mieter.email }}</a>
+                {% else %}<span class="text-gray-400 italic">Fehlt</span>{% endif %}
             </div>
         </div>
 
-        <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-            <div class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">Telefonnummer</div>
-            <div class="font-medium">
+        <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100 relative overflow-hidden">
+            <i class="bi bi-telephone absolute -right-4 -bottom-4 text-gray-200 text-6xl"></i>
+            <div class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-2 relative z-10">Telefonnummer</div>
+            <div class="font-bold text-sm relative z-10">
                 {% if mieter.telefon %}
-                    <a href="tel:{{ mieter.telefon }}" class="text-indigo-600 hover:text-indigo-800 hover:underline transition-colors flex items-center gap-2" style="text-decoration: none;">📞 {{ mieter.telefon }}</a>
-                {% else %}<span class="text-gray-400">-</span>{% endif %}
+                    <a href="tel:{{ mieter.telefon }}" class="text-indigo-600 hover:text-indigo-800 transition-colors" style="text-decoration: none;">{{ mieter.telefon }}</a>
+                {% else %}<span class="text-gray-400 italic">Fehlt</span>{% endif %}
             </div>
         </div>
 
-        <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 col-span-2">
-            <div class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">Postadresse</div>
-            <div class="font-medium">
+        <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100 col-span-1 md:col-span-2 relative overflow-hidden">
+            <i class="bi bi-geo-alt absolute -right-4 -bottom-4 text-gray-200 text-6xl"></i>
+            <div class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-2 relative z-10">Postadresse</div>
+            <div class="font-bold text-sm relative z-10">
                 {% if mieter.strasse or mieter.ort %}
-                    <a href="https://maps.google.com/?q={{ mieter.strasse|urlencode }},{{ mieter.plz|urlencode }}+{{ mieter.ort|urlencode }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 hover:underline transition-colors flex items-start gap-2" style="text-decoration: none;">
-                        📍 <span>{{ mieter.strasse|default:"-" }}<br>{{ mieter.plz|default:"" }} {{ mieter.ort|default:"" }}</span>
+                    <a href="https://maps.google.com/?q={{ mieter.strasse|urlencode }},{{ mieter.plz|urlencode }}+{{ mieter.ort|urlencode }}" target="_blank" class="text-gray-900 hover:text-indigo-600 transition-colors" style="text-decoration: none;">
+                        {{ mieter.strasse|default:"-" }}<br>{{ mieter.plz|default:"" }} {{ mieter.ort|default:"" }}
                     </a>
-                {% else %}<span class="text-gray-400">-</span>{% endif %}
+                {% else %}<span class="text-gray-400 italic">Fehlt</span>{% endif %}
             </div>
         </div>
     </div>
 
-    <h3 class="text-xl font-bold text-gray-800 mb-4">Verknüpfte Mietverträge</h3>
-    <div class="overflow-hidden rounded-xl border border-gray-200">
+    <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"><i class="bi bi-file-earmark-text text-indigo-500"></i> Mietverträge</h3>
+    <div class="overflow-hidden rounded-xl border border-gray-200 shadow-sm mb-12">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Objekt</th>
-                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Mietbeginn</th>
-                    <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Mietzins (Brutto)</th>
-                    <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Status</th>
+                    <th class="px-6 py-3.5 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Objekt</th>
+                    <th class="px-6 py-3.5 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Mietbeginn</th>
+                    <th class="px-6 py-3.5 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Bruttomiete</th>
+                    <th class="px-6 py-3.5 text-center text-[10px] font-black text-gray-500 uppercase tracking-widest">Status</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-100">
                 {% for vertrag in vertraege %}
-                <tr class="hover:bg-gray-50 transition-colors">
+                <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location.href='{% url 'mietvertrag_detail' vertrag.id %}'">
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="font-bold text-gray-900">{{ vertrag.einheit.bezeichnung }}</div>
+                        <div class="font-bold text-indigo-600 hover:text-indigo-800">{{ vertrag.einheit.bezeichnung }}</div>
                         <div class="text-xs text-gray-500 mt-0.5">{{ vertrag.einheit.liegenschaft.strasse }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{{ vertrag.beginn|date:"d.m.Y"|default:"-" }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-black text-gray-900">CHF {{ vertrag.netto_mietzins|add:vertrag.nebenkosten|default_if_none:"0"|floatformat:2 }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                        {% if vertrag.aktiv %}<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Aktiv</span>
-                        {% else %}<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20">Inaktiv</span>{% endif %}
+                        {% if vertrag.aktiv %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-700 uppercase tracking-wider border border-emerald-200">Aktiv</span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-gray-100 text-gray-600 uppercase tracking-wider border border-gray-200">Beendet</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">Keine Verträge gefunden.</td></tr>
+                <tr><td colspan="4" class="px-6 py-10 text-center text-gray-400 italic">Keine Verträge für diesen Mieter hinterlegt.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"><i class="bi bi-tools text-rose-500"></i> Gemeldete Tickets & Schäden</h3>
+    <div class="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3.5 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Datum</th>
+                    <th class="px-6 py-3.5 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Titel / Thema</th>
+                    <th class="px-6 py-3.5 text-center text-[10px] font-black text-gray-500 uppercase tracking-widest">Status</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+                {% for ticket in tickets %}
+                <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location.href='{% url 'ticket_detail' ticket.id %}'">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{{ ticket.erstellt_am|date:"d.m.Y" }}</td>
+                    <td class="px-6 py-4">
+                        <div class="font-bold text-gray-900">{{ ticket.titel }}</div>
+                        <div class="text-xs text-gray-500 mt-0.5 truncate max-w-md">{{ ticket.beschreibung }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        {% if ticket.status == 'neu' %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded text-[10px] font-bold bg-rose-100 text-rose-700 uppercase tracking-wider">Neu</span>
+                        {% elif ticket.status == 'erledigt' %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 uppercase tracking-wider">Erledigt</span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">In Bearbeitung</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="px-6 py-10 text-center text-gray-400 italic">Bisher wurden keine Tickets oder Mängel gemeldet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </div>
 
 {% if form %}
-<div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden fade-enter-active" style="margin: 20px;">
+<div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden fade-enter-active">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-            <h3 class="text-xl font-bold text-gray-900">Mieter bearbeiten</h3>
-            <a href="{% url 'mieter_detail' mieter.pk %}" x-target="main-content" class="text-gray-400 hover:text-red-500 text-2xl font-bold" style="text-decoration: none;">&times;</a>
+            <h3 class="text-xl font-black text-gray-900">Mieter bearbeiten</h3>
+            <a href="{% url 'mieter_detail' mieter.pk %}" x-target="main-content" class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors" style="text-decoration: none;">
+                <i class="bi bi-x-lg text-sm font-bold"></i>
+            </a>
         </div>
 
         <form method="POST" action="{% url 'mieter_detail' mieter.pk %}" x-target="main-content">
             {% csrf_token %}
             <input type="hidden" name="save_mieter" value="1">
 
-            <div class="p-6 grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto" x-data="{ isCompany: {% if form.instance.is_company %}true{% else %}false{% endif %} }">
+            <div class="p-6 grid grid-cols-2 gap-4 max-h-[65vh] overflow-y-auto" x-data="{ isCompany: {% if form.instance.is_company %}true{% else %}false{% endif %} }">
                 <div class="col-span-2 flex items-center gap-3 p-4 bg-indigo-50 rounded-xl border border-indigo-100 mb-2">
                     {{ form.is_company }}
                     <label for="{{ form.is_company.id_for_label }}" class="font-bold text-indigo-900 cursor-pointer select-none">Mieter ist eine Firma / juristische Person</label>
                 </div>
-                <div class="col-span-2" x-show="isCompany" x-transition><label class="block text-sm font-bold text-gray-700 mb-1">Firmenname</label>{{ form.firma }}</div>
-                <div class="col-span-1" x-show="!isCompany" x-transition><label class="block text-sm font-bold text-gray-700 mb-1">Vorname</label>{{ form.vorname }}</div>
-                <div class="col-span-1" x-show="!isCompany" x-transition><label class="block text-sm font-bold text-gray-700 mb-1">Nachname</label>{{ form.nachname }}</div>
+                <div class="col-span-2" x-show="isCompany" x-transition><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Firmenname</label>{{ form.firma }}</div>
+                <div class="col-span-1" x-show="!isCompany" x-transition><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Vorname</label>{{ form.vorname }}</div>
+                <div class="col-span-1" x-show="!isCompany" x-transition><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Nachname</label>{{ form.nachname }}</div>
 
                 <div class="col-span-2"><hr class="border-gray-100 my-2"></div>
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">E-Mail</label>{{ form.email }}</div>
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Telefon</label>{{ form.telefon }}</div>
-                <div class="col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1">Strasse & Nr.</label>{{ form.strasse }}</div>
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">PLZ</label>{{ form.plz }}</div>
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Ort</label>{{ form.ort }}</div>
+                <div class="col-span-1"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">E-Mail</label>{{ form.email }}</div>
+                <div class="col-span-1"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Telefon</label>{{ form.telefon }}</div>
+                <div class="col-span-2"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Strasse & Nr.</label>{{ form.strasse }}</div>
+                <div class="col-span-1"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">PLZ</label>{{ form.plz }}</div>
+                <div class="col-span-1"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Ort</label>{{ form.ort }}</div>
             </div>
 
             <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-                <a href="{% url 'mieter_detail' mieter.pk %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl" style="text-decoration: none;">Abbrechen</a>
-                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm">Speichern</button>
+                <a href="{% url 'mieter_detail' mieter.pk %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors" style="text-decoration: none;">Abbrechen</a>
+                <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm flex items-center gap-2 transition-colors">
+                    <i class="bi bi-check2"></i> Speichern
+                </button>
             </div>
         </form>
     </div>

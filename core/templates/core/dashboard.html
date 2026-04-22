@@ -1,196 +1,237 @@
-{% extends "unfold/layouts/base.html" %}
-{% load i18n static %}
+{% extends 'modern_base.html' %}
 
 {% block content %}
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<div class="fade-enter-active space-y-8 pb-10">
 
-<style>
-    /* Globaler Fix für die Schriftart */
-    body, .unfold-font { font-family: 'Inter', sans-serif !important; }
-
-    /* Icon-Fix: Verhindert das Verblassen und erzwingt kräftige Farben */
-    .material-symbols-outlined {
-        font-family: 'Material Symbols Outlined' !important;
-        display: inline-block;
-        vertical-align: middle;
-        opacity: 1 !important; /* Verhindert das Verblassen durch das Theme */
-    }
-
-    /* Spezifische Farben für die Kachel-Icons im Hintergrund - Kräftiger eingestellt */
-    .icon-bg-emerald { color: #10b981 !important; opacity: 0.5 !important; }
-    .icon-bg-red { color: #ef4444 !important; opacity: 0.5 !important; }
-    .icon-bg-amber { color: #f59e0b !important; opacity: 0.5 !important; }
-    .icon-bg-blue { color: #3b82f6 !important; opacity: 0.5 !important; }
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<div class="p-6">
-
-    <div class="mb-8 flex justify-between items-end">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white mb-2 tracking-tight">Immobilien Cockpit 🚀</h1>
-            <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Tagesaktueller Status Ihrer Verwaltung.</p>
+            <h1 class="text-3xl font-black text-gray-900 tracking-tight">Cockpit 🚀</h1>
+            <p class="text-gray-500 mt-1">Willkommen zurück! Hier ist der aktuelle Puls deines Portfolios.</p>
         </div>
-        <div class="hidden sm:block">
-            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full border border-blue-200">Live Daten</span>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all p-6 border border-gray-100 dark:border-gray-700 relative overflow-hidden">
-            <div class="absolute top-2 right-2 p-2">
-                <i class="material-symbols-outlined text-6xl icon-bg-emerald">payments</i>
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 text-sm font-bold text-indigo-600 bg-indigo-50 px-4 py-2.5 rounded-xl shadow-sm border border-indigo-100">
+                <i class="bi bi-calendar3"></i> {% now "j. F Y" %}
             </div>
-            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Soll-Miete (Monat)</p>
-            <h3 class="text-3xl font-black text-gray-800 dark:text-white">CHF {{ total_income|floatformat:0 }}</h3>
-            <div class="text-xs text-emerald-600 mt-2 font-bold flex items-center gap-1">
-                <i class="material-symbols-outlined text-sm !opacity-100">trending_up</i> inkl. Nebenkosten
-            </div>
-        </div>
-
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all p-6 border border-gray-100 dark:border-gray-700 relative overflow-hidden">
-            <div class="absolute top-2 right-2 p-2">
-                <i class="material-symbols-outlined text-6xl icon-bg-red">home_work</i>
-            </div>
-            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Leerstand</p>
-            <h3 class="text-3xl font-black text-gray-800 dark:text-white">{{ leerstand_prozent }}%</h3>
-            <div class="text-xs text-red-500 mt-2 font-bold flex items-center gap-1">
-                <i class="material-symbols-outlined text-sm !opacity-100">error</i> {{ leerstand_count }} Einheiten leer
-            </div>
-        </div>
-
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all p-6 border border-gray-100 dark:border-gray-700 relative overflow-hidden">
-            <div class="absolute top-2 right-2 p-2">
-                <i class="material-symbols-outlined text-6xl icon-bg-amber">build</i>
-            </div>
-            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Offene Tickets</p>
-            <h3 class="text-3xl font-black text-gray-800 dark:text-white">{{ offene_tickets }}</h3>
-            <div class="text-xs text-amber-600 mt-2 font-bold flex items-center gap-1">
-                <i class="material-symbols-outlined text-sm !opacity-100">priority_high</i> {{ kritische_tickets }} Kritisch
-            </div>
-        </div>
-
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all p-6 border border-gray-100 dark:border-gray-700 relative overflow-hidden">
-            <div class="absolute top-2 right-2 p-2">
-                <i class="material-symbols-outlined text-6xl icon-bg-blue">apartment</i>
-            </div>
-            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Portfolio</p>
-            <h3 class="text-3xl font-black text-gray-800 dark:text-white">{{ total_units }}</h3>
-            <div class="text-xs text-blue-600 mt-2 font-bold flex items-center gap-1">
-                <i class="material-symbols-outlined text-sm !opacity-100">inventory_2</i> Einheiten gesamt
-            </div>
+            <a href="{% url 'update_marktdaten' %}" class="flex items-center gap-2 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 px-4 py-2.5 rounded-xl shadow-sm transition-all" title="Marktdaten vom Bund abrufen" style="text-decoration: none;">
+                <i class="bi bi-arrow-repeat"></i> Sync LIK/Zins
+            </a>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-        <div class="lg:col-span-2 space-y-8">
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                <h4 class="text-lg font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
-                    <i class="material-symbols-outlined text-gray-400">pie_chart</i> Belegungsstatus
-                </h4>
-                <div class="flex flex-col md:flex-row items-center gap-8">
-                    <div class="w-full md:w-1/2 h-64">
-                        <canvas id="occupancyChart"></canvas>
-                    </div>
-                    <div class="w-full md:w-1/2 space-y-3">
-                        <div class="p-5 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
-                            <span class="text-xs font-bold text-gray-400 uppercase mb-4 block text-center">Aktionen</span>
-                            <div class="space-y-2">
-                                <a href="{% url 'admin:core_mietvertrag_add' %}" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition shadow-sm">
-                                    <i class="material-symbols-outlined text-sm !opacity-100">add</i> Neuer Vertrag
-                                </a>
-                                <a href="{% url 'ticket_erstellen' %}" target="_blank" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-lg text-sm font-bold transition shadow-sm">
-                                    <i class="material-symbols-outlined text-sm !opacity-100">public</i> Schaden melden
-                                </a>
-                                <div class="h-px bg-gray-200 dark:bg-gray-700 my-2"></div>
-                                <a href="{% url 'index' %}" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-sm font-medium transition">
-                                    <i class="material-symbols-outlined text-sm !opacity-100">home</i> Startseite
-                                </a>
-                                <a href="/admin/" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-sm font-medium transition">
-                                    <i class="material-symbols-outlined text-sm !opacity-100">apps</i> Klassische Ansicht
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group hover:border-emerald-200 transition-colors">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 transition-transform duration-500 group-hover:scale-110"></div>
+            <i class="bi bi-cash-stack absolute right-5 top-5 text-emerald-500 text-2xl"></i>
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Eingangsquote (Miete)</h3>
+            <div class="text-3xl font-black text-gray-900">{{ finanz_quote }}<span class="text-xl text-gray-400">%</span></div>
+            <p class="text-xs text-gray-500 mt-3 font-medium flex items-center gap-1">
+                <span class="text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded"><i class="bi bi-arrow-up-right"></i> {{ ist_miete|floatformat:0 }}</span>
+                von CHF {{ soll_miete|floatformat:0 }}
+            </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group hover:border-amber-200 transition-colors">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-amber-50 rounded-bl-full -mr-4 -mt-4 transition-transform duration-500 group-hover:scale-110"></div>
+            <i class="bi bi-door-open absolute right-5 top-5 text-amber-500 text-2xl"></i>
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Leerstand</h3>
+            <div class="text-3xl font-black text-gray-900">{{ leerstand_count }} <span class="text-lg text-gray-300 font-bold">Einheiten</span></div>
+            <p class="text-xs text-gray-500 mt-3 font-medium">
+                Das entspricht <span class="text-amber-600 font-bold bg-amber-50 px-1.5 py-0.5 rounded">{{ leerstand_quote }}%</span> des Portfolios.
+            </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group hover:border-rose-200 transition-colors">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-rose-50 rounded-bl-full -mr-4 -mt-4 transition-transform duration-500 group-hover:scale-110"></div>
+            <i class="bi bi-tools absolute right-5 top-5 text-rose-500 text-2xl"></i>
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Pendenzen / Tickets</h3>
+            <div class="text-3xl font-black text-gray-900">{{ offene_tickets }}</div>
+            <p class="text-xs text-gray-500 mt-3 font-medium text-rose-500">Unerledigte Aufgaben & Mängel.</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group hover:border-indigo-200 transition-colors">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-50 rounded-bl-full -mr-4 -mt-4 transition-transform duration-500 group-hover:scale-110"></div>
+            <i class="bi bi-buildings absolute right-5 top-5 text-indigo-500 text-2xl"></i>
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Gesamt-Portfolio</h3>
+            <div class="text-3xl font-black text-gray-900">{{ total_einheiten }}</div>
+            <p class="text-xs text-gray-500 mt-3 font-medium">Verwaltete Mietobjekte total.</p>
+        </div>
+
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Mieteinnahmen (Soll vs. Ist)</h3>
+                    <p class="text-xs text-gray-500 mt-1">Verlauf der letzten 6 Monate</p>
                 </div>
+                <a href="{% url 'zahlung_liste' %}" class="text-xs font-bold text-indigo-600 hover:text-white hover:bg-indigo-600 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl transition-all shadow-sm">
+                    Details <i class="bi bi-arrow-right"></i>
+                </a>
             </div>
-
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                <h4 class="text-lg font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
-                    <i class="material-symbols-outlined text-gray-400">bar_chart</i> Tickets nach Status
-                </h4>
-                <div class="h-64">
-                    <canvas id="ticketChart"></canvas>
-                </div>
+            <div class="relative flex-1 w-full min-h-[300px]">
+                <canvas id="revenueChart"></canvas>
             </div>
         </div>
 
-        <div class="space-y-8">
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div class="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                    <h4 class="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                        <i class="material-symbols-outlined text-amber-500 !opacity-100">alarm</i> Auslaufend (90 Tage)
-                    </h4>
-                </div>
-                <div class="divide-y divide-gray-100 dark:divide-gray-700">
-                    {% if auslaufende_vertraege %}
-                        {% for v in auslaufende_vertraege %}
-                        <div class="p-4 hover:bg-blue-50 dark:hover:bg-gray-700 transition group">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="font-bold text-gray-800 dark:text-white text-sm">{{ v.mieter.nachname }}</p>
-                                    <p class="text-xs text-gray-500">{{ v.einheit.bezeichnung }}</p>
-                                </div>
-                                <span class="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded font-bold border border-amber-200">{{ v.ende|date:"d.m.Y" }}</span>
-                            </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <i class="bi bi-lightning-charge-fill text-amber-400"></i> Schnellzugriff
+            </h3>
+
+            <div class="space-y-4">
+                <a href="{% url 'mietvertrag_liste' %}" x-target="main-content" class="flex items-center gap-4 p-4 rounded-xl border {% if potenzial_up > 0 %}border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50{% elif potenzial_down > 0 %}border-rose-200 bg-rose-50/50 hover:bg-rose-50{% else %}border-gray-100 hover:bg-gray-50{% endif %} transition-all group shadow-sm">
+                    <div class="w-12 h-12 rounded-xl {% if potenzial_up > 0 %}bg-emerald-100 text-emerald-600{% elif potenzial_down > 0 %}bg-rose-100 text-rose-600{% else %}bg-gray-100 text-gray-500{% endif %} flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-bold text-gray-900 text-sm">Zins-Potenzial</div>
+                        <div class="text-xs mt-0.5 flex gap-3 font-medium">
+                            <span class="text-emerald-600"><i class="bi bi-arrow-up-circle"></i> {{ potenzial_up }} Erhöhungen</span>
+                            <span class="text-rose-500"><i class="bi bi-exclamation-circle"></i> {{ potenzial_down }} Risiken</span>
                         </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="p-8 text-center text-gray-500 text-sm italic">
-                            Keine Verträge laufen aus.
-                        </div>
-                    {% endif %}
-                </div>
+                    </div>
+                    <i class="bi bi-chevron-right ml-auto text-gray-300 group-hover:text-gray-500 transition-colors"></i>
+                </a>
+
+                <a href="{% url 'mietzins_kontrolle' %}" x-target="main-content" class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-emerald-300 hover:bg-emerald-50 transition-all group shadow-sm">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform"><i class="bi bi-shield-check"></i></div>
+                    <div>
+                        <div class="font-bold text-gray-900 text-sm">Miet-Kontrolle</div>
+                        <div class="text-xs text-gray-500 mt-0.5">Wer hat noch nicht bezahlt?</div>
+                    </div>
+                    <i class="bi bi-chevron-right ml-auto text-gray-300 group-hover:text-emerald-500 transition-colors"></i>
+                </a>
+
+                <a href="{% url 'ticket_liste' %}" x-target="main-content" class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-rose-300 hover:bg-rose-50 transition-all group shadow-sm">
+                    <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform"><i class="bi bi-tools"></i></div>
+                    <div>
+                        <div class="font-bold text-gray-900 text-sm">Tickets bearbeiten</div>
+                        <div class="text-xs text-gray-500 mt-0.5">{{ offene_tickets }} offene Meldungen</div>
+                    </div>
+                    <i class="bi bi-chevron-right ml-auto text-gray-300 group-hover:text-rose-500 transition-colors"></i>
+                </a>
+
+                <a href="{% url 'abrechnung_liste' %}" x-target="main-content" class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50 transition-all group shadow-sm">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform"><i class="bi bi-calculator"></i></div>
+                    <div>
+                        <div class="font-bold text-gray-900 text-sm">Nebenkosten</div>
+                        <div class="text-xs text-gray-500 mt-0.5">Abrechnungen erstellen</div>
+                    </div>
+                    <i class="bi bi-chevron-right ml-auto text-gray-300 group-hover:text-indigo-500 transition-colors"></i>
+                </a>
             </div>
         </div>
     </div>
 </div>
 
+{% if messages %}
+<div class="fixed bottom-8 right-8 z-[3000] flex flex-col gap-3">
+    {% for message in messages %}
+    <div
+        x-data="{ show: true }"
+        x-show="show"
+        x-init="setTimeout(() => show = false, 7000)"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-4"
+        class="bg-slate-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4 border border-slate-700"
+    >
+        <div class="w-8 h-8 {% if message.tags == 'error' or message.tags == 'warning' %}bg-amber-500{% else %}bg-emerald-500{% endif %} rounded-full flex items-center justify-center text-white text-sm">
+            <i class="bi {% if message.tags == 'error' or message.tags == 'warning' %}bi-exclamation-lg{% else %}bi-check-lg{% endif %} font-black"></i>
+        </div>
+        <div class="text-sm font-medium">{{ message }}</div>
+        <button @click="show = false" class="text-slate-400 hover:text-white ml-2"><i class="bi bi-x-lg"></i></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    Chart.defaults.font.family = "'Inter', sans-serif";
+    document.addEventListener("DOMContentLoaded", function() {
+        const canvas = document.getElementById('revenueChart');
+        if (!canvas) return;
 
-    // Doughnut Chart
-    new Chart(document.getElementById('occupancyChart'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Vermietet', 'Leerstand'],
-            datasets: [{
-                data: [{{ vermietet_count }}, {{ leerstand_count }}],
-                backgroundColor: ['#10b981', '#ef4444'],
-                borderWidth: 0
-            }]
-        },
-        options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } }
-    });
+        const ctx = canvas.getContext('2d');
 
-    // Bar Chart
-    new Chart(document.getElementById('ticketChart'), {
-        type: 'bar',
-        data: {
-            labels: JSON.parse('{{ chart_ticket_labels|safe }}'),
-            datasets: [{
-                label: 'Tickets',
-                data: JSON.parse('{{ chart_ticket_data|safe }}'),
-                backgroundColor: '#3b82f6',
-                borderRadius: 4
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        const labels = {{ chart_labels|safe }};
+        const dataIst = {{ chart_ist|safe }};
+        const dataSoll = {{ chart_soll|safe }};
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Eingezahlt (Ist)',
+                        data: dataIst,
+                        backgroundColor: '#10b981',
+                        borderRadius: 6,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    },
+                    {
+                        label: 'Erwartet (Soll)',
+                        data: dataSoll,
+                        backgroundColor: '#f3f4f6',
+                        hoverBackgroundColor: '#e5e7eb',
+                        borderRadius: 6,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            font: { family: 'Inter', size: 12, weight: 'bold' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#1f2937',
+                        padding: 12,
+                        titleFont: { family: 'Inter', size: 13 },
+                        bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== null) {
+                                    label += 'CHF ' + new Intl.NumberFormat('de-CH').format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { borderDash: [4, 4], color: '#f3f4f6' },
+                        ticks: {
+                            font: { family: 'Inter', size: 11, weight: '600' },
+                            color: '#9ca3af',
+                            callback: function(value) { return 'CHF ' + value / 1000 + 'k'; }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Inter', size: 12, weight: 'bold' }, color: '#6b7280' }
+                    }
+                }
+            }
+        });
     });
 </script>
 {% endblock %}

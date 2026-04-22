@@ -1,10 +1,14 @@
-# portfolio/views.py
+import urllib.parse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.contrib import messages
+
 from .models import Liegenschaft, Einheit
 from .forms import LiegenschaftForm, EinheitForm
 from .services import sync_liegenschaft_with_gwr, get_liegenschaft_stats
+
+# WICHTIG: Import für den Live-Abgleich der Vermietungen
+from rentals.models import Mietvertrag
 
 def liegenschaft_liste(request):
     form = None
@@ -105,8 +109,21 @@ def liegenschaft_detail(request, pk):
     # --- Daten für das Template aufbereiten ---
     einheiten = liegenschaft.einheiten.all().order_by('bezeichnung')
 
-    # Auslagerung der Statistik-Berechnung in den Service
+    # 🔥 Live-Check: Haupt- UND Nebenobjekte auswerten!
+    aktive_vertraege = Mietvertrag.objects.filter(aktiv=True)
+    belegte_haupt_ids = list(aktive_vertraege.values_list('einheit_id', flat=True))
+    belegte_neben_ids = list(aktive_vertraege.values_list('nebenobjekte', flat=True))
+    alle_belegten_ids = set([id for id in (belegte_haupt_ids + belegte_neben_ids) if id is not None])
+
+    # Wir "markieren" die Einheiten für das Template, ohne sie in der DB zu speichern
+    for e in einheiten:
+        e.ist_vermietet = e.id in alle_belegten_ids
+
     stats = get_liegenschaft_stats(liegenschaft)
+
+    # MAPS URL GENERIEREN (Sichere HTTPS Variante für iFrames)
+    addr_query = urllib.parse.quote(f"{liegenschaft.strasse}, {liegenschaft.plz} {liegenschaft.ort}") if liegenschaft.strasse else ""
+    map_url = f"https://maps.google.com/maps?q={addr_query}&t=&z=15&ie=UTF8&iwloc=&output=embed" if addr_query else ""
 
     context = {
         'liegenschaft': liegenschaft,
@@ -115,5 +132,6 @@ def liegenschaft_detail(request, pk):
         'form': form,
         'einheit_form': einheit_form,
         'active_einheit_id': active_einheit_id,
+        'map_url': map_url,
     }
     return render(request, 'portfolio/liegenschaft_detail.html', context)

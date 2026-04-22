@@ -14,7 +14,9 @@ def mietvertrag_liste(request):
             form = MietvertragForm(request.POST)
             if form.is_valid():
                 form.save()
+                messages.success(request, "Mietvertrag wurde erfolgreich angelegt.")
                 return redirect('mietvertrag_liste')
+
     elif request.GET.get('new'):
         form = MietvertragForm()
 
@@ -53,12 +55,15 @@ def mietvertrag_detail(request, pk):
                 wurde_archiviert = archiviere_vertrag_wenn_unterzeichnet(gespeicherter_vertrag)
                 if wurde_archiviert:
                     messages.success(request, "✅ Vertrag wurde automatisch im Archiv abgelegt.")
+                else:
+                    messages.success(request, "Vertrag aktualisiert.")
 
                 return redirect('mietvertrag_detail', pk=pk)
 
         # 2. Vertrag löschen
         elif 'delete_vertrag' in request.POST:
             vertrag.delete()
+            messages.success(request, "Mietvertrag wurde gelöscht.")
             return redirect('mietvertrag_liste')
 
     elif request.GET.get('edit'):

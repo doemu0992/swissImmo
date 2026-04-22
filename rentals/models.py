@@ -1,12 +1,19 @@
 # rentals/models.py
 from django.db import models
 from django.utils import timezone
+from decimal import Decimal
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
 
 class Mietvertrag(models.Model):
     STATUS_CHOICES = [('offen', 'Offen'), ('gesendet', 'Versendet'), ('unterzeichnet', 'Unterzeichnet')]
     mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, related_name='vertraege')
+
+    # Das Hauptobjekt (z.B. Wohnung)
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='vertraege')
+
+    # 🔥 NEU: Zusätzliche Objekte (Bastelraum, Parkplatz etc.)
+    nebenobjekte = models.ManyToManyField('portfolio.Einheit', blank=True, related_name='als_nebenobjekt_in_vertraegen')
+
     beginn = models.DateField()
     ende = models.DateField(null=True, blank=True)
     netto_mietzins = models.DecimalField(max_digits=8, decimal_places=2)
@@ -23,16 +30,43 @@ class Mietvertrag(models.Model):
         verbose_name_plural = "Mietverträge"
         db_table = 'core_mietvertrag'
 
-    def __str__(self): return f"{self.mieter} - {self.einheit}"
+    def __str__(self):
+        base_str = f"{self.mieter} - {self.einheit}"
+        if self.pk and self.nebenobjekte.exists():
+            count = self.nebenobjekte.count()
+            return f"{base_str} (+{count} Nebenobjekt{'e' if count > 1 else ''})"
+        return base_str
 
-    # 🔥 NEU: Überschreiben der save() Methode für die DocuSeal Automatik 🔥
+    # 🔥 NEU: Die intelligente Mietzins-Prüfung 🔥
+    @property
+    def mietzinspotenzial(self):
+        try:
+            from crm.models import Verwaltung
+            vw = Verwaltung.objects.first()
+            if not vw: return 'neutral'
+
+            curr_zins = vw.aktueller_referenzzinssatz
+            curr_lik = vw.aktueller_lik_punkte
+
+            # 1. Priorität: Wenn der aktuelle Zins KLEINER ist als im Vertrag -> Senkungsrisiko!
+            if curr_zins < self.basis_referenzzinssatz:
+                return 'decrease'
+
+            # 2. Wenn aktueller Zins GRÖSSER ist -> Erhöhungspotenzial!
+            if curr_zins > self.basis_referenzzinssatz:
+                return 'increase'
+
+            # 3. LIK Prüfung (ab 1.5 Punkten Differenz lohnt sich meist eine Teuerungsausgleich)
+            if curr_lik > (self.basis_lik_punkte + Decimal('1.5')):
+                return 'increase'
+
+            return 'neutral'
+        except Exception:
+            return 'neutral'
+
     def save(self, *args, **kwargs):
-        # 1. Zuerst den Vertrag ganz normal speichern
         super().save(*args, **kwargs)
-
-        # 2. Wenn DocuSeal das PDF geliefert hat und der Status 'unterzeichnet' ist, wird es archiviert!
         if self.sign_status == 'unterzeichnet' and self.pdf_datei:
-            # Wir prüfen, ob das Dokument nicht vielleicht schon archiviert wurde (damit es keine Duplikate gibt)
             exists = Dokument.objects.filter(vertrag=self, kategorie='vertrag').exists()
             if not exists:
                 Dokument.objects.create(

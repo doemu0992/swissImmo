@@ -52,8 +52,15 @@ class Einheit(models.Model):
 
     def __str__(self): return f"{self.liegenschaft.strasse} - {self.bezeichnung}"
 
+    # 🔥 NEU: Prüft jetzt Haupt- und Nebenobjekte
     @property
-    def aktiver_vertrag(self): return self.vertraege.filter(aktiv=True).first()
+    def aktiver_vertrag(self):
+        # Zuerst prüfen, ob es als Hauptobjekt vermietet ist
+        vertrag = self.vertraege.filter(aktiv=True).first()
+        if vertrag:
+            return vertrag
+        # Wenn nicht, prüfen ob es als Nebenobjekt vermietet ist!
+        return self.als_nebenobjekt_in_vertraegen.filter(aktiv=True).first()
 
 class Zaehler(models.Model):
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='zaehler')

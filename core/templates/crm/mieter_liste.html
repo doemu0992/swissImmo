@@ -1,70 +1,89 @@
 {% extends 'modern_base.html' %}
 
 {% block content %}
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-    <div class="flex justify-between items-center mb-8">
-        <h2 class="text-3xl font-bold text-gray-800">Mieter & Kontakte</h2>
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 fade-enter-active">
 
-        <div class="flex items-center gap-4 w-1/2 justify-end">
-            <form action="{% url 'mieter_liste' %}" method="GET" x-target="main-content" class="w-2/3">
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><span class="text-gray-400">🔍</span></div>
-                    <input type="text" name="q" value="{{ search_query }}" @input.debounce.500ms="$el.form.requestSubmit()" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 outline-none transition-all shadow-inner" placeholder="Name, Firma oder E-Mail...">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <h2 class="text-3xl font-black text-gray-900 tracking-tight">Mieter & Kontakte</h2>
+            <p class="text-sm text-gray-500 mt-1">Dein CRM für alle Mietparteien</p>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+            <form action="{% url 'mieter_liste' %}" method="GET" x-target="main-content" class="w-full md:w-72">
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="bi bi-search text-gray-400 group-focus-within:text-indigo-500 transition-colors"></i>
+                    </div>
+                    <input type="text" name="q" value="{{ search_query }}"
+                           @input.debounce.500ms="$el.form.requestSubmit()"
+                           class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5 outline-none transition-all hover:bg-white shadow-sm"
+                           placeholder="Name, Firma oder E-Mail...">
                 </div>
             </form>
 
-            <a href="?new=1" x-target="main-content" class="bg-indigo-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-2 whitespace-nowrap" style="text-decoration: none;">
-                ➕ <span class="hidden md:inline">Neuer Mieter</span>
+            <a href="?new=1" x-target="main-content" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-indigo-700 hover:shadow-md transition-all flex items-center gap-2 whitespace-nowrap w-full md:w-auto justify-center" style="text-decoration: none;">
+                <i class="bi bi-person-plus-fill"></i> <span class="hidden md:inline">Neuer Mieter</span>
             </a>
         </div>
     </div>
 
-    <div id="mieter-grid" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 fade-enter-active">
+    <div id="mieter-grid" class="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {% for mieter in mieter_list %}
-            <a href="{% url 'mieter_detail' mieter.pk %}" x-target="main-content" class="block p-5 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 group" style="text-decoration: none;">
-                <div class="flex items-center gap-4 mb-4">
+            <a href="{% url 'mieter_detail' mieter.pk %}" x-target="main-content" class="block p-5 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg hover:border-indigo-200 hover:-translate-y-1 transition-all duration-300 group" style="text-decoration: none;">
+                <div class="flex items-center gap-4 mb-5">
                     {% if mieter.is_company %}
-                        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-xl border border-slate-200">🏢</div>
+                        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 text-xl border border-slate-200 group-hover:scale-110 transition-transform shadow-inner">🏢</div>
                     {% else %}
-                        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center text-indigo-700 font-black text-lg border border-indigo-200">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-indigo-100 to-blue-50 flex items-center justify-center text-indigo-700 font-black text-lg border border-indigo-200 group-hover:scale-110 transition-transform shadow-inner">
                             {{ mieter.vorname|first|default:"-" }}{{ mieter.nachname|first|default:"-" }}
                         </div>
                     {% endif %}
 
-                    <div class="overflow-hidden">
-                        <h3 class="text-lg font-bold text-gray-900 truncate">
+                    <div class="overflow-hidden flex-1">
+                        <h3 class="text-base font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
                             {% if mieter.is_company %}{{ mieter.firma }}{% else %}{{ mieter.vorname }} {{ mieter.nachname }}{% endif %}
                         </h3>
-                        <p class="text-xs text-gray-500 truncate">{% if mieter.is_company %}Firmenkunde{% else %}Privatperson{% endif %}</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">
+                            {% if mieter.is_company %}Firmenkunde{% else %}Privatperson{% endif %}
+                        </p>
                     </div>
                 </div>
-                <div class="space-y-2 text-sm text-gray-600">
-                    <div class="flex items-center gap-2 truncate"><span class="text-gray-400">✉️</span> {{ mieter.email|default:"Keine E-Mail" }}</div>
-                    <div class="flex items-center gap-2 truncate"><span class="text-gray-400">📞</span> {{ mieter.telefon|default:"Keine Telefonnummer" }}</div>
+
+                <div class="space-y-2.5 text-xs text-gray-600 bg-gray-50/50 p-3 rounded-xl border border-gray-50">
+                    <div class="flex items-center gap-2 truncate">
+                        <i class="bi bi-envelope-at text-gray-400"></i> {{ mieter.email|default:"<span class='text-gray-300 italic'>Keine E-Mail</span>"|safe }}
+                    </div>
+                    <div class="flex items-center gap-2 truncate">
+                        <i class="bi bi-telephone text-gray-400"></i> {{ mieter.telefon|default:"<span class='text-gray-300 italic'>Keine Telefonnummer</span>"|safe }}
+                    </div>
                 </div>
             </a>
         {% empty %}
-            <div class="col-span-full py-12 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                <span class="text-4xl mb-3 block">👥</span>
+            <div class="col-span-full py-20 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                <span class="text-5xl mb-4 block opacity-50">👥</span>
                 <h3 class="text-lg font-bold text-gray-900">Keine Kontakte gefunden</h3>
+                <p class="text-gray-500 text-sm mt-1">Lege deinen ersten Mieter an, um zu starten.</p>
             </div>
         {% endfor %}
     </div>
 </div>
 
 {% if form %}
-<div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden fade-enter-active" style="margin: 20px;">
+<div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden fade-enter-active">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-            <h3 class="text-xl font-bold text-gray-900">Neuen Mieter anlegen</h3>
-            <a href="{% url 'mieter_liste' %}" x-target="main-content" class="text-gray-400 hover:text-red-500 text-2xl font-bold" style="text-decoration: none;">&times;</a>
+            <h3 class="text-xl font-black text-gray-900">Neuen Mieter anlegen</h3>
+            <a href="{% url 'mieter_liste' %}" x-target="main-content" class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors" style="text-decoration: none;">
+                <i class="bi bi-x-lg text-sm font-bold"></i>
+            </a>
         </div>
 
         <form method="POST" action="{% url 'mieter_liste' %}" x-target="main-content">
             {% csrf_token %}
             <input type="hidden" name="save_new_mieter" value="1">
 
-            <div class="p-6 grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto" x-data="{ isCompany: {% if form.instance.is_company %}true{% else %}false{% endif %} }">
+            <div class="p-6 grid grid-cols-2 gap-4 max-h-[65vh] overflow-y-auto" x-data="{ isCompany: {% if form.instance.is_company %}true{% else %}false{% endif %} }">
 
                 <div class="col-span-2 flex items-center gap-3 p-4 bg-indigo-50 rounded-xl border border-indigo-100 mb-2">
                     {{ form.is_company }}
@@ -74,47 +93,49 @@
                 </div>
 
                 <div class="col-span-2" x-show="isCompany" x-transition>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Firmenname</label>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Firmenname</label>
                     {{ form.firma }}
                     {% if form.firma.errors %}<p class="text-red-500 text-xs mt-1">{{ form.firma.errors.0 }}</p>{% endif %}
                 </div>
 
                 <div class="col-span-1" x-show="!isCompany" x-transition>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Vorname</label>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Vorname</label>
                     {{ form.vorname }}
                 </div>
                 <div class="col-span-1" x-show="!isCompany" x-transition>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Nachname</label>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Nachname</label>
                     {{ form.nachname }}
                 </div>
 
                 <div class="col-span-2"><hr class="border-gray-100 my-2"></div>
 
                 <div class="col-span-1">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">E-Mail</label>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">E-Mail</label>
                     {{ form.email }}
                 </div>
                 <div class="col-span-1">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Telefon</label>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Telefon</label>
                     {{ form.telefon }}
                 </div>
                 <div class="col-span-2">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Strasse & Nr.</label>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Strasse & Nr.</label>
                     {{ form.strasse }}
                 </div>
                 <div class="col-span-1">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">PLZ</label>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">PLZ</label>
                     {{ form.plz }}
                 </div>
                 <div class="col-span-1">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Ort</label>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Ort</label>
                     {{ form.ort }}
                 </div>
             </div>
 
             <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-                <a href="{% url 'mieter_liste' %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl" style="text-decoration: none;">Abbrechen</a>
-                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm">Speichern</button>
+                <a href="{% url 'mieter_liste' %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors" style="text-decoration: none;">Abbrechen</a>
+                <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm flex items-center gap-2 transition-colors">
+                    <i class="bi bi-check2"></i> Speichern
+                </button>
             </div>
         </form>
     </div>

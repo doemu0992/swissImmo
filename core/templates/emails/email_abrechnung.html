@@ -1,0 +1,27 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2 style="color: #111827; margin-top: 0; font-size: 24px; font-weight: 800;">Ihre Nebenkostenabrechnung</h2>
+
+<p>Guten Tag {{ mieter_name }},</p>
+
+<p>Anbei erhalten Sie Ihre detaillierte Heiz- und Nebenkostenabrechnung für die Periode <strong>{{ periode }}</strong> bezüglich des Objekts <strong>{{ objekt_name }}</strong>.</p>
+
+{% if saldo_art == 'nachzahlung' %}
+    <div class="alert-red">
+        <strong style="color: #b91c1c; font-size: 18px;">Nachzahlung: CHF {{ saldo_betrag }}</strong><br>
+        <span style="font-size: 14px; color: #7f1d1d;">Bitte überweisen Sie diesen Betrag innert 30 Tagen.</span>
+    </div>
+{% elif saldo_art == 'guthaben' %}
+    <div class="alert-green">
+        <strong style="color: #047857; font-size: 18px;">Ihr Guthaben: CHF {{ saldo_betrag }}</strong><br>
+        <span style="font-size: 14px; color: #065f46;">Der Betrag wird Ihnen in Kürze ausbezahlt oder an die nächste Miete angerechnet.</span>
+    </div>
+{% else %}
+    <p>Ihr Saldo ist genau ausgeglichen (CHF 0.00). Es ist keine Zahlung Ihrerseits nötig.</p>
+{% endif %}
+
+<p>Das offizielle PDF-Dokument (inklusive detaillierter Kostenaufstellung) finden Sie im Anhang dieser E-Mail.</p>
+
+<p>Freundliche Grüsse<br><strong>Ihre Verwaltung</strong></p>
+{% endblock %}

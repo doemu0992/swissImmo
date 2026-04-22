@@ -15,6 +15,11 @@
         </div>
 
         <div class="flex gap-2">
+            <a href="{% url 'hallway_poster' liegenschaft.id %}" target="_blank" class="bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl font-bold hover:bg-gray-200 transition-colors shadow-sm flex items-center gap-2" style="text-decoration: none;" title="QR Code Aushang drucken">
+                🖨️ QR-Aushang
+            </a>
+            <div class="w-px bg-gray-200 mx-1"></div>
+
             <form method="POST" action="{% url 'liegenschaft_detail' liegenschaft.pk %}" x-target="main-content" onsubmit="return confirm('Möchtest du diese Liegenschaft wirklich löschen? Alle Einheiten werden ebenfalls gelöscht!');">
                 {% csrf_token %}
                 <input type="hidden" name="delete_liegenschaft" value="1">
@@ -26,16 +31,39 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
-        <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-            <div class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Einheiten</div>
-            <div class="text-2xl font-black text-gray-900">{{ stats.vermietet }} / {{ stats.total }} <span class="text-sm font-normal text-gray-500">vermietet</span></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+
+        <div class="flex flex-col gap-4">
+            <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 flex-1 flex flex-col justify-center shadow-sm">
+                <div class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Auslastung</div>
+                <div class="text-2xl font-black text-gray-900">{{ stats.vermietet }} / {{ stats.total }} <span class="text-sm font-normal text-gray-500">Einheiten</span></div>
+                {% if stats.leerstand > 0 %}
+                    <div class="text-xs text-red-500 mt-2 font-bold flex items-center gap-1">⚠️ {{ stats.leerstand }} Objekt(e) leer</div>
+                {% else %}
+                    <div class="text-xs text-emerald-600 mt-2 font-bold flex items-center gap-1">✅ Vollvermietet</div>
+                {% endif %}
+            </div>
+
+            <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 flex-1 flex flex-col justify-center shadow-sm">
+                <div class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Soll-Mietertrag (Monat)</div>
+                <div class="text-2xl font-black text-gray-900">CHF {{ stats.soll_miete|floatformat:0 }}</div>
+                <div class="text-xs text-gray-500 mt-2 font-medium">Brutto inkl. Nebenkosten</div>
+            </div>
         </div>
+
+        <div class="lg:col-span-2 bg-gray-100 rounded-xl overflow-hidden border border-gray-100 relative min-h-[250px] shadow-sm">
+            {% if map_url %}
+                <iframe width="100%" height="100%" frameborder="0" style="border:0; position:absolute; top:0; left:0; width:100%; height:100%;" src="{{ map_url|safe }}" allowfullscreen></iframe>
+            {% else %}
+                <div class="absolute inset-0 flex items-center justify-center text-gray-400 font-bold">Keine Adresse hinterlegt</div>
+            {% endif %}
         </div>
+
+    </div>
 
     <div class="flex justify-between items-end mb-4">
         <h3 class="text-xl font-bold text-gray-800">Wohnungen & Objekte</h3>
-        <a href="?new_einheit=1" x-target="main-content" class="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-700 transition-colors" style="text-decoration: none;">
+        <a href="?new_einheit=1" x-target="main-content" class="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-700 transition-colors shadow-sm" style="text-decoration: none;">
             + Neue Einheit
         </a>
     </div>
@@ -47,12 +75,13 @@
                     <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Objekt</th>
                     <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Eckdaten</th>
                     <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Bruttomiete</th>
+                    <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Status</th>
                     <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Aktionen</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-100">
                 {% for einheit in einheiten %}
-                <tr class="hover:bg-gray-50 transition-colors">
+                <tr class="hover:bg-gray-50 transition-colors group">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <a href="?edit_einheit={{ einheit.pk }}" x-target="main-content" class="font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1" style="text-decoration: none;">
                             {{ einheit.bezeichnung }} <span class="text-[10px] bg-indigo-50 px-1 rounded border border-indigo-100">✏️</span>
@@ -64,6 +93,13 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-black text-gray-900">
                         CHF {{ einheit.nettomiete_aktuell|add:einheit.nebenkosten_aktuell|default_if_none:"0"|floatformat:2 }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        {% if einheit.ist_vermietet %}
+                            <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border border-emerald-200">Vermietet</span>
+                        {% else %}
+                            <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border border-rose-200">Leerstand</span>
+                        {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
                         <form method="POST" action="{% url 'liegenschaft_detail' liegenschaft.pk %}" x-target="main-content" onsubmit="return confirm('Einheit wirklich löschen?');" class="inline">

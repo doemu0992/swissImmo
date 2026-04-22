@@ -118,3 +118,29 @@ def send_handyman_notification(auftrag):
         </body></html>
         """
         threading.Thread(target=send_via_hoststar, args=(ticket.email_melder, sub_m, html_m)).start()
+
+def send_payment_reminder(vertrag, monat_datum, offener_betrag):
+    """
+    Versendet eine E-Mail-Mahnung an den Mieter.
+    """
+    mieter = vertrag.mieter
+    if not mieter or not mieter.email:
+        return False
+
+    monat_str = monat_datum.strftime('%B %Y')
+    subject = f"Zahlungserinnerung: Miete {monat_str} - {vertrag.einheit.bezeichnung}"
+
+    html_msg = f"""
+    <html><body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+        <h2 style="color: #2c3e50;">Zahlungserinnerung</h2>
+        <p>Guten Tag {mieter.vorname} {mieter.nachname},</p>
+        <p>Bei der Kontrolle unserer Konten haben wir festgestellt, dass die Miete für den Monat <strong>{monat_str}</strong> für das Objekt <strong>{vertrag.einheit.bezeichnung}</strong> noch nicht vollständig beglichen wurde.</p>
+        <div style="background: #fdf2f2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0;">
+            <p style="margin: 0; font-weight: bold; color: #991b1b;">Ausstehender Betrag: CHF {offener_betrag:,.2f}</p>
+        </div>
+        <p>Sollten Sie die Zahlung bereits getätigt haben, betrachten Sie dieses Schreiben bitte als gegenstandslos. Andernfalls bitten wir Sie um eine zeitnahe Überweisung.</p>
+        <p>Freundliche Grüsse,<br>Ihre Liegenschaftsverwaltung</p>
+    </body></html>
+    """
+    threading.Thread(target=send_via_hoststar, args=(mieter.email, subject, html_msg)).start()
+    return True

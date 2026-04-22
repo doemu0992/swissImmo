@@ -1,0 +1,153 @@
+{% extends 'modern_base.html' %}
+
+{% block content %}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 fade-enter-active">
+
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+        <div>
+            <h2 class="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                <i class="bi bi-shield-check text-indigo-500"></i> Miet-Kontrolle
+            </h2>
+            <p class="text-sm text-gray-500 mt-1 font-medium">Soll/Ist-Abgleich für den Monat <strong class="text-gray-800">{{ monat|date:"F Y" }}</strong></p>
+        </div>
+        <div class="text-left md:text-right bg-gray-50 px-5 py-3 rounded-xl border border-gray-100">
+            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Eingangsquote Total</div>
+            <div class="text-3xl font-black flex items-center gap-2 {% if quote >= 95 %}text-emerald-500{% elif quote >= 80 %}text-amber-500{% else %}text-red-500{% endif %}">
+                {{ quote }}%
+                {% if quote >= 95 %}<i class="bi bi-emoji-smile text-2xl"></i>
+                {% elif quote >= 80 %}<i class="bi bi-emoji-neutral text-2xl"></i>
+                {% else %}<i class="bi bi-emoji-frown text-2xl"></i>{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+        <div class="bg-gray-50/80 p-6 rounded-2xl border border-gray-100 flex flex-col justify-center shadow-sm relative overflow-hidden group">
+            <div class="absolute -right-6 -top-6 text-gray-200 opacity-40 group-hover:scale-110 transition-transform duration-500"><i class="bi bi-calendar2-range text-9xl"></i></div>
+            <div class="text-[11px] text-gray-500 font-black uppercase tracking-widest mb-1 relative z-10">Soll-Miete Total</div>
+            <div class="text-3xl font-black text-gray-900 relative z-10">CHF {{ total_soll|floatformat:2 }}</div>
+            <div class="text-xs text-gray-400 font-medium mt-2 relative z-10">Erwartet für {{ monat|date:"F" }}</div>
+        </div>
+
+        <div class="bg-emerald-50/80 p-6 rounded-2xl border border-emerald-100 flex flex-col justify-center shadow-sm relative overflow-hidden group">
+            <div class="absolute -right-6 -top-6 text-emerald-200 opacity-40 group-hover:scale-110 transition-transform duration-500"><i class="bi bi-safe text-9xl"></i></div>
+            <div class="text-[11px] text-emerald-700 font-black uppercase tracking-widest mb-1 relative z-10">Eingezahlt (Ist)</div>
+            <div class="text-3xl font-black text-emerald-800 relative z-10">CHF {{ total_ist|floatformat:2 }}</div>
+
+            {% if total_diff > 0 %}
+                <div class="text-xs font-bold text-red-500 mt-2 relative z-10 bg-white/60 inline-block px-2 py-1 rounded-md w-fit">
+                    <i class="bi bi-exclamation-circle-fill"></i> Fehlt noch: CHF {{ total_diff|floatformat:2 }}
+                </div>
+            {% else %}
+                <div class="text-xs font-bold text-emerald-600 mt-2 relative z-10">
+                    <i class="bi bi-check2-all"></i> Alles bezahlt!
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <h3 class="text-lg font-black text-gray-800 mb-4 uppercase tracking-widest text-[11px]">Detailliste nach Vertrag</h3>
+
+    <div class="overflow-hidden rounded-xl border border-gray-200 shadow-sm bg-white">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3.5 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Mieter / Objekt</th>
+                    <th class="px-6 py-3.5 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Soll (CHF)</th>
+                    <th class="px-6 py-3.5 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Ist (CHF)</th>
+                    <th class="px-6 py-3.5 text-center text-[10px] font-black text-gray-500 uppercase tracking-widest">Status</th>
+                    <th class="px-6 py-3.5 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Aktion</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+                {% for item in kontrolle %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-bold text-gray-900 text-sm">{{ item.vertrag.mieter }}</div>
+                        <div class="text-xs text-gray-500 mt-1 font-medium flex items-center gap-1.5">
+                            <i class="bi bi-door-closed text-gray-300"></i> {{ item.vertrag.einheit.bezeichnung }} <span class="text-gray-300">|</span> {{ item.vertrag.einheit.liegenschaft.strasse }}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-600 bg-gray-50/30">
+                        {{ item.soll|floatformat:2 }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-black {% if item.ist < item.soll %}text-red-600{% else %}text-emerald-600{% endif %}">
+                        {{ item.ist|floatformat:2 }}
+                        {% if item.diff > 0 and item.ist > 0 %}
+                            <div class="text-[9px] font-bold uppercase tracking-wider text-amber-500 mt-1 bg-amber-50 rounded px-1.5 py-0.5 inline-block">Offen: {{ item.diff|floatformat:2 }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        {% if item.status == 'Bezahlt' %}
+                            <span class="px-2.5 py-1 inline-flex items-center text-[10px] font-black rounded uppercase tracking-widest bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                Bezahlt
+                            </span>
+                        {% elif item.status == 'Teilzahlung' %}
+                            <span class="px-2.5 py-1 inline-flex items-center text-[10px] font-black rounded uppercase tracking-widest bg-amber-100 text-amber-700 border border-amber-200">
+                                Teilzahlung
+                            </span>
+                        {% else %}
+                            <span class="px-2.5 py-1 inline-flex items-center text-[10px] font-black rounded uppercase tracking-widest bg-red-100 text-red-700 border border-red-200 shadow-sm shadow-red-100">
+                                Ausstehend
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right flex justify-end gap-2">
+                        {% if item.status != 'Bezahlt' %}
+                            <form method="POST" action="{% url 'send_mahnung_mail' item.vertrag.id %}" x-target="main-content" style="display: inline-block;">
+                                {% csrf_token %}
+                                <input type="hidden" name="monat" value="{{ monat|date:'F Y' }}">
+                                <input type="hidden" name="betrag" value="{{ item.diff|floatformat:2 }}">
+                                <button type="submit" onclick="return confirm('Mahnung per E-Mail an diesen Mieter senden?');" title="E-Mail Reminder senden" class="w-9 h-9 flex items-center justify-center bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-lg transition-colors border border-indigo-100 shadow-sm">
+                                    <i class="bi bi-envelope-fill"></i>
+                                </button>
+                            </form>
+
+                            <form method="POST" action="{% url 'generate_mahnung_pdf' item.vertrag.id %}" style="display: inline-block;">
+                                {% csrf_token %}
+                                <input type="hidden" name="monat" value="{{ monat|date:'F Y' }}">
+                                <input type="hidden" name="betrag" value="{{ item.diff|floatformat:2 }}">
+                                <button type="submit" title="Rechtssicheres PDF (Art. 257d OR) generieren" class="w-9 h-9 flex items-center justify-center bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition-colors border border-rose-100 shadow-sm">
+                                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="text-emerald-400 text-sm font-black bg-emerald-50 w-8 h-8 inline-flex items-center justify-center rounded-full"><i class="bi bi-check2"></i></span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-16 text-center text-gray-500 font-medium">
+                        <i class="bi bi-shield-check text-4xl mb-3 block text-gray-300"></i>
+                        Keine aktiven Mietverträge für diesen Monat gefunden.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if messages %}
+<div class="fixed bottom-8 right-8 z-[3000] flex flex-col gap-3">
+    {% for message in messages %}
+    <div
+        x-data="{ show: true }"
+        x-show="show"
+        x-init="setTimeout(() => show = false, 5000)"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-4"
+        class="bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 border border-gray-700"
+    >
+        <div class="w-6 h-6 {% if message.tags == 'error' %}bg-red-500{% else %}bg-emerald-500{% endif %} rounded-full flex items-center justify-center text-white text-sm">
+            {% if message.tags == 'error' %}<i class="bi bi-exclamation-lg font-black"></i>{% else %}<i class="bi bi-check-lg font-black"></i>{% endif %}
+        </div>
+        <div class="text-sm font-bold">{{ message }}</div>
+        <button @click="show = false" class="text-gray-400 hover:text-white ml-4"><i class="bi bi-x-lg text-xs"></i></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,158 +1,209 @@
 {% extends 'modern_base.html' %}
 
 {% block content %}
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 fade-enter-active">
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 fade-enter-active">
 
-    <div class="flex items-center justify-between mb-8">
-        <div class="flex items-center gap-4">
-            <a href="{% url 'abrechnung_liste' %}" x-target="main-content" class="text-gray-400 hover:text-indigo-600 transition-colors" title="Zurück">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-8">
+        <div class="flex items-start md:items-center gap-4">
+            <a href="{% url 'abrechnung_liste' %}" x-target="main-content" class="text-gray-400 hover:text-indigo-600 transition-colors mt-1 md:mt-0" title="Zurück">
                 <i class="bi bi-arrow-left-circle-fill" style="font-size: 2rem;"></i>
             </a>
             <div>
-                <div class="flex items-center gap-3">
-                    <h2 class="text-3xl font-bold text-gray-800">{{ periode.bezeichnung }}</h2>
-                    {% if periode.abgeschlossen %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Abgeschlossen</span>
-                    {% else %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200">In Bearbeitung</span>{% endif %}
+                <div class="flex flex-wrap items-center gap-3 mb-1">
+                    <h2 class="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">{{ periode.bezeichnung }}</h2>
+                    {% if periode.abgeschlossen %}
+                        <span class="inline-flex px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase tracking-widest shadow-sm">Abgeschlossen</span>
+                    {% else %}
+                        <span class="inline-flex px-2.5 py-1 rounded-md text-[10px] font-bold bg-orange-100 text-orange-700 border border-orange-200 uppercase tracking-widest shadow-sm">In Bearbeitung</span>
+                    {% endif %}
                 </div>
-                <p class="text-gray-500 mt-1">{{ periode.liegenschaft.strasse }} <span class="mx-2">|</span> {{ periode.start_datum|date:"d.m.Y" }} – {{ periode.ende_datum|date:"d.m.Y" }}</p>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ periode.liegenschaft.strasse }} <span class="mx-2">|</span> {{ periode.start_datum|date:"d.m.Y" }} – {{ periode.ende_datum|date:"d.m.Y" }}</p>
             </div>
         </div>
 
-        <div class="flex gap-2">
-            <a href="{% url 'abrechnung_pdf' periode.id %}" target="_blank" class="bg-gray-50 text-gray-700 border border-gray-200 px-4 py-2.5 rounded-xl font-bold hover:bg-gray-100 transition-colors shadow-sm flex items-center gap-2" style="text-decoration: none;">🖨️ PDFs</a>
-            <a href="{% url 'abrechnung_send_mail' periode.id %}" onclick="return confirm('Sollen die Abrechnungen an alle Mieter gesendet werden?');" target="_blank" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-100 transition-colors shadow-sm flex items-center gap-2" style="text-decoration: none;">📩 Senden</a>
+        <div class="flex flex-wrap gap-2 w-full md:w-auto">
+            <a href="{% url 'abrechnung_pdf' periode.id %}" target="_blank" class="w-full sm:w-auto bg-white text-gray-700 border border-gray-200 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors shadow-sm flex items-center justify-center gap-2" style="text-decoration: none;">
+                <i class="bi bi-printer"></i> PDFs
+            </a>
+            <a href="{% url 'abrechnung_send_mail' periode.id %}" onclick="return confirm('Sollen die Abrechnungen an alle Mieter gesendet werden?');" target="_blank" class="w-full sm:w-auto bg-emerald-50 text-emerald-700 border border-emerald-200 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors shadow-sm flex items-center justify-center gap-2" style="text-decoration: none;">
+                <i class="bi bi-envelope-at"></i> E-Mail Versand
+            </a>
 
-            <div class="w-px bg-gray-200 mx-1"></div>
+            <div class="w-px bg-gray-200 mx-1 hidden md:block"></div>
 
-            <form method="POST" action="{% url 'abrechnung_detail' periode.pk %}" onsubmit="return confirm('Periode wirklich löschen?');">
+            <form method="POST" action="{% url 'abrechnung_detail' periode.pk %}" onsubmit="return confirm('Periode endgültig löschen?');" class="inline w-full sm:w-auto">
                 {% csrf_token %}
                 <input type="hidden" name="delete_periode" value="1">
-                <button type="submit" class="bg-red-50 text-red-600 px-4 py-2.5 rounded-xl font-bold hover:bg-red-100 transition-colors shadow-sm">🗑️</button>
+                <button type="submit" class="w-full bg-white text-red-500 border border-gray-200 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-red-50 transition-colors shadow-sm flex justify-center items-center gap-2">
+                    <i class="bi bi-trash"></i> <span class="sm:hidden">Löschen</span>
+                </button>
             </form>
-            <a href="?edit=1" class="bg-indigo-50 text-indigo-600 px-5 py-2.5 rounded-xl font-bold hover:bg-indigo-100 transition-colors shadow-sm" style="text-decoration: none;">✏️ Bearbeiten</a>
+            <a href="?edit=1" x-target="main-content" class="w-full sm:w-auto bg-indigo-50 text-indigo-600 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors shadow-sm flex justify-center items-center gap-2" style="text-decoration: none;">
+                <i class="bi bi-pencil-square"></i> Einstellungen
+            </a>
         </div>
     </div>
-
-    {% if messages %}
-    <div class="mb-6">
-        {% for message in messages %}
-        <div class="p-4 rounded-xl text-sm font-bold {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% else %}bg-emerald-50 text-emerald-700 border-emerald-200{% endif %} border">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
 
-        <div>
+        <div class="flex flex-col h-full">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-800">Erfasste Belege</h3>
-                <a href="?new_beleg=1" class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg font-bold hover:bg-blue-100 text-sm" style="text-decoration: none;">+ Neuer Beleg</a>
+                <h3 class="text-xl font-black text-gray-900 flex items-center gap-2"><i class="bi bi-receipt text-indigo-500"></i> Erfasste Belege</h3>
+                <a href="?new_beleg=1" x-target="main-content" class="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg font-bold hover:bg-blue-100 transition-colors text-xs flex items-center gap-1 shadow-sm" style="text-decoration: none;">
+                    <i class="bi bi-plus-lg"></i> Beleg hochladen
+                </a>
             </div>
 
-            <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 mb-4">
-                <div class="text-sm text-gray-500 uppercase tracking-wider font-bold mb-1">Total Belege</div>
-                <div class="text-2xl font-black text-gray-900">CHF {{ total_belege|floatformat:2 }}</div>
+            <div class="bg-gray-50/80 rounded-2xl p-5 border border-gray-100 mb-5 shadow-sm flex items-center justify-between">
+                <div>
+                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Auslagen</div>
+                    <div class="text-3xl font-black text-gray-900">CHF {{ total_belege|floatformat:2 }}</div>
+                </div>
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-gray-300 text-xl shadow-sm">
+                    <i class="bi bi-wallet2"></i>
+                </div>
             </div>
 
-            <div class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+            <div class="space-y-3 max-h-[600px] overflow-y-auto pr-2 pb-4">
                 {% for beleg in belege %}
-                <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex justify-between items-center">
+                <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-indigo-200 transition-colors">
+
                     <div class="flex-grow">
-                        <div class="font-bold text-gray-900 text-sm flex items-center gap-2">
+                        <div class="font-bold text-gray-900 text-sm flex items-center gap-2 leading-tight">
                             {% if beleg.beleg_scan %}
-                                <a href="{{ beleg.beleg_scan.url }}" target="_blank" class="text-blue-500 hover:text-blue-700" title="PDF ansehen">📎</a>
+                                <a href="{{ beleg.beleg_scan.url }}" target="_blank" class="text-rose-500 hover:text-rose-700" title="PDF ansehen"><i class="bi bi-file-earmark-pdf-fill"></i></a>
                             {% endif %}
-                            {{ beleg.text|default:"Kein Text"|truncatechars:40 }}
+                            {{ beleg.text|default:"Kein Text"|truncatechars:50 }}
                         </div>
-                        <div class="text-xs text-gray-500 mt-1">{{ beleg.datum|date:"d.m.Y"|default:"-" }} • <span class="bg-gray-100 px-1.5 py-0.5 rounded">{{ beleg.get_kategorie_display }}</span></div>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="text-xs font-bold text-gray-500"><i class="bi bi-calendar3"></i> {{ beleg.datum|date:"d.m.Y"|default:"-" }}</span>
+                            <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">{{ beleg.get_kategorie_display }}</span>
+                        </div>
                     </div>
 
-                    <div class="text-right mr-4">
-                        <div class="font-black text-gray-900">CHF {{ beleg.betrag|default:"0.00"|floatformat:2 }}</div>
-                        <div class="text-[10px] text-gray-400 mt-1">Verteil: {{ beleg.get_verteilschluessel_display }}</div>
+                    <div class="flex items-center gap-4 sm:gap-6 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-gray-100 pt-3 sm:pt-0">
+                        <div class="text-left sm:text-right">
+                            <div class="font-black text-gray-900 text-base">CHF {{ beleg.betrag|default:"0.00"|floatformat:2 }}</div>
+                            <div class="text-[9px] font-bold text-indigo-500 uppercase tracking-widest mt-1"><i class="bi bi-diagram-3"></i> {{ beleg.get_verteilschluessel_display }}</div>
+                        </div>
+
+                        <div class="flex sm:flex-col gap-1.5 shrink-0">
+                            <a href="?edit_beleg={{ beleg.id }}" x-target="main-content" class="w-8 h-8 flex items-center justify-center bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors" style="text-decoration:none;">
+                                <i class="bi bi-pencil-fill text-xs"></i>
+                            </a>
+                            <form method="POST" action="{% url 'abrechnung_detail' periode.pk %}" onsubmit="return confirm('Beleg endgültig löschen?');" class="inline m-0">
+                                {% csrf_token %}
+                                <button type="submit" name="delete_beleg" value="{{ beleg.id }}" class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">
+                                    <i class="bi bi-trash3-fill text-xs"></i>
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
-                    <div class="flex flex-col gap-1">
-                        <a href="?edit_beleg={{ beleg.id }}" class="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-100 font-bold text-center" style="text-decoration:none;">✏️</a>
-                        <form method="POST" action="{% url 'abrechnung_detail' periode.pk %}" onsubmit="return confirm('Beleg wirklich löschen?');">
-                            {% csrf_token %}
-                            <button type="submit" name="delete_beleg" value="{{ beleg.id }}" class="text-xs bg-red-50 text-red-700 px-2 py-1 rounded hover:bg-red-100 font-bold w-full">🗑️</button>
-                        </form>
-                    </div>
                 </div>
                 {% empty %}
-                <div class="text-center py-8 text-gray-500 text-sm">Noch keine Belege hochgeladen.</div>
+                <div class="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                    <i class="bi bi-cloud-arrow-up text-4xl text-gray-300 block mb-3"></i>
+                    <div class="text-sm font-bold text-gray-600">Keine Belege vorhanden.</div>
+                    <div class="text-xs text-gray-500 mt-1">Lade PDFs hoch, unsere KI liest sie automatisch aus.</div>
+                </div>
                 {% endfor %}
             </div>
         </div>
 
-        <div>
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Live-Abrechnung (Vorschau)</h3>
+        <div class="flex flex-col h-full">
+            <h3 class="text-xl font-black text-gray-900 mb-4 flex items-center gap-2"><i class="bi bi-magic text-emerald-500"></i> Live-Berechnung</h3>
 
-            <div class="bg-slate-800 rounded-xl p-6 shadow-md text-white">
+            <div class="bg-slate-900 rounded-2xl p-6 shadow-xl text-white flex-grow flex flex-col relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 text-white/5"><i class="bi bi-braces-asterisk text-9xl"></i></div>
+
                 {% if ergebnis.error %}
-                    <div class="bg-red-500/20 border border-red-500 rounded-lg p-4 text-red-200 font-bold text-sm">
-                        ⚠️ Fehler im Rechenmodul:<br><br>
-                        {{ ergebnis.error }}
+                    <div class="bg-red-500/20 border border-red-500/50 rounded-xl p-5 text-red-200 font-bold text-sm relative z-10 flex gap-3">
+                        <i class="bi bi-exclamation-triangle-fill text-2xl"></i>
+                        <div>
+                            <span class="block text-white mb-1 uppercase tracking-widest text-[10px]">Fehler im Rechenmodul</span>
+                            {{ ergebnis.error }}
+                        </div>
                     </div>
                 {% else %}
-                    <div class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-slate-700">
+                    <div class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-slate-700/50 relative z-10">
                         <div>
-                            <div class="text-slate-400 text-xs uppercase font-bold tracking-wider mb-1">Total Kosten</div>
-                            <div class="text-2xl font-black text-white">CHF {{ ergebnis.total|floatformat:2 }}</div>
+                            <div class="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-1">Total verteilt</div>
+                            <div class="text-3xl font-black text-white">CHF {{ ergebnis.total|floatformat:2 }}</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-slate-400 text-xs uppercase font-bold tracking-wider mb-1">Rundungsdifferenz</div>
-                            <div class="text-lg font-medium text-slate-300">CHF {{ ergebnis.differenz|floatformat:2 }}</div>
+                            <div class="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-1 flex items-center justify-end gap-1"><i class="bi bi-info-circle"></i> Rundungsdifferenz</div>
+                            <div class="text-lg font-medium {% if ergebnis.differenz == 0 %}text-slate-500{% else %}text-amber-400{% endif %}">CHF {{ ergebnis.differenz|floatformat:2 }}</div>
                         </div>
                     </div>
 
-                    <div class="space-y-4">
-                        <h4 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Verteilung auf Mieter</h4>
+                    <div class="flex-grow overflow-y-auto pr-2 space-y-3 relative z-10">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Resultate pro Mieter</h4>
+
                         {% for mieter in ergebnis.data %}
-                        <div class="bg-slate-700/50 rounded-lg p-3 flex justify-between items-center">
+                        <div class="bg-slate-800/80 border border-slate-700/50 hover:border-indigo-500/50 transition-colors rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+
                             <div>
-                                <div class="font-bold text-sm">{{ mieter.name }}</div>
-                                <div class="text-xs text-slate-400">{{ mieter.einheit }}</div>
+                                <div class="font-bold text-sm text-white">{{ mieter.name }}</div>
+                                <div class="text-xs text-slate-400 mt-0.5"><i class="bi bi-door-open"></i> {{ mieter.einheit }}</div>
                             </div>
-                            <div class="text-right">
-                                <div class="text-xs text-slate-400">Anteil: CHF {{ mieter.kosten_anteil|floatformat:2 }}</div>
+
+                            <div class="text-left sm:text-right border-t sm:border-t-0 border-slate-700 pt-2 sm:pt-0">
+                                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Anteil: CHF {{ mieter.kosten_anteil|floatformat:2 }}</div>
+
                                 {% if mieter.nachzahlung %}
-                                    <div class="text-sm font-bold text-red-400">Nachzahlung: CHF {{ mieter.saldo|floatformat:2|slice:"1:" }}</div>
+                                    <div class="text-sm font-black text-red-400 flex items-center sm:justify-end gap-1.5">
+                                        <i class="bi bi-arrow-up-right-square"></i> Nachzahlung: CHF {{ mieter.saldo|floatformat:2|slice:"1:" }}
+                                    </div>
                                 {% else %}
-                                    <div class="text-sm font-bold text-emerald-400">Guthaben: CHF {{ mieter.saldo|floatformat:2 }}</div>
+                                    <div class="text-sm font-black text-emerald-400 flex items-center sm:justify-end gap-1.5">
+                                        <i class="bi bi-arrow-down-left-square"></i> Guthaben: CHF {{ mieter.saldo|floatformat:2 }}
+                                    </div>
                                 {% endif %}
                             </div>
+
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-10 text-slate-500 text-sm font-medium">
+                            <i class="bi bi-clock-history text-3xl block mb-2 opacity-50"></i>
+                            Warte auf Belege für die Berechnung...
                         </div>
                         {% endfor %}
                     </div>
                 {% endif %}
             </div>
         </div>
+
     </div>
 </div>
 
 {% if form %}
-<div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden fade-enter-active" style="margin: 20px;">
+<div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden fade-enter-active">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-            <h3 class="text-xl font-bold text-gray-900">Periode bearbeiten</h3>
-            <a href="{% url 'abrechnung_detail' periode.pk %}" class="text-gray-400 hover:text-red-500 text-2xl font-bold" style="text-decoration: none;">×</a>
+            <h3 class="text-xl font-black text-gray-900">Periode bearbeiten</h3>
+            <a href="{% url 'abrechnung_detail' periode.pk %}" x-target="main-content" class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors" style="text-decoration: none;">
+                <i class="bi bi-x-lg text-sm font-bold"></i>
+            </a>
         </div>
-        <form method="POST" action="{% url 'abrechnung_detail' periode.pk %}">
+        <form method="POST" action="{% url 'abrechnung_detail' periode.pk %}" x-target="main-content">
             {% csrf_token %}
             <input type="hidden" name="save_periode" value="1">
-            <div class="p-6 grid grid-cols-2 gap-4">
-                <div class="col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1">Liegenschaft</label>{{ form.liegenschaft }}</div>
-                <div class="col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1">Titel</label>{{ form.bezeichnung }}</div>
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Startdatum</label>{{ form.start_datum }}</div>
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Enddatum</label>{{ form.ende_datum }}</div>
-                <div class="col-span-2 flex items-center gap-3 mt-4">{{ form.abgeschlossen }}<label class="font-bold text-gray-700">Abrechnung abgeschlossen</label></div>
+            <div class="p-6 grid grid-cols-2 gap-4 max-h-[65vh] overflow-y-auto">
+                <div class="col-span-2"><label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Liegenschaft</label>{{ form.liegenschaft }}</div>
+                <div class="col-span-2"><label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Titel</label>{{ form.bezeichnung }}</div>
+                <div class="col-span-2"><hr class="border-gray-100 my-1"></div>
+                <div class="col-span-1"><label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Startdatum</label>{{ form.start_datum }}</div>
+                <div class="col-span-1"><label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Enddatum</label>{{ form.ende_datum }}</div>
+                <div class="col-span-2 flex items-center gap-3 mt-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                    {{ form.abgeschlossen }}<label class="font-bold text-gray-700 cursor-pointer text-sm">Abrechnung ist abgeschlossen (Gesperrt)</label>
+                </div>
             </div>
             <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700">Speichern</button>
+                <a href="{% url 'abrechnung_detail' periode.pk %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors" style="text-decoration: none;">Abbrechen</a>
+                <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm flex items-center gap-2 transition-colors">
+                    <i class="bi bi-check2"></i> Speichern
+                </button>
             </div>
         </form>
     </div>
@@ -160,14 +211,16 @@
 {% endif %}
 
 {% if show_new_modal or edit_beleg_id %}
-<div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden fade-enter-active" style="margin: 20px;">
-        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-blue-50">
-            <h3 class="text-xl font-bold text-blue-900">📄 Beleg {% if edit_beleg_id %}bearbeiten{% else %}hinzufügen{% endif %}</h3>
-            <a href="{% url 'abrechnung_detail' periode.pk %}" class="text-gray-400 hover:text-red-500 text-2xl font-bold" style="text-decoration: none;">×</a>
+<div class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden fade-enter-active">
+        <div class="p-6 border-b border-indigo-100 flex justify-between items-center bg-indigo-50/50">
+            <h3 class="text-xl font-black text-indigo-900 flex items-center gap-2"><i class="bi bi-receipt"></i> Beleg {% if edit_beleg_id %}bearbeiten{% else %}hinzufügen{% endif %}</h3>
+            <a href="{% url 'abrechnung_detail' periode.pk %}" x-target="main-content" class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-indigo-200 text-indigo-400 hover:text-red-500 hover:border-red-200 transition-colors" style="text-decoration: none;">
+                <i class="bi bi-x-lg text-sm font-bold"></i>
+            </a>
         </div>
 
-        <form method="POST" action="{% url 'abrechnung_detail' periode.pk %}" enctype="multipart/form-data">
+        <form method="POST" action="{% url 'abrechnung_detail' periode.pk %}" enctype="multipart/form-data" x-target="main-content">
             {% csrf_token %}
 
             {% if edit_beleg_id %}
@@ -177,37 +230,51 @@
                 <input type="hidden" name="add_beleg" value="1">
             {% endif %}
 
-            <div class="p-6 space-y-4">
+            <div class="p-6 space-y-5 max-h-[65vh] overflow-y-auto">
                 {% if beleg_form.errors %}
-                <div class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-bold rounded-xl">
-                    Bitte überprüfe deine Eingaben (z.B. Datumsformat oder Zahl).
-                    {{ beleg_form.errors }}
+                <div class="p-4 bg-red-50 border border-red-200 text-red-700 text-sm font-bold rounded-xl flex gap-3">
+                    <i class="bi bi-exclamation-triangle-fill text-lg"></i>
+                    <div>
+                        Bitte überprüfe deine Eingaben.
+                        <div class="text-xs font-normal mt-1 opacity-80">{{ beleg_form.errors }}</div>
+                    </div>
                 </div>
                 {% endif %}
 
                 {% if not edit_beleg_id %}
-                <div class="p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800 font-medium">
-                    Lade ein PDF/Bild hoch. Die KI liest Lieferant, Betrag und Datum danach <b>automatisch</b> im Hintergrund aus!
+                <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-sm text-emerald-800 font-medium flex gap-3 shadow-sm">
+                    <i class="bi bi-robot text-2xl text-emerald-500"></i>
+                    <div>
+                        <strong class="block mb-0.5">KI-Assistent aktiv!</strong>
+                        Lade einfach das PDF hoch. Lieferant, Datum und Betrag werden automatisch für dich ausgelesen.
+                    </div>
                 </div>
                 {% endif %}
 
-                <div><label class="block text-sm font-bold text-gray-700 mb-1">PDF / Bild</label>{{ beleg_form.beleg_scan }}</div>
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">PDF Scan / Bild</label>
+                    <div class="bg-gray-50 p-2 rounded-xl border border-dashed border-gray-300">
+                        {{ beleg_form.beleg_scan }}
+                    </div>
+                </div>
 
-                <div class="w-full border-t border-gray-200 my-4 relative">
-                    <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-xs text-gray-400 font-bold">DATEN</span>
+                <div class="w-full border-t border-gray-100 my-2 relative">
+                    <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-[10px] text-gray-400 font-black tracking-widest uppercase rounded">Manuelle Korrektur</span>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1">Lieferant / Text</label>{{ beleg_form.text }}</div>
-                    <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Betrag (CHF)</label>{{ beleg_form.betrag }}</div>
-                    <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Datum</label>{{ beleg_form.datum }}</div>
-                    <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Kategorie</label>{{ beleg_form.kategorie }}</div>
-                    <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Verteilschlüssel</label>{{ beleg_form.verteilschluessel }}</div>
+                    <div class="col-span-2"><label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Lieferant / Text</label>{{ beleg_form.text }}</div>
+                    <div class="col-span-1"><label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Datum</label>{{ beleg_form.datum }}</div>
+                    <div class="col-span-1"><label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5 text-indigo-600">Betrag (CHF)</label>{{ beleg_form.betrag }}</div>
+                    <div class="col-span-1"><label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Kategorie</label>{{ beleg_form.kategorie }}</div>
+                    <div class="col-span-1"><label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Verteilschlüssel</label>{{ beleg_form.verteilschluessel }}</div>
                 </div>
             </div>
             <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-                <a href="{% url 'abrechnung_detail' periode.pk %}" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl" style="text-decoration: none;">Abbrechen</a>
-                <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-sm">Speichern</button>
+                <a href="{% url 'abrechnung_detail' periode.pk %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors" style="text-decoration: none;">Abbrechen</a>
+                <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm flex items-center gap-2 transition-colors">
+                    <i class="bi bi-cloud-arrow-up-fill"></i> Beleg speichern
+                </button>
             </div>
         </form>
     </div>

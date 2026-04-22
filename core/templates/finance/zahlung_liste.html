@@ -1,0 +1,182 @@
+{% extends 'modern_base.html' %}
+
+{% block content %}
+<div x-data="{ showModal: {{ show_modal|yesno:'true,false'|default:'false' }} }" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 fade-enter-active">
+
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <h2 class="text-3xl font-black text-gray-900 tracking-tight">Zahlungseingänge</h2>
+            <p class="text-sm text-gray-500 mt-1">Hier werden alle Mieten und Zahlungen der Mieter verbucht.</p>
+        </div>
+        <div>
+            <button @click="showModal = true" class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-2 w-full md:w-auto justify-center">
+                <i class="bi bi-plus-lg"></i> <span class="hidden sm:inline">Zahlung verbuchen</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        <div class="bg-gray-50/80 p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Historie Total</div>
+                <div class="text-2xl font-black text-gray-900">{{ zahlungen.count }} <span class="text-sm font-bold text-gray-500">Eingänge</span></div>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-gray-300 text-xl border border-gray-100"><i class="bi bi-bank"></i></div>
+        </div>
+    </div>
+
+    <div class="overflow-hidden rounded-xl border border-gray-200 shadow-sm bg-white">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3.5 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Eingangsdatum</th>
+                    <th class="px-6 py-3.5 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Mieter & Objekt</th>
+                    <th class="px-6 py-3.5 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Gilt für Monat</th>
+                    <th class="px-6 py-3.5 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Betrag (CHF)</th>
+                    <th class="px-6 py-3.5 text-center text-[10px] font-black text-gray-500 uppercase tracking-widest">Aktion</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+                {% for z in zahlungen %}
+                <tr class="hover:bg-gray-50 transition-colors group">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
+                        <i class="bi bi-calendar-check text-gray-300 mr-1"></i> {{ z.datum_eingang|date:"d.m.Y" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-bold text-indigo-600 group-hover:text-indigo-800 transition-colors text-sm">{{ z.vertrag.mieter }}</div>
+                        <div class="text-[11px] font-medium text-gray-500 mt-1 flex items-center gap-1.5">
+                            <i class="bi bi-door-open-fill text-gray-300"></i> {{ z.vertrag.einheit.bezeichnung }} <span class="text-gray-300">|</span> {{ z.vertrag.einheit.liegenschaft.strasse }}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="bg-gray-100/80 border border-gray-200 text-gray-700 px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-wider">
+                            {{ z.buchungs_monat|date:"F Y"|default:"-" }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right font-black text-emerald-600 text-base">
+                        CHF {{ z.betrag|floatformat:2 }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <form method="POST" action="{% url 'zahlung_liste' %}" x-target="main-content" onsubmit="return confirm('Diese Zahlung wirklich löschen?');" class="inline m-0">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_zahlung" value="1">
+                            <input type="hidden" name="zahlung_id" value="{{ z.id }}">
+                            <button type="submit" class="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-50">
+                                <i class="bi bi-trash3-fill"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-20 text-center">
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-300 border border-gray-100 shadow-inner">
+                                <i class="bi bi-piggy-bank text-4xl"></i>
+                            </div>
+                            <p class="text-gray-500 font-medium text-sm mb-3">Noch keine Zahlungseingänge erfasst.</p>
+                            <button @click="showModal = true" class="text-indigo-600 font-bold hover:text-indigo-800 hover:underline text-sm transition-colors">
+                                Jetzt die erste Zahlung verbuchen
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div x-cloak x-show="showModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[2000] p-4">
+        <div
+            @click.away="showModal = false"
+            x-show="showModal"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            class="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border border-gray-100"
+        >
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-emerald-50/50">
+                <div class="flex items-center gap-3">
+                    <i class="bi bi-cash-coin text-2xl text-emerald-600"></i>
+                    <div>
+                        <h3 class="text-xl font-black text-gray-900">Zahlung verbuchen</h3>
+                        <p class="text-[10px] uppercase tracking-widest font-bold text-gray-500 mt-0.5">Miete oder Akonto</p>
+                    </div>
+                </div>
+                <button @click="showModal = false" type="button" class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-100 transition-all shadow-sm">
+                    <i class="bi bi-x-lg text-sm font-bold"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{% url 'zahlung_liste' %}" x-target="main-content">
+                {% csrf_token %}
+                <input type="hidden" name="save_zahlung" value="1">
+
+                <div class="p-8 space-y-6">
+                    {% if form.errors %}
+                        <div class="bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl text-sm flex items-center gap-3 font-medium">
+                            <i class="bi bi-exclamation-triangle-fill text-lg"></i>
+                            Bitte überprüfe die Eingaben im Formular.
+                        </div>
+                    {% endif %}
+
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Mietvertrag / Mieter</label>
+                            {{ form.vertrag }}
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Eingangsdatum auf Bank</label>
+                                {{ form.datum_eingang }}
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1.5">Betrag (CHF)</label>
+                                {{ form.betrag }}
+                            </div>
+                        </div>
+
+                        <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+                            <label class="block text-sm font-bold text-indigo-900 mb-1">Gilt für Miete im Monat</label>
+                            <p class="text-[10px] font-medium text-indigo-600/80 mb-3 leading-tight flex items-start gap-1.5">
+                                <i class="bi bi-info-circle-fill mt-0.5"></i> <span>Wichtig: Wähle als Tag immer den <strong>1. des Monats</strong> aus (z.B. 01.05.2026 für die Mai-Miete).</span>
+                            </p>
+                            {{ form.buchungs_monat }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-5 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
+                    <button type="button" @click="showModal = false" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors">Abbrechen</button>
+                    <button type="submit" class="px-6 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 shadow-sm transition-colors flex items-center gap-2">
+                        <i class="bi bi-check-circle-fill"></i> Verbuchen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<div class="fixed bottom-8 right-8 z-[3000] flex flex-col gap-3">
+    {% for message in messages %}
+    <div
+        x-data="{ show: true }"
+        x-show="show"
+        x-init="setTimeout(() => show = false, 5000)"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-4"
+        class="bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 border border-gray-700"
+    >
+        <div class="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center text-white text-sm">
+            <i class="bi bi-check-lg font-black"></i>
+        </div>
+        <div class="text-sm font-bold">{{ message }}</div>
+        <button @click="show = false" class="text-gray-400 hover:text-white ml-4"><i class="bi bi-x-lg text-xs"></i></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

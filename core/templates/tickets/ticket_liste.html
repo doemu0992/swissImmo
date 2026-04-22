@@ -1,98 +1,199 @@
 {% extends 'modern_base.html' %}
 
 {% block content %}
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 fade-enter-active">
-    <div class="flex justify-between items-center mb-8">
-        <h2 class="text-3xl font-bold text-gray-800">Reparaturen & Tickets</h2>
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 fade-enter-active">
 
-        <div class="flex items-center gap-4 w-1/2 justify-end">
-            <form action="{% url 'ticket_liste' %}" method="GET" x-target="main-content" class="w-2/3">
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><span class="text-gray-400">🔍</span></div>
-                    <input type="text" name="q" value="{{ search_query }}" @input.debounce.500ms="$el.form.requestSubmit()" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 outline-none" placeholder="Ticket suchen...">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <h2 class="text-3xl font-black text-gray-900 tracking-tight">Ticket Board</h2>
+            <p class="text-sm text-gray-500 mt-1">Ziehe die Tickets per Drag & Drop in die passende Spalte</p>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+            <form action="{% url 'ticket_liste' %}" method="GET" x-target="main-content" class="w-full md:w-72">
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="bi bi-search text-gray-400 group-focus-within:text-indigo-500 transition-colors"></i>
+                    </div>
+                    <input type="text" name="q" value="{{ search_query }}"
+                           @input.debounce.500ms="$el.form.requestSubmit()"
+                           class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5 outline-none transition-all hover:bg-white shadow-sm"
+                           placeholder="Suchen...">
                 </div>
             </form>
-            <a href="?new=1" x-target="main-content" class="bg-indigo-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-2 whitespace-nowrap" style="text-decoration: none;">
-                ➕ <span class="hidden md:inline">Neues Ticket</span>
+
+            <a href="?new=1" x-target="main-content" class="bg-gray-900 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-gray-800 hover:shadow-md transition-all flex items-center gap-2 whitespace-nowrap w-full md:w-auto justify-center" style="text-decoration: none;">
+                <i class="bi bi-plus-lg"></i> <span class="hidden md:inline">Neues Ticket</span>
             </a>
         </div>
     </div>
 
-    <div class="overflow-hidden rounded-xl border border-gray-200">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Ticket</th>
-                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Objekt</th>
-                    <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Prio</th>
-                    <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Status</th>
-                    <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Datum</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-100">
-                {% for ticket in tickets %}
-                <tr class="hover:bg-gray-50 transition-colors cursor-pointer {% if not ticket.gelesen %}bg-blue-50/30{% endif %}" onclick="document.getElementById('ticket-{{ ticket.id }}').click();">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <a id="ticket-{{ ticket.id }}" href="{% url 'ticket_detail' ticket.id %}" x-target="main-content" class="font-bold text-gray-900 hover:text-indigo-600 flex items-center gap-2" style="text-decoration: none;">
-                            {% if not ticket.gelesen %}<span class="w-2 h-2 rounded-full bg-blue-600"></span>{% endif %}
-                            {{ ticket.titel|truncatechars:40 }}
-                        </a>
-                        <div class="text-xs text-gray-500 mt-0.5">Von: {% if ticket.gemeldet_von %}{{ ticket.gemeldet_von }}{% else %}{{ ticket.email_melder|default:"Unbekannt" }}{% endif %}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="font-medium text-gray-900">{{ ticket.betroffene_einheit.bezeichnung|default:"Allgemein" }}</div>
-                        <div class="text-xs text-gray-500">{{ ticket.liegenschaft.strasse }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                        {% if ticket.prioritaet == 'hoch' %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-red-50 text-red-700 border border-red-200">HOCH</span>
-                        {% elif ticket.prioritaet == 'mittel' %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200">MITTEL</span>
-                        {% else %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">TIEF</span>{% endif %}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                        {% if ticket.status == 'neu' %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-red-50 text-red-700 border border-red-200">NEU</span>
-                        {% elif ticket.status == 'in_bearbeitung' %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200">IN BEARBEITUNG</span>
-                        {% elif ticket.status == 'warte_auf_mieter' %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">WARTE AUF MIETER</span>
-                        {% else %}<span class="inline-flex px-2 py-1 rounded text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">ERLEDIGT</span>{% endif %}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">{{ ticket.erstellt_am|date:"d.m.y" }}</td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="5" class="px-6 py-12 text-center text-gray-500">Keine Tickets gefunden. Entspann dich! ☕</td></tr>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start select-none">
+
+        <div class="bg-gray-50/80 rounded-2xl border border-gray-100 p-4 min-h-[600px] flex flex-col gap-4">
+            <div class="flex items-center justify-between mb-2 px-1">
+                <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-rose-500 block"></span> Neu
+                </h3>
+                <span class="bg-white border border-gray-200 text-gray-500 text-xs font-bold px-2.5 py-0.5 rounded-lg shadow-sm">{{ tickets_neu.count }}</span>
+            </div>
+
+            <div id="board-neu" data-status="neu" class="flex-1 flex flex-col gap-4">
+                {% for t in tickets_neu %}
+                <div data-id="{{ t.id }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-indigo-300 transition-all cursor-grab active:cursor-grabbing relative group" onclick="window.location.href='{% url 'ticket_detail' t.id %}'">
+                    {% if not t.gelesen %}<div class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse border-2 border-white shadow-sm"></div>{% endif %}
+                    <div class="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">{{ t.liegenschaft.strasse }}</div>
+                    <h4 class="font-bold text-gray-900 text-sm leading-tight mb-2">{{ t.titel }}</h4>
+                    <div class="text-xs text-gray-500 mb-4 line-clamp-2">{{ t.beschreibung }}</div>
+
+                    <div class="border-t border-gray-50 pt-3 flex items-center justify-between">
+                        <span class="text-[10px] text-gray-400 font-medium"><i class="bi bi-clock"></i> {{ t.erstellt_am|date:"d.m. | H:i" }}</span>
+                        <form method="POST" action="{% url 'update_ticket_status' t.id 'in_bearbeitung' %}" x-target="main-content" onclick="event.stopPropagation();" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white border border-indigo-100 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
+                                In Arbeit →
+                            </button>
+                        </form>
+                    </div>
+                </div>
                 {% endfor %}
-            </tbody>
-        </table>
+            </div>
+        </div>
+
+        <div class="bg-gray-50/80 rounded-2xl border border-gray-100 p-4 min-h-[600px] flex flex-col gap-4">
+            <div class="flex items-center justify-between mb-2 px-1">
+                <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-amber-500 block"></span> In Bearbeitung
+                </h3>
+                <span class="bg-white border border-gray-200 text-gray-500 text-xs font-bold px-2.5 py-0.5 rounded-lg shadow-sm">{{ tickets_in_bearbeitung.count }}</span>
+            </div>
+
+            <div id="board-in_bearbeitung" data-status="in_bearbeitung" class="flex-1 flex flex-col gap-4">
+                {% for t in tickets_in_bearbeitung %}
+                <div data-id="{{ t.id }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-indigo-300 transition-all cursor-grab active:cursor-grabbing relative group" onclick="window.location.href='{% url 'ticket_detail' t.id %}'">
+                    <div class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">{{ t.liegenschaft.strasse }}</div>
+                    <h4 class="font-bold text-gray-900 text-sm leading-tight mb-3">{{ t.titel }}</h4>
+
+                    <div class="border-t border-gray-50 pt-3 flex items-center justify-between">
+                        <form method="POST" action="{% url 'update_ticket_status' t.id 'neu' %}" x-target="main-content" onclick="event.stopPropagation();" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="w-8 h-8 flex justify-center items-center text-gray-400 bg-gray-50 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer" title="Zurücksetzen">
+                                <i class="bi bi-arrow-left"></i>
+                            </button>
+                        </form>
+                        <form method="POST" action="{% url 'update_ticket_status' t.id 'erledigt' %}" x-target="main-content" onclick="event.stopPropagation();" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-100 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
+                                Erledigt <i class="bi bi-check2"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="bg-gray-50/80 rounded-2xl border border-gray-100 p-4 min-h-[600px] flex flex-col gap-4 opacity-75 hover:opacity-100 transition-opacity">
+            <div class="flex items-center justify-between mb-2 px-1">
+                <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 block"></span> Abgeschlossen
+                </h3>
+                <span class="bg-white border border-gray-200 text-gray-500 text-xs font-bold px-2.5 py-0.5 rounded-lg shadow-sm">{{ tickets_erledigt.count }}</span>
+            </div>
+
+            <div id="board-erledigt" data-status="erledigt" class="flex-1 flex flex-col gap-4">
+                {% for t in tickets_erledigt %}
+                <div data-id="{{ t.id }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-indigo-300 transition-all cursor-grab active:cursor-grabbing relative group" onclick="window.location.href='{% url 'ticket_detail' t.id %}'">
+                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ t.liegenschaft.strasse }}</div>
+                    <h4 class="font-bold text-gray-600 text-sm leading-tight line-through mb-3">{{ t.titel }}</h4>
+
+                    <div class="border-t border-gray-50 pt-3">
+                        <form method="POST" action="{% url 'update_ticket_status' t.id 'in_bearbeitung' %}" x-target="main-content" onclick="event.stopPropagation();">
+                            {% csrf_token %}
+                            <button type="submit" class="text-[10px] font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-100 px-2 py-1.5 rounded transition-colors w-full text-center hidden group-hover:block cursor-pointer">
+                                Wiedereröffnen
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
     </div>
 </div>
 
 {% if form %}
-<div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden fade-enter-active" style="margin: 20px;">
+<div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden fade-enter-active">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-            <h3 class="text-xl font-bold text-gray-900">Neues Ticket erstellen</h3>
-            <a href="{% url 'ticket_liste' %}" x-target="main-content" class="text-gray-400 hover:text-red-500 text-2xl font-bold" style="text-decoration: none;">×</a>
+            <h3 class="text-xl font-black text-gray-900">Neues Ticket erfassen</h3>
+            <a href="{% url 'ticket_liste' %}" x-target="main-content" class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors" style="text-decoration: none;">
+                <i class="bi bi-x-lg text-sm font-bold"></i>
+            </a>
         </div>
-        <form method="POST" action="{% url 'ticket_liste' %}" x-target="main-content">
+        <form method="POST" action="{% url 'ticket_liste' %}" enctype="multipart/form-data" x-target="main-content">
             {% csrf_token %}
             <input type="hidden" name="save_new_ticket" value="1">
-            <div class="p-6 grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
-                <div class="col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1">Titel / Problem</label>{{ form.titel }}</div>
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Liegenschaft</label>{{ form.liegenschaft }}</div>
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Einheit</label>{{ form.betroffene_einheit }}</div>
-
-                <div class="col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1">Beschreibung</label>{{ form.beschreibung }}</div>
-
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Mieter (Melder)</label>{{ form.gemeldet_von }}</div>
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Zutritt / Termin</label>{{ form.zutritt }}</div>
-
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Priorität</label>{{ form.prioritaet }}</div>
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Status</label>{{ form.status }}</div>
+            <div class="p-6 grid grid-cols-2 gap-4 max-h-[65vh] overflow-y-auto">
+                <div class="col-span-2"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Titel / Thema</label>{{ form.titel }}</div>
+                <div class="col-span-1"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Liegenschaft</label>{{ form.liegenschaft }}</div>
+                <div class="col-span-1"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Gemeldet von</label>{{ form.gemeldet_von }}</div>
+                <div class="col-span-2"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Beschreibung</label>{{ form.beschreibung }}</div>
+                <div class="col-span-1"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Priorität</label>{{ form.prioritaet }}</div>
+                <div class="col-span-1"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Status</label>{{ form.status }}</div>
             </div>
             <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-                <a href="{% url 'ticket_liste' %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl" style="text-decoration: none;">Abbrechen</a>
-                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm">Ticket Erstellen</button>
+                <a href="{% url 'ticket_liste' %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors" style="text-decoration: none;">Abbrechen</a>
+                <button type="submit" class="px-6 py-2.5 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 shadow-sm transition-colors flex items-center gap-2">
+                    <i class="bi bi-check2"></i> Ticket Erstellen
+                </button>
             </div>
         </form>
     </div>
 </div>
 {% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const columns = ['board-neu', 'board-in_bearbeitung', 'board-erledigt'];
+
+        columns.forEach(colId => {
+            const el = document.getElementById(colId);
+            if (el) {
+                new Sortable(el, {
+                    group: 'kanban', // Alle Spalten gehören zur selben Gruppe (Karten können dazwischen getauscht werden)
+                    animation: 150,
+                    ghostClass: 'opacity-50', // Die Kachel wird halbtransparent, während man sie zieht
+                    dragClass: 'shadow-2xl',
+                    onEnd: function (evt) {
+                        const itemEl = evt.item;       // Die verschobene Karte
+                        const toList = evt.to;         // Die Ziel-Spalte
+                        const ticketId = itemEl.dataset.id;
+                        const newStatus = toList.dataset.status;
+
+                        // Nur speichern, wenn die Spalte gewechselt wurde
+                        if (evt.from !== evt.to) {
+                            // Update im Hintergrund an Django senden
+                            fetch(`/tickets/ticket/${ticketId}/status/${newStatus}/`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token }}',
+                                    'Content-Type': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            }).then(response => {
+                                if(response.ok) {
+                                    // Optional: Nach Erfolg die Zähler-Badges anpassen oder die Seite kurz sanft neu laden
+                                    // window.location.reload();
+                                }
+                            });
+                        }
+                    },
+                });
+            }
+        });
+    });
+</script>
 {% endblock %}

@@ -1,0 +1,289 @@
+{% extends 'modern_base.html' %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+
+<style>
+    .django-file-upload { font-size: 11px; color: #6b7280; line-height: 1.4; width: 100%; }
+    .django-file-upload a { color: #4f46e5; font-weight: 700; word-break: break-all; text-decoration: none; display: block; margin-bottom: 4px; }
+    .django-file-upload input[type="file"] {
+        display: block; width: 100%; margin-top: 8px;
+        font-size: 11px; background: white; padding: 6px;
+        border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer;
+    }
+    .django-file-upload input[type="checkbox"] { margin-right: 4px; accent-color: #4f46e5; }
+    .django-file-upload label { display: inline-flex; align-items: center; margin-top: 4px; }
+</style>
+
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 fade-enter-active">
+
+    <div class="mb-8">
+        <h2 class="text-3xl font-black text-gray-900 tracking-tight">System-Einstellungen</h2>
+        <p class="text-sm text-gray-500 mt-1">Verwalte dein Unternehmen, Handwerker und Mandanten.</p>
+    </div>
+
+    <div class="flex flex-wrap gap-2 border-b border-gray-100 mb-8 pb-1">
+        <a href="?tab=company" x-target="main-content" class="px-6 py-3 text-sm font-bold transition-all border-b-2 {% if active_tab == 'company' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-gray-400 hover:text-gray-600{% endif %}" style="text-decoration: none;">
+            🏢 Mein Unternehmen
+        </a>
+        <a href="?tab=handwerker" x-target="main-content" class="px-6 py-3 text-sm font-bold transition-all border-b-2 {% if active_tab == 'handwerker' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-gray-400 hover:text-gray-600{% endif %}" style="text-decoration: none;">
+            🔨 Handwerker
+        </a>
+        <a href="?tab=mandanten" x-target="main-content" class="px-6 py-3 text-sm font-bold transition-all border-b-2 {% if active_tab == 'mandanten' %}border-indigo-600 text-indigo-600{% else %}border-transparent text-gray-400 hover:text-gray-600{% endif %}" style="text-decoration: none;">
+            💼 Eigentümer / Mandanten
+        </a>
+    </div>
+
+    {% if active_tab == 'company' %}
+    <form method="POST" enctype="multipart/form-data" action="{% url 'settings' %}?tab=company" x-target="main-content" class="max-w-3xl"
+        x-data="{
+            pad: null,
+            initPad() {
+                if(!this.$refs.canvas) return;
+                if(typeof SignaturePad === 'undefined') return;
+
+                this.pad = new SignaturePad(this.$refs.canvas, { penColor: 'rgb(0, 0, 0)' });
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                this.$refs.canvas.width = this.$refs.canvas.offsetWidth * ratio;
+                this.$refs.canvas.height = this.$refs.canvas.offsetHeight * ratio;
+                this.$refs.canvas.getContext('2d').scale(ratio, ratio);
+                this.pad.clear();
+            },
+            prepareSubmit(e) {
+                if (this.pad && !this.pad.isEmpty()) {
+                    this.$refs.sigInput.value = this.pad.toDataURL('image/png');
+                }
+            }
+        }"
+        x-init="setTimeout(() => initPad(), 200)"
+        @submit="prepareSubmit"
+    >
+        {% csrf_token %}
+        <input type="hidden" name="save_verwaltung" value="1">
+        <input type="hidden" name="signature_data" x-ref="sigInput">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div class="md:col-span-1 flex flex-col">
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Unternehmens-Logo</label>
+                <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col gap-3 min-h-[180px] h-full">
+                    {% if verwaltung.logo %}
+                        <img src="{{ verwaltung.logo.url }}" class="h-16 w-auto rounded border border-gray-200 bg-white mx-auto object-contain">
+                    {% else %}
+                        <div class="h-16 w-16 mx-auto rounded bg-gray-200 flex items-center justify-center text-gray-400 text-[10px] p-2 italic border border-dashed border-gray-300">Kein Logo</div>
+                    {% endif %}
+
+                    <div class="mt-auto django-file-upload overflow-hidden">
+                        {{ verwaltung_form.logo }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-1 flex flex-col">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-[10px] font-black text-indigo-500 uppercase tracking-widest">Digitale Unterschrift</label>
+                    <button type="button" @click="if(pad) pad.clear()" class="text-[10px] text-gray-400 hover:text-red-500 font-bold uppercase tracking-wider">Neu Zeichnen</button>
+                </div>
+                <div class="p-2 bg-gray-50 rounded-2xl border border-indigo-100 shadow-sm min-h-[180px] flex-grow relative">
+                    {% if verwaltung.unterschrift_bild %}
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20 z-0">
+                            <img src="{{ verwaltung.unterschrift_bild.url }}" class="h-16">
+                        </div>
+                    {% else %}
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30 z-0">
+                            <span class="text-gray-400 text-xs font-medium">Hier unterschreiben...</span>
+                        </div>
+                    {% endif %}
+                    <canvas x-ref="canvas" class="w-full h-full bg-transparent rounded-xl cursor-crosshair relative z-10"></canvas>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 mt-2"><label class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Firmenname</label>{{ verwaltung_form.firma }}</div>
+            <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Strasse & Nr.</label>{{ verwaltung_form.strasse }}</div>
+            <div><label class="block text-xs font-bold text-gray-700 uppercase mb-1.5">PLZ</label>{{ verwaltung_form.plz }}</div>
+            <div><label class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Ort</label>{{ verwaltung_form.ort }}</div>
+            <div><label class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Telefon</label>{{ verwaltung_form.telefon }}</div>
+            <div><label class="block text-xs font-bold text-gray-700 uppercase mb-1.5">E-Mail</label>{{ verwaltung_form.email }}</div>
+            <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-gray-700 uppercase mb-1.5">IBAN (Auszahlungen & QR)</label>
+                {{ verwaltung_form.iban }}
+                <p class="text-[10px] text-gray-400 font-bold mt-1.5 uppercase tracking-wider"><i class="bi bi-info-circle"></i> Diese IBAN wird für die automatischen QR-Rechnungen an Mieter genutzt.</p>
+            </div>
+        </div>
+
+        <div class="mt-10 pt-6 border-t border-gray-100 flex justify-end">
+            <button type="submit" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all flex items-center gap-2">
+                <i class="bi bi-check2"></i> Unternehmensdaten speichern
+            </button>
+        </div>
+    </form>
+    {% endif %}
+
+    {% if active_tab == 'handwerker' %}
+    <div class="space-y-6">
+        <div class="flex justify-between items-center">
+            <h3 class="text-xl font-bold text-gray-900">Adressbuch Handwerker</h3>
+            <a href="?tab=handwerker&edit_id=new" x-target="main-content" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all">+ Neu</a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for h in handwerker %}
+            <div class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm hover:border-indigo-300 transition-all group relative">
+                <div class="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">{{ h.gewerk }}</div>
+                <h4 class="font-bold text-gray-900 mb-2">{{ h.firma }}</h4>
+                <div class="text-xs text-gray-500 space-y-1">
+                    <div class="flex items-center gap-2"><i class="bi bi-person"></i> {{ h.kontaktperson|default:"-" }}</div>
+                    <div class="flex items-center gap-2"><i class="bi bi-telephone"></i> {{ h.telefon|default:"-" }}</div>
+                </div>
+                <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <a href="?tab=handwerker&edit_id={{ h.id }}" x-target="main-content" class="text-gray-400 hover:text-indigo-600"><i class="bi bi-pencil-square"></i></a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full py-10 text-center text-gray-400 italic">Noch keine Handwerker erfasst.</div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if active_tab == 'mandanten' %}
+    <div class="space-y-6">
+        <div class="flex justify-between items-center">
+            <h3 class="text-xl font-bold text-gray-900">Liegenschafts-Eigentümer</h3>
+            <a href="?tab=mandanten&edit_id=new" x-target="main-content" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all">+ Neu</a>
+        </div>
+
+        <div class="overflow-hidden rounded-xl border border-gray-100 shadow-sm">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50">
+                    <tr class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        <th class="px-6 py-3">Eigentümer / Firma</th>
+                        <th class="px-6 py-3">Ort</th>
+                        <th class="px-6 py-3">Unterschrift</th>
+                        <th class="px-6 py-3 text-right">Aktion</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    {% for m in mandanten %}
+                    <tr class="hover:bg-gray-50 transition-colors group">
+                        <td class="px-6 py-4 font-bold text-gray-900">{{ m.firma_oder_name }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ m.ort|default:"-" }}</td>
+                        <td class="px-6 py-4">
+                            {% if m.unterschrift_bild %}
+                                <img src="{{ m.unterschrift_bild.url }}" class="h-8 w-auto grayscale group-hover:grayscale-0 transition-all">
+                            {% else %}
+                                <span class="text-[10px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 uppercase tracking-wider">Fehlt</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="?tab=mandanten&edit_id={{ m.id }}" x-target="main-content" class="text-gray-400 hover:text-indigo-600"><i class="bi bi-pencil-square"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+{% if modal_form %}
+<div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden fade-enter-active">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <h3 class="text-xl font-black text-gray-900">{{ modal_title }}</h3>
+            <a href="?tab={{ active_tab }}" x-target="main-content" class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors" style="text-decoration: none;">
+                <i class="bi bi-x-lg text-sm font-bold"></i>
+            </a>
+        </div>
+        <form method="POST" action="{% url 'settings' %}?tab={{ active_tab }}&edit_id={{ edit_obj_id }}" enctype="multipart/form-data" x-target="main-content"
+              {% if active_tab == 'mandanten' %}
+              x-data="{
+                  pad: null,
+                  initPad() {
+                      if(!this.$refs.canvasModal) return;
+                      if(typeof SignaturePad === 'undefined') return;
+
+                      this.pad = new SignaturePad(this.$refs.canvasModal, { penColor: 'rgb(0, 0, 0)' });
+                      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                      this.$refs.canvasModal.width = this.$refs.canvasModal.offsetWidth * ratio;
+                      this.$refs.canvasModal.height = this.$refs.canvasModal.offsetHeight * ratio;
+                      this.$refs.canvasModal.getContext('2d').scale(ratio, ratio);
+                      this.pad.clear();
+                  },
+                  prepareSubmit(e) {
+                      if (this.pad && !this.pad.isEmpty()) {
+                          this.$refs.sigInputModal.value = this.pad.toDataURL('image/png');
+                      }
+                  }
+              }"
+              x-init="setTimeout(() => initPad(), 200)"
+              @submit="prepareSubmit"
+              {% endif %}
+        >
+            {% csrf_token %}
+            {% if active_tab == 'mandanten' %}
+                <input type="hidden" name="save_mandant" value="1">
+                <input type="hidden" name="signature_data" x-ref="sigInputModal">
+            {% elif active_tab == 'handwerker' %}
+                <input type="hidden" name="save_handwerker" value="1">
+            {% endif %}
+
+            <div class="p-8 grid grid-cols-2 gap-5 max-h-[65vh] overflow-y-auto">
+                {% for field in modal_form %}
+                    {% if field.name == 'unterschrift_bild' %}
+                        <div class="col-span-2">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="block text-[10px] font-black text-indigo-500 uppercase tracking-widest">Digitale Unterschrift zeichnen</label>
+                                <button type="button" @click="if(pad) pad.clear()" class="text-[10px] text-gray-400 hover:text-red-500 font-bold uppercase tracking-wider">Neu Zeichnen</button>
+                            </div>
+                            <div class="p-2 bg-gray-50 rounded-2xl border border-indigo-100 shadow-sm h-[180px] flex flex-col relative">
+                                {% if modal_form.instance.unterschrift_bild %}
+                                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20 z-0">
+                                        <img src="{{ modal_form.instance.unterschrift_bild.url }}" class="h-16">
+                                    </div>
+                                {% else %}
+                                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30 z-0">
+                                        <span class="text-gray-400 text-xs font-medium">Hier unterschreiben...</span>
+                                    </div>
+                                {% endif %}
+                                <canvas x-ref="canvasModal" class="w-full h-full bg-transparent rounded-xl cursor-crosshair relative z-10"></canvas>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="{% if field.name == 'firma_oder_name' or field.name == 'firma' or field.name == 'notizen' %}col-span-2{% else %}col-span-1{% endif %}">
+                            <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-between gap-3">
+                {% if edit_obj_id != 'new' %}
+                    <button type="button" class="px-5 py-2.5 text-red-500 font-bold hover:bg-red-50 rounded-xl" onclick="if(confirm('Wirklich löschen?')) { document.getElementById('delete-form').submit(); }">Löschen</button>
+                {% else %}
+                    <div></div>
+                {% endif %}
+                <div class="flex gap-2">
+                    <a href="?tab={{ active_tab }}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors" style="text-decoration: none;">Abbrechen</a>
+                    <button type="submit" class="px-8 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm flex items-center gap-2">
+                        <i class="bi bi-check2"></i> Speichern
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        {% if edit_obj_id != 'new' %}
+        <form id="delete-form" method="POST" action="{% url 'settings' %}?tab={{ active_tab }}" class="hidden">
+            {% csrf_token %}
+            <input type="hidden" name="delete_obj" value="1">
+            <input type="hidden" name="obj_id" value="{{ edit_obj_id }}">
+            <input type="hidden" name="obj_type" value="{% if active_tab == 'mandanten' %}mandant{% else %}handwerker{% endif %}">
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

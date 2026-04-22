@@ -34,64 +34,43 @@ class AbrechnungsPeriode(models.Model):
 
     def __str__(self): return self.bezeichnung
 
-    # --- 🧮 DER LIVE RECHNER FÜR DIE KOSTENVERTEILUNG 🧮 ---
-
     @property
     def total_kosten(self):
-        """Rechnet alle Belege dieser Periode zusammen"""
         summe = self.belege.aggregate(total=Sum('betrag'))['total']
         return summe or Decimal('0.00')
 
     def berechne_mieter_anteil(self, vertrag):
-        """
-        Berechnet den exakten Anteil eines Mietvertrags an dieser Periode.
-        Berücksichtigt Verteilschlüssel (m2 / Einheit) und Wohndauer (Tage).
-        """
-        # 1. Zeit-Faktor berechnen (Wie viele Tage war der Mieter da?)
         v_start = vertrag.beginn
         v_ende = vertrag.ende or self.ende_datum
-
-        # Überschneidung der Daten herausfinden (Pro-Rata-Temporis)
         overlap_start = max(v_start, self.start_datum)
         overlap_end = min(v_ende, self.ende_datum)
 
         if overlap_start > overlap_end:
-            return Decimal('0.00') # Mieter hat in dieser Periode gar nicht hier gewohnt
+            return Decimal('0.00')
 
         tage_bewohnt = (overlap_end - overlap_start).days + 1
         tage_periode = (self.ende_datum - self.start_datum).days + 1
         zeit_faktor = Decimal(tage_bewohnt) / Decimal(tage_periode)
 
-        # 2. Gesamtkosten nach Verteilschlüssel trennen
         kosten_m2 = self.belege.filter(verteilschluessel='m2').aggregate(Sum('betrag'))['betrag__sum'] or Decimal('0.00')
         kosten_einheit = self.belege.filter(verteilschluessel='einheit').aggregate(Sum('betrag'))['betrag__sum'] or Decimal('0.00')
 
-        # 3. Kennzahlen des Gebäudes holen
         alle_einheiten = self.liegenschaft.einheiten.all()
         total_flaeche = sum(e.flaeche_m2 for e in alle_einheiten if e.flaeche_m2) or 1
         anzahl_einheiten = alle_einheiten.count() or 1
 
-        # 4. Kennzahlen des Mieters holen
         mieter_flaeche = vertrag.einheit.flaeche_m2 or 0
-
-        # 5. Finale Mathematik (Kosten * Anteil * Zeitfaktor)
         anteil_m2 = (kosten_m2 * Decimal(mieter_flaeche) / Decimal(total_flaeche)) * zeit_faktor
         anteil_einheit = (kosten_einheit / Decimal(anzahl_einheiten)) * zeit_faktor
 
-        # Abrunden auf 2 Dezimalstellen
         total_anteil = round(anteil_m2 + anteil_einheit, 2)
         return Decimal(str(total_anteil))
 
     def berechne_mieter_saldo(self, vertrag):
-        """Berechnet: Effektive Kosten minus bereits geleistete Akonto-Zahlungen"""
         effektive_kosten = self.berechne_mieter_anteil(vertrag)
-
-        # Zahlungen des Mieters in dieser Zeitspanne addieren
         akonto_zahlungen = vertrag.zahlungen.filter(
             datum_eingang__range=[self.start_datum, self.ende_datum]
         ).aggregate(Sum('betrag'))['betrag__sum'] or Decimal('0.00')
-
-        # Positiv = Mieter muss nachzahlen / Negativ = Mieter kriegt Geld zurück
         return effektive_kosten - akonto_zahlungen
 
 class NebenkostenLernRegel(models.Model):
@@ -133,9 +112,7 @@ class NebenkostenBeleg(models.Model):
         db_table = 'core_nebenkostenbeleg'
 
     def extract_data_locally(self):
-        """Liest das PDF aus und wendet smarte Logik an (ohne externe KI)"""
         if not self.beleg_scan: return
-
         try:
             full_text = ""
             with pdfplumber.open(self.beleg_scan.path) as pdf:
@@ -143,13 +120,8 @@ class NebenkostenBeleg(models.Model):
                     full_text += page.extract_text() + "\n"
 
             text_lower = full_text.lower()
-
-            # --- 1. KATEGORIE AUTOMATISCH BESTIMMEN ---
-            # Überschreibe nur, wenn die Kategorie noch auf dem Standard "diverse" steht
             if self.kategorie == 'diverse':
                 kategorie_gefunden = False
-
-                # A) Zuerst eigene Lern-Regeln aus der Datenbank prüfen
                 for regel in NebenkostenLernRegel.objects.all():
                     if regel.suchwort.lower() in text_lower:
                         self.kategorie = regel.kategorie_zuweisung
@@ -157,94 +129,106 @@ class NebenkostenBeleg(models.Model):
                         regel.save()
                         kategorie_gefunden = True
                         break
-
-                # B) Wenn keine eigene Regel greift, Fallback auf Standard-Schlagworte
                 if not kategorie_gefunden:
                     mapping = {
-                        'strom': ['strom', 'ewz', 'bkw', 'ckw', 'energie', 'elektro', 'beleuchtung'],
-                        'wasser': ['wasser', 'abwasser', 'wasserversorgung', 'kanalisation'],
-                        'heizung': ['heizöl', 'brennstoff', 'erdgas', 'fernwärme', 'pellets', 'wärme'],
-                        'hauswart': ['hauswartung', 'reinigung', 'garten', 'schneeräumung', 'unterhalt'],
-                        'kehricht': ['kehricht', 'entsorgung', 'abfall', 'müll', 'container'],
-                        'lift': ['aufzug', 'lift', 'schindler', 'otis', 'kone']
+                        'strom': ['strom', 'ewz', 'bkw', 'ckw', 'energie', 'elektro'],
+                        'wasser': ['wasser', 'abwasser', 'wasserversorgung'],
+                        'heizung': ['heizöl', 'brennstoff', 'erdgas', 'fernwärme'],
+                        'hauswart': ['hauswartung', 'reinigung', 'garten', 'schneeräumung'],
+                        'kehricht': ['kehricht', 'entsorgung', 'abfall'],
+                        'lift': ['aufzug', 'lift', 'schindler', 'otis']
                     }
                     for cat, keywords in mapping.items():
                         if any(key in text_lower for key in keywords):
                             self.kategorie = cat
                             break
 
-            # --- 2. BETRAG FINDEN ---
-            # Nur ausfüllen, wenn du das Feld im Formular leer gelassen hast
             if not self.betrag:
-                # Sucht nach "CHF", "Total" oder "Betrag" gefolgt von einer Schweizer Zahl (z.B. 1'250.00)
                 matches = re.findall(r'(?:chf|total|betrag|summe)[\s\:\.]*([\d\'\s]+\.\d{2})', text_lower)
-
                 if not matches:
-                    # Fallback: Einfach nach allen Beträgen im Dokument suchen
                     matches = re.findall(r'\b(\d{1,3}(?:[\' ]\d{3})*\.\d{2})\b', full_text)
-
                 if matches:
                     clean_amounts = []
                     for m in matches:
                         clean_val = m.replace("'", "").replace(" ", "")
                         try: clean_amounts.append(float(clean_val))
                         except: pass
-
                     if clean_amounts:
-                        # Nimm den höchsten Betrag (Rechnungstotal ist fast immer die grösste Zahl)
                         max_amount = max(clean_amounts)
-                        if max_amount < 100000: # Plausibilitätscheck (keine absurden Zahlen)
+                        if max_amount < 100000:
                             self.betrag = Decimal(str(max_amount))
 
-            # --- 3. LIEFERANT / TEXT ---
-            # Nur ausfüllen, wenn manuell noch nichts eingetragen wurde
             if not self.text:
                 lines = [l.strip() for l in full_text.split('\n') if len(l.strip()) > 3]
-                if lines:
-                    self.text = lines[0][:255] # Nimmt oft den Briefkopf/Absender
+                if lines: self.text = lines[0][:255]
 
         except Exception as e:
-            if not self.text:
-                self.text = f"Lokaler Scan Info: {str(e)[:50]}"
+            if not self.text: self.text = f"Lokaler Scan Info: {str(e)[:50]}"
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
-        # Zuerst speichern, damit die Datei auf der Festplatte ist
         super().save(*args, **kwargs)
-
-        # Nur bei einem komplett neuen Upload scannen (Verhindert überschreiben bei späteren Edits)
         if self.beleg_scan and is_new:
             self.extract_data_locally()
-
-            # Falls gar nichts gefunden wurde und manuell nichts eingetragen ist -> 0.00
             if self.betrag is None:
                 self.betrag = Decimal('0.00')
-
             super().save(update_fields=['betrag', 'text', 'kategorie'])
 
     def __str__(self): return f"{self.text or 'Beleg'} (CHF {self.betrag})"
 
-# --- Hilfsklassen ---
+# ==============================================================================
+# HILFSKLASSEN MIT ALLEN FELDERN FÜR DAS ADMIN BACKEND
+# ==============================================================================
 
 class KreditorenRechnung(models.Model):
+    STATUS_CHOICES = [
+        ('neu', 'Neu / Scan'),
+        ('freigegeben', 'Freigegeben'),
+        ('bezahlt', 'Bezahlt'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='neu')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True)
+    konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
+
     lieferant = models.CharField(max_length=200, blank=True)
+    datum = models.DateField(null=True, blank=True)
+    faellig_am = models.DateField(null=True, blank=True)
     betrag = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    iban = models.CharField(max_length=50, blank=True)
+    referenz = models.CharField(max_length=100, blank=True)
+
     beleg_scan = models.FileField(upload_to='kreditoren_belege/', blank=True, null=True)
+    fehlermeldung = models.TextField(blank=True)
+
     class Meta: db_table = 'core_kreditorenrechnung'
+
 
 class Zahlungseingang(models.Model):
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='zahlungen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
+    konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
+
     betrag = models.DecimalField(max_digits=10, decimal_places=2)
     datum_eingang = models.DateField(default=timezone.now)
     buchungs_monat = models.DateField("Für Monat/Jahr", null=True)
+    bemerkung = models.CharField(max_length=255, blank=True, default='')
+    erstellt_am = models.DateTimeField(default=timezone.now)
+
     class Meta: db_table = 'core_zahlungseingang'
+
 
 class Jahresabschluss(models.Model):
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE)
     jahr = models.IntegerField(default=2026)
+    notizen = models.TextField(blank=True, default='')
+
     class Meta: db_table = 'core_jahresabschluss'
+
 
 class MietzinsKontrolle(models.Model):
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE)
     monat = models.DateField()
+    notizen = models.TextField(blank=True, default='')
+
     class Meta: db_table = 'core_mietzinskontrolle'

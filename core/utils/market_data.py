@@ -1,8 +1,8 @@
+# core/utils/market_data.py
 import requests
 import re
 from decimal import Decimal
 from django.utils import timezone
-from datetime import date
 import logging
 
 logger = logging.getLogger(__name__)
@@ -22,7 +22,11 @@ def clean_decimal(value_str):
 def fetch_market_rates():
     results = {}
     errors = []
-    headers = {'User-Agent': 'Mozilla/5.0'}
+
+    # Ein unauffälliger Browser-Header, damit uns die Schweizer Server nicht blocken
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    }
 
     # ---------------------------------------------------------
     # 1. REFERENZZINSSATZ (BWO)
@@ -30,24 +34,26 @@ def fetch_market_rates():
     try:
         response = requests.get(URL_BWO_REF, headers=headers, timeout=10)
         found_zins = None
-        # Suche nach Zinswerten im plausiblen Bereich (1.00 bis 2.50)
-        # re.DOTALL ist hier wichtig, falls Text über mehrere Zeilen geht
+
+        # Sucht im HTML nach Werten wie "1,25 %" oder "1.50%"
         matches = re.findall(r"(\d[.,]\d{2})\s*%", response.text)
 
         for m in matches:
             val = clean_decimal(m)
-            if val and 1.0 <= val <= 2.5 and val % Decimal('0.25') == 0:
+            # Prüft, ob es ein gültiger Zins ist (z.B. Vielfaches von 0.25)
+            if val and Decimal('1.00') <= val <= Decimal('3.50') and (val * 100) % 25 == 0:
                 found_zins = val
                 break
 
         if found_zins:
             results['ref_zins'] = found_zins
         else:
-            results['ref_zins'] = Decimal('1.25') # Fallback
+            results['ref_zins'] = Decimal('1.75') # Fallback
+            errors.append("BWO: Zins nicht gefunden, nutze Fallback.")
 
     except Exception as e:
-        results['ref_zins'] = Decimal('1.25')
-        errors.append(f"BWO Fehler: {e}")
+        results['ref_zins'] = Decimal('1.75')
+        errors.append(f"BWO Verbindungsfehler: {e}")
 
     # ---------------------------------------------------------
     # 2. LIK (HEV Schweiz - Basis 2020)
@@ -56,75 +62,75 @@ def fetch_market_rates():
         response = requests.get(URL_LIK_HEV, headers=headers, timeout=10)
         html = response.text
 
-        # Wir suchen spezifisch nach der Tabelle "Dezember 2020 = 100"
-        # Wir nehmen einen großzügigen Ausschnitt ab diesem Text
-        start_marker = html.find("Dezember 2020 = 100")
+        # Wir suchen den Tabellen-Block für "Dezember 2020 = 100"
+        start_marker = html.find("2020 = 100")
 
         if start_marker != -1:
-            # Wir schneiden ab dem Marker ab und nehmen die nächsten 10.000 Zeichen
-            table_snippet = html[start_marker:start_marker+10000]
+            # Wir nehmen den HTML-Code nach dem Marker (wo die aktuellen Jahre stehen)
+            table_snippet = html[start_marker:start_marker+5000]
 
-            # OPTION A: Wir suchen explizit nach 2026
-            # Erklärung Regex:
-            # 2026      -> Finde das Jahr
-            # .*?       -> Finde beliebige Zeichen (auch HTML Tags & Zeilenumbrüche dank re.DOTALL)
-            # (\d{3}[.,]\d) -> Finde eine Zahl mit 3 Stellen (z.B. 106), Punkt/Komma, 1 Stelle (z.B. 9)
-            match_2026 = re.search(r"2026.*?(\d{3}[.,]\d)", table_snippet, re.DOTALL)
+            # FIX: Zuerst als Zahl (int) berechnen, dann in Text (str) umwandeln!
+            year_int = timezone.now().year
+            current_year = str(year_int)          # z.B. "2026"
+            next_year = str(year_int + 1)         # z.B. "2027"
+            last_year = str(year_int - 1)         # z.B. "2025"
 
-            if match_2026:
-                val = clean_decimal(match_2026.group(1))
-                results['lik'] = val
-            else:
-                # OPTION B: Fallback auf 2025 (falls 2026 noch nicht publiziert wäre)
-                # Wir suchen nach "2025" und nehmen die letzte Zahl in dieser Reihe (Dezember)
-                match_2025 = re.findall(r"2025.*?(\d{3}[.,]\d)", table_snippet, re.DOTALL)
+            # Wir suchen gezielt die Zeile des aktuellen oder letzten Jahres
+            row_match = re.search(fr"{current_year}.*?(?:</tr>|<br>|{next_year})", table_snippet, re.IGNORECASE | re.DOTALL)
 
-                # Wenn wir mehrere Treffer haben, müssen wir vorsichtig sein, da findall bei DOTALL
-                # den ganzen Rest matchen könnte. Besser: Zeilenweise suchen oder spezifischer.
+            if not row_match:
+                # Falls das aktuelle Jahr noch nicht publiziert ist, nehmen wir das Vorjahr
+                row_match = re.search(fr"{last_year}.*?(?:</tr>|<br>|{current_year})", table_snippet, re.IGNORECASE | re.DOTALL)
 
-                # Präziserer Regex für 2025 Zeile (alles bis zum nächsten Jahr oder Tabellenende)
-                row_2025 = re.search(r"2025.*?(2024|<table)", table_snippet, re.DOTALL)
-                if row_2025:
-                    vals = re.findall(r"(\d{3}[.,]\d)", row_2025.group(0))
-                    if vals:
-                        # Der letzte Wert ist meist der Durchschnitt, der vorletzte der Dezember.
-                        # Bei HEV ist die letzte Spalte der Durchschnitt.
-                        # Wir nehmen sicherheitshalber den aktuellsten bekannten Wert (106.9)
-                        # oder den höchsten gefundenen Wert, falls wir unsicher sind.
-                        results['lik'] = Decimal('106.9')
-                        errors.append("2026 noch nicht gefunden, nutze Dez 2025.")
-                    else:
-                        results['lik'] = Decimal('106.9')
+            if row_match:
+                row_html = row_match.group(0)
+                # Wir suchen in dieser Zeile nach ALLEN Zahlen im Format 1XX.X
+                vals = re.findall(r"(1\d{2}[.,]\d)", row_html)
+
+                valid_liks = []
+                for v in vals:
+                    d_val = clean_decimal(v)
+                    # WICHTIG: Wir filtern die "100.0" aus (das ist nur der Basiswert!)
+                    # Ein realistischer LIK für 2025/2026 liegt zwischen 104.0 und 120.0
+                    if d_val and Decimal('104.0') < d_val < Decimal('120.0'):
+                        valid_liks.append(d_val)
+
+                if valid_liks:
+                    # Wir nehmen den aktuellsten/letzten Wert in dieser Jahres-Reihe
+                    results['lik'] = valid_liks[-1]
                 else:
-                    results['lik'] = Decimal('106.9')
-
+                    results['lik'] = Decimal('107.8')
+                    errors.append(f"LIK-Werte für {current_year}/{last_year} waren ungültig.")
+            else:
+                results['lik'] = Decimal('107.8')
+                errors.append(f"Jahreszeile {current_year}/{last_year} nicht gefunden.")
         else:
-            # Tabelle gar nicht gefunden
-            results['lik'] = Decimal('106.9')
-            errors.append("Tabelle 'Basis 2020' nicht gefunden.")
+            results['lik'] = Decimal('107.8')
+            errors.append("Basis 2020 Tabelle nicht auf HEV gefunden.")
 
     except Exception as e:
-        results['lik'] = Decimal('106.9')
-        errors.append(f"LIK Fehler: {e}")
+        results['lik'] = Decimal('107.8')
+        errors.append(f"HEV Verbindungsfehler: {e}")
 
-    # Sicherheits-Fallback
+    # Absolutes Sicherheits-Netz
     if 'lik' not in results or results['lik'] is None:
-         results['lik'] = Decimal('106.9')
+         results['lik'] = Decimal('107.8')
 
     return results, errors
 
 def update_verwaltung_rates():
     """
-    Diese Funktion wird vom Admin-Button aufgerufen.
+    Diese Funktion wird vom Dashboard-Button aufgerufen.
+    Sie speichert die neuen Werte direkt in die Datenbank.
     """
     try:
         from crm.models import Verwaltung
     except ImportError:
-        return "Systemfehler (Import)", []
+        return "Systemfehler (Import Fehler crm.models)", []
 
     data, errors = fetch_market_rates()
 
-    # Verwaltungsobjekt holen oder erstellen
+    # Verwaltungsobjekt holen oder anlegen
     verwaltung = Verwaltung.objects.first()
     if not verwaltung:
         verwaltung = Verwaltung.objects.create(firma="Meine Verwaltung")
@@ -144,14 +150,14 @@ def update_verwaltung_rates():
         if verwaltung.aktueller_lik_punkte != data['lik']:
             verwaltung.aktueller_lik_punkte = data['lik']
             updated = True
-        msg.append(f"LIK (2020): {data['lik']}")
+        msg.append(f"LIK (Basis 2020): {data['lik']}")
 
     # SPEICHERN
     if updated:
         verwaltung.letztes_update_marktdaten = timezone.now()
         verwaltung.save()
-        return "Update erfolgreich: " + ", ".join(msg), errors
+        return "Erfolgreich aktualisiert: " + " | ".join(msg), errors
     elif msg:
-        return "Werte sind aktuell: " + ", ".join(msg), errors
+        return "Marktdaten geprüft, sie sind bereits aktuell: " + " | ".join(msg), errors
 
-    return "Keine Daten gefunden.", errors
+    return "Keine verwertbaren Daten gefunden.", errors

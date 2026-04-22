@@ -1,55 +1,73 @@
 {% extends 'modern_base.html' %}
 
 {% block content %}
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 fade-enter-active">
-    <div class="flex justify-between items-center mb-8">
-        <h2 class="text-3xl font-bold text-gray-800">Nebenkostenabrechnungen</h2>
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 fade-enter-active">
 
-        <div class="flex items-center gap-4 w-1/2 justify-end">
-            <form action="{% url 'abrechnung_liste' %}" method="GET" x-target="main-content" class="w-2/3">
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><span class="text-gray-400">🔍</span></div>
-                    <input type="text" name="q" value="{{ search_query }}" @input.debounce.500ms="$el.form.requestSubmit()" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 outline-none" placeholder="Liegenschaft oder Zeitraum suchen...">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <h2 class="text-3xl font-black text-gray-900 tracking-tight">Nebenkosten</h2>
+            <p class="text-sm text-gray-500 mt-1">Erstelle und verwalte die jährlichen Abrechnungen.</p>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+            <form action="{% url 'abrechnung_liste' %}" method="GET" x-target="main-content" class="w-full md:w-72">
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="bi bi-search text-gray-400 group-focus-within:text-indigo-500 transition-colors"></i>
+                    </div>
+                    <input type="text" name="q" value="{{ search_query }}"
+                           @input.debounce.500ms="$el.form.requestSubmit()"
+                           class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5 outline-none transition-all hover:bg-white shadow-sm"
+                           placeholder="Liegenschaft oder Jahr...">
                 </div>
             </form>
-            <a href="?new=1" x-target="main-content" class="bg-indigo-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-2 whitespace-nowrap" style="text-decoration: none;">
-                ➕ <span class="hidden md:inline">Neue Periode</span>
+
+            <a href="?new=1" x-target="main-content" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-indigo-700 hover:shadow-md transition-all flex items-center gap-2 whitespace-nowrap w-full md:w-auto justify-center" style="text-decoration: none;">
+                <i class="bi bi-plus-lg"></i> <span class="hidden md:inline">Neue Periode</span>
             </a>
         </div>
     </div>
 
-    <div class="overflow-hidden rounded-xl border border-gray-200">
+    <div class="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Bezeichnung</th>
-                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Liegenschaft</th>
-                    <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Zeitraum</th>
-                    <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Status</th>
+                    <th class="px-6 py-3.5 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Bezeichnung</th>
+                    <th class="px-6 py-3.5 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Liegenschaft</th>
+                    <th class="px-6 py-3.5 text-center text-[10px] font-black text-gray-500 uppercase tracking-widest">Zeitraum</th>
+                    <th class="px-6 py-3.5 text-center text-[10px] font-black text-gray-500 uppercase tracking-widest">Status</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-100">
                 {% for p in perioden %}
-                <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="document.getElementById('link-{{ p.id }}').click();">
+                <tr class="hover:bg-gray-50 transition-colors cursor-pointer group" onclick="document.getElementById('link-{{ p.id }}').click();">
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <a id="link-{{ p.id }}" href="{% url 'abrechnung_detail' p.id %}" x-target="main-content" class="font-bold text-indigo-600 hover:text-indigo-800 text-lg flex items-center gap-2" style="text-decoration: none;">
-                            📊 {{ p.bezeichnung }}
+                        <a id="link-{{ p.id }}" href="{% url 'abrechnung_detail' p.id %}" x-target="main-content" class="font-bold text-indigo-600 group-hover:text-indigo-800 text-base flex items-center gap-2 transition-colors" style="text-decoration: none;">
+                            <i class="bi bi-calculator"></i> {{ p.bezeichnung }}
                         </a>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="font-medium text-gray-900">{{ p.liegenschaft.strasse }}</div>
+                        <div class="font-bold text-gray-900 text-sm">{{ p.liegenschaft.strasse }}</div>
                         <div class="text-xs text-gray-500">{{ p.liegenschaft.plz }} {{ p.liegenschaft.ort }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-600">
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-600">
                         {{ p.start_datum|date:"d.m.Y" }} – {{ p.ende_datum|date:"d.m.Y" }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                        {% if p.abgeschlossen %}<span class="inline-flex px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20">Abgeschlossen</span>
-                        {% else %}<span class="inline-flex px-2.5 py-1 rounded-md text-xs font-bold bg-orange-50 text-orange-700 ring-1 ring-orange-600/20">In Bearbeitung</span>{% endif %}
+                        {% if p.abgeschlossen %}
+                            <span class="inline-flex px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase tracking-wider">Abgeschlossen</span>
+                        {% else %}
+                            <span class="inline-flex px-3 py-1 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700 border border-orange-200 uppercase tracking-wider">In Bearbeitung</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="px-6 py-12 text-center text-gray-500">Keine Abrechnungsperioden gefunden.</td></tr>
+                <tr>
+                    <td colspan="4" class="px-6 py-16 text-center">
+                        <i class="bi bi-folder2-open text-4xl text-gray-300 mb-3 block"></i>
+                        <p class="text-gray-500 font-medium">Keine Abrechnungsperioden gefunden.</p>
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -57,24 +75,31 @@
 </div>
 
 {% if form %}
-<div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden fade-enter-active" style="margin: 20px;">
+<div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden fade-enter-active">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-            <h3 class="text-xl font-bold text-gray-900">Neue Abrechnungsperiode</h3>
-            <a href="{% url 'abrechnung_liste' %}" x-target="main-content" class="text-gray-400 hover:text-red-500 text-2xl font-bold" style="text-decoration: none;">×</a>
+            <h3 class="text-xl font-black text-gray-900">Neue Abrechnungsperiode</h3>
+            <a href="{% url 'abrechnung_liste' %}" x-target="main-content" class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors" style="text-decoration: none;">
+                <i class="bi bi-x-lg text-sm font-bold"></i>
+            </a>
         </div>
         <form method="POST" action="{% url 'abrechnung_liste' %}" x-target="main-content">
             {% csrf_token %}
             <input type="hidden" name="save_new_periode" value="1">
-            <div class="p-6 grid grid-cols-2 gap-4">
-                <div class="col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1">Liegenschaft</label>{{ form.liegenschaft }}</div>
-                <div class="col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1">Titel (z.B. Nebenkosten 2024)</label>{{ form.bezeichnung }}</div>
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Startdatum</label>{{ form.start_datum }}</div>
-                <div class="col-span-1"><label class="block text-sm font-bold text-gray-700 mb-1">Enddatum</label>{{ form.ende_datum }}</div>
+            <div class="p-6 grid grid-cols-2 gap-4 max-h-[65vh] overflow-y-auto">
+                <div class="col-span-2"><label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Liegenschaft</label>{{ form.liegenschaft }}</div>
+                <div class="col-span-2"><label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Titel (z.B. Nebenkosten 2024)</label>{{ form.bezeichnung }}</div>
+
+                <div class="col-span-2"><hr class="border-gray-100 my-1"></div>
+
+                <div class="col-span-1"><label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Startdatum</label>{{ form.start_datum }}</div>
+                <div class="col-span-1"><label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Enddatum</label>{{ form.ende_datum }}</div>
             </div>
             <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-                <a href="{% url 'abrechnung_liste' %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl" style="text-decoration: none;">Abbrechen</a>
-                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm">Speichern</button>
+                <a href="{% url 'abrechnung_liste' %}" x-target="main-content" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors" style="text-decoration: none;">Abbrechen</a>
+                <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-sm flex items-center gap-2 transition-colors">
+                    <i class="bi bi-check2"></i> Erstellen
+                </button>
             </div>
         </form>
     </div>

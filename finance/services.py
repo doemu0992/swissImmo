@@ -54,7 +54,7 @@ def berechne_abrechnung(periode_id):
             # Default ist immer m2
             total_kosten_m2 += betrag
 
-    total_kosten_gesamt = total_kosten_m2 + total_kosten_einheit
+        total_kosten_gesamt = total_kosten_m2 + total_kosten_einheit
 
     # ---------------------------------------------------------
     # 2. GESAMT-BASIS ERMITTELN
@@ -115,7 +115,7 @@ def berechne_abrechnung(periode_id):
 
             abrechnungen.append({
                 'typ': 'mieter',
-                'name': f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}",
+                'name': f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}".strip(),
                 'einheit': einheit.bezeichnung,
                 'von': v_start,
                 'bis': v_ende,
@@ -149,11 +149,13 @@ def berechne_abrechnung(periode_id):
 
     abrechnungen.sort(key=lambda x: x['einheit'])
 
+    # WICHTIG: Hier wurden die Keys auf "total" und "data" angepasst,
+    # damit das neue Template sie erkennt.
     return {
-        'total_kosten': total_kosten_gesamt,
+        'total': total_kosten_gesamt,
         'total_flaeche': total_flaeche_liegenschaft,
         'belege_details': kategorien_liste,
-        'abrechnungen': abrechnungen,
+        'data': abrechnungen,
         'kontroll_summe': round(kontroll_summe, 2),
         'differenz': round(total_kosten_gesamt - kontroll_summe, 2)
     }
