@@ -1,0 +1,58 @@
+<div v-if="showPanel" @click="closePanel" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[80]"></div>
+<div :class="showPanel ? 'translate-x-0' : 'translate-x-full'" class="fixed inset-y-0 right-0 w-[500px] bg-white shadow-2xl z-[90] transition-transform duration-300 flex flex-col">
+
+    <div v-if="selectedItem" class="flex-1 flex flex-col h-full overflow-hidden">
+        <div class="px-8 py-8 flex justify-between items-center border-b border-slate-100">
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-1">{% verbatim %}{{ panelType }}{% endverbatim %}</p>
+                <h2 class="text-xl font-black">{% verbatim %}{{ selectedItem.mieter_name || selectedItem.display_name || selectedItem.titel }}{% endverbatim %}</h2>
+            </div>
+            <div class="flex items-center gap-2">
+                <button @click="handleDelete" class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-all"><i class="fa-solid fa-trash-can"></i></button>
+                <button @click="closePanel" class="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-8 space-y-10">
+            <div v-if="panelType === 'rentals'" class="space-y-8">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-6 bg-slate-50 rounded-2xl">
+                        <p class="text-[10px] font-black uppercase text-slate-400 mb-2">Netto</p>
+                        <p class="text-lg font-black font-mono">CHF {% verbatim %}{{ selectedItem.netto_mietzins }}{% endverbatim %}</p>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-2xl">
+                        <p class="text-[10px] font-black uppercase text-slate-400 mb-2">NK</p>
+                        <p class="text-lg font-black font-mono">CHF {% verbatim %}{{ selectedItem.nebenkosten }}{% endverbatim %}</p>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Prozesse</p>
+                    <button @click="downloadFile('/vertrag/' + selectedItem.id + '/pdf/')" class="w-full p-4 bg-white border border-slate-100 rounded-2xl flex items-center gap-4 hover:border-indigo-600 transition-all font-bold text-sm"><i class="fa-solid fa-file-pdf text-rose-500"></i> Vertrag PDF</button>
+                    <button @click="downloadFile('/vertrag/' + selectedItem.id + '/qr/')" class="w-full p-4 bg-white border border-slate-100 rounded-2xl flex items-center gap-4 hover:border-indigo-600 transition-all font-bold text-sm"><i class="fa-solid fa-qrcode text-emerald-500"></i> QR-Rechnung</button>
+                </div>
+            </div>
+
+            <div v-if="panelType === 'crm'" class="space-y-6">
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-3">
+                    <div class="flex items-center text-slate-600 text-sm"><i class="fa-solid fa-envelope w-6 text-slate-400"></i> {% verbatim %}{{ selectedItem.email || '-' }}{% endverbatim %}</div>
+                    <div class="flex items-center text-slate-600 text-sm"><i class="fa-solid fa-phone w-6 text-slate-400"></i> {% verbatim %}{{ selectedItem.telefon || '-' }}{% endverbatim %}</div>
+                </div>
+            </div>
+
+            <div v-if="panelType === 'tickets'" class="space-y-8">
+                <div class="p-6 bg-slate-50 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap font-medium">{% verbatim %}{{ selectedItem.beschreibung }}{% endverbatim %}</div>
+                <div class="space-y-4">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Verlauf</p>
+                    <div v-for="n in selectedItem.nachrichten" :key="n.id" class="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm text-xs">
+                        <span class="font-black text-slate-800">{% verbatim %}{{ n.absender_name }}{% endverbatim %}:</span> {% verbatim %}{{ n.nachricht }}{% endverbatim %}
+                    </div>
+                </div>
+                <div class="flex gap-2 sticky bottom-0 bg-white py-4 border-t border-slate-100">
+                    <button @click="updateTicketStatus(selectedItem.id, 'neu')" :class="selectedItem.status === 'neu' ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-500'" class="flex-1 py-2 rounded-xl text-xs font-bold">Neu</button>
+                    <button @click="updateTicketStatus(selectedItem.id, 'in_bearbeitung')" :class="selectedItem.status === 'in_bearbeitung' ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500'" class="flex-1 py-2 rounded-xl text-xs font-bold">Arbeit</button>
+                    <button @click="updateTicketStatus(selectedItem.id, 'erledigt')" :class="selectedItem.status === 'erledigt' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500'" class="flex-1 py-2 rounded-xl text-xs font-bold">Erledigt</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

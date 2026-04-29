@@ -10,16 +10,17 @@ from .services import sync_liegenschaft_with_gwr, get_liegenschaft_stats
 # WICHTIG: Import für den Live-Abgleich der Vermietungen
 from rentals.models import Mietvertrag
 
+# ========================================================
+# 1. DEINE BESTEHENDEN LEGACY VIEWS
+# ========================================================
+
 def liegenschaft_liste(request):
     form = None
-
     if request.method == 'POST':
         if 'save_new_liegenschaft' in request.POST:
             form = LiegenschaftForm(request.POST)
             if form.is_valid():
                 neue_liegenschaft = form.save()
-
-                # --- Service Aufruf: Die EGID & BFS Magie ---
                 sync_result = sync_liegenschaft_with_gwr(neue_liegenschaft)
 
                 if sync_result.get('error'):
@@ -53,25 +54,21 @@ def liegenschaft_liste(request):
 
 def liegenschaft_detail(request, pk):
     liegenschaft = get_object_or_404(Liegenschaft, pk=pk)
-
     form = None
     einheit_form = None
     active_einheit_id = None
 
     if request.method == 'POST':
-        # 1. Liegenschaft bearbeiten
         if 'save_liegenschaft' in request.POST:
             form = LiegenschaftForm(request.POST, instance=liegenschaft)
             if form.is_valid():
                 form.save()
                 return redirect('liegenschaft_detail', pk=pk)
 
-        # 2. Liegenschaft löschen
         elif 'delete_liegenschaft' in request.POST:
             liegenschaft.delete()
             return redirect('liegenschaft_liste')
 
-        # 3. Einheit bearbeiten
         elif 'save_einheit' in request.POST:
             active_einheit_id = request.POST.get('einheit_id')
             einheit = get_object_or_404(Einheit, pk=active_einheit_id, liegenschaft=liegenschaft)
@@ -80,7 +77,6 @@ def liegenschaft_detail(request, pk):
                 einheit_form.save()
                 return redirect('liegenschaft_detail', pk=pk)
 
-        # 4. Neue Einheit anlegen
         elif 'save_new_einheit' in request.POST:
             einheit_form = EinheitForm(request.POST)
             if einheit_form.is_valid():
@@ -89,7 +85,6 @@ def liegenschaft_detail(request, pk):
                 neue_einheit.save()
                 return redirect('liegenschaft_detail', pk=pk)
 
-        # 5. Einheit löschen
         elif 'delete_einheit' in request.POST:
             einheit_id = request.POST.get('einheit_id')
             Einheit.objects.filter(pk=einheit_id, liegenschaft=liegenschaft).delete()
@@ -97,31 +92,23 @@ def liegenschaft_detail(request, pk):
 
     elif request.GET.get('edit'):
         form = LiegenschaftForm(instance=liegenschaft)
-
     elif request.GET.get('edit_einheit'):
         active_einheit_id = request.GET.get('edit_einheit')
         einheit = get_object_or_404(Einheit, pk=active_einheit_id, liegenschaft=liegenschaft)
         einheit_form = EinheitForm(instance=einheit)
-
     elif request.GET.get('new_einheit'):
         einheit_form = EinheitForm()
 
-    # --- Daten für das Template aufbereiten ---
     einheiten = liegenschaft.einheiten.all().order_by('bezeichnung')
-
-    # 🔥 Live-Check: Haupt- UND Nebenobjekte auswerten!
     aktive_vertraege = Mietvertrag.objects.filter(aktiv=True)
     belegte_haupt_ids = list(aktive_vertraege.values_list('einheit_id', flat=True))
     belegte_neben_ids = list(aktive_vertraege.values_list('nebenobjekte', flat=True))
     alle_belegten_ids = set([id for id in (belegte_haupt_ids + belegte_neben_ids) if id is not None])
 
-    # Wir "markieren" die Einheiten für das Template, ohne sie in der DB zu speichern
     for e in einheiten:
         e.ist_vermietet = e.id in alle_belegten_ids
 
     stats = get_liegenschaft_stats(liegenschaft)
-
-    # MAPS URL GENERIEREN (Sichere HTTPS Variante für iFrames)
     addr_query = urllib.parse.quote(f"{liegenschaft.strasse}, {liegenschaft.plz} {liegenschaft.ort}") if liegenschaft.strasse else ""
     map_url = f"https://maps.google.com/maps?q={addr_query}&t=&z=15&ie=UTF8&iwloc=&output=embed" if addr_query else ""
 
@@ -135,3 +122,13 @@ def liegenschaft_detail(request, pk):
         'map_url': map_url,
     }
     return render(request, 'portfolio/liegenschaft_detail.html', context)
+
+# ========================================================
+# 2. UNSER NEUER VUE.JS TEST VIEW
+# ========================================================
+
+def vue_test_view(request):
+    """
+    Rendert das moderne Vue.js Template, das seine Daten über die API zieht.
+    """
+    return render(request, 'portfolio/vue_test.html')

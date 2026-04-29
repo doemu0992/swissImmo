@@ -1,0 +1,79 @@
+<div v-if="activeTab === 'home'" class="animate-fade-in space-y-10">
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 group hover:border-blue-200 transition-all relative overflow-hidden">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <i class="fa-solid fa-sack-dollar absolute right-5 top-5 text-blue-500 text-xl"></i>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Soll-Miete / Monat</p>
+            <div class="text-3xl font-black text-slate-900">CHF {{ soll_miete|floatformat:0 }}</div>
+            <p class="text-xs text-slate-500 mt-3 font-medium flex items-center gap-1">
+                <span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-bold">Ist: CHF {{ ist_miete|floatformat:0 }}</span>
+            </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 group hover:border-emerald-200 transition-all relative overflow-hidden">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <i class="fa-solid fa-arrow-trend-up absolute right-5 top-5 text-emerald-500 text-xl"></i>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Miet-Potenzial</p>
+            <div class="text-3xl font-black text-slate-900">CHF {{ potenzial_total|floatformat:0 }}</div>
+            <p class="text-xs text-slate-500 mt-3 font-medium flex items-center gap-1">
+                <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold"><i class="fa-solid fa-magnifying-glass-chart"></i> Scanner aktiv</span>
+            </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 group hover:border-amber-200 transition-all relative overflow-hidden">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-amber-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <i class="fa-solid fa-door-open absolute right-5 top-5 text-amber-500 text-xl"></i>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Leerstand</p>
+            <div class="text-3xl font-black text-slate-900">{{ leerstand_count }} <span class="text-lg text-slate-400">Einh.</span></div>
+            <p class="text-xs text-slate-500 mt-3 font-medium flex items-center gap-1">
+                <span class="text-amber-600 bg-amber-50 px-2 py-0.5 rounded font-bold">{{ leerstand_quote }}% Quote</span>
+            </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 group hover:border-rose-200 transition-all relative overflow-hidden">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-rose-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <i class="fa-solid fa-screwdriver-wrench absolute right-5 top-5 text-rose-500 text-xl"></i>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Offene Tickets</p>
+            <div class="text-3xl font-black text-slate-900">{{ offene_tickets }}</div>
+            <p class="text-xs text-slate-500 mt-3 font-medium flex items-center gap-1">
+                <span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded font-bold">{{ kritische_tickets }} Kritisch</span>
+            </p>
+        </div>
+
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+
+        <div class="lg:col-span-2 bg-white p-8 rounded-3xl border border-slate-100">
+            <canvas id="revenueChart"></canvas>
+        </div>
+
+        <div class="space-y-6">
+            <h3 class="font-black text-lg">Pendenzen & Schnellzugriff</h3>
+
+            <button @click="switchTab('finance')" class="w-full flex items-center justify-between p-6 bg-white border border-slate-100 rounded-3xl hover:border-indigo-500 transition-all group shadow-sm">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg"><i class="fa-solid fa-sack-dollar"></i></div>
+                    <div class="text-left">
+                        <span class="font-black block text-slate-800">Mietzinse prüfen</span>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ potenzial_up|default:"0" }} Erhöhungen möglich</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-indigo-500"></i>
+            </button>
+
+            <button @click="switchTab('tickets')" class="w-full flex items-center justify-between p-6 bg-white border border-slate-100 rounded-3xl hover:border-rose-500 transition-all group shadow-sm">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg"><i class="fa-solid fa-ticket"></i></div>
+                    <div class="text-left">
+                        <span class="font-black block text-slate-800">Tickets bearbeiten</span>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ offene_tickets|default:"0" }} Pendenzen</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-rose-500"></i>
+            </button>
+        </div>
+    </div>
+</div>

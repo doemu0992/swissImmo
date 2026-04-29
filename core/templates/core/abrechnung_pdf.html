@@ -5,22 +5,35 @@
     <title>Nebenkostenabrechnung</title>
     <style>
         @page {
-            size: A4;
-            margin: 0;
+            size: A4 portrait;
+            margin: 2cm 1.5cm 2.5cm 1.5cm;
         }
         body {
-            font-family: Helvetica, Arial, sans-serif;
+            font-family: 'Helvetica', 'Arial', sans-serif;
             font-size: 10pt;
+            color: #1f2937;
+            line-height: 1.5;
             margin: 0; padding: 0;
         }
-        .page-content {
-            padding: 20mm;
-            padding-bottom: 110mm; /* Platz für QR Code unten reservieren */
-        }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; border-bottom: 2px solid black; padding: 5px; }
-        td { border-bottom: 1px solid #ddd; padding: 5px; }
+        /* Typografie */
+        h1 { font-size: 16pt; font-weight: 900; color: #111827; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+        h2 { font-size: 12pt; font-weight: 800; color: #4f46e5; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px; margin-top: 35px; }
+
+        /* Layout-Blöcke */
+        .page-content { padding-bottom: 110mm; /* Reserviert Platz für QR Code */ }
+        .address-block { width: 100%; margin-bottom: 50px; }
+        .info-box { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+
+        /* Tabellen */
+        table { width: 100%; border-collapse: collapse; }
+        .info-table td { padding: 3px 0; vertical-align: top; }
+
+        .calc-table { margin-top: 15px; }
+        .calc-table td { padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+        .calc-table td.amount { text-align: right; width: 120px; }
+        .total-row { font-weight: 800; font-size: 11.5pt; }
+        .total-row td { border-top: 2px solid #111827; padding-top: 12px; border-bottom: none; }
 
         /* QR CODE CONTAINER - FIXIERT UNTEN */
         .qr-section {
@@ -30,58 +43,116 @@
             width: 210mm;
             height: 105mm;
             z-index: 1000;
-            /* Hintergrund weiß, damit er Text überdeckt falls nötig */
-            background-color: white;
+            background-color: white; /* Überdeckt Text am unteren Rand */
         }
-
-        /* Das Bild muss den Container füllen */
         .qr-section img {
             width: 210mm;
             height: 105mm;
             display: block;
         }
-
         .page-break { page-break-after: always; }
     </style>
 </head>
 <body>
 
 {% for a in abrechnungen %}
+    {% if a.typ != "leerstand" %}
     <div class="page-break">
         <div class="page-content">
-            <div style="color:green; font-size:9px; border:1px solid green; display:inline-block; margin-bottom:10px;">
-                STATUS: PNG BILD MODUS
-            </div>
 
-            <h2>Nebenkostenabrechnung</h2>
-            <p><strong>Mieter:</strong> {{ a.mieter }}</p>
-
-            <table>
-                <tr><th>Text</th><th style="text-align:right">Betrag</th></tr>
-                {% for d in a.details %}
-                <tr><td>{{ d.text }}</td><td style="text-align:right">{{ d.anteil|floatformat:2 }}</td></tr>
-                {% endfor %}
-                <tr><td><strong>Saldo</strong></td><td style="text-align:right"><strong>{{ a.saldo|floatformat:2 }}</strong></td></tr>
+            <table class="address-block">
+                <tr>
+                    <td style="width: 55%; vertical-align: top;">
+                        <span style="font-size: 8pt; color: #6b7280; text-decoration: underline;">
+                            {{ periode.liegenschaft.verwaltung.firma|default:"Verwaltung" }} | {{ periode.liegenschaft.verwaltung.strasse|default:"" }}
+                        </span><br><br><br>
+                        <strong>{{ a.name }}</strong><br>
+                        {{ periode.liegenschaft.strasse }}<br>
+                        {{ periode.liegenschaft.plz }} {{ periode.liegenschaft.ort }}
+                    </td>
+                    <td style="width: 45%; vertical-align: top; text-align: right; font-size: 9pt; color: #4b5563;">
+                        <strong>{{ periode.liegenschaft.verwaltung.firma|default:"Verwaltung" }}</strong><br>
+                        {{ periode.liegenschaft.verwaltung.strasse|default:"" }}<br>
+                        {{ periode.liegenschaft.verwaltung.plz|default:"" }} {{ periode.liegenschaft.verwaltung.ort|default:"" }}<br><br>
+                        Ort, Datum: {{ periode.liegenschaft.verwaltung.ort|default:periode.liegenschaft.ort }}, {% now "d.m.Y" %}
+                    </td>
+                </tr>
             </table>
 
-            <p>Bitte begleichen Sie den offenen Betrag.</p>
+            <h1>Heiz- und Nebenkosten</h1>
+            <p style="color: #6b7280; margin-top: 0;">Abrechnungsperiode: <strong>{{ periode.start_datum|date:"d.m.Y" }} bis {{ periode.ende_datum|date:"d.m.Y" }}</strong></p>
 
-            {% if a.qr_error %}
-                <div style="color:red; border:2px solid red; padding:10px; margin-top:20px;">
-                    FEHLER: {{ a.qr_error }}
-                </div>
-            {% elif a.qr_data_uri %}
-                <div style="margin-top:20px; color:green;">
-                    QR-Code wurde erstellt (siehe unten am Seitenrand).
-                </div>
+            <div class="info-box">
+                <table class="info-table">
+                    <tr><td style="width: 140px; color: #4b5563;">Liegenschaft:</td><td><strong>{{ periode.liegenschaft.strasse }}, {{ periode.liegenschaft.ort }}</strong></td></tr>
+                    <tr><td style="color: #4b5563;">Mietobjekt:</td><td><strong>{{ a.einheit }}</strong></td></tr>
+                    <tr><td style="color: #4b5563;">Ihr Abrechnungszeitraum:</td><td><strong>{{ a.von }} bis {{ a.bis }}</strong></td></tr>
+                    <tr><td style="color: #4b5563;">Abrechnungsart:</td><td><span style="background: #eef2ff; color: #4f46e5; padding: 2px 6px; border-radius: 4px; font-size: 9pt;">{{ a.info }}</span></td></tr>
+                </table>
+            </div>
 
+            <h2>Ihre persönliche Abrechnung</h2>
+            <table class="calc-table">
+                <tr>
+                    <td>Ihr Anteil an den Heiz- und Nebenkosten<br>
+                        <span style="font-size: 8.5pt; color: #6b7280;">(Gemäss Verteilschlüssel und Heizgradtagen berechnet)</span>
+                    </td>
+                    <td class="amount">CHF {{ a.kosten_anteil|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>Abzüglich geleistete Zahlungen<br>
+                        <span style="font-size: 8.5pt; color: #6b7280;">(Verrechnete {{ a.info }})</span>
+                    </td>
+                    <td class="amount">- CHF {{ a.akonto|floatformat:2 }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td>
+                        {% if a.saldo > 0 %}Zu zahlender Saldo (Nachzahlung)
+                        {% elif a.saldo < 0 %}Guthaben zu Ihren Gunsten
+                        {% else %}Ausgeglichener Saldo{% endif %}
+                    </td>
+                    <td class="amount {% if a.saldo > 0 %}color: #e11d48;{% else %}color: #059669;{% endif %}">
+                        CHF {{ a.saldo|floatformat:2 }}
+                    </td>
+                </tr>
+            </table>
+
+            <div style="margin-top: 30px; text-align: justify; font-size: 9.5pt;">
+
+                {% if a.typ == 'mieter_pauschal' %}
+                    <div style="background: #fdfbf7; border-left: 3px solid #f59e0b; padding: 10px;">
+                        Da in Ihrem Mietvertrag eine <strong>Nebenkosten-Pauschale</strong> vereinbart wurde, dient diese detaillierte Berechnung lediglich zu Ihrer Information. Die effektiven Kosten sind durch Ihre Pauschale rechtlich abgegolten.<br>
+                        <strong>Es resultiert keine Nachzahlung für Sie.</strong>
+                    </div>
+                {% else %}
+                    {% if a.saldo > 0 %}
+                        <p>Wir bitten Sie, den offenen Betrag von <strong>CHF {{ a.saldo|floatformat:2 }}</strong> innert 30 Tagen mit dem beiliegenden Einzahlungsschein zu begleichen.</p>
+                    {% elif a.saldo < 0 %}
+                        <p>Es resultiert ein Guthaben zu Ihren Gunsten. Wir werden den Betrag in den nächsten Tagen auf Ihr Bankkonto überweisen. Bitte teilen Sie uns Ihre aktuelle IBAN mit, falls diese noch nicht bei uns hinterlegt ist.</p>
+                    {% else %}
+                        <p>Ihre geleisteten Akonto-Zahlungen decken die effektiven Kosten exakt ab. Es ist keine weitere Zahlung erforderlich.</p>
+                    {% endif %}
+                {% endif %}
+
+                <p style="color: #6b7280; font-size: 8.5pt; margin-top: 20px;">
+                    Hinweis gemäss Art. 257b OR: Die Einsichtnahme in die detaillierten Originalbelege, die Heizgradtage-Tabelle sowie den detaillierten Liegenschafts-Kostenzusammenzug ist nach vorheriger Terminvereinbarung bei der Verwaltung jederzeit möglich.
+                </p>
+                <br>
+                Freundliche Grüsse<br><br>
+                <strong>{{ periode.liegenschaft.verwaltung.firma|default:"Ihre Verwaltung" }}</strong>
+            </div>
+
+            {% if a.nachzahlung and a.qr_data_uri %}
                 <div class="qr-section">
-                    <img src="{{ a.qr_data_uri }}" alt="QR Code">
+                    <img src="{{ a.qr_data_uri }}" alt="QR Einzahlungsschein">
                 </div>
+            {% elif a.qr_error %}
+                <div style="color: red; font-size: 8pt; margin-top: 20px;">QR-Generierungsfehler: {{ a.qr_error }}</div>
             {% endif %}
 
         </div>
     </div>
+    {% endif %}
 {% endfor %}
 
 </body>

@@ -1,0 +1,16 @@
+<div class="w-64 bg-slate-900 text-white flex flex-col z-[60]">
+    <div class="p-8 text-2xl font-black flex items-center gap-3 tracking-tighter">
+        <div class="w-9 h-9 rounded-xl bg-indigo-500 flex items-center justify-center text-sm shadow-lg shadow-indigo-500/40"><i class="fa-solid fa-building"></i></div>
+        <span>swissImmo</span>
+    </div>
+    <nav class="flex-1 px-4 space-y-1">
+        <button @click="switchTab('home')" :class="activeTab === 'home' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold"><i class="fa-solid fa-grid-2 w-5 text-center"></i> Dashboard</button>
+        <div class="pt-4 pb-2 px-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Portfolio</div>
+        <button @click="switchTab('portfolio')" :class="activeTab === 'portfolio' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold"><i class="fa-solid fa-city w-5 text-center"></i> Liegenschaften</button>
+        <button @click="switchTab('rentals')" :class="activeTab === 'rentals' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold"><i class="fa-solid fa-file-signature w-5 text-center"></i> Mietverträge</button>
+        <button @click="switchTab('crm')" :class="activeTab === 'crm' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold"><i class="fa-solid fa-users w-5 text-center"></i> Mieterstamm</button>
+        <div class="pt-4 pb-2 px-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Betrieb</div>
+        <button @click="switchTab('finance')" :class="activeTab === 'finance' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold"><i class="fa-solid fa-sack-dollar w-5 text-center"></i> Finanzen</button>
+        <button @click="switchTab('tickets')" :class="activeTab === 'tickets' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold"><i class="fa-solid fa-screwdriver-wrench w-5 text-center"></i> Tickets</button>
+    </nav>
+</div>

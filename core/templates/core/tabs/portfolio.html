@@ -1,0 +1,377 @@
+<div v-if="activeTab === 'portfolio' && !selectedLiegenschaft" class="animate-fade-in space-y-8 pb-10">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Portfolio</h1>
+        <button @click="showPropModal = true" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">+ Liegenschaft</button>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-for="l in liegenschaften" :key="l.id" @click="openLiegenschaftDeepDive(l)" class="bg-white p-8 rounded-3xl border border-slate-100 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer group">
+            <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all mb-6">
+                <i class="fa-solid fa-building text-xl"></i>
+            </div>
+            <h3 class="font-black text-lg text-slate-900">{% verbatim %}{{ l.strasse }}{% endverbatim %}</h3>
+            <p class="text-sm text-slate-500 font-medium">{% verbatim %}{{ l.plz }} {{ l.ort }}{% endverbatim %}</p>
+        </div>
+    </div>
+</div>
+
+<div v-if="activeTab === 'portfolio' && selectedLiegenschaft && !selectedEinheit" class="animate-fade-in space-y-6 pb-10">
+    <button @click="selectedLiegenschaft = null" class="text-slate-400 hover:text-indigo-600 font-bold text-sm mb-2 flex items-center gap-2 transition-colors">
+        <i class="fa-solid fa-arrow-left"></i> Zurück zur Übersicht
+    </button>
+
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-1">Liegenschaft</p>
+            <h1 class="text-4xl font-black text-slate-900 tracking-tight">{% verbatim %}{{ selectedLiegenschaft.strasse }}{% endverbatim %}</h1>
+            <p class="text-slate-500 font-medium text-lg mt-1"><i class="fa-solid fa-location-dot mr-2 text-indigo-500"></i>{% verbatim %}{{ selectedLiegenschaft.plz }} {{ selectedLiegenschaft.ort }}{% endverbatim %}</p>
+        </div>
+        <button @click="saveLiegenschaftEdit" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all">Gebäudedaten speichern</button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="space-y-6">
+
+            <div class="bg-slate-200 rounded-3xl h-48 overflow-hidden relative shadow-inner">
+                <iframe width="100%" height="100%" frameborder="0" style="border:0"
+                    :src="'https://maps.google.com/maps?q=' + encodeURIComponent(selectedLiegenschaft.strasse + ', ' + selectedLiegenschaft.plz + ' ' + selectedLiegenschaft.ort) + '&t=&z=15&ie=UTF8&iwloc=&output=embed'"
+                    allowfullscreen>
+                </iframe>
+                <div class="absolute inset-0 bg-transparent" style="pointer-events: none;"></div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Gebäude-Basisdaten</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">EGID</label><input type="text" v-model="selectedLiegenschaft.egid" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Baujahr</label><input type="number" v-model="selectedLiegenschaft.baujahr" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Fläche (m²)</label><input type="number" v-model="selectedLiegenschaft.grundstuecksflaeche_m2" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Volumen (m³)</label><input type="number" v-model="selectedLiegenschaft.gebaeudevolumen_m3" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold"></div>
+                </div>
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Versicherungswert (CHF)</label><input type="number" v-model="selectedLiegenschaft.versicherungswert" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-black font-mono"></div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Hauswart & Notfall</h3>
+                    <button @click="showLiegenschaftEditModal = true; editLiegenschaftData = {...selectedLiegenschaft};" class="text-indigo-600 text-xs font-bold hover:underline"><i class="fa-solid fa-pen mr-1"></i> Bearbeiten</button>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-broom"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900">{% verbatim %}{{ selectedLiegenschaft.hauswart_name || 'Kein Hauswart' }}{% endverbatim %}</div>
+                            <div class="text-[10px] text-slate-500">{% verbatim %}{{ selectedLiegenschaft.hauswart_telefon }}{% endverbatim %}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-faucet-drip"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900">{% verbatim %}{{ selectedLiegenschaft.sanitaer_name || 'Kein Sanitär' }}{% endverbatim %}</div>
+                            <div class="text-[10px] text-slate-500">{% verbatim %}{{ selectedLiegenschaft.sanitaer_telefon }}{% endverbatim %}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-bolt"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900">{% verbatim %}{{ selectedLiegenschaft.elektriker_name || 'Kein Elektriker' }}{% endverbatim %}</div>
+                            <div class="text-[10px] text-slate-500">{% verbatim %}{{ selectedLiegenschaft.elektriker_telefon }}{% endverbatim %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 text-white p-6 rounded-3xl shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-black uppercase tracking-widest text-[10px] text-slate-400">Gebäude-Dokumente</h3>
+                    <button @click="showDocModal = true; newDoc.liegenschaft_id = selectedLiegenschaft.id; newDoc.einheit_id = null;" class="text-indigo-400 hover:text-white transition-colors text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Upload</button>
+                </div>
+                <div class="space-y-2">
+                    <div v-for="d in selectedLiegenschaft.dokumente" :key="d.id" class="flex justify-between items-center p-3 bg-white/10 rounded-xl group">
+                        <div class="flex items-center gap-3"><i class="fa-solid fa-file-pdf text-rose-400"></i><div><div class="font-bold text-xs">{% verbatim %}{{ d.titel }}{% endverbatim %}</div><div class="text-[10px] text-slate-400">{% verbatim %}{{ d.kategorie }}{% endverbatim %}</div></div></div>
+                        <div class="flex gap-2">
+                            <a :href="d.datei_url" target="_blank" class="text-slate-400 hover:text-white"><i class="fa-solid fa-download"></i></a>
+                            <button @click="deleteDokument(d.id)" class="text-rose-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                    <div v-if="!selectedLiegenschaft.dokumente?.length" class="text-center py-4 text-slate-500 text-xs">Keine Dokumente abgelegt.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-2 space-y-6">
+            <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Objekt-Portfolio</h3>
+                    <button @click="showEinheitModal = true; newEinheit.liegenschaft_id = selectedLiegenschaft.id" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl hover:bg-indigo-100 transition-all">+ Objekt erfassen</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div v-for="e in selectedLiegenschaft.einheiten" :key="e.id" @click="selectedEinheit = e" class="p-5 bg-slate-50 rounded-2xl border border-slate-100 hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/5 transition-all cursor-pointer group">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="font-black text-sm group-hover:text-indigo-600 transition-colors">{% verbatim %}{{ e.bezeichnung }}{% endverbatim %}</span>
+                                <div class="text-[10px] text-slate-400 font-bold uppercase mt-1">{% verbatim %}{{ e.typ_display }}{% endverbatim %}</div>
+                            </div>
+                            <span :class="e.vermietungs_status === 'vermietet' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'" class="text-[9px] px-2 py-0.5 rounded font-black uppercase tracking-tighter">
+                                {% verbatim %}{{ e.vermietungs_status }}{% endverbatim %}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-end mt-4 pt-3 border-t border-slate-200/50">
+                            <span :class="e.vermietungs_status === 'vermietet' ? 'text-indigo-600 font-black' : 'text-slate-400 font-bold'" class="text-[10px] uppercase tracking-tighter truncate max-w-[150px]">
+                                <i class="fa-solid fa-user mr-1"></i> {% verbatim %}{{ e.aktueller_mieter }}{% endverbatim %}
+                            </span>
+                            <span class="font-mono font-bold text-sm text-slate-700">CHF {% verbatim %}{{ e.nettomiete_aktuell }}{% endverbatim %}</span>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="!selectedLiegenschaft.einheiten?.length" class="text-center py-10 text-slate-400 text-sm">Keine Einheiten erfasst.</div>
+            </div>
+
+            <div class="bg-slate-50 p-8 rounded-3xl border border-slate-200 border-dashed">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Haustechnik & Anlagen</h3>
+                        <p class="text-[10px] text-slate-400">Lift, Heizung, allgemeine Waschräume</p>
+                    </div>
+                    <button @click="showDeviceModal = true; newDevice.liegenschaft_id = selectedLiegenschaft.id; newDevice.einheit_id = null" class="text-xs font-bold text-indigo-600">+ Anlage erfassen</button>
+                </div>
+                <div class="space-y-3">
+                    <div v-for="g in selectedLiegenschaft.allgemeine_geraete" :key="g.id" class="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl group shadow-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500"><i class="fa-solid fa-gears"></i></div>
+                            <div>
+                                <div class="font-bold text-sm">{% verbatim %}{{ g.marke }} {{ g.modell }}{% endverbatim %}</div>
+                                <div class="text-[10px] text-slate-400 uppercase font-black">{% verbatim %}{{ g.kategorie_display }}{% endverbatim %}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <div class="text-xs font-bold text-slate-500">Garantie bis: {% verbatim %}{{ g.garantie_bis || '-' }}{% endverbatim %}</div>
+                            <button @click="deleteDevice(g.id)" class="text-rose-400 opacity-0 group-hover:opacity-100 transition-all"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                    <div v-if="!selectedLiegenschaft.allgemeine_geraete?.length" class="text-center py-6 text-slate-400 text-xs italic">Keine zentralen Anlagen erfasst.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div v-if="activeTab === 'portfolio' && selectedEinheit" class="animate-fade-in space-y-6 pb-10">
+    <button @click="selectedEinheit = null" class="text-slate-400 hover:text-indigo-600 font-bold text-sm mb-2 flex items-center gap-2 transition-colors"><i class="fa-solid fa-arrow-left"></i> Zurück zur Liegenschaft</button>
+
+    <div class="flex justify-between items-end mb-8">
+        <div class="flex-1 mr-8">
+            <div class="flex items-center gap-3 mb-1">
+                 <span :class="selectedEinheit.vermietungs_status === 'vermietet' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'" class="text-[10px] px-2 py-0.5 rounded font-black uppercase">
+                    {% verbatim %}{{ selectedEinheit.vermietungs_status }}{% endverbatim %}
+                </span>
+                <span class="text-[10px] font-black uppercase text-indigo-600">{% verbatim %}{{ selectedEinheit.typ_display }}{% endverbatim %}</span>
+            </div>
+            <input type="text" v-model="selectedEinheit.bezeichnung" class="w-full bg-transparent border-none p-0 text-4xl font-black text-slate-900 tracking-tight focus:ring-0 focus:outline-none placeholder-slate-300" placeholder="Objektname (z.B. Wohnung 1)">
+            <p class="text-slate-500 font-medium text-lg mt-1"><i class="fa-solid fa-location-dot mr-2 text-indigo-500"></i>{% verbatim %}{{ selectedLiegenschaft.strasse }}{% endverbatim %}</p>
+        </div>
+        <div class="flex gap-3">
+             <button @click="deleteEinheit(selectedEinheit.id)" class="bg-rose-50 text-rose-600 px-4 py-3 rounded-xl font-bold hover:bg-rose-600 hover:text-white transition-all" title="Objekt unwiderruflich löschen"><i class="fa-solid fa-trash-can"></i></button>
+             <button @click="selectedEinheit = null" class="bg-white border border-slate-200 text-slate-600 px-6 py-3 rounded-xl font-bold hover:bg-slate-50 transition-all">Schliessen</button>
+             <button @click="saveEinheitEdit" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">Speichern</button>
+        </div>
+    </div>
+
+    <div :class="selectedEinheit.vermietungs_status === 'vermietet' ? 'bg-indigo-50 border-indigo-100' : 'bg-slate-50 border-slate-200'" class="border p-5 rounded-3xl flex justify-between items-center mb-2 transition-colors">
+        <div class="flex items-center gap-4">
+            <div :class="selectedEinheit.vermietungs_status === 'vermietet' ? 'bg-indigo-600' : 'bg-slate-400'" class="w-12 h-12 text-white rounded-2xl flex items-center justify-center text-xl shadow-md transition-colors"><i class="fa-solid fa-user"></i></div>
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-widest" :class="selectedEinheit.vermietungs_status === 'vermietet' ? 'text-indigo-400' : 'text-slate-400'">Aktueller Mieter / Status</p>
+                <p :class="selectedEinheit.vermietungs_status === 'vermietet' ? 'text-indigo-900' : 'text-slate-500'" class="font-black text-xl transition-colors">
+                    {% verbatim %}{{ selectedEinheit.aktueller_mieter }}{% endverbatim %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <div class="space-y-6">
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px] mb-4">Basis-Infos & Netz</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Fläche (m²)</label><input type="number" v-model="selectedEinheit.flaeche_m2" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Zimmer</label><input type="number" step="0.5" v-model="selectedEinheit.zimmer" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">EWID</label><input type="text" v-model="selectedEinheit.ewid" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500" placeholder="Z.B. 12345"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">OTO-Dose</label><input type="text" v-model="selectedEinheit.oto_dose" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500" placeholder="B.123.456"></div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Verknüpfte Objekte (Paket)</h3>
+                    <button @click="showLinkModal = true; linkData.hauptobjekt_id = selectedEinheit.id" class="text-indigo-600 hover:bg-indigo-50 p-1 rounded-lg transition-all"><i class="fa-solid fa-link"></i></button>
+                </div>
+                <div class="space-y-2">
+                    <div v-for="n in selectedEinheit.nebenobjekte" :key="n.id" class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100 group">
+                        <div>
+                            <div class="font-bold text-xs">{% verbatim %}{{ n.bezeichnung }}{% endverbatim %}</div>
+                            <div class="text-[10px] text-slate-500">{% verbatim %}{{ n.typ_display }}{% endverbatim %}</div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono text-xs font-bold text-slate-700">CHF {% verbatim %}{{ n.nettomiete_aktuell }}{% endverbatim %}</span>
+                            <button @click="unlinkNebenobjekt(n.id)" class="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-link-slash"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-2 pt-4 border-t border-slate-100">
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Kellerabteil</label><input type="text" v-model="selectedEinheit.keller" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold" placeholder="Nr. 12"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Estrich</label><input type="text" v-model="selectedEinheit.estrich" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold" placeholder="Nr. 4"></div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px] mb-4">Grundausstattung</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Boden Wohnraum</label><input type="text" v-model="selectedEinheit.bodenbelag" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold" placeholder="Parkett"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Boden Nassraum</label><input type="text" v-model="selectedEinheit.bodenbelag_nassraum" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold" placeholder="Platten"></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 text-white p-6 rounded-3xl shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-black uppercase tracking-widest text-[10px] text-slate-400">Dokumenten-Tresor</h3>
+                    <button @click="showDocModal = true; newDoc.einheit_id = selectedEinheit.id; newDoc.liegenschaft_id = null;" class="text-indigo-400 hover:text-white transition-colors text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Upload</button>
+                </div>
+                <div class="space-y-2">
+                    <div v-for="d in selectedEinheit.dokumente" :key="d.id" class="flex justify-between items-center p-3 bg-white/10 rounded-xl group">
+                        <div class="flex items-center gap-3"><i class="fa-solid fa-file-pdf text-rose-400"></i><div><div class="font-bold text-xs">{% verbatim %}{{ d.titel }}{% endverbatim %}</div><div class="text-[10px] text-slate-400">{% verbatim %}{{ d.kategorie }}{% endverbatim %}</div></div></div>
+                        <div class="flex gap-2">
+                            <a :href="d.datei_url" target="_blank" class="text-slate-400 hover:text-white"><i class="fa-solid fa-download"></i></a>
+                            <button @click="deleteDokument(d.id)" class="text-rose-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                    <div v-if="!selectedEinheit.dokumente?.length" class="text-center py-4 text-slate-500 text-xs">Keine Dokumente abgelegt.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-2 space-y-6">
+
+            <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px] mb-6">Mietzins & Verteilschlüssel</h3>
+                <div class="grid grid-cols-2 gap-8 mb-8">
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100"><label class="block text-[10px] font-black uppercase text-slate-400 mb-2">Netto-Mietzins</label><div class="flex items-center gap-2"><span class="text-slate-400 font-bold">CHF</span><input type="number" v-model="selectedEinheit.nettomiete_aktuell" class="w-full bg-transparent border-none p-0 text-2xl font-black font-mono focus:ring-0"></div></div>
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100"><label class="block text-[10px] font-black uppercase text-slate-400 mb-2">Nebenkosten (Akonto)</label><div class="flex items-center gap-2"><span class="text-slate-400 font-bold">CHF</span><input type="number" v-model="selectedEinheit.nebenkosten_aktuell" class="w-full bg-transparent border-none p-0 text-2xl font-black font-mono focus:ring-0"></div></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Wertquote</label><input type="number" step="0.01" v-model="selectedEinheit.wertquote" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">HK-Schlüssel</label><select v-model="selectedEinheit.heizkosten_verteilschluessel" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"><option value="m2">Fläche (m²)</option><option value="m3">Volumen (m³)</option><option value="pauschal">Pauschal</option></select></div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px] mb-4">Mieter-Historie</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead><tr class="text-[10px] uppercase font-black text-slate-400 border-b border-slate-100"><th class="pb-2">Mieter</th><th class="pb-2">Von</th><th class="pb-2">Bis</th><th class="pb-2 text-right">Netto CHF</th></tr></thead>
+                        <tbody>
+                            <tr v-for="h in selectedEinheit.historie" class="border-b border-slate-50 text-sm">
+                                <td class="py-3 font-bold text-slate-800">{% verbatim %}{{ h.mieter_name }}{% endverbatim %}</td>
+                                <td class="py-3 text-slate-500">{% verbatim %}{{ h.start_datum }}{% endverbatim %}</td>
+                                <td class="py-3 text-slate-500">{% verbatim %}{{ h.ende_datum || 'Aktiv' }}{% endverbatim %}</td>
+                                <td class="py-3 text-right font-mono font-bold text-slate-700">{% verbatim %}{{ h.nettomiete }}{% endverbatim %}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div v-if="!selectedEinheit.historie?.length" class="text-center py-4 text-slate-400 text-xs">Keine Historie vorhanden.</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Messzähler</h3>
+                        <button @click="showZaehlerModal = true; newZaehler.einheit_id = selectedEinheit.id" class="text-indigo-600 hover:bg-indigo-50 p-1 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div class="space-y-2">
+                        <div v-for="z in selectedEinheit.zaehler" :key="z.id" class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100 group">
+                            <div><div class="font-bold text-xs">{% verbatim %}{{ z.typ_display }}{% endverbatim %}</div><div class="text-[10px] text-slate-500">{% verbatim %}{{ z.zaehler_nummer }}{% endverbatim %}</div></div>
+                            <div class="flex items-center gap-3"><span class="font-mono text-xs font-bold">{% verbatim %}{{ z.aktueller_stand }}{% endverbatim %}</span><button @click="deleteZaehler(z.id)" class="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash-can"></i></button></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Schlüssel</h3>
+                        <button @click="showSchluesselModal = true; newSchluessel.einheit_id = selectedEinheit.id" class="text-indigo-600 hover:bg-indigo-50 p-1 rounded-lg"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div class="space-y-2">
+                        <div v-for="s in selectedEinheit.schluessel_liste" :key="s.id" class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100 group">
+                            <div><div class="font-bold text-xs">{% verbatim %}{{ s.typ }}{% endverbatim %}</div><div class="text-[10px] text-slate-500">{% verbatim %}{{ s.schluessel_nummer }}{% endverbatim %}</div></div>
+                            <div class="flex items-center gap-3"><span class="bg-slate-200 px-1.5 py-0.5 rounded text-[10px] font-black">{% verbatim %}{{ s.anzahl }}x{% endverbatim %}</span><button @click="deleteSchluessel(s.id)" class="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash-can"></i></button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Technische Geräte</h3>
+                    <button @click="openDeviceModal" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl hover:bg-indigo-100 transition-all">+ Gerät erfassen</button>
+                </div>
+                <div class="space-y-3">
+                    <div v-for="g in selectedEinheit.geraete" :key="g.id" class="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl group">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-500"><i class="fa-solid fa-plug"></i></div>
+                            <div>
+                                <div class="font-bold text-sm text-slate-900">{% verbatim %}{{ g.marke }} {{ g.modell }}{% endverbatim %}</div>
+                                <div class="text-[10px] text-slate-400 uppercase font-black">{% verbatim %}{{ g.kategorie_display }}{% endverbatim %}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <div class="text-right text-xs font-bold text-slate-500">Garantie: {% verbatim %}{{ g.garantie_bis || '-' }}{% endverbatim %}</div>
+                            <div class="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button @click="openEditDeviceModal(g)" class="text-indigo-400 hover:text-indigo-600 transition-colors"><i class="fa-solid fa-pen"></i></button>
+                                <button @click="deleteDevice(g.id)" class="text-rose-400 hover:text-rose-600 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="!selectedEinheit.geraete || selectedEinheit.geraete.length === 0" class="text-center py-6 text-slate-400 text-sm font-medium">Keine Geräte erfasst.</div>
+                </div>
+            </div>
+
+            <div class="bg-indigo-900 text-white p-8 rounded-3xl shadow-xl shadow-indigo-200">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="font-black uppercase tracking-widest text-[10px] text-indigo-300">Unterhaltskartei & Renovationen</h3>
+                        <p class="text-xs text-indigo-100">Chronik aller wertsteigernden Massnahmen</p>
+                    </div>
+                    <button @click="showUnterhaltModal = true; newUnterhalt.einheit_id = selectedEinheit.id" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-white/20">
+                        <i class="fa-solid fa-plus"></i> Massnahme erfassen
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    <div v-for="u in selectedEinheit.unterhalte" :key="u.id" class="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl group hover:bg-white/10 transition-all">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-500/30 flex items-center justify-center font-black text-[10px]">
+                                {% verbatim %}{{ new Date(u.datum).getFullYear() }}{% endverbatim %}
+                            </div>
+                            <div>
+                                <div class="font-bold text-sm">{% verbatim %}{{ u.titel }}{% endverbatim %}</div>
+                                <div class="text-[10px] text-indigo-300">{% verbatim %}{{ u.beschreibung }}{% endverbatim %}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <div class="text-right text-sm font-black font-mono">CHF {% verbatim %}{{ u.kosten }}{% endverbatim %}</div>
+                            <button @click="deleteUnterhalt(u.id)" class="text-indigo-400 hover:text-white opacity-0 group-hover:opacity-100 transition-all"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </div>
+                    <div v-if="!selectedEinheit.unterhalte?.length" class="text-center py-6 text-indigo-300/50 text-xs italic">Noch keine Einträge in der Kartei vorhanden.</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

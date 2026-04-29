@@ -79,3 +79,11 @@ def mietvertrag_detail(request, pk):
         'dokumente': dokumente,
     }
     return render(request, 'rentals/mietvertrag_detail.html', context)
+
+# ========================================================
+# NEUER VUE.JS VIEW FÜR MIETVERTRÄGE
+# ========================================================
+
+def rentals_vue_test_view(request):
+    """Rendert das neue Vue.js Dashboard für Mietverträge"""
+    return render(request, 'rentals/vue_test.html')

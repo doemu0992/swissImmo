@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>swissImmo - Mietverträge</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans p-8">
+
+    {% csrf_token %}
+
+    <div id="app" class="max-w-6xl mx-auto">
+
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Mietverträge (Vue API Test)</h1>
+            <button @click="showCreateForm = true" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded font-bold shadow transition">
+                + Neuer Mietvertrag
+            </button>
+        </div>
+
+        <div v-if="showCreateForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800">Mietvertrag erstellen</h2>
+
+                <div class="grid grid-cols-2 gap-6">
+
+                    <div class="space-y-4">
+                        <h3 class="font-bold text-gray-700 border-b pb-1">Vertragspartner & Objekt</h3>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Mieter (aus CRM)</label>
+                            <select v-model="newContract.mieter_id" class="w-full border p-2 rounded bg-white">
+                                <option :value="null">-- Mieter wählen --</option>
+                                <option v-for="m in mieterListe" :key="m.id" :value="m.id">
+                                    {% verbatim %}{{ m.display_name }}{% endverbatim %}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Liegenschaft (aus Portfolio)</label>
+                            <select v-model="selectedLiegenschaftId" @change="loadEinheiten" class="w-full border p-2 rounded bg-white">
+                                <option :value="null">-- Liegenschaft wählen --</option>
+                                <option v-for="l in liegenschaften" :key="l.id" :value="l.id">
+                                    {% verbatim %}{{ l.strasse }}, {{ l.ort }}{% endverbatim %}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Wohnung / Einheit</label>
+                            <select v-model="newContract.einheit_id" :disabled="!einheiten.length" class="w-full border p-2 rounded bg-white disabled:bg-gray-100">
+                                <option :value="null">-- Bitte zuerst Liegenschaft wählen --</option>
+                                <option v-for="e in einheiten" :key="e.id" :value="e.id">
+                                    {% verbatim %}{{ e.bezeichnung }} ({{ e.typ_display }}){% endverbatim %}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="font-bold text-gray-700 border-b pb-1">Konditionen</h3>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Vertragsbeginn</label>
+                            <input v-model="newContract.beginn" type="date" class="w-full border p-2 rounded">
+                        </div>
+
+                        <div class="flex space-x-4">
+                            <div class="w-1/2">
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Netto-Mietzins</label>
+                                <input v-model="newContract.netto_mietzins" type="number" step="1" class="w-full border p-2 rounded" placeholder="CHF">
+                            </div>
+                            <div class="w-1/2">
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Nebenkosten</label>
+                                <input v-model="newContract.nebenkosten" type="number" step="1" class="w-full border p-2 rounded" placeholder="CHF">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">NK-Abrechnungsart</label>
+                            <select v-model="newContract.nk_abrechnungsart" class="w-full border p-2 rounded bg-white">
+                                <option value="akonto">Akonto</option>
+                                <option value="pauschal">Pauschal</option>
+                                <option value="inbegriffen">Inbegriffen</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-end space-x-3 pt-4 border-t">
+                    <button @click="showCreateForm = false" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded font-semibold">Abbrechen</button>
+                    <button @click="saveVertrag" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-bold shadow">Vertrag speichern</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="loading" class="text-indigo-500 font-semibold animate-pulse text-lg text-center py-20">Lade Verträge...</div>
+
+        <div v-else class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-indigo-50 text-indigo-800 text-sm uppercase tracking-wider">
+                        <th class="p-4 font-semibold">Mieter</th>
+                        <th class="p-4 font-semibold">Objekt</th>
+                        <th class="p-4 font-semibold">Beginn</th>
+                        <th class="p-4 font-semibold text-right">Mietzins (Brutto)</th>
+                        <th class="p-4 font-semibold text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="v in vertraege" :key="v.id" class="border-b hover:bg-gray-50 transition">
+                        <td class="p-4 font-bold text-gray-800">{% verbatim %}{{ v.mieter_name }}{% endverbatim %}</td>
+                        <td class="p-4 text-gray-600">
+                            {% verbatim %}{{ v.liegenschaft_name }}{% endverbatim %}<br>
+                            <span class="text-xs bg-gray-200 px-2 py-1 rounded mt-1 inline-block">{% verbatim %}{{ v.einheit_bezeichnung }}{% endverbatim %}</span>
+                        </td>
+                        <td class="p-4 text-gray-600">{% verbatim %}{{ v.beginn }}{% endverbatim %}</td>
+                        <td class="p-4 text-right font-mono text-gray-800">
+                            {% verbatim %}{{ formatCurrency(parseFloat(v.netto_mietzins) + parseFloat(v.nebenkosten)) }}{% endverbatim %}
+                        </td>
+                        <td class="p-4 text-center">
+                            <span v-if="v.aktiv" class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-semibold">Aktiv</span>
+                            <span v-else class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-semibold">Inaktiv</span>
+                        </td>
+                    </tr>
+                    <tr v-if="vertraege.length === 0">
+                        <td colspan="5" class="p-8 text-center text-gray-500 italic">Noch keine Verträge vorhanden.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    vertraege: [],
+                    mieterListe: [],
+                    liegenschaften: [],
+                    einheiten: [], // Wird erst gefüllt, wenn eine Liegenschaft gewählt wird
+
+                    selectedLiegenschaftId: null,
+                    loading: true,
+                    showCreateForm: false,
+
+                    newContract: {
+                        mieter_id: null,
+                        einheit_id: null,
+                        beginn: new Date().toISOString().split('T')[0], // Heutiges Datum als Standard
+                        netto_mietzins: null,
+                        nebenkosten: null,
+                        nk_abrechnungsart: 'akonto',
+                        verteilschluessel: 'm2'
+                    }
+                }
+            },
+            mounted() {
+                this.fetchInitialData();
+            },
+            methods: {
+                getCsrfToken() { return document.querySelector('[name=csrfmiddlewaretoken]').value; },
+
+                async fetchInitialData() {
+                    this.loading = true;
+                    try {
+                        // 🚀 Lade Verträge, Mieter UND Liegenschaften gleichzeitig!
+                        const [vertraegeRes, mieterRes, liegenschaftenRes] = await Promise.all([
+                            fetch('/api/rentals/vertraege'),
+                            fetch('/api/crm/mieter'),
+                            fetch('/api/portfolio/liegenschaften')
+                        ]);
+                        this.vertraege = await vertraegeRes.json();
+                        this.mieterListe = await mieterRes.json();
+                        this.liegenschaften = await liegenschaftenRes.json();
+                    } finally { this.loading = false; }
+                },
+
+                // Kaskadierendes Dropdown: Wird ausgelöst, wenn man Liegenschaft ändert
+                async loadEinheiten() {
+                    this.newContract.einheit_id = null; // Einheit-Auswahl zurücksetzen
+                    if (!this.selectedLiegenschaftId) {
+                        this.einheiten = [];
+                        return;
+                    }
+                    try {
+                        // Wir rufen den Detail-Endpunkt auf, da dieser die Einheiten enthält
+                        const res = await fetch(`/api/portfolio/liegenschaften/${this.selectedLiegenschaftId}`);
+                        const data = await res.json();
+                        this.einheiten = data.einheiten;
+                    } catch (e) { console.error("Fehler beim Laden der Einheiten", e); }
+                },
+
+                async saveVertrag() {
+                    try {
+                        const response = await fetch('/api/rentals/vertraege', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrfToken() },
+                            body: JSON.stringify(this.newContract)
+                        });
+
+                        if (response.ok) {
+                            this.showCreateForm = false;
+                            this.selectedLiegenschaftId = null;
+                            this.einheiten = [];
+                            // Formular leeren
+                            this.newContract = { mieter_id: null, einheit_id: null, beginn: new Date().toISOString().split('T')[0], netto_mietzins: null, nebenkosten: null, nk_abrechnungsart: 'akonto', verteilschluessel: 'm2' };
+
+                            // Verträge neu laden, damit der neue auftaucht
+                            await this.fetchInitialData();
+                        } else {
+                            const err = await response.json();
+                            alert("Fehler: " + JSON.stringify(err));
+                        }
+                    } catch (error) { console.error(error); }
+                },
+
+                formatCurrency(value) {
+                    if (!value || isNaN(value)) return 'CHF 0.00';
+                    return new Intl.NumberFormat('de-CH', { style: 'currency', currency: 'CHF' }).format(value);
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>

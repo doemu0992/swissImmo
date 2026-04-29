@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    {% include 'core/includes/head.html' %}
+</head>
+<body class="bg-[#f8fafc] h-screen overflow-hidden text-slate-900">
+    {% csrf_token %}
+
+    <div id="app" class="flex h-screen relative">
+        {% include 'core/components/toasts_and_loader.html' %}
+
+        {% include 'core/includes/sidebar.html' %}
+
+        <div class="flex-1 flex flex-col h-screen overflow-y-auto relative">
+            {% include 'core/includes/header.html' %}
+
+            <main class="p-10 max-w-7xl mx-auto w-full">
+                {% include 'core/tabs/home.html' %}
+                {% include 'core/tabs/portfolio.html' %}
+                {% include 'core/tabs/rentals.html' %}
+                {% include 'core/tabs/crm.html' %}
+                {% include 'core/tabs/finance.html' %}
+                {% include 'core/tabs/tickets.html' %}
+            </main>
+        </div>
+
+        {% include 'core/components/side_panels.html' %}
+        {% include 'core/components/modals.html' %}
+    </div>
+
+    {% include 'core/includes/scripts.html' %}
+</body>
+</html>

@@ -6,16 +6,18 @@ class MietvertragForm(forms.ModelForm):
     class Meta:
         model = Mietvertrag
         fields = [
-            'mieter', 'einheit', 'nebenobjekte', 'beginn', 'ende',  # <-- NEU: nebenobjekte hier eingefügt
+            'mieter', 'einheit', 'nebenobjekte', 'beginn', 'ende',
             'netto_mietzins', 'nebenkosten', 'kautions_betrag',
+            # 🔥 NEU FÜR HNK LOGIK
+            'nk_abrechnungsart', 'verteilschluessel', 'ausgeschlossene_kosten',
             'basis_referenzzinssatz', 'basis_lik_punkte', 'aktiv', 'sign_status'
         ]
         widgets = {
             'beginn': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
             'ende': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
             'aktiv': forms.CheckboxInput(attrs={'class': 'w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer'}),
-            # NEU: Multi-Select Feld etwas vergrössern, damit man die Optionen gut sieht
             'nebenobjekte': forms.SelectMultiple(attrs={'size': '4'}),
+            'ausgeschlossene_kosten': forms.Textarea(attrs={'rows': 2, 'placeholder': 'z.B. Lift, Gartenpflege'}),
         }
 
     def __init__(self, *args, **kwargs):

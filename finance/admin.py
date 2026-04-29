@@ -48,6 +48,11 @@ class AbrechnungAdmin(ModelAdmin):
 
     fieldsets = (
         ('Stammdaten', {'fields': ('liegenschaft', 'bezeichnung', ('start_datum', 'ende_datum'), 'abgeschlossen')}),
+        # 🔥 NEU: Die Tankbestände für die Heizkostenabrechnung
+        ('Heizöl / Gas Bestände (Optional)', {
+            'fields': (('anfangsbestand_liter', 'anfangsbestand_chf'), 'endbestand_liter'),
+            'classes': ('collapse',) # Lässt sich einklappen
+        }),
         ('Vorschau (Live)', {'fields': ('live_preview_tabelle',)})
     )
     readonly_fields = ('live_preview_tabelle',)
@@ -115,8 +120,8 @@ class AbrechnungAdmin(ModelAdmin):
 
 @admin.register(KreditorenRechnung)
 class KreditorenRechnungAdmin(ModelAdmin):
-    list_display = ('rechnung_profil', 'betrag_info', 'zuweisung_info', 'status_badge', 'schnell_aktionen')
-    list_filter = ('status', 'liegenschaft', 'konto')
+    list_display = ('rechnung_profil', 'betrag_info', 'zuweisung_info', 'status_badge', 'hnk_badge', 'schnell_aktionen')
+    list_filter = ('status', 'liegenschaft', 'konto', 'is_hnk_relevant')
     search_fields = ('lieferant', 'iban', 'referenz')
     readonly_fields = ('fehlermeldung',)
 
@@ -124,6 +129,11 @@ class KreditorenRechnungAdmin(ModelAdmin):
         ('KI-Scanner', {'fields': ('beleg_scan', 'fehlermeldung')}),
         ('Buchhaltung & Zuweisung', {'fields': ('status', 'liegenschaft', 'einheit', 'konto')}),
         ('Rechnungsdetails (Auto-Fill durch KI)', {'fields': ('lieferant', 'datum', 'faellig_am', 'betrag', 'iban', 'referenz')}),
+        # 🔥 NEU: Die HNK Abgrenzungs-Felder (Shift-Left)
+        ('HNK (Heiz- & Nebenkosten)', {
+            'fields': ('is_hnk_relevant', ('leistungs_von', 'leistungs_bis'), 'menge_liter'),
+            'classes': ('collapse',)
+        }),
     )
 
     @display(description="Lieferant & Rechnung", ordering="lieferant")
@@ -155,6 +165,10 @@ class KreditorenRechnungAdmin(ModelAdmin):
         elif st == 'freigegeben': return "Freigegeben", "warning"
         elif st == 'bezahlt': return "Bezahlt", "success"
         return st, "info"
+
+    @display(description="HNK", boolean=True)
+    def hnk_badge(self, obj):
+        return getattr(obj, 'is_hnk_relevant', False)
 
     @display(description="Aktionen")
     def schnell_aktionen(self, obj):
@@ -212,13 +226,15 @@ class ZahlungseingangAdmin(ModelAdmin):
 
 @admin.register(Buchungskonto)
 class BuchungskontoAdmin(ModelAdmin):
-    list_display = ('konto_profil', 'typ_badge')
+    list_display = ('konto_profil', 'typ_badge', 'is_hnk_relevant_badge')
     search_fields = ('nummer', 'bezeichnung')
-    list_filter = ('typ',)
+    list_filter = ('typ', 'is_hnk_relevant')
     actions_list = ["load_standard_accounts"]
 
     fieldsets = (
         ('Konto Definition', {'fields': ('nummer', 'bezeichnung', 'typ')}),
+        # 🔥 NEU: Ist dieses Konto für die Abrechnung relevant?
+        ('HNK Konfiguration', {'fields': ('is_hnk_relevant', 'standard_verteilschluessel')}),
     )
 
     @display(description="Konto", ordering="nummer")
@@ -237,18 +253,28 @@ class BuchungskontoAdmin(ModelAdmin):
         elif typ == 'aufwand': return "Aufwand", "danger"
         return "Bilanz", "info"
 
+    @display(description="HNK relevant", boolean=True)
+    def is_hnk_relevant_badge(self, obj):
+        return getattr(obj, 'is_hnk_relevant', False)
+
     @action(description="📚 Standard-Kontenplan laden", url_path="load-accounts")
     def load_standard_accounts(self, request):
         standard_konten = [
-            ('1020', 'Bankguthaben', 'bilanz'), ('1100', 'Forderungen', 'bilanz'), ('2000', 'Kreditoren', 'bilanz'),
-            ('3000', 'Mietertrag Wohnungen', 'ertrag'), ('3400', 'NK Akonto', 'ertrag'),
-            ('4000', 'Materialaufwand', 'aufwand'), ('4400', 'Unterhalt Gebäude', 'aufwand'), ('6500', 'Verwaltungshonorar', 'aufwand'),
+            ('1020', 'Bankguthaben', 'bilanz', False),
+            ('1100', 'Forderungen', 'bilanz', False),
+            ('2000', 'Kreditoren', 'bilanz', False),
+            ('3000', 'Mietertrag Wohnungen', 'ertrag', False),
+            ('3400', 'NK Akonto', 'ertrag', False),
+            ('4000', 'Heizmaterial (Öl/Gas)', 'aufwand', True), # Neu: Als HNK markiert!
+            ('4100', 'Wasser/Abwasser', 'aufwand', True),       # Neu: Als HNK markiert!
+            ('4400', 'Unterhalt Gebäude', 'aufwand', False),
+            ('6500', 'Verwaltungshonorar', 'aufwand', False),
         ]
         cnt = 0
-        for nr, bez, typ in standard_konten:
-            obj, created = Buchungskonto.objects.get_or_create(nummer=nr, defaults={'bezeichnung': bez, 'typ': typ})
+        for nr, bez, typ, hnk in standard_konten:
+            obj, created = Buchungskonto.objects.get_or_create(nummer=nr, defaults={'bezeichnung': bez, 'typ': typ, 'is_hnk_relevant': hnk})
             if created: cnt += 1
-        messages.success(request, f"✅ {cnt} Konten angelegt!")
+        messages.success(request, f"✅ {cnt} Konten angelegt/aktualisiert!")
         return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
 @admin.register(Jahresabschluss)

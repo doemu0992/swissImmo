@@ -1,0 +1,157 @@
+<div v-if="activeTab === 'rentals' && !selectedVertrag" class="animate-fade-in space-y-8 pb-10">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Mietverträge</h1>
+        <button @click="showNewRentModal = true" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">+ Neuer Vertrag</button>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-4 shadow-sm">
+        <i class="fa-solid fa-magnifying-glass text-slate-400 ml-2"></i>
+        <input type="text" v-model="rentSearchQuery" placeholder="Nach Mieter oder Objekt suchen..." class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-bold text-slate-700 placeholder-slate-400">
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-for="v in filteredVertraege" :key="v.id" @click="openVertragDeepDive(v)" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer group">
+            <div class="flex items-start justify-between mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl transition-all">
+                    <i class="fa-solid fa-file-signature"></i>
+                </div>
+                <span :class="v.status === 'aktiv' ? 'bg-emerald-100 text-emerald-700' : (v.status === 'entwurf' ? 'bg-slate-100 text-slate-500' : (v.status === 'gekuendigt' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'))" class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg">
+                    {% verbatim %}{{ v.status_display }}{% endverbatim %}
+                </span>
+            </div>
+            <h3 class="font-black text-lg text-slate-900 leading-tight mb-1 truncate">{% verbatim %}{{ v.mieter_name }}{% endverbatim %}</h3>
+            <p class="text-xs text-slate-500 font-medium mb-4 truncate">{% verbatim %}{{ v.einheit_name }} ({{ v.liegenschaft_name }}){% endverbatim %}</p>
+            <div class="pt-4 border-t border-slate-100 flex justify-between items-center text-[10px] font-bold text-slate-400">
+                <span class="flex items-center gap-1"><i class="fa-regular fa-calendar"></i> Ab {% verbatim %}{{ v.beginn }}{% endverbatim %}</span>
+                <span class="font-mono text-xs font-black text-slate-700">CHF {% verbatim %}{{ v.brutto_mietzins }}{% endverbatim %}</span>
+            </div>
+        </div>
+    </div>
+    <div v-if="filteredVertraege.length === 0" class="text-center py-12 text-slate-400 font-medium">Keine Verträge gefunden.</div>
+</div>
+
+<div v-if="activeTab === 'rentals' && selectedVertrag" class="animate-fade-in space-y-6 pb-10">
+    <button @click="selectedVertrag = null" class="text-slate-400 hover:text-indigo-600 font-bold text-sm mb-2 flex items-center gap-2 transition-colors">
+        <i class="fa-solid fa-arrow-left"></i> Zurück zur Übersicht
+    </button>
+
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <div class="flex items-center gap-3 mb-2">
+                <span class="bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg">Mietvertrag</span>
+                <select v-model="selectedVertrag.status" class="bg-white border border-slate-200 p-1.5 rounded-lg text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 shadow-sm">
+                    <option value="entwurf">Entwurf</option><option value="aktiv">Aktiv</option><option value="gekuendigt">Gekündigt</option><option value="archiviert">Archiviert</option>
+                </select>
+            </div>
+            <h1 class="text-4xl font-black text-slate-900 tracking-tight">{% verbatim %}{{ selectedVertrag.mieter_name }}{% endverbatim %}</h1>
+            <p class="text-slate-500 font-medium text-lg mt-1"><i class="fa-solid fa-key mr-2 text-indigo-500"></i>{% verbatim %}{{ selectedVertrag.einheit_name }} ({{ selectedVertrag.liegenschaft_name }}){% endverbatim %}</p>
+        </div>
+        <div class="flex gap-3">
+             <button @click="deleteVertrag" class="bg-rose-50 text-rose-600 px-4 py-3 rounded-xl font-bold hover:bg-rose-600 hover:text-white transition-all"><i class="fa-solid fa-trash-can"></i></button>
+             <button @click="saveVertragEdit" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">Speichern</button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="space-y-6">
+            <div class="bg-slate-900 text-white p-6 rounded-3xl shadow-xl">
+                <h3 class="font-black text-slate-400 uppercase tracking-widest text-[10px] mb-6">Mietzins & Konditionen</h3>
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                        <label class="text-xs font-bold text-slate-300">Netto-Mietzins</label>
+                        <div class="flex items-center gap-2"><span class="text-slate-500 text-[10px]">CHF</span><input type="number" v-model="selectedVertrag.netto_mietzins" class="w-24 bg-transparent border-none p-0 text-right font-mono font-black focus:ring-0 text-white"></div>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                        <label class="text-xs font-bold text-slate-300">Nebenkosten</label>
+                        <div class="flex items-center gap-2"><span class="text-slate-500 text-[10px]">CHF</span><input type="number" v-model="selectedVertrag.nebenkosten" class="w-24 bg-transparent border-none p-0 text-right font-mono font-black focus:ring-0 text-white"></div>
+                    </div>
+                </div>
+                <div class="bg-white/10 p-4 rounded-2xl flex justify-between items-center">
+                    <span class="text-xs font-black uppercase tracking-widest">Brutto Total</span>
+                    <span class="text-xl font-black font-mono">CHF {% verbatim %}{{ (parseFloat(selectedVertrag.netto_mietzins || 0) + parseFloat(selectedVertrag.nebenkosten || 0)).toFixed(2) }}{% endverbatim %}</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Nebenkosten-Details</h3>
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Abrechnungsart</label><select v-model="selectedVertrag.nk_abrechnungsart" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"><option value="akonto">Akonto</option><option value="pauschal">Pauschal</option><option value="inbegriffen">Inbegriffen</option></select></div>
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Verteilschlüssel</label><select v-model="selectedVertrag.verteilschluessel" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"><option value="m2">Fläche (m²)</option><option value="m3">Volumen (m³)</option><option value="quote">Wertquote</option></select></div>
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Ausgeschlossene Kosten</label><textarea v-model="selectedVertrag.ausgeschlossene_kosten" rows="2" placeholder="Z.B. Lift im EG..." class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500"></textarea></div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Mietkaution / Sicherheit</h3>
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Kautionsbetrag (CHF)</label><input type="number" v-model="selectedVertrag.kautions_betrag" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold font-mono focus:ring-2 focus:ring-indigo-500"></div>
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Bankkonto (IBAN)</label><input type="text" v-model="selectedVertrag.kautions_konto" placeholder="CH..." class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"></div>
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Einbezahlt am</label><input type="date" v-model="selectedVertrag.kautions_einbezahlt_am" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"></div>
+            </div>
+        </div>
+
+        <div class="col-span-2 space-y-6">
+
+            <div class="bg-slate-50 p-8 rounded-3xl border border-slate-200 shadow-inner">
+                <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px] mb-6">Mietdauer & Fristen</h3>
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div><label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Mietbeginn</label><input type="date" v-model="selectedVertrag.beginn" class="w-full bg-white border-none p-3 rounded-xl text-sm font-bold shadow-sm focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Vertragsende (Optional)</label><input type="date" v-model="selectedVertrag.ende" class="w-full bg-white border-none p-3 rounded-xl text-sm font-bold shadow-sm focus:ring-2 focus:ring-indigo-500"></div>
+                </div>
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="col-span-1"><label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Kündigungsfrist</label><div class="flex items-center gap-2"><input type="number" v-model="selectedVertrag.kuendigungsfrist_monate" class="w-full bg-white border-none p-3 rounded-xl text-sm font-bold shadow-sm focus:ring-2 focus:ring-indigo-500"><span class="text-xs font-bold text-slate-500">Monate</span></div></div>
+                    <div class="col-span-2"><label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Kündigungstermine</label><input type="text" v-model="selectedVertrag.kuendigungstermine" placeholder="Z.B. Ende März, Juni, Sept" class="w-full bg-white border-none p-3 rounded-xl text-sm font-bold shadow-sm focus:ring-2 focus:ring-indigo-500"></div>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px] mb-1">Vertragsdokument</h3>
+                    <p class="text-xs text-slate-500 font-medium">Digital signiertes PDF oder Scan</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button v-if="selectedVertrag.pdf_datei" @click="downloadFile(`/api/rentals/vertraege/${selectedVertrag.id}/pdf`)" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all">
+                        <i class="fa-solid fa-eye mr-2"></i>Vorschau
+                    </button>
+
+                    <button v-if="selectedVertrag.sign_status === 'offen'" @click="triggerDocuSeal(selectedVertrag.id)" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all">
+                        <i class="fa-solid fa-file-pen mr-2"></i>DocuSeal Senden
+                    </button>
+
+                    <span v-else class="text-[10px] font-black uppercase px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
+                        <i class="fa-solid fa-check-double mr-1"></i> {% verbatim %}{{ selectedVertrag.sign_status }}{% endverbatim %}
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div v-if="showNewRentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Neuen Mietvertrag erstellen</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mieter auswählen</label>
+                <select v-model="newRentData.mieter_id" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
+                    <option v-for="m in mieter" :key="m.id" :value="m.id">{% verbatim %}{{ m.display_name }}{% endverbatim %}</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mietobjekt (Einheit) auswählen</label>
+                <select v-model="newRentData.einheit_id" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
+                    <optgroup v-for="l in liegenschaften" :key="l.id" :label="l.strasse">
+                        <option v-for="e in l.einheiten" :key="e.id" :value="e.id">{% verbatim %}{{ e.bezeichnung }} ({{ e.typ_display }}){% endverbatim %}</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mietbeginn</label><input type="date" v-model="newRentData.beginn" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500"></div>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Netto CHF</label><input type="number" v-model="newRentData.netto_mietzins" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold font-mono focus:ring-2 focus:ring-indigo-500"></div>
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">NK CHF</label><input type="number" v-model="newRentData.nebenkosten" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold font-mono focus:ring-2 focus:ring-indigo-500"></div>
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showNewRentModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveNewVertrag" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">Vertrag erstellen</button>
+        </div>
+    </div>
+</div>

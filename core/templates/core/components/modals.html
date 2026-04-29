@@ -1,0 +1,388 @@
+<div v-if="showEinheitModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Neues Objekt erfassen</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Typ</label>
+                <select v-model="newEinheit.typ" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                    <option value="whg">Wohnung</option>
+                    <option value="gew">Gewerbe</option>
+                    <option value="pp">Parkplatz</option>
+                    <option value="gar">Garage</option>
+                    <option value="bas">Bastelraum</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Bezeichnung (z.B. Wohnung EG Links)</label>
+                <input v-model="newEinheit.bezeichnung" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Etage</label>
+                    <input v-model="newEinheit.etage" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Zimmer</label>
+                    <input v-model="newEinheit.zimmer" type="number" step="0.5" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm">
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showEinheitModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveNewEinheit" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showPaymentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Zahlung verbuchen</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mietvertrag</label>
+                <select v-model="newZahlung.vertrag_id" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-emerald-500">
+                    <option v-for="v in vertraege" :key="v.id" :value="v.id">{% verbatim %}{{ v.mieter_name }} ({{ v.einheit_bezeichnung }}){% endverbatim %}</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Betrag (CHF)</label>
+                    <input v-model="newZahlung.betrag" type="number" step="0.01" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 font-mono">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Datum</label>
+                    <input v-model="newZahlung.datum_eingang" type="date" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Bemerkung</label>
+                <input v-model="newZahlung.bemerkung" type="text" placeholder="Optional..." class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-emerald-500">
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showPaymentModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveZahlung" class="py-2.5 px-6 bg-emerald-600 text-white rounded-xl font-bold shadow-sm hover:bg-emerald-700 transition text-sm">Verbuchen</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showEditMieterModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Mieter bearbeiten</h3>
+        <div v-if="editMieterData" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Vorname</label>
+                    <input v-model="editMieterData.vorname" placeholder="Vorname" type="text" class="w-full bg-slate-50 p-3 rounded-xl border-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Nachname</label>
+                    <input v-model="editMieterData.nachname" placeholder="Nachname" type="text" class="w-full bg-slate-50 p-3 rounded-xl border-none">
+                </div>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-Mail</label>
+                <input v-model="editMieterData.email" placeholder="E-Mail Adresse" type="email" class="w-full bg-slate-50 p-3 rounded-xl border-none">
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showEditMieterModal = false" class="py-2.5 px-4 text-slate-400 font-bold text-sm hover:text-slate-600">Abbrechen</button>
+            <button @click="saveMieterEdit" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 shadow-sm">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showPropModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Liegenschaft erfassen</h3>
+        <div>
+            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Strasse & Hausnummer</label>
+            <input v-model="newProp.strasse" placeholder="z.B. Bahnhofstrasse 1" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl mb-4">
+        </div>
+        <div class="flex justify-end gap-3 mt-4 pt-6 border-t border-slate-100">
+            <button @click="showPropModal = false" class="py-2.5 px-4 text-slate-400 font-bold text-sm hover:text-slate-600">Abbrechen</button>
+            <button @click="saveProp" class="py-2.5 px-6 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 shadow-sm">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showDeviceModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Gerät erfassen</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Geräte-Kategorie</label>
+                <select v-model="newDevice.kategorie" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
+                    <option value="kuehlschrank">Kühlschrank</option>
+                    <option value="backofen">Backofen / Herd</option>
+                    <option value="geschirrspueler">Geschirrspüler</option>
+                    <option value="waschmaschine">Waschmaschine</option>
+                    <option value="tumbler">Tumbler / Trockner</option>
+                    <option value="heizung">Heizung / Boiler</option>
+                    <option value="sonstiges">Sonstiges</option>
+                </select>
+            </div>
+
+            <div v-if="newDevice.kategorie === 'sonstiges'" class="animate-fade-in">
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Genaue Bezeichnung</label>
+                <input v-model="newDevice.sonstiges_bezeichnung" placeholder="z.B. Klimaanlage, Boiler..." type="text" class="w-full bg-indigo-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Marke</label>
+                    <input v-model="newDevice.marke" placeholder="z.B. V-ZUG" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Modell / Typ</label>
+                    <input v-model="newDevice.modell" placeholder="z.B. Combair" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Installiert am</label>
+                    <input v-model="newDevice.installations_datum" type="date" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Garantie bis</label>
+                    <input v-model="newDevice.garantie_bis" type="date" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showDeviceModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveDevice" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showEditDeviceModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Gerät bearbeiten</h3>
+        <div v-if="editDeviceData" class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Geräte-Kategorie</label>
+                <select v-model="editDeviceData.kategorie" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
+                    <option value="kuehlschrank">Kühlschrank</option>
+                    <option value="backofen">Backofen / Herd</option>
+                    <option value="geschirrspueler">Geschirrspüler</option>
+                    <option value="waschmaschine">Waschmaschine</option>
+                    <option value="tumbler">Tumbler / Trockner</option>
+                    <option value="heizung">Heizung / Boiler</option>
+                    <option value="sonstiges">Sonstiges</option>
+                </select>
+            </div>
+
+            <div v-if="editDeviceData.kategorie === 'sonstiges'" class="animate-fade-in">
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Genaue Bezeichnung</label>
+                <input v-model="editDeviceData.sonstiges_bezeichnung" placeholder="z.B. Klimaanlage" type="text" class="w-full bg-indigo-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Marke</label>
+                    <input v-model="editDeviceData.marke" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Modell / Typ</label>
+                    <input v-model="editDeviceData.modell" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Installiert am</label>
+                    <input v-model="editDeviceData.installations_datum" type="date" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Garantie bis</label>
+                    <input v-model="editDeviceData.garantie_bis" type="date" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showEditDeviceModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveEditDevice" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">Aktualisieren</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showZaehlerModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Zähler erfassen</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Typ</label>
+                <select v-model="newZaehler.typ" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
+                    <option value="strom">Strom</option>
+                    <option value="wasser_kalt">Kaltwasser</option>
+                    <option value="wasser_warm">Warmwasser</option>
+                    <option value="waerme">Wärme / Heizung</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Zähler-Nummer</label>
+                <input v-model="newZaehler.zaehler_nummer" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Aktueller Stand</label>
+                <input v-model="newZaehler.aktueller_stand" type="number" step="0.01" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showZaehlerModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveZaehler" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showSchluesselModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Schlüssel erfassen</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Typ (z.B. Wohnung, Briefkasten)</label>
+                <input v-model="newSchluessel.typ" type="text" placeholder="Wohnungsschlüssel" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Schlüssel-Prägung / Nummer</label>
+                <input v-model="newSchluessel.schluessel_nummer" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Anzahl total</label>
+                <input v-model="newSchluessel.anzahl" type="number" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showSchluesselModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveSchluessel" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showUnterhaltModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Massnahme erfassen</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Titel / Gewerk</label>
+                <input v-model="newUnterhalt.titel" placeholder="z.B. Boden Kinderzimmer neu Vinyl" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Beschreibung / Details</label>
+                <textarea v-model="newUnterhalt.beschreibung" rows="3" placeholder="Hersteller, Farbe, Besonderheiten..." class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Datum</label>
+                    <input v-model="newUnterhalt.datum" type="date" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Kosten (CHF)</label>
+                    <input v-model="newUnterhalt.kosten" type="number" step="0.01" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 font-mono font-bold">
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showUnterhaltModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveUnterhalt" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">In Kartei speichern</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showDocModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Dokument hochladen</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Titel</label>
+                <input v-model="newDoc.titel" placeholder="z.B. Grundriss EG" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Kategorie</label>
+                <select v-model="newDoc.kategorie" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                    <option>Grundriss / Pläne</option>
+                    <option>Vertrag</option>
+                    <option>Protokoll</option>
+                    <option>Asbest / Gutachten</option>
+                    <option>Allgemein</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Datei (PDF, JPG...)</label>
+                <input type="file" ref="fileInput" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm">
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showDocModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="uploadDokument" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">Hochladen</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showLiegenschaftEditModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Hauswartung & Notfall</h3>
+        <div v-if="editLiegenschaftData" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Hauswart Name</label>
+                    <input v-model="editLiegenschaftData.hauswart_name" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Telefon</label>
+                    <input v-model="editLiegenschaftData.hauswart_telefon" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Sanitär Name</label>
+                    <input v-model="editLiegenschaftData.sanitaer_name" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Telefon</label>
+                    <input v-model="editLiegenschaftData.sanitaer_telefon" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Elektriker Name</label>
+                    <input v-model="editLiegenschaftData.elektriker_name" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Telefon</label>
+                    <input v-model="editLiegenschaftData.elektriker_telefon" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showLiegenschaftEditModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveLiegenschaftEdit" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showLinkModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Nebenobjekt verknüpfen</h3>
+        <p class="text-sm text-slate-500 mb-4">Wähle ein Objekt (z.B. Parkplatz), das standardmässig zu dieser Einheit gehört.</p>
+
+        <div class="space-y-4">
+            <div v-if="availableNebenobjekte && availableNebenobjekte.length > 0">
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Verfügbares Objekt</label>
+                <select v-model="linkData.nebenobjekt_id" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                    <option v-for="obj in availableNebenobjekte" :key="obj.id" :value="obj.id">
+                        {% verbatim %}{{ obj.bezeichnung }} ({{ obj.typ_display }}){% endverbatim %}
+                    </option>
+                </select>
+            </div>
+            <div v-else class="p-4 bg-rose-50 text-rose-600 rounded-xl text-sm font-medium">
+                Keine freien Nebenobjekte (Parkplätze, Garagen, etc.) in dieser Liegenschaft gefunden.
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showLinkModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveLink" :disabled="!linkData.nebenobjekt_id" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm disabled:opacity-50">Verknüpfen</button>
+        </div>
+    </div>
+</div>

@@ -12,6 +12,21 @@ class Buchungskonto(models.Model):
     bezeichnung = models.CharField("Bezeichnung", max_length=100)
     typ = models.CharField("Typ", max_length=20, choices=[('aufwand', 'Aufwand'), ('ertrag', 'Ertrag'), ('bilanz', 'Bilanz')])
 
+    # 🔥 NEU: HNK-Relevanz gemäss Experten-Feedback
+    is_hnk_relevant = models.BooleanField(
+        "HNK-relevant",
+        default=False,
+        help_text="Kennzeichnet, ob Buchungen auf diesem Konto in die Nebenkostenabrechnung fliessen (z.B. 4000er Konten)."
+    )
+
+    standard_verteilschluessel = models.CharField(
+        "Standard-Verteilschlüssel",
+        max_length=20,
+        choices=[('m2', 'Fläche (m²)'), ('m3', 'Volumen (m³)'), ('einheit', 'Pro Einheit')],
+        default='m2',
+        blank=True
+    )
+
     class Meta:
         verbose_name = "Buchungskonto"
         verbose_name_plural = "Kontenplan"
@@ -27,6 +42,11 @@ class AbrechnungsPeriode(models.Model):
     ende_datum = models.DateField()
     abgeschlossen = models.BooleanField(default=False)
 
+    # 🔥 NEU: Für die Bestandesrechnung (Heizöl/Gas)
+    anfangsbestand_liter = models.DecimalField("Anfangsbestand (L)", max_digits=10, decimal_places=2, default=0)
+    anfangsbestand_chf = models.DecimalField("Anfangsbestand (CHF)", max_digits=10, decimal_places=2, default=0)
+    endbestand_liter = models.DecimalField("Endbestand (L) am Stichtag", max_digits=10, decimal_places=2, default=0)
+
     class Meta:
         verbose_name = "Abrechnungsperiode"
         verbose_name_plural = "Abrechnungsperioden"
@@ -36,8 +56,15 @@ class AbrechnungsPeriode(models.Model):
 
     @property
     def total_kosten(self):
-        summe = self.belege.aggregate(total=Sum('betrag'))['total']
-        return summe or Decimal('0.00')
+        # Summiert Nebenkostenbelege UND HNK-relevante Kreditorenrechnungen
+        beleg_summe = self.belege.aggregate(total=Sum('betrag'))['total'] or Decimal('0.00')
+        kreditoren_summe = KreditorenRechnung.objects.filter(
+            liegenschaft=self.liegenschaft,
+            is_hnk_relevant=True,
+            leistungs_von__gte=self.start_datum,
+            leistungs_bis__lte=self.ende_datum
+        ).aggregate(total=Sum('betrag'))['total'] or Decimal('0.00')
+        return beleg_summe + kreditoren_summe
 
     def berechne_mieter_anteil(self, vertrag):
         v_start = vertrag.beginn
@@ -73,6 +100,12 @@ class AbrechnungsPeriode(models.Model):
         ).aggregate(Sum('betrag'))['betrag__sum'] or Decimal('0.00')
         return effektive_kosten - akonto_zahlungen
 
+    # --- Die "Heizgradtage" Logik für Mieterwechsel ---
+    def get_heizgradtage_faktor(self, monat):
+        """ Gibt den Schweizer Standard-Prozentsatz der Heizenergie pro Monat zurück """
+        hgt = {1: 21, 2: 18, 3: 15, 4: 10, 5: 5, 6: 0, 7: 0, 8: 0, 9: 3, 10: 8, 11: 10, 12: 10}
+        return Decimal(hgt.get(monat, 0)) / Decimal('100')
+
 class NebenkostenLernRegel(models.Model):
     suchwort = models.CharField("Schlüsselwort (z.B. Firmenname)", max_length=100, unique=True)
     kategorie_zuweisung = models.CharField("Wird zugewiesen zu", max_length=50)
@@ -97,7 +130,7 @@ class NebenkostenBeleg(models.Model):
         ('kehricht', 'Kehricht / Entsorgung'),
         ('diverse', 'Diverse Betriebskosten'),
     ]
-    VERTEIL_CHOICES = [('m2', 'Nach Fläche (m²)'), ('einheit', 'Pro Wohnung')]
+    VERTEIL_CHOICES = [('m2', 'Nach Fläche (m²)'), ('m3', 'Nach Volumen (m³)'), ('einheit', 'Pro Wohnung')]
 
     periode = models.ForeignKey(AbrechnungsPeriode, on_delete=models.CASCADE, related_name='belege')
     datum = models.DateField(default=timezone.now, blank=True, null=True)
@@ -176,10 +209,6 @@ class NebenkostenBeleg(models.Model):
 
     def __str__(self): return f"{self.text or 'Beleg'} (CHF {self.betrag})"
 
-# ==============================================================================
-# HILFSKLASSEN MIT ALLEN FELDERN FÜR DAS ADMIN BACKEND
-# ==============================================================================
-
 class KreditorenRechnung(models.Model):
     STATUS_CHOICES = [
         ('neu', 'Neu / Scan'),
@@ -191,6 +220,12 @@ class KreditorenRechnung(models.Model):
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
 
+    # 🔥 NEU: Die "Shift-Left" Felder für die HNK
+    is_hnk_relevant = models.BooleanField("In HNK einbeziehen", default=False)
+    leistungs_von = models.DateField("Leistungsperiode Von", null=True, blank=True)
+    leistungs_bis = models.DateField("Leistungsperiode Bis", null=True, blank=True)
+    menge_liter = models.DecimalField("Menge (Liter)", max_digits=10, decimal_places=2, null=True, blank=True)
+
     lieferant = models.CharField(max_length=200, blank=True)
     datum = models.DateField(null=True, blank=True)
     faellig_am = models.DateField(null=True, blank=True)
@@ -201,8 +236,11 @@ class KreditorenRechnung(models.Model):
     beleg_scan = models.FileField(upload_to='kreditoren_belege/', blank=True, null=True)
     fehlermeldung = models.TextField(blank=True)
 
-    class Meta: db_table = 'core_kreditorenrechnung'
+    class Meta:
+        verbose_name = "Kreditorenrechnung"
+        db_table = 'core_kreditorenrechnung'
 
+    def __str__(self): return f"{self.lieferant} - {self.betrag} ({self.status})"
 
 class Zahlungseingang(models.Model):
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='zahlungen')
@@ -217,14 +255,12 @@ class Zahlungseingang(models.Model):
 
     class Meta: db_table = 'core_zahlungseingang'
 
-
 class Jahresabschluss(models.Model):
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE)
     jahr = models.IntegerField(default=2026)
     notizen = models.TextField(blank=True, default='')
 
     class Meta: db_table = 'core_jahresabschluss'
-
 
 class MietzinsKontrolle(models.Model):
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE)

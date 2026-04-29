@@ -1,0 +1,13 @@
+<div v-if="activeTab === 'tickets'" class="animate-fade-in grid grid-cols-3 gap-8">
+    <div v-for="col in ['Neu', 'In Arbeit', 'Erledigt']" :key="col" class="space-y-4">
+        <div class="flex items-center justify-between px-2">
+            <h3 class="font-black text-xs uppercase tracking-widest text-slate-500">{% verbatim %}{{ col }}{% endverbatim %}</h3>
+        </div>
+        <div class="space-y-4">
+            <div v-for="t in getTicketsByStatus(col)" :key="t.id" @click="openPanel('tickets', t)" class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:border-indigo-500 cursor-pointer transition-all">
+                <h4 class="font-bold text-sm leading-snug">{% verbatim %}{{ t.titel }}{% endverbatim %}</h4>
+                <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-wider">{% verbatim %}{{ t.liegenschaft_name }}{% endverbatim %}</p>
+            </div>
+        </div>
+    </div>
+</div>

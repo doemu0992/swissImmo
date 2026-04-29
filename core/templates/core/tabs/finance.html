@@ -1,0 +1,22 @@
+<div v-if="activeTab === 'finance'" class="animate-fade-in space-y-6">
+    <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden">
+        <table class="w-full text-left">
+            <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                <tr><th class="px-8 py-5">Mieter / Objekt</th><th class="px-8 py-5 text-right">Soll</th><th class="px-8 py-5 text-right">Ist</th><th class="px-8 py-5 text-center">Status</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+                <tr v-for="k in mietzinsKontrolle" :key="k.vertrag_id" @click="openPanel('rentals', {id: k.vertrag_id, mieter_name: k.mieter_name})" class="hover:bg-slate-50 cursor-pointer">
+                    <td class="px-8 py-5">
+                        <div class="font-bold">{% verbatim %}{{ k.mieter_name }}{% endverbatim %}</div>
+                        <div class="text-[10px] text-slate-400">{% verbatim %}{{ k.objekt }}{% endverbatim %}</div>
+                    </td>
+                    <td class="px-8 py-5 text-right font-mono font-bold">{% verbatim %}{{ k.soll }}{% endverbatim %}</td>
+                    <td class="px-8 py-5 text-right font-mono font-bold" :class="k.ist >= k.soll ? 'text-emerald-600' : 'text-rose-600'">{% verbatim %}{{ k.ist }}{% endverbatim %}</td>
+                    <td class="px-8 py-5 text-center">
+                        <span :class="k.status === 'Bezahlt' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'" class="px-3 py-1 rounded-full text-[10px] font-black uppercase">{% verbatim %}{{ k.status }}{% endverbatim %}</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

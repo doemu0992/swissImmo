@@ -83,7 +83,7 @@ class DokumentVertragInline(TabularInline):
 @admin.register(Mietvertrag)
 class MietvertragAdmin(ModelAdmin):
     list_display = ('vertrag_profil', 'finanzen_info', 'laufzeit_info', 'docuseal_badge', 'schnell_aktionen')
-    list_filter = ('sign_status', 'aktiv')
+    list_filter = ('sign_status', 'aktiv', 'nk_abrechnungsart')
     list_filter_submit = True
     search_fields = ('mieter__vorname', 'mieter__nachname', 'einheit__bezeichnung')
     inlines = [DokumentVertragInline]
@@ -93,15 +93,20 @@ class MietvertragAdmin(ModelAdmin):
     fieldsets = (
         (None, {
             'fields': ('vertrag_full_header',),
-            # FIX: Zwingend .map-fieldset verwenden, damit das Layout 1:1 wie bei Liegenschaften funktioniert!
             'classes': ('map-fieldset',),
         }),
-        ('Vertragsparteien & Objekt', {'fields': ('mieter', 'einheit')}),
+        ('Vertragsparteien & Objekt', {'fields': ('mieter', 'einheit', 'nebenobjekte')}),
         ('Laufzeit & Status', {'fields': (('beginn', 'ende'), ('aktiv', 'sign_status'))}),
         ('Finanzielle Konditionen', {'fields': (('netto_mietzins', 'nebenkosten'), 'kautions_betrag')}),
+        # 🔥 NEU: HNK Setup
+        ('Heiz- & Nebenkosten (HNK-Setup)', {
+            'fields': (('nk_abrechnungsart', 'verteilschluessel'), 'ausgeschlossene_kosten')
+        }),
         ('Mietrechtliche Basis', {'fields': (('basis_referenzzinssatz', 'basis_lik_punkte'),)}),
         ('Digitale Akte', {'fields': ('pdf_datei',)})
     )
+
+    filter_horizontal = ('nebenobjekte',)
 
     # --- SAAS HEADER BUTTONS ---
     actions_detail = ["action_generate_pdf", "action_send_docuseal", "action_mietzins_rechner"]
@@ -129,7 +134,6 @@ class MietvertragAdmin(ModelAdmin):
         brutto = netto + nk
         mieter_name = str(getattr(obj, 'mieter', 'Unbekannt'))
 
-        # Einheit und Liegenschaft sicher abrufen
         einheit_name = str(getattr(obj.einheit, 'bezeichnung', '-')) if getattr(obj, 'einheit', None) else '-'
         lieg_obj = getattr(obj.einheit, 'liegenschaft', None) if getattr(obj, 'einheit', None) else None
         liegenschaft_name = str(getattr(lieg_obj, 'strasse', '-')) if lieg_obj else '-'
@@ -145,7 +149,7 @@ class MietvertragAdmin(ModelAdmin):
 
         if not aktiv:
             konto_status = "Inaktiv"
-            konto_color = "#6b7280" # Grau
+            konto_color = "#6b7280"
             konto_icon = "⏸️"
         else:
             zahlungen_aktuell = obj.zahlungen.filter(buchungs_monat=aktueller_monat).aggregate(Sum('betrag'))['betrag__sum'] or 0
@@ -153,15 +157,15 @@ class MietvertragAdmin(ModelAdmin):
 
             if zahlungen_aktuell >= brutto:
                 konto_status = "Bezahlt"
-                konto_color = "#059669" # Grün
+                konto_color = "#059669"
                 konto_icon = "✅"
             elif zahlungen_aktuell > 0:
                 konto_status = f"Teilz. ({zahlungen_aktuell:,.0f})"
-                konto_color = "#d97706" # Orange
+                konto_color = "#d97706"
                 konto_icon = "⚠️"
             else:
                 konto_status = "Offen"
-                konto_color = "#dc2626" # Rot
+                konto_color = "#dc2626"
                 konto_icon = "⏳"
 
         # --- GOOGLE MAPS URL GENERIEREN ---
@@ -171,17 +175,10 @@ class MietvertragAdmin(ModelAdmin):
             addr_query = ""
 
         context = {
-            'obj': obj,
-            'mieter_name': mieter_name,
-            'einheit_name': einheit_name,
-            'liegenschaft_name': liegenschaft_name,
-            'brutto': brutto,
-            'aktiv_text': aktiv_text,
-            'aktiv_color': aktiv_color,
-            'monat_str': monat_str,
-            'konto_status': konto_status,
-            'konto_color': konto_color,
-            'konto_icon': konto_icon,
+            'obj': obj, 'mieter_name': mieter_name, 'einheit_name': einheit_name,
+            'liegenschaft_name': liegenschaft_name, 'brutto': brutto,
+            'aktiv_text': aktiv_text, 'aktiv_color': aktiv_color, 'monat_str': monat_str,
+            'konto_status': konto_status, 'konto_color': konto_color, 'konto_icon': konto_icon,
             'map_url': f"https://maps.google.com/maps?q={addr_query}&t=&z=15&ie=UTF8&iwloc=&output=embed" if addr_query else "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed",
         }
         return mark_safe(render_to_string('admin/rentals/mietvertrag_header.html', context))
@@ -195,8 +192,7 @@ class MietvertragAdmin(ModelAdmin):
             '<div class="flex items-center gap-3">'
             '<div class="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-100 text-blue-700 text-xl shadow-sm ring-1 ring-inset ring-blue-600/10">📄</div>'
             '<div><div class="font-bold text-gray-900 leading-tight">{}</div><div class="text-xs text-gray-500 mt-0.5">🏠 {}</div></div>'
-            '</div>',
-            mieter_name, einheit_name
+            '</div>', mieter_name, einheit_name
         )
 
     @display(description="Mietzins (Brutto)")
@@ -204,12 +200,13 @@ class MietvertragAdmin(ModelAdmin):
         netto = float(getattr(obj, 'netto_mietzins', 0) or 0)
         nk = float(getattr(obj, 'nebenkosten', 0) or 0)
         brutto = netto + nk
+        typ = obj.get_nk_abrechnungsart_display() if hasattr(obj, 'get_nk_abrechnungsart_display') else ''
+
         return format_html(
             '<div class="flex flex-col gap-1">'
             '<span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 w-max">CHF {}</span>'
-            '<span class="text-[10px] text-gray-500">N: {} | NK: {}</span>'
-            '</div>',
-            f"{brutto:,.2f}", f"{netto:,.2f}", f"{nk:,.2f}"
+            '<span class="text-[10px] text-gray-500">N: {} | {}</span>'
+            '</div>', f"{brutto:,.2f}", f"{netto:,.2f}", typ
         )
 
     @display(description="Laufzeit & Status")
@@ -219,10 +216,8 @@ class MietvertragAdmin(ModelAdmin):
         aktiv_html = '<span class="text-xs font-bold text-emerald-600">● Aktiv</span>' if aktiv else '<span class="text-xs font-bold text-red-500">○ Aufgelöst</span>'
         return format_html(
             '<div class="flex flex-col gap-0.5">'
-            '{}'
-            '<span class="text-xs text-gray-500">Ab {}</span>'
-            '</div>',
-            mark_safe(aktiv_html), beginn
+            '{}<span class="text-xs text-gray-500">Ab {}</span>'
+            '</div>', mark_safe(aktiv_html), beginn
         )
 
     @display(description="Unterschrift", label=True)
@@ -243,8 +238,7 @@ class MietvertragAdmin(ModelAdmin):
             '<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>'
             '<a href="{}" target="_blank" class="text-gray-600 bg-gray-50 hover:bg-gray-200 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">🖨️ PDF</a>'
             '<a href="{}" target="_blank" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">📈 Zins</a>'
-            '</div>',
-            edit_url, pdf_url, calc_url
+            '</div>', edit_url, pdf_url, calc_url
         )
 
     def save_model(self, request, obj, form, change):
@@ -255,10 +249,7 @@ class MietvertragAdmin(ModelAdmin):
                 Dokument.objects.create(titel=f"Mietvertrag {obj.mieter}", kategorie='vertrag', vertrag=obj, mieter=obj.mieter, einheit=obj.einheit, datei=obj.pdf_datei)
                 messages.success(request, "✅ Vertrag archiviert.")
 
-
-# ==========================================
-# 3. LEERSTAND ADMIN (SaaS-Look)
-# ==========================================
+# ... Die anderen Klassen (LeerstandAdmin, MietzinsAnpassungAdmin, DokumentAdmin) bleiben unverändert ...
 
 @admin.register(Leerstand)
 class LeerstandAdmin(ModelAdmin):
@@ -303,10 +294,6 @@ class LeerstandAdmin(ModelAdmin):
             reverse('admin:rentals_leerstand_change', args=[obj.id])
         )
 
-
-# ==========================================
-# 4. MIETZINSANPASSUNG ADMIN (SaaS-Look)
-# ==========================================
 
 @admin.register(MietzinsAnpassung)
 class MietzinsAnpassungAdmin(ModelAdmin):
@@ -353,10 +340,6 @@ class MietzinsAnpassungAdmin(ModelAdmin):
             reverse('admin:rentals_mietzinsanpassung_change', args=[obj.id])
         )
 
-
-# ==========================================
-# 5. DOKUMENTE ADMIN
-# ==========================================
 
 @admin.register(Dokument)
 class DokumentAdmin(ModelAdmin):

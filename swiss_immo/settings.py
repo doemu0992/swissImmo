@@ -153,7 +153,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-CKEDITOR_CONFIGS = {'default': {'toolbar': 'full', 'height': 300, 'width': '100%',},}
+CKEDITOR_CONFIGS = {'default': {'toolbar': 'full', 'height': 300, 'width': '100%',}}
 
 # ==========================================
 # 9. EXTERNE DIENSTE & E-MAIL
@@ -185,10 +185,10 @@ UNFOLD = {
     # --- GLOBALER CLEAN-LOOK (RAHMENLOS) & INLINE-EDITING ---
     "STYLES": [
         lambda request: static("css/fairwalter_theme.css") + "?v=2",
-        lambda request: static("css/custom_admin.css") + "?v=999",   # Der Cache-Zerstörer für CSS
+        lambda request: static("css/custom_admin.css") + "?v=999",
     ],
     "SCRIPTS": [
-        lambda request: static("js/section_toggle.js") + "?v=999",   # Der Cache-Zerstörer für JS
+        lambda request: static("js/section_toggle.js") + "?v=999",
     ],
 
     "COLORS": {

@@ -6,24 +6,62 @@ from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_p
 
 class Mietvertrag(models.Model):
     STATUS_CHOICES = [('offen', 'Offen'), ('gesendet', 'Versendet'), ('unterzeichnet', 'Unterzeichnet')]
+
+    # 🔥 NEU: Der Lebenszyklus eines Vertrages
+    VERTRAG_STATUS = [
+        ('entwurf', 'Entwurf'),
+        ('aktiv', 'Aktiv'),
+        ('gekuendigt', 'Gekündigt'),
+        ('archiviert', 'Archiviert')
+    ]
+
+    NK_TYP_CHOICES = [
+        ('akonto', 'Akonto (Vorschuss mit Abrechnung)'),
+        ('pauschal', 'Pauschal (fixer Betrag ohne Abrechnung)'),
+        ('inbegriffen', 'Inbegriffen (im Nettomietzins enthalten)'),
+        ('direkt', 'Direkt (Mieter zahlt direkt an Werke)'),
+    ]
+
+    VERTEIL_CHOICES = [
+        ('m2', 'Fläche (m²)'),
+        ('m3', 'Volumen (m³)'),
+        ('quote', 'Wertquote'),
+        ('einheit', 'Pro Einheit / Pauschal'),
+        ('individuell', 'Individuelle Zähler (VHKA)'),
+    ]
+
     mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, related_name='vertraege')
-
-    # Das Hauptobjekt (z.B. Wohnung)
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='vertraege')
-
-    # 🔥 NEU: Zusätzliche Objekte (Bastelraum, Parkplatz etc.)
     nebenobjekte = models.ManyToManyField('portfolio.Einheit', blank=True, related_name='als_nebenobjekt_in_vertraegen')
 
+    # --- VERTRAGS-STATUS ---
+    status = models.CharField("Vertragsstatus", max_length=20, choices=VERTRAG_STATUS, default='entwurf')
+    aktiv = models.BooleanField(default=True)
+    sign_status = models.CharField("Signatur-Status", max_length=20, choices=STATUS_CHOICES, default='offen')
+
+    # --- FRISTEN & TERMINE ---
     beginn = models.DateField()
     ende = models.DateField(null=True, blank=True)
+    kuendigungsfrist_monate = models.IntegerField("Kündigungsfrist (Monate)", default=3)
+    kuendigungstermine = models.CharField("Kündigungstermine", max_length=100, default="Ende jedes Monats ausser Dezember", blank=True)
+
+    # --- FINANZEN ---
     netto_mietzins = models.DecimalField(max_digits=8, decimal_places=2)
     nebenkosten = models.DecimalField(max_digits=6, decimal_places=2)
+    nk_abrechnungsart = models.CharField("NK-Abrechnungsart", max_length=20, choices=NK_TYP_CHOICES, default='akonto')
+    verteilschluessel = models.CharField("Verteilschlüssel", max_length=20, choices=VERTEIL_CHOICES, default='m2')
+    ausgeschlossene_kosten = models.TextField("Ausgeschlossene Kosten", blank=True, help_text="Welche Kosten zahlt dieser Mieter NICHT?")
+
+    # --- KAUTION ---
+    kautions_betrag = models.DecimalField("Kautionsbetrag", max_digits=8, decimal_places=2, blank=True, null=True)
+    kautions_konto = models.CharField("Kautionskonto (IBAN)", max_length=34, blank=True, default='')
+    kautions_einbezahlt_am = models.DateField("Kaution einbezahlt am", null=True, blank=True)
+
+    # --- BASES ---
     basis_referenzzinssatz = models.DecimalField(max_digits=4, decimal_places=2, default=get_current_ref_zins)
     basis_lik_punkte = models.DecimalField(max_digits=6, decimal_places=1, default=get_current_lik)
-    aktiv = models.BooleanField(default=True)
-    sign_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='offen')
+
     pdf_datei = models.FileField(upload_to='vertraege_pdfs/', blank=True, null=True)
-    kautions_betrag = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
 
     class Meta:
         verbose_name = "Mietvertrag"
@@ -37,52 +75,48 @@ class Mietvertrag(models.Model):
             return f"{base_str} (+{count} Nebenobjekt{'e' if count > 1 else ''})"
         return base_str
 
-    # 🔥 NEU: Die intelligente Mietzins-Prüfung 🔥
+    @property
+    def brutto_mietzins(self):
+        return (self.netto_mietzins or Decimal('0.00')) + (self.nebenkosten or Decimal('0.00'))
+
     @property
     def mietzinspotenzial(self):
         try:
             from crm.models import Verwaltung
             vw = Verwaltung.objects.first()
             if not vw: return 'neutral'
-
             curr_zins = vw.aktueller_referenzzinssatz
             curr_lik = vw.aktueller_lik_punkte
-
-            # 1. Priorität: Wenn der aktuelle Zins KLEINER ist als im Vertrag -> Senkungsrisiko!
-            if curr_zins < self.basis_referenzzinssatz:
-                return 'decrease'
-
-            # 2. Wenn aktueller Zins GRÖSSER ist -> Erhöhungspotenzial!
-            if curr_zins > self.basis_referenzzinssatz:
-                return 'increase'
-
-            # 3. LIK Prüfung (ab 1.5 Punkten Differenz lohnt sich meist eine Teuerungsausgleich)
-            if curr_lik > (self.basis_lik_punkte + Decimal('1.5')):
-                return 'increase'
-
+            if curr_zins < self.basis_referenzzinssatz: return 'decrease'
+            if curr_zins > self.basis_referenzzinssatz: return 'increase'
+            if curr_lik > (self.basis_lik_punkte + Decimal('1.5')): return 'increase'
             return 'neutral'
         except Exception:
             return 'neutral'
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+
+        # 🔥 AUTOMATISCHE ABLAGE: Verknüpft das Dokument auch mit der Liegenschaft!
         if self.sign_status == 'unterzeichnet' and self.pdf_datei:
             exists = Dokument.objects.filter(vertrag=self, kategorie='vertrag').exists()
             if not exists:
                 Dokument.objects.create(
-                    titel=f"Mietvertrag {self.mieter}",
+                    bezeichnung=f"Mietvertrag {self.mieter}",
+                    titel=f"Unterzeichneter Mietvertrag - {self.einheit.bezeichnung}",
                     kategorie='vertrag',
                     vertrag=self,
                     mieter=self.mieter,
                     einheit=self.einheit,
+                    liegenschaft=self.einheit.liegenschaft,  # 🔥 Neu: Verknüpfung zur Liegenschaft
                     datei=self.pdf_datei
                 )
 
+# DEINE WEITEREN MODELLE BLEIBEN UNVERÄNDERT:
 class MietzinsAnpassung(models.Model):
     vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='anpassungen')
     wirksam_ab = models.DateField()
     neuer_netto_mietzins = models.DecimalField(max_digits=10, decimal_places=2)
-
     alter_netto_mietzins = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     alter_referenzzinssatz = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     alter_lik_index = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
@@ -92,7 +126,6 @@ class MietzinsAnpassung(models.Model):
     begruendung = models.TextField(blank=True, null=True)
 
     class Meta:
-        verbose_name = "Mietzinsanpassung"
         db_table = 'core_mietzinsanpassung'
 
 class Leerstand(models.Model):
@@ -103,7 +136,6 @@ class Leerstand(models.Model):
     bemerkung = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = "Leerstand"
         db_table = 'core_leerstand'
 
 class Dokument(models.Model):
@@ -119,8 +151,7 @@ class Dokument(models.Model):
     erstellt_am = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Dokument"
-        verbose_name_plural = "Dokumente"
         db_table = 'core_dokument'
 
-    def __str__(self): return self.bezeichnung
+    def __str__(self):
+        return self.bezeichnung
