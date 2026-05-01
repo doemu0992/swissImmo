@@ -1,22 +1,94 @@
-<div v-if="activeTab === 'finance'" class="animate-fade-in space-y-6">
-    <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden">
-        <table class="w-full text-left">
-            <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
-                <tr><th class="px-8 py-5">Mieter / Objekt</th><th class="px-8 py-5 text-right">Soll</th><th class="px-8 py-5 text-right">Ist</th><th class="px-8 py-5 text-center">Status</th></tr>
-            </thead>
-            <tbody class="divide-y divide-slate-50">
-                <tr v-for="k in mietzinsKontrolle" :key="k.vertrag_id" @click="openPanel('rentals', {id: k.vertrag_id, mieter_name: k.mieter_name})" class="hover:bg-slate-50 cursor-pointer">
-                    <td class="px-8 py-5">
-                        <div class="font-bold">{% verbatim %}{{ k.mieter_name }}{% endverbatim %}</div>
-                        <div class="text-[10px] text-slate-400">{% verbatim %}{{ k.objekt }}{% endverbatim %}</div>
-                    </td>
-                    <td class="px-8 py-5 text-right font-mono font-bold">{% verbatim %}{{ k.soll }}{% endverbatim %}</td>
-                    <td class="px-8 py-5 text-right font-mono font-bold" :class="k.ist >= k.soll ? 'text-emerald-600' : 'text-rose-600'">{% verbatim %}{{ k.ist }}{% endverbatim %}</td>
-                    <td class="px-8 py-5 text-center">
-                        <span :class="k.status === 'Bezahlt' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'" class="px-3 py-1 rounded-full text-[10px] font-black uppercase">{% verbatim %}{{ k.status }}{% endverbatim %}</span>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+<div v-if="activeTab === 'finance'" class="animate-fade-in pb-10">
+
+    <div class="flex justify-between items-end mb-6">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Finanzen & Buchhaltung</h1>
+            <p class="text-sm font-medium text-slate-500 mt-2">Zahlungsverkehr, Nebenkosten und Liegenschaftsrechnung</p>
+        </div>
+
+        <button v-if="financeTab === 'debitoren'" @click="showPaymentModal = true" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">+ Zahlung verbuchen</button>
+        <button v-if="financeTab === 'kreditoren'" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all"><i class="fa-solid fa-file-arrow-up mr-2"></i> Rechnung scannen</button>
     </div>
+
+    <div class="flex space-x-2 mb-8 bg-slate-100/50 p-1.5 rounded-2xl w-fit border border-slate-100">
+        <button @click="financeTab = 'debitoren'" :class="financeTab === 'debitoren' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Debitoren (Mieten)</button>
+        <button @click="financeTab = 'kreditoren'" :class="financeTab === 'kreditoren' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Kreditoren</button>
+        <button @click="financeTab = 'nebenkosten'" :class="financeTab === 'nebenkosten' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Nebenkosten (HNK)</button>
+        <button @click="financeTab = 'buchhaltung'" :class="financeTab === 'buchhaltung' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Erfolgsrechnung</button>
+    </div>
+
+    <div v-if="financeTab === 'debitoren'" class="animate-fade-in space-y-6">
+        <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                    <tr>
+                        <th class="px-8 py-5">Mieter / Objekt</th>
+                        <th class="px-8 py-5 text-right">Soll (CHF)</th>
+                        <th class="px-8 py-5 text-right">Ist (CHF)</th>
+                        <th class="px-8 py-5 text-center">Status & Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <tr v-for="k in mietzinsKontrolle" :key="k.vertrag_id" class="hover:bg-slate-50 transition-colors">
+                        <td class="px-8 py-5">
+                            <div class="font-bold text-slate-900">{% verbatim %}{{ k.mieter_name }}{% endverbatim %}</div>
+                            <div class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-house mr-1"></i>{% verbatim %}{{ k.objekt }}{% endverbatim %}</div>
+                        </td>
+                        <td class="px-8 py-5 text-right font-mono font-bold text-slate-600">{% verbatim %}{{ parseFloat(k.soll).toFixed(2) }}{% endverbatim %}</td>
+                        <td class="px-8 py-5 text-right font-mono font-bold" :class="k.ist >= k.soll ? 'text-emerald-600' : (k.ist > 0 ? 'text-amber-500' : 'text-rose-600')">
+                            {% verbatim %}{{ parseFloat(k.ist).toFixed(2) }}{% endverbatim %}
+                        </td>
+                        <td class="px-8 py-5">
+                            <div class="flex items-center justify-center gap-3">
+                                <span :class="k.status === 'Bezahlt' ? 'bg-emerald-50 text-emerald-600' : (k.status === 'Teilzahlung' ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600')" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">
+                                    {% verbatim %}{{ k.status }}{% endverbatim %}
+                                </span>
+
+                                <button v-if="k.status !== 'Bezahlt'" @click.stop="generateMahnung(k.vertrag_id, k.differenz)" class="bg-rose-100 text-rose-700 hover:bg-rose-600 hover:text-white w-8 h-8 rounded-lg flex items-center justify-center transition-all shadow-sm" title="Mahnung drucken">
+                                    <i class="fa-solid fa-envelope-open-text"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-if="!mietzinsKontrolle || mietzinsKontrolle.length === 0">
+                        <td colspan="4" class="text-center py-12 text-slate-400 font-medium">Keine aktiven Verträge für den aktuellen Monat gefunden.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div v-if="financeTab === 'kreditoren'" class="animate-fade-in">
+        <div class="bg-white p-16 rounded-3xl border border-slate-100 text-center shadow-sm">
+            <div class="w-24 h-24 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-indigo-400 text-4xl">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-3">Kreditoren-Workflow</h3>
+            <p class="text-slate-500 max-w-md mx-auto mb-8 text-sm">Hier verwaltest du eingehende Lieferantenrechnungen, scannst Belege automatisch mit der KI und bereitest Zahlungen (DTA/XML) vor.</p>
+            <button class="bg-indigo-50 text-indigo-600 px-6 py-3 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-all">Modul initialisieren</button>
+        </div>
+    </div>
+
+    <div v-if="financeTab === 'nebenkosten'" class="animate-fade-in">
+        <div class="bg-white p-16 rounded-3xl border border-slate-100 text-center shadow-sm">
+            <div class="w-24 h-24 bg-emerald-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-emerald-400 text-4xl">
+                <i class="fa-solid fa-chart-pie"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-3">Heiz- und Nebenkosten (HNK)</h3>
+            <p class="text-slate-500 max-w-md mx-auto mb-8 text-sm">Verteile die gebuchten Kosten auf die Mieter, berechne Heizgradtage und erstelle rechtssichere HNK-Abrechnungen auf Knopfdruck.</p>
+            <button class="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-xl text-sm font-bold hover:bg-emerald-100 transition-all">Neue Abrechnungsperiode starten</button>
+        </div>
+    </div>
+
+    <div v-if="financeTab === 'buchhaltung'" class="animate-fade-in">
+        <div class="bg-white p-16 rounded-3xl border border-slate-100 text-center shadow-sm">
+            <div class="w-24 h-24 bg-amber-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-amber-400 text-4xl">
+                <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-3">Erfolgsrechnung & Bilanz</h3>
+            <p class="text-slate-500 max-w-md mx-auto mb-8 text-sm">Dein Live-Kontenplan. Erhalte auf einen Blick die Erfolgsrechnung pro Liegenschaft und den Jahresabschluss für die Steuern.</p>
+            <button class="bg-amber-50 text-amber-600 px-6 py-3 rounded-xl text-sm font-bold hover:bg-amber-100 transition-all">Kontenplan öffnen</button>
+        </div>
+    </div>
+
 </div>

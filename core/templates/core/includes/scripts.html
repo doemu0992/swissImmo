@@ -16,7 +16,9 @@
         directives: { 'click-outside': clickOutside },
         data() {
             return {
-                activeTab: 'home', loading: true,
+                activeTab: 'home',
+                financeTab: 'debitoren', // 🔥 NEU: Initialer Tab für Finanzen
+                loading: true,
                 liegenschaften: [], vertraege: [], mieter: [], tickets: [], zahlungen: [], mietzinsKontrolle: [],
                 showPanel: false, panelType: '', selectedItem: null,
                 selectedLiegenschaft: null, selectedEinheit: null,
@@ -34,7 +36,6 @@
                 unitPreview: null,
                 wizardStep: 1,
 
-                // 🔥 HIER SIND DIE NEUEN FELDER DRIN:
                 newRentData: {
                     mieter_id: null,
                     einheit_id: null,
@@ -50,7 +51,7 @@
                     basis_referenzzinssatz: 0,
                     basis_lik_punkte: 0,
                     familienwohnung: false,
-                    mitmieter_name: '', // 🔥 NEU: Zwingendes Feld für Familienwohnung
+                    mitmieter_name: '',
                     anzahl_personen: 1,
                     besondere_vereinbarungen: '',
                     ausgeschlossene_kosten: '',
@@ -86,8 +87,9 @@
 
                 editDeviceData: null, editMieterData: null, editRentData: null, editLiegenschaftData: null, newTicketMessage: '',
 
-                tabTitles: { home: 'Cockpit', portfolio: 'Liegenschaften', rentals: 'Verträge', crm: 'Mieterstamm', finance: 'Mietzinskontrolle', tickets: 'Ticket-Board' },
-                tabSubtitles: { home: 'Portfolio-Performance im Überblick', portfolio: 'Objekte und Wohneinheiten verwalten', rentals: 'Aktive und zukünftige Mietverhältnisse', crm: 'Zentrale Mieterdatenbank', finance: 'Zahlungsabgleich und Mahnwesen', tickets: 'Schadensmeldungen bearbeiten' }
+                // 🔥 HIER SIND DIE SAUBEREN TITEL FÜR DIE TOP-BAR
+                tabTitles: { home: 'Cockpit', portfolio: 'Liegenschaften', rentals: 'Verträge', crm: 'Mieterstamm', finance: 'Finanzen', tickets: 'Ticket-Board' },
+                tabSubtitles: { home: 'Portfolio-Performance im Überblick', portfolio: 'Objekte und Wohneinheiten verwalten', rentals: 'Aktive und zukünftige Mietverhältnisse', crm: 'Zentrale Mieterdatenbank', finance: 'Zahlungsverkehr, Nebenkosten & Buchhaltung', tickets: 'Schadensmeldungen bearbeiten' }
             }
         },
         computed: {
@@ -172,7 +174,7 @@
                     basis_referenzzinssatz: 0,
                     basis_lik_punkte: 0,
                     familienwohnung: false,
-                    mitmieter_name: '', // 🔥 NEU: Beim Zurücksetzen leeren
+                    mitmieter_name: '',
                     anzahl_personen: 1,
                     besondere_vereinbarungen: '',
                     ausgeschlossene_kosten: '',
@@ -549,6 +551,29 @@
                 const res = await fetch('/api/finance/zahlungen', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() }, body: JSON.stringify(this.newZahlung) });
                 if(res.ok) { this.showPaymentModal = false; this.addToast("Verbucht!"); this.refreshAll(); }
             },
+
+            // 🔥 NEU: Mahnbrief generieren
+            async generateMahnung(vertragId, offenerBetrag) {
+                this.addToast("Mahnbrief wird generiert...");
+                try {
+                    const res = await fetch(`/api/finance/mahnung/${vertragId}?offener_betrag=${offenerBetrag}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.success) {
+                            window.open(data.url, '_blank');
+                            this.addToast("Mahnung erfolgreich erstellt!", "success");
+                        } else {
+                            this.addToast(data.error || "Fehler bei der Erstellung", "error");
+                        }
+                    } else {
+                        this.addToast("Serverfehler bei der Erstellung", "error");
+                    }
+                } catch(e) {
+                    console.error(e);
+                    this.addToast("Systemfehler", "error");
+                }
+            },
+
             addToast(msg, type = 'success') { const id = Date.now(); this.toasts.push({ id, msg, type }); setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id); }, 4000); },
             initChart() {
                 this.$nextTick(() => {

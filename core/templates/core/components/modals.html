@@ -66,6 +66,35 @@
     </div>
 </div>
 
+<div v-if="showNewMieterModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Neuen Kontakt anlegen</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Typ</label>
+                <select v-model="newMieterData.typ" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                    <option value="person">Privatperson</option>
+                    <option value="firma">Firma / Unternehmen</option>
+                    <option value="verein">Verein / Stiftung</option>
+                </select>
+            </div>
+            <div v-if="newMieterData.typ === 'person'" class="grid grid-cols-2 gap-4 animate-fade-in">
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Vorname</label><input v-model="newMieterData.vorname" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500"></div>
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Nachname</label><input v-model="newMieterData.nachname" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500"></div>
+            </div>
+            <div v-else class="animate-fade-in">
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Firmenname / Vereinsname</label>
+                <input v-model="newMieterData.firmen_name" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-Mail</label><input v-model="newMieterData.email" type="email" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"></div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showNewMieterModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveNewMieter" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">Speichern</button>
+        </div>
+    </div>
+</div>
+
 <div v-if="showEditMieterModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
     <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg animate-modal-pop p-8">
         <h3 class="text-2xl font-black text-slate-900 mb-6">Mieter bearbeiten</h3>
