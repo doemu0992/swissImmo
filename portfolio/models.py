@@ -1,6 +1,7 @@
 # portfolio/models.py
 from django.db import models
 from django.utils import timezone
+from datetime import date
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
 
 class Liegenschaft(models.Model):
@@ -15,7 +16,6 @@ class Liegenschaft(models.Model):
     kataster_nummer = models.CharField("Kataster-Nr.", max_length=50, blank=True)
     versicherungswert = models.DecimalField("Versicherungswert", max_digits=12, decimal_places=2, null=True, blank=True)
 
-    # NEU: Grundstücks-Infos
     grundstuecksflaeche_m2 = models.DecimalField("Grundstücksfläche (m²)", max_digits=10, decimal_places=2, null=True, blank=True)
     gebaeudevolumen_m3 = models.DecimalField("Gebäudevolumen (m³)", max_digits=10, decimal_places=2, null=True, blank=True)
 
@@ -56,7 +56,6 @@ class Einheit(models.Model):
     typ = models.CharField("Typ", max_length=10, choices=TYP_CHOICES, default='whg')
     etage = models.CharField("Etage", max_length=50, blank=True)
 
-    # --- NEBENOBJEKTE VERKNÜPFUNG ---
     gehoert_zu = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='nebenobjekte', verbose_name="Gehört zu Hauptobjekt")
 
     keller = models.CharField("Kellerabteil", max_length=50, blank=True, default='')
@@ -74,8 +73,14 @@ class Einheit(models.Model):
     volumen_m3 = models.DecimalField("Volumen (m³)", max_digits=7, decimal_places=2, null=True, blank=True)
     wertquote = models.DecimalField("Wertquote", max_digits=7, decimal_places=2, default=10.00)
 
+    # Veraltet durch neues Modell Verteilschluessel
     heizkosten_verteilschluessel = models.CharField("HK-Schlüssel", max_length=50, choices=[('m2', 'Fläche (m2)'), ('m3', 'Volumen (m3)'), ('pauschal', 'Pauschal')], default='m2')
+
     notizen = models.TextField("Interne Notizen", blank=True, default='')
+
+    # 🔥 NEU: Standard Kaution
+    standard_kautionsmonate = models.IntegerField("Standard Kaution (Monate)", default=3)
+
     nettomiete_aktuell = models.DecimalField("Soll-Miete", max_digits=8, decimal_places=2, default=0.00)
     nebenkosten_aktuell = models.DecimalField("Soll-Nebenkosten", max_digits=6, decimal_places=2, default=0.00)
     nk_abrechnungsart = models.CharField("NK-Art", max_length=20, default='akonto', choices=[('akonto', 'Akonto'), ('pauschal', 'Pauschal')])
@@ -90,11 +95,67 @@ class Einheit(models.Model):
     def __str__(self):
         return f"{self.liegenschaft.strasse} - {self.bezeichnung}"
 
-    @property
-    def aktiver_vertrag(self):
-        vertrag = self.vertraege.filter(aktiv=True).first()
-        if vertrag: return vertrag
-        return self.als_nebenobjekt_in_vertraegen.filter(aktiv=True).first()
+
+class Verteilschluessel(models.Model):
+    """Individuelle Verteilschlüssel pro Einheit."""
+    KOSTENART_CHOICES = [
+        ('heizung', 'Heizkosten'),
+        ('wasser', 'Wasser / Abwasser'),
+        ('lift', 'Liftkosten'),
+        ('allgemeinstrom', 'Allgemeinstrom'),
+        ('hauswartung', 'Hauswartung / Reinigung'),
+        ('kabel_tv', 'Kabel-TV / Antenne'),
+        ('garten', 'Gartenpflege'),
+        ('verwaltung', 'Verwaltungshonorar'),
+        ('versicherung', 'Versicherungen'),
+        ('sonstiges', 'Sonstige Nebenkosten'),
+    ]
+
+    TYP_CHOICES = [
+        ('m2', 'Fläche (m²)'),
+        ('m3', 'Volumen (m³)'),
+        ('prozent', 'Prozent (%)'),
+        ('anteil', 'Anteile (z.B. Wertquote)'),
+        ('pauschal', 'Pauschal (CHF)'),
+        ('zimmer', 'Zimmer'),
+        ('einheit', 'Pro Einheit')
+    ]
+
+    einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='verteilschluessel')
+    kostenart = models.CharField("Kostenart", max_length=50, choices=KOSTENART_CHOICES)
+    typ = models.CharField("Berechnungstyp", max_length=20, choices=TYP_CHOICES, default='m2')
+    wert = models.DecimalField("Wert", max_digits=12, decimal_places=4, default=0.00)
+    gueltig_ab = models.DateField("Gültig ab", default=date.today)
+    gueltig_bis = models.DateField("Gültig bis", null=True, blank=True)
+    notizen = models.CharField("Bemerkung", max_length=255, blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Verteilschlüssel"
+        verbose_name_plural = "Verteilschlüssel"
+        db_table = 'portfolio_verteilschluessel'
+        ordering = ['kostenart', '-gueltig_ab']
+
+    def __str__(self):
+        return f"{self.einheit.bezeichnung} - {self.get_kostenart_display()} ({self.wert})"
+
+
+class LiegenschaftVerteilschluessel(models.Model):
+    """Standard-Regeln für eine Liegenschaft (Vererbung)."""
+    liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='standard_schluessel')
+    kostenart = models.CharField("Kostenart", max_length=50, choices=Verteilschluessel.KOSTENART_CHOICES)
+    typ = models.CharField("Berechnung nach", max_length=20, choices=Verteilschluessel.TYP_CHOICES, default='m2')
+    wert = models.DecimalField("Wert", max_digits=12, decimal_places=4, default=0.00)
+    gueltig_ab = models.DateField("Gültig ab", default=date.today)
+    gueltig_bis = models.DateField("Gültig bis", null=True, blank=True)
+    notizen = models.CharField("Bemerkung", max_length=255, blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Liegenschafts-Standard (Verteilschlüssel)"
+        db_table = 'portfolio_liegenschaft_verteilschluessel'
+        ordering = ['kostenart']
+
+    def __str__(self):
+        return f"{self.liegenschaft.strasse} - Standard {self.get_kostenart_display()}"
 
 
 class Dokument(models.Model):
@@ -108,9 +169,6 @@ class Dokument(models.Model):
     class Meta:
         verbose_name = "Dokument"
         db_table = 'portfolio_dokument'
-
-    def __str__(self):
-        return self.titel
 
 
 class Unterhalt(models.Model):
@@ -138,7 +196,7 @@ class Zaehler(models.Model):
         verbose_name = "Zähler"
         db_table = 'core_zaehler'
 
-# 🔥 GEFIXT: Fehlte in der letzten Version!
+
 class ZaehlerStand(models.Model):
     zaehler = models.ForeignKey(Zaehler, on_delete=models.CASCADE, related_name='staende')
     datum = models.DateField(default=timezone.now)
@@ -147,6 +205,7 @@ class ZaehlerStand(models.Model):
     class Meta:
         verbose_name = "Zählerstand"
         db_table = 'core_zaehlerstand'
+
 
 class Geraet(models.Model):
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='allgemeine_geraete', null=True, blank=True)
@@ -174,7 +233,7 @@ class Schluessel(models.Model):
         verbose_name = "Schlüssel"
         db_table = 'core_schluessel'
 
-# 🔥 GEFIXT: Fehlte in der letzten Version!
+
 class SchluesselAusgabe(models.Model):
     schluessel = models.ForeignKey(Schluessel, on_delete=models.CASCADE, related_name='ausgaben')
     mieter = models.ForeignKey('crm.Mieter', on_delete=models.SET_NULL, null=True, blank=True)

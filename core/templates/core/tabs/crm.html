@@ -139,16 +139,21 @@
                             </div>
                             <div>
                                 <div class="font-bold text-sm">{% verbatim %}{{ d.titel }}{% endverbatim %}</div>
-                                <div class="text-[10px] text-slate-400 uppercase font-black">{% verbatim %}{{ d.kategorie }}{% endverbatim %} • {% verbatim %}{{ d.erstellt_am }}{% endverbatim %}</div>
+                                <div class="text-[10px] text-slate-400 uppercase font-black">{% verbatim %}{{ d.kategorie }}{% endverbatim %} • {% verbatim %}{{ d.datum }}{% endverbatim %}</div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <a :href="d.datei_url" target="_blank" class="bg-white/10 p-2 rounded-lg hover:bg-indigo-600 transition-all">
+                        <div class="flex items-center gap-2">
+                            <a :href="d.datei_url" target="_blank" class="bg-white/10 p-2 rounded-lg hover:bg-indigo-500 transition-all text-slate-300 hover:text-white" title="Vorschau">
                                 <i class="fa-solid fa-eye text-xs"></i>
                             </a>
-                            <button @click="deleteDokument(d.id)" class="text-rose-400 opacity-0 group-hover:opacity-100 transition-all">
+                            <a :href="d.datei_url" download target="_blank" class="bg-white/10 p-2 rounded-lg hover:bg-emerald-500 transition-all text-slate-300 hover:text-white" title="Download">
+                                <i class="fa-solid fa-download text-xs"></i>
+                            </a>
+
+                            <button @click="deleteDokument(d.id, d.is_vertrag)" class="bg-white/10 p-2 rounded-lg hover:bg-rose-500 transition-all text-slate-300 hover:text-white" title="Löschen">
                                 <i class="fa-solid fa-trash-can text-xs"></i>
                             </button>
+
                         </div>
                     </div>
                     <div v-if="!selectedMieter.dokumente?.length" class="text-center py-6 text-slate-500 text-xs italic">Keine Dokumente für diesen Mieter hinterlegt.</div>

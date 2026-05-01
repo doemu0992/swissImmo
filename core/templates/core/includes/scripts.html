@@ -31,12 +31,42 @@
                 selectedVertrag: null,
                 showNewRentModal: false,
                 rentSearchQuery: '',
-                newRentData: { mieter_id: null, einheit_id: null, beginn: new Date().toISOString().split('T')[0], netto_mietzins: 0, nebenkosten: 0 },
+                unitPreview: null,
+                wizardStep: 1,
+
+                // 🔥 HIER SIND DIE NEUEN FELDER DRIN:
+                newRentData: {
+                    mieter_id: null,
+                    einheit_id: null,
+                    beginn: new Date().toISOString().split('T')[0],
+                    erstmals_kuendbar_auf: null,
+                    netto_mietzins: 0,
+                    nebenkosten: 0,
+                    nk_abrechnungsart: 'akonto',
+                    zahlungsrhythmus: 'monatlich',
+                    kautions_betrag: 0,
+                    kuendigungsfrist_monate: 3,
+                    kuendigungstermine: 'Ende jedes Monats ausser Dezember',
+                    basis_referenzzinssatz: 0,
+                    basis_lik_punkte: 0,
+                    familienwohnung: false,
+                    mitmieter_name: '', // 🔥 NEU: Zwingendes Feld für Familienwohnung
+                    anzahl_personen: 1,
+                    besondere_vereinbarungen: '',
+                    ausgeschlossene_kosten: '',
+                    kostensteigerung_datum: new Date().toISOString().split('T')[0],
+                    mietzinsreserve_betrag: null,
+                    mietzinsreserve_prozent: null,
+                    weitere_vorbehalte: ''
+                },
 
                 showPropModal: false, showMieterModal: false, showEditMieterModal: false, showPaymentModal: false, showEditRentModal: false,
                 showDeviceModal: false, showEditDeviceModal: false, showZaehlerModal: false, showSchluesselModal: false, showUnterhaltModal: false,
                 showDocModal: false, showLiegenschaftEditModal: false, showLinkModal: false,
                 showEinheitModal: false,
+
+                showVerteilschluesselModal: false,
+                showLiegStdModal: false,
 
                 toasts: [], searchQuery: '', showSearch: false, chartInstance: null,
 
@@ -46,10 +76,13 @@
                 newZaehler: { einheit_id: null, typ: 'strom', zaehler_nummer: '', aktueller_stand: 0 },
                 newSchluessel: { einheit_id: null, typ: 'Wohnung', schluessel_nummer: '', anzahl: 3 },
                 newUnterhalt: { einheit_id: null, titel: '', beschreibung: '', datum: new Date().toISOString().split('T')[0], kosten: 0 },
-                newDoc: { liegenschaft_id: null, einheit_id: null, titel: '', kategorie: 'Allgemein' },
+                newDoc: { liegenschaft_id: null, einheit_id: null, mieter_id: null, titel: '', kategorie: 'Allgemein' },
                 linkData: { hauptobjekt_id: null, nebenobjekt_id: null },
 
                 newEinheit: { liegenschaft_id: null, bezeichnung: '', typ: 'whg', etage: '', zimmer: null },
+
+                newVerteilschluessel: { einheit_id: null, kostenart: 'heizung', typ: 'm2', wert: 0, gueltig_ab: new Date().toISOString().split('T')[0], notizen: '' },
+                newLiegStd: { liegenschaft_id: null, kostenart: 'heizung', typ: 'm2', wert: 0, gueltig_ab: new Date().toISOString().split('T')[0], notizen: '' },
 
                 editDeviceData: null, editMieterData: null, editRentData: null, editLiegenschaftData: null, newTicketMessage: '',
 
@@ -121,6 +154,70 @@
             // ==========================================
             // 🔥 RENTALS (Verträge) & DOCUSEAL
             // ==========================================
+            openContractWizard() {
+                this.wizardStep = 1;
+                this.unitPreview = null;
+                this.newRentData = {
+                    mieter_id: null,
+                    einheit_id: null,
+                    beginn: new Date().toISOString().split('T')[0],
+                    erstmals_kuendbar_auf: null,
+                    netto_mietzins: 0,
+                    nebenkosten: 0,
+                    nk_abrechnungsart: 'akonto',
+                    zahlungsrhythmus: 'monatlich',
+                    kautions_betrag: 0,
+                    kuendigungsfrist_monate: 3,
+                    kuendigungstermine: 'Ende jedes Monats ausser Dezember',
+                    basis_referenzzinssatz: 0,
+                    basis_lik_punkte: 0,
+                    familienwohnung: false,
+                    mitmieter_name: '', // 🔥 NEU: Beim Zurücksetzen leeren
+                    anzahl_personen: 1,
+                    besondere_vereinbarungen: '',
+                    ausgeschlossene_kosten: '',
+                    kostensteigerung_datum: new Date().toISOString().split('T')[0],
+                    mietzinsreserve_betrag: null,
+                    mietzinsreserve_prozent: null,
+                    weitere_vorbehalte: ''
+                };
+                this.showNewRentModal = true;
+            },
+
+            async onUnitSelectedForContract() {
+                if (!this.newRentData.einheit_id) {
+                    this.unitPreview = null;
+                    return;
+                }
+                this.loading = true;
+                try {
+                    const res = await fetch(`/api/portfolio/einheiten/${this.newRentData.einheit_id}`);
+                    if (res.ok) {
+                        const unit = await res.json();
+                        this.unitPreview = unit;
+
+                        this.newRentData.netto_mietzins = unit.nettomiete_aktuell;
+                        this.newRentData.nebenkosten = unit.nebenkosten_aktuell;
+                        this.newRentData.nk_abrechnungsart = unit.nk_abrechnungsart || 'akonto';
+
+                        const monate = unit.standard_kautionsmonate || 3;
+                        this.newRentData.kautions_betrag = unit.nettomiete_aktuell * monate;
+                    }
+
+                    const basisRes = await fetch('/api/crm/basiswerte');
+                    if (basisRes.ok) {
+                        const basis = await basisRes.json();
+                        this.newRentData.basis_referenzzinssatz = basis.ref_zins;
+                        this.newRentData.basis_lik_punkte = basis.lik_punkte;
+                    }
+                    this.addToast("Objekt-Daten geladen!");
+                } catch(e) {
+                    console.error(e);
+                    this.addToast("Fehler beim Laden der Vorschau.", "error");
+                } finally {
+                    this.loading = false;
+                }
+            },
             async openVertragDeepDive(v) {
                 this.loading = true;
                 try {
@@ -137,6 +234,9 @@
                     });
                     if(res.ok) {
                         this.showNewRentModal = false;
+                        this.unitPreview = null;
+                        this.openContractWizard(); // Reset
+                        this.showNewRentModal = false; // Wieder schliessen
                         this.addToast("Vertrag erfolgreich erstellt!");
                         this.refreshAll();
                     } else { alert("Fehler beim Erstellen des Vertrags."); }
@@ -145,6 +245,8 @@
             async saveVertragEdit() {
                 const payload = { ...this.selectedVertrag };
                 if(!payload.ende) payload.ende = null;
+                if(!payload.erstmals_kuendbar_auf) payload.erstmals_kuendbar_auf = null;
+                if(!payload.kostensteigerung_datum) payload.kostensteigerung_datum = null;
                 if(!payload.kautions_einbezahlt_am) payload.kautions_einbezahlt_am = null;
                 try {
                     const res = await fetch(`/api/rentals/vertraege/${this.selectedVertrag.id}`, {
@@ -184,7 +286,6 @@
                     this.openVertragDeepDive(this.selectedVertrag);
                 }
             },
-
 
             // ==========================================
             // 🔥 CRM & QR-CODE
@@ -271,20 +372,150 @@
                 const res = await fetch(`/api/portfolio/liegenschaften/${this.selectedLiegenschaft.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() }, body: JSON.stringify(payload) });
                 if(res.ok) { this.addToast("Gespeichert!"); this.refreshAll(); this.openLiegenschaftDeepDive(this.selectedLiegenschaft); }
             },
+
+            // ==========================================
+            // 🔥 VERTEILSCHLÜSSEL API LOGIK
+            // ==========================================
+            async saveVerteilschluessel() {
+                const res = await fetch('/api/portfolio/verteilschluessel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                    body: JSON.stringify(this.newVerteilschluessel)
+                });
+                if(res.ok) {
+                    this.showVerteilschluesselModal = false;
+                    this.addToast("Verteilschlüssel gespeichert!");
+                    this.newVerteilschluessel = { einheit_id: null, kostenart: 'heizung', typ: 'm2', wert: 0, gueltig_ab: new Date().toISOString().split('T')[0], notizen: '' };
+                    this.reloadEinheit();
+                } else {
+                    this.addToast("Fehler beim Speichern.", "error");
+                }
+            },
+            async deleteVerteilschluessel(id) {
+                if(!confirm("Diesen Verteilschlüssel löschen?")) return;
+                const res = await fetch(`/api/portfolio/verteilschluessel/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRFToken': this.getCsrf() }
+                });
+                if(res.ok) {
+                    this.addToast("Verteilschlüssel gelöscht!");
+                    this.reloadEinheit();
+                }
+            },
+
+            async saveLiegStd() {
+                try {
+                    const res = await fetch('/api/portfolio/liegenschaft-verteilschluessel', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCsrf()
+                        },
+                        body: JSON.stringify(this.newLiegStd)
+                    });
+
+                    if(res.ok) {
+                        this.showLiegStdModal = false;
+                        this.addToast("Standard-Regel erfolgreich gespeichert!");
+
+                        this.newLiegStd = {
+                            liegenschaft_id: null,
+                            kostenart: 'heizung',
+                            typ: 'm2',
+                            wert: 0,
+                            gueltig_ab: new Date().toISOString().split('T')[0],
+                            notizen: ''
+                        };
+                        this.openLiegenschaftDeepDive(this.selectedLiegenschaft);
+                    } else {
+                        const errorData = await res.json();
+                        console.error("Speicherfehler:", errorData);
+                        this.addToast("Fehler beim Speichern der Regel.", "error");
+                    }
+                } catch (e) {
+                    console.error(e);
+                    this.addToast("Systemfehler beim Speichern.", "error");
+                }
+            },
+            async deleteLiegStd(id) {
+                if(!confirm("Standard-Regel wirklich löschen?")) return;
+                const res = await fetch(`/api/portfolio/liegenschaft-verteilschluessel/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRFToken': this.getCsrf() }
+                });
+                if(res.ok) {
+                    this.addToast("Regel gelöscht!");
+                    this.openLiegenschaftDeepDive(this.selectedLiegenschaft);
+                }
+            },
+
+            // ==========================================
+            // 🔥 DOKUMENTE
+            // ==========================================
             async uploadDokument() {
                 const formData = new FormData();
                 formData.append('titel', this.newDoc.titel); formData.append('kategorie', this.newDoc.kategorie);
                 if (this.newDoc.liegenschaft_id) formData.append('liegenschaft_id', this.newDoc.liegenschaft_id);
                 if (this.newDoc.einheit_id) formData.append('einheit_id', this.newDoc.einheit_id);
+
+                if (this.selectedMieter && this.activeTab === 'crm') {
+                    formData.append('mieter_id', this.selectedMieter.id);
+                }
+
                 formData.append('datei', this.$refs.fileInput.files[0]);
                 const res = await fetch('/api/portfolio/dokumente', { method: 'POST', headers: { 'X-CSRFToken': this.getCsrf() }, body: formData });
-                if(res.ok) { this.showDocModal = false; this.addToast("Upload Erfolg!"); if(this.selectedEinheit) this.reloadEinheit(); else this.openLiegenschaftDeepDive(this.selectedLiegenschaft); }
+
+                if(res.ok) {
+                    this.showDocModal = false;
+                    this.addToast("Upload erfolgreich!");
+
+                    if (this.activeTab === 'crm' && this.selectedMieter) {
+                        this.openMieterDeepDive(this.selectedMieter);
+                    } else if (this.selectedEinheit) {
+                        this.reloadEinheit();
+                    } else if (this.selectedLiegenschaft) {
+                        this.openLiegenschaftDeepDive(this.selectedLiegenschaft);
+                    }
+                }
             },
-            async deleteDokument(id) {
-                if(!confirm("Löschen?")) return;
-                await fetch(`/api/portfolio/dokumente/${id}`, { method: 'DELETE', headers: { 'X-CSRFToken': this.getCsrf() } });
-                this.addToast("Gelöscht."); if(this.selectedEinheit) this.reloadEinheit(); else this.openLiegenschaftDeepDive(this.selectedLiegenschaft);
+
+            async deleteDokument(id, is_vertrag = false) {
+                if (is_vertrag) {
+                    const check = window.prompt("ACHTUNG: Offizielles Vertragsdokument!\n\nTippe LÖSCHEN ein, um es endgültig zu entfernen:");
+                    if (check !== "LÖSCHEN") return;
+                } else {
+                    if (!window.confirm("Dokument wirklich löschen?")) return;
+                }
+
+                const endpoint = (this.activeTab === 'crm' && this.selectedMieter)
+                    ? `/api/crm/dokumente/${id}`
+                    : `/api/portfolio/dokumente/${id}`;
+
+                try {
+                    const res = await fetch(endpoint, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRFToken': this.getCsrf() }
+                    });
+
+                    if (res.ok) {
+                        this.addToast("Erfolgreich gelöscht.");
+
+                        if (this.activeTab === 'crm' && this.selectedMieter) {
+                            this.openMieterDeepDive(this.selectedMieter);
+                        } else if (this.selectedEinheit) {
+                            this.reloadEinheit();
+                        } else if (this.selectedLiegenschaft) {
+                            this.openLiegenschaftDeepDive(this.selectedLiegenschaft);
+                        }
+                    } else {
+                        this.addToast("Fehler beim Löschen.", "error");
+                    }
+                } catch(e) {
+                    console.error(e);
+                    this.addToast("Systemfehler beim Löschen.", "error");
+                }
             },
+
             async saveDevice() {
                 const p = { ...this.newDevice }; if(!p.einheit_id) delete p.einheit_id; if(!p.liegenschaft_id) delete p.liegenschaft_id;
                 const res = await fetch('/api/portfolio/geraete', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() }, body: JSON.stringify(p) });
@@ -304,7 +535,16 @@
                 let url = this.panelType === 'tickets' ? `/api/tickets/${this.selectedItem.id}` : null;
                 if(url) fetch(url, { method: 'DELETE', headers: { 'X-CSRFToken': this.getCsrf() } }).then(res => { if(res.ok) { this.addToast("Gelöscht."); this.closePanel(); this.refreshAll(); } });
             },
-            async updateTicketStatus(id, s) { await fetch(`/api/tickets/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() }, body: JSON.stringify({ status: s }) }); this.addToast("Status OK."); this.refreshAll(); this.closePanel(); },
+            async updateTicketStatus(id, s) {
+                await fetch(`/api/tickets/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                    body: JSON.stringify({ status: s })
+                });
+                this.addToast("Status OK.");
+                this.refreshAll();
+                this.closePanel();
+            },
             async saveZahlung() {
                 const res = await fetch('/api/finance/zahlungen', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() }, body: JSON.stringify(this.newZahlung) });
                 if(res.ok) { this.showPaymentModal = false; this.addToast("Verbucht!"); this.refreshAll(); }

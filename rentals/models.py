@@ -7,7 +7,6 @@ from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_p
 class Mietvertrag(models.Model):
     STATUS_CHOICES = [('offen', 'Offen'), ('gesendet', 'Versendet'), ('unterzeichnet', 'Unterzeichnet')]
 
-    # 🔥 NEU: Der Lebenszyklus eines Vertrages
     VERTRAG_STATUS = [
         ('entwurf', 'Entwurf'),
         ('aktiv', 'Aktiv'),
@@ -30,6 +29,13 @@ class Mietvertrag(models.Model):
         ('individuell', 'Individuelle Zähler (VHKA)'),
     ]
 
+    ZAHLUNGSRHYTHMUS_CHOICES = [
+        ('monatlich', 'monatlich'),
+        ('vierteljahr', 'vierteljährlich'),
+        ('halbjahr', 'halbjährlich'),
+        ('jahr', 'jährlich'),
+    ]
+
     mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, related_name='vertraege')
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='vertraege')
     nebenobjekte = models.ManyToManyField('portfolio.Einheit', blank=True, related_name='als_nebenobjekt_in_vertraegen')
@@ -42,8 +48,15 @@ class Mietvertrag(models.Model):
     # --- FRISTEN & TERMINE ---
     beginn = models.DateField()
     ende = models.DateField(null=True, blank=True)
+    erstmals_kuendbar_auf = models.DateField("Erstmals kündbar auf", null=True, blank=True) # 🔥 NEU
     kuendigungsfrist_monate = models.IntegerField("Kündigungsfrist (Monate)", default=3)
     kuendigungstermine = models.CharField("Kündigungstermine", max_length=100, default="Ende jedes Monats ausser Dezember", blank=True)
+
+    # --- OBJEKT & NUTZUNG (🔥 NEU) ---
+    familienwohnung = models.BooleanField("Familienwohnung", default=False)
+    mitmieter_name = models.CharField("Ehegatte / Mitmieter", max_length=150, blank=True, default='') # 🔥 NEU
+    anzahl_personen = models.IntegerField("Anzahl Personen", default=1)
+    besondere_vereinbarungen = models.TextField("Besondere Vereinbarungen", blank=True, default='')
 
     # --- FINANZEN ---
     netto_mietzins = models.DecimalField(max_digits=8, decimal_places=2)
@@ -51,17 +64,22 @@ class Mietvertrag(models.Model):
     nk_abrechnungsart = models.CharField("NK-Abrechnungsart", max_length=20, choices=NK_TYP_CHOICES, default='akonto')
     verteilschluessel = models.CharField("Verteilschlüssel", max_length=20, choices=VERTEIL_CHOICES, default='m2')
     ausgeschlossene_kosten = models.TextField("Ausgeschlossene Kosten", blank=True, help_text="Welche Kosten zahlt dieser Mieter NICHT?")
+    zahlungsrhythmus = models.CharField("Zahlungsrhythmus", max_length=20, choices=ZAHLUNGSRHYTHMUS_CHOICES, default='monatlich') # 🔥 NEU
 
     # --- KAUTION ---
     kautions_betrag = models.DecimalField("Kautionsbetrag", max_digits=8, decimal_places=2, blank=True, null=True)
     kautions_konto = models.CharField("Kautionskonto (IBAN)", max_length=34, blank=True, default='')
     kautions_einbezahlt_am = models.DateField("Kaution einbezahlt am", null=True, blank=True)
 
-    # --- BASES ---
+    # --- BASES & VORBEHALTE (🔥 ERWEITERT) ---
     basis_referenzzinssatz = models.DecimalField(max_digits=4, decimal_places=2, default=get_current_ref_zins)
     basis_lik_punkte = models.DecimalField(max_digits=6, decimal_places=1, default=get_current_lik)
+    kostensteigerung_datum = models.DateField("Kostensteigerung ausgeglichen bis", null=True, blank=True)
+    mietzinsreserve_betrag = models.DecimalField("Reserve Betrag (CHF)", max_digits=8, decimal_places=2, null=True, blank=True)
+    mietzinsreserve_prozent = models.DecimalField("Reserve Prozent (%)", max_digits=5, decimal_places=2, null=True, blank=True)
+    weitere_vorbehalte = models.TextField("Weitere Vorbehalte", blank=True, default='')
 
-    pdf_datei = models.FileField(upload_to='vertraege_pdfs/', blank=True, null=True)
+    pdf_datei = models.FileField(upload_to='roh_vertraege/', blank=True, null=True)
 
     class Meta:
         verbose_name = "Mietvertrag"
@@ -97,8 +115,8 @@ class Mietvertrag(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
-        # 🔥 AUTOMATISCHE ABLAGE: Verknüpft das Dokument auch mit der Liegenschaft!
         if self.sign_status == 'unterzeichnet' and self.pdf_datei:
+            from portfolio.models import Dokument
             exists = Dokument.objects.filter(vertrag=self, kategorie='vertrag').exists()
             if not exists:
                 Dokument.objects.create(
@@ -108,11 +126,10 @@ class Mietvertrag(models.Model):
                     vertrag=self,
                     mieter=self.mieter,
                     einheit=self.einheit,
-                    liegenschaft=self.einheit.liegenschaft,  # 🔥 Neu: Verknüpfung zur Liegenschaft
+                    liegenschaft=self.einheit.liegenschaft,
                     datei=self.pdf_datei
                 )
 
-# DEINE WEITEREN MODELLE BLEIBEN UNVERÄNDERT:
 class MietzinsAnpassung(models.Model):
     vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='anpassungen')
     wirksam_ab = models.DateField()
@@ -143,12 +160,12 @@ class Dokument(models.Model):
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, null=True, blank=True)
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, null=True, blank=True)
     mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, null=True, blank=True)
-    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.SET_NULL, null=True, blank=True, related_name='dokumente')
+    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.SET_NULL, null=True, blank=True, related_name='dokument_ablage')
     bezeichnung = models.CharField(max_length=200, default="Dokument")
     titel = models.CharField(max_length=200, blank=True)
     datei = models.FileField(upload_to=get_smart_upload_path)
     kategorie = models.CharField(max_length=50, choices=[('vertrag', 'Vertrag'), ('protokoll', 'Protokoll'), ('korrespondenz', 'Korrespondenz'), ('sonstiges', 'Sonstiges')])
-    erstellt_am = models.DateTimeField(auto_now_add=True)
+    datum = models.DateField(auto_now_add=True)
 
     class Meta:
         db_table = 'core_dokument'

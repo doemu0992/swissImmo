@@ -4,21 +4,15 @@ from typing import List, Optional
 from decimal import Decimal
 from datetime import date
 from django.db import models
-from .models import Liegenschaft, Einheit, Geraet, Zaehler, Schluessel, Unterhalt, Dokument
+from .models import Liegenschaft, Einheit, Geraet, Zaehler, Schluessel, Unterhalt, Dokument, Verteilschluessel, LiegenschaftVerteilschluessel
 
-class DokumentSchemaOut(ModelSchema):
+class DokumentSchemaOut(Schema):
+    id: int
+    titel: str
+    kategorie: str
+    datum: date
     datei_url: str
-    class Meta:
-        model = Dokument
-        # 🔥 GEFIXT: 'erstellt_am' zu 'datum' geändert, passend zum Modell
-        fields = ['id', 'titel', 'kategorie', 'datum']
-
-    @staticmethod
-    def resolve_datei_url(obj):
-        try:
-            if obj.datei and hasattr(obj.datei, 'url'): return obj.datei.url
-        except Exception: pass
-        return ""
+    is_vertrag: bool = False
 
 class UnterhaltSchemaOut(ModelSchema):
     class Meta:
@@ -67,6 +61,33 @@ class NebenobjektSchemaOut(ModelSchema):
     def resolve_typ_display(obj):
         return obj.get_typ_display()
 
+class VerteilschluesselSchemaOut(Schema):
+    id: int
+    kostenart: str
+    kostenart_display: str
+    typ: str
+    typ_display: str
+    wert: Decimal
+    gueltig_ab: date
+    gueltig_bis: Optional[date] = None
+    notizen: str = ""
+
+class LiegenschaftVerteilschluesselSchemaOut(ModelSchema):
+    kostenart_display: str
+    typ_display: str
+
+    class Meta:
+        model = LiegenschaftVerteilschluessel
+        fields = ['id', 'kostenart', 'typ', 'wert', 'gueltig_ab', 'gueltig_bis', 'notizen']
+
+    @staticmethod
+    def resolve_kostenart_display(obj):
+        return obj.get_kostenart_display()
+
+    @staticmethod
+    def resolve_typ_display(obj):
+        return obj.get_typ_display()
+
 class EinheitSchemaOut(ModelSchema):
     typ_display: str
     aktueller_mieter: str
@@ -78,6 +99,7 @@ class EinheitSchemaOut(ModelSchema):
     dokumente: List[DokumentSchemaOut] = []
     historie: List[HistorieSchemaOut] = []
     nebenobjekte: List[NebenobjektSchemaOut] = []
+    verteilschluessel: List[VerteilschluesselSchemaOut] = []
 
     class Meta:
         model = Einheit
@@ -100,14 +122,11 @@ class EinheitSchemaOut(ModelSchema):
                 status__in=['aktiv', 'gekuendigt'],
                 beginn__lte=heute
             ).filter(models.Q(ende__isnull=True) | models.Q(ende__gte=heute)).first()
-
             if aktiver_vertrag:
                 return f"{aktiver_vertrag.mieter.vorname} {aktiver_vertrag.mieter.nachname}"
-
             zukuenftig = obj.vertraege.filter(status='aktiv', beginn__gt=heute).first()
             if zukuenftig:
                 return f"Ab {zukuenftig.beginn.strftime('%d.%m.%Y')}: {zukuenftig.mieter.display_name}"
-
         except Exception: pass
         return "Leerstand"
 
@@ -119,7 +138,6 @@ class EinheitSchemaOut(ModelSchema):
                 status__in=['aktiv', 'gekuendigt'],
                 beginn__lte=heute
             ).filter(models.Q(ende__isnull=True) | models.Q(ende__gte=heute)).exists()
-
             return "vermietet" if ist_vermietet else "leerstand"
         except Exception:
             return "leerstand"
@@ -136,17 +154,71 @@ class EinheitSchemaOut(ModelSchema):
                     'ende_datum': v.ende,
                     'nettomiete': v.netto_mietzins or Decimal('0.00')
                 })
-        except Exception:
-            pass
+        except Exception: pass
         return history
 
-    # 🔥 GEFIXT: Lädt automatisch alle Dokumente der Einheit (sortiert nach datum!)
     @staticmethod
     def resolve_dokumente(obj):
+        docs_out = []
+        seen_urls = set()
         try:
-            return obj.dokument_set.all().order_by('-datum')
-        except Exception:
-            return []
+            for d in obj.dokument_set.all():
+                url = d.datei.url if d.datei and hasattr(d.datei, 'url') else ""
+                if not url or url in seen_urls: continue
+                seen_urls.add(url)
+                docs_out.append({"id": d.id, "titel": d.titel or "Dokument", "kategorie": getattr(d, 'kategorie', 'Allgemein'), "datum": getattr(d, 'datum', date.today()), "datei_url": url, "is_vertrag": False})
+        except Exception: pass
+
+        try:
+            from rentals.models import Dokument as RentalsDokument
+            for d in RentalsDokument.objects.filter(einheit=obj):
+                url = d.datei.url if d.datei and hasattr(d.datei, 'url') else ""
+                if not url or url in seen_urls: continue
+                seen_urls.add(url)
+                kat = d.get_kategorie_display() if hasattr(d, 'get_kategorie_display') else 'Vertrag'
+                docs_out.append({"id": d.id + 10000, "titel": d.titel or d.bezeichnung, "kategorie": kat, "datum": getattr(d, 'datum', date.today()), "datei_url": url, "is_vertrag": True})
+        except Exception: pass
+        docs_out.sort(key=lambda x: x["datum"], reverse=True)
+        return docs_out
+
+    @staticmethod
+    def resolve_verteilschluessel(obj):
+        result = []
+        manual_keys = list(obj.verteilschluessel.all())
+        manual_kostenarten = [k.kostenart for k in manual_keys]
+
+        # 1. Manuelle Schlüssel immer anzeigen (egal ob Garage oder Wohnung)
+        for mk in manual_keys:
+            result.append({
+                "id": mk.id, "kostenart": mk.kostenart, "kostenart_display": mk.get_kostenart_display(),
+                "typ": mk.typ, "typ_display": mk.get_typ_display(), "wert": mk.wert,
+                "gueltig_ab": mk.gueltig_ab, "gueltig_bis": mk.gueltig_bis, "notizen": mk.notizen or "Individuell"
+            })
+
+        # 🔥 GEFIXT: Standards der Liegenschaft NUR bei Hauptobjekten anwenden!
+        if obj.typ in ['whg', 'gew', 'stwe']:
+            try:
+                standards = obj.liegenschaft.standard_schluessel.all()
+                for std in standards:
+                    if std.kostenart in manual_kostenarten: continue
+
+                    calc_wert = std.wert # Bei Pauschal wird der Wert des Standards genommen
+                    if std.typ == 'm2' and obj.flaeche_m2: calc_wert = obj.flaeche_m2
+                    elif std.typ == 'm3' and obj.volumen_m3: calc_wert = obj.volumen_m3
+                    elif std.typ == 'wertquote' and obj.wertquote: calc_wert = obj.wertquote
+                    elif std.typ == 'zimmer' and obj.zimmer: calc_wert = obj.zimmer
+                    elif std.typ == 'einheit': calc_wert = Decimal('1.00')
+
+                    result.append({
+                        "id": -std.id,
+                        "kostenart": std.kostenart, "kostenart_display": std.get_kostenart_display(),
+                        "typ": std.typ, "typ_display": std.get_typ_display(), "wert": calc_wert,
+                        "gueltig_ab": std.gueltig_ab, "gueltig_bis": std.gueltig_bis,
+                        "notizen": std.notizen or "Automatisch (Liegenschafts-Standard)"
+                    })
+            except Exception: pass
+
+        return result
 
 class EinheitCreateSchema(Schema):
     bezeichnung: str
@@ -169,6 +241,13 @@ class EinheitCreateSchema(Schema):
     nebenkosten_aktuell: Decimal = Decimal('0.00')
     nk_abrechnungsart: str = 'akonto'
 
+class VerteilschluesselUebersichtSchema(Schema):
+    einheit_bezeichnung: str
+    kostenart_display: str
+    typ_display: str
+    wert: Decimal
+    is_auto: bool = False
+
 class LiegenschaftListSchema(ModelSchema):
     einheiten: List[NebenobjektSchemaOut] = []
     class Meta:
@@ -179,17 +258,67 @@ class LiegenschaftDetailSchema(ModelSchema):
     einheiten: List[EinheitSchemaOut]
     dokumente: List[DokumentSchemaOut] = []
     allgemeine_geraete: List[GeraetSchemaOut] = []
+    verteilschluessel_uebersicht: List[VerteilschluesselUebersichtSchema] = []
+    standard_schluessel: List[LiegenschaftVerteilschluesselSchemaOut] = []
+
     class Meta:
         model = Liegenschaft
         exclude = ['mandant', 'verwaltung']
 
-    # 🔥 GEFIXT: Lädt automatisch alle Dokumente der Liegenschaft (sortiert nach datum!)
+    @staticmethod
+    def resolve_verteilschluessel_uebersicht(obj):
+        uebersicht = []
+        try:
+            einheiten = obj.einheiten.all()
+            standards = obj.standard_schluessel.all()
+            for e in einheiten:
+                manual_keys = {k.kostenart: k for k in e.verteilschluessel.all()}
+
+                # Manuelle Schlüssel immer laden
+                for mk in manual_keys.values():
+                    uebersicht.append({"einheit_bezeichnung": e.bezeichnung, "kostenart_display": mk.get_kostenart_display(), "typ_display": mk.get_typ_display(), "wert": mk.wert, "is_auto": False})
+
+                # 🔥 GEFIXT: Standards nur für Hauptobjekte in die Übersicht laden!
+                if e.typ in ['whg', 'gew', 'stwe']:
+                    for std in standards:
+                        if std.kostenart not in manual_keys:
+                            calc_wert = std.wert
+                            if std.typ == 'm2' and e.flaeche_m2: calc_wert = e.flaeche_m2
+                            elif std.typ == 'm3' and e.volumen_m3: calc_wert = e.volumen_m3
+                            elif std.typ == 'wertquote' and e.wertquote: calc_wert = e.wertquote
+                            elif std.typ == 'zimmer' and e.zimmer: calc_wert = e.zimmer
+                            elif std.typ == 'einheit': calc_wert = Decimal('1.00')
+
+                            uebersicht.append({"einheit_bezeichnung": e.bezeichnung, "kostenart_display": std.get_kostenart_display(), "typ_display": std.get_typ_display(), "wert": calc_wert, "is_auto": True})
+
+            uebersicht.sort(key=lambda x: (x["kostenart_display"], x["einheit_bezeichnung"]))
+        except Exception: pass
+        return uebersicht
+
     @staticmethod
     def resolve_dokumente(obj):
+        docs_out = []
+        seen_urls = set()
         try:
-            return obj.dokument_set.all().order_by('-datum')
-        except Exception:
-            return []
+            for d in obj.dokument_set.all():
+                url = d.datei.url if d.datei and hasattr(d.datei, 'url') else ""
+                if not url or url in seen_urls: continue
+                seen_urls.add(url)
+                docs_out.append({"id": d.id, "titel": d.titel or "Dokument", "kategorie": getattr(d, 'kategorie', 'Allgemein'), "datum": getattr(d, 'datum', date.today()), "datei_url": url, "is_vertrag": False})
+        except Exception: pass
+
+        try:
+            from rentals.models import Dokument as RentalsDokument
+            for d in RentalsDokument.objects.filter(liegenschaft=obj):
+                url = d.datei.url if d.datei and hasattr(d.datei, 'url') else ""
+                if not url or url in seen_urls: continue
+                seen_urls.add(url)
+                kat = d.get_kategorie_display() if hasattr(d, 'get_kategorie_display') else 'Vertrag'
+                docs_out.append({"id": d.id + 10000, "titel": d.titel or d.bezeichnung, "kategorie": kat, "datum": getattr(d, 'datum', date.today()), "datei_url": url, "is_vertrag": True})
+        except Exception: pass
+
+        docs_out.sort(key=lambda x: x["datum"], reverse=True)
+        return docs_out
 
 class LiegenschaftUpdateSchema(Schema):
     strasse: str = ""

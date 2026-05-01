@@ -1,7 +1,7 @@
 <div v-if="activeTab === 'rentals' && !selectedVertrag" class="animate-fade-in space-y-8 pb-10">
     <div class="flex justify-between items-center">
         <h1 class="text-3xl font-black text-slate-900 tracking-tight">Mietverträge</h1>
-        <button @click="showNewRentModal = true" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">+ Neuer Vertrag</button>
+        <button @click="openContractWizard" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">+ Neuer Vertrag</button>
     </div>
 
     <div class="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-4 shadow-sm">
@@ -75,8 +75,7 @@
             <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
                 <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Nebenkosten-Details</h3>
                 <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Abrechnungsart</label><select v-model="selectedVertrag.nk_abrechnungsart" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"><option value="akonto">Akonto</option><option value="pauschal">Pauschal</option><option value="inbegriffen">Inbegriffen</option></select></div>
-                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Verteilschlüssel</label><select v-model="selectedVertrag.verteilschluessel" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"><option value="m2">Fläche (m²)</option><option value="m3">Volumen (m³)</option><option value="quote">Wertquote</option></select></div>
-                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Ausgeschlossene Kosten</label><textarea v-model="selectedVertrag.ausgeschlossene_kosten" rows="2" placeholder="Z.B. Lift im EG..." class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500"></textarea></div>
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Zahlungsrhythmus</label><select v-model="selectedVertrag.zahlungsrhythmus" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"><option value="monatlich">Monatlich</option><option value="vierteljahr">Vierteljährlich</option><option value="halbjahr">Halbjährlich</option><option value="jahr">Jährlich</option></select></div>
             </div>
 
             <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
@@ -88,17 +87,41 @@
         </div>
 
         <div class="col-span-2 space-y-6">
-
             <div class="bg-slate-50 p-8 rounded-3xl border border-slate-200 shadow-inner">
                 <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px] mb-6">Mietdauer & Fristen</h3>
-                <div class="grid grid-cols-2 gap-6 mb-6">
+                <div class="grid grid-cols-3 gap-6 mb-6">
                     <div><label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Mietbeginn</label><input type="date" v-model="selectedVertrag.beginn" class="w-full bg-white border-none p-3 rounded-xl text-sm font-bold shadow-sm focus:ring-2 focus:ring-indigo-500"></div>
-                    <div><label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Vertragsende (Optional)</label><input type="date" v-model="selectedVertrag.ende" class="w-full bg-white border-none p-3 rounded-xl text-sm font-bold shadow-sm focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Erstmals kündbar auf</label><input type="date" v-model="selectedVertrag.erstmals_kuendbar_auf" class="w-full bg-white border-none p-3 rounded-xl text-sm font-bold shadow-sm focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Vertragsende (befristet)</label><input type="date" v-model="selectedVertrag.ende" class="w-full bg-white border-none p-3 rounded-xl text-sm font-bold shadow-sm focus:ring-2 focus:ring-indigo-500"></div>
                 </div>
                 <div class="grid grid-cols-3 gap-6">
                     <div class="col-span-1"><label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Kündigungsfrist</label><div class="flex items-center gap-2"><input type="number" v-model="selectedVertrag.kuendigungsfrist_monate" class="w-full bg-white border-none p-3 rounded-xl text-sm font-bold shadow-sm focus:ring-2 focus:ring-indigo-500"><span class="text-xs font-bold text-slate-500">Monate</span></div></div>
                     <div class="col-span-2"><label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Kündigungstermine</label><input type="text" v-model="selectedVertrag.kuendigungstermine" placeholder="Z.B. Ende März, Juni, Sept" class="w-full bg-white border-none p-3 rounded-xl text-sm font-bold shadow-sm focus:ring-2 focus:ring-indigo-500"></div>
                 </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+                <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Rechtliches, Reserven & Vorbehalte</h3>
+
+                <div class="grid grid-cols-3 gap-6 pb-6 border-b border-slate-100">
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-2 text-[10px] font-black uppercase text-slate-400 cursor-pointer">
+                            <input type="checkbox" v-model="selectedVertrag.familienwohnung" class="rounded text-indigo-600 focus:ring-indigo-500">
+                            Ist Familienwohnung?
+                        </label>
+                        <input v-if="selectedVertrag.familienwohnung" type="text" v-model="selectedVertrag.mitmieter_name" placeholder="Name des Partners" class="w-full bg-rose-50 border-none p-2 rounded-lg text-xs font-bold text-rose-700 focus:ring-2 focus:ring-rose-400">
+                    </div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Anzahl Personen</label><input type="number" v-model="selectedVertrag.anzahl_personen" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Kostensteigerung bis</label><input type="date" v-model="selectedVertrag.kostensteigerung_datum" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mietzinsreserve (CHF)</label><input type="number" v-model="selectedVertrag.mietzinsreserve_betrag" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mietzinsreserve (%)</label><input type="number" v-model="selectedVertrag.mietzinsreserve_prozent" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"></div>
+                </div>
+
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Weitere Vorbehalte</label><textarea v-model="selectedVertrag.weitere_vorbehalte" rows="2" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500"></textarea></div>
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Besondere Vereinbarungen</label><textarea v-model="selectedVertrag.besondere_vereinbarungen" rows="3" placeholder="Z.B. Hundehaltung erlaubt..." class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500"></textarea></div>
             </div>
 
             <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
@@ -107,7 +130,7 @@
                     <p class="text-xs text-slate-500 font-medium">Digital signiertes PDF oder Scan</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button v-if="selectedVertrag.pdf_datei" @click="downloadFile(`/api/rentals/vertraege/${selectedVertrag.id}/pdf`)" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all">
+                    <button v-if="selectedVertrag.pdf_datei" @click="downloadFile(selectedVertrag.pdf_datei)" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all">
                         <i class="fa-solid fa-eye mr-2"></i>Vorschau
                     </button>
 
@@ -120,38 +143,185 @@
                     </span>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 
 <div v-if="showNewRentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
-        <h3 class="text-2xl font-black text-slate-900 mb-6">Neuen Mietvertrag erstellen</h3>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mieter auswählen</label>
-                <select v-model="newRentData.mieter_id" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
-                    <option v-for="m in mieter" :key="m.id" :value="m.id">{% verbatim %}{{ m.display_name }}{% endverbatim %}</option>
-                </select>
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl animate-modal-pop overflow-hidden flex flex-col max-h-[90vh]">
+
+        <div class="bg-slate-50 border-b border-slate-100 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-black text-slate-900">Vertrags-Wizard</h3>
+                <button @click="showNewRentModal = false" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-            <div>
-                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mietobjekt (Einheit) auswählen</label>
-                <select v-model="newRentData.einheit_id" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
-                    <optgroup v-for="l in liegenschaften" :key="l.id" :label="l.strasse">
-                        <option v-for="e in l.einheiten" :key="e.id" :value="e.id">{% verbatim %}{{ e.bezeichnung }} ({{ e.typ_display }}){% endverbatim %}</option>
-                    </optgroup>
-                </select>
-            </div>
-            <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mietbeginn</label><input type="date" v-model="newRentData.beginn" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500"></div>
-            <div class="grid grid-cols-2 gap-4">
-                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Netto CHF</label><input type="number" v-model="newRentData.netto_mietzins" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold font-mono focus:ring-2 focus:ring-indigo-500"></div>
-                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">NK CHF</label><input type="number" v-model="newRentData.nebenkosten" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold font-mono focus:ring-2 focus:ring-indigo-500"></div>
+            <div class="flex items-center gap-4">
+                <div v-for="step in [1,2,3]" :key="step" class="flex items-center gap-2">
+                    <div :class="wizardStep >= step ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-400'" class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black transition-colors">
+                        {% verbatim %}{{ step }}{% endverbatim %}
+                    </div>
+                    <span :class="wizardStep >= step ? 'text-slate-900' : 'text-slate-400'" class="text-[10px] font-black uppercase tracking-widest">
+                        {% verbatim %}{{ step === 1 ? 'Objekt & Mieter' : (step === 2 ? 'Konditionen' : 'Snapshot & Finish') }}{% endverbatim %}
+                    </span>
+                    <div v-if="step < 3" class="w-8 h-[2px] bg-slate-200 mx-2"></div>
+                </div>
             </div>
         </div>
-        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
-            <button @click="showNewRentModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
-            <button @click="saveNewVertrag" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">Vertrag erstellen</button>
+
+        <div class="p-8 overflow-y-auto flex-1">
+
+            <div v-if="wizardStep === 1" class="animate-fade-in grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-indigo-600 mb-2">1. Wer zieht ein?</label>
+                        <select v-model="newRentData.mieter_id" class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold focus:ring-2 focus:ring-indigo-500 text-lg">
+                            <option v-for="m in mieter" :key="m.id" :value="m.id">{% verbatim %}{{ m.display_name }}{% endverbatim %}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-indigo-600 mb-2">2. Welches Objekt?</label>
+                        <select v-model="newRentData.einheit_id" @change="onUnitSelectedForContract" class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold focus:ring-2 focus:ring-indigo-500 text-lg">
+                            <option :value="null">Bitte wählen...</option>
+                            <optgroup v-for="l in liegenschaften" :key="l.id" :label="l.strasse">
+                                <option v-for="e in l.einheiten" :key="e.id" :value="e.id">{% verbatim %}{{ e.bezeichnung }} ({{ e.typ_display }}){% endverbatim %}</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-6 pt-4 border-t border-slate-100">
+                        <label class="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer">
+                            <input type="checkbox" v-model="newRentData.familienwohnung" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500">
+                            Familienwohnung?
+                        </label>
+                        <div class="flex-1 flex items-center gap-2">
+                            <label class="text-[10px] font-black uppercase text-slate-400">Anzahl Personen:</label>
+                            <input type="number" v-model="newRentData.anzahl_personen" class="w-16 bg-slate-50 border-none p-2 rounded-xl font-bold text-center">
+                        </div>
+                    </div>
+
+                    <div v-if="newRentData.familienwohnung" class="animate-fade-in p-5 bg-rose-50 rounded-2xl border border-rose-100">
+                        <label class="block text-[10px] font-black uppercase text-rose-600 mb-2">Name des Ehegatten / eingetragenen Partners (Zwingend)</label>
+                        <input type="text" v-model="newRentData.mitmieter_name" placeholder="Vorname und Nachname" class="w-full bg-white border-none p-3 rounded-xl font-bold shadow-sm focus:ring-2 focus:ring-rose-400">
+                        <p class="text-[9px] text-rose-500 mt-2 font-medium"><i class="fa-solid fa-circle-exclamation mr-1"></i>Rechtlicher Hinweis: Kündigungen & Mietzinsänderungen müssen separat an beide Personen zugestellt werden.</p>
+                    </div>
+                </div>
+                <div class="bg-indigo-50/50 rounded-3xl p-8 border border-indigo-100 flex flex-col justify-center text-center">
+                    <div v-if="!unitPreview">
+                        <i class="fa-solid fa-house-chimney-window text-4xl text-indigo-200 mb-4"></i>
+                        <p class="text-sm text-indigo-400 font-medium">Bitte wähle ein Objekt aus, um die Stammdaten zu laden.</p>
+                    </div>
+                    <div v-else class="space-y-4">
+                        <h4 class="font-black text-indigo-900 text-xl">{% verbatim %}{{ unitPreview.bezeichnung }}{% endverbatim %}</h4>
+                        <div class="flex flex-wrap justify-center gap-2">
+                            <span class="bg-white px-3 py-1 rounded-full text-[10px] font-black text-indigo-600 shadow-sm border border-indigo-100">{% verbatim %}{{ unitPreview.flaeche_m2 || 0 }}{% endverbatim %} m²</span>
+                            <span class="bg-white px-3 py-1 rounded-full text-[10px] font-black text-indigo-600 shadow-sm border border-indigo-100">{% verbatim %}{{ unitPreview.zimmer || 0 }}{% endverbatim %} Zimmer</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="wizardStep === 2" class="animate-fade-in">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div class="space-y-6">
+                        <h4 class="text-sm font-black text-slate-900 uppercase">Mietzins & NK</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Netto Miete</label><input type="number" v-model="newRentData.netto_mietzins" class="w-full bg-slate-50 border-none p-3 rounded-xl font-mono font-black text-lg"></div>
+                            <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Nebenkosten</label><input type="number" v-model="newRentData.nebenkosten" class="w-full bg-slate-50 border-none p-3 rounded-xl font-mono font-black text-lg"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Abrechnungsart</label>
+                                <select v-model="newRentData.nk_abrechnungsart" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold">
+                                    <option value="akonto">Akonto (Vorschuss)</option>
+                                    <option value="pauschal">Pauschal</option>
+                                    <option value="inbegriffen">Inbegriffen</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Zahlungsrhythmus</label>
+                                <select v-model="newRentData.zahlungsrhythmus" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold">
+                                    <option value="monatlich">Monatlich</option>
+                                    <option value="vierteljahr">Vierteljährlich</option>
+                                    <option value="halbjahr">Halbjährlich</option>
+                                    <option value="jahr">Jährlich</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <h4 class="text-sm font-black text-slate-900 uppercase">Sicherheit (Kaution)</h4>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Kautionsbetrag (Vorschlag: 3x Netto)</label>
+                            <div class="flex items-center gap-3">
+                                <input type="number" v-model="newRentData.kautions_betrag" class="flex-1 bg-slate-50 border-none p-3 rounded-xl font-mono font-black text-lg">
+                                <button @click="newRentData.kautions_betrag = (newRentData.netto_mietzins * 3)" class="text-[10px] bg-slate-100 hover:bg-slate-200 px-3 py-3 rounded-xl font-black uppercase">3x Miete</button>
+                            </div>
+                        </div>
+                        <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mietbeginn</label><input type="date" v-model="newRentData.beginn" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="wizardStep === 3" class="animate-fade-in space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <h4 class="text-sm font-black text-slate-900 uppercase">Rechtliche Basiswerte (Snapshot)</h4>
+                        <div class="p-6 bg-emerald-50 rounded-3xl border border-emerald-100">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-xs font-bold text-emerald-800">Referenzzinssatz</span>
+                                <span class="font-mono font-black text-emerald-900">{% verbatim %}{{ newRentData.basis_referenzzinssatz }}{% endverbatim %} %</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-emerald-800">LIK Indexstand</span>
+                                <span class="font-mono font-black text-emerald-900">{% verbatim %}{{ newRentData.basis_lik_punkte }}{% endverbatim %} Pkt.</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mietzinsreserve (CHF)</label><input type="number" v-model="newRentData.mietzinsreserve_betrag" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold" placeholder="0.00"></div>
+                            <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mietzinsreserve (%)</label><input type="number" v-model="newRentData.mietzinsreserve_prozent" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold" placeholder="0.00"></div>
+                        </div>
+                        <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Kostensteigerung ausgeglichen bis</label><input type="date" v-model="newRentData.kostensteigerung_datum" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold"></div>
+
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="col-span-1"><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Kündigungsfrist</label><input type="number" v-model="newRentData.kuendigungsfrist_monate" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold"></div>
+                            <div class="col-span-2"><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Termine</label><input type="text" v-model="newRentData.kuendigungstermine" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold text-xs"></div>
+                        </div>
+                        <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Erstmals kündbar auf</label><input type="date" v-model="newRentData.erstmals_kuendbar_auf" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold"></div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="bg-slate-900 text-white rounded-3xl p-8">
+                            <h4 class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">Verteilschlüssel-Snapshot</h4>
+                            <div class="space-y-2">
+                                <div v-for="v in unitPreview.verteilschluessel" :key="v.id" class="flex justify-between items-center text-[10px] border-b border-white/10 pb-2">
+                                    <span class="text-slate-300">{% verbatim %}{{ v.kostenart_display }}{% endverbatim %}</span>
+                                    <span class="font-mono font-bold">{% verbatim %}{{ v.wert }} {{ v.typ_display }}{% endverbatim %}</span>
+                                </div>
+                                <div v-if="!unitPreview.verteilschluessel || unitPreview.verteilschluessel.length === 0" class="text-xs text-slate-500 italic py-2">
+                                    Keine Verteilschlüssel hinterlegt.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Besondere Vereinbarungen (werden ins PDF gedruckt)</label>
+                            <textarea v-model="newRentData.besondere_vereinbarungen" rows="3" placeholder="Z.B. Haustiere nach Absprache..." class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold text-sm focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-slate-50 p-8 border-t border-slate-100 flex justify-between">
+            <button v-if="wizardStep > 1" @click="wizardStep--" class="py-3 px-6 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-all">Zurück</button>
+            <div v-else></div>
+
+            <div class="flex gap-3">
+                <button @click="showNewRentModal = false" class="py-3 px-6 text-slate-400 font-bold hover:text-slate-600">Abbrechen</button>
+                <button v-if="wizardStep < 3" @click="wizardStep++" :disabled="!newRentData.einheit_id || (newRentData.familienwohnung && !newRentData.mitmieter_name)" class="py-3 px-8 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all">Weiter</button>
+                <button v-if="wizardStep === 3" @click="saveNewVertrag" class="py-3 px-10 bg-emerald-600 text-white rounded-2xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all">Vertrag finalisieren</button>
+            </div>
         </div>
     </div>
 </div>

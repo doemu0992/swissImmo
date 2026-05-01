@@ -2,10 +2,11 @@
 from ninja import Router, Schema, File, Form
 from ninja.files import UploadedFile
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
 from typing import List, Optional
 from datetime import date
 from decimal import Decimal
-from .models import Liegenschaft, Einheit, Geraet, Zaehler, Schluessel, Unterhalt, Dokument
+from .models import Liegenschaft, Einheit, Geraet, Zaehler, Schluessel, Unterhalt, Dokument, Verteilschluessel, LiegenschaftVerteilschluessel
 from .schemas import LiegenschaftListSchema, LiegenschaftDetailSchema, LiegenschaftUpdateSchema, EinheitSchemaOut, EinheitCreateSchema
 from .services import sync_liegenschaft_with_gwr
 
@@ -46,6 +47,11 @@ def delete_liegenschaft(request, liegenschaft_id: int):
 # ========================================================
 # EINHEITEN
 # ========================================================
+# 🔥 NEU: Der Endpunkt, um eine einzelne Einheit (für die Vertrags-Vorschau) zu laden!
+@router.get("/einheiten/{einheit_id}", response=EinheitSchemaOut)
+def get_einheit(request, einheit_id: int):
+    return get_object_or_404(Einheit, id=einheit_id)
+
 @router.post("/liegenschaften/{liegenschaft_id}/einheiten", response={201: dict})
 def create_einheit(request, liegenschaft_id: int, payload: EinheitCreateSchema):
     data = payload.dict(exclude_unset=True)
@@ -78,8 +84,32 @@ def link_einheit(request, einheit_id: int, payload: LinkSchema):
 def upload_dokument(request, titel: str = Form(...), kategorie: str = Form(...), liegenschaft_id: Optional[int] = Form(None), einheit_id: Optional[int] = Form(None), datei: UploadedFile = File(...)):
     Dokument.objects.create(titel=titel, kategorie=kategorie, liegenschaft_id=liegenschaft_id, einheit_id=einheit_id, datei=datei); return 201, {"success": True}
 
-@router.delete("/dokumente/{id}", response={204: None})
-def delete_dokument(request, id: int): get_object_or_404(Dokument, id=id).delete(); return 204, None
+@router.delete("/dokumente/{id}", response={200: dict, 404: dict, 500: dict})
+def delete_dokument(request, id: int):
+    try:
+        if id >= 10000:
+            from rentals.models import Dokument as RentalsDokument
+            doc = RentalsDokument.objects.get(id=id - 10000)
+        else:
+            try:
+                doc = Dokument.objects.get(id=id)
+            except ObjectDoesNotExist:
+                from rentals.models import Dokument as RentalsDokument
+                doc = RentalsDokument.objects.get(id=id)
+
+        if hasattr(doc, 'datei') and doc.datei:
+            try:
+                doc.datei.delete(save=False)
+            except Exception:
+                pass
+
+        doc.delete()
+        return 200, {"success": True}
+
+    except ObjectDoesNotExist:
+        return 404, {"success": False, "error": "Dokument nicht gefunden."}
+    except Exception as e:
+        return 500, {"success": False, "error": str(e)}
 
 class UnterhaltCreateSchema(Schema): einheit_id: int; titel: str; beschreibung: str = ""; datum: date; kosten: Decimal = Decimal('0.00')
 @router.post("/unterhalt", response={201: dict})
@@ -89,10 +119,63 @@ def create_unterhalt(request, payload: UnterhaltCreateSchema):
 def delete_unterhalt(request, id: int): get_object_or_404(Unterhalt, id=id).delete(); return 204, None
 
 # ========================================================
-# GERÄTE (Hier ist der Fix für die Haustechnik!)
+# VERTEILSCHLÜSSEL EINHEIT
+# ========================================================
+class VerteilschluesselCreateSchema(Schema):
+    einheit_id: int
+    kostenart: str
+    typ: str
+    wert: Decimal
+    gueltig_ab: date
+    gueltig_bis: Optional[date] = None
+    notizen: str = ""
+
+@router.post("/verteilschluessel", response={201: dict})
+def create_verteilschluessel(request, payload: VerteilschluesselCreateSchema):
+    e = get_object_or_404(Einheit, id=payload.einheit_id)
+    Verteilschluessel.objects.create(einheit=e, **payload.dict(exclude={'einheit_id'}))
+    return 201, {"success": True}
+
+@router.delete("/verteilschluessel/{id}", response={204: None})
+def delete_verteilschluessel(request, id: int):
+    get_object_or_404(Verteilschluessel, id=id).delete()
+    return 204, None
+
+# ========================================================
+# LIEGENSCHAFTS-STANDARDS (VERTEILSCHLÜSSEL)
+# ========================================================
+class LiegenschaftVerteilschluesselCreateSchema(Schema):
+    liegenschaft_id: int
+    kostenart: str
+    typ: str
+    wert: Decimal = Decimal('0.00')
+    gueltig_ab: date
+    gueltig_bis: Optional[date] = None
+    notizen: str = ""
+
+@router.post("/liegenschaft-verteilschluessel", response={201: dict})
+def create_liegenschaft_verteilschluessel(request, payload: LiegenschaftVerteilschluesselCreateSchema):
+    l = get_object_or_404(Liegenschaft, id=payload.liegenschaft_id)
+    LiegenschaftVerteilschluessel.objects.create(
+        liegenschaft=l,
+        kostenart=payload.kostenart,
+        typ=payload.typ,
+        wert=payload.wert,
+        gueltig_ab=payload.gueltig_ab,
+        gueltig_bis=payload.gueltig_bis,
+        notizen=payload.notizen
+    )
+    return 201, {"success": True}
+
+@router.delete("/liegenschaft-verteilschluessel/{id}", response={204: None})
+def delete_liegenschaft_verteilschluessel(request, id: int):
+    get_object_or_404(LiegenschaftVerteilschluessel, id=id).delete()
+    return 204, None
+
+# ========================================================
+# GERÄTE, ZÄHLER & SCHLÜSSEL
 # ========================================================
 class GeraetCreateSchema(Schema):
-    # 🔥 GEFIXT: Beide IDs sind jetzt optional!
     einheit_id: Optional[int] = None
     liegenschaft_id: Optional[int] = None
     kategorie: str
@@ -106,7 +189,6 @@ class GeraetCreateSchema(Schema):
 def create_geraet(request, payload: GeraetCreateSchema):
     data = payload.dict(exclude={'einheit_id', 'liegenschaft_id'}, exclude_unset=True)
 
-    # Checken, ob das Gerät zur Liegenschaft oder zur Einheit gehört
     if payload.liegenschaft_id:
         l = get_object_or_404(Liegenschaft, id=payload.liegenschaft_id)
         Geraet.objects.create(liegenschaft=l, **data)
@@ -129,9 +211,6 @@ def delete_geraet(request, id: int):
     get_object_or_404(Geraet, id=id).delete()
     return 204, None
 
-# ========================================================
-# ZÄHLER & SCHLÜSSEL
-# ========================================================
 class ZaehlerCreateSchema(Schema): einheit_id: int; typ: str; zaehler_nummer: str; standort: str = ""; aktueller_stand: Decimal = Decimal('0.00')
 @router.post("/zaehler", response={201: dict})
 def create_zaehler(request, payload: ZaehlerCreateSchema): Zaehler.objects.create(einheit=get_object_or_404(Einheit, id=payload.einheit_id), **payload.dict(exclude={'einheit_id'})); return 201, {"success": True}

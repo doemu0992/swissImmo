@@ -92,7 +92,9 @@
                         <div class="flex items-center gap-3"><i class="fa-solid fa-file-pdf text-rose-400"></i><div><div class="font-bold text-xs">{% verbatim %}{{ d.titel }}{% endverbatim %}</div><div class="text-[10px] text-slate-400">{% verbatim %}{{ d.kategorie }}{% endverbatim %}</div></div></div>
                         <div class="flex gap-2">
                             <a :href="d.datei_url" target="_blank" class="text-slate-400 hover:text-white"><i class="fa-solid fa-download"></i></a>
-                            <button @click="deleteDokument(d.id)" class="text-rose-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash-can"></i></button>
+                            <button @click="deleteDokument(d.id, d.is_vertrag)" class="text-rose-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
                         </div>
                     </div>
                     <div v-if="!selectedLiegenschaft.dokumente?.length" class="text-center py-4 text-slate-500 text-xs">Keine Dokumente abgelegt.</div>
@@ -152,6 +154,54 @@
                         </div>
                     </div>
                     <div v-if="!selectedLiegenschaft.allgemeine_geraete?.length" class="text-center py-6 text-slate-400 text-xs italic">Keine zentralen Anlagen erfasst.</div>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Verteilschlüssel & Standards</h3>
+                        <p class="text-[10px] text-slate-400">Regeln und Übersicht aller Einheiten</p>
+                    </div>
+                    <button @click="showLiegStdModal = true; newLiegStd.liegenschaft_id = selectedLiegenschaft.id" class="text-xs font-bold text-white bg-indigo-600 px-4 py-2 rounded-xl shadow-lg hover:bg-indigo-700 transition-all">
+                        + Standard-Regel erfassen
+                    </button>
+                </div>
+
+                <div v-if="selectedLiegenschaft.standard_schluessel?.length" class="mb-6 space-y-2">
+                    <div v-for="s in selectedLiegenschaft.standard_schluessel" :key="s.id" class="flex justify-between items-center p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 group">
+                        <div class="font-bold text-xs text-indigo-900"><i class="fa-solid fa-wand-magic-sparkles mr-2 text-indigo-400"></i>{% verbatim %}{{ s.kostenart_display }}{% endverbatim %}</div>
+                        <div class="flex items-center gap-3">
+                            <span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider">Standard: nach {% verbatim %}{{ s.typ_display }}{% endverbatim %}</span>
+                            <button @click="deleteLiegStd(s.id)" class="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto border-t border-slate-100 pt-4">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-[10px] uppercase font-black text-slate-400 border-b border-slate-100">
+                                <th class="pb-2">Einheit</th>
+                                <th class="pb-2">Kostenart</th>
+                                <th class="pb-2 text-right">Wert</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="v in selectedLiegenschaft.verteilschluessel_uebersicht" class="border-b border-slate-50 text-sm">
+                                <td class="py-3 font-bold text-indigo-600">{% verbatim %}{{ v.einheit_bezeichnung }}{% endverbatim %}</td>
+                                <td class="py-3 font-bold text-slate-800">
+                                    {% verbatim %}{{ v.kostenart_display }}{% endverbatim %}
+                                    <span v-if="v.is_auto" class="ml-2 text-[8px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded uppercase font-black" title="Automatisch aus Standard generiert">Auto</span>
+                                </td>
+                                <td class="py-3 text-right">
+                                    <span class="font-mono font-bold text-slate-700">{% verbatim %}{{ v.wert }}{% endverbatim %}</span>
+                                    <span class="text-[10px] uppercase text-slate-400 ml-1">{% verbatim %}{{ v.typ_display }}{% endverbatim %}</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div v-if="!selectedLiegenschaft.verteilschluessel_uebersicht?.length" class="text-center py-6 text-slate-400 text-xs italic">Keine Verteilschlüssel in dieser Liegenschaft vorhanden.</div>
                 </div>
             </div>
         </div>
@@ -248,7 +298,9 @@
                         <div class="flex items-center gap-3"><i class="fa-solid fa-file-pdf text-rose-400"></i><div><div class="font-bold text-xs">{% verbatim %}{{ d.titel }}{% endverbatim %}</div><div class="text-[10px] text-slate-400">{% verbatim %}{{ d.kategorie }}{% endverbatim %}</div></div></div>
                         <div class="flex gap-2">
                             <a :href="d.datei_url" target="_blank" class="text-slate-400 hover:text-white"><i class="fa-solid fa-download"></i></a>
-                            <button @click="deleteDokument(d.id)" class="text-rose-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash-can"></i></button>
+                            <button @click="deleteDokument(d.id, d.is_vertrag)" class="text-rose-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
                         </div>
                     </div>
                     <div v-if="!selectedEinheit.dokumente?.length" class="text-center py-4 text-slate-500 text-xs">Keine Dokumente abgelegt.</div>
@@ -259,14 +311,27 @@
         <div class="col-span-2 space-y-6">
 
             <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px] mb-6">Mietzins & Verteilschlüssel</h3>
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Mietzins & Verteilschlüssel</h3>
+                    <button @click="showVerteilschluesselModal = true; newVerteilschluessel.einheit_id = selectedEinheit.id" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl hover:bg-indigo-100 transition-all">+ Schlüssel erfassen</button>
+                </div>
                 <div class="grid grid-cols-2 gap-8 mb-8">
                     <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100"><label class="block text-[10px] font-black uppercase text-slate-400 mb-2">Netto-Mietzins</label><div class="flex items-center gap-2"><span class="text-slate-400 font-bold">CHF</span><input type="number" v-model="selectedEinheit.nettomiete_aktuell" class="w-full bg-transparent border-none p-0 text-2xl font-black font-mono focus:ring-0"></div></div>
                     <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100"><label class="block text-[10px] font-black uppercase text-slate-400 mb-2">Nebenkosten (Akonto)</label><div class="flex items-center gap-2"><span class="text-slate-400 font-bold">CHF</span><input type="number" v-model="selectedEinheit.nebenkosten_aktuell" class="w-full bg-transparent border-none p-0 text-2xl font-black font-mono focus:ring-0"></div></div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Wertquote</label><input type="number" step="0.01" v-model="selectedEinheit.wertquote" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"></div>
-                    <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">HK-Schlüssel</label><select v-model="selectedEinheit.heizkosten_verteilschluessel" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"><option value="m2">Fläche (m²)</option><option value="m3">Volumen (m³)</option><option value="pauschal">Pauschal</option></select></div>
+
+                <div class="space-y-2 border-t border-slate-100 pt-4">
+                    <div v-for="v in selectedEinheit.verteilschluessel" :key="v.id" class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100 group">
+                        <div>
+                            <div class="font-bold text-xs">{% verbatim %}{{ v.kostenart_display }}{% endverbatim %}</div>
+                            <div class="text-[10px] text-slate-500">Ab: {% verbatim %}{{ v.gueltig_ab }}{% endverbatim %} <span v-if="v.notizen">({{ v.notizen }})</span></div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono text-xs font-bold text-slate-700">{% verbatim %}{{ v.wert }}{% endverbatim %} <span class="text-[10px] uppercase text-slate-400">{% verbatim %}{{ v.typ_display }}{% endverbatim %}</span></span>
+                            <button @click="deleteVerteilschluessel(v.id)" class="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                    <div v-if="!selectedEinheit.verteilschluessel?.length" class="text-center py-6 text-slate-400 text-xs italic">Keine individuellen Verteilschlüssel erfasst.</div>
                 </div>
             </div>
 
@@ -372,6 +437,113 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+</div>
+
+<div v-if="showVerteilschluesselModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Verteilschlüssel erfassen</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Kostenart</label>
+                <select v-model="newVerteilschluessel.kostenart" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                    <option value="heizung">Heizkosten</option>
+                    <option value="wasser">Wasser / Abwasser</option>
+                    <option value="lift">Liftkosten</option>
+                    <option value="allgemeinstrom">Allgemeinstrom</option>
+                    <option value="hauswartung">Hauswartung / Reinigung</option>
+                    <option value="kabel_tv">Kabel-TV / Antenne</option>
+                    <option value="garten">Gartenpflege</option>
+                    <option value="verwaltung">Verwaltungshonorar</option>
+                    <option value="versicherung">Versicherungen</option>
+                    <option value="sonstiges">Sonstige Nebenkosten</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Berechnung nach</label>
+                    <select v-model="newVerteilschluessel.typ" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                        <option value="m2">Fläche (m²)</option>
+                        <option value="m3">Volumen (m³)</option>
+                        <option value="prozent">Prozent (%)</option>
+                        <option value="anteil">Anteile</option>
+                        <option value="pauschal">Pauschal (CHF)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Wert</label>
+                    <input v-model="newVerteilschluessel.wert" type="number" step="0.01" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Gültig ab</label>
+                <input v-model="newVerteilschluessel.gueltig_ab" type="date" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Bemerkung (optional)</label>
+                <input v-model="newVerteilschluessel.notizen" type="text" placeholder="z.B. Gemäss STWEG Reglement" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showVerteilschluesselModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveVerteilschluessel" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showLiegStdModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Standard-Regel erfassen</h3>
+        <p class="text-xs text-slate-500 mb-6">Diese Regel wird automatisch auf alle Objekte der Liegenschaft vererbt.</p>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Kostenart</label>
+                <select v-model="newLiegStd.kostenart" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                    <option value="heizung">Heizkosten</option>
+                    <option value="wasser">Wasser / Abwasser</option>
+                    <option value="lift">Liftkosten</option>
+                    <option value="allgemeinstrom">Allgemeinstrom</option>
+                    <option value="hauswartung">Hauswartung / Reinigung</option>
+                    <option value="kabel_tv">Kabel-TV / Antenne</option>
+                    <option value="garten">Gartenpflege</option>
+                    <option value="verwaltung">Verwaltungshonorar</option>
+                    <option value="versicherung">Versicherungen</option>
+                    <option value="sonstiges">Sonstige Nebenkosten</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Berechnung nach</label>
+                    <select v-model="newLiegStd.typ" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                        <option value="m2">Fläche (m²)</option>
+                        <option value="m3">Volumen (m³)</option>
+                        <option value="prozent">Prozent (%)</option>
+                        <option value="anteil">Anteile</option>
+                        <option value="pauschal">Pauschal (CHF)</option>
+                        <option value="zimmer">Anzahl Zimmer</option>
+                        <option value="einheit">Pro Einheit</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Wert (Standard)</label>
+                    <input v-model="newLiegStd.wert" type="number" step="0.01" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Gültig ab</label>
+                <input v-model="newLiegStd.gueltig_ab" type="date" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Bemerkung (optional)</label>
+                <input v-model="newLiegStd.notizen" type="text" placeholder="z.B. Gemäss Reglement" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showLiegStdModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveLiegStd" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">Speichern</button>
         </div>
     </div>
 </div>

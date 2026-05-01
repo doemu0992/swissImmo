@@ -6,216 +6,223 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 2cm 1.5cm 2.5cm 1.5cm;
+            margin: 1.5cm 1.5cm 2cm 1.5cm;
             @frame footer {
                 -pdf-frame-content: footer_content;
                 left: 1.5cm; right: 1.5cm; bottom: 1cm; height: 1cm;
             }
         }
 
-        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 10pt; color: #1f2937; line-height: 1.5; }
-        .header-table { width: 100%; border-bottom: 2px solid #4f46e5; padding-bottom: 10px; margin-bottom: 20px; }
-        .verwaltung-info { font-size: 9pt; color: #4b5563; }
-        h1 { font-size: 22pt; font-weight: 900; color: #111827; margin: 0; letter-spacing: -0.025em; }
-        h2 { font-size: 12pt; font-weight: 800; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 25px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
-        .section-table { width: 100%; margin-bottom: 15px; }
-        .label { width: 30%; font-weight: 700; color: #374151; vertical-align: top; padding: 5px 0; }
-        .value { width: 70%; vertical-align: top; padding: 5px 0; }
-        .finance-card { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin: 10px 0; }
-        .total-row { border-top: 2px solid #4f46e5; margin-top: 10px; padding-top: 10px; font-size: 12pt; font-weight: 800; color: #111827; }
-        .badge { background-color: #eef2ff; color: #4f46e5; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 9pt; }
-        .legal-note { font-size: 8.5pt; color: #6b7280; text-align: justify; background: #fdfbf7; padding: 10px; border-left: 3px solid #d1d5db; }
+        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 9pt; color: #111827; line-height: 1.4; }
+        .header-table { width: 100%; border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+        .verwaltung-info { font-size: 8pt; color: #374151; text-align: right; }
 
-        /* Finales Unterschriften-Layout - Überarbeitet */
-        .signature-table {
-            width: 100%;
-            margin-top: 50px;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-        .signature-col {
-            width: 48%;
-        }
-        .spacer-col {
-            width: 4%;
-        }
-        .date-row td {
-            vertical-align: top;
-            font-size: 9pt;
-            padding-bottom: 15px; /* Abstand zwischen Datum und Unterschriftenbereich */
-        }
-        .image-row td {
-            vertical-align: bottom; /* Zwingt das Bild ganz nach unten an die Kante */
-            height: 75px;
-            padding: 0;
-        }
-        .signature-img {
-            max-height: 75px;
-            max-width: 180px;
-            display: block;
-            margin: 0; /* Kein negativer Margin mehr notwendig */
-        }
-        .name-row td {
-            border-top: 1px solid #9ca3af; /* Die Linie ist jetzt der Rahmen der Zelle */
-            padding-top: 8px;
-            font-size: 9pt;
-            vertical-align: top;
-        }
+        h1 { font-size: 18pt; font-weight: bold; margin: 0; }
+        h2 { font-size: 10pt; font-weight: bold; background-color: #f3f4f6; padding: 3px 5px; margin-top: 15px; margin-bottom: 8px; border-bottom: 1px solid #d1d5db; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        td { vertical-align: top; padding: 3px 0; }
+        .label { width: 30%; font-weight: bold; }
+        .value { width: 70%; }
+
+        .finance-table td { padding: 4px 5px; border-bottom: 0.5pt solid #e5e7eb; }
+        .total-row { font-weight: bold; font-size: 10pt; background-color: #f9fafb; }
+
+        .legal-text { font-size: 8pt; text-align: justify; color: #4b5563; margin-top: 5px; line-height: 1.3; }
+        .bold { font-weight: bold; }
+        .italic { font-style: italic; }
+
+        /* Unterschriften-Bereich optimiert für DocuSeal */
+        .signature-section { width: 100%; margin-top: 30px; }
+        .signature-box { border: 1px solid #e5e7eb; height: 100px; margin-top: 5px; background-color: #fdfdfd; }
+        .signature-label { font-size: 8pt; font-weight: bold; color: #6b7280; margin-bottom: 2px; }
     </style>
 </head>
 <body>
 
-    <div id="footer_content" style="text-align: center; font-size: 8pt; color: #9ca3af;">
-        Mietvertrag gemäss Schweizerischem Obligationenrecht (Art. 253 ff. OR) | Seite <pdf:pagenumber>
+    <div id="footer_content" style="text-align: center; font-size: 7pt; color: #9ca3af; border-top: 0.5pt solid #e5e7eb; padding-top: 5px;">
+        Mietvertrag {{ einheit.bezeichnung }} | Mieterschaft: {{ mieter.display_name }}
+        {% if vertrag.mitmieter_name %}& {{ vertrag.mitmieter_name }}{% endif %} | Seite <pdf:pagenumber>
     </div>
 
     <table class="header-table">
         <tr>
             <td>
                 <h1>MIETVERTRAG</h1>
-                <div style="color: #6b7280; font-size: 10pt;">Wohn- und Geschäftsräume</div>
+                <div style="font-weight: bold; color: #4b5563;">für Wohnräume</div>
             </td>
-            <td style="text-align: right;" class="verwaltung-info">
-                <strong>{{ verwaltung.firma }}</strong><br>
-                {{ verwaltung.strasse }}<br>
-                {{ verwaltung.plz }} {{ verwaltung.ort }}
+            <td class="verwaltung-info">
+                <strong>{{ verwaltung.firma|default:"Chirico Immobilien-Dienstleistungen GmbH" }}</strong><br>
+                {{ verwaltung.strasse|default:"Bahnhofstrasse 39" }}<br>
+                {{ verwaltung.plz|default:"2540" }} {{ verwaltung.ort|default:"Grenchen" }}
             </td>
         </tr>
     </table>
 
     <h2>1. Vertragsparteien</h2>
-    <table class="section-table">
+    <table>
         <tr>
-            <td class="label">Vermieterschaft</td>
+            <td class="label">Vermieter:</td>
             <td class="value">
                 <strong>{{ mandant.firma_oder_name|default:verwaltung.firma }}</strong><br>
-                {% if mandant and verwaltung and mandant.firma_oder_name != verwaltung.firma %}
-                <span style="font-size: 9pt; color: #6b7280;">vertreten durch: {{ verwaltung.firma }}</span>
-                {% endif %}
+                <span class="italic">vertreten durch: {{ verwaltung.firma|default:"Chirico Immobilien-Dienstleistungen GmbH" }}</span>
             </td>
         </tr>
         <tr>
-            <td class="label">Mieterschaft</td>
+            <td class="label">Mieter:</td>
             <td class="value">
-                <strong>{{ mieter.anrede }} {{ mieter.vorname }} {{ mieter.nachname }}</strong><br>
-                {{ mieter.strasse }}, {{ mieter.plz }} {{ mieter.ort }}
+                <strong>{{ mieter.vorname }} {{ mieter.nachname }}</strong><br>
+                {% if vertrag.mitmieter_name %}
+                <strong>{{ vertrag.mitmieter_name }}</strong><br>
+                {% endif %}
+                Aktuelle Adresse: {{ mieter.strasse }}, {{ mieter.plz }} {{ mieter.ort }}<br>
+                Zivilstand: {{ mieter.zivilstand|default:"-" }}<br>
+                <span class="legal-text italic">(Mehrere Mieter haften solidarisch für alle Verpflichtungen aus diesem Vertrag)</span>
             </td>
         </tr>
     </table>
 
-    <h2>2. Mietobjekt (Art. 253 OR)</h2>
-    <table class="section-table">
+    <h2>2. Mietobjekt</h2>
+    <table>
         <tr>
-            <td class="label">Hauptobjekt</td>
+            <td class="label">Objekt:</td>
             <td class="value">
-                <span class="badge">{{ einheit.get_typ_display }}</span><br>
-                <strong>{{ einheit.bezeichnung }}</strong> in der Liegenschaft {{ liegenschaft.strasse }}<br>
-                {{ einheit.zimmer|default:"-" }} Zimmer | {{ einheit.etage|default:"-" }} | {{ einheit.flaeche_m2|default:"-" }} m²
+                <strong>{{ einheit.bezeichnung }}</strong> ({{ einheit.get_typ_display }})<br>
+                {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}
             </td>
         </tr>
-        {% if vertrag.nebenobjekte.all %}
         <tr>
-            <td class="label">Nebenobjekte</td>
+            <td class="label">Beschreibung:</td>
+            <td class="value">{{ einheit.zimmer|default:"-" }} Zimmer | Etage: {{ einheit.etage|default:"-" }} | Fläche: {{ einheit.flaeche_m2|default:"-" }} m²</td>
+        </tr>
+        <tr>
+            <td class="label">Nebenräume:</td>
+            <td class="value">Keller: {{ einheit.keller|default:"-" }} | Estrich: {{ einheit.estrich|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td class="label">Familienwohnung:</td>
+            <td class="value">{% if vertrag.familienwohnung %}Ja (Art. 266m/n OR findet Anwendung){% else %}Nein{% endif %}</td>
+        </tr>
+    </table>
+
+    <h2>3. Mietzins & Nebenkosten (monatlich)</h2>
+    <table class="finance-table">
+        <tr>
+            <td>Nettomietzins</td>
+            <td style="text-align: right;">CHF {{ miete_fmt }}</td>
+        </tr>
+        <tr>
+            <td>Heiz- und Nebenkosten ({{ vertrag.get_nk_abrechnungsart_display }})</td>
+            <td style="text-align: right;">CHF {{ nk_fmt }}</td>
+        </tr>
+        <tr class="total-row">
+            <td>BRUTTOMIETZINS TOTAL</td>
+            <td style="text-align: right;">CHF {{ brutto_fmt }}</td>
+        </tr>
+    </table>
+
+    <div class="legal-text">
+        <span class="bold">Heizkosten:</span> Brennstoffe, Strom für Heizung, Kaminfeger, Tankrevision, Boilerentkalkung sowie verbrauchsabhängige Abrechnungsservices.<br>
+        <span class="bold">Betriebskosten:</span> Allgemeinstrom/-wasser, Hauswartung, Gartenpflege, Kehricht, Lift-Service, Kabelnetzgebühren und Verwaltungshonorar.<br>
+        Zahlbar monatlich im Voraus auf den 1. des Monats.
+    </div>
+
+    <h2>4. Berechnungsgrundlagen & Vorbehalte</h2>
+    <table>
+        <tr>
+            <td class="label">Grundlagen:</td>
             <td class="value">
-                {% for neben in vertrag.nebenobjekte.all %}
-                    &bull; {{ neben.bezeichnung }} ({{ neben.get_typ_display }})<br>
-                {% endfor %}
+                Ref.-Zinssatz: <strong>{{ vertrag.basis_referenzzinssatz }} %</strong> |
+                LIK-Index: <strong>{{ vertrag.basis_lik_punkte }} Pkt.</strong><br>
+                Kostensteigerung ausgeglichen bis: {{ vertrag.kostensteigerung_datum|date:"d.m.Y"|default:"Vertragsbeginn" }}
             </td>
+        </tr>
+        <tr>
+            <td class="label">Mietzinsreserve:</td>
+            <td class="value">
+                {% if vertrag.mietzinsreserve_betrag or vertrag.mietzinsreserve_prozent %}
+                    CHF {{ vertrag.mietzinsreserve_betrag|default:"0.00" }} / {{ vertrag.mietzinsreserve_prozent|default:"0.00" }} %
+                {% else %}
+                    Eine Mietzinsreserve wird ausdrücklich vorbehalten.
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+    <pdf:nextpage />
+
+    <h2>5. Sicherheitsleistung (Kaution)</h2>
+    <p>Der Mieter leistet eine Sicherheit in der Höhe von <span class="bold">CHF {{ kaution_fmt }}</span>. Diese ist spätestens bei Mietantritt auf ein gesperrtes Sparkonto (Mietkautionskonto) zu Gunsten des Mieters einzubezahlen.</p>
+
+    <h2>6. Mietdauer & Kündigung</h2>
+    <table>
+        <tr>
+            <td class="label">Mietbeginn:</td>
+            <td class="value"><span class="bold">{{ vertrag.beginn|date:"d.m.Y" }}</span>, 12:00 Uhr</td>
+        </tr>
+        <tr>
+            <td class="label">Kündigungsfrist:</td>
+            <td class="value">{{ vertrag.kuendigungsfrist_monate }} Monate</td>
+        </tr>
+        <tr>
+            <td class="label">Kündigungstermine:</td>
+            <td class="value">{{ vertrag.kuendigungstermine }}</td>
+        </tr>
+        {% if vertrag.erstmals_kuendbar_auf %}
+        <tr>
+            <td class="label">Mindestdauer:</td>
+            <td class="value">Der Vertrag ist erstmals kündbar auf den {{ vertrag.erstmals_kuendbar_auf|date:"d.m.Y" }}</td>
         </tr>
         {% endif %}
     </table>
 
-    <h2>3. Mietzins & Nebenkosten (Art. 257 ff. OR)</h2>
-    <div class="finance-card">
+    <h2>7. Besondere Vereinbarungen</h2>
+    <div class="legal-text" style="color: black; font-size: 9pt;">
+        {% if vertrag.besondere_vereinbarungen %}
+            {{ vertrag.besondere_vereinbarungen|linebreaksbr }}
+        {% else %}
+            Keine besonderen Vereinbarungen getroffen.
+        {% endif %}
+        <br><br>
+        - Die Hausordnung und die AVB (Ausgabe 2009) sind integrierende Bestandteile.<br>
+        - Haustiere bedürfen der schriftlichen Zustimmung der Verwaltung.<br>
+        - Namensschilder werden einheitlich durch die Verwaltung auf Kosten des Mieters erstellt.
+    </div>
+
+    <div style="margin-top: 40px;">
         <table style="width: 100%;">
             <tr>
-                <td style="padding: 4px 0;">Nettomietzins</td>
-                <td style="text-align: right;">CHF {{ miete_fmt }}</td>
-            </tr>
-            <tr>
-                <td style="padding: 4px 0;">Nebenkosten ({{ einheit.get_nk_abrechnungsart_display }})</td>
-                <td style="text-align: right;">CHF {{ nk_fmt }}</td>
-            </tr>
-            <tr class="total-row">
-                <td style="padding-top: 10px;">MONATLICHER BRUTTOMIETZINS</td>
-                <td style="text-align: right; padding-top: 10px;">CHF {{ brutto_fmt }}</td>
+                <td style="width: 45%;">
+                    <div class="signature-label">Vermieter / Verwaltung (Ort/Datum: {{ verwaltung.ort }}, {% now "d.m.Y" %})</div>
+                    <div class="signature-box">
+                        {% if unterschrift_path %}
+                        <img src="{{ unterschrift_path }}" style="max-height: 80px; padding: 10px;">
+                        {% endif %}
+                    </div>
+                    <div style="font-size: 8pt; margin-top: 5px;">{{ verwaltung.firma }}</div>
+                </td>
+                <td style="width: 10%;"></td>
+                <td style="width: 45%;">
+                    <div class="signature-label">Mieterschaft (Ort/Datum: _____________________)</div>
+                    <div class="signature-box">
+                        </div>
+                    <div style="font-size: 8pt; margin-top: 5px;">{{ mieter.vorname }} {{ mieter.nachname }} {% if vertrag.mitmieter_name %}& {{ vertrag.mitmieter_name }}{% endif %}</div>
+                </td>
             </tr>
         </table>
-    </div>
-    <div style="font-size: 8pt; color: #6b7280; margin-top: 5px;">
-        Grundlagen: Ref-Zinssatz: <strong>{{ vertrag.basis_referenzzinssatz }}%</strong> |
-        LIK-Index: <strong>{{ vertrag.basis_lik_punkte }} Punkte</strong>
     </div>
 
     <pdf:nextpage />
 
-    <h2>4. Sicherheitsleistung (Art. 257e OR)</h2>
-    <table class="section-table">
-        <tr>
-            <td class="label">Kautionsbetrag</td>
-            <td class="value"><strong>CHF {{ kaution_fmt }}</strong></td>
-        </tr>
-    </table>
-
-    <h2>5. Mietdauer & Kündigung</h2>
-    <table class="section-table">
-        <tr>
-            <td class="label">Mietbeginn</td>
-            <td class="value"><strong>{{ vertrag.beginn|date:"d.m.Y" }}</strong></td>
-        </tr>
-        <tr>
-            <td class="label">Vertragsart</td>
-            <td class="value">
-                {% if vertrag.ende %}
-                    Befristet bis zum {{ vertrag.ende|date:"d.m.Y" }} (Art. 266 OR).
-                {% else %}
-                    Unbefristet (Art. 266a OR).
-                {% endif %}
-            </td>
-        </tr>
-    </table>
-
-    <h2>6. Besondere Vereinbarungen</h2>
-    <div class="legal-note">
-        1. Die "Allgemeinen Bedingungen zum Mietvertrag für Wohnräume" bilden einen integrierenden Bestandteil dieses Vertrages.<br>
-        2. Die Untervermietung bedarf der schriftlichen Zustimmung der Vermieterschaft (Art. 262 OR).<br>
-        3. Die Kaution muss vollumfänglich geleistet sein, bevor die Schlüsselübergabe erfolgt.
+    <h2>Allgemeine Bedingungen & Hausordnung (Kurzfassung)</h2>
+    <div class="legal-text" style="column-count: 2; column-gap: 1.5cm;">
+        <span class="bold">Kleiner Unterhalt:</span> Reparaturen bis CHF 150.— (z.B. Filter, Schläuche, Glühbirnen) gehen zu Lasten des Mieters.<br><br>
+        <span class="bold">Meldepflicht:</span> Mängel am Objekt sind der Verwaltung sofort zu melden, ansonsten haftet der Mieter für Folgeschäden.<br><br>
+        <span class="bold">Lüften & Heizen:</span> Zur Schimmelvermeidung ist 3x täglich 5-10 Min. Stosslüften vorgeschrieben. Möbel 10cm Abstand von Aussenwänden.<br><br>
+        <span class="bold">Ruhezeiten:</span> Nachtruhe von 22:00 bis 07:00 Uhr. Musizieren max. 2 Std. täglich ausserhalb der Ruhezeiten.<br><br>
+        <span class="bold">Waschküche:</span> Benutzung nach Plan. Geräte sind nach Gebrauch gründlich zu reinigen (Flusensieb).<br><br>
+        <span class="bold">Rückgabe:</span> Das Objekt ist gereinigt und mit allen Schlüsseln am Tag nach Mietende um 12:00 Uhr zurückzugeben.
     </div>
-
-    <table class="signature-table">
-        <tr class="date-row">
-            <td class="signature-col">
-                Ort, Datum: {{ verwaltung.ort|default:"_______________" }}, {% now "d.m.Y" %}
-            </td>
-            <td class="spacer-col"></td>
-            <td class="signature-col">
-                Ort, Datum: ____________________
-            </td>
-        </tr>
-
-        <tr class="image-row">
-            <td class="signature-col">
-                {% if unterschrift_path %}
-                    <img src="{{ unterschrift_path }}" class="signature-img">
-                {% endif %}
-            </td>
-            <td class="spacer-col"></td>
-            <td class="signature-col">
-                </td>
-        </tr>
-
-        <tr class="name-row">
-            <td class="signature-col">
-                <strong>Vermieterschaft / Verwaltung</strong><br>
-                {{ verwaltung.firma|default:"SwissImmo Software Solution" }}
-            </td>
-            <td class="spacer-col"></td>
-            <td class="signature-col">
-                <strong>Mieterschaft</strong><br>
-                {{ mieter.vorname }} {{ mieter.nachname }}
-            </td>
-        </tr>
-    </table>
 
 </body>
 </html>

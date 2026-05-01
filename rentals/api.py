@@ -64,8 +64,6 @@ def generate_vertrag_pdf_bytes(vertrag):
     einheit = vertrag.einheit
     liegenschaft = einheit.liegenschaft
     mandant = liegenschaft.mandant
-
-    # 🔥 HIER IST DER FIX: Verwaltung wird aus der Datenbank geladen
     verwaltung = Verwaltung.objects.first()
 
     if einheit.typ in ['pp', 'bas', 'gar']:
@@ -93,7 +91,7 @@ def generate_vertrag_pdf_bytes(vertrag):
         'einheit': einheit,
         'liegenschaft': liegenschaft,
         'mandant': mandant,
-        'verwaltung': verwaltung,  # 🔥 Verwaltung wird an das PDF übergeben
+        'verwaltung': verwaltung,
         'verwaltungs_name': DEFAULT_VERWALTUNG_NAME,
         'heute': timezone.now().date(),
         'miete_fmt': f"{netto:.2f}",
@@ -128,16 +126,34 @@ def create_vertrag(request, payload: VertragCreateSchema):
     m = get_object_or_404(Mieter, id=payload.mieter_id)
     e = get_object_or_404(Einheit, id=payload.einheit_id)
     data = payload.dict(exclude={'mieter_id', 'einheit_id'}, exclude_unset=True)
+
+    # 🔥 SICHERHEIT: Falls das Frontend 'null' sendet, poppen wir es, damit der Django-Default greift
+    if data.get('basis_referenzzinssatz') is None:
+        data.pop('basis_referenzzinssatz', None)
+    if data.get('basis_lik_punkte') is None:
+        data.pop('basis_lik_punkte', None)
+
     neuer_vertrag = Mietvertrag.objects.create(mieter=m, einheit=e, **data)
+
+    # Einheit mit den neuen Werten aktualisieren
     e.nettomiete_aktuell = neuer_vertrag.netto_mietzins
     e.nebenkosten_aktuell = neuer_vertrag.nebenkosten
     e.save()
+
     return 201, neuer_vertrag
 
 @router.put("/vertraege/{vertrag_id}", response={200: dict})
 def update_vertrag(request, vertrag_id: int, payload: VertragUpdateSchema):
     v = get_object_or_404(Mietvertrag, id=vertrag_id)
-    for k, val in payload.dict(exclude_unset=True).items():
+    data = payload.dict(exclude_unset=True)
+
+    # 🔥 SICHERHEIT: Verhindert, dass man die Basiswerte aus Versehen auf leer setzt
+    if 'basis_referenzzinssatz' in data and data['basis_referenzzinssatz'] is None:
+        data.pop('basis_referenzzinssatz')
+    if 'basis_lik_punkte' in data and data['basis_lik_punkte'] is None:
+        data.pop('basis_lik_punkte')
+
+    for k, val in data.items():
         setattr(v, k, val)
     v.save()
     return 200, {"success": True}
@@ -167,7 +183,7 @@ def send_to_docuseal(request, vertrag_id: int):
     vertrag = get_object_or_404(Mietvertrag, id=vertrag_id)
     api_key = getattr(settings, 'DOCUSEAL_API_KEY', None)
 
-    # 🔥 WICHTIG: Hier deine Template-ID aus DocuSeal eintragen!
+    # WICHTIG: Hier deine Template-ID aus DocuSeal eintragen!
     TEMPLATE_ID = 1234567
 
     if not api_key:
