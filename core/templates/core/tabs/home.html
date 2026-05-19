@@ -1,44 +1,44 @@
-<div v-if="activeTab === 'home'" class="animate-fade-in space-y-10">
+<div v-if="activeTab === 'home'" class="animate-fade-in space-y-10 pb-10">
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
 
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 group hover:border-blue-200 transition-all relative overflow-hidden">
-            <div class="absolute right-0 top-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-            <i class="fa-solid fa-sack-dollar absolute right-5 top-5 text-blue-500 text-xl"></i>
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Soll-Miete / Monat</p>
-            <div class="text-3xl font-black text-slate-900">CHF {{ soll_miete|floatformat:0 }}</div>
-            <p class="text-xs text-slate-500 mt-3 font-medium flex items-center gap-1">
-                <span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-bold">Ist: CHF {{ ist_miete|floatformat:0 }}</span>
-            </p>
-        </div>
-
         <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 group hover:border-emerald-200 transition-all relative overflow-hidden">
             <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-            <i class="fa-solid fa-arrow-trend-up absolute right-5 top-5 text-emerald-500 text-xl"></i>
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Miet-Potenzial</p>
-            <div class="text-3xl font-black text-slate-900">CHF {{ potenzial_total|floatformat:0 }}</div>
+            <i class="fa-solid fa-sack-dollar absolute right-5 top-5 text-emerald-500 text-xl"></i>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Einnahmen (Ist-Miete)</p>
+            <div class="text-3xl font-black text-slate-900">CHF {{ ist_miete|floatformat:0 }}</div>
             <p class="text-xs text-slate-500 mt-3 font-medium flex items-center gap-1">
-                <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold"><i class="fa-solid fa-magnifying-glass-chart"></i> Scanner aktiv</span>
+                <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold">Von CHF {{ soll_miete|floatformat:0 }}</span>
             </p>
         </div>
 
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 group hover:border-amber-200 transition-all relative overflow-hidden">
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 group hover:border-indigo-200 transition-all relative overflow-hidden cursor-pointer" @click="switchTab('portfolio')">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <i class="fa-solid fa-building absolute right-5 top-5 text-indigo-500 text-xl"></i>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Liegenschaften</p>
+            <div class="text-3xl font-black text-slate-900">{% verbatim %}{{ liegenschaften.length }}{% endverbatim %}</div>
+            <p class="text-xs text-slate-500 mt-3 font-medium flex items-center gap-1">
+                <span class="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded font-bold">Alle ansehen</span>
+            </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 group hover:border-amber-200 transition-all relative overflow-hidden cursor-pointer" @click="switchTab('rentals')">
             <div class="absolute right-0 top-0 w-24 h-24 bg-amber-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-            <i class="fa-solid fa-door-open absolute right-5 top-5 text-amber-500 text-xl"></i>
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Leerstand</p>
-            <div class="text-3xl font-black text-slate-900">{{ leerstand_count }} <span class="text-lg text-slate-400">Einh.</span></div>
+            <i class="fa-solid fa-file-signature absolute right-5 top-5 text-amber-500 text-xl"></i>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Aktive Verträge</p>
+            <div class="text-3xl font-black text-slate-900">{% verbatim %}{{ vertraege.filter(v => !v.ende).length }}{% endverbatim %} <span class="text-lg text-slate-400">Laufend</span></div>
             <p class="text-xs text-slate-500 mt-3 font-medium flex items-center gap-1">
-                <span class="text-amber-600 bg-amber-50 px-2 py-0.5 rounded font-bold">{{ leerstand_quote }}% Quote</span>
+                <span class="text-amber-600 bg-amber-50 px-2 py-0.5 rounded font-bold">In Verwaltung</span>
             </p>
         </div>
 
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 group hover:border-rose-200 transition-all relative overflow-hidden">
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 group hover:border-rose-200 transition-all relative overflow-hidden cursor-pointer" @click="switchTab('tickets')">
             <div class="absolute right-0 top-0 w-24 h-24 bg-rose-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
             <i class="fa-solid fa-screwdriver-wrench absolute right-5 top-5 text-rose-500 text-xl"></i>
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Offene Tickets</p>
-            <div class="text-3xl font-black text-slate-900">{{ offene_tickets }}</div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Pendenzen / Tickets</p>
+            <div class="text-3xl font-black text-slate-900">{% verbatim %}{{ tickets.filter(t => t.status !== 'erledigt').length }}{% endverbatim %}</div>
             <p class="text-xs text-slate-500 mt-3 font-medium flex items-center gap-1">
-                <span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded font-bold">{{ kritische_tickets }} Kritisch</span>
+                <span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded font-bold">Jetzt bearbeiten</span>
             </p>
         </div>
 
@@ -47,33 +47,90 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
         <div class="lg:col-span-2 bg-white p-8 rounded-3xl border border-slate-100">
-            <canvas id="revenueChart"></canvas>
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Mieteinnahmen (Ist vs. Soll)</h3>
+                    <p class="text-xs text-slate-500 mt-1">Verlauf der letzten 6 Monate</p>
+                </div>
+            </div>
+            <div class="relative w-full h-[300px]">
+                <canvas id="revenueChart"></canvas>
+            </div>
         </div>
 
         <div class="space-y-6">
-            <h3 class="font-black text-lg">Pendenzen & Schnellzugriff</h3>
 
-            <button @click="switchTab('finance')" class="w-full flex items-center justify-between p-6 bg-white border border-slate-100 rounded-3xl hover:border-indigo-500 transition-all group shadow-sm">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg"><i class="fa-solid fa-sack-dollar"></i></div>
-                    <div class="text-left">
-                        <span class="font-black block text-slate-800">Mietzinse prüfen</span>
-                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ potenzial_up|default:"0" }} Erhöhungen möglich</span>
-                    </div>
-                </div>
-                <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-indigo-500"></i>
-            </button>
+            <div class="bg-slate-900 rounded-3xl shadow-xl p-6 text-white border border-slate-800">
+                <h3 class="font-black text-lg mb-1 flex items-center gap-2">
+                    <i class="fa-solid fa-bell text-amber-400"></i> Action Center
+                </h3>
+                <p class="text-xs text-slate-400 mb-6">Deine Aufgaben für heute</p>
 
-            <button @click="switchTab('tickets')" class="w-full flex items-center justify-between p-6 bg-white border border-slate-100 rounded-3xl hover:border-rose-500 transition-all group shadow-sm">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg"><i class="fa-solid fa-ticket"></i></div>
-                    <div class="text-left">
-                        <span class="font-black block text-slate-800">Tickets bearbeiten</span>
-                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ offene_tickets|default:"0" }} Pendenzen</span>
+                <div class="space-y-3">
+
+                    <div v-if="bewerbungenNeu.length > 0" @click="switchTab('mietprozess')" class="flex items-start gap-4 p-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer border border-white/5">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg shrink-0">
+                            <i class="fa-solid fa-person-circle-exclamation"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-white">{% verbatim %}{{ bewerbungenNeu.length }}{% endverbatim %} neue Bewerbung(en)</div>
+                            <div class="text-[10px] font-bold text-slate-400 mt-0.5">Warten auf Prüfung im Kanban-Board</div>
+                        </div>
                     </div>
+
+                    <div v-if="ticketsNeu.length > 0" @click="switchTab('tickets')" class="flex items-start gap-4 p-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer border border-white/5">
+                        <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-lg shrink-0">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-white">{% verbatim %}{{ ticketsNeu.length }}{% endverbatim %} ungesehene Tickets</div>
+                            <div class="text-[10px] font-bold text-slate-400 mt-0.5">Mieter haben neue Meldungen erfasst</div>
+                        </div>
+                    </div>
+
+                    <div v-if="hnkPerioden.filter(p => !p.abgeschlossen).length > 0" @click="switchTab('finance')" class="flex items-start gap-4 p-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer border border-white/5">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg shrink-0">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-white">Offene Nebenkosten</div>
+                            <div class="text-[10px] font-bold text-slate-400 mt-0.5">{% verbatim %}{{ hnkPerioden.filter(p => !p.abgeschlossen).length }}{% endverbatim %} Periode(n) noch nicht abgerechnet</div>
+                        </div>
+                    </div>
+
+                    <div v-if="bewerbungenNeu.length === 0 && ticketsNeu.length === 0 && hnkPerioden.filter(p => !p.abgeschlossen).length === 0" class="flex flex-col items-center justify-center p-6 text-center">
+                        <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-xl mb-3">
+                            <i class="fa-solid fa-mug-hot"></i>
+                        </div>
+                        <p class="text-sm font-bold text-white">Alles erledigt!</p>
+                        <p class="text-xs text-slate-400 mt-1">Geniess deinen Kaffee. Keine dringenden Aufgaben.</p>
+                    </div>
+
                 </div>
-                <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-rose-500"></i>
-            </button>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <h3 class="font-black text-slate-800 mb-4 text-sm">Zentrale Navigation</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <button @click="switchTab('portfolio')" class="p-4 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-200 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors text-slate-500 hover:text-indigo-600">
+                        <i class="fa-solid fa-city text-xl"></i>
+                        <span class="text-[10px] font-black uppercase tracking-widest">Portfolio</span>
+                    </button>
+                    <button @click="switchTab('finance')" class="p-4 bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors text-slate-500 hover:text-emerald-600">
+                        <i class="fa-solid fa-file-invoice-dollar text-xl"></i>
+                        <span class="text-[10px] font-black uppercase tracking-widest">Finanzen</span>
+                    </button>
+                    <button @click="switchTab('crm')" class="p-4 bg-slate-50 hover:bg-amber-50 border border-slate-100 hover:border-amber-200 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors text-slate-500 hover:text-amber-600">
+                        <i class="fa-solid fa-address-book text-xl"></i>
+                        <span class="text-[10px] font-black uppercase tracking-widest">Kontakte</span>
+                    </button>
+                    <button @click="switchTab('mietprozess')" class="p-4 bg-slate-50 hover:bg-rose-50 border border-slate-100 hover:border-rose-200 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors text-slate-500 hover:text-rose-600">
+                        <i class="fa-solid fa-handshake text-xl"></i>
+                        <span class="text-[10px] font-black uppercase tracking-widest">Vermietung</span>
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

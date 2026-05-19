@@ -2,6 +2,8 @@ from ninja import Router, File, Form, Schema
 from ninja.files import UploadedFile
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.core.mail import send_mail  # 🔥 NEU: Für den E-Mail Versand
+from django.conf import settings        # 🔥 NEU: Für die Absender-Adresse
 from typing import List, Optional
 from decimal import Decimal
 from datetime import datetime
@@ -190,7 +192,7 @@ def list_bewerbungen(request):
             "email_vermieter": b.email_vermieter,
             "erwerbsstatus": b.erwerbsstatus,
             "beruf": b.beruf,
-            "einkommen_jahr": b.einkommen_jahr, # Reicht den String-Range-Wert weiter
+            "einkommen_jahr": b.einkommen_jahr,
             "arbeitgeber": b.arbeitgeber,
             "angestellt_seit": b.angestellt_seit,
             "kontaktperson_arbeitgeber": b.kontaktperson_arbeitgeber,
@@ -254,25 +256,80 @@ def delete_bewerbung(request, bewerbung_id: int):
     return 204, None
 
 # ==============================================================================
-# 🔥 FLATFOX-STYLE KOMMUNIKATION
+# 🔥 FLATFOX-STYLE KOMMUNIKATION (Echte E-Mails)
 # ==============================================================================
 class MessageSchema(Schema):
     typ: str # 'einladung', 'nachforderung', 'absage'
 
-@router.post("/admin/{bewerbung_id}/message", response={200: dict, 400: dict})
+@router.post("/admin/{bewerbung_id}/message", response={200: dict, 400: dict, 500: dict})
 @transaction.atomic
 def send_bewerbung_message(request, bewerbung_id: int, payload: MessageSchema):
     bewerbung = get_object_or_404(Mietbewerbung, id=bewerbung_id)
 
-    if payload.typ == 'absage':
-        bewerbung.status = 'abgelehnt'
-        bewerbung.save()
-        return 200, {"success": True, "message": f"Absage-E-Mail an {bewerbung.email} versendet und Status auf 'Abgelehnt' gesetzt."}
+    subject = ""
+    message_body = ""
 
-    elif payload.typ == 'einladung':
-        return 200, {"success": True, "message": f"Einladung zur Besichtigung an {bewerbung.email} gesendet."}
+    if payload.typ == 'einladung':
+        subject = f"Einladung zur Wohnungsbesichtigung: {bewerbung.einheit.bezeichnung}"
+        message_body = f"""Guten Tag {bewerbung.vorname} {bewerbung.nachname},
+
+vielen Dank für Ihr Interesse an unserem Mietobjekt ({bewerbung.einheit.bezeichnung}).
+
+Ihre Unterlagen haben bei uns einen sehr positiven Eindruck hinterlassen! Gerne möchten wir Sie zu einer unverbindlichen Besichtigung einladen.
+
+Bitte antworten Sie kurz auf diese E-Mail, um einen passenden Termin in den kommenden Tagen abzustimmen.
+
+Freundliche Grüsse
+Ihre Hausverwaltung
+swissImmo"""
+        # Wenn Status noch 'neu' ist, rücken wir ihn automatisch auf 'geprüft' vor
+        if bewerbung.status == 'neu':
+            bewerbung.status = 'geprueft'
 
     elif payload.typ == 'nachforderung':
-        return 200, {"success": True, "message": f"Dokumenten-Nachforderung an {bewerbung.email} gesendet."}
+        subject = f"Fehlende Unterlagen zu Ihrer Bewerbung: {bewerbung.einheit.bezeichnung}"
+        message_body = f"""Guten Tag {bewerbung.vorname} {bewerbung.nachname},
 
-    return 400, {"success": False, "error": "Unbekannter Nachrichtentyp."}
+vielen Dank für Ihre Bewerbung für das Objekt {bewerbung.einheit.bezeichnung}.
+
+Um Ihr Dossier abschliessend prüfen zu können, benötigen wir noch weitere Unterlagen von Ihnen (z.B. einen aktuellen Betreibungsauszug oder Ausweiskopien).
+
+Bitte senden Sie uns diese zeitnah als Antwort auf diese E-Mail zu.
+
+Freundliche Grüsse
+Ihre Hausverwaltung
+swissImmo"""
+
+    elif payload.typ == 'absage':
+        subject = f"Ihre Bewerbung für: {bewerbung.einheit.bezeichnung}"
+        message_body = f"""Guten Tag {bewerbung.vorname} {bewerbung.nachname},
+
+vielen Dank für Ihr Interesse und die Einreichung Ihrer Unterlagen für das Objekt {bewerbung.einheit.bezeichnung}.
+
+Leider müssen wir Ihnen mitteilen, dass wir uns in diesem Fall für eine andere Mietpartei entschieden haben, welche noch etwas besser zum spezifischen Profil der Liegenschaft passt.
+
+Wir danken Ihnen für Ihr Verständnis und wünschen Ihnen für die weitere Wohnungssuche viel Erfolg.
+
+Freundliche Grüsse
+Ihre Hausverwaltung
+swissImmo"""
+        bewerbung.status = 'abgelehnt'
+
+    else:
+        return 400, {"success": False, "error": "Unbekannter Nachrichtentyp."}
+
+    # E-Mail versenden
+    try:
+        send_mail(
+            subject=subject,
+            message=message_body,
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'info@swissimmo.ch'),
+            recipient_list=[bewerbung.email],
+            fail_silently=False,
+        )
+        bewerbung.save()
+        return 200, {"success": True, "message": f"E-Mail wurde erfolgreich an {bewerbung.email} versendet."}
+
+    except Exception as e:
+        print(f"Fehler beim E-Mail-Versand: {e}")
+        return 500, {"success": False, "error": f"Fehler beim E-Mail-Versand. Ist SMTP konfiguriert? ({str(e)})"}

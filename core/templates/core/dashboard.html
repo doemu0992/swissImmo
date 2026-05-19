@@ -76,53 +76,61 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h3 class="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <i class="bi bi-lightning-charge-fill text-amber-400"></i> Schnellzugriff
-            </h3>
+        <div class="space-y-6">
 
-            <div class="space-y-4">
-                <a href="{% url 'mietvertrag_liste' %}" x-target="main-content" class="flex items-center gap-4 p-4 rounded-xl border {% if potenzial_up > 0 %}border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50{% elif potenzial_down > 0 %}border-rose-200 bg-rose-50/50 hover:bg-rose-50{% else %}border-gray-100 hover:bg-gray-50{% endif %} transition-all group shadow-sm">
-                    <div class="w-12 h-12 rounded-xl {% if potenzial_up > 0 %}bg-emerald-100 text-emerald-600{% elif potenzial_down > 0 %}bg-rose-100 text-rose-600{% else %}bg-gray-100 text-gray-500{% endif %} flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-                        <i class="bi bi-graph-up-arrow"></i>
-                    </div>
-                    <div class="flex-1">
-                        <div class="font-bold text-gray-900 text-sm">Zins-Potenzial</div>
-                        <div class="text-xs mt-0.5 flex gap-3 font-medium">
-                            <span class="text-emerald-600"><i class="bi bi-arrow-up-circle"></i> {{ potenzial_up }} Erhöhungen</span>
-                            <span class="text-rose-500"><i class="bi bi-exclamation-circle"></i> {{ potenzial_down }} Risiken</span>
+            <div class="bg-slate-900 rounded-2xl shadow-lg border border-slate-800 p-6 text-white">
+                <h3 class="text-lg font-black mb-1 flex items-center gap-2">
+                    <i class="bi bi-bell-fill text-amber-400"></i> Action Center
+                </h3>
+                <p class="text-xs text-slate-400 mb-6">Deine Aufgaben für heute</p>
+
+                <div class="space-y-3">
+                    {% if action_items %}
+                        {% for item in action_items %}
+                        <div class="flex items-start gap-4 p-3 bg-slate-800/50 rounded-xl border border-slate-700/50 hover:bg-slate-800 transition-colors">
+                            <div class="w-10 h-10 rounded-lg {{ item.color }} flex items-center justify-center text-lg shrink-0">
+                                <i class="bi {{ item.icon }}"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-sm text-slate-100">{{ item.title }}</div>
+                                <div class="text-[11px] text-slate-400 mt-0.5">{{ item.desc }}</div>
+                            </div>
                         </div>
-                    </div>
-                    <i class="bi bi-chevron-right ml-auto text-gray-300 group-hover:text-gray-500 transition-colors"></i>
-                </a>
-
-                <a href="{% url 'mietzins_kontrolle' %}" x-target="main-content" class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-emerald-300 hover:bg-emerald-50 transition-all group shadow-sm">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform"><i class="bi bi-shield-check"></i></div>
-                    <div>
-                        <div class="font-bold text-gray-900 text-sm">Miet-Kontrolle</div>
-                        <div class="text-xs text-gray-500 mt-0.5">Wer hat noch nicht bezahlt?</div>
-                    </div>
-                    <i class="bi bi-chevron-right ml-auto text-gray-300 group-hover:text-emerald-500 transition-colors"></i>
-                </a>
-
-                <a href="{% url 'ticket_liste' %}" x-target="main-content" class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-rose-300 hover:bg-rose-50 transition-all group shadow-sm">
-                    <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform"><i class="bi bi-tools"></i></div>
-                    <div>
-                        <div class="font-bold text-gray-900 text-sm">Tickets bearbeiten</div>
-                        <div class="text-xs text-gray-500 mt-0.5">{{ offene_tickets }} offene Meldungen</div>
-                    </div>
-                    <i class="bi bi-chevron-right ml-auto text-gray-300 group-hover:text-rose-500 transition-colors"></i>
-                </a>
-
-                <a href="{% url 'abrechnung_liste' %}" x-target="main-content" class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50 transition-all group shadow-sm">
-                    <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform"><i class="bi bi-calculator"></i></div>
-                    <div>
-                        <div class="font-bold text-gray-900 text-sm">Nebenkosten</div>
-                        <div class="text-xs text-gray-500 mt-0.5">Abrechnungen erstellen</div>
-                    </div>
-                    <i class="bi bi-chevron-right ml-auto text-gray-300 group-hover:text-indigo-500 transition-colors"></i>
-                </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="flex flex-col items-center justify-center p-6 text-center">
+                            <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-xl mb-3">
+                                <i class="bi bi-cup-hot"></i>
+                            </div>
+                            <p class="text-sm font-bold text-slate-200">Alles erledigt!</p>
+                            <p class="text-xs text-slate-500 mt-1">Geniess deinen Kaffee. Es stehen aktuell keine dringenden Aufgaben an.</p>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-sm font-bold text-gray-900 mb-4 text-center">Schnellzugriff</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <a href="{% url 'mietvertrag_liste' %}" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50 transition-all text-gray-500 hover:text-indigo-600">
+                        <i class="bi bi-file-earmark-text text-2xl mb-2"></i>
+                        <span class="text-[10px] font-bold uppercase tracking-wider">Verträge</span>
+                    </a>
+                    <a href="{% url 'mietzins_kontrolle' %}" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:border-emerald-300 hover:bg-emerald-50 transition-all text-gray-500 hover:text-emerald-600">
+                        <i class="bi bi-shield-check text-2xl mb-2"></i>
+                        <span class="text-[10px] font-bold uppercase tracking-wider">Miet-Check</span>
+                    </a>
+                    <a href="{% url 'ticket_liste' %}" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:border-rose-300 hover:bg-rose-50 transition-all text-gray-500 hover:text-rose-600">
+                        <i class="bi bi-tools text-2xl mb-2"></i>
+                        <span class="text-[10px] font-bold uppercase tracking-wider">Tickets</span>
+                    </a>
+                    <a href="{% url 'abrechnung_liste' %}" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:border-amber-300 hover:bg-amber-50 transition-all text-gray-500 hover:text-amber-600">
+                        <i class="bi bi-calculator text-2xl mb-2"></i>
+                        <span class="text-[10px] font-bold uppercase tracking-wider">HNK</span>
+                    </a>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -157,9 +165,9 @@
 
         const ctx = canvas.getContext('2d');
 
-        const labels = {{ chart_labels|safe }};
-        const dataIst = {{ chart_ist|safe }};
-        const dataSoll = {{ chart_soll|safe }};
+        const labels = {{ chart_labels|safe|default:"[]" }};
+        const dataIst = {{ chart_ist|safe|default:"[]" }};
+        const dataSoll = {{ chart_soll|safe|default:"[]" }};
 
         new Chart(ctx, {
             type: 'bar',
