@@ -26,8 +26,10 @@ def get_liegenschaft(request, liegenschaft_id: int):
 @router.post("/liegenschaften", response={201: LiegenschaftListSchema})
 def create_liegenschaft(request, payload: LiegenschaftUpdateSchema):
     neue_liegenschaft = Liegenschaft.objects.create(**payload.dict(exclude_unset=True))
-    try: sync_liegenschaft_with_gwr(neue_liegenschaft)
-    except Exception: pass
+    try:
+        sync_liegenschaft_with_gwr(neue_liegenschaft)
+    except Exception:
+        pass
     return 201, neue_liegenschaft
 
 @router.put("/liegenschaften/{liegenschaft_id}", response={200: dict})
@@ -47,7 +49,6 @@ def delete_liegenschaft(request, liegenschaft_id: int):
 # ========================================================
 # EINHEITEN
 # ========================================================
-# 🔥 NEU: Der Endpunkt, um eine einzelne Einheit (für die Vertrags-Vorschau) zu laden!
 @router.get("/einheiten/{einheit_id}", response=EinheitSchemaOut)
 def get_einheit(request, einheit_id: int):
     return get_object_or_404(Einheit, id=einheit_id)
@@ -72,17 +73,35 @@ def delete_einheit(request, einheit_id: int):
     return 204, None
 
 
-class LinkSchema(Schema): gehoert_zu_id: Optional[int]
-@router.patch("/einheiten/{einheit_id}/link", response={200: dict})
-def link_einheit(request, einheit_id: int, payload: LinkSchema):
-    einheit = get_object_or_404(Einheit, id=einheit_id); einheit.gehoert_zu_id = payload.gehoert_zu_id; einheit.save(); return 200, {"success": True}
+# 🔥 FIX: Die richtigen Endpunkte für Verknüpfen & Entkoppeln
+class LinkNebenobjektSchema(Schema):
+    nebenobjekt_id: int
+
+@router.post("/einheiten/{einheit_id}/link-nebenobjekt", response={200: dict})
+def link_nebenobjekt(request, einheit_id: int, payload: LinkNebenobjektSchema):
+    hauptobjekt = get_object_or_404(Einheit, id=einheit_id)
+    nebenobjekt = get_object_or_404(Einheit, id=payload.nebenobjekt_id)
+
+    nebenobjekt.gehoert_zu = hauptobjekt
+    nebenobjekt.save()
+    return 200, {"success": True}
+
+@router.post("/einheiten/{einheit_id}/unlink-nebenobjekt", response={200: dict})
+def unlink_nebenobjekt(request, einheit_id: int, payload: LinkNebenobjektSchema):
+    nebenobjekt = get_object_or_404(Einheit, id=payload.nebenobjekt_id)
+
+    nebenobjekt.gehoert_zu = None
+    nebenobjekt.save()
+    return 200, {"success": True}
+
 
 # ========================================================
 # DOKUMENTE & UNTERHALT
 # ========================================================
 @router.post("/dokumente", response={201: dict})
 def upload_dokument(request, titel: str = Form(...), kategorie: str = Form(...), liegenschaft_id: Optional[int] = Form(None), einheit_id: Optional[int] = Form(None), datei: UploadedFile = File(...)):
-    Dokument.objects.create(titel=titel, kategorie=kategorie, liegenschaft_id=liegenschaft_id, einheit_id=einheit_id, datei=datei); return 201, {"success": True}
+    Dokument.objects.create(titel=titel, kategorie=kategorie, liegenschaft_id=liegenschaft_id, einheit_id=einheit_id, datei=datei)
+    return 201, {"success": True}
 
 @router.delete("/dokumente/{id}", response={200: dict, 404: dict, 500: dict})
 def delete_dokument(request, id: int):
@@ -111,12 +130,20 @@ def delete_dokument(request, id: int):
     except Exception as e:
         return 500, {"success": False, "error": str(e)}
 
-class UnterhaltCreateSchema(Schema): einheit_id: int; titel: str; beschreibung: str = ""; datum: date; kosten: Decimal = Decimal('0.00')
+class UnterhaltCreateSchema(Schema):
+    einheit_id: int; titel: str; beschreibung: str = ""; datum: date; kosten: Decimal = Decimal('0.00')
+
 @router.post("/unterhalt", response={201: dict})
 def create_unterhalt(request, payload: UnterhaltCreateSchema):
-    e = get_object_or_404(Einheit, id=payload.einheit_id); Unterhalt.objects.create(liegenschaft=e.liegenschaft, einheit=e, titel=payload.titel, beschreibung=payload.beschreibung, datum=payload.datum, kosten=payload.kosten); return 201, {"success": True}
+    e = get_object_or_404(Einheit, id=payload.einheit_id)
+    Unterhalt.objects.create(liegenschaft=e.liegenschaft, einheit=e, titel=payload.titel, beschreibung=payload.beschreibung, datum=payload.datum, kosten=payload.kosten)
+    return 201, {"success": True}
+
 @router.delete("/unterhalt/{id}", response={204: None})
-def delete_unterhalt(request, id: int): get_object_or_404(Unterhalt, id=id).delete(); return 204, None
+def delete_unterhalt(request, id: int):
+    get_object_or_404(Unterhalt, id=id).delete()
+    return 204, None
+
 
 # ========================================================
 # VERTEILSCHLÜSSEL EINHEIT
@@ -140,6 +167,7 @@ def create_verteilschluessel(request, payload: VerteilschluesselCreateSchema):
 def delete_verteilschluessel(request, id: int):
     get_object_or_404(Verteilschluessel, id=id).delete()
     return 204, None
+
 
 # ========================================================
 # LIEGENSCHAFTS-STANDARDS (VERTEILSCHLÜSSEL)
@@ -171,6 +199,7 @@ def create_liegenschaft_verteilschluessel(request, payload: LiegenschaftVerteils
 def delete_liegenschaft_verteilschluessel(request, id: int):
     get_object_or_404(LiegenschaftVerteilschluessel, id=id).delete()
     return 204, None
+
 
 # ========================================================
 # GERÄTE, ZÄHLER & SCHLÜSSEL
@@ -211,14 +240,29 @@ def delete_geraet(request, id: int):
     get_object_or_404(Geraet, id=id).delete()
     return 204, None
 
-class ZaehlerCreateSchema(Schema): einheit_id: int; typ: str; zaehler_nummer: str; standort: str = ""; aktueller_stand: Decimal = Decimal('0.00')
-@router.post("/zaehler", response={201: dict})
-def create_zaehler(request, payload: ZaehlerCreateSchema): Zaehler.objects.create(einheit=get_object_or_404(Einheit, id=payload.einheit_id), **payload.dict(exclude={'einheit_id'})); return 201, {"success": True}
-@router.delete("/zaehler/{id}", response={204: None})
-def delete_zaehler(request, id: int): get_object_or_404(Zaehler, id=id).delete(); return 204, None
+class ZaehlerCreateSchema(Schema):
+    einheit_id: int; typ: str; zaehler_nummer: str; standort: str = ""; aktueller_stand: Decimal = Decimal('0.00')
 
-class SchluesselCreateSchema(Schema): einheit_id: int; typ: str; schluessel_nummer: str; anzahl: int
+@router.post("/zaehler", response={201: dict})
+def create_zaehler(request, payload: ZaehlerCreateSchema):
+    Zaehler.objects.create(einheit=get_object_or_404(Einheit, id=payload.einheit_id), **payload.dict(exclude={'einheit_id'}))
+    return 201, {"success": True}
+
+@router.delete("/zaehler/{id}", response={204: None})
+def delete_zaehler(request, id: int):
+    get_object_or_404(Zaehler, id=id).delete()
+    return 204, None
+
+class SchluesselCreateSchema(Schema):
+    einheit_id: int; typ: str; schluessel_nummer: str; anzahl: int
+
 @router.post("/schluessel", response={201: dict})
-def create_schluessel(request, payload: SchluesselCreateSchema): e = get_object_or_404(Einheit, id=payload.einheit_id); Schluessel.objects.create(liegenschaft=e.liegenschaft, einheit=e, **payload.dict(exclude={'einheit_id'})); return 201, {"success": True}
+def create_schluessel(request, payload: SchluesselCreateSchema):
+    e = get_object_or_404(Einheit, id=payload.einheit_id)
+    Schluessel.objects.create(liegenschaft=e.liegenschaft, einheit=e, **payload.dict(exclude={'einheit_id'}))
+    return 201, {"success": True}
+
 @router.delete("/schluessel/{id}", response={204: None})
-def delete_schluessel(request, id: int): get_object_or_404(Schluessel, id=id).delete(); return 204, None
+def delete_schluessel(request, id: int):
+    get_object_or_404(Schluessel, id=id).delete()
+    return 204, None

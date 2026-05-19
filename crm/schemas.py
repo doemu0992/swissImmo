@@ -22,7 +22,11 @@ class MieterSchemaOut(ModelSchema):
             'id', 'typ', 'anrede', 'vorname', 'nachname', 'firmen_name',
             'strasse', 'plz', 'ort', 'email', 'mobile', 'telefon_privat',
             'telefon_geschaeft', 'iban', 'bank_name', 'geburtsdatum',
-            'nationalitaet', 'ahv_nummer', 'zivilstand', 'bonitaet_datum', 'notizen'
+            'nationalitaet', 'ahv_nummer', 'zivilstand', 'bonitaet_datum', 'notizen',
+            # 🔥 FLATFOX-FELDER:
+            'heimatort', 'erwerbsstatus', 'beruf', 'arbeitgeber', 'einkommen_jahr',
+            # 🔥 ZUKÜNFTIGE ADRESSE FÜR FRONTEND FREISCHALTEN:
+            'zukuenftige_strasse', 'zukuenftige_plz', 'zukuenftiger_ort', 'zukuenftig_ab'
         ]
 
     @staticmethod
@@ -59,6 +63,14 @@ class MieterUpdateSchema(Schema):
     ahv_nummer: Optional[str] = None
     zivilstand: Optional[str] = None
     nationalitaet: Optional[str] = None
+
+    # 🔥 DATEN-EMPFANG FLATFOX:
+    heimatort: Optional[str] = None
+    erwerbsstatus: Optional[str] = None
+    beruf: Optional[str] = None
+    arbeitgeber: Optional[str] = None
+    einkommen_jahr: Optional[str] = None
+
     email: Optional[str] = None
     telefon_privat: Optional[str] = None
     telefon_geschaeft: Optional[str] = None
@@ -70,6 +82,13 @@ class MieterUpdateSchema(Schema):
     plz: Optional[str] = None
     ort: Optional[str] = None
     land: Optional[str] = None
+
+    # 🔥 DATEN-EMPFANG ZUKÜNFTIGE ADRESSE:
+    zukuenftige_strasse: Optional[str] = None
+    zukuenftige_plz: Optional[str] = None
+    zukuenftiger_ort: Optional[str] = None
+    zukuenftig_ab: Optional[date] = None
+
     iban: Optional[str] = None
     bank_name: Optional[str] = None
     bonitaet_datum: Optional[date] = None

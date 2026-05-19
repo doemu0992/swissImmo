@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bewerbung: {{ einheit.bezeichnung }} - swissImmo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap');
+        body { font-family: 'Nunito', sans-serif; background-color: #f8fafc; }
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col items-center py-10 px-4">
+
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+    <div id="app" class="w-full max-w-3xl">
+
+        <div v-if="success" class="bg-white rounded-3xl shadow-xl p-12 text-center animate-fade-in">
+            <div class="w-24 h-24 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center text-5xl mx-auto mb-6">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h1 class="text-4xl font-black text-slate-900 mb-4">Bewerbung eingereicht!</h1>
+            <p class="text-slate-500 text-lg mb-8">Vielen Dank für dein Interesse. Wir haben deine Unterlagen erhalten und werden diese nun prüfen. Wir melden uns in Kürze bei dir.</p>
+            <a href="/" class="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-600 transition-colors">Zurück zur Startseite</a>
+        </div>
+
+        <div v-else class="bg-white rounded-3xl shadow-xl overflow-hidden">
+
+            <div class="bg-slate-900 text-white p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-sm shadow-lg shadow-indigo-500/40"><i class="fa-solid fa-building"></i></div>
+                    <span class="text-xl font-black tracking-tighter">swissImmo</span>
+                </div>
+                <p class="text-indigo-400 font-black uppercase tracking-widest text-xs mb-1">Digitale Bewerbung</p>
+                <h1 class="text-3xl font-black mb-2">{{ einheit.bezeichnung }}</h1>
+                <p class="text-slate-400 flex items-center gap-2"><i class="fa-solid fa-location-dot"></i> {{ einheit.liegenschaft.strasse }}, {{ einheit.liegenschaft.plz }} {{ einheit.liegenschaft.ort }}</p>
+            </div>
+
+            <div class="bg-slate-50 border-b border-slate-100 p-4 flex justify-between items-center px-8">
+                <div class="flex items-center gap-2 w-full">
+                    <div v-for="s in 5" :key="s" class="h-2 flex-1 rounded-full transition-all duration-300" :class="step >= s ? 'bg-indigo-500' : 'bg-slate-200'"></div>
+                </div>
+                <span class="ml-4 text-xs font-black text-slate-400 whitespace-nowrap">Schritt {% verbatim %}{{ step }}{% endverbatim %} von 5</span>
+            </div>
+
+            <div class="p-8">
+
+                <div v-if="error" class="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl mb-6 text-sm font-bold flex items-center gap-3 animate-fade-in">
+                    <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                    {% verbatim %}{{ error }}{% endverbatim %}
+                </div>
+
+                <div v-show="step === 1" class="space-y-5 animate-fade-in">
+                    <h2 class="text-2xl font-black text-slate-800 mb-6">Wer bewirbt sich?</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Vorname *</label><input v-model="form.vorname" type="text" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Nachname *</label><input v-model="form.nachname" type="text" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Zivilstand *</label>
+                            <select v-model="form.zivilstand" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <option value="ledig">Ledig</option><option value="verheiratet">Verheiratet</option><option value="eingetragene_partnerschaft">Eingetragene Partnerschaft</option><option value="geschieden">Geschieden</option><option value="verwitwet">Verwitwet</option><option value="getrennt">Getrennt</option>
+                            </select>
+                        </div>
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Geburtsdatum *</label><input v-model="form.geburtsdatum" type="date" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Geschlecht</label>
+                            <select v-model="form.geschlecht" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <option value="weiblich">Weiblich</option><option value="maennlich">Männlich</option>
+                            </select>
+                        </div>
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Nationalität</label><input v-model="form.nationalitaet" type="text" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                    </div>
+                    <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Heimatort (für Schweizer)</label><input v-model="form.heimatort" type="text" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                </div>
+
+                <div v-show="step === 2" class="space-y-5 animate-fade-in">
+                    <h2 class="text-2xl font-black text-slate-800 mb-6">Kontakt & Aktuelle Adresse</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Mobilnummer *</label><input v-model="form.mobilnummer" type="tel" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">E-Mail Adresse *</label><input v-model="form.email" type="email" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                    </div>
+                    <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Aktuelle Adresse (Strasse, Nr.) *</label><input v-model="form.adresse" type="text" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">PLZ *</label><input v-model="form.plz" type="text" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Ort *</label><input v-model="form.ort" type="text" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                    </div>
+
+                    <h3 class="font-black text-slate-800 mt-8 mb-4">Aktuelles Mietverhältnis</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Aktueller Vermieter / Verwaltung *</label><input v-model="form.aktueller_vermieter" type="text" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Telefon Vermieter *</label><input v-model="form.telefon_vermieter" type="text" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                    </div>
+                    <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Grund für den Umzug</label><input v-model="form.grund_fuer_wechsel" type="text" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                </div>
+
+                <div v-show="step === 3" class="space-y-5 animate-fade-in">
+                    <h2 class="text-2xl font-black text-slate-800 mb-6">Beruf & Finanzen</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Erwerbsstatus *</label>
+                            <select v-model="form.erwerbsstatus" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <option value="angestellt">Angestellt</option><option value="selbstaendig">Selbständig</option><option value="student">Student</option><option value="pensioniert">Pensioniert</option><option value="iv_bezueger">IV Bezüger</option><option value="arbeitslos">Arbeitslos</option>
+                            </select>
+                        </div>
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Beruf *</label><input v-model="form.beruf" type="text" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                    </div>
+                    <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Bruttoeinkommen im Jahr (CHF) *</label>
+                        <select v-model="form.einkommen_jahr" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option>weniger als 30’000</option><option>30’000 - 40’000</option><option>40’000 - 50’000</option><option>50’000 - 60’000</option>
+                            <option>60’000 - 70’000</option><option>70’000 - 80’000</option><option>80’000 - 90’000</option><option>90’000 - 100’000</option>
+                            <option>100’000 - 120’000</option><option>120’000 - 160’000</option><option>mehr als 160’000</option>
+                        </select>
+                    </div>
+                    <div v-if="form.erwerbsstatus === 'angestellt'" class="grid grid-cols-1 md:grid-cols-2 gap-5 p-5 bg-slate-50 border border-slate-200 rounded-xl">
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Arbeitgeber *</label><input v-model="form.arbeitgeber" type="text" class="w-full bg-white border border-slate-200 p-3 rounded-lg font-bold"></div>
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Angestellt seit *</label><input v-model="form.angestellt_seit" type="date" class="w-full bg-white border border-slate-200 p-3 rounded-lg font-bold"></div>
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Tel. Arbeitgeber *</label><input v-model="form.telefon_arbeitgeber" type="text" class="w-full bg-white border border-slate-200 p-3 rounded-lg font-bold"></div>
+                        <div class="flex items-end">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" v-model="form.ist_unbefristet" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500">
+                                <span class="text-sm font-bold">Anstellung ist unbefristet</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mt-6 border-t border-slate-100 pt-6">
+                        <label class="flex items-center justify-between p-4 bg-rose-50 border border-rose-200 rounded-xl cursor-pointer hover:bg-rose-100 transition-colors">
+                            <div><p class="font-black text-rose-800">Betreibungen in den letzten 2 Jahren?</p><p class="text-xs text-rose-600">Falls ja, bitte im nächsten Schritt Auszug hochladen.</p></div>
+                            <input type="checkbox" v-model="form.hat_betreibungen" class="w-6 h-6 rounded text-rose-600 focus:ring-rose-500">
+                        </label>
+                    </div>
+                </div>
+
+                <div v-show="step === 4" class="space-y-5 animate-fade-in">
+                    <h2 class="text-2xl font-black text-slate-800 mb-6">Wohnungsdetails & Extras</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Anzahl Erwachsene</label><input v-model="form.anzahl_erwachsene" type="number" min="1" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold outline-none"></div>
+                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Anzahl Kinder</label><input v-model="form.anzahl_kinder" type="number" min="0" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold outline-none"></div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                            <span class="font-bold text-slate-800"><i class="fa-solid fa-paw w-6 text-slate-400"></i> Gibt es Haustiere?</span>
+                            <input type="checkbox" v-model="form.haustiere" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500">
+                        </label>
+                        <div v-if="form.haustiere" class="pl-10"><input v-model="form.haustiere_details" type="text" placeholder="Welche Tiere? (Rasse/Art)" class="w-full bg-white border border-slate-200 p-3 rounded-xl text-sm"></div>
+
+                        <label class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                            <span class="font-bold text-slate-800"><i class="fa-solid fa-guitar w-6 text-slate-400"></i> Spielt jemand ein Instrument?</span>
+                            <input type="checkbox" v-model="form.musikinstrumente" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500">
+                        </label>
+
+                        <label class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                            <span class="font-bold text-slate-800"><i class="fa-solid fa-car w-6 text-slate-400"></i> Interesse an Parkplatz/Garage?</span>
+                            <input type="checkbox" v-model="form.interesse_parkplatz" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500">
+                        </label>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100">
+                        <h3 class="font-black text-slate-800 mb-4">Schilder & Kaution</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
+                            <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Text für Briefkasten</label><input v-model="form.schild_briefkasten" type="text" placeholder="z.B. Muster" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold"></div>
+                            <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Text für Klingel</label><input v-model="form.schild_sonnerie" type="text" placeholder="z.B. Muster" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black uppercase text-slate-400 mb-2">Wunsch-Kautionsart</label>
+                            <select v-model="form.wunsch_kautions_typ" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold outline-none">
+                                <option value="bank">Klassisches Bankdepot (Mietzinskonto)</option>
+                                <option value="swisskaution">Kautionsversicherung (z.B. Swisskaution)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-show="step === 5" class="space-y-5 animate-fade-in">
+                    <h2 class="text-2xl font-black text-slate-800 mb-6">Dokumente hochladen</h2>
+
+                    <div class="border border-slate-200 rounded-xl p-5 hover:border-indigo-300 transition-colors">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-black text-slate-800">Betreibungsregisterauszug *</h4>
+                                <p class="text-xs text-slate-500 mt-1">Nicht älter als 3 Monate.</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="checkbox" v-model="form.digitaler_betreibungsauszug" id="digital_b" class="w-4 h-4 text-indigo-600 rounded">
+                                <label for="digital_b" class="text-xs font-bold text-indigo-600 cursor-pointer">Auszug nachreichen</label>
+                            </div>
+                        </div>
+
+                        <div v-if="!form.digitaler_betreibungsauszug">
+                            <div class="bg-blue-50 border border-blue-100 p-3 rounded-xl mb-4 text-xs text-blue-800">
+                                <i class="fa-solid fa-circle-info mr-1"></i> Keinen aktuellen Auszug zur Hand?
+                                <a href="https://www.e-service.admin.ch/crex/cms/content/strafregister/uebersicht_de" target="_blank" class="font-bold underline hover:text-blue-600">
+                                    Hier beim Bund online bestellen (PDF)
+                                </a>
+                            </div>
+                            <input type="file" @change="handleFile($event, 'betreibungsauszug')" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                        </div>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-xl p-5 hover:border-indigo-300 transition-colors">
+                        <h4 class="font-black text-slate-800 mb-1">Ausweiskopie (ID oder Pass) *</h4>
+                        <p class="text-xs text-slate-500 mb-3">Vorder- und Rückseite bei ID.</p>
+                        <input type="file" @change="handleFile($event, 'ausweiskopie')" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    </div>
+
+                    <div class="border border-slate-200 rounded-xl p-5 hover:border-indigo-300 transition-colors">
+                        <h4 class="font-black text-slate-800 mb-1">Lohnausweis (Letzte 3 Monate) *</h4>
+                        <input type="file" @change="handleFile($event, 'lohnausweis')" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    </div>
+
+                    <div class="border border-slate-200 rounded-xl p-5 hover:border-indigo-300 transition-colors">
+                        <h4 class="font-black text-slate-800 mb-1">Weitere Dokumente (Optional)</h4>
+                        <p class="text-xs text-slate-500 mb-3">Motivationsschreiben, Referenzen etc.</p>
+                        <input type="file" @change="handleFile($event, 'weitere_dokumente')" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black uppercase text-slate-400 mb-2 mt-4">Gewünschter Bezugstermin *</label>
+                        <input v-model="form.gewuenschter_bezugstermin" type="date" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-10 pt-6 border-t border-slate-100">
+                    <button v-if="step > 1" @click="step--" class="text-slate-400 font-bold hover:text-slate-800 transition-colors px-4 py-2"><i class="fa-solid fa-arrow-left mr-2"></i> Zurück</button>
+                    <div v-else></div> <button v-if="step < 5" @click="nextStep" class="bg-indigo-600 text-white px-8 py-3.5 rounded-xl font-black shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition-all flex items-center gap-2">
+                        Weiter <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                    <button v-if="step === 5" @click="submitForm" :disabled="isSubmitting" class="bg-emerald-500 text-white px-8 py-3.5 rounded-xl font-black shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition-all flex items-center gap-2 disabled:opacity-50">
+                        <i v-if="isSubmitting" class="fa-solid fa-circle-notch fa-spin"></i>
+                        <span v-else><i class="fa-solid fa-paper-plane mr-2"></i> Verbindlich einreichen</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    step: 1,
+                    isSubmitting: false,
+                    success: false,
+                    error: null,
+                    form: {
+                        einheit_id: '{{ einheit.id }}',
+                        vorname: '', nachname: '', zivilstand: 'ledig', geburtsdatum: '',
+                        geschlecht: 'weiblich', nationalitaet: 'Schweiz', heimatort: '',
+                        mobilnummer: '', email: '', adresse: '', plz: '', ort: '',
+                        aktueller_vermieter: '', kontaktperson_vermieter: '', telefon_vermieter: '', email_vermieter: '',
+                        erwerbsstatus: 'angestellt', beruf: '', einkommen_jahr: '70’000 - 80’000',
+                        arbeitgeber: '', angestellt_seit: '', kontaktperson_arbeitgeber: '', telefon_arbeitgeber: '', email_arbeitgeber: '', ist_unbefristet: true,
+                        hat_betreibungen: false, grund_fuer_wechsel: '',
+                        anzahl_erwachsene: 1, anzahl_kinder: 0, haustiere: false, haustiere_details: '',
+                        musikinstrumente: false, interesse_parkplatz: false, gewuenschter_bezugstermin: '', bemerkungen: '',
+                        schild_briefkasten: '', schild_sonnerie: '', wunsch_kautions_typ: 'bank',
+                        digitaler_betreibungsauszug: false
+                    },
+                    files: {
+                        betreibungsauszug: null, ausweiskopie: null, lohnausweis: null, weitere_dokumente: null
+                    }
+                }
+            },
+            methods: {
+                nextStep() {
+                    this.error = null;
+                    if (this.step === 1 && (!this.form.vorname || !this.form.nachname || !this.form.geburtsdatum)) {
+                        this.error = "Bitte fülle Vorname, Nachname und Geburtsdatum aus."; return;
+                    }
+                    if (this.step === 2 && (!this.form.mobilnummer || !this.form.email || !this.form.adresse || !this.form.aktueller_vermieter)) {
+                        this.error = "Bitte fülle alle Pflichtfelder (mit *) aus."; return;
+                    }
+                    if (this.step === 3 && (!this.form.beruf || (this.form.erwerbsstatus === 'angestellt' && !this.form.arbeitgeber))) {
+                        this.error = "Bitte fülle deine Berufs- und Arbeitgeberdaten aus."; return;
+                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    this.step++;
+                },
+                handleFile(event, field) {
+                    this.files[field] = event.target.files[0];
+                },
+                async submitForm() {
+                    this.error = null;
+                    if (!this.form.gewuenschter_bezugstermin) {
+                        this.error = "Bitte wähle einen gewünschten Bezugstermin aus."; return;
+                    }
+                    if (!this.form.digitaler_betreibungsauszug && !this.files.betreibungsauszug) {
+                        this.error = "Bitte lade einen Betreibungsauszug hoch oder wähle den digitalen Bezug."; return;
+                    }
+
+                    this.isSubmitting = true;
+                    const formData = new FormData();
+
+                    for (const key in this.form) {
+                        formData.append(key, this.form[key]);
+                    }
+                    for (const key in this.files) {
+                        if (this.files[key]) {
+                            formData.append(key, this.files[key]);
+                        }
+                    }
+
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                    try {
+                        const res = await fetch('/api/mietprozess/public/bewerben', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': csrfToken
+                            },
+                            body: formData
+                        });
+
+                        const textResponse = await res.text();
+                        let data;
+                        try {
+                            data = JSON.parse(textResponse);
+                        } catch (parseError) {
+                            console.error("Kein JSON vom Server. Server antwortete mit:", textResponse);
+                            this.error = "Serverfehler (HTML erhalten). Lade die Seite neu oder prüfe die PythonAnywhere Error Logs.";
+                            this.isSubmitting = false;
+                            return;
+                        }
+
+                        if (res.ok) {
+                            this.success = true;
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        } else {
+                            if (res.status === 422) {
+                                console.error("Validation Error:", data);
+                                this.error = "Bitte fülle alle Formularfelder korrekt aus. (" + JSON.stringify(data.detail) + ")";
+                            } else {
+                                this.error = data.error || "Ein unbekannter Fehler ist aufgetreten.";
+                            }
+                        }
+                    } catch (e) {
+                        this.error = "Totaler Netzwerkfehler. Verbindung abgebrochen.";
+                        console.error(e);
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

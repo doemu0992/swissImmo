@@ -1,0 +1,85 @@
+<div v-if="activeTab === 'mietprozess'" class="animate-fade-in pb-10">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-2xl font-black text-slate-800">Mietprozess & Bewerbungen</h2>
+            <p class="text-sm text-slate-500">Pipeline für neue Mietinteressenten</p>
+        </div>
+        <button @click="refreshAll" class="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-all">
+            <i class="fa-solid fa-rotate-right mr-2"></i> Aktualisieren
+        </button>
+    </div>
+
+    <div class="flex gap-6 overflow-x-auto pb-8 items-start">
+
+        <div class="flex-shrink-0 w-80 bg-slate-100/50 rounded-3xl p-4 border border-slate-200">
+            <div class="flex items-center justify-between mb-4 px-2">
+                <h3 class="font-black text-slate-700 uppercase tracking-widest text-xs">Neu Eingegangen</h3>
+                <span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-lg text-[10px] font-bold">{% verbatim %}{{ bewerbungenNeu.length }}{% endverbatim %}</span>
+            </div>
+            <div class="space-y-3">
+                <div v-for="b in bewerbungenNeu" :key="b.id" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer group" @click="openBewerbungDetail(b)">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[10px] font-black uppercase text-indigo-500 bg-indigo-50 px-2 py-1 rounded-md">{% verbatim %}{{ b.objekt_bezeichnung }}{% endverbatim %}</span>
+                        <span class="text-[10px] text-slate-400">{% verbatim %}{{ new Date(b.erstellt_am).toLocaleDateString('de-CH') }}{% endverbatim %}</span>
+                    </div>
+                    <h4 class="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{% verbatim %}{{ b.vorname }} {{ b.nachname }}{% endverbatim %}</h4>
+                    <p class="text-xs text-slate-500 mb-3 truncate"><i class="fa-solid fa-briefcase text-slate-300 mr-1"></i> {% verbatim %}{{ b.beruf }}{% endverbatim %}</p>
+                    <div class="flex gap-2">
+                        <button @click.stop="updateBewerbungStatus(b.id, 'geprueft')" class="flex-1 bg-indigo-50 text-indigo-600 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-indigo-600 hover:text-white transition-colors">
+                            Prüfen <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+                <div v-if="!bewerbungenNeu.length" class="text-center py-6 text-xs text-slate-400 font-medium italic border-2 border-dashed border-slate-200 rounded-2xl">Keine neuen Bewerbungen</div>
+            </div>
+        </div>
+
+        <div class="flex-shrink-0 w-80 bg-slate-100/50 rounded-3xl p-4 border border-slate-200">
+            <div class="flex items-center justify-between mb-4 px-2">
+                <h3 class="font-black text-amber-700 uppercase tracking-widest text-xs">Bonität Geprüft</h3>
+                <span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-lg text-[10px] font-bold">{% verbatim %}{{ bewerbungenGeprueft.length }}{% endverbatim %}</span>
+            </div>
+            <div class="space-y-3">
+                <div v-for="b in bewerbungenGeprueft" :key="b.id" class="bg-white p-4 rounded-2xl shadow-sm border border-amber-100 hover:border-amber-400 hover:shadow-md transition-all cursor-pointer group" @click="openBewerbungDetail(b)">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[10px] font-black uppercase text-amber-600 bg-amber-50 px-2 py-1 rounded-md">{% verbatim %}{{ b.objekt_bezeichnung }}{% endverbatim %}</span>
+                    </div>
+                    <h4 class="font-bold text-slate-900 group-hover:text-amber-600 transition-colors">{% verbatim %}{{ b.vorname }} {{ b.nachname }}{% endverbatim %}</h4>
+                    <p class="text-xs text-slate-500 mb-3 truncate">Einkommen: {% verbatim %}{{ b.einkommen_jahr }}{% endverbatim %}</p>
+                    <div class="flex gap-2">
+                        <button @click.stop="updateBewerbungStatus(b.id, 'abgelehnt')" class="w-8 bg-rose-50 text-rose-500 py-1.5 rounded-lg text-xs hover:bg-rose-500 hover:text-white transition-colors" title="Absagen">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <button @click.stop="updateBewerbungStatus(b.id, 'zugesagt')" class="flex-1 bg-emerald-50 text-emerald-600 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-emerald-500 hover:text-white transition-colors">
+                            Zusagen <i class="fa-solid fa-check ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+                <div v-if="!bewerbungenGeprueft.length" class="text-center py-6 text-xs text-slate-400 font-medium italic border-2 border-dashed border-slate-200 rounded-2xl">Keine geprüften Dossiers</div>
+            </div>
+        </div>
+
+        <div class="flex-shrink-0 w-80 bg-slate-100/50 rounded-3xl p-4 border border-slate-200">
+            <div class="flex items-center justify-between mb-4 px-2">
+                <h3 class="font-black text-emerald-700 uppercase tracking-widest text-xs">Zugesagt (Onboarding)</h3>
+                <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-lg text-[10px] font-bold">{% verbatim %}{{ bewerbungenZugesagt.length }}{% endverbatim %}</span>
+            </div>
+            <div class="space-y-3">
+                <div v-for="b in bewerbungenZugesagt" :key="b.id" class="bg-white p-4 rounded-2xl shadow-sm border border-emerald-200 hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer relative overflow-hidden group" @click="openBewerbungDetail(b)">
+                    <div class="absolute top-0 right-0 w-10 h-10 bg-emerald-50 rounded-bl-3xl -z-0"></div>
+                    <div class="flex justify-between items-start mb-2 relative z-10">
+                        <span class="text-[10px] font-black uppercase text-emerald-700 bg-emerald-100 px-2 py-1 rounded-md">{% verbatim %}{{ b.objekt_bezeichnung }}{% endverbatim %}</span>
+                        <i class="fa-solid fa-handshake text-emerald-400"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-900 relative z-10 group-hover:text-emerald-600 transition-colors">{% verbatim %}{{ b.vorname }} {{ b.nachname }}{% endverbatim %}</h4>
+                    <p class="text-[10px] text-slate-400 mb-3 relative z-10">Kaution: {% verbatim %}{{ b.wunsch_kautions_typ === 'bank' ? 'Bankdepot' : 'Swisskaution' }}{% endverbatim %}</p>
+                    <button @click.stop="openContractWizardFromBewerbung(b)" class="w-full bg-slate-900 text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-colors relative z-10 shadow-md">
+                        <i class="fa-solid fa-file-signature mr-1"></i> Vertrag erstellen
+                    </button>
+                </div>
+                <div v-if="!bewerbungenZugesagt.length" class="text-center py-6 text-xs text-slate-400 font-medium italic border-2 border-dashed border-slate-200 rounded-2xl">Keine offenen Zusagen</div>
+            </div>
+        </div>
+
+    </div>
+</div>

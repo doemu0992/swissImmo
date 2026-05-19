@@ -90,7 +90,7 @@ class Mandant(models.Model):
         super().save(*args, **kwargs)
 
 
-# 🔥 DER NEUE, AUFGERÜSTETE MIETER
+# 🔥 DER NEUE, AUFGERÜSTETE MIETER (Inkl. Flatfox-Felder & Adress-Historie)
 class Mieter(models.Model):
     TYP_CHOICES = [
         ('person', 'Privatperson'),
@@ -112,6 +112,13 @@ class Mieter(models.Model):
     ahv_nummer = models.CharField("AHV-Nummer", max_length=20, blank=True, default='')
     zivilstand = models.CharField("Zivilstand", max_length=50, blank=True, default='')
     nationalitaet = models.CharField("Nationalität", max_length=100, blank=True, default='')
+    heimatort = models.CharField("Heimatort", max_length=150, blank=True, default='')
+
+    # --- BERUF & FINANZEN (Übernahme aus Bewerbung) ---
+    erwerbsstatus = models.CharField("Erwerbsstatus", max_length=50, blank=True, default='')
+    beruf = models.CharField("Beruf", max_length=150, blank=True, default='')
+    arbeitgeber = models.CharField("Arbeitgeber", max_length=150, blank=True, default='')
+    einkommen_jahr = models.CharField("Jahreseinkommen", max_length=100, blank=True, default='')
 
     # --- KONTAKT ---
     email = models.EmailField("E-Mail", blank=True, default='')
@@ -127,6 +134,12 @@ class Mieter(models.Model):
     plz = models.CharField("PLZ", max_length=10, blank=True, default='')
     ort = models.CharField("Ort", max_length=100, blank=True, default='')
     land = models.CharField("Land", max_length=50, default='Schweiz')
+
+    # --- ZUKÜNFTIGE ADRESSE (Auto-Wechsel beim Einzug) ---
+    zukuenftige_strasse = models.CharField("Zukünftige Strasse", max_length=200, blank=True, default='')
+    zukuenftige_plz = models.CharField("Zukünftige PLZ", max_length=10, blank=True, default='')
+    zukuenftiger_ort = models.CharField("Zukünftiger Ort", max_length=100, blank=True, default='')
+    zukuenftig_ab = models.DateField("Gültig ab (Einzug)", null=True, blank=True)
 
     # --- FINANZEN & ADMIN ---
     iban = models.CharField("IBAN", max_length=34, blank=True, default='')
@@ -147,6 +160,31 @@ class Mieter(models.Model):
         if self.typ in ['firma', 'verein'] and self.firmen_name:
             return self.firmen_name
         return f"{self.vorname} {self.nachname}".strip() or "Unbekannter Kontakt"
+
+    def check_and_update_adresse(self):
+        """
+        Prüft, ob ein Einzugsdatum in der Zukunft hinterlegt war und heute erreicht wurde.
+        Führt den Adresswechsel durch und protokolliert die alte Adresse.
+        """
+        from datetime import date
+        if self.zukuenftig_ab and date.today() >= self.zukuenftig_ab:
+            # 1. Historie in den Notizen verewigen
+            alte_adr = f"{self.strasse} {self.adresszusatz}, {self.plz} {self.ort}".strip()
+            eintrag = f"[{date.today().strftime('%d.%m.%Y')}] SYSTEM: Adresse automatisch gewechselt wegen Einzug. Alte Adresse: {alte_adr}\n\n"
+            self.notizen = eintrag + (self.notizen or "")
+
+            # 2. Neue Adresse aktivieren
+            self.strasse = self.zukuenftige_strasse
+            self.plz = self.zukuenftige_plz
+            self.ort = self.zukuenftiger_ort
+            self.adresszusatz = "" # Kann bei Bedarf vom Mieter später ergänzt werden
+
+            # 3. Trigger leeren, damit es nicht nochmal ausgeführt wird
+            self.zukuenftige_strasse = ''
+            self.zukuenftige_plz = ''
+            self.zukuenftiger_ort = ''
+            self.zukuenftig_ab = None
+            self.save()
 
 
 class Handwerker(models.Model):

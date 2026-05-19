@@ -3,6 +3,7 @@ from ninja import Router
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from typing import List
+from datetime import date
 from .models import Mieter, Verwaltung  # 🔥 Verwaltung hinzugefügt
 from .schemas import MieterSchemaOut, MieterUpdateSchema
 from core.utils import get_current_ref_zins, get_current_lik
@@ -12,11 +13,20 @@ router = Router(tags=["CRM"])
 
 @router.get("/mieter", response=List[MieterSchemaOut])
 def list_mieter(request):
+    # 🔥 DER WECKER: Bevor wir die Liste ausgeben, prüfen wir blitzschnell,
+    # ob bei irgendjemandem heute der Einzugstag erreicht wurde.
+    umzuege = Mieter.objects.filter(zukuenftig_ab__lte=date.today())
+    for m in umzuege:
+        m.check_and_update_adresse()
+
     return sorted(list(Mieter.objects.all()), key=lambda x: x.display_name.lower())
 
 @router.get("/mieter/{mieter_id}", response=MieterSchemaOut)
 def get_mieter(request, mieter_id: int):
-    return get_object_or_404(Mieter, id=mieter_id)
+    m = get_object_or_404(Mieter, id=mieter_id)
+    # 🔥 DER WECKER: Auch beim Einzelaufruf kurz prüfen
+    m.check_and_update_adresse()
+    return m
 
 @router.post("/mieter", response={201: MieterSchemaOut})
 def create_mieter(request, payload: MieterUpdateSchema):
@@ -36,6 +46,17 @@ def update_mieter(request, mieter_id: int, payload: MieterUpdateSchema):
 def delete_mieter(request, mieter_id: int):
     get_object_or_404(Mieter, id=mieter_id).delete()
     return 204, None
+
+# 🔥 MANUELLER ABBRUCH DES ADRESSWECHSELS
+@router.post("/mieter/{mieter_id}/cancel-umzug")
+def cancel_umzug(request, mieter_id: int):
+    m = get_object_or_404(Mieter, id=mieter_id)
+    m.zukuenftige_strasse = ''
+    m.zukuenftige_plz = ''
+    m.zukuenftiger_ort = ''
+    m.zukuenftig_ab = None
+    m.save()
+    return 200, {"success": True}
 
 # LÖSCH-ENDPUNKT FÜR DOKUMENTE
 @router.delete("/dokumente/{id}", response={200: dict, 404: dict, 500: dict})

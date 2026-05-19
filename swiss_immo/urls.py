@@ -12,7 +12,8 @@ from portfolio.api import router as portfolio_router
 from crm.api import router as crm_router
 from rentals.api import router as rentals_router
 from tickets.api import router as tickets_router
-from finance.api import router as finance_router # <--- NEU: Finance Router importiert
+from finance.api import router as finance_router
+from mietprozess.api import router as mietprozess_router # <--- NEU: Mietprozess Router importiert
 
 # Wir initialisieren die zentrale API
 api = NinjaAPI(
@@ -26,7 +27,8 @@ api.add_router("/portfolio", portfolio_router)
 api.add_router("/crm", crm_router)
 api.add_router("/rentals", rentals_router)
 api.add_router("/tickets", tickets_router)
-api.add_router("/finance", finance_router) # <--- NEU: Finance Router registriert
+api.add_router("/finance", finance_router)
+api.add_router("/mietprozess", mietprozess_router) # <--- NEU: Mietprozess Router registriert
 
 
 # ========================================================
@@ -34,6 +36,7 @@ api.add_router("/finance", finance_router) # <--- NEU: Finance Router registrier
 # ========================================================
 # 1. Landing Page & Public Tickets
 from core.views.ticket_public import public_ticket_view, generate_hallway_poster, index_view
+from core.views.application import public_application_view # 🌟 NEU: Import für das Bewerbungsformular hinzugefügt
 
 # 2. Das neue Admin-Cockpit
 from core.views.dashboard_view import dashboard_view, update_market_data_view, spa_master_view
@@ -88,11 +91,15 @@ urlpatterns = [
     path('report/<int:liegenschaft_id>/', public_ticket_view, name='public_report'),
     path('liegenschaft/<int:liegenschaft_id>/poster/', generate_hallway_poster, name='hallway_poster'),
 
+    # --- ÖFFENTLICHES BEWERBUNGSFORMULAR ---
+    path('bewerben/<int:einheit_id>/', public_application_view, name='public_bewerbung'), # 🌟 NEU: URL-Route hinzugefügt
+
     # --- ALTE APP ROUTINGS ---
     path('portfolio/', include('portfolio.urls')),
     path('crm/', include('crm.urls')),
     path('rentals/', include('rentals.urls')),
     path('tickets/', include('tickets.urls')),
     path('finance/', include('finance.urls')),
+    # path('mietprozess/', include('mietprozess.urls')), # Falls du später klassische Views dafür brauchst
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

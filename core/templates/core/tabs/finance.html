@@ -1,26 +1,44 @@
 <div v-if="activeTab === 'finance'" class="animate-fade-in pb-10">
 
-    <div class="flex justify-between items-end mb-6">
-        <div>
-            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Finanzen & Buchhaltung</h1>
-            <p class="text-sm font-medium text-slate-500 mt-2">Zahlungsverkehr, Nebenkosten und Liegenschaftsrechnung</p>
+    <div class="flex justify-between items-center mb-8">
+        <div class="flex space-x-2 bg-slate-100/50 p-1.5 rounded-2xl w-fit border border-slate-100">
+            <button @click="financeTab = 'debitoren'" :class="financeTab === 'debitoren' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Debitoren (Mieten)</button>
+            <button @click="financeTab = 'kreditoren'" :class="financeTab === 'kreditoren' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Kreditoren</button>
+            <button @click="financeTab = 'nebenkosten'" :class="financeTab === 'nebenkosten' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Nebenkosten (HNK)</button>
+            <button @click="financeTab = 'buchhaltung'" :class="financeTab === 'buchhaltung' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Erfolgsrechnung & Konten</button>
         </div>
 
-        <button v-if="financeTab === 'debitoren'" @click="showPaymentModal = true" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">+ Zahlung verbuchen</button>
-        <button v-if="financeTab === 'kreditoren'" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all"><i class="fa-solid fa-file-arrow-up mr-2"></i> Rechnung scannen</button>
-    </div>
+        <div class="flex gap-3">
+            <button v-if="financeTab === 'debitoren'" @click="showSollstellungModal = true" class="bg-white border border-indigo-200 text-indigo-600 px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-indigo-50 transition-all mr-2">
+                <i class="fa-solid fa-play mr-2"></i> Mietenlauf (Sollstellung)
+            </button>
 
-    <div class="flex space-x-2 mb-8 bg-slate-100/50 p-1.5 rounded-2xl w-fit border border-slate-100">
-        <button @click="financeTab = 'debitoren'" :class="financeTab === 'debitoren' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Debitoren (Mieten)</button>
-        <button @click="financeTab = 'kreditoren'" :class="financeTab === 'kreditoren' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Kreditoren</button>
-        <button @click="financeTab = 'nebenkosten'" :class="financeTab === 'nebenkosten' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Nebenkosten (HNK)</button>
-        <button @click="financeTab = 'buchhaltung'" :class="financeTab === 'buchhaltung' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Erfolgsrechnung</button>
+            <button v-if="financeTab === 'debitoren'" @click="showPaymentModal = true" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">+ Zahlung verbuchen</button>
+
+            <template v-if="financeTab === 'kreditoren'">
+                <input type="file" ref="kreditorInput" @change="handleKreditorUpload" class="hidden" accept="application/pdf">
+                <button @click="$refs.kreditorInput.click()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">
+                    <i class="fa-solid fa-file-arrow-up mr-2"></i> Rechnung scannen
+                </button>
+            </template>
+
+            <button v-if="financeTab === 'buchhaltung' && (!kontenplan || kontenplan.length === 0)" @click="importStandardKontenplan" class="bg-white border-2 border-indigo-100 text-indigo-600 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-50 transition-all">
+                <i class="fa-solid fa-file-import mr-2"></i> Standard-Kontenplan laden
+            </button>
+            <button v-if="financeTab === 'buchhaltung'" @click="showKontoModal = true" class="bg-amber-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-amber-200 hover:bg-amber-600 transition-all">
+                + Konto erfassen
+            </button>
+        </div>
     </div>
 
     <div v-if="financeTab === 'debitoren'" class="animate-fade-in space-y-6">
+
         <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+            <div class="px-8 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="font-black text-slate-800 uppercase tracking-widest text-xs">Mietzins-Kontrolle (Soll/Ist)</h3>
+            </div>
             <table class="w-full text-left">
-                <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                <thead class="bg-white text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
                     <tr>
                         <th class="px-8 py-5">Mieter / Objekt</th>
                         <th class="px-8 py-5 text-right">Soll (CHF)</th>
@@ -43,52 +61,558 @@
                                 <span :class="k.status === 'Bezahlt' ? 'bg-emerald-50 text-emerald-600' : (k.status === 'Teilzahlung' ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600')" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">
                                     {% verbatim %}{{ k.status }}{% endverbatim %}
                                 </span>
-
-                                <button v-if="k.status !== 'Bezahlt'" @click.stop="generateMahnung(k.vertrag_id, k.differenz)" class="bg-rose-100 text-rose-700 hover:bg-rose-600 hover:text-white w-8 h-8 rounded-lg flex items-center justify-center transition-all shadow-sm" title="Mahnung drucken">
+                                <button v-if="k.status !== 'Bezahlt'" @click.stop="generateMahnung(k.vertrag_id, k.differnz || (k.soll - k.ist))" class="bg-rose-100 text-rose-700 hover:bg-rose-600 hover:text-white w-8 h-8 rounded-lg flex items-center justify-center transition-all shadow-sm" title="Mahnung drucken">
                                     <i class="fa-solid fa-envelope-open-text"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
-                    <tr v-if="!mietzinsKontrolle || mietzinsKontrolle.length === 0">
-                        <td colspan="4" class="text-center py-12 text-slate-400 font-medium">Keine aktiven Verträge für den aktuellen Monat gefunden.</td>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm mt-8">
+            <div class="px-8 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="font-black text-slate-800 uppercase tracking-widest text-xs">Letzte Zahlungseingänge (Journal)</h3>
+            </div>
+            <table class="w-full text-left">
+                <thead class="bg-white text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                    <tr>
+                        <th class="px-8 py-5">Eingangsdatum</th>
+                        <th class="px-8 py-5">Buchungstext / Bemerkung</th>
+                        <th class="px-8 py-5 text-right">Betrag (CHF)</th>
+                        <th class="px-8 py-5 text-center">Storno</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <tr v-for="z in zahlungen" :key="z.id" class="hover:bg-slate-50 transition-colors">
+                        <td class="px-8 py-5 font-mono text-sm text-slate-600">{% verbatim %}{{ z.datum_eingang }}{% endverbatim %}</td>
+                        <td class="px-8 py-5">
+                            <div class="font-bold text-slate-900">{% verbatim %}{{ z.bemerkung || 'Zahlungseingang Miete' }}{% endverbatim %}</div>
+                        </td>
+                        <td class="px-8 py-5 text-right font-mono font-bold text-emerald-600">
+                            + {% verbatim %}{{ parseFloat(z.betrag).toFixed(2) }}{% endverbatim %}
+                        </td>
+                        <td class="px-8 py-5 text-center">
+                            <button @click="deleteZahlung(z.id)" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Zahlung stornieren (Löschen)">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr v-if="!zahlungen || zahlungen.length === 0">
+                        <td colspan="4" class="text-center py-12 text-slate-400 font-medium italic">Es wurden noch keine Zahlungen erfasst.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm mt-8">
+            <div class="px-8 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="font-black text-slate-800 uppercase tracking-widest text-xs">Ausgehende Rechnungen & Sollstellungen</h3>
+            </div>
+            <table class="w-full text-left">
+                <thead class="bg-white text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                    <tr>
+                        <th class="px-8 py-5">Datum / Mieter</th>
+                        <th class="px-8 py-5">Rechnungstitel</th>
+                        <th class="px-8 py-5 text-right">Betrag (CHF)</th>
+                        <th class="px-8 py-5 text-center">Aktion</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <tr v-for="r in debitorenRechnungen" :key="r.id" class="hover:bg-slate-50 transition-colors">
+                        <td class="px-8 py-5">
+                            <div class="font-bold text-slate-900">{% verbatim %}{{ r.mieter }}{% endverbatim %}</div>
+                            <div class="text-[10px] text-slate-400 mt-1">Erstellt: {% verbatim %}{{ r.datum }}{% endverbatim %}</div>
+                        </td>
+                        <td class="px-8 py-5">
+                            <div class="font-bold text-slate-700">{% verbatim %}{{ r.titel }}{% endverbatim %}</div>
+                        </td>
+                        <td class="px-8 py-5 text-right font-mono font-bold text-indigo-600">
+                            {% verbatim %}{{ parseFloat(r.betrag).toFixed(2) }}{% endverbatim %}
+                        </td>
+                        <td class="px-8 py-5 text-center">
+                            <button @click="deleteDebitorenRechnung(r.id)" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Rechnung stornieren (löscht auch den Ertrag)">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr v-if="!debitorenRechnungen || debitorenRechnungen.length === 0">
+                        <td colspan="4" class="text-center py-12 text-slate-400 font-medium italic">Es wurden noch keine Rechnungen oder Sollstellungen erstellt.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <div v-if="financeTab === 'kreditoren'" class="animate-fade-in">
-        <div class="bg-white p-16 rounded-3xl border border-slate-100 text-center shadow-sm">
-            <div class="w-24 h-24 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-indigo-400 text-4xl">
-                <i class="fa-solid fa-file-invoice-dollar"></i>
+    <div v-if="financeTab === 'kreditoren'" class="animate-fade-in space-y-6">
+        <div @click="$refs.kreditorInput.click()" class="bg-white p-10 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center transition-all hover:border-indigo-400 hover:bg-indigo-50/30 cursor-pointer group">
+            <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                <i class="fa-solid fa-file-invoice-dollar text-slate-400 group-hover:text-indigo-600 text-2xl"></i>
             </div>
-            <h3 class="text-xl font-black text-slate-900 mb-3">Kreditoren-Workflow</h3>
-            <p class="text-slate-500 max-w-md mx-auto mb-8 text-sm">Hier verwaltest du eingehende Lieferantenrechnungen, scannst Belege automatisch mit der KI und bereitest Zahlungen (DTA/XML) vor.</p>
-            <button class="bg-indigo-50 text-indigo-600 px-6 py-3 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-all">Modul initialisieren</button>
+            <h3 class="font-black text-slate-900 mb-1">Rechnung per KI scannen</h3>
+            <p class="text-xs text-slate-500">PDF hierher ziehen oder klicken um Datei zu wählen</p>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                    <tr>
+                        <th class="px-8 py-5">Lieferant / Beleg</th>
+                        <th class="px-8 py-5 text-right">Betrag (CHF)</th>
+                        <th class="px-8 py-5 text-center">Status</th>
+                        <th class="px-8 py-5 text-right">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <tr v-for="k in kreditoren" :key="k.id" class="hover:bg-slate-50 transition-colors group">
+                        <td class="px-8 py-5">
+                            <div class="font-bold text-slate-900">{% verbatim %}{{ k.lieferant }}{% endverbatim %}</div>
+                            <div class="text-[10px] text-slate-400 mt-1">Datum: {% verbatim %}{{ k.datum }}{% endverbatim %}</div>
+                        </td>
+                        <td class="px-8 py-5 text-right font-mono font-bold text-slate-600">{% verbatim %}{{ parseFloat(k.betrag).toFixed(2) }}{% endverbatim %}</td>
+                        <td class="px-8 py-5 text-center">
+                            <span :class="k.status === 'bezahlt' ? 'bg-emerald-50 text-emerald-600' : (k.status === 'freigegeben' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600')" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">
+                                {% verbatim %}{{ k.status }}{% endverbatim %}
+                            </span>
+                        </td>
+                        <td class="px-8 py-5 text-right">
+                            <div class="flex justify-end gap-2">
+                                <button v-if="k.status === 'neu' || k.status === 'freigegeben'" @click="openKreditorEditModal(k)" class="w-8 h-8 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center hover:bg-amber-500 hover:text-white transition-all" title="Kontieren & Bearbeiten">
+                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                </button>
+                                <button v-if="k.status === 'freigegeben'" @click="payKreditor(k.id)" class="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all" title="Als bezahlt markieren (Buchen)">
+                                    <i class="fa-solid fa-check text-xs"></i>
+                                </button>
+                                <button v-if="k.status === 'freigegeben' || k.status === 'bezahlt'" @click="openWeiterverrechnungModal(k)" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-indigo-600 hover:text-white transition-all" title="An Mieter weiterverrechnen">
+                                    <i class="fa-solid fa-share-from-square mr-1"></i> Weiterverrechnen
+                                </button>
+                                <a :href="k.file_url" target="_blank" class="w-8 h-8 bg-slate-100 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-600 hover:text-white transition-all"><i class="fa-solid fa-eye text-xs"></i></a>
+                                <button @click="deleteKreditor(k.id)" class="w-8 h-8 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Rechnung löschen">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-if="!kreditoren || kreditoren.length === 0">
+                        <td colspan="4" class="text-center py-12 text-slate-400 font-medium italic">Noch keine Rechnungen hochgeladen.</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <div v-if="financeTab === 'nebenkosten'" class="animate-fade-in">
-        <div class="bg-white p-16 rounded-3xl border border-slate-100 text-center shadow-sm">
-            <div class="w-24 h-24 bg-emerald-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-emerald-400 text-4xl">
-                <i class="fa-solid fa-chart-pie"></i>
+    <div v-if="financeTab === 'nebenkosten'" class="animate-fade-in space-y-6">
+
+        <div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 class="font-black text-slate-800 uppercase tracking-widest text-sm ml-4">Abrechnungsperioden</h3>
+            <button @click="showPeriodeModal = true" class="bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all">
+                + Neue Periode
+            </button>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                    <tr>
+                        <th class="px-8 py-5">Bezeichnung / Objekt</th>
+                        <th class="px-8 py-5 text-center">Zeitraum</th>
+                        <th class="px-8 py-5 text-right">Erfasste Kosten</th>
+                        <th class="px-8 py-5 text-center">Status</th>
+                        <th class="px-8 py-5 text-right">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <tr v-for="p in hnkPerioden" :key="p.id" class="hover:bg-slate-50 transition-colors">
+                        <td class="px-8 py-5">
+                            <div class="font-bold text-slate-900">{% verbatim %}{{ p.bezeichnung }}{% endverbatim %}</div>
+                            <div class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-building mr-1"></i>{% verbatim %}{{ p.liegenschaft }}{% endverbatim %}</div>
+                        </td>
+                        <td class="px-8 py-5 text-center font-mono text-sm text-slate-600">{% verbatim %}{{ p.start_datum }} - {{ p.ende_datum }}{% endverbatim %}</td>
+                        <td class="px-8 py-5 text-right font-mono font-bold text-slate-600">CHF {% verbatim %}{{ parseFloat(p.total_kosten).toFixed(2) }}{% endverbatim %}</td>
+                        <td class="px-8 py-5 text-center">
+                            <span :class="p.abgeschlossen ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">
+                                {% verbatim %}{{ p.abgeschlossen ? 'Abgeschlossen' : 'Offen' }}{% endverbatim %}
+                            </span>
+                        </td>
+                        <td class="px-8 py-5 text-right">
+                            <div class="flex justify-end gap-2">
+                                <button @click="loadAbrechnung(p.id)" class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
+                                    <i class="fa-solid fa-calculator mr-1"></i> Berechnen
+                                </button>
+                                <button @click="deletePeriode(p.id)" class="w-9 h-9 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Periode löschen">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-if="!hnkPerioden || hnkPerioden.length === 0">
+                        <td colspan="5" class="text-center py-12 text-slate-400 font-medium italic">Es wurden noch keine Abrechnungsperioden angelegt.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div v-if="activeAbrechnung" class="bg-slate-900 rounded-3xl border border-slate-800 p-8 shadow-xl mt-8 animate-fade-in text-white">
+            <div class="flex justify-between items-start mb-8 border-b border-slate-700 pb-6">
+                <div>
+                    <h3 class="text-2xl font-black text-white">Abrechnung: {% verbatim %}{{ activeAbrechnung.periode.bezeichnung }}{% endverbatim %}</h3>
+                    <p class="text-slate-400 mt-1">{% verbatim %}{{ activeAbrechnung.periode.start }} bis {{ activeAbrechnung.periode.ende }} | {{ activeAbrechnung.periode.liegenschaft }}{% endverbatim %}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Total verrechenbare Kosten</p>
+                    <p class="font-mono font-black text-3xl text-emerald-400">CHF {% verbatim %}{{ activeAbrechnung.zusammenfassung.total_kosten.toFixed(2) }}{% endverbatim %}</p>
+                </div>
             </div>
-            <h3 class="text-xl font-black text-slate-900 mb-3">Heiz- und Nebenkosten (HNK)</h3>
-            <p class="text-slate-500 max-w-md mx-auto mb-8 text-sm">Verteile die gebuchten Kosten auf die Mieter, berechne Heizgradtage und erstelle rechtssichere HNK-Abrechnungen auf Knopfdruck.</p>
-            <button class="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-xl text-sm font-bold hover:bg-emerald-100 transition-all">Neue Abrechnungsperiode starten</button>
+
+            <h4 class="font-black uppercase tracking-widest text-xs text-indigo-400 mb-4">Verteilung auf Mieter</h4>
+            <div class="bg-slate-800 rounded-2xl overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-900/50 text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-700">
+                        <tr>
+                            <th class="px-6 py-4">Mieter / Einheit</th>
+                            <th class="px-6 py-4 text-center">Tage bewohnt</th>
+                            <th class="px-6 py-4 text-right">Anteil Kosten (Soll)</th>
+                            <th class="px-6 py-4 text-right">Bezahlt (Akonto)</th>
+                            <th class="px-6 py-4 text-right">Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700/50">
+                        <tr v-for="m in activeAbrechnung.mieter_abrechnungen" :key="m.vertrag_id" class="hover:bg-slate-700/30 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="font-bold text-white">{% verbatim %}{{ m.mieter_name }}{% endverbatim %}</div>
+                                <div class="text-[10px] text-slate-400">{% verbatim %}{{ m.einheit }}{% endverbatim %}</div>
+                            </td>
+                            <td class="px-6 py-4 text-center font-mono text-sm text-slate-300">{% verbatim %}{{ m.tage_bewohnt }}{% endverbatim %}</td>
+                            <td class="px-6 py-4 text-right font-mono font-bold text-slate-300">{% verbatim %}{{ m.anteil_kosten.toFixed(2) }}{% endverbatim %}</td>
+                            <td class="px-6 py-4 text-right font-mono font-bold text-emerald-400">- {% verbatim %}{{ m.akonto_bezahlt.toFixed(2) }}{% endverbatim %}</td>
+                            <td class="px-6 py-4 text-right font-mono font-black" :class="m.saldo > 0 ? 'text-rose-400' : 'text-emerald-400'">
+                                <span v-if="m.saldo > 0">Nachzahlung: </span>
+                                <span v-else>Gutschrift: </span>
+                                {% verbatim %}{{ Math.abs(m.saldo).toFixed(2) }}{% endverbatim %}
+                            </td>
+                        </tr>
+                        <tr v-if="activeAbrechnung.mieter_abrechnungen.length === 0">
+                            <td colspan="5" class="text-center py-8 text-slate-500 italic">Keine aktiven Verträge in diesem Zeitraum gefunden.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-8 flex justify-end gap-4">
+                <button v-if="!activeAbrechnung.periode.abgeschlossen" @click="verbuchenHNK(activeAbrechnung.periode.id)" class="bg-amber-500 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-amber-400 transition-all shadow-lg">
+                    <i class="fa-solid fa-file-invoice-dollar mr-2"></i> Saldi in Buchhaltung verbuchen
+                </button>
+
+                <button class="bg-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-indigo-500 transition-all shadow-lg">
+                    <i class="fa-solid fa-file-pdf mr-2"></i> PDF-Abrechnungen generieren
+                </button>
+            </div>
         </div>
     </div>
 
-    <div v-if="financeTab === 'buchhaltung'" class="animate-fade-in">
-        <div class="bg-white p-16 rounded-3xl border border-slate-100 text-center shadow-sm">
-            <div class="w-24 h-24 bg-amber-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-amber-400 text-4xl">
-                <i class="fa-solid fa-scale-balanced"></i>
+    <div v-if="financeTab === 'buchhaltung'" class="animate-fade-in space-y-6">
+
+        <div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="flex space-x-2 bg-slate-100 rounded-xl p-1">
+                <button @click="buchhaltungView = 'erfolgsrechnung'; loadErfolgsrechnung()" :class="buchhaltungView === 'erfolgsrechnung' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-sm font-bold transition-all">Erfolgsrechnung</button>
+                <button @click="buchhaltungView = 'kontenplan'" :class="buchhaltungView === 'kontenplan' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-sm font-bold transition-all">Kontenplan</button>
             </div>
-            <h3 class="text-xl font-black text-slate-900 mb-3">Erfolgsrechnung & Bilanz</h3>
-            <p class="text-slate-500 max-w-md mx-auto mb-8 text-sm">Dein Live-Kontenplan. Erhalte auf einen Blick die Erfolgsrechnung pro Liegenschaft und den Jahresabschluss für die Steuern.</p>
-            <button class="bg-amber-50 text-amber-600 px-6 py-3 rounded-xl text-sm font-bold hover:bg-amber-100 transition-all">Kontenplan öffnen</button>
+
+            <div v-if="buchhaltungView === 'erfolgsrechnung'" class="flex items-center gap-3">
+                <label class="text-xs font-bold text-slate-400 uppercase">Liegenschaft:</label>
+                <select v-model="erfolgsrechnungFilter" @change="loadErfolgsrechnung" class="bg-slate-50 border-none rounded-xl text-sm font-bold focus:ring-indigo-500 py-2 pl-4 pr-8 text-slate-700">
+                    <option value="">Gesamtes Portfolio</option>
+                    <option v-for="l in liegenschaften" :key="l.id" :value="l.id">{% verbatim %}{{ l.strasse }}, {{ l.ort }}{% endverbatim %}</option>
+                </select>
+            </div>
+        </div>
+
+        <div v-if="buchhaltungView === 'erfolgsrechnung'" class="grid grid-cols-2 gap-8 animate-fade-in">
+            <div class="bg-white rounded-3xl border border-slate-100 p-8 shadow-sm">
+                <h3 class="text-lg font-black text-slate-900 mb-6 border-b border-slate-100 pb-4">Ertrag</h3>
+                <div class="space-y-3 mb-6">
+                    <div v-for="e in erfolgsrechnung?.ertraege" :key="e.nummer" class="flex justify-between items-center text-sm">
+                        <span class="text-slate-600"><span class="font-mono text-xs text-slate-400 mr-2">{% verbatim %}{{ e.nummer }}{% endverbatim %}</span>{% verbatim %}{{ e.bezeichnung }}{% endverbatim %}</span>
+                        <span class="font-mono font-bold text-emerald-600">{% verbatim %}{{ e.saldo.toFixed(2) }}{% endverbatim %}</span>
+                    </div>
+                    <div v-if="!erfolgsrechnung?.ertraege?.length" class="text-xs text-slate-400 italic">Noch keine Ertragsbuchungen vorhanden.</div>
+                </div>
+                <div class="flex justify-between items-center border-t-2 border-slate-900 pt-4">
+                    <span class="font-black text-slate-900">Total Ertrag</span>
+                    <span class="font-mono font-black text-lg text-emerald-600">CHF {% verbatim %}{{ erfolgsrechnung?.total_ertrag?.toFixed(2) || '0.00' }}{% endverbatim %}</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-100 p-8 shadow-sm">
+                <h3 class="text-lg font-black text-slate-900 mb-6 border-b border-slate-100 pb-4">Aufwand</h3>
+                <div class="space-y-3 mb-6">
+                    <div v-for="a in erfolgsrechnung?.aufwaende" :key="a.nummer" class="flex justify-between items-center text-sm">
+                        <span class="text-slate-600"><span class="font-mono text-xs text-slate-400 mr-2">{% verbatim %}{{ a.nummer }}{% endverbatim %}</span>{% verbatim %}{{ a.bezeichnung }}{% endverbatim %}</span>
+                        <span class="font-mono font-bold text-rose-600">{% verbatim %}{{ a.saldo.toFixed(2) }}{% endverbatim %}</span>
+                    </div>
+                    <div v-if="!erfolgsrechnung?.aufwaende?.length" class="text-xs text-slate-400 italic">Noch keine Aufwandsbuchungen vorhanden.</div>
+                </div>
+                <div class="flex justify-between items-center border-t-2 border-slate-900 pt-4">
+                    <span class="font-black text-slate-900">Total Aufwand</span>
+                    <span class="font-mono font-black text-lg text-rose-600">CHF {% verbatim %}{{ erfolgsrechnung?.total_aufwand?.toFixed(2) || '0.00' }}{% endverbatim %}</span>
+                </div>
+            </div>
+
+            <div class="col-span-2 bg-slate-900 text-white rounded-3xl p-8 shadow-xl flex justify-between items-center">
+                <h3 class="text-xl font-black uppercase tracking-widest text-slate-400">Unternehmenserfolg</h3>
+                <span class="font-mono font-black text-3xl" :class="(erfolgsrechnung?.erfolg || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'">
+                    CHF {% verbatim %}{{ erfolgsrechnung?.erfolg?.toFixed(2) || '0.00' }}{% endverbatim %}
+                </span>
+            </div>
+        </div>
+
+        <div v-if="buchhaltungView === 'kontenplan'" class="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm animate-fade-in">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                    <tr>
+                        <th class="px-8 py-5">Konto</th>
+                        <th class="px-8 py-5">Bezeichnung</th>
+                        <th class="px-8 py-5 text-center">Kategorie</th>
+                        <th class="px-8 py-5 text-center">HNK-Relevant</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <tr v-for="konto in kontenplan" :key="konto.id" class="hover:bg-slate-50 transition-colors">
+                        <td class="px-8 py-5 font-mono font-bold text-slate-900">{% verbatim %}{{ konto.nummer }}{% endverbatim %}</td>
+                        <td class="px-8 py-5 font-bold text-slate-700">{% verbatim %}{{ konto.bezeichnung }}{% endverbatim %}</td>
+                        <td class="px-8 py-5 text-center">
+                            <span :class="{'bg-emerald-50 text-emerald-600': konto.typ === 'ertrag', 'bg-rose-50 text-rose-600': konto.typ === 'aufwand', 'bg-blue-50 text-blue-600': konto.typ === 'bilanz'}" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">
+                                {% verbatim %}{{ konto.typ_display }}{% endverbatim %}
+                            </span>
+                        </td>
+                        <td class="px-8 py-5 text-center">
+                            <i v-if="konto.is_hnk_relevant" class="fa-solid fa-check text-emerald-500"></i>
+                            <i v-else class="fa-solid fa-minus text-slate-300"></i>
+                        </td>
+                    </tr>
+                    <tr v-if="!kontenplan || kontenplan.length === 0">
+                        <td colspan="4" class="text-center py-12 text-slate-400 font-medium italic">Es wurde noch kein Kontenplan eingerichtet.</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
+</div>
+
+<div v-if="showKontoModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Neues Konto erfassen</h3>
+        <div class="space-y-4">
+            <div class="grid grid-cols-3 gap-4">
+                <div class="col-span-1">
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Nummer</label>
+                    <input v-model="newKonto.nummer" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500" placeholder="z.B. 4000">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Bezeichnung</label>
+                    <input v-model="newKonto.bezeichnung" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500" placeholder="z.B. Unterhalt Liegenschaft">
+                </div>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Konto-Typ</label>
+                <select v-model="newKonto.typ" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                    <option value="bilanz">Bilanzkonto (Aktiven/Passiven)</option>
+                    <option value="ertrag">Ertragskonto (Einnahmen)</option>
+                    <option value="aufwand">Aufwandskonto (Ausgaben)</option>
+                </select>
+            </div>
+
+            <div v-if="newKonto.typ === 'aufwand'" class="p-4 bg-emerald-50 rounded-xl border border-emerald-100 flex items-start gap-3 mt-4 transition-all">
+                <input type="checkbox" v-model="newKonto.is_hnk_relevant" id="hnk_rel" class="mt-1 rounded text-emerald-600 focus:ring-emerald-500 bg-white border-emerald-200">
+                <div>
+                    <label for="hnk_rel" class="font-bold text-sm text-emerald-900 cursor-pointer">HNK-Relevant (Nebenkosten)</label>
+                    <p class="text-[10px] text-emerald-700 leading-tight mt-0.5">Wird dieses Konto aktiviert, fliessen die gebuchten Rechnungen am Jahresende automatisch in die Mieterabrechnung.</p>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showKontoModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveKonto" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showKreditorEditModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl animate-modal-pop overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <div>
+                <h3 class="text-2xl font-black text-slate-900">Rechnung kontieren</h3>
+                <p class="text-xs text-slate-500">Gescannte Daten prüfen und Liegenschaft zuweisen</p>
+            </div>
+            <button @click="showKreditorEditModal = false" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+
+        <div class="p-8 overflow-y-auto grid grid-cols-2 gap-8">
+            <div class="space-y-4">
+                <h4 class="font-black text-xs uppercase tracking-widest text-indigo-600">Rechnungsdetails</h4>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Lieferant</label>
+                    <input v-model="editKreditorData.lieferant" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Betrag (CHF)</label>
+                        <input v-model="editKreditorData.betrag" type="number" step="0.01" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Datum</label>
+                        <input v-model="editKreditorData.datum" type="date" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Referenz / Rechnungs-Nr.</label>
+                    <input v-model="editKreditorData.referenz" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold">
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h4 class="font-black text-xs uppercase tracking-widest text-emerald-600">Buchhaltung & Objekt</h4>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Liegenschaft zuweisen</label>
+                    <select v-model="editKreditorData.liegenschaft_id" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold">
+                        <option :value="null">Bitte wählen...</option>
+                        <option v-for="l in liegenschaften" :key="l.id" :value="l.id">{% verbatim %}{{ l.strasse }}{% endverbatim %}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Buchungskonto</label>
+                    <select v-model="editKreditorData.konto_id" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold">
+                        <option :value="null">Bitte wählen...</option>
+                        <option v-for="k in kontenplan" :key="k.id" :value="k.id">{% verbatim %}{{ k.nummer }} - {{ k.bezeichnung }}{% endverbatim %}</option>
+                    </select>
+                </div>
+                <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-100 flex items-start gap-3 mt-4">
+                    <input type="checkbox" v-model="editKreditorData.is_hnk_relevant" id="hnk_checkbox" class="mt-1 rounded text-emerald-600 focus:ring-emerald-500 bg-white border-emerald-200">
+                    <div>
+                        <label for="hnk_checkbox" class="font-bold text-sm text-emerald-900 cursor-pointer">HNK-Relevant</label>
+                        <p class="text-[10px] text-emerald-700 leading-tight">Falls aktiviert, fließen diese Kosten in die Nebenkostenabrechnung ein.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-8 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
+            <button @click="showKreditorEditModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveKreditorEdit" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition text-sm">Verarbeiten & Freigeben</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showWeiterverrechnungModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-black text-slate-900">Weiterverrechnen</h3>
+            <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-share-from-square"></i></div>
+        </div>
+
+        <p class="text-sm text-slate-500 mb-6">Erstelle aus dieser Lieferantenrechnung direkt eine ausgehende Rechnung an den Mieter.</p>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mieter auswählen</label>
+                <select v-model="newDebitorenRechnung.vertrag_id" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                    <option :value="null" disabled>Bitte wählen...</option>
+                    <option v-for="v in vertraege" :key="v.id" :value="v.id">{% verbatim %}{{ v.mieter_name }} ({{ v.einheit_name }}){% endverbatim %}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Rechnungstitel</label>
+                <input v-model="newDebitorenRechnung.titel" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Betrag (CHF)</label>
+                    <input v-model="newDebitorenRechnung.betrag" type="number" step="0.01" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 text-indigo-600 font-mono">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Fällig am</label>
+                    <input v-model="newDebitorenRechnung.faellig_am" type="date" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 text-slate-600 font-mono">
+                </div>
+            </div>
+
+            <div class="bg-amber-50 p-4 rounded-xl border border-amber-100 mt-2">
+                <div class="flex gap-2">
+                    <i class="fa-solid fa-lightbulb text-amber-500 mt-0.5"></i>
+                    <p class="text-[10px] text-amber-800 leading-tight">Es wird automatisch eine Rechnung inkl. QR-Einzahlungsschein generiert und die Buchung (Soll: Debitoren an Haben: Weiterverrechnungskonto) erstellt.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showWeiterverrechnungModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="saveWeiterverrechnung" :disabled="!newDebitorenRechnung.vertrag_id" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition text-sm">Rechnung generieren</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showPeriodeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-6">Neue Abrechnungsperiode</h3>
+        <p class="text-sm text-slate-500 mb-6">Erstelle eine neue Periode (z.B. ein Kalenderjahr), um die Nebenkosten auf die Mieter zu verteilen.</p>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Bezeichnung</label>
+                <input v-model="newPeriode.bezeichnung" type="text" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500" placeholder="z.B. HNK Abrechnung 2026">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Liegenschaft</label>
+                <select v-model="newPeriode.liegenschaft_id" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                    <option :value="null" disabled>Bitte wählen...</option>
+                    <option v-for="l in liegenschaften" :key="l.id" :value="l.id">{% verbatim %}{{ l.strasse }}{% endverbatim %}</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Startdatum</label>
+                    <input v-model="newPeriode.start_datum" type="date" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 text-slate-600 font-mono">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Enddatum</label>
+                    <input v-model="newPeriode.ende_datum" type="date" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 text-slate-600 font-mono">
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showPeriodeModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="savePeriode" class="py-2.5 px-6 bg-emerald-500 text-white rounded-xl font-bold shadow-sm hover:bg-emerald-600 transition text-sm">Periode anlegen</button>
+        </div>
+    </div>
+</div>
+
+<div v-if="showSollstellungModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-pop p-8">
+        <h3 class="text-2xl font-black text-slate-900 mb-2">Mietenlauf starten</h3>
+        <p class="text-sm text-slate-500 mb-6">Erstellt automatisch alle Debitorenrechnungen und bucht die Forderungen für den gewählten Monat.</p>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Monat</label>
+                <select v-model="sollstellungData.monat" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                    <option v-for="m in 12" :key="m" :value="m">{% verbatim %}{{ m }}{% endverbatim %}</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Jahr</label>
+                <input v-model.number="sollstellungData.jahr" type="number" class="w-full bg-slate-50 border-none p-3 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 text-slate-600 font-mono">
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button @click="showSollstellungModal = false" class="py-2.5 px-4 text-slate-400 font-bold hover:text-slate-600 transition text-sm">Abbrechen</button>
+            <button @click="runSollstellung" class="py-2.5 px-6 bg-indigo-600 text-white rounded-xl font-bold shadow-sm hover:bg-indigo-700 transition text-sm">
+                <i class="fa-solid fa-gears mr-2"></i> Lauf starten
+            </button>
+        </div>
+    </div>
 </div>

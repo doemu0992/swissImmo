@@ -12,7 +12,7 @@ class Buchungskonto(models.Model):
     bezeichnung = models.CharField("Bezeichnung", max_length=100)
     typ = models.CharField("Typ", max_length=20, choices=[('aufwand', 'Aufwand'), ('ertrag', 'Ertrag'), ('bilanz', 'Bilanz')])
 
-    # 🔥 NEU: HNK-Relevanz gemäss Experten-Feedback
+    # 🔥 HNK-Relevanz gemäss Experten-Feedback
     is_hnk_relevant = models.BooleanField(
         "HNK-relevant",
         default=False,
@@ -35,6 +35,64 @@ class Buchungskonto(models.Model):
 
     def __str__(self): return f"{self.nummer} - {self.bezeichnung}"
 
+# 🔥 NEU: Die doppelte Buchhaltung (Soll & Haben)
+class Buchung(models.Model):
+    datum = models.DateField(default=timezone.now)
+    beleg_text = models.CharField(max_length=255)
+
+    # Optional: Verknüpfung zur Liegenschaft (für objektbezogene Auswertungen)
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True, related_name='buchungen')
+
+    soll_konto = models.ForeignKey(Buchungskonto, on_delete=models.PROTECT, related_name='soll_buchungen')
+    haben_konto = models.ForeignKey(Buchungskonto, on_delete=models.PROTECT, related_name='haben_buchungen')
+    betrag = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # Verknüpfungen zu unseren Belegen (als ForeignKey, da ein Beleg Rechnungs- und Zahlungsbuchung haben kann)
+    zahlungseingang = models.ForeignKey('Zahlungseingang', on_delete=models.SET_NULL, null=True, blank=True, related_name='buchungen')
+    kreditoren_rechnung = models.ForeignKey('KreditorenRechnung', on_delete=models.SET_NULL, null=True, blank=True, related_name='buchungen')
+    debitoren_rechnung = models.ForeignKey('DebitorenRechnung', on_delete=models.SET_NULL, null=True, blank=True, related_name='buchungen')
+
+    def __str__(self):
+        return f"{self.datum}: {self.soll_konto.nummer} an {self.haben_konto.nummer} | CHF {self.betrag}"
+
+    class Meta:
+        verbose_name = "Buchung"
+        verbose_name_plural = "Buchungen"
+        ordering = ['-datum', '-id']
+        db_table = 'core_buchung'
+
+
+# 🔥 NEU: Debitorenrechnungen für Weiterverrechnungen an Mieter
+class DebitorenRechnung(models.Model):
+    STATUS_CHOICES = [
+        ('offen', 'Offen'),
+        ('bezahlt', 'Bezahlt'),
+        ('storniert', 'Storniert'),
+    ]
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='debitoren_rechnungen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True)
+
+    titel = models.CharField("Titel / Grund", max_length=200)
+    beschreibung = models.TextField(blank=True, default="")
+    datum = models.DateField(default=timezone.now)
+    faellig_am = models.DateField(null=True, blank=True)
+    betrag = models.DecimalField(max_digits=10, decimal_places=2)
+
+    konto_haben = models.ForeignKey(Buchungskonto, on_delete=models.PROTECT, null=True, blank=True, help_text="Gegenkonto (z.B. 1190 Durchlaufkonto oder 3000 Ertrag)")
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='offen')
+    pdf_dokument = models.FileField(upload_to='debitoren_rechnungen/', blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Debitorenrechnung (Weiterverrechnung)"
+        verbose_name_plural = "Debitorenrechnungen"
+        db_table = 'core_debitorenrechnung'
+
+    def __str__(self):
+        return f"{self.titel} - CHF {self.betrag} ({self.get_status_display()})"
+
+
 class AbrechnungsPeriode(models.Model):
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='abrechnungen')
     bezeichnung = models.CharField("Titel", max_length=100)
@@ -42,7 +100,7 @@ class AbrechnungsPeriode(models.Model):
     ende_datum = models.DateField()
     abgeschlossen = models.BooleanField(default=False)
 
-    # 🔥 NEU: Für die Bestandesrechnung (Heizöl/Gas)
+    # Für die Bestandesrechnung (Heizöl/Gas)
     anfangsbestand_liter = models.DecimalField("Anfangsbestand (L)", max_digits=10, decimal_places=2, default=0)
     anfangsbestand_chf = models.DecimalField("Anfangsbestand (CHF)", max_digits=10, decimal_places=2, default=0)
     endbestand_liter = models.DecimalField("Endbestand (L) am Stichtag", max_digits=10, decimal_places=2, default=0)
@@ -220,7 +278,7 @@ class KreditorenRechnung(models.Model):
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
 
-    # 🔥 NEU: Die "Shift-Left" Felder für die HNK
+    # Die "Shift-Left" Felder für die HNK
     is_hnk_relevant = models.BooleanField("In HNK einbeziehen", default=False)
     leistungs_von = models.DateField("Leistungsperiode Von", null=True, blank=True)
     leistungs_bis = models.DateField("Leistungsperiode Bis", null=True, blank=True)

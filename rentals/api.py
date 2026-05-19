@@ -140,6 +140,13 @@ def create_vertrag(request, payload: VertragCreateSchema):
     e.nebenkosten_aktuell = neuer_vertrag.nebenkosten
     e.save()
 
+    # 🔥 NEU: Zukünftige Adresse beim Mieter vollautomatisch hinterlegen
+    m.zukuenftige_strasse = e.liegenschaft.strasse
+    m.zukuenftige_plz = e.liegenschaft.plz
+    m.zukuenftiger_ort = e.liegenschaft.ort
+    m.zukuenftig_ab = neuer_vertrag.beginn
+    m.save()
+
     return 201, neuer_vertrag
 
 @router.put("/vertraege/{vertrag_id}", response={200: dict})
@@ -156,11 +163,31 @@ def update_vertrag(request, vertrag_id: int, payload: VertragUpdateSchema):
     for k, val in data.items():
         setattr(v, k, val)
     v.save()
+
+    # Falls sich das Einzugsdatum bei einem noch nicht aktiven Vertrag ändert,
+    # ziehen wir die Info für den Mieter gleich mit glatt.
+    if 'beginn' in data and v.beginn:
+        m = v.mieter
+        if m.zukuenftig_ab:  # Nur wenn er noch in der "Warteschlange" für den Adresswechsel ist
+            m.zukuenftig_ab = v.beginn
+            m.save()
+
     return 200, {"success": True}
 
 @router.delete("/vertraege/{vertrag_id}", response={204: None})
 def delete_vertrag(request, vertrag_id: int):
-    get_object_or_404(Mietvertrag, id=vertrag_id).delete()
+    vertrag = get_object_or_404(Mietvertrag, id=vertrag_id)
+    mieter = vertrag.mieter
+
+    # 🔥 NEU: Wenn dieser Vertrag der Grund für den Zukunfts-Umzug war, stornieren wir den Umzug!
+    if mieter.zukuenftig_ab == vertrag.beginn:
+        mieter.zukuenftige_strasse = ''
+        mieter.zukuenftige_plz = ''
+        mieter.zukuenftiger_ort = ''
+        mieter.zukuenftig_ab = None
+        mieter.save()
+
+    vertrag.delete()
     return 204, None
 
 # ========================================================

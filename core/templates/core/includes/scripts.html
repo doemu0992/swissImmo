@@ -17,19 +17,25 @@
         data() {
             return {
                 activeTab: 'home',
-                financeTab: 'debitoren', // 🔥 NEU: Initialer Tab für Finanzen
+                financeTab: 'debitoren',
                 loading: true,
+
                 liegenschaften: [], vertraege: [], mieter: [], tickets: [], zahlungen: [], mietzinsKontrolle: [],
+                kreditoren: [],
+                kontenplan: [],
+
+                buchhaltungView: 'erfolgsrechnung',
+                erfolgsrechnungFilter: '',
+                erfolgsrechnung: null,
+
                 showPanel: false, panelType: '', selectedItem: null,
                 selectedLiegenschaft: null, selectedEinheit: null,
 
-                // CRM
                 selectedMieter: null,
                 showNewMieterModal: false,
                 crmSearchQuery: '',
                 newMieterData: { typ: 'person', vorname: '', nachname: '', firmen_name: '', email: '' },
 
-                // RENTALS (Verträge)
                 selectedVertrag: null,
                 showNewRentModal: false,
                 rentSearchQuery: '',
@@ -37,37 +43,26 @@
                 wizardStep: 1,
 
                 newRentData: {
-                    mieter_id: null,
-                    einheit_id: null,
-                    beginn: new Date().toISOString().split('T')[0],
-                    erstmals_kuendbar_auf: null,
-                    netto_mietzins: 0,
-                    nebenkosten: 0,
-                    nk_abrechnungsart: 'akonto',
-                    zahlungsrhythmus: 'monatlich',
-                    kautions_betrag: 0,
-                    kuendigungsfrist_monate: 3,
-                    kuendigungstermine: 'Ende jedes Monats ausser Dezember',
-                    basis_referenzzinssatz: 0,
-                    basis_lik_punkte: 0,
-                    familienwohnung: false,
-                    mitmieter_name: '',
-                    anzahl_personen: 1,
-                    besondere_vereinbarungen: '',
-                    ausgeschlossene_kosten: '',
+                    mieter_id: null, einheit_id: null, beginn: new Date().toISOString().split('T')[0],
+                    erstmals_kuendbar_auf: null, netto_mietzins: 0, nebenkosten: 0, nk_abrechnungsart: 'akonto',
+                    zahlungsrhythmus: 'monatlich', kautions_betrag: 0, kuendigungsfrist_monate: 3,
+                    kuendigungstermine: 'Ende jedes Monats ausser Dezember', basis_referenzzinssatz: 0,
+                    basis_lik_punkte: 0, familienwohnung: false, mitmieter_name: '', anzahl_personen: 1,
+                    besondere_vereinbarungen: '', ausgeschlossene_kosten: '',
                     kostensteigerung_datum: new Date().toISOString().split('T')[0],
-                    mietzinsreserve_betrag: null,
-                    mietzinsreserve_prozent: null,
-                    weitere_vorbehalte: ''
+                    mietzinsreserve_betrag: null, mietzinsreserve_prozent: null, weitere_vorbehalte: ''
                 },
 
+                // Modals
                 showPropModal: false, showMieterModal: false, showEditMieterModal: false, showPaymentModal: false, showEditRentModal: false,
                 showDeviceModal: false, showEditDeviceModal: false, showZaehlerModal: false, showSchluesselModal: false, showUnterhaltModal: false,
                 showDocModal: false, showLiegenschaftEditModal: false, showLinkModal: false,
-                showEinheitModal: false,
-
-                showVerteilschluesselModal: false,
-                showLiegStdModal: false,
+                showEinheitModal: false, showVerteilschluesselModal: false, showLiegStdModal: false,
+                showKontoModal: false,
+                showWeiterverrechnungModal: false,
+                showKreditorEditModal: false,
+                showPeriodeModal: false,
+                showSollstellungModal: false,
 
                 toasts: [], searchQuery: '', showSearch: false, chartInstance: null,
 
@@ -79,17 +74,29 @@
                 newUnterhalt: { einheit_id: null, titel: '', beschreibung: '', datum: new Date().toISOString().split('T')[0], kosten: 0 },
                 newDoc: { liegenschaft_id: null, einheit_id: null, mieter_id: null, titel: '', kategorie: 'Allgemein' },
                 linkData: { hauptobjekt_id: null, nebenobjekt_id: null },
-
                 newEinheit: { liegenschaft_id: null, bezeichnung: '', typ: 'whg', etage: '', zimmer: null },
-
                 newVerteilschluessel: { einheit_id: null, kostenart: 'heizung', typ: 'm2', wert: 0, gueltig_ab: new Date().toISOString().split('T')[0], notizen: '' },
                 newLiegStd: { liegenschaft_id: null, kostenart: 'heizung', typ: 'm2', wert: 0, gueltig_ab: new Date().toISOString().split('T')[0], notizen: '' },
+                newKonto: { nummer: '', bezeichnung: '', typ: 'aufwand', is_hnk_relevant: false, standard_verteilschluessel: 'm2' },
+
+                newDebitorenRechnung: { vertrag_id: null, titel: '', betrag: 0, faellig_am: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] },
+                editKreditorData: { id: null, lieferant: '', betrag: 0, datum: '', referenz: '', liegenschaft_id: null, konto_id: null, is_hnk_relevant: false },
+
+                hnkPerioden: [],
+                newPeriode: { liegenschaft_id: null, bezeichnung: '', start_datum: new Date().toISOString().split('T')[0], ende_datum: new Date().toISOString().split('T')[0] },
+                activeAbrechnung: null,
+
+                sollstellungData: { monat: new Date().getMonth() + 1, jahr: new Date().getFullYear() },
+
+                debitorenRechnungen: [], // Speichert ausgehende Rechnungen & Sollstellungen
+
+                bewerbungen: [], // 🔥 NEU: Kanban-Board Bewerbungen
+                selectedBewerbung: null,
 
                 editDeviceData: null, editMieterData: null, editRentData: null, editLiegenschaftData: null, newTicketMessage: '',
 
-                // 🔥 HIER SIND DIE SAUBEREN TITEL FÜR DIE TOP-BAR
-                tabTitles: { home: 'Cockpit', portfolio: 'Liegenschaften', rentals: 'Verträge', crm: 'Mieterstamm', finance: 'Finanzen', tickets: 'Ticket-Board' },
-                tabSubtitles: { home: 'Portfolio-Performance im Überblick', portfolio: 'Objekte und Wohneinheiten verwalten', rentals: 'Aktive und zukünftige Mietverhältnisse', crm: 'Zentrale Mieterdatenbank', finance: 'Zahlungsverkehr, Nebenkosten & Buchhaltung', tickets: 'Schadensmeldungen bearbeiten' }
+                tabTitles: { home: 'Cockpit', portfolio: 'Liegenschaften', rentals: 'Verträge', crm: 'Mieterstamm', finance: 'Finanzen', tickets: 'Ticket-Board', mietprozess: 'Mietprozess & Bewerbungen' },
+                tabSubtitles: { home: 'Portfolio-Performance im Überblick', portfolio: 'Objekte und Wohneinheiten verwalten', rentals: 'Aktive und zukünftige Mietverhältnisse', crm: 'Zentrale Mieterdatenbank', finance: 'Zahlungsverkehr, Nebenkosten & Buchhaltung', tickets: 'Schadensmeldungen bearbeiten', mietprozess: 'Pipeline für Mietinteressenten' }
             }
         },
         computed: {
@@ -121,7 +128,11 @@
                     objekte: this.liegenschaften.filter(l => l.strasse.toLowerCase().includes(q) || l.ort.toLowerCase().includes(q)).slice(0, 5),
                     tickets: this.tickets.filter(t => t.titel.toLowerCase().includes(q) || (t.liegenschaft_name && t.liegenschaft_name.toLowerCase().includes(q))).slice(0, 5)
                 };
-            }
+            },
+            // 🔥 NEU: Kanban-Board Filter
+            bewerbungenNeu() { return this.bewerbungen.filter(b => b.status === 'neu'); },
+            bewerbungenGeprueft() { return this.bewerbungen.filter(b => b.status === 'geprueft'); },
+            bewerbungenZugesagt() { return this.bewerbungen.filter(b => b.status === 'zugesagt'); }
         },
         mounted() {
             this.refreshAll();
@@ -142,19 +153,421 @@
             async refreshAll() {
                 this.loading = true;
                 try {
-                    const [l, v, m, t, z, k] = await Promise.all([
+                    // 🔥 bewerb Aufruf in Promise.all hinzugefügt
+                    const [l, v, m, t, z, k, kred, kon, deb, bewerb] = await Promise.all([
                         fetch('/api/portfolio/liegenschaften'), fetch('/api/rentals/vertraege'),
                         fetch('/api/crm/mieter'), fetch('/api/tickets/'),
-                        fetch('/api/finance/zahlungen'), fetch('/api/finance/mietzins-kontrolle')
+                        fetch('/api/finance/zahlungen'), fetch('/api/finance/mietzins-kontrolle'),
+                        fetch('/api/finance/kreditoren'), fetch('/api/finance/konten'),
+                        fetch('/api/finance/debitoren-rechnungen'),
+                        fetch('/api/mietprozess/admin/liste') // 🔥 NEU
                     ]);
                     this.liegenschaften = await l.json(); this.vertraege = await v.json();
                     this.mieter = await m.json(); this.tickets = await t.json();
                     this.zahlungen = await z.json(); this.mietzinsKontrolle = await k.json();
+                    this.kreditoren = await kred.json();
+                    this.kontenplan = await kon.json();
+                    this.debitorenRechnungen = await deb.json();
+                    this.bewerbungen = await bewerb.json(); // 🔥 Zuweisung
+
+                    this.loadErfolgsrechnung();
+                    this.loadPerioden();
                 } catch(e) { console.error(e); } finally { this.loading = false; }
             },
 
             // ==========================================
-            // 🔥 RENTALS (Verträge) & DOCUSEAL
+            // 🔥 HNK METHODEN (NEBENKOSTEN)
+            // ==========================================
+            async loadPerioden() {
+                try {
+                    const res = await fetch('/api/finance/nebenkosten/perioden');
+                    if (res.ok) {
+                        this.hnkPerioden = await res.json();
+                    }
+                } catch(e) {
+                    console.error("Fehler beim Laden der HNK-Perioden", e);
+                }
+            },
+
+            async savePeriode() {
+                if(!this.newPeriode.liegenschaft_id || !this.newPeriode.bezeichnung) {
+                    this.addToast("Bitte fülle alle Felder aus.", "error");
+                    return;
+                }
+                try {
+                    const res = await fetch('/api/finance/nebenkosten/perioden', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                        body: JSON.stringify(this.newPeriode)
+                    });
+                    if (res.ok) {
+                        this.showPeriodeModal = false;
+                        this.addToast("Periode erfolgreich angelegt!");
+                        this.newPeriode = { liegenschaft_id: null, bezeichnung: '', start_datum: new Date().toISOString().split('T')[0], ende_datum: new Date().toISOString().split('T')[0] };
+                        this.loadPerioden();
+                    } else {
+                        this.addToast("Fehler beim Erstellen der Periode.", "error");
+                    }
+                } catch(e) {
+                    this.addToast("Systemfehler.", "error");
+                }
+            },
+
+            async loadAbrechnung(id) {
+                this.loading = true;
+                try {
+                    const res = await fetch(`/api/finance/nebenkosten/perioden/${id}/abrechnung`);
+                    if(res.ok) {
+                        this.activeAbrechnung = await res.json();
+                        this.addToast("Abrechnung erfolgreich berechnet!");
+                    } else {
+                        this.addToast("Fehler bei der Berechnung.", "error");
+                    }
+                } catch(e) {
+                    this.addToast("Systemfehler bei der Berechnung.", "error");
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async deletePeriode(id) {
+                if(!confirm("Möchtest du diese Abrechnungsperiode wirklich löschen? Alle berechneten Daten für diesen Zeitraum gehen verloren.")) return;
+                try {
+                    const res = await fetch(`/api/finance/nebenkosten/perioden/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRFToken': this.getCsrf() }
+                    });
+                    if(res.ok) {
+                        this.addToast("Periode gelöscht.");
+                        if(this.activeAbrechnung && this.activeAbrechnung.periode.id === id) {
+                            this.activeAbrechnung = null;
+                        }
+                        this.loadPerioden();
+                    } else {
+                        this.addToast("Fehler beim Löschen.", "error");
+                    }
+                } catch(e) {
+                    this.addToast("Systemfehler.", "error");
+                }
+            },
+
+            async verbuchenHNK(periodeId) {
+                if(!confirm("Achtung: Sollen die Saldi jetzt endgültig als Rechnungen (Nachzahlungen) und Gutschriften in die Buchhaltung übertragen werden? Die Periode wird danach abgeschlossen.")) return;
+
+                this.loading = true;
+                try {
+                    const res = await fetch(`/api/finance/nebenkosten/perioden/${periodeId}/verbuchen`, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': this.getCsrf() }
+                    });
+                    if(res.ok) {
+                        this.addToast("Erfolgreich! Rechnungen wurden erstellt und gebucht.");
+                        this.loadPerioden();
+                        this.loadAbrechnung(periodeId);
+                        this.refreshAll();
+                    } else {
+                        const err = await res.json();
+                        this.addToast(err.error || "Fehler beim Verbuchen.", "error");
+                    }
+                } catch(e) {
+                    this.addToast("Systemfehler beim Verbuchen.", "error");
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            // ==========================================
+            // KREDITOREN & DEBITOREN (WEITERVERRECHNUNG)
+            // ==========================================
+
+            async runSollstellung() {
+                this.loading = true;
+                try {
+                    const res = await fetch('/api/finance/debitoren/sollstellung', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                        body: JSON.stringify(this.sollstellungData)
+                    });
+
+                    const data = await res.json();
+
+                    if(res.ok) {
+                        this.showSollstellungModal = false;
+                        if (data.erstellt === 0) {
+                            this.addToast("Für diesen Monat wurden bereits alle Mieten verbucht.", "info");
+                        } else {
+                            this.addToast(`Lauf erfolgreich! ${data.erstellt} Rechnungen verbucht.`);
+                        }
+                        this.refreshAll();
+                    } else {
+                        this.addToast(data.error || "Fehler beim Mietenlauf.", "error");
+                    }
+                } catch(e) {
+                    this.addToast("Systemfehler beim Mietenlauf.", "error");
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async deleteDebitorenRechnung(id) {
+                if(!confirm("Achtung: Diese Sollstellung/Rechnung wirklich stornieren? Dadurch wird auch der gebuchte Ertrag wieder aus der Buchhaltung entfernt.")) return;
+                try {
+                    const res = await fetch(`/api/finance/debitoren-rechnungen/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRFToken': this.getCsrf() }
+                    });
+                    if(res.ok) {
+                        this.addToast("Rechnung erfolgreich storniert.");
+                        this.refreshAll();
+                    } else {
+                        this.addToast("Fehler beim Stornieren.", "error");
+                    }
+                } catch(e) {
+                    this.addToast("Systemfehler.", "error");
+                }
+            },
+
+            async handleKreditorUpload(event) {
+                const file = event.target.files[0];
+                if(!file) return;
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                this.addToast("KI-Scanner analysiert Beleg...", "info");
+                try {
+                    const res = await fetch('/api/finance/kreditoren/upload', {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': this.getCsrf() },
+                        body: formData
+                    });
+                    if(res.ok) {
+                        this.addToast("Rechnung erfolgreich erkannt!");
+                        this.refreshAll();
+                    } else {
+                        this.addToast("Fehler beim Scannen der Rechnung.", "error");
+                    }
+                } catch(e) {
+                    this.addToast("Systemfehler beim Upload.", "error");
+                }
+            },
+
+            openKreditorEditModal(rechnung) {
+                this.editKreditorData = {
+                    id: rechnung.id,
+                    lieferant: rechnung.lieferant || '',
+                    betrag: rechnung.betrag || 0,
+                    datum: rechnung.datum ? rechnung.datum.split('.').reverse().join('-') : '',
+                    referenz: rechnung.referenz || '',
+                    liegenschaft_id: rechnung.liegenschaft_id || null,
+                    konto_id: rechnung.konto_id || null,
+                    is_hnk_relevant: rechnung.is_hnk_relevant || false
+                };
+                this.showKreditorEditModal = true;
+            },
+
+            async saveKreditorEdit() {
+                try {
+                    const res = await fetch(`/api/finance/kreditoren/${this.editKreditorData.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                        body: JSON.stringify(this.editKreditorData)
+                    });
+                    if (res.ok) {
+                        this.showKreditorEditModal = false;
+                        this.addToast("Rechnung erfolgreich kontiert und freigegeben!");
+                        this.refreshAll();
+                    } else {
+                        this.addToast("Fehler beim Speichern.", "error");
+                    }
+                } catch (e) {
+                    console.error(e);
+                    this.addToast("Systemfehler.", "error");
+                }
+            },
+
+            async payKreditor(id) {
+                if(!confirm("Rechnung als bezahlt markieren und in die Erfolgsrechnung buchen?")) return;
+                try {
+                    const res = await fetch(`/api/finance/kreditoren/${id}/pay`, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': this.getCsrf() }
+                    });
+                    if(res.ok) {
+                        this.addToast("Erfolgreich bezahlt & gebucht!");
+                        this.refreshAll();
+                    } else {
+                        const err = await res.json();
+                        this.addToast(err.error || "Fehler beim Buchen.", "error");
+                    }
+                } catch(e) {
+                    this.addToast("Systemfehler beim Buchen.", "error");
+                }
+            },
+
+            async deleteKreditor(id) {
+                if(!confirm("Diese Rechnung wirklich unwiderruflich löschen?")) return;
+                try {
+                    const res = await fetch(`/api/finance/kreditoren/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRFToken': this.getCsrf() }
+                    });
+                    if(res.ok) {
+                        this.addToast("Rechnung erfolgreich gelöscht.");
+                        this.refreshAll();
+                    } else {
+                        this.addToast("Fehler beim Löschen.", "error");
+                    }
+                } catch(e) {
+                    this.addToast("Systemfehler beim Löschen.", "error");
+                }
+            },
+
+            openWeiterverrechnungModal(kreditorRechnung) {
+                this.newDebitorenRechnung = {
+                    vertrag_id: null,
+                    titel: `Weiterverrechnung: ${kreditorRechnung.lieferant}`,
+                    betrag: kreditorRechnung.betrag,
+                    faellig_am: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                };
+                this.showWeiterverrechnungModal = true;
+            },
+
+            async saveWeiterverrechnung() {
+                try {
+                    const res = await fetch('/api/finance/debitoren-rechnungen', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                        body: JSON.stringify(this.newDebitorenRechnung)
+                    });
+                    if (res.ok) {
+                        this.showWeiterverrechnungModal = false;
+                        this.addToast("Rechnung generiert & verbucht!");
+                        this.refreshAll();
+                    } else {
+                        const err = await res.json();
+                        this.addToast(err.error || "Fehler beim Erstellen.", "error");
+                    }
+                } catch (e) {
+                    this.addToast("Systemfehler.", "error");
+                }
+            },
+
+            // ==========================================
+            // BUCHHALTUNG / KONTENPLAN METHODEN
+            // ==========================================
+            async loadErfolgsrechnung() {
+                try {
+                    let url = '/api/finance/erfolgsrechnung';
+                    if (this.erfolgsrechnungFilter) {
+                        url += `?liegenschaft_id=${this.erfolgsrechnungFilter}`;
+                    }
+                    const res = await fetch(url);
+                    if (res.ok) {
+                        this.erfolgsrechnung = await res.json();
+                    }
+                } catch(e) {
+                    console.error("Fehler beim Laden der Erfolgsrechnung", e);
+                }
+            },
+
+            async saveKonto() {
+                if(!this.newKonto.nummer || !this.newKonto.bezeichnung) {
+                    this.addToast("Nummer und Bezeichnung sind Pflichtfelder.", "error");
+                    return;
+                }
+                try {
+                    const res = await fetch('/api/finance/konten', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                        body: JSON.stringify(this.newKonto)
+                    });
+                    if(res.ok) {
+                        this.showKontoModal = false;
+                        this.addToast("Buchungskonto erfolgreich erstellt!");
+                        this.newKonto = { nummer: '', bezeichnung: '', typ: 'aufwand', is_hnk_relevant: false, standard_verteilschluessel: 'm2' };
+                        this.refreshAll();
+                    } else {
+                        const errorData = await res.json();
+                        this.addToast(errorData.error || "Fehler beim Erstellen des Kontos.", "error");
+                    }
+                } catch(e) {
+                    this.addToast("Systemfehler.", "error");
+                }
+            },
+
+            async importStandardKontenplan() {
+                if(!confirm("Möchtest du den Schweizer Standard-Kontenplan (KMU/Immobilien) importieren?")) return;
+
+                this.addToast("Importiere Konten...", "info");
+                try {
+                    const res = await fetch('/api/finance/konten/import-standard', {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': this.getCsrf() }
+                    });
+                    if(res.ok) {
+                        this.addToast("Kontenplan erfolgreich geladen!");
+                        this.refreshAll();
+                    } else {
+                        this.addToast("Fehler beim Importieren. API-Endpunkt aktiv?", "error");
+                    }
+                } catch(e) {
+                    this.addToast("Systemfehler beim Import", "error");
+                }
+            },
+
+            // ==========================================
+            // PORTFOLIO METHODEN
+            // ==========================================
+            async saveProp() {
+                const res = await fetch('/api/portfolio/liegenschaften', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                    body: JSON.stringify(this.newProp)
+                });
+                if(res.ok) { this.showPropModal = false; this.addToast("Liegenschaft erstellt!"); this.refreshAll(); }
+            },
+            async deleteLiegenschaft() {
+                if(!confirm("Liegenschaft wirklich unwiderruflich löschen? Alle zugehörigen Objekte werden entfernt!")) return;
+                try {
+                    const res = await fetch(`/api/portfolio/liegenschaften/${this.selectedLiegenschaft.id}`, { method: 'DELETE', headers: { 'X-CSRFToken': this.getCsrf() } });
+                    if(res.ok) { this.addToast("Liegenschaft gelöscht."); this.selectedLiegenschaft = null; this.refreshAll(); }
+                } catch(e) { this.addToast("Fehler beim Löschen.", "error"); }
+            },
+            openDeviceModal(liegenschaftId, einheitId = null) {
+                this.newDevice.liegenschaft_id = liegenschaftId;
+                this.newDevice.einheit_id = einheitId;
+                this.showDeviceModal = true;
+            },
+            async saveLink() {
+                const res = await fetch(`/api/portfolio/einheiten/${this.selectedEinheit.id}/link-nebenobjekt`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                    body: JSON.stringify({ nebenobjekt_id: this.linkData.nebenobjekt_id })
+                });
+                if(res.ok) { this.showLinkModal = false; this.addToast("Verknüpfung gespeichert!"); this.reloadEinheit(); }
+            },
+            async unlinkNebenobjekt(nebenobjektId) {
+                if(!confirm("Verknüpfung wirklich aufheben?")) return;
+                try {
+                    const res = await fetch(`/api/portfolio/einheiten/${this.selectedEinheit.id}/unlink-nebenobjekt`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                        body: JSON.stringify({ nebenobjekt_id: nebenobjektId })
+                    });
+                    if(res.ok) {
+                        this.addToast("Verknüpfung aufgehoben.");
+                        this.reloadEinheit();
+                    } else {
+                        this.addToast("Fehler beim Entkoppeln.", "error");
+                    }
+                } catch (e) {
+                    this.addToast("Systemfehler", "error");
+                }
+            },
+
+            // ==========================================
+            // RENTALS (Verträge) & DOCUSEAL
             // ==========================================
             openContractWizard() {
                 this.wizardStep = 1;
@@ -290,7 +703,7 @@
             },
 
             // ==========================================
-            // 🔥 CRM & QR-CODE
+            // CRM & QR-CODE
             // ==========================================
             async openMieterDeepDive(m) {
                 this.loading = true;
@@ -318,6 +731,24 @@
                     const res = await fetch(`/api/crm/mieter/${this.selectedMieter.id}`, { method: 'DELETE', headers: { 'X-CSRFToken': this.getCsrf() } });
                     if(res.ok) { this.addToast("Kontakt gelöscht."); this.selectedMieter = null; this.refreshAll(); }
                 } catch(e) {}
+            },
+            async cancelAdresswechsel(mieterId) {
+                if(!confirm("Geplanten Adresswechsel wirklich abbrechen? Die Adresse bleibt wie bisher.")) return;
+                try {
+                    const res = await fetch(`/api/crm/mieter/${mieterId}/cancel-umzug`, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': this.getCsrf() }
+                    });
+                    if(res.ok) {
+                        this.addToast("Adresswechsel storniert.");
+                        if (this.selectedMieter) {
+                            this.selectedMieter.zukuenftig_ab = null;
+                        }
+                        this.refreshAll();
+                    }
+                } catch(e) {
+                    this.addToast("Fehler beim Stornieren.", "error");
+                }
             },
             async generateQR(id) {
                 this.addToast("QR-Rechnung wird erstellt...");
@@ -376,7 +807,7 @@
             },
 
             // ==========================================
-            // 🔥 VERTEILSCHLÜSSEL API LOGIK
+            // VERTEILSCHLÜSSEL API LOGIK
             // ==========================================
             async saveVerteilschluessel() {
                 const res = await fetch('/api/portfolio/verteilschluessel', {
@@ -452,7 +883,7 @@
             },
 
             // ==========================================
-            // 🔥 DOKUMENTE
+            // DOKUMENTE
             // ==========================================
             async uploadDokument() {
                 const formData = new FormData();
@@ -551,8 +982,15 @@
                 const res = await fetch('/api/finance/zahlungen', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() }, body: JSON.stringify(this.newZahlung) });
                 if(res.ok) { this.showPaymentModal = false; this.addToast("Verbucht!"); this.refreshAll(); }
             },
+            async deleteZahlung(id) {
+                if(!confirm("Zahlung wirklich stornieren?")) return;
+                try {
+                    const res = await fetch(`/api/finance/zahlungen/${id}`, { method: 'DELETE', headers: { 'X-CSRFToken': this.getCsrf() } });
+                    if(res.ok) { this.addToast("Zahlung storniert."); this.refreshAll(); }
+                } catch(e) {}
+            },
 
-            // 🔥 NEU: Mahnbrief generieren
+            // Mahnbrief generieren
             async generateMahnung(vertragId, offenerBetrag) {
                 this.addToast("Mahnbrief wird generiert...");
                 try {
@@ -571,6 +1009,208 @@
                 } catch(e) {
                     console.error(e);
                     this.addToast("Systemfehler", "error");
+                }
+            },
+
+            // ==========================================
+            // 🔥 MIETPROZESS METHODEN (Flatfox-Style)
+            // ==========================================
+            getTragbarkeit(bewerbung) {
+                if(!bewerbung) return { colorClass: 'bg-slate-50 border-slate-200 text-slate-500', text: 'Wird berechnet...', percent: 0, icon: 'fa-solid fa-calculator' };
+
+                // 1. Bruttomiete der betroffenen Einheit suchen
+                let bruttomiete = 0;
+                for (const l of this.liegenschaften) {
+                    const e = l.einheiten?.find(e => e.id === bewerbung.einheit_id);
+                    if (e) {
+                        bruttomiete = parseFloat(e.nettomiete_aktuell || 0) + parseFloat(e.nebenkosten_aktuell || 0);
+                        break;
+                    }
+                }
+
+                if (bruttomiete === 0) return { colorClass: 'bg-slate-50 border-slate-200 text-slate-600', text: 'Miete unbekannt', percent: 0, icon: 'fa-solid fa-circle-question' };
+
+                // 2. Einkommen aus dem Text extrahieren (z.B. "70’000 - 80’000" -> 70000)
+                let einkommenStr = bewerbung.einkommen_jahr || "0";
+                let matches = einkommenStr.replace(/’|'/g, '').match(/\d+/g);
+                let einkommenJahr = matches && matches.length > 0 ? parseInt(matches[0]) : 0;
+
+                let einkommenMonat = einkommenJahr / 12;
+                if (einkommenMonat === 0) return { colorClass: 'bg-slate-50 border-slate-200 text-slate-600', text: 'Einkommen unklar', percent: 0, icon: 'fa-solid fa-circle-question' };
+
+                // 3. Tragbarkeit berechnen
+                let quote = (bruttomiete / einkommenMonat) * 100;
+
+                if (quote <= 33.33) {
+                    return { colorClass: 'bg-emerald-50 border-emerald-200 text-emerald-800', text: 'Tragbarkeit ideal', percent: Math.round(quote), icon: 'fa-solid fa-check-double' };
+                } else if (quote <= 40) {
+                    return { colorClass: 'bg-amber-50 border-amber-200 text-amber-800', text: 'Tragbarkeit knapp', percent: Math.round(quote), icon: 'fa-solid fa-scale-unbalanced' };
+                } else {
+                    return { colorClass: 'bg-rose-50 border-rose-200 text-rose-800', text: 'Tragbarkeit kritisch', percent: Math.round(quote), icon: 'fa-solid fa-triangle-exclamation' };
+                }
+            },
+
+            openBewerbungDetail(bewerbung) {
+                this.selectedBewerbung = bewerbung;
+            },
+
+            copyBewerbungsLink(einheitId) {
+                const publicUrl = `${window.location.origin}/bewerben/${einheitId}/`;
+                navigator.clipboard.writeText(publicUrl).then(() => {
+                    this.addToast("Bewerbungs-Link erfolgreich kopiert!", "success");
+                }).catch(err => {
+                    console.error('Fehler beim Kopieren: ', err);
+                    this.addToast("Kopieren fehlgeschlagen. Bitte manuell kopieren.", "error");
+                });
+            },
+
+            async updateBewerbungStatus(id, newStatus) {
+                try {
+                    const res = await fetch(`/api/mietprozess/admin/${id}/status`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                        body: JSON.stringify({ status: newStatus })
+                    });
+                    if(res.ok) {
+                        this.addToast("Status aktualisiert!");
+                        this.refreshAll();
+                    }
+                } catch(e) { this.addToast("Fehler beim Update.", "error"); }
+            },
+
+            async sendBewerbungMessage(id, typ) {
+                // Sicherheitsabfrage, besonders bei Absagen wichtig
+                if (typ === 'absage') {
+                    if (!confirm("Möchtest du diesem Interessenten wirklich absagen?")) return;
+                }
+
+                this.addToast("E-Mail wird generiert und versendet...", "info");
+                try {
+                    const res = await fetch(`/api/mietprozess/admin/${id}/message`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                        body: JSON.stringify({ typ: typ })
+                    });
+
+                    if(res.ok) {
+                        const data = await res.json();
+                        this.addToast(data.message, "success");
+                        this.refreshAll(); // Kanban Board neu laden
+
+                        // Wenn es eine Absage war, das Modal automatisch schließen
+                        if (typ === 'absage') {
+                            this.selectedBewerbung = null;
+                        }
+                    } else {
+                        this.addToast("Fehler beim Versenden der E-Mail.", "error");
+                    }
+                } catch(e) {
+                    this.addToast("Netzwerkfehler beim E-Mail-Versand.", "error");
+                }
+            },
+
+            async openContractWizardFromBewerbung(bewerbung) {
+                this.addToast("Prüfe CRM-Datenbank...", "info");
+
+                try {
+                    // 1. Smarter Check: Gibt es den Kontakt bereits? (Suche nach Email ODER exaktem Namen)
+                    let existingMieter = this.mieter.find(m =>
+                        (m.email && m.email.toLowerCase() === bewerbung.email.toLowerCase()) ||
+                        (m.vorname.toLowerCase() === bewerbung.vorname.toLowerCase() &&
+                         m.nachname.toLowerCase() === bewerbung.nachname.toLowerCase())
+                    );
+
+                    let targetMieterId = null;
+
+                    // Das prall gefüllte Datenpaket aus der Bewerbung
+                    const crmPayload = {
+                        typ: 'person',
+                        vorname: bewerbung.vorname,
+                        nachname: bewerbung.nachname,
+                        email: bewerbung.email,
+                        mobile: bewerbung.mobilnummer || '',
+                        telefon_privat: bewerbung.telefon || '',
+                        strasse: bewerbung.adresse || '',
+                        plz: bewerbung.plz || '',
+                        ort: bewerbung.ort || '',
+                        geburtsdatum: bewerbung.geburtsdatum || null,
+                        zivilstand: bewerbung.zivilstand || '',
+                        nationalitaet: bewerbung.nationalitaet || '',
+                        heimatort: bewerbung.heimatort || '',
+                        erwerbsstatus: bewerbung.erwerbsstatus || '',
+                        beruf: bewerbung.beruf || '',
+                        arbeitgeber: bewerbung.arbeitgeber || '',
+                        einkommen_jahr: bewerbung.einkommen_jahr || ''
+                    };
+
+                    if (existingMieter) {
+                        // UPDATE: Kontakt existiert -> Wir führen die Daten zusammen!
+                        this.addToast("Kontakt gefunden. Aktualisiere CRM-Akte...", "info");
+
+                        // Wir mischen den alten Kontakt mit den neuen Infos (neue Infos überschreiben alte)
+                        const updatePayload = { ...existingMieter, ...crmPayload };
+
+                        const res = await fetch(`/api/crm/mieter/${existingMieter.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                            body: JSON.stringify(updatePayload)
+                        });
+
+                        if (res.ok) {
+                            targetMieterId = existingMieter.id;
+                        }
+                    } else {
+                        // CREATE: Kontakt ist neu -> Wir legen ihn komplett an!
+                        this.addToast("Lege neuen Kontakt im CRM an...", "info");
+
+                        const res = await fetch(`/api/crm/mieter`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() },
+                            body: JSON.stringify(crmPayload)
+                        });
+
+                        if (res.ok) {
+                            // Wenn dein Backend die ID direkt zurückgibt:
+                            const responseData = await res.json();
+                            if (responseData && responseData.id) {
+                                targetMieterId = responseData.id;
+                            }
+                        }
+                    }
+
+                    // 2. Wir laden die Daten neu, damit der aktualisierte/neue Mieter im Frontend bereitsteht
+                    await this.refreshAll();
+
+                    this.selectedBewerbung = null; // Bewerber-Modal schließen
+
+                    this.openContractWizard(); // Startet den Wizard (leert ihn zuerst)
+                    this.switchTab('rentals'); // Wechselt zum Reiter Verträge
+
+                    // 3. Fallback: Falls wir die ID vom POST nicht bekommen haben, suchen wir ihn jetzt in der frischen Liste
+                    if (!targetMieterId) {
+                        const refreshedMieter = this.mieter.find(m => m.email === bewerbung.email && m.vorname === bewerbung.vorname);
+                        if (refreshedMieter) {
+                            targetMieterId = refreshedMieter.id;
+                        }
+                    }
+
+                    // 4. Befüllt den Wizard mit dem verknüpften CRM-Kontakt
+                    if (targetMieterId) {
+                        this.newRentData.mieter_id = targetMieterId;
+                    }
+
+                    this.newRentData.einheit_id = bewerbung.einheit_id;
+                    this.newRentData.anzahl_personen = (bewerbung.anzahl_erwachsene || 1) + (bewerbung.anzahl_kinder || 0);
+                    this.newRentData.mitmieter_name = '';
+                    this.newRentData.wunsch_kautions_typ = bewerbung.wunsch_kautions_typ;
+
+                    this.onUnitSelectedForContract();
+
+                    this.addToast("Erfolgreich! CRM synchronisiert & Vertrag vorbereitet.", "success");
+
+                } catch(e) {
+                    console.error(e);
+                    this.addToast("Fehler beim Synchronisieren der Daten ins CRM.", "error");
                 }
             },
 

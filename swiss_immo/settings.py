@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'rentals',      # Verträge & Leerstände
     'finance',      # Rechnungen & Buchhaltung
     'tickets',      # Schadensmeldungen
+    'mietprozess',
 
     # --- Standard Django ---
     'django.contrib.admin',
