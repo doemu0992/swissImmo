@@ -13,7 +13,7 @@ from crm.api import router as crm_router
 from rentals.api import router as rentals_router
 from tickets.api import router as tickets_router
 from finance.api import router as finance_router
-from mietprozess.api import router as mietprozess_router # <--- NEU: Mietprozess Router importiert
+from mietprozess.api import router as mietprozess_router
 
 # Wir initialisieren die zentrale API
 api = NinjaAPI(
@@ -28,7 +28,7 @@ api.add_router("/crm", crm_router)
 api.add_router("/rentals", rentals_router)
 api.add_router("/tickets", tickets_router)
 api.add_router("/finance", finance_router)
-api.add_router("/mietprozess", mietprozess_router) # <--- NEU: Mietprozess Router registriert
+api.add_router("/mietprozess", mietprozess_router)
 
 
 # ========================================================
@@ -36,7 +36,7 @@ api.add_router("/mietprozess", mietprozess_router) # <--- NEU: Mietprozess Route
 # ========================================================
 # 1. Landing Page & Public Tickets
 from core.views.ticket_public import public_ticket_view, generate_hallway_poster, index_view
-from core.views.application import public_application_view # 🌟 NEU: Import für das Bewerbungsformular hinzugefügt
+from core.views.application import public_application_view
 
 # 2. Das neue Admin-Cockpit
 from core.views.dashboard_view import dashboard_view, update_market_data_view, spa_master_view
@@ -52,7 +52,6 @@ from core.views.docuseal import send_via_docuseal, docuseal_webhook
 
 # 6. Abrechnung, QR, Finanzen & Mahnungen
 from core.views.billing import abrechnung_pdf_view, qr_rechnung_pdf
-# 🔥 NEU: Import der Mahnungs-Views hinzugefügt
 from core.views.email_views import send_abrechnung_email_view, send_mahnung_email_view, generate_mahnung_pdf_view
 
 urlpatterns = [
@@ -81,7 +80,7 @@ urlpatterns = [
     path('abrechnung/<int:periode_id>/pdf/', abrechnung_pdf_view, name='abrechnung_pdf'),
     path('abrechnung/<int:periode_id>/send-mail/', send_abrechnung_email_view, name='abrechnung_send_mail'),
 
-    # 🔥 NEU: MAHNUNGEN MIT KÜNDIGUNGSANDROHUNG (Art. 257d OR)
+    # --- MAHNUNGEN MIT KÜNDIGUNGSANDROHUNG (Art. 257d OR) ---
     path('vertrag/<int:vertrag_id>/mahnung/', generate_mahnung_pdf_view, name='generate_mahnung_pdf'),
     path('vertrag/<int:vertrag_id>/mahnung/mail/', send_mahnung_email_view, name='send_mahnung_mail'),
 
@@ -97,14 +96,6 @@ urlpatterns = [
     path('liegenschaft/<int:liegenschaft_id>/poster/', generate_hallway_poster, name='hallway_poster'),
 
     # --- ÖFFENTLICHES BEWERBUNGSFORMULAR ---
-    path('bewerben/<int:einheit_id>/', public_application_view, name='public_bewerbung'), # 🌟 NEU: URL-Route hinzugefügt
-
-    # --- ALTE APP ROUTINGS ---
-    path('portfolio/', include('portfolio.urls')),
-    path('crm/', include('crm.urls')),
-    path('rentals/', include('rentals.urls')),
-    path('tickets/', include('tickets.urls')),
-    path('finance/', include('finance.urls')),
-    # path('mietprozess/', include('mietprozess.urls')), # Falls du später klassische Views dafür brauchst
+    path('bewerben/<int:einheit_id>/', public_application_view, name='public_bewerbung'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
