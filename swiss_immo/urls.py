@@ -50,9 +50,10 @@ from core.views.pdf import generate_pdf_view
 # 5. DocuSeal
 from core.views.docuseal import send_via_docuseal, docuseal_webhook
 
-# 6. Abrechnung, QR & Finanzen
+# 6. Abrechnung, QR, Finanzen & Mahnungen
 from core.views.billing import abrechnung_pdf_view, qr_rechnung_pdf
-from core.views.email_views import send_abrechnung_email_view
+# 🔥 NEU: Import der Mahnungs-Views hinzugefügt
+from core.views.email_views import send_abrechnung_email_view, send_mahnung_email_view, generate_mahnung_pdf_view
 
 urlpatterns = [
     # --- STARTSEITE ---
@@ -79,6 +80,10 @@ urlpatterns = [
     path('vertrag/<int:vertrag_id>/pdf/', generate_pdf_view, name='generate_pdf'),
     path('abrechnung/<int:periode_id>/pdf/', abrechnung_pdf_view, name='abrechnung_pdf'),
     path('abrechnung/<int:periode_id>/send-mail/', send_abrechnung_email_view, name='abrechnung_send_mail'),
+
+    # 🔥 NEU: MAHNUNGEN MIT KÜNDIGUNGSANDROHUNG (Art. 257d OR)
+    path('vertrag/<int:vertrag_id>/mahnung/', generate_mahnung_pdf_view, name='generate_mahnung_pdf'),
+    path('vertrag/<int:vertrag_id>/mahnung/mail/', send_mahnung_email_view, name='send_mahnung_mail'),
 
     # --- QR RECHNUNG ---
     path('vertrag/<int:vertrag_id>/qr/', qr_rechnung_pdf, name='generate_qr'),

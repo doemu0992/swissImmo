@@ -94,6 +94,7 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right flex justify-end gap-2">
                         {% if item.status != 'Bezahlt' %}
+
                             <form method="POST" action="{% url 'send_mahnung_mail' item.vertrag.id %}" x-target="main-content" style="display: inline-block;">
                                 {% csrf_token %}
                                 <input type="hidden" name="monat" value="{{ monat|date:'F Y' }}">
@@ -103,14 +104,10 @@
                                 </button>
                             </form>
 
-                            <form method="POST" action="{% url 'generate_mahnung_pdf' item.vertrag.id %}" style="display: inline-block;">
-                                {% csrf_token %}
-                                <input type="hidden" name="monat" value="{{ monat|date:'F Y' }}">
-                                <input type="hidden" name="betrag" value="{{ item.diff|floatformat:2 }}">
-                                <button type="submit" title="Rechtssicheres PDF (Art. 257d OR) generieren" class="w-9 h-9 flex items-center justify-center bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition-colors border border-rose-100 shadow-sm">
-                                    <i class="bi bi-file-earmark-pdf-fill"></i>
-                                </button>
-                            </form>
+                            <a href="{% url 'generate_mahnung_pdf' item.vertrag.id %}?monat={{ monat|date:'F Y' }}&betrag={{ item.diff|floatformat:2 }}" target="_blank" title="Rechtssicheres PDF (Art. 257d OR) generieren" class="w-9 h-9 flex items-center justify-center bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition-colors border border-rose-100 shadow-sm">
+                                <i class="bi bi-file-earmark-pdf-fill"></i>
+                            </a>
+
                         {% else %}
                             <span class="text-emerald-400 text-sm font-black bg-emerald-50 w-8 h-8 inline-flex items-center justify-center rounded-full"><i class="bi bi-check2"></i></span>
                         {% endif %}

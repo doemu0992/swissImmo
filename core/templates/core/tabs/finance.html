@@ -61,9 +61,23 @@
                                 <span :class="k.status === 'Bezahlt' ? 'bg-emerald-50 text-emerald-600' : (k.status === 'Teilzahlung' ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600')" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">
                                     {% verbatim %}{{ k.status }}{% endverbatim %}
                                 </span>
-                                <button v-if="k.status !== 'Bezahlt'" @click.stop="generateMahnung(k.vertrag_id, k.differnz || (k.soll - k.ist))" class="bg-rose-100 text-rose-700 hover:bg-rose-600 hover:text-white w-8 h-8 rounded-lg flex items-center justify-center transition-all shadow-sm" title="Mahnung drucken">
-                                    <i class="fa-solid fa-envelope-open-text"></i>
-                                </button>
+
+                                <div class="flex gap-2" v-if="k.status !== 'Bezahlt'">
+                                    <form method="POST" :action="`/vertrag/${k.vertrag_id}/mahnung/mail/`" class="m-0 p-0">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="betrag" :value="(k.soll - k.ist).toFixed(2)">
+                                        <button type="submit" onclick="return confirm('Mahnung per E-Mail an diesen Mieter senden?');" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white w-8 h-8 rounded-lg flex items-center justify-center transition-all shadow-sm" title="Mahnung per E-Mail senden">
+                                            <i class="fa-solid fa-envelope"></i>
+                                        </button>
+                                    </form>
+
+                                    <a :href="`/vertrag/${k.vertrag_id}/mahnung/?betrag=${(k.soll - k.ist).toFixed(2)}`"
+                                       target="_blank"
+                                       class="bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white w-8 h-8 rounded-lg flex items-center justify-center transition-all shadow-sm"
+                                       title="Rechtssichere Mahnung (PDF) generieren">
+                                        <i class="fa-solid fa-file-pdf"></i>
+                                    </a>
+                                </div>
                             </div>
                         </td>
                     </tr>

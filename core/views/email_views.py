@@ -27,6 +27,12 @@ from core.utils.qr_code import draw_qr_bill
 # HILFSFUNKTIONEN FÜR PDF-GENERIERUNG
 # ==============================================================================
 
+def get_aktueller_monat():
+    """Gibt den aktuellen Monat und das Jahr auf Deutsch zurück (z.B. 'Mai 2026')"""
+    monate = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
+    heute = datetime.date.today()
+    return f"{monate[heute.month - 1]} {heute.year}"
+
 def draw_header(c, verwaltung):
     """ Zeichnet das Logo und die Absenderzeile oben """
     if not verwaltung: return
@@ -91,10 +97,17 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
         c.setFont("Helvetica", 9)
         c.drawString(left_margin, 275*mm, f"{verwaltung.strasse}, {verwaltung.plz} {verwaltung.ort}")
 
-    c.setFont("Helvetica", 11)
     y_addr = 250*mm
-    if vertrag.mieter.is_company:
-        c.drawString(right_window_margin, y_addr, vertrag.mieter.firma); y_addr -= 5*mm
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(right_window_margin, y_addr, "EINSCHREIBEN")
+
+    y_addr -= 8*mm
+    c.setFont("Helvetica", 11)
+
+    firma_name = getattr(vertrag.mieter, 'firma', None)
+    if firma_name:
+        c.drawString(right_window_margin, y_addr, firma_name); y_addr -= 5*mm
+
     c.drawString(right_window_margin, y_addr, f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}")
     c.drawString(right_window_margin, y_addr-5*mm, vertrag.mieter.strasse)
     c.drawString(right_window_margin, y_addr-10*mm, f"{vertrag.mieter.plz} {vertrag.mieter.ort}")
@@ -105,21 +118,23 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
 
     c.setFont("Helvetica", 11); text_y = 175*mm
     salutation = f"Sehr geehrte Damen und Herren,"
-    if vertrag.mieter.anrede == "Herr": salutation = f"Sehr geehrter Herr {vertrag.mieter.nachname},"
-    elif vertrag.mieter.anrede == "Frau": salutation = f"Sehr geehrte Frau {vertrag.mieter.nachname},"
+    if getattr(vertrag.mieter, 'anrede', '') == "Herr": salutation = f"Sehr geehrter Herr {vertrag.mieter.nachname},"
+    elif getattr(vertrag.mieter, 'anrede', '') == "Frau": salutation = f"Sehr geehrte Frau {vertrag.mieter.nachname},"
     c.drawString(left_margin, text_y, salutation); text_y -= 10*mm
 
     lines = [
-        f"Bei der Kontrolle unserer Mietzinseingänge mussten wir feststellen, dass für den Monat",
-        f"{monat_str} noch ein Betrag von CHF {betrag_str} ausstehend ist.", "",
-        "Gestützt auf Art. 257d des Schweizerischen Obligationenrechts (OR) setzen wir Ihnen hiermit",
-        "eine Zahlungsfrist von", "", "30 TAGEN", "",
+        f"Bei der Kontrolle unserer Mietzinseingänge mussten wir leider feststellen, dass für den",
+        f"Monat {monat_str} noch ein Betrag von CHF {betrag_str} ausstehend ist.", "",
+        "Gestützt auf Art. 257d des Schweizerischen Obligationenrechts (OR) setzen wir Ihnen",
+        "hiermit eine formelle Zahlungsfrist von", "",
+        "30 TAGEN", "",
         f"ab Erhalt dieses Schreibens an, um den oben genannten Betrag zu begleichen.", "",
         "KÜNDIGUNGSANDROHUNG:",
-        "Sollte die Zahlung nicht innert dieser Frist bei uns eintreffen, werden wir das",
-        "Mietverhältnis gemäss Art. 257d Abs. 2 OR kündigen.", "",
-        "Wir bitten Sie, die Unannehmlichkeiten einer Kündigung zu vermeiden und den Betrag",
-        "umgehend zu überweisen.", "", "Freundliche Grüsse", "", "", "__________________________",
+        "Sollte die vollständige Zahlung nicht innert dieser Frist bei uns eintreffen, werden wir",
+        "das Mietverhältnis gestützt auf Art. 257d Abs. 2 OR ausserordentlich kündigen.", "",
+        "Sollte sich Ihre Zahlung mit diesem Schreiben gekreuzt haben, bitten wir Sie,",
+        "dieses Schreiben als gegenstandslos zu betrachten.", "",
+        "Freundliche Grüsse", "", "", "__________________________",
         f"{verwaltung.firma if verwaltung else 'Die Vermieterschaft'}"
     ]
 
@@ -128,11 +143,11 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
         else: c.setFont("Helvetica", 11)
         c.drawString(left_margin, text_y, line); text_y -= 5.5*mm
 
-    # --- SEITE 2: DIE QR-RECHNUNG (Falls IBAN vorhanden) ---
-    iban = vertrag.einheit.liegenschaft.iban
+    # --- SEITE 2: DIE QR-RECHNUNG ---
+    iban = getattr(vertrag.einheit.liegenschaft, 'iban', None)
     if iban:
         try:
-            c.showPage() # Neue Seite anfangen
+            c.showPage()
             betrag_float = float(str(betrag_str).replace(',', '.'))
 
             if verwaltung:
@@ -140,11 +155,10 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
             else:
                 creditor = {'name': "Verwaltung", 'line1': vertrag.einheit.liegenschaft.strasse, 'line2': f"{vertrag.einheit.liegenschaft.plz} {vertrag.einheit.liegenschaft.ort}"}
 
-            m_name = vertrag.mieter.firma if vertrag.mieter.is_company else f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}"
+            m_name = firma_name if firma_name else f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}"
             debtor = {'name': m_name, 'line1': vertrag.mieter.strasse, 'line2': f"{vertrag.mieter.plz} {vertrag.mieter.ort}"}
 
             draw_qr_bill(c, iban, creditor, debtor, betrag_float, f"Mahnung {monat_str} {vertrag.einheit.bezeichnung}")
-            c.showPage()
         except: pass
 
     c.save(); buffer.seek(0)
@@ -163,22 +177,25 @@ def send_abrechnung_email_view(request, periode_id):
 
 @staff_member_required
 def send_mahnung_email_view(request, vertrag_id):
-    """ Verschickt die Mahnung per E-Mail (mit dem kombinierten PDF) """
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     verwaltung = Verwaltung.objects.first()
-    monat_str = request.POST.get('monat', 'Laufender Monat')
+
+    # 🌟 NEU: Dynamischer Monat als Default
+    monat_str = request.POST.get('monat') or get_aktueller_monat()
     betrag_str = request.POST.get('betrag', '0.00')
 
     if not vertrag.mieter.email:
         messages.error(request, "Mieter hat keine E-Mail."); return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
-    # Kombiniertes PDF generieren
     pdf_bytes = generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, datetime.date.today())
+
+    firma_name = getattr(vertrag.mieter, 'firma', None)
+    anzeige_name = firma_name if firma_name else f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}"
 
     context = {
         'firma_name': verwaltung.firma if verwaltung else 'Ihre Verwaltung',
         'logo_url': request.build_absolute_uri(verwaltung.logo.url) if verwaltung and verwaltung.logo else "",
-        'mieter_name': vertrag.mieter.firma if vertrag.mieter.is_company else f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}",
+        'mieter_name': anzeige_name,
         'objekt_name': f"{vertrag.einheit.bezeichnung} ({vertrag.einheit.liegenschaft.strasse})",
         'monat': monat_str, 'betrag': betrag_str,
     }
@@ -199,16 +216,18 @@ def send_mahnung_email_view(request, vertrag_id):
 
 @staff_member_required
 def generate_mahnung_pdf_view(request, vertrag_id):
-    """ Nur Download des kombinierten PDFs (Brief + QR) """
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     verwaltung = Verwaltung.objects.first()
-    monat_str = request.POST.get('monat', 'Laufender Monat')
-    betrag_str = request.POST.get('betrag', '0.00')
 
-    # Hier nutzen wir jetzt die kombinierte Funktion!
+    # 🌟 NEU: Dynamischer Monat als Default
+    monat_str = request.GET.get('monat') or request.POST.get('monat') or get_aktueller_monat()
+
+    default_betrag = f"{vertrag.netto_mietzins + vertrag.nebenkosten:.2f}"
+    betrag_str = request.GET.get('betrag') or request.POST.get('betrag', default_betrag)
+
     pdf_bytes = generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, datetime.date.today())
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="Mahnung_Art257d_{vertrag.mieter.nachname}.pdf"'
+    response['Content-Disposition'] = f'inline; filename="Mahnung_Art257d_{vertrag.mieter.nachname}.pdf"'
     response.write(pdf_bytes)
     return response
