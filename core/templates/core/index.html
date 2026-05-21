@@ -5,46 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SwissImmo Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+<body class="bg-slate-50 min-h-screen flex flex-col items-center justify-center p-6">
 
-    <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
-            SwissImmo Portal
-        </h2>
-        <p class="mt-2 text-sm text-gray-600">
-            Willkommen im Service-Portal.
+    <div class="text-center mb-12">
+        <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-200">
+            <i class="fa-solid fa-buildings text-white text-4xl"></i>
+        </div>
+        <h1 class="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight mb-3">SwissImmo Portal</h1>
+        <p class="text-slate-500 font-medium text-lg max-w-md mx-auto">
+            Willkommen im Service-Portal. Bitte wählen Sie Ihren Bereich aus.
         </p>
     </div>
 
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
 
-            <div>
-                <a href="/schaden/melden/" class="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                    📢 Neuen Schaden melden
-                </a>
-                <p class="mt-2 text-xs text-center text-gray-500">Für Mieter & Bewohner</p>
+        <a href="/schaden/melden/" class="group bg-white rounded-3xl shadow-lg shadow-slate-200/50 border border-slate-100 p-8 hover:-translate-y-1 hover:shadow-xl hover:border-emerald-100 transition-all duration-300 relative overflow-hidden flex flex-col h-full">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -z-10 group-hover:bg-emerald-100/50 transition-colors"></div>
+
+            <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-sm group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
             </div>
 
-            <div class="relative">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-gray-300"></div>
-                </div>
-                <div class="relative flex justify-center text-sm">
-                    <span class="px-2 bg-white text-gray-500">Interne Verwaltung</span>
-                </div>
+            <h3 class="text-xl font-black text-slate-800 mb-2">Schaden melden</h3>
+            <p class="text-slate-500 text-sm font-medium mb-8 flex-grow">
+                Für Mieter und Bewohner: Melden Sie uns schnell und unkompliziert ein Anliegen oder einen Defekt in Ihrer Wohnung.
+            </p>
+
+            <div class="text-emerald-600 font-bold text-sm flex items-center gap-2 group-hover:gap-3 transition-all">
+                Zum Formular <i class="fa-solid fa-arrow-right"></i>
+            </div>
+        </a>
+
+        <a href="/login/" class="group bg-white rounded-3xl shadow-lg shadow-slate-200/50 border border-slate-100 p-8 hover:-translate-y-1 hover:shadow-xl hover:border-indigo-100 transition-all duration-300 relative overflow-hidden flex flex-col h-full">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -z-10 group-hover:bg-indigo-100/50 transition-colors"></div>
+
+            <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-sm group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-lock"></i>
             </div>
 
-            <div>
-                <a href="/admin/dashboard/" class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                    🔑 Zum Cockpit / Login
-                </a>
-            </div>
+            <h3 class="text-xl font-black text-slate-800 mb-2">Interne Verwaltung</h3>
+            <p class="text-slate-500 text-sm font-medium mb-8 flex-grow">
+                Für Mitarbeiter: Loggen Sie sich in das sichere SwissImmo Cockpit ein, um das Immobilien-Portfolio zu verwalten.
+            </p>
 
-        </div>
+            <div class="text-indigo-600 font-bold text-sm flex items-center gap-2 group-hover:gap-3 transition-all">
+                Zum Login <i class="fa-solid fa-arrow-right"></i>
+            </div>
+        </a>
+
+    </div>
+
+    <div class="mt-16 text-center text-slate-400 text-sm font-medium">
+        &copy; 2026 SwissImmo. Alle Rechte vorbehalten.
     </div>
 
 </body>

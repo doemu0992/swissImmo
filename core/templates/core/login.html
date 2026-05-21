@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | SwissImmo Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full">
+        <div class="text-center mb-10">
+            <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-200">
+                <i class="fa-solid fa-buildings text-white text-2xl"></i>
+            </div>
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight">SwissImmo</h2>
+            <p class="text-slate-500 mt-2 font-medium">Verwaltungs-Cockpit</p>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-8">
+            <h3 class="text-lg font-bold text-slate-800 mb-6">Bitte melden Sie sich an</h3>
+
+            {% if form.errors %}
+            <div class="bg-rose-50 border border-rose-100 text-rose-600 text-sm p-4 rounded-xl mb-6 font-medium flex items-start gap-3">
+                <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                <p>Benutzername oder Passwort ist falsch. Bitte versuchen Sie es erneut.</p>
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'login' %}" class="space-y-5">
+                {% csrf_token %}
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Benutzername</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" name="username" required autofocus
+                            class="w-full bg-slate-50 border border-slate-200 pl-11 pr-4 py-3 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all placeholder:text-slate-300 placeholder:font-medium"
+                            placeholder="Ihr Benutzername">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Passwort</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="password" name="password" required
+                            class="w-full bg-slate-50 border border-slate-200 pl-11 pr-4 py-3 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all placeholder:text-slate-300 placeholder:font-medium"
+                            placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-3.5 px-4 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all flex justify-center items-center gap-2">
+                        <span>Anmelden</span> <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <input type="hidden" name="next" value="{{ next|default:'/app/' }}">
+            </form>
+        </div>
+
+        <div class="mt-8 text-center">
+            <a href="{% url 'index' %}" class="text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Zurück zum öffentlichen Portal
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

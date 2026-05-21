@@ -1,20 +1,23 @@
 # crm/api.py
-from ninja import Router
+from ninja import Router, Schema
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
-from typing import List
+from typing import List, Optional
 from datetime import date
-from .models import Mieter, Verwaltung  # 🔥 Verwaltung hinzugefügt
+from .models import Mieter, Verwaltung, Handwerker  # 🔥 Handwerker importiert
 from .schemas import MieterSchemaOut, MieterUpdateSchema
 from core.utils import get_current_ref_zins, get_current_lik
-from core.utils.qr_code import generate_mieter_qr_pdf  # 🔥 Echter PDF-Generator importiert
+from core.utils.qr_code import generate_mieter_qr_pdf
 
 router = Router(tags=["CRM"])
 
+# ==========================================
+# MIETER / KONTAKTE
+# ==========================================
+
 @router.get("/mieter", response=List[MieterSchemaOut])
 def list_mieter(request):
-    # 🔥 DER WECKER: Bevor wir die Liste ausgeben, prüfen wir blitzschnell,
-    # ob bei irgendjemandem heute der Einzugstag erreicht wurde.
+    # 🔥 DER WECKER
     umzuege = Mieter.objects.filter(zukuenftig_ab__lte=date.today())
     for m in umzuege:
         m.check_and_update_adresse()
@@ -24,7 +27,6 @@ def list_mieter(request):
 @router.get("/mieter/{mieter_id}", response=MieterSchemaOut)
 def get_mieter(request, mieter_id: int):
     m = get_object_or_404(Mieter, id=mieter_id)
-    # 🔥 DER WECKER: Auch beim Einzelaufruf kurz prüfen
     m.check_and_update_adresse()
     return m
 
@@ -47,7 +49,6 @@ def delete_mieter(request, mieter_id: int):
     get_object_or_404(Mieter, id=mieter_id).delete()
     return 204, None
 
-# 🔥 MANUELLER ABBRUCH DES ADRESSWECHSELS
 @router.post("/mieter/{mieter_id}/cancel-umzug")
 def cancel_umzug(request, mieter_id: int):
     m = get_object_or_404(Mieter, id=mieter_id)
@@ -58,7 +59,42 @@ def cancel_umzug(request, mieter_id: int):
     m.save()
     return 200, {"success": True}
 
-# LÖSCH-ENDPUNKT FÜR DOKUMENTE
+
+# ==========================================
+# 🔥 NEU: HANDWERKER / PARTNER
+# ==========================================
+
+class HandwerkerInSchema(Schema):
+    firma: str
+    kontaktperson: Optional[str] = None
+    email: str
+    telefon: Optional[str] = None
+    branche: str
+
+@router.post("/handwerker", response={200: dict})
+def create_handwerker(request, payload: HandwerkerInSchema):
+    h = Handwerker.objects.create(**payload.dict())
+    return 200, {"success": True, "id": h.id}
+
+@router.put("/handwerker/{h_id}", response={200: dict})
+def update_handwerker(request, h_id: int, payload: HandwerkerInSchema):
+    h = get_object_or_404(Handwerker, id=h_id)
+    for attr, value in payload.dict().items():
+        setattr(h, attr, value)
+    h.save()
+    return 200, {"success": True}
+
+@router.delete("/handwerker/{h_id}", response={200: dict})
+def delete_handwerker(request, h_id: int):
+    h = get_object_or_404(Handwerker, id=h_id)
+    h.delete()
+    return 200, {"success": True}
+
+
+# ==========================================
+# DOKUMENTE & TOOLS
+# ==========================================
+
 @router.delete("/dokumente/{id}", response={200: dict, 404: dict, 500: dict})
 def delete_mieter_dokument(request, id: int):
     try:
@@ -87,7 +123,6 @@ def delete_mieter_dokument(request, id: int):
     except Exception as e:
         return 500, {"success": False, "error": str(e)}
 
-# 🔥 JETZ ECHT: QR-Code Endpunkt
 @router.get("/mieter/{mieter_id}/qr-rechnung")
 def generate_mieter_qr(request, mieter_id: int):
     m = get_object_or_404(Mieter, id=mieter_id)
@@ -96,23 +131,19 @@ def generate_mieter_qr(request, mieter_id: int):
     if not verwaltung:
         return 400, {"success": False, "error": "Keine Verwaltungsdaten hinterlegt."}
 
-    # Den aktuellsten aktiven Vertrag suchen, um den Betrag zu erhalten
     vertrag = m.vertraege.filter(status='aktiv').first()
     if not vertrag:
-        # Fallback auf den neusten Vertrag, falls keiner "aktiv" markiert ist
         vertrag = m.vertraege.order_by('-id').first()
 
     if not vertrag:
         return 400, {"success": False, "error": "Kein Mietvertrag für diesen Mieter gefunden."}
 
     try:
-        # Ruft deine Logik in core/utils/qr_code.py auf
         pdf_url = generate_mieter_qr_pdf(m, vertrag, verwaltung)
         return {"success": True, "url": pdf_url}
     except Exception as e:
         return 500, {"success": False, "error": f"Fehler bei der QR-Erstellung: {str(e)}"}
 
-# Endpunkt für die globalen Basiswerte
 @router.get("/basiswerte", response=dict)
 def get_global_basiswerte(request):
     return {

@@ -187,22 +187,34 @@ class Mieter(models.Model):
             self.save()
 
 
+# 🔥 DER NEUE HANDWERKER-STAMM FÜR DIE API
 class Handwerker(models.Model):
-    firma = models.CharField("Firma", max_length=100)
-    gewerk = models.CharField("Gewerk (z.B. Sanitär, Elektro)", max_length=100)
-    kontaktperson = models.CharField("Kontaktperson", max_length=100, blank=True)
-    strasse = models.CharField("Strasse & Nr.", max_length=100, blank=True)
-    plz = models.CharField("PLZ", max_length=10, blank=True)
-    ort = models.CharField("Ort", max_length=100, blank=True)
-    email = models.EmailField("E-Mail", blank=True)
-    telefon = models.CharField("Telefon", max_length=30, blank=True)
-    iban = models.CharField("IBAN", max_length=34, blank=True)
-    notizen = models.TextField("Interne Notizen", blank=True)
+    BRANCHEN_CHOICES = [
+        ('sanitaer', 'Sanitär / Heizung'),
+        ('elektro', 'Elektroinstallation'),
+        ('maler', 'Maler / Gipser'),
+        ('schreiner', 'Schreiner / Zimmermann'),
+        ('schloss', 'Schlosserei / Schlüsseldienst'),
+        ('allgemein', 'Allround-Handwerker / Baugeschäft'),
+        ('garten', 'Gartenbau / Umgebung'),
+        ('reinigung', 'Reinigungsinstitut'),
+    ]
+
+    firma = models.CharField(max_length=255, verbose_name="Firmenname")
+    kontaktperson = models.CharField(max_length=255, blank=True, null=True, verbose_name="Kontaktperson")
+    branche = models.CharField(max_length=50, choices=BRANCHEN_CHOICES, default='allgemein')
+    email = models.EmailField(verbose_name="E-Mail für Aufträge", blank=True, null=True)
+    telefon = models.CharField(max_length=50, blank=True, null=True, verbose_name="Telefonnummer")
+    erstellt_am = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Handwerker"
-        verbose_name_plural = "Handwerker"
+        verbose_name_plural = "Handwerkerstamm"
+        ordering = ['firma']
         db_table = 'core_handwerker'
 
     def __str__(self):
-        return self.firma
+        try:
+            return f"{self.firma} ({self.get_branche_display()})"
+        except:
+            return self.firma

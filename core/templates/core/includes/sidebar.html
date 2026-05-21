@@ -1,20 +1,81 @@
-<div class="w-64 bg-slate-900 text-white flex flex-col z-[60]">
+<div class="w-64 bg-slate-900 text-white flex flex-col z-[60] min-h-[100dvh]">
+
     <div class="p-8 text-2xl font-black flex items-center gap-3 tracking-tighter">
-        <div class="w-9 h-9 rounded-xl bg-indigo-500 flex items-center justify-center text-sm shadow-lg shadow-indigo-500/40"><i class="fa-solid fa-building"></i></div>
+        <div class="w-9 h-9 rounded-xl bg-indigo-500 flex items-center justify-center text-sm shadow-lg shadow-indigo-500/40">
+            <i class="fa-solid fa-building"></i>
+        </div>
         <span>swissImmo</span>
     </div>
-    <nav class="flex-1 px-4 space-y-1">
-        <button @click="switchTab('home')" :class="activeTab === 'home' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold"><i class="fa-solid fa-grid-2 w-5 text-center"></i> Dashboard</button>
 
-        <div class="pt-4 pb-2 px-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Portfolio</div>
-        <button @click="switchTab('portfolio')" :class="activeTab === 'portfolio' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold"><i class="fa-solid fa-city w-5 text-center"></i> Liegenschaften</button>
-        <button @click="switchTab('rentals')" :class="activeTab === 'rentals' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold"><i class="fa-solid fa-file-signature w-5 text-center"></i> Mietverträge</button>
-        <button @click="switchTab('crm')" :class="activeTab === 'crm' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold"><i class="fa-solid fa-users w-5 text-center"></i> Mieterstamm</button>
+    <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
 
-        <div class="pt-4 pb-2 px-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Betrieb</div>
-        <button @click="switchTab('finance')" :class="activeTab === 'finance' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold"><i class="fa-solid fa-sack-dollar w-5 text-center"></i> Finanzen</button>
-        <button @click="switchTab('tickets')" :class="activeTab === 'tickets' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold"><i class="fa-solid fa-screwdriver-wrench w-5 text-center"></i> Tickets</button>
+        <button @click="switchTab('home')"
+                :class="activeTab === 'home' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold">
+            <i class="fa-solid fa-grid-2 w-5 text-center"></i> Dashboard
+        </button>
 
-        <button @click="switchTab('mietprozess')" :class="activeTab === 'mietprozess' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold"><i class="fa-solid fa-users-viewfinder w-5 text-center"></i> Mietprozess</button>
+        <div class="pt-6 pb-2 px-4 text-[10px] font-black uppercase tracking-widest text-slate-500">
+            Portfolio
+        </div>
+
+        <button @click="switchTab('portfolio')"
+                :class="activeTab === 'portfolio' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold">
+            <i class="fa-solid fa-city w-5 text-center"></i> Liegenschaften
+        </button>
+
+        <button @click="switchTab('rentals')"
+                :class="activeTab === 'rentals' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold">
+            <i class="fa-solid fa-file-signature w-5 text-center"></i> Mietverträge
+        </button>
+
+        <button @click="switchTab('crm')"
+                :class="activeTab === 'crm' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold">
+            <i class="fa-solid fa-users w-5 text-center"></i> Mieterstamm
+        </button>
+
+        <div class="pt-6 pb-2 px-4 text-[10px] font-black uppercase tracking-widest text-slate-500">
+            Betrieb
+        </div>
+
+        <button @click="switchTab('finance')"
+                :class="activeTab === 'finance' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold">
+            <i class="fa-solid fa-sack-dollar w-5 text-center"></i> Finanzen
+        </button>
+
+        <button @click="switchTab('tickets')"
+                :class="activeTab === 'tickets' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold relative">
+            <i class="fa-solid fa-screwdriver-wrench w-5 text-center"></i>
+            <span>Tickets</span>
+
+            <span v-if="ticketBadgeCount > 0"
+                  v-text="ticketBadgeCount"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[11px] font-bold text-white shadow-sm shadow-rose-500/20 animate-pulse">
+            </span>
+        </button>
+
+        <button @click="switchTab('mietprozess')"
+                :class="activeTab === 'mietprozess' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-semibold relative">
+            <i class="fa-solid fa-users-viewfinder w-5 text-center"></i>
+            <span>Mietprozess</span>
+
+            <span v-if="bewerbungenNeu.length > 0"
+                  v-text="bewerbungenNeu.length"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-indigo-500 px-1.5 text-[11px] font-bold text-white shadow-sm shadow-indigo-500/20 animate-pulse">
+            </span>
+        </button>
     </nav>
+
+    <div class="p-4 mt-auto border-t border-white/5">
+        <a href="{% url 'admin:index' %}" target="_blank" class="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-semibold">
+            <i class="fa-solid fa-gear w-5 text-center"></i> System-Admin
+        </a>
+    </div>
+
 </div>

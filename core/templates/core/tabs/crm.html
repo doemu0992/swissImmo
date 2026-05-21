@@ -1,29 +1,60 @@
-<div v-if="activeTab === 'crm' && !selectedMieter" class="animate-fade-in space-y-8 pb-10">
+<div v-if="activeTab === 'crm' && !selectedMieter && !selectedHandwerker" class="animate-fade-in space-y-8 pb-10">
     <div class="flex justify-between items-center">
         <h1 class="text-3xl font-black text-slate-900 tracking-tight">Mieterstamm & Kontakte</h1>
-        <button @click="showNewMieterModal = true" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">+ Neuer Kontakt</button>
+        <button v-if="crmView === 'mieter'" @click.stop="showNewMieterModal = true" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">+ Neuer Kontakt</button>
+        <button v-if="crmView === 'handwerker'" @click.stop="showNewHandwerkerModal = true" class="bg-sky-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-sky-200 hover:bg-sky-700 transition-all">+ Neuer Handwerker</button>
     </div>
 
-    <div class="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-4 shadow-sm">
-        <i class="fa-solid fa-magnifying-glass text-slate-400 ml-2"></i>
-        <input type="text" v-model="crmSearchQuery" placeholder="Name, Firma oder E-Mail suchen..." class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-bold text-slate-700 placeholder-slate-400">
+    <div class="flex gap-6 border-b border-slate-200">
+        <button @click="crmView = 'mieter'" :class="crmView === 'mieter' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-800'" class="pb-3 border-b-2 font-bold text-sm transition-all">Mieterstamm</button>
+        <button @click="crmView = 'handwerker'" :class="crmView === 'handwerker' ? 'border-sky-600 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-800'" class="pb-3 border-b-2 font-bold text-sm transition-all">Handwerker & Partner</button>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <div v-for="m in filteredMieter" :key="m.id" @click="openMieterDeepDive(m)" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer group">
-            <div class="flex items-start justify-between mb-4">
-                <div :class="m.typ === 'person' ? 'bg-indigo-50 text-indigo-600' : (m.typ === 'firma' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600')" class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-all">
-                    <i v-if="m.typ === 'person'" class="fa-solid fa-user"></i>
-                    <i v-if="m.typ === 'firma'" class="fa-solid fa-building"></i>
-                    <i v-if="m.typ === 'verein'" class="fa-solid fa-users"></i>
+    <div v-show="crmView === 'mieter'" class="space-y-6">
+        <div class="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-4 shadow-sm">
+            <i class="fa-solid fa-magnifying-glass text-slate-400 ml-2"></i>
+            <input type="text" v-model="crmSearchQuery" placeholder="Name, Firma oder E-Mail suchen..." class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-bold text-slate-700 placeholder-slate-400">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div v-for="m in filteredMieter" :key="m.id" @click="openMieterDeepDive(m)" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer group">
+                <div class="flex items-start justify-between mb-4">
+                    <div :class="m.typ === 'person' ? 'bg-indigo-50 text-indigo-600' : (m.typ === 'firma' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600')" class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-all">
+                        <i v-if="m.typ === 'person'" class="fa-solid fa-user"></i>
+                        <i v-if="m.typ === 'firma'" class="fa-solid fa-building"></i>
+                        <i v-if="m.typ === 'verein'" class="fa-solid fa-users"></i>
+                    </div>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">{% verbatim %}{{ m.typ }}{% endverbatim %}</span>
                 </div>
-                <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">{% verbatim %}{{ m.typ }}{% endverbatim %}</span>
+                <h3 class="font-black text-lg text-slate-900 leading-tight mb-1 truncate">{% verbatim %}{{ m.display_name }}{% endverbatim %}</h3>
+                <p class="text-xs text-slate-500 font-medium mb-4 truncate">{% verbatim %}{{ m.email || 'Keine E-Mail' }}{% endverbatim %}</p>
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center text-[10px] font-bold text-slate-400">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-phone"></i> {% verbatim %}{{ m.mobile || m.telefon_privat || m.telefon_geschaeft || '-' }}{% endverbatim %}</span>
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-location-dot"></i> {% verbatim %}{{ m.ort || '-' }}{% endverbatim %}</span>
+                </div>
             </div>
-            <h3 class="font-black text-lg text-slate-900 leading-tight mb-1 truncate">{% verbatim %}{{ m.display_name }}{% endverbatim %}</h3>
-            <p class="text-xs text-slate-500 font-medium mb-4 truncate">{% verbatim %}{{ m.email || 'Keine E-Mail' }}{% endverbatim %}</p>
-            <div class="pt-4 border-t border-slate-100 flex justify-between items-center text-[10px] font-bold text-slate-400">
-                <span class="flex items-center gap-1"><i class="fa-solid fa-phone"></i> {% verbatim %}{{ m.mobile || m.telefon_privat || m.telefon_geschaeft || '-' }}{% endverbatim %}</span>
-                <span class="flex items-center gap-1"><i class="fa-solid fa-location-dot"></i> {% verbatim %}{{ m.ort || '-' }}{% endverbatim %}</span>
+        </div>
+    </div>
+
+    <div v-show="crmView === 'handwerker'" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div v-for="hw in handwerkerList" :key="hw.id" @click="selectedHandwerker = hw" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-sky-500 hover:shadow-xl hover:shadow-sky-500/5 transition-all cursor-pointer group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-all bg-sky-50 text-sky-600">
+                        <i class="fa-solid fa-helmet-safety"></i>
+                    </div>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-100 px-2 py-1 rounded-lg" v-text="hw.branche_label"></span>
+                </div>
+                <h3 class="font-black text-lg text-slate-900 leading-tight mb-1 truncate" v-text="hw.firma"></h3>
+                <p class="text-xs text-slate-500 font-medium mb-4 truncate" v-text="hw.kontaktperson || 'Keine Kontaktperson'"></p>
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center text-[10px] font-bold text-slate-400">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-phone"></i> <span v-text="hw.telefon || '-'"></span></span>
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-envelope"></i> <span v-text="hw.email || '-'"></span></span>
+                </div>
+            </div>
+
+            <div v-if="handwerkerList.length === 0" class="col-span-full text-center py-12 text-sm font-medium text-slate-400 border-2 border-dashed border-slate-200 rounded-3xl">
+                Noch keine Handwerker oder Partner erfasst.
             </div>
         </div>
     </div>
@@ -197,6 +228,82 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+</div>
+
+<div v-if="activeTab === 'crm' && selectedHandwerker" class="animate-fade-in space-y-6 pb-10">
+    <button @click="selectedHandwerker = null" class="text-slate-400 hover:text-sky-600 font-bold text-sm mb-2 flex items-center gap-2 transition-colors">
+        <i class="fa-solid fa-arrow-left"></i> Zurück zur Übersicht
+    </button>
+
+    <div class="flex justify-between items-end mb-8">
+        <div class="flex-1 mr-8">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="bg-sky-100 text-sky-700 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg">
+                    Handwerker / Partner
+                </span>
+            </div>
+            <input type="text" v-model="selectedHandwerker.firma" class="w-full bg-transparent border-none p-0 text-4xl font-black text-slate-900 tracking-tight focus:ring-0 focus:outline-none placeholder-slate-300" placeholder="Firmenname">
+        </div>
+        <div class="flex gap-3">
+             <button @click="deleteHandwerker" class="bg-rose-50 text-rose-600 px-4 py-3 rounded-xl font-bold hover:bg-rose-600 hover:text-white transition-all"><i class="fa-solid fa-trash-can"></i></button>
+             <button @click="saveHandwerkerEdit" class="bg-sky-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-sky-700 transition-all">Speichern</button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+            <h3 class="font-black text-slate-800 uppercase tracking-widest text-[10px]">Kontaktdaten</h3>
+            <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Kontaktperson</label><input type="text" v-model="selectedHandwerker.kontaktperson" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-sky-500"></div>
+            <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-Mail (für Aufträge)</label><input type="email" v-model="selectedHandwerker.email" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-sky-500"></div>
+            <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Telefon</label><input type="text" v-model="selectedHandwerker.telefon" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-sky-500"></div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Branche / Gewerk</label>
+                <select v-model="selectedHandwerker.branche" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-sky-500">
+                    <option value="sanitaer">Sanitär / Heizung</option>
+                    <option value="elektro">Elektroinstallation</option>
+                    <option value="maler">Maler / Gipser</option>
+                    <option value="schreiner">Schreiner / Zimmermann</option>
+                    <option value="schloss">Schlosserei / Schlüsseldienst</option>
+                    <option value="allgemein">Allround-Handwerker / Baugeschäft</option>
+                    <option value="garten">Gartenbau / Umgebung</option>
+                    <option value="reinigung">Reinigungsinstitut</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div v-if="showNewHandwerkerModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+    <div v-click-outside="() => showNewHandwerkerModal = false" class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in-up">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="font-black text-slate-800">Neuen Handwerker anlegen</h3>
+            <button @click="showNewHandwerkerModal = false" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Firma *</label><input type="text" v-model="newHandwerkerData.firma" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-sky-500"></div>
+            <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Kontaktperson</label><input type="text" v-model="newHandwerkerData.kontaktperson" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-sky-500"></div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">E-Mail (Aufträge) *</label><input type="email" v-model="newHandwerkerData.email" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-sky-500"></div>
+                <div><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Telefon</label><input type="text" v-model="newHandwerkerData.telefon" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-sky-500"></div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Branche</label>
+                <select v-model="newHandwerkerData.branche" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-sky-500">
+                    <option value="sanitaer">Sanitär / Heizung</option>
+                    <option value="elektro">Elektroinstallation</option>
+                    <option value="maler">Maler / Gipser</option>
+                    <option value="schreiner">Schreiner / Zimmermann</option>
+                    <option value="schloss">Schlosserei / Schlüsseldienst</option>
+                    <option value="allgemein">Allround-Handwerker / Baugeschäft</option>
+                    <option value="garten">Gartenbau / Umgebung</option>
+                    <option value="reinigung">Reinigungsinstitut</option>
+                </select>
+            </div>
+            <button @click="saveNewHandwerker" class="w-full mt-4 bg-sky-600 text-white p-3 rounded-xl font-bold hover:bg-sky-700 transition-all">Speichern</button>
         </div>
     </div>
 </div>

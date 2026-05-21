@@ -5,6 +5,7 @@ from finance.models import Zahlungseingang
 
 from django.shortcuts import render, redirect
 from django.db.models import Sum, Count, Q
+from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.utils import timezone
@@ -28,28 +29,17 @@ def update_market_data_view(request):
         for error in errors:
             messages.warning(request, error)
 
-    # Erfolgsmeldung anzeigen und zurück zum Dashboard
+    # Erfolgsmeldung anzeigen und zurück zum neuen SPA-Dashboard
     messages.success(request, msg)
-    return redirect('admin_dashboard')
+    return redirect('spa_master')
 
 
-@staff_member_required
-def dashboard_view(request):
-    """
-    ALTE LOGIK: Für das klassische Django-Admin-Dashboard.
-    """
-    try:
-        context = _generate_dashboard_context()
-        return render(request, 'core/dashboard.html', context)
-    except Exception as e:
-        return _render_error(e)
-
-
-@staff_member_required
+@login_required(login_url='/admin/login/')
 def spa_master_view(request):
     """
     NEUE LOGIK: Für unser Vue.js Cockpit (Single Page Application).
     Nutzt dieselben Berechnungen, sendet sie aber an spa_master.html.
+    Sicher geschützt via Login-Zwang.
     """
     try:
         context = _generate_dashboard_context()

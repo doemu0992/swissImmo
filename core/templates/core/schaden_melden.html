@@ -1,0 +1,284 @@
+{% extends "modern_base.html" %}
+
+{% block content %}
+
+<script id="liegenschaften-daten" type="application/json">
+    {{ liegenschaften_json|default:'[]'|safe }}
+</script>
+
+<div class="max-w-4xl mx-auto" x-data="{
+    step: 1,
+    formData: {
+        kategorie: '',
+        raum: '',
+        objekt: ''
+    },
+    adresseSuche: '',
+    ausgewaehlteLiegenschaftId: '',
+    /* 🔥 Hier greift Alpine jetzt sicher auf die Daten zu */
+    liegenschaften: JSON.parse(document.getElementById('liegenschaften-daten').textContent),
+    showDropdown: false,
+
+    get gefilterteLiegenschaften() {
+        if (this.adresseSuche.length < 2) return [];
+        return this.liegenschaften.filter(l =>
+            l.text.toLowerCase().includes(this.adresseSuche.toLowerCase())
+        );
+    },
+    selectLiegenschaft(l) {
+        this.adresseSuche = l.text;
+        this.ausgewaehlteLiegenschaftId = l.id;
+        this.showDropdown = false;
+    },
+    selectCategory(cat) {
+        this.formData.kategorie = cat;
+        if(cat === 'Schadensmeldung') {
+            this.step = 2;
+        } else {
+            this.formData.raum = '';
+            this.formData.objekt = '';
+            this.step = 4;
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+    selectRoom(raum) {
+        this.formData.raum = raum;
+        this.step = 3;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+    selectObject(obj) {
+        this.formData.objekt = obj;
+        this.step = 4;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}">
+
+    {% if success %}
+    <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-10 text-center">
+        <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <h2 class="text-3xl font-black text-slate-900 mb-4">Vielen Dank!</h2>
+        <p class="text-slate-500 font-medium mb-8">Ihre Meldung wurde erfolgreich an die Verwaltung übermittelt. Wir werden uns in Kürze darum kümmern.</p>
+        <a href="{% url 'index' %}" class="inline-block bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors">
+            Zurück zur Startseite
+        </a>
+    </div>
+
+    {% else %}
+
+    <div class="mb-8">
+        <div class="w-full bg-slate-200 rounded-full h-2.5">
+            <div class="bg-indigo-600 h-2.5 rounded-full transition-all duration-500 ease-out" :style="'width: ' + (step * 25) + '%'"></div>
+        </div>
+    </div>
+
+    <form action="" method="POST" enctype="multipart/form-data" class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 sm:p-10 min-h-[400px] relative">
+        {% csrf_token %}
+
+        <input type="hidden" name="kategorie" x-model="formData.kategorie">
+        <input type="hidden" name="raum" x-model="formData.raum">
+        <input type="hidden" name="objekt" x-model="formData.objekt">
+        <input type="hidden" name="liegenschaft_id" x-model="ausgewaehlteLiegenschaftId">
+
+        <div x-show="step === 1" x-transition>
+            <h2 class="text-2xl font-black text-slate-900 mb-8 text-center">Worum geht es?</h2>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button type="button" @click="selectCategory('Schadensmeldung')" class="group bg-slate-50 border border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:border-indigo-500 hover:bg-indigo-50 hover:shadow-md transition-all">
+                    <i class="fa-solid fa-house-crack text-4xl text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
+                    <span class="font-bold text-slate-600 group-hover:text-indigo-800 text-sm">Schadensmeldung</span>
+                </button>
+                <button type="button" @click="selectCategory('Allgemeine Anfrage')" class="group bg-slate-50 border border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:border-indigo-500 hover:bg-indigo-50 hover:shadow-md transition-all">
+                    <i class="fa-regular fa-comments text-4xl text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
+                    <span class="font-bold text-slate-600 group-hover:text-indigo-800 text-sm">Allgemeine Anfrage</span>
+                </button>
+                <button type="button" @click="selectCategory('Namensschilder')" class="group bg-slate-50 border border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:border-indigo-500 hover:bg-indigo-50 hover:shadow-md transition-all">
+                    <i class="fa-regular fa-id-badge text-4xl text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
+                    <span class="font-bold text-slate-600 group-hover:text-indigo-800 text-sm text-center">Namensschilder-bestellung</span>
+                </button>
+                <button type="button" @click="selectCategory('Schlüsselbestellung')" class="group bg-slate-50 border border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:border-indigo-500 hover:bg-indigo-50 hover:shadow-md transition-all">
+                    <i class="fa-solid fa-key text-4xl text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
+                    <span class="font-bold text-slate-600 group-hover:text-indigo-800 text-sm text-center">Schlüsselbestellung</span>
+                </button>
+                <button type="button" @click="selectCategory('Frage zu Dokumenten')" class="group bg-slate-50 border border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:border-indigo-500 hover:bg-indigo-50 hover:shadow-md transition-all">
+                    <i class="fa-regular fa-file-lines text-4xl text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
+                    <span class="font-bold text-slate-600 group-hover:text-indigo-800 text-sm text-center">Frage zu Dokumenten</span>
+                </button>
+            </div>
+        </div>
+
+        <div x-show="step === 2" x-transition style="display: none;">
+            <button type="button" @click="step = 1" class="absolute top-6 left-6 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-arrow-left"></i> Zurück</button>
+            <h2 class="text-2xl font-black text-slate-900 mb-8 text-center mt-10 md:mt-0">In welchem Raum?</h2>
+
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <button type="button" @click="selectRoom('Küche')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-kitchen-set text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Küche</span>
+                </button>
+                <button type="button" @click="selectRoom('Bad')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-bath text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Bad</span>
+                </button>
+                <button type="button" @click="selectRoom('Korridor')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-door-open text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Korridor</span>
+                </button>
+                <button type="button" @click="selectRoom('Zimmer')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-bed text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Zimmer</span>
+                </button>
+                <button type="button" @click="selectRoom('Reduit')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-boxes-stacked text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Reduit</span>
+                </button>
+                <button type="button" @click="selectRoom('Balkon/Terrasse')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-sun text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Balkon/Terrasse</span>
+                </button>
+                <button type="button" @click="selectRoom('Treppenhaus')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-stairs text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Treppenhaus</span>
+                </button>
+                <button type="button" @click="selectRoom('Waschküche')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-jug-detergent text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Waschküche</span>
+                </button>
+                <button type="button" @click="selectRoom('Keller')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-box text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Keller</span>
+                </button>
+                <button type="button" @click="selectRoom('Anderer Raum')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-pen text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Anderer Raum</span>
+                </button>
+            </div>
+        </div>
+
+        <div x-show="step === 3" x-transition style="display: none;">
+            <button type="button" @click="step = 2" class="absolute top-6 left-6 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-arrow-left"></i> Zurück</button>
+            <h2 class="text-2xl font-black text-slate-900 mb-8 text-center mt-10 md:mt-0">Was genau ist betroffen?</h2>
+
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <button type="button" @click="selectObject('Kühlschrank')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-snowflake text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Kühlschrank</span>
+                </button>
+                <button type="button" @click="selectObject('Geschirrspüler')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-plate-wheat text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Geschirrspüler</span>
+                </button>
+                <button type="button" @click="selectObject('Dampfabzug')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-wind text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Dampfabzug</span>
+                </button>
+                <button type="button" @click="selectObject('Kochherd')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-fire-burner text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Kochherd</span>
+                </button>
+                <button type="button" @click="selectObject('Backofen')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-temperature-arrow-up text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs text-center">Backofen, Steamer</span>
+                </button>
+                <button type="button" @click="selectObject('Armaturen')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-faucet-drip text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs text-center">Spülbecken, Armaturen</span>
+                </button>
+                <button type="button" @click="selectObject('Fenster')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-regular fa-window-maximize text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Fenster</span>
+                </button>
+                <button type="button" @click="selectObject('Jalousien')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-bars text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs text-center">Jalousien, Rollläden</span>
+                </button>
+                <button type="button" @click="selectObject('Licht')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-regular fa-lightbulb text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Licht</span>
+                </button>
+                <button type="button" @click="selectObject('Anderes')" class="group bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-pen text-3xl text-slate-400 group-hover:text-indigo-600"></i><span class="font-bold text-slate-600 text-xs">Anderes</span>
+                </button>
+            </div>
+        </div>
+
+        <div x-show="step === 4" x-transition style="display: none;">
+            <button type="button" @click="step = formData.kategorie === 'Schadensmeldung' ? 3 : 1" class="absolute top-6 left-6 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-arrow-left"></i> Zurück</button>
+
+            <h2 class="text-2xl font-black text-slate-900 mb-6 text-center mt-10 md:mt-0">Details & Kontaktdaten</h2>
+
+            <div class="flex flex-wrap gap-2 justify-center mb-6">
+                <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-xs font-bold" x-show="formData.kategorie" x-text="formData.kategorie"></span>
+                <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-xs font-bold" x-show="formData.raum" x-text="formData.raum"></span>
+                <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-xs font-bold" x-show="formData.objekt" x-text="formData.objekt"></span>
+            </div>
+
+            <div class="space-y-5">
+
+                <div class="relative" @click.away="showDropdown = false">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Liegenschaft / Adresse *</label>
+                    <input
+                        type="text"
+                        name="adresse"
+                        required
+                        x-model="adresseSuche"
+                        @input="showDropdown = true"
+                        @focus="showDropdown = true"
+                        class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none"
+                        placeholder="Tippen Sie Ihre Strasse ein (z.B. Selzach)..."
+                        autocomplete="off"
+                    >
+
+                    <div
+                        x-show="showDropdown && gefilterteLiegenschaften.length > 0"
+                        class="absolute z-50 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto"
+                        style="display: none;"
+                    >
+                        <template x-for="l in gefilterteLiegenschaften" :key="l.id">
+                            <button
+                                type="button"
+                                @click="selectLiegenschaft(l)"
+                                class="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-900 font-bold border-b border-slate-100 transition-colors last:border-0"
+                            >
+                                <i class="fa-solid fa-location-dot text-indigo-500 mr-2"></i> <span x-text="l.text"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Vorname *</label>
+                        <input type="text" name="vorname" required class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none" placeholder="Ihr Vorname">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Nachname *</label>
+                        <input type="text" name="nachname" required class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none" placeholder="Ihr Nachname">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Kurze Beschreibung des Problems *</label>
+                    <textarea name="beschreibung" required rows="3" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none" placeholder="Bitte beschreiben Sie das Anliegen..."></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">E-Mail Adresse *</label>
+                        <input type="email" name="email" required class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none" placeholder="Ihre E-Mail">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Telefonnummer *</label>
+                        <input type="tel" name="telefon" required class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none" placeholder="Für Rückfragen">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Wie sind Sie am besten erreichbar? / Zutritt zur Wohnung *</label>
+                    <select name="erreichbarkeit" required class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none text-slate-700 font-bold">
+                        <option value="telefon">Bitte telefonisch kontaktieren zwecks Termin</option>
+                        <option value="email">Bitte per E-Mail kontaktieren</option>
+                        <option value="schluesselbox">Handwerker darf via Schlüsselbox / Deponierung direkt rein</option>
+                        <option value="immer">Ich bin meistens Zuhause (Zutritt unkompliziert)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Foto hochladen (Optional)</label>
+                    <input type="file" name="foto" accept="image/*" class="w-full bg-slate-50 border border-slate-200 p-2 rounded-xl text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-700 hover:-translate-y-0.5 transition-all text-lg">
+                        Meldung jetzt absenden <i class="fa-solid fa-paper-plane ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,7 +1,9 @@
+# swiss_immo/urls.py
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views  # <-- Import für den Login
 
 # ========================================================
 # 🚀 API SETUP (DJANGO NINJA)
@@ -35,11 +37,11 @@ api.add_router("/mietprozess", mietprozess_router)
 # VIEWS IMPORTE (Klassisches Django / Legacy)
 # ========================================================
 # 1. Landing Page & Public Tickets
-from core.views.ticket_public import public_ticket_view, generate_hallway_poster, index_view
+from core.views.ticket_public import public_ticket_view, generate_hallway_poster, index_view, public_schaden_melden_view
 from core.views.application import public_application_view
 
-# 2. Das neue Admin-Cockpit
-from core.views.dashboard_view import dashboard_view, update_market_data_view, spa_master_view
+# 2. Das neue Admin-Cockpit (Bereinigt um das alte Dashboard)
+from core.views.dashboard_view import update_market_data_view, spa_master_view
 
 # 3. Verträge & Mietzins
 from core.views.contracts import mietzins_anpassung_view, generiere_amtliches_formular
@@ -58,11 +60,13 @@ urlpatterns = [
     # --- STARTSEITE ---
     path('', index_view, name='index'),
 
+    # --- EIGENER SAAS LOGIN ---
+    path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
+
     # --- DIE NEUE WEB-APP (SPA) ---
     path('app/', spa_master_view, name='spa_master'),
 
-    # --- ADMIN & DASHBOARD ---
-    path('admin/dashboard/', dashboard_view, name='admin_dashboard'),
+    # --- ADMIN-ZUGÄNGE & SYSTEM ---
     path('admin/update-marktdaten/', update_market_data_view, name='update_marktdaten'),
     path('admin/', admin.site.urls),
 
@@ -94,6 +98,9 @@ urlpatterns = [
     # --- QR CODE SYSTEM (Aushang) ---
     path('report/<int:liegenschaft_id>/', public_ticket_view, name='public_report'),
     path('liegenschaft/<int:liegenschaft_id>/poster/', generate_hallway_poster, name='hallway_poster'),
+
+    # --- ÖFFENTLICHES SCHADENSFORMULAR (NEU) ---
+    path('schaden/melden/', public_schaden_melden_view, name='schaden_melden'),
 
     # --- ÖFFENTLICHES BEWERBUNGSFORMULAR ---
     path('bewerben/<int:einheit_id>/', public_application_view, name='public_bewerbung'),

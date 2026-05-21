@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arbeitsauftrag</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 20px; line-height: 1.6;">
+
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;">
+
+        <div style="background-color: #0f172a; padding: 24px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 18px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;">🛠️ Arbeitsauftrag / Instandstellung</h1>
+            <p style="color: #94a3b8; margin: 5px 0 0 0; font-size: 13px;">swissImmo Immobilienverwaltung</p>
+        </div>
+
+        <div style="padding: 32px;">
+            <p style="margin-top: 0; font-size: 15px;">
+                Sehr geehrte Damen und Herren,<br><br>
+                Im Namen der Eigentümerschaft beauftragen wir Sie hiermit mit der Behebung des unten stehenden Schadens. Bitte setzen Sie sich zwecks Terminvereinbarung direkt mit der meldenden Person in Verbindung.
+            </p>
+
+            <div style="margin-top: 28px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 20px;">
+                <h3 style="margin: 0 0 10px 0; font-size: 13px; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">📍 Betroffenes Objekt</h3>
+                <table style="width: 100%; font-size: 14px; color: #1e293b;" cellpadding="2" cellspacing="0">
+                    <tr>
+                        <td style="width: 110px; font-weight: 600; color: #64748b;">Liegenschaft:</td>
+                        <td><strong>{{ ticket.liegenschaft.strasse }}</strong>, {{ ticket.liegenschaft.plz }} {{ ticket.liegenschaft.ort }}</td>
+                    </tr>
+                    {% if ticket.betroffene_einheit %}
+                    <tr>
+                        <td style="font-weight: 600; color: #64748b;">Objekt/Etage:</td>
+                        <td>{{ ticket.betroffene_einheit.bezeichnung }} ({% if ticket.betroffene_einheit.etage %}{{ ticket.betroffene_einheit.etage }}{% else %}Allgemein{% endif %})</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+
+            <div style="margin-top: 20px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 20px;">
+                <h3 style="margin: 0 0 10px 0; font-size: 13px; color: #e11d48; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">🚨 Schadendetails (Ticket #{{ ticket.id }})</h3>
+                <table style="width: 100%; font-size: 14px; color: #1e293b; margin-bottom: 12px;" cellpadding="2" cellspacing="0">
+                    <tr>
+                        <td style="width: 110px; font-weight: 600; color: #64748b;">Kategorie:</td>
+                        <td>{{ ticket.kategorie|capfirst }}</td>
+                    </tr>
+                    {% if ticket.raum %}
+                    <tr>
+                        <td style="font-weight: 600; color: #64748b;">Ort / Raum:</td>
+                        <td>{{ ticket.raum|capfirst }} {% if ticket.objekt %}(an {{ ticket.objekt|capfirst }}){% endif %}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+
+                <div style="border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 14px; color: #0f172a;">
+                    <strong>Problembeschrieb:</strong><br>
+                    <div style="margin-top: 4px; font-style: italic; color: #334155; white-space: pre-line;">{{ ticket.beschreibung }}</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px 20px;">
+                <h3 style="margin: 0 0 10px 0; font-size: 13px; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">📞 Kontakt zur Terminvereinbarung</h3>
+                <table style="width: 100%; font-size: 14px; color: #14532d;" cellpadding="2" cellspacing="0">
+                    <tr>
+                        <td style="width: 110px; font-weight: 600; color: #166534;">Ansprechperson:</td>
+                        <td>
+                            {% if ticket.gemeldet_von %}
+                                {{ ticket.gemeldet_von.vorname }} {{ ticket.gemeldet_von.nachname }}
+                            {% else %}
+                                {{ ticket.melder_vorname }} {{ ticket.melder_nachname }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% if ticket.tel_melder %}
+                    <tr>
+                        <td style="font-weight: 600; color: #166534;">Telefon:</td>
+                        <td><a href="tel:{{ ticket.tel_melder }}" style="color: #15803d; text-decoration: underline;">{{ ticket.tel_melder }}</a></td>
+                    </tr>
+                    {% endif %}
+                    {% if ticket.email_melder %}
+                    <tr>
+                        <td style="font-weight: 600; color: #166534;">E-Mail:</td>
+                        <td><a href="mailto:{{ ticket.email_melder }}" style="color: #15803d; text-decoration: underline;">{{ ticket.email_melder }}</a></td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td style="font-weight: 600; color: #166534; vertical-align: top;">Zutritt / Regie:</td>
+                        <td style="font-weight: bold; color: #166534;">
+                            {% if ticket.zutritt == 'telefon' %}
+                                Vorab telefonisch avisieren (Mieter anwesend)
+                            {% else %}
+                                Schlüssel via Verwaltung vorhanden / Passpartout freigegeben
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            {% if foto_url %}
+            <div style="margin-top: 24px; text-align: center;">
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 8px; text-align: left; font-weight: 600;">📷 Schadenfoto des Mieters:</p>
+                <a href="{{ foto_url }}" target="_blank">
+                    <img src="{{ foto_url }}" alt="Schadenfoto" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid #e2e8f0; object-fit: contain;">
+                </a>
+                <p style="font-size: 11px; color: #94a3b8; margin-top: 4px;">(Für Vollbildansicht auf das Bild klicken)</p>
+            </div>
+            {% endif %}
+
+            <div style="margin-top: 32px; border-top: 1px dashed #cbd5e1; padding-top: 16px; font-size: 12px; color: #64748b;">
+                <strong>Rechnungsadresse:</strong> Bitte stellen Sie die Rechnung nach Abschluss der Arbeiten elektronisch an unsere offizielle Verwaltungsadresse aus und vermerken Sie zwingend die Ticket-Nr. <strong>#{{ ticket.id }}</strong> sowie die Liegenschaftsadresse auf dem Beleg.
+            </div>
+
+            <p style="margin-top: 28px; margin-bottom: 0; font-size: 14px;">
+                Besten Dank für die speditive Erledigung.<br><br>
+                Freundliche Grüsse<br>
+                <strong>{{ verwaltung_name }}</strong><br>
+                <span style="color: #64748b; font-size: 12px;">swissImmo Immobilien</span>
+            </p>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8;">
+        Diese E-Mail wurde automatisch aus dem ERP-System der swissImmo Verwaltung generiert.
+    </div>
+
+</body>
+</html>

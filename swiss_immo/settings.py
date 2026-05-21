@@ -1,3 +1,4 @@
+# swiss_immo/settings.py
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -20,7 +21,7 @@ load_dotenv(env_path)
 # ==========================================
 
 def badge_ticket_count(request):
-    """Zählt ungelesene Tickets + neue Nachrichten für Sidebar-Badge"""
+    """Zählt ungelesene Tickets + neue Nachrichten für Sidebar-Badge (Backup-Admin)"""
     from tickets.models import SchadenMeldung, TicketNachricht
 
     try:
@@ -53,20 +54,20 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # ==========================================
 
 INSTALLED_APPS = [
-    # --- MODERNES DESIGN ---
+    # --- MODERNES DESIGN (Für Fallback-Admin) ---
     "unfold",
     "unfold.contrib.filters",
     "unfold.contrib.forms",
     "unfold.contrib.import_export",
 
-    # --- Deine Apps (NEUE ARCHITEKTUR) ---
-    'core',         # utils & views
+    # --- Deine Apps (NEUE SPA-ARCHITEKTUR) ---
+    'core',         # utils & views (Die Zentrale)
     'crm',          # Personendaten & Firmen
     'portfolio',    # Liegenschaften & Einheiten
     'rentals',      # Verträge & Leerstände
     'finance',      # Rechnungen & Buchhaltung
     'tickets',      # Schadensmeldungen
-    'mietprozess',
+    'mietprozess',  # Bewerber- & Mietprozesse
 
     # --- Standard Django ---
     'django.contrib.admin',
@@ -129,7 +130,7 @@ DATABASES = {
 }
 
 # ==========================================
-# 7. SPRACHE & ZEIT
+# 7. SPRACHE, ZEIT & REDIRECTS
 # ==========================================
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -141,6 +142,11 @@ LANGUAGE_CODE = 'de-ch'
 TIME_ZONE = 'Europe/Zurich'
 USE_I18N = True
 USE_TZ = True
+
+# --- LOGIN / LOGOUT REDIRECTS FÜR SPA ---
+LOGIN_URL = '/login/'           # <-- NEU: Hierhin geht's, wenn man nicht eingeloggt ist
+LOGIN_REDIRECT_URL = '/app/'
+LOGOUT_REDIRECT_URL = '/'
 
 # ==========================================
 # 8. STATIC & MEDIA
@@ -164,7 +170,7 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 DOCUSEAL_API_KEY = os.getenv('DOCUSEAL_API_KEY')
 DOCUSEAL_URL = "https://api.docuseal.com"
 
-# SMTP KONFIGURATION (HOSTSTAR)
+# SMTP KONFIGURATION (HOSTSTAR) - BLEIBT AKTIV!
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'lx37.hoststar.hosting'
 EMAIL_PORT = 587
@@ -180,7 +186,7 @@ DEFAULT_FROM_EMAIL = f'ImmoSwiss Verwaltung <{os.getenv("EMAIL_HOST_USER", "info
 UNFOLD = {
     "SITE_TITLE": "SwissImmo Verwaltung",
     "SITE_HEADER": "SwissImmo",
-    "SITE_URL": reverse_lazy("admin_dashboard"),
+    "SITE_URL": reverse_lazy("spa_master"), # Leitet Logo-Klick direkt in die App
     "SITE_ICON": "real_estate_agent",
 
     # --- GLOBALER CLEAN-LOOK (RAHMENLOS) & INLINE-EDITING ---
@@ -209,60 +215,13 @@ UNFOLD = {
 
     "SIDEBAR": {
         "show_search": True,
-        "show_all_applications": False,
+        "show_all_applications": True, # Erlaubt Zugriff auf alle Daten im Notfall
         "navigation": [
             {
-                "title": "Schreibtisch",
+                "title": "Hauptsystem",
                 "separator": True,
                 "items": [
-                    {"title": "Cockpit 🚀", "icon": "dashboard", "link": reverse_lazy("admin_dashboard")},
-                    {"title": "SaaS Portal ✨", "icon": "rocket_launch", "link": reverse_lazy("liegenschaft_liste")},
-                    {
-                        "title": "Tickets & Schäden",
-                        "icon": "build",
-                        "link": reverse_lazy("admin:tickets_schadenmeldung_changelist"),
-                        "badge": badge_ticket_count,
-                    },
-                ],
-            },
-            {
-                "title": "Portfolio & Vermietung",
-                "separator": True,
-                "items": [
-                    {"title": "Liegenschaften", "icon": "domain", "link": reverse_lazy("admin:portfolio_liegenschaft_changelist")},
-                    {"title": "Mietobjekte", "icon": "meeting_room", "link": reverse_lazy("admin:portfolio_einheit_changelist")},
-                    {"title": "Mietverträge", "icon": "contract", "link": reverse_lazy("admin:rentals_mietvertrag_changelist")},
-                    {"title": "Mietzinsanpassungen", "icon": "trending_up", "link": reverse_lazy("admin:rentals_mietzinsanpassung_changelist")},
-                    {"title": "Leerstände", "icon": "key_off", "link": reverse_lazy("admin:rentals_leerstand_changelist")},
-                ],
-            },
-            {
-                "title": "CRM & Kontakte",
-                "separator": True,
-                "items": [
-                    {"title": "Mieter", "icon": "groups", "link": reverse_lazy("admin:crm_mieter_changelist")},
-                    {"title": "Handwerker", "icon": "engineering", "link": reverse_lazy("admin:crm_handwerker_changelist")},
-                    {"title": "Mandanten (Eigentümer)", "icon": "business_center", "link": reverse_lazy("admin:crm_mandant_changelist")},
-                ],
-            },
-            {
-                "title": "Finanzen",
-                "separator": True,
-                "items": [
-                    {"title": "Mieteinnahmen", "icon": "savings", "link": reverse_lazy("admin:finance_zahlungseingang_changelist")},
-                    {"title": "Mietzins-Kontrolle", "icon": "fact_check", "link": reverse_lazy("admin:finance_mietzinskontrolle_changelist")},
-                    {"title": "Kreditoren", "icon": "account_balance_wallet", "link": reverse_lazy("admin:finance_kreditorenrechnung_changelist")},
-                    {"title": "Nebenkosten", "icon": "receipt_long", "link": reverse_lazy("admin:finance_abrechnungsperiode_changelist")},
-                    {"title": "Erfolgsrechnung", "icon": "analytics", "link": reverse_lazy("admin:finance_jahresabschluss_changelist")},
-                ],
-            },
-            {
-                "title": "System",
-                "separator": True,
-                "items": [
-                    {"title": "Kontenplan", "icon": "account_balance", "link": reverse_lazy("admin:finance_buchungskonto_changelist")},
-                    {"title": "Eigene Verwaltung", "icon": "settings", "link": reverse_lazy("admin:crm_verwaltung_changelist")},
-                    {"title": "Benutzer & Rechte", "icon": "lock", "link": reverse_lazy("admin:auth_user_changelist")},
+                    {"title": "Zurück zur App 🚀", "icon": "dashboard", "link": reverse_lazy("spa_master")},
                 ],
             },
         ],

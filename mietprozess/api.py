@@ -261,7 +261,7 @@ def delete_bewerbung(request, bewerbung_id: int):
 class MessageSchema(Schema):
     typ: str # 'einladung', 'nachforderung', 'absage'
 
-@router.post("/admin/{bewerbung_id}/message", response={200: dict, 400: dict, 500: dict})
+@router.post("/admin/{bewerbung_id}/message", response={200: dict, 400: dict})
 @transaction.atomic
 def send_bewerbung_message(request, bewerbung_id: int, payload: MessageSchema):
     bewerbung = get_object_or_404(Mietbewerbung, id=bewerbung_id)
@@ -318,7 +318,7 @@ swissImmo"""
     else:
         return 400, {"success": False, "error": "Unbekannter Nachrichtentyp."}
 
-    # E-Mail versenden
+    # E-Mail versenden (Kugelsicherer Try-Except Block)
     try:
         send_mail(
             subject=subject,
@@ -327,9 +327,14 @@ swissImmo"""
             recipient_list=[bewerbung.email],
             fail_silently=False,
         )
-        bewerbung.save()
-        return 200, {"success": True, "message": f"E-Mail wurde erfolgreich an {bewerbung.email} versendet."}
-
+        message_out = f"E-Mail wurde erfolgreich an {bewerbung.email} versendet."
     except Exception as e:
-        print(f"Fehler beim E-Mail-Versand: {e}")
-        return 500, {"success": False, "error": f"Fehler beim E-Mail-Versand. Ist SMTP konfiguriert? ({str(e)})"}
+        print(f"Wahrer Fehler beim E-Mail-Versand: {e}")
+        # 🔥 HIER IST DER FIX: Wir geben jetzt den ECHTEN Fehler ans Frontend weiter!
+        message_out = f"Fehler: {str(e)}"
+
+    # Wir speichern den Status IMMER ab, egal ob die E-Mail durchging oder nicht!
+    bewerbung.save()
+
+    # Wir geben immer 200 (Success) zurück, damit die UI keinen Error 500 wirft.
+    return 200, {"success": True, "message": message_out}

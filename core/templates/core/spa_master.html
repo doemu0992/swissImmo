@@ -2,26 +2,48 @@
 <html lang="de">
 <head>
     {% include 'core/includes/head.html' %}
+    <style>
+        /* Verhindert kurzes Aufblitzen des Menüs beim Neuladen der Seite */
+        [v-cloak] { display: none !important; }
+    </style>
 </head>
-<body class="bg-[#f8fafc] h-screen overflow-hidden text-slate-900">
+<body class="bg-[#f8fafc] h-[100dvh] overflow-hidden text-slate-900">
     {% csrf_token %}
 
-    <div id="app" class="flex h-screen relative">
+    <div id="app" class="flex h-[100dvh] relative w-full overflow-hidden">
         {% include 'core/components/toasts_and_loader.html' %}
 
-        {% include 'core/includes/sidebar.html' %}
+        <div v-cloak v-show="mobileMenuOpen" @click="mobileMenuOpen = false" class="fixed inset-0 bg-slate-900/60 z-40 md:hidden backdrop-blur-sm transition-opacity"></div>
 
-        <div class="flex-1 flex flex-col h-screen overflow-y-auto relative">
+        <div :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 shadow-2xl md:shadow-none h-[100dvh] overflow-y-auto bg-[#0f172a] flex-shrink-0">
+            {% include 'core/includes/sidebar.html' %}
+        </div>
+
+        <div class="flex-1 flex flex-col h-[100dvh] overflow-y-auto relative min-w-0">
+
+            <div class="md:hidden flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-30 shadow-sm">
+                <div class="font-black text-slate-800 text-lg tracking-tight flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
+                        <i class="fa-solid fa-building text-sm"></i>
+                    </div>
+                    swissImmo
+                </div>
+                <button @click="mobileMenuOpen = true" class="text-slate-600 hover:text-indigo-600 focus:outline-none p-2 rounded-xl bg-slate-50 border border-slate-200">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+            </div>
+
             {% include 'core/includes/header.html' %}
 
-            <main class="p-10 max-w-7xl mx-auto w-full">
+            <main class="p-4 md:p-10 max-w-7xl mx-auto w-full">
                 {% include 'core/tabs/home.html' %}
                 {% include 'core/tabs/portfolio.html' %}
                 {% include 'core/tabs/rentals.html' %}
                 {% include 'core/tabs/crm.html' %}
                 {% include 'core/tabs/finance.html' %}
                 {% include 'core/tabs/tickets.html' %}
-                {% include 'core/tabs/mietprozess.html' %} </main>
+                {% include 'core/tabs/mietprozess.html' %}
+            </main>
         </div>
 
         {% include 'core/components/side_panels.html' %}
