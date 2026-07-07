@@ -23,9 +23,9 @@
 <div class="flex min-h-[100dvh]">
 
     <!-- SIDEBAR: identisch zur App, damit alles wie EINE Anwendung wirkt -->
-    <aside class="w-64 bg-petrol-900 text-white flex-col min-h-[100dvh] hidden md:flex flex-shrink-0">
+    <aside class="w-64 bg-slate-900 text-white flex-col min-h-[100dvh] hidden md:flex flex-shrink-0">
         <a href="/app/" class="p-8 text-2xl font-black flex items-center gap-3 tracking-tighter">
-            <div class="w-9 h-9 rounded-xl bg-coral-500 flex items-center justify-center text-sm shadow-lg shadow-coral-500/40">
+            <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-sm shadow-lg shadow-indigo-600/40">
                 <i class="fa-solid fa-building"></i>
             </div>
             <span>swissImmo</span>
@@ -63,8 +63,8 @@
         <!-- TOPBAR mit Breadcrumb -->
         <header class="h-16 px-6 md:px-10 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-40">
             <nav class="flex items-center gap-2 text-sm min-w-0">
-                <a href="/app/" class="text-slate-400 hover:text-petrol-600 transition-colors md:hidden"><i class="fa-solid fa-arrow-left"></i></a>
-                <a href="/app/" class="text-slate-400 hover:text-petrol-600 transition-colors hidden md:inline">Übersicht</a>
+                <a href="/app/" class="text-slate-400 hover:text-indigo-600 transition-colors md:hidden"><i class="fa-solid fa-arrow-left"></i></a>
+                <a href="/app/" class="text-slate-400 hover:text-indigo-600 transition-colors hidden md:inline">Übersicht</a>
                 <i class="fa-solid fa-chevron-right text-[9px] text-slate-300 hidden md:inline"></i>
                 {% block breadcrumb %}<span class="font-semibold text-slate-700 truncate">Dossier</span>{% endblock %}
             </nav>

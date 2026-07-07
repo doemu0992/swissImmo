@@ -1,9 +1,9 @@
 {% extends 'core/dossier/base.html' %}
 {% load chf %}
 {% block title %}Vertrag {{ v.mieter.display_name }}{% endblock %}
-{% block nav_rentals %}bg-white/10 text-white{% endblock %}
+{% block nav_rentals %}bg-indigo-600 text-white shadow-md{% endblock %}
 {% block breadcrumb %}
-    <a href="/app/?tab=rentals" class="text-slate-400 hover:text-petrol-600 transition-colors">Mietverträge</a>
+    <a href="/app/?tab=rentals" class="text-slate-400 hover:text-indigo-600 transition-colors">Mietverträge</a>
     <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i>
     <span class="font-semibold text-slate-700 truncate">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</span>
 {% endblock %}
@@ -13,19 +13,19 @@
 <!-- SEITENKOPF -->
 <div class="bg-white rounded-xl border border-slate-200 p-6">
     <div class="flex flex-col md:flex-row md:items-center gap-5">
-        <div class="w-14 h-14 rounded-xl bg-petrol-50 text-petrol-600 flex items-center justify-center text-2xl shrink-0">
+        <div class="w-14 h-14 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl shrink-0">
             <i class="fa-solid fa-file-signature"></i>
         </div>
         <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap mb-1">
                 <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {% if v.status == 'aktiv' %}bg-emerald-50 text-emerald-700{% elif v.status == 'entwurf' %}bg-slate-100 text-slate-500{% else %}bg-amber-50 text-amber-700{% endif %}">{{ v.get_status_display }}</span>
                 <span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Signatur: {{ v.get_sign_status_display }}</span>
-                {% if v.mietzinspotenzial == 'decrease' %}<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-coral-50 text-coral-600">Senkungsanspruch</span>{% elif v.mietzinspotenzial == 'increase' %}<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">Erhöhungspotenzial</span>{% endif %}
+                {% if v.mietzinspotenzial == 'decrease' %}<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-rose-50 text-rose-600">Senkungsanspruch</span>{% elif v.mietzinspotenzial == 'increase' %}<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">Erhöhungspotenzial</span>{% endif %}
             </div>
             <h1 class="text-2xl font-bold text-slate-900">
-                <a href="{% url 'dossier_mieter' v.mieter.id %}" class="hover:text-petrol-600 transition-colors">{{ v.mieter.display_name }}</a>
+                <a href="{% url 'dossier_mieter' v.mieter.id %}" class="hover:text-indigo-600 transition-colors">{{ v.mieter.display_name }}</a>
                 <span class="text-slate-300 font-light mx-1">·</span>
-                <a href="{% url 'dossier_liegenschaft' v.einheit.liegenschaft.id %}" class="hover:text-petrol-600 transition-colors">{{ v.einheit }}</a>
+                <a href="{% url 'dossier_liegenschaft' v.einheit.liegenschaft.id %}" class="hover:text-indigo-600 transition-colors">{{ v.einheit }}</a>
             </h1>
             <p class="text-sm text-slate-500 mt-0.5">seit {{ v.beginn|date:"d.m.Y" }}{% if v.ende %} · bis {{ v.ende|date:"d.m.Y" }}{% endif %}{% if v.mitmieter_name %} · Mitmieter: {{ v.mitmieter_name }}{% endif %}</p>
         </div>
@@ -37,14 +37,14 @@
 
     <!-- AKTIONEN -->
     <div class="flex flex-wrap gap-2 mt-5 pt-5 border-t border-slate-100">
-        <a href="/vertrag/{{ v.id }}/pdf/" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-petrol-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-file-pdf mr-1.5"></i>Vertrag PDF</a>
+        <a href="/vertrag/{{ v.id }}/pdf/" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-file-pdf mr-1.5"></i>Vertrag PDF</a>
         {% if kann_schreiben %}
-        <a href="/vertrag/{{ v.id }}/qr/" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-petrol-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-qrcode mr-1.5"></i>QR-Rechnung</a>
-        <a href="/vertrag/{{ v.id }}/mahnung/" target="_blank" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-petrol-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Mahnung PDF</a>
+        <a href="/vertrag/{{ v.id }}/qr/" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-qrcode mr-1.5"></i>QR-Rechnung</a>
+        <a href="/vertrag/{{ v.id }}/mahnung/" target="_blank" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Mahnung PDF</a>
         {% endif %}
         {% if kann_verwalten %}
-        <a href="/mietzins/{{ v.id }}/" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-petrol-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-percent mr-1.5"></i>Mietzinsanpassung</a>
-        <a href="/vertrag/{{ v.id }}/senden/" onclick="return confirm('Vertrag jetzt via DocuSeal an {{ v.mieter.email|default:'den Mieter' }} senden?')" class="bg-coral-500 hover:bg-coral-600 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-colors shadow-sm"><i class="fa-solid fa-paper-plane mr-1.5"></i>Via DocuSeal senden</a>
+        <a href="/mietzins/{{ v.id }}/" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-percent mr-1.5"></i>Mietzinsanpassung</a>
+        <a href="/vertrag/{{ v.id }}/senden/" onclick="return confirm('Vertrag jetzt via DocuSeal an {{ v.mieter.email|default:'den Mieter' }} senden?')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-colors shadow-sm"><i class="fa-solid fa-paper-plane mr-1.5"></i>Via DocuSeal senden</a>
         {% endif %}
     </div>
 </div>
@@ -103,10 +103,10 @@
     <!-- Rechnungen, Zahlungen, Historie, Dokumente -->
     <div class="lg:col-span-2 space-y-6">
 
-        <div class="bg-white rounded-xl border {% if total_offen > 0 %}border-coral-100{% else %}border-slate-200{% endif %}">
+        <div class="bg-white rounded-xl border {% if total_offen > 0 %}border-rose-100{% else %}border-slate-200{% endif %}">
             <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700 flex justify-between">
                 <span>Rechnungen (Sollstellungen)</span>
-                {% if total_offen > 0 %}<span class="text-coral-600">CHF {{ total_offen|chf }} offen</span>{% endif %}
+                {% if total_offen > 0 %}<span class="text-rose-600">CHF {{ total_offen|chf }} offen</span>{% endif %}
             </div>
             <table class="w-full text-sm">
                 <tbody class="divide-y divide-slate-50">
@@ -116,7 +116,7 @@
                         <td class="py-2.5 text-slate-400 text-xs whitespace-nowrap">{% if r.faellig_am %}fällig {{ r.faellig_am|date:"d.m.Y" }}{% endif %}</td>
                         <td class="py-2.5 text-right font-semibold whitespace-nowrap">CHF {{ r.betrag|chf }}</td>
                         <td class="px-5 py-2.5 text-right">
-                            <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {% if r.status == 'bezahlt' %}bg-emerald-50 text-emerald-700{% elif r.status == 'teilbezahlt' %}bg-amber-50 text-amber-700{% else %}bg-coral-50 text-coral-600{% endif %}">{{ r.get_status_display }}</span>
+                            <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {% if r.status == 'bezahlt' %}bg-emerald-50 text-emerald-700{% elif r.status == 'teilbezahlt' %}bg-amber-50 text-amber-700{% else %}bg-rose-50 text-rose-600{% endif %}">{{ r.get_status_display }}</span>
                         </td>
                     </tr>
                 {% empty %}
@@ -166,7 +166,7 @@
                 <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Dokumente</div>
                 <div class="divide-y divide-slate-50">
                 {% for d in dokumente %}
-                    <a {% if d.datei %}href="{{ d.datei.url }}" target="_blank"{% endif %} class="flex items-center gap-3 px-5 py-2.5 hover:text-petrol-600 transition-colors">
+                    <a {% if d.datei %}href="{{ d.datei.url }}" target="_blank"{% endif %} class="flex items-center gap-3 px-5 py-2.5 hover:text-indigo-600 transition-colors">
                         <i class="fa-solid fa-file-lines text-slate-300"></i>
                         <span class="text-sm flex-1 truncate">{{ d.bezeichnung }}</span>
                         <span class="text-xs text-slate-400">{{ d.datum|date:"d.m.y" }}</span>
