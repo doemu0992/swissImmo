@@ -168,6 +168,9 @@
         },
         methods: {
             getCsrf() { return document.querySelector('[name=csrfmiddlewaretoken]').value; },
+            geheZuDossier(typ, id) {
+                window.location.href = '/dossier/' + typ + '/' + id + '/';
+            },
             switchTab(t) {
                 this.activeTab = t;
                 this.selectedEinheit = null;

@@ -10,13 +10,13 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="v in filteredVertraege" :key="v.id" @click="openVertragDeepDive(v)" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer group">
+        <div v-for="v in filteredVertraege" :key="v.id" @click="geheZuDossier('vertrag', v.id)" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer group">
             <div class="flex items-start justify-between mb-4">
                 <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl transition-all">
                     <i class="fa-solid fa-file-signature"></i>
                 </div>
                 <div class="flex items-center gap-2">
-                    <a :href="'/dossier/vertrag/' + v.id" @click.stop class="text-slate-300 hover:text-indigo-600 transition-colors" title="Dossier öffnen"><i class="fa-solid fa-folder-open"></i></a>
+                    <button @click.stop="openVertragDeepDive(v)" class="text-slate-300 hover:text-indigo-600 transition-colors" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
                     <span :class="v.status === 'aktiv' ? 'bg-emerald-100 text-emerald-700' : (v.status === 'entwurf' ? 'bg-slate-100 text-slate-500' : (v.status === 'gekuendigt' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'))" class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg">
                         {% verbatim %}{{ v.status_display }}{% endverbatim %}
                     </span>

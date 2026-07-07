@@ -17,7 +17,7 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <div v-for="m in filteredMieter" :key="m.id" @click="openMieterDeepDive(m)" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer group">
+            <div v-for="m in filteredMieter" :key="m.id" @click="geheZuDossier('mieter', m.id)" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer group">
                 <div class="flex items-start justify-between mb-4">
                     <div :class="m.typ === 'person' ? 'bg-indigo-50 text-indigo-600' : (m.typ === 'firma' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600')" class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-all">
                         <i v-if="m.typ === 'person'" class="fa-solid fa-user"></i>
@@ -25,7 +25,7 @@
                         <i v-if="m.typ === 'verein'" class="fa-solid fa-users"></i>
                     </div>
                     <div class="flex items-center gap-2">
-                        <a :href="'/dossier/mieter/' + m.id" @click.stop class="text-slate-300 hover:text-indigo-600 transition-colors" title="Dossier öffnen"><i class="fa-solid fa-folder-open"></i></a>
+                        <button @click.stop="openMieterDeepDive(m)" class="text-slate-300 hover:text-indigo-600 transition-colors" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
                         <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">{% verbatim %}{{ m.typ }}{% endverbatim %}</span>
                     </div>
                 </div>
