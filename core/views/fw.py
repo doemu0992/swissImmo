@@ -10,13 +10,13 @@ from datetime import date
 from decimal import Decimal
 
 from django.db.models import Q, Sum
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, TEAM_ROLLEN
 from core.views.dashboard_view import _berechne_aufgaben
 from crm.models import Mieter
-from finance.models import DebitorenRechnung
+from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Liegenschaft, Einheit
 from rentals.models import Mietvertrag
 
@@ -352,4 +352,168 @@ def fw_personen(request):
         'typ_filter': typ_filter, 'q': q,
         'typ_chips': [('', 'Alle'), ('person', 'Privatpersonen'), ('firma', 'Firmen'), ('verein', 'Vereine')],
         'mit_vertrag_count': sum(1 for r in rows if r['aktive']),
+    })
+
+
+# ============================================================
+# ETAPPE C: DETAILSEITEN MIT BREADCRUMB + TABS
+# ============================================================
+
+def _vertrag_status_pill(v):
+    label, cls = VERTRAG_PILL.get(v.status, (v.status, 'bg-slate-100 text-slate-500'))
+    return {'label': label, 'cls': cls}
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_liegenschaft_detail(request, pk):
+    from portfolio.models import Unterhalt
+    from portfolio.models import Dokument as PortfolioDokument
+    from rentals.models import Dokument as RentalsDokument
+    from tickets.models import SchadenMeldung
+
+    lg = get_object_or_404(Liegenschaft.objects.select_related('mandant', 'verwaltung'), id=pk)
+    basis = _global_filter(request)
+
+    einheiten_rows = []
+    soll_monat = Decimal('0.00')
+    vermietet = 0
+    for e in lg.einheiten.all().order_by('bezeichnung'):
+        vertrag = (Mietvertrag.objects.filter(einheit=e, status='aktiv')
+                   .select_related('mieter').order_by('-beginn').first())
+        if vertrag:
+            vermietet += 1
+            soll_monat += vertrag.brutto_mietzins
+        einheiten_rows.append({'einheit': e, 'vertrag': vertrag})
+
+    tickets = (SchadenMeldung.objects.filter(liegenschaft=lg)
+               .exclude(status='erledigt').order_by('-erstellt_am')[:10])
+
+    dokumente = []
+    for d in RentalsDokument.objects.filter(liegenschaft=lg).order_by('-datum')[:15]:
+        dokumente.append({'titel': d.bezeichnung or d.titel, 'kategorie': d.kategorie,
+                          'datum': d.datum, 'url': d.datei.url if d.datei else None})
+    for d in PortfolioDokument.objects.filter(liegenschaft=lg).order_by('-datum')[:15]:
+        dokumente.append({'titel': d.titel, 'kategorie': d.kategorie,
+                          'datum': d.datum, 'url': d.datei.url if d.datei else None})
+    dokumente.sort(key=lambda d: d['datum'] or date.min, reverse=True)
+
+    unterhalt = Unterhalt.objects.filter(liegenschaft=lg).order_by('-datum')[:10]
+    perioden = lg.abrechnungen.order_by('-start_datum')[:6]
+
+    dok20 = dokumente[:20]
+    tab_liste = [
+        ('objekte', 'Objekte', len(einheiten_rows)),
+        ('finanzen', 'Finanzen', None),
+        ('unterhalt', 'Unterhalt', unterhalt.count() or None),
+        ('schaeden', 'Schäden', tickets.count() or None),
+        ('dokumente', 'Dokumente', len(dok20) or None),
+    ]
+    return render(request, 'fw/liegenschaft_detail.html', {
+        **basis, 'nav': 'liegenschaften', 'lg': lg,
+        'einheiten_rows': einheiten_rows,
+        'total_einheiten': len(einheiten_rows),
+        'vermietet': vermietet,
+        'leerstand': len(einheiten_rows) - vermietet,
+        'soll_monat': soll_monat,
+        'tickets': tickets,
+        'dokumente': dok20,
+        'unterhalt': unterhalt,
+        'perioden': perioden,
+        'tab_liste': tab_liste,
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_objekt_detail(request, pk):
+    from portfolio.models import Geraet, Zaehler
+    e = get_object_or_404(Einheit.objects.select_related('liegenschaft'), id=pk)
+    basis = _global_filter(request)
+
+    aktiver_vertrag = (Mietvertrag.objects.filter(einheit=e, status='aktiv')
+                       .select_related('mieter').order_by('-beginn').first())
+    if not aktiver_vertrag:
+        aktiver_vertrag = (Mietvertrag.objects
+                           .filter(als_nebenobjekt_in_vertraegen=e, status='aktiv')
+                           .select_related('mieter').order_by('-beginn').first())
+    historie = (Mietvertrag.objects.filter(einheit=e).exclude(status='aktiv')
+                .select_related('mieter').order_by('-beginn')[:10])
+
+    geraete = Geraet.objects.filter(einheit=e).order_by('kategorie')
+    zaehler = Zaehler.objects.filter(einheit=e).order_by('typ')
+
+    tab_liste = [
+        ('uebersicht', 'Übersicht', None),
+        ('historie', 'Historie', historie.count() or None),
+        ('geraete', 'Geräte', geraete.count() or None),
+        ('zaehler', 'Zähler', zaehler.count() or None),
+    ]
+    return render(request, 'fw/objekt_detail.html', {
+        **basis, 'nav': 'objekte', 'e': e,
+        'aktiver_vertrag': aktiver_vertrag,
+        'vertrag_pill': _vertrag_status_pill(aktiver_vertrag) if aktiver_vertrag else None,
+        'historie': historie,
+        'geraete': geraete,
+        'zaehler': zaehler,
+        'tab_liste': tab_liste,
+    })
+
+
+# --- Erstellbare Dokumente pro Vertrag (Fairwalter-Stil) ---
+def _erstellbare_dokumente(v):
+    """Verlinkt die bestehenden PDF-/Prozess-Endpunkte als 'Erstellbare Dokumente'."""
+    docs = [
+        {'titel': 'Mietvertrag (PDF)', 'icon': 'fa-file-contract',
+         'url': f'/vertrag/{v.id}/pdf/', 'sub': 'Kompletter Vertrag als PDF'},
+        {'titel': 'QR-Rechnung', 'icon': 'fa-qrcode',
+         'url': f'/vertrag/{v.id}/qr/', 'sub': 'Einzahlungsschein mit QR-IBAN'},
+        {'titel': 'Mahnung (Art. 257d OR)', 'icon': 'fa-triangle-exclamation',
+         'url': f'/vertrag/{v.id}/mahnung/', 'sub': 'Zahlungsfrist mit Kündigungsandrohung'},
+        {'titel': 'Mietzinsanpassung', 'icon': 'fa-percent',
+         'url': f'/mietzins/{v.id}/', 'sub': 'Amtliches Formular berechnen'},
+    ]
+    return docs
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_vertrag_detail(request, pk):
+    from rentals.models import Dokument as RentalsDokument
+    v = get_object_or_404(
+        Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=pk)
+    basis = _global_filter(request)
+
+    rechnungen = (DebitorenRechnung.objects.filter(vertrag=v)
+                  .exclude(status='storniert').order_by('-datum')[:15])
+    offene = [r for r in rechnungen if r.status in ('offen', 'teilbezahlt')]
+    total_offen = sum((r.offener_betrag for r in offene), Decimal('0.00'))
+
+    zahlungen = (Zahlungseingang.objects.filter(vertrag=v, status='verbucht')
+                 .order_by('-datum_eingang')[:15])
+    anpassungen = v.anpassungen.order_by('-wirksam_ab')[:10]
+    dokumente = RentalsDokument.objects.filter(vertrag=v).order_by('-datum')[:15]
+
+    rechnungs_rows = []
+    for r in rechnungen:
+        label, pill_cls = STATUS_PILL.get(r.status, (r.status, 'bg-slate-100 text-slate-500'))
+        rechnungs_rows.append({'r': r, 'status_label': label, 'pill_cls': pill_cls,
+                               'offen': r.offener_betrag if r.status in ('offen', 'teilbezahlt') else Decimal('0.00')})
+
+    tab_liste = [
+        ('uebersicht', 'Übersicht', None),
+        ('finanzen', 'Finanzen', len(offene) or None),
+        ('mietzins', 'Mietzins', anpassungen.count() or None),
+        ('dokumente', 'Dokumente', None),
+    ]
+    return render(request, 'fw/vertrag_detail.html', {
+        **basis, 'nav': 'vertraege', 'v': v,
+        'vertrag_pill': _vertrag_status_pill(v),
+        'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0')),
+        'rechnungs_rows': rechnungs_rows,
+        'total_offen': total_offen,
+        'anzahl_offen': len(offene),
+        'zahlungen': zahlungen,
+        'anpassungen': anpassungen,
+        'dokumente': dokumente,
+        'nebenobjekte': v.nebenobjekte.all(),
+        'erstellbare_dokumente': _erstellbare_dokumente(v),
+        'tab_liste': tab_liste,
     })

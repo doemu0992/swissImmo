@@ -102,6 +102,22 @@
         </main>
     </div>
 </div>
+<script>
+// Generische Tab-Umschaltung für Detailseiten:
+// Buttons: data-tab="<gruppe>" data-target="<name>"; Panels: id="<gruppe>-<name>"
+function fwTab(gruppe, name) {
+    document.querySelectorAll('[data-panel="' + gruppe + '"]').forEach(function(p) {
+        p.classList.toggle('hidden', p.id !== gruppe + '-' + name);
+    });
+    document.querySelectorAll('[data-tab="' + gruppe + '"]').forEach(function(b) {
+        var aktiv = b.dataset.target === name;
+        b.classList.toggle('border-indigo-600', aktiv);
+        b.classList.toggle('text-indigo-600', aktiv);
+        b.classList.toggle('border-transparent', !aktiv);
+        b.classList.toggle('text-slate-500', !aktiv);
+    });
+}
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>
