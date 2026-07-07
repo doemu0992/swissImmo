@@ -1153,10 +1153,28 @@
                 if(!confirm("Wirklich löschen?")) return;
             },
 
-            // 🔥 NEUE METHODE: STORNIEREN
             async saveZahlung() {
-                const res = await fetch('/api/finance/zahlungen', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() }, body: JSON.stringify(this.newZahlung) });
-                if(res.ok) { this.showPaymentModal = false; this.addToast("Verbucht!"); this.refreshAll(); }
+                // Pflichtfelder prüfen BEVOR wir senden — sonst 422 ohne Feedback
+                if (!this.newZahlung.vertrag_id) { this.addToast("Bitte zuerst einen Mietvertrag auswählen.", "error"); return; }
+                if (!this.newZahlung.betrag || parseFloat(this.newZahlung.betrag) <= 0) { this.addToast("Bitte einen gültigen Betrag eingeben.", "error"); return; }
+                if (!this.newZahlung.datum_eingang) { this.addToast("Bitte ein Datum wählen.", "error"); return; }
+                try {
+                    const res = await fetch('/api/finance/zahlungen', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() }, body: JSON.stringify(this.newZahlung) });
+                    if (res.ok) {
+                        this.showPaymentModal = false; this.addToast("Verbucht!"); this.refreshAll();
+                    } else {
+                        // Fehler NIE stumm verschlucken — Detail aus der API anzeigen
+                        let msg = `Fehler beim Verbuchen (${res.status}).`;
+                        try {
+                            const err = await res.json();
+                            if (err.detail && Array.isArray(err.detail)) {
+                                const felder = err.detail.map(d => d.loc[d.loc.length - 1]).join(', ');
+                                msg = `Eingabe ungültig: ${felder}`;
+                            } else if (err.error) { msg = err.error; }
+                        } catch(e) {}
+                        this.addToast(msg, "error");
+                    }
+                } catch(e) { this.addToast("Netzwerkfehler beim Verbuchen.", "error"); }
             },
             async storniereZahlung(id) {
                 if(!confirm("Zahlung stornieren? Der offene Posten (OP) des Mieters wird wiederhergestellt und das Geld aus der Buchhaltung entfernt.")) return;

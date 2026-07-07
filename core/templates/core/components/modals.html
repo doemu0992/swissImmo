@@ -41,6 +41,7 @@
             <div>
                 <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mietvertrag</label>
                 <select v-model="newZahlung.vertrag_id" class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-emerald-500">
+                    <option :value="null" disabled>— Bitte Mietvertrag wählen —</option>
                     <option v-for="v in vertraege" :key="v.id" :value="v.id">{% verbatim %}{{ v.mieter_name }} ({{ v.einheit_bezeichnung }}){% endverbatim %}</option>
                 </select>
             </div>
