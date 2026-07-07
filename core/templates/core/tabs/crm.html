@@ -24,7 +24,10 @@
                         <i v-if="m.typ === 'firma'" class="fa-solid fa-building"></i>
                         <i v-if="m.typ === 'verein'" class="fa-solid fa-users"></i>
                     </div>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">{% verbatim %}{{ m.typ }}{% endverbatim %}</span>
+                    <div class="flex items-center gap-2">
+                        <a :href="'/dossier/mieter/' + m.id" @click.stop class="text-slate-300 hover:text-indigo-600 transition-colors" title="Dossier öffnen"><i class="fa-solid fa-folder-open"></i></a>
+                        <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">{% verbatim %}{{ m.typ }}{% endverbatim %}</span>
+                    </div>
                 </div>
                 <h3 class="font-black text-lg text-slate-900 leading-tight mb-1 truncate">{% verbatim %}{{ m.display_name }}{% endverbatim %}</h3>
                 <p class="text-xs text-slate-500 font-medium mb-4 truncate">{% verbatim %}{{ m.email || 'Keine E-Mail' }}{% endverbatim %}</p>

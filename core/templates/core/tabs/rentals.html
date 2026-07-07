@@ -15,9 +15,12 @@
                 <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl transition-all">
                     <i class="fa-solid fa-file-signature"></i>
                 </div>
-                <span :class="v.status === 'aktiv' ? 'bg-emerald-100 text-emerald-700' : (v.status === 'entwurf' ? 'bg-slate-100 text-slate-500' : (v.status === 'gekuendigt' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'))" class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg">
-                    {% verbatim %}{{ v.status_display }}{% endverbatim %}
-                </span>
+                <div class="flex items-center gap-2">
+                    <a :href="'/dossier/vertrag/' + v.id" @click.stop class="text-slate-300 hover:text-indigo-600 transition-colors" title="Dossier öffnen"><i class="fa-solid fa-folder-open"></i></a>
+                    <span :class="v.status === 'aktiv' ? 'bg-emerald-100 text-emerald-700' : (v.status === 'entwurf' ? 'bg-slate-100 text-slate-500' : (v.status === 'gekuendigt' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'))" class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg">
+                        {% verbatim %}{{ v.status_display }}{% endverbatim %}
+                    </span>
+                </div>
             </div>
             <h3 class="font-black text-lg text-slate-900 leading-tight mb-1 truncate">{% verbatim %}{{ v.mieter_name }}{% endverbatim %}</h3>
             <p class="text-xs text-slate-500 font-medium mb-4 truncate">{% verbatim %}{{ v.einheit_name }} ({{ v.liegenschaft_name }}){% endverbatim %}</p>

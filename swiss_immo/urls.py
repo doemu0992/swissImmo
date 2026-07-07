@@ -56,6 +56,9 @@ from core.views.dashboard_view import update_market_data_view, spa_master_view
 # 2b. Eigentümer-Portal & Login-Weiche
 from core.views.portal import portal_view, nach_login_view
 
+# 2c. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
+from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
+
 # 3. Verträge & Mietzins
 from core.views.contracts import mietzins_anpassung_view, generiere_amtliches_formular
 
@@ -83,6 +86,11 @@ urlpatterns = [
 
     # --- EIGENTÜMER-PORTAL (read-only, nur eigener Mandant) ---
     path('portal/', portal_view, name='portal'),
+
+    # --- DOSSIER-SEITEN (Team-intern: alles zu einem Mieter/Objekt/Vertrag) ---
+    path('dossier/mieter/<int:mieter_id>/', mieter_dossier, name='dossier_mieter'),
+    path('dossier/liegenschaft/<int:liegenschaft_id>/', liegenschaft_dossier, name='dossier_liegenschaft'),
+    path('dossier/vertrag/<int:vertrag_id>/', vertrag_dossier, name='dossier_vertrag'),
 
     # --- ADMIN-ZUGÄNGE & SYSTEM ---
     path('admin/update-marktdaten/', update_market_data_view, name='update_marktdaten'),

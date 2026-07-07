@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% load chf %}<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="utf-8">
@@ -58,14 +58,14 @@
             <div class="kpi"><div class="wert">{{ liegenschaften|length }}</div><div class="label">Liegenschaften</div></div>
             <div class="kpi"><div class="wert">{{ total_einheiten }}</div><div class="label">Einheiten</div></div>
             <div class="kpi"><div class="wert">{{ total_vermietet }} / {{ total_einheiten }}</div><div class="label">Vermietet</div></div>
-            <div class="kpi"><div class="wert">CHF {{ total_soll|floatformat:2 }}</div><div class="label">Soll-Miete / Monat</div></div>
+            <div class="kpi"><div class="wert">CHF {{ total_soll|chf }}</div><div class="label">Soll-Miete / Monat</div></div>
         </div>
 
         {% for lg in liegenschaften %}
         <div class="card">
             <h2>
                 <span>{{ lg.adresse }}{% if lg.baujahr %} · Bj. {{ lg.baujahr }}{% endif %}</span>
-                <span class="soll">CHF {{ lg.soll_monat|floatformat:2 }} / Mt.</span>
+                <span class="soll">CHF {{ lg.soll_monat|chf }} / Mt.</span>
             </h2>
             <table>
                 <thead>
@@ -79,9 +79,9 @@
                     <tr>
                         <td>{{ e.bezeichnung }}</td>
                         <td>{{ e.typ }}</td>
-                        <td>{% if e.zimmer %}{{ e.zimmer }} Zi.{% endif %}{% if e.flaeche %} · {{ e.flaeche|floatformat:0 }} m²{% endif %}</td>
+                        <td>{% if e.zimmer %}{{ e.zimmer }} Zi.{% endif %}{% if e.flaeche %} · {{ e.flaeche|chf:0 }} m²{% endif %}</td>
                         <td>{% if e.mieter %}{{ e.mieter }}{% if e.seit %} <span style="color:#94a3b8;">(seit {{ e.seit|date:"d.m.Y" }})</span>{% endif %}{% else %}<span class="leer">Leerstand</span>{% endif %}</td>
-                        <td class="num">{% if e.brutto %}CHF {{ e.brutto|floatformat:2 }}{% else %}—{% endif %}</td>
+                        <td class="num">{% if e.brutto %}CHF {{ e.brutto|chf }}{% else %}—{% endif %}</td>
                     </tr>
                 {% empty %}
                     <tr><td colspan="5" style="color:#94a3b8;">Keine Einheiten erfasst.</td></tr>
