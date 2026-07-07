@@ -40,6 +40,12 @@ class Buchung(models.Model):
     datum = models.DateField(default=timezone.now)
     beleg_text = models.CharField(max_length=255)
 
+    # Audit-Trail: wer hat diese Buchung ausgelöst (None = System/Migration)
+    erstellt_von = models.ForeignKey(
+        'auth.User', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='+', verbose_name="Erstellt von"
+    )
+
     # Optional: Verknüpfung zur Liegenschaft (für objektbezogene Auswertungen)
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True, related_name='buchungen')
 
@@ -310,6 +316,12 @@ class Zahlungseingang(models.Model):
     buchungs_monat = models.DateField("Für Monat/Jahr", null=True)
     bemerkung = models.CharField(max_length=255, blank=True, default='')
     erstellt_am = models.DateTimeField(default=timezone.now)
+
+    # Audit-Trail: wer hat die Zahlung erfasst (None = System/Import)
+    erstellt_von = models.ForeignKey(
+        'auth.User', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='+', verbose_name="Erfasst von"
+    )
 
     class Meta: db_table = 'core_zahlungseingang'
 

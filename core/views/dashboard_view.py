@@ -6,7 +6,8 @@ from finance.models import Zahlungseingang
 from django.shortcuts import render, redirect
 from django.db.models import Sum, Count, Q
 from django.contrib.auth.decorators import login_required
-from django.contrib.admin.views.decorators import staff_member_required
+from core.auth import (rolle_erforderlich, hat_rolle, ist_eigentuemer,
+                       ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG, TEAM_ROLLEN)
 from django.contrib import messages
 from django.utils import timezone
 from django.http import HttpResponse
@@ -17,7 +18,7 @@ from decimal import Decimal
 # Import für den Marktdaten-Sync
 from core.utils.market_data import update_verwaltung_rates
 
-@staff_member_required
+@rolle_erforderlich(ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG)
 def update_market_data_view(request):
     """
     Startet den manuellen Import von BWO (Zins) und BFS (LIK).
@@ -34,13 +35,18 @@ def update_market_data_view(request):
     return redirect('spa_master')
 
 
-@login_required(login_url='/admin/login/')
+@login_required
 def spa_master_view(request):
     """
     NEUE LOGIK: Für unser Vue.js Cockpit (Single Page Application).
     Nutzt dieselben Berechnungen, sendet sie aber an spa_master.html.
-    Sicher geschützt via Login-Zwang.
+    Zugriff: Team-Rollen (Verwaltung/Sachbearbeitung/Lesend) + Superuser.
+    Eigentümer-Logins werden ins Portal umgeleitet.
     """
+    if ist_eigentuemer(request.user) and not hat_rolle(request.user, TEAM_ROLLEN):
+        return redirect('portal')
+    if not hat_rolle(request.user, TEAM_ROLLEN):
+        return redirect('login')
     try:
         context = _generate_dashboard_context()
         return render(request, 'core/spa_master.html', context)

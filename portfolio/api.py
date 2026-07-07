@@ -10,6 +10,8 @@ from .models import Liegenschaft, Einheit, Geraet, Zaehler, Schluessel, Unterhal
 from .schemas import LiegenschaftListSchema, LiegenschaftDetailSchema, LiegenschaftUpdateSchema, EinheitSchemaOut, EinheitCreateSchema
 from .services import sync_liegenschaft_with_gwr
 
+from core.auth import auth_schreiben, auth_verwaltung, log_aktion
+
 router = Router(tags=["Portfolio"])
 
 # ========================================================
@@ -23,7 +25,7 @@ def list_liegenschaften(request):
 def get_liegenschaft(request, liegenschaft_id: int):
     return get_object_or_404(Liegenschaft, id=liegenschaft_id)
 
-@router.post("/liegenschaften", response={201: LiegenschaftListSchema})
+@router.post("/liegenschaften", response={201: LiegenschaftListSchema}, auth=auth_schreiben)
 def create_liegenschaft(request, payload: LiegenschaftUpdateSchema):
     neue_liegenschaft = Liegenschaft.objects.create(**payload.dict(exclude_unset=True))
     try:
@@ -32,7 +34,7 @@ def create_liegenschaft(request, payload: LiegenschaftUpdateSchema):
         pass
     return 201, neue_liegenschaft
 
-@router.put("/liegenschaften/{liegenschaft_id}", response={200: dict})
+@router.put("/liegenschaften/{liegenschaft_id}", response={200: dict}, auth=auth_schreiben)
 def update_liegenschaft(request, liegenschaft_id: int, payload: LiegenschaftUpdateSchema):
     l = get_object_or_404(Liegenschaft, id=liegenschaft_id)
     for k, v in payload.dict(exclude_unset=True).items():
@@ -40,9 +42,11 @@ def update_liegenschaft(request, liegenschaft_id: int, payload: LiegenschaftUpda
     l.save()
     return 200, {"success": True}
 
-@router.delete("/liegenschaften/{liegenschaft_id}", response={204: None})
+@router.delete("/liegenschaften/{liegenschaft_id}", response={204: None}, auth=auth_verwaltung)
 def delete_liegenschaft(request, liegenschaft_id: int):
-    get_object_or_404(Liegenschaft, id=liegenschaft_id).delete()
+    lg = get_object_or_404(Liegenschaft, id=liegenschaft_id)
+    log_aktion(request, "Liegenschaft gelöscht", str(lg), f"Liegenschaft-ID {lg.id}")
+    lg.delete()
     return 204, None
 
 
@@ -53,13 +57,13 @@ def delete_liegenschaft(request, liegenschaft_id: int):
 def get_einheit(request, einheit_id: int):
     return get_object_or_404(Einheit, id=einheit_id)
 
-@router.post("/liegenschaften/{liegenschaft_id}/einheiten", response={201: dict})
+@router.post("/liegenschaften/{liegenschaft_id}/einheiten", response={201: dict}, auth=auth_schreiben)
 def create_einheit(request, liegenschaft_id: int, payload: EinheitCreateSchema):
     data = payload.dict(exclude_unset=True)
     Einheit.objects.create(liegenschaft=get_object_or_404(Liegenschaft, id=liegenschaft_id), **data)
     return 201, {"success": True}
 
-@router.put("/einheiten/{einheit_id}", response=EinheitSchemaOut)
+@router.put("/einheiten/{einheit_id}", response=EinheitSchemaOut, auth=auth_schreiben)
 def update_einheit(request, einheit_id: int, payload: EinheitCreateSchema):
     einheit = get_object_or_404(Einheit, id=einheit_id)
     for attr, value in payload.dict(exclude_unset=True).items():
@@ -67,9 +71,11 @@ def update_einheit(request, einheit_id: int, payload: EinheitCreateSchema):
     einheit.save()
     return einheit
 
-@router.delete("/einheiten/{einheit_id}", response={204: None})
+@router.delete("/einheiten/{einheit_id}", response={204: None}, auth=auth_verwaltung)
 def delete_einheit(request, einheit_id: int):
-    get_object_or_404(Einheit, id=einheit_id).delete()
+    einheit = get_object_or_404(Einheit, id=einheit_id)
+    log_aktion(request, "Einheit gelöscht", str(einheit), f"Einheit-ID {einheit.id}")
+    einheit.delete()
     return 204, None
 
 
@@ -77,7 +83,7 @@ def delete_einheit(request, einheit_id: int):
 class LinkNebenobjektSchema(Schema):
     nebenobjekt_id: int
 
-@router.post("/einheiten/{einheit_id}/link-nebenobjekt", response={200: dict})
+@router.post("/einheiten/{einheit_id}/link-nebenobjekt", response={200: dict}, auth=auth_schreiben)
 def link_nebenobjekt(request, einheit_id: int, payload: LinkNebenobjektSchema):
     hauptobjekt = get_object_or_404(Einheit, id=einheit_id)
     nebenobjekt = get_object_or_404(Einheit, id=payload.nebenobjekt_id)
@@ -86,7 +92,7 @@ def link_nebenobjekt(request, einheit_id: int, payload: LinkNebenobjektSchema):
     nebenobjekt.save()
     return 200, {"success": True}
 
-@router.post("/einheiten/{einheit_id}/unlink-nebenobjekt", response={200: dict})
+@router.post("/einheiten/{einheit_id}/unlink-nebenobjekt", response={200: dict}, auth=auth_schreiben)
 def unlink_nebenobjekt(request, einheit_id: int, payload: LinkNebenobjektSchema):
     nebenobjekt = get_object_or_404(Einheit, id=payload.nebenobjekt_id)
 
@@ -98,12 +104,12 @@ def unlink_nebenobjekt(request, einheit_id: int, payload: LinkNebenobjektSchema)
 # ========================================================
 # DOKUMENTE & UNTERHALT
 # ========================================================
-@router.post("/dokumente", response={201: dict})
+@router.post("/dokumente", response={201: dict}, auth=auth_schreiben)
 def upload_dokument(request, titel: str = Form(...), kategorie: str = Form(...), liegenschaft_id: Optional[int] = Form(None), einheit_id: Optional[int] = Form(None), datei: UploadedFile = File(...)):
     Dokument.objects.create(titel=titel, kategorie=kategorie, liegenschaft_id=liegenschaft_id, einheit_id=einheit_id, datei=datei)
     return 201, {"success": True}
 
-@router.delete("/dokumente/{id}", response={200: dict, 404: dict, 500: dict})
+@router.delete("/dokumente/{id}", response={200: dict, 404: dict, 500: dict}, auth=auth_verwaltung)
 def delete_dokument(request, id: int):
     try:
         if id >= 10000:
@@ -133,13 +139,13 @@ def delete_dokument(request, id: int):
 class UnterhaltCreateSchema(Schema):
     einheit_id: int; titel: str; beschreibung: str = ""; datum: date; kosten: Decimal = Decimal('0.00')
 
-@router.post("/unterhalt", response={201: dict})
+@router.post("/unterhalt", response={201: dict}, auth=auth_schreiben)
 def create_unterhalt(request, payload: UnterhaltCreateSchema):
     e = get_object_or_404(Einheit, id=payload.einheit_id)
     Unterhalt.objects.create(liegenschaft=e.liegenschaft, einheit=e, titel=payload.titel, beschreibung=payload.beschreibung, datum=payload.datum, kosten=payload.kosten)
     return 201, {"success": True}
 
-@router.delete("/unterhalt/{id}", response={204: None})
+@router.delete("/unterhalt/{id}", response={204: None}, auth=auth_verwaltung)
 def delete_unterhalt(request, id: int):
     get_object_or_404(Unterhalt, id=id).delete()
     return 204, None
@@ -157,13 +163,13 @@ class VerteilschluesselCreateSchema(Schema):
     gueltig_bis: Optional[date] = None
     notizen: str = ""
 
-@router.post("/verteilschluessel", response={201: dict})
+@router.post("/verteilschluessel", response={201: dict}, auth=auth_schreiben)
 def create_verteilschluessel(request, payload: VerteilschluesselCreateSchema):
     e = get_object_or_404(Einheit, id=payload.einheit_id)
     Verteilschluessel.objects.create(einheit=e, **payload.dict(exclude={'einheit_id'}))
     return 201, {"success": True}
 
-@router.delete("/verteilschluessel/{id}", response={204: None})
+@router.delete("/verteilschluessel/{id}", response={204: None}, auth=auth_verwaltung)
 def delete_verteilschluessel(request, id: int):
     get_object_or_404(Verteilschluessel, id=id).delete()
     return 204, None
@@ -181,7 +187,7 @@ class LiegenschaftVerteilschluesselCreateSchema(Schema):
     gueltig_bis: Optional[date] = None
     notizen: str = ""
 
-@router.post("/liegenschaft-verteilschluessel", response={201: dict})
+@router.post("/liegenschaft-verteilschluessel", response={201: dict}, auth=auth_schreiben)
 def create_liegenschaft_verteilschluessel(request, payload: LiegenschaftVerteilschluesselCreateSchema):
     l = get_object_or_404(Liegenschaft, id=payload.liegenschaft_id)
     LiegenschaftVerteilschluessel.objects.create(
@@ -195,7 +201,7 @@ def create_liegenschaft_verteilschluessel(request, payload: LiegenschaftVerteils
     )
     return 201, {"success": True}
 
-@router.delete("/liegenschaft-verteilschluessel/{id}", response={204: None})
+@router.delete("/liegenschaft-verteilschluessel/{id}", response={204: None}, auth=auth_verwaltung)
 def delete_liegenschaft_verteilschluessel(request, id: int):
     get_object_or_404(LiegenschaftVerteilschluessel, id=id).delete()
     return 204, None
@@ -214,7 +220,7 @@ class GeraetCreateSchema(Schema):
     installations_datum: Optional[date] = None
     garantie_bis: Optional[date] = None
 
-@router.post("/geraete", response={201: dict})
+@router.post("/geraete", response={201: dict}, auth=auth_schreiben)
 def create_geraet(request, payload: GeraetCreateSchema):
     data = payload.dict(exclude={'einheit_id', 'liegenschaft_id'}, exclude_unset=True)
 
@@ -227,7 +233,7 @@ def create_geraet(request, payload: GeraetCreateSchema):
 
     return 201, {"success": True}
 
-@router.put("/geraete/{id}", response={200: dict})
+@router.put("/geraete/{id}", response={200: dict}, auth=auth_schreiben)
 def update_geraet(request, id: int, payload: GeraetCreateSchema):
     g = get_object_or_404(Geraet, id=id)
     for k, v in payload.dict(exclude_unset=True, exclude={'einheit_id', 'liegenschaft_id'}).items():
@@ -235,7 +241,7 @@ def update_geraet(request, id: int, payload: GeraetCreateSchema):
     g.save()
     return 200, {"success": True}
 
-@router.delete("/geraete/{id}", response={204: None})
+@router.delete("/geraete/{id}", response={204: None}, auth=auth_verwaltung)
 def delete_geraet(request, id: int):
     get_object_or_404(Geraet, id=id).delete()
     return 204, None
@@ -243,12 +249,12 @@ def delete_geraet(request, id: int):
 class ZaehlerCreateSchema(Schema):
     einheit_id: int; typ: str; zaehler_nummer: str; standort: str = ""; aktueller_stand: Decimal = Decimal('0.00')
 
-@router.post("/zaehler", response={201: dict})
+@router.post("/zaehler", response={201: dict}, auth=auth_schreiben)
 def create_zaehler(request, payload: ZaehlerCreateSchema):
     Zaehler.objects.create(einheit=get_object_or_404(Einheit, id=payload.einheit_id), **payload.dict(exclude={'einheit_id'}))
     return 201, {"success": True}
 
-@router.delete("/zaehler/{id}", response={204: None})
+@router.delete("/zaehler/{id}", response={204: None}, auth=auth_verwaltung)
 def delete_zaehler(request, id: int):
     get_object_or_404(Zaehler, id=id).delete()
     return 204, None
@@ -256,13 +262,13 @@ def delete_zaehler(request, id: int):
 class SchluesselCreateSchema(Schema):
     einheit_id: int; typ: str; schluessel_nummer: str; anzahl: int
 
-@router.post("/schluessel", response={201: dict})
+@router.post("/schluessel", response={201: dict}, auth=auth_schreiben)
 def create_schluessel(request, payload: SchluesselCreateSchema):
     e = get_object_or_404(Einheit, id=payload.einheit_id)
     Schluessel.objects.create(liegenschaft=e.liegenschaft, einheit=e, **payload.dict(exclude={'einheit_id'}))
     return 201, {"success": True}
 
-@router.delete("/schluessel/{id}", response={204: None})
+@router.delete("/schluessel/{id}", response={204: None}, auth=auth_verwaltung)
 def delete_schluessel(request, id: int):
     get_object_or_404(Schluessel, id=id).delete()
     return 204, None

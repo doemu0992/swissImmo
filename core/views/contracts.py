@@ -7,7 +7,7 @@ import datetime
 from decimal import Decimal, InvalidOperation
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
-from django.contrib.admin.views.decorators import staff_member_required
+from core.auth import rolle_erforderlich, ROLLE_VERWALTUNG
 
 # PDF Tools
 from reportlab.lib.pagesizes import A4
@@ -26,7 +26,7 @@ def parse_decimal(value):
     except (InvalidOperation, ValueError):
         return Decimal('0.00')
 
-@staff_member_required
+@rolle_erforderlich(ROLLE_VERWALTUNG)
 def mietzins_anpassung_view(request, vertrag_id):
     """
     Zeigt ein Formular zur Berechnung und generiert danach das PDF mit Unterschrift.

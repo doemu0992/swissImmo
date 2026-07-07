@@ -17,6 +17,8 @@ from core.utils.qr_code import generate_mahnung_pdf
 from .utils import scan_invoice_pdf
 from .schemas import ZahlungSchemaOut, ZahlungCreateSchema, MietzinsKontrolleSchema
 
+from core.auth import auth_schreiben, auth_verwaltung, log_aktion
+
 router = Router(tags=["Finanzen"])
 
 # ========================================================
@@ -27,7 +29,7 @@ class SollstellungSchema(Schema):
     monat: int
     jahr: int
 
-@router.post("/debitoren/sollstellung", response={200: dict, 400: dict})
+@router.post("/debitoren/sollstellung", response={200: dict, 400: dict}, auth=auth_verwaltung)
 @transaction.atomic # 🔥 Schützt vor parallelen Ausführungen
 def run_sollstellung(request, payload: SollstellungSchema):
     """Führt den monatlichen Mietenlauf durch und bucht die Sollstellungen."""
@@ -76,7 +78,8 @@ def run_sollstellung(request, payload: SollstellungSchema):
                 soll_konto=konto_debitoren,
                 haben_konto=konto_ertrag,
                 betrag=v.netto_mietzins,
-                debitoren_rechnung=rechnung
+                debitoren_rechnung=rechnung,
+                erstellt_von=request.user
             )
 
         if v.nebenkosten and v.nebenkosten > 0:
@@ -87,11 +90,13 @@ def run_sollstellung(request, payload: SollstellungSchema):
                 soll_konto=konto_debitoren,
                 haben_konto=konto_nk_akonto,
                 betrag=v.nebenkosten,
-                debitoren_rechnung=rechnung
+                debitoren_rechnung=rechnung,
+                erstellt_von=request.user
             )
 
         erstellt += 1
 
+    log_aktion(request, "Sollstellung ausgeführt", titel_vorlage, f"{erstellt} Rechnungen erstellt")
     return 200, {"success": True, "erstellt": erstellt}
 
 @router.get("/zahlungen", response=List[ZahlungSchemaOut])
@@ -99,7 +104,7 @@ def list_zahlungen(request):
     """Liste der letzten 50 Zahlungseingänge."""
     return Zahlungseingang.objects.all().select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft').order_by('-datum_eingang')[:50]
 
-@router.post("/zahlungen", response={201: dict, 400: dict})
+@router.post("/zahlungen", response={201: dict, 400: dict}, auth=auth_schreiben)
 @transaction.atomic # 🔥
 def create_zahlung(request, payload: ZahlungCreateSchema):
     """Verbucht einen Zahlungseingang und erstellt automatisch die Buchhaltungssätze."""
@@ -111,7 +116,8 @@ def create_zahlung(request, payload: ZahlungCreateSchema):
         datum_eingang=payload.datum_eingang,
         buchungs_monat=payload.buchungs_monat.replace(day=1),
         bemerkung=payload.bemerkung,
-        liegenschaft=vertrag.einheit.liegenschaft
+        liegenschaft=vertrag.einheit.liegenschaft,
+        erstellt_von=request.user
     )
 
     try:
@@ -125,7 +131,8 @@ def create_zahlung(request, payload: ZahlungCreateSchema):
             soll_konto=konto_bank, # Bank nimmt zu
             haben_konto=konto_debitoren, # Debitoren nehmen ab
             betrag=payload.betrag,
-            zahlungseingang=zahlung
+            zahlungseingang=zahlung,
+            erstellt_von=request.user
         )
     except Buchungskonto.DoesNotExist:
         pass
@@ -163,11 +170,14 @@ def get_kontrolle(request):
 
     return ergebnis
 
-@router.delete("/zahlungen/{zahlung_id}", response={204: None})
+@router.delete("/zahlungen/{zahlung_id}", response={204: None}, auth=auth_verwaltung)
 @transaction.atomic
 def delete_zahlung(request, zahlung_id: int):
+    zahlung = get_object_or_404(Zahlungseingang, id=zahlung_id)
+    log_aktion(request, "Zahlung gelöscht", f"Zahlung #{zahlung.id}",
+               f"CHF {zahlung.betrag}, Vertrag-ID {zahlung.vertrag_id}")
     Buchung.objects.filter(zahlungseingang_id=zahlung_id).delete()
-    get_object_or_404(Zahlungseingang, id=zahlung_id).delete()
+    zahlung.delete()
     return 204, None
 
 @router.get("/mahnung/{vertrag_id}")
@@ -200,7 +210,7 @@ class KreditorUpdateSchema(Schema):
     konto_id: Optional[int] = None
     is_hnk_relevant: bool = False
 
-@router.post("/kreditoren/upload")
+@router.post("/kreditoren/upload", auth=auth_schreiben)
 def upload_kreditor(request, file: UploadedFile = File(...)):
     """Lädt eine Rechnung hoch und extrahiert die Daten per KI/OCR."""
     rechnung = KreditorenRechnung.objects.create(
@@ -244,7 +254,7 @@ def list_kreditoren(request):
         } for k in kreditoren
     ]
 
-@router.put("/kreditoren/{rechnung_id}", response={200: dict})
+@router.put("/kreditoren/{rechnung_id}", response={200: dict}, auth=auth_schreiben)
 @transaction.atomic
 def update_kreditor(request, rechnung_id: int, payload: KreditorUpdateSchema):
     """Aktualisiert eine gescannte Rechnung und weist sie einem Objekt zu."""
@@ -258,7 +268,7 @@ def update_kreditor(request, rechnung_id: int, payload: KreditorUpdateSchema):
     rechnung.save()
     return 200, {"success": True}
 
-@router.post("/kreditoren/{rechnung_id}/pay", response={200: dict, 400: dict})
+@router.post("/kreditoren/{rechnung_id}/pay", response={200: dict, 400: dict}, auth=auth_verwaltung)
 @transaction.atomic # 🔥 Setzt eine Transaktion
 def pay_kreditor(request, rechnung_id: int):
     """Markiert eine Lieferantenrechnung als bezahlt und erstellt die Buchung."""
@@ -270,6 +280,8 @@ def pay_kreditor(request, rechnung_id: int):
 
     rechnung.status = 'bezahlt'
     rechnung.save()
+    log_aktion(request, "Kreditorenrechnung bezahlt", rechnung.lieferant or f"Rechnung #{rechnung.id}",
+               f"CHF {rechnung.betrag}")
 
     try:
         konto_bank = Buchungskonto.objects.get(nummer="1020")
@@ -282,17 +294,20 @@ def pay_kreditor(request, rechnung_id: int):
             soll_konto=konto_aufwand,
             haben_konto=konto_bank,
             betrag=rechnung.betrag or Decimal('0.00'),
-            kreditoren_rechnung=rechnung
+            kreditoren_rechnung=rechnung,
+            erstellt_von=request.user
         )
     except Buchungskonto.DoesNotExist:
         pass
 
     return 200, {"success": True}
 
-@router.delete("/kreditoren/{rechnung_id}", response={204: None})
+@router.delete("/kreditoren/{rechnung_id}", response={204: None}, auth=auth_verwaltung)
 @transaction.atomic
 def delete_kreditor(request, rechnung_id: int):
     rechnung = get_object_or_404(KreditorenRechnung, id=rechnung_id)
+    log_aktion(request, "Kreditorenrechnung gelöscht", rechnung.lieferant or f"Rechnung #{rechnung.id}",
+               f"CHF {rechnung.betrag}, Status {rechnung.status}")
     Buchung.objects.filter(kreditoren_rechnung=rechnung).delete()
     rechnung.delete()
     return 204, None
@@ -309,7 +324,7 @@ class DebitorenRechnungCreateSchema(Schema):
     faellig_am: Optional[date] = None
     konto_haben_id: Optional[int] = None
 
-@router.post("/debitoren-rechnungen", response={201: dict})
+@router.post("/debitoren-rechnungen", response={201: dict}, auth=auth_schreiben)
 @transaction.atomic
 def create_debitorenrechnung(request, payload: DebitorenRechnungCreateSchema):
     """Erstellt eine ausgehende Rechnung (z.B. Weiterverrechnung) für einen Mieter."""
@@ -337,7 +352,8 @@ def create_debitorenrechnung(request, payload: DebitorenRechnungCreateSchema):
             soll_konto=konto_debitoren,
             haben_konto=konto_haben,
             betrag=rechnung.betrag,
-            debitoren_rechnung=rechnung
+            debitoren_rechnung=rechnung,
+            erstellt_von=request.user
         )
     except Buchungskonto.DoesNotExist:
         pass
@@ -360,11 +376,12 @@ def list_debitorenrechnungen(request):
     ]
 
 # 🔥 NEU: Delete-Endpunkt für Debitorenrechnungen
-@router.delete("/debitoren-rechnungen/{rechnung_id}", response={204: None})
+@router.delete("/debitoren-rechnungen/{rechnung_id}", response={204: None}, auth=auth_verwaltung)
 @transaction.atomic
 def delete_debitorenrechnung(request, rechnung_id: int):
     """Löscht eine ausgehende Rechnung / Sollstellung inkl. Buchungssätzen."""
     rechnung = get_object_or_404(DebitorenRechnung, id=rechnung_id)
+    log_aktion(request, "Debitorenrechnung gelöscht", rechnung.titel, f"CHF {rechnung.betrag}")
 
     # 1. Die zugehörigen Buchungssätze in der Buchhaltung löschen (nimmt den Ertrag wieder raus!)
     Buchung.objects.filter(debitoren_rechnung=rechnung).delete()
@@ -399,7 +416,7 @@ def list_konten(request):
         } for k in konten
     ]
 
-@router.post("/konten", response={201: dict, 400: dict})
+@router.post("/konten", response={201: dict, 400: dict}, auth=auth_schreiben)
 def create_konto(request, payload: KontoCreateSchema):
     if Buchungskonto.objects.filter(nummer=payload.nummer).exists():
         return 400, {"success": False, "error": "Diese Kontonummer existiert bereits."}
@@ -407,7 +424,7 @@ def create_konto(request, payload: KontoCreateSchema):
     Buchungskonto.objects.create(**payload.dict())
     return 201, {"success": True}
 
-@router.post("/konten/import-standard", response={200: dict})
+@router.post("/konten/import-standard", response={200: dict}, auth=auth_verwaltung)
 def import_standard_kontenplan(request):
     standard_konten = [
         {"nummer": "1020", "bezeichnung": "Bank", "typ": "bilanz", "is_hnk_relevant": False},
@@ -507,7 +524,7 @@ def list_perioden(request, liegenschaft_id: Optional[int] = None):
         } for p in qs
     ]
 
-@router.post("/nebenkosten/perioden", response={201: dict})
+@router.post("/nebenkosten/perioden", response={201: dict}, auth=auth_schreiben)
 def create_periode(request, payload: PeriodeCreateSchema):
     periode = AbrechnungsPeriode.objects.create(**payload.dict())
     return 201, {"success": True, "id": periode.id}
@@ -582,14 +599,15 @@ def calculate_hnk_abrechnung(request, periode_id: int):
         "mieter_abrechnungen": mieter_abrechnungen
     }
 
-@router.delete("/nebenkosten/perioden/{periode_id}", response={204: None})
+@router.delete("/nebenkosten/perioden/{periode_id}", response={204: None}, auth=auth_verwaltung)
 @transaction.atomic
 def delete_periode(request, periode_id: int):
     periode = get_object_or_404(AbrechnungsPeriode, id=periode_id)
+    log_aktion(request, "Abrechnungsperiode gelöscht", periode.bezeichnung)
     periode.delete()
     return 204, None
 
-@router.post("/nebenkosten/perioden/{periode_id}/verbuchen", response={200: dict, 400: dict})
+@router.post("/nebenkosten/perioden/{periode_id}/verbuchen", response={200: dict, 400: dict}, auth=auth_verwaltung)
 @transaction.atomic # 🔥 Schützt vor Doppelbuchung per Doppelklick
 def verbuchen_hnk_abrechnung(request, periode_id: int):
     # .select_for_update() sperrt den Datensatz auf Datenbankebene solange die Funktion läuft
@@ -629,7 +647,8 @@ def verbuchen_hnk_abrechnung(request, periode_id: int):
                 soll_konto=konto_debitoren,
                 haben_konto=konto_nk_ertrag,
                 betrag=saldo,
-                debitoren_rechnung=rechnung
+                debitoren_rechnung=rechnung,
+                erstellt_von=request.user
             )
 
         elif saldo < 0:
@@ -640,10 +659,13 @@ def verbuchen_hnk_abrechnung(request, periode_id: int):
                 liegenschaft=vertrag.einheit.liegenschaft,
                 soll_konto=konto_nk_ertrag,
                 haben_konto=konto_debitoren,
-                betrag=gutschrift_betrag
+                betrag=gutschrift_betrag,
+                erstellt_von=request.user
             )
 
     periode.abgeschlossen = True
     periode.save()
+    log_aktion(request, "HNK-Abrechnung verbucht", periode.bezeichnung,
+               f"{len(abrechnung_data['mieter_abrechnungen'])} Mieter-Abrechnungen")
 
     return 200, {"success": True}

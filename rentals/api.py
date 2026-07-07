@@ -28,6 +28,8 @@ from .models import Mietvertrag
 from .schemas import VertragSchemaOut, VertragCreateSchema, VertragUpdateSchema
 
 logger = logging.getLogger(__name__)
+from core.auth import auth_schreiben, auth_verwaltung, log_aktion
+
 router = Router(tags=["Rentals"])
 
 # ========================================================
@@ -121,7 +123,7 @@ def list_vertraege(request):
 def get_vertrag(request, vertrag_id: int):
     return get_object_or_404(Mietvertrag, id=vertrag_id)
 
-@router.post("/vertraege", response={201: VertragSchemaOut})
+@router.post("/vertraege", response={201: VertragSchemaOut}, auth=auth_schreiben)
 def create_vertrag(request, payload: VertragCreateSchema):
     m = get_object_or_404(Mieter, id=payload.mieter_id)
     e = get_object_or_404(Einheit, id=payload.einheit_id)
@@ -149,7 +151,7 @@ def create_vertrag(request, payload: VertragCreateSchema):
 
     return 201, neuer_vertrag
 
-@router.put("/vertraege/{vertrag_id}", response={200: dict})
+@router.put("/vertraege/{vertrag_id}", response={200: dict}, auth=auth_schreiben)
 def update_vertrag(request, vertrag_id: int, payload: VertragUpdateSchema):
     v = get_object_or_404(Mietvertrag, id=vertrag_id)
     data = payload.dict(exclude_unset=True)
@@ -174,7 +176,7 @@ def update_vertrag(request, vertrag_id: int, payload: VertragUpdateSchema):
 
     return 200, {"success": True}
 
-@router.delete("/vertraege/{vertrag_id}", response={204: None})
+@router.delete("/vertraege/{vertrag_id}", response={204: None}, auth=auth_verwaltung)
 def delete_vertrag(request, vertrag_id: int):
     vertrag = get_object_or_404(Mietvertrag, id=vertrag_id)
     mieter = vertrag.mieter
@@ -187,6 +189,7 @@ def delete_vertrag(request, vertrag_id: int):
         mieter.zukuenftig_ab = None
         mieter.save()
 
+    log_aktion(request, "Mietvertrag gelöscht", str(vertrag), f"Vertrag-ID {vertrag.id}")
     vertrag.delete()
     return 204, None
 
@@ -205,7 +208,7 @@ def view_vertrag_pdf(request, vertrag_id: int):
         logger.error(f"PDF Gen Error: {e}")
         return HttpResponse(f"Fehler bei der PDF Generierung: {e}", status=500)
 
-@router.post("/vertraege/{vertrag_id}/send-docuseal")
+@router.post("/vertraege/{vertrag_id}/send-docuseal", auth=auth_verwaltung)
 def send_to_docuseal(request, vertrag_id: int):
     vertrag = get_object_or_404(Mietvertrag, id=vertrag_id)
     api_key = getattr(settings, 'DOCUSEAL_API_KEY', None)
@@ -253,6 +256,7 @@ def send_to_docuseal(request, vertrag_id: int):
         if response.status_code in [200, 201]:
             vertrag.sign_status = 'gesendet'
             vertrag.save()
+            log_aktion(request, "Vertrag via DocuSeal gesendet", str(vertrag), f"an {vertrag.mieter.email}")
             return {"success": True, "message": f"Vertrag erfolgreich an {vertrag.mieter.email} gesendet!"}
         else:
             return {"success": False, "error": f"DocuSeal API Fehler ({response.status_code}): {response.text}"}
@@ -268,8 +272,14 @@ class WebhookSchema(Schema):
     event_type: str
     data: dict = {}
 
-@router.post("/webhook/docuseal")
+# auth=None: Webhook muss öffentlich erreichbar sein (DocuSeal kann sich nicht
+# einloggen). Absicherung: DOCUSEAL_WEBHOOK_SECRET in .env setzen und denselben
+# Wert in DocuSeal als Header "X-Webhook-Secret" konfigurieren.
+@router.post("/webhook/docuseal", auth=None)
 def docuseal_webhook(request, payload: WebhookSchema):
+    secret = getattr(settings, 'DOCUSEAL_WEBHOOK_SECRET', None)
+    if secret and request.headers.get('X-Webhook-Secret') != secret:
+        return {"status": "forbidden"}
     if payload.event_type == 'submission.completed':
         name = payload.data.get('name', '')
         try:

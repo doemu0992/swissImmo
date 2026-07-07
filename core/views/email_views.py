@@ -9,7 +9,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
+from core.auth import rolle_erforderlich, log_aktion, ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG
 from django.conf import settings
 from django.http import HttpResponse
 
@@ -169,13 +169,13 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
 # VIEWS
 # ==============================================================================
 
-@staff_member_required
+@rolle_erforderlich(ROLLE_VERWALTUNG)
 def send_abrechnung_email_view(request, periode_id):
     # (Abrechnungs-Logik bleibt gleich...)
     pass
 
 
-@staff_member_required
+@rolle_erforderlich(ROLLE_VERWALTUNG)
 def send_mahnung_email_view(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     verwaltung = Verwaltung.objects.first()
@@ -210,11 +210,13 @@ def send_mahnung_email_view(request, vertrag_id):
     email.attach(f"Mahnung_{monat_str.replace(' ','_')}.pdf", pdf_bytes, 'application/pdf')
     email.send()
 
+    log_aktion(request, "Mahnung versendet (Art. 257d OR)", str(vertrag),
+               f"an {vertrag.mieter.email}, Monat {monat_str}, CHF {betrag_str}")
     messages.success(request, f"✅ Mahnung inkl. QR-Rechnung an {vertrag.mieter.email} gesendet.")
     return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
 
-@staff_member_required
+@rolle_erforderlich(ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG)
 def generate_mahnung_pdf_view(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     verwaltung = Verwaltung.objects.first()

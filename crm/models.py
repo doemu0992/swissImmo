@@ -49,6 +49,13 @@ class Verwaltung(models.Model):
 
 
 class Mandant(models.Model):
+    # Portal-Zugang: verknüpfter Login für das Eigentümer-Portal (/portal/).
+    # Eigentümer sehen dort NUR ihre eigenen Liegenschaften — kein SPA-/API-Zugriff.
+    benutzer = models.OneToOneField(
+        'auth.User', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='mandant_profil', verbose_name="Portal-Login",
+        help_text="Optionaler Benutzer-Account für das Eigentümer-Portal."
+    )
     firma_oder_name = models.CharField("Name / Firma (Eigentümer)", max_length=100)
     kontaktperson = models.CharField("Kontaktperson", max_length=100, blank=True)
     strasse = models.CharField("Strasse & Nr.", max_length=100, blank=True)

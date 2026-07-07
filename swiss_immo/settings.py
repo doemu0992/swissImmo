@@ -143,9 +143,10 @@ TIME_ZONE = 'Europe/Zurich'
 USE_I18N = True
 USE_TZ = True
 
-# --- LOGIN / LOGOUT REDIRECTS FÜR SPA ---
-LOGIN_URL = '/login/'           # <-- NEU: Hierhin geht's, wenn man nicht eingeloggt ist
-LOGIN_REDIRECT_URL = '/app/'
+# --- LOGIN / LOGOUT REDIRECTS ---
+LOGIN_URL = '/login/'           # <-- Hierhin geht's, wenn man nicht eingeloggt ist
+# Login-Weiche: Team-Rollen → /app/, Eigentümer-Logins → /portal/
+LOGIN_REDIRECT_URL = '/nach-login/'
 LOGOUT_REDIRECT_URL = '/'
 
 # ==========================================
@@ -169,6 +170,9 @@ CKEDITOR_CONFIGS = {'default': {'toolbar': 'full', 'height': 300, 'width': '100%
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 DOCUSEAL_API_KEY = os.getenv('DOCUSEAL_API_KEY')
 DOCUSEAL_URL = "https://api.docuseal.com"
+# Optional: gemeinsames Secret für den DocuSeal-Webhook. Wenn gesetzt, muss
+# DocuSeal denselben Wert als Header "X-Webhook-Secret" mitsenden.
+DOCUSEAL_WEBHOOK_SECRET = os.getenv('DOCUSEAL_WEBHOOK_SECRET')
 
 # SMTP KONFIGURATION (HOSTSTAR) - BLEIBT AKTIV!
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -9,6 +9,8 @@ from .schemas import MieterSchemaOut, MieterUpdateSchema
 from core.utils import get_current_ref_zins, get_current_lik
 from core.utils.qr_code import generate_mieter_qr_pdf
 
+from core.auth import auth_schreiben, auth_verwaltung, log_aktion
+
 router = Router(tags=["CRM"])
 
 # ==========================================
@@ -30,13 +32,13 @@ def get_mieter(request, mieter_id: int):
     m.check_and_update_adresse()
     return m
 
-@router.post("/mieter", response={201: MieterSchemaOut})
+@router.post("/mieter", response={201: MieterSchemaOut}, auth=auth_schreiben)
 def create_mieter(request, payload: MieterUpdateSchema):
     data = payload.dict(exclude_unset=True)
     neuer_mieter = Mieter.objects.create(**data)
     return 201, neuer_mieter
 
-@router.put("/mieter/{mieter_id}", response={200: dict})
+@router.put("/mieter/{mieter_id}", response={200: dict}, auth=auth_schreiben)
 def update_mieter(request, mieter_id: int, payload: MieterUpdateSchema):
     m = get_object_or_404(Mieter, id=mieter_id)
     for k, v in payload.dict(exclude_unset=True).items():
@@ -44,12 +46,14 @@ def update_mieter(request, mieter_id: int, payload: MieterUpdateSchema):
     m.save()
     return 200, {"success": True}
 
-@router.delete("/mieter/{mieter_id}", response={204: None})
+@router.delete("/mieter/{mieter_id}", response={204: None}, auth=auth_verwaltung)
 def delete_mieter(request, mieter_id: int):
-    get_object_or_404(Mieter, id=mieter_id).delete()
+    mieter = get_object_or_404(Mieter, id=mieter_id)
+    log_aktion(request, "Mieter gelöscht", mieter.display_name, f"Mieter-ID {mieter.id}")
+    mieter.delete()
     return 204, None
 
-@router.post("/mieter/{mieter_id}/cancel-umzug")
+@router.post("/mieter/{mieter_id}/cancel-umzug", auth=auth_schreiben)
 def cancel_umzug(request, mieter_id: int):
     m = get_object_or_404(Mieter, id=mieter_id)
     m.zukuenftige_strasse = ''
@@ -71,12 +75,12 @@ class HandwerkerInSchema(Schema):
     telefon: Optional[str] = None
     branche: str
 
-@router.post("/handwerker", response={200: dict})
+@router.post("/handwerker", response={200: dict}, auth=auth_schreiben)
 def create_handwerker(request, payload: HandwerkerInSchema):
     h = Handwerker.objects.create(**payload.dict())
     return 200, {"success": True, "id": h.id}
 
-@router.put("/handwerker/{h_id}", response={200: dict})
+@router.put("/handwerker/{h_id}", response={200: dict}, auth=auth_schreiben)
 def update_handwerker(request, h_id: int, payload: HandwerkerInSchema):
     h = get_object_or_404(Handwerker, id=h_id)
     for attr, value in payload.dict().items():
@@ -84,7 +88,7 @@ def update_handwerker(request, h_id: int, payload: HandwerkerInSchema):
     h.save()
     return 200, {"success": True}
 
-@router.delete("/handwerker/{h_id}", response={200: dict})
+@router.delete("/handwerker/{h_id}", response={200: dict}, auth=auth_verwaltung)
 def delete_handwerker(request, h_id: int):
     h = get_object_or_404(Handwerker, id=h_id)
     h.delete()
@@ -95,7 +99,7 @@ def delete_handwerker(request, h_id: int):
 # DOKUMENTE & TOOLS
 # ==========================================
 
-@router.delete("/dokumente/{id}", response={200: dict, 404: dict, 500: dict})
+@router.delete("/dokumente/{id}", response={200: dict, 404: dict, 500: dict}, auth=auth_verwaltung)
 def delete_mieter_dokument(request, id: int):
     try:
         if id >= 10000:

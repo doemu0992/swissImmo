@@ -17,6 +17,7 @@ from django.utils import timezone
 from django.template.loader import get_template
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
+from core.auth import rolle_erforderlich, log_aktion, ROLLE_VERWALTUNG
 from django.core.files.base import ContentFile
 from django.conf import settings
 from django.contrib.staticfiles import finders
@@ -60,6 +61,7 @@ def link_callback(uri, rel):
 
 # --- VIEWS ---
 
+@rolle_erforderlich(ROLLE_VERWALTUNG)
 def send_via_docuseal(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     DEFAULT_VERWALTUNG_NAME = getattr(settings, 'VERWALTUNG_NAME', "SwissImmo Verwaltung")

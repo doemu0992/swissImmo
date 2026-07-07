@@ -9,8 +9,8 @@ from django.contrib.auth import views as auth_views  # <-- Import für den Login
 # 🚀 API SETUP (DJANGO NINJA)
 # ========================================================
 from ninja import NinjaAPI
-from ninja.security import django_auth
 from django.contrib.admin.views.decorators import staff_member_required
+from core.auth import auth_lesen
 # Router importieren
 from portfolio.api import router as portfolio_router
 from crm.api import router as crm_router
@@ -19,17 +19,18 @@ from tickets.api import router as tickets_router
 from finance.api import router as finance_router
 from mietprozess.api import router as mietprozess_router
 
-# Wir initialisieren die zentrale API.
-# auth=django_auth: JEDER Endpoint verlangt eine eingeloggte Session
-# (das SPA sendet Session-Cookie + X-CSRFToken bereits mit).
-# Öffentliche Ausnahmen werden am Endpoint mit auth=None markiert
-# (aktuell nur POST /api/mietprozess/public/bewerben).
+# Wir initialisieren die zentrale API mit dem Rollenkonzept (core/auth.py):
+#   Standard (alle GETs):   auth_lesen      → Verwaltung, Sachbearbeitung, Lesend
+#   Erfassen/Bearbeiten:    auth_schreiben  → Verwaltung, Sachbearbeitung
+#   Löschen/Buchen/Senden:  auth_verwaltung → nur Verwaltung
+# Öffentliche Ausnahmen sind am Endpoint mit auth=None markiert
+# (Bewerbungsformular, DocuSeal-Webhook).
 # docs_decorator: API-Dokumentation (/api/docs) nur für Staff sichtbar.
 api = NinjaAPI(
     title="swissImmo API",
     version="1.0.0",
     description="REST API für das Vue.js Frontend",
-    auth=django_auth,
+    auth=auth_lesen,
     docs_decorator=staff_member_required,
 )
 
@@ -52,6 +53,9 @@ from core.views.application import public_application_view
 # 2. Das neue Admin-Cockpit (Bereinigt um das alte Dashboard)
 from core.views.dashboard_view import update_market_data_view, spa_master_view
 
+# 2b. Eigentümer-Portal & Login-Weiche
+from core.views.portal import portal_view, nach_login_view
+
 # 3. Verträge & Mietzins
 from core.views.contracts import mietzins_anpassung_view, generiere_amtliches_formular
 
@@ -71,9 +75,14 @@ urlpatterns = [
 
     # --- EIGENER SAAS LOGIN ---
     path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('nach-login/', nach_login_view, name='nach_login'),
 
     # --- DIE NEUE WEB-APP (SPA) ---
     path('app/', spa_master_view, name='spa_master'),
+
+    # --- EIGENTÜMER-PORTAL (read-only, nur eigener Mandant) ---
+    path('portal/', portal_view, name='portal'),
 
     # --- ADMIN-ZUGÄNGE & SYSTEM ---
     path('admin/update-marktdaten/', update_market_data_view, name='update_marktdaten'),

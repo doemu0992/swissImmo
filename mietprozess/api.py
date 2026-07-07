@@ -12,6 +12,8 @@ from .models import Mietbewerbung
 from .schemas import BewerbungCreateSchema, BewerbungSchemaOut
 from portfolio.models import Einheit
 
+from core.auth import auth_schreiben, auth_verwaltung, log_aktion
+
 router = Router(tags=["Mietprozess"])
 
 # auth=None: Bewusst öffentlich — das ist das Bewerbungsformular für Interessenten
@@ -226,7 +228,7 @@ def list_bewerbungen(request):
 class StatusUpdateSchema(Schema):
     status: str
 
-@router.patch("/admin/{bewerbung_id}/status", response={200: dict, 400: dict})
+@router.patch("/admin/{bewerbung_id}/status", response={200: dict, 400: dict}, auth=auth_schreiben)
 @transaction.atomic
 def update_bewerbung_status(request, bewerbung_id: int, payload: StatusUpdateSchema):
     bewerbung = get_object_or_404(Mietbewerbung.objects.select_for_update(), id=bewerbung_id)
@@ -240,7 +242,7 @@ def update_bewerbung_status(request, bewerbung_id: int, payload: StatusUpdateSch
 
     return 200, {"success": True, "new_status": bewerbung.status}
 
-@router.delete("/admin/{bewerbung_id}", response={204: None})
+@router.delete("/admin/{bewerbung_id}", response={204: None}, auth=auth_verwaltung)
 @transaction.atomic
 def delete_bewerbung(request, bewerbung_id: int):
     bewerbung = get_object_or_404(Mietbewerbung, id=bewerbung_id)
@@ -254,6 +256,7 @@ def delete_bewerbung(request, bewerbung_id: int):
     if hasattr(bewerbung, 'weitere_dokumente') and bewerbung.weitere_dokumente:
         bewerbung.weitere_dokumente.delete(save=False)
 
+    log_aktion(request, "Bewerbung gelöscht", f"{bewerbung.vorname} {bewerbung.nachname}", f"Bewerbung-ID {bewerbung.id}")
     bewerbung.delete()
     return 204, None
 
@@ -263,7 +266,7 @@ def delete_bewerbung(request, bewerbung_id: int):
 class MessageSchema(Schema):
     typ: str # 'einladung', 'nachforderung', 'absage'
 
-@router.post("/admin/{bewerbung_id}/message", response={200: dict, 400: dict})
+@router.post("/admin/{bewerbung_id}/message", response={200: dict, 400: dict}, auth=auth_schreiben)
 @transaction.atomic
 def send_bewerbung_message(request, bewerbung_id: int, payload: MessageSchema):
     bewerbung = get_object_or_404(Mietbewerbung, id=bewerbung_id)

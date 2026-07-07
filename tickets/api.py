@@ -19,6 +19,8 @@ from .schemas import (
     HandwerkerOutSchema
 )
 
+from core.auth import auth_schreiben, auth_verwaltung, log_aktion
+
 router = Router(tags=["Tickets"])
 
 @router.get("/", response=List[SchadenMeldungListSchema])
@@ -35,7 +37,7 @@ def get_ticket(request, ticket_id: int):
         ticket.save()
     return ticket
 
-@router.patch("/{ticket_id}/status", response=SchadenMeldungListSchema)
+@router.patch("/{ticket_id}/status", response=SchadenMeldungListSchema, auth=auth_schreiben)
 def update_ticket_status(request, ticket_id: int, payload: TicketStatusUpdateSchema):
     """Ändert den Status eines Tickets."""
     ticket = get_object_or_404(SchadenMeldung, id=ticket_id)
@@ -65,7 +67,7 @@ def list_handwerker(request):
 
 
 # 🔥 NOTIZEN SPEICHERN
-@router.post("/{ticket_id}/nachrichten", response={201: SuccessSchema})
+@router.post("/{ticket_id}/nachrichten", response={201: SuccessSchema}, auth=auth_schreiben)
 def add_ticket_message(request, ticket_id: int, payload: TicketNachrichtCreateSchema):
     """Fügt einem Ticket eine neue interne Notiz hinzu."""
     ticket = get_object_or_404(SchadenMeldung, id=ticket_id)
@@ -83,10 +85,11 @@ def add_ticket_message(request, ticket_id: int, payload: TicketNachrichtCreateSc
     )
     return 201, {"success": True}
 
-@router.delete("/{ticket_id}", response={204: None})
+@router.delete("/{ticket_id}", response={204: None}, auth=auth_verwaltung)
 def delete_ticket(request, ticket_id: int):
     """Löscht ein Ticket aus dem System."""
     ticket = get_object_or_404(SchadenMeldung, id=ticket_id)
+    log_aktion(request, "Ticket gelöscht", f"Ticket #{ticket.id}", str(ticket))
     ticket.delete()
     return 204, None
 
@@ -98,7 +101,7 @@ def delete_ticket(request, ticket_id: int):
 class SendMessageSchema(Schema):
     message: str
 
-@router.post("/{ticket_id}/send-message", response={200: SuccessSchema, 400: dict})
+@router.post("/{ticket_id}/send-message", response={200: SuccessSchema, 400: dict}, auth=auth_schreiben)
 def send_ticket_message(request, ticket_id: int, payload: SendMessageSchema):
     """Sendet eine offizielle Update-E-Mail an den Mieter."""
     ticket = get_object_or_404(SchadenMeldung, id=ticket_id)
@@ -144,7 +147,7 @@ def send_ticket_message(request, ticket_id: int, payload: SendMessageSchema):
 class AssignArtisanSchema(Schema):
     handwerker_id: int
 
-@router.post("/{ticket_id}/assign-artisan", response={200: SuccessSchema, 400: dict})
+@router.post("/{ticket_id}/assign-artisan", response={200: SuccessSchema, 400: dict}, auth=auth_schreiben)
 def assign_artisan(request, ticket_id: int, payload: AssignArtisanSchema):
     """Generiert einen Arbeitsauftrag und sendet ihn dem Handwerker per Mail."""
     ticket = get_object_or_404(SchadenMeldung, id=ticket_id)
