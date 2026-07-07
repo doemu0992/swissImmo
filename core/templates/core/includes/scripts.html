@@ -431,15 +431,16 @@
                 }
             },
 
-            async deleteDebitorenRechnung(id) {
-                if(!confirm("Achtung: Diese Sollstellung/Rechnung wirklich stornieren? Dadurch wird auch der gebuchte Ertrag wieder aus der Buchhaltung entfernt.")) return;
+            // 🔥 NEUE METHODE: STORNIEREN
+            async storniereDebitorenRechnung(id) {
+                if(!confirm("Achtung: Möchtest du diese Rechnung wirklich stornieren? Es wird automatisch eine Gegenbuchung in der Erfolgsrechnung erstellt!")) return;
                 try {
                     const res = await fetch(`/api/finance/debitoren-rechnungen/${id}`, {
                         method: 'DELETE',
                         headers: { 'X-CSRFToken': this.getCsrf() }
                     });
                     if(res.ok) {
-                        this.addToast("Rechnung erfolgreich storniert.");
+                        this.addToast("Rechnung erfolgreich storniert und rückgebucht.");
                         this.refreshAll();
                     } else {
                         this.addToast("Fehler beim Stornieren.", "error");
@@ -527,21 +528,22 @@
                 }
             },
 
-            async deleteKreditor(id) {
-                if(!confirm("Diese Rechnung wirklich unwiderruflich löschen?")) return;
+            // 🔥 NEUE METHODE: STORNIEREN
+            async storniereKreditor(id) {
+                if(!confirm("Handwerker-Rechnung stornieren? Zugehörige Aufwands-Buchungen werden automatisch rückgängig gemacht.")) return;
                 try {
                     const res = await fetch(`/api/finance/kreditoren/${id}`, {
                         method: 'DELETE',
                         headers: { 'X-CSRFToken': this.getCsrf() }
                     });
                     if(res.ok) {
-                        this.addToast("Rechnung erfolgreich gelöscht.");
+                        this.addToast("Rechnung erfolgreich storniert.");
                         this.refreshAll();
                     } else {
-                        this.addToast("Fehler beim Löschen.", "error");
+                        this.addToast("Fehler beim Stornieren.", "error");
                     }
                 } catch(e) {
-                    this.addToast("Systemfehler beim Löschen.", "error");
+                    this.addToast("Systemfehler beim Stornieren.", "error");
                 }
             },
 
@@ -1150,16 +1152,18 @@
             handleDelete() {
                 if(!confirm("Wirklich löschen?")) return;
             },
+
+            // 🔥 NEUE METHODE: STORNIEREN
             async saveZahlung() {
                 const res = await fetch('/api/finance/zahlungen', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.getCsrf() }, body: JSON.stringify(this.newZahlung) });
                 if(res.ok) { this.showPaymentModal = false; this.addToast("Verbucht!"); this.refreshAll(); }
             },
-            async deleteZahlung(id) {
-                if(!confirm("Zahlung wirklich stornieren?")) return;
+            async storniereZahlung(id) {
+                if(!confirm("Zahlung stornieren? Der offene Posten (OP) des Mieters wird wiederhergestellt und das Geld aus der Buchhaltung entfernt.")) return;
                 try {
                     const res = await fetch(`/api/finance/zahlungen/${id}`, { method: 'DELETE', headers: { 'X-CSRFToken': this.getCsrf() } });
-                    if(res.ok) { this.addToast("Zahlung storniert."); this.refreshAll(); }
-                } catch(e) {}
+                    if(res.ok) { this.addToast("Zahlung storniert und rückgebucht."); this.refreshAll(); }
+                } catch(e) { this.addToast("Fehler beim Stornieren.", "error"); }
             },
 
             // ==========================================

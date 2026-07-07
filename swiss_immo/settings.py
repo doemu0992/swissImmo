@@ -168,6 +168,7 @@ CKEDITOR_CONFIGS = {'default': {'toolbar': 'full', 'height': 300, 'width': '100%
 # ==========================================
 
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')  # Für den KI-Rechnungs-Scanner (finance/utils.py)
 DOCUSEAL_API_KEY = os.getenv('DOCUSEAL_API_KEY')
 DOCUSEAL_URL = "https://api.docuseal.com"
 # Optional: gemeinsames Secret für den DocuSeal-Webhook. Wenn gesetzt, muss

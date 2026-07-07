@@ -4,7 +4,7 @@ from ninja.files import UploadedFile
 from django.shortcuts import get_object_or_404
 from django.db.models import Sum
 from django.utils import timezone
-from django.db import transaction # 🔥 NEU: Der Schutz vor Doppelbuchungen
+from django.db import transaction
 from typing import List, Optional
 from decimal import Decimal
 from datetime import date
@@ -15,14 +15,31 @@ from rentals.models import Mietvertrag
 from crm.models import Verwaltung
 from core.utils.qr_code import generate_mahnung_pdf
 from .utils import scan_invoice_pdf
-from .schemas import ZahlungSchemaOut, ZahlungCreateSchema, MietzinsKontrolleSchema
 
 from core.auth import auth_schreiben, auth_verwaltung, log_aktion
 
 router = Router(tags=["Finanzen"])
 
 # ========================================================
-# DEBITOREN / ZAHLUNGEN / SOLLSTELLUNG
+# HILFSFUNKTION: STORNO BUCHUNG (Revisionssicherheit)
+# ========================================================
+def erstelle_storno_buchung(original_buchung, benutzer=None):
+    """Erstellt eine exakte Umkehrbuchung für die Revisionssicherheit."""
+    return Buchung.objects.create(
+        datum=timezone.now().date(),
+        beleg_text=f"STORNO: {original_buchung.beleg_text}",
+        liegenschaft=original_buchung.liegenschaft,
+        soll_konto=original_buchung.haben_konto,  # Konten getauscht
+        haben_konto=original_buchung.soll_konto,  # Konten getauscht
+        betrag=original_buchung.betrag,
+        ist_storno=True,
+        storniert_am=timezone.now(),
+        erstellt_von=benutzer
+    )
+
+
+# ========================================================
+# DEBITOREN / SOLLSTELLUNG / ZAHLUNGEN
 # ========================================================
 
 class SollstellungSchema(Schema):
@@ -30,12 +47,13 @@ class SollstellungSchema(Schema):
     jahr: int
 
 @router.post("/debitoren/sollstellung", response={200: dict, 400: dict}, auth=auth_verwaltung)
-@transaction.atomic # 🔥 Schützt vor parallelen Ausführungen
+@transaction.atomic
 def run_sollstellung(request, payload: SollstellungSchema):
-    """Führt den monatlichen Mietenlauf durch und bucht die Sollstellungen."""
+    """Führt den monatlichen Mietenlauf durch (inkl. Pro-Rata Berechnung)."""
     start_date = date(payload.jahr, payload.monat, 1)
     _, last_day = calendar.monthrange(payload.jahr, payload.monat)
     end_date = date(payload.jahr, payload.monat, last_day)
+    tage_im_monat = last_day
 
     vertraege = Mietvertrag.objects.filter(
         status='aktiv',
@@ -53,62 +71,63 @@ def run_sollstellung(request, payload: SollstellungSchema):
     titel_vorlage = f"Miete & NK {payload.monat:02d}/{payload.jahr}"
 
     for v in vertraege:
-        # 🔥 STRIKTERER CHECK: Gibt es in diesem Monat schon eine Debitorenrechnung für diesen Vertrag?
-        if DebitorenRechnung.objects.filter(vertrag=v, titel=titel_vorlage).exists():
+        if DebitorenRechnung.objects.filter(vertrag=v, titel=titel_vorlage).exclude(status='storniert').exists():
             continue
 
-        total_betrag = (v.netto_mietzins or Decimal('0.00')) + (v.nebenkosten or Decimal('0.00'))
+        # PRO-RATA BERECHNUNG FÜR TEIL-MONATE (Ein-/Auszug mitten im Monat)
+        vertrag_start = max(start_date, v.beginn)
+        vertrag_ende = min(end_date, v.ende) if v.ende else end_date
+        tage_aktiv = (vertrag_ende - vertrag_start).days + 1
+
+        faktor = Decimal(tage_aktiv) / Decimal(tage_im_monat)
+
+        netto = round((v.netto_mietzins or Decimal('0.00')) * faktor, 2)
+        nk = round((v.nebenkosten or Decimal('0.00')) * faktor, 2)
+        total_betrag = netto + nk
+
         if total_betrag <= 0:
             continue
 
         rechnung = DebitorenRechnung.objects.create(
-            vertrag=v,
-            liegenschaft=v.einheit.liegenschaft,
-            einheit=v.einheit,
-            titel=titel_vorlage,
-            betrag=total_betrag,
-            faellig_am=start_date
+            vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
+            titel=titel_vorlage, betrag=total_betrag, faellig_am=start_date
         )
 
-        if v.netto_mietzins and v.netto_mietzins > 0:
+        if netto > 0:
             Buchung.objects.create(
-                datum=start_date,
-                beleg_text=f"Mietertrag {v.mieter} - {payload.monat:02d}/{payload.jahr}",
-                liegenschaft=v.einheit.liegenschaft,
-                soll_konto=konto_debitoren,
-                haben_konto=konto_ertrag,
-                betrag=v.netto_mietzins,
-                debitoren_rechnung=rechnung,
-                erstellt_von=request.user
+                datum=start_date, beleg_text=f"Mietertrag {v.mieter} - {payload.monat:02d}/{payload.jahr}",
+                liegenschaft=v.einheit.liegenschaft, soll_konto=konto_debitoren, haben_konto=konto_ertrag,
+                betrag=netto, debitoren_rechnung=rechnung, erstellt_von=request.user
             )
-
-        if v.nebenkosten and v.nebenkosten > 0:
+        if nk > 0:
             Buchung.objects.create(
-                datum=start_date,
-                beleg_text=f"NK-Akonto {v.mieter} - {payload.monat:02d}/{payload.jahr}",
-                liegenschaft=v.einheit.liegenschaft,
-                soll_konto=konto_debitoren,
-                haben_konto=konto_nk_akonto,
-                betrag=v.nebenkosten,
-                debitoren_rechnung=rechnung,
-                erstellt_von=request.user
+                datum=start_date, beleg_text=f"NK-Akonto {v.mieter} - {payload.monat:02d}/{payload.jahr}",
+                liegenschaft=v.einheit.liegenschaft, soll_konto=konto_debitoren, haben_konto=konto_nk_akonto,
+                betrag=nk, debitoren_rechnung=rechnung, erstellt_von=request.user
             )
-
         erstellt += 1
 
     log_aktion(request, "Sollstellung ausgeführt", titel_vorlage, f"{erstellt} Rechnungen erstellt")
     return 200, {"success": True, "erstellt": erstellt}
 
-@router.get("/zahlungen", response=List[ZahlungSchemaOut])
-def list_zahlungen(request):
-    """Liste der letzten 50 Zahlungseingänge."""
-    return Zahlungseingang.objects.all().select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft').order_by('-datum_eingang')[:50]
+class ZahlungCreateSchema(Schema):
+    vertrag_id: int
+    betrag: Decimal
+    datum_eingang: date
+    buchungs_monat: date
+    bemerkung: str = ""
 
 @router.post("/zahlungen", response={201: dict, 400: dict}, auth=auth_schreiben)
-@transaction.atomic # 🔥
+@transaction.atomic
 def create_zahlung(request, payload: ZahlungCreateSchema):
-    """Verbucht einen Zahlungseingang und erstellt automatisch die Buchhaltungssätze."""
+    """Verbucht einen Zahlungseingang (Bank an Debitoren) und verknüpft OPs."""
     vertrag = get_object_or_404(Mietvertrag, id=payload.vertrag_id)
+
+    # Suche passende offene Rechnung für diesen Monat
+    offene_rechnung = DebitorenRechnung.objects.filter(
+        vertrag=vertrag,
+        status__in=['offen', 'teilbezahlt']
+    ).order_by('faellig_am').first()
 
     zahlung = Zahlungseingang.objects.create(
         vertrag=vertrag,
@@ -117,19 +136,28 @@ def create_zahlung(request, payload: ZahlungCreateSchema):
         buchungs_monat=payload.buchungs_monat.replace(day=1),
         bemerkung=payload.bemerkung,
         liegenschaft=vertrag.einheit.liegenschaft,
+        debitoren_rechnung=offene_rechnung,
         erstellt_von=request.user
     )
 
+    # OP-Status der Rechnung aktualisieren, falls verknüpft
+    if offene_rechnung:
+        if offene_rechnung.offener_betrag <= 0:
+            offene_rechnung.status = 'bezahlt'
+        else:
+            offene_rechnung.status = 'teilbezahlt'
+        offene_rechnung.save()
+
     try:
         konto_bank = Buchungskonto.objects.get(nummer="1020")
-        konto_debitoren = Buchungskonto.objects.get(nummer="1100") # Zahlungen mindern die Forderung!
+        konto_debitoren = Buchungskonto.objects.get(nummer="1100")
 
         Buchung.objects.create(
             datum=payload.datum_eingang,
             beleg_text=f"Zahlungseingang {vertrag.mieter} - {payload.bemerkung or 'Miete/NK'}",
             liegenschaft=vertrag.einheit.liegenschaft,
-            soll_konto=konto_bank, # Bank nimmt zu
-            haben_konto=konto_debitoren, # Debitoren nehmen ab
+            soll_konto=konto_bank,
+            haben_konto=konto_debitoren,
             betrag=payload.betrag,
             zahlungseingang=zahlung,
             erstellt_von=request.user
@@ -139,20 +167,63 @@ def create_zahlung(request, payload: ZahlungCreateSchema):
 
     return 201, {"success": True}
 
-@router.get("/mietzins-kontrolle", response=List[MietzinsKontrolleSchema])
+@router.get("/zahlungen", response=List[dict])
+def list_zahlungen(request):
+    """Liste der letzten 50 aktiven Zahlungseingänge."""
+    zahlungen = Zahlungseingang.objects.filter(status='verbucht').select_related('vertrag__mieter').order_by('-datum_eingang')[:50]
+    return [
+        {
+            "id": z.id,
+            "datum_eingang": z.datum_eingang.strftime('%d.%m.%Y'),
+            "bemerkung": z.bemerkung,
+            "betrag": float(z.betrag)
+        } for z in zahlungen
+    ]
+
+@router.delete("/zahlungen/{zahlung_id}", response={200: dict}, auth=auth_verwaltung)
+@transaction.atomic
+def storniere_zahlung(request, zahlung_id: int):
+    """REVISIONSSICHER: Zahlungen werden storniert, nicht gelöscht."""
+    zahlung = get_object_or_404(Zahlungseingang, id=zahlung_id)
+    if zahlung.status == 'storniert':
+        return 200, {"success": True}
+
+    fuer_storno = Buchung.objects.filter(zahlungseingang=zahlung, ist_storno=False)
+    for b in fuer_storno:
+        erstelle_storno_buchung(b, benutzer=request.user)
+
+    zahlung.status = 'storniert'
+    zahlung.save()
+
+    # Rechnungsstatus wieder aufrollen
+    if zahlung.debitoren_rechnung:
+        rech = zahlung.debitoren_rechnung
+        if rech.offener_betrag >= rech.betrag:
+            rech.status = 'offen'
+        else:
+            rech.status = 'teilbezahlt'
+        rech.save()
+
+    log_aktion(request, "Zahlung storniert", f"Zahlung #{zahlung.id}",
+               f"CHF {zahlung.betrag}, Vertrag-ID {zahlung.vertrag_id}")
+    return 200, {"success": True}
+
+
+@router.get("/mietzins-kontrolle", response=List[dict])
 def get_kontrolle(request):
-    """Berechnet den Soll-Ist-Abgleich für den aktuellen Monat."""
+    """Soll-Ist-Abgleich für den aktuellen Monat."""
     heute = timezone.now().date()
     aktueller_monat = heute.replace(day=1)
-
     aktive_vertraege = Mietvertrag.objects.filter(status='aktiv').select_related('mieter', 'einheit__liegenschaft')
     ergebnis = []
 
     for v in aktive_vertraege:
-        soll = (v.netto_mietzins or 0) + (v.nebenkosten or 0)
+        # Soll aus der Sollstellung holen (falls vorhanden), ansonsten Standardmiete
+        rechnung = DebitorenRechnung.objects.filter(vertrag=v, datum__year=heute.year, datum__month=heute.month).exclude(status='storniert').first()
+        soll = rechnung.betrag if rechnung else ((v.netto_mietzins or 0) + (v.nebenkosten or 0))
+
         ist = Zahlungseingang.objects.filter(
-            vertrag=v,
-            buchungs_monat=aktueller_monat
+            vertrag=v, buchungs_monat=aktueller_monat, status='verbucht'
         ).aggregate(total=Sum('betrag'))['total'] or Decimal('0.00')
 
         diff = soll - ist
@@ -162,33 +233,18 @@ def get_kontrolle(request):
             "vertrag_id": v.id,
             "mieter_name": str(v.mieter),
             "objekt": f"{v.einheit.liegenschaft.strasse} ({v.einheit.bezeichnung})",
-            "soll": soll,
-            "ist": ist,
-            "differenz": diff,
+            "soll": float(soll),
+            "ist": float(ist),
+            "differenz": float(diff),
             "status": status
         })
-
     return ergebnis
-
-@router.delete("/zahlungen/{zahlung_id}", response={204: None}, auth=auth_verwaltung)
-@transaction.atomic
-def delete_zahlung(request, zahlung_id: int):
-    zahlung = get_object_or_404(Zahlungseingang, id=zahlung_id)
-    log_aktion(request, "Zahlung gelöscht", f"Zahlung #{zahlung.id}",
-               f"CHF {zahlung.betrag}, Vertrag-ID {zahlung.vertrag_id}")
-    Buchung.objects.filter(zahlungseingang_id=zahlung_id).delete()
-    zahlung.delete()
-    return 204, None
 
 @router.get("/mahnung/{vertrag_id}")
 def erstelle_mahnung(request, vertrag_id: int, offener_betrag: float):
-    """Generiert einen Mahnbrief inkl. QR-Code als PDF"""
     vertrag = get_object_or_404(Mietvertrag, id=vertrag_id)
     verwaltung = Verwaltung.objects.first()
-
-    if not verwaltung:
-        return 400, {"success": False, "error": "Keine Verwaltung hinterlegt."}
-
+    if not verwaltung: return 400, {"success": False, "error": "Keine Verwaltung hinterlegt."}
     try:
         pdf_url = generate_mahnung_pdf(vertrag, offener_betrag, verwaltung)
         return {"success": True, "url": pdf_url}
@@ -197,7 +253,7 @@ def erstelle_mahnung(request, vertrag_id: int, offener_betrag: float):
 
 
 # ========================================================
-# KREDITOREN / KI-SCANNER
+# KREDITOREN (2-STUFIGE BUCHHALTUNG)
 # ========================================================
 
 class KreditorUpdateSchema(Schema):
@@ -206,30 +262,21 @@ class KreditorUpdateSchema(Schema):
     datum: date
     referenz: str = ""
     liegenschaft_id: Optional[int] = None
-    einheit_id: Optional[int] = None
     konto_id: Optional[int] = None
     is_hnk_relevant: bool = False
 
 @router.post("/kreditoren/upload", auth=auth_schreiben)
 def upload_kreditor(request, file: UploadedFile = File(...)):
-    """Lädt eine Rechnung hoch und extrahiert die Daten per KI/OCR."""
-    rechnung = KreditorenRechnung.objects.create(
-        beleg_scan=file,
-        status='neu'
-    )
-
+    rechnung = KreditorenRechnung.objects.create(beleg_scan=file, status='neu')
     try:
         scanned_data = scan_invoice_pdf(rechnung.beleg_scan.path)
-
         rechnung.lieferant = scanned_data.get('lieferant', 'Unbekannt')
         rechnung.iban = scanned_data.get('iban', '')
         rechnung.betrag = scanned_data.get('betrag')
         rechnung.datum = scanned_data.get('datum')
         rechnung.referenz = scanned_data.get('referenz', '')
         rechnung.save()
-
         return {"success": True, "id": rechnung.id, "data": scanned_data}
-
     except Exception as e:
         rechnung.fehlermeldung = str(e)
         rechnung.save()
@@ -237,8 +284,7 @@ def upload_kreditor(request, file: UploadedFile = File(...)):
 
 @router.get("/kreditoren", response=List[dict])
 def list_kreditoren(request):
-    """Gibt eine Liste aller erfassten Kreditorenrechnungen zurück."""
-    kreditoren = KreditorenRechnung.objects.all().order_by('-id')
+    kreditoren = KreditorenRechnung.objects.exclude(status='storniert').order_by('-id')
     return [
         {
             "id": k.id,
@@ -257,43 +303,58 @@ def list_kreditoren(request):
 @router.put("/kreditoren/{rechnung_id}", response={200: dict}, auth=auth_schreiben)
 @transaction.atomic
 def update_kreditor(request, rechnung_id: int, payload: KreditorUpdateSchema):
-    """Aktualisiert eine gescannte Rechnung und weist sie einem Objekt zu."""
-    rechnung = get_object_or_404(KreditorenRechnung, id=rechnung_id)
-    data = payload.dict(exclude_unset=True)
+    """Freigabe der Rechnung -> Erzeugt den Aufwand in der Buchhaltung."""
+    rechnung = get_object_or_404(KreditorenRechnung.objects.select_for_update(), id=rechnung_id)
+    war_neu = rechnung.status == 'neu'
 
-    for attr, value in data.items():
+    for attr, value in payload.dict(exclude_unset=True).items():
         setattr(rechnung, attr, value)
 
     rechnung.status = 'freigegeben'
     rechnung.save()
+
+    # SCHRITT 1: Aufwand buchen (Aufwand an Kreditoren)
+    if war_neu and rechnung.konto:
+        try:
+            konto_kreditoren = Buchungskonto.objects.get(nummer="2000")
+            Buchung.objects.create(
+                datum=rechnung.datum or timezone.now().date(),
+                beleg_text=f"Rechnung {rechnung.lieferant} - {rechnung.referenz}",
+                liegenschaft=rechnung.liegenschaft,
+                soll_konto=rechnung.konto,          # Aufwand
+                haben_konto=konto_kreditoren,       # Verbindlichkeit
+                betrag=rechnung.betrag,
+                kreditoren_rechnung=rechnung,
+                erstellt_von=request.user
+            )
+        except Buchungskonto.DoesNotExist:
+            pass
+
     return 200, {"success": True}
 
 @router.post("/kreditoren/{rechnung_id}/pay", response={200: dict, 400: dict}, auth=auth_verwaltung)
-@transaction.atomic # 🔥 Setzt eine Transaktion
+@transaction.atomic
 def pay_kreditor(request, rechnung_id: int):
-    """Markiert eine Lieferantenrechnung als bezahlt und erstellt die Buchung."""
-    # 🔥 .select_for_update() sperrt diese Rechnungsebene für andere gleichzeitige Anfragen
+    """Bezahlung der Rechnung -> Bucht das Geld vom Bankkonto ab."""
     rechnung = get_object_or_404(KreditorenRechnung.objects.select_for_update(), id=rechnung_id)
-
-    if rechnung.status == 'bezahlt':
-        return 400, {"success": False, "error": "Diese Rechnung wurde bereits gebucht!"}
+    if rechnung.status == 'bezahlt': return 400, {"success": False, "error": "Bereits bezahlt!"}
 
     rechnung.status = 'bezahlt'
     rechnung.save()
     log_aktion(request, "Kreditorenrechnung bezahlt", rechnung.lieferant or f"Rechnung #{rechnung.id}",
                f"CHF {rechnung.betrag}")
 
+    # SCHRITT 2: Zahlung buchen (Kreditoren an Bank)
     try:
         konto_bank = Buchungskonto.objects.get(nummer="1020")
-        konto_aufwand = rechnung.konto or Buchungskonto.objects.get(nummer="4000")
-
+        konto_kreditoren = Buchungskonto.objects.get(nummer="2000")
         Buchung.objects.create(
             datum=timezone.now().date(),
-            beleg_text=f"Rechnung {rechnung.lieferant} - {rechnung.referenz or 'ohne Ref'}",
+            beleg_text=f"Zahlung {rechnung.lieferant} - {rechnung.referenz}",
             liegenschaft=rechnung.liegenschaft,
-            soll_konto=konto_aufwand,
-            haben_konto=konto_bank,
-            betrag=rechnung.betrag or Decimal('0.00'),
+            soll_konto=konto_kreditoren,    # Verbindlichkeit sinkt
+            haben_konto=konto_bank,         # Geldabfluss
+            betrag=rechnung.betrag,
             kreditoren_rechnung=rechnung,
             erstellt_von=request.user
         )
@@ -302,18 +363,26 @@ def pay_kreditor(request, rechnung_id: int):
 
     return 200, {"success": True}
 
-@router.delete("/kreditoren/{rechnung_id}", response={204: None}, auth=auth_verwaltung)
+@router.delete("/kreditoren/{rechnung_id}", response={200: dict}, auth=auth_verwaltung)
 @transaction.atomic
-def delete_kreditor(request, rechnung_id: int):
+def storniere_kreditor(request, rechnung_id: int):
+    """REVISIONSSICHER: Kreditor stornieren."""
     rechnung = get_object_or_404(KreditorenRechnung, id=rechnung_id)
-    log_aktion(request, "Kreditorenrechnung gelöscht", rechnung.lieferant or f"Rechnung #{rechnung.id}",
-               f"CHF {rechnung.betrag}, Status {rechnung.status}")
-    Buchung.objects.filter(kreditoren_rechnung=rechnung).delete()
-    rechnung.delete()
-    return 204, None
+    if rechnung.status == 'storniert': return 200, {"success": True}
+
+    fuer_storno = Buchung.objects.filter(kreditoren_rechnung=rechnung, ist_storno=False)
+    for b in fuer_storno:
+        erstelle_storno_buchung(b, benutzer=request.user)
+
+    rechnung.status = 'storniert'
+    rechnung.save()
+    log_aktion(request, "Kreditorenrechnung storniert", rechnung.lieferant or f"Rechnung #{rechnung.id}",
+               f"CHF {rechnung.betrag}")
+    return 200, {"success": True}
+
 
 # ========================================================
-# DEBITORENRECHNUNGEN (WEITERVERRECHNUNG)
+# MANUELLE DEBITORENRECHNUNGEN / WEITERVERRECHNUNG
 # ========================================================
 
 class DebitorenRechnungCreateSchema(Schema):
@@ -327,42 +396,27 @@ class DebitorenRechnungCreateSchema(Schema):
 @router.post("/debitoren-rechnungen", response={201: dict}, auth=auth_schreiben)
 @transaction.atomic
 def create_debitorenrechnung(request, payload: DebitorenRechnungCreateSchema):
-    """Erstellt eine ausgehende Rechnung (z.B. Weiterverrechnung) für einen Mieter."""
     vertrag = get_object_or_404(Mietvertrag, id=payload.vertrag_id)
-
     rechnung = DebitorenRechnung.objects.create(
-        vertrag=vertrag,
-        liegenschaft=vertrag.einheit.liegenschaft,
-        einheit=vertrag.einheit,
-        titel=payload.titel,
-        beschreibung=payload.beschreibung,
-        betrag=payload.betrag,
-        faellig_am=payload.faellig_am,
-        konto_haben_id=payload.konto_haben_id
+        vertrag=vertrag, liegenschaft=vertrag.einheit.liegenschaft, einheit=vertrag.einheit,
+        titel=payload.titel, beschreibung=payload.beschreibung, betrag=payload.betrag,
+        faellig_am=payload.faellig_am, konto_haben_id=payload.konto_haben_id
     )
-
     try:
         konto_debitoren = Buchungskonto.objects.get(nummer="1100")
         konto_haben = rechnung.konto_haben or Buchungskonto.objects.get(nummer="3000")
-
         Buchung.objects.create(
-            datum=timezone.now().date(),
-            beleg_text=f"Rechnung an {vertrag.mieter}: {rechnung.titel}",
-            liegenschaft=vertrag.einheit.liegenschaft,
-            soll_konto=konto_debitoren,
-            haben_konto=konto_haben,
-            betrag=rechnung.betrag,
-            debitoren_rechnung=rechnung,
-            erstellt_von=request.user
+            datum=timezone.now().date(), beleg_text=f"Rechnung an {vertrag.mieter}: {rechnung.titel}",
+            liegenschaft=vertrag.einheit.liegenschaft, soll_konto=konto_debitoren, haben_konto=konto_haben,
+            betrag=rechnung.betrag, debitoren_rechnung=rechnung, erstellt_von=request.user
         )
     except Buchungskonto.DoesNotExist:
         pass
-
     return 201, {"success": True, "id": rechnung.id}
 
 @router.get("/debitoren-rechnungen", response=List[dict])
 def list_debitorenrechnungen(request):
-    rechnungen = DebitorenRechnung.objects.all().order_by('-id')
+    rechnungen = DebitorenRechnung.objects.exclude(status='storniert').order_by('-id')
     return [
         {
             "id": r.id,
@@ -375,23 +429,25 @@ def list_debitorenrechnungen(request):
         } for r in rechnungen
     ]
 
-# 🔥 NEU: Delete-Endpunkt für Debitorenrechnungen
-@router.delete("/debitoren-rechnungen/{rechnung_id}", response={204: None}, auth=auth_verwaltung)
+@router.delete("/debitoren-rechnungen/{rechnung_id}", response={200: dict}, auth=auth_verwaltung)
 @transaction.atomic
-def delete_debitorenrechnung(request, rechnung_id: int):
-    """Löscht eine ausgehende Rechnung / Sollstellung inkl. Buchungssätzen."""
+def storniere_debitorenrechnung(request, rechnung_id: int):
+    """REVISIONSSICHER: Rechnung stornieren statt löschen (Gegenbuchung)."""
     rechnung = get_object_or_404(DebitorenRechnung, id=rechnung_id)
-    log_aktion(request, "Debitorenrechnung gelöscht", rechnung.titel, f"CHF {rechnung.betrag}")
+    if rechnung.status == 'storniert': return 200, {"success": True}
 
-    # 1. Die zugehörigen Buchungssätze in der Buchhaltung löschen (nimmt den Ertrag wieder raus!)
-    Buchung.objects.filter(debitoren_rechnung=rechnung).delete()
+    fuer_storno = Buchung.objects.filter(debitoren_rechnung=rechnung, ist_storno=False)
+    for b in fuer_storno:
+        erstelle_storno_buchung(b, benutzer=request.user)
 
-    # 2. Rechnung selbst löschen
-    rechnung.delete()
-    return 204, None
+    rechnung.status = 'storniert'
+    rechnung.save()
+    log_aktion(request, "Debitorenrechnung storniert", rechnung.titel, f"CHF {rechnung.betrag}")
+    return 200, {"success": True}
+
 
 # ========================================================
-# BUCHHALTUNG / ERFOLGSRECHNUNG / KONTENPLAN
+# KONTENPLAN & ERFOLGSRECHNUNG
 # ========================================================
 
 class KontoCreateSchema(Schema):
@@ -406,12 +462,8 @@ def list_konten(request):
     konten = Buchungskonto.objects.all().order_by('nummer')
     return [
         {
-            "id": k.id,
-            "nummer": k.nummer,
-            "bezeichnung": k.bezeichnung,
-            "typ": k.typ,
-            "typ_display": k.get_typ_display(),
-            "is_hnk_relevant": k.is_hnk_relevant,
+            "id": k.id, "nummer": k.nummer, "bezeichnung": k.bezeichnung, "typ": k.typ,
+            "typ_display": k.get_typ_display(), "is_hnk_relevant": k.is_hnk_relevant,
             "standard_verteilschluessel": k.standard_verteilschluessel
         } for k in konten
     ]
@@ -420,7 +472,6 @@ def list_konten(request):
 def create_konto(request, payload: KontoCreateSchema):
     if Buchungskonto.objects.filter(nummer=payload.nummer).exists():
         return 400, {"success": False, "error": "Diese Kontonummer existiert bereits."}
-
     Buchungskonto.objects.create(**payload.dict())
     return 201, {"success": True}
 
@@ -443,32 +494,25 @@ def import_standard_kontenplan(request):
         {"nummer": "4400", "bezeichnung": "Sachversicherungen", "typ": "aufwand", "is_hnk_relevant": True, "standard_verteilschluessel": "m3"},
         {"nummer": "4500", "bezeichnung": "Verwaltungshonorar", "typ": "aufwand", "is_hnk_relevant": False},
     ]
-
-    for konto in standard_konten:
-        Buchungskonto.objects.get_or_create(
-            nummer=konto['nummer'],
-            defaults={
-                'bezeichnung': konto['bezeichnung'],
-                'typ': konto['typ'],
-                'is_hnk_relevant': konto['is_hnk_relevant'],
-                'standard_verteilschluessel': konto.get('standard_verteilschluessel', 'm2')
-            }
-        )
+    for k in standard_konten:
+        Buchungskonto.objects.get_or_create(nummer=k['nummer'], defaults={
+            'bezeichnung': k['bezeichnung'], 'typ': k['typ'], 'is_hnk_relevant': k['is_hnk_relevant'],
+            'standard_verteilschluessel': k.get('standard_verteilschluessel', 'm2')
+        })
     return 200, {"success": True}
 
 @router.get("/erfolgsrechnung", response=dict)
 def get_erfolgsrechnung(request, liegenschaft_id: Optional[int] = None):
+    # WICHTIG: Stornos werden NICHT ausgefiltert. Ein Storno-Paar (Original +
+    # Umkehrbuchung) hebt sich arithmetisch selbst auf — nur so stimmt die
+    # Erfolgsrechnung. (Nur das Storno auszufiltern liesse die stornierte
+    # Original-Buchung fälschlich weiterzählen.)
     qs = Buchung.objects.all()
-
-    if liegenschaft_id:
-        qs = qs.filter(liegenschaft_id=liegenschaft_id)
-
+    if liegenschaft_id: qs = qs.filter(liegenschaft_id=liegenschaft_id)
     konten = Buchungskonto.objects.filter(typ__in=['ertrag', 'aufwand'])
 
-    ertraege = []
-    aufwaende = []
-    total_ertrag = Decimal('0.00')
-    total_aufwand = Decimal('0.00')
+    ertraege, aufwaende = [], []
+    total_ertrag, total_aufwand = Decimal('0.00'), Decimal('0.00')
 
     for k in konten:
         soll_sum = qs.filter(soll_konto=k).aggregate(total=Sum('betrag'))['total'] or Decimal('0.00')
@@ -479,21 +523,16 @@ def get_erfolgsrechnung(request, liegenschaft_id: Optional[int] = None):
             if saldo != 0:
                 ertraege.append({"nummer": k.nummer, "bezeichnung": k.bezeichnung, "saldo": float(saldo)})
                 total_ertrag += saldo
-
         elif k.typ == 'aufwand':
             saldo = soll_sum - haben_sum
             if saldo != 0:
                 aufwaende.append({"nummer": k.nummer, "bezeichnung": k.bezeichnung, "saldo": float(saldo)})
                 total_aufwand += saldo
 
-    erfolg = total_ertrag - total_aufwand
-
     return {
-        "ertraege": ertraege,
-        "aufwaende": aufwaende,
-        "total_ertrag": float(total_ertrag),
-        "total_aufwand": float(total_aufwand),
-        "erfolg": float(erfolg)
+        "ertraege": ertraege, "aufwaende": aufwaende,
+        "total_ertrag": float(total_ertrag), "total_aufwand": float(total_aufwand),
+        "erfolg": float(total_ertrag - total_aufwand)
     }
 
 # ========================================================
@@ -509,28 +548,23 @@ class PeriodeCreateSchema(Schema):
 @router.get("/nebenkosten/perioden", response=List[dict])
 def list_perioden(request, liegenschaft_id: Optional[int] = None):
     qs = AbrechnungsPeriode.objects.all().order_by('-start_datum')
-    if liegenschaft_id:
-        qs = qs.filter(liegenschaft_id=liegenschaft_id)
-
+    if liegenschaft_id: qs = qs.filter(liegenschaft_id=liegenschaft_id)
     return [
         {
-            "id": p.id,
-            "liegenschaft": p.liegenschaft.strasse,
-            "bezeichnung": p.bezeichnung,
-            "start_datum": p.start_datum.strftime('%d.%m.%Y'),
-            "ende_datum": p.ende_datum.strftime('%d.%m.%Y'),
-            "abgeschlossen": p.abgeschlossen,
-            "total_kosten": float(p.total_kosten)
+            "id": p.id, "liegenschaft": p.liegenschaft.strasse, "bezeichnung": p.bezeichnung,
+            "start_datum": p.start_datum.strftime('%d.%m.%Y'), "ende_datum": p.ende_datum.strftime('%d.%m.%Y'),
+            "abgeschlossen": p.abgeschlossen, "total_kosten": float(p.total_kosten)
         } for p in qs
     ]
 
 @router.post("/nebenkosten/perioden", response={201: dict}, auth=auth_schreiben)
 def create_periode(request, payload: PeriodeCreateSchema):
-    periode = AbrechnungsPeriode.objects.create(**payload.dict())
-    return 201, {"success": True, "id": periode.id}
+    p = AbrechnungsPeriode.objects.create(**payload.dict())
+    return 201, {"success": True, "id": p.id}
 
 @router.get("/nebenkosten/perioden/{periode_id}/abrechnung", response=dict)
 def calculate_hnk_abrechnung(request, periode_id: int):
+    """HNK-Abrechnung berechnen (Vorschau) — wird vom SPA-Finanz-Tab genutzt."""
     periode = get_object_or_404(AbrechnungsPeriode, id=periode_id)
     liegenschaft = periode.liegenschaft
 
@@ -539,7 +573,7 @@ def calculate_hnk_abrechnung(request, periode_id: int):
         is_hnk_relevant=True,
         datum__gte=periode.start_datum,
         datum__lte=periode.ende_datum
-    )
+    ).exclude(status='storniert')
     total_kosten = sum((r.betrag or Decimal('0.00')) for r in kosten_rechnungen)
 
     alle_einheiten = liegenschaft.einheiten.all()
@@ -599,10 +633,12 @@ def calculate_hnk_abrechnung(request, periode_id: int):
         "mieter_abrechnungen": mieter_abrechnungen
     }
 
-@router.delete("/nebenkosten/perioden/{periode_id}", response={204: None}, auth=auth_verwaltung)
+@router.delete("/nebenkosten/perioden/{periode_id}", response={204: None, 400: dict}, auth=auth_verwaltung)
 @transaction.atomic
 def delete_periode(request, periode_id: int):
     periode = get_object_or_404(AbrechnungsPeriode, id=periode_id)
+    if periode.abgeschlossen:
+        return 400, {"success": False, "error": "Verbuchte Perioden können nicht gelöscht werden (Revisionssicherheit)."}
     log_aktion(request, "Abrechnungsperiode gelöscht", periode.bezeichnung)
     periode.delete()
     return 204, None

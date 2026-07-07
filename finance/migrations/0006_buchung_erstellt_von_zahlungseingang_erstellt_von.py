@@ -8,7 +8,9 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("finance", "0005_alter_buchung_kreditoren_rechnung_and_more"),
+        # Läuft NACH der Storno-Migration vom Server (dort bereits angewendet) —
+        # so bleibt die Migrations-Kette linear: 0005 → 0006_ist_storno → diese.
+        ("finance", "0006_buchung_ist_storno_buchung_storniert_am_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
