@@ -140,10 +140,10 @@ def _berechne_aufgaben(heute, leerstand_count, potenzial_up, potenzial_down):
     Reihenfolge = Dringlichkeit (Geld zuerst, dann Fristen, dann Chancen).
     """
     STIL = {
-        'rose':    ('bg-rose-500/20', 'text-rose-400'),
-        'amber':   ('bg-amber-500/20', 'text-amber-400'),
-        'indigo':  ('bg-indigo-500/20', 'text-indigo-400'),
-        'emerald': ('bg-emerald-500/20', 'text-emerald-400'),
+        'rose':    ('bg-coral-50', 'text-coral-600'),
+        'amber':   ('bg-amber-50', 'text-amber-600'),
+        'indigo':  ('bg-petrol-50', 'text-petrol-600'),
+        'emerald': ('bg-emerald-50', 'text-emerald-600'),
     }
 
     def aufgabe(stil, icon, titel, sub, tab):
