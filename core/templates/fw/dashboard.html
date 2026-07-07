@@ -1,0 +1,173 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Dashboard — swissImmo{% endblock %}
+
+{% block content %}
+
+<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Dashboard</h1>
+{% if aktive_lg %}
+<p class="text-sm text-slate-500 mb-4">Gefiltert auf: <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}, {{ aktive_lg.ort }}</span>
+    <a href="/neu/" class="ml-2 text-xs text-slate-400 hover:text-indigo-600">× Filter aufheben</a></p>
+{% endif %}
+
+<!-- ================= PORTFOLIO ================= -->
+<div class="flex items-center gap-2 mt-4 mb-3">
+    <h2 class="text-lg font-bold text-slate-800">Portfolio</h2>
+    <i class="fa-regular fa-circle-question text-indigo-300 text-sm" title="Bestandsübersicht"></i>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+    <!-- Spalte 1: Liegenschaften -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0">
+            <i class="fa-solid fa-building"></i>
+        </div>
+        <div>
+            <div class="text-2xl font-bold text-indigo-600">{{ liegenschaften_count }}</div>
+            <div class="text-sm text-slate-500">Liegenschaften</div>
+        </div>
+    </div>
+
+    <!-- Spalte 2 (breit): Mietobjekte mit Breakdown -->
+    <div class="md:col-span-2 bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-6">
+        <div class="flex items-center gap-4 shrink-0">
+            <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-house"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-bold text-indigo-600">{{ objekte_count }}</div>
+                <div class="text-sm text-slate-500">Mietobjekte</div>
+            </div>
+        </div>
+        <div class="border-l border-slate-100 pl-6 space-y-1 text-sm">
+            <div><span class="font-bold text-indigo-600 mr-2">{{ breakdown.wohnen }}</span><span class="text-slate-500">Wohnen</span></div>
+            <div><span class="font-bold text-indigo-600 mr-2">{{ breakdown.parkplatz }}</span><span class="text-slate-500">Parkplatz</span></div>
+            <div><span class="font-bold text-indigo-600 mr-2">{{ breakdown.gewerbe }}</span><span class="text-slate-500">Gewerbe</span></div>
+        </div>
+    </div>
+
+    <!-- Spalte 3: Verträge mit Status-Breakdown -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-6">
+        <div class="flex items-center gap-4 shrink-0">
+            <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-file-lines"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-bold text-indigo-600">{{ vertraege_count }}</div>
+                <div class="text-sm text-slate-500">Verträge</div>
+            </div>
+        </div>
+        <div class="border-l border-slate-100 pl-5 space-y-1 text-xs">
+            <div><span class="font-bold text-slate-700 mr-2">{{ v_beendet }}</span><span class="text-slate-500">Beendet</span></div>
+            <div><span class="font-bold text-emerald-600 mr-2">{{ v_aktiv }}</span><span class="text-slate-500">Aktiv</span></div>
+            <div><span class="font-bold text-rose-600 mr-2">{{ v_gekuendigt }}</span><span class="text-slate-500">Gekündigt</span></div>
+            <div><span class="font-bold text-amber-500 mr-2">{{ v_zukuenftig }}</span><span class="text-slate-500">Zukünftig</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= LEERSTAND + AUFGABEN ================= -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8 items-start">
+
+    <!-- LEERSTAND mit Tabs -->
+    <div class="bg-white rounded-xl border border-slate-200">
+        <div class="px-6 pt-5 flex items-center gap-2">
+            <h2 class="text-lg font-bold text-slate-800">Leerstand</h2>
+            <i class="fa-regular fa-circle-question text-indigo-300 text-sm"></i>
+        </div>
+        <div class="px-6 mt-3 flex gap-6 border-b border-slate-100 text-sm font-medium">
+            <button onclick="zeigeTab('leerstand')" id="tabbtn-leerstand" class="pb-2.5 border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2">
+                Leerstand <span class="text-[11px] font-bold bg-indigo-600 text-white rounded-md px-1.5 py-0.5">{{ leerstand_count }}</span>
+            </button>
+            <button onclick="zeigeTab('gekuendigt')" id="tabbtn-gekuendigt" class="pb-2.5 border-b-2 border-transparent text-slate-500 flex items-center gap-2">
+                Gekündigt <span class="text-[11px] font-bold bg-slate-200 text-slate-600 rounded-md px-1.5 py-0.5">{{ gekuendigte_count }}</span>
+            </button>
+            <button onclick="zeigeTab('bevorstehend')" id="tabbtn-bevorstehend" class="pb-2.5 border-b-2 border-transparent text-slate-500 flex items-center gap-2">
+                Bevorstehend <span class="text-[11px] font-bold bg-slate-200 text-slate-600 rounded-md px-1.5 py-0.5">{{ bevorstehende_count }}</span>
+            </button>
+        </div>
+
+        <div id="tab-leerstand" class="divide-y divide-slate-50 max-h-80 overflow-y-auto">
+            {% for e in leerstand_objekte %}
+            <div class="flex items-center gap-3 px-6 py-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-file-lines"></i></div>
+                <span class="text-sm flex-1 truncate">{{ e.liegenschaft.strasse }}, {{ e.liegenschaft.plz }} {{ e.liegenschaft.ort }} – {{ e.bezeichnung }}</span>
+                <a href="/dossier/liegenschaft/{{ e.liegenschaft.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Ansehen</a>
+            </div>
+            {% empty %}
+            <p class="px-6 py-6 text-sm text-slate-400 italic">Kein Leerstand — alles vermietet. 🎉</p>
+            {% endfor %}
+        </div>
+
+        <div id="tab-gekuendigt" class="hidden divide-y divide-slate-50 max-h-80 overflow-y-auto">
+            {% for v in gekuendigte %}
+            <div class="flex items-center gap-3 px-6 py-3">
+                <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-file-lines"></i></div>
+                <span class="text-sm flex-1 truncate">{{ v.einheit }} – {{ v.mieter.display_name }}{% if v.ende %} · bis {{ v.ende|date:"d.m.Y" }}{% endif %}</span>
+                <a href="/dossier/vertrag/{{ v.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Ansehen</a>
+            </div>
+            {% empty %}
+            <p class="px-6 py-6 text-sm text-slate-400 italic">Keine gekündigten Verträge.</p>
+            {% endfor %}
+        </div>
+
+        <div id="tab-bevorstehend" class="hidden divide-y divide-slate-50 max-h-80 overflow-y-auto">
+            {% for v in bevorstehende %}
+            <div class="flex items-center gap-3 px-6 py-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-file-lines"></i></div>
+                <span class="text-sm flex-1 truncate">{{ v.einheit }} – {{ v.mieter.display_name }} · ab {{ v.beginn|date:"d.m.Y" }}</span>
+                <a href="/dossier/vertrag/{{ v.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Ansehen</a>
+            </div>
+            {% empty %}
+            <p class="px-6 py-6 text-sm text-slate-400 italic">Keine bevorstehenden Verträge.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- AUFGABEN (Pendenzen-Engine) -->
+    <div class="bg-white rounded-xl border border-slate-200">
+        <div class="px-6 pt-5 pb-3 flex items-center gap-2">
+            <h2 class="text-lg font-bold text-slate-800">Aufgaben</h2>
+            <i class="fa-regular fa-circle-question text-indigo-300 text-sm" title="Automatisch aus deinen Daten berechnet"></i>
+        </div>
+        <div class="divide-y divide-slate-50 max-h-96 overflow-y-auto pb-2">
+            {% for a in aufgaben %}
+            <a href="/app/?tab={{ a.tab }}" class="flex items-center gap-3 px-6 py-3 hover:bg-slate-50 transition-colors">
+                <div class="w-9 h-9 rounded-lg {{ a.bg }} {{ a.text }} flex items-center justify-center shrink-0 text-sm">
+                    <i class="fa-solid {{ a.icon }}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-slate-900">{{ a.titel }}</div>
+                    <div class="text-xs text-slate-400">{{ a.sub }}</div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+            </a>
+            {% empty %}
+            <div class="flex flex-col items-center justify-center px-6 py-10 text-center">
+                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-lg mb-3">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <p class="text-sm font-medium text-slate-700">Alles erledigt</p>
+                <p class="text-xs text-slate-400 mt-1">Keine dringenden Aufgaben.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function zeigeTab(name) {
+    ['leerstand', 'gekuendigt', 'bevorstehend'].forEach(function(t) {
+        document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
+        var btn = document.getElementById('tabbtn-' + t);
+        btn.classList.toggle('border-indigo-600', t === name);
+        btn.classList.toggle('text-indigo-600', t === name);
+        btn.classList.toggle('border-transparent', t !== name);
+        btn.classList.toggle('text-slate-500', t !== name);
+    });
+}
+</script>
+{% endblock %}

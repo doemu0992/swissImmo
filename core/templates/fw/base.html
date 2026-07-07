@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}swissImmo{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+<div class="flex min-h-[100dvh]">
+
+    <!-- ================= SIDEBAR (Fairwalter-Struktur) ================= -->
+    <aside class="w-60 bg-[#161926] text-white flex-col min-h-[100dvh] hidden lg:flex flex-shrink-0">
+
+        <a href="/neu/" class="px-5 py-5 flex items-center gap-2.5 border-b border-white/5">
+            <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-xs shadow-lg shadow-indigo-600/30">
+                <i class="fa-solid fa-building"></i>
+            </div>
+            <span class="font-extrabold tracking-wide text-sm uppercase">swissImmo</span>
+        </a>
+
+        <!-- GLOBALER FILTER -->
+        <form method="get" class="px-4 py-3 bg-white/5 border-b border-white/5">
+            <label class="block text-[11px] font-semibold text-slate-300">Globaler Filter</label>
+            <select name="lg" onchange="this.form.submit()"
+                    class="mt-1 w-full bg-transparent text-sm text-slate-400 focus:outline-none cursor-pointer [&>option]:text-slate-900">
+                <option value="">Liegenschaft auswählen</option>
+                {% for l in alle_liegenschaften %}
+                <option value="{{ l.id }}" {% if aktive_lg and aktive_lg.id == l.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto text-sm">
+            {% include 'fw/_nav_item.html' with ziel='/neu/' key='dashboard' icon='fa-table-cells-large' label='Dashboard' %}
+            {% include 'fw/_nav_item.html' with ziel='' key='erste_schritte' icon='fa-circle-half-stroke' label='Erste Schritte' %}
+            {% include 'fw/_nav_item.html' with ziel='/app/?tab=portfolio' key='liegenschaften' icon='fa-building' label='Liegenschaften' %}
+            {% include 'fw/_nav_item.html' with ziel='/app/?tab=portfolio' key='objekte' icon='fa-house' label='Objekte' %}
+            {% include 'fw/_nav_item.html' with ziel='' key='dokumente' icon='fa-floppy-disk' label='Dokumente' %}
+            {% include 'fw/_nav_item.html' with ziel='' key='kommunikation' icon='fa-comment' label='Kommunikation' %}
+
+            <div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Verwaltung</div>
+            {% include 'fw/_nav_item.html' with ziel='/app/?tab=crm' key='personen' icon='fa-user-group' label='Personen' %}
+            {% include 'fw/_nav_item.html' with ziel='/app/?tab=rentals' key='vertraege' icon='fa-file-lines' label='Verträge' %}
+            {% include 'fw/_nav_item.html' with ziel='/app/?tab=rentals' key='mietzins' icon='fa-percent' label='Mietzins' %}
+
+            <div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Finanzen</div>
+            {% include 'fw/_nav_item.html' with ziel='/app/?tab=finance' key='buchhaltung' icon='fa-calculator' label='Buchhaltung' %}
+            {% include 'fw/_nav_item.html' with ziel='' key='bankkonten' icon='fa-building-columns' label='Bankkonten' %}
+            {% include 'fw/_nav_item.html' with ziel='' key='bankabgleich' icon='fa-right-left' label='Bankabgleich' %}
+            {% include 'fw/_nav_item.html' with ziel='/app/?tab=finance' key='sollstellung' icon='fa-rotate' label='Sollstellung Miete' %}
+            {% include 'fw/_nav_item.html' with ziel='/app/?tab=finance' key='debitoren' icon='fa-layer-group' label='Debitoren' %}
+            {% include 'fw/_nav_item.html' with ziel='/app/?tab=finance' key='kreditoren' icon='fa-credit-card' label='Kreditoren' %}
+            {% include 'fw/_nav_item.html' with ziel='' key='mahnwesen' icon='fa-envelope-open-text' label='Mahnwesen' %}
+            {% include 'fw/_nav_item.html' with ziel='/app/?tab=finance' key='nebenkosten' icon='fa-bolt' label='Nebenkosten' %}
+            {% include 'fw/_nav_item.html' with ziel='' key='hypotheken' icon='fa-chart-column' label='Hypotheken' %}
+
+            <div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Gebäude</div>
+            {% include 'fw/_nav_item.html' with ziel='/app/?tab=portfolio' key='assets' icon='fa-house-chimney' label='Assets' %}
+            {% include 'fw/_nav_item.html' with ziel='/app/?tab=crm' key='dienstleister' icon='fa-wrench' label='Dienstleister' %}
+            {% include 'fw/_nav_item.html' with ziel='/app/?tab=tickets' key='schadensfaelle' icon='fa-cloud-bolt' label='Schadensfälle' %}
+        </nav>
+
+        <a href="/app/" class="px-5 py-4 border-t border-white/5 text-xs text-slate-500 hover:text-slate-300 transition-colors">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Zur bisherigen App
+        </a>
+    </aside>
+
+    <!-- ================= INHALT ================= -->
+    <div class="flex-1 min-w-0 flex flex-col">
+
+        <!-- TOPBAR -->
+        <header class="h-16 px-6 md:px-8 flex items-center gap-4 bg-white border-b border-slate-200 sticky top-0 z-40">
+            <a href="/neu/" class="lg:hidden text-slate-500"><i class="fa-solid fa-bars"></i></a>
+            <div class="flex-1 max-w-xl">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" placeholder="Suche" disabled
+                           class="w-full bg-slate-100 pl-11 pr-4 py-2.5 rounded-lg text-sm focus:outline-none placeholder:text-slate-400">
+                </div>
+            </div>
+            <button class="relative text-slate-400 hover:text-slate-600 transition-colors" title="Benachrichtigungen">
+                <i class="fa-regular fa-bell text-lg"></i>
+            </button>
+            <div class="flex items-center gap-2.5">
+                <span class="text-sm text-slate-500 hidden md:inline">Hallo, <span class="font-semibold text-slate-800">{{ request.user.first_name|default:request.user.username }}</span></span>
+                <div class="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">
+                    {{ request.user.username|slice:":2"|upper }}
+                </div>
+            </div>
+        </header>
+
+        <main class="p-6 md:p-8 w-full max-w-[1400px] mx-auto">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

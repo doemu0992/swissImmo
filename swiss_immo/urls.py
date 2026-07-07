@@ -56,7 +56,10 @@ from core.views.dashboard_view import update_market_data_view, spa_master_view
 # 2b. Eigentümer-Portal & Login-Weiche
 from core.views.portal import portal_view, nach_login_view
 
-# 2c. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
+# 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
+from core.views.fw import fw_dashboard
+
+# 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
 
 # 3. Verträge & Mietzins
@@ -80,6 +83,9 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('nach-login/', nach_login_view, name='nach_login'),
+
+    # --- FAIRWALTER-REBUILD (neue Oberfläche, wächst etappenweise) ---
+    path('neu/', fw_dashboard, name='fw_dashboard'),
 
     # --- DIE NEUE WEB-APP (SPA) ---
     path('app/', spa_master_view, name='spa_master'),
