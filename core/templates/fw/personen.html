@@ -1,0 +1,86 @@
+{% extends 'fw/base.html' %}
+{% block title %}Personen — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-1">
+    <h1 class="text-3xl font-extrabold text-slate-900">Personen</h1>
+    <a href="/app/?tab=crm" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+        <i class="fa-solid fa-plus mr-1.5"></i> Person erfassen
+    </a>
+</div>
+<p class="text-sm text-slate-500 mb-5">{{ rows|length }} Person(en) ·
+    <span class="text-emerald-600 font-medium">{{ mit_vertrag_count }} mit aktivem Vertrag</span>
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/personen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+
+    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+        <div class="flex items-center gap-1.5 flex-wrap">
+            {% for wert, label in typ_chips %}
+            <a href="?typ={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
+               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                      {% if typ_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+        <form method="get" class="ml-auto relative">
+            {% if typ_filter %}<input type="hidden" name="typ" value="{{ typ_filter }}">{% endif %}
+            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" name="q" value="{{ q }}" placeholder="Name, E-Mail oder Ort suchen…"
+                   class="bg-slate-100 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+        </form>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Name</th>
+                <th class="px-5 py-3 font-semibold">Kontakt</th>
+                <th class="px-5 py-3 font-semibold">Adresse</th>
+                <th class="px-5 py-3 font-semibold">Mietet aktuell</th>
+                <th class="px-5 py-3"></th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for row in rows %}
+            <tr class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="window.location='/dossier/mieter/{{ row.m.id }}/'">
+                <td class="px-5 py-3.5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                            <i class="fa-solid {% if row.m.typ == 'firma' %}fa-briefcase{% elif row.m.typ == 'verein' %}fa-people-group{% else %}fa-user{% endif %}"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-slate-900 whitespace-nowrap">{{ row.m.display_name }}</div>
+                            <div class="text-xs text-slate-400">{{ row.m.get_typ_display }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-5 py-3.5 text-slate-600">
+                    {% if row.m.email %}<div class="whitespace-nowrap"><i class="fa-regular fa-envelope text-slate-300 mr-1.5 text-xs"></i>{{ row.m.email }}</div>{% endif %}
+                    {% if row.telefon %}<div class="whitespace-nowrap text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-phone text-slate-300 mr-1.5 text-[10px]"></i>{{ row.telefon }}</div>{% endif %}
+                    {% if not row.m.email and not row.telefon %}<span class="text-slate-300">—</span>{% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">
+                    {% if row.m.strasse %}{{ row.m.strasse }}, {{ row.m.plz }} {{ row.m.ort }}{% else %}<span class="text-slate-300">—</span>{% endif %}
+                </td>
+                <td class="px-5 py-3.5 whitespace-nowrap">
+                    {% if row.objekt %}
+                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">{{ row.objekt }}</span>
+                    {% if row.aktive|length > 1 %}<span class="ml-1 text-xs text-slate-400">+{{ row.aktive|length|add:"-1" }}</span>{% endif %}
+                    {% else %}<span class="text-slate-300">—</span>{% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="px-5 py-10 text-center text-sm text-slate-400 italic">
+                {% if q or typ_filter %}Keine Treffer für diesen Filter.{% else %}Noch keine Personen erfasst.{% endif %}
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

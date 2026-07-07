@@ -15,6 +15,7 @@ from django.utils import timezone
 
 from core.auth import rolle_erforderlich, TEAM_ROLLEN
 from core.views.dashboard_view import _berechne_aufgaben
+from crm.models import Mieter
 from finance.models import DebitorenRechnung
 from portfolio.models import Liegenschaft, Einheit
 from rentals.models import Mietvertrag
@@ -262,4 +263,93 @@ def fw_objekte(request):
         'typ_chips': [('', 'Alle'), ('wohnen', 'Wohnen'), ('parkplatz', 'Parkplatz'), ('gewerbe', 'Gewerbe')],
         'vermietet_count': vermietet_count,
         'leer_count': len(rows) - vermietet_count,
+    })
+
+
+VERTRAG_PILL = {
+    'entwurf':    ('Entwurf',    'bg-slate-100 text-slate-600'),
+    'aktiv':      ('Aktiv',      'bg-emerald-50 text-emerald-700'),
+    'gekuendigt': ('Gekündigt',  'bg-rose-50 text-rose-600'),
+    'archiviert': ('Archiviert', 'bg-slate-100 text-slate-500'),
+}
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_vertraege(request):
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    qs = (Mietvertrag.objects
+          .select_related('mieter', 'einheit__liegenschaft')
+          .order_by('-beginn'))
+    if aktive_lg:
+        qs = qs.filter(einheit__liegenschaft=aktive_lg)
+
+    status_filter = request.GET.get('status', '')
+    if status_filter in VERTRAG_PILL:
+        qs = qs.filter(status=status_filter)
+    q = (request.GET.get('q') or '').strip()
+    if q:
+        qs = qs.filter(Q(mieter__vorname__icontains=q) | Q(mieter__nachname__icontains=q)
+                       | Q(mieter__firmen_name__icontains=q)
+                       | Q(einheit__bezeichnung__icontains=q)
+                       | Q(einheit__liegenschaft__strasse__icontains=q))
+
+    rows = []
+    for v in qs:
+        label, pill_cls = VERTRAG_PILL.get(v.status, (v.status, 'bg-slate-100 text-slate-500'))
+        rows.append({
+            'v': v,
+            'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0')),
+            'status_label': label,
+            'pill_cls': pill_cls,
+        })
+
+    return render(request, 'fw/vertraege.html', {
+        **basis, 'nav': 'vertraege', 'rows': rows,
+        'status_filter': status_filter, 'q': q,
+        'status_chips': [('', 'Alle')] + [(k, v[0]) for k, v in VERTRAG_PILL.items()],
+        'aktiv_count': sum(1 for r in rows if r['v'].status == 'aktiv'),
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_personen(request):
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    qs = Mieter.objects.all().order_by('nachname', 'firmen_name')
+    if aktive_lg:
+        qs = qs.filter(vertraege__einheit__liegenschaft=aktive_lg).distinct()
+
+    typ_filter = request.GET.get('typ', '')
+    if typ_filter in ('person', 'firma', 'verein'):
+        qs = qs.filter(typ=typ_filter)
+    q = (request.GET.get('q') or '').strip()
+    if q:
+        qs = qs.filter(Q(vorname__icontains=q) | Q(nachname__icontains=q)
+                       | Q(firmen_name__icontains=q) | Q(email__icontains=q) | Q(ort__icontains=q))
+
+    aktive_vertraege = (Mietvertrag.objects.filter(status='aktiv')
+                        .select_related('einheit__liegenschaft'))
+    vertrag_je_mieter = {}
+    for v in aktive_vertraege:
+        vertrag_je_mieter.setdefault(v.mieter_id, []).append(v)
+
+    rows = []
+    for m in qs:
+        aktive = vertrag_je_mieter.get(m.id, [])
+        rows.append({
+            'm': m,
+            'telefon': m.mobile or m.telefon_privat or m.telefon_geschaeft,
+            'aktive': aktive,
+            'objekt': (f"{aktive[0].einheit.liegenschaft.strasse} · {aktive[0].einheit.bezeichnung}"
+                       if aktive else None),
+        })
+
+    return render(request, 'fw/personen.html', {
+        **basis, 'nav': 'personen', 'rows': rows,
+        'typ_filter': typ_filter, 'q': q,
+        'typ_chips': [('', 'Alle'), ('person', 'Privatpersonen'), ('firma', 'Firmen'), ('verein', 'Vereine')],
+        'mit_vertrag_count': sum(1 for r in rows if r['aktive']),
     })
