@@ -1,9 +1,11 @@
 # core/views/pdf.py
+from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from rentals.models import Mietvertrag
 from core.services.pdf_service import generate_vertrag_pdf_bytes
 
+@staff_member_required
 def generate_pdf_view(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     try:

@@ -14,7 +14,9 @@ from portfolio.models import Einheit
 
 router = Router(tags=["Mietprozess"])
 
-@router.post("/public/bewerben", response={201: dict, 400: dict})
+# auth=None: Bewusst öffentlich — das ist das Bewerbungsformular für Interessenten
+# (alle anderen Endpoints erben die Session-Pflicht aus NinjaAPI(auth=django_auth)).
+@router.post("/public/bewerben", response={201: dict, 400: dict}, auth=None)
 @transaction.atomic
 def public_submit_bewerbung(
     request,

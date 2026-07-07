@@ -9,6 +9,8 @@ from django.contrib.auth import views as auth_views  # <-- Import für den Login
 # 🚀 API SETUP (DJANGO NINJA)
 # ========================================================
 from ninja import NinjaAPI
+from ninja.security import django_auth
+from django.contrib.admin.views.decorators import staff_member_required
 # Router importieren
 from portfolio.api import router as portfolio_router
 from crm.api import router as crm_router
@@ -17,11 +19,18 @@ from tickets.api import router as tickets_router
 from finance.api import router as finance_router
 from mietprozess.api import router as mietprozess_router
 
-# Wir initialisieren die zentrale API
+# Wir initialisieren die zentrale API.
+# auth=django_auth: JEDER Endpoint verlangt eine eingeloggte Session
+# (das SPA sendet Session-Cookie + X-CSRFToken bereits mit).
+# Öffentliche Ausnahmen werden am Endpoint mit auth=None markiert
+# (aktuell nur POST /api/mietprozess/public/bewerben).
+# docs_decorator: API-Dokumentation (/api/docs) nur für Staff sichtbar.
 api = NinjaAPI(
     title="swissImmo API",
     version="1.0.0",
-    description="REST API für das Vue.js Frontend"
+    description="REST API für das Vue.js Frontend",
+    auth=django_auth,
+    docs_decorator=staff_member_required,
 )
 
 # Wir registrieren die Module in der API
