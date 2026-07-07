@@ -58,7 +58,7 @@
                         </td>
                         <td class="px-8 py-5">
                             <div class="flex items-center justify-center gap-3">
-                                <span :class="k.status === 'Bezahlt' ? 'bg-emerald-50 text-emerald-600' : (k.status === 'Teilzahlung' ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600')" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">
+                                <span :class="k.status === 'Bezahlt' ? 'bg-emerald-50 text-emerald-600' : (k.status === 'Teilzahlung' || k.status === 'Teilbezahlt' ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600')" class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest">
                                     {% verbatim %}{{ k.status }}{% endverbatim %}
                                 </span>
 
@@ -108,8 +108,8 @@
                             + {% verbatim %}{{ parseFloat(z.betrag).toFixed(2) }}{% endverbatim %}
                         </td>
                         <td class="px-8 py-5 text-center">
-                            <button @click="deleteZahlung(z.id)" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Zahlung stornieren (Löschen)">
-                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            <button @click="storniereZahlung(z.id)" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Revisionssicher stornieren">
+                                <i class="fa-solid fa-rotate-left text-xs"></i>
                             </button>
                         </td>
                     </tr>
@@ -146,8 +146,8 @@
                             {% verbatim %}{{ parseFloat(r.betrag).toFixed(2) }}{% endverbatim %}
                         </td>
                         <td class="px-8 py-5 text-center">
-                            <button @click="deleteDebitorenRechnung(r.id)" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Rechnung stornieren (löscht auch den Ertrag)">
-                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            <button @click="storniereDebitorenRechnung(r.id)" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Revisionssicher stornieren">
+                                <i class="fa-solid fa-rotate-left text-xs"></i>
                             </button>
                         </td>
                     </tr>
@@ -202,8 +202,8 @@
                                     <i class="fa-solid fa-share-from-square mr-1"></i> Weiterverrechnen
                                 </button>
                                 <a :href="k.file_url" target="_blank" class="w-8 h-8 bg-slate-100 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-600 hover:text-white transition-all"><i class="fa-solid fa-eye text-xs"></i></a>
-                                <button @click="deleteKreditor(k.id)" class="w-8 h-8 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Rechnung löschen">
-                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                <button @click="storniereKreditor(k.id)" class="w-8 h-8 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Revisionssicher stornieren">
+                                    <i class="fa-solid fa-rotate-left text-xs"></i>
                                 </button>
                             </div>
                         </td>

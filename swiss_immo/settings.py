@@ -169,6 +169,7 @@ CKEDITOR_CONFIGS = {'default': {'toolbar': 'full', 'height': 300, 'width': '100%
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 DOCUSEAL_API_KEY = os.getenv('DOCUSEAL_API_KEY')
 DOCUSEAL_URL = "https://api.docuseal.com"
+GROQ_API_KEY = os.getenv('GROQ_API_KEY') # 🔥 NEU: Groq API Key aus der .env Datei laden
 
 # SMTP KONFIGURATION (HOSTSTAR) - BLEIBT AKTIV!
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -35,7 +35,7 @@ class Buchungskonto(models.Model):
 
     def __str__(self): return f"{self.nummer} - {self.bezeichnung}"
 
-# 🔥 NEU: Die doppelte Buchhaltung (Soll & Haben)
+# 🔥 NEU: Die doppelte Buchhaltung (Soll & Haben) mit Revisionssicherheit
 class Buchung(models.Model):
     datum = models.DateField(default=timezone.now)
     beleg_text = models.CharField(max_length=255)
@@ -47,10 +47,14 @@ class Buchung(models.Model):
     haben_konto = models.ForeignKey(Buchungskonto, on_delete=models.PROTECT, related_name='haben_buchungen')
     betrag = models.DecimalField(max_digits=10, decimal_places=2)
 
-    # Verknüpfungen zu unseren Belegen (als ForeignKey, da ein Beleg Rechnungs- und Zahlungsbuchung haben kann)
+    # Verknüpfungen zu unseren Belegen
     zahlungseingang = models.ForeignKey('Zahlungseingang', on_delete=models.SET_NULL, null=True, blank=True, related_name='buchungen')
     kreditoren_rechnung = models.ForeignKey('KreditorenRechnung', on_delete=models.SET_NULL, null=True, blank=True, related_name='buchungen')
     debitoren_rechnung = models.ForeignKey('DebitorenRechnung', on_delete=models.SET_NULL, null=True, blank=True, related_name='buchungen')
+
+    # 🔥 NEU: Revisionssicherheit (Storno)
+    ist_storno = models.BooleanField(default=False)
+    storniert_am = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.datum}: {self.soll_konto.nummer} an {self.haben_konto.nummer} | CHF {self.betrag}"
@@ -62,12 +66,13 @@ class Buchung(models.Model):
         db_table = 'core_buchung'
 
 
-# 🔥 NEU: Debitorenrechnungen für Weiterverrechnungen an Mieter
+# 🔥 NEU: Debitorenrechnungen (inkl. OP-Verwaltung)
 class DebitorenRechnung(models.Model):
     STATUS_CHOICES = [
         ('offen', 'Offen'),
+        ('teilbezahlt', 'Teilbezahlt'), # 🔥 NEU für saubere OP-Verwaltung
         ('bezahlt', 'Bezahlt'),
-        ('storniert', 'Storniert'),
+        ('storniert', 'Storniert'),     # 🔥 NEU statt Löschen
     ]
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='debitoren_rechnungen')
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
@@ -92,6 +97,69 @@ class DebitorenRechnung(models.Model):
     def __str__(self):
         return f"{self.titel} - CHF {self.betrag} ({self.get_status_display()})"
 
+    # 🔥 NEU: OP-Verwaltung (Offener Betrag)
+    @property
+    def offener_betrag(self):
+        zahlungen = self.zahlungseingaenge.filter(status='verbucht').aggregate(Sum('betrag'))['betrag__sum'] or Decimal('0.00')
+        return max(Decimal('0.00'), self.betrag - zahlungen)
+
+
+class Zahlungseingang(models.Model):
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='zahlungen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
+    konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
+
+    # 🔥 NEU: Verknüpfung zur Rechnung für sauberes Matching
+    debitoren_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.SET_NULL, null=True, blank=True, related_name='zahlungseingaenge')
+
+    betrag = models.DecimalField(max_digits=10, decimal_places=2)
+    datum_eingang = models.DateField(default=timezone.now)
+    buchungs_monat = models.DateField("Für Monat/Jahr", null=True)
+    bemerkung = models.CharField(max_length=255, blank=True, default='')
+    erstellt_am = models.DateTimeField(default=timezone.now)
+
+    # 🔥 NEU: Status für Stornos
+    status = models.CharField(max_length=20, choices=[('verbucht', 'Verbucht'), ('storniert', 'Storniert')], default='verbucht')
+
+    class Meta: db_table = 'core_zahlungseingang'
+
+class KreditorenRechnung(models.Model):
+    STATUS_CHOICES = [
+        ('neu', 'Neu / Scan'),
+        ('freigegeben', 'Freigegeben'),
+        ('bezahlt', 'Bezahlt'),
+        ('storniert', 'Storniert'), # 🔥 NEU für Revisionssicherheit
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='neu')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True)
+    konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
+
+    # Die "Shift-Left" Felder für die HNK
+    is_hnk_relevant = models.BooleanField("In HNK einbeziehen", default=False)
+    leistungs_von = models.DateField("Leistungsperiode Von", null=True, blank=True)
+    leistungs_bis = models.DateField("Leistungsperiode Bis", null=True, blank=True)
+    menge_liter = models.DecimalField("Menge (Liter)", max_digits=10, decimal_places=2, null=True, blank=True)
+
+    lieferant = models.CharField(max_length=200, blank=True)
+    datum = models.DateField(null=True, blank=True)
+    faellig_am = models.DateField(null=True, blank=True)
+    betrag = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    iban = models.CharField(max_length=50, blank=True)
+    referenz = models.CharField(max_length=100, blank=True)
+
+    beleg_scan = models.FileField(upload_to='kreditoren_belege/', blank=True, null=True)
+    fehlermeldung = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Kreditorenrechnung"
+        db_table = 'core_kreditorenrechnung'
+
+    def __str__(self): return f"{self.lieferant} - {self.betrag} ({self.status})"
+
+# ========================================================
+# HNK ABRECHNUNG UND BELEGE
+# ========================================================
 
 class AbrechnungsPeriode(models.Model):
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='abrechnungen')
@@ -266,52 +334,6 @@ class NebenkostenBeleg(models.Model):
             super().save(update_fields=['betrag', 'text', 'kategorie'])
 
     def __str__(self): return f"{self.text or 'Beleg'} (CHF {self.betrag})"
-
-class KreditorenRechnung(models.Model):
-    STATUS_CHOICES = [
-        ('neu', 'Neu / Scan'),
-        ('freigegeben', 'Freigegeben'),
-        ('bezahlt', 'Bezahlt'),
-    ]
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='neu')
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
-    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True)
-    konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
-
-    # Die "Shift-Left" Felder für die HNK
-    is_hnk_relevant = models.BooleanField("In HNK einbeziehen", default=False)
-    leistungs_von = models.DateField("Leistungsperiode Von", null=True, blank=True)
-    leistungs_bis = models.DateField("Leistungsperiode Bis", null=True, blank=True)
-    menge_liter = models.DecimalField("Menge (Liter)", max_digits=10, decimal_places=2, null=True, blank=True)
-
-    lieferant = models.CharField(max_length=200, blank=True)
-    datum = models.DateField(null=True, blank=True)
-    faellig_am = models.DateField(null=True, blank=True)
-    betrag = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    iban = models.CharField(max_length=50, blank=True)
-    referenz = models.CharField(max_length=100, blank=True)
-
-    beleg_scan = models.FileField(upload_to='kreditoren_belege/', blank=True, null=True)
-    fehlermeldung = models.TextField(blank=True)
-
-    class Meta:
-        verbose_name = "Kreditorenrechnung"
-        db_table = 'core_kreditorenrechnung'
-
-    def __str__(self): return f"{self.lieferant} - {self.betrag} ({self.status})"
-
-class Zahlungseingang(models.Model):
-    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='zahlungen')
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
-    konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
-
-    betrag = models.DecimalField(max_digits=10, decimal_places=2)
-    datum_eingang = models.DateField(default=timezone.now)
-    buchungs_monat = models.DateField("Für Monat/Jahr", null=True)
-    bemerkung = models.CharField(max_length=255, blank=True, default='')
-    erstellt_am = models.DateTimeField(default=timezone.now)
-
-    class Meta: db_table = 'core_zahlungseingang'
 
 class Jahresabschluss(models.Model):
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE)
