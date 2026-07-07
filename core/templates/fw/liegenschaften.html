@@ -1,0 +1,62 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Liegenschaften — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-1">
+    <h1 class="text-3xl font-extrabold text-slate-900">Liegenschaften</h1>
+    <a href="/app/?tab=portfolio" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+        <i class="fa-solid fa-plus mr-1.5"></i> Liegenschaft erfassen
+    </a>
+</div>
+<p class="text-sm text-slate-500 mb-5">{{ rows|length }} Liegenschaft(en) im Portfolio
+    {% if aktive_lg %}· gefiltert <a href="/neu/liegenschaften/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Liegenschaft</th>
+                <th class="px-5 py-3 font-semibold">Ort</th>
+                <th class="px-5 py-3 font-semibold text-center">Objekte</th>
+                <th class="px-5 py-3 font-semibold text-center">Aktive Verträge</th>
+                <th class="px-5 py-3 font-semibold text-center">Leerstand</th>
+                <th class="px-5 py-3 font-semibold text-right">Mietertrag / Monat</th>
+                <th class="px-5 py-3"></th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for row in rows %}
+            <tr class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="window.location='/dossier/liegenschaft/{{ row.lg.id }}/'">
+                <td class="px-5 py-3.5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-building"></i></div>
+                        <div>
+                            <div class="font-semibold text-slate-900">{{ row.lg.strasse }}</div>
+                            {% if row.lg.baujahr %}<div class="text-xs text-slate-400">Baujahr {{ row.lg.baujahr }}</div>{% endif %}
+                        </div>
+                    </div>
+                </td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.lg.plz }} {{ row.lg.ort }}</td>
+                <td class="px-5 py-3.5 text-center font-semibold text-slate-800">{{ row.einheiten_count }}</td>
+                <td class="px-5 py-3.5 text-center text-slate-600">{{ row.vertraege_count }}</td>
+                <td class="px-5 py-3.5 text-center">
+                    {% if row.leer %}
+                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700">{{ row.leer }} leer</span>
+                    {% else %}
+                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">Voll vermietet</span>
+                    {% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-right font-semibold text-indigo-600 whitespace-nowrap">CHF {{ row.mietertrag|chf }}</td>
+                <td class="px-5 py-3.5 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="px-5 py-10 text-center text-sm text-slate-400 italic">Noch keine Liegenschaften erfasst.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

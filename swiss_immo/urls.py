@@ -57,7 +57,7 @@ from core.views.dashboard_view import update_market_data_view, spa_master_view
 from core.views.portal import portal_view, nach_login_view
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
-from core.views.fw import fw_dashboard
+from core.views.fw import fw_dashboard, fw_debitoren, fw_liegenschaften, fw_objekte
 
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
@@ -86,6 +86,9 @@ urlpatterns = [
 
     # --- FAIRWALTER-REBUILD (neue Oberfläche, wächst etappenweise) ---
     path('neu/', fw_dashboard, name='fw_dashboard'),
+    path('neu/debitoren/', fw_debitoren, name='fw_debitoren'),
+    path('neu/liegenschaften/', fw_liegenschaften, name='fw_liegenschaften'),
+    path('neu/objekte/', fw_objekte, name='fw_objekte'),
 
     # --- DIE NEUE WEB-APP (SPA) ---
     path('app/', spa_master_view, name='spa_master'),

@@ -7,12 +7,15 @@ Der 'Globale Filter' (?lg=<id>) filtert alle Kennzahlen auf eine Liegenschaft �
 er wird in _global_filter() gelesen und an jede Seite durchgereicht.
 """
 from datetime import date
+from decimal import Decimal
 
+from django.db.models import Q, Sum
 from django.shortcuts import render
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, TEAM_ROLLEN
 from core.views.dashboard_view import _berechne_aufgaben
+from finance.models import DebitorenRechnung
 from portfolio.models import Liegenschaft, Einheit
 from rentals.models import Mietvertrag
 
@@ -92,3 +95,171 @@ def fw_dashboard(request):
         'aufgaben': aufgaben,
     }
     return render(request, 'fw/dashboard.html', context)
+
+
+# ============================================================
+# ETAPPE B: LISTEN ALS DATENTABELLEN
+# ============================================================
+
+def _mahnstufe(faellig, heute, status):
+    """Heuristische Mahnstufe aus dem Fälligkeitsdatum (bis Etappe D
+    ein echtes Mahnwesen mit gespeicherten Stufen bringt)."""
+    if status not in ('offen', 'teilbezahlt') or not faellig or faellig >= heute:
+        return None
+    tage = (heute - faellig).days
+    if tage > 60:
+        return {'label': '3. Mahnung', 'cls': 'bg-rose-100 text-rose-700', 'tage': tage}
+    if tage > 30:
+        return {'label': '2. Mahnung', 'cls': 'bg-rose-50 text-rose-600', 'tage': tage}
+    if tage > 14:
+        return {'label': '1. Mahnung', 'cls': 'bg-amber-100 text-amber-700', 'tage': tage}
+    return {'label': 'Fällig', 'cls': 'bg-amber-50 text-amber-600', 'tage': tage}
+
+
+STATUS_PILL = {
+    'offen':       ('Offen',       'bg-amber-50 text-amber-700'),
+    'teilbezahlt': ('Teilbezahlt', 'bg-sky-50 text-sky-700'),
+    'bezahlt':     ('Bezahlt',     'bg-emerald-50 text-emerald-700'),
+    'storniert':   ('Storniert',   'bg-slate-100 text-slate-500'),
+}
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_debitoren(request):
+    heute = timezone.now().date()
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    qs = (DebitorenRechnung.objects
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft',
+                          'liegenschaft', 'einheit__liegenschaft')
+          .prefetch_related('zahlungseingaenge'))
+    if aktive_lg:
+        qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
+
+    # Filterzeile: Status-Chips + Suche
+    status_filter = request.GET.get('status', '')
+    if status_filter in STATUS_PILL:
+        qs = qs.filter(status=status_filter)
+    q = (request.GET.get('q') or '').strip()
+    if q:
+        qs = qs.filter(Q(titel__icontains=q)
+                       | Q(vertrag__mieter__vorname__icontains=q)
+                       | Q(vertrag__mieter__nachname__icontains=q)
+                       | Q(vertrag__mieter__firmen_name__icontains=q))
+
+    rows = []
+    total_offen = Decimal('0.00')
+    anzahl_offen = 0
+    anzahl_ueberfaellig = 0
+    for r in qs:
+        lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag_id and r.vertrag.einheit_id else None)
+        einheit = r.einheit or (r.vertrag.einheit if r.vertrag_id else None)
+        offen = r.offener_betrag if r.status in ('offen', 'teilbezahlt') else Decimal('0.00')
+        faellig = r.faellig_am or r.datum
+        mahn = _mahnstufe(faellig, heute, r.status)
+        if r.status in ('offen', 'teilbezahlt'):
+            total_offen += offen
+            anzahl_offen += 1
+            if mahn:
+                anzahl_ueberfaellig += 1
+        label, pill_cls = STATUS_PILL.get(r.status, (r.status, 'bg-slate-100 text-slate-500'))
+        rows.append({
+            'r': r,
+            'mieter': r.vertrag.mieter.display_name if r.vertrag_id else '—',
+            'objekt': f"{lg.strasse}, {lg.ort}" if lg else '—',
+            'einheit': einheit.bezeichnung if einheit else '',
+            'faellig': faellig,
+            'offen': offen,
+            'status_label': label,
+            'pill_cls': pill_cls,
+            'mahn': mahn,
+            'vertrag_id': r.vertrag_id,
+        })
+    # Offene zuerst (nach Fälligkeit), erledigte danach (neuste zuoberst)
+    rows.sort(key=lambda x: (0, x['faellig'].toordinal()) if x['r'].status in ('offen', 'teilbezahlt')
+              else (1, -x['faellig'].toordinal()))
+
+    context = {
+        **basis,
+        'nav': 'debitoren',
+        'rows': rows,
+        'status_filter': status_filter,
+        'q': q,
+        'status_chips': [('', 'Alle')] + [(k, v[0]) for k, v in STATUS_PILL.items()],
+        'total_offen': total_offen,
+        'anzahl_offen': anzahl_offen,
+        'anzahl_ueberfaellig': anzahl_ueberfaellig,
+    }
+    return render(request, 'fw/debitoren.html', context)
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_liegenschaften(request):
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    liegenschaften = Liegenschaft.objects.all().order_by('strasse')
+    if aktive_lg:
+        liegenschaften = liegenschaften.filter(id=aktive_lg.id)
+
+    rows = []
+    for lg in liegenschaften:
+        einheiten = lg.einheiten.all()
+        aktive = Mietvertrag.objects.filter(einheit__liegenschaft=lg, status='aktiv')
+        belegte = set(aktive.values_list('einheit_id', flat=True))
+        for neben_id in aktive.values_list('nebenobjekte', flat=True):
+            if neben_id:
+                belegte.add(neben_id)
+        leer = sum(1 for e in einheiten if e.id not in belegte)
+        soll = aktive.aggregate(s=Sum('netto_mietzins'), n=Sum('nebenkosten'))
+        mietertrag = (soll['s'] or Decimal('0')) + (soll['n'] or Decimal('0'))
+        rows.append({'lg': lg, 'einheiten_count': len(einheiten), 'leer': leer,
+                     'mietertrag': mietertrag, 'vertraege_count': aktive.count()})
+
+    return render(request, 'fw/liegenschaften.html', {
+        **basis, 'nav': 'liegenschaften', 'rows': rows,
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_objekte(request):
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    einheiten = Einheit.objects.select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung')
+    if aktive_lg:
+        einheiten = einheiten.filter(liegenschaft=aktive_lg)
+
+    typ_filter = request.GET.get('typ', '')
+    typ_gruppen = {'wohnen': ['whg', 'stwe'], 'parkplatz': ['pp', 'gar'], 'gewerbe': ['gew']}
+    if typ_filter in typ_gruppen:
+        einheiten = einheiten.filter(typ__in=typ_gruppen[typ_filter])
+    q = (request.GET.get('q') or '').strip()
+    if q:
+        einheiten = einheiten.filter(Q(bezeichnung__icontains=q) | Q(liegenschaft__strasse__icontains=q))
+
+    aktive = Mietvertrag.objects.filter(status='aktiv').select_related('mieter')
+    mieter_je_einheit = {}
+    for v in aktive:
+        mieter_je_einheit[v.einheit_id] = (v.mieter.display_name, v.id)
+    for v in aktive.prefetch_related('nebenobjekte'):
+        for neben in v.nebenobjekte.all():
+            mieter_je_einheit.setdefault(neben.id, (v.mieter.display_name, v.id))
+
+    rows = []
+    vermietet_count = 0
+    for e in einheiten:
+        belegung = mieter_je_einheit.get(e.id)
+        if belegung:
+            vermietet_count += 1
+        rows.append({'e': e, 'mieter': belegung[0] if belegung else None,
+                     'vertrag_id': belegung[1] if belegung else None})
+
+    return render(request, 'fw/objekte.html', {
+        **basis, 'nav': 'objekte', 'rows': rows,
+        'typ_filter': typ_filter, 'q': q,
+        'typ_chips': [('', 'Alle'), ('wohnen', 'Wohnen'), ('parkplatz', 'Parkplatz'), ('gewerbe', 'Gewerbe')],
+        'vermietet_count': vermietet_count,
+        'leer_count': len(rows) - vermietet_count,
+    })

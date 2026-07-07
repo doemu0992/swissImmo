@@ -1,0 +1,94 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Objekte — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-1">
+    <h1 class="text-3xl font-extrabold text-slate-900">Objekte</h1>
+    <a href="/app/?tab=portfolio" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+        <i class="fa-solid fa-plus mr-1.5"></i> Objekt erfassen
+    </a>
+</div>
+<p class="text-sm text-slate-500 mb-5">{{ rows|length }} Mietobjekt(e) ·
+    <span class="text-emerald-600 font-medium">{{ vermietet_count }} vermietet</span> ·
+    <span class="{% if leer_count %}text-amber-600{% else %}text-slate-400{% endif %} font-medium">{{ leer_count }} im Leerstand</span>
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/objekte/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+
+    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+        <div class="flex items-center gap-1.5 flex-wrap">
+            {% for wert, label in typ_chips %}
+            <a href="?typ={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
+               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                      {% if typ_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+        <form method="get" class="ml-auto relative">
+            {% if typ_filter %}<input type="hidden" name="typ" value="{{ typ_filter }}">{% endif %}
+            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" name="q" value="{{ q }}" placeholder="Objekt oder Strasse suchen…"
+                   class="bg-slate-100 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+        </form>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Objekt</th>
+                <th class="px-5 py-3 font-semibold">Liegenschaft</th>
+                <th class="px-5 py-3 font-semibold">Typ</th>
+                <th class="px-5 py-3 font-semibold text-center">Zimmer</th>
+                <th class="px-5 py-3 font-semibold text-center">Fläche</th>
+                <th class="px-5 py-3 font-semibold text-right">Soll-Miete</th>
+                <th class="px-5 py-3 font-semibold">Status</th>
+                <th class="px-5 py-3 font-semibold">Mieter</th>
+                <th class="px-5 py-3"></th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for row in rows %}
+            <tr class="hover:bg-slate-50/60 transition-colors">
+                <td class="px-5 py-3.5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                            <i class="fa-solid {% if row.e.typ == 'pp' or row.e.typ == 'gar' %}fa-square-parking{% elif row.e.typ == 'gew' %}fa-shop{% else %}fa-house{% endif %}"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-slate-900">{{ row.e.bezeichnung }}</div>
+                            {% if row.e.etage %}<div class="text-xs text-slate-400">{{ row.e.etage }}</div>{% endif %}
+                        </div>
+                    </div>
+                </td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.e.liegenschaft.strasse }}, {{ row.e.liegenschaft.ort }}</td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.e.get_typ_display }}</td>
+                <td class="px-5 py-3.5 text-center text-slate-600">{% if row.e.zimmer %}{{ row.e.zimmer }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3.5 text-center text-slate-600 whitespace-nowrap">{% if row.e.flaeche_m2 %}{{ row.e.flaeche_m2|floatformat:0 }} m²{% else %}—{% endif %}</td>
+                <td class="px-5 py-3.5 text-right font-medium text-slate-800 whitespace-nowrap">{% if row.e.nettomiete_aktuell %}{{ row.e.nettomiete_aktuell|chf }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3.5">
+                    {% if row.mieter %}
+                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">Vermietet</span>
+                    {% else %}
+                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700">Leerstand</span>
+                    {% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{% if row.mieter %}{{ row.mieter }}{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
+                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                    {% if row.vertrag_id %}<a href="/dossier/vertrag/{{ row.vertrag_id }}/" class="text-xs text-indigo-600 font-medium hover:underline">Vertrag</a>
+                    {% else %}<a href="/dossier/liegenschaft/{{ row.e.liegenschaft_id }}/" class="text-xs text-indigo-600 font-medium hover:underline">Ansehen</a>{% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="9" class="px-5 py-10 text-center text-sm text-slate-400 italic">
+                {% if q or typ_filter %}Keine Treffer für diesen Filter.{% else %}Noch keine Objekte erfasst.{% endif %}
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
