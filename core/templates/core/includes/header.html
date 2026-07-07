@@ -7,14 +7,14 @@
 
     <div class="flex-1 max-w-xl mx-8 relative" v-click-outside="() => showSearch = false">
         <div class="relative group">
-            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-petrol-600 transition-colors"></i>
             <input
                 id="global-search-input"
                 v-model="searchQuery"
                 @focus="showSearch = true"
                 type="text"
                 placeholder="Suche nach Mietern, Objekten, Tickets..."
-                class="w-full bg-white border border-slate-200 pl-12 pr-12 py-3 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm placeholder:text-slate-400"
+                class="w-full bg-white border border-slate-200 pl-12 pr-12 py-3 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-petrol-600/10 focus:border-petrol-600 transition-all shadow-sm placeholder:text-slate-400"
             >
             <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none opacity-50 group-focus-within:opacity-0 transition-opacity">
                 <kbd class="bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded-md text-[10px] font-black text-slate-500 font-sans">⌘K</kbd>
@@ -63,16 +63,16 @@
     </div>
 
     <div class="w-1/4 flex justify-end gap-3">
-        <a v-if="activeTab === 'home'" href="/admin/update-marktdaten/" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:bg-slate-800 transition-all">
+        <a v-if="activeTab === 'home'" href="/admin/update-marktdaten/" class="bg-petrol-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:bg-petrol-700 transition-all">
             <i class="fa-solid fa-rotate mr-2"></i> Marktdaten Sync
         </a>
-        <button v-if="activeTab === 'portfolio'" @click="showPropModal = true" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">
+        <button v-if="activeTab === 'portfolio'" @click="showPropModal = true" class="bg-coral-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-coral-100 hover:bg-coral-600 transition-all">
             + Liegenschaft
         </button>
-        <button v-if="activeTab === 'crm'" @click="showMieterModal = true" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">
+        <button v-if="activeTab === 'crm'" @click="showMieterModal = true" class="bg-coral-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-coral-100 hover:bg-coral-600 transition-all">
             + Neuer Mieter
         </button>
-        <button v-if="activeTab === 'finance'" @click="showPaymentModal = true" class="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all">
+        <button v-if="activeTab === 'finance'" @click="showPaymentModal = true" class="bg-coral-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-coral-100 hover:bg-coral-600 transition-all">
             + Zahlung verbuchen
         </button>
     </div>

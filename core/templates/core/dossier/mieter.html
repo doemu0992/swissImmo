@@ -1,103 +1,117 @@
 {% extends 'core/dossier/base.html' %}
 {% load chf %}
 {% block title %}{{ mieter.display_name }}{% endblock %}
-{% block dossier_typ %}Mieter-Dossier{% endblock %}
+{% block nav_crm %}bg-white/10 text-white{% endblock %}
+{% block breadcrumb %}
+    <a href="/app/?tab=crm" class="text-slate-400 hover:text-petrol-600 transition-colors">Mieterstamm</a>
+    <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i>
+    <span class="font-semibold text-slate-700 truncate">{{ mieter.display_name }}</span>
+{% endblock %}
 
 {% block content %}
 
-<!-- HERO -->
-<div class="bg-slate-900 rounded-3xl p-8 text-white flex flex-col md:flex-row md:items-center gap-6">
-    <div class="w-16 h-16 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-3xl shrink-0">
-        <i class="fa-solid {% if mieter.typ == 'person' %}fa-user{% elif mieter.typ == 'firma' %}fa-building{% else %}fa-users{% endif %}"></i>
-    </div>
-    <div class="flex-1">
-        <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{{ mieter.get_typ_display }}</div>
-        <h1 class="text-3xl font-black">{{ mieter.display_name }}</h1>
-        <p class="text-sm text-slate-400 mt-1">
-            {% if mieter.strasse %}{{ mieter.strasse }}, {{ mieter.plz }} {{ mieter.ort }}{% else %}Keine Adresse hinterlegt{% endif %}
-        </p>
-    </div>
-    <div class="grid grid-cols-3 gap-6 text-center">
-        <div><div class="text-2xl font-black">{{ anzahl_aktive }}</div><div class="text-[10px] font-black uppercase tracking-widest text-slate-400">Aktive Verträge</div></div>
-        <div><div class="text-2xl font-black">{{ brutto_monat|chf:0 }}</div><div class="text-[10px] font-black uppercase tracking-widest text-slate-400">CHF / Monat</div></div>
-        <div><div class="text-2xl font-black {% if total_offen > 0 %}text-rose-400{% else %}text-emerald-400{% endif %}">{{ total_offen|chf:0 }}</div><div class="text-[10px] font-black uppercase tracking-widest text-slate-400">CHF offen</div></div>
+<!-- SEITENKOPF -->
+<div class="bg-white rounded-xl border border-slate-200 p-6">
+    <div class="flex flex-col md:flex-row md:items-center gap-5">
+        <div class="w-14 h-14 rounded-xl bg-petrol-50 text-petrol-600 flex items-center justify-center text-2xl shrink-0">
+            <i class="fa-solid {% if mieter.typ == 'person' %}fa-user{% elif mieter.typ == 'firma' %}fa-building{% else %}fa-users{% endif %}"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+                <h1 class="text-2xl font-bold text-slate-900">{{ mieter.display_name }}</h1>
+                <span class="text-xs font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-500">{{ mieter.get_typ_display }}</span>
+            </div>
+            <p class="text-sm text-slate-500 mt-0.5">
+                {% if mieter.strasse %}{{ mieter.strasse }}, {{ mieter.plz }} {{ mieter.ort }}{% else %}Keine Adresse hinterlegt{% endif %}
+            </p>
+        </div>
+        <div class="flex gap-8 text-right">
+            <div><div class="text-xl font-bold text-slate-900">{{ anzahl_aktive }}</div><div class="text-xs text-slate-400">Aktive Verträge</div></div>
+            <div><div class="text-xl font-bold text-slate-900">{{ brutto_monat|chf:0 }}</div><div class="text-xs text-slate-400">CHF / Monat</div></div>
+            <div><div class="text-xl font-bold {% if total_offen > 0 %}text-coral-600{% else %}text-emerald-600{% endif %}">{{ total_offen|chf:0 }}</div><div class="text-xs text-slate-400">CHF offen</div></div>
+        </div>
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    <!-- LINKE SPALTE: Kontakt & Profil -->
-    <div class="space-y-8">
-        <div class="bg-white rounded-3xl border border-slate-100 p-6">
-            <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Kontakt</h3>
-            <div class="space-y-3 text-sm">
-                {% if mieter.email %}<div class="flex items-center gap-3"><i class="fa-solid fa-envelope text-slate-300 w-4"></i><a href="mailto:{{ mieter.email }}" class="text-indigo-600 font-medium hover:underline">{{ mieter.email }}</a></div>{% endif %}
-                {% if mieter.mobile %}<div class="flex items-center gap-3"><i class="fa-solid fa-mobile-screen text-slate-300 w-4"></i><span class="font-medium">{{ mieter.mobile }}</span></div>{% endif %}
-                {% if mieter.telefon_privat %}<div class="flex items-center gap-3"><i class="fa-solid fa-phone text-slate-300 w-4"></i><span class="font-medium">{{ mieter.telefon_privat }}</span></div>{% endif %}
-                {% if mieter.telefon_geschaeft %}<div class="flex items-center gap-3"><i class="fa-solid fa-briefcase text-slate-300 w-4"></i><span class="font-medium">{{ mieter.telefon_geschaeft }}</span></div>{% endif %}
-                <div class="flex items-center gap-3"><i class="fa-solid fa-language text-slate-300 w-4"></i><span class="font-medium">{{ mieter.get_sprache_display }}</span></div>
+    <!-- LINKS: Kontakt & Profil -->
+    <div class="space-y-6">
+        <div class="bg-white rounded-xl border border-slate-200">
+            <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Kontakt</div>
+            <div class="p-5 space-y-3 text-sm">
+                {% if mieter.email %}<div class="flex items-center gap-3"><i class="fa-solid fa-envelope text-slate-300 w-4"></i><a href="mailto:{{ mieter.email }}" class="text-petrol-600 font-medium hover:underline truncate">{{ mieter.email }}</a></div>{% endif %}
+                {% if mieter.mobile %}<div class="flex items-center gap-3"><i class="fa-solid fa-mobile-screen text-slate-300 w-4"></i><span>{{ mieter.mobile }}</span></div>{% endif %}
+                {% if mieter.telefon_privat %}<div class="flex items-center gap-3"><i class="fa-solid fa-phone text-slate-300 w-4"></i><span>{{ mieter.telefon_privat }}</span></div>{% endif %}
+                {% if mieter.telefon_geschaeft %}<div class="flex items-center gap-3"><i class="fa-solid fa-briefcase text-slate-300 w-4"></i><span>{{ mieter.telefon_geschaeft }}</span></div>{% endif %}
+                <div class="flex items-center gap-3"><i class="fa-solid fa-language text-slate-300 w-4"></i><span>{{ mieter.get_sprache_display }}</span></div>
             </div>
         </div>
 
-        <div class="bg-white rounded-3xl border border-slate-100 p-6">
-            <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Profil</h3>
-            <dl class="space-y-2 text-sm">
-                {% if mieter.geburtsdatum %}<div class="flex justify-between"><dt class="text-slate-400">Geburtsdatum</dt><dd class="font-bold">{{ mieter.geburtsdatum|date:"d.m.Y" }}</dd></div>{% endif %}
-                {% if mieter.zivilstand %}<div class="flex justify-between"><dt class="text-slate-400">Zivilstand</dt><dd class="font-bold">{{ mieter.zivilstand }}</dd></div>{% endif %}
-                {% if mieter.nationalitaet %}<div class="flex justify-between"><dt class="text-slate-400">Nationalität</dt><dd class="font-bold">{{ mieter.nationalitaet }}</dd></div>{% endif %}
-                {% if mieter.beruf %}<div class="flex justify-between"><dt class="text-slate-400">Beruf</dt><dd class="font-bold">{{ mieter.beruf }}</dd></div>{% endif %}
-                {% if mieter.arbeitgeber %}<div class="flex justify-between"><dt class="text-slate-400">Arbeitgeber</dt><dd class="font-bold">{{ mieter.arbeitgeber }}</dd></div>{% endif %}
-                {% if mieter.einkommen_jahr %}<div class="flex justify-between"><dt class="text-slate-400">Einkommen</dt><dd class="font-bold">{{ mieter.einkommen_jahr }}</dd></div>{% endif %}
-                {% if mieter.uid_nummer %}<div class="flex justify-between"><dt class="text-slate-400">UID</dt><dd class="font-bold">{{ mieter.uid_nummer }}</dd></div>{% endif %}
-                {% if mieter.iban %}<div class="flex justify-between"><dt class="text-slate-400">IBAN</dt><dd class="font-bold font-mono text-xs">{{ mieter.iban }}</dd></div>{% endif %}
-                {% if mieter.bonitaet_datum %}<div class="flex justify-between"><dt class="text-slate-400">Betreibungsauszug</dt><dd class="font-bold">{{ mieter.bonitaet_datum|date:"d.m.Y" }}</dd></div>{% endif %}
+        <div class="bg-white rounded-xl border border-slate-200">
+            <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Profil</div>
+            <dl class="p-5 space-y-2.5 text-sm">
+                {% if mieter.geburtsdatum %}<div class="flex justify-between gap-4"><dt class="text-slate-400">Geburtsdatum</dt><dd class="font-medium text-right">{{ mieter.geburtsdatum|date:"d.m.Y" }}</dd></div>{% endif %}
+                {% if mieter.zivilstand %}<div class="flex justify-between gap-4"><dt class="text-slate-400">Zivilstand</dt><dd class="font-medium text-right">{{ mieter.zivilstand }}</dd></div>{% endif %}
+                {% if mieter.nationalitaet %}<div class="flex justify-between gap-4"><dt class="text-slate-400">Nationalität</dt><dd class="font-medium text-right">{{ mieter.nationalitaet }}</dd></div>{% endif %}
+                {% if mieter.beruf %}<div class="flex justify-between gap-4"><dt class="text-slate-400">Beruf</dt><dd class="font-medium text-right">{{ mieter.beruf }}</dd></div>{% endif %}
+                {% if mieter.arbeitgeber %}<div class="flex justify-between gap-4"><dt class="text-slate-400">Arbeitgeber</dt><dd class="font-medium text-right">{{ mieter.arbeitgeber }}</dd></div>{% endif %}
+                {% if mieter.einkommen_jahr %}<div class="flex justify-between gap-4"><dt class="text-slate-400">Einkommen</dt><dd class="font-medium text-right">{{ mieter.einkommen_jahr }}</dd></div>{% endif %}
+                {% if mieter.uid_nummer %}<div class="flex justify-between gap-4"><dt class="text-slate-400">UID</dt><dd class="font-medium text-right">{{ mieter.uid_nummer }}</dd></div>{% endif %}
+                {% if mieter.iban %}<div class="flex justify-between gap-4"><dt class="text-slate-400">IBAN</dt><dd class="font-medium font-mono text-xs text-right">{{ mieter.iban }}</dd></div>{% endif %}
+                {% if mieter.bonitaet_datum %}<div class="flex justify-between gap-4"><dt class="text-slate-400">Betreibungsauszug</dt><dd class="font-medium text-right">{{ mieter.bonitaet_datum|date:"d.m.Y" }}</dd></div>{% endif %}
             </dl>
         </div>
 
         {% if mieter.notizen %}
-        <div class="bg-amber-50 rounded-3xl border border-amber-100 p-6">
-            <h3 class="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-3"><i class="fa-solid fa-note-sticky mr-1"></i> Interne Notizen</h3>
-            <p class="text-xs text-amber-900 whitespace-pre-line leading-relaxed">{{ mieter.notizen|truncatechars:600 }}</p>
+        <div class="bg-white rounded-xl border border-slate-200">
+            <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700"><i class="fa-solid fa-note-sticky text-amber-400 mr-1.5"></i>Interne Notizen</div>
+            <p class="p-5 text-xs text-slate-600 whitespace-pre-line leading-relaxed">{{ mieter.notizen|truncatechars:600 }}</p>
         </div>
         {% endif %}
     </div>
 
-    <!-- RECHTE SPALTEN: Verträge, Finanzen, Dokumente -->
-    <div class="lg:col-span-2 space-y-8">
+    <!-- RECHTS: Verträge, Finanzen, Dokumente -->
+    <div class="lg:col-span-2 space-y-6">
 
-        <div class="bg-white rounded-3xl border border-slate-100 p-6">
-            <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Verträge</h3>
+        <div class="bg-white rounded-xl border border-slate-200">
+            <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Verträge</div>
+            <div class="divide-y divide-slate-50">
             {% for v in vertraege %}
-            <a href="{% url 'dossier_vertrag' v.id %}" class="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
-                <div class="w-10 h-10 rounded-xl {% if v.status == 'aktiv' %}bg-emerald-50 text-emerald-600{% else %}bg-slate-100 text-slate-400{% endif %} flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-file-signature"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="font-bold text-sm text-slate-900 truncate">{{ v.einheit }}</div>
-                    <div class="text-xs text-slate-400">seit {{ v.beginn|date:"d.m.Y" }}{% if v.ende %} bis {{ v.ende|date:"d.m.Y" }}{% endif %}</div>
-                </div>
-                <div class="text-right shrink-0">
-                    <div class="font-black text-sm">CHF {{ v.brutto_mietzins|chf }}</div>
-                    <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg {% if v.status == 'aktiv' %}bg-emerald-100 text-emerald-700{% elif v.status == 'entwurf' %}bg-slate-100 text-slate-500{% else %}bg-amber-100 text-amber-700{% endif %}">{{ v.get_status_display }}</span>
-                </div>
-                <i class="fa-solid fa-chevron-right text-slate-300"></i>
-            </a>
+                <a href="{% url 'dossier_vertrag' v.id %}" class="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors">
+                    <div class="w-9 h-9 rounded-lg {% if v.status == 'aktiv' %}bg-emerald-50 text-emerald-600{% else %}bg-slate-100 text-slate-400{% endif %} flex items-center justify-center shrink-0 text-sm">
+                        <i class="fa-solid fa-file-signature"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium text-sm text-slate-900 truncate">{{ v.einheit }}</div>
+                        <div class="text-xs text-slate-400">seit {{ v.beginn|date:"d.m.Y" }}{% if v.ende %} bis {{ v.ende|date:"d.m.Y" }}{% endif %}</div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="font-semibold text-sm">CHF {{ v.brutto_mietzins|chf }}</div>
+                        <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {% if v.status == 'aktiv' %}bg-emerald-50 text-emerald-700{% elif v.status == 'entwurf' %}bg-slate-100 text-slate-500{% else %}bg-amber-50 text-amber-700{% endif %}">{{ v.get_status_display }}</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                </a>
             {% empty %}
-            <p class="text-sm text-slate-400 italic">Keine Verträge vorhanden.</p>
+                <p class="px-5 py-4 text-sm text-slate-400 italic">Keine Verträge vorhanden.</p>
             {% endfor %}
+            </div>
         </div>
 
         {% if offene_rechnungen %}
-        <div class="bg-white rounded-3xl border border-rose-100 p-6">
-            <h3 class="text-[10px] font-black uppercase tracking-widest text-rose-500 mb-4"><i class="fa-solid fa-file-invoice-dollar mr-1"></i> Offene Posten — CHF {{ total_offen|chf }}</h3>
+        <div class="bg-white rounded-xl border border-coral-100">
+            <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-coral-600 flex justify-between">
+                <span><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i>Offene Posten</span>
+                <span>CHF {{ total_offen|chf }}</span>
+            </div>
             <table class="w-full text-sm">
-                <tbody>
+                <tbody class="divide-y divide-slate-50">
                 {% for r in offene_rechnungen %}
-                    <tr class="border-b border-slate-50 last:border-0">
-                        <td class="py-2 font-medium">{{ r.titel }}</td>
-                        <td class="py-2 text-slate-400 text-xs">fällig {{ r.faellig_am|date:"d.m.Y" }}</td>
-                        <td class="py-2 text-right font-black text-rose-600">CHF {{ r.offener_betrag|chf }}</td>
-                        <td class="py-2 text-right"><span class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-rose-50 text-rose-500">{{ r.get_status_display }}</span></td>
+                    <tr>
+                        <td class="px-5 py-2.5 font-medium">{{ r.titel }}</td>
+                        <td class="py-2.5 text-slate-400 text-xs">fällig {{ r.faellig_am|date:"d.m.Y" }}</td>
+                        <td class="py-2.5 text-right font-semibold text-coral-600">CHF {{ r.offener_betrag|chf }}</td>
+                        <td class="px-5 py-2.5 text-right"><span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-coral-50 text-coral-600">{{ r.get_status_display }}</span></td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -105,48 +119,52 @@
         </div>
         {% endif %}
 
-        <div class="bg-white rounded-3xl border border-slate-100 p-6">
-            <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Letzte Zahlungen</h3>
+        <div class="bg-white rounded-xl border border-slate-200">
+            <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Letzte Zahlungen</div>
             <table class="w-full text-sm">
-                <tbody>
+                <tbody class="divide-y divide-slate-50">
                 {% for z in zahlungen %}
-                    <tr class="border-b border-slate-50 last:border-0">
-                        <td class="py-2 text-slate-400 text-xs">{{ z.datum_eingang|date:"d.m.Y" }}</td>
-                        <td class="py-2 font-medium">{{ z.bemerkung|default:"Miete/NK" }}</td>
-                        <td class="py-2 text-right font-black text-emerald-600">+ CHF {{ z.betrag|chf }}</td>
+                    <tr>
+                        <td class="px-5 py-2.5 text-slate-400 text-xs whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</td>
+                        <td class="py-2.5 font-medium">{{ z.bemerkung|default:"Miete/NK" }}</td>
+                        <td class="px-5 py-2.5 text-right font-semibold text-emerald-600 whitespace-nowrap">+ CHF {{ z.betrag|chf }}</td>
                     </tr>
                 {% empty %}
-                    <tr><td class="py-2 text-sm text-slate-400 italic">Noch keine Zahlungen erfasst.</td></tr>
+                    <tr><td class="px-5 py-4 text-sm text-slate-400 italic">Noch keine Zahlungen erfasst.</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="bg-white rounded-3xl border border-slate-100 p-6">
-                <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Dokumente</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-xl border border-slate-200">
+                <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Dokumente</div>
+                <div class="divide-y divide-slate-50">
                 {% for d in dokumente %}
-                <a {% if d.datei %}href="{{ d.datei.url }}" target="_blank"{% endif %} class="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0 hover:text-indigo-600 transition-colors">
-                    <i class="fa-solid fa-file-lines text-slate-300"></i>
-                    <span class="text-sm font-medium flex-1 truncate">{{ d.bezeichnung }}</span>
-                    <span class="text-[10px] text-slate-400">{{ d.datum|date:"d.m.y" }}</span>
-                </a>
+                    <a {% if d.datei %}href="{{ d.datei.url }}" target="_blank"{% endif %} class="flex items-center gap-3 px-5 py-2.5 hover:text-petrol-600 transition-colors">
+                        <i class="fa-solid fa-file-lines text-slate-300"></i>
+                        <span class="text-sm flex-1 truncate">{{ d.bezeichnung }}</span>
+                        <span class="text-xs text-slate-400">{{ d.datum|date:"d.m.y" }}</span>
+                    </a>
                 {% empty %}
-                <p class="text-sm text-slate-400 italic">Keine Dokumente.</p>
+                    <p class="px-5 py-4 text-sm text-slate-400 italic">Keine Dokumente.</p>
                 {% endfor %}
+                </div>
             </div>
 
-            <div class="bg-white rounded-3xl border border-slate-100 p-6">
-                <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Gemeldete Schäden</h3>
+            <div class="bg-white rounded-xl border border-slate-200">
+                <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Gemeldete Schäden</div>
+                <div class="divide-y divide-slate-50">
                 {% for t in tickets %}
-                <div class="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">
-                    <i class="fa-solid fa-screwdriver-wrench {% if t.status == 'erledigt' %}text-slate-300{% else %}text-rose-400{% endif %}"></i>
-                    <span class="text-sm font-medium flex-1 truncate">{{ t.titel }}</span>
-                    <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded {% if t.status == 'erledigt' %}bg-slate-100 text-slate-400{% else %}bg-rose-50 text-rose-500{% endif %}">{{ t.status }}</span>
-                </div>
+                    <div class="flex items-center gap-3 px-5 py-2.5">
+                        <i class="fa-solid fa-screwdriver-wrench {% if t.status == 'erledigt' %}text-slate-300{% else %}text-coral-400{% endif %}"></i>
+                        <span class="text-sm flex-1 truncate">{{ t.titel }}</span>
+                        <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {% if t.status == 'erledigt' %}bg-slate-100 text-slate-400{% else %}bg-coral-50 text-coral-600{% endif %}">{{ t.status }}</span>
+                    </div>
                 {% empty %}
-                <p class="text-sm text-slate-400 italic">Keine Meldungen.</p>
+                    <p class="px-5 py-4 text-sm text-slate-400 italic">Keine Meldungen.</p>
                 {% endfor %}
+                </div>
             </div>
         </div>
 

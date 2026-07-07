@@ -5,34 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Dossier{% endblock %} — swissImmo</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: {
+            petrol: { 50:'#f0f7fa', 100:'#d9eaf0', 200:'#b6d6e2', 600:'#17607a', 700:'#135064', 800:'#0f3f52', 900:'#0b2e3b' },
+            coral:  { 50:'#fef3f2', 100:'#fde4e1', 400:'#f58a7e', 500:'#f26d5f', 600:'#e0503f', 700:'#c03d2f' },
+        }}}};
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="bg-slate-50 text-slate-900">
+<div class="flex min-h-[100dvh]">
 
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-            <a href="/app/" class="flex items-center gap-2 text-slate-500 hover:text-indigo-600 font-bold text-sm transition-colors">
-                <i class="fa-solid fa-arrow-left"></i> Zurück zur App
-            </a>
-            <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-folder-open text-indigo-400"></i>
-                {% block dossier_typ %}Dossier{% endblock %}
+    <!-- SIDEBAR: identisch zur App, damit alles wie EINE Anwendung wirkt -->
+    <aside class="w-64 bg-petrol-900 text-white flex-col min-h-[100dvh] hidden md:flex flex-shrink-0">
+        <a href="/app/" class="p-8 text-2xl font-black flex items-center gap-3 tracking-tighter">
+            <div class="w-9 h-9 rounded-xl bg-coral-500 flex items-center justify-center text-sm shadow-lg shadow-coral-500/40">
+                <i class="fa-solid fa-building"></i>
             </div>
-        </div>
-    </header>
+            <span>swissImmo</span>
+        </a>
+        <nav class="flex-1 px-4 space-y-1">
+            <a href="/app/" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-white/5 hover:text-white transition-all">
+                <i class="fa-solid fa-grid-2 w-5 text-center"></i> Dashboard
+            </a>
+            <div class="pt-6 pb-2 px-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Portfolio</div>
+            <a href="/app/?tab=portfolio" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold {% block nav_portfolio %}text-slate-400 hover:bg-white/5 hover:text-white{% endblock %} transition-all">
+                <i class="fa-solid fa-city w-5 text-center"></i> Liegenschaften
+            </a>
+            <a href="/app/?tab=rentals" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold {% block nav_rentals %}text-slate-400 hover:bg-white/5 hover:text-white{% endblock %} transition-all">
+                <i class="fa-solid fa-file-signature w-5 text-center"></i> Mietverträge
+            </a>
+            <a href="/app/?tab=crm" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold {% block nav_crm %}text-slate-400 hover:bg-white/5 hover:text-white{% endblock %} transition-all">
+                <i class="fa-solid fa-users w-5 text-center"></i> Mieterstamm
+            </a>
+            <div class="pt-6 pb-2 px-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Betrieb</div>
+            <a href="/app/?tab=finance" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-white/5 hover:text-white transition-all">
+                <i class="fa-solid fa-sack-dollar w-5 text-center"></i> Finanzen
+            </a>
+            <a href="/app/?tab=tickets" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-white/5 hover:text-white transition-all">
+                <i class="fa-solid fa-screwdriver-wrench w-5 text-center"></i> Tickets
+            </a>
+            <a href="/app/?tab=mietprozess" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-white/5 hover:text-white transition-all">
+                <i class="fa-solid fa-handshake w-5 text-center"></i> Vermietung
+            </a>
+        </nav>
+    </aside>
 
-    <main class="max-w-6xl mx-auto px-6 py-8 space-y-8">
-        {% block content %}{% endblock %}
-    </main>
+    <!-- INHALT -->
+    <div class="flex-1 min-w-0 flex flex-col">
 
-    <footer class="max-w-6xl mx-auto px-6 pb-10 text-center text-[10px] font-bold text-slate-300 uppercase tracking-widest">
-        swissImmo Dossier
-    </footer>
+        <!-- TOPBAR mit Breadcrumb -->
+        <header class="h-16 px-6 md:px-10 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-40">
+            <nav class="flex items-center gap-2 text-sm min-w-0">
+                <a href="/app/" class="text-slate-400 hover:text-petrol-600 transition-colors md:hidden"><i class="fa-solid fa-arrow-left"></i></a>
+                <a href="/app/" class="text-slate-400 hover:text-petrol-600 transition-colors hidden md:inline">Übersicht</a>
+                <i class="fa-solid fa-chevron-right text-[9px] text-slate-300 hidden md:inline"></i>
+                {% block breadcrumb %}<span class="font-semibold text-slate-700 truncate">Dossier</span>{% endblock %}
+            </nav>
+            <div class="flex items-center gap-3">
+                {% block topbar_actions %}{% endblock %}
+            </div>
+        </header>
+
+        <main class="p-6 md:p-10 max-w-6xl w-full mx-auto space-y-6">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
 </body>
 </html>

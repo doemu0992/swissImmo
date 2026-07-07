@@ -19,7 +19,7 @@
             return {
                 mobileMenuOpen: false,
 
-                activeTab: 'home',
+                activeTab: new URLSearchParams(window.location.search).get('tab') || 'home',
                 financeTab: 'debitoren',
                 loading: true,
 
