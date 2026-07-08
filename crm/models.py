@@ -225,3 +225,29 @@ class Handwerker(models.Model):
             return f"{self.firma} ({self.get_branche_display()})"
         except:
             return self.firma
+
+class Vorlage(models.Model):
+    """Wiederverwendbare Text-/Brief-Vorlage mit Platzhaltern (z. B. {mieter_name})."""
+    KATEGORIE_CHOICES = [
+        ('brief', 'Brief / Anschreiben'),
+        ('kuendigung', 'Kündigung'),
+        ('mahnung', 'Mahnung'),
+        ('info', 'Information / Rundschreiben'),
+        ('protokoll', 'Protokoll'),
+        ('sonstiges', 'Sonstiges'),
+    ]
+    name = models.CharField("Bezeichnung", max_length=150)
+    kategorie = models.CharField("Kategorie", max_length=20, choices=KATEGORIE_CHOICES, default='brief')
+    betreff = models.CharField("Betreff", max_length=200, blank=True, default='')
+    inhalt = models.TextField("Inhalt", blank=True, default='')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+    aktualisiert_am = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Vorlage"
+        verbose_name_plural = "Vorlagen"
+        ordering = ['kategorie', 'name']
+        db_table = 'core_vorlage'
+
+    def __str__(self):
+        return self.name

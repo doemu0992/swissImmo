@@ -1,0 +1,60 @@
+{% extends 'fw/base.html' %}
+{% block title %}{% if ist_neu %}Neue Vorlage{% else %}{{ vl.name }} bearbeiten{% endif %} — swissImmo{% endblock %}
+{% block content %}
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/vorlagen/" class="hover:text-indigo-600">Vorlagen</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <span class="text-slate-600 font-medium">{% if ist_neu %}Neu{% else %}{{ vl.name }}{% endif %}</span>
+</nav>
+
+<h1 class="text-2xl font-extrabold text-slate-900 mb-1">{% if ist_neu %}Neue Vorlage{% else %}{{ vl.name }} bearbeiten{% endif %}</h1>
+<p class="text-sm text-slate-500 mb-6">Text mit Platzhaltern, die beim Verwenden automatisch ersetzt werden.</p>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 max-w-5xl">
+    <form method="post" class="lg:col-span-2 space-y-5">
+        {% csrf_token %}
+        <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Bezeichnung *</label>
+                    <input name="name" required value="{{ vl.name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kategorie</label>
+                    <select name="kategorie" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                        {% for val, lbl in kategorien %}<option value="{{ val }}" {% if vl.kategorie == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                    </select></div>
+            </div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Betreff</label>
+                <input name="betreff" value="{{ vl.betreff }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Inhalt</label>
+                <textarea name="inhalt" rows="14" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono leading-relaxed">{{ vl.inhalt }}</textarea></div>
+        </div>
+        <div class="flex items-center gap-3">
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+                <i class="fa-solid fa-check mr-1.5"></i>Speichern
+            </button>
+            <a href="/neu/vorlagen/" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
+        </div>
+    </form>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5 h-fit">
+        <h3 class="font-bold text-slate-800 text-sm mb-1">Platzhalter</h3>
+        <p class="text-xs text-slate-400 mb-3">Klicke, um einzufügen.</p>
+        <div class="space-y-1.5">
+            {% for code, beschr in platzhalter %}
+            <button type="button" onclick="einfuegen('{{ code }}')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-indigo-50 transition-colors">
+                <code class="text-xs font-bold text-indigo-600">{{ code }}</code>
+                <span class="text-xs text-slate-400 block">{{ beschr }}</span>
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function einfuegen(code){
+    var ta = document.querySelector('textarea[name="inhalt"]');
+    var s = ta.selectionStart, e = ta.selectionEnd;
+    ta.value = ta.value.slice(0,s) + code + ta.value.slice(e);
+    ta.focus(); ta.selectionStart = ta.selectionEnd = s + code.length;
+}
+</script>
+{% endblock %}

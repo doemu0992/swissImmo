@@ -2090,17 +2090,125 @@ def fw_stub(request, titel, icon, text, nav=''):
     return render(request, 'fw/stub.html', {**basis, 'nav': nav, 'titel': titel, 'icon': icon, 'text': text})
 
 
-def fw_vorlagen(request):
-    return fw_stub(request, 'Vorlagen', 'fa-file-lines',
-                   'Dokumentvorlagen (Mietvertrag, Mahnungen, Briefe) zentral verwalten. Aktuell werden die '
-                   'Standard-Vorlagen von swissImmo verwendet — die Vertrags- und Begleitdokumente findest du '
-                   'direkt auf jeder Vertrags-Detailseite unter „Erstellbare Dokumente".')
+PLATZHALTER_HILFE = [
+    ('{mieter_name}', 'Name des Mieters'),
+    ('{mieter_adresse}', 'Adresse des Mieters'),
+    ('{objekt}', 'Objektbezeichnung'),
+    ('{liegenschaft}', 'Strasse der Liegenschaft'),
+    ('{vermieter}', 'Name der Verwaltung / des Vermieters'),
+    ('{datum}', 'Heutiges Datum'),
+    ('{miete}', 'Bruttomietzins'),
+]
 
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_vorlagen(request):
+    from crm.models import Vorlage
+    basis = _global_filter(request)
+    vorlagen = Vorlage.objects.all()
+    return render(request, 'fw/vorlagen.html', {**basis, 'nav': 'vorlagen', 'vorlagen': vorlagen})
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_vorlage_form(request, pk=None):
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Vorlage
+    from core.auth import log_aktion
+    vl = get_object_or_404(Vorlage, id=pk) if pk else None
+    basis = _global_filter(request)
+    if request.method == 'POST':
+        obj = vl or Vorlage()
+        obj.name = request.POST.get('name', '').strip()
+        obj.kategorie = request.POST.get('kategorie', 'brief')
+        obj.betreff = request.POST.get('betreff', '').strip()
+        obj.inhalt = request.POST.get('inhalt', '')
+        if not obj.name:
+            messages.error(request, "Bezeichnung ist erforderlich.")
+            return redirect(request.path)
+        obj.save()
+        log_aktion(request, "Vorlage bearbeitet" if pk else "Vorlage erstellt", obj.name, '')
+        messages.success(request, f"✅ Vorlage '{obj.name}' gespeichert.")
+        return redirect('/neu/vorlagen/')
+    return render(request, 'fw/vorlage_form.html', {
+        **basis, 'nav': 'vorlagen', 'vl': vl, 'ist_neu': vl is None,
+        'kategorien': Vorlage.KATEGORIE_CHOICES, 'platzhalter': PLATZHALTER_HILFE,
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_vorlage_loeschen(request, pk):
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Vorlage
+    from core.auth import log_aktion
+    vl = get_object_or_404(Vorlage, id=pk)
+    if request.method == 'POST':
+        name = vl.name
+        log_aktion(request, "Vorlage gelöscht", name, '')
+        vl.delete()
+        messages.success(request, f"🗑️ Vorlage '{name}' gelöscht.")
+    return redirect('/neu/vorlagen/')
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
 def fw_integrationen(request):
-    return fw_stub(request, 'Integrationen', 'fa-plug',
-                   'Schnittstellen zu Drittsystemen (Banken-Abgleich via camt.053/QR, PainDiary, E-Mail-Versand, '
-                   'DocuSeal-Signatur) werden hier gebündelt. Der Banken-Abgleich ist bereits unter '
-                   '„Bankabgleich" nutzbar.')
+    from django.conf import settings as dj_settings
+    basis = _global_filter(request)
+
+    def gesetzt(key):
+        return bool(getattr(dj_settings, key, None))
+
+    email_ok = gesetzt('EMAIL_HOST_USER') and gesetzt('EMAIL_HOST_PASSWORD')
+    integrationen = [
+        {'key': 'email', 'name': 'E-Mail-Versand', 'icon': 'fa-envelope', 'farbe': 'indigo',
+         'aktiv': email_ok, 'status': 'Verbunden' if email_ok else 'Nicht konfiguriert',
+         'beschreibung': 'Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über deinen SMTP-Server.',
+         'detail': (getattr(dj_settings, 'EMAIL_HOST', '') or '') if email_ok else 'E-Mail-Zugangsdaten in den Servereinstellungen hinterlegen.',
+         'aktion': 'test_email' if email_ok else None},
+        {'key': 'docuseal', 'name': 'DocuSeal — digitale Signatur', 'icon': 'fa-file-signature', 'farbe': 'emerald',
+         'aktiv': gesetzt('DOCUSEAL_API_KEY'), 'status': 'Verbunden' if gesetzt('DOCUSEAL_API_KEY') else 'Nicht konfiguriert',
+         'beschreibung': 'Sende Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der Rücklauf wird automatisch als unterzeichnetes PDF abgelegt.',
+         'detail': 'Nutzbar über „An DocuSeal senden" auf der Vertrags-Detailseite.' if gesetzt('DOCUSEAL_API_KEY') else 'DOCUSEAL_API_KEY hinterlegen.',
+         'aktion': None},
+        {'key': 'ki', 'name': 'KI-Rechnungsscanner', 'icon': 'fa-robot', 'farbe': 'violet',
+         'aktiv': gesetzt('GROQ_API_KEY'), 'status': 'Verbunden' if gesetzt('GROQ_API_KEY') else 'Nicht konfiguriert',
+         'beschreibung': 'Kreditoren-Belege automatisch auslesen (Betrag, IBAN, QR-Referenz) und als Zahlung erfassen.',
+         'detail': 'Nutzbar im Bereich Kreditoren.' if gesetzt('GROQ_API_KEY') else 'GROQ_API_KEY hinterlegen.',
+         'aktion': None},
+        {'key': 'bank', 'name': 'Banken-Abgleich (camt.053 / QR)', 'icon': 'fa-building-columns', 'farbe': 'sky',
+         'aktiv': True, 'status': 'Aktiv',
+         'beschreibung': 'Importiere camt.053-Kontoauszüge und ordne Zahlungseingänge automatisch per QR-Referenz den Debitoren zu.',
+         'detail': 'Nutzbar im Bereich Bankabgleich.',
+         'aktion': 'bank_link'},
+    ]
+    return render(request, 'fw/integrationen.html', {**basis, 'nav': 'integrationen', 'integrationen': integrationen})
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_integration_test_email(request):
+    """Sendet eine Test-E-Mail an die eigene Adresse."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from django.core.mail import EmailMessage, get_connection
+    from django.conf import settings as dj_settings
+    if request.method == 'POST':
+        ziel = (request.user.email or getattr(dj_settings, 'EMAIL_HOST_USER', '') or '').strip()
+        if not ziel:
+            messages.error(request, "Keine Ziel-E-Mail hinterlegt. Bitte im Benutzerprofil eine E-Mail eintragen.")
+            return redirect('/neu/integrationen/')
+        try:
+            # Timeout, damit ein langsamer/nicht erreichbarer SMTP den Request nie blockiert.
+            conn = get_connection(timeout=15)
+            EmailMessage(
+                'swissImmo — Test-E-Mail',
+                'Diese Test-E-Mail bestätigt, dass der E-Mail-Versand korrekt konfiguriert ist.\n\nswissImmo',
+                getattr(dj_settings, 'DEFAULT_FROM_EMAIL', None),
+                [ziel], connection=conn,
+            ).send(fail_silently=False)
+            messages.success(request, f"✅ Test-E-Mail an {ziel} gesendet.")
+        except Exception as e:
+            messages.error(request, f"E-Mail-Versand fehlgeschlagen: {e}")
+    return redirect('/neu/integrationen/')
 
 def fw_abonnemente(request):
     return fw_stub(request, 'Abonnement', 'fa-star',

@@ -75,7 +75,8 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_obj
                            fw_benutzer, fw_mandate, fw_vorlagen, fw_integrationen, fw_abonnemente,
                            fw_liegenschaft_form, fw_objekt_form, fw_suche,
                            fw_mandat_form, fw_mandat_loeschen,
-                           fw_benutzer_form, fw_benutzer_loeschen)
+                           fw_benutzer_form, fw_benutzer_loeschen,
+                           fw_vorlage_form, fw_vorlage_loeschen, fw_integration_test_email)
 
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
@@ -150,7 +151,11 @@ urlpatterns = [
     path('neu/mandate/<int:pk>/bearbeiten/', fw_mandat_form, name='fw_mandat_bearbeiten'),
     path('neu/mandate/<int:pk>/loeschen/', fw_mandat_loeschen, name='fw_mandat_loeschen'),
     path('neu/vorlagen/', fw_vorlagen, name='fw_vorlagen'),
+    path('neu/vorlagen/neu/', fw_vorlage_form, name='fw_vorlage_neu'),
+    path('neu/vorlagen/<int:pk>/bearbeiten/', fw_vorlage_form, name='fw_vorlage_bearbeiten'),
+    path('neu/vorlagen/<int:pk>/loeschen/', fw_vorlage_loeschen, name='fw_vorlage_loeschen'),
     path('neu/integrationen/', fw_integrationen, name='fw_integrationen'),
+    path('neu/integrationen/test-email/', fw_integration_test_email, name='fw_integration_test_email'),
     path('neu/abonnement/', fw_abonnemente, name='fw_abonnemente'),
     path('neu/kommunikation/', fw_kommunikation, name='fw_kommunikation'),
     path('neu/mahnwesen/', fw_mahnwesen, name='fw_mahnwesen'),
