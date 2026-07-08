@@ -24,11 +24,12 @@
                       {% if typ_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
-        <form method="get" class="ml-auto relative">
+        <form method="get" class="ml-auto relative" onsubmit="return true;">
             {% if typ_filter %}<input type="hidden" name="typ" value="{{ typ_filter }}">{% endif %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input type="text" name="q" value="{{ q }}" placeholder="Name, E-Mail oder Ort suchen…"
+            <input type="text" name="q" id="personSearch" value="{{ q }}" placeholder="Name, E-Mail oder Ort suchen…"
+                   autocomplete="off" oninput="livePersonFilter(this.value)"
                    class="bg-slate-100 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
         </form>
     </div>
@@ -46,7 +47,7 @@
             </thead>
             <tbody class="divide-y divide-slate-50">
             {% for row in rows %}
-            <tr class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="window.location='/neu/personen/{{ row.m.id }}/'">
+            <tr class="person-row hover:bg-slate-50/60 transition-colors cursor-pointer" data-suche="{{ row.m.display_name|lower }} {{ row.m.email|lower }} {{ row.m.ort|lower }} {{ row.m.plz }}" onclick="window.location='/neu/personen/{{ row.m.id }}/'">
                 <td class="px-5 py-3.5">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
@@ -81,6 +82,20 @@
             {% endfor %}
             </tbody>
         </table>
+        <div id="keinTreffer" class="hidden px-5 py-10 text-center text-sm text-slate-400 italic">Keine Treffer.</div>
     </div>
+    <script>
+      function livePersonFilter(term){
+        term=(term||'').trim().toLowerCase();
+        var rows=document.querySelectorAll('tr.person-row'), sichtbar=0;
+        rows.forEach(function(r){
+          var hit = !term || (r.getAttribute('data-suche')||'').indexOf(term)!==-1;
+          r.style.display = hit ? '' : 'none';
+          if(hit) sichtbar++;
+        });
+        var kt=document.getElementById('keinTreffer');
+        if(kt) kt.classList.toggle('hidden', sichtbar>0 || rows.length===0);
+      }
+    </script>
 </div>
 {% endblock %}

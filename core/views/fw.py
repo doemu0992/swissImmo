@@ -1593,6 +1593,34 @@ def fw_person_form(request, pk=None):
             obj.geburtsdatum = None
         obj.iban = P.get('iban', '').strip()
         obj.notizen = P.get('notizen', '').strip()
+
+        # --- Pflichtfeld-Validierung ---
+        fehler = []
+        if obj.typ == 'firma':
+            if not obj.firmen_name:
+                fehler.append("Firmenname ist erforderlich.")
+        else:
+            if not obj.nachname:
+                fehler.append("Nachname ist erforderlich.")
+        if obj.email and '@' not in obj.email:
+            fehler.append("E-Mail-Adresse ist ungültig.")
+        if fehler:
+            for f in fehler:
+                messages.error(request, f"❌ {f}")
+            return render(request, 'fw/person_form.html', {
+                **basis, 'nav': 'personen', 'm': obj, 'ist_neu': pk is None,
+            })
+
+        # --- Dublettenprüfung (nur neue Person, überspringbar) ---
+        if not pk and P.get('dublette_ok') != '1':
+            dubletten = _finde_dubletten(obj.typ, obj.vorname, obj.nachname,
+                                         obj.firmen_name, obj.email, obj.plz)
+            if dubletten:
+                return render(request, 'fw/person_form.html', {
+                    **basis, 'nav': 'personen', 'm': obj, 'ist_neu': True,
+                    'dubletten': dubletten, 'dublette_warnung': True,
+                })
+
         obj.save()
         log_aktion(request, "Person bearbeitet" if pk else "Person erstellt", obj.display_name, '')
         messages.success(request, f"✅ {obj.display_name} gespeichert.")
@@ -1602,6 +1630,29 @@ def fw_person_form(request, pk=None):
         **basis, 'nav': 'personen', 'm': m,
         'ist_neu': m is None,
     })
+
+
+def _finde_dubletten(typ, vorname, nachname, firmen_name, email, plz, exclude_id=None):
+    """Findet mögliche Dubletten: gleiche E-Mail ODER (Name + PLZ)."""
+    from django.db.models import Q
+    qs = Mieter.objects.all()
+    if exclude_id:
+        qs = qs.exclude(id=exclude_id)
+    bedingung = Q(pk__in=[])
+    if email:
+        bedingung |= Q(email__iexact=email)
+    if typ == 'firma' and firmen_name:
+        bedingung |= Q(firmen_name__iexact=firmen_name)
+    elif nachname:
+        namensfilter = Q(nachname__iexact=nachname)
+        if vorname:
+            namensfilter &= Q(vorname__iexact=vorname)
+        if plz:
+            namensfilter &= Q(plz=plz)
+        bedingung |= namensfilter
+    treffer = qs.filter(bedingung).distinct()[:5]
+    return [{'id': t.id, 'name': t.display_name, 'email': t.email,
+             'ort': f"{t.plz} {t.ort}".strip()} for t in treffer]
 
 
 # ============================================================

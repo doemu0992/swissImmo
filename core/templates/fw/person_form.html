@@ -16,6 +16,30 @@
 <form method="post" class="max-w-3xl space-y-5">
     {% csrf_token %}
 
+    {% if dublette_warnung %}
+    <div class="bg-amber-50 border border-amber-300 rounded-xl p-5">
+        <div class="flex items-start gap-3">
+            <div class="text-amber-500 text-xl">⚠️</div>
+            <div class="flex-1">
+                <h3 class="font-bold text-amber-900 text-sm mb-1">Mögliche Dublette gefunden</h3>
+                <p class="text-sm text-amber-800 mb-3">Es existieren bereits ähnliche Personen. Bitte prüfen Sie, ob es sich um dieselbe Person handelt:</p>
+                <div class="space-y-1.5 mb-4">
+                    {% for d in dubletten %}
+                    <a href="/neu/personen/{{ d.id }}/" class="flex items-center gap-2 text-sm bg-white rounded-lg px-3 py-2 border border-amber-200 hover:border-amber-400">
+                        <span class="font-semibold text-slate-800">{{ d.name }}</span>
+                        {% if d.email %}<span class="text-slate-400">· {{ d.email }}</span>{% endif %}
+                        {% if d.ort %}<span class="text-slate-400">· {{ d.ort }}</span>{% endif %}
+                        <span class="ml-auto text-indigo-600 text-xs font-semibold">Öffnen →</span>
+                    </a>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="dublette_ok" value="1">
+                <p class="text-xs text-amber-700">Ist es dennoch eine neue Person? Dann unten auf „Trotzdem speichern" klicken.</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Typ -->
     <div class="bg-white rounded-xl border border-slate-200 p-5">
         <label class="block text-xs font-semibold text-slate-500 mb-2">Kunden-Typ</label>
@@ -41,7 +65,7 @@
                 </select></div>
             <div class="sm:col-span-1"><label class="block text-xs font-semibold text-slate-500 mb-1">Vorname</label>
                 <input name="vorname" value="{{ m.vorname }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Nachname</label>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Nachname <span class="text-red-500">*</span></label>
                 <input name="nachname" value="{{ m.nachname }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Geburtsdatum</label>
@@ -52,7 +76,7 @@
     <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4 hidden" id="box-firma">
         <h3 class="font-bold text-slate-800 text-sm">Firma / Organisation</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Firmenname</label>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Firmenname <span class="text-red-500">*</span></label>
                 <input name="firmen_name" value="{{ m.firmen_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">UID / CHE-Nummer</label>
                 <input name="uid_nummer" value="{{ m.uid_nummer }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
@@ -99,10 +123,10 @@
     </div>
 
     <div class="flex items-center gap-3">
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
-            <i class="fa-solid fa-check mr-1.5"></i>Speichern
+        <button type="submit" class="{% if dublette_warnung %}bg-amber-500 hover:bg-amber-600{% else %}bg-indigo-600 hover:bg-indigo-700{% endif %} text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+            <i class="fa-solid fa-check mr-1.5"></i>{% if dublette_warnung %}Trotzdem speichern{% else %}Speichern{% endif %}
         </button>
-        <a href="{% if ist_neu %}/neu/personen/{% else %}/neu/personen/{{ m.id }}/{% endif %}" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
+        <a href="{% if ist_neu or m.id == None %}/neu/personen/{% else %}/neu/personen/{{ m.id }}/{% endif %}" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
     </div>
 </form>
 
