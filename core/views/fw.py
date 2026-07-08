@@ -2826,6 +2826,32 @@ def fw_nebenkosten_detail(request, pk):
             'nachzahlung': a.get('nachzahlung', False), 'info': a.get('info', ''),
         })
 
+    # Akonto-Anpassungs-Vorschlag: effektive Jahres-NK vs. aktuelle Akonto/Monat.
+    # Weicht der monatliche Akonto ≥ 10 % (mind. CHF 10) vom effektiven Bedarf ab,
+    # wird eine neue runde Akonto-Höhe vorgeschlagen.
+    monate = 1
+    if p.start_datum and p.ende_datum:
+        monate = max(1, round((p.ende_datum - p.start_datum).days / 30.44))
+    akonto_vorschlaege = []
+    for a in abrechnungen:
+        vid = a['vertrag_id']
+        if not vid:
+            continue
+        kosten_monat = (a['kosten'] / monate) if monate else a['kosten']
+        akonto_monat = (a['akonto'] / monate) if monate else a['akonto']
+        # auf CHF 5 runden
+        empfohlen = (Decimal(round(float(kosten_monat) / 5.0)) * 5).quantize(Decimal('1'))
+        diff = empfohlen - akonto_monat
+        schwelle = max(Decimal('10'), (akonto_monat * Decimal('0.10')))
+        if abs(diff) >= schwelle and empfohlen > 0:
+            akonto_vorschlaege.append({
+                'vertrag_id': vid, 'mieter': a['mieter'], 'einheit': a['einheit'],
+                'aktuell': akonto_monat.quantize(Decimal('1')),
+                'empfohlen': empfohlen,
+                'richtung': 'erhöhen' if diff > 0 else 'senken',
+                'diff': abs(diff).quantize(Decimal('1')),
+            })
+
     belege = p.belege.all().order_by('-datum')
     kosten_rechnungen = (KreditorenRechnung.objects.filter(
         liegenschaft=lg, is_hnk_relevant=True,
@@ -2843,6 +2869,7 @@ def fw_nebenkosten_detail(request, pk):
         'abrechnungen': abrechnungen,
         'belege_details': result.get('belege_details', []),
         'belege': belege, 'kreditoren': kosten_rechnungen,
+        'akonto_vorschlaege': akonto_vorschlaege,
         'hkvo_angewendet': result.get('hkvo_angewendet', False),
         'hkvo_aktiv': getattr(lg, 'hkvo_aktiv', False) if lg else False,
         'differenz': result.get('differenz', Decimal('0.00')),
@@ -2903,6 +2930,42 @@ def fw_nebenkosten_verbuchen(request, pk):
         p.save(update_fields=['abgeschlossen'])
     log_aktion(request, "NK-Abrechnung verbucht", p.bezeichnung, f"{n_nach} Nachzahlungen, {n_gut} Gutschriften")
     messages.success(request, f"✅ Abrechnung verbucht: {n_nach} Nachzahlung(en), {n_gut} Gutschrift(en).")
+    return redirect(f'/neu/nebenkosten/{p.id}/')
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_akonto_anpassen(request, pk):
+    """Übernimmt die vorgeschlagene neue Akonto-Höhe in die gewählten Verträge
+    (nach der NK-Abrechnung). Setzt Vertrag.nebenkosten + Einheit.nebenkosten_aktuell."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import AbrechnungsPeriode
+    from core.auth import log_aktion
+    p = get_object_or_404(AbrechnungsPeriode, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/nebenkosten/{p.id}/')
+    angepasst = 0
+    for vid in request.POST.getlist('vertrag_id'):
+        neu = (request.POST.get(f'akonto_{vid}') or '').strip().replace(',', '.')
+        try:
+            betrag = Decimal(neu)
+        except Exception:
+            continue
+        if betrag <= 0:
+            continue
+        v = Mietvertrag.objects.filter(id=vid).select_related('einheit').first()
+        if not v:
+            continue
+        v.nebenkosten = betrag
+        v.save(update_fields=['nebenkosten'])
+        if v.einheit_id:
+            v.einheit.nebenkosten_aktuell = betrag
+            v.einheit.save(update_fields=['nebenkosten_aktuell'])
+        angepasst += 1
+    log_aktion(request, "Akonto angepasst", p.bezeichnung, f"{angepasst} Verträge")
+    messages.success(request,
+                     f"✅ Akonto bei {angepasst} Vertrag/Verträgen angepasst." if angepasst
+                     else "Keine Akonto-Anpassung übernommen.")
     return redirect(f'/neu/nebenkosten/{p.id}/')
 
 

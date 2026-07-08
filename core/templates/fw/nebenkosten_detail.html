@@ -48,6 +48,40 @@
 
 {% include 'fw/_detail_tabs.html' with gruppe='nk' tabs=tab_liste %}
 
+{% if akonto_vorschlaege %}
+<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-5 mb-5">
+    <div class="flex items-start gap-3 mb-3">
+        <div class="text-indigo-500 text-xl">💡</div>
+        <div>
+            <h3 class="font-bold text-indigo-900 text-sm">Akonto-Anpassung empfohlen</h3>
+            <p class="text-sm text-indigo-800">Bei {{ akonto_vorschlaege|length }} Vertrag/Verträgen weicht der monatliche Akonto deutlich vom effektiven Bedarf ab. Neue Höhe auf CHF 5 gerundet.</p>
+        </div>
+    </div>
+    <form method="post" action="/neu/nebenkosten/{{ p.id }}/akonto/">
+        {% csrf_token %}
+        <div class="space-y-2 mb-3">
+        {% for s in akonto_vorschlaege %}
+            <label class="flex items-center gap-3 bg-white rounded-lg px-4 py-2.5 border border-indigo-100 cursor-pointer">
+                <input type="checkbox" name="vertrag_id" value="{{ s.vertrag_id }}" checked class="accent-indigo-600">
+                <div class="flex-1 min-w-0">
+                    <div class="font-semibold text-slate-800 text-sm truncate">{{ s.mieter }} <span class="text-slate-400 font-normal">· {{ s.einheit }}</span></div>
+                    <div class="text-xs text-slate-500">aktuell CHF {{ s.aktuell|chf }}/Mt. → {{ s.richtung }} um CHF {{ s.diff|chf }}</div>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-xs text-slate-400">neu CHF</span>
+                    <input type="number" step="1" name="akonto_{{ s.vertrag_id }}" value="{{ s.empfohlen }}" class="w-20 bg-slate-100 rounded-lg text-sm px-2 py-1.5 text-right font-semibold">
+                </div>
+            </label>
+        {% endfor %}
+        </div>
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg">
+            <i class="fa-solid fa-check mr-1.5"></i>Akonto anpassen
+        </button>
+        <p class="text-xs text-indigo-600 mt-2">Übernimmt die neue Akonto-Höhe in den Vertrag (künftige Sollstellungen). Eine formelle Mitteilung an den Mieter ist separat zu versenden.</p>
+    </form>
+</div>
+{% endif %}
+
 <!-- MIETER-ABRECHNUNG -->
 <div data-panel="nk" id="nk-abrechnung">
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
