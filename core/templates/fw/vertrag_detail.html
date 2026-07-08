@@ -20,7 +20,24 @@
             <p class="text-sm text-slate-500">{{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.ort }} · {{ v.einheit.bezeichnung }}</p>
         </div>
     </div>
-    <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ vertrag_pill.cls }}">{{ vertrag_pill.label }}</span>
+    <div class="flex flex-col items-end gap-2">
+        <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ vertrag_pill.cls }}">{{ vertrag_pill.label }}</span>
+        <!-- Status-Umschalter -->
+        <form method="post" action="/neu/vertraege/{{ v.id }}/status/" class="flex items-center bg-slate-100 rounded-lg p-0.5 gap-0.5">
+            {% csrf_token %}
+            <button name="status" value="entwurf" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'entwurf' %}bg-white text-slate-800 shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Entwurf</button>
+            <button name="status" value="aktiv" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'aktiv' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Aktiv</button>
+            <button name="status" value="archiviert" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'archiviert' or v.status == 'gekuendigt' %}bg-slate-600 text-white shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Inaktiv</button>
+        </form>
+        <div class="flex items-center gap-2">
+            <a href="/vertrag/{{ v.id }}/pdf/" target="_blank" class="text-xs font-medium text-slate-500 hover:text-indigo-600"><i class="fa-solid fa-file-pdf mr-1"></i>PDF</a>
+            <span class="text-slate-300">·</span>
+            <form method="post" action="/neu/vertraege/{{ v.id }}/loeschen/" onsubmit="return confirm('Diesen Vertrag wirklich löschen?{% if rechnungs_rows %}\n\n{{ rechnungs_rows|length }} verknüpfte Rechnung(en) und {{ zahlungen|length }} Zahlung(en) bleiben erhalten (werden entkoppelt).{% endif %}');">
+                {% csrf_token %}
+                <button class="text-xs font-medium text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash mr-1"></i>Löschen</button>
+            </form>
+        </div>
+    </div>
 </div>
 
 <!-- KPI -->

@@ -539,6 +539,45 @@ def fw_vertrag_detail(request, pk):
     })
 
 
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_vertrag_status(request, pk):
+    """Setzt den Vertragsstatus: entwurf / aktiv / archiviert (inaktiv)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    v = get_object_or_404(Mietvertrag, id=pk)
+    if request.method == 'POST':
+        neu = request.POST.get('status', '')
+        erlaubt = {'entwurf': 'Entwurf', 'aktiv': 'Aktiv', 'archiviert': 'Inaktiv / Archiviert'}
+        if neu in erlaubt:
+            v.status = neu
+            v.aktiv = (neu == 'aktiv')
+            v.save(update_fields=['status', 'aktiv'])
+            log_aktion(request, "Vertragsstatus geändert", str(v.mieter), erlaubt[neu])
+            messages.success(request, f"✅ Vertrag ist jetzt: {erlaubt[neu]}.")
+        else:
+            messages.error(request, "Unbekannter Status.")
+    return redirect(f'/neu/vertraege/{v.id}/')
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_vertrag_loeschen(request, pk):
+    """Löscht einen Mietvertrag. Verknüpfte Rechnungen/Zahlungen bleiben erhalten
+    (FK on_delete=SET_NULL) — die revisionssichere Buchhaltung wird nicht zerstört."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    v = get_object_or_404(Mietvertrag, id=pk)
+    if request.method == 'POST':
+        name = str(v.mieter)
+        einheit = v.einheit.bezeichnung
+        log_aktion(request, "Mietvertrag gelöscht", name, einheit)
+        v.delete()
+        messages.success(request, f"🗑️ Vertrag ({name} · {einheit}) wurde gelöscht.")
+        return redirect('/neu/vertraege/')
+    return redirect(f'/neu/vertraege/{v.id}/')
+
+
 # ============================================================
 # ETAPPE D: MAHNWESEN (Mahnstufen aus überfälligen Debitoren)
 # ============================================================
