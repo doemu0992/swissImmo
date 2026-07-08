@@ -3215,12 +3215,81 @@ def fw_liegenschaft_form(request, pk=None):
         log_aktion(request, "Liegenschaft bearbeitet" if pk else "Liegenschaft erstellt",
                    f"{obj.strasse}, {obj.ort}", '')
         messages.success(request, f"✅ Liegenschaft {obj.strasse} gespeichert.")
+
+        # Automatischer GWR/EGID-Import (nur wenn gewünscht) — ermittelt die EGID
+        # aus der Adresse und importiert die Objekte (Wohnungen) vom Bundesamt.
+        if P.get('gwr_import', 'on') == 'on' and (not obj.egid or obj.einheiten.count() == 0):
+            try:
+                from portfolio.services import sync_liegenschaft_with_gwr
+                res = sync_liegenschaft_with_gwr(obj)
+                if res.get('egid_found'):
+                    messages.success(request, f"📍 EGID {res['egid_found']} automatisch ermittelt.")
+                if res.get('units_created'):
+                    messages.success(request, f"🏠 {res['units_created']} Objekt(e) automatisch aus dem Gebäude- und Wohnungsregister importiert.")
+                if not obj.egid and not res.get('egid_found'):
+                    messages.warning(request, "⚠️ EGID konnte nicht automatisch ermittelt werden — bitte Adresse prüfen oder EGID manuell erfassen.")
+                elif res.get('error'):
+                    messages.warning(request, f"⚠️ GWR-Import teilweise fehlgeschlagen: {res['error']}")
+            except Exception as e:
+                messages.warning(request, f"⚠️ Automatischer GWR-Import nicht möglich: {e}")
         return redirect(f'/neu/liegenschaften/{obj.id}/')
 
     return render(request, 'fw/liegenschaft_form.html', {
         **basis, 'nav': 'liegenschaften', 'lg': lg, 'ist_neu': lg is None,
         'mandanten': Mandant.objects.all().order_by('firma_oder_name'),
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_liegenschaft_gwr(request, pk):
+    """GWR/EGID-Import manuell (erneut) auslösen — z.B. wenn er beim Anlegen
+    fehlschlug oder die Objekte nachträglich vom Bund geladen werden sollen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    lg = get_object_or_404(Liegenschaft, id=pk)
+    try:
+        from portfolio.services import sync_liegenschaft_with_gwr
+        res = sync_liegenschaft_with_gwr(lg)
+        if res.get('egid_found'):
+            messages.success(request, f"📍 EGID {res['egid_found']} ermittelt.")
+        if res.get('units_created'):
+            messages.success(request, f"🏠 {res['units_created']} Objekt(e) aus dem GWR importiert.")
+        if not res.get('egid_found') and not res.get('units_created'):
+            if lg.egid and lg.einheiten.count() > 0:
+                messages.info(request, "Objekte bereits erfasst — kein weiterer Import nötig.")
+            elif not lg.egid:
+                messages.warning(request, "⚠️ EGID konnte nicht ermittelt werden — Adresse prüfen.")
+            else:
+                messages.info(request, "Keine neuen Objekte im GWR gefunden.")
+        if res.get('error'):
+            messages.warning(request, f"⚠️ Hinweis: {res['error']}")
+    except Exception as e:
+        messages.warning(request, f"⚠️ GWR-Import nicht möglich: {e}")
+    return redirect(f'/neu/liegenschaften/{lg.id}/')
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_liegenschaft_loeschen(request, pk):
+    """Liegenschaft löschen. Blockiert, solange aktive Verträge bestehen —
+    diese müssen zuerst beendet werden (Schutz vor versehentlichem Datenverlust)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    lg = get_object_or_404(Liegenschaft, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/liegenschaften/{lg.id}/')
+
+    aktive = Mietvertrag.objects.filter(einheit__liegenschaft=lg, status='aktiv').count()
+    if aktive:
+        messages.error(request, f"❌ Liegenschaft kann nicht gelöscht werden: {aktive} aktive(r) Vertrag/Verträge. Bitte zuerst kündigen/beenden.")
+        return redirect(f'/neu/liegenschaften/{lg.id}/')
+
+    name = f"{lg.strasse}, {lg.plz} {lg.ort}"
+    anz_obj = lg.einheiten.count()
+    log_aktion(request, "Liegenschaft gelöscht", name, f"inkl. {anz_obj} Objekt(e)")
+    lg.delete()   # cascade: Objekte, Zähler, Geräte, beendete Verträge etc.
+    messages.success(request, f'🗑️ Liegenschaft „{name}" inkl. {anz_obj} Objekt(e) gelöscht.')
+    return redirect('/neu/liegenschaften/')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
