@@ -76,6 +76,38 @@ def fw_dashboard(request):
                      .exclude(status__in=['archiviert', 'gekuendigt'])
                      .select_related('mieter', 'einheit__liegenschaft').order_by('beginn'))
 
+    # --- KPIs (Bewirtschafter-Kennzahlen) ---
+    objekte_total = einheiten.count()
+    leer_count = leerstand_objekte.count()
+    leerstandsquote = round(leer_count / objekte_total * 100, 1) if objekte_total else 0.0
+    # Soll-Miete/Monat (Potenzial = alle Objekte zu Soll-Miete) und Ist (nur belegte)
+    soll_potenzial = Decimal('0.00')
+    ist_miete = Decimal('0.00')
+    ausfall_leerstand = Decimal('0.00')
+    for e in einheiten:
+        miete = (e.nettomiete_aktuell or Decimal('0')) + (e.nebenkosten_aktuell or Decimal('0'))
+        soll_potenzial += miete
+        if e.id in belegte_ids:
+            ist_miete += miete
+        else:
+            ausfall_leerstand += miete
+    # ertragsgewichtete Leerstandsquote (Fr.-Ausfall / Potenzial)
+    leerstandsquote_ertrag = round(float(ausfall_leerstand) / float(soll_potenzial) * 100, 1) if soll_potenzial else 0.0
+    # Offene überfällige Forderungen (Mietzinsausfall/Debitorenrisiko)
+    _deb = DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
+    if aktive_lg:
+        _deb = _deb.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
+    offen_ueberfaellig = sum((r.offener_betrag for r in _deb
+                              if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) < heute), Decimal('0.00'))
+    kpis = {
+        'leerstandsquote': leerstandsquote,
+        'leerstandsquote_ertrag': leerstandsquote_ertrag,
+        'soll_potenzial': soll_potenzial,
+        'ist_miete': ist_miete,
+        'ausfall_leerstand': ausfall_leerstand,
+        'offen_ueberfaellig': offen_ueberfaellig,
+    }
+
     # --- AUFGABEN (bestehende Pendenzen-Engine wiederverwenden) ---
     aufgaben = _berechne_aufgaben(heute, leerstand_objekte.count(), 0, 0)
     # Aufgaben-Ziele auf die neue Oberfläche mappen, wo es ein Pendant gibt
@@ -102,6 +134,7 @@ def fw_dashboard(request):
         'bevorstehende': bevorstehende[:20],
         'bevorstehende_count': bevorstehende.count(),
         'aufgaben': aufgaben,
+        'kpis': kpis,
     }
     return render(request, 'fw/dashboard.html', context)
 

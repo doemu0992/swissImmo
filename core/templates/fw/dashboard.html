@@ -10,6 +10,42 @@
     <a href="/neu/" class="ml-2 text-xs text-slate-400 hover:text-indigo-600">× Filter aufheben</a></p>
 {% endif %}
 
+<!-- ================= KENNZAHLEN ================= -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="flex items-center justify-between">
+            <div class="text-2xl font-bold {% if kpis.leerstandsquote > 5 %}text-rose-600{% elif kpis.leerstandsquote > 0 %}text-amber-600{% else %}text-emerald-600{% endif %}">{{ kpis.leerstandsquote }}%</div>
+            <i class="fa-solid fa-door-open text-slate-300"></i>
+        </div>
+        <div class="text-sm text-slate-500">Leerstandsquote</div>
+        <div class="text-[11px] text-slate-400">ertragsgewichtet {{ kpis.leerstandsquote_ertrag }}%</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="flex items-center justify-between">
+            <div class="text-2xl font-bold text-slate-900">CHF {{ kpis.ist_miete|chf }}</div>
+            <i class="fa-solid fa-coins text-slate-300"></i>
+        </div>
+        <div class="text-sm text-slate-500">Ist-Miete / Monat</div>
+        <div class="text-[11px] text-slate-400">Soll-Potenzial CHF {{ kpis.soll_potenzial|chf }}</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="flex items-center justify-between">
+            <div class="text-2xl font-bold {% if kpis.ausfall_leerstand > 0 %}text-amber-600{% else %}text-emerald-600{% endif %}">CHF {{ kpis.ausfall_leerstand|chf }}</div>
+            <i class="fa-solid fa-house-circle-xmark text-slate-300"></i>
+        </div>
+        <div class="text-sm text-slate-500">Mietzinsausfall Leerstand</div>
+        <div class="text-[11px] text-slate-400">pro Monat</div>
+    </div>
+    <a href="/neu/mahnwesen/" class="bg-white rounded-xl border border-slate-200 p-4 hover:border-indigo-300 transition-colors">
+        <div class="flex items-center justify-between">
+            <div class="text-2xl font-bold {% if kpis.offen_ueberfaellig > 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">CHF {{ kpis.offen_ueberfaellig|chf }}</div>
+            <i class="fa-solid fa-triangle-exclamation text-slate-300"></i>
+        </div>
+        <div class="text-sm text-slate-500">Überfällige Forderungen</div>
+        <div class="text-[11px] text-indigo-400">→ Mahnwesen</div>
+    </a>
+</div>
+
 <!-- ================= PORTFOLIO ================= -->
 <div class="flex items-center gap-2 mt-4 mb-3">
     <h2 class="text-lg font-bold text-slate-800">Portfolio</h2>
