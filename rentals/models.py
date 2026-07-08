@@ -71,10 +71,14 @@ class Mietvertrag(models.Model):
     zahlungsrhythmus = models.CharField("Zahlungsrhythmus", max_length=20, choices=ZAHLUNGSRHYTHMUS_CHOICES, default='monatlich') # 🔥 NEU
     mwst_pflichtig = models.BooleanField("MWST-pflichtig", default=False)             # 🔥 NEU (v.a. Gewerbe)
 
-    # --- KAUTION ---
+    # --- KAUTION (Art. 257e OR: Sperrkonto auf Mietername, separat geführt) ---
     kautions_betrag = models.DecimalField("Kautionsbetrag", max_digits=8, decimal_places=2, blank=True, null=True)
     kautions_konto = models.CharField("Kautionskonto (IBAN)", max_length=34, blank=True, default='')
     kautions_einbezahlt_am = models.DateField("Kaution einbezahlt am", null=True, blank=True)
+    kautions_zurueckbezahlt_am = models.DateField("Kaution zurückbezahlt am", null=True, blank=True)          # 🔥 NEU
+    kautions_rueckzahlung_betrag = models.DecimalField("Rückzahlung an Mieter", max_digits=8, decimal_places=2, null=True, blank=True)  # 🔥 NEU
+    kautions_abzug_betrag = models.DecimalField("Einbehalt / Abzug", max_digits=8, decimal_places=2, null=True, blank=True)  # 🔥 NEU
+    kautions_abzug_grund = models.TextField("Grund des Einbehalts", blank=True, default='')                    # 🔥 NEU
 
     # --- BASES & VORBEHALTE (🔥 ERWEITERT) ---
     basis_referenzzinssatz = models.DecimalField(max_digits=4, decimal_places=2, default=get_current_ref_zins)
@@ -101,6 +105,17 @@ class Mietvertrag(models.Model):
     @property
     def brutto_mietzins(self):
         return (self.netto_mietzins or Decimal('0.00')) + (self.nebenkosten or Decimal('0.00'))
+
+    @property
+    def kautions_status(self):
+        """offen (keine) / erwartet / einbezahlt / zurueckbezahlt — für das Kautions-Register."""
+        if not self.kautions_betrag or self.kautions_betrag <= 0:
+            return 'keine'
+        if self.kautions_zurueckbezahlt_am:
+            return 'zurueckbezahlt'
+        if self.kautions_einbezahlt_am:
+            return 'einbezahlt'
+        return 'erwartet'
 
     @property
     def mietzinspotenzial(self):

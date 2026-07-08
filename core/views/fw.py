@@ -2615,3 +2615,99 @@ def fw_kuendigung_zuruecknehmen(request, pk):
         log_aktion(request, "Kündigung zurückgezogen", str(v.mieter), '')
         messages.success(request, "✅ Kündigung zurückgezogen, Vertrag reaktiviert.")
     return redirect(f'/neu/vertraege/{v.id}/')
+
+
+# ============================================================
+# KAUTIONS-REGISTER (Art. 257e OR — separat vom Verwaltungs-Hauptbuch)
+# ============================================================
+
+KAUTION_PILL = {
+    'erwartet':       ('Erwartet',       'bg-amber-50 text-amber-700'),
+    'einbezahlt':     ('Einbezahlt',     'bg-emerald-50 text-emerald-700'),
+    'zurueckbezahlt': ('Zurückbezahlt',  'bg-slate-100 text-slate-500'),
+}
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_kautionen(request):
+    """Register aller Mietzinsdepots — separate Führung nach Art. 257e OR."""
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    qs = (Mietvertrag.objects.filter(kautions_betrag__gt=0)
+          .select_related('mieter', 'einheit__liegenschaft').order_by('-beginn'))
+    if aktive_lg:
+        qs = qs.filter(einheit__liegenschaft=aktive_lg)
+
+    rows, sum_erwartet, sum_gehalten = [], Decimal('0.00'), Decimal('0.00')
+    for v in qs:
+        st = v.kautions_status
+        label, cls = KAUTION_PILL.get(st, (st, 'bg-slate-100 text-slate-500'))
+        rows.append({'v': v, 'status': st, 'label': label, 'cls': cls})
+        if st == 'erwartet':
+            sum_erwartet += v.kautions_betrag or Decimal('0.00')
+        elif st == 'einbezahlt':
+            sum_gehalten += v.kautions_betrag or Decimal('0.00')
+    return render(request, 'fw/kautionen.html', {
+        **basis, 'nav': 'kautionen', 'rows': rows,
+        'sum_erwartet': sum_erwartet, 'sum_gehalten': sum_gehalten,
+        'anzahl': len(rows),
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_kaution_aktion(request, vertrag_id):
+    """Einzahlung bestätigen oder Rückzahlung (mit Einbehalt) erfassen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    v = get_object_or_404(Mietvertrag, id=vertrag_id)
+    if request.method != 'POST':
+        return redirect(f'/neu/vertraege/{v.id}/')
+    P = request.POST
+    aktion = P.get('aktion')
+
+    def d(key):
+        val = P.get(key)
+        try:
+            return date.fromisoformat(val) if val else None
+        except ValueError:
+            return None
+
+    def dec(key):
+        try:
+            return Decimal(str(P.get(key) or '0').replace(',', '.'))
+        except Exception:
+            return Decimal('0.00')
+
+    if aktion == 'einzahlung':
+        v.kautions_einbezahlt_am = d('einbezahlt_am') or timezone.localdate()
+        v.kautions_konto = P.get('kautions_konto', v.kautions_konto).strip() or v.kautions_konto
+        v.save(update_fields=['kautions_einbezahlt_am', 'kautions_konto'])
+        log_aktion(request, "Kaution einbezahlt", str(v.mieter), f"CHF {v.kautions_betrag}")
+        messages.success(request, "✅ Kautions-Einzahlung erfasst.")
+
+    elif aktion == 'rueckzahlung':
+        abzug = dec('abzug_betrag')
+        total = v.kautions_betrag or Decimal('0.00')
+        rueck = dec('rueckzahlung_betrag') if P.get('rueckzahlung_betrag') else (total - abzug)
+        v.kautions_zurueckbezahlt_am = d('zurueckbezahlt_am') or timezone.localdate()
+        v.kautions_rueckzahlung_betrag = rueck
+        v.kautions_abzug_betrag = abzug
+        v.kautions_abzug_grund = P.get('abzug_grund', '').strip()
+        v.save(update_fields=['kautions_zurueckbezahlt_am', 'kautions_rueckzahlung_betrag',
+                              'kautions_abzug_betrag', 'kautions_abzug_grund'])
+        # Einbehalt optional als Debitoren-Weiterverrechnung buchen (Schadenersatz)
+        if abzug > 0 and P.get('abzug_verrechnen') == 'on':
+            try:
+                from finance.models import DebitorenRechnung
+                DebitorenRechnung.objects.create(
+                    vertrag=v, betrag=abzug, datum=timezone.localdate(),
+                    faellig_am=timezone.localdate(), status='bezahlt',
+                    titel="Einbehalt Mietzinsdepot",
+                    beschreibung=v.kautions_abzug_grund or "Verrechnung aus Kaution",
+                )
+            except Exception:
+                pass
+        log_aktion(request, "Kaution zurückbezahlt", str(v.mieter),
+                   f"Rückzahlung CHF {rueck}, Abzug CHF {abzug}")
+        messages.success(request, f"✅ Rückzahlung erfasst: CHF {rueck} an Mieter, CHF {abzug} einbehalten.")
+    return redirect(f'/neu/vertraege/{v.id}/')
