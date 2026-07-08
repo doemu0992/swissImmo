@@ -1,0 +1,124 @@
+{% load chf %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    @page { size: A4 portrait; margin: 2.2cm 2cm 2cm 2cm;
+        @frame footer { -pdf-frame-content: footerContent; bottom: 1cm; margin-left: 2cm; margin-right: 2cm; height: 1cm; } }
+    body { font-family: Helvetica, sans-serif; font-size: 9.5pt; color: #1e293b; line-height: 1.5; }
+    h1 { font-size: 15pt; margin: 0 0 6pt 0; }
+    .kopf { font-size: 8pt; color: #64748b; border-bottom: 1px solid #e2e8f0; padding-bottom: 4pt; margin-bottom: 12pt; }
+    .disclaimer { font-size: 8pt; color: #64748b; margin-bottom: 12pt; }
+    .sec { background-color: #f1f5f9; font-weight: bold; font-size: 10pt; padding: 4pt 7pt; margin: 14pt 0 6pt 0; }
+    .sublabel { font-weight: bold; font-size: 8pt; color: #64748b; margin: 6pt 0 2pt 0; }
+    .note { font-size: 8pt; color: #64748b; margin: 3pt 0; }
+    .fam { font-size: 8pt; color: #b45309; background-color: #fffbeb; padding: 4pt 6pt; margin: 5pt 0; }
+    table.data { width: 100%; border-collapse: collapse; margin: 4pt 0; }
+    table.data td { padding: 2.5pt 0; vertical-align: top; }
+    table.data td.k { color: #64748b; width: 38%; }
+    table.data td.b { font-weight: bold; }
+    p { margin: 5pt 0; }
+    .sign { width: 100%; margin-top: 22pt; }
+    .sign td { width: 240pt; vertical-align: bottom; padding-top: 30pt; font-size: 8pt; color: #64748b; }
+    .sigline { border-top: 1px solid #94a3b8; padding-top: 3pt; }
+    .sigimg { height: 36pt; }
+</style>
+</head>
+<body>
+
+{% if mandant %}{% with vname=mandant.firma_oder_name vstr=mandant.strasse vplz=mandant.plz vort=mandant.ort %}
+<div class="kopf">{{ vname }} | {{ vstr }} | {{ vplz }} {{ vort }}</div>
+{% endwith %}{% else %}
+<div class="kopf">{{ verwaltung.firma }} | {{ verwaltung.strasse }} | {{ verwaltung.plz }} {{ verwaltung.ort }}</div>
+{% endif %}
+
+<h1>Mietvertrag für Wohnräume</h1>
+<div class="disclaimer">Einfachheitshalber wird auf die weiblichen Formen «Mieterin, Vermieterin» etc. verzichtet und stattdessen «Mieter, Vermieter» etc. als Oberbegriff verwendet.</div>
+
+<div class="sec">1. Vertragsparteien</div>
+<div class="sublabel">Vermieter</div>
+{% if mandant %}
+{{ mandant.firma_oder_name }}<br>{{ mandant.strasse }}<br>{{ mandant.plz }} {{ mandant.ort }}
+{% else %}
+{{ verwaltung.firma }}<br>{{ verwaltung.strasse }}<br>{{ verwaltung.plz }} {{ verwaltung.ort }}
+{% endif %}
+<div class="note">Nachstehend «Vermieter» genannt.</div>
+{% if verwaltung %}
+<div class="sublabel">Vertreten durch:</div>
+{{ verwaltung.firma }}<br>{{ verwaltung.strasse }}<br>{{ verwaltung.plz }} {{ verwaltung.ort }}
+{% endif %}
+
+<div class="sublabel">Mieter</div>
+{{ mieter.display_name }}{% if mieter.strasse %}<br>{{ mieter.strasse }}{% endif %}{% if mieter.plz %}<br>{{ mieter.plz }} {{ mieter.ort }}{% endif %}
+{% if vertrag.mitmieter_name %}
+<div style="margin-top:6pt;">{{ vertrag.mitmieter_name }}{% if mieter.strasse %}<br>{{ mieter.strasse }}{% endif %}{% if mieter.plz %}<br>{{ mieter.plz }} {{ mieter.ort }}{% endif %}</div>
+{% endif %}
+<div class="note">Nachstehend «Mieter» genannt.</div>
+{% if vertrag.familienwohnung %}
+<div class="fam"><b>Familienwohnung</b> (Art. 266n / 169 OR): Eine Kündigung durch den Vermieter ist beiden Ehegatten separat mit amtlichem Formular zuzustellen.</div>
+{% endif %}
+<p class="note">Alle aufgeführten Personen haften für sämtliche Verbindlichkeiten solidarisch.</p>
+
+<div class="sec">2. Mietsache</div>
+<table class="data">
+    <tr><td class="k">Mietobjekt</td><td>{{ einheit.bezeichnung }}</td></tr>
+    <tr><td class="k">Stockwerk</td><td>{{ einheit.etage|default:"—" }}</td></tr>
+    <tr><td class="k">Adresse</td><td>{{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}</td></tr>
+    <tr><td class="k">EGID / EWID</td><td>{{ liegenschaft.egid|default:"—" }} / {{ einheit.ewid|default:"—" }}</td></tr>
+</table>
+<p class="note">Der Mieter verpflichtet sich, die Mietsache während der gesamten Mietdauer zum vertraglich vereinbarten Zweck, das heisst als Wohnung, zu gebrauchen. Eine wesentliche Gebrauchsänderung ist nur mit ausdrücklicher Zustimmung des Vermieters gestattet.</p>
+
+<div class="sec">3. Mietdauer und Kündigung</div>
+<table class="data">
+    <tr><td class="k">Mietbeginn</td><td>{{ vertrag.beginn|date:"d.m.Y" }}</td></tr>
+    <tr><td class="k">Mietende</td><td>{% if vertrag.ende %}{{ vertrag.ende|date:"d.m.Y" }}{% else %}unbefristet{% endif %}</td></tr>
+    <tr><td class="k">Kündigungsfrist</td><td>{{ vertrag.kuendigungsfrist_monate }} Monate</td></tr>
+    <tr><td class="k">Kündigungstermine</td><td>{{ vertrag.kuendigungstermine }}</td></tr>
+</table>
+{% if vertrag.erstmals_kuendbar_auf %}<p class="note">Der Vertrag ist erstmals kündbar auf {{ vertrag.erstmals_kuendbar_auf|date:"d.m.Y" }}.</p>{% endif %}
+<p class="note">Die Kündigung dieses Mietvertrages durch den Mieter hat mit Einschreibebrief, jene des Vermieters hat mit amtlichem Formular zu erfolgen.</p>
+
+<div class="sec">4. Mietzins</div>
+<table class="data">
+    <tr><td class="k">Nettomietzins</td><td>CHF {{ miete_fmt }}</td></tr>
+    <tr><td class="k">Nebenkosten ({{ vertrag.get_nk_abrechnungsart_display }})</td><td>CHF {{ nk_fmt }}</td></tr>
+    <tr><td class="k b">Bruttomietzins</td><td class="b">CHF {{ brutto_fmt }}</td></tr>
+    <tr><td class="k">Zahlungsrhythmus</td><td>{{ vertrag.get_zahlungsrhythmus_display }}</td></tr>
+</table>
+<p class="note">Der Mietzins ist jeweils am 1. Tag des Monats (Verfalldatum) fällig. Bei Zahlungseingängen nach dem Verfalldatum ist der Vermieter berechtigt, einen Verzugszins sowie Mahn- und Umtriebsgebühren in usanzgemässer Höhe in Rechnung zu stellen.</p>
+
+<div class="sec">5. Mietzinsdepot</div>
+<p class="note">Zur Sicherstellung sämtlicher vermieterseitiger Ansprüche aus dem Mietverhältnis leistet der Mieter eine Sicherheit im Sinne von Art. 257e OR von <b>CHF {{ kaution_fmt }}</b>.{% if vertrag.kautions_konto %} Kautionskonto: {{ vertrag.kautions_konto }}.{% endif %} Die Sicherheitsleistung muss bis zur Schlüsselübergabe erfolgt sein.</p>
+
+<div class="sec">6. Nebenkosten</div>
+<p class="note">Nebenkosten sind das Entgelt für die tatsächlichen Aufwendungen des Vermieters oder eines Dritten für Leistungen, die mit dem Gebrauch der Mietsache zusammenhängen, wie Heizungs-, Warmwasser- und Betriebskosten sowie öffentliche Abgaben. Abrechnungsart: {{ vertrag.get_nk_abrechnungsart_display }}.</p>
+
+<div class="sec">7. Allgemeine Bedingungen und Hausordnung</div>
+<p class="note">Die allgemeinen Bedingungen zum Mietvertrag und die Hausordnung bilden einen integrierenden Bestandteil dieses Vertrags. Die Parteien bestätigen mit ihren Unterschriften, dass sie ein vollständiges Exemplar erhalten haben und sich mit dem Inhalt einverstanden erklären. Jede Änderung oder Ergänzung bedarf zu ihrer Gültigkeit der Schriftform.</p>
+
+<div class="sec">8. Datenschutz &amp; anwendbares Recht</div>
+<p class="note">Im Rahmen der Leistungserbringung werden personenbezogene Daten (Name, E-Mail-Adresse, Angaben zum Mietobjekt) zum Betrieb der Verwaltungs-Plattform verarbeitet. Soweit in diesem Vertrag nichts anderes vereinbart ist, gelten die Bestimmungen des Schweizerischen Obligationenrechts (Art. 253 ff. OR). Gerichtsstand ist der Ort der gemieteten Sache.</p>
+
+<table class="sign">
+    <tr>
+        <td>
+            <div class="sublabel">Vermieter</div>
+            {% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg"><br>{% endif %}
+            <div class="sigline">Ort, Datum / Unterschrift</div>
+        </td>
+        <td>
+            <div class="sublabel">Mieter</div>
+            <br><br>
+            <div class="sigline">Ort, Datum / Unterschrift</div>
+            {% if vertrag.mitmieter_name %}<div style="margin-top:24pt;" class="sigline">Ort, Datum / Unterschrift (Mitmieter)</div>{% endif %}
+        </td>
+    </tr>
+</table>
+
+<div id="footerContent" style="font-size:7pt;color:#94a3b8;text-align:center;">
+    {% if mandant %}{{ mandant.firma_oder_name }}{% else %}{{ verwaltung.firma }}{% endif %} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }} · erstellt am {{ heute|date:"d.m.Y" }}
+</div>
+
+</body>
+</html>

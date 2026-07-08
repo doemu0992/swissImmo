@@ -1803,6 +1803,13 @@ def fw_vertrag_neu_speichern(request):
         except ValueError:
             return None
 
+    # Zweiter Mieter (Ehepartner): aus Einzelfeldern zu mitmieter_name kombinieren,
+    # Fallback auf ein evtl. direkt übergebenes mitmieter_name.
+    mit_teile = [P.get('mit_anrede', '').strip(), P.get('mit_vorname', '').strip(),
+                 P.get('mit_nachname', '').strip()]
+    mitmieter = ' '.join(t for t in mit_teile if t).strip() or P.get('mitmieter_name', '').strip()
+    familienwohnung = P.get('familienwohnung') == 'on'
+
     beginn = datum('beginn') or timezone.now().date()
     with transaction.atomic():
         vertrag = Mietvertrag.objects.create(
@@ -1812,7 +1819,7 @@ def fw_vertrag_neu_speichern(request):
             erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
             kuendigungsfrist_monate=int(P.get('kuendigungsfrist') or 3),
             kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
-            mitmieter_name=P.get('mitmieter_name', '').strip(),
+            mitmieter_name=mitmieter, familienwohnung=familienwohnung,
             anzahl_personen=int(P.get('anzahl_personen') or 1),
             netto_mietzins=dec('netto_mietzins'), nebenkosten=dec('nebenkosten'),
             nk_abrechnungsart=P.get('nk_abrechnungsart', 'akonto'),
@@ -1820,6 +1827,18 @@ def fw_vertrag_neu_speichern(request):
             kautions_betrag=dec('kautions_betrag') or None,
             kautions_konto=P.get('kautions_konto', '').strip(),
         )
+    # Zukünftige Adresse = Objektadresse ab Einzug (Auto-Wechsel via
+    # Mieter.check_and_update_adresse am Mietbeginn). Nur setzen, wenn der Einzug
+    # in der Zukunft liegt und die Objektadresse von der aktuellen abweicht.
+    lg = einheit.liegenschaft
+    obj_strasse = f"{lg.strasse}{(', ' + einheit.etage) if einheit.etage else ''}"
+    if beginn >= timezone.now().date() and (mieter.strasse or '') != lg.strasse:
+        mieter.zukuenftige_strasse = obj_strasse
+        mieter.zukuenftige_plz = lg.plz
+        mieter.zukuenftiger_ort = lg.ort
+        mieter.zukuenftig_ab = beginn
+        mieter.save()
+
     log_aktion(request, "Mietvertrag erstellt (Assistent)", str(mieter),
                f"{einheit.bezeichnung}, ab {beginn}")
     messages.success(request, f"✅ Mietvertrag für {mieter.display_name} erstellt.")

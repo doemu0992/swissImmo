@@ -65,6 +65,8 @@
                 {% if v.erstmals_kuendbar_auf %}<div class="flex justify-between"><dt class="text-slate-500">Erstmals kündbar</dt><dd class="text-slate-800 font-medium">{{ v.erstmals_kuendbar_auf|date:"d.m.Y" }}</dd></div>{% endif %}
                 <div class="flex justify-between"><dt class="text-slate-500">Kündigungstermine</dt><dd class="text-slate-800 font-medium text-right">{{ v.kuendigungstermine }}</dd></div>
                 {% if v.anzahl_personen %}<div class="flex justify-between"><dt class="text-slate-500">Personen</dt><dd class="text-slate-800 font-medium">{{ v.anzahl_personen }}</dd></div>{% endif %}
+                {% if v.mitmieter_name %}<div class="flex justify-between"><dt class="text-slate-500">Mitmieter</dt><dd class="text-slate-800 font-medium text-right">{{ v.mitmieter_name }}</dd></div>{% endif %}
+                {% if v.familienwohnung %}<div class="flex justify-between"><dt class="text-slate-500">Familienwohnung</dt><dd class="text-amber-700 font-medium">Ja (Art. 266n OR)</dd></div>{% endif %}
             </dl>
             {% if nebenobjekte %}
             <div class="mt-3 pt-3 border-t border-slate-100">

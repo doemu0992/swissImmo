@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    @page { size: A4 portrait; margin: 2.2cm 2cm 2cm 2cm; }
+    body { font-family: Helvetica, sans-serif; font-size: 9.5pt; color: #1e293b; line-height: 1.5; }
+    h1 { font-size: 15pt; margin: 0 0 6pt 0; }
+    .kopf { font-size: 8pt; color: #64748b; border-bottom: 1px solid #e2e8f0; padding-bottom: 4pt; margin-bottom: 12pt; }
+    .sec { background-color: #f1f5f9; font-weight: bold; font-size: 10pt; padding: 4pt 7pt; margin: 14pt 0 6pt 0; }
+    .sublabel { font-weight: bold; font-size: 8pt; color: #64748b; margin: 6pt 0 2pt 0; }
+    .note { font-size: 8pt; color: #64748b; margin: 3pt 0; }
+    table.data { width: 100%; border-collapse: collapse; margin: 4pt 0; }
+    table.data td { padding: 2.5pt 0; vertical-align: top; }
+    table.data td.k { color: #64748b; width: 38%; }
+    table.data td.b { font-weight: bold; }
+    .sign { width: 100%; margin-top: 22pt; }
+    .sign td { width: 240pt; vertical-align: bottom; padding-top: 30pt; font-size: 8pt; color: #64748b; }
+    .sigline { border-top: 1px solid #94a3b8; padding-top: 3pt; }
+    .sigimg { height: 36pt; }
+</style>
+</head>
+<body>
+{% if mandant %}<div class="kopf">{{ mandant.firma_oder_name }} | {{ mandant.strasse }} | {{ mandant.plz }} {{ mandant.ort }}</div>
+{% else %}<div class="kopf">{{ verwaltung.firma }} | {{ verwaltung.strasse }} | {{ verwaltung.plz }} {{ verwaltung.ort }}</div>{% endif %}
+
+<h1>Mietvertrag für {{ einheit.get_typ_display }}</h1>
+
+<div class="sec">1. Vertragsparteien</div>
+<div class="sublabel">Vermieter</div>
+{% if mandant %}{{ mandant.firma_oder_name }}<br>{{ mandant.strasse }}<br>{{ mandant.plz }} {{ mandant.ort }}
+{% else %}{{ verwaltung.firma }}<br>{{ verwaltung.strasse }}<br>{{ verwaltung.plz }} {{ verwaltung.ort }}{% endif %}
+<div class="sublabel">Mieter</div>
+{{ mieter.display_name }}{% if mieter.strasse %}<br>{{ mieter.strasse }}<br>{{ mieter.plz }} {{ mieter.ort }}{% endif %}
+{% if vertrag.mitmieter_name %}<div style="margin-top:6pt;">{{ vertrag.mitmieter_name }}</div>{% endif %}
+
+<div class="sec">2. Mietobjekt</div>
+<table class="data">
+    <tr><td class="k">Objekt</td><td>{{ einheit.bezeichnung }} ({{ einheit.get_typ_display }})</td></tr>
+    <tr><td class="k">Adresse</td><td>{{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}</td></tr>
+</table>
+
+<div class="sec">3. Mietdauer und Kündigung</div>
+<table class="data">
+    <tr><td class="k">Mietbeginn</td><td>{{ vertrag.beginn|date:"d.m.Y" }}</td></tr>
+    <tr><td class="k">Mietende</td><td>{% if vertrag.ende %}{{ vertrag.ende|date:"d.m.Y" }}{% else %}unbefristet{% endif %}</td></tr>
+    <tr><td class="k">Kündigungsfrist</td><td>{{ vertrag.kuendigungsfrist_monate }} Monate</td></tr>
+    <tr><td class="k">Kündigungstermine</td><td>{{ vertrag.kuendigungstermine }}</td></tr>
+</table>
+
+<div class="sec">4. Mietzins</div>
+<table class="data">
+    <tr><td class="k">Nettomietzins</td><td>CHF {{ miete_fmt }}</td></tr>
+    <tr><td class="k">Nebenkosten</td><td>CHF {{ nk_fmt }}</td></tr>
+    <tr><td class="k b">Bruttomietzins</td><td class="b">CHF {{ brutto_fmt }}</td></tr>
+</table>
+<p class="note">Der Mietzins ist jeweils am 1. Tag des Monats fällig. Soweit nichts anderes vereinbart ist, gelten die Bestimmungen des Schweizerischen Obligationenrechts (Art. 253 ff. OR).</p>
+
+<table class="sign">
+    <tr>
+        <td><div class="sublabel">Vermieter</div>{% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg"><br>{% endif %}<div class="sigline">Ort, Datum / Unterschrift</div></td>
+        <td><div class="sublabel">Mieter</div><br><br><div class="sigline">Ort, Datum / Unterschrift</div></td>
+    </tr>
+</table>
+</body>
+</html>
