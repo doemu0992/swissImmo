@@ -1,0 +1,107 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Mahnwesen — swissImmo{% endblock %}
+
+{% block content %}
+
+<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Mahnwesen</h1>
+<p class="text-sm text-slate-500 mb-5">Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt erzeugen
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/mahnwesen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+<!-- Stufen-KPI -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-envelope-open-text"></i></div>
+        <div><div class="text-2xl font-bold text-rose-600">CHF {{ total|chf }}</div><div class="text-sm text-slate-500">Total überfällig</div></div>
+    </div>
+    {% for s in mahnstufen %}
+    <a href="?stufe={{ s.stufe }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
+       class="bg-white rounded-xl border p-5 flex items-center gap-4 transition-colors
+              {% if stufe_filter == s.stufe|stringformat:'s' %}border-indigo-400 ring-1 ring-indigo-200{% else %}border-slate-200 hover:border-slate-300{% endif %}">
+        <div class="w-11 h-11 rounded-lg flex items-center justify-center text-lg shrink-0 {{ s.cls }}"><span class="font-bold">{{ s.stufe }}</span></div>
+        <div>
+            <div class="text-2xl font-bold text-slate-800">{% if s.stufe == 3 %}{{ counts.3 }}{% elif s.stufe == 2 %}{{ counts.2 }}{% else %}{{ counts.1 }}{% endif %}</div>
+            <div class="text-sm text-slate-500">{{ s.label }}</div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+<!-- Tabelle -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+
+    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+        <div class="flex items-center gap-1.5 flex-wrap">
+            {% for wert, label in stufe_chips %}
+            <a href="?stufe={{ wert }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
+               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                      {% if stufe_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+        <div class="ml-auto text-xs text-slate-400">{{ rows|length }} Position(en)</div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Stufe</th>
+                <th class="px-5 py-3 font-semibold">Mieter</th>
+                <th class="px-5 py-3 font-semibold">Objekt</th>
+                <th class="px-5 py-3 font-semibold">Fällig seit</th>
+                <th class="px-5 py-3 font-semibold text-center">Tage</th>
+                <th class="px-5 py-3 font-semibold text-right">Offen</th>
+                <th class="px-5 py-3 font-semibold text-right">Aktion</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for row in rows %}
+            <tr class="hover:bg-slate-50/60 transition-colors">
+                <td class="px-5 py-3.5">
+                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap {{ row.stufe.cls }}">{{ row.stufe.label }}</span>
+                </td>
+                <td class="px-5 py-3.5 font-medium text-slate-900 whitespace-nowrap">
+                    {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="hover:text-indigo-600">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.objekt }}</td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.faellig|date:"d.m.Y" }}</td>
+                <td class="px-5 py-3.5 text-center font-semibold text-rose-600">{{ row.tage }}</td>
+                <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">{{ row.offen|chf }}</td>
+                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                    {% if row.mahn_url %}
+                    <a href="{{ row.mahn_url }}" target="_blank"
+                       class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                        <i class="fa-solid fa-file-pdf"></i> Mahnung
+                    </a>
+                    {% else %}<span class="text-slate-300 text-xs">kein Vertrag</span>{% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="px-5 py-12 text-center">
+                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-check"></i></div>
+                <p class="text-sm font-medium text-slate-700">Keine offenen Mahnfälle</p>
+                <p class="text-xs text-slate-400 mt-1">{% if stufe_filter %}Keine Position in dieser Stufe.{% else %}Alle Forderungen sind aktuell oder noch nicht mahnfällig.{% endif %}</p>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Stufen-Legende -->
+    <div class="px-5 py-3.5 border-t border-slate-100 flex flex-wrap gap-x-6 gap-y-1.5 text-xs text-slate-500">
+        {% for s in mahnstufen %}
+        <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full {{ s.dot }}"></span>
+            <span class="font-semibold text-slate-600">{{ s.label }}</span> ab {{ s.ab_tage }} Tagen — {{ s.unter }}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<p class="text-xs text-slate-400 mt-3">
+    <i class="fa-solid fa-circle-info mr-1"></i>
+    Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. „Mahnung" öffnet das fertige PDF
+    (inkl. QR-Rechnung und — ab Stufe 3 — Kündigungsandrohung nach Art. 257d OR) mit vorbelegtem Betrag und Monat.
+</p>
+{% endblock %}

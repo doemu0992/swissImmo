@@ -517,3 +517,87 @@ def fw_vertrag_detail(request, pk):
         'erstellbare_dokumente': _erstellbare_dokumente(v),
         'tab_liste': tab_liste,
     })
+
+
+# ============================================================
+# ETAPPE D: MAHNWESEN (Mahnstufen aus überfälligen Debitoren)
+# ============================================================
+
+# Mahnstufen-Schwellen (Tage überfällig) — zentrale Stellschraube.
+MAHN_STUFEN = [
+    {'stufe': 3, 'ab_tage': 60, 'label': '3. Mahnung', 'unter': 'Kündigungsandrohung (Art. 257d OR)',
+     'cls': 'bg-rose-100 text-rose-700', 'dot': 'bg-rose-500'},
+    {'stufe': 2, 'ab_tage': 30, 'label': '2. Mahnung', 'unter': 'Zweite schriftliche Erinnerung',
+     'cls': 'bg-rose-50 text-rose-600', 'dot': 'bg-rose-400'},
+    {'stufe': 1, 'ab_tage': 14, 'label': '1. Mahnung', 'unter': 'Erste Zahlungserinnerung',
+     'cls': 'bg-amber-100 text-amber-700', 'dot': 'bg-amber-500'},
+]
+
+
+def _stufe_fuer_tage(tage):
+    for s in MAHN_STUFEN:
+        if tage >= s['ab_tage']:
+            return s
+    return None
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_mahnwesen(request):
+    heute = timezone.now().date()
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    qs = (DebitorenRechnung.objects
+          .filter(status__in=['offen', 'teilbezahlt'])
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft')
+          .prefetch_related('zahlungseingaenge'))
+    if aktive_lg:
+        qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
+
+    stufe_filter = request.GET.get('stufe', '')
+
+    rows = []
+    total = Decimal('0.00')
+    counts = {1: 0, 2: 0, 3: 0}
+    summe = {1: Decimal('0.00'), 2: Decimal('0.00'), 3: Decimal('0.00')}
+    for r in qs:
+        faellig = r.faellig_am or r.datum
+        if not faellig or faellig >= heute:
+            continue
+        tage = (heute - faellig).days
+        stufe = _stufe_fuer_tage(tage)
+        if not stufe:
+            continue  # < 14 Tage: noch kein Mahnfall
+        offen = r.offener_betrag
+        if offen <= 0:
+            continue
+        counts[stufe['stufe']] += 1
+        summe[stufe['stufe']] += offen
+        total += offen
+        if stufe_filter and str(stufe['stufe']) != stufe_filter:
+            continue
+        lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag_id and r.vertrag.einheit_id else None)
+        monat = faellig.strftime('%m/%Y')
+        rows.append({
+            'r': r, 'stufe': stufe, 'tage': tage, 'offen': offen,
+            'mieter': r.vertrag.mieter.display_name if r.vertrag_id else '—',
+            'objekt': (f"{lg.strasse}, {lg.ort}" if lg else '—'),
+            'faellig': faellig,
+            'vertrag_id': r.vertrag_id,
+            'hat_email': bool(r.vertrag and r.vertrag.mieter.email),
+            'mahn_url': (f"/vertrag/{r.vertrag_id}/mahnung/?betrag={offen}&monat={monat}"
+                         if r.vertrag_id else None),
+        })
+    rows.sort(key=lambda x: (-x['stufe']['stufe'], -x['tage']))
+
+    stufe_chips = [('', 'Alle Stufen')] + [(str(s['stufe']), s['label']) for s in MAHN_STUFEN]
+
+    context = {
+        **basis, 'nav': 'mahnwesen', 'rows': rows,
+        'stufe_filter': stufe_filter, 'stufe_chips': stufe_chips,
+        'total': total,
+        'mahnstufen': MAHN_STUFEN,
+        'counts': counts, 'summe': summe,
+        'anzahl_total': counts[1] + counts[2] + counts[3],
+    }
+    return render(request, 'fw/mahnwesen.html', context)
