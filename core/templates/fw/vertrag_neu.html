@@ -506,10 +506,23 @@ function live(){
     ${val('besondere_vereinbarungen')?`<div class="pvsec">7. Besondere Bestimmungen</div><p class="text-xs text-slate-500 my-2">${val('besondere_vereinbarungen')}</p>`:''}
 
     <div class="pvsec">${val('besondere_vereinbarungen')?'8':'7'}. Unterschriften</div>
-    <div class="grid grid-cols-2 gap-6 mt-4 text-xs text-slate-400">
-      <div>Vermieter<br><br>______________<br>Ort, Datum</div>
-      <div>Mieter<br><br>______________<br>Ort, Datum</div>
-    </div>`;
+    ${(function(){
+      const z=zweiterName();
+      const m1=(m?m.name:'Mieter');
+      if(z){
+        // Zwei Mieter → beide unterschreiben (solidarisch / Familienwohnung)
+        return `<div class="grid grid-cols-2 gap-6 mt-4 text-xs text-slate-400">
+          <div>Vermieter<br><br>______________<br>Ort, Datum</div>
+          <div>Mieter 1: ${m1}<br><br>______________<br>Ort, Datum</div>
+          <div>&nbsp;</div>
+          <div>Mieter 2: ${z}<br><br>______________<br>Ort, Datum</div>
+        </div>`;
+      }
+      return `<div class="grid grid-cols-2 gap-6 mt-4 text-xs text-slate-400">
+        <div>Vermieter<br><br>______________<br>Ort, Datum</div>
+        <div>Mieter<br><br>______________<br>Ort, Datum</div>
+      </div>`;
+    })()}`;
 }
 function buildSummary(){
   const l=curLg(), o=curObj(), m=curMieter();
