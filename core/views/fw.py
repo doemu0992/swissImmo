@@ -2870,6 +2870,13 @@ PLATZHALTER_HILFE = [
     ('{vermieter}', 'Name der Verwaltung / des Vermieters'),
     ('{datum}', 'Heutiges Datum'),
     ('{miete}', 'Bruttomietzins'),
+    # Schadensfall-/Ticket-Vorlagen
+    ('{handwerker}', 'Beauftragte Handwerkerfirma (Schaden)'),
+    ('{melder_name}', 'Name des Melders (Schaden)'),
+    ('{melder_tel}', 'Telefon des Melders (Schaden)'),
+    ('{schaden}', 'Titel des Schadens'),
+    ('{ticket_id}', 'Ticket-Nummer'),
+    ('{status}', 'Aktueller Ticket-Status'),
 ]
 
 @rolle_erforderlich(*TEAM_ROLLEN)
