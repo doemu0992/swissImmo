@@ -1499,3 +1499,64 @@ def fw_nebenkosten_detail(request, pk):
         'kreditoren': kosten_rechnungen,
         'tab_liste': tab_liste,
     })
+
+
+# ============================================================
+# ETAPPE D: MIETZINS (Anpassungspotenzial + amtliches Formular)
+# ============================================================
+
+POTENZIAL_PILL = {
+    'increase': ('Erhöhung möglich', 'bg-emerald-50 text-emerald-700', 'fa-arrow-trend-up'),
+    'decrease': ('Senkungsanspruch', 'bg-rose-50 text-rose-600', 'fa-arrow-trend-down'),
+    'neutral':  ('Aktuell', 'bg-slate-100 text-slate-500', 'fa-equals'),
+}
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_mietzins(request):
+    from crm.models import Verwaltung
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    vw = Verwaltung.objects.first()
+    curr_zins = vw.aktueller_referenzzinssatz if vw else None
+    curr_lik = vw.aktueller_lik_punkte if vw else None
+
+    qs = (Mietvertrag.objects.filter(status='aktiv')
+          .select_related('mieter', 'einheit__liegenschaft')
+          .prefetch_related('anpassungen').order_by('einheit__liegenschaft__strasse'))
+    if aktive_lg:
+        qs = qs.filter(einheit__liegenschaft=aktive_lg)
+
+    pot_filter = request.GET.get('potenzial', '')
+
+    rows = []
+    n_inc = n_dec = 0
+    for v in qs:
+        pot = v.mietzinspotenzial
+        if pot == 'increase':
+            n_inc += 1
+        elif pot == 'decrease':
+            n_dec += 1
+        if pot_filter and pot_filter != pot:
+            continue
+        label, cls, icon = POTENZIAL_PILL.get(pot, POTENZIAL_PILL['neutral'])
+        letzte = v.anpassungen.all()
+        letzte_anpassung = max((a.wirksam_ab for a in letzte), default=None)
+        rows.append({
+            'v': v, 'mieter': v.mieter.display_name,
+            'objekt': f"{v.einheit.liegenschaft.strasse} · {v.einheit.bezeichnung}",
+            'netto': v.netto_mietzins or Decimal('0'),
+            'basis_zins': v.basis_referenzzinssatz, 'basis_lik': v.basis_lik_punkte,
+            'pot': pot, 'pot_label': label, 'pot_cls': cls, 'pot_icon': icon,
+            'letzte_anpassung': letzte_anpassung,
+            'anpassungen': letzte.count(),
+        })
+
+    chips = [('', 'Alle'), ('increase', 'Erhöhung möglich'), ('decrease', 'Senkungsanspruch'), ('neutral', 'Aktuell')]
+    return render(request, 'fw/mietzins.html', {
+        **basis, 'nav': 'mietzins', 'rows': rows,
+        'pot_filter': pot_filter, 'pot_chips': chips,
+        'curr_zins': curr_zins, 'curr_lik': curr_lik,
+        'n_inc': n_inc, 'n_dec': n_dec, 'anzahl': len(rows),
+    })
