@@ -7,6 +7,8 @@
 <p class="text-sm text-slate-500 mb-5">Rundschreiben und Mitteilungen an Mieter — mit Live-Vorschau
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
 
+{% if messages %}<div class="space-y-2 mb-4">{% for m in messages %}<div class="text-sm px-4 py-2.5 rounded-lg {% if 'error' in m.tags %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>{% endfor %}</div>{% endif %}
+
 {{ empfaenger|json_script:"empfaenger-data" }}
 {{ absender|json_script:"absender-data" }}
 {{ vorlagen|json_script:"vorlagen-data" }}
@@ -86,11 +88,32 @@ Freundliche Grüsse</textarea>
                 <button type="button" onclick="druckeVorschau()" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors">
                     <i class="fa-solid fa-print"></i> Als Brief drucken
                 </button>
-                <a href="/app/?tab=crm" class="inline-flex items-center gap-1.5 border border-slate-200 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors" title="Öffnet die klassische Ansicht">
-                    <i class="fa-regular fa-envelope"></i> Per E-Mail <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-                </a>
+                <button type="button" onclick="perEmailSenden()" class="inline-flex items-center gap-1.5 border border-slate-200 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors">
+                    <i class="fa-regular fa-envelope"></i> Per E-Mail senden
+                </button>
             </div>
-            <p class="text-xs text-slate-400 mt-3">„Als Brief drucken" öffnet die Vorschau im Druckdialog (ein Brief pro Empfänger folgt in einer späteren Etappe). E-Mail-Versand läuft aktuell noch klassisch.</p>
+            <form id="mailForm" method="post" action="/neu/kommunikation/senden/" class="hidden">{% csrf_token %}
+                <input type="hidden" name="betreff" id="mail-betreff">
+                <input type="hidden" name="text" id="mail-text">
+                <div id="mail-empfaenger"></div>
+            </form>
+            <p class="text-xs text-slate-400 mt-3">„Als Brief drucken" öffnet die Vorschau im Druckdialog. „Per E-Mail senden" verschickt die Mitteilung an alle gewählten Mieter mit hinterlegter E-Mail-Adresse.</p>
+            <script>
+              function perEmailSenden(){
+                var ids=[].slice.call(document.querySelectorAll('.emp-check:checked')).map(function(c){return c.value;});
+                if(!ids.length){alert('Bitte mindestens einen Empfänger wählen.');return;}
+                var betreff=(document.getElementById('betreff')||{}).value||'Mitteilung';
+                var textEl=document.getElementById('text')||document.getElementById('nachricht')||document.getElementById('inhalt');
+                var text=textEl?textEl.value:'';
+                if(!text.trim()){alert('Bitte einen Text verfassen.');return;}
+                if(!confirm(ids.length+' Empfänger per E-Mail anschreiben?'))return;
+                document.getElementById('mail-betreff').value=betreff;
+                document.getElementById('mail-text').value=text;
+                var box=document.getElementById('mail-empfaenger'); box.innerHTML='';
+                ids.forEach(function(id){var i=document.createElement('input');i.type='hidden';i.name='empfaenger_id';i.value=id;box.appendChild(i);});
+                document.getElementById('mailForm').submit();
+              }
+            </script>
         </div>
     </div>
 

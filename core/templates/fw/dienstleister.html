@@ -5,11 +5,40 @@
 
 <div class="flex items-center justify-between mb-1">
     <h1 class="text-3xl font-extrabold text-slate-900">Dienstleister</h1>
-    <a href="/app/?tab=crm" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors" title="Öffnet die klassische Ansicht">
-        <i class="fa-solid fa-plus mr-1.5"></i> Handwerker erfassen <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-0.5"></i>
-    </a>
+    <button type="button" onclick="document.getElementById('dlform').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+        <i class="fa-solid fa-plus mr-1.5"></i> Handwerker erfassen
+    </button>
 </div>
 <p class="text-sm text-slate-500 mb-5">Handwerkerstamm für Reparaturaufträge · {{ anzahl }} Firma/Firmen in {{ anzahl_branchen }} Branchen</p>
+
+{% if messages %}<div class="space-y-2 mb-4">{% for m in messages %}<div class="text-sm px-4 py-2.5 rounded-lg {% if 'error' in m.tags %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>{% endfor %}</div>{% endif %}
+
+<div id="dlform" class="hidden bg-white rounded-xl border border-indigo-200 p-5 mb-6">
+    <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-screwdriver-wrench text-indigo-500 mr-1.5"></i>Handwerker / Dienstleister erfassen</h3>
+    <form method="post" action="/neu/dienstleister/neu/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {% csrf_token %}
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Firma *</label>
+            <input name="firma" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Branche</label>
+            <select name="branche" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <option value="sanitaer">Sanitär / Heizung</option>
+                <option value="elektro">Elektroinstallation</option>
+                <option value="maler">Maler / Gipser</option>
+                <option value="schreiner">Schreiner / Zimmermann</option>
+                <option value="schloss">Schlosserei / Schlüsseldienst</option>
+                <option value="allgemein" selected>Allround-Handwerker / Baugeschäft</option>
+                <option value="garten">Gartenbau / Umgebung</option>
+                <option value="reinigung">Reinigungsinstitut</option>
+            </select></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kontaktperson</label>
+            <input name="kontaktperson" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">E-Mail</label>
+            <input name="email" type="email" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Telefon</label>
+            <input name="telefon" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div class="sm:col-span-2"><button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen</button></div>
+    </form>
+</div>
 
 <!-- Filterzeile -->
 <div class="flex flex-wrap items-center gap-3 mb-5">

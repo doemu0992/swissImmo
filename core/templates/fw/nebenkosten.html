@@ -6,13 +6,34 @@
 
 <div class="flex items-center justify-between mb-1">
     <h1 class="text-3xl font-extrabold text-slate-900">Nebenkosten</h1>
-    <a href="/app/?tab=finance" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors" title="Öffnet die klassische Ansicht">
-        <i class="fa-solid fa-plus mr-1.5"></i> Periode anlegen <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-0.5"></i>
-    </a>
+    <button type="button" onclick="document.getElementById('nkform').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+        <i class="fa-solid fa-plus mr-1.5"></i> Periode anlegen
+    </button>
 </div>
 <p class="text-sm text-slate-500 mb-5">Heiz- und Nebenkosten-Abrechnungsperioden
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
     <a href="/neu/nebenkosten/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+{% if messages %}<div class="space-y-2 mb-4">{% for m in messages %}<div class="text-sm px-4 py-2.5 rounded-lg {% if 'error' in m.tags %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>{% endfor %}</div>{% endif %}
+
+<div id="nkform" class="hidden bg-white rounded-xl border border-indigo-200 p-5 mb-6">
+    <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-bolt text-indigo-500 mr-1.5"></i>Neue Abrechnungsperiode</h3>
+    <form method="post" action="/neu/nebenkosten/neu/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {% csrf_token %}
+        <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft *</label>
+            <select name="liegenschaft_id" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <option value="">— wählen —</option>
+                {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
+            </select></div>
+        <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Bezeichnung *</label>
+            <input name="bezeichnung" required placeholder="z.B. Heizperiode 2025/2026" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Von *</label>
+            <input type="date" name="start_datum" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bis *</label>
+            <input type="date" name="ende_datum" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div class="sm:col-span-2"><button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Periode anlegen</button></div>
+    </form>
+</div>
 
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

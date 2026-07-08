@@ -104,7 +104,7 @@
         <p class="text-sm text-slate-400 italic">Noch keine Abrechnungsperioden.</p>
         {% endfor %}
     </div>
-    <a href="/app/?tab=finance" class="text-sm text-indigo-600 font-medium hover:underline"><i class="fa-solid fa-arrow-right mr-1"></i> Zur Nebenkosten-Abrechnung</a>
+    <a href="/neu/nebenkosten/{% if lg %}?lg={{ lg.id }}{% endif %}" class="text-sm text-indigo-600 font-medium hover:underline"><i class="fa-solid fa-arrow-right mr-1"></i> Zur Nebenkosten-Abrechnung</a>
 </div>
 
 <!-- ===== TAB: UNTERHALT ===== -->

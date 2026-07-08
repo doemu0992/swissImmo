@@ -1403,12 +1403,16 @@ def fw_kreditoren(request):
 
     status_chips = [('', 'Alle')] + [(k, v[0]) for k, v in KRED_PILL.items() if k != 'storniert']
 
+    from finance.models import Buchungskonto
+    aufwand_konten = Buchungskonto.objects.filter(typ='aufwand').order_by('nummer')
+    liegenschaften = Liegenschaft.objects.order_by('strasse')
     return render(request, 'fw/kreditoren.html', {
         **basis, 'nav': 'kreditoren', 'rows': rows,
         'status_filter': status_filter, 'status_chips': status_chips,
         'total_offen': total_offen, 'total_neu': total_neu, 'anzahl_neu': anzahl_neu,
         'anzahl': len(rows),
         'darf_bezahlen': hat_rolle(request.user, VERWALTUNGS_ROLLEN),
+        'aufwand_konten': aufwand_konten, 'liegenschaften': liegenschaften,
         'meldung': list(messages.get_messages(request)),
     })
 
@@ -1921,6 +1925,8 @@ def fw_assets(request):
         **basis, 'nav': 'assets', 'rows': rows,
         'g_filter': g_filter, 'garantie_chips': chips, 'q': q,
         'anzahl': len(rows), 'n_aktiv': n_aktiv, 'n_bald': n_bald, 'n_abgelaufen': n_abgelaufen,
+        'liegenschaften': Liegenschaft.objects.order_by('strasse'),
+        'einheiten': Einheit.objects.select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung'),
     })
 
 
@@ -2005,6 +2011,8 @@ def fw_buchhaltung(request):
         'journal': journal,
         'tab_liste': tab_liste,
         'jahr': jahr, 'jahre': list(range(heute.year, heute.year - 5, -1)),
+        'alle_konten': Buchungskonto.objects.all().order_by('nummer'),
+        'liegenschaften': Liegenschaft.objects.order_by('strasse'),
     })
 
 
@@ -2270,6 +2278,7 @@ def fw_nebenkosten(request):
         'status_filter': status_filter, 'status_chips': chips,
         'n_offen': n_offen, 'n_zu': n_zu, 'total_kosten_offen': total_kosten_offen,
         'anzahl': len(rows),
+        'liegenschaften': Liegenschaft.objects.order_by('strasse'),
     })
 
 
@@ -2617,6 +2626,8 @@ def fw_dokumente(request):
         **basis, 'nav': 'dokumente', 'eintraege': eintraege,
         'kat_filter': kat_filter, 'kat_chips': kat_chips, 'q': q,
         'anzahl': len(eintraege),
+        'liegenschaften': Liegenschaft.objects.order_by('strasse'),
+        'einheiten': Einheit.objects.select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung'),
     })
 
 
@@ -4097,3 +4108,275 @@ def fw_debitor_qr_pdf(request, pk):
     resp = HttpResponse(buf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Rechnung_{r.id}.pdf"'
     return resp
+
+
+# ============================================================
+# CREATE-/ACTION-VIEWS: alles in /neu/ (ersetzt /app/-Links)
+# ============================================================
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_kreditor_neu(request):
+    """Kreditorenrechnung erfassen (Status neu → im Kreditoren-Tab freigeben)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import KreditorenRechnung, Buchungskonto
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_kreditoren')
+
+    def _dec(name):
+        raw = (request.POST.get(name) or '').strip().replace(',', '.')
+        try:
+            return Decimal(raw) if raw else None
+        except Exception:
+            return None
+
+    lieferant = (request.POST.get('lieferant') or '').strip()
+    betrag = _dec('betrag')
+    if not lieferant or not betrag or betrag <= 0:
+        messages.error(request, "Lieferant und Betrag (> 0) sind erforderlich.")
+        return redirect('fw_kreditoren')
+
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+    konto = Buchungskonto.objects.filter(id=request.POST.get('konto_id')).first() if request.POST.get('konto_id') else None
+    kr = KreditorenRechnung.objects.create(
+        lieferant=lieferant, betrag=betrag, mwst_satz=(_dec('mwst_satz') or Decimal('0.0')),
+        liegenschaft=lg, konto=konto,
+        datum=(date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.now().date()),
+        faellig_am=(date.fromisoformat(request.POST['faellig_am']) if request.POST.get('faellig_am') else None),
+        referenz=(request.POST.get('referenz') or '').strip(),
+        is_hnk_relevant=request.POST.get('is_hnk_relevant') == 'on',
+        status='neu',
+    )
+    if request.FILES.get('beleg_scan'):
+        kr.beleg_scan = request.FILES['beleg_scan']
+        kr.save()
+    log_aktion(request, "Kreditorenrechnung erfasst", lieferant, f"CHF {betrag}")
+    messages.success(request, f"✅ Kreditorenrechnung '{lieferant}' über CHF {betrag} erfasst (Status: Neu — bitte freigeben).")
+    ziel = '/neu/kreditoren/'
+    if lgq := request.POST.get('lg'):
+        ziel += f'?lg={lgq}'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_kreditor_freigeben(request, pk):
+    """Kreditorenrechnung freigeben: bucht Aufwand (netto) an Kreditoren (2000)
+    + Vorsteuer-Split (1170). Erfordert ein Aufwandskonto."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import KreditorenRechnung, Buchungskonto, Buchung
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_kreditoren')
+    k = get_object_or_404(KreditorenRechnung, id=pk)
+    if k.status != 'neu':
+        messages.info(request, "Rechnung ist bereits freigegeben oder bezahlt.")
+        return redirect('fw_kreditoren')
+
+    # Aufwandskonto zuweisen (aus Formular oder bestehendes)
+    if request.POST.get('konto_id'):
+        k.konto = Buchungskonto.objects.filter(id=request.POST['konto_id']).first()
+    if not k.konto:
+        messages.error(request, "Bitte zuerst ein Aufwandskonto zuweisen (in der Zeile wählen).")
+        return redirect('fw_kreditoren')
+
+    with transaction.atomic():
+        k.status = 'freigegeben'
+        k.save()
+        try:
+            konto_kred = Buchungskonto.objects.get(nummer="2000")
+        except Buchungskonto.DoesNotExist:
+            konto_kred = None
+        if konto_kred:
+            brutto = k.betrag or Decimal('0.00')
+            vorsteuer = Decimal('0.00')
+            if (k.mwst_satz or 0) > 0:
+                satz = k.mwst_satz
+                vorsteuer = (brutto * satz / (Decimal('100') + satz)).quantize(Decimal('0.01'))
+                k.mwst_betrag = vorsteuer
+                k.save(update_fields=['mwst_betrag'])
+            netto = brutto - vorsteuer
+            Buchung.objects.create(datum=k.datum or timezone.now().date(),
+                beleg_text=f"Rechnung {k.lieferant} - {k.referenz}", liegenschaft=k.liegenschaft,
+                soll_konto=k.konto, haben_konto=konto_kred, betrag=netto,
+                kreditoren_rechnung=k, erstellt_von=request.user)
+            if vorsteuer > 0:
+                kv, _ = Buchungskonto.objects.get_or_create(nummer="1170",
+                    defaults={'bezeichnung': 'Vorsteuer (MWST)', 'typ': 'bilanz'})
+                Buchung.objects.create(datum=k.datum or timezone.now().date(),
+                    beleg_text=f"Vorsteuer {k.mwst_satz}% {k.lieferant}", liegenschaft=k.liegenschaft,
+                    soll_konto=kv, haben_konto=konto_kred, betrag=vorsteuer,
+                    kreditoren_rechnung=k, erstellt_von=request.user)
+    log_aktion(request, "Kreditorenrechnung freigegeben", k.lieferant, f"CHF {k.betrag}")
+    messages.success(request, f"✅ '{k.lieferant}' freigegeben und verbucht.")
+    ziel = '/neu/kreditoren/'
+    if lgq := request.POST.get('lg'):
+        ziel += f'?lg={lgq}'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_dienstleister_neu(request):
+    """Handwerker / Dienstleister erfassen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Handwerker
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_dienstleister')
+    firma = (request.POST.get('firma') or '').strip()
+    if not firma:
+        messages.error(request, "Firma ist erforderlich.")
+        return redirect('fw_dienstleister')
+    Handwerker.objects.create(
+        firma=firma, branche=request.POST.get('branche', 'allgemein'),
+        kontaktperson=(request.POST.get('kontaktperson') or '').strip(),
+        email=(request.POST.get('email') or '').strip(),
+        telefon=(request.POST.get('telefon') or '').strip(),
+    )
+    log_aktion(request, "Dienstleister erfasst", firma, '')
+    messages.success(request, f"✅ Dienstleister '{firma}' erfasst.")
+    return redirect('fw_dienstleister')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_asset_neu(request):
+    """Gerät / Asset erfassen (Portfolio)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Geraet, Einheit
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_assets')
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+    if not lg:
+        messages.error(request, "Liegenschaft ist erforderlich.")
+        return redirect('fw_assets')
+    g = Geraet.objects.create(
+        liegenschaft=lg,
+        einheit=Einheit.objects.filter(id=request.POST.get('einheit_id')).first() if request.POST.get('einheit_id') else None,
+        kategorie=request.POST.get('kategorie', 'sonstiges'),
+        sonstiges_bezeichnung=(request.POST.get('sonstiges_bezeichnung') or '').strip(),
+        marke=(request.POST.get('marke') or '').strip(),
+        modell=(request.POST.get('modell') or '').strip(),
+        installations_datum=(date.fromisoformat(request.POST['installations_datum']) if request.POST.get('installations_datum') else None),
+        garantie_bis=(date.fromisoformat(request.POST['garantie_bis']) if request.POST.get('garantie_bis') else None),
+    )
+    log_aktion(request, "Asset erfasst", f"{g.marke} {g.modell}", str(lg))
+    messages.success(request, "✅ Asset / Gerät erfasst.")
+    ziel = '/neu/assets/'
+    if lgq := request.POST.get('lg'):
+        ziel += f'?lg={lgq}'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_dokument_neu(request):
+    """Dokument hochladen (Portfolio-Ablage)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Dokument as PDokument, Einheit
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_dokumente')
+    if not request.FILES.get('datei'):
+        messages.error(request, "Bitte eine Datei auswählen.")
+        return redirect('fw_dokumente')
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+    PDokument.objects.create(
+        titel=(request.POST.get('titel') or request.FILES['datei'].name).strip(),
+        kategorie=request.POST.get('kategorie', 'sonstiges'),
+        liegenschaft=lg,
+        einheit=Einheit.objects.filter(id=request.POST.get('einheit_id')).first() if request.POST.get('einheit_id') else None,
+        datei=request.FILES['datei'],
+    )
+    log_aktion(request, "Dokument hochgeladen", request.POST.get('titel', ''), '')
+    messages.success(request, "✅ Dokument hochgeladen.")
+    ziel = '/neu/dokumente/'
+    if lgq := request.POST.get('lg'):
+        ziel += f'?lg={lgq}'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_nebenkosten_neu(request):
+    """Neue Nebenkosten-Abrechnungsperiode anlegen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import AbrechnungsPeriode
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_nebenkosten')
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+    bez = (request.POST.get('bezeichnung') or '').strip()
+    try:
+        start = date.fromisoformat(request.POST.get('start_datum'))
+        ende = date.fromisoformat(request.POST.get('ende_datum'))
+    except Exception:
+        start = ende = None
+    if not lg or not bez or not start or not ende:
+        messages.error(request, "Liegenschaft, Bezeichnung, Start- und Enddatum sind erforderlich.")
+        return redirect('fw_nebenkosten')
+    p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung=bez, start_datum=start, ende_datum=ende)
+    log_aktion(request, "Abrechnungsperiode erstellt", bez, str(lg))
+    messages.success(request, f"✅ Abrechnungsperiode '{bez}' erstellt.")
+    return redirect(f'/neu/nebenkosten/{p.id}/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_buchung_neu(request):
+    """Manuelle Buchung erfassen (Soll an Haben)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import Buchungskonto, Buchung
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_buchhaltung')
+    soll = Buchungskonto.objects.filter(id=request.POST.get('soll_konto_id')).first()
+    haben = Buchungskonto.objects.filter(id=request.POST.get('haben_konto_id')).first()
+    try:
+        betrag = Decimal(str(request.POST.get('betrag') or '0').replace(',', '.'))
+    except Exception:
+        betrag = Decimal('0')
+    text = (request.POST.get('beleg_text') or '').strip()
+    if not soll or not haben or betrag <= 0 or not text:
+        messages.error(request, "Soll-, Haben-Konto, Betrag (> 0) und Belegtext sind erforderlich.")
+        return redirect('fw_buchhaltung')
+    if soll.id == haben.id:
+        messages.error(request, "Soll- und Haben-Konto müssen unterschiedlich sein.")
+        return redirect('fw_buchhaltung')
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first() if request.POST.get('liegenschaft_id') else None
+    Buchung.objects.create(
+        datum=(date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.now().date()),
+        beleg_text=text, liegenschaft=lg, soll_konto=soll, haben_konto=haben,
+        betrag=betrag, erstellt_von=request.user)
+    log_aktion(request, "Manuelle Buchung", text, f"{soll.nummer}/{haben.nummer} CHF {betrag}")
+    messages.success(request, f"✅ Buchung erfasst: {soll.nummer} an {haben.nummer} · CHF {betrag}.")
+    return redirect('fw_buchhaltung')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_kommunikation_senden(request):
+    """Verschickt die verfasste Mitteilung per E-Mail an die gewählten Mieter."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.utils.email_service import send_ticket_email
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_kommunikation')
+    betreff = (request.POST.get('betreff') or 'Mitteilung').strip()
+    text = (request.POST.get('text') or '').strip()
+    ids = request.POST.getlist('empfaenger_id')
+    if not text or not ids:
+        messages.error(request, "Text und mindestens ein Empfänger erforderlich.")
+        return redirect('fw_kommunikation')
+    gesendet = 0
+    for mid in ids:
+        m = Mieter.objects.filter(id=mid).first()
+        if m and m.email:
+            if send_ticket_email(m.email, betreff, text):
+                gesendet += 1
+    log_aktion(request, "Rundschreiben per E-Mail", betreff, f"{gesendet} Empfänger")
+    messages.success(request, f"✅ {gesendet} E-Mail(s) versendet." if gesendet else "Keine E-Mail versendet (fehlende Adressen).")
+    return redirect('fw_kommunikation')
