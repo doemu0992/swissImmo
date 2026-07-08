@@ -767,6 +767,8 @@ def fw_schlussabrechnung(request, vertrag_id):
         except Exception as e:
             messages.error(request, f"❌ PDF konnte nicht erstellt werden: {e}")
             return redirect(f'/neu/vertraege/{v.id}/schlussabrechnung/')
+        from core.services.ablage import ablegen
+        ablegen(pdf, "Schlussabrechnung", kategorie='korrespondenz', vertrag=v, dedup=True)
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = f'inline; filename="Schlussabrechnung_{v.mieter.nachname}.pdf"'
         return resp
@@ -899,6 +901,11 @@ def fw_abnahme_pdf(request, pk):
     from core.services.abnahme_pdf import generate_abnahme_pdf
     prot = get_object_or_404(Abnahmeprotokoll.objects.select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
     pdf = generate_abnahme_pdf(prot, verwaltung=Verwaltung.objects.first())
+    # Auto-Ablage in die Vertrags-Akte (abgeschlossene Protokolle)
+    if getattr(prot, 'abgeschlossen', False):
+        from core.services.ablage import ablegen
+        ablegen(pdf, f"Abnahmeprotokoll ({prot.get_typ_display()}) {prot.datum:%d.%m.%Y}",
+                kategorie='protokoll', vertrag=prot.vertrag, dedup=True)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Abnahmeprotokoll_{prot.vertrag.mieter.nachname}.pdf"'
     return resp
@@ -2991,6 +2998,9 @@ def fw_mietzins_anpassung(request, vertrag_id):
         if pdf is None:
             from core.services.amtliche_formulare_so import mietzins_so_pdf
             pdf = mietzins_so_pdf(v, daten, verwaltung=vw)
+        from core.services.ablage import ablegen
+        ablegen(pdf, f"Mietzinsanpassung wirksam {wirksam_ab:%d.%m.%Y}",
+                kategorie='vertrag', vertrag=v, dedup=True)
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = f'inline; filename="Mietzinsanpassung_{v.mieter.nachname}.pdf"'
         return resp
@@ -4149,6 +4159,9 @@ def fw_kuendigung_formular(request, pk):
     if pdf is None:
         from core.services.amtliche_formulare_so import kuendigung_so_pdf
         pdf = kuendigung_so_pdf(k.vertrag, k, verwaltung=vw)
+    from core.services.ablage import ablegen
+    ablegen(pdf, f"Kündigung {k.get_absender_display()} {k.eingang_datum:%d.%m.%Y}",
+            kategorie='vertrag', vertrag=k.vertrag, dedup=True)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Kuendigung_{k.vertrag.mieter.nachname}.pdf"'
     return resp
@@ -5076,3 +5089,72 @@ def fw_kommunikation_senden(request):
     log_aktion(request, "Rundschreiben per E-Mail", betreff, f"{gesendet} Empfänger")
     messages.success(request, f"✅ {gesendet} E-Mail(s) versendet." if gesendet else "Keine E-Mail versendet (fehlende Adressen).")
     return redirect('fw_kommunikation')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_serienbrief_pdf(request):
+    """Erzeugt ein Sammel-PDF (ein Brief pro Empfänger, Fenstercouvert) für
+    einen echten postalischen Rundbrief an alle gewählten Mieter."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from django.http import HttpResponse
+    from crm.models import Verwaltung
+    from core.auth import log_aktion
+    from core.services.serienbrief import generate_serienbrief_pdf
+    from core.services.ablage import ablegen
+    if request.method != 'POST':
+        return redirect('fw_kommunikation')
+    betreff = (request.POST.get('betreff') or 'Mitteilung').strip()
+    text = (request.POST.get('text') or '').strip()
+    ids = request.POST.getlist('empfaenger_id')
+    if not text or not ids:
+        messages.error(request, "Text und mindestens ein Empfänger erforderlich.")
+        return redirect('fw_kommunikation')
+
+    vw = Verwaltung.objects.first()
+    absender = {
+        'firma': vw.firma if vw else 'Meine Verwaltung',
+        'strasse': vw.strasse if vw else '',
+        'plz': vw.plz if vw else '', 'ort': vw.ort if vw else '',
+    }
+
+    # Empfänger auflösen (Adresse + Objekt/Liegenschaft aus aktivem Vertrag)
+    empfaenger = []
+    for mid in ids:
+        m = Mieter.objects.filter(id=mid).first()
+        if not m:
+            continue
+        v = (Mietvertrag.objects.filter(mieter=m, status='aktiv')
+             .select_related('einheit__liegenschaft').first())
+        lg = v.einheit.liegenschaft if v else None
+        empfaenger.append({
+            'name': m.display_name, 'anrede': m.anrede or '',
+            'strasse': m.strasse or (lg.strasse if lg else ''),
+            'plz': m.plz or (lg.plz if lg else ''),
+            'ort': m.ort or (lg.ort if lg else ''),
+            'objekt': (f"{lg.strasse}, {lg.ort} · {v.einheit.bezeichnung}" if v and lg else ''),
+            'liegenschaft': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''),
+        })
+    if not empfaenger:
+        messages.error(request, "Keine gültigen Empfänger gefunden.")
+        return redirect('fw_kommunikation')
+
+    logo_path = None
+    if vw and getattr(vw, 'logo', None):
+        try:
+            logo_path = vw.logo.path
+        except Exception:
+            logo_path = None
+
+    pdf = generate_serienbrief_pdf(absender, betreff, text, empfaenger, logo_path=logo_path)
+
+    # Auto-Ablage: bei genau einem Empfänger mit Vertrag in dessen Akte ablegen
+    if len(ids) == 1:
+        m = Mieter.objects.filter(id=ids[0]).first()
+        v = (Mietvertrag.objects.filter(mieter=m, status='aktiv').first() if m else None)
+        ablegen(pdf, f"Brief: {betreff}", kategorie='korrespondenz', vertrag=v, mieter=m)
+
+    log_aktion(request, "Serienbrief-PDF erzeugt", betreff, f"{len(empfaenger)} Empfänger")
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = f'attachment; filename="serienbrief_{date.today().isoformat()}.pdf"'
+    return resp

@@ -87,6 +87,9 @@ Freundliche Grüsse</textarea>
                 <button type="button" onclick="druckeVorschau()" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors">
                     <i class="fa-solid fa-print"></i> Als Brief drucken
                 </button>
+                <button type="button" onclick="serienbriefPdf()" class="inline-flex items-center gap-1.5 border border-slate-200 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors">
+                    <i class="fa-solid fa-file-pdf"></i> Serienbrief-PDF
+                </button>
                 <button type="button" onclick="perEmailSenden()" class="inline-flex items-center gap-1.5 border border-slate-200 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors">
                     <i class="fa-regular fa-envelope"></i> Per E-Mail senden
                 </button>
@@ -96,21 +99,38 @@ Freundliche Grüsse</textarea>
                 <input type="hidden" name="text" id="mail-text">
                 <div id="mail-empfaenger"></div>
             </form>
-            <p class="text-xs text-slate-400 mt-3">„Als Brief drucken" öffnet die Vorschau im Druckdialog. „Per E-Mail senden" verschickt die Mitteilung an alle gewählten Mieter mit hinterlegter E-Mail-Adresse.</p>
+            <form id="pdfForm" method="post" action="/neu/kommunikation/serienbrief/" class="hidden" target="_blank">{% csrf_token %}
+                <input type="hidden" name="betreff" id="pdf-betreff">
+                <input type="hidden" name="text" id="pdf-text">
+                <div id="pdf-empfaenger"></div>
+            </form>
+            <p class="text-xs text-slate-400 mt-3">„Serienbrief-PDF" erzeugt einen Brief pro Empfänger (Fenstercouvert) als Sammel-PDF zum Ausdrucken. „Per E-Mail senden" verschickt die Mitteilung an alle gewählten Mieter mit hinterlegter E-Mail-Adresse.</p>
             <script>
-              function perEmailSenden(){
+              function _sammleVersand(){
                 var ids=[].slice.call(document.querySelectorAll('.emp-check:checked')).map(function(c){return c.value;});
-                if(!ids.length){alert('Bitte mindestens einen Empfänger wählen.');return;}
+                if(!ids.length){alert('Bitte mindestens einen Empfänger wählen.');return null;}
                 var betreff=(document.getElementById('betreff')||{}).value||'Mitteilung';
                 var textEl=document.getElementById('text')||document.getElementById('nachricht')||document.getElementById('inhalt');
                 var text=textEl?textEl.value:'';
-                if(!text.trim()){alert('Bitte einen Text verfassen.');return;}
-                if(!confirm(ids.length+' Empfänger per E-Mail anschreiben?'))return;
-                document.getElementById('mail-betreff').value=betreff;
-                document.getElementById('mail-text').value=text;
+                if(!text.trim()){alert('Bitte einen Text verfassen.');return null;}
+                return {ids:ids, betreff:betreff, text:text};
+              }
+              function perEmailSenden(){
+                var d=_sammleVersand(); if(!d)return;
+                if(!confirm(d.ids.length+' Empfänger per E-Mail anschreiben?'))return;
+                document.getElementById('mail-betreff').value=d.betreff;
+                document.getElementById('mail-text').value=d.text;
                 var box=document.getElementById('mail-empfaenger'); box.innerHTML='';
-                ids.forEach(function(id){var i=document.createElement('input');i.type='hidden';i.name='empfaenger_id';i.value=id;box.appendChild(i);});
+                d.ids.forEach(function(id){var i=document.createElement('input');i.type='hidden';i.name='empfaenger_id';i.value=id;box.appendChild(i);});
                 document.getElementById('mailForm').submit();
+              }
+              function serienbriefPdf(){
+                var d=_sammleVersand(); if(!d)return;
+                document.getElementById('pdf-betreff').value=d.betreff;
+                document.getElementById('pdf-text').value=d.text;
+                var box=document.getElementById('pdf-empfaenger'); box.innerHTML='';
+                d.ids.forEach(function(id){var i=document.createElement('input');i.type='hidden';i.name='empfaenger_id';i.value=id;box.appendChild(i);});
+                document.getElementById('pdfForm').submit();
               }
             </script>
         </div>
