@@ -1803,11 +1803,27 @@ def fw_vertrag_neu_speichern(request):
         except ValueError:
             return None
 
-    # Zweiter Mieter (Ehepartner): aus Einzelfeldern zu mitmieter_name kombinieren,
-    # Fallback auf ein evtl. direkt übergebenes mitmieter_name.
-    mit_teile = [P.get('mit_anrede', '').strip(), P.get('mit_vorname', '').strip(),
-                 P.get('mit_nachname', '').strip()]
-    mitmieter = ' '.join(t for t in mit_teile if t).strip() or P.get('mitmieter_name', '').strip()
+    # Zweiter Mieter (Ehepartner) — gleiche Erfassung wie 1. Person:
+    # bestehend (mit_mieter_id) ODER neu (mit_* Felder). Name -> mitmieter_name.
+    mitmieter = ''
+    zweiter_obj = None
+    mit_id = P.get('mit_mieter_id') or ''
+    if mit_id:
+        zweiter_obj = Mieter.objects.filter(id=mit_id).first()
+        if zweiter_obj:
+            mitmieter = zweiter_obj.display_name
+    if not mitmieter:
+        mit_teile = [P.get('mit_anrede', '').strip(), P.get('mit_vorname', '').strip(),
+                     P.get('mit_nachname', '').strip()]
+        mitmieter = ' '.join(t for t in mit_teile if t).strip() or P.get('mitmieter_name', '').strip()
+        # Neue zweite Person mit Namen -> als Mieter-Datensatz anlegen (erscheint in Personen)
+        if not zweiter_obj and (P.get('mit_vorname', '').strip() or P.get('mit_nachname', '').strip()):
+            zweiter_obj = Mieter.objects.create(
+                typ='person', anrede=P.get('mit_anrede', 'Frau'),
+                vorname=P.get('mit_vorname', '').strip(), nachname=P.get('mit_nachname', '').strip(),
+                strasse=P.get('mit_strasse', '').strip(), plz=P.get('mit_plz', '').strip(),
+                ort=P.get('mit_ort', '').strip(), email=P.get('mit_email', '').strip(),
+            )
     familienwohnung = P.get('familienwohnung') == 'on'
 
     beginn = datum('beginn') or timezone.now().date()
@@ -1828,16 +1844,20 @@ def fw_vertrag_neu_speichern(request):
             kautions_konto=P.get('kautions_konto', '').strip(),
         )
     # Zukünftige Adresse = Objektadresse ab Einzug (Auto-Wechsel via
-    # Mieter.check_and_update_adresse am Mietbeginn). Nur setzen, wenn der Einzug
-    # in der Zukunft liegt und die Objektadresse von der aktuellen abweicht.
+    # Mieter.check_and_update_adresse am Mietbeginn) — für beide Mieter.
     lg = einheit.liegenschaft
     obj_strasse = f"{lg.strasse}{(', ' + einheit.etage) if einheit.etage else ''}"
-    if beginn >= timezone.now().date() and (mieter.strasse or '') != lg.strasse:
-        mieter.zukuenftige_strasse = obj_strasse
-        mieter.zukuenftige_plz = lg.plz
-        mieter.zukuenftiger_ort = lg.ort
-        mieter.zukuenftig_ab = beginn
-        mieter.save()
+
+    def setze_zukunftsadresse(person):
+        if person and beginn >= timezone.now().date() and (person.strasse or '') != lg.strasse:
+            person.zukuenftige_strasse = obj_strasse
+            person.zukuenftige_plz = lg.plz
+            person.zukuenftiger_ort = lg.ort
+            person.zukuenftig_ab = beginn
+            person.save()
+
+    setze_zukunftsadresse(mieter)
+    setze_zukunftsadresse(zweiter_obj)
 
     log_aktion(request, "Mietvertrag erstellt (Assistent)", str(mieter),
                f"{einheit.bezeichnung}, ab {beginn}")
