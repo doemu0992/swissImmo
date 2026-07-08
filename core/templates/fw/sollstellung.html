@@ -1,0 +1,114 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Sollstellung Miete — swissImmo{% endblock %}
+
+{% block content %}
+
+<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Sollstellung Miete</h1>
+<p class="text-sm text-slate-500 mb-5">Monatlicher Mietenlauf — erzeugt Debitorenrechnungen (Pro-Rata bei Ein-/Auszug mitten im Monat)
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+
+{% for m in meldung %}
+<div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
+{% endfor %}
+
+<!-- Monatswähler + Aktion -->
+<div class="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+    <div class="flex flex-wrap items-end gap-4">
+        <form method="get" class="flex items-end gap-3">
+            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Monat</label>
+                <select name="monat" onchange="this.form.submit()" class="bg-slate-100 border-0 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                    {% for m, name in monate %}<option value="{{ m }}" {% if m == monat %}selected{% endif %}>{{ name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Jahr</label>
+                <select name="jahr" onchange="this.form.submit()" class="bg-slate-100 border-0 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                    {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
+                </select>
+            </div>
+        </form>
+
+        <div class="flex-1"></div>
+
+        {% if n_offen %}
+        <form method="post" action="/neu/sollstellung/starten/" onsubmit="return confirm('Sollstellung {{ monat_name }} {{ jahr }} für {{ n_offen }} Vertrag/Verträge starten?');">
+            {% csrf_token %}
+            <input type="hidden" name="jahr" value="{{ jahr }}">
+            <input type="hidden" name="monat" value="{{ monat }}">
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors">
+                <i class="fa-solid fa-rotate mr-1.5"></i> Sollstellung starten ({{ n_offen }})
+            </button>
+        </form>
+        {% else %}
+        <span class="inline-flex items-center gap-1.5 text-sm text-emerald-600 font-medium bg-emerald-50 px-4 py-2.5 rounded-lg">
+            <i class="fa-solid fa-check"></i> {{ monat_name }} {{ jahr }} vollständig gestellt
+        </span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- KPI -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-coins"></i></div>
+        <div><div class="text-2xl font-bold text-indigo-600">CHF {{ total_soll|chf }}</div><div class="text-sm text-slate-500">Zu stellen ({{ monat_name }})</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div><div class="text-2xl font-bold text-slate-800">{{ n_offen }}</div><div class="text-sm text-slate-500">Noch offen</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-circle-check"></i></div>
+        <div><div class="text-2xl font-bold text-slate-800">{{ n_gestellt }}</div><div class="text-sm text-slate-500">Bereits gestellt</div></div>
+    </div>
+</div>
+
+<!-- Vorschau-Tabelle -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Vorschau — {{ monat_name }} {{ jahr }}</div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Mieter</th>
+                <th class="px-5 py-3 font-semibold">Objekt</th>
+                <th class="px-5 py-3 font-semibold text-right">Netto</th>
+                <th class="px-5 py-3 font-semibold text-right">NK</th>
+                <th class="px-5 py-3 font-semibold text-right">Total</th>
+                <th class="px-5 py-3 font-semibold">Status</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for row in rows %}
+            <tr class="hover:bg-slate-50/60">
+                <td class="px-5 py-3.5 font-medium text-slate-900 whitespace-nowrap">
+                    <a href="/neu/vertraege/{{ row.v.id }}/" class="hover:text-indigo-600">{{ row.mieter }}</a>
+                </td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.objekt }}
+                    {% if row.prorata %}<span class="ml-1 text-[10px] font-bold uppercase bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded" title="Teilmonat: {{ row.tage }} von {{ row.tage_monat }} Tagen">Pro-Rata</span>{% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-right text-slate-700 whitespace-nowrap">{{ row.netto|chf }}</td>
+                <td class="px-5 py-3.5 text-right text-slate-500 whitespace-nowrap">{{ row.nk|chf }}</td>
+                <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">{{ row.total|chf }}</td>
+                <td class="px-5 py-3.5">
+                    {% if row.gestellt %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">Gestellt</span>
+                    {% else %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700">Offen</span>{% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="px-5 py-10 text-center text-sm text-slate-400 italic">Keine aktiven Verträge für diesen Monat.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<p class="text-xs text-slate-400 mt-4">
+    <i class="fa-solid fa-circle-info mr-1"></i>
+    Der Mietenlauf ist idempotent — bereits gestellte Verträge werden übersprungen. Pro-Rata rechnet Ein-/Auszüge
+    mitten im Monat tagegenau ab. Gebucht wird Debitoren 1100 an Ertrag 3000 (Netto) bzw. NK-Akonto 3020 (Nebenkosten).
+</p>
+{% endblock %}

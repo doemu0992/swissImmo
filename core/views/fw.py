@@ -1254,3 +1254,148 @@ def fw_buchhaltung(request):
         'journal': journal,
         'tab_liste': tab_liste,
     })
+
+
+# ============================================================
+# ETAPPE D: SOLLSTELLUNG MIETE (monatlicher Mietenlauf)
+# ============================================================
+
+import calendar as _calendar
+
+
+def _sollstellung_kontext(request):
+    """Vorschau: aktive Verträge + Soll je Vertrag für den gewählten Monat."""
+    heute = timezone.now().date()
+    try:
+        jahr = int(request.GET.get('jahr') or heute.year)
+        monat = int(request.GET.get('monat') or heute.month)
+    except ValueError:
+        jahr, monat = heute.year, heute.month
+    monat = min(max(monat, 1), 12)
+
+    start_date = date(jahr, monat, 1)
+    _, last_day = _calendar.monthrange(jahr, monat)
+    end_date = date(jahr, monat, last_day)
+    titel = f"Miete & NK {monat:02d}/{jahr}"
+
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    vertraege = (Mietvertrag.objects.filter(status='aktiv', beginn__lte=end_date)
+                 .exclude(ende__lt=start_date)
+                 .select_related('mieter', 'einheit__liegenschaft'))
+    if aktive_lg:
+        vertraege = vertraege.filter(einheit__liegenschaft=aktive_lg)
+
+    rows = []
+    total_soll = Decimal('0.00')
+    n_offen = n_gestellt = 0
+    for v in vertraege:
+        v_start = max(start_date, v.beginn)
+        v_ende = min(end_date, v.ende) if v.ende else end_date
+        tage_aktiv = (v_ende - v_start).days + 1
+        faktor = Decimal(tage_aktiv) / Decimal(last_day)
+        netto = round((v.netto_mietzins or Decimal('0')) * faktor, 2)
+        nk = round((v.nebenkosten or Decimal('0')) * faktor, 2)
+        total = netto + nk
+        if total <= 0:
+            continue
+        gestellt = DebitorenRechnung.objects.filter(vertrag=v, titel=titel).exclude(status='storniert').exists()
+        if gestellt:
+            n_gestellt += 1
+        else:
+            n_offen += 1
+            total_soll += total
+        rows.append({
+            'v': v, 'mieter': v.mieter.display_name,
+            'objekt': f"{v.einheit.liegenschaft.strasse} · {v.einheit.bezeichnung}",
+            'netto': netto, 'nk': nk, 'total': total,
+            'prorata': tage_aktiv < last_day, 'tage': tage_aktiv, 'tage_monat': last_day,
+            'gestellt': gestellt,
+        })
+
+    monate = [(m, date(2000, m, 1).strftime('%B')) for m in range(1, 13)]
+    jahre = list(range(heute.year - 2, heute.year + 2))
+    return {
+        **basis, 'nav': 'sollstellung', 'rows': rows,
+        'jahr': jahr, 'monat': monat, 'titel': titel,
+        'total_soll': total_soll, 'n_offen': n_offen, 'n_gestellt': n_gestellt,
+        'monate': monate, 'jahre': jahre,
+        'monat_name': date(2000, monat, 1).strftime('%B'),
+    }
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_sollstellung(request):
+    from django.contrib import messages
+    ctx = _sollstellung_kontext(request)
+    ctx['meldung'] = list(messages.get_messages(request))
+    return render(request, 'fw/sollstellung.html', ctx)
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_sollstellung_run(request):
+    """Führt den Mietenlauf für den gewählten Monat aus (idempotent, Pro-Rata,
+    Debitoren 1100 an Ertrag 3000 / NK-Akonto 3020) — wie die Finanz-API."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import Buchungskonto, Buchung
+    from core.auth import log_aktion
+
+    if request.method != 'POST':
+        return redirect('fw_sollstellung')
+
+    heute = timezone.now().date()
+    try:
+        jahr = int(request.POST.get('jahr') or heute.year)
+        monat = int(request.POST.get('monat') or heute.month)
+    except ValueError:
+        jahr, monat = heute.year, heute.month
+
+    start_date = date(jahr, monat, 1)
+    _, last_day = _calendar.monthrange(jahr, monat)
+    end_date = date(jahr, monat, last_day)
+    titel = f"Miete & NK {monat:02d}/{jahr}"
+
+    try:
+        konto_deb = Buchungskonto.objects.get(nummer="1100")
+        konto_ertrag = Buchungskonto.objects.get(nummer="3000")
+        konto_nk = Buchungskonto.objects.get(nummer="3020")
+    except Buchungskonto.DoesNotExist:
+        messages.error(request, "Standard-Konten (1100, 3000, 3020) fehlen. Bitte zuerst Kontenplan laden.")
+        return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
+
+    vertraege = (Mietvertrag.objects.filter(status='aktiv', beginn__lte=end_date)
+                 .exclude(ende__lt=start_date).select_related('mieter', 'einheit__liegenschaft'))
+
+    erstellt = 0
+    with transaction.atomic():
+        for v in vertraege:
+            if DebitorenRechnung.objects.filter(vertrag=v, titel=titel).exclude(status='storniert').exists():
+                continue
+            v_start = max(start_date, v.beginn)
+            v_ende = min(end_date, v.ende) if v.ende else end_date
+            faktor = Decimal((v_ende - v_start).days + 1) / Decimal(last_day)
+            netto = round((v.netto_mietzins or Decimal('0')) * faktor, 2)
+            nk = round((v.nebenkosten or Decimal('0')) * faktor, 2)
+            if netto + nk <= 0:
+                continue
+            rechnung = DebitorenRechnung.objects.create(
+                vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
+                titel=titel, betrag=netto + nk, faellig_am=start_date)
+            if netto > 0:
+                Buchung.objects.create(datum=start_date, beleg_text=f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
+                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_ertrag,
+                                       betrag=netto, debitoren_rechnung=rechnung, erstellt_von=request.user)
+            if nk > 0:
+                Buchung.objects.create(datum=start_date, beleg_text=f"NK-Akonto {v.mieter} - {monat:02d}/{jahr}",
+                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_nk,
+                                       betrag=nk, debitoren_rechnung=rechnung, erstellt_von=request.user)
+            erstellt += 1
+
+    log_aktion(request, "Sollstellung ausgeführt", titel, f"{erstellt} Rechnungen erstellt")
+    if erstellt:
+        messages.success(request, f"✅ Sollstellung {titel}: {erstellt} Rechnung(en) erstellt.")
+    else:
+        messages.success(request, f"Sollstellung {titel}: alles bereits gestellt — nichts Neues erzeugt.")
+    return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
