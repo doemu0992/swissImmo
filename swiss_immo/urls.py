@@ -68,7 +68,7 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_obj
                            fw_dienstleister, fw_assets, fw_buchhaltung,
                            fw_sollstellung, fw_sollstellung_run,
                            fw_nebenkosten, fw_nebenkosten_detail, fw_nebenkosten_verbuchen,
-                           fw_mietzins, fw_dokumente, fw_kommunikation,
+                           fw_mietzins, fw_mietzins_anpassung, fw_dokumente, fw_kommunikation,
                            fw_vertrag_neu, fw_vertrag_neu_speichern,
                            fw_vertrag_status, fw_vertrag_loeschen,
                            fw_kuendigung_erfassen, fw_kuendigung_zuruecknehmen,
@@ -144,6 +144,7 @@ urlpatterns = [
     path('neu/nebenkosten/<int:pk>/', fw_nebenkosten_detail, name='fw_nebenkosten_detail'),
     path('neu/nebenkosten/<int:pk>/verbuchen/', fw_nebenkosten_verbuchen, name='fw_nebenkosten_verbuchen'),
     path('neu/mietzins/', fw_mietzins, name='fw_mietzins'),
+    path('neu/mietzins/<int:vertrag_id>/anpassung/', fw_mietzins_anpassung, name='fw_mietzins_anpassung'),
     path('neu/dokumente/', fw_dokumente, name='fw_dokumente'),
     # Profil-Menü
     path('neu/suche/', fw_suche, name='fw_suche'),

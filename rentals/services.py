@@ -123,6 +123,15 @@ def _monatsende(jahr: int, monat: int) -> _dt.date:
     return _dt.date(jahr, monat, calendar.monthrange(jahr, monat)[1])
 
 
+def naechster_anpassungstermin(vertrag, ankuendigung_datum: _dt.date) -> _dt.date:
+    """Frühester Termin, auf den eine Mietzinserhöhung wirksam werden kann.
+    Die Mitteilung muss den Mieter mindestens 10 Tage VOR Beginn der Kündigungsfrist
+    erreichen (Art. 269d OR). Wir behandeln daher (Ankündigung + 10 Tage) wie einen
+    Kündigungseingang und nehmen den nächsten ordentlichen Kündigungstermin."""
+    fiktiver_eingang = ankuendigung_datum + _dt.timedelta(days=10)
+    return berechne_kuendigungstermin(vertrag, fiktiver_eingang)
+
+
 def berechne_kuendigungstermin(vertrag, eingang_datum: _dt.date) -> _dt.date:
     """Nächster ordentlicher Kündigungstermin ab (Eingang + Kündigungsfrist),
     unter Beachtung der erlaubten Termin-Monate und 'erstmals kündbar auf'."""

@@ -1898,6 +1898,99 @@ def fw_mietzins(request):
     })
 
 
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_mietzins_anpassung(request, vertrag_id):
+    """Amtliches Mietzinsanpassungs-Formular (Art. 269d OR / Art. 19 VMWG) in der /neu/-Shell.
+    GET: Berechnungs-Formular · POST action=pdf: Formular als PDF · POST action=speichern:
+    Anpassung erfassen (und optional Vertragsbasis fortschreiben)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from django.http import HttpResponse
+    from crm.models import Verwaltung
+    from rentals.models import MietzinsAnpassung
+    from rentals.services import berechne_mietpotenzial, naechster_anpassungstermin
+    from core.utils import get_current_ref_zins, get_current_lik
+    from core.services.mietzins_formular import generate_amtliches_formular_pdf
+    from core.auth import log_aktion
+
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
+    basis = _global_filter(request)
+    vw = Verwaltung.objects.first()
+    lg = v.einheit.liegenschaft
+    mandant = lg.mandant
+
+    def _dec(x, default='0'):
+        try:
+            return Decimal(str(x).replace(',', '.').strip())
+        except Exception:
+            return Decimal(default)
+
+    aktuell_ref = _dec(get_current_ref_zins())
+    aktuell_lik = _dec(get_current_lik())
+
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion', 'pdf')
+        neu_netto = _dec(request.POST.get('neu_netto'), str(v.netto_mietzins))
+        neu_zins = _dec(request.POST.get('neu_zins'), str(aktuell_ref))
+        neu_lik = _dec(request.POST.get('neu_lik'), str(aktuell_lik))
+        wirksam_str = request.POST.get('wirksam_ab') or ''
+        try:
+            wirksam_ab = date.fromisoformat(wirksam_str)
+        except Exception:
+            wirksam_ab = naechster_anpassungstermin(v, timezone.now().date())
+        begruendung = (request.POST.get('begruendung') or '').strip()
+        mit_vorbehalt = request.POST.get('mit_vorbehalt') == 'on'
+        vorbehalt_text = (request.POST.get('vorbehalt_text') or '').strip()
+
+        pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik,
+                                     _dec(request.POST.get('kosten_pct'), '0')) or {}
+        daten = {
+            'alt_netto': v.netto_mietzins, 'neu_netto': neu_netto,
+            'nebenkosten': v.nebenkosten,
+            'alt_zins': v.basis_referenzzinssatz, 'neu_zins': neu_zins,
+            'alt_lik': v.basis_lik_punkte, 'neu_lik': neu_lik,
+            'zins_pct': None, 'lik_pct': None,
+            'kosten_pct': request.POST.get('kosten_pct') or None,
+            'total_pct': pot.get('delta_prozent'),
+            'wirksam_ab': wirksam_ab, 'begruendung': begruendung,
+            'schlichtungsbehoerde': request.POST.get('schlichtungsbehoerde') or '',
+            'mit_vorbehalt': mit_vorbehalt, 'vorbehalt_text': vorbehalt_text,
+        }
+
+        anp = MietzinsAnpassung.objects.create(
+            vertrag=v, wirksam_ab=wirksam_ab,
+            alter_netto_mietzins=v.netto_mietzins, neuer_netto_mietzins=neu_netto,
+            alter_referenzzinssatz=v.basis_referenzzinssatz, neuer_referenzzinssatz=neu_zins,
+            alter_lik_index=v.basis_lik_punkte, neuer_lik_index=neu_lik,
+            erhoehung_prozent_total=pot.get('delta_prozent'),
+            begruendung=begruendung or 'Anpassung an Referenzzinssatz und Teuerung',
+        )
+        log_aktion(request, "Mietzinsanpassung erstellt", str(v),
+                   f"neu CHF {neu_netto}, wirksam {wirksam_ab}")
+
+        if aktion == 'speichern':
+            messages.success(request, f"✅ Mietzinsanpassung erfasst — neu CHF {neu_netto} ab {wirksam_ab.strftime('%d.%m.%Y')}.")
+            return redirect(f'/neu/vertraege/{v.id}/')
+
+        pdf = generate_amtliches_formular_pdf(v, daten, verwaltung=vw, mandant=mandant)
+        resp = HttpResponse(pdf, content_type='application/pdf')
+        resp['Content-Disposition'] = f'inline; filename="Mietzinsanpassung_{v.mieter.nachname}.pdf"'
+        return resp
+
+    # --- GET: Vorschlag berechnen ---
+    pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik, Decimal('0.00')) or {}
+    vorschlag_netto = pot.get('neu_chf', v.netto_mietzins)
+    naechster_termin = naechster_anpassungstermin(v, timezone.now().date())
+
+    return render(request, 'fw/mietzins_anpassung.html', {
+        **basis, 'nav': 'mietzins', 'v': v, 'lg': lg,
+        'alt_netto': v.netto_mietzins, 'alt_zins': v.basis_referenzzinssatz, 'alt_lik': v.basis_lik_punkte,
+        'aktuell_ref': aktuell_ref, 'aktuell_lik': aktuell_lik,
+        'vorschlag_netto': vorschlag_netto, 'naechster_termin': naechster_termin,
+        'pot': pot,
+    })
+
+
 # ============================================================
 # ETAPPE D: DOKUMENTE (zentrale Ablage aus beiden Quellen)
 # ============================================================
