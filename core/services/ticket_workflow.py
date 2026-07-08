@@ -57,20 +57,50 @@ TICKET_PLATZHALTER = [
 
 
 def ticket_kontext(ticket, handwerker=None, status=None):
-    """Baut das Platzhalter-Dict für ein Ticket."""
+    """Baut das Platzhalter-Dict für ein Ticket.
+
+    Enthält sowohl die Schaden-spezifischen Platzhalter ({melder_name}, {schaden} …)
+    ALS AUCH die allgemeinen Vorlagen-Platzhalter ({mieter_name}, {vermieter},
+    {datum}, {objekt}, {liegenschaft}) — damit Vorlagen mit beliebigen der in der
+    Editor-Hilfe gelisteten Platzhalter funktionieren."""
+    import datetime
     lg = ticket.liegenschaft
     melder = (ticket.gemeldet_von.display_name if ticket.gemeldet_von_id
               else f"{ticket.melder_vorname or ''} {ticket.melder_nachname or ''}".strip() or 'Mieter')
     objekt = ticket.betroffene_einheit.bezeichnung if ticket.betroffene_einheit_id else (lg.strasse if lg else '')
+
+    # Vermieter = Mandant (Eigentümer) der Liegenschaft, sonst Verwaltung
+    vermieter = ''
+    if lg and lg.mandant_id:
+        vermieter = lg.mandant.firma_oder_name
+    else:
+        try:
+            from crm.models import Verwaltung
+            vw = Verwaltung.objects.first()
+            vermieter = (vw.firma if vw else '') or 'Ihre Liegenschaftsverwaltung'
+        except Exception:
+            vermieter = 'Ihre Liegenschaftsverwaltung'
+
+    mieter_adresse = ''
+    if ticket.gemeldet_von_id:
+        mg = ticket.gemeldet_von
+        mieter_adresse = f"{mg.strasse or ''}, {mg.plz or ''} {mg.ort or ''}".strip(' ,')
+
     return {
+        # Schaden-spezifisch
         'melder_name': melder,
         'melder_tel': ticket.tel_melder or ticket.mieter_telefon or '',
-        'objekt': objekt,
-        'liegenschaft': f"{lg.strasse}, {lg.ort}" if lg else '',
         'schaden': ticket.titel,
         'ticket_id': str(ticket.id),
         'handwerker': (handwerker.firma if handwerker else ''),
         'status': status or ticket.get_status_display(),
+        # Allgemeine Vorlagen-Platzhalter (Alias/Kompatibilität)
+        'mieter_name': melder,
+        'mieter_adresse': mieter_adresse,
+        'objekt': objekt,
+        'liegenschaft': f"{lg.strasse}, {lg.ort}" if lg else '',
+        'vermieter': vermieter,
+        'datum': datetime.date.today().strftime('%d.%m.%Y'),
     }
 
 
