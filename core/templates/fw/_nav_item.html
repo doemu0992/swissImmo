@@ -1,14 +1,14 @@
 {% comment %}Sidebar-Navigationspunkt. ziel='' → 'bald'. ziel mit '/app/' → klassische Oberfläche → Marker.{% endcomment %}
 {% if ziel %}
-<a href="{{ ziel }}{% if '/neu/' in ziel and lg_query %}{{ lg_query }}{% endif %}"
-   class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all
+<a href="{{ ziel }}{% if '/neu/' in ziel and lg_query %}{{ lg_query }}{% endif %}" title="{{ label }}"
+   class="sb-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all
           {% if nav == key %}bg-indigo-600 text-white shadow-md{% else %}text-slate-400 hover:bg-white/5 hover:text-white{% endif %}">
-    <i class="fa-solid {{ icon }} w-4 text-center text-[13px]"></i> {{ label }}
-    {% if '/app/' in ziel %}<i class="fa-solid fa-arrow-up-right-from-square ml-auto text-[9px] text-slate-500" title="Öffnet die klassische Ansicht"></i>{% endif %}
+    <i class="fa-solid {{ icon }} w-4 text-center text-[13px]"></i> <span class="sb-label">{{ label }}</span>
+    {% if '/app/' in ziel %}<i class="fa-solid fa-arrow-up-right-from-square ml-auto text-[9px] text-slate-500 sb-label" title="Öffnet die klassische Ansicht"></i>{% endif %}
 </a>
 {% else %}
-<span class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-slate-600 cursor-default select-none" title="Kommt in einer späteren Etappe">
-    <i class="fa-solid {{ icon }} w-4 text-center text-[13px]"></i> {{ label }}
-    <span class="ml-auto text-[9px] font-bold uppercase tracking-wider bg-white/5 text-slate-500 px-1.5 py-0.5 rounded">bald</span>
+<span class="sb-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-slate-600 cursor-default select-none" title="{{ label }} — kommt in einer späteren Etappe">
+    <i class="fa-solid {{ icon }} w-4 text-center text-[13px]"></i> <span class="sb-label">{{ label }}</span>
+    <span class="ml-auto text-[9px] font-bold uppercase tracking-wider bg-white/5 text-slate-500 px-1.5 py-0.5 rounded sb-label">bald</span>
 </span>
 {% endif %}

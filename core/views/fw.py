@@ -2105,3 +2105,98 @@ def fw_integrationen(request):
 def fw_abonnemente(request):
     return fw_stub(request, 'Abonnement', 'fa-star',
                    'Dein swissImmo-Abo und die Abrechnung. Aktuell ist die Vollversion aktiv.')
+
+
+# ============================================================
+# LIEGENSCHAFT + OBJEKT CRUD (neu / bearbeiten)
+# ============================================================
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_liegenschaft_form(request, pk=None):
+    """Liegenschaft erfassen oder bearbeiten."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Mandant
+    from core.auth import log_aktion
+    lg = get_object_or_404(Liegenschaft, id=pk) if pk else None
+    basis = _global_filter(request)
+
+    if request.method == 'POST':
+        P = request.POST
+        obj = lg or Liegenschaft()
+        obj.strasse = P.get('strasse', '').strip()
+        obj.plz = P.get('plz', '').strip()
+        obj.ort = P.get('ort', '').strip()
+        obj.kanton = P.get('kanton', '').strip()
+        obj.egid = P.get('egid', '').strip()
+        obj.kataster_nummer = P.get('kataster_nummer', '').strip()
+
+        def intval(key):
+            v = P.get(key, '').strip()
+            try:
+                return int(v) if v else None
+            except ValueError:
+                return None
+        obj.baujahr = intval('baujahr')
+        md_id = P.get('mandant_id') or ''
+        obj.mandant = Mandant.objects.filter(id=md_id).first() if md_id else None
+        obj.hauswart_name = P.get('hauswart_name', '').strip()
+        obj.hauswart_telefon = P.get('hauswart_telefon', '').strip()
+        obj.bank_name = P.get('bank_name', '').strip()
+        obj.iban = P.get('iban', '').strip()
+        obj.save()
+        log_aktion(request, "Liegenschaft bearbeitet" if pk else "Liegenschaft erstellt",
+                   f"{obj.strasse}, {obj.ort}", '')
+        messages.success(request, f"✅ Liegenschaft {obj.strasse} gespeichert.")
+        return redirect(f'/neu/liegenschaften/{obj.id}/')
+
+    return render(request, 'fw/liegenschaft_form.html', {
+        **basis, 'nav': 'liegenschaften', 'lg': lg, 'ist_neu': lg is None,
+        'mandanten': Mandant.objects.all().order_by('firma_oder_name'),
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_objekt_form(request, pk=None):
+    """Mietobjekt (Einheit) erfassen oder bearbeiten."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    e = get_object_or_404(Einheit, id=pk) if pk else None
+    basis = _global_filter(request)
+
+    if request.method == 'POST':
+        P = request.POST
+        obj = e or Einheit()
+        lg_id = P.get('liegenschaft_id') or (e.liegenschaft_id if e else None)
+        obj.liegenschaft = get_object_or_404(Liegenschaft, id=lg_id)
+        obj.bezeichnung = P.get('bezeichnung', '').strip()
+        obj.typ = P.get('typ', 'whg')
+        obj.etage = P.get('etage', '').strip()
+        obj.ewid = P.get('ewid', '').strip()
+
+        def dec(key):
+            v = str(P.get(key) or '').replace(',', '.').strip()
+            try:
+                return Decimal(v) if v else None
+            except Exception:
+                return None
+        obj.zimmer = dec('zimmer')
+        obj.flaeche_m2 = dec('flaeche_m2')
+        obj.nettomiete_aktuell = dec('nettomiete_aktuell') or Decimal('0.00')
+        obj.nebenkosten_aktuell = dec('nebenkosten_aktuell') or Decimal('0.00')
+        obj.keller = P.get('keller', '').strip()
+        obj.notizen = P.get('notizen', '').strip()
+        obj.save()
+        log_aktion(request, "Objekt bearbeitet" if pk else "Objekt erstellt",
+                   f"{obj.bezeichnung} ({obj.liegenschaft.strasse})", '')
+        messages.success(request, f"✅ Objekt {obj.bezeichnung} gespeichert.")
+        return redirect(f'/neu/objekte/{obj.id}/')
+
+    vorwahl_lg = request.GET.get('lg') or (e.liegenschaft_id if e else None)
+    return render(request, 'fw/objekt_form.html', {
+        **basis, 'nav': 'objekte', 'e': e, 'ist_neu': e is None,
+        'liegenschaften': Liegenschaft.objects.all().order_by('strasse'),
+        'vorwahl_lg': str(vorwahl_lg) if vorwahl_lg else '',
+        'typ_choices': Einheit.TYP_CHOICES,
+    })

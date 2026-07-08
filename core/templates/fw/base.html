@@ -11,23 +11,41 @@
         body { font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        /* Einklappbare Sidebar */
+        #fwSidebar { transition: width .18s ease; }
+        html._sbc #fwSidebar { width: 4.5rem; }
+        html._sbc #fwSidebar .sb-label,
+        html._sbc #fwSidebar .sb-section,
+        html._sbc #fwSidebar .sb-filter,
+        html._sbc #fwSidebar .sb-logotext,
+        html._sbc #fwSidebar .sb-footlabel { display: none !important; }
+        html._sbc #fwSidebar .sb-item { justify-content: center; gap: 0; }
+        html._sbc #fwSidebar .sb-logo { justify-content: center; }
+        html._sbc #fwSidebar .sb-collapse-icon { transform: rotate(180deg); }
     </style>
+    <script>
+        // Zustand vor dem ersten Paint anwenden (kein Flackern)
+        if (localStorage.getItem('sbCollapsed') === '1') document.documentElement.classList.add('_sbc');
+    </script>
 </head>
 <body class="bg-slate-100 text-slate-900">
 <div class="flex min-h-[100dvh]">
 
     <!-- ================= SIDEBAR (Fairwalter-Struktur) ================= -->
-    <aside class="w-60 bg-[#161926] text-white flex-col min-h-[100dvh] hidden lg:flex flex-shrink-0">
+    <aside id="fwSidebar" class="w-60 bg-[#161926] text-white flex-col min-h-[100dvh] hidden lg:flex flex-shrink-0">
 
-        <a href="/neu/" class="px-5 py-5 flex items-center gap-2.5 border-b border-white/5">
-            <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-xs shadow-lg shadow-indigo-600/30">
+        <div class="px-5 py-5 flex items-center gap-2.5 border-b border-white/5 sb-logo">
+            <a href="/neu/" class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-xs shadow-lg shadow-indigo-600/30 shrink-0">
                 <i class="fa-solid fa-building"></i>
-            </div>
-            <span class="font-extrabold tracking-wide text-sm uppercase">swissImmo</span>
-        </a>
+            </a>
+            <a href="/neu/" class="font-extrabold tracking-wide text-sm uppercase sb-logotext flex-1">swissImmo</a>
+            <button onclick="fwToggleSidebar()" title="Menü ein-/ausklappen" class="text-slate-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-angles-left text-xs sb-collapse-icon"></i>
+            </button>
+        </div>
 
         <!-- GLOBALER FILTER -->
-        <form method="get" class="px-4 py-3 bg-white/5 border-b border-white/5">
+        <form method="get" class="px-4 py-3 bg-white/5 border-b border-white/5 sb-filter">
             <label class="block text-[11px] font-semibold text-slate-300">Globaler Filter</label>
             <select name="lg" onchange="this.form.submit()"
                     class="mt-1 w-full bg-transparent text-sm text-slate-400 focus:outline-none cursor-pointer [&>option]:text-slate-900">
@@ -46,12 +64,12 @@
             {% include 'fw/_nav_item.html' with ziel='/neu/dokumente/' key='dokumente' icon='fa-floppy-disk' label='Dokumente' %}
             {% include 'fw/_nav_item.html' with ziel='/neu/kommunikation/' key='kommunikation' icon='fa-comment' label='Kommunikation' %}
 
-            <div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Verwaltung</div>
+            <div class="sb-section pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Verwaltung</div>
             {% include 'fw/_nav_item.html' with ziel='/neu/personen/' key='personen' icon='fa-user-group' label='Personen' %}
             {% include 'fw/_nav_item.html' with ziel='/neu/vertraege/' key='vertraege' icon='fa-file-lines' label='Verträge' %}
             {% include 'fw/_nav_item.html' with ziel='/neu/mietzins/' key='mietzins' icon='fa-percent' label='Mietzins' %}
 
-            <div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Finanzen</div>
+            <div class="sb-section pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Finanzen</div>
             {% include 'fw/_nav_item.html' with ziel='/neu/buchhaltung/' key='buchhaltung' icon='fa-calculator' label='Buchhaltung' %}
             {% include 'fw/_nav_item.html' with ziel='/neu/bankkonten/' key='bankkonten' icon='fa-building-columns' label='Bankkonten' %}
             {% include 'fw/_nav_item.html' with ziel='/neu/bankabgleich/' key='bankabgleich' icon='fa-right-left' label='Bankabgleich' %}
@@ -62,14 +80,14 @@
             {% include 'fw/_nav_item.html' with ziel='/neu/nebenkosten/' key='nebenkosten' icon='fa-bolt' label='Nebenkosten' %}
             {% include 'fw/_nav_item.html' with ziel='' key='hypotheken' icon='fa-chart-column' label='Hypotheken' %}
 
-            <div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Gebäude</div>
+            <div class="sb-section pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Gebäude</div>
             {% include 'fw/_nav_item.html' with ziel='/neu/assets/' key='assets' icon='fa-house-chimney' label='Assets' %}
             {% include 'fw/_nav_item.html' with ziel='/neu/dienstleister/' key='dienstleister' icon='fa-wrench' label='Dienstleister' %}
             {% include 'fw/_nav_item.html' with ziel='/neu/schaeden/' key='schadensfaelle' icon='fa-cloud-bolt' label='Schadensfälle' %}
         </nav>
 
-        <a href="/app/" class="px-5 py-4 border-t border-white/5 text-xs text-slate-500 hover:text-slate-300 transition-colors">
-            <i class="fa-solid fa-arrow-left mr-1.5"></i> Zur bisherigen App
+        <a href="/app/" title="Zur bisherigen App" class="sb-item px-5 py-4 border-t border-white/5 text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i><span class="sb-footlabel">Zur bisherigen App</span>
         </a>
     </aside>
 
@@ -130,6 +148,12 @@
 <script>
 // Generische Tab-Umschaltung für Detailseiten:
 // Buttons: data-tab="<gruppe>" data-target="<name>"; Panels: id="<gruppe>-<name>"
+// Sidebar ein-/ausklappen (Zustand in localStorage)
+function fwToggleSidebar() {
+    var collapsed = document.documentElement.classList.toggle('_sbc');
+    localStorage.setItem('sbCollapsed', collapsed ? '1' : '0');
+}
+
 // Profil-Dropdown öffnen/schliessen
 function fwProfilMenu() {
     var m = document.getElementById('fwProfil');

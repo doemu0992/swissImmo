@@ -22,11 +22,16 @@
             <p class="text-sm text-slate-500">{{ e.get_typ_display }}{% if e.etage %} · {{ e.etage }}{% endif %} · {{ e.liegenschaft.strasse }}, {{ e.liegenschaft.ort }}</p>
         </div>
     </div>
-    {% if aktiver_vertrag %}
-    <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ vertrag_pill.cls }}">{{ vertrag_pill.label }}</span>
-    {% else %}
-    <span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-amber-50 text-amber-700">Leerstand</span>
-    {% endif %}
+    <div class="flex items-center gap-2">
+        {% if aktiver_vertrag %}
+        <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ vertrag_pill.cls }}">{{ vertrag_pill.label }}</span>
+        {% else %}
+        <span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-amber-50 text-amber-700">Leerstand</span>
+        {% endif %}
+        <a href="/neu/objekte/{{ e.id }}/bearbeiten/" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+            <i class="fa-solid fa-pen text-xs mr-1"></i>Bearbeiten
+        </a>
+    </div>
 </div>
 
 <!-- KPI -->
@@ -68,7 +73,7 @@
             <a href="/neu/vertraege/{{ aktiver_vertrag.id }}/" class="text-sm text-indigo-600 font-medium hover:underline">Vertrag ansehen <i class="fa-solid fa-arrow-right ml-1 text-xs"></i></a>
             {% else %}
             <p class="text-sm text-slate-400 italic">Dieses Objekt steht aktuell leer.</p>
-            <a href="/app/?tab=rentals" class="text-sm text-indigo-600 font-medium hover:underline mt-2 inline-block">Vertrag erstellen</a>
+            <a href="/neu/vertraege/neu/?einheit={{ e.id }}" class="text-sm text-indigo-600 font-medium hover:underline mt-2 inline-block">Vertrag erstellen <i class="fa-solid fa-arrow-right ml-1 text-xs"></i></a>
             {% endif %}
         </div>
         <!-- Ausstattung -->

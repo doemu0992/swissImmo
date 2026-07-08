@@ -72,7 +72,8 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_obj
                            fw_vertrag_neu, fw_vertrag_neu_speichern,
                            fw_vertrag_status, fw_vertrag_loeschen,
                            fw_account, fw_marktdaten_aktualisieren, fw_marktdaten_live,
-                           fw_benutzer, fw_mandate, fw_vorlagen, fw_integrationen, fw_abonnemente)
+                           fw_benutzer, fw_mandate, fw_vorlagen, fw_integrationen, fw_abonnemente,
+                           fw_liegenschaft_form, fw_objekt_form)
 
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
@@ -103,7 +104,11 @@ urlpatterns = [
     path('neu/', fw_dashboard, name='fw_dashboard'),
     path('neu/debitoren/', fw_debitoren, name='fw_debitoren'),
     path('neu/liegenschaften/', fw_liegenschaften, name='fw_liegenschaften'),
+    path('neu/liegenschaften/neu/', fw_liegenschaft_form, name='fw_liegenschaft_neu'),
+    path('neu/liegenschaften/<int:pk>/bearbeiten/', fw_liegenschaft_form, name='fw_liegenschaft_bearbeiten'),
     path('neu/objekte/', fw_objekte, name='fw_objekte'),
+    path('neu/objekte/neu/', fw_objekt_form, name='fw_objekt_neu'),
+    path('neu/objekte/<int:pk>/bearbeiten/', fw_objekt_form, name='fw_objekt_bearbeiten'),
     path('neu/personen/', fw_personen, name='fw_personen'),
     path('neu/personen/neu/', fw_person_form, name='fw_person_neu'),
     path('neu/personen/<int:pk>/bearbeiten/', fw_person_form, name='fw_person_bearbeiten'),
