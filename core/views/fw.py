@@ -4532,12 +4532,102 @@ def fw_mwst(request):
     vorsteuer = saldo('1170', soll_positiv=True)        # Vorsteuer-Guthaben (Soll-Saldo)
     zahllast = umsatzsteuer - vorsteuer
 
+    # Steuerbaren Umsatz aus den Ertragskonten (nur mit MWST belegte Erträge: 3010 Gewerbe)
+    from crm.models import Verwaltung
+    from core.services.mwst_estv import berechne_estv
+    vw = Verwaltung.objects.first()
+    umsatz_steuerbar = saldo('3010', soll_positiv=False)  # Gewerbe/Parkplätze (optiert)
+    methode = getattr(vw, 'mwst_methode', 'effektiv') if vw else 'effektiv'
+    saldosatz = getattr(vw, 'saldosteuersatz', Decimal('0')) if vw else Decimal('0')
+    estv = berechne_estv(
+        umsatz_steuerbar=umsatz_steuerbar, umsatzsteuer=umsatzsteuer,
+        vorsteuer_material=vorsteuer, vorsteuer_invest=Decimal('0'),
+        methode=methode, saldosteuersatz=saldosatz)
+    if methode == 'saldo':
+        zahllast = estv['z500']
+
     return render(request, 'fw/mwst.html', {
         **basis, 'nav': 'mwst', 'jahr': jahr, 'quartal': quartal,
         'von': von, 'bis': bis,
         'umsatzsteuer': umsatzsteuer, 'vorsteuer': vorsteuer, 'zahllast': zahllast,
+        'umsatz_steuerbar': umsatz_steuerbar, 'estv': estv,
+        'mwst_methode': methode, 'saldosteuersatz': saldosatz,
+        'mwst_uid': getattr(vw, 'mwst_uid', '') if vw else '',
         'jahre': list(range(heute.year, heute.year - 5, -1)),
     })
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_mwst_einstellungen(request):
+    """Speichert MWST-Methode, Saldosteuersatz und MWST-Nummer."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Verwaltung
+    if request.method != 'POST':
+        return redirect('fw_mwst')
+    vw = Verwaltung.objects.first()
+    if not vw:
+        messages.error(request, "Keine Verwaltung erfasst.")
+        return redirect('fw_mwst')
+    vw.mwst_methode = request.POST.get('mwst_methode', 'effektiv')
+    vw.mwst_uid = (request.POST.get('mwst_uid') or '').strip()
+    try:
+        vw.saldosteuersatz = Decimal((request.POST.get('saldosteuersatz') or '0').replace(',', '.'))
+    except Exception:
+        vw.saldosteuersatz = Decimal('0')
+    vw.save(update_fields=['mwst_methode', 'mwst_uid', 'saldosteuersatz'])
+    messages.success(request, "✅ MWST-Einstellungen gespeichert.")
+    ziel = request.POST.get('zurueck') or '/neu/mwst/'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_mwst_estv_export(request):
+    """ESTV-Abrechnung als CSV (offizielle Ziffern) für den gewählten Zeitraum."""
+    from django.http import HttpResponse
+    from crm.models import Verwaltung
+    from core.services.mwst_estv import estv_csv
+    from finance.models import Buchungskonto, Buchung
+    from django.db.models import Sum
+    heute = timezone.now().date()
+    try:
+        jahr = int(request.GET.get('jahr') or heute.year)
+    except ValueError:
+        jahr = heute.year
+    quartal = request.GET.get('quartal', '')
+    if quartal in ('1', '2', '3', '4'):
+        q = int(quartal)
+        von = date(jahr, (q - 1) * 3 + 1, 1)
+        _, ld = _calendar.monthrange(jahr, q * 3)
+        bis = date(jahr, q * 3, ld)
+    else:
+        von, bis = date(jahr, 1, 1), date(jahr, 12, 31)
+
+    qs = Buchung.objects.filter(datum__gte=von, datum__lte=bis)
+
+    def saldo(nummer, soll_positiv):
+        k = Buchungskonto.objects.filter(nummer=nummer).first()
+        if not k:
+            return Decimal('0.00')
+        soll = qs.filter(soll_konto=k).aggregate(s=Sum('betrag'))['s'] or Decimal('0.00')
+        haben = qs.filter(haben_konto=k).aggregate(s=Sum('betrag'))['s'] or Decimal('0.00')
+        return (soll - haben) if soll_positiv else (haben - soll)
+
+    vw = Verwaltung.objects.first()
+    from core.services.mwst_estv import berechne_estv
+    estv = berechne_estv(
+        umsatz_steuerbar=saldo('3010', soll_positiv=False),
+        umsatzsteuer=saldo('2200', soll_positiv=False),
+        vorsteuer_material=saldo('1170', soll_positiv=True),
+        vorsteuer_invest=Decimal('0'),
+        methode=getattr(vw, 'mwst_methode', 'effektiv') if vw else 'effektiv',
+        saldosteuersatz=getattr(vw, 'saldosteuersatz', Decimal('0')) if vw else Decimal('0'))
+    csv_bytes = estv_csv(estv, firma=(vw.firma if vw else 'Verwaltung'),
+                         uid=(vw.mwst_uid if vw else ''), periode_von=von, periode_bis=bis)
+    resp = HttpResponse(csv_bytes, content_type='text/csv; charset=utf-8')
+    zeitraum = f"{jahr}" + (f"_Q{quartal}" if quartal else "")
+    resp['Content-Disposition'] = f'attachment; filename="ESTV_MWST_{zeitraum}.csv"'
+    return resp
 
 
 # ============================================================

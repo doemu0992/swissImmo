@@ -20,6 +20,11 @@ class Verwaltung(models.Model):
     # Periodensperre / Revisionssicherheit: Buchungen mit Datum ≤ diesem Stichtag
     # sind gesperrt (abgeschlossene Periode). Leer = keine Sperre.
     buchung_gesperrt_bis = models.DateField("Buchungen gesperrt bis", null=True, blank=True)
+    # MWST-Konfiguration (für ESTV-Abrechnung)
+    MWST_METHODE_CHOICES = [('effektiv', 'Effektive Methode'), ('saldo', 'Saldosteuersatz')]
+    mwst_uid = models.CharField("MWST-Nummer (CHE)", max_length=20, blank=True, default='')
+    mwst_methode = models.CharField("MWST-Methode", max_length=10, choices=MWST_METHODE_CHOICES, default='effektiv')
+    saldosteuersatz = models.DecimalField("Saldosteuersatz (%)", max_digits=4, decimal_places=1, default=0)
 
     class Meta:
         verbose_name = "Meine Verwaltung"
