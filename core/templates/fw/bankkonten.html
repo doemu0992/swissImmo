@@ -1,0 +1,84 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Bankkonten — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-1">
+    <h1 class="text-3xl font-extrabold text-slate-900">Bankkonten</h1>
+    <a href="/app/?tab=portfolio" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+        <i class="fa-solid fa-plus mr-1.5"></i> Konto hinterlegen
+    </a>
+</div>
+<p class="text-sm text-slate-500 mb-5">Miet-, Verwaltungs- und Eigentümerkonten mit QR-IBAN-Erkennung
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/bankkonten/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+<!-- KPI -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-building-columns"></i></div>
+        <div><div class="text-2xl font-bold text-indigo-600">{{ anzahl }}</div><div class="text-sm text-slate-500">Konten hinterlegt</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-qrcode"></i></div>
+        <div><div class="text-2xl font-bold text-slate-800">{{ qr_count }}</div><div class="text-sm text-slate-500">QR-IBAN aktiv</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg {% if fehlend %}bg-amber-50 text-amber-600{% else %}bg-slate-100 text-slate-500{% endif %} flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div><div class="text-2xl font-bold {% if fehlend %}text-amber-600{% else %}text-slate-800{% endif %}">{{ fehlend }}</div><div class="text-sm text-slate-500">Liegenschaft ohne IBAN</div></div>
+    </div>
+</div>
+
+<!-- Konten-Karten -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    {% for k in konten %}
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <div class="flex items-start justify-between gap-3 mb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg {{ k.typ_cls }} flex items-center justify-center shrink-0"><i class="fa-solid {{ k.typ_icon }}"></i></div>
+                <div>
+                    <div class="font-semibold text-slate-900">{{ k.inhaber }}</div>
+                    <div class="text-xs text-slate-400">{{ k.kontext }}</div>
+                </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-md text-xs font-semibold {% if k.ist_qr %}bg-emerald-50 text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">
+                {% if k.ist_qr %}QR-IBAN{% else %}IBAN{% endif %}
+            </span>
+        </div>
+
+        <!-- IBAN-Zeile -->
+        <div class="bg-slate-50 rounded-lg px-4 py-3 flex items-center gap-3 mb-3">
+            {% if k.ist_qr %}<i class="fa-solid fa-qrcode text-emerald-500 text-lg shrink-0"></i>{% else %}<i class="fa-solid fa-university text-slate-400 text-lg shrink-0"></i>{% endif %}
+            <span class="font-mono text-sm text-slate-800 tracking-wide">{{ k.iban }}</span>
+        </div>
+
+        <div class="flex items-center justify-between text-sm">
+            <div class="text-slate-500">{{ k.bank|default:"Bank nicht hinterlegt" }}</div>
+            {% if k.mietertrag != None %}
+            <div class="text-right"><span class="text-slate-400 text-xs">Soll / Monat</span>
+                <div class="font-bold text-indigo-600">CHF {{ k.mietertrag|chf }}</div></div>
+            {% endif %}
+        </div>
+
+        {% if k.lg_id %}
+        <div class="mt-3 pt-3 border-t border-slate-100">
+            <a href="/neu/liegenschaften/{{ k.lg_id }}/" class="text-xs text-indigo-600 font-medium hover:underline">Liegenschaft ansehen <i class="fa-solid fa-arrow-right ml-1"></i></a>
+        </div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-10 text-center">
+        <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center text-xl mb-3 mx-auto"><i class="fa-solid fa-building-columns"></i></div>
+        <p class="text-sm font-medium text-slate-700">Noch keine Bankverbindung hinterlegt</p>
+        <p class="text-xs text-slate-400 mt-1">Erfasse die IBAN bei der Liegenschaft, damit QR-Rechnungen erzeugt werden können.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<p class="text-xs text-slate-400 mt-4">
+    <i class="fa-solid fa-circle-info mr-1"></i>
+    QR-IBAN wird an der Institut-ID (Stellen 5–9 im Bereich 30000–31999) erkannt — nur damit lassen sich
+    QR-Rechnungen mit strukturierter Referenz (QRR) erzeugen. Der Bankabgleich baut auf diesen Konten auf.
+</p>
+{% endblock %}

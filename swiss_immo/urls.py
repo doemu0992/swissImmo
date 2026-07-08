@@ -60,7 +60,7 @@ from core.views.portal import portal_view, nach_login_view
 from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_objekte,
                            fw_personen, fw_vertraege,
                            fw_liegenschaft_detail, fw_objekt_detail, fw_vertrag_detail,
-                           fw_mahnwesen)
+                           fw_mahnwesen, fw_bankkonten)
 
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
@@ -98,6 +98,7 @@ urlpatterns = [
     path('neu/objekte/<int:pk>/', fw_objekt_detail, name='fw_objekt_detail'),
     path('neu/vertraege/<int:pk>/', fw_vertrag_detail, name='fw_vertrag_detail'),
     path('neu/mahnwesen/', fw_mahnwesen, name='fw_mahnwesen'),
+    path('neu/bankkonten/', fw_bankkonten, name='fw_bankkonten'),
 
     # --- DIE NEUE WEB-APP (SPA) ---
     path('app/', spa_master_view, name='spa_master'),
