@@ -1,0 +1,146 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}{{ m.display_name }} — swissImmo{% endblock %}
+
+{% block content %}
+
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/personen/{{ lg_query }}" class="hover:text-indigo-600">Personen</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <span class="text-slate-600 font-medium">{{ m.display_name }}</span>
+</nav>
+
+<div class="flex items-start justify-between gap-4">
+    <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-lg font-bold shadow-lg shadow-indigo-600/25">
+            {{ m.display_name|slice:":2"|upper }}
+        </div>
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">{{ m.display_name }}</h1>
+            <p class="text-sm text-slate-500">{{ m.get_typ_display }}{% if m.ort %} · {{ m.plz }} {{ m.ort }}{% endif %}</p>
+        </div>
+    </div>
+    {% if anzahl_aktive %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-emerald-50 text-emerald-700">{{ anzahl_aktive }} aktiver Vertrag{{ anzahl_aktive|pluralize:",e" }}</span>{% endif %}
+</div>
+
+<!-- KPI -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-2xl font-bold text-indigo-600">{{ anzahl_aktive }}</div><div class="text-sm text-slate-500">Aktive Verträge</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-2xl font-bold text-slate-800">CHF {{ brutto_monat|chf }}</div><div class="text-sm text-slate-500">Miete / Monat</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-2xl font-bold {% if total_offen %}text-rose-600{% else %}text-emerald-600{% endif %}">CHF {{ total_offen|chf }}</div><div class="text-sm text-slate-500">Offen</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-lg font-bold text-slate-800 truncate">{{ telefon|default:"—" }}</div><div class="text-sm text-slate-500">Telefon</div>
+    </div>
+</div>
+
+{% include 'fw/_detail_tabs.html' with gruppe='pd' tabs=tab_liste %}
+
+<!-- ÜBERSICHT -->
+<div data-panel="pd" id="pd-uebersicht">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-800 mb-3">Kontakt</h3>
+            <dl class="text-sm space-y-2">
+                {% if m.email %}<div class="flex justify-between"><dt class="text-slate-500">E-Mail</dt><dd class="text-slate-800 font-medium">{{ m.email }}</dd></div>{% endif %}
+                {% if telefon %}<div class="flex justify-between"><dt class="text-slate-500">Telefon</dt><dd class="text-slate-800 font-medium">{{ telefon }}</dd></div>{% endif %}
+                {% if m.strasse %}<div class="flex justify-between"><dt class="text-slate-500">Adresse</dt><dd class="text-slate-800 font-medium text-right">{{ m.strasse }}, {{ m.plz }} {{ m.ort }}</dd></div>{% endif %}
+                {% if m.iban %}<div class="flex justify-between"><dt class="text-slate-500">IBAN</dt><dd class="text-slate-800 font-medium font-mono text-xs">{{ m.iban }}</dd></div>{% endif %}
+            </dl>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-800 mb-3">Aktuelle Vermietung</h3>
+            {% if anzahl_aktive %}
+            {% for row in vertrag_rows %}{% if row.v.status == 'aktiv' %}
+            <a href="/neu/vertraege/{{ row.v.id }}/" class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0 hover:text-indigo-600">
+                <span class="text-sm text-slate-700">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</span>
+                <span class="text-sm font-semibold text-indigo-600">CHF {{ row.brutto|chf }}</span>
+            </a>
+            {% endif %}{% endfor %}
+            {% else %}<p class="text-sm text-slate-400 italic">Kein aktiver Vertrag.</p>{% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- VERTRÄGE -->
+<div data-panel="pd" id="pd-vertraege" class="hidden">
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Objekt</th><th class="px-5 py-3 font-semibold">Von</th><th class="px-5 py-3 font-semibold">Bis</th>
+                <th class="px-5 py-3 font-semibold text-right">Brutto</th><th class="px-5 py-3 font-semibold">Status</th><th class="px-5 py-3"></th>
+            </tr></thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for row in vertrag_rows %}
+            <tr class="hover:bg-slate-50/60 cursor-pointer" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
+                <td class="px-5 py-3 font-medium text-slate-900">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</td>
+                <td class="px-5 py-3 text-slate-600">{{ row.v.beginn|date:"d.m.Y" }}</td>
+                <td class="px-5 py-3 text-slate-600">{% if row.v.ende %}{{ row.v.ende|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3 text-right font-semibold text-slate-900">CHF {{ row.brutto|chf }}</td>
+                <td class="px-5 py-3"><span class="px-2.5 py-1 rounded-md text-xs font-semibold {{ row.cls }}">{{ row.label }}</span></td>
+                <td class="px-5 py-3 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Verträge.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- FINANZEN -->
+<div data-panel="pd" id="pd-finanzen" class="hidden">
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
+        <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Offene Posten</div>
+        <table class="w-full text-sm">
+            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Fällig</th><th class="px-5 py-3 font-semibold">Titel</th><th class="px-5 py-3 font-semibold text-right">Offen</th>
+            </tr></thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for r in offene %}
+            <tr><td class="px-5 py-3 text-slate-600">{{ r.faellig_am|date:"d.m.Y"|default:"—" }}</td>
+                <td class="px-5 py-3 text-slate-900">{{ r.titel }}</td>
+                <td class="px-5 py-3 text-right font-semibold text-rose-600">{{ r.offener_betrag|chf }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine offenen Posten. 🎉</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Zahlungseingänge</div>
+        <table class="w-full text-sm">
+            <tbody class="divide-y divide-slate-50">
+            {% for z in zahlungen %}
+            <tr><td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</td>
+                <td class="px-5 py-3 text-slate-600">{{ z.bemerkung|default:"Zahlung" }}</td>
+                <td class="px-5 py-3 text-right font-medium text-emerald-600">+{{ z.betrag|chf }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Zahlungen.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- DOKUMENTE -->
+<div data-panel="pd" id="pd-dokumente" class="hidden">
+    <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50">
+        {% for d in dokumente %}
+        <div class="flex items-center gap-3 px-5 py-3.5">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-paperclip"></i></div>
+            <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ d.bezeichnung|default:d.titel }}</div>
+                <div class="text-xs text-slate-400">{{ d.kategorie }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}</div></div>
+            {% if d.datei %}<a href="{{ d.datei.url }}" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Öffnen</a>{% endif %}
+        </div>
+        {% empty %}
+        <p class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Dokumente hinterlegt.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -78,6 +78,13 @@ def fw_dashboard(request):
 
     # --- AUFGABEN (bestehende Pendenzen-Engine wiederverwenden) ---
     aufgaben = _berechne_aufgaben(heute, leerstand_objekte.count(), 0, 0)
+    # Aufgaben-Ziele auf die neue Oberfläche mappen, wo es ein Pendant gibt
+    tab_ziel = {
+        'finance': '/neu/debitoren/', 'rentals': '/neu/vertraege/',
+        'portfolio': '/neu/liegenschaften/', 'crm': '/neu/personen/',
+    }
+    for a in aufgaben:
+        a['ziel'] = tab_ziel.get(a.get('tab'), f"/app/?tab={a.get('tab')}")
 
     context = {
         **basis,
@@ -813,3 +820,50 @@ def fw_bankabgleich_verbuchen(request):
     if aktive := request.POST.get('lg'):
         ziel += f'?lg={aktive}'
     return _r(ziel)
+
+
+# ============================================================
+# PERSON-DETAIL (Mieter) — in der neuen Shell
+# ============================================================
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_person_detail(request, pk):
+    from rentals.models import Dokument as RentalsDokument
+    from tickets.models import SchadenMeldung
+    m = get_object_or_404(Mieter, id=pk)
+    basis = _global_filter(request)
+
+    vertraege = (m.vertraege.select_related('einheit__liegenschaft').order_by('-beginn'))
+    aktive = [v for v in vertraege if v.status == 'aktiv']
+
+    offene = (DebitorenRechnung.objects
+              .filter(vertrag__mieter=m, status__in=['offen', 'teilbezahlt'])
+              .select_related('vertrag').order_by('faellig_am'))
+    total_offen = sum((r.offener_betrag for r in offene), Decimal('0.00'))
+
+    zahlungen = (Zahlungseingang.objects.filter(vertrag__mieter=m, status='verbucht')
+                 .order_by('-datum_eingang')[:15])
+    dokumente = RentalsDokument.objects.filter(mieter=m).order_by('-datum')[:15]
+
+    vertrag_rows = []
+    for v in vertraege:
+        label, cls = VERTRAG_PILL.get(v.status, (v.status, 'bg-slate-100 text-slate-500'))
+        vertrag_rows.append({'v': v, 'label': label, 'cls': cls,
+                             'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0'))})
+
+    tab_liste = [
+        ('uebersicht', 'Übersicht', None),
+        ('vertraege', 'Verträge', vertraege.count() or None),
+        ('finanzen', 'Finanzen', offene.count() or None),
+        ('dokumente', 'Dokumente', dokumente.count() or None),
+    ]
+    return render(request, 'fw/person_detail.html', {
+        **basis, 'nav': 'personen', 'm': m,
+        'vertrag_rows': vertrag_rows,
+        'anzahl_aktive': len(aktive),
+        'brutto_monat': sum((r['brutto'] for r in vertrag_rows if r['v'].status == 'aktiv'), Decimal('0.00')),
+        'offene': offene, 'total_offen': total_offen,
+        'zahlungen': zahlungen, 'dokumente': dokumente,
+        'telefon': m.mobile or m.telefon_privat or m.telefon_geschaeft,
+        'tab_liste': tab_liste,
+    })

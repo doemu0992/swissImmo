@@ -93,7 +93,7 @@
             <div class="flex items-center gap-3 px-6 py-3">
                 <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-file-lines"></i></div>
                 <span class="text-sm flex-1 truncate">{{ e.liegenschaft.strasse }}, {{ e.liegenschaft.plz }} {{ e.liegenschaft.ort }} – {{ e.bezeichnung }}</span>
-                <a href="/dossier/liegenschaft/{{ e.liegenschaft.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Ansehen</a>
+                <a href="/neu/liegenschaften/{{ e.liegenschaft.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Ansehen</a>
             </div>
             {% empty %}
             <p class="px-6 py-6 text-sm text-slate-400 italic">Kein Leerstand — alles vermietet. 🎉</p>
@@ -105,7 +105,7 @@
             <div class="flex items-center gap-3 px-6 py-3">
                 <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-file-lines"></i></div>
                 <span class="text-sm flex-1 truncate">{{ v.einheit }} – {{ v.mieter.display_name }}{% if v.ende %} · bis {{ v.ende|date:"d.m.Y" }}{% endif %}</span>
-                <a href="/dossier/vertrag/{{ v.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Ansehen</a>
+                <a href="/neu/vertraege/{{ v.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Ansehen</a>
             </div>
             {% empty %}
             <p class="px-6 py-6 text-sm text-slate-400 italic">Keine gekündigten Verträge.</p>
@@ -117,7 +117,7 @@
             <div class="flex items-center gap-3 px-6 py-3">
                 <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-file-lines"></i></div>
                 <span class="text-sm flex-1 truncate">{{ v.einheit }} – {{ v.mieter.display_name }} · ab {{ v.beginn|date:"d.m.Y" }}</span>
-                <a href="/dossier/vertrag/{{ v.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Ansehen</a>
+                <a href="/neu/vertraege/{{ v.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Ansehen</a>
             </div>
             {% empty %}
             <p class="px-6 py-6 text-sm text-slate-400 italic">Keine bevorstehenden Verträge.</p>
@@ -133,7 +133,7 @@
         </div>
         <div class="divide-y divide-slate-50 max-h-96 overflow-y-auto pb-2">
             {% for a in aufgaben %}
-            <a href="/app/?tab={{ a.tab }}" class="flex items-center gap-3 px-6 py-3 hover:bg-slate-50 transition-colors">
+            <a href="{{ a.ziel }}" class="flex items-center gap-3 px-6 py-3 hover:bg-slate-50 transition-colors">
                 <div class="w-9 h-9 rounded-lg {{ a.bg }} {{ a.text }} flex items-center justify-center shrink-0 text-sm">
                     <i class="fa-solid {{ a.icon }}"></i>
                 </div>
