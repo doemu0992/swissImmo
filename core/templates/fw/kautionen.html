@@ -21,7 +21,7 @@
     <table class="w-full text-sm min-w-[720px]">
         <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
             <tr><th class="text-left px-5 py-3">Mieter / Objekt</th><th class="text-right px-5 py-3">Betrag</th>
-                <th class="text-left px-5 py-3">Sperrkonto</th><th class="text-left px-5 py-3">Einbezahlt</th>
+                <th class="text-left px-5 py-3">Art</th><th class="text-left px-5 py-3">Sperrkonto / Police</th><th class="text-left px-5 py-3">Seit</th>
                 <th class="text-left px-5 py-3">Status</th></tr>
         </thead>
         <tbody class="divide-y divide-slate-50">
@@ -30,13 +30,14 @@
                 <td class="px-5 py-3.5"><div class="font-medium text-slate-900">{{ row.v.mieter.display_name }}</div>
                     <div class="text-xs text-slate-400">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</div></td>
                 <td class="px-5 py-3.5 text-right font-semibold tabular-nums">CHF {{ row.v.kautions_betrag|chf }}</td>
-                <td class="px-5 py-3.5 font-mono text-xs text-slate-500">{{ row.v.kautions_konto|default:"—" }}</td>
+                <td class="px-5 py-3.5">{% if row.v.ist_kautionsversicherung %}<span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 text-xs font-semibold"><i class="fa-solid fa-shield-halved mr-0.5"></i>Versicherung</span>{% else %}<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-500 text-xs font-semibold">Sperrkonto</span>{% endif %}</td>
+                <td class="px-5 py-3.5 font-mono text-xs text-slate-500">{% if row.v.ist_kautionsversicherung %}{{ row.v.kautions_versicherer|default:"—" }}{% if row.v.kautions_policennummer %} · {{ row.v.kautions_policennummer }}{% endif %}{% else %}{{ row.v.kautions_konto|default:"—" }}{% endif %}</td>
                 <td class="px-5 py-3.5 text-slate-500">{{ row.v.kautions_einbezahlt_am|date:"d.m.Y"|default:"—" }}</td>
                 <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold {{ row.cls }}">{{ row.label }}</span>
                     {% if row.status == 'zurueckbezahlt' and row.v.kautions_abzug_betrag %}<div class="text-xs text-rose-500 mt-0.5">Abzug CHF {{ row.v.kautions_abzug_betrag|chf }}</div>{% endif %}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="px-5 py-8 text-center text-slate-400 italic">Keine Kautionen erfasst.</td></tr>
+            <tr><td colspan="6" class="px-5 py-8 text-center text-slate-400 italic">Keine Kautionen erfasst.</td></tr>
             {% endfor %}
         </tbody>
     </table>

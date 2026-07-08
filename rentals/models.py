@@ -72,10 +72,20 @@ class Mietvertrag(models.Model):
     mwst_pflichtig = models.BooleanField("MWST-pflichtig", default=False)             # 🔥 NEU (v.a. Gewerbe)
     mwst_satz = models.DecimalField("MWST-Satz (%)", max_digits=4, decimal_places=1, default=Decimal('8.1'))  # 🔥 NEU (Option Art. 22 MWSTG)
 
-    # --- KAUTION (Art. 257e OR: Sperrkonto auf Mietername, separat geführt) ---
+    # --- KAUTION (Art. 257e OR: Sperrkonto auf Mietername ODER Kautionsversicherung) ---
+    KAUTIONSART_CHOICES = [
+        ('sperrkonto', 'Sperrkonto (Bankdepot)'),
+        ('versicherung', 'Kautionsversicherung'),
+    ]
+    kautions_art = models.CharField("Kautionsart", max_length=20, choices=KAUTIONSART_CHOICES,
+                                    default='sperrkonto', blank=True)
     kautions_betrag = models.DecimalField("Kautionsbetrag", max_digits=8, decimal_places=2, blank=True, null=True)
     kautions_konto = models.CharField("Kautionskonto (IBAN)", max_length=34, blank=True, default='')
     kautions_einbezahlt_am = models.DateField("Kaution einbezahlt am", null=True, blank=True)
+    # --- Kautionsversicherung (Alternative zum Sperrkonto) ---
+    kautions_versicherer = models.CharField("Versicherer / Anbieter", max_length=120, blank=True, default='')
+    kautions_policennummer = models.CharField("Policennummer", max_length=60, blank=True, default='')
+    kautions_zertifikat = models.FileField("Zertifikat / Police", upload_to='kautions_zertifikate/', null=True, blank=True)
     kautions_zurueckbezahlt_am = models.DateField("Kaution zurückbezahlt am", null=True, blank=True)          # 🔥 NEU
     kautions_rueckzahlung_betrag = models.DecimalField("Rückzahlung an Mieter", max_digits=8, decimal_places=2, null=True, blank=True)  # 🔥 NEU
     kautions_abzug_betrag = models.DecimalField("Einbehalt / Abzug", max_digits=8, decimal_places=2, null=True, blank=True)  # 🔥 NEU
@@ -109,7 +119,8 @@ class Mietvertrag(models.Model):
 
     @property
     def kautions_status(self):
-        """offen (keine) / erwartet / einbezahlt / zurueckbezahlt — für das Kautions-Register."""
+        """offen (keine) / erwartet / einbezahlt / zurueckbezahlt — für das Kautions-Register.
+        Bei Versicherung entspricht 'einbezahlt' = Zertifikat hinterlegt/Police aktiv."""
         if not self.kautions_betrag or self.kautions_betrag <= 0:
             return 'keine'
         if self.kautions_zurueckbezahlt_am:
@@ -117,6 +128,22 @@ class Mietvertrag(models.Model):
         if self.kautions_einbezahlt_am:
             return 'einbezahlt'
         return 'erwartet'
+
+    @property
+    def ist_kautionsversicherung(self):
+        return self.kautions_art == 'versicherung'
+
+    @property
+    def kautions_status_label(self):
+        """Menschlicher, art-abhängiger Status-Text."""
+        st = self.kautions_status
+        vers = self.ist_kautionsversicherung
+        return {
+            'keine': 'Keine Kaution',
+            'erwartet': 'Zertifikat ausstehend' if vers else 'Einzahlung erwartet',
+            'einbezahlt': 'Police aktiv' if vers else 'Einbezahlt',
+            'zurueckbezahlt': 'Police aufgelöst' if vers else 'Zurückbezahlt',
+        }.get(st, st)
 
     @property
     def mietzinspotenzial(self):

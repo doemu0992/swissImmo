@@ -3762,16 +3762,47 @@ def fw_kaution_aktion(request, vertrag_id):
             return Decimal('0.00')
 
     if aktion == 'einzahlung':
+        # Sperrkonto: Einzahlung auf Mietkonto bestätigen
+        v.kautions_art = 'sperrkonto'
         v.kautions_einbezahlt_am = d('einbezahlt_am') or timezone.localdate()
         v.kautions_konto = P.get('kautions_konto', v.kautions_konto).strip() or v.kautions_konto
-        v.save(update_fields=['kautions_einbezahlt_am', 'kautions_konto'])
-        log_aktion(request, "Kaution einbezahlt", str(v.mieter), f"CHF {v.kautions_betrag}")
-        messages.success(request, "✅ Kautions-Einzahlung erfasst.")
+        v.save(update_fields=['kautions_art', 'kautions_einbezahlt_am', 'kautions_konto'])
+        log_aktion(request, "Kaution einbezahlt (Sperrkonto)", str(v.mieter), f"CHF {v.kautions_betrag}")
+        messages.success(request, "✅ Kautions-Einzahlung auf Sperrkonto erfasst.")
+
+    elif aktion == 'versicherung':
+        # Kautionsversicherung: bestätigen, sobald das Zertifikat/die Police vorliegt
+        versicherer = P.get('kautions_versicherer', '').strip()
+        police = P.get('kautions_policennummer', '').strip()
+        zertifikat = request.FILES.get('kautions_zertifikat')
+        if not versicherer:
+            messages.error(request, "❌ Bitte den Versicherer/Anbieter angeben.")
+            return redirect(f'/neu/vertraege/{v.id}/')
+        if not zertifikat and not v.kautions_zertifikat:
+            messages.error(request, "❌ Bitte das Zertifikat / die Police hochladen — erst dann kann bestätigt werden.")
+            return redirect(f'/neu/vertraege/{v.id}/')
+        v.kautions_art = 'versicherung'
+        v.kautions_versicherer = versicherer
+        v.kautions_policennummer = police
+        if zertifikat:
+            v.kautions_zertifikat = zertifikat
+        v.kautions_einbezahlt_am = d('einbezahlt_am') or timezone.localdate()  # = Police aktiv ab
+        v.kautions_konto = ''  # kein Sperrkonto bei Versicherung
+        v.save(update_fields=['kautions_art', 'kautions_versicherer', 'kautions_policennummer',
+                              'kautions_zertifikat', 'kautions_einbezahlt_am', 'kautions_konto'])
+        log_aktion(request, "Kautionsversicherung bestätigt", str(v.mieter),
+                   f"{versicherer} · Police {police} · CHF {v.kautions_betrag}")
+        messages.success(request, f"✅ Kautionsversicherung bestätigt ({versicherer}) — Zertifikat hinterlegt.")
 
     elif aktion == 'rueckzahlung':
         abzug = dec('abzug_betrag')
         total = v.kautions_betrag or Decimal('0.00')
-        rueck = dec('rueckzahlung_betrag') if P.get('rueckzahlung_betrag') else (total - abzug)
+        # Bei Versicherung wird die Police aufgelöst — es gibt keine Rückzahlung an
+        # den Mieter (er hat nur Prämien bezahlt); ein Einbehalt ist eine Schadenforderung.
+        if v.ist_kautionsversicherung:
+            rueck = Decimal('0.00')
+        else:
+            rueck = dec('rueckzahlung_betrag') if P.get('rueckzahlung_betrag') else (total - abzug)
         v.kautions_zurueckbezahlt_am = d('zurueckbezahlt_am') or timezone.localdate()
         v.kautions_rueckzahlung_betrag = rueck
         v.kautions_abzug_betrag = abzug

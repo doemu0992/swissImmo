@@ -128,41 +128,85 @@
     <div class="bg-white rounded-xl border border-slate-200 p-5 mt-4 max-w-2xl">
         <div class="flex items-center justify-between mb-3">
             <h3 class="font-bold text-slate-800"><i class="fa-solid fa-shield-halved text-slate-400 mr-1.5"></i>Mietzinsdepot</h3>
-            <span class="text-xs text-slate-400">Art. 257e OR · Sperrkonto auf Mietername</span>
+            <span class="text-xs text-slate-400">Art. 257e OR · {% if v.ist_kautionsversicherung %}Kautionsversicherung{% else %}Sperrkonto auf Mietername{% endif %}</span>
         </div>
         <dl class="text-sm space-y-2 mb-3">
             <div class="flex justify-between"><dt class="text-slate-500">Betrag</dt><dd class="text-slate-800 font-semibold">CHF {{ v.kautions_betrag|chf }}</dd></div>
-            {% if v.kautions_konto %}<div class="flex justify-between"><dt class="text-slate-500">Sperrkonto</dt><dd class="font-mono text-xs text-slate-600">{{ v.kautions_konto }}</dd></div>{% endif %}
-            {% if v.kautions_einbezahlt_am %}<div class="flex justify-between"><dt class="text-slate-500">Einbezahlt</dt><dd class="text-slate-800">{{ v.kautions_einbezahlt_am|date:"d.m.Y" }}</dd></div>{% endif %}
+            {% if v.kautions_status != 'erwartet' %}<div class="flex justify-between"><dt class="text-slate-500">Status</dt><dd class="text-slate-800 font-medium">{{ v.kautions_status_label }}</dd></div>{% endif %}
+            {% if v.ist_kautionsversicherung %}
+                {% if v.kautions_versicherer %}<div class="flex justify-between"><dt class="text-slate-500">Versicherer</dt><dd class="text-slate-800">{{ v.kautions_versicherer }}</dd></div>{% endif %}
+                {% if v.kautions_policennummer %}<div class="flex justify-between"><dt class="text-slate-500">Policennummer</dt><dd class="font-mono text-xs text-slate-600">{{ v.kautions_policennummer }}</dd></div>{% endif %}
+                {% if v.kautions_zertifikat %}<div class="flex justify-between"><dt class="text-slate-500">Zertifikat</dt><dd><a href="{{ v.kautions_zertifikat.url }}" target="_blank" class="text-indigo-600 hover:underline text-xs font-semibold"><i class="fa-solid fa-file-pdf mr-0.5"></i>Police öffnen</a></dd></div>{% endif %}
+                {% if v.kautions_einbezahlt_am %}<div class="flex justify-between"><dt class="text-slate-500">Police aktiv ab</dt><dd class="text-slate-800">{{ v.kautions_einbezahlt_am|date:"d.m.Y" }}</dd></div>{% endif %}
+            {% else %}
+                {% if v.kautions_konto %}<div class="flex justify-between"><dt class="text-slate-500">Sperrkonto</dt><dd class="font-mono text-xs text-slate-600">{{ v.kautions_konto }}</dd></div>{% endif %}
+                {% if v.kautions_einbezahlt_am %}<div class="flex justify-between"><dt class="text-slate-500">Einbezahlt</dt><dd class="text-slate-800">{{ v.kautions_einbezahlt_am|date:"d.m.Y" }}</dd></div>{% endif %}
+            {% endif %}
             {% if v.kautions_zurueckbezahlt_am %}
-            <div class="flex justify-between"><dt class="text-slate-500">Zurückbezahlt</dt><dd class="text-slate-800">{{ v.kautions_zurueckbezahlt_am|date:"d.m.Y" }} · CHF {{ v.kautions_rueckzahlung_betrag|chf }}</dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">{% if v.ist_kautionsversicherung %}Aufgelöst{% else %}Zurückbezahlt{% endif %}</dt><dd class="text-slate-800">{{ v.kautions_zurueckbezahlt_am|date:"d.m.Y" }}{% if not v.ist_kautionsversicherung %} · CHF {{ v.kautions_rueckzahlung_betrag|chf }}{% endif %}</dd></div>
             {% if v.kautions_abzug_betrag %}<div class="flex justify-between"><dt class="text-slate-500">Einbehalt</dt><dd class="text-rose-600 font-medium">CHF {{ v.kautions_abzug_betrag|chf }}</dd></div>{% endif %}
             {% endif %}
         </dl>
 
         {% if v.kautions_status == 'erwartet' %}
-        <form method="post" action="/neu/vertraege/{{ v.id }}/kaution/" class="flex flex-wrap items-end gap-2 border-t border-slate-100 pt-3">
-            {% csrf_token %}<input type="hidden" name="aktion" value="einzahlung">
-            <div><label class="block text-xs text-slate-500 mb-1">Einbezahlt am</label>
-                <input type="date" name="einbezahlt_am" class="bg-slate-100 rounded-lg text-sm px-3 py-2"></div>
-            <div class="flex-1 min-w-[160px]"><label class="block text-xs text-slate-500 mb-1">Sperrkonto (IBAN)</label>
-                <input name="kautions_konto" value="{{ v.kautions_konto }}" placeholder="CH…" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2 font-mono"></div>
-            <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Einzahlung bestätigen</button>
-        </form>
+        <div class="border-t border-slate-100 pt-3">
+            <div class="inline-flex rounded-lg bg-slate-100 p-0.5 mb-3 text-xs font-semibold">
+                <button type="button" id="kt-tab-sperr" onclick="ktSwitch('sperr')" class="px-3 py-1.5 rounded-md bg-white shadow-sm text-slate-800">Sperrkonto</button>
+                <button type="button" id="kt-tab-vers" onclick="ktSwitch('vers')" class="px-3 py-1.5 rounded-md text-slate-500">Versicherung</button>
+            </div>
+
+            <form id="kt-form-sperr" method="post" action="/neu/vertraege/{{ v.id }}/kaution/" class="flex flex-wrap items-end gap-2">
+                {% csrf_token %}<input type="hidden" name="aktion" value="einzahlung">
+                <div><label class="block text-xs text-slate-500 mb-1">Einbezahlt am</label>
+                    <input type="date" name="einbezahlt_am" class="bg-slate-100 rounded-lg text-sm px-3 py-2"></div>
+                <div class="flex-1 min-w-[160px]"><label class="block text-xs text-slate-500 mb-1">Sperrkonto (IBAN)</label>
+                    <input name="kautions_konto" value="{{ v.kautions_konto }}" placeholder="CH…" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2 font-mono"></div>
+                <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Einzahlung bestätigen</button>
+            </form>
+
+            <form id="kt-form-vers" method="post" action="/neu/vertraege/{{ v.id }}/kaution/" enctype="multipart/form-data" class="hidden space-y-2">
+                {% csrf_token %}<input type="hidden" name="aktion" value="versicherung">
+                <div class="flex flex-wrap gap-2">
+                    <div class="flex-1 min-w-[160px]"><label class="block text-xs text-slate-500 mb-1">Versicherer / Anbieter</label>
+                        <input name="kautions_versicherer" list="kt-versicherer" value="{{ v.kautions_versicherer }}" placeholder="z. B. SwissCaution" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2">
+                        <datalist id="kt-versicherer"><option>SwissCaution</option><option>GoCaution</option><option>Firstcaution</option><option>SmartCaution</option><option>Helvetia Kautionsversicherung</option><option>Zürich Kautionsgarantie</option></datalist></div>
+                    <div class="min-w-[140px]"><label class="block text-xs text-slate-500 mb-1">Policennummer</label>
+                        <input name="kautions_policennummer" value="{{ v.kautions_policennummer }}" placeholder="Police-Nr." class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2 font-mono"></div>
+                    <div><label class="block text-xs text-slate-500 mb-1">Aktiv ab</label>
+                        <input type="date" name="einbezahlt_am" class="bg-slate-100 rounded-lg text-sm px-3 py-2"></div>
+                </div>
+                <div><label class="block text-xs text-slate-500 mb-1">Zertifikat / Police (PDF) *</label>
+                    <input type="file" name="kautions_zertifikat" accept="application/pdf,image/*" class="w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-slate-700"></div>
+                <p class="text-xs text-slate-400"><i class="fa-solid fa-circle-info mr-1"></i>Bestätigen, sobald das Zertifikat des Versicherers vorliegt.</p>
+                <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Versicherung bestätigen</button>
+            </form>
+
+            <script>
+            function ktSwitch(m){
+                var s=document.getElementById('kt-form-sperr'), v=document.getElementById('kt-form-vers');
+                var ts=document.getElementById('kt-tab-sperr'), tv=document.getElementById('kt-tab-vers');
+                var on='bg-white shadow-sm text-slate-800', off='text-slate-500';
+                if(m==='vers'){ s.classList.add('hidden'); v.classList.remove('hidden');
+                    tv.className='px-3 py-1.5 rounded-md '+on; ts.className='px-3 py-1.5 rounded-md '+off; }
+                else { v.classList.add('hidden'); s.classList.remove('hidden');
+                    ts.className='px-3 py-1.5 rounded-md '+on; tv.className='px-3 py-1.5 rounded-md '+off; }
+            }
+            </script>
+        </div>
         {% elif v.kautions_status == 'einbezahlt' %}
         <form method="post" action="/neu/vertraege/{{ v.id }}/kaution/" class="border-t border-slate-100 pt-3 space-y-2">
             {% csrf_token %}<input type="hidden" name="aktion" value="rueckzahlung">
-            <div class="text-xs font-semibold text-slate-500">Rückzahlung bei Auszug</div>
+            <div class="text-xs font-semibold text-slate-500">{% if v.ist_kautionsversicherung %}Police auflösen bei Auszug{% else %}Rückzahlung bei Auszug{% endif %}</div>
             <div class="flex flex-wrap gap-2">
                 <div><label class="block text-xs text-slate-500 mb-1">Datum</label>
                     <input type="date" name="zurueckbezahlt_am" class="bg-slate-100 rounded-lg text-sm px-3 py-2"></div>
-                <div><label class="block text-xs text-slate-500 mb-1">Einbehalt (CHF)</label>
+                <div><label class="block text-xs text-slate-500 mb-1">{% if v.ist_kautionsversicherung %}Schadenforderung (CHF){% else %}Einbehalt (CHF){% endif %}</label>
                     <input type="number" step="0.05" name="abzug_betrag" value="0" class="w-28 bg-slate-100 rounded-lg text-sm px-3 py-2"></div>
-                <div class="flex-1 min-w-[160px]"><label class="block text-xs text-slate-500 mb-1">Grund des Einbehalts</label>
+                <div class="flex-1 min-w-[160px]"><label class="block text-xs text-slate-500 mb-1">Grund</label>
                     <input name="abzug_grund" placeholder="z. B. Schäden, offene Miete" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2"></div>
             </div>
-            <label class="flex items-center gap-2 text-xs text-slate-600"><input type="checkbox" name="abzug_verrechnen" class="accent-indigo-600"> Einbehalt als Debitoren-Weiterverrechnung buchen</label>
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Rückzahlung erfassen</button>
+            <label class="flex items-center gap-2 text-xs text-slate-600"><input type="checkbox" name="abzug_verrechnen" class="accent-indigo-600"> {% if v.ist_kautionsversicherung %}Schadenforderung{% else %}Einbehalt{% endif %} als Debitoren-Weiterverrechnung buchen</label>
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">{% if v.ist_kautionsversicherung %}Police auflösen{% else %}Rückzahlung erfassen{% endif %}</button>
         </form>
         {% endif %}
     </div>
