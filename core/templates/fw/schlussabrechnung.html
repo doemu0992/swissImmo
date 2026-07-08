@@ -13,7 +13,10 @@
 <h1 class="text-2xl font-extrabold text-slate-900 mb-1">Schlussabrechnung beim Auszug</h1>
 <p class="text-sm text-slate-500 mb-6">{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ v.mieter.display_name }}</p>
 
-<form method="post" class="max-w-3xl space-y-5">
+<form method="post" class="max-w-3xl space-y-5" id="sa-form"
+      data-offen="{{ offen_total|unlocalize }}"
+      data-kaution="{{ kaution|unlocalize }}"
+      data-versicherung="{% if ist_versicherung %}1{% else %}0{% endif %}">
     {% csrf_token %}
 
     <!-- Rahmendaten -->
@@ -28,11 +31,16 @@
             <div class="text-[11px] text-slate-400">automatisch aus offenen Debitoren</div>
         </div>
         <div>
-            <div class="text-xs text-slate-500 mb-1">Mietkaution</div>
-            <div class="text-lg font-bold text-emerald-600">CHF {{ kaution|chf }}</div>
-            <label class="flex items-center gap-2 text-[11px] text-slate-500 mt-1">
-                <input type="checkbox" name="kaution_verrechnen" checked class="accent-indigo-600">verrechnen / zurückzahlen
-            </label>
+            <div class="text-xs text-slate-500 mb-1">Mietkaution {% if ist_versicherung %}<span class="text-indigo-600 font-semibold">· Versicherung</span>{% else %}<span class="text-slate-400">· Sperrkonto</span>{% endif %}</div>
+            <div class="text-lg font-bold {% if ist_versicherung %}text-indigo-600{% else %}text-emerald-600{% endif %}">CHF {{ kaution|chf }}</div>
+            {% if ist_versicherung %}
+                <div class="text-[11px] text-slate-500 mt-1"><i class="fa-solid fa-shield-halved mr-0.5"></i>Kautionsgarantie — kein Guthaben des Mieters. Schäden bitte als Position „zulasten" erfassen.</div>
+                <input type="hidden" name="kaution_verrechnen" value="">
+            {% else %}
+                <label class="flex items-center gap-2 text-[11px] text-slate-500 mt-1">
+                    <input type="checkbox" name="kaution_verrechnen" id="cb-kaution" checked class="accent-indigo-600">verrechnen / zurückzahlen
+                </label>
+            {% endif %}
         </div>
     </div>
 
@@ -43,9 +51,9 @@
         <div class="space-y-2">
             {% for i in "12345" %}
             <div class="grid grid-cols-12 gap-2 items-center">
-                <input name="pos_text" placeholder="Bezeichnung" class="col-span-6 bg-slate-100 rounded-lg text-sm px-3 py-2">
-                <input name="pos_betrag" inputmode="decimal" placeholder="Betrag CHF" class="col-span-3 bg-slate-100 rounded-lg text-sm px-3 py-2 text-right">
-                <select name="pos_richtung" class="col-span-3 bg-slate-100 rounded-lg text-sm px-2 py-2">
+                <input name="pos_text" value="{% if forloop.first and schaden_prefill_betrag > 0 %}{{ schaden_prefill_text }}{% endif %}" placeholder="Bezeichnung" class="col-span-6 bg-slate-100 rounded-lg text-sm px-3 py-2">
+                <input name="pos_betrag" value="{% if forloop.first and schaden_prefill_betrag > 0 %}{{ schaden_prefill_betrag|unlocalize }}{% endif %}" inputmode="decimal" class="pos-betrag col-span-3 bg-slate-100 rounded-lg text-sm px-3 py-2 text-right" placeholder="Betrag CHF">
+                <select name="pos_richtung" class="pos-richtung col-span-3 bg-slate-100 rounded-lg text-sm px-2 py-2">
                     <option value="zulasten">zulasten Mieter</option>
                     <option value="zugunsten">zugunsten Mieter</option>
                 </select>
@@ -54,11 +62,20 @@
         </div>
     </div>
 
-    <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-5 text-sm text-slate-600">
-        <i class="fa-solid fa-circle-info text-indigo-500 mr-1.5"></i>
-        Der Saldo ergibt sich aus: offene Forderungen + Positionen (zulasten) − Positionen (zugunsten) − Kaution.
-        Positiver Saldo = <strong>Nachzahlung durch Mieter</strong>, negativer Saldo = <strong>Rückzahlung an Mieter</strong>.
-        Das genaue Total steht auf dem PDF.
+    <!-- LIVE-SALDO -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-3">Abrechnung (live)</h3>
+        <dl class="text-sm space-y-1.5">
+            <div class="flex justify-between"><dt class="text-slate-500">Offene Mietforderungen</dt><dd id="s-offen" class="tabular-nums text-slate-700">–</dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Positionen zulasten Mieter</dt><dd id="s-zulasten" class="tabular-nums text-slate-700">–</dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Positionen zugunsten Mieter</dt><dd id="s-zugunsten" class="tabular-nums text-slate-700">–</dd></div>
+            <div id="s-kaution-row" class="flex justify-between"><dt class="text-slate-500">Mietkaution (Guthaben Mieter)</dt><dd id="s-kaution" class="tabular-nums text-emerald-600">–</dd></div>
+        </dl>
+        <div class="border-t border-slate-100 mt-3 pt-3 flex items-center justify-between">
+            <div id="s-label" class="font-bold text-slate-800">Saldo</div>
+            <div id="s-saldo" class="text-xl font-extrabold tabular-nums text-slate-900">CHF 0.00</div>
+        </div>
+        <p id="s-hint" class="text-xs text-slate-400 mt-1"></p>
     </div>
 
     <div class="flex items-center gap-3">
@@ -71,4 +88,57 @@
         <a href="/neu/vertraege/{{ v.id }}/" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
     </div>
 </form>
+
+<script>
+(function(){
+    var form = document.getElementById('sa-form');
+    var offen = parseFloat(form.dataset.offen) || 0;
+    var kaution = parseFloat(form.dataset.kaution) || 0;
+    var istVers = form.dataset.versicherung === '1';
+    var fr = function(n){ return 'CHF ' + n.toLocaleString('de-CH', {minimumFractionDigits:2, maximumFractionDigits:2}); };
+
+    function parse(v){ return parseFloat((v||'').toString().replace(/'/g,'').replace(',','.')) || 0; }
+
+    function recalc(){
+        var betrag = form.querySelectorAll('.pos-betrag');
+        var richt  = form.querySelectorAll('.pos-richtung');
+        var zul = 0, zug = 0;
+        for (var i=0; i<betrag.length; i++){
+            var b = parse(betrag[i].value);
+            if (!b) continue;
+            if (richt[i].value === 'zugunsten') zug += b; else zul += b;
+        }
+        var cb = document.getElementById('cb-kaution');
+        var kautionCredit = (!istVers && kaution > 0 && (!cb || cb.checked)) ? kaution : 0;
+
+        document.getElementById('s-offen').textContent = fr(offen);
+        document.getElementById('s-zulasten').textContent = fr(zul);
+        document.getElementById('s-zugunsten').textContent = '− ' + fr(zug);
+        var krow = document.getElementById('s-kaution-row');
+        if (kautionCredit > 0){ krow.style.display=''; document.getElementById('s-kaution').textContent = '− ' + fr(kautionCredit); }
+        else { krow.style.display = 'none'; }
+
+        var saldo = offen + zul - zug - kautionCredit;
+        var lbl = document.getElementById('s-label');
+        var out = document.getElementById('s-saldo');
+        var hint = document.getElementById('s-hint');
+        if (saldo > 0.005){
+            lbl.textContent = 'Nachzahlung durch Mieter';
+            out.textContent = fr(saldo); out.className = 'text-xl font-extrabold tabular-nums text-rose-600';
+            hint.textContent = 'Positiver Saldo → wird beim Verbuchen als Debitor (Rechnung) gestellt.';
+        } else if (saldo < -0.005){
+            lbl.textContent = 'Rückzahlung an Mieter';
+            out.textContent = fr(-saldo); out.className = 'text-xl font-extrabold tabular-nums text-emerald-600';
+            hint.textContent = istVers ? 'Bei einer Kautionsversicherung erfolgt keine Bardepot-Rückzahlung — Guthaben nur aus weiteren Gutschriften.' : 'Negativer Saldo → wird dem Mieter zurückbezahlt.';
+        } else {
+            lbl.textContent = 'Ausgeglichen';
+            out.textContent = fr(0); out.className = 'text-xl font-extrabold tabular-nums text-slate-900';
+            hint.textContent = '';
+        }
+    }
+    form.addEventListener('input', recalc);
+    form.addEventListener('change', recalc);
+    recalc();
+})();
+</script>
 {% endblock %}

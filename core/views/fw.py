@@ -697,7 +697,10 @@ def fw_schlussabrechnung(request, vertrag_id):
                 # Kaution als abgerechnet markieren
                 if kaution_verrechnen and (v.kautions_betrag or 0) > 0:
                     v.kautions_zurueckbezahlt_am = auszug
-                    if daten['nachzahlung']:
+                    if v.ist_kautionsversicherung:
+                        # Versicherung: keine Rückzahlung an Mieter; Police wird aufgelöst.
+                        v.kautions_rueckzahlung_betrag = Decimal('0.00')
+                    elif daten['nachzahlung']:
                         # Kaution ging an offene Forderungen → Abzug = ganze Kaution, Rückzahlung 0
                         v.kautions_abzug_betrag = v.kautions_betrag
                         v.kautions_rueckzahlung_betrag = Decimal('0.00')
@@ -734,10 +737,17 @@ def fw_schlussabrechnung(request, vertrag_id):
     # GET
     offene = DebitorenRechnung.objects.filter(vertrag=v, status__in=['offen', 'teilbezahlt'])
     offen_total = sum((r.offener_betrag for r in offene), Decimal('0.00'))
+    # Bereits erfasste Schaden-/Einbehalts-Forderung (z.B. aus „Police auflösen") als
+    # Position vorbelegen, damit sie in der Schlussabrechnung sichtbar mitzählt.
+    schaden_betrag = v.kautions_abzug_betrag or Decimal('0.00')
+    schaden_text = v.kautions_abzug_grund or ('Schadenforderung' if schaden_betrag > 0 else '')
     return render(request, 'fw/schlussabrechnung.html', {
         **basis, 'nav': 'vertraege', 'v': v,
         'offen_total': offen_total,
         'kaution': v.kautions_betrag or Decimal('0.00'),
+        'ist_versicherung': v.ist_kautionsversicherung,
+        'schaden_prefill_betrag': schaden_betrag,
+        'schaden_prefill_text': schaden_text,
         'auszug_default': (v.ende or timezone.now().date()).isoformat(),
     })
 

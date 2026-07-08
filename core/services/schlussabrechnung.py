@@ -45,19 +45,25 @@ def berechne_schlussabrechnung(vertrag, auszug_datum, positionen, kaution_verrec
     for z in zeilen:
         zwischen += z['betrag'] if z['zulasten'] else -z['betrag']
 
-    # 3. Kaution (zugunsten Mieter — wird verrechnet/zurückgezahlt)
+    # 3. Kaution — art-abhängig:
+    #    Sperrkonto: Guthaben des Mieters → wird ihm gutgeschrieben (zugunsten).
+    #    Versicherung: KEIN Guthaben des Mieters (er zahlte nur Prämien) → wird NICHT
+    #    gutgeschrieben; Schäden erscheinen als normale Positionen (zulasten).
     kaution = vertrag.kautions_betrag or Decimal('0.00')
-    if kaution_verrechnen and kaution > 0:
-        zeilen.append({'text': 'Mietkaution (Guthaben Mieter)', 'betrag': kaution, 'zulasten': False})
+    ist_versicherung = getattr(vertrag, 'ist_kautionsversicherung', False)
+    kaution_gutschrift = bool(kaution_verrechnen and kaution > 0 and not ist_versicherung)
+    if kaution_gutschrift:
+        zeilen.append({'text': 'Mietkaution Sperrkonto (Guthaben Mieter)', 'betrag': kaution, 'zulasten': False})
 
-    saldo = zwischen - (kaution if (kaution_verrechnen and kaution > 0) else Decimal('0.00'))
+    saldo = zwischen - (kaution if kaution_gutschrift else Decimal('0.00'))
     # saldo > 0 → Mieter zahlt nach; saldo < 0 → Rückzahlung an Mieter
     return {
         'zeilen': zeilen,
         'offen_total': offen_total,
         'zwischen': zwischen,
         'kaution': kaution,
-        'kaution_verrechnen': kaution_verrechnen and kaution > 0,
+        'ist_versicherung': ist_versicherung,
+        'kaution_verrechnen': kaution_gutschrift,
         'saldo': saldo,
         'nachzahlung': saldo > 0,
         'rueckzahlung': -saldo if saldo < 0 else Decimal('0.00'),
