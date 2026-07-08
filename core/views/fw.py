@@ -3462,6 +3462,44 @@ def fw_benutzer_loeschen(request, pk):
 # KÜNDIGUNGSPROZESS (Erfassung + Fristenberechnung + Bestätigung)
 # ============================================================
 
+def _auszugscheckliste_anlegen(vertrag, kuendigung, per, user, mit_leerstand=False):
+    """Legt die Standard-Auszugscheckliste als Pendenzen an (mit Fälligkeit relativ
+    zum Vertragsende). Gibt die Anzahl erstellter Pendenzen zurück."""
+    from core.models import Pendenz
+    heute = timezone.now().date()
+    lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else None
+    ist_vermieter = getattr(kuendigung, 'absender', '') == 'vermieter'
+
+    def tage(offset):
+        return (per + _timedelta(days=offset)) if per else heute
+
+    aufgaben = [
+        ("Amtliches Kündigungsformular versenden" if ist_vermieter else "Kündigung schriftlich bestätigen", heute, 'vertrag'),
+        ("Abnahmetermin mit Mieter vereinbaren", tage(-30), 'aufgabe'),
+        ("Wohnungsabnahme durchführen (Protokoll)", per or heute, 'protokoll' if False else 'aufgabe'),
+        ("Zählerstände ablesen & Ummeldung", per or heute, 'aufgabe'),
+        ("Schlüssel-Rückgabe kontrollieren", per or heute, 'aufgabe'),
+        ("Schlussabrechnung erstellen", tage(7), 'finanzen'),
+        ("Kaution abrechnen / freigeben", tage(14), 'finanzen'),
+    ]
+    if mit_leerstand:
+        aufgaben.append(("Nachmieter suchen / Inserat aufschalten", heute, 'aufgabe'))
+
+    n = 0
+    for titel, faellig, kat in aufgaben:
+        # Duplikatschutz: gleiche Pendenz für diesen Vertrag nicht doppelt
+        if Pendenz.objects.filter(vertrag=vertrag, titel=titel, erledigt=False).exists():
+            continue
+        Pendenz.objects.create(
+            titel=titel, kategorie=(kat if kat in dict(Pendenz.KATEGORIE_CHOICES) else 'aufgabe'),
+            faellig_am=faellig, liegenschaft=lg, vertrag=vertrag,
+            beschreibung=f"Auszug {vertrag.mieter.display_name} · {vertrag.einheit.bezeichnung}",
+            erstellt_von=user,
+        )
+        n += 1
+    return n
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_kuendigung_erfassen(request, vertrag_id):
     """Erfasst eine Kündigung, berechnet den Termin und setzt den Vertrag auf 'gekuendigt'."""
@@ -3504,9 +3542,25 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         v.aktiv = False
         v.ende = per
         v.save(update_fields=['status', 'aktiv', 'ende'])
+
+        # Auszugscheckliste automatisch als Pendenzen anlegen
+        leerstand_gewuenscht = P.get('leerstand_anlegen') == 'on'
+        n_pendenzen = _auszugscheckliste_anlegen(v, k, per, request.user, mit_leerstand=leerstand_gewuenscht)
+
+        # Leerstand ab Tag nach Vertragsende (opt-in)
+        hinweis = ""
+        if leerstand_gewuenscht and per and v.einheit_id:
+            from rentals.models import Leerstand
+            beginn = per + _timedelta(days=1)
+            if not Leerstand.objects.filter(einheit=v.einheit, beginn=beginn, ende__isnull=True).exists():
+                Leerstand.objects.create(einheit=v.einheit, beginn=beginn, grund='mietersuche',
+                                         bemerkung=f"Automatisch aus Kündigung (Ende {per.strftime('%d.%m.%Y')})")
+                hinweis = " · Leerstand ab " + beginn.strftime('%d.%m.%Y') + " angelegt"
+
         log_aktion(request, "Kündigung erfasst", str(v.mieter),
-                   f"per {per.strftime('%d.%m.%Y') if per else '—'}")
-        messages.success(request, f"✅ Kündigung erfasst — Vertragsende {per.strftime('%d.%m.%Y') if per else '—'}.")
+                   f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen{hinweis}")
+        messages.success(request, f"✅ Kündigung erfasst — Vertragsende {per.strftime('%d.%m.%Y') if per else '—'} · "
+                         f"{n_pendenzen} Auszugs-Pendenzen erstellt{hinweis}.")
         return redirect(f'/neu/vertraege/{v.id}/')
 
     # Vorschau des nächsten Termins für heute
