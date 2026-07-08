@@ -1,0 +1,118 @@
+{% extends 'fw/base.html' %}
+{% block title %}Pendenzen & Fristen — swissImmo{% endblock %}
+{% block content %}
+
+<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Pendenzen &amp; Fristen</h1>
+<p class="text-sm text-slate-500 mb-5">Automatisch erkannte Fristen und eigene Pendenzen an einem Ort
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/pendenzen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+{% for m in meldung %}
+<div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
+{% endfor %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <!-- Linke Spalte: Fristen + Pendenzen -->
+    <div class="lg:col-span-2 space-y-5">
+        <!-- Automatische Fristen -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">
+                <i class="fa-solid fa-calendar-days text-indigo-500 mr-1.5"></i>Automatische Fristen (nächste 90 Tage)
+            </div>
+            <div class="divide-y divide-slate-50">
+                {% for f in auto %}
+                <a href="{{ f.url }}" class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60">
+                    <div class="w-9 h-9 rounded-lg bg-{{ f.farbe }}-50 text-{{ f.farbe }}-600 flex items-center justify-center text-sm shrink-0"><i class="fa-solid {{ f.icon }}"></i></div>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-sm font-medium text-slate-900 truncate">{{ f.titel }}</div>
+                        <div class="text-xs text-slate-500 truncate">{{ f.kategorie }} · {{ f.sub }}</div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="text-sm font-semibold {% if f.tage < 14 %}text-rose-600{% else %}text-slate-700{% endif %}">{{ f.faellig|date:"d.m.Y" }}</div>
+                        <div class="text-[11px] text-slate-400">in {{ f.tage }} Tg.</div>
+                    </div>
+                </a>
+                {% empty %}
+                <div class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Fristen in den nächsten 90 Tagen.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Offene Pendenzen -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">
+                <i class="fa-solid fa-list-check text-emerald-500 mr-1.5"></i>Offene Pendenzen ({{ offene|length }})
+            </div>
+            <div class="divide-y divide-slate-50">
+                {% for p in offene %}
+                <div class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60">
+                    <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
+                        <button class="w-5 h-5 rounded border-2 border-slate-300 hover:border-emerald-500 flex items-center justify-center text-transparent hover:text-emerald-500" title="Als erledigt markieren"><i class="fa-solid fa-check text-[10px]"></i></button>
+                    </form>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-sm font-medium text-slate-900">{{ p.titel }}</div>
+                        <div class="text-xs text-slate-500">
+                            {{ p.get_kategorie_display }}{% if p.liegenschaft %} · {{ p.liegenschaft.strasse }}{% endif %}{% if p.beschreibung %} · {{ p.beschreibung|truncatechars:60 }}{% endif %}
+                        </div>
+                    </div>
+                    {% if p.faellig_am %}<span class="text-xs font-semibold {% if p.ueberfaellig %}text-rose-600{% else %}text-slate-500{% endif %} shrink-0">{{ p.faellig_am|date:"d.m.Y" }}{% if p.ueberfaellig %} <i class="fa-solid fa-triangle-exclamation"></i>{% endif %}</span>{% endif %}
+                    <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" onsubmit="return confirm('Pendenz löschen?');">{% csrf_token %}
+                        <button class="text-slate-300 hover:text-rose-500 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </div>
+                {% empty %}
+                <div class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine offenen Pendenzen.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if erledigte %}
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-400 text-sm">Erledigt</div>
+            <div class="divide-y divide-slate-50">
+                {% for p in erledigte %}
+                <div class="flex items-center gap-3 px-5 py-2.5">
+                    <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
+                        <button class="w-5 h-5 rounded bg-emerald-500 text-white flex items-center justify-center" title="Wieder öffnen"><i class="fa-solid fa-check text-[10px]"></i></button>
+                    </form>
+                    <span class="text-sm text-slate-400 line-through flex-1">{{ p.titel }}</span>
+                    <span class="text-xs text-slate-300">{{ p.erledigt_am|date:"d.m.Y" }}</span>
+                    <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" onsubmit="return confirm('Pendenz löschen?');">{% csrf_token %}
+                        <button class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Rechte Spalte: Neue Pendenz -->
+    <div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 sticky top-4">
+            <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-plus text-indigo-500 mr-1.5"></i>Neue Pendenz</h3>
+            <form method="post" action="/neu/pendenzen/neu/" class="space-y-3">
+                {% csrf_token %}
+                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Titel *</label>
+                    <input name="titel" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kategorie</label>
+                    <select name="kategorie" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                        {% for key, label in kategorien %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
+                    </select></div>
+                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Fällig am</label>
+                    <input type="date" name="faellig_am" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft (optional)</label>
+                    <select name="liegenschaft_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                        <option value="">— keine —</option>
+                        {% for lg in liegenschaften %}<option value="{{ lg.id }}">{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
+                    </select></div>
+                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Beschreibung</label>
+                    <textarea name="beschreibung" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></textarea></div>
+                <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg">
+                    <i class="fa-solid fa-check mr-1.5"></i>Pendenz erfassen
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

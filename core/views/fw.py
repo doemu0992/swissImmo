@@ -3335,3 +3335,143 @@ def fw_bewerbung_zu_vertrag(request, pk):
         f"✅ Mieter angelegt und Vertragsentwurf für {einheit.bezeichnung} erstellt — "
         f"bitte Konditionen prüfen und aktivieren.")
     return redirect(f'/neu/vertraege/{vertrag.id}/')
+
+
+# ============================================================
+# PENDENZEN / FRISTEN (persistent + automatisch berechnet)
+# ============================================================
+
+def _auto_fristen(aktive_lg, horizont_tage=90):
+    """Automatisch berechnete Fristen aus dem Datenbestand (read-only):
+    befristete Vertragsenden, Kündigungs-Vollzüge, erstmals kündbar."""
+    from rentals.models import Kuendigung
+    heute = timezone.now().date()
+    grenze = heute + _timedelta(days=horizont_tage)
+    fristen = []
+
+    aktive = Mietvertrag.objects.filter(status='aktiv').select_related('mieter', 'einheit__liegenschaft')
+    gek = Mietvertrag.objects.filter(status='gekuendigt').select_related('mieter', 'einheit__liegenschaft')
+    if aktive_lg:
+        aktive = aktive.filter(einheit__liegenschaft=aktive_lg)
+        gek = gek.filter(einheit__liegenschaft=aktive_lg)
+
+    # a) Befristete Vertragsenden im Horizont
+    for v in aktive.filter(ende__range=[heute, grenze]).order_by('ende'):
+        fristen.append({
+            'kategorie': 'Befristetes Vertragsende', 'farbe': 'amber', 'icon': 'fa-hourglass-end',
+            'titel': f"Vertrag {v.mieter.display_name} endet",
+            'sub': f"{v.einheit.bezeichnung}, {v.einheit.liegenschaft.strasse}",
+            'faellig': v.ende, 'url': f'/neu/vertraege/{v.id}/',
+            'tage': (v.ende - heute).days,
+        })
+
+    # b) Gekündigte Verträge — Auszug/Übergabe steht an
+    for v in gek.filter(ende__range=[heute, grenze]).order_by('ende'):
+        fristen.append({
+            'kategorie': 'Auszug (gekündigt)', 'farbe': 'rose', 'icon': 'fa-person-walking-arrow-right',
+            'titel': f"Auszug {v.mieter.display_name}",
+            'sub': f"{v.einheit.bezeichnung} — Abnahme & Kautionsabrechnung vorbereiten",
+            'faellig': v.ende, 'url': f'/neu/vertraege/{v.id}/',
+            'tage': (v.ende - heute).days,
+        })
+
+    # c) Erstmals kündbar im Horizont
+    for v in aktive.filter(erstmals_kuendbar_auf__range=[heute, grenze]).order_by('erstmals_kuendbar_auf'):
+        fristen.append({
+            'kategorie': 'Erstmals kündbar', 'farbe': 'indigo', 'icon': 'fa-calendar-check',
+            'titel': f"{v.mieter.display_name}: erstmals kündbar",
+            'sub': f"{v.einheit.bezeichnung} — Mietzins-/Konditionen-Review möglich",
+            'faellig': v.erstmals_kuendbar_auf, 'url': f'/neu/vertraege/{v.id}/',
+            'tage': (v.erstmals_kuendbar_auf - heute).days,
+        })
+
+    fristen.sort(key=lambda f: f['faellig'])
+    return fristen
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_pendenzen(request):
+    from core.models import Pendenz
+    from crm.models import Mandant  # noqa
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.now().date()
+
+    auto = _auto_fristen(aktive_lg)
+
+    pq = Pendenz.objects.all().select_related('liegenschaft', 'vertrag__mieter')
+    if aktive_lg:
+        pq = pq.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg) | Q(liegenschaft__isnull=True, vertrag__isnull=True))
+    offene = list(pq.filter(erledigt=False))
+    erledigte = list(pq.filter(erledigt=True)[:20])
+
+    for p in offene:
+        p.ueberfaellig = bool(p.faellig_am and p.faellig_am < heute)
+
+    liegenschaften = Liegenschaft.objects.order_by('strasse')
+    from django.contrib import messages
+    return render(request, 'fw/pendenzen.html', {
+        **basis, 'nav': 'pendenzen', 'auto': auto,
+        'offene': offene, 'erledigte': erledigte,
+        'liegenschaften': liegenschaften, 'heute': heute,
+        'kategorien': Pendenz.KATEGORIE_CHOICES,
+        'meldung': list(messages.get_messages(request)),
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_pendenz_neu(request):
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.models import Pendenz
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_pendenzen')
+    titel = (request.POST.get('titel') or '').strip()
+    if not titel:
+        messages.error(request, "Titel fehlt.")
+        return redirect('fw_pendenzen')
+    faellig = None
+    if request.POST.get('faellig_am'):
+        try:
+            faellig = date.fromisoformat(request.POST['faellig_am'])
+        except Exception:
+            faellig = None
+    lg_id = request.POST.get('liegenschaft_id') or None
+    Pendenz.objects.create(
+        titel=titel,
+        beschreibung=(request.POST.get('beschreibung') or '').strip(),
+        kategorie=request.POST.get('kategorie', 'aufgabe'),
+        faellig_am=faellig,
+        liegenschaft_id=lg_id if lg_id else None,
+        erstellt_von=request.user,
+    )
+    log_aktion(request, "Pendenz erstellt", titel, '')
+    messages.success(request, f"✅ Pendenz „{titel}“ erfasst.")
+    return redirect('fw_pendenzen')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_pendenz_toggle(request, pk):
+    from django.shortcuts import redirect
+    from core.models import Pendenz
+    if request.method != 'POST':
+        return redirect('fw_pendenzen')
+    p = get_object_or_404(Pendenz, id=pk)
+    p.erledigt = not p.erledigt
+    p.erledigt_am = timezone.now().date() if p.erledigt else None
+    p.save()
+    return redirect('fw_pendenzen')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_pendenz_loeschen(request, pk):
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.models import Pendenz
+    if request.method != 'POST':
+        return redirect('fw_pendenzen')
+    p = get_object_or_404(Pendenz, id=pk)
+    p.delete()
+    messages.success(request, "Pendenz gelöscht.")
+    return redirect('fw_pendenzen')

@@ -80,7 +80,8 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_obj
                            fw_benutzer_form, fw_benutzer_loeschen,
                            fw_vorlage_form, fw_vorlage_loeschen, fw_integration_test_email,
                            fw_bewerbungen, fw_bewerbung_detail, fw_bewerbung_status,
-                           fw_bewerbung_zu_vertrag)
+                           fw_bewerbung_zu_vertrag,
+                           fw_pendenzen, fw_pendenz_neu, fw_pendenz_toggle, fw_pendenz_loeschen)
 
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
@@ -145,6 +146,10 @@ urlpatterns = [
     path('neu/nebenkosten/', fw_nebenkosten, name='fw_nebenkosten'),
     path('neu/nebenkosten/<int:pk>/', fw_nebenkosten_detail, name='fw_nebenkosten_detail'),
     path('neu/nebenkosten/<int:pk>/verbuchen/', fw_nebenkosten_verbuchen, name='fw_nebenkosten_verbuchen'),
+    path('neu/pendenzen/', fw_pendenzen, name='fw_pendenzen'),
+    path('neu/pendenzen/neu/', fw_pendenz_neu, name='fw_pendenz_neu'),
+    path('neu/pendenzen/<int:pk>/toggle/', fw_pendenz_toggle, name='fw_pendenz_toggle'),
+    path('neu/pendenzen/<int:pk>/loeschen/', fw_pendenz_loeschen, name='fw_pendenz_loeschen'),
     path('neu/bewerbungen/', fw_bewerbungen, name='fw_bewerbungen'),
     path('neu/bewerbungen/<int:pk>/', fw_bewerbung_detail, name='fw_bewerbung_detail'),
     path('neu/bewerbungen/<int:pk>/status/', fw_bewerbung_status, name='fw_bewerbung_status'),
