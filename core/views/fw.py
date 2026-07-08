@@ -108,6 +108,29 @@ def fw_dashboard(request):
         'offen_ueberfaellig': offen_ueberfaellig,
     }
 
+    # --- COCKPIT (handlungsorientierte Widgets, verlinkt) ---
+    from core.models import Pendenz
+    from tickets.models import HandwerkerAuftrag
+    from portfolio.models import Wartungsfrist
+    _pend = Pendenz.objects.filter(erledigt=False)
+    _frist = Wartungsfrist.objects.filter(aktiv=True, naechste_faelligkeit__lte=heute + _timedelta(days=30))
+    _freig = HandwerkerAuftrag.objects.filter(freigabe_status='ausstehend')
+    if aktive_lg:
+        _pend = _pend.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
+        _frist = _frist.filter(liegenschaft=aktive_lg)
+        _freig = _freig.filter(ticket__liegenschaft=aktive_lg)
+    debitoren_ueberfaellig_n = sum(1 for r in _deb
+                                   if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) < heute)
+    cockpit = {
+        'pendenzen': _pend.count(),
+        'pendenzen_ueberfaellig': _pend.filter(faellig_am__lt=heute).count(),
+        'debitoren_n': debitoren_ueberfaellig_n,
+        'debitoren_chf': offen_ueberfaellig,
+        'freigaben': _freig.count(),
+        'fristen': _frist.count(),
+        'fristen_ueberfaellig': _frist.filter(naechste_faelligkeit__lt=heute).count(),
+    }
+
     # --- AUFGABEN (bestehende Pendenzen-Engine wiederverwenden) ---
     aufgaben = _berechne_aufgaben(heute, leerstand_objekte.count(), 0, 0)
     # Aufgaben-Ziele auf die neue Oberfläche mappen, wo es ein Pendant gibt
@@ -135,6 +158,7 @@ def fw_dashboard(request):
         'bevorstehende_count': bevorstehende.count(),
         'aufgaben': aufgaben,
         'kpis': kpis,
+        'cockpit': cockpit,
     }
     return render(request, 'fw/dashboard.html', context)
 

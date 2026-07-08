@@ -270,6 +270,24 @@ class MieterPortalTests(TestCase):
         self.assertIsNotNone(m.benutzer_id)
 
 
+class DashboardCockpitTests(TestCase):
+    def test_cockpit_zaehlt_freigaben_und_fristen(self):
+        from tickets.models import SchadenMeldung, HandwerkerAuftrag
+        from crm.models import Handwerker
+        lg, e, m, v = _basis_objekte()
+        hw = Handwerker.objects.create(firma='HW AG')
+        t = SchadenMeldung.objects.create(liegenschaft=lg, titel='X', beschreibung='y')
+        HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, freigabe_status='ausstehend')
+        Wartungsfrist.objects.create(liegenschaft=lg, bezeichnung='Wartung',
+                                     naechste_faelligkeit=date.today() + timedelta(days=10))
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        r = c.get('/neu/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.context['cockpit']['freigaben'], 1)
+        self.assertEqual(r.context['cockpit']['fristen'], 1)
+
+
 class AkontoTests(TestCase):
     def test_akonto_uebernahme(self):
         lg, e, m, v = _basis_objekte()

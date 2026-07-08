@@ -10,6 +10,40 @@
     <a href="/neu/" class="ml-2 text-xs text-slate-400 hover:text-indigo-600">× Filter aufheben</a></p>
 {% endif %}
 
+<!-- ================= COCKPIT: WAS IST ZU TUN? ================= -->
+{% if cockpit.pendenzen or cockpit.debitoren_n or cockpit.freigaben or cockpit.fristen %}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+    <a href="/neu/pendenzen/" class="bg-white rounded-xl border border-slate-200 hover:border-indigo-300 p-4 flex items-center gap-3 transition-colors">
+        <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-list-check"></i></div>
+        <div>
+            <div class="text-xl font-bold text-slate-900">{{ cockpit.pendenzen }}</div>
+            <div class="text-xs text-slate-500">Offene Pendenzen{% if cockpit.pendenzen_ueberfaellig %} · <span class="text-rose-600 font-semibold">{{ cockpit.pendenzen_ueberfaellig }} überfällig</span>{% endif %}</div>
+        </div>
+    </a>
+    <a href="/neu/debitoren/" class="bg-white rounded-xl border border-slate-200 hover:border-rose-300 p-4 flex items-center gap-3 transition-colors">
+        <div class="w-10 h-10 rounded-lg {% if cockpit.debitoren_n %}bg-rose-50 text-rose-600{% else %}bg-emerald-50 text-emerald-600{% endif %} flex items-center justify-center shrink-0"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+        <div>
+            <div class="text-xl font-bold text-slate-900">{{ cockpit.debitoren_n }}</div>
+            <div class="text-xs text-slate-500">Überfällige Rechnungen{% if cockpit.debitoren_chf %} · CHF {{ cockpit.debitoren_chf|chf }}{% endif %}</div>
+        </div>
+    </a>
+    <a href="/neu/schaeden/" class="bg-white rounded-xl border border-slate-200 hover:border-amber-300 p-4 flex items-center gap-3 transition-colors">
+        <div class="w-10 h-10 rounded-lg {% if cockpit.freigaben %}bg-amber-50 text-amber-600{% else %}bg-slate-50 text-slate-400{% endif %} flex items-center justify-center shrink-0"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+        <div>
+            <div class="text-xl font-bold text-slate-900">{{ cockpit.freigaben }}</div>
+            <div class="text-xs text-slate-500">Reparaturen bei Eigentümer</div>
+        </div>
+    </a>
+    <a href="/neu/liegenschaften/" class="bg-white rounded-xl border border-slate-200 hover:border-indigo-300 p-4 flex items-center gap-3 transition-colors">
+        <div class="w-10 h-10 rounded-lg {% if cockpit.fristen_ueberfaellig %}bg-rose-50 text-rose-600{% elif cockpit.fristen %}bg-amber-50 text-amber-600{% else %}bg-slate-50 text-slate-400{% endif %} flex items-center justify-center shrink-0"><i class="fa-solid fa-calendar-check"></i></div>
+        <div>
+            <div class="text-xl font-bold text-slate-900">{{ cockpit.fristen }}</div>
+            <div class="text-xs text-slate-500">Fristen in 30 Tagen{% if cockpit.fristen_ueberfaellig %} · <span class="text-rose-600 font-semibold">{{ cockpit.fristen_ueberfaellig }} überfällig</span>{% endif %}</div>
+        </div>
+    </a>
+</div>
+{% endif %}
+
 <!-- ================= KENNZAHLEN ================= -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
     <div class="bg-white rounded-xl border border-slate-200 p-4">
