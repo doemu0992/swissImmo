@@ -1202,3 +1202,55 @@ def fw_assets(request):
         'g_filter': g_filter, 'garantie_chips': chips, 'q': q,
         'anzahl': len(rows), 'n_aktiv': n_aktiv, 'n_bald': n_bald, 'n_abgelaufen': n_abgelaufen,
     })
+
+
+# ============================================================
+# ETAPPE D: BUCHHALTUNG (Erfolgsrechnung + Journal)
+# ============================================================
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_buchhaltung(request):
+    from finance.models import Buchung, Buchungskonto
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    # --- ERFOLGSRECHNUNG (Storno-Paare heben sich selbst auf, nicht filtern) ---
+    qs = Buchung.objects.all()
+    if aktive_lg:
+        qs = qs.filter(liegenschaft=aktive_lg)
+    konten = Buchungskonto.objects.filter(typ__in=['ertrag', 'aufwand'])
+
+    ertraege, aufwaende = [], []
+    total_ertrag = total_aufwand = Decimal('0.00')
+    for k in konten:
+        soll = qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+        haben = qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+        if k.typ == 'ertrag':
+            saldo = haben - soll
+            if saldo:
+                ertraege.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': saldo})
+                total_ertrag += saldo
+        else:
+            saldo = soll - haben
+            if saldo:
+                aufwaende.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': saldo})
+                total_aufwand += saldo
+    ertraege.sort(key=lambda x: x['nummer'])
+    aufwaende.sort(key=lambda x: x['nummer'])
+    erfolg = total_ertrag - total_aufwand
+
+    # --- BUCHUNGSJOURNAL (letzte 60) ---
+    journal = (qs.select_related('soll_konto', 'haben_konto', 'liegenschaft')
+               .order_by('-datum', '-id')[:60])
+
+    tab_liste = [
+        ('erfolg', 'Erfolgsrechnung', None),
+        ('journal', 'Journal', journal.count() or None),
+    ]
+    return render(request, 'fw/buchhaltung.html', {
+        **basis, 'nav': 'buchhaltung',
+        'ertraege': ertraege, 'aufwaende': aufwaende,
+        'total_ertrag': total_ertrag, 'total_aufwand': total_aufwand, 'erfolg': erfolg,
+        'journal': journal,
+        'tab_liste': tab_liste,
+    })

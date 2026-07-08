@@ -1,0 +1,119 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Buchhaltung — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-1">
+    <h1 class="text-3xl font-extrabold text-slate-900">Buchhaltung</h1>
+    <a href="/app/?tab=finance" class="text-sm text-slate-500 hover:text-indigo-600 border border-slate-200 px-3 py-2 rounded-lg" title="Öffnet die klassische Ansicht">
+        <i class="fa-solid fa-sliders mr-1.5"></i> Kontenplan &amp; Buchen <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-0.5"></i>
+    </a>
+</div>
+<p class="text-sm text-slate-500 mb-5">Erfolgsrechnung und Buchungsjournal
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/buchhaltung/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+<!-- KPI -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-arrow-trend-up"></i></div>
+        <div><div class="text-2xl font-bold text-emerald-600">CHF {{ total_ertrag|chf }}</div><div class="text-sm text-slate-500">Ertrag</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-arrow-trend-down"></i></div>
+        <div><div class="text-2xl font-bold text-rose-600">CHF {{ total_aufwand|chf }}</div><div class="text-sm text-slate-500">Aufwand</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg {% if erfolg >= 0 %}bg-indigo-50 text-indigo-600{% else %}bg-rose-50 text-rose-600{% endif %} flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-scale-balanced"></i></div>
+        <div><div class="text-2xl font-bold {% if erfolg >= 0 %}text-indigo-600{% else %}text-rose-600{% endif %}">CHF {{ erfolg|chf }}</div><div class="text-sm text-slate-500">Erfolg (Gewinn/Verlust)</div></div>
+    </div>
+</div>
+
+{% include 'fw/_detail_tabs.html' with gruppe='bh' tabs=tab_liste %}
+
+<!-- ERFOLGSRECHNUNG -->
+<div data-panel="bh" id="bh-erfolg">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Erträge -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+                <span class="font-bold text-slate-800 text-sm">Ertrag</span>
+                <span class="text-sm font-bold text-emerald-600">CHF {{ total_ertrag|chf }}</span>
+            </div>
+            <table class="w-full text-sm">
+                <tbody class="divide-y divide-slate-50">
+                {% for e in ertraege %}
+                <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ e.nummer }}</td>
+                    <td class="px-5 py-2.5 text-slate-700">{{ e.bezeichnung }}</td>
+                    <td class="px-5 py-2.5 text-right font-medium text-slate-900 whitespace-nowrap">{{ e.saldo|chf }}</td></tr>
+                {% empty %}
+                <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Ertragsbuchungen.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Aufwände -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+                <span class="font-bold text-slate-800 text-sm">Aufwand</span>
+                <span class="text-sm font-bold text-rose-600">CHF {{ total_aufwand|chf }}</span>
+            </div>
+            <table class="w-full text-sm">
+                <tbody class="divide-y divide-slate-50">
+                {% for a in aufwaende %}
+                <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ a.nummer }}</td>
+                    <td class="px-5 py-2.5 text-slate-700">{{ a.bezeichnung }}</td>
+                    <td class="px-5 py-2.5 text-right font-medium text-slate-900 whitespace-nowrap">{{ a.saldo|chf }}</td></tr>
+                {% empty %}
+                <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Aufwandbuchungen.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Ergebnis -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 mt-4 flex items-center justify-between">
+        <span class="font-bold text-slate-800">Unternehmenserfolg</span>
+        <span class="text-xl font-extrabold {% if erfolg >= 0 %}text-indigo-600{% else %}text-rose-600{% endif %}">
+            {% if erfolg >= 0 %}Gewinn{% else %}Verlust{% endif %} · CHF {{ erfolg|chf }}
+        </span>
+    </div>
+</div>
+
+<!-- JOURNAL -->
+<div data-panel="bh" id="bh-journal" class="hidden">
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                    <th class="px-5 py-3 font-semibold">Datum</th>
+                    <th class="px-5 py-3 font-semibold">Beleg</th>
+                    <th class="px-5 py-3 font-semibold">Soll</th>
+                    <th class="px-5 py-3 font-semibold">Haben</th>
+                    <th class="px-5 py-3 font-semibold text-right">Betrag</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                {% for b in journal %}
+                <tr class="hover:bg-slate-50/60 {% if b.ist_storno %}bg-rose-50/30{% endif %}">
+                    <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
+                    <td class="px-5 py-3 text-slate-700 max-w-[280px] truncate">
+                        {% if b.ist_storno %}<span class="text-[10px] font-bold uppercase bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded mr-1.5">Storno</span>{% endif %}
+                        {{ b.beleg_text }}
+                    </td>
+                    <td class="px-5 py-3 text-slate-500 font-mono text-xs whitespace-nowrap">{{ b.soll_konto.nummer }} {{ b.soll_konto.bezeichnung|truncatechars:18 }}</td>
+                    <td class="px-5 py-3 text-slate-500 font-mono text-xs whitespace-nowrap">{{ b.haben_konto.nummer }} {{ b.haben_konto.bezeichnung|truncatechars:18 }}</td>
+                    <td class="px-5 py-3 text-right font-medium text-slate-900 whitespace-nowrap">{{ b.betrag|chf }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Buchungen.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="px-5 py-3 border-t border-slate-100 text-xs text-slate-400">Letzte {{ journal|length }} Buchung(en) · Storno-Paare heben sich in der Erfolgsrechnung gegenseitig auf</div>
+    </div>
+</div>
+{% endblock %}
