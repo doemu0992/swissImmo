@@ -258,3 +258,61 @@ class Kuendigung(models.Model):
 
     def __str__(self):
         return f"Kündigung {self.vertrag} durch {self.get_absender_display()}"
+
+
+class Abnahmeprotokoll(models.Model):
+    """Wohnungsabnahme-Protokoll (Einzug/Auszug): Zustand Raum-für-Raum mit
+    Mängeln, Verursacher-Zuordnung, Fotos, Zählerständen und Unterschriften."""
+    TYP_CHOICES = [('einzug', 'Einzug / Übergabe'), ('auszug', 'Auszug / Rücknahme')]
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.CASCADE, related_name='abnahmen')
+    typ = models.CharField("Art", max_length=10, choices=TYP_CHOICES, default='auszug')
+    datum = models.DateField("Datum", default=timezone.now)
+    mieter_anwesend = models.BooleanField("Mieter anwesend", default=True)
+    verwalter_name = models.CharField("Abnahme durch", max_length=120, blank=True, default='')
+    allgemein_zustand = models.CharField("Allgemeinzustand", max_length=25, blank=True, default='gut',
+        choices=[('neuwertig', 'Neuwertig'), ('gut', 'Gut'), ('gebraucht', 'Gebraucht'), ('renovationsbeduerftig', 'Renovationsbedürftig')])
+    schluessel_anzahl = models.PositiveSmallIntegerField("Schlüssel zurück", null=True, blank=True)
+    zaehler_strom = models.CharField("Zählerstand Strom", max_length=40, blank=True, default='')
+    zaehler_wasser = models.CharField("Zählerstand Wasser", max_length=40, blank=True, default='')
+    zaehler_gas = models.CharField("Zählerstand Gas/Wärme", max_length=40, blank=True, default='')
+    neue_adresse = models.CharField("Neue Adresse des Mieters", max_length=200, blank=True, default='')
+    bemerkungen = models.TextField("Bemerkungen", blank=True, default='')
+    unterschrift_mieter = models.CharField("Unterschrift Mieter", max_length=120, blank=True, default='')
+    unterschrift_verwalter = models.CharField("Unterschrift Verwalter", max_length=120, blank=True, default='')
+    abgeschlossen = models.BooleanField("Abgeschlossen", default=False)
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Abnahmeprotokoll"
+        verbose_name_plural = "Abnahmeprotokolle"
+        ordering = ['-datum', '-id']
+        db_table = 'core_abnahmeprotokoll'
+
+    def __str__(self):
+        return f"{self.get_typ_display()} {self.vertrag} ({self.datum})"
+
+    @property
+    def maengel_mieter(self):
+        return [m for m in self.maengel.all() if m.verursacher == 'mieter']
+
+    @property
+    def kosten_mieter_total(self):
+        return sum((m.kostenschaetzung or Decimal('0.00')) for m in self.maengel_mieter)
+
+
+class AbnahmeMangel(models.Model):
+    """Einzelner Mangel im Abnahmeprotokoll, einem Raum + Verursacher zugeordnet."""
+    VERURSACHER = [('abnutzung', 'Normale Abnutzung'), ('mieter', 'Mieter (Schaden)'), ('vermieter', 'Vermieter/Unterhalt')]
+    protokoll = models.ForeignKey(Abnahmeprotokoll, on_delete=models.CASCADE, related_name='maengel')
+    raum = models.CharField("Raum", max_length=60, blank=True, default='')
+    beschreibung = models.CharField("Mangel", max_length=255)
+    verursacher = models.CharField("Verursacher", max_length=12, choices=VERURSACHER, default='abnutzung')
+    kostenschaetzung = models.DecimalField("Kostenschätzung CHF", max_digits=9, decimal_places=2, null=True, blank=True)
+    foto = models.ImageField("Foto", upload_to='abnahme_fotos/', null=True, blank=True)
+
+    class Meta:
+        db_table = 'core_abnahmemangel'
+        ordering = ['id']
+
+    def __str__(self):
+        return f"{self.raum}: {self.beschreibung}"

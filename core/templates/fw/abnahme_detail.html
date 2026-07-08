@@ -1,0 +1,68 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Abnahmeprotokoll — {{ v.mieter.display_name }}{% endblock %}
+{% block content %}
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/vertraege/{{ v.id }}/" class="hover:text-indigo-600">{{ v.mieter.display_name }}</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <span class="text-slate-600 font-medium">Abnahmeprotokoll</span>
+</nav>
+
+<div class="flex items-start justify-between gap-4 mb-4">
+    <div>
+        <h1 class="text-2xl font-extrabold text-slate-900">Wohnungsabnahme — {{ p.get_typ_display }}</h1>
+        <p class="text-sm text-slate-500">{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ p.datum|date:"d.m.Y" }}</p>
+    </div>
+    <div class="flex items-center gap-2">
+        <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" class="text-sm font-semibold text-slate-700 border border-slate-200 hover:border-indigo-400 px-3 py-2 rounded-lg"><i class="fa-solid fa-file-pdf mr-1.5"></i>PDF</a>
+        {% if p.kosten_mieter_total %}
+        <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/?abnahme={{ p.id }}" class="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg"><i class="fa-solid fa-file-invoice mr-1.5"></i>In Schlussabrechnung</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 text-sm space-y-2">
+        <div class="flex justify-between"><span class="text-slate-500">Abnahme durch</span><span class="font-medium">{{ p.verwalter_name|default:"—" }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Mieter anwesend</span><span>{{ p.mieter_anwesend|yesno:"Ja,Nein" }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Allgemeinzustand</span><span>{{ p.get_allgemein_zustand_display }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Schlüssel zurück</span><span>{{ p.schluessel_anzahl|default:"—" }}</span></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 text-sm space-y-2">
+        <div class="flex justify-between"><span class="text-slate-500">Zähler Strom</span><span>{{ p.zaehler_strom|default:"—" }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Zähler Wasser</span><span>{{ p.zaehler_wasser|default:"—" }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Zähler Gas/Wärme</span><span>{{ p.zaehler_gas|default:"—" }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Neue Adresse</span><span class="text-right">{{ p.neue_adresse|default:"—" }}</span></div>
+    </div>
+    <div class="bg-indigo-50 rounded-xl border border-indigo-100 p-5">
+        <div class="text-xs text-indigo-600 mb-1">Kosten zulasten Mieter (Schätzung)</div>
+        <div class="text-2xl font-bold text-indigo-700">CHF {{ p.kosten_mieter_total|chf }}</div>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden mt-4">
+    <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Mängel ({{ maengel|length }})</div>
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+            <tr><th class="text-left px-5 py-2.5">Raum</th><th class="text-left px-5 py-2.5">Mangel</th>
+                <th class="text-left px-5 py-2.5">Verursacher</th><th class="text-right px-5 py-2.5">CHF</th><th class="px-5 py-2.5">Foto</th></tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+            {% for m in maengel %}
+            <tr>
+                <td class="px-5 py-2.5 text-slate-700">{{ m.raum|default:"—" }}</td>
+                <td class="px-5 py-2.5 text-slate-800">{{ m.beschreibung }}</td>
+                <td class="px-5 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold
+                    {% if m.verursacher == 'mieter' %}bg-rose-50 text-rose-600{% elif m.verursacher == 'vermieter' %}bg-sky-50 text-sky-600{% else %}bg-slate-100 text-slate-500{% endif %}">{{ m.get_verursacher_display }}</span></td>
+                <td class="px-5 py-2.5 text-right tabular-nums">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% endif %}</td>
+                <td class="px-5 py-2.5 text-center">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank"><img src="{{ m.foto.url }}" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="px-5 py-6 text-center text-slate-400 italic">Keine Mängel festgestellt.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if p.bemerkungen %}<div class="bg-white rounded-xl border border-slate-200 p-5 mt-4 text-sm"><div class="text-xs text-slate-500 mb-1">Bemerkungen</div>{{ p.bemerkungen|linebreaksbr }}</div>{% endif %}
+{% endblock %}

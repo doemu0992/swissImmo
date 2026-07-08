@@ -49,10 +49,20 @@
         <h3 class="font-bold text-slate-800 text-sm mb-1">Weitere Positionen</h3>
         <p class="text-xs text-slate-400 mb-4">z.B. Nebenkosten-Nachzahlung/-Guthaben, Schäden, Endreinigung, Ersatz. „zulasten" = Mieter schuldet, „zugunsten" = Gutschrift an Mieter.</p>
         <div class="space-y-2">
+            {% for p in prefill_positionen %}
+            <div class="grid grid-cols-12 gap-2 items-center">
+                <input name="pos_text" value="{{ p.text }}" placeholder="Bezeichnung" class="col-span-6 bg-slate-100 rounded-lg text-sm px-3 py-2">
+                <input name="pos_betrag" value="{{ p.betrag|unlocalize }}" inputmode="decimal" class="pos-betrag col-span-3 bg-slate-100 rounded-lg text-sm px-3 py-2 text-right" placeholder="Betrag CHF">
+                <select name="pos_richtung" class="pos-richtung col-span-3 bg-slate-100 rounded-lg text-sm px-2 py-2">
+                    <option value="zulasten" selected>zulasten Mieter</option>
+                    <option value="zugunsten">zugunsten Mieter</option>
+                </select>
+            </div>
+            {% endfor %}
             {% for i in "12345" %}
             <div class="grid grid-cols-12 gap-2 items-center">
-                <input name="pos_text" value="{% if forloop.first and schaden_prefill_betrag > 0 %}{{ schaden_prefill_text }}{% endif %}" placeholder="Bezeichnung" class="col-span-6 bg-slate-100 rounded-lg text-sm px-3 py-2">
-                <input name="pos_betrag" value="{% if forloop.first and schaden_prefill_betrag > 0 %}{{ schaden_prefill_betrag|unlocalize }}{% endif %}" inputmode="decimal" class="pos-betrag col-span-3 bg-slate-100 rounded-lg text-sm px-3 py-2 text-right" placeholder="Betrag CHF">
+                <input name="pos_text" placeholder="Bezeichnung" class="col-span-6 bg-slate-100 rounded-lg text-sm px-3 py-2">
+                <input name="pos_betrag" inputmode="decimal" class="pos-betrag col-span-3 bg-slate-100 rounded-lg text-sm px-3 py-2 text-right" placeholder="Betrag CHF">
                 <select name="pos_richtung" class="pos-richtung col-span-3 bg-slate-100 rounded-lg text-sm px-2 py-2">
                     <option value="zulasten">zulasten Mieter</option>
                     <option value="zugunsten">zugunsten Mieter</option>

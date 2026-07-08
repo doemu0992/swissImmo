@@ -778,6 +778,19 @@ def fw_schlussabrechnung(request, vertrag_id):
     # Position vorbelegen, damit sie in der Schlussabrechnung sichtbar mitzählt.
     schaden_betrag = v.kautions_abzug_betrag or Decimal('0.00')
     schaden_text = v.kautions_abzug_grund or ('Schadenforderung' if schaden_betrag > 0 else '')
+    # Mängel aus einem Abnahmeprotokoll (Verursacher = Mieter) als Positionen vorbelegen
+    prefill_positionen = []
+    ab_id = request.GET.get('abnahme')
+    if ab_id:
+        from rentals.models import Abnahmeprotokoll
+        ab = Abnahmeprotokoll.objects.filter(id=ab_id, vertrag=v).first()
+        if ab:
+            for m in ab.maengel_mieter:
+                if m.kostenschaetzung:
+                    txt = f"{m.raum + ': ' if m.raum else ''}{m.beschreibung}"
+                    prefill_positionen.append({'text': txt[:90], 'betrag': m.kostenschaetzung})
+    if schaden_betrag > 0:
+        prefill_positionen.insert(0, {'text': schaden_text, 'betrag': schaden_betrag})
     return render(request, 'fw/schlussabrechnung.html', {
         **basis, 'nav': 'vertraege', 'v': v,
         'offen_total': offen_total,
@@ -785,8 +798,110 @@ def fw_schlussabrechnung(request, vertrag_id):
         'ist_versicherung': v.ist_kautionsversicherung,
         'schaden_prefill_betrag': schaden_betrag,
         'schaden_prefill_text': schaden_text,
+        'prefill_positionen': prefill_positionen,
         'auszug_default': (v.ende or timezone.now().date()).isoformat(),
+        'abnahmen': v.abnahmen.all(),
     })
+
+
+# ============================================================
+# WOHNUNGSABNAHME-PROTOKOLL (Einzug/Auszug, mobil)
+# ============================================================
+ABNAHME_RAEUME = ['Eingang/Korridor', 'Wohnzimmer', 'Küche', 'Bad/WC', 'Zimmer 1',
+                  'Zimmer 2', 'Zimmer 3', 'Balkon/Terrasse', 'Keller', 'Estrich', 'Allgemein']
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_abnahme_neu(request, vertrag_id):
+    """Wohnungsabnahme erfassen (mobil): Zustand, Mängel je Raum mit Verursacher,
+    Fotos, Zählerstände, Unterschriften."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import Abnahmeprotokoll, AbnahmeMangel
+    from core.auth import log_aktion
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
+    basis = _global_filter(request)
+
+    if request.method == 'POST':
+        P = request.POST
+
+        def _dec(x):
+            try:
+                return Decimal(str(x).replace(',', '.').strip()) if str(x).strip() else None
+            except Exception:
+                return None
+        try:
+            datum = date.fromisoformat(P.get('datum') or '')
+        except Exception:
+            datum = timezone.localdate()
+        prot = Abnahmeprotokoll.objects.create(
+            vertrag=v, typ=P.get('typ', 'auszug'), datum=datum,
+            mieter_anwesend=P.get('mieter_anwesend') == 'on',
+            verwalter_name=P.get('verwalter_name', '').strip(),
+            allgemein_zustand=P.get('allgemein_zustand', 'gut'),
+            schluessel_anzahl=int(P.get('schluessel_anzahl')) if (P.get('schluessel_anzahl') or '').isdigit() else None,
+            zaehler_strom=P.get('zaehler_strom', '').strip(),
+            zaehler_wasser=P.get('zaehler_wasser', '').strip(),
+            zaehler_gas=P.get('zaehler_gas', '').strip(),
+            neue_adresse=P.get('neue_adresse', '').strip(),
+            bemerkungen=P.get('bemerkungen', '').strip(),
+            unterschrift_mieter=P.get('unterschrift_mieter', '').strip(),
+            unterschrift_verwalter=P.get('unterschrift_verwalter', '').strip(),
+            abgeschlossen=P.get('abgeschlossen') == 'on',
+        )
+        # Mängel-Zeilen (parallele Listen). Fotos werden in Reihenfolge zugeordnet
+        # (leere Datei-Inputs liefert der Browser nicht mit).
+        raeume = P.getlist('m_raum')
+        beschr = P.getlist('m_beschreibung')
+        verurs = P.getlist('m_verursacher')
+        kosten = P.getlist('m_kosten')
+        fotos = list(request.FILES.getlist('m_foto'))
+        for i, b in enumerate(beschr):
+            b = (b or '').strip()
+            if not b:
+                continue
+            AbnahmeMangel.objects.create(
+                protokoll=prot,
+                raum=(raeume[i] if i < len(raeume) else '').strip(),
+                beschreibung=b,
+                verursacher=(verurs[i] if i < len(verurs) else 'abnutzung'),
+                kostenschaetzung=_dec(kosten[i] if i < len(kosten) else ''),
+                foto=(fotos.pop(0) if fotos else None),
+            )
+        log_aktion(request, "Wohnungsabnahme erfasst", str(v.mieter), f"{prot.get_typ_display()} {datum}")
+        messages.success(request, f"✅ Abnahmeprotokoll erfasst ({prot.maengel.count()} Mängel).")
+        return redirect(f'/neu/abnahme/{prot.id}/')
+
+    return render(request, 'fw/abnahme_neu.html', {
+        **basis, 'nav': 'vertraege', 'v': v, 'raeume': ABNAHME_RAEUME,
+        'heute': timezone.localdate().isoformat(),
+        'verwalter_default': (request.user.get_full_name() or request.user.username),
+        'typ_default': 'auszug' if v.status in ('gekuendigt', 'archiviert') else 'einzug',
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_abnahme_detail(request, pk):
+    from rentals.models import Abnahmeprotokoll
+    basis = _global_filter(request)
+    prot = get_object_or_404(Abnahmeprotokoll.objects.select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
+    return render(request, 'fw/abnahme_detail.html', {
+        **basis, 'nav': 'vertraege', 'p': prot, 'v': prot.vertrag,
+        'maengel': prot.maengel.all(),
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_abnahme_pdf(request, pk):
+    from django.http import HttpResponse
+    from rentals.models import Abnahmeprotokoll
+    from crm.models import Verwaltung
+    from core.services.abnahme_pdf import generate_abnahme_pdf
+    prot = get_object_or_404(Abnahmeprotokoll.objects.select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
+    pdf = generate_abnahme_pdf(prot, verwaltung=Verwaltung.objects.first())
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = f'inline; filename="Abnahmeprotokoll_{prot.vertrag.mieter.nachname}.pdf"'
+    return resp
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

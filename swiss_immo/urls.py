@@ -74,6 +74,7 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_debitor_qr_pdf, fw_deb
                            fw_mietzins, fw_mietzins_anpassung, fw_dokumente, fw_kommunikation,
                            fw_vertrag_neu, fw_vertrag_neu_speichern,
                            fw_vertrag_status, fw_vertrag_loeschen, fw_schlussabrechnung,
+                           fw_abnahme_neu, fw_abnahme_detail, fw_abnahme_pdf,
                            fw_kuendigung_erfassen, fw_kuendigung_zuruecknehmen, fw_kuendigung_formular,
                            fw_kautionen, fw_kaution_aktion, fw_mwst,
                            fw_account, fw_marktdaten_aktualisieren, fw_marktdaten_live,
@@ -181,6 +182,9 @@ urlpatterns = [
     path('neu/bewerbungen/<int:pk>/vertrag/', fw_bewerbung_zu_vertrag, name='fw_bewerbung_zu_vertrag'),
     path('neu/mietzins/', fw_mietzins, name='fw_mietzins'),
     path('neu/mietzins/<int:vertrag_id>/anpassung/', fw_mietzins_anpassung, name='fw_mietzins_anpassung'),
+    path('neu/vertraege/<int:vertrag_id>/abnahme/neu/', fw_abnahme_neu, name='fw_abnahme_neu'),
+    path('neu/abnahme/<int:pk>/', fw_abnahme_detail, name='fw_abnahme_detail'),
+    path('neu/abnahme/<int:pk>/pdf/', fw_abnahme_pdf, name='fw_abnahme_pdf'),
     path('neu/dokumente/', fw_dokumente, name='fw_dokumente'),
     path('neu/dokumente/neu/', fw_dokument_neu, name='fw_dokument_neu'),
     # Profil-Menü
