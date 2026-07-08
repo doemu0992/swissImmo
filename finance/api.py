@@ -313,20 +313,42 @@ def update_kreditor(request, rechnung_id: int, payload: KreditorUpdateSchema):
     rechnung.status = 'freigegeben'
     rechnung.save()
 
-    # SCHRITT 1: Aufwand buchen (Aufwand an Kreditoren)
+    # SCHRITT 1: Aufwand buchen (Aufwand an Kreditoren) — mit Vorsteuer-Split
     if war_neu and rechnung.konto:
         try:
             konto_kreditoren = Buchungskonto.objects.get(nummer="2000")
+            brutto = rechnung.betrag or Decimal('0.00')
+            # Vorsteuer aus Bruttobetrag herausrechnen (falls MWST-Satz gesetzt)
+            vorsteuer = Decimal('0.00')
+            if (rechnung.mwst_satz or 0) > 0:
+                satz = rechnung.mwst_satz
+                vorsteuer = (brutto * satz / (Decimal('100') + satz)).quantize(Decimal('0.01'))
+                rechnung.mwst_betrag = vorsteuer
+                rechnung.save(update_fields=['mwst_betrag'])
+            netto_aufwand = brutto - vorsteuer
             Buchung.objects.create(
                 datum=rechnung.datum or timezone.now().date(),
                 beleg_text=f"Rechnung {rechnung.lieferant} - {rechnung.referenz}",
                 liegenschaft=rechnung.liegenschaft,
-                soll_konto=rechnung.konto,          # Aufwand
-                haben_konto=konto_kreditoren,       # Verbindlichkeit
-                betrag=rechnung.betrag,
+                soll_konto=rechnung.konto,          # Aufwand (netto)
+                haben_konto=konto_kreditoren,       # Verbindlichkeit (brutto -> zwei Buchungen)
+                betrag=netto_aufwand,
                 kreditoren_rechnung=rechnung,
                 erstellt_von=request.user
             )
+            if vorsteuer > 0:
+                konto_vorsteuer, _ = Buchungskonto.objects.get_or_create(
+                    nummer="1170", defaults={'bezeichnung': 'Vorsteuer (MWST)', 'typ': 'bilanz'})
+                Buchung.objects.create(
+                    datum=rechnung.datum or timezone.now().date(),
+                    beleg_text=f"Vorsteuer {rechnung.mwst_satz}% {rechnung.lieferant}",
+                    liegenschaft=rechnung.liegenschaft,
+                    soll_konto=konto_vorsteuer,     # Vorsteuer-Guthaben
+                    haben_konto=konto_kreditoren,
+                    betrag=vorsteuer,
+                    kreditoren_rechnung=rechnung,
+                    erstellt_von=request.user
+                )
         except Buchungskonto.DoesNotExist:
             pass
 
@@ -480,8 +502,10 @@ def import_standard_kontenplan(request):
     standard_konten = [
         {"nummer": "1020", "bezeichnung": "Bank", "typ": "bilanz", "is_hnk_relevant": False},
         {"nummer": "1100", "bezeichnung": "Forderungen (Debitoren)", "typ": "bilanz", "is_hnk_relevant": False},
+        {"nummer": "1170", "bezeichnung": "Vorsteuer (MWST)", "typ": "bilanz", "is_hnk_relevant": False},
         {"nummer": "1190", "bezeichnung": "Durchlaufkonto Weiterverrechnungen", "typ": "bilanz", "is_hnk_relevant": False},
         {"nummer": "2000", "bezeichnung": "Verbindlichkeiten (Kreditoren)", "typ": "bilanz", "is_hnk_relevant": False},
+        {"nummer": "2200", "bezeichnung": "Geschuldete MWST (Umsatzsteuer)", "typ": "bilanz", "is_hnk_relevant": False},
         {"nummer": "3000", "bezeichnung": "Mieterträge Wohnungen", "typ": "ertrag", "is_hnk_relevant": False},
         {"nummer": "3010", "bezeichnung": "Mieterträge Gewerbe/Parkplätze", "typ": "ertrag", "is_hnk_relevant": False},
         {"nummer": "3020", "bezeichnung": "Nebenkosten Akonto-Zahlungen", "typ": "ertrag", "is_hnk_relevant": False},

@@ -1,0 +1,47 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}MWST-Abrechnung — swissImmo{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-1">MWST-Abrechnung</h1>
+<p class="text-sm text-slate-500 mb-5">Geschuldete Umsatzsteuer minus Vorsteuer = Zahllast gegenüber der ESTV.
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+
+<form method="get" class="flex flex-wrap items-end gap-3 mb-6">
+    {% if request.GET.lg %}<input type="hidden" name="lg" value="{{ request.GET.lg }}">{% endif %}
+    <div><label class="block text-xs font-semibold text-slate-500 mb-1">Jahr</label>
+        <select name="jahr" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+            {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
+        </select></div>
+    <div><label class="block text-xs font-semibold text-slate-500 mb-1">Periode</label>
+        <select name="quartal" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+            <option value="" {% if not quartal %}selected{% endif %}>Ganzes Jahr</option>
+            {% for q in "1234" %}<option value="{{ q }}" {% if quartal == q|stringformat:'s' %}selected{% endif %}>{{ q }}. Quartal</option>{% endfor %}
+        </select></div>
+    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Anzeigen</button>
+</form>
+
+<div class="max-w-xl bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400 font-semibold">
+        Periode {{ von|date:"d.m.Y" }} – {{ bis|date:"d.m.Y" }}</div>
+    <div class="divide-y divide-slate-50">
+        <div class="flex items-center justify-between px-5 py-4">
+            <div><div class="text-sm font-medium text-slate-800">Geschuldete Umsatzsteuer</div>
+                <div class="text-xs text-slate-400">Konto 2200 · Ausgangs-MWST auf optierte Mieten</div></div>
+            <div class="text-lg font-bold text-slate-800 tabular-nums">CHF {{ umsatzsteuer|chf }}</div>
+        </div>
+        <div class="flex items-center justify-between px-5 py-4">
+            <div><div class="text-sm font-medium text-slate-800">− Vorsteuer</div>
+                <div class="text-xs text-slate-400">Konto 1170 · abziehbare MWST auf Kreditoren</div></div>
+            <div class="text-lg font-bold text-emerald-600 tabular-nums">CHF {{ vorsteuer|chf }}</div>
+        </div>
+        <div class="flex items-center justify-between px-5 py-4 bg-indigo-50/40">
+            <div><div class="text-sm font-bold text-slate-900">Zahllast an ESTV</div>
+                <div class="text-xs text-slate-400">Umsatzsteuer − Vorsteuer</div></div>
+            <div class="text-2xl font-extrabold {% if zahllast >= 0 %}text-indigo-700{% else %}text-emerald-600{% endif %} tabular-nums">CHF {{ zahllast|chf }}</div>
+        </div>
+    </div>
+</div>
+<p class="text-xs text-slate-400 mt-4 max-w-xl">Hinweis: Die Vermietung ist grundsätzlich von der MWST ausgenommen —
+    MWST fällt nur bei <b>optierten</b> Objekten an (Option nach Art. 22 MWSTG, i. d. R. Gewerbe). Diese Auswertung
+    dient der Vorbereitung; die effektive MWST-Deklaration erfolgt über das ESTV-Portal. Werte bitte mit dem Treuhänder prüfen.</p>
+{% endblock %}

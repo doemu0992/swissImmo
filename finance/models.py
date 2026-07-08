@@ -156,7 +156,9 @@ class KreditorenRechnung(models.Model):
     lieferant = models.CharField(max_length=200, blank=True)
     datum = models.DateField(null=True, blank=True)
     faellig_am = models.DateField(null=True, blank=True)
-    betrag = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    betrag = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Bruttobetrag inkl. MWST
+    mwst_satz = models.DecimalField("MWST-Satz (%)", max_digits=4, decimal_places=1, default=Decimal('0.0'))  # 🔥 NEU (0 = keine Vorsteuer)
+    mwst_betrag = models.DecimalField("Vorsteuer (CHF)", max_digits=10, decimal_places=2, default=Decimal('0.00'))  # 🔥 NEU
     iban = models.CharField(max_length=50, blank=True)
     referenz = models.CharField(max_length=100, blank=True)
 

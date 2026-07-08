@@ -1463,6 +1463,9 @@ def fw_sollstellung_run(request):
     except Buchungskonto.DoesNotExist:
         messages.error(request, "Standard-Konten (1100, 3000, 3020) fehlen. Bitte zuerst Kontenplan laden.")
         return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
+    # MWST-Konto sicherstellen (für optierte Verträge)
+    konto_mwst, _ = Buchungskonto.objects.get_or_create(
+        nummer="2200", defaults={'bezeichnung': 'Geschuldete MWST (Umsatzsteuer)', 'typ': 'bilanz'})
 
     vertraege = (Mietvertrag.objects.filter(status='aktiv', beginn__lte=end_date)
                  .exclude(ende__lt=start_date).select_related('mieter', 'einheit__liegenschaft'))
@@ -1479,9 +1482,13 @@ def fw_sollstellung_run(request):
             nk = round((v.nebenkosten or Decimal('0')) * faktor, 2)
             if netto + nk <= 0:
                 continue
+            # Ausgangs-MWST bei optierten Verträgen (Art. 22 MWSTG)
+            mwst = Decimal('0.00')
+            if v.mwst_pflichtig and (v.mwst_satz or 0) > 0:
+                mwst = round((netto + nk) * (v.mwst_satz / Decimal('100')), 2)
             rechnung = DebitorenRechnung.objects.create(
                 vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
-                titel=titel, betrag=netto + nk, faellig_am=start_date)
+                titel=titel, betrag=netto + nk + mwst, faellig_am=start_date)
             if netto > 0:
                 Buchung.objects.create(datum=start_date, beleg_text=f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
                                        liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_ertrag,
@@ -1490,6 +1497,10 @@ def fw_sollstellung_run(request):
                 Buchung.objects.create(datum=start_date, beleg_text=f"NK-Akonto {v.mieter} - {monat:02d}/{jahr}",
                                        liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_nk,
                                        betrag=nk, debitoren_rechnung=rechnung, erstellt_von=request.user)
+            if mwst > 0:
+                Buchung.objects.create(datum=start_date, beleg_text=f"MWST {v.mwst_satz}% {v.mieter} - {monat:02d}/{jahr}",
+                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_mwst,
+                                       betrag=mwst, debitoren_rechnung=rechnung, erstellt_von=request.user)
             erstellt += 1
 
     log_aktion(request, "Sollstellung ausgeführt", titel, f"{erstellt} Rechnungen erstellt")
@@ -1960,6 +1971,7 @@ def fw_vertrag_neu_speichern(request):
             verteilschluessel=P.get('verteilschluessel', 'm2'),
             zahlungsrhythmus=P.get('zahlungsrhythmus', 'monatlich'),
             mwst_pflichtig=P.get('mwst_pflichtig') == 'on',
+            mwst_satz=dec('mwst_satz') or Decimal('8.1'),
             weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
             basis_referenzzinssatz=dec('basis_referenzzinssatz') or Decimal('1.75'),
             basis_lik_punkte=dec('basis_lik_punkte') or Decimal('107.1'),
@@ -2714,3 +2726,54 @@ def fw_kaution_aktion(request, vertrag_id):
                    f"Rückzahlung CHF {rueck}, Abzug CHF {abzug}")
         messages.success(request, f"✅ Rückzahlung erfasst: CHF {rueck} an Mieter, CHF {abzug} einbehalten.")
     return redirect(f'/neu/vertraege/{v.id}/')
+
+
+# ============================================================
+# MWST-AUSWERTUNG (Umsatzsteuer vs. Vorsteuer = Zahllast)
+# ============================================================
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_mwst(request):
+    """MWST-Abrechnung: geschuldete Umsatzsteuer (2200) minus Vorsteuer (1170) = Zahllast."""
+    from finance.models import Buchungskonto, Buchung
+    from django.db.models import Sum
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.now().date()
+
+    try:
+        jahr = int(request.GET.get('jahr') or heute.year)
+    except ValueError:
+        jahr = heute.year
+    quartal = request.GET.get('quartal', '')  # '', '1'..'4'
+    if quartal in ('1', '2', '3', '4'):
+        q = int(quartal)
+        von = date(jahr, (q - 1) * 3 + 1, 1)
+        m_end = q * 3
+        _, ld = _calendar.monthrange(jahr, m_end)
+        bis = date(jahr, m_end, ld)
+    else:
+        von, bis = date(jahr, 1, 1), date(jahr, 12, 31)
+
+    qs = Buchung.objects.filter(datum__gte=von, datum__lte=bis)
+    if aktive_lg:
+        qs = qs.filter(liegenschaft=aktive_lg)
+
+    def saldo(nummer, soll_positiv):
+        k = Buchungskonto.objects.filter(nummer=nummer).first()
+        if not k:
+            return Decimal('0.00')
+        soll = qs.filter(soll_konto=k).aggregate(s=Sum('betrag'))['s'] or Decimal('0.00')
+        haben = qs.filter(haben_konto=k).aggregate(s=Sum('betrag'))['s'] or Decimal('0.00')
+        return (soll - haben) if soll_positiv else (haben - soll)
+
+    umsatzsteuer = saldo('2200', soll_positiv=False)   # geschuldete MWST (Haben-Saldo)
+    vorsteuer = saldo('1170', soll_positiv=True)        # Vorsteuer-Guthaben (Soll-Saldo)
+    zahllast = umsatzsteuer - vorsteuer
+
+    return render(request, 'fw/mwst.html', {
+        **basis, 'nav': 'mwst', 'jahr': jahr, 'quartal': quartal,
+        'von': von, 'bis': bis,
+        'umsatzsteuer': umsatzsteuer, 'vorsteuer': vorsteuer, 'zahllast': zahllast,
+        'jahre': list(range(heute.year, heute.year - 5, -1)),
+    })

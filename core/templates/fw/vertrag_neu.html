@@ -169,9 +169,15 @@
                     </div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Mietzins brutto (CHF)</label>
                     <input id="s_brutto" type="text" readonly class="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2.5 mb-3 text-slate-600">
-                    <label class="flex items-center gap-2 text-sm text-slate-700 mb-3">
-                        <input type="checkbox" name="mwst_pflichtig" onchange="live()" class="accent-indigo-600"> MWST-pflichtig <span class="text-xs text-slate-400">(v. a. Gewerbe)</span>
-                    </label>
+                    <div class="flex items-center gap-3 mb-3 flex-wrap">
+                        <label class="flex items-center gap-2 text-sm text-slate-700">
+                            <input type="checkbox" name="mwst_pflichtig" id="s_mwst" onchange="document.getElementById('mwst-satz-box').classList.toggle('hidden', !this.checked); live()" class="accent-indigo-600"> MWST-pflichtig <span class="text-xs text-slate-400">(optiert, v. a. Gewerbe)</span>
+                        </label>
+                        <div id="mwst-satz-box" class="hidden flex items-center gap-1.5">
+                            <input type="number" step="0.1" name="mwst_satz" value="8.1" oninput="live()" class="w-20 bg-slate-100 rounded-lg text-sm px-2 py-1.5 text-right">
+                            <span class="text-xs text-slate-400">% Satz</span>
+                        </div>
+                    </div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Mietzinsvorbehalte</label>
                     <textarea name="weitere_vorbehalte" rows="2" oninput="live()" placeholder="z. B. Vorbehalt weiterer Referenzzins-/Teuerungsanpassungen" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 mb-4"></textarea>
 
