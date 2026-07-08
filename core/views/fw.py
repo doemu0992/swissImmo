@@ -2927,6 +2927,24 @@ def fw_vorlagen(request):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_vorlagen_standard(request):
+    """Legt die vorbelegten Standardvorlagen an (fehlende), die dann editierbar sind."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.services.vorlagen_defaults import seed_standard_vorlagen
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_vorlagen')
+    n = seed_standard_vorlagen()
+    log_aktion(request, "Standardvorlagen erstellt", f"{n} neu", '')
+    if n:
+        messages.success(request, f"✅ {n} Standardvorlage(n) erstellt — jederzeit unter 'Bearbeiten' anpassbar.")
+    else:
+        messages.success(request, "Alle Standardvorlagen sind bereits vorhanden.")
+    return redirect('fw_vorlagen')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_vorlage_form(request, pk=None):
     from django.shortcuts import redirect
     from django.contrib import messages

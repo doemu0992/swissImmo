@@ -3,11 +3,19 @@
 {% block content %}
 <div class="flex items-center justify-between mb-1">
     <h1 class="text-3xl font-extrabold text-slate-900">Vorlagen</h1>
-    <a href="/neu/vorlagen/neu/" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
-        <i class="fa-solid fa-plus mr-1.5"></i> Vorlage erstellen
-    </a>
+    <div class="flex items-center gap-2">
+        <form method="post" action="/neu/vorlagen/standard/">
+            {% csrf_token %}
+            <button class="bg-white border border-slate-200 hover:border-indigo-300 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors" title="Legt fehlende Standardvorlagen mit vorbelegtem Text an">
+                <i class="fa-solid fa-wand-magic-sparkles mr-1.5 text-indigo-500"></i> Standardvorlagen erstellen
+            </button>
+        </form>
+        <a href="/neu/vorlagen/neu/" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+            <i class="fa-solid fa-plus mr-1.5"></i> Vorlage erstellen
+        </a>
+    </div>
 </div>
-<p class="text-sm text-slate-500 mb-6">Wiederverwendbare Text-/Brief-Vorlagen mit Platzhaltern für Korrespondenz.</p>
+<p class="text-sm text-slate-500 mb-6">Wiederverwendbare Text-/Brief-Vorlagen mit Platzhaltern für Korrespondenz. „Standardvorlagen erstellen" legt vorbelegte Texte für alle Bereiche an, die du dann anpassen kannst.</p>
 
 {% if messages %}
 <div class="space-y-2 mb-4 max-w-3xl">
@@ -38,8 +46,14 @@
 {% else %}
 <div class="bg-white rounded-xl border border-slate-200 p-10 text-center max-w-2xl">
     <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl mx-auto mb-3"><i class="fa-solid fa-file-lines"></i></div>
-    <p class="text-sm text-slate-500 mb-4">Noch keine Vorlagen. Erstelle deine erste Brief- oder Mahnungsvorlage.</p>
-    <a href="/neu/vorlagen/neu/" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"><i class="fa-solid fa-plus mr-1.5"></i>Vorlage erstellen</a>
+    <p class="text-sm text-slate-500 mb-4">Noch keine Vorlagen. Lege mit einem Klick die vorbelegten Standardvorlagen an — oder erstelle eine eigene.</p>
+    <div class="flex items-center justify-center gap-2">
+        <form method="post" action="/neu/vorlagen/standard/">
+            {% csrf_token %}
+            <button class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Standardvorlagen erstellen</button>
+        </form>
+        <a href="/neu/vorlagen/neu/" class="inline-block bg-white border border-slate-200 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-lg hover:border-indigo-300"><i class="fa-solid fa-plus mr-1.5"></i>Eigene Vorlage</a>
+    </div>
 </div>
 {% endif %}
 {% endblock %}
