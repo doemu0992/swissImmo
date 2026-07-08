@@ -350,6 +350,51 @@ class MieterkontoTests(TestCase):
         self.assertEqual(r2['Content-Type'], 'application/pdf')
 
 
+class SicherheitsIsolationTests(TestCase):
+    """Stellt sicher, dass Portale strikt isoliert sind (keine Cross-Tenant-Lecks)."""
+
+    def test_mieter_kann_keine_team_seite(self):
+        lg, e, m, v = _basis_objekte()
+        u = User.objects.create_user(username='miet_iso', password='x')
+        m.benutzer = u; m.save()
+        c = Client(); c.force_login(u)
+        # /neu/ ist team-gated -> Mieter wird ab-/weggeleitet, sieht keine Verwaltungsdaten
+        r = c.get('/neu/debitoren/')
+        self.assertdenied(r)
+
+    def test_eigentuemer_fremde_freigabe_404(self):
+        from tickets.models import SchadenMeldung, HandwerkerAuftrag
+        from crm.models import Handwerker
+        lg, e, m, v = _basis_objekte()
+        eig_lg = Liegenschaft.objects.create(strasse='Eig 1', plz='3000', ort='Bern')
+        md = Mandant.objects.create(firma_oder_name='Eig AG'); eig_lg.mandant = md; eig_lg.save()
+        u = User.objects.create_user(username='eig_iso', password='x'); md.benutzer = u; md.save()
+        # Freigabe an FREMDER Liegenschaft (nicht dem Mandanten zugeordnet)
+        hw = Handwerker.objects.create(firma='HW')
+        t = SchadenMeldung.objects.create(liegenschaft=lg, titel='X', beschreibung='y')
+        a = HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, freigabe_status='ausstehend')
+        c = Client(); c.force_login(u)
+        r = c.post(f'/portal/freigabe/{a.id}/', {'aktion': 'freigeben'})
+        self.assertEqual(r.status_code, 404)
+        a.refresh_from_db()
+        self.assertEqual(a.freigabe_status, 'ausstehend')  # unverändert
+
+    def test_mieter_fremdes_dokument_404(self):
+        from rentals.models import Dokument as RDok
+        from django.core.files.base import ContentFile
+        lg, e, m, v = _basis_objekte()
+        u = User.objects.create_user(username='miet_iso2', password='x'); m.benutzer = u; m.save()
+        fremd = Mieter.objects.create(typ='person', nachname='Fremd')
+        d = RDok(mieter=fremd, bezeichnung='Fremd', titel='Fremd', kategorie='x')
+        d.datei.save('f.pdf', ContentFile(b'%PDF'), save=True)
+        c = Client(); c.force_login(u)
+        self.assertEqual(c.get(f'/mieter/dokument/{d.id}/').status_code, 404)
+
+    def assertdenied(self, r):
+        # Team-Guard: entweder Redirect (weg) oder 403 — jedenfalls kein 200 mit Daten
+        self.assertIn(r.status_code, (302, 403))
+
+
 class AkontoTests(TestCase):
     def test_akonto_uebernahme(self):
         lg, e, m, v = _basis_objekte()
