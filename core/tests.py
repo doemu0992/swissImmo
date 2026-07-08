@@ -230,6 +230,36 @@ class MieterPortalTests(TestCase):
         self.assertEqual(t.gemeldet_von_id, m.id)
         self.assertEqual(t.betroffene_einheit_id, v.einheit_id)
 
+    def test_offene_rechnung_und_qr(self):
+        from finance.models import DebitorenRechnung
+        from crm.models import Verwaltung
+        m, v, u = self._mieter_login()
+        # IBAN für QR-Bill bereitstellen
+        Verwaltung.objects.create(firma='Verwaltung AG', strasse='W 1', plz='8000', ort='Zürich',
+                                  iban='CH9300762011623852957')
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=v.einheit.liegenschaft,
+                                         titel='Miete Januar', betrag=Decimal('1700'),
+                                         faellig_am=date.today(), status='offen')
+        c = Client(); c.force_login(u)
+        r = c.get('/mieter/')
+        self.assertContains(r, 'Offene Rechnungen')
+        self.assertContains(r, 'Miete Januar')
+        rech = DebitorenRechnung.objects.get(titel='Miete Januar')
+        pdf = c.get(f'/mieter/rechnung/{rech.id}/')
+        self.assertEqual(pdf.status_code, 200)
+        self.assertEqual(pdf['Content-Type'], 'application/pdf')
+
+    def test_fremde_rechnung_404(self):
+        from finance.models import DebitorenRechnung
+        m, v, u = self._mieter_login()
+        # Rechnung eines anderen Mieters
+        m2 = Mieter.objects.create(typ='person', nachname='Fremd')
+        v2 = Mietvertrag.objects.create(mieter=m2, einheit=v.einheit, beginn=date(2020, 1, 1),
+                                        netto_mietzins=Decimal('100'), nebenkosten=Decimal('0'), status='beendet')
+        fremd = DebitorenRechnung.objects.create(vertrag=v2, titel='Fremd', betrag=Decimal('50'), status='offen')
+        c = Client(); c.force_login(u)
+        self.assertEqual(c.get(f'/mieter/rechnung/{fremd.id}/').status_code, 404)
+
     def test_verwalter_erstellt_zugang(self):
         lg, e, m, v = _basis_objekte()
         u = _team_user()

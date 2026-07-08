@@ -260,9 +260,47 @@ def mieter_portal_view(request):
             'beginn': v.beginn, 'kaution': v.kautions_betrag,
         })
 
+    # Offene Rechnungen des Mieters (QR-Einzahlschein herunterladbar)
+    from finance.models import DebitorenRechnung
+    from django.utils import timezone
+    offene_qs = (DebitorenRechnung.objects
+                 .filter(vertrag__mieter=mieter, status__in=['offen', 'teilbezahlt'])
+                 .select_related('vertrag').order_by('faellig_am'))
+    heute = timezone.localdate()
+    offene = []
+    total_offen = Decimal('0.00')
+    for r in offene_qs:
+        betrag = r.offener_betrag if r.offener_betrag and r.offener_betrag > 0 else r.betrag
+        total_offen += betrag
+        offene.append({
+            'id': r.id, 'titel': r.titel, 'betrag': betrag,
+            'faellig': r.faellig_am,
+            'ueberfaellig': bool(r.faellig_am and r.faellig_am < heute),
+        })
+
     return render(request, 'core/mieter_portal.html', {
         'mieter': mieter, 'objekte': objekte, 'dokumente': dokumente,
+        'offene': offene, 'total_offen': total_offen,
     })
+
+
+@login_required
+def mieter_rechnung_qr(request, pk):
+    """QR-Einzahlschein einer offenen Rechnung des eingeloggten Mieters."""
+    from finance.models import DebitorenRechnung
+    from core.services.debitor_qr import generate_debitor_qr_pdf
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        raise Http404
+    r = get_object_or_404(DebitorenRechnung.objects.select_related(
+        'vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft'),
+        pk=pk, vertrag__mieter=mieter)
+    pdf = generate_debitor_qr_pdf(r)
+    if pdf is None:
+        raise Http404
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = f'inline; filename="Rechnung_{r.id}.pdf"'
+    return resp
 
 
 @login_required

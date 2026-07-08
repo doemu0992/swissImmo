@@ -63,6 +63,29 @@
         <div class="hinweis">Aktuell ist Ihrem Konto kein aktives Mietobjekt zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</div>
         {% endfor %}
 
+        {% if offene %}
+        <div class="card">
+            <h2><span>Offene Rechnungen</span><span style="font-size:14px; color:#dc2626;">CHF {{ total_offen|chf }}</span></h2>
+            <div class="body">
+                {% for r in offene %}
+                <div class="row" style="align-items:center;">
+                    <div>
+                        <div style="font-weight:600;">{{ r.titel }}</div>
+                        <div style="font-size:12px; color:#94a3b8;">
+                            {% if r.faellig %}fällig {{ r.faellig|date:"d.m.Y" }}{% endif %}
+                            {% if r.ueberfaellig %}<span style="color:#dc2626; font-weight:600;">· überfällig</span>{% endif %}
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span class="val">CHF {{ r.betrag|chf }}</span>
+                        <a href="/mieter/rechnung/{{ r.id }}/" target="_blank" style="background:#4338ca; color:#fff; text-decoration:none; font-size:13px; font-weight:600; padding:6px 12px; border-radius:8px; white-space:nowrap;">QR-Rechnung</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         {% if dokumente %}
         <div class="card">
             <h2>Meine Dokumente</h2>
