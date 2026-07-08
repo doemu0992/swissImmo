@@ -1,0 +1,103 @@
+{% extends 'fw/base.html' %}
+{% block title %}Assets — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-1">
+    <h1 class="text-3xl font-extrabold text-slate-900">Assets</h1>
+    <a href="/app/?tab=portfolio" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors" title="Öffnet die klassische Ansicht">
+        <i class="fa-solid fa-plus mr-1.5"></i> Gerät erfassen <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-0.5"></i>
+    </a>
+</div>
+<p class="text-sm text-slate-500 mb-5">Geräte & Anlagen mit Garantieübersicht
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/assets/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+<!-- KPI -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-plug"></i></div>
+        <div><div class="text-2xl font-bold text-indigo-600">{{ anzahl }}</div><div class="text-sm text-slate-500">Geräte</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-shield-halved"></i></div>
+        <div><div class="text-2xl font-bold text-slate-800">{{ n_aktiv }}</div><div class="text-sm text-slate-500">Garantie aktiv</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div><div class="text-2xl font-bold {% if n_bald %}text-amber-600{% else %}text-slate-800{% endif %}">{{ n_bald }}</div><div class="text-sm text-slate-500">Läuft in 90 T ab</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-hourglass-end"></i></div>
+        <div><div class="text-2xl font-bold text-slate-800">{{ n_abgelaufen }}</div><div class="text-sm text-slate-500">Abgelaufen</div></div>
+    </div>
+</div>
+
+<!-- Tabelle -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+        <div class="flex items-center gap-1.5 flex-wrap">
+            {% for wert, label in garantie_chips %}
+            <a href="?garantie={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
+               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                      {% if g_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+        <form method="get" class="ml-auto relative">
+            {% if g_filter %}<input type="hidden" name="garantie" value="{{ g_filter }}">{% endif %}
+            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" name="q" value="{{ q }}" placeholder="Gerät, Marke, Modell…"
+                   class="bg-slate-100 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+        </form>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Gerät</th>
+                <th class="px-5 py-3 font-semibold">Marke / Modell</th>
+                <th class="px-5 py-3 font-semibold">Standort</th>
+                <th class="px-5 py-3 font-semibold">Installiert</th>
+                <th class="px-5 py-3 font-semibold">Garantie bis</th>
+                <th class="px-5 py-3 font-semibold">Status</th>
+                <th class="px-5 py-3"></th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for row in rows %}
+            <tr class="hover:bg-slate-50/60 transition-colors">
+                <td class="px-5 py-3.5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid {{ row.icon }}"></i></div>
+                        <span class="font-semibold text-slate-900 capitalize">{{ row.name }}</span>
+                    </div>
+                </td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{% if row.g.marke or row.g.modell %}{{ row.g.marke }} {{ row.g.modell }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.standort }}</td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{% if row.g.installations_datum %}{{ row.g.installations_datum|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{% if row.g.garantie_bis %}{{ row.g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap {{ row.g_cls }}">{{ row.g_status }}</span></td>
+                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                    {% if row.einheit_id %}<a href="/neu/objekte/{{ row.einheit_id }}/" class="text-xs text-indigo-600 font-medium hover:underline">Objekt</a>
+                    {% elif row.lg_id %}<a href="/neu/liegenschaften/{{ row.lg_id }}/" class="text-xs text-indigo-600 font-medium hover:underline">Liegenschaft</a>{% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="px-5 py-12 text-center">
+                <div class="w-10 h-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-plug"></i></div>
+                <p class="text-sm font-medium text-slate-700">{% if q or g_filter %}Keine Treffer{% else %}Keine Geräte erfasst{% endif %}</p>
+                <p class="text-xs text-slate-400 mt-1">Geräte werden bei Objekt oder Liegenschaft in der klassischen Ansicht erfasst.</p>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<p class="text-xs text-slate-400 mt-4">
+    <i class="fa-solid fa-circle-info mr-1"></i>
+    „Läuft bald ab" umfasst Geräte, deren Garantie in den nächsten 90 Tagen endet — rechtzeitig Mängel kostenlos beheben lassen.
+</p>
+{% endblock %}
