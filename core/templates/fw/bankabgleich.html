@@ -11,7 +11,7 @@
 
 {% for m in meldung %}
 <div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium
-            {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">
+            {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% elif m.tags == 'warning' %}bg-amber-50 text-amber-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">
     {{ m }}
 </div>
 {% endfor %}
@@ -26,10 +26,20 @@
         <div class="w-11 h-11 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-list-check"></i></div>
         <div><div class="text-2xl font-bold text-slate-800">{{ anzahl }}</div><div class="text-sm text-slate-500">Offene Posten</div></div>
     </div>
-    <div class="bg-white rounded-xl border border-dashed border-slate-300 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-file-import"></i></div>
-        <div><div class="text-sm font-semibold text-slate-600">camt.053-Import</div><div class="text-xs text-slate-400">Kontoauszug-Upload folgt — QRR-Matching vorbereitet</div></div>
-    </div>
+    <form method="post" action="/neu/bankabgleich/camt-import/" enctype="multipart/form-data"
+          class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        {% csrf_token %}
+        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+        <div class="w-11 h-11 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-file-import"></i></div>
+        <div class="min-w-0 flex-1">
+            <div class="text-sm font-semibold text-slate-700 mb-1.5">camt.053-Import</div>
+            <input type="file" name="camt_datei" accept=".xml,text/xml,application/xml" required
+                   class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-600 file:text-white hover:file:bg-sky-700 file:cursor-pointer">
+        </div>
+        <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shrink-0 transition-colors">
+            <i class="fa-solid fa-upload mr-1"></i>Import
+        </button>
+    </form>
 </div>
 
 <!-- Offene Posten -->

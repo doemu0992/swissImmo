@@ -18,7 +18,7 @@ from reportlab.lib import colors
 import reportlab.lib.utils
 
 from core.utils.billing import berechne_abrechnung
-from core.utils.qr_code import draw_qr_bill
+from core.utils.qr_code import draw_qr_bill, ist_qr_iban, qrr_referenz
 
 # ==========================================
 # 1. QR RECHNUNG FÜR MIETZINS
@@ -67,12 +67,26 @@ def qr_rechnung_pdf(request, vertrag_id):
     monat_jahr = request.GET.get('monat', datetime.date.today().strftime('%m/%Y'))
     mitteilung = f"Miete {monat_jahr} - {einheit.bezeichnung}"
 
+    # Referenztyp bestimmen (SIX-Spec): QR-IBAN => QRR + Referenz, sonst NON.
+    # Monatliche Mietrechnung ohne DebitorenRechnung: synthetische QRR aus Vertrag + YYYYMM.
+    if ist_qr_iban(raw_iban):
+        try:
+            mm_str, yyyy_str = monat_jahr.split('/')
+            monat_id = int(yyyy_str) * 100 + int(mm_str)
+        except (ValueError, IndexError):
+            monat_id = int(datetime.date.today().strftime('%Y%m'))
+        ref_raw, ref_formatiert = qrr_referenz(vertrag.id, monat_id)
+        ref_typ, ref_val = "QRR", ref_raw
+    else:
+        ref_typ, ref_val = "NON", ""
+        ref_formatiert = ""
+
     qr_data = "\n".join([
         "SPC", "0200", "1", raw_iban,
         "K", creditor_name, creditor_line1, creditor_line2, "", "", "CH",
         "", "", "", "", "", "", "", f"{total_betrag:.2f}", "CHF",
         "K", debtor_name, debtor_line1, debtor_line2, "", "", "CH",
-        "NON", "", mitteilung, "EPD", ""
+        ref_typ, ref_val, mitteilung, "EPD", ""
     ])
 
     buffer = io.BytesIO()
@@ -157,6 +171,13 @@ def qr_rechnung_pdf(request, vertrag_id):
         c.drawString(x, y, creditor_line1)
         y -= lh
         c.drawString(x, y, creditor_line2)
+        if ref_formatiert:
+            y -= (lh * 1.5)
+            c.setFont("Helvetica-Bold", 8)
+            c.drawString(x, y, "Referenz")
+            y -= lh
+            c.setFont("Helvetica", 8)
+            c.drawString(x, y, ref_formatiert)
         if is_receipt:
             y -= (lh * 1.5)
             c.setFont("Helvetica-Bold", 8)
@@ -166,7 +187,7 @@ def qr_rechnung_pdf(request, vertrag_id):
             c.drawString(x, y, mitteilung)
             y -= (lh * 0.5)
         else:
-            y -= (lh * 3)
+            y -= (lh * (1.5 if ref_formatiert else 3))
         y -= (lh * 1.5)
         c.setFont("Helvetica-Bold", 8)
         c.drawString(x, y, "Zahlbar durch")
@@ -304,7 +325,11 @@ def abrechnung_pdf_view(request, periode_id):
 
         if row['nachzahlung'] and liegenschaft.iban:
             try:
-                draw_qr_bill(c, liegenschaft.iban, creditor, debtor, betrag_abs, f"NK {periode.bezeichnung} - {row['einheit']}")
+                nk_ref = None
+                if ist_qr_iban(liegenschaft.iban) and row.get('vertrag_id'):
+                    nk_ref, _ = qrr_referenz(row['vertrag_id'], 900000 + (periode.id or 0))
+                draw_qr_bill(c, liegenschaft.iban, creditor, debtor, betrag_abs,
+                             f"NK {periode.bezeichnung} - {row['einheit']}", reference=nk_ref)
                 c.showPage()
             except Exception as e:
                 print(f"QR Error: {e}")

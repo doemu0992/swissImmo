@@ -61,7 +61,7 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_obj
                            fw_personen, fw_vertraege,
                            fw_liegenschaft_detail, fw_objekt_detail, fw_vertrag_detail,
                            fw_mahnwesen, fw_bankkonten,
-                           fw_bankabgleich, fw_bankabgleich_verbuchen,
+                           fw_bankabgleich, fw_bankabgleich_verbuchen, fw_camt_import,
                            fw_person_detail, fw_person_form,
                            fw_kreditoren, fw_kreditor_bezahlen,
                            fw_schaeden, fw_schaden_detail,
@@ -170,6 +170,7 @@ urlpatterns = [
     path('neu/bankkonten/', fw_bankkonten, name='fw_bankkonten'),
     path('neu/bankabgleich/', fw_bankabgleich, name='fw_bankabgleich'),
     path('neu/bankabgleich/verbuchen/', fw_bankabgleich_verbuchen, name='fw_bankabgleich_verbuchen'),
+    path('neu/bankabgleich/camt-import/', fw_camt_import, name='fw_camt_import'),
 
     # --- DIE NEUE WEB-APP (SPA) ---
     path('app/', spa_master_view, name='spa_master'),

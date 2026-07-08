@@ -877,6 +877,180 @@ def fw_bankabgleich_verbuchen(request):
     return _r(ziel)
 
 
+def _camt_localname(tag):
+    """Entfernt den XML-Namespace ({...}Ntry -> Ntry)."""
+    return tag.split('}')[-1] if '}' in tag else tag
+
+
+def _camt_find(el, *pfad):
+    """Namespace-agnostisches Suchen entlang eines Pfads von Localnames."""
+    cur = el
+    for name in pfad:
+        gefunden = None
+        for kind in list(cur):
+            if _camt_localname(kind.tag) == name:
+                gefunden = kind
+                break
+        if gefunden is None:
+            return None
+        cur = gefunden
+    return cur
+
+
+def _camt_parse(xml_bytes):
+    """Parst einen camt.053-Kontoauszug (ISO 20022) namespace-agnostisch.
+    Gibt Liste von Gutschriften zurück: [{'betrag': Decimal, 'referenz': str,
+    'datum': date|None, 'info': str}]."""
+    import xml.etree.ElementTree as ET
+    root = ET.fromstring(xml_bytes)
+    eintraege = []
+    # Alle <Ntry>-Elemente unabhängig von der Verschachtelungstiefe
+    for ntry in root.iter():
+        if _camt_localname(ntry.tag) != 'Ntry':
+            continue
+        cdtdbt = _camt_find(ntry, 'CdtDbtInd')
+        if cdtdbt is None or (cdtdbt.text or '').strip() != 'CRDT':
+            continue  # nur Gutschriften (Zahlungseingänge)
+        amt_el = _camt_find(ntry, 'Amt')
+        if amt_el is None or not (amt_el.text or '').strip():
+            continue
+        try:
+            betrag = Decimal((amt_el.text or '0').strip())
+        except Exception:
+            continue
+        # Buchungsdatum (Element mit Text ist in ET „falsy", daher explizit is-None prüfen)
+        datum = None
+        dt_el = _camt_find(ntry, 'BookgDt', 'Dt')
+        if dt_el is None:
+            dt_el = _camt_find(ntry, 'ValDt', 'Dt')
+        if dt_el is not None and dt_el.text:
+            try:
+                datum = date.fromisoformat(dt_el.text.strip()[:10])
+            except Exception:
+                datum = None
+        # Referenz + Info aus TxDtls (kann mehrere geben; wir nehmen erste mit Strd-Ref)
+        referenz = ''
+        info = ''
+        for sub in ntry.iter():
+            ln = _camt_localname(sub.tag)
+            if ln == 'CdtrRefInf':
+                ref_el = _camt_find(sub, 'Ref')
+                if ref_el is not None and ref_el.text:
+                    referenz = ref_el.text.strip().replace(' ', '')
+            elif ln == 'Ustrd' and not info and sub.text:
+                info = sub.text.strip()
+        eintraege.append({'betrag': betrag, 'referenz': referenz, 'datum': datum, 'info': info})
+    return eintraege
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_camt_import(request):
+    """Importiert einen camt.053-Kontoauszug: Gutschriften werden per QRR-Referenz
+    den offenen Debitorenrechnungen zugeordnet und als Zahlungseingang (Bank an
+    Debitoren) verbucht."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import Buchungskonto, Buchung
+    from core.utils.qr_code import qrr_referenz
+    from core.auth import log_aktion
+
+    if request.method != 'POST':
+        return redirect('fw_bankabgleich')
+
+    datei = request.FILES.get('camt_datei')
+    if not datei:
+        messages.error(request, "Keine Datei ausgewählt.")
+        return redirect('fw_bankabgleich')
+
+    try:
+        eintraege = _camt_parse(datei.read())
+    except Exception as e:
+        messages.error(request, f"Datei konnte nicht gelesen werden (kein gültiges camt.053?): {e}")
+        return redirect('fw_bankabgleich')
+
+    if not eintraege:
+        messages.warning(request, "Keine Gutschriften (CRDT) im Kontoauszug gefunden.")
+        return redirect('fw_bankabgleich')
+
+    # Referenz-Index aller offenen/teilbezahlten Rechnungen aufbauen
+    offene = list(DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
+                  .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft'))
+    ref_index = {}
+    for r in offene:
+        schluessel = set()
+        if r.qr_referenz:
+            schluessel.add(r.qr_referenz.replace(' ', ''))
+        if r.vertrag_id:
+            raw, _ = qrr_referenz(r.vertrag_id, r.id)
+            schluessel.add(raw)
+        for s in schluessel:
+            ref_index.setdefault(s, r)
+
+    verbucht = 0
+    zugeordnet_summe = Decimal('0.00')
+    nicht_zugeordnet = 0
+    heute = timezone.now().date()
+
+    try:
+        konto_bank = Buchungskonto.objects.get(nummer="1020")
+        konto_deb = Buchungskonto.objects.get(nummer="1100")
+    except Buchungskonto.DoesNotExist:
+        konto_bank = konto_deb = None
+
+    for e in eintraege:
+        ref = e['referenz']
+        rechnung = ref_index.get(ref) if ref else None
+        if not rechnung or not rechnung.vertrag_id:
+            nicht_zugeordnet += 1
+            continue
+        offen = rechnung.offener_betrag
+        if offen <= 0:
+            continue
+        betrag = min(max(e['betrag'], Decimal('0.01')), offen)
+        vertrag = rechnung.vertrag
+        with transaction.atomic():
+            zahlung = Zahlungseingang.objects.create(
+                vertrag=vertrag, betrag=betrag,
+                datum_eingang=e['datum'] or heute,
+                buchungs_monat=(rechnung.faellig_am or rechnung.datum or heute).replace(day=1),
+                bemerkung=f"camt.053-Import {rechnung.titel}",
+                liegenschaft=vertrag.einheit.liegenschaft,
+                debitoren_rechnung=rechnung, erstellt_von=request.user, status='verbucht',
+            )
+            rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
+            rechnung.save()
+            if konto_bank and konto_deb:
+                Buchung.objects.create(
+                    datum=e['datum'] or heute,
+                    beleg_text=f"camt.053 {vertrag.mieter} - {rechnung.titel}",
+                    liegenschaft=vertrag.einheit.liegenschaft,
+                    soll_konto=konto_bank, haben_konto=konto_deb, betrag=betrag,
+                    zahlungseingang=zahlung, erstellt_von=request.user,
+                )
+        # Rechnung aus dem Index nehmen wenn voll bezahlt (verhindert Doppelzuordnung)
+        if rechnung.status == 'bezahlt':
+            for k in [k for k, v in ref_index.items() if v is rechnung]:
+                ref_index.pop(k, None)
+        verbucht += 1
+        zugeordnet_summe += betrag
+
+    log_aktion(request, "camt.053-Import", datei.name,
+               f"{verbucht} Zahlungen verbucht, CHF {zugeordnet_summe}, {nicht_zugeordnet} ohne Zuordnung")
+    if verbucht:
+        messages.success(request,
+            f"✅ {verbucht} Zahlung(en) automatisch zugeordnet und verbucht — total CHF {zugeordnet_summe}." +
+            (f" {nicht_zugeordnet} Gutschrift(en) ohne passende Referenz." if nicht_zugeordnet else ""))
+    else:
+        messages.warning(request,
+            f"Keine Gutschrift konnte zugeordnet werden ({nicht_zugeordnet} ohne passende QRR-Referenz). "
+            "Prüfe, ob die Rechnungen mit QR-Referenz erstellt wurden.")
+
+    ziel = '/neu/bankabgleich/'
+    if aktive := request.POST.get('lg'):
+        ziel += f'?lg={aktive}'
+    return redirect(ziel)
+
+
 # ============================================================
 # PERSON-DETAIL (Mieter) — in der neuen Shell
 # ============================================================

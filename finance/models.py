@@ -93,6 +93,7 @@ class DebitorenRechnung(models.Model):
     konto_haben = models.ForeignKey(Buchungskonto, on_delete=models.PROTECT, null=True, blank=True, help_text="Gegenkonto (z.B. 1190 Durchlaufkonto oder 3000 Ertrag)")
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='offen')
+    qr_referenz = models.CharField("QRR-Referenz (27-stellig)", max_length=27, blank=True, default='', db_index=True)  # 🔥 NEU (camt.053-Abgleich)
     pdf_dokument = models.FileField(upload_to='debitoren_rechnungen/', blank=True, null=True)
 
     class Meta:
@@ -102,6 +103,18 @@ class DebitorenRechnung(models.Model):
 
     def __str__(self):
         return f"{self.titel} - CHF {self.betrag} ({self.get_status_display()})"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # QRR-Referenz automatisch setzen (für QR-Rechnung + camt.053-Abgleich)
+        if not self.qr_referenz and self.pk:
+            try:
+                from core.utils.qr_code import qrr_referenz
+                raw, _ = qrr_referenz(self.vertrag_id, self.pk)
+                type(self).objects.filter(pk=self.pk).update(qr_referenz=raw)
+                self.qr_referenz = raw
+            except Exception:
+                pass
 
     # 🔥 NEU: OP-Verwaltung (Offener Betrag)
     @property

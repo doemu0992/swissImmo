@@ -15,6 +15,30 @@ def format_iban(iban):
     iban = iban.replace(" ", "")
     return " ".join(iban[i:i+4] for i in range(0, len(iban), 4))
 
+
+def ist_qr_iban(iban):
+    """QR-IBAN: Institut-ID (Stellen 5–9) im Bereich 30000–31999."""
+    raw = (iban or "").replace(" ", "").upper()
+    if len(raw) < 9 or not raw.startswith("CH"):
+        return False
+    try:
+        return 30000 <= int(raw[4:9]) <= 31999
+    except ValueError:
+        return False
+
+
+def qrr_referenz(vertrag_id, rechnung_id):
+    """27-stellige QRR-Referenz (Modulo-10-rekursiv). Gibt (raw, formatiert) zurück."""
+    basis = f"{(vertrag_id or 0):010d}{(rechnung_id or 0):016d}"
+    tabelle = [0, 9, 4, 6, 8, 2, 7, 1, 3, 5]
+    uebertrag = 0
+    for z in basis:
+        uebertrag = tabelle[(uebertrag + int(z)) % 10]
+    pruef = (10 - uebertrag) % 10
+    ref = basis + str(pruef)
+    formatiert = ' '.join([ref[0:2], ref[2:7], ref[7:12], ref[12:17], ref[17:22], ref[22:27]])
+    return ref, formatiert
+
 def draw_cross(c, x, y):
     """Zeichnet das Schweizer Kreuz in den QR Code"""
     c.setFillColorRGB(0, 0, 0)
@@ -26,14 +50,22 @@ def draw_cross(c, x, y):
     c.rect(x - bar_length/2, y - bar_width/2, bar_length, bar_width, fill=1, stroke=0)
     c.setFillColor(colors.black) # Reset auf Schwarz
 
-def draw_qr_bill(c, iban, creditor, debtor, amount, reason):
+def draw_qr_bill(c, iban, creditor, debtor, amount, reason, reference=None):
     """
     Zeichnet den offiziellen QR-Teil unten auf das Blatt.
     Funktioniert für Mietzins UND Nebenkosten.
+    reference: 27-stellige QRR-Referenz (ohne Leerzeichen). Bei QR-IBAN Pflicht.
     """
     # 1. Daten Vorbereiten
     raw_iban = iban.replace(" ", "")
     formatted_iban = format_iban(raw_iban)
+
+    # Referenztyp korrekt bestimmen (SIX-Spec): QR-IBAN => QRR + Referenz, sonst NON
+    ref_raw = (reference or "").replace(" ", "")
+    if ist_qr_iban(raw_iban) and ref_raw:
+        ref_typ, ref_val = "QRR", ref_raw
+    else:
+        ref_typ, ref_val = "NON", ""
 
     # Creditor (Empfänger = Verwaltung/Mandant)
     creditor_data = {
@@ -56,7 +88,7 @@ def draw_qr_bill(c, iban, creditor, debtor, amount, reason):
         "", "", "", "", "", "", "",
         f"{amount:.2f}", "CHF",
         "K", debtor_data['name'], debtor_data['line1'], debtor_data['line2'], "", "", "CH",
-        "NON", "", reason[:140], "EPD", ""
+        ref_typ, ref_val, reason[:140], "EPD", ""
     ])
 
     # 2. Zeichnen Starten (Unten am Blatt)
@@ -180,6 +212,10 @@ def generate_mieter_qr_pdf(mieter, vertrag, verwaltung):
     monat = timezone.now().strftime("%m/%Y")
     reason = f"Miete {vertrag.einheit.bezeichnung} - {monat}"
 
+    ref = None
+    if ist_qr_iban(iban):
+        ref, _ = qrr_referenz(vertrag.id, int(timezone.now().strftime("%Y%m")))
+
     # 2. PDF generieren
     c = canvas.Canvas(file_path, pagesize=A4)
 
@@ -192,7 +228,7 @@ def generate_mieter_qr_pdf(mieter, vertrag, verwaltung):
     c.drawString(20*mm, 235*mm, "Bitte verwenden Sie den untenstehenden Einzahlungsschein für Ihre Überweisung.")
 
     # 3. QR-Funktion aufrufen (zeichnet unten den Zahlteil)
-    draw_qr_bill(c, iban, creditor, debtor, float(amount), reason)
+    draw_qr_bill(c, iban, creditor, debtor, float(amount), reason, reference=ref)
 
     c.save()
 
@@ -227,6 +263,10 @@ def generate_mahnung_pdf(vertrag, offener_betrag, verwaltung):
 
     # Grund für den QR Code
     reason = f"Mahnung Miete {vertrag.einheit.bezeichnung}"
+
+    ref = None
+    if ist_qr_iban(iban):
+        ref, _ = qrr_referenz(vertrag.id, int(timezone.now().strftime("%Y%m")))
 
     c = canvas.Canvas(file_path, pagesize=A4)
 
@@ -328,7 +368,7 @@ def generate_mahnung_pdf(vertrag, offener_betrag, verwaltung):
     c.showPage()
 
     # --- 9. QR Code unten anfügen ---
-    draw_qr_bill(c, iban, creditor, debtor, float(offener_betrag), reason)
+    draw_qr_bill(c, iban, creditor, debtor, float(offener_betrag), reason, reference=ref)
 
     c.save()
     return f"{settings.MEDIA_URL}qr_rechnungen/{filename}"
