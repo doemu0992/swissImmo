@@ -97,6 +97,8 @@ def generate_vertrag_pdf_bytes(vertrag):
         'nk_fmt': f"{nk:,.2f}".replace(",", "'"),
         'brutto_fmt': f"{brutto:,.2f}".replace(",", "'"),
         'kaution_fmt': f"{kaution:,.2f}".replace(",", "'"),
+        'ref_fmt': f"{(vertrag.basis_referenzzinssatz or 0):.2f}",
+        'lik_fmt': f"{(vertrag.basis_lik_punkte or 0):.1f}",
         'unterschrift_path': unterschrift_path,
     }
 

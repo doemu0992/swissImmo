@@ -1838,7 +1838,7 @@ def fw_vertrag_neu_speichern(request):
             erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
             kuendigungsfrist_monate=int(P.get('kuendigungsfrist') or 3),
             kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
-            mitmieter_name=mitmieter, familienwohnung=familienwohnung,
+            mitmieter_name=mitmieter, mitmieter=zweiter_obj, familienwohnung=familienwohnung,
             anzahl_personen=int(P.get('anzahl_personen') or 1),
             besondere_vereinbarungen=P.get('besondere_vereinbarungen', '').strip(),
             mitbenutzung=P.get('mitbenutzung', '').strip(),

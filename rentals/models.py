@@ -55,6 +55,8 @@ class Mietvertrag(models.Model):
     # --- OBJEKT & NUTZUNG (🔥 NEU) ---
     familienwohnung = models.BooleanField("Familienwohnung", default=False)
     mitmieter_name = models.CharField("Ehegatte / Mitmieter", max_length=150, blank=True, default='') # 🔥 NEU
+    mitmieter = models.ForeignKey('crm.Mieter', on_delete=models.SET_NULL, null=True, blank=True,
+                                  related_name='vertraege_als_mitmieter', verbose_name="Zweiter Mieter")  # 🔥 NEU (volle Adresse)
     anzahl_personen = models.IntegerField("Anzahl Personen", default=1)
     besondere_vereinbarungen = models.TextField("Besondere Vereinbarungen", blank=True, default='')
     mitbenutzung = models.TextField("Zur Mitbenützung", blank=True, default='')      # 🔥 NEU (z.B. Waschküche, Estrich)

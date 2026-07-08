@@ -11,6 +11,7 @@
     .kopf { font-size: 8pt; color: #64748b; border-bottom: 1px solid #e2e8f0; padding-bottom: 4pt; margin-bottom: 12pt; }
     .disclaimer { font-size: 8pt; color: #64748b; margin-bottom: 12pt; }
     .sec { background-color: #f1f5f9; font-weight: bold; font-size: 10pt; padding: 4pt 7pt; margin: 14pt 0 6pt 0; }
+    .subsec { font-weight: bold; font-size: 9pt; color: #334155; margin: 9pt 0 3pt 0; }
     .sublabel { font-weight: bold; font-size: 8pt; color: #64748b; margin: 6pt 0 2pt 0; }
     .note { font-size: 8pt; color: #64748b; margin: 3pt 0; }
     .fam { font-size: 8pt; color: #b45309; background-color: #fffbeb; padding: 4pt 6pt; margin: 5pt 0; }
@@ -51,7 +52,9 @@
 
 <div class="sublabel">Mieter</div>
 {{ mieter.display_name }}{% if mieter.strasse %}<br>{{ mieter.strasse }}{% endif %}{% if mieter.plz %}<br>{{ mieter.plz }} {{ mieter.ort }}{% endif %}
-{% if vertrag.mitmieter_name %}
+{% if vertrag.mitmieter %}
+<div style="margin-top:6pt;">{{ vertrag.mitmieter.display_name }}{% if vertrag.mitmieter.strasse %}<br>{{ vertrag.mitmieter.strasse }}{% endif %}{% if vertrag.mitmieter.plz %}<br>{{ vertrag.mitmieter.plz }} {{ vertrag.mitmieter.ort }}{% endif %}</div>
+{% elif vertrag.mitmieter_name %}
 <div style="margin-top:6pt;">{{ vertrag.mitmieter_name }}{% if mieter.strasse %}<br>{{ mieter.strasse }}{% endif %}{% if mieter.plz %}<br>{{ mieter.plz }} {{ mieter.ort }}{% endif %}</div>
 {% endif %}
 <div class="note">Nachstehend «Mieter» genannt.</div>
@@ -66,6 +69,9 @@
     <tr><td class="k">Stockwerk</td><td>{{ einheit.etage|default:"—" }}</td></tr>
     <tr><td class="k">Adresse</td><td>{{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}</td></tr>
     <tr><td class="k">EGID / EWID</td><td>{{ liegenschaft.egid|default:"—" }} / {{ einheit.ewid|default:"—" }}</td></tr>
+    <tr><td class="k">Anzahl erwachsene Personen</td><td>{{ vertrag.anzahl_personen }}</td></tr>
+    {% if vertrag.nebenraeume %}<tr><td class="k">Nebenräume</td><td>{{ vertrag.nebenraeume }}</td></tr>{% endif %}
+    {% if vertrag.mitbenutzung %}<tr><td class="k">Zur Mitbenützung</td><td>{{ vertrag.mitbenutzung }}</td></tr>{% endif %}
 </table>
 <p class="note">Der Mieter verpflichtet sich, die Mietsache während der gesamten Mietdauer zum vertraglich vereinbarten Zweck, das heisst als Wohnung, zu gebrauchen. Eine wesentliche Gebrauchsänderung ist nur mit ausdrücklicher Zustimmung des Vermieters gestattet.</p>
 
@@ -84,20 +90,41 @@
     <tr><td class="k">Nettomietzins</td><td>CHF {{ miete_fmt }}</td></tr>
     <tr><td class="k">Nebenkosten ({{ vertrag.get_nk_abrechnungsart_display }})</td><td>CHF {{ nk_fmt }}</td></tr>
     <tr><td class="k b">Bruttomietzins</td><td class="b">CHF {{ brutto_fmt }}</td></tr>
-    <tr><td class="k">Zahlungsrhythmus</td><td>{{ vertrag.get_zahlungsrhythmus_display }}</td></tr>
+    <tr><td class="k">Zahlungsrhythmus</td><td>{{ vertrag.get_zahlungsrhythmus_display }}{% if vertrag.mwst_pflichtig %} (inkl. MWST){% endif %}</td></tr>
 </table>
-<p class="note">Der Mietzins ist jeweils am 1. Tag des Monats (Verfalldatum) fällig. Bei Zahlungseingängen nach dem Verfalldatum ist der Vermieter berechtigt, einen Verzugszins sowie Mahn- und Umtriebsgebühren in usanzgemässer Höhe in Rechnung zu stellen.</p>
 
-<div class="sec">5. Mietzinsdepot</div>
+<div class="subsec">4.1 Mietzinsbasis</div>
+<table class="data">
+    <tr><td class="k">Referenzzinssatz</td><td>{{ vertrag.beginn|date:"m.Y" }}, {{ ref_fmt }}%</td></tr>
+    <tr><td class="k">Landesindex der Konsumentenpreise</td><td>Basis {{ vertrag.beginn|date:"m.Y" }}, {{ lik_fmt }} Pkt.</td></tr>
+    {% if vertrag.kostensteigerung_datum %}<tr><td class="k">Kostensteigerung ausgeglichen bis</td><td>{{ vertrag.kostensteigerung_datum|date:"m.Y" }}</td></tr>{% endif %}
+</table>
+<p class="note">Der Mietzins beruht auf den obigen Grundlagen. Änderungen des Referenzzinssatzes, des Landesindexes sowie allgemeine Kostensteigerungen berechtigen zu einer Anpassung des Mietzinses nach den Bestimmungen des OR und der VMWG.</p>
+
+<div class="subsec">4.2 Mietzinszahlung</div>
+<p class="note">Der Mietzins ist jeweils am 1. Tag des Monats (Verfalldatum) im Voraus fällig. Bei Zahlungseingängen nach dem Verfalldatum ist der Vermieter berechtigt, einen Verzugszins sowie Mahn- und Umtriebsgebühren in usanzgemässer Höhe in Rechnung zu stellen.</p>
+
+<div class="subsec">4.3 Mietzinsdepot</div>
 <p class="note">Zur Sicherstellung sämtlicher vermieterseitiger Ansprüche aus dem Mietverhältnis leistet der Mieter eine Sicherheit im Sinne von Art. 257e OR von <b>CHF {{ kaution_fmt }}</b>.{% if vertrag.kautions_konto %} Kautionskonto: {{ vertrag.kautions_konto }}.{% endif %} Die Sicherheitsleistung muss bis zur Schlüsselübergabe erfolgt sein.</p>
 
-<div class="sec">6. Nebenkosten</div>
-<p class="note">Nebenkosten sind das Entgelt für die tatsächlichen Aufwendungen des Vermieters oder eines Dritten für Leistungen, die mit dem Gebrauch der Mietsache zusammenhängen, wie Heizungs-, Warmwasser- und Betriebskosten sowie öffentliche Abgaben. Abrechnungsart: {{ vertrag.get_nk_abrechnungsart_display }}.</p>
+<div class="subsec">4.4 Nebenkosten</div>
+<p class="note">Nebenkosten sind das Entgelt für die tatsächlichen Aufwendungen des Vermieters oder eines Dritten für Leistungen, die mit dem Gebrauch der Mietsache zusammenhängen, wie Heizungs-, Warmwasser- und Betriebskosten sowie öffentliche Abgaben. Abrechnungsart: {{ vertrag.get_nk_abrechnungsart_display }}. Verteilschlüssel: {{ vertrag.get_verteilschluessel_display }}.</p>
 
-<div class="sec">7. Allgemeine Bedingungen und Hausordnung</div>
+{% if vertrag.weitere_vorbehalte or vertrag.besondere_vereinbarungen %}
+<div class="sec">5. Vorbehalte und besondere Vereinbarungen</div>
+{% if vertrag.weitere_vorbehalte %}<div class="subsec">Mietzinsvorbehalte</div><p class="note">{{ vertrag.weitere_vorbehalte|linebreaksbr }}</p>{% endif %}
+{% if vertrag.besondere_vereinbarungen %}<div class="subsec">Besondere Bestimmungen</div><p class="note">{{ vertrag.besondere_vereinbarungen|linebreaksbr }}</p>{% endif %}
+<div class="sec">6. Allgemeine Bedingungen und Hausordnung</div>
+{% else %}
+<div class="sec">5. Allgemeine Bedingungen und Hausordnung</div>
+{% endif %}
 <p class="note">Die allgemeinen Bedingungen zum Mietvertrag und die Hausordnung bilden einen integrierenden Bestandteil dieses Vertrags. Die Parteien bestätigen mit ihren Unterschriften, dass sie ein vollständiges Exemplar erhalten haben und sich mit dem Inhalt einverstanden erklären. Jede Änderung oder Ergänzung bedarf zu ihrer Gültigkeit der Schriftform.</p>
 
-<div class="sec">8. Datenschutz &amp; anwendbares Recht</div>
+{% if vertrag.weitere_vorbehalte or vertrag.besondere_vereinbarungen %}
+<div class="sec">7. Datenschutz &amp; anwendbares Recht</div>
+{% else %}
+<div class="sec">6. Datenschutz &amp; anwendbares Recht</div>
+{% endif %}
 <p class="note">Im Rahmen der Leistungserbringung werden personenbezogene Daten (Name, E-Mail-Adresse, Angaben zum Mietobjekt) zum Betrieb der Verwaltungs-Plattform verarbeitet. Soweit in diesem Vertrag nichts anderes vereinbart ist, gelten die Bestimmungen des Schweizerischen Obligationenrechts (Art. 253 ff. OR). Gerichtsstand ist der Ort der gemieteten Sache.</p>
 
 <table class="sign">
@@ -111,13 +138,13 @@
             <div class="sublabel">Mieter</div>
             <br><br>
             <div class="sigline">Ort, Datum / Unterschrift</div>
-            {% if vertrag.mitmieter_name %}<div style="margin-top:24pt;" class="sigline">Ort, Datum / Unterschrift (Mitmieter)</div>{% endif %}
+            {% if vertrag.mitmieter or vertrag.mitmieter_name %}<div style="margin-top:24pt;" class="sigline">Ort, Datum / Unterschrift (Mitmieter)</div>{% endif %}
         </td>
     </tr>
 </table>
 
 <div id="footerContent" style="font-size:7pt;color:#94a3b8;text-align:center;">
-    {% if mandant %}{{ mandant.firma_oder_name }}{% else %}{{ verwaltung.firma }}{% endif %} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }} · erstellt am {{ heute|date:"d.m.Y" }}
+    {% if mandant %}{{ mandant.firma_oder_name }}{% else %}{{ verwaltung.firma }}{% endif %} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }} · erstellt am {{ heute|date:"d.m.Y" }} · Seite <pdf:pagenumber> von <pdf:pagecount>
 </div>
 
 </body>
