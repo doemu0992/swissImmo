@@ -78,7 +78,9 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_obj
                            fw_liegenschaft_form, fw_objekt_form, fw_suche,
                            fw_mandat_form, fw_mandat_loeschen,
                            fw_benutzer_form, fw_benutzer_loeschen,
-                           fw_vorlage_form, fw_vorlage_loeschen, fw_integration_test_email)
+                           fw_vorlage_form, fw_vorlage_loeschen, fw_integration_test_email,
+                           fw_bewerbungen, fw_bewerbung_detail, fw_bewerbung_status,
+                           fw_bewerbung_zu_vertrag)
 
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
@@ -143,6 +145,10 @@ urlpatterns = [
     path('neu/nebenkosten/', fw_nebenkosten, name='fw_nebenkosten'),
     path('neu/nebenkosten/<int:pk>/', fw_nebenkosten_detail, name='fw_nebenkosten_detail'),
     path('neu/nebenkosten/<int:pk>/verbuchen/', fw_nebenkosten_verbuchen, name='fw_nebenkosten_verbuchen'),
+    path('neu/bewerbungen/', fw_bewerbungen, name='fw_bewerbungen'),
+    path('neu/bewerbungen/<int:pk>/', fw_bewerbung_detail, name='fw_bewerbung_detail'),
+    path('neu/bewerbungen/<int:pk>/status/', fw_bewerbung_status, name='fw_bewerbung_status'),
+    path('neu/bewerbungen/<int:pk>/vertrag/', fw_bewerbung_zu_vertrag, name='fw_bewerbung_zu_vertrag'),
     path('neu/mietzins/', fw_mietzins, name='fw_mietzins'),
     path('neu/mietzins/<int:vertrag_id>/anpassung/', fw_mietzins_anpassung, name='fw_mietzins_anpassung'),
     path('neu/dokumente/', fw_dokumente, name='fw_dokumente'),

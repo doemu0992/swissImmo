@@ -3101,3 +3101,140 @@ def fw_mwst(request):
         'umsatzsteuer': umsatzsteuer, 'vorsteuer': vorsteuer, 'zahllast': zahllast,
         'jahre': list(range(heute.year, heute.year - 5, -1)),
     })
+
+
+# ============================================================
+# MIETPROZESS: BEWERBUNGEN → MIETER → VERTRAG (in der /neu/-Shell)
+# ============================================================
+
+BEWERBUNG_SPALTEN = [
+    ('neu', 'Neu eingegangen', 'bg-sky-50 text-sky-700'),
+    ('geprueft', 'Bonität geprüft', 'bg-amber-50 text-amber-700'),
+    ('zugesagt', 'Zusage erteilt', 'bg-emerald-50 text-emerald-700'),
+    ('abgelehnt', 'Abgelehnt', 'bg-rose-50 text-rose-700'),
+]
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_bewerbungen(request):
+    """Bewerbungen-Board, nach Status gruppiert."""
+    from mietprozess.models import Mietbewerbung
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    qs = (Mietbewerbung.objects.select_related('einheit__liegenschaft')
+          .order_by('-erstellt_am'))
+    if aktive_lg:
+        qs = qs.filter(einheit__liegenschaft=aktive_lg)
+
+    alle = list(qs)
+    spalten = []
+    for key, label, cls in BEWERBUNG_SPALTEN:
+        eintraege = [b for b in alle if b.status == key]
+        spalten.append({'key': key, 'label': label, 'cls': cls, 'items': eintraege, 'anzahl': len(eintraege)})
+
+    return render(request, 'fw/bewerbungen.html', {
+        **basis, 'nav': 'bewerbungen', 'spalten': spalten, 'gesamt': len(alle),
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_bewerbung_detail(request, pk):
+    from mietprozess.models import Mietbewerbung
+    b = get_object_or_404(Mietbewerbung.objects.select_related('einheit__liegenschaft'), id=pk)
+    basis = _global_filter(request)
+
+    dokumente = []
+    for feld, label in [('betreibungsauszug', 'Betreibungsauszug'), ('ausweiskopie', 'Ausweiskopie'),
+                        ('lohnausweis', 'Lohnausweis'), ('weitere_dokumente', 'Weitere Dokumente')]:
+        f = getattr(b, feld, None)
+        if f:
+            dokumente.append({'label': label, 'url': f.url})
+
+    status_label = dict((k, l) for k, l, _ in BEWERBUNG_SPALTEN).get(b.status, b.status)
+    from django.contrib import messages
+    return render(request, 'fw/bewerbung_detail.html', {
+        **basis, 'nav': 'bewerbungen', 'b': b, 'dokumente': dokumente,
+        'status_label': status_label, 'status_wahl': BEWERBUNG_SPALTEN,
+        'meldung': list(messages.get_messages(request)),
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_bewerbung_status(request, pk):
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from mietprozess.models import Mietbewerbung
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect(f'/neu/bewerbungen/{pk}/')
+    b = get_object_or_404(Mietbewerbung, id=pk)
+    neu = request.POST.get('status')
+    gueltig = {k for k, _, _ in BEWERBUNG_SPALTEN}
+    if neu in gueltig:
+        b.status = neu
+        b.save()
+        log_aktion(request, "Bewerbungsstatus geändert", f"{b.vorname} {b.nachname}", neu)
+        messages.success(request, f"Status auf „{dict((k,l) for k,l,_ in BEWERBUNG_SPALTEN)[neu]}“ gesetzt.")
+    return redirect(f'/neu/bewerbungen/{pk}/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_bewerbung_zu_vertrag(request, pk):
+    """Zusage: Mieter aus der Bewerbung anlegen (oder finden) und einen
+    Vertragsentwurf auf der Einheit erstellen — mit den Objekt-Defaults vorbefüllt."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from mietprozess.models import Mietbewerbung
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect(f'/neu/bewerbungen/{pk}/')
+
+    b = get_object_or_404(Mietbewerbung.objects.select_related('einheit__liegenschaft'), id=pk)
+    einheit = b.einheit
+    lg = einheit.liegenschaft
+
+    # 1. Mieter finden oder anlegen (Duplikat-Schutz über E-Mail + Name)
+    mieter = None
+    if b.email:
+        mieter = Mieter.objects.filter(email__iexact=b.email, nachname__iexact=b.nachname).first()
+    if not mieter:
+        mieter = Mieter.objects.create(
+            typ='person',
+            anrede='Frau' if b.geschlecht == 'weiblich' else 'Herr',
+            vorname=b.vorname, nachname=b.nachname,
+            geburtsdatum=b.geburtsdatum, zivilstand=b.zivilstand or '',
+            nationalitaet=b.nationalitaet or '', heimatort=b.heimatort or '',
+            erwerbsstatus=b.erwerbsstatus or '', beruf=b.beruf or '',
+            arbeitgeber=b.arbeitgeber or '', einkommen_jahr=b.einkommen_jahr or '',
+            email=b.email or '', mobile=b.mobilnummer or '',
+            strasse=b.adresse or '', plz=b.plz or '', ort=b.ort or '',
+        )
+
+    # 2. Vertragsentwurf anlegen (mit Objekt-Defaults)
+    from decimal import Decimal as _D
+    beginn = b.gewuenschter_bezugstermin or timezone.now().date()
+    kautionsmonate = einheit.standard_kautionsmonate or 0
+    netto = einheit.nettomiete_aktuell or _D('0')
+    nk = einheit.nebenkosten_aktuell or _D('0')
+    kaution = (netto + nk) * kautionsmonate if kautionsmonate else None
+
+    vertrag = Mietvertrag.objects.create(
+        mieter=mieter, einheit=einheit, status='entwurf', beginn=beginn,
+        netto_mietzins=netto, nebenkosten=nk,
+        nk_abrechnungsart=einheit.nk_abrechnungsart or 'akonto',
+        anzahl_personen=(b.anzahl_erwachsene or 1) + (b.anzahl_kinder or 0),
+        kautions_betrag=kaution,
+        basis_referenzzinssatz=einheit.ref_zinssatz or _D('1.75'),
+        basis_lik_punkte=einheit.lik_punkte or _D('107.1'),
+        besondere_vereinbarungen=(f"Haustiere: {b.haustiere_details}" if b.haustiere and b.haustiere_details else ''),
+    )
+
+    b.status = 'zugesagt'
+    b.save()
+    log_aktion(request, "Bewerbung → Vertragsentwurf", f"{mieter.display_name}",
+               f"{einheit.bezeichnung}, Entwurf #{vertrag.id}")
+    messages.success(request,
+        f"✅ Mieter angelegt und Vertragsentwurf für {einheit.bezeichnung} erstellt — "
+        f"bitte Konditionen prüfen und aktivieren.")
+    return redirect(f'/neu/vertraege/{vertrag.id}/')

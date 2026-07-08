@@ -1,0 +1,113 @@
+{% extends 'fw/base.html' %}
+{% block title %}{{ b.vorname }} {{ b.nachname }} — Bewerbung{% endblock %}
+{% block content %}
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/bewerbungen/" class="hover:text-indigo-600">Bewerbungen</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <span class="text-slate-600 font-medium">{{ b.vorname }} {{ b.nachname }}</span>
+</nav>
+
+{% for m in meldung %}
+<div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
+{% endfor %}
+
+<div class="flex items-start justify-between gap-4 mb-6">
+    <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-lg shadow-indigo-600/25">
+            <i class="fa-solid fa-user"></i>
+        </div>
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">{{ b.vorname }} {{ b.nachname }}</h1>
+            <p class="text-sm text-slate-500">{{ b.einheit.bezeichnung }} · {{ b.einheit.liegenschaft.strasse }}, {{ b.einheit.liegenschaft.ort }}</p>
+        </div>
+    </div>
+    <div class="flex flex-col items-end gap-2">
+        {% if b.hat_betreibungen %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Betreibungen vorhanden</span>
+        {% else %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700"><i class="fa-solid fa-circle-check mr-1"></i>Keine Betreibungen</span>{% endif %}
+        <span class="text-xs text-slate-400">Status: {{ status_label }}</span>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <!-- Hauptdaten -->
+    <div class="lg:col-span-2 space-y-5">
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-800 text-sm mb-3">Personalien & Kontakt</h3>
+            <dl class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                <div class="flex justify-between"><dt class="text-slate-500">Geburtsdatum</dt><dd class="text-slate-800">{{ b.geburtsdatum|date:"d.m.Y" }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Zivilstand</dt><dd class="text-slate-800">{{ b.get_zivilstand_display }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Nationalität</dt><dd class="text-slate-800">{{ b.nationalitaet }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Heimatort</dt><dd class="text-slate-800">{{ b.heimatort|default:"—" }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Mobil</dt><dd class="text-slate-800">{{ b.mobilnummer }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">E-Mail</dt><dd class="text-slate-800 truncate">{{ b.email }}</dd></div>
+                <div class="flex justify-between col-span-2"><dt class="text-slate-500">Adresse</dt><dd class="text-slate-800">{{ b.adresse }}, {{ b.plz }} {{ b.ort }}</dd></div>
+            </dl>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-800 text-sm mb-3">Beruf & Finanzen</h3>
+            <dl class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                <div class="flex justify-between"><dt class="text-slate-500">Erwerbsstatus</dt><dd class="text-slate-800">{{ b.get_erwerbsstatus_display }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Beruf</dt><dd class="text-slate-800">{{ b.beruf }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Arbeitgeber</dt><dd class="text-slate-800">{{ b.arbeitgeber|default:"—" }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Einkommen/Jahr</dt><dd class="text-slate-800">{{ b.einkommen_jahr }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Anstellung</dt><dd class="text-slate-800">{% if b.ist_unbefristet %}unbefristet{% else %}befristet{% endif %}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Bezugstermin</dt><dd class="text-slate-800">{{ b.gewuenschter_bezugstermin|date:"d.m.Y"|default:"—" }}</dd></div>
+            </dl>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-800 text-sm mb-3">Haushalt & Wünsche</h3>
+            <dl class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                <div class="flex justify-between"><dt class="text-slate-500">Personen</dt><dd class="text-slate-800">{{ b.anzahl_erwachsene }} Erw.{% if b.anzahl_kinder %} + {{ b.anzahl_kinder }} Kinder{% endif %}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Haustiere</dt><dd class="text-slate-800">{% if b.haustiere %}{{ b.haustiere_details|default:"ja" }}{% else %}nein{% endif %}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Parkplatz</dt><dd class="text-slate-800">{% if b.interesse_parkplatz %}gewünscht{% else %}nein{% endif %}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Kaution</dt><dd class="text-slate-800">{{ b.get_wunsch_kautions_typ_display }}</dd></div>
+                {% if b.schild_briefkasten %}<div class="flex justify-between col-span-2"><dt class="text-slate-500">Briefkasten-Schild</dt><dd class="text-slate-800">{{ b.schild_briefkasten }}</dd></div>{% endif %}
+                {% if b.schild_sonnerie %}<div class="flex justify-between col-span-2"><dt class="text-slate-500">Sonnerie-Schild</dt><dd class="text-slate-800">{{ b.schild_sonnerie }}</dd></div>{% endif %}
+            </dl>
+            {% if b.bemerkungen %}<p class="text-sm text-slate-600 mt-3 pt-3 border-t border-slate-100">{{ b.bemerkungen }}</p>{% endif %}
+        </div>
+    </div>
+
+    <!-- Aktionen -->
+    <div class="space-y-5">
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-800 text-sm mb-3">Dokumente</h3>
+            {% if dokumente %}
+            <div class="space-y-2">
+                {% for d in dokumente %}
+                <a href="{{ d.url }}" target="_blank" class="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700">
+                    <i class="fa-solid fa-file-pdf"></i>{{ d.label }}
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}<p class="text-sm text-slate-400 italic">Keine Dokumente hochgeladen.</p>{% endif %}
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-800 text-sm mb-3">Status ändern</h3>
+            <form method="post" action="/neu/bewerbungen/{{ b.id }}/status/" class="flex items-center gap-2">
+                {% csrf_token %}
+                <select name="status" class="flex-1 bg-slate-100 rounded-lg text-sm px-3 py-2">
+                    {% for key, label, cls in status_wahl %}
+                    <option value="{{ key }}" {% if b.status == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <button class="bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-2 rounded-lg">Setzen</button>
+            </form>
+        </div>
+
+        <div class="bg-indigo-600 rounded-xl p-5 text-white">
+            <h3 class="font-bold text-sm mb-1"><i class="fa-solid fa-file-signature mr-1"></i>Zusage & Vertrag</h3>
+            <p class="text-xs text-indigo-100 mb-3">Legt einen Mieter aus dieser Bewerbung an und erstellt einen Vertragsentwurf auf {{ b.einheit.bezeichnung }}.</p>
+            <form method="post" action="/neu/bewerbungen/{{ b.id }}/vertrag/" onsubmit="return confirm('Mieter anlegen und Vertragsentwurf erstellen?');">
+                {% csrf_token %}
+                <button class="w-full bg-white text-indigo-700 text-sm font-bold px-3 py-2.5 rounded-lg hover:bg-indigo-50">
+                    Mieter + Vertragsentwurf erstellen
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

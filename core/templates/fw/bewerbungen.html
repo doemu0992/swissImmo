@@ -1,0 +1,40 @@
+{% extends 'fw/base.html' %}
+{% block title %}Bewerbungen — swissImmo{% endblock %}
+{% block content %}
+
+<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Bewerbungen</h1>
+<p class="text-sm text-slate-500 mb-5">Mietinteressenten prüfen, zusagen und in einen Vertrag überführen
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/bewerbungen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}
+    · <span class="font-semibold text-slate-700">{{ gesamt }}</span> total</p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+    {% for sp in spalten %}
+    <div class="bg-slate-50 rounded-xl border border-slate-200 p-3">
+        <div class="flex items-center justify-between px-1 mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">{{ sp.label }}</span>
+            <span class="px-2 py-0.5 rounded-md text-xs font-semibold {{ sp.cls }}">{{ sp.anzahl }}</span>
+        </div>
+        <div class="space-y-2">
+            {% for b in sp.items %}
+            <a href="/neu/bewerbungen/{{ b.id }}/" class="block bg-white rounded-lg border border-slate-200 p-3 hover:border-indigo-300 hover:shadow-sm transition-all">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="font-semibold text-slate-900 text-sm truncate">{{ b.vorname }} {{ b.nachname }}</span>
+                    {% if b.hat_betreibungen %}<i class="fa-solid fa-triangle-exclamation text-rose-500 text-xs" title="Betreibungen"></i>
+                    {% else %}<i class="fa-solid fa-circle-check text-emerald-500 text-xs" title="Keine Betreibungen"></i>{% endif %}
+                </div>
+                <div class="text-xs text-slate-500 mt-1 truncate">{{ b.einheit.bezeichnung }} · {{ b.einheit.liegenschaft.strasse }}</div>
+                <div class="flex items-center gap-2 mt-2 text-[11px] text-slate-400">
+                    <span><i class="fa-solid fa-user mr-0.5"></i>{{ b.anzahl_erwachsene }}{% if b.anzahl_kinder %}+{{ b.anzahl_kinder }}K{% endif %}</span>
+                    {% if b.gewuenschter_bezugstermin %}<span><i class="fa-solid fa-calendar mr-0.5"></i>{{ b.gewuenschter_bezugstermin|date:"d.m.y" }}</span>{% endif %}
+                    <span class="ml-auto">{{ b.erstellt_am|date:"d.m." }}</span>
+                </div>
+            </a>
+            {% empty %}
+            <div class="text-center text-xs text-slate-400 italic py-6">Keine Bewerbungen</div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
