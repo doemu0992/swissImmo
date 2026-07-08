@@ -54,7 +54,7 @@ from core.views.application import public_application_view
 from core.views.dashboard_view import update_market_data_view, spa_master_view
 
 # 2b. Eigentümer-Portal & Login-Weiche
-from core.views.portal import portal_view, nach_login_view
+from core.views.portal import portal_view, nach_login_view, portal_dokument_download, portal_report_pdf
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_dashboard, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_liegenschaften, fw_objekte,
@@ -226,6 +226,8 @@ urlpatterns = [
 
     # --- EIGENTÜMER-PORTAL (read-only, nur eigener Mandant) ---
     path('portal/', portal_view, name='portal'),
+    path('portal/dokument/<int:pk>/', portal_dokument_download, name='portal_dokument_download'),
+    path('portal/report/', portal_report_pdf, name='portal_report_pdf'),
 
     # --- DOSSIER-SEITEN (Team-intern: alles zu einem Mieter/Objekt/Vertrag) ---
     path('dossier/mieter/<int:mieter_id>/', mieter_dossier, name='dossier_mieter'),

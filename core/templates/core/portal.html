@@ -54,18 +54,29 @@
             Guten Tag {{ mandant.firma_oder_name }} — hier finden Sie den aktuellen Stand Ihrer Liegenschaften.
         </p>
 
+        <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+            <a href="/portal/report/" target="_blank" style="background:#1e3a8a; color:#fff; text-decoration:none; padding:9px 16px; border-radius:8px; font-size:14px; font-weight:600;">📄 Portfolio-Report (PDF)</a>
+        </div>
+
         <div class="kpis">
             <div class="kpi"><div class="wert">{{ liegenschaften|length }}</div><div class="label">Liegenschaften</div></div>
-            <div class="kpi"><div class="wert">{{ total_einheiten }}</div><div class="label">Einheiten</div></div>
             <div class="kpi"><div class="wert">{{ total_vermietet }} / {{ total_einheiten }}</div><div class="label">Vermietet</div></div>
+            <div class="kpi"><div class="wert">{{ leerquote|floatformat:1 }} %</div><div class="label">Leerstandsquote</div></div>
             <div class="kpi"><div class="wert">CHF {{ total_soll|chf }}</div><div class="label">Soll-Miete / Monat</div></div>
+            <div class="kpi"><div class="wert">CHF {{ jahres_soll|chf }}</div><div class="label">Soll-Miete / Jahr</div></div>
+            {% if bruttorendite is not None %}
+            <div class="kpi"><div class="wert">{{ bruttorendite|floatformat:2 }} %</div><div class="label">Bruttorendite*</div></div>
+            {% endif %}
         </div>
+        {% if bruttorendite is not None %}
+        <p style="font-size:11px; color:#94a3b8; margin:-12px 0 20px;">* Bruttorendite = Jahres-Sollmiete / Gebäudeversicherungswert (Näherung).</p>
+        {% endif %}
 
         {% for lg in liegenschaften %}
         <div class="card">
             <h2>
                 <span>{{ lg.adresse }}{% if lg.baujahr %} · Bj. {{ lg.baujahr }}{% endif %}</span>
-                <span class="soll">CHF {{ lg.soll_monat|chf }} / Mt.</span>
+                <span class="soll">CHF {{ lg.soll_monat|chf }} / Mt.{% if lg.rendite is not None %} · {{ lg.rendite|floatformat:2 }} %{% endif %}{% if lg.leer %} · <span class="leer">{{ lg.leer }} leer</span>{% endif %}</span>
             </h2>
             <table>
                 <thead>
@@ -88,6 +99,18 @@
                 {% endfor %}
                 </tbody>
             </table>
+            {% if lg.dokumente %}
+            <div style="padding:12px 16px; border-top:1px solid #e2e8f0; background:#f8fafc;">
+                <div style="font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px;">Dokumente</div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                {% for d in lg.dokumente %}
+                    <a href="/portal/dokument/{{ d.id }}/" style="font-size:14px; color:#1e3a8a; text-decoration:none;">
+                        📎 {{ d.titel }} <span style="color:#94a3b8;">· {{ d.datum|date:"d.m.Y" }}</span>
+                    </a>
+                {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
         {% empty %}
         <div class="hinweis">Ihrem Konto sind noch keine Liegenschaften zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</div>
