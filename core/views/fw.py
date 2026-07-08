@@ -2525,9 +2525,14 @@ def fw_mietzins_anpassung(request, vertrag_id):
             messages.success(request, f"✅ Mietzinsanpassung erfasst — neu CHF {neu_netto} ab {wirksam_ab.strftime('%d.%m.%Y')}.")
             return redirect(f'/neu/vertraege/{v.id}/')
 
-        # Amtliches Solothurner Formular (Standard), sonst generische Variante
+        # SO → amtliches Original ausfüllen; andere Kantone → Nachbildung (kantonsabhängig)
+        from core.services.kantone import kanton_fuer_liegenschaft
+        kt = kanton_fuer_liegenschaft(lg)
         if request.POST.get('formular') == 'generisch':
             pdf = generate_amtliches_formular_pdf(v, daten, verwaltung=vw, mandant=mandant)
+        elif kt == 'SO':
+            from core.services.formular_fill import fill_mietzins_so
+            pdf = fill_mietzins_so(v, daten, verwaltung=vw)
         else:
             from core.services.amtliche_formulare_so import mietzins_so_pdf
             pdf = mietzins_so_pdf(v, daten, verwaltung=vw)
@@ -3601,9 +3606,15 @@ def fw_kuendigung_formular(request, pk):
     from django.http import HttpResponse
     from rentals.models import Kuendigung
     from crm.models import Verwaltung
-    from core.services.amtliche_formulare_so import kuendigung_so_pdf
+    from core.services.kantone import kanton_fuer_liegenschaft
     k = get_object_or_404(Kuendigung.objects.select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
-    pdf = kuendigung_so_pdf(k.vertrag, k, verwaltung=Verwaltung.objects.first())
+    lg = k.vertrag.einheit.liegenschaft if k.vertrag.einheit_id else None
+    if kanton_fuer_liegenschaft(lg) == 'SO':
+        from core.services.formular_fill import fill_kuendigung_so
+        pdf = fill_kuendigung_so(k.vertrag, k, verwaltung=Verwaltung.objects.first())
+    else:
+        from core.services.amtliche_formulare_so import kuendigung_so_pdf
+        pdf = kuendigung_so_pdf(k.vertrag, k, verwaltung=Verwaltung.objects.first())
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Kuendigung_{k.vertrag.mieter.nachname}.pdf"'
     return resp
