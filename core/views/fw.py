@@ -1733,6 +1733,12 @@ def fw_person_form(request, pk=None):
                 fehler.append("Nachname ist erforderlich.")
         if obj.email and '@' not in obj.email:
             fehler.append("E-Mail-Adresse ist ungültig.")
+        if obj.iban:
+            from core.services.iban import ist_gueltige_iban, formatiere_iban
+            if not ist_gueltige_iban(obj.iban):
+                fehler.append("IBAN ist ungültig (Prüfsumme stimmt nicht).")
+            else:
+                obj.iban = formatiere_iban(obj.iban)
         if fehler:
             for f in fehler:
                 messages.error(request, f"❌ {f}")

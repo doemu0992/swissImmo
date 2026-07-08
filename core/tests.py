@@ -156,6 +156,31 @@ class DatenqualitaetTests(TestCase):
         self.assertEqual(Mieter.objects.filter(nachname='Zwilling').count(), 2)
 
 
+class IbanTests(TestCase):
+    def test_validierung(self):
+        from core.services.iban import ist_gueltige_iban, formatiere_iban
+        self.assertTrue(ist_gueltige_iban('CH9300762011623852957'))
+        self.assertTrue(ist_gueltige_iban('CH93 0076 2011 6238 5295 7'))
+        self.assertFalse(ist_gueltige_iban('CH9300762011623852958'))
+        self.assertFalse(ist_gueltige_iban('HELLO'))
+        self.assertEqual(formatiere_iban('CH9300762011623852957'), 'CH93 0076 2011 6238 5295 7')
+
+    def test_person_form_lehnt_falsche_iban_ab(self):
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        r = c.post('/neu/personen/neu/', {'typ': 'person', 'nachname': 'IbanTest', 'iban': 'CH0000000000000000000'})
+        self.assertContains(r, 'IBAN ist ungültig')
+        self.assertFalse(Mieter.objects.filter(nachname='IbanTest').exists())
+
+    def test_person_form_speichert_gueltige_iban_formatiert(self):
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        r = c.post('/neu/personen/neu/', {'typ': 'person', 'nachname': 'IbanOk', 'iban': 'CH9300762011623852957'})
+        self.assertEqual(r.status_code, 302)
+        m = Mieter.objects.get(nachname='IbanOk')
+        self.assertEqual(m.iban, 'CH93 0076 2011 6238 5295 7')
+
+
 class WartungsfristTests(TestCase):
     def test_pendenz_und_rollover(self):
         from core.services.automation import generate_auto_pendenzen, _plus_monate
