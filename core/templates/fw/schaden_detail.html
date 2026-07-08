@@ -159,6 +159,14 @@
                 <div>
                     <div class="font-semibold text-slate-900">{{ a.handwerker }}</div>
                     <div class="text-xs text-slate-500">Beauftragt {{ a.beauftragt_am|date:"d.m.Y" }} · Status: {{ a.status }}</div>
+                    {% if a.freigabe_status == 'ausstehend' %}
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-700">⏳ Eigentümer-Freigabe ausstehend</span>
+                    {% elif a.freigabe_status == 'freigegeben' %}
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700">✓ Freigegeben {{ a.freigabe_datum|date:"d.m.Y" }}</span>
+                    {% elif a.freigabe_status == 'abgelehnt' %}
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-red-50 text-red-700">✗ Abgelehnt</span>
+                    {% endif %}
+                    {% if a.freigabe_kommentar %}<div class="text-xs text-slate-500 mt-1 italic">„{{ a.freigabe_kommentar }}"</div>{% endif %}
                     {% if a.bemerkung %}<div class="text-xs text-slate-500 mt-1">{{ a.bemerkung|truncatechars:100 }}</div>{% endif %}
                 </div>
                 {% if a.kreditoren_rechnung_id %}
@@ -175,6 +183,11 @@
                     {% if not a.kreditoren_rechnung_id %}
                     <label class="flex items-center gap-2 text-xs text-slate-600 mb-2">
                         <input type="checkbox" name="kreditor_erstellen" class="accent-indigo-600">Kreditorenrechnung erstellen
+                    </label>
+                    {% endif %}
+                    {% if a.freigabe_status == 'nicht_noetig' or a.freigabe_status == 'abgelehnt' %}
+                    <label class="flex items-center gap-2 text-xs text-slate-600 mb-2">
+                        <input type="checkbox" name="freigabe_anfordern" class="accent-amber-500">Eigentümer-Freigabe anfordern
                     </label>
                     {% endif %}
                     <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg">Kosten speichern</button>

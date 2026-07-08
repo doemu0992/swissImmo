@@ -2136,6 +2136,15 @@ def fw_auftrag_kosten(request, pk):
     a.kosten_geschaetzt = _dec('kosten_geschaetzt')
     a.kosten_effektiv = _dec('kosten_effektiv')
 
+    # Reparaturfreigabe anfordern: manuell oder ab Schwellenwert (CHF 1'000)
+    REPARATUR_FREIGABE_SCHWELLE = Decimal('1000')
+    freigabe_anfordern = request.POST.get('freigabe_anfordern') == 'on'
+    ueber_schwelle = (a.kosten_geschaetzt or Decimal('0')) >= REPARATUR_FREIGABE_SCHWELLE
+    if a.freigabe_status in ('nicht_noetig', 'abgelehnt') and (freigabe_anfordern or ueber_schwelle):
+        a.freigabe_status = 'ausstehend'
+        a.freigabe_datum = None
+        messages.info(request, "ℹ️ Reparatur zur Freigabe an den Eigentümer weitergeleitet (Portal).")
+
     # Optional Kreditorenrechnung erstellen
     if request.POST.get('kreditor_erstellen') == 'on' and a.kosten_effektiv and not a.kreditoren_rechnung_id:
         kr = KreditorenRechnung.objects.create(

@@ -42,7 +42,65 @@ def portal_view(request):
         return render(request, 'core/portal.html', {'mandant': None})
 
     daten = _portfolio_daten(mandant)
-    return render(request, 'core/portal.html', {'mandant': mandant, **daten})
+    freigaben = _offene_freigaben(mandant)
+    return render(request, 'core/portal.html', {'mandant': mandant, 'freigaben': freigaben, **daten})
+
+
+def _offene_freigaben(mandant):
+    """Handwerker-Aufträge, die auf die Freigabe dieses Eigentümers warten."""
+    from tickets.models import HandwerkerAuftrag
+    lg_ids = list(mandant.liegenschaften.values_list('id', flat=True))
+    qs = (HandwerkerAuftrag.objects
+          .filter(freigabe_status='ausstehend', ticket__liegenschaft_id__in=lg_ids)
+          .select_related('ticket__liegenschaft', 'handwerker').order_by('-id'))
+    out = []
+    for a in qs:
+        t = a.ticket
+        out.append({
+            'id': a.id,
+            'titel': t.titel,
+            'liegenschaft': f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}" if t.liegenschaft_id else '—',
+            'handwerker': a.handwerker.firma if a.handwerker_id else '—',
+            'kosten': a.kosten_geschaetzt,
+            'bemerkung': a.bemerkung,
+        })
+    return out
+
+
+@login_required
+def portal_freigabe(request, pk):
+    """Eigentümer gibt einen Reparatur-Auftrag frei oder lehnt ihn ab."""
+    from django.utils import timezone
+    from tickets.models import HandwerkerAuftrag, TicketNachricht
+    mandant = getattr(request.user, 'mandant_profil', None)
+    if mandant is None or request.method != 'POST':
+        raise Http404
+    lg_ids = list(mandant.liegenschaften.values_list('id', flat=True))
+    a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket'),
+                          pk=pk, ticket__liegenschaft_id__in=lg_ids)
+    if a.freigabe_status != 'ausstehend':
+        return redirect('portal')
+    aktion = request.POST.get('aktion')
+    kommentar = (request.POST.get('kommentar') or '').strip()
+    if aktion == 'freigeben':
+        a.freigabe_status = 'freigegeben'
+    elif aktion == 'ablehnen':
+        a.freigabe_status = 'abgelehnt'
+    else:
+        return redirect('portal')
+    a.freigabe_datum = timezone.now()
+    a.freigabe_kommentar = kommentar
+    a.save(update_fields=['freigabe_status', 'freigabe_datum', 'freigabe_kommentar'])
+    # Aktennotiz am Ticket hinterlassen (für die Verwaltung sichtbar)
+    try:
+        label = 'freigegeben' if a.freigabe_status == 'freigegeben' else 'abgelehnt'
+        TicketNachricht.objects.create(
+            ticket=a.ticket, absender_name=mandant.firma_oder_name, typ='system',
+            nachricht=f"Reparatur vom Eigentümer {label}." + (f" Kommentar: {kommentar}" if kommentar else ''),
+            is_intern=True)
+    except Exception:
+        pass
+    return redirect('portal')
 
 
 def _portfolio_daten(mandant):

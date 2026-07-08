@@ -72,9 +72,24 @@ class HandwerkerAuftrag(models.Model):
     kosten_effektiv = models.DecimalField("Effektive Kosten (CHF)", max_digits=10, decimal_places=2, null=True, blank=True)
     kreditoren_rechnung = models.ForeignKey('finance.KreditorenRechnung', on_delete=models.SET_NULL, null=True, blank=True, related_name='handwerker_auftraege')
 
+    # 🔥 Reparaturfreigabe durch den Eigentümer (Portal)
+    FREIGABE_CHOICES = [
+        ('nicht_noetig', 'Keine Freigabe nötig'),
+        ('ausstehend', 'Freigabe ausstehend'),
+        ('freigegeben', 'Freigegeben'),
+        ('abgelehnt', 'Abgelehnt'),
+    ]
+    freigabe_status = models.CharField("Freigabe-Status", max_length=20, choices=FREIGABE_CHOICES, default='nicht_noetig')
+    freigabe_datum = models.DateTimeField("Freigabe am", null=True, blank=True)
+    freigabe_kommentar = models.TextField("Kommentar Eigentümer", blank=True, default='')
+
     class Meta:
         verbose_name = "Handwerker-Auftrag"
         db_table = 'core_handwerkerauftrag'
+
+    @property
+    def freigabe_ausstehend(self):
+        return self.freigabe_status == 'ausstehend'
 
 
 class TicketNachricht(models.Model):
