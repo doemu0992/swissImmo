@@ -67,6 +67,11 @@ class HandwerkerAuftrag(models.Model):
     beauftragt_am = models.DateTimeField(auto_now_add=True)
     bemerkung = models.TextField(blank=True)
 
+    # 🔥 Kostenkontrolle (Reparatur-Budget)
+    kosten_geschaetzt = models.DecimalField("Kostenschätzung (CHF)", max_digits=10, decimal_places=2, null=True, blank=True)
+    kosten_effektiv = models.DecimalField("Effektive Kosten (CHF)", max_digits=10, decimal_places=2, null=True, blank=True)
+    kreditoren_rechnung = models.ForeignKey('finance.KreditorenRechnung', on_delete=models.SET_NULL, null=True, blank=True, related_name='handwerker_auftraege')
+
     class Meta:
         verbose_name = "Handwerker-Auftrag"
         db_table = 'core_handwerkerauftrag'

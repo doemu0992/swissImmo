@@ -86,24 +86,54 @@
     </div>
 </div>
 
-<!-- HANDWERKER -->
+<!-- HANDWERKER & KOSTEN -->
 <div data-panel="sc" id="sc-handwerker" class="hidden">
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <table class="w-full text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Handwerker</th><th class="px-5 py-3 font-semibold">Beauftragt</th><th class="px-5 py-3 font-semibold">Status</th><th class="px-5 py-3 font-semibold">Bemerkung</th>
-            </tr></thead>
-            <tbody class="divide-y divide-slate-50">
-            {% for a in auftraege %}
-            <tr><td class="px-5 py-3 font-medium text-slate-900">{{ a.handwerker }}</td>
-                <td class="px-5 py-3 text-slate-600">{{ a.beauftragt_am|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3 text-slate-600">{{ a.status }}</td>
-                <td class="px-5 py-3 text-slate-500">{{ a.bemerkung|default:"—"|truncatechars:60 }}</td></tr>
-            {% empty %}
-            <tr><td colspan="4" class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch kein Handwerker beauftragt.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
+    {% load chf %}
+    <!-- Kosten-Summe -->
+    <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-4">
+            <div class="text-2xl font-bold text-slate-700">CHF {{ kosten_geschaetzt|chf }}</div><div class="text-sm text-slate-500">Kostenschätzung total</div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-4">
+            <div class="text-2xl font-bold text-indigo-600">CHF {{ kosten_effektiv|chf }}</div><div class="text-sm text-slate-500">Effektive Kosten total</div>
+        </div>
     </div>
+
+    <div class="space-y-4">
+        {% for a in auftraege %}
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <div class="flex items-start justify-between gap-3 mb-3">
+                <div>
+                    <div class="font-semibold text-slate-900">{{ a.handwerker }}</div>
+                    <div class="text-xs text-slate-500">Beauftragt {{ a.beauftragt_am|date:"d.m.Y" }} · Status: {{ a.status }}</div>
+                    {% if a.bemerkung %}<div class="text-xs text-slate-500 mt-1">{{ a.bemerkung|truncatechars:100 }}</div>{% endif %}
+                </div>
+                {% if a.kreditoren_rechnung_id %}
+                <a href="/neu/kreditoren/" class="text-xs font-semibold text-emerald-600 hover:underline shrink-0"><i class="fa-solid fa-link mr-1"></i>Kreditor #{{ a.kreditoren_rechnung_id }}</a>
+                {% endif %}
+            </div>
+            <form method="post" action="/neu/auftrag/{{ a.id }}/kosten/" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                {% csrf_token %}
+                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kostenschätzung (CHF)</label>
+                    <input name="kosten_geschaetzt" value="{{ a.kosten_geschaetzt|default_if_none:'' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2"></div>
+                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Effektive Kosten (CHF)</label>
+                    <input name="kosten_effektiv" value="{{ a.kosten_effektiv|default_if_none:'' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2"></div>
+                <div>
+                    {% if not a.kreditoren_rechnung_id %}
+                    <label class="flex items-center gap-2 text-xs text-slate-600 mb-2">
+                        <input type="checkbox" name="kreditor_erstellen" class="accent-indigo-600">Kreditorenrechnung erstellen
+                    </label>
+                    {% endif %}
+                    <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg">Kosten speichern</button>
+                </div>
+            </form>
+        </div>
+        {% empty %}
+        <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch kein Handwerker beauftragt.</div>
+        {% endfor %}
+    </div>
+    <p class="text-xs text-slate-400 mt-3"><i class="fa-solid fa-circle-info mr-1"></i>
+        Beim Anhaken von „Kreditorenrechnung erstellen" wird aus den effektiven Kosten eine Kreditorenrechnung (Status Neu)
+        angelegt und mit diesem Auftrag verknüpft — Freigabe und Zahlung erfolgen im Kreditoren-Tab.</p>
 </div>
 {% endblock %}

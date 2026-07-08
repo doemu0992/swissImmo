@@ -1334,17 +1334,65 @@ def fw_schaden_detail(request, pk):
     melder = (t.gemeldet_von.display_name if t.gemeldet_von_id
               else f"{t.melder_vorname or ''} {t.melder_nachname or ''}".strip() or '—')
 
+    auftraege = list(auftraege)
+    kosten_geschaetzt = sum((a.kosten_geschaetzt or Decimal('0')) for a in auftraege)
+    kosten_effektiv = sum((a.kosten_effektiv or Decimal('0')) for a in auftraege)
+
     tab_liste = [
         ('uebersicht', 'Übersicht', None),
         ('verlauf', 'Verlauf', nachrichten.count() or None),
-        ('handwerker', 'Handwerker', auftraege.count() or None),
+        ('handwerker', 'Handwerker & Kosten', len(auftraege) or None),
     ]
     return render(request, 'fw/schaden_detail.html', {
         **basis, 'nav': 'schadensfaelle', 't': t,
         's_label': s_label, 's_cls': s_cls, 'p_label': p_label, 'p_cls': p_cls,
         'nachrichten': nachrichten, 'auftraege': auftraege, 'melder': melder,
+        'kosten_geschaetzt': kosten_geschaetzt, 'kosten_effektiv': kosten_effektiv,
         'tab_liste': tab_liste,
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_auftrag_kosten(request, pk):
+    """Reparaturkosten auf einem Handwerker-Auftrag erfassen; optional eine
+    Kreditorenrechnung erzeugen und verknüpfen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import HandwerkerAuftrag
+    from finance.models import KreditorenRechnung
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_schaeden')
+    a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket__liegenschaft', 'handwerker'), id=pk)
+
+    def _dec(name):
+        raw = (request.POST.get(name) or '').strip().replace(',', '.')
+        if not raw:
+            return None
+        try:
+            return Decimal(raw)
+        except Exception:
+            return None
+
+    a.kosten_geschaetzt = _dec('kosten_geschaetzt')
+    a.kosten_effektiv = _dec('kosten_effektiv')
+
+    # Optional Kreditorenrechnung erstellen
+    if request.POST.get('kreditor_erstellen') == 'on' and a.kosten_effektiv and not a.kreditoren_rechnung_id:
+        kr = KreditorenRechnung.objects.create(
+            liegenschaft=a.ticket.liegenschaft,
+            lieferant=(a.handwerker.firma if a.handwerker_id else 'Handwerker'),
+            betrag=a.kosten_effektiv,
+            status='neu',
+        )
+        a.kreditoren_rechnung = kr
+        messages.success(request, f"✅ Kosten erfasst und Kreditorenrechnung über CHF {a.kosten_effektiv} erstellt (Status: Neu — im Kreditoren-Tab freigeben).")
+    else:
+        messages.success(request, "✅ Kosten erfasst.")
+    a.save()
+    log_aktion(request, "Reparaturkosten erfasst", f"Ticket #{a.ticket_id}",
+               f"geschätzt {a.kosten_geschaetzt}, effektiv {a.kosten_effektiv}")
+    return redirect(f'/neu/schaeden/{a.ticket_id}/')
 
 
 # ============================================================
