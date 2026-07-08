@@ -441,7 +441,7 @@ def fw_objekt_detail(request, pk):
                        .select_related('mieter').order_by('-beginn').first())
     if not aktiver_vertrag:
         aktiver_vertrag = (Mietvertrag.objects
-                           .filter(als_nebenobjekt_in_vertraegen=e, status='aktiv')
+                           .filter(nebenobjekte=e, status='aktiv')
                            .select_related('mieter').order_by('-beginn').first())
     historie = (Mietvertrag.objects.filter(einheit=e).exclude(status='aktiv')
                 .select_related('mieter').order_by('-beginn')[:10])
