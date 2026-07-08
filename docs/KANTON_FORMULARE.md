@@ -16,9 +16,9 @@ Zwei Formulartypen je Kanton:
 
 | KT | Status | MZ (Mietzinsänderung) | KD (Kündigung) |
 |----|--------|-----------------------|-----------------|
-| SO | ✅ eingebaut | (im Repo) | (im Repo) |
-| ZH | 🔗 Link | https://www.gerichte-zh.ch/fileadmin/user_upload/Dokumente/Themen/Miete/Formulare_und_Merkblaetter/F_Mietzinserhoehung.pdf | https://www.zh.ch/content/dam/zhweb/bilder-dokumente/organisation/direktion-der-justiz-und-des-innern/generalsekretariat/mietwesen/formulare-neu-ab-nov2025/Formular-Kuendigung.pdf |
-| BE | 🔗 Link | https://www.zsg.justice.be.ch/content/dam/zsg_justice/dokumente/de/zivilrecht/formular-zinserhoehung-miete-be.pdf | https://www.zsg.justice.be.ch/content/dam/zsg_justice/dokumente/de/zivilrecht/formular-kuendigung-miete-be-online.pdf |
+| SO | ✅ eingebaut | (im Repo, Overlay) | (im Repo, Overlay) |
+| ZH | ✅ eingebaut | (im Repo, AcroForm) | (im Repo, AcroForm) |
+| BE | ✅ eingebaut | (im Repo, AcroForm) | (im Repo, AcroForm) |
 | LU | 🔗 Link | https://gerichte.lu.ch/-/media/Gerichte/Dokumente/rechtsgebiete/formulare/Mietrecht/Mietvertragsaenderung_pdf.pdf | https://gerichte.lu.ch/-/media/Gerichte/Dokumente/rechtsgebiete/formulare/Mietvertrag_Kuendigung_pdf.pdf |
 | AG | 🔗 Link | https://www.ag.ch/media/kanton-aargau/jb/dokumente/schlichtungsbehoerden/schlichtungsbehoerden-fuer-miete-und-pacht/formular-fuer-mitteilung-von-miet-und-pachtzinsaenderungen.pdf | https://www.ag.ch/media/kanton-aargau/jb/dokumente/schlichtungsbehoerden/schlichtungsbehoerden-fuer-miete-und-pacht/formular-fuer-kuendigung-von-miet-undpachtvertraegen.pdf |
 | BS | 🔗 Link | Übersicht: https://www.bs.ch/regierungsrat/staatskanzlei/staatliche-schlichtungsstelle-fuer-mietstreitigkeiten/formulare | https://media.bs.ch/original_file/b5992c3d30bb0ebf5ac1acf7f746c01bf2cbfb9c/formular-zur-kuendigung-von-wohn-und-geschaeftsraeumen-durch.pdf |
