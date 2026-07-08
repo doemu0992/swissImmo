@@ -37,12 +37,12 @@ def _absender(verwaltung, mandant):
     return ["Immobilienverwaltung", "", ""]
 
 
-def _kopf(c, titel_klein):
+def _kopf(c, titel_klein, kanton_name="Solothurn"):
     c.setFont("Helvetica-Oblique", 7.5)
     c.setFillColor(colors.black)
     c.drawString(20*mm, 288*mm, titel_klein)
     c.setFont("Helvetica-Bold", 14)
-    c.drawRightString(190*mm, 287*mm, "KANTON solothurn")
+    c.drawRightString(190*mm, 287*mm, f"KANTON {kanton_name.lower()}")
 
 
 def _feldlinie(c, x, y, breite):
@@ -51,8 +51,9 @@ def _feldlinie(c, x, y, breite):
     c.line(x, y, x + breite, y)
 
 
-def _schlichtung_seite(c, titel):
-    """Seite 2: Rechtsmittelbelehrung + Schlichtungsbehörden SO."""
+def _schlichtung_seite(c, titel, kanton_name="Solothurn", behoerden=None, exakt=True):
+    """Seite 2: Rechtsmittelbelehrung + Schlichtungsbehörden des Kantons."""
+    behoerden = behoerden if behoerden is not None else SCHLICHTUNGSBEHOERDEN_SO
     c.setFont("Helvetica-Bold", 11)
     c.drawString(20*mm, 280*mm, "Rechtsmittelbelehrung")
     c.setFont("Helvetica", 8.5)
@@ -62,15 +63,21 @@ def _schlichtung_seite(c, titel):
         y -= 4.5*mm
     y -= 4*mm
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(20*mm, y, "Schlichtungsbehörden im Kanton Solothurn")
+    c.drawString(20*mm, y, f"Schlichtungsbehörden im Kanton {kanton_name}" if kanton_name else "Zuständige Schlichtungsbehörde")
     y -= 7*mm
-    for amtei, adr, tel in SCHLICHTUNGSBEHOERDEN_SO:
+    for amtei, adr, tel in behoerden:
         c.setFont("Helvetica-Bold", 8.5)
         c.drawString(20*mm, y, amtei)
         c.setFont("Helvetica", 8)
         c.drawString(20*mm, y - 4*mm, adr)
         c.drawString(20*mm, y - 8*mm, tel)
         y -= 13*mm
+    if not exakt:
+        c.setFont("Helvetica-Oblique", 8)
+        c.setFillColor(colors.HexColor("#B45309"))
+        c.drawString(20*mm, y, "Hinweis: Für diesen Kanton ist die genaue Schlichtungsbehörden-Adresse noch zu hinterlegen —")
+        c.drawString(20*mm, y - 4*mm, "vor Versand bitte die amtliche Adresse ergänzen.")
+        c.setFillColor(colors.black)
     c.setFont("Helvetica-Oblique", 7.5)
     c.setFillColor(colors.grey)
     c.drawString(20*mm, 14*mm, "Auszüge aus OR / VMWG gemäss amtlichem Formular. Gesetzestexte: www.fedlex.admin.ch")
@@ -89,7 +96,10 @@ def mietzins_so_pdf(vertrag, daten, verwaltung=None):
     mandant = lg.mandant if lg else None
     c.setTitle(f"Mietzinsanpassung {mieter.nachname}")
 
-    _kopf(c, "Amtliches Formular zur Mitteilung von Mietzins- und anderen Mietvertragsänderungen")
+    from core.services.kantone import schlichtung_block
+    _kt, kanton_name, behoerden, exakt = schlichtung_block(lg)
+    _kopf(c, "Amtliches Formular zur Mitteilung von Mietzins- und anderen Mietvertragsänderungen",
+          kanton_name=kanton_name or "Solothurn")
 
     # Absender / Adressat
     c.setFont("Helvetica-Bold", 9)
@@ -221,7 +231,7 @@ def mietzins_so_pdf(vertrag, daten, verwaltung=None):
         "Der Mieter kann eine Mietzinserhöhung oder andere Mietvertragsänderung innert 30 Tagen, nachdem sie",
         "ihm mitgeteilt worden ist, bei der Schlichtungsbehörde als missbräuchlich im Sinne der Art. 269 und",
         "269a OR anfechten (Art. 270b OR).",
-    ])
+    ], kanton_name=kanton_name, behoerden=behoerden, exakt=exakt)
     c.drawRightString(190*mm, 12*mm, "Seite 2/2")
     c.showPage(); c.save(); buf.seek(0)
     return buf.read()
@@ -239,7 +249,10 @@ def kuendigung_so_pdf(vertrag, kuendigung, verwaltung=None):
     mandant = lg.mandant if lg else None
     c.setTitle(f"Kündigung {mieter.nachname}")
 
-    _kopf(c, "Amtliches Formular für Kündigung von vermieteten oder verpachteten Wohn- und Geschäftsräumen")
+    from core.services.kantone import schlichtung_block
+    _kt, kanton_name, behoerden, exakt = schlichtung_block(lg)
+    _kopf(c, "Amtliches Formular für Kündigung von vermieteten oder verpachteten Wohn- und Geschäftsräumen",
+          kanton_name=kanton_name or "Solothurn")
     c.setFont("Helvetica-Bold", 8)
     c.drawString(110*mm, 278*mm, "Einschreiben R")
 
@@ -328,7 +341,7 @@ def kuendigung_so_pdf(vertrag, kuendigung, verwaltung=None):
         "Die Mieterschaft kann innert 30 Tagen nach Empfang dieser Mitteilung bei der Schlichtungsbehörde die",
         "Kündigung anfechten und/oder die Erstreckung des Mietverhältnisses verlangen (Art. 273 OR).",
         "Bei der Pacht gilt dies sinngemäss (Art. 300 OR).",
-    ])
+    ], kanton_name=kanton_name, behoerden=behoerden, exakt=exakt)
     c.drawRightString(190*mm, 12*mm, "Seite 2/2")
     c.showPage(); c.save(); buf.seek(0)
     return buf.read()
