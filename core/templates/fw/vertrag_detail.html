@@ -111,7 +111,7 @@
                     {% if k.ausserordentlich %}<span class="ml-1 text-xs text-rose-600">ausserordentlich</span>{% endif %}</div>
                 {% if k.status != 'zurueckgezogen' %}
                 <div class="flex items-center gap-3 mt-1.5">
-                    <a href="/neu/kuendigung/{{ k.id }}/formular/" target="_blank" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-file-contract mr-0.5"></i>Amtliches Formular SO (PDF)</a>
+                    <a href="/neu/kuendigung/{{ k.id }}/formular/" target="_blank" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-file-contract mr-0.5"></i>Amtliches Formular{% if formular_kanton %} {{ formular_kanton }}{% endif %} (PDF)</a>
                     <a href="/vertrag/{{ v.id }}/dokument/kuendigungsbestaetigung/" target="_blank" class="text-xs font-medium text-slate-500 hover:underline">Bestätigung</a>
                     <form method="post" action="/neu/kuendigung/{{ k.id }}/zuruecknehmen/" onsubmit="return confirm('Kündigung zurücknehmen und Vertrag reaktivieren?');" class="inline">
                         {% csrf_token %}

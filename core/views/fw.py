@@ -636,8 +636,17 @@ def fw_vertrag_detail(request, pk):
         'nebenobjekte': v.nebenobjekte.all(),
         'erstellbare_dokumente': _erstellbare_dokumente(v),
         'kuendigungen': v.kuendigungen.all(),
+        'formular_kanton': _formular_kanton_label(v),
         'tab_liste': tab_liste,
     })
+
+
+def _formular_kanton_label(vertrag):
+    """Kürzel des Kantons für das amtliche Formular (SO/ZH/BE/…). Leer, wenn
+    keine Liegenschaft/kein Kanton bestimmbar."""
+    from core.services.kantone import kanton_fuer_liegenschaft
+    lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else None
+    return kanton_fuer_liegenschaft(lg) if lg else ''
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
