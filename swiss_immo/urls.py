@@ -57,7 +57,7 @@ from core.views.dashboard_view import update_market_data_view, spa_master_view
 from core.views.portal import portal_view, nach_login_view
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
-from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_objekte,
+from core.views.fw import (fw_dashboard, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_liegenschaften, fw_objekte,
                            fw_personen, fw_vertraege,
                            fw_liegenschaft_detail, fw_objekt_detail, fw_vertrag_detail,
                            fw_mahnwesen, fw_mahnung_erfassen, fw_bankkonten,
@@ -111,6 +111,8 @@ urlpatterns = [
     # --- FAIRWALTER-REBUILD (neue Oberfläche, wächst etappenweise) ---
     path('neu/', fw_dashboard, name='fw_dashboard'),
     path('neu/debitoren/', fw_debitoren, name='fw_debitoren'),
+    path('neu/debitoren/neu/', fw_debitor_neu, name='fw_debitor_neu'),
+    path('neu/debitoren/<int:pk>/qr-pdf/', fw_debitor_qr_pdf, name='fw_debitor_qr_pdf'),
     path('neu/liegenschaften/', fw_liegenschaften, name='fw_liegenschaften'),
     path('neu/liegenschaften/neu/', fw_liegenschaft_form, name='fw_liegenschaft_neu'),
     path('neu/liegenschaften/<int:pk>/bearbeiten/', fw_liegenschaft_form, name='fw_liegenschaft_bearbeiten'),
