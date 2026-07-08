@@ -675,7 +675,7 @@ def fw_bankkonten(request):
             konten.append({
                 'typ': 'Verwaltung', 'typ_icon': 'fa-briefcase', 'typ_cls': 'bg-slate-100 text-slate-600',
                 'inhaber': vw.firma, 'kontext': 'Verwaltungskonto',
-                'bank': vw.bank_name, 'iban': _iban_format(vw.iban),
+                'bank': getattr(vw, 'bank_name', ''), 'iban': _iban_format(vw.iban),
                 'ist_qr': is_qr, 'mietertrag': None, 'lg_id': None,
             })
         for m in Mandant.objects.all().order_by('firma_oder_name'):
