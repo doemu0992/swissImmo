@@ -63,6 +63,12 @@
         <div class="hinweis">Aktuell ist Ihrem Konto kein aktives Mietobjekt zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</div>
         {% endfor %}
 
+        {% if objekte %}
+        <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+            <a href="/mieter/kontoauszug/" target="_blank" style="background:#fff; border:1px solid #c7d2fe; color:#4338ca; text-decoration:none; padding:9px 16px; border-radius:8px; font-size:14px; font-weight:600;">📄 Kontoauszug (PDF)</a>
+        </div>
+        {% endif %}
+
         {% if offene %}
         <div class="card">
             <h2><span>Offene Rechnungen</span><span style="font-size:14px; color:#dc2626;">CHF {{ total_offen|chf }}</span></h2>

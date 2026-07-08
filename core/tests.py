@@ -313,6 +313,43 @@ class DashboardCockpitTests(TestCase):
         self.assertEqual(r.context['cockpit']['fristen'], 1)
 
 
+class MieterkontoTests(TestCase):
+    def test_saldo_und_reihenfolge(self):
+        from finance.models import DebitorenRechnung, Zahlungseingang
+        from core.services.mieterkonto import berechne_mieterkonto
+        lg, e, m, v = _basis_objekte()
+        DebitorenRechnung.objects.create(vertrag=v, titel='Miete Jan', betrag=Decimal('1700'),
+                                         datum=date(2025, 1, 1), status='offen')
+        DebitorenRechnung.objects.create(vertrag=v, titel='Miete Feb', betrag=Decimal('1700'),
+                                         datum=date(2025, 2, 1), status='offen')
+        Zahlungseingang.objects.create(vertrag=v, betrag=Decimal('1700'),
+                                       datum_eingang=date(2025, 1, 15), status='verbucht')
+        zeilen, saldo = berechne_mieterkonto(m)
+        self.assertEqual(len(zeilen), 3)
+        self.assertEqual(saldo, Decimal('1700'))  # 1700+1700-1700
+        # laufender Saldo nach der Zahlung = 0
+        self.assertEqual(zeilen[1]['saldo'], Decimal('0'))
+
+    def test_pdf_view_team_und_mieter(self):
+        from finance.models import DebitorenRechnung
+        lg, e, m, v = _basis_objekte()
+        DebitorenRechnung.objects.create(vertrag=v, titel='Miete', betrag=Decimal('1700'),
+                                         datum=date(2025, 1, 1), status='offen')
+        # Team
+        tu = _team_user()
+        tc = Client(); tc.force_login(tu)
+        r = tc.get(f'/neu/personen/{m.id}/kontoauszug/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        # Mieter
+        u = User.objects.create_user(username='mk_mieter', password='x')
+        m.benutzer = u; m.save()
+        mc = Client(); mc.force_login(u)
+        r2 = mc.get('/mieter/kontoauszug/')
+        self.assertEqual(r2.status_code, 200)
+        self.assertEqual(r2['Content-Type'], 'application/pdf')
+
+
 class AkontoTests(TestCase):
     def test_akonto_uebernahme(self):
         lg, e, m, v = _basis_objekte()

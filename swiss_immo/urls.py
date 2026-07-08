@@ -55,7 +55,8 @@ from core.views.dashboard_view import update_market_data_view, spa_master_view
 
 # 2b. Eigentümer-Portal & Login-Weiche
 from core.views.portal import (portal_view, nach_login_view, portal_dokument_download, portal_report_pdf, portal_freigabe,
-                                mieter_portal_view, mieter_dokument_download, mieter_schaden_melden, mieter_rechnung_qr)
+                                mieter_portal_view, mieter_dokument_download, mieter_schaden_melden, mieter_rechnung_qr,
+                                mieter_kontoauszug_pdf)
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_dashboard, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_liegenschaften, fw_objekte,
@@ -64,7 +65,7 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_debitor_qr_pdf, fw_deb
                            fw_wartungsfrist_neu, fw_wartungsfrist_loeschen,
                            fw_mahnwesen, fw_mahnung_erfassen, fw_mahnlauf, fw_bankkonten,
                            fw_bankabgleich, fw_bankabgleich_verbuchen, fw_camt_import,
-                           fw_person_detail, fw_person_form, fw_kommunikation_neu, fw_mieter_portal_zugang,
+                           fw_person_detail, fw_person_form, fw_kommunikation_neu, fw_mieter_portal_zugang, fw_mieterkonto_pdf,
                            fw_kreditoren, fw_kreditoren_pain001, fw_kreditor_bezahlen, fw_kreditor_neu, fw_kreditor_freigeben,
                            fw_dienstleister_neu, fw_asset_neu, fw_dokument_neu, fw_nebenkosten_neu,
                            fw_buchung_neu, fw_kommunikation_senden, fw_serienbrief_pdf,
@@ -152,6 +153,7 @@ urlpatterns = [
     path('neu/vertraege/<int:vertrag_id>/kaution/', fw_kaution_aktion, name='fw_kaution_aktion'),
     path('neu/personen/<int:pk>/', fw_person_detail, name='fw_person_detail'),
     path('neu/personen/<int:pk>/portal-zugang/', fw_mieter_portal_zugang, name='fw_mieter_portal_zugang'),
+    path('neu/personen/<int:pk>/kontoauszug/', fw_mieterkonto_pdf, name='fw_mieterkonto_pdf'),
     path('neu/kommunikation/notiz/', fw_kommunikation_neu, name='fw_kommunikation_neu'),
     path('neu/kreditoren/', fw_kreditoren, name='fw_kreditoren'),
     path('neu/kreditoren/pain001/', fw_kreditoren_pain001, name='fw_kreditoren_pain001'),
@@ -241,6 +243,7 @@ urlpatterns = [
     path('mieter/dokument/<int:pk>/', mieter_dokument_download, name='mieter_dokument_download'),
     path('mieter/schaden/', mieter_schaden_melden, name='mieter_schaden_melden'),
     path('mieter/rechnung/<int:pk>/', mieter_rechnung_qr, name='mieter_rechnung_qr'),
+    path('mieter/kontoauszug/', mieter_kontoauszug_pdf, name='mieter_kontoauszug_pdf'),
 
     # --- DOSSIER-SEITEN (Team-intern: alles zu einem Mieter/Objekt/Vertrag) ---
     path('dossier/mieter/<int:mieter_id>/', mieter_dossier, name='dossier_mieter'),

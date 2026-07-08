@@ -304,6 +304,20 @@ def mieter_rechnung_qr(request, pk):
 
 
 @login_required
+def mieter_kontoauszug_pdf(request):
+    """Kontoauszug (PDF) des eingeloggten Mieters."""
+    from crm.models import Verwaltung
+    from core.services.mieterkonto import generate_mieterkonto_pdf
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        raise Http404
+    pdf = generate_mieterkonto_pdf(mieter, verwaltung=Verwaltung.objects.first())
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = 'inline; filename="Kontoauszug.pdf"'
+    return resp
+
+
+@login_required
 def mieter_dokument_download(request, pk):
     """Dokument-Download — nur eigene Mieter-Dokumente."""
     from rentals.models import Dokument as RDokument

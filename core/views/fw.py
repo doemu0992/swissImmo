@@ -1661,6 +1661,19 @@ def fw_mieter_portal_zugang(request, pk):
     return redirect(f'/neu/personen/{m.id}/')
 
 
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_mieterkonto_pdf(request, pk):
+    """Kontoauszug (PDF) eines Mieters für die Verwaltung."""
+    from django.http import HttpResponse
+    from crm.models import Verwaltung
+    from core.services.mieterkonto import generate_mieterkonto_pdf
+    m = get_object_or_404(Mieter, id=pk)
+    pdf = generate_mieterkonto_pdf(m, verwaltung=Verwaltung.objects.first())
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = f'inline; filename="Kontoauszug_{m.nachname or m.id}.pdf"'
+    return resp
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_kommunikation_neu(request):
     """Schnelle Telefonnotiz / Kommunikation zu einem Kontakt erfassen."""
