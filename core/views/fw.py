@@ -9,11 +9,12 @@ er wird in _global_filter() gelesen und an jede Seite durchgereicht.
 from datetime import date
 from decimal import Decimal
 
+from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 
-from core.auth import rolle_erforderlich, TEAM_ROLLEN
+from core.auth import rolle_erforderlich, TEAM_ROLLEN, SCHREIB_ROLLEN
 from core.views.dashboard_view import _berechne_aufgaben
 from crm.models import Mieter
 from finance.models import DebitorenRechnung, Zahlungseingang
@@ -689,3 +690,126 @@ def fw_bankkonten(request):
         'anzahl': len(konten), 'qr_count': qr_count,
         'fehlend': fehlend,
     })
+
+
+# ============================================================
+# ETAPPE D: BANKABGLEICH (offene Posten mit Zahlung abgleichen)
+# ============================================================
+
+def _qrr_referenz(rechnung):
+    """Erzeugt eine strukturierte 27-stellige QRR-Referenz mit Modulo-10-rekursiv-Prüfziffer
+    aus Vertrags- und Rechnungs-ID (stabil, damit Zahlungseingänge zuordenbar sind)."""
+    basis = f"{(rechnung.vertrag_id or 0):010d}{rechnung.id:016d}"
+    tabelle = [0, 9, 4, 6, 8, 2, 7, 1, 3, 5]
+    uebertrag = 0
+    for z in basis:
+        uebertrag = tabelle[(uebertrag + int(z)) % 10]
+    pruef = (10 - uebertrag) % 10
+    ref = basis + str(pruef)
+    return ' '.join([ref[0:2], ref[2:7], ref[7:12], ref[12:17], ref[17:22], ref[22:27]])
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_bankabgleich(request):
+    heute = timezone.now().date()
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    qs = (DebitorenRechnung.objects
+          .filter(status__in=['offen', 'teilbezahlt'])
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft')
+          .prefetch_related('zahlungseingaenge')
+          .order_by('faellig_am'))
+    if aktive_lg:
+        qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
+
+    rows = []
+    total_offen = Decimal('0.00')
+    for r in qs:
+        offen = r.offener_betrag
+        if offen <= 0:
+            continue
+        total_offen += offen
+        lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag_id and r.vertrag.einheit_id else None)
+        faellig = r.faellig_am or r.datum
+        rows.append({
+            'r': r, 'offen': offen,
+            'mieter': r.vertrag.mieter.display_name if r.vertrag_id else '—',
+            'objekt': f"{lg.strasse}, {lg.ort}" if lg else '—',
+            'faellig': faellig,
+            'ueberfaellig': bool(faellig and faellig < heute),
+            'qrr': _qrr_referenz(r) if r.vertrag_id else '—',
+            'kann_verbuchen': bool(r.vertrag_id),
+        })
+
+    # Kürzliche Abgleiche (verbuchte Zahlungen) als Kontext
+    letzte = (Zahlungseingang.objects.filter(status='verbucht')
+              .select_related('vertrag__mieter').order_by('-erstellt_am')[:8])
+    if aktive_lg:
+        letzte = letzte.filter(vertrag__einheit__liegenschaft=aktive_lg)
+
+    from django.contrib import messages
+    return render(request, 'fw/bankabgleich.html', {
+        **basis, 'nav': 'bankabgleich', 'rows': rows,
+        'total_offen': total_offen, 'anzahl': len(rows),
+        'letzte': letzte,
+        'meldung': list(messages.get_messages(request)),
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_bankabgleich_verbuchen(request):
+    """Verbucht eine (Teil-)Zahlung für einen offenen Posten — Bank an Debitoren,
+    dieselbe Doppelbuchung + OP-Fortschreibung wie die Finanz-API."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import Buchungskonto, Buchung
+    from core.auth import log_aktion
+
+    if request.method != 'POST':
+        return redirect('fw_bankabgleich')
+
+    rechnung = get_object_or_404(DebitorenRechnung, id=request.POST.get('rechnung_id'))
+    if not rechnung.vertrag_id:
+        messages.error(request, "Position ohne Vertrag kann nicht automatisch verbucht werden.")
+        return redirect('fw_bankabgleich')
+
+    offen = rechnung.offener_betrag
+    try:
+        betrag = Decimal(str(request.POST.get('betrag') or offen))
+    except Exception:
+        betrag = offen
+    betrag = min(max(betrag, Decimal('0.01')), offen)
+
+    heute = timezone.now().date()
+    vertrag = rechnung.vertrag
+    with transaction.atomic():
+        zahlung = Zahlungseingang.objects.create(
+            vertrag=vertrag, betrag=betrag, datum_eingang=heute,
+            buchungs_monat=(rechnung.faellig_am or rechnung.datum or heute).replace(day=1),
+            bemerkung=f"Bankabgleich {rechnung.titel}",
+            liegenschaft=vertrag.einheit.liegenschaft,
+            debitoren_rechnung=rechnung, erstellt_von=request.user, status='verbucht',
+        )
+        rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
+        rechnung.save()
+        try:
+            konto_bank = Buchungskonto.objects.get(nummer="1020")
+            konto_deb = Buchungskonto.objects.get(nummer="1100")
+            Buchung.objects.create(
+                datum=heute, beleg_text=f"Bankabgleich {vertrag.mieter} - {rechnung.titel}",
+                liegenschaft=vertrag.einheit.liegenschaft,
+                soll_konto=konto_bank, haben_konto=konto_deb, betrag=betrag,
+                zahlungseingang=zahlung, erstellt_von=request.user,
+            )
+        except Buchungskonto.DoesNotExist:
+            pass
+
+    log_aktion(request, "Zahlung via Bankabgleich verbucht", str(vertrag),
+               f"CHF {betrag} auf {rechnung.titel}")
+    messages.success(request, f"✅ CHF {betrag} verbucht — {vertrag.mieter.display_name} ({rechnung.titel}).")
+    from django.shortcuts import redirect as _r
+    ziel = '/neu/bankabgleich/'
+    if aktive := request.POST.get('lg'):
+        ziel += f'?lg={aktive}'
+    return _r(ziel)

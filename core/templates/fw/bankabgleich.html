@@ -1,0 +1,108 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Bankabgleich — swissImmo{% endblock %}
+
+{% block content %}
+
+<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Bankabgleich</h1>
+<p class="text-sm text-slate-500 mb-5">Offene Posten mit Zahlungseingängen abgleichen und mit einem Klick verbuchen (Bank an Debitoren)
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/bankabgleich/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+{% for m in meldung %}
+<div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium
+            {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">
+    {{ m }}
+</div>
+{% endfor %}
+
+<!-- KPI + Import-Hinweis -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-right-left"></i></div>
+        <div><div class="text-2xl font-bold text-indigo-600">CHF {{ total_offen|chf }}</div><div class="text-sm text-slate-500">Abzugleichen (offen)</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-list-check"></i></div>
+        <div><div class="text-2xl font-bold text-slate-800">{{ anzahl }}</div><div class="text-sm text-slate-500">Offene Posten</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-dashed border-slate-300 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-file-import"></i></div>
+        <div><div class="text-sm font-semibold text-slate-600">camt.053-Import</div><div class="text-xs text-slate-400">Kontoauszug-Upload folgt — QRR-Matching vorbereitet</div></div>
+    </div>
+</div>
+
+<!-- Offene Posten -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
+    <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Offene Posten abgleichen</div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Fällig</th>
+                <th class="px-5 py-3 font-semibold">Mieter</th>
+                <th class="px-5 py-3 font-semibold">Objekt</th>
+                <th class="px-5 py-3 font-semibold">QRR-Referenz</th>
+                <th class="px-5 py-3 font-semibold text-right">Offen</th>
+                <th class="px-5 py-3 font-semibold text-right">Abgleich</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for row in rows %}
+            <tr class="hover:bg-slate-50/60 transition-colors">
+                <td class="px-5 py-3.5 whitespace-nowrap {% if row.ueberfaellig %}font-semibold text-rose-600{% else %}text-slate-600{% endif %}">{{ row.faellig|date:"d.m.Y" }}</td>
+                <td class="px-5 py-3.5 font-medium text-slate-900 whitespace-nowrap">
+                    {% if row.r.vertrag_id %}<a href="/neu/vertraege/{{ row.r.vertrag_id }}/" class="hover:text-indigo-600">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.objekt }}</td>
+                <td class="px-5 py-3.5 font-mono text-xs text-slate-500 whitespace-nowrap">{{ row.qrr }}</td>
+                <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">{{ row.offen|chf }}</td>
+                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                    {% if row.kann_verbuchen %}
+                    <form method="post" action="/neu/bankabgleich/verbuchen/" onsubmit="return confirm('CHF {{ row.offen|chf }} von {{ row.mieter }} als bezahlt verbuchen?');" class="inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="rechnung_id" value="{{ row.r.id }}">
+                        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                        <button type="submit" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                            <i class="fa-solid fa-check"></i> Verbuchen
+                        </button>
+                    </form>
+                    {% else %}<span class="text-slate-300 text-xs">kein Vertrag</span>{% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="px-5 py-12 text-center">
+                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-check"></i></div>
+                <p class="text-sm font-medium text-slate-700">Alles abgeglichen</p>
+                <p class="text-xs text-slate-400 mt-1">Keine offenen Posten — jede Forderung ist verbucht.</p>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Kürzlich verbucht -->
+{% if letzte %}
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Kürzlich abgeglichen</div>
+    <div class="divide-y divide-slate-50">
+        {% for z in letzte %}
+        <div class="flex items-center gap-3 px-5 py-3">
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-check"></i></div>
+            <span class="text-sm flex-1 truncate">{{ z.vertrag.mieter.display_name }}{% if z.bemerkung %} · {{ z.bemerkung }}{% endif %}</span>
+            <span class="text-xs text-slate-400">{{ z.datum_eingang|date:"d.m.Y" }}</span>
+            <span class="text-sm font-semibold text-emerald-600">+{{ z.betrag|chf }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<p class="text-xs text-slate-400 mt-4">
+    <i class="fa-solid fa-circle-info mr-1"></i>
+    „Verbuchen" bucht den offenen Betrag als Zahlungseingang (Bank 1020 an Debitoren 1100) und schreibt den
+    OP-Status fort (offen → teilbezahlt → bezahlt). Der camt.053-Kontoauszug-Import ordnet Eingänge künftig
+    automatisch über die QRR-Referenz zu.
+</p>
+{% endblock %}
