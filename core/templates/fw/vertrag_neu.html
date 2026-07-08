@@ -179,7 +179,7 @@
                     <div class="border border-slate-200 rounded-xl p-4">
                         <div class="flex items-center justify-between mb-1">
                             <h4 class="font-bold text-slate-800 text-sm">Indexwerte</h4>
-                            <button type="button" onclick="indexUebernehmen()" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Aktuelle Werte übernehmen</button>
+                            <button type="button" onclick="indexUebernehmen(this)" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Aktuelle Werte übernehmen</button>
                         </div>
                         <p class="text-xs text-slate-400 mb-3">Basiswerte, auf denen der Vertrag beruht — für spätere Mietzinsanpassungen.</p>
                         <div class="grid grid-cols-2 gap-3">
@@ -281,7 +281,18 @@ function monateAusserDez(){ document.querySelectorAll('.monat-cb').forEach(c=>c.
 function monateStandard(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = ['März','Juni','September'].includes(c.value)); live(); }
 function gewaehlteMonate(){ return Array.from(document.querySelectorAll('.monat-cb:checked')).map(c=>c.value); }
 function fristStep(d){ const el=document.getElementById('s_frist'); el.value=Math.max(1,(parseInt(el.value)||3)+d); live(); }
-function indexUebernehmen(){ document.getElementById('s_lik').value=AKT_LIK; document.getElementById('s_ref').value=AKT_REF; live(); }
+function indexUebernehmen(btn){
+    // Zuerst gespeicherte Werte, dann Live-Abruf aus dem Internet.
+    document.getElementById('s_lik').value=AKT_LIK; document.getElementById('s_ref').value=AKT_REF; live();
+    var label = btn ? btn.textContent : ''; if(btn){ btn.disabled=true; btn.textContent='Lädt …'; }
+    fetch('/neu/marktdaten/live/').then(r=>r.json()).then(d=>{
+        if(d.ref_zins) document.getElementById('s_ref').value=d.ref_zins;
+        if(d.lik) document.getElementById('s_lik').value=d.lik;
+        live();
+        if(btn){ btn.disabled=false; btn.textContent = d.quelle==='internet' ? '✓ Aktuell (Internet)' : label;
+                 setTimeout(()=>{ btn.textContent=label; }, 2500); }
+    }).catch(()=>{ if(btn){ btn.disabled=false; btn.textContent=label; } });
+}
 function kautionSet(monate){ const netto=parseFloat(document.getElementById('s_netto').value)||0; document.getElementById('s_kaution').value=(netto*monate).toFixed(2); live(); }
 
 // Schritt-Leiste rendern

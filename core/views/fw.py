@@ -1970,3 +1970,138 @@ def fw_vertrag_neu_speichern(request):
                f"{einheit.bezeichnung}, ab {beginn}")
     messages.success(request, f"✅ Mietvertrag für {mieter.display_name} erstellt.")
     return redirect(f'/neu/vertraege/{vertrag.id}/')
+
+
+# ============================================================
+# PROFIL-MENÜ: Account, Benutzer, Mandate, Vorlagen, Integrationen
+# ============================================================
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_account(request):
+    """Firmen-/Verwaltungs-Stammdaten + Marktdaten (Referenzzins/LIK)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Verwaltung
+    from core.auth import log_aktion, hat_rolle
+    vw = Verwaltung.objects.first() or Verwaltung.objects.create(firma="Meine Verwaltung")
+    basis = _global_filter(request)
+
+    if request.method == 'POST' and hat_rolle(request.user, SCHREIB_ROLLEN):
+        P = request.POST
+        vw.firma = P.get('firma', '').strip() or vw.firma
+        vw.strasse = P.get('strasse', '').strip()
+        vw.plz = P.get('plz', '').strip()
+        vw.ort = P.get('ort', '').strip()
+        vw.telefon = P.get('telefon', '').strip()
+        vw.email = P.get('email', '').strip()
+        vw.iban = P.get('iban', '').strip()
+
+        def dec(key, fallback):
+            try:
+                return Decimal(str(P.get(key) or fallback).replace(',', '.'))
+            except Exception:
+                return fallback
+        vw.aktueller_referenzzinssatz = dec('aktueller_referenzzinssatz', vw.aktueller_referenzzinssatz)
+        vw.aktueller_lik_punkte = dec('aktueller_lik_punkte', vw.aktueller_lik_punkte)
+        vw.save()
+        log_aktion(request, "Account/Stammdaten bearbeitet", vw.firma, '')
+        messages.success(request, "✅ Stammdaten gespeichert.")
+        return redirect('/neu/account/')
+
+    return render(request, 'fw/account.html', {**basis, 'nav': 'account', 'vw': vw})
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_marktdaten_aktualisieren(request):
+    """Holt Referenzzins + LIK aus dem Internet und speichert sie in Verwaltung."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.utils.market_data import update_verwaltung_rates
+    if request.method == 'POST':
+        try:
+            msg, errors = update_verwaltung_rates()
+            messages.success(request, f"📡 {msg}")
+            if errors:
+                messages.warning(request, "Hinweis: " + " | ".join(errors[:2]) +
+                                 " — Falls das Netzwerk (PythonAnywhere-Whitelist) die Abfrage blockiert, "
+                                 "kannst du die Werte oben manuell eintragen.")
+        except Exception as e:
+            messages.error(request, f"Marktdaten konnten nicht geladen werden: {e}. Werte bitte manuell eintragen.")
+    return redirect('/neu/account/')
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_marktdaten_live(request):
+    """JSON-Endpoint für den 'Aktuelle Werte'-Button im Vertragsassistenten.
+    Versucht ein Live-Update, gibt aber immer die aktuell gespeicherten Werte zurück."""
+    from django.http import JsonResponse
+    from crm.models import Verwaltung
+    from core.auth import hat_rolle
+    quelle = 'gespeichert'
+    if hat_rolle(request.user, SCHREIB_ROLLEN):
+        try:
+            from core.utils.market_data import update_verwaltung_rates
+            update_verwaltung_rates()
+            quelle = 'internet'
+        except Exception:
+            quelle = 'gespeichert'
+    vw = Verwaltung.objects.first()
+    return JsonResponse({
+        'ref_zins': float(vw.aktueller_referenzzinssatz) if vw else 1.25,
+        'lik': float(vw.aktueller_lik_punkte) if vw else 107.8,
+        'stand': vw.letztes_update_marktdaten.strftime('%d.%m.%Y %H:%M') if vw and vw.letztes_update_marktdaten else None,
+        'quelle': quelle,
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_benutzer(request):
+    """Team-Mitglieder (Django-User + Rolle)."""
+    from django.contrib.auth.models import User
+    from core.auth import ROLLE_EIGENTUEMER
+    basis = _global_filter(request)
+    users = User.objects.filter(is_active=True).order_by('username')
+    rows = []
+    for u in users:
+        rollen = list(u.groups.values_list('name', flat=True))
+        if ROLLE_EIGENTUEMER in rollen and len(rollen) == 1:
+            continue  # reine Eigentümer-Portal-Accounts hier nicht zeigen
+        rows.append({'u': u, 'rolle': ', '.join(rollen) or ('Superuser' if u.is_superuser else '—'),
+                     'name': (u.get_full_name() or u.username)})
+    return render(request, 'fw/benutzer.html', {**basis, 'nav': 'benutzer', 'rows': rows})
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_mandate(request):
+    """Mandanten (Eigentümer, für die verwaltet wird)."""
+    from crm.models import Mandant
+    basis = _global_filter(request)
+    mandanten = Mandant.objects.all().order_by('firma_oder_name')
+    rows = []
+    for md in mandanten:
+        anzahl_lg = Liegenschaft.objects.filter(mandant=md).count()
+        rows.append({'md': md, 'anzahl_lg': anzahl_lg})
+    return render(request, 'fw/mandate.html', {**basis, 'nav': 'mandate', 'rows': rows})
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_stub(request, titel, icon, text, nav=''):
+    basis = _global_filter(request)
+    return render(request, 'fw/stub.html', {**basis, 'nav': nav, 'titel': titel, 'icon': icon, 'text': text})
+
+
+def fw_vorlagen(request):
+    return fw_stub(request, 'Vorlagen', 'fa-file-lines',
+                   'Dokumentvorlagen (Mietvertrag, Mahnungen, Briefe) zentral verwalten. Aktuell werden die '
+                   'Standard-Vorlagen von swissImmo verwendet — die Vertrags- und Begleitdokumente findest du '
+                   'direkt auf jeder Vertrags-Detailseite unter „Erstellbare Dokumente".')
+
+def fw_integrationen(request):
+    return fw_stub(request, 'Integrationen', 'fa-plug',
+                   'Schnittstellen zu Drittsystemen (Banken-Abgleich via camt.053/QR, PainDiary, E-Mail-Versand, '
+                   'DocuSeal-Signatur) werden hier gebündelt. Der Banken-Abgleich ist bereits unter '
+                   '„Bankabgleich" nutzbar.')
+
+def fw_abonnemente(request):
+    return fw_stub(request, 'Abonnement', 'fa-star',
+                   'Dein swissImmo-Abo und die Abrechnung. Aktuell ist die Vollversion aktiv.')

@@ -1,0 +1,31 @@
+{% extends 'fw/base.html' %}
+{% block title %}Benutzer — swissImmo{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Benutzer</h1>
+<p class="text-sm text-slate-500 mb-6">{{ rows|length }} Team-Mitglied(er) mit Zugriff auf die Verwaltung.</p>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden max-w-3xl">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+            <tr><th class="text-left px-5 py-3">Name</th><th class="text-left px-5 py-3">Benutzername</th>
+                <th class="text-left px-5 py-3">Rolle</th><th class="text-left px-5 py-3">E-Mail</th></tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+            {% for row in rows %}
+            <tr class="hover:bg-slate-50/60">
+                <td class="px-5 py-3.5 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">{{ row.name|slice:":2"|upper }}</span>
+                    <span class="font-medium text-slate-900">{{ row.name }}</span>
+                </td>
+                <td class="px-5 py-3.5 text-slate-500">{{ row.u.username }}</td>
+                <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700">{{ row.rolle }}</span></td>
+                <td class="px-5 py-3.5 text-slate-500">{{ row.u.email|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="px-5 py-8 text-center text-slate-400 italic">Keine Benutzer.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<p class="text-xs text-slate-400 mt-4 max-w-3xl">Benutzer und Rollen werden zentral über die Administration verwaltet. Rollen: Verwaltung (Vollzugriff), Sachbearbeitung (schreibend), Lesend.</p>
+{% endblock %}

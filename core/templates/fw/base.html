@@ -89,10 +89,35 @@
             <button class="relative text-slate-400 hover:text-slate-600 transition-colors" title="Benachrichtigungen">
                 <i class="fa-regular fa-bell text-lg"></i>
             </button>
-            <div class="flex items-center gap-2.5">
-                <span class="text-sm text-slate-500 hidden md:inline">Hallo, <span class="font-semibold text-slate-800">{{ request.user.first_name|default:request.user.username }}</span></span>
-                <div class="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">
-                    {{ request.user.username|slice:":2"|upper }}
+            <div class="relative">
+                <button onclick="fwProfilMenu()" class="flex items-center gap-2.5 group">
+                    <span class="text-sm text-slate-500 hidden md:inline">Hallo, <span class="font-semibold text-slate-800">{{ request.user.first_name|default:request.user.username }}</span></span>
+                    <span class="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold group-hover:ring-2 ring-indigo-200 transition-all">
+                        {{ request.user.username|slice:":2"|upper }}
+                    </span>
+                </button>
+                <!-- Dropdown -->
+                <div id="fwProfil" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-300/40 py-2 z-50">
+                    <div class="px-4 py-2.5 flex items-center gap-3 border-b border-slate-100 mb-1">
+                        <span class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold">{{ request.user.username|slice:":2"|upper }}</span>
+                        <div class="min-w-0">
+                            <div class="text-sm font-semibold text-slate-900 truncate">{{ request.user.get_full_name|default:request.user.username }}</div>
+                            <div class="text-xs text-slate-400 truncate">{{ request.user.email|default:request.user.username }}</div>
+                        </div>
+                    </div>
+                    {% include 'fw/_menu_item.html' with ziel='/neu/personen/' icon='fa-user' label='Profil' %}
+                    {% include 'fw/_menu_item.html' with ziel='/neu/account/' icon='fa-gear' label='Account' %}
+                    {% include 'fw/_menu_item.html' with ziel='/neu/abonnement/' icon='fa-star' label='Abonnement' %}
+                    {% include 'fw/_menu_item.html' with ziel='/neu/benutzer/' icon='fa-users' label='Benutzer' %}
+                    {% include 'fw/_menu_item.html' with ziel='/neu/mandate/' icon='fa-briefcase' label='Mandate' %}
+                    {% include 'fw/_menu_item.html' with ziel='/neu/vorlagen/' icon='fa-file-lines' label='Vorlagen' %}
+                    {% include 'fw/_menu_item.html' with ziel='/neu/dokumente/' icon='fa-folder-open' label='Dokumente' %}
+                    {% include 'fw/_menu_item.html' with ziel='/neu/integrationen/' icon='fa-plug' label='Integrationen' %}
+                    <div class="border-t border-slate-100 my-1.5"></div>
+                    {% include 'fw/_menu_item.html' with ziel='/app/' icon='fa-arrow-left' label='Zur klassischen Ansicht' extern=True %}
+                    <a href="/logout/" class="flex items-center gap-3 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50">
+                        <i class="fa-solid fa-right-from-bracket w-4 text-center"></i> Abmelden
+                    </a>
                 </div>
             </div>
         </header>
@@ -105,6 +130,20 @@
 <script>
 // Generische Tab-Umschaltung für Detailseiten:
 // Buttons: data-tab="<gruppe>" data-target="<name>"; Panels: id="<gruppe>-<name>"
+// Profil-Dropdown öffnen/schliessen
+function fwProfilMenu() {
+    var m = document.getElementById('fwProfil');
+    if (m) m.classList.toggle('hidden');
+}
+document.addEventListener('click', function(e) {
+    var m = document.getElementById('fwProfil');
+    if (!m || m.classList.contains('hidden')) return;
+    // Klick ausserhalb von Menü + Avatar-Button schliesst
+    if (!m.contains(e.target) && !e.target.closest('button[onclick="fwProfilMenu()"]')) {
+        m.classList.add('hidden');
+    }
+});
+
 function fwTab(gruppe, name) {
     document.querySelectorAll('[data-panel="' + gruppe + '"]').forEach(function(p) {
         p.classList.toggle('hidden', p.id !== gruppe + '-' + name);
