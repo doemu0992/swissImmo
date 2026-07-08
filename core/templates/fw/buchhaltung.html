@@ -10,9 +10,22 @@
         <i class="fa-solid fa-sliders mr-1.5"></i> Kontenplan &amp; Buchen <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-0.5"></i>
     </a>
 </div>
-<p class="text-sm text-slate-500 mb-5">Erfolgsrechnung und Buchungsjournal
+<p class="text-sm text-slate-500 mb-4">Erfolgsrechnung, Bilanz und Buchungsjournal
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
     <a href="/neu/buchhaltung/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+<!-- Jahresfilter (Jahresabschluss) -->
+<div class="flex items-center gap-1.5 flex-wrap mb-5">
+    <span class="text-xs font-semibold text-slate-400 mr-1">Geschäftsjahr:</span>
+    {% for j in jahre %}
+    <a href="?jahr={{ j }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
+       class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+              {% if jahr == j %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ j }}</a>
+    {% endfor %}
+    <a href="?jahr=alle{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
+       class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+              {% if jahr == 'alle' %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">Alle</a>
+</div>
 
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
@@ -79,6 +92,58 @@
             {% if erfolg >= 0 %}Gewinn{% else %}Verlust{% endif %} · CHF {{ erfolg|chf }}
         </span>
     </div>
+</div>
+
+<!-- BILANZ -->
+<div data-panel="bh" id="bh-bilanz" class="hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Aktiven -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+                <span class="font-bold text-slate-800 text-sm">Aktiven</span>
+                <span class="text-sm font-bold text-slate-800">CHF {{ total_aktiven|chf }}</span>
+            </div>
+            <table class="w-full text-sm">
+                <tbody class="divide-y divide-slate-50">
+                {% for a in aktiven %}
+                <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ a.nummer }}</td>
+                    <td class="px-5 py-2.5 text-slate-700">{{ a.bezeichnung }}</td>
+                    <td class="px-5 py-2.5 text-right font-medium text-slate-900 whitespace-nowrap">{{ a.saldo|chf }}</td></tr>
+                {% empty %}
+                <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Aktivkonten mit Saldo.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Passiven -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+                <span class="font-bold text-slate-800 text-sm">Passiven &amp; Eigenkapital</span>
+                <span class="text-sm font-bold text-slate-800">CHF {{ passiven_mit_erfolg|chf }}</span>
+            </div>
+            <table class="w-full text-sm">
+                <tbody class="divide-y divide-slate-50">
+                {% for p in passiven %}
+                <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ p.nummer }}</td>
+                    <td class="px-5 py-2.5 text-slate-700">{{ p.bezeichnung }}</td>
+                    <td class="px-5 py-2.5 text-right font-medium text-slate-900 whitespace-nowrap">{{ p.saldo|chf }}</td></tr>
+                {% endfor %}
+                <tr class="bg-slate-50/60"><td class="px-5 py-2.5 text-slate-400 font-mono text-xs">—</td>
+                    <td class="px-5 py-2.5 text-slate-700 font-medium">{% if erfolg >= 0 %}Jahresgewinn{% else %}Jahresverlust{% endif %}</td>
+                    <td class="px-5 py-2.5 text-right font-medium {% if erfolg >= 0 %}text-emerald-600{% else %}text-rose-600{% endif %} whitespace-nowrap">{{ erfolg|chf }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 mt-4 flex items-center justify-between">
+        <span class="font-bold text-slate-800">Bilanzsumme</span>
+        <span class="text-sm {% if bilanz_differenz == 0 %}text-emerald-600{% else %}text-amber-600{% endif %} font-semibold">
+            {% if bilanz_differenz == 0 %}<i class="fa-solid fa-check mr-1"></i>Aktiven = Passiven · CHF {{ total_aktiven|chf }}
+            {% else %}<i class="fa-solid fa-triangle-exclamation mr-1"></i>Differenz CHF {{ bilanz_differenz|chf }} (Buchungen ausserhalb Kontenrahmen){% endif %}
+        </span>
+    </div>
+    <p class="text-xs text-slate-400 mt-3"><i class="fa-solid fa-circle-info mr-1"></i>
+        Bilanz aus den Bilanzkonten (Sollsaldo = Aktivum, Habensaldo = Passivum). Der Jahreserfolg wird dem Eigenkapital zugerechnet.</p>
 </div>
 
 <!-- JOURNAL -->

@@ -14,7 +14,7 @@ from django.db.models import Q, Sum
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 
-from core.auth import rolle_erforderlich, TEAM_ROLLEN, SCHREIB_ROLLEN, ROLLE_VERWALTUNG
+from core.auth import rolle_erforderlich, TEAM_ROLLEN, SCHREIB_ROLLEN, ROLLE_VERWALTUNG, VERWALTUNGS_ROLLEN
 from core.views.dashboard_view import _berechne_aufgaben
 from crm.models import Mieter
 from finance.models import DebitorenRechnung, Zahlungseingang
@@ -1486,15 +1486,29 @@ def fw_buchhaltung(request):
     from finance.models import Buchung, Buchungskonto
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
+    heute = timezone.now().date()
 
-    # --- ERFOLGSRECHNUNG (Storno-Paare heben sich selbst auf, nicht filtern) ---
+    # --- Jahresfilter (Jahresabschluss) ---
+    jahr_param = request.GET.get('jahr', str(heute.year))
     qs = Buchung.objects.all()
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
-    konten = Buchungskonto.objects.filter(typ__in=['ertrag', 'aufwand'])
+    if jahr_param and jahr_param != 'alle':
+        try:
+            jahr = int(jahr_param)
+            qs = qs.filter(datum__gte=date(jahr, 1, 1), datum__lte=date(jahr, 12, 31))
+        except ValueError:
+            jahr = heute.year
+    else:
+        jahr = 'alle'
+
+    # --- ERFOLGSRECHNUNG (Storno-Paare heben sich selbst auf, nicht filtern) ---
+    konten = Buchungskonto.objects.all()
 
     ertraege, aufwaende = [], []
+    aktiven, passiven = [], []
     total_ertrag = total_aufwand = Decimal('0.00')
+    total_aktiven = total_passiven = Decimal('0.00')
     for k in konten:
         soll = qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
         haben = qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
@@ -1503,14 +1517,27 @@ def fw_buchhaltung(request):
             if saldo:
                 ertraege.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': saldo})
                 total_ertrag += saldo
-        else:
+        elif k.typ == 'aufwand':
             saldo = soll - haben
             if saldo:
                 aufwaende.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': saldo})
                 total_aufwand += saldo
-    ertraege.sort(key=lambda x: x['nummer'])
-    aufwaende.sort(key=lambda x: x['nummer'])
+        else:  # bilanz
+            saldo = soll - haben  # Sollsaldo: >0 Aktivum, <0 Passivum
+            if saldo == 0:
+                continue
+            if saldo > 0:
+                aktiven.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': saldo})
+                total_aktiven += saldo
+            else:
+                passiven.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': -saldo})
+                total_passiven += -saldo
+    for lst in (ertraege, aufwaende, aktiven, passiven):
+        lst.sort(key=lambda x: x['nummer'])
     erfolg = total_ertrag - total_aufwand
+    # Bilanz-Ausgleich: Erfolg wird dem Eigenkapital (Passiven) zugeschlagen
+    passiven_mit_erfolg = total_passiven + erfolg
+    bilanz_differenz = total_aktiven - passiven_mit_erfolg
 
     # --- BUCHUNGSJOURNAL (letzte 60) ---
     journal = (qs.select_related('soll_konto', 'haben_konto', 'liegenschaft')
@@ -1518,14 +1545,84 @@ def fw_buchhaltung(request):
 
     tab_liste = [
         ('erfolg', 'Erfolgsrechnung', None),
+        ('bilanz', 'Bilanz', None),
         ('journal', 'Journal', journal.count() or None),
     ]
     return render(request, 'fw/buchhaltung.html', {
         **basis, 'nav': 'buchhaltung',
         'ertraege': ertraege, 'aufwaende': aufwaende,
         'total_ertrag': total_ertrag, 'total_aufwand': total_aufwand, 'erfolg': erfolg,
+        'aktiven': aktiven, 'passiven': passiven,
+        'total_aktiven': total_aktiven, 'total_passiven': total_passiven,
+        'passiven_mit_erfolg': passiven_mit_erfolg, 'bilanz_differenz': bilanz_differenz,
         'journal': journal,
         'tab_liste': tab_liste,
+        'jahr': jahr, 'jahre': list(range(heute.year, heute.year - 5, -1)),
+    })
+
+
+# ============================================================
+# EIGENTÜMER-/MANDATSABRECHNUNG
+# ============================================================
+
+def _mandat_abrechnung_daten(mandant, jahr):
+    """Erträge/Aufwände je Liegenschaft des Mandanten für das Geschäftsjahr.
+    Gibt (zeilen, totals) zurück — Basis für Anzeige und PDF."""
+    from finance.models import Buchung, Buchungskonto
+    import calendar as _cal
+    von, bis = date(jahr, 1, 1), date(jahr, 12, 31)
+    liegenschaften = Liegenschaft.objects.filter(mandant=mandant).order_by('strasse')
+    ertrag_konten = list(Buchungskonto.objects.filter(typ='ertrag'))
+    aufwand_konten = list(Buchungskonto.objects.filter(typ='aufwand'))
+
+    zeilen = []
+    sum_ertrag = sum_aufwand = Decimal('0.00')
+    for lg in liegenschaften:
+        bqs = Buchung.objects.filter(liegenschaft=lg, datum__gte=von, datum__lte=bis)
+        ertrag = Decimal('0.00')
+        for k in ertrag_konten:
+            s = bqs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            h = bqs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            ertrag += (h - s)
+        aufwand = Decimal('0.00')
+        for k in aufwand_konten:
+            s = bqs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            h = bqs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            aufwand += (s - h)
+        saldo = ertrag - aufwand
+        zeilen.append({'lg': lg, 'ertrag': ertrag, 'aufwand': aufwand, 'saldo': saldo})
+        sum_ertrag += ertrag
+        sum_aufwand += aufwand
+    totals = {'ertrag': sum_ertrag, 'aufwand': sum_aufwand, 'saldo': sum_ertrag - sum_aufwand}
+    return zeilen, totals, von, bis
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_mandat_abrechnung(request, pk):
+    from crm.models import Mandant
+    md = get_object_or_404(Mandant, id=pk)
+    basis = _global_filter(request)
+    heute = timezone.now().date()
+    try:
+        jahr = int(request.GET.get('jahr') or heute.year)
+    except ValueError:
+        jahr = heute.year
+
+    if request.GET.get('pdf') == '1':
+        from crm.models import Verwaltung
+        from core.services.mandat_abrechnung import generate_mandat_abrechnung_pdf
+        from django.http import HttpResponse
+        zeilen, totals, von, bis = _mandat_abrechnung_daten(md, jahr)
+        pdf = generate_mandat_abrechnung_pdf(md, jahr, zeilen, totals, von, bis, Verwaltung.objects.first())
+        resp = HttpResponse(pdf, content_type='application/pdf')
+        resp['Content-Disposition'] = f'inline; filename="Mandatsabrechnung_{md.firma_oder_name}_{jahr}.pdf"'
+        return resp
+
+    zeilen, totals, von, bis = _mandat_abrechnung_daten(md, jahr)
+    return render(request, 'fw/mandat_abrechnung.html', {
+        **basis, 'nav': 'mandate', 'md': md, 'jahr': jahr, 'von': von, 'bis': bis,
+        'zeilen': zeilen, 'totals': totals,
+        'jahre': list(range(heute.year, heute.year - 5, -1)),
     })
 
 
