@@ -2823,9 +2823,15 @@ def fw_vertrag_neu_speichern(request):
         if zweiter_obj:
             mitmieter = zweiter_obj.display_name
     if not mitmieter:
-        mit_teile = [P.get('mit_anrede', '').strip(), P.get('mit_vorname', '').strip(),
-                     P.get('mit_nachname', '').strip()]
-        mitmieter = ' '.join(t for t in mit_teile if t).strip() or P.get('mitmieter_name', '').strip()
+        mit_vorname = P.get('mit_vorname', '').strip()
+        mit_nachname = P.get('mit_nachname', '').strip()
+        # Nur einen Mitmieter bilden, wenn wirklich ein Name erfasst wurde —
+        # die Anrede allein (Default 'Frau') darf keinen Phantom-Mieter erzeugen.
+        if mit_vorname or mit_nachname:
+            mit_teile = [P.get('mit_anrede', '').strip(), mit_vorname, mit_nachname]
+            mitmieter = ' '.join(t for t in mit_teile if t).strip()
+        else:
+            mitmieter = P.get('mitmieter_name', '').strip()
         # Neue zweite Person mit Namen -> als Mieter-Datensatz anlegen (erscheint in Personen)
         if not zweiter_obj and (P.get('mit_vorname', '').strip() or P.get('mit_nachname', '').strip()):
             zweiter_obj = Mieter.objects.create(
