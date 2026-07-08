@@ -538,11 +538,22 @@ def fw_liegenschaft_detail(request, pk):
     unterhalt = Unterhalt.objects.filter(liegenschaft=lg).order_by('-datum')[:10]
     perioden = lg.abrechnungen.order_by('-start_datum')[:6]
 
+    from portfolio.models import Wartungsfrist
+    heute = timezone.localdate()
+    wartungsfristen = []
+    for wf in lg.wartungsfristen.filter(aktiv=True).order_by('naechste_faelligkeit'):
+        tage = (wf.naechste_faelligkeit - heute).days
+        wartungsfristen.append({
+            'wf': wf, 'tage': tage,
+            'faellig_bald': 0 <= tage <= 60, 'ueberfaellig': tage < 0,
+        })
+
     dok20 = dokumente[:20]
     tab_liste = [
         ('objekte', 'Objekte', len(einheiten_rows)),
         ('finanzen', 'Finanzen', None),
         ('unterhalt', 'Unterhalt', unterhalt.count() or None),
+        ('fristen', 'Fristen', len(wartungsfristen) or None),
         ('schaeden', 'Schäden', tickets.count() or None),
         ('dokumente', 'Dokumente', len(dok20) or None),
     ]
@@ -556,9 +567,58 @@ def fw_liegenschaft_detail(request, pk):
         'tickets': tickets,
         'dokumente': dok20,
         'unterhalt': unterhalt,
+        'wartungsfristen': wartungsfristen,
         'perioden': perioden,
         'tab_liste': tab_liste,
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_wartungsfrist_neu(request, pk):
+    """Wartungs-/Versicherungsfrist zu einer Liegenschaft erfassen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Wartungsfrist
+    from core.auth import log_aktion
+    lg = get_object_or_404(Liegenschaft, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/liegenschaften/{lg.id}/')
+    bez = (request.POST.get('bezeichnung') or '').strip()
+    faellig = (request.POST.get('naechste_faelligkeit') or '').strip()
+    if not bez or not faellig:
+        messages.error(request, "Bezeichnung und Fälligkeitsdatum sind erforderlich.")
+        return redirect(f'/neu/liegenschaften/{lg.id}/')
+    try:
+        faellig_d = date.fromisoformat(faellig)
+    except ValueError:
+        messages.error(request, "Ungültiges Datum.")
+        return redirect(f'/neu/liegenschaften/{lg.id}/')
+    try:
+        intervall = int(request.POST.get('intervall_monate') or 12)
+    except ValueError:
+        intervall = 12
+    Wartungsfrist.objects.create(
+        liegenschaft=lg, art=request.POST.get('art', 'wartung'),
+        bezeichnung=bez, anbieter=(request.POST.get('anbieter') or '').strip(),
+        naechste_faelligkeit=faellig_d, intervall_monate=max(0, intervall),
+        notiz=(request.POST.get('notiz') or '').strip())
+    log_aktion(request, "Wartungsfrist erfasst", str(lg), bez)
+    messages.success(request, f'✅ Frist „{bez}" gespeichert.')
+    return redirect(f'/neu/liegenschaften/{lg.id}/?tab=fristen')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_wartungsfrist_loeschen(request, pk):
+    """Wartungs-/Versicherungsfrist löschen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Wartungsfrist
+    wf = get_object_or_404(Wartungsfrist.objects.select_related('liegenschaft'), id=pk)
+    lg_id = wf.liegenschaft_id
+    if request.method == 'POST':
+        wf.delete()
+        messages.success(request, "🗑️ Frist gelöscht.")
+    return redirect(f'/neu/liegenschaften/{lg_id}/?tab=fristen')
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)

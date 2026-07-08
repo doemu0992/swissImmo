@@ -247,3 +247,33 @@ class SchluesselAusgabe(models.Model):
     class Meta:
         verbose_name = "Schlüsselausgabe"
         db_table = 'core_schluesselausgabe'
+
+
+class Wartungsfrist(models.Model):
+    """Wiederkehrende Wartungs-/Service-/Versicherungsfrist einer Liegenschaft.
+    Speist automatisch Pendenzen (generate_auto_pendenzen)."""
+    ART_CHOICES = [
+        ('wartung', 'Wartung / Service'),
+        ('versicherung', 'Versicherung'),
+        ('kontrolle', 'Kontrolle / Prüfung'),
+        ('abo', 'Abonnement / Vertrag'),
+        ('sonstiges', 'Sonstiges'),
+    ]
+    liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='wartungsfristen')
+    art = models.CharField("Art", max_length=20, choices=ART_CHOICES, default='wartung')
+    bezeichnung = models.CharField("Bezeichnung", max_length=200)
+    anbieter = models.CharField("Anbieter / Dienstleister", max_length=200, blank=True, default='')
+    naechste_faelligkeit = models.DateField("Nächste Fälligkeit")
+    intervall_monate = models.PositiveSmallIntegerField("Intervall (Monate)", default=12)
+    aktiv = models.BooleanField("Aktiv", default=True)
+    notiz = models.TextField("Notiz", blank=True, default='')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Wartungsfrist"
+        verbose_name_plural = "Wartungsfristen"
+        ordering = ['naechste_faelligkeit']
+        db_table = 'portfolio_wartungsfrist'
+
+    def __str__(self):
+        return f"{self.get_art_display()}: {self.bezeichnung}"

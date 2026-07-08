@@ -175,7 +175,7 @@ def generate_auto_pendenzen(horizont_tage=90, user=None):
     Feld Pendenz.quelle. Gibt die Anzahl neu erstellter Pendenzen zurück."""
     from core.models import Pendenz
     from rentals.models import Mietvertrag
-    from portfolio.models import Geraet
+    from portfolio.models import Geraet, Wartungsfrist
 
     heute = timezone.localdate()
     grenze = heute + timedelta(days=horizont_tage)
@@ -226,7 +226,35 @@ def generate_auto_pendenzen(horizont_tage=90, user=None):
                 f"Garantie/Service für {bez} endet — Verlängerung oder Wartung prüfen.",
                 liegenschaft=lg)
 
+    # d) Wartungs-/Versicherungsfristen (wiederkehrend)
+    for wf in Wartungsfrist.objects.filter(aktiv=True, naechste_faelligkeit__lte=grenze).select_related('liegenschaft'):
+        # Überfällige Fristen ins Intervall rollen, bis sie wieder in der Zukunft liegen
+        rollen = 0
+        while wf.naechste_faelligkeit < heute and (wf.intervall_monate or 0) > 0 and rollen < 60:
+            wf.naechste_faelligkeit = _plus_monate(wf.naechste_faelligkeit, wf.intervall_monate)
+            rollen += 1
+        if rollen:
+            wf.save(update_fields=['naechste_faelligkeit'])
+        if wf.naechste_faelligkeit > grenze:
+            continue
+        anbieter = f" ({wf.anbieter})" if wf.anbieter else ""
+        _ensure(f"auto:wartung:{wf.id}:{wf.naechste_faelligkeit.isoformat()}",
+                f"{wf.get_art_display()}: {wf.bezeichnung}{anbieter}",
+                wf.naechste_faelligkeit, 'unterhalt',
+                wf.notiz or f"Wiederkehrende Frist ({wf.get_art_display()}) — Termin planen/erneuern.",
+                liegenschaft=wf.liegenschaft)
+
     return neu
+
+
+def _plus_monate(d, monate):
+    """Addiert Monate zu einem Datum (Tag wird bei kürzeren Monaten geklemmt)."""
+    import calendar
+    monat0 = d.month - 1 + int(monate)
+    jahr = d.year + monat0 // 12
+    monat = monat0 % 12 + 1
+    tag = min(d.day, calendar.monthrange(jahr, monat)[1])
+    return d.replace(year=jahr, month=monat, day=tag)
 
 
 # ============================================================

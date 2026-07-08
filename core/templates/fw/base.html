@@ -229,6 +229,16 @@ function fwTab(gruppe, name) {
         b.classList.toggle('text-slate-500', !aktiv);
     });
 }
+
+// Deep-Link: ?tab=<name> aktiviert beim Laden den passenden Tab
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        var t = new URLSearchParams(window.location.search).get('tab');
+        if (!t) return;
+        var btn = document.querySelector('[data-tab][data-target="' + t + '"]');
+        if (btn) fwTab(btn.dataset.tab, t);
+    } catch (e) {}
+});
 </script>
 {% block scripts %}{% endblock %}
 </body>
