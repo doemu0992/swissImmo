@@ -1645,3 +1645,51 @@ def fw_dokumente(request):
         'kat_filter': kat_filter, 'kat_chips': kat_chips, 'q': q,
         'anzahl': len(eintraege),
     })
+
+
+# ============================================================
+# ETAPPE D: KOMMUNIKATION (Mitteilungs-Assistent mit Live-Vorschau)
+# ============================================================
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_kommunikation(request):
+    from crm.models import Verwaltung
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    vw = Verwaltung.objects.first()
+    absender = {
+        'firma': vw.firma if vw else 'Meine Verwaltung',
+        'strasse': vw.strasse if vw else '',
+        'plz': vw.plz if vw else '', 'ort': vw.ort if vw else '',
+    }
+
+    # Empfänger = Mieter mit aktivem Vertrag (im Filter-Scope)
+    vertraege = (Mietvertrag.objects.filter(status='aktiv')
+                 .select_related('mieter', 'einheit__liegenschaft'))
+    if aktive_lg:
+        vertraege = vertraege.filter(einheit__liegenschaft=aktive_lg)
+
+    empfaenger = []
+    gesehen = set()
+    for v in vertraege:
+        m = v.mieter
+        if m.id in gesehen:
+            continue
+        gesehen.add(m.id)
+        lg = v.einheit.liegenschaft
+        empfaenger.append({
+            'id': m.id, 'name': m.display_name,
+            'anrede': m.anrede or '',
+            'strasse': m.strasse or lg.strasse,
+            'plz': m.plz or lg.plz, 'ort': m.ort or lg.ort,
+            'email': m.email or '',
+            'objekt': f"{lg.strasse}, {lg.ort} · {v.einheit.bezeichnung}",
+        })
+    empfaenger.sort(key=lambda e: e['name'])
+
+    return render(request, 'fw/kommunikation.html', {
+        **basis, 'nav': 'kommunikation',
+        'absender': absender, 'empfaenger': empfaenger,
+        'anzahl_empfaenger': len(empfaenger),
+    })

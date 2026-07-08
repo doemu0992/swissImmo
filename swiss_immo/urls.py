@@ -68,7 +68,7 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_obj
                            fw_dienstleister, fw_assets, fw_buchhaltung,
                            fw_sollstellung, fw_sollstellung_run,
                            fw_nebenkosten, fw_nebenkosten_detail,
-                           fw_mietzins, fw_dokumente)
+                           fw_mietzins, fw_dokumente, fw_kommunikation)
 
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
@@ -119,6 +119,7 @@ urlpatterns = [
     path('neu/nebenkosten/<int:pk>/', fw_nebenkosten_detail, name='fw_nebenkosten_detail'),
     path('neu/mietzins/', fw_mietzins, name='fw_mietzins'),
     path('neu/dokumente/', fw_dokumente, name='fw_dokumente'),
+    path('neu/kommunikation/', fw_kommunikation, name='fw_kommunikation'),
     path('neu/mahnwesen/', fw_mahnwesen, name='fw_mahnwesen'),
     path('neu/bankkonten/', fw_bankkonten, name='fw_bankkonten'),
     path('neu/bankabgleich/', fw_bankabgleich, name='fw_bankabgleich'),
