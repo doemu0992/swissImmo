@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Abhängigkeiten installieren
+        run: pip install -r requirements.txt
+      - name: Django system check
+        run: python manage.py check
+      - name: Migrationen vollständig?
+        run: python manage.py makemigrations --check --dry-run
+      - name: Tests
+        run: python manage.py test --verbosity=2
