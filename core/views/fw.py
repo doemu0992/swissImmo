@@ -1760,6 +1760,9 @@ def fw_vertrag_neu(request):
         **basis, 'nav': 'vertraege',
         'liegenschaften': liegenschaften, 'mieter': mieter,
         'verwaltung': verwaltung,
+        'aktueller_ref_zins': float(vw.aktueller_referenzzinssatz) if vw else 1.75,
+        'aktueller_lik': float(vw.aktueller_lik_punkte) if vw else 107.1,
+        'heute_iso': timezone.now().date().isoformat(),
     })
 
 
@@ -1837,9 +1840,18 @@ def fw_vertrag_neu_speichern(request):
             kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
             mitmieter_name=mitmieter, familienwohnung=familienwohnung,
             anzahl_personen=int(P.get('anzahl_personen') or 1),
+            besondere_vereinbarungen=P.get('besondere_vereinbarungen', '').strip(),
+            mitbenutzung=P.get('mitbenutzung', '').strip(),
+            nebenraeume=P.get('nebenraeume', '').strip(),
             netto_mietzins=dec('netto_mietzins'), nebenkosten=dec('nebenkosten'),
             nk_abrechnungsart=P.get('nk_abrechnungsart', 'akonto'),
+            verteilschluessel=P.get('verteilschluessel', 'm2'),
             zahlungsrhythmus=P.get('zahlungsrhythmus', 'monatlich'),
+            mwst_pflichtig=P.get('mwst_pflichtig') == 'on',
+            weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
+            basis_referenzzinssatz=dec('basis_referenzzinssatz') or Decimal('1.75'),
+            basis_lik_punkte=dec('basis_lik_punkte') or Decimal('107.1'),
+            kostensteigerung_datum=datum('kostensteigerung_datum'),
             kautions_betrag=dec('kautions_betrag') or None,
             kautions_konto=P.get('kautions_konto', '').strip(),
         )

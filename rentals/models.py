@@ -57,6 +57,8 @@ class Mietvertrag(models.Model):
     mitmieter_name = models.CharField("Ehegatte / Mitmieter", max_length=150, blank=True, default='') # 🔥 NEU
     anzahl_personen = models.IntegerField("Anzahl Personen", default=1)
     besondere_vereinbarungen = models.TextField("Besondere Vereinbarungen", blank=True, default='')
+    mitbenutzung = models.TextField("Zur Mitbenützung", blank=True, default='')      # 🔥 NEU (z.B. Waschküche, Estrich)
+    nebenraeume = models.TextField("Nebenräume", blank=True, default='')              # 🔥 NEU (z.B. Keller, Reduit)
 
     # --- FINANZEN ---
     netto_mietzins = models.DecimalField(max_digits=8, decimal_places=2)
@@ -65,6 +67,7 @@ class Mietvertrag(models.Model):
     verteilschluessel = models.CharField("Verteilschlüssel", max_length=20, choices=VERTEIL_CHOICES, default='m2')
     ausgeschlossene_kosten = models.TextField("Ausgeschlossene Kosten", blank=True, help_text="Welche Kosten zahlt dieser Mieter NICHT?")
     zahlungsrhythmus = models.CharField("Zahlungsrhythmus", max_length=20, choices=ZAHLUNGSRHYTHMUS_CHOICES, default='monatlich') # 🔥 NEU
+    mwst_pflichtig = models.BooleanField("MWST-pflichtig", default=False)             # 🔥 NEU (v.a. Gewerbe)
 
     # --- KAUTION ---
     kautions_betrag = models.DecimalField("Kautionsbetrag", max_digits=8, decimal_places=2, blank=True, null=True)
