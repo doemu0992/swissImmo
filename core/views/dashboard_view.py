@@ -30,9 +30,9 @@ def update_market_data_view(request):
         for error in errors:
             messages.warning(request, error)
 
-    # Erfolgsmeldung anzeigen und zurück zum neuen SPA-Dashboard
+    # Erfolgsmeldung anzeigen und zurück zur neuen Oberfläche
     messages.success(request, msg)
-    return redirect('spa_master')
+    return redirect('fw_dashboard')
 
 
 @login_required

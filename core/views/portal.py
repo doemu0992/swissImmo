@@ -18,11 +18,11 @@ from rentals.models import Mietvertrag
 
 @login_required
 def nach_login_view(request):
-    """Login-Weiche: Team → SPA, Eigentümer → Portal."""
+    """Login-Weiche: Team → neue Oberfläche (/neu/), Eigentümer → Portal."""
     if getattr(request.user, 'mandant_profil', None) is not None:
         return redirect('portal')
     if hat_rolle(request.user, TEAM_ROLLEN):
-        return redirect('spa_master')
+        return redirect('fw_dashboard')
     if ist_eigentuemer(request.user):
         return redirect('portal')
     # Login ohne Rolle und ohne Mandant-Verknüpfung: zurück zum Login
@@ -34,10 +34,10 @@ def nach_login_view(request):
 def portal_view(request):
     mandant = getattr(request.user, 'mandant_profil', None)
 
-    # Team-Mitglieder ohne Mandant-Verknüpfung gehören ins SPA
+    # Team-Mitglieder ohne Mandant-Verknüpfung gehören in die neue Oberfläche
     if mandant is None:
         if hat_rolle(request.user, TEAM_ROLLEN):
-            return redirect('spa_master')
+            return redirect('fw_dashboard')
         return render(request, 'core/portal.html', {'mandant': None})
 
     liegenschaften = []
