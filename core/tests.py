@@ -1,0 +1,254 @@
+"""Regressionstests für die P1/P2-Features (Serienbrief, Auto-Ablage,
+Eigentümer-/Mieterportal, Reparaturfreigabe, Datenqualität, Akonto,
+Wartungsfristen, MWST-ESTV). Ziel: die neu gebauten Flows dauerhaft
+gegen Regressionen absichern."""
+from datetime import date, timedelta
+from decimal import Decimal
+
+from django.test import TestCase, Client
+from django.contrib.auth.models import User, Group
+
+from crm.models import Mieter, Mandant, Verwaltung
+from portfolio.models import Liegenschaft, Einheit, Wartungsfrist
+from rentals.models import Mietvertrag
+
+
+def _team_user(rolle='Verwaltung'):
+    grp, _ = Group.objects.get_or_create(name=rolle)
+    u = User.objects.create_user(username=f'team_{rolle}', password='x')
+    u.groups.add(grp)
+    return u
+
+
+def _basis_objekte():
+    lg = Liegenschaft.objects.create(strasse='Teststrasse 1', plz='8000', ort='Zürich',
+                                     versicherungswert=Decimal('1000000'))
+    e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='wohnung',
+                               nettomiete_aktuell=Decimal('1500'), nebenkosten_aktuell=Decimal('200'))
+    m = Mieter.objects.create(typ='person', vorname='Hans', nachname='Muster',
+                              email='hans@example.ch', strasse='Seeweg 3', plz='8000', ort='Zürich')
+    v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
+                                   netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'),
+                                   status='aktiv', kautions_betrag=Decimal('4500'))
+    return lg, e, m, v
+
+
+class SerienbriefTests(TestCase):
+    def test_pdf_platzhalter_und_seiten(self):
+        from core.services.serienbrief import generate_serienbrief_pdf
+        absender = {'firma': 'Verwaltung AG', 'strasse': 'Weg 1', 'plz': '8000', 'ort': 'Zürich'}
+        emp = [
+            {'name': 'Herr A', 'anrede': 'Sehr geehrter Herr A', 'strasse': 'S 1', 'plz': '8000', 'ort': 'Zürich', 'objekt': 'O1', 'liegenschaft': 'L1'},
+            {'name': 'Frau B', 'anrede': 'Sehr geehrte Frau B', 'strasse': 'S 2', 'plz': '8001', 'ort': 'Bern', 'objekt': 'O2', 'liegenschaft': 'L2'},
+        ]
+        pdf = generate_serienbrief_pdf(absender, 'Betreff {name}', 'Hallo {anrede}, Objekt {objekt}.', emp)
+        self.assertTrue(pdf.startswith(b'%PDF'))
+        self.assertGreater(len(pdf), 1000)
+
+    def test_serienbrief_view(self):
+        _lg, _e, m, _v = _basis_objekte()
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        r = c.post('/neu/kommunikation/serienbrief/', {
+            'betreff': 'Info', 'text': '{anrede}\n\n{liegenschaft}', 'empfaenger_id': [str(m.id)]})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+
+
+class AblageTests(TestCase):
+    def test_ablegen_dedup(self):
+        from core.services.ablage import ablegen
+        from rentals.models import Dokument
+        _lg, _e, _m, v = _basis_objekte()
+        d1 = ablegen(b'%PDF-1', 'Kündigung', vertrag=v, dedup=True)
+        d2 = ablegen(b'%PDF-2', 'Kündigung', vertrag=v, dedup=True)
+        self.assertIsNotNone(d1)
+        self.assertEqual(d1.id, d2.id)
+        self.assertEqual(Dokument.objects.filter(vertrag=v, bezeichnung='Kündigung').count(), 1)
+        self.assertEqual(d1.mieter_id, v.mieter_id)
+
+
+class EigentuemerPortalTests(TestCase):
+    def _mandant_login(self):
+        lg, e, m, v = _basis_objekte()
+        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        lg.mandant = md; lg.save()
+        u = User.objects.create_user(username='eig', password='x')
+        md.benutzer = u; md.save()
+        return md, lg, u
+
+    def test_cockpit_kpis(self):
+        md, lg, u = self._mandant_login()
+        c = Client(); c.force_login(u)
+        r = c.get('/portal/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Leerstandsquote')
+        self.assertContains(r, 'Bruttorendite')  # versicherungswert gesetzt
+
+    def test_report_pdf(self):
+        md, lg, u = self._mandant_login()
+        c = Client(); c.force_login(u)
+        r = c.get('/portal/report/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+
+    def test_fremddokument_404(self):
+        from portfolio.models import Dokument as PDok
+        from django.core.files.base import ContentFile
+        md, lg, u = self._mandant_login()
+        fremd = Liegenschaft.objects.create(strasse='X', plz='9', ort='Y')
+        d = PDok(liegenschaft=fremd, titel='Fremd', kategorie='x')
+        d.datei.save('f.pdf', ContentFile(b'%PDF'), save=True)
+        c = Client(); c.force_login(u)
+        self.assertEqual(c.get(f'/portal/dokument/{d.id}/').status_code, 404)
+
+
+class ReparaturFreigabeTests(TestCase):
+    def test_freigabe_flow(self):
+        from tickets.models import SchadenMeldung, HandwerkerAuftrag
+        lg, e, m, v = _basis_objekte()
+        md = Mandant.objects.create(firma_oder_name='Eig AG')
+        lg.mandant = md; lg.save()
+        u = User.objects.create_user(username='eig2', password='x'); md.benutzer = u; md.save()
+        from crm.models import Handwerker
+        hw = Handwerker.objects.create(firma='Sanitär AG')
+        t = SchadenMeldung.objects.create(liegenschaft=lg, titel='Heizung', beschreibung='x')
+        a = HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, freigabe_status='ausstehend', kosten_geschaetzt=Decimal('2000'))
+        c = Client(); c.force_login(u)
+        self.assertContains(c.get('/portal/'), 'Reparaturen zur Freigabe')
+        r = c.post(f'/portal/freigabe/{a.id}/', {'aktion': 'freigeben', 'kommentar': 'ok'})
+        self.assertEqual(r.status_code, 302)
+        a.refresh_from_db()
+        self.assertEqual(a.freigabe_status, 'freigegeben')
+        self.assertEqual(a.freigabe_kommentar, 'ok')
+
+    def test_schwelle_automatisch(self):
+        from tickets.models import SchadenMeldung, HandwerkerAuftrag
+        lg, e, m, v = _basis_objekte()
+        from crm.models import Handwerker
+        hw = Handwerker.objects.create(firma='Elektro AG')
+        t = SchadenMeldung.objects.create(liegenschaft=lg, titel='X', beschreibung='y')
+        a = HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, freigabe_status='nicht_noetig')
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        c.post(f'/neu/auftrag/{a.id}/kosten/', {'kosten_geschaetzt': '2500'})
+        a.refresh_from_db()
+        self.assertEqual(a.freigabe_status, 'ausstehend')
+
+
+class DatenqualitaetTests(TestCase):
+    def test_pflichtfeld_nachname(self):
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        r = c.post('/neu/personen/neu/', {'typ': 'person', 'vorname': 'Nur Vorname'})
+        self.assertContains(r, 'erforderlich')
+        self.assertFalse(Mieter.objects.filter(vorname='Nur Vorname').exists())
+
+    def test_dublette_und_override(self):
+        Mieter.objects.create(typ='person', vorname='Max', nachname='Zwilling', plz='9000', ort='SG')
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        r = c.post('/neu/personen/neu/', {'typ': 'person', 'vorname': 'Max', 'nachname': 'Zwilling', 'plz': '9000', 'ort': 'SG'})
+        self.assertContains(r, 'Dublette')
+        self.assertEqual(Mieter.objects.filter(nachname='Zwilling').count(), 1)
+        r2 = c.post('/neu/personen/neu/', {'typ': 'person', 'vorname': 'Max', 'nachname': 'Zwilling', 'plz': '9000', 'ort': 'SG', 'dublette_ok': '1'})
+        self.assertEqual(r2.status_code, 302)
+        self.assertEqual(Mieter.objects.filter(nachname='Zwilling').count(), 2)
+
+
+class WartungsfristTests(TestCase):
+    def test_pendenz_und_rollover(self):
+        from core.services.automation import generate_auto_pendenzen, _plus_monate
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        wf = Wartungsfrist.objects.create(liegenschaft=lg, art='versicherung', bezeichnung='Police',
+                                          naechste_faelligkeit=date.today() + timedelta(days=10),
+                                          intervall_monate=12)
+        generate_auto_pendenzen(horizont_tage=90)
+        self.assertTrue(Pendenz.objects.filter(quelle__startswith=f'auto:wartung:{wf.id}').exists())
+        # Rollover
+        wf.naechste_faelligkeit = date.today() - timedelta(days=400); wf.save()
+        generate_auto_pendenzen(horizont_tage=90)
+        wf.refresh_from_db()
+        self.assertGreaterEqual(wf.naechste_faelligkeit, date.today())
+        self.assertEqual(_plus_monate(date(2026, 1, 31), 1), date(2026, 2, 28))
+
+
+class MwstEstvTests(TestCase):
+    def test_effektiv(self):
+        from core.services.mwst_estv import berechne_estv
+        e = berechne_estv(umsatz_steuerbar=Decimal('120000'), umsatzsteuer=Decimal('9720'),
+                          vorsteuer_material=Decimal('3000'), vorsteuer_invest=Decimal('500'))
+        self.assertEqual(e['z479'], Decimal('3500.00'))
+        self.assertEqual(e['z500'], Decimal('6220.00'))
+
+    def test_guthaben(self):
+        from core.services.mwst_estv import berechne_estv
+        e = berechne_estv(umsatz_steuerbar=Decimal('10000'), umsatzsteuer=Decimal('810'),
+                          vorsteuer_material=Decimal('2000'), vorsteuer_invest=Decimal('0'))
+        self.assertEqual(e['z500'], Decimal('0.00'))
+        self.assertEqual(e['z510'], Decimal('1190.00'))
+
+    def test_saldosteuersatz(self):
+        from core.services.mwst_estv import berechne_estv
+        e = berechne_estv(umsatz_steuerbar=Decimal('120000'), umsatzsteuer=Decimal('0'),
+                          vorsteuer_material=Decimal('0'), vorsteuer_invest=Decimal('0'),
+                          methode='saldo', saldosteuersatz=Decimal('6.5'))
+        self.assertEqual(e['z500'], Decimal('7800.00'))
+
+
+class MieterPortalTests(TestCase):
+    def _mieter_login(self):
+        lg, e, m, v = _basis_objekte()
+        u = User.objects.create_user(username='mieter1', password='x')
+        m.benutzer = u; m.save()
+        return m, v, u
+
+    def test_portal_zeigt_objekt(self):
+        m, v, u = self._mieter_login()
+        c = Client(); c.force_login(u)
+        r = c.get('/mieter/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Ihr Mietobjekt')
+        self.assertContains(r, 'Teststrasse 1')
+
+    def test_nach_login_routing(self):
+        m, v, u = self._mieter_login()
+        c = Client(); c.force_login(u)
+        r = c.get('/nach-login/')
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(r.url.endswith('/mieter/'))
+
+    def test_schaden_melden(self):
+        from tickets.models import SchadenMeldung
+        m, v, u = self._mieter_login()
+        c = Client(); c.force_login(u)
+        r = c.post('/mieter/schaden/', {'vertrag_id': str(v.id), 'titel': 'Leck', 'beschreibung': 'tropft'})
+        self.assertEqual(r.status_code, 302)
+        t = SchadenMeldung.objects.filter(titel='Leck').first()
+        self.assertIsNotNone(t)
+        self.assertEqual(t.gemeldet_von_id, m.id)
+        self.assertEqual(t.betroffene_einheit_id, v.einheit_id)
+
+    def test_verwalter_erstellt_zugang(self):
+        lg, e, m, v = _basis_objekte()
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        r = c.post(f'/neu/personen/{m.id}/portal-zugang/', {'aktion': 'erstellen'})
+        self.assertEqual(r.status_code, 302)
+        m.refresh_from_db()
+        self.assertIsNotNone(m.benutzer_id)
+
+
+class AkontoTests(TestCase):
+    def test_akonto_uebernahme(self):
+        lg, e, m, v = _basis_objekte()
+        from finance.models import AbrechnungsPeriode
+        p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='NK 2025',
+                                              start_datum=date(2025, 1, 1), ende_datum=date(2025, 12, 31))
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        r = c.post(f'/neu/nebenkosten/{p.id}/akonto/', {'vertrag_id': [str(v.id)], f'akonto_{v.id}': '333'})
+        self.assertEqual(r.status_code, 302)
+        v.refresh_from_db()
+        self.assertEqual(v.nebenkosten, Decimal('333'))
