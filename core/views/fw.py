@@ -1399,3 +1399,103 @@ def fw_sollstellung_run(request):
     else:
         messages.success(request, f"Sollstellung {titel}: alles bereits gestellt — nichts Neues erzeugt.")
     return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
+
+
+# ============================================================
+# ETAPPE D: NEBENKOSTEN (HNK-Abrechnungsperioden)
+# ============================================================
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_nebenkosten(request):
+    from finance.models import AbrechnungsPeriode
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    qs = AbrechnungsPeriode.objects.select_related('liegenschaft').order_by('-start_datum')
+    if aktive_lg:
+        qs = qs.filter(liegenschaft=aktive_lg)
+
+    status_filter = request.GET.get('status', '')
+    rows = []
+    n_offen = n_zu = 0
+    total_kosten_offen = Decimal('0.00')
+    for p in qs:
+        kosten = p.total_kosten
+        if p.abgeschlossen:
+            n_zu += 1
+        else:
+            n_offen += 1
+            total_kosten_offen += kosten
+        if status_filter == 'offen' and p.abgeschlossen:
+            continue
+        if status_filter == 'abgeschlossen' and not p.abgeschlossen:
+            continue
+        rows.append({
+            'p': p, 'kosten': kosten,
+            'lg': p.liegenschaft.strasse if p.liegenschaft_id else '—',
+            'belege': p.belege.count(),
+        })
+
+    chips = [('', 'Alle'), ('offen', 'Offen'), ('abgeschlossen', 'Abgeschlossen')]
+    return render(request, 'fw/nebenkosten.html', {
+        **basis, 'nav': 'nebenkosten', 'rows': rows,
+        'status_filter': status_filter, 'status_chips': chips,
+        'n_offen': n_offen, 'n_zu': n_zu, 'total_kosten_offen': total_kosten_offen,
+        'anzahl': len(rows),
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_nebenkosten_detail(request, pk):
+    from finance.models import AbrechnungsPeriode, KreditorenRechnung
+    p = get_object_or_404(AbrechnungsPeriode.objects.select_related('liegenschaft'), id=pk)
+    basis = _global_filter(request)
+    lg = p.liegenschaft
+
+    # HNK-relevante Kreditorenrechnungen dieser Periode
+    kosten_rechnungen = (KreditorenRechnung.objects.filter(
+        liegenschaft=lg, is_hnk_relevant=True,
+        datum__gte=p.start_datum, datum__lte=p.ende_datum).exclude(status='storniert'))
+    total_kosten = sum((r.betrag or Decimal('0')) for r in kosten_rechnungen)
+
+    alle_einheiten = lg.einheiten.all() if lg else []
+    total_flaeche = sum(e.flaeche_m2 for e in alle_einheiten if e.flaeche_m2) or 1
+    tage_periode = (p.ende_datum - p.start_datum).days + 1
+
+    vertraege = (Mietvertrag.objects.filter(einheit__liegenschaft=lg, beginn__lte=p.ende_datum)
+                 .exclude(ende__lt=p.start_datum).select_related('mieter', 'einheit')) if lg else []
+
+    abrechnungen = []
+    total_akonto = Decimal('0.00')
+    for v in vertraege:
+        v_start = max(v.beginn, p.start_datum)
+        v_ende = min(v.ende, p.ende_datum) if v.ende else p.ende_datum
+        tage_bewohnt = (v_ende - v_start).days + 1
+        zeit_faktor = Decimal(tage_bewohnt) / Decimal(tage_periode)
+        flaeche = v.einheit.flaeche_m2 or 0
+        anteil = Decimal(flaeche) / Decimal(total_flaeche)
+        mieter_kosten = round(total_kosten * anteil * zeit_faktor, 2)
+        monate = round(tage_bewohnt / 30)
+        akonto = round((v.nebenkosten or Decimal('0')) * Decimal(monate), 2)
+        total_akonto += akonto
+        saldo = mieter_kosten - akonto
+        abrechnungen.append({
+            'v': v, 'mieter': v.mieter.display_name, 'einheit': v.einheit.bezeichnung,
+            'flaeche': flaeche, 'tage': tage_bewohnt,
+            'kosten': mieter_kosten, 'akonto': akonto, 'saldo': saldo,
+        })
+
+    belege = p.belege.all().order_by('-datum')
+
+    tab_liste = [
+        ('abrechnung', 'Mieter-Abrechnung', len(abrechnungen) or None),
+        ('belege', 'Belege', belege.count() or None),
+    ]
+    return render(request, 'fw/nebenkosten_detail.html', {
+        **basis, 'nav': 'nebenkosten', 'p': p,
+        'total_kosten': total_kosten, 'total_akonto': total_akonto,
+        'saldo_total': total_kosten - total_akonto,
+        'abrechnungen': abrechnungen, 'belege': belege,
+        'kreditoren': kosten_rechnungen,
+        'tab_liste': tab_liste,
+    })

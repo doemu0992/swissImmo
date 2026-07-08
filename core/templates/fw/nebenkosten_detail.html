@@ -1,0 +1,111 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}{{ p.bezeichnung }} — swissImmo{% endblock %}
+
+{% block content %}
+
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/nebenkosten/{{ lg_query }}" class="hover:text-indigo-600">Nebenkosten</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <span class="text-slate-600 font-medium">{{ p.bezeichnung }}</span>
+</nav>
+
+<div class="flex items-start justify-between gap-4">
+    <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-lg shadow-indigo-600/25">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+        </div>
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">{{ p.bezeichnung }}</h1>
+            <p class="text-sm text-slate-500">{% if p.liegenschaft_id %}{{ p.liegenschaft.strasse }}, {{ p.liegenschaft.ort }} · {% endif %}{{ p.start_datum|date:"d.m.Y" }} – {{ p.ende_datum|date:"d.m.Y" }}</p>
+        </div>
+    </div>
+    <div class="flex items-center gap-2">
+        {% if p.abgeschlossen %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-emerald-50 text-emerald-700">Abgeschlossen</span>
+        {% else %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-amber-50 text-amber-700">Offen</span>{% endif %}
+        <a href="/app/?tab=finance" class="text-sm text-slate-500 hover:text-indigo-600 border border-slate-200 px-3 py-1.5 rounded-lg" title="Öffnet die klassische Ansicht">
+            Abrechnen <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+        </a>
+    </div>
+</div>
+
+<!-- KPI -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-2xl font-bold text-indigo-600">CHF {{ total_kosten|chf }}</div><div class="text-sm text-slate-500">Total Kosten (HNK)</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-2xl font-bold text-slate-800">CHF {{ total_akonto|chf }}</div><div class="text-sm text-slate-500">Akonto bezahlt</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-2xl font-bold {% if saldo_total > 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">CHF {{ saldo_total|chf }}</div>
+        <div class="text-sm text-slate-500">Saldo ({% if saldo_total > 0 %}Nachzahlung{% else %}Rückzahlung{% endif %})</div>
+    </div>
+</div>
+
+{% include 'fw/_detail_tabs.html' with gruppe='nk' tabs=tab_liste %}
+
+<!-- MIETER-ABRECHNUNG -->
+<div data-panel="nk" id="nk-abrechnung">
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                    <th class="px-5 py-3 font-semibold">Mieter</th>
+                    <th class="px-5 py-3 font-semibold">Objekt</th>
+                    <th class="px-5 py-3 font-semibold text-center">m²</th>
+                    <th class="px-5 py-3 font-semibold text-center">Tage</th>
+                    <th class="px-5 py-3 font-semibold text-right">Anteil Kosten</th>
+                    <th class="px-5 py-3 font-semibold text-right">Akonto</th>
+                    <th class="px-5 py-3 font-semibold text-right">Saldo</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                {% for a in abrechnungen %}
+                <tr class="hover:bg-slate-50/60">
+                    <td class="px-5 py-3 font-medium text-slate-900 whitespace-nowrap">
+                        <a href="/neu/vertraege/{{ a.v.id }}/" class="hover:text-indigo-600">{{ a.mieter }}</a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ a.einheit }}</td>
+                    <td class="px-5 py-3 text-center text-slate-600">{{ a.flaeche|floatformat:0 }}</td>
+                    <td class="px-5 py-3 text-center text-slate-600">{{ a.tage }}</td>
+                    <td class="px-5 py-3 text-right text-slate-700 whitespace-nowrap">{{ a.kosten|chf }}</td>
+                    <td class="px-5 py-3 text-right text-slate-500 whitespace-nowrap">{{ a.akonto|chf }}</td>
+                    <td class="px-5 py-3 text-right font-semibold whitespace-nowrap {% if a.saldo > 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">
+                        {{ a.saldo|chf }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Mieter in dieser Periode.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="px-5 py-3 border-t border-slate-100 text-xs text-slate-400">
+            Positiver Saldo = Nachzahlung durch Mieter · Verteilung nach Fläche (m²), zeitanteilig (Pro-Rata). Vorschau — verbindliche Abrechnung in der klassischen Ansicht.
+        </div>
+    </div>
+</div>
+
+<!-- BELEGE -->
+<div data-panel="nk" id="nk-belege" class="hidden">
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Datum</th><th class="px-5 py-3 font-semibold">Beschreibung</th><th class="px-5 py-3 font-semibold">Kategorie</th><th class="px-5 py-3 font-semibold text-right">Betrag</th>
+            </tr></thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for b in belege %}
+            <tr><td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
+                <td class="px-5 py-3 text-slate-900">{{ b.text|default:"Beleg" }}</td>
+                <td class="px-5 py-3 text-slate-500">{{ b.get_kategorie_display }}</td>
+                <td class="px-5 py-3 text-right font-medium text-slate-900 whitespace-nowrap">{{ b.betrag|chf }}</td></tr>
+            {% empty %}
+            <tr><td colspan="4" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Belege erfasst. HNK-relevante Kreditorenrechnungen fliessen automatisch ein.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

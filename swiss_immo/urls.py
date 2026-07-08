@@ -66,7 +66,8 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_obj
                            fw_kreditoren, fw_kreditor_bezahlen,
                            fw_schaeden, fw_schaden_detail,
                            fw_dienstleister, fw_assets, fw_buchhaltung,
-                           fw_sollstellung, fw_sollstellung_run)
+                           fw_sollstellung, fw_sollstellung_run,
+                           fw_nebenkosten, fw_nebenkosten_detail)
 
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
@@ -113,6 +114,8 @@ urlpatterns = [
     path('neu/buchhaltung/', fw_buchhaltung, name='fw_buchhaltung'),
     path('neu/sollstellung/', fw_sollstellung, name='fw_sollstellung'),
     path('neu/sollstellung/starten/', fw_sollstellung_run, name='fw_sollstellung_run'),
+    path('neu/nebenkosten/', fw_nebenkosten, name='fw_nebenkosten'),
+    path('neu/nebenkosten/<int:pk>/', fw_nebenkosten_detail, name='fw_nebenkosten_detail'),
     path('neu/mahnwesen/', fw_mahnwesen, name='fw_mahnwesen'),
     path('neu/bankkonten/', fw_bankkonten, name='fw_bankkonten'),
     path('neu/bankabgleich/', fw_bankabgleich, name='fw_bankabgleich'),

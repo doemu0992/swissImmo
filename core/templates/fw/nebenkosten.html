@@ -1,0 +1,89 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Nebenkosten — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-1">
+    <h1 class="text-3xl font-extrabold text-slate-900">Nebenkosten</h1>
+    <a href="/app/?tab=finance" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors" title="Öffnet die klassische Ansicht">
+        <i class="fa-solid fa-plus mr-1.5"></i> Periode anlegen <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-0.5"></i>
+    </a>
+</div>
+<p class="text-sm text-slate-500 mb-5">Heiz- und Nebenkosten-Abrechnungsperioden
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/nebenkosten/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+<!-- KPI -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-bolt"></i></div>
+        <div><div class="text-2xl font-bold text-indigo-600">CHF {{ total_kosten_offen|chf }}</div><div class="text-sm text-slate-500">Kosten offene Perioden</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div><div class="text-2xl font-bold text-slate-800">{{ n_offen }}</div><div class="text-sm text-slate-500">Offene Perioden</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-circle-check"></i></div>
+        <div><div class="text-2xl font-bold text-slate-800">{{ n_zu }}</div><div class="text-sm text-slate-500">Abgeschlossen</div></div>
+    </div>
+</div>
+
+<!-- Tabelle -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+        <div class="flex items-center gap-1.5 flex-wrap">
+            {% for wert, label in status_chips %}
+            <a href="?status={{ wert }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
+               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                      {% if status_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+        <div class="ml-auto text-xs text-slate-400">{{ anzahl }} Periode(n)</div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Periode</th>
+                <th class="px-5 py-3 font-semibold">Liegenschaft</th>
+                <th class="px-5 py-3 font-semibold">Zeitraum</th>
+                <th class="px-5 py-3 font-semibold text-center">Belege</th>
+                <th class="px-5 py-3 font-semibold text-right">Total Kosten</th>
+                <th class="px-5 py-3 font-semibold">Status</th>
+                <th class="px-5 py-3"></th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for row in rows %}
+            <tr class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="window.location='/neu/nebenkosten/{{ row.p.id }}/'">
+                <td class="px-5 py-3.5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        <span class="font-semibold text-slate-900">{{ row.p.bezeichnung }}</span>
+                    </div>
+                </td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.lg }}</td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.p.start_datum|date:"d.m.Y" }} – {{ row.p.ende_datum|date:"d.m.Y" }}</td>
+                <td class="px-5 py-3.5 text-center text-slate-600">{{ row.belege }}</td>
+                <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">CHF {{ row.kosten|chf }}</td>
+                <td class="px-5 py-3.5">
+                    {% if row.p.abgeschlossen %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">Abgeschlossen</span>
+                    {% else %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700">Offen</span>{% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="px-5 py-12 text-center">
+                <div class="w-10 h-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-bolt"></i></div>
+                <p class="text-sm font-medium text-slate-700">{% if status_filter %}Keine Perioden in diesem Status{% else %}Noch keine Abrechnungsperioden{% endif %}</p>
+                <p class="text-xs text-slate-400 mt-1">Perioden werden in der klassischen Ansicht angelegt.</p>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
