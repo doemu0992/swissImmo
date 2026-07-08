@@ -1,0 +1,74 @@
+{% extends 'fw/base.html' %}
+{% block title %}Dokumente — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-1">
+    <h1 class="text-3xl font-extrabold text-slate-900">Dokumente</h1>
+    <a href="/app/?tab=portfolio" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors" title="Öffnet die klassische Ansicht">
+        <i class="fa-solid fa-upload mr-1.5"></i> Dokument hochladen <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-0.5"></i>
+    </a>
+</div>
+<p class="text-sm text-slate-500 mb-5">Zentrale Ablage aus Vertrags- und Objektdokumenten
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/dokumente/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+<!-- Filterzeile -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+        <div class="flex items-center gap-1.5 flex-wrap">
+            {% for wert, label in kat_chips %}
+            <a href="?kat={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
+               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                      {% if kat_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+        <form method="get" class="ml-auto relative">
+            {% if kat_filter %}<input type="hidden" name="kat" value="{{ kat_filter }}">{% endif %}
+            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" name="q" value="{{ q }}" placeholder="Dokument oder Kontext suchen…"
+                   class="bg-slate-100 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+        </form>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Dokument</th>
+                <th class="px-5 py-3 font-semibold">Kategorie</th>
+                <th class="px-5 py-3 font-semibold">Kontext</th>
+                <th class="px-5 py-3 font-semibold">Ablage</th>
+                <th class="px-5 py-3 font-semibold">Datum</th>
+                <th class="px-5 py-3"></th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for e in eintraege %}
+            <tr class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="window.open('{{ e.url }}', '_blank')">
+                <td class="px-5 py-3.5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg {{ e.icon_cls }} flex items-center justify-center shrink-0"><i class="fa-solid {{ e.icon }}"></i></div>
+                        <span class="font-medium text-slate-900">{{ e.name }}</span>
+                    </div>
+                </td>
+                <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-600 capitalize whitespace-nowrap">{{ e.kat }}</span></td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{% if e.kontext %}{{ e.kontext }}{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
+                <td class="px-5 py-3.5 text-slate-400 text-xs whitespace-nowrap">{{ e.quelle }}</td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{% if e.datum %}{{ e.datum|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3.5 text-right"><a href="{{ e.url }}" target="_blank" onclick="event.stopPropagation();" class="text-xs text-indigo-600 font-medium hover:underline">Öffnen</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="px-5 py-12 text-center">
+                <div class="w-10 h-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-folder-open"></i></div>
+                <p class="text-sm font-medium text-slate-700">{% if q or kat_filter %}Keine Treffer{% else %}Noch keine Dokumente abgelegt{% endif %}</p>
+                <p class="text-xs text-slate-400 mt-1">Dokumente entstehen automatisch (unterzeichnete Verträge) oder per Upload in der klassischen Ansicht.</p>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="px-5 py-3 border-t border-slate-100 text-xs text-slate-400">{{ anzahl }} Dokument(e) aus Vertrags- und Objektablage</div>
+</div>
+{% endblock %}
