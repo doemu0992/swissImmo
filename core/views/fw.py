@@ -762,7 +762,11 @@ def fw_schlussabrechnung(request, vertrag_id):
                              + (", Nachzahlung als Debitor gestellt" if daten['nachzahlung'] else "") + ").")
             return redirect(f'/neu/vertraege/{v.id}/')
 
-        pdf = generate_schlussabrechnung_pdf(v, daten, verwaltung=Verwaltung.objects.first())
+        try:
+            pdf = generate_schlussabrechnung_pdf(v, daten, verwaltung=Verwaltung.objects.first())
+        except Exception as e:
+            messages.error(request, f"❌ PDF konnte nicht erstellt werden: {e}")
+            return redirect(f'/neu/vertraege/{v.id}/schlussabrechnung/')
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = f'inline; filename="Schlussabrechnung_{v.mieter.nachname}.pdf"'
         return resp
@@ -2623,6 +2627,14 @@ def fw_mietzins_anpassung(request, vertrag_id):
 
     if request.method == 'POST':
         aktion = request.POST.get('aktion', 'pdf')
+        # Vertragsbasis (Ref-Zins/LIK, auf denen der Vertrag beruht) — editierbar,
+        # damit sie bei Alt-/Importverträgen ergänzt/korrigiert werden kann. Wird
+        # auf dem Vertrag gespeichert, bevor das Potenzial gerechnet wird.
+        if request.POST.get('basis_zins') not in (None, ''):
+            v.basis_referenzzinssatz = _dec(request.POST.get('basis_zins'), str(v.basis_referenzzinssatz or aktuell_ref))
+        if request.POST.get('basis_lik') not in (None, ''):
+            v.basis_lik_punkte = _dec(request.POST.get('basis_lik'), str(v.basis_lik_punkte or aktuell_lik))
+        v.save(update_fields=['basis_referenzzinssatz', 'basis_lik_punkte'])
         neu_netto = _dec(request.POST.get('neu_netto'), str(v.netto_mietzins))
         neu_zins = _dec(request.POST.get('neu_zins'), str(aktuell_ref))
         neu_lik = _dec(request.POST.get('neu_lik'), str(aktuell_lik))
@@ -2683,9 +2695,15 @@ def fw_mietzins_anpassung(request, vertrag_id):
     vorschlag_netto = pot.get('neu_chf', v.netto_mietzins)
     naechster_termin = naechster_anpassungstermin(v, timezone.now().date())
 
+    # Basis-Vorbelegung: fehlt sie am Vertrag (Alt-/Importvertrag), aktuelle
+    # Marktwerte vorschlagen, damit der Sachbearbeiter sie ergänzen kann.
+    basis_zins = v.basis_referenzzinssatz if (v.basis_referenzzinssatz or 0) > 0 else aktuell_ref
+    basis_lik = v.basis_lik_punkte if (v.basis_lik_punkte or 0) > 0 else aktuell_lik
     return render(request, 'fw/mietzins_anpassung.html', {
         **basis, 'nav': 'mietzins', 'v': v, 'lg': lg,
-        'alt_netto': v.netto_mietzins, 'alt_zins': v.basis_referenzzinssatz, 'alt_lik': v.basis_lik_punkte,
+        'alt_netto': v.netto_mietzins,
+        'alt_zins': basis_zins, 'alt_lik': basis_lik,
+        'basis_fehlt': not ((v.basis_referenzzinssatz or 0) > 0 and (v.basis_lik_punkte or 0) > 0),
         'aktuell_ref': aktuell_ref, 'aktuell_lik': aktuell_lik,
         'vorschlag_netto': vorschlag_netto, 'naechster_termin': naechster_termin,
         'pot': pot,
