@@ -2013,12 +2013,24 @@ def fw_account(request):
                 return fallback
         vw.aktueller_referenzzinssatz = dec('aktueller_referenzzinssatz', vw.aktueller_referenzzinssatz)
         vw.aktueller_lik_punkte = dec('aktueller_lik_punkte', vw.aktueller_lik_punkte)
+        # Logo hochladen oder entfernen
+        if P.get('logo_entfernen') == '1' and vw.logo:
+            vw.logo.delete(save=False)
+            vw.logo = None
+        elif request.FILES.get('logo'):
+            vw.logo = request.FILES['logo']
         vw.save()
         log_aktion(request, "Account/Stammdaten bearbeitet", vw.firma, '')
         messages.success(request, "✅ Stammdaten gespeichert.")
         return redirect('/neu/account/')
 
-    return render(request, 'fw/account.html', {**basis, 'nav': 'account', 'vw': vw})
+    logo_url = ''
+    if getattr(vw, 'logo', None):
+        try:
+            logo_url = vw.logo.url
+        except Exception:
+            logo_url = ''
+    return render(request, 'fw/account.html', {**basis, 'nav': 'account', 'vw': vw, 'logo_url': logo_url})
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
