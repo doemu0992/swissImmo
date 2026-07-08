@@ -9,6 +9,8 @@
 
 {{ empfaenger|json_script:"empfaenger-data" }}
 {{ absender|json_script:"absender-data" }}
+{{ vorlagen|json_script:"vorlagen-data" }}
+<span id="logo-url" data-url="{{ logo_url }}"></span>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
@@ -46,6 +48,13 @@
             <div class="flex items-center gap-2 mb-3">
                 <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center">2</span>
                 <h3 class="font-bold text-slate-800">Mitteilung verfassen</h3>
+            </div>
+            <div class="mb-3 pb-3 border-b border-slate-100">
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Vorlage verwenden</label>
+                <select id="vorlage-select" onchange="vorlageWaehlen()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                    <option value="">— Freier Text (keine Vorlage) —</option>
+                </select>
+                <p class="text-xs text-slate-400 mt-1">Vorlagen verwaltest du unter <a href="/neu/vorlagen/" class="text-indigo-600 hover:underline">Profil → Vorlagen</a>.</p>
             </div>
             <label class="block text-xs font-semibold text-slate-500 mb-1">Betreff</label>
             <input id="betreff" type="text" value="Information zu Ihrer Wohnung" oninput="aktualisiere()"
@@ -92,6 +101,8 @@ Freundliche Grüsse</textarea>
             <span id="preview-hint" class="ml-auto font-normal normal-case text-slate-400"></span>
         </div>
         <div id="brief" class="bg-white rounded-xl border border-slate-200 shadow-sm p-8 md:p-10 min-h-[500px] text-sm text-slate-800 leading-relaxed">
+            <!-- Logo -->
+            <div id="pv-logo" class="mb-6"></div>
             <!-- Absender -->
             <div id="pv-absender" class="text-[11px] text-slate-500 mb-10"></div>
             <!-- Empfänger-Adresse -->
@@ -109,6 +120,27 @@ Freundliche Grüsse</textarea>
 <script>
 const EMPF = JSON.parse(document.getElementById('empfaenger-data').textContent);
 const ABS = JSON.parse(document.getElementById('absender-data').textContent);
+const VORLAGEN = JSON.parse(document.getElementById('vorlagen-data').textContent);
+const LOGO_URL = document.getElementById('logo-url').dataset.url || '';
+
+// Vorlagen-Dropdown befüllen
+(function(){
+    const sel = document.getElementById('vorlage-select');
+    VORLAGEN.forEach(function(v){
+        const o = document.createElement('option');
+        o.value = v.id; o.textContent = v.name + ' (' + v.kategorie + ')';
+        sel.appendChild(o);
+    });
+})();
+function vorlageWaehlen(){
+    const id = document.getElementById('vorlage-select').value;
+    if(!id) return;
+    const v = VORLAGEN.find(x => String(x.id) === String(id));
+    if(!v) return;
+    if(v.betreff) document.getElementById('betreff').value = v.betreff;
+    document.getElementById('nachricht').value = v.inhalt || '';
+    aktualisiere();
+}
 
 function gewaehlte() {
     return Array.from(document.querySelectorAll('.emp-check:checked')).map(c => parseInt(c.value));
@@ -125,11 +157,23 @@ function einfuegen(ph) {
     aktualisiere();
 }
 function ersetze(txt, emp) {
-    if (!emp) return txt.replace(/\{name\}/g,'[Name]').replace(/\{anrede\}/g,'[Anrede]')
-                        .replace(/\{objekt\}/g,'[Objekt]').replace(/\{adresse\}/g,'[Adresse]');
+    const vermieter = ABS.firma || '';
+    const datum = heuteStr();
+    if (!emp) {
+        return txt.replace(/\{name\}/g,'[Name]').replace(/\{mieter_name\}/g,'[Name]')
+                  .replace(/\{anrede\}/g,'[Anrede]')
+                  .replace(/\{objekt\}/g,'[Objekt]').replace(/\{liegenschaft\}/g,'[Liegenschaft]')
+                  .replace(/\{adresse\}/g,'[Adresse]').replace(/\{mieter_adresse\}/g,'[Adresse]')
+                  .replace(/\{vermieter\}/g, vermieter).replace(/\{datum\}/g, datum)
+                  .replace(/\{miete\}/g,'[Miete]');
+    }
     const adr = (emp.strasse||'') + ', ' + (emp.plz||'') + ' ' + (emp.ort||'');
-    return txt.replace(/\{name\}/g, emp.name).replace(/\{anrede\}/g, emp.anrede||'')
-              .replace(/\{objekt\}/g, emp.objekt).replace(/\{adresse\}/g, adr);
+    return txt.replace(/\{name\}/g, emp.name).replace(/\{mieter_name\}/g, emp.name)
+              .replace(/\{anrede\}/g, emp.anrede||'')
+              .replace(/\{objekt\}/g, emp.objekt).replace(/\{liegenschaft\}/g, emp.objekt)
+              .replace(/\{adresse\}/g, adr).replace(/\{mieter_adresse\}/g, adr)
+              .replace(/\{vermieter\}/g, vermieter).replace(/\{datum\}/g, datum)
+              .replace(/\{miete\}/g, '');
 }
 function heuteStr() {
     const d = new Date();
@@ -142,6 +186,9 @@ function aktualisiere() {
 
     document.getElementById('emp-count').textContent = empf.length + ' ausgewählt';
     document.getElementById('preview-hint').textContent = erste ? ('Beispiel: ' + erste.name) : '';
+
+    document.getElementById('pv-logo').innerHTML = LOGO_URL
+        ? '<img src="' + LOGO_URL + '" alt="Logo" style="max-height:64px;max-width:220px;object-fit:contain;">' : '';
 
     document.getElementById('pv-absender').textContent =
         ABS.firma + (ABS.strasse ? ' · ' + ABS.strasse : '') + (ABS.ort ? ' · ' + ABS.plz + ' ' + ABS.ort : '');

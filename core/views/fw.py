@@ -1748,7 +1748,7 @@ def fw_dokumente(request):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_kommunikation(request):
-    from crm.models import Verwaltung
+    from crm.models import Verwaltung, Vorlage
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
@@ -1758,6 +1758,15 @@ def fw_kommunikation(request):
         'strasse': vw.strasse if vw else '',
         'plz': vw.plz if vw else '', 'ort': vw.ort if vw else '',
     }
+    logo_url = ''
+    if vw and getattr(vw, 'logo', None):
+        try:
+            logo_url = vw.logo.url
+        except Exception:
+            logo_url = ''
+
+    vorlagen = [{'id': v.id, 'name': v.name, 'betreff': v.betreff, 'inhalt': v.inhalt,
+                 'kategorie': v.get_kategorie_display()} for v in Vorlage.objects.all()]
 
     # Empfänger = Mieter mit aktivem Vertrag (im Filter-Scope)
     vertraege = (Mietvertrag.objects.filter(status='aktiv')
@@ -1787,6 +1796,7 @@ def fw_kommunikation(request):
         **basis, 'nav': 'kommunikation',
         'absender': absender, 'empfaenger': empfaenger,
         'anzahl_empfaenger': len(empfaenger),
+        'vorlagen': vorlagen, 'logo_url': logo_url,
     })
 
 
