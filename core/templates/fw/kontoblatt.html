@@ -1,0 +1,63 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Kontoblatt {{ konto.nummer }} — swissImmo{% endblock %}
+{% block content %}
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/buchhaltung/" class="hover:text-indigo-600">Buchhaltung</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <span class="text-slate-600 font-medium">Kontoblatt {{ konto.nummer }}</span>
+</nav>
+
+<div class="flex items-start justify-between gap-4 mb-4">
+    <div>
+        <h1 class="text-2xl font-extrabold text-slate-900">{{ konto.nummer }} · {{ konto.bezeichnung }}</h1>
+        <p class="text-sm text-slate-500">{{ konto.get_typ_display }}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
+    </div>
+    <div class="flex items-center gap-2">
+        <form method="get" class="flex items-center gap-1">
+            <select name="jahr" onchange="this.form.submit()" class="bg-slate-100 rounded-lg text-sm px-3 py-2">
+                {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
+                <option value="alle" {% if jahr == 'alle' %}selected{% endif %}>Alle</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm min-w-[720px]">
+        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+            <tr>
+                <th class="text-left px-4 py-2.5">Beleg</th><th class="text-left px-4 py-2.5">Datum</th>
+                <th class="text-left px-4 py-2.5">Text</th><th class="text-left px-4 py-2.5">Gegenkonto</th>
+                <th class="text-right px-4 py-2.5">Soll</th><th class="text-right px-4 py-2.5">Haben</th>
+                <th class="text-right px-4 py-2.5">Saldo</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+            {% if ist_bilanz %}
+            <tr class="bg-slate-50/60"><td colspan="6" class="px-4 py-2 text-slate-500 italic">Eröffnungssaldo{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</td>
+                <td class="px-4 py-2 text-right font-semibold tabular-nums">{{ eroeffnung|chf }}</td></tr>
+            {% endif %}
+            {% for z in zeilen %}
+            <tr class="{% if z.b.ist_storno %}text-rose-400 line-through{% endif %}">
+                <td class="px-4 py-2 text-slate-400 tabular-nums">{{ z.b.beleg_nr|default:z.b.id }}</td>
+                <td class="px-4 py-2 text-slate-500">{{ z.b.datum|date:"d.m.Y" }}</td>
+                <td class="px-4 py-2 text-slate-800">{{ z.b.beleg_text }}</td>
+                <td class="px-4 py-2 text-slate-500">{{ z.gegenkonto.nummer }} {{ z.gegenkonto.bezeichnung }}</td>
+                <td class="px-4 py-2 text-right tabular-nums">{% if z.soll %}{{ z.soll|chf }}{% endif %}</td>
+                <td class="px-4 py-2 text-right tabular-nums">{% if z.haben %}{{ z.haben|chf }}{% endif %}</td>
+                <td class="px-4 py-2 text-right tabular-nums font-medium">{{ z.saldo|chf }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="px-4 py-8 text-center text-slate-400 italic">Keine Buchungen in diesem Zeitraum.</td></tr>
+            {% endfor %}
+            <tr class="bg-slate-50 font-bold">
+                <td colspan="6" class="px-4 py-2.5 text-right">Endsaldo</td>
+                <td class="px-4 py-2.5 text-right tabular-nums {% if endsaldo < 0 %}text-rose-600{% else %}text-slate-900{% endif %}">CHF {{ endsaldo|chf }}</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

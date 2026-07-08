@@ -1189,9 +1189,12 @@ def _camt_parse(xml_bytes):
                 datum = date.fromisoformat(dt_el.text.strip()[:10])
             except Exception:
                 datum = None
-        # Referenz + Info aus TxDtls (kann mehrere geben; wir nehmen erste mit Strd-Ref)
+        # Referenz + Info + Bank-Tx-Ref (Duplikatschutz) + Auftraggebername (Fuzzy)
         referenz = ''
         info = ''
+        acct_ref = ''
+        dbtr_name = ''
+        in_dbtr = False
         for sub in ntry.iter():
             ln = _camt_localname(sub.tag)
             if ln == 'CdtrRefInf':
@@ -1200,7 +1203,14 @@ def _camt_parse(xml_bytes):
                     referenz = ref_el.text.strip().replace(' ', '')
             elif ln == 'Ustrd' and not info and sub.text:
                 info = sub.text.strip()
-        eintraege.append({'betrag': betrag, 'referenz': referenz, 'datum': datum, 'info': info})
+            elif ln in ('AcctSvcrRef', 'TxId', 'EndToEndId') and not acct_ref and sub.text:
+                acct_ref = sub.text.strip()
+            elif ln == 'Dbtr':
+                in_dbtr = True
+            elif ln == 'Nm' and in_dbtr and not dbtr_name and sub.text:
+                dbtr_name = sub.text.strip(); in_dbtr = False
+        eintraege.append({'betrag': betrag, 'referenz': referenz, 'datum': datum,
+                          'info': info, 'acct_ref': acct_ref, 'dbtr_name': dbtr_name})
     return eintraege
 
 
@@ -1249,33 +1259,29 @@ def fw_camt_import(request):
 
     verbucht = 0
     zugeordnet_summe = Decimal('0.00')
-    nicht_zugeordnet = 0
+    fuzzy = 0
+    geklaert = 0            # auf Durchlaufkonto 1190 geparkt
+    duplikate = 0
     heute = timezone.now().date()
 
-    try:
-        konto_bank = Buchungskonto.objects.get(nummer="1020")
-        konto_deb = Buchungskonto.objects.get(nummer="1100")
-    except Buchungskonto.DoesNotExist:
-        konto_bank = konto_deb = None
+    konto_bank = Buchungskonto.objects.filter(nummer="1020").first()
+    konto_deb = Buchungskonto.objects.filter(nummer="1100").first()
+    konto_clearing, _ = Buchungskonto.objects.get_or_create(
+        nummer="1190", defaults={'bezeichnung': 'Durchlaufkonto (ungeklärte Zahlungen)', 'typ': 'bilanz'})
 
-    for e in eintraege:
-        ref = e['referenz']
-        rechnung = ref_index.get(ref) if ref else None
-        if not rechnung or not rechnung.vertrag_id:
-            nicht_zugeordnet += 1
-            continue
-        offen = rechnung.offener_betrag
-        if offen <= 0:
-            continue
-        betrag = min(max(e['betrag'], Decimal('0.01')), offen)
+    # Fuzzy-Index: offener Betrag → Rechnungen (für referenzlose Gutschriften)
+    def _norm(s):
+        return ''.join(ch for ch in (s or '').lower() if ch.isalnum())
+
+    def _verbuche(rechnung, betrag, e, via):
         vertrag = rechnung.vertrag
         with transaction.atomic():
             zahlung = Zahlungseingang.objects.create(
-                vertrag=vertrag, betrag=betrag,
-                datum_eingang=e['datum'] or heute,
+                vertrag=vertrag, betrag=betrag, datum_eingang=e['datum'] or heute,
                 buchungs_monat=(rechnung.faellig_am or rechnung.datum or heute).replace(day=1),
-                bemerkung=f"camt.053-Import {rechnung.titel}",
-                liegenschaft=vertrag.einheit.liegenschaft,
+                bemerkung=f"camt.053-Import ({via}) {rechnung.titel}",
+                bank_referenz=e.get('acct_ref', ''),
+                liegenschaft=vertrag.einheit.liegenschaft if vertrag and vertrag.einheit_id else None,
                 debitoren_rechnung=rechnung, erstellt_von=request.user, status='verbucht',
             )
             rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
@@ -1284,27 +1290,70 @@ def fw_camt_import(request):
                 Buchung.objects.create(
                     datum=e['datum'] or heute,
                     beleg_text=f"camt.053 {vertrag.mieter} - {rechnung.titel}",
-                    liegenschaft=vertrag.einheit.liegenschaft,
+                    liegenschaft=vertrag.einheit.liegenschaft if vertrag and vertrag.einheit_id else None,
                     soll_konto=konto_bank, haben_konto=konto_deb, betrag=betrag,
-                    zahlungseingang=zahlung, erstellt_von=request.user,
-                )
-        # Rechnung aus dem Index nehmen wenn voll bezahlt (verhindert Doppelzuordnung)
+                    zahlungseingang=zahlung, erstellt_von=request.user)
         if rechnung.status == 'bezahlt':
             for k in [k for k, v in ref_index.items() if v is rechnung]:
                 ref_index.pop(k, None)
-        verbucht += 1
-        zugeordnet_summe += betrag
+
+    for e in eintraege:
+        # 0) Duplikatschutz über Bank-Transaktionsreferenz
+        aref = e.get('acct_ref', '')
+        if aref and Zahlungseingang.objects.filter(bank_referenz=aref).exists():
+            duplikate += 1
+            continue
+
+        betrag_e = e['betrag']
+        rechnung = ref_index.get(e['referenz']) if e['referenz'] else None
+
+        # 1) Exakte QRR-Referenz
+        if rechnung and rechnung.vertrag_id and rechnung.offener_betrag > 0:
+            betrag = min(max(betrag_e, Decimal('0.01')), rechnung.offener_betrag)
+            _verbuche(rechnung, betrag, e, 'Referenz')
+            verbucht += 1; zugeordnet_summe += betrag
+            continue
+
+        # 2) Fuzzy: exakter Betrag + Name des Auftraggebers passt eindeutig
+        name = _norm(e.get('dbtr_name', '')) or _norm(e.get('info', ''))
+        kandidaten = [r for r in offene if r.vertrag_id and r.offener_betrag == betrag_e
+                      and name and r.vertrag.mieter and _norm(r.vertrag.mieter.nachname) and _norm(r.vertrag.mieter.nachname) in name]
+        if len(kandidaten) == 1:
+            r = kandidaten[0]
+            _verbuche(r, betrag_e, e, 'Name+Betrag')
+            verbucht += 1; fuzzy += 1; zugeordnet_summe += betrag_e
+            continue
+
+        # 3) Nicht zuordenbar → aufs Durchlaufkonto 1190 parken (nichts geht verloren)
+        with transaction.atomic():
+            zahlung = Zahlungseingang.objects.create(
+                betrag=betrag_e, datum_eingang=e['datum'] or heute,
+                buchungs_monat=(e['datum'] or heute).replace(day=1),
+                bemerkung=f"camt.053 UNGEKLÄRT: {e.get('dbtr_name','') or e.get('info','') or e.get('referenz','')}"[:255],
+                bank_referenz=aref, konto=konto_clearing,
+                erstellt_von=request.user, status='verbucht')
+            if konto_bank:
+                Buchung.objects.create(
+                    datum=e['datum'] or heute,
+                    beleg_text=f"camt.053 ungeklärt: {e.get('dbtr_name','') or e.get('referenz','')}"[:255],
+                    soll_konto=konto_bank, haben_konto=konto_clearing, betrag=betrag_e,
+                    zahlungseingang=zahlung, erstellt_von=request.user)
+        geklaert += 1
 
     log_aktion(request, "camt.053-Import", datei.name,
-               f"{verbucht} Zahlungen verbucht, CHF {zugeordnet_summe}, {nicht_zugeordnet} ohne Zuordnung")
-    if verbucht:
-        messages.success(request,
-            f"✅ {verbucht} Zahlung(en) automatisch zugeordnet und verbucht — total CHF {zugeordnet_summe}." +
-            (f" {nicht_zugeordnet} Gutschrift(en) ohne passende Referenz." if nicht_zugeordnet else ""))
+               f"{verbucht} verbucht (davon {fuzzy} fuzzy), CHF {zugeordnet_summe}, {geklaert} auf 1190, {duplikate} Duplikate")
+    if verbucht or geklaert:
+        teile = [f"{verbucht} Zahlung(en) zugeordnet (CHF {zugeordnet_summe})"]
+        if fuzzy:
+            teile.append(f"davon {fuzzy} über Name/Betrag")
+        if geklaert:
+            teile.append(f"{geklaert} ungeklärt auf Durchlaufkonto 1190 geparkt")
+        if duplikate:
+            teile.append(f"{duplikate} Duplikat(e) übersprungen")
+        messages.success(request, "✅ camt.053-Import: " + ", ".join(teile) + ".")
     else:
         messages.warning(request,
-            f"Keine Gutschrift konnte zugeordnet werden ({nicht_zugeordnet} ohne passende QRR-Referenz). "
-            "Prüfe, ob die Rechnungen mit QR-Referenz erstellt wurden.")
+            f"Keine neuen Gutschriften verbucht ({duplikate} Duplikat(e) übersprungen).")
 
     ziel = '/neu/bankabgleich/'
     if aktive := request.POST.get('lg'):
@@ -2143,27 +2192,42 @@ def fw_buchhaltung(request):
     else:
         jahr = 'alle'
 
-    # --- ERFOLGSRECHNUNG (Storno-Paare heben sich selbst auf, nicht filtern) ---
+    # --- ZWEI SICHTEN (korrekte Rechnungslegung) ---
+    # Erfolgsrechnung = NUR die Periode (Ertrags-/Aufwandskonten werden jährlich
+    #   abgeschlossen → year-scoped qs).
+    # Bilanz = KUMULATIV bis Jahresende (Bilanzkonten tragen Eröffnungssalden über;
+    #   ohne Kumulation wäre die Jahresbilanz falsch). Das kumulierte Jahres-/
+    #   Vortragsergebnis fliesst ins Eigenkapital, damit die Bilanz aufgeht.
     konten = Buchungskonto.objects.all()
+    bilanz_qs = Buchung.objects.all()
+    if aktive_lg:
+        bilanz_qs = bilanz_qs.filter(liegenschaft=aktive_lg)
+    if jahr != 'alle':
+        bilanz_qs = bilanz_qs.filter(datum__lte=date(jahr, 12, 31))
 
     ertraege, aufwaende = [], []
     aktiven, passiven = [], []
     total_ertrag = total_aufwand = Decimal('0.00')
     total_aktiven = total_passiven = Decimal('0.00')
+    kum_erfolg = Decimal('0.00')   # kumuliertes Ergebnis bis Jahresende (Eigenkapital)
     for k in konten:
-        soll = qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
-        haben = qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
         if k.typ == 'ertrag':
+            soll = qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            haben = qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
             saldo = haben - soll
             if saldo:
                 ertraege.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': saldo})
                 total_ertrag += saldo
         elif k.typ == 'aufwand':
+            soll = qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            haben = qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
             saldo = soll - haben
             if saldo:
                 aufwaende.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': saldo})
                 total_aufwand += saldo
-        else:  # bilanz
+        else:  # bilanz — kumulativ bis Jahresende
+            soll = bilanz_qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            haben = bilanz_qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
             saldo = soll - haben  # Sollsaldo: >0 Aktivum, <0 Passivum
             if saldo == 0:
                 continue
@@ -2173,12 +2237,23 @@ def fw_buchhaltung(request):
             else:
                 passiven.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': -saldo})
                 total_passiven += -saldo
+    # Kumuliertes Ergebnis (alle Erfolgskonten bis Jahresende) → Eigenkapital-Zeile
+    for k in konten:
+        if k.typ == 'ertrag':
+            s = bilanz_qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            h = bilanz_qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            kum_erfolg += (h - s)
+        elif k.typ == 'aufwand':
+            s = bilanz_qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            h = bilanz_qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            kum_erfolg -= (s - h)
     for lst in (ertraege, aufwaende, aktiven, passiven):
         lst.sort(key=lambda x: x['nummer'])
-    erfolg = total_ertrag - total_aufwand
-    # Bilanz-Ausgleich: Erfolg wird dem Eigenkapital (Passiven) zugeschlagen
-    passiven_mit_erfolg = total_passiven + erfolg
+    erfolg = total_ertrag - total_aufwand          # Ergebnis der Periode (Erfolgsrechnung)
+    # Bilanz-Ausgleich: kumuliertes Ergebnis (Vortrag + laufendes Jahr) ins Eigenkapital
+    passiven_mit_erfolg = total_passiven + kum_erfolg
     bilanz_differenz = total_aktiven - passiven_mit_erfolg
+    erfolg_vortrag = kum_erfolg - erfolg           # Ergebnisvortrag aus Vorjahren
 
     # --- BUCHUNGSJOURNAL (letzte 60) ---
     journal = (qs.select_related('soll_konto', 'haben_konto', 'liegenschaft')
@@ -2196,12 +2271,97 @@ def fw_buchhaltung(request):
         'aktiven': aktiven, 'passiven': passiven,
         'total_aktiven': total_aktiven, 'total_passiven': total_passiven,
         'passiven_mit_erfolg': passiven_mit_erfolg, 'bilanz_differenz': bilanz_differenz,
+        'kum_erfolg': kum_erfolg, 'erfolg_vortrag': erfolg_vortrag,
         'journal': journal,
         'tab_liste': tab_liste,
         'jahr': jahr, 'jahre': list(range(heute.year, heute.year - 5, -1)),
         'alle_konten': Buchungskonto.objects.all().order_by('nummer'),
         'liegenschaften': Liegenschaft.objects.order_by('strasse'),
     })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_kontoblatt(request, nummer):
+    """Kontoauszug/Kontoblatt eines Kontos: alle Buchungen mit laufendem Saldo.
+    Bilanzkonten kumulativ (mit Eröffnungssaldo aus Vorjahren)."""
+    from finance.models import Buchung, Buchungskonto
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.now().date()
+    konto = get_object_or_404(Buchungskonto, nummer=nummer)
+    jahr_param = request.GET.get('jahr', str(heute.year))
+    try:
+        jahr = int(jahr_param)
+    except ValueError:
+        jahr = None
+
+    alle = Buchung.objects.filter(Q(soll_konto=konto) | Q(haben_konto=konto))
+    if aktive_lg:
+        alle = alle.filter(liegenschaft=aktive_lg)
+    alle = alle.select_related('soll_konto', 'haben_konto', 'liegenschaft').order_by('datum', 'id')
+
+    ist_bilanz = konto.typ == 'bilanz'
+    # Eröffnungssaldo: bei Bilanzkonten kumulativ aus Vorjahren, bei Erfolg 0.
+    eroeffnung = Decimal('0.00')
+    if jahr and ist_bilanz:
+        vor = alle.filter(datum__lt=date(jahr, 1, 1))
+        s = vor.filter(soll_konto=konto).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+        h = vor.filter(haben_konto=konto).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+        eroeffnung = s - h
+    periode = alle.filter(datum__gte=date(jahr, 1, 1), datum__lte=date(jahr, 12, 31)) if jahr else alle
+
+    zeilen = []
+    saldo = eroeffnung
+    for b in periode:
+        ist_soll = b.soll_konto_id == konto.id
+        betrag = b.betrag if ist_soll else -b.betrag
+        saldo += betrag
+        gegen = b.haben_konto if ist_soll else b.soll_konto
+        zeilen.append({'b': b, 'soll': b.betrag if ist_soll else None,
+                       'haben': b.betrag if not ist_soll else None,
+                       'gegenkonto': gegen, 'saldo': saldo})
+    return render(request, 'fw/kontoblatt.html', {
+        **basis, 'nav': 'buchhaltung', 'konto': konto, 'zeilen': zeilen,
+        'eroeffnung': eroeffnung, 'endsaldo': saldo, 'ist_bilanz': ist_bilanz,
+        'jahr': jahr or 'alle', 'jahre': list(range(heute.year, heute.year - 5, -1)),
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_buchhaltung_export(request):
+    """Exportiert das Buchungsjournal des Jahres als CSV (Treuhänder-Handover)."""
+    import csv
+    from django.http import HttpResponse
+    from finance.models import Buchung
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.now().date()
+    try:
+        jahr = int(request.GET.get('jahr', str(heute.year)))
+    except ValueError:
+        jahr = heute.year
+    qs = Buchung.objects.all()
+    if aktive_lg:
+        qs = qs.filter(liegenschaft=aktive_lg)
+    qs = qs.filter(datum__gte=date(jahr, 1, 1), datum__lte=date(jahr, 12, 31))
+    qs = qs.select_related('soll_konto', 'haben_konto', 'liegenschaft').order_by('datum', 'id')
+
+    resp = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    resp['Content-Disposition'] = f'attachment; filename="Journal_{jahr}.csv"'
+    resp.write('﻿')  # BOM für Excel
+    w = csv.writer(resp, delimiter=';')
+    w.writerow(['Beleg-Nr', 'Datum', 'Belegtext', 'Soll-Konto', 'Haben-Konto', 'Betrag CHF', 'Liegenschaft', 'Storno'])
+    for b in qs:
+        w.writerow([
+            getattr(b, 'beleg_nr', '') or b.id,
+            b.datum.strftime('%d.%m.%Y'), b.beleg_text,
+            f"{b.soll_konto.nummer} {b.soll_konto.bezeichnung}",
+            f"{b.haben_konto.nummer} {b.haben_konto.bezeichnung}",
+            f"{b.betrag:.2f}",
+            b.liegenschaft.strasse if b.liegenschaft else '',
+            'ja' if b.ist_storno else '',
+        ])
+    return resp
 
 
 # ============================================================

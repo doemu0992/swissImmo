@@ -55,6 +55,8 @@ class Buchung(models.Model):
     # 🔥 NEU: Revisionssicherheit (Storno)
     ist_storno = models.BooleanField(default=False)
     storniert_am = models.DateTimeField(null=True, blank=True)
+    # Fortlaufende, lückenlose Belegnummer (OR 958f) — beim ersten Speichern vergeben
+    beleg_nr = models.PositiveIntegerField("Beleg-Nr", null=True, blank=True, db_index=True)
 
     # Audit-Trail: wer hat diese Buchung ausgelöst (None = System/Migration)
     erstellt_von = models.ForeignKey(
@@ -79,6 +81,10 @@ class Buchung(models.Model):
                     f"Periode gesperrt: Buchungen bis {sperre:%d.%m.%Y} sind abgeschlossen "
                     f"(Datum {self.datum:%d.%m.%Y}). Bitte spätere Periode wählen."
                 )
+            # Fortlaufende Belegnummer vergeben (lückenlos, OR 958f)
+            if self.beleg_nr is None:
+                letzte = Buchung.objects.aggregate(m=models.Max('beleg_nr'))['m'] or 0
+                self.beleg_nr = letzte + 1
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
@@ -162,6 +168,8 @@ class Zahlungseingang(models.Model):
     datum_eingang = models.DateField(default=timezone.now)
     buchungs_monat = models.DateField("Für Monat/Jahr", null=True)
     bemerkung = models.CharField(max_length=255, blank=True, default='')
+    # Bank-Transaktionsreferenz aus camt.053 (AcctSvcrRef) — Duplikatschutz beim Import
+    bank_referenz = models.CharField("Bank-Referenz", max_length=140, blank=True, default='', db_index=True)
     erstellt_am = models.DateTimeField(default=timezone.now)
 
     # 🔥 NEU: Status für Stornos
