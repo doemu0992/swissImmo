@@ -22,6 +22,22 @@
 <!-- Ad-hoc Rechnung -->
 <div id="adhoc" class="hidden bg-white rounded-xl border border-indigo-200 p-5 mb-6">
     <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-file-invoice-dollar text-indigo-500 mr-1.5"></i>Rechnung / Weiterverrechnung erstellen</h3>
+    <!-- Schnellauswahl wiederkehrender Positionen -->
+    <div class="flex flex-wrap gap-2 mb-4">
+        <span class="text-xs font-semibold text-slate-400 self-center mr-1">Schnellauswahl:</span>
+        <button type="button" onclick="fwPos('Sonnerie-Beschriftung','20')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700"><i class="fa-solid fa-bell mr-1"></i>Sonnerie-Beschriftung</button>
+        <button type="button" onclick="fwPos('Namensschild Briefkasten','15')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700"><i class="fa-solid fa-envelope mr-1"></i>Briefkasten-Schild</button>
+        <button type="button" onclick="fwPos('Ersatzschlüssel','80')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700"><i class="fa-solid fa-key mr-1"></i>Ersatzschlüssel</button>
+        <button type="button" onclick="fwPos('Zylinderwechsel','150')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700"><i class="fa-solid fa-lock mr-1"></i>Zylinderwechsel</button>
+        <button type="button" onclick="fwPos('Reinigung / Endreinigung','')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700"><i class="fa-solid fa-broom mr-1"></i>Reinigung</button>
+        <button type="button" onclick="fwPos('Schadenersatz','')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700"><i class="fa-solid fa-screwdriver-wrench mr-1"></i>Schadenersatz</button>
+    </div>
+    <script>
+      function fwPos(titel, betrag){
+        var f=document.querySelector('#adhoc form');
+        f.titel.value=titel; if(betrag) f.betrag.value=betrag; f.titel.focus();
+      }
+    </script>
     <form method="post" action="/neu/debitoren/neu/" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
@@ -122,7 +138,14 @@
                 </td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     <a href="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" class="text-xs text-emerald-600 font-medium hover:underline mr-2" title="QR-Rechnung als PDF"><i class="fa-solid fa-qrcode"></i> QR</a>
-                    {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="text-xs text-indigo-600 font-medium hover:underline">Ansehen</a>{% endif %}
+                    {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="text-xs text-indigo-600 font-medium hover:underline mr-2">Ansehen</a>{% endif %}
+                    {% if row.r.status != 'storniert' and row.r.status != 'bezahlt' and row.r.status != 'teilbezahlt' %}
+                    <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" onsubmit="return confirm('Rechnung „{{ row.r.titel }}" stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.');">
+                        {% csrf_token %}
+                        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                        <button type="submit" class="text-xs text-rose-500 font-medium hover:text-rose-700" title="Stornieren / löschen"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                    {% endif %}
                 </td>
             </tr>
             {% empty %}

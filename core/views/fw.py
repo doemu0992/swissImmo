@@ -254,7 +254,46 @@ def fw_debitor_neu(request):
             pass
 
     log_aktion(request, "Ad-hoc-Debitorenrechnung erstellt", titel, f"CHF {betrag}")
-    messages.success(request, f"✅ Rechnung „{titel}“ über CHF {betrag} erstellt — QR-Rechnung via QR-Button.")
+    messages.success(request, f"✅ Rechnung '{titel}' über CHF {betrag} erstellt — QR-Rechnung via QR-Button.")
+    ziel = '/neu/debitoren/'
+    if lgq := request.POST.get('lg'):
+        ziel += f'?lg={lgq}'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_debitor_stornieren(request, pk):
+    """Storniert eine (versehentlich erstellte) Debitorenrechnung revisionssicher:
+    Status → storniert und alle zugehörigen Buchungen werden per Gegenbuchung
+    aufgehoben. Bereits (teil-)bezahlte Rechnungen werden blockiert — dort müssen
+    zuerst die Zahlungen storniert werden."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import Buchung, Zahlungseingang
+    from finance.api import erstelle_storno_buchung
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_debitoren')
+
+    r = get_object_or_404(DebitorenRechnung, id=pk)
+    if r.status == 'storniert':
+        messages.info(request, "Rechnung ist bereits storniert.")
+        return redirect('fw_debitoren')
+
+    bezahlt = (Zahlungseingang.objects.filter(debitoren_rechnung=r, status='verbucht')
+               .exists())
+    if bezahlt:
+        messages.error(request, "Diese Rechnung hat verbuchte Zahlungen — bitte zuerst die Zahlung(en) stornieren.")
+        return redirect('fw_debitoren')
+
+    with transaction.atomic():
+        for b in Buchung.objects.filter(debitoren_rechnung=r, ist_storno=False):
+            erstelle_storno_buchung(b, benutzer=request.user)
+        r.status = 'storniert'
+        r.save()
+
+    log_aktion(request, "Debitorenrechnung storniert", r.titel, f"CHF {r.betrag}")
+    messages.success(request, f"✅ Rechnung '{r.titel}' storniert (revisionssicher, mit Gegenbuchung).")
     ziel = '/neu/debitoren/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
