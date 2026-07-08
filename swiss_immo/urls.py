@@ -73,7 +73,7 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_obj
                            fw_vertrag_status, fw_vertrag_loeschen,
                            fw_account, fw_marktdaten_aktualisieren, fw_marktdaten_live,
                            fw_benutzer, fw_mandate, fw_vorlagen, fw_integrationen, fw_abonnemente,
-                           fw_liegenschaft_form, fw_objekt_form)
+                           fw_liegenschaft_form, fw_objekt_form, fw_suche)
 
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
@@ -135,6 +135,7 @@ urlpatterns = [
     path('neu/mietzins/', fw_mietzins, name='fw_mietzins'),
     path('neu/dokumente/', fw_dokumente, name='fw_dokumente'),
     # Profil-Menü
+    path('neu/suche/', fw_suche, name='fw_suche'),
     path('neu/account/', fw_account, name='fw_account'),
     path('neu/marktdaten/aktualisieren/', fw_marktdaten_aktualisieren, name='fw_marktdaten_aktualisieren'),
     path('neu/marktdaten/live/', fw_marktdaten_live, name='fw_marktdaten_live'),

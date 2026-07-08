@@ -1,0 +1,81 @@
+{% extends 'fw/base.html' %}
+{% block title %}Suche{% if q %}: {{ q }}{% endif %} — swissImmo{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-extrabold text-slate-900 mb-1">Suche</h1>
+{% if q %}
+<p class="text-sm text-slate-500 mb-6">{{ total }} Treffer für „<span class="font-semibold text-slate-700">{{ q }}</span>"</p>
+{% else %}
+<p class="text-sm text-slate-500 mb-6">Gib oben einen Suchbegriff ein — Personen, Liegenschaften, Objekte und Verträge.</p>
+{% endif %}
+
+{% if q and total == 0 %}
+<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400">
+    <i class="fa-solid fa-magnifying-glass text-2xl mb-3 text-slate-300"></i>
+    <p class="text-sm">Keine Treffer für „{{ q }}".</p>
+</div>
+{% endif %}
+
+{% if personen %}
+<div class="mb-6">
+    <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Personen ({{ personen|length }})</div>
+    <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50">
+        {% for m in personen %}
+        <a href="/neu/personen/{{ m.id }}/" class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60">
+            <span class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">{{ m.display_name|slice:":2"|upper }}</span>
+            <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ m.display_name }}</div>
+                <div class="text-xs text-slate-400">{{ m.get_typ_display }}{% if m.ort %} · {{ m.plz }} {{ m.ort }}{% endif %}</div></div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-300"></i>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if liegenschaften %}
+<div class="mb-6">
+    <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Liegenschaften ({{ liegenschaften|length }})</div>
+    <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50">
+        {% for lg in liegenschaften %}
+        <a href="/neu/liegenschaften/{{ lg.id }}/" class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60">
+            <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-building text-xs"></i></span>
+            <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ lg.strasse }}</div>
+                <div class="text-xs text-slate-400">{{ lg.plz }} {{ lg.ort }}</div></div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-300"></i>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if objekte %}
+<div class="mb-6">
+    <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Objekte ({{ objekte|length }})</div>
+    <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50">
+        {% for e in objekte %}
+        <a href="/neu/objekte/{{ e.id }}/" class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60">
+            <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-house text-xs"></i></span>
+            <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ e.bezeichnung }}</div>
+                <div class="text-xs text-slate-400">{{ e.liegenschaft.strasse }}, {{ e.liegenschaft.ort }}{% if e.etage %} · {{ e.etage }}{% endif %}</div></div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-300"></i>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if vertraege %}
+<div class="mb-6">
+    <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Verträge ({{ vertraege|length }})</div>
+    <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50">
+        {% for v in vertraege %}
+        <a href="/neu/vertraege/{{ v.id }}/" class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60">
+            <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-file-contract text-xs"></i></span>
+            <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</div>
+                <div class="text-xs text-slate-400">{{ v.einheit.liegenschaft.strasse }} · ab {{ v.beginn|date:"d.m.Y" }}</div></div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-300"></i>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

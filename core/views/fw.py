@@ -2200,3 +2200,39 @@ def fw_objekt_form(request, pk=None):
         'vorwahl_lg': str(vorwahl_lg) if vorwahl_lg else '',
         'typ_choices': Einheit.TYP_CHOICES,
     })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_suche(request):
+    """Globale Suche über Personen, Liegenschaften, Objekte und Verträge."""
+    q = (request.GET.get('q') or '').strip()
+    basis = _global_filter(request)
+    personen, liegenschaften, objekte, vertraege = [], [], [], []
+
+    if q:
+        personen = list(Mieter.objects.filter(
+            Q(vorname__icontains=q) | Q(nachname__icontains=q) | Q(firmen_name__icontains=q)
+            | Q(email__icontains=q) | Q(ort__icontains=q)
+        ).order_by('nachname', 'firmen_name')[:20])
+
+        liegenschaften = list(Liegenschaft.objects.filter(
+            Q(strasse__icontains=q) | Q(ort__icontains=q) | Q(plz__icontains=q) | Q(egid__icontains=q)
+        ).order_by('strasse')[:20])
+
+        objekte = list(Einheit.objects.select_related('liegenschaft').filter(
+            Q(bezeichnung__icontains=q) | Q(etage__icontains=q)
+            | Q(liegenschaft__strasse__icontains=q) | Q(liegenschaft__ort__icontains=q)
+        ).order_by('liegenschaft__strasse', 'bezeichnung')[:20])
+
+        vertraege = list(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft').filter(
+            Q(mieter__vorname__icontains=q) | Q(mieter__nachname__icontains=q)
+            | Q(mieter__firmen_name__icontains=q) | Q(einheit__bezeichnung__icontains=q)
+            | Q(einheit__liegenschaft__strasse__icontains=q)
+        ).order_by('-beginn')[:20])
+
+    total = len(personen) + len(liegenschaften) + len(objekte) + len(vertraege)
+    return render(request, 'fw/suche.html', {
+        **basis, 'nav': '', 'q': q, 'total': total,
+        'personen': personen, 'liegenschaften': liegenschaften,
+        'objekte': objekte, 'vertraege': vertraege,
+    })
