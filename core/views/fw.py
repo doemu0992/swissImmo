@@ -1886,7 +1886,10 @@ def fw_vertrag_neu_speichern(request):
         return redirect('fw_vertrag_neu')
 
     P = request.POST
-    einheit = get_object_or_404(Einheit, id=P.get('einheit_id'))
+    einheit = Einheit.objects.filter(id=P.get('einheit_id') or 0).first()
+    if not einheit:
+        messages.error(request, "Bitte wähle ein Objekt aus, bevor du den Vertrag erstellst.")
+        return redirect('/neu/vertraege/neu/')
 
     # Mieter: bestehend oder neu
     mieter_id = P.get('mieter_id') or ''

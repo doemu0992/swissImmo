@@ -11,7 +11,7 @@
     <a href="/neu/vertraege/{{ lg_query }}" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></a>
 </div>
 
-<form method="post" action="/neu/vertraege/neu/speichern/" id="vform">
+<form method="post" action="/neu/vertraege/neu/speichern/" id="vform" onsubmit="return vorSubmit()">
 {% csrf_token %}
 <input type="hidden" name="einheit_id" id="f_einheit_id">
 <input type="hidden" name="mieter_id" id="f_mieter_id">
@@ -380,6 +380,32 @@ function toggleZweiter(){
   if(!on){ document.getElementById('familienwohnung').checked=false; document.getElementById('f_mit_mieter_id').value=''; }
   live();
 }
+// Vor dem Absenden: Hidden-IDs sicher aus den aktuellen Auswahlen setzen + prüfen.
+// So schlägt "Vertrag erstellen" nie fehl, weil ein onchange nicht gefeuert hat.
+function vorSubmit(){
+  const objSel = document.getElementById('s_obj');
+  document.getElementById('f_einheit_id').value = objSel ? objSel.value : '';
+  document.getElementById('f_mieter_id').value =
+    (mieterMode==='best') ? (document.getElementById('s_mieter')?.value||'') : '';
+  const zw = document.getElementById('zweiter_aktiv');
+  document.getElementById('f_mit_mieter_id').value =
+    (zw && zw.checked && mieter2Mode==='best') ? (document.getElementById('s_mieter2')?.value||'') : '';
+
+  if(!document.getElementById('f_einheit_id').value){
+    alert('Bitte wähle im Schritt 1 ein Objekt aus, bevor du den Vertrag erstellst.');
+    goStep(0); return false;
+  }
+  // Mieter: entweder bestehende Person gewählt oder Name eingegeben
+  const hatMieter = document.getElementById('f_mieter_id').value
+    || (document.querySelector('[name=vorname]')?.value || '').trim()
+    || (document.querySelector('[name=nachname]')?.value || '').trim();
+  if(!hatMieter){
+    alert('Bitte wähle im Schritt 2 eine Person aus oder erfasse eine neue.');
+    goStep(1); return false;
+  }
+  return true;
+}
+
 function goStep(i){
   if(i<0||i>6) return;
   cur=i;
