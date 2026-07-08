@@ -258,3 +258,31 @@ class Vorlage(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Kommunikation(models.Model):
+    """Kommunikations-/Kontaktjournal: dokumentiert jede Interaktion mit einem
+    Kontakt (Telefon, E-Mail, Brief, Notiz) — verknüpfbar mit Person/Vertrag/Schaden."""
+    from django.utils import timezone as _tz
+    TYP = [('telefon', 'Telefon'), ('email', 'E-Mail'), ('brief', 'Brief'),
+           ('notiz', 'Notiz'), ('persoenlich', 'Persönlich')]
+    RICHTUNG = [('eingehend', 'Eingehend'), ('ausgehend', 'Ausgehend'), ('intern', 'Intern')]
+    mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, null=True, blank=True, related_name='kommunikationen')
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, blank=True, related_name='kommunikationen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
+    typ = models.CharField("Kanal", max_length=15, choices=TYP, default='telefon')
+    richtung = models.CharField("Richtung", max_length=12, choices=RICHTUNG, default='eingehend')
+    zeitpunkt = models.DateTimeField("Zeitpunkt", default=_tz.now)
+    betreff = models.CharField("Betreff", max_length=200, blank=True, default='')
+    inhalt = models.TextField("Inhalt / Notiz")
+    erledigt = models.BooleanField("Erledigt", default=True)
+    erstellt_von = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    class Meta:
+        verbose_name = "Kommunikation"
+        verbose_name_plural = "Kommunikationsjournal"
+        ordering = ['-zeitpunkt', '-id']
+        db_table = 'core_kommunikation'
+
+    def __str__(self):
+        return f"{self.get_typ_display()} {self.zeitpunkt:%d.%m.%Y}: {self.betreff or self.inhalt[:40]}"

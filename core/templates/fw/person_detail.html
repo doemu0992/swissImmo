@@ -148,4 +148,43 @@
         {% endfor %}
     </div>
 </div>
+
+<!-- ===== JOURNAL / KOMMUNIKATION ===== -->
+<div data-panel="pd" id="pd-aktivitaet" class="hidden">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+        <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-comment-dots text-indigo-500 mr-1.5"></i>Notiz / Kontakt erfassen</h3>
+        <form method="post" action="/neu/kommunikation/notiz/" class="space-y-3">
+            {% csrf_token %}
+            <input type="hidden" name="mieter_id" value="{{ m.id }}">
+            <div class="flex flex-wrap gap-2">
+                <select name="typ" class="bg-slate-100 rounded-lg text-sm px-3 py-2">
+                    <option value="telefon">Telefon</option><option value="email">E-Mail</option>
+                    <option value="brief">Brief</option><option value="persoenlich">Persönlich</option><option value="notiz">Notiz</option>
+                </select>
+                <select name="richtung" class="bg-slate-100 rounded-lg text-sm px-3 py-2">
+                    <option value="eingehend">Eingehend</option><option value="ausgehend">Ausgehend</option><option value="intern">Intern</option>
+                </select>
+                <input name="betreff" placeholder="Betreff (optional)" class="flex-1 min-w-[160px] bg-slate-100 rounded-lg text-sm px-3 py-2">
+            </div>
+            <textarea name="inhalt" rows="2" required placeholder="Was wurde besprochen?" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2"></textarea>
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Erfassen</button>
+        </form>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50">
+        {% for k in kommunikationen %}
+        <div class="flex items-start gap-3 px-5 py-3.5">
+            <div class="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center
+                {% if k.typ == 'telefon' %}bg-emerald-50 text-emerald-600{% elif k.typ == 'email' %}bg-sky-50 text-sky-600{% elif k.typ == 'brief' %}bg-amber-50 text-amber-600{% else %}bg-slate-100 text-slate-500{% endif %}">
+                <i class="fa-solid {% if k.typ == 'telefon' %}fa-phone{% elif k.typ == 'email' %}fa-envelope{% elif k.typ == 'brief' %}fa-file-lines{% elif k.typ == 'persoenlich' %}fa-user{% else %}fa-note-sticky{% endif %} text-xs"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="text-sm text-slate-900">{% if k.betreff %}<span class="font-semibold">{{ k.betreff }}</span> · {% endif %}{{ k.inhalt }}</div>
+                <div class="text-xs text-slate-400 mt-0.5">{{ k.get_typ_display }} · {{ k.get_richtung_display }} · {{ k.zeitpunkt|date:"d.m.Y H:i" }}{% if k.erstellt_von %} · {{ k.erstellt_von.username }}{% endif %}</div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Einträge im Kontaktjournal.</p>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}

@@ -1510,6 +1510,7 @@ def fw_person_detail(request, pk):
         ('vertraege', 'Verträge', vertraege.count() or None),
         ('finanzen', 'Finanzen', offene.count() or None),
         ('dokumente', 'Dokumente', dokumente.count() or None),
+        ('aktivitaet', 'Journal', m.kommunikationen.count() or None),
     ]
     return render(request, 'fw/person_detail.html', {
         **basis, 'nav': 'personen', 'm': m,
@@ -1519,8 +1520,37 @@ def fw_person_detail(request, pk):
         'offene': offene, 'total_offen': total_offen,
         'zahlungen': zahlungen, 'dokumente': dokumente,
         'telefon': m.mobile or m.telefon_privat or m.telefon_geschaeft,
+        'kommunikationen': m.kommunikationen.select_related('vertrag', 'erstellt_von')[:50],
         'tab_liste': tab_liste,
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_kommunikation_neu(request):
+    """Schnelle Telefonnotiz / Kommunikation zu einem Kontakt erfassen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Kommunikation
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('/neu/personen/')
+    P = request.POST
+    m = get_object_or_404(Mieter, id=P.get('mieter_id'))
+    inhalt = (P.get('inhalt') or '').strip()
+    if not inhalt:
+        messages.error(request, "Bitte einen Inhalt/Notiztext erfassen.")
+        return redirect(f'/neu/personen/{m.id}/')
+    vertrag = m.vertraege.order_by('-beginn').first()
+    Kommunikation.objects.create(
+        mieter=m, vertrag=vertrag,
+        liegenschaft=vertrag.einheit.liegenschaft if vertrag and vertrag.einheit_id else None,
+        typ=P.get('typ', 'telefon'), richtung=P.get('richtung', 'eingehend'),
+        betreff=(P.get('betreff') or '').strip(), inhalt=inhalt,
+        erstellt_von=request.user,
+    )
+    log_aktion(request, "Kommunikation erfasst", str(m), P.get('typ', 'telefon'))
+    messages.success(request, "✅ Notiz im Kontaktjournal erfasst.")
+    return redirect(f'/neu/personen/{m.id}/#p-aktivitaet')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
