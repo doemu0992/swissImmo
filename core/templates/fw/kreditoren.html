@@ -6,9 +6,16 @@
 
 <div class="flex items-center justify-between mb-1">
     <h1 class="text-3xl font-extrabold text-slate-900">Kreditoren</h1>
-    <button type="button" onclick="document.getElementById('kredform').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
-        <i class="fa-solid fa-plus mr-1.5"></i> Rechnung erfassen
-    </button>
+    <div class="flex items-center gap-2">
+        {% if anzahl_zahlbar and darf_bezahlen %}
+        <a href="/neu/kreditoren/pain001/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" title="ISO-20022 Zahlungsdatei für e-Banking" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors whitespace-nowrap">
+            <i class="fa-solid fa-file-arrow-down mr-1.5"></i>Zahlungsdatei (pain.001) · {{ anzahl_zahlbar }}
+        </a>
+        {% endif %}
+        <button type="button" onclick="document.getElementById('kredform').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+            <i class="fa-solid fa-plus mr-1.5"></i> Rechnung erfassen
+        </button>
+    </div>
 </div>
 <p class="text-sm text-slate-500 mb-5">Rechnungseingang → Freigabe → Zahlung (Aufwand an Kreditoren, dann Kreditoren an Bank)
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>

@@ -1458,15 +1458,63 @@ def fw_kreditoren(request):
     from finance.models import Buchungskonto
     aufwand_konten = Buchungskonto.objects.filter(typ='aufwand').order_by('nummer')
     liegenschaften = Liegenschaft.objects.order_by('strasse')
+    # Für pain.001: freigegebene Rechnungen mit gültiger IBAN
+    zahlbar = [r for r in rows if r['k'].status == 'freigegeben' and (r['k'].iban or '').strip()]
     return render(request, 'fw/kreditoren.html', {
         **basis, 'nav': 'kreditoren', 'rows': rows,
         'status_filter': status_filter, 'status_chips': status_chips,
         'total_offen': total_offen, 'total_neu': total_neu, 'anzahl_neu': anzahl_neu,
         'anzahl': len(rows),
+        'anzahl_zahlbar': len(zahlbar),
         'darf_bezahlen': hat_rolle(request.user, VERWALTUNGS_ROLLEN),
         'aufwand_konten': aufwand_konten, 'liegenschaften': liegenschaften,
         'meldung': list(messages.get_messages(request)),
     })
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_kreditoren_pain001(request):
+    """Erzeugt eine ISO-20022 pain.001-Zahlungsdatei aus allen freigegebenen
+    Kreditorenrechnungen (für den e-Banking-Massenupload)."""
+    from django.http import HttpResponse
+    from django.contrib import messages
+    from django.shortcuts import redirect
+    from finance.models import KreditorenRechnung
+    from crm.models import Verwaltung
+    from core.services.pain001 import generate_pain001
+    from core.auth import log_aktion
+
+    basis = _global_filter(request)
+    qs = KreditorenRechnung.objects.filter(status='freigegeben')
+    if basis['aktive_lg']:
+        qs = qs.filter(liegenschaft=basis['aktive_lg'])
+    rechnungen = list(qs)
+    if not rechnungen:
+        messages.error(request, "Keine freigegebenen Kreditorenrechnungen für die Zahlungsdatei.")
+        return redirect('/neu/kreditoren/?status=freigegeben')
+
+    vw = Verwaltung.objects.first()
+    debtor_iban = (vw.iban if vw else '') or ''
+    if not debtor_iban.strip():
+        messages.error(request, "Für die Zahlungsdatei fehlt die IBAN der Verwaltung (Profil → Account).")
+        return redirect('/neu/kreditoren/?status=freigegeben')
+
+    heute = timezone.localdate()
+    jetzt = timezone.now()
+    msg_id = f"SWISSIMMO-{jetzt.strftime('%Y%m%d%H%M%S')}"
+    xml, anzahl, summe, skipped = generate_pain001(
+        rechnungen, debtor_name=(vw.firma if vw else 'Immobilienverwaltung'),
+        debtor_iban=debtor_iban, msg_id=msg_id,
+        exec_date=heute.isoformat(), now_iso=jetzt.strftime('%Y-%m-%dT%H:%M:%S'))
+
+    if anzahl == 0:
+        messages.error(request, "Keine zahlbaren Rechnungen (fehlende IBAN/Betrag).")
+        return redirect('/neu/kreditoren/?status=freigegeben')
+
+    log_aktion(request, "pain.001 erzeugt", msg_id, f"{anzahl} Zahlungen, CHF {summe}")
+    resp = HttpResponse(xml, content_type='application/xml')
+    resp['Content-Disposition'] = f'attachment; filename="{msg_id}.xml"'
+    return resp
 
 
 @rolle_erforderlich(ROLLE_VERWALTUNG)
