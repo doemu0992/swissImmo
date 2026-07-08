@@ -19,14 +19,16 @@ from rentals.models import Mietvertrag
 
 @login_required
 def nach_login_view(request):
-    """Login-Weiche: Team → neue Oberfläche (/neu/), Eigentümer → Portal."""
+    """Login-Weiche: Team → /neu/, Eigentümer → Portal, Mieter → Mieterportal."""
     if getattr(request.user, 'mandant_profil', None) is not None:
         return redirect('portal')
     if hat_rolle(request.user, TEAM_ROLLEN):
         return redirect('fw_dashboard')
     if ist_eigentuemer(request.user):
         return redirect('portal')
-    # Login ohne Rolle und ohne Mandant-Verknüpfung: zurück zum Login
+    if getattr(request.user, 'mieter_profil', None) is not None:
+        return redirect('mieter_portal')
+    # Login ohne Rolle und ohne Verknüpfung: zurück zum Login
     # (Rolle muss zuerst von der Verwaltung zugewiesen werden).
     return redirect('login')
 
@@ -220,3 +222,95 @@ def portal_report_pdf(request):
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = 'inline; filename="Portfolio-Report.pdf"'
     return resp
+
+
+# ============================================================
+# MIETERPORTAL (Self-Service für Mieter mit Login)
+# ============================================================
+
+@login_required
+def mieter_portal_view(request):
+    """Mieter sieht seinen aktiven Vertrag, Objektdaten, Dokumente und kann
+    einen Schaden melden. Read-only ausser Schadenmeldung."""
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        # Kein Mieterprofil → passende Weiche
+        if hat_rolle(request.user, TEAM_ROLLEN):
+            return redirect('fw_dashboard')
+        if getattr(request.user, 'mandant_profil', None) is not None:
+            return redirect('portal')
+        return render(request, 'core/mieter_portal.html', {'mieter': None})
+
+    vertraege = (Mietvertrag.objects
+                 .filter(mieter=mieter, status='aktiv')
+                 .select_related('einheit__liegenschaft').order_by('-beginn'))
+    from rentals.models import Dokument as RDokument
+    dok_qs = (RDokument.objects.filter(mieter=mieter).order_by('-datum')[:30])
+    dokumente = [{'id': d.id, 'titel': d.bezeichnung or d.titel, 'kategorie': d.kategorie,
+                  'datum': d.datum} for d in dok_qs if d.datei]
+
+    objekte = []
+    for v in vertraege:
+        e = v.einheit
+        lg = e.liegenschaft if e else None
+        objekte.append({
+            'vertrag': v, 'einheit': e, 'liegenschaft': lg,
+            'adresse': f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else '—',
+            'brutto': v.brutto_mietzins, 'netto': v.netto_mietzins, 'nk': v.nebenkosten,
+            'beginn': v.beginn, 'kaution': v.kautions_betrag,
+        })
+
+    return render(request, 'core/mieter_portal.html', {
+        'mieter': mieter, 'objekte': objekte, 'dokumente': dokumente,
+    })
+
+
+@login_required
+def mieter_dokument_download(request, pk):
+    """Dokument-Download — nur eigene Mieter-Dokumente."""
+    from rentals.models import Dokument as RDokument
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        raise Http404
+    dok = get_object_or_404(RDokument, pk=pk, mieter=mieter)
+    try:
+        f = dok.datei.open('rb')
+    except Exception:
+        raise Http404
+    import os
+    resp = HttpResponse(f.read(), content_type='application/octet-stream')
+    resp['Content-Disposition'] = f'attachment; filename="{os.path.basename(dok.datei.name)}"'
+    return resp
+
+
+@login_required
+def mieter_schaden_melden(request):
+    """Mieter meldet einen Schaden aus dem Portal (erzeugt ein Ticket)."""
+    from django.contrib import messages
+    from tickets.models import SchadenMeldung
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None or request.method != 'POST':
+        return redirect('mieter_portal')
+    titel = (request.POST.get('titel') or '').strip()
+    beschreibung = (request.POST.get('beschreibung') or '').strip()
+    vertrag_id = request.POST.get('vertrag_id')
+    if not titel or not beschreibung:
+        messages.error(request, "Bitte Titel und Beschreibung angeben.")
+        return redirect('mieter_portal')
+    v = (Mietvertrag.objects.filter(id=vertrag_id, mieter=mieter)
+         .select_related('einheit__liegenschaft').first()) if vertrag_id else None
+    if not v:
+        v = (Mietvertrag.objects.filter(mieter=mieter, status='aktiv')
+             .select_related('einheit__liegenschaft').first())
+    if not v or not v.einheit_id:
+        messages.error(request, "Kein aktives Mietobjekt gefunden.")
+        return redirect('mieter_portal')
+    SchadenMeldung.objects.create(
+        liegenschaft=v.einheit.liegenschaft, betroffene_einheit=v.einheit,
+        gemeldet_von=mieter, titel=titel, beschreibung=beschreibung,
+        raum=(request.POST.get('raum') or '').strip(),
+        melder_vorname=mieter.vorname or '', melder_nachname=mieter.nachname or '',
+        email_melder=mieter.email or '', tel_melder=mieter.mobile or mieter.telefon_privat or '',
+        status='neu')
+    messages.success(request, "✅ Ihre Schadenmeldung wurde übermittelt. Die Verwaltung kümmert sich darum.")
+    return redirect('mieter_portal')

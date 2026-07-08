@@ -1588,8 +1588,53 @@ def fw_person_detail(request, pk):
         'zahlungen': zahlungen, 'dokumente': dokumente,
         'telefon': m.mobile or m.telefon_privat or m.telefon_geschaeft,
         'kommunikationen': m.kommunikationen.select_related('vertrag', 'erstellt_von')[:50],
+        'portal_user': getattr(m, 'benutzer', None),
         'tab_liste': tab_liste,
     })
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_mieter_portal_zugang(request, pk):
+    """Erstellt/aktualisiert einen Mieterportal-Login und zeigt die Zugangsdaten einmalig."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from django.contrib.auth.models import User
+    from core.auth import log_aktion
+    import secrets
+    m = get_object_or_404(Mieter, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/personen/{m.id}/')
+    aktion = request.POST.get('aktion', 'erstellen')
+    if aktion == 'entfernen':
+        if m.benutzer_id:
+            u = m.benutzer
+            m.benutzer = None
+            m.save(update_fields=['benutzer'])
+            u.is_active = False
+            u.save(update_fields=['is_active'])
+        messages.success(request, "Portal-Zugang deaktiviert.")
+        return redirect(f'/neu/personen/{m.id}/')
+
+    # Benutzername: E-Mail bevorzugt, sonst mieter<id>
+    basis_name = (m.email or f"mieter{m.id}").strip().lower()
+    passwort = secrets.token_urlsafe(9)
+    if m.benutzer_id:
+        u = m.benutzer
+        u.set_password(passwort)
+        u.is_active = True
+        u.save()
+    else:
+        username = basis_name
+        i = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{basis_name}.{i}"
+            i += 1
+        u = User.objects.create_user(username=username, email=m.email or '', password=passwort)
+        m.benutzer = u
+        m.save(update_fields=['benutzer'])
+    log_aktion(request, "Mieterportal-Zugang erstellt", m.display_name, u.username)
+    messages.success(request, f"✅ Portal-Zugang aktiv. Benutzername: {u.username} · Passwort: {passwort} — bitte dem Mieter sicher mitteilen (wird nur einmal angezeigt).")
+    return redirect(f'/neu/personen/{m.id}/')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

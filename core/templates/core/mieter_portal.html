@@ -1,0 +1,106 @@
+{% load chf %}<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mieterportal — SwissImmo</title>
+    <style>
+        :root { color-scheme: light; }
+        * { box-sizing: border-box; margin: 0; }
+        body { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f1f5f9; color: #0f172a; line-height: 1.5; }
+        header { background: #4338ca; color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 18px; font-weight: 600; }
+        header form { margin: 0; }
+        header button { background: rgba(255,255,255,.15); color: #fff; border: 0; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+        header button:hover { background: rgba(255,255,255,.25); }
+        main { max-width: 820px; margin: 0 auto; padding: 24px 16px 64px; }
+        .card { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(15,23,42,.08); margin-bottom: 20px; overflow: hidden; }
+        .card h2 { font-size: 16px; padding: 14px 16px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .card .body { padding: 16px; }
+        .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        .row:last-child { border-bottom: 0; }
+        .row .label { color: #64748b; }
+        .row .val { font-weight: 600; }
+        .doc { display: block; font-size: 14px; color: #4338ca; text-decoration: none; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+        .doc:last-child { border-bottom: 0; }
+        label.f { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px; }
+        input.f, textarea.f, select.f { width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 11px; font-size: 14px; margin-bottom: 12px; font-family: inherit; }
+        button.primary { background: #4338ca; color: #fff; border: 0; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+        button.primary:hover { background: #3730a3; }
+        .msg { padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 14px; }
+        .msg.ok { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+        .msg.err { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+        .hinweis { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; padding: 16px; border-radius: 12px; }
+        footer { text-align: center; color: #94a3b8; font-size: 12px; padding: 24px; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>🔑 Mieterportal</h1>
+    <form method="post" action="/logout/">{% csrf_token %}<button type="submit">Abmelden</button></form>
+</header>
+<main>
+    {% if messages %}{% for m in messages %}
+        <div class="msg {% if 'error' in m.tags %}err{% else %}ok{% endif %}">{{ m }}</div>
+    {% endfor %}{% endif %}
+
+    {% if mieter %}
+        <p style="margin-bottom:16px; color:#475569;">Guten Tag {{ mieter.display_name }} — willkommen in Ihrem Mieterportal.</p>
+
+        {% for o in objekte %}
+        <div class="card">
+            <h2><span>Ihr Mietobjekt</span><span style="font-size:13px; color:#4338ca;">seit {{ o.beginn|date:"d.m.Y" }}</span></h2>
+            <div class="body">
+                <div class="row"><span class="label">Adresse</span><span class="val">{{ o.adresse }}</span></div>
+                <div class="row"><span class="label">Objekt</span><span class="val">{{ o.einheit.bezeichnung }}</span></div>
+                <div class="row"><span class="label">Nettomiete</span><span class="val">CHF {{ o.netto|chf }}</span></div>
+                <div class="row"><span class="label">Nebenkosten (Akonto)</span><span class="val">CHF {{ o.nk|chf }}</span></div>
+                <div class="row"><span class="label">Bruttomiete / Monat</span><span class="val">CHF {{ o.brutto|chf }}</span></div>
+                {% if o.kaution %}<div class="row"><span class="label">Mietkaution</span><span class="val">CHF {{ o.kaution|chf }}</span></div>{% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="hinweis">Aktuell ist Ihrem Konto kein aktives Mietobjekt zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</div>
+        {% endfor %}
+
+        {% if dokumente %}
+        <div class="card">
+            <h2>Meine Dokumente</h2>
+            <div class="body">
+                {% for d in dokumente %}
+                <a class="doc" href="/mieter/dokument/{{ d.id }}/">📎 {{ d.titel }} <span style="color:#94a3b8;">· {{ d.datum|date:"d.m.Y" }}</span></a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if objekte %}
+        <div class="card">
+            <h2>Schaden / Reparatur melden</h2>
+            <div class="body">
+                <form method="post" action="/mieter/schaden/">
+                    {% csrf_token %}
+                    {% if objekte|length > 1 %}
+                    <label class="f">Objekt</label>
+                    <select name="vertrag_id" class="f">
+                        {% for o in objekte %}<option value="{{ o.vertrag.id }}">{{ o.adresse }} · {{ o.einheit.bezeichnung }}</option>{% endfor %}
+                    </select>
+                    {% else %}<input type="hidden" name="vertrag_id" value="{{ objekte.0.vertrag.id }}">{% endif %}
+                    <label class="f">Was ist betroffen? (Titel)</label>
+                    <input class="f" name="titel" placeholder="z.B. Wasserhahn tropft" required>
+                    <label class="f">Raum (optional)</label>
+                    <input class="f" name="raum" placeholder="z.B. Badezimmer">
+                    <label class="f">Beschreibung</label>
+                    <textarea class="f" name="beschreibung" rows="4" placeholder="Bitte beschreiben Sie das Problem." required></textarea>
+                    <button type="submit" class="primary">Meldung senden</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="hinweis">Ihr Login ist noch keinem Mieter-Dossier zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</div>
+    {% endif %}
+</main>
+<footer>SwissImmo Mieterportal · Alle Angaben ohne Gewähr</footer>
+</body>
+</html>

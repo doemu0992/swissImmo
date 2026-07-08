@@ -161,6 +161,9 @@ class Mieter(models.Model):
     bank_name = models.CharField("Bank", max_length=100, blank=True, default='')
     bonitaet_datum = models.DateField("Betreibungsauszug vom", null=True, blank=True)
     notizen = models.TextField("Interne Notizen", blank=True, default='')
+    # Mieterportal-Login (optional): verknüpfter Benutzer für das Self-Service-Portal
+    benutzer = models.OneToOneField('auth.User', on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='mieter_profil')
 
     class Meta:
         verbose_name = "Mieter"

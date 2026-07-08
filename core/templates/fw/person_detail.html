@@ -69,6 +69,29 @@
             {% endif %}{% endfor %}
             {% else %}<p class="text-sm text-slate-400 italic">Kein aktiver Vertrag.</p>{% endif %}
         </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 lg:col-span-2">
+            <h3 class="font-bold text-slate-800 mb-3"><i class="fa-solid fa-key text-indigo-500 mr-1.5"></i>Mieterportal-Zugang</h3>
+            {% if portal_user %}
+                <p class="text-sm text-slate-600 mb-3">Aktiv · Benutzername: <span class="font-mono font-semibold">{{ portal_user.username }}</span>
+                    {% if not portal_user.is_active %}<span class="text-red-500">(deaktiviert)</span>{% endif %}</p>
+                <div class="flex gap-2">
+                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('Neues Passwort erzeugen? Das alte wird ungültig.');">{% csrf_token %}
+                        <input type="hidden" name="aktion" value="erstellen">
+                        <button class="text-xs font-semibold border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-lg">Passwort zurücksetzen</button>
+                    </form>
+                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('Portal-Zugang deaktivieren?');">{% csrf_token %}
+                        <input type="hidden" name="aktion" value="entfernen">
+                        <button class="text-xs font-semibold border border-red-100 text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg">Zugang deaktivieren</button>
+                    </form>
+                </div>
+            {% else %}
+                <p class="text-sm text-slate-500 mb-3">Kein Portal-Zugang. Erstellen Sie einen Login, damit der Mieter Vertrag, Dokumente und Schadenmeldung online nutzen kann.</p>
+                <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/">{% csrf_token %}
+                    <input type="hidden" name="aktion" value="erstellen">
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"><i class="fa-solid fa-key mr-1.5"></i>Portal-Zugang erstellen</button>
+                </form>
+            {% endif %}
+        </div>
     </div>
 </div>
 
