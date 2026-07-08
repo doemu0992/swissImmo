@@ -1,0 +1,114 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Kreditoren — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-1">
+    <h1 class="text-3xl font-extrabold text-slate-900">Kreditoren</h1>
+    <a href="/app/?tab=finance" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors" title="Öffnet die klassische Ansicht">
+        <i class="fa-solid fa-file-arrow-up mr-1.5"></i> Rechnung scannen <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-0.5"></i>
+    </a>
+</div>
+<p class="text-sm text-slate-500 mb-5">Rechnungseingang → Freigabe → Zahlung (Aufwand an Kreditoren, dann Kreditoren an Bank)
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/kreditoren/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+{% for m in meldung %}
+<div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
+{% endfor %}
+
+<!-- KPI -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-money-check-dollar"></i></div>
+        <div><div class="text-2xl font-bold text-sky-600">CHF {{ total_offen|chf }}</div><div class="text-sm text-slate-500">Freigegeben, offen</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-inbox"></i></div>
+        <div><div class="text-2xl font-bold text-slate-800">{{ anzahl_neu }}</div><div class="text-sm text-slate-500">Neu / zu prüfen</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-list"></i></div>
+        <div><div class="text-2xl font-bold text-slate-800">{{ anzahl }}</div><div class="text-sm text-slate-500">Rechnungen total</div></div>
+    </div>
+</div>
+
+<!-- Tabelle -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+        <div class="flex items-center gap-1.5 flex-wrap">
+            {% for wert, label in status_chips %}
+            <a href="?status={{ wert }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
+               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                      {% if status_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+        <div class="ml-auto text-xs text-slate-400">{{ anzahl }} Rechnung(en)</div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Lieferant</th>
+                <th class="px-5 py-3 font-semibold">Objekt</th>
+                <th class="px-5 py-3 font-semibold">Konto</th>
+                <th class="px-5 py-3 font-semibold">Fällig</th>
+                <th class="px-5 py-3 font-semibold text-right">Betrag</th>
+                <th class="px-5 py-3 font-semibold">Status</th>
+                <th class="px-5 py-3 font-semibold text-right">Aktion</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for row in rows %}
+            <tr class="hover:bg-slate-50/60 transition-colors">
+                <td class="px-5 py-3.5 font-medium text-slate-900 whitespace-nowrap">
+                    {{ row.lieferant }}
+                    {% if row.k.referenz %}<div class="text-xs text-slate-400 font-normal">{{ row.k.referenz }}</div>{% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.objekt }}</td>
+                <td class="px-5 py-3.5 text-slate-500 text-xs whitespace-nowrap">{% if row.konto %}{{ row.konto }}{% else %}<span class="text-amber-500">nicht zugeordnet</span>{% endif %}</td>
+                <td class="px-5 py-3.5 whitespace-nowrap {% if row.ueberfaellig %}font-semibold text-rose-600{% else %}text-slate-600{% endif %}">{% if row.faellig %}{{ row.faellig|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">{{ row.betrag|chf }}</td>
+                <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap {{ row.pill_cls }}">{{ row.status_label }}</span></td>
+                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                    <div class="inline-flex items-center gap-2">
+                        {% if row.beleg_url %}<a href="{{ row.beleg_url }}" target="_blank" class="text-slate-400 hover:text-indigo-600" title="Beleg ansehen"><i class="fa-solid fa-paperclip"></i></a>{% endif %}
+                        {% if row.kann_bezahlen and darf_bezahlen %}
+                        <form method="post" action="/neu/kreditoren/bezahlen/" onsubmit="return confirm('CHF {{ row.betrag|chf }} an {{ row.lieferant }} als bezahlt verbuchen?');" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="rechnung_id" value="{{ row.k.id }}">
+                            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                            <button type="submit" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                                <i class="fa-solid fa-check"></i> Bezahlen
+                            </button>
+                        </form>
+                        {% elif row.k.status == 'neu' %}
+                        <a href="/app/?tab=finance" class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors" title="Freigabe in der klassischen Ansicht">
+                            Prüfen <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                        </a>
+                        {% elif row.k.status == 'bezahlt' %}
+                        <span class="text-emerald-600 text-xs"><i class="fa-solid fa-check-double"></i> erledigt</span>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="px-5 py-12 text-center">
+                <div class="w-10 h-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-file-invoice"></i></div>
+                <p class="text-sm font-medium text-slate-700">Keine Kreditorenrechnungen</p>
+                <p class="text-xs text-slate-400 mt-1">{% if status_filter %}Keine Rechnung in diesem Status.{% else %}Scanne eine Lieferantenrechnung in der klassischen Ansicht.{% endif %}</p>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<p class="text-xs text-slate-400 mt-4">
+    <i class="fa-solid fa-circle-info mr-1"></i>
+    „Bezahlen" bucht die Zahlung (Kreditoren 2000 an Bank 1020) und setzt den Status auf bezahlt.
+    Die Freigabe (Konto zuordnen, Aufwand buchen) läuft aktuell noch in der klassischen Ansicht.
+</p>
+{% endblock %}

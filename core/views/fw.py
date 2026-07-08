@@ -14,7 +14,7 @@ from django.db.models import Q, Sum
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 
-from core.auth import rolle_erforderlich, TEAM_ROLLEN, SCHREIB_ROLLEN
+from core.auth import rolle_erforderlich, TEAM_ROLLEN, SCHREIB_ROLLEN, ROLLE_VERWALTUNG
 from core.views.dashboard_view import _berechne_aufgaben
 from crm.models import Mieter
 from finance.models import DebitorenRechnung, Zahlungseingang
@@ -867,3 +867,115 @@ def fw_person_detail(request, pk):
         'telefon': m.mobile or m.telefon_privat or m.telefon_geschaeft,
         'tab_liste': tab_liste,
     })
+
+
+# ============================================================
+# ETAPPE D: KREDITOREN (Rechnungseingang -> Freigabe -> Zahlung)
+# ============================================================
+
+KRED_PILL = {
+    'neu':         ('Neu / Prüfen', 'bg-amber-50 text-amber-700'),
+    'freigegeben': ('Freigegeben',  'bg-sky-50 text-sky-700'),
+    'bezahlt':     ('Bezahlt',      'bg-emerald-50 text-emerald-700'),
+    'storniert':   ('Storniert',    'bg-slate-100 text-slate-500'),
+}
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_kreditoren(request):
+    from finance.models import KreditorenRechnung
+    from core.auth import hat_rolle, VERWALTUNGS_ROLLEN
+    from django.contrib import messages
+    heute = timezone.now().date()
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    qs = (KreditorenRechnung.objects.exclude(status='storniert')
+          .select_related('liegenschaft', 'konto').order_by('-id'))
+    if aktive_lg:
+        qs = qs.filter(liegenschaft=aktive_lg)
+
+    status_filter = request.GET.get('status', '')
+    if status_filter in KRED_PILL:
+        qs = qs.filter(status=status_filter)
+
+    rows = []
+    total_offen = Decimal('0.00')     # freigegeben, noch nicht bezahlt
+    total_neu = Decimal('0.00')       # zu prüfen
+    anzahl_neu = 0
+    for k in qs:
+        label, cls = KRED_PILL.get(k.status, (k.status, 'bg-slate-100 text-slate-500'))
+        betrag = k.betrag or Decimal('0.00')
+        faellig = k.faellig_am
+        if k.status == 'freigegeben':
+            total_offen += betrag
+        elif k.status == 'neu':
+            total_neu += betrag
+            anzahl_neu += 1
+        rows.append({
+            'k': k, 'betrag': betrag, 'status_label': label, 'pill_cls': cls,
+            'faellig': faellig,
+            'ueberfaellig': bool(faellig and faellig < heute and k.status != 'bezahlt'),
+            'lieferant': k.lieferant or 'Wird gescannt …',
+            'objekt': f"{k.liegenschaft.strasse}, {k.liegenschaft.ort}" if k.liegenschaft else '—',
+            'konto': f"{k.konto.nummer} {k.konto.bezeichnung}" if k.konto else None,
+            'beleg_url': k.beleg_scan.url if k.beleg_scan else None,
+            'kann_bezahlen': k.status == 'freigegeben',
+        })
+
+    status_chips = [('', 'Alle')] + [(k, v[0]) for k, v in KRED_PILL.items() if k != 'storniert']
+
+    return render(request, 'fw/kreditoren.html', {
+        **basis, 'nav': 'kreditoren', 'rows': rows,
+        'status_filter': status_filter, 'status_chips': status_chips,
+        'total_offen': total_offen, 'total_neu': total_neu, 'anzahl_neu': anzahl_neu,
+        'anzahl': len(rows),
+        'darf_bezahlen': hat_rolle(request.user, VERWALTUNGS_ROLLEN),
+        'meldung': list(messages.get_messages(request)),
+    })
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_kreditor_bezahlen(request):
+    """Bezahlt eine freigegebene Kreditorenrechnung — Kreditoren 2000 an Bank 1020
+    (dieselbe Doppelbuchung wie die Finanz-API pay_kreditor)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import KreditorenRechnung, Buchungskonto, Buchung
+    from core.auth import log_aktion
+
+    if request.method != 'POST':
+        return redirect('fw_kreditoren')
+
+    k = get_object_or_404(KreditorenRechnung, id=request.POST.get('rechnung_id'))
+    if k.status == 'bezahlt':
+        messages.error(request, "Diese Rechnung ist bereits bezahlt.")
+        return redirect('fw_kreditoren')
+    if k.status != 'freigegeben':
+        messages.error(request, "Nur freigegebene Rechnungen können bezahlt werden.")
+        return redirect('fw_kreditoren')
+
+    with transaction.atomic():
+        k.status = 'bezahlt'
+        k.save()
+        try:
+            konto_bank = Buchungskonto.objects.get(nummer="1020")
+            konto_kred = Buchungskonto.objects.get(nummer="2000")
+            Buchung.objects.create(
+                datum=timezone.now().date(),
+                beleg_text=f"Zahlung {k.lieferant} - {k.referenz}",
+                liegenschaft=k.liegenschaft,
+                soll_konto=konto_kred, haben_konto=konto_bank,
+                betrag=k.betrag or Decimal('0.00'),
+                kreditoren_rechnung=k, erstellt_von=request.user,
+            )
+        except Buchungskonto.DoesNotExist:
+            pass
+
+    log_aktion(request, "Kreditorenrechnung bezahlt (Bankabgleich)",
+               k.lieferant or f"Rechnung #{k.id}", f"CHF {k.betrag}")
+    messages.success(request, f"✅ CHF {k.betrag} an {k.lieferant or 'Lieferant'} bezahlt.")
+    ziel = '/neu/kreditoren/'
+    if lg := request.POST.get('lg'):
+        ziel += f'?lg={lg}'
+    return redirect(ziel)
