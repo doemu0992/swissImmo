@@ -7,7 +7,6 @@
 <p class="text-sm text-slate-500 mb-5">Rundschreiben und Mitteilungen an Mieter — mit Live-Vorschau
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
 
-{% if messages %}<div class="space-y-2 mb-4">{% for m in messages %}<div class="text-sm px-4 py-2.5 rounded-lg {% if 'error' in m.tags %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>{% endfor %}</div>{% endif %}
 
 {{ empfaenger|json_script:"empfaenger-data" }}
 {{ absender|json_script:"absender-data" }}

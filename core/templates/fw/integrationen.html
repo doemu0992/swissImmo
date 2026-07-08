@@ -4,13 +4,6 @@
 <h1 class="text-3xl font-extrabold text-slate-900 mb-1">Integrationen</h1>
 <p class="text-sm text-slate-500 mb-6">Verbundene Dienste und Schnittstellen von swissImmo.</p>
 
-{% if messages %}
-<div class="space-y-2 mb-4 max-w-4xl">
-    {% for m in messages %}
-    <div class="text-sm px-4 py-2.5 rounded-lg {% if 'error' in m.tags %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
-    {% endfor %}
-</div>
-{% endif %}
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
     {% for i in integrationen %}

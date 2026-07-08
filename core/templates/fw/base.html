@@ -143,6 +143,29 @@
             </div>
         </header>
 
+        {% if messages %}
+        <div id="fw-toasts" class="fixed top-4 right-4 z-[100] w-[min(92vw,380px)] space-y-2">
+            {% for m in messages %}
+            <div class="fw-toast flex items-start gap-2 text-sm px-4 py-3 rounded-xl shadow-lg border
+                {% if 'error' in m.tags %}bg-rose-50 border-rose-200 text-rose-800
+                {% elif 'warning' in m.tags %}bg-amber-50 border-amber-200 text-amber-800
+                {% else %}bg-emerald-50 border-emerald-200 text-emerald-800{% endif %}">
+                <i class="fa-solid {% if 'error' in m.tags %}fa-circle-exclamation{% elif 'warning' in m.tags %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %} mt-0.5"></i>
+                <div class="flex-1">{{ m }}</div>
+                <button type="button" onclick="this.closest('.fw-toast').remove()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            {% endfor %}
+        </div>
+        <script>
+            setTimeout(function(){
+                document.querySelectorAll('#fw-toasts .fw-toast').forEach(function(t){
+                    t.style.transition='opacity .4s'; t.style.opacity='0';
+                    setTimeout(function(){ t.remove(); }, 400);
+                });
+            }, 6000);
+        </script>
+        {% endif %}
+
         <main class="p-6 md:p-8 w-full max-w-[1400px] mx-auto">
             {% block content %}{% endblock %}
         </main>

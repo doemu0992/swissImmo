@@ -11,7 +11,6 @@
 </div>
 <p class="text-sm text-slate-500 mb-5">Handwerkerstamm für Reparaturaufträge · {{ anzahl }} Firma/Firmen in {{ anzahl_branchen }} Branchen</p>
 
-{% if messages %}<div class="space-y-2 mb-4">{% for m in messages %}<div class="text-sm px-4 py-2.5 rounded-lg {% if 'error' in m.tags %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>{% endfor %}</div>{% endif %}
 
 <div id="dlform" class="hidden bg-white rounded-xl border border-indigo-200 p-5 mb-6">
     <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-screwdriver-wrench text-indigo-500 mr-1.5"></i>Handwerker / Dienstleister erfassen</h3>
