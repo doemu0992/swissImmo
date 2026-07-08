@@ -1693,3 +1693,134 @@ def fw_kommunikation(request):
         'absender': absender, 'empfaenger': empfaenger,
         'anzahl_empfaenger': len(empfaenger),
     })
+
+
+# ============================================================
+# ETAPPE D: VERTRAGSERSTELLUNG (7-Schritte-Assistent + Live-Vorschau)
+# ============================================================
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_vertrag_neu(request):
+    from crm.models import Verwaltung, Mieter
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    vw = Verwaltung.objects.first()
+    verwaltung = {
+        'firma': vw.firma if vw else '', 'strasse': vw.strasse if vw else '',
+        'plz': vw.plz if vw else '', 'ort': vw.ort if vw else '',
+    }
+
+    # Belegte Einheiten (aktiver Vertrag inkl. Nebenobjekte) ausschliessen
+    belegte = set(Mietvertrag.objects.filter(status='aktiv').values_list('einheit_id', flat=True))
+    for nid in Mietvertrag.objects.filter(status='aktiv').values_list('nebenobjekte', flat=True):
+        if nid:
+            belegte.add(nid)
+
+    lg_qs = Liegenschaft.objects.select_related('mandant').prefetch_related('einheiten').order_by('strasse')
+    if aktive_lg:
+        lg_qs = lg_qs.filter(id=aktive_lg.id)
+
+    liegenschaften = []
+    for lg in lg_qs:
+        objekte = []
+        for e in lg.einheiten.all().order_by('bezeichnung'):
+            if e.id in belegte:
+                continue
+            objekte.append({
+                'id': e.id, 'bezeichnung': e.bezeichnung,
+                'typ': e.get_typ_display(), 'etage': e.etage or '',
+                'ewid': e.ewid or '', 'zimmer': float(e.zimmer) if e.zimmer else None,
+                'flaeche': float(e.flaeche_m2) if e.flaeche_m2 else None,
+                'netto': float(e.nettomiete_aktuell or 0), 'nk': float(e.nebenkosten_aktuell or 0),
+                'kaution_monate': e.standard_kautionsmonate or 3,
+            })
+        if not objekte:
+            continue
+        # Vermieter = Mandant (Eigentümer) sonst Verwaltung
+        if lg.mandant_id:
+            vermieter = {'name': lg.mandant.firma_oder_name,
+                         'strasse': lg.mandant.strasse or lg.strasse,
+                         'plz': lg.mandant.plz or lg.plz, 'ort': lg.mandant.ort or lg.ort}
+        else:
+            vermieter = {'name': verwaltung['firma'], 'strasse': verwaltung['strasse'],
+                         'plz': verwaltung['plz'], 'ort': verwaltung['ort']}
+        liegenschaften.append({
+            'id': lg.id, 'strasse': lg.strasse, 'plz': lg.plz, 'ort': lg.ort,
+            'egid': lg.egid or '', 'vermieter': vermieter, 'objekte': objekte,
+        })
+
+    # Bestehende Mieter für Auswahl
+    mieter = [{'id': m.id, 'name': m.display_name, 'anrede': m.anrede or '',
+               'vorname': m.vorname or '', 'nachname': m.nachname or '',
+               'strasse': m.strasse or '', 'plz': m.plz or '', 'ort': m.ort or '', 'email': m.email or ''}
+              for m in Mieter.objects.all().order_by('nachname', 'firmen_name')]
+
+    return render(request, 'fw/vertrag_neu.html', {
+        **basis, 'nav': 'vertraege',
+        'liegenschaften': liegenschaften, 'mieter': mieter,
+        'verwaltung': verwaltung,
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_vertrag_neu_speichern(request):
+    """Erstellt den Mietvertrag (+ optional neuen Mieter) aus dem Assistenten."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Mieter
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_vertrag_neu')
+
+    P = request.POST
+    einheit = get_object_or_404(Einheit, id=P.get('einheit_id'))
+
+    # Mieter: bestehend oder neu
+    mieter_id = P.get('mieter_id') or ''
+    if mieter_id:
+        mieter = get_object_or_404(Mieter, id=mieter_id)
+    else:
+        mieter = Mieter.objects.create(
+            typ='person', anrede=P.get('anrede', 'Herr'),
+            vorname=P.get('vorname', '').strip(), nachname=P.get('nachname', '').strip(),
+            strasse=P.get('m_strasse', '').strip(), plz=P.get('m_plz', '').strip(),
+            ort=P.get('m_ort', '').strip(), email=P.get('m_email', '').strip(),
+        )
+
+    def dec(key, default='0'):
+        try:
+            return Decimal(str(P.get(key) or default).replace("'", '').replace(',', '.'))
+        except Exception:
+            return Decimal(default)
+
+    def datum(key):
+        v = P.get(key)
+        if not v:
+            return None
+        try:
+            return date.fromisoformat(v)
+        except ValueError:
+            return None
+
+    beginn = datum('beginn') or timezone.now().date()
+    with transaction.atomic():
+        vertrag = Mietvertrag.objects.create(
+            mieter=mieter, einheit=einheit,
+            status='aktiv' if P.get('aktiv_setzen') == 'on' else 'entwurf',
+            beginn=beginn, ende=datum('ende'),
+            erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
+            kuendigungsfrist_monate=int(P.get('kuendigungsfrist') or 3),
+            kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
+            mitmieter_name=P.get('mitmieter_name', '').strip(),
+            anzahl_personen=int(P.get('anzahl_personen') or 1),
+            netto_mietzins=dec('netto_mietzins'), nebenkosten=dec('nebenkosten'),
+            nk_abrechnungsart=P.get('nk_abrechnungsart', 'akonto'),
+            zahlungsrhythmus=P.get('zahlungsrhythmus', 'monatlich'),
+            kautions_betrag=dec('kautions_betrag') or None,
+            kautions_konto=P.get('kautions_konto', '').strip(),
+        )
+    log_aktion(request, "Mietvertrag erstellt (Assistent)", str(mieter),
+               f"{einheit.bezeichnung}, ab {beginn}")
+    messages.success(request, f"✅ Mietvertrag für {mieter.display_name} erstellt.")
+    return redirect(f'/neu/vertraege/{vertrag.id}/')

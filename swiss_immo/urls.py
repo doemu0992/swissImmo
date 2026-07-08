@@ -68,7 +68,8 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_obj
                            fw_dienstleister, fw_assets, fw_buchhaltung,
                            fw_sollstellung, fw_sollstellung_run,
                            fw_nebenkosten, fw_nebenkosten_detail,
-                           fw_mietzins, fw_dokumente, fw_kommunikation)
+                           fw_mietzins, fw_dokumente, fw_kommunikation,
+                           fw_vertrag_neu, fw_vertrag_neu_speichern)
 
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
@@ -102,6 +103,8 @@ urlpatterns = [
     path('neu/objekte/', fw_objekte, name='fw_objekte'),
     path('neu/personen/', fw_personen, name='fw_personen'),
     path('neu/vertraege/', fw_vertraege, name='fw_vertraege'),
+    path('neu/vertraege/neu/', fw_vertrag_neu, name='fw_vertrag_neu'),
+    path('neu/vertraege/neu/speichern/', fw_vertrag_neu_speichern, name='fw_vertrag_neu_speichern'),
     path('neu/liegenschaften/<int:pk>/', fw_liegenschaft_detail, name='fw_liegenschaft_detail'),
     path('neu/objekte/<int:pk>/', fw_objekt_detail, name='fw_objekt_detail'),
     path('neu/vertraege/<int:pk>/', fw_vertrag_detail, name='fw_vertrag_detail'),
