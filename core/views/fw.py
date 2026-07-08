@@ -1386,11 +1386,72 @@ def fw_schaeden(request):
         })
 
     chips = [('', 'Alle'), ('offen', 'Offen')] + [(k, v[0]) for k, v in TICKET_PILL.items()]
+    liegenschaften = Liegenschaft.objects.order_by('strasse')
+    einheiten = Einheit.objects.select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung')
+    from django.contrib import messages
     return render(request, 'fw/schaeden.html', {
         **basis, 'nav': 'schadensfaelle', 'rows': rows,
         'status_filter': status_filter, 'status_chips': chips, 'q': q,
         'anzahl': len(rows), 'offen': offen, 'in_arbeit': in_arbeit,
+        'liegenschaften': liegenschaften, 'einheiten': einheiten,
+        'meldung': list(messages.get_messages(request)),
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schaden_neu(request):
+    """Intern erfassten Schaden (z.B. telefonisch gemeldet) anlegen — sendet dem
+    Melder (falls E-Mail) automatisch die Eingangsbestätigung."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import SchadenMeldung
+    from core.services.ticket_workflow import vorlage_text
+    from core.utils.email_service import send_ticket_email
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_schaeden')
+
+    titel = (request.POST.get('titel') or '').strip()
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+    if not titel or not lg:
+        messages.error(request, "Titel und Liegenschaft sind erforderlich.")
+        return redirect('fw_schaeden')
+
+    einheit = Einheit.objects.filter(id=request.POST.get('einheit_id')).first() if request.POST.get('einheit_id') else None
+    t = SchadenMeldung.objects.create(
+        liegenschaft=lg, betroffene_einheit=einheit,
+        titel=titel, beschreibung=(request.POST.get('beschreibung') or '').strip(),
+        kategorie=(request.POST.get('kategorie') or '').strip(),
+        melder_vorname=(request.POST.get('melder_vorname') or '').strip(),
+        melder_nachname=(request.POST.get('melder_nachname') or '').strip(),
+        email_melder=(request.POST.get('email_melder') or '').strip(),
+        tel_melder=(request.POST.get('tel_melder') or '').strip(),
+        prioritaet=request.POST.get('prioritaet', 'mittel'), status='neu',
+    )
+    ok = False
+    if t.email_melder:
+        from crm.models import Vorlage
+        from core.services.ticket_workflow import ticket_kontext
+        betreff = f"Eingangsbestätigung: {t.titel} (Ticket #{t.id})"
+        v = Vorlage.objects.filter(kategorie='ticket_eingang').first()
+        if v and v.inhalt:
+            k = ticket_kontext(t)
+            body = v.inhalt
+            for kk, vv in k.items():
+                body = body.replace('{' + kk + '}', str(vv))
+            if v.betreff:
+                betreff = v.betreff
+                for kk, vv in k.items():
+                    betreff = betreff.replace('{' + kk + '}', str(vv))
+        else:
+            body = (f"Guten Tag\n\nWir haben Ihre Schadenmeldung '{t.titel}' erhalten (Ticket #{t.id}) "
+                    f"und kümmern uns darum. Wir melden uns, sobald ein Handwerker beauftragt wurde.\n\n"
+                    f"Freundliche Grüsse\nIhre Liegenschaftsverwaltung")
+        ok = send_ticket_email(t.email_melder, betreff, body)
+
+    log_aktion(request, "Schaden intern erfasst", f"Ticket #{t.id}", titel)
+    messages.success(request, f"✅ Ticket #{t.id} erstellt" + (f" · Eingangsbestätigung an {t.email_melder} gesendet." if ok else "."))
+    return redirect(f'/neu/schaeden/{t.id}/')
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -1411,18 +1472,151 @@ def fw_schaden_detail(request, pk):
     kosten_geschaetzt = sum((a.kosten_geschaetzt or Decimal('0')) for a in auftraege)
     kosten_effektiv = sum((a.kosten_effektiv or Decimal('0')) for a in auftraege)
 
+    from crm.models import Handwerker
+    from core.services.ticket_workflow import vorlage_text
+    handwerker_liste = Handwerker.objects.all().order_by('firma')
+    # Auftragstext-Vorschlag (Vorlage ticket_handwerker) für das Beauftragen-Formular
+    _, auftrag_vorschlag = vorlage_text('ticket_handwerker', t)
+    melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
+
     tab_liste = [
         ('uebersicht', 'Übersicht', None),
         ('verlauf', 'Verlauf', nachrichten.count() or None),
         ('handwerker', 'Handwerker & Kosten', len(auftraege) or None),
     ]
+    from django.contrib import messages
     return render(request, 'fw/schaden_detail.html', {
         **basis, 'nav': 'schadensfaelle', 't': t,
         's_label': s_label, 's_cls': s_cls, 'p_label': p_label, 'p_cls': p_cls,
         'nachrichten': nachrichten, 'auftraege': auftraege, 'melder': melder,
         'kosten_geschaetzt': kosten_geschaetzt, 'kosten_effektiv': kosten_effektiv,
         'tab_liste': tab_liste,
+        'handwerker_liste': handwerker_liste, 'auftrag_vorschlag': auftrag_vorschlag,
+        'melder_email': melder_email, 'status_wahl': TICKET_PILL,
+        'meldung': list(messages.get_messages(request)),
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schaden_auftrag(request, pk):
+    """Handwerker beauftragen — automatisiert: Auftrag anlegen, Mail an Handwerker
+    (aus Vorlage) + Info-Mail an Melder, Status → in Bearbeitung, Verlaufseintrag."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import SchadenMeldung, HandwerkerAuftrag, TicketNachricht
+    from crm.models import Handwerker
+    from core.services.ticket_workflow import vorlage_text
+    from core.utils.email_service import send_ticket_email
+    from core.auth import log_aktion
+
+    if request.method != 'POST':
+        return redirect(f'/neu/schaeden/{pk}/')
+    t = get_object_or_404(SchadenMeldung.objects.select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von'), id=pk)
+    hw = get_object_or_404(Handwerker, id=request.POST.get('handwerker_id'))
+    auftragstext = (request.POST.get('auftragstext') or '').strip()
+
+    with transaction.atomic():
+        auftrag = HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, bemerkung=auftragstext, status='offen')
+        TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
+                                       nachricht=f"Auftrag an {hw.firma} vergeben.", is_intern=True)
+        if t.status == 'neu':
+            t.status = 'in_bearbeitung'
+        t.save()
+
+    # Mail an Handwerker (Auftragstext, Foto als Anhang)
+    hw_betreff, hw_text = vorlage_text('ticket_handwerker', t, handwerker=hw)
+    if auftragstext:
+        hw_text = auftragstext
+    hw_ok = send_ticket_email(hw.email, hw_betreff, hw_text, foto_field=t.foto) if hw.email else False
+
+    # Info-Mail an Melder
+    melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
+    m_betreff, m_text = vorlage_text('ticket_melder', t, handwerker=hw)
+    melder_ok = send_ticket_email(melder_email, m_betreff, m_text) if melder_email else False
+
+    if melder_ok:
+        TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
+                                       nachricht=f"Melder automatisch informiert ({melder_email}).", is_intern=True)
+
+    log_aktion(request, "Handwerker beauftragt", f"Ticket #{t.id}", f"{hw.firma}")
+    hinweise = []
+    hinweise.append("Mail an Handwerker gesendet" if hw_ok else ("Handwerker ohne E-Mail" if not hw.email else "Mail an Handwerker fehlgeschlagen"))
+    hinweise.append("Melder informiert" if melder_ok else ("Melder ohne E-Mail" if not melder_email else "Melder-Mail fehlgeschlagen"))
+    messages.success(request, f"✅ {hw.firma} beauftragt · Status: In Bearbeitung · " + " · ".join(hinweise) + ".")
+    return redirect(f'/neu/schaeden/{t.id}/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schaden_status(request, pk):
+    """Ticket-Status ändern; optional Melder automatisch informieren
+    (bei „erledigt" die Erledigt-Vorlage)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import SchadenMeldung, TicketNachricht
+    from core.services.ticket_workflow import vorlage_text
+    from core.utils.email_service import send_ticket_email
+    from core.auth import log_aktion
+
+    if request.method != 'POST':
+        return redirect(f'/neu/schaeden/{pk}/')
+    t = get_object_or_404(SchadenMeldung.objects.select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von'), id=pk)
+    neu = request.POST.get('status')
+    if neu not in dict(SchadenMeldung.STATUS_CHOICES):
+        messages.error(request, "Ungültiger Status.")
+        return redirect(f'/neu/schaeden/{t.id}/')
+    t.status = neu
+    t.save()
+    TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
+                                   nachricht=f"Status geändert: {t.get_status_display()}.", is_intern=True)
+
+    info = ""
+    if request.POST.get('melder_informieren') == 'on':
+        melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
+        kat = 'ticket_erledigt' if neu == 'erledigt' else 'ticket_melder_status'
+        betreff, text = vorlage_text(kat, t, status=t.get_status_display())
+        if melder_email and send_ticket_email(melder_email, betreff, text):
+            info = f" · Melder informiert ({melder_email})"
+            TicketNachricht.objects.create(ticket=t, absender_name="System", typ='system',
+                                           nachricht=f"Melder über Status '{t.get_status_display()}' informiert.", is_intern=True)
+
+    log_aktion(request, "Ticket-Status geändert", f"Ticket #{t.id}", t.get_status_display())
+    messages.success(request, f"✅ Status: {t.get_status_display()}{info}.")
+    return redirect(f'/neu/schaeden/{t.id}/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schaden_antwort(request, pk):
+    """Antwort/Nachricht an den Melder — als Verlaufseintrag + E-Mail."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import SchadenMeldung, TicketNachricht
+    from core.utils.email_service import send_ticket_email
+    from core.auth import log_aktion
+
+    if request.method != 'POST':
+        return redirect(f'/neu/schaeden/{pk}/')
+    t = get_object_or_404(SchadenMeldung.objects.select_related('liegenschaft', 'gemeldet_von'), id=pk)
+    text = (request.POST.get('text') or '').strip()
+    if not text:
+        return redirect(f'/neu/schaeden/{t.id}/')
+
+    absender = (request.user.get_full_name() or request.user.username or 'Verwaltung')
+    TicketNachricht.objects.create(ticket=t, absender_name=absender, typ='antwort_senden',
+                                   nachricht=text, is_von_verwaltung=True)
+    if t.status == 'neu':
+        t.status = 'in_bearbeitung'
+        t.save()
+
+    melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
+    ok = send_ticket_email(melder_email, f"Ihre Meldung (Ticket #{t.id})", text) if melder_email else False
+    log_aktion(request, "Ticket-Antwort gesendet", f"Ticket #{t.id}", '')
+    if ok:
+        messages.success(request, f"✅ Antwort an {melder_email} gesendet.")
+    elif melder_email:
+        messages.error(request, "Antwort gespeichert, aber E-Mail-Versand fehlgeschlagen.")
+    else:
+        messages.success(request, "Antwort im Verlauf gespeichert (Melder ohne E-Mail).")
+    return redirect(f'/neu/schaeden/{t.id}/')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

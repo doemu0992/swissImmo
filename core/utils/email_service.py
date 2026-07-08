@@ -119,6 +119,25 @@ def send_handyman_notification(auftrag):
         """
         threading.Thread(target=send_via_hoststar, args=(ticket.email_melder, sub_m, html_m)).start()
 
+def send_ticket_email(to_email, betreff, inhalt_text, foto_field=None):
+    """Sendet eine Ticket-Mail (aus Vorlage) synchron. inhalt_text ist Klartext
+    mit Zeilenumbrüchen; wird zu HTML gewandelt. Gibt True/False zurück."""
+    if not to_email:
+        return False
+    html = "<html><body style='font-family:Arial,sans-serif;color:#333;line-height:1.5;'>"
+    html += inhalt_text.replace('\n', '<br>')
+    html += "</body></html>"
+    att_name = att_content = None
+    if foto_field:
+        try:
+            with foto_field.open('rb') as f:
+                att_content = f.read()
+                att_name = os.path.basename(foto_field.name)
+        except Exception:
+            att_name = att_content = None
+    return send_via_hoststar(to_email, betreff, html, att_name, att_content)
+
+
 def send_payment_reminder(vertrag, monat_datum, offener_betrag):
     """
     Versendet eine E-Mail-Mahnung an den Mieter.

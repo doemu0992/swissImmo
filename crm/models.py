@@ -234,6 +234,10 @@ class Vorlage(models.Model):
         ('mahnung', 'Mahnung'),
         ('info', 'Information / Rundschreiben'),
         ('protokoll', 'Protokoll'),
+        ('ticket_eingang', 'Schaden – Eingangsbestätigung'),
+        ('ticket_handwerker', 'Schaden – Auftrag an Handwerker'),
+        ('ticket_melder', 'Schaden – Info an Melder'),
+        ('ticket_erledigt', 'Schaden – Erledigt-Meldung'),
         ('sonstiges', 'Sonstiges'),
     ]
     name = models.CharField("Bezeichnung", max_length=150)

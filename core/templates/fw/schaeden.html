@@ -5,13 +5,57 @@
 
 <div class="flex items-center justify-between mb-1">
     <h1 class="text-3xl font-extrabold text-slate-900">Schadensfälle</h1>
-    <a href="/app/?tab=tickets" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors" title="Öffnet die klassische Ansicht">
-        <i class="fa-solid fa-plus mr-1.5"></i> Ticket erfassen <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-0.5"></i>
-    </a>
+    <button type="button" onclick="document.getElementById('neuschaden').classList.toggle('hidden')"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+        <i class="fa-solid fa-plus mr-1.5"></i> Schaden erfassen
+    </button>
 </div>
-<p class="text-sm text-slate-500 mb-5">Schadensmeldungen und Reparaturaufträge
+<p class="text-sm text-slate-500 mb-5">Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische Info an Melder
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
     <a href="/neu/schaeden/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+{% for m in meldung %}
+<div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
+{% endfor %}
+
+<!-- Schaden intern erfassen -->
+<div id="neuschaden" class="hidden bg-white rounded-xl border border-indigo-200 p-5 mb-6">
+    <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-triangle-exclamation text-rose-500 mr-1.5"></i>Schaden erfassen (z.B. telefonisch gemeldet)</h3>
+    <form method="post" action="/neu/schaeden/neu/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {% csrf_token %}
+        <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Titel / Schaden *</label>
+            <input name="titel" required placeholder="z.B. Wasserhahn tropft" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft *</label>
+            <select name="liegenschaft_id" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <option value="">— wählen —</option>
+                {% for lg in liegenschaften %}<option value="{{ lg.id }}">{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
+            </select></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Objekt (optional)</label>
+            <select name="einheit_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <option value="">— ganze Liegenschaft —</option>
+                {% for e in einheiten %}<option value="{{ e.id }}">{{ e.liegenschaft.strasse }} · {{ e.bezeichnung }}</option>{% endfor %}
+            </select></div>
+        <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Beschreibung</label>
+            <textarea name="beschreibung" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></textarea></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Melder Vor-/Nachname</label>
+            <div class="flex gap-2">
+                <input name="melder_vorname" placeholder="Vorname" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <input name="melder_nachname" placeholder="Nachname" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            </div></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Priorität</label>
+            <select name="prioritaet" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <option value="tief">Tief</option><option value="mittel" selected>Mittel</option><option value="hoch">Hoch</option>
+            </select></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Melder E-Mail</label>
+            <input name="email_melder" type="email" placeholder="Für automatische Bestätigung" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Melder Telefon</label>
+            <input name="tel_melder" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div class="sm:col-span-2">
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Ticket erstellen</button>
+            <span class="text-xs text-slate-400 ml-2">Mit E-Mail erhält der Melder automatisch eine Eingangsbestätigung.</span>
+        </div>
+    </form>
+</div>
 
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
