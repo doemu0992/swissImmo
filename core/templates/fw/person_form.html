@@ -1,0 +1,124 @@
+{% extends 'fw/base.html' %}
+{% block title %}{% if ist_neu %}Neue Person{% else %}{{ m.display_name }} bearbeiten{% endif %} — swissImmo{% endblock %}
+
+{% block content %}
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/personen/{{ lg_query }}" class="hover:text-indigo-600">Personen</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    {% if not ist_neu %}<a href="/neu/personen/{{ m.id }}/" class="hover:text-indigo-600">{{ m.display_name }}</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>{% endif %}
+    <span class="text-slate-600 font-medium">{% if ist_neu %}Neue Person{% else %}Bearbeiten{% endif %}</span>
+</nav>
+
+<h1 class="text-2xl font-extrabold text-slate-900 mb-1">{% if ist_neu %}Neue Person erfassen{% else %}{{ m.display_name }} bearbeiten{% endif %}</h1>
+<p class="text-sm text-slate-500 mb-6">Kontakt- und Adressdaten. Pflichtfelder sind markiert.</p>
+
+<form method="post" class="max-w-3xl space-y-5">
+    {% csrf_token %}
+
+    <!-- Typ -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <label class="block text-xs font-semibold text-slate-500 mb-2">Kunden-Typ</label>
+        <div class="flex flex-wrap gap-2" id="typWahl">
+            {% for val, lbl in m.TYP_CHOICES %}{% endfor %}
+            <button type="button" data-typ="person" onclick="setTyp('person')" class="typ-btn px-4 py-2 rounded-lg text-sm font-semibold">Privatperson</button>
+            <button type="button" data-typ="firma" onclick="setTyp('firma')" class="typ-btn px-4 py-2 rounded-lg text-sm font-semibold">Firma / Unternehmen</button>
+            <button type="button" data-typ="verein" onclick="setTyp('verein')" class="typ-btn px-4 py-2 rounded-lg text-sm font-semibold">Verein / Stiftung</button>
+        </div>
+        <input type="hidden" name="typ" id="f_typ" value="{{ m.typ|default:'person' }}">
+    </div>
+
+    <!-- Person -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4" id="box-person">
+        <h3 class="font-bold text-slate-800 text-sm">Person</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Anrede</label>
+                <select name="anrede" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    {% for a in "Herr,Frau,Familie" %}{% endfor %}
+                    <option {% if m.anrede == 'Herr' %}selected{% endif %}>Herr</option>
+                    <option {% if m.anrede == 'Frau' %}selected{% endif %}>Frau</option>
+                    <option {% if m.anrede == 'Familie' %}selected{% endif %}>Familie</option>
+                </select></div>
+            <div class="sm:col-span-1"><label class="block text-xs font-semibold text-slate-500 mb-1">Vorname</label>
+                <input name="vorname" value="{{ m.vorname }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Nachname</label>
+                <input name="nachname" value="{{ m.nachname }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Geburtsdatum</label>
+            <input type="date" name="geburtsdatum" value="{{ m.geburtsdatum|date:'Y-m-d' }}" class="w-full sm:w-56 bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+    </div>
+
+    <!-- Firma -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4 hidden" id="box-firma">
+        <h3 class="font-bold text-slate-800 text-sm">Firma / Organisation</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Firmenname</label>
+                <input name="firmen_name" value="{{ m.firmen_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">UID / CHE-Nummer</label>
+                <input name="uid_nummer" value="{{ m.uid_nummer }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Kontaktperson</label>
+                <input name="kontaktperson" value="{{ m.kontaktperson }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+    </div>
+
+    <!-- Kontakt -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <h3 class="font-bold text-slate-800 text-sm">Kontakt</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">E-Mail</label>
+                <input type="email" name="email" value="{{ m.email }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Telefon</label>
+                <input name="telefon_privat" value="{{ m.telefon_privat }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mobile</label>
+                <input name="mobile" value="{{ m.mobile }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+    </div>
+
+    <!-- Adresse -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <h3 class="font-bold text-slate-800 text-sm">Adresse</h3>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Strasse & Nr.</label>
+            <input name="strasse" value="{{ m.strasse }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Adresszusatz</label>
+            <input name="adresszusatz" value="{{ m.adresszusatz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">PLZ</label>
+                <input name="plz" value="{{ m.plz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Ort</label>
+                <input name="ort" value="{{ m.ort }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+    </div>
+
+    <!-- Finanzen & Notizen -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <h3 class="font-bold text-slate-800 text-sm">Weitere Angaben</h3>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">IBAN</label>
+            <input name="iban" value="{{ m.iban }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono" placeholder="CH…"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Interne Notizen</label>
+            <textarea name="notizen" rows="3" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">{{ m.notizen }}</textarea></div>
+    </div>
+
+    <div class="flex items-center gap-3">
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+            <i class="fa-solid fa-check mr-1.5"></i>Speichern
+        </button>
+        <a href="{% if ist_neu %}/neu/personen/{% else %}/neu/personen/{{ m.id }}/{% endif %}" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
+    </div>
+</form>
+
+<script>
+function setTyp(t){
+    document.getElementById('f_typ').value = t;
+    document.querySelectorAll('.typ-btn').forEach(function(b){
+        var aktiv = b.dataset.typ === t;
+        b.classList.toggle('bg-indigo-600', aktiv);
+        b.classList.toggle('text-white', aktiv);
+        b.classList.toggle('bg-slate-100', !aktiv);
+        b.classList.toggle('text-slate-600', !aktiv);
+    });
+    document.getElementById('box-person').classList.toggle('hidden', t !== 'person');
+    document.getElementById('box-firma').classList.toggle('hidden', t === 'person');
+}
+setTyp(document.getElementById('f_typ').value || 'person');
+</script>
+{% endblock %}

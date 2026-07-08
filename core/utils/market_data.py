@@ -8,7 +8,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 URL_LIK_HEV = "https://www.hev-schweiz.ch/vermieten/statistiken/landesindex-der-konsumentenpreise"
-URL_BWO_REF = "https://www.bwo.admin.ch/bwo/de/home/mietrecht/referenzzinssatz.html"
+# BWO-Seite umgezogen -> neue kurze URL (alte /bwo/de/home/... liefert 403)
+URL_BWO_REF = "https://www.bwo.admin.ch/de/referenzzinssatz"
+URL_BWO_REF_ALT = "https://www.bwo.admin.ch/de/entwicklung-referenzzinssatz-und-durchschnittszinssatz"
+
+# Aktuelle Fallback-Werte (Stand 2026): Referenzzinssatz 1.25 % seit 09.2025,
+# LIK Basis Dez 2020 = 100 ~ 107.8. Werden genutzt, wenn kein Internet erreichbar ist.
+FALLBACK_REF_ZINS = Decimal('1.25')
+FALLBACK_LIK = Decimal('107.8')
 
 def clean_decimal(value_str):
     if not value_str: return None
@@ -31,29 +38,29 @@ def fetch_market_rates():
     # ---------------------------------------------------------
     # 1. REFERENZZINSSATZ (BWO)
     # ---------------------------------------------------------
-    try:
-        response = requests.get(URL_BWO_REF, headers=headers, timeout=10)
-        found_zins = None
-
-        # Sucht im HTML nach Werten wie "1,25 %" oder "1.50%"
-        matches = re.findall(r"(\d[.,]\d{2})\s*%", response.text)
-
-        for m in matches:
-            val = clean_decimal(m)
-            # Prüft, ob es ein gültiger Zins ist (z.B. Vielfaches von 0.25)
-            if val and Decimal('1.00') <= val <= Decimal('3.50') and (val * 100) % 25 == 0:
-                found_zins = val
+    found_zins = None
+    for url in (URL_BWO_REF, URL_BWO_REF_ALT):
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            # Sucht im HTML nach Werten wie "1,25 %" oder "1.50%"
+            matches = re.findall(r"(\d[.,]\d{2})\s*%", response.text)
+            for m in matches:
+                val = clean_decimal(m)
+                # Prüft, ob es ein gültiger Zins ist (z.B. Vielfaches von 0.25)
+                if val and Decimal('1.00') <= val <= Decimal('3.50') and (val * 100) % 25 == 0:
+                    found_zins = val
+                    break
+            if found_zins:
                 break
+        except Exception as e:
+            errors.append(f"BWO Verbindungsfehler ({url}): {e}")
 
-        if found_zins:
-            results['ref_zins'] = found_zins
-        else:
-            results['ref_zins'] = Decimal('1.75') # Fallback
-            errors.append("BWO: Zins nicht gefunden, nutze Fallback.")
-
-    except Exception as e:
-        results['ref_zins'] = Decimal('1.75')
-        errors.append(f"BWO Verbindungsfehler: {e}")
+    if found_zins:
+        results['ref_zins'] = found_zins
+    else:
+        results['ref_zins'] = FALLBACK_REF_ZINS
+        if not errors:
+            errors.append("BWO: Zins nicht gefunden, nutze Fallback 1.25 %.")
 
     # ---------------------------------------------------------
     # 2. LIK (HEV Schweiz - Basis 2020)
@@ -99,22 +106,22 @@ def fetch_market_rates():
                     # Wir nehmen den aktuellsten/letzten Wert in dieser Jahres-Reihe
                     results['lik'] = valid_liks[-1]
                 else:
-                    results['lik'] = Decimal('107.8')
+                    results['lik'] = FALLBACK_LIK
                     errors.append(f"LIK-Werte für {current_year}/{last_year} waren ungültig.")
             else:
-                results['lik'] = Decimal('107.8')
+                results['lik'] = FALLBACK_LIK
                 errors.append(f"Jahreszeile {current_year}/{last_year} nicht gefunden.")
         else:
-            results['lik'] = Decimal('107.8')
+            results['lik'] = FALLBACK_LIK
             errors.append("Basis 2020 Tabelle nicht auf HEV gefunden.")
 
     except Exception as e:
-        results['lik'] = Decimal('107.8')
+        results['lik'] = FALLBACK_LIK
         errors.append(f"HEV Verbindungsfehler: {e}")
 
     # Absolutes Sicherheits-Netz
     if 'lik' not in results or results['lik'] is None:
-         results['lik'] = Decimal('107.8')
+         results['lik'] = FALLBACK_LIK
 
     return results, errors
 

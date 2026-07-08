@@ -20,7 +20,12 @@
             <p class="text-sm text-slate-500">{{ m.get_typ_display }}{% if m.ort %} · {{ m.plz }} {{ m.ort }}{% endif %}</p>
         </div>
     </div>
-    {% if anzahl_aktive %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-emerald-50 text-emerald-700">{{ anzahl_aktive }} aktiver Vertrag{{ anzahl_aktive|pluralize:",e" }}</span>{% endif %}
+    <div class="flex items-center gap-2">
+        {% if anzahl_aktive %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-emerald-50 text-emerald-700">{{ anzahl_aktive }} aktiver Vertrag{{ anzahl_aktive|pluralize:",e" }}</span>{% endif %}
+        <a href="/neu/personen/{{ m.id }}/bearbeiten/" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+            <i class="fa-solid fa-pen text-xs mr-1"></i>Bearbeiten
+        </a>
+    </div>
 </div>
 
 <!-- KPI -->

@@ -881,6 +881,50 @@ def fw_person_detail(request, pk):
     })
 
 
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_person_form(request, pk=None):
+    """Person (Mieter/Kontakt) erfassen oder bearbeiten — Fairwalter-Stil."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    m = get_object_or_404(Mieter, id=pk) if pk else None
+    basis = _global_filter(request)
+
+    if request.method == 'POST':
+        P = request.POST
+        obj = m or Mieter()
+        obj.typ = P.get('typ', 'person')
+        obj.anrede = P.get('anrede', '').strip()
+        obj.vorname = P.get('vorname', '').strip()
+        obj.nachname = P.get('nachname', '').strip()
+        obj.firmen_name = P.get('firmen_name', '').strip()
+        obj.uid_nummer = P.get('uid_nummer', '').strip()
+        obj.kontaktperson = P.get('kontaktperson', '').strip()
+        obj.email = P.get('email', '').strip()
+        obj.telefon_privat = P.get('telefon_privat', '').strip()
+        obj.mobile = P.get('mobile', '').strip()
+        obj.strasse = P.get('strasse', '').strip()
+        obj.adresszusatz = P.get('adresszusatz', '').strip()
+        obj.plz = P.get('plz', '').strip()
+        obj.ort = P.get('ort', '').strip()
+        gd = P.get('geburtsdatum', '').strip()
+        try:
+            obj.geburtsdatum = date.fromisoformat(gd) if gd else None
+        except ValueError:
+            obj.geburtsdatum = None
+        obj.iban = P.get('iban', '').strip()
+        obj.notizen = P.get('notizen', '').strip()
+        obj.save()
+        log_aktion(request, "Person bearbeitet" if pk else "Person erstellt", obj.display_name, '')
+        messages.success(request, f"✅ {obj.display_name} gespeichert.")
+        return redirect(f'/neu/personen/{obj.id}/')
+
+    return render(request, 'fw/person_form.html', {
+        **basis, 'nav': 'personen', 'm': m,
+        'ist_neu': m is None,
+    })
+
+
 # ============================================================
 # ETAPPE D: KREDITOREN (Rechnungseingang -> Freigabe -> Zahlung)
 # ============================================================
