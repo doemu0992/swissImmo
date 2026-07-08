@@ -1,0 +1,229 @@
+"""Zentrale, wiederverwendbare Automatisierungs-Prozesse für swissImmo.
+
+Diese Funktionen sind bewusst request-unabhängig, damit sie sowohl aus den Views
+(Button) als auch aus Management-Commands (Scheduler / PythonAnywhere Task)
+aufgerufen werden können. Alle Läufe sind idempotent.
+"""
+import calendar as _calendar
+from datetime import date, timedelta
+from decimal import Decimal
+
+from django.db import transaction
+from django.utils import timezone
+
+
+# ============================================================
+# 1. SOLLSTELLUNG (monatlicher Mietenlauf)
+# ============================================================
+def run_sollstellung(jahr, monat, user=None):
+    """Erzeugt für alle im Monat aktiven Verträge die Miet-/NK-Rechnung samt
+    Buchungssätzen (idempotent — bereits gestellte Verträge werden übersprungen).
+    Gibt die Anzahl neu erstellter Rechnungen zurück."""
+    from finance.models import Buchungskonto, Buchung, DebitorenRechnung
+    from rentals.models import Mietvertrag
+
+    start_date = date(jahr, monat, 1)
+    _, last_day = _calendar.monthrange(jahr, monat)
+    end_date = date(jahr, monat, last_day)
+    titel = f"Miete & NK {monat:02d}/{jahr}"
+
+    konto_deb = Buchungskonto.objects.filter(nummer="1100").first()
+    konto_ertrag = Buchungskonto.objects.filter(nummer="3000").first()
+    konto_nk = Buchungskonto.objects.filter(nummer="3020").first()
+    if not (konto_deb and konto_ertrag and konto_nk):
+        raise RuntimeError("Standard-Konten (1100, 3000, 3020) fehlen — Kontenplan laden.")
+    konto_mwst, _ = Buchungskonto.objects.get_or_create(
+        nummer="2200", defaults={'bezeichnung': 'Geschuldete MWST (Umsatzsteuer)', 'typ': 'bilanz'})
+
+    vertraege = (Mietvertrag.objects.filter(status='aktiv', beginn__lte=end_date)
+                 .exclude(ende__lt=start_date).select_related('mieter', 'einheit__liegenschaft'))
+
+    erstellt = 0
+    with transaction.atomic():
+        for v in vertraege:
+            if DebitorenRechnung.objects.filter(vertrag=v, titel=titel).exclude(status='storniert').exists():
+                continue
+            v_start = max(start_date, v.beginn)
+            v_ende = min(end_date, v.ende) if v.ende else end_date
+            faktor = Decimal((v_ende - v_start).days + 1) / Decimal(last_day)
+            netto = round((v.netto_mietzins or Decimal('0')) * faktor, 2)
+            nk = round((v.nebenkosten or Decimal('0')) * faktor, 2)
+            if netto + nk <= 0:
+                continue
+            mwst = Decimal('0.00')
+            if v.mwst_pflichtig and (v.mwst_satz or 0) > 0:
+                mwst = round((netto + nk) * (v.mwst_satz / Decimal('100')), 2)
+            rechnung = DebitorenRechnung.objects.create(
+                vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
+                titel=titel, betrag=netto + nk + mwst, faellig_am=start_date)
+            if netto > 0:
+                Buchung.objects.create(datum=start_date, beleg_text=f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
+                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_ertrag,
+                                       betrag=netto, debitoren_rechnung=rechnung, erstellt_von=user)
+            if nk > 0:
+                Buchung.objects.create(datum=start_date, beleg_text=f"NK-Akonto {v.mieter} - {monat:02d}/{jahr}",
+                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_nk,
+                                       betrag=nk, debitoren_rechnung=rechnung, erstellt_von=user)
+            if mwst > 0:
+                Buchung.objects.create(datum=start_date, beleg_text=f"MWST {v.mwst_satz}% {v.mieter} - {monat:02d}/{jahr}",
+                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_mwst,
+                                       betrag=mwst, debitoren_rechnung=rechnung, erstellt_von=user)
+            erstellt += 1
+    return erstellt
+
+
+# ============================================================
+# 2. MAHNLAUF (Sammellauf über alle fälligen Debitoren)
+# ============================================================
+MAHN_STUFEN_TAGE = [(3, 60), (2, 30), (1, 14)]   # (Stufe, ab Tagen überfällig)
+MAHN_GEBUEHR = {1: Decimal('0.00'), 2: Decimal('20.00'), 3: Decimal('40.00')}
+VERZUGSZINS_PROZENT = Decimal('5.0')   # Art. 104 OR
+
+
+def _stufe_fuer_tage(tage):
+    for stufe, ab in MAHN_STUFEN_TAGE:
+        if tage >= ab:
+            return stufe
+    return None
+
+
+def verzugszins(betrag, tage, prozent=VERZUGSZINS_PROZENT):
+    """Verzugszins nach Art. 104 OR: betrag × prozent × tage / 360 (kaufm.)."""
+    if betrag <= 0 or tage <= 0:
+        return Decimal('0.00')
+    return (Decimal(betrag) * prozent / Decimal('100') * Decimal(tage) / Decimal('360')).quantize(Decimal('0.01'))
+
+
+def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
+    """Führt einen Sammel-Mahnlauf über alle überfälligen offenen Debitoren aus.
+    Für jede fällige Rechnung, die noch keine Mahnung der berechneten Stufe hat,
+    wird ein revisionssicherer Mahnung-Eintrag erzeugt (+ optional Mahngebühr als
+    Debitor, + optional Zahlungserinnerung per E-Mail). Idempotent pro Stufe.
+
+    Gibt dict zurück: {'gemahnt': n, 'emails': m, 'gebuehren': CHF, 'zins': CHF}.
+    """
+    from finance.models import DebitorenRechnung, Mahnung
+    from django.db.models import Q
+    from core.utils.email_service import send_payment_reminder
+
+    heute = timezone.localdate()
+    qs = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft'))
+    if aktive_lg:
+        qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
+
+    res = {'gemahnt': 0, 'emails': 0, 'gebuehren': Decimal('0.00'), 'zins': Decimal('0.00'), 'geprueft': 0}
+
+    for r in qs:
+        faellig = r.faellig_am or r.datum
+        if not faellig or faellig >= heute:
+            continue
+        offen = r.offener_betrag
+        if offen <= 0:
+            continue
+        tage = (heute - faellig).days
+        stufe = _stufe_fuer_tage(tage)
+        if not stufe:
+            continue
+        res['geprueft'] += 1
+        # Idempotenz: existiert bereits eine Mahnung dieser (oder höherer) Stufe?
+        hoechste = r.mahnungen.order_by('-stufe').first()
+        if hoechste and hoechste.stufe >= stufe:
+            continue
+
+        gebuehr = MAHN_GEBUEHR.get(stufe, Decimal('0.00'))
+        zins = verzugszins(offen, tage) if mit_zins else Decimal('0.00')
+        with transaction.atomic():
+            Mahnung.objects.create(
+                debitoren_rechnung=r, vertrag=r.vertrag, stufe=stufe, datum=heute,
+                betrag_offen=offen, gebuehr=gebuehr,
+                versandart='email' if (send_email and r.vertrag and r.vertrag.mieter.email) else 'manuell',
+                bemerkung=(f"Verzugszins CHF {zins} ({tage} Tage)" if zins > 0 else ''),
+                erstellt_von=user,
+            )
+            zusatz = gebuehr + zins
+            if zusatz > 0 and r.vertrag_id:
+                lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag.einheit_id else None)
+                teile = []
+                if gebuehr > 0:
+                    teile.append(f"Mahngebühr {stufe}. Mahnung")
+                if zins > 0:
+                    teile.append(f"Verzugszins {VERZUGSZINS_PROZENT}%")
+                DebitorenRechnung.objects.create(
+                    vertrag=r.vertrag, liegenschaft=lg,
+                    titel=" + ".join(teile), beschreibung=f"Zu: {r.titel}",
+                    datum=heute, faellig_am=heute + timedelta(days=30),
+                    betrag=zusatz, status='offen')
+        res['gemahnt'] += 1
+        res['gebuehren'] += gebuehr
+        res['zins'] += zins
+        if send_email and r.vertrag and r.vertrag.mieter.email:
+            try:
+                if send_payment_reminder(r.vertrag, faellig, offen):
+                    res['emails'] += 1
+            except Exception:
+                pass
+    return res
+
+
+# ============================================================
+# 3. AUTO-PENDENZEN (Fristen aus dem Datenbestand persistieren)
+# ============================================================
+def generate_auto_pendenzen(horizont_tage=90, user=None):
+    """Erzeugt/aktualisiert persistente Pendenzen aus terminierten Ereignissen
+    (Vertragsende, Auszug, Geräte-Garantien, Serviceabos). Idempotent über das
+    Feld Pendenz.quelle. Gibt die Anzahl neu erstellter Pendenzen zurück."""
+    from core.models import Pendenz
+    from rentals.models import Mietvertrag
+    from portfolio.models import Geraet
+
+    heute = timezone.localdate()
+    grenze = heute + timedelta(days=horizont_tage)
+    neu = 0
+
+    def _ensure(quelle, titel, faellig, kategorie, beschreibung='', liegenschaft=None, vertrag=None):
+        nonlocal neu
+        obj, created = Pendenz.objects.get_or_create(
+            quelle=quelle,
+            defaults={'titel': titel, 'faellig_am': faellig, 'kategorie': kategorie,
+                      'beschreibung': beschreibung, 'liegenschaft': liegenschaft,
+                      'vertrag': vertrag, 'erstellt_von': user})
+        if created:
+            neu += 1
+        elif not obj.erledigt:
+            # Fälligkeit/Titel aktuell halten, ohne Erledigt-Status zu überschreiben
+            if obj.faellig_am != faellig or obj.titel != titel:
+                obj.faellig_am = faellig
+                obj.titel = titel
+                obj.save(update_fields=['faellig_am', 'titel'])
+        return obj
+
+    # a) Befristete Vertragsenden
+    for v in (Mietvertrag.objects.filter(status='aktiv', ende__range=[heute, grenze])
+              .select_related('mieter', 'einheit__liegenschaft')):
+        _ensure(f"auto:vertragsende:{v.id}",
+                f"Vertragsende {v.mieter.display_name} ({v.einheit.bezeichnung})",
+                v.ende, 'vertrag',
+                "Befristeter Vertrag läuft aus — Verlängerung oder Auszug prüfen.",
+                liegenschaft=v.einheit.liegenschaft if v.einheit_id else None, vertrag=v)
+
+    # b) Gekündigte Verträge → Auszug/Abnahme/Kautionsabrechnung
+    for v in (Mietvertrag.objects.filter(status='gekuendigt', ende__range=[heute, grenze])
+              .select_related('mieter', 'einheit__liegenschaft')):
+        _ensure(f"auto:auszug:{v.id}",
+                f"Auszug {v.mieter.display_name} ({v.einheit.bezeichnung})",
+                v.ende, 'vertrag',
+                "Wohnungsabnahme, Schlussabrechnung und Kautionsabrechnung vorbereiten.",
+                liegenschaft=v.einheit.liegenschaft if v.einheit_id else None, vertrag=v)
+
+    # c) Geräte-Garantien / Serviceabläufe
+    for g in Geraet.objects.filter(garantie_bis__range=[heute, grenze]).select_related('liegenschaft', 'einheit__liegenschaft'):
+        lg = g.liegenschaft or (g.einheit.liegenschaft if getattr(g, 'einheit_id', None) else None)
+        bez = getattr(g, 'sonstiges_bezeichnung', '') or getattr(g, 'get_kategorie_display', lambda: 'Gerät')()
+        _ensure(f"auto:garantie:{g.id}",
+                f"Garantie läuft ab: {bez}",
+                g.garantie_bis, 'unterhalt',
+                f"Garantie/Service für {bez} endet — Verlängerung oder Wartung prüfen.",
+                liegenschaft=lg)
+
+    return neu

@@ -45,6 +45,9 @@ class Pendenz(models.Model):
     kategorie = models.CharField("Kategorie", max_length=20, choices=KATEGORIE_CHOICES, default='aufgabe')
     faellig_am = models.DateField("Fällig am", null=True, blank=True)
     erledigt = models.BooleanField("Erledigt", default=False)
+    # Herkunft für automatisch generierte Pendenzen (idempotenter Schlüssel, z.B.
+    # "auto:garantie:12"). Leer = manuell erfasst.
+    quelle = models.CharField("Quelle", max_length=80, blank=True, default='', db_index=True)
     erledigt_am = models.DateField("Erledigt am", null=True, blank=True)
 
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, null=True, blank=True, related_name='pendenzen')

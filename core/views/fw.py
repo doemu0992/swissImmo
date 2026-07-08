@@ -2196,57 +2196,13 @@ def fw_sollstellung_run(request):
     except ValueError:
         jahr, monat = heute.year, heute.month
 
-    start_date = date(jahr, monat, 1)
-    _, last_day = _calendar.monthrange(jahr, monat)
-    end_date = date(jahr, monat, last_day)
     titel = f"Miete & NK {monat:02d}/{jahr}"
-
+    from core.services.automation import run_sollstellung
     try:
-        konto_deb = Buchungskonto.objects.get(nummer="1100")
-        konto_ertrag = Buchungskonto.objects.get(nummer="3000")
-        konto_nk = Buchungskonto.objects.get(nummer="3020")
-    except Buchungskonto.DoesNotExist:
-        messages.error(request, "Standard-Konten (1100, 3000, 3020) fehlen. Bitte zuerst Kontenplan laden.")
+        erstellt = run_sollstellung(jahr, monat, user=request.user)
+    except RuntimeError as e:
+        messages.error(request, f"{e}")
         return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
-    # MWST-Konto sicherstellen (für optierte Verträge)
-    konto_mwst, _ = Buchungskonto.objects.get_or_create(
-        nummer="2200", defaults={'bezeichnung': 'Geschuldete MWST (Umsatzsteuer)', 'typ': 'bilanz'})
-
-    vertraege = (Mietvertrag.objects.filter(status='aktiv', beginn__lte=end_date)
-                 .exclude(ende__lt=start_date).select_related('mieter', 'einheit__liegenschaft'))
-
-    erstellt = 0
-    with transaction.atomic():
-        for v in vertraege:
-            if DebitorenRechnung.objects.filter(vertrag=v, titel=titel).exclude(status='storniert').exists():
-                continue
-            v_start = max(start_date, v.beginn)
-            v_ende = min(end_date, v.ende) if v.ende else end_date
-            faktor = Decimal((v_ende - v_start).days + 1) / Decimal(last_day)
-            netto = round((v.netto_mietzins or Decimal('0')) * faktor, 2)
-            nk = round((v.nebenkosten or Decimal('0')) * faktor, 2)
-            if netto + nk <= 0:
-                continue
-            # Ausgangs-MWST bei optierten Verträgen (Art. 22 MWSTG)
-            mwst = Decimal('0.00')
-            if v.mwst_pflichtig and (v.mwst_satz or 0) > 0:
-                mwst = round((netto + nk) * (v.mwst_satz / Decimal('100')), 2)
-            rechnung = DebitorenRechnung.objects.create(
-                vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
-                titel=titel, betrag=netto + nk + mwst, faellig_am=start_date)
-            if netto > 0:
-                Buchung.objects.create(datum=start_date, beleg_text=f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
-                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_ertrag,
-                                       betrag=netto, debitoren_rechnung=rechnung, erstellt_von=request.user)
-            if nk > 0:
-                Buchung.objects.create(datum=start_date, beleg_text=f"NK-Akonto {v.mieter} - {monat:02d}/{jahr}",
-                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_nk,
-                                       betrag=nk, debitoren_rechnung=rechnung, erstellt_von=request.user)
-            if mwst > 0:
-                Buchung.objects.create(datum=start_date, beleg_text=f"MWST {v.mwst_satz}% {v.mieter} - {monat:02d}/{jahr}",
-                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_mwst,
-                                       betrag=mwst, debitoren_rechnung=rechnung, erstellt_von=request.user)
-            erstellt += 1
 
     log_aktion(request, "Sollstellung ausgeführt", titel, f"{erstellt} Rechnungen erstellt")
     if erstellt:
@@ -4220,6 +4176,41 @@ def fw_mahnung_erfassen(request):
                f"offen CHF {rechnung.offener_betrag}, Gebühr CHF {gebuehr}")
     messages.success(request,
         f"✅ {stufe}. Mahnung erfasst" + (f" · Mahngebühr CHF {gebuehr} gestellt." if gebuehr > 0 else "."))
+    ziel = '/neu/mahnwesen/'
+    if lg := request.POST.get('lg'):
+        ziel += f'?lg={lg}'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_mahnlauf(request):
+    """Sammel-Mahnlauf über ALLE fälligen offenen Debitoren (statt einzeln).
+    Erzeugt Mahnungen je Stufe (idempotent), stellt Mahngebühr + optional
+    Verzugszins und verschickt Zahlungserinnerungen per E-Mail."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    from core.services.automation import run_mahnlauf
+    if request.method != 'POST':
+        return redirect('fw_mahnwesen')
+    basis = _global_filter(request)
+    mit_zins = request.POST.get('mit_zins') == 'on'
+    send_email = request.POST.get('kein_versand') != 'on'
+    res = run_mahnlauf(aktive_lg=basis['aktive_lg'], send_email=send_email,
+                       mit_zins=mit_zins, user=request.user)
+    log_aktion(request, "Mahnlauf ausgeführt", "Sammellauf",
+               f"{res['gemahnt']} gemahnt, {res['emails']} E-Mails, Gebühren CHF {res['gebuehren']}, Zins CHF {res['zins']}")
+    if res['gemahnt']:
+        teile = [f"{res['gemahnt']} Mahnung(en) erstellt"]
+        if send_email:
+            teile.append(f"{res['emails']} E-Mail(s) versandt")
+        if res['gebuehren'] > 0:
+            teile.append(f"Gebühren CHF {res['gebuehren']}")
+        if res['zins'] > 0:
+            teile.append(f"Verzugszins CHF {res['zins']}")
+        messages.success(request, "✅ Mahnlauf: " + ", ".join(teile) + ".")
+    else:
+        messages.success(request, "Mahnlauf: keine neuen Mahnungen fällig — alles aktuell.")
     ziel = '/neu/mahnwesen/'
     if lg := request.POST.get('lg'):
         ziel += f'?lg={lg}'

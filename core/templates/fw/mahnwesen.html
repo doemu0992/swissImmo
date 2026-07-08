@@ -4,10 +4,24 @@
 
 {% block content %}
 
-<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Mahnwesen</h1>
-<p class="text-sm text-slate-500 mb-5">Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt erzeugen
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/mahnwesen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+<div class="flex items-start justify-between gap-4 mb-5">
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900 mb-1">Mahnwesen</h1>
+        <p class="text-sm text-slate-500">Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt erzeugen
+            {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+            <a href="/neu/mahnwesen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+    </div>
+    {% if anzahl_total %}
+    <form method="post" action="/neu/mahnwesen/lauf/" onsubmit="return confirm('Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt.');" class="shrink-0 text-right">
+        {% csrf_token %}
+        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm whitespace-nowrap">
+            <i class="fa-solid fa-bolt mr-1.5"></i>Mahnlauf ausführen
+        </button>
+        <label class="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1.5 justify-end"><input type="checkbox" name="mit_zins" class="accent-indigo-600">Verzugszins (5%) berechnen</label>
+    </form>
+    {% endif %}
+</div>
 
 <!-- Stufen-KPI -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
