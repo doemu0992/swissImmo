@@ -1,0 +1,156 @@
+"""Schlussabrechnung beim Auszug eines Mieters.
+
+Fasst offene Mietforderungen, Nebenkosten-Saldo, Schäden/Abzüge und die Kaution
+zu einer Endabrechnung zusammen und weist den Saldo (Nachzahlung durch bzw.
+Rückzahlung an den Mieter) aus. Erzeugt das PDF."""
+import io
+import datetime
+from decimal import Decimal
+
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import mm
+from reportlab.lib import colors
+
+
+def _fmt(d):
+    try:
+        return f"{Decimal(str(d)):,.2f}".replace(",", "'")
+    except Exception:
+        return str(d)
+
+
+def berechne_schlussabrechnung(vertrag, auszug_datum, positionen, kaution_verrechnen=True):
+    """positionen: Liste von dicts {'text': str, 'betrag': Decimal, 'zulasten': bool}.
+    zulasten=True → Mieter schuldet; False → Gutschrift an Mieter.
+    Gibt dict mit Zeilen + Saldo zurück."""
+    from finance.models import DebitorenRechnung
+    zeilen = []
+
+    # 1. Offene Mietforderungen (automatisch)
+    offene = (DebitorenRechnung.objects.filter(vertrag=vertrag, status__in=['offen', 'teilbezahlt']))
+    offen_total = sum((r.offener_betrag for r in offene), Decimal('0.00'))
+    if offen_total > 0:
+        zeilen.append({'text': 'Offene Mietforderungen', 'betrag': offen_total, 'zulasten': True})
+
+    # 2. Manuelle Positionen (NK-Saldo, Schäden, Reinigung, Gutschriften …)
+    for p in positionen:
+        b = p.get('betrag') or Decimal('0.00')
+        if b == 0:
+            continue
+        zeilen.append({'text': p.get('text', 'Position'), 'betrag': b, 'zulasten': bool(p.get('zulasten', True))})
+
+    # Zwischensaldo (ohne Kaution): positiv = Mieter schuldet
+    zwischen = Decimal('0.00')
+    for z in zeilen:
+        zwischen += z['betrag'] if z['zulasten'] else -z['betrag']
+
+    # 3. Kaution (zugunsten Mieter — wird verrechnet/zurückgezahlt)
+    kaution = vertrag.kautions_betrag or Decimal('0.00')
+    if kaution_verrechnen and kaution > 0:
+        zeilen.append({'text': 'Mietkaution (Guthaben Mieter)', 'betrag': kaution, 'zulasten': False})
+
+    saldo = zwischen - (kaution if (kaution_verrechnen and kaution > 0) else Decimal('0.00'))
+    # saldo > 0 → Mieter zahlt nach; saldo < 0 → Rückzahlung an Mieter
+    return {
+        'zeilen': zeilen,
+        'offen_total': offen_total,
+        'zwischen': zwischen,
+        'kaution': kaution,
+        'kaution_verrechnen': kaution_verrechnen and kaution > 0,
+        'saldo': saldo,
+        'nachzahlung': saldo > 0,
+        'rueckzahlung': -saldo if saldo < 0 else Decimal('0.00'),
+        'auszug_datum': auszug_datum,
+    }
+
+
+def generate_schlussabrechnung_pdf(vertrag, daten, verwaltung=None):
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    mieter = vertrag.mieter
+    einheit = vertrag.einheit
+    lg = einheit.liegenschaft
+    mandant = lg.mandant if lg else None
+    c.setTitle(f"Schlussabrechnung {mieter.nachname}")
+
+    if verwaltung and getattr(verwaltung, 'logo', None):
+        try:
+            c.drawImage(verwaltung.logo.path, 155*mm, 272*mm, width=40*mm, preserveAspectRatio=True, mask='auto')
+        except Exception:
+            pass
+
+    absender = mandant.firma_oder_name if mandant else (verwaltung.firma if verwaltung else 'Immobilienverwaltung')
+    a_str = (mandant.strasse if mandant else (verwaltung.strasse if verwaltung else '')) or ''
+    a_ort = (f"{mandant.plz} {mandant.ort}" if mandant else (f"{verwaltung.plz} {verwaltung.ort}" if verwaltung else '')) or ''
+    c.setFont("Helvetica-Bold", 9); c.drawString(20*mm, 280*mm, absender)
+    c.setFont("Helvetica", 9); c.drawString(20*mm, 276*mm, a_str); c.drawString(20*mm, 272*mm, a_ort)
+
+    # Empfänger (Auszugsadresse: zukünftige Adresse falls vorhanden)
+    ziel_strasse = mieter.zukuenftige_strasse or mieter.strasse or ''
+    ziel_ort = (f"{mieter.zukuenftige_plz} {mieter.zukuenftiger_ort}".strip()
+                if mieter.zukuenftige_strasse else f"{mieter.plz or ''} {mieter.ort or ''}".strip())
+    c.setFont("Helvetica", 11)
+    c.drawString(20*mm, 250*mm, f"{mieter.vorname} {mieter.nachname}")
+    c.drawString(20*mm, 245*mm, ziel_strasse)
+    c.drawString(20*mm, 240*mm, ziel_ort)
+
+    c.setFont("Helvetica-Bold", 15)
+    c.drawString(20*mm, 220*mm, "Schlussabrechnung")
+    c.setFont("Helvetica", 9); c.setFillColor(colors.grey)
+    az = daten['auszug_datum']
+    az_str = az.strftime('%d.%m.%Y') if hasattr(az, 'strftime') else str(az)
+    c.drawString(20*mm, 214*mm, f"Mietobjekt: {einheit.bezeichnung}, {lg.strasse}, {lg.plz} {lg.ort}")
+    c.drawString(20*mm, 209*mm, f"Auszug per: {az_str}")
+    c.setFillColor(colors.black)
+
+    # Tabelle
+    y = 196*mm
+    c.setFillColor(colors.HexColor("#EEF0F5")); c.rect(18*mm, y-2*mm, 174*mm, 8*mm, fill=1, stroke=0)
+    c.setFillColor(colors.black); c.setFont("Helvetica-Bold", 9)
+    c.drawString(22*mm, y, "Position")
+    c.drawRightString(150*mm, y, "zulasten")
+    c.drawRightString(186*mm, y, "zugunsten")
+    y -= 9*mm
+    c.setFont("Helvetica", 10)
+    for z in daten['zeilen']:
+        if y < 60*mm:
+            c.showPage(); y = 270*mm
+        c.drawString(22*mm, y, z['text'][:60])
+        if z['zulasten']:
+            c.drawRightString(150*mm, y, _fmt(z['betrag']))
+        else:
+            c.drawRightString(186*mm, y, _fmt(z['betrag']))
+        y -= 6*mm
+
+    y -= 2*mm
+    c.setLineWidth(0.6); c.line(18*mm, y, 192*mm, y); y -= 8*mm
+
+    saldo = daten['saldo']
+    c.setFillColor(colors.HexColor("#FEF2F2") if daten['nachzahlung'] else colors.HexColor("#ECFDF5"))
+    c.rect(18*mm, y-6*mm, 174*mm, 16*mm, fill=1, stroke=0)
+    c.setFillColor(colors.black); c.setFont("Helvetica-Bold", 12)
+    if daten['nachzahlung']:
+        c.drawString(22*mm, y, "Nachzahlung durch Mieter")
+        c.drawRightString(188*mm, y, f"CHF {_fmt(saldo)}")
+    else:
+        c.drawString(22*mm, y, "Rückzahlung an Mieter")
+        c.drawRightString(188*mm, y, f"CHF {_fmt(daten['rueckzahlung'])}")
+
+    # Hinweis + Zahlungsangaben
+    y -= 22*mm
+    c.setFont("Helvetica", 9); c.setFillColor(colors.grey)
+    if daten['nachzahlung']:
+        c.drawString(20*mm, y, "Bitte überweisen Sie den Betrag innert 30 Tagen. Besten Dank.")
+    else:
+        c.drawString(20*mm, y, "Der Betrag wird auf das uns bekannte / von Ihnen genannte Konto überwiesen.")
+        if mieter.iban:
+            c.drawString(20*mm, y-5*mm, f"IBAN: {mieter.iban}")
+    c.setFillColor(colors.black)
+
+    c.setFont("Helvetica", 10)
+    c.drawString(20*mm, 30*mm, "Freundliche Grüsse")
+    c.setFont("Helvetica-Bold", 10); c.drawString(20*mm, 20*mm, absender)
+
+    c.showPage(); c.save(); buffer.seek(0)
+    return buffer.read()

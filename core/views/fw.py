@@ -641,6 +641,99 @@ def fw_vertrag_detail(request, pk):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schlussabrechnung(request, vertrag_id):
+    """Schlussabrechnung beim Auszug: offene Forderungen + NK-Saldo + Schäden −
+    Kaution = Saldo. GET zeigt Formular, POST erzeugt PDF (aktion=pdf) oder
+    verbucht Kaution + Nachzahlung (aktion=buchen)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from django.http import HttpResponse
+    from crm.models import Verwaltung
+    from core.services.schlussabrechnung import berechne_schlussabrechnung, generate_schlussabrechnung_pdf
+    from core.auth import log_aktion
+
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
+    basis = _global_filter(request)
+
+    def _dec(x):
+        try:
+            return Decimal(str(x).replace(',', '.').strip())
+        except Exception:
+            return Decimal('0.00')
+
+    if request.method == 'POST':
+        try:
+            auszug = date.fromisoformat(request.POST.get('auszug_datum') or '')
+        except Exception:
+            auszug = v.ende or timezone.now().date()
+        kaution_verrechnen = request.POST.get('kaution_verrechnen') == 'on'
+
+        positionen = []
+        texte = request.POST.getlist('pos_text')
+        betraege = request.POST.getlist('pos_betrag')
+        richtungen = request.POST.getlist('pos_richtung')
+        for i, txt in enumerate(texte):
+            txt = (txt or '').strip()
+            betr = _dec(betraege[i] if i < len(betraege) else '0')
+            if not txt or betr == 0:
+                continue
+            richtung = richtungen[i] if i < len(richtungen) else 'zulasten'
+            positionen.append({'text': txt, 'betrag': betr, 'zulasten': (richtung == 'zulasten')})
+
+        daten = berechne_schlussabrechnung(v, auszug, positionen, kaution_verrechnen=kaution_verrechnen)
+        aktion = request.POST.get('aktion', 'pdf')
+
+        if aktion == 'buchen':
+            with transaction.atomic():
+                # Kaution als abgerechnet markieren
+                if kaution_verrechnen and (v.kautions_betrag or 0) > 0:
+                    v.kautions_zurueckbezahlt_am = auszug
+                    if daten['nachzahlung']:
+                        # Kaution ging an offene Forderungen → Abzug = ganze Kaution, Rückzahlung 0
+                        v.kautions_abzug_betrag = v.kautions_betrag
+                        v.kautions_rueckzahlung_betrag = Decimal('0.00')
+                    else:
+                        v.kautions_rueckzahlung_betrag = daten['rueckzahlung']
+                        v.kautions_abzug_betrag = (v.kautions_betrag or Decimal('0')) - daten['rueckzahlung']
+                    v.save()
+                # Nachzahlung als Debitor stellen
+                if daten['nachzahlung'] and daten['saldo'] > 0:
+                    from finance.models import Buchungskonto, Buchung
+                    heute = timezone.now().date()
+                    rech = DebitorenRechnung.objects.create(
+                        vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
+                        titel="Schlussabrechnung (Nachzahlung)", datum=heute,
+                        faellig_am=heute + _timedelta(days=30), betrag=daten['saldo'], status='offen')
+                    try:
+                        kd = Buchungskonto.objects.get(nummer="1100")
+                        ke = Buchungskonto.objects.get(nummer="3000")
+                        Buchung.objects.create(datum=heute, beleg_text=f"Schlussabrechnung {v.mieter}",
+                            liegenschaft=v.einheit.liegenschaft, soll_konto=kd, haben_konto=ke,
+                            betrag=daten['saldo'], debitoren_rechnung=rech, erstellt_von=request.user)
+                    except Buchungskonto.DoesNotExist:
+                        pass
+            log_aktion(request, "Schlussabrechnung verbucht", str(v.mieter), f"Saldo CHF {daten['saldo']}")
+            messages.success(request, "✅ Schlussabrechnung verbucht (Kaution abgerechnet"
+                             + (", Nachzahlung als Debitor gestellt" if daten['nachzahlung'] else "") + ").")
+            return redirect(f'/neu/vertraege/{v.id}/')
+
+        pdf = generate_schlussabrechnung_pdf(v, daten, verwaltung=Verwaltung.objects.first())
+        resp = HttpResponse(pdf, content_type='application/pdf')
+        resp['Content-Disposition'] = f'inline; filename="Schlussabrechnung_{v.mieter.nachname}.pdf"'
+        return resp
+
+    # GET
+    offene = DebitorenRechnung.objects.filter(vertrag=v, status__in=['offen', 'teilbezahlt'])
+    offen_total = sum((r.offener_betrag for r in offene), Decimal('0.00'))
+    return render(request, 'fw/schlussabrechnung.html', {
+        **basis, 'nav': 'vertraege', 'v': v,
+        'offen_total': offen_total,
+        'kaution': v.kautions_betrag or Decimal('0.00'),
+        'auszug_default': (v.ende or timezone.now().date()).isoformat(),
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_vertrag_status(request, pk):
     """Setzt den Vertragsstatus: entwurf / aktiv / archiviert (inaktiv)."""
     from django.shortcuts import redirect
