@@ -1,0 +1,109 @@
+{% extends 'fw/base.html' %}
+{% block title %}Ticket #{{ t.id }} — swissImmo{% endblock %}
+
+{% block content %}
+
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/schaeden/{{ lg_query }}" class="hover:text-indigo-600">Schadensfälle</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <span class="text-slate-600 font-medium">Ticket #{{ t.id }}</span>
+</nav>
+
+<div class="flex items-start justify-between gap-4">
+    <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-xl bg-rose-500 text-white flex items-center justify-center text-xl shadow-lg shadow-rose-500/25">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">{{ t.titel }}</h1>
+            <p class="text-sm text-slate-500">
+                {% if t.liegenschaft_id %}{{ t.liegenschaft.strasse }}, {{ t.liegenschaft.ort }}{% endif %}
+                {% if t.betroffene_einheit_id %} · {{ t.betroffene_einheit.bezeichnung }}{% endif %}
+                {% if t.kategorie %} · {{ t.kategorie }}{% endif %}
+            </p>
+        </div>
+    </div>
+    <div class="flex items-center gap-2">
+        <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ p_cls }}">{{ p_label }}</span>
+        <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ s_cls }}">{{ s_label }}</span>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/app/?tab=tickets" class="text-sm text-indigo-600 font-medium hover:underline" title="Öffnet die klassische Ansicht">
+        <i class="fa-solid fa-pen-to-square mr-1"></i> Bearbeiten / Antworten <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+    </a>
+</div>
+
+{% include 'fw/_detail_tabs.html' with gruppe='sc' tabs=tab_liste %}
+
+<!-- ÜBERSICHT -->
+<div data-panel="sc" id="sc-uebersicht">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-800 mb-3">Schadensbeschreibung</h3>
+            <p class="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{{ t.beschreibung|default:"—" }}</p>
+            {% if t.foto %}
+            <div class="mt-4"><img src="{{ t.foto.url }}" alt="Schaden" class="rounded-lg max-h-80 border border-slate-200"></div>
+            {% endif %}
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-800 mb-3">Meldung</h3>
+            <dl class="text-sm space-y-2">
+                <div class="flex justify-between"><dt class="text-slate-500">Melder</dt><dd class="text-slate-800 font-medium text-right">{{ melder }}</dd></div>
+                {% if t.email_melder %}<div class="flex justify-between"><dt class="text-slate-500">E-Mail</dt><dd class="text-slate-800 font-medium text-right">{{ t.email_melder }}</dd></div>{% endif %}
+                {% if t.tel_melder %}<div class="flex justify-between"><dt class="text-slate-500">Telefon</dt><dd class="text-slate-800 font-medium">{{ t.tel_melder }}</dd></div>{% endif %}
+                {% if t.raum %}<div class="flex justify-between"><dt class="text-slate-500">Raum</dt><dd class="text-slate-800 font-medium">{{ t.raum }}</dd></div>{% endif %}
+                <div class="flex justify-between"><dt class="text-slate-500">Zutritt</dt><dd class="text-slate-800 font-medium">{{ t.get_zutritt_display }}</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Gemeldet</dt><dd class="text-slate-800 font-medium">{{ t.erstellt_am|date:"d.m.Y H:i" }}</dd></div>
+            </dl>
+        </div>
+    </div>
+</div>
+
+<!-- VERLAUF -->
+<div data-panel="sc" id="sc-verlauf" class="hidden">
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        {% for n in nachrichten %}
+        <div class="flex gap-3 pb-4 mb-4 border-b border-slate-50 last:border-0 last:mb-0 last:pb-0">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0
+                        {% if n.is_von_verwaltung %}bg-indigo-600 text-white{% elif n.is_intern %}bg-slate-200 text-slate-600{% else %}bg-emerald-100 text-emerald-700{% endif %}">
+                {{ n.absender_name|slice:":2"|upper }}
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-slate-900">{{ n.absender_name }}</span>
+                    {% if n.is_intern %}<span class="text-[10px] font-bold uppercase bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">intern</span>{% endif %}
+                    <span class="text-xs text-slate-400">{{ n.erstellt_am|date:"d.m.Y H:i" }}</span>
+                </div>
+                <p class="text-sm text-slate-700 mt-1 whitespace-pre-line">{{ n.nachricht }}</p>
+                {% if n.datei %}<a href="{{ n.datei.url }}" class="text-xs text-indigo-600 hover:underline mt-1 inline-block"><i class="fa-solid fa-paperclip mr-1"></i>Anhang</a>{% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-sm text-slate-400 italic py-6">Noch keine Nachrichten im Verlauf.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- HANDWERKER -->
+<div data-panel="sc" id="sc-handwerker" class="hidden">
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Handwerker</th><th class="px-5 py-3 font-semibold">Beauftragt</th><th class="px-5 py-3 font-semibold">Status</th><th class="px-5 py-3 font-semibold">Bemerkung</th>
+            </tr></thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for a in auftraege %}
+            <tr><td class="px-5 py-3 font-medium text-slate-900">{{ a.handwerker }}</td>
+                <td class="px-5 py-3 text-slate-600">{{ a.beauftragt_am|date:"d.m.Y" }}</td>
+                <td class="px-5 py-3 text-slate-600">{{ a.status }}</td>
+                <td class="px-5 py-3 text-slate-500">{{ a.bemerkung|default:"—"|truncatechars:60 }}</td></tr>
+            {% empty %}
+            <tr><td colspan="4" class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch kein Handwerker beauftragt.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

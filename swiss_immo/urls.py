@@ -63,7 +63,8 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_obj
                            fw_mahnwesen, fw_bankkonten,
                            fw_bankabgleich, fw_bankabgleich_verbuchen,
                            fw_person_detail,
-                           fw_kreditoren, fw_kreditor_bezahlen)
+                           fw_kreditoren, fw_kreditor_bezahlen,
+                           fw_schaeden, fw_schaden_detail)
 
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
@@ -103,6 +104,8 @@ urlpatterns = [
     path('neu/personen/<int:pk>/', fw_person_detail, name='fw_person_detail'),
     path('neu/kreditoren/', fw_kreditoren, name='fw_kreditoren'),
     path('neu/kreditoren/bezahlen/', fw_kreditor_bezahlen, name='fw_kreditor_bezahlen'),
+    path('neu/schaeden/', fw_schaeden, name='fw_schaeden'),
+    path('neu/schaeden/<int:pk>/', fw_schaden_detail, name='fw_schaden_detail'),
     path('neu/mahnwesen/', fw_mahnwesen, name='fw_mahnwesen'),
     path('neu/bankkonten/', fw_bankkonten, name='fw_bankkonten'),
     path('neu/bankabgleich/', fw_bankabgleich, name='fw_bankabgleich'),

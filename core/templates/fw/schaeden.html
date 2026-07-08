@@ -1,0 +1,94 @@
+{% extends 'fw/base.html' %}
+{% block title %}Schadensfälle — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-1">
+    <h1 class="text-3xl font-extrabold text-slate-900">Schadensfälle</h1>
+    <a href="/app/?tab=tickets" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors" title="Öffnet die klassische Ansicht">
+        <i class="fa-solid fa-plus mr-1.5"></i> Ticket erfassen <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-0.5"></i>
+    </a>
+</div>
+<p class="text-sm text-slate-500 mb-5">Schadensmeldungen und Reparaturaufträge
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/schaeden/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+<!-- KPI -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-cloud-bolt"></i></div>
+        <div><div class="text-2xl font-bold text-rose-600">{{ offen }}</div><div class="text-sm text-slate-500">Offen</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+        <div><div class="text-2xl font-bold text-slate-800">{{ in_arbeit }}</div><div class="text-sm text-slate-500">In Bearbeitung</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-list"></i></div>
+        <div><div class="text-2xl font-bold text-slate-800">{{ anzahl }}</div><div class="text-sm text-slate-500">Total angezeigt</div></div>
+    </div>
+</div>
+
+<!-- Tabelle -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+        <div class="flex items-center gap-1.5 flex-wrap">
+            {% for wert, label in status_chips %}
+            <a href="?status={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
+               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                      {% if status_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+        <form method="get" class="ml-auto relative">
+            {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" name="q" value="{{ q }}" placeholder="Titel, Kategorie, Objekt…"
+                   class="bg-slate-100 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+        </form>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Schaden</th>
+                <th class="px-5 py-3 font-semibold">Objekt</th>
+                <th class="px-5 py-3 font-semibold">Melder</th>
+                <th class="px-5 py-3 font-semibold">Priorität</th>
+                <th class="px-5 py-3 font-semibold">Gemeldet</th>
+                <th class="px-5 py-3 font-semibold">Status</th>
+                <th class="px-5 py-3"></th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for row in rows %}
+            <tr class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="window.location='/neu/schaeden/{{ row.t.id }}/'">
+                <td class="px-5 py-3.5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div>
+                            <div class="font-semibold text-slate-900">{{ row.t.titel|truncatechars:48 }}</div>
+                            {% if row.t.kategorie %}<div class="text-xs text-slate-400">{{ row.t.kategorie }}{% if row.t.raum %} · {{ row.t.raum }}{% endif %}</div>{% endif %}
+                        </div>
+                    </div>
+                </td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.objekt }}</td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.melder }}</td>
+                <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap {{ row.p_cls }}">{{ row.p_label }}</span></td>
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.t.erstellt_am|date:"d.m.Y" }}</td>
+                <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap {{ row.s_cls }}">{{ row.s_label }}</span></td>
+                <td class="px-5 py-3.5 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="px-5 py-12 text-center">
+                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-check"></i></div>
+                <p class="text-sm font-medium text-slate-700">Keine Schadensfälle</p>
+                <p class="text-xs text-slate-400 mt-1">{% if status_filter or q %}Keine Treffer für diesen Filter.{% else %}Aktuell sind keine Schäden gemeldet.{% endif %}</p>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

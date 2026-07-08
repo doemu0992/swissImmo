@@ -979,3 +979,96 @@ def fw_kreditor_bezahlen(request):
     if lg := request.POST.get('lg'):
         ziel += f'?lg={lg}'
     return redirect(ziel)
+
+
+# ============================================================
+# ETAPPE D: SCHADENSFÄLLE (Tickets)
+# ============================================================
+
+TICKET_PILL = {
+    'neu':                   ('Neu',                'bg-rose-50 text-rose-600'),
+    'in_bearbeitung':        ('In Bearbeitung',     'bg-sky-50 text-sky-700'),
+    'warte_auf_mieter':      ('Warte auf Mieter',   'bg-amber-50 text-amber-700'),
+    'warte_auf_handwerker':  ('Warte auf Handwerker','bg-amber-50 text-amber-700'),
+    'erledigt':              ('Erledigt',           'bg-emerald-50 text-emerald-700'),
+}
+PRIO_PILL = {
+    'hoch':   ('Hoch',   'bg-rose-100 text-rose-700'),
+    'mittel': ('Mittel', 'bg-amber-50 text-amber-700'),
+    'tief':   ('Tief',   'bg-slate-100 text-slate-500'),
+    'niedrig':('Tief',   'bg-slate-100 text-slate-500'),
+}
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_schaeden(request):
+    from tickets.models import SchadenMeldung
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    qs = (SchadenMeldung.objects.select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von')
+          .order_by('-erstellt_am'))
+    if aktive_lg:
+        qs = qs.filter(liegenschaft=aktive_lg)
+
+    status_filter = request.GET.get('status', '')
+    if status_filter == 'offen':
+        qs = qs.exclude(status='erledigt')
+    elif status_filter in TICKET_PILL:
+        qs = qs.filter(status=status_filter)
+    q = (request.GET.get('q') or '').strip()
+    if q:
+        qs = qs.filter(Q(titel__icontains=q) | Q(beschreibung__icontains=q)
+                       | Q(kategorie__icontains=q) | Q(liegenschaft__strasse__icontains=q))
+
+    rows = []
+    offen = 0
+    in_arbeit = 0
+    for t in qs:
+        s_label, s_cls = TICKET_PILL.get(t.status, (t.status, 'bg-slate-100 text-slate-500'))
+        p_label, p_cls = PRIO_PILL.get((t.prioritaet or '').lower(), (t.prioritaet or 'Mittel', 'bg-slate-100 text-slate-500'))
+        if t.status != 'erledigt':
+            offen += 1
+        if t.status == 'in_bearbeitung':
+            in_arbeit += 1
+        melder = (t.gemeldet_von.display_name if t.gemeldet_von_id
+                  else f"{t.melder_vorname or ''} {t.melder_nachname or ''}".strip() or '—')
+        rows.append({
+            't': t, 's_label': s_label, 's_cls': s_cls, 'p_label': p_label, 'p_cls': p_cls,
+            'objekt': f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}" if t.liegenschaft_id else '—',
+            'melder': melder,
+        })
+
+    chips = [('', 'Alle'), ('offen', 'Offen')] + [(k, v[0]) for k, v in TICKET_PILL.items()]
+    return render(request, 'fw/schaeden.html', {
+        **basis, 'nav': 'schadensfaelle', 'rows': rows,
+        'status_filter': status_filter, 'status_chips': chips, 'q': q,
+        'anzahl': len(rows), 'offen': offen, 'in_arbeit': in_arbeit,
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_schaden_detail(request, pk):
+    from tickets.models import SchadenMeldung
+    t = get_object_or_404(
+        SchadenMeldung.objects.select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von'), id=pk)
+    basis = _global_filter(request)
+
+    s_label, s_cls = TICKET_PILL.get(t.status, (t.status, 'bg-slate-100 text-slate-500'))
+    p_label, p_cls = PRIO_PILL.get((t.prioritaet or '').lower(), (t.prioritaet or 'Mittel', 'bg-slate-100 text-slate-500'))
+    nachrichten = t.nachrichten.order_by('erstellt_am')
+    auftraege = t.handwerker_auftraege.select_related('handwerker').order_by('-beauftragt_am')
+    melder = (t.gemeldet_von.display_name if t.gemeldet_von_id
+              else f"{t.melder_vorname or ''} {t.melder_nachname or ''}".strip() or '—')
+
+    tab_liste = [
+        ('uebersicht', 'Übersicht', None),
+        ('verlauf', 'Verlauf', nachrichten.count() or None),
+        ('handwerker', 'Handwerker', auftraege.count() or None),
+    ]
+    return render(request, 'fw/schaden_detail.html', {
+        **basis, 'nav': 'schadensfaelle', 't': t,
+        's_label': s_label, 's_cls': s_cls, 'p_label': p_label, 'p_cls': p_cls,
+        'nachrichten': nachrichten, 'auftraege': auftraege, 'melder': melder,
+        'tab_liste': tab_liste,
+    })
