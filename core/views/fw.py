@@ -2525,7 +2525,12 @@ def fw_mietzins_anpassung(request, vertrag_id):
             messages.success(request, f"✅ Mietzinsanpassung erfasst — neu CHF {neu_netto} ab {wirksam_ab.strftime('%d.%m.%Y')}.")
             return redirect(f'/neu/vertraege/{v.id}/')
 
-        pdf = generate_amtliches_formular_pdf(v, daten, verwaltung=vw, mandant=mandant)
+        # Amtliches Solothurner Formular (Standard), sonst generische Variante
+        if request.POST.get('formular') == 'generisch':
+            pdf = generate_amtliches_formular_pdf(v, daten, verwaltung=vw, mandant=mandant)
+        else:
+            from core.services.amtliche_formulare_so import mietzins_so_pdf
+            pdf = mietzins_so_pdf(v, daten, verwaltung=vw)
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = f'inline; filename="Mietzinsanpassung_{v.mieter.nachname}.pdf"'
         return resp
@@ -3534,6 +3539,20 @@ def fw_kuendigung_zuruecknehmen(request, pk):
         log_aktion(request, "Kündigung zurückgezogen", str(v.mieter), '')
         messages.success(request, "✅ Kündigung zurückgezogen, Vertrag reaktiviert.")
     return redirect(f'/neu/vertraege/{v.id}/')
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_kuendigung_formular(request, pk):
+    """Amtliches Solothurner Kündigungsformular (PDF) zu einer Kündigung."""
+    from django.http import HttpResponse
+    from rentals.models import Kuendigung
+    from crm.models import Verwaltung
+    from core.services.amtliche_formulare_so import kuendigung_so_pdf
+    k = get_object_or_404(Kuendigung.objects.select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
+    pdf = kuendigung_so_pdf(k.vertrag, k, verwaltung=Verwaltung.objects.first())
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = f'inline; filename="Kuendigung_{k.vertrag.mieter.nachname}.pdf"'
+    return resp
 
 
 # ============================================================
