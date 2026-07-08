@@ -1,0 +1,66 @@
+{% extends 'fw/base.html' %}
+{% block title %}{% if ist_neu %}Neuer Mandant{% else %}{{ md.firma_oder_name }} bearbeiten{% endif %} — swissImmo{% endblock %}
+{% block content %}
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/mandate/" class="hover:text-indigo-600">Mandate</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <span class="text-slate-600 font-medium">{% if ist_neu %}Neu{% else %}{{ md.firma_oder_name }}{% endif %}</span>
+</nav>
+
+<h1 class="text-2xl font-extrabold text-slate-900 mb-1">{% if ist_neu %}Neuen Mandanten erfassen{% else %}{{ md.firma_oder_name }} bearbeiten{% endif %}</h1>
+<p class="text-sm text-slate-500 mb-6">Eigentümer-Stammdaten und Zuordnung der Liegenschaften.</p>
+
+<form method="post" class="max-w-3xl space-y-5">
+    {% csrf_token %}
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <h3 class="font-bold text-slate-800 text-sm">Eigentümer</h3>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Name / Firma *</label>
+            <input name="firma_oder_name" required value="{{ md.firma_oder_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kontaktperson</label>
+                <input name="kontaktperson" value="{{ md.kontaktperson }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">E-Mail</label>
+                <input type="email" name="email" value="{{ md.email }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Strasse & Nr.</label>
+            <input name="strasse" value="{{ md.strasse }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">PLZ</label>
+                <input name="plz" value="{{ md.plz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Ort</label>
+                <input name="ort" value="{{ md.ort }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Telefon</label>
+                <input name="telefon" value="{{ md.telefon }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bankname</label>
+                <input name="bank_name" value="{{ md.bank_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">IBAN</label>
+                <input name="iban" value="{{ md.iban }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-1">Zugeordnete Liegenschaften</h3>
+        <p class="text-xs text-slate-400 mb-3">Wähle die Liegenschaften, die diesem Eigentümer gehören.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto">
+            {% for lg in alle_liegenschaften %}
+            <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer text-sm">
+                <input type="checkbox" name="liegenschaften" value="{{ lg.id }}" {% if lg.id in zugeordnet %}checked{% endif %} class="accent-indigo-600">
+                <span class="min-w-0"><span class="font-medium text-slate-800">{{ lg.strasse }}</span>
+                    <span class="text-xs text-slate-400 block">{{ lg.plz }} {{ lg.ort }}{% if lg.mandant and lg.mandant_id != md.id %} · aktuell: {{ lg.mandant.firma_oder_name }}{% endif %}</span></span>
+            </label>
+            {% empty %}
+            <p class="text-sm text-slate-400 italic col-span-2">Noch keine Liegenschaften erfasst.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+            <i class="fa-solid fa-check mr-1.5"></i>Speichern
+        </button>
+        <a href="/neu/mandate/" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}

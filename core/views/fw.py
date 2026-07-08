@@ -2236,3 +2236,77 @@ def fw_suche(request):
         'personen': personen, 'liegenschaften': liegenschaften,
         'objekte': objekte, 'vertraege': vertraege,
     })
+
+
+# ============================================================
+# MANDATE CRUD (Eigentümer) + Liegenschaft-Zuordnung
+# ============================================================
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_mandat_form(request, pk=None):
+    """Mandant (Eigentümer) erfassen/bearbeiten + Liegenschaften zuordnen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Mandant
+    from core.auth import log_aktion
+    md = get_object_or_404(Mandant, id=pk) if pk else None
+    basis = _global_filter(request)
+
+    if request.method == 'POST':
+        P = request.POST
+        obj = md or Mandant()
+        obj.firma_oder_name = P.get('firma_oder_name', '').strip()
+        obj.kontaktperson = P.get('kontaktperson', '').strip()
+        obj.strasse = P.get('strasse', '').strip()
+        obj.plz = P.get('plz', '').strip()
+        obj.ort = P.get('ort', '').strip()
+        obj.telefon = P.get('telefon', '').strip()
+        obj.email = P.get('email', '').strip()
+        obj.bank_name = P.get('bank_name', '').strip()
+        obj.iban = P.get('iban', '').strip()
+        if not obj.firma_oder_name:
+            messages.error(request, "Name / Firma ist erforderlich.")
+            return redirect(request.path)
+        obj.save()
+        # Liegenschaften zuordnen: gewählte -> dieser Mandant; abgewählte (bisher dieser) -> ohne Mandant
+        gewaehlt = set(P.getlist('liegenschaften'))
+        for lg in Liegenschaft.objects.all():
+            sid = str(lg.id)
+            if sid in gewaehlt and lg.mandant_id != obj.id:
+                lg.mandant = obj
+                lg.save(update_fields=['mandant'])
+            elif sid not in gewaehlt and lg.mandant_id == obj.id:
+                lg.mandant = None
+                lg.save(update_fields=['mandant'])
+        log_aktion(request, "Mandant bearbeitet" if pk else "Mandant erstellt", obj.firma_oder_name, '')
+        messages.success(request, f"✅ Mandant {obj.firma_oder_name} gespeichert.")
+        return redirect('/neu/mandate/')
+
+    alle_lg = Liegenschaft.objects.all().order_by('strasse')
+    zugeordnet = set(Liegenschaft.objects.filter(mandant=md).values_list('id', flat=True)) if md else set()
+    return render(request, 'fw/mandat_form.html', {
+        **basis, 'nav': 'mandate', 'md': md, 'ist_neu': md is None,
+        'alle_liegenschaften': alle_lg, 'zugeordnet': zugeordnet,
+    })
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_mandat_loeschen(request, pk):
+    """Löscht einen Mandanten — NUR wenn keine Liegenschaften zugeordnet sind
+    (mandant->liegenschaft ist CASCADE; sonst würden Objekte/Verträge mitgelöscht)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Mandant
+    from core.auth import log_aktion
+    md = get_object_or_404(Mandant, id=pk)
+    if request.method == 'POST':
+        anzahl = Liegenschaft.objects.filter(mandant=md).count()
+        if anzahl > 0:
+            messages.error(request, f"❌ '{md.firma_oder_name}' hat noch {anzahl} zugeordnete Liegenschaft(en). "
+                                    "Bitte zuerst die Zuordnung im Bearbeiten-Dialog entfernen, dann löschen.")
+            return redirect('/neu/mandate/')
+        name = md.firma_oder_name
+        log_aktion(request, "Mandant gelöscht", name, '')
+        md.delete()
+        messages.success(request, f"🗑️ Mandant {name} gelöscht.")
+    return redirect('/neu/mandate/')
