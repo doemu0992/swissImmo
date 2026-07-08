@@ -655,6 +655,20 @@ def fw_mahnwesen(request):
 
     stufe_chips = [('', 'Alle Stufen')] + [(str(s['stufe']), s['label']) for s in MAHN_STUFEN]
 
+    # Letzte erfasste Mahnung je Rechnung + Historie
+    from finance.models import Mahnung
+    letzte_je_rechnung = {}
+    for mn in Mahnung.objects.all().order_by('datum'):
+        letzte_je_rechnung[mn.debitoren_rechnung_id] = mn
+    for row in rows:
+        row['letzte_mahnung'] = letzte_je_rechnung.get(row['r'].id)
+
+    historie_qs = (Mahnung.objects.select_related('vertrag__mieter', 'debitoren_rechnung')
+                   .order_by('-datum', '-id'))
+    if aktive_lg:
+        historie_qs = historie_qs.filter(vertrag__einheit__liegenschaft=aktive_lg)
+    historie = list(historie_qs[:30])
+
     context = {
         **basis, 'nav': 'mahnwesen', 'rows': rows,
         'stufe_filter': stufe_filter, 'stufe_chips': stufe_chips,
@@ -662,6 +676,7 @@ def fw_mahnwesen(request):
         'mahnstufen': MAHN_STUFEN,
         'counts': counts, 'summe': summe,
         'anzahl_total': counts[1] + counts[2] + counts[3],
+        'historie': historie,
     }
     return render(request, 'fw/mahnwesen.html', context)
 
@@ -3523,3 +3538,64 @@ def fw_pendenz_loeschen(request, pk):
     p.delete()
     messages.success(request, "Pendenz gelöscht.")
     return redirect('fw_pendenzen')
+
+
+# ============================================================
+# MAHN-HISTORIE (revisionssicher) + Mahngebühren
+# ============================================================
+
+MAHN_GEBUEHR = {1: Decimal('0.00'), 2: Decimal('20.00'), 3: Decimal('40.00')}
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_mahnung_erfassen(request):
+    """Erfasst einen revisionssicheren Mahnschritt in der Historie und legt
+    optional eine Mahngebühr als Debitorenrechnung an."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import Mahnung, DebitorenRechnung
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_mahnwesen')
+
+    rechnung = get_object_or_404(DebitorenRechnung.objects.select_related('vertrag__mieter'),
+                                 id=request.POST.get('rechnung_id'))
+    try:
+        stufe = int(request.POST.get('stufe') or 1)
+    except ValueError:
+        stufe = 1
+    stufe = min(max(stufe, 1), 3)
+
+    try:
+        gebuehr = Decimal(str(request.POST.get('gebuehr') or MAHN_GEBUEHR.get(stufe, Decimal('0'))).replace(',', '.'))
+    except Exception:
+        gebuehr = MAHN_GEBUEHR.get(stufe, Decimal('0.00'))
+
+    heute = timezone.now().date()
+    m = Mahnung.objects.create(
+        debitoren_rechnung=rechnung, vertrag=rechnung.vertrag, stufe=stufe,
+        datum=heute, betrag_offen=rechnung.offener_betrag, gebuehr=gebuehr,
+        versandart=request.POST.get('versandart', 'manuell'),
+        erstellt_von=request.user,
+    )
+
+    # Mahngebühr als separate Debitorenrechnung (falls > 0)
+    if gebuehr > 0 and rechnung.vertrag_id:
+        DebitorenRechnung.objects.create(
+            vertrag=rechnung.vertrag,
+            liegenschaft=rechnung.liegenschaft or (rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None),
+            titel=f"Mahngebühr {stufe}. Mahnung",
+            beschreibung=f"Mahngebühr zu: {rechnung.titel}",
+            datum=heute, faellig_am=heute + _timedelta(days=30),
+            betrag=gebuehr, status='offen',
+        )
+
+    log_aktion(request, f"{stufe}. Mahnung erfasst",
+               rechnung.vertrag.mieter.display_name if rechnung.vertrag_id else rechnung.titel,
+               f"offen CHF {rechnung.offener_betrag}, Gebühr CHF {gebuehr}")
+    messages.success(request,
+        f"✅ {stufe}. Mahnung erfasst" + (f" · Mahngebühr CHF {gebuehr} gestellt." if gebuehr > 0 else "."))
+    ziel = '/neu/mahnwesen/'
+    if lg := request.POST.get('lg'):
+        ziel += f'?lg={lg}'
+    return redirect(ziel)

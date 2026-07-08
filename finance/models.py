@@ -65,6 +65,17 @@ class Buchung(models.Model):
     def __str__(self):
         return f"{self.datum}: {self.soll_konto.nummer} an {self.haben_konto.nummer} | CHF {self.betrag}"
 
+    def delete(self, *args, **kwargs):
+        """Revisionssicherheit: Buchungen sind append-only. Statt Löschen wird
+        storniert (Gegenbuchung). Hard-Delete nur mit explizitem force=True
+        (z.B. Testdaten-Cleanup / Storno-Paar-Bereinigung)."""
+        if kwargs.pop('force', False):
+            return super().delete(*args, **kwargs)
+        raise PermissionError(
+            "Buchungen dürfen nicht gelöscht werden (Revisionssicherheit). "
+            "Bitte stornieren statt löschen."
+        )
+
     class Meta:
         verbose_name = "Buchung"
         verbose_name_plural = "Buchungen"
@@ -147,6 +158,31 @@ class Zahlungseingang(models.Model):
     )
 
     class Meta: db_table = 'core_zahlungseingang'
+
+
+class Mahnung(models.Model):
+    """Revisionssichere Mahn-Historie: pro Mahnschritt ein unveränderlicher Eintrag
+    mit Stufe, offenem Betrag und (optionaler) Mahngebühr."""
+    debitoren_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.CASCADE, related_name='mahnungen', null=True, blank=True)
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, blank=True, related_name='mahnungen')
+    stufe = models.PositiveSmallIntegerField("Mahnstufe", default=1)
+    datum = models.DateField("Mahndatum", default=timezone.now)
+    betrag_offen = models.DecimalField("Offener Betrag", max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    gebuehr = models.DecimalField("Mahngebühr", max_digits=8, decimal_places=2, default=Decimal('0.00'))
+    versandart = models.CharField("Versand", max_length=20, choices=[('email', 'E-Mail'), ('brief', 'Brief'), ('manuell', 'Manuell erfasst')], default='manuell')
+    bemerkung = models.CharField(max_length=255, blank=True, default='')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+    erstellt_von = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    class Meta:
+        verbose_name = "Mahnung"
+        verbose_name_plural = "Mahn-Historie"
+        ordering = ['-datum', '-id']
+        db_table = 'core_mahnung'
+
+    def __str__(self):
+        return f"{self.stufe}. Mahnung – CHF {self.betrag_offen} ({self.datum})"
+
 
 class KreditorenRechnung(models.Model):
     STATUS_CHOICES = [

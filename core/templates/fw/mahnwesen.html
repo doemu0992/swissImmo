@@ -69,12 +69,25 @@
                 <td class="px-5 py-3.5 text-center font-semibold text-rose-600">{{ row.tage }}</td>
                 <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">{{ row.offen|chf }}</td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                    {% if row.letzte_mahnung %}<div class="text-[10px] text-slate-400 mb-1">zuletzt: {{ row.letzte_mahnung.stufe }}. Mahnung {{ row.letzte_mahnung.datum|date:"d.m.Y" }}</div>{% endif %}
+                    <div class="inline-flex items-center gap-1.5">
                     {% if row.mahn_url %}
                     <a href="{{ row.mahn_url }}" target="_blank"
                        class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                        <i class="fa-solid fa-file-pdf"></i> Mahnung
+                        <i class="fa-solid fa-file-pdf"></i> PDF
                     </a>
+                    <form method="post" action="/neu/mahnwesen/erfassen/" class="inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="rechnung_id" value="{{ row.r.id }}">
+                        <input type="hidden" name="stufe" value="{{ row.stufe.stufe }}">
+                        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                        <button type="submit" title="{{ row.stufe.label }} in Historie erfassen (inkl. Gebühr)"
+                           class="inline-flex items-center gap-1.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Erfassen
+                        </button>
+                    </form>
                     {% else %}<span class="text-slate-300 text-xs">kein Vertrag</span>{% endif %}
+                    </div>
                 </td>
             </tr>
             {% empty %}
@@ -101,7 +114,41 @@
 
 <p class="text-xs text-slate-400 mt-3">
     <i class="fa-solid fa-circle-info mr-1"></i>
-    Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. „Mahnung" öffnet das fertige PDF
-    (inkl. QR-Rechnung und — ab Stufe 3 — Kündigungsandrohung nach Art. 257d OR) mit vorbelegtem Betrag und Monat.
+    Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. „PDF" öffnet die fertige Mahnung
+    (inkl. QR-Rechnung und — ab Stufe 3 — Kündigungsandrohung nach Art. 257d OR). „Erfassen" schreibt den
+    Mahnschritt revisionssicher in die Historie und stellt die Mahngebühr (Stufe 2: CHF 20, Stufe 3: CHF 40).
 </p>
+
+<!-- Mahn-Historie (revisionssicher) -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden mt-6">
+    <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">
+        <i class="fa-solid fa-clock-rotate-left text-slate-400 mr-1.5"></i>Mahn-Historie
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Datum</th>
+                <th class="px-5 py-3 font-semibold">Stufe</th>
+                <th class="px-5 py-3 font-semibold">Mieter</th>
+                <th class="px-5 py-3 font-semibold">Rechnung</th>
+                <th class="px-5 py-3 font-semibold text-right">Offen</th>
+                <th class="px-5 py-3 font-semibold text-right">Gebühr</th>
+            </tr></thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for h in historie %}
+            <tr class="hover:bg-slate-50/60">
+                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ h.datum|date:"d.m.Y" }}</td>
+                <td class="px-5 py-3"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">{{ h.stufe }}. Mahnung</span></td>
+                <td class="px-5 py-3 text-slate-900 whitespace-nowrap">{% if h.vertrag_id %}{{ h.vertrag.mieter.display_name }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3 text-slate-500 truncate max-w-[200px]">{% if h.debitoren_rechnung %}{{ h.debitoren_rechnung.titel }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3 text-right text-slate-700 whitespace-nowrap">{{ h.betrag_offen|chf }}</td>
+                <td class="px-5 py-3 text-right whitespace-nowrap {% if h.gebuehr > 0 %}text-rose-600 font-medium{% else %}text-slate-400{% endif %}">{{ h.gebuehr|chf }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Mahnungen erfasst.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}
