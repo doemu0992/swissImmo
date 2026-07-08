@@ -59,6 +59,20 @@
         </div>
     </div>
 
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
+        <h3 class="font-bold text-slate-800 text-sm">Nebenkosten / Heizung</h3>
+        <label class="flex items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" name="hkvo_aktiv" {% if lg.hkvo_aktiv %}checked{% endif %} onchange="document.getElementById('hkvo-box').classList.toggle('hidden', !this.checked)" class="accent-indigo-600">
+            Verbrauchsabhängige Heizkostenabrechnung (HKVO)
+        </label>
+        <div id="hkvo-box" class="{% if not lg.hkvo_aktiv %}hidden{% endif %} flex items-center gap-2 pl-6">
+            <label class="text-xs text-slate-500">Grundkosten-Anteil</label>
+            <input type="number" name="hkvo_grundkosten_prozent" value="{{ lg.hkvo_grundkosten_prozent|default:40 }}" min="0" max="100" class="w-20 bg-slate-100 rounded-lg text-sm px-2 py-1.5 text-right">
+            <span class="text-xs text-slate-400">% (Rest = Verbrauch, nach Wärmezähler)</span>
+        </div>
+        <p class="text-xs text-slate-400">Bei aktiver HKVO werden die Heizkosten in Grundkosten (nach m³) und Verbrauchskosten (nach Zählerständen der Wärmezähler) aufgeteilt.</p>
+    </div>
+
     <div class="flex items-center gap-3">
         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             <i class="fa-solid fa-check mr-1.5"></i>Speichern

@@ -27,6 +27,26 @@ def get_heizgradtage_fuer_zeitraum(start_datum, ende_datum):
 
     return total_prozent / Decimal('100')
 
+
+def _heiz_verbrauch_pro_einheit(liegenschaft, start_p, ende_p):
+    """Verbrauch (Zählerdifferenz) pro Einheit für Heizungs-/Wärmezähler im Zeitraum.
+    Gibt {einheit_id: verbrauch} zurück; leer, wenn keine verwertbaren Zählerstände existieren."""
+    from portfolio.models import Zaehler, ZaehlerStand
+    result = {}
+    heiz_typen = ('heiz', 'wärme', 'waerme', 'wmz', 'energie', 'wärmemenge')
+    for z in Zaehler.objects.filter(einheit__liegenschaft=liegenschaft):
+        typ = (z.typ or '').lower()
+        if not any(t in typ for t in heiz_typen):
+            continue
+        staende = list(ZaehlerStand.objects.filter(
+            zaehler=z, datum__gte=start_p, datum__lte=ende_p).order_by('datum'))
+        if len(staende) >= 2:
+            verbrauch = (staende[-1].wert or Decimal('0')) - (staende[0].wert or Decimal('0'))
+            if verbrauch > 0:
+                result[z.einheit_id] = result.get(z.einheit_id, Decimal('0')) + verbrauch
+    return result
+
+
 def berechne_abrechnung(periode_id):
     """
     Professionelle Schweizer HNK-Abrechnung (Expert-Version).
@@ -162,6 +182,13 @@ def berechne_abrechnung(periode_id):
     if total_m3 <= 0: total_m3 = total_m2 # Fallback: m2 nehmen wenn m3 nicht konfiguriert ist
     total_einheiten = einheiten.count() or 1
 
+    # HKVO: verbrauchsabhängige Heizkosten (Grundkosten nach m³ + Verbrauchskosten nach Zähler)
+    hkvo_aktiv = getattr(liegenschaft, 'hkvo_aktiv', False)
+    grundkosten_anteil = Decimal(getattr(liegenschaft, 'hkvo_grundkosten_prozent', 40)) / Decimal('100')
+    verbrauch_map = _heiz_verbrauch_pro_einheit(liegenschaft, start_p, ende_p) if hkvo_aktiv else {}
+    total_verbrauch = sum(verbrauch_map.values()) if verbrauch_map else Decimal('0')
+    hkvo_angewendet = bool(hkvo_aktiv and total_verbrauch > 0)
+
     # ---------------------------------------------------------
     # 3. VERTEILUNG AUF EINHEITEN & MIETER (Die Matrix)
     # ---------------------------------------------------------
@@ -173,7 +200,14 @@ def berechne_abrechnung(periode_id):
         e_m2 = einheit.flaeche_m2 or Decimal('0')
         e_m3 = einheit.volumen_m3 or e_m2
 
-        anteil_hk_einheit = pool_heizkosten * (e_m3 / total_m3)
+        if hkvo_angewendet:
+            # Grundkosten nach m³, Verbrauchskosten nach gemessenem Verbrauch (HKVO)
+            e_verbrauch = verbrauch_map.get(einheit.id, Decimal('0'))
+            grund = pool_heizkosten * grundkosten_anteil * (e_m3 / total_m3)
+            verbrauch = pool_heizkosten * (Decimal('1') - grundkosten_anteil) * (e_verbrauch / total_verbrauch)
+            anteil_hk_einheit = grund + verbrauch
+        else:
+            anteil_hk_einheit = pool_heizkosten * (e_m3 / total_m3)
         anteil_nk_einheit = (pool_nk_m2 * (e_m2 / total_m2)) + (pool_nk_einheit * (Decimal('1') / Decimal(total_einheiten)))
 
         # Mieter in dieser Periode finden
@@ -212,6 +246,7 @@ def berechne_abrechnung(periode_id):
 
                 abrechnungen.append({
                     'typ': 'mieter_akonto',
+                    'vertrag_id': vertrag.id,
                     'name': f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}",
                     'einheit': einheit.bezeichnung,
                     'von': v_start.strftime('%d.%m.%y'),
@@ -228,6 +263,7 @@ def berechne_abrechnung(periode_id):
                 # Pauschal: Kosten fallen an, aber Differenz geht zulasten Eigentümer
                 abrechnungen.append({
                     'typ': 'mieter_pauschal',
+                    'vertrag_id': vertrag.id,
                     'name': f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}",
                     'einheit': einheit.bezeichnung,
                     'von': v_start.strftime('%d.%m.%y'),
@@ -272,5 +308,6 @@ def berechne_abrechnung(periode_id):
         'belege_details': kategorien_liste,
         'abrechnungen': abrechnungen,
         'kontroll_summe': round(kontroll_summe, 2),
-        'differenz': round(total_kosten_gesamt - kontroll_summe, 2)
+        'differenz': round(total_kosten_gesamt - kontroll_summe, 2),
+        'hkvo_angewendet': hkvo_angewendet,
     }

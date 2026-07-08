@@ -24,6 +24,9 @@ class Liegenschaft(models.Model):
     iban = models.CharField("IBAN", max_length=34, blank=True)
 
     verteilschluessel_text = models.CharField("Verteilschlüssel Standard", max_length=200, default="nach Wohnfläche (m2)")
+    # HKVO: verbrauchsabhängige Heizkostenabrechnung
+    hkvo_aktiv = models.BooleanField("Verbrauchsabhängige Heizkosten (HKVO)", default=False)
+    hkvo_grundkosten_prozent = models.IntegerField("Grundkosten-Anteil (%)", default=40)  # Rest = Verbrauchskosten
 
     # --- HAUSWARTUNG & NOTFALL ---
     hauswart_name = models.CharField("Hauswart", max_length=100, blank=True, default='')

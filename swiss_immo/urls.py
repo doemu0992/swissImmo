@@ -67,7 +67,7 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_obj
                            fw_schaeden, fw_schaden_detail,
                            fw_dienstleister, fw_assets, fw_buchhaltung,
                            fw_sollstellung, fw_sollstellung_run,
-                           fw_nebenkosten, fw_nebenkosten_detail,
+                           fw_nebenkosten, fw_nebenkosten_detail, fw_nebenkosten_verbuchen,
                            fw_mietzins, fw_dokumente, fw_kommunikation,
                            fw_vertrag_neu, fw_vertrag_neu_speichern,
                            fw_vertrag_status, fw_vertrag_loeschen,
@@ -142,6 +142,7 @@ urlpatterns = [
     path('neu/sollstellung/starten/', fw_sollstellung_run, name='fw_sollstellung_run'),
     path('neu/nebenkosten/', fw_nebenkosten, name='fw_nebenkosten'),
     path('neu/nebenkosten/<int:pk>/', fw_nebenkosten_detail, name='fw_nebenkosten_detail'),
+    path('neu/nebenkosten/<int:pk>/verbuchen/', fw_nebenkosten_verbuchen, name='fw_nebenkosten_verbuchen'),
     path('neu/mietzins/', fw_mietzins, name='fw_mietzins'),
     path('neu/dokumente/', fw_dokumente, name='fw_dokumente'),
     # Profil-Menü

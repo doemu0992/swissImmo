@@ -21,11 +21,14 @@
         </div>
     </div>
     <div class="flex items-center gap-2">
+        {% if hkvo_angewendet %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-50 text-sky-700" title="Verbrauchsabhängige Heizkostenabrechnung angewendet">HKVO ✓</span>{% endif %}
         {% if p.abgeschlossen %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-emerald-50 text-emerald-700">Abgeschlossen</span>
-        {% else %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-amber-50 text-amber-700">Offen</span>{% endif %}
-        <a href="/app/?tab=finance" class="text-sm text-slate-500 hover:text-indigo-600 border border-slate-200 px-3 py-1.5 rounded-lg" title="Öffnet die klassische Ansicht">
-            Abrechnen <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-        </a>
+        {% else %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-amber-50 text-amber-700">Offen</span>
+        <form method="post" action="/neu/nebenkosten/{{ p.id }}/verbuchen/" onsubmit="return confirm('Abrechnung jetzt verbuchen? Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Periode wird abgeschlossen.');">
+            {% csrf_token %}
+            <button class="text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1"></i>Verbuchen</button>
+        </form>
+        {% endif %}
     </div>
 </div>
 

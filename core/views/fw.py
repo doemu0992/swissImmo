@@ -1557,58 +1557,110 @@ def fw_nebenkosten(request):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_nebenkosten_detail(request, pk):
+    """Zeigt die Abrechnung — nutzt die EINE kanonische Engine (core.utils.billing),
+    identisch zu PDF und Verbuchung (keine divergierenden Berechnungen mehr)."""
     from finance.models import AbrechnungsPeriode, KreditorenRechnung
+    from core.utils.billing import berechne_abrechnung
     p = get_object_or_404(AbrechnungsPeriode.objects.select_related('liegenschaft'), id=pk)
     basis = _global_filter(request)
     lg = p.liegenschaft
 
-    # HNK-relevante Kreditorenrechnungen dieser Periode
-    kosten_rechnungen = (KreditorenRechnung.objects.filter(
-        liegenschaft=lg, is_hnk_relevant=True,
-        datum__gte=p.start_datum, datum__lte=p.ende_datum).exclude(status='storniert'))
-    total_kosten = sum((r.betrag or Decimal('0')) for r in kosten_rechnungen)
-
-    alle_einheiten = lg.einheiten.all() if lg else []
-    total_flaeche = sum(e.flaeche_m2 for e in alle_einheiten if e.flaeche_m2) or 1
-    tage_periode = (p.ende_datum - p.start_datum).days + 1
-
-    vertraege = (Mietvertrag.objects.filter(einheit__liegenschaft=lg, beginn__lte=p.ende_datum)
-                 .exclude(ende__lt=p.start_datum).select_related('mieter', 'einheit')) if lg else []
-
+    result = berechne_abrechnung(p.id)
+    # Kanonische Ausgabe auf die Template-Keys mappen
     abrechnungen = []
+    total_kosten_verteilt = Decimal('0.00')
     total_akonto = Decimal('0.00')
-    for v in vertraege:
-        v_start = max(v.beginn, p.start_datum)
-        v_ende = min(v.ende, p.ende_datum) if v.ende else p.ende_datum
-        tage_bewohnt = (v_ende - v_start).days + 1
-        zeit_faktor = Decimal(tage_bewohnt) / Decimal(tage_periode)
-        flaeche = v.einheit.flaeche_m2 or 0
-        anteil = Decimal(flaeche) / Decimal(total_flaeche)
-        mieter_kosten = round(total_kosten * anteil * zeit_faktor, 2)
-        monate = round(tage_bewohnt / 30)
-        akonto = round((v.nebenkosten or Decimal('0')) * Decimal(monate), 2)
+    for a in result.get('abrechnungen', []):
+        kosten = Decimal(str(a.get('kosten_anteil', 0)))
+        akonto = Decimal(str(a.get('akonto', 0)))
+        total_kosten_verteilt += kosten
         total_akonto += akonto
-        saldo = mieter_kosten - akonto
         abrechnungen.append({
-            'v': v, 'mieter': v.mieter.display_name, 'einheit': v.einheit.bezeichnung,
-            'flaeche': flaeche, 'tage': tage_bewohnt,
-            'kosten': mieter_kosten, 'akonto': akonto, 'saldo': saldo,
+            'v': None, 'vertrag_id': a.get('vertrag_id'),
+            'mieter': a.get('name', ''), 'einheit': a.get('einheit', ''),
+            'flaeche': '', 'tage': f"{a.get('von','')}–{a.get('bis','')}" if a.get('von') != '-' else 'Leerstand',
+            'kosten': kosten, 'akonto': akonto, 'saldo': Decimal(str(a.get('saldo', 0))),
+            'nachzahlung': a.get('nachzahlung', False), 'info': a.get('info', ''),
         })
 
     belege = p.belege.all().order_by('-datum')
+    kosten_rechnungen = (KreditorenRechnung.objects.filter(
+        liegenschaft=lg, is_hnk_relevant=True,
+        datum__gte=p.start_datum, datum__lte=p.ende_datum).exclude(status='storniert')) if lg else []
 
     tab_liste = [
         ('abrechnung', 'Mieter-Abrechnung', len(abrechnungen) or None),
-        ('belege', 'Belege', belege.count() or None),
+        ('belege', 'Belege', (len(result.get('belege_details', [])) or belege.count()) or None),
     ]
     return render(request, 'fw/nebenkosten_detail.html', {
         **basis, 'nav': 'nebenkosten', 'p': p,
-        'total_kosten': total_kosten, 'total_akonto': total_akonto,
-        'saldo_total': total_kosten - total_akonto,
-        'abrechnungen': abrechnungen, 'belege': belege,
-        'kreditoren': kosten_rechnungen,
+        'total_kosten': result.get('total_kosten', Decimal('0.00')),
+        'total_akonto': total_akonto,
+        'saldo_total': total_kosten_verteilt - total_akonto,
+        'abrechnungen': abrechnungen,
+        'belege_details': result.get('belege_details', []),
+        'belege': belege, 'kreditoren': kosten_rechnungen,
+        'hkvo_angewendet': result.get('hkvo_angewendet', False),
+        'hkvo_aktiv': getattr(lg, 'hkvo_aktiv', False) if lg else False,
+        'differenz': result.get('differenz', Decimal('0.00')),
         'tab_liste': tab_liste,
     })
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_nebenkosten_verbuchen(request, pk):
+    """Verbucht die Abrechnung mit den GLEICHEN Zahlen wie Anzeige/PDF (kanonische Engine)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import AbrechnungsPeriode, Buchungskonto, Buchung
+    from core.utils.billing import berechne_abrechnung
+    from core.auth import log_aktion
+    p = get_object_or_404(AbrechnungsPeriode, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/nebenkosten/{p.id}/')
+    if p.abgeschlossen:
+        messages.error(request, "Diese Periode ist bereits abgeschlossen und verbucht.")
+        return redirect(f'/neu/nebenkosten/{p.id}/')
+
+    result = berechne_abrechnung(p.id)
+    try:
+        konto_deb = Buchungskonto.objects.get(nummer="1100")
+        konto_nk = Buchungskonto.objects.get(nummer="3020")
+    except Buchungskonto.DoesNotExist:
+        messages.error(request, "Konten 1100 / 3020 fehlen. Bitte Kontenplan laden.")
+        return redirect(f'/neu/nebenkosten/{p.id}/')
+
+    heute = timezone.now().date()
+    n_nach = n_gut = 0
+    with transaction.atomic():
+        for a in result.get('abrechnungen', []):
+            vid = a.get('vertrag_id')
+            saldo = Decimal(str(a.get('saldo', 0)))
+            if not vid or a.get('typ') == 'leerstand' or abs(saldo) < Decimal('0.01'):
+                continue
+            v = Mietvertrag.objects.filter(id=vid).select_related('einheit__liegenschaft').first()
+            if not v:
+                continue
+            if saldo > 0:  # Nachzahlung -> Debitor
+                rech = DebitorenRechnung.objects.create(
+                    vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
+                    titel=f"NK-Abrechnung Nachzahlung - {p.bezeichnung}",
+                    beschreibung=f"Periode {p.start_datum:%d.%m.%Y}–{p.ende_datum:%d.%m.%Y}",
+                    betrag=saldo, faellig_am=heute + timezone.timedelta(days=30), konto_haben=konto_nk)
+                Buchung.objects.create(datum=heute, beleg_text=f"NK-Nachzahlung {v.mieter} - {p.bezeichnung}",
+                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_nk,
+                                       betrag=saldo, debitoren_rechnung=rech, erstellt_von=request.user)
+                n_nach += 1
+            else:  # Guthaben -> Gutschrift
+                Buchung.objects.create(datum=heute, beleg_text=f"NK-Gutschrift {v.mieter} - {p.bezeichnung}",
+                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_nk, haben_konto=konto_deb,
+                                       betrag=abs(saldo), erstellt_von=request.user)
+                n_gut += 1
+        p.abgeschlossen = True
+        p.save(update_fields=['abgeschlossen'])
+    log_aktion(request, "NK-Abrechnung verbucht", p.bezeichnung, f"{n_nach} Nachzahlungen, {n_gut} Gutschriften")
+    messages.success(request, f"✅ Abrechnung verbucht: {n_nach} Nachzahlung(en), {n_gut} Gutschrift(en).")
+    return redirect(f'/neu/nebenkosten/{p.id}/')
 
 
 # ============================================================
@@ -2293,6 +2345,11 @@ def fw_liegenschaft_form(request, pk=None):
         obj.hauswart_telefon = P.get('hauswart_telefon', '').strip()
         obj.bank_name = P.get('bank_name', '').strip()
         obj.iban = P.get('iban', '').strip()
+        obj.hkvo_aktiv = P.get('hkvo_aktiv') == 'on'
+        try:
+            obj.hkvo_grundkosten_prozent = int(P.get('hkvo_grundkosten_prozent') or 40)
+        except ValueError:
+            obj.hkvo_grundkosten_prozent = 40
         obj.save()
         log_aktion(request, "Liegenschaft bearbeitet" if pk else "Liegenschaft erstellt",
                    f"{obj.strasse}, {obj.ort}", '')
