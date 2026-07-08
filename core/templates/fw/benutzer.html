@@ -1,25 +1,48 @@
 {% extends 'fw/base.html' %}
 {% block title %}Benutzer — swissImmo{% endblock %}
 {% block content %}
-<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Benutzer</h1>
+<div class="flex items-center justify-between mb-1">
+    <h1 class="text-3xl font-extrabold text-slate-900">Benutzer</h1>
+    <a href="/neu/benutzer/neu/" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+        <i class="fa-solid fa-plus mr-1.5"></i> Benutzer erfassen
+    </a>
+</div>
 <p class="text-sm text-slate-500 mb-6">{{ rows|length }} Team-Mitglied(er) mit Zugriff auf die Verwaltung.</p>
+
+{% if messages %}
+<div class="space-y-2 mb-4 max-w-3xl">
+    {% for m in messages %}
+    <div class="text-sm px-4 py-2.5 rounded-lg {% if 'error' in m.tags %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
+    {% endfor %}
+</div>
+{% endif %}
 
 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden max-w-3xl">
     <table class="w-full text-sm">
         <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
-            <tr><th class="text-left px-5 py-3">Name</th><th class="text-left px-5 py-3">Benutzername</th>
-                <th class="text-left px-5 py-3">Rolle</th><th class="text-left px-5 py-3">E-Mail</th></tr>
+            <tr><th class="text-left px-5 py-3">Name</th><th class="text-left px-5 py-3">Rolle</th>
+                <th class="text-left px-5 py-3">E-Mail</th><th class="text-right px-5 py-3">Aktionen</th></tr>
         </thead>
         <tbody class="divide-y divide-slate-50">
             {% for row in rows %}
-            <tr class="hover:bg-slate-50/60">
-                <td class="px-5 py-3.5 flex items-center gap-3">
-                    <span class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">{{ row.name|slice:":2"|upper }}</span>
-                    <span class="font-medium text-slate-900">{{ row.name }}</span>
+            <tr class="hover:bg-slate-50/60 {% if not row.u.is_active %}opacity-50{% endif %}">
+                <td class="px-5 py-3.5">
+                    <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">{{ row.name|slice:":2"|upper }}</span>
+                        <span><span class="font-medium text-slate-900">{{ row.name }}</span>
+                            <span class="text-xs text-slate-400 block">{{ row.u.username }}{% if not row.u.is_active %} · inaktiv{% endif %}</span></span>
+                    </a>
                 </td>
-                <td class="px-5 py-3.5 text-slate-500">{{ row.u.username }}</td>
                 <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700">{{ row.rolle }}</span></td>
                 <td class="px-5 py-3.5 text-slate-500">{{ row.u.email|default:"—" }}</td>
+                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                    <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="text-xs font-medium text-indigo-600 hover:underline mr-3"><i class="fa-solid fa-pen text-[10px] mr-0.5"></i>Bearbeiten</a>
+                    <form method="post" action="/neu/benutzer/{{ row.u.id }}/loeschen/" class="inline"
+                          onsubmit="return confirm('Benutzer „{{ row.u.username }}" wirklich löschen?');">
+                        {% csrf_token %}
+                        <button class="text-xs font-medium text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash text-[10px] mr-0.5"></i>Löschen</button>
+                    </form>
+                </td>
             </tr>
             {% empty %}
             <tr><td colspan="4" class="px-5 py-8 text-center text-slate-400 italic">Keine Benutzer.</td></tr>
@@ -27,5 +50,5 @@
         </tbody>
     </table>
 </div>
-<p class="text-xs text-slate-400 mt-4 max-w-3xl">Benutzer und Rollen werden zentral über die Administration verwaltet. Rollen: Verwaltung (Vollzugriff), Sachbearbeitung (schreibend), Lesend.</p>
+<p class="text-xs text-slate-400 mt-4 max-w-3xl">Rollen: <b>Verwaltung</b> (Vollzugriff), <b>Sachbearbeitung</b> (schreibend), <b>Lesend</b> (nur ansehen). Reine Eigentümer-Portal-Zugänge werden hier nicht angezeigt.</p>
 {% endblock %}

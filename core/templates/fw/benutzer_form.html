@@ -1,0 +1,55 @@
+{% extends 'fw/base.html' %}
+{% block title %}{% if ist_neu %}Neuer Benutzer{% else %}{{ ziel.username }} bearbeiten{% endif %} — swissImmo{% endblock %}
+{% block content %}
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/benutzer/" class="hover:text-indigo-600">Benutzer</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <span class="text-slate-600 font-medium">{% if ist_neu %}Neu{% else %}{{ ziel.username }}{% endif %}</span>
+</nav>
+
+<h1 class="text-2xl font-extrabold text-slate-900 mb-1">{% if ist_neu %}Neuen Benutzer erfassen{% else %}{{ ziel.username }} bearbeiten{% endif %}</h1>
+<p class="text-sm text-slate-500 mb-6">Team-Mitglied mit Zugriff auf die Verwaltung.</p>
+
+<form method="post" class="max-w-2xl space-y-5">
+    {% csrf_token %}
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Benutzername *</label>
+            {% if ist_neu %}<input name="username" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            {% else %}<input value="{{ ziel.username }}" disabled class="w-full bg-slate-50 text-slate-400 rounded-lg text-sm px-3 py-2.5">{% endif %}</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Vorname</label>
+                <input name="first_name" value="{{ ziel.first_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nachname</label>
+                <input name="last_name" value="{{ ziel.last_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">E-Mail</label>
+            <input type="email" name="email" value="{{ ziel.email }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Passwort {% if not ist_neu %}<span class="text-slate-400 font-normal">(leer lassen = unverändert)</span>{% else %}*{% endif %}</label>
+            <input type="text" name="passwort" {% if ist_neu %}required{% endif %} autocomplete="new-password" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <h3 class="font-bold text-slate-800 text-sm">Rolle & Status</h3>
+        {% if ziel.is_superuser %}
+        <p class="text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2">Dieser Benutzer ist ein Superuser (Admin) — die Rolle wird nicht verändert.</p>
+        {% else %}
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Rolle</label>
+            <select name="rolle" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                {% for r in rollen %}<option value="{{ r }}" {% if aktuelle_rolle == r or ist_neu and r == 'Lesend' %}selected{% endif %}>{{ r }}</option>{% endfor %}
+            </select>
+            <p class="text-xs text-slate-400 mt-1">Verwaltung = Vollzugriff · Sachbearbeitung = schreibend · Lesend = nur ansehen</p></div>
+        {% endif %}
+        <label class="flex items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" name="is_active" {% if ist_neu or ziel.is_active %}checked{% endif %} {% if ist_selbst %}disabled{% endif %} class="accent-indigo-600"> Konto aktiv
+            {% if ist_selbst %}<span class="text-xs text-slate-400">(eigener Account — kann nicht deaktiviert werden)</span>{% endif %}
+        </label>
+    </div>
+
+    <div class="flex items-center gap-3">
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+            <i class="fa-solid fa-check mr-1.5"></i>Speichern
+        </button>
+        <a href="/neu/benutzer/" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}

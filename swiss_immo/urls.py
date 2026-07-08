@@ -74,7 +74,8 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_liegenschaften, fw_obj
                            fw_account, fw_marktdaten_aktualisieren, fw_marktdaten_live,
                            fw_benutzer, fw_mandate, fw_vorlagen, fw_integrationen, fw_abonnemente,
                            fw_liegenschaft_form, fw_objekt_form, fw_suche,
-                           fw_mandat_form, fw_mandat_loeschen)
+                           fw_mandat_form, fw_mandat_loeschen,
+                           fw_benutzer_form, fw_benutzer_loeschen)
 
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
@@ -141,6 +142,9 @@ urlpatterns = [
     path('neu/marktdaten/aktualisieren/', fw_marktdaten_aktualisieren, name='fw_marktdaten_aktualisieren'),
     path('neu/marktdaten/live/', fw_marktdaten_live, name='fw_marktdaten_live'),
     path('neu/benutzer/', fw_benutzer, name='fw_benutzer'),
+    path('neu/benutzer/neu/', fw_benutzer_form, name='fw_benutzer_neu'),
+    path('neu/benutzer/<int:pk>/bearbeiten/', fw_benutzer_form, name='fw_benutzer_bearbeiten'),
+    path('neu/benutzer/<int:pk>/loeschen/', fw_benutzer_loeschen, name='fw_benutzer_loeschen'),
     path('neu/mandate/', fw_mandate, name='fw_mandate'),
     path('neu/mandate/neu/', fw_mandat_form, name='fw_mandat_neu'),
     path('neu/mandate/<int:pk>/bearbeiten/', fw_mandat_form, name='fw_mandat_bearbeiten'),
