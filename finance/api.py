@@ -500,12 +500,18 @@ def create_konto(request, payload: KontoCreateSchema):
 @router.post("/konten/import-standard", response={200: dict}, auth=auth_verwaltung)
 def import_standard_kontenplan(request):
     standard_konten = [
+        {"nummer": "1015", "bezeichnung": "Kautionssperrkonten (Mieterkautionen)", "typ": "bilanz", "is_hnk_relevant": False},
         {"nummer": "1020", "bezeichnung": "Bank", "typ": "bilanz", "is_hnk_relevant": False},
         {"nummer": "1100", "bezeichnung": "Forderungen (Debitoren)", "typ": "bilanz", "is_hnk_relevant": False},
         {"nummer": "1170", "bezeichnung": "Vorsteuer (MWST)", "typ": "bilanz", "is_hnk_relevant": False},
         {"nummer": "1190", "bezeichnung": "Durchlaufkonto Weiterverrechnungen", "typ": "bilanz", "is_hnk_relevant": False},
+        {"nummer": "1500", "bezeichnung": "Sachanlagen (Anlagegüter)", "typ": "bilanz", "is_hnk_relevant": False},
         {"nummer": "2000", "bezeichnung": "Verbindlichkeiten (Kreditoren)", "typ": "bilanz", "is_hnk_relevant": False},
+        {"nummer": "2010", "bezeichnung": "Kautionsverbindlichkeiten", "typ": "bilanz", "is_hnk_relevant": False},
         {"nummer": "2200", "bezeichnung": "Geschuldete MWST (Umsatzsteuer)", "typ": "bilanz", "is_hnk_relevant": False},
+        {"nummer": "2800", "bezeichnung": "Erneuerungsfonds (Rückstellung)", "typ": "bilanz", "is_hnk_relevant": False},
+        {"nummer": "6800", "bezeichnung": "Abschreibungen", "typ": "aufwand", "is_hnk_relevant": False},
+        {"nummer": "6900", "bezeichnung": "Einlage Erneuerungsfonds", "typ": "aufwand", "is_hnk_relevant": False},
         {"nummer": "3000", "bezeichnung": "Mieterträge Wohnungen", "typ": "ertrag", "is_hnk_relevant": False},
         {"nummer": "3010", "bezeichnung": "Mieterträge Gewerbe/Parkplätze", "typ": "ertrag", "is_hnk_relevant": False},
         {"nummer": "3020", "bezeichnung": "Nebenkosten Akonto-Zahlungen", "typ": "ertrag", "is_hnk_relevant": False},

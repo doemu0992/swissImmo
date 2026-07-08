@@ -65,6 +65,22 @@ class Buchung(models.Model):
     def __str__(self):
         return f"{self.datum}: {self.soll_konto.nummer} an {self.haben_konto.nummer} | CHF {self.betrag}"
 
+    def save(self, *args, **kwargs):
+        # Periodensperre: neue Buchungen in einer abgeschlossenen Periode blockieren.
+        if self._state.adding:
+            try:
+                from crm.models import Verwaltung
+                vw = Verwaltung.objects.first()
+                sperre = vw.buchung_gesperrt_bis if vw else None
+            except Exception:
+                sperre = None
+            if sperre and self.datum and self.datum <= sperre:
+                raise PermissionError(
+                    f"Periode gesperrt: Buchungen bis {sperre:%d.%m.%Y} sind abgeschlossen "
+                    f"(Datum {self.datum:%d.%m.%Y}). Bitte spätere Periode wählen."
+                )
+        super().save(*args, **kwargs)
+
     def delete(self, *args, **kwargs):
         """Revisionssicherheit: Buchungen sind append-only. Statt Löschen wird
         storniert (Gegenbuchung). Hard-Delete nur mit explizitem force=True
@@ -411,3 +427,78 @@ class MietzinsKontrolle(models.Model):
     notizen = models.TextField(blank=True, default='')
 
     class Meta: db_table = 'core_mietzinskontrolle'
+
+# ============================================================
+# ANLAGENBUCHHALTUNG (lineare Abschreibung / AfA)
+# ============================================================
+class Anlage(models.Model):
+    """Anlagegut (z.B. Heizung, Lift, Küche) mit linearer Abschreibung.
+    Jährliche AfA = Anschaffungswert / Nutzungsdauer (Jahre)."""
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='anlagen')
+    bezeichnung = models.CharField("Bezeichnung", max_length=200)
+    anschaffungswert = models.DecimalField("Anschaffungswert (CHF)", max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    anschaffungsdatum = models.DateField("Anschaffungsdatum")
+    nutzungsdauer_jahre = models.PositiveSmallIntegerField("Nutzungsdauer (Jahre)", default=10)
+    restwert = models.DecimalField("Restwert (CHF)", max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    aktiv = models.BooleanField("Aktiv", default=True)
+    notizen = models.TextField(blank=True, default='')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Anlage"
+        verbose_name_plural = "Anlagen"
+        db_table = 'core_anlage'
+        ordering = ['liegenschaft', 'bezeichnung']
+
+    def __str__(self):
+        return f"{self.bezeichnung} ({self.anschaffungswert} CHF)"
+
+    @property
+    def jahres_afa(self):
+        if not self.nutzungsdauer_jahre:
+            return Decimal('0.00')
+        basis = (self.anschaffungswert or Decimal('0')) - (self.restwert or Decimal('0'))
+        return (basis / Decimal(self.nutzungsdauer_jahre)).quantize(Decimal('0.01'))
+
+    @property
+    def kumulierte_afa(self):
+        return sum((a.betrag for a in self.abschreibungen.all()), Decimal('0.00'))
+
+    @property
+    def buchwert(self):
+        return (self.anschaffungswert or Decimal('0')) - self.kumulierte_afa
+
+
+class Abschreibung(models.Model):
+    """Ein AfA-Buchungsvorgang pro Anlage und Jahr (idempotent)."""
+    anlage = models.ForeignKey(Anlage, on_delete=models.CASCADE, related_name='abschreibungen')
+    jahr = models.PositiveIntegerField("Jahr")
+    betrag = models.DecimalField("AfA-Betrag", max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    datum = models.DateField("Buchungsdatum")
+    buchung = models.ForeignKey(Buchung, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'core_abschreibung'
+        unique_together = ('anlage', 'jahr')
+        ordering = ['-jahr']
+
+    def __str__(self):
+        return f"AfA {self.jahr}: {self.anlage.bezeichnung} — CHF {self.betrag}"
+
+
+class Erneuerungsfonds(models.Model):
+    """Erneuerungsfonds / Rückstellung je Liegenschaft (STWEG-tauglich).
+    Jährliche Einlage wird als Rückstellung gebucht."""
+    liegenschaft = models.OneToOneField('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='erneuerungsfonds')
+    bestand = models.DecimalField("Bestand (CHF)", max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    jaehrliche_einlage = models.DecimalField("Jährliche Einlage (CHF)", max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    letzte_einlage_jahr = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Erneuerungsfonds"
+        verbose_name_plural = "Erneuerungsfonds"
+        db_table = 'core_erneuerungsfonds'
+
+    def __str__(self):
+        return f"Erneuerungsfonds {self.liegenschaft} — CHF {self.bestand}"

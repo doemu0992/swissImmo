@@ -2031,6 +2031,90 @@ def fw_assets(request):
 
 
 # ============================================================
+# ANLAGEN & ABSCHLUSS (AfA, Erneuerungsfonds, Periodensperre)
+# ============================================================
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_anlagen(request):
+    """Anlagenbuchhaltung (lineare AfA), Erneuerungsfonds und Periodensperre."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import Anlage, Erneuerungsfonds
+    from crm.models import Verwaltung
+    from core.services.automation import run_abschreibungen, run_erneuerungsfonds_einlage
+    from core.auth import log_aktion
+    basis = _global_filter(request)
+    heute = timezone.localdate()
+
+    def _dec(x):
+        try:
+            return Decimal(str(x).replace(',', '.').strip() or '0')
+        except Exception:
+            return Decimal('0.00')
+
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion')
+        if aktion == 'anlage_neu':
+            lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+            try:
+                adatum = date.fromisoformat(request.POST.get('anschaffungsdatum'))
+            except Exception:
+                adatum = heute
+            if lg and request.POST.get('bezeichnung', '').strip():
+                Anlage.objects.create(
+                    liegenschaft=lg, bezeichnung=request.POST['bezeichnung'].strip(),
+                    anschaffungswert=_dec(request.POST.get('anschaffungswert')),
+                    anschaffungsdatum=adatum,
+                    nutzungsdauer_jahre=int(request.POST.get('nutzungsdauer_jahre') or 10),
+                    restwert=_dec(request.POST.get('restwert')))
+                messages.success(request, "✅ Anlage erfasst.")
+            else:
+                messages.error(request, "Bezeichnung und Liegenschaft sind Pflicht.")
+        elif aktion == 'afa_lauf':
+            jahr = int(request.POST.get('jahr') or heute.year)
+            n, summe = run_abschreibungen(jahr, user=request.user)
+            log_aktion(request, "AfA-Lauf", str(jahr), f"{n} Abschreibungen, CHF {summe}")
+            messages.success(request, f"✅ AfA-Lauf {jahr}: {n} Abschreibung(en) gebucht (CHF {summe})." if n
+                             else f"AfA-Lauf {jahr}: nichts zu buchen (bereits erledigt oder keine Anlagen).")
+        elif aktion == 'fonds_set':
+            lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+            if lg:
+                f, _ = Erneuerungsfonds.objects.get_or_create(liegenschaft=lg)
+                f.jaehrliche_einlage = _dec(request.POST.get('jaehrliche_einlage'))
+                if request.POST.get('bestand') not in (None, ''):
+                    f.bestand = _dec(request.POST.get('bestand'))
+                f.save()
+                messages.success(request, f"✅ Erneuerungsfonds {lg.strasse} gespeichert.")
+        elif aktion == 'fonds_lauf':
+            jahr = int(request.POST.get('jahr') or heute.year)
+            n, summe = run_erneuerungsfonds_einlage(jahr, user=request.user)
+            log_aktion(request, "Erneuerungsfonds-Einlage", str(jahr), f"{n} Einlagen, CHF {summe}")
+            messages.success(request, f"✅ Erneuerungsfonds-Einlage {jahr}: {n} Buchung(en) (CHF {summe})." if n
+                             else f"Erneuerungsfonds {jahr}: nichts zu buchen.")
+        elif aktion == 'sperre_set':
+            vw = Verwaltung.objects.first()
+            if vw:
+                try:
+                    vw.buchung_gesperrt_bis = date.fromisoformat(request.POST.get('gesperrt_bis')) if request.POST.get('gesperrt_bis') else None
+                except Exception:
+                    vw.buchung_gesperrt_bis = None
+                vw.save(update_fields=['buchung_gesperrt_bis'])
+                log_aktion(request, "Periodensperre gesetzt", str(vw.buchung_gesperrt_bis or '—'), '')
+                messages.success(request, "✅ Periodensperre aktualisiert.")
+        return redirect('/neu/anlagen/')
+
+    anlagen = list(Anlage.objects.select_related('liegenschaft').all())
+    fonds = list(Erneuerungsfonds.objects.select_related('liegenschaft').all())
+    vw = Verwaltung.objects.first()
+    return render(request, 'fw/anlagen.html', {
+        **basis, 'nav': 'anlagen', 'anlagen': anlagen, 'fonds': fonds,
+        'liegenschaften': Liegenschaft.objects.order_by('strasse'),
+        'gesperrt_bis': vw.buchung_gesperrt_bis if vw else None,
+        'jahr_default': heute.year - 1,
+    })
+
+
+# ============================================================
 # ETAPPE D: BUCHHALTUNG (Erfolgsrechnung + Journal)
 # ============================================================
 
@@ -3814,8 +3898,14 @@ def fw_kaution_aktion(request, vertrag_id):
         v.kautions_einbezahlt_am = d('einbezahlt_am') or timezone.localdate()
         v.kautions_konto = P.get('kautions_konto', v.kautions_konto).strip() or v.kautions_konto
         v.save(update_fields=['kautions_art', 'kautions_einbezahlt_am', 'kautions_konto'])
+        # Bilanzbuchung: 1015 Kautionssperrkonto an 2010 Kautionsverbindlichkeit
+        try:
+            from core.services.automation import buche_kaution_einzahlung
+            buche_kaution_einzahlung(v, v.kautions_einbezahlt_am, user=request.user)
+        except Exception:
+            pass
         log_aktion(request, "Kaution einbezahlt (Sperrkonto)", str(v.mieter), f"CHF {v.kautions_betrag}")
-        messages.success(request, "✅ Kautions-Einzahlung auf Sperrkonto erfasst.")
+        messages.success(request, "✅ Kautions-Einzahlung auf Sperrkonto erfasst (bilanziert).")
 
     elif aktion == 'versicherung':
         # Kautionsversicherung: bestätigen, sobald das Zertifikat/die Police vorliegt
@@ -3856,6 +3946,12 @@ def fw_kaution_aktion(request, vertrag_id):
         v.kautions_abzug_grund = P.get('abzug_grund', '').strip()
         v.save(update_fields=['kautions_zurueckbezahlt_am', 'kautions_rueckzahlung_betrag',
                               'kautions_abzug_betrag', 'kautions_abzug_grund'])
+        # Bilanz: Sperrkonto auflösen (2010 an 1015)
+        try:
+            from core.services.automation import buche_kaution_aufloesung
+            buche_kaution_aufloesung(v, v.kautions_zurueckbezahlt_am, user=request.user)
+        except Exception:
+            pass
         # Einbehalt optional als Debitoren-Weiterverrechnung buchen (Schadenersatz)
         if abzug > 0 and P.get('abzug_verrechnen') == 'on':
             try:

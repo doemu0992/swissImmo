@@ -1,0 +1,118 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Anlagen & Abschluss — swissImmo{% endblock %}
+{% block content %}
+
+<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Anlagen & Abschluss</h1>
+<p class="text-sm text-slate-500 mb-6">Anlagenbuchhaltung mit linearer Abschreibung, Erneuerungsfonds und Periodensperre.</p>
+
+<!-- ANLAGEN -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-building-columns text-indigo-500 mr-1.5"></i>Anlagegüter</h3>
+        <form method="post" class="flex items-center gap-2">{% csrf_token %}
+            <input type="hidden" name="aktion" value="afa_lauf">
+            <input type="number" name="jahr" value="{{ jahr_default }}" class="w-24 bg-slate-100 rounded-lg text-sm px-2 py-1.5 text-right">
+            <button onclick="return confirm('AfA-Lauf für das Jahr buchen? (idempotent)');" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"><i class="fa-solid fa-bolt mr-1"></i>AfA-Lauf</button>
+        </form>
+    </div>
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+            <tr><th class="text-left px-5 py-2.5">Anlage</th><th class="text-left px-5 py-2.5">Liegenschaft</th>
+                <th class="text-right px-5 py-2.5">Anschaffung</th><th class="text-right px-5 py-2.5">ND</th>
+                <th class="text-right px-5 py-2.5">AfA/Jahr</th><th class="text-right px-5 py-2.5">Kum. AfA</th><th class="text-right px-5 py-2.5">Buchwert</th></tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+            {% for a in anlagen %}
+            <tr>
+                <td class="px-5 py-2.5 font-medium text-slate-900">{{ a.bezeichnung }}<div class="text-[11px] text-slate-400">seit {{ a.anschaffungsdatum|date:"d.m.Y" }}</div></td>
+                <td class="px-5 py-2.5 text-slate-500">{{ a.liegenschaft.strasse }}</td>
+                <td class="px-5 py-2.5 text-right tabular-nums">CHF {{ a.anschaffungswert|chf }}</td>
+                <td class="px-5 py-2.5 text-right">{{ a.nutzungsdauer_jahre }} J</td>
+                <td class="px-5 py-2.5 text-right tabular-nums text-slate-700">CHF {{ a.jahres_afa|chf }}</td>
+                <td class="px-5 py-2.5 text-right tabular-nums text-rose-500">CHF {{ a.kumulierte_afa|chf }}</td>
+                <td class="px-5 py-2.5 text-right tabular-nums font-semibold">CHF {{ a.buchwert|chf }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="px-5 py-6 text-center text-slate-400 italic">Noch keine Anlagen erfasst.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="border-t border-slate-100 p-4 bg-slate-50/50">
+        <form method="post" class="grid grid-cols-1 sm:grid-cols-6 gap-2 items-end">{% csrf_token %}
+            <input type="hidden" name="aktion" value="anlage_neu">
+            <div class="sm:col-span-2"><label class="block text-xs text-slate-500 mb-1">Bezeichnung</label>
+                <input name="bezeichnung" required placeholder="z. B. Heizung" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2"></div>
+            <div><label class="block text-xs text-slate-500 mb-1">Liegenschaft</label>
+                <select name="liegenschaft_id" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-2">
+                    {% for l in liegenschaften %}<option value="{{ l.id }}">{{ l.strasse }}</option>{% endfor %}
+                </select></div>
+            <div><label class="block text-xs text-slate-500 mb-1">Wert CHF</label>
+                <input name="anschaffungswert" inputmode="decimal" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 text-right"></div>
+            <div><label class="block text-xs text-slate-500 mb-1">Datum</label>
+                <input type="date" name="anschaffungsdatum" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-2"></div>
+            <div class="flex gap-2">
+                <div><label class="block text-xs text-slate-500 mb-1">ND (J)</label>
+                    <input name="nutzungsdauer_jahre" type="number" value="10" class="w-16 bg-white border border-slate-200 rounded-lg text-sm px-2 py-2 text-right"></div>
+                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-3 py-2 rounded-lg self-end"><i class="fa-solid fa-plus"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ERNEUERUNGSFONDS -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-piggy-bank text-emerald-500 mr-1.5"></i>Erneuerungsfonds (Rückstellung)</h3>
+        <form method="post" class="flex items-center gap-2">{% csrf_token %}
+            <input type="hidden" name="aktion" value="fonds_lauf">
+            <input type="number" name="jahr" value="{{ jahr_default }}" class="w-24 bg-slate-100 rounded-lg text-sm px-2 py-1.5 text-right">
+            <button onclick="return confirm('Jährliche Einlagen für das Jahr buchen?');" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"><i class="fa-solid fa-bolt mr-1"></i>Einlage buchen</button>
+        </form>
+    </div>
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+            <tr><th class="text-left px-5 py-2.5">Liegenschaft</th><th class="text-right px-5 py-2.5">Bestand</th>
+                <th class="text-right px-5 py-2.5">Einlage/Jahr</th><th class="text-right px-5 py-2.5">Letzte Einlage</th></tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+            {% for f in fonds %}
+            <tr><td class="px-5 py-2.5 font-medium">{{ f.liegenschaft.strasse }}</td>
+                <td class="px-5 py-2.5 text-right tabular-nums font-semibold text-emerald-600">CHF {{ f.bestand|chf }}</td>
+                <td class="px-5 py-2.5 text-right tabular-nums">CHF {{ f.jaehrliche_einlage|chf }}</td>
+                <td class="px-5 py-2.5 text-right text-slate-500">{{ f.letzte_einlage_jahr|default:"—" }}</td></tr>
+            {% empty %}
+            <tr><td colspan="4" class="px-5 py-6 text-center text-slate-400 italic">Noch kein Erneuerungsfonds definiert.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="border-t border-slate-100 p-4 bg-slate-50/50">
+        <form method="post" class="flex flex-wrap items-end gap-2">{% csrf_token %}
+            <input type="hidden" name="aktion" value="fonds_set">
+            <div><label class="block text-xs text-slate-500 mb-1">Liegenschaft</label>
+                <select name="liegenschaft_id" class="bg-white border border-slate-200 rounded-lg text-sm px-2 py-2">
+                    {% for l in liegenschaften %}<option value="{{ l.id }}">{{ l.strasse }}</option>{% endfor %}
+                </select></div>
+            <div><label class="block text-xs text-slate-500 mb-1">Jährliche Einlage CHF</label>
+                <input name="jaehrliche_einlage" inputmode="decimal" class="w-36 bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 text-right"></div>
+            <div><label class="block text-xs text-slate-500 mb-1">Bestand (optional)</label>
+                <input name="bestand" inputmode="decimal" placeholder="unverändert" class="w-36 bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 text-right"></div>
+            <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Speichern</button>
+        </form>
+    </div>
+</div>
+
+<!-- PERIODENSPERRE -->
+<div class="bg-white rounded-xl border border-slate-200 p-5 max-w-xl">
+    <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-lock text-amber-500 mr-1.5"></i>Periodensperre</h3>
+    <p class="text-xs text-slate-400 mb-3">Buchungen mit Datum ≤ Stichtag werden gesperrt (abgeschlossene Periode, Revisionssicherheit).
+        {% if gesperrt_bis %}<span class="text-amber-600 font-semibold">Aktuell gesperrt bis {{ gesperrt_bis|date:"d.m.Y" }}.</span>{% else %}Aktuell keine Sperre.{% endif %}</p>
+    <form method="post" class="flex items-end gap-2">{% csrf_token %}
+        <input type="hidden" name="aktion" value="sperre_set">
+        <div><label class="block text-xs text-slate-500 mb-1">Gesperrt bis</label>
+            <input type="date" name="gesperrt_bis" value="{{ gesperrt_bis|date:'Y-m-d' }}" class="bg-slate-100 rounded-lg text-sm px-3 py-2"></div>
+        <button class="bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Sperre setzen</button>
+        <button name="gesperrt_bis" value="" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-2">Aufheben</button>
+    </form>
+</div>
+{% endblock %}

@@ -227,3 +227,115 @@ def generate_auto_pendenzen(horizont_tage=90, user=None):
                 liegenschaft=lg)
 
     return neu
+
+
+# ============================================================
+# 4. BUCHHALTER-TIEFE: Kaution-Bilanzierung, AfA, Erneuerungsfonds
+# ============================================================
+def _konto(nummer, bezeichnung, typ):
+    from finance.models import Buchungskonto
+    k, _ = Buchungskonto.objects.get_or_create(
+        nummer=nummer, defaults={'bezeichnung': bezeichnung, 'typ': typ})
+    return k
+
+
+def buche_kaution_einzahlung(vertrag, datum, user=None):
+    """Bilanzbuchung bei Einzahlung auf ein Kautions-Sperrkonto:
+    1015 Kautionssperrkonto an 2010 Kautionsverbindlichkeit. Nur für Sperrkonto
+    (Versicherung bewegt kein Geld). Idempotent (pro Vertrag nur einmal)."""
+    from finance.models import Buchung
+    from decimal import Decimal as D
+    if vertrag.ist_kautionsversicherung:
+        return None
+    betrag = vertrag.kautions_betrag or D('0.00')
+    if betrag <= 0:
+        return None
+    soll = _konto('1015', 'Kautionssperrkonten (Mieterkautionen)', 'bilanz')
+    haben = _konto('2010', 'Kautionsverbindlichkeiten', 'bilanz')
+    beleg = f"Mietkaution {vertrag.mieter} — Einzahlung Sperrkonto"
+    if Buchung.objects.filter(beleg_text=beleg, ist_storno=False).exists():
+        return None
+    return Buchung.objects.create(
+        datum=datum, beleg_text=beleg,
+        liegenschaft=vertrag.einheit.liegenschaft if vertrag.einheit_id else None,
+        soll_konto=soll, haben_konto=haben, betrag=betrag, erstellt_von=user)
+
+
+def buche_kaution_aufloesung(vertrag, datum, user=None):
+    """Bilanzbuchung bei Auflösung/Rückzahlung des Sperrkontos:
+    2010 Kautionsverbindlichkeit an 1015 Kautionssperrkonto."""
+    from finance.models import Buchung
+    from decimal import Decimal as D
+    if vertrag.ist_kautionsversicherung:
+        return None
+    betrag = vertrag.kautions_betrag or D('0.00')
+    if betrag <= 0:
+        return None
+    soll = _konto('2010', 'Kautionsverbindlichkeiten', 'bilanz')
+    haben = _konto('1015', 'Kautionssperrkonten (Mieterkautionen)', 'bilanz')
+    beleg = f"Mietkaution {vertrag.mieter} — Auflösung Sperrkonto"
+    if Buchung.objects.filter(beleg_text=beleg, ist_storno=False).exists():
+        return None
+    return Buchung.objects.create(
+        datum=datum, beleg_text=beleg,
+        liegenschaft=vertrag.einheit.liegenschaft if vertrag.einheit_id else None,
+        soll_konto=soll, haben_konto=haben, betrag=betrag, erstellt_von=user)
+
+
+def run_abschreibungen(jahr, user=None):
+    """Bucht die lineare Jahres-AfA für alle aktiven Anlagen, sofern für das Jahr
+    noch keine Abschreibung existiert (idempotent). 6800 Abschreibungen an 1500
+    Sachanlagen. Gibt (anzahl, summe) zurück."""
+    from finance.models import Anlage, Abschreibung, Buchung
+    from decimal import Decimal as D
+    aufwand = _konto('6800', 'Abschreibungen', 'aufwand')
+    aktivum = _konto('1500', 'Sachanlagen (Anlagegüter)', 'bilanz')
+    buchungsdatum = date(jahr, 12, 31)
+    anzahl, summe = 0, D('0.00')
+    for a in Anlage.objects.filter(aktiv=True):
+        if a.anschaffungsdatum and a.anschaffungsdatum.year > jahr:
+            continue
+        if a.buchwert <= (a.restwert or D('0')):
+            continue   # vollständig abgeschrieben
+        if Abschreibung.objects.filter(anlage=a, jahr=jahr).exists():
+            continue
+        afa = a.jahres_afa
+        # nicht unter den Restwert abschreiben
+        max_afa = a.buchwert - (a.restwert or D('0'))
+        if afa > max_afa:
+            afa = max_afa
+        if afa <= 0:
+            continue
+        b = Buchung.objects.create(
+            datum=buchungsdatum, beleg_text=f"Abschreibung {jahr}: {a.bezeichnung}",
+            liegenschaft=a.liegenschaft, soll_konto=aufwand, haben_konto=aktivum,
+            betrag=afa, erstellt_von=user)
+        Abschreibung.objects.create(anlage=a, jahr=jahr, betrag=afa, datum=buchungsdatum, buchung=b)
+        anzahl += 1
+        summe += afa
+    return anzahl, summe
+
+
+def run_erneuerungsfonds_einlage(jahr, user=None):
+    """Bucht die jährliche Einlage in den Erneuerungsfonds als Rückstellung:
+    6900 Einlage Erneuerungsfonds an 2800 Erneuerungsfonds. Idempotent pro Jahr."""
+    from finance.models import Erneuerungsfonds, Buchung
+    from decimal import Decimal as D
+    aufwand = _konto('6900', 'Einlage Erneuerungsfonds', 'aufwand')
+    fonds_konto = _konto('2800', 'Erneuerungsfonds (Rückstellung)', 'bilanz')
+    buchungsdatum = date(jahr, 12, 31)
+    anzahl, summe = 0, D('0.00')
+    for f in Erneuerungsfonds.objects.filter(jaehrliche_einlage__gt=0):
+        if f.letzte_einlage_jahr == jahr:
+            continue
+        einlage = f.jaehrliche_einlage
+        Buchung.objects.create(
+            datum=buchungsdatum, beleg_text=f"Einlage Erneuerungsfonds {jahr}: {f.liegenschaft}",
+            liegenschaft=f.liegenschaft, soll_konto=aufwand, haben_konto=fonds_konto,
+            betrag=einlage, erstellt_von=user)
+        f.bestand = (f.bestand or D('0')) + einlage
+        f.letzte_einlage_jahr = jahr
+        f.save(update_fields=['bestand', 'letzte_einlage_jahr'])
+        anzahl += 1
+        summe += einlage
+    return anzahl, summe

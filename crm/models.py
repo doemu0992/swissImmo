@@ -17,6 +17,9 @@ class Verwaltung(models.Model):
     aktueller_referenzzinssatz = models.DecimalField("Aktueller Ref.Zins", max_digits=4, decimal_places=2, default=1.75)
     aktueller_lik_punkte = models.DecimalField("Aktueller LIK", max_digits=6, decimal_places=1, default=107.1)
     letztes_update_marktdaten = models.DateTimeField("Letztes Update Marktdaten", null=True, blank=True)
+    # Periodensperre / Revisionssicherheit: Buchungen mit Datum ≤ diesem Stichtag
+    # sind gesperrt (abgeschlossene Periode). Leer = keine Sperre.
+    buchung_gesperrt_bis = models.DateField("Buchungen gesperrt bis", null=True, blank=True)
 
     class Meta:
         verbose_name = "Meine Verwaltung"
