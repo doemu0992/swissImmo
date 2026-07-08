@@ -1,0 +1,43 @@
+{% extends "core/dok_base.html" %}
+{% block inhalt %}
+{% with k=vertrag.kuendigungen.first %}
+<div style="margin-top:6pt;">
+    {{ vermieter_name }}<br>{{ vermieter_strasse }}<br>{{ vermieter_plz }} {{ vermieter_ort }}
+</div>
+
+<div style="margin-top:26pt;" class="adr">
+    {{ mieter.display_name }}<br>
+    {{ mieter.strasse }}<br>{{ mieter.plz }} {{ mieter.ort }}
+</div>
+
+<div style="text-align:right; font-size:8.5pt; color:#64748b; margin-bottom:18pt;">
+    {{ liegenschaft.ort }}, {{ heute|date:"d.m.Y" }}
+</div>
+
+<h2 style="margin-top:0;">Kündigungsbestätigung</h2>
+<p>Sehr geehrte Mieterschaft</p>
+
+{% if k %}
+<p>Wir bestätigen den Eingang der Kündigung des Mietvertrags für das Mietobjekt
+<b>{{ einheit.bezeichnung }}</b> an der {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}.</p>
+
+<table class="data" style="margin:10pt 0;">
+    <tr><td class="k">Gekündigt durch</td><td>{{ k.get_absender_display }}</td></tr>
+    <tr><td class="k">Eingang der Kündigung</td><td>{{ k.eingang_datum|date:"d.m.Y" }}{% if k.zustellung %} ({{ k.get_zustellung_display }}){% endif %}</td></tr>
+    {% if k.ausserordentlich %}<tr><td class="k">Art</td><td>Ausserordentliche Kündigung{% if k.ausserordentlich_grund %} — {{ k.ausserordentlich_grund }}{% endif %}</td></tr>{% endif %}
+    <tr><td class="k">Vertragsende (wirksam)</td><td><b>{{ k.per_datum|date:"d.m.Y" }}</b></td></tr>
+    {% if k.erstreckung_bis %}<tr><td class="k">Erstreckung bis</td><td>{{ k.erstreckung_bis|date:"d.m.Y" }}</td></tr>{% endif %}
+</table>
+
+<p>Das Mietverhältnis endet somit per <b>{{ k.per_datum|date:"d.m.Y" }}</b>. Wir bitten Sie, die Wohnung
+bis zu diesem Datum vollständig geräumt und gereinigt zu übergeben. Für die Wohnungsabnahme werden wir
+rechtzeitig einen Termin mit Ihnen vereinbaren.</p>
+{% else %}
+<p>Wir bestätigen den Eingang Ihrer Kündigung. Die Einzelheiten teilen wir Ihnen separat mit.</p>
+{% endif %}
+
+<p>Bei Fragen stehen wir Ihnen gerne zur Verfügung.</p>
+<p style="margin-top:18pt;">Freundliche Grüsse</p>
+<p style="margin-top:2pt;">{{ vermieter_name }}</p>
+{% endwith %}
+{% endblock %}

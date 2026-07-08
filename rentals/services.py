@@ -84,3 +84,66 @@ def archiviere_vertrag_wenn_unterzeichnet(vertrag):
             return True
 
     return False
+
+# ---------------------------------------------------------------------------
+# Kündigungs-Terminberechnung (Schweizer Mietrecht)
+# ---------------------------------------------------------------------------
+import calendar
+import datetime as _dt
+
+_MONATE = {
+    'januar': 1, 'februar': 2, 'märz': 3, 'maerz': 3, 'april': 4, 'mai': 5,
+    'juni': 6, 'juli': 7, 'august': 8, 'september': 9, 'oktober': 10,
+    'november': 11, 'dezember': 12,
+}
+
+
+def _erlaubte_termin_monate(kuendigungstermine: str):
+    """Parst das (Freitext-)Feld kuendigungstermine zu einer Menge erlaubter Monatszahlen (1-12)."""
+    txt = (kuendigungstermine or '').lower()
+    if not txt.strip():
+        return set(range(1, 13))
+    genannt = {num for name, num in _MONATE.items() if name in txt}
+    # "jedes Monats" / "monatlich" => alle Monate als Basis
+    if 'jedes monat' in txt or 'monatlich' in txt or 'jeden monat' in txt or not genannt:
+        erlaubt = set(range(1, 13))
+    else:
+        erlaubt = set(genannt)
+    # Ausschlüsse: "ausser Dezember", "ausgenommen ..."
+    if 'ausser' in txt or 'ausgenommen' in txt or 'ausg.' in txt:
+        pos = max(txt.find('ausser'), txt.find('ausgenommen'), txt.find('ausg.'))
+        schwanz = txt[pos:]
+        for name, num in _MONATE.items():
+            if name in schwanz:
+                erlaubt.discard(num)
+    return erlaubt or set(range(1, 13))
+
+
+def _monatsende(jahr: int, monat: int) -> _dt.date:
+    return _dt.date(jahr, monat, calendar.monthrange(jahr, monat)[1])
+
+
+def berechne_kuendigungstermin(vertrag, eingang_datum: _dt.date) -> _dt.date:
+    """Nächster ordentlicher Kündigungstermin ab (Eingang + Kündigungsfrist),
+    unter Beachtung der erlaubten Termin-Monate und 'erstmals kündbar auf'."""
+    frist = int(vertrag.kuendigungsfrist_monate or 3)
+    erlaubt = _erlaubte_termin_monate(vertrag.kuendigungstermine)
+
+    # Frühestes Ende = Ende des Monats, der 'frist' Monate nach Eingang liegt
+    m = eingang_datum.month - 1 + frist
+    jahr = eingang_datum.year + m // 12
+    monat = m % 12 + 1
+    fruehestens = _monatsende(jahr, monat)
+    if vertrag.erstmals_kuendbar_auf and vertrag.erstmals_kuendbar_auf > fruehestens:
+        fruehestens = vertrag.erstmals_kuendbar_auf
+
+    # Nächsten erlaubten Monats-Endtermin >= fruehestens finden (max 24 Monate vorwärts)
+    kandidat = fruehestens
+    for _ in range(25):
+        if kandidat.month in erlaubt and kandidat >= fruehestens:
+            return kandidat
+        # nächster Monat
+        nm = kandidat.month % 12 + 1
+        ny = kandidat.year + (1 if kandidat.month == 12 else 0)
+        kandidat = _monatsende(ny, nm)
+    return fruehestens

@@ -177,3 +177,41 @@ class Dokument(models.Model):
 
     def __str__(self):
         return self.bezeichnung
+
+class Kuendigung(models.Model):
+    """Kündigung eines Mietvertrags (ordentlich/ausserordentlich) inkl. Fristenberechnung."""
+    ABSENDER_CHOICES = [('mieter', 'Mieter'), ('vermieter', 'Vermieter')]
+    ZUSTELLUNG_CHOICES = [
+        ('einschreiben', 'Einschreiben (Mieter)'),
+        ('amtliches_formular', 'Amtliches Formular (Vermieter)'),
+        ('normal', 'Normal / persönlich'),
+    ]
+    STATUS_CHOICES = [
+        ('erfasst', 'Erfasst'),
+        ('bestaetigt', 'Bestätigt'),
+        ('vollzogen', 'Vollzogen'),
+        ('zurueckgezogen', 'Zurückgezogen'),
+    ]
+
+    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='kuendigungen')
+    absender = models.CharField("Gekündigt durch", max_length=20, choices=ABSENDER_CHOICES, default='mieter')
+    eingang_datum = models.DateField("Eingang / Poststempel", default=timezone.localdate)
+    zustellung = models.CharField("Zustellung", max_length=30, choices=ZUSTELLUNG_CHOICES, default='einschreiben')
+    gewuenschtes_ende = models.DateField("Gewünschtes Vertragsende", null=True, blank=True)
+    berechneter_termin = models.DateField("Nächster ordentlicher Termin", null=True, blank=True)
+    per_datum = models.DateField("Vertragsende (wirksam)", null=True, blank=True)
+    ausserordentlich = models.BooleanField("Ausserordentliche Kündigung", default=False)
+    ausserordentlich_grund = models.CharField("Grund (ausserordentlich)", max_length=200, blank=True, default='')
+    erstreckung_bis = models.DateField("Erstreckung bis", null=True, blank=True)
+    status = models.CharField("Status", max_length=20, choices=STATUS_CHOICES, default='erfasst')
+    bemerkung = models.TextField("Bemerkung", blank=True, default='')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Kündigung"
+        verbose_name_plural = "Kündigungen"
+        ordering = ['-eingang_datum']
+        db_table = 'core_kuendigung'
+
+    def __str__(self):
+        return f"Kündigung {self.vertrag} durch {self.get_absender_display()}"

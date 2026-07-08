@@ -15,6 +15,7 @@ DOKUMENT_TYPEN = {
     'wohnungsausweis':        ('core/dok_wohnungsausweis.html',        'Wohnungsausweis', {}),
     'begleitbrief':           ('core/dok_begleitbrief.html',           'Begleitbrief Mietvertrag', {'signed': False}),
     'begleitbrief-signiert':  ('core/dok_begleitbrief.html',           'Begleitbrief unterzeichneter Vertrag', {'signed': True}),
+    'kuendigungsbestaetigung': ('core/dok_kuendigungsbestaetigung.html', 'Kündigungsbestätigung', {}),
 }
 
 

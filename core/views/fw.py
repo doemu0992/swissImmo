@@ -491,6 +491,9 @@ def _erstellbare_dokumente(v):
         {'titel': 'Wohnungsausweis', 'icon': 'fa-id-card',
          'url': f'/vertrag/{v.id}/dokument/wohnungsausweis/', 'sub': 'Mieter- und Objektdaten'},
     ]
+    if v.kuendigungen.exists():
+        docs.append({'titel': 'Kündigungsbestätigung', 'icon': 'fa-file-circle-xmark',
+                     'url': f'/vertrag/{v.id}/dokument/kuendigungsbestaetigung/', 'sub': 'Bestätigung mit Vertragsende'})
     return docs
 
 
@@ -535,6 +538,7 @@ def fw_vertrag_detail(request, pk):
         'dokumente': dokumente,
         'nebenobjekte': v.nebenobjekte.all(),
         'erstellbare_dokumente': _erstellbare_dokumente(v),
+        'kuendigungen': v.kuendigungen.all(),
         'tab_liste': tab_liste,
     })
 
@@ -2528,3 +2532,86 @@ def fw_benutzer_loeschen(request, pk):
         ziel.delete()
         messages.success(request, f"🗑️ Benutzer {name} gelöscht.")
     return redirect('/neu/benutzer/')
+
+
+# ============================================================
+# KÜNDIGUNGSPROZESS (Erfassung + Fristenberechnung + Bestätigung)
+# ============================================================
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_kuendigung_erfassen(request, vertrag_id):
+    """Erfasst eine Kündigung, berechnet den Termin und setzt den Vertrag auf 'gekuendigt'."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import Kuendigung
+    from rentals.services import berechne_kuendigungstermin
+    from core.auth import log_aktion
+    v = get_object_or_404(Mietvertrag, id=vertrag_id)
+    basis = _global_filter(request)
+
+    if request.method == 'POST':
+        P = request.POST
+
+        def d(key):
+            val = P.get(key)
+            if not val:
+                return None
+            try:
+                return date.fromisoformat(val)
+            except ValueError:
+                return None
+        eingang = d('eingang_datum') or timezone.localdate()
+        termin = berechne_kuendigungstermin(v, eingang)
+        gewuenscht = d('gewuenschtes_ende')
+        ausserord = P.get('ausserordentlich') == 'on'
+        # Wirksames Ende: ausserordentlich/gewünscht -> gewünschtes Datum, sonst ordentlicher Termin
+        per = gewuenscht if (ausserord and gewuenscht) else (gewuenscht or termin)
+
+        k = Kuendigung.objects.create(
+            vertrag=v, absender=P.get('absender', 'mieter'),
+            eingang_datum=eingang, zustellung=P.get('zustellung', 'einschreiben'),
+            gewuenschtes_ende=gewuenscht, berechneter_termin=termin, per_datum=per,
+            ausserordentlich=ausserord, ausserordentlich_grund=P.get('ausserordentlich_grund', '').strip(),
+            erstreckung_bis=d('erstreckung_bis'), status='bestaetigt' if P.get('bestaetigen') == 'on' else 'erfasst',
+            bemerkung=P.get('bemerkung', '').strip(),
+        )
+        # Vertrag auf gekündigt setzen
+        v.status = 'gekuendigt'
+        v.aktiv = False
+        v.ende = per
+        v.save(update_fields=['status', 'aktiv', 'ende'])
+        log_aktion(request, "Kündigung erfasst", str(v.mieter),
+                   f"per {per.strftime('%d.%m.%Y') if per else '—'}")
+        messages.success(request, f"✅ Kündigung erfasst — Vertragsende {per.strftime('%d.%m.%Y') if per else '—'}.")
+        return redirect(f'/neu/vertraege/{v.id}/')
+
+    # Vorschau des nächsten Termins für heute
+    vorschau_termin = berechne_kuendigungstermin(v, timezone.localdate())
+    return render(request, 'fw/kuendigung_form.html', {
+        **basis, 'nav': 'vertraege', 'v': v,
+        'vorschau_termin': vorschau_termin, 'heute_iso': timezone.localdate().isoformat(),
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_kuendigung_zuruecknehmen(request, pk):
+    """Nimmt eine Kündigung zurück und reaktiviert den Vertrag."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import Kuendigung
+    from core.auth import log_aktion
+    k = get_object_or_404(Kuendigung, id=pk)
+    v = k.vertrag
+    if request.method == 'POST':
+        k.status = 'zurueckgezogen'
+        k.save(update_fields=['status'])
+        # Vertrag reaktivieren, wenn keine andere aktive Kündigung besteht
+        andere = v.kuendigungen.exclude(id=k.id).exclude(status='zurueckgezogen').exists()
+        if not andere:
+            v.status = 'aktiv'
+            v.aktiv = True
+            v.ende = None
+            v.save(update_fields=['status', 'aktiv', 'ende'])
+        log_aktion(request, "Kündigung zurückgezogen", str(v.mieter), '')
+        messages.success(request, "✅ Kündigung zurückgezogen, Vertrag reaktiviert.")
+    return redirect(f'/neu/vertraege/{v.id}/')
