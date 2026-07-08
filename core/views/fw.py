@@ -478,6 +478,18 @@ def _erstellbare_dokumente(v):
          'url': f'/vertrag/{v.id}/mahnung/', 'sub': 'Zahlungsfrist mit Kündigungsandrohung'},
         {'titel': 'Mietzinsanpassung', 'icon': 'fa-percent',
          'url': f'/mietzins/{v.id}/', 'sub': 'Amtliches Formular berechnen'},
+        {'titel': 'Begleitbrief Mietvertrag', 'icon': 'fa-envelope',
+         'url': f'/vertrag/{v.id}/dokument/begleitbrief/', 'sub': 'Anschreiben zur Unterzeichnung'},
+        {'titel': 'Begleitbrief unterzeichnet', 'icon': 'fa-envelope-circle-check',
+         'url': f'/vertrag/{v.id}/dokument/begleitbrief-signiert/', 'sub': 'Zustellung des signierten Vertrags'},
+        {'titel': 'Allgemeine Bedingungen', 'icon': 'fa-file-lines',
+         'url': f'/vertrag/{v.id}/dokument/allgemeine-bedingungen/', 'sub': 'Vertragsbeilage'},
+        {'titel': 'Hausordnung', 'icon': 'fa-list-check',
+         'url': f'/vertrag/{v.id}/dokument/hausordnung/', 'sub': 'Vertragsbeilage'},
+        {'titel': 'Merkblatt Lüften & Pflegen', 'icon': 'fa-wind',
+         'url': f'/vertrag/{v.id}/dokument/merkblatt-lueften/', 'sub': 'Vertragsbeilage'},
+        {'titel': 'Wohnungsausweis', 'icon': 'fa-id-card',
+         'url': f'/vertrag/{v.id}/dokument/wohnungsausweis/', 'sub': 'Mieter- und Objektdaten'},
     ]
     return docs
 

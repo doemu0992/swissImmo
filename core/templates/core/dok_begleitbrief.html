@@ -1,0 +1,38 @@
+{% extends "core/dok_base.html" %}
+{% block inhalt %}
+<div style="margin-top:6pt;">
+    {{ vermieter_name }}<br>{{ vermieter_strasse }}<br>{{ vermieter_plz }} {{ vermieter_ort }}
+</div>
+
+<div style="margin-top:26pt;" class="adr">
+    {{ mieter.display_name }}<br>
+    {{ mieter.strasse }}<br>{{ mieter.plz }} {{ mieter.ort }}
+</div>
+
+<div style="text-align:right; font-size:8.5pt; color:#64748b; margin-bottom:18pt;">
+    {{ liegenschaft.ort }}, {{ heute|date:"d.m.Y" }}
+</div>
+
+{% if signed %}
+<h2 style="margin-top:0;">Ihr unterzeichneter Mietvertrag</h2>
+<p>Sehr geehrte Mieterschaft</p>
+<p>Wir freuen uns, Ihnen den beidseitig unterzeichneten Mietvertrag für das Mietobjekt <b>{{ einheit.bezeichnung }}</b> an der {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}, zuzustellen. Bitte bewahren Sie dieses Exemplar sorgfältig auf.</p>
+<p>Ihr Mietverhältnis beginnt am <b>{{ vertrag.beginn|date:"d.m.Y" }}</b>. Die Übergabe der Wohnung und der Schlüssel wird separat mit Ihnen vereinbart. Bitte stellen Sie sicher, dass die vereinbarte Sicherheitsleistung (Mietzinsdepot) von <b>CHF {{ kaution_fmt }}</b> bis zur Schlüsselübergabe geleistet ist.</p>
+<p>Wir wünschen Ihnen einen guten Start in Ihrem neuen Zuhause und stehen Ihnen bei Fragen gerne zur Verfügung.</p>
+{% else %}
+<h2 style="margin-top:0;">Ihr Mietvertrag zur Unterzeichnung</h2>
+<p>Sehr geehrte Mieterschaft</p>
+<p>Wir freuen uns, Ihnen den Mietvertrag für das Mietobjekt <b>{{ einheit.bezeichnung }}</b> an der {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}, in zweifacher Ausfertigung zuzustellen.</p>
+<p>Bitte prüfen Sie den Vertrag, unterzeichnen Sie beide Exemplare und senden Sie <b>ein</b> unterzeichnetes Exemplar innert 10 Tagen an uns zurück. Das zweite Exemplar erhalten Sie beidseitig unterzeichnet zurück und ist für Ihre Unterlagen bestimmt.</p>
+<p>Ihr Mietverhältnis beginnt am <b>{{ vertrag.beginn|date:"d.m.Y" }}</b>. Der Bruttomietzins beträgt <b>CHF {{ brutto_fmt }}</b> pro Monat. Die Sicherheitsleistung (Mietzinsdepot) von <b>CHF {{ kaution_fmt }}</b> ist bis zur Schlüsselübergabe zu leisten.</p>
+<p>Dem Vertrag liegen die Allgemeinen Bedingungen, die Hausordnung sowie das Merkblatt «Richtig Lüften und Pflegen» bei. Für Fragen stehen wir Ihnen gerne zur Verfügung.</p>
+{% endif %}
+
+<p style="margin-top:18pt;">Freundliche Grüsse</p>
+<p style="margin-top:2pt;">{{ vermieter_name }}</p>
+
+<div style="margin-top:22pt; font-size:8pt; color:#64748b;">
+    Beilagen:
+    {% if signed %}Unterzeichneter Mietvertrag{% else %}Mietvertrag (2 Exemplare), Allgemeine Bedingungen, Hausordnung, Merkblatt Lüften{% endif %}
+</div>
+{% endblock %}

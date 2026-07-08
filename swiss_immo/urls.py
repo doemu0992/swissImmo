@@ -77,8 +77,8 @@ from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dos
 # 3. Verträge & Mietzins
 from core.views.contracts import mietzins_anpassung_view, generiere_amtliches_formular
 
-# 4. PDF (Nur Mietvertrag)
-from core.views.pdf import generate_pdf_view
+# 4. PDF (Mietvertrag + Begleitdokumente)
+from core.views.pdf import generate_pdf_view, generate_dokument_view
 
 # 5. DocuSeal
 from core.views.docuseal import send_via_docuseal, docuseal_webhook
@@ -154,6 +154,7 @@ urlpatterns = [
 
     # --- PDF & E-MAIL ---
     path('vertrag/<int:vertrag_id>/pdf/', generate_pdf_view, name='generate_pdf'),
+    path('vertrag/<int:vertrag_id>/dokument/<slug:doc_type>/', generate_dokument_view, name='generate_dokument'),
     path('abrechnung/<int:periode_id>/pdf/', abrechnung_pdf_view, name='abrechnung_pdf'),
     path('abrechnung/<int:periode_id>/send-mail/', send_abrechnung_email_view, name='abrechnung_send_mail'),
 

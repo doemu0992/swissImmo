@@ -1,0 +1,49 @@
+{% extends "core/dok_base.html" %}
+{% block inhalt %}
+<h1>Wohnungsausweis</h1>
+<div class="subtitle">Angaben zum Mietobjekt und zu den Mietern</div>
+
+<div class="sec">Mietobjekt</div>
+<table class="form">
+    <tr><td class="k">Objekt</td><td>{{ einheit.bezeichnung }}</td></tr>
+    <tr><td class="k">Stockwerk</td><td>{{ einheit.etage|default:"—" }}</td></tr>
+    <tr><td class="k">Adresse</td><td>{{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}</td></tr>
+    <tr><td class="k">EGID / EWID</td><td>{{ liegenschaft.egid|default:"—" }} / {{ einheit.ewid|default:"—" }}</td></tr>
+    <tr><td class="k">Mietbeginn</td><td>{{ vertrag.beginn|date:"d.m.Y" }}</td></tr>
+    <tr><td class="k">Bruttomietzins</td><td>CHF {{ brutto_fmt }}</td></tr>
+</table>
+
+<div class="sec">Mieter</div>
+<table class="form">
+    <tr><td class="k">Name / Vorname</td><td>{{ mieter.display_name }}</td></tr>
+    <tr><td class="k">Bisherige Adresse</td><td>{{ mieter.strasse }}, {{ mieter.plz }} {{ mieter.ort }}</td></tr>
+    <tr><td class="k">Telefon</td><td>{{ mieter.telefon|default:"" }}</td></tr>
+    <tr><td class="k">E-Mail</td><td>{{ mieter.email|default:"" }}</td></tr>
+    <tr><td class="k">Geburtsdatum</td><td>{{ mieter.geburtsdatum|date:"d.m.Y"|default:"" }}</td></tr>
+    <tr><td class="k">Heimatort / Nationalität</td><td>&nbsp;</td></tr>
+</table>
+
+{% if vertrag.mitmieter or vertrag.mitmieter_name %}
+<div class="sec">Mitmieter</div>
+<table class="form">
+    <tr><td class="k">Name / Vorname</td><td>{% if vertrag.mitmieter %}{{ vertrag.mitmieter.display_name }}{% else %}{{ vertrag.mitmieter_name }}{% endif %}</td></tr>
+    <tr><td class="k">Bisherige Adresse</td><td>{% if vertrag.mitmieter %}{{ vertrag.mitmieter.strasse }}, {{ vertrag.mitmieter.plz }} {{ vertrag.mitmieter.ort }}{% endif %}</td></tr>
+    <tr><td class="k">Telefon</td><td>{% if vertrag.mitmieter %}{{ vertrag.mitmieter.telefon|default:"" }}{% endif %}</td></tr>
+    <tr><td class="k">E-Mail</td><td>{% if vertrag.mitmieter %}{{ vertrag.mitmieter.email|default:"" }}{% endif %}</td></tr>
+</table>
+{% endif %}
+
+<div class="sec">Weitere im Haushalt lebende Personen</div>
+<table class="form">
+    <tr><td class="k">Anzahl erwachsene Personen</td><td>{{ vertrag.anzahl_personen }}</td></tr>
+    <tr><td class="k">Kinder (Anzahl / Jahrgänge)</td><td>&nbsp;</td></tr>
+    <tr><td class="k">Haustiere</td><td>&nbsp;</td></tr>
+</table>
+
+<table class="sign">
+    <tr>
+        <td><div class="sigline">Ort, Datum</div></td>
+        <td><div class="sigline">Unterschrift Mieter</div></td>
+    </tr>
+</table>
+{% endblock %}
