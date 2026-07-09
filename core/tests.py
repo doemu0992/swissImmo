@@ -1105,3 +1105,58 @@ class SteuerauszugTests(TestCase):
         from core.services.steuerauszug import steuerauszug_daten
         d = steuerauszug_daten(md2, 2024)
         self.assertEqual(d['total']['ertrag'], Decimal('0'))
+
+
+class EigentuemerZugangTests(TestCase):
+    def _mandant(self):
+        md = Mandant.objects.create(firma_oder_name='Eig AG', email='eig@example.ch')
+        return md
+
+    def test_zugang_erstellen_und_mail(self):
+        from django.core import mail
+        md = self._mandant()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        r = c.post(f'/neu/mandate/{md.id}/portal-zugang/')
+        self.assertEqual(r.status_code, 302)
+        md.refresh_from_db()
+        self.assertIsNotNone(md.benutzer_id)
+        self.assertTrue(md.benutzer.is_active)
+        empf = [a for mo in mail.outbox for a in mo.to]
+        self.assertIn('eig@example.ch', empf)
+        # Login-Link zeigt aufs Portal
+        self.assertIn('/portal/login/', mail.outbox[-1].body)
+
+    def test_login_und_routing_ins_portal(self):
+        md = self._mandant()
+        lg = Liegenschaft.objects.create(strasse='A', plz='1', ort='X', versicherungswert=Decimal('1'))
+        lg.mandant = md; lg.save()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        c.post(f'/neu/mandate/{md.id}/portal-zugang/')
+        md.refresh_from_db()
+        # Der neue Eigentümer-Login landet nach /nach-login/ auf /portal/
+        oc = Client(); oc.force_login(md.benutzer)
+        r = oc.get('/nach-login/')
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(r.url.endswith('/portal/'))
+        self.assertEqual(oc.get('/portal/').status_code, 200)
+
+    def test_zugang_entfernen(self):
+        md = self._mandant()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        c.post(f'/neu/mandate/{md.id}/portal-zugang/')
+        md.refresh_from_db()
+        self.assertIsNotNone(md.benutzer_id)
+        c.post(f'/neu/mandate/{md.id}/portal-zugang/', {'aktion': 'entfernen'})
+        md.refresh_from_db()
+        self.assertIsNone(md.benutzer_id)
+
+    def test_button_in_mandatform(self):
+        md = self._mandant()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get(f'/neu/mandate/{md.id}/bearbeiten/').content.decode()
+        self.assertIn('Eigentümer-Portal-Zugang', body)
+        self.assertIn(f'/neu/mandate/{md.id}/portal-zugang/', body)

@@ -4400,7 +4400,73 @@ def fw_mandat_form(request, pk=None):
     return render(request, 'fw/mandat_form.html', {
         **basis, 'nav': 'mandate', 'md': md, 'ist_neu': md is None,
         'alle_liegenschaften': alle_lg, 'zugeordnet': zugeordnet,
+        'portal_user': getattr(md, 'benutzer', None) if md else None,
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_mandant_portal_zugang(request, pk):
+    """Erstellt/entfernt einen Eigentümer-Portal-Login und mailt die Zugangsdaten."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from django.contrib.auth.models import User
+    from crm.models import Mandant
+    from core.auth import log_aktion
+    import secrets
+    md = get_object_or_404(Mandant, id=pk)
+    ziel = f'/neu/mandate/{md.id}/bearbeiten/'
+    if request.method != 'POST':
+        return redirect(ziel)
+
+    if request.POST.get('aktion') == 'entfernen':
+        if md.benutzer_id:
+            u = md.benutzer
+            md.benutzer = None
+            md.save(update_fields=['benutzer'])
+            try:
+                u.delete()
+            except Exception:
+                u.is_active = False
+                u.save(update_fields=['is_active'])
+        messages.success(request, "Portal-Zugang entfernt.")
+        return redirect(ziel)
+
+    basis_name = (md.email or f"eigentuemer{md.id}").strip().lower()
+    passwort = secrets.token_urlsafe(9)
+    if md.benutzer_id:
+        u = md.benutzer
+        u.set_password(passwort)
+        u.is_active = True
+        u.save()
+    else:
+        username = basis_name
+        i = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{basis_name}.{i}"
+            i += 1
+        u = User.objects.create_user(username=username, email=md.email or '', password=passwort)
+        md.benutzer = u
+        md.save(update_fields=['benutzer'])
+    log_aktion(request, "Eigentümer-Portal-Zugang erstellt", md.firma_oder_name, u.username)
+
+    mail_ok = False
+    if md.email:
+        from core.utils.email_service import send_eigentuemer_portal_zugang
+        from crm.models import Verwaltung
+        from django.conf import settings as _settings
+        vw = Verwaltung.objects.first()
+        login_url = _settings.PORTAL_BASE_URL.rstrip('/') + '/portal/login/'
+        mail_ok = send_eigentuemer_portal_zugang(
+            md.email, md.firma_oder_name, u.username, passwort, login_url,
+            absender_firma=(vw.firma if vw else ''))
+
+    if mail_ok:
+        messages.success(request, f"✅ Portal-Zugang aktiv. Zugangsdaten wurden an {md.email} gesendet. (Benutzername: {u.username})")
+    elif md.email:
+        messages.warning(request, f"⚠️ Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: {u.username} · Passwort: {passwort} — bitte manuell mitteilen.")
+    else:
+        messages.success(request, f"✅ Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: {u.username} · Passwort: {passwort} (bitte dem Eigentümer sicher mitteilen, wird nur einmal angezeigt).")
+    return redirect(ziel)
 
 
 @rolle_erforderlich(ROLLE_VERWALTUNG)
