@@ -640,6 +640,22 @@ class MieterDokumenteTests(TestCase):
         mc = Client(); mc.force_login(u)
         self.assertIn('Brief: Info X', mc.get('/mieter/').content.decode())
 
+    def test_vertragspaket_zip_download(self):
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        r = c.get(f'/vertrag/{v.id}/dokumente-zip/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/zip')
+        # Mehrere Dokumente in der Akte (Mietvertrag + Beilagen)
+        anzahl = Dokument.objects.filter(vertrag=v, kategorie='vertrag').count()
+        self.assertGreaterEqual(anzahl, 2)
+        # ZIP enthält mindestens den Mietvertrag
+        import io, zipfile
+        zf = zipfile.ZipFile(io.BytesIO(r.content))
+        self.assertTrue(any('Mietvertrag' in n for n in zf.namelist()))
+
 
 class SicherheitsIsolationTests(TestCase):
     """Stellt sicher, dass Portale strikt isoliert sind (keine Cross-Tenant-Lecks)."""

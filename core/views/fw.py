@@ -3717,9 +3717,25 @@ def fw_vertrag_neu_speichern(request):
     setze_zukunftsadresse(mieter)
     setze_zukunftsadresse(zweiter_obj)
 
+    # Vertragsdokumente automatisch erzeugen und einzeln in die Akte legen
+    # (→ erscheinen sofort im Mieterportal). Fehler dürfen die Erstellung
+    # nicht blockieren.
+    anzahl_dok = 0
+    try:
+        from core.views.pdf import erzeuge_und_ablege_vertragspaket
+        anzahl_dok = len(erzeuge_und_ablege_vertragspaket(vertrag))
+    except Exception:
+        anzahl_dok = 0
+
     log_aktion(request, "Mietvertrag erstellt (Assistent)", str(mieter),
                f"{einheit.bezeichnung}, ab {beginn}")
-    messages.success(request, f"✅ Mietvertrag für {mieter.display_name} erstellt.")
+    if anzahl_dok:
+        messages.success(
+            request,
+            f"✅ Mietvertrag für {mieter.display_name} erstellt — "
+            f"{anzahl_dok} Dokumente automatisch abgelegt (im Portal sichtbar).")
+    else:
+        messages.success(request, f"✅ Mietvertrag für {mieter.display_name} erstellt.")
     return redirect(f'/neu/vertraege/{vertrag.id}/')
 
 
