@@ -13,6 +13,7 @@ from decimal import Decimal
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.cache import never_cache
 
 from core.auth import hat_rolle, ist_eigentuemer, TEAM_ROLLEN
 from rentals.models import Mietvertrag
@@ -34,6 +35,7 @@ def nach_login_view(request):
     return redirect('login')
 
 
+@never_cache
 @login_required
 def portal_view(request):
     mandant = getattr(request.user, 'mandant_profil', None)
@@ -229,6 +231,7 @@ def portal_report_pdf(request):
 # MIETERPORTAL (Self-Service für Mieter mit Login)
 # ============================================================
 
+@never_cache
 @login_required
 def mieter_portal_view(request):
     """Mieter sieht seinen aktiven Vertrag, Objektdaten, Dokumente und kann
@@ -304,6 +307,7 @@ def mieter_rechnung_qr(request, pk):
     return resp
 
 
+@never_cache
 @login_required
 def mieter_kuendigung(request):
     """Mieter erfasst eine Kündigung für ein Objekt (Antrag) + Brief zum Download.
