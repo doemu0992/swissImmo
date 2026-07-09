@@ -940,7 +940,7 @@ class LikVertragTests(TestCase):
 
     def test_assistent_setzt_stand_beim_erstellen(self):
         from rentals.models import Mietvertrag as MV
-        Verwaltung.objects.create(firma='V AG', aktueller_lik_stand=date(2024, 8, 1))
+        from core.services.lik import aktueller_lik_wert
         lg = Liegenschaft.objects.create(strasse='Neu 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='wohnung')
         m = Mieter.objects.create(typ='person', nachname='Neu')
@@ -951,4 +951,27 @@ class LikVertragTests(TestCase):
             'netto_mietzins': '1500', 'nebenkosten': '200', 'basis_lik_punkte': '107.1'})
         self.assertEqual(r.status_code, 302)
         v = MV.objects.filter(mieter=m).first()
-        self.assertEqual(v.basis_lik_stand, date(2024, 8, 1))
+        # ohne Formular-Override wird automatisch der neueste BFS-Stand gesetzt
+        auto_stand, _pkt, _basis = aktueller_lik_wert()
+        self.assertEqual(v.basis_lik_stand, auto_stand)
+
+    def test_assistent_formular_override_stand(self):
+        from rentals.models import Mietvertrag as MV
+        lg = Liegenschaft.objects.create(strasse='Neu 2', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='wohnung')
+        m = Mieter.objects.create(typ='person', nachname='Ovr')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        c.post('/neu/vertraege/neu/speichern/', {
+            'einheit_id': str(e.id), 'mieter_id': str(m.id), 'beginn': '2025-01-01',
+            'netto_mietzins': '1500', 'nebenkosten': '200', 'basis_lik_punkte': '106.3',
+            'basis_lik_stand': '2023-05'})
+        v = MV.objects.filter(mieter=m).first()
+        self.assertEqual(v.basis_lik_stand, date(2023, 5, 1))
+
+    def test_aktueller_lik_wert_aus_tabelle(self):
+        from core.services.lik import aktueller_lik_wert
+        stand, pkt, basis = aktueller_lik_wert()
+        self.assertEqual(basis, 'Dezember 2020')
+        self.assertEqual(stand, date(2026, 6, 1))       # neuester Monat im Bild
+        self.assertEqual(pkt, Decimal('108.3'))

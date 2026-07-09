@@ -9,6 +9,49 @@ werden (Art. 269a lit. b OR / VMWG)."""
 _MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli",
            "August", "September", "Oktober", "November", "Dezember"]
 
+# Aktive LIK-Serie (Name = Basis) und die offiziellen Monatswerte des BFS.
+LIK_BASIS = "Dezember 2020"
+
+# Landesindex der Konsumentenpreise, Basis «Dezember 2020 = 100» (Quelle: BFS).
+# None = Monat noch nicht veröffentlicht. Bei neuer BFS-Publikation hier ergänzen.
+LIK_DEZ2020 = {
+    2020: [None, None, None, None, None, None, None, None, None, None, None, 100.0],
+    2021: [100.1, 100.2, 100.6, 100.8, 101.0, 101.1, 101.0, 101.3, 101.3, 101.6, 101.6, 101.5],
+    2022: [101.7, 102.4, 103.0, 103.3, 104.0, 104.5, 104.5, 104.8, 104.6, 104.6, 104.6, 104.4],
+    2023: [105.0, 105.8, 106.0, 106.0, 106.3, 106.3, 106.2, 106.4, 106.3, 106.4, 106.2, 106.2],
+    2024: [106.4, 107.1, 107.1, 107.4, 107.7, 107.7, 107.5, 107.5, 107.2, 107.1, 106.9, 106.9],
+    2025: [106.8, 107.4, 107.5, 107.5, 107.6, 107.8, 107.8, 107.7, 107.5, 107.2, 107.0, 106.9],
+    2026: [106.9, 107.6, 107.8, 108.1, 108.3, 108.3],
+}
+
+
+def lik_punkte_fuer(jahr, monat):
+    """LIK-Punkte (Decimal) eines Monats aus der Tabelle, oder None."""
+    from decimal import Decimal
+    reihe = LIK_DEZ2020.get(jahr)
+    if not reihe or monat < 1 or monat > len(reihe):
+        return None
+    val = reihe[monat - 1]
+    return Decimal(str(val)) if val is not None else None
+
+
+def aktueller_lik_wert():
+    """Neuester veröffentlichter LIK-Wert. Gibt (stand_date, punkte, basis) zurück
+    — stand_date ist der 1. des Monats, aus dem der Wert stammt. Vollautomatisch
+    (keine manuelle Pflege nötig), Basis = Serienname «Dezember 2020»."""
+    import datetime
+    from decimal import Decimal
+    best = None
+    for jahr in sorted(LIK_DEZ2020):
+        reihe = LIK_DEZ2020[jahr]
+        for i, val in enumerate(reihe):
+            if val is not None:
+                best = (jahr, i + 1, val)
+    if best is None:
+        return None, None, LIK_BASIS
+    j, mo, val = best
+    return datetime.date(j, mo, 1), Decimal(str(val)), LIK_BASIS
+
 
 def stand_label(stand):
     """DateField -> 'August 2024' (oder '' wenn None)."""

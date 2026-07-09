@@ -3612,11 +3612,21 @@ def fw_vertrag_neu(request):
         'liegenschaften': liegenschaften, 'mieter': mieter,
         'verwaltung': verwaltung,
         'aktueller_ref_zins': float(vw.aktueller_referenzzinssatz) if vw else 1.75,
-        'aktueller_lik': float(vw.aktueller_lik_punkte) if vw else 107.1,
-        'lik_basis': (vw.lik_basis if vw else 'Dezember 2020'),
-        'aktueller_lik_stand_iso': (vw.aktueller_lik_stand.strftime('%Y-%m') if vw and vw.aktueller_lik_stand else ''),
+        **_lik_assistent_defaults(vw),
         'heute_iso': timezone.now().date().isoformat(),
     })
+
+
+def _lik_assistent_defaults(vw):
+    """Auto-Vorbelegung LIK für den Vertragsassistenten: Basis + neuester
+    Stand-Monat + Punkte aus der offiziellen BFS-Tabelle (mit Fallback auf die
+    Account-Einstellungen, falls die Tabelle mal leer ist)."""
+    from core.services.lik import aktueller_lik_wert
+    stand, pkt, basis = aktueller_lik_wert()
+    lik = float(pkt) if pkt is not None else (float(vw.aktueller_lik_punkte) if vw else 107.1)
+    stand_iso = (stand.strftime('%Y-%m') if stand
+                 else (vw.aktueller_lik_stand.strftime('%Y-%m') if vw and vw.aktueller_lik_stand else ''))
+    return {'aktueller_lik': lik, 'lik_basis': basis, 'aktueller_lik_stand_iso': stand_iso}
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -3694,10 +3704,13 @@ def fw_vertrag_neu_speichern(request):
     beginn = datum('beginn') or timezone.now().date()
 
     # LIK-Stand-Monat (aus dem die Basis-Punkte stammen): Formular-Override,
-    # sonst der aktuelle Stand aus den Account-Einstellungen (Basis Dez. 2020).
+    # sonst automatisch der neueste veröffentlichte Monat (BFS-Tabelle,
+    # Basis Dez. 2020), Fallback Account-Einstellung.
     from crm.models import Verwaltung as _Vw
+    from core.services.lik import aktueller_lik_wert
     _vw = einheit.liegenschaft.verwaltung or _Vw.objects.first()
-    basis_lik_stand = _vw.aktueller_lik_stand if _vw else None
+    _auto_stand, _auto_pkt, _ = aktueller_lik_wert()
+    basis_lik_stand = _auto_stand or (_vw.aktueller_lik_stand if _vw else None)
     _stand_raw = (P.get('basis_lik_stand') or '').strip()  # 'YYYY-MM' aus <input type=month>
     if _stand_raw:
         try:

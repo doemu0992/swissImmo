@@ -282,7 +282,7 @@
 const LG = JSON.parse(document.getElementById('lg-data').textContent);
 const MIETER = JSON.parse(document.getElementById('mieter-data').textContent);
 const STEPS = ['Objekt','Personen','Konditionen','Mietzins','Kaution','Nebenkosten','Abschluss'];
-const AKT_REF = {% localize off %}{{ aktueller_ref_zins }}{% endlocalize %}, AKT_LIK = {% localize off %}{{ aktueller_lik }}{% endlocalize %}, HEUTE = "{{ heute_iso }}";
+const AKT_REF = {% localize off %}{{ aktueller_ref_zins }}{% endlocalize %}, AKT_LIK = {% localize off %}{{ aktueller_lik }}{% endlocalize %}, AKT_LIK_STAND = "{{ aktueller_lik_stand_iso }}", HEUTE = "{{ heute_iso }}";
 const MONATE = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 let cur = 0, mieterMode = 'best';
 
@@ -295,7 +295,9 @@ function gewaehlteMonate(){ return Array.from(document.querySelectorAll('.monat-
 function fristStep(d){ const el=document.getElementById('s_frist'); el.value=Math.max(1,(parseInt(el.value)||3)+d); live(); }
 function indexUebernehmen(btn){
     // Zuerst gespeicherte Werte, dann Live-Abruf aus dem Internet.
-    document.getElementById('s_lik').value=AKT_LIK; document.getElementById('s_ref').value=AKT_REF; live();
+    document.getElementById('s_lik').value=AKT_LIK; document.getElementById('s_ref').value=AKT_REF;
+    if(AKT_LIK_STAND){ document.getElementById('s_lik_stand').value=AKT_LIK_STAND; }
+    live();
     var label = btn ? btn.textContent : ''; if(btn){ btn.disabled=true; btn.textContent='Lädt …'; }
     fetch('/neu/marktdaten/live/').then(r=>r.json()).then(d=>{
         if(d.ref_zins) document.getElementById('s_ref').value=d.ref_zins;
@@ -552,6 +554,7 @@ document.head.appendChild(stepStyle);
 monateStandard();                    // Standard-Kündigungsmonate März/Juni/September
 document.getElementById('s_lik').value = AKT_LIK;   // Indexwerte vorbelegen
 document.getElementById('s_ref').value = AKT_REF;
+if(AKT_LIK_STAND){ document.getElementById('s_lik_stand').value = AKT_LIK_STAND; }
 goStep(0);
 </script>
 {% endblock %}
