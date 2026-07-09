@@ -3276,7 +3276,14 @@ def fw_mietzins_anpassung(request, vertrag_id):
             v.basis_referenzzinssatz = _dec(request.POST.get('basis_zins'), str(v.basis_referenzzinssatz or aktuell_ref))
         if request.POST.get('basis_lik') not in (None, ''):
             v.basis_lik_punkte = _dec(request.POST.get('basis_lik'), str(v.basis_lik_punkte or aktuell_lik))
-        v.save(update_fields=['basis_referenzzinssatz', 'basis_lik_punkte'])
+        stand_raw = (request.POST.get('basis_lik_stand') or '').strip()  # 'YYYY-MM'
+        if stand_raw:
+            try:
+                _jy, _jm = stand_raw.split('-')[:2]
+                v.basis_lik_stand = date(int(_jy), int(_jm), 1)
+            except Exception:
+                pass
+        v.save(update_fields=['basis_referenzzinssatz', 'basis_lik_punkte', 'basis_lik_stand'])
         neu_netto = _dec(request.POST.get('neu_netto'), str(v.netto_mietzins))
         neu_zins = _dec(request.POST.get('neu_zins'), str(aktuell_ref))
         neu_lik = _dec(request.POST.get('neu_lik'), str(aktuell_lik))
@@ -3296,6 +3303,8 @@ def fw_mietzins_anpassung(request, vertrag_id):
             'nebenkosten': v.nebenkosten,
             'alt_zins': v.basis_referenzzinssatz, 'neu_zins': neu_zins,
             'alt_lik': v.basis_lik_punkte, 'neu_lik': neu_lik,
+            'lik_basis': (vw.lik_basis if vw else 'Dezember 2020'),
+            'alt_lik_stand': v.basis_lik_stand, 'neu_lik_stand': (vw.aktueller_lik_stand if vw else None),
             'zins_pct': None, 'lik_pct': None,
             'kosten_pct': request.POST.get('kosten_pct') or None,
             'total_pct': pot.get('delta_prozent'),
@@ -3350,6 +3359,8 @@ def fw_mietzins_anpassung(request, vertrag_id):
         'alt_zins': basis_zins, 'alt_lik': basis_lik,
         'basis_fehlt': not ((v.basis_referenzzinssatz or 0) > 0 and (v.basis_lik_punkte or 0) > 0),
         'aktuell_ref': aktuell_ref, 'aktuell_lik': aktuell_lik,
+        'lik_basis': (vw.lik_basis if vw else 'Dezember 2020'),
+        'alt_lik_stand': v.basis_lik_stand, 'aktuell_lik_stand': (vw.aktueller_lik_stand if vw else None),
         'vorschlag_netto': vorschlag_netto, 'naechster_termin': naechster_termin,
         'pot': pot,
     })
@@ -3723,6 +3734,15 @@ def fw_account(request):
                 return fallback
         vw.aktueller_referenzzinssatz = dec('aktueller_referenzzinssatz', vw.aktueller_referenzzinssatz)
         vw.aktueller_lik_punkte = dec('aktueller_lik_punkte', vw.aktueller_lik_punkte)
+        # LIK-Basis + Stand-Monat
+        vw.lik_basis = (P.get('lik_basis') or vw.lik_basis or 'Dezember 2020').strip()
+        stand_raw = (P.get('aktueller_lik_stand') or '').strip()  # 'YYYY-MM' aus <input type=month>
+        if stand_raw:
+            try:
+                jahr, monat = stand_raw.split('-')[:2]
+                vw.aktueller_lik_stand = date(int(jahr), int(monat), 1)
+            except Exception:
+                pass
         # Logo hochladen oder entfernen
         if P.get('logo_entfernen') == '1' and vw.logo:
             vw.logo.delete(save=False)

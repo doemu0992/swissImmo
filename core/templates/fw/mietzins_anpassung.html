@@ -34,7 +34,10 @@
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Neuer Referenzzins (%)</label>
                 <input name="neu_zins" value="{% localize off %}{{ aktuell_ref }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
             </div>
-            <div class="hidden sm:block"></div>
+            <div class="sm:col-span-2 -mb-1">
+                <span class="text-[11px] font-semibold text-indigo-600">LIK-Basis: {{ lik_basis|default:"Dezember 2020" }} = 100</span>
+                <span class="text-[11px] text-slate-400"> · alter und neuer Wert müssen dieselbe Basis haben</span>
+            </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">LIK Vertrag (Basis, Punkte)</label>
                 <input name="basis_lik" value="{% localize off %}{{ alt_lik }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 {% if basis_fehlt %}ring-2 ring-amber-300{% endif %}">
@@ -42,6 +45,15 @@
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Neuer LIK (Punkte)</label>
                 <input name="neu_lik" value="{% localize off %}{{ aktuell_lik }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Stand-Monat (Basis-LIK)</label>
+                <input type="month" name="basis_lik_stand" value="{{ alt_lik_stand|date:'Y-m' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Stand-Monat (neuer LIK)</label>
+                <input type="month" value="{{ aktuell_lik_stand|date:'Y-m' }}" disabled class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 text-slate-400">
+                <p class="text-[11px] text-slate-400 mt-1">aus Account → Marktdaten</p>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Allg. Kostensteigerung (%)</label>

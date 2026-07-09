@@ -155,7 +155,12 @@ def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, mandant=Non
         gruende.append(f"Referenzzinssatz: {daten['alt_zins']} % → {daten['neu_zins']} %"
                        + (f"  (Anteil {daten.get('zins_pct')} %)" if daten.get('zins_pct') is not None else ""))
     if daten.get('alt_lik') is not None and daten.get('neu_lik') is not None and daten['alt_lik'] != daten['neu_lik']:
-        gruende.append(f"Teuerung (LIK): {daten['alt_lik']} → {daten['neu_lik']} Punkte, 40 % anrechenbar"
+        from core.services.lik import stand_label
+        _basis = daten.get('lik_basis') or 'Dezember 2020'
+        _as = stand_label(daten.get('alt_lik_stand')); _ns = stand_label(daten.get('neu_lik_stand'))
+        gruende.append(f"Teuerung (LIK, Basis {_basis} = 100): {daten['alt_lik']} Punkte"
+                       + (f" (Stand {_as})" if _as else "") + f" → {daten['neu_lik']} Punkte"
+                       + (f" (Stand {_ns})" if _ns else "") + ", 40 % anrechenbar"
                        + (f"  (Anteil {daten.get('lik_pct')} %)" if daten.get('lik_pct') is not None else ""))
     if daten.get('kosten_pct'):
         gruende.append(f"Allgemeine Kostensteigerung: Anteil {daten.get('kosten_pct')} %")

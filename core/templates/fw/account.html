@@ -33,8 +33,14 @@
             <input type="hidden" name="iban" value="{{ vw.iban }}">
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Referenzzinssatz (%)</label>
                 <input name="aktueller_referenzzinssatz" type="number" step="0.05" value="{% localize off %}{{ vw.aktueller_referenzzinssatz }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Landesindex LIK (Basis Dez. 2020 = 100)</label>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Landesindex LIK (Punkte)</label>
                 <input name="aktueller_lik_punkte" type="number" step="0.1" value="{% localize off %}{{ vw.aktueller_lik_punkte }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">LIK-Basis</label>
+                <input name="lik_basis" type="text" value="{{ vw.lik_basis|default:'Dezember 2020' }}" placeholder="Dezember 2020" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <p class="text-[11px] text-slate-400 mt-1">Aktuelle Basis des BFS: «Dezember 2020 = 100».</p></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">LIK Stand-Monat (abgelesen)</label>
+                <input name="aktueller_lik_stand" type="month" value="{{ vw.aktueller_lik_stand|date:'Y-m' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <p class="text-[11px] text-slate-400 mt-1">Monat, aus dem die Punkte stammen — erscheint auf dem amtlichen Formular.</p></div>
             <div class="sm:col-span-2">
                 <button class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold px-4 py-2.5 rounded-lg">Marktdaten manuell speichern</button>
             </div>

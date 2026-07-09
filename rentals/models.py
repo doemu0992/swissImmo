@@ -94,6 +94,8 @@ class Mietvertrag(models.Model):
     # --- BASES & VORBEHALTE (🔥 ERWEITERT) ---
     basis_referenzzinssatz = models.DecimalField(max_digits=4, decimal_places=2, default=get_current_ref_zins)
     basis_lik_punkte = models.DecimalField(max_digits=6, decimal_places=1, default=get_current_lik)
+    # Stand-Monat, aus dem basis_lik_punkte abgelesen wurde (für amtliches Formular)
+    basis_lik_stand = models.DateField("LIK Basis Stand-Monat", null=True, blank=True)
     kostensteigerung_datum = models.DateField("Kostensteigerung ausgeglichen bis", null=True, blank=True)
     mietzinsreserve_betrag = models.DecimalField("Reserve Betrag (CHF)", max_digits=8, decimal_places=2, null=True, blank=True)
     mietzinsreserve_prozent = models.DecimalField("Reserve Prozent (%)", max_digits=5, decimal_places=2, null=True, blank=True)

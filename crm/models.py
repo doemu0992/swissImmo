@@ -16,6 +16,10 @@ class Verwaltung(models.Model):
     unterschrift_bild = models.ImageField("Digitale Unterschrift", upload_to="unterschriften/", blank=True, null=True)
     aktueller_referenzzinssatz = models.DecimalField("Aktueller Ref.Zins", max_digits=4, decimal_places=2, default=1.75)
     aktueller_lik_punkte = models.DecimalField("Aktueller LIK", max_digits=6, decimal_places=1, default=107.1)
+    # LIK-Basis (Landesindex): aktuell «Dezember 2020 = 100». Muss auf dem
+    # amtlichen Formular ausgewiesen werden; alt/neu-Werte müssen dieselbe Basis haben.
+    lik_basis = models.CharField("LIK-Basis", max_length=40, default="Dezember 2020")
+    aktueller_lik_stand = models.DateField("LIK Stand-Monat", null=True, blank=True)
     letztes_update_marktdaten = models.DateTimeField("Letztes Update Marktdaten", null=True, blank=True)
     # Periodensperre / Revisionssicherheit: Buchungen mit Datum ≤ diesem Stichtag
     # sind gesperrt (abgeschlossene Periode). Leer = keine Sperre.
