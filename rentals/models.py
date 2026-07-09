@@ -215,6 +215,9 @@ class Dokument(models.Model):
     titel = models.CharField(max_length=200, blank=True)
     datei = models.FileField(upload_to=get_smart_upload_path)
     kategorie = models.CharField(max_length=50, choices=[('vertrag', 'Vertrag'), ('protokoll', 'Protokoll'), ('korrespondenz', 'Korrespondenz'), ('sonstiges', 'Sonstiges')])
+    # Sichtbarkeit im Mieterportal (Datenschutz): Standard sichtbar, Verwalter
+    # kann sensible Dokumente (z.B. interne Vermerke) ausblenden.
+    im_portal_sichtbar = models.BooleanField("Im Mieterportal sichtbar", default=True)
     datum = models.DateField(auto_now_add=True)
 
     class Meta:

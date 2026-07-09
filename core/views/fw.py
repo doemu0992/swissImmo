@@ -1592,7 +1592,12 @@ def fw_person_detail(request, pk):
 
     zahlungen = (Zahlungseingang.objects.filter(vertrag__mieter=m, status='verbucht')
                  .order_by('-datum_eingang')[:15])
-    dokumente = RentalsDokument.objects.filter(mieter=m).order_by('-datum')[:15]
+    # Dokumente am Mieter ODER an seinen Verträgen (Vertrags-PDF, Mietzins,
+    # Kündigung …) — hier steuert der Verwalter die Portal-Sichtbarkeit.
+    from django.db.models import Q as _Q
+    _vids = list(m.vertraege.values_list('id', flat=True))
+    dokumente = (RentalsDokument.objects.filter(_Q(mieter=m) | _Q(vertrag_id__in=_vids))
+                 .distinct().order_by('-datum')[:25])
 
     vertrag_rows = []
     for v in vertraege:
@@ -1726,6 +1731,21 @@ def fw_kommunikation_neu(request):
     log_aktion(request, "Kommunikation erfasst", str(m), P.get('typ', 'telefon'))
     messages.success(request, "✅ Notiz im Kontaktjournal erfasst.")
     return redirect(f'/neu/personen/{m.id}/#p-aktivitaet')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_dokument_portal_toggle(request, pk):
+    """Schaltet die Mieterportal-Sichtbarkeit eines Dokuments um."""
+    from django.shortcuts import redirect
+    from rentals.models import Dokument as RentalsDokument
+    from core.auth import log_aktion
+    d = get_object_or_404(RentalsDokument, id=pk)
+    if request.method == 'POST':
+        d.im_portal_sichtbar = not d.im_portal_sichtbar
+        d.save(update_fields=['im_portal_sichtbar'])
+        log_aktion(request, "Dokument-Portalsichtbarkeit", d.bezeichnung or d.titel,
+                   'sichtbar' if d.im_portal_sichtbar else 'ausgeblendet')
+    return redirect(request.META.get('HTTP_REFERER') or (f'/neu/personen/{d.mieter_id}/' if d.mieter_id else '/neu/dokumente/'))
 
 
 @rolle_erforderlich(ROLLE_VERWALTUNG)
@@ -5539,6 +5559,7 @@ def fw_serienbrief_pdf(request):
              .select_related('einheit__liegenschaft').first())
         lg = v.einheit.liegenschaft if v else None
         empfaenger.append({
+            '_mieter_id': m.id,
             'name': m.display_name, 'anrede': m.anrede or '',
             'strasse': m.strasse or (lg.strasse if lg else ''),
             'plz': m.plz or (lg.plz if lg else ''),
@@ -5559,13 +5580,19 @@ def fw_serienbrief_pdf(request):
 
     pdf = generate_serienbrief_pdf(absender, betreff, text, empfaenger, logo_path=logo_path)
 
-    # Auto-Ablage: bei genau einem Empfänger mit Vertrag in dessen Akte ablegen
-    if len(ids) == 1:
-        m = Mieter.objects.filter(id=ids[0]).first()
-        v = (Mietvertrag.objects.filter(mieter=m, status='aktiv').first() if m else None)
-        ablegen(pdf, f"Brief: {betreff}", kategorie='korrespondenz', vertrag=v, mieter=m)
+    # Auto-Ablage: pro Empfänger eine eigene (einseitige) Brief-Kopie in dessen
+    # Akte ablegen — erscheint automatisch im Mieterportal (portal-sichtbar).
+    abgelegt = 0
+    for e in empfaenger:
+        m = Mieter.objects.filter(id=e.get('_mieter_id')).first()
+        if not m:
+            continue
+        v = (Mietvertrag.objects.filter(mieter=m, status='aktiv').first())
+        einzel = generate_serienbrief_pdf(absender, betreff, text, [e], logo_path=logo_path)
+        if ablegen(einzel, f"Brief: {betreff}", kategorie='korrespondenz', vertrag=v, mieter=m):
+            abgelegt += 1
 
-    log_aktion(request, "Serienbrief-PDF erzeugt", betreff, f"{len(empfaenger)} Empfänger")
+    log_aktion(request, "Serienbrief-PDF erzeugt", betreff, f"{len(empfaenger)} Empfänger · {abgelegt} abgelegt")
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'attachment; filename="serienbrief_{date.today().isoformat()}.pdf"'
     return resp

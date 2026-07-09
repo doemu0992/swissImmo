@@ -248,10 +248,28 @@ def mieter_portal_view(request):
     vertraege = (Mietvertrag.objects
                  .filter(mieter=mieter, status='aktiv')
                  .select_related('einheit__liegenschaft').order_by('-beginn'))
+    # Dokumente: alle am Mieter ODER seinem (aktiven/beendeten) Vertrag/Objekt,
+    # die im Portal freigegeben sind — gruppiert nach Kategorie.
+    from django.db.models import Q
     from rentals.models import Dokument as RDokument
-    dok_qs = (RDokument.objects.filter(mieter=mieter).order_by('-datum')[:30])
-    dokumente = [{'id': d.id, 'titel': d.bezeichnung or d.titel, 'kategorie': d.kategorie,
-                  'datum': d.datum} for d in dok_qs if d.datei]
+    alle_vertrag_ids = list(Mietvertrag.objects.filter(mieter=mieter).values_list('id', flat=True))
+    einheit_ids = [v.einheit_id for v in vertraege if v.einheit_id]
+    dok_qs = (RDokument.objects.filter(
+                  Q(mieter=mieter) | Q(vertrag_id__in=alle_vertrag_ids) | Q(einheit_id__in=einheit_ids),
+                  im_portal_sichtbar=True)
+              .distinct().order_by('-datum')[:80])
+    KAT_LABEL = {'vertrag': 'Vertrag', 'protokoll': 'Protokolle',
+                 'korrespondenz': 'Korrespondenz', 'sonstiges': 'Dokumente'}
+    KAT_ORDER = ['vertrag', 'korrespondenz', 'protokoll', 'sonstiges']
+    gruppen = {}
+    for d in dok_qs:
+        if not d.datei:
+            continue
+        kat = d.kategorie or 'sonstiges'
+        gruppen.setdefault(kat, []).append({'id': d.id, 'titel': d.bezeichnung or d.titel, 'datum': d.datum})
+    dok_gruppen = [{'label': KAT_LABEL.get(k, k.capitalize()), 'docs': gruppen[k]}
+                   for k in KAT_ORDER if gruppen.get(k)]
+    dokumente = [doc for g in dok_gruppen for doc in g['docs']]  # für {% if dokumente %}
 
     objekte = []
     for v in vertraege:
@@ -283,7 +301,8 @@ def mieter_portal_view(request):
         })
 
     return render(request, 'core/mieter_portal.html', {
-        'mieter': mieter, 'objekte': objekte, 'dokumente': dokumente,
+        'mieter': mieter, 'objekte': objekte,
+        'dokumente': dokumente, 'dok_gruppen': dok_gruppen,
         'offene': offene, 'total_offen': total_offen,
     })
 
@@ -445,12 +464,20 @@ def mieter_kontoauszug_pdf(request):
 
 @login_required
 def mieter_dokument_download(request, pk):
-    """Dokument-Download — nur eigene Mieter-Dokumente."""
-    from rentals.models import Dokument as RDokument
+    """Dokument-Download — nur portal-freigegebene Dokumente am Mieter oder
+    seinem Vertrag/Objekt."""
+    from django.db.models import Q
+    from rentals.models import Dokument as RDokument, Mietvertrag
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         raise Http404
-    dok = get_object_or_404(RDokument, pk=pk, mieter=mieter)
+    vertrag_ids = list(Mietvertrag.objects.filter(mieter=mieter).values_list('id', flat=True))
+    einheit_ids = list(Mietvertrag.objects.filter(mieter=mieter).values_list('einheit_id', flat=True))
+    dok = get_object_or_404(
+        RDokument.objects.filter(
+            Q(mieter=mieter) | Q(vertrag_id__in=vertrag_ids) | Q(einheit_id__in=[e for e in einheit_ids if e]),
+            im_portal_sichtbar=True),
+        pk=pk)
     try:
         f = dok.datei.open('rb')
     except Exception:

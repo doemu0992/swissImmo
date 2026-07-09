@@ -540,6 +540,53 @@ class MieterKuendigungTests(TestCase):
             pass
 
 
+class MieterDokumenteTests(TestCase):
+    def _setup(self):
+        from django.core.files.base import ContentFile
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        u = User.objects.create_user(username='dok_mieter', password='x'); m.benutzer = u; m.save()
+        dv = Dokument(vertrag=v, bezeichnung='Mietvertrag', kategorie='vertrag')
+        dv.datei.save('mv.pdf', ContentFile(b'%PDF'), save=True)
+        di = Dokument(mieter=m, bezeichnung='Intern', kategorie='sonstiges', im_portal_sichtbar=False)
+        di.datei.save('int.pdf', ContentFile(b'%PDF'), save=True)
+        return lg, e, m, v, u, dv, di
+
+    def test_vertragsdok_sichtbar_intern_versteckt(self):
+        lg, e, m, v, u, dv, di = self._setup()
+        c = Client(); c.force_login(u)
+        body = c.get('/mieter/').content.decode()
+        self.assertIn('Mietvertrag', body)
+        self.assertNotIn('Intern', body)
+        self.assertEqual(c.get(f'/mieter/dokument/{dv.id}/').status_code, 200)
+        self.assertEqual(c.get(f'/mieter/dokument/{di.id}/').status_code, 404)  # versteckt
+
+    def test_verwalter_toggle_versteckt(self):
+        lg, e, m, v, u, dv, di = self._setup()
+        team = _team_user()
+        tc = Client(); tc.force_login(team)
+        tc.post(f'/neu/dokument/{dv.id}/portal-sichtbar/')
+        dv.refresh_from_db()
+        self.assertFalse(dv.im_portal_sichtbar)
+        c = Client(); c.force_login(u)
+        self.assertNotIn('Mietvertrag', c.get('/mieter/').content.decode())
+        self.assertEqual(c.get(f'/mieter/dokument/{dv.id}/').status_code, 404)
+
+    def test_serienbrief_pro_empfaenger_abgelegt(self):
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        vor = Dokument.objects.filter(mieter=m, kategorie='korrespondenz').count()
+        c.post('/neu/kommunikation/serienbrief/', {'betreff': 'Info X', 'text': 'Hallo {name}', 'empfaenger_id': [str(m.id)]})
+        nach = Dokument.objects.filter(mieter=m, kategorie='korrespondenz').count()
+        self.assertEqual(nach, vor + 1)
+        # und im Portal des Mieters sichtbar
+        u = User.objects.create_user(username='sb_mieter', password='x'); m.benutzer = u; m.save()
+        mc = Client(); mc.force_login(u)
+        self.assertIn('Brief: Info X', mc.get('/mieter/').content.decode())
+
+
 class SicherheitsIsolationTests(TestCase):
     """Stellt sicher, dass Portale strikt isoliert sind (keine Cross-Tenant-Lecks)."""
 

@@ -93,12 +93,15 @@
         </div>
         {% endif %}
 
-        {% if dokumente %}
+        {% if dok_gruppen %}
         <div class="card">
             <h2>Meine Dokumente</h2>
             <div class="body">
-                {% for d in dokumente %}
+                {% for g in dok_gruppen %}
+                <div style="font-size:12px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.03em; margin:{% if not forloop.first %}14px{% else %}0{% endif %} 0 4px;">{{ g.label }}</div>
+                {% for d in g.docs %}
                 <a class="doc" href="/mieter/dokument/{{ d.id }}/">📎 {{ d.titel }} <span style="color:#94a3b8;">· {{ d.datum|date:"d.m.Y" }}</span></a>
+                {% endfor %}
                 {% endfor %}
             </div>
         </div>

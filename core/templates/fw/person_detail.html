@@ -175,12 +175,19 @@
 
 <!-- DOKUMENTE -->
 <div data-panel="pd" id="pd-dokumente" class="hidden">
+    <p class="text-xs text-slate-400 mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Das Auge steuert, ob der Mieter das Dokument im Portal sieht. Grün = sichtbar, grau = ausgeblendet.</p>
     <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50">
         {% for d in dokumente %}
         <div class="flex items-center gap-3 px-5 py-3.5">
             <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-paperclip"></i></div>
             <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ d.bezeichnung|default:d.titel }}</div>
-                <div class="text-xs text-slate-400">{{ d.kategorie }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}</div></div>
+                <div class="text-xs text-slate-400">{{ d.get_kategorie_display }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}</div></div>
+            <form method="post" action="/neu/dokument/{{ d.id }}/portal-sichtbar/" class="shrink-0" title="{% if d.im_portal_sichtbar %}Im Mieterportal sichtbar – klicken zum Ausblenden{% else %}Im Mieterportal ausgeblendet – klicken zum Anzeigen{% endif %}">
+                {% csrf_token %}
+                <button class="w-8 h-8 rounded-lg flex items-center justify-center {% if d.im_portal_sichtbar %}bg-emerald-50 text-emerald-600 hover:bg-emerald-100{% else %}bg-slate-100 text-slate-400 hover:bg-slate-200{% endif %}">
+                    <i class="fa-solid {% if d.im_portal_sichtbar %}fa-eye{% else %}fa-eye-slash{% endif %} text-xs"></i>
+                </button>
+            </form>
             {% if d.datei %}<a href="{{ d.datei.url }}" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Öffnen</a>{% endif %}
         </div>
         {% empty %}
