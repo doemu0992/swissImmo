@@ -465,7 +465,7 @@ class LoginBackendTests(TestCase):
         body = c.get('/mieter/').content.decode()
         self.assertIn('id="pSidebar"', body)   # gemeinsame Portal-Shell
         self.assertIn('Übersicht', body)
-        self.assertIn('Schaden melden', body)
+        self.assertIn('Meine Meldungen', body)
 
 
 class MitmieterPortalTests(TestCase):
@@ -834,3 +834,59 @@ class PortalLoginUrlTests(TestCase):
         self.assertTrue(mail.outbox)
         body = mail.outbox[-1].body
         self.assertIn('https://swissimmo.pythonanywhere.com/portal/login/', body)
+
+
+class MieterTicketPortalTests(TestCase):
+    """Mieter sieht seine Meldungen im Portal, Status, und kann antworten."""
+
+    def _setup(self):
+        lg, e, m, v = _basis_objekte()
+        Verwaltung.objects.create(firma='Verwaltung AG', email='verwaltung@example.ch')
+        u = User.objects.create_user(username='tp_mieter', password='x')
+        m.email = 'mieter@example.ch'; m.benutzer = u; m.save()
+        from tickets.models import SchadenMeldung
+        t = SchadenMeldung.objects.create(liegenschaft=lg, betroffene_einheit=e,
+                                          gemeldet_von=m, titel='Heizung defekt',
+                                          beschreibung='Wird nicht warm', status='in_bearbeitung')
+        return lg, e, m, v, u, t
+
+    def test_uebersicht_zeigt_ticket_und_status(self):
+        lg, e, m, v, u, t = self._setup()
+        c = Client(); c.force_login(u)
+        body = c.get('/mieter/tickets/').content.decode()
+        self.assertIn('Heizung defekt', body)
+        self.assertIn('In Bearbeitung', body)   # Status-Label
+
+    def test_detail_und_antwort_sendet_mail(self):
+        from django.core import mail
+        from tickets.models import TicketNachricht
+        lg, e, m, v, u, t = self._setup()
+        c = Client(); c.force_login(u)
+        self.assertEqual(c.get(f'/mieter/ticket/{t.id}/').status_code, 200)
+        r = c.post(f'/mieter/ticket/{t.id}/nachricht/', {'text': 'Wann kommt der Handwerker?'})
+        self.assertEqual(r.status_code, 302)
+        n = TicketNachricht.objects.filter(ticket=t, is_von_verwaltung=False).first()
+        self.assertIsNotNone(n)
+        self.assertEqual(n.nachricht, 'Wann kommt der Handwerker?')
+        t.refresh_from_db()
+        self.assertFalse(t.gelesen)   # Verwalter-Badge wieder aktiv
+        empf = [addr for mailobj in mail.outbox for addr in mailobj.to]
+        self.assertIn('verwaltung@example.ch', empf)
+
+    def test_fremdes_ticket_404(self):
+        lg, e, m, v, u, t = self._setup()
+        from tickets.models import SchadenMeldung
+        fremd = Mieter.objects.create(typ='person', nachname='Fremd')
+        ft = SchadenMeldung.objects.create(liegenschaft=lg, gemeldet_von=fremd, titel='Fremd', beschreibung='x')
+        c = Client(); c.force_login(u)
+        self.assertEqual(c.get(f'/mieter/ticket/{ft.id}/').status_code, 404)
+        self.assertNotIn('Fremd', c.get('/mieter/tickets/').content.decode())
+
+    def test_interne_notiz_nicht_sichtbar(self):
+        from tickets.models import TicketNachricht
+        lg, e, m, v, u, t = self._setup()
+        TicketNachricht.objects.create(ticket=t, absender_name='Team', typ='chat',
+                                       nachricht='INTERNE NOTIZ GEHEIM', is_intern=True)
+        c = Client(); c.force_login(u)
+        body = c.get(f'/mieter/ticket/{t.id}/').content.decode()
+        self.assertNotIn('INTERNE NOTIZ GEHEIM', body)

@@ -1,0 +1,15 @@
+{% comment %}Gemeinsame Mieterportal-Sidebar. Parameter: aktiv (uebersicht|meldungen|kuendigung){% endcomment %}
+<a href="/mieter/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'uebersicht' %}bg-indigo-600 text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
+    <i class="fa-solid fa-house w-5 text-center"></i> Übersicht
+</a>
+<a href="/mieter/tickets/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'meldungen' %}bg-indigo-600 text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
+    <i class="fa-solid fa-screwdriver-wrench w-5 text-center"></i> Meine Meldungen
+</a>
+
+<div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Service</div>
+<a href="/mieter/kontoauszug/" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
+    <i class="fa-solid fa-file-lines w-5 text-center"></i> Kontoauszug (PDF)
+</a>
+<a href="/mieter/kuendigung/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'kuendigung' %}bg-indigo-600 text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
+    <i class="fa-solid fa-envelope-open-text w-5 text-center"></i> Kündigung
+</a>

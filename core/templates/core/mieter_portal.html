@@ -5,35 +5,7 @@
 {% block brand %}Mieterportal{% endblock %}
 {% block brand_mobile %}Mieterportal{% endblock %}
 
-{% block nav %}
-    <a href="#uebersicht" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
-        <i class="fa-solid fa-house w-5 text-center"></i> Übersicht
-    </a>
-    {% if offene %}
-    <a href="#rechnungen" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
-        <span class="flex items-center gap-3"><i class="fa-solid fa-file-invoice w-5 text-center"></i> Rechnungen</span>
-        <span class="text-[10px] font-bold bg-rose-500 text-white rounded-full px-2 py-0.5">{{ offene|length }}</span>
-    </a>
-    {% endif %}
-    {% if dok_gruppen %}
-    <a href="#dokumente" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
-        <i class="fa-solid fa-folder-open w-5 text-center"></i> Dokumente
-    </a>
-    {% endif %}
-    {% if objekte %}
-    <a href="#schaden" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
-        <i class="fa-solid fa-screwdriver-wrench w-5 text-center"></i> Schaden melden
-    </a>
-
-    <div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Service</div>
-    <a href="/mieter/kontoauszug/" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
-        <i class="fa-solid fa-file-lines w-5 text-center"></i> Kontoauszug (PDF)
-    </a>
-    <a href="/mieter/kuendigung/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
-        <i class="fa-solid fa-envelope-open-text w-5 text-center"></i> Kündigung
-    </a>
-    {% endif %}
-{% endblock %}
+{% block nav %}{% include 'core/_mieter_nav.html' with aktiv='uebersicht' %}{% endblock %}
 
 {% block content %}
     {% if mieter %}
@@ -83,7 +55,12 @@
         {% endfor %}
 
         {% if objekte %}
-        <div class="grid grid-cols-2 gap-3 mb-6">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+            <a href="/mieter/tickets/"
+               class="flex items-center gap-3 bg-white rounded-xl border border-slate-200 px-4 py-3.5 hover:border-indigo-300 hover:shadow-md transition-all">
+                <span class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+                <span class="text-sm font-semibold text-slate-700 leading-tight">Meldungen<br><span class="text-xs font-normal text-slate-400">Status &amp; Verlauf</span></span>
+            </a>
             <a href="/mieter/kontoauszug/" target="_blank"
                class="flex items-center gap-3 bg-white rounded-xl border border-slate-200 px-4 py-3.5 hover:border-indigo-300 hover:shadow-md transition-all">
                 <span class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-file-lines"></i></span>

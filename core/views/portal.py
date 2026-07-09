@@ -551,13 +551,99 @@ def _benachrichtige_neue_meldung(ticket, vertrag):
         pass
     # Verwaltung/Eigentümer-Benachrichtigung
     try:
-        lg = ticket.liegenschaft
-        empf = []
-        vw = (lg.verwaltung if lg and lg.verwaltung_id else None) or Verwaltung.objects.first()
-        if vw and vw.email:
-            empf.append(vw.email)
-        if lg and lg.mandant_id and lg.mandant.email:
-            empf.append(lg.mandant.email)
-        send_neue_meldung_intern(ticket, empf)
+        send_neue_meldung_intern(ticket, _verwaltung_empfaenger(ticket.liegenschaft))
     except Exception:
         pass
+
+
+def _verwaltung_empfaenger(lg):
+    """E-Mail-Empfänger auf Verwaltungsseite (Verwaltung + ggf. Eigentümer)."""
+    from crm.models import Verwaltung
+    empf = []
+    vw = (lg.verwaltung if lg and lg.verwaltung_id else None) or Verwaltung.objects.first()
+    if vw and vw.email:
+        empf.append(vw.email)
+    if lg and lg.mandant_id and lg.mandant.email:
+        empf.append(lg.mandant.email)
+    return empf
+
+
+# Status → (Label, Tailwind-Klassen) fürs Mieterportal
+TICKET_STATUS_PILL = {
+    'neu':                  ('Neu',                 'bg-rose-100 text-rose-700'),
+    'in_bearbeitung':       ('In Bearbeitung',      'bg-sky-100 text-sky-700'),
+    'warte_auf_mieter':     ('Warte auf Sie',       'bg-amber-100 text-amber-700'),
+    'warte_auf_handwerker': ('Handwerker beauftragt','bg-indigo-100 text-indigo-700'),
+    'erledigt':             ('Erledigt',            'bg-emerald-100 text-emerald-700'),
+}
+
+
+@never_cache
+@login_required
+def mieter_tickets_view(request):
+    """Übersicht aller vom Mieter gemeldeten Schäden mit Status."""
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        return redirect('mieter_portal')
+    from tickets.models import SchadenMeldung
+    qs = (SchadenMeldung.objects.filter(gemeldet_von=mieter)
+          .select_related('liegenschaft', 'betroffene_einheit').order_by('-erstellt_am'))
+    tickets = []
+    for t in qs:
+        label, cls = TICKET_STATUS_PILL.get(t.status, (t.status, 'bg-slate-100 text-slate-600'))
+        tickets.append({'t': t, 'status_label': label, 'status_cls': cls,
+                        'objekt': f"{t.liegenschaft.strasse}" if t.liegenschaft_id else '—'})
+    return render(request, 'core/mieter_tickets.html', {'mieter': mieter, 'tickets': tickets})
+
+
+@never_cache
+@login_required
+def mieter_ticket_detail(request, pk):
+    """Ticket-Detail mit Status + Nachrichtenverlauf; Mieter kann antworten."""
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        return redirect('mieter_portal')
+    from tickets.models import SchadenMeldung
+    t = get_object_or_404(SchadenMeldung, pk=pk, gemeldet_von=mieter)
+    label, cls = TICKET_STATUS_PILL.get(t.status, (t.status, 'bg-slate-100 text-slate-600'))
+    # Nur mieter-relevante Verlaufseinträge (keine internen Notizen / Handwerker-Mails)
+    verlauf = (t.nachrichten.exclude(is_intern=True)
+               .exclude(typ='handwerker_mail').order_by('erstellt_am'))
+    return render(request, 'core/mieter_ticket_detail.html', {
+        'mieter': mieter, 't': t, 'status_label': label, 'status_cls': cls,
+        'verlauf': verlauf,
+        'objekt': f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}" if t.liegenschaft_id else '—',
+    })
+
+
+@never_cache
+@login_required
+def mieter_ticket_nachricht(request, pk):
+    """Mieter schreibt eine Nachricht zu seinem Ticket → Verlauf + Mail an Verwaltung."""
+    from django.contrib import messages
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None or request.method != 'POST':
+        return redirect('mieter_portal')
+    from tickets.models import SchadenMeldung, TicketNachricht
+    t = get_object_or_404(SchadenMeldung, pk=pk, gemeldet_von=mieter)
+    text = (request.POST.get('text') or '').strip()
+    if not text:
+        return redirect(f'/mieter/ticket/{t.id}/')
+    TicketNachricht.objects.create(ticket=t, absender_name=mieter.display_name, typ='chat',
+                                   nachricht=text, is_von_verwaltung=False, gelesen=False)
+    # Ticket wieder als ungelesen markieren → Sidebar-Badge beim Verwalter
+    t.gelesen = False
+    if t.status == 'erledigt':
+        t.status = 'in_bearbeitung'
+    t.save(update_fields=['gelesen', 'status'])
+    # Verwaltung per E-Mail benachrichtigen
+    try:
+        from core.utils.email_service import send_ticket_email
+        body = (f"Neue Nachricht von {mieter.display_name} zu Ticket #{t.id} ({t.titel}):\n\n"
+                f"{text}\n\nBitte im Cockpit unter Schadensfälle beantworten.")
+        for adr in _verwaltung_empfaenger(t.liegenschaft):
+            send_ticket_email(adr, f"Mieter-Nachricht zu Ticket #{t.id}: {t.titel}", body)
+    except Exception:
+        pass
+    messages.success(request, "✅ Ihre Nachricht wurde übermittelt. Die Verwaltung meldet sich.")
+    return redirect(f'/mieter/ticket/{t.id}/')
