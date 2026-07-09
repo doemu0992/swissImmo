@@ -374,6 +374,34 @@ class MieterkontoTests(TestCase):
         self.assertEqual(r2['Content-Type'], 'application/pdf')
 
 
+class PersonLoeschenTests(TestCase):
+    def test_ohne_vertrag_loeschbar(self):
+        m = Mieter.objects.create(typ='person', nachname='Weg')
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        r = c.post(f'/neu/personen/{m.id}/loeschen/')
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(Mieter.objects.filter(id=m.id).exists())
+
+    def test_aktiver_vertrag_blockiert(self):
+        lg, e, m, v = _basis_objekte()  # v ist aktiv
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        r = c.post(f'/neu/personen/{m.id}/loeschen/', follow=True)
+        self.assertTrue(Mieter.objects.filter(id=m.id).exists())
+        self.assertContains(r, 'kann nicht gelöscht werden')
+
+    def test_portal_login_wird_mitgeloescht(self):
+        m = Mieter.objects.create(typ='person', nachname='PortalWeg')
+        pu = User.objects.create_user(username='portalweg@x.ch', password='x')
+        m.benutzer = pu; m.save()
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        c.post(f'/neu/personen/{m.id}/loeschen/')
+        self.assertFalse(Mieter.objects.filter(id=m.id).exists())
+        self.assertFalse(User.objects.filter(id=pu.id).exists())
+
+
 class LoginBackendTests(TestCase):
     """Robuste Anmeldung: Gross-/Kleinschreibung, Leerzeichen, Namenskollision."""
 

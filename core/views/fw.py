@@ -1724,6 +1724,39 @@ def fw_kommunikation_neu(request):
     return redirect(f'/neu/personen/{m.id}/#p-aktivitaet')
 
 
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_person_loeschen(request, pk):
+    """Person (Mieter/Kontakt) löschen. Blockiert bei aktivem Vertrag —
+    dieser muss zuerst gekündigt/beendet werden. Entfernt auch den
+    verknüpften Mieterportal-Zugang."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    m = get_object_or_404(Mieter, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/personen/{m.id}/')
+
+    aktive = m.vertraege.filter(status='aktiv').count()
+    if aktive:
+        messages.error(request, f"❌ Person kann nicht gelöscht werden: {aktive} aktive(r) Vertrag/Verträge. Bitte zuerst kündigen/beenden.")
+        return redirect(f'/neu/personen/{m.id}/')
+
+    name = m.display_name
+    anz_vertraege = m.vertraege.count()
+    # Verknüpften Portal-Login mitentfernen
+    if m.benutzer_id:
+        try:
+            m.benutzer.delete()
+        except Exception:
+            pass
+    log_aktion(request, "Person gelöscht", name,
+               f"inkl. {anz_vertraege} Vertrag/Verträge + zugehörige Daten" if anz_vertraege else "")
+    m.delete()   # cascade: Verträge (beendet/Entwurf), Kommunikation, Dokumente etc.
+    zusatz = f" inkl. {anz_vertraege} beendete(r)/Entwurf-Vertrag/Verträge" if anz_vertraege else ""
+    messages.success(request, f'🗑️ „{name}" gelöscht{zusatz}.')
+    return redirect('/neu/personen/')
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_person_form(request, pk=None):
     """Person (Mieter/Kontakt) erfassen oder bearbeiten — Fairwalter-Stil."""
