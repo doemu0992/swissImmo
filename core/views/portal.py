@@ -519,12 +519,45 @@ def mieter_schaden_melden(request):
     if not v or not v.einheit_id:
         messages.error(request, "Kein aktives Mietobjekt gefunden.")
         return redirect('mieter_portal')
-    SchadenMeldung.objects.create(
+    t = SchadenMeldung.objects.create(
         liegenschaft=v.einheit.liegenschaft, betroffene_einheit=v.einheit,
         gemeldet_von=mieter, titel=titel, beschreibung=beschreibung,
         raum=(request.POST.get('raum') or '').strip(),
         melder_vorname=mieter.vorname or '', melder_nachname=mieter.nachname or '',
         email_melder=mieter.email or '', tel_melder=mieter.mobile or mieter.telefon_privat or '',
-        status='neu')
-    messages.success(request, "✅ Ihre Schadenmeldung wurde übermittelt. Die Verwaltung kümmert sich darum.")
+        status='neu', gelesen=False)
+
+    # 1) Eingangsbestätigung an den Mieter, 2) Benachrichtigung an die Verwaltung
+    _benachrichtige_neue_meldung(t, v)
+
+    messages.success(request, "✅ Ihre Schadenmeldung wurde übermittelt. Sie erhalten eine Bestätigung per E-Mail; die Verwaltung kümmert sich darum.")
     return redirect('mieter_portal')
+
+
+def _benachrichtige_neue_meldung(ticket, vertrag):
+    """Mieter erhält Eingangsbestätigung, Verwaltung/Eigentümer die Meldung.
+    Fehler beim Mailversand dürfen die Schadenmeldung nie blockieren."""
+    from core.utils.email_service import send_ticket_email, send_neue_meldung_intern
+    from crm.models import Verwaltung
+    # Mieter-Bestätigung
+    try:
+        if ticket.email_melder:
+            body = (f"Guten Tag\n\nWir haben Ihre Schadenmeldung '{ticket.titel}' erhalten "
+                    f"(Ticket #{ticket.id}) und kümmern uns darum. Sobald ein Handwerker "
+                    f"beauftragt wurde, informieren wir Sie.\n\n"
+                    f"Freundliche Grüsse\nIhre Liegenschaftsverwaltung")
+            send_ticket_email(ticket.email_melder, f"Eingangsbestätigung: {ticket.titel} (Ticket #{ticket.id})", body)
+    except Exception:
+        pass
+    # Verwaltung/Eigentümer-Benachrichtigung
+    try:
+        lg = ticket.liegenschaft
+        empf = []
+        vw = (lg.verwaltung if lg and lg.verwaltung_id else None) or Verwaltung.objects.first()
+        if vw and vw.email:
+            empf.append(vw.email)
+        if lg and lg.mandant_id and lg.mandant.email:
+            empf.append(lg.mandant.email)
+        send_neue_meldung_intern(ticket, empf)
+    except Exception:
+        pass

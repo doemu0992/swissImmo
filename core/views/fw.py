@@ -2187,6 +2187,11 @@ def fw_schaden_detail(request, pk):
         SchadenMeldung.objects.select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von'), id=pk)
     basis = _global_filter(request)
 
+    # Beim Öffnen als gelesen markieren (entfernt den Sidebar-Badge-Zähler)
+    if not t.gelesen:
+        t.gelesen = True
+        t.save(update_fields=['gelesen'])
+
     s_label, s_cls = TICKET_PILL.get(t.status, (t.status, 'bg-slate-100 text-slate-500'))
     p_label, p_cls = PRIO_PILL.get((t.prioritaet or '').lower(), (t.prioritaet or 'Mittel', 'bg-slate-100 text-slate-500'))
     nachrichten = t.nachrichten.order_by('erstellt_am')

@@ -777,3 +777,47 @@ class AkontoTests(TestCase):
         self.assertEqual(r.status_code, 302)
         v.refresh_from_db()
         self.assertEqual(v.nebenkosten, Decimal('333'))
+
+
+class TicketPortalTests(TestCase):
+    """Schadenmeldung aus dem Mieterportal: E-Mails + Sidebar-Badge (gelesen)."""
+
+    def _setup(self):
+        lg, e, m, v = _basis_objekte()
+        # Verwaltung mit E-Mail für die interne Benachrichtigung
+        Verwaltung.objects.create(firma='Verwaltung AG', email='verwaltung@example.ch')
+        u = User.objects.create_user(username='ticket_mieter', password='x')
+        m.email = 'mieter@example.ch'; m.benutzer = u; m.save()
+        return lg, e, m, v, u
+
+    def test_portal_ticket_sendet_mails(self):
+        from django.core import mail
+        from tickets.models import SchadenMeldung
+        lg, e, m, v, u = self._setup()
+        c = Client(); c.force_login(u)
+        r = c.post('/mieter/schaden/', {'vertrag_id': str(v.id), 'titel': 'Wasserhahn tropft',
+                                        'beschreibung': 'Im Bad', 'raum': 'Bad'})
+        self.assertEqual(r.status_code, 302)
+        t = SchadenMeldung.objects.filter(titel='Wasserhahn tropft').first()
+        self.assertIsNotNone(t)
+        self.assertFalse(t.gelesen)
+        empf = [addr for mailobj in mail.outbox for addr in mailobj.to]
+        self.assertIn('mieter@example.ch', empf)       # Bestätigung an Mieter
+        self.assertIn('verwaltung@example.ch', empf)   # Benachrichtigung an Verwaltung
+
+    def test_sidebar_badge_und_gelesen(self):
+        from tickets.models import SchadenMeldung
+        lg, e, m, v, u = self._setup()
+        t = SchadenMeldung.objects.create(liegenschaft=lg, betroffene_einheit=e,
+                                          titel='Neu X', beschreibung='...', status='neu', gelesen=False)
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        # Badge sichtbar (Titel-Attribut des Zählers)
+        body = c.get('/neu/').content.decode()
+        self.assertIn('neue Schadenmeldung(en)', body)
+        # Öffnen markiert als gelesen -> Badge verschwindet
+        c.get(f'/neu/schaeden/{t.id}/')
+        t.refresh_from_db()
+        self.assertTrue(t.gelesen)
+        body2 = c.get('/neu/').content.decode()
+        self.assertNotIn('neue Schadenmeldung(en)', body2)

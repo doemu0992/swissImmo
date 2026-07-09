@@ -119,6 +119,38 @@ def send_handyman_notification(auftrag):
         """
         threading.Thread(target=send_via_hoststar, args=(ticket.email_melder, sub_m, html_m)).start()
 
+def send_neue_meldung_intern(ticket, to_emails):
+    """Benachrichtigt die Verwaltung über eine neu eingegangene Schadenmeldung
+    (z.B. aus dem Mieterportal). to_emails: Liste von Empfängeradressen."""
+    empf = [e for e in (to_emails or []) if e]
+    if not empf:
+        return False
+    lg = ticket.liegenschaft
+    objekt = f"{lg.strasse}, {lg.ort}" if lg else '—'
+    einheit = ticket.betroffene_einheit.bezeichnung if ticket.betroffene_einheit_id else '—'
+    melder = (ticket.gemeldet_von.display_name if ticket.gemeldet_von_id
+              else f"{ticket.melder_vorname or ''} {ticket.melder_nachname or ''}".strip() or '—')
+    html = f"""
+    <html><body style="font-family:Arial,sans-serif;color:#0f172a;line-height:1.6;">
+      <h2 style="color:#4338ca;">Neue Schadenmeldung aus dem Mieterportal</h2>
+      <table cellpadding="6" style="border-collapse:collapse;">
+        <tr><td style="color:#64748b;">Ticket</td><td><strong>#{ticket.id}</strong></td></tr>
+        <tr><td style="color:#64748b;">Titel</td><td><strong>{ticket.titel}</strong></td></tr>
+        <tr><td style="color:#64748b;">Objekt</td><td>{objekt} · {einheit}</td></tr>
+        <tr><td style="color:#64748b;">Raum</td><td>{ticket.raum or '—'}</td></tr>
+        <tr><td style="color:#64748b;">Melder</td><td>{melder}<br>{ticket.email_melder or ''} {ticket.tel_melder or ''}</td></tr>
+      </table>
+      <p style="margin-top:12px;white-space:pre-line;">{ticket.beschreibung or ''}</p>
+      <p style="color:#94a3b8;font-size:12px;margin-top:20px;">Diese Meldung erscheint in der Software unter Schadensfälle.</p>
+    </body></html>
+    """
+    betreff = f"Neue Schadenmeldung #{ticket.id}: {ticket.titel}"
+    ok = False
+    for adr in empf:
+        ok = send_via_hoststar(adr, betreff, html) or ok
+    return ok
+
+
 def send_ticket_email(to_email, betreff, inhalt_text, foto_field=None):
     """Sendet eine Ticket-Mail (aus Vorlage) synchron. inhalt_text ist Klartext
     mit Zeilenumbrüchen; wird zu HTML gewandelt. Gibt True/False zurück."""
