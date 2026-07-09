@@ -7,9 +7,14 @@ from decimal import Decimal
 def berechne_mieterkonto(mieter, von=None, bis=None):
     """Gibt (zeilen, endsaldo) zurück. Positiver Saldo = Mieter schuldet."""
     from finance.models import DebitorenRechnung, Zahlungseingang
+    from rentals.models import Mietvertrag
+    from django.db.models import Q
     bewegungen = []
 
-    rech = DebitorenRechnung.objects.filter(vertrag__mieter=mieter).exclude(status='storniert')
+    # Erst- UND Mitmieter (2-Personen-Verträge)
+    vids = list(Mietvertrag.objects.filter(Q(mieter=mieter) | Q(mitmieter=mieter)).values_list('id', flat=True))
+
+    rech = DebitorenRechnung.objects.filter(vertrag_id__in=vids).exclude(status='storniert')
     for r in rech:
         d = r.datum
         if (von and d < von) or (bis and d > bis):
@@ -17,7 +22,7 @@ def berechne_mieterkonto(mieter, von=None, bis=None):
         bewegungen.append({'datum': d, 'text': r.titel, 'soll': r.betrag or Decimal('0'),
                            'haben': Decimal('0'), 'sort': 0})
 
-    zahl = Zahlungseingang.objects.filter(vertrag__mieter=mieter, status='verbucht')
+    zahl = Zahlungseingang.objects.filter(vertrag_id__in=vids, status='verbucht')
     for z in zahl:
         d = z.datum_eingang
         if (von and d < von) or (bis and d > bis):

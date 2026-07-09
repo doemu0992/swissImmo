@@ -450,6 +450,42 @@ class LoginBackendTests(TestCase):
         self.assertTrue(ok)
 
 
+class MitmieterPortalTests(TestCase):
+    """2-Personen-Vertrag: auch die Zweitperson (mitmieter) sieht alles."""
+    def _setup(self):
+        from django.core.files.base import ContentFile
+        from rentals.models import Dokument
+        lg = Liegenschaft.objects.create(strasse='Paar 1', plz='3000', ort='Bern')
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='4.5 Zi', typ='wohnung')
+        m1 = Mieter.objects.create(typ='person', nachname='Erst')
+        m2 = Mieter.objects.create(typ='person', nachname='Zweit')
+        v = Mietvertrag.objects.create(mieter=m1, mitmieter=m2, einheit=e, beginn=date(2024, 1, 1),
+                                       netto_mietzins=Decimal('1200'), nebenkosten=Decimal('150'),
+                                       status='aktiv', familienwohnung=True)
+        u2 = User.objects.create_user(username='zweit', password='x'); m2.benutzer = u2; m2.save()
+        d = Dokument(vertrag=v, bezeichnung='Mietvertrag', kategorie='vertrag')
+        d.datei.save('mv.pdf', ContentFile(b'%PDF'), save=True)
+        return lg, e, m1, m2, v, u2, d
+
+    def test_zweitperson_sieht_objekt_und_dokument(self):
+        lg, e, m1, m2, v, u2, d = self._setup()
+        c = Client(); c.force_login(u2)
+        body = c.get('/mieter/').content.decode()
+        self.assertIn('Ihr Mietobjekt', body)
+        self.assertIn('Paar 1', body)
+        self.assertIn('Mietvertrag', body)
+        self.assertEqual(c.get(f'/mieter/dokument/{d.id}/').status_code, 200)
+
+    def test_zweitperson_kann_kuendigen(self):
+        from rentals.models import Kuendigung
+        lg, e, m1, m2, v, u2, d = self._setup()
+        c = Client(); c.force_login(u2)
+        self.assertContains(c.get('/mieter/kuendigung/'), '4.5 Zi')
+        r = c.post('/mieter/kuendigung/', {'vertrag_id': str(v.id)})
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(Kuendigung.objects.filter(vertrag=v).exists())
+
+
 class MieterKuendigungTests(TestCase):
     def _login(self):
         lg, e, m, v = _basis_objekte()

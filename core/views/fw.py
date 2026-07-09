@@ -1595,7 +1595,7 @@ def fw_person_detail(request, pk):
     # Dokumente am Mieter ODER an seinen Verträgen (Vertrags-PDF, Mietzins,
     # Kündigung …) — hier steuert der Verwalter die Portal-Sichtbarkeit.
     from django.db.models import Q as _Q
-    _vids = list(m.vertraege.values_list('id', flat=True))
+    _vids = list(Mietvertrag.objects.filter(_Q(mieter=m) | _Q(mitmieter=m)).values_list('id', flat=True))
     dokumente = (RentalsDokument.objects.filter(_Q(mieter=m) | _Q(vertrag_id__in=_vids))
                  .distinct().order_by('-datum')[:25])
 

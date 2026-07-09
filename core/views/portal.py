@@ -231,6 +231,11 @@ def portal_report_pdf(request):
 # MIETERPORTAL (Self-Service für Mieter mit Login)
 # ============================================================
 
+def _ist_mieter_q(mieter):
+    """Verträge, bei denen die Person Erst- ODER Mitmieter ist (2-Personen-Verträge)."""
+    from django.db.models import Q
+    return Q(mieter=mieter) | Q(mitmieter=mieter)
+
 @never_cache
 @login_required
 def mieter_portal_view(request):
@@ -245,14 +250,14 @@ def mieter_portal_view(request):
             return redirect('portal')
         return render(request, 'core/mieter_portal.html', {'mieter': None})
 
+    from django.db.models import Q
     vertraege = (Mietvertrag.objects
-                 .filter(mieter=mieter, status='aktiv')
+                 .filter(_ist_mieter_q(mieter), status='aktiv')
                  .select_related('einheit__liegenschaft').order_by('-beginn'))
     # Dokumente: alle am Mieter ODER seinem (aktiven/beendeten) Vertrag/Objekt,
     # die im Portal freigegeben sind — gruppiert nach Kategorie.
-    from django.db.models import Q
     from rentals.models import Dokument as RDokument
-    alle_vertrag_ids = list(Mietvertrag.objects.filter(mieter=mieter).values_list('id', flat=True))
+    alle_vertrag_ids = list(Mietvertrag.objects.filter(_ist_mieter_q(mieter)).values_list('id', flat=True))
     einheit_ids = [v.einheit_id for v in vertraege if v.einheit_id]
     dok_qs = (RDokument.objects.filter(
                   Q(mieter=mieter) | Q(vertrag_id__in=alle_vertrag_ids) | Q(einheit_id__in=einheit_ids),
@@ -282,11 +287,11 @@ def mieter_portal_view(request):
             'beginn': v.beginn, 'kaution': v.kautions_betrag,
         })
 
-    # Offene Rechnungen des Mieters (QR-Einzahlschein herunterladbar)
+    # Offene Rechnungen (QR-Einzahlschein herunterladbar) — Erst- UND Mitmieter
     from finance.models import DebitorenRechnung
     from django.utils import timezone
     offene_qs = (DebitorenRechnung.objects
-                 .filter(vertrag__mieter=mieter, status__in=['offen', 'teilbezahlt'])
+                 .filter(vertrag_id__in=alle_vertrag_ids, status__in=['offen', 'teilbezahlt'])
                  .select_related('vertrag').order_by('faellig_am'))
     heute = timezone.localdate()
     offene = []
@@ -315,9 +320,10 @@ def mieter_rechnung_qr(request, pk):
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         raise Http404
+    vertrag_ids = list(Mietvertrag.objects.filter(_ist_mieter_q(mieter)).values_list('id', flat=True))
     r = get_object_or_404(DebitorenRechnung.objects.select_related(
         'vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft'),
-        pk=pk, vertrag__mieter=mieter)
+        pk=pk, vertrag_id__in=vertrag_ids)
     pdf = generate_debitor_qr_pdf(r)
     if pdf is None:
         raise Http404
@@ -339,7 +345,7 @@ def mieter_kuendigung(request):
     if mieter is None:
         raise Http404
 
-    vertraege = (Mietvertrag.objects.filter(mieter=mieter, status='aktiv')
+    vertraege = (Mietvertrag.objects.filter(_ist_mieter_q(mieter), status='aktiv')
                  .select_related('einheit__liegenschaft'))
 
     if request.method == 'POST':
@@ -383,7 +389,8 @@ def mieter_kuendigung(request):
             'frist': v.kuendigungsfrist_monate,
             'familienwohnung': bool(getattr(v, 'familienwohnung', False)) or bool(getattr(v, 'mitmieter_name', '')),
         })
-    erfasste = (Kuendigung.objects.filter(vertrag__mieter=mieter)
+    _vids = list(Mietvertrag.objects.filter(_ist_mieter_q(mieter)).values_list('id', flat=True))
+    erfasste = (Kuendigung.objects.filter(vertrag_id__in=_vids)
                 .select_related('vertrag__einheit__liegenschaft').order_by('-erstellt_am'))
     STATUS_LABEL = {'erfasst': 'Eingereicht', 'bestaetigt': 'Bestätigt',
                     'vollzogen': 'Vollzogen', 'zurueckgezogen': 'Zurückgezogen'}
@@ -437,9 +444,10 @@ def mieter_kuendigung_pdf(request, pk):
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         raise Http404
+    _vids = list(Mietvertrag.objects.filter(_ist_mieter_q(mieter)).values_list('id', flat=True))
     k = get_object_or_404(Kuendigung.objects.select_related(
         'vertrag__mieter', 'vertrag__einheit__liegenschaft'),
-        pk=pk, vertrag__mieter=mieter)
+        pk=pk, vertrag_id__in=_vids)
     lg = k.vertrag.einheit.liegenschaft if k.vertrag.einheit_id else None
     mandant = lg.mandant if lg else None
     pdf = generate_kuendigung_mieter_pdf(k.vertrag, k, verwaltung=Verwaltung.objects.first(), mandant=mandant)
@@ -471,11 +479,12 @@ def mieter_dokument_download(request, pk):
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         raise Http404
-    vertrag_ids = list(Mietvertrag.objects.filter(mieter=mieter).values_list('id', flat=True))
-    einheit_ids = list(Mietvertrag.objects.filter(mieter=mieter).values_list('einheit_id', flat=True))
+    meine = Mietvertrag.objects.filter(_ist_mieter_q(mieter))
+    vertrag_ids = list(meine.values_list('id', flat=True))
+    einheit_ids = [e for e in meine.values_list('einheit_id', flat=True) if e]
     dok = get_object_or_404(
         RDokument.objects.filter(
-            Q(mieter=mieter) | Q(vertrag_id__in=vertrag_ids) | Q(einheit_id__in=[e for e in einheit_ids if e]),
+            Q(mieter=mieter) | Q(vertrag_id__in=vertrag_ids) | Q(einheit_id__in=einheit_ids),
             im_portal_sichtbar=True),
         pk=pk)
     try:
@@ -502,10 +511,10 @@ def mieter_schaden_melden(request):
     if not titel or not beschreibung:
         messages.error(request, "Bitte Titel und Beschreibung angeben.")
         return redirect('mieter_portal')
-    v = (Mietvertrag.objects.filter(id=vertrag_id, mieter=mieter)
+    v = (Mietvertrag.objects.filter(_ist_mieter_q(mieter), id=vertrag_id)
          .select_related('einheit__liegenschaft').first()) if vertrag_id else None
     if not v:
-        v = (Mietvertrag.objects.filter(mieter=mieter, status='aktiv')
+        v = (Mietvertrag.objects.filter(_ist_mieter_q(mieter), status='aktiv')
              .select_related('einheit__liegenschaft').first())
     if not v or not v.einheit_id:
         messages.error(request, "Kein aktives Mietobjekt gefunden.")
