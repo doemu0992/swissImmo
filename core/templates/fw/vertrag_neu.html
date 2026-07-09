@@ -190,7 +190,13 @@
                         <p class="text-xs text-slate-400 mb-3">Basiswerte, auf denen der Vertrag beruht — für spätere Mietzinsanpassungen.</p>
                         <div class="grid grid-cols-2 gap-3">
                             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Basis Konsumentenpreisindex (LIK)</label>
-                                <input name="basis_lik_punkte" id="s_lik" type="number" step="0.1" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                                <input name="basis_lik_punkte" id="s_lik" type="number" step="0.1" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                                <p class="text-[11px] text-slate-400 mt-1">Basis {{ lik_basis }}</p></div>
+                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">LIK Stand-Monat</label>
+                                <input name="basis_lik_stand" id="s_lik_stand" type="month" value="{{ aktueller_lik_stand_iso }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                                <p class="text-[11px] text-slate-400 mt-1">Monat, aus dem der LIK-Wert stammt</p></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 mt-3">
                             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Stand Referenzzinssatz (%)</label>
                                 <input name="basis_referenzzinssatz" id="s_ref" type="number" step="0.05" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
                         </div>

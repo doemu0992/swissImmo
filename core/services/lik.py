@@ -35,3 +35,27 @@ def lik_bezeichnung(punkte, basis="Dezember 2020", stand=None):
     if s:
         teile.append(f"Stand {s}")
     return " · ".join(teile)
+
+
+def vertrag_lik_context(vertrag, verwaltung=None):
+    """Einheitliche LIK-Angaben eines Vertrags für alle Ansichten/PDFs.
+
+    Gibt {lik_basis, lik_stand, lik_stand_label, lik_pkt, lik_voll} zurück.
+    - Basis: `Verwaltung.lik_basis` (Default «Dezember 2020»)
+    - Stand: `Vertrag.basis_lik_stand`, sonst `Verwaltung.aktueller_lik_stand`
+    - Punkte: `Vertrag.basis_lik_punkte` (Schweizer Format mit Komma)
+    """
+    basis = (getattr(verwaltung, 'lik_basis', None) or "Dezember 2020")
+    stand = getattr(vertrag, 'basis_lik_stand', None) or getattr(verwaltung, 'aktueller_lik_stand', None)
+    punkte = getattr(vertrag, 'basis_lik_punkte', None)
+    try:
+        pkt = f"{float(punkte):.1f}".replace('.', ',') if punkte is not None else "—"
+    except Exception:
+        pkt = str(punkte)
+    return {
+        'lik_basis': basis,
+        'lik_stand': stand,
+        'lik_stand_label': stand_label(stand),
+        'lik_pkt': pkt,
+        'lik_voll': lik_bezeichnung(punkte, basis=basis, stand=stand),
+    }

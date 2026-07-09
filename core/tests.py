@@ -905,3 +905,50 @@ class MieterTicketPortalTests(TestCase):
         c = Client(); c.force_login(u)
         body = c.get(f'/mieter/ticket/{t.id}/').content.decode()
         self.assertNotIn('INTERNE NOTIZ GEHEIM', body)
+
+
+class LikVertragTests(TestCase):
+    """LIK im Mietvertrag: Basis (Dez. 2020) + Stand-Monat durchgängig."""
+
+    def test_lik_context_basis_und_stand(self):
+        from core.services.lik import vertrag_lik_context
+        lg, e, m, v = _basis_objekte()
+        vw = Verwaltung.objects.create(firma='V AG', lik_basis='Dezember 2020',
+                                       aktueller_lik_punkte=Decimal('107.1'),
+                                       aktueller_lik_stand=date(2024, 8, 1))
+        v.basis_lik_punkte = Decimal('106.3'); v.basis_lik_stand = date(2023, 5, 1); v.save()
+        ctx = vertrag_lik_context(v, vw)
+        self.assertEqual(ctx['lik_basis'], 'Dezember 2020')
+        self.assertEqual(ctx['lik_stand_label'], 'Mai 2023')
+        self.assertEqual(ctx['lik_pkt'], '106,3')
+
+    def test_lik_context_fallback_auf_verwaltungsstand(self):
+        from core.services.lik import vertrag_lik_context
+        lg, e, m, v = _basis_objekte()
+        vw = Verwaltung.objects.create(firma='V AG', aktueller_lik_stand=date(2025, 3, 1))
+        v.basis_lik_stand = None; v.save()
+        ctx = vertrag_lik_context(v, vw)
+        self.assertEqual(ctx['lik_stand_label'], 'März 2025')   # Fallback
+
+    def test_vertrag_pdf_enthaelt_basis_und_stand(self):
+        from core.services.pdf_service import generate_vertrag_pdf_bytes
+        lg, e, m, v = _basis_objekte()
+        Verwaltung.objects.create(firma='V AG', lik_basis='Dezember 2020', aktueller_lik_stand=date(2024, 8, 1))
+        v.basis_lik_punkte = Decimal('107.1'); v.basis_lik_stand = date(2024, 8, 1); v.save()
+        pdf = generate_vertrag_pdf_bytes(v)
+        self.assertTrue(pdf.startswith(b'%PDF'))
+
+    def test_assistent_setzt_stand_beim_erstellen(self):
+        from rentals.models import Mietvertrag as MV
+        Verwaltung.objects.create(firma='V AG', aktueller_lik_stand=date(2024, 8, 1))
+        lg = Liegenschaft.objects.create(strasse='Neu 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='wohnung')
+        m = Mieter.objects.create(typ='person', nachname='Neu')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        r = c.post('/neu/vertraege/neu/speichern/', {
+            'einheit_id': str(e.id), 'mieter_id': str(m.id), 'beginn': '2025-01-01',
+            'netto_mietzins': '1500', 'nebenkosten': '200', 'basis_lik_punkte': '107.1'})
+        self.assertEqual(r.status_code, 302)
+        v = MV.objects.filter(mieter=m).first()
+        self.assertEqual(v.basis_lik_stand, date(2024, 8, 1))

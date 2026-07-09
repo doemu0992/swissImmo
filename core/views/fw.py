@@ -3613,6 +3613,8 @@ def fw_vertrag_neu(request):
         'verwaltung': verwaltung,
         'aktueller_ref_zins': float(vw.aktueller_referenzzinssatz) if vw else 1.75,
         'aktueller_lik': float(vw.aktueller_lik_punkte) if vw else 107.1,
+        'lik_basis': (vw.lik_basis if vw else 'Dezember 2020'),
+        'aktueller_lik_stand_iso': (vw.aktueller_lik_stand.strftime('%Y-%m') if vw and vw.aktueller_lik_stand else ''),
         'heute_iso': timezone.now().date().isoformat(),
     })
 
@@ -3690,6 +3692,20 @@ def fw_vertrag_neu_speichern(request):
     familienwohnung = P.get('familienwohnung') == 'on'
 
     beginn = datum('beginn') or timezone.now().date()
+
+    # LIK-Stand-Monat (aus dem die Basis-Punkte stammen): Formular-Override,
+    # sonst der aktuelle Stand aus den Account-Einstellungen (Basis Dez. 2020).
+    from crm.models import Verwaltung as _Vw
+    _vw = einheit.liegenschaft.verwaltung or _Vw.objects.first()
+    basis_lik_stand = _vw.aktueller_lik_stand if _vw else None
+    _stand_raw = (P.get('basis_lik_stand') or '').strip()  # 'YYYY-MM' aus <input type=month>
+    if _stand_raw:
+        try:
+            _jahr, _monat = _stand_raw.split('-')[:2]
+            basis_lik_stand = date(int(_jahr), int(_monat), 1)
+        except Exception:
+            pass
+
     with transaction.atomic():
         vertrag = Mietvertrag.objects.create(
             mieter=mieter, einheit=einheit,
@@ -3712,6 +3728,7 @@ def fw_vertrag_neu_speichern(request):
             weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
             basis_referenzzinssatz=dec('basis_referenzzinssatz') or Decimal('1.75'),
             basis_lik_punkte=dec('basis_lik_punkte') or Decimal('107.1'),
+            basis_lik_stand=basis_lik_stand,
             kostensteigerung_datum=datum('kostensteigerung_datum'),
             kautions_betrag=dec('kautions_betrag') or None,
             kautions_konto=P.get('kautions_konto', '').strip(),

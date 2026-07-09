@@ -55,6 +55,11 @@ def link_callback(uri, rel):
     else: return uri
     return path if os.path.isfile(path) else None
 
+def _lik_ctx(vertrag, verwaltung):
+    from core.services.lik import vertrag_lik_context
+    return vertrag_lik_context(vertrag, verwaltung)
+
+
 def generate_vertrag_pdf_bytes(vertrag):
     einheit = vertrag.einheit
     liegenschaft = einheit.liegenschaft
@@ -100,6 +105,8 @@ def generate_vertrag_pdf_bytes(vertrag):
         'ref_fmt': f"{(vertrag.basis_referenzzinssatz or 0):.2f}",
         'lik_fmt': f"{(vertrag.basis_lik_punkte or 0):.1f}",
         'unterschrift_path': unterschrift_path,
+        # Einheitliche LIK-Angaben (Basis Dez. 2020 + Stand-Monat)
+        **_lik_ctx(vertrag, verwaltung),
     }
 
     html = get_template(template_name).render(context)

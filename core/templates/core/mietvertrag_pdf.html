@@ -96,7 +96,7 @@
 <div class="subsec">4.1 Mietzinsbasis</div>
 <table class="data">
     <tr><td class="k">Referenzzinssatz</td><td>{{ vertrag.beginn|date:"m.Y" }}, {{ ref_fmt }}%</td></tr>
-    <tr><td class="k">Landesindex der Konsumentenpreise</td><td>Basis {{ vertrag.beginn|date:"m.Y" }}, {{ lik_fmt }} Pkt.</td></tr>
+    <tr><td class="k">Landesindex der Konsumentenpreise</td><td>Basis {{ lik_basis }}{% if lik_stand_label %}, Stand {{ lik_stand_label }}{% endif %}: {{ lik_pkt }} Pkt.</td></tr>
     {% if vertrag.kostensteigerung_datum %}<tr><td class="k">Kostensteigerung ausgeglichen bis</td><td>{{ vertrag.kostensteigerung_datum|date:"m.Y" }}</td></tr>{% endif %}
 </table>
 <p class="note">Der Mietzins beruht auf den obigen Grundlagen. Änderungen des Referenzzinssatzes, des Landesindexes sowie allgemeine Kostensteigerungen berechtigen zu einer Anpassung des Mietzinses nach den Bestimmungen des OR und der VMWG.</p>
