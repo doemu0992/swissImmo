@@ -971,7 +971,32 @@ class LikVertragTests(TestCase):
 
     def test_aktueller_lik_wert_aus_tabelle(self):
         from core.services.lik import aktueller_lik_wert
-        stand, pkt, basis = aktueller_lik_wert()
+        # live=False → deterministisch aus der eingebauten BFS-Tabelle
+        stand, pkt, basis = aktueller_lik_wert(live=False)
         self.assertEqual(basis, 'Dezember 2020')
         self.assertEqual(stand, date(2026, 6, 1))       # neuester Monat im Bild
         self.assertEqual(pkt, Decimal('108.3'))
+
+    def test_live_parser_extrahiert_monat_und_wert(self):
+        # Simuliert die HEV-Tabelle: Live-Parser muss Monat UND Wert lesen
+        from core.services import lik as liks
+        html = ('<html>Dezember 2020 = 100'
+                '<table><tr><td>2026</td>'
+                '<td>106.9</td><td>107.6</td><td>107.8</td><td>108.1</td>'
+                '<td>108.3</td><td>108.3</td></tr>'
+                '<tr><td>2025</td><td>106.8</td></tr></table></html>')
+        orig = liks.requests.get if hasattr(liks, 'requests') else None
+        import types
+        class _Resp:
+            text = html
+        import core.services.lik as _m
+        import requests as _rq
+        _saved = _rq.get
+        _rq.get = lambda *a, **k: _Resp()
+        try:
+            res = _m._fetch_live_lik()
+        finally:
+            _rq.get = _saved
+        self.assertIsNotNone(res)
+        self.assertEqual(res[0], date(2026, 6, 1))
+        self.assertEqual(res[1], Decimal('108.3'))

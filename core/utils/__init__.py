@@ -143,6 +143,15 @@ def get_current_ref_zins():
     except: return 1.75
 
 def get_current_lik():
+    # Primär: automatischer LIK (Live-Abruf → BFS-Tabelle), damit überall
+    # derselbe, immer aktuelle Wert gilt. Fallback: Account-Einstellung.
+    try:
+        from core.services.lik import aktueller_lik_wert
+        _stand, pkt, _basis = aktueller_lik_wert()
+        if pkt is not None:
+            return pkt
+    except Exception:
+        pass
     try:
         from crm.models import Verwaltung
         v = Verwaltung.objects.first()

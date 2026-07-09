@@ -35,10 +35,8 @@ def lik_punkte_fuer(jahr, monat):
     return Decimal(str(val)) if val is not None else None
 
 
-def aktueller_lik_wert():
-    """Neuester veröffentlichter LIK-Wert. Gibt (stand_date, punkte, basis) zurück
-    — stand_date ist der 1. des Monats, aus dem der Wert stammt. Vollautomatisch
-    (keine manuelle Pflege nötig), Basis = Serienname «Dezember 2020»."""
+def _tabelle_wert():
+    """Neuester Wert aus der eingebauten BFS-Tabelle (Offline-Netz)."""
     import datetime
     from decimal import Decimal
     best = None
@@ -48,9 +46,89 @@ def aktueller_lik_wert():
             if val is not None:
                 best = (jahr, i + 1, val)
     if best is None:
-        return None, None, LIK_BASIS
+        return None, None
     j, mo, val = best
-    return datetime.date(j, mo, 1), Decimal(str(val)), LIK_BASIS
+    return datetime.date(j, mo, 1), Decimal(str(val))
+
+
+def _fetch_live_lik(timeout=8):
+    """Best-effort Live-Abruf des neuesten LIK (Basis Dez. 2020) inkl. Monat
+    von der HEV-Tabelle. Gibt (date, Decimal) oder None. Fängt JEDEN Fehler ab
+    (kein Internet, Layout-Änderung …) → dann greift die Tabelle."""
+    import re
+    import datetime
+    from decimal import Decimal, InvalidOperation
+    try:
+        import requests
+    except Exception:
+        return None
+    url = "https://www.hev-schweiz.ch/vermieten/statistiken/landesindex-der-konsumentenpreise"
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+               'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+    try:
+        html = requests.get(url, headers=headers, timeout=timeout).text
+    except Exception:
+        return None
+    try:
+        pos = html.find("2020 = 100")
+        if pos < 0:
+            return None
+        snip = html[pos:pos + 8000]
+        heute = datetime.date.today()
+        for yr in (heute.year, heute.year - 1):
+            row = re.search(rf">\s*{yr}\s*<.*?(?=>\s*{yr - 1}\s*<|</table>)", snip, re.S)
+            if not row:
+                continue
+            vals = re.findall(r"1\d{2}[.,]\d", row.group(0))
+            if len(vals) >= 13:      # 12 Monate + Jahres-Ø → Ø abschneiden
+                vals = vals[:12]
+            monat = len(vals)
+            if not (1 <= monat <= 12):
+                continue
+            if yr == heute.year and monat > heute.month:
+                monat = heute.month
+                vals = vals[:monat]
+            if not vals:
+                continue
+            try:
+                wert = Decimal(vals[monat - 1].replace(',', '.'))
+            except (InvalidOperation, ValueError):
+                continue
+            if Decimal('100') <= wert <= Decimal('140'):
+                return datetime.date(yr, monat, 1), wert
+    except Exception:
+        return None
+    return None
+
+
+def _live_lik_cached():
+    """Live-Wert mit 24-h-Cache (schont die Quelle, hält es aktuell)."""
+    try:
+        from django.core.cache import cache
+    except Exception:
+        return _fetch_live_lik()
+    key = 'lik_live_dez2020_v1'
+    cached = cache.get(key)
+    if cached is not None:
+        return cached or None      # False-Sentinel = letzter Versuch fehlgeschlagen
+    got = _fetch_live_lik()
+    cache.set(key, got or False, 60 * 60 * 24)
+    return got
+
+
+def aktueller_lik_wert(live=True):
+    """Neuester LIK-Wert (stand_date, punkte, basis) — vollautomatisch.
+
+    Priorität: Live-Abruf (BFS/HEV, 24-h-Cache) → eingebaute BFS-Tabelle.
+    Der Live-Wert gewinnt nur, wenn er mindestens so aktuell ist wie die
+    Tabelle (verhindert Rückschritte durch fehlerhaftes Parsing).
+    """
+    t_stand, t_pkt = _tabelle_wert()
+    if live:
+        got = _live_lik_cached()
+        if got and got[0] and (t_stand is None or got[0] >= t_stand):
+            return got[0], got[1], LIK_BASIS
+    return t_stand, t_pkt, LIK_BASIS
 
 
 def stand_label(stand):

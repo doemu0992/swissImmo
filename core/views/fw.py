@@ -3301,6 +3301,11 @@ def fw_mietzins_anpassung(request, vertrag_id):
 
     aktuell_ref = _dec(get_current_ref_zins())
     aktuell_lik = _dec(get_current_lik())
+    # Automatischer LIK-Stand (Live-Abruf → BFS-Tabelle) für die Anzeige
+    from core.services.lik import aktueller_lik_wert
+    _auto_stand, _auto_lik, _auto_basis = aktueller_lik_wert()
+    aktuell_lik_stand = _auto_stand or (vw.aktueller_lik_stand if vw else None)
+    lik_basis = _auto_basis or (vw.lik_basis if vw else 'Dezember 2020')
 
     if request.method == 'POST':
         aktion = request.POST.get('aktion', 'pdf')
@@ -3338,8 +3343,8 @@ def fw_mietzins_anpassung(request, vertrag_id):
             'nebenkosten': v.nebenkosten,
             'alt_zins': v.basis_referenzzinssatz, 'neu_zins': neu_zins,
             'alt_lik': v.basis_lik_punkte, 'neu_lik': neu_lik,
-            'lik_basis': (vw.lik_basis if vw else 'Dezember 2020'),
-            'alt_lik_stand': v.basis_lik_stand, 'neu_lik_stand': (vw.aktueller_lik_stand if vw else None),
+            'lik_basis': lik_basis,
+            'alt_lik_stand': v.basis_lik_stand, 'neu_lik_stand': aktuell_lik_stand,
             'zins_pct': None, 'lik_pct': None,
             'kosten_pct': request.POST.get('kosten_pct') or None,
             'total_pct': pot.get('delta_prozent'),
@@ -3394,8 +3399,8 @@ def fw_mietzins_anpassung(request, vertrag_id):
         'alt_zins': basis_zins, 'alt_lik': basis_lik,
         'basis_fehlt': not ((v.basis_referenzzinssatz or 0) > 0 and (v.basis_lik_punkte or 0) > 0),
         'aktuell_ref': aktuell_ref, 'aktuell_lik': aktuell_lik,
-        'lik_basis': (vw.lik_basis if vw else 'Dezember 2020'),
-        'alt_lik_stand': v.basis_lik_stand, 'aktuell_lik_stand': (vw.aktueller_lik_stand if vw else None),
+        'lik_basis': lik_basis,
+        'alt_lik_stand': v.basis_lik_stand, 'aktuell_lik_stand': aktuell_lik_stand,
         'vorschlag_netto': vorschlag_netto, 'naechster_termin': naechster_termin,
         'pot': pot,
     })
