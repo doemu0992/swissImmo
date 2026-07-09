@@ -3784,16 +3784,22 @@ def fw_marktdaten_live(request):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_benutzer(request):
-    """Team-Mitglieder (Django-User + Rolle)."""
+    """Team-Mitglieder (Django-User + Rolle). Portal-Konten (Mieter/Eigentümer)
+    werden hier NICHT angezeigt — die werden über Person bzw. Mandant verwaltet."""
     from django.contrib.auth.models import User
     from core.auth import ROLLE_EIGENTUEMER
     basis = _global_filter(request)
     users = User.objects.filter(is_active=True).order_by('username')
     rows = []
     for u in users:
+        # Reine Portal-Zugänge ausblenden (Mieter- oder Eigentümer-Portal)
+        if getattr(u, 'mieter_profil', None) is not None:
+            continue
+        if getattr(u, 'mandant_profil', None) is not None:
+            continue
         rollen = list(u.groups.values_list('name', flat=True))
         if ROLLE_EIGENTUEMER in rollen and len(rollen) == 1:
-            continue  # reine Eigentümer-Portal-Accounts hier nicht zeigen
+            continue  # reiner Eigentümer (per Rolle) — auch ausblenden
         rows.append({'u': u, 'rolle': ', '.join(rollen) or ('Superuser' if u.is_superuser else '—'),
                      'name': (u.get_full_name() or u.username)})
     return render(request, 'fw/benutzer.html', {**basis, 'nav': 'benutzer', 'rows': rows})

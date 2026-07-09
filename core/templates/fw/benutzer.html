@@ -10,8 +10,8 @@
 <p class="text-sm text-slate-500 mb-6">{{ rows|length }} Team-Mitglied(er) mit Zugriff auf die Verwaltung.</p>
 
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden max-w-3xl">
-    <table class="w-full text-sm">
+<div class="bg-white rounded-xl border border-slate-200 overflow-x-auto">
+    <table class="w-full text-sm min-w-[640px]">
         <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
             <tr><th class="text-left px-5 py-3">Name</th><th class="text-left px-5 py-3">Rolle</th>
                 <th class="text-left px-5 py-3">E-Mail</th><th class="text-right px-5 py-3">Aktionen</th></tr>
@@ -31,7 +31,7 @@
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="text-xs font-medium text-indigo-600 hover:underline mr-3"><i class="fa-solid fa-pen text-[10px] mr-0.5"></i>Bearbeiten</a>
                     <form method="post" action="/neu/benutzer/{{ row.u.id }}/loeschen/" class="inline"
-                          onsubmit="return confirm('Benutzer „{{ row.u.username }}" wirklich löschen?');">
+                          onsubmit="return confirm('Benutzer {{ row.u.username|escapejs }} wirklich löschen?');">
                         {% csrf_token %}
                         <button class="text-xs font-medium text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash text-[10px] mr-0.5"></i>Löschen</button>
                     </form>

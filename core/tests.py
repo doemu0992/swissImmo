@@ -402,6 +402,20 @@ class PersonLoeschenTests(TestCase):
         self.assertFalse(User.objects.filter(id=pu.id).exists())
 
 
+class BenutzerListeTests(TestCase):
+    def test_portalkonten_ausgeblendet_teamkonten_sichtbar(self):
+        team = _team_user()  # Gruppe 'Verwaltung'
+        # Mieter-Portal-Konto
+        mu = User.objects.create_user(username='miet_portal@x.ch')
+        m = Mieter.objects.create(typ='person', nachname='PL'); m.benutzer = mu; m.save()
+        c = Client(); c.force_login(team)
+        r = c.get('/neu/benutzer/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, team.username)
+        self.assertNotContains(r, 'miet_portal@x.ch')
+        self.assertContains(r, 'Löschen')
+
+
 class LoginBackendTests(TestCase):
     """Robuste Anmeldung: Gross-/Kleinschreibung, Leerzeichen, Namenskollision."""
 
