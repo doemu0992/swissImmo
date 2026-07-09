@@ -1634,9 +1634,13 @@ def fw_mieter_portal_zugang(request, pk):
             u = m.benutzer
             m.benutzer = None
             m.save(update_fields=['benutzer'])
-            u.is_active = False
-            u.save(update_fields=['is_active'])
-        messages.success(request, "Portal-Zugang deaktiviert.")
+            # Konto vollständig entfernen (kein verwaistes .1/.2-Konto zurücklassen)
+            try:
+                u.delete()
+            except Exception:
+                u.is_active = False
+                u.save(update_fields=['is_active'])
+        messages.success(request, "Portal-Zugang entfernt.")
         return redirect(f'/neu/personen/{m.id}/')
 
     # Benutzername: E-Mail bevorzugt, sonst mieter<id>
