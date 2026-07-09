@@ -294,6 +294,30 @@ class MieterPortalTests(TestCase):
         m.refresh_from_db()
         self.assertIsNotNone(m.benutzer_id)
 
+    def test_zugangsdaten_werden_gemailt(self):
+        from django.core import mail
+        lg, e, m, v = _basis_objekte()  # m.email = hans@example.ch
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        c.post(f'/neu/personen/{m.id}/portal-zugang/', {'aktion': 'erstellen'})
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        self.assertIn(m.email, msg.to)
+        m.refresh_from_db()
+        self.assertIn(m.benutzer.username, msg.body)   # Benutzername in der Mail
+        self.assertIn('/login/', msg.body)             # Login-Link in der Mail
+
+    def test_kein_mail_ohne_adresse(self):
+        from django.core import mail
+        lg, e, m, v = _basis_objekte()
+        m.email = ''; m.save()
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        c.post(f'/neu/personen/{m.id}/portal-zugang/', {'aktion': 'erstellen'})
+        self.assertEqual(len(mail.outbox), 0)
+        m.refresh_from_db()
+        self.assertIsNotNone(m.benutzer_id)  # Zugang trotzdem erstellt
+
 
 class DashboardCockpitTests(TestCase):
     def test_cockpit_zaehlt_freigaben_und_fristen(self):

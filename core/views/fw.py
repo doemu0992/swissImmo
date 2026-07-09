@@ -1657,7 +1657,25 @@ def fw_mieter_portal_zugang(request, pk):
         m.benutzer = u
         m.save(update_fields=['benutzer'])
     log_aktion(request, "Mieterportal-Zugang erstellt", m.display_name, u.username)
-    messages.success(request, f"✅ Portal-Zugang aktiv. Benutzername: {u.username} · Passwort: {passwort} — bitte dem Mieter sicher mitteilen (wird nur einmal angezeigt).")
+
+    # Zugangsdaten per E-Mail an den Mieter senden (Benutzername, Passwort, Login-Link)
+    mail_ok = False
+    if m.email:
+        from core.utils.email_service import send_mieter_portal_zugang
+        from crm.models import Verwaltung
+        vw = Verwaltung.objects.first()
+        login_url = request.build_absolute_uri('/login/')
+        anrede = (f"{m.anrede} " if m.anrede else "") + (m.nachname or m.display_name)
+        mail_ok = send_mieter_portal_zugang(
+            m.email, anrede.strip(), u.username, passwort, login_url,
+            absender_firma=(vw.firma if vw else ''))
+
+    if mail_ok:
+        messages.success(request, f"✅ Portal-Zugang aktiv. Zugangsdaten wurden an {m.email} gesendet. (Benutzername: {u.username})")
+    elif m.email:
+        messages.warning(request, f"⚠️ Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: {u.username} · Passwort: {passwort} — bitte manuell mitteilen.")
+    else:
+        messages.success(request, f"✅ Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: {u.username} · Passwort: {passwort} (bitte dem Mieter sicher mitteilen, wird nur einmal angezeigt).")
     return redirect(f'/neu/personen/{m.id}/')
 
 

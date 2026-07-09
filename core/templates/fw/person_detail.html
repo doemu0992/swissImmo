@@ -72,12 +72,14 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5 lg:col-span-2">
             <h3 class="font-bold text-slate-800 mb-3"><i class="fa-solid fa-key text-indigo-500 mr-1.5"></i>Mieterportal-Zugang</h3>
             {% if portal_user %}
-                <p class="text-sm text-slate-600 mb-3">Aktiv · Benutzername: <span class="font-mono font-semibold">{{ portal_user.username }}</span>
+                <p class="text-sm text-slate-600 mb-1">Aktiv · Benutzername: <span class="font-mono font-semibold">{{ portal_user.username }}</span>
                     {% if not portal_user.is_active %}<span class="text-red-500">(deaktiviert)</span>{% endif %}</p>
+                <p class="text-xs text-slate-400 mb-3">Login unter <span class="font-mono">/login/</span>. „Passwort zurücksetzen" erzeugt ein neues Passwort und sendet es
+                    {% if m.email %}an <span class="font-semibold">{{ m.email }}</span>{% else %}<span class="text-amber-600">(keine E-Mail hinterlegt — wird angezeigt)</span>{% endif %}.</p>
                 <div class="flex gap-2">
-                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('Neues Passwort erzeugen? Das alte wird ungültig.');">{% csrf_token %}
+                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('Neues Passwort erzeugen und {% if m.email %}an den Mieter senden{% else %}anzeigen{% endif %}? Das alte wird ungültig.');">{% csrf_token %}
                         <input type="hidden" name="aktion" value="erstellen">
-                        <button class="text-xs font-semibold border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-lg">Passwort zurücksetzen</button>
+                        <button class="text-xs font-semibold border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-lg">Passwort zurücksetzen &amp; senden</button>
                     </form>
                     <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('Portal-Zugang deaktivieren?');">{% csrf_token %}
                         <input type="hidden" name="aktion" value="entfernen">
@@ -85,10 +87,13 @@
                     </form>
                 </div>
             {% else %}
-                <p class="text-sm text-slate-500 mb-3">Kein Portal-Zugang. Erstellen Sie einen Login, damit der Mieter Vertrag, Dokumente und Schadenmeldung online nutzen kann.</p>
+                <p class="text-sm text-slate-500 mb-1">Kein Portal-Zugang. Erstellen Sie einen Login, damit der Mieter Vertrag, offene Rechnungen (QR), Kontoauszug, Dokumente und Schadenmeldung online nutzen kann.</p>
+                <p class="text-xs text-slate-400 mb-3">
+                    {% if m.email %}Die Zugangsdaten werden automatisch an <span class="font-semibold">{{ m.email }}</span> gesendet.{% else %}<span class="text-amber-600">Keine E-Mail hinterlegt — die Zugangsdaten werden hier einmalig angezeigt.</span>{% endif %}
+                </p>
                 <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/">{% csrf_token %}
                     <input type="hidden" name="aktion" value="erstellen">
-                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"><i class="fa-solid fa-key mr-1.5"></i>Portal-Zugang erstellen</button>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"><i class="fa-solid fa-key mr-1.5"></i>Portal-Zugang erstellen{% if m.email %} &amp; per E-Mail senden{% endif %}</button>
                 </form>
             {% endif %}
         </div>
