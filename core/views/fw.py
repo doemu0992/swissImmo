@@ -112,13 +112,16 @@ def fw_dashboard(request):
     from core.models import Pendenz
     from tickets.models import HandwerkerAuftrag
     from portfolio.models import Wartungsfrist
+    from rentals.models import Kuendigung
     _pend = Pendenz.objects.filter(erledigt=False)
     _frist = Wartungsfrist.objects.filter(aktiv=True, naechste_faelligkeit__lte=heute + _timedelta(days=30))
     _freig = HandwerkerAuftrag.objects.filter(freigabe_status='ausstehend')
+    _portal_kuend = Kuendigung.objects.filter(status='erfasst', absender='mieter')
     if aktive_lg:
         _pend = _pend.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
         _frist = _frist.filter(liegenschaft=aktive_lg)
         _freig = _freig.filter(ticket__liegenschaft=aktive_lg)
+        _portal_kuend = _portal_kuend.filter(vertrag__einheit__liegenschaft=aktive_lg)
     debitoren_ueberfaellig_n = sum(1 for r in _deb
                                    if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) < heute)
     cockpit = {
@@ -129,6 +132,7 @@ def fw_dashboard(request):
         'freigaben': _freig.count(),
         'fristen': _frist.count(),
         'fristen_ueberfaellig': _frist.filter(naechste_faelligkeit__lt=heute).count(),
+        'portal_kuendigungen': _portal_kuend.count(),
     }
 
     # --- AUFGABEN (bestehende Pendenzen-Engine wiederverwenden) ---
@@ -4475,6 +4479,38 @@ def fw_kuendigung_zuruecknehmen(request, pk):
             v.save(update_fields=['status', 'aktiv', 'ende'])
         log_aktion(request, "Kündigung zurückgezogen", str(v.mieter), '')
         messages.success(request, "✅ Kündigung zurückgezogen, Vertrag reaktiviert.")
+    return redirect(f'/neu/vertraege/{v.id}/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_kuendigung_bestaetigen(request, pk):
+    """Bestätigt eine (i.d.R. über das Mieterportal eingegangene) Kündigung:
+    setzt den Vertrag auf 'gekuendigt' und legt die Auszugs-Pendenzen an."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import Kuendigung
+    from core.auth import log_aktion
+    k = get_object_or_404(Kuendigung.objects.select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
+    v = k.vertrag
+    if request.method != 'POST':
+        return redirect(f'/neu/vertraege/{v.id}/')
+    if k.status == 'zurueckgezogen':
+        messages.error(request, "Zurückgezogene Kündigung kann nicht bestätigt werden.")
+        return redirect(f'/neu/vertraege/{v.id}/')
+
+    per = k.per_datum or k.berechneter_termin
+    k.status = 'bestaetigt'
+    k.save(update_fields=['status'])
+    v.status = 'gekuendigt'
+    v.aktiv = False
+    v.ende = per
+    v.save(update_fields=['status', 'aktiv', 'ende'])
+
+    n_pendenzen = _auszugscheckliste_anlegen(v, k, per, request.user, mit_leerstand=False)
+    log_aktion(request, "Kündigung bestätigt", str(v.mieter),
+               f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen")
+    messages.success(request, f"✅ Kündigung bestätigt — Vertragsende {per.strftime('%d.%m.%Y') if per else '—'} · "
+                     f"{n_pendenzen} Auszugs-Pendenzen erstellt.")
     return redirect(f'/neu/vertraege/{v.id}/')
 
 

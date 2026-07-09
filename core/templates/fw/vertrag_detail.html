@@ -106,11 +106,18 @@
                 <div class="flex items-center justify-between">
                     <div class="text-xs font-semibold {% if k.status == 'zurueckgezogen' %}text-slate-400 line-through{% else %}text-amber-700{% endif %}">
                         <i class="fa-solid fa-file-circle-xmark mr-1"></i>Kündigung durch {{ k.get_absender_display }}
+                        {% if k.status == 'erfasst' and k.absender == 'mieter' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700">über Portal · eingegangen</span>{% elif k.status == 'bestaetigt' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700">bestätigt</span>{% endif %}
                     </div>
                     <span class="text-xs text-slate-400">{{ k.eingang_datum|date:"d.m.Y" }}</span>
                 </div>
                 <div class="text-sm mt-1">Vertragsende: <b class="text-slate-800">{{ k.per_datum|date:"d.m.Y" }}</b>
                     {% if k.ausserordentlich %}<span class="ml-1 text-xs text-rose-600">ausserordentlich</span>{% endif %}</div>
+                {% if k.status == 'erfasst' %}
+                <form method="post" action="/neu/kuendigung/{{ k.id }}/bestaetigen/" onsubmit="return confirm('Kündigung bestätigen? Der Vertrag wird auf gekündigt gesetzt und Auszugs-Pendenzen werden erstellt.');" class="mt-2">
+                    {% csrf_token %}
+                    <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1"></i>Bestätigen &amp; Vertrag beenden</button>
+                </form>
+                {% endif %}
                 {% if k.status != 'zurueckgezogen' %}
                 <div class="flex items-center gap-3 mt-1.5">
                     <a href="/neu/kuendigung/{{ k.id }}/formular/" target="_blank" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-file-contract mr-0.5"></i>Amtliches Formular{% if formular_kanton %} {{ formular_kanton }}{% endif %} (PDF)</a>

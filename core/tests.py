@@ -500,6 +500,25 @@ class MieterKuendigungTests(TestCase):
         c2 = Client(); c2.force_login(u2)
         self.assertEqual(c2.get(f'/mieter/kuendigung/{k.id}/brief/').status_code, 404)
 
+    def test_verwalter_bestaetigt_portal_kuendigung(self):
+        from rentals.models import Kuendigung
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        u = User.objects.create_user(username='kuend_mieter2', password='x'); m.benutzer = u; m.save()
+        c = Client(); c.force_login(u)
+        c.post('/mieter/kuendigung/', {'vertrag_id': str(v.id)})
+        k = Kuendigung.objects.get(vertrag=v)
+        # Verwalter bestätigt
+        team = _team_user()
+        tc = Client(); tc.force_login(team)
+        r = tc.post(f'/neu/kuendigung/{k.id}/bestaetigen/')
+        self.assertEqual(r.status_code, 302)
+        k.refresh_from_db(); v.refresh_from_db()
+        self.assertEqual(k.status, 'bestaetigt')
+        self.assertEqual(v.status, 'gekuendigt')
+        self.assertIsNotNone(v.ende)
+        self.assertGreater(Pendenz.objects.filter(vertrag=v).count(), 0)  # Auszugs-Pendenzen
+
     def test_familienwohnung_zwei_unterschriften(self):
         from rentals.models import Kuendigung
         from core.services.kuendigung_brief import generate_kuendigung_mieter_pdf
