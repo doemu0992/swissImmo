@@ -1677,7 +1677,7 @@ def fw_mieter_portal_zugang(request, pk):
         from core.utils.email_service import send_mieter_portal_zugang
         from crm.models import Verwaltung
         vw = Verwaltung.objects.first()
-        login_url = request.build_absolute_uri('/login/')
+        login_url = request.build_absolute_uri('/portal/login/')
         anrede = (f"{m.anrede} " if m.anrede else "") + (m.nachname or m.display_name)
         mail_ok = send_mieter_portal_zugang(
             m.email, anrede.strip(), u.username, passwort, login_url,

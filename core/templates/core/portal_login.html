@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal-Login | SwissImmo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="min-h-[100dvh] bg-slate-100 lg:grid lg:grid-cols-2">
+
+    <!-- Linke Markenseite (nur Desktop) -->
+    <div class="hidden lg:flex flex-col justify-between bg-[#161926] text-white p-12 relative overflow-hidden">
+        <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-indigo-600/20 blur-3xl"></div>
+        <div class="absolute -bottom-32 -left-16 w-96 h-96 rounded-full bg-indigo-500/10 blur-3xl"></div>
+
+        <div class="relative flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/40">
+                <i class="fa-solid fa-building text-white"></i>
+            </span>
+            <span class="font-extrabold tracking-wide uppercase">swissImmo</span>
+        </div>
+
+        <div class="relative">
+            <h1 class="text-4xl font-black leading-tight tracking-tight">Ihr persönliches<br>Immobilien-Portal</h1>
+            <p class="mt-4 text-slate-300 text-lg max-w-sm leading-relaxed">
+                Alle Unterlagen zu Ihrer Wohnung, offene Rechnungen und Ihr direkter Draht zur Verwaltung — an einem Ort.
+            </p>
+            <ul class="mt-8 space-y-3 text-slate-300 text-sm">
+                <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-indigo-400"></i> Mietvertrag &amp; Dokumente jederzeit abrufbar</li>
+                <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-indigo-400"></i> Rechnungen mit QR-Einzahlschein</li>
+                <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-indigo-400"></i> Schaden melden &amp; Kündigung erfassen</li>
+            </ul>
+        </div>
+
+        <p class="relative text-xs text-slate-500">© SwissImmo · Sicheres Login für Mietende und Eigentümer</p>
+    </div>
+
+    <!-- Rechte Login-Seite -->
+    <div class="flex items-center justify-center p-6 sm:p-10 min-h-[100dvh]">
+        <div class="w-full max-w-md">
+
+            <!-- Logo (Mobile) -->
+            <div class="lg:hidden text-center mb-8">
+                <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-indigo-200">
+                    <i class="fa-solid fa-building text-white text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">SwissImmo Portal</h2>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-8">
+                <h3 class="text-xl font-bold text-slate-900">Willkommen zurück</h3>
+                <p class="text-sm text-slate-500 mt-1 mb-6">Bitte melden Sie sich in Ihrem Portal an.</p>
+
+                {% if form.errors %}
+                <div class="bg-rose-50 border border-rose-100 text-rose-600 text-sm p-4 rounded-xl mb-6 font-medium flex items-start gap-3">
+                    <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                    <p>Benutzername oder Passwort ist falsch. Bitte versuchen Sie es erneut.</p>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'portal_login' %}" class="space-y-5">
+                    {% csrf_token %}
+
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">Benutzername</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" name="username" required autofocus
+                                autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username" inputmode="email"
+                                class="w-full bg-slate-50 border border-slate-200 pl-11 pr-4 py-3 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all placeholder:text-slate-300 placeholder:font-medium"
+                                placeholder="Ihr Benutzername oder E-Mail">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">Passwort</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="password" name="password" required id="pw"
+                                autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="current-password"
+                                class="w-full bg-slate-50 border border-slate-200 pl-11 pr-11 py-3 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all placeholder:text-slate-300 placeholder:font-medium"
+                                placeholder="••••••••">
+                            <button type="button" onclick="var p=document.getElementById('pw');p.type=p.type==='password'?'text':'password';this.querySelector('i').classList.toggle('fa-eye');this.querySelector('i').classList.toggle('fa-eye-slash');"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1" tabindex="-1" aria-label="Passwort anzeigen">
+                                <i class="fa-solid fa-eye text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-3.5 px-4 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all flex justify-center items-center gap-2">
+                        <span>Anmelden</span> <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                    <input type="hidden" name="next" value="{{ next|default:'/nach-login/' }}">
+                </form>
+            </div>
+
+            <div class="mt-6 rounded-xl bg-white/60 border border-slate-200 px-4 py-3 text-center">
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    <i class="fa-solid fa-key text-indigo-500 mr-1"></i>
+                    Zugangsdaten erhalten Sie per E-Mail von Ihrer Verwaltung.
+                    Noch keinen Zugang? Bitte wenden Sie sich an Ihre Liegenschaftsverwaltung.
+                </p>
+            </div>
+
+            <div class="mt-6 text-center">
+                <a href="{% url 'index' %}" class="text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Zurück zur Startseite
+                </a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

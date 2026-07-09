@@ -112,6 +112,8 @@ urlpatterns = [
 
     # --- EIGENER SAAS LOGIN ---
     path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
+    # Eigene Login-Seite für Mieter- und Eigentümer-Portal (gleiche Auth, eigenes Design)
+    path('portal/login/', auth_views.LoginView.as_view(template_name='core/portal_login.html'), name='portal_login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('nach-login/', nach_login_view, name='nach_login'),
 

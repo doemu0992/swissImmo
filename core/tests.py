@@ -449,6 +449,24 @@ class LoginBackendTests(TestCase):
         ok = c.login(username='Mieterview@example.ch', password='Geheim-1')
         self.assertTrue(ok)
 
+    def test_portal_login_seite_lädt(self):
+        c = Client()
+        r = c.get('/portal/login/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Portal')
+        # postet auf denselben Endpoint
+        self.assertContains(r, 'action="/portal/login/"')
+
+    def test_mieterportal_hat_sidebar(self):
+        lg, e, m, v = _basis_objekte()
+        u = User.objects.create_user(username='sidebar_mieter', password='x')
+        m.benutzer = u; m.save()
+        c = Client(); c.force_login(u)
+        body = c.get('/mieter/').content.decode()
+        self.assertIn('id="pSidebar"', body)   # gemeinsame Portal-Shell
+        self.assertIn('Übersicht', body)
+        self.assertIn('Schaden melden', body)
+
 
 class MitmieterPortalTests(TestCase):
     """2-Personen-Vertrag: auch die Zweitperson (mitmieter) sieht alles."""
