@@ -486,7 +486,9 @@ def fw_personen(request):
 
     qs = Mieter.objects.all().order_by('nachname', 'firmen_name')
     if aktive_lg:
-        qs = qs.filter(vertraege__einheit__liegenschaft=aktive_lg).distinct()
+        # Haupt- ODER Mitmieter eines Vertrags in dieser Liegenschaft
+        qs = qs.filter(Q(vertraege__einheit__liegenschaft=aktive_lg)
+                       | Q(vertraege_als_mitmieter__einheit__liegenschaft=aktive_lg)).distinct()
 
     typ_filter = request.GET.get('typ', '')
     if typ_filter in ('person', 'firma', 'verein'):
@@ -500,7 +502,10 @@ def fw_personen(request):
                         .select_related('einheit__liegenschaft'))
     vertrag_je_mieter = {}
     for v in aktive_vertraege:
+        # Vertrag beim Hauptmieter UND beim Mitmieter (2. Person) anzeigen
         vertrag_je_mieter.setdefault(v.mieter_id, []).append(v)
+        if v.mitmieter_id:
+            vertrag_je_mieter.setdefault(v.mitmieter_id, []).append(v)
 
     rows = []
     for m in qs:
@@ -1581,21 +1586,23 @@ def fw_person_detail(request, pk):
     from tickets.models import SchadenMeldung
     m = get_object_or_404(Mieter, id=pk)
     basis = _global_filter(request)
+    from django.db.models import Q as _Q
 
-    vertraege = (m.vertraege.select_related('einheit__liegenschaft').order_by('-beginn'))
+    # Verträge, in denen die Person Haupt- ODER Mitmieter ist (2-Personen-Vertrag)
+    vertraege = (Mietvertrag.objects.filter(_Q(mieter=m) | _Q(mitmieter=m))
+                 .select_related('einheit__liegenschaft').distinct().order_by('-beginn'))
     aktive = [v for v in vertraege if v.status == 'aktiv']
+    _vids = list(vertraege.values_list('id', flat=True))
 
     offene = (DebitorenRechnung.objects
-              .filter(vertrag__mieter=m, status__in=['offen', 'teilbezahlt'])
+              .filter(vertrag_id__in=_vids, status__in=['offen', 'teilbezahlt'])
               .select_related('vertrag').order_by('faellig_am'))
     total_offen = sum((r.offener_betrag for r in offene), Decimal('0.00'))
 
-    zahlungen = (Zahlungseingang.objects.filter(vertrag__mieter=m, status='verbucht')
+    zahlungen = (Zahlungseingang.objects.filter(vertrag_id__in=_vids, status='verbucht')
                  .order_by('-datum_eingang')[:15])
     # Dokumente am Mieter ODER an seinen Verträgen (Vertrags-PDF, Mietzins,
     # Kündigung …) — hier steuert der Verwalter die Portal-Sichtbarkeit.
-    from django.db.models import Q as _Q
-    _vids = list(Mietvertrag.objects.filter(_Q(mieter=m) | _Q(mitmieter=m)).values_list('id', flat=True))
     dokumente = (RentalsDokument.objects.filter(_Q(mieter=m) | _Q(vertrag_id__in=_vids))
                  .distinct().order_by('-datum')[:25])
 

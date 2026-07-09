@@ -503,6 +503,27 @@ class MitmieterPortalTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertTrue(Kuendigung.objects.filter(vertrag=v).exists())
 
+    def test_zweitperson_zeigt_mietobjekt_in_personenliste(self):
+        lg, e, m1, m2, v, u2, d = self._setup()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/personen/').content.decode()
+        # Beide Namen erscheinen mit dem gemieteten Objekt (Strasse der Liegenschaft)
+        self.assertIn('Erst', body)
+        self.assertIn('Zweit', body)
+        self.assertGreaterEqual(body.count('Paar 1'), 2)  # beim Haupt- UND Mitmieter
+        # Global-Filter auf die Liegenschaft: Mitmieter bleibt sichtbar
+        gefiltert = c.get(f'/neu/personen/?lg={lg.id}').content.decode()
+        self.assertIn('Zweit', gefiltert)
+
+    def test_zweitperson_detailseite_zeigt_vertrag(self):
+        lg, e, m1, m2, v, u2, d = self._setup()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get(f'/neu/personen/{m2.id}/').content.decode()
+        self.assertIn('Paar 1', body)   # gemietetes Objekt beim Mitmieter
+        self.assertIn('4.5 Zi', body)
+
 
 class MieterKuendigungTests(TestCase):
     def _login(self):
