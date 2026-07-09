@@ -56,7 +56,7 @@ from core.views.dashboard_view import update_market_data_view, spa_master_view
 # 2b. Eigentümer-Portal & Login-Weiche
 from core.views.portal import (portal_view, nach_login_view, portal_dokument_download, portal_report_pdf, portal_freigabe,
                                 mieter_portal_view, mieter_dokument_download, mieter_schaden_melden, mieter_rechnung_qr,
-                                mieter_kontoauszug_pdf)
+                                mieter_kontoauszug_pdf, mieter_kuendigung, mieter_kuendigung_pdf)
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_dashboard, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_liegenschaften, fw_objekte,
@@ -244,6 +244,8 @@ urlpatterns = [
     path('mieter/schaden/', mieter_schaden_melden, name='mieter_schaden_melden'),
     path('mieter/rechnung/<int:pk>/', mieter_rechnung_qr, name='mieter_rechnung_qr'),
     path('mieter/kontoauszug/', mieter_kontoauszug_pdf, name='mieter_kontoauszug_pdf'),
+    path('mieter/kuendigung/', mieter_kuendigung, name='mieter_kuendigung'),
+    path('mieter/kuendigung/<int:pk>/brief/', mieter_kuendigung_pdf, name='mieter_kuendigung_pdf'),
 
     # --- DOSSIER-SEITEN (Team-intern: alles zu einem Mieter/Objekt/Vertrag) ---
     path('dossier/mieter/<int:mieter_id>/', mieter_dossier, name='dossier_mieter'),

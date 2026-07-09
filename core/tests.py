@@ -408,6 +408,77 @@ class LoginBackendTests(TestCase):
         self.assertTrue(ok)
 
 
+class MieterKuendigungTests(TestCase):
+    def _login(self):
+        lg, e, m, v = _basis_objekte()
+        u = User.objects.create_user(username='kuend_mieter', password='x')
+        m.benutzer = u; m.save()
+        return lg, e, m, v, u
+
+    def test_nur_eigene_objekte(self):
+        lg, e, m, v, u = self._login()
+        # Fremdes Objekt + fremder aktiver Vertrag
+        fremd_m = Mieter.objects.create(typ='person', nachname='Fremd')
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='FREMD-Whg', typ='wohnung')
+        Mietvertrag.objects.create(mieter=fremd_m, einheit=e2, beginn=date(2020, 1, 1),
+                                   netto_mietzins=Decimal('1'), nebenkosten=Decimal('0'), status='aktiv')
+        c = Client(); c.force_login(u)
+        r = c.get('/mieter/kuendigung/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, '3.5 Zi')       # eigenes Objekt
+        self.assertNotContains(r, 'FREMD-Whg')  # fremdes Objekt NICHT
+
+    def test_erfassen_erzeugt_kuendigung_ohne_status_wechsel(self):
+        from rentals.models import Kuendigung
+        lg, e, m, v, u = self._login()
+        c = Client(); c.force_login(u)
+        r = c.post('/mieter/kuendigung/', {'vertrag_id': str(v.id)})
+        self.assertEqual(r.status_code, 302)
+        k = Kuendigung.objects.filter(vertrag=v).first()
+        self.assertIsNotNone(k)
+        self.assertEqual(k.absender, 'mieter')
+        self.assertEqual(k.status, 'erfasst')
+        self.assertEqual(k.zustellung, 'einschreiben')
+        self.assertIsNotNone(k.per_datum)
+        v.refresh_from_db()
+        self.assertEqual(v.status, 'aktiv')  # Verwaltung bestätigt -> noch nicht gekündigt
+
+    def test_brief_pdf_und_isolation(self):
+        from rentals.models import Kuendigung
+        lg, e, m, v, u = self._login()
+        c = Client(); c.force_login(u)
+        c.post('/mieter/kuendigung/', {'vertrag_id': str(v.id)})
+        k = Kuendigung.objects.get(vertrag=v)
+        r = c.get(f'/mieter/kuendigung/{k.id}/brief/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        # Fremder Mieter kommt nicht an den Brief
+        m2 = Mieter.objects.create(typ='person', nachname='Andere')
+        u2 = User.objects.create_user(username='andere', password='x'); m2.benutzer = u2; m2.save()
+        c2 = Client(); c2.force_login(u2)
+        self.assertEqual(c2.get(f'/mieter/kuendigung/{k.id}/brief/').status_code, 404)
+
+    def test_familienwohnung_zwei_unterschriften(self):
+        from rentals.models import Kuendigung
+        from core.services.kuendigung_brief import generate_kuendigung_mieter_pdf
+        lg, e, m, v, u = self._login()
+        v.familienwohnung = True; v.mitmieter_name = 'Anna Muster'; v.save()
+        k = Kuendigung.objects.create(vertrag=v, absender='mieter', eingang_datum=date.today(),
+                                      berechneter_termin=date(2025, 6, 30), per_datum=date(2025, 6, 30),
+                                      status='erfasst')
+        pdf = generate_kuendigung_mieter_pdf(v, k)
+        self.assertTrue(pdf.startswith(b'%PDF'))
+        # Text prüfen via pdf-Rohbytes (Namen im Content-Stream)
+        try:
+            import fitz
+            doc = fitz.open(stream=pdf, filetype='pdf')
+            txt = doc[0].get_text()
+            self.assertIn('Anna Muster', txt)
+            self.assertIn('266m', txt)
+        except ImportError:
+            pass
+
+
 class SicherheitsIsolationTests(TestCase):
     """Stellt sicher, dass Portale strikt isoliert sind (keine Cross-Tenant-Lecks)."""
 

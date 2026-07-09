@@ -7,6 +7,7 @@ verknüpft werden. Er sieht hier NUR seine eigenen Liegenschaften — keine
 Mieterdetails anderer Mandanten, kein SPA, keine API (core/auth.py sperrt
 Eigentümer-Logins dort aus).
 """
+import datetime
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
@@ -300,6 +301,127 @@ def mieter_rechnung_qr(request, pk):
         raise Http404
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Rechnung_{r.id}.pdf"'
+    return resp
+
+
+@login_required
+def mieter_kuendigung(request):
+    """Mieter erfasst eine Kündigung für ein Objekt (Antrag) + Brief zum Download.
+    Setzt den Vertrag NICHT automatisch auf gekündigt — die Verwaltung bestätigt."""
+    from django.contrib import messages
+    from rentals.models import Kuendigung
+    from rentals.services import berechne_kuendigungstermin
+    from django.utils import timezone
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        raise Http404
+
+    vertraege = (Mietvertrag.objects.filter(mieter=mieter, status='aktiv')
+                 .select_related('einheit__liegenschaft'))
+
+    if request.method == 'POST':
+        v = vertraege.filter(id=request.POST.get('vertrag_id')).first()
+        if not v:
+            messages.error(request, "Kein gültiges Mietobjekt gewählt.")
+            return redirect('mieter_kuendigung')
+        heute = timezone.localdate()
+        wunsch = (request.POST.get('gewuenschtes_ende') or '').strip()
+        try:
+            gewuenscht = datetime.date.fromisoformat(wunsch) if wunsch else None
+        except ValueError:
+            gewuenscht = None
+        termin = berechne_kuendigungstermin(v, heute)
+        # Wirksames Ende: frühestens der ordentliche Termin (Wunsch nur, wenn später)
+        per = gewuenscht if (gewuenscht and gewuenscht >= termin) else termin
+        k = Kuendigung.objects.create(
+            vertrag=v, absender='mieter', eingang_datum=heute,
+            zustellung='einschreiben', gewuenschtes_ende=gewuenscht,
+            berechneter_termin=termin, per_datum=per, status='erfasst',
+            bemerkung=(request.POST.get('bemerkung') or '').strip())
+
+        # Verwaltung benachrichtigen (E-Mail) + Journal-Notiz
+        _benachrichtige_verwaltung_kuendigung(v, k)
+
+        messages.success(request, f"✅ Ihre Kündigung wurde erfasst (Termin: {per.strftime('%d.%m.%Y')}). "
+                         "Laden Sie den Kündigungsbrief herunter und senden Sie ihn per Einschreiben. "
+                         "Die Verwaltung wurde informiert und bestätigt den Eingang.")
+        return redirect('mieter_kuendigung')
+
+    # GET: Objekte mit berechnetem Termin + bereits erfasste Kündigungen
+    heute = timezone.localdate()
+    objekte = []
+    for v in vertraege:
+        lg = v.einheit.liegenschaft if v.einheit_id else None
+        objekte.append({
+            'vertrag': v,
+            'adresse': f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else '—',
+            'einheit': v.einheit.bezeichnung if v.einheit_id else '',
+            'termin': berechne_kuendigungstermin(v, heute),
+            'frist': v.kuendigungsfrist_monate,
+            'familienwohnung': bool(getattr(v, 'familienwohnung', False)) or bool(getattr(v, 'mitmieter_name', '')),
+        })
+    erfasste = (Kuendigung.objects.filter(vertrag__mieter=mieter)
+                .select_related('vertrag__einheit__liegenschaft').order_by('-erstellt_am'))
+    STATUS_LABEL = {'erfasst': 'Eingereicht', 'bestaetigt': 'Bestätigt',
+                    'vollzogen': 'Vollzogen', 'zurueckgezogen': 'Zurückgezogen'}
+    kuendigungen = [{
+        'id': k.id, 'objekt': (k.vertrag.einheit.bezeichnung if k.vertrag.einheit_id else ''),
+        'per': k.per_datum or k.berechneter_termin,
+        'status': STATUS_LABEL.get(k.status, k.status),
+        'eingereicht': k.eingang_datum,
+    } for k in erfasste]
+    return render(request, 'core/mieter_kuendigung.html', {
+        'mieter': mieter, 'objekte': objekte, 'kuendigungen': kuendigungen,
+        'heute_iso': heute.isoformat(),
+    })
+
+
+def _benachrichtige_verwaltung_kuendigung(vertrag, kuendigung):
+    from crm.models import Verwaltung
+    try:
+        from crm.models import Kommunikation
+        Kommunikation.objects.create(
+            mieter=vertrag.mieter, vertrag=vertrag, typ='email', richtung='eingehend',
+            betreff='Kündigung über Mieterportal',
+            inhalt=f"Der Mieter hat über das Portal per {(kuendigung.per_datum or kuendigung.berechneter_termin)} gekündigt. "
+                   "Bitte Eingang bestätigen und Kündigung prüfen (Familienwohnung/Unterschriften).")
+    except Exception:
+        pass
+    vw = Verwaltung.objects.first()
+    empfaenger = (vw.email if vw and vw.email else None)
+    if empfaenger:
+        try:
+            from core.utils.email_service import send_ticket_email
+            per = kuendigung.per_datum or kuendigung.berechneter_termin
+            lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else None
+            text = (f"Eingang einer Kündigung über das Mieterportal.\n\n"
+                    f"Mieter: {vertrag.mieter.display_name}\n"
+                    f"Objekt: {vertrag.einheit.bezeichnung if vertrag.einheit_id else ''}"
+                    f"{(' · ' + lg.strasse + ', ' + lg.plz + ' ' + lg.ort) if lg else ''}\n"
+                    f"Gewünschtes Vertragsende: {per.strftime('%d.%m.%Y') if per else '—'}\n\n"
+                    "Bitte im System bestätigen. Der Mieter versendet zusätzlich den Kündigungsbrief per Einschreiben.")
+            send_ticket_email(empfaenger, "Kündigung über Mieterportal", text)
+        except Exception:
+            pass
+
+
+@login_required
+def mieter_kuendigung_pdf(request, pk):
+    """Kündigungsbrief (PDF) zu einer eigenen Kündigung."""
+    from rentals.models import Kuendigung
+    from crm.models import Verwaltung
+    from core.services.kuendigung_brief import generate_kuendigung_mieter_pdf
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        raise Http404
+    k = get_object_or_404(Kuendigung.objects.select_related(
+        'vertrag__mieter', 'vertrag__einheit__liegenschaft'),
+        pk=pk, vertrag__mieter=mieter)
+    lg = k.vertrag.einheit.liegenschaft if k.vertrag.einheit_id else None
+    mandant = lg.mandant if lg else None
+    pdf = generate_kuendigung_mieter_pdf(k.vertrag, k, verwaltung=Verwaltung.objects.first(), mandant=mandant)
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = 'inline; filename="Kuendigung.pdf"'
     return resp
 
 
