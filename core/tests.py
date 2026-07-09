@@ -244,6 +244,19 @@ class MieterPortalTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertTrue(r.url.endswith('/mieter/'))
 
+    def test_eigene_seiten_laden(self):
+        m, v, u = self._mieter_login()
+        c = Client(); c.force_login(u)
+        # Übersicht verlinkt auf die dedizierten Seiten (keine Sprungmarken)
+        body = c.get('/mieter/').content.decode()
+        self.assertIn('/mieter/rechnungen/', body)
+        self.assertIn('/mieter/dokumente/', body)
+        self.assertIn('/mieter/schaden/neu/', body)
+        # und jede Seite lädt eigenständig
+        self.assertEqual(c.get('/mieter/rechnungen/').status_code, 200)
+        self.assertEqual(c.get('/mieter/dokumente/').status_code, 200)
+        self.assertContains(c.get('/mieter/schaden/neu/'), 'Schaden / Reparatur melden')
+
     def test_schaden_melden(self):
         from tickets.models import SchadenMeldung
         m, v, u = self._mieter_login()
@@ -266,8 +279,10 @@ class MieterPortalTests(TestCase):
                                          titel='Miete Januar', betrag=Decimal('1700'),
                                          faellig_am=date.today(), status='offen')
         c = Client(); c.force_login(u)
-        r = c.get('/mieter/')
-        self.assertContains(r, 'Offene Rechnungen')
+        # Übersicht zeigt den Rechnungs-Zähler …
+        self.assertContains(c.get('/mieter/'), 'Rechnungen')
+        # … die Detailseite die Positionen
+        r = c.get('/mieter/rechnungen/')
         self.assertContains(r, 'Miete Januar')
         rech = DebitorenRechnung.objects.get(titel='Miete Januar')
         pdf = c.get(f'/mieter/rechnung/{rech.id}/')
@@ -491,7 +506,7 @@ class MitmieterPortalTests(TestCase):
         body = c.get('/mieter/').content.decode()
         self.assertIn('Ihr Mietobjekt', body)
         self.assertIn('Paar 1', body)
-        self.assertIn('Mietvertrag', body)
+        self.assertIn('Mietvertrag', c.get('/mieter/dokumente/').content.decode())
         self.assertEqual(c.get(f'/mieter/dokument/{d.id}/').status_code, 200)
 
     def test_zweitperson_kann_kuendigen(self):
@@ -654,7 +669,7 @@ class MieterDokumenteTests(TestCase):
     def test_vertragsdok_sichtbar_intern_versteckt(self):
         lg, e, m, v, u, dv, di = self._setup()
         c = Client(); c.force_login(u)
-        body = c.get('/mieter/').content.decode()
+        body = c.get('/mieter/dokumente/').content.decode()
         self.assertIn('Mietvertrag', body)
         self.assertNotIn('Intern', body)
         self.assertEqual(c.get(f'/mieter/dokument/{dv.id}/').status_code, 200)
@@ -668,7 +683,7 @@ class MieterDokumenteTests(TestCase):
         dv.refresh_from_db()
         self.assertFalse(dv.im_portal_sichtbar)
         c = Client(); c.force_login(u)
-        self.assertNotIn('Mietvertrag', c.get('/mieter/').content.decode())
+        self.assertNotIn('Mietvertrag', c.get('/mieter/dokumente/').content.decode())
         self.assertEqual(c.get(f'/mieter/dokument/{dv.id}/').status_code, 404)
 
     def test_vertragsdokument_automatisch_abgelegt(self):
@@ -687,7 +702,7 @@ class MieterDokumenteTests(TestCase):
         self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 1)
         # im Portal sichtbar
         mc = Client(); mc.force_login(u)
-        self.assertIn('Mietvertrag', mc.get('/mieter/').content.decode())
+        self.assertIn('Mietvertrag', mc.get('/mieter/dokumente/').content.decode())
 
     def test_serienbrief_pro_empfaenger_abgelegt(self):
         from rentals.models import Dokument
@@ -701,7 +716,7 @@ class MieterDokumenteTests(TestCase):
         # und im Portal des Mieters sichtbar
         u = User.objects.create_user(username='sb_mieter', password='x'); m.benutzer = u; m.save()
         mc = Client(); mc.force_login(u)
-        self.assertIn('Brief: Info X', mc.get('/mieter/').content.decode())
+        self.assertIn('Brief: Info X', mc.get('/mieter/dokumente/').content.decode())
 
     def test_vertragspaket_zip_download(self):
         from rentals.models import Dokument

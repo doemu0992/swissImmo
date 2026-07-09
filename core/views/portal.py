@@ -236,46 +236,14 @@ def _ist_mieter_q(mieter):
     from django.db.models import Q
     return Q(mieter=mieter) | Q(mitmieter=mieter)
 
-@never_cache
-@login_required
-def mieter_portal_view(request):
-    """Mieter sieht seinen aktiven Vertrag, Objektdaten, Dokumente und kann
-    einen Schaden melden. Read-only ausser Schadenmeldung."""
-    mieter = getattr(request.user, 'mieter_profil', None)
-    if mieter is None:
-        # Kein Mieterprofil → passende Weiche
-        if hat_rolle(request.user, TEAM_ROLLEN):
-            return redirect('fw_dashboard')
-        if getattr(request.user, 'mandant_profil', None) is not None:
-            return redirect('portal')
-        return render(request, 'core/mieter_portal.html', {'mieter': None})
-
-    from django.db.models import Q
+# ---------------------------------------------------------------------------
+# Gemeinsame Datenbeschaffung fürs Mieterportal (von mehreren Views genutzt)
+# ---------------------------------------------------------------------------
+def _mieter_objekte(mieter):
+    """Aktive Mietobjekte des Mieters (Erst- und Mitmieter) als Anzeige-Dicts."""
     vertraege = (Mietvertrag.objects
                  .filter(_ist_mieter_q(mieter), status='aktiv')
                  .select_related('einheit__liegenschaft').order_by('-beginn'))
-    # Dokumente: alle am Mieter ODER seinem (aktiven/beendeten) Vertrag/Objekt,
-    # die im Portal freigegeben sind — gruppiert nach Kategorie.
-    from rentals.models import Dokument as RDokument
-    alle_vertrag_ids = list(Mietvertrag.objects.filter(_ist_mieter_q(mieter)).values_list('id', flat=True))
-    einheit_ids = [v.einheit_id for v in vertraege if v.einheit_id]
-    dok_qs = (RDokument.objects.filter(
-                  Q(mieter=mieter) | Q(vertrag_id__in=alle_vertrag_ids) | Q(einheit_id__in=einheit_ids),
-                  im_portal_sichtbar=True)
-              .distinct().order_by('-datum')[:80])
-    KAT_LABEL = {'vertrag': 'Vertrag', 'protokoll': 'Protokolle',
-                 'korrespondenz': 'Korrespondenz', 'sonstiges': 'Dokumente'}
-    KAT_ORDER = ['vertrag', 'korrespondenz', 'protokoll', 'sonstiges']
-    gruppen = {}
-    for d in dok_qs:
-        if not d.datei:
-            continue
-        kat = d.kategorie or 'sonstiges'
-        gruppen.setdefault(kat, []).append({'id': d.id, 'titel': d.bezeichnung or d.titel, 'datum': d.datum})
-    dok_gruppen = [{'label': KAT_LABEL.get(k, k.capitalize()), 'docs': gruppen[k]}
-                   for k in KAT_ORDER if gruppen.get(k)]
-    dokumente = [doc for g in dok_gruppen for doc in g['docs']]  # für {% if dokumente %}
-
     objekte = []
     for v in vertraege:
         e = v.einheit
@@ -286,10 +254,37 @@ def mieter_portal_view(request):
             'brutto': v.brutto_mietzins, 'netto': v.netto_mietzins, 'nk': v.nebenkosten,
             'beginn': v.beginn, 'kaution': v.kautions_betrag,
         })
+    return vertraege, objekte
 
-    # Offene Rechnungen (QR-Einzahlschein herunterladbar) — Erst- UND Mitmieter
+
+def _mieter_dok_gruppen(mieter, vertraege):
+    """Portal-sichtbare Dokumente, nach Kategorie gruppiert."""
+    from django.db.models import Q
+    from rentals.models import Dokument as RDokument
+    alle_vertrag_ids = list(Mietvertrag.objects.filter(_ist_mieter_q(mieter)).values_list('id', flat=True))
+    einheit_ids = [v.einheit_id for v in vertraege if v.einheit_id]
+    dok_qs = (RDokument.objects.filter(
+                  Q(mieter=mieter) | Q(vertrag_id__in=alle_vertrag_ids) | Q(einheit_id__in=einheit_ids),
+                  im_portal_sichtbar=True)
+              .distinct().order_by('-datum')[:120])
+    KAT_LABEL = {'vertrag': 'Vertrag', 'protokoll': 'Protokolle',
+                 'korrespondenz': 'Korrespondenz', 'sonstiges': 'Dokumente'}
+    KAT_ORDER = ['vertrag', 'korrespondenz', 'protokoll', 'sonstiges']
+    gruppen = {}
+    for d in dok_qs:
+        if not d.datei:
+            continue
+        kat = d.kategorie or 'sonstiges'
+        gruppen.setdefault(kat, []).append({'id': d.id, 'titel': d.bezeichnung or d.titel, 'datum': d.datum})
+    return [{'label': KAT_LABEL.get(k, k.capitalize()), 'docs': gruppen[k]}
+            for k in KAT_ORDER if gruppen.get(k)]
+
+
+def _mieter_offene(mieter):
+    """Offene Rechnungen (Erst- und Mitmieter) + Gesamtsumme."""
     from finance.models import DebitorenRechnung
     from django.utils import timezone
+    alle_vertrag_ids = list(Mietvertrag.objects.filter(_ist_mieter_q(mieter)).values_list('id', flat=True))
     offene_qs = (DebitorenRechnung.objects
                  .filter(vertrag_id__in=alle_vertrag_ids, status__in=['offen', 'teilbezahlt'])
                  .select_related('vertrag').order_by('faellig_am'))
@@ -304,12 +299,71 @@ def mieter_portal_view(request):
             'faellig': r.faellig_am,
             'ueberfaellig': bool(r.faellig_am and r.faellig_am < heute),
         })
+    return offene, total_offen
 
+
+def _mieter_ticket_count(mieter):
+    from tickets.models import SchadenMeldung
+    return SchadenMeldung.objects.filter(gemeldet_von=mieter).count()
+
+
+@never_cache
+@login_required
+def mieter_portal_view(request):
+    """Portal-Startseite (Dashboard): Mietobjekt(e) + Schnellzugriffe mit Zählern."""
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        if hat_rolle(request.user, TEAM_ROLLEN):
+            return redirect('fw_dashboard')
+        if getattr(request.user, 'mandant_profil', None) is not None:
+            return redirect('portal')
+        return render(request, 'core/mieter_portal.html', {'mieter': None})
+
+    vertraege, objekte = _mieter_objekte(mieter)
+    offene, total_offen = _mieter_offene(mieter)
+    dok_gruppen = _mieter_dok_gruppen(mieter, vertraege)
+    dok_count = sum(len(g['docs']) for g in dok_gruppen)
     return render(request, 'core/mieter_portal.html', {
         'mieter': mieter, 'objekte': objekte,
-        'dokumente': dokumente, 'dok_gruppen': dok_gruppen,
-        'offene': offene, 'total_offen': total_offen,
+        'offene_count': len(offene), 'total_offen': total_offen,
+        'dok_count': dok_count, 'ticket_count': _mieter_ticket_count(mieter),
     })
+
+
+@never_cache
+@login_required
+def mieter_rechnungen_view(request):
+    """Eigene Seite: offene Rechnungen mit QR-Einzahlschein."""
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        return redirect('mieter_portal')
+    offene, total_offen = _mieter_offene(mieter)
+    return render(request, 'core/mieter_rechnungen.html', {
+        'mieter': mieter, 'offene': offene, 'total_offen': total_offen})
+
+
+@never_cache
+@login_required
+def mieter_dokumente_view(request):
+    """Eigene Seite: Dokumentenablage (Vertrag, Korrespondenz, Protokolle …)."""
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        return redirect('mieter_portal')
+    vertraege, _objekte = _mieter_objekte(mieter)
+    dok_gruppen = _mieter_dok_gruppen(mieter, vertraege)
+    return render(request, 'core/mieter_dokumente.html', {
+        'mieter': mieter, 'dok_gruppen': dok_gruppen})
+
+
+@never_cache
+@login_required
+def mieter_schaden_formular(request):
+    """Eigene Seite mit dem Schaden-Meldeformular (POST geht an mieter_schaden_melden)."""
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        return redirect('mieter_portal')
+    _vertraege, objekte = _mieter_objekte(mieter)
+    return render(request, 'core/mieter_schaden.html', {'mieter': mieter, 'objekte': objekte})
 
 
 @login_required
@@ -510,7 +564,7 @@ def mieter_schaden_melden(request):
     vertrag_id = request.POST.get('vertrag_id')
     if not titel or not beschreibung:
         messages.error(request, "Bitte Titel und Beschreibung angeben.")
-        return redirect('mieter_portal')
+        return redirect('mieter_schaden_formular')
     v = (Mietvertrag.objects.filter(_ist_mieter_q(mieter), id=vertrag_id)
          .select_related('einheit__liegenschaft').first()) if vertrag_id else None
     if not v:

@@ -1,12 +1,12 @@
-{% comment %}Gemeinsame Mieterportal-Sidebar. Parameter: aktiv (uebersicht|meldungen|kuendigung).
-Rechnungen/Dokumente/Schaden sind Sprungmarken zur Übersichtsseite (funktionieren von jeder Seite aus).{% endcomment %}
+{% comment %}Gemeinsame Mieterportal-Sidebar. Parameter: aktiv
+(uebersicht|rechnungen|dokumente|meldungen|schaden|kuendigung){% endcomment %}
 <a href="/mieter/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'uebersicht' %}bg-indigo-600 text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
     <i class="fa-solid fa-house w-5 text-center"></i> Übersicht
 </a>
-<a href="/mieter/#rechnungen" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
+<a href="/mieter/rechnungen/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'rechnungen' %}bg-indigo-600 text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
     <i class="fa-solid fa-file-invoice w-5 text-center"></i> Rechnungen
 </a>
-<a href="/mieter/#dokumente" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
+<a href="/mieter/dokumente/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'dokumente' %}bg-indigo-600 text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
     <i class="fa-solid fa-folder-open w-5 text-center"></i> Dokumente
 </a>
 <a href="/mieter/tickets/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'meldungen' %}bg-indigo-600 text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
@@ -14,7 +14,7 @@ Rechnungen/Dokumente/Schaden sind Sprungmarken zur Übersichtsseite (funktionier
 </a>
 
 <div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Service</div>
-<a href="/mieter/#schaden" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
+<a href="/mieter/schaden/neu/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'schaden' %}bg-indigo-600 text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
     <i class="fa-solid fa-triangle-exclamation w-5 text-center"></i> Schaden melden
 </a>
 <a href="/mieter/kontoauszug/" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
