@@ -821,3 +821,16 @@ class TicketPortalTests(TestCase):
         self.assertTrue(t.gelesen)
         body2 = c.get('/neu/').content.decode()
         self.assertNotIn('neue Schadenmeldung(en)', body2)
+
+
+class PortalLoginUrlTests(TestCase):
+    def test_zugangsmail_nutzt_produktions_url(self):
+        from django.core import mail
+        lg, e, m, v = _basis_objekte()
+        m.email = 'mieter@example.ch'; m.save()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        c.post(f'/neu/personen/{m.id}/portal-zugang/')
+        self.assertTrue(mail.outbox)
+        body = mail.outbox[-1].body
+        self.assertIn('https://swissimmo.pythonanywhere.com/portal/login/', body)

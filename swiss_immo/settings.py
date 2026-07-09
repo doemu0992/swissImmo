@@ -193,6 +193,10 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = f'ImmoSwiss Verwaltung <{os.getenv("EMAIL_HOST_USER", "info@immoswiss.app")}>'
 
+# Basis-URL für Links in E-Mails (Portal-Login etc.) — unabhängig vom Request-Host,
+# damit der Link auch aus Cron/Hintergrund-Jobs korrekt auf die Produktion zeigt.
+PORTAL_BASE_URL = os.getenv('PORTAL_BASE_URL', 'https://swissimmo.pythonanywhere.com')
+
 # ==========================================
 # 10. MODERNES DESIGN KONFIGURATION (UNFOLD)
 # ==========================================
