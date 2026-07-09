@@ -48,7 +48,10 @@ def portal_view(request):
 
     daten = _portfolio_daten(mandant)
     freigaben = _offene_freigaben(mandant)
-    return render(request, 'core/portal.html', {'mandant': mandant, 'freigaben': freigaben, **daten})
+    from django.utils import timezone
+    steuerjahr = timezone.localdate().year - 1
+    return render(request, 'core/portal.html', {
+        'mandant': mandant, 'freigaben': freigaben, 'steuerjahr': steuerjahr, **daten})
 
 
 def _offene_freigaben(mandant):
@@ -224,6 +227,28 @@ def portal_report_pdf(request):
     pdf = generate_portfolio_report(mandant, daten)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = 'inline; filename="Portfolio-Report.pdf"'
+    return resp
+
+
+@never_cache
+@login_required
+def portal_steuerauszug_pdf(request):
+    """Steuerauszug (Liegenschaftsrechnung) für ein Jahr — nur eigene Mandate."""
+    mandant = getattr(request.user, 'mandant_profil', None)
+    if mandant is None:
+        raise Http404
+    import datetime
+    heute = datetime.date.today()
+    try:
+        jahr = int(request.GET.get('jahr') or (heute.year - 1))
+    except (TypeError, ValueError):
+        jahr = heute.year - 1
+    # Plausibler Bereich
+    jahr = max(2000, min(jahr, heute.year))
+    from core.services.steuerauszug import generate_steuerauszug_pdf
+    pdf = generate_steuerauszug_pdf(mandant, jahr)
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = f'inline; filename="Steuerauszug_{jahr}.pdf"'
     return resp
 
 

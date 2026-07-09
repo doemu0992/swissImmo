@@ -55,6 +55,7 @@ from core.views.dashboard_view import update_market_data_view, spa_master_view
 
 # 2b. Eigentümer-Portal & Login-Weiche
 from core.views.portal import (portal_view, nach_login_view, portal_dokument_download, portal_report_pdf, portal_freigabe,
+                                portal_steuerauszug_pdf,
                                 mieter_portal_view, mieter_dokument_download, mieter_schaden_melden, mieter_rechnung_qr,
                                 mieter_kontoauszug_pdf, mieter_kuendigung, mieter_kuendigung_pdf,
                                 mieter_tickets_view, mieter_ticket_detail, mieter_ticket_nachricht,
@@ -245,6 +246,7 @@ urlpatterns = [
     path('portal/', portal_view, name='portal'),
     path('portal/dokument/<int:pk>/', portal_dokument_download, name='portal_dokument_download'),
     path('portal/report/', portal_report_pdf, name='portal_report_pdf'),
+    path('portal/steuerauszug/', portal_steuerauszug_pdf, name='portal_steuerauszug_pdf'),
     path('portal/freigabe/<int:pk>/', portal_freigabe, name='portal_freigabe'),
     path('mieter/', mieter_portal_view, name='mieter_portal'),
     path('mieter/dokument/<int:pk>/', mieter_dokument_download, name='mieter_dokument_download'),

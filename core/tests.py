@@ -1051,3 +1051,57 @@ class BackupCommandTests(TestCase):
             call_command('backup_db', stdout=out)
             self.assertIn('Backup erstellt', out.getvalue())
             self.assertTrue(list((tmp / 'backups').glob('db-*.sqlite3')))
+
+
+class SteuerauszugTests(TestCase):
+    """Eigentümer-Steuerauszug: Erträge − Ausgaben − AfA je Liegenschaft."""
+
+    def _setup(self):
+        from finance.models import Zahlungseingang, KreditorenRechnung, Anlage, Abschreibung
+        from crm.models import Handwerker  # noqa
+        lg, e, m, v = _basis_objekte()
+        md = Mandant.objects.create(firma_oder_name='Eig AG')
+        lg.mandant = md; lg.save()
+        u = User.objects.create_user(username='eig_steuer', password='x'); md.benutzer = u; md.save()
+        # Ertrag: Zahlungseingang 2024
+        Zahlungseingang.objects.create(vertrag=v, betrag=Decimal('20000'),
+                                       datum_eingang=date(2024, 6, 1), status='verbucht')
+        # Ausgabe: Kreditorenrechnung 2024
+        KreditorenRechnung.objects.create(liegenschaft=lg, lieferant='Sanitär',
+                                          betrag=Decimal('5000'), datum=date(2024, 3, 1), status='bezahlt')
+        # AfA: Anlage + Abschreibung 2024
+        anl = Anlage.objects.create(liegenschaft=lg, bezeichnung='Heizung',
+                                    anschaffungswert=Decimal('30000'), anschaffungsdatum=date(2020, 1, 1),
+                                    nutzungsdauer_jahre=10)
+        Abschreibung.objects.create(anlage=anl, jahr=2024, betrag=Decimal('3000'), datum=date(2024, 12, 31))
+        return md, lg, u
+
+    def test_daten_rechnen_korrekt(self):
+        from core.services.steuerauszug import steuerauszug_daten
+        md, lg, u = self._setup()
+        d = steuerauszug_daten(md, 2024)
+        z = d['zeilen'][0]
+        self.assertEqual(z['ertrag'], Decimal('20000'))
+        self.assertEqual(z['ausgaben'], Decimal('5000'))
+        self.assertEqual(z['afa'], Decimal('3000'))
+        self.assertEqual(z['netto'], Decimal('12000'))   # 20000 - 5000 - 3000
+        self.assertEqual(d['total']['netto'], Decimal('12000'))
+
+    def test_pdf_und_portal_button(self):
+        md, lg, u = self._setup()
+        c = Client(); c.force_login(u)
+        r = c.get('/portal/steuerauszug/?jahr=2024')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r.content.startswith(b'%PDF'))
+        # Button im Portal sichtbar
+        self.assertContains(c.get('/portal/'), 'Steuerauszug')
+
+    def test_fremder_mandant_kein_zugriff(self):
+        md, lg, u = self._setup()
+        # Anderer Eigentümer sieht die Zahlen nicht in seinem Auszug
+        md2 = Mandant.objects.create(firma_oder_name='Andere AG')
+        u2 = User.objects.create_user(username='eig_andere', password='x'); md2.benutzer = u2; md2.save()
+        from core.services.steuerauszug import steuerauszug_daten
+        d = steuerauszug_daten(md2, 2024)
+        self.assertEqual(d['total']['ertrag'], Decimal('0'))
