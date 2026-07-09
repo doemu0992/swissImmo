@@ -6,7 +6,8 @@
 
 <div style="margin-top:26pt;" class="adr">
     {{ mieter.display_name }}<br>
-    {{ mieter.strasse }}<br>{{ mieter.plz }} {{ mieter.ort }}
+    {% if mitmieter %}{{ mitmieter.display_name }}<br>{% elif mitmieter_name %}{{ mitmieter_name }}<br>{% endif %}
+    {% if mieter.strasse %}{{ mieter.strasse }}<br>{{ mieter.plz }} {{ mieter.ort }}{% elif mitmieter and mitmieter.strasse %}{{ mitmieter.strasse }}<br>{{ mitmieter.plz }} {{ mitmieter.ort }}{% endif %}
 </div>
 
 <div style="text-align:right; font-size:8.5pt; color:#64748b; margin-bottom:18pt;">

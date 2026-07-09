@@ -13,7 +13,7 @@
 
 <div id="content-main" style="max-width: 900px; margin: 0 auto; padding: 20px;">
     <h1>Mietzins-Rechner</h1>
-    <h3 style="color: #666; margin-top: 0;">{{ mieter.vorname }} {{ mieter.nachname }} ({{ vertrag.einheit.bezeichnung }})</h3>
+    <h3 style="color: #666; margin-top: 0;">{{ mieter.vorname }} {{ mieter.nachname }}{% if vertrag.mitmieter %} &amp; {{ vertrag.mitmieter.display_name }}{% elif vertrag.mitmieter_name %} &amp; {{ vertrag.mitmieter_name }}{% endif %} ({{ vertrag.einheit.bezeichnung }})</h3>
 
     <form method="post">
         {% csrf_token %}

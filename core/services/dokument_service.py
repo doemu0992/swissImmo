@@ -43,8 +43,13 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
     brutto = netto + nk
     kaution = vertrag.kautions_betrag or 0
 
+    # Zweiter Mieter (2-Personen-Vertrag): Objekt bevorzugt, sonst Freitext-Name
+    mitmieter = vertrag.mitmieter
+    mitmieter_name = (mitmieter.display_name if mitmieter else (vertrag.mitmieter_name or '')).strip()
+
     context = {
         'vertrag': vertrag, 'mieter': vertrag.mieter, 'einheit': einheit,
+        'mitmieter': mitmieter, 'mitmieter_name': mitmieter_name,
         'liegenschaft': liegenschaft, 'mandant': mandant, 'verwaltung': verwaltung,
         'heute': timezone.now().date(),
         'vermieter_name': v_name, 'vermieter_strasse': v_str,

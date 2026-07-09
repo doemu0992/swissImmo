@@ -3,6 +3,21 @@ Wiederverwendet von der Team-Ansicht und vom Mieterportal."""
 import io
 
 
+def schuldner_name(vertrag):
+    """Schuldnername fürs QR-Feld. Bei 2-Personen-Verträgen beide Namen
+    (max. 70 Zeichen laut QR-Norm — sonst nur der Hauptmieter)."""
+    if not vertrag or not vertrag.mieter_id:
+        return '—'
+    name = vertrag.mieter.display_name
+    zweiter = (vertrag.mitmieter.display_name if vertrag.mitmieter
+               else (vertrag.mitmieter_name or '')).strip()
+    if zweiter:
+        kombi = f"{name} & {zweiter}"
+        if len(kombi) <= 70:
+            name = kombi
+    return name
+
+
 def generate_debitor_qr_pdf(rechnung):
     """Gibt die PDF-Bytes zurück oder None, wenn keine IBAN hinterlegt ist."""
     from reportlab.pdfgen import canvas as _canvas
@@ -30,7 +45,7 @@ def generate_debitor_qr_pdf(rechnung):
 
     mieter = r.vertrag.mieter if r.vertrag_id else None
     if mieter:
-        debtor = {'name': mieter.display_name, 'line1': mieter.strasse or '', 'line2': f"{mieter.plz or ''} {mieter.ort or ''}".strip()}
+        debtor = {'name': schuldner_name(r.vertrag), 'line1': mieter.strasse or '', 'line2': f"{mieter.plz or ''} {mieter.ort or ''}".strip()}
     else:
         debtor = {'name': '—', 'line1': '', 'line2': ''}
 

@@ -524,6 +524,30 @@ class MitmieterPortalTests(TestCase):
         self.assertIn('Paar 1', body)   # gemietetes Objekt beim Mitmieter
         self.assertIn('4.5 Zi', body)
 
+    def test_qr_schuldner_beide_namen(self):
+        from core.services.debitor_qr import schuldner_name
+        lg, e, m1, m2, v, u2, d = self._setup()
+        name = schuldner_name(v)
+        self.assertIn(m1.display_name, name)
+        self.assertIn(m2.display_name, name)
+        self.assertIn('&', name)
+
+    def test_begleitbrief_nennt_beide(self):
+        from core.services.dokument_service import generate_dokument_pdf_bytes
+        lg, e, m1, m2, v, u2, d = self._setup()
+        # smoke: PDF erzeugt sich ohne Fehler bei 2-Personen-Vertrag
+        pdf = generate_dokument_pdf_bytes(v, 'begleitbrief')
+        self.assertTrue(pdf.startswith(b'%PDF'))
+        # Template-Logik direkt prüfen: beide Namen im Adressblock
+        from django.template.loader import get_template
+        html = get_template('core/dok_begleitbrief.html').render({
+            'vertrag': v, 'mieter': m1, 'mitmieter': m2, 'mitmieter_name': m2.display_name,
+            'einheit': e, 'liegenschaft': lg, 'heute': date.today(),
+            'vermieter_name': 'V AG', 'brutto_fmt': '0.00', 'kaution_fmt': '0.00', 'signed': False,
+        })
+        self.assertIn(m1.display_name, html)
+        self.assertIn(m2.display_name, html)
+
 
 class MieterKuendigungTests(TestCase):
     def _login(self):
