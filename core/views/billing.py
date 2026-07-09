@@ -214,7 +214,15 @@ def qr_rechnung_pdf(request, vertrag_id):
     c.showPage()
     c.save()
     buffer.seek(0)
-    response = HttpResponse(buffer, content_type='application/pdf')
+    pdf_bytes = buffer.getvalue()
+    # Auto-Ablage in die Akte (pro Monat eigener Titel -> Dedup je Monat) -> Portal
+    try:
+        from core.services.ablage import ablegen
+        ablegen(pdf_bytes, f"QR-Rechnung Miete {monat_jahr}", kategorie='korrespondenz',
+                vertrag=vertrag, dedup=True)
+    except Exception:
+        pass
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
     filename = f"QR_Rechnung_{mieter.nachname}_{monat_jahr.replace('/', '-')}.pdf"
     response['Content-Disposition'] = f'inline; filename="{filename}"'
     return response

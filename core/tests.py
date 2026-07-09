@@ -572,6 +572,24 @@ class MieterDokumenteTests(TestCase):
         self.assertNotIn('Mietvertrag', c.get('/mieter/').content.decode())
         self.assertEqual(c.get(f'/mieter/dokument/{dv.id}/').status_code, 404)
 
+    def test_vertragsdokument_automatisch_abgelegt(self):
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        u = User.objects.create_user(username='vd_mieter', password='x'); m.benutzer = u; m.save()
+        team = _team_user()
+        tc = Client(); tc.force_login(team)
+        r = tc.get(f'/vertrag/{v.id}/pdf/')
+        self.assertEqual(r.status_code, 200)
+        d = Dokument.objects.filter(vertrag=v, kategorie='vertrag').first()
+        self.assertIsNotNone(d)
+        self.assertEqual(d.mieter_id, m.id)
+        # Dedup: erneute Generierung erzeugt kein Duplikat
+        tc.get(f'/vertrag/{v.id}/pdf/')
+        self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 1)
+        # im Portal sichtbar
+        mc = Client(); mc.force_login(u)
+        self.assertIn('Mietvertrag', mc.get('/mieter/').content.decode())
+
     def test_serienbrief_pro_empfaenger_abgelegt(self):
         from rentals.models import Dokument
         lg, e, m, v = _basis_objekte()

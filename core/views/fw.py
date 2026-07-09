@@ -5245,6 +5245,10 @@ def fw_debitor_qr_pdf(request, pk):
     pdf = generate_debitor_qr_pdf(r)
     if pdf is None:
         return HttpResponse("Keine IBAN hinterlegt (Liegenschaft oder Verwaltung).", status=400)
+    # Auto-Ablage in die Akte (pro Rechnung eigener Titel) -> Portal
+    if r.vertrag_id:
+        from core.services.ablage import ablegen
+        ablegen(pdf, f"Rechnung: {r.titel} (#{r.id})", kategorie='korrespondenz', vertrag=r.vertrag, dedup=True)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Rechnung_{r.id}.pdf"'
     return resp
