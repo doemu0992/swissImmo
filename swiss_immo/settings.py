@@ -143,6 +143,14 @@ TIME_ZONE = 'Europe/Zurich'
 USE_I18N = True
 USE_TZ = True
 
+# --- AUTHENTICATION ---
+# Case-insensitive Login (Benutzername = E-Mail; Mobilgeräte gross-schreiben
+# den ersten Buchstaben automatisch). Standard-Backend als Fallback.
+AUTHENTICATION_BACKENDS = [
+    'core.auth_backends.CaseInsensitiveModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 # --- LOGIN / LOGOUT REDIRECTS ---
 LOGIN_URL = '/login/'           # <-- Hierhin geht's, wenn man nicht eingeloggt ist
 # Login-Weiche: Team-Rollen → /app/, Eigentümer-Logins → /portal/

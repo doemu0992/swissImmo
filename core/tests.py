@@ -374,6 +374,40 @@ class MieterkontoTests(TestCase):
         self.assertEqual(r2['Content-Type'], 'application/pdf')
 
 
+class LoginBackendTests(TestCase):
+    """Robuste Anmeldung: Gross-/Kleinschreibung, Leerzeichen, Namenskollision."""
+
+    def test_case_insensitiv_und_whitespace(self):
+        from django.contrib.auth import authenticate
+        User.objects.create_user(username='mieter@example.ch', password='Pass-123')
+        self.assertIsNotNone(authenticate(username='mieter@example.ch', password='Pass-123'))
+        self.assertIsNotNone(authenticate(username='Mieter@example.ch', password='Pass-123'))
+        self.assertIsNotNone(authenticate(username='  mieter@example.ch ', password='Pass-123'))
+        self.assertIsNone(authenticate(username='mieter@example.ch', password='falsch'))
+
+    def test_namenskollision_email_trifft_richtiges_konto(self):
+        from django.contrib.auth import authenticate
+        # Admin belegt die E-Mail bereits als Benutzername
+        admin = User.objects.create_user(username='chef@example.ch', email='chef@example.ch', password='AdminPW1')
+        # Mieter kollidiert -> abweichender Benutzername, gleiche E-Mail
+        mieter = User.objects.create_user(username='chef@example.ch.1', email='chef@example.ch', password='MieterPW9')
+        # Login mit reiner E-Mail + Mieter-Passwort -> Mieter-Konto
+        u1 = authenticate(username='chef@example.ch', password='MieterPW9')
+        self.assertEqual(u1, mieter)
+        # Login mit reiner E-Mail + Admin-Passwort -> Admin-Konto
+        u2 = authenticate(username='chef@example.ch', password='AdminPW1')
+        self.assertEqual(u2, admin)
+
+    def test_login_view_mieter(self):
+        lg, e, m, v = _basis_objekte()
+        u = User.objects.create_user(username='mieterview@example.ch', password='Geheim-1')
+        m.benutzer = u; m.save()
+        c = Client()
+        # Login mit grossgeschriebener Eingabe (iOS-Verhalten)
+        ok = c.login(username='Mieterview@example.ch', password='Geheim-1')
+        self.assertTrue(ok)
+
+
 class SicherheitsIsolationTests(TestCase):
     """Stellt sicher, dass Portale strikt isoliert sind (keine Cross-Tenant-Lecks)."""
 
