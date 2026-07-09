@@ -1,6 +1,9 @@
 # Sicherheit (NIEMALS hochladen)
 .env
+.secret_key
 db.sqlite3
+backups/
+logs/
 
 # Python Müll
 __pycache__/

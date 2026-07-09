@@ -40,14 +40,62 @@ def badge_ticket_count(request):
 # 3. SICHERHEIT
 # ==========================================
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key')
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+def _get_secret_key():
+    """SECRET_KEY aus der Umgebung; sonst aus einer persistenten Datei
+    (einmalig erzeugt). NIE ein hartkodierter unsicherer Key — der würde
+    Sessions/Tokens fälschbar machen."""
+    key = os.getenv('SECRET_KEY')
+    if key:
+        return key
+    key_file = BASE_DIR / '.secret_key'
+    from django.core.management.utils import get_random_secret_key
+    try:
+        if key_file.exists():
+            saved = key_file.read_text().strip()
+            if saved:
+                return saved
+        new_key = get_random_secret_key()
+        key_file.write_text(new_key)
+        try:
+            os.chmod(key_file, 0o600)
+        except Exception:
+            pass
+        return new_key
+    except Exception:
+        # Notfall: App soll starten (Warnung im Log), aber ohne festen Key
+        return get_random_secret_key()
+
+
+SECRET_KEY = _get_secret_key()
+# Sicherer Default: Produktion (DEBUG=False). Zum lokalen Entwickeln DEBUG=True setzen.
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['www.immoswiss.app', 'swissimmo.pythonanywhere.com', '127.0.0.1', 'localhost']
+# Weitere Hosts optional per Env (kommagetrennt), z.B. eigene Domain.
+ALLOWED_HOSTS += [h.strip() for h in os.getenv('EXTRA_ALLOWED_HOSTS', '').split(',') if h.strip()]
 CSRF_TRUSTED_ORIGINS = ['https://*.pythonanywhere.com', 'https://www.immoswiss.app']
+CSRF_TRUSTED_ORIGINS += [o.strip() for o in os.getenv('EXTRA_CSRF_ORIGINS', '').split(',') if o.strip()]
 
 # Sagt Django, dass es HTTPS ist, wenn der Proxy (PythonAnywhere) das sagt.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Test-Modus erkennen (damit die HTTPS-Umleitung den Test-Client nicht bricht)
+import sys as _sys
+TESTING = ('test' in _sys.argv) or ('pytest' in _sys.argv[0] if _sys.argv else False)
+
+# --- Produktions-Härtung (nur wenn DEBUG=False, damit lokale HTTP-Entwicklung läuft) ---
+if not DEBUG and not TESTING:
+    SESSION_COOKIE_SECURE = True          # Session-Cookie nur über HTTPS
+    CSRF_COOKIE_SECURE = True             # CSRF-Cookie nur über HTTPS
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = 'same-origin'
+    X_FRAME_OPTIONS = 'DENY'              # Clickjacking-Schutz
+    # HSTS: Browser merkt sich HTTPS-Pflicht (1 Jahr). Per Env abschaltbar.
+    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    # HTTP→HTTPS-Redirect (Standard an; hinter PythonAnywhere-Proxy via SSL-Header).
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True') == 'True'
 
 # ==========================================
 # 4. APPS
@@ -120,15 +168,31 @@ WSGI_APPLICATION = 'swiss_immo.wsgi.application'
 # 6. DATENBANK
 # ==========================================
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'OPTIONS': {
-            'timeout': 30,
+# Standard: SQLite (kein Umbau nötig). Für Produktion/Skalierung PostgreSQL
+# per Umgebungsvariablen aktivieren (DB_ENGINE=postgres + DB_NAME/USER/…).
+# Benötigt dann das Paket psycopg2-binary auf dem Server.
+if os.getenv('DB_ENGINE', '').lower() in ('postgres', 'postgresql'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', ''),
+            'USER': os.getenv('DB_USER', ''),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+            'CONN_MAX_AGE': 600,
         }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+            'OPTIONS': {
+                'timeout': 30,
+            }
+        }
+    }
 
 # ==========================================
 # 7. SPRACHE, ZEIT & REDIRECTS
@@ -136,7 +200,10 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+     'OPTIONS': {'min_length': 8}},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 LANGUAGE_CODE = 'de-ch'
@@ -196,6 +263,35 @@ DEFAULT_FROM_EMAIL = f'ImmoSwiss Verwaltung <{os.getenv("EMAIL_HOST_USER", "info
 # Basis-URL für Links in E-Mails (Portal-Login etc.) — unabhängig vom Request-Host,
 # damit der Link auch aus Cron/Hintergrund-Jobs korrekt auf die Produktion zeigt.
 PORTAL_BASE_URL = os.getenv('PORTAL_BASE_URL', 'https://swissimmo.pythonanywhere.com')
+
+# ==========================================
+# 9b. LOGGING (Fehler landen in Datei statt lautlos zu verschwinden)
+# ==========================================
+_LOG_DIR = BASE_DIR / 'logs'
+try:
+    _LOG_DIR.mkdir(exist_ok=True)
+except Exception:
+    _LOG_DIR = BASE_DIR
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {'format': '{asctime} {levelname} {name}: {message}', 'style': '{'},
+    },
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'standard'},
+        'file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': str(_LOG_DIR / 'swissimmo.log'),
+            'maxBytes': 5 * 1024 * 1024, 'backupCount': 5,
+            'formatter': 'standard', 'encoding': 'utf-8',
+        },
+    },
+    'root': {'handlers': ['console', 'file'], 'level': 'INFO'},
+    'loggers': {
+        'django.request': {'handlers': ['console', 'file'], 'level': 'ERROR', 'propagate': False},
+    },
+}
 
 # ==========================================
 # 10. MODERNES DESIGN KONFIGURATION (UNFOLD)

@@ -1000,3 +1000,54 @@ class LikVertragTests(TestCase):
         self.assertIsNotNone(res)
         self.assertEqual(res[0], date(2026, 6, 1))
         self.assertEqual(res[1], Decimal('108.3'))
+
+
+class AbonnementTests(TestCase):
+    def test_abo_seite_zeigt_drei_plaene(self):
+        Einheit.objects.create(liegenschaft=Liegenschaft.objects.create(
+            strasse='A', plz='1', ort='X', versicherungswert=Decimal('1')),
+            bezeichnung='W1', typ='wohnung')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        r = c.get('/neu/abonnement/')
+        self.assertEqual(r.status_code, 200)
+        for name in ('Start', 'Pro', 'Premium'):
+            self.assertContains(r, name)
+
+    def test_plan_waehlen_speichert(self):
+        Verwaltung.objects.create(firma='V AG')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        r = c.post('/neu/abonnement/', {'plan': 'premium'})
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(Verwaltung.objects.first().abo_plan, 'premium')
+
+    def test_jaehrlich_rabatt(self):
+        # 100 Einheiten Pro: monatlich 190, jährlich -15 % -> ~161/Mt
+        lg = Liegenschaft.objects.create(strasse='B', plz='1', ort='X', versicherungswert=Decimal('1'))
+        for i in range(100):
+            Einheit.objects.create(liegenschaft=lg, bezeichnung=f'W{i}', typ='wohnung')
+        Verwaltung.objects.create(firma='V AG')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/abonnement/').content.decode()
+        self.assertIn('CHF 190', body)                 # Pro monatlich (1.90 * 100)
+        body_j = c.post('/neu/abonnement/', {'plan': 'pro', 'jaehrlich': 'on'}, follow=True).content.decode()
+        self.assertIn('CHF 162', body_j)               # 190 * 0.85 gerundet
+
+
+class BackupCommandTests(TestCase):
+    def test_backup_db_sqlite(self):
+        import io, sqlite3, tempfile
+        from pathlib import Path
+        from django.test import override_settings
+        from django.core.management import call_command
+        tmp = Path(tempfile.mkdtemp())
+        dbfile = tmp / 'db.sqlite3'
+        sqlite3.connect(str(dbfile)).close()   # leere echte DB-Datei
+        with override_settings(BASE_DIR=tmp, DATABASES={'default': {
+                'ENGINE': 'django.db.backends.sqlite3', 'NAME': str(dbfile)}}):
+            out = io.StringIO()
+            call_command('backup_db', stdout=out)
+            self.assertIn('Backup erstellt', out.getvalue())
+            self.assertTrue(list((tmp / 'backups').glob('db-*.sqlite3')))

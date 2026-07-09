@@ -4079,9 +4079,71 @@ def fw_integration_test_email(request):
             messages.error(request, f"E-Mail-Versand fehlgeschlagen: {e}")
     return redirect('/neu/integrationen/')
 
+# Preisplan-Definition (Single Source of Truth). Preis = pro Einheit/Monat.
+ABO_PLAENE = [
+    {'key': 'start', 'name': 'Start', 'preis_einheit': Decimal('0.90'),
+     'grund': Decimal('9'), 'gratis_bis': 3, 'farbe': 'slate',
+     'zielgruppe': 'Selbstverwalter & kleine Eigentümer',
+     'features': ['Objekte, Personen & Verträge', 'Vertrags-PDF & Dokumentenablage',
+                  'Mieterportal (Dokumente, QR-Rechnung, Schaden, Tickets)',
+                  'QR-Rechnung & Kontoauszug'],
+     'nicht': ['Buchhaltung & Zahlungsverkehr', 'Nebenkosten & MWST', 'Eigentümerportal']},
+    {'key': 'pro', 'name': 'Pro', 'preis_einheit': Decimal('1.90'),
+     'grund': Decimal('49'), 'gratis_bis': 0, 'farbe': 'indigo', 'empfohlen': True,
+     'zielgruppe': 'Liegenschaftsverwaltungen',
+     'features': ['Alles aus Start', 'Buchhaltung, Sollstellung & Mahnwesen',
+                  'camt.053-Import / pain.001-Export', 'Nebenkostenabrechnung & MWST',
+                  'Mietzinsanpassung (amtl. Formular, LIK/Referenzzins)',
+                  'Eigentümerportal & Reports', 'Serienbriefe & Schaden-/Handwerker-Flow'],
+     'nicht': ['Multi-Mandant (voll)', 'KI-Analysen', 'API-Zugang']},
+    {'key': 'premium', 'name': 'Premium', 'preis_einheit': Decimal('2.90'),
+     'grund': Decimal('149'), 'gratis_bis': 0, 'farbe': 'purple',
+     'zielgruppe': 'Grössere Verwaltungen & Treuhänder',
+     'features': ['Alles aus Pro', 'Multi-Mandant & Mandatsabrechnung',
+                  'KI-Analysen & Report-Assistent', 'DocuSeal-Vertragssignatur inkl.',
+                  'API-Zugang', 'Prioritäts-Support & Onboarding'],
+     'nicht': []},
+]
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
 def fw_abonnemente(request):
-    return fw_stub(request, 'Abonnement', 'fa-star',
-                   'Dein swissImmo-Abo und die Abrechnung. Aktuell ist die Vollversion aktiv.')
+    """Abo-/Preisseite: 3 Stufen, Preis pro Einheit, aktueller Plan wählbar."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Verwaltung
+    from core.auth import log_aktion, hat_rolle
+    vw = Verwaltung.objects.first() or Verwaltung.objects.create(firma="Meine Verwaltung")
+    basis = _global_filter(request)
+
+    if request.method == 'POST' and hat_rolle(request.user, SCHREIB_ROLLEN):
+        plan = request.POST.get('plan')
+        if plan in dict(Verwaltung.ABO_CHOICES):
+            vw.abo_plan = plan
+            vw.abo_jaehrlich = request.POST.get('jaehrlich') == 'on'
+            vw.save(update_fields=['abo_plan', 'abo_jaehrlich'])
+            log_aktion(request, "Abo-Plan gewählt", plan, 'jährlich' if vw.abo_jaehrlich else 'monatlich')
+            messages.success(request, f"✅ Plan «{dict(Verwaltung.ABO_CHOICES)[plan]}» aktiviert.")
+        return redirect('/neu/abonnement/')
+
+    einheiten = Einheit.objects.count()
+    jaehrlich = vw.abo_jaehrlich
+    plaene = []
+    for p in ABO_PLAENE:
+        verrechenbar = max(0, einheiten - p['gratis_bis'])
+        monatlich = max(p['grund'], p['preis_einheit'] * verrechenbar)
+        if jaehrlich:
+            monatlich = (monatlich * Decimal('12') * Decimal('0.85') / Decimal('12'))
+        plaene.append({
+            **p, 'aktiv': vw.abo_plan == p['key'],
+            'monatlich': monatlich.quantize(Decimal('1')),
+            'jahr': (monatlich * 12).quantize(Decimal('1')),
+        })
+
+    return render(request, 'fw/abonnement.html', {
+        **basis, 'nav': 'abonnement', 'plaene': plaene, 'einheiten': einheiten,
+        'jaehrlich': jaehrlich, 'aktiver_plan': vw.abo_plan,
+    })
 
 
 # ============================================================
