@@ -33,8 +33,16 @@
     <script>
         // Zustand vor dem ersten Paint anwenden (kein Flackern)
         if (localStorage.getItem('sbCollapsed') === '1') document.documentElement.classList.add('_sbc');
-        // Im Modal (?embed=1) geladen → Chrome ausblenden
-        try { if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('_embed'); } catch (e) {}
+        // Im Modal geladen → Chrome ausblenden. Erkennung über den iframe-Kontext,
+        // damit der Embed-Modus auch nach internen Weiterleitungen (POST→Redirect,
+        // Bewerbung→Vertrag, Wizard-Ende) erhalten bleibt — nicht nur solange ?embed=1
+        // in der URL steht.
+        try {
+            var _inFrame = false;
+            try { _inFrame = window.self !== window.top; } catch (e) { _inFrame = true; }
+            if (_inFrame || new URLSearchParams(location.search).get('embed') === '1')
+                document.documentElement.classList.add('_embed');
+        } catch (e) {}
     </script>
 </head>
 <body class="bg-slate-100 text-slate-900">

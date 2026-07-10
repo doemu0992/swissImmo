@@ -1762,3 +1762,13 @@ class MieterwechselCockpitTests(TestCase):
         body = c.get('/neu/mieterwechsel/').content.decode()
         self.assertIn("fwModalOpen(this,'Bewerbungen')", body)
         self.assertIn("fwModalOpen(this,'Vertrag erstellen')", body)
+
+    def test_embed_ueberlebt_redirect_via_iframe_kontext(self):
+        """base.html blendet den Chrome auch ohne ?embed=1 aus, sobald im iframe
+        geladen (window.self !== window.top) — so bleiben mehrstufige Flows
+        (Wizard-Ende, Bewerbung→Vertrag) im Popup chrome-frei."""
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertIn('window.self !== window.top', body)
+        self.assertIn("classList.add('_embed')", body)
