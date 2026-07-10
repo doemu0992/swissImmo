@@ -47,12 +47,8 @@
                 <i class="fa-solid {% if r.nachmieter %}fa-circle-check{% else %}fa-file-lines{% endif %}"></i><br>Neuer Vertrag</div>
             <div class="rounded-lg py-2 {% if r.einzug %}bg-emerald-50 text-emerald-700{% else %}bg-slate-50 text-slate-400{% endif %}">
                 <i class="fa-solid {% if r.einzug %}fa-circle-check{% else %}fa-key{% endif %}"></i><br>Übergabe</div>
-            {% if r.kaution_betrag %}
-            <div class="rounded-lg py-2 {% if r.kaution_erledigt %}bg-emerald-50 text-emerald-700{% elif r.kaution_offen and r.auszug %}bg-amber-50 text-amber-700 font-semibold{% else %}bg-slate-50 text-slate-400{% endif %}">
-                <i class="fa-solid {% if r.kaution_erledigt %}fa-circle-check{% else %}fa-shield-halved{% endif %}"></i><br>Kaution</div>
-            {% else %}
-            <div class="rounded-lg py-2 bg-slate-50 text-slate-300"><i class="fa-solid fa-shield-halved"></i><br>Keine Kaution</div>
-            {% endif %}
+            <div class="rounded-lg py-2 {% if r.schluss_offen %}bg-amber-50 text-amber-700 font-semibold{% elif r.auszug and not r.schluss_offen %}bg-emerald-50 text-emerald-700{% else %}bg-slate-50 text-slate-400{% endif %}">
+                <i class="fa-solid {% if r.auszug and not r.schluss_offen %}fa-circle-check{% else %}fa-file-invoice-dollar{% endif %}"></i><br>Abrechnung</div>
         </div>
 
         {% if r.aktion != '—' %}
@@ -60,7 +56,7 @@
             <div class="text-xs text-slate-500"><i class="fa-solid fa-arrow-right text-indigo-400"></i> Nächster Schritt: <span class="font-semibold text-slate-700">{{ r.aktion }}</span></div>
             <div class="flex gap-2 flex-wrap">
                 {% if not r.auszug %}<a href="/neu/vertraege/{{ r.v.id }}/abnahme/neu/?typ=auszug" class="text-xs font-semibold text-amber-700 border border-amber-200 hover:bg-amber-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-box-open mr-1"></i>Rücknahme starten</a>{% endif %}
-                {% if r.auszug and r.kaution_offen %}<a href="/neu/vertraege/{{ r.v.id }}/#kaution" class="text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-shield-halved mr-1"></i>Kaution abrechnen</a>{% endif %}
+                {% if r.schluss_offen %}<a href="/neu/vertraege/{{ r.v.id }}/schlussabrechnung/{% if r.auszug_prot_id %}?abnahme={{ r.auszug_prot_id }}{% endif %}" class="text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-file-invoice-dollar mr-1"></i>Schlussabrechnung</a>{% endif %}
                 {% if not r.nachmieter %}<a href="/neu/bewerbungen/" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Bewerbungen</a>{% endif %}
                 {% if r.nachmieter_vid %}
                     {% if not r.einzug %}<a href="/neu/vertraege/{{ r.nachmieter_vid }}/abnahme/neu/?typ=einzug" class="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-key mr-1"></i>Übergabe starten</a>{% endif %}

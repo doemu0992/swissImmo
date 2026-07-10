@@ -4038,18 +4038,24 @@ def fw_mieterwechsel(request):
                             .exclude(status='inaktiv')
                             .select_related('mieter').order_by('beginn').first())
         bewerbungen = Mietbewerbung.objects.filter(einheit=e).exclude(status='abgelehnt').count() if e else 0
-        auszug = v.abnahmen.filter(typ='auszug').exists() if v else False
+        auszug_prot = v.abnahmen.filter(typ='auszug').order_by('-datum').first() if v else None
+        auszug = auszug_prot is not None
         einzug = nachmieter_v.abnahmen.filter(typ='einzug').exists() if nachmieter_v else False
 
-        # Kaution des ausziehenden Mieters: nach der Rücknahme abrechnen (Art. 257e).
+        # Kaution + offene Forderungen des ausziehenden Mieters: nach der Rücknahme
+        # per Schlussabrechnung abrechnen (netto: offene Forderungen − Kaution, Art. 257e).
         kaution_status = v.kautions_status if v else 'keine'
         kaution_offen = kaution_status in ('erwartet', 'einbezahlt')   # noch nicht abgerechnet
         kaution_erledigt = kaution_status in ('zurueckbezahlt', 'keine')
+        offene_forderungen = (DebitorenRechnung.objects
+                              .filter(vertrag=v, status__in=['offen', 'teilbezahlt']).count()) if v else 0
+        # Schlussabrechnung nötig, solange Kaution offen ODER Forderungen offen sind
+        schluss_offen = bool(auszug and (kaution_offen or offene_forderungen > 0))
 
         # Pipeline-Stufe + nächste Aktion
-        if auszug and kaution_offen:
-            stufe, farbe, aktion = 'Kaution abrechnen', 'amber', 'Mietzinsdepot abrechnen (Art. 257e)'
-        elif einzug and kaution_erledigt:
+        if schluss_offen:
+            stufe, farbe, aktion = 'Schlussabrechnung', 'amber', 'Schlussabrechnung erstellen (Kaution + offene Forderungen)'
+        elif einzug and kaution_erledigt and offene_forderungen == 0:
             stufe, farbe, aktion = 'Abgeschlossen', 'emerald', '—'
         elif nachmieter_v:
             stufe, farbe, aktion = 'Nachmieter-Vertrag', 'sky', 'Übergabe / Einzug planen'
@@ -4068,8 +4074,10 @@ def fw_mieterwechsel(request):
             'nachmieter': nachmieter_v.mieter.display_name if nachmieter_v and nachmieter_v.mieter_id else None,
             'nachmieter_vid': nachmieter_v.id if nachmieter_v else None,
             'bewerbungen': bewerbungen, 'auszug': auszug, 'einzug': einzug,
+            'auszug_prot_id': (auszug_prot.id if auszug_prot else None),
             'kaution_offen': kaution_offen, 'kaution_erledigt': kaution_erledigt,
             'kaution_betrag': (v.kautions_betrag if v else None),
+            'offene_forderungen': offene_forderungen, 'schluss_offen': schluss_offen,
             'stufe': stufe, 'farbe': farbe, 'aktion': aktion,
         })
 

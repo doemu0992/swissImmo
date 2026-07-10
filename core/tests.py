@@ -1613,19 +1613,35 @@ class MieterwechselCockpitTests(TestCase):
         generate_auto_pendenzen(horizont_tage=90)
         self.assertFalse(Pendenz.objects.filter(quelle=f'auto:ruecknahme:{k.id}').exists())
 
-    def test_kaution_abrechnen_nach_ruecknahme(self):
-        """Nach der Rücknahme zeigt das Cockpit den Kautions-Abrechnungsschritt."""
+    def test_schlussabrechnung_nach_ruecknahme(self):
+        """Nach der Rücknahme zeigt das Cockpit die Schlussabrechnung (Kaution offen),
+        vorbefüllt aus dem Rücknahme-Protokoll."""
         from rentals.models import Abnahmeprotokoll
         lg, e, m, v, k, ende = self._kuendigung()   # v hat kautions_betrag 4500, Status 'erwartet'
-        Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/mieterwechsel/').content.decode()
-        self.assertIn('Kaution abrechnen', body)
-        self.assertIn(f'/neu/vertraege/{v.id}/#kaution', body)
+        self.assertIn('Schlussabrechnung', body)
+        self.assertIn(f'/neu/vertraege/{v.id}/schlussabrechnung/?abnahme={prot.id}', body)
 
-    def test_kaution_erledigt_kein_abrechnen(self):
-        """Zurückbezahlte Kaution → kein Abrechnen-Button mehr."""
+    def test_offene_forderung_erzwingt_schlussabrechnung(self):
+        """Auch ohne Kaution: offene Debitoren nach Rücknahme → Schlussabrechnung."""
+        from rentals.models import Abnahmeprotokoll
+        from finance.models import DebitorenRechnung
+        lg, e, m, v, k, ende = self._kuendigung()
+        v.kautions_betrag = Decimal('0'); v.save()   # keine Kaution
+        Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, einheit=e,
+                                         titel='Restmiete', betrag=Decimal('900'),
+                                         faellig_am=date.today(), status='offen')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertIn('Schlussabrechnung', body)
+
+    def test_abgerechnet_kein_schlussabrechnung_button(self):
+        """Kaution zurückbezahlt und keine offenen Forderungen → keine Schlussabrechnung."""
         from rentals.models import Abnahmeprotokoll
         lg, e, m, v, k, ende = self._kuendigung()
         v.kautions_einbezahlt_am = date(2024, 1, 5)
@@ -1635,4 +1651,4 @@ class MieterwechselCockpitTests(TestCase):
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/mieterwechsel/').content.decode()
-        self.assertNotIn('Kaution abrechnen', body)
+        self.assertNotIn('/schlussabrechnung/', body)
