@@ -3724,6 +3724,7 @@ def fw_vertrag_neu(request):
                 'flaeche': float(e.flaeche_m2) if e.flaeche_m2 else None,
                 'netto': float(e.nettomiete_aktuell or 0), 'nk': float(e.nebenkosten_aktuell or 0),
                 'kaution_monate': e.standard_kautionsmonate or 3,
+                'vertrag_titel': e.vertrag_titel, 'kategorie': e.mietrecht_kategorie,
             })
         if not objekte:
             continue
@@ -4910,8 +4911,15 @@ def _auszugscheckliste_anlegen(vertrag, kuendigung, per, user, mit_leerstand=Fal
     def tage(offset):
         return (per + _timedelta(days=offset)) if per else heute
 
+    # Erste Aufgabe je Kündigungs-Richtung UND Objektart: das amtliche Formular ist
+    # nur bei Wohn-/Geschäftsräumen Pflicht (Art. 266l), nicht bei Nebenobjekten.
+    if ist_vermieter:
+        erste = "Amtliches Kündigungsformular versenden" if vertrag.ist_geschuetzt \
+                else "Kündigung schriftlich mitteilen"
+    else:
+        erste = "Kündigung schriftlich bestätigen"
     aufgaben = [
-        ("Amtliches Kündigungsformular versenden" if ist_vermieter else "Kündigung schriftlich bestätigen", heute, 'vertrag'),
+        (erste, heute, 'vertrag'),
         ("Abnahmetermin mit Mieter vereinbaren", tage(-30), 'aufgabe'),
         ("Wohnungsabnahme durchführen (Protokoll)", per or heute, 'protokoll' if False else 'aufgabe'),
         ("Zählerstände ablesen & Ummeldung", per or heute, 'aufgabe'),
@@ -5062,7 +5070,7 @@ def fw_kuendigung_bestaetigen(request, pk):
     n_pendenzen = _auszugscheckliste_anlegen(v, k, per, request.user, mit_leerstand=False)
     # Bestätigung erfolgt → 'Kündigung schriftlich bestätigen' abhaken
     from core.services.automation import erledige_pendenzen_fuer
-    erledige_pendenzen_fuer(v, ['schriftlich bestätigen', 'Kündigungsformular versenden'], user=request.user)
+    erledige_pendenzen_fuer(v, ['schriftlich', 'Kündigungsformular'], user=request.user)
     log_aktion(request, "Kündigung bestätigt", str(v.mieter),
                f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen")
     messages.success(request, f"✅ Kündigung bestätigt — Vertragsende {per.strftime('%d.%m.%Y') if per else '—'} · "
@@ -5088,7 +5096,7 @@ def fw_kuendigung_formular(request, pk):
             kategorie='vertrag', vertrag=k.vertrag, dedup=True)
     # Amtliches Formular erstellt → 'schriftlich bestätigen / Formular versenden' abhaken
     from core.services.automation import erledige_pendenzen_fuer
-    erledige_pendenzen_fuer(k.vertrag, ['schriftlich bestätigen', 'Kündigungsformular versenden'],
+    erledige_pendenzen_fuer(k.vertrag, ['schriftlich', 'Kündigungsformular'],
                             user=request.user)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Kuendigung_{k.vertrag.mieter.nachname}.pdf"'

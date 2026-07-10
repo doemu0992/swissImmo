@@ -95,6 +95,32 @@ class Einheit(models.Model):
     verfuegbar_ab = models.DateField("Verfügbar ab", null=True, blank=True)
     ausschreibung_notiz = models.TextField("Vermarktungsnotiz", blank=True, default='')
 
+    # --- Mietrechtliche Einordnung nach Objektart (Single Source of Truth) ---
+    # 'wohnen'/'gewerbe' = geschützte Wohn-/Geschäftsräume (Art. 253a ff. OR:
+    # amtliches Formular bei Vermieterkündigung, Erstreckung, Kaution max 3 Mte).
+    # 'nebenobjekt' = gesondert vermietete Einstellplätze/übrige Sachen
+    # (Art. 266e OR: 2 Wochen auf Ende einer Monatsperiode, kein amtl. Formular).
+    MIETRECHT_KATEGORIE = {
+        'whg': 'wohnen', 'stwe': 'wohnen', 'gew': 'gewerbe',
+        'pp': 'nebenobjekt', 'gar': 'nebenobjekt', 'bas': 'nebenobjekt',
+    }
+    VERTRAG_TITEL = {
+        'whg': 'Mietvertrag für Wohnräume',
+        'stwe': 'Mietvertrag für Wohnräume',
+        'gew': 'Mietvertrag für Geschäftsräume',
+        'pp': 'Mietvertrag für einen Parkplatz',
+        'gar': 'Mietvertrag für eine Garage',
+        'bas': 'Mietvertrag für einen Bastel-/Hobbyraum',
+    }
+
+    @property
+    def mietrecht_kategorie(self):
+        return self.MIETRECHT_KATEGORIE.get(self.typ, 'wohnen')
+
+    @property
+    def vertrag_titel(self):
+        return self.VERTRAG_TITEL.get(self.typ, 'Mietvertrag')
+
     class Meta:
         verbose_name = "Einheit"
         verbose_name_plural = "Einheiten"

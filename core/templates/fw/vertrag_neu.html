@@ -484,7 +484,7 @@ function live(){
 
   document.getElementById('pv').innerHTML = `
     <div class="text-[11px] text-slate-400 border-b border-slate-100 pb-2 mb-4">${vm.name} | ${vm.strasse} | ${vm.plz} ${vm.ort}</div>
-    <div class="font-bold text-base mb-3">Mietvertrag für Wohnräume</div>
+    <div class="font-bold text-base mb-3">${o?o.vertrag_titel:'Mietvertrag für Wohnräume'}</div>
     <p class="text-xs text-slate-500 mb-4">Einfachheitshalber wird auf die weiblichen Formen verzichtet und «Mieter, Vermieter» als Oberbegriff verwendet.</p>
 
     <div class="pvsec">1. Vertragsparteien</div>

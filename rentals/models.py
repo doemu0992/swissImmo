@@ -119,6 +119,31 @@ class Mietvertrag(models.Model):
     def brutto_mietzins(self):
         return (self.netto_mietzins or Decimal('0.00')) + (self.nebenkosten or Decimal('0.00'))
 
+    # --- Mietrechtliche Einordnung (aus der Objektart der Haupteinheit) ---
+    @property
+    def mietrecht_kategorie(self):
+        """'wohnen' | 'gewerbe' | 'nebenobjekt' — bestimmt Titel, Formularpflicht,
+        Erstreckung und Kautionsobergrenze."""
+        return self.einheit.mietrecht_kategorie if self.einheit_id else 'wohnen'
+
+    @property
+    def ist_geschuetzt(self):
+        """Wohn-/Geschäftsräume: amtliches Kündigungsformular des Vermieters +
+        Erstreckung + Kaution max 3 Monatsmieten. Nebenobjekte nicht."""
+        return self.mietrecht_kategorie in ('wohnen', 'gewerbe')
+
+    @property
+    def vertrag_titel(self):
+        """Dynamischer Vertragstitel je Objektart (Wohnräume/Geschäftsräume/
+        Parkplatz/Garage/Bastelraum)."""
+        return self.einheit.vertrag_titel if self.einheit_id else 'Mietvertrag'
+
+    @property
+    def kaution_max_monate(self):
+        """Gesetzliche Kautionsobergrenze: 3 Monatsmieten bei Wohnräumen
+        (Art. 257e OR), frei bei Geschäftsräumen/Nebenobjekten."""
+        return 3 if self.mietrecht_kategorie == 'wohnen' else None
+
     @property
     def kautions_status(self):
         """offen (keine) / erwartet / einbezahlt / zurueckbezahlt — für das Kautions-Register.

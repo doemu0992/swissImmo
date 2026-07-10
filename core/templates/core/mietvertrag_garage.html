@@ -24,7 +24,7 @@
 {% if mandant %}<div class="kopf">{{ mandant.firma_oder_name }} | {{ mandant.strasse }} | {{ mandant.plz }} {{ mandant.ort }}</div>
 {% else %}<div class="kopf">{{ verwaltung.firma }} | {{ verwaltung.strasse }} | {{ verwaltung.plz }} {{ verwaltung.ort }}</div>{% endif %}
 
-<h1>Mietvertrag für {{ einheit.get_typ_display }}</h1>
+<h1>{{ vertrag.vertrag_titel }}</h1>
 
 <div class="sec">1. Vertragsparteien</div>
 <div class="sublabel">Vermieter</div>
@@ -47,6 +47,7 @@
     <tr><td class="k">Kündigungsfrist</td><td>{{ vertrag.kuendigungsfrist_monate }} Monate</td></tr>
     <tr><td class="k">Kündigungstermine</td><td>{{ vertrag.kuendigungstermine }}</td></tr>
 </table>
+<p class="note">Als gesondert vermietetes Objekt (kein Wohn- oder Geschäftsraum) gelten die allgemeinen Kündigungsregeln des OR; die Kündigung des Vermieters bedarf keines amtlichen Formulars, und es besteht kein Erstreckungsanspruch. Für gesondert vermietete Einstellplätze gilt von Gesetzes wegen eine Frist von zwei Wochen auf Ende einer einmonatigen Mietdauer (Art. 266e OR), soweit oben nichts anderes vereinbart ist.</p>
 
 <div class="sec">4. Mietzins</div>
 <table class="data">

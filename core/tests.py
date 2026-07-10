@@ -2113,3 +2113,74 @@ class MieterwechselE2ETests(TestCase):
         offen = Pendenz.objects.filter(vertrag=v, erledigt=False)
         self.assertEqual(offen.count(), 0,
                          f"noch offen: {[p.titel for p in offen]}")
+
+
+class MietvertragObjektartTests(TestCase):
+    """Vertrag richtet sich nach der Objektart (Titel + Mietrecht-Regime)."""
+
+    def _einheit(self, typ):
+        lg = Liegenschaft.objects.create(strasse='Artweg 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Objekt', typ=typ,
+                                   nettomiete_aktuell=Decimal('150'))
+        m = Mieter.objects.create(typ='person', nachname='Muster')
+        v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
+                                       netto_mietzins=Decimal('150'), nebenkosten=Decimal('0'),
+                                       status='aktiv')
+        return lg, e, m, v
+
+    def test_titel_und_kategorie(self):
+        faelle = {
+            'whg': ('Mietvertrag für Wohnräume', 'wohnen', True),
+            'gew': ('Mietvertrag für Geschäftsräume', 'gewerbe', True),
+            'pp':  ('Mietvertrag für einen Parkplatz', 'nebenobjekt', False),
+            'gar': ('Mietvertrag für eine Garage', 'nebenobjekt', False),
+            'bas': ('Mietvertrag für einen Bastel-/Hobbyraum', 'nebenobjekt', False),
+        }
+        for typ, (titel, kat, geschuetzt) in faelle.items():
+            _lg, e, _m, v = self._einheit(typ)
+            self.assertEqual(v.vertrag_titel, titel, typ)
+            self.assertEqual(v.mietrecht_kategorie, kat, typ)
+            self.assertEqual(v.ist_geschuetzt, geschuetzt, typ)
+        # Kaution-Obergrenze nur bei Wohnräumen
+        _lg, e, _m, v = self._einheit('whg')
+        self.assertEqual(v.kaution_max_monate, 3)
+        _lg, e, _m, v = self._einheit('pp')
+        self.assertIsNone(v.kaution_max_monate)
+
+    def test_pdf_titel_parkplatz(self):
+        from core.services.pdf_service import generate_vertrag_pdf_bytes
+        _lg, e, _m, v = self._einheit('pp')
+        pdf = generate_vertrag_pdf_bytes(v)
+        self.assertTrue(pdf.startswith(b'%PDF'))
+
+    def test_wizard_vorwahl_liefert_titel(self):
+        _lg, e, _m, v = self._einheit('pp')
+        team = _team_user(); c = Client(); c.force_login(team)
+        r = c.get(f'/neu/vertraege/neu/?einheit={e.id}')
+        obj = r.context['liegenschaften'][0]['objekte'][0]
+        self.assertEqual(obj['vertrag_titel'], 'Mietvertrag für einen Parkplatz')
+        self.assertEqual(obj['kategorie'], 'nebenobjekt')
+
+    def test_checkliste_regime_nebenobjekt(self):
+        """Vermieterkündigung eines Parkplatzes → KEIN amtliches Formular."""
+        from core.models import Pendenz
+        _lg, e, _m, v = self._einheit('pp')
+        team = _team_user(); c = Client(); c.force_login(team)
+        c.post(f'/neu/vertraege/{v.id}/kuendigen/', {
+            'absender': 'vermieter', 'eingang_datum': date.today().isoformat(),
+            'zustellung': 'einschreiben'})
+        titel = list(Pendenz.objects.filter(vertrag=v).values_list('titel', flat=True))
+        self.assertIn('Kündigung schriftlich mitteilen', titel)
+        self.assertNotIn('Amtliches Kündigungsformular versenden', titel)
+
+    def test_checkliste_regime_wohnung(self):
+        """Vermieterkündigung einer Wohnung → amtliches Formular."""
+        from core.models import Pendenz
+        _lg, e, _m, v = self._einheit('whg')
+        team = _team_user(); c = Client(); c.force_login(team)
+        c.post(f'/neu/vertraege/{v.id}/kuendigen/', {
+            'absender': 'vermieter', 'eingang_datum': date.today().isoformat(),
+            'zustellung': 'einschreiben'})
+        titel = list(Pendenz.objects.filter(vertrag=v).values_list('titel', flat=True))
+        self.assertIn('Amtliches Kündigungsformular versenden', titel)
