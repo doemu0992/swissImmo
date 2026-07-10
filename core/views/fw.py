@@ -850,6 +850,8 @@ def fw_schlussabrechnung(request, vertrag_id):
                             betrag=daten['saldo'], debitoren_rechnung=rech, erstellt_von=request.user)
                     except Buchungskonto.DoesNotExist:
                         pass
+            from core.services.automation import erledige_pendenzen_fuer
+            erledige_pendenzen_fuer(v, ['Schlussabrechnung', 'Kaution'], user=request.user)
             log_aktion(request, "Schlussabrechnung verbucht", str(v.mieter), f"Saldo CHF {daten['saldo']}")
             if request.POST.get('embed'):
                 return render(request, 'fw/_modal_done.html', {'msg': 'Schlussabrechnung verbucht'})
@@ -966,6 +968,15 @@ def fw_abnahme_neu(request, vertrag_id):
                 kostenschaetzung=_dec(kosten[i] if i < len(kosten) else ''),
                 foto=(fotos.pop(0) if fotos else None),
             )
+        # Passende Auszugs-Pendenzen automatisch abhaken
+        if prot.typ == 'auszug':
+            from core.services.automation import erledige_pendenzen_fuer
+            kw = ['Wohnungsabnahme', 'Abnahmetermin']
+            if prot.zaehler_strom or prot.zaehler_wasser or prot.zaehler_gas:
+                kw.append('Zählerstände')
+            if prot.schluessel_anzahl is not None:
+                kw.append('Schlüssel')
+            erledige_pendenzen_fuer(v, kw, user=request.user)
         log_aktion(request, "Wohnungsabnahme erfasst", str(v.mieter), f"{prot.get_typ_display()} {datum}")
         if P.get('embed'):
             typ_txt = prot.get_typ_display()
@@ -4161,6 +4172,12 @@ def fw_objekt_ausschreiben(request, einheit_id):
         e.ausschreibung_notiz = notiz
     e.zur_ausschreibung = True
     e.save(update_fields=['zur_ausschreibung', 'verfuegbar_ab', 'ausschreibung_notiz'])
+    # 'Nachmieter suchen'-Pendenz des ausziehenden Vertrags automatisch abhaken
+    k = (Kuendigung.objects.filter(vertrag__einheit=e, status__in=['erfasst', 'bestaetigt'])
+         .select_related('vertrag').order_by('per_datum', 'berechneter_termin').first())
+    if k and k.vertrag_id:
+        from core.services.automation import erledige_pendenzen_fuer
+        erledige_pendenzen_fuer(k.vertrag, ['Nachmieter', 'Inserat'], user=request.user)
     log_aktion(request, "Objekt ausgeschrieben", str(e),
                f"verfügbar ab {e.verfuegbar_ab or '—'}")
     if request.POST.get('embed'):
@@ -5178,6 +5195,8 @@ def fw_kaution_aktion(request, vertrag_id):
                 )
             except Exception:
                 pass
+        from core.services.automation import erledige_pendenzen_fuer
+        erledige_pendenzen_fuer(v, ['Kaution'], user=request.user)
         log_aktion(request, "Kaution zurückbezahlt", str(v.mieter),
                    f"Rückzahlung CHF {rueck}, Abzug CHF {abzug}")
         messages.success(request, f"✅ Rückzahlung erfasst: CHF {rueck} an Mieter, CHF {abzug} einbehalten.")

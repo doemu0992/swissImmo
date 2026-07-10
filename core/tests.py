@@ -1870,6 +1870,46 @@ class PendenzAktionTests(TestCase):
         self.assertIn('Whg A', body)
         self.assertIn('Whg B', body)
 
+    def test_abnahme_hakt_pendenz_ab(self):
+        """Rücknahme-Protokoll erledigt die 'Wohnungsabnahme'-Pendenz automatisch."""
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        p = Pendenz.objects.create(titel='Wohnungsabnahme durchführen (Protokoll)', kategorie='aufgabe',
+                                   vertrag=v, liegenschaft=lg, faellig_am=date.today())
+        team = _team_user(); c = Client(); c.force_login(team)
+        c.post(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug', {
+            'typ': 'auszug', 'datum': date.today().isoformat(), 'allgemein_zustand': 'gut'})
+        p.refresh_from_db()
+        self.assertTrue(p.erledigt)
+
+    def test_schlussabrechnung_hakt_pendenzen_ab(self):
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        p1 = Pendenz.objects.create(titel='Schlussabrechnung erstellen', vertrag=v,
+                                    kategorie='finanzen', faellig_am=date.today())
+        p2 = Pendenz.objects.create(titel='Kaution abrechnen / freigeben', vertrag=v,
+                                    kategorie='finanzen', faellig_am=date.today())
+        team = _team_user(); c = Client(); c.force_login(team)
+        c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/',
+               {'aktion': 'buchen', 'auszug_datum': date.today().isoformat()})
+        p1.refresh_from_db(); p2.refresh_from_db()
+        self.assertTrue(p1.erledigt)
+        self.assertTrue(p2.erledigt)
+
+    def test_ausschreiben_hakt_nachmieter_pendenz_ab(self):
+        from core.models import Pendenz
+        from rentals.models import Kuendigung
+        lg, e, m, v = _basis_objekte()
+        Kuendigung.objects.create(vertrag=v, absender='mieter', eingang_datum=date.today(),
+                                  per_datum=date.today() + timedelta(days=30),
+                                  berechneter_termin=date.today() + timedelta(days=30), status='erfasst')
+        p = Pendenz.objects.create(titel='Nachmieter suchen / Inserat aufschalten', vertrag=v,
+                                   kategorie='aufgabe', faellig_am=date.today())
+        team = _team_user(); c = Client(); c.force_login(team)
+        c.post(f'/neu/objekte/{e.id}/ausschreiben/', {'ziel': 'an', 'weiter': '/neu/mieterwechsel/'})
+        p.refresh_from_db()
+        self.assertTrue(p.erledigt)
+
 
 class SchadenModalTests(TestCase):
     def test_schadenliste_oeffnet_detail_im_modal(self):

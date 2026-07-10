@@ -166,6 +166,29 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
     return res
 
 
+def erledige_pendenzen_fuer(vertrag, keywords, user=None):
+    """Hakt offene Pendenzen dieses Vertrags automatisch ab, deren Titel eines der
+    `keywords` enthält (case-insensitive). Wird aufgerufen, wenn der zugehörige
+    Schritt tatsächlich erledigt wurde (Rücknahme protokolliert, Schlussabrechnung
+    verbucht, Kaution abgerechnet, Objekt ausgeschrieben). Idempotent; gibt die
+    Anzahl frisch erledigter Pendenzen zurück."""
+    from core.models import Pendenz
+    from django.db.models import Q
+    if not vertrag or not keywords:
+        return 0
+    q = Q()
+    for kw in keywords:
+        q |= Q(titel__icontains=kw)
+    heute = timezone.localdate()
+    n = 0
+    for p in Pendenz.objects.filter(vertrag=vertrag, erledigt=False).filter(q):
+        p.erledigt = True
+        p.erledigt_am = heute
+        p.save(update_fields=['erledigt', 'erledigt_am'])
+        n += 1
+    return n
+
+
 # ============================================================
 # 3. AUTO-PENDENZEN (Fristen aus dem Datenbestand persistieren)
 # ============================================================
