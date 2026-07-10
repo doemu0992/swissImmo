@@ -2370,3 +2370,44 @@ class MietrechtReferenzTests(TestCase):
                                   berechneter_termin=date.today() + timedelta(days=90), status='bestaetigt')
         pdf = generate_dokument_pdf_bytes(v, 'kuendigungsbestaetigung')
         self.assertTrue(pdf.startswith(b'%PDF'))
+
+
+class EinstellplatzFristTests(TestCase):
+    """Vertretbare Anpassung: Einstellplatz-Kündigung nach Art. 266e (2 Wochen)."""
+
+    def _platz(self, typ='pp'):
+        lg = Liegenschaft.objects.create(strasse='Platz 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('500000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='PP 12', typ=typ,
+                                   nettomiete_aktuell=Decimal('120'))
+        m = Mieter.objects.create(typ='person', nachname='Halter')
+        v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
+                                       netto_mietzins=Decimal('120'), nebenkosten=Decimal('0'),
+                                       status='aktiv', kuendigungsfrist_monate=3)
+        return lg, e, m, v
+
+    def test_termin_zwei_wochen_auf_monatsende(self):
+        from rentals.services import berechne_kuendigungstermin
+        _lg, _e, _m, v = self._platz('pp')
+        # Eingang 5. März → +14 Tage = 19. März → nächstes Monatsende = 31. März
+        t = berechne_kuendigungstermin(v, date(2025, 3, 5))
+        self.assertEqual(t, date(2025, 3, 31))
+        # Eingang 20. März → +14 Tage = 3. April → 30. April
+        t2 = berechne_kuendigungstermin(v, date(2025, 3, 20))
+        self.assertEqual(t2, date(2025, 4, 30))
+
+    def test_anzeige_einstellplatz_vs_bastelraum(self):
+        _lg, _e, _m, v = self._platz('gar')
+        self.assertIn('2 Wochen', v.kuendigungsfrist_anzeige)
+        self.assertIn('266e', v.kuendigungsfrist_anzeige)
+        # Bastelraum ist kein Einstellplatz → Monatsanzeige
+        _lg, _e, _m, vb = self._platz('bas')
+        self.assertIn('Monate', vb.kuendigungsfrist_anzeige)
+        self.assertNotIn('266e', vb.kuendigungsfrist_anzeige)
+
+    def test_wohnung_frist_unveraendert(self):
+        from rentals.services import berechne_kuendigungstermin
+        lg, e, m, v = _basis_objekte()   # Wohnung, 3 Monate
+        t = berechne_kuendigungstermin(v, date(2025, 1, 15))
+        # 3 Monate ab Januar → April-Ende (regulär), nicht 2-Wochen-Logik
+        self.assertEqual(t.month, 4)

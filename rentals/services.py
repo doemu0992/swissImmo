@@ -134,7 +134,23 @@ def naechster_anpassungstermin(vertrag, ankuendigung_datum: _dt.date) -> _dt.dat
 
 def berechne_kuendigungstermin(vertrag, eingang_datum: _dt.date) -> _dt.date:
     """Nächster ordentlicher Kündigungstermin ab (Eingang + Kündigungsfrist),
-    unter Beachtung der erlaubten Termin-Monate und 'erstmals kündbar auf'."""
+    unter Beachtung der erlaubten Termin-Monate und 'erstmals kündbar auf'.
+
+    Sonderfall gesondert vermietete Einstellplätze (Art. 266e OR): Frist von
+    zwei Wochen auf Ende einer einmonatigen Mietdauer — nicht monatsbasiert."""
+    einheit = getattr(vertrag, 'einheit', None)
+    if einheit is not None and getattr(einheit, 'ist_einstellplatz', False):
+        # Frühestes Monatsende, das mindestens 14 Tage nach Eingang liegt.
+        grenze = eingang_datum + _dt.timedelta(days=14)
+        me = _monatsende(grenze.year, grenze.month)
+        if me < grenze:
+            nm = grenze.month % 12 + 1
+            ny = grenze.year + (1 if grenze.month == 12 else 0)
+            me = _monatsende(ny, nm)
+        if vertrag.erstmals_kuendbar_auf and vertrag.erstmals_kuendbar_auf > me:
+            return vertrag.erstmals_kuendbar_auf
+        return me
+
     frist = int(vertrag.kuendigungsfrist_monate or 3)
     erlaubt = _erlaubte_termin_monate(vertrag.kuendigungstermine)
 

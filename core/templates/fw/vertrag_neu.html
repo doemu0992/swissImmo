@@ -405,7 +405,7 @@ function objChange(){
     if (!istGew && frist.value === '6') frist.value = '3';
     if (!istGew) { const md = document.getElementById('s_modell'); if (md) { md.value = 'fest'; modellChange(); } }
     document.getElementById('kaution-hint').textContent = istGew
-      ? 'Bei Geschäftsräumen frei vereinbar (keine 3-Monats-Grenze).'
+      ? 'Geschäftsräume: Betrag frei (keine 3-Monats-Grenze), aber Sperrkonto auf Mietername bleibt Pflicht (Art. 257e Abs. 1 OR).'
       : (o.kaution_monate ? `Empfohlen: ${o.kaution_monate} Monatsmieten (max 3, Art. 257e)` : '');
   }
   live();

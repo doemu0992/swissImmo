@@ -44,7 +44,7 @@
 <table class="data">
     <tr><td class="k">Mietbeginn</td><td>{{ vertrag.beginn|date:"d.m.Y" }}</td></tr>
     <tr><td class="k">Mietende</td><td>{% if vertrag.ende %}{{ vertrag.ende|date:"d.m.Y" }}{% else %}unbefristet{% endif %}</td></tr>
-    <tr><td class="k">Kündigungsfrist</td><td>{{ vertrag.kuendigungsfrist_monate }} Monate</td></tr>
+    <tr><td class="k">Kündigungsfrist</td><td>{{ vertrag.kuendigungsfrist_anzeige }}</td></tr>
     <tr><td class="k">Kündigungstermine</td><td>{{ vertrag.kuendigungstermine }}</td></tr>
 </table>
 <p class="note">{{ vertrag.nebenobjekt_kuendigung_note }}</p>

@@ -86,7 +86,7 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5">
             <h3 class="font-bold text-slate-800 mb-3">Kündigung & Fristen</h3>
             <dl class="text-sm space-y-2">
-                <div class="flex justify-between"><dt class="text-slate-500">Kündigungsfrist</dt><dd class="text-slate-800 font-medium">{{ v.kuendigungsfrist_monate }} Monate</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-500">Kündigungsfrist</dt><dd class="text-slate-800 font-medium">{{ v.kuendigungsfrist_anzeige }}</dd></div>
                 {% if v.erstmals_kuendbar_auf %}<div class="flex justify-between"><dt class="text-slate-500">Erstmals kündbar</dt><dd class="text-slate-800 font-medium">{{ v.erstmals_kuendbar_auf|date:"d.m.Y" }}</dd></div>{% endif %}
                 <div class="flex justify-between"><dt class="text-slate-500">Kündigungstermine</dt><dd class="text-slate-800 font-medium text-right">{{ v.kuendigungstermine }}</dd></div>
                 {% if v.anzahl_personen %}<div class="flex justify-between"><dt class="text-slate-500">Personen</dt><dd class="text-slate-800 font-medium">{{ v.anzahl_personen }}</dd></div>{% endif %}
