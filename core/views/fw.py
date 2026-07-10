@@ -3860,13 +3860,24 @@ def fw_vertrag_neu_speichern(request):
         except Exception:
             pass
 
+    # Kündigungsfrist: bei Geschäftsräumen gesetzlich min. 6 Monate (Art. 266d);
+    # wird der Wert nicht gesetzt, greift der art-abhängige Default.
+    _kfrist_default = 6 if einheit.mietrecht_kategorie == 'gewerbe' else 3
+    try:
+        _kfrist = int(P.get('kuendigungsfrist') or _kfrist_default)
+    except ValueError:
+        _kfrist = _kfrist_default
+    _mietzins_modell = P.get('mietzins_modell', 'fest')
+    if _mietzins_modell not in ('fest', 'index', 'staffel'):
+        _mietzins_modell = 'fest'
+
     with transaction.atomic():
         vertrag = Mietvertrag.objects.create(
             mieter=mieter, einheit=einheit,
             status='aktiv' if P.get('aktiv_setzen') == 'on' else 'entwurf',
             beginn=beginn, ende=datum('ende'),
             erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
-            kuendigungsfrist_monate=int(P.get('kuendigungsfrist') or 3),
+            kuendigungsfrist_monate=_kfrist,
             kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
             mitmieter_name=mitmieter, mitmieter=zweiter_obj, familienwohnung=familienwohnung,
             anzahl_personen=int(P.get('anzahl_personen') or 1),
@@ -3879,6 +3890,8 @@ def fw_vertrag_neu_speichern(request):
             zahlungsrhythmus=P.get('zahlungsrhythmus', 'monatlich'),
             mwst_pflichtig=P.get('mwst_pflichtig') == 'on',
             mwst_satz=dec('mwst_satz') or Decimal('8.1'),
+            mietzins_modell=_mietzins_modell,
+            zweckbestimmung=P.get('zweckbestimmung', '').strip(),
             weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
             basis_referenzzinssatz=dec('basis_referenzzinssatz') or Decimal('1.75'),
             basis_lik_punkte=dec('basis_lik_punkte') or Decimal('107.1'),
@@ -3887,6 +3900,23 @@ def fw_vertrag_neu_speichern(request):
             kautions_betrag=dec('kautions_betrag') or None,
             kautions_konto=P.get('kautions_konto', '').strip(),
         )
+        # Staffelstufen (parallele Listen ab_datum/netto) — nur bei Staffelmiete
+        if _mietzins_modell == 'staffel':
+            from rentals.models import Staffelstufe
+            ab_list = P.getlist('staffel_ab')
+            netto_list = P.getlist('staffel_netto')
+            for i, ab in enumerate(ab_list):
+                try:
+                    ab_d = date.fromisoformat((ab or '').strip())
+                except ValueError:
+                    continue
+                betrag = dec(f'__staffel_{i}') if False else None
+                try:
+                    betrag = Decimal(str(netto_list[i]).replace("'", '').replace(',', '.')) if i < len(netto_list) and str(netto_list[i]).strip() else None
+                except Exception:
+                    betrag = None
+                if ab_d and betrag and betrag > 0:
+                    Staffelstufe.objects.create(vertrag=vertrag, ab_datum=ab_d, netto_mietzins=betrag)
     # Zukünftige Adresse = Objektadresse ab Einzug (Auto-Wechsel via
     # Mieter.check_and_update_adresse am Mietbeginn) — für beide Mieter.
     lg = einheit.liegenschaft

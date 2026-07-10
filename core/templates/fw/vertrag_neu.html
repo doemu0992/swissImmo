@@ -182,6 +182,30 @@
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Mietzinsvorbehalte</label>
                     <textarea name="weitere_vorbehalte" rows="2" oninput="live()" placeholder="z. B. Vorbehalt weiterer Referenzzins-/Teuerungsanpassungen" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 mb-4"></textarea>
 
+                    <!-- Geschäftsraum: Zweck + Mietzinsmodell (nur bei Gewerbe sichtbar) -->
+                    <div id="gewerbe-box" class="hidden border border-indigo-200 bg-indigo-50/40 rounded-xl p-4 mb-4">
+                        <h4 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-briefcase text-indigo-500 mr-1"></i>Geschäftsraum</h4>
+                        <p class="text-xs text-slate-400 mb-3">Zweckbestimmung und Mietzinsmodell für Geschäftsräume.</p>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Nutzungszweck</label>
+                        <input name="zweckbestimmung" id="s_zweck" oninput="live()" placeholder="z. B. Betrieb eines Coiffeursalons" class="w-full bg-white rounded-lg text-sm px-3 py-2.5 mb-3">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Mietzinsmodell</label>
+                        <select name="mietzins_modell" id="s_modell" onchange="modellChange(); live()" class="w-full bg-white rounded-lg text-sm px-3 py-2.5">
+                            <option value="fest">Fester Mietzins</option>
+                            <option value="index">Indexmiete (LIK, Art. 269b — Vertrag ≥ 5 Jahre)</option>
+                            <option value="staffel">Staffelmiete (Art. 269c — Vertrag ≥ 3 Jahre)</option>
+                        </select>
+                        <!-- Staffelstufen -->
+                        <div id="staffel-box" class="hidden mt-3">
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-xs font-semibold text-slate-500">Staffelstufen</label>
+                                <button type="button" onclick="staffelAdd()" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-100 px-2.5 py-1 rounded-lg">+ Stufe</button>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mb-2">Ab dem Stichtag gilt der neue Nettomietzins — automatisch im Mietenlauf.</p>
+                            <div id="staffel-rows" class="space-y-2"></div>
+                        </div>
+                        <p id="index-hint" class="hidden text-[11px] text-amber-700 bg-amber-50 rounded px-2 py-1 mt-3">Indexanpassungen werden mit amtlichem Formular (Art. 269d) angekündigt — das System erinnert automatisch, wenn der LIK gestiegen ist.</p>
+                    </div>
+
                     <!-- Indexwerte -->
                     <div class="border border-slate-200 rounded-xl p-4">
                         <div class="flex items-center justify-between mb-1">
@@ -373,10 +397,34 @@ function objChange(){
     const info=document.getElementById('obj-info');
     info.classList.remove('hidden');
     info.innerHTML = `<b>${o.bezeichnung}</b> · ${o.typ}${o.etage?' · '+o.etage:''}${o.flaeche?' · '+o.flaeche+' m²':''}${o.zimmer?' · '+o.zimmer+' Zi':''}`;
-    // Kaution-Hinweis
-    document.getElementById('kaution-hint').textContent = o.kaution_monate ? `Empfohlen: ${o.kaution_monate} Monatsmieten` : '';
+    // Objektart-abhängig: Gewerbe-Felder, Kündigungsfrist-Default, Kaution-Hinweis
+    const istGew = o.kategorie === 'gewerbe';
+    document.getElementById('gewerbe-box').classList.toggle('hidden', !istGew);
+    const frist = document.getElementById('s_frist');
+    if (istGew && (frist.value === '3' || frist.value === '')) frist.value = '6';   // Art. 266d
+    if (!istGew && frist.value === '6') frist.value = '3';
+    if (!istGew) { const md = document.getElementById('s_modell'); if (md) { md.value = 'fest'; modellChange(); } }
+    document.getElementById('kaution-hint').textContent = istGew
+      ? 'Bei Geschäftsräumen frei vereinbar (keine 3-Monats-Grenze).'
+      : (o.kaution_monate ? `Empfohlen: ${o.kaution_monate} Monatsmieten (max 3, Art. 257e)` : '');
   }
   live();
+}
+function modellChange(){
+  const md = document.getElementById('s_modell'); if(!md) return;
+  document.getElementById('staffel-box').classList.toggle('hidden', md.value !== 'staffel');
+  document.getElementById('index-hint').classList.toggle('hidden', md.value !== 'index');
+  if(md.value === 'staffel' && !document.querySelector('#staffel-rows .staffel-row')) staffelAdd();
+}
+function staffelAdd(){
+  const wrap = document.getElementById('staffel-rows');
+  const row = document.createElement('div');
+  row.className = 'staffel-row flex items-center gap-2';
+  row.innerHTML = `
+    <input type="date" name="staffel_ab" oninput="live()" class="flex-1 bg-white rounded-lg text-sm px-2 py-1.5">
+    <input type="number" step="0.01" name="staffel_netto" oninput="live()" placeholder="Netto CHF" class="w-28 bg-white rounded-lg text-sm px-2 py-1.5">
+    <button type="button" onclick="this.closest('.staffel-row').remove(); live()" class="text-slate-400 hover:text-rose-500 text-sm px-1"><i class="fa-solid fa-xmark"></i></button>`;
+  wrap.appendChild(row);
 }
 function mieterTab(m){
   mieterMode=m;

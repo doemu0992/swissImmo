@@ -2249,3 +2249,56 @@ class GewerbeMietzinsTests(TestCase):
         v.save()
         generate_auto_pendenzen(horizont_tage=120)
         self.assertFalse(Pendenz.objects.filter(vertrag=v, titel__icontains='Indexmiete anpassen').exists())
+
+
+class GewerbeWizardTests(TestCase):
+    """Etappe D: derselbe Wizard, aber Gewerbe blendet Modell/Staffel ein und
+    speichert korrekt (Kündigungsfrist-Default 6, Staffelstufen)."""
+
+    def _gew_einheit(self):
+        lg = Liegenschaft.objects.create(strasse='Laden 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('2000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='EG Laden', typ='gew',
+                                   nettomiete_aktuell=Decimal('3000'), nebenkosten_aktuell=Decimal('300'))
+        m = Mieter.objects.create(typ='firma', firmen_name='Test GmbH')
+        return lg, e, m
+
+    def test_wizard_zeigt_gewerbe_felder(self):
+        lg, e, m = self._gew_einheit()
+        team = _team_user(); c = Client(); c.force_login(team)
+        body = c.get(f'/neu/vertraege/neu/?einheit={e.id}').content.decode()
+        self.assertIn('id="gewerbe-box"', body)
+        self.assertIn('name="mietzins_modell"', body)
+        self.assertIn("o.kategorie === 'gewerbe'", body)
+
+    def test_speichern_gewerbe_staffel_und_frist(self):
+        from rentals.models import Mietvertrag as MV, Staffelstufe
+        lg, e, m = self._gew_einheit()
+        team = _team_user(); c = Client(); c.force_login(team)
+        c.post('/neu/vertraege/neu/speichern/', {
+            'einheit_id': e.id, 'mieter_id': m.id, 'beginn': '2024-01-01',
+            'netto_mietzins': '3000', 'nebenkosten': '300',
+            'mietzins_modell': 'staffel',
+            'staffel_ab': ['2025-01-01', '2026-01-01'],
+            'staffel_netto': ['3100', '3200'],
+            'zweckbestimmung': 'Betrieb einer Bäckerei',
+            # kuendigungsfrist bewusst weggelassen → Default 6 (Gewerbe)
+        })
+        v = MV.objects.filter(einheit=e).order_by('-id').first()
+        self.assertIsNotNone(v)
+        self.assertEqual(v.mietzins_modell, 'staffel')
+        self.assertEqual(v.kuendigungsfrist_monate, 6)
+        self.assertEqual(v.zweckbestimmung, 'Betrieb einer Bäckerei')
+        self.assertEqual(v.staffelstufen.count(), 2)
+        self.assertEqual(v.effektiver_netto_mietzins(date(2025, 6, 1)), Decimal('3100'))
+
+    def test_pdf_gewerbe_index_rendert(self):
+        from rentals.models import Mietvertrag as MV
+        from core.services.pdf_service import generate_vertrag_pdf_bytes
+        lg, e, m = self._gew_einheit()
+        v = MV.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
+                              netto_mietzins=Decimal('3000'), nebenkosten=Decimal('300'),
+                              status='aktiv', mietzins_modell='index',
+                              zweckbestimmung='Büro')
+        pdf = generate_vertrag_pdf_bytes(v)
+        self.assertTrue(pdf.startswith(b'%PDF'))

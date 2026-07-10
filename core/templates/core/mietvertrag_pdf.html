@@ -73,7 +73,11 @@
     {% if vertrag.nebenraeume %}<tr><td class="k">Nebenräume</td><td>{{ vertrag.nebenraeume }}</td></tr>{% endif %}
     {% if vertrag.mitbenutzung %}<tr><td class="k">Zur Mitbenützung</td><td>{{ vertrag.mitbenutzung }}</td></tr>{% endif %}
 </table>
+{% if vertrag.mietrecht_kategorie == 'gewerbe' %}
+<p class="note">Der Mieter verpflichtet sich, die Mietsache während der gesamten Mietdauer ausschliesslich zum folgenden Zweck zu gebrauchen: <b>{{ vertrag.zweckbestimmung|default:"gemäss separater Vereinbarung" }}</b>. Eine Änderung der Nutzung bedarf der vorgängigen schriftlichen Zustimmung des Vermieters.</p>
+{% else %}
 <p class="note">Der Mieter verpflichtet sich, die Mietsache während der gesamten Mietdauer zum vertraglich vereinbarten Zweck, das heisst als Wohnung, zu gebrauchen. Eine wesentliche Gebrauchsänderung ist nur mit ausdrücklicher Zustimmung des Vermieters gestattet.</p>
+{% endif %}
 
 <div class="sec">3. Mietdauer und Kündigung</div>
 <table class="data">
@@ -100,6 +104,18 @@
     {% if vertrag.kostensteigerung_datum %}<tr><td class="k">Kostensteigerung ausgeglichen bis</td><td>{{ vertrag.kostensteigerung_datum|date:"m.Y" }}</td></tr>{% endif %}
 </table>
 <p class="note">Der Mietzins beruht auf den obigen Grundlagen. Änderungen des Referenzzinssatzes, des Landesindexes sowie allgemeine Kostensteigerungen berechtigen zu einer Anpassung des Mietzinses nach den Bestimmungen des OR und der VMWG.</p>
+
+{% if vertrag.mietzins_modell == 'index' %}
+<div class="subsec">4.4 Indexklausel (Art. 269b OR)</div>
+<p class="note">Der Nettomietzins ist an den Landesindex der Konsumentenpreise gekoppelt. Er wird zu {{ vertrag.index_weitergabe_prozent }} % der Indexveränderung angepasst, frühestens alle {{ vertrag.index_intervall_monate }} Monate. Basis ist der oben genannte Indexstand. Anpassungen werden dem Mieter mit amtlichem Formular unter Einhaltung einer Frist von mindestens 30 Tagen auf einen Kündigungstermin mitgeteilt (Art. 269d OR). Diese Klausel setzt einen festen Mietvertrag von mindestens fünf Jahren voraus.</p>
+{% elif vertrag.mietzins_modell == 'staffel' %}
+<div class="subsec">4.4 Staffelmietklausel (Art. 269c OR)</div>
+<p class="note">Die Parteien vereinbaren folgende gestaffelte Nettomietzinse. Die Staffelung gilt als im Voraus vereinbart; einer erneuten Mitteilung bedarf es nicht.</p>
+<table class="data">
+    <tr><td class="k">ab {{ vertrag.beginn|date:"d.m.Y" }}</td><td>CHF {{ miete_fmt }}</td></tr>
+    {% for s in vertrag.staffelstufen.all %}<tr><td class="k">ab {{ s.ab_datum|date:"d.m.Y" }}</td><td>CHF {{ s.netto_mietzins|floatformat:2 }}</td></tr>{% endfor %}
+</table>
+{% endif %}
 
 <div class="subsec">4.2 Mietzinszahlung</div>
 <p class="note">Der Mietzins ist jeweils am 1. Tag des Monats (Verfalldatum) im Voraus fällig. Bei Zahlungseingängen nach dem Verfalldatum ist der Vermieter berechtigt, einen Verzugszins sowie Mahn- und Umtriebsgebühren in usanzgemässer Höhe in Rechnung zu stellen.</p>
