@@ -4973,6 +4973,9 @@ def fw_kuendigung_erfassen(request, vertrag_id):
 
         log_aktion(request, "Kündigung erfasst", str(v.mieter),
                    f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen{hinweis}")
+        if P.get('embed'):
+            return render(request, 'fw/_modal_done.html', {
+                'msg': f"Kündigung erfasst · {n_pendenzen} Auszugs-Pendenzen"})
         messages.success(request, f"✅ Kündigung erfasst — Vertragsende {per.strftime('%d.%m.%Y') if per else '—'} · "
                          f"{n_pendenzen} Auszugs-Pendenzen erstellt{hinweis}.")
         return redirect(f'/neu/vertraege/{v.id}/')

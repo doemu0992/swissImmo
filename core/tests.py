@@ -1801,6 +1801,28 @@ class MieterwechselCockpitTests(TestCase):
         self.assertIn("classList.add('_embed')", body)
 
 
+class KuendigungModalTests(TestCase):
+    def test_vertragsliste_zeigt_kuendigen_aktion(self):
+        lg, e, m, v = _basis_objekte()   # v ist aktiv
+        team = _team_user(); c = Client(); c.force_login(team)
+        body = c.get('/neu/vertraege/').content.decode()
+        self.assertIn(f'/neu/vertraege/{v.id}/kuendigen/', body)
+        self.assertIn("fwModalOpen(this,'Kündigung erfassen')", body)
+
+    def test_kuendigung_embed_schliesst_und_legt_pendenzen_an(self):
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        team = _team_user(); c = Client(); c.force_login(team)
+        r = c.post(f'/neu/vertraege/{v.id}/kuendigen/', {
+            'embed': '1', 'absender': 'mieter', 'eingang_datum': date.today().isoformat(),
+            'zustellung': 'einschreiben'})
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("fwModal: 'done'", r.content.decode())
+        v.refresh_from_db()
+        self.assertEqual(v.status, 'gekuendigt')
+        self.assertTrue(Pendenz.objects.filter(vertrag=v, erledigt=False).exists())
+
+
 class PendenzAktionTests(TestCase):
     def test_ruecknahme_pendenz_verlinkt_abnahme(self):
         """Eine 'Wohnungsrücknahme planen'-Pendenz verlinkt direkt in die Rücknahme (Popup)."""
