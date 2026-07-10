@@ -3652,14 +3652,27 @@ def fw_vertrag_neu(request):
         'plz': vw.plz if vw else '', 'ort': vw.ort if vw else '',
     }
 
+    # Vorwahl einer bestimmten Einheit (z.B. aus dem Mieterwechsel-Cockpit):
+    # dann nur diese Liegenschaft + dieses Objekt anzeigen, keine Auswahl nötig.
+    try:
+        vorwahl_einheit = int(request.GET.get('einheit') or 0) or None
+    except ValueError:
+        vorwahl_einheit = None
+    vorwahl_e = Einheit.objects.select_related('liegenschaft').filter(id=vorwahl_einheit).first() if vorwahl_einheit else None
+
     # Belegte Einheiten (aktiver Vertrag inkl. Nebenobjekte) ausschliessen
     belegte = set(Mietvertrag.objects.filter(status='aktiv').values_list('einheit_id', flat=True))
     for nid in Mietvertrag.objects.filter(status='aktiv').values_list('nebenobjekte', flat=True):
         if nid:
             belegte.add(nid)
+    # Die vorgewählte Einheit immer zeigen (Nachmieter-Vertrag beginnt nach Auszug,
+    # der alte Vertrag kann noch aktiv/gekündigt sein).
+    belegte.discard(vorwahl_einheit)
 
     lg_qs = Liegenschaft.objects.select_related('mandant').prefetch_related('einheiten').order_by('strasse')
-    if aktive_lg:
+    if vorwahl_e:
+        lg_qs = lg_qs.filter(id=vorwahl_e.liegenschaft_id)
+    elif aktive_lg:
         lg_qs = lg_qs.filter(id=aktive_lg.id)
 
     liegenschaften = []
@@ -3668,6 +3681,8 @@ def fw_vertrag_neu(request):
         for e in lg.einheiten.all().order_by('bezeichnung'):
             if e.id in belegte:
                 continue
+            if vorwahl_e and e.id != vorwahl_einheit:
+                continue   # bei Vorwahl nur genau dieses Objekt
             objekte.append({
                 'id': e.id, 'bezeichnung': e.bezeichnung,
                 'typ': e.get_typ_display(), 'etage': e.etage or '',
@@ -3704,6 +3719,7 @@ def fw_vertrag_neu(request):
         'aktueller_ref_zins': float(vw.aktueller_referenzzinssatz) if vw else 1.75,
         **_lik_assistent_defaults(vw),
         'heute_iso': timezone.now().date().isoformat(),
+        'vorwahl_einheit': vorwahl_einheit or '',
     })
 
 

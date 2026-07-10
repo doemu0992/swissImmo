@@ -1763,6 +1763,33 @@ class MieterwechselCockpitTests(TestCase):
         self.assertIn("fwModalOpen(this,'Bewerbungen')", body)
         self.assertIn("fwModalOpen(this,'Vertrag erstellen',true)", body)   # breit
 
+    def test_cockpit_vertrag_erstellen_mit_einheit_vorwahl(self):
+        """'Vertrag erstellen' übergibt die konkrete Einheit an den Wizard."""
+        lg, e, m, v, k, ende = self._kuendigung()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertIn(f'/neu/vertraege/neu/?einheit={e.id}', body)
+
+    def test_wizard_vorwahl_nur_eine_einheit(self):
+        """Mit ?einheit=<id> zeigt der Wizard nur diese Liegenschaft/Einheit und
+        setzt die Vorwahl — auch wenn der alte Vertrag noch aktiv ist."""
+        lg, e, m, v, k, ende = self._kuendigung()   # v ist aktiv auf e
+        # zweite Liegenschaft, die NICHT erscheinen darf
+        lg2 = Liegenschaft.objects.create(strasse='Andere 9', plz='3000', ort='Bern',
+                                          versicherungswert=Decimal('500000'))
+        Einheit.objects.create(liegenschaft=lg2, bezeichnung='2 Zi', typ='wohnung',
+                               nettomiete_aktuell=Decimal('900'))
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        r = c.get(f'/neu/vertraege/neu/?einheit={e.id}')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.context['vorwahl_einheit'], e.id)
+        lgs = r.context['liegenschaften']   # nur die Wizard-Daten zählen
+        self.assertEqual(len(lgs), 1)
+        self.assertEqual(lgs[0]['id'], lg.id)
+        self.assertEqual([o['id'] for o in lgs[0]['objekte']], [e.id])
+
     def test_embed_ueberlebt_redirect_via_iframe_kontext(self):
         """base.html blendet den Chrome auch ohne ?embed=1 aus, sobald im iframe
         geladen (window.self !== window.top) — so bleiben mehrstufige Flows

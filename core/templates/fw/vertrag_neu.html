@@ -5,6 +5,7 @@
 {% block content %}
 {{ liegenschaften|json_script:"lg-data" }}
 {{ mieter|json_script:"mieter-data" }}
+{{ vorwahl_einheit|json_script:"vorwahl-einheit" }}
 
 <div class="flex items-center justify-between mb-4">
     <h1 class="text-2xl font-extrabold text-slate-900">Vertragserfassung</h1>
@@ -332,6 +333,20 @@ document.getElementById('s_mieter').innerHTML = '<option value="">Person auswäh
 document.getElementById('s_mieter2').innerHTML = '<option value="">Person auswählen…</option>' +
   MIETER.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
 let mieter2Mode = 'best';
+
+// Vorwahl aus dem Mieterwechsel-Cockpit: Liegenschaft + Objekt automatisch setzen
+try {
+  const VORWAHL = JSON.parse(document.getElementById('vorwahl-einheit').textContent);
+  if (VORWAHL) {
+    const l = LG.find(l => l.objekte.some(o => String(o.id) === String(VORWAHL)));
+    if (l) {
+      document.getElementById('s_lg').value = String(l.id);
+      lgChange();
+      document.getElementById('s_obj').value = String(VORWAHL);
+      objChange();
+    }
+  }
+} catch (e) {}
 
 function curLg(){ return LG.find(l=>String(l.id)===document.getElementById('s_lg').value); }
 function curObj(){ const l=curLg(); if(!l) return null; return l.objekte.find(o=>String(o.id)===document.getElementById('s_obj').value); }
