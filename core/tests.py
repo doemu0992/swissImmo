@@ -2016,3 +2016,100 @@ class ModalFramingTests(TestCase):
         body = c.get('/neu/debitoren/').content.decode()
         self.assertIn("fwModalOpen(this,'Vertrag',true)", body)   # breit für Vorschau daneben
         self.assertIn('id="fwModal"', body)
+
+
+class MieterwechselE2ETests(TestCase):
+    """Durchgängiger End-to-End-Durchlauf des ganzen Mieterwechsel-Kreislaufs
+    über die echten URLs: Kündigen → Pendenzen → Ausschreiben → Nachmieter →
+    Rücknahme → Übergabe → Schlussabrechnung → Auto-Abhaken → Cockpit leer."""
+
+    def _konten(self):
+        _seed_konten()
+
+    def test_kompletter_kreislauf(self):
+        from core.models import Pendenz
+        from rentals.models import Kuendigung, Abnahmeprotokoll
+        self._konten()
+        lg = Liegenschaft.objects.create(strasse='Wechselweg 5', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='4.5 Zi', typ='wohnung',
+                                   nettomiete_aktuell=Decimal('1800'), nebenkosten_aktuell=Decimal('250'))
+        m = Mieter.objects.create(typ='person', vorname='Alt', nachname='Mieter', email='alt@example.ch')
+        v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2023, 1, 1),
+                                       netto_mietzins=Decimal('1800'), nebenkosten=Decimal('250'),
+                                       status='aktiv', kautions_betrag=Decimal('5400'),
+                                       kautions_einbezahlt_am=date(2023, 1, 5))
+        team = _team_user()
+        c = Client(); c.force_login(team)
+
+        # 1) KÜNDIGEN (im Popup) → Vertrag gekündigt + Auszugs-Pendenzen
+        r = c.post(f'/neu/vertraege/{v.id}/kuendigen/', {
+            'embed': '1', 'absender': 'mieter', 'eingang_datum': date.today().isoformat(),
+            'zustellung': 'einschreiben'})
+        self.assertIn("fwModal: 'done'", r.content.decode())
+        v.refresh_from_db()
+        self.assertEqual(v.status, 'gekuendigt')
+        pend_total = Pendenz.objects.filter(vertrag=v, erledigt=False).count()
+        self.assertGreaterEqual(pend_total, 5)
+
+        # 1b) Kündigung schriftlich bestätigen → erste Pendenz abgehakt
+        kd = Kuendigung.objects.get(vertrag=v)
+        c.post(f'/neu/kuendigung/{kd.id}/bestaetigen/')
+        self.assertFalse(Pendenz.objects.filter(vertrag=v, erledigt=False,
+                                                titel__icontains='schriftlich bestätigen').exists())
+
+        # 2) DASHBOARD zeigt die Aufgaben
+        self.assertEqual(c.get('/neu/').status_code, 200)
+
+        # 3) COCKPIT listet den Wechsel als 'Gekündigt' + Ausschreiben-Aktion
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertIn('Wechselweg 5', body)
+        self.assertIn(f'/neu/objekte/{e.id}/ausschreiben/', body)
+
+        # 4) OBJEKT AUSSCHREIBEN → Vermarktung + 'Nachmieter'-Pendenz erledigt
+        c.post(f'/neu/objekte/{e.id}/ausschreiben/',
+               {'embed': '1', 'ziel': 'an', 'verfuegbar_ab': (date.today() + timedelta(days=60)).isoformat()})
+        e.refresh_from_db()
+        self.assertTrue(e.zur_ausschreibung)
+        self.assertContains(c.get('/neu/vermarktung/'), '4.5 Zi')
+
+        # 5) RÜCKNAHME protokollieren → 'Wohnungsabnahme'-Pendenz erledigt
+        r = c.post(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug', {
+            'embed': '1', 'typ': 'auszug', 'datum': date.today().isoformat(),
+            'allgemein_zustand': 'gut', 'schluessel_anzahl': '3', 'zaehler_strom': '12345'})
+        self.assertIn("fwModal: 'done'", r.content.decode())
+        self.assertTrue(v.abnahmen.filter(typ='auszug').exists())
+        self.assertFalse(Pendenz.objects.filter(vertrag=v, erledigt=False,
+                                                titel__icontains='Wohnungsabnahme').exists())
+
+        # 6) NACHMIETER-Vertrag anlegen (beginnt nach Auszug)
+        nm = Mieter.objects.create(typ='person', vorname='Neu', nachname='Mieter', email='neu@example.ch')
+        ende = v.ende or (date.today() + timedelta(days=60))
+        nv = Mietvertrag.objects.create(mieter=nm, einheit=e, beginn=ende + timedelta(days=1),
+                                        netto_mietzins=Decimal('1850'), nebenkosten=Decimal('250'),
+                                        status='entwurf')
+        # Nachmieter erkannt → Übergabe-Aktion verfügbar. (Die Stufe zeigt hier
+        # bereits 'Schlussabrechnung', weil die Kaution offen ist — der
+        # Übergabe-Link ist der Beweis, dass der Nachmieter erkannt wurde.)
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertIn('Neu Mieter', body)
+        self.assertIn(f'/neu/vertraege/{nv.id}/abnahme/neu/?typ=einzug', body)
+
+        # 7) ÜBERGABE an Nachmieter
+        r = c.post(f'/neu/vertraege/{nv.id}/abnahme/neu/?typ=einzug', {
+            'embed': '1', 'typ': 'einzug', 'datum': date.today().isoformat(), 'allgemein_zustand': 'gut'})
+        self.assertIn("fwModal: 'done'", r.content.decode())
+        self.assertTrue(nv.abnahmen.filter(typ='einzug').exists())
+
+        # 8) SCHLUSSABRECHNUNG verbuchen → Schlussabrechnung + Kaution erledigt
+        r = c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/', {
+            'embed': '1', 'aktion': 'buchen', 'auszug_datum': ende.isoformat(),
+            'kaution_verrechnen': 'on'})
+        self.assertIn("fwModal: 'done'", r.content.decode())
+        v.refresh_from_db()
+        self.assertIsNotNone(v.kautions_zurueckbezahlt_am)
+
+        # 9) ERGEBNIS: alle Auszugs-Pendenzen erledigt → Gruppe leer
+        offen = Pendenz.objects.filter(vertrag=v, erledigt=False)
+        self.assertEqual(offen.count(), 0,
+                         f"noch offen: {[p.titel for p in offen]}")

@@ -5060,6 +5060,9 @@ def fw_kuendigung_bestaetigen(request, pk):
     v.save(update_fields=['status', 'aktiv', 'ende'])
 
     n_pendenzen = _auszugscheckliste_anlegen(v, k, per, request.user, mit_leerstand=False)
+    # Bestätigung erfolgt → 'Kündigung schriftlich bestätigen' abhaken
+    from core.services.automation import erledige_pendenzen_fuer
+    erledige_pendenzen_fuer(v, ['schriftlich bestätigen', 'Kündigungsformular versenden'], user=request.user)
     log_aktion(request, "Kündigung bestätigt", str(v.mieter),
                f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen")
     messages.success(request, f"✅ Kündigung bestätigt — Vertragsende {per.strftime('%d.%m.%Y') if per else '—'} · "
@@ -5083,6 +5086,10 @@ def fw_kuendigung_formular(request, pk):
     from core.services.ablage import ablegen
     ablegen(pdf, f"Kündigung {k.get_absender_display()} {k.eingang_datum:%d.%m.%Y}",
             kategorie='vertrag', vertrag=k.vertrag, dedup=True)
+    # Amtliches Formular erstellt → 'schriftlich bestätigen / Formular versenden' abhaken
+    from core.services.automation import erledige_pendenzen_fuer
+    erledige_pendenzen_fuer(k.vertrag, ['schriftlich bestätigen', 'Kündigungsformular versenden'],
+                            user=request.user)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Kuendigung_{k.vertrag.mieter.nachname}.pdf"'
     return resp
