@@ -83,13 +83,18 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 import sys as _sys
 TESTING = ('test' in _sys.argv) or ('pytest' in _sys.argv[0] if _sys.argv else False)
 
+# Clickjacking-Schutz: SAMEORIGIN erlaubt der App, EIGENE Seiten zu framen
+# (Cockpit-Modals laden /neu/-Seiten per iframe) — externes Framing bleibt
+# blockiert. 'DENY' (Django-Default) würde auch die eigenen Popups leer lassen.
+# Modul-Ebene, damit es in JEDER Umgebung gilt (auch DEBUG).
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
 # --- Produktions-Härtung (nur wenn DEBUG=False, damit lokale HTTP-Entwicklung läuft) ---
 if not DEBUG and not TESTING:
     SESSION_COOKIE_SECURE = True          # Session-Cookie nur über HTTPS
     CSRF_COOKIE_SECURE = True             # CSRF-Cookie nur über HTTPS
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_REFERRER_POLICY = 'same-origin'
-    X_FRAME_OPTIONS = 'DENY'              # Clickjacking-Schutz
     # HSTS: Browser merkt sich HTTPS-Pflicht (1 Jahr). Per Env abschaltbar.
     SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True

@@ -1796,3 +1796,36 @@ class SchadenModalTests(TestCase):
         c = Client(); c.force_login(team)
         body = c.get(f'/neu/schaeden/{t.id}/').content.decode()
         self.assertIn('window.self !== window.top', body)   # Chrome wird im iframe versteckt
+
+
+class ModalFramingTests(TestCase):
+    def test_xframe_options_erlaubt_eigene_iframes(self):
+        """X-Frame-Options muss SAMEORIGIN sein — sonst bleiben die Popups leer."""
+        lg, e, m, v = _basis_objekte()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        for url in ('/neu/mieterwechsel/', f'/neu/vertraege/{v.id}/', '/neu/schaeden/'):
+            r = c.get(url)
+            xf = r.headers.get('X-Frame-Options', '')
+            self.assertEqual(xf.upper(), 'SAMEORIGIN', f"{url}: {xf!r}")
+
+    def test_vertragsliste_oeffnet_detail_im_modal(self):
+        lg, e, m, v = _basis_objekte()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/vertraege/').content.decode()
+        self.assertIn(f"fwModalOpenUrl('/neu/vertraege/{v.id}/'", body)
+        self.assertIn('id="fwModal"', body)
+        self.assertNotIn(f"window.location='/neu/vertraege/{v.id}/'", body)
+
+    def test_debitorenliste_ansehen_im_modal(self):
+        from finance.models import DebitorenRechnung
+        lg, e, m, v = _basis_objekte()
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, einheit=e,
+                                         titel='Miete', betrag=Decimal('1700'),
+                                         faellig_am=date.today(), status='offen')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/debitoren/').content.decode()
+        self.assertIn("fwModalOpen(this,'Vertrag')", body)
+        self.assertIn('id="fwModal"', body)
