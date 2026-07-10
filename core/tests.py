@@ -1396,3 +1396,47 @@ class MahnlaufTests(TestCase):
         res = run_mahnlauf(send_email=False, mit_zins=True)
         self.assertGreater(res['zins'], Decimal('0.00'))
         self.assertTrue(DebitorenRechnung.objects.filter(titel__icontains='Verzugszins').exists())
+
+
+class NkAbrechnungVersandTests(TestCase):
+    def _periode(self):
+        from finance.models import AbrechnungsPeriode, NebenkostenBeleg
+        lg = Liegenschaft.objects.create(strasse='NK 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='wohnung', flaeche_m2=Decimal('80'))
+        m = Mieter.objects.create(typ='person', vorname='Nina', nachname='Kosten',
+                                  strasse='Weg 2', plz='8000', ort='ZH', email='nk@example.ch')
+        v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2023, 1, 1),
+                                       netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'),
+                                       status='aktiv', nk_abrechnungsart='akonto')
+        p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='NK 2023',
+                                              start_datum=date(2023, 1, 1), ende_datum=date(2023, 12, 31))
+        NebenkostenBeleg.objects.create(periode=p, text='Heizung', betrag=Decimal('1200'),
+                                        datum=date(2023, 6, 1), verteilschluessel='m2')
+        return lg, e, m, v, p
+
+    def test_sammel_pdf_und_ablage_ins_portal(self):
+        from rentals.models import Dokument
+        from django.contrib.auth.models import User
+        lg, e, m, v, p = self._periode()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        r = c.post(f'/neu/nebenkosten/{p.id}/versand/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r.content.startswith(b'%PDF'))
+        # Einzel-Abrechnung liegt in der Akte -> Portal
+        d = Dokument.objects.filter(vertrag=v, bezeichnung__icontains='Nebenkostenabrechnung').first()
+        self.assertIsNotNone(d)
+        u = User.objects.create_user(username='nk_mieter', password='x'); m.benutzer = u; m.save()
+        mc = Client(); mc.force_login(u)
+        self.assertIn('Nebenkostenabrechnung', mc.get('/mieter/dokumente/').content.decode())
+
+    def test_pdf_generator_einzeln(self):
+        from core.services.nk_abrechnung import generate_nk_pdf_einzeln
+        k = {'verwaltung': None, 'periode': 'NK 2023', 'objekt': 'Weg 2',
+             'adresse': ['Nina Kosten', 'Weg 2', '8000 ZH'],
+             'positionen': [{'kategorie': 'Heizung', 'betrag': Decimal('1200'), 'schluessel': 'm2'}],
+             'total_kosten': Decimal('1200'), 'kosten_anteil': Decimal('1200'),
+             'akonto': Decimal('2400'), 'saldo': Decimal('-1200'), 'nachzahlung': False}
+        pdf = generate_nk_pdf_einzeln(k)
+        self.assertTrue(pdf.startswith(b'%PDF'))

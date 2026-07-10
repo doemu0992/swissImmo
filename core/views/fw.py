@@ -3175,6 +3175,82 @@ def fw_nebenkosten_verbuchen(request, pk):
     return redirect(f'/neu/nebenkosten/{p.id}/')
 
 
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_nebenkosten_versand(request, pk):
+    """Erzeugt je Mieter eine Nebenkosten-Abrechnung (PDF), legt sie in dessen
+    Akte (→ Mieterportal) und liefert alle zusammen als Sammel-PDF."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from django.http import HttpResponse
+    from finance.models import AbrechnungsPeriode
+    from crm.models import Verwaltung
+    from core.utils.billing import berechne_abrechnung
+    from core.services.nk_abrechnung import generate_nk_pdf_einzeln, generate_nk_pdf_sammel
+    from core.services.ablage import ablegen
+    from core.auth import log_aktion
+
+    p = get_object_or_404(AbrechnungsPeriode.objects.select_related('liegenschaft'), id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/nebenkosten/{p.id}/')
+
+    result = berechne_abrechnung(p.id)
+    if result.get('error'):
+        messages.error(request, result['error'])
+        return redirect(f'/neu/nebenkosten/{p.id}/')
+
+    vw = Verwaltung.objects.first()
+    lg = p.liegenschaft
+    periode_str = f"{p.bezeichnung} ({p.start_datum:%d.%m.%Y}–{p.ende_datum:%d.%m.%Y})"
+    positionen = result.get('belege_details', [])
+    total_kosten = result.get('total_kosten', Decimal('0.00'))
+
+    kontexte = []
+    abgelegt = 0
+    for a in result.get('abrechnungen', []):
+        vid = a.get('vertrag_id')
+        if not vid or a.get('typ') == 'leerstand':
+            continue
+        v = Mietvertrag.objects.filter(id=vid).select_related('mieter', 'mitmieter', 'einheit__liegenschaft').first()
+        if not v:
+            continue
+        m = v.mieter
+        namen = m.display_name
+        zweit = (v.mitmieter.display_name if v.mitmieter_id else (v.mitmieter_name or '')).strip()
+        if zweit:
+            namen += f" & {zweit}"
+        adresse = [namen]
+        if m.strasse:
+            adresse.append(m.strasse)
+        if m.plz or m.ort:
+            adresse.append(f"{m.plz or ''} {m.ort or ''}".strip())
+        k = {
+            'verwaltung': vw, 'periode': periode_str,
+            'objekt': f"{lg.strasse}, {lg.plz} {lg.ort} · {v.einheit.bezeichnung}" if lg and v.einheit_id else (v.einheit.bezeichnung if v.einheit_id else ''),
+            'adresse': adresse, 'positionen': positionen, 'total_kosten': total_kosten,
+            'kosten_anteil': a.get('kosten_anteil', 0), 'akonto': a.get('akonto', 0),
+            'saldo': a.get('saldo', 0), 'nachzahlung': a.get('nachzahlung', False),
+        }
+        kontexte.append(k)
+        # Einzel-PDF in die Akte des Mieters (erscheint im Portal)
+        try:
+            einzel = generate_nk_pdf_einzeln(k)
+            if ablegen(einzel, f"Nebenkostenabrechnung {p.bezeichnung}", kategorie='korrespondenz',
+                       vertrag=v, mieter=m, dedup=True):
+                abgelegt += 1
+        except Exception:
+            pass
+
+    if not kontexte:
+        messages.error(request, "Keine abzurechnenden Mieter in dieser Periode gefunden.")
+        return redirect(f'/neu/nebenkosten/{p.id}/')
+
+    log_aktion(request, "NK-Abrechnungen versendet", p.bezeichnung, f"{abgelegt} abgelegt")
+    sammel = generate_nk_pdf_sammel(kontexte)
+    resp = HttpResponse(sammel, content_type='application/pdf')
+    resp['Content-Disposition'] = f'attachment; filename="Nebenkostenabrechnungen_{p.bezeichnung}.pdf"'
+    return resp
+
+
 @rolle_erforderlich(ROLLE_VERWALTUNG)
 def fw_akonto_anpassen(request, pk):
     """Übernimmt die vorgeschlagene neue Akonto-Höhe in die gewählten Verträge

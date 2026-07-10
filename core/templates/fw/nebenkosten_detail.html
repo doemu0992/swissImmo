@@ -22,6 +22,10 @@
     </div>
     <div class="flex items-center gap-2">
         {% if hkvo_angewendet %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-50 text-sky-700" title="Verbrauchsabhängige Heizkostenabrechnung angewendet">HKVO ✓</span>{% endif %}
+        <form method="post" action="/neu/nebenkosten/{{ p.id }}/versand/" title="Erzeugt je Mieter eine Abrechnung, legt sie ins Portal und lädt alle als Sammel-PDF">
+            {% csrf_token %}
+            <button class="text-sm font-semibold bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 px-4 py-1.5 rounded-lg"><i class="fa-solid fa-file-arrow-down mr-1"></i>Abrechnungen erstellen &amp; ablegen</button>
+        </form>
         {% if p.abgeschlossen %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-emerald-50 text-emerald-700">Abgeschlossen</span>
         {% else %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-amber-50 text-amber-700">Offen</span>
         <form method="post" action="/neu/nebenkosten/{{ p.id }}/verbuchen/" onsubmit="return confirm('Abrechnung jetzt verbuchen? Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Periode wird abgeschlossen.');">
