@@ -2184,3 +2184,68 @@ class MietvertragObjektartTests(TestCase):
             'zustellung': 'einschreiben'})
         titel = list(Pendenz.objects.filter(vertrag=v).values_list('titel', flat=True))
         self.assertIn('Amtliches Kündigungsformular versenden', titel)
+
+
+class GewerbeMietzinsTests(TestCase):
+    """Stufe 1+2 Gewerbe: Mietzinsmodell (Staffel/Index) + Mietenlauf-Automatik."""
+
+    def _vertrag(self, modell='fest', typ='gew', netto='2000'):
+        lg = Liegenschaft.objects.create(strasse='Gewerbe 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('2000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Ladenlokal', typ=typ,
+                                   nettomiete_aktuell=Decimal(netto))
+        m = Mieter.objects.create(typ='firma', firmen_name='Muster GmbH')
+        v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
+                                       netto_mietzins=Decimal(netto), nebenkosten=Decimal('200'),
+                                       status='aktiv', mietzins_modell=modell)
+        return lg, e, m, v
+
+    def test_effektiver_mietzins_staffel(self):
+        from rentals.models import Staffelstufe
+        _lg, _e, _m, v = self._vertrag('staffel', netto='2000')
+        Staffelstufe.objects.create(vertrag=v, ab_datum=date(2025, 1, 1), netto_mietzins=Decimal('2100'))
+        Staffelstufe.objects.create(vertrag=v, ab_datum=date(2026, 1, 1), netto_mietzins=Decimal('2200'))
+        self.assertEqual(v.effektiver_netto_mietzins(date(2024, 6, 1)), Decimal('2000'))  # vor 1. Stufe
+        self.assertEqual(v.effektiver_netto_mietzins(date(2025, 6, 1)), Decimal('2100'))
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 6, 1)), Decimal('2200'))
+
+    def test_effektiver_mietzins_fest_und_index(self):
+        _lg, _e, _m, v = self._vertrag('fest', netto='2000')
+        self.assertEqual(v.effektiver_netto_mietzins(date(2030, 1, 1)), Decimal('2000'))
+        _lg, _e, _m, v2 = self._vertrag('index', netto='2000')
+        self.assertEqual(v2.effektiver_netto_mietzins(date(2030, 1, 1)), Decimal('2000'))
+
+    def test_sollstellung_nutzt_staffel(self):
+        from rentals.models import Staffelstufe
+        from finance.models import DebitorenRechnung
+        from core.services.automation import run_sollstellung
+        _seed_konten()
+        _lg, _e, _m, v = self._vertrag('staffel', netto='2000')
+        Staffelstufe.objects.create(vertrag=v, ab_datum=date(2025, 1, 1), netto_mietzins=Decimal('2100'))
+        run_sollstellung(2025, 3)   # März 2025 → Stufe 2100 gilt
+        r = DebitorenRechnung.objects.filter(vertrag=v).order_by('-id').first()
+        self.assertIsNotNone(r)
+        # Betrag = 2100 netto + 200 NK (voller Monat)
+        self.assertEqual(r.betrag, Decimal('2300.00'))
+
+    def test_index_pendenz_bei_gestiegenem_lik(self):
+        from core.services.automation import generate_auto_pendenzen
+        from core.models import Pendenz
+        _lg, _e, _m, v = self._vertrag('index', netto='2000')
+        v.basis_lik_punkte = Decimal('95.0')   # klar unter aktuellem Tabellenwert
+        v.beginn = date(2020, 1, 1)             # Intervall längst erreicht
+        v.save()
+        generate_auto_pendenzen(horizont_tage=120)
+        p = Pendenz.objects.filter(vertrag=v, titel__icontains='Indexmiete anpassen').first()
+        self.assertIsNotNone(p)
+        self.assertIn('Art. 269d', p.beschreibung)
+
+    def test_kein_index_wenn_lik_nicht_gestiegen(self):
+        from core.services.automation import generate_auto_pendenzen
+        from core.models import Pendenz
+        _lg, _e, _m, v = self._vertrag('index', netto='2000')
+        v.basis_lik_punkte = Decimal('999.0')   # unrealistisch hoch → keine Erhöhung
+        v.beginn = date(2020, 1, 1)
+        v.save()
+        generate_auto_pendenzen(horizont_tage=120)
+        self.assertFalse(Pendenz.objects.filter(vertrag=v, titel__icontains='Indexmiete anpassen').exists())

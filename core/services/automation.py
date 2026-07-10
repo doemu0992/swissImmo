@@ -46,7 +46,10 @@ def run_sollstellung(jahr, monat, user=None):
             v_start = max(start_date, v.beginn)
             v_ende = min(end_date, v.ende) if v.ende else end_date
             faktor = Decimal((v_ende - v_start).days + 1) / Decimal(last_day)
-            netto = round((v.netto_mietzins or Decimal('0')) * faktor, 2)
+            # Staffelmiete: den zum Abrechnungsmonat gültigen Netto-Mietzins verwenden
+            # (vorab vereinbart → automatisch). Fest/Index nutzen den Basiswert.
+            basis_netto = v.effektiver_netto_mietzins(start_date)
+            netto = round((basis_netto or Decimal('0')) * faktor, 2)
             nk = round((v.nebenkosten or Decimal('0')) * faktor, 2)
             if netto + nk <= 0:
                 continue
@@ -287,6 +290,37 @@ def generate_auto_pendenzen(horizont_tage=90, user=None):
                 wf.naechste_faelligkeit, 'unterhalt',
                 wf.notiz or f"Wiederkehrende Frist ({wf.get_art_display()}) — Termin planen/erneuern.",
                 liegenschaft=wf.liegenschaft)
+
+    # e) Indexmieten: fällige Indexanpassung erkennen (Art. 269b). Nicht still
+    # umbuchen — Ankündigung mit amtlichem Formular (Art. 269d, 30 Tage Vorlauf).
+    try:
+        from core.services.lik import aktueller_lik_wert
+        _stand, aktuell_pkt, _b = aktueller_lik_wert(live=False)  # Tabellenwert: schnell, offline
+    except Exception:
+        aktuell_pkt = None
+    if aktuell_pkt:
+        for v in (Mietvertrag.objects.filter(status='aktiv', mietzins_modell='index')
+                  .select_related('mieter', 'einheit__liegenschaft')):
+            basis_lik = v.basis_lik_punkte or Decimal('0')
+            if basis_lik <= 0 or not v.einheit_id:
+                continue
+            ref_datum = v.index_letzte_anpassung or v.beginn
+            naechste = _plus_monate(ref_datum, v.index_intervall_monate or 12)
+            if naechste > grenze:
+                continue
+            if Decimal(aktuell_pkt) <= basis_lik:
+                continue   # LIK nicht gestiegen → keine Erhöhung möglich
+            weiter = (v.index_weitergabe_prozent or Decimal('100')) / Decimal('100')
+            faktor = Decimal('1') + (Decimal(aktuell_pkt) - basis_lik) / basis_lik * weiter
+            neuer_netto = (v.netto_mietzins * faktor).quantize(Decimal('0.01'))
+            if neuer_netto <= (v.netto_mietzins or Decimal('0')):
+                continue
+            _ensure(f"auto:index:{v.id}:{naechste.isoformat()}",
+                    f"Indexmiete anpassen: {v.mieter.display_name} ({v.einheit.bezeichnung})",
+                    max(naechste, heute), 'vertrag',
+                    (f"LIK {basis_lik}→{aktuell_pkt} Pkt.: Netto CHF {v.netto_mietzins}→{neuer_netto} "
+                     f"möglich. Mit amtlichem Formular (Art. 269d) ankündigen, 30 Tage vor Termin."),
+                    liegenschaft=v.einheit.liegenschaft, vertrag=v)
 
     return neu
 

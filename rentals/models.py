@@ -72,6 +72,22 @@ class Mietvertrag(models.Model):
     mwst_pflichtig = models.BooleanField("MWST-pflichtig", default=False)             # 🔥 NEU (v.a. Gewerbe)
     mwst_satz = models.DecimalField("MWST-Satz (%)", max_digits=4, decimal_places=1, default=Decimal('8.1'))  # 🔥 NEU (Option Art. 22 MWSTG)
 
+    # --- MIETZINSMODELL (v.a. Geschäftsraum: Index Art. 269b / Staffel Art. 269c) ---
+    MIETZINS_MODELL_CHOICES = [
+        ('fest', 'Fester Mietzins'),
+        ('index', 'Indexmiete (LIK, Art. 269b)'),
+        ('staffel', 'Staffelmiete (Art. 269c)'),
+    ]
+    mietzins_modell = models.CharField("Mietzinsmodell", max_length=10,
+                                       choices=MIETZINS_MODELL_CHOICES, default='fest')
+    zweckbestimmung = models.CharField("Nutzungszweck (Geschäftsraum)", max_length=200,
+                                       blank=True, default='')
+    # Indexmiete: Anteil der LIK-Weitergabe (Geschäftsraum i.d.R. 100 %) + Mindestintervall
+    index_weitergabe_prozent = models.DecimalField("Index-Weitergabe (%)", max_digits=5,
+                                                   decimal_places=1, default=Decimal('100.0'))
+    index_intervall_monate = models.IntegerField("Index-Mindestintervall (Monate)", default=12)
+    index_letzte_anpassung = models.DateField("Letzte Indexanpassung", null=True, blank=True)
+
     # --- KAUTION (Art. 257e OR: Sperrkonto auf Mietername ODER Kautionsversicherung) ---
     KAUTIONSART_CHOICES = [
         ('sperrkonto', 'Sperrkonto (Bankdepot)'),
@@ -144,6 +160,20 @@ class Mietvertrag(models.Model):
         (Art. 257e OR), frei bei Geschäftsräumen/Nebenobjekten."""
         return 3 if self.mietrecht_kategorie == 'wohnen' else None
 
+    def effektiver_netto_mietzins(self, fuer_datum=None):
+        """Netto-Mietzins, der an einem bestimmten Datum gilt. Bei Staffelmiete
+        die zum Stichtag jüngste erreichte Staffelstufe (vorab vereinbart →
+        automatisch), sonst der Basis-Nettomietzins. Index/fest = Basiswert
+        (Indexanpassungen werden separat mit amtlichem Formular angekündigt)."""
+        from datetime import date as _d
+        stichtag = fuer_datum or _d.today()
+        basis = self.netto_mietzins or Decimal('0.00')
+        if self.mietzins_modell != 'staffel' or not self.pk:
+            return basis
+        stufe = (self.staffelstufen.filter(ab_datum__lte=stichtag)
+                 .order_by('-ab_datum').first())
+        return stufe.netto_mietzins if stufe else basis
+
     @property
     def kautions_status(self):
         """offen (keine) / erwartet / einbezahlt / zurueckbezahlt — für das Kautions-Register.
@@ -204,6 +234,24 @@ class Mietvertrag(models.Model):
                     liegenschaft=self.einheit.liegenschaft,
                     datei=self.pdf_datei
                 )
+
+class Staffelstufe(models.Model):
+    """Eine vereinbarte Staffelmietstufe (Art. 269c OR): ab `ab_datum` gilt
+    `netto_mietzins`. Vorab im Vertrag vereinbart → im Mietenlauf automatisch
+    (keine erneute Ankündigung nötig)."""
+    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='staffelstufen')
+    ab_datum = models.DateField("Gültig ab")
+    netto_mietzins = models.DecimalField("Netto-Mietzins ab Stichtag", max_digits=8, decimal_places=2)
+
+    class Meta:
+        db_table = 'core_staffelstufe'
+        ordering = ['ab_datum']
+        verbose_name = "Staffelstufe"
+        verbose_name_plural = "Staffelstufen"
+
+    def __str__(self):
+        return f"ab {self.ab_datum:%d.%m.%Y}: CHF {self.netto_mietzins}"
+
 
 class MietzinsAnpassung(models.Model):
     vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='anpassungen')
