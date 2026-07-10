@@ -1197,3 +1197,41 @@ class EigentuemerReportVersandTests(TestCase):
         Mandant.objects.create(firma_oder_name='Ohne Mail')  # keine E-Mail
         call_command('send_eigentuemer_reports', stdout=io.StringIO())
         self.assertEqual(len(mail.outbox), 0)
+
+
+class SerienbriefMitmieterTests(TestCase):
+    def _paar(self):
+        lg = Liegenschaft.objects.create(strasse='Paar 9', plz='3000', ort='Bern', versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='4.5 Zi', typ='wohnung')
+        m1 = Mieter.objects.create(typ='person', anrede='Herr', vorname='Hans', nachname='Erst',
+                                   strasse='Weg 1', plz='3000', ort='Bern')
+        m2 = Mieter.objects.create(typ='person', anrede='Frau', vorname='Anna', nachname='Zweit')
+        v = Mietvertrag.objects.create(mieter=m1, mitmieter=m2, einheit=e, beginn=date(2024, 1, 1),
+                                       netto_mietzins=Decimal('1200'), nebenkosten=Decimal('150'), status='aktiv')
+        return lg, e, m1, m2, v
+
+    def test_beide_namen_und_kein_doppelbrief(self):
+        from rentals.models import Dokument
+        lg, e, m1, m2, v = self._paar()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        # beide Personen ausgewählt -> nur EIN Brief, beide Namen adressiert
+        r = c.post('/neu/kommunikation/serienbrief/', {
+            'betreff': 'Hausordnung', 'text': 'Guten Tag {name}', 'empfaenger_id': [str(m1.id), str(m2.id)]})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        # genau eine Ablage am Vertrag (nicht zwei)
+        docs = Dokument.objects.filter(vertrag=v, kategorie='korrespondenz')
+        self.assertEqual(docs.count(), 1)
+
+    def test_zweitperson_sieht_brief_im_portal(self):
+        from django.contrib.auth.models import User
+        lg, e, m1, m2, v = self._paar()
+        team = _team_user()
+        tc = Client(); tc.force_login(team)
+        tc.post('/neu/kommunikation/serienbrief/', {
+            'betreff': 'Info Paar', 'text': 'Hallo {name}', 'empfaenger_id': [str(m1.id)]})
+        # Mitmieter (Zweitperson) mit Portal-Login sieht den Brief
+        u = User.objects.create_user(username='zweit_portal', password='x'); m2.benutzer = u; m2.save()
+        mc = Client(); mc.force_login(u)
+        self.assertIn('Brief: Info Paar', mc.get('/mieter/dokumente/').content.decode())

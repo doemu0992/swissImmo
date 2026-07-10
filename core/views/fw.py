@@ -5747,24 +5747,42 @@ def fw_serienbrief_pdf(request):
         'plz': vw.plz if vw else '', 'ort': vw.ort if vw else '',
     }
 
-    # Empfänger auflösen (Adresse + Objekt/Liegenschaft aus aktivem Vertrag)
+    # Empfänger auflösen (Adresse + Objekt/Liegenschaft aus aktivem Vertrag).
+    # Bei 2-Personen-Verträgen werden BEIDE Namen adressiert; sind beide Personen
+    # gewählt, entsteht trotzdem nur EIN Brief (Dedup über Vertrag).
+    from django.db.models import Q as _Q
     empfaenger = []
+    verarbeitete_vertraege = set()
     for mid in ids:
         m = Mieter.objects.filter(id=mid).first()
         if not m:
             continue
-        v = (Mietvertrag.objects.filter(mieter=m, status='aktiv')
-             .select_related('einheit__liegenschaft').first())
-        lg = v.einheit.liegenschaft if v else None
-        empfaenger.append({
-            '_mieter_id': m.id,
-            'name': m.display_name, 'anrede': m.anrede or '',
-            'strasse': m.strasse or (lg.strasse if lg else ''),
-            'plz': m.plz or (lg.plz if lg else ''),
-            'ort': m.ort or (lg.ort if lg else ''),
-            'objekt': (f"{lg.strasse}, {lg.ort} · {v.einheit.bezeichnung}" if v and lg else ''),
-            'liegenschaft': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''),
-        })
+        v = (Mietvertrag.objects.filter(_Q(mieter=m) | _Q(mitmieter=m), status='aktiv')
+             .select_related('einheit__liegenschaft', 'mieter', 'mitmieter').first())
+        if v:
+            if v.id in verarbeitete_vertraege:
+                continue  # zweite Person desselben Vertrags → kein Doppelbrief
+            verarbeitete_vertraege.add(v.id)
+            lg = v.einheit.liegenschaft if v.einheit_id else None
+            prim = v.mieter or m
+            zweit = (v.mitmieter.display_name if v.mitmieter else (v.mitmieter_name or '')).strip()
+            name = prim.display_name + (f" & {zweit}" if zweit else '')
+            empfaenger.append({
+                '_mieter_id': prim.id, '_vertrag_id': v.id,
+                'name': name, 'anrede': prim.anrede or '',
+                'strasse': prim.strasse or (lg.strasse if lg else ''),
+                'plz': prim.plz or (lg.plz if lg else ''),
+                'ort': prim.ort or (lg.ort if lg else ''),
+                'objekt': (f"{lg.strasse}, {lg.ort} · {v.einheit.bezeichnung}" if lg else ''),
+                'liegenschaft': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''),
+            })
+        else:
+            empfaenger.append({
+                '_mieter_id': m.id, '_vertrag_id': None,
+                'name': m.display_name, 'anrede': m.anrede or '',
+                'strasse': m.strasse or '', 'plz': m.plz or '', 'ort': m.ort or '',
+                'objekt': '', 'liegenschaft': '',
+            })
     if not empfaenger:
         messages.error(request, "Keine gültigen Empfänger gefunden.")
         return redirect('fw_kommunikation')
@@ -5785,8 +5803,9 @@ def fw_serienbrief_pdf(request):
         m = Mieter.objects.filter(id=e.get('_mieter_id')).first()
         if not m:
             continue
-        v = (Mietvertrag.objects.filter(mieter=m, status='aktiv').first())
+        v = Mietvertrag.objects.filter(id=e.get('_vertrag_id')).first() if e.get('_vertrag_id') else None
         einzel = generate_serienbrief_pdf(absender, betreff, text, [e], logo_path=logo_path)
+        # Ablage am Vertrag (erscheint im Portal beider Personen) + am Hauptmieter
         if ablegen(einzel, f"Brief: {betreff}", kategorie='korrespondenz', vertrag=v, mieter=m):
             abgelegt += 1
 
