@@ -3,7 +3,7 @@
 <div id="fwModal" class="fixed inset-0 z-[60] hidden">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="fwModalClose()"></div>
     <div class="absolute inset-0 flex items-center justify-center p-3 sm:p-6 pointer-events-none">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl h-[88vh] flex flex-col overflow-hidden pointer-events-auto">
+        <div id="fwModalBox" class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl h-[88vh] flex flex-col overflow-hidden pointer-events-auto">
             <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100 shrink-0">
                 <h2 id="fwModalTitle" class="font-bold text-slate-900">Schritt</h2>
                 <button onclick="fwModalClose()" class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"><i class="fa-solid fa-xmark"></i></button>
@@ -14,17 +14,20 @@
 </div>
 <script>
 var fwModalWasOpen = false;
-function fwModalOpenUrl(url, title) {
+// wide=true → breites Modal (z.B. Vertrag mit Vorschau nebeneinander statt darunter)
+function fwModalOpenUrl(url, title, wide) {
     url += (url.indexOf('?') === -1 ? '?' : '&') + 'embed=1';
     document.getElementById('fwModalTitle').textContent = title || 'Schritt';
+    var box = document.getElementById('fwModalBox');
+    box.style.maxWidth = wide ? 'min(96vw, 1240px)' : '48rem';
     document.getElementById('fwModalFrame').src = url;
     document.getElementById('fwModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     fwModalWasOpen = true;
     return false;   // native Navigation unterdrücken
 }
-function fwModalOpen(link, title) {
-    return fwModalOpenUrl(link.getAttribute('href'), title);
+function fwModalOpen(link, title, wide) {
+    return fwModalOpenUrl(link.getAttribute('href'), title, wide);
 }
 function fwModalClose() {
     if (!fwModalWasOpen) return;

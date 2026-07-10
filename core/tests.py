@@ -1761,7 +1761,7 @@ class MieterwechselCockpitTests(TestCase):
         c = Client(); c.force_login(team)
         body = c.get('/neu/mieterwechsel/').content.decode()
         self.assertIn("fwModalOpen(this,'Bewerbungen')", body)
-        self.assertIn("fwModalOpen(this,'Vertrag erstellen')", body)
+        self.assertIn("fwModalOpen(this,'Vertrag erstellen',true)", body)   # breit
 
     def test_embed_ueberlebt_redirect_via_iframe_kontext(self):
         """base.html blendet den Chrome auch ohne ?embed=1 aus, sobald im iframe
@@ -1827,5 +1827,5 @@ class ModalFramingTests(TestCase):
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/debitoren/').content.decode()
-        self.assertIn("fwModalOpen(this,'Vertrag')", body)
+        self.assertIn("fwModalOpen(this,'Vertrag',true)", body)   # breit für Vorschau daneben
         self.assertIn('id="fwModal"', body)

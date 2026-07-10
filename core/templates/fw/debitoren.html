@@ -135,7 +135,7 @@
                 </td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     <a href="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" class="text-xs text-emerald-600 font-medium hover:underline mr-2" title="QR-Rechnung als PDF"><i class="fa-solid fa-qrcode"></i> QR</a>
-                    {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" onclick="return fwModalOpen(this,'Vertrag')" class="text-xs text-indigo-600 font-medium hover:underline mr-2">Ansehen</a>{% endif %}
+                    {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" onclick="return fwModalOpen(this,'Vertrag',true)" class="text-xs text-indigo-600 font-medium hover:underline mr-2">Ansehen</a>{% endif %}
                     {% if row.r.status != 'storniert' and row.r.status != 'bezahlt' and row.r.status != 'teilbezahlt' %}
                     <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" onsubmit="return confirm('Rechnung „{{ row.r.titel }}" stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.');">
                         {% csrf_token %}

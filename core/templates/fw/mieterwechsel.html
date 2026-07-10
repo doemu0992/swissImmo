@@ -67,8 +67,8 @@
                 {% if not r.nachmieter %}<a href="/neu/bewerbungen/" onclick="return fwModalOpen(this,'Bewerbungen')" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Bewerbungen</a>{% endif %}
                 {% if r.nachmieter_vid %}
                     {% if not r.einzug %}<a href="/neu/vertraege/{{ r.nachmieter_vid }}/abnahme/neu/?typ=einzug" onclick="return fwModalOpen(this,'Wohnungsübergabe')" class="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-key mr-1"></i>Übergabe starten</a>{% endif %}
-                    <a href="/neu/vertraege/{{ r.nachmieter_vid }}/" onclick="return fwModalOpen(this,'Neuer Vertrag')" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Neuer Vertrag</a>
-                {% else %}<a href="/neu/vertraege/neu/" onclick="return fwModalOpen(this,'Vertrag erstellen')" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg">Vertrag erstellen</a>{% endif %}
+                    <a href="/neu/vertraege/{{ r.nachmieter_vid }}/" onclick="return fwModalOpen(this,'Neuer Vertrag',true)" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Neuer Vertrag</a>
+                {% else %}<a href="/neu/vertraege/neu/" onclick="return fwModalOpen(this,'Vertrag erstellen',true)" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg">Vertrag erstellen</a>{% endif %}
             </div>
         </div>
         {% endif %}
