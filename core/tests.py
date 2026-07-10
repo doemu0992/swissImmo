@@ -1772,3 +1772,27 @@ class MieterwechselCockpitTests(TestCase):
         body = c.get('/neu/mieterwechsel/').content.decode()
         self.assertIn('window.self !== window.top', body)
         self.assertIn("classList.add('_embed')", body)
+
+
+class SchadenModalTests(TestCase):
+    def test_schadenliste_oeffnet_detail_im_modal(self):
+        """Die Schadensliste öffnet den Schaden inkl. Workflow im Popup, kein Seitenwechsel."""
+        from tickets.models import SchadenMeldung
+        lg, e, m, v = _basis_objekte()
+        t = SchadenMeldung.objects.create(liegenschaft=lg, titel='Wasserschaden', beschreibung='x')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/schaeden/').content.decode()
+        self.assertIn(f"fwModalOpenUrl('/neu/schaeden/{t.id}/'", body)
+        self.assertIn('id="fwModal"', body)
+        self.assertNotIn(f"window.location='/neu/schaeden/{t.id}/'", body)
+
+    def test_schaden_detail_im_iframe_chromelos(self):
+        """Das Schaden-Detail läuft im Popup chrome-frei (iframe-Kontext-Erkennung)."""
+        from tickets.models import SchadenMeldung
+        lg, e, m, v = _basis_objekte()
+        t = SchadenMeldung.objects.create(liegenschaft=lg, titel='Wasserschaden', beschreibung='x')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get(f'/neu/schaeden/{t.id}/').content.decode()
+        self.assertIn('window.self !== window.top', body)   # Chrome wird im iframe versteckt

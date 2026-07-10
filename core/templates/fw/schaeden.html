@@ -107,7 +107,7 @@
             </thead>
             <tbody class="divide-y divide-slate-50">
             {% for row in rows %}
-            <tr class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="window.location='/neu/schaeden/{{ row.t.id }}/'">
+            <tr class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="fwModalOpenUrl('/neu/schaeden/{{ row.t.id }}/','Schaden #{{ row.t.id }}')">
                 <td class="px-5 py-3.5">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-triangle-exclamation"></i></div>
@@ -135,4 +135,8 @@
         </table>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{% include 'fw/_fwmodal.html' %}
 {% endblock %}

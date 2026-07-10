@@ -82,51 +82,8 @@
     <p class="text-sm text-slate-400 mt-1">Sobald eine Kündigung erfasst ist, erscheint hier der komplette Wechselprozess.</p>
 </div>
 {% endif %}
-
-<!-- Modal für Wechsel-Schritte (Rücknahme / Übergabe / Schlussabrechnung inline) -->
-<div id="fwModal" class="fixed inset-0 z-[60] hidden">
-    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="fwModalClose()"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-3 sm:p-6 pointer-events-none">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl h-[88vh] flex flex-col overflow-hidden pointer-events-auto">
-            <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100 shrink-0">
-                <h2 id="fwModalTitle" class="font-bold text-slate-900">Schritt</h2>
-                <button onclick="fwModalClose()" class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <iframe id="fwModalFrame" class="flex-1 w-full border-0" src="about:blank" title="Wechsel-Schritt"></iframe>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
-<script>
-function fwModalOpen(link, title) {
-    var url = link.getAttribute('href');
-    url += (url.indexOf('?') === -1 ? '?' : '&') + 'embed=1';
-    document.getElementById('fwModalTitle').textContent = title || 'Schritt';
-    document.getElementById('fwModalFrame').src = url;
-    document.getElementById('fwModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    fwModalWasOpen = true;
-    return false;   // native Navigation unterdrücken
-}
-var fwModalWasOpen = false;
-function fwModalClose() {
-    if (!fwModalWasOpen) return;
-    fwModalWasOpen = false;
-    document.getElementById('fwModal').classList.add('hidden');
-    document.getElementById('fwModalFrame').src = 'about:blank';
-    document.body.style.overflow = '';
-    // Nach jedem Schritt das Cockpit auffrischen (Pipeline spiegelt Änderungen)
-    window.location.reload();
-}
-// Signal aus dem eingebetteten Formular: Schritt erledigt → schliessen + Cockpit neu laden
-window.addEventListener('message', function (e) {
-    if (e.data && e.data.fwModal === 'done') fwModalClose();
-});
-// Esc schliesst das Modal
-document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && !document.getElementById('fwModal').classList.contains('hidden')) fwModalClose();
-});
-</script>
+{% include 'fw/_fwmodal.html' %}
 {% endblock %}
