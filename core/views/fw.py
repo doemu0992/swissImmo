@@ -4108,9 +4108,23 @@ def fw_objekt_ausschreiben(request, einheit_id):
     from django.contrib import messages
     from rentals.models import Kuendigung
     from core.auth import log_aktion
+    basis = _global_filter(request)
     e = get_object_or_404(Einheit.objects.select_related('liegenschaft'), id=einheit_id)
+
+    def _kuendigung_ende():
+        k = (Kuendigung.objects.filter(vertrag__einheit=e, status__in=['erfasst', 'bestaetigt'])
+             .order_by('per_datum', 'berechneter_termin').first())
+        return (k.per_datum or k.berechneter_termin) if k else None
+
     if request.method != 'POST':
-        return redirect('/neu/vermarktung/')
+        # GET: Ausschreibungs-Formular (v.a. für das Cockpit-Modal)
+        embed = request.GET.get('embed') == '1'
+        return render(request, 'fw/objekt_ausschreiben.html', {
+            **basis, 'nav': 'mieterwechsel', 'e': e,
+            'verfuegbar_default': (e.verfuegbar_ab or _kuendigung_ende() or timezone.localdate()).isoformat(),
+            'embed_base': ('fw/base_embed.html' if embed else None),
+        })
+
     ziel = request.POST.get('ziel', 'an')
     weiter = request.POST.get('weiter') or '/neu/mieterwechsel/'
     if ziel == 'aus':
@@ -4120,12 +4134,12 @@ def fw_objekt_ausschreiben(request, einheit_id):
         messages.success(request, "Ausschreibung beendet.")
         return redirect(weiter)
 
-    if not e.verfuegbar_ab:
-        # Verfügbarkeitsdatum aus der jüngsten laufenden Kündigung dieser Einheit
-        k = (Kuendigung.objects.filter(vertrag__einheit=e, status__in=['erfasst', 'bestaetigt'])
-             .order_by('per_datum', 'berechneter_termin').first())
-        if k:
-            e.verfuegbar_ab = k.per_datum or k.berechneter_termin
+    # Verfügbarkeitsdatum: aus Formular, sonst aus der Kündigung
+    try:
+        vd = date.fromisoformat(request.POST.get('verfuegbar_ab') or '')
+    except Exception:
+        vd = None
+    e.verfuegbar_ab = vd or e.verfuegbar_ab or _kuendigung_ende()
     notiz = request.POST.get('notiz', '').strip()
     if notiz:
         e.ausschreibung_notiz = notiz
@@ -4133,6 +4147,8 @@ def fw_objekt_ausschreiben(request, einheit_id):
     e.save(update_fields=['zur_ausschreibung', 'verfuegbar_ab', 'ausschreibung_notiz'])
     log_aktion(request, "Objekt ausgeschrieben", str(e),
                f"verfügbar ab {e.verfuegbar_ab or '—'}")
+    if request.POST.get('embed'):
+        return render(request, 'fw/_modal_done.html', {'msg': 'Objekt ausgeschrieben'})
     messages.success(request, "✅ Objekt zur Nachmietersuche ausgeschrieben — erscheint jetzt in der Vermarktung.")
     return redirect(weiter)
 

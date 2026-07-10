@@ -24,10 +24,17 @@
             html._sbc #fwSidebar .sb-logo { justify-content: center; }
             html._sbc #fwSidebar .sb-collapse-icon { transform: rotate(180deg); }
         }
+        /* Embed-Modus (im Modal geladen): Sidebar/Topbar aus, Inhalt füllt das Fenster */
+        html._embed #fwSidebar,
+        html._embed header,
+        html._embed #fwBackdrop { display: none !important; }
+        html._embed main { padding: 1.25rem !important; max-width: none !important; }
     </style>
     <script>
         // Zustand vor dem ersten Paint anwenden (kein Flackern)
         if (localStorage.getItem('sbCollapsed') === '1') document.documentElement.classList.add('_sbc');
+        // Im Modal (?embed=1) geladen → Chrome ausblenden
+        try { if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('_embed'); } catch (e) {}
     </script>
 </head>
 <body class="bg-slate-100 text-slate-900">

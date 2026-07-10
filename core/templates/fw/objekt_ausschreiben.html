@@ -1,0 +1,35 @@
+{% extends embed_base|default:'fw/base.html' %}
+{% block title %}Objekt ausschreiben — {{ e.bezeichnung }}{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-extrabold text-slate-900 mb-1">Objekt ausschreiben</h1>
+<p class="text-sm text-slate-500 mb-6">{{ e.bezeichnung }}, {{ e.liegenschaft.strasse }}, {{ e.liegenschaft.plz }} {{ e.liegenschaft.ort }}</p>
+
+<form method="post" action="/neu/objekte/{{ e.id }}/ausschreiben/" class="max-w-xl space-y-5">
+    {% csrf_token %}
+    <input type="hidden" name="ziel" value="an">
+    {% if embed_base %}<input type="hidden" name="embed" value="1">{% endif %}
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Verfügbar ab</label>
+            <input type="date" name="verfuegbar_ab" value="{{ verfuegbar_default }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <p class="text-[11px] text-slate-400 mt-1">Standard: Endtermin der laufenden Kündigung.</p>
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Vermarktungsnotiz <span class="text-slate-300">(optional)</span></label>
+            <textarea name="notiz" rows="4" placeholder="z. B. renoviert 2024, Balkon nach Süden, ab sofort besichtigbar …" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">{{ e.ausschreibung_notiz }}</textarea>
+        </div>
+        <dl class="grid grid-cols-3 gap-2 text-center pt-1">
+            <div class="rounded-lg bg-slate-50 py-2"><dt class="text-[11px] text-slate-400">Zimmer</dt><dd class="text-sm font-bold text-slate-800">{% if e.zimmer %}{{ e.zimmer }}{% else %}–{% endif %}</dd></div>
+            <div class="rounded-lg bg-slate-50 py-2"><dt class="text-[11px] text-slate-400">Fläche</dt><dd class="text-sm font-bold text-slate-800">{% if e.flaeche_m2 %}{{ e.flaeche_m2|floatformat:0 }} m²{% else %}–{% endif %}</dd></div>
+            <div class="rounded-lg bg-slate-50 py-2"><dt class="text-[11px] text-slate-400">Bruttomiete</dt><dd class="text-sm font-bold text-slate-800">{{ e.nettomiete_aktuell|add:e.nebenkosten_aktuell|floatformat:0 }}</dd></div>
+        </dl>
+    </div>
+
+    <div class="flex items-center justify-end gap-2">
+        <button type="submit" class="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-lg shadow-sm">
+            <i class="fa-solid fa-bullhorn mr-1"></i>Ausschreiben
+        </button>
+    </div>
+</form>
+{% endblock %}

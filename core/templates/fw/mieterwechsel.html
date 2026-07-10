@@ -61,19 +61,14 @@
                     {% if r.ausgeschrieben %}
                     <a href="/neu/vermarktung/" class="text-xs font-semibold text-emerald-700 border border-emerald-200 hover:bg-emerald-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-bullhorn mr-1"></i>Ausgeschrieben</a>
                     {% else %}
-                    <form method="post" action="/neu/objekte/{{ r.einheit_id }}/ausschreiben/" class="inline">
-                        {% csrf_token %}
-                        <input type="hidden" name="ziel" value="an">
-                        <input type="hidden" name="weiter" value="/neu/mieterwechsel/">
-                        <button class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-bullhorn mr-1"></i>Objekt ausschreiben</button>
-                    </form>
+                    <a href="/neu/objekte/{{ r.einheit_id }}/ausschreiben/" onclick="return fwModalOpen(this,'Objekt ausschreiben')" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-bullhorn mr-1"></i>Objekt ausschreiben</a>
                     {% endif %}
                 {% endif %}
-                {% if not r.nachmieter %}<a href="/neu/bewerbungen/" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Bewerbungen</a>{% endif %}
+                {% if not r.nachmieter %}<a href="/neu/bewerbungen/" onclick="return fwModalOpen(this,'Bewerbungen')" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Bewerbungen</a>{% endif %}
                 {% if r.nachmieter_vid %}
                     {% if not r.einzug %}<a href="/neu/vertraege/{{ r.nachmieter_vid }}/abnahme/neu/?typ=einzug" onclick="return fwModalOpen(this,'Wohnungsübergabe')" class="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-key mr-1"></i>Übergabe starten</a>{% endif %}
-                    <a href="/neu/vertraege/{{ r.nachmieter_vid }}/" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Neuer Vertrag</a>
-                {% else %}<a href="/neu/vertraege/neu/" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg">Vertrag erstellen</a>{% endif %}
+                    <a href="/neu/vertraege/{{ r.nachmieter_vid }}/" onclick="return fwModalOpen(this,'Neuer Vertrag')" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Neuer Vertrag</a>
+                {% else %}<a href="/neu/vertraege/neu/" onclick="return fwModalOpen(this,'Vertrag erstellen')" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg">Vertrag erstellen</a>{% endif %}
             </div>
         </div>
         {% endif %}
@@ -112,19 +107,22 @@ function fwModalOpen(link, title) {
     document.getElementById('fwModalFrame').src = url;
     document.getElementById('fwModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    fwModalWasOpen = true;
     return false;   // native Navigation unterdrücken
 }
+var fwModalWasOpen = false;
 function fwModalClose() {
+    if (!fwModalWasOpen) return;
+    fwModalWasOpen = false;
     document.getElementById('fwModal').classList.add('hidden');
     document.getElementById('fwModalFrame').src = 'about:blank';
     document.body.style.overflow = '';
+    // Nach jedem Schritt das Cockpit auffrischen (Pipeline spiegelt Änderungen)
+    window.location.reload();
 }
 // Signal aus dem eingebetteten Formular: Schritt erledigt → schliessen + Cockpit neu laden
 window.addEventListener('message', function (e) {
-    if (e.data && e.data.fwModal === 'done') {
-        fwModalClose();
-        window.location.reload();
-    }
+    if (e.data && e.data.fwModal === 'done') fwModalClose();
 });
 // Esc schliesst das Modal
 document.addEventListener('keydown', function (e) {

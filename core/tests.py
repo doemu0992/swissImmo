@@ -1724,3 +1724,41 @@ class MieterwechselCockpitTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertIn("fwModal: 'done'", r.content.decode())
         self.assertTrue(v.abnahmen.filter(typ='auszug').exists())
+
+    def test_ausschreiben_form_im_modal(self):
+        """'Objekt ausschreiben' öffnet ein Formular im Modal (GET embed), keine stille POST."""
+        lg, e, m, v, k, ende = self._kuendigung()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        # Cockpit verlinkt per Modal
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertIn(f"fwModalOpen(this,'Objekt ausschreiben')", body)
+        # GET embed rendert das Formular ohne Sidebar, Verfügbarkeit vorbelegt aus Kündigung
+        form = c.get(f'/neu/objekte/{e.id}/ausschreiben/?embed=1').content.decode()
+        self.assertNotIn('fwSidebar', form)
+        self.assertIn('name="verfuegbar_ab"', form)
+        self.assertIn(ende.isoformat(), form)
+
+    def test_ausschreiben_embed_post_signalisiert_done(self):
+        lg, e, m, v, k, ende = self._kuendigung()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        r = c.post(f'/neu/objekte/{e.id}/ausschreiben/', {
+            'embed': '1', 'ziel': 'an', 'verfuegbar_ab': ende.isoformat(),
+            'notiz': 'Renoviert 2024',
+        })
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("fwModal: 'done'", r.content.decode())
+        e.refresh_from_db()
+        self.assertTrue(e.zur_ausschreibung)
+        self.assertEqual(e.verfuegbar_ab, ende)
+        self.assertEqual(e.ausschreibung_notiz, 'Renoviert 2024')
+
+    def test_navigations_schritte_oeffnen_im_modal(self):
+        """Bewerbungen / Vertrag erstellen laufen ebenfalls über das Modal."""
+        lg, e, m, v, k, ende = self._kuendigung()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertIn("fwModalOpen(this,'Bewerbungen')", body)
+        self.assertIn("fwModalOpen(this,'Vertrag erstellen')", body)
