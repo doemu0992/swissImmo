@@ -1652,3 +1652,41 @@ class MieterwechselCockpitTests(TestCase):
         c = Client(); c.force_login(team)
         body = c.get('/neu/mieterwechsel/').content.decode()
         self.assertNotIn('/schlussabrechnung/', body)
+
+    def test_objekt_ausschreiben_button_und_verfuegbarkeit(self):
+        """Cockpit bietet 'Objekt ausschreiben'; POST setzt Ausschreibung + Verfügbarkeit."""
+        lg, e, m, v, k, ende = self._kuendigung()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertIn(f'/neu/objekte/{e.id}/ausschreiben/', body)
+        self.assertIn('Objekt ausschreiben', body)
+        # Ausschreiben
+        r = c.post(f'/neu/objekte/{e.id}/ausschreiben/', {'ziel': 'an', 'weiter': '/neu/mieterwechsel/'})
+        self.assertEqual(r.status_code, 302)
+        e.refresh_from_db()
+        self.assertTrue(e.zur_ausschreibung)
+        self.assertEqual(e.verfuegbar_ab, ende)   # aus der Kündigung übernommen
+
+    def test_vermarktungsliste_zeigt_ausgeschriebenes_objekt(self):
+        lg, e, m, v, k, ende = self._kuendigung()
+        e.zur_ausschreibung = True
+        e.verfuegbar_ab = ende
+        e.save()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        r = c.get('/neu/vermarktung/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Teststrasse 1')
+        self.assertContains(r, '3.5 Zi')
+
+    def test_ausschreibung_beenden(self):
+        lg, e, m, v, k, ende = self._kuendigung()
+        e.zur_ausschreibung = True; e.save()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        c.post(f'/neu/objekte/{e.id}/ausschreiben/', {'ziel': 'aus', 'weiter': '/neu/vermarktung/'})
+        e.refresh_from_db()
+        self.assertFalse(e.zur_ausschreibung)
+        # Objekt ist nicht mehr in der Vermarktungsliste
+        self.assertContains(c.get('/neu/vermarktung/'), 'Kein Objekt in der Vermarktung')

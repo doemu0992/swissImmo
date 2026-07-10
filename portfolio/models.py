@@ -90,6 +90,11 @@ class Einheit(models.Model):
     ref_zinssatz = models.DecimalField("Basis Ref.Zins", max_digits=4, decimal_places=2, default=get_current_ref_zins)
     lik_punkte = models.DecimalField("Basis LIK", max_digits=6, decimal_places=1, default=get_current_lik)
 
+    # Vermarktung / Nachmietersuche
+    zur_ausschreibung = models.BooleanField("Zur Ausschreibung", default=False)
+    verfuegbar_ab = models.DateField("Verfügbar ab", null=True, blank=True)
+    ausschreibung_notiz = models.TextField("Vermarktungsnotiz", blank=True, default='')
+
     class Meta:
         verbose_name = "Einheit"
         verbose_name_plural = "Einheiten"

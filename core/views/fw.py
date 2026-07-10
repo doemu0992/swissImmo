@@ -4078,6 +4078,8 @@ def fw_mieterwechsel(request):
             'kaution_offen': kaution_offen, 'kaution_erledigt': kaution_erledigt,
             'kaution_betrag': (v.kautions_betrag if v else None),
             'offene_forderungen': offene_forderungen, 'schluss_offen': schluss_offen,
+            'ausgeschrieben': (e.zur_ausschreibung if e else False),
+            'einheit_id': (e.id if e else None),
             'stufe': stufe, 'farbe': farbe, 'aktion': aktion,
         })
 
@@ -4086,6 +4088,79 @@ def fw_mieterwechsel(request):
         **basis, 'nav': 'mieterwechsel', 'rows': rows,
         'anzahl': len(rows), 'offen': len(offen),
         'dringend': len([r for r in offen if r['tage'] is not None and r['tage'] <= 60]),
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_objekt_ausschreiben(request, einheit_id):
+    """Objekt zur Nachmietersuche ausschreiben (bzw. Ausschreibung beenden).
+    Setzt `zur_ausschreibung` und übernimmt das Verfügbarkeitsdatum aus der
+    laufenden Kündigung, falls noch keins gesetzt ist."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import Kuendigung
+    from core.auth import log_aktion
+    e = get_object_or_404(Einheit.objects.select_related('liegenschaft'), id=einheit_id)
+    if request.method != 'POST':
+        return redirect('/neu/vermarktung/')
+    ziel = request.POST.get('ziel', 'an')
+    weiter = request.POST.get('weiter') or '/neu/mieterwechsel/'
+    if ziel == 'aus':
+        e.zur_ausschreibung = False
+        e.save(update_fields=['zur_ausschreibung'])
+        log_aktion(request, "Ausschreibung beendet", str(e), '')
+        messages.success(request, "Ausschreibung beendet.")
+        return redirect(weiter)
+
+    if not e.verfuegbar_ab:
+        # Verfügbarkeitsdatum aus der jüngsten laufenden Kündigung dieser Einheit
+        k = (Kuendigung.objects.filter(vertrag__einheit=e, status__in=['erfasst', 'bestaetigt'])
+             .order_by('per_datum', 'berechneter_termin').first())
+        if k:
+            e.verfuegbar_ab = k.per_datum or k.berechneter_termin
+    notiz = request.POST.get('notiz', '').strip()
+    if notiz:
+        e.ausschreibung_notiz = notiz
+    e.zur_ausschreibung = True
+    e.save(update_fields=['zur_ausschreibung', 'verfuegbar_ab', 'ausschreibung_notiz'])
+    log_aktion(request, "Objekt ausgeschrieben", str(e),
+               f"verfügbar ab {e.verfuegbar_ab or '—'}")
+    messages.success(request, "✅ Objekt zur Nachmietersuche ausgeschrieben — erscheint jetzt in der Vermarktung.")
+    return redirect(weiter)
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_vermarktung(request):
+    """Vermarktungsliste: alle ausgeschriebenen Objekte mit Eckdaten, Verfügbarkeit
+    und Bewerbungsstand — die Nachmietersuche auf einen Blick."""
+    from mietprozess.models import Mietbewerbung
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    qs = (Einheit.objects.filter(zur_ausschreibung=True)
+          .select_related('liegenschaft').order_by('verfuegbar_ab', 'liegenschaft__strasse'))
+    if aktive_lg:
+        qs = qs.filter(liegenschaft=aktive_lg)
+
+    heute = timezone.localdate()
+    rows = []
+    for e in qs:
+        lg = e.liegenschaft
+        bew = list(Mietbewerbung.objects.filter(einheit=e).exclude(status='abgelehnt'))
+        rows.append({
+            'e': e, 'liegenschaft': lg,
+            'objekt': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else e.bezeichnung),
+            'bezeichnung': e.bezeichnung,
+            'zimmer': e.zimmer, 'flaeche': e.flaeche_m2,
+            'miete': (e.nettomiete_aktuell or Decimal('0')) + (e.nebenkosten_aktuell or Decimal('0')),
+            'netto': e.nettomiete_aktuell, 'nk': e.nebenkosten_aktuell,
+            'verfuegbar_ab': e.verfuegbar_ab,
+            'frei': (e.verfuegbar_ab is None or e.verfuegbar_ab <= heute),
+            'bewerbungen': len(bew),
+            'notiz': e.ausschreibung_notiz,
+        })
+    return render(request, 'fw/vermarktung.html', {
+        **basis, 'nav': 'vermarktung', 'rows': rows, 'anzahl': len(rows),
+        'summe_bewerbungen': sum(r['bewerbungen'] for r in rows),
     })
 
 
