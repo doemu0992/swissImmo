@@ -1341,3 +1341,58 @@ class CamtImportTests(TestCase):
             c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f})
         # trotz zweifachem Import nur EINE Zahlung (Duplikatschutz über Bank-Referenz)
         self.assertEqual(Zahlungseingang.objects.filter(bank_referenz='SAMEREF').count(), 1)
+
+
+class MahnlaufTests(TestCase):
+    def test_verzugszins_art104(self):
+        from core.services.automation import verzugszins
+        # 12'000 × 5% × 360/360 = 600.00
+        self.assertEqual(verzugszins(Decimal('12000'), 360), Decimal('600.00'))
+        # 10'000 × 5% × 90/360 = 125.00
+        self.assertEqual(verzugszins(Decimal('10000'), 90), Decimal('125.00'))
+        self.assertEqual(verzugszins(Decimal('1000'), 0), Decimal('0.00'))
+
+    def test_mahnstufe_nach_tagen(self):
+        from core.services.automation import _stufe_fuer_tage
+        self.assertIsNone(_stufe_fuer_tage(13))
+        self.assertEqual(_stufe_fuer_tage(14), 1)
+        self.assertEqual(_stufe_fuer_tage(30), 2)
+        self.assertEqual(_stufe_fuer_tage(60), 3)
+
+    def _ueberfaellig(self, tage):
+        from django.utils import timezone
+        from finance.models import DebitorenRechnung
+        _lg, _e, _m, v = _basis_objekte()
+        faellig = timezone.localdate() - timedelta(days=tage)
+        return DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=v.einheit.liegenschaft, titel='Miete 01',
+            betrag=Decimal('1700'), datum=faellig, faellig_am=faellig, status='offen')
+
+    def test_mahnung_und_gebuehr(self):
+        from core.services.automation import run_mahnlauf
+        from finance.models import Mahnung, DebitorenRechnung
+        r = self._ueberfaellig(40)   # -> Stufe 2, Gebühr 20
+        res = run_mahnlauf(send_email=False)
+        self.assertEqual(res['gemahnt'], 1)
+        m = Mahnung.objects.get(debitoren_rechnung=r)
+        self.assertEqual(m.stufe, 2)
+        self.assertEqual(m.gebuehr, Decimal('20.00'))
+        # Mahngebühr als eigener Debitor
+        self.assertTrue(DebitorenRechnung.objects.filter(titel__icontains='Mahngebühr').exists())
+
+    def test_idempotent_gleiche_stufe(self):
+        from core.services.automation import run_mahnlauf
+        from finance.models import Mahnung
+        self._ueberfaellig(40)
+        run_mahnlauf(send_email=False)
+        res2 = run_mahnlauf(send_email=False)
+        self.assertEqual(res2['gemahnt'], 0)
+        self.assertEqual(Mahnung.objects.count(), 1)
+
+    def test_mit_verzugszins(self):
+        from core.services.automation import run_mahnlauf
+        from finance.models import DebitorenRechnung
+        self._ueberfaellig(90)   # 90 Tage überfällig -> Stufe 3
+        res = run_mahnlauf(send_email=False, mit_zins=True)
+        self.assertGreater(res['zins'], Decimal('0.00'))
+        self.assertTrue(DebitorenRechnung.objects.filter(titel__icontains='Verzugszins').exists())
