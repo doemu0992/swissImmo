@@ -1521,3 +1521,41 @@ class MwstEstvTests(TestCase):
                           vorsteuer_material=Decimal('0'), vorsteuer_invest=Decimal('0'),
                           methode='saldo', saldosteuersatz=Decimal('5'))
         self.assertEqual(d['z500'], Decimal('500.00'))   # 10000 * 5%
+
+
+class MieterwechselCockpitTests(TestCase):
+    def _kuendigung(self, tage_bis_ende=40):
+        from rentals.models import Kuendigung
+        lg, e, m, v = _basis_objekte()
+        ende = date.today() + timedelta(days=tage_bis_ende)
+        k = Kuendigung.objects.create(vertrag=v, absender='mieter', eingang_datum=date.today(),
+                                      per_datum=ende, berechneter_termin=ende, status='erfasst')
+        return lg, e, m, v, k, ende
+
+    def test_gekuendigt_erscheint(self):
+        lg, e, m, v, k, ende = self._kuendigung()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        r = c.get('/neu/mieterwechsel/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Teststrasse 1')
+        self.assertContains(r, 'Gekündigt')
+
+    def test_nachmietervertrag_erkannt(self):
+        lg, e, m, v, k, ende = self._kuendigung()
+        # Nachmieter-Vertrag auf derselben Einheit ab Ende
+        nm = Mieter.objects.create(typ='person', nachname='Neu')
+        Mietvertrag.objects.create(mieter=nm, einheit=e, beginn=ende + timedelta(days=1),
+                                   netto_mietzins=Decimal('1600'), nebenkosten=Decimal('200'), status='entwurf')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertIn('Nachmieter-Vertrag', body)
+        self.assertIn('Neu', body)
+
+    def test_vollzogene_kuendigung_nicht_gelistet(self):
+        lg, e, m, v, k, ende = self._kuendigung()
+        k.status = 'vollzogen'; k.save()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        self.assertContains(c.get('/neu/mieterwechsel/'), 'Kein laufender Mieterwechsel')

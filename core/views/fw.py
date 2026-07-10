@@ -4005,6 +4005,73 @@ def fw_mandate(request):
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
+def fw_mieterwechsel(request):
+    """Mieterwechsel-Cockpit: alle laufenden Kündigungen als Pipeline
+    Gekündigt → Rücknahme → Nachmieter → neuer Vertrag → Übergabe."""
+    from rentals.models import Kuendigung, Abnahmeprotokoll
+    from mietprozess.models import Mietbewerbung
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.localdate()
+
+    qs = (Kuendigung.objects.filter(status__in=['erfasst', 'bestaetigt'])
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft')
+          .order_by('per_datum', 'berechneter_termin'))
+    if aktive_lg:
+        qs = qs.filter(vertrag__einheit__liegenschaft=aktive_lg)
+
+    rows = []
+    for k in qs:
+        v = k.vertrag
+        e = v.einheit if v else None
+        lg = e.liegenschaft if e else None
+        ende = k.per_datum or k.berechneter_termin
+        tage = (ende - heute).days if ende else None
+
+        # Nachmieter-Vertrag: anderer Vertrag auf derselben Einheit mit Beginn ~ab Ende
+        nachmieter_v = None
+        if e:
+            nachmieter_v = (Mietvertrag.objects.filter(einheit=e)
+                            .exclude(id=v.id)
+                            .filter(beginn__gte=(ende or v.beginn) if ende else v.beginn)
+                            .exclude(status='inaktiv')
+                            .select_related('mieter').order_by('beginn').first())
+        bewerbungen = Mietbewerbung.objects.filter(einheit=e).exclude(status='abgelehnt').count() if e else 0
+        auszug = v.abnahmen.filter(typ='auszug').exists() if v else False
+        einzug = nachmieter_v.abnahmen.filter(typ='einzug').exists() if nachmieter_v else False
+
+        # Pipeline-Stufe + nächste Aktion
+        if einzug:
+            stufe, farbe, aktion = 'Abgeschlossen', 'emerald', '—'
+        elif nachmieter_v:
+            stufe, farbe, aktion = 'Nachmieter-Vertrag', 'sky', 'Übergabe / Einzug planen'
+        elif bewerbungen:
+            stufe, farbe, aktion = 'Bewerbungen', 'indigo', 'Bewerbung prüfen & Vertrag erstellen'
+        elif auszug:
+            stufe, farbe, aktion = 'Rücknahme erfolgt', 'amber', 'Nachmieter suchen'
+        else:
+            stufe, farbe, aktion = 'Gekündigt', 'rose', 'Objekt ausschreiben / Rücknahme planen'
+
+        rows.append({
+            'k': k, 'v': v, 'einheit': e, 'liegenschaft': lg,
+            'objekt': (f"{lg.strasse}, {lg.ort} · {e.bezeichnung}" if lg and e else (e.bezeichnung if e else '—')),
+            'mieter': v.mieter.display_name if v and v.mieter_id else '—',
+            'ende': ende, 'tage': tage,
+            'nachmieter': nachmieter_v.mieter.display_name if nachmieter_v and nachmieter_v.mieter_id else None,
+            'nachmieter_vid': nachmieter_v.id if nachmieter_v else None,
+            'bewerbungen': bewerbungen, 'auszug': auszug, 'einzug': einzug,
+            'stufe': stufe, 'farbe': farbe, 'aktion': aktion,
+        })
+
+    offen = [r for r in rows if r['stufe'] != 'Abgeschlossen']
+    return render(request, 'fw/mieterwechsel.html', {
+        **basis, 'nav': 'mieterwechsel', 'rows': rows,
+        'anzahl': len(rows), 'offen': len(offen),
+        'dringend': len([r for r in offen if r['tage'] is not None and r['tage'] <= 60]),
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
 def fw_stub(request, titel, icon, text, nav=''):
     basis = _global_filter(request)
     return render(request, 'fw/stub.html', {**basis, 'nav': nav, 'titel': titel, 'icon': icon, 'text': text})
