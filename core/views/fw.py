@@ -5545,11 +5545,47 @@ def fw_pendenzen(request):
         p.ueberfaellig = bool(p.faellig_am and p.faellig_am < heute)
         p.ziel_url, p.ziel_label, p.ziel_wide = _pendenz_ziel(p)
 
+    # Nach Bezug gruppieren: pro Vertrag (Auszug/Mieterwechsel) eine Gruppe,
+    # Liegenschafts-Fristen je Liegenschaft, der Rest unter „Allgemein".
+    # So bleiben die je ~8 Auszugs-Pendenzen mehrerer Kündigungen getrennt.
+    from collections import OrderedDict
+    gruppen = OrderedDict()
+
+    def _grp(key, titel, sub, icon, url, wide):
+        if key not in gruppen:
+            gruppen[key] = {'titel': titel, 'sub': sub, 'icon': icon, 'url': url,
+                            'wide': wide, 'pendenzen': [], 'min_faellig': None}
+        return gruppen[key]
+
+    for p in offene:
+        if p.vertrag_id:
+            v = p.vertrag
+            obj = (v.einheit.bezeichnung if v and v.einheit_id else '')
+            strasse = (v.einheit.liegenschaft.strasse if v and v.einheit_id and v.einheit.liegenschaft_id else '')
+            titel = (f"{strasse} · {obj}".strip(' ·') or f"Vertrag #{p.vertrag_id}")
+            g = _grp(f"v{p.vertrag_id}", titel,
+                     (v.mieter.display_name if v and v.mieter_id else ''),
+                     'fa-right-from-bracket', f'/neu/vertraege/{p.vertrag_id}/', True)
+        elif p.liegenschaft_id:
+            g = _grp(f"l{p.liegenschaft_id}", p.liegenschaft.strasse, p.liegenschaft.ort,
+                     'fa-building', f'/neu/liegenschaften/{p.liegenschaft_id}/', True)
+        else:
+            g = _grp('allgemein', 'Allgemein', '', 'fa-list-check', None, False)
+        g['pendenzen'].append(p)
+        if p.faellig_am and (g['min_faellig'] is None or p.faellig_am < g['min_faellig']):
+            g['min_faellig'] = p.faellig_am
+
+    # Gruppen nach frühester Fälligkeit sortieren, „Allgemein" ans Ende
+    from datetime import date as _date
+    gruppen_liste = sorted(
+        gruppen.values(),
+        key=lambda g: (g['titel'] == 'Allgemein', g['min_faellig'] or _date.max))
+
     liegenschaften = Liegenschaft.objects.order_by('strasse')
     from django.contrib import messages
     return render(request, 'fw/pendenzen.html', {
         **basis, 'nav': 'pendenzen', 'auto': auto,
-        'offene': offene, 'erledigte': erledigte,
+        'offene': offene, 'gruppen': gruppen_liste, 'erledigte': erledigte,
         'liegenschaften': liegenschaften, 'heute': heute,
         'kategorien': Pendenz.KATEGORIE_CHOICES,
         'meldung': list(messages.get_messages(request)),

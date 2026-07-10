@@ -1836,6 +1836,40 @@ class PendenzAktionTests(TestCase):
         self.assertIn('Büro aufräumen', body)
         self.assertNotIn("fwModalOpen(this,'Büro aufräumen'", body)
 
+    def test_pendenzen_nach_vertrag_gruppiert(self):
+        """Auszugs-Pendenzen mehrerer Kündigungen erscheinen unter getrennten
+        Überschriften (Objekt), nicht vermischt."""
+        from core.models import Pendenz
+        lg = Liegenschaft.objects.create(strasse='Bahnhofstrasse 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        e1 = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg A', typ='wohnung')
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg B', typ='wohnung')
+        m1 = Mieter.objects.create(typ='person', nachname='Alpha')
+        m2 = Mieter.objects.create(typ='person', nachname='Beta')
+        v1 = Mietvertrag.objects.create(mieter=m1, einheit=e1, beginn=date(2024, 1, 1),
+                                        netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'),
+                                        status='gekuendigt')
+        v2 = Mietvertrag.objects.create(mieter=m2, einheit=e2, beginn=date(2024, 1, 1),
+                                        netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'),
+                                        status='gekuendigt')
+        for v in (v1, v2):
+            Pendenz.objects.create(titel='Wohnungsabnahme durchführen', kategorie='aufgabe',
+                                   vertrag=v, liegenschaft=lg, faellig_am=date.today())
+            Pendenz.objects.create(titel='Kaution abrechnen / freigeben', kategorie='finanzen',
+                                   vertrag=v, liegenschaft=lg, faellig_am=date.today())
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        r = c.get('/neu/pendenzen/')
+        gruppen = r.context['gruppen']
+        # Zwei Vertragsgruppen, je 2 Pendenzen
+        vertragsgruppen = [g for g in gruppen if g['titel'].startswith('Bahnhofstrasse 1')]
+        self.assertEqual(len(vertragsgruppen), 2)
+        for g in vertragsgruppen:
+            self.assertEqual(len(g['pendenzen']), 2)
+        body = r.content.decode()
+        self.assertIn('Whg A', body)
+        self.assertIn('Whg B', body)
+
 
 class SchadenModalTests(TestCase):
     def test_schadenliste_oeffnet_detail_im_modal(self):
