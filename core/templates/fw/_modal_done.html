@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');body{font-family:'Inter',sans-serif;}</style>
+</head>
+<body class="bg-slate-50">
+<div class="min-h-[40vh] flex flex-col items-center justify-center text-center p-8">
+    <span class="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4"><i class="fa-solid fa-circle-check text-2xl"></i></span>
+    <p class="font-bold text-slate-800 text-lg">{{ msg|default:"Erledigt" }}</p>
+    <p class="text-sm text-slate-400 mt-1">Fenster wird geschlossen …</p>
+</div>
+<script>
+    // Elternfenster (Cockpit) informieren: Schritt erledigt → Modal schliessen + neu laden
+    try { window.parent.postMessage({ fwModal: 'done' }, '*'); } catch (e) {}
+</script>
+</body>
+</html>

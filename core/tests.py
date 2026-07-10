@@ -1690,3 +1690,37 @@ class MieterwechselCockpitTests(TestCase):
         self.assertFalse(e.zur_ausschreibung)
         # Objekt ist nicht mehr in der Vermarktungsliste
         self.assertContains(c.get('/neu/vermarktung/'), 'Kein Objekt in der Vermarktung')
+
+    def test_cockpit_oeffnet_schritte_als_modal(self):
+        """Cockpit-Aktionen öffnen die Schritte im Modal (fwModalOpen), nicht per Seitenwechsel."""
+        lg, e, m, v, k, ende = self._kuendigung()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertIn('fwModalOpen(this', body)
+        self.assertIn('id="fwModal"', body)
+        self.assertIn("e.data.fwModal === 'done'", body)
+
+    def test_abnahme_embed_ohne_sidebar(self):
+        """Embed-Formular rendert ohne Sidebar (base_embed) für das Modal."""
+        lg, e, m, v, k, ende = self._kuendigung()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        voll = c.get(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug').content.decode()
+        embed = c.get(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug&embed=1').content.decode()
+        self.assertIn('fwSidebar', voll)          # Vollseite hat Sidebar
+        self.assertNotIn('fwSidebar', embed)       # Embed hat keine Sidebar
+        self.assertIn('name="embed" value="1"', embed)
+
+    def test_abnahme_embed_post_signalisiert_done(self):
+        """POST im Embed-Modus liefert die Modal-Done-Seite (postMessage an Cockpit)."""
+        lg, e, m, v, k, ende = self._kuendigung()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        r = c.post(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug&embed=1', {
+            'embed': '1', 'typ': 'auszug', 'datum': date.today().isoformat(),
+            'allgemein_zustand': 'gut',
+        })
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("fwModal: 'done'", r.content.decode())
+        self.assertTrue(v.abnahmen.filter(typ='auszug').exists())

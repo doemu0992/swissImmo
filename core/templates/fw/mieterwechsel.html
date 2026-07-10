@@ -55,8 +55,8 @@
         <div class="mt-3 flex items-center justify-between gap-3 flex-wrap">
             <div class="text-xs text-slate-500"><i class="fa-solid fa-arrow-right text-indigo-400"></i> Nächster Schritt: <span class="font-semibold text-slate-700">{{ r.aktion }}</span></div>
             <div class="flex gap-2 flex-wrap">
-                {% if not r.auszug %}<a href="/neu/vertraege/{{ r.v.id }}/abnahme/neu/?typ=auszug" class="text-xs font-semibold text-amber-700 border border-amber-200 hover:bg-amber-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-box-open mr-1"></i>Rücknahme starten</a>{% endif %}
-                {% if r.schluss_offen %}<a href="/neu/vertraege/{{ r.v.id }}/schlussabrechnung/{% if r.auszug_prot_id %}?abnahme={{ r.auszug_prot_id }}{% endif %}" class="text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-file-invoice-dollar mr-1"></i>Schlussabrechnung</a>{% endif %}
+                {% if not r.auszug %}<a href="/neu/vertraege/{{ r.v.id }}/abnahme/neu/?typ=auszug" onclick="return fwModalOpen(this,'Wohnungsrücknahme')" class="text-xs font-semibold text-amber-700 border border-amber-200 hover:bg-amber-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-box-open mr-1"></i>Rücknahme starten</a>{% endif %}
+                {% if r.schluss_offen %}<a href="/neu/vertraege/{{ r.v.id }}/schlussabrechnung/{% if r.auszug_prot_id %}?abnahme={{ r.auszug_prot_id }}{% endif %}" onclick="return fwModalOpen(this,'Schlussabrechnung')" class="text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-file-invoice-dollar mr-1"></i>Schlussabrechnung</a>{% endif %}
                 {% if not r.nachmieter and r.einheit_id %}
                     {% if r.ausgeschrieben %}
                     <a href="/neu/vermarktung/" class="text-xs font-semibold text-emerald-700 border border-emerald-200 hover:bg-emerald-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-bullhorn mr-1"></i>Ausgeschrieben</a>
@@ -71,7 +71,7 @@
                 {% endif %}
                 {% if not r.nachmieter %}<a href="/neu/bewerbungen/" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Bewerbungen</a>{% endif %}
                 {% if r.nachmieter_vid %}
-                    {% if not r.einzug %}<a href="/neu/vertraege/{{ r.nachmieter_vid }}/abnahme/neu/?typ=einzug" class="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-key mr-1"></i>Übergabe starten</a>{% endif %}
+                    {% if not r.einzug %}<a href="/neu/vertraege/{{ r.nachmieter_vid }}/abnahme/neu/?typ=einzug" onclick="return fwModalOpen(this,'Wohnungsübergabe')" class="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-key mr-1"></i>Übergabe starten</a>{% endif %}
                     <a href="/neu/vertraege/{{ r.nachmieter_vid }}/" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Neuer Vertrag</a>
                 {% else %}<a href="/neu/vertraege/neu/" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg">Vertrag erstellen</a>{% endif %}
             </div>
@@ -87,4 +87,48 @@
     <p class="text-sm text-slate-400 mt-1">Sobald eine Kündigung erfasst ist, erscheint hier der komplette Wechselprozess.</p>
 </div>
 {% endif %}
+
+<!-- Modal für Wechsel-Schritte (Rücknahme / Übergabe / Schlussabrechnung inline) -->
+<div id="fwModal" class="fixed inset-0 z-[60] hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="fwModalClose()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-3 sm:p-6 pointer-events-none">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl h-[88vh] flex flex-col overflow-hidden pointer-events-auto">
+            <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100 shrink-0">
+                <h2 id="fwModalTitle" class="font-bold text-slate-900">Schritt</h2>
+                <button onclick="fwModalClose()" class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <iframe id="fwModalFrame" class="flex-1 w-full border-0" src="about:blank" title="Wechsel-Schritt"></iframe>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fwModalOpen(link, title) {
+    var url = link.getAttribute('href');
+    url += (url.indexOf('?') === -1 ? '?' : '&') + 'embed=1';
+    document.getElementById('fwModalTitle').textContent = title || 'Schritt';
+    document.getElementById('fwModalFrame').src = url;
+    document.getElementById('fwModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    return false;   // native Navigation unterdrücken
+}
+function fwModalClose() {
+    document.getElementById('fwModal').classList.add('hidden');
+    document.getElementById('fwModalFrame').src = 'about:blank';
+    document.body.style.overflow = '';
+}
+// Signal aus dem eingebetteten Formular: Schritt erledigt → schliessen + Cockpit neu laden
+window.addEventListener('message', function (e) {
+    if (e.data && e.data.fwModal === 'done') {
+        fwModalClose();
+        window.location.reload();
+    }
+});
+// Esc schliesst das Modal
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !document.getElementById('fwModal').classList.contains('hidden')) fwModalClose();
+});
+</script>
 {% endblock %}

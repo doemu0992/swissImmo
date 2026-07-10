@@ -851,6 +851,8 @@ def fw_schlussabrechnung(request, vertrag_id):
                     except Buchungskonto.DoesNotExist:
                         pass
             log_aktion(request, "Schlussabrechnung verbucht", str(v.mieter), f"Saldo CHF {daten['saldo']}")
+            if request.POST.get('embed'):
+                return render(request, 'fw/_modal_done.html', {'msg': 'Schlussabrechnung verbucht'})
             messages.success(request, "✅ Schlussabrechnung verbucht (Kaution abgerechnet"
                              + (", Nachzahlung als Debitor gestellt" if daten['nachzahlung'] else "") + ").")
             return redirect(f'/neu/vertraege/{v.id}/')
@@ -896,6 +898,7 @@ def fw_schlussabrechnung(request, vertrag_id):
         'prefill_positionen': prefill_positionen,
         'auszug_default': (v.ende or timezone.now().date()).isoformat(),
         'abnahmen': v.abnahmen.all(),
+        'embed_base': ('fw/base_embed.html' if request.GET.get('embed') == '1' else None),
     })
 
 
@@ -964,15 +967,20 @@ def fw_abnahme_neu(request, vertrag_id):
                 foto=(fotos.pop(0) if fotos else None),
             )
         log_aktion(request, "Wohnungsabnahme erfasst", str(v.mieter), f"{prot.get_typ_display()} {datum}")
+        if P.get('embed'):
+            typ_txt = prot.get_typ_display()
+            return render(request, 'fw/_modal_done.html', {'msg': f"{typ_txt} erfasst ({prot.maengel.count()} Mängel)"})
         messages.success(request, f"✅ Abnahmeprotokoll erfasst ({prot.maengel.count()} Mängel).")
         return redirect(f'/neu/abnahme/{prot.id}/')
 
+    embed = request.GET.get('embed') == '1'
     return render(request, 'fw/abnahme_neu.html', {
         **basis, 'nav': 'vertraege', 'v': v, 'raeume': ABNAHME_RAEUME,
         'heute': timezone.localdate().isoformat(),
         'verwalter_default': (request.user.get_full_name() or request.user.username),
         'typ_default': (request.GET.get('typ') if request.GET.get('typ') in ('auszug', 'einzug')
                         else ('auszug' if v.status in ('gekuendigt', 'archiviert') else 'einzug')),
+        'embed_base': ('fw/base_embed.html' if embed else None),
     })
 
 

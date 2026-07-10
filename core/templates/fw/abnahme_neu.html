@@ -1,17 +1,20 @@
-{% extends 'fw/base.html' %}
+{% extends embed_base|default:'fw/base.html' %}
 {% block title %}Wohnungsabnahme — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
+{% if not embed_base %}
 <nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/vertraege/{{ v.id }}/" class="hover:text-indigo-600">{{ v.mieter.display_name }}</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>
     <span class="text-slate-600 font-medium">Wohnungsabnahme</span>
 </nav>
+{% endif %}
 
 <h1 class="text-2xl font-extrabold text-slate-900 mb-1">Wohnungsabnahme</h1>
 <p class="text-sm text-slate-500 mb-5">{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ v.mieter.display_name }}</p>
 
 <form method="post" enctype="multipart/form-data" class="max-w-3xl space-y-5">
     {% csrf_token %}
+    {% if embed_base %}<input type="hidden" name="embed" value="1">{% endif %}
 
     <!-- Kopf -->
     <div class="bg-white rounded-xl border border-slate-200 p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
