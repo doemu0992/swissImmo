@@ -21,7 +21,7 @@
             </div>
             <div class="divide-y divide-slate-50">
                 {% for f in auto %}
-                <a href="{{ f.url }}" class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60">
+                <a href="{{ f.url }}" onclick="return fwModalOpen(this,'{{ f.titel|escapejs }}',true)" class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60">
                     <div class="w-9 h-9 rounded-lg bg-{{ f.farbe }}-50 text-{{ f.farbe }}-600 flex items-center justify-center text-sm shrink-0"><i class="fa-solid {{ f.icon }}"></i></div>
                     <div class="min-w-0 flex-1">
                         <div class="text-sm font-medium text-slate-900 truncate">{{ f.titel }}</div>
@@ -49,12 +49,22 @@
                     <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
                         <button class="w-5 h-5 rounded border-2 border-slate-300 hover:border-emerald-500 flex items-center justify-center text-transparent hover:text-emerald-500" title="Als erledigt markieren"><i class="fa-solid fa-check text-[10px]"></i></button>
                     </form>
+                    {% if p.ziel_url %}
+                    <a href="{{ p.ziel_url }}" onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})" class="min-w-0 flex-1 group">
+                        <div class="text-sm font-medium text-slate-900 group-hover:text-indigo-600">{{ p.titel }}</div>
+                        <div class="text-xs text-slate-500">
+                            {{ p.get_kategorie_display }}{% if p.liegenschaft %} · {{ p.liegenschaft.strasse }}{% endif %}{% if p.beschreibung %} · {{ p.beschreibung|truncatechars:60 }}{% endif %}
+                        </div>
+                    </a>
+                    <a href="{{ p.ziel_url }}" onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-2.5 py-1 rounded-lg shrink-0 whitespace-nowrap">{{ p.ziel_label }}</a>
+                    {% else %}
                     <div class="min-w-0 flex-1">
                         <div class="text-sm font-medium text-slate-900">{{ p.titel }}</div>
                         <div class="text-xs text-slate-500">
                             {{ p.get_kategorie_display }}{% if p.liegenschaft %} · {{ p.liegenschaft.strasse }}{% endif %}{% if p.beschreibung %} · {{ p.beschreibung|truncatechars:60 }}{% endif %}
                         </div>
                     </div>
+                    {% endif %}
                     {% if p.faellig_am %}<span class="text-xs font-semibold {% if p.ueberfaellig %}text-rose-600{% else %}text-slate-500{% endif %} shrink-0">{{ p.faellig_am|date:"d.m.Y" }}{% if p.ueberfaellig %} <i class="fa-solid fa-triangle-exclamation"></i>{% endif %}</span>{% endif %}
                     <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" onsubmit="return confirm('Pendenz löschen?');">{% csrf_token %}
                         <button class="text-slate-300 hover:text-rose-500 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
@@ -115,4 +125,8 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{% include 'fw/_fwmodal.html' %}
 {% endblock %}

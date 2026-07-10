@@ -5530,8 +5530,20 @@ def fw_pendenzen(request):
     offene = list(pq.filter(erledigt=False))
     erledigte = list(pq.filter(erledigt=True)[:20])
 
+    def _pendenz_ziel(p):
+        """Verknüpft die Pendenz mit dem passenden Objekt/Schritt (öffnet im Popup)."""
+        q = p.quelle or ''
+        if p.vertrag_id:
+            if q.startswith('auto:ruecknahme:'):
+                return (f'/neu/vertraege/{p.vertrag_id}/abnahme/neu/?typ=auszug', 'Rücknahme starten', False)
+            return (f'/neu/vertraege/{p.vertrag_id}/', 'Vertrag öffnen', True)
+        if p.liegenschaft_id:
+            return (f'/neu/liegenschaften/{p.liegenschaft_id}/', 'Liegenschaft öffnen', True)
+        return (None, None, False)
+
     for p in offene:
         p.ueberfaellig = bool(p.faellig_am and p.faellig_am < heute)
+        p.ziel_url, p.ziel_label, p.ziel_wide = _pendenz_ziel(p)
 
     liegenschaften = Liegenschaft.objects.order_by('strasse')
     from django.contrib import messages

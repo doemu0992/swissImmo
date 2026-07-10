@@ -1801,6 +1801,42 @@ class MieterwechselCockpitTests(TestCase):
         self.assertIn("classList.add('_embed')", body)
 
 
+class PendenzAktionTests(TestCase):
+    def test_ruecknahme_pendenz_verlinkt_abnahme(self):
+        """Eine 'Wohnungsrücknahme planen'-Pendenz verlinkt direkt in die Rücknahme (Popup)."""
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        Pendenz.objects.create(titel='Wohnungsrücknahme planen: Muster', kategorie='vertrag',
+                               quelle=f'auto:ruecknahme:1', vertrag=v, faellig_am=date.today())
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/pendenzen/').content.decode()
+        self.assertIn(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug', body)
+        self.assertIn('Rücknahme starten', body)
+        self.assertIn('id="fwModal"', body)   # öffnet im Popup
+
+    def test_vertrag_pendenz_verlinkt_vertrag(self):
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        Pendenz.objects.create(titel='Vertragsende Muster', kategorie='vertrag',
+                               quelle=f'auto:vertragsende:{v.id}', vertrag=v, faellig_am=date.today())
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/pendenzen/').content.decode()
+        self.assertIn(f"fwModalOpen(this,'Vertragsende Muster',true)", body)
+        self.assertIn('Vertrag öffnen', body)
+
+    def test_freie_pendenz_ohne_link(self):
+        """Eine Pendenz ohne Vertrag/Liegenschaft bleibt ein einfacher Eintrag."""
+        from core.models import Pendenz
+        Pendenz.objects.create(titel='Büro aufräumen', kategorie='aufgabe', faellig_am=date.today())
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/pendenzen/').content.decode()
+        self.assertIn('Büro aufräumen', body)
+        self.assertNotIn("fwModalOpen(this,'Büro aufräumen'", body)
+
+
 class SchadenModalTests(TestCase):
     def test_schadenliste_oeffnet_detail_im_modal(self):
         """Die Schadensliste öffnet den Schaden inkl. Workflow im Popup, kein Seitenwechsel."""
