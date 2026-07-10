@@ -3943,6 +3943,18 @@ def fw_vertrag_neu_speichern(request):
     except Exception:
         anzahl_dok = 0
 
+    # Mietrechtliche Plausibilitätsprüfung (Index ≥ 5 J / Staffel ≥ 3 J,
+    # max. 1 Staffelerhöhung/Jahr) — als Warnung, nicht blockierend.
+    try:
+        from core.services.mietrecht import pruefe_mietzinsmodell, staffel_pruefung
+        _warn = pruefe_mietzinsmodell(_mietzins_modell, vertrag.beginn, vertrag.ende)
+        if _mietzins_modell == 'staffel':
+            _warn += staffel_pruefung(list(vertrag.staffelstufen.all()))
+        for _w in _warn:
+            messages.warning(request, "⚠️ " + _w)
+    except Exception:
+        pass
+
     log_aktion(request, "Mietvertrag erstellt (Assistent)", str(mieter),
                f"{einheit.bezeichnung}, ab {beginn}")
     if anzahl_dok:

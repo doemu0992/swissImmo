@@ -155,8 +155,14 @@ def generate_schlussabrechnung_pdf(vertrag, daten, verwaltung=None):
     c.setFillColor(colors.black)
 
     c.setFont("Helvetica", 10)
-    c.drawString(20*mm, 30*mm, "Freundliche Grüsse")
-    c.setFont("Helvetica-Bold", 10); c.drawString(20*mm, 20*mm, absender)
+    c.drawString(20*mm, 42*mm, "Freundliche Grüsse")
+    c.setFont("Helvetica-Bold", 10); c.drawString(20*mm, 33*mm, absender)
+
+    # Rechtlicher Hinweis (Rückgabe/Mängelrüge + Kaution)
+    c.setFont("Helvetica", 6.5); c.setFillColor(colors.grey)
+    c.drawString(20*mm, 16*mm, "Rückgabe der Mietsache: Art. 267 OR; Prüfung und Mängelrüge des Vermieters: Art. 267a OR.")
+    c.drawString(20*mm, 13*mm, "Mietzinsdepot / Kaution: Art. 257e OR (Freigabe durch die Bank i.d.R. ein Jahr nach Mietende ohne Betreibung/Klage).")
+    c.setFillColor(colors.black)
 
     c.showPage(); c.save(); buffer.seek(0)
     return buffer.read()

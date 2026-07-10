@@ -143,6 +143,11 @@
 {% endif %}
 <p class="note">Im Rahmen der Leistungserbringung werden personenbezogene Daten (Name, E-Mail-Adresse, Angaben zum Mietobjekt) zum Betrieb der Verwaltungs-Plattform verarbeitet. Soweit in diesem Vertrag nichts anderes vereinbart ist, gelten die Bestimmungen des Schweizerischen Obligationenrechts (Art. 253 ff. OR). Gerichtsstand ist der Ort der gemieteten Sache.</p>
 
+<p class="note" style="margin-top:8pt; border-top:0.5pt solid #e2e8f0; padding-top:6pt;"><b>Massgebliche Gesetzesgrundlagen (OR):</b>
+Übergabe Art. 256 · Kaution Art. 257e · Zahlungsverzug Art. 257d · Nebenkosten Art. 257a–257b ·
+Kündigung Art. 266 ff.{% if vertrag.mietrecht_kategorie == 'wohnen' %} (Wohnräume Art. 266c){% elif vertrag.mietrecht_kategorie == 'gewerbe' %} (Geschäftsräume Art. 266d){% endif %},
+Form Art. 266l · Rückgabe Art. 267/267a{% if vertrag.ist_geschuetzt %} · Kündigungsschutz und Erstreckung Art. 271–272d{% endif %}{% if vertrag.mietzins_modell == 'index' %} · Indexklausel Art. 269b, Anpassung Art. 269d{% elif vertrag.mietzins_modell == 'staffel' %} · Staffelmiete Art. 269c{% endif %}.</p>
+
 <table class="sign">
     <tr>
         <td>

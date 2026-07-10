@@ -1,4 +1,5 @@
 {% extends "core/dok_base.html" %}
+{% load mietrecht_tags %}
 {% block inhalt %}
 {% with k=vertrag.kuendigungen.first %}
 <div style="margin-top:6pt;">
@@ -38,6 +39,18 @@ rechtzeitig einen Termin mit Ihnen vereinbaren.</p>
 {% endif %}
 
 <p>Bei Fragen stehen wir Ihnen gerne zur Verfügung.</p>
+
+{% if vertrag.ist_geschuetzt %}
+<div style="margin-top:14pt; padding:8pt 10pt; background:#f8fafc; border:0.5pt solid #e2e8f0; font-size:8pt; color:#64748b;">
+    <b style="color:#334155;">Rechtliche Hinweise.</b>
+    Diese Kündigung kann innert 30 Tagen nach Empfang bei der zuständigen Schlichtungsbehörde
+    angefochten werden ({% art 'anfechtung' %}, {% art 'anfechtung_frist' %}). Zudem kann eine
+    Erstreckung des Mietverhältnisses verlangt werden ({% art 'erstreckung' %}). Die Kündigung
+    des Vermieters erfolgt mit amtlich genehmigtem Formular ({% art 'kuendigung_form' %}){% if vertrag.familienwohnung %};
+    bei einer Familienwohnung ist sie beiden Ehegatten getrennt zuzustellen ({% art 'familienwohnung' %}){% endif %}.
+</div>
+{% endif %}
+
 <p style="margin-top:18pt;">Freundliche Grüsse</p>
 <p style="margin-top:2pt;">{{ vermieter_name }}</p>
 {% endwith %}

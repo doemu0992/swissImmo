@@ -2315,3 +2315,58 @@ class GewerbeWizardTests(TestCase):
                               zweckbestimmung='Büro')
         pdf = generate_vertrag_pdf_bytes(v)
         self.assertTrue(pdf.startswith(b'%PDF'))
+
+
+class MietrechtReferenzTests(TestCase):
+    """Zentrale Gesetzesreferenzen + Validierungen (analysis → software)."""
+
+    def test_artikel_referenzen(self):
+        from core.services import mietrecht
+        self.assertEqual(mietrecht.ref('kaution'), 'Art. 257e OR')
+        self.assertEqual(mietrecht.ref('verzug'), 'Art. 257d OR')
+        self.assertEqual(mietrecht.kuendigung_ref('wohnen'), 'Art. 266c OR')
+        self.assertEqual(mietrecht.kuendigung_ref('gewerbe'), 'Art. 266d OR')
+        self.assertEqual(mietrecht.kuendigung_ref('nebenobjekt', ist_einstellplatz=True), 'Art. 266e OR')
+        self.assertEqual(mietrecht.kuendigung_ref('nebenobjekt', ist_einstellplatz=False), 'Art. 266b OR')
+
+    def test_template_tag(self):
+        from django.template import Template, Context
+        out = Template("{% load mietrecht_tags %}{% art 'indexmiete' %}|{{ 'staffelmiete'|artikel }}").render(Context({}))
+        self.assertEqual(out, 'Art. 269b OR|Art. 269c OR')
+
+    def test_pruefe_mietzinsmodell(self):
+        from core.services.mietrecht import pruefe_mietzinsmodell
+        from datetime import date as d
+        # Index ohne Ende → Warnung
+        self.assertTrue(pruefe_mietzinsmodell('index', d(2024, 1, 1), None))
+        # Index < 5 Jahre → Warnung
+        self.assertTrue(pruefe_mietzinsmodell('index', d(2024, 1, 1), d(2027, 1, 1)))
+        # Index ≥ 5 Jahre → ok
+        self.assertFalse(pruefe_mietzinsmodell('index', d(2024, 1, 1), d(2029, 1, 1)))
+        # Staffel < 3 Jahre → Warnung
+        self.assertTrue(pruefe_mietzinsmodell('staffel', d(2024, 1, 1), d(2025, 6, 1)))
+        # Staffel ≥ 3 Jahre → ok
+        self.assertFalse(pruefe_mietzinsmodell('staffel', d(2024, 1, 1), d(2027, 6, 1)))
+        # Fest → nie Warnung
+        self.assertFalse(pruefe_mietzinsmodell('fest', d(2024, 1, 1), None))
+
+    def test_staffel_max_eine_erhoehung_pro_jahr(self):
+        from core.services.mietrecht import staffel_pruefung
+        from datetime import date as d
+        class S:
+            def __init__(self, dt): self.ab_datum = dt
+        # zwei Stufen < 1 Jahr auseinander → Warnung
+        self.assertTrue(staffel_pruefung([S(d(2025, 1, 1)), S(d(2025, 8, 1))]))
+        # jährlich → ok
+        self.assertFalse(staffel_pruefung([S(d(2025, 1, 1)), S(d(2026, 1, 1)), S(d(2027, 1, 1))]))
+
+    def test_kuendigungsbestaetigung_pdf_mit_zitaten(self):
+        """Die Kündigungsbestätigung rendert (nutzt die Template-Tags)."""
+        from rentals.models import Mietvertrag as MV, Kuendigung
+        from core.services.dokument_service import generate_dokument_pdf_bytes
+        lg, e, m, v = _basis_objekte()
+        Kuendigung.objects.create(vertrag=v, absender='vermieter', eingang_datum=date.today(),
+                                  per_datum=date.today() + timedelta(days=90),
+                                  berechneter_termin=date.today() + timedelta(days=90), status='bestaetigt')
+        pdf = generate_dokument_pdf_bytes(v, 'kuendigungsbestaetigung')
+        self.assertTrue(pdf.startswith(b'%PDF'))
