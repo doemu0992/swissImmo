@@ -1612,3 +1612,27 @@ class MieterwechselCockpitTests(TestCase):
         Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
         generate_auto_pendenzen(horizont_tage=90)
         self.assertFalse(Pendenz.objects.filter(quelle=f'auto:ruecknahme:{k.id}').exists())
+
+    def test_kaution_abrechnen_nach_ruecknahme(self):
+        """Nach der Rücknahme zeigt das Cockpit den Kautions-Abrechnungsschritt."""
+        from rentals.models import Abnahmeprotokoll
+        lg, e, m, v, k, ende = self._kuendigung()   # v hat kautions_betrag 4500, Status 'erwartet'
+        Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertIn('Kaution abrechnen', body)
+        self.assertIn(f'/neu/vertraege/{v.id}/#kaution', body)
+
+    def test_kaution_erledigt_kein_abrechnen(self):
+        """Zurückbezahlte Kaution → kein Abrechnen-Button mehr."""
+        from rentals.models import Abnahmeprotokoll
+        lg, e, m, v, k, ende = self._kuendigung()
+        v.kautions_einbezahlt_am = date(2024, 1, 5)
+        v.kautions_zurueckbezahlt_am = date.today()
+        v.save()
+        Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertNotIn('Kaution abrechnen', body)

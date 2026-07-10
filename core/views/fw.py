@@ -4041,8 +4041,15 @@ def fw_mieterwechsel(request):
         auszug = v.abnahmen.filter(typ='auszug').exists() if v else False
         einzug = nachmieter_v.abnahmen.filter(typ='einzug').exists() if nachmieter_v else False
 
+        # Kaution des ausziehenden Mieters: nach der Rücknahme abrechnen (Art. 257e).
+        kaution_status = v.kautions_status if v else 'keine'
+        kaution_offen = kaution_status in ('erwartet', 'einbezahlt')   # noch nicht abgerechnet
+        kaution_erledigt = kaution_status in ('zurueckbezahlt', 'keine')
+
         # Pipeline-Stufe + nächste Aktion
-        if einzug:
+        if auszug and kaution_offen:
+            stufe, farbe, aktion = 'Kaution abrechnen', 'amber', 'Mietzinsdepot abrechnen (Art. 257e)'
+        elif einzug and kaution_erledigt:
             stufe, farbe, aktion = 'Abgeschlossen', 'emerald', '—'
         elif nachmieter_v:
             stufe, farbe, aktion = 'Nachmieter-Vertrag', 'sky', 'Übergabe / Einzug planen'
@@ -4061,6 +4068,8 @@ def fw_mieterwechsel(request):
             'nachmieter': nachmieter_v.mieter.display_name if nachmieter_v and nachmieter_v.mieter_id else None,
             'nachmieter_vid': nachmieter_v.id if nachmieter_v else None,
             'bewerbungen': bewerbungen, 'auszug': auszug, 'einzug': einzug,
+            'kaution_offen': kaution_offen, 'kaution_erledigt': kaution_erledigt,
+            'kaution_betrag': (v.kautions_betrag if v else None),
             'stufe': stufe, 'farbe': farbe, 'aktion': aktion,
         })
 
