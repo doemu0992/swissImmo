@@ -1235,3 +1235,109 @@ class SerienbriefMitmieterTests(TestCase):
         u = User.objects.create_user(username='zweit_portal', password='x'); m2.benutzer = u; m2.save()
         mc = Client(); mc.force_login(u)
         self.assertIn('Brief: Info Paar', mc.get('/mieter/dokumente/').content.decode())
+
+
+def _seed_konten():
+    from finance.models import Buchungskonto
+    for nr, bez, typ in [('1020', 'Bank', 'bilanz'), ('1100', 'Debitoren', 'bilanz'),
+                         ('3000', 'Mietertrag', 'ertrag'), ('3020', 'NK-Akonto', 'ertrag')]:
+        Buchungskonto.objects.get_or_create(nummer=nr, defaults={'bezeichnung': bez, 'typ': typ})
+
+
+class QrrReferenzTests(TestCase):
+    def test_referenz_27_stellig_mod10(self):
+        from core.utils.qr_code import qrr_referenz
+        raw, fmt = qrr_referenz(5, 42)
+        self.assertEqual(len(raw), 27)
+        self.assertTrue(raw.isdigit())
+        # Prüfziffer mit derselben Mod-10-rekursiv-Tabelle verifizieren
+        tab = [0, 9, 4, 6, 8, 2, 7, 1, 3, 5]
+        u = 0
+        for z in raw[:26]:
+            u = tab[(u + int(z)) % 10]
+        self.assertEqual(int(raw[26]), (10 - u) % 10)
+
+    def test_rechnung_setzt_referenz_automatisch(self):
+        from finance.models import DebitorenRechnung
+        _lg, _e, _m, v = _basis_objekte()
+        r = DebitorenRechnung.objects.create(vertrag=v, titel='Test', betrag=Decimal('100'))
+        r.refresh_from_db()
+        self.assertEqual(len(r.qr_referenz), 27)
+
+
+class SollstellungTests(TestCase):
+    def test_erstellt_und_idempotent(self):
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung
+        _seed_konten()
+        _basis_objekte()  # Vertrag ab 2024-01-01, 1500+200
+        n1 = run_sollstellung(2024, 3)
+        self.assertEqual(n1, 1)
+        r = DebitorenRechnung.objects.get(titel='Miete & NK 03/2024')
+        self.assertEqual(r.betrag, Decimal('1700.00'))
+        # zweiter Lauf erzeugt nichts Neues
+        n2 = run_sollstellung(2024, 3)
+        self.assertEqual(n2, 0)
+        self.assertEqual(DebitorenRechnung.objects.filter(titel='Miete & NK 03/2024').count(), 1)
+
+    def test_pro_rata_bei_einzug_mitte_monat(self):
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung
+        _seed_konten()
+        lg = Liegenschaft.objects.create(strasse='PR 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='wohnung')
+        m = Mieter.objects.create(typ='person', nachname='Prorata')
+        Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 3, 16),
+                                   netto_mietzins=Decimal('3100'), nebenkosten=Decimal('0'), status='aktiv')
+        run_sollstellung(2024, 3)   # März = 31 Tage, ab 16. -> 16/31
+        r = DebitorenRechnung.objects.get(vertrag__mieter=m)
+        self.assertEqual(r.betrag, Decimal('1600.00'))   # 3100 * 16/31 = 1600.00
+
+
+class CamtImportTests(TestCase):
+    def _camt(self, ref, betrag='1700.00', acct_ref='BANKTX1'):
+        return (
+            '<?xml version="1.0"?><Document><BkToCstmrStmt><Stmt><Ntry>'
+            '<CdtDbtInd>CRDT</CdtDbtInd>'
+            f'<Amt Ccy="CHF">{betrag}</Amt>'
+            '<BookgDt><Dt>2024-03-05</Dt></BookgDt>'
+            '<NtryDtls><TxDtls>'
+            f'<Refs><AcctSvcrRef>{acct_ref}</AcctSvcrRef></Refs>'
+            f'<RmtInf><Strd><CdtrRefInf><Ref>{ref}</Ref></CdtrRefInf></Strd></RmtInf>'
+            '</TxDtls></NtryDtls>'
+            '</Ntry></Stmt></BkToCstmrStmt></Document>'
+        ).encode('utf-8')
+
+    def test_zahlung_wird_per_referenz_verbucht(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung, Zahlungseingang
+        _seed_konten()
+        _basis_objekte()
+        run_sollstellung(2024, 3)
+        r = DebitorenRechnung.objects.get(titel='Miete & NK 03/2024')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        f = SimpleUploadedFile('camt.xml', self._camt(r.qr_referenz), content_type='application/xml')
+        resp = c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f})
+        self.assertEqual(resp.status_code, 302)
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'bezahlt')
+        self.assertEqual(Zahlungseingang.objects.filter(debitoren_rechnung=r, status='verbucht').count(), 1)
+
+    def test_duplikat_wird_nicht_doppelt_verbucht(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung, Zahlungseingang
+        _seed_konten()
+        _basis_objekte()
+        run_sollstellung(2024, 3)
+        r = DebitorenRechnung.objects.get(titel='Miete & NK 03/2024')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        for _ in range(2):
+            f = SimpleUploadedFile('camt.xml', self._camt(r.qr_referenz, acct_ref='SAMEREF'),
+                                   content_type='application/xml')
+            c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f})
+        # trotz zweifachem Import nur EINE Zahlung (Duplikatschutz über Bank-Referenz)
+        self.assertEqual(Zahlungseingang.objects.filter(bank_referenz='SAMEREF').count(), 1)
