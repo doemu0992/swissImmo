@@ -1440,3 +1440,84 @@ class NkAbrechnungVersandTests(TestCase):
              'akonto': Decimal('2400'), 'saldo': Decimal('-1200'), 'nachzahlung': False}
         pdf = generate_nk_pdf_einzeln(k)
         self.assertTrue(pdf.startswith(b'%PDF'))
+
+
+class NkNachzahlungQrTests(TestCase):
+    def test_nachzahlung_wird_offene_qr_rechnung_im_portal(self):
+        from finance.models import AbrechnungsPeriode, NebenkostenBeleg, DebitorenRechnung
+        from django.contrib.auth.models import User
+        _seed_konten()
+        vw = Verwaltung.objects.create(firma='V AG', strasse='W 1', plz='8000', ort='ZH',
+                                       iban='CH9300762011623852957')
+        lg = Liegenschaft.objects.create(strasse='NKQ 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='wohnung', flaeche_m2=Decimal('80'))
+        m = Mieter.objects.create(typ='person', nachname='Nach', email='n@example.ch')
+        v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2023, 1, 1),
+                                       netto_mietzins=Decimal('1500'), nebenkosten=Decimal('0'),
+                                       status='aktiv', nk_abrechnungsart='akonto')
+        p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='NK 2023',
+                                              start_datum=date(2023, 1, 1), ende_datum=date(2023, 12, 31))
+        NebenkostenBeleg.objects.create(periode=p, text='Heizung', betrag=Decimal('1200'),
+                                        datum=date(2023, 6, 1), verteilschluessel='m2')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        c.post(f'/neu/nebenkosten/{p.id}/verbuchen/')
+        r = DebitorenRechnung.objects.filter(vertrag=v, titel__icontains='Nachzahlung').first()
+        self.assertIsNotNone(r)
+        self.assertEqual(r.status, 'offen')
+        self.assertEqual(len(r.qr_referenz), 27)
+        # Mieter sieht die Nachzahlung + kann QR-Einzahlschein abrufen
+        u = User.objects.create_user(username='nq_mieter', password='x'); m.benutzer = u; m.save()
+        mc = Client(); mc.force_login(u)
+        self.assertContains(mc.get('/mieter/rechnungen/'), 'Nachzahlung')
+        pdf = mc.get(f'/mieter/rechnung/{r.id}/')
+        self.assertEqual(pdf.status_code, 200)
+        self.assertTrue(pdf.content.startswith(b'%PDF'))
+
+
+class KautionRueckzahlungTests(TestCase):
+    def test_rueckzahlung_mit_einbehalt(self):
+        _lg, _e, _m, v = _basis_objekte()   # kautions_betrag 4500
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        r = c.post(f'/neu/vertraege/{v.id}/kaution/', {
+            'aktion': 'rueckzahlung', 'abzug_betrag': '500', 'abzug_grund': 'Reinigung',
+            'zurueckbezahlt_am': '2025-01-31'})
+        self.assertEqual(r.status_code, 302)
+        v.refresh_from_db()
+        self.assertEqual(v.kautions_abzug_betrag, Decimal('500'))
+        self.assertEqual(v.kautions_rueckzahlung_betrag, Decimal('4000'))   # 4500 - 500
+        self.assertEqual(v.kautions_status, 'zurueckbezahlt')
+
+    def test_einzahlung_setzt_status(self):
+        _lg, _e, _m, v = _basis_objekte()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        c.post(f'/neu/vertraege/{v.id}/kaution/', {'aktion': 'einzahlung', 'einbezahlt_am': '2024-01-05'})
+        v.refresh_from_db()
+        self.assertEqual(v.kautions_status, 'einbezahlt')
+        self.assertIsNotNone(v.kautions_einbezahlt_am)
+
+
+class MwstEstvTests(TestCase):
+    def test_effektiv_zahllast(self):
+        from core.services.mwst_estv import berechne_estv
+        d = berechne_estv(umsatz_steuerbar=Decimal('10000'), umsatzsteuer=Decimal('810'),
+                          vorsteuer_material=Decimal('100'), vorsteuer_invest=Decimal('50'))
+        self.assertEqual(d['z479'], Decimal('150.00'))   # Total Vorsteuer
+        self.assertEqual(d['z500'], Decimal('660.00'))   # 810 - 150 Zahllast
+        self.assertEqual(d['z510'], Decimal('0.00'))
+
+    def test_effektiv_guthaben(self):
+        from core.services.mwst_estv import berechne_estv
+        d = berechne_estv(umsatz_steuerbar=Decimal('1000'), umsatzsteuer=Decimal('100'),
+                          vorsteuer_material=Decimal('300'), vorsteuer_invest=Decimal('0'))
+        self.assertEqual(d['z500'], Decimal('0.00'))
+        self.assertEqual(d['z510'], Decimal('200.00'))   # Guthaben
+
+    def test_saldosteuersatz(self):
+        from core.services.mwst_estv import berechne_estv
+        d = berechne_estv(umsatz_steuerbar=Decimal('10000'), umsatzsteuer=Decimal('0'),
+                          vorsteuer_material=Decimal('0'), vorsteuer_invest=Decimal('0'),
+                          methode='saldo', saldosteuersatz=Decimal('5'))
+        self.assertEqual(d['z500'], Decimal('500.00'))   # 10000 * 5%
