@@ -205,6 +205,29 @@ def send_mieter_portal_zugang(to_email, anrede_name, username, passwort, login_u
     return send_via_hoststar(to_email, betreff, html)
 
 
+def send_report_mail(to_email, betreff, html_inhalt, anhaenge=None):
+    """Sendet eine HTML-Mail mit mehreren PDF-Anhängen. anhaenge = Liste von
+    (dateiname, bytes). Gibt True/False zurück."""
+    if not to_email:
+        return False
+    try:
+        from_email = settings.DEFAULT_FROM_EMAIL
+        reply_addr = os.environ.get('EMAIL_REPLY_USER', 'reply@immoswiss.app')
+        email = EmailMessage(subject=betreff, body=html_inhalt, from_email=from_email,
+                             to=[to_email], reply_to=[reply_addr])
+        email.content_subtype = "html"
+        for name, inhalt in (anhaenge or []):
+            if inhalt:
+                mime = 'application/pdf' if name.lower().endswith('.pdf') else 'application/octet-stream'
+                email.attach(name, inhalt, mime)
+        email.send(fail_silently=False)
+        print(f"✅ Report-Mail an {to_email} ({len(anhaenge or [])} Anhang/Anhänge)")
+        return True
+    except Exception as e:
+        print(f"❌ Report-Mail Fehler: {e}")
+        return False
+
+
 def send_eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma=''):
     """Sendet dem Eigentümer (Mandant) seine Portal-Zugangsdaten. True/False."""
     if not to_email:

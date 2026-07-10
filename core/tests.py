@@ -1160,3 +1160,40 @@ class EigentuemerZugangTests(TestCase):
         body = c.get(f'/neu/mandate/{md.id}/bearbeiten/').content.decode()
         self.assertIn('Eigentümer-Portal-Zugang', body)
         self.assertIn(f'/neu/mandate/{md.id}/portal-zugang/', body)
+
+
+class EigentuemerReportVersandTests(TestCase):
+    def test_command_sendet_mit_anhaengen(self):
+        from django.core import mail
+        from django.core.management import call_command
+        import io
+        lg, e, m, v = _basis_objekte()
+        md = Mandant.objects.create(firma_oder_name='Eig AG', email='eig@example.ch')
+        lg.mandant = md; lg.save()
+        out = io.StringIO()
+        call_command('send_eigentuemer_reports', '--jahr', '2024', stdout=out)
+        self.assertIn('versendet', out.getvalue())
+        self.assertTrue(mail.outbox)
+        msg = mail.outbox[-1]
+        self.assertIn('eig@example.ch', msg.to)
+        # zwei PDF-Anhänge (Report + Steuerauszug)
+        self.assertEqual(len(msg.attachments), 2)
+        namen = [a[0] for a in msg.attachments]
+        self.assertTrue(any('Portfolio-Report' in n for n in namen))
+        self.assertTrue(any('Steuerauszug' in n for n in namen))
+
+    def test_dry_run_sendet_nicht(self):
+        from django.core import mail
+        from django.core.management import call_command
+        import io
+        Mandant.objects.create(firma_oder_name='Eig AG', email='eig@example.ch')
+        call_command('send_eigentuemer_reports', '--dry-run', stdout=io.StringIO())
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_ohne_email_uebersprungen(self):
+        from django.core import mail
+        from django.core.management import call_command
+        import io
+        Mandant.objects.create(firma_oder_name='Ohne Mail')  # keine E-Mail
+        call_command('send_eigentuemer_reports', stdout=io.StringIO())
+        self.assertEqual(len(mail.outbox), 0)
