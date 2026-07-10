@@ -971,7 +971,8 @@ def fw_abnahme_neu(request, vertrag_id):
         **basis, 'nav': 'vertraege', 'v': v, 'raeume': ABNAHME_RAEUME,
         'heute': timezone.localdate().isoformat(),
         'verwalter_default': (request.user.get_full_name() or request.user.username),
-        'typ_default': 'auszug' if v.status in ('gekuendigt', 'archiviert') else 'einzug',
+        'typ_default': (request.GET.get('typ') if request.GET.get('typ') in ('auszug', 'einzug')
+                        else ('auszug' if v.status in ('gekuendigt', 'archiviert') else 'einzug')),
     })
 
 

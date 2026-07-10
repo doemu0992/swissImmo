@@ -52,9 +52,13 @@
         {% if r.aktion != '—' %}
         <div class="mt-3 flex items-center justify-between gap-3 flex-wrap">
             <div class="text-xs text-slate-500"><i class="fa-solid fa-arrow-right text-indigo-400"></i> Nächster Schritt: <span class="font-semibold text-slate-700">{{ r.aktion }}</span></div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-wrap">
+                {% if not r.auszug %}<a href="/neu/vertraege/{{ r.v.id }}/abnahme/neu/?typ=auszug" class="text-xs font-semibold text-amber-700 border border-amber-200 hover:bg-amber-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-box-open mr-1"></i>Rücknahme starten</a>{% endif %}
                 {% if not r.nachmieter %}<a href="/neu/bewerbungen/" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Bewerbungen</a>{% endif %}
-                {% if r.nachmieter_vid %}<a href="/neu/vertraege/{{ r.nachmieter_vid }}/" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Neuer Vertrag</a>{% else %}<a href="/neu/vertraege/neu/" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg">Vertrag erstellen</a>{% endif %}
+                {% if r.nachmieter_vid %}
+                    {% if not r.einzug %}<a href="/neu/vertraege/{{ r.nachmieter_vid }}/abnahme/neu/?typ=einzug" class="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-key mr-1"></i>Übergabe starten</a>{% endif %}
+                    <a href="/neu/vertraege/{{ r.nachmieter_vid }}/" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Neuer Vertrag</a>
+                {% else %}<a href="/neu/vertraege/neu/" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg">Vertrag erstellen</a>{% endif %}
             </div>
         </div>
         {% endif %}

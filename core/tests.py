@@ -1559,3 +1559,56 @@ class MieterwechselCockpitTests(TestCase):
         team = _team_user()
         c = Client(); c.force_login(team)
         self.assertContains(c.get('/neu/mieterwechsel/'), 'Kein laufender Mieterwechsel')
+
+    def test_ruecknahme_aktion_verlinkt_vorgetypt(self):
+        """Cockpit verlinkt die Rücknahme direkt auf den vorgetypten Abnahme-Flow."""
+        lg, e, m, v, k, ende = self._kuendigung()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertIn(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug', body)
+        self.assertIn('Rücknahme starten', body)
+
+    def test_uebergabe_aktion_bei_nachmieter(self):
+        """Sobald ein Nachmietervertrag existiert, verlinkt das Cockpit die Übergabe."""
+        lg, e, m, v, k, ende = self._kuendigung()
+        nm = Mieter.objects.create(typ='person', nachname='Neu')
+        nv = Mietvertrag.objects.create(mieter=nm, einheit=e, beginn=ende + timedelta(days=1),
+                                        netto_mietzins=Decimal('1600'), nebenkosten=Decimal('200'),
+                                        status='entwurf')
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get('/neu/mieterwechsel/').content.decode()
+        self.assertIn(f'/neu/vertraege/{nv.id}/abnahme/neu/?typ=einzug', body)
+        self.assertIn('Übergabe starten', body)
+
+    def test_abnahme_form_uebernimmt_typ_aus_query(self):
+        lg, e, m, v, k, ende = self._kuendigung()
+        team = _team_user()
+        c = Client(); c.force_login(team)
+        body = c.get(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug').content.decode()
+        self.assertIn('<option value="auszug" selected>', body)
+
+    def test_auto_pendenz_ruecknahme(self):
+        """generate_auto_pendenzen legt eine Wohnungsrücknahme-Pendenz je Kündigung an."""
+        from core.services.automation import generate_auto_pendenzen
+        from core.models import Pendenz
+        lg, e, m, v, k, ende = self._kuendigung(tage_bis_ende=40)
+        generate_auto_pendenzen(horizont_tage=90)
+        p = Pendenz.objects.filter(quelle=f'auto:ruecknahme:{k.id}').first()
+        self.assertIsNotNone(p)
+        self.assertIn('Wohnungsrücknahme planen', p.titel)
+        self.assertEqual(p.faellig_am, ende)
+        # Idempotent — kein zweiter Eintrag
+        generate_auto_pendenzen(horizont_tage=90)
+        self.assertEqual(Pendenz.objects.filter(quelle=f'auto:ruecknahme:{k.id}').count(), 1)
+
+    def test_auto_pendenz_ruecknahme_entfaellt_nach_abnahme(self):
+        """Ist die Rücknahme bereits protokolliert, wird keine Pendenz erzeugt."""
+        from core.services.automation import generate_auto_pendenzen
+        from core.models import Pendenz
+        from rentals.models import Abnahmeprotokoll
+        lg, e, m, v, k, ende = self._kuendigung(tage_bis_ende=40)
+        Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        generate_auto_pendenzen(horizont_tage=90)
+        self.assertFalse(Pendenz.objects.filter(quelle=f'auto:ruecknahme:{k.id}').exists())

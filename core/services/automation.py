@@ -174,7 +174,7 @@ def generate_auto_pendenzen(horizont_tage=90, user=None):
     (Vertragsende, Auszug, Geräte-Garantien, Serviceabos). Idempotent über das
     Feld Pendenz.quelle. Gibt die Anzahl neu erstellter Pendenzen zurück."""
     from core.models import Pendenz
-    from rentals.models import Mietvertrag
+    from rentals.models import Mietvertrag, Kuendigung
     from portfolio.models import Geraet, Wartungsfrist
 
     heute = timezone.localdate()
@@ -215,6 +215,27 @@ def generate_auto_pendenzen(horizont_tage=90, user=None):
                 v.ende, 'vertrag',
                 "Wohnungsabnahme, Schlussabrechnung und Kautionsabrechnung vorbereiten.",
                 liegenschaft=v.einheit.liegenschaft if v.einheit_id else None, vertrag=v)
+
+    # b2) Laufende Kündigungen → Wohnungsrücknahme planen (Mieterwechsel-Cockpit).
+    # Nur solange noch kein Auszugs-Protokoll erfasst wurde; die Pendenz fällt
+    # rechtzeitig VOR dem Mietende an (Rücknahme wird üblicherweise am Endtermin
+    # durchgeführt), damit Termin & Nachmietersuche vorbereitet werden können.
+    for k in (Kuendigung.objects.filter(status__in=['erfasst', 'bestaetigt'])
+              .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft')):
+        v = k.vertrag
+        if not v or not v.einheit_id:
+            continue
+        ende = k.per_datum or k.berechneter_termin
+        if not ende or ende < heute or ende > grenze:
+            continue
+        if v.abnahmen.filter(typ='auszug').exists():
+            continue   # Rücknahme bereits durchgeführt
+        _ensure(f"auto:ruecknahme:{k.id}",
+                f"Wohnungsrücknahme planen: {v.mieter.display_name} ({v.einheit.bezeichnung})",
+                ende, 'vertrag',
+                "Kündigung erfasst — Rücknahmetermin vereinbaren, Objekt ausschreiben "
+                "und Nachmieter suchen.",
+                liegenschaft=v.einheit.liegenschaft, vertrag=v)
 
     # c) Geräte-Garantien / Serviceabläufe
     for g in Geraet.objects.filter(garantie_bis__range=[heute, grenze]).select_related('liegenschaft', 'einheit__liegenschaft'):
