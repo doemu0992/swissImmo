@@ -160,6 +160,25 @@ class Mietvertrag(models.Model):
         (Art. 257e OR), frei bei Geschäftsräumen/Nebenobjekten."""
         return 3 if self.mietrecht_kategorie == 'wohnen' else None
 
+    @property
+    def nebenobjekt_kuendigung_note(self):
+        """Korrekte Kündigungs-Rechtsgrundlage für gesondert vermietete
+        Nebenobjekte: Einstellplatz (Art. 266e, 2 Wochen/Monatsende) vs.
+        übrige unbewegliche Sache wie Bastelraum (Art. 266b, 3 Monate)."""
+        if not self.einheit_id or self.mietrecht_kategorie != 'nebenobjekt':
+            return ''
+        gemein = ("Als gesondert vermietetes Objekt (kein Wohn- oder Geschäftsraum) "
+                  "bedarf die Kündigung des Vermieters keines amtlichen Formulars, "
+                  "und es besteht kein Erstreckungsanspruch. ")
+        if self.einheit.ist_einstellplatz:
+            return gemein + ("Für gesondert vermietete Einstellplätze gilt von "
+                             "Gesetzes wegen eine Frist von zwei Wochen auf Ende einer "
+                             "einmonatigen Mietdauer (Art. 266e OR), soweit oben nichts "
+                             "anderes vereinbart ist.")
+        return gemein + ("Es gilt die gesetzliche Frist von drei Monaten auf einen "
+                         "ortsüblichen Termin bzw. das Ende einer dreimonatigen Mietdauer "
+                         "(Art. 266b OR), soweit oben nichts anderes vereinbart ist.")
+
     def effektiver_netto_mietzins(self, fuer_datum=None):
         """Netto-Mietzins, der an einem bestimmten Datum gilt. Bei Staffelmiete
         die zum Stichtag jüngste erreichte Staffelstufe (vorab vereinbart →

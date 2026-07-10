@@ -113,9 +113,17 @@ class Einheit(models.Model):
         'bas': 'Mietvertrag für einen Bastel-/Hobbyraum',
     }
 
+    # Einstellplätze (Art. 266e: 2 Wochen/Monatsende) vs. übrige unbewegliche
+    # Sachen wie Bastelraum (Art. 266b: 3 Monate, ortsüblicher Termin).
+    EINSTELLPLATZ_TYPEN = {'pp', 'gar'}
+
     @property
     def mietrecht_kategorie(self):
         return self.MIETRECHT_KATEGORIE.get(self.typ, 'wohnen')
+
+    @property
+    def ist_einstellplatz(self):
+        return self.typ in self.EINSTELLPLATZ_TYPEN
 
     @property
     def vertrag_titel(self):

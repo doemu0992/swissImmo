@@ -2185,6 +2185,19 @@ class MietvertragObjektartTests(TestCase):
         titel = list(Pendenz.objects.filter(vertrag=v).values_list('titel', flat=True))
         self.assertIn('Amtliches Kündigungsformular versenden', titel)
 
+    def test_kuendigung_note_einstellplatz_vs_bastelraum(self):
+        # Parkplatz/Garage = Einstellplatz → Art. 266e (2 Wochen)
+        for typ in ('pp', 'gar'):
+            _lg, _e, _m, v = self._einheit(typ)
+            self.assertIn('Art. 266e', v.nebenobjekt_kuendigung_note, typ)
+        # Bastelraum = übrige unbewegliche Sache → Art. 266b (3 Monate)
+        _lg, _e, _m, v = self._einheit('bas')
+        self.assertIn('Art. 266b', v.nebenobjekt_kuendigung_note)
+        self.assertNotIn('266e', v.nebenobjekt_kuendigung_note)
+        # Wohnung hat keine Nebenobjekt-Note
+        _lg, _e, _m, v = self._einheit('whg')
+        self.assertEqual(v.nebenobjekt_kuendigung_note, '')
+
 
 class GewerbeMietzinsTests(TestCase):
     """Stufe 1+2 Gewerbe: Mietzinsmodell (Staffel/Index) + Mietenlauf-Automatik."""
