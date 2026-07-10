@@ -1801,6 +1801,34 @@ class MieterwechselCockpitTests(TestCase):
         self.assertIn("classList.add('_embed')", body)
 
 
+class TagesstartCockpitTests(TestCase):
+    def test_heute_zu_tun_zeigt_dringende_pendenz_mit_popup(self):
+        """Fällige Pendenzen erscheinen im 'Heute zu tun' und öffnen im Popup."""
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        Pendenz.objects.create(titel='Rücknahme vorbereiten', kategorie='vertrag',
+                               quelle='auto:ruecknahme:1', vertrag=v, liegenschaft=lg,
+                               faellig_am=date.today())
+        team = _team_user(); c = Client(); c.force_login(team)
+        r = c.get('/neu/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(len(r.context['heute_todo']), 1)
+        body = r.content.decode()
+        self.assertIn('Heute zu tun', body)
+        self.assertIn(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug', body)
+        self.assertIn('id="fwModal"', body)
+
+    def test_ferne_pendenz_nicht_im_heute(self):
+        """Pendenzen weit in der Zukunft (>14 Tage) erscheinen nicht im 'Heute zu tun'."""
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        Pendenz.objects.create(titel='Weit weg', kategorie='aufgabe', vertrag=v,
+                               faellig_am=date.today() + timedelta(days=40))
+        team = _team_user(); c = Client(); c.force_login(team)
+        r = c.get('/neu/')
+        self.assertEqual(len(r.context['heute_todo']), 0)
+
+
 class KuendigungModalTests(TestCase):
     def test_vertragsliste_zeigt_kuendigen_aktion(self):
         lg, e, m, v = _basis_objekte()   # v ist aktiv

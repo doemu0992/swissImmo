@@ -10,7 +10,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, F
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 
@@ -135,6 +135,27 @@ def fw_dashboard(request):
         'portal_kuendigungen': _portal_kuend.count(),
     }
 
+    # --- HEUTE ZU TUN (konkrete, per Popup erledigbare Einträge) ---
+    grenze14 = heute + _timedelta(days=14)
+    dringend_pend = (_pend.filter(Q(faellig_am__lte=grenze14) | Q(faellig_am__isnull=True))
+                     .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft')
+                     .order_by(F('faellig_am').asc(nulls_last=True)))
+    heute_todo = []
+    for p in dringend_pend[:8]:
+        url, label, wide = _pendenz_ziel(p)
+        obj = ''
+        if p.vertrag_id and p.vertrag and p.vertrag.einheit_id:
+            obj = p.vertrag.einheit.bezeichnung
+        elif p.liegenschaft_id:
+            obj = p.liegenschaft.strasse
+        heute_todo.append({
+            'id': p.id, 'titel': p.titel, 'sub': obj,
+            'faellig': p.faellig_am,
+            'ueberfaellig': bool(p.faellig_am and p.faellig_am < heute),
+            'url': url, 'label': label or 'Öffnen', 'wide': wide,
+        })
+    heute_todo_mehr = max(_pend.filter(Q(faellig_am__lte=grenze14) | Q(faellig_am__isnull=True)).count() - 8, 0)
+
     # --- AUFGABEN (bestehende Pendenzen-Engine wiederverwenden) ---
     aufgaben = _berechne_aufgaben(heute, leerstand_objekte.count(), 0, 0)
     # Aufgaben-Ziele auf die neue Oberfläche mappen, wo es ein Pendant gibt
@@ -163,6 +184,8 @@ def fw_dashboard(request):
         'aufgaben': aufgaben,
         'kpis': kpis,
         'cockpit': cockpit,
+        'heute_todo': heute_todo,
+        'heute_todo_mehr': heute_todo_mehr,
     }
     return render(request, 'fw/dashboard.html', context)
 
@@ -5536,6 +5559,19 @@ def _auto_fristen(aktive_lg, horizont_tage=90):
     return fristen
 
 
+def _pendenz_ziel(p):
+    """Verknüpft eine Pendenz mit dem passenden Objekt/Schritt (öffnet im Popup).
+    Rückgabe: (url, label, wide). Modulweit nutzbar (Pendenzen-Seite + Dashboard)."""
+    q = p.quelle or ''
+    if p.vertrag_id:
+        if q.startswith('auto:ruecknahme:'):
+            return (f'/neu/vertraege/{p.vertrag_id}/abnahme/neu/?typ=auszug', 'Rücknahme starten', False)
+        return (f'/neu/vertraege/{p.vertrag_id}/', 'Vertrag öffnen', True)
+    if p.liegenschaft_id:
+        return (f'/neu/liegenschaften/{p.liegenschaft_id}/', 'Liegenschaft öffnen', True)
+    return (None, None, False)
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_pendenzen(request):
     from core.models import Pendenz
@@ -5551,17 +5587,6 @@ def fw_pendenzen(request):
         pq = pq.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg) | Q(liegenschaft__isnull=True, vertrag__isnull=True))
     offene = list(pq.filter(erledigt=False))
     erledigte = list(pq.filter(erledigt=True)[:20])
-
-    def _pendenz_ziel(p):
-        """Verknüpft die Pendenz mit dem passenden Objekt/Schritt (öffnet im Popup)."""
-        q = p.quelle or ''
-        if p.vertrag_id:
-            if q.startswith('auto:ruecknahme:'):
-                return (f'/neu/vertraege/{p.vertrag_id}/abnahme/neu/?typ=auszug', 'Rücknahme starten', False)
-            return (f'/neu/vertraege/{p.vertrag_id}/', 'Vertrag öffnen', True)
-        if p.liegenschaft_id:
-            return (f'/neu/liegenschaften/{p.liegenschaft_id}/', 'Liegenschaft öffnen', True)
-        return (None, None, False)
 
     for p in offene:
         p.ueberfaellig = bool(p.faellig_am and p.faellig_am < heute)

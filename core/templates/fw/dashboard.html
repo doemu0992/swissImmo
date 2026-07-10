@@ -10,6 +10,39 @@
     <a href="/neu/" class="ml-2 text-xs text-slate-400 hover:text-indigo-600">× Filter aufheben</a></p>
 {% endif %}
 
+<!-- ================= HEUTE ZU TUN (konkrete Aufgaben, Popup) ================= -->
+{% if heute_todo %}
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-5">
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+        <div class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-sun text-amber-500 mr-1.5"></i>Heute zu tun</div>
+        <a href="/neu/pendenzen/" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Alle Pendenzen</a>
+    </div>
+    <div class="divide-y divide-slate-50">
+        {% for t in heute_todo %}
+        <div class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60">
+            <span class="w-2 h-2 rounded-full shrink-0 {% if t.ueberfaellig %}bg-rose-500{% else %}bg-amber-400{% endif %}"></span>
+            {% if t.url %}
+            <a href="{{ t.url }}" onclick="return fwModalOpen(this,'{{ t.titel|escapejs }}',{% if t.wide %}true{% else %}false{% endif %})" class="min-w-0 flex-1 group">
+                <div class="text-sm font-medium text-slate-900 group-hover:text-indigo-600 truncate">{{ t.titel }}</div>
+                {% if t.sub %}<div class="text-xs text-slate-400 truncate">{{ t.sub }}</div>{% endif %}
+            </a>
+            {% else %}
+            <div class="min-w-0 flex-1">
+                <div class="text-sm font-medium text-slate-900 truncate">{{ t.titel }}</div>
+                {% if t.sub %}<div class="text-xs text-slate-400 truncate">{{ t.sub }}</div>{% endif %}
+            </div>
+            {% endif %}
+            {% if t.faellig %}<span class="text-xs font-semibold shrink-0 {% if t.ueberfaellig %}text-rose-600{% else %}text-slate-500{% endif %}">{{ t.faellig|date:"d.m.Y" }}{% if t.ueberfaellig %} <i class="fa-solid fa-triangle-exclamation"></i>{% endif %}</span>{% endif %}
+            {% if t.url %}<a href="{{ t.url }}" onclick="return fwModalOpen(this,'{{ t.titel|escapejs }}',{% if t.wide %}true{% else %}false{% endif %})" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-2.5 py-1 rounded-lg shrink-0 whitespace-nowrap">{{ t.label }}</a>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% if heute_todo_mehr %}
+    <a href="/neu/pendenzen/" class="block px-5 py-2.5 text-center text-xs font-semibold text-slate-500 hover:text-indigo-600 border-t border-slate-100">+ {{ heute_todo_mehr }} weitere in den nächsten 14 Tagen</a>
+    {% endif %}
+</div>
+{% endif %}
+
 <!-- ================= COCKPIT: WAS IST ZU TUN? ================= -->
 {% if cockpit.pendenzen or cockpit.debitoren_n or cockpit.freigaben or cockpit.fristen or cockpit.portal_kuendigungen %}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
@@ -249,4 +282,5 @@ function zeigeTab(name) {
     });
 }
 </script>
+{% include 'fw/_fwmodal.html' %}
 {% endblock %}
