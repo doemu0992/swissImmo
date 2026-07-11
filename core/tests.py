@@ -2886,6 +2886,25 @@ class FristenKalenderTests(TestCase):
         call_command('fristen_digest')
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_taeglicher_lauf_sendet_digest_am_wochentag(self):
+        from django.core.management import call_command
+        from django.core import mail
+        from django.utils import timezone
+        from django.contrib.auth.models import User, Group
+        grp, _ = Group.objects.get_or_create(name='Verwaltung')
+        u = User.objects.create_user('chef3', password='x', email='c3@example.ch'); u.groups.add(grp)
+        self._frist('Frist morgen', 2)
+        wd = timezone.localdate().weekday()
+        call_command('taeglicher_lauf', '--digest-weekday', str(wd))
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_taeglicher_lauf_ohne_digest(self):
+        from django.core.management import call_command
+        from django.core import mail
+        self._frist('Frist morgen', 2)
+        call_command('taeglicher_lauf', '--digest-weekday', '-1')
+        self.assertEqual(len(mail.outbox), 0)
+
 
 class DashboardKritischTests(TestCase):
     """Dashboard-Widget: letzte kritische Logbuch-Aktionen (nur Verwaltung)."""
