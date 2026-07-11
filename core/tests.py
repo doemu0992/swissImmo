@@ -2801,6 +2801,58 @@ class FristenCenterTests(TestCase):
         self.assertNotContains(r, 'Manuelle Aufgabe')
 
 
+class FristenKalenderTests(TestCase):
+    """iCal-Export (Download + Feed) und wöchentliches Fristen-Mail."""
+
+    def _frist(self, titel, tage):
+        from core.models import Pendenz
+        return Pendenz.objects.create(titel=titel, kategorie='frist',
+                                      faellig_am=date.today() + timedelta(days=tage))
+
+    def test_ics_download(self):
+        self._frist('Kündigungstermin Muster', 5)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/fristen/export.ics')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('text/calendar', r['Content-Type'])
+        body = r.content.decode('utf-8')
+        self.assertIn('BEGIN:VCALENDAR', body)
+        self.assertIn('BEGIN:VEVENT', body)
+        self.assertIn('Kündigungstermin Muster', body)
+
+    def test_feed_token(self):
+        from core.services.ical import feed_token
+        self._frist('Frist X', 3)
+        c = Client()  # ohne Login
+        # gültiger Token
+        r = c.get(f'/fristen.ics?token={feed_token()}')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('BEGIN:VCALENDAR', r.content.decode('utf-8'))
+        # ungültiger Token
+        r2 = c.get('/fristen.ics?token=falsch')
+        self.assertEqual(r2.status_code, 403)
+
+    def test_fristen_digest_mail(self):
+        from django.core.management import call_command
+        from django.core import mail
+        from django.contrib.auth.models import User, Group
+        grp, _ = Group.objects.get_or_create(name='Verwaltung')
+        u = User.objects.create_user(username='chef2', password='x', email='chef@example.ch')
+        u.groups.add(grp)
+        self._frist('Zahlungsfrist läuft ab', 2)
+        self._frist('Alte Frist', -5)
+        call_command('fristen_digest', '--tage', '7')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('chef@example.ch', mail.outbox[0].to)
+        self.assertIn('überfällig', mail.outbox[0].subject)
+
+    def test_fristen_digest_ohne_fristen(self):
+        from django.core.management import call_command
+        from django.core import mail
+        call_command('fristen_digest')
+        self.assertEqual(len(mail.outbox), 0)
+
+
 class DashboardKritischTests(TestCase):
     """Dashboard-Widget: letzte kritische Logbuch-Aktionen (nur Verwaltung)."""
 

@@ -6,7 +6,29 @@
     <div class="flex items-center gap-2 text-sm">
         <a href="/neu/fristen/" class="px-3 py-2 rounded-lg font-semibold {% if not nur_frist %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">Alle</a>
         <a href="/neu/fristen/?nur=frist" class="px-3 py-2 rounded-lg font-semibold {% if nur_frist %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">Nur gesetzliche Fristen</a>
+        <button type="button" onclick="document.getElementById('kalender-box').classList.toggle('hidden')"
+                class="px-3 py-2 rounded-lg font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">
+            <i class="fa-regular fa-calendar-plus mr-1"></i>Kalender
+        </button>
     </div>
+</div>
+
+<!-- Kalender-Export / Abo -->
+<div id="kalender-box" class="hidden bg-white rounded-xl border border-slate-200 p-4 mb-5">
+    <div class="flex items-center gap-2 mb-3">
+        <a href="/neu/fristen/export.ics" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-3.5 py-2 rounded-lg">
+            <i class="fa-solid fa-download"></i> .ics herunterladen
+        </a>
+        <span class="text-xs text-slate-400">einmaliger Import in Outlook / Apple / Google Calendar</span>
+    </div>
+    <label class="block text-xs font-semibold text-slate-500 mb-1">Kalender abonnieren (aktualisiert sich automatisch)</label>
+    <div class="flex items-center gap-2">
+        <input id="feed-url" readonly value="{{ request.scheme }}://{{ request.get_host }}/fristen.ics?token={{ feed_token|urlencode }}"
+               class="flex-1 bg-slate-100 rounded-lg text-xs px-3 py-2 font-mono text-slate-600">
+        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feed-url').value); this.textContent='Kopiert ✓';"
+                class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg whitespace-nowrap">Kopieren</button>
+    </div>
+    <p class="text-[11px] text-slate-400 mt-1.5">Im Kalender „Abonnement/Kalender per URL hinzufügen" wählen und diese Adresse einfügen. Der Token ist geheim — nicht weitergeben.</p>
 </div>
 <p class="text-sm text-slate-500 mb-6">Alle datierten offenen Fristen chronologisch — Kündigungstermine, Anfechtungs-,
     Zahlungs- und Wartungsfristen, Referenzzins, Vertragsenden. {{ gesamt }} Fristen{% if ueberfaellig_n %} · <span class="text-rose-600 font-semibold">{{ ueberfaellig_n }} überfällig</span>{% endif %}.</p>

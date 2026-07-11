@@ -6006,11 +6006,49 @@ def fw_fristen(request):
         {'key': 'spaeter', 'titel': 'Später', 'icon': 'fa-calendar',
          'cls': 'text-slate-500', 'items': [e for e in eintraege if e['faellig'] > grenze_monat]},
     ]
+    from core.services.ical import feed_token
     return render(request, 'fw/fristen.html', {
         **basis, 'nav': 'fristen', 'buckets': buckets, 'heute': heute,
         'gesamt': len(eintraege), 'nur_frist': nur_frist,
         'ueberfaellig_n': len(buckets[0]['items']),
+        'feed_token': feed_token(),
     })
+
+
+def _offene_fristen_pendenzen(aktive_lg=None):
+    """Alle offenen, datierten Pendenzen (optional auf eine Liegenschaft gefiltert)."""
+    from core.models import Pendenz
+    pq = (Pendenz.objects.filter(erledigt=False, faellig_am__isnull=False)
+          .select_related('liegenschaft', 'vertrag__mieter'))
+    if aktive_lg:
+        pq = pq.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg)
+                       | Q(liegenschaft__isnull=True, vertrag__isnull=True))
+    return pq.order_by('faellig_am')
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_fristen_ical(request):
+    """Fristen als .ics herunterladen (zum Import in den Kalender)."""
+    from django.http import HttpResponse
+    from core.services.ical import build_ics, fristen_events
+    basis = _global_filter(request)
+    ics = build_ics(fristen_events(_offene_fristen_pendenzen(basis['aktive_lg'])))
+    resp = HttpResponse(ics, content_type='text/calendar; charset=utf-8')
+    resp['Content-Disposition'] = 'attachment; filename="swissimmo-fristen.ics"'
+    return resp
+
+
+def fristen_ical_feed(request):
+    """Öffentlicher, abonnierbarer iCal-Feed (Token-gesichert, ohne Login) —
+    damit Outlook/Google/Apple Calendar die Fristen automatisch synchronisieren."""
+    from django.http import HttpResponse, HttpResponseForbidden
+    from core.services.ical import build_ics, fristen_events, token_gueltig
+    if not token_gueltig(request.GET.get('token')):
+        return HttpResponseForbidden("Ungültiger oder fehlender Token.")
+    ics = build_ics(fristen_events(_offene_fristen_pendenzen()))
+    resp = HttpResponse(ics, content_type='text/calendar; charset=utf-8')
+    resp['Content-Disposition'] = 'inline; filename="swissimmo-fristen.ics"'
+    return resp
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
