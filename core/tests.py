@@ -2727,6 +2727,46 @@ class Verzug257dTests(TestCase):
         self.assertEqual(termin_257d(date(2026, 3, 5)), date(2026, 4, 30))
 
 
+class AnfechtungsfristTests(TestCase):
+    """Anfechtungsfristen als Pendenz: Vermieterkündigung (Art. 271/273) und
+    Mietzinserhöhung (Art. 270b) — je 30 Tage."""
+
+    def test_vermieterkuendigung_legt_anfechtungsfrist_an(self):
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()   # Wohnung → geschützt
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/kuendigen/',
+               {'absender': 'vermieter', 'eingang_datum': date.today().isoformat(), 'bestaetigen': 'on'})
+        p = Pendenz.objects.filter(vertrag=v, titel__icontains='Anfechtungsfrist Kündigung').first()
+        self.assertIsNotNone(p)
+        self.assertIn('Art. 271', p.beschreibung)
+        self.assertEqual(p.faellig_am, date.today() + timedelta(days=30))
+
+    def test_mieterkuendigung_ohne_anfechtungsfrist(self):
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/kuendigen/',
+               {'absender': 'mieter', 'eingang_datum': date.today().isoformat(), 'bestaetigen': 'on'})
+        self.assertFalse(Pendenz.objects.filter(vertrag=v, titel__icontains='Anfechtungsfrist').exists())
+
+    def test_mietzinserhoehung_legt_anfechtungsfrist_an(self):
+        from crm.models import Verwaltung
+        from core.models import Pendenz
+        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
+        lg, e, m, v = _basis_objekte()   # netto 1500
+        v.basis_referenzzinssatz = Decimal('1.75'); v.basis_lik_punkte = Decimal('100'); v.save()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/mietzins/{v.id}/anpassung/', {
+            'aktion': 'speichern', 'neu_netto': '1600', 'neu_zins': '1.50', 'neu_lik': '100',
+            'basis_zins': '1.75', 'basis_lik': '100', 'kosten_pct': '0',
+            'wirksam_ab': (date.today() + timedelta(days=120)).isoformat(),
+        })
+        p = Pendenz.objects.filter(vertrag=v, titel__icontains='Anfechtungsfrist Mietzins').first()
+        self.assertIsNotNone(p)
+        self.assertIn('Art. 270b', p.beschreibung)
+
+
 class DashboardKritischTests(TestCase):
     """Dashboard-Widget: letzte kritische Logbuch-Aktionen (nur Verwaltung)."""
 

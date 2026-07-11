@@ -3510,6 +3510,21 @@ def fw_mietzins_anpassung(request, vertrag_id):
         log_aktion(request, "Mietzinsanpassung erstellt", str(v),
                    f"neu CHF {neu_netto}, wirksam {wirksam_ab}", ziel=v)
 
+        # Anfechtungsfrist-Pendenz bei einer Erhöhung: der Mieter kann die
+        # Mietzinserhöhung innert 30 Tagen ab Empfang anfechten (Art. 270b OR).
+        if neu_netto > (v.netto_mietzins or Decimal('0')):
+            from core.models import Pendenz
+            frist = timezone.localdate() + _timedelta(days=30)
+            Pendenz.objects.create(
+                titel=f"Anfechtungsfrist Mietzinserhöhung läuft ab – {v.mieter.display_name}",
+                beschreibung=(f"Erhöhung auf CHF {neu_netto} (wirksam {wirksam_ab:%d.%m.%Y}). Der Mieter kann "
+                              "sie innert 30 Tagen ab Empfang des amtlichen Formulars bei der "
+                              "Schlichtungsbehörde anfechten (Art. 270b OR)."),
+                kategorie='frist', faellig_am=frist, vertrag=v,
+                liegenschaft=lg,
+                erstellt_von=request.user if request.user.is_authenticated else None,
+            )
+
         if aktion == 'speichern':
             messages.success(request, f"✅ Mietzinsanpassung erfasst — neu CHF {neu_netto} ab {wirksam_ab.strftime('%d.%m.%Y')}.")
             return redirect(f'/neu/vertraege/{v.id}/')
@@ -5159,6 +5174,21 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         v.aktiv = False
         v.ende = per
         v.save(update_fields=['status', 'aktiv', 'ende'])
+
+        # Anfechtungsfrist-Pendenz bei Vermieterkündigung geschützter Räume:
+        # der Mieter kann die Kündigung innert 30 Tagen anfechten (Art. 271/273 OR).
+        if k.absender == 'vermieter' and v.ist_geschuetzt:
+            from core.models import Pendenz
+            frist = eingang + _timedelta(days=30)
+            Pendenz.objects.create(
+                titel=f"Anfechtungsfrist Kündigung läuft ab – {v.mieter.display_name}",
+                beschreibung=("Der Mieter kann die Vermieterkündigung innert 30 Tagen ab Empfang bei der "
+                              "Schlichtungsbehörde anfechten (Art. 271/271a/273 OR) und eine Erstreckung "
+                              "verlangen (Art. 272). Danach wird die Kündigung grundsätzlich rechtskräftig."),
+                kategorie='frist', faellig_am=frist, vertrag=v,
+                liegenschaft=v.einheit.liegenschaft if v.einheit_id else None,
+                erstellt_von=request.user if request.user.is_authenticated else None,
+            )
 
         # Auszugscheckliste automatisch als Pendenzen anlegen
         leerstand_gewuenscht = P.get('leerstand_anlegen') == 'on'
