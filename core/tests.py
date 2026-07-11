@@ -2308,6 +2308,16 @@ class GewerbeWizardTests(TestCase):
         self.assertEqual(v.staffelstufen.count(), 2)
         self.assertEqual(v.effektiver_netto_mietzins(date(2025, 6, 1)), Decimal('3100'))
 
+    def test_live_mietrecht_check_im_wizard(self):
+        """Der Wizard enthält die Live-Plausibilitätsprüfung (meldet beim Erfassen)."""
+        lg, e, m = self._gew_einheit()
+        team = _team_user(); c = Client(); c.force_login(team)
+        body = c.get(f'/neu/vertraege/neu/?einheit={e.id}').content.decode()
+        self.assertIn('function mietrechtCheck', body)
+        self.assertIn('id="mietrecht-warn"', body)
+        self.assertIn('Art. 257e OR', body)   # Kaution-Prüfung
+        self.assertIn('Art. 269b OR', body)   # Index-Dauer-Prüfung
+
     def test_pdf_gewerbe_index_rendert(self):
         from rentals.models import Mietvertrag as MV
         from core.services.pdf_service import generate_vertrag_pdf_bytes

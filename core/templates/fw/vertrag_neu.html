@@ -298,6 +298,10 @@
     <!-- ========== RECHTS: LIVE-VERTRAGSVORSCHAU ========== -->
     <div class="lg:sticky lg:top-24">
         <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-2"><i class="fa-solid fa-file-contract"></i> Live-Vorschau</div>
+        <div id="mietrecht-warn" class="hidden mb-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[12.5px] text-amber-800">
+            <div class="font-bold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-scale-balanced"></i> Mietrechtlicher Hinweis</div>
+            <ul id="mietrecht-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
+        </div>
         <div id="pv" class="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-[13px] text-slate-800 leading-relaxed max-h-[75vh] overflow-y-auto"></div>
     </div>
 </div>
@@ -513,6 +517,44 @@ function fmt(n){ n=parseFloat(n)||0; return n.toLocaleString('de-CH',{minimumFra
 function val(n){ const el=document.querySelector('[name='+n+']'); return el?el.value:''; }
 function dstr(v){ if(!v) return ''; const p=v.split('-'); return p[2]+'.'+p[1]+'.'+p[0]; }
 
+// Live-Plausibilitätsprüfung nach Mietrecht — meldet direkt beim Erfassen,
+// wenn etwas gegen die gesetzlichen Vorgaben verstösst (Kaution, Frist, Modell).
+function _monthsBetween(a, b){ return (b.getFullYear()-a.getFullYear())*12 + (b.getMonth()-a.getMonth()); }
+function mietrechtCheck(){
+  const o = curObj(); const kat = o ? o.kategorie : null;
+  const warns = [];
+  const netto = parseFloat(val('netto_mietzins')) || 0;
+  const kaut  = parseFloat(val('kautions_betrag')) || 0;
+  const unbef = document.getElementById('unbefristet').checked;
+  const b = val('beginn'), e = val('ende');
+
+  // Kaution: Wohnräume höchstens drei Monatsmieten (Art. 257e OR)
+  if (kat === 'wohnen' && netto > 0 && kaut > netto*3 + 0.01)
+    warns.push('Die Kaution übersteigt drei Monatsmieten (Art. 257e OR).');
+
+  // Kündigungsfrist unter dem gesetzlichen Minimum
+  const frist = parseInt(val('kuendigungsfrist')) || 0;
+  if (kat === 'wohnen' && frist > 0 && frist < 3)
+    warns.push('Kündigungsfrist unter dem Minimum von 3 Monaten für Wohnräume (Art. 266c OR).');
+  if (kat === 'gewerbe' && frist > 0 && frist < 6)
+    warns.push('Kündigungsfrist unter dem Minimum von 6 Monaten für Geschäftsräume (Art. 266d OR).');
+
+  // Mietzinsmodell: Mindest-Vertragsdauer
+  const md = document.getElementById('s_modell');
+  const gewSichtbar = md && !document.getElementById('gewerbe-box').classList.contains('hidden');
+  const modell = gewSichtbar ? md.value : 'fest';
+  if (modell === 'index') {
+    if (unbef || !e) warns.push('Indexmiete verlangt einen befristeten Vertrag mit fester Dauer von mind. 5 Jahren (Art. 269b OR).');
+    else if (b && _monthsBetween(new Date(b), new Date(e)) < 60) warns.push('Indexmiete: feste Vertragsdauer von mind. 5 Jahren erforderlich (Art. 269b OR).');
+  }
+  if (modell === 'staffel' && !unbef && b && e && _monthsBetween(new Date(b), new Date(e)) < 36)
+    warns.push('Staffelmiete: Vertragsdauer von mind. 3 Jahren erforderlich (Art. 269c OR).');
+
+  const box = document.getElementById('mietrecht-warn');
+  const list = document.getElementById('mietrecht-warn-list');
+  if (warns.length) { list.innerHTML = warns.map(w => `<li>${w}</li>`).join(''); box.classList.remove('hidden'); }
+  else { box.classList.add('hidden'); }
+}
 function live(){
   const l=curLg(), o=curObj(), m=curMieter();
   const vm = l?l.vermieter:{name:'{{ verwaltung.firma }}',strasse:'{{ verwaltung.strasse }}',plz:'{{ verwaltung.plz }}',ort:'{{ verwaltung.ort }}'};
@@ -529,6 +571,7 @@ function live(){
   document.getElementById('f_kuendigungstermine').value = kterm;
   const bruttoEl=document.getElementById('s_brutto'); if(bruttoEl) bruttoEl.value = "CHF "+fmt(brutto);
   const nkEcho=document.getElementById('nk-echo'); if(nkEcho) nkEcho.textContent = "CHF "+fmt(nk);
+  mietrechtCheck();
 
   document.getElementById('pv').innerHTML = `
     <div class="text-[11px] text-slate-400 border-b border-slate-100 pb-2 mb-4">${vm.name} | ${vm.strasse} | ${vm.plz} ${vm.ort}</div>
