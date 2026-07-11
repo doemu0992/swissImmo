@@ -2560,3 +2560,29 @@ class LogbuchTests(TestCase):
         u = _team_user(rolle='Lesend'); c = Client(); c.force_login(u)
         r = c.get('/neu/logbuch/')
         self.assertNotEqual(r.status_code, 200)
+
+    def test_eintrag_verweist_auf_objekt(self):
+        """Statusänderung verlinkt den Eintrag auf den Vertrag (ziel_typ/ziel_id + ziel_url)."""
+        from core.models import AktivitaetsLog
+        lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        c.post(f'/neu/vertraege/{v.id}/status/', {'status': 'archiviert'})
+        log = AktivitaetsLog.objects.filter(ziel_typ='vertrag', ziel_id=v.id).first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.ziel_url, f'/neu/vertraege/{v.id}/')
+        # Logbuch rendert den Link
+        r = c.get('/neu/logbuch/')
+        self.assertContains(r, f'href="/neu/vertraege/{v.id}/"')
+
+    def test_verlauf_tab_auf_vertrag(self):
+        """Der Vertrag zeigt seinen eigenen Verlauf (Audit-Einträge)."""
+        lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        self._log('Kaution einbezahlt (Sperrkonto)', str(m), 'CHF 4500', user=u)
+        # ziel setzen wie im echten Flow
+        from core.models import AktivitaetsLog
+        AktivitaetsLog.objects.all().update(ziel_typ='vertrag', ziel_id=v.id)
+        r = c.get(f'/neu/vertraege/{v.id}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'id="vt-verlauf"')
+        self.assertContains(r, 'Kaution einbezahlt')

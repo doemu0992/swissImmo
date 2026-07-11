@@ -769,14 +769,18 @@ def fw_vertrag_detail(request, pk):
         rechnungs_rows.append({'r': r, 'status_label': label, 'pill_cls': pill_cls,
                                'offen': r.offener_betrag if r.status in ('offen', 'teilbezahlt') else Decimal('0.00')})
 
+    from core.models import AktivitaetsLog
+    verlauf = list(AktivitaetsLog.objects.filter(ziel_typ='vertrag', ziel_id=v.id)
+                   .select_related('benutzer')[:50])
     tab_liste = [
         ('uebersicht', 'Übersicht', None),
         ('finanzen', 'Finanzen', len(offene) or None),
         ('mietzins', 'Mietzins', anpassungen.count() or None),
         ('dokumente', 'Dokumente', None),
+        ('verlauf', 'Verlauf', len(verlauf) or None),
     ]
     return render(request, 'fw/vertrag_detail.html', {
-        **basis, 'nav': 'vertraege', 'v': v,
+        **basis, 'nav': 'vertraege', 'v': v, 'verlauf': verlauf,
         'vertrag_pill': _vertrag_status_pill(v),
         'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0')),
         'rechnungs_rows': rechnungs_rows,
@@ -878,7 +882,7 @@ def fw_schlussabrechnung(request, vertrag_id):
                         pass
             from core.services.automation import erledige_pendenzen_fuer
             erledige_pendenzen_fuer(v, ['Schlussabrechnung', 'Kaution'], user=request.user)
-            log_aktion(request, "Schlussabrechnung verbucht", str(v.mieter), f"Saldo CHF {daten['saldo']}")
+            log_aktion(request, "Schlussabrechnung verbucht", str(v.mieter), f"Saldo CHF {daten['saldo']}", ziel=v)
             if request.POST.get('embed'):
                 return render(request, 'fw/_modal_done.html', {'msg': 'Schlussabrechnung verbucht'})
             messages.success(request, "✅ Schlussabrechnung verbucht (Kaution abgerechnet"
@@ -1003,7 +1007,7 @@ def fw_abnahme_neu(request, vertrag_id):
             if prot.schluessel_anzahl is not None:
                 kw.append('Schlüssel')
             erledige_pendenzen_fuer(v, kw, user=request.user)
-        log_aktion(request, "Wohnungsabnahme erfasst", str(v.mieter), f"{prot.get_typ_display()} {datum}")
+        log_aktion(request, "Wohnungsabnahme erfasst", str(v.mieter), f"{prot.get_typ_display()} {datum}", ziel=v)
         if P.get('embed'):
             typ_txt = prot.get_typ_display()
             return render(request, 'fw/_modal_done.html', {'msg': f"{typ_txt} erfasst ({prot.maengel.count()} Mängel)"})
@@ -1064,7 +1068,7 @@ def fw_vertrag_status(request, pk):
             v.status = neu
             v.aktiv = (neu == 'aktiv')
             v.save(update_fields=['status', 'aktiv'])
-            log_aktion(request, "Vertragsstatus geändert", str(v.mieter), erlaubt[neu])
+            log_aktion(request, "Vertragsstatus geändert", str(v.mieter), erlaubt[neu], ziel=v)
             messages.success(request, f"✅ Vertrag ist jetzt: {erlaubt[neu]}.")
         else:
             messages.error(request, "Unbekannter Status.")
@@ -1658,15 +1662,21 @@ def fw_person_detail(request, pk):
         vertrag_rows.append({'v': v, 'label': label, 'cls': cls,
                              'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0'))})
 
+    from core.models import AktivitaetsLog
+    verlauf = list(AktivitaetsLog.objects.filter(
+        _Q(ziel_typ='person', ziel_id=m.id) | _Q(ziel_typ='vertrag', ziel_id__in=_vids)
+    ).select_related('benutzer')[:50])
+
     tab_liste = [
         ('uebersicht', 'Übersicht', None),
         ('vertraege', 'Verträge', vertraege.count() or None),
         ('finanzen', 'Finanzen', offene.count() or None),
         ('dokumente', 'Dokumente', dokumente.count() or None),
         ('aktivitaet', 'Journal', m.kommunikationen.count() or None),
+        ('verlauf', 'Verlauf', len(verlauf) or None),
     ]
     return render(request, 'fw/person_detail.html', {
-        **basis, 'nav': 'personen', 'm': m,
+        **basis, 'nav': 'personen', 'm': m, 'verlauf': verlauf,
         'vertrag_rows': vertrag_rows,
         'anzahl_aktive': len(aktive),
         'brutto_monat': sum((r['brutto'] for r in vertrag_rows if r['v'].status == 'aktiv'), Decimal('0.00')),
@@ -1905,7 +1915,7 @@ def fw_person_form(request, pk=None):
                 })
 
         obj.save()
-        log_aktion(request, "Person bearbeitet" if pk else "Person erstellt", obj.display_name, '')
+        log_aktion(request, "Person bearbeitet" if pk else "Person erstellt", obj.display_name, '', ziel=obj)
         messages.success(request, f"✅ {obj.display_name} gespeichert.")
         return redirect(f'/neu/personen/{obj.id}/')
 
@@ -3484,7 +3494,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
             begruendung=begruendung or 'Anpassung an Referenzzinssatz und Teuerung',
         )
         log_aktion(request, "Mietzinsanpassung erstellt", str(v),
-                   f"neu CHF {neu_netto}, wirksam {wirksam_ab}")
+                   f"neu CHF {neu_netto}, wirksam {wirksam_ab}", ziel=v)
 
         if aktion == 'speichern':
             messages.success(request, f"✅ Mietzinsanpassung erfasst — neu CHF {neu_netto} ab {wirksam_ab.strftime('%d.%m.%Y')}.")
@@ -3959,7 +3969,7 @@ def fw_vertrag_neu_speichern(request):
         pass
 
     log_aktion(request, "Mietvertrag erstellt (Assistent)", str(mieter),
-               f"{einheit.bezeichnung}, ab {beginn}")
+               f"{einheit.bezeichnung}, ab {beginn}", ziel=vertrag)
     if anzahl_dok:
         messages.success(
             request,
@@ -5122,7 +5132,7 @@ def fw_kuendigung_erfassen(request, vertrag_id):
                 hinweis = " · Leerstand ab " + beginn.strftime('%d.%m.%Y') + " angelegt"
 
         log_aktion(request, "Kündigung erfasst", str(v.mieter),
-                   f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen{hinweis}")
+                   f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen{hinweis}", ziel=v)
         if P.get('embed'):
             return render(request, 'fw/_modal_done.html', {
                 'msg': f"Kündigung erfasst · {n_pendenzen} Auszugs-Pendenzen"})
@@ -5157,7 +5167,7 @@ def fw_kuendigung_zuruecknehmen(request, pk):
             v.aktiv = True
             v.ende = None
             v.save(update_fields=['status', 'aktiv', 'ende'])
-        log_aktion(request, "Kündigung zurückgezogen", str(v.mieter), '')
+        log_aktion(request, "Kündigung zurückgezogen", str(v.mieter), '', ziel=v)
         messages.success(request, "✅ Kündigung zurückgezogen, Vertrag reaktiviert.")
     return redirect(f'/neu/vertraege/{v.id}/')
 
@@ -5191,7 +5201,7 @@ def fw_kuendigung_bestaetigen(request, pk):
     from core.services.automation import erledige_pendenzen_fuer
     erledige_pendenzen_fuer(v, ['schriftlich', 'Kündigungsformular'], user=request.user)
     log_aktion(request, "Kündigung bestätigt", str(v.mieter),
-               f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen")
+               f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen", ziel=v)
     messages.success(request, f"✅ Kündigung bestätigt — Vertragsende {per.strftime('%d.%m.%Y') if per else '—'} · "
                      f"{n_pendenzen} Auszugs-Pendenzen erstellt.")
     return redirect(f'/neu/vertraege/{v.id}/')
@@ -5295,7 +5305,7 @@ def fw_kaution_aktion(request, vertrag_id):
             buche_kaution_einzahlung(v, v.kautions_einbezahlt_am, user=request.user)
         except Exception:
             pass
-        log_aktion(request, "Kaution einbezahlt (Sperrkonto)", str(v.mieter), f"CHF {v.kautions_betrag}")
+        log_aktion(request, "Kaution einbezahlt (Sperrkonto)", str(v.mieter), f"CHF {v.kautions_betrag}", ziel=v)
         messages.success(request, "✅ Kautions-Einzahlung auf Sperrkonto erfasst (bilanziert).")
 
     elif aktion == 'versicherung':
@@ -5319,7 +5329,7 @@ def fw_kaution_aktion(request, vertrag_id):
         v.save(update_fields=['kautions_art', 'kautions_versicherer', 'kautions_policennummer',
                               'kautions_zertifikat', 'kautions_einbezahlt_am', 'kautions_konto'])
         log_aktion(request, "Kautionsversicherung bestätigt", str(v.mieter),
-                   f"{versicherer} · Police {police} · CHF {v.kautions_betrag}")
+                   f"{versicherer} · Police {police} · CHF {v.kautions_betrag}", ziel=v)
         messages.success(request, f"✅ Kautionsversicherung bestätigt ({versicherer}) — Zertifikat hinterlegt.")
 
     elif aktion == 'rueckzahlung':
@@ -5358,7 +5368,7 @@ def fw_kaution_aktion(request, vertrag_id):
         from core.services.automation import erledige_pendenzen_fuer
         erledige_pendenzen_fuer(v, ['Kaution'], user=request.user)
         log_aktion(request, "Kaution zurückbezahlt", str(v.mieter),
-                   f"Rückzahlung CHF {rueck}, Abzug CHF {abzug}")
+                   f"Rückzahlung CHF {rueck}, Abzug CHF {abzug}", ziel=v)
         messages.success(request, f"✅ Rückzahlung erfasst: CHF {rueck} an Mieter, CHF {abzug} einbehalten.")
     return redirect(f'/neu/vertraege/{v.id}/')
 
@@ -5634,7 +5644,7 @@ def fw_bewerbung_zu_vertrag(request, pk):
     b.status = 'zugesagt'
     b.save()
     log_aktion(request, "Bewerbung → Vertragsentwurf", f"{mieter.display_name}",
-               f"{einheit.bezeichnung}, Entwurf #{vertrag.id}")
+               f"{einheit.bezeichnung}, Entwurf #{vertrag.id}", ziel=vertrag)
     messages.success(request,
         f"✅ Mieter angelegt und Vertragsentwurf für {einheit.bezeichnung} erstellt — "
         f"bitte Konditionen prüfen und aktivieren.")

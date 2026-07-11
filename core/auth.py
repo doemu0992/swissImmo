@@ -91,19 +91,38 @@ def rolle_erforderlich(*rollen):
 # AUDIT-TRAIL
 # ==========================================
 
-def log_aktion(request, aktion, objekt="", details=""):
+# Modellklassen-Name → Ziel-Typ (für anklickbare Logeinträge + Objekt-Verlauf).
+_ZIEL_TYP_MAP = {
+    'Mietvertrag': 'vertrag',
+    'Mieter': 'person',
+    'Liegenschaft': 'liegenschaft',
+    'Einheit': 'objekt',
+    'Ticket': 'ticket',
+    'Pendenz': 'pendenz',
+}
+
+
+def log_aktion(request, aktion, objekt="", details="", ziel=None):
     """
     Schreibt einen Eintrag ins Aktivitätslog (wer hat wann was getan).
+    Optional `ziel` = betroffene Modellinstanz (Mietvertrag/Mieter/…) → der
+    Eintrag wird im Logbuch anklickbar und erscheint im Verlauf des Objekts.
     Darf NIE den Geschäftsprozess brechen — Fehler werden geschluckt.
     """
     from core.models import AktivitaetsLog
     try:
         user = request.user if request.user.is_authenticated else None
+        ziel_typ, ziel_id = '', None
+        if ziel is not None and getattr(ziel, 'pk', None):
+            ziel_typ = _ZIEL_TYP_MAP.get(type(ziel).__name__, type(ziel).__name__.lower())
+            ziel_id = ziel.pk
         AktivitaetsLog.objects.create(
             benutzer=user,
             aktion=str(aktion)[:100],
             objekt=str(objekt)[:200],
             details=str(details)[:2000],
+            ziel_typ=ziel_typ,
+            ziel_id=ziel_id,
         )
     except Exception:
         pass

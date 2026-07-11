@@ -103,7 +103,11 @@
                     <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-600 whitespace-nowrap">{{ e.aktion }}</span>
                     {% endif %}
                 </td>
-                <td class="px-5 py-3.5 text-slate-700">{{ e.objekt|default:"—" }}</td>
+                <td class="px-5 py-3.5 text-slate-700">
+                    {% if e.ziel_url %}
+                    <a href="{{ e.ziel_url }}" class="text-indigo-600 hover:underline font-medium">{{ e.objekt|default:"öffnen" }}<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1 text-indigo-300"></i></a>
+                    {% else %}{{ e.objekt|default:"—" }}{% endif %}
+                </td>
                 <td class="px-5 py-3.5 text-slate-400 text-xs">{{ e.details|default:"" }}</td>
             </tr>
             {% empty %}

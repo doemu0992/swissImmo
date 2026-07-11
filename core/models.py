@@ -17,15 +17,33 @@ class AktivitaetsLog(models.Model):
     aktion = models.CharField("Aktion", max_length=100)
     objekt = models.CharField("Objekt", max_length=200, blank=True, default='')
     details = models.TextField("Details", blank=True, default='')
+    # Optionaler Verweis auf das betroffene Objekt → macht Logeinträge anklickbar
+    # und erlaubt einen "Verlauf" je Vertrag/Person/Liegenschaft.
+    ziel_typ = models.CharField("Ziel-Typ", max_length=20, blank=True, default='', db_index=True)
+    ziel_id = models.PositiveIntegerField("Ziel-ID", null=True, blank=True, db_index=True)
 
     class Meta:
         verbose_name = "Aktivitätslog"
         verbose_name_plural = "Aktivitätslog"
         ordering = ['-zeitpunkt']
+        indexes = [models.Index(fields=['ziel_typ', 'ziel_id'])]
 
     def __str__(self):
         wer = self.benutzer.username if self.benutzer else "System"
         return f"{self.zeitpunkt:%d.%m.%Y %H:%M} — {wer}: {self.aktion}"
+
+    # Ziel-Typ → Detailseite unter /neu/. Nur Typen mit sinnvoller Detailansicht.
+    _ZIEL_URLS = {
+        'vertrag': '/neu/vertraege/{id}/',
+        'person': '/neu/personen/{id}/',
+        'liegenschaft': '/neu/liegenschaften/{id}/',
+    }
+
+    @property
+    def ziel_url(self):
+        if self.ziel_id and self.ziel_typ in self._ZIEL_URLS:
+            return self._ZIEL_URLS[self.ziel_typ].format(id=self.ziel_id)
+        return ''
 
 
 class Pendenz(models.Model):

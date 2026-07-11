@@ -333,4 +333,30 @@
         {% endfor %}
     </div>
 </div>
+
+<div data-panel="vt" id="vt-verlauf" class="hidden">
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div class="px-5 py-3 font-bold text-slate-800 text-sm border-b border-slate-100">Verlauf — wer hat was gemacht</div>
+        <div class="divide-y divide-slate-50">
+            {% for e in verlauf %}
+            <div class="flex items-start gap-3 px-5 py-3.5">
+                <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                    {% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}<i class="fa-solid fa-robot"></i>{% endif %}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-slate-900">{{ e.aktion }}</div>
+                    {% if e.details %}<div class="text-xs text-slate-500">{{ e.details }}</div>{% endif %}
+                </div>
+                <div class="text-xs text-slate-400 whitespace-nowrap text-right shrink-0">
+                    {{ e.zeitpunkt|date:"d.m.Y H:i" }}<br>
+                    <span class="text-slate-400">{{ e.benutzer.get_full_name|default:e.benutzer.username|default:"System" }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <p class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine protokollierten Aktionen zu diesem Vertrag.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <p class="text-xs text-slate-400 mt-3">Vollständiges Logbuch aller Objekte unter <a href="/neu/logbuch/" class="text-indigo-600 hover:underline">Profil → Logbuch</a>.</p>
+</div>
 {% endblock %}
