@@ -2638,3 +2638,22 @@ class LogbuchTests(TestCase):
         })
         log = AktivitaetsLog.objects.filter(aktion='Person bearbeitet').latest('id')
         self.assertIn('Nachname: Muster → Meier', log.details)
+
+    def test_diff_auf_allen_modulen(self):
+        """Der Vorher→Nachher-Diff greift generisch — hier für Liegenschaft & Objekt."""
+        from core.models import AktivitaetsLog
+        lg, e, m, v = _basis_objekte()   # lg: …, Zürich · e: '3.5 Zi'
+        u = _team_user(); c = Client(); c.force_login(u)
+        # Liegenschaft: Ort Zürich → Bern (GWR-Import deaktiviert)
+        c.post(f'/neu/liegenschaften/{lg.id}/bearbeiten/', {
+            'strasse': 'Teststrasse 1', 'plz': '8000', 'ort': 'Bern', 'gwr_import': '',
+        })
+        log = AktivitaetsLog.objects.filter(aktion='Liegenschaft bearbeitet').latest('id')
+        self.assertIn('→ Bern', log.details)
+        # Objekt: Bezeichnung ändern
+        c.post(f'/neu/objekte/{e.id}/bearbeiten/', {
+            'liegenschaft_id': lg.id, 'bezeichnung': '4.5 Zi', 'typ': 'whg',
+            'nettomiete_aktuell': '1500', 'nebenkosten_aktuell': '200',
+        })
+        log2 = AktivitaetsLog.objects.filter(aktion='Objekt bearbeitet').latest('id')
+        self.assertIn('4.5 Zi', log2.details)

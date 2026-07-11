@@ -1852,22 +1852,14 @@ def fw_person_form(request, pk=None):
     """Person (Mieter/Kontakt) erfassen oder bearbeiten — Fairwalter-Stil."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from core.auth import log_aktion, snapshot, diff_text
+    from core.auth import log_aktion, snapshot_model, diff_model
     m = get_object_or_404(Mieter, id=pk) if pk else None
     basis = _global_filter(request)
-
-    # Felder, deren Änderung im Logbuch als Vorher→Nachher festgehalten wird.
-    _DIFF_FELDER = ['vorname', 'nachname', 'firmen_name', 'email', 'telefon_privat',
-                    'mobile', 'strasse', 'plz', 'ort', 'iban', 'geburtsdatum']
-    _DIFF_LABELS = {'vorname': 'Vorname', 'nachname': 'Nachname', 'firmen_name': 'Firma',
-                    'email': 'E-Mail', 'telefon_privat': 'Telefon', 'mobile': 'Mobile',
-                    'strasse': 'Strasse', 'plz': 'PLZ', 'ort': 'Ort', 'iban': 'IBAN',
-                    'geburtsdatum': 'Geburtsdatum'}
 
     if request.method == 'POST':
         P = request.POST
         # Alt-Zustand für Vorher→Nachher (nur beim Bearbeiten, frisch aus der DB).
-        alt_snap = snapshot(Mieter.objects.get(pk=m.pk), _DIFF_FELDER) if m is not None else {}
+        alt_snap = snapshot_model(Mieter.objects.get(pk=m.pk)) if m is not None else {}
         obj = m or Mieter()
         obj.typ = P.get('typ', 'person')
         obj.anrede = P.get('anrede', '').strip()
@@ -1925,7 +1917,7 @@ def fw_person_form(request, pk=None):
                 })
 
         obj.save()
-        aenderungen = diff_text(alt_snap, snapshot(obj, _DIFF_FELDER), _DIFF_LABELS) if pk else ''
+        aenderungen = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
         log_aktion(request, "Person bearbeitet" if pk else "Person erstellt",
                    obj.display_name, aenderungen, ziel=obj)
         messages.success(request, f"✅ {obj.display_name} gespeichert.")
@@ -4002,12 +3994,13 @@ def fw_account(request):
     from django.shortcuts import redirect
     from django.contrib import messages
     from crm.models import Verwaltung
-    from core.auth import log_aktion, hat_rolle
+    from core.auth import log_aktion, hat_rolle, snapshot_model, diff_model
     vw = Verwaltung.objects.first() or Verwaltung.objects.create(firma="Meine Verwaltung")
     basis = _global_filter(request)
 
     if request.method == 'POST' and hat_rolle(request.user, SCHREIB_ROLLEN):
         P = request.POST
+        alt_snap = snapshot_model(Verwaltung.objects.get(pk=vw.pk))
         vw.firma = P.get('firma', '').strip() or vw.firma
         vw.strasse = P.get('strasse', '').strip()
         vw.plz = P.get('plz', '').strip()
@@ -4039,7 +4032,8 @@ def fw_account(request):
         elif request.FILES.get('logo'):
             vw.logo = request.FILES['logo']
         vw.save()
-        log_aktion(request, "Account/Stammdaten bearbeitet", vw.firma, '')
+        log_aktion(request, "Account/Stammdaten bearbeitet", vw.firma,
+                   diff_model(alt_snap, snapshot_model(vw), vw))
         messages.success(request, "✅ Stammdaten gespeichert.")
         return redirect('/neu/account/')
 
@@ -4431,10 +4425,11 @@ def fw_vorlage_form(request, pk=None):
     from django.shortcuts import redirect
     from django.contrib import messages
     from crm.models import Vorlage
-    from core.auth import log_aktion
+    from core.auth import log_aktion, snapshot_model, diff_model
     vl = get_object_or_404(Vorlage, id=pk) if pk else None
     basis = _global_filter(request)
     if request.method == 'POST':
+        alt_snap = snapshot_model(Vorlage.objects.get(pk=pk)) if pk else {}
         obj = vl or Vorlage()
         obj.name = request.POST.get('name', '').strip()
         obj.kategorie = request.POST.get('kategorie', 'brief')
@@ -4444,7 +4439,8 @@ def fw_vorlage_form(request, pk=None):
             messages.error(request, "Bezeichnung ist erforderlich.")
             return redirect(request.path)
         obj.save()
-        log_aktion(request, "Vorlage bearbeitet" if pk else "Vorlage erstellt", obj.name, '')
+        _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
+        log_aktion(request, "Vorlage bearbeitet" if pk else "Vorlage erstellt", obj.name, _diff)
         messages.success(request, f"✅ Vorlage '{obj.name}' gespeichert.")
         return redirect('/neu/vorlagen/')
     return render(request, 'fw/vorlage_form.html', {
@@ -4605,12 +4601,13 @@ def fw_liegenschaft_form(request, pk=None):
     from django.shortcuts import redirect
     from django.contrib import messages
     from crm.models import Mandant
-    from core.auth import log_aktion
+    from core.auth import log_aktion, snapshot_model, diff_model
     lg = get_object_or_404(Liegenschaft, id=pk) if pk else None
     basis = _global_filter(request)
 
     if request.method == 'POST':
         P = request.POST
+        alt_snap = snapshot_model(Liegenschaft.objects.get(pk=pk)) if pk else {}
         obj = lg or Liegenschaft()
         obj.strasse = P.get('strasse', '').strip()
         obj.plz = P.get('plz', '').strip()
@@ -4638,8 +4635,9 @@ def fw_liegenschaft_form(request, pk=None):
         except ValueError:
             obj.hkvo_grundkosten_prozent = 40
         obj.save()
+        _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
         log_aktion(request, "Liegenschaft bearbeitet" if pk else "Liegenschaft erstellt",
-                   f"{obj.strasse}, {obj.ort}", '')
+                   f"{obj.strasse}, {obj.ort}", _diff, ziel=obj)
         messages.success(request, f"✅ Liegenschaft {obj.strasse} gespeichert.")
 
         # Automatischer GWR/EGID-Import (nur wenn gewünscht) — ermittelt die EGID
@@ -4723,12 +4721,13 @@ def fw_objekt_form(request, pk=None):
     """Mietobjekt (Einheit) erfassen oder bearbeiten."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from core.auth import log_aktion
+    from core.auth import log_aktion, snapshot_model, diff_model
     e = get_object_or_404(Einheit, id=pk) if pk else None
     basis = _global_filter(request)
 
     if request.method == 'POST':
         P = request.POST
+        alt_snap = snapshot_model(Einheit.objects.get(pk=pk)) if pk else {}
         obj = e or Einheit()
         lg_id = P.get('liegenschaft_id') or (e.liegenschaft_id if e else None)
         obj.liegenschaft = get_object_or_404(Liegenschaft, id=lg_id)
@@ -4750,8 +4749,9 @@ def fw_objekt_form(request, pk=None):
         obj.keller = P.get('keller', '').strip()
         obj.notizen = P.get('notizen', '').strip()
         obj.save()
+        _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
         log_aktion(request, "Objekt bearbeitet" if pk else "Objekt erstellt",
-                   f"{obj.bezeichnung} ({obj.liegenschaft.strasse})", '')
+                   f"{obj.bezeichnung} ({obj.liegenschaft.strasse})", _diff, ziel=obj)
         messages.success(request, f"✅ Objekt {obj.bezeichnung} gespeichert.")
         return redirect(f'/neu/objekte/{obj.id}/')
 
@@ -4810,12 +4810,13 @@ def fw_mandat_form(request, pk=None):
     from django.shortcuts import redirect
     from django.contrib import messages
     from crm.models import Mandant
-    from core.auth import log_aktion
+    from core.auth import log_aktion, snapshot_model, diff_model
     md = get_object_or_404(Mandant, id=pk) if pk else None
     basis = _global_filter(request)
 
     if request.method == 'POST':
         P = request.POST
+        alt_snap = snapshot_model(Mandant.objects.get(pk=pk)) if pk else {}
         obj = md or Mandant()
         obj.firma_oder_name = P.get('firma_oder_name', '').strip()
         obj.kontaktperson = P.get('kontaktperson', '').strip()
@@ -4840,7 +4841,8 @@ def fw_mandat_form(request, pk=None):
             elif sid not in gewaehlt and lg.mandant_id == obj.id:
                 lg.mandant = None
                 lg.save(update_fields=['mandant'])
-        log_aktion(request, "Mandant bearbeitet" if pk else "Mandant erstellt", obj.firma_oder_name, '')
+        _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
+        log_aktion(request, "Mandant bearbeitet" if pk else "Mandant erstellt", obj.firma_oder_name, _diff)
         messages.success(request, f"✅ Mandant {obj.firma_oder_name} gespeichert.")
         return redirect('/neu/mandate/')
 
@@ -4952,12 +4954,15 @@ def fw_benutzer_form(request, pk=None):
     from django.shortcuts import redirect
     from django.contrib import messages
     from django.contrib.auth.models import User, Group
-    from core.auth import log_aktion
+    from core.auth import log_aktion, snapshot_model, diff_model
     ziel = get_object_or_404(User, id=pk) if pk else None
     basis = _global_filter(request)
 
     if request.method == 'POST':
         P = request.POST
+        alt_snap = snapshot_model(User.objects.get(pk=pk)) if pk else {}
+        alt_rolle = (next((g for g in ziel.groups.values_list('name', flat=True)
+                           if g in _ROLLEN_WAHL), '') if ziel else '')
         username = P.get('username', '').strip()
         rolle = P.get('rolle', 'Lesend')
         if rolle not in _ROLLEN_WAHL:
@@ -4986,7 +4991,11 @@ def fw_benutzer_form(request, pk=None):
         if not ziel.is_superuser:
             grp, _ = Group.objects.get_or_create(name=rolle)
             ziel.groups.set([grp])
-        log_aktion(request, "Benutzer bearbeitet" if pk else "Benutzer erstellt", ziel.username, rolle)
+        _diff = diff_model(alt_snap, snapshot_model(ziel), ziel) if pk else ''
+        if pk and alt_rolle and alt_rolle != rolle:
+            _diff = f"Rolle: {alt_rolle} → {rolle}" + (' · ' + _diff if _diff else '')
+        log_aktion(request, "Benutzer bearbeitet" if pk else "Benutzer erstellt",
+                   ziel.username, _diff or rolle)
         messages.success(request, f"✅ Benutzer {ziel.username} gespeichert.")
         return redirect('/neu/benutzer/')
 

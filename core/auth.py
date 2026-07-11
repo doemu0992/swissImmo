@@ -156,6 +156,43 @@ def diff_text(alt, neu, labels=None):
     return ' · '.join(zeilen)
 
 
+def _diffbare_felder(obj):
+    """Konkrete, sinnvoll vergleichbare Felder eines Modells (keine PK/Relationen/
+    auto-Zeitstempel/Datei-/Passwortfelder)."""
+    felder = []
+    for f in obj._meta.concrete_fields:
+        if f.primary_key or f.is_relation:
+            continue
+        if getattr(f, 'auto_now', False) or getattr(f, 'auto_now_add', False):
+            continue
+        if f.get_internal_type() in ('FileField', 'ImageField', 'BinaryField'):
+            continue
+        if f.name in ('password', 'last_login'):
+            continue
+        felder.append(f)
+    return felder
+
+
+def snapshot_model(obj):
+    """Momentaufnahme aller diffbaren Felder eines Modells (für Vorher/Nachher).
+    Leer, wenn das Objekt (noch) keine PK hat."""
+    if obj is None or not getattr(obj, 'pk', None):
+        return {}
+    snap = {}
+    for f in _diffbare_felder(obj):
+        try:
+            snap[f.name] = getattr(obj, f.name)
+        except Exception:
+            pass
+    return snap
+
+
+def diff_model(alt, neu, obj):
+    """Vorher→Nachher-Text mit den verbose_name des Modells als Feldbeschriftung."""
+    labels = {f.name: str(getattr(f, 'verbose_name', f.name)) for f in _diffbare_felder(obj)}
+    return diff_text(alt, neu, labels)
+
+
 def log_aktion(request, aktion, objekt="", details="", ziel=None, kategorie=None, ip=None, user=None):
     """
     Schreibt einen Eintrag ins Aktivitätslog (wer hat wann was getan).
