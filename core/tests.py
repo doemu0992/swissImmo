@@ -1840,6 +1840,16 @@ class KuendigungModalTests(TestCase):
         self.assertIn(f'/neu/vertraege/{v.id}/kuendigen/', body)
         self.assertIn("fwModalOpen(this,'Kündigung erfassen')", body)
 
+    def test_kuendigung_form_live_pruefung(self):
+        """Das Kündigungsformular enthält die mietrechtliche Live-Prüfung."""
+        lg, e, m, v = _basis_objekte()   # Wohnung → geschützt
+        team = _team_user(); c = Client(); c.force_login(team)
+        body = c.get(f'/neu/vertraege/{v.id}/kuendigen/').content.decode()
+        self.assertIn('function kuendigungCheck', body)
+        self.assertIn('id="k-warn"', body)
+        self.assertIn('IST_GESCHUETZT = true', body)
+        self.assertIn('Art. 266l OR', body)
+
     def test_kuendigung_embed_schliesst_und_legt_pendenzen_an(self):
         from core.models import Pendenz
         lg, e, m, v = _basis_objekte()
