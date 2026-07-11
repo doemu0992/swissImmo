@@ -2801,6 +2801,40 @@ class FristenCenterTests(TestCase):
         self.assertNotContains(r, 'Manuelle Aufgabe')
 
 
+class KautionFreigabeTests(TestCase):
+    """Art. 257e Abs. 3: nach 1 Jahr seit Mietende ohne Ansprüche → Freigabe-Pendenz."""
+
+    def test_pendenz_nach_einem_jahr(self):
+        from core.services.automation import generate_auto_pendenzen
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        v.ende = date.today() - timedelta(days=366)
+        v.status = 'beendet'; v.save()
+        generate_auto_pendenzen(horizont_tage=90)
+        p = Pendenz.objects.filter(vertrag=v, quelle__startswith='auto:kautionfreigabe').first()
+        self.assertIsNotNone(p)
+        self.assertIn('Art. 257e Abs. 3', p.beschreibung)
+        self.assertEqual(p.kategorie, 'frist')
+
+    def test_keine_pendenz_wenn_zurueckbezahlt(self):
+        from core.services.automation import generate_auto_pendenzen
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        v.ende = date.today() - timedelta(days=366)
+        v.kautions_zurueckbezahlt_am = date.today(); v.save()
+        generate_auto_pendenzen(horizont_tage=90)
+        self.assertFalse(Pendenz.objects.filter(quelle__startswith='auto:kautionfreigabe').exists())
+
+    def test_keine_pendenz_bei_versicherung(self):
+        from core.services.automation import generate_auto_pendenzen
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        v.ende = date.today() - timedelta(days=366)
+        v.kautions_art = 'versicherung'; v.save()
+        generate_auto_pendenzen(horizont_tage=90)
+        self.assertFalse(Pendenz.objects.filter(quelle__startswith='auto:kautionfreigabe').exists())
+
+
 class FristenKalenderTests(TestCase):
     """iCal-Export (Download + Feed) und wöchentliches Fristen-Mail."""
 

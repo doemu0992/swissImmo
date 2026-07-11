@@ -347,6 +347,28 @@ def generate_auto_pendenzen(horizont_tage=90, user=None):
                      f"(VMWG). Allfällige Anpassung prüfen."),
                     liegenschaft=v.einheit.liegenschaft, vertrag=v)
 
+    # g) Kautions-Freigabefrist (Art. 257e Abs. 3): nach beendetem Mietverhältnis
+    # kann der Mieter die Freigabe der Kaution verlangen, wenn der Vermieter nicht
+    # innert eines Jahres seit Mietende Ansprüche geltend gemacht/eingeklagt hat.
+    # Betrifft nur echte Bardepots (keine Kautionsversicherung), die noch nicht
+    # zurückbezahlt sind.
+    for v in (Mietvertrag.objects.filter(ende__isnull=False, ende__lt=heute,
+                                          kautions_zurueckbezahlt_am__isnull=True)
+              .exclude(kautions_art='versicherung')
+              .select_related('mieter', 'einheit__liegenschaft')):
+        if not v.kautions_betrag or v.kautions_betrag <= 0:
+            continue
+        frist = v.ende + timedelta(days=365)
+        if frist > grenze:
+            continue   # noch nicht im Vorlauf-Horizont
+        _ensure(f"auto:kautionfreigabe:{v.id}",
+                f"Kaution abrechnen/freigeben: {v.mieter.display_name}",
+                frist, 'frist',
+                ("Mietverhältnis ist über 1 Jahr beendet — der Mieter kann die Freigabe der "
+                 "Kaution vom Sperrkonto verlangen, sofern keine Ansprüche geltend gemacht oder "
+                 "eingeklagt wurden (Art. 257e Abs. 3 OR). Kaution abrechnen und freigeben."),
+                liegenschaft=v.einheit.liegenschaft if v.einheit_id else None, vertrag=v)
+
     return neu
 
 
