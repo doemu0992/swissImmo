@@ -5187,11 +5187,14 @@ def fw_kuendigung_erfassen(request, vertrag_id):
     vorschau_termin = berechne_kuendigungstermin(v, timezone.localdate())
     # Aus dem Verzugsprozess kommend → ausserordentliche Kündigung wegen Zahlungsverzug vorbelegen
     verzug = request.GET.get('grund') in ('verzug', '257d')
+    from rentals.services import termin_257d
+    ao_termin = termin_257d(timezone.localdate()) if verzug else None
     return render(request, 'fw/kuendigung_form.html', {
         **basis, 'nav': 'vertraege', 'v': v,
         'vorschau_termin': vorschau_termin, 'heute_iso': timezone.localdate().isoformat(),
         'prefill_ao': verzug,
         'prefill_grund': 'Zahlungsverzug (Art. 257d OR)' if verzug else '',
+        'ao_termin': ao_termin,
     })
 
 

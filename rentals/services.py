@@ -172,3 +172,11 @@ def berechne_kuendigungstermin(vertrag, eingang_datum: _dt.date) -> _dt.date:
         ny = kandidat.year + (1 if kandidat.month == 12 else 0)
         kandidat = _monatsende(ny, nm)
     return fruehestens
+
+
+def termin_257d(ab_datum: _dt.date) -> _dt.date:
+    """Frühestmöglicher Kündigungstermin bei ausserordentlicher Kündigung wegen
+    Zahlungsverzug (Art. 257d Abs. 2 OR): Frist von mindestens 30 Tagen auf Ende
+    eines Monats. → Ende des Monats, in den (ab_datum + 30 Tage) fällt."""
+    grenze = ab_datum + _dt.timedelta(days=30)
+    return _monatsende(grenze.year, grenze.month)

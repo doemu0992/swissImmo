@@ -2715,6 +2715,16 @@ class Verzug257dTests(TestCase):
         c = Client(); c.force_login(_team_user())
         r = c.get(f'/neu/vertraege/{v.id}/kuendigen/?grund=257d')
         self.assertContains(r, 'Zahlungsverzug (Art. 257d OR)')
+        # Ausserordentlicher 257d-Termin wird berechnet und angezeigt
+        self.assertContains(r, 'Ausserordentlich wegen Zahlungsverzug')
+        self.assertContains(r, 'Art. 257d Abs. 2 OR')
+
+    def test_termin_257d_berechnung(self):
+        from rentals.services import termin_257d
+        # 10.01. + 30 Tage = 09.02. → Ende Februar
+        self.assertEqual(termin_257d(date(2026, 1, 10)), date(2026, 2, 28))
+        # 05.03. + 30 Tage = 04.04. → Ende April
+        self.assertEqual(termin_257d(date(2026, 3, 5)), date(2026, 4, 30))
 
 
 class DashboardKritischTests(TestCase):

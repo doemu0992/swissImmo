@@ -36,7 +36,7 @@
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Eingang / Poststempel *</label>
                 <input type="date" name="eingang_datum" id="s_eingang" value="{{ heute_iso }}" onchange="berechne()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gewünschtes Ende <span class="text-slate-400 font-normal">(optional)</span></label>
-                <input type="date" name="gewuenschtes_ende" id="s_gew_ende" onchange="kuendigungCheck()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                <input type="date" name="gewuenschtes_ende" id="s_gew_ende" onchange="kuendigungCheck()" {% if ao_termin %}value="{{ ao_termin|date:'Y-m-d' }}"{% endif %} class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
 
         <!-- Mietrechtliche Live-Prüfung -->
@@ -51,6 +51,15 @@
             <div class="text-lg font-bold text-indigo-700" id="termin-anzeige">{{ vorschau_termin|date:"d.m.Y" }}</div>
             <p class="text-xs text-indigo-400 mt-0.5">Berechnet aus Eingang + {{ v.kuendigungsfrist_monate }} Monaten, auf den nächsten erlaubten Termin.</p>
         </div>
+
+        {% if ao_termin %}
+        <!-- Ausserordentlicher Termin bei Zahlungsverzug (Art. 257d Abs. 2) -->
+        <div class="bg-rose-50 border border-rose-100 rounded-lg px-4 py-3">
+            <div class="text-xs font-semibold text-rose-500 uppercase tracking-wide mb-0.5">Ausserordentlich wegen Zahlungsverzug</div>
+            <div class="text-lg font-bold text-rose-700">frühestens {{ ao_termin|date:"d.m.Y" }}</div>
+            <p class="text-xs text-rose-400 mt-0.5">Art. 257d Abs. 2 OR: mindestens 30 Tage auf Ende eines Monats — erst nach fruchtlosem Ablauf der gesetzten Zahlungsfrist.</p>
+        </div>
+        {% endif %}
 
         <label class="flex items-center gap-2 text-sm text-slate-700">
             <input type="checkbox" name="ausserordentlich" id="s_ao" {% if prefill_ao %}checked{% endif %} onchange="document.getElementById('ao-box').classList.toggle('hidden', !this.checked); kuendigungCheck()" class="accent-indigo-600"> Ausserordentliche Kündigung
@@ -99,6 +108,7 @@ function berechne(){ kuendigungCheck(); }
 
 // Mietrechtliche Live-Prüfung der Kündigung.
 var MIN_TERMIN = "{{ vorschau_termin|date:'Y-m-d' }}";
+var AO_MIN_TERMIN = "{{ ao_termin|date:'Y-m-d' }}";
 var IST_GESCHUETZT = {% if v.ist_geschuetzt %}true{% else %}false{% endif %};
 function kuendigungCheck(){
     var warns = [];
@@ -111,6 +121,12 @@ function kuendigungCheck(){
         warns.push('Das gewünschte Ende liegt vor dem nächsten ordentlichen Kündigungstermin (' +
                    MIN_TERMIN.split('-').reverse().join('.') + '). Eine ordentliche Kündigung auf ' +
                    'diesen Termin wäre unwirksam (Art. 266a / 266o OR) — nur bei ausserordentlicher Kündigung zulässig.');
+    }
+    // Ausserordentlich wegen Zahlungsverzug: Ende vor dem 257d-Mindesttermin
+    if (gew && ao && AO_MIN_TERMIN && gew < AO_MIN_TERMIN) {
+        warns.push('Bei ausserordentlicher Kündigung wegen Zahlungsverzug muss der Termin mindestens ' +
+                   '30 Tage auf ein Monatsende liegen — frühestens ' +
+                   AO_MIN_TERMIN.split('-').reverse().join('.') + ' (Art. 257d Abs. 2 OR).');
     }
     // Vermieterkündigung geschützter Räume → Formpflicht + Anfechtungs-/Erstreckungsrechte
     if (absender === 'vermieter' && IST_GESCHUETZT) {
