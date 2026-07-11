@@ -28,11 +28,11 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Referenzzins Vertrag (Basis, %)</label>
-                <input name="basis_zins" value="{% localize off %}{{ alt_zins }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 {% if basis_fehlt %}ring-2 ring-amber-300{% endif %}">
+                <input name="basis_zins" id="mz_basis_zins" oninput="mietzinsCheck()" value="{% localize off %}{{ alt_zins }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 {% if basis_fehlt %}ring-2 ring-amber-300{% endif %}">
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Neuer Referenzzins (%)</label>
-                <input name="neu_zins" value="{% localize off %}{{ aktuell_ref }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <input name="neu_zins" id="mz_neu_zins" oninput="mietzinsCheck()" value="{% localize off %}{{ aktuell_ref }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
             </div>
             <div class="sm:col-span-2 -mb-1">
                 <span class="text-[11px] font-semibold text-indigo-600">LIK-Basis: {{ lik_basis|default:"Dezember 2020" }} = 100</span>
@@ -72,14 +72,20 @@
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Netto neu (CHF)</label>
-                <input name="neu_netto" value="{% localize off %}{{ vorschlag_netto }}{% endlocalize %}" class="w-full bg-indigo-50 border border-indigo-200 rounded-lg text-sm px-3 py-2.5 font-semibold">
+                <input name="neu_netto" id="mz_neu" oninput="mietzinsCheck()" value="{% localize off %}{{ vorschlag_netto }}{% endlocalize %}" class="w-full bg-indigo-50 border border-indigo-200 rounded-lg text-sm px-3 py-2.5 font-semibold">
                 <p class="text-[11px] text-slate-400 mt-1">Vorschlag aus Referenzzins + Teuerung + Kosten</p>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Wirksam ab</label>
-                <input type="date" name="wirksam_ab" value="{{ naechster_termin|date:'Y-m-d' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <input type="date" name="wirksam_ab" id="mz_wirksam" onchange="mietzinsCheck()" value="{{ naechster_termin|date:'Y-m-d' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <p class="text-[11px] text-slate-400 mt-1">Nächster Termin mit gewahrter Ankündigungsfrist (+10 Tage)</p>
             </div>
+        </div>
+
+        <!-- Mietrechtliche Live-Prüfung -->
+        <div id="mz-warn" class="hidden mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[12.5px] text-amber-800">
+            <div class="font-bold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-scale-balanced"></i> Mietrechtlicher Hinweis</div>
+            <ul id="mz-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
         </div>
     </div>
 
@@ -113,4 +119,47 @@
         <a href="/neu/mietzins/" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
     </div>
 </form>
+
+<script>
+// Mietrechtliche Live-Prüfung der Mietzinsanpassung (Art. 269d OR / Art. 19 VMWG).
+var MZ_MIN_WIRKSAM = "{{ naechster_termin|date:'Y-m-d' }}";
+var MZ_ALT_NETTO   = {% localize off %}{{ alt_netto|default:0 }}{% endlocalize %};
+var MZ_VORSCHLAG   = {% localize off %}{{ vorschlag_netto|default:0 }}{% endlocalize %};
+function _mzNum(id){ var e=document.getElementById(id); if(!e) return NaN; return parseFloat((e.value||'').replace(',','.')); }
+function mietzinsCheck(){
+    var warns = [];
+    var neu = _mzNum('mz_neu');
+    var wirksam = (document.getElementById('mz_wirksam')||{}).value || '';
+    var basisZins = _mzNum('mz_basis_zins');
+    var neuZins = _mzNum('mz_neu_zins');
+
+    // A) Ankündigungsfrist / Termin nicht gewahrt → Erhöhung erst auf den nächsten Termin gültig.
+    if (wirksam && MZ_MIN_WIRKSAM && wirksam < MZ_MIN_WIRKSAM) {
+        warns.push('Der gewählte Termin wahrt die Ankündigungsfrist nicht. Eine Mietzinserhöhung muss mit ' +
+                   'der Kündigungsfrist + 10 Tagen auf einen Kündigungstermin angekündigt werden — frühester ' +
+                   'zulässiger Termin ist der ' + MZ_MIN_WIRKSAM.split('-').reverse().join('.') +
+                   ' (Art. 269d Abs. 1 OR / Art. 18 VMWG).');
+    }
+    // C) Erhöhung über das begründbare Mass hinaus → Missbrauchs-/Anfechtungsrisiko.
+    if (!isNaN(neu) && MZ_VORSCHLAG > 0 && neu > MZ_VORSCHLAG + 0.5) {
+        warns.push('Der neue Netto-Mietzins liegt über dem aus Referenzzins, Teuerung und Kostensteigerung ' +
+                   'begründbaren Betrag (Vorschlag CHF ' + MZ_VORSCHLAG.toLocaleString('de-CH') + '). Der ' +
+                   'übersteigende Teil ist nur mit einem zusätzlichen Grund (z. B. wertvermehrende Investition) ' +
+                   'zulässig — sonst als missbräuchlich anfechtbar (Art. 269 OR; Anfechtung innert 30 Tagen, Art. 270b).');
+    }
+    // D) Referenzzins gesunken, aber trotzdem Erhöhung → Herabsetzungsanspruch des Mieters.
+    if (!isNaN(basisZins) && !isNaN(neuZins) && neuZins < basisZins - 0.001 &&
+        !isNaN(neu) && neu >= MZ_ALT_NETTO - 0.5) {
+        warns.push('Der Referenzzinssatz ist seit der letzten Festsetzung gesunken (' +
+                   basisZins.toLocaleString('de-CH') + '% → ' + neuZins.toLocaleString('de-CH') + '%). ' +
+                   'Der Mieter hat grundsätzlich Anspruch auf Herabsetzung (Art. 270a OR); eine Erhöhung ist ' +
+                   'nur zulässig, wenn andere Gründe (Teuerung/Kosten/Investitionen) den Rückgang überwiegen.');
+    }
+
+    var box = document.getElementById('mz-warn'), list = document.getElementById('mz-warn-list');
+    if (warns.length) { list.innerHTML = warns.map(function(w){ return '<li>'+w+'</li>'; }).join(''); box.classList.remove('hidden'); }
+    else { box.classList.add('hidden'); }
+}
+mietzinsCheck();
+</script>
 {% endblock %}

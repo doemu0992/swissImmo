@@ -2472,3 +2472,33 @@ class ReferenzzinsSenkungTests(TestCase):
         v.mietzins_modell = 'index'; v.save()
         generate_auto_pendenzen(horizont_tage=90)
         self.assertFalse(Pendenz.objects.filter(vertrag=v, titel__icontains='Referenzzinssenkung').exists())
+
+
+class MietzinsAnpassungLiveTests(TestCase):
+    """Die Mietzinsanpassung meldet mietrechtliche Probleme live beim Erfassen
+    (Art. 269d/270a OR), nicht erst auf dem PDF."""
+
+    def _setup(self):
+        from crm.models import Verwaltung
+        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
+        lg, e, m, v = _basis_objekte()
+        v.basis_referenzzinssatz = Decimal('1.75')
+        v.basis_lik_punkte = Decimal('100')
+        v.mietzins_modell = 'fest'
+        v.save()
+        return v
+
+    def test_live_pruefung_im_formular(self):
+        v = self._setup()
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/mietzins/{v.id}/anpassung/').content.decode()
+        # Live-Prüf-Gerüst vorhanden
+        self.assertIn('function mietzinsCheck', body)
+        self.assertIn('id="mz-warn"', body)
+        # Die drei geprüften Rechtsgrundlagen sind im ausgelieferten Script referenziert
+        self.assertIn('Art. 269d Abs. 1 OR', body)   # Ankündigungsfrist/Termin
+        self.assertIn('Art. 269 OR', body)           # Missbrauch/Anfechtung
+        self.assertIn('Art. 270a OR', body)          # Herabsetzung bei gesunkenem Referenzzins
+        # Serverwerte für die Client-Prüfung sind eingebettet
+        self.assertIn('MZ_MIN_WIRKSAM', body)
+        self.assertIn('MZ_VORSCHLAG', body)
