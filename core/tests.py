@@ -2557,6 +2557,23 @@ class LogbuchTests(TestCase):
         self.assertIn('text/csv', r['Content-Type'])
         self.assertIn('Kaution zurückbezahlt', r.content.decode('utf-8'))
 
+    def test_pdf_auditbericht(self):
+        u = _team_user(); c = Client(); c.force_login(u)
+        self._log('Person gelöscht', 'Alt Kunde', user=u)
+        r = c.get('/neu/logbuch/?export=pdf')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r.content.startswith(b'%PDF'))
+
+    def test_statistik_kopf(self):
+        u = _team_user(); c = Client(); c.force_login(u)
+        self._log('Person gelöscht', 'A', user=u)
+        r = c.get('/neu/logbuch/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'davon kritisch')
+        self.assertContains(r, 'Aktivste Benutzer')
+        self.assertContains(r, 'Art. 958f OR')
+
     def test_nur_verwaltung_sieht_logbuch(self):
         """Lesend-Rolle darf das Logbuch nicht sehen (rollenbasiert)."""
         u = _team_user(rolle='Lesend'); c = Client(); c.force_login(u)
@@ -2657,3 +2674,68 @@ class LogbuchTests(TestCase):
         })
         log2 = AktivitaetsLog.objects.filter(aktion='Objekt bearbeitet').latest('id')
         self.assertIn('4.5 Zi', log2.details)
+
+
+class Verzug257dTests(TestCase):
+    """Zahlungsverzug Art. 257d: Fristansetzung erzeugt Dokument + Fristen-Pendenz,
+    Live-Prüfung der Mindestfrist, Kündigungs-Prefill."""
+
+    def _setup_offen(self):
+        from finance.models import DebitorenRechnung
+        lg, e, m, v = _basis_objekte()
+        heute = date.today()
+        DebitorenRechnung.objects.create(
+            vertrag=v, titel='Miete', datum=heute - timedelta(days=40),
+            faellig_am=heute - timedelta(days=35), betrag=Decimal('1700'), status='offen')
+        return lg, e, m, v
+
+    def test_form_zeigt_offenen_betrag_und_min_frist(self):
+        lg, e, m, v = self._setup_offen()
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/vertraege/{v.id}/verzug/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Art. 257d')
+        self.assertContains(r, 'MIN_FRIST = 30')   # Wohnung → geschützt → 30 Tage
+
+    def test_frist_ansetzen_legt_dokument_und_pendenz_an(self):
+        from core.models import Pendenz, AktivitaetsLog
+        from rentals.models import Dokument
+        lg, e, m, v = self._setup_offen()
+        c = Client(); c.force_login(_team_user())
+        frist = (date.today() + timedelta(days=30)).isoformat()
+        r = c.post(f'/neu/vertraege/{v.id}/verzug/', {'frist_bis': frist})
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(Pendenz.objects.filter(vertrag=v, titel__icontains='257d').exists())
+        self.assertTrue(Dokument.objects.filter(vertrag=v, bezeichnung__icontains='257d').exists())
+        self.assertTrue(AktivitaetsLog.objects.filter(aktion__icontains='257d', ziel_typ='vertrag',
+                                                      ziel_id=v.id).exists())
+
+    def test_kuendigung_prefill_bei_verzug(self):
+        lg, e, m, v = self._setup_offen()
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/vertraege/{v.id}/kuendigen/?grund=257d')
+        self.assertContains(r, 'Zahlungsverzug (Art. 257d OR)')
+
+
+class DashboardKritischTests(TestCase):
+    """Dashboard-Widget: letzte kritische Logbuch-Aktionen (nur Verwaltung)."""
+
+    def test_widget_zeigt_kritische_aktion(self):
+        from core.models import AktivitaetsLog
+        from core.auth import kategorie_fuer
+        lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        AktivitaetsLog.objects.create(benutzer=u, aktion='Person gelöscht', objekt='Alt Kunde',
+                                      kategorie=kategorie_fuer('Person gelöscht'))
+        r = c.get('/neu/')
+        self.assertContains(r, 'Letzte kritische Aktionen')
+        self.assertContains(r, 'Person gelöscht')
+
+    def test_widget_nicht_fuer_lesend(self):
+        from core.models import AktivitaetsLog
+        from core.auth import kategorie_fuer
+        u = _team_user(rolle='Lesend'); c = Client(); c.force_login(u)
+        AktivitaetsLog.objects.create(benutzer=u, aktion='Person gelöscht', objekt='X',
+                                      kategorie=kategorie_fuer('Person gelöscht'))
+        r = c.get('/neu/')
+        self.assertNotContains(r, 'Letzte kritische Aktionen')

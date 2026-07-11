@@ -53,11 +53,11 @@
         </div>
 
         <label class="flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" name="ausserordentlich" id="s_ao" onchange="document.getElementById('ao-box').classList.toggle('hidden', !this.checked); kuendigungCheck()" class="accent-indigo-600"> Ausserordentliche Kündigung
+            <input type="checkbox" name="ausserordentlich" id="s_ao" {% if prefill_ao %}checked{% endif %} onchange="document.getElementById('ao-box').classList.toggle('hidden', !this.checked); kuendigungCheck()" class="accent-indigo-600"> Ausserordentliche Kündigung
         </label>
-        <div id="ao-box" class="hidden space-y-3 pl-6">
+        <div id="ao-box" class="{% if not prefill_ao %}hidden {% endif %}space-y-3 pl-6">
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Grund</label>
-                <input name="ausserordentlich_grund" placeholder="z. B. wichtiger Grund (Art. 266g), Zahlungsverzug (257d) …" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                <input name="ausserordentlich_grund" value="{{ prefill_grund }}" placeholder="z. B. wichtiger Grund (Art. 266g), Zahlungsverzug (257d) …" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
 
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Erstreckung bis <span class="text-slate-400 font-normal">(optional)</span></label>

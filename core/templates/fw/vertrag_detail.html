@@ -224,6 +224,18 @@
 
 <!-- ===== TAB: FINANZEN ===== -->
 <div data-panel="vt" id="vt-finanzen" class="hidden">
+    {% if total_offen > 0 %}
+    <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-4 flex items-start gap-3">
+        <i class="fa-solid fa-triangle-exclamation text-rose-500 mt-0.5"></i>
+        <div class="flex-1 min-w-0">
+            <div class="text-sm font-bold text-rose-800">Offener Betrag: CHF {{ total_offen|chf }}</div>
+            <p class="text-xs text-rose-600 mt-0.5">Bei Zahlungsverzug: Frist ansetzen (Art. 257d OR) — Zahlungsaufforderung mit 30-Tage-Frist, danach ausserordentliche Kündigung möglich.</p>
+        </div>
+        <a href="/neu/vertraege/{{ v.id }}/verzug/" class="shrink-0 inline-flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg">
+            <i class="fa-solid fa-gavel"></i> Zahlungsverzug 257d
+        </a>
+    </div>
+    {% endif %}
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
         <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Offene Posten & Rechnungen</div>
         <table class="w-full text-sm">

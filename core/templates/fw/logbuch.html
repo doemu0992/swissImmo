@@ -3,13 +3,44 @@
 {% block content %}
 <div class="flex items-center justify-between mb-1 flex-wrap gap-3">
     <h1 class="text-3xl font-extrabold text-slate-900">Logbuch</h1>
-    <a href="?{% if f_q %}q={{ f_q|urlencode }}&{% endif %}{% if f_benutzer %}benutzer={{ f_benutzer|urlencode }}&{% endif %}{% if f_art %}art={{ f_art|urlencode }}&{% endif %}tage={{ f_tage|urlencode }}&export=csv"
-       class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
-        <i class="fa-solid fa-file-csv mr-1.5 text-emerald-600"></i> CSV-Export
-    </a>
+    <div class="flex items-center gap-2">
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=pdf" target="_blank"
+           class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+            <i class="fa-solid fa-file-pdf mr-1.5 text-rose-500"></i> PDF-Bericht
+        </a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=csv"
+           class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+            <i class="fa-solid fa-file-csv mr-1.5 text-emerald-600"></i> CSV-Export
+        </a>
+    </div>
 </div>
 <p class="text-sm text-slate-500 mb-5">Nachvollziehbarer Verlauf: <b>wer</b> hat <b>wann</b> <b>was</b> getan.
     {{ total }} Einträge im gewählten Zeitraum · rein lesend (Revisions-Trail).</p>
+
+<!-- Statistik-Kopf -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-2xl font-extrabold text-slate-900">{{ total }}</div>
+        <div class="text-xs text-slate-400">Einträge (Zeitraum)</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-2xl font-extrabold text-rose-600">{{ stat.kritisch }}</div>
+        <div class="text-xs text-slate-400">davon kritisch</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-2xl font-extrabold text-violet-600">{{ stat.sicherheit }}</div>
+        <div class="text-xs text-slate-400">Sicherheit / Login</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-xs font-semibold text-slate-500 mb-1">Aktivste Benutzer</div>
+        {% for u in top_user %}
+        <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-700 truncate">{{ u.benutzer__first_name|default:u.benutzer__username }}{% if u.benutzer__last_name %} {{ u.benutzer__last_name }}{% endif %}</span>
+            <span class="font-bold text-slate-500">{{ u.n }}</span>
+        </div>
+        {% empty %}<div class="text-xs text-slate-400 italic">—</div>{% endfor %}
+    </div>
+</div>
 
 <!-- Filterleiste -->
 <form method="get" class="bg-white rounded-xl border border-slate-200 p-4 mb-5">
@@ -131,14 +162,12 @@
 <div class="flex items-center justify-between mt-4 text-sm">
     <span class="text-slate-400">Seite {{ seite.number }} von {{ seite.paginator.num_pages }} · {{ total }} Einträge</span>
     <div class="flex items-center gap-2">
-        {% with base="?q="|add:f_q|add:"&benutzer="|add:f_benutzer|add:"&art="|add:f_art|add:"&tage="|add:f_tage %}
         {% if seite.has_previous %}
-        <a href="{{ base }}&page={{ seite.previous_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600"><i class="fa-solid fa-chevron-left text-[10px] mr-1"></i>Zurück</a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.previous_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600"><i class="fa-solid fa-chevron-left text-[10px] mr-1"></i>Zurück</a>
         {% endif %}
         {% if seite.has_next %}
-        <a href="{{ base }}&page={{ seite.next_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600">Weiter<i class="fa-solid fa-chevron-right text-[10px] ml-1"></i></a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&page={{ seite.next_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600">Weiter<i class="fa-solid fa-chevron-right text-[10px] ml-1"></i></a>
         {% endif %}
-        {% endwith %}
     </div>
 </div>
 {% endif %}
@@ -147,5 +176,6 @@
     Das Logbuch protokolliert automatisch alle wesentlichen Aktionen (Verträge, Personen, Dokumente,
     Kündigungen, Buchungen, Versand, Löschungen). Einträge sind unveränderlich und dienen der
     Nachvollziehbarkeit. Nur Benutzer mit der Rolle <b>Verwaltung</b> sehen das Logbuch.
+    Geschäftsbücher und Belege sind <b>10 Jahre</b> aufzubewahren (Art. 958f OR).
 </p>
 {% endblock %}

@@ -156,6 +156,15 @@ def fw_dashboard(request):
         })
     heute_todo_mehr = max(_pend.filter(Q(faellig_am__lte=grenze14) | Q(faellig_am__isnull=True)).count() - 8, 0)
 
+    # --- Letzte kritische Aktionen aus dem Logbuch (nur Verwaltung) ---
+    from core.auth import hat_rolle
+    kritische_aktionen = []
+    if hat_rolle(request.user, [ROLLE_VERWALTUNG]):
+        from core.models import AktivitaetsLog
+        kritische_aktionen = list(
+            AktivitaetsLog.objects.filter(kategorie__in=AktivitaetsLog.KRITISCH)
+            .select_related('benutzer')[:6])
+
     # --- AUFGABEN (bestehende Pendenzen-Engine wiederverwenden) ---
     aufgaben = _berechne_aufgaben(heute, leerstand_objekte.count(), 0, 0)
     # Aufgaben-Ziele auf die neue Oberfläche mappen, wo es ein Pendant gibt
@@ -186,6 +195,7 @@ def fw_dashboard(request):
         'cockpit': cockpit,
         'heute_todo': heute_todo,
         'heute_todo_mehr': heute_todo_mehr,
+        'kritische_aktionen': kritische_aktionen,
     }
     return render(request, 'fw/dashboard.html', context)
 
@@ -4162,6 +4172,27 @@ def fw_logbuch(request):
                         e.aktion, e.objekt, e.details])
         return resp
 
+    # PDF-Auditbericht (revisionssicher, gleiche Filter)
+    if request.GET.get('export') == 'pdf':
+        from django.http import HttpResponse
+        from core.services.logbuch_pdf import logbuch_pdf
+        pdf = logbuch_pdf(list(qs[:2000]), erstellt_von=(request.user.get_full_name() or request.user.username))
+        resp = HttpResponse(pdf, content_type='application/pdf')
+        resp['Content-Disposition'] = 'inline; filename="Logbuch-Auditbericht.pdf"'
+        return resp
+
+    # Kennzahlen für den Statistik-Kopf (auf der gefilterten Menge)
+    from django.db.models import Count
+    kat_counts = {k: n for k, n in qs.values_list('kategorie').annotate(n=Count('id'))}
+    stat = {
+        'kritisch': qs.filter(kategorie__in=AktivitaetsLog.KRITISCH).count(),
+        'sicherheit': kat_counts.get('sicherheit', 0),
+        'geloescht': kat_counts.get('geloescht', 0),
+    }
+    top_user = list(qs.exclude(benutzer__isnull=True)
+                    .values('benutzer__username', 'benutzer__first_name', 'benutzer__last_name')
+                    .annotate(n=Count('id')).order_by('-n')[:5])
+
     paginator = Paginator(qs, 50)
     seite = paginator.get_page(request.GET.get('page'))
 
@@ -4172,7 +4203,7 @@ def fw_logbuch(request):
 
     return render(request, 'fw/logbuch.html', {
         **basis, 'nav': 'logbuch', 'seite': seite, 'total': paginator.count,
-        'benutzer': benutzer,
+        'benutzer': benutzer, 'stat': stat, 'top_user': top_user,
         'f_q': q, 'f_benutzer': benutzer_id, 'f_art': art, 'f_tage': tage,
     })
 
@@ -5154,9 +5185,98 @@ def fw_kuendigung_erfassen(request, vertrag_id):
 
     # Vorschau des nächsten Termins für heute
     vorschau_termin = berechne_kuendigungstermin(v, timezone.localdate())
+    # Aus dem Verzugsprozess kommend → ausserordentliche Kündigung wegen Zahlungsverzug vorbelegen
+    verzug = request.GET.get('grund') in ('verzug', '257d')
     return render(request, 'fw/kuendigung_form.html', {
         **basis, 'nav': 'vertraege', 'v': v,
         'vorschau_termin': vorschau_termin, 'heute_iso': timezone.localdate().isoformat(),
+        'prefill_ao': verzug,
+        'prefill_grund': 'Zahlungsverzug (Art. 257d OR)' if verzug else '',
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_verzug_257d(request, vertrag_id):
+    """Zahlungsverzug (Art. 257d OR): fällige Miete offen → Zahlungsaufforderung mit
+    Fristansetzung (Dokument + Fristen-Pendenz). Nach fruchtlosem Ablauf kann
+    ausserordentlich gekündigt werden (Abs. 2). GET: Formular · POST: Frist ansetzen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from datetime import timedelta
+    from finance.models import DebitorenRechnung
+    from crm.models import Verwaltung
+    from core.models import Pendenz
+    from core.auth import log_aktion
+    from core.services.serienbrief import generate_serienbrief_pdf
+    from core.services.ablage import ablegen
+
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
+    basis = _global_filter(request)
+    heute = timezone.localdate()
+    lg = v.einheit.liegenschaft if v.einheit_id else None
+
+    # Offene, fällige Forderungen dieses Vertrags
+    offene = DebitorenRechnung.objects.filter(vertrag=v, status__in=['offen', 'teilbezahlt'])
+    faellige = [r for r in offene if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) <= heute]
+    offen_total = sum((r.offener_betrag for r in faellige), Decimal('0.00'))
+
+    # Mindestfrist: Wohn-/Geschäftsräume 30 Tage, sonst 10 Tage (Art. 257d Abs. 1)
+    min_frist = 30 if v.ist_geschuetzt else 10
+    default_frist = (heute + timedelta(days=min_frist)).isoformat()
+
+    if request.method == 'POST':
+        try:
+            frist = date.fromisoformat(request.POST.get('frist_bis') or default_frist)
+        except ValueError:
+            frist = heute + timedelta(days=min_frist)
+        vw = Verwaltung.objects.first()
+        absender = {'firma': getattr(vw, 'firma', '') if vw else '', 'strasse': getattr(vw, 'strasse', '') if vw else '',
+                    'plz': getattr(vw, 'plz', '') if vw else '', 'ort': getattr(vw, 'ort', '') if vw else ''}
+        m = v.mieter
+        emp = [{'name': m.display_name, 'anrede': f"Sehr geehrte/r {m.display_name}",
+                'strasse': m.strasse, 'plz': m.plz, 'ort': m.ort,
+                'objekt': v.einheit.bezeichnung if v.einheit_id else '',
+                'liegenschaft': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else '')}]
+        betreff = "Zahlungsaufforderung mit Fristansetzung (Art. 257d OR)"
+        text = (
+            "{anrede}\n\n"
+            "Für das Mietobjekt {objekt} an der {liegenschaft} sind offene Mietzinse von total "
+            f"CHF {offen_total:.2f} zur Zahlung fällig.\n\n"
+            f"Gestützt auf Art. 257d OR setzen wir Ihnen eine Frist bis zum {frist.strftime('%d.%m.%Y')}, "
+            "um den ausstehenden Betrag vollständig zu begleichen.\n\n"
+            "Wir weisen Sie ausdrücklich darauf hin, dass wir das Mietverhältnis nach unbenutztem "
+            "Ablauf dieser Frist ausserordentlich kündigen können (Art. 257d Abs. 2 OR), mit einer "
+            "Frist von 30 Tagen auf Ende eines Monats.\n\n"
+            "Freundliche Grüsse"
+        )
+        pdf = generate_serienbrief_pdf(absender, betreff, text, emp)
+        ablegen(pdf, f"Zahlungsaufforderung 257d – Frist {frist:%d.%m.%Y}",
+                kategorie='korrespondenz', vertrag=v, dedup=False)
+        # Fristen-Pendenz: läuft am Fristende ab → dann ausserordentliche Kündigung möglich
+        Pendenz.objects.create(
+            titel=f"Art. 257d: Zahlungsfrist läuft ab – {v.mieter.display_name}",
+            beschreibung=(f"Offene Miete CHF {offen_total:.2f}. Zahlungsfrist bis {frist:%d.%m.%Y} "
+                          "(Art. 257d Abs. 1 OR). Nach fruchtlosem Ablauf: ausserordentliche Kündigung "
+                          "mit 30 Tagen auf Monatsende (Art. 257d Abs. 2 OR)."),
+            kategorie='frist', faellig_am=frist, vertrag=v, liegenschaft=lg,
+            erstellt_von=request.user if request.user.is_authenticated else None,
+        )
+        log_aktion(request, "Zahlungsaufforderung 257d erstellt", str(v.mieter),
+                   f"Frist bis {frist:%d.%m.%Y}, offen CHF {offen_total:.2f}", ziel=v)
+        if request.POST.get('als_pdf') == '1':
+            from django.http import HttpResponse
+            resp = HttpResponse(pdf, content_type='application/pdf')
+            resp['Content-Disposition'] = f'inline; filename="Zahlungsaufforderung_{v.mieter.nachname}.pdf"'
+            return resp
+        messages.success(request, f"✅ Zahlungsaufforderung erstellt – Frist bis {frist:%d.%m.%Y}. "
+                                  "Fristen-Pendenz angelegt.")
+        return redirect(f'/neu/vertraege/{v.id}/')
+
+    return render(request, 'fw/verzug_257d.html', {
+        **basis, 'nav': 'vertraege', 'v': v, 'lg': lg,
+        'offen_total': offen_total, 'anzahl_faellig': len(faellige),
+        'min_frist': min_frist, 'default_frist': default_frist,
+        'heute_iso': heute.isoformat(),
     })
 
 
