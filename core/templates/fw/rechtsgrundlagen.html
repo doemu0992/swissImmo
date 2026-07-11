@@ -1,0 +1,37 @@
+{% extends 'fw/base.html' %}
+{% block title %}Rechtsgrundlagen — swissImmo{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Rechtsgrundlagen</h1>
+<p class="text-sm text-slate-500 mb-6 max-w-3xl">Die mietrechtlichen Grundlagen (Schweizer OR / VMWG), auf die swissImmo
+    seine Prüfungen, Fristen und Dokumente stützt — mit Hinweis, wo im Programm der jeweilige Artikel greift.</p>
+
+<div class="space-y-5">
+{% for g in gruppen %}
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
+        <i class="fa-solid {{ g.icon }} text-indigo-500"></i>
+        <h2 class="font-bold text-slate-800 text-sm">{{ g.titel }}</h2>
+    </div>
+    <div class="divide-y divide-slate-50">
+        {% for a in g.artikel %}
+        <div class="px-5 py-3.5 flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
+            <div class="sm:w-40 shrink-0">
+                <span class="inline-block px-2 py-0.5 rounded-md text-xs font-bold bg-indigo-50 text-indigo-700 whitespace-nowrap">{{ a.ref }}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium text-slate-900">{{ a.label }}</div>
+                {% if a.anwendung %}<div class="text-xs text-slate-500 mt-0.5">{{ a.anwendung }}</div>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+</div>
+
+<p class="text-xs text-slate-400 mt-6 max-w-3xl">
+    Angaben nach bestem Wissen und ohne Gewähr — sie ersetzen keine Rechtsberatung. Im Einzelfall,
+    insbesondere bei Kündigungen und Mietzinsstreitigkeiten, ist eine anwaltliche/behördliche Abklärung angezeigt.
+    Alle Zitate stammen aus einer zentralen Quelle und werden überall in der App konsistent verwendet.
+</p>
+{% endblock %}

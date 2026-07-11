@@ -50,6 +50,40 @@ ARTIKEL = {
 }
 
 
+# ── Wo wird der Artikel in der Software angewandt? (für die Rechtsgrundlagen-Seite) ──
+ANWENDUNG = {
+    'kaution':             'Vertrags-Wizard (max. 3 Monatsmieten, Live-Prüfung) · Kautions-Cockpit · '
+                           'automatische Freigabefrist 1 Jahr nach Mietende (Abs. 3).',
+    'verzug':              'Zahlungsverzug-Prozess: Fristansetzung (30 T Wohn-/Geschäft, 10 T übrige) '
+                           '→ ausserordentliche Kündigung 30 T auf Monatsende · Mahnwesen.',
+    'verzugszins':         'Verzugszins-Berechnung im Debitoren-/Mahnlauf.',
+    'kuendigung_form':     'Kündigungs-Erfassung: Vermieterkündigung nur mit amtlichem Formular (Live-Hinweis).',
+    'kuendigung_termine':  'Kündigungstermin-Berechnung · Live-Prüfung „Ende vor ordentlichem Termin".',
+    'kuendigung_wohnung':  'Frist-Default & Live-Prüfung im Vertrags-Wizard (Objektart Wohnen).',
+    'kuendigung_geschaeft':'Frist-Default & Live-Prüfung im Vertrags-Wizard (Objektart Gewerbe).',
+    'kuendigung_platz':    'Kündigungstermin-Berechnung für Einstellplätze (2 Wochen / Monatsende).',
+    'kuendigung_uebrige':  'Kündigungsfrist für Nebenobjekte (Bastelraum u.ä.).',
+    'kuendigung_ao':       'Ausserordentliche Kündigung (Grundauswahl im Kündigungsformular).',
+    'familienwohnung':     'Vertrags-Wizard: Hinweis auf getrennte Zustellung an beide Ehegatten.',
+    'kuendigung_nichtig':  'Live-Prüfung: unwirksame ordentliche Kündigung auf zu frühen Termin.',
+    'anfechtung':          'Automatische Anfechtungsfrist-Pendenz bei Vermieterkündigung.',
+    'anfechtung_frist':    'Anfechtungsfrist-Pendenz (30 Tage) · Rechtsbelehrung auf Dokumenten.',
+    'erstreckung':         'Hinweis bei Vermieterkündigung geschützter Räume.',
+    'missbrauch':          'Mietzinsanpassung: Live-Warnung, wenn Erhöhung das begründbare Mass übersteigt.',
+    'indexmiete':          'Vertrags-Wizard/Gewerbe: Index nur bei fester Dauer ≥ 5 J (Live-Prüfung) · Mietenlauf.',
+    'staffelmiete':        'Vertrags-Wizard/Gewerbe: Staffel ≥ 3 J, max. 1×/Jahr (Live-Prüfung) · Mietenlauf.',
+    'mietzinserhoehung':   'Amtliches Mietzinsanpassungs-Formular · Ankündigungsfrist-Live-Prüfung.',
+    'herabsetzung':        'Automatische Pendenz bei Referenzzinssenkung (Herabsetzungsanspruch).',
+    'referenzzins':        'Marktdaten (Referenzzinssatz) · Grundlage der Herabsetzungs-/Erhöhungslogik.',
+    'anfangsmietzins':     'Hinweis im Mietzins-Kontext.',
+    'rueckgabe':           'Wohnungsabnahme/Rücknahme-Protokoll · Schlussabrechnung.',
+    'rueckgabe_pruefung':  'Wohnungsabnahme: Mängelrüge bei Rückgabe.',
+    'nebenkosten':         'Nebenkosten-Abrechnung (Assistent) · Rechtsgrundlagen im Abrechnungs-PDF.',
+    'zahlungstermin':      'Sollstellung Miete · Fälligkeiten.',
+    'uebergabe':           'Vertrag/Übergabeprotokoll.',
+}
+
+
 def ref(key):
     """Gibt das reine Zitat zurück, z.B. 'Art. 266c OR' (leer bei unbekanntem Schlüssel)."""
     eintrag = ARTIKEL.get(key)
@@ -59,6 +93,35 @@ def ref(key):
 def label(key):
     eintrag = ARTIKEL.get(key)
     return eintrag[1] if eintrag else ''
+
+
+# ── Gruppierte Übersicht für die Rechtsgrundlagen-Seite ──────────────────────
+GRUPPEN = [
+    ('Kaution', 'fa-shield-halved', ['kaution']),
+    ('Zahlungsverzug', 'fa-triangle-exclamation', ['verzug', 'verzugszins']),
+    ('Kündigung – Form & Fristen', 'fa-file-circle-xmark',
+     ['kuendigung_form', 'kuendigung_termine', 'kuendigung_wohnung', 'kuendigung_geschaeft',
+      'kuendigung_platz', 'kuendigung_uebrige', 'kuendigung_ao', 'familienwohnung', 'kuendigung_nichtig']),
+    ('Kündigungsschutz', 'fa-scale-balanced', ['anfechtung', 'anfechtung_frist', 'erstreckung']),
+    ('Mietzins', 'fa-percent',
+     ['missbrauch', 'indexmiete', 'staffelmiete', 'mietzinserhoehung', 'herabsetzung',
+      'referenzzins', 'anfangsmietzins']),
+    ('Rückgabe & Nebenkosten', 'fa-key', ['rueckgabe', 'rueckgabe_pruefung', 'nebenkosten', 'zahlungstermin', 'uebergabe']),
+]
+
+
+def uebersicht():
+    """Aufbereitete, gruppierte Liste aller angewandten Rechtsgrundlagen für die UI."""
+    gruppen = []
+    for titel, icon, keys in GRUPPEN:
+        rows = []
+        for k in keys:
+            if k not in ARTIKEL:
+                continue
+            rows.append({'ref': ARTIKEL[k][0], 'label': ARTIKEL[k][1],
+                         'anwendung': ANWENDUNG.get(k, '')})
+        gruppen.append({'titel': titel, 'icon': icon, 'artikel': rows})
+    return gruppen
 
 
 # ── Kategorie-abhängige Kündigungs-Rechtsgrundlage ───────────────────────────

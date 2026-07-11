@@ -4224,6 +4224,17 @@ def fw_logbuch(request):
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
+def fw_rechtsgrundlagen(request):
+    """Übersicht aller mietrechtlichen Grundlagen (OR/VMWG), die die Software
+    anwendet — Artikel, Kurztitel und wo im Programm sie greifen."""
+    from core.services import mietrecht
+    basis = _global_filter(request)
+    return render(request, 'fw/rechtsgrundlagen.html', {
+        **basis, 'nav': 'rechtsgrundlagen', 'gruppen': mietrecht.uebersicht(),
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
 def fw_mandate(request):
     """Mandanten (Eigentümer, für die verwaltet wird)."""
     from crm.models import Mandant

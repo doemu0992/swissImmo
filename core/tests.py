@@ -2801,6 +2801,28 @@ class FristenCenterTests(TestCase):
         self.assertNotContains(r, 'Manuelle Aufgabe')
 
 
+class RechtsgrundlagenTests(TestCase):
+    """In-App-Übersicht der angewandten Rechtsgrundlagen."""
+
+    def test_seite_rendert_artikel(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/rechtsgrundlagen/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Rechtsgrundlagen')
+        self.assertContains(r, 'Art. 257d OR')     # Verzug
+        self.assertContains(r, 'Art. 269d OR')     # Mietzinserhöhung
+        self.assertContains(r, 'Zahlungsverzug-Prozess')  # Anwendungshinweis
+
+    def test_uebersicht_struktur(self):
+        from core.services import mietrecht
+        g = mietrecht.uebersicht()
+        self.assertTrue(any(x['titel'] == 'Kaution' for x in g))
+        # jede Zeile hat ref/label/anwendung
+        for gruppe in g:
+            for a in gruppe['artikel']:
+                self.assertIn('OR', a['ref'] + a['label'] + ' OR')
+
+
 class KautionFreigabeTests(TestCase):
     """Art. 257e Abs. 3: nach 1 Jahr seit Mietende ohne Ansprüche → Freigabe-Pendenz."""
 
