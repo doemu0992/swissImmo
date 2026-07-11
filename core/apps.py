@@ -19,3 +19,6 @@ class CoreConfig(AppConfig):
             )
 
         admin.site.has_permission = superuser_only
+
+        # Login-/Sicherheits-Ereignisse ins Logbuch schreiben.
+        from core import signals  # noqa: F401

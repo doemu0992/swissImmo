@@ -101,17 +101,77 @@ _ZIEL_TYP_MAP = {
     'Pendenz': 'pendenz',
 }
 
+# Stichwort → Kategorie (Reihenfolge zählt: erste Übereinstimmung gewinnt).
+_KATEGORIE_KEYS = [
+    ('geloescht',  ['gelöscht', 'storniert', 'zurückgezogen', 'entfernt']),
+    ('sicherheit', ['angemeldet', 'abgemeldet', 'login', 'anmeldung', 'passwort']),
+    ('finanzen',   ['verbucht', 'bezahlt', 'sollstellung', 'zahlung', 'mahn', 'pain.001',
+                    'camt', 'afa', 'abrechnung', 'buchung', 'einlage', 'kaution', 'rechnung']),
+    ('versand',    ['versendet', 'versand', 'e-mail', 'serienbrief', 'rundschreiben', 'gesendet']),
+    ('erstellt',   ['erstellt', 'erfasst', 'erzeugt', 'hochgeladen', 'angelegt', 'beauftragt']),
+    ('bearbeitet', ['bearbeitet', 'geändert', 'angepasst', 'freigegeben', 'zugeordnet', 'bestätigt']),
+]
 
-def log_aktion(request, aktion, objekt="", details="", ziel=None):
+
+def kategorie_fuer(aktion):
+    """Leitet die strukturierte Kategorie aus dem freien Aktionstext ab."""
+    a = (aktion or '').lower()
+    for kat, keys in _KATEGORIE_KEYS:
+        if any(k in a for k in keys):
+            return kat
+    return 'sonstiges'
+
+
+def client_ip(request):
+    """Ermittelt die Client-IP (berücksichtigt Reverse-Proxy X-Forwarded-For)."""
+    try:
+        xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
+        if xff:
+            return xff.split(',')[0].strip()[:45]
+        return (request.META.get('REMOTE_ADDR') or '').strip()[:45] or None
+    except Exception:
+        return None
+
+
+def snapshot(obj, felder):
+    """Momentaufnahme der angegebenen Felder eines Objekts (für Vorher/Nachher)."""
+    snap = {}
+    for f in felder:
+        try:
+            snap[f] = getattr(obj, f)
+        except Exception:
+            snap[f] = None
+    return snap
+
+
+def diff_text(alt, neu, labels=None):
+    """Baut 'Feld: alt → neu'-Zeilen aus zwei Snapshots. Leer, wenn nichts änderte."""
+    labels = labels or {}
+    zeilen = []
+    for f, altwert in (alt or {}).items():
+        neuwert = (neu or {}).get(f)
+        if str(altwert or '') != str(neuwert or ''):
+            name = labels.get(f, f)
+            zeilen.append(f"{name}: {altwert or '—'} → {neuwert or '—'}")
+    return ' · '.join(zeilen)
+
+
+def log_aktion(request, aktion, objekt="", details="", ziel=None, kategorie=None, ip=None, user=None):
     """
     Schreibt einen Eintrag ins Aktivitätslog (wer hat wann was getan).
     Optional `ziel` = betroffene Modellinstanz (Mietvertrag/Mieter/…) → der
     Eintrag wird im Logbuch anklickbar und erscheint im Verlauf des Objekts.
+    `user` überschreibt den handelnden Benutzer (z. B. bei Login-Signalen, wo
+    `request.user` noch nicht gesetzt ist). `kategorie` wird sonst automatisch
+    aus der Aktion abgeleitet.
     Darf NIE den Geschäftsprozess brechen — Fehler werden geschluckt.
     """
     from core.models import AktivitaetsLog
     try:
-        user = request.user if request.user.is_authenticated else None
+        if user is None:
+            ru = getattr(request, 'user', None) if request else None
+            if ru is not None and getattr(ru, 'is_authenticated', False):
+                user = ru
         ziel_typ, ziel_id = '', None
         if ziel is not None and getattr(ziel, 'pk', None):
             ziel_typ = _ZIEL_TYP_MAP.get(type(ziel).__name__, type(ziel).__name__.lower())
@@ -123,6 +183,8 @@ def log_aktion(request, aktion, objekt="", details="", ziel=None):
             details=str(details)[:2000],
             ziel_typ=ziel_typ,
             ziel_id=ziel_id,
+            kategorie=kategorie or kategorie_fuer(aktion),
+            ip_adresse=ip or (client_ip(request) if request else None),
         )
     except Exception:
         pass

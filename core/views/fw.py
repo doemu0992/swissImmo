@@ -1852,12 +1852,22 @@ def fw_person_form(request, pk=None):
     """Person (Mieter/Kontakt) erfassen oder bearbeiten — Fairwalter-Stil."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from core.auth import log_aktion
+    from core.auth import log_aktion, snapshot, diff_text
     m = get_object_or_404(Mieter, id=pk) if pk else None
     basis = _global_filter(request)
 
+    # Felder, deren Änderung im Logbuch als Vorher→Nachher festgehalten wird.
+    _DIFF_FELDER = ['vorname', 'nachname', 'firmen_name', 'email', 'telefon_privat',
+                    'mobile', 'strasse', 'plz', 'ort', 'iban', 'geburtsdatum']
+    _DIFF_LABELS = {'vorname': 'Vorname', 'nachname': 'Nachname', 'firmen_name': 'Firma',
+                    'email': 'E-Mail', 'telefon_privat': 'Telefon', 'mobile': 'Mobile',
+                    'strasse': 'Strasse', 'plz': 'PLZ', 'ort': 'Ort', 'iban': 'IBAN',
+                    'geburtsdatum': 'Geburtsdatum'}
+
     if request.method == 'POST':
         P = request.POST
+        # Alt-Zustand für Vorher→Nachher (nur beim Bearbeiten, frisch aus der DB).
+        alt_snap = snapshot(Mieter.objects.get(pk=m.pk), _DIFF_FELDER) if m is not None else {}
         obj = m or Mieter()
         obj.typ = P.get('typ', 'person')
         obj.anrede = P.get('anrede', '').strip()
@@ -1915,7 +1925,9 @@ def fw_person_form(request, pk=None):
                 })
 
         obj.save()
-        log_aktion(request, "Person bearbeitet" if pk else "Person erstellt", obj.display_name, '', ziel=obj)
+        aenderungen = diff_text(alt_snap, snapshot(obj, _DIFF_FELDER), _DIFF_LABELS) if pk else ''
+        log_aktion(request, "Person bearbeitet" if pk else "Person erstellt",
+                   obj.display_name, aenderungen, ziel=obj)
         messages.success(request, f"✅ {obj.display_name} gespeichert.")
         return redirect(f'/neu/personen/{obj.id}/')
 
@@ -4129,21 +4141,12 @@ def fw_logbuch(request):
     elif benutzer_id.isdigit():
         qs = qs.filter(benutzer_id=int(benutzer_id))
 
-    # Aktionsart-Buckets (Keyword-Match über das freie Aktionsfeld)
-    ART_KEYS = {
-        'erstellt':   ['erstellt', 'erfasst', 'erzeugt', 'hochgeladen', 'angelegt', 'beauftragt', 'gewählt'],
-        'bearbeitet': ['bearbeitet', 'geändert', 'angepasst', 'freigegeben', 'zugeordnet', 'bestätigt'],
-        'geloescht':  ['gelöscht', 'storniert', 'zurückgezogen', 'beendet'],
-        'finanzen':   ['verbucht', 'bezahlt', 'sollstellung', 'zahlung', 'mahn', 'pain.001',
-                       'camt', 'afa', 'abrechnung', 'buchung', 'einlage'],
-        'versand':    ['versendet', 'versand', 'e-mail', 'serienbrief', 'rundschreiben', 'gesendet'],
-    }
+    # Aktionsart: strukturierte Kategorie (zuverlässig, am Eintrag gespeichert).
     art = (request.GET.get('art') or '').strip()
-    if art in ART_KEYS:
-        cond = Q()
-        for kw in ART_KEYS[art]:
-            cond |= Q(aktion__icontains=kw)
-        qs = qs.filter(cond)
+    if art == 'kritisch':
+        qs = qs.filter(kategorie__in=AktivitaetsLog.KRITISCH)
+    elif art in dict(AktivitaetsLog.KATEGORIE_CHOICES):
+        qs = qs.filter(kategorie=art)
 
     tage = (request.GET.get('tage') or '30').strip()
     if tage.isdigit() and int(tage) > 0:

@@ -21,12 +21,27 @@ class AktivitaetsLog(models.Model):
     # und erlaubt einen "Verlauf" je Vertrag/Person/Liegenschaft.
     ziel_typ = models.CharField("Ziel-Typ", max_length=20, blank=True, default='', db_index=True)
     ziel_id = models.PositiveIntegerField("Ziel-ID", null=True, blank=True, db_index=True)
+    # Strukturierte Kategorie (aus der Aktion abgeleitet) für zuverlässige Filter.
+    KATEGORIE_CHOICES = [
+        ('erstellt', 'Erstellt / erfasst'),
+        ('bearbeitet', 'Bearbeitet / geändert'),
+        ('geloescht', 'Gelöscht / storniert'),
+        ('finanzen', 'Finanzen / Buchung'),
+        ('versand', 'Versand / Kommunikation'),
+        ('sicherheit', 'Sicherheit / Login'),
+        ('sonstiges', 'Sonstiges'),
+    ]
+    kategorie = models.CharField("Kategorie", max_length=20, blank=True, default='', db_index=True)
+    ip_adresse = models.GenericIPAddressField("IP-Adresse", null=True, blank=True)
 
     class Meta:
         verbose_name = "Aktivitätslog"
         verbose_name_plural = "Aktivitätslog"
         ordering = ['-zeitpunkt']
         indexes = [models.Index(fields=['ziel_typ', 'ziel_id'])]
+
+    # Kategorien, die als "kritisch" gelten (Löschungen, Geldbewegungen, Sicherheit).
+    KRITISCH = {'geloescht', 'finanzen', 'sicherheit'}
 
     def __str__(self):
         wer = self.benutzer.username if self.benutzer else "System"

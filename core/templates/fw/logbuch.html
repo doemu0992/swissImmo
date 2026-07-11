@@ -33,11 +33,13 @@
             <label class="block text-xs font-semibold text-slate-500 mb-1">Art</label>
             <select name="art" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <option value="">Alle Arten</option>
+                <option value="kritisch"   {% if f_art == 'kritisch' %}selected{% endif %}>⚠ Nur kritische (Löschung/Geld/Sicherheit)</option>
                 <option value="erstellt"   {% if f_art == 'erstellt' %}selected{% endif %}>Erstellt / erfasst</option>
                 <option value="bearbeitet" {% if f_art == 'bearbeitet' %}selected{% endif %}>Bearbeitet / geändert</option>
                 <option value="geloescht"  {% if f_art == 'geloescht' %}selected{% endif %}>Gelöscht / storniert</option>
                 <option value="finanzen"   {% if f_art == 'finanzen' %}selected{% endif %}>Finanzen / Buchung</option>
                 <option value="versand"    {% if f_art == 'versand' %}selected{% endif %}>Versand / Kommunikation</option>
+                <option value="sicherheit" {% if f_art == 'sicherheit' %}selected{% endif %}>Sicherheit / Login</option>
             </select>
         </div>
         <div>
@@ -91,14 +93,18 @@
                     {% endif %}
                 </td>
                 <td class="px-5 py-3.5">
-                    {% if 'gelöscht' in e.aktion or 'storniert' in e.aktion or 'zurückgezogen' in e.aktion %}
+                    {% if e.kategorie == 'geloescht' %}
                     <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-50 text-rose-700 whitespace-nowrap">{{ e.aktion }}</span>
-                    {% elif 'erstellt' in e.aktion or 'erfasst' in e.aktion or 'erzeugt' in e.aktion or 'hochgeladen' in e.aktion or 'angelegt' in e.aktion %}
+                    {% elif e.kategorie == 'erstellt' %}
                     <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 whitespace-nowrap">{{ e.aktion }}</span>
-                    {% elif 'bearbeitet' in e.aktion or 'geändert' in e.aktion or 'angepasst' in e.aktion or 'freigegeben' in e.aktion %}
+                    {% elif e.kategorie == 'bearbeitet' %}
                     <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 whitespace-nowrap">{{ e.aktion }}</span>
-                    {% elif 'verbucht' in e.aktion or 'bezahlt' in e.aktion or 'Sollstellung' in e.aktion or 'Mahn' in e.aktion or 'Zahlung' in e.aktion %}
+                    {% elif e.kategorie == 'finanzen' %}
                     <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-sky-50 text-sky-700 whitespace-nowrap">{{ e.aktion }}</span>
+                    {% elif e.kategorie == 'sicherheit' %}
+                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-violet-50 text-violet-700 whitespace-nowrap"><i class="fa-solid fa-shield-halved text-[9px] mr-1"></i>{{ e.aktion }}</span>
+                    {% elif e.kategorie == 'versand' %}
+                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-teal-50 text-teal-700 whitespace-nowrap">{{ e.aktion }}</span>
                     {% else %}
                     <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-600 whitespace-nowrap">{{ e.aktion }}</span>
                     {% endif %}
@@ -108,7 +114,10 @@
                     <a href="{{ e.ziel_url }}" class="text-indigo-600 hover:underline font-medium">{{ e.objekt|default:"öffnen" }}<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1 text-indigo-300"></i></a>
                     {% else %}{{ e.objekt|default:"—" }}{% endif %}
                 </td>
-                <td class="px-5 py-3.5 text-slate-400 text-xs">{{ e.details|default:"" }}</td>
+                <td class="px-5 py-3.5 text-slate-400 text-xs">
+                    {{ e.details|default:"" }}
+                    {% if e.ip_adresse %}<span class="text-slate-300 whitespace-nowrap"><i class="fa-solid fa-location-dot text-[9px] ml-1 mr-0.5"></i>{{ e.ip_adresse }}</span>{% endif %}
+                </td>
             </tr>
             {% empty %}
             <tr><td colspan="5" class="px-5 py-10 text-center text-slate-400 italic">Keine Einträge im gewählten Zeitraum / Filter.</td></tr>

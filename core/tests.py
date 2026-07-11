@@ -2510,7 +2510,9 @@ class LogbuchTests(TestCase):
 
     def _log(self, aktion, objekt='', details='', user=None):
         from core.models import AktivitaetsLog
-        return AktivitaetsLog.objects.create(benutzer=user, aktion=aktion, objekt=objekt, details=details)
+        from core.auth import kategorie_fuer
+        return AktivitaetsLog.objects.create(benutzer=user, aktion=aktion, objekt=objekt,
+                                             details=details, kategorie=kategorie_fuer(aktion))
 
     def test_crud_schreibt_logeintraege(self):
         """Person erstellen + Vertrag löschen erzeugen echte Logeinträge mit Benutzer."""
@@ -2586,3 +2588,53 @@ class LogbuchTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'id="vt-verlauf"')
         self.assertContains(r, 'Kaution einbezahlt')
+
+    # --- #4 Strukturierte Kategorie ---
+    def test_kategorie_wird_abgeleitet(self):
+        from core.auth import log_aktion, kategorie_fuer
+        self.assertEqual(kategorie_fuer('Person gelöscht'), 'geloescht')
+        self.assertEqual(kategorie_fuer('Kaution zurückbezahlt'), 'finanzen')
+        self.assertEqual(kategorie_fuer('Mietvertrag erstellt'), 'erstellt')
+        self.assertEqual(kategorie_fuer('Angemeldet'), 'sicherheit')
+        # log_aktion speichert die Kategorie automatisch
+        u = _team_user()
+        req = type('R', (), {'user': u, 'META': {}})()
+        log_aktion(req, 'Dokument hochgeladen', 'x.pdf')
+        from core.models import AktivitaetsLog
+        self.assertEqual(AktivitaetsLog.objects.latest('id').kategorie, 'erstellt')
+
+    def test_filter_kritisch(self):
+        u = _team_user(); c = Client(); c.force_login(u)
+        self._log('Person gelöscht', 'A', user=u)          # geloescht → kritisch
+        self._log('Kaution zurückbezahlt', 'B', user=u)     # finanzen → kritisch
+        self._log('Person bearbeitet', 'C', user=u)         # bearbeitet → nicht kritisch
+        r = c.get('/neu/logbuch/?art=kritisch')
+        self.assertContains(r, 'Person gelöscht')
+        self.assertContains(r, 'Kaution zurückbezahlt')
+        self.assertNotContains(r, 'Person bearbeitet')
+
+    # --- #3 Login-/Sicherheits-Events ---
+    def test_login_events_protokolliert(self):
+        from core.models import AktivitaetsLog
+        User.objects.create_user(username='chef', password='geheim123')
+        c = Client()
+        # erfolgreicher Login
+        self.assertTrue(c.login(username='chef', password='geheim123'))
+        self.assertTrue(AktivitaetsLog.objects.filter(aktion='Angemeldet',
+                                                      kategorie='sicherheit').exists())
+        # fehlgeschlagener Login
+        c2 = Client(); c2.login(username='chef', password='falsch')
+        self.assertTrue(AktivitaetsLog.objects.filter(aktion='Anmeldung fehlgeschlagen',
+                                                      kategorie='sicherheit').exists())
+
+    # --- #2 Vorher → Nachher bei Änderungen ---
+    def test_person_aenderung_diff(self):
+        from core.models import AktivitaetsLog
+        lg, e, m, v = _basis_objekte()   # m: Hans Muster
+        u = _team_user(); c = Client(); c.force_login(u)
+        c.post(f'/neu/personen/{m.id}/bearbeiten/', {
+            'typ': 'person', 'vorname': 'Hans', 'nachname': 'Meier',   # Muster → Meier
+            'email': 'hans@example.ch',
+        })
+        log = AktivitaetsLog.objects.filter(aktion='Person bearbeitet').latest('id')
+        self.assertIn('Nachname: Muster → Meier', log.details)
