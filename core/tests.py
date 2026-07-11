@@ -2502,3 +2502,61 @@ class MietzinsAnpassungLiveTests(TestCase):
         # Serverwerte für die Client-Prüfung sind eingebettet
         self.assertIn('MZ_MIN_WIRKSAM', body)
         self.assertIn('MZ_VORSCHLAG', body)
+
+
+class LogbuchTests(TestCase):
+    """Audit-Trail / Logbuch: wer hat wann was getan, sichtbar unter /neu/logbuch/,
+    mit Filtern, CSV-Export und rollenbasiertem Zugriff."""
+
+    def _log(self, aktion, objekt='', details='', user=None):
+        from core.models import AktivitaetsLog
+        return AktivitaetsLog.objects.create(benutzer=user, aktion=aktion, objekt=objekt, details=details)
+
+    def test_crud_schreibt_logeintraege(self):
+        """Person erstellen + Vertrag löschen erzeugen echte Logeinträge mit Benutzer."""
+        from core.models import AktivitaetsLog
+        lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        # Person erstellen
+        c.post('/neu/personen/neu/', {'typ': 'person', 'vorname': 'Neu', 'nachname': 'Test',
+                                      'email': 'neu@test.ch'})
+        self.assertTrue(AktivitaetsLog.objects.filter(aktion__icontains='Person erstellt',
+                                                      benutzer=u).exists())
+        # Vertrag löschen
+        c.post(f'/neu/vertraege/{v.id}/loeschen/')
+        self.assertTrue(AktivitaetsLog.objects.filter(aktion__icontains='gelöscht').exists())
+
+    def test_logbuch_view_zeigt_eintraege(self):
+        u = _team_user(); c = Client(); c.force_login(u)
+        self._log('Mietvertrag erstellt (Assistent)', 'Hans Muster', 'CHF 1500', user=u)
+        r = c.get('/neu/logbuch/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Mietvertrag erstellt')
+        self.assertContains(r, 'Hans Muster')
+
+    def test_filter_freitext_und_art(self):
+        u = _team_user(); c = Client(); c.force_login(u)
+        self._log('Person gelöscht', 'Alt Kunde', user=u)
+        self._log('Dokument hochgeladen', 'Vertrag.pdf', user=u)
+        # Freitext
+        r = c.get('/neu/logbuch/?q=Kunde')
+        self.assertContains(r, 'Person gelöscht')
+        self.assertNotContains(r, 'Dokument hochgeladen')
+        # Art-Bucket "geloescht"
+        r = c.get('/neu/logbuch/?art=geloescht')
+        self.assertContains(r, 'Person gelöscht')
+        self.assertNotContains(r, 'Dokument hochgeladen')
+
+    def test_csv_export(self):
+        u = _team_user(); c = Client(); c.force_login(u)
+        self._log('Kaution zurückbezahlt', 'Hans Muster', 'CHF 4500', user=u)
+        r = c.get('/neu/logbuch/?export=csv')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('text/csv', r['Content-Type'])
+        self.assertIn('Kaution zurückbezahlt', r.content.decode('utf-8'))
+
+    def test_nur_verwaltung_sieht_logbuch(self):
+        """Lesend-Rolle darf das Logbuch nicht sehen (rollenbasiert)."""
+        u = _team_user(rolle='Lesend'); c = Client(); c.force_login(u)
+        r = c.get('/neu/logbuch/')
+        self.assertNotEqual(r.status_code, 200)

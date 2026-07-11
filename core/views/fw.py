@@ -672,7 +672,10 @@ def fw_wartungsfrist_loeschen(request, pk):
     wf = get_object_or_404(Wartungsfrist.objects.select_related('liegenschaft'), id=pk)
     lg_id = wf.liegenschaft_id
     if request.method == 'POST':
+        from core.auth import log_aktion
+        bez = f"{wf.bezeichnung} · {wf.liegenschaft}"
         wf.delete()
+        log_aktion(request, "Wartungsfrist gelöscht", bez, '')
         messages.success(request, "🗑️ Frist gelöscht.")
     return redirect(f'/neu/liegenschaften/{lg_id}/?tab=fristen')
 
@@ -4093,6 +4096,80 @@ def fw_benutzer(request):
     return render(request, 'fw/benutzer.html', {**basis, 'nav': 'benutzer', 'rows': rows})
 
 
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_logbuch(request):
+    """Logbuch / Audit-Trail: wer hat wann was getan (Verträge, Personen,
+    Dokumente, Buchungen, Löschungen …). Nur für die Verwaltung einsehbar,
+    rein lesend. Filter: Freitext, Benutzer, Aktionsart, Zeitraum · seitenweise.
+    Optionaler CSV-Export mit denselben Filtern (?export=csv)."""
+    from django.contrib.auth.models import User
+    from django.core.paginator import Paginator
+    from core.models import AktivitaetsLog
+    basis = _global_filter(request)
+
+    qs = AktivitaetsLog.objects.select_related('benutzer').all()
+
+    q = (request.GET.get('q') or '').strip()
+    if q:
+        qs = qs.filter(Q(aktion__icontains=q) | Q(objekt__icontains=q) | Q(details__icontains=q))
+
+    benutzer_id = (request.GET.get('benutzer') or '').strip()
+    if benutzer_id == 'system':
+        qs = qs.filter(benutzer__isnull=True)
+    elif benutzer_id.isdigit():
+        qs = qs.filter(benutzer_id=int(benutzer_id))
+
+    # Aktionsart-Buckets (Keyword-Match über das freie Aktionsfeld)
+    ART_KEYS = {
+        'erstellt':   ['erstellt', 'erfasst', 'erzeugt', 'hochgeladen', 'angelegt', 'beauftragt', 'gewählt'],
+        'bearbeitet': ['bearbeitet', 'geändert', 'angepasst', 'freigegeben', 'zugeordnet', 'bestätigt'],
+        'geloescht':  ['gelöscht', 'storniert', 'zurückgezogen', 'beendet'],
+        'finanzen':   ['verbucht', 'bezahlt', 'sollstellung', 'zahlung', 'mahn', 'pain.001',
+                       'camt', 'afa', 'abrechnung', 'buchung', 'einlage'],
+        'versand':    ['versendet', 'versand', 'e-mail', 'serienbrief', 'rundschreiben', 'gesendet'],
+    }
+    art = (request.GET.get('art') or '').strip()
+    if art in ART_KEYS:
+        cond = Q()
+        for kw in ART_KEYS[art]:
+            cond |= Q(aktion__icontains=kw)
+        qs = qs.filter(cond)
+
+    tage = (request.GET.get('tage') or '30').strip()
+    if tage.isdigit() and int(tage) > 0:
+        von = timezone.now() - _timedelta(days=int(tage))
+        qs = qs.filter(zeitpunkt__gte=von)
+
+    # CSV-Export (gleiche Filter) — revisionssicher für die Ablage
+    if request.GET.get('export') == 'csv':
+        import csv
+        from django.http import HttpResponse
+        resp = HttpResponse(content_type='text/csv; charset=utf-8')
+        resp['Content-Disposition'] = 'attachment; filename="logbuch.csv"'
+        resp.write('﻿')  # BOM → Excel erkennt UTF-8
+        w = csv.writer(resp, delimiter=';')
+        w.writerow(['Zeitpunkt', 'Benutzer', 'Aktion', 'Objekt', 'Details'])
+        for e in qs[:10000]:
+            w.writerow([timezone.localtime(e.zeitpunkt).strftime('%d.%m.%Y %H:%M'),
+                        e.benutzer.get_full_name() or e.benutzer.username if e.benutzer else 'System',
+                        e.aktion, e.objekt, e.details])
+        return resp
+
+    paginator = Paginator(qs, 50)
+    seite = paginator.get_page(request.GET.get('page'))
+
+    # Benutzer-Dropdown: nur, wer tatsächlich Einträge hat
+    aktive_ids = list(AktivitaetsLog.objects.exclude(benutzer__isnull=True)
+                      .values_list('benutzer_id', flat=True).distinct())
+    benutzer = User.objects.filter(id__in=aktive_ids).order_by('username')
+
+    return render(request, 'fw/logbuch.html', {
+        **basis, 'nav': 'logbuch', 'seite': seite, 'total': paginator.count,
+        'benutzer': benutzer,
+        'f_q': q, 'f_benutzer': benutzer_id, 'f_art': art, 'f_tage': tage,
+    })
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_mandate(request):
     """Mandanten (Eigentümer, für die verwaltet wird)."""
@@ -5749,7 +5826,10 @@ def fw_pendenz_loeschen(request, pk):
     if request.method != 'POST':
         return redirect('fw_pendenzen')
     p = get_object_or_404(Pendenz, id=pk)
+    from core.auth import log_aktion
+    titel = p.titel
     p.delete()
+    log_aktion(request, "Pendenz gelöscht", titel, '')
     messages.success(request, "Pendenz gelöscht.")
     return redirect('fw_pendenzen')
 
