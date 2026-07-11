@@ -1440,6 +1440,9 @@ class NkAbrechnungVersandTests(TestCase):
              'akonto': Decimal('2400'), 'saldo': Decimal('-1200'), 'nachzahlung': False}
         pdf = generate_nk_pdf_einzeln(k)
         self.assertTrue(pdf.startswith(b'%PDF'))
+        # Nachzahlungs-Variante (anderer Rechts-/Fristhinweis-Zweig)
+        k2 = {**k, 'akonto': Decimal('800'), 'saldo': Decimal('400'), 'nachzahlung': True}
+        self.assertTrue(generate_nk_pdf_einzeln(k2).startswith(b'%PDF'))
 
 
 class NkNachzahlungQrTests(TestCase):

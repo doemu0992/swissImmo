@@ -120,12 +120,20 @@ def _draw_page(c, k):
         c.drawString(24 * mm, y, "Guthaben zu Ihren Gunsten")
         c.drawRightString(w - 24 * mm, y, f"CHF {_chf(abs(saldo))}")
 
+    # Rechtsgrundlagen (VMWG / OR) — konsistent zur klassischen Abrechnung
+    from core.services.mietrecht import ref as _mr
     c.setFillColorRGB(0.5, 0.55, 0.6)
     c.setFont("Helvetica", 7.5)
+    c.drawString(20 * mm, 22 * mm,
+                 f"Umgelegt werden nur die vertraglich vereinbarten Nebenkosten ({_mr('nebenkosten')}, VMWG Art. 4-8) nach dem vereinbarten Verteilschlüssel.")
     c.drawString(20 * mm, 18 * mm,
-                 "Diese Abrechnung basiert auf den effektiven Kosten der Abrechnungsperiode und dem vertraglichen Verteilschlüssel.")
-    c.drawString(20 * mm, 14 * mm,
-                 "Beanstandungen sind innert 30 Tagen schriftlich mitzuteilen. Belege können auf Wunsch eingesehen werden.")
+                 "Einsicht in die Originalbelege ist nach Art. 257b Abs. 2 OR nach Terminvereinbarung jederzeit möglich.")
+    if nachzahlung:
+        c.drawString(20 * mm, 14 * mm,
+                     "Bitte begleichen Sie die Nachzahlung innert 30 Tagen. Beanstandungen sind innert 30 Tagen schriftlich mitzuteilen.")
+    else:
+        c.drawString(20 * mm, 14 * mm,
+                     "Ein allfälliges Guthaben wird Ihnen gutgeschrieben. Beanstandungen sind innert 30 Tagen schriftlich mitzuteilen.")
 
 
 def generate_nk_pdf_einzeln(kontext):
