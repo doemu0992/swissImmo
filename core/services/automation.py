@@ -322,6 +322,31 @@ def generate_auto_pendenzen(horizont_tage=90, user=None):
                      f"möglich. Mit amtlichem Formular (Art. 269d) ankündigen, 30 Tage vor Termin."),
                     liegenschaft=v.einheit.liegenschaft, vertrag=v)
 
+    # f) Referenzzinssenkung: liegt der aktuelle Referenzzinssatz unter der
+    # Vertragsbasis, kann der Mieter eine Herabsetzung verlangen (Art. 270a OR).
+    # Informativ — nicht für Index-/Staffelverträge (die folgen anderer Logik).
+    try:
+        from core.utils import get_current_ref_zins
+        aktuell_ref = Decimal(str(get_current_ref_zins()))
+    except Exception:
+        aktuell_ref = None
+    if aktuell_ref is not None:
+        for v in (Mietvertrag.objects.filter(status='aktiv', mietzins_modell='fest')
+                  .select_related('mieter', 'einheit__liegenschaft')):
+            basis_ref = v.basis_referenzzinssatz or Decimal('0')
+            if not v.einheit_id or basis_ref <= 0 or aktuell_ref >= basis_ref:
+                continue
+            # Näherung: ~2.91 % Mietzinssenkung je 0.25-Prozentpunkt-Schritt (VMWG).
+            schritte = (basis_ref - aktuell_ref) / Decimal('0.25')
+            senkung_pct = (schritte * Decimal('2.91')).quantize(Decimal('0.1'))
+            _ensure(f"auto:refsenkung:{v.id}:{aktuell_ref}",
+                    f"Referenzzinssenkung prüfen: {v.mieter.display_name} ({v.einheit.bezeichnung})",
+                    heute, 'vertrag',
+                    (f"Referenzzins {basis_ref}%→{aktuell_ref}%: Der Mieter kann eine "
+                     f"Herabsetzung verlangen (Art. 270a OR), Richtwert ca. −{senkung_pct}% "
+                     f"(VMWG). Allfällige Anpassung prüfen."),
+                    liegenschaft=v.einheit.liegenschaft, vertrag=v)
+
     return neu
 
 

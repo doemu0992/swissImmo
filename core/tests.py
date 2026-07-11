@@ -2411,3 +2411,41 @@ class EinstellplatzFristTests(TestCase):
         t = berechne_kuendigungstermin(v, date(2025, 1, 15))
         # 3 Monate ab Januar → April-Ende (regulär), nicht 2-Wochen-Logik
         self.assertEqual(t.month, 4)
+
+
+class ReferenzzinsSenkungTests(TestCase):
+    """Art. 270a: sinkt der Referenzzins unter die Vertragsbasis, wird eine
+    informative Pendenz (Herabsetzung möglich) angelegt."""
+
+    def _setup(self, basis, aktuell):
+        from crm.models import Verwaltung
+        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal(str(aktuell)))
+        lg, e, m, v = _basis_objekte()
+        v.basis_referenzzinssatz = Decimal(str(basis))
+        v.mietzins_modell = 'fest'
+        v.save()
+        return v
+
+    def test_pendenz_bei_senkung(self):
+        from core.services.automation import generate_auto_pendenzen
+        from core.models import Pendenz
+        v = self._setup(basis='2.00', aktuell='1.50')
+        generate_auto_pendenzen(horizont_tage=90)
+        p = Pendenz.objects.filter(vertrag=v, titel__icontains='Referenzzinssenkung').first()
+        self.assertIsNotNone(p)
+        self.assertIn('Art. 270a', p.beschreibung)
+
+    def test_keine_pendenz_wenn_gleich_oder_hoeher(self):
+        from core.services.automation import generate_auto_pendenzen
+        from core.models import Pendenz
+        v = self._setup(basis='1.50', aktuell='1.75')   # aktuell höher → kein Anspruch
+        generate_auto_pendenzen(horizont_tage=90)
+        self.assertFalse(Pendenz.objects.filter(vertrag=v, titel__icontains='Referenzzinssenkung').exists())
+
+    def test_keine_pendenz_bei_indexvertrag(self):
+        from core.services.automation import generate_auto_pendenzen
+        from core.models import Pendenz
+        v = self._setup(basis='2.00', aktuell='1.50')
+        v.mietzins_modell = 'index'; v.save()
+        generate_auto_pendenzen(horizont_tage=90)
+        self.assertFalse(Pendenz.objects.filter(vertrag=v, titel__icontains='Referenzzinssenkung').exists())
