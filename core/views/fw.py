@@ -5948,6 +5948,71 @@ def fw_pendenzen(request):
     })
 
 
+def _art_aus_text(text):
+    """Zieht die erste Gesetzesreferenz (z. B. 'Art. 257d OR') aus einem Text."""
+    import re
+    m = re.search(r'Art\.\s*\d+[a-z]?(?:\s*Abs\.\s*\d+)?\s*OR', text or '')
+    return m.group(0) if m else ''
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_fristen(request):
+    """Fristen-Center: alle datierten, offenen Fristen chronologisch gebündelt —
+    Kündigungstermine, Anfechtungs-/Zahlungsfristen (257d/270b/271), Wartung,
+    Referenzzins, befristete Vertragsenden. Zeitfenster: überfällig / diese Woche /
+    dieser Monat / später. Jede Frist verlinkt aufs betroffene Objekt."""
+    from core.models import Pendenz
+    from datetime import timedelta
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.now().date()
+
+    pq = (Pendenz.objects.filter(erledigt=False, faellig_am__isnull=False)
+          .select_related('liegenschaft', 'vertrag__mieter', 'vertrag__einheit__liegenschaft'))
+    if aktive_lg:
+        pq = pq.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg)
+                       | Q(liegenschaft__isnull=True, vertrag__isnull=True))
+    nur_frist = request.GET.get('nur') == 'frist'
+    if nur_frist:
+        pq = pq.filter(kategorie='frist')
+
+    eintraege = []
+    for p in pq.order_by('faellig_am'):
+        url, label, wide = _pendenz_ziel(p)
+        if p.vertrag_id and p.vertrag:
+            bezug = p.vertrag.mieter.display_name if p.vertrag.mieter_id else ''
+            if p.vertrag.einheit_id:
+                bezug = f"{p.vertrag.einheit.liegenschaft.strasse} · {bezug}" if p.vertrag.einheit.liegenschaft_id else bezug
+        elif p.liegenschaft_id:
+            bezug = f"{p.liegenschaft.strasse}, {p.liegenschaft.ort}"
+        else:
+            bezug = ''
+        eintraege.append({
+            'p': p, 'faellig': p.faellig_am, 'titel': p.titel, 'bezug': bezug,
+            'tage': (p.faellig_am - heute).days, 'art': _art_aus_text(p.beschreibung),
+            'url': url, 'label': label or 'Öffnen', 'wide': wide,
+        })
+
+    # Zeitfenster-Buckets
+    grenze_woche = heute + timedelta(days=7)
+    grenze_monat = heute + timedelta(days=30)
+    buckets = [
+        {'key': 'ueberfaellig', 'titel': 'Überfällig', 'icon': 'fa-triangle-exclamation',
+         'cls': 'text-rose-600', 'items': [e for e in eintraege if e['faellig'] < heute]},
+        {'key': 'woche', 'titel': 'Diese Woche', 'icon': 'fa-calendar-day',
+         'cls': 'text-amber-600', 'items': [e for e in eintraege if heute <= e['faellig'] <= grenze_woche]},
+        {'key': 'monat', 'titel': 'Diesen Monat', 'icon': 'fa-calendar-week',
+         'cls': 'text-indigo-600', 'items': [e for e in eintraege if grenze_woche < e['faellig'] <= grenze_monat]},
+        {'key': 'spaeter', 'titel': 'Später', 'icon': 'fa-calendar',
+         'cls': 'text-slate-500', 'items': [e for e in eintraege if e['faellig'] > grenze_monat]},
+    ]
+    return render(request, 'fw/fristen.html', {
+        **basis, 'nav': 'fristen', 'buckets': buckets, 'heute': heute,
+        'gesamt': len(eintraege), 'nur_frist': nur_frist,
+        'ueberfaellig_n': len(buckets[0]['items']),
+    })
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_pendenz_neu(request):
     from django.shortcuts import redirect

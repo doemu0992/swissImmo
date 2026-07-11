@@ -92,7 +92,7 @@ from core.views.fw import (fw_dashboard, fw_debitoren, fw_debitor_qr_pdf, fw_deb
                            fw_vorlage_form, fw_vorlage_loeschen, fw_integration_test_email,
                            fw_bewerbungen, fw_bewerbung_detail, fw_bewerbung_status,
                            fw_bewerbung_zu_vertrag,
-                           fw_pendenzen, fw_pendenz_neu, fw_pendenz_toggle, fw_pendenz_loeschen)
+                           fw_pendenzen, fw_pendenz_neu, fw_pendenz_toggle, fw_pendenz_loeschen, fw_fristen)
 
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
@@ -198,6 +198,7 @@ urlpatterns = [
     path('neu/nebenkosten/<int:pk>/versand/', fw_nebenkosten_versand, name='fw_nebenkosten_versand'),
     path('neu/nebenkosten/<int:pk>/akonto/', fw_akonto_anpassen, name='fw_akonto_anpassen'),
     path('neu/pendenzen/', fw_pendenzen, name='fw_pendenzen'),
+    path('neu/fristen/', fw_fristen, name='fw_fristen'),
     path('neu/pendenzen/neu/', fw_pendenz_neu, name='fw_pendenz_neu'),
     path('neu/pendenzen/<int:pk>/toggle/', fw_pendenz_toggle, name='fw_pendenz_toggle'),
     path('neu/pendenzen/<int:pk>/loeschen/', fw_pendenz_loeschen, name='fw_pendenz_loeschen'),

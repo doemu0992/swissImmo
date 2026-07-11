@@ -2767,6 +2767,40 @@ class AnfechtungsfristTests(TestCase):
         self.assertIn('Art. 270b', p.beschreibung)
 
 
+class FristenCenterTests(TestCase):
+    """Fristen-Center bündelt datierte Pendenzen chronologisch in Zeitfenster."""
+
+    def _frist(self, titel, tage, besch='', vertrag=None):
+        from core.models import Pendenz
+        return Pendenz.objects.create(titel=titel, kategorie='frist',
+                                      faellig_am=date.today() + timedelta(days=tage),
+                                      beschreibung=besch, vertrag=vertrag)
+
+    def test_buckets_und_artikel(self):
+        lg, e, m, v = _basis_objekte()
+        self._frist('Zahlungsfrist', -3, 'Frist bis … (Art. 257d Abs. 1 OR).', vertrag=v)
+        self._frist('Kündigungstermin', 5, vertrag=v)
+        self._frist('Wartung Heizung', 20)
+        self._frist('Vertragsende', 90)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/fristen/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Überfällig')
+        self.assertContains(r, 'Diese Woche')
+        self.assertContains(r, 'Art. 257d Abs. 1 OR')   # Artikel aus Beschreibung extrahiert
+        self.assertContains(r, '1 überfällig')
+
+    def test_nur_gesetzliche_fristen_filter(self):
+        from core.models import Pendenz
+        Pendenz.objects.create(titel='Manuelle Aufgabe', kategorie='aufgabe',
+                               faellig_am=date.today() + timedelta(days=2))
+        self._frist('Anfechtungsfrist', 3, 'Art. 270b OR')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/fristen/?nur=frist')
+        self.assertContains(r, 'Anfechtungsfrist')
+        self.assertNotContains(r, 'Manuelle Aufgabe')
+
+
 class DashboardKritischTests(TestCase):
     """Dashboard-Widget: letzte kritische Logbuch-Aktionen (nur Verwaltung)."""
 
