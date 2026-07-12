@@ -316,3 +316,20 @@ class Wartungsfrist(models.Model):
 
     def __str__(self):
         return f"{self.get_art_display()}: {self.bezeichnung}"
+
+class EinheitFoto(models.Model):
+    """Fotos eines Mietobjekts für Exposé, Portal-Feed und Vermarktung."""
+    einheit = models.ForeignKey('Einheit', on_delete=models.CASCADE, related_name='fotos')
+    bild = models.ImageField(upload_to=get_smart_upload_path)
+    beschreibung = models.CharField(max_length=200, blank=True, default='')
+    reihenfolge = models.PositiveIntegerField(default=0)
+    hochgeladen_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Objekt-Foto"
+        verbose_name_plural = "Objekt-Fotos"
+        ordering = ['reihenfolge', 'hochgeladen_am']
+        db_table = 'core_einheitfoto'
+
+    def __str__(self):
+        return f"Foto zu {self.einheit_id}"

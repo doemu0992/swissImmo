@@ -52,8 +52,25 @@ def generate_expose_pdf(einheit, verwaltung=None):
     c.drawRightString(w - 20 * mm, h - 28 * mm, "inkl. Nebenkosten")
     c.setFillColor(colors.black)
 
-    # Eckdaten-Kacheln
+    # Titelbild (erstes Objekt-Foto), falls vorhanden
     y = h - 58 * mm
+    titelbild = einheit.fotos.first()
+    if titelbild:
+        try:
+            from reportlab.lib.utils import ImageReader
+            img = ImageReader(titelbild.bild.path)
+            iw, ih = img.getSize()
+            bw = w - 40 * mm
+            bh = bw * ih / iw
+            bh = min(bh, 70 * mm)
+            bw2 = bh * iw / ih
+            c.drawImage(img, 20 * mm, y - bh, width=bw2, height=bh,
+                        preserveAspectRatio=True, mask='auto')
+            y -= bh + 6 * mm
+        except Exception:
+            pass
+
+    # Eckdaten-Kacheln
     verf = einheit.verfuegbar_ab.strftime('%d.%m.%Y') if einheit.verfuegbar_ab else "sofort"
     fakten = [
         ("Zimmer", (str(einheit.zimmer) if einheit.zimmer else "—")),

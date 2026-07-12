@@ -90,6 +90,41 @@
     </div>
 </div>
 
+<!-- ===== TAB: FOTOS ===== -->
+<div data-panel="obj" id="obj-fotos" class="hidden">
+    {% for m in meldung %}
+    <div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
+    {% endfor %}
+    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+        <h3 class="font-bold text-slate-800 text-sm mb-1">Objekt-Fotos</h3>
+        <p class="text-xs text-slate-400 mb-3">Werden im Exposé, im Portal-Feed und in der Vermarktungsliste verwendet. Das erste Foto ist das Titelbild.</p>
+        <form method="post" action="/neu/objekte/{{ e.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
+            {% csrf_token %}
+            <input name="fotos" type="file" accept="image/*" multiple required
+                   class="text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold">
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-upload mr-1.5"></i>Hochladen</button>
+        </form>
+    </div>
+    {% if fotos %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {% for f in fotos %}
+        <div class="relative group">
+            <a href="{{ f.bild.url }}" target="_blank" class="block">
+                <img src="{{ f.bild.url }}" alt="Objektfoto" class="rounded-lg w-full h-40 object-cover border border-slate-200">
+            </a>
+            {% if forloop.first %}<span class="absolute bottom-1 left-1 text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded font-semibold">Titelbild</span>{% endif %}
+            <form method="post" action="/neu/objekte/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1" onsubmit="return confirm('Foto löschen?');">
+                {% csrf_token %}
+                <button class="w-7 h-7 rounded-full bg-white/90 hover:bg-rose-50 text-rose-600 text-xs shadow" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Fotos.</div>
+    {% endif %}
+</div>
+
 <!-- ===== TAB: HISTORIE ===== -->
 <div data-panel="obj" id="obj-historie" class="hidden">
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">

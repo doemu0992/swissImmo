@@ -21,11 +21,19 @@ def feed_objekte(base_url=''):
 
     objekte = []
     qs = (Einheit.objects.filter(zur_ausschreibung=True)
-          .select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung'))
+          .select_related('liegenschaft').prefetch_related('fotos')
+          .order_by('liegenschaft__strasse', 'bezeichnung'))
     for e in qs:
         lg = e.liegenschaft
         netto = e.nettomiete_aktuell or Decimal('0')
         nk = e.nebenkosten_aktuell or Decimal('0')
+        bilder = []
+        for f in e.fotos.all():
+            try:
+                url = f.bild.url
+            except Exception:
+                continue
+            bilder.append((base_url.rstrip('/') + url) if base_url and url.startswith('/') else url)
         objekte.append({
             'id': e.id,
             'referenz': f"OBJ-{e.id}",
@@ -46,6 +54,7 @@ def feed_objekte(base_url=''):
             },
             'verfuegbar_ab': e.verfuegbar_ab.isoformat() if e.verfuegbar_ab else 'sofort',
             'beschreibung': e.ausschreibung_notiz or '',
+            'bilder': bilder,
             'expose_url': (base_url.rstrip('/') + f"/neu/vermarktung/{e.id}/expose/") if base_url else f"/neu/vermarktung/{e.id}/expose/",
         })
     return objekte

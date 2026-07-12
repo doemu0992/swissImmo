@@ -918,13 +918,16 @@ def fw_objekt_detail(request, pk):
 
     geraete = Geraet.objects.filter(einheit=e).order_by('kategorie')
     zaehler = Zaehler.objects.filter(einheit=e).order_by('typ')
+    fotos = list(e.fotos.all())
 
     tab_liste = [
         ('uebersicht', 'Übersicht', None),
+        ('fotos', 'Fotos', len(fotos) or None),
         ('historie', 'Historie', historie.count() or None),
         ('geraete', 'Geräte', geraete.count() or None),
         ('zaehler', 'Zähler', zaehler.count() or None),
     ]
+    from django.contrib import messages
     return render(request, 'fw/objekt_detail.html', {
         **basis, 'nav': 'objekte', 'e': e,
         'aktiver_vertrag': aktiver_vertrag,
@@ -932,8 +935,47 @@ def fw_objekt_detail(request, pk):
         'historie': historie,
         'geraete': geraete,
         'zaehler': zaehler,
+        'fotos': fotos,
         'tab_liste': tab_liste,
+        'meldung': list(messages.get_messages(request)),
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_objekt_foto_upload(request, pk):
+    """Hängt Fotos an ein Mietobjekt (für Exposé, Portal-Feed, Vermarktung)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import EinheitFoto
+    from core.auth import log_aktion
+    e = get_object_or_404(Einheit, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/objekte/{e.id}/')
+    start = e.fotos.count()
+    n = 0
+    for f in request.FILES.getlist('fotos'):
+        EinheitFoto.objects.create(einheit=e, bild=f, reihenfolge=start + n)
+        n += 1
+    if n:
+        log_aktion(request, "Objekt-Fotos hochgeladen", e.bezeichnung, f"{n} Foto(s)")
+        messages.success(request, f"✅ {n} Foto(s) hinzugefügt.")
+    else:
+        messages.error(request, "Keine Datei ausgewählt.")
+    return redirect(f'/neu/objekte/{e.id}/#obj-fotos')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_objekt_foto_loeschen(request, pk):
+    """Entfernt ein einzelnes Objekt-Foto."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import EinheitFoto
+    foto = get_object_or_404(EinheitFoto.objects.select_related('einheit'), id=pk)
+    eid = foto.einheit_id
+    if request.method == 'POST':
+        foto.delete()
+        messages.success(request, "Foto entfernt.")
+    return redirect(f'/neu/objekte/{eid}/#obj-fotos')
 
 
 # --- Erstellbare Dokumente pro Vertrag (Fairwalter-Stil) ---
@@ -5102,7 +5144,8 @@ def fw_vermarktung(request):
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
     qs = (Einheit.objects.filter(zur_ausschreibung=True)
-          .select_related('liegenschaft').order_by('verfuegbar_ab', 'liegenschaft__strasse'))
+          .select_related('liegenschaft').prefetch_related('fotos')
+          .order_by('verfuegbar_ab', 'liegenschaft__strasse'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
 
@@ -5111,8 +5154,11 @@ def fw_vermarktung(request):
     for e in qs:
         lg = e.liegenschaft
         bew = list(Mietbewerbung.objects.filter(einheit=e).exclude(status='abgelehnt'))
+        _fotos = list(e.fotos.all())
         rows.append({
             'e': e, 'liegenschaft': lg,
+            'titelbild': _fotos[0].bild.url if _fotos else None,
+            'fotos_n': len(_fotos),
             'objekt': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else e.bezeichnung),
             'bezeichnung': e.bezeichnung,
             'zimmer': e.zimmer, 'flaeche': e.flaeche_m2,

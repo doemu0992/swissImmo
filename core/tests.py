@@ -3745,6 +3745,64 @@ class AuftragPdfTests(TestCase):
         self.assertContains(r, f'/neu/auftrag/{a.id}/pdf/')
 
 
+class ObjektFotoTests(TestCase):
+    """Objekt-Fotos: Upload, Exposé-Titelbild, Portal-Feed-Bilder, Listen-Thumbnail."""
+
+    def _bild(self, name='obj.png'):
+        import io
+        from PIL import Image
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        buf = io.BytesIO()
+        Image.new('RGB', (12, 10), (60, 120, 200)).save(buf, 'PNG')
+        return SimpleUploadedFile(name, buf.getvalue(), content_type='image/png')
+
+    def _objekt(self):
+        lg, e, m, v = _basis_objekte()
+        e.typ = 'whg'; e.zimmer = Decimal('3.5'); e.zur_ausschreibung = True; e.save()
+        return lg, e
+
+    def test_upload_und_loeschen(self):
+        from portfolio.models import EinheitFoto
+        lg, e = self._objekt()
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post(f'/neu/objekte/{e.id}/foto/', {'fotos': [self._bild('a.png'), self._bild('b.png')]})
+        self.assertEqual(EinheitFoto.objects.filter(einheit=e).count(), 2)
+        f = EinheitFoto.objects.filter(einheit=e).first()
+        c.post(f'/neu/objekte/foto/{f.id}/loeschen/')
+        self.assertEqual(EinheitFoto.objects.filter(einheit=e).count(), 1)
+
+    def test_feed_enthaelt_bilder(self):
+        from crm.models import Verwaltung
+        from portfolio.models import EinheitFoto
+        Verwaltung.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='t')
+        lg, e = self._objekt()
+        EinheitFoto.objects.create(einheit=e, bild=self._bild())
+        c = Client()
+        r = c.get('/neu/vermarktung/feed.json?token=t')
+        o = r.json()['objekte'][0]
+        self.assertEqual(len(o['bilder']), 1)
+        self.assertTrue(o['bilder'][0].startswith('http'))
+
+    def test_vermarktung_zeigt_thumbnail(self):
+        from portfolio.models import EinheitFoto
+        lg, e = self._objekt()
+        EinheitFoto.objects.create(einheit=e, bild=self._bild())
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/vermarktung/')
+        row = r.context['rows'][0]
+        self.assertIsNotNone(row['titelbild'])
+        self.assertEqual(row['fotos_n'], 1)
+
+    def test_expose_mit_titelbild(self):
+        from portfolio.models import EinheitFoto
+        lg, e = self._objekt()
+        EinheitFoto.objects.create(einheit=e, bild=self._bild())
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/vermarktung/{e.id}/expose/')
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.content.startswith(b'%PDF'))
+
+
 class PortalFeedTests(TestCase):
     """Token-gesicherter Vermarktungs-Objekt-Feed für Immobilien-Portale."""
 
