@@ -261,6 +261,8 @@ class Vorlage(models.Model):
         ('ticket_handwerker', 'Schaden – Auftrag an Handwerker'),
         ('ticket_melder', 'Schaden – Info an Melder'),
         ('ticket_erledigt', 'Schaden – Erledigt-Meldung'),
+        ('bewerber_zusage', 'Bewerber – Zusage'),
+        ('bewerber_absage', 'Bewerber – Absage'),
         ('sonstiges', 'Sonstiges'),
     ]
     name = models.CharField("Bezeichnung", max_length=150)

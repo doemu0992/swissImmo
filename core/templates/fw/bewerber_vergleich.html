@@ -20,7 +20,20 @@
     </div>
 </div>
 
-<p class="text-xs text-slate-400 mb-5 max-w-3xl">Der Eignungs-Score (0–100) gewichtet Tragbarkeit (Drittel-Regel: Jahreseinkommen ≥ 3× Jahresmiete), Betreibungen, Anstellung und Vollständigkeit der Unterlagen. Er ist eine Entscheidungshilfe — keine automatische Zu- oder Absage.</p>
+<p class="text-xs text-slate-400 mb-4 max-w-3xl">Der Eignungs-Score (0–100) gewichtet Tragbarkeit (Drittel-Regel: Jahreseinkommen ≥ 3× Jahresmiete), Betreibungen, Anstellung und Vollständigkeit der Unterlagen. Er ist eine Entscheidungshilfe — keine automatische Zu- oder Absage.</p>
+
+{% for m in meldung %}
+<div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium
+            {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% elif m.tags == 'warning' %}bg-amber-50 text-amber-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
+{% endfor %}
+
+{% if offene_n %}
+<form method="post" action="/neu/vermarktung/{{ e.id }}/bewerber/absage-uebrige/{{ lg_query }}" class="mb-4"
+      onsubmit="return confirm('Allen {{ offene_n }} noch offenen Bewerbern eine Absage senden?');">
+    {% csrf_token %}
+    <button class="text-xs font-semibold text-rose-600 border border-rose-200 hover:bg-rose-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-envelope mr-1"></i>Übrige {{ offene_n }} absagen</button>
+</form>
+{% endif %}
 
 {% if kandidaten %}
 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden overflow-x-auto">
@@ -59,7 +72,26 @@
                     {{ k.haushalt }} Pers.{% if k.haustiere %} · <i class="fa-solid fa-paw text-slate-400" title="Haustiere"></i>{% endif %}
                     {% if k.bezug %}<div class="text-xs text-slate-400">ab {{ k.bezug|date:"d.m.Y" }}</div>{% endif %}
                 </td>
-                <td class="px-4 py-3 text-right"><a href="/neu/bewerbungen/{{ k.b.id }}/" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold">Details ›</a></td>
+                <td class="px-4 py-3 text-right whitespace-nowrap">
+                    {% if k.status == 'zugesagt' %}
+                        <span class="text-xs font-semibold text-emerald-600"><i class="fa-solid fa-check mr-1"></i>Zugesagt</span>
+                    {% elif k.status == 'abgelehnt' %}
+                        <span class="text-xs font-semibold text-slate-400">Abgesagt</span>
+                    {% else %}
+                    <div class="inline-flex items-center gap-1.5">
+                        <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/entscheid/" class="inline"
+                              onsubmit="return confirm('{{ k.name }} zusagen{% if k.b.email %} und E-Mail senden{% endif %}?');">
+                            {% csrf_token %}<input type="hidden" name="entscheid" value="zusage">
+                            <button class="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1.5 rounded-lg">Zusagen</button>
+                        </form>
+                        <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/entscheid/" class="inline"
+                              onsubmit="return confirm('{{ k.name }} absagen{% if k.b.email %} und E-Mail senden{% endif %}?');">
+                            {% csrf_token %}<input type="hidden" name="entscheid" value="absage">
+                            <button class="text-xs font-semibold text-slate-500 border border-slate-200 hover:bg-slate-50 px-2.5 py-1.5 rounded-lg">Absagen</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </td>
             </tr>
         {% endfor %}
         </tbody>

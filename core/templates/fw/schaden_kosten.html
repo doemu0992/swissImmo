@@ -1,0 +1,86 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Reparaturkosten — swissImmo{% endblock %}
+{% block content %}
+<div class="text-xs text-slate-400 mb-3">
+    <a href="/neu/schaeden/{{ lg_query }}" class="hover:text-indigo-600">Schadensfälle</a>
+    <i class="fa-solid fa-chevron-right text-[8px] mx-1"></i>Kostenübersicht
+</div>
+
+<div class="flex items-start justify-between flex-wrap gap-3 mb-1">
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Reparaturkosten</h1>
+        <p class="text-sm text-slate-500 mt-1">Kostenschätzungen (offen) und effektive Kosten aus den Handwerker-Aufträgen je Liegenschaft.
+            {% if aktive_lg %}· <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+    </div>
+    <form method="get" class="inline-flex items-center gap-1">
+        {% if request.GET.lg %}<input type="hidden" name="lg" value="{{ request.GET.lg }}">{% endif %}
+        <select name="jahr" onchange="this.form.submit()" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+            <option value="0" {% if not jahr %}selected{% endif %}>Alle Jahre</option>
+            {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
+        </select>
+    </form>
+</div>
+
+<!-- Kennzahlen -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 my-5">
+    <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Effektive Kosten</div>
+        <div class="text-xl font-bold text-slate-900 mt-0.5">CHF {{ total.effektiv|chf }}</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Offene Schätzung</div>
+        <div class="text-xl font-bold text-amber-600 mt-0.5">CHF {{ total.offen|chf }}</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Aufträge</div>
+        <div class="text-xl font-bold text-slate-900 mt-0.5">{{ total.auftraege }}</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Schadensfälle</div>
+        <div class="text-xl font-bold text-slate-900 mt-0.5">{{ total.schaeden }}</div>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden overflow-x-auto">
+    <table class="w-full text-sm min-w-[700px]">
+        <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Liegenschaft</th>
+                <th class="px-5 py-3 font-semibold text-center">Schäden</th>
+                <th class="px-5 py-3 font-semibold text-center">Aufträge</th>
+                <th class="px-5 py-3 font-semibold text-right">Offene Schätzung</th>
+                <th class="px-5 py-3 font-semibold text-right">Effektiv</th>
+                <th class="px-5 py-3 font-semibold text-right">Total</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+        {% for g in rows %}
+            <tr class="hover:bg-slate-50">
+                <td class="px-5 py-3 font-semibold text-slate-900">{{ g.name }}</td>
+                <td class="px-5 py-3 text-center text-slate-600">{{ g.schaeden }}{% if g.schaeden_offen %} <span class="text-amber-600 text-xs">({{ g.schaeden_offen }} offen)</span>{% endif %}</td>
+                <td class="px-5 py-3 text-center text-slate-600">{{ g.auftraege }}</td>
+                <td class="px-5 py-3 text-right {% if g.offen %}text-amber-600 font-medium{% else %}text-slate-300{% endif %}">{% if g.offen %}{{ g.offen|chf }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3 text-right {% if g.effektiv %}text-slate-900 font-medium{% else %}text-slate-300{% endif %}">{% if g.effektiv %}{{ g.effektiv|chf }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3 text-right font-semibold text-slate-900">CHF {{ g.effektiv|add:g.offen|chf }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6" class="px-5 py-10 text-center text-slate-400 text-sm">Keine Handwerker-Aufträge{% if jahr %} in {{ jahr }}{% endif %}.</td></tr>
+        {% endfor %}
+        </tbody>
+        {% if rows %}
+        <tfoot>
+            <tr class="border-t-2 border-slate-200 font-semibold text-slate-900">
+                <td class="px-5 py-3">Total</td>
+                <td class="px-5 py-3 text-center">{{ total.schaeden }}</td>
+                <td class="px-5 py-3 text-center">{{ total.auftraege }}</td>
+                <td class="px-5 py-3 text-right text-amber-600">{{ total.offen|chf }}</td>
+                <td class="px-5 py-3 text-right">{{ total.effektiv|chf }}</td>
+                <td class="px-5 py-3 text-right">CHF {{ total.effektiv|add:total.offen|chf }}</td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+</div>
+<p class="text-xs text-slate-400 mt-3">„Offene Schätzung" = beauftragte, aber noch nicht abgerechnete Kosten (Kostenschätzung). „Effektiv" = tatsächlich erfasste Kosten. Total = Effektiv + offene Schätzung als erwarteter Gesamtaufwand.</p>
+{% endblock %}

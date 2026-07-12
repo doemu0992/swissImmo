@@ -2620,6 +2620,74 @@ def fw_schaeden(request):
     })
 
 
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_schaden_kosten(request):
+    """Reparaturkosten-Übersicht je Liegenschaft: Kostenschätzungen (offen) und
+    effektive Kosten aus den Handwerker-Aufträgen — das Reparaturbudget im Blick."""
+    from tickets.models import SchadenMeldung, HandwerkerAuftrag
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.now().date()
+    try:
+        jahr = int(request.GET.get('jahr') or 0)
+    except ValueError:
+        jahr = 0
+
+    auf = HandwerkerAuftrag.objects.select_related('ticket__liegenschaft', 'handwerker')
+    if aktive_lg:
+        auf = auf.filter(ticket__liegenschaft=aktive_lg)
+    if jahr:
+        auf = auf.filter(beauftragt_am__year=jahr)
+
+    gruppen = {}
+    for a in auf:
+        lg = a.ticket.liegenschaft if a.ticket_id else None
+        key = lg.id if lg else 0
+        g = gruppen.setdefault(key, {'lg': lg, 'auftraege': 0, 'geschaetzt': Decimal('0.00'),
+                                     'effektiv': Decimal('0.00'), 'offen': Decimal('0.00')})
+        g['auftraege'] += 1
+        gesch = a.kosten_geschaetzt or Decimal('0.00')
+        eff = a.kosten_effektiv
+        g['geschaetzt'] += gesch
+        if eff is not None:
+            g['effektiv'] += eff
+        else:
+            g['offen'] += gesch   # noch nicht abgerechnet → offene Kostenschätzung
+
+    # Schaden-Zähler je Liegenschaft
+    schaeden = SchadenMeldung.objects.all()
+    if aktive_lg:
+        schaeden = schaeden.filter(liegenschaft=aktive_lg)
+    if jahr:
+        schaeden = schaeden.filter(erstellt_am__year=jahr)
+    s_total, s_offen = {}, {}
+    for t in schaeden.values('liegenschaft_id', 'status'):
+        k = t['liegenschaft_id'] or 0
+        s_total[k] = s_total.get(k, 0) + 1
+        if t['status'] != 'erledigt':
+            s_offen[k] = s_offen.get(k, 0) + 1
+
+    rows = []
+    for key, g in gruppen.items():
+        g['schaeden'] = s_total.get(key, 0)
+        g['schaeden_offen'] = s_offen.get(key, 0)
+        g['name'] = f"{g['lg'].strasse}, {g['lg'].ort}" if g['lg'] else '— ohne Liegenschaft —'
+        rows.append(g)
+    rows.sort(key=lambda g: (-(g['effektiv'] + g['offen']), g['name'].lower()))
+
+    total = {
+        'auftraege': sum(g['auftraege'] for g in rows),
+        'geschaetzt': sum((g['geschaetzt'] for g in rows), Decimal('0.00')),
+        'effektiv': sum((g['effektiv'] for g in rows), Decimal('0.00')),
+        'offen': sum((g['offen'] for g in rows), Decimal('0.00')),
+        'schaeden': sum(g['schaeden'] for g in rows),
+    }
+    return render(request, 'fw/schaden_kosten.html', {
+        **basis, 'nav': 'schadensfaelle', 'rows': rows, 'total': total,
+        'jahr': jahr, 'jahre': list(range(heute.year, heute.year - 5, -1)),
+    })
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_schaden_neu(request):
     """Intern erfassten Schaden (z.B. telefonisch gemeldet) anlegen — sendet dem
@@ -6345,14 +6413,107 @@ def fw_bewerber_vergleich(request, einheit_id):
     kandidaten.sort(key=lambda k: -k['score'])
     # Indikator-Spaltentitel aus dem ersten Kandidaten (fixe Reihenfolge)
     indikator_labels = [i['label'] for i in kandidaten[0]['indikatoren']] if kandidaten else []
+    offene_n = sum(1 for k in kandidaten if k['status'] in ('neu', 'geprueft'))
 
+    from django.contrib import messages
     return render(request, 'fw/bewerber_vergleich.html', {
         **basis, 'nav': 'vermarktung', 'e': e,
         'objekt': f"{e.liegenschaft.strasse}, {e.liegenschaft.ort}" if e.liegenschaft_id else e.bezeichnung,
         'brutto_monat': brutto_monat, 'jahresmiete': brutto_monat * 12,
         'kandidaten': kandidaten, 'indikator_labels': indikator_labels,
-        'mit_abgelehnt': mit_abgelehnt,
+        'mit_abgelehnt': mit_abgelehnt, 'offene_n': offene_n,
+        'meldung': list(messages.get_messages(request)),
     })
+
+
+def _bewerber_mail(b, entscheid):
+    """Baut (betreff, body) für Zusage/Absage — aus Vorlage (falls vorhanden) mit
+    Platzhaltern, sonst Standardtext."""
+    from crm.models import Vorlage, Verwaltung
+    vw = Verwaltung.objects.first()
+    e = b.einheit
+    lg = e.liegenschaft if e else None
+    objekt = f"{e.bezeichnung}" + (f", {lg.strasse}, {lg.plz} {lg.ort}" if lg else "")
+    brutto = (e.nettomiete_aktuell or Decimal('0')) + (e.nebenkosten_aktuell or Decimal('0')) if e else Decimal('0')
+    ctx = {
+        'bewerber_name': f"{b.vorname} {b.nachname}",
+        'objekt': objekt, 'liegenschaft': lg.strasse if lg else '',
+        'miete': f"CHF {brutto:.2f}", 'vermieter': (vw.firma if vw else 'Ihre Liegenschaftsverwaltung'),
+        'datum': timezone.now().strftime('%d.%m.%Y'),
+    }
+    kat = 'bewerber_zusage' if entscheid == 'zusage' else 'bewerber_absage'
+    v = Vorlage.objects.filter(kategorie=kat).first()
+    if v and v.inhalt:
+        body = v.inhalt
+        betreff = v.betreff or (f"Ihre Bewerbung für {objekt}")
+        for k, val in ctx.items():
+            body = body.replace('{' + k + '}', str(val))
+            betreff = betreff.replace('{' + k + '}', str(val))
+    elif entscheid == 'zusage':
+        betreff = f"Zusage für Ihre Wohnungsbewerbung – {objekt}"
+        body = (f"Guten Tag {ctx['bewerber_name']}\n\nWir freuen uns, Ihnen das Mietobjekt "
+                f"{objekt} zusagen zu können. Wir melden uns in Kürze mit den Vertragsunterlagen.\n\n"
+                f"Freundliche Grüsse\n{ctx['vermieter']}")
+    else:
+        betreff = f"Ihre Wohnungsbewerbung – {objekt}"
+        body = (f"Guten Tag {ctx['bewerber_name']}\n\nVielen Dank für Ihre Bewerbung für {objekt} "
+                f"und Ihr Interesse. Wir haben uns für eine andere Bewerbung entschieden und wünschen "
+                f"Ihnen bei der weiteren Wohnungssuche viel Erfolg.\n\nFreundliche Grüsse\n{ctx['vermieter']}")
+    return betreff, body
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_bewerber_entscheid(request, pk):
+    """Zusage/Absage einer Bewerbung: setzt Status + sendet dem Bewerber eine
+    (Vorlagen-)E-Mail. entscheid = 'zusage' | 'absage'."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from mietprozess.models import Mietbewerbung
+    from core.utils.email_service import send_ticket_email
+    from core.auth import log_aktion
+    b = get_object_or_404(Mietbewerbung.objects.select_related('einheit__liegenschaft'), id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
+    entscheid = request.POST.get('entscheid')
+    if entscheid not in ('zusage', 'absage'):
+        return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
+    b.status = 'zugesagt' if entscheid == 'zusage' else 'abgelehnt'
+    b.save(update_fields=['status'])
+    ok = False
+    if b.email:
+        betreff, body = _bewerber_mail(b, entscheid)
+        ok = send_ticket_email(b.email, betreff, body)
+    log_aktion(request, f"Bewerber-{entscheid.capitalize()}", f"{b.vorname} {b.nachname}",
+               b.einheit.bezeichnung if b.einheit_id else '')
+    wort = "Zusage" if entscheid == 'zusage' else "Absage"
+    messages.success(request, f"✅ {wort} gesetzt" + (f" · E-Mail an {b.email} gesendet." if ok else "."))
+    return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_bewerber_absage_uebrige(request, einheit_id):
+    """Sendet allen noch offenen (neu/geprüft) Bewerbern eines Objekts eine Absage
+    — z. B. nach der Zusage an den gewählten Bewerber."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from mietprozess.models import Mietbewerbung
+    from core.utils.email_service import send_ticket_email
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect(f'/neu/vermarktung/{einheit_id}/bewerber/')
+    offene = Mietbewerbung.objects.filter(einheit_id=einheit_id, status__in=['neu', 'geprueft'])
+    n = mails = 0
+    for b in offene.select_related('einheit__liegenschaft'):
+        b.status = 'abgelehnt'
+        b.save(update_fields=['status'])
+        n += 1
+        if b.email:
+            betreff, body = _bewerber_mail(b, 'absage')
+            if send_ticket_email(b.email, betreff, body):
+                mails += 1
+    log_aktion(request, "Bewerber-Sammelabsage", f"Objekt #{einheit_id}", f"{n} abgesagt")
+    messages.success(request, f"✅ {n} offene Bewerbung(en) abgesagt" + (f" · {mails} E-Mail(s) versendet." if mails else "."))
+    return redirect(f'/neu/vermarktung/{einheit_id}/bewerber/')
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)

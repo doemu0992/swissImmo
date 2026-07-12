@@ -3576,6 +3576,84 @@ class BewerberScoringTests(TestCase):
         self.assertEqual(len(r2.context['kandidaten']), 2)
 
 
+class BewerberEntscheidTests(TestCase):
+    """Zusage/Absage an Bewerber mit E-Mail + Sammelabsage."""
+
+    def _bewerbung(self, e, vorname='Anna', status='geprueft', email='anna@example.ch'):
+        from mietprozess.models import Mietbewerbung
+        return Mietbewerbung.objects.create(
+            einheit=e, vorname=vorname, nachname='Muster', geburtsdatum=date(1990, 1, 1),
+            mobilnummer='079', email=email, beruf='Kauffrau', einkommen_jahr="90000",
+            erwerbsstatus='angestellt', status=status)
+
+    def test_zusage_setzt_status(self):
+        lg, e, m, v = _basis_objekte()
+        b = self._bewerbung(e)
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        r = c.post(f'/neu/bewerbungen/{b.id}/entscheid/', {'entscheid': 'zusage'})
+        self.assertEqual(r.status_code, 302)
+        b.refresh_from_db()
+        self.assertEqual(b.status, 'zugesagt')
+
+    def test_absage_setzt_status(self):
+        lg, e, m, v = _basis_objekte()
+        b = self._bewerbung(e)
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post(f'/neu/bewerbungen/{b.id}/entscheid/', {'entscheid': 'absage'})
+        b.refresh_from_db()
+        self.assertEqual(b.status, 'abgelehnt')
+
+    def test_sammelabsage_nur_offene(self):
+        lg, e, m, v = _basis_objekte()
+        b1 = self._bewerbung(e, 'A', status='neu')
+        b2 = self._bewerbung(e, 'B', status='geprueft')
+        b3 = self._bewerbung(e, 'C', status='zugesagt')   # bleibt unangetastet
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post(f'/neu/vermarktung/{e.id}/bewerber/absage-uebrige/')
+        b1.refresh_from_db(); b2.refresh_from_db(); b3.refresh_from_db()
+        self.assertEqual(b1.status, 'abgelehnt')
+        self.assertEqual(b2.status, 'abgelehnt')
+        self.assertEqual(b3.status, 'zugesagt')
+
+    def test_mail_text_default(self):
+        from core.views.fw import _bewerber_mail
+        lg, e, m, v = _basis_objekte()
+        b = self._bewerbung(e)
+        betreff, body = _bewerber_mail(b, 'zusage')
+        self.assertIn('Zusage', betreff)
+        self.assertIn('Anna Muster', body)
+
+
+class SchadenKostenTests(TestCase):
+    """Reparaturkosten-Übersicht je Liegenschaft."""
+
+    def _setup(self):
+        from tickets.models import SchadenMeldung, HandwerkerAuftrag
+        from crm.models import Handwerker
+        lg, e, m, v = _basis_objekte()
+        hw = Handwerker.objects.create(firma='Sanitär AG')
+        t1 = SchadenMeldung.objects.create(liegenschaft=lg, titel='Rohrbruch', status='neu')
+        t2 = SchadenMeldung.objects.create(liegenschaft=lg, titel='Fenster', status='erledigt')
+        # Auftrag mit effektiven Kosten + einer mit nur Schätzung (offen)
+        HandwerkerAuftrag.objects.create(ticket=t1, handwerker=hw,
+                                         kosten_geschaetzt=Decimal('500'), kosten_effektiv=None)
+        HandwerkerAuftrag.objects.create(ticket=t2, handwerker=hw,
+                                         kosten_geschaetzt=Decimal('300'), kosten_effektiv=Decimal('280'))
+        return lg
+
+    def test_kostenuebersicht_aggregiert(self):
+        lg = self._setup()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/schaeden/kosten/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.context['total']['effektiv'], Decimal('280.00'))
+        self.assertEqual(r.context['total']['offen'], Decimal('500.00'))
+        self.assertEqual(r.context['total']['auftraege'], 2)
+        self.assertEqual(r.context['total']['schaeden'], 2)
+        row = r.context['rows'][0]
+        self.assertEqual(row['schaeden_offen'], 1)
+
+
 class VerwaltungshonorarTests(TestCase):
     """Verwaltungshonorar: % der Mieterträge, Buchung Soll 4500 / Haben Bank."""
 

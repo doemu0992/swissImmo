@@ -5,10 +5,15 @@
 
 <div class="flex items-center justify-between mb-1">
     <h1 class="text-3xl font-extrabold text-slate-900">Schadensfälle</h1>
-    <button type="button" onclick="document.getElementById('neuschaden').classList.toggle('hidden')"
-            class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
-        <i class="fa-solid fa-plus mr-1.5"></i> Schaden erfassen
-    </button>
+    <div class="flex items-center gap-2">
+        <a href="/neu/schaeden/kosten/{{ lg_query }}" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2.5 rounded-lg">
+            <i class="fa-solid fa-coins mr-1.5"></i>Kostenübersicht
+        </a>
+        <button type="button" onclick="document.getElementById('neuschaden').classList.toggle('hidden')"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+            <i class="fa-solid fa-plus mr-1.5"></i> Schaden erfassen
+        </button>
+    </div>
 </div>
 <p class="text-sm text-slate-500 mb-5">Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische Info an Melder
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
