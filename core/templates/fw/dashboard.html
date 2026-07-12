@@ -43,29 +43,6 @@
 </div>
 {% endif %}
 
-<!-- ================= LETZTE KRITISCHE AKTIONEN (Logbuch, nur Verwaltung) ================= -->
-{% if kritische_aktionen %}
-<div class="bg-white rounded-2xl border border-slate-200 shadow-sm mb-5 overflow-hidden">
-    <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
-        <div class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-shield-halved text-rose-500 mr-1.5"></i>Letzte kritische Aktionen</div>
-        <a href="/neu/logbuch/?art=kritisch" class="text-xs font-semibold text-slate-500 hover:text-indigo-600">Logbuch öffnen</a>
-    </div>
-    <div class="divide-y divide-slate-50">
-        {% for e in kritische_aktionen %}
-        <div class="flex items-center gap-3 px-5 py-2.5">
-            <div class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-[10px] font-bold shrink-0">
-                {% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}<i class="fa-solid fa-robot"></i>{% endif %}
-            </div>
-            <div class="flex-1 min-w-0">
-                <span class="text-sm text-slate-800">{{ e.aktion }}</span>
-                {% if e.objekt %}<span class="text-xs text-slate-400"> · {% if e.ziel_url %}<a href="{{ e.ziel_url }}" class="text-indigo-500 hover:underline">{{ e.objekt }}</a>{% else %}{{ e.objekt }}{% endif %}</span>{% endif %}
-            </div>
-            <div class="text-xs text-slate-400 whitespace-nowrap shrink-0">{{ e.zeitpunkt|date:"d.m. H:i" }}</div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
 
 <!-- ================= COCKPIT: WAS IST ZU TUN? ================= -->
 {% if cockpit.pendenzen or cockpit.debitoren_n or cockpit.freigaben or cockpit.fristen or cockpit.portal_kuendigungen %}

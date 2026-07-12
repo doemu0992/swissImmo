@@ -3102,9 +3102,9 @@ class FristenKalenderTests(TestCase):
 
 
 class DashboardKritischTests(TestCase):
-    """Dashboard-Widget: letzte kritische Logbuch-Aktionen (nur Verwaltung)."""
+    """Kritische Aktionen erscheinen NICHT auf dem Dashboard, sondern im Logbuch."""
 
-    def test_widget_zeigt_kritische_aktion(self):
+    def test_kein_widget_auf_dashboard(self):
         from core.models import AktivitaetsLog
         from core.auth import kategorie_fuer
         lg, e, m, v = _basis_objekte()
@@ -3112,14 +3112,14 @@ class DashboardKritischTests(TestCase):
         AktivitaetsLog.objects.create(benutzer=u, aktion='Person gelöscht', objekt='Alt Kunde',
                                       kategorie=kategorie_fuer('Person gelöscht'))
         r = c.get('/neu/')
-        self.assertContains(r, 'Letzte kritische Aktionen')
-        self.assertContains(r, 'Person gelöscht')
+        self.assertEqual(r.status_code, 200)
+        self.assertNotContains(r, 'Letzte kritische Aktionen')
 
-    def test_widget_nicht_fuer_lesend(self):
+    def test_kritische_im_logbuch(self):
         from core.models import AktivitaetsLog
         from core.auth import kategorie_fuer
-        u = _team_user(rolle='Lesend'); c = Client(); c.force_login(u)
-        AktivitaetsLog.objects.create(benutzer=u, aktion='Person gelöscht', objekt='X',
+        u = _team_user(); c = Client(); c.force_login(u)
+        AktivitaetsLog.objects.create(benutzer=u, aktion='Person gelöscht', objekt='Alt Kunde',
                                       kategorie=kategorie_fuer('Person gelöscht'))
-        r = c.get('/neu/')
-        self.assertNotContains(r, 'Letzte kritische Aktionen')
+        r = c.get('/neu/logbuch/?art=kritisch')
+        self.assertContains(r, 'Person gelöscht')

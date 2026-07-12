@@ -156,15 +156,6 @@ def fw_dashboard(request):
         })
     heute_todo_mehr = max(_pend.filter(Q(faellig_am__lte=grenze14) | Q(faellig_am__isnull=True)).count() - 8, 0)
 
-    # --- Letzte kritische Aktionen aus dem Logbuch (nur Verwaltung) ---
-    from core.auth import hat_rolle
-    kritische_aktionen = []
-    if hat_rolle(request.user, [ROLLE_VERWALTUNG]):
-        from core.models import AktivitaetsLog
-        kritische_aktionen = list(
-            AktivitaetsLog.objects.filter(kategorie__in=AktivitaetsLog.KRITISCH)
-            .select_related('benutzer')[:6])
-
     # --- AUFGABEN (bestehende Pendenzen-Engine wiederverwenden) ---
     aufgaben = _berechne_aufgaben(heute, leerstand_objekte.count(), 0, 0)
     # Aufgaben-Ziele auf die neue Oberfläche mappen, wo es ein Pendant gibt
@@ -195,7 +186,6 @@ def fw_dashboard(request):
         'cockpit': cockpit,
         'heute_todo': heute_todo,
         'heute_todo_mehr': heute_todo_mehr,
-        'kritische_aktionen': kritische_aktionen,
     }
     return render(request, 'fw/dashboard.html', context)
 
