@@ -59,6 +59,25 @@ class SchadenMeldung(models.Model):
         return f"Ticket #{self.id}: {self.titel}"
 
 
+class SchadenFoto(models.Model):
+    """Mehrere Fotos pro Schadenmeldung (Dokumentation). Das Legacy-Einzelfeld
+    SchadenMeldung.foto bleibt bestehen und wird zusätzlich angezeigt."""
+    schaden = models.ForeignKey(SchadenMeldung, on_delete=models.CASCADE, related_name='fotos')
+    bild = models.ImageField(upload_to=get_smart_upload_path)
+    beschreibung = models.CharField(max_length=200, blank=True, default='')
+    hochgeladen_am = models.DateTimeField(auto_now_add=True)
+    hochgeladen_von = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    class Meta:
+        verbose_name = "Schaden-Foto"
+        verbose_name_plural = "Schaden-Fotos"
+        ordering = ['hochgeladen_am']
+        db_table = 'core_schadenfoto'
+
+    def __str__(self):
+        return f"Foto zu Ticket #{self.schaden_id}"
+
+
 class HandwerkerAuftrag(models.Model):
     ticket = models.ForeignKey(SchadenMeldung, on_delete=models.CASCADE, related_name='handwerker_auftraege')
     # 🔥 WIEDER ZURÜCK: Verweist auf den CRM Handwerker

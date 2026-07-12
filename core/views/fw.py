@@ -2718,6 +2718,10 @@ def fw_schaden_neu(request):
         tel_melder=(request.POST.get('tel_melder') or '').strip(),
         prioritaet=request.POST.get('prioritaet', 'mittel'), status='neu',
     )
+    # Fotos (Mehrfach-Upload) anhängen
+    from tickets.models import SchadenFoto
+    for f in request.FILES.getlist('fotos'):
+        SchadenFoto.objects.create(schaden=t, bild=f, hochgeladen_von=request.user)
     ok = False
     if t.email_melder:
         from crm.models import Vorlage
@@ -2774,10 +2778,12 @@ def fw_schaden_detail(request, pk):
     _, auftrag_vorschlag = vorlage_text('ticket_handwerker', t)
     melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
 
+    fotos = list(t.fotos.all())
     tab_liste = [
         ('uebersicht', 'Übersicht', None),
         ('verlauf', 'Verlauf', nachrichten.count() or None),
         ('handwerker', 'Handwerker & Kosten', len(auftraege) or None),
+        ('fotos', 'Fotos', len(fotos) or None),
     ]
     from django.contrib import messages
     return render(request, 'fw/schaden_detail.html', {
@@ -2785,11 +2791,51 @@ def fw_schaden_detail(request, pk):
         's_label': s_label, 's_cls': s_cls, 'p_label': p_label, 'p_cls': p_cls,
         'nachrichten': nachrichten, 'auftraege': auftraege, 'melder': melder,
         'kosten_geschaetzt': kosten_geschaetzt, 'kosten_effektiv': kosten_effektiv,
+        'fotos': fotos,
         'tab_liste': tab_liste,
         'handwerker_liste': handwerker_liste, 'auftrag_vorschlag': auftrag_vorschlag,
         'melder_email': melder_email, 'status_wahl': TICKET_PILL,
         'meldung': list(messages.get_messages(request)),
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schaden_foto_upload(request, pk):
+    """Hängt ein oder mehrere Fotos an eine Schadenmeldung (Dokumentation)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import SchadenMeldung, SchadenFoto
+    from core.auth import log_aktion
+    t = get_object_or_404(SchadenMeldung, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/schaeden/{t.id}/')
+    dateien = request.FILES.getlist('fotos')
+    n = 0
+    for f in dateien:
+        SchadenFoto.objects.create(schaden=t, bild=f, hochgeladen_von=request.user)
+        n += 1
+    if n:
+        log_aktion(request, "Schaden-Fotos hochgeladen", f"Ticket #{t.id}", f"{n} Foto(s)")
+        messages.success(request, f"✅ {n} Foto(s) hinzugefügt.")
+    else:
+        messages.error(request, "Keine Datei ausgewählt.")
+    return redirect(f'/neu/schaeden/{t.id}/#sc-fotos')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schaden_foto_loeschen(request, pk):
+    """Entfernt ein einzelnes Schaden-Foto."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import SchadenFoto
+    from core.auth import log_aktion
+    foto = get_object_or_404(SchadenFoto.objects.select_related('schaden'), id=pk)
+    tid = foto.schaden_id
+    if request.method == 'POST':
+        foto.delete()
+        log_aktion(request, "Schaden-Foto gelöscht", f"Ticket #{tid}", '')
+        messages.success(request, "Foto entfernt.")
+    return redirect(f'/neu/schaeden/{tid}/#sc-fotos')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

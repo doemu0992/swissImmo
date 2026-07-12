@@ -202,4 +202,43 @@
         Beim Anhaken von „Kreditorenrechnung erstellen" wird aus den effektiven Kosten eine Kreditorenrechnung (Status Neu)
         angelegt und mit diesem Auftrag verknüpft — Freigabe und Zahlung erfolgen im Kreditoren-Tab.</p>
 </div>
+
+<!-- FOTOS -->
+<div data-panel="sc" id="sc-fotos" class="hidden">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+        <h3 class="font-bold text-slate-800 text-sm mb-3">Fotos hinzufügen</h3>
+        <form method="post" action="/neu/schaeden/{{ t.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
+            {% csrf_token %}
+            <input name="fotos" type="file" accept="image/*" multiple required
+                   class="text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold">
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-upload mr-1.5"></i>Hochladen</button>
+        </form>
+    </div>
+
+    {% if fotos or t.foto %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {% if t.foto %}
+        <a href="{{ t.foto.url }}" target="_blank" class="block group relative">
+            <img src="{{ t.foto.url }}" alt="Schaden" class="rounded-lg w-full h-40 object-cover border border-slate-200">
+            <span class="absolute bottom-1 left-1 text-[10px] bg-black/50 text-white px-1.5 py-0.5 rounded">Erstmeldung</span>
+        </a>
+        {% endif %}
+        {% for f in fotos %}
+        <div class="relative group">
+            <a href="{{ f.bild.url }}" target="_blank" class="block">
+                <img src="{{ f.bild.url }}" alt="Foto" class="rounded-lg w-full h-40 object-cover border border-slate-200">
+            </a>
+            <form method="post" action="/neu/schaeden/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1"
+                  onsubmit="return confirm('Foto löschen?');">
+                {% csrf_token %}
+                <button class="w-7 h-7 rounded-full bg-white/90 hover:bg-rose-50 text-rose-600 text-xs shadow" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+            </form>
+            {% if f.hochgeladen_am %}<span class="absolute bottom-1 left-1 text-[10px] bg-black/50 text-white px-1.5 py-0.5 rounded">{{ f.hochgeladen_am|date:"d.m.Y" }}</span>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Fotos.</div>
+    {% endif %}
+</div>
 {% endblock %}

@@ -3654,6 +3654,62 @@ class SchadenKostenTests(TestCase):
         self.assertEqual(row['schaeden_offen'], 1)
 
 
+class SchadenFotoTests(TestCase):
+    """Mehrfach-Foto-Upload für Schadenmeldungen."""
+
+    def _bild(self, name='schaden.png'):
+        import io
+        from PIL import Image
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        buf = io.BytesIO()
+        Image.new('RGB', (10, 10), (200, 50, 50)).save(buf, 'PNG')
+        return SimpleUploadedFile(name, buf.getvalue(), content_type='image/png')
+
+    def _schaden(self, lg):
+        from tickets.models import SchadenMeldung
+        return SchadenMeldung.objects.create(liegenschaft=lg, titel='Wasserschaden', beschreibung='x', status='neu')
+
+    def test_upload_mehrere_fotos(self):
+        from tickets.models import SchadenFoto
+        lg, e, m, v = _basis_objekte()
+        t = self._schaden(lg)
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        r = c.post(f'/neu/schaeden/{t.id}/foto/', {'fotos': [self._bild('a.png'), self._bild('b.png')]})
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(SchadenFoto.objects.filter(schaden=t).count(), 2)
+
+    def test_erfassen_mit_foto(self):
+        from tickets.models import SchadenMeldung, SchadenFoto
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        r = c.post('/neu/schaeden/neu/', {
+            'titel': 'Riss in Wand', 'liegenschaft_id': lg.id, 'beschreibung': 'test',
+            'prioritaet': 'mittel', 'fotos': [self._bild('riss.png')]})
+        self.assertEqual(r.status_code, 302)
+        t = SchadenMeldung.objects.get(titel='Riss in Wand')
+        self.assertEqual(SchadenFoto.objects.filter(schaden=t).count(), 1)
+
+    def test_foto_loeschen(self):
+        from tickets.models import SchadenFoto
+        lg, e, m, v = _basis_objekte()
+        t = self._schaden(lg)
+        f = SchadenFoto.objects.create(schaden=t, bild=self._bild())
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post(f'/neu/schaeden/foto/{f.id}/loeschen/')
+        self.assertFalse(SchadenFoto.objects.filter(id=f.id).exists())
+
+    def test_detail_zeigt_fotos_tab(self):
+        from tickets.models import SchadenFoto
+        lg, e, m, v = _basis_objekte()
+        t = self._schaden(lg)
+        SchadenFoto.objects.create(schaden=t, bild=self._bild())
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/schaeden/{t.id}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(len(r.context['fotos']), 1)
+        self.assertContains(r, 'sc-fotos')
+
+
 class VerwaltungshonorarTests(TestCase):
     """Verwaltungshonorar: % der Mieterträge, Buchung Soll 4500 / Haben Bank."""
 
