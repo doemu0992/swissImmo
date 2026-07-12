@@ -3218,3 +3218,65 @@ class FinanzCockpitTests(TestCase):
         r = c.get('/neu/finanzen/')
         self.assertEqual(r.context['durchlauf_saldo'], Decimal('120.00'))
         self.assertContains(r, 'geparkte Positionen klären')
+
+
+class MieterkontoblattTests(TestCase):
+    """Mieterkontoblatt (on-screen): Forderungen + Zahlungen mit laufendem Saldo."""
+
+    def _konto(self):
+        from finance.models import DebitorenRechnung, Zahlungseingang
+        lg, e, m, v = _basis_objekte()
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, titel='Miete 01/2025',
+                                         betrag=Decimal('1700'), datum=date(2025, 1, 1),
+                                         faellig_am=date(2025, 1, 1), status='offen')
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, titel='Miete 02/2025',
+                                         betrag=Decimal('1700'), datum=date(2025, 2, 1),
+                                         faellig_am=date(2025, 2, 1), status='bezahlt')
+        Zahlungseingang.objects.create(vertrag=v, betrag=Decimal('1700'),
+                                       datum_eingang=date(2025, 2, 3), status='verbucht',
+                                       bemerkung='Zahlung Februar')
+        return lg, e, m, v
+
+    def test_kontoblatt_saldo_und_bewegungen(self):
+        lg, e, m, v = self._konto()
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/mieterkonten/{m.id}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Kontoblatt')
+        self.assertContains(r, 'Miete 01/2025')
+        self.assertContains(r, 'Zahlung Februar')
+        # Soll 3400, Haben 1700, Endsaldo 1700 (Mieter schuldet)
+        self.assertEqual(r.context['total_soll'], Decimal('3400.00'))
+        self.assertEqual(r.context['total_haben'], Decimal('1700.00'))
+        self.assertEqual(r.context['endsaldo'], Decimal('1700.00'))
+        # laufender Saldo der letzten Bewegung = Endsaldo
+        self.assertEqual(r.context['zeilen'][-1]['saldo'], Decimal('1700.00'))
+
+    def test_offene_posten_liste(self):
+        lg, e, m, v = self._konto()
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/mieterkonten/{m.id}/')
+        # nur die noch offene Rechnung erscheint als OP
+        self.assertEqual(len(r.context['op_rows']), 1)
+        self.assertEqual(r.context['op_total'], Decimal('1700.00'))
+
+    def test_datumsfilter(self):
+        lg, e, m, v = self._konto()
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/mieterkonten/{m.id}/?von=2025-02-01')
+        # nur Februar-Bewegungen (Rechnung + Zahlung), Januar ausgeblendet
+        texte = [z['text'] for z in r.context['zeilen']]
+        self.assertIn('Miete 02/2025', texte)
+        self.assertNotIn('Miete 01/2025', texte)
+
+    def test_uebersicht_listet_mieter_mit_saldo(self):
+        lg, e, m, v = self._konto()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/mieterkonten/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, m.display_name)
+        self.assertEqual(r.context['total_offen'], Decimal('1700.00'))
+        self.assertEqual(r.context['offen_n'], 1)
+        # Filter "nur offen"
+        r2 = c.get('/neu/mieterkonten/?filter=offen')
+        self.assertEqual(len(r2.context['rows']), 1)

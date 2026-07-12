@@ -1,0 +1,55 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Mieterkonten — swissImmo{% endblock %}
+{% block content %}
+<div class="flex items-start justify-between flex-wrap gap-3 mb-1">
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Mieterkonten</h1>
+        <p class="text-sm text-slate-500 mt-1 max-w-2xl">Pro Mieter der aktuelle Saldo aus allen Forderungen und Zahlungen. Klick öffnet das Kontoblatt.
+            {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+    </div>
+    <div class="text-right">
+        <div class="text-3xl font-extrabold {% if total_offen %}text-rose-600{% else %}text-slate-900{% endif %}">CHF {{ total_offen|chf }}</div>
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">offene Forderungen · {{ offen_n }} Mieter</div>
+    </div>
+</div>
+
+<div class="flex items-center gap-2 my-4">
+    <a href="/neu/mieterkonten/{{ lg_query }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if not filter_op %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-indigo-300{% endif %}">Alle ({{ anzahl }})</a>
+    <a href="/neu/mieterkonten/?filter=offen{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if filter_op %}bg-rose-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-rose-300{% endif %}">Nur mit offenem Saldo ({{ offen_n }})</a>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Mieter</th>
+                <th class="px-5 py-3 font-semibold">Objekt</th>
+                <th class="px-5 py-3 font-semibold text-center">Status</th>
+                <th class="px-5 py-3 font-semibold text-right">Saldo</th>
+                <th class="px-5 py-3"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+        {% for r in rows %}
+            <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location='/neu/mieterkonten/{{ r.m.id }}/{{ lg_query }}'">
+                <td class="px-5 py-3 font-semibold text-slate-900">{{ r.m.display_name }}</td>
+                <td class="px-5 py-3 text-slate-600">{{ r.objekt }}{% if r.objekte_n > 1 %} <span class="text-slate-400">+{{ r.objekte_n|add:"-1" }}</span>{% endif %}</td>
+                <td class="px-5 py-3 text-center">
+                    {% if r.aktiv %}<span class="text-[11px] font-semibold bg-emerald-50 text-emerald-700 rounded-md px-2 py-0.5">aktiv</span>
+                    {% else %}<span class="text-[11px] font-semibold bg-slate-100 text-slate-500 rounded-md px-2 py-0.5">beendet</span>{% endif %}
+                </td>
+                <td class="px-5 py-3 text-right font-semibold {% if r.saldo > 0 %}text-rose-600{% elif r.saldo < 0 %}text-emerald-600{% else %}text-slate-400{% endif %}">
+                    {% if r.saldo > 0 %}CHF {{ r.saldo|chf }}
+                    {% elif r.saldo < 0 %}CHF {{ r.saldo|chf }}<div class="text-[10px] font-normal text-slate-400">Guthaben</div>
+                    {% else %}ausgeglichen{% endif %}
+                </td>
+                <td class="px-5 py-3 text-right"><i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" class="px-5 py-10 text-center text-slate-400 text-sm">Keine Mieterkonten{% if filter_op %} mit offenem Saldo{% endif %}.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

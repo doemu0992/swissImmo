@@ -1977,6 +1977,97 @@ def fw_mieterkonto_pdf(request, pk):
     return resp
 
 
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_mieterkonto(request, pk):
+    """Mieterkontoblatt (on-screen): alle Forderungen (Sollstellungen) und Zahlungen
+    chronologisch mit laufendem Saldo — dieselbe Datenbasis wie der PDF-Auszug."""
+    from core.services.mieterkonto import berechne_mieterkonto
+    from django.db.models import Q as _Q
+    m = get_object_or_404(Mieter, id=pk)
+    basis = _global_filter(request)
+
+    von = bis = None
+    try:
+        if request.GET.get('von'):
+            von = date.fromisoformat(request.GET['von'])
+        if request.GET.get('bis'):
+            bis = date.fromisoformat(request.GET['bis'])
+    except ValueError:
+        von = bis = None
+
+    zeilen, endsaldo = berechne_mieterkonto(m, von=von, bis=bis)
+    total_soll = sum((z['soll'] for z in zeilen), Decimal('0.00'))
+    total_haben = sum((z['haben'] for z in zeilen), Decimal('0.00'))
+
+    # Offene Posten (OP): noch nicht (voll) bezahlte Forderungen
+    vids = list(Mietvertrag.objects.filter(_Q(mieter=m) | _Q(mitmieter=m)).values_list('id', flat=True))
+    op = [r for r in DebitorenRechnung.objects.filter(vertrag_id__in=vids, status__in=['offen', 'teilbezahlt'])
+          .select_related('vertrag__einheit__liegenschaft').order_by('faellig_am') if r.offener_betrag > 0]
+    heute = timezone.now().date()
+    op_rows = [{
+        'r': r, 'offen': r.offener_betrag,
+        'faellig': r.faellig_am or r.datum,
+        'ueberfaellig': bool((r.faellig_am or r.datum) and (r.faellig_am or r.datum) < heute),
+    } for r in op]
+
+    return render(request, 'fw/mieterkonto.html', {
+        **basis, 'nav': 'mieterkonten', 'm': m,
+        'zeilen': zeilen, 'endsaldo': endsaldo,
+        'total_soll': total_soll, 'total_haben': total_haben,
+        'op_rows': op_rows, 'op_total': sum((o['offen'] for o in op_rows), Decimal('0.00')),
+        'von': von, 'bis': bis,
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_mieterkonten(request):
+    """Übersicht aller Mieterkonten: pro Mieter der aktuelle Saldo (Forderungen −
+    Zahlungen). Einstieg ins einzelne Kontoblatt."""
+    from core.services.mieterkonto import berechne_mieterkonto
+    from django.db.models import Q as _Q
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    filter_op = request.GET.get('filter') == 'offen'
+
+    vtr = Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft')
+    if aktive_lg:
+        vtr = vtr.filter(einheit__liegenschaft=aktive_lg)
+    # Ein Mieter kann mehrere Verträge haben → pro Mieter EIN Konto.
+    mieter_map = {}
+    for v in vtr:
+        if not v.mieter_id:
+            continue
+        eintrag = mieter_map.setdefault(v.mieter_id, {'mieter': v.mieter, 'objekte': set(), 'aktiv': False})
+        if v.einheit_id and v.einheit.liegenschaft_id:
+            eintrag['objekte'].add(f"{v.einheit.liegenschaft.strasse} · {v.einheit.bezeichnung}")
+        if v.status == 'aktiv':
+            eintrag['aktiv'] = True
+
+    rows = []
+    total_offen = Decimal('0.00')
+    for mid, data in mieter_map.items():
+        _, saldo = berechne_mieterkonto(data['mieter'])
+        if saldo > 0:
+            total_offen += saldo
+        if filter_op and saldo <= 0:
+            continue
+        rows.append({
+            'm': data['mieter'], 'saldo': saldo,
+            'objekt': ' · '.join(sorted(data['objekte'])[:1]) or '—',
+            'objekte_n': len(data['objekte']),
+            'aktiv': data['aktiv'],
+        })
+    # offene zuerst (grösster Schuldsaldo oben), dann Name
+    rows.sort(key=lambda r: (-(r['saldo'] if r['saldo'] > 0 else Decimal('0')), (r['m'].nachname or '').lower()))
+
+    return render(request, 'fw/mieterkonten.html', {
+        **basis, 'nav': 'mieterkonten', 'rows': rows,
+        'total_offen': total_offen, 'anzahl': len(rows),
+        'offen_n': sum(1 for r in rows if r['saldo'] > 0),
+        'filter_op': filter_op,
+    })
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_kommunikation_neu(request):
     """Schnelle Telefonnotiz / Kommunikation zu einem Kontakt erfassen."""
