@@ -125,6 +125,12 @@ class DebitorenRechnung(models.Model):
 
     konto_haben = models.ForeignKey(Buchungskonto, on_delete=models.PROTECT, null=True, blank=True, help_text="Gegenkonto (z.B. 1190 Durchlaufkonto oder 3000 Ertrag)")
 
+    # Weiterverrechnung: Verknüpfung zur weiterverrechneten Lieferantenrechnung
+    # (macht die durchgereichte Fremdleistung nachvollziehbar/abstimmbar).
+    quell_kreditor = models.ForeignKey('KreditorenRechnung', on_delete=models.SET_NULL,
+                                       null=True, blank=True, related_name='weiterverrechnungen',
+                                       verbose_name="Weiterverrechnung aus Kreditorenrechnung")
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='offen')
     qr_referenz = models.CharField("QRR-Referenz (27-stellig)", max_length=27, blank=True, default='', db_index=True)  # 🔥 NEU (camt.053-Abgleich)
     pdf_dokument = models.FileField(upload_to='debitoren_rechnungen/', blank=True, null=True)
@@ -243,6 +249,17 @@ class KreditorenRechnung(models.Model):
         db_table = 'core_kreditorenrechnung'
 
     def __str__(self): return f"{self.lieferant} - {self.betrag} ({self.status})"
+
+    @property
+    def weiterverrechnet_betrag(self):
+        """Summe der bereits an Mieter weiterverrechneten Beträge (ohne Stornos)."""
+        return (self.weiterverrechnungen.exclude(status='storniert')
+                .aggregate(s=Sum('betrag'))['s'] or Decimal('0.00'))
+
+    @property
+    def offen_weiterzuverrechnen(self):
+        """Noch nicht weiterverrechneter Anteil der Rechnung."""
+        return max(Decimal('0.00'), (self.betrag or Decimal('0.00')) - self.weiterverrechnet_betrag)
 
 # ========================================================
 # HNK ABRECHNUNG UND BELEGE

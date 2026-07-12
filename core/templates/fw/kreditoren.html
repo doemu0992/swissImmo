@@ -142,6 +142,14 @@
                         {% elif row.k.status == 'bezahlt' %}
                         <span class="text-emerald-600 text-xs"><i class="fa-solid fa-check-double"></i> erledigt</span>
                         {% endif %}
+                        {% if row.kann_weiterverrechnen %}
+                        <a href="/neu/kreditoren/{{ row.k.id }}/weiterverrechnen/"
+                           onclick="return fwModalOpen(this,'Weiterverrechnen',false)"
+                           class="inline-flex items-center gap-1.5 border border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                           title="Offen: CHF {{ row.offen_wv|chf }}">
+                            <i class="fa-solid fa-share"></i> Weiterverrechnen
+                        </a>
+                        {% endif %}
                     </div>
                 </td>
             </tr>
@@ -162,4 +170,5 @@
     „Bezahlen" bucht die Zahlung (Kreditoren 2000 an Bank 1020) und setzt den Status auf bezahlt.
     Die Freigabe (Konto zuordnen, Aufwand buchen) läuft aktuell noch in der klassischen Ansicht.
 </p>
+{% include 'fw/_fwmodal.html' %}
 {% endblock %}

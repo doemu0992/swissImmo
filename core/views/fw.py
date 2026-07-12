@@ -349,6 +349,89 @@ def fw_debitor_neu(request):
     return redirect(ziel)
 
 
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_weiterverrechnung(request, kreditor_id):
+    """Geführte Weiterverrechnung einer Lieferantenrechnung an einen Mieter.
+
+    GET: Formular (Mieter/Vertrag wählen, Betrag = offener weiterzuverrechnender
+    Anteil, optionaler Zuschlag). POST: erstellt eine mit der Kreditorenrechnung
+    VERKNÜPFTE Debitorenrechnung und bucht ertragsneutral über das Durchlaufkonto
+    1190 (Grundbetrag mindert den Aufwand), der Zuschlag wird als Ertrag gebucht."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import KreditorenRechnung, DebitorenRechnung
+    from finance.booking import buche
+    from core.auth import log_aktion
+    k = get_object_or_404(KreditorenRechnung.objects.select_related('liegenschaft', 'konto'), id=kreditor_id)
+    basis = _global_filter(request)
+    heute = timezone.localdate()
+
+    aufwand_konto = k.konto.nummer if k.konto_id else '4000'
+
+    if request.method == 'POST':
+        vertrag_id = request.POST.get('vertrag_id')
+        vertrag = Mietvertrag.objects.filter(id=vertrag_id).select_related('mieter', 'einheit__liegenschaft').first()
+        if not vertrag:
+            messages.error(request, "Bitte einen Mieter/Vertrag wählen.")
+            return redirect(request.path)
+
+        def _dec(x, d='0'):
+            try:
+                return Decimal(str(x).replace(',', '.').strip() or d)
+            except Exception:
+                return Decimal(d)
+        grund = _dec(request.POST.get('betrag'), str(k.offen_weiterzuverrechnen))
+        zuschlag = _dec(request.POST.get('zuschlag'), '0')
+        if grund <= 0:
+            messages.error(request, "Betrag muss grösser als 0 sein.")
+            return redirect(request.path)
+        # Nicht mehr weiterverrechnen als noch offen ist (Grundbetrag = Fremdkosten)
+        grund = min(grund, k.offen_weiterzuverrechnen)
+        total = (grund + max(zuschlag, Decimal('0'))).quantize(Decimal('0.01'))
+        lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else k.liegenschaft
+        titel = (request.POST.get('titel') or f"Weiterverrechnung: {k.lieferant}").strip()
+
+        rechnung = DebitorenRechnung.objects.create(
+            vertrag=vertrag, liegenschaft=lg, einheit=vertrag.einheit,
+            titel=titel, beschreibung=f"Weiterverrechnung Lieferantenrechnung {k.lieferant}"
+                                      + (f" · {k.referenz}" if k.referenz else ''),
+            datum=heute, faellig_am=heute + _timedelta(days=30), betrag=total,
+            status='offen', quell_kreditor=k)
+
+        # Ertragsneutrale Durchreichung des Grundbetrags über 1190:
+        #   1100 Debitor  an 1190 Durchlauf   (Forderung an Mieter)
+        #   1190 Durchlauf an <Aufwand>        (mindert den Aufwand → netto null)
+        buche("1100", "1190", grund, f"Weiterverrechnung {vertrag.mieter}: {titel}",
+              datum=heute, liegenschaft=lg, debitor=rechnung, kreditor=k, user=request.user)
+        buche("1190", aufwand_konto, grund, f"Aufwandsminderung Weiterverrechnung: {k.lieferant}",
+              datum=heute, liegenschaft=lg, debitor=rechnung, kreditor=k, user=request.user)
+        # Zuschlag = echter Ertrag (übrige Erträge 3600)
+        if zuschlag > 0:
+            buche("1100", "3600", zuschlag, f"Zuschlag Weiterverrechnung {vertrag.mieter}",
+                  datum=heute, liegenschaft=lg, debitor=rechnung, user=request.user)
+
+        log_aktion(request, "Weiterverrechnung erstellt", str(vertrag.mieter),
+                   f"CHF {total} aus {k.lieferant} (#{k.id})", ziel=vertrag)
+        messages.success(request, f"✅ CHF {total} an {vertrag.mieter} weiterverrechnet — "
+                                  "QR-Rechnung über den QR-Button in den Debitoren.")
+        if request.POST.get('embed') == '1':
+            return render(request, 'fw/_modal_done.html', {})
+        return redirect('/neu/debitoren/')
+
+    # GET — aktive Verträge zur Auswahl
+    vertraege = (Mietvertrag.objects.filter(status='aktiv')
+                 .select_related('mieter', 'einheit__liegenschaft').order_by('einheit__liegenschaft__strasse'))
+    if k.liegenschaft_id:
+        bevorzugt = vertraege.filter(einheit__liegenschaft=k.liegenschaft)
+        vertraege = list(bevorzugt) + [v for v in vertraege if v.einheit and v.einheit.liegenschaft_id != k.liegenschaft_id]
+    else:
+        vertraege = list(vertraege)
+    return render(request, 'fw/weiterverrechnung.html', {
+        **basis, 'nav': 'kreditoren', 'k': k, 'vertraege': vertraege,
+        'offen_wv': k.offen_weiterzuverrechnen, 'aufwand_konto': aufwand_konto,
+    })
+
+
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def fw_debitor_stornieren(request, pk):
     """Storniert eine (versehentlich erstellte) Debitorenrechnung revisionssicher:
@@ -1993,6 +2076,9 @@ def fw_kreditoren(request):
             'konto': f"{k.konto.nummer} {k.konto.bezeichnung}" if k.konto else None,
             'beleg_url': k.beleg_scan.url if k.beleg_scan else None,
             'kann_bezahlen': k.status == 'freigegeben',
+            'offen_wv': k.offen_weiterzuverrechnen,
+            'kann_weiterverrechnen': (k.status in ('freigegeben', 'bezahlt')
+                                      and k.offen_weiterzuverrechnen > 0),
         })
 
     status_chips = [('', 'Alle')] + [(k, v[0]) for k, v in KRED_PILL.items() if k != 'storniert']

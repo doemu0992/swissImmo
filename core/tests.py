@@ -2847,6 +2847,59 @@ class BuchungsServiceTests(TestCase):
         self.assertTrue(Buchung.objects.filter(debitoren_rechnung=r, soll_konto__nummer='1100').exists())
 
 
+class WeiterverrechnungTests(TestCase):
+    """Geführte Weiterverrechnung: Verknüpfung + ertragsneutrale Buchung über 1190."""
+
+    def _kreditor(self, betrag='500', konto='4000'):
+        from finance.models import KreditorenRechnung
+        from finance.booking import konto as _k
+        lg, e, m, v = _basis_objekte()
+        k = KreditorenRechnung.objects.create(
+            lieferant='Sanitär AG', betrag=Decimal(betrag), status='bezahlt',
+            liegenschaft=lg, konto=_k(konto))
+        return lg, e, m, v, k
+
+    def test_weiterverrechnung_verknuepft_und_neutral(self):
+        from finance.models import DebitorenRechnung, Buchung
+        lg, e, m, v, k = self._kreditor('500')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/kreditoren/{k.id}/weiterverrechnen/',
+                   {'vertrag_id': v.id, 'betrag': '500', 'zuschlag': '0', 'titel': 'Rohrbruch'})
+        self.assertIn(r.status_code, (200, 302))
+        deb = DebitorenRechnung.objects.filter(quell_kreditor=k).first()
+        self.assertIsNotNone(deb)
+        self.assertEqual(deb.betrag, Decimal('500.00'))
+        # Ertragsneutral: 1100/1190 + 1190/4000 → 1190 netto 0, Aufwand gemindert
+        self.assertTrue(Buchung.objects.filter(debitoren_rechnung=deb, soll_konto__nummer='1100', haben_konto__nummer='1190').exists())
+        self.assertTrue(Buchung.objects.filter(debitoren_rechnung=deb, soll_konto__nummer='1190', haben_konto__nummer='4000').exists())
+        # Kreditor ist voll weiterverrechnet
+        k.refresh_from_db()
+        self.assertEqual(k.offen_weiterzuverrechnen, Decimal('0.00'))
+
+    def test_zuschlag_wird_als_ertrag_gebucht(self):
+        from finance.models import DebitorenRechnung, Buchung
+        lg, e, m, v, k = self._kreditor('500')
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/kreditoren/{k.id}/weiterverrechnen/',
+               {'vertrag_id': v.id, 'betrag': '500', 'zuschlag': '50'})
+        deb = DebitorenRechnung.objects.filter(quell_kreditor=k).first()
+        self.assertEqual(deb.betrag, Decimal('550.00'))
+        self.assertTrue(Buchung.objects.filter(debitoren_rechnung=deb, soll_konto__nummer='1100', haben_konto__nummer='3600', betrag=Decimal('50.00')).exists())
+
+    def test_begrenzt_auf_offenen_anteil(self):
+        from finance.models import DebitorenRechnung
+        lg, e, m, v, k = self._kreditor('500')
+        c = Client(); c.force_login(_team_user())
+        # erst 300 weiterverrechnen
+        c.post(f'/neu/kreditoren/{k.id}/weiterverrechnen/', {'vertrag_id': v.id, 'betrag': '300', 'zuschlag': '0'})
+        k.refresh_from_db()
+        self.assertEqual(k.offen_weiterzuverrechnen, Decimal('200.00'))
+        # dann 999 versuchen → auf 200 begrenzt
+        c.post(f'/neu/kreditoren/{k.id}/weiterverrechnen/', {'vertrag_id': v.id, 'betrag': '999', 'zuschlag': '0'})
+        k.refresh_from_db()
+        self.assertEqual(k.offen_weiterzuverrechnen, Decimal('0.00'))
+
+
 class RechtsgrundlagenTests(TestCase):
     """In-App-Übersicht der angewandten Rechtsgrundlagen."""
 
