@@ -2984,16 +2984,33 @@ class RechtsgrundlagenTests(TestCase):
         self.assertContains(r, 'Rechtsgrundlagen')
         self.assertContains(r, 'Art. 257d OR')     # Verzug
         self.assertContains(r, 'Art. 269d OR')     # Mietzinserhöhung
-        self.assertContains(r, 'Zahlungsverzug-Prozess')  # Anwendungshinweis
+        self.assertContains(r, 'Obligationenrecht')
+        self.assertContains(r, 'fedlex.admin.ch')  # amtliche Quelle
 
-    def test_uebersicht_struktur(self):
-        from core.services import mietrecht
-        g = mietrecht.uebersicht()
-        self.assertTrue(any(x['titel'] == 'Kaution' for x in g))
-        # jede Zeile hat ref/label/anwendung
-        for gruppe in g:
-            for a in gruppe['artikel']:
-                self.assertIn('OR', a['ref'] + a['label'] + ' OR')
+    def test_suche(self):
+        from core.services import gesetzestexte
+        # Stichwort
+        rows = gesetzestexte.suche('kaution')
+        self.assertTrue(any(r['art'] == '257e' for r in rows))
+        # Artikelnummer
+        rows = gesetzestexte.suche('269c')
+        self.assertTrue(any('staffel' in ' '.join(r['stichworte']) for r in rows))
+        # Mehrwortsuche
+        self.assertTrue(gesetzestexte.suche('referenzzins senkung'))
+        # leere Query → alle
+        self.assertEqual(len(gesetzestexte.suche('')), len(gesetzestexte.REGISTER))
+
+    def test_suche_view(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/rechtsgrundlagen/?q=kaution')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Art. 257e OR')
+        self.assertNotContains(r, 'Art. 266d OR')   # Geschäftsraum-Frist – nicht Treffer
+
+    def test_anwendung_overlay(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/rechtsgrundlagen/?q=257d')
+        self.assertContains(r, 'In swissImmo')      # Anwendungshinweis am Artikel
 
 
 class KautionFreigabeTests(TestCase):

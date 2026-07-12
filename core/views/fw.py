@@ -4318,12 +4318,30 @@ def fw_logbuch(request):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_rechtsgrundlagen(request):
-    """Übersicht aller mietrechtlichen Grundlagen (OR/VMWG), die die Software
-    anwendet — Artikel, Kurztitel und wo im Programm sie greifen."""
-    from core.services import mietrecht
+    """Verzeichnis der mietrechtlichen Gesetzesartikel (OR/VMWG/ZGB) mit
+    Kurzfassung, Stichworten, amtlichem Volltext-Link (Fedlex) und Suche.
+    Wo ein Artikel in der Software angewandt wird, steht es als Overlay dabei."""
+    from core.services import gesetzestexte, mietrecht
     basis = _global_filter(request)
+    q = (request.GET.get('q') or '').strip()
+
+    # "Im Programm angewandt"-Overlay: Zitat ('Art. 257e OR') → Anwendungstext
+    anwendung = {}
+    for key, text in mietrecht.ANWENDUNG.items():
+        ref = mietrecht.ref(key)
+        if ref:
+            anwendung[ref] = text
+
+    gruppen = gesetzestexte.gesetze_uebersicht(q)
+    treffer = 0
+    for g in gruppen:
+        for a in g['artikel']:
+            a['anwendung'] = anwendung.get(f"Art. {a['art']} {a['gesetz']}", '')
+            treffer += 1
+
     return render(request, 'fw/rechtsgrundlagen.html', {
-        **basis, 'nav': 'rechtsgrundlagen', 'gruppen': mietrecht.uebersicht(),
+        **basis, 'nav': 'rechtsgrundlagen', 'gruppen': gruppen, 'q': q,
+        'treffer': treffer, 'gesamt': len(gesetzestexte.REGISTER),
     })
 
 
