@@ -3280,3 +3280,67 @@ class MieterkontoblattTests(TestCase):
         # Filter "nur offen"
         r2 = c.get('/neu/mieterkonten/?filter=offen')
         self.assertEqual(len(r2.context['rows']), 1)
+
+
+class JournalStornoTests(TestCase):
+    """Revisionssichere Gegenbuchung: Original bleibt, Storno kehrt Soll/Haben um."""
+
+    def _buchung(self):
+        from finance.booking import buche
+        lg, e, m, v = _basis_objekte()
+        b = buche('4000', '1020', Decimal('250'), 'Falsche Rechnung', liegenschaft=lg)
+        return lg, b
+
+    def test_storno_kehrt_um_und_netzt_auf_null(self):
+        from finance.booking import storniere_buchung
+        from finance.models import Buchung, Buchungskonto
+        from django.db.models import Sum
+        lg, b = self._buchung()
+        gegen = storniere_buchung(b)
+        # Soll/Haben getauscht, gleicher Betrag, als Storno markiert, verknüpft
+        self.assertTrue(gegen.ist_storno)
+        self.assertEqual(gegen.storno_von_id, b.id)
+        self.assertEqual(gegen.soll_konto.nummer, '1020')
+        self.assertEqual(gegen.haben_konto.nummer, '4000')
+        self.assertEqual(gegen.betrag, Decimal('250.00'))
+        # Original als storniert markiert (bleibt aber erhalten)
+        b.refresh_from_db()
+        self.assertIsNotNone(b.storniert_am)
+        self.assertEqual(Buchung.objects.count(), 2)
+        # Aufwand 4000 netto = 0 (250 Soll − 250 Haben)
+        k = Buchungskonto.objects.get(nummer='4000')
+        soll = Buchung.objects.filter(soll_konto=k).aggregate(s=Sum('betrag'))['s'] or Decimal('0')
+        haben = Buchung.objects.filter(haben_konto=k).aggregate(s=Sum('betrag'))['s'] or Decimal('0')
+        self.assertEqual(soll - haben, Decimal('0.00'))
+
+    def test_kein_doppelstorno(self):
+        from finance.booking import storniere_buchung
+        lg, b = self._buchung()
+        storniere_buchung(b)
+        with self.assertRaises(ValueError):
+            storniere_buchung(b)
+
+    def test_storno_von_storno_verboten(self):
+        from finance.booking import storniere_buchung
+        lg, b = self._buchung()
+        gegen = storniere_buchung(b)
+        with self.assertRaises(ValueError):
+            storniere_buchung(gegen)
+
+    def test_view_storniert_und_zeigt_badge(self):
+        from finance.models import Buchung
+        lg, b = self._buchung()
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/buchhaltung/buchung/{b.id}/stornieren/')
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(Buchung.objects.filter(ist_storno=True).count(), 1)
+        # Journal zeigt beide + storniert-Badge
+        r2 = c.get('/neu/buchhaltung/')
+        self.assertContains(r2, 'storniert')
+        self.assertContains(r2, 'Storno Beleg')
+
+    def test_original_bleibt_erhalten_kein_hard_delete(self):
+        from finance.models import Buchung
+        lg, b = self._buchung()
+        with self.assertRaises(PermissionError):
+            b.delete()

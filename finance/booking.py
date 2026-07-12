@@ -94,3 +94,32 @@ def buche(soll, haben, betrag, beleg_text, *, datum=None, liegenschaft=None, use
         liegenschaft=liegenschaft, erstellt_von=user,
         debitoren_rechnung=debitor, kreditoren_rechnung=kreditor, zahlungseingang=zahlung,
         ist_storno=storno)
+
+
+def storniere_buchung(buchung, *, user=None, datum=None):
+    """Revisionssichere Gegenbuchung (Soll↔Haben getauscht). Die Originalbuchung
+    bleibt unverändert erhalten (append-only), wird aber als storniert markiert.
+
+    Das Storno wird im laufenden (offenen) Datum gebucht — nicht rückdatiert in
+    die u.U. gesperrte Ursprungsperiode. Gibt die Gegenbuchung zurück.
+    """
+    from finance.models import Buchung
+    if buchung.ist_storno:
+        raise ValueError("Eine Storno-Buchung kann nicht storniert werden.")
+    if buchung.storniert_am is not None:
+        raise ValueError("Diese Buchung wurde bereits storniert.")
+
+    original_nr = buchung.beleg_nr
+    gegen = Buchung.objects.create(
+        datum=datum or timezone.now().date(),
+        beleg_text=f"Storno Beleg #{original_nr}: {buchung.beleg_text}"[:255],
+        soll_konto=buchung.haben_konto, haben_konto=buchung.soll_konto,
+        betrag=buchung.betrag, liegenschaft=buchung.liegenschaft,
+        erstellt_von=user, ist_storno=True, storno_von=buchung,
+        # Beleg-Verknüpfungen mitführen, damit OP-/Nebenbuch-Bezug erhalten bleibt
+        debitoren_rechnung=buchung.debitoren_rechnung,
+        kreditoren_rechnung=buchung.kreditoren_rechnung,
+        zahlungseingang=buchung.zahlungseingang)
+    buchung.storniert_am = timezone.now()
+    buchung.save(update_fields=['storniert_am'])
+    return gegen

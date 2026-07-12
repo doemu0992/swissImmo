@@ -6829,6 +6829,32 @@ def fw_buchung_neu(request):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_buchung_stornieren(request, pk):
+    """Storniert eine Journalbuchung durch eine revisionssichere Gegenbuchung.
+    Die Originalbuchung bleibt erhalten (append-only, OR 958f)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import Buchung
+    from finance.booking import storniere_buchung
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_buchhaltung')
+    b = get_object_or_404(Buchung, id=pk)
+    try:
+        gegen = storniere_buchung(b, user=request.user)
+    except ValueError as e:
+        messages.error(request, str(e))
+        return redirect('fw_buchhaltung')
+    except PermissionError as e:
+        messages.error(request, str(e))
+        return redirect('fw_buchhaltung')
+    log_aktion(request, "Buchung storniert", b.beleg_text,
+               f"Beleg #{b.beleg_nr} → Storno #{gegen.beleg_nr} · CHF {b.betrag}")
+    messages.success(request, f"✅ Beleg #{b.beleg_nr} storniert (Gegenbuchung #{gegen.beleg_nr}).")
+    return redirect('fw_buchhaltung')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_kommunikation_senden(request):
     """Verschickt die verfasste Mitteilung per E-Mail an die gewählten Mieter."""
     from django.shortcuts import redirect

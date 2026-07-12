@@ -55,6 +55,9 @@ class Buchung(models.Model):
     # 🔥 NEU: Revisionssicherheit (Storno)
     ist_storno = models.BooleanField(default=False)
     storniert_am = models.DateTimeField(null=True, blank=True)
+    # Verweis der Gegenbuchung auf die ursprüngliche Buchung (Storno-Paar)
+    storno_von = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='stornierungen')
     # Fortlaufende, lückenlose Belegnummer (OR 958f) — beim ersten Speichern vergeben
     beleg_nr = models.PositiveIntegerField("Beleg-Nr", null=True, blank=True, db_index=True)
 
