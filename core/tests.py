@@ -2801,6 +2801,52 @@ class FristenCenterTests(TestCase):
         self.assertNotContains(r, 'Manuelle Aufgabe')
 
 
+class BuchungsServiceTests(TestCase):
+    """Zentrale Buchungsschicht: Kontenplan garantiert, kein stiller Verlust."""
+
+    def test_ensure_und_konto_autocreate(self):
+        from finance.booking import ensure_kontenplan, konto
+        from finance.models import Buchungskonto
+        Buchungskonto.objects.all().delete()
+        n = ensure_kontenplan()
+        self.assertGreater(n, 10)
+        # bekanntes Konto wird bei Bedarf nachgelegt
+        Buchungskonto.objects.filter(nummer='1100').delete()
+        k = konto('1100')
+        self.assertEqual(k.nummer, '1100')
+
+    def test_buche_schreibt_und_ueberspringt_null(self):
+        from finance.booking import buche
+        from finance.models import Buchung
+        b = buche('1100', '3000', Decimal('1500'), 'Test-Miete')
+        self.assertIsNotNone(b)
+        self.assertEqual(b.soll_konto.nummer, '1100')
+        self.assertEqual(b.haben_konto.nummer, '3000')
+        # Nullbetrag → keine Buchung
+        self.assertIsNone(buche('1100', '3000', Decimal('0'), 'Null'))
+        self.assertIsNone(buche('1100', '3000', None, 'None'))
+        self.assertEqual(Buchung.objects.count(), 1)
+
+    def test_unbekanntes_konto_wirft(self):
+        from finance.booking import buche
+        with self.assertRaises(ValueError):
+            buche('9999', '3000', Decimal('10'), 'Ungültig')
+
+    def test_sollstellung_bucht_ueber_service(self):
+        """Sollstellung schreibt saubere Buchungen, auch wenn der Kontenplan leer war."""
+        from finance.models import Buchungskonto, Buchung, DebitorenRechnung
+        from core.services.automation import run_sollstellung
+        Buchungskonto.objects.all().delete()   # kein Kontenplan → früher stiller Verlust
+        lg, e, m, v = _basis_objekte()
+        heute = date.today()
+        n = run_sollstellung(heute.year, heute.month)
+        self.assertGreaterEqual(n, 1)
+        r = DebitorenRechnung.objects.filter(vertrag=v).first()
+        self.assertIsNotNone(r)
+        # Buchungen existieren (nicht stillschweigend verschluckt)
+        self.assertTrue(Buchung.objects.filter(debitoren_rechnung=r, soll_konto__nummer='1100').exists())
+
+
 class RechtsgrundlagenTests(TestCase):
     """In-App-Übersicht der angewandten Rechtsgrundlagen."""
 

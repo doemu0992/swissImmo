@@ -19,7 +19,8 @@ def run_sollstellung(jahr, monat, user=None):
     """Erzeugt für alle im Monat aktiven Verträge die Miet-/NK-Rechnung samt
     Buchungssätzen (idempotent — bereits gestellte Verträge werden übersprungen).
     Gibt die Anzahl neu erstellter Rechnungen zurück."""
-    from finance.models import Buchungskonto, Buchung, DebitorenRechnung
+    from finance.models import DebitorenRechnung
+    from finance.booking import buche, ensure_kontenplan
     from rentals.models import Mietvertrag
 
     start_date = date(jahr, monat, 1)
@@ -27,13 +28,7 @@ def run_sollstellung(jahr, monat, user=None):
     end_date = date(jahr, monat, last_day)
     titel = f"Miete & NK {monat:02d}/{jahr}"
 
-    konto_deb = Buchungskonto.objects.filter(nummer="1100").first()
-    konto_ertrag = Buchungskonto.objects.filter(nummer="3000").first()
-    konto_nk = Buchungskonto.objects.filter(nummer="3020").first()
-    if not (konto_deb and konto_ertrag and konto_nk):
-        raise RuntimeError("Standard-Konten (1100, 3000, 3020) fehlen — Kontenplan laden.")
-    konto_mwst, _ = Buchungskonto.objects.get_or_create(
-        nummer="2200", defaults={'bezeichnung': 'Geschuldete MWST (Umsatzsteuer)', 'typ': 'bilanz'})
+    ensure_kontenplan()   # Kontenplan garantieren (kein stiller Buchungsverlust)
 
     vertraege = (Mietvertrag.objects.filter(status='aktiv', beginn__lte=end_date)
                  .exclude(ende__lt=start_date).select_related('mieter', 'einheit__liegenschaft'))
@@ -59,18 +54,13 @@ def run_sollstellung(jahr, monat, user=None):
             rechnung = DebitorenRechnung.objects.create(
                 vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
                 titel=titel, betrag=netto + nk + mwst, faellig_am=start_date)
-            if netto > 0:
-                Buchung.objects.create(datum=start_date, beleg_text=f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
-                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_ertrag,
-                                       betrag=netto, debitoren_rechnung=rechnung, erstellt_von=user)
-            if nk > 0:
-                Buchung.objects.create(datum=start_date, beleg_text=f"NK-Akonto {v.mieter} - {monat:02d}/{jahr}",
-                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_nk,
-                                       betrag=nk, debitoren_rechnung=rechnung, erstellt_von=user)
-            if mwst > 0:
-                Buchung.objects.create(datum=start_date, beleg_text=f"MWST {v.mwst_satz}% {v.mieter} - {monat:02d}/{jahr}",
-                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_mwst,
-                                       betrag=mwst, debitoren_rechnung=rechnung, erstellt_von=user)
+            lg = v.einheit.liegenschaft if v.einheit_id else None
+            buche("1100", "3000", netto, f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
+                  datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
+            buche("1100", "3020", nk, f"NK-Akonto {v.mieter} - {monat:02d}/{jahr}",
+                  datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
+            buche("1100", "2200", mwst, f"MWST {v.mwst_satz}% {v.mieter} - {monat:02d}/{jahr}",
+                  datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
             erstellt += 1
     return erstellt
 

@@ -337,15 +337,9 @@ def fw_debitor_neu(request):
             titel=titel, beschreibung=(request.POST.get('beschreibung') or '').strip(),
             datum=heute, faellig_am=faellig, betrag=betrag, status='offen',
         )
-        try:
-            konto_deb = Buchungskonto.objects.get(nummer="1100")
-            konto_ertrag = Buchungskonto.objects.get(nummer="3000")
-            Buchung.objects.create(
-                datum=heute, beleg_text=f"Weiterverrechnung: {titel}", liegenschaft=lg,
-                soll_konto=konto_deb, haben_konto=konto_ertrag, betrag=betrag,
-                debitoren_rechnung=rechnung, erstellt_von=request.user)
-        except Buchungskonto.DoesNotExist:
-            pass
+        from finance.booking import buche
+        buche("1100", "3000", betrag, f"Weiterverrechnung: {titel}", datum=heute,
+              liegenschaft=lg, debitor=rechnung, user=request.user)
 
     log_aktion(request, "Ad-hoc-Debitorenrechnung erstellt", titel, f"CHF {betrag}")
     messages.success(request, f"✅ Rechnung '{titel}' über CHF {betrag} erstellt — QR-Rechnung via QR-Button.")
@@ -882,14 +876,10 @@ def fw_schlussabrechnung(request, vertrag_id):
                         vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
                         titel="Schlussabrechnung (Nachzahlung)", datum=heute,
                         faellig_am=heute + _timedelta(days=30), betrag=daten['saldo'], status='offen')
-                    try:
-                        kd = Buchungskonto.objects.get(nummer="1100")
-                        ke = Buchungskonto.objects.get(nummer="3000")
-                        Buchung.objects.create(datum=heute, beleg_text=f"Schlussabrechnung {v.mieter}",
-                            liegenschaft=v.einheit.liegenschaft, soll_konto=kd, haben_konto=ke,
-                            betrag=daten['saldo'], debitoren_rechnung=rech, erstellt_von=request.user)
-                    except Buchungskonto.DoesNotExist:
-                        pass
+                    from finance.booking import buche
+                    buche("1100", "3000", daten['saldo'], f"Schlussabrechnung {v.mieter}",
+                          datum=heute, liegenschaft=v.einheit.liegenschaft, debitor=rech,
+                          user=request.user)
             from core.services.automation import erledige_pendenzen_fuer
             erledige_pendenzen_fuer(v, ['Schlussabrechnung', 'Kaution'], user=request.user)
             log_aktion(request, "Schlussabrechnung verbucht", str(v.mieter), f"Saldo CHF {daten['saldo']}", ziel=v)
@@ -1391,17 +1381,10 @@ def fw_bankabgleich_verbuchen(request):
         )
         rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
         rechnung.save()
-        try:
-            konto_bank = Buchungskonto.objects.get(nummer="1020")
-            konto_deb = Buchungskonto.objects.get(nummer="1100")
-            Buchung.objects.create(
-                datum=heute, beleg_text=f"Bankabgleich {vertrag.mieter} - {rechnung.titel}",
-                liegenschaft=vertrag.einheit.liegenschaft,
-                soll_konto=konto_bank, haben_konto=konto_deb, betrag=betrag,
-                zahlungseingang=zahlung, erstellt_von=request.user,
-            )
-        except Buchungskonto.DoesNotExist:
-            pass
+        from finance.booking import buche
+        buche("1020", "1100", betrag, f"Bankabgleich {vertrag.mieter} - {rechnung.titel}",
+              datum=heute, liegenschaft=vertrag.einheit.liegenschaft, zahlung=zahlung,
+              user=request.user)
 
     log_aktion(request, "Zahlung via Bankabgleich verbucht", str(vertrag),
                f"CHF {betrag} auf {rechnung.titel}")
@@ -1561,13 +1544,11 @@ def fw_camt_import(request):
             )
             rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
             rechnung.save()
-            if konto_bank and konto_deb:
-                Buchung.objects.create(
-                    datum=e['datum'] or heute,
-                    beleg_text=f"camt.053 {vertrag.mieter} - {rechnung.titel}",
-                    liegenschaft=vertrag.einheit.liegenschaft if vertrag and vertrag.einheit_id else None,
-                    soll_konto=konto_bank, haben_konto=konto_deb, betrag=betrag,
-                    zahlungseingang=zahlung, erstellt_von=request.user)
+            from finance.booking import buche
+            buche("1020", "1100", betrag, f"camt.053 {vertrag.mieter} - {rechnung.titel}",
+                  datum=e['datum'] or heute,
+                  liegenschaft=vertrag.einheit.liegenschaft if vertrag and vertrag.einheit_id else None,
+                  zahlung=zahlung, user=request.user)
         if rechnung.status == 'bezahlt':
             for k in [k for k, v in ref_index.items() if v is rechnung]:
                 ref_index.pop(k, None)
@@ -1607,12 +1588,10 @@ def fw_camt_import(request):
                 bemerkung=f"camt.053 UNGEKLÄRT: {e.get('dbtr_name','') or e.get('info','') or e.get('referenz','')}"[:255],
                 bank_referenz=aref, konto=konto_clearing,
                 erstellt_von=request.user, status='verbucht')
-            if konto_bank:
-                Buchung.objects.create(
-                    datum=e['datum'] or heute,
-                    beleg_text=f"camt.053 ungeklärt: {e.get('dbtr_name','') or e.get('referenz','')}"[:255],
-                    soll_konto=konto_bank, haben_konto=konto_clearing, betrag=betrag_e,
-                    zahlungseingang=zahlung, erstellt_von=request.user)
+            from finance.booking import buche
+            buche("1020", "1190", betrag_e,
+                  f"camt.053 ungeklärt: {e.get('dbtr_name','') or e.get('referenz','')}",
+                  datum=e['datum'] or heute, zahlung=zahlung, user=request.user)
         geklaert += 1
 
     log_aktion(request, "camt.053-Import", datei.name,
@@ -2103,19 +2082,10 @@ def fw_kreditor_bezahlen(request):
     with transaction.atomic():
         k.status = 'bezahlt'
         k.save()
-        try:
-            konto_bank = Buchungskonto.objects.get(nummer="1020")
-            konto_kred = Buchungskonto.objects.get(nummer="2000")
-            Buchung.objects.create(
-                datum=timezone.now().date(),
-                beleg_text=f"Zahlung {k.lieferant} - {k.referenz}",
-                liegenschaft=k.liegenschaft,
-                soll_konto=konto_kred, haben_konto=konto_bank,
-                betrag=k.betrag or Decimal('0.00'),
-                kreditoren_rechnung=k, erstellt_von=request.user,
-            )
-        except Buchungskonto.DoesNotExist:
-            pass
+        from finance.booking import buche
+        buche("2000", "1020", k.betrag or Decimal('0.00'),
+              f"Zahlung {k.lieferant} - {k.referenz}", liegenschaft=k.liegenschaft,
+              kreditor=k, user=request.user)
 
     log_aktion(request, "Kreditorenrechnung bezahlt (Bankabgleich)",
                k.lieferant or f"Rechnung #{k.id}", f"CHF {k.betrag}")
@@ -3205,12 +3175,8 @@ def fw_nebenkosten_verbuchen(request, pk):
         return redirect(f'/neu/nebenkosten/{p.id}/')
 
     result = berechne_abrechnung(p.id)
-    try:
-        konto_deb = Buchungskonto.objects.get(nummer="1100")
-        konto_nk = Buchungskonto.objects.get(nummer="3020")
-    except Buchungskonto.DoesNotExist:
-        messages.error(request, "Konten 1100 / 3020 fehlen. Bitte Kontenplan laden.")
-        return redirect(f'/neu/nebenkosten/{p.id}/')
+    from finance.booking import buche, konto as _konto
+    konto_nk = _konto("3020")
 
     heute = timezone.now().date()
     n_nach = n_gut = 0
@@ -3229,14 +3195,12 @@ def fw_nebenkosten_verbuchen(request, pk):
                     titel=f"NK-Abrechnung Nachzahlung - {p.bezeichnung}",
                     beschreibung=f"Periode {p.start_datum:%d.%m.%Y}–{p.ende_datum:%d.%m.%Y}",
                     betrag=saldo, faellig_am=heute + timezone.timedelta(days=30), konto_haben=konto_nk)
-                Buchung.objects.create(datum=heute, beleg_text=f"NK-Nachzahlung {v.mieter} - {p.bezeichnung}",
-                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_deb, haben_konto=konto_nk,
-                                       betrag=saldo, debitoren_rechnung=rech, erstellt_von=request.user)
+                buche("1100", "3020", saldo, f"NK-Nachzahlung {v.mieter} - {p.bezeichnung}",
+                      datum=heute, liegenschaft=v.einheit.liegenschaft, debitor=rech, user=request.user)
                 n_nach += 1
             else:  # Guthaben -> Gutschrift
-                Buchung.objects.create(datum=heute, beleg_text=f"NK-Gutschrift {v.mieter} - {p.bezeichnung}",
-                                       liegenschaft=v.einheit.liegenschaft, soll_konto=konto_nk, haben_konto=konto_deb,
-                                       betrag=abs(saldo), erstellt_von=request.user)
+                buche("3020", "1100", abs(saldo), f"NK-Gutschrift {v.mieter} - {p.bezeichnung}",
+                      datum=heute, liegenschaft=v.einheit.liegenschaft, user=request.user)
                 n_gut += 1
         p.abgeschlossen = True
         p.save(update_fields=['abgeschlossen'])
@@ -6319,30 +6283,21 @@ def fw_kreditor_freigeben(request, pk):
     with transaction.atomic():
         k.status = 'freigegeben'
         k.save()
-        try:
-            konto_kred = Buchungskonto.objects.get(nummer="2000")
-        except Buchungskonto.DoesNotExist:
-            konto_kred = None
-        if konto_kred:
-            brutto = k.betrag or Decimal('0.00')
-            vorsteuer = Decimal('0.00')
-            if (k.mwst_satz or 0) > 0:
-                satz = k.mwst_satz
-                vorsteuer = (brutto * satz / (Decimal('100') + satz)).quantize(Decimal('0.01'))
-                k.mwst_betrag = vorsteuer
-                k.save(update_fields=['mwst_betrag'])
-            netto = brutto - vorsteuer
-            Buchung.objects.create(datum=k.datum or timezone.now().date(),
-                beleg_text=f"Rechnung {k.lieferant} - {k.referenz}", liegenschaft=k.liegenschaft,
-                soll_konto=k.konto, haben_konto=konto_kred, betrag=netto,
-                kreditoren_rechnung=k, erstellt_von=request.user)
-            if vorsteuer > 0:
-                kv, _ = Buchungskonto.objects.get_or_create(nummer="1170",
-                    defaults={'bezeichnung': 'Vorsteuer (MWST)', 'typ': 'bilanz'})
-                Buchung.objects.create(datum=k.datum or timezone.now().date(),
-                    beleg_text=f"Vorsteuer {k.mwst_satz}% {k.lieferant}", liegenschaft=k.liegenschaft,
-                    soll_konto=kv, haben_konto=konto_kred, betrag=vorsteuer,
-                    kreditoren_rechnung=k, erstellt_von=request.user)
+        from finance.booking import buche
+        datum_b = k.datum or timezone.now().date()
+        brutto = k.betrag or Decimal('0.00')
+        vorsteuer = Decimal('0.00')
+        if (k.mwst_satz or 0) > 0:
+            satz = k.mwst_satz
+            vorsteuer = (brutto * satz / (Decimal('100') + satz)).quantize(Decimal('0.01'))
+            k.mwst_betrag = vorsteuer
+            k.save(update_fields=['mwst_betrag'])
+        netto = brutto - vorsteuer
+        buche(k.konto, "2000", netto, f"Rechnung {k.lieferant} - {k.referenz}",
+              datum=datum_b, liegenschaft=k.liegenschaft, kreditor=k, user=request.user)
+        if vorsteuer > 0:
+            buche("1170", "2000", vorsteuer, f"Vorsteuer {k.mwst_satz}% {k.lieferant}",
+                  datum=datum_b, liegenschaft=k.liegenschaft, kreditor=k, user=request.user)
     log_aktion(request, "Kreditorenrechnung freigegeben", k.lieferant, f"CHF {k.betrag}")
     messages.success(request, f"✅ '{k.lieferant}' freigegeben und verbucht.")
     ziel = '/neu/kreditoren/'
