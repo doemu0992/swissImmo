@@ -3710,6 +3710,41 @@ class SchadenFotoTests(TestCase):
         self.assertContains(r, 'sc-fotos')
 
 
+class AuftragPdfTests(TestCase):
+    """Reparaturauftrag-PDF für einen Handwerker-Auftrag."""
+
+    def test_auftrag_pdf(self):
+        from tickets.models import SchadenMeldung, HandwerkerAuftrag
+        from crm.models import Handwerker, Verwaltung
+        Verwaltung.objects.create(firma='Verwaltung AG', strasse='Weg 1', plz='8000', ort='Zürich',
+                                  email='info@vw.ch', telefon='044 000 00 00')
+        lg, e, m, v = _basis_objekte()
+        hw = Handwerker.objects.create(firma='Sanitär AG', kontaktperson='H. Meier', email='hw@example.ch')
+        t = SchadenMeldung.objects.create(liegenschaft=lg, betroffene_einheit=e, titel='Rohrbruch Küche',
+                                          beschreibung='Wasser tritt aus.', kategorie='Sanitär',
+                                          raum='Küche', melder_vorname='Anna', melder_nachname='Muster',
+                                          tel_melder='079', status='neu')
+        a = HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, kosten_geschaetzt=Decimal('450'),
+                                             bemerkung='Bitte rasch erledigen.')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/auftrag/{a.id}/pdf/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r.content.startswith(b'%PDF'))
+        self.assertGreater(len(r.content), 1200)
+
+    def test_pdf_button_im_detail(self):
+        from tickets.models import SchadenMeldung, HandwerkerAuftrag
+        from crm.models import Handwerker
+        lg, e, m, v = _basis_objekte()
+        hw = Handwerker.objects.create(firma='Elektro AG')
+        t = SchadenMeldung.objects.create(liegenschaft=lg, titel='Steckdose', beschreibung='x', status='neu')
+        a = HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw)
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/schaeden/{t.id}/')
+        self.assertContains(r, f'/neu/auftrag/{a.id}/pdf/')
+
+
 class VerwaltungshonorarTests(TestCase):
     """Verwaltungshonorar: % der Mieterträge, Buchung Soll 4500 / Haben Bank."""
 

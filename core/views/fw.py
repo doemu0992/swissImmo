@@ -2960,6 +2960,22 @@ def fw_schaden_antwort(request, pk):
     return redirect(f'/neu/schaeden/{t.id}/')
 
 
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_auftrag_pdf(request, pk):
+    """Reparaturauftrag (PDF) für einen Handwerker-Auftrag."""
+    from django.http import HttpResponse
+    from tickets.models import HandwerkerAuftrag
+    from crm.models import Verwaltung
+    from core.services.handwerker_auftrag_pdf import generate_auftrag_pdf
+    a = get_object_or_404(
+        HandwerkerAuftrag.objects.select_related('ticket__liegenschaft', 'ticket__betroffene_einheit', 'handwerker'),
+        id=pk)
+    pdf = generate_auftrag_pdf(a, Verwaltung.objects.first())
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = f'inline; filename="Reparaturauftrag_{a.id}.pdf"'
+    return resp
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_auftrag_kosten(request, pk):
     """Reparaturkosten auf einem Handwerker-Auftrag erfassen; optional eine
