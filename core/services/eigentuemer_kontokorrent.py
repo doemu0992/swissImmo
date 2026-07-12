@@ -61,3 +61,124 @@ def kontokorrent(mandant, jahr=None):
         'offen': ergebnis - ausbezahlt,
         'liegenschaften_n': liegenschaften.count(),
     }
+
+
+def _fmt(d):
+    try:
+        return f"{Decimal(str(d)):,.2f}".replace(",", "'")
+    except Exception:
+        return str(d)
+
+
+def generate_kontokorrent_pdf(mandant, jahr, verwaltung=None):
+    """Kontokorrent-Auszug für den Eigentümer: Ergebnis je Liegenschaft,
+    Auszahlungen und offener Saldo — das Dokument für den Eigentümer."""
+    import io
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.units import mm
+    from reportlab.lib import colors
+
+    kk = kontokorrent(mandant, jahr=jahr)
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4)
+    w, h = A4
+    periode = str(jahr) if jahr else "kumuliert (alle Jahre)"
+    c.setTitle(f"Kontokorrent {mandant.firma_oder_name} {periode}")
+
+    # Absender
+    if verwaltung:
+        c.setFont("Helvetica-Bold", 9)
+        c.drawString(20 * mm, h - 20 * mm, verwaltung.firma or "")
+        c.setFont("Helvetica", 9)
+        c.drawString(20 * mm, h - 24 * mm, verwaltung.strasse or "")
+        c.drawString(20 * mm, h - 28 * mm, f"{verwaltung.plz or ''} {verwaltung.ort or ''}".strip())
+    # Empfänger
+    c.setFont("Helvetica", 11)
+    c.drawString(20 * mm, h - 48 * mm, mandant.firma_oder_name)
+    if mandant.kontaktperson:
+        c.drawString(20 * mm, h - 53 * mm, mandant.kontaktperson)
+    c.drawString(20 * mm, h - 58 * mm, mandant.strasse or "")
+    c.drawString(20 * mm, h - 63 * mm, f"{mandant.plz or ''} {mandant.ort or ''}".strip())
+
+    # Titel
+    c.setFont("Helvetica-Bold", 15)
+    c.drawString(20 * mm, h - 80 * mm, "Kontokorrent Eigentümer")
+    c.setFont("Helvetica", 9)
+    c.setFillColor(colors.grey)
+    c.drawString(20 * mm, h - 85 * mm, f"Periode: {periode}")
+    c.setFillColor(colors.black)
+
+    # Ergebnis je Liegenschaft
+    y = h - 98 * mm
+    c.setFillColor(colors.HexColor("#EEF0F5"))
+    c.rect(18 * mm, y - 2 * mm, 174 * mm, 8 * mm, fill=1, stroke=0)
+    c.setFillColor(colors.black)
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(22 * mm, y, "Liegenschaft")
+    c.drawRightString(120 * mm, y, "Ertrag")
+    c.drawRightString(155 * mm, y, "Aufwand")
+    c.drawRightString(188 * mm, y, "Ergebnis")
+    y -= 9 * mm
+    c.setFont("Helvetica", 9)
+    for z in kk['zeilen']:
+        if y < 60 * mm:
+            c.showPage(); y = h - 30 * mm
+        c.drawString(22 * mm, y, f"{z['lg'].strasse}, {z['lg'].ort}"[:52])
+        c.drawRightString(120 * mm, y, _fmt(z['ertrag']))
+        c.drawRightString(155 * mm, y, _fmt(z['aufwand']))
+        c.drawRightString(188 * mm, y, _fmt(z['ergebnis']))
+        y -= 6 * mm
+    if not kk['zeilen']:
+        c.setFillColor(colors.grey)
+        c.drawString(22 * mm, y, "Keine verbuchten Bewegungen in der Periode.")
+        c.setFillColor(colors.black); y -= 6 * mm
+
+    y -= 1 * mm
+    c.setLineWidth(0.6); c.line(18 * mm, y, 192 * mm, y); y -= 7 * mm
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(22 * mm, y, "Ergebnis Total")
+    c.drawRightString(120 * mm, y, _fmt(kk['ertrag']))
+    c.drawRightString(155 * mm, y, _fmt(kk['aufwand']))
+    c.drawRightString(188 * mm, y, _fmt(kk['ergebnis']))
+
+    # Auszahlungen
+    y -= 14 * mm
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(20 * mm, y, "Auszahlungen an den Eigentümer")
+    y -= 7 * mm
+    c.setFont("Helvetica", 9)
+    for a in kk['auszahlungen']:
+        if y < 45 * mm:
+            c.showPage(); y = h - 30 * mm
+        txt = a.datum.strftime('%d.%m.%Y') + (f" · {a.bemerkung}" if a.bemerkung else "")
+        c.drawString(22 * mm, y, txt[:60])
+        c.drawRightString(188 * mm, y, _fmt(a.betrag))
+        y -= 6 * mm
+    if not kk['auszahlungen']:
+        c.setFillColor(colors.grey)
+        c.drawString(22 * mm, y, "Keine Auszahlungen in der Periode."); c.setFillColor(colors.black); y -= 6 * mm
+    c.setLineWidth(0.6); c.line(120 * mm, y, 192 * mm, y); y -= 7 * mm
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(22 * mm, y, "Ausbezahlt Total")
+    c.drawRightString(188 * mm, y, _fmt(kk['ausbezahlt']))
+
+    # Offener Saldo
+    y -= 16 * mm
+    offen = kk['offen']
+    c.setFillColor(colors.HexColor("#ECFDF5") if offen >= 0 else colors.HexColor("#FEF2F2"))
+    c.rect(18 * mm, y - 6 * mm, 174 * mm, 16 * mm, fill=1, stroke=0)
+    c.setFillColor(colors.black)
+    c.setFont("Helvetica-Bold", 12)
+    label = "Offener Saldo (Guthaben Eigentümer)" if offen >= 0 else "Überzahlung (Eigentümer schuldet)"
+    c.drawString(22 * mm, y, label)
+    c.drawRightString(188 * mm, y, f"CHF {_fmt(abs(offen))}")
+
+    c.setFont("Helvetica", 8); c.setFillColor(colors.grey)
+    c.drawString(20 * mm, 18 * mm, "Ergebnis der bewirtschafteten Liegenschaften (inkl. Verwaltungshonorar) abzüglich der geleisteten Auszahlungen.")
+    if mandant.iban:
+        c.drawString(20 * mm, 14 * mm, f"Auszahlung auf: {mandant.iban}")
+    c.setFillColor(colors.black)
+
+    c.showPage(); c.save(); buf.seek(0)
+    return buf.read()

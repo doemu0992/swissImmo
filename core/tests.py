@@ -3413,6 +3413,15 @@ class EigentuemerKontokorrentTests(TestCase):
         self.assertContains(r, 'Eigentum AG')
         self.assertContains(r, 'Auszahlung erfassen')
 
+    def test_kontokorrent_pdf(self):
+        md, lg = self._setup()
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        r = c.get(f'/neu/mandate/{md.id}/kontokorrent/?pdf=1')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r.content.startswith(b'%PDF'))
+        self.assertGreater(len(r.content), 1000)
+
 
 class LieferantenkontenTests(TestCase):
     """Lieferantenkonten (Kreditoren): pro Lieferant offener Betrag + Kontoblatt."""

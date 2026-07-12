@@ -3403,6 +3403,15 @@ def fw_eigentuemer_kontokorrent(request, pk):
         except ValueError:
             jahr = None
 
+    if request.GET.get('pdf') == '1':
+        from crm.models import Verwaltung
+        from core.services.eigentuemer_kontokorrent import generate_kontokorrent_pdf
+        from django.http import HttpResponse
+        pdf = generate_kontokorrent_pdf(md, jahr, Verwaltung.objects.first())
+        resp = HttpResponse(pdf, content_type='application/pdf')
+        resp['Content-Disposition'] = f'inline; filename="Kontokorrent_{md.firma_oder_name}_{jahr or "alle"}.pdf"'
+        return resp
+
     kk = kontokorrent(md, jahr=jahr)
     bankkonten = list(Buchungskonto.objects.filter(nummer__in=['1020', '1015']).order_by('nummer'))
 
