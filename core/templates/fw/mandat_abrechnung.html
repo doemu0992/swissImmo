@@ -13,10 +13,16 @@
         <h1 class="text-2xl font-extrabold text-slate-900">Eigentümerabrechnung {{ jahr }}</h1>
         <p class="text-sm text-slate-500">{{ md.firma_oder_name }} · {{ von|date:"d.m.Y" }} – {{ bis|date:"d.m.Y" }}</p>
     </div>
-    <a href="/neu/mandate/{{ md.id }}/abrechnung/?jahr={{ jahr }}&pdf=1" target="_blank"
-       class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm shrink-0">
-        <i class="fa-solid fa-file-pdf mr-1.5"></i>PDF
-    </a>
+    <div class="flex items-center gap-2 shrink-0">
+        <a href="/neu/mandate/{{ md.id }}/kontokorrent/?jahr={{ jahr }}"
+           class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2.5 rounded-lg">
+            <i class="fa-solid fa-scale-balanced mr-1.5"></i>Kontokorrent
+        </a>
+        <a href="/neu/mandate/{{ md.id }}/abrechnung/?jahr={{ jahr }}&pdf=1" target="_blank"
+           class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm">
+            <i class="fa-solid fa-file-pdf mr-1.5"></i>PDF
+        </a>
+    </div>
 </div>
 
 <!-- Jahresfilter -->

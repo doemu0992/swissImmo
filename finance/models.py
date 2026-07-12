@@ -10,7 +10,13 @@ from django.db.models import Sum
 class Buchungskonto(models.Model):
     nummer = models.CharField("Kontonummer", max_length=10, unique=True)
     bezeichnung = models.CharField("Bezeichnung", max_length=100)
-    typ = models.CharField("Typ", max_length=20, choices=[('aufwand', 'Aufwand'), ('ertrag', 'Ertrag'), ('bilanz', 'Bilanz')])
+    # 'bilanz' = Bilanzkonto mit dynamischer Aktiv/Passiv-Zuordnung nach Saldo-Vorzeichen
+    #   (korrekt für normale Konten: z.B. Bank im Minus = Passivum). 'aktiv'/'passiv'
+    #   erzwingen die Seite — nötig für Eigenkapital-/Kontokorrent-Konten, deren
+    #   Soll-Saldo (z.B. Ausschüttung) das Eigenkapital MINDERT statt ein Aktivum zu sein.
+    typ = models.CharField("Typ", max_length=20, choices=[
+        ('aufwand', 'Aufwand'), ('ertrag', 'Ertrag'), ('bilanz', 'Bilanz'),
+        ('aktiv', 'Aktivum'), ('passiv', 'Passivum / Eigenkapital')])
 
     # 🔥 HNK-Relevanz gemäss Experten-Feedback
     is_hnk_relevant = models.BooleanField(
@@ -562,3 +568,28 @@ class Erneuerungsfonds(models.Model):
 
     def __str__(self):
         return f"Erneuerungsfonds {self.liegenschaft} — CHF {self.bestand}"
+
+
+class EigentuemerAuszahlung(models.Model):
+    """Auszahlung an einen Eigentümer (Mandant) aus dem Kontokorrent Eigentümer.
+    Bucht Soll 2850 (Kontokorrent Eigentümer) / Haben Bank — reduziert die
+    Verbindlichkeit gegenüber dem Eigentümer und die liquiden Mittel."""
+    mandant = models.ForeignKey('crm.Mandant', on_delete=models.CASCADE, related_name='auszahlungen')
+    betrag = models.DecimalField(max_digits=12, decimal_places=2)
+    datum = models.DateField(default=timezone.now)
+    konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True,
+                              help_text="Bankkonto der Auszahlung (Haben)")
+    bemerkung = models.CharField(max_length=255, blank=True, default='')
+    status = models.CharField(max_length=20, choices=[('verbucht', 'Verbucht'), ('storniert', 'Storniert')],
+                              default='verbucht')
+    erstellt_am = models.DateTimeField(default=timezone.now)
+    erstellt_von = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    class Meta:
+        verbose_name = "Eigentümer-Auszahlung"
+        verbose_name_plural = "Eigentümer-Auszahlungen"
+        ordering = ['-datum', '-id']
+        db_table = 'core_eigentuemerauszahlung'
+
+    def __str__(self):
+        return f"Auszahlung {self.mandant_id} — CHF {self.betrag} ({self.datum})"

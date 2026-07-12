@@ -1,0 +1,149 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Kontokorrent {{ md.firma_oder_name }} — swissImmo{% endblock %}
+{% block content %}
+<div class="text-xs text-slate-400 mb-3">
+    <a href="/neu/mandate/" class="hover:text-indigo-600">Mandate</a>
+    <i class="fa-solid fa-chevron-right text-[8px] mx-1"></i>{{ md.firma_oder_name }}
+    <i class="fa-solid fa-chevron-right text-[8px] mx-1"></i>Kontokorrent
+</div>
+
+<div class="flex items-start justify-between flex-wrap gap-3 mb-1">
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Kontokorrent Eigentümer</h1>
+        <p class="text-sm text-slate-500 mt-1">{{ md.firma_oder_name }} · Ergebnis der Liegenschaften abzüglich Auszahlungen.</p>
+    </div>
+    <div class="flex items-center gap-2">
+        <a href="/neu/mandate/{{ md.id }}/abrechnung/{% if jahr %}?jahr={{ jahr }}{% endif %}" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-file-invoice mr-1.5"></i>Abrechnung</a>
+        <form method="get" class="inline-flex items-center gap-1">
+            <select name="jahr" onchange="this.form.submit()" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+                <option value="alle" {% if not jahr %}selected{% endif %}>Kumuliert</option>
+                {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
+            </select>
+        </form>
+    </div>
+</div>
+
+{% for m in meldung %}
+<div class="mt-4 px-4 py-3 rounded-lg text-sm font-medium
+            {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% elif m.tags == 'warning' %}bg-amber-50 text-amber-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
+{% endfor %}
+
+<!-- Kennzahlen -->
+<div class="grid grid-cols-2 lg:grid-cols-3 gap-3 my-5">
+    <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Ergebnis Liegenschaften</div>
+        <div class="text-xl font-bold {% if kk.ergebnis < 0 %}text-rose-600{% else %}text-slate-900{% endif %} mt-0.5">CHF {{ kk.ergebnis|chf }}</div>
+        <div class="text-xs text-slate-400 mt-0.5">Ertrag {{ kk.ertrag|chf }} − Aufwand {{ kk.aufwand|chf }}</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Bereits ausbezahlt</div>
+        <div class="text-xl font-bold text-slate-900 mt-0.5">CHF {{ kk.ausbezahlt|chf }}</div>
+        <div class="text-xs text-slate-400 mt-0.5">{{ kk.auszahlungen|length }} Auszahlung(en)</div>
+    </div>
+    <div class="bg-white rounded-xl border {% if kk.offen > 0 %}border-emerald-200{% elif kk.offen < 0 %}border-rose-200{% else %}border-slate-200{% endif %} px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">
+            {% if kk.offen >= 0 %}Offen an Eigentümer{% else %}Überzahlung (Eigentümer schuldet){% endif %}
+        </div>
+        <div class="text-xl font-bold {% if kk.offen > 0 %}text-emerald-600{% elif kk.offen < 0 %}text-rose-600{% else %}text-slate-900{% endif %} mt-0.5">CHF {{ kk.offen|chf }}</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <!-- Linke Spalte: Ergebnis + Auszahlungen -->
+    <div class="lg:col-span-2 space-y-5">
+        <!-- Ergebnis je Liegenschaft -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Ergebnis je Liegenschaft</div>
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-50">
+                        <th class="px-5 py-2.5 font-semibold">Liegenschaft</th>
+                        <th class="px-5 py-2.5 font-semibold text-right">Ertrag</th>
+                        <th class="px-5 py-2.5 font-semibold text-right">Aufwand</th>
+                        <th class="px-5 py-2.5 font-semibold text-right">Ergebnis</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                {% for z in kk.zeilen %}
+                    <tr>
+                        <td class="px-5 py-2.5 text-slate-800">{{ z.lg.strasse }}, {{ z.lg.ort }}</td>
+                        <td class="px-5 py-2.5 text-right text-slate-600">{{ z.ertrag|chf }}</td>
+                        <td class="px-5 py-2.5 text-right text-slate-600">{{ z.aufwand|chf }}</td>
+                        <td class="px-5 py-2.5 text-right font-semibold {% if z.ergebnis < 0 %}text-rose-600{% else %}text-slate-900{% endif %}">{{ z.ergebnis|chf }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4" class="px-5 py-8 text-center text-slate-400 text-sm">Keine verbuchten Bewegungen{% if jahr %} in {{ jahr }}{% endif %}.</td></tr>
+                {% endfor %}
+                </tbody>
+                {% if kk.zeilen %}
+                <tfoot>
+                    <tr class="border-t-2 border-slate-200 font-semibold text-slate-900">
+                        <td class="px-5 py-3">Total</td>
+                        <td class="px-5 py-3 text-right">{{ kk.ertrag|chf }}</td>
+                        <td class="px-5 py-3 text-right">{{ kk.aufwand|chf }}</td>
+                        <td class="px-5 py-3 text-right">{{ kk.ergebnis|chf }}</td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+
+        <!-- Auszahlungen -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Auszahlungen an den Eigentümer</div>
+            <div class="divide-y divide-slate-50">
+            {% for a in kk.auszahlungen %}
+                <div class="px-5 py-3 flex items-center gap-3">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-medium text-slate-900">{{ a.datum|date:"d.m.Y" }}{% if a.bemerkung %} · <span class="font-normal text-slate-500">{{ a.bemerkung }}</span>{% endif %}</div>
+                        <div class="text-xs text-slate-400 mt-0.5">ab Konto {{ a.konto.nummer }} {{ a.konto.bezeichnung }}</div>
+                    </div>
+                    <div class="text-sm font-semibold text-slate-900">CHF {{ a.betrag|chf }}</div>
+                </div>
+            {% empty %}
+                <div class="px-5 py-8 text-center text-slate-400 text-sm">Noch keine Auszahlungen erfasst.</div>
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Rechte Spalte: Auszahlung erfassen -->
+    <div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 sticky top-20">
+            <h2 class="font-bold text-slate-800 text-sm mb-1">Auszahlung erfassen</h2>
+            <p class="text-xs text-slate-500 mb-4">Bucht Soll 2850 (Kontokorrent Eigentümer) / Haben Bank.</p>
+            <form method="post" action="/neu/mandate/{{ md.id }}/auszahlung/" class="space-y-3">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Betrag (CHF) *</label>
+                    <input name="betrag" type="text" inputmode="decimal" required
+                           value="{% if kk.offen > 0 %}{{ kk.offen|chf }}{% endif %}"
+                           class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Datum</label>
+                    <input name="datum" type="date" value="{{ heute|date:'Y-m-d' }}"
+                           class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Ab Bankkonto</label>
+                    <select name="konto_nummer" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+                        {% for k in bankkonten %}<option value="{{ k.nummer }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Bemerkung</label>
+                    <input name="bemerkung" type="text" placeholder="z. B. Quartalsauszahlung Q2"
+                           class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+                </div>
+                <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg">
+                    <i class="fa-solid fa-money-bill-transfer mr-1.5"></i>Auszahlung verbuchen
+                </button>
+            </form>
+            {% if md.iban %}<p class="text-[11px] text-slate-400 mt-3">Eigentümer-IBAN: {{ md.iban }}</p>{% endif %}
+        </div>
+    </div>
+</div>
+<p class="text-xs text-slate-400 mt-4 max-w-3xl">Der offene Saldo ist eine Verwaltungssicht (Ergebnis der bewirtschafteten Liegenschaften minus Auszahlungen). Auszahlungen werden über das Kontokorrent Eigentümer (Konto 2850) gebucht und mindern die Verbindlichkeit gegenüber dem Eigentümer sowie die liquiden Mittel.</p>
+{% endblock %}

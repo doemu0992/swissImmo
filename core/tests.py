@@ -3344,3 +3344,71 @@ class JournalStornoTests(TestCase):
         lg, b = self._buchung()
         with self.assertRaises(PermissionError):
             b.delete()
+
+
+class EigentuemerKontokorrentTests(TestCase):
+    """Mandanten-Kontokorrent: Ergebnis − Auszahlungen, korrekte Passiv-Buchung."""
+
+    def _setup(self):
+        from crm.models import Mandant
+        from finance.booking import buche, ensure_kontenplan
+        ensure_kontenplan()
+        md = Mandant.objects.create(firma_oder_name='Eigentum AG', iban='CH9300762011623852957')
+        lg, e, m, v = _basis_objekte()
+        lg.mandant = md
+        lg.save()
+        buche('1020', '3000', Decimal('2000'), 'Miete', liegenschaft=lg)      # Ertrag 2000
+        buche('4000', '1020', Decimal('500'), 'Reparatur', liegenschaft=lg)   # Aufwand 500
+        return md, lg
+
+    def test_2850_ist_passivkonto(self):
+        from finance.booking import konto
+        k = konto('2850')
+        self.assertEqual(k.typ, 'passiv')
+
+    def test_kontokorrent_saldo(self):
+        from core.services.eigentuemer_kontokorrent import kontokorrent
+        md, lg = self._setup()
+        kk = kontokorrent(md)
+        self.assertEqual(kk['ertrag'], Decimal('2000.00'))
+        self.assertEqual(kk['aufwand'], Decimal('500.00'))
+        self.assertEqual(kk['ergebnis'], Decimal('1500.00'))
+        self.assertEqual(kk['ausbezahlt'], Decimal('0.00'))
+        self.assertEqual(kk['offen'], Decimal('1500.00'))
+
+    def test_auszahlung_bucht_und_reduziert_offen(self):
+        from finance.models import Buchung, EigentuemerAuszahlung
+        from core.services.eigentuemer_kontokorrent import kontokorrent
+        md, lg = self._setup()
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        r = c.post(f'/neu/mandate/{md.id}/auszahlung/', {'betrag': '1000', 'konto_nummer': '1020'})
+        self.assertEqual(r.status_code, 302)
+        # Buchung Soll 2850 / Haben 1020
+        self.assertTrue(Buchung.objects.filter(soll_konto__nummer='2850', haben_konto__nummer='1020',
+                                               betrag=Decimal('1000.00')).exists())
+        self.assertEqual(EigentuemerAuszahlung.objects.filter(mandant=md, status='verbucht').count(), 1)
+        kk = kontokorrent(md)
+        self.assertEqual(kk['ausbezahlt'], Decimal('1000.00'))
+        self.assertEqual(kk['offen'], Decimal('500.00'))
+
+    def test_bilanz_bleibt_ausgeglichen_nach_auszahlung(self):
+        """Auszahlung via 2850 (Passiv) mindert das Eigenkapital — die Bilanz muss
+        aufgehen (Aktiven == Passiven inkl. Ergebnis)."""
+        md, lg = self._setup()
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post(f'/neu/mandate/{md.id}/auszahlung/', {'betrag': '400', 'konto_nummer': '1020'})
+        r = c.get('/neu/buchhaltung/')
+        self.assertEqual(r.context['bilanz_differenz'], Decimal('0.00'))
+        # 2850 erscheint auf der Passivseite mit negativem Saldo (Eigenkapital-Minderung)
+        p2850 = [p for p in r.context['passiven'] if p['nummer'] == '2850']
+        self.assertTrue(p2850)
+        self.assertEqual(p2850[0]['saldo'], Decimal('-400.00'))
+
+    def test_kontokorrent_view_rendert(self):
+        md, lg = self._setup()
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        r = c.get(f'/neu/mandate/{md.id}/kontokorrent/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Kontokorrent Eigentümer')
+        self.assertContains(r, 'Eigentum AG')
+        self.assertContains(r, 'Auszahlung erfassen')

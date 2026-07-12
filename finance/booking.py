@@ -25,6 +25,7 @@ STANDARD_KONTEN = [
     ('2010', 'Kautionsverbindlichkeiten', 'bilanz', False, 'm2'),
     ('2200', 'Geschuldete MWST (Umsatzsteuer)', 'bilanz', False, 'm2'),
     ('2800', 'Erneuerungsfonds (Rückstellung)', 'bilanz', False, 'm2'),
+    ('2850', 'Kontokorrent Eigentümer', 'passiv', False, 'm2'),
     ('3000', 'Mieterträge Wohnungen', 'ertrag', False, 'm2'),
     ('3010', 'Mieterträge Gewerbe/Parkplätze', 'ertrag', False, 'm2'),
     ('3020', 'Nebenkosten Akonto-Zahlungen', 'ertrag', False, 'm2'),

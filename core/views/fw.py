@@ -3083,13 +3083,22 @@ def fw_buchhaltung(request):
             if saldo:
                 aufwaende.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': saldo})
                 total_aufwand += saldo
-        else:  # bilanz — kumulativ bis Jahresende
+        else:  # bilanz / aktiv / passiv — kumulativ bis Jahresende
             soll = bilanz_qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
             haben = bilanz_qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
-            saldo = soll - haben  # Sollsaldo: >0 Aktivum, <0 Passivum
+            saldo = soll - haben  # Sollsaldo: >0 tendenziell Aktivum, <0 Passivum
             if saldo == 0:
                 continue
-            if saldo > 0:
+            if k.typ == 'aktiv':
+                # Immer Aktivseite (Soll−Haben) — auch bei negativem Saldo sichtbar.
+                aktiven.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': saldo})
+                total_aktiven += saldo
+            elif k.typ == 'passiv':
+                # Immer Passivseite (Haben−Soll). Ein Soll-Saldo (z.B. Ausschüttung
+                # via Kontokorrent) MINDERT das Eigenkapital → negative Passivzeile.
+                passiven.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': -saldo})
+                total_passiven += -saldo
+            elif saldo > 0:
                 aktiven.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': saldo})
                 total_aktiven += saldo
             else:
@@ -3158,7 +3167,7 @@ def fw_kontoblatt(request, nummer):
         alle = alle.filter(liegenschaft=aktive_lg)
     alle = alle.select_related('soll_konto', 'haben_konto', 'liegenschaft').order_by('datum', 'id')
 
-    ist_bilanz = konto.typ == 'bilanz'
+    ist_bilanz = konto.typ in ('bilanz', 'aktiv', 'passiv')
     # Eröffnungssaldo: bei Bilanzkonten kumulativ aus Vorjahren, bei Erfolg 0.
     eroeffnung = Decimal('0.00')
     if jahr and ist_bilanz:
@@ -3285,6 +3294,80 @@ def fw_mandat_abrechnung(request, pk):
         'zeilen': zeilen, 'totals': totals,
         'jahre': list(range(heute.year, heute.year - 5, -1)),
     })
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_eigentuemer_kontokorrent(request, pk):
+    """Kontokorrent Eigentümer (on-screen): Ergebnis der Liegenschaften −
+    Auszahlungen = offener Saldo. Einstieg zum Erfassen einer Auszahlung."""
+    from crm.models import Mandant
+    from core.services.eigentuemer_kontokorrent import kontokorrent
+    from finance.models import Buchungskonto
+    md = get_object_or_404(Mandant, id=pk)
+    basis = _global_filter(request)
+    heute = timezone.now().date()
+    jahr_param = request.GET.get('jahr', '')
+    jahr = None
+    if jahr_param and jahr_param != 'alle':
+        try:
+            jahr = int(jahr_param)
+        except ValueError:
+            jahr = None
+
+    kk = kontokorrent(md, jahr=jahr)
+    bankkonten = list(Buchungskonto.objects.filter(nummer__in=['1020', '1015']).order_by('nummer'))
+    from django.contrib import messages
+    return render(request, 'fw/eigentuemer_kontokorrent.html', {
+        **basis, 'nav': 'mandate', 'md': md, 'kk': kk,
+        'jahr': jahr, 'jahr_param': jahr_param,
+        'jahre': list(range(heute.year, heute.year - 5, -1)),
+        'bankkonten': bankkonten, 'heute': heute,
+        'meldung': list(messages.get_messages(request)),
+    })
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_eigentuemer_auszahlung(request, pk):
+    """Erfasst eine Auszahlung an den Eigentümer und bucht sie:
+    Soll 2850 (Kontokorrent Eigentümer) / Haben Bank."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Mandant
+    from finance.models import Buchungskonto, EigentuemerAuszahlung
+    from finance.booking import buche, konto as _konto
+    from core.auth import log_aktion
+    md = get_object_or_404(Mandant, id=pk)
+    if request.method != 'POST':
+        return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
+    try:
+        betrag = Decimal(str(request.POST.get('betrag') or '0').replace(',', '.')).quantize(Decimal('0.01'))
+    except Exception:
+        betrag = Decimal('0')
+    if betrag <= 0:
+        messages.error(request, "Betrag muss grösser als 0 sein.")
+        return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
+    try:
+        datum = date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.now().date()
+    except ValueError:
+        datum = timezone.now().date()
+    bank = Buchungskonto.objects.filter(nummer=request.POST.get('konto_nummer') or '1020').first() or _konto('1020')
+    bemerkung = (request.POST.get('bemerkung') or '').strip()
+
+    try:
+        buchung = buche('2850', bank, betrag,
+                        f"Auszahlung Eigentümer {md.firma_oder_name}" + (f" — {bemerkung}" if bemerkung else ""),
+                        datum=datum, user=request.user)
+    except PermissionError as e:
+        messages.error(request, str(e))
+        return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
+
+    EigentuemerAuszahlung.objects.create(
+        mandant=md, betrag=betrag, datum=datum, konto=bank,
+        bemerkung=bemerkung, erstellt_von=request.user)
+    log_aktion(request, "Eigentümer-Auszahlung", md.firma_oder_name,
+               f"CHF {betrag} ab {bank.nummer} · Beleg #{buchung.beleg_nr if buchung else '—'}")
+    messages.success(request, f"✅ Auszahlung CHF {betrag} an {md.firma_oder_name} verbucht (Soll 2850 / Haben {bank.nummer}).")
+    return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
 
 
 # ============================================================
