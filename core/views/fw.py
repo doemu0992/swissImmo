@@ -2032,6 +2032,7 @@ KRED_PILL = {
     'neu':         ('Neu / Prüfen', 'bg-amber-50 text-amber-700'),
     'freigegeben': ('Freigegeben',  'bg-sky-50 text-sky-700'),
     'in_zahlung':  ('In Zahlung',   'bg-indigo-50 text-indigo-700'),
+    'teilbezahlt': ('Teilbezahlt',  'bg-yellow-50 text-yellow-700'),
     'bezahlt':     ('Bezahlt',      'bg-emerald-50 text-emerald-700'),
     'storniert':   ('Storniert',    'bg-slate-100 text-slate-500'),
 }
@@ -2062,9 +2063,10 @@ def fw_kreditoren(request):
     for k in qs:
         label, cls = KRED_PILL.get(k.status, (k.status, 'bg-slate-100 text-slate-500'))
         betrag = k.betrag or Decimal('0.00')
+        offen_betrag = k.offener_betrag
         faellig = k.faellig_am
-        if k.status in ('freigegeben', 'in_zahlung'):
-            total_offen += betrag
+        if k.status in ('freigegeben', 'in_zahlung', 'teilbezahlt'):
+            total_offen += offen_betrag
         elif k.status == 'neu':
             total_neu += betrag
             anzahl_neu += 1
@@ -2076,10 +2078,12 @@ def fw_kreditoren(request):
             'objekt': f"{k.liegenschaft.strasse}, {k.liegenschaft.ort}" if k.liegenschaft else '—',
             'konto': f"{k.konto.nummer} {k.konto.bezeichnung}" if k.konto else None,
             'beleg_url': k.beleg_scan.url if k.beleg_scan else None,
-            'kann_bezahlen': k.status in ('freigegeben', 'in_zahlung'),
+            'kann_bezahlen': k.status in ('freigegeben', 'in_zahlung', 'teilbezahlt'),
             'in_zahlung': k.status == 'in_zahlung',
+            'teilbezahlt': k.status == 'teilbezahlt',
+            'offen_betrag': offen_betrag,
             'offen_wv': k.offen_weiterzuverrechnen,
-            'kann_weiterverrechnen': (k.status in ('freigegeben', 'in_zahlung', 'bezahlt')
+            'kann_weiterverrechnen': (k.status in ('freigegeben', 'in_zahlung', 'teilbezahlt', 'bezahlt')
                                       and k.offen_weiterzuverrechnen > 0),
         })
 
@@ -2169,25 +2173,39 @@ def fw_kreditor_bezahlen(request):
     if request.method != 'POST':
         return redirect('fw_kreditoren')
 
+    from finance.models import KreditorenZahlung
     k = get_object_or_404(KreditorenRechnung, id=request.POST.get('rechnung_id'))
-    if k.status == 'bezahlt':
-        messages.error(request, "Diese Rechnung ist bereits bezahlt.")
+    if k.status in ('bezahlt', 'storniert', 'neu'):
+        messages.error(request, "Diese Rechnung kann nicht (mehr) bezahlt werden.")
         return redirect('fw_kreditoren')
-    if k.status not in ('freigegeben', 'in_zahlung'):
-        messages.error(request, "Nur freigegebene oder in Zahlung stehende Rechnungen können bezahlt werden.")
+
+    # Optionaler Teilbetrag; Standard = offener Betrag
+    def _dec(x):
+        try:
+            return Decimal(str(x).replace(',', '.').strip())
+        except Exception:
+            return None
+    offen = k.offener_betrag
+    betrag = _dec(request.POST.get('betrag')) or offen
+    betrag = min(max(betrag, Decimal('0.00')), offen)
+    if betrag <= 0:
+        messages.error(request, "Kein offener Betrag zu bezahlen.")
         return redirect('fw_kreditoren')
 
     with transaction.atomic():
-        k.status = 'bezahlt'
-        k.save()
         from finance.booking import buche
-        buche("2000", "1020", k.betrag or Decimal('0.00'),
-              f"Zahlung {k.lieferant} - {k.referenz}", liegenschaft=k.liegenschaft,
-              kreditor=k, user=request.user)
+        zahlung = KreditorenZahlung.objects.create(
+            kreditor=k, betrag=betrag, datum=timezone.localdate(),
+            bemerkung=f"Zahlung {k.lieferant}", erstellt_von=request.user)
+        buche("2000", "1020", betrag, f"Zahlung {k.lieferant} - {k.referenz}",
+              liegenschaft=k.liegenschaft, kreditor=k, user=request.user)
+        k.status = 'bezahlt' if k.offener_betrag <= 0 else 'teilbezahlt'
+        k.save(update_fields=['status'])
 
-    log_aktion(request, "Kreditorenrechnung bezahlt (Bankabgleich)",
-               k.lieferant or f"Rechnung #{k.id}", f"CHF {k.betrag}")
-    messages.success(request, f"✅ CHF {k.betrag} an {k.lieferant or 'Lieferant'} bezahlt.")
+    log_aktion(request, "Kreditorenrechnung bezahlt", k.lieferant or f"Rechnung #{k.id}",
+               f"CHF {betrag}" + (f" (offen CHF {k.offener_betrag})" if k.status == 'teilbezahlt' else ""))
+    messages.success(request, f"✅ CHF {betrag} an {k.lieferant or 'Lieferant'} bezahlt"
+                              + (f" — noch offen CHF {k.offener_betrag}." if k.status == 'teilbezahlt' else "."))
     ziel = '/neu/kreditoren/'
     if lg := request.POST.get('lg'):
         ziel += f'?lg={lg}'

@@ -117,12 +117,14 @@
                     <div class="inline-flex items-center gap-2">
                         {% if row.beleg_url %}<a href="{{ row.beleg_url }}" target="_blank" class="text-slate-400 hover:text-indigo-600" title="Beleg ansehen"><i class="fa-solid fa-paperclip"></i></a>{% endif %}
                         {% if row.kann_bezahlen and darf_bezahlen %}
-                        <form method="post" action="/neu/kreditoren/bezahlen/" onsubmit="return confirm('CHF {{ row.betrag|chf }} an {{ row.lieferant }} als bezahlt verbuchen?');" class="inline">
+                        <form method="post" action="/neu/kreditoren/bezahlen/" onsubmit="return confirm('Zahlung an {{ row.lieferant }} verbuchen?');" class="inline-flex items-center gap-1">
                             {% csrf_token %}
                             <input type="hidden" name="rechnung_id" value="{{ row.k.id }}">
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                            <input type="number" step="0.05" min="0" name="betrag" value="{{ row.offen_betrag|stringformat:'.2f' }}"
+                                   class="w-20 bg-slate-100 rounded-lg text-xs px-2 py-1.5 text-right" title="Betrag (Teilzahlung möglich)">
                             <button type="submit" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                                <i class="fa-solid fa-check"></i> {% if row.in_zahlung %}Zahlung bestätigen{% else %}Bezahlen{% endif %}
+                                <i class="fa-solid fa-check"></i> {% if row.in_zahlung %}Bestätigen{% else %}Bezahlen{% endif %}
                             </button>
                         </form>
                         {% if row.in_zahlung %}

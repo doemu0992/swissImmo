@@ -1,4 +1,10 @@
 # finance/api.py
+#
+# VERALTET (Legacy /app/-SPA). Die aktive Oberfläche ist /neu/ (core/views/fw.py).
+# Diese API wird nur noch von der alten SPA genutzt. Alle buchenden Endpunkte
+# delegieren inzwischen an die kanonische Buchungsschicht (finance.booking.buche)
+# bzw. an core.services.automation.run_sollstellung — es gibt KEINE zweite,
+# abweichende Buchungslogik mehr. Neue Funktionalität gehört nach fw.py.
 from ninja import Router, File, Schema
 from ninja.files import UploadedFile
 from django.shortcuts import get_object_or_404
@@ -49,65 +55,15 @@ class SollstellungSchema(Schema):
 @router.post("/debitoren/sollstellung", response={200: dict, 400: dict}, auth=auth_verwaltung)
 @transaction.atomic
 def run_sollstellung(request, payload: SollstellungSchema):
-    """Führt den monatlichen Mietenlauf durch (inkl. Pro-Rata Berechnung)."""
-    start_date = date(payload.jahr, payload.monat, 1)
-    _, last_day = calendar.monthrange(payload.jahr, payload.monat)
-    end_date = date(payload.jahr, payload.monat, last_day)
-    tage_im_monat = last_day
+    """Führt den monatlichen Mietenlauf durch.
 
-    vertraege = Mietvertrag.objects.filter(
-        status='aktiv',
-        beginn__lte=end_date
-    ).exclude(ende__lt=start_date)
-
-    try:
-        konto_debitoren = Buchungskonto.objects.get(nummer="1100")
-        konto_ertrag = Buchungskonto.objects.get(nummer="3000")
-        konto_nk_akonto = Buchungskonto.objects.get(nummer="3020")
-    except Buchungskonto.DoesNotExist:
-        return 400, {"success": False, "error": "Standard-Konten (1100, 3000, 3020) fehlen. Bitte zuerst Kontenplan laden."}
-
-    erstellt = 0
-    titel_vorlage = f"Miete & NK {payload.monat:02d}/{payload.jahr}"
-
-    for v in vertraege:
-        if DebitorenRechnung.objects.filter(vertrag=v, titel=titel_vorlage).exclude(status='storniert').exists():
-            continue
-
-        # PRO-RATA BERECHNUNG FÜR TEIL-MONATE (Ein-/Auszug mitten im Monat)
-        vertrag_start = max(start_date, v.beginn)
-        vertrag_ende = min(end_date, v.ende) if v.ende else end_date
-        tage_aktiv = (vertrag_ende - vertrag_start).days + 1
-
-        faktor = Decimal(tage_aktiv) / Decimal(tage_im_monat)
-
-        netto = round((v.netto_mietzins or Decimal('0.00')) * faktor, 2)
-        nk = round((v.nebenkosten or Decimal('0.00')) * faktor, 2)
-        total_betrag = netto + nk
-
-        if total_betrag <= 0:
-            continue
-
-        rechnung = DebitorenRechnung.objects.create(
-            vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
-            titel=titel_vorlage, betrag=total_betrag, faellig_am=start_date
-        )
-
-        if netto > 0:
-            Buchung.objects.create(
-                datum=start_date, beleg_text=f"Mietertrag {v.mieter} - {payload.monat:02d}/{payload.jahr}",
-                liegenschaft=v.einheit.liegenschaft, soll_konto=konto_debitoren, haben_konto=konto_ertrag,
-                betrag=netto, debitoren_rechnung=rechnung, erstellt_von=request.user
-            )
-        if nk > 0:
-            Buchung.objects.create(
-                datum=start_date, beleg_text=f"NK-Akonto {v.mieter} - {payload.monat:02d}/{payload.jahr}",
-                liegenschaft=v.einheit.liegenschaft, soll_konto=konto_debitoren, haben_konto=konto_nk_akonto,
-                betrag=nk, debitoren_rechnung=rechnung, erstellt_von=request.user
-            )
-        erstellt += 1
-
-    log_aktion(request, "Sollstellung ausgeführt", titel_vorlage, f"{erstellt} Rechnungen erstellt")
+    DEPRECATED-Pfad (alte /app/-SPA): delegiert an den EINEN kanonischen Dienst
+    ``core.services.automation.run_sollstellung`` (mit MWST + Staffel/Index),
+    damit /app/ und /neu/ NICHT auseinanderlaufen. Keine eigene Buchungslogik mehr."""
+    from core.services.automation import run_sollstellung as _kanonisch
+    erstellt = _kanonisch(payload.jahr, payload.monat, user=request.user)
+    log_aktion(request, "Sollstellung ausgeführt", f"Miete & NK {payload.monat:02d}/{payload.jahr}",
+               f"{erstellt} Rechnungen erstellt")
     return 200, {"success": True, "erstellt": erstellt}
 
 class ZahlungCreateSchema(Schema):
@@ -148,23 +104,11 @@ def create_zahlung(request, payload: ZahlungCreateSchema):
             offene_rechnung.status = 'teilbezahlt'
         offene_rechnung.save()
 
-    try:
-        konto_bank = Buchungskonto.objects.get(nummer="1020")
-        konto_debitoren = Buchungskonto.objects.get(nummer="1100")
-
-        Buchung.objects.create(
-            datum=payload.datum_eingang,
-            beleg_text=f"Zahlungseingang {vertrag.mieter} - {payload.bemerkung or 'Miete/NK'}",
-            liegenschaft=vertrag.einheit.liegenschaft,
-            soll_konto=konto_bank,
-            haben_konto=konto_debitoren,
-            betrag=payload.betrag,
-            zahlungseingang=zahlung,
-            erstellt_von=request.user
-        )
-    except Buchungskonto.DoesNotExist:
-        pass
-
+    from finance.booking import buche
+    buche("1020", "1100", payload.betrag,
+          f"Zahlungseingang {vertrag.mieter} - {payload.bemerkung or 'Miete/NK'}",
+          datum=payload.datum_eingang, liegenschaft=vertrag.einheit.liegenschaft,
+          zahlung=zahlung, user=request.user)
     return 201, {"success": True}
 
 @router.get("/zahlungen", response=List[dict])
@@ -315,42 +259,21 @@ def update_kreditor(request, rechnung_id: int, payload: KreditorUpdateSchema):
 
     # SCHRITT 1: Aufwand buchen (Aufwand an Kreditoren) — mit Vorsteuer-Split
     if war_neu and rechnung.konto:
-        try:
-            konto_kreditoren = Buchungskonto.objects.get(nummer="2000")
-            brutto = rechnung.betrag or Decimal('0.00')
-            # Vorsteuer aus Bruttobetrag herausrechnen (falls MWST-Satz gesetzt)
-            vorsteuer = Decimal('0.00')
-            if (rechnung.mwst_satz or 0) > 0:
-                satz = rechnung.mwst_satz
-                vorsteuer = (brutto * satz / (Decimal('100') + satz)).quantize(Decimal('0.01'))
-                rechnung.mwst_betrag = vorsteuer
-                rechnung.save(update_fields=['mwst_betrag'])
-            netto_aufwand = brutto - vorsteuer
-            Buchung.objects.create(
-                datum=rechnung.datum or timezone.now().date(),
-                beleg_text=f"Rechnung {rechnung.lieferant} - {rechnung.referenz}",
-                liegenschaft=rechnung.liegenschaft,
-                soll_konto=rechnung.konto,          # Aufwand (netto)
-                haben_konto=konto_kreditoren,       # Verbindlichkeit (brutto -> zwei Buchungen)
-                betrag=netto_aufwand,
-                kreditoren_rechnung=rechnung,
-                erstellt_von=request.user
-            )
-            if vorsteuer > 0:
-                konto_vorsteuer, _ = Buchungskonto.objects.get_or_create(
-                    nummer="1170", defaults={'bezeichnung': 'Vorsteuer (MWST)', 'typ': 'bilanz'})
-                Buchung.objects.create(
-                    datum=rechnung.datum or timezone.now().date(),
-                    beleg_text=f"Vorsteuer {rechnung.mwst_satz}% {rechnung.lieferant}",
-                    liegenschaft=rechnung.liegenschaft,
-                    soll_konto=konto_vorsteuer,     # Vorsteuer-Guthaben
-                    haben_konto=konto_kreditoren,
-                    betrag=vorsteuer,
-                    kreditoren_rechnung=rechnung,
-                    erstellt_von=request.user
-                )
-        except Buchungskonto.DoesNotExist:
-            pass
+        from finance.booking import buche
+        datum_b = rechnung.datum or timezone.now().date()
+        brutto = rechnung.betrag or Decimal('0.00')
+        vorsteuer = Decimal('0.00')
+        if (rechnung.mwst_satz or 0) > 0:
+            satz = rechnung.mwst_satz
+            vorsteuer = (brutto * satz / (Decimal('100') + satz)).quantize(Decimal('0.01'))
+            rechnung.mwst_betrag = vorsteuer
+            rechnung.save(update_fields=['mwst_betrag'])
+        buche(rechnung.konto, "2000", brutto - vorsteuer,
+              f"Rechnung {rechnung.lieferant} - {rechnung.referenz}",
+              datum=datum_b, liegenschaft=rechnung.liegenschaft, kreditor=rechnung, user=request.user)
+        if vorsteuer > 0:
+            buche("1170", "2000", vorsteuer, f"Vorsteuer {rechnung.mwst_satz}% {rechnung.lieferant}",
+                  datum=datum_b, liegenschaft=rechnung.liegenschaft, kreditor=rechnung, user=request.user)
 
     return 200, {"success": True}
 
@@ -367,21 +290,9 @@ def pay_kreditor(request, rechnung_id: int):
                f"CHF {rechnung.betrag}")
 
     # SCHRITT 2: Zahlung buchen (Kreditoren an Bank)
-    try:
-        konto_bank = Buchungskonto.objects.get(nummer="1020")
-        konto_kreditoren = Buchungskonto.objects.get(nummer="2000")
-        Buchung.objects.create(
-            datum=timezone.now().date(),
-            beleg_text=f"Zahlung {rechnung.lieferant} - {rechnung.referenz}",
-            liegenschaft=rechnung.liegenschaft,
-            soll_konto=konto_kreditoren,    # Verbindlichkeit sinkt
-            haben_konto=konto_bank,         # Geldabfluss
-            betrag=rechnung.betrag,
-            kreditoren_rechnung=rechnung,
-            erstellt_von=request.user
-        )
-    except Buchungskonto.DoesNotExist:
-        pass
+    from finance.booking import buche
+    buche("2000", "1020", rechnung.betrag, f"Zahlung {rechnung.lieferant} - {rechnung.referenz}",
+          liegenschaft=rechnung.liegenschaft, kreditor=rechnung, user=request.user)
 
     return 200, {"success": True}
 
@@ -424,16 +335,11 @@ def create_debitorenrechnung(request, payload: DebitorenRechnungCreateSchema):
         titel=payload.titel, beschreibung=payload.beschreibung, betrag=payload.betrag,
         faellig_am=payload.faellig_am, konto_haben_id=payload.konto_haben_id
     )
-    try:
-        konto_debitoren = Buchungskonto.objects.get(nummer="1100")
-        konto_haben = rechnung.konto_haben or Buchungskonto.objects.get(nummer="3000")
-        Buchung.objects.create(
-            datum=timezone.now().date(), beleg_text=f"Rechnung an {vertrag.mieter}: {rechnung.titel}",
-            liegenschaft=vertrag.einheit.liegenschaft, soll_konto=konto_debitoren, haben_konto=konto_haben,
-            betrag=rechnung.betrag, debitoren_rechnung=rechnung, erstellt_von=request.user
-        )
-    except Buchungskonto.DoesNotExist:
-        pass
+    from finance.booking import buche
+    haben = rechnung.konto_haben.nummer if rechnung.konto_haben_id else "3000"
+    buche("1100", haben, rechnung.betrag, f"Rechnung an {vertrag.mieter}: {rechnung.titel}",
+          datum=timezone.now().date(), liegenschaft=vertrag.einheit.liegenschaft,
+          debitor=rechnung, user=request.user)
     return 201, {"success": True, "id": rechnung.id}
 
 @router.get("/debitoren-rechnungen", response=List[dict])

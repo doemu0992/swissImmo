@@ -2947,6 +2947,32 @@ class KreditorZahllaufTests(TestCase):
         k.refresh_from_db()
         self.assertEqual(k.status, 'freigegeben')
 
+    def test_teilzahlung_op(self):
+        from finance.models import Buchung, KreditorenZahlung
+        lg, k = self._setup()   # betrag 800, freigegeben
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        # Teilzahlung 300
+        c.post('/neu/kreditoren/bezahlen/', {'rechnung_id': k.id, 'betrag': '300'})
+        k.refresh_from_db()
+        self.assertEqual(k.status, 'teilbezahlt')
+        self.assertEqual(k.offener_betrag, Decimal('500.00'))
+        self.assertTrue(Buchung.objects.filter(kreditoren_rechnung=k, betrag=Decimal('300.00'),
+                                               soll_konto__nummer='2000', haben_konto__nummer='1020').exists())
+        # Restzahlung 500 → bezahlt
+        c.post('/neu/kreditoren/bezahlen/', {'rechnung_id': k.id, 'betrag': '500'})
+        k.refresh_from_db()
+        self.assertEqual(k.status, 'bezahlt')
+        self.assertEqual(k.offener_betrag, Decimal('0.00'))
+        self.assertEqual(KreditorenZahlung.objects.filter(kreditor=k, status='verbucht').count(), 2)
+
+    def test_ueberzahlung_begrenzt(self):
+        lg, k = self._setup()
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post('/neu/kreditoren/bezahlen/', {'rechnung_id': k.id, 'betrag': '9999'})
+        k.refresh_from_db()
+        self.assertEqual(k.status, 'bezahlt')
+        self.assertEqual(k.bezahlt_betrag, Decimal('800.00'))   # auf offen begrenzt
+
 
 class RechtsgrundlagenTests(TestCase):
     """In-App-Übersicht der angewandten Rechtsgrundlagen."""

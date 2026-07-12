@@ -219,6 +219,7 @@ class KreditorenRechnung(models.Model):
         ('neu', 'Neu / Scan'),
         ('freigegeben', 'Freigegeben'),
         ('in_zahlung', 'In Zahlung'),   # in pain.001-Datei enthalten, noch nicht bestätigt
+        ('teilbezahlt', 'Teilbezahlt'), # 🔥 OP: teilweise bezahlt
         ('bezahlt', 'Bezahlt'),
         ('storniert', 'Storniert'), # 🔥 NEU für Revisionssicherheit
     ]
@@ -261,6 +262,36 @@ class KreditorenRechnung(models.Model):
     def offen_weiterzuverrechnen(self):
         """Noch nicht weiterverrechneter Anteil der Rechnung."""
         return max(Decimal('0.00'), (self.betrag or Decimal('0.00')) - self.weiterverrechnet_betrag)
+
+    # --- OP-Verwaltung auf der Kreditorenseite (analog Debitoren) ---
+    @property
+    def bezahlt_betrag(self):
+        return (self.zahlungen.filter(status='verbucht').aggregate(s=Sum('betrag'))['s']
+                or Decimal('0.00'))
+
+    @property
+    def offener_betrag(self):
+        return max(Decimal('0.00'), (self.betrag or Decimal('0.00')) - self.bezahlt_betrag)
+
+
+class KreditorenZahlung(models.Model):
+    """Ausgangszahlung an einen Lieferanten (ermöglicht Teilzahlungen / OP)."""
+    kreditor = models.ForeignKey(KreditorenRechnung, on_delete=models.CASCADE, related_name='zahlungen')
+    betrag = models.DecimalField(max_digits=10, decimal_places=2)
+    datum = models.DateField(default=timezone.now)
+    konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
+    bank_referenz = models.CharField("Bank-Referenz", max_length=140, blank=True, default='', db_index=True)
+    bemerkung = models.CharField(max_length=255, blank=True, default='')
+    status = models.CharField(max_length=20, choices=[('verbucht', 'Verbucht'), ('storniert', 'Storniert')], default='verbucht')
+    erstellt_am = models.DateTimeField(default=timezone.now)
+    erstellt_von = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    class Meta:
+        db_table = 'core_kreditorenzahlung'
+        ordering = ['-datum', '-id']
+
+    def __str__(self):
+        return f"Zahlung CHF {self.betrag} an {self.kreditor.lieferant}"
 
 # ========================================================
 # HNK ABRECHNUNG UND BELEGE
