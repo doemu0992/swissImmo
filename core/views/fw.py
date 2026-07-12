@@ -3405,14 +3405,58 @@ def fw_eigentuemer_kontokorrent(request, pk):
 
     kk = kontokorrent(md, jahr=jahr)
     bankkonten = list(Buchungskonto.objects.filter(nummer__in=['1020', '1015']).order_by('nummer'))
+
+    # Verwaltungshonorar-Vorschau nur bei gewähltem Geschäftsjahr (Honorar wird
+    # je Jahr gebucht). Ohne Jahr (kumuliert) keine Buchung anbieten.
+    honorar = None
+    if jahr and (md.honorar_prozent or Decimal('0')) > 0:
+        from core.services.verwaltungshonorar import honorar_vorschau
+        h_zeilen, h_total, h_prozent = honorar_vorschau(md, jahr)
+        honorar = {'zeilen': h_zeilen, 'total': h_total, 'prozent': h_prozent,
+                   'offen_n': sum(1 for z in h_zeilen if not z['gebucht'] and z['honorar'] > 0)}
+
     from django.contrib import messages
     return render(request, 'fw/eigentuemer_kontokorrent.html', {
-        **basis, 'nav': 'mandate', 'md': md, 'kk': kk,
+        **basis, 'nav': 'mandate', 'md': md, 'kk': kk, 'honorar': honorar,
         'jahr': jahr, 'jahr_param': jahr_param,
         'jahre': list(range(heute.year, heute.year - 5, -1)),
         'bankkonten': bankkonten, 'heute': heute,
         'meldung': list(messages.get_messages(request)),
     })
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_eigentuemer_honorar(request, pk):
+    """Bucht das Verwaltungshonorar (Soll 4500 / Haben Bank) je Liegenschaft
+    für das gewählte Geschäftsjahr. Idempotent."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Mandant
+    from core.services.verwaltungshonorar import buche_honorar
+    from core.auth import log_aktion
+    md = get_object_or_404(Mandant, id=pk)
+    if request.method != 'POST':
+        return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
+    try:
+        jahr = int(request.POST.get('jahr') or 0)
+    except ValueError:
+        jahr = 0
+    if not jahr:
+        messages.error(request, "Kein Geschäftsjahr gewählt.")
+        return redirect(f'/neu/mandate/{md.id}/kontokorrent/')
+    bank = request.POST.get('konto_nummer') or '1020'
+    try:
+        anzahl, summe = buche_honorar(md, jahr, bank_nummer=bank, user=request.user)
+    except PermissionError as e:
+        messages.error(request, str(e))
+        return redirect(f'/neu/mandate/{md.id}/kontokorrent/?jahr={jahr}')
+    if anzahl:
+        log_aktion(request, "Verwaltungshonorar gebucht", md.firma_oder_name,
+                   f"{jahr} · {anzahl} Liegenschaft(en) · CHF {summe}")
+        messages.success(request, f"✅ Verwaltungshonorar {jahr} verbucht: CHF {summe} über {anzahl} Liegenschaft(en) (Soll 4500 / Haben {bank}).")
+    else:
+        messages.warning(request, "Kein Honorar zu buchen (bereits gebucht oder kein Mietertrag).")
+    return redirect(f'/neu/mandate/{md.id}/kontokorrent/?jahr={jahr}')
 
 
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
@@ -5402,6 +5446,10 @@ def fw_mandat_form(request, pk=None):
         obj.email = P.get('email', '').strip()
         obj.bank_name = P.get('bank_name', '').strip()
         obj.iban = P.get('iban', '').strip()
+        try:
+            obj.honorar_prozent = Decimal(str(P.get('honorar_prozent') or '0').replace(',', '.'))
+        except Exception:
+            obj.honorar_prozent = Decimal('0.00')
         if not obj.firma_oder_name:
             messages.error(request, "Name / Firma ist erforderlich.")
             return redirect(request.path)

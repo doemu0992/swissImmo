@@ -108,8 +108,43 @@
         </div>
     </div>
 
-    <!-- Rechte Spalte: Auszahlung erfassen -->
-    <div>
+    <!-- Rechte Spalte: Honorar + Auszahlung erfassen -->
+    <div class="space-y-5">
+        {% if honorar %}
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h2 class="font-bold text-slate-800 text-sm mb-1">Verwaltungshonorar {{ jahr }}</h2>
+            <p class="text-xs text-slate-500 mb-3">{{ honorar.prozent }} % der Mieterträge · Soll 4500 / Haben Bank.</p>
+            <div class="divide-y divide-slate-50 mb-3">
+            {% for z in honorar.zeilen %}
+                <div class="py-1.5 flex items-center gap-2 text-sm">
+                    <span class="flex-1 min-w-0 truncate text-slate-700">{{ z.lg.strasse }}</span>
+                    <span class="text-slate-500 tabular-nums">CHF {{ z.honorar|chf }}</span>
+                    {% if z.gebucht %}<span class="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded">gebucht</span>{% endif %}
+                </div>
+            {% empty %}
+                <div class="py-2 text-xs text-slate-400">Keine Liegenschaften mit Mietertrag in {{ jahr }}.</div>
+            {% endfor %}
+            </div>
+            {% if honorar.offen_n %}
+            <form method="post" action="/neu/mandate/{{ md.id }}/honorar/">
+                {% csrf_token %}
+                <input type="hidden" name="jahr" value="{{ jahr }}">
+                <input type="hidden" name="konto_nummer" value="1020">
+                <button class="w-full bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"
+                        onclick="return confirm('Verwaltungshonorar {{ jahr }} verbuchen: CHF {{ honorar.total|chf }}?');">
+                    <i class="fa-solid fa-percent mr-1.5"></i>Honorar {{ jahr }} buchen (CHF {{ honorar.total|chf }})
+                </button>
+            </form>
+            {% else %}
+            <p class="text-xs text-emerald-600 font-medium"><i class="fa-solid fa-check mr-1"></i>Honorar {{ jahr }} vollständig verbucht.</p>
+            {% endif %}
+        </div>
+        {% elif jahr and md.honorar_prozent == 0 %}
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h2 class="font-bold text-slate-800 text-sm mb-1">Verwaltungshonorar</h2>
+            <p class="text-xs text-slate-500">Kein Honorarsatz hinterlegt. <a href="/neu/mandate/{{ md.id }}/bearbeiten/" class="text-indigo-600 hover:underline">Im Mandat setzen</a>, um es hier zu buchen.</p>
+        </div>
+        {% endif %}
         <div class="bg-white rounded-xl border border-slate-200 p-5 sticky top-20">
             <h2 class="font-bold text-slate-800 text-sm mb-1">Auszahlung erfassen</h2>
             <p class="text-xs text-slate-500 mb-4">Bucht Soll 2850 (Kontokorrent Eigentümer) / Haben Bank.</p>

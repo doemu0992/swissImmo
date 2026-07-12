@@ -1,5 +1,6 @@
 # crm/models.py
 import io
+from decimal import Decimal
 from PIL import Image
 from django.core.files.base import ContentFile
 from django.db import models
@@ -81,6 +82,9 @@ class Mandant(models.Model):
     email = models.EmailField("E-Mail", blank=True)
     bank_name = models.CharField("Bankname (Mandant)", max_length=100, blank=True)
     iban = models.CharField("IBAN", max_length=34, blank=True)
+    # Verwaltungshonorar in % der Mieterträge (netto). 0 = kein Honorar.
+    honorar_prozent = models.DecimalField("Verwaltungshonorar (%)", max_digits=5, decimal_places=2,
+                                          default=Decimal('0.00'))
     unterschrift_bild = models.ImageField("Digitale Unterschrift", upload_to="unterschriften/", blank=True, null=True)
 
     class Meta:

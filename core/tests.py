@@ -3472,3 +3472,71 @@ class LieferantenkontenTests(TestCase):
         c = Client(); c.force_login(_team_user())
         r = c.get('/neu/lieferantenkonten/?filter=offen')
         self.assertEqual(len(r.context['rows']), 2)   # beide haben offene Posten
+
+
+class VerwaltungshonorarTests(TestCase):
+    """Verwaltungshonorar: % der Mieterträge, Buchung Soll 4500 / Haben Bank."""
+
+    def _setup(self, prozent='4'):
+        from crm.models import Mandant
+        from finance.booking import buche, ensure_kontenplan
+        ensure_kontenplan()
+        md = Mandant.objects.create(firma_oder_name='Eigentum AG', honorar_prozent=Decimal(prozent))
+        lg, e, m, v = _basis_objekte()
+        lg.mandant = md
+        lg.save()
+        # Mietertrag 10'000 im Jahr 2025 (Konto 3000)
+        buche('1020', '3000', Decimal('10000'), 'Miete', datum=date(2025, 6, 1), liegenschaft=lg)
+        return md, lg
+
+    def test_vorschau_berechnet_honorar(self):
+        from core.services.verwaltungshonorar import honorar_vorschau
+        md, lg = self._setup('4')
+        zeilen, total, prozent = honorar_vorschau(md, 2025)
+        self.assertEqual(prozent, Decimal('4.00'))
+        self.assertEqual(zeilen[0]['mietertrag'], Decimal('10000.00'))
+        self.assertEqual(zeilen[0]['honorar'], Decimal('400.00'))   # 4 % von 10'000
+        self.assertFalse(zeilen[0]['gebucht'])
+        self.assertEqual(total, Decimal('400.00'))
+
+    def test_buchung_soll_4500_haben_bank(self):
+        from core.services.verwaltungshonorar import buche_honorar
+        from finance.models import Buchung
+        md, lg = self._setup('4')
+        anzahl, summe = buche_honorar(md, 2025, user=None)
+        self.assertEqual(anzahl, 1)
+        self.assertEqual(summe, Decimal('400.00'))
+        self.assertTrue(Buchung.objects.filter(soll_konto__nummer='4500', haben_konto__nummer='1020',
+                                               betrag=Decimal('400.00'), liegenschaft=lg).exists())
+
+    def test_idempotent(self):
+        from core.services.verwaltungshonorar import buche_honorar, honorar_vorschau
+        md, lg = self._setup('4')
+        buche_honorar(md, 2025, user=None)
+        # Zweiter Lauf bucht nichts mehr
+        anzahl, summe = buche_honorar(md, 2025, user=None)
+        self.assertEqual(anzahl, 0)
+        zeilen, _t, _p = honorar_vorschau(md, 2025)
+        self.assertTrue(zeilen[0]['gebucht'])
+
+    def test_honorar_mindert_eigentuemer_ergebnis(self):
+        from core.services.verwaltungshonorar import buche_honorar
+        from core.services.eigentuemer_kontokorrent import kontokorrent
+        md, lg = self._setup('4')
+        vorher = kontokorrent(md, jahr=2025)['ergebnis']
+        buche_honorar(md, 2025, user=None)
+        nachher = kontokorrent(md, jahr=2025)['ergebnis']
+        # Honorar (400) ist Aufwand → Ergebnis sinkt um 400
+        self.assertEqual(vorher - nachher, Decimal('400.00'))
+
+    def test_view_zeigt_honorar_panel(self):
+        md, lg = self._setup('4')
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        r = c.get(f'/neu/mandate/{md.id}/kontokorrent/?jahr=2025')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Verwaltungshonorar 2025')
+        # Buchen-Aktion
+        r2 = c.post(f'/neu/mandate/{md.id}/honorar/', {'jahr': '2025', 'konto_nummer': '1020'})
+        self.assertEqual(r2.status_code, 302)
+        from finance.models import Buchung
+        self.assertTrue(Buchung.objects.filter(soll_konto__nummer='4500', betrag=Decimal('400.00')).exists())
