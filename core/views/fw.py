@@ -1489,6 +1489,70 @@ def fw_mahnwesen(request):
     return render(request, 'fw/mahnwesen.html', context)
 
 
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_debitoren_aging(request):
+    """Debitoren-Altersstruktur (OP-Aging): offene Forderungen nach
+    Fälligkeitsalter (nicht fällig / 1–30 / 31–60 / 61–90 / >90 Tage),
+    gruppiert je Mieter — die Risikosicht fürs Mahnwesen."""
+    heute = timezone.now().date()
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    qs = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft'))
+    if aktive_lg:
+        qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
+
+    BUCKETS = ['nicht_faellig', 'd30', 'd60', 'd90', 'd90plus']
+
+    def bucket(tage):
+        if tage <= 0:
+            return 'nicht_faellig'
+        if tage <= 30:
+            return 'd30'
+        if tage <= 60:
+            return 'd60'
+        if tage <= 90:
+            return 'd90'
+        return 'd90plus'
+
+    gruppen = {}
+    total = {b: Decimal('0.00') for b in BUCKETS}
+    total['summe'] = Decimal('0.00')
+    for r in qs:
+        offen = r.offener_betrag
+        if offen <= 0:
+            continue
+        faellig = r.faellig_am or r.datum
+        tage = (heute - faellig).days if faellig else 0
+        b = bucket(tage)
+        if r.vertrag_id and r.vertrag.mieter_id:
+            key = ('m', r.vertrag.mieter_id)
+            name = r.vertrag.mieter.display_name
+            lg = r.vertrag.einheit.liegenschaft if r.vertrag.einheit_id else None
+            objekt = (f"{lg.strasse}" if lg else '')
+        else:
+            key = ('t', (r.titel or 'Diverse'))
+            name = r.titel or 'Diverse'
+            objekt = r.liegenschaft.strasse if r.liegenschaft_id else ''
+        g = gruppen.setdefault(key, {'name': name, 'objekt': objekt,
+                                     **{b: Decimal('0.00') for b in BUCKETS},
+                                     'summe': Decimal('0.00'), 'aeltester': 0})
+        g[b] += offen
+        g['summe'] += offen
+        g['aeltester'] = max(g['aeltester'], tage)
+        total[b] += offen
+        total['summe'] += offen
+
+    rows = sorted(gruppen.values(), key=lambda g: (-g['aeltester'], -float(g['summe'])))
+    ueberfaellig_summe = total['d30'] + total['d60'] + total['d90'] + total['d90plus']
+
+    return render(request, 'fw/debitoren_aging.html', {
+        **basis, 'nav': 'mahnwesen', 'rows': rows, 'total': total,
+        'ueberfaellig_summe': ueberfaellig_summe, 'anzahl': len(rows), 'heute': heute,
+    })
+
+
 # ============================================================
 # ETAPPE D: BANKKONTEN (QR-IBAN-Erkennung + Mietertrag je Konto)
 # ============================================================

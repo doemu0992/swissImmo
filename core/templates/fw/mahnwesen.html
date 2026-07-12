@@ -10,6 +10,7 @@
         <p class="text-sm text-slate-500">Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt erzeugen
             {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
             <a href="/neu/mahnwesen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+        <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="inline-block mt-2 text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-chart-column mr-1"></i>Altersstruktur (OP-Aging) ansehen</a>
     </div>
     {% if anzahl_total %}
     <form method="post" action="/neu/mahnwesen/lauf/" onsubmit="return confirm('Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt.');" class="shrink-0 text-right">

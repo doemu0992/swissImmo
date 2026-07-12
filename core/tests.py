@@ -3803,6 +3803,45 @@ class ObjektFotoTests(TestCase):
         self.assertTrue(r.content.startswith(b'%PDF'))
 
 
+class DebitorenAgingTests(TestCase):
+    """Debitoren-Altersstruktur (OP-Aging) nach Fälligkeits-Buckets."""
+
+    def _rechnung(self, v, lg, betrag, faellig, status='offen'):
+        from finance.models import DebitorenRechnung
+        return DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Miete', betrag=Decimal(betrag),
+            datum=faellig, faellig_am=faellig, status=status)
+
+    def test_buckets_pro_mieter(self):
+        lg, e, m, v = _basis_objekte()
+        heute = date.today()
+        self._rechnung(v, lg, '100', heute + timedelta(days=10))    # nicht fällig
+        self._rechnung(v, lg, '200', heute - timedelta(days=15))    # 1–30
+        self._rechnung(v, lg, '300', heute - timedelta(days=45))    # 31–60
+        self._rechnung(v, lg, '400', heute - timedelta(days=120))   # >90
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/mahnwesen/aging/')
+        self.assertEqual(r.status_code, 200)
+        t = r.context['total']
+        self.assertEqual(t['nicht_faellig'], Decimal('100.00'))
+        self.assertEqual(t['d30'], Decimal('200.00'))
+        self.assertEqual(t['d60'], Decimal('300.00'))
+        self.assertEqual(t['d90plus'], Decimal('400.00'))
+        self.assertEqual(t['summe'], Decimal('1000.00'))
+        self.assertEqual(r.context['ueberfaellig_summe'], Decimal('900.00'))
+        # ein Mieter, ältester = 120 Tage
+        self.assertEqual(len(r.context['rows']), 1)
+        self.assertEqual(r.context['rows'][0]['aeltester'], 120)
+
+    def test_bezahlte_ignoriert(self):
+        lg, e, m, v = _basis_objekte()
+        self._rechnung(v, lg, '500', date.today() - timedelta(days=40), status='bezahlt')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/mahnwesen/aging/')
+        self.assertEqual(r.context['total']['summe'], Decimal('0.00'))
+        self.assertEqual(len(r.context['rows']), 0)
+
+
 class MieterspiegelTests(TestCase):
     """Mieterspiegel (Rent Roll): Soll/Ist/Leerstand je Liegenschaft + PDF."""
 

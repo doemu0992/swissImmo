@@ -1,0 +1,93 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Debitoren-Altersstruktur — swissImmo{% endblock %}
+{% block content %}
+<div class="text-xs text-slate-400 mb-3">
+    <a href="/neu/mahnwesen/{{ lg_query }}" class="hover:text-indigo-600">Mahnwesen</a>
+    <i class="fa-solid fa-chevron-right text-[8px] mx-1"></i>Altersstruktur
+</div>
+
+<div class="flex items-start justify-between flex-wrap gap-3 mb-1">
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Debitoren-Altersstruktur</h1>
+        <p class="text-sm text-slate-500 mt-1">Offene Forderungen nach Fälligkeitsalter · Stichtag {{ heute|date:"d.m.Y" }}
+            {% if aktive_lg %}· <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+    </div>
+    <div class="text-right">
+        <div class="text-3xl font-extrabold {% if ueberfaellig_summe %}text-rose-600{% else %}text-slate-900{% endif %}">CHF {{ ueberfaellig_summe|chf }}</div>
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">überfällig · Total offen CHF {{ total.summe|chf }}</div>
+    </div>
+</div>
+
+<!-- Bucket-Kennzahlen -->
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-3 my-5">
+    <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Nicht fällig</div>
+        <div class="text-lg font-bold text-slate-900 mt-0.5">CHF {{ total.nicht_faellig|chf }}</div>
+    </div>
+    <div class="bg-white rounded-xl border border-amber-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-amber-600 font-semibold">1–30 Tage</div>
+        <div class="text-lg font-bold text-slate-900 mt-0.5">CHF {{ total.d30|chf }}</div>
+    </div>
+    <div class="bg-white rounded-xl border border-orange-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-orange-600 font-semibold">31–60 Tage</div>
+        <div class="text-lg font-bold text-slate-900 mt-0.5">CHF {{ total.d60|chf }}</div>
+    </div>
+    <div class="bg-white rounded-xl border border-rose-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-rose-600 font-semibold">61–90 Tage</div>
+        <div class="text-lg font-bold text-slate-900 mt-0.5">CHF {{ total.d90|chf }}</div>
+    </div>
+    <div class="bg-white rounded-xl border border-rose-300 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-rose-700 font-semibold">&gt; 90 Tage</div>
+        <div class="text-lg font-bold text-rose-700 mt-0.5">CHF {{ total.d90plus|chf }}</div>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden overflow-x-auto">
+    <table class="w-full text-sm min-w-[820px]">
+        <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Mieter</th>
+                <th class="px-5 py-3 font-semibold text-right">Nicht fällig</th>
+                <th class="px-5 py-3 font-semibold text-right">1–30</th>
+                <th class="px-5 py-3 font-semibold text-right">31–60</th>
+                <th class="px-5 py-3 font-semibold text-right">61–90</th>
+                <th class="px-5 py-3 font-semibold text-right">&gt;90</th>
+                <th class="px-5 py-3 font-semibold text-right">Total</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+        {% for g in rows %}
+            <tr class="hover:bg-slate-50">
+                <td class="px-5 py-2.5">
+                    <div class="font-medium text-slate-900">{{ g.name }}</div>
+                    {% if g.objekt %}<div class="text-[11px] text-slate-400">{{ g.objekt }}</div>{% endif %}
+                </td>
+                <td class="px-5 py-2.5 text-right {% if g.nicht_faellig %}text-slate-600{% else %}text-slate-300{% endif %}">{% if g.nicht_faellig %}{{ g.nicht_faellig|chf }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-2.5 text-right {% if g.d30 %}text-amber-600 font-medium{% else %}text-slate-300{% endif %}">{% if g.d30 %}{{ g.d30|chf }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-2.5 text-right {% if g.d60 %}text-orange-600 font-medium{% else %}text-slate-300{% endif %}">{% if g.d60 %}{{ g.d60|chf }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-2.5 text-right {% if g.d90 %}text-rose-600 font-medium{% else %}text-slate-300{% endif %}">{% if g.d90 %}{{ g.d90|chf }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-2.5 text-right {% if g.d90plus %}text-rose-700 font-semibold{% else %}text-slate-300{% endif %}">{% if g.d90plus %}{{ g.d90plus|chf }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-2.5 text-right font-semibold text-slate-900">{{ g.summe|chf }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="7" class="px-5 py-10 text-center text-slate-400 text-sm">Keine offenen Forderungen — alles bezahlt. 🎉</td></tr>
+        {% endfor %}
+        </tbody>
+        {% if rows %}
+        <tfoot>
+            <tr class="border-t-2 border-slate-200 font-semibold text-slate-900">
+                <td class="px-5 py-3">Total ({{ anzahl }} Mieter)</td>
+                <td class="px-5 py-3 text-right">{{ total.nicht_faellig|chf }}</td>
+                <td class="px-5 py-3 text-right text-amber-600">{{ total.d30|chf }}</td>
+                <td class="px-5 py-3 text-right text-orange-600">{{ total.d60|chf }}</td>
+                <td class="px-5 py-3 text-right text-rose-600">{{ total.d90|chf }}</td>
+                <td class="px-5 py-3 text-right text-rose-700">{{ total.d90plus|chf }}</td>
+                <td class="px-5 py-3 text-right">{{ total.summe|chf }}</td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+</div>
+<p class="text-xs text-slate-400 mt-3">Fälligkeitsalter ab dem Fälligkeits- bzw. Rechnungsdatum. Positionen ab 30 Tagen sind mahnrelevant — Mahnungen erfasst du im <a href="/neu/mahnwesen/{{ lg_query }}" class="text-indigo-600 hover:underline">Mahnwesen</a>.</p>
+{% endblock %}
