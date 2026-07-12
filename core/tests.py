@@ -3140,3 +3140,81 @@ class DashboardKritischTests(TestCase):
                                       kategorie=kategorie_fuer('Person gelöscht'))
         r = c.get('/neu/logbuch/?art=kritisch')
         self.assertContains(r, 'Person gelöscht')
+
+
+class FinanzCockpitTests(TestCase):
+    """Finanz-Cockpit: EIN Arbeitskorb in Prozessreihenfolge + Monatsabschluss-Checkliste."""
+
+    def test_leerer_arbeitskorb(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/finanzen/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Finanz-Cockpit')
+        self.assertContains(r, 'Arbeitskorb')
+        self.assertContains(r, 'Alle Finanzaufgaben erledigt')
+
+    def test_offene_debitoren_und_kreditoren_im_korb(self):
+        from finance.models import DebitorenRechnung, KreditorenRechnung
+        from finance.booking import konto as _k
+        lg, e, m, v = _basis_objekte()
+        # überfällige Forderung
+        DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Miete alt', betrag=Decimal('1700'),
+            datum=date(2024, 1, 1), faellig_am=date(2024, 1, 1), status='offen')
+        # Kreditor neu (zur Freigabe) + freigegeben (zur Zahlung)
+        KreditorenRechnung.objects.create(lieferant='Neu AG', betrag=Decimal('200'),
+                                          status='neu', liegenschaft=lg, konto=_k('4000'))
+        KreditorenRechnung.objects.create(lieferant='Frei AG', betrag=Decimal('300'),
+                                          status='freigegeben', liegenschaft=lg, konto=_k('4000'))
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/finanzen/')
+        self.assertContains(r, 'Zahlungseingänge abgleichen')
+        self.assertContains(r, 'Eingangsrechnungen freigeben')
+        self.assertContains(r, 'Zahllauf ausführen')
+        self.assertContains(r, 'dringend')                    # überfällige Debitoren
+        self.assertContains(r, 'Überfällige Forderungen mahnen')
+        self.assertNotContains(r, 'Alle Finanzaufgaben erledigt')
+
+    def test_nur_angefangene_weiterverrechnung_ist_todo(self):
+        """Eine unberührte Kreditorenrechnung darf NICHT als Weiterverrechnungs-Todo erscheinen;
+        eine teilweise weiterverrechnete schon."""
+        from finance.models import KreditorenRechnung
+        from finance.booking import konto as _k
+        lg, e, m, v = _basis_objekte()
+        k = KreditorenRechnung.objects.create(lieferant='Sanitär AG', betrag=Decimal('500'),
+                                              status='bezahlt', liegenschaft=lg, konto=_k('4000'))
+        c = Client(); c.force_login(_team_user())
+        # noch nichts weiterverrechnet → Anzahl 0 (Kachel zeigt "erledigt")
+        r = c.get('/neu/finanzen/')
+        self.assertEqual(r.context['arbeitskorb'][3]['key'], 'weiterverrechnung')
+        self.assertEqual(r.context['arbeitskorb'][3]['anzahl'], 0)
+        # 300 von 500 weiterverrechnen → jetzt offener Rest = Todo
+        c.post(f'/neu/kreditoren/{k.id}/weiterverrechnen/',
+               {'vertrag_id': v.id, 'betrag': '300', 'zuschlag': '0'})
+        r2 = c.get('/neu/finanzen/')
+        self.assertEqual(r2.context['arbeitskorb'][3]['anzahl'], 1)
+
+    def test_checkliste_sollstellung_ampel(self):
+        from core.services.automation import run_sollstellung
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        heute = date.today()
+        r = c.get('/neu/finanzen/')
+        # vor Sollstellung: der Sollstellungs-Schritt ist offen (ok=False)
+        soll = next(x for x in r.context['checkliste'] if x['titel'].startswith('Sollstellung'))
+        self.assertIs(soll['ok'], False)
+        # Sollstellung für aktuellen Monat laufen lassen
+        run_sollstellung(heute.year, heute.month)
+        r2 = c.get('/neu/finanzen/')
+        soll2 = next(x for x in r2.context['checkliste'] if x['titel'].startswith('Sollstellung'))
+        self.assertIs(soll2['ok'], True)
+
+    def test_durchlaufkonto_saldo_sichtbar(self):
+        from finance.booking import buche
+        lg, e, m, v = _basis_objekte()
+        # geparkte Position auf 1190 (Soll) — noch nicht geklärt
+        buche('1190', '1020', Decimal('120'), 'Unklare Gutschrift', liegenschaft=lg)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/finanzen/')
+        self.assertEqual(r.context['durchlauf_saldo'], Decimal('120.00'))
+        self.assertContains(r, 'geparkte Positionen klären')

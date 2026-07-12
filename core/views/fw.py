@@ -190,6 +190,150 @@ def fw_dashboard(request):
     return render(request, 'fw/dashboard.html', context)
 
 
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_finanzen(request):
+    """Finanz-Cockpit — EIN Arbeitskorb statt 11 Menüs einzeln abzuklappern.
+
+    Die Reihenfolge der Abschnitte bildet den realen Buchhalter-Ablauf ab:
+    Eingänge klären (Bank) → Eingangsrechnungen freigeben → Zahllauf →
+    weiterverrechnen → mahnen → Perioden abschliessen (Sollstellung, MWST).
+    Jede Kachel zeigt Anzahl + CHF + Direktlink auf die bestehende Funktion.
+    """
+    from finance.models import KreditorenRechnung, Buchungskonto, Buchung
+    from core.models import Pendenz
+    import calendar as _cal
+
+    heute = timezone.now().date()
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    # ---------- Debitoren (offene Forderungen) ----------
+    deb = DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
+    if aktive_lg:
+        deb = deb.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
+    deb = [r for r in deb.select_related('vertrag') if r.offener_betrag > 0]
+    deb_offen_chf = sum((r.offener_betrag for r in deb), Decimal('0.00'))
+    deb_ueberf = [r for r in deb if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) < heute]
+    deb_ueberf_chf = sum((r.offener_betrag for r in deb_ueberf), Decimal('0.00'))
+
+    # ---------- Kreditoren (Eingangsrechnungen) ----------
+    kred = KreditorenRechnung.objects.exclude(status='storniert')
+    if aktive_lg:
+        kred = kred.filter(liegenschaft=aktive_lg)
+    kred = list(kred)
+    zur_freigabe = [k for k in kred if k.status == 'neu']
+    zur_zahlung = [k for k in kred if k.status in ('freigegeben', 'teilbezahlt') and k.offener_betrag > 0]
+    in_zahlung = [k for k in kred if k.status == 'in_zahlung']
+    # Weiterverrechnung: nur *angefangene* (bereits teilweise weiterverrechnete) Rechnungen
+    # als Todo führen — sonst würde jede Lieferantenrechnung fälschlich als "zu
+    # verrechnen" markiert (Weiterverrechnung ist ein bewusster Einzelentscheid).
+    offen_wv = [k for k in kred if k.weiterverrechnet_betrag > 0 and k.offen_weiterzuverrechnen > 0]
+
+    def _chf(items, attr='offener_betrag'):
+        return sum((getattr(k, attr) or Decimal('0.00') for k in items), Decimal('0.00'))
+
+    # ---------- Kaution-Freigabefristen (fällige Pendenzen) ----------
+    kaut = Pendenz.objects.filter(erledigt=False, quelle__startswith='auto:kautionfreigabe:')
+    if aktive_lg:
+        kaut = kaut.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
+    kaut_faellig = kaut.filter(faellig_am__lte=heute).count()
+    kaut_offen = kaut.count()
+
+    # ---------- Durchlaufkonto 1190: ungeklärte/geparkte Positionen ----------
+    durchlauf_saldo = Decimal('0.00')
+    k1190 = Buchungskonto.objects.filter(nummer='1190').first()
+    if k1190:
+        bq = Buchung.objects.all()
+        if aktive_lg:
+            bq = bq.filter(liegenschaft=aktive_lg)
+        soll = bq.filter(soll_konto=k1190).aggregate(s=Sum('betrag'))['s'] or Decimal('0.00')
+        haben = bq.filter(haben_konto=k1190).aggregate(s=Sum('betrag'))['s'] or Decimal('0.00')
+        durchlauf_saldo = soll - haben
+
+    # ---------- Arbeitskorb (Reihenfolge = Prozess) ----------
+    # Volle Tailwind-Klassen (CDN-sicher, keine dynamisch zusammengesetzten Namen).
+    P = {
+        'sky':    ('bg-sky-100 text-sky-600',       'bg-sky-600 hover:bg-sky-700'),
+        'amber':  ('bg-amber-100 text-amber-600',   'bg-amber-500 hover:bg-amber-600'),
+        'indigo': ('bg-indigo-100 text-indigo-600', 'bg-indigo-600 hover:bg-indigo-700'),
+        'violet': ('bg-violet-100 text-violet-600', 'bg-violet-600 hover:bg-violet-700'),
+        'rose':   ('bg-rose-100 text-rose-600',     'bg-rose-600 hover:bg-rose-700'),
+        'teal':   ('bg-teal-100 text-teal-600',     'bg-teal-600 hover:bg-teal-700'),
+    }
+    _korb = [
+        ('bank', 'fa-right-left', 'sky', 'Zahlungseingänge abgleichen',
+         'Offene Forderungen mit Bankgutschriften verbuchen',
+         len(deb), deb_offen_chf, '/neu/bankabgleich/', 'Abgleichen', bool(deb_ueberf)),
+        ('freigabe', 'fa-stamp', 'amber', 'Eingangsrechnungen freigeben',
+         'Neu erfasste Kreditoren prüfen & freigeben',
+         len(zur_freigabe), _chf(zur_freigabe, 'betrag'), '/neu/kreditoren/', 'Freigeben', False),
+        ('zahllauf', 'fa-money-bill-transfer', 'indigo', 'Zahllauf ausführen',
+         'Freigegebene Kreditoren zur Zahlung (pain.001)',
+         len(zur_zahlung), _chf(zur_zahlung), '/neu/kreditoren/', 'Zahlen',
+         any((k.faellig_am and k.faellig_am < heute) for k in zur_zahlung)),
+        ('weiterverrechnung', 'fa-share-from-square', 'violet', 'Weiterverrechnungen abschliessen',
+         'Angefangene Weiterverrechnungen an Mieter fertigstellen',
+         len(offen_wv), _chf(offen_wv, 'offen_weiterzuverrechnen'), '/neu/kreditoren/', 'Weiterverrechnen', False),
+        ('mahnen', 'fa-envelope-open-text', 'rose', 'Überfällige Forderungen mahnen',
+         'Fällige Debitoren mit Mahnung anstossen',
+         len(deb_ueberf), deb_ueberf_chf, '/neu/mahnwesen/', 'Mahnen', bool(deb_ueberf)),
+        ('kaution', 'fa-shield-halved', 'teal', 'Kautionen freigeben',
+         'Rückzahlungsfristen nach Auszug (Art. 257e)',
+         kaut_offen, None, '/neu/kautionen/', 'Kautionen', kaut_faellig > 0),
+    ]
+    arbeitskorb = [{
+        'key': k, 'icon': ic, 'icon_cls': P[f][0], 'btn_cls': P[f][1],
+        'titel': t, 'sub': s, 'anzahl': n, 'chf': c,
+        'url': u + basis['lg_query'], 'cta': cta, 'dringend': d,
+    } for (k, ic, f, t, s, n, c, u, cta, d) in _korb]
+    offene_posten = sum(1 for i in arbeitskorb if i['anzahl'])
+    dringend_n = sum(1 for i in arbeitskorb if i['dringend'])
+
+    # ---------- Monatsabschluss-Checkliste (Ampel) ----------
+    j, m = heute.year, heute.month
+    soll_titel = f"Miete & NK {m:02d}/{j}"
+    soll_qs = DebitorenRechnung.objects.filter(titel=soll_titel).exclude(status='storniert')
+    if aktive_lg:
+        soll_qs = soll_qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
+    soll_gelaufen = soll_qs.exists()
+
+    # MWST: welches Quartal ist als letztes abgeschlossen und damit abrechnungsreif?
+    aktuelles_q = (m - 1) // 3 + 1
+    letztes_q = aktuelles_q - 1 or 4
+    letztes_q_jahr = j if aktuelles_q > 1 else j - 1
+
+    checkliste = [
+        {'titel': f'Sollstellung Miete {m:02d}/{j} gebucht', 'ok': soll_gelaufen,
+         'url': '/neu/sollstellung/' + basis['lg_query'],
+         'hinweis': 'Monatlicher Mietenlauf erzeugt Debitoren + Buchungen'},
+        {'titel': 'Eingangsrechnungen alle freigegeben', 'ok': not zur_freigabe,
+         'url': '/neu/kreditoren/' + basis['lg_query'],
+         'hinweis': f'{len(zur_freigabe)} noch offen' if zur_freigabe else 'keine offenen'},
+        {'titel': 'Zahllauf ausgeführt', 'ok': not zur_zahlung,
+         'url': '/neu/kreditoren/' + basis['lg_query'],
+         'hinweis': f'{len(zur_zahlung)} zur Zahlung' if zur_zahlung else 'nichts offen'},
+        {'titel': 'Zahlungseingänge abgeglichen', 'ok': not deb_ueberf,
+         'url': '/neu/bankabgleich/' + basis['lg_query'],
+         'hinweis': f'{len(deb_ueberf)} überfällig' if deb_ueberf else 'keine überfälligen'},
+        {'titel': f'MWST-Abrechnung Q{letztes_q}/{letztes_q_jahr} prüfen', 'ok': None,
+         'url': f'/neu/mwst/?jahr={letztes_q_jahr}&quartal={letztes_q}',
+         'hinweis': 'Quartalsweise an die ESTV — manuell bestätigen'},
+    ]
+    erledigt_n = sum(1 for c in checkliste if c['ok'] is True)
+    pflicht_n = sum(1 for c in checkliste if c['ok'] is not None)
+
+    return render(request, 'fw/finanzen.html', {
+        **basis, 'nav': 'finanzen',
+        'arbeitskorb': arbeitskorb,
+        'offene_posten': offene_posten, 'dringend_n': dringend_n,
+        'deb_offen_chf': deb_offen_chf, 'deb_ueberf_chf': deb_ueberf_chf,
+        'kred_zahllauf_chf': _chf(zur_zahlung), 'in_zahlung_n': len(in_zahlung),
+        'durchlauf_saldo': durchlauf_saldo,
+        'checkliste': checkliste, 'erledigt_n': erledigt_n, 'pflicht_n': pflicht_n,
+        'heute': heute,
+    })
+
+
 # ============================================================
 # ETAPPE B: LISTEN ALS DATENTABELLEN
 # ============================================================

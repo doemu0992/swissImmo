@@ -1,0 +1,112 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Finanzen — swissImmo{% endblock %}
+{% block content %}
+<div class="flex items-start justify-between flex-wrap gap-3 mb-1">
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Finanz-Cockpit</h1>
+        <p class="text-sm text-slate-500 mt-1 max-w-2xl">Ihr Arbeitskorb — was ist zu tun, in der richtigen Reihenfolge.
+            {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+    </div>
+    <div class="text-right">
+        <div class="text-3xl font-extrabold {% if dringend_n %}text-rose-600{% else %}text-slate-900{% endif %}">{{ offene_posten }}</div>
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">offene Aufgaben{% if dringend_n %} · {{ dringend_n }} dringend{% endif %}</div>
+    </div>
+</div>
+
+<!-- Kennzahlenleiste -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 my-5">
+    <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Offene Forderungen</div>
+        <div class="text-xl font-bold text-slate-900 mt-0.5">CHF {{ deb_offen_chf|chf }}</div>
+        {% if deb_ueberf_chf %}<div class="text-xs text-rose-600 mt-0.5">davon CHF {{ deb_ueberf_chf|chf }} überfällig</div>{% endif %}
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Zur Zahlung frei</div>
+        <div class="text-xl font-bold text-slate-900 mt-0.5">CHF {{ kred_zahllauf_chf|chf }}</div>
+        {% if in_zahlung_n %}<div class="text-xs text-slate-400 mt-0.5">{{ in_zahlung_n }} in Zahlung (unbestätigt)</div>{% endif %}
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Durchlaufkonto 1190</div>
+        <div class="text-xl font-bold {% if durchlauf_saldo %}text-amber-600{% else %}text-slate-900{% endif %} mt-0.5">CHF {{ durchlauf_saldo|chf }}</div>
+        <div class="text-xs text-slate-400 mt-0.5">{% if durchlauf_saldo %}geparkte Positionen klären{% else %}alles abgestimmt{% endif %}</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
+        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Monatsabschluss</div>
+        <div class="text-xl font-bold text-slate-900 mt-0.5">{{ erledigt_n }}/{{ pflicht_n }}</div>
+        <div class="text-xs text-slate-400 mt-0.5">Pflichtschritte erledigt</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+    <!-- ARBEITSKORB -->
+    <div class="xl:col-span-2">
+        <h2 class="text-xs uppercase tracking-[0.2em] text-slate-500 font-bold mb-3">Arbeitskorb</h2>
+        <div class="space-y-2.5">
+        {% for i in arbeitskorb %}
+            <div class="bg-white rounded-xl border {% if i.dringend %}border-rose-200{% else %}border-slate-200{% endif %} px-4 py-3.5 flex items-center gap-4">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 {{ i.icon_cls }}">
+                    <i class="fa-solid {{ i.icon }}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-semibold text-slate-900">{{ i.titel }}</span>
+                        {% if i.anzahl %}<span class="text-[11px] font-bold {% if i.dringend %}bg-rose-100 text-rose-700{% else %}bg-slate-100 text-slate-600{% endif %} rounded-md px-1.5 py-0.5">{{ i.anzahl }}</span>{% endif %}
+                        {% if i.dringend %}<span class="text-[10px] font-bold uppercase tracking-wide text-rose-600">dringend</span>{% endif %}
+                    </div>
+                    <div class="text-xs text-slate-500 mt-0.5 truncate">{{ i.sub }}{% if i.chf %} · <span class="font-medium text-slate-600">CHF {{ i.chf|chf }}</span>{% endif %}</div>
+                </div>
+                {% if i.anzahl %}
+                <a href="{{ i.url }}" class="shrink-0 text-white text-xs font-semibold px-3.5 py-2 rounded-lg {{ i.btn_cls }}">{{ i.cta }} ›</a>
+                {% else %}
+                <span class="shrink-0 text-emerald-600 text-xs font-semibold px-2"><i class="fa-solid fa-check mr-1"></i>erledigt</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+        </div>
+        {% if offene_posten == 0 %}
+        <div class="mt-3 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 text-sm text-emerald-700">
+            <i class="fa-solid fa-circle-check mr-1.5"></i>Alle Finanzaufgaben erledigt — nichts offen.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- MONATSABSCHLUSS-CHECKLISTE -->
+    <div>
+        <h2 class="text-xs uppercase tracking-[0.2em] text-slate-500 font-bold mb-3">Monatsabschluss {{ heute|date:"m/Y" }}</h2>
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="divide-y divide-slate-50">
+            {% for c in checkliste %}
+                <a href="{{ c.url }}" class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50">
+                    {% if c.ok is True %}
+                        <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i>
+                    {% elif c.ok is False %}
+                        <i class="fa-regular fa-circle text-amber-400 mt-0.5"></i>
+                    {% else %}
+                        <i class="fa-regular fa-circle-question text-slate-300 mt-0.5"></i>
+                    {% endif %}
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm {% if c.ok is True %}text-slate-400 line-through{% else %}text-slate-800 font-medium{% endif %}">{{ c.titel }}</div>
+                        <div class="text-xs text-slate-400 mt-0.5">{{ c.hinweis }}</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-slate-300 mt-1"></i>
+                </a>
+            {% endfor %}
+            </div>
+            <div class="px-4 py-2.5 bg-slate-50 border-t border-slate-100 text-[11px] text-slate-400">
+                Reihenfolge = empfohlener Ablauf. Grün = erledigt, gelb = offen, grau = manuell prüfen.
+            </div>
+        </div>
+
+        <div class="mt-4 bg-white rounded-xl border border-slate-200 p-4">
+            <div class="text-xs uppercase tracking-wide text-slate-400 font-semibold mb-2">Direkt zu</div>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+                <a href="/neu/buchhaltung/{{ lg_query }}" class="text-slate-600 hover:text-indigo-600"><i class="fa-solid fa-calculator w-4 mr-1"></i>Journal</a>
+                <a href="/neu/mwst/" class="text-slate-600 hover:text-indigo-600"><i class="fa-solid fa-percent w-4 mr-1"></i>MWST</a>
+                <a href="/neu/nebenkosten/{{ lg_query }}" class="text-slate-600 hover:text-indigo-600"><i class="fa-solid fa-bolt w-4 mr-1"></i>Nebenkosten</a>
+                <a href="/neu/anlagen/{{ lg_query }}" class="text-slate-600 hover:text-indigo-600"><i class="fa-solid fa-building-columns w-4 mr-1"></i>Abschluss</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

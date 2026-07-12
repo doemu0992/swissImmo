@@ -62,7 +62,7 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
                                 mieter_rechnungen_view, mieter_dokumente_view, mieter_schaden_formular)
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
-from core.views.fw import (fw_dashboard, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_liegenschaften, fw_objekte,
+from core.views.fw import (fw_dashboard, fw_finanzen, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_liegenschaften, fw_objekte,
                            fw_personen, fw_vertraege, fw_mieterwechsel, fw_vermarktung, fw_objekt_ausschreiben,
                            fw_liegenschaft_detail, fw_objekt_detail, fw_vertrag_detail,
                            fw_wartungsfrist_neu, fw_wartungsfrist_loeschen,
@@ -188,6 +188,7 @@ urlpatterns = [
     path('neu/dienstleister/neu/', fw_dienstleister_neu, name='fw_dienstleister_neu'),
     path('neu/assets/', fw_assets, name='fw_assets'),
     path('neu/assets/neu/', fw_asset_neu, name='fw_asset_neu'),
+    path('neu/finanzen/', fw_finanzen, name='fw_finanzen'),
     path('neu/buchhaltung/', fw_buchhaltung, name='fw_buchhaltung'),
     path('neu/buchhaltung/export/', fw_buchhaltung_export, name='fw_buchhaltung_export'),
     path('neu/buchhaltung/konto/<str:nummer>/', fw_kontoblatt, name='fw_kontoblatt'),
