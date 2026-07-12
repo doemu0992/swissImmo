@@ -63,7 +63,7 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_dashboard, fw_finanzen, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_liegenschaften, fw_objekte,
-                           fw_personen, fw_vertraege, fw_mieterwechsel, fw_vermarktung, fw_objekt_ausschreiben,
+                           fw_personen, fw_vertraege, fw_mieterwechsel, fw_vermarktung, fw_objekt_ausschreiben, fw_expose_pdf,
                            fw_liegenschaft_detail, fw_objekt_detail, fw_vertrag_detail,
                            fw_wartungsfrist_neu, fw_wartungsfrist_loeschen,
                            fw_mahnwesen, fw_mahnung_erfassen, fw_mahnlauf, fw_bankkonten,
@@ -146,6 +146,7 @@ urlpatterns = [
     path('neu/mieterwechsel/', fw_mieterwechsel, name='fw_mieterwechsel'),
     path('neu/vermarktung/', fw_vermarktung, name='fw_vermarktung'),
     path('neu/objekte/<int:einheit_id>/ausschreiben/', fw_objekt_ausschreiben, name='fw_objekt_ausschreiben'),
+    path('neu/vermarktung/<int:pk>/expose/', fw_expose_pdf, name='fw_expose_pdf'),
     path('neu/vertraege/neu/', fw_vertrag_neu, name='fw_vertrag_neu'),
     path('neu/vertraege/neu/speichern/', fw_vertrag_neu_speichern, name='fw_vertrag_neu_speichern'),
     path('neu/liegenschaften/<int:pk>/', fw_liegenschaft_detail, name='fw_liegenschaft_detail'),

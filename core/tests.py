@@ -3483,6 +3483,40 @@ class LieferantenkontenTests(TestCase):
         self.assertEqual(len(r.context['rows']), 2)   # beide haben offene Posten
 
 
+class ExposeTests(TestCase):
+    """Exposé/Inserat-PDF für ausgeschriebene Objekte."""
+
+    def test_titel_zimmerwohnung(self):
+        from core.services.expose import objekt_titel
+        lg, e, m, v = _basis_objekte()
+        e.typ = 'whg'; e.zimmer = Decimal('3.5'); e.save()
+        self.assertEqual(objekt_titel(e), '3.5-Zimmer-Wohnung')
+        e.zimmer = Decimal('4.0'); e.save()
+        self.assertEqual(objekt_titel(e), '4-Zimmer-Wohnung')
+
+    def test_expose_pdf_view(self):
+        from crm.models import Verwaltung
+        Verwaltung.objects.create(firma='Verwaltung AG', strasse='Weg 1', plz='8000', ort='Zürich',
+                                  telefon='044 000 00 00', email='info@vw.ch')
+        lg, e, m, v = _basis_objekte()
+        e.typ = 'whg'; e.zimmer = Decimal('3.5'); e.zur_ausschreibung = True
+        e.ausschreibung_notiz = 'Helle Wohnung mit Balkon und Seesicht.'
+        e.save()
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/vermarktung/{e.id}/expose/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r.content.startswith(b'%PDF'))
+        self.assertGreater(len(r.content), 1200)
+
+    def test_expose_button_in_liste(self):
+        lg, e, m, v = _basis_objekte()
+        e.zur_ausschreibung = True; e.save()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/vermarktung/')
+        self.assertContains(r, f'/neu/vermarktung/{e.id}/expose/')
+
+
 class VerwaltungshonorarTests(TestCase):
     """Verwaltungshonorar: % der Mieterträge, Buchung Soll 4500 / Haben Bank."""
 

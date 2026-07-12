@@ -5000,6 +5000,21 @@ def fw_vermarktung(request):
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
+def fw_expose_pdf(request, pk):
+    """Exposé/Inserat (PDF) für ein Mietobjekt — Eckdaten, Mietzins, Kontakt."""
+    from django.http import HttpResponse
+    from crm.models import Verwaltung
+    from core.services.expose import generate_expose_pdf, objekt_titel
+    e = get_object_or_404(Einheit.objects.select_related('liegenschaft'), id=pk)
+    pdf = generate_expose_pdf(e, Verwaltung.objects.first())
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    lg = e.liegenschaft
+    fname = f"Expose_{(lg.strasse if lg else e.bezeichnung)}".replace(' ', '_').replace('/', '-')
+    resp['Content-Disposition'] = f'inline; filename="{fname}.pdf"'
+    return resp
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
 def fw_stub(request, titel, icon, text, nav=''):
     basis = _global_filter(request)
     return render(request, 'fw/stub.html', {**basis, 'nav': nav, 'titel': titel, 'icon': icon, 'text': text})
