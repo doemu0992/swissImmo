@@ -8,11 +8,21 @@ Bewusst als Kurzfassungen gehalten: massgeblich ist der amtliche Text; für den
 aktuellen Wortlaut (inkl. Revisionen) immer die Fedlex-Fundstelle konsultieren.
 """
 
-# Fedlex-Volltextsuche je Artikel (immer aktuell, führt auf den amtlichen Text).
+# Amtliche Fedlex-Fundstellen (ELI der konsolidierten Erlasse). Der Anker
+# #art_<nr> springt – wo von Fedlex unterstützt – direkt zum Artikel; sonst
+# landet der Link auf dem korrekten Erlass.
+_ELI = {
+    'OR':   'https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de',       # SR 220
+    'VMWG': 'https://www.fedlex.admin.ch/eli/cc/1990/835_835_835/de',     # SR 221.213.11
+    'ZGB':  'https://www.fedlex.admin.ch/eli/cc/24/233_245_233/de',       # SR 210
+}
 _FEDLEX_SUCHE = "https://www.fedlex.admin.ch/de/search?query={q}"
 
 
 def fedlex_url(gesetz, artikel):
+    base = _ELI.get(gesetz)
+    if base:
+        return f"{base}#art_{str(artikel).lower()}"
     from urllib.parse import quote
     return _FEDLEX_SUCHE.format(q=quote(f"Art. {artikel} {gesetz}"))
 
