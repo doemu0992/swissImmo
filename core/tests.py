@@ -3803,6 +3803,51 @@ class ObjektFotoTests(TestCase):
         self.assertTrue(r.content.startswith(b'%PDF'))
 
 
+class MieterspiegelTests(TestCase):
+    """Mieterspiegel (Rent Roll): Soll/Ist/Leerstand je Liegenschaft + PDF."""
+
+    def _setup(self):
+        from portfolio.models import Einheit
+        lg, e, m, v = _basis_objekte()   # e ist belegt (aktiver Vertrag v), Netto 1500 + NK 200
+        # zweite, leere Einheit
+        Einheit.objects.create(liegenschaft=lg, bezeichnung='2.5 Zi', typ='whg',
+                               nettomiete_aktuell=Decimal('1200'), nebenkosten_aktuell=Decimal('150'))
+        return lg
+
+    def test_berechnung_soll_ist_leerstand(self):
+        from core.services.mieterspiegel import berechne_mieterspiegel
+        from portfolio.models import Liegenschaft
+        lg = self._setup()
+        spiegel = berechne_mieterspiegel(list(Liegenschaft.objects.all()))
+        t = spiegel[0]['totals']
+        self.assertEqual(t['anzahl'], 2)
+        self.assertEqual(t['belegt'], 1)
+        self.assertEqual(t['leer'], 1)
+        self.assertEqual(t['soll_brutto'], Decimal('3050.00'))   # 1700 + 1350
+        self.assertEqual(t['ist_brutto'], Decimal('1700.00'))    # nur belegte Einheit
+        self.assertEqual(t['leer_fr'], Decimal('1350.00'))
+        self.assertEqual(t['leerstandsquote'], 50.0)
+
+    def test_view_und_gesamt(self):
+        lg = self._setup()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/mieterspiegel/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Mieterspiegel')
+        self.assertContains(r, 'Leerstand')
+        self.assertEqual(r.context['gesamt']['ist_brutto'], Decimal('1700.00'))
+
+    def test_pdf(self):
+        from crm.models import Verwaltung
+        Verwaltung.objects.create(firma='VW AG', strasse='W 1', plz='8000', ort='ZH')
+        self._setup()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/mieterspiegel/?pdf=1')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r.content.startswith(b'%PDF'))
+
+
 class PortalFeedTests(TestCase):
     """Token-gesicherter Vermarktungs-Objekt-Feed für Immobilien-Portale."""
 
