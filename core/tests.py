@@ -3412,3 +3412,63 @@ class EigentuemerKontokorrentTests(TestCase):
         self.assertContains(r, 'Kontokorrent Eigentümer')
         self.assertContains(r, 'Eigentum AG')
         self.assertContains(r, 'Auszahlung erfassen')
+
+
+class LieferantenkontenTests(TestCase):
+    """Lieferantenkonten (Kreditoren): pro Lieferant offener Betrag + Kontoblatt."""
+
+    def _setup(self):
+        from finance.models import KreditorenRechnung, KreditorenZahlung
+        from finance.booking import konto as _k
+        lg, e, m, v = _basis_objekte()
+        # Sanitär AG: 2 Rechnungen (800 offen + 300 bezahlt via Zahlung)
+        KreditorenRechnung.objects.create(lieferant='Sanitär AG', betrag=Decimal('800'),
+                                          status='freigegeben', liegenschaft=lg, konto=_k('4000'),
+                                          datum=date(2025, 1, 5))
+        k2 = KreditorenRechnung.objects.create(lieferant='Sanitär AG', betrag=Decimal('300'),
+                                               status='bezahlt', liegenschaft=lg, konto=_k('4000'),
+                                               datum=date(2025, 1, 10))
+        KreditorenZahlung.objects.create(kreditor=k2, betrag=Decimal('300'), datum=date(2025, 1, 20),
+                                         konto=_k('1020'), status='verbucht', bemerkung='Zahlung R2')
+        # Elektro AG: 1 offene Rechnung
+        KreditorenRechnung.objects.create(lieferant='Elektro AG', betrag=Decimal('500'),
+                                          status='neu', liegenschaft=lg, konto=_k('4000'),
+                                          datum=date(2025, 1, 8))
+        return lg
+
+    def test_uebersicht_gruppiert_und_saldo(self):
+        lg = self._setup()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/lieferantenkonten/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Sanitär AG')
+        self.assertContains(r, 'Elektro AG')
+        # total offen = 800 (Sanitär Rest) + 500 (Elektro) = 1300
+        self.assertEqual(r.context['total_offen'], Decimal('1300.00'))
+        self.assertEqual(r.context['offen_n'], 2)
+        # Sanitär-Zeile: 2 Rechnungen, offen 800
+        san = next(g for g in r.context['rows'] if g['name'] == 'Sanitär AG')
+        self.assertEqual(san['anzahl'], 2)
+        self.assertEqual(san['offen'], Decimal('800.00'))
+        self.assertEqual(san['volumen'], Decimal('1100.00'))
+
+    def test_kontoblatt_bewegungen_und_saldo(self):
+        lg = self._setup()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/lieferantenkonto/?name=Sanit%C3%A4r+AG')
+        self.assertEqual(r.status_code, 200)
+        # 2 Rechnungen (800+300) belastung, 1 Zahlung 300 → Endsaldo 800
+        self.assertEqual(r.context['total_belastung'], Decimal('1100.00'))
+        self.assertEqual(r.context['total_zahlung'], Decimal('300.00'))
+        self.assertEqual(r.context['endsaldo'], Decimal('800.00'))
+        # laufender Saldo der letzten Bewegung = Endsaldo
+        self.assertEqual(r.context['bewegungen'][-1]['saldo'], Decimal('800.00'))
+        # 1 offener Posten (die 800er Rechnung)
+        self.assertEqual(len(r.context['op_rows']), 1)
+        self.assertEqual(r.context['op_total'], Decimal('800.00'))
+
+    def test_filter_nur_offen(self):
+        lg = self._setup()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/lieferantenkonten/?filter=offen')
+        self.assertEqual(len(r.context['rows']), 2)   # beide haben offene Posten

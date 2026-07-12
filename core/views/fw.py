@@ -2068,6 +2068,95 @@ def fw_mieterkonten(request):
     })
 
 
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_lieferantenkonten(request):
+    """Übersicht Lieferantenkonten (Kreditoren): pro Lieferant offener Betrag
+    (was die Verwaltung dem Lieferanten noch schuldet). Einstieg ins Kontoblatt."""
+    from finance.models import KreditorenRechnung
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    filter_op = request.GET.get('filter') == 'offen'
+
+    kred = KreditorenRechnung.objects.exclude(status='storniert')
+    if aktive_lg:
+        kred = kred.filter(liegenschaft=aktive_lg)
+
+    gruppen = {}
+    for k in kred:
+        name = (k.lieferant or '').strip() or '— ohne Lieferant —'
+        g = gruppen.setdefault(name, {'name': name, 'anzahl': 0, 'offen': Decimal('0.00'),
+                                      'volumen': Decimal('0.00')})
+        g['anzahl'] += 1
+        g['offen'] += k.offener_betrag
+        g['volumen'] += (k.betrag or Decimal('0.00'))
+
+    rows = list(gruppen.values())
+    total_offen = sum((g['offen'] for g in rows), Decimal('0.00'))
+    if filter_op:
+        rows = [g for g in rows if g['offen'] > 0]
+    rows.sort(key=lambda g: (-g['offen'], g['name'].lower()))
+
+    return render(request, 'fw/lieferantenkonten.html', {
+        **basis, 'nav': 'lieferantenkonten', 'rows': rows,
+        'total_offen': total_offen, 'anzahl': len(gruppen),
+        'offen_n': sum(1 for g in gruppen.values() if g['offen'] > 0),
+        'filter_op': filter_op,
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_lieferantenkonto(request):
+    """Kontoblatt eines Lieferanten: alle Rechnungen (Belastung) und Zahlungen
+    (Ausgang) chronologisch mit laufendem offenem Saldo. Lieferant via ?name=."""
+    from finance.models import KreditorenRechnung, KreditorenZahlung
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.now().date()
+    name = (request.GET.get('name') or '').strip()
+
+    kred = KreditorenRechnung.objects.exclude(status='storniert')
+    if aktive_lg:
+        kred = kred.filter(liegenschaft=aktive_lg)
+    if name == '— ohne Lieferant —':
+        kred = kred.filter(Q(lieferant='') | Q(lieferant__isnull=True))
+    else:
+        kred = kred.filter(lieferant=name)
+    kred = list(kred.select_related('liegenschaft').prefetch_related('zahlungen'))
+
+    bewegungen = []
+    for k in kred:
+        d = k.datum or k.faellig_am or heute
+        bewegungen.append({'datum': d, 'text': f"Rechnung{(' ' + k.referenz) if k.referenz else ''}",
+                           'belastung': k.betrag or Decimal('0.00'), 'zahlung': Decimal('0.00'), 'sort': 0})
+        for z in k.zahlungen.all():
+            if z.status != 'verbucht':
+                continue
+            bewegungen.append({'datum': z.datum, 'text': z.bemerkung or 'Zahlung',
+                               'belastung': Decimal('0.00'), 'zahlung': z.betrag or Decimal('0.00'), 'sort': 1})
+    bewegungen.sort(key=lambda b: (b['datum'], b['sort']))
+    saldo = Decimal('0.00')
+    for b in bewegungen:
+        saldo += b['belastung'] - b['zahlung']
+        b['saldo'] = saldo
+
+    total_belastung = sum((b['belastung'] for b in bewegungen), Decimal('0.00'))
+    total_zahlung = sum((b['zahlung'] for b in bewegungen), Decimal('0.00'))
+
+    # Offene Posten (unbezahlte/teilbezahlte Rechnungen)
+    op = [{'k': k, 'offen': k.offener_betrag, 'faellig': k.faellig_am or k.datum,
+           'ueberfaellig': bool((k.faellig_am or k.datum) and (k.faellig_am or k.datum) < heute)}
+          for k in kred if k.offener_betrag > 0]
+    op.sort(key=lambda o: (o['faellig'] or heute))
+
+    return render(request, 'fw/lieferantenkonto.html', {
+        **basis, 'nav': 'lieferantenkonten', 'name': name,
+        'bewegungen': bewegungen, 'endsaldo': saldo,
+        'total_belastung': total_belastung, 'total_zahlung': total_zahlung,
+        'op_rows': op, 'op_total': sum((o['offen'] for o in op), Decimal('0.00')),
+        'rechnungen_n': len(kred),
+    })
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_kommunikation_neu(request):
     """Schnelle Telefonnotiz / Kommunikation zu einem Kontakt erfassen."""
