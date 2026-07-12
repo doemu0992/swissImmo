@@ -30,6 +30,9 @@ class Verwaltung(models.Model):
     mwst_uid = models.CharField("MWST-Nummer (CHE)", max_length=20, blank=True, default='')
     mwst_methode = models.CharField("MWST-Methode", max_length=10, choices=MWST_METHODE_CHOICES, default='effektiv')
     saldosteuersatz = models.DecimalField("Saldosteuersatz (%)", max_digits=4, decimal_places=1, default=0)
+    # Vermarktungs-Portale: Token für den öffentlichen Objekt-Feed (Homegate,
+    # ImmoScout24/SMG, Flatfox etc. via Feed-URL/Middleware). Leer = Feed deaktiviert.
+    portal_feed_token = models.CharField("Portal-Feed-Token", max_length=64, blank=True, default='')
     # Abonnement / Preisplan
     ABO_CHOICES = [('start', 'Start'), ('pro', 'Pro'), ('premium', 'Premium')]
     abo_plan = models.CharField("Abo-Plan", max_length=10, choices=ABO_CHOICES, default='pro')

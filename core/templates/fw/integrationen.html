@@ -42,5 +42,57 @@
     {% endfor %}
 </div>
 
-<p class="text-xs text-slate-400 mt-6 max-w-4xl">Weitere Integrationen sind geplant: Inserate & Bewerbungen (Flatfox/ImmoScout24), Buchhaltungs-Export (Bexio/Abacus), SMS-Erinnerungen.</p>
+<!-- Vermarktungs-Portale (Objekt-Feed) -->
+<div class="max-w-4xl mt-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <div class="flex items-start gap-4">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 {% if portal_token %}bg-amber-50 text-amber-600{% else %}bg-slate-100 text-slate-400{% endif %}">
+                <i class="fa-solid fa-bullhorn text-lg"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                    <h3 class="font-bold text-slate-900 text-sm">Immobilien-Portale — Objekt-Feed</h3>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide {% if portal_token %}bg-emerald-50 text-emerald-600{% else %}bg-slate-100 text-slate-400{% endif %}">
+                        {% if portal_token %}<i class="fa-solid fa-circle-check mr-0.5"></i>Aktiv{% else %}Deaktiviert{% endif %}
+                    </span>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">Stellt alle zur Ausschreibung markierten Objekte ({{ portal_ausgeschrieben_n }}) als standardisierten, token-gesicherten Feed (JSON/CSV) bereit — abrufbar von Portalen wie <span class="font-medium">Homegate, ImmoScout24 (SMG), Flatfox</span> bzw. deren Import/Middleware.</p>
+
+                {% if portal_token %}
+                <div class="mt-3">
+                    <label class="block text-[11px] font-semibold text-slate-500 mb-1 uppercase tracking-wide">Feed-URL (JSON)</label>
+                    <div class="flex items-center gap-2">
+                        <input id="feedurl" readonly value="{{ request.scheme }}://{{ request.get_host }}{{ portal_feed_pfad }}"
+                               class="flex-1 bg-slate-100 rounded-lg text-xs px-3 py-2 font-mono text-slate-700">
+                        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feedurl').value)"
+                                class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-2 rounded-lg shrink-0"><i class="fa-solid fa-copy mr-1"></i>Kopieren</button>
+                    </div>
+                    <div class="flex items-center gap-3 mt-3">
+                        <a href="{{ portal_feed_pfad }}" target="_blank" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-code mr-1"></i>JSON ansehen</a>
+                        <a href="{{ portal_feed_pfad }}&format=csv" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-file-csv mr-1"></i>CSV herunterladen</a>
+                    </div>
+                    <div class="flex items-center gap-2 mt-4">
+                        <form method="post" action="/neu/integrationen/portal-token/" onsubmit="return confirm('Neuen Token erzeugen? Die alte Feed-URL wird ungültig.');">
+                            {% csrf_token %}
+                            <button class="text-xs font-semibold text-slate-500 border border-slate-200 hover:bg-slate-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-rotate mr-1"></i>Token neu erzeugen</button>
+                        </form>
+                        <form method="post" action="/neu/integrationen/portal-token/" onsubmit="return confirm('Feed deaktivieren?');">
+                            {% csrf_token %}<input type="hidden" name="aktion" value="entfernen">
+                            <button class="text-xs font-semibold text-rose-600 border border-rose-200 hover:bg-rose-50 px-3 py-1.5 rounded-lg">Deaktivieren</button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <form method="post" action="/neu/integrationen/portal-token/" class="mt-3">
+                    {% csrf_token %}
+                    <button class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-key mr-1"></i>Feed aktivieren (Token erzeugen)</button>
+                </form>
+                {% endif %}
+                <p class="text-[11px] text-slate-400 mt-3">Der Token schützt die URL — teile sie nur mit dem Portal/der Middleware. Bei Verdacht auf Missbrauch Token neu erzeugen.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p class="text-xs text-slate-400 mt-6 max-w-4xl">Der Objekt-Feed ist der neutrale Standard-Ausgang; die konkrete Portal-Anbindung (Homegate/ImmoScout24 via IDX, Flatfox via Import) erfolgt über den jeweiligen Portal-Import bzw. eine Middleware, die diesen Feed liest.</p>
 {% endblock %}

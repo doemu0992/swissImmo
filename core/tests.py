@@ -3745,6 +3745,69 @@ class AuftragPdfTests(TestCase):
         self.assertContains(r, f'/neu/auftrag/{a.id}/pdf/')
 
 
+class PortalFeedTests(TestCase):
+    """Token-gesicherter Vermarktungs-Objekt-Feed für Immobilien-Portale."""
+
+    def _objekt(self):
+        lg, e, m, v = _basis_objekte()
+        e.typ = 'whg'; e.zimmer = Decimal('3.5'); e.zur_ausschreibung = True
+        e.ausschreibung_notiz = 'Helle Wohnung'
+        e.save()
+        return lg, e
+
+    def test_feed_ohne_token_verboten(self):
+        from crm.models import Verwaltung
+        Verwaltung.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='geheim123')
+        self._objekt()
+        c = Client()   # kein Login nötig (öffentlich, aber token-gated)
+        self.assertEqual(c.get('/neu/vermarktung/feed.json').status_code, 403)
+        self.assertEqual(c.get('/neu/vermarktung/feed.json?token=falsch').status_code, 403)
+
+    def test_feed_json_mit_token(self):
+        from crm.models import Verwaltung
+        Verwaltung.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='geheim123')
+        lg, e = self._objekt()
+        c = Client()
+        r = c.get('/neu/vermarktung/feed.json?token=geheim123')
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        self.assertEqual(data['anzahl'], 1)
+        o = data['objekte'][0]
+        self.assertEqual(o['typ'], 'apartment')
+        self.assertEqual(o['zimmer'], 3.5)
+        self.assertEqual(o['miete']['brutto'], 1700.0)
+        self.assertIn('/neu/vermarktung/', o['expose_url'])
+
+    def test_feed_csv(self):
+        from crm.models import Verwaltung
+        Verwaltung.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='t')
+        self._objekt()
+        c = Client()
+        r = c.get('/neu/vermarktung/feed.json?token=t&format=csv')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('text/csv', r['Content-Type'])
+        self.assertIn(b'referenz;typ', r.content)
+
+    def test_token_erzeugen_und_entfernen(self):
+        from crm.models import Verwaltung
+        Verwaltung.objects.create(firma='VW AG', strasse='', plz='', ort='')
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post('/neu/integrationen/portal-token/')
+        vw = Verwaltung.objects.first()
+        self.assertTrue(vw.portal_feed_token)
+        c.post('/neu/integrationen/portal-token/', {'aktion': 'entfernen'})
+        vw.refresh_from_db()
+        self.assertEqual(vw.portal_feed_token, '')
+
+    def test_integrationen_zeigt_portal_karte(self):
+        from crm.models import Verwaltung
+        Verwaltung.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='abc')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/integrationen/')
+        self.assertContains(r, 'Immobilien-Portale')
+        self.assertContains(r, 'feed.json')
+
+
 class VerwaltungshonorarTests(TestCase):
     """Verwaltungshonorar: % der Mieterträge, Buchung Soll 4500 / Haben Bank."""
 

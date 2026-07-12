@@ -5268,7 +5268,79 @@ def fw_integrationen(request):
          'detail': 'Nutzbar im Bereich Bankabgleich.',
          'aktion': 'bank_link'},
     ]
-    return render(request, 'fw/integrationen.html', {**basis, 'nav': 'integrationen', 'integrationen': integrationen})
+    # Vermarktungs-Portale (Objekt-Feed)
+    from crm.models import Verwaltung
+    from portfolio.models import Einheit
+    vw = Verwaltung.objects.first()
+    token = (vw.portal_feed_token if vw else '') or ''
+    feed_pfad = f"/neu/vermarktung/feed.json?token={token}" if token else ''
+    ausgeschrieben_n = Einheit.objects.filter(zur_ausschreibung=True).count()
+    return render(request, 'fw/integrationen.html', {
+        **basis, 'nav': 'integrationen', 'integrationen': integrationen,
+        'portal_token': token, 'portal_feed_pfad': feed_pfad,
+        'portal_ausgeschrieben_n': ausgeschrieben_n,
+    })
+
+
+def fw_vermarktung_feed(request):
+    """Öffentlicher, token-gesicherter Objekt-Feed für Immobilien-Portale
+    (Homegate, ImmoScout24/SMG, Flatfox …). ?format=csv für CSV, sonst JSON.
+
+    Kein Login — die Absicherung erfolgt über ?token= (Verwaltung.portal_feed_token).
+    """
+    from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
+    from crm.models import Verwaltung
+    from core.services.portal_feed import feed_objekte, feed_csv_rows
+    import csv as _csv
+    import io
+
+    vw = Verwaltung.objects.first()
+    erwartet = (vw.portal_feed_token if vw else '') or ''
+    token = request.GET.get('token', '')
+    if not erwartet or token != erwartet:
+        return HttpResponseForbidden("Ungültiger oder fehlender Feed-Token.")
+
+    base = f"{request.scheme}://{request.get_host()}"
+    objekte = feed_objekte(base_url=base)
+
+    if request.GET.get('format') == 'csv':
+        buf = io.StringIO()
+        w = _csv.writer(buf, delimiter=';')
+        for row in feed_csv_rows(objekte):
+            w.writerow(row)
+        resp = HttpResponse(buf.getvalue(), content_type='text/csv; charset=utf-8')
+        resp['Content-Disposition'] = 'attachment; filename="vermarktung_feed.csv"'
+        return resp
+
+    return JsonResponse({
+        'anbieter': (vw.firma if vw else ''),
+        'anzahl': len(objekte),
+        'objekte': objekte,
+    }, json_dumps_params={'ensure_ascii': False})
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_integration_portal_token(request):
+    """Erzeugt/rotiert oder entfernt den Portal-Feed-Token."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Verwaltung
+    from core.auth import log_aktion
+    import secrets
+    if request.method != 'POST':
+        return redirect('/neu/integrationen/')
+    vw = Verwaltung.objects.first() or Verwaltung.objects.create(firma='Meine Verwaltung', strasse='', plz='', ort='')
+    if request.POST.get('aktion') == 'entfernen':
+        vw.portal_feed_token = ''
+        vw.save(update_fields=['portal_feed_token'])
+        log_aktion(request, "Portal-Feed deaktiviert", vw.firma, '')
+        messages.success(request, "Portal-Feed deaktiviert (Token entfernt).")
+    else:
+        vw.portal_feed_token = secrets.token_urlsafe(24)
+        vw.save(update_fields=['portal_feed_token'])
+        log_aktion(request, "Portal-Feed-Token erzeugt", vw.firma, '')
+        messages.success(request, "✅ Neuer Portal-Feed-Token erzeugt.")
+    return redirect('/neu/integrationen/')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
