@@ -93,7 +93,7 @@ from core.views.fw import (fw_dashboard, fw_finanzen, fw_debitoren, fw_debitor_q
                            fw_eigentuemer_kontokorrent, fw_eigentuemer_auszahlung, fw_eigentuemer_honorar,
                            fw_benutzer_form, fw_benutzer_loeschen,
                            fw_vorlage_form, fw_vorlage_loeschen, fw_integration_test_email,
-                           fw_bewerbungen, fw_bewerbung_detail, fw_bewerbung_status,
+                           fw_bewerbungen, fw_bewerber_vergleich, fw_bewerbung_detail, fw_bewerbung_status,
                            fw_bewerbung_zu_vertrag,
                            fw_pendenzen, fw_pendenz_neu, fw_pendenz_toggle, fw_pendenz_loeschen, fw_fristen,
                            fw_fristen_ical, fristen_ical_feed)
@@ -218,6 +218,7 @@ urlpatterns = [
     path('neu/pendenzen/<int:pk>/toggle/', fw_pendenz_toggle, name='fw_pendenz_toggle'),
     path('neu/pendenzen/<int:pk>/loeschen/', fw_pendenz_loeschen, name='fw_pendenz_loeschen'),
     path('neu/bewerbungen/', fw_bewerbungen, name='fw_bewerbungen'),
+    path('neu/vermarktung/<int:einheit_id>/bewerber/', fw_bewerber_vergleich, name='fw_bewerber_vergleich'),
     path('neu/bewerbungen/<int:pk>/', fw_bewerbung_detail, name='fw_bewerbung_detail'),
     path('neu/bewerbungen/<int:pk>/status/', fw_bewerbung_status, name='fw_bewerbung_status'),
     path('neu/bewerbungen/<int:pk>/vertrag/', fw_bewerbung_zu_vertrag, name='fw_bewerbung_zu_vertrag'),

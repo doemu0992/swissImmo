@@ -3517,6 +3517,65 @@ class ExposeTests(TestCase):
         self.assertContains(r, f'/neu/vermarktung/{e.id}/expose/')
 
 
+class BewerberScoringTests(TestCase):
+    """Bewerber-Vergleich mit Eignungs-Score (Tragbarkeit/Betreibungen/Anstellung/Doku)."""
+
+    def _bewerbung(self, e, **kw):
+        from mietprozess.models import Mietbewerbung
+        defaults = dict(
+            einheit=e, vorname='Anna', nachname='Muster', geburtsdatum=date(1990, 1, 1),
+            mobilnummer='079 000 00 00', email='anna@example.ch', beruf='Kauffrau',
+            einkommen_jahr="90'000", erwerbsstatus='angestellt', ist_unbefristet=True,
+            hat_betreibungen=False, anzahl_erwachsene=1, status='geprueft')
+        defaults.update(kw)
+        return Mietbewerbung.objects.create(**defaults)
+
+    def test_parse_einkommen(self):
+        from core.services.bewerber_scoring import parse_einkommen
+        self.assertEqual(parse_einkommen("90'000"), 90000)
+        self.assertEqual(parse_einkommen("80'000 – 100'000"), 80000)   # untere Grenze
+        self.assertEqual(parse_einkommen("CHF 72000"), 72000)
+        self.assertIsNone(parse_einkommen("keine Angabe"))
+
+    def test_scoring_guter_bewerber(self):
+        from core.services.bewerber_scoring import bewerte_bewerbung
+        lg, e, m, v = _basis_objekte()   # Brutto 1700/Mt → 20'400/Jahr
+        e.betreibungsauszug = 'x.pdf'; e.save()  # egal
+        b = self._bewerbung(e, einkommen_jahr="90000")  # 90'000 / 20'400 = 4.4× → gut
+        r = bewerte_bewerbung(b, Decimal('1700'))
+        self.assertEqual(r['score'], 45 + 25 + 15 + 0)   # keine Dokumente hochgeladen
+        self.assertEqual(r['ampel'], 'gut')
+
+    def test_scoring_betreibungen_und_tragbarkeit(self):
+        from core.services.bewerber_scoring import bewerte_bewerbung
+        lg, e, m, v = _basis_objekte()
+        b = self._bewerbung(e, einkommen_jahr="30000", hat_betreibungen=True)  # 30'000/20'400=1.47× → 0 Pkt
+        r = bewerte_bewerbung(b, Decimal('1700'))
+        # Tragbarkeit 0 + Betreibungen 0 + Anstellung 15 + Doku 0 = 15
+        self.assertEqual(r['score'], 15)
+        self.assertEqual(r['ampel'], 'schlecht')
+
+    def test_vergleich_view_sortiert_nach_score(self):
+        lg, e, m, v = _basis_objekte()
+        self._bewerbung(e, vorname='Schwach', einkommen_jahr="28000", hat_betreibungen=True)
+        self._bewerbung(e, vorname='Stark', einkommen_jahr="120000")
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/vermarktung/{e.id}/bewerber/')
+        self.assertEqual(r.status_code, 200)
+        namen = [k['b'].vorname for k in r.context['kandidaten']]
+        self.assertEqual(namen, ['Stark', 'Schwach'])   # bester zuerst
+
+    def test_abgelehnte_ausgeblendet(self):
+        lg, e, m, v = _basis_objekte()
+        self._bewerbung(e, vorname='Aktiv')
+        self._bewerbung(e, vorname='Weg', status='abgelehnt')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/vermarktung/{e.id}/bewerber/')
+        self.assertEqual(len(r.context['kandidaten']), 1)
+        r2 = c.get(f'/neu/vermarktung/{e.id}/bewerber/?alle=1')
+        self.assertEqual(len(r2.context['kandidaten']), 2)
+
+
 class VerwaltungshonorarTests(TestCase):
     """Verwaltungshonorar: % der Mieterträge, Buchung Soll 4500 / Haben Bank."""
 

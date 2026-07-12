@@ -6316,6 +6316,46 @@ def fw_bewerbungen(request):
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
+def fw_bewerber_vergleich(request, einheit_id):
+    """Vergleicht alle Bewerber eines Objekts mit Eignungs-Score (Tragbarkeit,
+    Betreibungen, Anstellung, Unterlagen) als Entscheidungshilfe für die Mieterwahl."""
+    from mietprozess.models import Mietbewerbung
+    from core.services.bewerber_scoring import bewerte_bewerbung
+    e = get_object_or_404(Einheit.objects.select_related('liegenschaft'), id=einheit_id)
+    basis = _global_filter(request)
+    brutto_monat = (e.nettomiete_aktuell or Decimal('0')) + (e.nebenkosten_aktuell or Decimal('0'))
+
+    qs = Mietbewerbung.objects.filter(einheit=e).order_by('-erstellt_am')
+    mit_abgelehnt = request.GET.get('alle') == '1'
+    if not mit_abgelehnt:
+        qs = qs.exclude(status='abgelehnt')
+
+    kandidaten = []
+    for b in qs:
+        bewertung = bewerte_bewerbung(b, brutto_monat)
+        s_label, s_cls = dict((k, (l, c)) for k, l, c in BEWERBUNG_SPALTEN).get(b.status, (b.status, 'bg-slate-100 text-slate-500'))
+        kandidaten.append({
+            'b': b, 'name': f"{b.vorname} {b.nachname}",
+            'haushalt': b.anzahl_erwachsene + b.anzahl_kinder,
+            'bezug': b.gewuenschter_bezugstermin,
+            'haustiere': b.haustiere, 'status': b.status,
+            's_label': s_label, 's_cls': s_cls,
+            **bewertung,
+        })
+    kandidaten.sort(key=lambda k: -k['score'])
+    # Indikator-Spaltentitel aus dem ersten Kandidaten (fixe Reihenfolge)
+    indikator_labels = [i['label'] for i in kandidaten[0]['indikatoren']] if kandidaten else []
+
+    return render(request, 'fw/bewerber_vergleich.html', {
+        **basis, 'nav': 'vermarktung', 'e': e,
+        'objekt': f"{e.liegenschaft.strasse}, {e.liegenschaft.ort}" if e.liegenschaft_id else e.bezeichnung,
+        'brutto_monat': brutto_monat, 'jahresmiete': brutto_monat * 12,
+        'kandidaten': kandidaten, 'indikator_labels': indikator_labels,
+        'mit_abgelehnt': mit_abgelehnt,
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
 def fw_bewerbung_detail(request, pk):
     from mietprozess.models import Mietbewerbung
     b = get_object_or_404(Mietbewerbung.objects.select_related('einheit__liegenschaft'), id=pk)

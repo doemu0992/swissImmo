@@ -1,0 +1,74 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Bewerber-Vergleich — swissImmo{% endblock %}
+{% block content %}
+<div class="text-xs text-slate-400 mb-3">
+    <a href="/neu/vermarktung/{{ lg_query }}" class="hover:text-indigo-600">Vermarktung</a>
+    <i class="fa-solid fa-chevron-right text-[8px] mx-1"></i>Bewerber-Vergleich
+</div>
+
+<div class="flex items-start justify-between flex-wrap gap-3 mb-1">
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Bewerber-Vergleich</h1>
+        <p class="text-sm text-slate-500 mt-1">{{ objekt }} · {{ e.bezeichnung }} · Bruttomiete CHF {{ brutto_monat|chf }}/Mt. ({{ jahresmiete|chf }}/Jahr)</p>
+    </div>
+    <div class="flex items-center gap-2">
+        <a href="/neu/vermarktung/{{ e.id }}/expose/" target="_blank" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-file-pdf mr-1.5"></i>Exposé</a>
+        <a href="?{% if not mit_abgelehnt %}alle=1{% endif %}{% if aktive_lg %}{% if not mit_abgelehnt %}&{% endif %}lg={{ aktive_lg.id }}{% endif %}" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 text-sm font-semibold px-4 py-2 rounded-lg">
+            {% if mit_abgelehnt %}Abgelehnte ausblenden{% else %}Abgelehnte einblenden{% endif %}
+        </a>
+    </div>
+</div>
+
+<p class="text-xs text-slate-400 mb-5 max-w-3xl">Der Eignungs-Score (0–100) gewichtet Tragbarkeit (Drittel-Regel: Jahreseinkommen ≥ 3× Jahresmiete), Betreibungen, Anstellung und Vollständigkeit der Unterlagen. Er ist eine Entscheidungshilfe — keine automatische Zu- oder Absage.</p>
+
+{% if kandidaten %}
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden overflow-x-auto">
+    <table class="w-full text-sm min-w-[820px]">
+        <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-100">
+                <th class="px-4 py-3 font-semibold">Rang</th>
+                <th class="px-4 py-3 font-semibold">Bewerber</th>
+                <th class="px-4 py-3 font-semibold text-center">Score</th>
+                {% for label in indikator_labels %}<th class="px-4 py-3 font-semibold">{{ label }}</th>{% endfor %}
+                <th class="px-4 py-3 font-semibold">Haushalt</th>
+                <th class="px-4 py-3"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+        {% for k in kandidaten %}
+            <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-bold text-slate-400">{{ forloop.counter }}</td>
+                <td class="px-4 py-3">
+                    <a href="/neu/bewerbungen/{{ k.b.id }}/" class="font-semibold text-slate-900 hover:text-indigo-600">{{ k.name }}</a>
+                    <div class="mt-0.5"><span class="text-[10px] font-semibold px-1.5 py-0.5 rounded {{ k.s_cls }}">{{ k.s_label }}</span></div>
+                </td>
+                <td class="px-4 py-3 text-center">
+                    <span class="inline-flex items-center justify-center w-11 h-11 rounded-full font-bold text-white
+                        {% if k.ampel == 'gut' %}bg-emerald-500{% elif k.ampel == 'mittel' %}bg-amber-500{% else %}bg-rose-500{% endif %}">{{ k.score }}</span>
+                </td>
+                {% for ind in k.indikatoren %}
+                <td class="px-4 py-3">
+                    <span class="inline-flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full shrink-0 {% if ind.ampel == 'gut' %}bg-emerald-500{% elif ind.ampel == 'mittel' %}bg-amber-500{% else %}bg-rose-500{% endif %}"></span>
+                        <span class="text-slate-700 text-[13px]">{{ ind.wert }}</span>
+                    </span>
+                </td>
+                {% endfor %}
+                <td class="px-4 py-3 text-slate-600 text-[13px]">
+                    {{ k.haushalt }} Pers.{% if k.haustiere %} · <i class="fa-solid fa-paw text-slate-400" title="Haustiere"></i>{% endif %}
+                    {% if k.bezug %}<div class="text-xs text-slate-400">ab {{ k.bezug|date:"d.m.Y" }}</div>{% endif %}
+                </td>
+                <td class="px-4 py-3 text-right"><a href="/neu/bewerbungen/{{ k.b.id }}/" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold">Details ›</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="bg-white rounded-xl border border-slate-200 p-10 text-center text-slate-400">
+    <i class="fa-solid fa-users text-2xl mb-2 text-slate-300"></i>
+    <p class="text-sm">Noch keine Bewerbungen für dieses Objekt.</p>
+</div>
+{% endif %}
+{% endblock %}
