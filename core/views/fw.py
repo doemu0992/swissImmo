@@ -2031,6 +2031,7 @@ def _finde_dubletten(typ, vorname, nachname, firmen_name, email, plz, exclude_id
 KRED_PILL = {
     'neu':         ('Neu / Prüfen', 'bg-amber-50 text-amber-700'),
     'freigegeben': ('Freigegeben',  'bg-sky-50 text-sky-700'),
+    'in_zahlung':  ('In Zahlung',   'bg-indigo-50 text-indigo-700'),
     'bezahlt':     ('Bezahlt',      'bg-emerald-50 text-emerald-700'),
     'storniert':   ('Storniert',    'bg-slate-100 text-slate-500'),
 }
@@ -2062,7 +2063,7 @@ def fw_kreditoren(request):
         label, cls = KRED_PILL.get(k.status, (k.status, 'bg-slate-100 text-slate-500'))
         betrag = k.betrag or Decimal('0.00')
         faellig = k.faellig_am
-        if k.status == 'freigegeben':
+        if k.status in ('freigegeben', 'in_zahlung'):
             total_offen += betrag
         elif k.status == 'neu':
             total_neu += betrag
@@ -2075,9 +2076,10 @@ def fw_kreditoren(request):
             'objekt': f"{k.liegenschaft.strasse}, {k.liegenschaft.ort}" if k.liegenschaft else '—',
             'konto': f"{k.konto.nummer} {k.konto.bezeichnung}" if k.konto else None,
             'beleg_url': k.beleg_scan.url if k.beleg_scan else None,
-            'kann_bezahlen': k.status == 'freigegeben',
+            'kann_bezahlen': k.status in ('freigegeben', 'in_zahlung'),
+            'in_zahlung': k.status == 'in_zahlung',
             'offen_wv': k.offen_weiterzuverrechnen,
-            'kann_weiterverrechnen': (k.status in ('freigegeben', 'bezahlt')
+            'kann_weiterverrechnen': (k.status in ('freigegeben', 'in_zahlung', 'bezahlt')
                                       and k.offen_weiterzuverrechnen > 0),
         })
 
@@ -2139,7 +2141,17 @@ def fw_kreditoren_pain001(request):
         messages.error(request, "Keine zahlbaren Rechnungen (fehlende IBAN/Betrag).")
         return redirect('/neu/kreditoren/?status=freigegeben')
 
-    log_aktion(request, "pain.001 erzeugt", msg_id, f"{anzahl} Zahlungen, CHF {summe}")
+    # Enthaltene Rechnungen auf "in Zahlung" setzen → tauchen im nächsten
+    # Zahllauf NICHT wieder auf (Doppelzahlungsschutz). Bestätigung via "Bezahlen".
+    n_markiert = 0
+    for r in rechnungen:
+        if (r.iban or '').strip() and (r.betrag or 0) > 0:
+            r.status = 'in_zahlung'
+            r.save(update_fields=['status'])
+            n_markiert += 1
+
+    log_aktion(request, "pain.001 erzeugt", msg_id,
+               f"{anzahl} Zahlungen, CHF {summe} · {n_markiert} auf 'in Zahlung'")
     resp = HttpResponse(xml, content_type='application/xml')
     resp['Content-Disposition'] = f'attachment; filename="{msg_id}.xml"'
     return resp
@@ -2161,8 +2173,8 @@ def fw_kreditor_bezahlen(request):
     if k.status == 'bezahlt':
         messages.error(request, "Diese Rechnung ist bereits bezahlt.")
         return redirect('fw_kreditoren')
-    if k.status != 'freigegeben':
-        messages.error(request, "Nur freigegebene Rechnungen können bezahlt werden.")
+    if k.status not in ('freigegeben', 'in_zahlung'):
+        messages.error(request, "Nur freigegebene oder in Zahlung stehende Rechnungen können bezahlt werden.")
         return redirect('fw_kreditoren')
 
     with transaction.atomic():
@@ -2176,6 +2188,29 @@ def fw_kreditor_bezahlen(request):
     log_aktion(request, "Kreditorenrechnung bezahlt (Bankabgleich)",
                k.lieferant or f"Rechnung #{k.id}", f"CHF {k.betrag}")
     messages.success(request, f"✅ CHF {k.betrag} an {k.lieferant or 'Lieferant'} bezahlt.")
+    ziel = '/neu/kreditoren/'
+    if lg := request.POST.get('lg'):
+        ziel += f'?lg={lg}'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_kreditor_zahlung_zuruecksetzen(request, pk):
+    """Setzt eine 'in Zahlung' stehende Rechnung auf 'freigegeben' zurück —
+    falls die pain.001-Datei doch nicht ausgeführt wurde. Dann kommt sie im
+    nächsten Zahllauf wieder mit."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import KreditorenRechnung
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_kreditoren')
+    k = get_object_or_404(KreditorenRechnung, id=pk)
+    if k.status == 'in_zahlung':
+        k.status = 'freigegeben'
+        k.save(update_fields=['status'])
+        log_aktion(request, "Zahllauf zurückgesetzt", k.lieferant or f"Rechnung #{k.id}", '')
+        messages.success(request, f"↩︎ '{k.lieferant}' wieder freigegeben (nicht mehr in Zahlung).")
     ziel = '/neu/kreditoren/'
     if lg := request.POST.get('lg'):
         ziel += f'?lg={lg}'

@@ -122,9 +122,16 @@
                             <input type="hidden" name="rechnung_id" value="{{ row.k.id }}">
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             <button type="submit" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                                <i class="fa-solid fa-check"></i> Bezahlen
+                                <i class="fa-solid fa-check"></i> {% if row.in_zahlung %}Zahlung bestätigen{% else %}Bezahlen{% endif %}
                             </button>
                         </form>
+                        {% if row.in_zahlung %}
+                        <form method="post" action="/neu/kreditoren/{{ row.k.id }}/zahlung-zuruecksetzen/" onsubmit="return confirm('Zahlung zurücksetzen — Rechnung kommt im nächsten Zahllauf wieder mit?');" class="inline">
+                            {% csrf_token %}
+                            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                            <button type="submit" class="text-slate-400 hover:text-slate-700 text-xs" title="Zahllauf zurücksetzen"><i class="fa-solid fa-rotate-left"></i></button>
+                        </form>
+                        {% endif %}
                         {% elif row.k.status == 'neu' and darf_bezahlen %}
                         <form method="post" action="/neu/kreditoren/{{ row.k.id }}/freigeben/" onsubmit="return confirm('Rechnung freigeben und als Aufwand verbuchen?');" class="inline-flex items-center gap-1.5">
                             {% csrf_token %}

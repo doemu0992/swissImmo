@@ -218,6 +218,7 @@ class KreditorenRechnung(models.Model):
     STATUS_CHOICES = [
         ('neu', 'Neu / Scan'),
         ('freigegeben', 'Freigegeben'),
+        ('in_zahlung', 'In Zahlung'),   # in pain.001-Datei enthalten, noch nicht bestätigt
         ('bezahlt', 'Bezahlt'),
         ('storniert', 'Storniert'), # 🔥 NEU für Revisionssicherheit
     ]

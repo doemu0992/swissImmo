@@ -2900,6 +2900,54 @@ class WeiterverrechnungTests(TestCase):
         self.assertEqual(k.offen_weiterzuverrechnen, Decimal('0.00'))
 
 
+class KreditorZahllaufTests(TestCase):
+    """pain.001-Zahllauf: enthaltene Rechnungen → 'in Zahlung' (kein Doppelzahlen)."""
+
+    def _setup(self):
+        from crm.models import Verwaltung
+        from finance.models import KreditorenRechnung
+        from finance.booking import konto as _k
+        Verwaltung.objects.create(firma='V AG', iban='CH9300762011623852957')
+        lg, e, m, v = _basis_objekte()
+        k = KreditorenRechnung.objects.create(
+            lieferant='Elektro AG', betrag=Decimal('800'), status='freigegeben',
+            liegenschaft=lg, konto=_k('4000'),
+            iban='CH9300762011623852957', referenz='R-1')
+        return lg, k
+
+    def test_pain001_markiert_in_zahlung(self):
+        from finance.models import KreditorenRechnung
+        lg, k = self._setup()
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        r = c.get('/neu/kreditoren/pain001/')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('xml', r['Content-Type'])
+        k.refresh_from_db()
+        self.assertEqual(k.status, 'in_zahlung')
+        # Zweiter Lauf enthält sie NICHT mehr → keine freigegebenen mehr
+        r2 = c.get('/neu/kreditoren/pain001/')
+        self.assertEqual(r2.status_code, 302)   # keine freigegebenen → Redirect mit Fehler
+
+    def test_bestaetigen_bucht_aus(self):
+        from finance.models import KreditorenRechnung, Buchung
+        lg, k = self._setup()
+        k.status = 'in_zahlung'; k.save()
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post('/neu/kreditoren/bezahlen/', {'rechnung_id': k.id})
+        k.refresh_from_db()
+        self.assertEqual(k.status, 'bezahlt')
+        self.assertTrue(Buchung.objects.filter(kreditoren_rechnung=k, soll_konto__nummer='2000', haben_konto__nummer='1020').exists())
+
+    def test_zuruecksetzen(self):
+        from finance.models import KreditorenRechnung
+        lg, k = self._setup()
+        k.status = 'in_zahlung'; k.save()
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post(f'/neu/kreditoren/{k.id}/zahlung-zuruecksetzen/')
+        k.refresh_from_db()
+        self.assertEqual(k.status, 'freigegeben')
+
+
 class RechtsgrundlagenTests(TestCase):
     """In-App-Übersicht der angewandten Rechtsgrundlagen."""
 
