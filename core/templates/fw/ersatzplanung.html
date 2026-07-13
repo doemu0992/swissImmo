@@ -12,9 +12,10 @@
 <div class="flex items-start justify-between flex-wrap gap-3 mb-1">
     <div>
         <h1 class="text-3xl font-extrabold text-slate-900">Garantie- & Ersatzplanung</h1>
-        <p class="text-sm text-slate-500 mt-1">Raumbuch-Elemente nach Restnutzungsdauer (Lebensdauertabelle) mit Lebenszykluskosten
+        <p class="text-sm text-slate-500 mt-1">Raumbuch-Elemente nach Restnutzungsdauer (Lebensdauertabelle) mit Ersatzbudget je Jahr
             {% if aktive_lg %}· <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
     </div>
+    <a href="/neu/ersatzplanung/?pdf=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm"><i class="fa-solid fa-file-pdf mr-1.5"></i>Budget-PDF</a>
 </div>
 <div class="mb-4"></div>
 
@@ -37,6 +38,29 @@
         <div><div class="text-2xl font-bold text-slate-800">{{ n_unbekannt }}</div><div class="text-sm text-slate-500">Ohne Datenbasis</div></div>
     </div>
 </div>
+
+<!-- Ersatzbudget je Jahr -->
+{% if jahres_budget %}
+<div class="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+    <div class="flex items-baseline justify-between mb-4">
+        <h2 class="font-bold text-slate-800 text-sm">Ersatzbudget je Jahr (nächste {{ horizont_jahre }} Jahre)</h2>
+        <span class="text-sm text-slate-400">Total CHF {{ budget_total|chf }}</span>
+    </div>
+    <div class="space-y-2.5">
+        {% for b in jahres_budget %}
+        <div class="flex items-center gap-3">
+            <div class="w-14 shrink-0 text-sm font-semibold text-slate-700">{{ b.jahr }}</div>
+            <div class="flex-1 bg-slate-100 rounded-full h-4 overflow-hidden">
+                <div class="h-full rounded-full bg-indigo-500" style="width: {% widthratio b.summe budget_total 100 %}%"></div>
+            </div>
+            <div class="w-16 shrink-0 text-right text-xs text-slate-400">{{ b.anzahl }}×</div>
+            <div class="w-28 shrink-0 text-right text-sm font-semibold text-slate-900">CHF {{ b.summe|chf }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    <p class="text-xs text-slate-400 mt-4"><i class="fa-solid fa-piggy-bank mr-1"></i>Grundlage für die Erneuerungsfonds-/Budgetplanung: erwartetes Ersatzjahr = Einbaujahr + Lebensdauer, Kosten = Neuwert.</p>
+</div>
+{% endif %}
 
 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
     <div class="px-5 py-4 flex flex-wrap items-center gap-1.5 border-b border-slate-100">

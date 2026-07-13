@@ -3440,49 +3440,37 @@ def fw_schaden_ausstattung(request, pk):
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_ersatzplanung(request):
     """Garantie- & Ersatzplanung: Raumbuch-Elemente nach Restnutzungsdauer
-    (Lebensdauertabelle) und Garantiestatus — mit Lebenszykluskosten."""
-    from portfolio.models import Ausstattung
+    (Lebensdauertabelle), Jahres-Ersatzbudget und Lebenszykluskosten.
+    ?pdf=1 → Budget-Report als PDF."""
+    from core.services.ersatzplanung import berechne_ersatzplanung
     heute = timezone.now().date()
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
-    qs = (Ausstattung.objects.select_related('einheit__liegenschaft')
-          .prefetch_related('schaeden__handwerker_auftraege'))
-    if aktive_lg:
-        qs = qs.filter(einheit__liegenschaft=aktive_lg)
+    daten = berechne_ersatzplanung(aktive_lg=aktive_lg, heute=heute)
 
-    STATUS_META = {
-        'faellig': ('Ersatz fällig', 'bg-rose-50 text-rose-700'),
-        'bald': ('Ersatz bald', 'bg-amber-50 text-amber-700'),
-        'ok': ('Im Nutzungszeitraum', 'bg-emerald-50 text-emerald-700'),
-        'unbekannt': ('Keine Datenbasis', 'bg-slate-100 text-slate-400'),
-    }
+    if request.GET.get('pdf') == '1':
+        from django.http import HttpResponse
+        from crm.models import Verwaltung
+        from core.services.ersatzplanung_pdf import generate_ersatzplanung_pdf
+        lg_name = (f"{aktive_lg.strasse}, {aktive_lg.ort}" if aktive_lg
+                   else "Alle Liegenschaften")
+        pdf = generate_ersatzplanung_pdf(daten, lg_name, verwaltung=Verwaltung.objects.first())
+        resp = HttpResponse(pdf, content_type='application/pdf')
+        resp['Content-Disposition'] = 'inline; filename="Ersatzplanung.pdf"'
+        return resp
+
     f = request.GET.get('status', '')
-    rows = []
-    n = {'faellig': 0, 'bald': 0, 'ok': 0, 'unbekannt': 0}
-    for a in qs:
-        st = a.ersatz_status(heute)
-        n[st] += 1
-        if f and f != st:
-            continue
-        label, cls = STATUS_META[st]
-        rows.append({
-            'a': a, 'rest': a.rest_jahre(heute), 'status': st,
-            'status_label': label, 'status_cls': cls,
-            'lebenszyklus': a.lebenszyklus_kosten(),
-            'reparaturkosten': a.reparatur_kosten_total(),
-            'schaden_anzahl': a.schaeden.count(),
-            'standort': f"{a.einheit.liegenschaft.strasse} · {a.einheit.bezeichnung}",
-        })
-    # Sortierung: fällig zuerst, dann nach Restjahren aufsteigend
-    ordnung = {'faellig': 0, 'bald': 1, 'ok': 2, 'unbekannt': 3}
-    rows.sort(key=lambda r: (ordnung[r['status']], r['rest'] if r['rest'] is not None else 999))
+    rows = [r for r in daten['rows'] if not f or f == r['status']]
 
     chips = [('', 'Alle'), ('faellig', 'Ersatz fällig'), ('bald', 'Bald fällig'),
              ('ok', 'Im Nutzungszeitraum'), ('unbekannt', 'Keine Datenbasis')]
     return render(request, 'fw/ersatzplanung.html', {
         **basis, 'nav': 'assets', 'rows': rows, 'status_filter': f, 'chips': chips,
-        'n_faellig': n['faellig'], 'n_bald': n['bald'], 'n_ok': n['ok'], 'n_unbekannt': n['unbekannt'],
+        'n_faellig': daten['n_faellig'], 'n_bald': daten['n_bald'],
+        'n_ok': daten['n_ok'], 'n_unbekannt': daten['n_unbekannt'],
+        'jahres_budget': daten['jahres_budget'], 'budget_total': daten['budget_total'],
+        'horizont_jahre': daten['horizont_jahre'],
         'anzahl': len(rows),
     })
 

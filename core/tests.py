@@ -4552,3 +4552,67 @@ class AusstattungEditKatalogTests(TestCase):
             r = c.post(f'/neu/objekte/{e.id}/ausstattung/katalog/', {'raumtyp': rt})
             self.assertEqual(r.status_code, 302)
         self.assertGreater(Ausstattung.objects.filter(einheit=e).count(), 50)
+
+
+class ErsatzplanungBudgetTests(TestCase):
+    """Ersatz- & Budgetplanung: Jahres-Budget-Projektion + PDF-Export."""
+
+    def _element(self, e, jahre, alter_jahre, neuwert):
+        from portfolio.models import Ausstattung
+        einbau = date.today() - timedelta(days=int(365.25 * alter_jahre))
+        return Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Gerät',
+                                          neuwert=Decimal(neuwert), einbau_datum=einbau,
+                                          lebensdauer_jahre=jahre)
+
+    def test_budget_projektion(self):
+        from core.services.ersatzplanung import berechne_ersatzplanung
+        _lg, e, _m, _v = _basis_objekte()
+        heute = date.today()
+        # Ersatz in ~5 Jahren (10 J Lebensdauer, 5 J alt), Neuwert 2000
+        self._element(e, jahre=10, alter_jahre=5, neuwert='2000')
+        # überfällig (12 J alt) → laufendes Jahr, Neuwert 1000
+        self._element(e, jahre=10, alter_jahre=12, neuwert='1000')
+        d = berechne_ersatzplanung(heute=heute)
+        self.assertEqual(d['budget_total'], Decimal('3000'))
+        # überfälliges Element landet im laufenden Jahr
+        jahre = {b['jahr']: b['summe'] for b in d['jahres_budget']}
+        self.assertIn(heute.year, jahre)
+        self.assertEqual(jahre[heute.year], Decimal('1000'))
+        self.assertIn(heute.year + 5, jahre)
+
+    def test_budget_ohne_neuwert_ignoriert(self):
+        from core.services.ersatzplanung import berechne_ersatzplanung
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        # kein Neuwert → kein Budget, aber Zeile existiert
+        Ausstattung.objects.create(einheit=e, raum='Bad', kategorie='WC',
+                                   einbau_datum=date.today(), lebensdauer_jahre=10)
+        d = berechne_ersatzplanung()
+        self.assertEqual(d['budget_total'], Decimal('0.00'))
+        self.assertEqual(len(d['rows']), 1)
+
+    def test_budget_horizont(self):
+        from core.services.ersatzplanung import berechne_ersatzplanung
+        _lg, e, _m, _v = _basis_objekte()
+        # Ersatz erst in ~25 Jahren → ausserhalb 10-Jahres-Horizont
+        self._element(e, jahre=30, alter_jahre=5, neuwert='5000')
+        d = berechne_ersatzplanung(horizont_jahre=10)
+        self.assertEqual(d['budget_total'], Decimal('0.00'))
+        self.assertEqual(d['jahres_budget'], [])
+
+    def test_ersatzplanung_pdf_view(self):
+        _lg, e, _m, _v = _basis_objekte()
+        self._element(e, jahre=10, alter_jahre=5, neuwert='2000')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/ersatzplanung/?pdf=1')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r.content.startswith(b'%PDF'))
+
+    def test_ersatzplanung_zeigt_budget(self):
+        _lg, e, _m, _v = _basis_objekte()
+        self._element(e, jahre=10, alter_jahre=5, neuwert='2000')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/ersatzplanung/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Ersatzbudget je Jahr')
