@@ -3962,6 +3962,17 @@ class AuswertungTests(TestCase):
         r = c.get(f'/neu/auswertung/?jahr=2025&lg={lg.id}')
         self.assertEqual(r.context['lg_rows'], [])   # bei LG-Filter kein Vergleich
 
+    def test_pdf_export(self):
+        from finance.booking import buche
+        lg, e, m, v = _basis_objekte()
+        buche('1020', '3000', Decimal('1500'), 'Miete', datum=date(2025, 1, 15), liegenschaft=lg)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/auswertung/?typ=mietertrag&jahr=2025&pdf=1')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r.content.startswith(b'%PDF'))
+        self.assertGreater(len(r.content), 1200)
+
 
 class MieterspiegelTests(TestCase):
     """Mieterspiegel (Rent Roll): Soll/Ist/Leerstand je Liegenschaft + PDF."""

@@ -800,6 +800,17 @@ def fw_auswertung(request):
             r['pct'] = int(abs(r['wert']) / max_lg * 100)
             r['neg'] = r['wert'] < 0
 
+    if request.GET.get('pdf') == '1':
+        from crm.models import Verwaltung
+        from core.services.auswertung_pdf import generate_auswertung_pdf
+        from django.http import HttpResponse
+        lg_name = f"{aktive_lg.strasse}, {aktive_lg.ort}" if aktive_lg else "Alle Liegenschaften"
+        pdf = generate_auswertung_pdf(typ_label, jahr, lg_name, total, monate, lg_rows,
+                                      Verwaltung.objects.first())
+        resp = HttpResponse(pdf, content_type='application/pdf')
+        resp['Content-Disposition'] = f'inline; filename="Auswertung_{typ}_{jahr}.pdf"'
+        return resp
+
     return render(request, 'fw/auswertung.html', {
         **basis, 'nav': 'auswertung', 'jahr': jahr, 'typ': typ, 'typ_label': typ_label,
         'typen': AUSWERTUNG_TYPEN, 'jahre': list(range(heute.year, heute.year - 6, -1)),
