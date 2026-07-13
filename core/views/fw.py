@@ -3442,12 +3442,13 @@ def fw_ersatzplanung(request):
     """Garantie- & Ersatzplanung: Raumbuch-Elemente nach Restnutzungsdauer
     (Lebensdauertabelle), Jahres-Ersatzbudget und Lebenszykluskosten.
     ?pdf=1 → Budget-Report als PDF."""
-    from core.services.ersatzplanung import berechne_ersatzplanung
+    from core.services.ersatzplanung import berechne_ersatzplanung, fonds_deckung
     heute = timezone.now().date()
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
     daten = berechne_ersatzplanung(aktive_lg=aktive_lg, heute=heute)
+    deckung = fonds_deckung(aktive_lg, daten['budget_total'], daten['horizont_jahre'])
 
     if request.GET.get('pdf') == '1':
         from django.http import HttpResponse
@@ -3455,7 +3456,8 @@ def fw_ersatzplanung(request):
         from core.services.ersatzplanung_pdf import generate_ersatzplanung_pdf
         lg_name = (f"{aktive_lg.strasse}, {aktive_lg.ort}" if aktive_lg
                    else "Alle Liegenschaften")
-        pdf = generate_ersatzplanung_pdf(daten, lg_name, verwaltung=Verwaltung.objects.first())
+        pdf = generate_ersatzplanung_pdf(daten, lg_name, verwaltung=Verwaltung.objects.first(),
+                                         deckung=deckung)
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = 'inline; filename="Ersatzplanung.pdf"'
         return resp
@@ -3470,7 +3472,7 @@ def fw_ersatzplanung(request):
         'n_faellig': daten['n_faellig'], 'n_bald': daten['n_bald'],
         'n_ok': daten['n_ok'], 'n_unbekannt': daten['n_unbekannt'],
         'jahres_budget': daten['jahres_budget'], 'budget_total': daten['budget_total'],
-        'horizont_jahre': daten['horizont_jahre'],
+        'horizont_jahre': daten['horizont_jahre'], 'deckung': deckung,
         'anzahl': len(rows),
     })
 

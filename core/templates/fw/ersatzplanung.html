@@ -39,6 +39,44 @@
     </div>
 </div>
 
+<!-- Erneuerungsfonds-Deckung -->
+{% if deckung %}
+<div class="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-piggy-bank text-indigo-500 mr-1.5"></i>Erneuerungsfonds-Deckung ({{ horizont_jahre }}-Jahres-Horizont)</h2>
+        {% if deckung.deckungsgrad is not None %}
+        <span class="px-2.5 py-1 rounded-md text-xs font-bold {% if deckung.gedeckt %}bg-emerald-50 text-emerald-700{% else %}bg-rose-50 text-rose-700{% endif %}">{{ deckung.deckungsgrad }}% gedeckt</span>
+        {% endif %}
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+            <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Fonds-Bestand</div>
+            <div class="text-lg font-bold text-slate-900 mt-0.5">CHF {{ deckung.bestand|chf }}</div>
+        </div>
+        <div>
+            <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Jährliche Einlage</div>
+            <div class="text-lg font-bold text-slate-900 mt-0.5">CHF {{ deckung.einlage|chf }}</div>
+        </div>
+        <div>
+            <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Ersatzbudget ({{ horizont_jahre }} J)</div>
+            <div class="text-lg font-bold text-slate-900 mt-0.5">CHF {{ budget_total|chf }}</div>
+        </div>
+        <div>
+            <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Empf. Jahresrückstellung</div>
+            <div class="text-lg font-bold {% if deckung.mehrbedarf > 0 %}text-rose-600{% else %}text-emerald-600{% endif %} mt-0.5">CHF {{ deckung.empfohlen|chf }}</div>
+        </div>
+    </div>
+    <div class="mt-4 pt-4 border-t border-slate-100 text-sm">
+        {% if deckung.gedeckt %}
+        <span class="text-emerald-700"><i class="fa-solid fa-circle-check mr-1"></i>Gedeckt: Bestand + Einlagen ({{ deckung.projiziert|chf }}) decken das Ersatzbudget über {{ horizont_jahre }} Jahre (Reserve CHF {{ deckung.saldo|chf }}).</span>
+        {% else %}
+        <span class="text-rose-700"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Unterdeckung von CHF {{ deckung.saldo|chf }} über {{ horizont_jahre }} Jahre.</span>
+        {% if deckung.mehrbedarf > 0 %}<span class="text-slate-600"> Empfehlung: jährliche Einlage um <span class="font-semibold">CHF {{ deckung.mehrbedarf|chf }}</span> auf CHF {{ deckung.empfohlen|chf }} erhöhen.</span>{% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
 <!-- Ersatzbudget je Jahr -->
 {% if jahres_budget %}
 <div class="bg-white rounded-xl border border-slate-200 p-5 mb-6">

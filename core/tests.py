@@ -4616,3 +4616,59 @@ class ErsatzplanungBudgetTests(TestCase):
         r = c.get('/neu/ersatzplanung/')
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Ersatzbudget je Jahr')
+
+
+class ErneuerungsfondsDeckungTests(TestCase):
+    """Ersatzplanung ↔ Erneuerungsfonds: Deckungsgrad + empfohlene Rückstellung."""
+
+    def _setup(self, bestand, einlage, neuwert='2000', jahre=10, alter=5):
+        from portfolio.models import Ausstattung
+        from finance.models import Erneuerungsfonds
+        lg, e, _m, _v = _basis_objekte()
+        Erneuerungsfonds.objects.create(liegenschaft=lg, bestand=Decimal(bestand),
+                                        jaehrliche_einlage=Decimal(einlage))
+        einbau = date.today() - timedelta(days=int(365.25 * alter))
+        Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Gerät',
+                                   neuwert=Decimal(neuwert), einbau_datum=einbau,
+                                   lebensdauer_jahre=jahre)
+        return lg, e
+
+    def test_deckung_gedeckt(self):
+        from core.services.ersatzplanung import berechne_ersatzplanung, fonds_deckung
+        lg, e = self._setup(bestand='5000', einlage='0', neuwert='2000')
+        d = berechne_ersatzplanung(aktive_lg=lg)
+        deck = fonds_deckung(lg, d['budget_total'], d['horizont_jahre'])
+        self.assertTrue(deck['gedeckt'])
+        self.assertEqual(deck['bestand'], Decimal('5000'))
+        # Empfehlung = Budget / Horizont = 2000/10 = 200
+        self.assertEqual(deck['empfohlen'], Decimal('200.00'))
+
+    def test_deckung_unterdeckung_und_mehrbedarf(self):
+        from core.services.ersatzplanung import berechne_ersatzplanung, fonds_deckung
+        lg, e = self._setup(bestand='0', einlage='50', neuwert='2000')
+        d = berechne_ersatzplanung(aktive_lg=lg)
+        deck = fonds_deckung(lg, d['budget_total'], d['horizont_jahre'])
+        # Projektion 0 + 50*10 = 500 < 2000 → Unterdeckung
+        self.assertFalse(deck['gedeckt'])
+        self.assertEqual(deck['projiziert'], Decimal('500'))
+        # empfohlen 200, Einlage 50 → Mehrbedarf 150
+        self.assertEqual(deck['mehrbedarf'], Decimal('150.00'))
+
+    def test_deckung_none_ohne_fonds(self):
+        from core.services.ersatzplanung import fonds_deckung
+        _lg, _e, _m, _v = _basis_objekte()
+        self.assertIsNone(fonds_deckung(None, Decimal('1000'), 10))
+
+    def test_view_zeigt_deckung(self):
+        lg, e = self._setup(bestand='5000', einlage='300')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/ersatzplanung/?lg={lg.id}')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Erneuerungsfonds-Deckung')
+
+    def test_pdf_mit_deckung(self):
+        lg, e = self._setup(bestand='5000', einlage='300')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/ersatzplanung/?lg={lg.id}&pdf=1')
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.content.startswith(b'%PDF'))

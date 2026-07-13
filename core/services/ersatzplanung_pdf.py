@@ -14,7 +14,7 @@ def _fmt(d):
 STATUS_LABEL = {'faellig': 'fällig', 'bald': 'bald', 'ok': 'ok', 'unbekannt': '—'}
 
 
-def generate_ersatzplanung_pdf(daten, lg_name, verwaltung=None):
+def generate_ersatzplanung_pdf(daten, lg_name, verwaltung=None, deckung=None):
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas
     from reportlab.lib.units import mm
@@ -58,6 +58,29 @@ def generate_ersatzplanung_pdf(daten, lg_name, verwaltung=None):
     c.drawString(150 * mm, y - 7 * mm, f"CHF {_fmt(daten['budget_total'])}")
     c.setFillColor(colors.black)
     y -= 18 * mm
+
+    # Erneuerungsfonds-Deckung
+    if deckung:
+        emerald = colors.HexColor("#059669")
+        c.setStrokeColor(colors.HexColor("#E2E8F0"))
+        c.roundRect(20 * mm, y - 20 * mm, w - 40 * mm, 22 * mm, 3, stroke=1, fill=0)
+        c.setFont("Helvetica-Bold", 10); c.setFillColor(colors.black)
+        c.drawString(24 * mm, y - 5 * mm, f"Erneuerungsfonds-Deckung ({daten['horizont_jahre']} J)")
+        if deckung.get('deckungsgrad') is not None:
+            c.setFillColor(emerald if deckung['gedeckt'] else rose)
+            c.setFont("Helvetica-Bold", 10)
+            c.drawRightString(w - 24 * mm, y - 5 * mm, f"{deckung['deckungsgrad']}% gedeckt")
+        c.setFillColor(grey); c.setFont("Helvetica", 8)
+        c.drawString(24 * mm, y - 11 * mm, "Bestand")
+        c.drawString(70 * mm, y - 11 * mm, "Jährl. Einlage")
+        c.drawString(120 * mm, y - 11 * mm, "Empf. Rückstellung")
+        c.setFillColor(colors.black); c.setFont("Helvetica-Bold", 9)
+        c.drawString(24 * mm, y - 16 * mm, f"CHF {_fmt(deckung['bestand'])}")
+        c.drawString(70 * mm, y - 16 * mm, f"CHF {_fmt(deckung['einlage'])}")
+        c.setFillColor(rose if deckung['mehrbedarf'] > 0 else emerald)
+        c.drawString(120 * mm, y - 16 * mm, f"CHF {_fmt(deckung['empfohlen'])}")
+        c.setFillColor(colors.black)
+        y -= 26 * mm
 
     # Jahres-Budget als Balken
     c.setFont("Helvetica-Bold", 11)

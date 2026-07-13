@@ -76,3 +76,38 @@ def berechne_ersatzplanung(aktive_lg=None, heute=None, horizont_jahre=10):
         'n_ok': n['ok'], 'n_unbekannt': n['unbekannt'],
         'aktuelles_jahr': aktuelles_jahr, 'horizont_jahre': horizont_jahre,
     }
+
+
+def fonds_deckung(aktive_lg, budget_total, horizont_jahre):
+    """Vergleicht das projizierte Ersatzbudget mit dem Erneuerungsfonds:
+    aktueller Bestand, jährliche Einlage, Deckungsgrad und empfohlene
+    Jahresrückstellung. Aggregiert über alle Fonds, wenn keine Liegenschaft
+    gewählt ist. None, wenn gar kein Fonds existiert."""
+    from finance.models import Erneuerungsfonds
+    qs = Erneuerungsfonds.objects.all()
+    if aktive_lg:
+        qs = qs.filter(liegenschaft=aktive_lg)
+    fonds = list(qs)
+    if not fonds:
+        return None
+    bestand = sum((f.bestand or Decimal('0.00') for f in fonds), Decimal('0.00'))
+    einlage = sum((f.jaehrliche_einlage or Decimal('0.00') for f in fonds), Decimal('0.00'))
+    horizont = horizont_jahre or 1
+    empfohlen = (budget_total / horizont).quantize(Decimal('0.01')) if budget_total else Decimal('0.00')
+    # Projektion: Bestand + Einlagen über den Horizont vs. Ersatzbudget
+    projiziert = bestand + einlage * horizont
+    saldo = projiziert - budget_total   # >= 0 → gedeckt
+    deckungsgrad = None
+    if budget_total > 0:
+        deckungsgrad = int((projiziert / budget_total * 100).to_integral_value())
+    return {
+        'anzahl_fonds': len(fonds),
+        'bestand': bestand,
+        'einlage': einlage,
+        'empfohlen': empfohlen,
+        'mehrbedarf': max(Decimal('0.00'), empfohlen - einlage),
+        'projiziert': projiziert,
+        'saldo': saldo,
+        'gedeckt': saldo >= 0,
+        'deckungsgrad': deckungsgrad,
+    }
