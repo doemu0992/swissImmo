@@ -4737,3 +4737,36 @@ class DatenResetTests(TestCase):
         r = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
         # keine Verwaltungs-Rolle → kein Reset (Redirect/403), Daten bleiben
         self.assertTrue(Mietvertrag.objects.filter(id=v.id).exists())
+
+
+class ObjekteGruppierungTests(TestCase):
+    """Objekte-Übersicht nach Liegenschaft gruppiert (Akkordeon)."""
+
+    def test_gruppierung_nach_liegenschaft(self):
+        from portfolio.models import Einheit
+        lg1, e1, _m, _v = _basis_objekte()
+        lg2 = Liegenschaft.objects.create(strasse='Andere Gasse 5', plz='3000', ort='Bern',
+                                          versicherungswert=Decimal('500000'))
+        Einheit.objects.create(liegenschaft=lg2, bezeichnung='2 Zi', typ='whg',
+                               nettomiete_aktuell=Decimal('1000'))
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/objekte/')
+        self.assertEqual(r.status_code, 200)
+        gruppen = r.context['gruppen']
+        self.assertEqual(len(gruppen), 2)
+        ids = {g['lg'].id for g in gruppen}
+        self.assertEqual(ids, {lg1.id, lg2.id})
+        # Überschrift der Liegenschaft erscheint
+        self.assertContains(r, 'Andere Gasse 5')
+        self.assertContains(r, 'Teststrasse 1')
+
+    def test_gruppe_zaehlt_belegt_leer(self):
+        from portfolio.models import Einheit
+        lg, e, _m, _v = _basis_objekte()   # e ist vermietet (aktiver Vertrag)
+        Einheit.objects.create(liegenschaft=lg, bezeichnung='Leer 1', typ='whg')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/objekte/')
+        g = r.context['gruppen'][0]
+        self.assertEqual(g['anzahl'], 2)
+        self.assertEqual(g['belegt'], 1)
+        self.assertEqual(g['leer'], 1)

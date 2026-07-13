@@ -893,8 +893,21 @@ def fw_objekte(request):
         rows.append({'e': e, 'mieter': belegung[0] if belegung else None,
                      'vertrag_id': belegung[1] if belegung else None})
 
+    # Nach Liegenschaft gruppieren (Überschrift + Akkordeon je Liegenschaft)
+    gruppen = []
+    for row in rows:
+        lg = row['e'].liegenschaft
+        if gruppen and gruppen[-1]['lg'].id == lg.id:
+            gruppen[-1]['rows'].append(row)
+        else:
+            gruppen.append({'lg': lg, 'rows': [row]})
+    for g in gruppen:
+        g['anzahl'] = len(g['rows'])
+        g['belegt'] = sum(1 for r in g['rows'] if r['mieter'])
+        g['leer'] = g['anzahl'] - g['belegt']
+
     return render(request, 'fw/objekte.html', {
-        **basis, 'nav': 'objekte', 'rows': rows,
+        **basis, 'nav': 'objekte', 'rows': rows, 'gruppen': gruppen,
         'typ_filter': typ_filter, 'q': q,
         'typ_chips': [('', 'Alle'), ('wohnen', 'Wohnen'), ('parkplatz', 'Parkplatz'), ('gewerbe', 'Gewerbe')],
         'vermietet_count': vermietet_count,
