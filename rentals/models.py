@@ -403,11 +403,20 @@ class Abnahmeprotokoll(models.Model):
 
     @property
     def kosten_mieter_total(self):
-        return sum((m.kostenschaetzung or Decimal('0.00')) for m in self.maengel_mieter)
+        """Vom Mieter zu tragender Gesamtbetrag — Mieteranteil (nach Lebensdauer)
+        wenn erfasst, sonst die volle Kostenschätzung."""
+        total = Decimal('0.00')
+        for m in self.maengel_mieter:
+            anteil = m.mieteranteil if m.mieteranteil is not None else m.kostenschaetzung
+            total += anteil or Decimal('0.00')
+        return total
 
 
 class AbnahmeMangel(models.Model):
-    """Einzelner Mangel im Abnahmeprotokoll, einem Raum + Verursacher zugeordnet."""
+    """Einzelner Mangel im Abnahmeprotokoll, einem Raum + Verursacher zugeordnet.
+    Kann mit einem Ausstattungselement (Raumbuch) verknüpft werden — dann fliesst
+    die paritätische Lebensdauertabelle ein: der Mieter zahlt nur den Zeitwert-
+    anteil ('neu für alt'-Abzug), nicht den vollen Neuwert."""
     VERURSACHER = [('abnutzung', 'Normale Abnutzung'), ('mieter', 'Mieter (Schaden)'), ('vermieter', 'Vermieter/Unterhalt')]
     protokoll = models.ForeignKey(Abnahmeprotokoll, on_delete=models.CASCADE, related_name='maengel')
     raum = models.CharField("Raum", max_length=60, blank=True, default='')
@@ -415,6 +424,11 @@ class AbnahmeMangel(models.Model):
     verursacher = models.CharField("Verursacher", max_length=12, choices=VERURSACHER, default='abnutzung')
     kostenschaetzung = models.DecimalField("Kostenschätzung CHF", max_digits=9, decimal_places=2, null=True, blank=True)
     foto = models.ImageField("Foto", upload_to='abnahme_fotos/', null=True, blank=True)
+    # Lebensdauertabelle / Zeitwert
+    ausstattung = models.ForeignKey('portfolio.Ausstattung', on_delete=models.SET_NULL,
+                                    null=True, blank=True, related_name='maengel')
+    neuwert = models.DecimalField("Neuwert CHF", max_digits=9, decimal_places=2, null=True, blank=True)
+    mieteranteil = models.DecimalField("Mieteranteil CHF (nach Lebensdauer)", max_digits=9, decimal_places=2, null=True, blank=True)
 
     class Meta:
         db_table = 'core_abnahmemangel'
@@ -422,3 +436,34 @@ class AbnahmeMangel(models.Model):
 
     def __str__(self):
         return f"{self.raum}: {self.beschreibung}"
+
+    def zeitwert_faktor(self, stichtag=None):
+        """Restwertanteil 0..1 aus der Lebensdauertabelle des verknüpften Elements
+        ('neu für alt'-Abzug). None, wenn keine Lebensdauer-Info vorliegt."""
+        if not self.ausstattung_id:
+            return None
+        from datetime import date as _date
+        a = self.ausstattung
+        ld = a.effektive_lebensdauer()
+        if not (a.einbau_datum and ld):
+            return None
+        tag = stichtag or (self.protokoll.datum if self.protokoll_id else None) or _date.today()
+        alter = max(0.0, (tag - a.einbau_datum).days / 365.25)
+        rest = max(0.0, float(ld) - alter)
+        return rest / float(ld)
+
+    def berechne_mieteranteil(self, stichtag=None):
+        """Vom Mieter zu tragender Betrag: bei verknüpftem Element der Zeitwert-
+        anteil der Kosten/des Neuwerts; sonst die volle Kostenschätzung.
+        Nur für verursacher='mieter'; sonst 0."""
+        if self.verursacher != 'mieter':
+            return Decimal('0.00')
+        basis = self.kostenschaetzung or self.neuwert
+        if basis is None and self.ausstattung_id:
+            basis = self.ausstattung.neuwert
+        if basis is None:
+            return Decimal('0.00')
+        faktor = self.zeitwert_faktor(stichtag)
+        if faktor is None:
+            return Decimal(basis).quantize(Decimal('0.01'))
+        return (Decimal(basis) * Decimal(str(faktor))).quantize(Decimal('0.01'))

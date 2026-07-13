@@ -45,20 +45,26 @@
     <table class="w-full text-sm">
         <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
             <tr><th class="text-left px-5 py-2.5">Raum</th><th class="text-left px-5 py-2.5">Mangel</th>
-                <th class="text-left px-5 py-2.5">Verursacher</th><th class="text-right px-5 py-2.5">CHF</th><th class="px-5 py-2.5">Foto</th></tr>
+                <th class="text-left px-5 py-2.5">Verursacher</th>
+                <th class="text-right px-5 py-2.5">Kosten</th>
+                <th class="text-right px-5 py-2.5">Mieteranteil</th>
+                <th class="px-5 py-2.5">Foto</th></tr>
         </thead>
         <tbody class="divide-y divide-slate-50">
             {% for m in maengel %}
             <tr>
                 <td class="px-5 py-2.5 text-slate-700">{{ m.raum|default:"—" }}</td>
-                <td class="px-5 py-2.5 text-slate-800">{{ m.beschreibung }}</td>
+                <td class="px-5 py-2.5 text-slate-800">{{ m.beschreibung }}
+                    {% if m.ausstattung %}<div class="text-[11px] text-slate-400"><i class="fa-solid fa-clipboard-list mr-0.5"></i>{{ m.ausstattung.kategorie }}{% if m.ausstattung.effektive_lebensdauer %} · Lebensdauer {{ m.ausstattung.effektive_lebensdauer }} J{% endif %}</div>{% endif %}</td>
                 <td class="px-5 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold
                     {% if m.verursacher == 'mieter' %}bg-rose-50 text-rose-600{% elif m.verursacher == 'vermieter' %}bg-sky-50 text-sky-600{% else %}bg-slate-100 text-slate-500{% endif %}">{{ m.get_verursacher_display }}</span></td>
-                <td class="px-5 py-2.5 text-right tabular-nums">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% endif %}</td>
+                <td class="px-5 py-2.5 text-right tabular-nums text-slate-500">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% elif m.neuwert %}{{ m.neuwert|chf }}{% endif %}</td>
+                <td class="px-5 py-2.5 text-right tabular-nums font-semibold {% if m.verursacher == 'mieter' %}text-rose-600{% else %}text-slate-300{% endif %}">
+                    {% if m.verursacher == 'mieter' and m.mieteranteil is not None %}{{ m.mieteranteil|chf }}{% elif m.verursacher == 'mieter' and m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-2.5 text-center">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank"><img src="{{ m.foto.url }}" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="px-5 py-6 text-center text-slate-400 italic">Keine Mängel festgestellt.</td></tr>
+            <tr><td colspan="6" class="px-5 py-6 text-center text-slate-400 italic">Keine Mängel festgestellt.</td></tr>
             {% endfor %}
         </tbody>
     </table>

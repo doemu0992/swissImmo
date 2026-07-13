@@ -4271,3 +4271,119 @@ class AusstattungRaumbuchTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Raumbuch / Ausstattung')
         self.assertContains(r, 'Dusche')
+
+
+class AbnahmeLebensdauerTests(TestCase):
+    """Assets/Raumbuch Phase 2: Abnahme rechnet Zeitwert/Mieteranteil je Mangel
+    nach der Lebensdauertabelle → Schlussabrechnung."""
+
+    def _element(self, e, jahre=10, alter_jahre=5, neuwert='2000'):
+        from portfolio.models import Ausstattung
+        einbau = date.today() - timedelta(days=int(365.25 * alter_jahre))
+        return Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Kochherd',
+                                          neuwert=Decimal(neuwert), einbau_datum=einbau,
+                                          lebensdauer_jahre=jahre)
+
+    def test_mieteranteil_zeitwert(self):
+        from rentals.models import Abnahmeprotokoll, AbnahmeMangel
+        _lg, e, _m, v = _basis_objekte()
+        el = self._element(e, jahre=10, alter_jahre=5, neuwert='2000')
+        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        mangel = AbnahmeMangel(protokoll=prot, raum='Küche', beschreibung='Glaskeramik gesprungen',
+                               verursacher='mieter', ausstattung=el, neuwert=Decimal('2000'))
+        anteil = mangel.berechne_mieteranteil()
+        # 5 von 10 Jahren verbraucht → ~50% Restwert → ~1000
+        self.assertTrue(Decimal('950') <= anteil <= Decimal('1050'))
+
+    def test_mieteranteil_abgeschrieben_null(self):
+        from rentals.models import Abnahmeprotokoll, AbnahmeMangel
+        _lg, e, _m, v = _basis_objekte()
+        el = self._element(e, jahre=10, alter_jahre=12, neuwert='2000')
+        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        mangel = AbnahmeMangel(protokoll=prot, beschreibung='defekt',
+                               verursacher='mieter', ausstattung=el)
+        # vollständig abgeschrieben → Mieter zahlt nichts
+        self.assertEqual(mangel.berechne_mieteranteil(), Decimal('0.00'))
+
+    def test_mieteranteil_ohne_element_voller_betrag(self):
+        from rentals.models import Abnahmeprotokoll, AbnahmeMangel
+        _lg, e, _m, v = _basis_objekte()
+        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        mangel = AbnahmeMangel(protokoll=prot, beschreibung='Loch in Wand',
+                               verursacher='mieter', kostenschaetzung=Decimal('300'))
+        self.assertEqual(mangel.berechne_mieteranteil(), Decimal('300.00'))
+
+    def test_mieteranteil_nur_mieter(self):
+        from rentals.models import Abnahmeprotokoll, AbnahmeMangel
+        _lg, e, _m, v = _basis_objekte()
+        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        mangel = AbnahmeMangel(protokoll=prot, beschreibung='Abnutzung',
+                               verursacher='abnutzung', kostenschaetzung=Decimal('300'))
+        self.assertEqual(mangel.berechne_mieteranteil(), Decimal('0.00'))
+
+    def test_abnahme_view_speichert_mieteranteil(self):
+        from rentals.models import Abnahmeprotokoll, AbnahmeMangel
+        _lg, e, _m, v = _basis_objekte()
+        el = self._element(e, jahre=10, alter_jahre=5, neuwert='2000')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/vertraege/{v.id}/abnahme/neu/', {
+            'typ': 'auszug', 'datum': date.today().isoformat(),
+            'm_raum': ['Küche'], 'm_beschreibung': ['Glaskeramik gesprungen'],
+            'm_verursacher': ['mieter'], 'm_kosten': [''],
+            'm_ausstattung': [str(el.id)], 'm_neuwert': ['2000']})
+        self.assertEqual(r.status_code, 302)
+        mangel = AbnahmeMangel.objects.get(beschreibung='Glaskeramik gesprungen')
+        self.assertEqual(mangel.ausstattung_id, el.id)
+        self.assertIsNotNone(mangel.mieteranteil)
+        self.assertTrue(Decimal('950') <= mangel.mieteranteil <= Decimal('1050'))
+
+    def test_kosten_mieter_total_nutzt_mieteranteil(self):
+        from rentals.models import Abnahmeprotokoll, AbnahmeMangel
+        _lg, e, _m, v = _basis_objekte()
+        el = self._element(e, jahre=10, alter_jahre=5, neuwert='2000')
+        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        AbnahmeMangel.objects.create(protokoll=prot, beschreibung='x', verursacher='mieter',
+                                     ausstattung=el, mieteranteil=Decimal('1000'),
+                                     kostenschaetzung=Decimal('2000'))
+        # nutzt mieteranteil (1000), nicht kostenschaetzung (2000)
+        self.assertEqual(prot.kosten_mieter_total, Decimal('1000'))
+
+    def test_schlussabrechnung_prefill_mieteranteil(self):
+        from rentals.models import Abnahmeprotokoll, AbnahmeMangel
+        _lg, e, _m, v = _basis_objekte()
+        el = self._element(e, jahre=10, alter_jahre=5, neuwert='2000')
+        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        AbnahmeMangel.objects.create(protokoll=prot, raum='Küche', beschreibung='Glaskeramik',
+                                     verursacher='mieter', ausstattung=el,
+                                     mieteranteil=Decimal('1000'), kostenschaetzung=Decimal('2000'))
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/vertraege/{v.id}/schlussabrechnung/?abnahme={prot.id}')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Zeitwert')
+
+    def test_lebensdauer_seite(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/lebensdauer/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Lebensdauertabelle')
+
+    def test_lebensdauer_hinzufuegen_und_bearbeiten(self):
+        from portfolio.models import Lebensdauer
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/lebensdauer/', {'aktion': 'neu', 'kategorie': 'Testgerät', 'jahre': '12'})
+        self.assertEqual(r.status_code, 302)
+        row = Lebensdauer.objects.get(kategorie='Testgerät')
+        self.assertEqual(row.jahre, 12)
+        c.post('/neu/lebensdauer/', {'aktion': 'speichern', f'jahre_{row.id}': '18',
+                                     f'bemerkung_{row.id}': 'angepasst'})
+        row.refresh_from_db()
+        self.assertEqual(row.jahre, 18)
+        self.assertEqual(row.bemerkung, 'angepasst')
+
+    def test_lebensdauer_loeschen(self):
+        from portfolio.models import Lebensdauer
+        row = Lebensdauer.objects.create(kategorie='Weg', jahre=5)
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/lebensdauer/', {'aktion': 'loeschen', 'id': str(row.id)})
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(Lebensdauer.objects.filter(id=row.id).exists())

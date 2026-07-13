@@ -53,8 +53,8 @@
             <h3 class="font-bold text-slate-800 text-sm">Mängel / Zustand je Raum</h3>
             <button type="button" onclick="addMangel()" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Mangel</button>
         </div>
-        <div id="maengel" class="space-y-2"></div>
-        <p class="text-xs text-slate-400 mt-2">Verursacher „Mieter (Schaden)" fliesst mit Kostenschätzung in die Schlussabrechnung.</p>
+        <div id="maengel" class="space-y-3"></div>
+        <p class="text-xs text-slate-400 mt-2">Verursacher „Mieter (Schaden)" fliesst in die Schlussabrechnung. Ist ein Raumbuch-Element verknüpft, wird der <span class="font-semibold">Zeitwert</span> nach paritätischer Lebensdauertabelle berechnet (Abzug „neu für alt").</p>
         <p class="text-[11px] text-slate-400 mt-2 border-t border-slate-100 pt-2"><i class="fa-solid fa-scale-balanced mr-1 text-slate-300"></i>Der Vermieter muss die Sache bei der Rückgabe prüfen und dem Mieter erkennbare Mängel sofort melden (Art. 267a OR); unterbleibt die Rüge, gilt die Sache als ordnungsgemäss zurückgegeben (ausgenommen versteckte Mängel).</p>
     </div>
 
@@ -80,17 +80,27 @@
 </form>
 
 <template id="mangelTpl">
-    <div class="mangel-row grid grid-cols-12 gap-2 items-center">
-        <select name="m_raum" class="col-span-3 bg-slate-100 rounded-lg text-sm px-2 py-2">
-            {% for r in raeume %}<option>{{ r }}</option>{% endfor %}
-        </select>
-        <input name="m_beschreibung" placeholder="Mangel beschreiben" class="col-span-4 bg-slate-100 rounded-lg text-sm px-3 py-2">
-        <select name="m_verursacher" class="col-span-2 bg-slate-100 rounded-lg text-sm px-2 py-2">
-            <option value="abnutzung">Abnutzung</option><option value="mieter">Mieter</option><option value="vermieter">Vermieter</option>
-        </select>
-        <input name="m_kosten" inputmode="decimal" placeholder="CHF" class="col-span-1 bg-slate-100 rounded-lg text-sm px-2 py-2 text-right">
-        <label class="col-span-1 text-center cursor-pointer text-slate-400 hover:text-indigo-600" title="Foto"><i class="fa-solid fa-camera"></i><input type="file" name="m_foto" accept="image/*" capture="environment" class="hidden"></label>
-        <button type="button" onclick="this.closest('.mangel-row').remove()" class="col-span-1 text-slate-300 hover:text-rose-500"><i class="fa-solid fa-xmark"></i></button>
+    <div class="mangel-row border border-slate-100 rounded-lg p-2 space-y-2">
+        <div class="grid grid-cols-12 gap-2 items-center">
+            <select name="m_raum" class="col-span-3 bg-slate-100 rounded-lg text-sm px-2 py-2">
+                {% for r in raeume %}<option>{{ r }}</option>{% endfor %}
+            </select>
+            <input name="m_beschreibung" placeholder="Mangel beschreiben" class="col-span-4 bg-slate-100 rounded-lg text-sm px-3 py-2">
+            <select name="m_verursacher" class="col-span-2 bg-slate-100 rounded-lg text-sm px-2 py-2">
+                <option value="abnutzung">Abnutzung</option><option value="mieter">Mieter</option><option value="vermieter">Vermieter</option>
+            </select>
+            <input name="m_kosten" inputmode="decimal" placeholder="CHF" class="col-span-1 bg-slate-100 rounded-lg text-sm px-2 py-2 text-right" title="Reparatur-/Ersatzkosten">
+            <label class="col-span-1 text-center cursor-pointer text-slate-400 hover:text-indigo-600" title="Foto"><i class="fa-solid fa-camera"></i><input type="file" name="m_foto" accept="image/*" capture="environment" class="hidden"></label>
+            <button type="button" onclick="this.closest('.mangel-row').remove()" class="col-span-1 text-slate-300 hover:text-rose-500"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="grid grid-cols-12 gap-2 items-center">
+            <span class="col-span-3 text-[11px] text-slate-400 text-right pr-1"><i class="fa-solid fa-clipboard-list mr-1"></i>Raumbuch-Element</span>
+            <select name="m_ausstattung" class="col-span-6 bg-slate-50 rounded-lg text-xs px-2 py-1.5 text-slate-600">
+                <option value="">— kein Element (voller Betrag) —</option>
+                {% for el in elemente %}<option value="{{ el.id }}">{{ el.raum }} · {{ el.kategorie }}{% if el.einbau_datum %} ({{ el.einbau_datum|date:"Y" }}){% endif %}</option>{% endfor %}
+            </select>
+            <input name="m_neuwert" inputmode="decimal" placeholder="Neuwert CHF" class="col-span-3 bg-slate-50 rounded-lg text-xs px-2 py-1.5 text-right text-slate-600" title="Neuwert (optional, sonst vom Element)">
+        </div>
     </div>
 </template>
 <script>

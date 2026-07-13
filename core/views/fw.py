@@ -1299,6 +1299,62 @@ def fw_ausstattung_del(request, pk):
     return redirect(f'/neu/objekte/{eid}/#obj-raumbuch')
 
 
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_lebensdauer(request):
+    """Editierbare paritätische Lebensdauertabelle (Mieterverband/HEV).
+    Grundlage für den Zeitwert-/Mieteranteil bei der Wohnungsabnahme."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Lebensdauer
+    from core.auth import log_aktion, hat_rolle
+    basis = _global_filter(request)
+
+    if request.method == 'POST':
+        if not hat_rolle(request.user, SCHREIB_ROLLEN):
+            messages.error(request, "Keine Berechtigung zum Bearbeiten.")
+            return redirect('/neu/lebensdauer/')
+        aktion = request.POST.get('aktion')
+        if aktion == 'speichern':
+            n = 0
+            for row in Lebensdauer.objects.all():
+                val = request.POST.get(f'jahre_{row.id}')
+                bem = request.POST.get(f'bemerkung_{row.id}')
+                changed = False
+                if val and val.isdigit() and int(val) != row.jahre and int(val) > 0:
+                    row.jahre = int(val); changed = True
+                if bem is not None and bem.strip() != row.bemerkung:
+                    row.bemerkung = bem.strip(); changed = True
+                if changed:
+                    row.save(); n += 1
+            log_aktion(request, "Lebensdauertabelle bearbeitet", f"{n} Werte")
+            messages.success(request, f"✅ {n} Wert(e) aktualisiert." if n else "Keine Änderung.")
+        elif aktion == 'neu':
+            kat = (request.POST.get('kategorie') or '').strip()
+            jahre = request.POST.get('jahre')
+            if kat and jahre and jahre.isdigit() and int(jahre) > 0:
+                _, created = Lebensdauer.objects.get_or_create(
+                    kategorie=kat, defaults={'jahre': int(jahre),
+                                             'bemerkung': (request.POST.get('bemerkung') or '').strip()})
+                messages.success(request, f"✅ «{kat}» hinzugefügt." if created else "Kategorie existiert bereits.")
+            else:
+                messages.error(request, "Kategorie und Jahre (> 0) sind Pflicht.")
+        elif aktion == 'loeschen':
+            Lebensdauer.objects.filter(id=request.POST.get('id')).delete()
+            messages.success(request, "Kategorie entfernt.")
+        elif aktion == 'seed':
+            from core.services.raumkatalog import seed_lebensdauer
+            n = seed_lebensdauer()
+            messages.success(request, f"✅ {n} Standardwert(e) ergänzt." if n else "Alle Standardwerte bereits vorhanden.")
+        return redirect('/neu/lebensdauer/')
+
+    from django.contrib import messages as _m
+    return render(request, 'fw/lebensdauer.html', {
+        **basis, 'nav': 'assets',
+        'rows': Lebensdauer.objects.all(),
+        'meldung': list(_m.get_messages(request)),
+    })
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_objekt_foto_upload(request, pk):
     """Hängt Fotos an ein Mietobjekt (für Exposé, Portal-Feed, Vermarktung)."""
@@ -1532,9 +1588,12 @@ def fw_schlussabrechnung(request, vertrag_id):
         ab = Abnahmeprotokoll.objects.filter(id=ab_id, vertrag=v).first()
         if ab:
             for m in ab.maengel_mieter:
-                if m.kostenschaetzung:
+                betrag = m.mieteranteil if m.mieteranteil is not None else m.kostenschaetzung
+                if betrag:
                     txt = f"{m.raum + ': ' if m.raum else ''}{m.beschreibung}"
-                    prefill_positionen.append({'text': txt[:90], 'betrag': m.kostenschaetzung})
+                    if m.mieteranteil is not None and m.ausstattung_id:
+                        txt += " (Zeitwert)"
+                    prefill_positionen.append({'text': txt[:90], 'betrag': betrag})
     if schaden_betrag > 0:
         prefill_positionen.insert(0, {'text': schaden_text, 'betrag': schaden_betrag})
     return render(request, 'fw/schlussabrechnung.html', {
@@ -1602,19 +1661,34 @@ def fw_abnahme_neu(request, vertrag_id):
         beschr = P.getlist('m_beschreibung')
         verurs = P.getlist('m_verursacher')
         kosten = P.getlist('m_kosten')
+        assets = P.getlist('m_ausstattung')
+        neuwerte = P.getlist('m_neuwert')
         fotos = list(request.FILES.getlist('m_foto'))
+        from portfolio.models import Ausstattung as _Ausstattung
         for i, b in enumerate(beschr):
             b = (b or '').strip()
             if not b:
                 continue
-            AbnahmeMangel.objects.create(
+            aid = (assets[i] if i < len(assets) else '').strip()
+            element = None
+            if aid.isdigit():
+                element = _Ausstattung.objects.filter(id=int(aid), einheit=v.einheit).first()
+            nw = _dec(neuwerte[i] if i < len(neuwerte) else '')
+            if nw is None and element is not None:
+                nw = element.neuwert
+            mangel = AbnahmeMangel(
                 protokoll=prot,
                 raum=(raeume[i] if i < len(raeume) else '').strip(),
                 beschreibung=b,
                 verursacher=(verurs[i] if i < len(verurs) else 'abnutzung'),
                 kostenschaetzung=_dec(kosten[i] if i < len(kosten) else ''),
+                ausstattung=element,
+                neuwert=nw,
                 foto=(fotos.pop(0) if fotos else None),
             )
+            # Mieteranteil nach Lebensdauertabelle berechnen und einfrieren
+            mangel.mieteranteil = mangel.berechne_mieteranteil(stichtag=datum)
+            mangel.save()
         # Passende Auszugs-Pendenzen automatisch abhaken
         if prot.typ == 'auszug':
             from core.services.automation import erledige_pendenzen_fuer
@@ -1632,8 +1706,11 @@ def fw_abnahme_neu(request, vertrag_id):
         return redirect(f'/neu/abnahme/{prot.id}/')
 
     embed = request.GET.get('embed') == '1'
+    from portfolio.models import Ausstattung
+    elemente = list(Ausstattung.objects.filter(einheit=v.einheit))
     return render(request, 'fw/abnahme_neu.html', {
         **basis, 'nav': 'vertraege', 'v': v, 'raeume': ABNAHME_RAEUME,
+        'elemente': elemente,
         'heute': timezone.localdate().isoformat(),
         'verwalter_default': (request.user.get_full_name() or request.user.username),
         'typ_default': (request.GET.get('typ') if request.GET.get('typ') in ('auszug', 'einzug')

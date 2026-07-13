@@ -60,33 +60,40 @@ def generate_abnahme_pdf(prot, verwaltung=None):
     c.setStrokeColor(colors.HexColor("#e2e8f0")); c.line(20 * mm, y, 190 * mm, y)
     y -= 6 * mm
     c.setFont("Helvetica-Bold", 8); c.setFillColor(colors.grey)
-    c.drawString(20 * mm, y, "Raum"); c.drawString(55 * mm, y, "Mangel")
-    c.drawString(140 * mm, y, "Verursacher"); c.drawRightString(190 * mm, y, "CHF")
+    c.drawString(20 * mm, y, "Raum"); c.drawString(50 * mm, y, "Mangel")
+    c.drawString(118 * mm, y, "Verursacher")
+    c.drawRightString(168 * mm, y, "Kosten"); c.drawRightString(190 * mm, y, "Anteil")
     c.setFillColor(colors.black)
     y -= 5 * mm
     c.setFont("Helvetica", 9)
-    total_mieter = Decimal('0.00')
     maengel = list(prot.maengel.all())
     if not maengel:
         c.setFillColor(colors.grey); c.drawString(20 * mm, y, "Keine Mängel festgestellt."); c.setFillColor(colors.black); y -= 6 * mm
     for m in maengel:
         if y < 40 * mm:
             c.showPage(); y = 280 * mm; c.setFont("Helvetica", 9)
-        c.drawString(20 * mm, y, (m.raum or '—')[:22])
-        c.drawString(55 * mm, y, (m.beschreibung or '')[:52])
-        c.drawString(140 * mm, y, VERURS_LABEL.get(m.verursacher, m.verursacher))
-        if m.kostenschaetzung:
-            c.drawRightString(190 * mm, y, _fmt(m.kostenschaetzung))
-            if m.verursacher == 'mieter':
-                total_mieter += m.kostenschaetzung
+        c.drawString(20 * mm, y, (m.raum or '—')[:18])
+        c.drawString(50 * mm, y, (m.beschreibung or '')[:44])
+        c.drawString(118 * mm, y, VERURS_LABEL.get(m.verursacher, m.verursacher))
+        basis = m.kostenschaetzung if m.kostenschaetzung is not None else m.neuwert
+        if basis is not None:
+            c.drawRightString(168 * mm, y, _fmt(basis))
+        if m.verursacher == 'mieter':
+            anteil = m.mieteranteil if m.mieteranteil is not None else m.kostenschaetzung
+            if anteil is not None:
+                c.drawRightString(190 * mm, y, _fmt(anteil))
         y -= 5.5 * mm
 
     y -= 2 * mm
     c.setStrokeColor(colors.HexColor("#e2e8f0")); c.line(20 * mm, y, 190 * mm, y); y -= 6 * mm
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(20 * mm, y, "Kosten zulasten Mieter (Schätzung)")
-    c.drawRightString(190 * mm, y, f"CHF {_fmt(total_mieter)}")
-    y -= 10 * mm
+    c.drawString(20 * mm, y, "Kosten zulasten Mieter (Zeitwert)")
+    c.drawRightString(190 * mm, y, f"CHF {_fmt(prot.kosten_mieter_total)}")
+    y -= 6 * mm
+    c.setFont("Helvetica", 7); c.setFillColor(colors.grey)
+    c.drawString(20 * mm, y, "Anteil = Zeitwert nach paritätischer Lebensdauertabelle (Abzug 'neu für alt') bei verknüpftem Raumbuch-Element.")
+    c.setFillColor(colors.black)
+    y -= 8 * mm
 
     if prot.bemerkungen:
         c.setFont("Helvetica-Bold", 9); c.drawString(20 * mm, y, "Bemerkungen:"); y -= 5 * mm
