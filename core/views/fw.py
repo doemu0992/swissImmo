@@ -719,6 +719,94 @@ def fw_berichte(request):
     return render(request, 'fw/berichte.html', {**basis, 'nav': 'berichte', 'berichte': berichte})
 
 
+AUSWERTUNG_TYPEN = [
+    ('mietertrag', 'Mietertrag', 'ertrag'),
+    ('aufwand', 'Aufwand (total)', 'aufwand'),
+    ('reparatur', 'Reparaturen (Unterhalt)', 'aufwand'),
+    ('ergebnis', 'Nettoergebnis', 'ergebnis'),
+]
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_auswertung(request):
+    """Interaktive Auswertung: Kennzahl (Mietertrag/Aufwand/Reparaturen/Ergebnis)
+    im Monatsverlauf eines Jahres + Vergleich je Liegenschaft — mit Filtern."""
+    from finance.models import Buchung, Buchungskonto
+    from django.db.models import Sum
+    import calendar as _cal
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.now().date()
+    try:
+        jahr = int(request.GET.get('jahr') or heute.year)
+    except ValueError:
+        jahr = heute.year
+    typ = request.GET.get('typ', 'mietertrag')
+    if typ not in dict((t[0], t) for t in AUSWERTUNG_TYPEN):
+        typ = 'mietertrag'
+    typ_label = dict((t[0], t[1]) for t in AUSWERTUNG_TYPEN)[typ]
+
+    ertrag_konten = list(Buchungskonto.objects.filter(typ='ertrag').values_list('id', flat=True))
+    aufwand_konten = list(Buchungskonto.objects.filter(typ='aufwand').values_list('id', flat=True))
+    mietertrag_konten = list(Buchungskonto.objects.filter(nummer__in=['3000', '3010']).values_list('id', flat=True))
+    reparatur_konten = list(Buchungskonto.objects.filter(nummer='4000').values_list('id', flat=True))
+
+    def _wert(bqs):
+        def saldo(kids, positiv_haben):
+            if not kids:
+                return Decimal('0.00')
+            s = bqs.filter(soll_konto_id__in=kids).aggregate(x=Sum('betrag'))['x'] or Decimal('0.00')
+            h = bqs.filter(haben_konto_id__in=kids).aggregate(x=Sum('betrag'))['x'] or Decimal('0.00')
+            return (h - s) if positiv_haben else (s - h)
+        if typ == 'mietertrag':
+            return saldo(mietertrag_konten, True)
+        if typ == 'aufwand':
+            return saldo(aufwand_konten, False)
+        if typ == 'reparatur':
+            return saldo(reparatur_konten, False)
+        return saldo(ertrag_konten, True) - saldo(aufwand_konten, False)   # ergebnis
+
+    base_q = Buchung.objects.filter(datum__year=jahr, ist_storno=False)
+    if aktive_lg:
+        base_q = base_q.filter(liegenschaft=aktive_lg)
+
+    # Monatsverlauf
+    monate = []
+    max_abs = Decimal('0.01')
+    total = Decimal('0.00')
+    for m in range(1, 13):
+        w = _wert(base_q.filter(datum__month=m))
+        monate.append({'m': m, 'name': date(2000, m, 1).strftime('%b'), 'wert': w})
+        total += w
+        if abs(w) > max_abs:
+            max_abs = abs(w)
+    for mm in monate:
+        mm['pct'] = int(abs(mm['wert']) / max_abs * 100)
+        mm['neg'] = mm['wert'] < 0
+
+    # Vergleich je Liegenschaft (nur ohne aktiven LG-Filter sinnvoll)
+    lg_rows = []
+    if not aktive_lg:
+        max_lg = Decimal('0.01')
+        for lg in Liegenschaft.objects.order_by('strasse'):
+            w = _wert(Buchung.objects.filter(datum__year=jahr, ist_storno=False, liegenschaft=lg))
+            if w == 0:
+                continue
+            lg_rows.append({'lg': lg, 'wert': w})
+            if abs(w) > max_lg:
+                max_lg = abs(w)
+        lg_rows.sort(key=lambda r: -r['wert'])
+        for r in lg_rows:
+            r['pct'] = int(abs(r['wert']) / max_lg * 100)
+            r['neg'] = r['wert'] < 0
+
+    return render(request, 'fw/auswertung.html', {
+        **basis, 'nav': 'auswertung', 'jahr': jahr, 'typ': typ, 'typ_label': typ_label,
+        'typen': AUSWERTUNG_TYPEN, 'jahre': list(range(heute.year, heute.year - 6, -1)),
+        'monate': monate, 'total': total, 'lg_rows': lg_rows,
+    })
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_mieterspiegel(request):
     """Mieterspiegel (Rent Roll): je Liegenschaft alle Einheiten mit Mieter,

@@ -62,7 +62,7 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
                                 mieter_rechnungen_view, mieter_dokumente_view, mieter_schaden_formular)
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
-from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_liegenschaften, fw_mieterspiegel, fw_objekte,
+from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_auswertung, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_liegenschaften, fw_mieterspiegel, fw_objekte,
                            fw_personen, fw_vertraege, fw_mieterwechsel, fw_vermarktung, fw_objekt_ausschreiben, fw_expose_pdf,
                            fw_liegenschaft_detail, fw_objekt_detail, fw_objekt_foto_upload, fw_objekt_foto_loeschen, fw_vertrag_detail,
                            fw_wartungsfrist_neu, fw_wartungsfrist_loeschen,
@@ -135,6 +135,7 @@ urlpatterns = [
     path('neu/liegenschaften/', fw_liegenschaften, name='fw_liegenschaften'),
     path('neu/mieterspiegel/', fw_mieterspiegel, name='fw_mieterspiegel'),
     path('neu/berichte/', fw_berichte, name='fw_berichte'),
+    path('neu/auswertung/', fw_auswertung, name='fw_auswertung'),
     path('neu/liegenschaften/neu/', fw_liegenschaft_form, name='fw_liegenschaft_neu'),
     path('neu/liegenschaften/<int:pk>/bearbeiten/', fw_liegenschaft_form, name='fw_liegenschaft_bearbeiten'),
     path('neu/liegenschaften/<int:pk>/gwr-import/', fw_liegenschaft_gwr, name='fw_liegenschaft_gwr'),

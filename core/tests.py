@@ -3915,6 +3915,54 @@ class BerichteHubTests(TestCase):
         self.assertContains(r, 'offen')
 
 
+class AuswertungTests(TestCase):
+    """Interaktive Auswertung: Monatsverlauf + Liegenschafts-Vergleich, filterbar."""
+
+    def test_mietertrag_monatsverlauf(self):
+        from finance.booking import buche
+        lg, e, m, v = _basis_objekte()
+        buche('1020', '3000', Decimal('1500'), 'Miete Jan', datum=date(2025, 1, 15), liegenschaft=lg)
+        buche('1020', '3000', Decimal('1500'), 'Miete Mär', datum=date(2025, 3, 10), liegenschaft=lg)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/auswertung/?typ=mietertrag&jahr=2025')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.context['total'], Decimal('3000.00'))
+        jan = next(x for x in r.context['monate'] if x['m'] == 1)
+        self.assertEqual(jan['wert'], Decimal('1500.00'))
+        self.assertEqual(jan['pct'], 100)   # Januar = Maximum
+
+    def test_ergebnis_negativ(self):
+        from finance.booking import buche
+        lg, e, m, v = _basis_objekte()
+        buche('1020', '3000', Decimal('1000'), 'Miete', datum=date(2025, 2, 1), liegenschaft=lg)
+        buche('4000', '1020', Decimal('1500'), 'Reparatur', datum=date(2025, 2, 5), liegenschaft=lg)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/auswertung/?typ=ergebnis&jahr=2025')
+        self.assertEqual(r.context['total'], Decimal('-500.00'))
+        feb = next(x for x in r.context['monate'] if x['m'] == 2)
+        self.assertTrue(feb['neg'])
+
+    def test_liegenschafts_vergleich(self):
+        from finance.booking import buche
+        from portfolio.models import Liegenschaft
+        lg, e, m, v = _basis_objekte()
+        lg2 = Liegenschaft.objects.create(strasse='Zweitweg 2', plz='8000', ort='Zürich',
+                                          versicherungswert=Decimal('500000'))
+        buche('1020', '3000', Decimal('2000'), 'A', datum=date(2025, 1, 1), liegenschaft=lg)
+        buche('1020', '3000', Decimal('800'), 'B', datum=date(2025, 1, 1), liegenschaft=lg2)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/auswertung/?typ=mietertrag&jahr=2025')   # ohne LG-Filter
+        self.assertEqual(len(r.context['lg_rows']), 2)
+        self.assertEqual(r.context['lg_rows'][0]['lg'].id, lg.id)   # grösster zuerst
+        self.assertEqual(r.context['lg_rows'][0]['pct'], 100)
+
+    def test_lg_filter_kein_vergleich(self):
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/auswertung/?jahr=2025&lg={lg.id}')
+        self.assertEqual(r.context['lg_rows'], [])   # bei LG-Filter kein Vergleich
+
+
 class MieterspiegelTests(TestCase):
     """Mieterspiegel (Rent Roll): Soll/Ist/Leerstand je Liegenschaft + PDF."""
 

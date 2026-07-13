@@ -1,9 +1,15 @@
 {% extends 'fw/base.html' %}
 {% block title %}Berichte — swissImmo{% endblock %}
 {% block content %}
-<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Berichte & Auswertungen</h1>
-<p class="text-sm text-slate-500 mb-6 max-w-2xl">Alle Reports und Exporte an einem Ort.
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+<div class="flex items-start justify-between flex-wrap gap-3 mb-1">
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Berichte & Auswertungen</h1>
+        <p class="text-sm text-slate-500 mt-1 max-w-2xl">Alle Reports und Exporte an einem Ort.
+            {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+    </div>
+    <a href="/neu/auswertung/{{ lg_query }}" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm"><i class="fa-solid fa-chart-line mr-1.5"></i>Interaktive Auswertung</a>
+</div>
+<div class="mb-6"></div>
 
 {% for g in berichte %}
 <h2 class="text-xs uppercase tracking-[0.2em] text-slate-500 font-bold mb-3 mt-6">{{ g.gruppe }}</h2>
