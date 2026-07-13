@@ -5445,7 +5445,61 @@ def fw_account(request):
             logo_url = vw.logo.url
         except Exception:
             logo_url = ''
-    return render(request, 'fw/account.html', {**basis, 'nav': 'account', 'vw': vw, 'logo_url': logo_url})
+    return render(request, 'fw/account.html', {
+        **basis, 'nav': 'account', 'vw': vw, 'logo_url': logo_url,
+        'kann_reset': hat_rolle(request.user, [ROLLE_VERWALTUNG]),
+    })
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_datenreset(request):
+    """GEFAHRENZONE: löscht ALLE operativen Daten (Liegenschaften, Objekte,
+    Verträge, Personen, Buchungen, Rechnungen, Schäden, Vorlagen, Mandate,
+    Verwaltungs-Stammdaten …) und startet mit einer leeren, frisch geseedeten
+    Datenbank. Benutzerkonten/Rollen bleiben erhalten (Login bleibt gültig).
+    Erfordert Bestätigungstext 'LÖSCHEN'."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from django.db import connection
+    from django.apps import apps
+    from core.auth import log_aktion
+
+    if request.method != 'POST':
+        return redirect('/neu/account/')
+    if (request.POST.get('bestaetigung') or '').strip().upper() != 'LÖSCHEN':
+        messages.error(request, "Zum Zurücksetzen bitte «LÖSCHEN» eingeben.")
+        return redirect('/neu/account/#gefahrenzone')
+
+    # Eigene App-Daten (Framework/Benutzer bleiben erhalten)
+    OWN_APPS = {'core', 'crm', 'finance', 'mietprozess', 'portfolio', 'rentals', 'tickets'}
+    # Auth-Tabellen NIE anfassen (Login/Rollen bleiben), auch wenn ein Modell
+    # im 'core'-App-Label darauf zeigen sollte.
+    KEEP = {'auth_user', 'auth_group', 'auth_user_groups', 'auth_group_permissions',
+            'auth_permission', 'auth_user_user_permissions', 'django_admin_log',
+            'django_content_type', 'django_session', 'django_migrations'}
+    tabellen = sorted({m._meta.db_table for m in apps.get_models()
+                       if m._meta.app_label in OWN_APPS and m._meta.db_table not in KEEP})
+
+    with connection.constraint_checks_disabled():
+        with connection.cursor() as cur:
+            for t in tabellen:
+                cur.execute(f'DELETE FROM "{t}"')
+
+    # Referenz-/Stammdaten frisch aufsetzen
+    from finance.booking import ensure_kontenplan
+    from core.services.raumkatalog import seed_lebensdauer
+    try:
+        ensure_kontenplan()
+    except Exception:
+        pass
+    try:
+        seed_lebensdauer()
+    except Exception:
+        pass
+
+    log_aktion(request, "Datenbank zurückgesetzt", f"{len(tabellen)} Tabellen geleert")
+    messages.success(request, "✅ Alle Daten wurden gelöscht — du startest mit einer leeren Datenbank.")
+    return redirect('/neu/')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

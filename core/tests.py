@@ -4672,3 +4672,56 @@ class ErneuerungsfondsDeckungTests(TestCase):
         r = c.get(f'/neu/ersatzplanung/?lg={lg.id}&pdf=1')
         self.assertEqual(r.status_code, 200)
         self.assertTrue(r.content.startswith(b'%PDF'))
+
+
+class DatenResetTests(TestCase):
+    """Gefahrenzone: alle Daten löschen und von vorne beginnen."""
+
+    def test_reset_loescht_alles(self):
+        from finance.models import Buchung
+        from portfolio.models import Ausstattung
+        lg, e, m, v = _basis_objekte()
+        Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Herd')
+        self.assertTrue(Mietvertrag.objects.exists())
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        r = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
+        self.assertEqual(r.status_code, 302)
+        from crm.models import Mieter
+        self.assertFalse(Mietvertrag.objects.exists())
+        self.assertFalse(Mieter.objects.exists())
+        self.assertFalse(Liegenschaft.objects.exists())
+        self.assertFalse(Ausstattung.objects.exists())
+
+    def test_reset_behaelt_benutzer(self):
+        _lg, _e, _m, _v = _basis_objekte()
+        u = _team_user(rolle='Verwaltung')
+        c = Client(); c.force_login(u)
+        c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
+        # Benutzer + Rollen bleiben → Login weiter gültig
+        self.assertTrue(User.objects.filter(id=u.id).exists())
+        r = c.get('/neu/account/')
+        self.assertEqual(r.status_code, 200)
+
+    def test_reset_ohne_bestaetigung_macht_nichts(self):
+        _lg, _e, _m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        r = c.post('/neu/datenreset/', {'bestaetigung': 'nein'})
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(Mietvertrag.objects.filter(id=v.id).exists())
+
+    def test_reset_seedet_referenzdaten(self):
+        from portfolio.models import Lebensdauer
+        from finance.models import Buchungskonto
+        _lg, _e, _m, _v = _basis_objekte()
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
+        # Lebensdauertabelle + Kontenplan wieder vorhanden
+        self.assertTrue(Lebensdauer.objects.exists())
+        self.assertTrue(Buchungskonto.objects.exists())
+
+    def test_reset_erfordert_verwaltung(self):
+        _lg, _e, _m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user(rolle='Buchhaltung'))
+        r = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
+        # keine Verwaltungs-Rolle → kein Reset (Redirect/403), Daten bleiben
+        self.assertTrue(Mietvertrag.objects.filter(id=v.id).exists())
