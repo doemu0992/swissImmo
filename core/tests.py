@@ -4770,3 +4770,60 @@ class ObjekteGruppierungTests(TestCase):
         self.assertEqual(g['anzahl'], 2)
         self.assertEqual(g['belegt'], 1)
         self.assertEqual(g['leer'], 1)
+
+
+class HypothekenTests(TestCase):
+    """Hypotheken je Liegenschaft: Zinskosten, Fälligkeiten, Gruppierung, CRUD."""
+
+    def test_jaehrlicher_zins(self):
+        from finance.models import Hypothek
+        lg, _e, _m, _v = _basis_objekte()
+        hy = Hypothek.objects.create(liegenschaft=lg, betrag=Decimal('500000'),
+                                     zinssatz=Decimal('1.500'))
+        self.assertEqual(hy.jaehrlicher_zins, Decimal('7500.00'))
+
+    def test_view_kpi_und_gruppierung(self):
+        from finance.models import Hypothek
+        lg, _e, _m, _v = _basis_objekte()
+        Hypothek.objects.create(liegenschaft=lg, betrag=Decimal('400000'), zinssatz=Decimal('2.000'))
+        Hypothek.objects.create(liegenschaft=lg, betrag=Decimal('100000'), zinssatz=Decimal('1.000'))
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/hypotheken/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.context['total_schuld'], Decimal('500000'))
+        self.assertEqual(r.context['total_zins'], Decimal('9000.00'))  # 8000 + 1000
+        self.assertEqual(len(r.context['gruppen']), 1)
+        self.assertEqual(r.context['gruppen'][0]['schuld'], Decimal('500000'))
+
+    def test_erfassen_und_loeschen(self):
+        from finance.models import Hypothek
+        lg, _e, _m, _v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/hypotheken/', {
+            'aktion': 'neu', 'liegenschaft_id': str(lg.id), 'bank': 'ZKB',
+            'betrag': '350000', 'zinssatz': '1.750', 'typ': 'saron', 'ablauf': '2030-06-30'})
+        self.assertEqual(r.status_code, 302)
+        hy = Hypothek.objects.get(liegenschaft=lg)
+        self.assertEqual(hy.bank, 'ZKB')
+        self.assertEqual(hy.betrag, Decimal('350000'))
+        r2 = c.post('/neu/hypotheken/', {'aktion': 'loeschen', 'id': str(hy.id)})
+        self.assertEqual(r2.status_code, 302)
+        self.assertFalse(Hypothek.objects.filter(id=hy.id).exists())
+
+    def test_ablauf_warnung(self):
+        from finance.models import Hypothek
+        lg, _e, _m, _v = _basis_objekte()
+        Hypothek.objects.create(liegenschaft=lg, betrag=Decimal('100000'),
+                                ablauf=date.today() + timedelta(days=60))  # < 180 T
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/hypotheken/')
+        self.assertEqual(r.context['n_ablaufend'], 1)
+        self.assertContains(r, 'bald fällig')
+
+    def test_belehnung_gegen_versicherungswert(self):
+        from finance.models import Hypothek
+        lg, _e, _m, _v = _basis_objekte()  # versicherungswert 1'000'000
+        Hypothek.objects.create(liegenschaft=lg, betrag=Decimal('600000'))
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/hypotheken/')
+        self.assertEqual(r.context['gruppen'][0]['belehnung'], 60)

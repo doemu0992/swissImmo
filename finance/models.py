@@ -593,3 +593,33 @@ class EigentuemerAuszahlung(models.Model):
 
     def __str__(self):
         return f"Auszahlung {self.mandant_id} — CHF {self.betrag} ({self.datum})"
+
+
+class Hypothek(models.Model):
+    """Hypothekartranche auf einer Liegenschaft (Fest/SARON/variabel).
+    Grundlage für Zinskosten und Ablauf-/Refinanzierungsplanung."""
+    TYP = [('fest', 'Festhypothek'), ('saron', 'SARON'), ('variabel', 'Variabel')]
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='hypotheken')
+    bank = models.CharField("Bank / Gläubiger", max_length=120, blank=True, default='')
+    bezeichnung = models.CharField("Bezeichnung / Tranche", max_length=120, blank=True, default='')
+    betrag = models.DecimalField("Betrag (CHF)", max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    zinssatz = models.DecimalField("Zinssatz (%)", max_digits=5, decimal_places=3, default=Decimal('0.000'))
+    typ = models.CharField(max_length=10, choices=TYP, default='fest')
+    beginn = models.DateField("Abschluss / Beginn", null=True, blank=True)
+    ablauf = models.DateField("Ablauf / Fälligkeit", null=True, blank=True)
+    notiz = models.TextField(blank=True, default='')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Hypothek"
+        verbose_name_plural = "Hypotheken"
+        ordering = ['ablauf', 'id']
+        db_table = 'core_hypothek'
+
+    def __str__(self):
+        return f"{self.bank or 'Hypothek'} {self.betrag} ({self.get_typ_display()})"
+
+    @property
+    def jaehrlicher_zins(self):
+        """Jährliche Zinskosten = Betrag × Zinssatz."""
+        return (self.betrag * self.zinssatz / Decimal('100')).quantize(Decimal('0.01'))
