@@ -1126,7 +1126,8 @@ def fw_wartungsfrist_loeschen(request, pk):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_objekt_detail(request, pk):
-    from portfolio.models import Geraet, Zaehler
+    from portfolio.models import Geraet, Zaehler, Ausstattung
+    from core.services.raumkatalog import RAUMTYPEN, RAUM_KATALOG
     e = get_object_or_404(Einheit.objects.select_related('liegenschaft'), id=pk)
     basis = _global_filter(request)
 
@@ -1143,9 +1144,22 @@ def fw_objekt_detail(request, pk):
     zaehler = Zaehler.objects.filter(einheit=e).order_by('typ')
     fotos = list(e.fotos.all())
 
+    # Ausstattung/Raumbuch — die Räume entstehen aus den erfassten Assets.
+    ausst = list(Ausstattung.objects.filter(einheit=e))
+    raeume = []
+    for a in ausst:
+        zw = a.zeitwert()
+        row = {'a': a, 'zeitwert': zw, 'lebensdauer': a.effektive_lebensdauer()}
+        if raeume and raeume[-1]['raum'] == a.raum:
+            raeume[-1]['elemente'].append(row)
+        else:
+            raeume.append({'raum': a.raum, 'elemente': [row]})
+    ausst_count = len(ausst)
+
     tab_liste = [
         ('uebersicht', 'Übersicht', None),
         ('fotos', 'Fotos', len(fotos) or None),
+        ('raumbuch', 'Raumbuch', ausst_count or None),
         ('historie', 'Historie', historie.count() or None),
         ('geraete', 'Geräte', geraete.count() or None),
         ('zaehler', 'Zähler', zaehler.count() or None),
@@ -1159,9 +1173,130 @@ def fw_objekt_detail(request, pk):
         'geraete': geraete,
         'zaehler': zaehler,
         'fotos': fotos,
+        'raeume': raeume,
+        'ausst_count': ausst_count,
+        'raumtypen': RAUMTYPEN,
+        'raum_katalog': RAUM_KATALOG,
+        'zustand_choices': Ausstattung.ZUSTAND,
         'tab_liste': tab_liste,
         'meldung': list(messages.get_messages(request)),
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_ausstattung_add(request, pk):
+    """Erfasst ein Ausstattungselement (Raumbuch) am Objekt. Der Raum ergibt sich
+    aus dem eingegebenen Raumnamen — kein separates Raum-CRUD nötig."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Ausstattung
+    from core.auth import log_aktion
+    e = get_object_or_404(Einheit, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
+
+    raum = (request.POST.get('raum') or '').strip()
+    kategorie = (request.POST.get('kategorie') or '').strip()
+    if not raum or not kategorie:
+        messages.error(request, "Raum und Kategorie sind Pflichtfelder.")
+        return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
+
+    def _dec(x):
+        try:
+            v = (str(x) or '').replace(',', '.').strip()
+            return Decimal(v) if v else None
+        except Exception:
+            return None
+
+    def _date(x):
+        try:
+            return date.fromisoformat(x)
+        except Exception:
+            return None
+
+    def _int(x, default=None):
+        try:
+            return int(x)
+        except Exception:
+            return default
+
+    # Sortierung ans Ende des jeweiligen Raums
+    letzte = (Ausstattung.objects.filter(einheit=e, raum=raum)
+              .order_by('-sortierung').first())
+    sort = (letzte.sortierung + 1) if letzte else 0
+
+    a = Ausstattung.objects.create(
+        einheit=e, raum=raum, kategorie=kategorie,
+        bezeichnung=(request.POST.get('bezeichnung') or '').strip(),
+        marke=(request.POST.get('marke') or '').strip(),
+        modell=(request.POST.get('modell') or '').strip(),
+        material=(request.POST.get('material') or '').strip(),
+        menge=_int(request.POST.get('menge'), 1) or 1,
+        einbau_datum=_date(request.POST.get('einbau_datum')),
+        neuwert=_dec(request.POST.get('neuwert')),
+        lebensdauer_jahre=_int(request.POST.get('lebensdauer_jahre')),
+        zustand=request.POST.get('zustand') or 'gut',
+        garantie_bis=_date(request.POST.get('garantie_bis')),
+        notiz=(request.POST.get('notiz') or '').strip(),
+        sortierung=sort,
+    )
+    if request.FILES.get('foto'):
+        a.foto = request.FILES['foto']
+        a.save(update_fields=['foto'])
+    log_aktion(request, "Ausstattung erfasst", e.bezeichnung, f"{raum} · {kategorie}")
+    messages.success(request, f"✅ «{kategorie}» im Raum «{raum}» erfasst.")
+    return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_ausstattung_katalog(request, pk):
+    """Legt für einen Raumtyp die Standard-Ausstattung aus dem Katalog an
+    (Schnellerfassung). Vorhandene Elemente werden nicht dupliziert."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Ausstattung
+    from core.services.raumkatalog import RAUM_KATALOG
+    from core.auth import log_aktion
+    e = get_object_or_404(Einheit, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
+
+    raumtyp = (request.POST.get('raumtyp') or '').strip()
+    elemente = RAUM_KATALOG.get(raumtyp)
+    if not elemente:
+        messages.error(request, "Unbekannter Raumtyp.")
+        return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
+
+    vorhanden = set(Ausstattung.objects.filter(einheit=e, raum=raumtyp)
+                    .values_list('kategorie', flat=True))
+    n = 0
+    for i, (kat, jahre) in enumerate(elemente):
+        if kat in vorhanden:
+            continue
+        Ausstattung.objects.create(
+            einheit=e, raum=raumtyp, kategorie=kat,
+            lebensdauer_jahre=jahre, zustand='gut', sortierung=i)
+        n += 1
+    if n:
+        log_aktion(request, "Raumkatalog geladen", e.bezeichnung, f"{raumtyp}: {n} Elemente")
+        messages.success(request, f"✅ {n} Element(e) für «{raumtyp}» angelegt — jetzt Details ergänzen.")
+    else:
+        messages.info(request, f"«{raumtyp}» ist bereits vollständig erfasst.")
+    return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_ausstattung_del(request, pk):
+    """Entfernt ein Ausstattungselement."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Ausstattung
+    a = get_object_or_404(Ausstattung.objects.select_related('einheit'), id=pk)
+    eid = a.einheit_id
+    if request.method == 'POST':
+        a.delete()
+        messages.success(request, "Ausstattungselement entfernt.")
+    return redirect(f'/neu/objekte/{eid}/#obj-raumbuch')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -3480,10 +3615,26 @@ def fw_assets(request):
 
     chips = [('', 'Alle'), ('aktiv', 'Garantie aktiv'), ('bald', 'Läuft bald ab'),
              ('abgelaufen', 'Abgelaufen'), ('ohne', 'Ohne Garantie')]
+
+    # Raumbuch portfolioweit — Ausstattung je Objekt (Raum entsteht aus Assets)
+    from portfolio.models import Ausstattung
+    aqs = (Ausstattung.objects.select_related('einheit__liegenschaft')
+           .order_by('einheit__liegenschaft__strasse', 'einheit__bezeichnung', 'raum', 'sortierung'))
+    if aktive_lg:
+        aqs = aqs.filter(einheit__liegenschaft=aktive_lg)
+    ZUSTAND_CLS = {
+        'neuwertig': 'bg-emerald-50 text-emerald-700', 'gut': 'bg-emerald-50 text-emerald-700',
+        'gebraucht': 'bg-amber-50 text-amber-700', 'defekt': 'bg-rose-50 text-rose-700'}
+    ausst_rows = [{
+        'a': a, 'zustand_cls': ZUSTAND_CLS.get(a.zustand, 'bg-slate-100 text-slate-500'),
+        'standort': f"{a.einheit.liegenschaft.strasse} · {a.einheit.bezeichnung}",
+    } for a in aqs]
+
     return render(request, 'fw/assets.html', {
         **basis, 'nav': 'assets', 'rows': rows,
         'g_filter': g_filter, 'garantie_chips': chips, 'q': q,
         'anzahl': len(rows), 'n_aktiv': n_aktiv, 'n_bald': n_bald, 'n_abgelaufen': n_abgelaufen,
+        'ausst_rows': ausst_rows, 'ausst_count': len(ausst_rows),
         'liegenschaften': Liegenschaft.objects.order_by('strasse'),
         'einheiten': Einheit.objects.select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung'),
     })

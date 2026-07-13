@@ -4148,3 +4148,126 @@ class VerwaltungshonorarTests(TestCase):
         self.assertEqual(r2.status_code, 302)
         from finance.models import Buchung
         self.assertTrue(Buchung.objects.filter(soll_konto__nummer='4500', betrag=Decimal('400.00')).exists())
+
+
+class AusstattungRaumbuchTests(TestCase):
+    """Assets/Raumbuch Phase 1: Ausstattungselemente je Objekt (Raum entsteht
+    aus den Assets), Katalog-Vorlagen, Zeitwert nach Lebensdauertabelle."""
+
+    def test_lebensdauer_geseedet(self):
+        from portfolio.models import Lebensdauer
+        # Data-Migration 0019 seedet die Standardwerte
+        self.assertTrue(Lebensdauer.objects.filter(kategorie='Backofen').exists())
+
+    def test_effektive_lebensdauer_fallback_tabelle(self):
+        from portfolio.models import Ausstattung, Lebensdauer
+        _lg, e, _m, _v = _basis_objekte()
+        Lebensdauer.objects.update_or_create(kategorie='Backofen', defaults={'jahre': 15})
+        a = Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Backofen')
+        # kein manueller Wert → aus Tabelle
+        self.assertEqual(a.effektive_lebensdauer(), 15)
+        a.lebensdauer_jahre = 20
+        self.assertEqual(a.effektive_lebensdauer(), 20)
+
+    def test_zeitwert_berechnung(self):
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        # Neuwert 2000, 10 J Lebensdauer, 5 J alt → Zeitwert ~1000
+        einbau = date.today() - timedelta(days=int(365.25 * 5))
+        a = Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Kochherd',
+                                       neuwert=Decimal('2000'), einbau_datum=einbau,
+                                       lebensdauer_jahre=10)
+        zw = a.zeitwert()
+        self.assertIsNotNone(zw)
+        self.assertTrue(Decimal('950') <= zw <= Decimal('1050'))
+
+    def test_zeitwert_null_ohne_daten(self):
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        a = Ausstattung.objects.create(einheit=e, raum='Bad', kategorie='WC')
+        self.assertIsNone(a.zeitwert())
+
+    def test_zeitwert_nie_negativ(self):
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        # 20 J altes Element bei 10 J Lebensdauer → Rest 0, nicht negativ
+        einbau = date.today() - timedelta(days=int(365.25 * 20))
+        a = Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Herd',
+                                       neuwert=Decimal('1000'), einbau_datum=einbau,
+                                       lebensdauer_jahre=10)
+        self.assertEqual(a.zeitwert(), Decimal('0.00'))
+
+    def test_element_erfassen_view(self):
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/objekte/{e.id}/ausstattung/', {
+            'raum': 'Küche', 'kategorie': 'Geschirrspüler', 'marke': 'V-Zug',
+            'neuwert': '1800', 'einbau_datum': '2022-01-01', 'zustand': 'gut', 'menge': '1'})
+        self.assertEqual(r.status_code, 302)
+        a = Ausstattung.objects.get(einheit=e, kategorie='Geschirrspüler')
+        self.assertEqual(a.raum, 'Küche')
+        self.assertEqual(a.marke, 'V-Zug')
+        self.assertEqual(a.neuwert, Decimal('1800'))
+
+    def test_element_erfassen_pflichtfeld(self):
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/objekte/{e.id}/ausstattung/', {'raum': '', 'kategorie': ''})
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(Ausstattung.objects.filter(einheit=e).exists())
+
+    def test_katalog_laden(self):
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/objekte/{e.id}/ausstattung/katalog/', {'raumtyp': 'Küche'})
+        self.assertEqual(r.status_code, 302)
+        kueche = Ausstattung.objects.filter(einheit=e, raum='Küche')
+        self.assertGreater(kueche.count(), 5)
+        # Lebensdauer aus Katalog übernommen
+        herd = kueche.filter(kategorie='Kochherd / Glaskeramik').first()
+        self.assertIsNotNone(herd)
+        self.assertEqual(herd.lebensdauer_jahre, 15)
+
+    def test_katalog_dedupliziert(self):
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/objekte/{e.id}/ausstattung/katalog/', {'raumtyp': 'Küche'})
+        n1 = Ausstattung.objects.filter(einheit=e, raum='Küche').count()
+        c.post(f'/neu/objekte/{e.id}/ausstattung/katalog/', {'raumtyp': 'Küche'})
+        n2 = Ausstattung.objects.filter(einheit=e, raum='Küche').count()
+        self.assertEqual(n1, n2)
+
+    def test_element_loeschen(self):
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        a = Ausstattung.objects.create(einheit=e, raum='Bad', kategorie='Lavabo')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/ausstattung/{a.id}/loeschen/')
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(Ausstattung.objects.filter(id=a.id).exists())
+
+    def test_objekt_detail_zeigt_raumbuch(self):
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Backofen',
+                                   neuwert=Decimal('1200'), einbau_datum=date(2021, 1, 1),
+                                   lebensdauer_jahre=15)
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/objekte/{e.id}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Raumbuch')
+        self.assertContains(r, 'Backofen')
+
+    def test_assets_seite_zeigt_ausstattung(self):
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        Ausstattung.objects.create(einheit=e, raum='Bad', kategorie='Dusche', zustand='defekt')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/assets/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Raumbuch / Ausstattung')
+        self.assertContains(r, 'Dusche')

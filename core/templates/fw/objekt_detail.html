@@ -125,6 +125,117 @@
     {% endif %}
 </div>
 
+<!-- ===== TAB: RAUMBUCH ===== -->
+<div data-panel="obj" id="obj-raumbuch" class="hidden">
+    {% for m in meldung %}
+    <div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% elif m.tags == 'info' %}bg-sky-50 text-sky-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
+    {% endfor %}
+
+    <!-- Schnellerfassung ganzer Raum aus Katalog -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+        <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-wand-magic-sparkles text-indigo-500 mr-1.5"></i>Raum aus Katalog anlegen</h3>
+        <p class="text-xs text-slate-400 mb-3">Lädt die typische Ausstattung eines Raumtyps mit Standard-Lebensdauern — danach Details je Element ergänzen. Die Räume entstehen aus den Elementen.</p>
+        <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/katalog/" class="flex flex-wrap items-end gap-3">
+            {% csrf_token %}
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Raumtyp</label>
+                <select name="raumtyp" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    {% for rt in raumtypen %}<option value="{{ rt }}">{{ rt }}</option>{% endfor %}
+                </select></div>
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"><i class="fa-solid fa-layer-group mr-1.5"></i>Katalog laden</button>
+        </form>
+    </div>
+
+    <!-- Einzelnes Element erfassen -->
+    <div class="bg-white rounded-xl border border-indigo-200 p-5 mb-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-plus text-indigo-500 mr-1.5"></i>Ausstattungselement erfassen</h3>
+        <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {% csrf_token %}
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Raum *</label>
+                <input name="raum" list="raumliste" required placeholder="z.B. Küche" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <datalist id="raumliste">{% for rt in raumtypen %}<option value="{{ rt }}">{% endfor %}{% for r in raeume %}<option value="{{ r.raum }}">{% endfor %}</datalist></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kategorie *</label>
+                <input name="kategorie" required placeholder="z.B. Kochherd / Glaskeramik" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bezeichnung / Detail</label>
+                <input name="bezeichnung" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Marke</label>
+                <input name="marke" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Modell</label>
+                <input name="modell" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Material</label>
+                <input name="material" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Einbau / Anschaffung</label>
+                <input type="date" name="einbau_datum" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Neuwert (CHF)</label>
+                <input name="neuwert" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Lebensdauer (Jahre)</label>
+                <input name="lebensdauer_jahre" inputmode="numeric" placeholder="aus Tabelle" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Zustand</label>
+                <select name="zustand" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    {% for val, lbl in zustand_choices %}<option value="{{ val }}" {% if val == 'gut' %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                </select></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Garantie bis</label>
+                <input type="date" name="garantie_bis" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Menge</label>
+                <input name="menge" inputmode="numeric" value="1" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Notiz</label>
+                <input name="notiz" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Foto</label>
+                <input type="file" name="foto" accept="image/*" class="w-full text-xs text-slate-600 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold"></div>
+            <div class="sm:col-span-3 flex justify-end"><button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen</button></div>
+        </form>
+    </div>
+
+    <!-- Raumbuch (Räume aus Assets) -->
+    {% if raeume %}
+    <div class="space-y-4">
+        {% for r in raeume %}
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 bg-slate-50/60 flex items-center gap-2">
+                <i class="fa-solid fa-door-open text-indigo-500"></i>
+                <span class="font-bold text-slate-800">{{ r.raum }}</span>
+                <span class="text-xs text-slate-400">· {{ r.elemente|length }} Element{{ r.elemente|length|pluralize:",e" }}</span>
+            </div>
+            <table class="w-full text-sm">
+                <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                    <th class="px-5 py-2.5 font-semibold">Kategorie</th>
+                    <th class="px-5 py-2.5 font-semibold">Marke / Modell</th>
+                    <th class="px-5 py-2.5 font-semibold">Einbau</th>
+                    <th class="px-5 py-2.5 font-semibold text-right">Neuwert</th>
+                    <th class="px-5 py-2.5 font-semibold text-right">Zeitwert</th>
+                    <th class="px-5 py-2.5 font-semibold">Zustand</th>
+                    <th class="px-5 py-2.5"></th>
+                </tr></thead>
+                <tbody class="divide-y divide-slate-50">
+                {% for row in r.elemente %}
+                <tr class="hover:bg-slate-50/60">
+                    <td class="px-5 py-2.5">
+                        <div class="font-medium text-slate-900">{{ row.a.kategorie }}</div>
+                        {% if row.a.bezeichnung %}<div class="text-xs text-slate-400">{{ row.a.bezeichnung }}</div>{% endif %}
+                        {% if row.a.foto %}<a href="{{ row.a.foto.url }}" target="_blank" class="text-[11px] text-indigo-600 hover:underline"><i class="fa-solid fa-image mr-0.5"></i>Foto</a>{% endif %}
+                    </td>
+                    <td class="px-5 py-2.5 text-slate-600">{% if row.a.marke or row.a.modell %}{{ row.a.marke }} {{ row.a.modell }}{% else %}—{% endif %}</td>
+                    <td class="px-5 py-2.5 text-slate-600 whitespace-nowrap">{% if row.a.einbau_datum %}{{ row.a.einbau_datum|date:"m.Y" }}{% else %}—{% endif %}{% if row.lebensdauer %} <span class="text-xs text-slate-400">· {{ row.lebensdauer }}J</span>{% endif %}</td>
+                    <td class="px-5 py-2.5 text-right text-slate-700 whitespace-nowrap">{% if row.a.neuwert %}{{ row.a.neuwert|chf }}{% else %}—{% endif %}</td>
+                    <td class="px-5 py-2.5 text-right whitespace-nowrap {% if row.zeitwert %}text-slate-900 font-semibold{% else %}text-slate-400{% endif %}">{% if row.zeitwert %}{{ row.zeitwert|chf }}{% else %}—{% endif %}</td>
+                    <td class="px-5 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold {% if row.a.zustand == 'defekt' %}bg-rose-50 text-rose-700{% elif row.a.zustand == 'gebraucht' %}bg-amber-50 text-amber-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ row.a.get_zustand_display }}</span></td>
+                    <td class="px-5 py-2.5 text-right">
+                        <form method="post" action="/neu/ausstattung/{{ row.a.id }}/loeschen/" onsubmit="return confirm('Element löschen?');">
+                            {% csrf_token %}
+                            <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Ausstattung erfasst. Lade einen Raum aus dem Katalog oder erfasse ein Element — die Räume entstehen aus den Assets.</div>
+    {% endif %}
+</div>
+
 <!-- ===== TAB: HISTORIE ===== -->
 <div data-panel="obj" id="obj-historie" class="hidden">
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">

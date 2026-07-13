@@ -264,6 +264,82 @@ class Geraet(models.Model):
         db_table = 'core_geraet'
 
 
+class Ausstattung(models.Model):
+    """Ausstattungselement eines Objekts (Raumbuch). Der Raum entsteht aus den
+    Assets heraus — `raum` ist ein Attribut, das Raumbuch ist die Gruppierung.
+    Grundlage für Abnahme (Zeitwert nach Lebensdauertabelle) und Reparaturhistorie."""
+    ZUSTAND = [('neuwertig', 'Neuwertig'), ('gut', 'Gut'),
+               ('gebraucht', 'Gebraucht'), ('defekt', 'Defekt')]
+
+    einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='ausstattung')
+    raum = models.CharField("Raum", max_length=60)
+    kategorie = models.CharField("Kategorie", max_length=80)
+    bezeichnung = models.CharField("Bezeichnung / Detail", max_length=120, blank=True, default='')
+    marke = models.CharField(max_length=80, blank=True, default='')
+    modell = models.CharField(max_length=80, blank=True, default='')
+    material = models.CharField(max_length=80, blank=True, default='')
+    menge = models.PositiveIntegerField("Menge", default=1)
+    einbau_datum = models.DateField("Einbau / Anschaffung", null=True, blank=True)
+    neuwert = models.DecimalField("Neuwert (CHF)", max_digits=10, decimal_places=2, null=True, blank=True)
+    lebensdauer_jahre = models.PositiveIntegerField("Lebensdauer (Jahre, optional)", null=True, blank=True)
+    zustand = models.CharField(max_length=12, choices=ZUSTAND, default='gut')
+    garantie_bis = models.DateField(null=True, blank=True)
+    notiz = models.TextField(blank=True, default='')
+    foto = models.ImageField(upload_to=get_smart_upload_path, null=True, blank=True)
+    sortierung = models.PositiveIntegerField(default=0)
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Ausstattung"
+        verbose_name_plural = "Ausstattung"
+        ordering = ['raum', 'sortierung', 'id']
+        db_table = 'core_ausstattung'
+
+    def __str__(self):
+        return f"{self.raum} · {self.kategorie}"
+
+    def effektive_lebensdauer(self):
+        """Lebensdauer in Jahren: manueller Wert, sonst aus der Lebensdauertabelle
+        (nach Kategorie), sonst None."""
+        if self.lebensdauer_jahre:
+            return self.lebensdauer_jahre
+        return Lebensdauer.fuer_kategorie(self.kategorie)
+
+    def zeitwert(self, stichtag=None):
+        """Zeitwert (Restwert) nach paritätischer Lebensdauertabelle:
+        Neuwert × Restnutzungsdauer / Lebensdauer. None, wenn Daten fehlen."""
+        from decimal import Decimal
+        ld = self.effektive_lebensdauer()
+        if not (self.neuwert and self.einbau_datum and ld):
+            return None
+        tag = stichtag or date.today()
+        alter = max(0.0, (tag - self.einbau_datum).days / 365.25)
+        rest = max(0.0, float(ld) - alter)
+        return (self.neuwert * Decimal(str(rest / float(ld)))).quantize(Decimal('0.01'))
+
+
+class Lebensdauer(models.Model):
+    """Paritätische Lebensdauertabelle (Mieterverband/HEV): erwartete Nutzungs-
+    dauer je Ausstattungs-Kategorie. Editierbar; Standardwerte werden geseedet."""
+    kategorie = models.CharField(max_length=80, unique=True)
+    jahre = models.PositiveIntegerField("Lebensdauer (Jahre)")
+    bemerkung = models.CharField(max_length=200, blank=True, default='')
+
+    class Meta:
+        verbose_name = "Lebensdauer"
+        verbose_name_plural = "Lebensdauertabelle"
+        ordering = ['kategorie']
+        db_table = 'core_lebensdauer'
+
+    def __str__(self):
+        return f"{self.kategorie}: {self.jahre} J"
+
+    @classmethod
+    def fuer_kategorie(cls, kategorie):
+        row = cls.objects.filter(kategorie__iexact=(kategorie or '').strip()).first()
+        return row.jahre if row else None
+
+
 class Schluessel(models.Model):
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE)
     einheit = models.ForeignKey(Einheit, on_delete=models.SET_NULL, null=True, blank=True, related_name='schluessel_liste')
