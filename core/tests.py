@@ -4488,3 +4488,67 @@ class AusstattungLebenszyklusTests(TestCase):
         r = c.get(f'/neu/objekte/{e.id}/')
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Reparatur')
+
+
+class AusstattungEditKatalogTests(TestCase):
+    """Ausstattung bearbeiten (Katalog-Elemente mit Daten ergänzen) + Katalog-
+    Vollständigkeit/Konsistenz."""
+
+    def test_element_bearbeiten(self):
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        a = Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Backofen',
+                                       lebensdauer_jahre=15)
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/ausstattung/{a.id}/bearbeiten/', {
+            'raum': 'Küche', 'kategorie': 'Backofen', 'marke': 'V-Zug', 'modell': 'Combair',
+            'neuwert': '1600', 'einbau_datum': '2021-06-01', 'zustand': 'gut',
+            'garantie_bis': '2026-06-01', 'menge': '1', 'lebensdauer_jahre': '15'})
+        self.assertEqual(r.status_code, 302)
+        a.refresh_from_db()
+        self.assertEqual(a.marke, 'V-Zug')
+        self.assertEqual(a.modell, 'Combair')
+        self.assertEqual(a.neuwert, Decimal('1600'))
+        self.assertEqual(a.einbau_datum, date(2021, 6, 1))
+
+    def test_bearbeiten_pflichtfeld(self):
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        a = Ausstattung.objects.create(einheit=e, raum='Bad', kategorie='WC')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/ausstattung/{a.id}/bearbeiten/', {'raum': '', 'kategorie': ''})
+        self.assertEqual(r.status_code, 302)
+        a.refresh_from_db()
+        self.assertEqual(a.kategorie, 'WC')  # unverändert
+
+    def test_katalog_alle_raeume_vollstaendig(self):
+        """Jeder Raumtyp enthält die gemeinsamen Bauteile (Wände, Beleuchtung,
+        Lichtschalter, Steckdosen) — Katalog konsistent aufgebaut."""
+        from core.services.raumkatalog import RAUM_KATALOG
+        for raum, elemente in RAUM_KATALOG.items():
+            kats = [k for k, _ in elemente]
+            # Mindestgrösse
+            self.assertGreaterEqual(len(kats), 7, f"{raum} zu wenige Elemente")
+            # keine Duplikate innerhalb eines Raums
+            self.assertEqual(len(kats), len(set(kats)), f"{raum} hat Duplikate")
+            # Elektro-Basis überall (ausser reine Aussen-/Technikräume)
+            if raum not in ('Balkon / Terrasse', 'Heizung / Technik', 'Keller / Estrich'):
+                self.assertIn('Beleuchtung', kats, f"{raum} ohne Beleuchtung")
+                self.assertIn('Steckdosen', kats, f"{raum} ohne Steckdosen")
+
+    def test_katalog_lebensdauern_positiv(self):
+        from core.services.raumkatalog import RAUM_KATALOG
+        for raum, elemente in RAUM_KATALOG.items():
+            for kat, jahre in elemente:
+                self.assertTrue(jahre and jahre > 0, f"{raum}/{kat} ohne Lebensdauer")
+
+    def test_katalog_laden_neue_raeume(self):
+        from portfolio.models import Ausstattung
+        from core.services.raumkatalog import RAUMTYPEN
+        _lg, e, _m, _v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        # Alle Raumtypen laden lassen (auch neue: Heizung/Technik, Reduit/Waschküche)
+        for rt in RAUMTYPEN:
+            r = c.post(f'/neu/objekte/{e.id}/ausstattung/katalog/', {'raumtyp': rt})
+            self.assertEqual(r.status_code, 302)
+        self.assertGreater(Ausstattung.objects.filter(einheit=e).count(), 50)

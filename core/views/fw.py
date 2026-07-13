@@ -1254,6 +1254,66 @@ def fw_ausstattung_add(request, pk):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_ausstattung_edit(request, pk):
+    """Bearbeitet ein bestehendes Ausstattungselement (Marke/Modell/Material,
+    Neuwert, Einbaudatum, Zustand, Garantie, Lebensdauer, Notiz, Foto). So lassen
+    sich die aus dem Katalog geladenen Elemente mit echten Daten ergänzen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Ausstattung
+    from core.auth import log_aktion
+    a = get_object_or_404(Ausstattung.objects.select_related('einheit'), id=pk)
+    eid = a.einheit_id
+    if request.method != 'POST':
+        return redirect(f'/neu/objekte/{eid}/#obj-raumbuch')
+
+    def _dec(x):
+        try:
+            v = (str(x) or '').replace(',', '.').strip()
+            return Decimal(v) if v else None
+        except Exception:
+            return None
+
+    def _date(x):
+        try:
+            return date.fromisoformat(x)
+        except Exception:
+            return None
+
+    def _int(x, default=None):
+        try:
+            return int(x)
+        except Exception:
+            return default
+
+    P = request.POST
+    raum = (P.get('raum') or '').strip()
+    kategorie = (P.get('kategorie') or '').strip()
+    if not raum or not kategorie:
+        messages.error(request, "Raum und Kategorie sind Pflichtfelder.")
+        return redirect(f'/neu/objekte/{eid}/#obj-raumbuch')
+    a.raum = raum
+    a.kategorie = kategorie
+    a.bezeichnung = (P.get('bezeichnung') or '').strip()
+    a.marke = (P.get('marke') or '').strip()
+    a.modell = (P.get('modell') or '').strip()
+    a.material = (P.get('material') or '').strip()
+    a.menge = _int(P.get('menge'), a.menge) or 1
+    a.einbau_datum = _date(P.get('einbau_datum'))
+    a.neuwert = _dec(P.get('neuwert'))
+    a.lebensdauer_jahre = _int(P.get('lebensdauer_jahre'))
+    a.zustand = P.get('zustand') or a.zustand
+    a.garantie_bis = _date(P.get('garantie_bis'))
+    a.notiz = (P.get('notiz') or '').strip()
+    if request.FILES.get('foto'):
+        a.foto = request.FILES['foto']
+    a.save()
+    log_aktion(request, "Ausstattung bearbeitet", a.einheit.bezeichnung, f"{raum} · {kategorie}")
+    messages.success(request, f"✅ «{kategorie}» aktualisiert.")
+    return redirect(f'/neu/objekte/{eid}/#obj-raumbuch')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_ausstattung_katalog(request, pk):
     """Legt für einen Raumtyp die Standard-Ausstattung aus dem Katalog an
     (Schnellerfassung). Vorhandene Elemente werden nicht dupliziert."""

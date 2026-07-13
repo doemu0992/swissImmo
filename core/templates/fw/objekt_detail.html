@@ -222,10 +222,53 @@
                     <td class="px-5 py-2.5 text-right text-slate-700 whitespace-nowrap">{% if row.a.neuwert %}{{ row.a.neuwert|chf }}{% else %}—{% endif %}</td>
                     <td class="px-5 py-2.5 text-right whitespace-nowrap {% if row.zeitwert %}text-slate-900 font-semibold{% else %}text-slate-400{% endif %}">{% if row.zeitwert %}{{ row.zeitwert|chf }}{% else %}—{% endif %}</td>
                     <td class="px-5 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold {% if row.a.zustand == 'defekt' %}bg-rose-50 text-rose-700{% elif row.a.zustand == 'gebraucht' %}bg-amber-50 text-amber-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ row.a.get_zustand_display }}</span></td>
-                    <td class="px-5 py-2.5 text-right">
-                        <form method="post" action="/neu/ausstattung/{{ row.a.id }}/loeschen/" onsubmit="return confirm('Element löschen?');">
+                    <td class="px-5 py-2.5 text-right whitespace-nowrap">
+                        <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 text-xs mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
+                        <form method="post" action="/neu/ausstattung/{{ row.a.id }}/loeschen/" class="inline" onsubmit="return confirm('Element löschen?');">
                             {% csrf_token %}
                             <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                <!-- Inline-Bearbeitung -->
+                <tr id="edit-{{ row.a.id }}" class="hidden bg-indigo-50/40">
+                    <td colspan="7" class="px-5 py-4">
+                        <form method="post" action="/neu/ausstattung/{{ row.a.id }}/bearbeiten/" enctype="multipart/form-data" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {% csrf_token %}
+                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Raum</label>
+                                <input name="raum" value="{{ row.a.raum }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Kategorie</label>
+                                <input name="kategorie" value="{{ row.a.kategorie }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Marke</label>
+                                <input name="marke" value="{{ row.a.marke }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Modell</label>
+                                <input name="modell" value="{{ row.a.modell }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Material</label>
+                                <input name="material" value="{{ row.a.material }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Bezeichnung / Detail</label>
+                                <input name="bezeichnung" value="{{ row.a.bezeichnung }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Einbau / Anschaffung</label>
+                                <input type="date" name="einbau_datum" value="{{ row.a.einbau_datum|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Neuwert (CHF)</label>
+                                <input name="neuwert" value="{{ row.a.neuwert|default_if_none:'' }}" inputmode="decimal" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Lebensdauer (J)</label>
+                                <input name="lebensdauer_jahre" value="{{ row.a.lebensdauer_jahre|default_if_none:'' }}" inputmode="numeric" placeholder="{{ row.lebensdauer|default_if_none:'aus Tabelle' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Zustand</label>
+                                <select name="zustand" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
+                                    {% for val, lbl in zustand_choices %}<option value="{{ val }}" {% if row.a.zustand == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                                </select></div>
+                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Garantie bis</label>
+                                <input type="date" name="garantie_bis" value="{{ row.a.garantie_bis|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Menge</label>
+                                <input name="menge" value="{{ row.a.menge }}" inputmode="numeric" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                            <div class="sm:col-span-2"><label class="block text-[11px] font-semibold text-slate-500 mb-1">Notiz</label>
+                                <input name="notiz" value="{{ row.a.notiz }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                            <div class="sm:col-span-2"><label class="block text-[11px] font-semibold text-slate-500 mb-1">Foto {% if row.a.foto %}<span class="text-slate-400">(ersetzt bestehendes)</span>{% endif %}</label>
+                                <input type="file" name="foto" accept="image/*" class="w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold"></div>
+                            <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
+                                <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
+                                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                            </div>
                         </form>
                     </td>
                 </tr>

@@ -1,53 +1,84 @@
 """Raum-/Ausstattungskatalog (Vorlagen) und Standard-Lebensdauern.
 
 - RAUM_KATALOG: pro Raumtyp die typischen Ausstattungselemente, damit die
-  Erfassung schnell geht (Standardliste laden, dann anpassen).
+  Erfassung schnell geht (Standardliste laden, dann je Element anpassen —
+  Marke/Modell/Neuwert/Einbaudatum ergänzen).
 - STANDARD_LEBENSDAUER: gängige Nutzungsdauern (Jahre) je Kategorie, angelehnt
   an die paritätische Lebensdauertabelle (Mieterverband/HEV). Bewusst als
   Startwerte gedacht — in der App editierbar, offizielle Version dort pflegen.
+
+Konsistenz: Jeder Innenraum enthält denselben Satz gemeinsamer Bauteile
+(Wände, Decke, Fenster/Fensterbank/Storen, Tür, Beleuchtung, Lichtschalter,
+Steckdosen) plus die raumspezifischen Elemente — so ist der Katalog überall
+gleich aufgebaut und vollständig.
 """
 
-# Raumtyp -> Liste von (Kategorie, Standard-Lebensdauer-Jahre|None)
+# Gemeinsame Bauteile für Innenräume (überall gleich → konsistente Erfassung).
+# (Kategorie, Standard-Lebensdauer-Jahre)
+_ALLGEMEIN_ELEKTRO = [
+    ('Beleuchtung', 15), ('Lichtschalter', 25), ('Steckdosen', 25),
+]
+_INNEN_BASIS = [
+    ('Wände / Anstrich', 8), ('Decke / Anstrich', 8),
+    ('Fenster', 30), ('Fensterbank', 30), ('Storen / Rollladen', 25),
+    ('Zimmertür', 30),
+] + _ALLGEMEIN_ELEKTRO
+
+# Raumtyp -> Liste von (Kategorie, Standard-Lebensdauer-Jahre)
 RAUM_KATALOG = {
     'Küche': [
-        ('Küchenkombination', 25), ('Kochherd / Glaskeramik', 15), ('Backofen', 15),
-        ('Dampfabzug', 15), ('Geschirrspüler', 12), ('Kühlschrank', 15),
-        ('Spüle / Armatur', 20), ('Arbeitsplatte', 20), ('Wände', 8),
-        ('Bodenbelag', 20), ('Beleuchtung', 15), ('Lichtschalter', 25),
-        ('Steckdosen', 25), ('Fensterbank', 30), ('Storen / Rollladen', 25),
-    ],
-    'Bad / WC': [
-        ('Badewanne', 35), ('Dusche / Duschwand', 20), ('Lavabo', 35), ('WC', 35),
-        ('Armaturen', 20), ('Spiegelschrank', 15), ('Wandplatten', 30),
-        ('Bodenplatten', 30), ('Ventilator / Entlüftung', 15), ('Beleuchtung', 15),
-        ('Lichtschalter', 25), ('Steckdosen', 25),
-    ],
-    'Zimmer': [
-        ('Wände / Anstrich', 8), ('Bodenbelag / Parkett', 25), ('Teppich', 10),
-        ('Decke', 8), ('Fenster', 30), ('Fensterbank', 30), ('Storen / Rollladen', 25),
-        ('Beleuchtung', 15), ('Lichtschalter', 25), ('Steckdosen', 25), ('Zimmertür', 30),
-    ],
-    'Wohnzimmer': [
-        ('Wände / Anstrich', 8), ('Bodenbelag / Parkett', 25), ('Decke', 8),
+        ('Küchenkombination / Korpus', 25), ('Arbeitsplatte', 20),
+        ('Kochherd / Glaskeramik', 15), ('Backofen', 15), ('Mikrowelle', 12),
+        ('Dampfabzug / Ventilator', 15), ('Geschirrspüler', 12),
+        ('Kühlschrank / Gefrierteil', 15), ('Spüle / Becken', 25),
+        ('Küchenarmatur', 20), ('Spritzschutz / Wandabschluss', 20),
+        ('Wände / Anstrich', 8), ('Decke / Anstrich', 8), ('Bodenbelag', 20),
         ('Fenster', 30), ('Fensterbank', 30), ('Storen / Rollladen', 25),
-        ('Beleuchtung', 15), ('Lichtschalter', 25), ('Steckdosen', 25),
-    ],
+        ('Küchentür', 30),
+    ] + _ALLGEMEIN_ELEKTRO,
+    'Bad / WC': [
+        ('Badewanne', 35), ('Dusche / Duschwanne', 30), ('Duschabtrennung / Duschwand', 20),
+        ('Lavabo / Waschbecken', 35), ('WC / Spülkasten', 35),
+        ('Armaturen', 20), ('Spiegelschrank', 15), ('Badmöbel / Unterschrank', 20),
+        ('Wandplatten', 30), ('Bodenplatten', 30), ('Silikonfugen', 5),
+        ('Ventilator / Entlüftung', 15), ('Accessoires / Handtuchhalter', 15),
+        ('Decke / Anstrich', 8), ('Fenster', 30), ('Badezimmertür', 30),
+    ] + _ALLGEMEIN_ELEKTRO,
+    'Wohnzimmer': [
+        ('Bodenbelag / Parkett', 25), ('Teppich', 10),
+        ('Heizkörper / Radiator', 30), ('Balkontür', 30),
+    ] + _INNEN_BASIS,
+    'Zimmer': [
+        ('Bodenbelag / Parkett', 25), ('Teppich', 10),
+        ('Einbauschrank', 25), ('Heizkörper / Radiator', 30),
+    ] + _INNEN_BASIS,
     'Korridor / Entrée': [
-        ('Wände / Anstrich', 8), ('Bodenbelag', 20), ('Einbauschrank', 25),
-        ('Wohnungstür', 30), ('Beleuchtung', 15), ('Lichtschalter', 25),
-        ('Steckdosen', 25), ('Gegensprechanlage', 20),
-    ],
-    'Reduit / Keller': [
-        ('Waschmaschine', 15), ('Tumbler', 15), ('Regale', 20), ('Beleuchtung', 15),
-        ('Wände', 8), ('Bodenbelag', 20),
+        ('Bodenbelag', 20), ('Einbauschrank / Garderobe', 25),
+        ('Wohnungseingangstür', 30), ('Gegensprechanlage / Video', 20),
+        ('Sicherungskasten / Elektroverteilung', 30),
+        ('Wände / Anstrich', 8), ('Decke / Anstrich', 8),
+    ] + _ALLGEMEIN_ELEKTRO,
+    'Reduit / Waschküche': [
+        ('Waschmaschine', 15), ('Tumbler / Trockner', 15),
+        ('Waschbecken / Ausguss', 25), ('Regale / Tablare', 20),
+        ('Wände / Anstrich', 8), ('Bodenbelag', 20), ('Tür', 30),
+    ] + _ALLGEMEIN_ELEKTRO,
+    'Keller / Estrich': [
+        ('Kellerabteil / Lattenverschlag', 30), ('Regale / Tablare', 20),
+        ('Wände', 8), ('Bodenbelag', 20), ('Kellertür', 30),
+        ('Beleuchtung', 15), ('Lichtschalter', 25),
     ],
     'Balkon / Terrasse': [
-        ('Bodenbelag', 20), ('Geländer', 40), ('Storen / Markise', 20),
-        ('Beleuchtung', 15), ('Steckdose (aussen)', 25),
+        ('Bodenbelag / Plattenbelag', 20), ('Geländer / Brüstung', 40),
+        ('Storen / Markise', 20), ('Sichtschutz / Trennwand', 20),
+        ('Sonnenschutz-Motor', 15), ('Aussenbeleuchtung', 15),
+        ('Steckdose (aussen)', 25), ('Wasseranschluss (aussen)', 25),
     ],
-    'Allgemein': [
-        ('Heizung / Radiatoren', 30), ('Boiler', 20), ('Rauchmelder', 10),
-        ('Zähler', 15),
+    'Heizung / Technik': [
+        ('Heizung / Wärmeerzeuger', 30), ('Heizkörper / Radiatoren', 30),
+        ('Bodenheizung-Verteiler', 30), ('Boiler / Warmwasserspeicher', 20),
+        ('Lüftungsanlage', 20), ('Rauchmelder', 10),
+        ('Wasserzähler / Zähler', 15), ('Sicherungskasten', 30),
     ],
 }
 
