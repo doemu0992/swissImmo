@@ -5094,29 +5094,24 @@ def fw_mandate(request):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_mieterwechsel(request):
-    """Mieterwechsel-Cockpit: alle laufenden Kündigungen als Pipeline
-    Gekündigt → Rücknahme → Nachmieter → neuer Vertrag → Übergabe."""
-    from rentals.models import Kuendigung, Abnahmeprotokoll
+    """Mieterwechsel-Cockpit: EINE Übersicht über alle Vertragswechsel — gekündigte
+    UND auslaufende (befristete) Verträge — als Pipeline von Gekündigt/Läuft aus →
+    Rücknahme → Nachmieter → neuer Vertrag → Übergabe → Abrechnung."""
+    from rentals.models import Kuendigung
     from mietprozess.models import Mietbewerbung
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
     heute = timezone.localdate()
+    try:
+        monate = int(request.GET.get('monate', '12'))
+    except ValueError:
+        monate = 12
+    grenze = None if monate == 0 else heute + _timedelta(days=int(monate * 30.44))
 
-    qs = (Kuendigung.objects.filter(status__in=['erfasst', 'bestaetigt'])
-          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft')
-          .order_by('per_datum', 'berechneter_termin'))
-    if aktive_lg:
-        qs = qs.filter(vertrag__einheit__liegenschaft=aktive_lg)
-
-    rows = []
-    for k in qs:
-        v = k.vertrag
+    def _row(v, ende, gekuendigt, k=None):
         e = v.einheit if v else None
         lg = e.liegenschaft if e else None
-        ende = k.per_datum or k.berechneter_termin
         tage = (ende - heute).days if ende else None
-
-        # Nachmieter-Vertrag: anderer Vertrag auf derselben Einheit mit Beginn ~ab Ende
         nachmieter_v = None
         if e:
             nachmieter_v = (Mietvertrag.objects.filter(einheit=e)
@@ -5129,17 +5124,13 @@ def fw_mieterwechsel(request):
         auszug = auszug_prot is not None
         einzug = nachmieter_v.abnahmen.filter(typ='einzug').exists() if nachmieter_v else False
 
-        # Kaution + offene Forderungen des ausziehenden Mieters: nach der Rücknahme
-        # per Schlussabrechnung abrechnen (netto: offene Forderungen − Kaution, Art. 257e).
         kaution_status = v.kautions_status if v else 'keine'
-        kaution_offen = kaution_status in ('erwartet', 'einbezahlt')   # noch nicht abgerechnet
+        kaution_offen = kaution_status in ('erwartet', 'einbezahlt')
         kaution_erledigt = kaution_status in ('zurueckbezahlt', 'keine')
         offene_forderungen = (DebitorenRechnung.objects
                               .filter(vertrag=v, status__in=['offen', 'teilbezahlt']).count()) if v else 0
-        # Schlussabrechnung nötig, solange Kaution offen ODER Forderungen offen sind
         schluss_offen = bool(auszug and (kaution_offen or offene_forderungen > 0))
 
-        # Pipeline-Stufe + nächste Aktion
         if schluss_offen:
             stufe, farbe, aktion = 'Schlussabrechnung', 'amber', 'Schlussabrechnung erstellen (Kaution + offene Forderungen)'
         elif einzug and kaution_erledigt and offene_forderungen == 0:
@@ -5150,11 +5141,13 @@ def fw_mieterwechsel(request):
             stufe, farbe, aktion = 'Bewerbungen', 'indigo', 'Bewerbung prüfen & Vertrag erstellen'
         elif auszug:
             stufe, farbe, aktion = 'Rücknahme erfolgt', 'amber', 'Nachmieter suchen'
-        else:
+        elif gekuendigt:
             stufe, farbe, aktion = 'Gekündigt', 'rose', 'Objekt ausschreiben / Rücknahme planen'
+        else:
+            stufe, farbe, aktion = 'Läuft aus', 'slate', 'Ausschreiben oder Kündigung erfassen'
 
-        rows.append({
-            'k': k, 'v': v, 'einheit': e, 'liegenschaft': lg,
+        return {
+            'k': k, 'v': v, 'einheit': e, 'liegenschaft': lg, 'gekuendigt': gekuendigt,
             'objekt': (f"{lg.strasse}, {lg.ort} · {e.bezeichnung}" if lg and e else (e.bezeichnung if e else '—')),
             'mieter': v.mieter.display_name if v and v.mieter_id else '—',
             'ende': ende, 'tage': tage,
@@ -5168,12 +5161,44 @@ def fw_mieterwechsel(request):
             'ausgeschrieben': (e.zur_ausschreibung if e else False),
             'einheit_id': (e.id if e else None),
             'stufe': stufe, 'farbe': farbe, 'aktion': aktion,
-        })
+        }
 
+    rows = []
+    behandelte_vids = set()
+
+    # 1) Gekündigte Verträge (laufende Kündigungen) — immer relevant, kein Horizont
+    kq = (Kuendigung.objects.filter(status__in=['erfasst', 'bestaetigt'])
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft')
+          .order_by('per_datum', 'berechneter_termin'))
+    if aktive_lg:
+        kq = kq.filter(vertrag__einheit__liegenschaft=aktive_lg)
+    for k in kq:
+        v = k.vertrag
+        if not v or v.id in behandelte_vids:
+            continue
+        behandelte_vids.add(v.id)
+        rows.append(_row(v, k.per_datum or k.berechneter_termin, gekuendigt=True, k=k))
+
+    # 2) Auslaufende befristete Verträge (aktiv, mit Ende, ohne laufende Kündigung)
+    vq = (Mietvertrag.objects.filter(status='aktiv', ende__isnull=False)
+          .select_related('mieter', 'einheit__liegenschaft'))
+    if aktive_lg:
+        vq = vq.filter(einheit__liegenschaft=aktive_lg)
+    if grenze:
+        vq = vq.filter(ende__lte=grenze)
+    for v in vq.order_by('ende'):
+        if v.id in behandelte_vids:
+            continue
+        behandelte_vids.add(v.id)
+        rows.append(_row(v, v.ende, gekuendigt=False))
+
+    rows.sort(key=lambda r: (r['ende'] or heute))
     offen = [r for r in rows if r['stufe'] != 'Abgeschlossen']
     return render(request, 'fw/mieterwechsel.html', {
         **basis, 'nav': 'mieterwechsel', 'rows': rows,
-        'anzahl': len(rows), 'offen': len(offen),
+        'anzahl': len(rows), 'offen': len(offen), 'monate': monate,
+        'gekuendigt_n': sum(1 for r in rows if r['gekuendigt']),
+        'auslaufend_n': sum(1 for r in rows if not r['gekuendigt']),
         'dringend': len([r for r in offen if r['tage'] is not None and r['tage'] <= 60]),
     })
 
@@ -5274,60 +5299,6 @@ def fw_vermarktung(request):
     return render(request, 'fw/vermarktung.html', {
         **basis, 'nav': 'vermarktung', 'rows': rows, 'anzahl': len(rows),
         'summe_bewerbungen': sum(r['bewerbungen'] for r in rows),
-    })
-
-
-@rolle_erforderlich(*TEAM_ROLLEN)
-def fw_vertragsauslauf(request):
-    """Vertragsauslauf / Nachvermietung: auslaufende und gekündigte Verträge mit
-    Tagen bis Ende, Ausschreibungs-Status und Nachmieter — proaktive Re-Vermietung."""
-    from rentals.models import Kuendigung
-    basis = _global_filter(request)
-    aktive_lg = basis['aktive_lg']
-    heute = timezone.localdate()
-    try:
-        monate = int(request.GET.get('monate', '6'))
-    except ValueError:
-        monate = 6
-    grenze = None if monate == 0 else heute + _timedelta(days=int(monate * 30.44))
-
-    vtr = (Mietvertrag.objects.filter(status__in=['aktiv', 'gekuendigt'])
-           .select_related('mieter', 'einheit__liegenschaft'))
-    if aktive_lg:
-        vtr = vtr.filter(einheit__liegenschaft=aktive_lg)
-
-    # Effektives Ende: Vertrag.ende, sonst per_datum/berechneter Termin einer laufenden Kündigung
-    kuend = {}
-    for k in Kuendigung.objects.filter(status__in=['erfasst', 'bestaetigt']).order_by('per_datum'):
-        kuend.setdefault(k.vertrag_id, k.per_datum or k.berechneter_termin)
-
-    rows = []
-    for v in vtr:
-        ende = v.ende or kuend.get(v.id)
-        if not ende:
-            continue
-        if grenze and ende > grenze:
-            continue
-        tage = (ende - heute).days
-        e = v.einheit
-        nachmieter = (Mietvertrag.objects.filter(einheit=e, beginn__gte=ende)
-                      .exclude(id=v.id).exclude(status='archiviert').exists()) if e else False
-        rows.append({
-            'v': v, 'mieter': v.mieter.display_name if v.mieter_id else '—',
-            'einheit': e,
-            'objekt': (f"{e.liegenschaft.strasse} · {e.bezeichnung}" if e and e.liegenschaft_id else (e.bezeichnung if e else '—')),
-            'ende': ende, 'tage': tage,
-            'gekuendigt': v.status == 'gekuendigt',
-            'ausgeschrieben': bool(e and e.zur_ausschreibung),
-            'nachmieter': nachmieter,
-            'handlungsbedarf': bool(e and not e.zur_ausschreibung and not nachmieter and tage <= 120),
-        })
-    rows.sort(key=lambda r: r['ende'])
-    handlungsbedarf_n = sum(1 for r in rows if r['handlungsbedarf'])
-
-    return render(request, 'fw/vertragsauslauf.html', {
-        **basis, 'nav': 'vermarktung', 'rows': rows, 'anzahl': len(rows),
-        'monate': monate, 'handlungsbedarf_n': handlungsbedarf_n, 'heute': heute,
     })
 
 

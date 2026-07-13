@@ -1,15 +1,24 @@
 {% extends 'fw/base.html' %}
 {% block title %}Mieterwechsel · swissImmo{% endblock %}
 {% block content %}
-<div class="mb-6 flex items-end justify-between gap-3 flex-wrap">
+<div class="mb-4 flex items-end justify-between gap-3 flex-wrap">
     <div>
         <h1 class="text-2xl font-black tracking-tight text-slate-900">Mieterwechsel-Cockpit</h1>
-        <p class="text-slate-500 mt-1">Laufende Kündigungen von der Rücknahme bis zur Übergabe an den Nachmieter.</p>
+        <p class="text-slate-500 mt-1">Gekündigte <span class="text-slate-400">({{ gekuendigt_n }})</span> und auslaufende <span class="text-slate-400">({{ auslaufend_n }})</span> Verträge — von Rücknahme bis Übergabe an den Nachmieter.</p>
     </div>
     <div class="flex gap-2">
         <span class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm"><span class="font-bold text-slate-900">{{ offen }}</span> <span class="text-slate-400">offen</span></span>
         <span class="px-3 py-2 rounded-xl bg-rose-50 border border-rose-100 text-sm"><span class="font-bold text-rose-700">{{ dringend }}</span> <span class="text-rose-500">≤ 60 Tage</span></span>
     </div>
+</div>
+
+<div class="flex items-center gap-2 mb-5 flex-wrap">
+    <span class="text-xs font-semibold text-slate-400 mr-1">Auslaufende Verträge im Horizont:</span>
+    <a href="?monate=3{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 3 %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-indigo-300{% endif %}">3 Mt.</a>
+    <a href="?monate=6{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 6 %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-indigo-300{% endif %}">6 Mt.</a>
+    <a href="?monate=12{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 12 %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-indigo-300{% endif %}">12 Mt.</a>
+    <a href="?monate=0{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 0 %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-indigo-300{% endif %}">Alle</a>
+    <span class="text-[11px] text-slate-400 ml-1">· gekündigte immer sichtbar</span>
 </div>
 
 {% if rows %}

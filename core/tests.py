@@ -3803,44 +3803,56 @@ class ObjektFotoTests(TestCase):
         self.assertTrue(r.content.startswith(b'%PDF'))
 
 
-class VertragsauslaufTests(TestCase):
-    """Vertragsauslauf / Nachvermietung: auslaufende & gekündigte Verträge."""
+class MieterwechselAuslaufTests(TestCase):
+    """Konsolidiertes Mieterwechsel-Cockpit: gekündigte UND auslaufende Verträge."""
 
-    def test_befristeter_vertrag_mit_ende(self):
+    def test_auslaufender_vertrag_erscheint(self):
         lg, e, m, v = _basis_objekte()
-        v.ende = date.today() + timedelta(days=45)   # läuft in 45 Tagen aus
-        v.save()
+        v.ende = date.today() + timedelta(days=45); v.save()
         c = Client(); c.force_login(_team_user())
-        r = c.get('/neu/vertragsauslauf/')
+        r = c.get('/neu/mieterwechsel/')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(len(r.context['rows']), 1)
-        row = r.context['rows'][0]
-        self.assertEqual(row['tage'], 45)
-        self.assertTrue(row['handlungsbedarf'])   # ≤120T, nicht ausgeschrieben, kein Nachmieter
+        row = next((x for x in r.context['rows'] if x['v'].id == v.id), None)
+        self.assertIsNotNone(row)
+        self.assertFalse(row['gekuendigt'])
+        self.assertEqual(row['stufe'], 'Läuft aus')
+        self.assertEqual(r.context['auslaufend_n'], 1)
 
-    def test_ausgeschrieben_kein_handlungsbedarf(self):
+    def test_gekuendigter_vertrag_erscheint(self):
+        from rentals.models import Kuendigung
         lg, e, m, v = _basis_objekte()
-        v.ende = date.today() + timedelta(days=30); v.save()
-        e.zur_ausschreibung = True; e.save()
+        v.status = 'gekuendigt'; v.save()
+        Kuendigung.objects.create(vertrag=v, absender='mieter', status='erfasst',
+                                  per_datum=date.today() + timedelta(days=60))
         c = Client(); c.force_login(_team_user())
-        r = c.get('/neu/vertragsauslauf/')
-        row = r.context['rows'][0]
-        self.assertTrue(row['ausgeschrieben'])
-        self.assertFalse(row['handlungsbedarf'])
+        r = c.get('/neu/mieterwechsel/')
+        row = next((x for x in r.context['rows'] if x['v'].id == v.id), None)
+        self.assertIsNotNone(row)
+        self.assertTrue(row['gekuendigt'])
+        self.assertEqual(r.context['gekuendigt_n'], 1)
 
-    def test_horizont_filter(self):
+    def test_horizont_filter_nur_auslaufende(self):
         lg, e, m, v = _basis_objekte()
-        v.ende = date.today() + timedelta(days=300); v.save()   # >6 Monate
+        v.ende = date.today() + timedelta(days=300); v.save()   # > 6 Monate
         c = Client(); c.force_login(_team_user())
-        self.assertEqual(len(c.get('/neu/vertragsauslauf/?monate=6').context['rows']), 0)
-        self.assertEqual(len(c.get('/neu/vertragsauslauf/?monate=12').context['rows']), 1)
-        self.assertEqual(len(c.get('/neu/vertragsauslauf/?monate=0').context['rows']), 1)
+        self.assertEqual(c.get('/neu/mieterwechsel/?monate=6').context['auslaufend_n'], 0)
+        self.assertEqual(c.get('/neu/mieterwechsel/?monate=12').context['auslaufend_n'], 1)
 
-    def test_ohne_ende_nicht_gelistet(self):
-        lg, e, m, v = _basis_objekte()   # v.ende = None, status aktiv
+    def test_keine_doppelung_gekuendigt_und_ende(self):
+        from rentals.models import Kuendigung
+        lg, e, m, v = _basis_objekte()
+        v.status = 'gekuendigt'; v.ende = date.today() + timedelta(days=30); v.save()
+        Kuendigung.objects.create(vertrag=v, absender='mieter', status='erfasst',
+                                  per_datum=date.today() + timedelta(days=30))
         c = Client(); c.force_login(_team_user())
-        r = c.get('/neu/vertragsauslauf/?monate=0')
-        self.assertEqual(len(r.context['rows']), 0)
+        r = c.get('/neu/mieterwechsel/')
+        treffer = [x for x in r.context['rows'] if x['v'].id == v.id]
+        self.assertEqual(len(treffer), 1)   # nur einmal (als gekündigt)
+        self.assertTrue(treffer[0]['gekuendigt'])
+
+    def test_vertragsauslauf_route_entfernt(self):
+        c = Client(); c.force_login(_team_user())
+        self.assertEqual(c.get('/neu/vertragsauslauf/').status_code, 404)
 
 
 class DebitorenAgingTests(TestCase):
