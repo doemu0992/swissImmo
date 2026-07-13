@@ -5278,6 +5278,60 @@ def fw_vermarktung(request):
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
+def fw_vertragsauslauf(request):
+    """Vertragsauslauf / Nachvermietung: auslaufende und gekündigte Verträge mit
+    Tagen bis Ende, Ausschreibungs-Status und Nachmieter — proaktive Re-Vermietung."""
+    from rentals.models import Kuendigung
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.localdate()
+    try:
+        monate = int(request.GET.get('monate', '6'))
+    except ValueError:
+        monate = 6
+    grenze = None if monate == 0 else heute + _timedelta(days=int(monate * 30.44))
+
+    vtr = (Mietvertrag.objects.filter(status__in=['aktiv', 'gekuendigt'])
+           .select_related('mieter', 'einheit__liegenschaft'))
+    if aktive_lg:
+        vtr = vtr.filter(einheit__liegenschaft=aktive_lg)
+
+    # Effektives Ende: Vertrag.ende, sonst per_datum/berechneter Termin einer laufenden Kündigung
+    kuend = {}
+    for k in Kuendigung.objects.filter(status__in=['erfasst', 'bestaetigt']).order_by('per_datum'):
+        kuend.setdefault(k.vertrag_id, k.per_datum or k.berechneter_termin)
+
+    rows = []
+    for v in vtr:
+        ende = v.ende or kuend.get(v.id)
+        if not ende:
+            continue
+        if grenze and ende > grenze:
+            continue
+        tage = (ende - heute).days
+        e = v.einheit
+        nachmieter = (Mietvertrag.objects.filter(einheit=e, beginn__gte=ende)
+                      .exclude(id=v.id).exclude(status='archiviert').exists()) if e else False
+        rows.append({
+            'v': v, 'mieter': v.mieter.display_name if v.mieter_id else '—',
+            'einheit': e,
+            'objekt': (f"{e.liegenschaft.strasse} · {e.bezeichnung}" if e and e.liegenschaft_id else (e.bezeichnung if e else '—')),
+            'ende': ende, 'tage': tage,
+            'gekuendigt': v.status == 'gekuendigt',
+            'ausgeschrieben': bool(e and e.zur_ausschreibung),
+            'nachmieter': nachmieter,
+            'handlungsbedarf': bool(e and not e.zur_ausschreibung and not nachmieter and tage <= 120),
+        })
+    rows.sort(key=lambda r: r['ende'])
+    handlungsbedarf_n = sum(1 for r in rows if r['handlungsbedarf'])
+
+    return render(request, 'fw/vertragsauslauf.html', {
+        **basis, 'nav': 'vermarktung', 'rows': rows, 'anzahl': len(rows),
+        'monate': monate, 'handlungsbedarf_n': handlungsbedarf_n, 'heute': heute,
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
 def fw_expose_pdf(request, pk):
     """Exposé/Inserat (PDF) für ein Mietobjekt — Eckdaten, Mietzins, Kontakt."""
     from django.http import HttpResponse

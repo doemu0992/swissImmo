@@ -3803,6 +3803,46 @@ class ObjektFotoTests(TestCase):
         self.assertTrue(r.content.startswith(b'%PDF'))
 
 
+class VertragsauslaufTests(TestCase):
+    """Vertragsauslauf / Nachvermietung: auslaufende & gekündigte Verträge."""
+
+    def test_befristeter_vertrag_mit_ende(self):
+        lg, e, m, v = _basis_objekte()
+        v.ende = date.today() + timedelta(days=45)   # läuft in 45 Tagen aus
+        v.save()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/vertragsauslauf/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(len(r.context['rows']), 1)
+        row = r.context['rows'][0]
+        self.assertEqual(row['tage'], 45)
+        self.assertTrue(row['handlungsbedarf'])   # ≤120T, nicht ausgeschrieben, kein Nachmieter
+
+    def test_ausgeschrieben_kein_handlungsbedarf(self):
+        lg, e, m, v = _basis_objekte()
+        v.ende = date.today() + timedelta(days=30); v.save()
+        e.zur_ausschreibung = True; e.save()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/vertragsauslauf/')
+        row = r.context['rows'][0]
+        self.assertTrue(row['ausgeschrieben'])
+        self.assertFalse(row['handlungsbedarf'])
+
+    def test_horizont_filter(self):
+        lg, e, m, v = _basis_objekte()
+        v.ende = date.today() + timedelta(days=300); v.save()   # >6 Monate
+        c = Client(); c.force_login(_team_user())
+        self.assertEqual(len(c.get('/neu/vertragsauslauf/?monate=6').context['rows']), 0)
+        self.assertEqual(len(c.get('/neu/vertragsauslauf/?monate=12').context['rows']), 1)
+        self.assertEqual(len(c.get('/neu/vertragsauslauf/?monate=0').context['rows']), 1)
+
+    def test_ohne_ende_nicht_gelistet(self):
+        lg, e, m, v = _basis_objekte()   # v.ende = None, status aktiv
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/vertragsauslauf/?monate=0')
+        self.assertEqual(len(r.context['rows']), 0)
+
+
 class DebitorenAgingTests(TestCase):
     """Debitoren-Altersstruktur (OP-Aging) nach Fälligkeits-Buckets."""
 
