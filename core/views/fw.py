@@ -634,6 +634,92 @@ def fw_liegenschaften(request):
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
+def fw_berichte(request):
+    """Berichte & Auswertungen — ein zentraler Ort für alle Reports/Exporte,
+    mit ein paar aktuellen Kennzahlen je Bericht."""
+    from finance.models import KreditorenRechnung
+    from tickets.models import HandwerkerAuftrag
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.now().date()
+
+    # --- Forderungen (Debitoren) ---
+    deb = DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
+    if aktive_lg:
+        deb = deb.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
+    deb = [r for r in deb.select_related('vertrag') if r.offener_betrag > 0]
+    deb_offen = sum((r.offener_betrag for r in deb), Decimal('0.00'))
+    deb_ueberf = sum((r.offener_betrag for r in deb
+                      if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) < heute), Decimal('0.00'))
+
+    # --- Verbindlichkeiten (Kreditoren) ---
+    kred = KreditorenRechnung.objects.exclude(status='storniert')
+    if aktive_lg:
+        kred = kred.filter(liegenschaft=aktive_lg)
+    kred_offen = sum((k.offener_betrag for k in kred), Decimal('0.00'))
+
+    # --- Portfolio (Soll-Mietzins / Leerstand) ---
+    einh = Einheit.objects.all()
+    if aktive_lg:
+        einh = einh.filter(liegenschaft=aktive_lg)
+    einh = list(einh)
+    belegte = set(Mietvertrag.objects.filter(status='aktiv').values_list('einheit_id', flat=True))
+    for nid in Mietvertrag.objects.filter(status='aktiv').values_list('nebenobjekte', flat=True):
+        if nid:
+            belegte.add(nid)
+    soll_mietzins = sum(((e.nettomiete_aktuell or Decimal('0')) + (e.nebenkosten_aktuell or Decimal('0')) for e in einh), Decimal('0.00'))
+    leer_n = sum(1 for e in einh if e.id not in belegte)
+    leerstandsquote = round(leer_n / len(einh) * 100, 1) if einh else 0.0
+
+    # --- Reparaturkosten laufendes Jahr (effektiv) ---
+    auf = HandwerkerAuftrag.objects.filter(beauftragt_am__year=heute.year)
+    if aktive_lg:
+        auf = auf.filter(ticket__liegenschaft=aktive_lg)
+    reparatur_eff = sum((a.kosten_effektiv or Decimal('0') for a in auf), Decimal('0.00'))
+
+    lgq = basis['lg_query']
+    berichte = [
+        {'gruppe': 'Finanzen', 'items': [
+            {'icon': 'fa-calculator', 'farbe': 'indigo', 'titel': 'Erfolgsrechnung & Bilanz',
+             'sub': 'Ertrag/Aufwand, Aktiven/Passiven, Journal', 'url': '/neu/buchhaltung/' + lgq,
+             'kennzahl': None, 'pdf': True},
+            {'icon': 'fa-percent', 'farbe': 'violet', 'titel': 'MWST-Abrechnung',
+             'sub': 'Umsatz-/Vorsteuer, ESTV-Export', 'url': '/neu/mwst/', 'kennzahl': None, 'pdf': False},
+            {'icon': 'fa-gauge-high', 'farbe': 'sky', 'titel': 'Finanz-Cockpit',
+             'sub': 'Arbeitskorb + Monatsabschluss', 'url': '/neu/finanzen/' + lgq, 'kennzahl': None, 'pdf': False},
+        ]},
+        {'gruppe': 'Forderungen & Zahlungen', 'items': [
+            {'icon': 'fa-chart-column', 'farbe': 'rose', 'titel': 'Debitoren-Altersstruktur',
+             'sub': 'Offene Forderungen nach Fälligkeitsalter', 'url': '/neu/mahnwesen/aging/' + lgq,
+             'kennzahl': f"CHF {deb_ueberf:,.0f} überfällig".replace(',', "'"), 'pdf': False},
+            {'icon': 'fa-file-invoice-dollar', 'farbe': 'indigo', 'titel': 'Mieterkonten',
+             'sub': 'Kontoblatt je Mieter (Forderungen/Zahlungen)', 'url': '/neu/mieterkonten/' + lgq,
+             'kennzahl': f"CHF {deb_offen:,.0f} offen".replace(',', "'"), 'pdf': True},
+            {'icon': 'fa-file-invoice', 'farbe': 'amber', 'titel': 'Lieferantenkonten',
+             'sub': 'Kontoblatt je Lieferant (Kreditoren)', 'url': '/neu/lieferantenkonten/' + lgq,
+             'kennzahl': f"CHF {kred_offen:,.0f} offen".replace(',', "'"), 'pdf': False},
+        ]},
+        {'gruppe': 'Portfolio', 'items': [
+            {'icon': 'fa-table-list', 'farbe': 'emerald', 'titel': 'Mieterspiegel',
+             'sub': 'Rent Roll je Liegenschaft (Soll/Ist/Leerstand)', 'url': '/neu/mieterspiegel/' + lgq,
+             'kennzahl': f"CHF {soll_mietzins:,.0f} Soll · {leerstandsquote}% leer".replace(',', "'"), 'pdf': True},
+            {'icon': 'fa-scale-balanced', 'farbe': 'teal', 'titel': 'Eigentümer-Abrechnungen',
+             'sub': 'Mandatsabrechnung & Kontokorrent je Eigentümer', 'url': '/neu/mandate/',
+             'kennzahl': None, 'pdf': True},
+        ]},
+        {'gruppe': 'Objekte & Unterhalt', 'items': [
+            {'icon': 'fa-coins', 'farbe': 'orange', 'titel': 'Reparaturkosten',
+             'sub': 'Kosten je Liegenschaft (offen/effektiv)', 'url': '/neu/schaeden/kosten/' + lgq,
+             'kennzahl': f"CHF {reparatur_eff:,.0f} {heute.year}".replace(',', "'"), 'pdf': False},
+            {'icon': 'fa-bullhorn', 'farbe': 'sky', 'titel': 'Objekt-Feed (Portale)',
+             'sub': 'Vermarktungs-Feed für Homegate/Flatfox', 'url': '/neu/integrationen/',
+             'kennzahl': None, 'pdf': False},
+        ]},
+    ]
+    return render(request, 'fw/berichte.html', {**basis, 'nav': 'berichte', 'berichte': berichte})
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
 def fw_mieterspiegel(request):
     """Mieterspiegel (Rent Roll): je Liegenschaft alle Einheiten mit Mieter,
     Mietzins und Vertragsdaten + Soll/Ist/Leerstand. On-Screen und als PDF."""

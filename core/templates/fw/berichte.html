@@ -1,0 +1,31 @@
+{% extends 'fw/base.html' %}
+{% block title %}Berichte — swissImmo{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Berichte & Auswertungen</h1>
+<p class="text-sm text-slate-500 mb-6 max-w-2xl">Alle Reports und Exporte an einem Ort.
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+
+{% for g in berichte %}
+<h2 class="text-xs uppercase tracking-[0.2em] text-slate-500 font-bold mb-3 mt-6">{{ g.gruppe }}</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    {% for i in g.items %}
+    <a href="{{ i.url }}" class="group bg-white rounded-xl border border-slate-200 p-4 hover:border-indigo-300 hover:shadow-sm transition">
+        <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-{{ i.farbe }}-50 text-{{ i.farbe }}-600">
+                <i class="fa-solid {{ i.icon }}"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5">
+                    <span class="font-semibold text-slate-900 text-sm group-hover:text-indigo-600">{{ i.titel }}</span>
+                    {% if i.pdf %}<span class="text-[9px] font-bold uppercase bg-slate-100 text-slate-400 rounded px-1 py-0.5">PDF</span>{% endif %}
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5">{{ i.sub }}</div>
+                {% if i.kennzahl %}<div class="text-xs font-semibold text-slate-700 mt-1.5">{{ i.kennzahl }}</div>{% endif %}
+            </div>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300 group-hover:text-indigo-400 mt-1"></i>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endfor %}
+{% endblock %}

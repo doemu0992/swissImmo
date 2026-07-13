@@ -3894,6 +3894,27 @@ class DebitorenAgingTests(TestCase):
         self.assertEqual(len(r.context['rows']), 0)
 
 
+class BerichteHubTests(TestCase):
+    """Zentrale Berichte-Seite bündelt alle Reports."""
+
+    def test_seite_zeigt_berichte_und_kennzahlen(self):
+        from finance.models import DebitorenRechnung
+        lg, e, m, v = _basis_objekte()
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, titel='Miete',
+                                         betrag=Decimal('1700'), datum=date(2025, 1, 1),
+                                         faellig_am=date(2025, 1, 1), status='offen')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/berichte/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Berichte')
+        self.assertContains(r, 'Mieterspiegel')
+        self.assertContains(r, 'Debitoren-Altersstruktur')
+        self.assertContains(r, '/neu/mahnwesen/aging/')
+        self.assertContains(r, '/neu/mieterspiegel/')
+        # Kennzahl (offene Forderung) erscheint
+        self.assertContains(r, 'offen')
+
+
 class MieterspiegelTests(TestCase):
     """Mieterspiegel (Rent Roll): Soll/Ist/Leerstand je Liegenschaft + PDF."""
 
