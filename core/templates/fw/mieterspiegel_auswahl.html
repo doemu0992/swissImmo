@@ -1,0 +1,44 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Mieterspiegel — swissImmo{% endblock %}
+{% block content %}
+<div class="mb-5">
+    <h1 class="text-3xl font-extrabold text-slate-900">Mieterspiegel</h1>
+    <p class="text-sm text-slate-500 mt-1">Rent Roll pro Liegenschaft — Liegenschaft wählen · Stichtag {{ stichtag|date:"d.m.Y" }}</p>
+</div>
+
+{% if uebersicht %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% for b in uebersicht %}
+    <a href="/neu/mieterspiegel/?lg={{ b.lg.id }}" class="block bg-white rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md transition p-5 group">
+        <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-building"></i></div>
+                <div class="min-w-0">
+                    <div class="font-bold text-slate-900 truncate group-hover:text-indigo-600">{{ b.lg.strasse }}</div>
+                    <div class="text-xs text-slate-400">{{ b.lg.plz }} {{ b.lg.ort }}</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-indigo-500 mt-1"></i>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-slate-100">
+            <div>
+                <div class="text-[10px] uppercase tracking-wide text-slate-400 font-semibold">Soll / Mt.</div>
+                <div class="text-sm font-bold text-slate-900">CHF {{ b.totals.soll_brutto|chf }}</div>
+            </div>
+            <div>
+                <div class="text-[10px] uppercase tracking-wide text-slate-400 font-semibold">Belegt</div>
+                <div class="text-sm font-bold text-slate-900">{{ b.totals.belegt }}/{{ b.totals.anzahl }}</div>
+            </div>
+            <div>
+                <div class="text-[10px] uppercase tracking-wide text-slate-400 font-semibold">Leerstand</div>
+                <div class="text-sm font-bold {% if b.totals.leer %}text-amber-600{% else %}text-slate-900{% endif %}">{{ b.totals.leerstandsquote }}%</div>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl border border-slate-200 p-10 text-center text-slate-400">Keine Liegenschaften erfasst.</div>
+{% endif %}
+{% endblock %}

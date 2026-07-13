@@ -2,13 +2,26 @@
 {% load chf %}
 {% block title %}Mieterspiegel — swissImmo{% endblock %}
 {% block content %}
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/mieterspiegel/" class="hover:text-indigo-600">Mieterspiegel</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <span class="text-slate-600 font-medium">{{ aktive_lg.strasse }}</span>
+</nav>
+
 <div class="flex items-start justify-between flex-wrap gap-3 mb-1">
     <div>
         <h1 class="text-3xl font-extrabold text-slate-900">Mieterspiegel</h1>
-        <p class="text-sm text-slate-500 mt-1">Alle Einheiten mit Mieter, Mietzins und Vertragsdaten · Stichtag {{ stichtag|date:"d.m.Y" }}
-            {% if aktive_lg %}· <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+        <p class="text-sm text-slate-500 mt-1">Einheiten mit Mieter, Mietzins und Vertragsdaten · Stichtag {{ stichtag|date:"d.m.Y" }}
+            · <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}, {{ aktive_lg.plz }} {{ aktive_lg.ort }}</span></p>
     </div>
-    <a href="/neu/mieterspiegel/?pdf=1{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm"><i class="fa-solid fa-file-pdf mr-1.5"></i>PDF</a>
+    <div class="flex items-center gap-2">
+        {% if alle_lgs|length > 1 %}
+        <select onchange="if(this.value) window.location='/neu/mieterspiegel/?lg='+this.value" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5">
+            {% for l in alle_lgs %}<option value="{{ l.id }}" {% if l.id == aktive_lg.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
+        </select>
+        {% endif %}
+        <a href="/neu/mieterspiegel/?pdf=1&lg={{ aktive_lg.id }}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm"><i class="fa-solid fa-file-pdf mr-1.5"></i>PDF</a>
+    </div>
 </div>
 
 <!-- Gesamt-Kennzahlen -->

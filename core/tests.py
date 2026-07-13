@@ -3999,21 +3999,33 @@ class MieterspiegelTests(TestCase):
         self.assertEqual(t['leer_fr'], Decimal('1350.00'))
         self.assertEqual(t['leerstandsquote'], 50.0)
 
-    def test_view_und_gesamt(self):
+    def test_auswahl_uebersicht_ohne_lg(self):
+        """Ohne Liegenschaftswahl: Auswahl-Übersicht (kein kombiniertes Gesamttotal)."""
         lg = self._setup()
         c = Client(); c.force_login(_team_user())
         r = c.get('/neu/mieterspiegel/')
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Mieterspiegel')
-        self.assertContains(r, 'Leerstand')
-        self.assertEqual(r.context['gesamt']['ist_brutto'], Decimal('1700.00'))
+        self.assertTemplateUsed(r, 'fw/mieterspiegel_auswahl.html')
+        self.assertIn('uebersicht', r.context)
+        self.assertNotIn('gesamt', r.context)
 
-    def test_pdf(self):
+    def test_view_pro_liegenschaft(self):
+        lg = self._setup()
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/mieterspiegel/?lg={lg.id}')
+        self.assertEqual(r.status_code, 200)
+        self.assertTemplateUsed(r, 'fw/mieterspiegel.html')
+        # Kennzahlen der EINEN Liegenschaft (kein Gesamttotal über alle)
+        self.assertEqual(r.context['gesamt']['ist_brutto'], Decimal('1700.00'))
+        self.assertEqual(len(r.context['spiegel']), 1)
+
+    def test_pdf_pro_liegenschaft(self):
         from crm.models import Verwaltung
         Verwaltung.objects.create(firma='VW AG', strasse='W 1', plz='8000', ort='ZH')
-        self._setup()
+        lg = self._setup()
         c = Client(); c.force_login(_team_user())
-        r = c.get('/neu/mieterspiegel/?pdf=1')
+        r = c.get(f'/neu/mieterspiegel/?lg={lg.id}&pdf=1')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r['Content-Type'], 'application/pdf')
         self.assertTrue(r.content.startswith(b'%PDF'))

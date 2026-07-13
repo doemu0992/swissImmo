@@ -820,39 +820,42 @@ def fw_auswertung(request):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_mieterspiegel(request):
-    """Mieterspiegel (Rent Roll): je Liegenschaft alle Einheiten mit Mieter,
-    Mietzins und Vertragsdaten + Soll/Ist/Leerstand. On-Screen und als PDF."""
+    """Mieterspiegel (Rent Roll) — immer pro Liegenschaft. Ohne Auswahl eine
+    Übersicht aller Liegenschaften zur Auswahl; mit Auswahl der Rent Roll der
+    einzelnen Liegenschaft (On-Screen und als PDF)."""
     from core.services.mieterspiegel import berechne_mieterspiegel, generate_mieterspiegel_pdf
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
-    lgs = Liegenschaft.objects.order_by('strasse')
-    if aktive_lg:
-        lgs = lgs.filter(id=aktive_lg.id)
-    spiegel = berechne_mieterspiegel(list(lgs))
+    alle_lgs = list(Liegenschaft.objects.order_by('strasse'))
+
+    # Keine Liegenschaft gewählt → Auswahl-Übersicht (eine Karte je Liegenschaft)
+    if not aktive_lg:
+        uebersicht = berechne_mieterspiegel(alle_lgs)
+        return render(request, 'fw/mieterspiegel_auswahl.html', {
+            **basis, 'nav': 'liegenschaften', 'uebersicht': uebersicht,
+            'stichtag': timezone.now().date(),
+        })
+
+    spiegel = berechne_mieterspiegel([aktive_lg])
 
     if request.GET.get('pdf') == '1':
         from crm.models import Verwaltung
         from django.http import HttpResponse
         pdf = generate_mieterspiegel_pdf(spiegel, Verwaltung.objects.first(), stichtag=timezone.now().date())
         resp = HttpResponse(pdf, content_type='application/pdf')
-        resp['Content-Disposition'] = 'inline; filename="Mieterspiegel.pdf"'
+        fname = (aktive_lg.strasse or 'Mieterspiegel').replace(' ', '_')
+        resp['Content-Disposition'] = f'inline; filename="Mieterspiegel_{fname}.pdf"'
         return resp
 
-    # Gesamt-Summen über alle Liegenschaften
-    gesamt = {'soll_brutto': Decimal('0.00'), 'ist_brutto': Decimal('0.00'),
-              'leer_fr': Decimal('0.00'), 'anzahl': 0, 'leer': 0}
-    for b in spiegel:
-        t = b['totals']
-        gesamt['soll_brutto'] += t['soll_brutto']
-        gesamt['ist_brutto'] += t['ist_brutto']
-        gesamt['leer_fr'] += t['leer_fr']
-        gesamt['anzahl'] += t['anzahl']
-        gesamt['leer'] += t['leer']
-    gesamt['leerstandsquote'] = round(gesamt['leer'] / gesamt['anzahl'] * 100, 1) if gesamt['anzahl'] else 0.0
+    # Kennzahlen der EINEN gewählten Liegenschaft (kein Gesamttotal über alle)
+    b = spiegel[0] if spiegel else None
+    gesamt = b['totals'] if b else {
+        'soll_brutto': Decimal('0.00'), 'ist_brutto': Decimal('0.00'),
+        'leer_fr': Decimal('0.00'), 'anzahl': 0, 'leer': 0, 'leerstandsquote': 0.0}
 
     return render(request, 'fw/mieterspiegel.html', {
         **basis, 'nav': 'liegenschaften', 'spiegel': spiegel, 'gesamt': gesamt,
-        'stichtag': timezone.now().date(),
+        'stichtag': timezone.now().date(), 'alle_lgs': alle_lgs,
     })
 
 
