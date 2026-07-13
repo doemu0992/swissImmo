@@ -22,6 +22,9 @@ class SchadenMeldung(models.Model):
 
     gemeldet_von = models.ForeignKey('crm.Mieter', on_delete=models.SET_NULL, null=True, blank=True, related_name='gemeldete_schaeden')
 
+    # Raumbuch: betroffenes Ausstattungselement (Reparaturhistorie/Lebenszykluskosten)
+    ausstattung = models.ForeignKey('portfolio.Ausstattung', on_delete=models.SET_NULL, null=True, blank=True, related_name='schaeden')
+
     # Sektionsfelder aus dem Multi-Step-Formular
     kategorie = models.CharField("Kategorie", max_length=100, blank=True, null=True)
     raum = models.CharField("Raum", max_length=100, blank=True, null=True)

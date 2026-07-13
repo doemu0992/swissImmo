@@ -317,6 +317,43 @@ class Ausstattung(models.Model):
         rest = max(0.0, float(ld) - alter)
         return (self.neuwert * Decimal(str(rest / float(ld)))).quantize(Decimal('0.01'))
 
+    def rest_jahre(self, stichtag=None):
+        """Verbleibende Nutzungsdauer in Jahren (kann negativ = überfällig).
+        None, wenn Einbaudatum oder Lebensdauer fehlen."""
+        ld = self.effektive_lebensdauer()
+        if not (self.einbau_datum and ld):
+            return None
+        tag = stichtag or date.today()
+        alter = (tag - self.einbau_datum).days / 365.25
+        return round(float(ld) - alter, 1)
+
+    def ersatz_status(self, stichtag=None):
+        """Ersatzplanung: 'faellig' (Lebensdauer erreicht), 'bald' (≤ 2 J),
+        'ok' oder 'unbekannt' (keine Datenbasis)."""
+        rest = self.rest_jahre(stichtag)
+        if rest is None:
+            return 'unbekannt'
+        if rest <= 0:
+            return 'faellig'
+        if rest <= 2:
+            return 'bald'
+        return 'ok'
+
+    def reparatur_kosten_total(self):
+        """Summe der effektiven (sonst geschätzten) Reparaturkosten aller mit
+        diesem Element verknüpften Schäden — Basis für Lebenszykluskosten."""
+        from decimal import Decimal
+        total = Decimal('0.00')
+        for s in self.schaeden.all():
+            for a in s.handwerker_auftraege.all():
+                total += (a.kosten_effektiv or a.kosten_geschaetzt or Decimal('0.00'))
+        return total
+
+    def lebenszyklus_kosten(self):
+        """Neuwert + bisher aufgelaufene Reparaturkosten."""
+        from decimal import Decimal
+        return (self.neuwert or Decimal('0.00')) + self.reparatur_kosten_total()
+
 
 class Lebensdauer(models.Model):
     """Paritätische Lebensdauertabelle (Mieterverband/HEV): erwartete Nutzungs-

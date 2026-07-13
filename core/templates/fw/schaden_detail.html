@@ -72,6 +72,24 @@
                 <div class="flex justify-between"><dt class="text-slate-500">Zutritt</dt><dd class="text-slate-800 font-medium">{{ t.get_zutritt_display }}</dd></div>
                 <div class="flex justify-between"><dt class="text-slate-500">Gemeldet</dt><dd class="text-slate-800 font-medium">{{ t.erstellt_am|date:"d.m.Y H:i" }}</dd></div>
             </dl>
+            <!-- Raumbuch-Element verknüpfen -->
+            <div class="mt-4 pt-4 border-t border-slate-100">
+                <h4 class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i>Betroffenes Element</h4>
+                {% if t.betroffene_einheit_id %}
+                <form method="post" action="/neu/schaeden/{{ t.id }}/ausstattung/" class="flex flex-col gap-2">
+                    {% csrf_token %}
+                    <select name="ausstattung_id" class="bg-slate-100 rounded-lg text-sm px-3 py-2">
+                        <option value="">— kein Element —</option>
+                        {% for el in ausstattung_elemente %}<option value="{{ el.id }}" {% if t.ausstattung_id == el.id %}selected{% endif %}>{{ el.raum }} · {{ el.kategorie }}</option>{% endfor %}
+                    </select>
+                    <button class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 text-xs font-semibold px-3 py-1.5 rounded-lg self-start">Verknüpfen</button>
+                </form>
+                {% if t.ausstattung_id %}<p class="text-[11px] text-slate-400 mt-2">Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements. <a href="/neu/objekte/{{ t.betroffene_einheit_id }}/#obj-raumbuch" class="text-indigo-600 hover:underline">Raumbuch</a></p>{% endif %}
+                {% if not ausstattung_elemente %}<p class="text-[11px] text-slate-400 mt-1">Noch keine Ausstattung am Objekt erfasst.</p>{% endif %}
+                {% else %}
+                <p class="text-xs text-slate-400">Kein Mietobjekt zugeordnet.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>

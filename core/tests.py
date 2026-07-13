@@ -4387,3 +4387,104 @@ class AbnahmeLebensdauerTests(TestCase):
         r = c.post('/neu/lebensdauer/', {'aktion': 'loeschen', 'id': str(row.id)})
         self.assertEqual(r.status_code, 302)
         self.assertFalse(Lebensdauer.objects.filter(id=row.id).exists())
+
+
+class AusstattungLebenszyklusTests(TestCase):
+    """Assets/Raumbuch Phase 3: Element ↔ Schaden (Reparaturhistorie/Lebens-
+    zykluskosten) + Garantie-/Ersatzplanung."""
+
+    def _element(self, e, jahre=10, alter_jahre=5, neuwert='2000'):
+        from portfolio.models import Ausstattung
+        einbau = date.today() - timedelta(days=int(365.25 * alter_jahre))
+        return Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Kochherd',
+                                          neuwert=Decimal(neuwert), einbau_datum=einbau,
+                                          lebensdauer_jahre=jahre)
+
+    def _schaden_mit_kosten(self, lg, e, el, kosten):
+        from tickets.models import SchadenMeldung, HandwerkerAuftrag
+        from crm.models import Handwerker
+        hw = Handwerker.objects.create(firma='Muster GmbH')
+        s = SchadenMeldung.objects.create(liegenschaft=lg, betroffene_einheit=e,
+                                          titel='Defekt', beschreibung='x', ausstattung=el)
+        HandwerkerAuftrag.objects.create(ticket=s, handwerker=hw,
+                                         kosten_effektiv=Decimal(kosten))
+        return s
+
+    def test_rest_jahre(self):
+        _lg, e, _m, _v = _basis_objekte()
+        el = self._element(e, jahre=10, alter_jahre=4)
+        self.assertTrue(5.5 <= el.rest_jahre() <= 6.5)
+
+    def test_ersatz_status(self):
+        _lg, e, _m, _v = _basis_objekte()
+        self.assertEqual(self._element(e, jahre=10, alter_jahre=4).ersatz_status(), 'ok')
+        self.assertEqual(self._element(e, jahre=10, alter_jahre=9).ersatz_status(), 'bald')
+        self.assertEqual(self._element(e, jahre=10, alter_jahre=12).ersatz_status(), 'faellig')
+        from portfolio.models import Ausstattung
+        blank = Ausstattung.objects.create(einheit=e, raum='Bad', kategorie='WC')
+        self.assertEqual(blank.ersatz_status(), 'unbekannt')
+
+    def test_reparatur_kosten_und_lebenszyklus(self):
+        lg, e, _m, _v = _basis_objekte()
+        el = self._element(e, neuwert='2000')
+        self._schaden_mit_kosten(lg, e, el, '300')
+        self._schaden_mit_kosten(lg, e, el, '150')
+        self.assertEqual(el.reparatur_kosten_total(), Decimal('450'))
+        self.assertEqual(el.lebenszyklus_kosten(), Decimal('2450'))
+
+    def test_schaden_verknuepfen_view(self):
+        from tickets.models import SchadenMeldung
+        lg, e, _m, _v = _basis_objekte()
+        el = self._element(e)
+        s = SchadenMeldung.objects.create(liegenschaft=lg, betroffene_einheit=e,
+                                          titel='x', beschreibung='y')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/schaeden/{s.id}/ausstattung/', {'ausstattung_id': str(el.id)})
+        self.assertEqual(r.status_code, 302)
+        s.refresh_from_db()
+        self.assertEqual(s.ausstattung_id, el.id)
+        # aufheben
+        c.post(f'/neu/schaeden/{s.id}/ausstattung/', {'ausstattung_id': ''})
+        s.refresh_from_db()
+        self.assertIsNone(s.ausstattung_id)
+
+    def test_schaden_verknuepfen_nur_eigenes_objekt(self):
+        from tickets.models import SchadenMeldung
+        from portfolio.models import Einheit
+        lg, e, _m, _v = _basis_objekte()
+        andere = Einheit.objects.create(liegenschaft=lg, bezeichnung='Andere', typ='wohnung')
+        el_fremd = self._element(andere)
+        s = SchadenMeldung.objects.create(liegenschaft=lg, betroffene_einheit=e,
+                                          titel='x', beschreibung='y')
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/schaeden/{s.id}/ausstattung/', {'ausstattung_id': str(el_fremd.id)})
+        s.refresh_from_db()
+        # Element eines anderen Objekts wird nicht verknüpft
+        self.assertIsNone(s.ausstattung_id)
+
+    def test_ersatzplanung_view(self):
+        lg, e, _m, _v = _basis_objekte()
+        self._element(e, jahre=10, alter_jahre=12)  # fällig
+        self._element(e, jahre=10, alter_jahre=4)   # ok
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/ersatzplanung/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Ersatzplanung')
+        self.assertContains(r, 'Ersatz fällig')
+
+    def test_ersatzplanung_filter(self):
+        lg, e, _m, _v = _basis_objekte()
+        self._element(e, jahre=10, alter_jahre=12)  # fällig
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/ersatzplanung/?status=faellig')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Kochherd')
+
+    def test_raumbuch_zeigt_reparaturhistorie(self):
+        lg, e, _m, _v = _basis_objekte()
+        el = self._element(e)
+        self._schaden_mit_kosten(lg, e, el, '250')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/objekte/{e.id}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Reparatur')

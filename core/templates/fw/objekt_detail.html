@@ -209,9 +209,13 @@
                 {% for row in r.elemente %}
                 <tr class="hover:bg-slate-50/60">
                     <td class="px-5 py-2.5">
-                        <div class="font-medium text-slate-900">{{ row.a.kategorie }}</div>
+                        <div class="font-medium text-slate-900">{{ row.a.kategorie }}
+                            {% if row.ersatz_status == 'faellig' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-600">Ersatz fällig</span>{% elif row.ersatz_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-600">bald fällig</span>{% endif %}</div>
                         {% if row.a.bezeichnung %}<div class="text-xs text-slate-400">{{ row.a.bezeichnung }}</div>{% endif %}
-                        {% if row.a.foto %}<a href="{{ row.a.foto.url }}" target="_blank" class="text-[11px] text-indigo-600 hover:underline"><i class="fa-solid fa-image mr-0.5"></i>Foto</a>{% endif %}
+                        <div class="flex items-center gap-2 mt-0.5">
+                            {% if row.a.foto %}<a href="{{ row.a.foto.url }}" target="_blank" class="text-[11px] text-indigo-600 hover:underline"><i class="fa-solid fa-image mr-0.5"></i>Foto</a>{% endif %}
+                            {% if row.schaden_anzahl %}<span class="text-[11px] text-slate-500"><i class="fa-solid fa-screwdriver-wrench mr-0.5 text-slate-400"></i>{{ row.schaden_anzahl }} Reparatur{{ row.schaden_anzahl|pluralize:"en" }} · CHF {{ row.reparaturkosten|chf }}</span>{% endif %}
+                        </div>
                     </td>
                     <td class="px-5 py-2.5 text-slate-600">{% if row.a.marke or row.a.modell %}{{ row.a.marke }} {{ row.a.modell }}{% else %}—{% endif %}</td>
                     <td class="px-5 py-2.5 text-slate-600 whitespace-nowrap">{% if row.a.einbau_datum %}{{ row.a.einbau_datum|date:"m.Y" }}{% else %}—{% endif %}{% if row.lebensdauer %} <span class="text-xs text-slate-400">· {{ row.lebensdauer }}J</span>{% endif %}</td>

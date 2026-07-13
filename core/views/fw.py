@@ -1145,11 +1145,16 @@ def fw_objekt_detail(request, pk):
     fotos = list(e.fotos.all())
 
     # Ausstattung/Raumbuch — die Räume entstehen aus den erfassten Assets.
-    ausst = list(Ausstattung.objects.filter(einheit=e))
+    ausst = list(Ausstattung.objects.filter(einheit=e)
+                 .prefetch_related('schaeden__handwerker_auftraege'))
     raeume = []
     for a in ausst:
         zw = a.zeitwert()
-        row = {'a': a, 'zeitwert': zw, 'lebensdauer': a.effektive_lebensdauer()}
+        n_schaden = a.schaeden.count()
+        row = {'a': a, 'zeitwert': zw, 'lebensdauer': a.effektive_lebensdauer(),
+               'rest': a.rest_jahre(), 'ersatz_status': a.ersatz_status(),
+               'schaden_anzahl': n_schaden,
+               'reparaturkosten': a.reparatur_kosten_total() if n_schaden else None}
         if raeume and raeume[-1]['raum'] == a.raum:
             raeume[-1]['elemente'].append(row)
         else:
@@ -3320,6 +3325,10 @@ def fw_schaden_detail(request, pk):
     melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
 
     fotos = list(t.fotos.all())
+    # Raumbuch-Elemente des betroffenen Objekts (zum Verknüpfen)
+    from portfolio.models import Ausstattung
+    ausstattung_elemente = (list(Ausstattung.objects.filter(einheit=t.betroffene_einheit))
+                            if t.betroffene_einheit_id else [])
     tab_liste = [
         ('uebersicht', 'Übersicht', None),
         ('verlauf', 'Verlauf', nachrichten.count() or None),
@@ -3334,9 +3343,87 @@ def fw_schaden_detail(request, pk):
         'kosten_geschaetzt': kosten_geschaetzt, 'kosten_effektiv': kosten_effektiv,
         'fotos': fotos,
         'tab_liste': tab_liste,
+        'ausstattung_elemente': ausstattung_elemente,
         'handwerker_liste': handwerker_liste, 'auftrag_vorschlag': auftrag_vorschlag,
         'melder_email': melder_email, 'status_wahl': TICKET_PILL,
         'meldung': list(messages.get_messages(request)),
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schaden_ausstattung(request, pk):
+    """Verknüpft eine Schadenmeldung mit einem Raumbuch-Element (oder löst die
+    Verknüpfung). Baut die Reparaturhistorie/Lebenszykluskosten am Element auf."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import SchadenMeldung
+    from portfolio.models import Ausstattung
+    from core.auth import log_aktion
+    t = get_object_or_404(SchadenMeldung, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/schaeden/{t.id}/')
+    aid = (request.POST.get('ausstattung_id') or '').strip()
+    if aid.isdigit() and t.betroffene_einheit_id:
+        el = Ausstattung.objects.filter(id=int(aid), einheit=t.betroffene_einheit).first()
+        t.ausstattung = el
+        t.save(update_fields=['ausstattung'])
+        if el:
+            log_aktion(request, "Schaden mit Element verknüpft", f"Ticket #{t.id}", f"{el.raum} · {el.kategorie}")
+            messages.success(request, f"✅ Mit «{el.kategorie}» ({el.raum}) verknüpft.")
+    else:
+        t.ausstattung = None
+        t.save(update_fields=['ausstattung'])
+        messages.success(request, "Verknüpfung aufgehoben.")
+    return redirect(f'/neu/schaeden/{t.id}/')
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_ersatzplanung(request):
+    """Garantie- & Ersatzplanung: Raumbuch-Elemente nach Restnutzungsdauer
+    (Lebensdauertabelle) und Garantiestatus — mit Lebenszykluskosten."""
+    from portfolio.models import Ausstattung
+    heute = timezone.now().date()
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+
+    qs = (Ausstattung.objects.select_related('einheit__liegenschaft')
+          .prefetch_related('schaeden__handwerker_auftraege'))
+    if aktive_lg:
+        qs = qs.filter(einheit__liegenschaft=aktive_lg)
+
+    STATUS_META = {
+        'faellig': ('Ersatz fällig', 'bg-rose-50 text-rose-700'),
+        'bald': ('Ersatz bald', 'bg-amber-50 text-amber-700'),
+        'ok': ('Im Nutzungszeitraum', 'bg-emerald-50 text-emerald-700'),
+        'unbekannt': ('Keine Datenbasis', 'bg-slate-100 text-slate-400'),
+    }
+    f = request.GET.get('status', '')
+    rows = []
+    n = {'faellig': 0, 'bald': 0, 'ok': 0, 'unbekannt': 0}
+    for a in qs:
+        st = a.ersatz_status(heute)
+        n[st] += 1
+        if f and f != st:
+            continue
+        label, cls = STATUS_META[st]
+        rows.append({
+            'a': a, 'rest': a.rest_jahre(heute), 'status': st,
+            'status_label': label, 'status_cls': cls,
+            'lebenszyklus': a.lebenszyklus_kosten(),
+            'reparaturkosten': a.reparatur_kosten_total(),
+            'schaden_anzahl': a.schaeden.count(),
+            'standort': f"{a.einheit.liegenschaft.strasse} · {a.einheit.bezeichnung}",
+        })
+    # Sortierung: fällig zuerst, dann nach Restjahren aufsteigend
+    ordnung = {'faellig': 0, 'bald': 1, 'ok': 2, 'unbekannt': 3}
+    rows.sort(key=lambda r: (ordnung[r['status']], r['rest'] if r['rest'] is not None else 999))
+
+    chips = [('', 'Alle'), ('faellig', 'Ersatz fällig'), ('bald', 'Bald fällig'),
+             ('ok', 'Im Nutzungszeitraum'), ('unbekannt', 'Keine Datenbasis')]
+    return render(request, 'fw/ersatzplanung.html', {
+        **basis, 'nav': 'assets', 'rows': rows, 'status_filter': f, 'chips': chips,
+        'n_faellig': n['faellig'], 'n_bald': n['bald'], 'n_ok': n['ok'], 'n_unbekannt': n['unbekannt'],
+        'anzahl': len(rows),
     })
 
 
