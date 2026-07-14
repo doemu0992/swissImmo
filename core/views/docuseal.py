@@ -141,17 +141,12 @@ def send_via_docuseal(request, vertrag_id):
         payload = {
             "name": f"Mietvertrag {vertrag.id}",
             "send_email": True,
+            # Position via Textanker im PDF ({{...;type=signature;role=Mieter}}),
+            # nicht über feste Koordinaten → korrekt für alle Vertragstypen.
             "documents": [
                 {
                     "name": filename,
                     "file": b64_data,
-                    "fields": [{
-                        "name": "Unterschrift_Mieter",
-                        "type": "signature",
-                        "role": "Mieter",
-                        "required": True,
-                        "areas": [{"x": 300, "y": 650, "w": 180, "h": 60, "page": 2}]
-                    }]
                 }
             ],
             "submitters": [{

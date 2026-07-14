@@ -73,12 +73,13 @@ def docuseal_senden(vertrag):
 
         b64 = base64.b64encode(pdf_file.getvalue()).decode('ascii').replace('\n', '')
         filename = f"{sanitize_filename(f'mietvertrag_{mieter.nachname}_{vertrag.id}')}.pdf"
+        # KEINE festen Koordinaten mehr: Die Position kommt aus dem Textanker
+        # {{Unterschrift Mieter;type=signature;role=Mieter}} im PDF (unsichtbar auf
+        # der Unterschriftszeile). DocuSeal platziert das Feld exakt dort —
+        # layout-unabhängig für Wohnung/Gewerbe/Parkplatz.
         payload = {
             "name": f"Mietvertrag {vertrag.id}", "send_email": True,
-            "documents": [{"name": filename, "file": b64, "fields": [{
-                "name": "Unterschrift_Mieter", "type": "signature", "role": "Mieter",
-                "required": True,
-                "areas": [{"x": 300, "y": 650, "w": 180, "h": 60, "page": 2}]}]}],
+            "documents": [{"name": filename, "file": b64}],
             "submitters": [{"role": "Mieter", "email": mieter.email, "send_email": True,
                             "name": f"{mieter.vorname} {mieter.nachname}".strip() or mieter.display_name}],
         }

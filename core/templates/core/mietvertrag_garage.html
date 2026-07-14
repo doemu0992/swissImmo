@@ -60,7 +60,7 @@
 <table class="sign">
     <tr>
         <td><div class="sublabel">Vermieter</div>{% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg"><br>{% endif %}<div class="sigline">Ort, Datum / Unterschrift</div></td>
-        <td><div class="sublabel">Mieter</div><br><br><div class="sigline">Ort, Datum / Unterschrift</div></td>
+        <td><div class="sublabel">Mieter</div><br><span style="color:#ffffff;font-size:13pt;">{% verbatim %}{{Unterschrift Mieter;type=signature;role=Mieter;required=true}}{% endverbatim %}</span><br><div class="sigline">Ort, Datum / Unterschrift</div></td>
     </tr>
 </table>
 </body>
