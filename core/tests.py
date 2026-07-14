@@ -5012,6 +5012,19 @@ class DocuSealAblageTests(TestCase):
         ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-neu')
         self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 1)
 
+    def test_bereinige_signierte_dubletten(self):
+        """Einmal-Aufräumung reduziert bestehende Dubletten (Person/Objekt-Akte)."""
+        from core.services.ablage import ablegen, bereinige_signierte_dubletten
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        for i in range(4):
+            ablegen(f'%PDF-{i}'.encode(), f"Mietvertrag (unterzeichnet) — {i}",
+                    kategorie='vertrag', vertrag=v, dedup=False)
+        self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 4)
+        n = bereinige_signierte_dubletten()
+        self.assertEqual(n, 3)
+        self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 1)
+
     def test_model_save_legt_signierten_vertrag_ab(self):
         from rentals.models import Dokument
         from django.core.files.base import ContentFile

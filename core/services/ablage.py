@@ -142,6 +142,32 @@ def ablage_signierter_vertrag(vertrag, pdf_bytes=None):
                    dateiname=dateiname, dedup=False)
 
 
+def bereinige_signierte_dubletten():
+    """Einmalige/manuelle Aufräumung: reduziert je Vertrag ALLE signierten
+    Dokumente auf das neueste (nach erstellt_am, dann id) — behebt bereits
+    entstandene Ablage-Explosionen (Person-/Objekt-/Liegenschafts-Akte, Portal).
+    Gibt die Anzahl entfernter Dubletten zurück."""
+    from django.db.models import Count
+    from rentals.models import Dokument
+    geloescht = 0
+    vids = (Dokument.objects
+            .filter(kategorie='vertrag', bezeichnung__startswith=SIGNIERT_TITEL,
+                    vertrag__isnull=False)
+            .values('vertrag').annotate(n=Count('id')).filter(n__gt=1)
+            .values_list('vertrag', flat=True))
+    for vid in list(vids):
+        docs = list(Dokument.objects.filter(
+            vertrag_id=vid, kategorie='vertrag',
+            bezeichnung__startswith=SIGNIERT_TITEL).order_by('-erstellt_am', '-id'))
+        for d in docs[1:]:
+            try:
+                d.delete()
+                geloescht += 1
+            except Exception:
+                pass
+    return geloescht
+
+
 def _slug(text):
     import re
     text = (text or '').strip().lower()
