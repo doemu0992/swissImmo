@@ -24,15 +24,26 @@
                 <h3 class="font-bold text-slate-800">Empfänger</h3>
                 <span id="emp-count" class="ml-auto text-xs font-semibold text-indigo-600"></span>
             </div>
+            <!-- Ganze Liegenschaft wählen → alle Mieter dieser Liegenschaft markieren -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                <select id="lg-select" onchange="lgWaehlen()" class="bg-slate-100 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                    <option value="">Ganze Liegenschaft wählen…</option>
+                    {% for l in liegenschaften_wahl %}<option value="{{ l.id }}">{{ l.label }}</option>{% endfor %}
+                </select>
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input id="emp-search" oninput="empSuche()" placeholder="Empfänger suchen…" class="w-full bg-slate-100 rounded-lg text-sm pl-8 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                </div>
+            </div>
             <div class="flex items-center gap-2 mb-2">
-                <button type="button" onclick="alleWaehlen(true)" class="text-xs font-semibold text-indigo-600 hover:underline">Alle</button>
+                <button type="button" onclick="alleWaehlen(true)" class="text-xs font-semibold text-indigo-600 hover:underline">Alle (sichtbar)</button>
                 <span class="text-slate-300">·</span>
                 <button type="button" onclick="alleWaehlen(false)" class="text-xs font-semibold text-slate-500 hover:underline">Keine</button>
             </div>
             <div class="max-h-56 overflow-y-auto border border-slate-100 rounded-lg divide-y divide-slate-50">
                 {% for e in empfaenger %}
-                <label class="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer">
-                    <input type="checkbox" class="emp-check accent-indigo-600" value="{{ e.id }}" checked onchange="aktualisiere()">
+                <label class="emp-row flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer" data-name="{{ e.name|lower }} {{ e.objekt|lower }}" data-lg="{{ e.lg_id }}">
+                    <input type="checkbox" class="emp-check accent-indigo-600" value="{{ e.id }}" onchange="aktualisiere()">
                     <div class="min-w-0">
                         <div class="text-sm font-medium text-slate-900 truncate">{{ e.name }}</div>
                         <div class="text-xs text-slate-400 truncate">{{ e.objekt }}</div>
@@ -42,6 +53,7 @@
                 <p class="px-3 py-6 text-sm text-slate-400 italic text-center">Keine aktiven Mieter im Filter.</p>
                 {% endfor %}
             </div>
+            <p class="text-xs text-slate-400 mt-2">Standardmässig ist niemand vorausgewählt. Ganze Liegenschaft wählen oder einzeln ankreuzen.</p>
         </div>
 
         <!-- Schritt 2: Betreff + Text -->
@@ -188,8 +200,30 @@ function gewaehlte() {
     return Array.from(document.querySelectorAll('.emp-check:checked')).map(c => parseInt(c.value));
 }
 function alleWaehlen(v) {
-    document.querySelectorAll('.emp-check').forEach(c => c.checked = v);
+    // "Alle" bezieht sich nur auf aktuell sichtbare (nicht gefilterte) Zeilen
+    document.querySelectorAll('.emp-row').forEach(function(row){
+        if (row.classList.contains('hidden')) return;
+        const c = row.querySelector('.emp-check'); if (c) c.checked = v;
+    });
     aktualisiere();
+}
+function lgWaehlen() {
+    const lg = document.getElementById('lg-select').value;
+    if (!lg) return;
+    document.querySelectorAll('.emp-row').forEach(function(row){
+        if (String(row.dataset.lg) === String(lg)) {
+            const c = row.querySelector('.emp-check'); if (c) c.checked = true;
+        }
+    });
+    document.getElementById('lg-select').value = '';   // Auswahl zurücksetzen
+    aktualisiere();
+}
+function empSuche() {
+    const q = (document.getElementById('emp-search').value || '').toLowerCase().trim();
+    document.querySelectorAll('.emp-row').forEach(function(row){
+        const hit = !q || (row.dataset.name || '').indexOf(q) !== -1;
+        row.classList.toggle('hidden', !hit);
+    });
 }
 function einfuegen(ph) {
     const t = document.getElementById('nachricht');

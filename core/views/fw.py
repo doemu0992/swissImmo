@@ -5636,12 +5636,15 @@ def fw_kommunikation(request):
 
     empfaenger = []
     gesehen = set()
+    lg_map = {}
     for v in vertraege:
         m = v.mieter
         if m.id in gesehen:
             continue
         gesehen.add(m.id)
         lg = v.einheit.liegenschaft
+        lg_label = f"{lg.strasse}, {lg.ort}"
+        lg_map[lg.id] = lg_label
         empfaenger.append({
             'id': m.id, 'name': m.display_name,
             'anrede': m.anrede or '',
@@ -5649,13 +5652,16 @@ def fw_kommunikation(request):
             'plz': m.plz or lg.plz, 'ort': m.ort or lg.ort,
             'email': m.email or '',
             'objekt': f"{lg.strasse}, {lg.ort} · {v.einheit.bezeichnung}",
+            'lg_id': lg.id, 'lg_label': lg_label,
         })
     empfaenger.sort(key=lambda e: e['name'])
+    liegenschaften_wahl = [{'id': k, 'label': lbl} for k, lbl in sorted(lg_map.items(), key=lambda kv: kv[1])]
 
     return render(request, 'fw/kommunikation.html', {
         **basis, 'nav': 'kommunikation',
         'absender': absender, 'empfaenger': empfaenger,
         'anzahl_empfaenger': len(empfaenger),
+        'liegenschaften_wahl': liegenschaften_wahl,
         'vorlagen': vorlagen, 'logo_url': logo_url,
     })
 

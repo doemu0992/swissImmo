@@ -1224,6 +1224,21 @@ class SerienbriefMitmieterTests(TestCase):
         docs = Dokument.objects.filter(vertrag=v, kategorie='korrespondenz')
         self.assertEqual(docs.count(), 1)
 
+    def test_kommunikation_lg_auswahl_und_suche(self):
+        lg, e, m1, m2, v = self._paar()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/kommunikation/')
+        self.assertEqual(r.status_code, 200)
+        body = r.content.decode()
+        # Liegenschafts-Schnellwahl + Suche vorhanden, Liegenschaft in Wahlliste
+        self.assertIn('lgWaehlen()', body)
+        self.assertIn('empSuche()', body)
+        self.assertIn('id="emp-search"', body)
+        self.assertTrue(len(r.context['liegenschaften_wahl']) >= 1)
+        # Empfänger NICHT automatisch vorausgewählt (kein 'checked' am emp-check)
+        self.assertNotIn('class="emp-check accent-indigo-600" value="{}" checked'.format(m1.id), body)
+        self.assertIn('data-lg="{}"'.format(lg.id), body)
+
     def test_zweitperson_sieht_brief_im_portal(self):
         from django.contrib.auth.models import User
         lg, e, m1, m2, v = self._paar()
