@@ -662,8 +662,8 @@ function live(){
     <table class="w-full my-2 text-[13px]"><tbody>
       <tr><td class="text-slate-500 py-0.5 w-2/5">Mietbeginn</td><td>${dstr(val('beginn'))||'—'}</td></tr>
       <tr><td class="text-slate-500 py-0.5">Mietende</td><td>${unbef?'unbefristet':(dstr(val('ende'))||'—')}</td></tr>
-      <tr><td class="text-slate-500 py-0.5">Kündigungsfrist</td><td>${val('kuendigungsfrist')||3} Monate</td></tr>
-      <tr><td class="text-slate-500 py-0.5">Kündigungstermine</td><td>${val('kuendigungstermine')||'—'}</td></tr>
+      <tr><td class="text-slate-500 py-0.5">Kündigungsfrist</td><td>${(o&&o.ist_einstellplatz)?'2 Wochen auf Ende einer Monatsperiode (Art. 266e OR)':((val('kuendigungsfrist')||3)+' Monate')}</td></tr>
+      <tr><td class="text-slate-500 py-0.5">Kündigungstermine</td><td>${(o&&o.ist_einstellplatz)?'Ende jedes Monats':(val('kuendigungstermine')||'—')}</td></tr>
     </tbody></table>
     ${val('erstmals_kuendbar')?`<p class="text-xs text-slate-500 mb-2">Der Vertrag ist erstmals kündbar auf ${dstr(val('erstmals_kuendbar'))}.</p>`:''}
 
