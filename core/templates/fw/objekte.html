@@ -69,7 +69,7 @@
                                 <i class="fa-solid {% if row.e.typ == 'pp' or row.e.typ == 'gar' %}fa-square-parking{% elif row.e.typ == 'gew' %}fa-shop{% else %}fa-house{% endif %}"></i>
                             </div>
                             <div>
-                                <div class="font-semibold text-slate-900">{{ row.e.bezeichnung }}</div>
+                                <a href="/neu/objekte/{{ row.e.id }}/" class="font-semibold text-slate-900 hover:text-indigo-600">{{ row.e.bezeichnung }}</a>
                                 {% if row.e.etage %}<div class="text-xs text-slate-400">{{ row.e.etage }}</div>{% endif %}
                             </div>
                         </div>
@@ -87,8 +87,8 @@
                     </td>
                     <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{% if row.mieter %}{{ row.mieter }}{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
                     <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                        {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="text-xs text-indigo-600 font-medium hover:underline">Vertrag</a>
-                        {% else %}<a href="/neu/objekte/{{ row.e.id }}/" class="text-xs text-indigo-600 font-medium hover:underline">Ansehen</a>{% endif %}
+                        <a href="/neu/objekte/{{ row.e.id }}/" class="text-xs text-indigo-600 font-medium hover:underline">Ansehen</a>
+                        {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="text-xs text-indigo-600 font-medium hover:underline ml-3">Vertrag</a>{% endif %}
                     </td>
                 </tr>
                 {% endfor %}
