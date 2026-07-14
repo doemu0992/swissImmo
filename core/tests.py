@@ -5250,6 +5250,20 @@ class LoeschbarkeitTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertFalse(Handwerker.objects.filter(id=h.id).exists())
 
+    def test_dienstleister_bearbeiten(self):
+        from crm.models import Handwerker
+        h = Handwerker.objects.create(firma='Alt AG', branche='allgemein', telefon='000')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/dienstleister/{h.id}/bearbeiten/', {
+            'firma': 'Neu AG', 'branche': 'elektro',
+            'kontaktperson': 'Frau Muster', 'email': 'a@b.ch', 'telefon': '079'})
+        self.assertEqual(r.status_code, 302)
+        h.refresh_from_db()
+        self.assertEqual(h.firma, 'Neu AG')
+        self.assertEqual(h.branche, 'elektro')
+        self.assertEqual(h.kontaktperson, 'Frau Muster')
+        self.assertEqual(h.telefon, '079')
+
     def test_asset_loeschen(self):
         from portfolio.models import Geraet
         lg, e, m, v = _basis_objekte()

@@ -8588,6 +8588,31 @@ def fw_nebenkosten_neu(request):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_dienstleister_bearbeiten(request, pk):
+    """Dienstleister / Handwerker bearbeiten (Stammdaten)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Handwerker
+    from core.auth import log_aktion
+    h = get_object_or_404(Handwerker, id=pk)
+    if request.method != 'POST':
+        return redirect('fw_dienstleister')
+    firma = (request.POST.get('firma') or '').strip()
+    if not firma:
+        messages.error(request, "Firma ist erforderlich.")
+        return redirect('fw_dienstleister')
+    h.firma = firma
+    h.branche = request.POST.get('branche', h.branche) or h.branche
+    h.kontaktperson = (request.POST.get('kontaktperson') or '').strip()
+    h.email = (request.POST.get('email') or '').strip()
+    h.telefon = (request.POST.get('telefon') or '').strip()
+    h.save()
+    log_aktion(request, "Dienstleister bearbeitet", firma, '')
+    messages.success(request, f"✅ Dienstleister '{firma}' aktualisiert.")
+    return redirect('fw_dienstleister')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_dienstleister_loeschen(request, pk):
     """Dienstleister / Handwerker löschen (Stammdaten)."""
     from django.shortcuts import redirect

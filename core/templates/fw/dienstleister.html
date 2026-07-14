@@ -70,10 +70,41 @@
             </div>
             <div class="flex items-center gap-2 shrink-0">
                 {% if row.offene %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-50 text-rose-600 whitespace-nowrap">{{ row.offene }} offen</span>{% endif %}
+                <button type="button" onclick="document.getElementById('dledit-{{ row.h.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 text-sm" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
                 <form method="post" action="/neu/dienstleister/{{ row.h.id }}/loeschen/" onsubmit="return confirm('Dienstleister «{{ row.h.firma|escapejs }}» löschen?');">{% csrf_token %}
                     <button class="text-slate-300 hover:text-rose-600 text-sm" title="Löschen"><i class="fa-solid fa-trash"></i></button>
                 </form>
             </div>
+        </div>
+
+        <!-- Inline-Bearbeitung -->
+        <div id="dledit-{{ row.h.id }}" class="hidden mb-4 pb-4 border-b border-slate-100">
+            <form method="post" action="/neu/dienstleister/{{ row.h.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {% csrf_token %}
+                <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Firma *</label>
+                    <input name="firma" value="{{ row.h.firma }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Branche</label>
+                    <select name="branche" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
+                        <option value="sanitaer" {% if row.h.branche == 'sanitaer' %}selected{% endif %}>Sanitär / Heizung</option>
+                        <option value="elektro" {% if row.h.branche == 'elektro' %}selected{% endif %}>Elektroinstallation</option>
+                        <option value="maler" {% if row.h.branche == 'maler' %}selected{% endif %}>Maler / Gipser</option>
+                        <option value="schreiner" {% if row.h.branche == 'schreiner' %}selected{% endif %}>Schreiner / Zimmermann</option>
+                        <option value="schloss" {% if row.h.branche == 'schloss' %}selected{% endif %}>Schlosserei / Schlüsseldienst</option>
+                        <option value="allgemein" {% if row.h.branche == 'allgemein' %}selected{% endif %}>Allround-Handwerker / Baugeschäft</option>
+                        <option value="garten" {% if row.h.branche == 'garten' %}selected{% endif %}>Gartenbau / Umgebung</option>
+                        <option value="reinigung" {% if row.h.branche == 'reinigung' %}selected{% endif %}>Reinigungsinstitut</option>
+                    </select></div>
+                <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Kontaktperson</label>
+                    <input name="kontaktperson" value="{{ row.h.kontaktperson }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">E-Mail</label>
+                    <input name="email" type="email" value="{{ row.h.email }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Telefon</label>
+                    <input name="telefon" value="{{ row.h.telefon }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                <div class="sm:col-span-2 flex items-center gap-2 justify-end">
+                    <button type="button" onclick="document.getElementById('dledit-{{ row.h.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                </div>
+            </form>
         </div>
 
         <dl class="text-sm space-y-2">
