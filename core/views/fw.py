@@ -8576,6 +8576,85 @@ def fw_nebenkosten_neu(request):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_dienstleister_loeschen(request, pk):
+    """Dienstleister / Handwerker löschen (Stammdaten)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Handwerker
+    from core.auth import log_aktion
+    h = get_object_or_404(Handwerker, id=pk)
+    if request.method == 'POST':
+        firma = h.firma
+        h.delete()
+        log_aktion(request, "Dienstleister gelöscht", firma, '')
+        messages.success(request, f"🗑️ Dienstleister '{firma}' gelöscht.")
+    return redirect('fw_dienstleister')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_asset_loeschen(request, pk):
+    """Asset / Gerät (Portfolio-Assetliste) löschen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Geraet
+    from core.auth import log_aktion
+    g = get_object_or_404(Geraet, id=pk)
+    if request.method == 'POST':
+        bez = f"{g.kategorie} {g.marke}".strip()
+        g.delete()
+        log_aktion(request, "Asset gelöscht", bez, '')
+        messages.success(request, "🗑️ Asset gelöscht.")
+    ziel = '/neu/assets/'
+    if lgq := request.POST.get('lg'):
+        ziel += f'?lg={lgq}'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_kreditor_loeschen(request, pk):
+    """Kreditorenrechnung löschen — NUR solange sie noch nicht verbucht ist
+    (Status 'neu'). Verbuchte Rechnungen werden aus Revisionsgründen nicht
+    gelöscht, sondern per Storno der Buchung rückgängig gemacht."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import KreditorenRechnung
+    from core.auth import log_aktion
+    k = get_object_or_404(KreditorenRechnung, id=pk)
+    if request.method == 'POST':
+        if k.status != 'neu':
+            messages.error(request, "Bereits verbuchte Rechnung kann nicht gelöscht werden — "
+                                    "bitte die zugehörige Buchung stornieren.")
+        else:
+            lief = k.lieferant
+            k.delete()
+            log_aktion(request, "Kreditorenrechnung gelöscht", lief, '')
+            messages.success(request, f"🗑️ Kreditorenrechnung '{lief}' gelöscht.")
+    ziel = '/neu/kreditoren/'
+    if lgq := request.POST.get('lg'):
+        ziel += f'?lg={lgq}'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_nebenkosten_loeschen(request, pk):
+    """Nebenkosten-Abrechnungsperiode löschen — nur solange nicht abgeschlossen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import AbrechnungsPeriode
+    from core.auth import log_aktion
+    p = get_object_or_404(AbrechnungsPeriode, id=pk)
+    if request.method == 'POST':
+        if getattr(p, 'abgeschlossen', False):
+            messages.error(request, "Abgeschlossene Periode kann nicht gelöscht werden.")
+            return redirect(f'/neu/nebenkosten/{p.id}/')
+        bez = p.bezeichnung
+        p.delete()
+        log_aktion(request, "Abrechnungsperiode gelöscht", bez, '')
+        messages.success(request, f"🗑️ Abrechnungsperiode '{bez}' gelöscht.")
+    return redirect('fw_nebenkosten')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_buchung_neu(request):
     """Manuelle Buchung erfassen (Soll an Haben)."""
     from django.shortcuts import redirect

@@ -68,7 +68,12 @@
                     <div class="text-xs text-slate-400">{{ row.branche }}</div>
                 </div>
             </div>
-            {% if row.offene %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-50 text-rose-600 whitespace-nowrap">{{ row.offene }} offen</span>{% endif %}
+            <div class="flex items-center gap-2 shrink-0">
+                {% if row.offene %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-50 text-rose-600 whitespace-nowrap">{{ row.offene }} offen</span>{% endif %}
+                <form method="post" action="/neu/dienstleister/{{ row.h.id }}/loeschen/" onsubmit="return confirm('Dienstleister «{{ row.h.firma|escapejs }}» löschen?');">{% csrf_token %}
+                    <button class="text-slate-300 hover:text-rose-600 text-sm" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                </form>
+            </div>
         </div>
 
         <dl class="text-sm space-y-2">

@@ -122,8 +122,12 @@
                 <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{% if row.g.garantie_bis %}{{ row.g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap {{ row.g_cls }}">{{ row.g_status }}</span></td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                    {% if row.einheit_id %}<a href="/neu/objekte/{{ row.einheit_id }}/" class="text-xs text-indigo-600 font-medium hover:underline">Objekt</a>
-                    {% elif row.lg_id %}<a href="/neu/liegenschaften/{{ row.lg_id }}/" class="text-xs text-indigo-600 font-medium hover:underline">Liegenschaft</a>{% endif %}
+                    {% if row.einheit_id %}<a href="/neu/objekte/{{ row.einheit_id }}/" class="text-xs text-indigo-600 font-medium hover:underline mr-3">Objekt</a>
+                    {% elif row.lg_id %}<a href="/neu/liegenschaften/{{ row.lg_id }}/" class="text-xs text-indigo-600 font-medium hover:underline mr-3">Liegenschaft</a>{% endif %}
+                    <form method="post" action="/neu/assets/{{ row.g.id }}/loeschen/" class="inline" onsubmit="return confirm('Asset löschen?');">{% csrf_token %}
+                        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                        <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                    </form>
                 </td>
             </tr>
             {% empty %}

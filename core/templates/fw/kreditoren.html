@@ -159,6 +159,12 @@
                             <i class="fa-solid fa-share"></i> Weiterverrechnen
                         </a>
                         {% endif %}
+                        {% if row.k.status == 'neu' %}
+                        <form method="post" action="/neu/kreditoren/{{ row.k.id }}/loeschen/" class="inline" onsubmit="return confirm('Kreditorenrechnung «{{ row.lieferant|escapejs }}» löschen? (nur solange nicht verbucht)');">{% csrf_token %}
+                            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                            <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                        {% endif %}
                     </div>
                 </td>
             </tr>

@@ -93,7 +93,13 @@
                     {% if row.p.abgeschlossen %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">Abgeschlossen</span>
                     {% else %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700">Offen</span>{% endif %}
                 </td>
-                <td class="px-5 py-3.5 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
+                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                    {% if not row.p.abgeschlossen %}
+                    <form method="post" action="/neu/nebenkosten/{{ row.p.id }}/loeschen/" class="inline" onclick="event.stopPropagation();" onsubmit="return confirm('Abrechnungsperiode «{{ row.p.bezeichnung|escapejs }}» löschen?');">{% csrf_token %}
+                        <button class="text-slate-300 hover:text-rose-600 text-xs mr-2" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                    {% endif %}
+                    <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
             </tr>
             {% empty %}
             <tr><td colspan="7" class="px-5 py-12 text-center">

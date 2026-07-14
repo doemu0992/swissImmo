@@ -5201,6 +5201,51 @@ class GeraetZaehlerTests(TestCase):
         self.assertContains(r, 'Küche')
 
 
+class LoeschbarkeitTests(TestCase):
+    """Addierbare Stammdaten/Listen müssen löschbar sein."""
+
+    def test_dienstleister_loeschen(self):
+        from crm.models import Handwerker
+        h = Handwerker.objects.create(firma='Muster AG')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/dienstleister/{h.id}/loeschen/')
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(Handwerker.objects.filter(id=h.id).exists())
+
+    def test_asset_loeschen(self):
+        from portfolio.models import Geraet
+        lg, e, m, v = _basis_objekte()
+        g = Geraet.objects.create(liegenschaft=lg, kategorie='Heizung')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/assets/{g.id}/loeschen/')
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(Geraet.objects.filter(id=g.id).exists())
+
+    def test_kreditor_loeschen_nur_neu(self):
+        from finance.models import KreditorenRechnung
+        lg, e, m, v = _basis_objekte()
+        neu = KreditorenRechnung.objects.create(lieferant='Neu AG', betrag=Decimal('100'), status='neu')
+        gebucht = KreditorenRechnung.objects.create(lieferant='Alt AG', betrag=Decimal('50'), status='freigegeben')
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        # neu → löschbar
+        c.post(f'/neu/kreditoren/{neu.id}/loeschen/')
+        self.assertFalse(KreditorenRechnung.objects.filter(id=neu.id).exists())
+        # verbucht → bleibt erhalten
+        c.post(f'/neu/kreditoren/{gebucht.id}/loeschen/')
+        self.assertTrue(KreditorenRechnung.objects.filter(id=gebucht.id).exists())
+
+    def test_nebenkosten_periode_loeschen(self):
+        from finance.models import AbrechnungsPeriode
+        from datetime import date as _d
+        lg, e, m, v = _basis_objekte()
+        p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='NK 2025',
+                                              start_datum=_d(2025, 1, 1), ende_datum=_d(2025, 12, 31))
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/nebenkosten/{p.id}/loeschen/')
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(AbrechnungsPeriode.objects.filter(id=p.id).exists())
+
+
 class VertragUnterzeichnetTimestampTests(TestCase):
     """Rücklauf-Zeitstempel des unterzeichneten Vertrags (Detail-Ansicht)."""
 
