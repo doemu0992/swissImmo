@@ -195,18 +195,26 @@ class Mietvertrag(models.Model):
                          "(Art. 266b OR), soweit oben nichts anderes vereinbart ist.")
 
     def effektiver_netto_mietzins(self, fuer_datum=None):
-        """Netto-Mietzins, der an einem bestimmten Datum gilt. Bei Staffelmiete
-        die zum Stichtag jüngste erreichte Staffelstufe (vorab vereinbart →
-        automatisch), sonst der Basis-Nettomietzins. Index/fest = Basiswert
-        (Indexanpassungen werden separat mit amtlichem Formular angekündigt)."""
+        """Netto-Mietzins, der an einem bestimmten Datum gilt — verrechnungswirksam.
+
+        - Staffelmiete: die zum Stichtag jüngste erreichte Staffelstufe (vorab
+          vereinbart → automatisch).
+        - Fest/Index: die jüngste am Stichtag WIRKSAME amtliche Mietzinsanpassung
+          (Referenzzins-/Index-/Teuerungsanpassung, Art. 269d) ab `wirksam_ab` —
+          so folgt die Sollstellung automatisch der angekündigten Anpassung, ohne
+          den Basiswert zu mutieren. Ohne Anpassung/Stufe = Basis-Nettomietzins."""
         from datetime import date as _d
         stichtag = fuer_datum or _d.today()
         basis = self.netto_mietzins or Decimal('0.00')
-        if self.mietzins_modell != 'staffel' or not self.pk:
+        if not self.pk:
             return basis
-        stufe = (self.staffelstufen.filter(ab_datum__lte=stichtag)
-                 .order_by('-ab_datum').first())
-        return stufe.netto_mietzins if stufe else basis
+        if self.mietzins_modell == 'staffel':
+            stufe = (self.staffelstufen.filter(ab_datum__lte=stichtag)
+                     .order_by('-ab_datum').first())
+            return stufe.netto_mietzins if stufe else basis
+        anp = (self.anpassungen.filter(wirksam_ab__lte=stichtag)
+               .order_by('-wirksam_ab', '-id').first())
+        return anp.neuer_netto_mietzins if anp else basis
 
     @property
     def kautions_status(self):

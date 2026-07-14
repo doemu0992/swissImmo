@@ -5787,6 +5787,29 @@ class SollstellungKontierungTests(TestCase):
         self.assertIn('3000', haben)   # Wohnungs-Mietertrag
         self.assertIn('3020', haben)   # NK-Akonto
 
+    def test_index_anpassung_wird_verrechnet(self):
+        """Fest/Index: eine wirksame Mietzinsanpassung (Art. 269d) treibt die
+        Sollstellung automatisch ab wirksam_ab — ohne den Basiswert zu mutieren."""
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung
+        from rentals.models import MietzinsAnpassung
+        lg = Liegenschaft.objects.create(strasse='Idx 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Idx-Büro', typ='gew',
+                                   nettomiete_aktuell=Decimal('3000'))
+        m = Mieter.objects.create(typ='firma', firmen_name='Idx AG')
+        v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2025, 1, 1),
+                                       netto_mietzins=Decimal('3000'), nebenkosten=Decimal('0'),
+                                       status='aktiv', mietzins_modell='index')
+        MietzinsAnpassung.objects.create(vertrag=v, wirksam_ab=date(2026, 1, 1),
+                                         alter_netto_mietzins=Decimal('3000'),
+                                         neuer_netto_mietzins=Decimal('3150'))
+        self.assertEqual(v.effektiver_netto_mietzins(date(2025, 6, 1)), Decimal('3000'))
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 6, 1)), Decimal('3150'))
+        run_sollstellung(2026, 3)
+        r = DebitorenRechnung.objects.get(vertrag=v, titel='Miete & NK 03/2026')
+        self.assertEqual(r.betrag, Decimal('3150.00'))
+
     def test_gewerbe_staffel_bucht_gueltige_stufe(self):
         from core.services.automation import run_sollstellung
         from finance.models import DebitorenRechnung
