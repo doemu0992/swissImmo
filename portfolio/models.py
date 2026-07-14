@@ -2,6 +2,7 @@
 from django.db import models
 from django.utils import timezone
 from datetime import date
+from decimal import Decimal
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
 
 class Liegenschaft(models.Model):
@@ -132,6 +133,28 @@ class Einheit(models.Model):
     def vertrag_titel(self):
         return self.VERTRAG_TITEL.get(self.typ, 'Mietvertrag')
 
+    def aktueller_sollmietzins(self, stichtag=None):
+        """Die zum Stichtag (Default heute) gültige Sollmietzins-Zeile —
+        jüngstes `gueltig_ab` <= Stichtag. None, wenn keine passt."""
+        tag = stichtag or date.today()
+        return (self.sollmietzinse.filter(gueltig_ab__lte=tag)
+                .order_by('-gueltig_ab', '-id').first())
+
+    def sync_aktuelle_miete(self):
+        """Führt nettomiete_aktuell/nebenkosten_aktuell aus der aktuell gültigen
+        Sollmietzins-Zeile nach. Ohne passende Zeile bleiben die Werte bestehen.
+        Ändert bestehende Verträge NICHT (Art. 269d — amtliches Formular)."""
+        row = self.aktueller_sollmietzins()
+        if row is None:
+            return
+        felder = []
+        if self.nettomiete_aktuell != row.netto_mietzins:
+            self.nettomiete_aktuell = row.netto_mietzins; felder.append('nettomiete_aktuell')
+        if self.nebenkosten_aktuell != row.nebenkosten:
+            self.nebenkosten_aktuell = row.nebenkosten; felder.append('nebenkosten_aktuell')
+        if felder:
+            self.save(update_fields=felder)
+
     class Meta:
         verbose_name = "Einheit"
         verbose_name_plural = "Einheiten"
@@ -139,6 +162,39 @@ class Einheit(models.Model):
 
     def __str__(self):
         return f"{self.liegenschaft.strasse} - {self.bezeichnung}"
+
+
+class Sollmietzins(models.Model):
+    """Datierte Sollmietzins-Historie je Objekt (Komponenten): ab `gueltig_ab`
+    gelten die hinterlegten Netto-/Nebenkostenwerte. Der aktuell gültige Wert
+    wird auf die Einheit (nettomiete_aktuell/nebenkosten_aktuell) abgeleitet;
+    NEUE Verträge übernehmen automatisch die zum Mietbeginn gültige Zeile.
+    Bestehende Verträge bleiben unberührt (Mietzinsänderung nur über amtliches
+    Formular, Art. 269d OR)."""
+    einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='sollmietzinse')
+    gueltig_ab = models.DateField("Gültig ab", default=date.today)
+    netto_mietzins = models.DecimalField("Netto-Mietzins (CHF)", max_digits=8, decimal_places=2, default=0.00)
+    nebenkosten = models.DecimalField("Nebenkosten (CHF)", max_digits=6, decimal_places=2, default=0.00)
+    notiz = models.CharField("Bemerkung", max_length=200, blank=True, default='')
+    erstellt_am = models.DateTimeField("Erfasst am", auto_now_add=True, null=True)
+
+    class Meta:
+        verbose_name = "Sollmietzins"
+        verbose_name_plural = "Sollmietzinse"
+        ordering = ['-gueltig_ab', '-id']
+        db_table = 'portfolio_sollmietzins'
+
+    def __str__(self):
+        return f"{self.einheit.bezeichnung} ab {self.gueltig_ab}: {self.netto_mietzins}+{self.nebenkosten}"
+
+    @property
+    def brutto(self):
+        return (self.netto_mietzins or Decimal('0')) + (self.nebenkosten or Decimal('0'))
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Nach jeder Änderung die abgeleiteten Aktuellwerte der Einheit nachführen.
+        self.einheit.sync_aktuelle_miete()
 
 
 class Verteilschluessel(models.Model):

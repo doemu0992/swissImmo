@@ -50,12 +50,47 @@
 
     <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
         <h3 class="font-bold text-slate-800 text-sm">Soll-Mietzins</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nettomiete (CHF)</label>
                 <input name="nettomiete_aktuell" type="number" step="0.01" value="{% localize off %}{{ e.nettomiete_aktuell|default:'0' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nebenkosten (CHF)</label>
                 <input name="nebenkosten_aktuell" type="number" step="0.01" value="{% localize off %}{{ e.nebenkosten_aktuell|default:'0' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gültig ab</label>
+                <input name="soll_gueltig_ab" type="date" {% if not sollmietzinse %}value="{{ heute_iso }}"{% endif %} class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
+        <p class="text-[11px] text-slate-400">Diese Werte werden als datierte Sollmietzins-Zeile («gültig ab») hinterlegt. Neue Verträge übernehmen automatisch den zum Mietbeginn gültigen Wert; bestehende Verträge bleiben unverändert (Art. 269d OR).</p>
+
+        {% if sollmietzinse %}
+        <div class="border border-slate-200 rounded-lg overflow-hidden">
+            <table class="w-full text-sm">
+                <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                    <th class="px-4 py-2 font-semibold">Gültig ab</th>
+                    <th class="px-4 py-2 font-semibold text-right">Netto</th>
+                    {% if not e.ist_einstellplatz %}<th class="px-4 py-2 font-semibold text-right">NK</th>
+                    <th class="px-4 py-2 font-semibold text-right">Brutto</th>{% endif %}
+                    <th class="px-4 py-2"></th>
+                </tr></thead>
+                <tbody class="divide-y divide-slate-50">
+                {% for s in sollmietzinse %}
+                <tr>
+                    <td class="px-4 py-2 font-medium text-slate-800">{{ s.gueltig_ab|date:"d.m.Y" }}
+                        {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700">aktuell</span>{% endif %}</td>
+                    <td class="px-4 py-2 text-right text-slate-700">CHF {{ s.netto_mietzins|floatformat:2 }}</td>
+                    {% if not e.ist_einstellplatz %}<td class="px-4 py-2 text-right text-slate-700">CHF {{ s.nebenkosten|floatformat:2 }}</td>
+                    <td class="px-4 py-2 text-right font-semibold text-slate-900">CHF {{ s.brutto|floatformat:2 }}</td>{% endif %}
+                    <td class="px-4 py-2 text-right">
+                        <form method="post" action="/neu/sollmietzins/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('Diese Sollmietzins-Zeile löschen?');">{% csrf_token %}
+                            <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="text-[11px] text-slate-400">Weitere datierte Zeilen verwaltest du im <a href="/neu/objekte/{{ e.id }}/?tab=mietzins" class="text-indigo-600 hover:underline">Objekt → Mietzins</a>.</p>
+        {% endif %}
+
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Interne Notizen</label>
             <textarea name="notizen" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">{{ e.notizen }}</textarea></div>
     </div>

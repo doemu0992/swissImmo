@@ -5612,3 +5612,100 @@ class DocuSealWebhookTests(TestCase):
         self.assertEqual(r.status_code, 200)
         r2 = c.post('/api/rentals/webhook/docuseal', data='kein json', content_type='application/json')
         self.assertEqual(r2.status_code, 200)
+
+
+class SollmietzinsTests(TestCase):
+    """Datierte Sollmietzins-Komponententabelle je Objekt (gültig ab)."""
+
+    def _obj(self, typ='whg'):
+        lg = Liegenschaft.objects.create(strasse='Sollweg 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2.5 Zi', typ=typ,
+                                   nettomiete_aktuell=Decimal('0'), nebenkosten_aktuell=Decimal('0'))
+        return lg, e
+
+    def test_aktueller_sollmietzins_nach_datum(self):
+        from portfolio.models import Sollmietzins
+        _, e = self._obj()
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2024, 1, 1),
+                                    netto_mietzins=Decimal('1400'), nebenkosten=Decimal('180'))
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2026, 1, 1),
+                                    netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'))
+        # Stichtag zwischen beiden → ältere Zeile gilt
+        row = e.aktueller_sollmietzins(date(2025, 6, 1))
+        self.assertEqual(row.netto_mietzins, Decimal('1400'))
+        # Stichtag nach der zweiten → neuere Zeile gilt
+        row2 = e.aktueller_sollmietzins(date(2026, 6, 1))
+        self.assertEqual(row2.netto_mietzins, Decimal('1500'))
+        # vor der ersten Zeile → None
+        self.assertIsNone(e.aktueller_sollmietzins(date(2020, 1, 1)))
+
+    def test_sync_leitet_aktuellwerte_ab(self):
+        from portfolio.models import Sollmietzins
+        _, e = self._obj()
+        # Zeile mit heute gültig → nach save() abgeleitet
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2020, 1, 1),
+                                    netto_mietzins=Decimal('1234'), nebenkosten=Decimal('99'))
+        e.refresh_from_db()
+        self.assertEqual(e.nettomiete_aktuell, Decimal('1234.00'))
+        self.assertEqual(e.nebenkosten_aktuell, Decimal('99.00'))
+
+    def test_view_add_und_del(self):
+        from portfolio.models import Sollmietzins
+        _, e = self._obj()
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/sollmietzins/', {
+            'einheit_id': e.id, 'gueltig_ab': '2026-03-01',
+            'netto_mietzins': '1600', 'nebenkosten': '210', 'notiz': 'Test',
+        })
+        self.assertEqual(r.status_code, 302)
+        s = Sollmietzins.objects.get(einheit=e)
+        self.assertEqual(s.netto_mietzins, Decimal('1600'))
+        e.refresh_from_db()
+        self.assertEqual(e.nettomiete_aktuell, Decimal('1600.00'))
+        # löschen
+        c.post(f'/neu/sollmietzins/{s.id}/loeschen/')
+        self.assertFalse(Sollmietzins.objects.filter(id=s.id).exists())
+
+    def test_einstellplatz_add_erzwingt_nk_null(self):
+        from portfolio.models import Sollmietzins
+        _, e = self._obj(typ='pp')
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/sollmietzins/', {
+            'einheit_id': e.id, 'gueltig_ab': '2026-01-01',
+            'netto_mietzins': '120', 'nebenkosten': '50',  # NK wird ignoriert
+        })
+        s = Sollmietzins.objects.get(einheit=e)
+        self.assertEqual(s.nebenkosten, Decimal('0.00'))
+
+    def test_objekt_detail_zeigt_mietzins_tab(self):
+        _, e = self._obj()
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/objekte/{e.id}/').content.decode()
+        self.assertIn('id="obj-mietzins"', body)
+        self.assertIn('/neu/sollmietzins/', body)
+
+    def test_objekt_form_seedet_erste_zeile(self):
+        from portfolio.models import Sollmietzins
+        lg = Liegenschaft.objects.create(strasse='Neu 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/objekte/neu/', {
+            'liegenschaft_id': lg.id, 'bezeichnung': '4.5 Zi', 'typ': 'whg',
+            'nettomiete_aktuell': '1800', 'nebenkosten_aktuell': '250',
+            'soll_gueltig_ab': '2026-02-01',
+        })
+        e = Einheit.objects.get(bezeichnung='4.5 Zi')
+        s = Sollmietzins.objects.get(einheit=e)
+        self.assertEqual(s.gueltig_ab, date(2026, 2, 1))
+        self.assertEqual(s.netto_mietzins, Decimal('1800.00'))
+
+    def test_wizard_json_enthaelt_sollplan(self):
+        from portfolio.models import Sollmietzins
+        _, e = self._obj()
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2026, 1, 1),
+                                    netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'))
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/vertraege/neu/?einheit={e.id}').content.decode()
+        self.assertIn('sollplan', body)
+        self.assertIn('applySollplan', body)

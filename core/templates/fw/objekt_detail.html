@@ -428,6 +428,66 @@
 </div>
 
 <!-- ===== TAB: ZÄHLER ===== -->
+<!-- ===== TAB: MIETZINS (Sollmietzins-Komponenten, datiert) ===== -->
+<div data-panel="obj" id="obj-mietzins" class="hidden">
+    <div class="bg-indigo-50/60 border border-indigo-100 rounded-xl px-4 py-3 mb-4 text-[12.5px] text-indigo-800">
+        <i class="fa-solid fa-circle-info mr-1"></i>Hier hinterlegst du den Sollmietzins <b>datiert («gültig ab»)</b>.
+        Der aktuell gültige Wert steuert die Soll-Miete des Objekts. <b>Neue Verträge</b> übernehmen automatisch
+        den zum Mietbeginn gültigen Wert — <b>bestehende Verträge bleiben unverändert</b> (Mietzinsänderung nur über
+        das amtliche Formular, Art. 269d OR).
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
+        <table class="w-full text-sm">
+            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3 font-semibold">Gültig ab</th>
+                <th class="px-5 py-3 font-semibold text-right">Netto</th>
+                {% if not e.ist_einstellplatz %}<th class="px-5 py-3 font-semibold text-right">Nebenkosten</th>
+                <th class="px-5 py-3 font-semibold text-right">Brutto</th>{% endif %}
+                <th class="px-5 py-3 font-semibold">Bemerkung</th>
+                <th class="px-5 py-3"></th>
+            </tr></thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for s in sollmietzinse %}
+            <tr class="hover:bg-slate-50/60">
+                <td class="px-5 py-3 font-medium text-slate-900">{{ s.gueltig_ab|date:"d.m.Y" }}
+                    {% if s.id == aktueller_soll_id %}<span class="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700">aktuell gültig</span>{% endif %}</td>
+                <td class="px-5 py-3 text-right text-slate-700">CHF {{ s.netto_mietzins|chf }}</td>
+                {% if not e.ist_einstellplatz %}<td class="px-5 py-3 text-right text-slate-700">CHF {{ s.nebenkosten|chf }}</td>
+                <td class="px-5 py-3 text-right font-semibold text-slate-900">CHF {{ s.brutto|chf }}</td>{% endif %}
+                <td class="px-5 py-3 text-slate-500">{{ s.notiz|default:"—" }}</td>
+                <td class="px-5 py-3 text-right whitespace-nowrap">
+                    <form method="post" action="/neu/sollmietzins/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('Diese Sollmietzins-Zeile löschen?');">{% csrf_token %}
+                        <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </td></tr>
+            {% empty %}
+            <tr><td colspan="{% if e.ist_einstellplatz %}4{% else %}6{% endif %}" class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch kein Sollmietzins erfasst.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-plus text-indigo-500 mr-1.5"></i>Sollmietzins erfassen</h3>
+        <form method="post" action="/neu/sollmietzins/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            {% csrf_token %}
+            <input type="hidden" name="einheit_id" value="{{ e.id }}">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gültig ab <span class="text-red-500">*</span></label>
+                <input name="gueltig_ab" type="date" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">{% if e.ist_einstellplatz %}Mietzins{% else %}Netto-Mietzins{% endif %} (CHF) <span class="text-red-500">*</span></label>
+                <input name="netto_mietzins" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            {% if not e.ist_einstellplatz %}
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nebenkosten (CHF)</label>
+                <input name="nebenkosten" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            {% endif %}
+            <div class="{% if e.ist_einstellplatz %}sm:col-span-2{% endif %}"><label class="block text-xs font-semibold text-slate-500 mb-1">Bemerkung</label>
+                <input name="notiz" placeholder="z.B. Erstvermietung" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-4">
+                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Sollmietzins speichern</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div data-panel="obj" id="obj-zaehler" class="hidden">
     <datalist id="zaehlertyp">{% for t in zaehler_typen %}<option value="{{ t }}">{% endfor %}</datalist>
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">

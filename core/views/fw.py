@@ -1305,6 +1305,12 @@ def fw_objekt_detail(request, pk):
     zaehler = Zaehler.objects.filter(einheit=e).order_by('typ')
     fotos = list(e.fotos.all())
 
+    # Sollmietzins-Komponenten (datierte Netto-/NK-Historie). Die aktuell gültige
+    # Zeile wird markiert; sie steuert nettomiete_aktuell/nebenkosten_aktuell.
+    sollmietzinse = list(e.sollmietzinse.all())
+    aktueller_soll = e.aktueller_sollmietzins()
+    aktueller_soll_id = aktueller_soll.id if aktueller_soll else None
+
     # Ausstattung/Raumbuch — die Räume entstehen aus den erfassten Assets.
     ausst = list(Ausstattung.objects.filter(einheit=e)
                  .prefetch_related('schaeden__handwerker_auftraege'))
@@ -1327,6 +1333,7 @@ def fw_objekt_detail(request, pk):
         ('fotos', 'Fotos', len(fotos) or None),
         ('raumbuch', 'Raumbuch', ausst_count or None),
         ('historie', 'Historie', historie.count() or None),
+        ('mietzins', 'Mietzins', len(sollmietzinse) or None),
         ('geraete', 'Geräte', geraete.count() or None),
         ('zaehler', 'Zähler', zaehler.count() or None),
     ]
@@ -1338,6 +1345,8 @@ def fw_objekt_detail(request, pk):
         'historie': historie,
         'geraete': geraete,
         'zaehler': zaehler,
+        'sollmietzinse': sollmietzinse,
+        'aktueller_soll_id': aktueller_soll_id,
         'fotos': fotos,
         'raeume': raeume,
         'ausst_count': ausst_count,
@@ -1698,6 +1707,62 @@ def fw_zaehler_del(request, pk):
     if eid:
         return redirect(f'/neu/objekte/{eid}/?tab=zaehler')
     return redirect(f'/neu/liegenschaften/{lid}/?tab=technik')
+
+
+# --- Sollmietzins-Komponenten (datierte Netto-/NK-Historie je Objekt) ---
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_sollmietzins_add(request):
+    """Erfasst eine datierte Sollmietzins-Zeile (gültig ab) für ein Objekt.
+    Der aktuell gültige Wert wird automatisch auf die Einheit abgeleitet;
+    neue Verträge übernehmen ihn ab dem Mietbeginn (Bestand bleibt unberührt)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Sollmietzins
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('/neu/objekte/')
+
+    def _dec(x):
+        try:
+            v = (str(x) or '').replace("'", '').replace(',', '.').strip()
+            return Decimal(v) if v else Decimal('0.00')
+        except Exception:
+            return Decimal('0.00')
+
+    e = get_object_or_404(Einheit, id=request.POST.get('einheit_id'))
+    ziel = f'/neu/objekte/{e.id}/?tab=mietzins'
+    ab_raw = (request.POST.get('gueltig_ab') or '').strip()
+    try:
+        ab = date.fromisoformat(ab_raw)
+    except ValueError:
+        messages.error(request, "Bitte ein gültiges «gültig ab»-Datum angeben.")
+        return redirect(ziel)
+    netto = _dec(request.POST.get('netto_mietzins'))
+    # Einstellplatz → keine Nebenkosten
+    nk = Decimal('0.00') if e.ist_einstellplatz else _dec(request.POST.get('nebenkosten'))
+    Sollmietzins.objects.create(
+        einheit=e, gueltig_ab=ab, netto_mietzins=netto, nebenkosten=nk,
+        notiz=(request.POST.get('notiz') or '').strip()[:200],
+    )
+    log_aktion(request, "Sollmietzins erfasst", e.bezeichnung, f"ab {ab}: {netto}+{nk}")
+    messages.success(request, f"✅ Sollmietzins ab {ab.strftime('%d.%m.%Y')} erfasst.")
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_sollmietzins_del(request, pk):
+    """Entfernt eine Sollmietzins-Zeile und führt den Aktuellwert der Einheit nach."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Sollmietzins
+    s = get_object_or_404(Sollmietzins, id=pk)
+    e = s.einheit
+    if request.method == 'POST':
+        s.delete()
+        e.sync_aktuelle_miete()
+        messages.success(request, "Sollmietzins-Zeile entfernt.")
+    return redirect(f'/neu/objekte/{e.id}/?tab=mietzins')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -5713,12 +5778,19 @@ def fw_vertrag_neu(request):
                 continue
             if vorwahl_e and e.id != vorwahl_einheit:
                 continue   # bei Vorwahl nur genau dieses Objekt
+            # Datierte Sollmietzins-Historie (gültig ab) — neue Verträge
+            # übernehmen die zum Mietbeginn gültige Zeile automatisch.
+            sollplan = [{'ab': s.gueltig_ab.isoformat(),
+                         'netto': float(s.netto_mietzins or 0),
+                         'nk': float(s.nebenkosten or 0)}
+                        for s in e.sollmietzinse.all()]  # bereits -gueltig_ab sortiert
             objekte.append({
                 'id': e.id, 'bezeichnung': e.bezeichnung,
                 'typ': e.get_typ_display(), 'typ_code': e.typ, 'etage': e.etage or '',
                 'ewid': e.ewid or '', 'zimmer': float(e.zimmer) if e.zimmer else None,
                 'flaeche': float(e.flaeche_m2) if e.flaeche_m2 else None,
                 'netto': float(e.nettomiete_aktuell or 0), 'nk': float(e.nebenkosten_aktuell or 0),
+                'sollplan': sollplan,
                 'kaution_monate': e.standard_kautionsmonate or 3,
                 'vertrag_titel': e.vertrag_titel, 'kategorie': e.mietrecht_kategorie,
                 'ist_einstellplatz': e.ist_einstellplatz,
@@ -6991,6 +7063,22 @@ def fw_objekt_form(request, pk=None):
         obj.keller = P.get('keller', '').strip()
         obj.notizen = P.get('notizen', '').strip()
         obj.save()
+        # Erste datierte Sollmietzins-Zeile aus dem Formular seeden (nur, wenn ein
+        # «gültig ab» angegeben ist und noch keine Historie besteht). Weitere Zeilen
+        # werden im Objekt-Detail unter «Mietzins» verwaltet.
+        from portfolio.models import Sollmietzins
+        soll_ab_raw = (P.get('soll_gueltig_ab') or '').strip()
+        if soll_ab_raw and not obj.sollmietzinse.exists():
+            try:
+                soll_ab = date.fromisoformat(soll_ab_raw)
+                Sollmietzins.objects.create(
+                    einheit=obj, gueltig_ab=soll_ab,
+                    netto_mietzins=obj.nettomiete_aktuell,
+                    nebenkosten=Decimal('0.00') if obj.ist_einstellplatz else obj.nebenkosten_aktuell,
+                    notiz='Ersterfassung',
+                )
+            except ValueError:
+                pass
         _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
         log_aktion(request, "Objekt bearbeitet" if pk else "Objekt erstellt",
                    f"{obj.bezeichnung} ({obj.liegenschaft.strasse})", _diff, ziel=obj)
@@ -6998,11 +7086,16 @@ def fw_objekt_form(request, pk=None):
         return redirect(f'/neu/objekte/{obj.id}/')
 
     vorwahl_lg = request.GET.get('lg') or (e.liegenschaft_id if e else None)
+    sollmietzinse = list(e.sollmietzinse.all()) if e else []
+    aktueller_soll = e.aktueller_sollmietzins() if e else None
     return render(request, 'fw/objekt_form.html', {
         **basis, 'nav': 'objekte', 'e': e, 'ist_neu': e is None,
         'liegenschaften': Liegenschaft.objects.all().order_by('strasse'),
         'vorwahl_lg': str(vorwahl_lg) if vorwahl_lg else '',
         'typ_choices': Einheit.TYP_CHOICES,
+        'sollmietzinse': sollmietzinse,
+        'aktueller_soll_id': aktueller_soll.id if aktueller_soll else None,
+        'heute_iso': timezone.now().date().isoformat(),
     })
 
 

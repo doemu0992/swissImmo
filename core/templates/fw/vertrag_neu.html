@@ -133,7 +133,7 @@
                     <p class="text-sm text-slate-500 mb-4">Mietdauer, Kündigungsmodalitäten und weitere Angaben zur Mietsache.</p>
                     <div class="grid grid-cols-2 gap-3">
                         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mietbeginn *</label>
-                            <input name="beginn" id="s_beginn" type="date" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                            <input name="beginn" id="s_beginn" type="date" oninput="applySollplan(); live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
                         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mietende</label>
                             <input name="ende" id="s_ende" type="date" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                             <label class="text-xs text-slate-400 flex items-center gap-1 mt-1"><input type="checkbox" id="unbefristet" checked onchange="toggleEnde()"> unbefristet</label></div>
@@ -469,8 +469,25 @@ function objChange(){
     document.getElementById('kaution-hint').textContent = istGew
       ? 'Geschäftsräume: Betrag frei (keine 3-Monats-Grenze), aber Sperrkonto auf Mietername bleibt Pflicht (Art. 257e Abs. 1 OR).'
       : (o.kaution_monate ? `Empfohlen: ${o.kaution_monate} Monatsmieten (max 3, Art. 257e)` : '');
+    applySollplan();   // datierte Sollmietzins-Zeile ab Mietbeginn übernehmen
   }
   live();
+}
+// Sollmietzins-Historie (gültig ab): neuer Vertrag übernimmt automatisch die
+// zum Mietbeginn gültige Zeile (jüngstes gueltig_ab <= Mietbeginn). Ohne
+// Mietbeginn wird die früheste Zeile genommen. Kein Plan → Objekt-Standardwert.
+function applySollplan(){
+  const o=curObj(); if(!o) return;
+  const plan=o.sollplan||[];
+  if(!plan.length) return;   // keine datierte Historie → o.netto/o.nk bleibt
+  const b=val('beginn');
+  let row=null;
+  if(b){ row = plan.find(r => r.ab <= b); }   // plan ist nach ab absteigend sortiert
+  if(!row){ row = plan[plan.length-1]; }      // vor der ersten Zeile → früheste nehmen
+  if(row){
+    document.getElementById('s_netto').value = row.netto;
+    if(!o.ist_einstellplatz) document.getElementById('s_nk').value = row.nk;
+  }
 }
 function modellChange(){
   const md = document.getElementById('s_modell'); if(!md) return;
