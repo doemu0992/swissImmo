@@ -5129,6 +5129,35 @@ class GeraetZaehlerTests(TestCase):
         self.assertEqual(z.typ, 'Strom')
         self.assertEqual(z.zaehler_nummer, 'ABC-123')
 
+    def test_zaehler_bearbeiten(self):
+        from portfolio.models import Zaehler
+        lg, e, m, v = _basis_objekte()
+        z = Zaehler.objects.create(einheit=e, typ='Strom', zaehler_nummer='A1',
+                                   aktueller_stand=Decimal('100'))
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/zaehler/{z.id}/bearbeiten/', {
+            'typ': 'Wasser kalt', 'zaehler_nummer': 'W-9', 'standort': 'Keller',
+            'aktueller_stand': '250.75'})
+        self.assertEqual(r.status_code, 302)
+        z.refresh_from_db()
+        self.assertEqual(z.typ, 'Wasser kalt')
+        self.assertEqual(z.zaehler_nummer, 'W-9')
+        self.assertEqual(z.standort, 'Keller')
+        self.assertEqual(z.aktueller_stand, Decimal('250.75'))
+
+    def test_geraet_bearbeiten(self):
+        from portfolio.models import Geraet
+        lg, e, m, v = _basis_objekte()
+        g = Geraet.objects.create(einheit=e, kategorie='Boiler', marke='Alt')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/geraet/{g.id}/bearbeiten/', {
+            'kategorie': 'Wärmepumpe', 'marke': 'Neu', 'modell': 'X2'})
+        self.assertEqual(r.status_code, 302)
+        g.refresh_from_db()
+        self.assertEqual(g.kategorie, 'Wärmepumpe')
+        self.assertEqual(g.marke, 'Neu')
+        self.assertEqual(g.modell, 'X2')
+
     def test_liegenschaft_allgemeines_geraet(self):
         from portfolio.models import Geraet
         lg, e, m, v = _basis_objekte()

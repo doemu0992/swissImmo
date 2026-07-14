@@ -323,9 +323,30 @@
                 <td class="px-5 py-3 text-slate-600">{% if g.marke or g.modell %}{{ g.marke }} {{ g.modell }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{% if g.installations_datum %}{{ g.installations_datum|date:"m.Y" }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{% if g.garantie_bis %}{{ g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right">
-                    <form method="post" action="/neu/geraet/{{ g.id }}/loeschen/" onsubmit="return confirm('Gerät löschen?');">{% csrf_token %}
+                <td class="px-5 py-3 text-right whitespace-nowrap">
+                    <button type="button" onclick="document.getElementById('gedit-{{ g.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 text-xs mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
+                    <form method="post" action="/neu/geraet/{{ g.id }}/loeschen/" class="inline" onsubmit="return confirm('Gerät löschen?');">{% csrf_token %}
                         <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </td></tr>
+            <tr id="gedit-{{ g.id }}" class="hidden bg-indigo-50/40">
+                <td colspan="5" class="px-5 py-4">
+                    <form method="post" action="/neu/geraet/{{ g.id }}/bearbeiten/" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {% csrf_token %}
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Kategorie</label>
+                            <input name="kategorie" list="geraetkat" value="{{ g.kategorie }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Marke</label>
+                            <input name="marke" value="{{ g.marke }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Modell</label>
+                            <input name="modell" value="{{ g.modell }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Installations-Datum</label>
+                            <input type="date" name="installations_datum" value="{{ g.installations_datum|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Garantie bis</label>
+                            <input type="date" name="garantie_bis" value="{{ g.garantie_bis|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div class="col-span-2 sm:col-span-3 flex items-center gap-2 justify-end">
+                            <button type="button" onclick="document.getElementById('gedit-{{ g.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
+                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                        </div>
                     </form>
                 </td></tr>
             {% empty %}
@@ -371,9 +392,28 @@
                 <td class="px-5 py-3 text-slate-600">{{ z.zaehler_nummer }}</td>
                 <td class="px-5 py-3 text-slate-600">{{ z.standort|default:"—" }}</td>
                 <td class="px-5 py-3 text-right text-slate-700">{{ z.aktueller_stand|floatformat:2 }}</td>
-                <td class="px-5 py-3 text-right">
-                    <form method="post" action="/neu/zaehler/{{ z.id }}/loeschen/" onsubmit="return confirm('Zähler löschen?');">{% csrf_token %}
+                <td class="px-5 py-3 text-right whitespace-nowrap">
+                    <button type="button" onclick="document.getElementById('zedit-{{ z.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 text-xs mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
+                    <form method="post" action="/neu/zaehler/{{ z.id }}/loeschen/" class="inline" onsubmit="return confirm('Zähler löschen?');">{% csrf_token %}
                         <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </td></tr>
+            <tr id="zedit-{{ z.id }}" class="hidden bg-indigo-50/40">
+                <td colspan="5" class="px-5 py-4">
+                    <form method="post" action="/neu/zaehler/{{ z.id }}/bearbeiten/" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {% csrf_token %}
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Typ</label>
+                            <input name="typ" list="zaehlertyp" value="{{ z.typ }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Zähler-Nr.</label>
+                            <input name="zaehler_nummer" value="{{ z.zaehler_nummer }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Standort</label>
+                            <input name="standort" value="{{ z.standort }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Aktueller Stand</label>
+                            <input name="aktueller_stand" value="{{ z.aktueller_stand|floatformat:2 }}" inputmode="decimal" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
+                            <button type="button" onclick="document.getElementById('zedit-{{ z.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
+                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                        </div>
                     </form>
                 </td></tr>
             {% empty %}

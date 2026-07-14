@@ -1549,6 +1549,42 @@ def fw_zaehler_add(request):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_zaehler_edit(request, pk):
+    """Bearbeitet einen bestehenden Zähler (Typ/Nr./Standort/Stand)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Zaehler
+    from core.auth import log_aktion
+    z = get_object_or_404(Zaehler, id=pk)
+    eid, lid = z.einheit_id, z.liegenschaft_id
+    ziel = (f'/neu/objekte/{eid}/?tab=zaehler' if eid
+            else f'/neu/liegenschaften/{lid}/?tab=technik')
+    if request.method != 'POST':
+        return redirect(ziel)
+
+    def _dec(x):
+        try:
+            v = (str(x) or '').replace(',', '.').strip()
+            return Decimal(v) if v else Decimal('0.00')
+        except Exception:
+            return z.aktueller_stand
+
+    typ = (request.POST.get('typ') or '').strip()
+    nummer = (request.POST.get('zaehler_nummer') or '').strip()
+    if not typ or not nummer:
+        messages.error(request, "Typ und Zähler-Nr. sind Pflichtfelder.")
+        return redirect(ziel)
+    z.typ = typ
+    z.zaehler_nummer = nummer
+    z.standort = (request.POST.get('standort') or '').strip()
+    z.aktueller_stand = _dec(request.POST.get('aktueller_stand'))
+    z.save()
+    log_aktion(request, "Zähler bearbeitet", f"{typ} · {nummer}", '')
+    messages.success(request, f"✅ Zähler «{typ}» aktualisiert.")
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_zaehler_del(request, pk):
     """Entfernt einen Zähler (Objekt- oder Liegenschaftsebene)."""
     from django.shortcuts import redirect
@@ -1562,6 +1598,42 @@ def fw_zaehler_del(request, pk):
     if eid:
         return redirect(f'/neu/objekte/{eid}/?tab=zaehler')
     return redirect(f'/neu/liegenschaften/{lid}/?tab=technik')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_geraet_edit(request, pk):
+    """Bearbeitet ein bestehendes Gerät (Kategorie/Marke/Modell/Daten)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Geraet
+    from core.auth import log_aktion
+    g = get_object_or_404(Geraet, id=pk)
+    eid, lid = g.einheit_id, g.liegenschaft_id
+    ziel = (f'/neu/objekte/{eid}/?tab=geraete' if eid
+            else f'/neu/liegenschaften/{lid}/?tab=technik')
+    if request.method != 'POST':
+        return redirect(ziel)
+
+    def _date(x):
+        try:
+            return date.fromisoformat(x)
+        except Exception:
+            return None
+
+    kategorie = (request.POST.get('kategorie') or '').strip()
+    if not kategorie:
+        messages.error(request, "Kategorie ist ein Pflichtfeld.")
+        return redirect(ziel)
+    g.kategorie = kategorie
+    g.sonstiges_bezeichnung = (request.POST.get('sonstiges_bezeichnung') or '').strip()
+    g.marke = (request.POST.get('marke') or '').strip()
+    g.modell = (request.POST.get('modell') or '').strip()
+    g.installations_datum = _date(request.POST.get('installations_datum'))
+    g.garantie_bis = _date(request.POST.get('garantie_bis'))
+    g.save()
+    log_aktion(request, "Gerät bearbeitet", kategorie, '')
+    messages.success(request, f"✅ Gerät «{kategorie}» aktualisiert.")
+    return redirect(ziel)
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
