@@ -2009,14 +2009,14 @@ class ModalFramingTests(TestCase):
             xf = r.headers.get('X-Frame-Options', '')
             self.assertEqual(xf.upper(), 'SAMEORIGIN', f"{url}: {xf!r}")
 
-    def test_vertragsliste_oeffnet_detail_im_modal(self):
+    def test_vertragsliste_oeffnet_detail_als_seite(self):
         lg, e, m, v = _basis_objekte()
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/vertraege/').content.decode()
-        self.assertIn(f"fwModalOpenUrl('/neu/vertraege/{v.id}/'", body)
-        self.assertIn('id="fwModal"', body)
-        self.assertNotIn(f"window.location='/neu/vertraege/{v.id}/'", body)
+        # Klick auf die Zeile navigiert zur vollen Detailseite (kein Modal)
+        self.assertIn(f"window.location='/neu/vertraege/{v.id}/'", body)
+        self.assertNotIn(f"fwModalOpenUrl('/neu/vertraege/{v.id}/'", body)
 
     def test_debitorenliste_ansehen_im_modal(self):
         from finance.models import DebitorenRechnung

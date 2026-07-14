@@ -44,13 +44,11 @@
             <span class="text-slate-300">·</span>
             <a href="/vertrag/{{ v.id }}/pdf/" target="_blank" class="text-xs font-medium text-slate-500 hover:text-indigo-600"><i class="fa-solid fa-file-pdf mr-1"></i>PDF</a>
             <span class="text-slate-300">·</span>
-            {% if v.sign_status != 'unterzeichnet' %}
-            <form method="post" action="/neu/vertraege/{{ v.id }}/signieren/" onsubmit="return confirm('Vertrag an {{ v.mieter.display_name|escapejs }} zur digitalen Unterschrift senden?');"{% if not docuseal_konfiguriert %} title="DocuSeal ist noch nicht konfiguriert (Integrationen)"{% endif %}>
+            <form method="post" action="/neu/vertraege/{{ v.id }}/signieren/" onsubmit="return confirm('{% if v.sign_status == 'unterzeichnet' %}Dieser Vertrag ist bereits unterzeichnet. Wirklich erneut zur Unterschrift senden?{% else %}Vertrag an {{ v.mieter.display_name|escapejs }} zur digitalen Unterschrift senden?{% endif %}');"{% if not docuseal_konfiguriert %} title="DocuSeal ist noch nicht konfiguriert (Integrationen)"{% endif %}>
                 {% csrf_token %}
-                <button class="text-xs font-semibold text-violet-600 hover:text-violet-700"><i class="fa-solid fa-signature mr-1"></i>{% if v.sign_status == 'gesendet' %}Erneut senden{% else %}Zur Unterschrift senden{% endif %}</button>
+                <button class="text-xs font-semibold text-violet-600 hover:text-violet-700"><i class="fa-solid fa-signature mr-1"></i>{% if v.sign_status == 'offen' %}Zur Unterschrift senden{% else %}Erneut senden{% endif %}</button>
             </form>
             <span class="text-slate-300">·</span>
-            {% endif %}
             <form method="post" action="/neu/vertraege/{{ v.id }}/loeschen/" onsubmit="return confirm('Diesen Vertrag wirklich löschen?{% if rechnungs_rows %}\n\n{{ rechnungs_rows|length }} verknüpfte Rechnung(en) und {{ zahlungen|length }} Zahlung(en) bleiben erhalten (werden entkoppelt).{% endif %}');">
                 {% csrf_token %}
                 <button class="text-xs font-medium text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash mr-1"></i>Löschen</button>
