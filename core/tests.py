@@ -5803,3 +5803,54 @@ class SollstellungKontierungTests(TestCase):
         run_sollstellung(2026, 3)   # März 2026 → Stufe ab 2026-01 gilt
         r = DebitorenRechnung.objects.get(vertrag=v, titel='Miete & NK 03/2026')
         self.assertEqual(r.betrag, Decimal('2100.00'))
+
+
+class StaffelImTabTests(TestCase):
+    """Staffelmiete des aktiven Gewerbe-Vertrags im Mietzins-Tab erfassen/löschen."""
+
+    def _gew_vertrag(self):
+        lg = Liegenschaft.objects.create(strasse='Staf-Tab 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Büro 1', typ='gew',
+                                   nettomiete_aktuell=Decimal('2000'))
+        m = Mieter.objects.create(typ='firma', firmen_name='Z AG')
+        v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2025, 1, 1),
+                                       netto_mietzins=Decimal('2000'), nebenkosten=Decimal('0'),
+                                       status='aktiv')
+        return e, v
+
+    def test_gewerbe_tab_zeigt_staffel_karte(self):
+        e, v = self._gew_vertrag()
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/objekte/{e.id}/').content.decode()
+        self.assertIn('Staffelmiete (Art. 269c OR)', body)
+        self.assertIn('/neu/staffel/', body)
+
+    def test_staffel_add_setzt_modell_und_bucht(self):
+        from rentals.models import Staffelstufe
+        e, v = self._gew_vertrag()
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/staffel/', {'vertrag_id': v.id, 'ab_datum': '2026-01-01',
+                                 'netto_mietzins': '2100'})
+        v.refresh_from_db()
+        self.assertEqual(v.mietzins_modell, 'staffel')
+        self.assertEqual(v.staffelstufen.count(), 1)
+        # Effektiver Mietzins ab Stichtag greift
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 6, 1)), Decimal('2100'))
+        # löschen
+        s = Staffelstufe.objects.get(vertrag=v)
+        c.post(f'/neu/staffel/{s.id}/loeschen/')
+        self.assertFalse(Staffelstufe.objects.filter(id=s.id).exists())
+
+    def test_wohnung_ohne_staffel_kein_tab_abschnitt(self):
+        lg = Liegenschaft.objects.create(strasse='Wohn-Tab 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg 1', typ='whg',
+                                   nettomiete_aktuell=Decimal('1500'))
+        m = Mieter.objects.create(typ='person', vorname='A', nachname='B')
+        Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2025, 1, 1),
+                                   netto_mietzins=Decimal('1500'), nebenkosten=Decimal('0'),
+                                   status='aktiv')
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/objekte/{e.id}/').content.decode()
+        self.assertNotIn('Staffelmiete (Art. 269c OR)', body)

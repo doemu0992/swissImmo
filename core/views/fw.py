@@ -1311,6 +1311,13 @@ def fw_objekt_detail(request, pk):
     aktueller_soll = e.aktueller_sollmietzins()
     aktueller_soll_id = aktueller_soll.id if aktueller_soll else None
 
+    # Staffelmiete (Art. 269c) ist vertragsgebunden: Stufen des AKTIVEN Vertrags
+    # im Mietzins-Tab zeigen/erfassen — v.a. bei Gewerbe oder laufender Staffel.
+    staffelstufen = list(aktiver_vertrag.staffelstufen.all()) if aktiver_vertrag else []
+    zeige_staffel = bool(aktiver_vertrag) and (
+        e.mietrecht_kategorie == 'gewerbe'
+        or (aktiver_vertrag and aktiver_vertrag.mietzins_modell == 'staffel'))
+
     # Ausstattung/Raumbuch — die Räume entstehen aus den erfassten Assets.
     ausst = list(Ausstattung.objects.filter(einheit=e)
                  .prefetch_related('schaeden__handwerker_auftraege'))
@@ -1347,6 +1354,8 @@ def fw_objekt_detail(request, pk):
         'zaehler': zaehler,
         'sollmietzinse': sollmietzinse,
         'aktueller_soll_id': aktueller_soll_id,
+        'staffelstufen': staffelstufen,
+        'zeige_staffel': zeige_staffel,
         'fotos': fotos,
         'raeume': raeume,
         'ausst_count': ausst_count,
@@ -1763,6 +1772,57 @@ def fw_sollmietzins_del(request, pk):
         e.sync_aktuelle_miete()
         messages.success(request, "Sollmietzins-Zeile entfernt.")
     return redirect(f'/neu/objekte/{e.id}/?tab=mietzins')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_staffel_add(request):
+    """Erfasst eine Staffelstufe (Art. 269c) für den AKTIVEN Vertrag eines Objekts.
+    Staffelmiete ist vertragsgebunden — die Stufe treibt direkt die Sollstellung
+    (effektiver_netto_mietzins ab Stichtag)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import Mietvertrag, Staffelstufe
+    if request.method != 'POST':
+        return redirect('/neu/objekte/')
+    v = get_object_or_404(Mietvertrag, id=request.POST.get('vertrag_id'))
+    ziel = f'/neu/objekte/{v.einheit_id}/?tab=mietzins'
+    try:
+        ab = date.fromisoformat((request.POST.get('ab_datum') or '').strip())
+    except ValueError:
+        messages.error(request, "Bitte ein gültiges Stichtag-Datum angeben.")
+        return redirect(ziel)
+
+    def _dec(x):
+        try:
+            return Decimal((str(x) or '').replace("'", '').replace(',', '.').strip())
+        except Exception:
+            return None
+
+    netto = _dec(request.POST.get('netto_mietzins'))
+    if netto is None or netto <= 0:
+        messages.error(request, "Bitte einen gültigen Netto-Mietzins angeben.")
+        return redirect(ziel)
+    Staffelstufe.objects.create(vertrag=v, ab_datum=ab, netto_mietzins=netto)
+    # Damit die Stufe im Mietenlauf greift, muss das Vertragsmodell 'staffel' sein.
+    if v.mietzins_modell != 'staffel':
+        v.mietzins_modell = 'staffel'
+        v.save(update_fields=['mietzins_modell'])
+    messages.success(request, f"✅ Staffelstufe ab {ab.strftime('%d.%m.%Y')} erfasst.")
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_staffel_del(request, pk):
+    """Entfernt eine Staffelstufe des aktiven Vertrags."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import Staffelstufe
+    s = get_object_or_404(Staffelstufe, id=pk)
+    eid = s.vertrag.einheit_id
+    if request.method == 'POST':
+        s.delete()
+        messages.success(request, "Staffelstufe entfernt.")
+    return redirect(f'/neu/objekte/{eid}/?tab=mietzins')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
