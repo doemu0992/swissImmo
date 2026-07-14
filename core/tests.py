@@ -4980,26 +4980,37 @@ class DocuSealAblageTests(TestCase):
         self.assertEqual(dok.kategorie, 'vertrag')
         self.assertTrue(dok.im_portal_sichtbar)   # → Mieterportal
 
-    def test_ablage_timestamp_und_kein_overwrite(self):
+    def test_ablage_signiert_kanonisch_einzeln(self):
+        """Genau EIN signiertes Dokument pro Vertrag — auch bei Mehrfach-Versand."""
         from core.services.ablage import ablage_signierter_vertrag
         from rentals.models import Dokument
-        from django.utils import timezone
-        from datetime import timedelta
-        from unittest import mock
         lg, e, m, v = _basis_objekte()
-        d1 = ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-1')
-        # Titel + exakter Ablage-Zeitstempel (Datum + Uhrzeit)
+        d1 = ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-A')
         self.assertTrue(d1.bezeichnung.startswith('Mietvertrag (unterzeichnet)'))
         self.assertIsNotNone(d1.erstellt_am)
-        # gleiche Minute → Idempotenz-Schutz, kein Doppel
-        d1b = ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-1b')
+        # identischer Inhalt (wiederholtes save()) → kein Duplikat
+        d1b = ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-A')
         self.assertEqual(d1.id, d1b.id)
-        # späterer Rücklauf → NEUES Dokument, altes bleibt erhalten (kein Overwrite)
-        spaeter = timezone.now() + timedelta(hours=1)
-        with mock.patch('django.utils.timezone.now', return_value=spaeter):
-            d2 = ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-2')
-        self.assertNotEqual(d1.id, d2.id)
-        self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 2)
+        self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 1)
+        # neue Unterschrift (anderer Inhalt) → weiterhin genau EIN Dokument (aktualisiert)
+        ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-B')
+        self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 1)
+        # Explosionstest: viele Rückläufe mit je anderem Inhalt → bleibt bei EINEM
+        for i in range(5):
+            ablage_signierter_vertrag(v, pdf_bytes=f'%PDF-{i}'.encode())
+        self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 1)
+
+    def test_ablage_raeumt_alt_dubletten_zusammen(self):
+        """Bereits explodierte Alt-Dubletten werden beim nächsten Rücklauf auf eines zusammengeführt."""
+        from core.services.ablage import ablegen, ablage_signierter_vertrag
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        # simuliere 3 alte signierte Dubletten
+        for s in (b'%PDF-1', b'%PDF-2', b'%PDF-3'):
+            ablegen(s, "Mietvertrag (unterzeichnet) — alt", kategorie='vertrag', vertrag=v, dedup=False)
+        self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 3)
+        ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-neu')
+        self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 1)
 
     def test_model_save_legt_signierten_vertrag_ab(self):
         from rentals.models import Dokument

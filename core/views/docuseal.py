@@ -164,6 +164,7 @@ def send_via_docuseal(request, vertrag_id):
 
         if response.status_code in [200, 201]:
             vertrag.sign_status = 'gesendet'
+            vertrag.unterzeichnet_am = None
             vertrag.save()
             messages.success(request, f"✅ Vertrag an {vertrag.mieter.email} gesendet")
         else:

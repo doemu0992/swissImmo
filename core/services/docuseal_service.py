@@ -90,8 +90,11 @@ def docuseal_senden(vertrag):
                              headers={"X-Auth-Token": api_key, "Content-Type": "application/json"},
                              json=payload, timeout=30)
         if resp.status_code in (200, 201):
+            # Neuer Versand → alten Rücklauf-Zeitstempel verwerfen, damit der
+            # nächste Rücklauf frisch datiert wird (Detail zeigt letzte Unterschrift).
             vertrag.sign_status = 'gesendet'
-            vertrag.save(update_fields=['sign_status'])
+            vertrag.unterzeichnet_am = None
+            vertrag.save(update_fields=['sign_status', 'unterzeichnet_am'])
             return (True, f"Vertrag an {mieter.email} zur Unterschrift gesendet.")
         return (False, f"DocuSeal-Fehler {resp.status_code}.")
     except Exception as e:

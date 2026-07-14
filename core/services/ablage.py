@@ -48,17 +48,42 @@ def ablegen(pdf_bytes, titel, kategorie='korrespondenz', *,
         return None
 
 
+SIGNIERT_TITEL = "Mietvertrag (unterzeichnet)"
+
+
+def _file_sha256(fieldfile):
+    """SHA-256 des Datei-Inhalts eines FieldFile (oder None)."""
+    import hashlib
+    try:
+        fieldfile.open('rb')
+        try:
+            data = fieldfile.read()
+        finally:
+            fieldfile.close()
+        return hashlib.sha256(data).hexdigest()
+    except Exception:
+        return None
+
+
 def ablage_signierter_vertrag(vertrag, pdf_bytes=None):
     """Legt den UNTERZEICHNETEN Mietvertrag zentral als rentals.Dokument ab —
     dadurch erscheint er überall dort, wo Verträge/Dokumente gezeigt werden:
     Mieterportal (im_portal_sichtbar), Person-Akte, Objekt-/Liegenschafts-Akte.
 
-    Jeder Rücklauf wird als NEUES, mit Zeitstempel versehenes Dokument abgelegt —
-    ein bereits vorhandenes signiertes Dokument wird NICHT überschrieben (Revision:
-    frühere Fassungen bleiben erhalten). Dedup nur gegen exakt denselben Zeitstempel
-    (verhindert Doppel-Ablage durch mehrfaches save() innerhalb derselben Minute).
+    **Genau EIN kanonisches signiertes Dokument pro Vertrag** (verhindert die
+    Explosion bei Mehrfach-Versand/Neu-Unterschrift):
+      - Ist der eingehende PDF-Inhalt identisch zu einem bereits abgelegten
+        signierten Dokument (z.B. wiederholtes save() derselben Fassung), passiert
+        NICHTS — kein Duplikat.
+      - Kommt eine NEUE Unterschrift zurück (anderer Inhalt), wird das bestehende
+        signierte Dokument **in-place aktualisiert** (Datei + Zeitstempel) und
+        etwaige Alt-Dubletten werden zusammengeführt. So bleibt immer die aktuellste
+        unterschriebene Fassung erhalten — nichts Wertvolles geht verloren, aber die
+        Ablage bläht nicht auf.
     Gibt das Dokument zurück (oder None)."""
     from django.utils import timezone
+    from django.core.files.base import ContentFile
+    import hashlib
     if pdf_bytes is None:
         datei = getattr(vertrag, 'pdf_datei', None)
         if not datei:
@@ -75,17 +100,46 @@ def ablage_signierter_vertrag(vertrag, pdf_bytes=None):
                 pass
     if not pdf_bytes:
         return None
-    stempel = timezone.localtime(timezone.now()).strftime('%d.%m.%Y %H:%M')
-    titel = f"Mietvertrag (unterzeichnet) — {stempel}"
+
     from rentals.models import Dokument
-    # Idempotenz-Schutz: identischer Titel am selben Vertrag (Minutengenauigkeit)
-    # → kein zweites Dokument (mehrfaches save() im selben Request).
-    if Dokument.objects.filter(vertrag=vertrag, bezeichnung=titel[:200]).exists():
-        return Dokument.objects.filter(vertrag=vertrag, bezeichnung=titel[:200]).first()
+    neu_hash = hashlib.sha256(pdf_bytes).hexdigest()
+    # Alle bereits abgelegten signierten Fassungen dieses Vertrags (auch alt-
+    # datierte aus früheren Versionen der Ablage-Logik).
+    bestehende = list(Dokument.objects.filter(
+        vertrag=vertrag, kategorie='vertrag',
+        bezeichnung__startswith=SIGNIERT_TITEL).order_by('id'))
+
+    # 1) Inhaltlich identisch bereits vorhanden → kein Duplikat.
+    for d in bestehende:
+        if d.datei and _file_sha256(d.datei) == neu_hash:
+            return d
+
+    stamp = timezone.localtime(timezone.now()).strftime('%d.%m.%Y %H:%M')
     stamp_file = timezone.localtime(timezone.now()).strftime('%Y%m%d_%H%M')
+    titel = f"{SIGNIERT_TITEL} — {stamp}"
+    dateiname = f"Mietvertrag_unterzeichnet_{getattr(vertrag, 'id', '')}_{stamp_file}.pdf"
+
+    # 2) Neue Fassung: bestehendes kanonisches Dokument in-place aktualisieren,
+    #    überzählige Alt-Dubletten entfernen (auf genau eines zusammenführen).
+    if bestehende:
+        ziel = bestehende[0]
+        for d in bestehende[1:]:
+            try:
+                d.delete()
+            except Exception:
+                pass
+        try:
+            ziel.bezeichnung = titel[:200]
+            ziel.titel = titel[:200]
+            ziel.erstellt_am = timezone.now()
+            ziel.datei.save(dateiname, ContentFile(pdf_bytes), save=True)
+            return ziel
+        except Exception:
+            return None
+
+    # 3) Noch keine Fassung → erstmals ablegen.
     return ablegen(pdf_bytes, titel, kategorie='vertrag', vertrag=vertrag,
-                   dateiname=f"Mietvertrag_unterzeichnet_{getattr(vertrag, 'id', '')}_{stamp_file}.pdf",
-                   dedup=False)
+                   dateiname=dateiname, dedup=False)
 
 
 def _slug(text):
