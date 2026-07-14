@@ -8,10 +8,6 @@
 <p class="text-sm text-slate-500 mb-5">Monatlicher Mietenlauf — erzeugt Debitorenrechnungen (Pro-Rata bei Ein-/Auszug mitten im Monat)
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
 
-{% for m in meldung %}
-<div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
-{% endfor %}
-
 <!-- Monatswähler + Aktion -->
 <div class="bg-white rounded-xl border border-slate-200 p-5 mb-6">
     <div class="flex flex-wrap items-end gap-4">

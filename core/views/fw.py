@@ -1766,6 +1766,21 @@ def fw_sollmietzins_del(request, pk):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_objekt_nkart(request, pk):
+    """Setzt die Nebenkosten-Abrechnungsart des Objekts (Standard für neue Verträge)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    e = get_object_or_404(Einheit, id=pk)
+    if request.method == 'POST':
+        art = request.POST.get('nk_abrechnungsart')
+        if art in ('akonto', 'pauschal'):
+            e.nk_abrechnungsart = art
+            e.save(update_fields=['nk_abrechnungsart'])
+            messages.success(request, "Nebenkosten-Abrechnungsart aktualisiert.")
+    return redirect(f'/neu/objekte/{e.id}/?tab=mietzins')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_geraet_edit(request, pk):
     """Bearbeitet ein bestehendes Gerät (Kategorie/Marke/Modell/Daten)."""
     from django.shortcuts import redirect
@@ -5791,6 +5806,7 @@ def fw_vertrag_neu(request):
                 'flaeche': float(e.flaeche_m2) if e.flaeche_m2 else None,
                 'netto': float(e.nettomiete_aktuell or 0), 'nk': float(e.nebenkosten_aktuell or 0),
                 'sollplan': sollplan,
+                'nk_abrechnungsart': e.nk_abrechnungsart or 'akonto',
                 'kaution_monate': e.standard_kautionsmonate or 3,
                 'vertrag_titel': e.vertrag_titel, 'kategorie': e.mietrecht_kategorie,
                 'ist_einstellplatz': e.ist_einstellplatz,

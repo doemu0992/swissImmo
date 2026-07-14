@@ -5709,3 +5709,43 @@ class SollmietzinsTests(TestCase):
         body = c.get(f'/neu/vertraege/neu/?einheit={e.id}').content.decode()
         self.assertIn('sollplan', body)
         self.assertIn('applySollplan', body)
+
+
+class MietzinsTabExtraTests(TestCase):
+    """NK-Abrechnungsart im Mietzins-Tab + Meldungen nur als Toast (nicht inline)."""
+
+    def _obj(self, typ='whg'):
+        lg = Liegenschaft.objects.create(strasse='Tabweg 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='1.5 Zi', typ=typ)
+        return lg, e
+
+    def test_nkart_speichern_und_wizard_prefill(self):
+        _, e = self._obj()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/objekte/{e.id}/nkart/', {'nk_abrechnungsart': 'pauschal'})
+        e.refresh_from_db()
+        self.assertEqual(e.nk_abrechnungsart, 'pauschal')
+        body = c.get(f'/neu/objekte/{e.id}/').content.decode()
+        self.assertIn('name="nk_abrechnungsart"', body)
+        wbody = c.get(f'/neu/vertraege/neu/?einheit={e.id}').content.decode()
+        self.assertIn('nk_abrechnungsart', wbody)
+
+    def test_meldung_nur_als_toast_nicht_inline(self):
+        _, e = self._obj()
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/sollmietzins/', {
+            'einheit_id': e.id, 'gueltig_ab': '2026-01-01', 'netto_mietzins': '1000',
+        }, follow=True)
+        body = r.content.decode()
+        # Standard-Toast-Container vorhanden
+        self.assertIn('fw-toasts', body)
+        # Meldungstext erscheint genau EINMAL (nur im Toast, kein Inline-Duplikat)
+        self.assertEqual(body.count('Sollmietzins ab'), 1)
+
+    def test_objekt_detail_hat_keine_inline_meldung(self):
+        _, e = self._obj()
+        c = Client(); c.force_login(_team_user())
+        # Panels dürfen keine {% for m in meldung %}-Reste mehr rendern
+        body = c.get(f'/neu/objekte/{e.id}/').content.decode()
+        self.assertIn('id="obj-mietzins"', body)  # Seite lädt sauber

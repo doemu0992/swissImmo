@@ -9,13 +9,6 @@
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
     <a href="/neu/bankabgleich/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
 
-{% for m in meldung %}
-<div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium
-            {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% elif m.tags == 'warning' %}bg-amber-50 text-amber-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">
-    {{ m }}
-</div>
-{% endfor %}
-
 <!-- KPI + Import-Hinweis -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">

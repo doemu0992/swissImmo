@@ -19,10 +19,6 @@
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
     <a href="/neu/schaeden/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
 
-{% for m in meldung %}
-<div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
-{% endfor %}
-
 <!-- Schaden intern erfassen -->
 <div id="neuschaden" class="hidden bg-white rounded-xl border border-indigo-200 p-5 mb-6">
     <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-triangle-exclamation text-rose-500 mr-1.5"></i>Schaden erfassen (z.B. telefonisch gemeldet)</h3>

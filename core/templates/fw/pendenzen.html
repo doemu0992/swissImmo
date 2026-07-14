@@ -7,10 +7,6 @@
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
     <a href="/neu/pendenzen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
 
-{% for m in meldung %}
-<div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
-{% endfor %}
-
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
     <!-- Linke Spalte: Fristen + Pendenzen -->
     <div class="lg:col-span-2 space-y-5">

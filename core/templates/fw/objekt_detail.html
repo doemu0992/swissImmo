@@ -125,9 +125,6 @@
 
 <!-- ===== TAB: FOTOS ===== -->
 <div data-panel="obj" id="obj-fotos" class="hidden">
-    {% for m in meldung %}
-    <div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
-    {% endfor %}
     <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
         <h3 class="font-bold text-slate-800 text-sm mb-1">Objekt-Fotos</h3>
         <p class="text-xs text-slate-400 mb-3">Werden im Exposé, im Portal-Feed und in der Vermarktungsliste verwendet. Das erste Foto ist das Titelbild.</p>
@@ -160,10 +157,6 @@
 
 <!-- ===== TAB: RAUMBUCH ===== -->
 <div data-panel="obj" id="obj-raumbuch" class="hidden">
-    {% for m in meldung %}
-    <div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% elif m.tags == 'info' %}bg-sky-50 text-sky-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
-    {% endfor %}
-
     <!-- Schnellerfassung ganzer Raum aus Katalog -->
     <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
         <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-wand-magic-sparkles text-indigo-500 mr-1.5"></i>Raum aus Katalog anlegen</h3>
@@ -436,6 +429,21 @@
         den zum Mietbeginn gültigen Wert — <b>bestehende Verträge bleiben unverändert</b> (Mietzinsänderung nur über
         das amtliche Formular, Art. 269d OR).
     </div>
+    {% if not e.ist_einstellplatz %}
+    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+        <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-sliders text-indigo-500 mr-1.5"></i>Nebenkosten-Abrechnungsart</h3>
+        <form method="post" action="/neu/objekte/{{ e.id }}/nkart/" class="flex flex-wrap items-end gap-3">
+            {% csrf_token %}
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Abrechnungsart</label>
+                <select name="nk_abrechnungsart" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5 min-w-[16rem]">
+                    <option value="akonto" {% if e.nk_abrechnungsart == 'akonto' %}selected{% endif %}>Akonto (Vorschuss mit Abrechnung)</option>
+                    <option value="pauschal" {% if e.nk_abrechnungsart == 'pauschal' %}selected{% endif %}>Pauschal (fixer Betrag)</option>
+                </select></div>
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+        </form>
+        <p class="text-[11px] text-slate-400 mt-2">Gilt als Standard-Abrechnungsart für neue Verträge dieses Objekts.</p>
+    </div>
+    {% endif %}
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
         <table class="w-full text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">

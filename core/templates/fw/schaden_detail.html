@@ -36,10 +36,6 @@
     </div>
 </div>
 
-{% for m in meldung %}
-<div class="mt-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
-{% endfor %}
-
 <!-- Status-Schnellwechsel -->
 <div class="mt-4 bg-white rounded-xl border border-slate-200 p-4">
     <form method="post" action="/neu/schaeden/{{ t.id }}/status/" class="flex flex-wrap items-center gap-3">

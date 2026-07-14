@@ -470,6 +470,9 @@ function objChange(){
       ? 'Geschäftsräume: Betrag frei (keine 3-Monats-Grenze), aber Sperrkonto auf Mietername bleibt Pflicht (Art. 257e Abs. 1 OR).'
       : (o.kaution_monate ? `Empfohlen: ${o.kaution_monate} Monatsmieten (max 3, Art. 257e)` : '');
     applySollplan();   // datierte Sollmietzins-Zeile ab Mietbeginn übernehmen
+    // Nebenkosten-Abrechnungsart des Objekts vorbelegen
+    const nkArtSel = document.querySelector('[name=nk_abrechnungsart]');
+    if (nkArtSel && o.nk_abrechnungsart) nkArtSel.value = o.nk_abrechnungsart;
   }
   live();
 }

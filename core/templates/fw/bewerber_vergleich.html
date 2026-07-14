@@ -22,11 +22,6 @@
 
 <p class="text-xs text-slate-400 mb-4 max-w-3xl">Der Eignungs-Score (0–100) gewichtet Tragbarkeit (Drittel-Regel: Jahreseinkommen ≥ 3× Jahresmiete), Betreibungen, Anstellung und Vollständigkeit der Unterlagen. Er ist eine Entscheidungshilfe — keine automatische Zu- oder Absage.</p>
 
-{% for m in meldung %}
-<div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium
-            {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% elif m.tags == 'warning' %}bg-amber-50 text-amber-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
-{% endfor %}
-
 {% if offene_n %}
 <form method="post" action="/neu/vermarktung/{{ e.id }}/bewerber/absage-uebrige/{{ lg_query }}" class="mb-4"
       onsubmit="return confirm('Allen {{ offene_n }} noch offenen Bewerbern eine Absage senden?');">

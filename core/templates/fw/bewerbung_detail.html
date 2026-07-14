@@ -7,10 +7,6 @@
     <span class="text-slate-600 font-medium">{{ b.vorname }} {{ b.nachname }}</span>
 </nav>
 
-{% for m in meldung %}
-<div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium {% if m.tags == 'error' %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ m }}</div>
-{% endfor %}
-
 <div class="flex items-start justify-between gap-4 mb-6">
     <div class="flex items-center gap-4">
         <div class="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-lg shadow-indigo-600/25">
