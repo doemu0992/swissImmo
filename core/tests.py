@@ -5307,6 +5307,75 @@ class LoeschbarkeitTests(TestCase):
         c.post(f'/neu/kreditoren/{gebucht.id}/loeschen/')
         self.assertTrue(KreditorenRechnung.objects.filter(id=gebucht.id).exists())
 
+    def test_kommunikation_loeschen(self):
+        from crm.models import Kommunikation
+        lg, e, m, v = _basis_objekte()
+        k = Kommunikation.objects.create(mieter=m, typ='telefon', richtung='eingehend',
+                                         inhalt='Testnotiz')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/kommunikation/{k.id}/loeschen/')
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(Kommunikation.objects.filter(id=k.id).exists())
+
+    def test_schaden_loeschen(self):
+        from tickets.models import SchadenMeldung
+        lg, e, m, v = _basis_objekte()
+        t = SchadenMeldung.objects.create(liegenschaft=lg, titel='Wasserschaden',
+                                          beschreibung='Test')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/schaeden/{t.id}/loeschen/')
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(SchadenMeldung.objects.filter(id=t.id).exists())
+
+    def test_portfolio_dokument_loeschen(self):
+        from portfolio.models import Dokument as PDok
+        from django.core.files.base import ContentFile
+        lg, e, m, v = _basis_objekte()
+        d = PDok.objects.create(titel='Foto', kategorie='sonstiges', liegenschaft=lg)
+        d.datei.save('x.pdf', ContentFile(b'%PDF'), save=True)
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/dokumente/{d.id}/loeschen/')
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(PDok.objects.filter(id=d.id).exists())
+
+    def test_wartungsfrist_bearbeiten(self):
+        from portfolio.models import Wartungsfrist
+        from datetime import date as _d
+        lg, e, m, v = _basis_objekte()
+        wf = Wartungsfrist.objects.create(liegenschaft=lg, art='wartung', bezeichnung='Alt',
+                                          naechste_faelligkeit=_d(2025, 1, 1), intervall_monate=12)
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/frist/{wf.id}/bearbeiten/', {
+            'art': 'versicherung', 'bezeichnung': 'Neu', 'anbieter': 'AXA',
+            'naechste_faelligkeit': '2026-06-01', 'intervall_monate': '24'})
+        self.assertEqual(r.status_code, 302)
+        wf.refresh_from_db()
+        self.assertEqual(wf.bezeichnung, 'Neu')
+        self.assertEqual(wf.art, 'versicherung')
+        self.assertEqual(wf.intervall_monate, 24)
+
+    def test_asset_bearbeiten(self):
+        from portfolio.models import Geraet
+        lg, e, m, v = _basis_objekte()
+        g = Geraet.objects.create(liegenschaft=lg, kategorie='Boiler')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/assets/{g.id}/bearbeiten/', {
+            'kategorie': 'Wärmepumpe', 'kapazitaet': '12 kW', 'seriennummer': 'X1'})
+        self.assertEqual(r.status_code, 302)
+        g.refresh_from_db()
+        self.assertEqual(g.kategorie, 'Wärmepumpe')
+        self.assertEqual(g.kapazitaet, '12 kW')
+
+    def test_abnahme_loeschen(self):
+        from rentals.models import Abnahmeprotokoll
+        from django.utils import timezone
+        lg, e, m, v = _basis_objekte()
+        p = Abnahmeprotokoll.objects.create(vertrag=v, typ='einzug', datum=timezone.now().date())
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/abnahme/{p.id}/loeschen/')
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(Abnahmeprotokoll.objects.filter(id=p.id).exists())
+
     def test_nebenkosten_periode_loeschen(self):
         from finance.models import AbrechnungsPeriode
         from datetime import date as _d

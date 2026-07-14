@@ -1191,6 +1191,41 @@ def fw_wartungsfrist_loeschen(request, pk):
     return redirect(f'/neu/liegenschaften/{lg_id}/?tab=fristen')
 
 
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_wartungsfrist_bearbeiten(request, pk):
+    """Wartungs-/Versicherungsfrist bearbeiten."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Wartungsfrist
+    from core.auth import log_aktion
+    wf = get_object_or_404(Wartungsfrist.objects.select_related('liegenschaft'), id=pk)
+    lg_id = wf.liegenschaft_id
+    if request.method != 'POST':
+        return redirect(f'/neu/liegenschaften/{lg_id}/?tab=fristen')
+    bez = (request.POST.get('bezeichnung') or '').strip()
+    faellig = (request.POST.get('naechste_faelligkeit') or '').strip()
+    if not bez or not faellig:
+        messages.error(request, "Bezeichnung und Fälligkeitsdatum sind erforderlich.")
+        return redirect(f'/neu/liegenschaften/{lg_id}/?tab=fristen')
+    try:
+        wf.naechste_faelligkeit = date.fromisoformat(faellig)
+    except ValueError:
+        messages.error(request, "Ungültiges Datum.")
+        return redirect(f'/neu/liegenschaften/{lg_id}/?tab=fristen')
+    wf.art = request.POST.get('art', wf.art) or wf.art
+    wf.bezeichnung = bez
+    wf.anbieter = (request.POST.get('anbieter') or '').strip()
+    try:
+        wf.intervall_monate = max(0, int(request.POST.get('intervall_monate') or wf.intervall_monate))
+    except ValueError:
+        pass
+    wf.notiz = (request.POST.get('notiz') or '').strip()
+    wf.save()
+    log_aktion(request, "Wartungsfrist bearbeitet", bez, '')
+    messages.success(request, f'✅ Frist „{bez}" aktualisiert.')
+    return redirect(f'/neu/liegenschaften/{lg_id}/?tab=fristen')
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_objekt_detail(request, pk):
     from portfolio.models import Geraet, Zaehler, Ausstattung
@@ -2075,6 +2110,22 @@ def fw_abnahme_detail(request, pk):
         **basis, 'nav': 'vertraege', 'p': prot, 'v': prot.vertrag,
         'maengel': prot.maengel.all(),
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_abnahme_loeschen(request, pk):
+    """Abnahmeprotokoll löschen (inkl. Mängel-Positionen)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import Abnahmeprotokoll
+    from core.auth import log_aktion
+    prot = get_object_or_404(Abnahmeprotokoll.objects.select_related('vertrag'), id=pk)
+    vid = prot.vertrag_id
+    if request.method == 'POST':
+        log_aktion(request, "Abnahmeprotokoll gelöscht", str(prot.vertrag) if vid else '', '')
+        prot.delete()
+        messages.success(request, "🗑️ Abnahmeprotokoll gelöscht.")
+    return redirect(f'/neu/vertraege/{vid}/' if vid else '/neu/vertraege/')
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -3092,6 +3143,22 @@ def fw_kommunikation_neu(request):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_kommunikation_loeschen(request, pk):
+    """Journal-Eintrag (Kommunikation) löschen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Kommunikation
+    from core.auth import log_aktion
+    k = get_object_or_404(Kommunikation.objects.select_related('mieter'), id=pk)
+    mid = k.mieter_id
+    if request.method == 'POST':
+        log_aktion(request, "Journal-Eintrag gelöscht", str(k.mieter) if k.mieter_id else '', k.typ)
+        k.delete()
+        messages.success(request, "🗑️ Journal-Eintrag gelöscht.")
+    return redirect(f'/neu/personen/{mid}/?tab=aktivitaet')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_dokument_portal_toggle(request, pk):
     """Schaltet die Mieterportal-Sichtbarkeit eines Dokuments um."""
     from django.shortcuts import redirect
@@ -3816,6 +3883,22 @@ def fw_schaden_foto_loeschen(request, pk):
         log_aktion(request, "Schaden-Foto gelöscht", f"Ticket #{tid}", '')
         messages.success(request, "Foto entfernt.")
     return redirect(f'/neu/schaeden/{tid}/#sc-fotos')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schaden_loeschen(request, pk):
+    """Schadensmeldung (Ticket) löschen — inkl. Fotos/Nachrichten (cascade)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import SchadenMeldung
+    from core.auth import log_aktion
+    t = get_object_or_404(SchadenMeldung, id=pk)
+    if request.method == 'POST':
+        titel = t.titel or (t.beschreibung or '')[:40]
+        t.delete()
+        log_aktion(request, "Schadensmeldung gelöscht", titel, '')
+        messages.success(request, "🗑️ Schadensmeldung gelöscht.")
+    return redirect('/neu/schaeden/')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -5394,6 +5477,7 @@ def fw_dokumente(request):
         eintraege.append({
             'name': d.titel or 'Dokument', 'kat': d.kategorie or 'sonstiges', 'datum': d.datum,
             'url': d.datei.url, 'kontext': kontext, 'quelle': 'Objektablage',
+            'id': d.id, 'loeschbar': True,
         })
 
     # Kategorien für Chips (aus vorhandenen)
@@ -8563,6 +8647,25 @@ def fw_dokument_neu(request):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_dokument_loeschen(request, pk):
+    """Portfolio-/Objekt-Dokument löschen (hochgeladene Ablage)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Dokument as PDokument
+    from core.auth import log_aktion
+    d = get_object_or_404(PDokument, id=pk)
+    if request.method == 'POST':
+        titel = d.titel
+        d.delete()
+        log_aktion(request, "Dokument gelöscht", titel, '')
+        messages.success(request, "🗑️ Dokument gelöscht.")
+    ziel = '/neu/dokumente/'
+    if lgq := request.POST.get('lg'):
+        ziel += f'?lg={lgq}'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_nebenkosten_neu(request):
     """Neue Nebenkosten-Abrechnungsperiode anlegen."""
     from django.shortcuts import redirect
@@ -8626,6 +8729,44 @@ def fw_dienstleister_loeschen(request, pk):
         log_aktion(request, "Dienstleister gelöscht", firma, '')
         messages.success(request, f"🗑️ Dienstleister '{firma}' gelöscht.")
     return redirect('fw_dienstleister')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_asset_bearbeiten(request, pk):
+    """Asset / Gerät (Portfolio-Assetliste) bearbeiten."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Geraet
+    from core.auth import log_aktion
+    g = get_object_or_404(Geraet, id=pk)
+    ziel = '/neu/assets/'
+    if lgq := request.POST.get('lg'):
+        ziel += f'?lg={lgq}'
+    if request.method != 'POST':
+        return redirect(ziel)
+
+    def _date(x):
+        try:
+            return date.fromisoformat(x)
+        except Exception:
+            return None
+
+    kategorie = (request.POST.get('kategorie') or '').strip()
+    if kategorie:
+        g.kategorie = kategorie
+    g.sonstiges_bezeichnung = (request.POST.get('sonstiges_bezeichnung') or '').strip()
+    g.marke = (request.POST.get('marke') or '').strip()
+    g.modell = (request.POST.get('modell') or '').strip()
+    g.seriennummer = (request.POST.get('seriennummer') or '').strip()
+    g.kapazitaet = (request.POST.get('kapazitaet') or '').strip()
+    g.standort = (request.POST.get('standort') or '').strip()
+    g.installations_datum = _date(request.POST.get('installations_datum'))
+    g.garantie_bis = _date(request.POST.get('garantie_bis'))
+    g.notiz = (request.POST.get('notiz') or '').strip()
+    g.save()
+    log_aktion(request, "Asset bearbeitet", f"{g.kategorie} {g.marke}".strip(), '')
+    messages.success(request, "✅ Asset aktualisiert.")
+    return redirect(ziel)
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

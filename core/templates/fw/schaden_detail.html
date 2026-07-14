@@ -26,6 +26,13 @@
     <div class="flex items-center gap-2">
         <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ p_cls }}">{{ p_label }}</span>
         <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ s_cls }}">{{ s_label }}</span>
+        <form method="post" action="/neu/schaeden/{{ t.id }}/loeschen/" class="inline"
+              onsubmit="return confirm('Schadensmeldung #{{ t.id }} wirklich löschen? Fotos und Verlauf werden mitgelöscht.');">
+            {% csrf_token %}
+            <button type="submit" title="Schadensmeldung löschen" class="text-sm text-rose-600 hover:text-white hover:bg-rose-600 hover:border-rose-600 border border-rose-200 px-3 py-1.5 rounded-lg font-semibold transition-colors">
+                <i class="fa-solid fa-trash text-xs"></i>
+            </button>
+        </form>
     </div>
 </div>
 

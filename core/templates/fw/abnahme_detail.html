@@ -18,6 +18,13 @@
         {% if p.kosten_mieter_total %}
         <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/?abnahme={{ p.id }}" class="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg"><i class="fa-solid fa-file-invoice mr-1.5"></i>In Schlussabrechnung</a>
         {% endif %}
+        <form method="post" action="/neu/abnahme/{{ p.id }}/loeschen/" class="inline"
+              onsubmit="return confirm('Abnahmeprotokoll wirklich löschen?');">
+            {% csrf_token %}
+            <button type="submit" title="Protokoll löschen" class="text-sm text-rose-600 hover:text-white hover:bg-rose-600 hover:border-rose-600 border border-rose-200 px-3 py-2 rounded-lg font-semibold transition-colors">
+                <i class="fa-solid fa-trash text-xs"></i>
+            </button>
+        </form>
     </div>
 </div>
 

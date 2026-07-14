@@ -246,6 +246,9 @@
                 <div class="text-sm text-slate-900">{% if k.betreff %}<span class="font-semibold">{{ k.betreff }}</span> · {% endif %}{{ k.inhalt }}</div>
                 <div class="text-xs text-slate-400 mt-0.5">{{ k.get_typ_display }} · {{ k.get_richtung_display }} · {{ k.zeitpunkt|date:"d.m.Y H:i" }}{% if k.erstellt_von %} · {{ k.erstellt_von.username }}{% endif %}</div>
             </div>
+            <form method="post" action="/neu/kommunikation/{{ k.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('Journal-Eintrag löschen?');">{% csrf_token %}
+                <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+            </form>
         </div>
         {% empty %}
         <p class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Einträge im Kontaktjournal.</p>

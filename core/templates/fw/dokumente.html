@@ -86,7 +86,16 @@
                 <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{% if e.kontext %}{{ e.kontext }}{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
                 <td class="px-5 py-3.5 text-slate-400 text-xs whitespace-nowrap">{{ e.quelle }}</td>
                 <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{% if e.datum %}{{ e.datum|date:"d.m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3.5 text-right"><a href="{{ e.url }}" target="_blank" onclick="event.stopPropagation();" class="text-xs text-indigo-600 font-medium hover:underline">Öffnen</a></td>
+                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                    <a href="{{ e.url }}" target="_blank" onclick="event.stopPropagation();" class="text-xs text-indigo-600 font-medium hover:underline mr-3">Öffnen</a>
+                    {% if e.loeschbar %}
+                    <form method="post" action="/neu/dokumente/{{ e.id }}/loeschen/" class="inline" onclick="event.stopPropagation();" onsubmit="return confirm('Dokument «{{ e.name|escapejs }}» löschen?');">
+                        {% csrf_token %}
+                        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                        <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                    {% endif %}
+                </td>
             </tr>
             {% empty %}
             <tr><td colspan="6" class="px-5 py-12 text-center">
