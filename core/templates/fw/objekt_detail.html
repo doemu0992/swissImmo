@@ -495,11 +495,56 @@
         </form>
     </div>
 
+    {% if zeige_staffelvorlage %}
+    <!-- Objekt-Staffelmiete-Vorlage (Plan) — belegt neue Verträge vor, wie Sollmietzins -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 mt-6">
+        <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-layer-group text-indigo-500 mr-1.5"></i>Staffelmiete-Vorlage (Objekt)</h3>
+        <p class="text-[11px] text-slate-400 mb-3">Geplante, datierte Netto-Stufen für dieses Objekt. Ein <b>neuer Gewerbe-Vertrag</b> übernimmt sie automatisch als Staffelmiete (Art. 269c). Diese Vorlage wird selbst nicht verrechnet — die verrechnungswirksamen Stufen entstehen am konkreten Vertrag.</p>
+        <div class="border border-slate-200 rounded-lg overflow-hidden mb-3">
+            <table class="w-full text-sm">
+                <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                    <th class="px-4 py-2 font-semibold">Gültig ab</th>
+                    <th class="px-4 py-2 font-semibold text-right">Netto-Mietzins</th>
+                    <th class="px-4 py-2 font-semibold">Bemerkung</th>
+                    <th class="px-4 py-2"></th>
+                </tr></thead>
+                <tbody class="divide-y divide-slate-50">
+                {% for s in staffelvorlagen %}
+                <tr>
+                    <td class="px-4 py-2 font-medium text-slate-800">{{ s.gueltig_ab|date:"d.m.Y" }}</td>
+                    <td class="px-4 py-2 text-right font-semibold text-slate-900">CHF {{ s.netto_mietzins|chf }}</td>
+                    <td class="px-4 py-2 text-slate-500">{{ s.notiz|default:"—" }}</td>
+                    <td class="px-4 py-2 text-right">
+                        <form method="post" action="/neu/staffelvorlage/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('Diese Staffel-Vorlage-Zeile löschen?');">{% csrf_token %}
+                            <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="px-4 py-4 text-center text-xs text-slate-400 italic">Noch keine Staffel-Vorlage — neue Verträge starten mit festem Mietzins.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <form method="post" action="/neu/staffelvorlage/" class="flex flex-wrap items-end gap-3">
+            {% csrf_token %}
+            <input type="hidden" name="einheit_id" value="{{ e.id }}">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gültig ab <span class="text-red-500">*</span></label>
+                <input name="gueltig_ab" type="date" required class="bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Netto-Mietzins ab Stichtag (CHF) <span class="text-red-500">*</span></label>
+                <input name="netto_mietzins" inputmode="decimal" placeholder="0.00" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5 w-44"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bemerkung</label>
+                <input name="notiz" placeholder="z.B. Jahresstaffel" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Stufe hinzufügen</button>
+        </form>
+    </div>
+    {% endif %}
+
     {% if zeige_staffel %}
     <!-- Staffelmiete (Art. 269c) — vertragsgebunden, treibt die Sollstellung -->
     <div class="bg-white rounded-xl border border-slate-200 p-5 mt-6">
         <div class="flex items-center justify-between mb-1">
-            <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-stairs text-indigo-500 mr-1.5"></i>Staffelmiete (Art. 269c OR)</h3>
+            <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-stairs text-indigo-500 mr-1.5"></i>Staffelstufen des aktiven Vertrags</h3>
             <a href="/neu/vertraege/{{ aktiver_vertrag.id }}/" class="text-xs text-indigo-600 hover:underline">Aktiver Vertrag</a>
         </div>
         <p class="text-[11px] text-slate-400 mb-3">Vorab vereinbarte Stufen des <b>aktiven Vertrags</b>. Ab dem Stichtag gilt der neue Netto-Mietzins automatisch im Mietenlauf (keine erneute Ankündigung). Zulässig bei fester Vertragsdauer ≥ 3 Jahren, max. 1 Erhöhung pro Jahr.</p>

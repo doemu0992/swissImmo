@@ -5819,12 +5819,16 @@ class StaffelImTabTests(TestCase):
                                        status='aktiv')
         return e, v
 
-    def test_gewerbe_tab_zeigt_staffel_karte(self):
+    def test_gewerbe_tab_zeigt_live_staffel_nur_bei_staffelvertrag(self):
         e, v = self._gew_vertrag()
         c = Client(); c.force_login(_team_user())
+        # Fester Gewerbe-Vertrag → keine Live-Staffel-Karte (nur die Objekt-Vorlage)
         body = c.get(f'/neu/objekte/{e.id}/').content.decode()
-        self.assertIn('Staffelmiete (Art. 269c OR)', body)
-        self.assertIn('/neu/staffel/', body)
+        self.assertNotIn('Staffelstufen des aktiven Vertrags', body)
+        # Staffelvertrag → Live-Karte erscheint
+        v.mietzins_modell = 'staffel'; v.save(update_fields=['mietzins_modell'])
+        body2 = c.get(f'/neu/objekte/{e.id}/').content.decode()
+        self.assertIn('Staffelstufen des aktiven Vertrags', body2)
 
     def test_staffel_add_setzt_modell_und_bucht(self):
         from rentals.models import Staffelstufe
@@ -5854,3 +5858,50 @@ class StaffelImTabTests(TestCase):
         c = Client(); c.force_login(_team_user())
         body = c.get(f'/neu/objekte/{e.id}/').content.decode()
         self.assertNotIn('Staffelmiete (Art. 269c OR)', body)
+
+
+class StaffelVorlageTests(TestCase):
+    """Objektbezogene Staffelmiete-Vorlage (wie Sollmietzins) + Wizard-Prefill."""
+
+    def _gew(self):
+        lg = Liegenschaft.objects.create(strasse='SV 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Büro SV', typ='gew',
+                                   nettomiete_aktuell=Decimal('2000'))
+        return lg, e
+
+    def test_vorlage_add_und_del(self):
+        from portfolio.models import StaffelVorlage
+        _, e = self._gew()
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/staffelvorlage/', {'einheit_id': e.id, 'gueltig_ab': '2027-01-01',
+                                        'netto_mietzins': '2100', 'notiz': 'Jahr 2'})
+        s = StaffelVorlage.objects.get(einheit=e)
+        self.assertEqual(s.netto_mietzins, Decimal('2100'))
+        c.post(f'/neu/staffelvorlage/{s.id}/loeschen/')
+        self.assertFalse(StaffelVorlage.objects.filter(id=s.id).exists())
+
+    def test_gewerbe_tab_zeigt_vorlage_karte(self):
+        _, e = self._gew()
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/objekte/{e.id}/').content.decode()
+        self.assertIn('Staffelmiete-Vorlage (Objekt)', body)
+        self.assertIn('/neu/staffelvorlage/', body)
+
+    def test_wohnung_keine_vorlage_karte(self):
+        lg = Liegenschaft.objects.create(strasse='SV Wohn', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg SV', typ='whg')
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/objekte/{e.id}/').content.decode()
+        self.assertNotIn('Staffelmiete-Vorlage (Objekt)', body)
+
+    def test_wizard_json_enthaelt_staffelvorlage(self):
+        from portfolio.models import StaffelVorlage
+        _, e = self._gew()
+        StaffelVorlage.objects.create(einheit=e, gueltig_ab=date(2027, 1, 1),
+                                      netto_mietzins=Decimal('2100'))
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/vertraege/neu/?einheit={e.id}').content.decode()
+        self.assertIn('staffelvorlage', body)
+        self.assertIn('applyStaffelVorlage', body)

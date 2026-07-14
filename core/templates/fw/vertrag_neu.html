@@ -470,6 +470,7 @@ function objChange(){
       ? 'Geschäftsräume: Betrag frei (keine 3-Monats-Grenze), aber Sperrkonto auf Mietername bleibt Pflicht (Art. 257e Abs. 1 OR).'
       : (o.kaution_monate ? `Empfohlen: ${o.kaution_monate} Monatsmieten (max 3, Art. 257e)` : '');
     applySollplan();   // datierte Sollmietzins-Zeile ab Mietbeginn übernehmen
+    applyStaffelVorlage();   // Objekt-Staffelmiete-Vorlage → Staffelstufen vorbelegen
     // Nebenkosten-Abrechnungsart des Objekts vorbelegen
     const nkArtSel = document.querySelector('[name=nk_abrechnungsart]');
     if (nkArtSel && o.nk_abrechnungsart) nkArtSel.value = o.nk_abrechnungsart;
@@ -491,6 +492,26 @@ function applySollplan(){
     document.getElementById('s_netto').value = row.netto;
     if(!o.ist_einstellplatz) document.getElementById('s_nk').value = row.nk;
   }
+}
+// Objekt-Staffelmiete-Vorlage → neuen Gewerbe-Vertrag als Staffelmiete vorbelegen.
+// Setzt Modell 'staffel' und füllt die Staffelstufen aus der Objekt-Vorlage.
+function applyStaffelVorlage(){
+  const o=curObj(); if(!o) return;
+  const plan=o.staffelvorlage||[];
+  const md=document.getElementById('s_modell');
+  if(!plan.length || !md) return;
+  // Nur bei Gewerbe sinnvoll (Staffel-Box liegt in der Gewerbe-Box)
+  if(o.kategorie !== 'gewerbe') return;
+  md.value='staffel'; modellChange();
+  const wrap=document.getElementById('staffel-rows'); if(!wrap) return;
+  wrap.innerHTML='';
+  plan.forEach(function(r){
+    staffelAdd();
+    const last=wrap.lastElementChild; if(!last) return;
+    const ab=last.querySelector('[name=staffel_ab]'); if(ab) ab.value=r.ab;
+    const nt=last.querySelector('[name=staffel_netto]'); if(nt) nt.value=r.netto;
+  });
+  live();
 }
 function modellChange(){
   const md = document.getElementById('s_modell'); if(!md) return;

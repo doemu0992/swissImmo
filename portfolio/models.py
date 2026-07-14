@@ -197,6 +197,27 @@ class Sollmietzins(models.Model):
         self.einheit.sync_aktuelle_miete()
 
 
+class StaffelVorlage(models.Model):
+    """Objektbezogene Staffelmiete-Vorlage (Art. 269c): geplante, datierte
+    Netto-Stufen. Wird NICHT direkt verrechnet — sie belegt einen NEUEN
+    (Gewerbe-)Vertrag im Wizard als Staffelmiete vor. Die verrechnungswirksamen
+    Stufen entstehen erst am konkreten Vertrag (rentals.Staffelstufe)."""
+    einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='staffelvorlagen')
+    gueltig_ab = models.DateField("Gültig ab", default=date.today)
+    netto_mietzins = models.DecimalField("Netto-Mietzins ab Stichtag (CHF)", max_digits=8, decimal_places=2, default=0.00)
+    notiz = models.CharField("Bemerkung", max_length=200, blank=True, default='')
+    erstellt_am = models.DateTimeField("Erfasst am", auto_now_add=True, null=True)
+
+    class Meta:
+        verbose_name = "Staffelmiete-Vorlage"
+        verbose_name_plural = "Staffelmiete-Vorlagen"
+        ordering = ['gueltig_ab', 'id']
+        db_table = 'portfolio_staffelvorlage'
+
+    def __str__(self):
+        return f"{self.einheit.bezeichnung} ab {self.gueltig_ab}: {self.netto_mietzins}"
+
+
 class Verteilschluessel(models.Model):
     """Individuelle Verteilschlüssel pro Einheit."""
     KOSTENART_CHOICES = [

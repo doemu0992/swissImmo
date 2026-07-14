@@ -1311,12 +1311,14 @@ def fw_objekt_detail(request, pk):
     aktueller_soll = e.aktueller_sollmietzins()
     aktueller_soll_id = aktueller_soll.id if aktueller_soll else None
 
-    # Staffelmiete (Art. 269c) ist vertragsgebunden: Stufen des AKTIVEN Vertrags
-    # im Mietzins-Tab zeigen/erfassen — v.a. bei Gewerbe oder laufender Staffel.
+    # Staffelmiete (Art. 269c):
+    #  - OBJEKT-Vorlage (Plan, belegt neue Verträge vor) — wie Sollmietzins.
+    #  - Stufen des AKTIVEN Vertrags (live, verrechnungswirksam) — nur wenn der
+    #    laufende Vertrag tatsächlich eine Staffelmiete ist.
+    staffelvorlagen = list(e.staffelvorlagen.all())
+    zeige_staffelvorlage = (e.mietrecht_kategorie == 'gewerbe')
     staffelstufen = list(aktiver_vertrag.staffelstufen.all()) if aktiver_vertrag else []
-    zeige_staffel = bool(aktiver_vertrag) and (
-        e.mietrecht_kategorie == 'gewerbe'
-        or (aktiver_vertrag and aktiver_vertrag.mietzins_modell == 'staffel'))
+    zeige_staffel = bool(aktiver_vertrag) and aktiver_vertrag.mietzins_modell == 'staffel'
 
     # Ausstattung/Raumbuch — die Räume entstehen aus den erfassten Assets.
     ausst = list(Ausstattung.objects.filter(einheit=e)
@@ -1356,6 +1358,8 @@ def fw_objekt_detail(request, pk):
         'aktueller_soll_id': aktueller_soll_id,
         'staffelstufen': staffelstufen,
         'zeige_staffel': zeige_staffel,
+        'staffelvorlagen': staffelvorlagen,
+        'zeige_staffelvorlage': zeige_staffelvorlage,
         'fotos': fotos,
         'raeume': raeume,
         'ausst_count': ausst_count,
@@ -1772,6 +1776,56 @@ def fw_sollmietzins_del(request, pk):
         e.sync_aktuelle_miete()
         messages.success(request, "Sollmietzins-Zeile entfernt.")
     return redirect(f'/neu/objekte/{e.id}/?tab=mietzins')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_staffelvorlage_add(request):
+    """Erfasst eine datierte Stufe der OBJEKT-Staffelmiete-Vorlage (Plan). Belegt
+    neue Verträge im Wizard vor — wird selbst nicht verrechnet."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import StaffelVorlage
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('/neu/objekte/')
+    e = get_object_or_404(Einheit, id=request.POST.get('einheit_id'))
+    ziel = f'/neu/objekte/{e.id}/?tab=mietzins'
+    try:
+        ab = date.fromisoformat((request.POST.get('gueltig_ab') or '').strip())
+    except ValueError:
+        messages.error(request, "Bitte ein gültiges «gültig ab»-Datum angeben.")
+        return redirect(ziel)
+
+    def _dec(x):
+        try:
+            return Decimal((str(x) or '').replace("'", '').replace(',', '.').strip())
+        except Exception:
+            return None
+
+    netto = _dec(request.POST.get('netto_mietzins'))
+    if netto is None or netto <= 0:
+        messages.error(request, "Bitte einen gültigen Netto-Mietzins angeben.")
+        return redirect(ziel)
+    StaffelVorlage.objects.create(
+        einheit=e, gueltig_ab=ab, netto_mietzins=netto,
+        notiz=(request.POST.get('notiz') or '').strip()[:200])
+    log_aktion(request, "Staffel-Vorlage erfasst", e.bezeichnung, f"ab {ab}: {netto}")
+    messages.success(request, f"✅ Staffel-Vorlage ab {ab.strftime('%d.%m.%Y')} erfasst.")
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_staffelvorlage_del(request, pk):
+    """Entfernt eine Stufe der Objekt-Staffelmiete-Vorlage."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import StaffelVorlage
+    s = get_object_or_404(StaffelVorlage, id=pk)
+    eid = s.einheit_id
+    if request.method == 'POST':
+        s.delete()
+        messages.success(request, "Staffel-Vorlage-Zeile entfernt.")
+    return redirect(f'/neu/objekte/{eid}/?tab=mietzins')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -5859,6 +5913,10 @@ def fw_vertrag_neu(request):
                          'netto': float(s.netto_mietzins or 0),
                          'nk': float(s.nebenkosten or 0)}
                         for s in e.sollmietzinse.all()]  # bereits -gueltig_ab sortiert
+            # Objekt-Staffelmiete-Vorlage (aufsteigend nach gueltig_ab) → belegt
+            # einen neuen Gewerbe-Vertrag als Staffelmiete vor.
+            staffelvorlage = [{'ab': s.gueltig_ab.isoformat(), 'netto': float(s.netto_mietzins or 0)}
+                              for s in e.staffelvorlagen.all()]
             objekte.append({
                 'id': e.id, 'bezeichnung': e.bezeichnung,
                 'typ': e.get_typ_display(), 'typ_code': e.typ, 'etage': e.etage or '',
@@ -5866,6 +5924,7 @@ def fw_vertrag_neu(request):
                 'flaeche': float(e.flaeche_m2) if e.flaeche_m2 else None,
                 'netto': float(e.nettomiete_aktuell or 0), 'nk': float(e.nebenkosten_aktuell or 0),
                 'sollplan': sollplan,
+                'staffelvorlage': staffelvorlage,
                 'nk_abrechnungsart': e.nk_abrechnungsart or 'akonto',
                 'kaution_monate': e.standard_kautionsmonate or 3,
                 'vertrag_titel': e.vertrag_titel, 'kategorie': e.mietrecht_kategorie,
