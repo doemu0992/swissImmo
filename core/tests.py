@@ -2326,6 +2326,33 @@ class GewerbeWizardTests(TestCase):
         self.assertIn('266e', body)
         self.assertIn('setMonateAlle', body)
 
+    def test_parkplatz_frist_anzeige_und_pdf_ohne_nk(self):
+        from portfolio.models import Einheit
+        from rentals.models import Mietvertrag as MV
+        from django.template.loader import get_template
+        from django.utils import timezone
+        lg = Liegenschaft.objects.create(strasse='Weg 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='PP 1', typ='pp',
+                                   nettomiete_aktuell=Decimal('120'))
+        mi = Mieter.objects.create(typ='person', vorname='H', nachname='M', email='h@x.ch')
+        # 2 Wochen (monate 0)
+        v = MV.objects.create(einheit=e, mieter=mi, netto_mietzins=Decimal('120'),
+                              nebenkosten=Decimal('0'), kuendigungsfrist_monate=0,
+                              beginn=timezone.now().date())
+        self.assertIn('2 Wochen', v.kuendigungsfrist_anzeige)
+        # längere Frist möglich (3 Monate auf Monatsende)
+        v.kuendigungsfrist_monate = 3; v.save()
+        self.assertIn('3 Monate auf Ende eines Monats', v.kuendigungsfrist_anzeige)
+        # PDF (Garage-Template) ohne Nebenkosten-Zeile
+        ctx = {'vertrag': v, 'mieter': mi, 'einheit': e, 'liegenschaft': lg,
+               'mandant': None, 'verwaltung': None, 'heute': timezone.now().date(),
+               'miete_fmt': '120.00', 'nk_fmt': '0.00', 'brutto_fmt': '120.00',
+               'kaution_fmt': '0.00', 'unterschrift_path': None}
+        html = get_template('core/mietvertrag_garage.html').render(ctx)
+        self.assertNotIn('Nebenkosten', html)
+        self.assertIn('Mietzins', html)
+
     def test_speichern_gewerbe_staffel_und_frist(self):
         from rentals.models import Mietvertrag as MV, Staffelstufe
         lg, e, m = self._gew_einheit()
@@ -2427,7 +2454,10 @@ class MietrechtReferenzTests(TestCase):
 class EinstellplatzFristTests(TestCase):
     """Vertretbare Anpassung: Einstellplatz-Kündigung nach Art. 266e (2 Wochen)."""
 
-    def _platz(self, typ='pp'):
+    def _platz(self, typ='pp', monate=None):
+        # Einstellplatz (pp/gar): gesetzliche 2-Wochen-Frist = monate 0; sonst 3
+        if monate is None:
+            monate = 0 if typ in ('pp', 'gar') else 3
         lg = Liegenschaft.objects.create(strasse='Platz 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('500000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='PP 12', typ=typ,
@@ -2435,7 +2465,7 @@ class EinstellplatzFristTests(TestCase):
         m = Mieter.objects.create(typ='person', nachname='Halter')
         v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
                                        netto_mietzins=Decimal('120'), nebenkosten=Decimal('0'),
-                                       status='aktiv', kuendigungsfrist_monate=3)
+                                       status='aktiv', kuendigungsfrist_monate=monate)
         return lg, e, m, v
 
     def test_termin_zwei_wochen_auf_monatsende(self):
@@ -2456,6 +2486,14 @@ class EinstellplatzFristTests(TestCase):
         _lg, _e, _m, vb = self._platz('bas')
         self.assertIn('Monate', vb.kuendigungsfrist_anzeige)
         self.assertNotIn('266e', vb.kuendigungsfrist_anzeige)
+
+    def test_einstellplatz_laengere_frist(self):
+        from rentals.services import berechne_kuendigungstermin
+        # Vereinbarte längere Frist (1 Monat auf Monatsende) statt gesetzlicher 2 Wochen
+        _lg, _e, _m, v = self._platz('pp', monate=1)
+        self.assertIn('1 Monat auf Ende eines Monats', v.kuendigungsfrist_anzeige)
+        # nicht mehr die 2-Wochen-Regel (Eingang 5. März → nicht 31. März)
+        self.assertNotEqual(berechne_kuendigungstermin(v, date(2025, 3, 5)), date(2025, 3, 31))
 
     def test_wohnung_frist_unveraendert(self):
         from rentals.services import berechne_kuendigungstermin

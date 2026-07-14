@@ -164,10 +164,15 @@ class Mietvertrag(models.Model):
     @property
     def kuendigungsfrist_anzeige(self):
         """Anzeigetext der Kündigungsfrist. Bei gesondert vermieteten
-        Einstellplätzen gilt die gesetzliche 2-Wochen-Frist (Art. 266e OR),
-        die sich nicht in ganzen Monaten abbilden lässt."""
+        Einstellplätzen gilt von Gesetzes wegen mindestens die 2-Wochen-Frist
+        (Art. 266e OR); die Parteien können aber eine LÄNGERE Frist auf Ende eines
+        Monats vereinbaren. `kuendigungsfrist_monate` <= 0 = gesetzliche 2 Wochen,
+        > 0 = vereinbarte Monatsfrist."""
         if self.einheit_id and self.einheit.ist_einstellplatz:
-            return "2 Wochen auf Ende der Mietperiode (Art. 266e OR)"
+            m = self.kuendigungsfrist_monate or 0
+            if m <= 0:
+                return "2 Wochen auf Ende einer Monatsperiode (Art. 266e OR)"
+            return f"{m} Monat{'e' if m != 1 else ''} auf Ende eines Monats"
         return f"{self.kuendigungsfrist_monate} Monate"
 
     @property

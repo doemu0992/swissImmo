@@ -148,7 +148,7 @@
                     <input type="hidden" name="kuendigungstermine" id="f_kuendigungstermine">
 
                     <div class="grid grid-cols-2 gap-3 mt-4">
-                        <div id="frist-box"><label class="block text-xs font-semibold text-slate-500 mb-1">Kündigungsfrist (Monate) *</label>
+                        <div id="frist-box"><label id="frist-label" class="block text-xs font-semibold text-slate-500 mb-1">Kündigungsfrist (Monate) *</label>
                             <div class="flex items-center bg-slate-100 rounded-lg w-40">
                                 <button type="button" onclick="fristStep(-1)" class="px-3 py-2.5 text-indigo-600 font-bold">−</button>
                                 <input name="kuendigungsfrist" id="s_frist" type="number" value="3" min="1" oninput="live()" class="w-14 bg-transparent text-center text-sm py-2.5 focus:outline-none">
@@ -158,7 +158,7 @@
                             <input name="erstmals_kuendbar" type="date" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
                     </div>
                     <p id="frist-ep-note" class="hidden text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2 mt-2">
-                        <i class="fa-solid fa-circle-info mr-1"></i>Einstellplatz: gesetzliche Frist <b>2 Wochen auf Ende einer Monatsperiode</b> (Art. 266e OR) — kein amtliches Formular, keine Erstreckung. Die Monatsangabe ist hier nicht massgeblich.
+                        <i class="fa-solid fa-circle-info mr-1"></i>Einstellplatz: gesetzliche Mindestfrist <b>2 Wochen auf Ende einer Monatsperiode</b> (Art. 266e OR) — kein amtliches Formular, keine Erstreckung. <b>0 = 2 Wochen</b>; eine <b>längere</b> Frist auf Monatsende (z.B. 1 oder 3 Monate) kann vereinbart werden.
                     </p>
 
                     <label class="block text-xs font-semibold text-slate-500 mb-1 mt-4">Zur Mitbenützung</label>
@@ -358,7 +358,7 @@ function monateAusserDez(){ document.querySelectorAll('.monat-cb').forEach(c=>c.
 function monateStandard(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = ['März','Juni','September'].includes(c.value)); live(); }
 function setMonateAlle(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = true); live(); }
 function gewaehlteMonate(){ return Array.from(document.querySelectorAll('.monat-cb:checked')).map(c=>c.value); }
-function fristStep(d){ const el=document.getElementById('s_frist'); el.value=Math.max(1,(parseInt(el.value)||3)+d); live(); }
+function fristStep(d){ const el=document.getElementById('s_frist'); const min=parseInt(el.min)||1; el.value=Math.max(min,(parseInt(el.value)|| (min||3))+d); live(); }
 function indexUebernehmen(btn){
     // Zuerst gespeicherte Werte, dann Live-Abruf aus dem Internet.
     document.getElementById('s_lik').value=AKT_LIK; document.getElementById('s_ref').value=AKT_REF;
@@ -442,16 +442,23 @@ function objChange(){
     if (!istGew && frist.value === '6') frist.value = '3';
     if (!istGew) { const md = document.getElementById('s_modell'); if (md) { md.value = 'fest'; modellChange(); } }
 
-    // Einstellplatz (Parkplatz/Garage): 2-Wochen-Frist gesetzlich, keine NK nötig,
-    // Kündigung Ende jeder Monatsperiode (alle Monate).
-    document.getElementById('frist-box').classList.toggle('hidden', istEP);
+    // Einstellplatz (Parkplatz/Garage): Frist mind. 2 Wochen (Art. 266e), aber
+    // eine längere Monatsfrist auf Monatsende ist möglich. 0 = 2 Wochen. Keine NK,
+    // Kündigung Ende jeder Monatsperiode.
     document.getElementById('frist-ep-note').classList.toggle('hidden', !istEP);
     document.getElementById('nk-hint').classList.toggle('hidden', !istEP);
     document.getElementById('nk-label').textContent = istEP ? 'Nebenkosten (CHF)' : 'Nebenkosten (CHF) *';
+    const fristLabel = document.getElementById('frist-label');
     if (istEP) {
-      // Nebenkosten default 0, Kündigung an jedem Monatsende möglich
+      frist.min = 0;
+      if (frist.value === '3' || frist.value === '6' || frist.value === '') frist.value = '0';
+      if (fristLabel) fristLabel.textContent = 'Kündigungsfrist (0 = 2 Wochen, sonst Monate)';
       if (!o.nk) document.getElementById('s_nk').value = '0';
       if (window.setMonateAlle) setMonateAlle();
+    } else {
+      frist.min = 1;
+      if ((parseInt(frist.value) || 0) < 1) frist.value = istGew ? '6' : '3';
+      if (fristLabel) fristLabel.textContent = 'Kündigungsfrist (Monate) *';
     }
 
     document.getElementById('kaution-hint').textContent = istGew
@@ -662,7 +669,7 @@ function live(){
     <table class="w-full my-2 text-[13px]"><tbody>
       <tr><td class="text-slate-500 py-0.5 w-2/5">Mietbeginn</td><td>${dstr(val('beginn'))||'—'}</td></tr>
       <tr><td class="text-slate-500 py-0.5">Mietende</td><td>${unbef?'unbefristet':(dstr(val('ende'))||'—')}</td></tr>
-      <tr><td class="text-slate-500 py-0.5">Kündigungsfrist</td><td>${(o&&o.ist_einstellplatz)?'2 Wochen auf Ende einer Monatsperiode (Art. 266e OR)':((val('kuendigungsfrist')||3)+' Monate')}</td></tr>
+      <tr><td class="text-slate-500 py-0.5">Kündigungsfrist</td><td>${(o&&o.ist_einstellplatz)?((parseInt(val('kuendigungsfrist'))>0)?(val('kuendigungsfrist')+' Monate auf Monatsende'):'2 Wochen auf Ende einer Monatsperiode (Art. 266e OR)'):((val('kuendigungsfrist')||3)+' Monate')}</td></tr>
       <tr><td class="text-slate-500 py-0.5">Kündigungstermine</td><td>${(o&&o.ist_einstellplatz)?'Ende jedes Monats':(val('kuendigungstermine')||'—')}</td></tr>
     </tbody></table>
     ${val('erstmals_kuendbar')?`<p class="text-xs text-slate-500 mb-2">Der Vertrag ist erstmals kündbar auf ${dstr(val('erstmals_kuendbar'))}.</p>`:''}

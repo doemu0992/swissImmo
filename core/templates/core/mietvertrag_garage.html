@@ -51,9 +51,13 @@
 
 <div class="sec">4. Mietzins</div>
 <table class="data">
+    {% if vertrag.nebenkosten %}
     <tr><td class="k">Nettomietzins</td><td>CHF {{ miete_fmt }}</td></tr>
     <tr><td class="k">Nebenkosten</td><td>CHF {{ nk_fmt }}</td></tr>
     <tr><td class="k b">Bruttomietzins</td><td class="b">CHF {{ brutto_fmt }}</td></tr>
+    {% else %}
+    <tr><td class="k b">Mietzins</td><td class="b">CHF {{ miete_fmt }}</td></tr>
+    {% endif %}
 </table>
 <p class="note">Der Mietzins ist jeweils am 1. Tag des Monats fällig. Soweit nichts anderes vereinbart ist, gelten die Bestimmungen des Schweizerischen Obligationenrechts (Art. 253 ff. OR).</p>
 

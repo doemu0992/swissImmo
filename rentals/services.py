@@ -139,7 +139,11 @@ def berechne_kuendigungstermin(vertrag, eingang_datum: _dt.date) -> _dt.date:
     Sonderfall gesondert vermietete Einstellplätze (Art. 266e OR): Frist von
     zwei Wochen auf Ende einer einmonatigen Mietdauer — nicht monatsbasiert."""
     einheit = getattr(vertrag, 'einheit', None)
-    if einheit is not None and getattr(einheit, 'ist_einstellplatz', False):
+    # Einstellplatz mit gesetzlicher 2-Wochen-Frist (kuendigungsfrist_monate <= 0).
+    # Wurde eine LÄNGERE Monatsfrist vereinbart (> 0), gilt die normale
+    # Monatslogik weiter unten (Frist in Monaten auf Monatsende).
+    if (einheit is not None and getattr(einheit, 'ist_einstellplatz', False)
+            and (vertrag.kuendigungsfrist_monate or 0) <= 0):
         # Frühestes Monatsende, das mindestens 14 Tage nach Eingang liegt.
         grenze = eingang_datum + _dt.timedelta(days=14)
         me = _monatsende(grenze.year, grenze.month)
