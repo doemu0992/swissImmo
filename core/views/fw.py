@@ -1463,8 +1463,12 @@ def fw_geraet_add(request):
         sonstiges_bezeichnung=(request.POST.get('sonstiges_bezeichnung') or '').strip(),
         marke=(request.POST.get('marke') or '').strip(),
         modell=(request.POST.get('modell') or '').strip(),
+        seriennummer=(request.POST.get('seriennummer') or '').strip(),
+        kapazitaet=(request.POST.get('kapazitaet') or '').strip(),
+        standort=(request.POST.get('standort') or '').strip(),
         installations_datum=_date(request.POST.get('installations_datum')),
         garantie_bis=_date(request.POST.get('garantie_bis')),
+        notiz=(request.POST.get('notiz') or '').strip(),
     )
     if eid:
         e = get_object_or_404(Einheit, id=eid)
@@ -1628,8 +1632,12 @@ def fw_geraet_edit(request, pk):
     g.sonstiges_bezeichnung = (request.POST.get('sonstiges_bezeichnung') or '').strip()
     g.marke = (request.POST.get('marke') or '').strip()
     g.modell = (request.POST.get('modell') or '').strip()
+    g.seriennummer = (request.POST.get('seriennummer') or '').strip()
+    g.kapazitaet = (request.POST.get('kapazitaet') or '').strip()
+    g.standort = (request.POST.get('standort') or '').strip()
     g.installations_datum = _date(request.POST.get('installations_datum'))
     g.garantie_bis = _date(request.POST.get('garantie_bis'))
+    g.notiz = (request.POST.get('notiz') or '').strip()
     g.save()
     log_aktion(request, "Gerät bearbeitet", kategorie, '')
     messages.success(request, f"✅ Gerät «{kategorie}» aktualisiert.")
@@ -8511,8 +8519,12 @@ def fw_asset_neu(request):
         sonstiges_bezeichnung=(request.POST.get('sonstiges_bezeichnung') or '').strip(),
         marke=(request.POST.get('marke') or '').strip(),
         modell=(request.POST.get('modell') or '').strip(),
+        seriennummer=(request.POST.get('seriennummer') or '').strip(),
+        kapazitaet=(request.POST.get('kapazitaet') or '').strip(),
+        standort=(request.POST.get('standort') or '').strip(),
         installations_datum=(date.fromisoformat(request.POST['installations_datum']) if request.POST.get('installations_datum') else None),
         garantie_bis=(date.fromisoformat(request.POST['garantie_bis']) if request.POST.get('garantie_bis') else None),
+        notiz=(request.POST.get('notiz') or '').strip(),
     )
     log_aktion(request, "Asset erfasst", f"{g.marke} {g.modell}", str(lg))
     messages.success(request, "✅ Asset / Gerät erfasst.")

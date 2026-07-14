@@ -261,8 +261,13 @@ class Geraet(models.Model):
     sonstiges_bezeichnung = models.CharField(max_length=100, blank=True, default='')
     marke = models.CharField(max_length=100, blank=True)
     modell = models.CharField(max_length=100, blank=True)
+    seriennummer = models.CharField("Seriennummer", max_length=100, blank=True, default='')
+    # Kapazität / Leistung als freies Feld: z.B. "300 L" (Boiler), "24 kW" (Heizung)
+    kapazitaet = models.CharField("Kapazität / Leistung", max_length=60, blank=True, default='')
+    standort = models.CharField("Standort", max_length=100, blank=True, default='')
     installations_datum = models.DateField(null=True, blank=True)
     garantie_bis = models.DateField(null=True, blank=True)
+    notiz = models.TextField("Notiz", blank=True, default='')
 
     class Meta:
         verbose_name = "Gerät"

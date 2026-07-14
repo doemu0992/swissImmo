@@ -5158,6 +5158,20 @@ class GeraetZaehlerTests(TestCase):
         self.assertEqual(g.marke, 'Neu')
         self.assertEqual(g.modell, 'X2')
 
+    def test_geraet_technische_felder(self):
+        from portfolio.models import Geraet
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/geraet/', {'liegenschaft_id': str(lg.id), 'kategorie': 'Boiler',
+                                    'seriennummer': 'SN-4711', 'kapazitaet': '300 L',
+                                    'standort': 'Keller', 'notiz': 'entkalkt 2025'})
+        self.assertEqual(r.status_code, 302)
+        g = Geraet.objects.get(liegenschaft=lg, kategorie='Boiler')
+        self.assertEqual(g.seriennummer, 'SN-4711')
+        self.assertEqual(g.kapazitaet, '300 L')
+        self.assertEqual(g.standort, 'Keller')
+        self.assertEqual(g.notiz, 'entkalkt 2025')
+
     def test_liegenschaft_allgemeines_geraet(self):
         from portfolio.models import Geraet
         lg, e, m, v = _basis_objekte()
