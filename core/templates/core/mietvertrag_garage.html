@@ -60,7 +60,7 @@
 <table class="sign">
     <tr>
         <td><div class="sublabel">Vermieter</div>{% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg"><br>{% endif %}<div class="sigline">{% if mandant %}{{ mandant.ort }}{% elif verwaltung %}{{ verwaltung.ort }}{% endif %}, {{ heute|date:"d.m.Y" }} / Unterschrift</div></td>
-        <td><div class="sublabel">Mieter</div><br><span style="color:#ffffff;font-size:13pt;">{% verbatim %}{{Unterschrift Mieter;role=Mieter;type=signature;required=true}}{% endverbatim %}</span><br><div class="sigline">Unterschrift</div><div style="margin-top:16pt;">Ort:&nbsp;&nbsp;<span style="color:#ffffff;">{% verbatim %}{{Ort Mieter;role=Mieter;type=text;required=true}}{% endverbatim %}</span></div><div style="margin-top:11pt;">Datum:&nbsp;&nbsp;<span style="color:#ffffff;">{% verbatim %}{{Datum Mieter;role=Mieter;type=date;required=true}}{% endverbatim %}</span></div></td>
+        <td><div class="sublabel">Mieter</div><br><span style="color:#ffffff;font-size:13pt;">{% verbatim %}{{Unterschrift Mieter;role=Mieter;type=signature;required=true}}{% endverbatim %}</span><br><div class="sigline">Unterschrift</div><table style="width:100%;margin-top:14pt;"><tr><td style="width:58pt;padding:3pt 0;color:#64748b;">Ort</td><td style="padding:3pt 0 3pt 10pt;"><span style="color:#ffffff;">{% verbatim %}{{Ort Mieter;role=Mieter;type=text;required=true}}{% endverbatim %}</span></td></tr><tr><td style="padding:3pt 0;color:#64748b;">Datum</td><td style="padding:3pt 0 3pt 10pt;"><span style="color:#ffffff;">{% verbatim %}{{Datum Mieter;role=Mieter;type=date;required=true}}{% endverbatim %}</span></td></tr></table></td>
     </tr>
 </table>
 </body>

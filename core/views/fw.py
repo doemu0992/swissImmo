@@ -1046,19 +1046,27 @@ def fw_liegenschaft_detail(request, pk):
     einheiten = [row['einheit'] for row in einheiten_rows]
     from collections import defaultdict
     buckets = defaultdict(list)
+    from datetime import datetime as _dt
+    def _sortkey(val):
+        # date ODER datetime → immer als datetime vergleichbar machen
+        if val is None:
+            return _dt.min
+        if isinstance(val, _dt):
+            return val.replace(tzinfo=None)
+        return _dt.combine(val, _dt.min.time())
     for d in (RentalsDokument.objects
               .filter(Q(liegenschaft=lg) | Q(einheit__liegenschaft=lg) | Q(vertrag__einheit__liegenschaft=lg))
               .select_related('einheit', 'vertrag').distinct().order_by('-datum')):
         eid = d.einheit_id or (d.vertrag.einheit_id if d.vertrag_id else None)
         buckets[eid].append({'titel': d.bezeichnung or d.titel, 'kategorie': d.kategorie,
-                             'datum': d.datum, 'url': d.datei.url if d.datei else None})
+                             'datum': d.ablage_zeit, 'url': d.datei.url if d.datei else None})
     for d in (PortfolioDokument.objects
               .filter(Q(liegenschaft=lg) | Q(einheit__liegenschaft=lg))
               .select_related('einheit').distinct().order_by('-datum')):
         buckets[d.einheit_id].append({'titel': d.titel, 'kategorie': d.kategorie,
                                       'datum': d.datum, 'url': d.datei.url if d.datei else None})
     for lst in buckets.values():
-        lst.sort(key=lambda d: d['datum'] or date.min, reverse=True)
+        lst.sort(key=lambda d: _sortkey(d['datum']), reverse=True)
     # Reihenfolge: Liegenschaft (allgemein) zuerst, dann je Objekt
     dok_gruppen = []
     if buckets.get(None):
@@ -1083,9 +1091,16 @@ def fw_liegenschaft_detail(request, pk):
             'faellig_bald': 0 <= tage <= 60, 'ueberfaellig': tage < 0,
         })
 
+    # Technik: allgemeine Geräte (Heizung/Boiler/…) + Zähler (Allgemeinstrom/…)
+    from portfolio.models import Geraet, Zaehler
+    lg_geraete = list(Geraet.objects.filter(liegenschaft=lg).order_by('kategorie'))
+    lg_zaehler = list(Zaehler.objects.filter(liegenschaft=lg).order_by('typ'))
+    technik_count = len(lg_geraete) + len(lg_zaehler)
+
     tab_liste = [
         ('objekte', 'Objekte', len(einheiten_rows)),
         ('finanzen', 'Finanzen', None),
+        ('technik', 'Technik', technik_count or None),
         ('unterhalt', 'Unterhalt', unterhalt.count() or None),
         ('fristen', 'Fristen', len(wartungsfristen) or None),
         ('schaeden', 'Schäden', tickets.count() or None),
@@ -1104,8 +1119,25 @@ def fw_liegenschaft_detail(request, pk):
         'unterhalt': unterhalt,
         'wartungsfristen': wartungsfristen,
         'perioden': perioden,
+        'lg_geraete': lg_geraete,
+        'lg_zaehler': lg_zaehler,
+        'geraet_kategorien': GERAET_KATEGORIEN,
+        'zaehler_typen': ZAEHLER_TYPEN,
         'tab_liste': tab_liste,
     })
+
+
+# Vorschlagslisten (datalist) für Geräte-Kategorien und Zähler-Typen
+GERAET_KATEGORIEN = [
+    'Heizung', 'Boiler / Wassererwärmer', 'Wärmepumpe', 'Lüftung', 'Klimaanlage',
+    'Aufzug', 'Waschmaschine', 'Tumbler', 'Geschirrspüler', 'Backofen', 'Kochfeld',
+    'Kühlschrank', 'Dampfabzug', 'Rauchmelder', 'Solaranlage', 'Photovoltaik',
+    'Gartengerät', 'Tor / Antrieb', 'Sonstiges',
+]
+ZAEHLER_TYPEN = [
+    'Allgemeinstrom', 'Strom', 'Wasser kalt', 'Wasser warm', 'Gas',
+    'Wärmezähler', 'Öl', 'Fernwärme', 'Sonstiges',
+]
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -1218,6 +1250,8 @@ def fw_objekt_detail(request, pk):
         'raumtypen': RAUMTYPEN,
         'raum_katalog': RAUM_KATALOG,
         'zustand_choices': Ausstattung.ZUSTAND,
+        'geraet_kategorien': GERAET_KATEGORIEN,
+        'zaehler_typen': ZAEHLER_TYPEN,
         'tab_liste': tab_liste,
         'meldung': list(messages.get_messages(request)),
     })
@@ -1397,6 +1431,137 @@ def fw_ausstattung_del(request, pk):
         a.delete()
         messages.success(request, "Ausstattungselement entfernt.")
     return redirect(f'/neu/objekte/{eid}/#obj-raumbuch')
+
+
+# --- Geräte (Objekt + allgemeine Liegenschafts-Geräte wie Heizung/Boiler) ---
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_geraet_add(request):
+    """Erfasst ein Gerät. Ziel ist entweder ein Objekt (`einheit_id`) oder eine
+    Liegenschaft (`liegenschaft_id`, z.B. Heizung, Boiler, Lüftung)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Geraet
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('/neu/liegenschaften/')
+
+    def _date(x):
+        try:
+            return date.fromisoformat(x)
+        except Exception:
+            return None
+
+    eid = request.POST.get('einheit_id')
+    lid = request.POST.get('liegenschaft_id')
+    kategorie = (request.POST.get('kategorie') or '').strip()
+    if not kategorie:
+        kategorie = (request.POST.get('sonstiges_bezeichnung') or 'sonstiges').strip() or 'sonstiges'
+
+    kwargs = dict(
+        kategorie=kategorie,
+        sonstiges_bezeichnung=(request.POST.get('sonstiges_bezeichnung') or '').strip(),
+        marke=(request.POST.get('marke') or '').strip(),
+        modell=(request.POST.get('modell') or '').strip(),
+        installations_datum=_date(request.POST.get('installations_datum')),
+        garantie_bis=_date(request.POST.get('garantie_bis')),
+    )
+    if eid:
+        e = get_object_or_404(Einheit, id=eid)
+        Geraet.objects.create(einheit=e, **kwargs)
+        log_aktion(request, "Gerät erfasst", e.bezeichnung, kategorie)
+        messages.success(request, f"✅ Gerät «{kategorie}» erfasst.")
+        return redirect(f'/neu/objekte/{e.id}/?tab=geraete')
+    if lid:
+        lg = get_object_or_404(Liegenschaft, id=lid)
+        Geraet.objects.create(liegenschaft=lg, **kwargs)
+        log_aktion(request, "Gerät erfasst", str(lg), kategorie)
+        messages.success(request, f"✅ Gerät «{kategorie}» erfasst.")
+        return redirect(f'/neu/liegenschaften/{lg.id}/?tab=technik')
+    messages.error(request, "Kein Ziel angegeben.")
+    return redirect('/neu/liegenschaften/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_geraet_del(request, pk):
+    """Entfernt ein Gerät (Objekt- oder Liegenschaftsebene)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Geraet
+    g = get_object_or_404(Geraet, id=pk)
+    eid, lid = g.einheit_id, g.liegenschaft_id
+    if request.method == 'POST':
+        g.delete()
+        messages.success(request, "Gerät entfernt.")
+    if eid:
+        return redirect(f'/neu/objekte/{eid}/?tab=geraete')
+    return redirect(f'/neu/liegenschaften/{lid}/?tab=technik')
+
+
+# --- Zähler (Objekt + allgemeine Liegenschafts-Zähler wie Allgemeinstrom) ---
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_zaehler_add(request):
+    """Erfasst einen Zähler. Ziel ist entweder ein Objekt (`einheit_id`) oder eine
+    Liegenschaft (`liegenschaft_id`, z.B. Allgemeinstrom, Hauptwasser)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Zaehler
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('/neu/liegenschaften/')
+
+    def _dec(x):
+        try:
+            v = (str(x) or '').replace(',', '.').strip()
+            return Decimal(v) if v else Decimal('0.00')
+        except Exception:
+            return Decimal('0.00')
+
+    typ = (request.POST.get('typ') or '').strip()
+    nummer = (request.POST.get('zaehler_nummer') or '').strip()
+    if not typ or not nummer:
+        messages.error(request, "Typ und Zähler-Nr. sind Pflichtfelder.")
+        ref = request.META.get('HTTP_REFERER') or '/neu/liegenschaften/'
+        return redirect(ref)
+
+    kwargs = dict(
+        typ=typ, zaehler_nummer=nummer,
+        standort=(request.POST.get('standort') or '').strip(),
+        aktueller_stand=_dec(request.POST.get('aktueller_stand')),
+    )
+    eid = request.POST.get('einheit_id')
+    lid = request.POST.get('liegenschaft_id')
+    if eid:
+        e = get_object_or_404(Einheit, id=eid)
+        Zaehler.objects.create(einheit=e, **kwargs)
+        log_aktion(request, "Zähler erfasst", e.bezeichnung, f"{typ} · {nummer}")
+        messages.success(request, f"✅ Zähler «{typ}» erfasst.")
+        return redirect(f'/neu/objekte/{e.id}/?tab=zaehler')
+    if lid:
+        lg = get_object_or_404(Liegenschaft, id=lid)
+        Zaehler.objects.create(liegenschaft=lg, **kwargs)
+        log_aktion(request, "Zähler erfasst", str(lg), f"{typ} · {nummer}")
+        messages.success(request, f"✅ Zähler «{typ}» erfasst.")
+        return redirect(f'/neu/liegenschaften/{lg.id}/?tab=technik')
+    messages.error(request, "Kein Ziel angegeben.")
+    return redirect('/neu/liegenschaften/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_zaehler_del(request, pk):
+    """Entfernt einen Zähler (Objekt- oder Liegenschaftsebene)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Zaehler
+    z = get_object_or_404(Zaehler, id=pk)
+    eid, lid = z.einheit_id, z.liegenschaft_id
+    if request.method == 'POST':
+        z.delete()
+        messages.success(request, "Zähler entfernt.")
+    if eid:
+        return redirect(f'/neu/objekte/{eid}/?tab=zaehler')
+    return redirect(f'/neu/liegenschaften/{lid}/?tab=technik')
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)

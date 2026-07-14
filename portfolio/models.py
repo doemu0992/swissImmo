@@ -228,8 +228,13 @@ class Unterhalt(models.Model):
 
 
 class Zaehler(models.Model):
-    einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='zaehler')
-    typ = models.CharField(max_length=20)
+    # Objekt-Zähler (einheit) ODER allgemeiner Liegenschafts-Zähler
+    # (z.B. Allgemeinstrom, Hauptwasser) — genau eine der beiden Beziehungen ist gesetzt.
+    einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='zaehler',
+                                null=True, blank=True)
+    liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE,
+                                     related_name='allgemeine_zaehler', null=True, blank=True)
+    typ = models.CharField(max_length=40)
     zaehler_nummer = models.CharField(max_length=50)
     standort = models.CharField("Standort", max_length=100, blank=True)
     aktueller_stand = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)

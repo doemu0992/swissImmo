@@ -4980,14 +4980,26 @@ class DocuSealAblageTests(TestCase):
         self.assertEqual(dok.kategorie, 'vertrag')
         self.assertTrue(dok.im_portal_sichtbar)   # → Mieterportal
 
-    def test_ablage_dedup(self):
+    def test_ablage_timestamp_und_kein_overwrite(self):
         from core.services.ablage import ablage_signierter_vertrag
         from rentals.models import Dokument
+        from django.utils import timezone
+        from datetime import timedelta
+        from unittest import mock
         lg, e, m, v = _basis_objekte()
-        ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-1')
-        ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-2')
-        # dedup: nur EIN Vertrags-Dokument dieses Namens
-        self.assertEqual(Dokument.objects.filter(vertrag=v, bezeichnung='Mietvertrag (unterzeichnet)').count(), 1)
+        d1 = ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-1')
+        # Titel + exakter Ablage-Zeitstempel (Datum + Uhrzeit)
+        self.assertTrue(d1.bezeichnung.startswith('Mietvertrag (unterzeichnet)'))
+        self.assertIsNotNone(d1.erstellt_am)
+        # gleiche Minute → Idempotenz-Schutz, kein Doppel
+        d1b = ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-1b')
+        self.assertEqual(d1.id, d1b.id)
+        # späterer Rücklauf → NEUES Dokument, altes bleibt erhalten (kein Overwrite)
+        spaeter = timezone.now() + timedelta(hours=1)
+        with mock.patch('django.utils.timezone.now', return_value=spaeter):
+            d2 = ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-2')
+        self.assertNotEqual(d1.id, d2.id)
+        self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 2)
 
     def test_model_save_legt_signierten_vertrag_ab(self):
         from rentals.models import Dokument
@@ -5088,6 +5100,100 @@ class VertragUnterschriftsblockTests(TestCase):
 
     def test_parkplatz(self):
         self._assert_block(self._render('pp'))
+
+
+class GeraetZaehlerTests(TestCase):
+    """Geräte + Zähler erfassen — auf Objekt- und Liegenschaftsebene (allgemein)."""
+
+    def test_objekt_geraet_add_und_del(self):
+        from portfolio.models import Geraet
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/geraet/', {'einheit_id': str(e.id), 'kategorie': 'Waschmaschine',
+                                    'marke': 'V-Zug', 'modell': 'Adora'})
+        self.assertEqual(r.status_code, 302)
+        g = Geraet.objects.get(einheit=e)
+        self.assertEqual(g.kategorie, 'Waschmaschine')
+        self.assertEqual(g.marke, 'V-Zug')
+        c.post(f'/neu/geraet/{g.id}/loeschen/')
+        self.assertFalse(Geraet.objects.filter(id=g.id).exists())
+
+    def test_objekt_zaehler_add(self):
+        from portfolio.models import Zaehler
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/zaehler/', {'einheit_id': str(e.id), 'typ': 'Strom',
+                                     'zaehler_nummer': 'ABC-123', 'aktueller_stand': '1234.5'})
+        self.assertEqual(r.status_code, 302)
+        z = Zaehler.objects.get(einheit=e)
+        self.assertEqual(z.typ, 'Strom')
+        self.assertEqual(z.zaehler_nummer, 'ABC-123')
+
+    def test_liegenschaft_allgemeines_geraet(self):
+        from portfolio.models import Geraet
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/geraet/', {'liegenschaft_id': str(lg.id), 'kategorie': 'Heizung',
+                                    'marke': 'Viessmann'})
+        self.assertEqual(r.status_code, 302)
+        g = Geraet.objects.get(liegenschaft=lg)
+        self.assertEqual(g.kategorie, 'Heizung')
+        self.assertIsNone(g.einheit_id)
+
+    def test_liegenschaft_allgemeinstrom_zaehler(self):
+        from portfolio.models import Zaehler
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/zaehler/', {'liegenschaft_id': str(lg.id), 'typ': 'Allgemeinstrom',
+                                     'zaehler_nummer': 'AS-9'})
+        self.assertEqual(r.status_code, 302)
+        z = Zaehler.objects.get(liegenschaft=lg)
+        self.assertEqual(z.typ, 'Allgemeinstrom')
+        self.assertIsNone(z.einheit_id)
+
+    def test_liegenschaft_technik_tab_sichtbar(self):
+        from portfolio.models import Geraet
+        lg, e, m, v = _basis_objekte()
+        Geraet.objects.create(liegenschaft=lg, kategorie='Boiler')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/liegenschaften/{lg.id}/')
+        self.assertContains(r, 'lg-technik')
+        self.assertContains(r, 'Allgemeine Geräte')
+        self.assertContains(r, 'Boiler')
+
+    def test_objekt_raumbuch_accordion(self):
+        from portfolio.models import Ausstattung
+        lg, e, m, v = _basis_objekte()
+        Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Backofen')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/objekte/{e.id}/')
+        # Raum als <details>-Akkordeon dargestellt
+        self.assertContains(r, 'group-open:rotate-90')
+        self.assertContains(r, 'Küche')
+
+
+class VertragUnterzeichnetTimestampTests(TestCase):
+    """Rücklauf-Zeitstempel des unterzeichneten Vertrags (Detail-Ansicht)."""
+
+    def test_unterzeichnet_am_beim_save(self):
+        lg, e, m, v = _basis_objekte()
+        from django.core.files.base import ContentFile
+        self.assertIsNone(v.unterzeichnet_am)
+        v.pdf_datei.save('s.pdf', ContentFile(b'%PDF-signed'), save=False)
+        v.sign_status = 'unterzeichnet'
+        v.save()
+        v.refresh_from_db()
+        self.assertIsNotNone(v.unterzeichnet_am)
+
+    def test_detail_zeigt_ruecklauf_zeit(self):
+        lg, e, m, v = _basis_objekte()
+        from django.utils import timezone
+        v.sign_status = 'unterzeichnet'
+        v.unterzeichnet_am = timezone.now()
+        v.save()
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/vertraege/{v.id}/')
+        self.assertContains(r, 'zurück am')
 
 
 class DocuSealWebhookTests(TestCase):

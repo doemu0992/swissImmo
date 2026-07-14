@@ -52,8 +52,13 @@ def ablage_signierter_vertrag(vertrag, pdf_bytes=None):
     """Legt den UNTERZEICHNETEN Mietvertrag zentral als rentals.Dokument ab —
     dadurch erscheint er überall dort, wo Verträge/Dokumente gezeigt werden:
     Mieterportal (im_portal_sichtbar), Person-Akte, Objekt-/Liegenschafts-Akte.
-    Einmal ablegen statt drei Ablagestellen pflegen. Dedup verhindert Doppel.
+
+    Jeder Rücklauf wird als NEUES, mit Zeitstempel versehenes Dokument abgelegt —
+    ein bereits vorhandenes signiertes Dokument wird NICHT überschrieben (Revision:
+    frühere Fassungen bleiben erhalten). Dedup nur gegen exakt denselben Zeitstempel
+    (verhindert Doppel-Ablage durch mehrfaches save() innerhalb derselben Minute).
     Gibt das Dokument zurück (oder None)."""
+    from django.utils import timezone
     if pdf_bytes is None:
         datei = getattr(vertrag, 'pdf_datei', None)
         if not datei:
@@ -70,10 +75,17 @@ def ablage_signierter_vertrag(vertrag, pdf_bytes=None):
                 pass
     if not pdf_bytes:
         return None
-    return ablegen(pdf_bytes, "Mietvertrag (unterzeichnet)", kategorie='vertrag',
-                   vertrag=vertrag,
-                   dateiname=f"Mietvertrag_unterzeichnet_{getattr(vertrag, 'id', '')}.pdf",
-                   dedup=True)
+    stempel = timezone.localtime(timezone.now()).strftime('%d.%m.%Y %H:%M')
+    titel = f"Mietvertrag (unterzeichnet) — {stempel}"
+    from rentals.models import Dokument
+    # Idempotenz-Schutz: identischer Titel am selben Vertrag (Minutengenauigkeit)
+    # → kein zweites Dokument (mehrfaches save() im selben Request).
+    if Dokument.objects.filter(vertrag=vertrag, bezeichnung=titel[:200]).exists():
+        return Dokument.objects.filter(vertrag=vertrag, bezeichnung=titel[:200]).first()
+    stamp_file = timezone.localtime(timezone.now()).strftime('%Y%m%d_%H%M')
+    return ablegen(pdf_bytes, titel, kategorie='vertrag', vertrag=vertrag,
+                   dateiname=f"Mietvertrag_unterzeichnet_{getattr(vertrag, 'id', '')}_{stamp_file}.pdf",
+                   dedup=False)
 
 
 def _slug(text):

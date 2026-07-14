@@ -44,6 +44,7 @@ class Mietvertrag(models.Model):
     status = models.CharField("Vertragsstatus", max_length=20, choices=VERTRAG_STATUS, default='entwurf')
     aktiv = models.BooleanField(default=True)
     sign_status = models.CharField("Signatur-Status", max_length=20, choices=STATUS_CHOICES, default='offen')
+    unterzeichnet_am = models.DateTimeField("Unterzeichnet am (Rücklauf)", null=True, blank=True)
 
     # --- FRISTEN & TERMINE ---
     beginn = models.DateField()
@@ -246,10 +247,16 @@ class Mietvertrag(models.Model):
             return 'neutral'
 
     def save(self, *args, **kwargs):
+        # Rücklauf-Zeitstempel setzen, sobald der Vertrag als unterzeichnet gilt
+        # (nur beim erstmaligen Übergang → nicht bei jedem weiteren Save).
+        if self.sign_status == 'unterzeichnet' and self.unterzeichnet_am is None:
+            from django.utils import timezone
+            self.unterzeichnet_am = timezone.now()
         super().save(*args, **kwargs)
 
         # Unterzeichneten Vertrag zentral ablegen → erscheint überall (Portal,
-        # Person, Objekt/Liegenschaft). Eine Ablagestelle, dedup-sicher.
+        # Person, Objekt/Liegenschaft). Jeder Rücklauf wird als NEUES, mit
+        # Zeitstempel versehenes Dokument abgelegt (bestehende nicht überschrieben).
         if self.sign_status == 'unterzeichnet' and self.pdf_datei:
             try:
                 from core.services.ablage import ablage_signierter_vertrag
@@ -314,9 +321,16 @@ class Dokument(models.Model):
     # kann sensible Dokumente (z.B. interne Vermerke) ausblenden.
     im_portal_sichtbar = models.BooleanField("Im Mieterportal sichtbar", default=True)
     datum = models.DateField(auto_now_add=True)
+    # Exakter Ablage-Zeitpunkt (Datum + Uhrzeit). datum bleibt für Alt-Auswertungen.
+    erstellt_am = models.DateTimeField("Abgelegt am", auto_now_add=True, null=True)
 
     class Meta:
         db_table = 'core_dokument'
+
+    @property
+    def ablage_zeit(self):
+        """Datum + Uhrzeit der Ablage (Fallback auf datum bei Alt-Dokumenten)."""
+        return self.erstellt_am or self.datum
 
     def __str__(self):
         return self.bezeichnung
