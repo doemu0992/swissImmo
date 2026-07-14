@@ -248,20 +248,14 @@ class Mietvertrag(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
+        # Unterzeichneten Vertrag zentral ablegen → erscheint überall (Portal,
+        # Person, Objekt/Liegenschaft). Eine Ablagestelle, dedup-sicher.
         if self.sign_status == 'unterzeichnet' and self.pdf_datei:
-            from portfolio.models import Dokument
-            exists = Dokument.objects.filter(vertrag=self, kategorie='vertrag').exists()
-            if not exists:
-                Dokument.objects.create(
-                    bezeichnung=f"Mietvertrag {self.mieter}",
-                    titel=f"Unterzeichneter Mietvertrag - {self.einheit.bezeichnung}",
-                    kategorie='vertrag',
-                    vertrag=self,
-                    mieter=self.mieter,
-                    einheit=self.einheit,
-                    liegenschaft=self.einheit.liegenschaft,
-                    datei=self.pdf_datei
-                )
+            try:
+                from core.services.ablage import ablage_signierter_vertrag
+                ablage_signierter_vertrag(self)
+            except Exception:
+                pass
 
 class Staffelstufe(models.Model):
     """Eine vereinbarte Staffelmietstufe (Art. 269c OR): ab `ab_datum` gilt

@@ -48,6 +48,34 @@ def ablegen(pdf_bytes, titel, kategorie='korrespondenz', *,
         return None
 
 
+def ablage_signierter_vertrag(vertrag, pdf_bytes=None):
+    """Legt den UNTERZEICHNETEN Mietvertrag zentral als rentals.Dokument ab —
+    dadurch erscheint er überall dort, wo Verträge/Dokumente gezeigt werden:
+    Mieterportal (im_portal_sichtbar), Person-Akte, Objekt-/Liegenschafts-Akte.
+    Einmal ablegen statt drei Ablagestellen pflegen. Dedup verhindert Doppel.
+    Gibt das Dokument zurück (oder None)."""
+    if pdf_bytes is None:
+        datei = getattr(vertrag, 'pdf_datei', None)
+        if not datei:
+            return None
+        try:
+            datei.open('rb')
+            pdf_bytes = datei.read()
+        except Exception:
+            return None
+        finally:
+            try:
+                datei.close()
+            except Exception:
+                pass
+    if not pdf_bytes:
+        return None
+    return ablegen(pdf_bytes, "Mietvertrag (unterzeichnet)", kategorie='vertrag',
+                   vertrag=vertrag,
+                   dateiname=f"Mietvertrag_unterzeichnet_{getattr(vertrag, 'id', '')}.pdf",
+                   dedup=True)
+
+
 def _slug(text):
     import re
     text = (text or '').strip().lower()

@@ -4959,3 +4959,83 @@ class PersonDokumenteGruppenTests(TestCase):
         c = Client(); c.force_login(_team_user())
         r = c.get(f'/neu/personen/{m.id}/')
         self.assertEqual(r.context['dok_total'], 0)
+
+
+class DocuSealAblageTests(TestCase):
+    """Signierter Vertrag wird zentral abgelegt (Portal/Person/Objekt) +
+    DocuSeal-Versand graceful ohne API-Key."""
+
+    def test_ablage_signierter_vertrag_ueberall(self):
+        from core.services.ablage import ablage_signierter_vertrag
+        from rentals.models import Dokument
+        from django.core.files.base import ContentFile
+        lg, e, m, v = _basis_objekte()
+        dok = ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-signed')
+        self.assertIsNotNone(dok)
+        # EIN rentals.Dokument, mit allen Bezügen → überall sichtbar
+        self.assertEqual(dok.vertrag_id, v.id)
+        self.assertEqual(dok.mieter_id, m.id)
+        self.assertEqual(dok.einheit_id, e.id)
+        self.assertEqual(dok.liegenschaft_id, lg.id)
+        self.assertEqual(dok.kategorie, 'vertrag')
+        self.assertTrue(dok.im_portal_sichtbar)   # → Mieterportal
+
+    def test_ablage_dedup(self):
+        from core.services.ablage import ablage_signierter_vertrag
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-1')
+        ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-2')
+        # dedup: nur EIN Vertrags-Dokument dieses Namens
+        self.assertEqual(Dokument.objects.filter(vertrag=v, bezeichnung='Mietvertrag (unterzeichnet)').count(), 1)
+
+    def test_model_save_legt_signierten_vertrag_ab(self):
+        from rentals.models import Dokument
+        from django.core.files.base import ContentFile
+        lg, e, m, v = _basis_objekte()
+        v.pdf_datei.save('signed.pdf', ContentFile(b'%PDF-signed'), save=False)
+        v.sign_status = 'unterzeichnet'
+        v.save()
+        # erscheint als rentals.Dokument (Person/Portal/Objekt)
+        self.assertTrue(Dokument.objects.filter(vertrag=v, kategorie='vertrag').exists())
+
+    def test_signierter_vertrag_in_person_und_liegenschaft(self):
+        from core.services.ablage import ablage_signierter_vertrag
+        lg, e, m, v = _basis_objekte()
+        ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-x')
+        c = Client(); c.force_login(_team_user())
+        # Person-Akte
+        rp = c.get(f'/neu/personen/{m.id}/')
+        self.assertEqual(rp.context['dok_total'], 1)
+        # Liegenschaft-Akte (pro Objekt)
+        rl = c.get(f'/neu/liegenschaften/{lg.id}/')
+        self.assertEqual(rl.context['dok_total'], 1)
+
+    def test_docuseal_senden_ohne_key(self):
+        from core.services.docuseal_service import docuseal_senden
+        lg, e, m, v = _basis_objekte()
+        ok, msg = docuseal_senden(v)
+        self.assertFalse(ok)
+        self.assertIn('nicht konfiguriert', msg)
+
+    def test_wizard_senden_ohne_key_erstellt_trotzdem(self):
+        from portfolio.models import Einheit
+        lg = Liegenschaft.objects.create(strasse='Musterweg 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg', typ='whg',
+                                   nettomiete_aktuell=Decimal('1500'))
+        m = Mieter.objects.create(typ='person', vorname='Hans', nachname='Muster',
+                                  email='hans@example.ch')
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        r = c.post('/neu/vertraege/neu/speichern/', {
+            'einheit_id': str(e.id), 'mieter_id': str(m.id),
+            'netto_mietzins': '1500', 'nebenkosten': '200', 'beginn': '2025-01-01',
+            'abschluss': 'senden'})
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(Mietvertrag.objects.filter(einheit=e).exists())  # trotzdem erstellt
+
+    def test_vertrag_signieren_view_ohne_key(self):
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/vertraege/{v.id}/signieren/')
+        self.assertEqual(r.status_code, 302)  # graceful, Fehlermeldung

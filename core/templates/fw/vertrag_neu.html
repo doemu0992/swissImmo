@@ -290,6 +290,16 @@
                     <label class="flex items-center gap-2 text-sm text-slate-700">
                         <input type="checkbox" name="aktiv_setzen" checked class="accent-indigo-600"> Vertrag direkt als <b>aktiv</b> setzen (erscheint in Sollstellung &amp; Debitoren)
                     </label>
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                        <label class="flex items-center gap-2 text-sm text-slate-700">
+                            <input type="checkbox" name="abschluss" value="senden" class="accent-indigo-600"> Nach dem Erstellen <b>digital zur Unterschrift senden</b> (DocuSeal)
+                        </label>
+                        {% if docuseal_konfiguriert %}
+                        <p class="text-xs text-slate-400 mt-1 ml-6">Der Mieter erhält den Vertrag per E-Mail zur elektronischen Unterschrift. Der unterschriebene Vertrag wird automatisch überall abgelegt (Portal, Person, Objekt).</p>
+                        {% else %}
+                        <p class="text-xs text-amber-600 mt-1 ml-6"><i class="fa-solid fa-circle-info mr-1"></i>DocuSeal ist noch nicht konfiguriert — der Vertrag wird trotzdem erstellt. API-Key unter <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>

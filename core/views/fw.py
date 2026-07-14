@@ -1556,6 +1556,7 @@ def fw_vertrag_detail(request, pk):
         ('dokumente', 'Dokumente', None),
         ('verlauf', 'Verlauf', len(verlauf) or None),
     ]
+    from core.services.docuseal_service import docuseal_konfiguriert
     return render(request, 'fw/vertrag_detail.html', {
         **basis, 'nav': 'vertraege', 'v': v, 'verlauf': verlauf,
         'vertrag_pill': _vertrag_status_pill(v),
@@ -1571,6 +1572,7 @@ def fw_vertrag_detail(request, pk):
         'kuendigungen': v.kuendigungen.all(),
         'formular_kanton': _formular_kanton_label(v),
         'tab_liste': tab_liste,
+        'docuseal_konfiguriert': docuseal_konfiguriert(),
     })
 
 
@@ -5312,6 +5314,7 @@ def fw_vertrag_neu(request):
                'strasse': m.strasse or '', 'plz': m.plz or '', 'ort': m.ort or '', 'email': m.email or ''}
               for m in Mieter.objects.all().order_by('nachname', 'firmen_name')]
 
+    from core.services.docuseal_service import docuseal_konfiguriert
     return render(request, 'fw/vertrag_neu.html', {
         **basis, 'nav': 'vertraege',
         'liegenschaften': liegenschaften, 'mieter': mieter,
@@ -5320,6 +5323,7 @@ def fw_vertrag_neu(request):
         **_lik_assistent_defaults(vw),
         'heute_iso': timezone.now().date().isoformat(),
         'vorwahl_einheit': vorwahl_einheit or '',
+        'docuseal_konfiguriert': docuseal_konfiguriert(),
     })
 
 
@@ -5537,7 +5541,35 @@ def fw_vertrag_neu_speichern(request):
             f"{anzahl_dok} Dokumente automatisch abgelegt (im Portal sichtbar).")
     else:
         messages.success(request, f"✅ Mietvertrag für {mieter.display_name} erstellt.")
+
+    # Optionaler Abschluss: direkt zur digitalen Unterschrift senden (DocuSeal).
+    if P.get('abschluss') == 'senden':
+        from core.services.docuseal_service import docuseal_senden
+        ok, msg = docuseal_senden(vertrag)
+        if ok:
+            log_aktion(request, "Vertrag zur Unterschrift gesendet", str(mieter), msg, ziel=vertrag)
+            messages.success(request, f"✍️ {msg}")
+        else:
+            messages.warning(request, f"Vertrag erstellt, aber Signaturversand nicht möglich: {msg}")
     return redirect(f'/neu/vertraege/{vertrag.id}/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_vertrag_signieren(request, pk):
+    """Sendet einen bestehenden Vertrag zur digitalen Unterschrift (DocuSeal)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.services.docuseal_service import docuseal_senden
+    from core.auth import log_aktion
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit'), id=pk)
+    if request.method == 'POST':
+        ok, msg = docuseal_senden(v)
+        if ok:
+            log_aktion(request, "Vertrag zur Unterschrift gesendet", str(v.mieter), msg, ziel=v)
+            messages.success(request, f"✍️ {msg}")
+        else:
+            messages.error(request, f"❌ {msg}")
+    return redirect(f'/neu/vertraege/{v.id}/')
 
 
 # ============================================================
