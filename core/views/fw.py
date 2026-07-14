@@ -8860,8 +8860,11 @@ def fw_serienbrief_pdf(request):
             continue
         v = Mietvertrag.objects.filter(id=e.get('_vertrag_id')).first() if e.get('_vertrag_id') else None
         einzel = generate_serienbrief_pdf(absender, betreff, text, [e], logo_path=logo_path)
+        # Titel mit aufgelösten Platzhaltern ({liegenschaft} etc.) — nicht roh.
+        from core.services.serienbrief import _ersetze
+        betreff_aufgeloest = _ersetze(betreff, e) or betreff
         # Ablage am Vertrag (erscheint im Portal beider Personen) + am Hauptmieter
-        if ablegen(einzel, f"Brief: {betreff}", kategorie='korrespondenz', vertrag=v, mieter=m):
+        if ablegen(einzel, f"Brief: {betreff_aufgeloest}", kategorie='korrespondenz', vertrag=v, mieter=m):
             abgelegt += 1
 
     log_aktion(request, "Serienbrief-PDF erzeugt", betreff, f"{len(empfaenger)} Empfänger · {abgelegt} abgelegt")

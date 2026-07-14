@@ -5012,6 +5012,27 @@ class DocuSealAblageTests(TestCase):
         ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-neu')
         self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 1)
 
+    def test_vertragsbeilage_dedup_pro_objekt(self):
+        """Beilagen-Ablage: ein Beleg je (Objekt, Titel) — kein Duplikat bei Neu-Erstellung."""
+        from core.views.pdf import _ablegen_vertragsdokument
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        _ablegen_vertragsdokument(b'%PDF-1', 'Hausordnung', v)
+        _ablegen_vertragsdokument(b'%PDF-2', 'Hausordnung', v)   # 2. Erstellung → kein Duplikat
+        self.assertEqual(Dokument.objects.filter(einheit=e, bezeichnung='Hausordnung').count(), 1)
+
+    def test_bereinige_vertragsbeilagen_dubletten(self):
+        from core.services.ablage import ablegen, bereinige_vertragsbeilagen_dubletten
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        # simuliere 3 explodierte Beilagen-Dubletten (gleiches Objekt + Titel)
+        for s in (b'%PDF-1', b'%PDF-2', b'%PDF-3'):
+            ablegen(s, "Hausordnung", kategorie='vertrag', vertrag=v, einheit=e, dedup=False)
+        self.assertEqual(Dokument.objects.filter(einheit=e, bezeichnung='Hausordnung').count(), 3)
+        n = bereinige_vertragsbeilagen_dubletten()
+        self.assertEqual(n, 2)
+        self.assertEqual(Dokument.objects.filter(einheit=e, bezeichnung='Hausordnung').count(), 1)
+
     def test_bereinige_signierte_dubletten(self):
         """Einmal-Aufräumung reduziert bestehende Dubletten (Person/Objekt-Akte)."""
         from core.services.ablage import ablegen, bereinige_signierte_dubletten

@@ -22,10 +22,25 @@ def generate_pdf_view(request, vertrag_id):
 
 
 def _ablegen_vertragsdokument(pdf_bytes, titel, vertrag):
-    """Legt ein beim Vertrag generiertes PDF automatisch in die Akte
-    (mit Dedup) — erscheint dann auch im Mieterportal."""
+    """Legt ein beim Vertrag generiertes Standard-Dokument automatisch in die Akte
+    (→ Mieterportal). **Ein Beleg je (Objekt, Titel)** — wird der Vertrag neu
+    erstellt oder neu versendet, wird das bestehende Dokument in-place aktualisiert
+    statt ein Duplikat anzulegen (verhindert die Ablage-Explosion). Beilagen wie
+    Hausordnung/Allgemeine Bedingungen sind ohnehin objektweit identisch."""
     try:
-        from core.services.ablage import ablegen
+        from rentals.models import Dokument
+        from django.core.files.base import ContentFile
+        from core.services.ablage import ablegen, _slug
+        einheit = getattr(vertrag, 'einheit', None)
+        if einheit is not None:
+            vorhanden = (Dokument.objects
+                         .filter(kategorie='vertrag', bezeichnung=titel[:200], einheit=einheit)
+                         .order_by('-id').first())
+            if vorhanden is not None:
+                vorhanden.vertrag = vertrag
+                vorhanden.mieter = getattr(vertrag, 'mieter', None) or vorhanden.mieter
+                vorhanden.datei.save(f"{_slug(titel)}.pdf", ContentFile(pdf_bytes), save=True)
+                return
         ablegen(pdf_bytes, titel, kategorie='vertrag', vertrag=vertrag, dedup=True)
     except Exception:
         pass

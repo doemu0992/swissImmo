@@ -168,6 +168,34 @@ def bereinige_signierte_dubletten():
     return geloescht
 
 
+def bereinige_vertragsbeilagen_dubletten():
+    """Einmalige/manuelle Aufräumung der automatisch erzeugten Vertrags-Beilagen
+    (Mietvertrag, Allgemeine Bedingungen, Hausordnung, Merkblatt, Wohnungsausweis,
+    Begleitbrief): je (Objekt, Titel) nur das neueste behalten. Der UNTERZEICHNETE
+    Vertrag (eigene Logik) bleibt unberührt. Gibt die Anzahl entfernter Dubletten
+    zurück."""
+    from django.db.models import Count
+    from rentals.models import Dokument
+    geloescht = 0
+    gruppen = (Dokument.objects
+               .filter(kategorie='vertrag', einheit__isnull=False)
+               .exclude(bezeichnung__startswith=SIGNIERT_TITEL)
+               .values('einheit', 'bezeichnung')
+               .annotate(n=Count('id')).filter(n__gt=1))
+    for g in gruppen:
+        docs = list(Dokument.objects.filter(
+            kategorie='vertrag', einheit_id=g['einheit'], bezeichnung=g['bezeichnung'])
+            .exclude(bezeichnung__startswith=SIGNIERT_TITEL)
+            .order_by('-erstellt_am', '-id'))
+        for d in docs[1:]:
+            try:
+                d.delete()
+                geloescht += 1
+            except Exception:
+                pass
+    return geloescht
+
+
 def _slug(text):
     import re
     text = (text or '').strip().lower()
