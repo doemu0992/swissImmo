@@ -4827,3 +4827,53 @@ class HypothekenTests(TestCase):
         c = Client(); c.force_login(_team_user())
         r = c.get('/neu/hypotheken/')
         self.assertEqual(r.context['gruppen'][0]['belehnung'], 60)
+
+
+class LiegenschaftDokumenteGruppenTests(TestCase):
+    """Liegenschaft-Dokumente nach Objekt gruppiert (Akkordeon)."""
+
+    def _doc(self, **kw):
+        from rentals.models import Dokument
+        from django.core.files.base import ContentFile
+        d = Dokument(kategorie='sonstiges', **kw)
+        d.datei.save('x.pdf', ContentFile(b'%PDF-1'), save=False)
+        d.save()
+        return d
+
+    def test_gruppierung_objekt_und_allgemein(self):
+        from portfolio.models import Einheit
+        lg, e, _m, _v = _basis_objekte()
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='whg')
+        # 1 Dokument allgemein (nur Liegenschaft), 1 auf Objekt e, 1 auf e2
+        self._doc(liegenschaft=lg, bezeichnung='Allgemein-Doc')
+        self._doc(liegenschaft=lg, einheit=e, bezeichnung='Objekt-e-Doc')
+        self._doc(liegenschaft=lg, einheit=e2, bezeichnung='Objekt-e2-Doc')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/liegenschaften/{lg.id}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.context['dok_total'], 3)
+        gruppen = r.context['dok_gruppen']
+        # Allgemein zuerst, dann je Objekt
+        self.assertIsNone(gruppen[0]['einheit'])
+        labels = [g['label'] for g in gruppen]
+        self.assertIn('3.5 Zi', labels)
+        self.assertIn('2 Zi', labels)
+        self.assertContains(r, 'Objekt-e-Doc')
+
+    def test_dokument_ueber_vertrag_dem_objekt_zugeordnet(self):
+        lg, e, _m, v = _basis_objekte()
+        # Dokument nur am Vertrag → soll unter dem Objekt der Vertragseinheit erscheinen
+        self._doc(vertrag=v, bezeichnung='Vertrags-Doc')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/liegenschaften/{lg.id}/')
+        gruppen = {g['label']: g for g in r.context['dok_gruppen']}
+        self.assertIn('3.5 Zi', gruppen)
+        titel = [d['titel'] for d in gruppen['3.5 Zi']['dokumente']]
+        self.assertIn('Vertrags-Doc', titel)
+
+    def test_keine_dokumente(self):
+        lg, _e, _m, _v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/liegenschaften/{lg.id}/')
+        self.assertEqual(r.context['dok_total'], 0)
+        self.assertContains(r, 'Keine Dokumente hinterlegt')

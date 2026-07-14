@@ -1042,14 +1042,33 @@ def fw_liegenschaft_detail(request, pk):
     tickets = (SchadenMeldung.objects.filter(liegenschaft=lg)
                .exclude(status='erledigt').order_by('-erstellt_am')[:10])
 
-    dokumente = []
-    for d in RentalsDokument.objects.filter(liegenschaft=lg).order_by('-datum')[:15]:
-        dokumente.append({'titel': d.bezeichnung or d.titel, 'kategorie': d.kategorie,
-                          'datum': d.datum, 'url': d.datei.url if d.datei else None})
-    for d in PortfolioDokument.objects.filter(liegenschaft=lg).order_by('-datum')[:15]:
-        dokumente.append({'titel': d.titel, 'kategorie': d.kategorie,
-                          'datum': d.datum, 'url': d.datei.url if d.datei else None})
-    dokumente.sort(key=lambda d: d['datum'] or date.min, reverse=True)
+    # Dokumente der Liegenschaft — nach Objekt (Einheit) gruppiert.
+    einheiten = [row['einheit'] for row in einheiten_rows]
+    from collections import defaultdict
+    buckets = defaultdict(list)
+    for d in (RentalsDokument.objects
+              .filter(Q(liegenschaft=lg) | Q(einheit__liegenschaft=lg) | Q(vertrag__einheit__liegenschaft=lg))
+              .select_related('einheit', 'vertrag').distinct().order_by('-datum')):
+        eid = d.einheit_id or (d.vertrag.einheit_id if d.vertrag_id else None)
+        buckets[eid].append({'titel': d.bezeichnung or d.titel, 'kategorie': d.kategorie,
+                             'datum': d.datum, 'url': d.datei.url if d.datei else None})
+    for d in (PortfolioDokument.objects
+              .filter(Q(liegenschaft=lg) | Q(einheit__liegenschaft=lg))
+              .select_related('einheit').distinct().order_by('-datum')):
+        buckets[d.einheit_id].append({'titel': d.titel, 'kategorie': d.kategorie,
+                                      'datum': d.datum, 'url': d.datei.url if d.datei else None})
+    for lst in buckets.values():
+        lst.sort(key=lambda d: d['datum'] or date.min, reverse=True)
+    # Reihenfolge: Liegenschaft (allgemein) zuerst, dann je Objekt
+    dok_gruppen = []
+    if buckets.get(None):
+        dok_gruppen.append({'einheit': None, 'label': 'Liegenschaft (allgemein)',
+                            'dokumente': buckets[None]})
+    for e in einheiten:
+        if buckets.get(e.id):
+            dok_gruppen.append({'einheit': e, 'label': e.bezeichnung,
+                                'dokumente': buckets[e.id]})
+    dok_total = sum(len(g['dokumente']) for g in dok_gruppen)
 
     unterhalt = Unterhalt.objects.filter(liegenschaft=lg).order_by('-datum')[:10]
     perioden = lg.abrechnungen.order_by('-start_datum')[:6]
@@ -1064,14 +1083,13 @@ def fw_liegenschaft_detail(request, pk):
             'faellig_bald': 0 <= tage <= 60, 'ueberfaellig': tage < 0,
         })
 
-    dok20 = dokumente[:20]
     tab_liste = [
         ('objekte', 'Objekte', len(einheiten_rows)),
         ('finanzen', 'Finanzen', None),
         ('unterhalt', 'Unterhalt', unterhalt.count() or None),
         ('fristen', 'Fristen', len(wartungsfristen) or None),
         ('schaeden', 'Schäden', tickets.count() or None),
-        ('dokumente', 'Dokumente', len(dok20) or None),
+        ('dokumente', 'Dokumente', dok_total or None),
     ]
     return render(request, 'fw/liegenschaft_detail.html', {
         **basis, 'nav': 'liegenschaften', 'lg': lg,
@@ -1081,7 +1099,8 @@ def fw_liegenschaft_detail(request, pk):
         'leerstand': len(einheiten_rows) - vermietet,
         'soll_monat': soll_monat,
         'tickets': tickets,
-        'dokumente': dok20,
+        'dok_gruppen': dok_gruppen,
+        'dok_total': dok_total,
         'unterhalt': unterhalt,
         'wartungsfristen': wartungsfristen,
         'perioden': perioden,

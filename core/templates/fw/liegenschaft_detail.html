@@ -220,19 +220,34 @@
     </div>
 </div>
 
-<!-- ===== TAB: DOKUMENTE ===== -->
+<!-- ===== TAB: DOKUMENTE (nach Objekt gruppiert) ===== -->
 <div data-panel="lg" id="lg-dokumente" class="hidden">
-    <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50">
-        {% for d in dokumente %}
-        <div class="flex items-center gap-3 px-5 py-3.5">
-            <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-lines"></i></div>
-            <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ d.titel }}</div>
-                <div class="text-xs text-slate-400">{{ d.kategorie }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}</div></div>
-            {% if d.url %}<a href="{{ d.url }}" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Öffnen</a>{% endif %}
-        </div>
-        {% empty %}
-        <p class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Dokumente hinterlegt.</p>
+    {% if dok_gruppen %}
+    <div class="space-y-3">
+        {% for g in dok_gruppen %}
+        <details open class="group bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <summary class="px-5 py-3 flex items-center gap-3 cursor-pointer select-none hover:bg-slate-50/60 list-none">
+                <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform group-open:rotate-90"></i>
+                <i class="fa-solid {% if g.einheit %}fa-house{% else %}fa-building{% endif %} text-indigo-500"></i>
+                <span class="font-bold text-slate-800">{{ g.label }}</span>
+                <span class="text-[11px] font-semibold bg-slate-100 text-slate-500 rounded-md px-1.5 py-0.5">{{ g.dokumente|length }} Dokument{{ g.dokumente|length|pluralize:"e" }}</span>
+                {% if g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="ml-auto text-xs text-indigo-600 font-medium hover:underline" onclick="event.stopPropagation()">Objekt <i class="fa-solid fa-arrow-right text-[10px]"></i></a>{% endif %}
+            </summary>
+            <div class="border-t border-slate-100 divide-y divide-slate-50">
+                {% for d in g.dokumente %}
+                <div class="flex items-center gap-3 px-5 py-3.5">
+                    <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-lines"></i></div>
+                    <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ d.titel }}</div>
+                        <div class="text-xs text-slate-400">{{ d.kategorie }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}</div></div>
+                    {% if d.url %}<a href="{{ d.url }}" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Öffnen</a>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </details>
         {% endfor %}
     </div>
+    {% else %}
+    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Keine Dokumente hinterlegt.</div>
+    {% endif %}
 </div>
 {% endblock %}
