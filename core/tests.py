@@ -5347,6 +5347,17 @@ class LoeschbarkeitTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertFalse(SchadenMeldung.objects.filter(id=t.id).exists())
 
+    def test_rentals_dokument_loeschen_ueberall(self):
+        from core.services.ablage import ablegen
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        d = ablegen(b'%PDF', 'Hausordnung', kategorie='vertrag', vertrag=v)
+        self.assertIsNotNone(d)
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/dokument/{d.id}/loeschen/')
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(Dokument.objects.filter(id=d.id).exists())
+
     def test_portfolio_dokument_loeschen(self):
         from portfolio.models import Dokument as PDok
         from django.core.files.base import ContentFile

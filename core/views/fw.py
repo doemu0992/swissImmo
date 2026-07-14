@@ -1059,12 +1059,14 @@ def fw_liegenschaft_detail(request, pk):
               .select_related('einheit', 'vertrag').distinct().order_by('-datum')):
         eid = d.einheit_id or (d.vertrag.einheit_id if d.vertrag_id else None)
         buckets[eid].append({'titel': d.bezeichnung or d.titel, 'kategorie': d.kategorie,
-                             'datum': d.ablage_zeit, 'url': d.datei.url if d.datei else None})
+                             'datum': d.ablage_zeit, 'url': d.datei.url if d.datei else None,
+                             'id': d.id, 'del_url': f'/neu/dokument/{d.id}/loeschen/'})
     for d in (PortfolioDokument.objects
               .filter(Q(liegenschaft=lg) | Q(einheit__liegenschaft=lg))
               .select_related('einheit').distinct().order_by('-datum')):
         buckets[d.einheit_id].append({'titel': d.titel, 'kategorie': d.kategorie,
-                                      'datum': d.datum, 'url': d.datei.url if d.datei else None})
+                                      'datum': d.datum, 'url': d.datei.url if d.datei else None,
+                                      'id': d.id, 'del_url': f'/neu/dokumente/{d.id}/loeschen/'})
     for lst in buckets.values():
         lst.sort(key=lambda d: _sortkey(d['datum']), reverse=True)
     # Reihenfolge: Liegenschaft (allgemein) zuerst, dann je Objekt
@@ -3171,6 +3173,25 @@ def fw_dokument_portal_toggle(request, pk):
         log_aktion(request, "Dokument-Portalsichtbarkeit", d.bezeichnung or d.titel,
                    'sichtbar' if d.im_portal_sichtbar else 'ausgeblendet')
     return redirect(request.META.get('HTTP_REFERER') or (f'/neu/personen/{d.mieter_id}/' if d.mieter_id else '/neu/dokumente/'))
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_rentals_dokument_loeschen(request, pk):
+    """Dokument (Vertrags-/Mieter-Ablage) löschen — überall dort, wo Dokumente
+    in Akten gezeigt werden (Person, Vertrag, Objekt, Liegenschaft, Portal)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import Dokument as RentalsDokument
+    from core.auth import log_aktion
+    d = get_object_or_404(RentalsDokument, id=pk)
+    ref = request.META.get('HTTP_REFERER')
+    ziel = ref or (f'/neu/personen/{d.mieter_id}/' if d.mieter_id else '/neu/dokumente/')
+    if request.method == 'POST':
+        titel = d.bezeichnung or d.titel or 'Dokument'
+        d.delete()
+        log_aktion(request, "Dokument gelöscht", titel, '')
+        messages.success(request, "🗑️ Dokument gelöscht.")
+    return redirect(ziel)
 
 
 @rolle_erforderlich(ROLLE_VERWALTUNG)

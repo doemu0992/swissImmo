@@ -351,6 +351,9 @@
             <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ d.bezeichnung|default:d.titel }}</div>
                 <div class="text-xs text-slate-400">{{ d.kategorie }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}</div></div>
             {% if d.datei %}<a href="{{ d.datei.url }}" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Öffnen</a>{% endif %}
+            <form method="post" action="/neu/dokument/{{ d.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('Dokument «{{ d.bezeichnung|default:d.titel|escapejs }}» löschen?');">{% csrf_token %}
+                <button class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="Löschen"><i class="fa-solid fa-trash text-xs"></i></button>
+            </form>
         </div>
         {% empty %}
         <p class="px-5 py-6 text-center text-sm text-slate-400 italic">Keine abgelegten Dokumente.</p>

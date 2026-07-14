@@ -71,7 +71,7 @@ from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_auswertung
                            fw_wartungsfrist_neu, fw_wartungsfrist_bearbeiten, fw_wartungsfrist_loeschen,
                            fw_mahnwesen, fw_debitoren_aging, fw_mahnung_erfassen, fw_mahnlauf, fw_bankkonten,
                            fw_bankabgleich, fw_bankabgleich_verbuchen, fw_camt_import,
-                           fw_person_detail, fw_person_form, fw_person_loeschen, fw_dokument_portal_toggle, fw_kommunikation_neu, fw_kommunikation_loeschen, fw_mieter_portal_zugang, fw_mieterkonto_pdf,
+                           fw_person_detail, fw_person_form, fw_person_loeschen, fw_dokument_portal_toggle, fw_rentals_dokument_loeschen, fw_kommunikation_neu, fw_kommunikation_loeschen, fw_mieter_portal_zugang, fw_mieterkonto_pdf,
                            fw_mieterkonto, fw_mieterkonten, fw_lieferantenkonten, fw_lieferantenkonto,
                            fw_kreditoren, fw_kreditoren_pain001, fw_kreditor_bezahlen, fw_kreditor_neu, fw_kreditor_freigeben, fw_kreditor_loeschen, fw_weiterverrechnung,
                            fw_kreditor_zahlung_zuruecksetzen,
@@ -269,6 +269,7 @@ urlpatterns = [
     path('neu/dokumente/', fw_dokumente, name='fw_dokumente'),
     path('neu/dokumente/neu/', fw_dokument_neu, name='fw_dokument_neu'),
     path('neu/dokumente/<int:pk>/loeschen/', fw_dokument_loeschen, name='fw_dokument_loeschen'),
+    path('neu/dokument/<int:pk>/loeschen/', fw_rentals_dokument_loeschen, name='fw_rentals_dokument_loeschen'),
     # Profil-Menü
     path('neu/suche/', fw_suche, name='fw_suche'),
     path('neu/account/', fw_account, name='fw_account'),
