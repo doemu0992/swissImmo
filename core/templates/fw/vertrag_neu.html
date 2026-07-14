@@ -58,10 +58,23 @@
                         </select>
                     </div>
                     <div id="mieter-neu" class="hidden space-y-3">
-                        <div class="grid grid-cols-3 gap-2">
+                        <input type="hidden" name="mieter_typ" id="f_mieter_typ" value="person">
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" data-ntyp="person" onclick="setNeuTyp('person')" class="ntyp-btn px-3 py-1.5 rounded-lg text-xs font-semibold">Privatperson</button>
+                            <button type="button" data-ntyp="firma" onclick="setNeuTyp('firma')" class="ntyp-btn px-3 py-1.5 rounded-lg text-xs font-semibold">Firma</button>
+                            <button type="button" data-ntyp="verein" onclick="setNeuTyp('verein')" class="ntyp-btn px-3 py-1.5 rounded-lg text-xs font-semibold">Verein / Stiftung</button>
+                        </div>
+                        <div id="neu-namen" class="grid grid-cols-3 gap-2">
                             <select name="anrede" oninput="live()" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5"><option>Herr</option><option>Frau</option><option value="">—</option></select>
                             <input name="vorname" oninput="live()" placeholder="Vorname" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                             <input name="nachname" oninput="live()" placeholder="Nachname" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                        </div>
+                        <div id="neu-firma" class="hidden space-y-3">
+                            <input name="firmen_name" oninput="live()" placeholder="Firmen- / Organisationsname" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input name="kontaktperson" placeholder="Kontaktperson" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                                <input name="uid_nummer" placeholder="UID / CHE-Nummer" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                            </div>
                         </div>
                         <input name="m_strasse" oninput="live()" placeholder="Strasse & Nr." class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                         <div class="grid grid-cols-3 gap-2">
@@ -380,7 +393,11 @@ function curLg(){ return LG.find(l=>String(l.id)===document.getElementById('s_lg
 function curObj(){ const l=curLg(); if(!l) return null; return l.objekte.find(o=>String(o.id)===document.getElementById('s_obj').value); }
 function curMieter(){
   if(mieterMode==='best'){ return MIETER.find(m=>String(m.id)===document.getElementById('s_mieter').value); }
-  return { name:((document.querySelector('[name=vorname]').value+' '+document.querySelector('[name=nachname]').value).trim()||'[Mieter]'),
+  const t=(document.getElementById('f_mieter_typ')||{}).value||'person';
+  let nm;
+  if(t==='person'){ nm=(document.querySelector('[name=vorname]').value+' '+document.querySelector('[name=nachname]').value).trim(); }
+  else { nm=(document.querySelector('[name=firmen_name]').value||'').trim(); }
+  return { name:(nm||'[Mieter]'),
            anrede:document.querySelector('[name=anrede]').value,
            strasse:document.querySelector('[name=m_strasse]').value, plz:document.querySelector('[name=m_plz]').value, ort:document.querySelector('[name=m_ort]').value };
 }
@@ -486,14 +503,30 @@ function vorSubmit(){
     goStep(0); return false;
   }
   // Mieter: entweder bestehende Person gewählt oder Name eingegeben
+  // (Privatperson: Vor-/Nachname · Firma/Verein: Firmen-/Organisationsname)
   const hatMieter = document.getElementById('f_mieter_id').value
     || (document.querySelector('[name=vorname]')?.value || '').trim()
-    || (document.querySelector('[name=nachname]')?.value || '').trim();
+    || (document.querySelector('[name=nachname]')?.value || '').trim()
+    || (document.querySelector('[name=firmen_name]')?.value || '').trim();
   if(!hatMieter){
     alert('Bitte wähle im Schritt 2 eine Person aus oder erfasse eine neue.');
     goStep(1); return false;
   }
   return true;
+}
+
+function setNeuTyp(t){
+  document.getElementById('f_mieter_typ').value = t;
+  document.querySelectorAll('.ntyp-btn').forEach(function(b){
+    var aktiv = b.dataset.ntyp === t;
+    b.classList.toggle('bg-indigo-600', aktiv);
+    b.classList.toggle('text-white', aktiv);
+    b.classList.toggle('bg-slate-100', !aktiv);
+    b.classList.toggle('text-slate-600', !aktiv);
+  });
+  document.getElementById('neu-namen').classList.toggle('hidden', t !== 'person');
+  document.getElementById('neu-firma').classList.toggle('hidden', t === 'person');
+  live();
 }
 
 function goStep(i){
@@ -670,6 +703,7 @@ monateStandard();                    // Standard-Kündigungsmonate März/Juni/Se
 document.getElementById('s_lik').value = AKT_LIK;   // Indexwerte vorbelegen
 document.getElementById('s_ref').value = AKT_REF;
 if(AKT_LIK_STAND){ document.getElementById('s_lik_stand').value = AKT_LIK_STAND; }
+setNeuTyp('person');
 goStep(0);
 </script>
 {% endblock %}

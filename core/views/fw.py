@@ -2911,10 +2911,12 @@ def fw_person_form(request, pk=None):
         obj.notizen = P.get('notizen', '').strip()
 
         # --- Pflichtfeld-Validierung ---
+        # Nachname nur bei Privatpersonen Pflicht; Firma UND Verein/Stiftung
+        # brauchen stattdessen den Firmen-/Organisationsnamen.
         fehler = []
-        if obj.typ == 'firma':
+        if obj.typ in ('firma', 'verein'):
             if not obj.firmen_name:
-                fehler.append("Firmenname ist erforderlich.")
+                fehler.append("Firmen-/Organisationsname ist erforderlich.")
         else:
             if not obj.nachname:
                 fehler.append("Nachname ist erforderlich.")
@@ -2965,7 +2967,7 @@ def _finde_dubletten(typ, vorname, nachname, firmen_name, email, plz, exclude_id
     bedingung = Q(pk__in=[])
     if email:
         bedingung |= Q(email__iexact=email)
-    if typ == 'firma' and firmen_name:
+    if typ in ('firma', 'verein') and firmen_name:
         bedingung |= Q(firmen_name__iexact=firmen_name)
     elif nachname:
         namensfilter = Q(nachname__iexact=nachname)
@@ -5336,9 +5338,17 @@ def fw_vertrag_neu_speichern(request):
     if mieter_id:
         mieter = get_object_or_404(Mieter, id=mieter_id)
     else:
+        neu_typ = P.get('mieter_typ', 'person')
+        if neu_typ not in ('person', 'firma', 'verein'):
+            neu_typ = 'person'
         mieter = Mieter.objects.create(
-            typ='person', anrede=P.get('anrede', 'Herr'),
-            vorname=P.get('vorname', '').strip(), nachname=P.get('nachname', '').strip(),
+            typ=neu_typ,
+            anrede=P.get('anrede', 'Herr') if neu_typ == 'person' else '',
+            vorname=P.get('vorname', '').strip(),
+            nachname=P.get('nachname', '').strip(),
+            firmen_name=P.get('firmen_name', '').strip(),
+            kontaktperson=P.get('kontaktperson', '').strip(),
+            uid_nummer=P.get('uid_nummer', '').strip(),
             strasse=P.get('m_strasse', '').strip(), plz=P.get('m_plz', '').strip(),
             ort=P.get('m_ort', '').strip(), email=P.get('m_email', '').strip(),
         )

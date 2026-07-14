@@ -4877,3 +4877,52 @@ class LiegenschaftDokumenteGruppenTests(TestCase):
         r = c.get(f'/neu/liegenschaften/{lg.id}/')
         self.assertEqual(r.context['dok_total'], 0)
         self.assertContains(r, 'Keine Dokumente hinterlegt')
+
+
+class PersonFirmaVereinTests(TestCase):
+    """Nachname nur bei Privatperson Pflicht; Firma/Verein via Firmenname.
+    Vertragswizard erlaubt Firma/Verein als neue Person."""
+
+    def test_verein_ohne_nachname_speicherbar(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/personen/neu/', {
+            'typ': 'verein', 'firmen_name': 'Stiftung Sonnenschein', 'nachname': '',
+            'strasse': 'Weg 1', 'plz': '8000', 'ort': 'Zürich', 'dublette_ok': '1'})
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(Mieter.objects.filter(typ='verein', firmen_name='Stiftung Sonnenschein').exists())
+
+    def test_firma_ohne_nachname_speicherbar(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/personen/neu/', {
+            'typ': 'firma', 'firmen_name': 'Muster AG', 'nachname': '', 'dublette_ok': '1'})
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(Mieter.objects.filter(typ='firma', firmen_name='Muster AG').exists())
+
+    def test_verein_ohne_firmenname_fehler(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/personen/neu/', {'typ': 'verein', 'firmen_name': '', 'nachname': '', 'dublette_ok': '1'})
+        self.assertEqual(r.status_code, 200)  # Fehler, kein Redirect
+        self.assertContains(r, 'Organisationsname ist erforderlich')
+        self.assertFalse(Mieter.objects.filter(typ='verein').exists())
+
+    def test_privatperson_braucht_nachname(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/personen/neu/', {'typ': 'person', 'vorname': 'Hans', 'nachname': '', 'dublette_ok': '1'})
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Nachname ist erforderlich')
+
+    def test_wizard_neuer_mieter_firma(self):
+        from portfolio.models import Einheit
+        lg = Liegenschaft.objects.create(strasse='Bahnhofstr 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Büro', typ='gew',
+                                   nettomiete_aktuell=Decimal('2000'))
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        r = c.post('/neu/vertraege/neu/speichern/', {
+            'einheit_id': str(e.id), 'mieter_typ': 'firma', 'firmen_name': 'Handels GmbH',
+            'kontaktperson': 'Frau Meier', 'm_strasse': 'Weg 3', 'm_plz': '8000', 'm_ort': 'Zürich',
+            'netto_mietzins': '2000', 'nebenkosten': '200', 'beginn': '2025-01-01'})
+        self.assertEqual(r.status_code, 302)
+        m = Mieter.objects.get(firmen_name='Handels GmbH')
+        self.assertEqual(m.typ, 'firma')
+        self.assertEqual(m.kontaktperson, 'Frau Meier')
