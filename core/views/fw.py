@@ -5878,6 +5878,10 @@ def fw_vertrag_neu_speichern(request):
     if _mietzins_modell not in ('fest', 'index', 'staffel'):
         _mietzins_modell = 'fest'
 
+    # Einstellplätze (Parkplatz/Garage, Art. 266e) haben keine separaten
+    # Nebenkosten — serverseitig hart auf 0 setzen, egal was übermittelt wurde.
+    _nk = Decimal('0.00') if einheit.ist_einstellplatz else dec('nebenkosten')
+
     with transaction.atomic():
         vertrag = Mietvertrag.objects.create(
             mieter=mieter, einheit=einheit,
@@ -5891,7 +5895,7 @@ def fw_vertrag_neu_speichern(request):
             besondere_vereinbarungen=P.get('besondere_vereinbarungen', '').strip(),
             mitbenutzung=P.get('mitbenutzung', '').strip(),
             nebenraeume=P.get('nebenraeume', '').strip(),
-            netto_mietzins=dec('netto_mietzins'), nebenkosten=dec('nebenkosten'),
+            netto_mietzins=dec('netto_mietzins'), nebenkosten=_nk,
             nk_abrechnungsart=P.get('nk_abrechnungsart', 'akonto'),
             verteilschluessel=P.get('verteilschluessel', 'm2'),
             zahlungsrhythmus=P.get('zahlungsrhythmus', 'monatlich'),

@@ -2353,6 +2353,46 @@ class GewerbeWizardTests(TestCase):
         self.assertNotIn('Nebenkosten', html)
         self.assertIn('Mietzins', html)
 
+    def test_wizard_parkplatz_nk_komplett_entfernt(self):
+        """Beim Einstellplatz muss NK aus Wizard/Vorschau verschwinden: NK-Feld
+        ausblendbar, Schritt 6 (Nebenkosten) übersprungen, Vorschau ohne NK."""
+        from portfolio.models import Einheit
+        lg = Liegenschaft.objects.create(strasse='Weg 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='PP 1', typ='pp',
+                                   nettomiete_aktuell=Decimal('120'))
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/vertraege/neu/?einheit={e.id}').content.decode()
+        # NK-Feld + Brutto-Anzeige sind ausblendbare Container
+        self.assertIn('id="nk-field-box"', body)
+        self.assertIn('id="brutto-box"', body)
+        # Schritt-Navigation überspringt den Nebenkosten-Schritt bei Einstellplatz
+        self.assertIn('function visibleSteps()', body)
+        self.assertIn('updateStepNav()', body)
+        # Vorschau nutzt dynamische Abschnittsnummern statt hartem "6. Nebenkosten"
+        self.assertIn('secN(', body)
+        self.assertNotIn('<div class="pvsec">6. Nebenkosten</div>', body)
+
+    def test_speichern_parkplatz_nk_wird_auf_null_gezwungen(self):
+        """Auch wenn das Formular NK mitliefert, wird beim Einstellplatz 0 gespeichert."""
+        from portfolio.models import Einheit
+        from rentals.models import Mietvertrag as MV
+        lg = Liegenschaft.objects.create(strasse='Weg 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='PP 2', typ='pp',
+                                   nettomiete_aktuell=Decimal('150'))
+        mi = Mieter.objects.create(typ='person', vorname='A', nachname='B', email='a@b.ch')
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/vertraege/neu/speichern/', {
+            'einheit_id': e.id, 'mieter_id': mi.id, 'beginn': '2026-01-01',
+            'netto_mietzins': '150', 'nebenkosten': '80',  # NK wird absichtlich mitgeschickt
+            'kuendigungsfrist': '0',
+        })
+        v = MV.objects.filter(einheit=e).order_by('-id').first()
+        self.assertIsNotNone(v)
+        self.assertEqual(v.nebenkosten, Decimal('0.00'))
+        self.assertEqual(v.netto_mietzins, Decimal('150'))
+
     def test_speichern_gewerbe_staffel_und_frist(self):
         from rentals.models import Mietvertrag as MV, Staffelstufe
         lg, e, m = self._gew_einheit()

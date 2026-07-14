@@ -179,14 +179,15 @@
                         <option value="halbjahr">Halbjährlich</option><option value="jahr">Jährlich</option>
                     </select>
                     <div class="grid grid-cols-2 gap-3">
-                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mietzins netto (CHF) *</label>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1"><span id="netto-label">Mietzins netto (CHF) *</span></label>
                             <input name="netto_mietzins" id="s_netto" type="number" step="0.01" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                        <div><label class="block text-xs font-semibold text-slate-500 mb-1"><span id="nk-label">Nebenkosten (CHF) *</span></label>
-                            <input name="nebenkosten" id="s_nk" type="number" step="0.01" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                            <p id="nk-hint" class="hidden text-xs text-slate-400 mt-1">Bei Einstellplätzen i.d.R. keine separaten Nebenkosten (im Mietzins enthalten) — 0 lassen, falls keine.</p></div>
+                        <div id="nk-field-box"><label class="block text-xs font-semibold text-slate-500 mb-1"><span id="nk-label">Nebenkosten (CHF) *</span></label>
+                            <input name="nebenkosten" id="s_nk" type="number" step="0.01" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
                     </div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Mietzins brutto (CHF)</label>
-                    <input id="s_brutto" type="text" readonly class="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2.5 mb-3 text-slate-600">
+                    <div id="brutto-box">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Mietzins brutto (CHF)</label>
+                        <input id="s_brutto" type="text" readonly class="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2.5 mb-3 text-slate-600">
+                    </div>
                     <div class="flex items-center gap-3 mb-3 flex-wrap">
                         <label class="flex items-center gap-2 text-sm text-slate-700">
                             <input type="checkbox" name="mwst_pflichtig" id="s_mwst" onchange="document.getElementById('mwst-satz-box').classList.toggle('hidden', !this.checked); live()" class="accent-indigo-600"> MWST-pflichtig <span class="text-xs text-slate-400">(optiert, v. a. Gewerbe)</span>
@@ -310,10 +311,10 @@
 
         <!-- Navigation -->
         <div class="border-t border-slate-100 px-6 py-4 flex items-center justify-between bg-slate-50/50">
-            <button type="button" id="btn-back" onclick="goStep(cur-1)" class="text-sm font-semibold text-slate-500 hover:text-slate-700 px-3 py-2 rounded-lg invisible">
+            <button type="button" id="btn-back" onclick="stepMove(-1)" class="text-sm font-semibold text-slate-500 hover:text-slate-700 px-3 py-2 rounded-lg invisible">
                 <i class="fa-solid fa-arrow-left mr-1"></i> Zurück
             </button>
-            <button type="button" id="btn-next" onclick="goStep(cur+1)" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
+            <button type="button" id="btn-next" onclick="stepMove(1)" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
                 Weiter <i class="fa-solid fa-arrow-right ml-1"></i>
             </button>
             <button type="submit" id="btn-save" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
@@ -443,17 +444,21 @@ function objChange(){
     if (!istGew) { const md = document.getElementById('s_modell'); if (md) { md.value = 'fest'; modellChange(); } }
 
     // Einstellplatz (Parkplatz/Garage): Frist mind. 2 Wochen (Art. 266e), aber
-    // eine längere Monatsfrist auf Monatsende ist möglich. 0 = 2 Wochen. Keine NK,
+    // eine längere Monatsfrist auf Monatsende ist möglich. 0 = 2 Wochen. KEINE
+    // Nebenkosten (Feld, Brutto-Zeile und der ganze Nebenkosten-Schritt entfallen),
     // Kündigung Ende jeder Monatsperiode.
     document.getElementById('frist-ep-note').classList.toggle('hidden', !istEP);
-    document.getElementById('nk-hint').classList.toggle('hidden', !istEP);
-    document.getElementById('nk-label').textContent = istEP ? 'Nebenkosten (CHF)' : 'Nebenkosten (CHF) *';
+    // NK komplett entfernen: Feld, Brutto-Anzeige und Schritt 6 (Nebenkosten)
+    document.getElementById('nk-field-box').classList.toggle('hidden', istEP);
+    document.getElementById('brutto-box').classList.toggle('hidden', istEP);
+    document.getElementById('netto-label').textContent = istEP ? 'Mietzins (CHF) *' : 'Mietzins netto (CHF) *';
+    if (istEP) document.getElementById('s_nk').value = '0';
+    updateStepNav();
     const fristLabel = document.getElementById('frist-label');
     if (istEP) {
       frist.min = 0;
       if (frist.value === '3' || frist.value === '6' || frist.value === '') frist.value = '0';
       if (fristLabel) fristLabel.textContent = 'Kündigungsfrist (0 = 2 Wochen, sonst Monate)';
-      if (!o.nk) document.getElementById('s_nk').value = '0';
       if (window.setMonateAlle) setMonateAlle();
     } else {
       frist.min = 1;
@@ -565,8 +570,29 @@ function setNeuTyp(t){
   live();
 }
 
+// Einstellplatz (Parkplatz/Garage) hat KEINE Nebenkosten → Schritt 6 (Index 5)
+// entfällt komplett aus Schritt-Leiste und Navigation.
+function isEP(){ const o=curObj(); return !!(o && o.ist_einstellplatz); }
+function visibleSteps(){ return [0,1,2,3,4,5,6].filter(i => !(isEP() && i===5)); }
+function updateStepNav(){
+  const nav = document.querySelector('.step-nav');
+  if(!nav) return;
+  const item = nav.querySelector('.stepitem[data-i="5"]');
+  if(item) item.classList.toggle('hidden', isEP());
+  // Falls der Nutzer auf dem nun ausgeblendeten Schritt steht → weiter zu 6.
+  if(isEP() && cur===5) goStep(6);
+}
+function stepMove(dir){
+  const vis = visibleSteps();
+  let idx = vis.indexOf(cur);
+  if(idx===-1) idx = 0;
+  let ni = idx + dir;
+  if(ni<0) ni=0; if(ni>=vis.length) ni=vis.length-1;
+  goStep(vis[ni]);
+}
 function goStep(i){
   if(i<0||i>6) return;
+  if(isEP() && i===5) return;   // Nebenkosten-Schritt bei Einstellplatz überspringen
   cur=i;
   document.querySelectorAll('.vstep').forEach(s=>s.classList.toggle('hidden', +s.dataset.step!==i));
   document.querySelectorAll('.stepitem').forEach(el=>{
@@ -642,6 +668,12 @@ function live(){
   const nkEcho=document.getElementById('nk-echo'); if(nkEcho) nkEcho.textContent = "CHF "+fmt(nk);
   mietrechtCheck();
 
+  // Einstellplatz (Parkplatz/Garage) → keine Nebenkosten in der Vorschau.
+  // Abschnittsnummern laufen dynamisch, damit ohne NK keine Lücke entsteht.
+  const eps = !!(o && o.ist_einstellplatz);
+  const mwstIncl = document.querySelector('[name=mwst_pflichtig]').checked ? ' (inkl. MWST)' : '';
+  const secN = (function(){ let n=3; return function(t){ return `<div class="pvsec">${++n}. ${t}</div>`; }; })();
+
   document.getElementById('pv').innerHTML = `
     <div class="text-[11px] text-slate-400 border-b border-slate-100 pb-2 mb-4">${vm.name} | ${vm.strasse} | ${vm.plz} ${vm.ort}</div>
     <div class="font-bold text-base mb-3">${o?o.vertrag_titel:'Mietvertrag für Wohnräume'}</div>
@@ -679,25 +711,26 @@ function live(){
       ${val('nebenraeume')?`<tr><td class="text-slate-500 py-0.5">Nebenräume</td><td>${val('nebenraeume')}</td></tr>`:''}
     </tbody></table>`:''}
 
-    <div class="pvsec">4. Mietzins</div>
+    ${secN('Mietzins')}
     <table class="w-full my-2 text-[13px]"><tbody>
-      <tr><td class="text-slate-500 py-0.5 w-2/5">Nettomietzins</td><td>CHF ${fmt(netto)}</td></tr>
+      ${eps
+        ? `<tr><td class="text-slate-500 py-0.5 w-2/5 font-semibold">Mietzins</td><td class="font-semibold">CHF ${fmt(netto)}${mwstIncl}</td></tr>`
+        : `<tr><td class="text-slate-500 py-0.5 w-2/5">Nettomietzins</td><td>CHF ${fmt(netto)}</td></tr>
       <tr><td class="text-slate-500 py-0.5">Nebenkosten</td><td>CHF ${fmt(nk)}</td></tr>
-      <tr><td class="text-slate-500 py-0.5 font-semibold">Bruttomietzins</td><td class="font-semibold">CHF ${fmt(brutto)}${document.querySelector('[name=mwst_pflichtig]').checked?' (inkl. MWST)':''}</td></tr>
+      <tr><td class="text-slate-500 py-0.5 font-semibold">Bruttomietzins</td><td class="font-semibold">CHF ${fmt(brutto)}${mwstIncl}</td></tr>`}
     </tbody></table>
     <p class="text-xs text-slate-400 mb-2">Der Mietzins ist jeweils am 1. Tag des Monats (Verfalldatum) fällig. Zahlungsmodus: ${({monatlich:'monatlich',vierteljahr:'vierteljährlich',halbjahr:'halbjährlich',jahr:'jährlich'})[val('zahlungsrhythmus')]||'monatlich'}.</p>
     <p class="text-xs text-slate-400 mb-1">Landesindex der Konsumentenpreise: Basis ${LIK_BASIS_NAME}${likStandLabel()?', Stand '+likStandLabel():''}: ${val('basis_lik_punkte')||'—'} Pkt. · Referenzzinssatz ${val('basis_referenzzinssatz')||'—'}%.</p>
     ${val('weitere_vorbehalte')?`<p class="text-xs text-slate-500 mb-2"><b>Vorbehalte:</b> ${val('weitere_vorbehalte')}</p>`:''}
 
-    <div class="pvsec">5. Mietzinsdepot</div>
+    ${secN('Mietzinsdepot')}
     <p class="text-xs text-slate-500 my-2">Der Mieter leistet eine Sicherheit im Sinne von OR 257e von <b>CHF ${fmt(kaut)}</b>.${val('kautions_konto')?' Konto: '+val('kautions_konto'):''}</p>
 
-    <div class="pvsec">6. Nebenkosten</div>
-    <p class="text-xs text-slate-500 my-2">Abrechnungsart: ${({akonto:'Akonto (Vorschuss mit Abrechnung)',pauschal:'Pauschal',inbegriffen:'Im Nettomietzins inbegriffen',direkt:'Direkt an Werke'})[val('nk_abrechnungsart')]||'Akonto'}. Nebenkosten sind das Entgelt für Heizung, Warmwasser und Betriebskosten.</p>
+    ${eps ? '' : secN('Nebenkosten') + `<p class="text-xs text-slate-500 my-2">Abrechnungsart: ${({akonto:'Akonto (Vorschuss mit Abrechnung)',pauschal:'Pauschal',inbegriffen:'Im Nettomietzins inbegriffen',direkt:'Direkt an Werke'})[val('nk_abrechnungsart')]||'Akonto'}. Nebenkosten sind das Entgelt für Heizung, Warmwasser und Betriebskosten.</p>`}
 
-    ${val('besondere_vereinbarungen')?`<div class="pvsec">7. Besondere Bestimmungen</div><p class="text-xs text-slate-500 my-2">${val('besondere_vereinbarungen')}</p>`:''}
+    ${val('besondere_vereinbarungen')? secN('Besondere Bestimmungen')+`<p class="text-xs text-slate-500 my-2">${val('besondere_vereinbarungen')}</p>`:''}
 
-    <div class="pvsec">${val('besondere_vereinbarungen')?'8':'7'}. Unterschriften</div>
+    ${secN('Unterschriften')}
     ${(function(){
       const z=zweiterName();
       const m1=(m?m.name:'Mieter');
@@ -718,17 +751,23 @@ function live(){
 }
 function buildSummary(){
   const l=curLg(), o=curObj(), m=curMieter();
-  const netto=parseFloat(val('netto_mietzins'))||0, nk=parseFloat(val('nebenkosten'))||0;
+  const eps = !!(o && o.ist_einstellplatz);
+  const netto=parseFloat(val('netto_mietzins'))||0, nk=eps?0:(parseFloat(val('nebenkosten'))||0);
+  const fristTxt = eps
+    ? ((parseInt(val('kuendigungsfrist'))>0) ? (val('kuendigungsfrist')+' Monate auf Monatsende') : '2 Wochen auf Monatsende (Art. 266e OR)')
+    : ((val('kuendigungsfrist')||3)+' Monate');
   document.getElementById('summary').innerHTML = `
     <div class="flex justify-between"><span class="text-slate-500">Objekt</span><span class="font-medium text-right">${o?o.bezeichnung:'—'}${l?', '+l.strasse:''}</span></div>
     <div class="flex justify-between"><span class="text-slate-500">Mieter</span><span class="font-medium">${m?m.name:'—'}</span></div>
     ${zweiterName()?`<div class="flex justify-between"><span class="text-slate-500">Zweiter Mieter</span><span class="font-medium">${zweiterName()}${document.getElementById('familienwohnung').checked?' · Familienwohnung':''}</span></div>`:''}
     <div class="flex justify-between"><span class="text-slate-500">Mietbeginn</span><span class="font-medium">${dstr(val('beginn'))||'—'}</span></div>
     <div class="flex justify-between"><span class="text-slate-500">Mietende</span><span class="font-medium">${document.getElementById('unbefristet').checked?'unbefristet':(dstr(val('ende'))||'—')}</span></div>
-    <div class="flex justify-between"><span class="text-slate-500">Kündigungsmonate</span><span class="font-medium text-right">${val('kuendigungstermine')||'—'}</span></div>
-    <div class="flex justify-between"><span class="text-slate-500">Kündigungsfrist</span><span class="font-medium">${val('kuendigungsfrist')||3} Monate</span></div>
-    <div class="flex justify-between border-t border-slate-200 pt-1.5 mt-1.5"><span class="text-slate-500">Netto / NK</span><span class="font-medium">CHF ${fmt(netto)} / ${fmt(nk)}</span></div>
-    <div class="flex justify-between"><span class="text-slate-500">Brutto/Monat</span><span class="font-bold text-indigo-600">CHF ${fmt(netto+nk)}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500">Kündigungsmonate</span><span class="font-medium text-right">${eps?'Ende jedes Monats':(val('kuendigungstermine')||'—')}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500">Kündigungsfrist</span><span class="font-medium text-right">${fristTxt}</span></div>
+    ${eps
+      ? `<div class="flex justify-between border-t border-slate-200 pt-1.5 mt-1.5"><span class="text-slate-500">Mietzins/Monat</span><span class="font-bold text-indigo-600">CHF ${fmt(netto)}</span></div>`
+      : `<div class="flex justify-between border-t border-slate-200 pt-1.5 mt-1.5"><span class="text-slate-500">Netto / NK</span><span class="font-medium">CHF ${fmt(netto)} / ${fmt(nk)}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500">Brutto/Monat</span><span class="font-bold text-indigo-600">CHF ${fmt(netto+nk)}</span></div>`}
     <div class="flex justify-between"><span class="text-slate-500">Kaution</span><span class="font-medium">CHF ${fmt(parseFloat(val('kautions_betrag'))||0)}</span></div>`;
 }
 // Init

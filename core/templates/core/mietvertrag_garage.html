@@ -51,7 +51,7 @@
 
 <div class="sec">4. Mietzins</div>
 <table class="data">
-    {% if vertrag.nebenkosten %}
+    {% if vertrag.nebenkosten and not einheit.ist_einstellplatz %}
     <tr><td class="k">Nettomietzins</td><td>CHF {{ miete_fmt }}</td></tr>
     <tr><td class="k">Nebenkosten</td><td>CHF {{ nk_fmt }}</td></tr>
     <tr><td class="k b">Bruttomietzins</td><td class="b">CHF {{ brutto_fmt }}</td></tr>
