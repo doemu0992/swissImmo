@@ -35,9 +35,12 @@ def docuseal_senden(vertrag):
         from django.contrib.staticfiles import finders
         from core.views.docuseal import link_callback, sanitize_filename
 
+        from crm.models import Verwaltung
+
         einheit = vertrag.einheit
         liegenschaft = einheit.liegenschaft
         mandant = getattr(liegenschaft, 'mandant', None)
+        verwaltung = getattr(liegenschaft, 'verwaltung', None) or Verwaltung.objects.first()
         template_path = ('core/mietvertrag_garage.html'
                          if einheit.typ in ('pp', 'bas', 'gar')
                          else 'core/mietvertrag_pdf.html')
@@ -49,7 +52,7 @@ def docuseal_senden(vertrag):
             except Exception:
                 unterschrift_path = None
         if not unterschrift_path:
-            dummy = finders.find("img/unterschrift_dummy.png")
+            dummy = finders.find("img/unterschrift_dummy_transparent.png")
             if dummy:
                 unterschrift_path = dummy
 
@@ -57,7 +60,7 @@ def docuseal_senden(vertrag):
         nk = vertrag.nebenkosten or 0
         context = {
             'vertrag': vertrag, 'mieter': mieter, 'einheit': einheit,
-            'liegenschaft': liegenschaft, 'mandant': mandant,
+            'liegenschaft': liegenschaft, 'mandant': mandant, 'verwaltung': verwaltung,
             'verwaltungs_name': getattr(settings, 'VERWALTUNG_NAME', 'SwissImmo Verwaltung'),
             'heute': timezone.now().date(),
             'miete_fmt': f"{netto:.2f}", 'nk_fmt': f"{nk:.2f}",

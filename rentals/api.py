@@ -79,7 +79,7 @@ def generate_vertrag_pdf_bytes(vertrag):
         except: pass
 
     if not unterschrift_path:
-        dummy = finders.find("img/unterschrift_dummy.png")
+        dummy = finders.find("img/unterschrift_dummy_transparent.png")
         if dummy: unterschrift_path = dummy
 
     netto = vertrag.netto_mietzins or 0

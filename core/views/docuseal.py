@@ -81,6 +81,7 @@ def send_via_docuseal(request, vertrag_id):
         einheit = vertrag.einheit
         liegenschaft = einheit.liegenschaft
         mandant = liegenschaft.mandant
+        verwaltung = getattr(liegenschaft, 'verwaltung', None) or Verwaltung.objects.first()
 
         if einheit.typ in ['pp', 'bas', 'gar']:
             template_path = 'core/mietvertrag_garage.html'
@@ -94,7 +95,7 @@ def send_via_docuseal(request, vertrag_id):
             except: pass
 
         if not unterschrift_path:
-            dummy = finders.find("img/unterschrift_dummy.png")
+            dummy = finders.find("img/unterschrift_dummy_transparent.png")
             if dummy: unterschrift_path = dummy
 
         netto = vertrag.netto_mietzins or 0
@@ -108,6 +109,7 @@ def send_via_docuseal(request, vertrag_id):
             'einheit': einheit,
             'liegenschaft': liegenschaft,
             'mandant': mandant,
+            'verwaltung': verwaltung,
             'verwaltungs_name': DEFAULT_VERWALTUNG_NAME,
             'heute': timezone.now().date(),
             'miete_fmt': f"{netto:.2f}",

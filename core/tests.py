@@ -5041,6 +5041,55 @@ class DocuSealAblageTests(TestCase):
         self.assertEqual(r.status_code, 302)  # graceful, Fehlermeldung
 
 
+class VertragUnterschriftsblockTests(TestCase):
+    """Unterschriftsblock im Vertrags-PDF: Vermieter Ort+Datum automatisch,
+    Mieter Ort+Datum als vom Unterzeichner auszufüllende DocuSeal-Felder."""
+
+    def _render(self, typ='whg'):
+        from portfolio.models import Einheit
+        from crm.models import Verwaltung
+        from django.template.loader import get_template
+        from django.utils import timezone
+        Verwaltung.objects.create(firma='Test Verwaltung', strasse='Weg 1',
+                                  plz='8000', ort='Zürich')
+        lg = Liegenschaft.objects.create(strasse='Musterweg 1', plz='8004', ort='Bern',
+                                         versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Obj', typ=typ,
+                                   nettomiete_aktuell=Decimal('1500'))
+        m = Mieter.objects.create(typ='person', vorname='Hans', nachname='Muster',
+                                  email='hans@example.ch')
+        v = Mietvertrag.objects.create(einheit=e, mieter=m,
+                                       netto_mietzins=Decimal('1500'),
+                                       nebenkosten=Decimal('200'),
+                                       beginn=timezone.now().date())
+        tpl = ('core/mietvertrag_garage.html' if typ in ('pp', 'bas', 'gar')
+               else 'core/mietvertrag_pdf.html')
+        ctx = {'vertrag': v, 'mieter': m, 'einheit': e, 'liegenschaft': lg,
+               'mandant': None, 'verwaltung': Verwaltung.objects.first(),
+               'heute': timezone.now().date(), 'miete_fmt': '1500.00',
+               'nk_fmt': '200.00', 'brutto_fmt': '1700.00', 'kaution_fmt': '0.00',
+               'unterschrift_path': None}
+        return get_template(tpl).render(ctx)
+
+    def _assert_block(self, html):
+        # Vermieter: Ort automatisch (aus Verwaltung), keine leere "Ort, Datum"-Zeile
+        self.assertIn('Zürich', html)
+        # Mieter: DocuSeal-Felder für Ort (text) und Datum (date)
+        self.assertIn('{{Ort Mieter;role=Mieter;type=text', html)
+        self.assertIn('{{Datum Mieter;role=Mieter;type=date', html)
+        # Unterschriftsanker bleibt bestehen
+        self.assertIn('{{Unterschrift Mieter;role=Mieter;type=signature', html)
+
+    def test_wohnung(self):
+        self._assert_block(self._render('whg'))
+
+    def test_gewerbe(self):
+        self._assert_block(self._render('gew'))
+
+    def test_parkplatz(self):
+        self._assert_block(self._render('pp'))
+
+
 class DocuSealWebhookTests(TestCase):
     """Toleranter DocuSeal-Webhook: verschiedene Payloads, kein 'Wert ungültig',
     unterschriebener Vertrag wird zentral abgelegt."""

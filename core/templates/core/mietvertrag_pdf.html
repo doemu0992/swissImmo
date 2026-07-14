@@ -153,20 +153,20 @@ Form Art. 266l · Rückgabe Art. 267/267a{% if vertrag.ist_geschuetzt %} · Kün
         <td>
             <div class="sublabel">Vermieter</div>
             {% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg"><br>{% endif %}
-            <div class="sigline">Ort, Datum / Unterschrift</div>
+            <div class="sigline">{% if mandant %}{{ mandant.ort }}{% elif verwaltung %}{{ verwaltung.ort }}{% endif %}, {{ heute|date:"d.m.Y" }} / Unterschrift</div>
         </td>
         <td>
             {% if vertrag.mitmieter or vertrag.mitmieter_name %}
                 <div class="sublabel">Mieter 1: {{ mieter.display_name }}</div>
                 <br><span style="color:#ffffff;font-size:13pt;">{% verbatim %}{{Unterschrift Mieter;role=Mieter;type=signature;required=true}}{% endverbatim %}</span><br>
-                <div class="sigline">Ort, Datum / Unterschrift</div>
+                <div class="sigline"><span style="color:#ffffff;">{% verbatim %}{{Ort Mieter;role=Mieter;type=text;required=true}}{% endverbatim %}</span>, <span style="color:#ffffff;">{% verbatim %}{{Datum Mieter;role=Mieter;type=date;required=true}}{% endverbatim %}</span> / Unterschrift</div>
                 <div style="margin-top:22pt;" class="sublabel">Mieter 2: {% if vertrag.mitmieter %}{{ vertrag.mitmieter.display_name }}{% else %}{{ vertrag.mitmieter_name }}{% endif %}</div>
                 <br><br>
                 <div class="sigline">Ort, Datum / Unterschrift</div>
             {% else %}
                 <div class="sublabel">Mieter</div>
                 <br><span style="color:#ffffff;font-size:13pt;">{% verbatim %}{{Unterschrift Mieter;role=Mieter;type=signature;required=true}}{% endverbatim %}</span><br>
-                <div class="sigline">Ort, Datum / Unterschrift</div>
+                <div class="sigline"><span style="color:#ffffff;">{% verbatim %}{{Ort Mieter;role=Mieter;type=text;required=true}}{% endverbatim %}</span>, <span style="color:#ffffff;">{% verbatim %}{{Datum Mieter;role=Mieter;type=date;required=true}}{% endverbatim %}</span> / Unterschrift</div>
             {% endif %}
         </td>
     </tr>

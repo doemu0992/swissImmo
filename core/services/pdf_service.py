@@ -81,7 +81,7 @@ def generate_vertrag_pdf_bytes(vertrag):
         unterschrift_path = mandant.unterschrift_bild.path
 
     if not unterschrift_path:
-        dummy = finders.find("img/unterschrift_dummy.png")
+        dummy = finders.find("img/unterschrift_dummy_transparent.png")
         if dummy: unterschrift_path = dummy
 
     # 🔥 HIER WENDEN WIR DEN ZAUBERFILTER AN:
