@@ -5749,3 +5749,57 @@ class MietzinsTabExtraTests(TestCase):
         # Panels dürfen keine {% for m in meldung %}-Reste mehr rendern
         body = c.get(f'/neu/objekte/{e.id}/').content.decode()
         self.assertIn('id="obj-mietzins"', body)  # Seite lädt sauber
+
+
+class SollstellungKontierungTests(TestCase):
+    """Buchhalterische Kontierung der Sollstellung nach Objektart + NK-Art."""
+
+    def test_gewerbe_pauschal_kontierung(self):
+        from core.services.automation import run_sollstellung
+        from finance.models import Buchung
+        lg = Liegenschaft.objects.create(strasse='Gew 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Laden', typ='gew',
+                                   nettomiete_aktuell=Decimal('2000'), nebenkosten_aktuell=Decimal('200'))
+        m = Mieter.objects.create(typ='firma', firmen_name='X GmbH')
+        Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2026, 1, 1),
+                                   netto_mietzins=Decimal('2000'), nebenkosten=Decimal('200'),
+                                   status='aktiv', nk_abrechnungsart='pauschal')
+        run_sollstellung(2026, 1)
+        haben = set(Buchung.objects.values_list('haben_konto__nummer', flat=True))
+        self.assertIn('3010', haben)   # Gewerbe-Mietertrag
+        self.assertIn('3021', haben)   # Pauschal-NK (kein Akonto)
+        self.assertNotIn('3020', haben)
+
+    def test_wohnung_akonto_kontierung(self):
+        from core.services.automation import run_sollstellung
+        from finance.models import Buchung
+        lg = Liegenschaft.objects.create(strasse='Wohn 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg', typ='whg',
+                                   nettomiete_aktuell=Decimal('1500'), nebenkosten_aktuell=Decimal('200'))
+        m = Mieter.objects.create(typ='person', vorname='A', nachname='B')
+        Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2026, 1, 1),
+                                   netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'),
+                                   status='aktiv', nk_abrechnungsart='akonto')
+        run_sollstellung(2026, 1)
+        haben = set(Buchung.objects.values_list('haben_konto__nummer', flat=True))
+        self.assertIn('3000', haben)   # Wohnungs-Mietertrag
+        self.assertIn('3020', haben)   # NK-Akonto
+
+    def test_gewerbe_staffel_bucht_gueltige_stufe(self):
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung
+        from rentals.models import Staffelstufe
+        lg = Liegenschaft.objects.create(strasse='Staf 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Büro', typ='gew',
+                                   nettomiete_aktuell=Decimal('2000'))
+        m = Mieter.objects.create(typ='firma', firmen_name='Y AG')
+        v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2025, 1, 1),
+                                       netto_mietzins=Decimal('2000'), nebenkosten=Decimal('0'),
+                                       status='aktiv', mietzins_modell='staffel')
+        Staffelstufe.objects.create(vertrag=v, ab_datum=date(2026, 1, 1), netto_mietzins=Decimal('2100'))
+        run_sollstellung(2026, 3)   # März 2026 → Stufe ab 2026-01 gilt
+        r = DebitorenRechnung.objects.get(vertrag=v, titel='Miete & NK 03/2026')
+        self.assertEqual(r.betrag, Decimal('2100.00'))

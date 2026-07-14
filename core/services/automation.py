@@ -55,9 +55,18 @@ def run_sollstellung(jahr, monat, user=None):
                 vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
                 titel=titel, betrag=netto + nk + mwst, faellig_am=start_date)
             lg = v.einheit.liegenschaft if v.einheit_id else None
-            buche("1100", "3000", netto, f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
+            e = v.einheit
+            # Mietertrag: Gewerbe/Parkplätze/Nebenobjekte → 3010, Wohnen → 3000.
+            ertrag_konto = "3010" if (e and e.mietrecht_kategorie in ('gewerbe', 'nebenobjekt')) else "3000"
+            # Nebenkosten: Pauschale ist definitiver Ertrag (keine Jahresabrechnung)
+            # → eigenes Konto 3021; Akonto (Vorschuss, wird abgerechnet) → 3020.
+            if getattr(v, 'nk_abrechnungsart', 'akonto') == 'pauschal':
+                nk_konto, nk_label = "3021", "NK-Pauschal"
+            else:
+                nk_konto, nk_label = "3020", "NK-Akonto"
+            buche("1100", ertrag_konto, netto, f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
-            buche("1100", "3020", nk, f"NK-Akonto {v.mieter} - {monat:02d}/{jahr}",
+            buche("1100", nk_konto, nk, f"{nk_label} {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
             buche("1100", "2200", mwst, f"MWST {v.mwst_satz}% {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
