@@ -2499,9 +2499,27 @@ def fw_person_detail(request, pk):
     zahlungen = (Zahlungseingang.objects.filter(vertrag_id__in=_vids, status='verbucht')
                  .order_by('-datum_eingang')[:15])
     # Dokumente am Mieter ODER an seinen Verträgen (Vertrags-PDF, Mietzins,
-    # Kündigung …) — hier steuert der Verwalter die Portal-Sichtbarkeit.
-    dokumente = (RentalsDokument.objects.filter(_Q(mieter=m) | _Q(vertrag_id__in=_vids))
-                 .distinct().order_by('-datum')[:25])
+    # Kündigung …) — pro Objekt gruppiert (Objekt = Einheit des Vertrags).
+    from collections import defaultdict
+    dok_buckets = defaultdict(list)
+    einheit_meta = {}
+    for d in (RentalsDokument.objects.filter(_Q(mieter=m) | _Q(vertrag_id__in=_vids))
+              .select_related('einheit__liegenschaft', 'vertrag__einheit__liegenschaft')
+              .distinct().order_by('-datum')):
+        e = d.einheit or (d.vertrag.einheit if d.vertrag_id else None)
+        eid = e.id if e else None
+        if e and eid not in einheit_meta:
+            einheit_meta[eid] = e
+        dok_buckets[eid].append(d)   # Modell-Objekt behalten (Portal-Toggle braucht d.id)
+    dok_gruppen = []
+    if dok_buckets.get(None):
+        dok_gruppen.append({'einheit': None, 'label': 'Persönlich (ohne Objektbezug)',
+                            'dokumente': dok_buckets[None]})
+    for eid, e in einheit_meta.items():
+        dok_gruppen.append({'einheit': e,
+                            'label': f"{e.bezeichnung} · {e.liegenschaft.strasse}",
+                            'dokumente': dok_buckets[eid]})
+    dok_total = sum(len(g['dokumente']) for g in dok_gruppen)
 
     vertrag_rows = []
     for v in vertraege:
@@ -2518,7 +2536,7 @@ def fw_person_detail(request, pk):
         ('uebersicht', 'Übersicht', None),
         ('vertraege', 'Verträge', vertraege.count() or None),
         ('finanzen', 'Finanzen', offene.count() or None),
-        ('dokumente', 'Dokumente', dokumente.count() or None),
+        ('dokumente', 'Dokumente', dok_total or None),
         ('aktivitaet', 'Journal', m.kommunikationen.count() or None),
         ('verlauf', 'Verlauf', len(verlauf) or None),
     ]
@@ -2528,7 +2546,7 @@ def fw_person_detail(request, pk):
         'anzahl_aktive': len(aktive),
         'brutto_monat': sum((r['brutto'] for r in vertrag_rows if r['v'].status == 'aktiv'), Decimal('0.00')),
         'offene': offene, 'total_offen': total_offen,
-        'zahlungen': zahlungen, 'dokumente': dokumente,
+        'zahlungen': zahlungen, 'dok_gruppen': dok_gruppen, 'dok_total': dok_total,
         'telefon': m.mobile or m.telefon_privat or m.telefon_geschaeft,
         'kommunikationen': m.kommunikationen.select_related('vertrag', 'erstellt_von')[:50],
         'portal_user': getattr(m, 'benutzer', None),

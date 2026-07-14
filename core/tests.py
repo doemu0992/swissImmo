@@ -4926,3 +4926,36 @@ class PersonFirmaVereinTests(TestCase):
         m = Mieter.objects.get(firmen_name='Handels GmbH')
         self.assertEqual(m.typ, 'firma')
         self.assertEqual(m.kontaktperson, 'Frau Meier')
+
+
+class PersonDokumenteGruppenTests(TestCase):
+    """Person-Dokumente nach Objekt gruppiert (Akkordeon)."""
+
+    def _doc(self, **kw):
+        from rentals.models import Dokument
+        from django.core.files.base import ContentFile
+        d = Dokument(kategorie='vertrag', **kw)
+        d.datei.save('x.pdf', ContentFile(b'%PDF-1'), save=False)
+        d.save()
+        return d
+
+    def test_gruppierung_objekt_und_persoenlich(self):
+        lg, e, m, v = _basis_objekte()
+        self._doc(mieter=m, bezeichnung='Persoenlich-Doc')          # ohne Objektbezug
+        self._doc(vertrag=v, bezeichnung='Objekt-Doc')              # via Vertrag → Objekt e
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/personen/{m.id}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.context['dok_total'], 2)
+        gruppen = r.context['dok_gruppen']
+        self.assertIsNone(gruppen[0]['einheit'])   # Persönlich zuerst
+        labels = [g['label'] for g in gruppen]
+        self.assertTrue(any('3.5 Zi' in l for l in labels))
+        self.assertContains(r, 'Objekt-Doc')
+        self.assertContains(r, 'Persoenlich-Doc')
+
+    def test_keine_dokumente(self):
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/personen/{m.id}/')
+        self.assertEqual(r.context['dok_total'], 0)
