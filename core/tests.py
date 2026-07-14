@@ -4283,6 +4283,12 @@ class AusstattungRaumbuchTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Raumbuch / Ausstattung')
         self.assertContains(r, 'Dusche')
+        # Raumbuch pro Objekt gruppiert: Objekt-Akkordeon + Raum-Überschrift
+        self.assertContains(r, 'group-open:rotate-90')
+        self.assertContains(r, e.bezeichnung)
+        self.assertContains(r, 'Bad')
+        self.assertEqual(len(r.context['raumbuch_objekte']), 1)
+        self.assertEqual(r.context['raumbuch_objekte'][0]['einheit'].id, e.id)
 
 
 class AbnahmeLebensdauerTests(TestCase):

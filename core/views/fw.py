@@ -4224,16 +4224,30 @@ def fw_assets(request):
     ZUSTAND_CLS = {
         'neuwertig': 'bg-emerald-50 text-emerald-700', 'gut': 'bg-emerald-50 text-emerald-700',
         'gebraucht': 'bg-amber-50 text-amber-700', 'defekt': 'bg-rose-50 text-rose-700'}
-    ausst_rows = [{
-        'a': a, 'zustand_cls': ZUSTAND_CLS.get(a.zustand, 'bg-slate-100 text-slate-500'),
-        'standort': f"{a.einheit.liegenschaft.strasse} · {a.einheit.bezeichnung}",
-    } for a in aqs]
+    # Raumbuch pro Objekt gruppiert (Objekt → Räume → Elemente)
+    from collections import OrderedDict
+    _obj = OrderedDict()
+    ausst_count = 0
+    for a in aqs:
+        e = a.einheit
+        if not e:
+            continue
+        ausst_count += 1
+        entry = _obj.setdefault(e.id, {'einheit': e, 'raeume': OrderedDict(), 'count': 0})
+        entry['count'] += 1
+        entry['raeume'].setdefault(a.raum, []).append({
+            'a': a, 'zustand_cls': ZUSTAND_CLS.get(a.zustand, 'bg-slate-100 text-slate-500'),
+        })
+    raumbuch_objekte = [{
+        'einheit': v['einheit'], 'count': v['count'],
+        'raeume': [{'raum': r, 'elemente': els} for r, els in v['raeume'].items()],
+    } for v in _obj.values()]
 
     return render(request, 'fw/assets.html', {
         **basis, 'nav': 'assets', 'rows': rows,
         'g_filter': g_filter, 'garantie_chips': chips, 'q': q,
         'anzahl': len(rows), 'n_aktiv': n_aktiv, 'n_bald': n_bald, 'n_abgelaufen': n_abgelaufen,
-        'ausst_rows': ausst_rows, 'ausst_count': len(ausst_rows),
+        'raumbuch_objekte': raumbuch_objekte, 'ausst_count': ausst_count,
         'liegenschaften': Liegenschaft.objects.order_by('strasse'),
         'einheiten': Einheit.objects.select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung'),
     })
