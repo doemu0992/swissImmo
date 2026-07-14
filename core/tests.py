@@ -5039,3 +5039,64 @@ class DocuSealAblageTests(TestCase):
         c = Client(); c.force_login(_team_user())
         r = c.post(f'/neu/vertraege/{v.id}/signieren/')
         self.assertEqual(r.status_code, 302)  # graceful, Fehlermeldung
+
+
+class DocuSealWebhookTests(TestCase):
+    """Toleranter DocuSeal-Webhook: verschiedene Payloads, kein 'Wert ungültig',
+    unterschriebener Vertrag wird zentral abgelegt."""
+
+    def test_vertrag_id_aus_name(self):
+        from rentals.api import _vertrag_id_aus_name
+        self.assertEqual(_vertrag_id_aus_name('Mietvertrag 42'), 42)
+        self.assertEqual(_vertrag_id_aus_name('Mietvertrag42'), 42)
+        self.assertEqual(_vertrag_id_aus_name(''), 0)
+        self.assertEqual(_vertrag_id_aus_name('Foo'), 0)
+
+    def test_erster_dokument_url(self):
+        from rentals.api import _erster_dokument_url
+        self.assertEqual(_erster_dokument_url([{'url': 'a'}, {'url': 'b'}]), 'a')
+        self.assertIsNone(_erster_dokument_url([]))
+        self.assertIsNone(_erster_dokument_url(None))
+
+    def test_event_nicht_abgeschlossen_ignoriert(self):
+        from rentals.api import verarbeite_docuseal_event
+        lg, e, m, v = _basis_objekte()
+        # 'form.viewed' o.ä. → nichts tun, kein Fehler
+        self.assertFalse(verarbeite_docuseal_event({'event_type': 'form.viewed', 'data': {'name': f'Mietvertrag {v.id}'}}))
+        v.refresh_from_db()
+        self.assertNotEqual(v.sign_status, 'unterzeichnet')
+
+    def test_completed_legt_vertrag_ab(self):
+        from unittest.mock import patch, MagicMock
+        from rentals.api import verarbeite_docuseal_event
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        resp = MagicMock(status_code=200, content=b'%PDF-signed')
+        payload = {'event_type': 'submission.completed',
+                   'data': {'name': f'Mietvertrag {v.id}', 'combined_document_url': 'http://x/y.pdf'}}
+        with patch('rentals.api.requests.get', return_value=resp):
+            ok = verarbeite_docuseal_event(payload)
+        self.assertTrue(ok)
+        v.refresh_from_db()
+        self.assertEqual(v.sign_status, 'unterzeichnet')
+        self.assertEqual(v.status, 'aktiv')
+        # zentral abgelegt (Portal/Person/Objekt)
+        self.assertTrue(Dokument.objects.filter(vertrag=v, kategorie='vertrag').exists())
+
+    def test_completed_documents_liste(self):
+        from unittest.mock import patch, MagicMock
+        from rentals.api import verarbeite_docuseal_event
+        lg, e, m, v = _basis_objekte()
+        resp = MagicMock(status_code=200, content=b'%PDF-x')
+        payload = {'event_type': 'form.completed',
+                   'data': {'name': f'Mietvertrag {v.id}', 'documents': [{'url': 'http://x/doc.pdf'}]}}
+        with patch('rentals.api.requests.get', return_value=resp):
+            self.assertTrue(verarbeite_docuseal_event(payload))
+
+    def test_webhook_endpoint_gibt_200(self):
+        # Endpunkt darf NIE 422/'Wert ungültig' liefern, auch bei leerem Body
+        c = Client()
+        r = c.post('/api/rentals/webhook/docuseal', data='{}', content_type='application/json')
+        self.assertEqual(r.status_code, 200)
+        r2 = c.post('/api/rentals/webhook/docuseal', data='kein json', content_type='application/json')
+        self.assertEqual(r2.status_code, 200)

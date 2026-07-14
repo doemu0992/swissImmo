@@ -268,33 +268,85 @@ def send_to_docuseal(request, vertrag_id: int):
 # ========================================================
 # WEBHOOK
 # ========================================================
-class WebhookSchema(Schema):
-    event_type: str
-    data: dict = {}
+def _erster_dokument_url(dokumente):
+    """Extrahiert die erste Dokument-URL aus einer DocuSeal-Dokumentliste."""
+    if isinstance(dokumente, list):
+        for d in dokumente:
+            if isinstance(d, dict) and d.get('url'):
+                return d['url']
+    return None
 
-# auth=None: Webhook muss öffentlich erreichbar sein (DocuSeal kann sich nicht
-# einloggen). Absicherung: DOCUSEAL_WEBHOOK_SECRET in .env setzen und denselben
-# Wert in DocuSeal als Header "X-Webhook-Secret" konfigurieren.
+
+def _vertrag_id_aus_name(name):
+    """Zieht die Vertrags-ID aus einem Namen wie 'Mietvertrag 3'."""
+    if not name:
+        return 0
+    teil = str(name).split('Mietvertrag')[-1]
+    ziffern = re.sub(r'[^0-9]', '', teil)
+    try:
+        return int(ziffern) if ziffern else 0
+    except ValueError:
+        return 0
+
+
+def verarbeite_docuseal_event(payload):
+    """Verarbeitet ein DocuSeal-Webhook-Event tolerant (verschiedene Payload-
+    Varianten). Lädt bei Abschluss den unterschriebenen Vertrag herunter und
+    legt ihn über vertrag.save() zentral überall ab. Gibt True zurück, wenn ein
+    Vertrag aktualisiert wurde."""
+    if not isinstance(payload, dict):
+        return False
+    event = str(payload.get('event_type') or payload.get('event') or '').lower()
+    data = payload.get('data')
+    if not isinstance(data, dict):
+        data = payload
+    status = str(data.get('status') or '').lower()
+    if 'completed' not in event and status != 'completed':
+        return False   # nur vollständig unterschriebene Verträge ablegen
+
+    submission = data.get('submission') if isinstance(data.get('submission'), dict) else {}
+    name = data.get('name') or submission.get('name') or ''
+    vertrag_id = _vertrag_id_aus_name(name)
+    vertrag = Mietvertrag.objects.filter(id=vertrag_id).first() if vertrag_id else None
+    if not vertrag:
+        return False
+
+    doc_url = (data.get('combined_document_url')
+               or submission.get('combined_document_url')
+               or _erster_dokument_url(data.get('documents'))
+               or _erster_dokument_url(submission.get('documents')))
+    if not doc_url:
+        return False
+    try:
+        r = requests.get(doc_url, timeout=30)
+    except Exception:
+        return False
+    if r.status_code != 200:
+        return False
+    vertrag.pdf_datei.save(f"Unterschrieben_Mietvertrag_{vertrag.id}.pdf",
+                           ContentFile(r.content), save=False)
+    vertrag.sign_status = 'unterzeichnet'
+    if vertrag.status in ('entwurf', 'offen'):
+        vertrag.status = 'aktiv'
+    vertrag.save()   # → zentrale Ablage (Portal, Person, Objekt) via Model.save
+    return True
+
+
+# auth=None + KEIN Body-Schema: Webhook muss öffentlich erreichbar sein und darf
+# NIE mit „Wert ungültig"/422 antworten (sonst meldet DocuSeal den Webhook als
+# fehlerhaft). Payload wird tolerant selbst geparst. Absicherung optional über
+# DOCUSEAL_WEBHOOK_SECRET (Header "X-Webhook-Secret").
 @router.post("/webhook/docuseal", auth=None)
-def docuseal_webhook(request, payload: WebhookSchema):
+def docuseal_webhook(request):
     secret = getattr(settings, 'DOCUSEAL_WEBHOOK_SECRET', None)
     if secret and request.headers.get('X-Webhook-Secret') != secret:
-        return {"status": "forbidden"}
-    if payload.event_type == 'submission.completed':
-        name = payload.data.get('name', '')
-        try:
-            vertrag_id = int(name.replace("Mietvertrag", "").strip())
-            vertrag = Mietvertrag.objects.get(id=vertrag_id)
-            doc_url = payload.data.get('combined_document_url') or (payload.data.get('documents')[0].get('url') if payload.data.get('documents') else None)
-
-            if doc_url:
-                r = requests.get(doc_url)
-                if r.status_code == 200:
-                    filename = f"Unterschrieben_Mietvertrag_{vertrag.id}.pdf"
-                    vertrag.pdf_datei.save(filename, ContentFile(r.content), save=False)
-                    vertrag.sign_status = 'unterzeichnet'
-                    vertrag.status = 'aktiv'
-                    vertrag.save()
-        except Exception:
-            pass
-    return 200, {"status": "ok"}
+        return HttpResponse('{"status":"forbidden"}', content_type='application/json', status=200)
+    try:
+        payload = json.loads(request.body or b'{}')
+    except Exception:
+        payload = {}
+    try:
+        verarbeite_docuseal_event(payload)
+    except Exception:
+        logger.error("DocuSeal-Webhook: Verarbeitung fehlgeschlagen", exc_info=True)
+    return HttpResponse('{"status":"ok"}', content_type='application/json', status=200)
