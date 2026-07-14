@@ -148,7 +148,7 @@
                     <input type="hidden" name="kuendigungstermine" id="f_kuendigungstermine">
 
                     <div class="grid grid-cols-2 gap-3 mt-4">
-                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kündigungsfrist (Monate) *</label>
+                        <div id="frist-box"><label class="block text-xs font-semibold text-slate-500 mb-1">Kündigungsfrist (Monate) *</label>
                             <div class="flex items-center bg-slate-100 rounded-lg w-40">
                                 <button type="button" onclick="fristStep(-1)" class="px-3 py-2.5 text-indigo-600 font-bold">−</button>
                                 <input name="kuendigungsfrist" id="s_frist" type="number" value="3" min="1" oninput="live()" class="w-14 bg-transparent text-center text-sm py-2.5 focus:outline-none">
@@ -157,6 +157,9 @@
                         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Erstmögliche Kündigung *</label>
                             <input name="erstmals_kuendbar" type="date" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
                     </div>
+                    <p id="frist-ep-note" class="hidden text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2 mt-2">
+                        <i class="fa-solid fa-circle-info mr-1"></i>Einstellplatz: gesetzliche Frist <b>2 Wochen auf Ende einer Monatsperiode</b> (Art. 266e OR) — kein amtliches Formular, keine Erstreckung. Die Monatsangabe ist hier nicht massgeblich.
+                    </p>
 
                     <label class="block text-xs font-semibold text-slate-500 mb-1 mt-4">Zur Mitbenützung</label>
                     <textarea name="mitbenutzung" rows="2" oninput="live()" placeholder="z. B. Waschküche, Trockenraum, Veloraum" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></textarea>
@@ -178,8 +181,9 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mietzins netto (CHF) *</label>
                             <input name="netto_mietzins" id="s_netto" type="number" step="0.01" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nebenkosten (CHF) *</label>
-                            <input name="nebenkosten" id="s_nk" type="number" step="0.01" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1"><span id="nk-label">Nebenkosten (CHF) *</span></label>
+                            <input name="nebenkosten" id="s_nk" type="number" step="0.01" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                            <p id="nk-hint" class="hidden text-xs text-slate-400 mt-1">Bei Einstellplätzen i.d.R. keine separaten Nebenkosten (im Mietzins enthalten) — 0 lassen, falls keine.</p></div>
                     </div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Mietzins brutto (CHF)</label>
                     <input id="s_brutto" type="text" readonly class="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2.5 mb-3 text-slate-600">
@@ -352,6 +356,7 @@ document.getElementById('monate-grid').innerHTML = MONATE.map((m,i)=>
   `<label class="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" class="monat-cb accent-indigo-600" value="${m}" onchange="live()"> ${m}</label>`).join('');
 function monateAusserDez(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = c.value!=='Dezember'); live(); }
 function monateStandard(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = ['März','Juni','September'].includes(c.value)); live(); }
+function setMonateAlle(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = true); live(); }
 function gewaehlteMonate(){ return Array.from(document.querySelectorAll('.monat-cb:checked')).map(c=>c.value); }
 function fristStep(d){ const el=document.getElementById('s_frist'); el.value=Math.max(1,(parseInt(el.value)||3)+d); live(); }
 function indexUebernehmen(btn){
@@ -430,11 +435,25 @@ function objChange(){
     info.innerHTML = `<b>${o.bezeichnung}</b> · ${o.typ}${o.etage?' · '+o.etage:''}${o.flaeche?' · '+o.flaeche+' m²':''}${o.zimmer?' · '+o.zimmer+' Zi':''}`;
     // Objektart-abhängig: Gewerbe-Felder, Kündigungsfrist-Default, Kaution-Hinweis
     const istGew = o.kategorie === 'gewerbe';
+    const istEP = !!o.ist_einstellplatz;   // Parkplatz/Garage → Art. 266e (2 Wochen)
     document.getElementById('gewerbe-box').classList.toggle('hidden', !istGew);
     const frist = document.getElementById('s_frist');
     if (istGew && (frist.value === '3' || frist.value === '')) frist.value = '6';   // Art. 266d
     if (!istGew && frist.value === '6') frist.value = '3';
     if (!istGew) { const md = document.getElementById('s_modell'); if (md) { md.value = 'fest'; modellChange(); } }
+
+    // Einstellplatz (Parkplatz/Garage): 2-Wochen-Frist gesetzlich, keine NK nötig,
+    // Kündigung Ende jeder Monatsperiode (alle Monate).
+    document.getElementById('frist-box').classList.toggle('hidden', istEP);
+    document.getElementById('frist-ep-note').classList.toggle('hidden', !istEP);
+    document.getElementById('nk-hint').classList.toggle('hidden', !istEP);
+    document.getElementById('nk-label').textContent = istEP ? 'Nebenkosten (CHF)' : 'Nebenkosten (CHF) *';
+    if (istEP) {
+      // Nebenkosten default 0, Kündigung an jedem Monatsende möglich
+      if (!o.nk) document.getElementById('s_nk').value = '0';
+      if (window.setMonateAlle) setMonateAlle();
+    }
+
     document.getElementById('kaution-hint').textContent = istGew
       ? 'Geschäftsräume: Betrag frei (keine 3-Monats-Grenze), aber Sperrkonto auf Mietername bleibt Pflicht (Art. 257e Abs. 1 OR).'
       : (o.kaution_monate ? `Empfohlen: ${o.kaution_monate} Monatsmieten (max 3, Art. 257e)` : '');

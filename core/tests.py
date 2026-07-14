@@ -2297,6 +2297,20 @@ class GewerbeWizardTests(TestCase):
         self.assertIn('name="mietzins_modell"', body)
         self.assertIn("o.kategorie === 'gewerbe'", body)
 
+    def test_wizard_parkplatz_einstellplatz_anpassung(self):
+        from portfolio.models import Einheit
+        lg = Liegenschaft.objects.create(strasse='Weg 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='PP 1', typ='pp',
+                                   nettomiete_aktuell=Decimal('120'))
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/vertraege/neu/?einheit={e.id}').content.decode()
+        # Objektdaten tragen die Einstellplatz-Kennung + JS reagiert darauf
+        self.assertIn('ist_einstellplatz', body)
+        self.assertIn('frist-ep-note', body)
+        self.assertIn('266e', body)
+        self.assertIn('setMonateAlle', body)
+
     def test_speichern_gewerbe_staffel_und_frist(self):
         from rentals.models import Mietvertrag as MV, Staffelstufe
         lg, e, m = self._gew_einheit()

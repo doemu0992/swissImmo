@@ -5629,12 +5629,13 @@ def fw_vertrag_neu(request):
                 continue   # bei Vorwahl nur genau dieses Objekt
             objekte.append({
                 'id': e.id, 'bezeichnung': e.bezeichnung,
-                'typ': e.get_typ_display(), 'etage': e.etage or '',
+                'typ': e.get_typ_display(), 'typ_code': e.typ, 'etage': e.etage or '',
                 'ewid': e.ewid or '', 'zimmer': float(e.zimmer) if e.zimmer else None,
                 'flaeche': float(e.flaeche_m2) if e.flaeche_m2 else None,
                 'netto': float(e.nettomiete_aktuell or 0), 'nk': float(e.nebenkosten_aktuell or 0),
                 'kaution_monate': e.standard_kautionsmonate or 3,
                 'vertrag_titel': e.vertrag_titel, 'kategorie': e.mietrecht_kategorie,
+                'ist_einstellplatz': e.ist_einstellplatz,
             })
         if not objekte:
             continue
