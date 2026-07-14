@@ -225,7 +225,7 @@
     {% if dok_gruppen %}
     <div class="space-y-3">
         {% for g in dok_gruppen %}
-        <details open class="group bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <details class="group bg-white rounded-xl border border-slate-200 overflow-hidden">
             <summary class="px-5 py-3 flex items-center gap-3 cursor-pointer select-none hover:bg-slate-50/60 list-none">
                 <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform group-open:rotate-90"></i>
                 <i class="fa-solid {% if g.einheit %}fa-house{% else %}fa-building{% endif %} text-indigo-500"></i>
