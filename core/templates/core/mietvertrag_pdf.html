@@ -21,7 +21,7 @@
     table.data td.b { font-weight: bold; }
     p { margin: 5pt 0; }
     .sign { width: 100%; margin-top: 22pt; }
-    .sign td { width: 240pt; vertical-align: bottom; padding-top: 30pt; font-size: 8pt; color: #64748b; }
+    .sign td { width: 240pt; vertical-align: top; padding-top: 30pt; font-size: 8pt; color: #64748b; }
     .sigline { border-top: 1px solid #94a3b8; padding-top: 3pt; }
     .sigimg { height: 36pt; }
 </style>
@@ -159,14 +159,18 @@ Form Art. 266l · Rückgabe Art. 267/267a{% if vertrag.ist_geschuetzt %} · Kün
             {% if vertrag.mitmieter or vertrag.mitmieter_name %}
                 <div class="sublabel">Mieter 1: {{ mieter.display_name }}</div>
                 <br><span style="color:#ffffff;font-size:13pt;">{% verbatim %}{{Unterschrift Mieter;role=Mieter;type=signature;required=true}}{% endverbatim %}</span><br>
-                <div class="sigline"><span style="color:#ffffff;">{% verbatim %}{{Ort Mieter;role=Mieter;type=text;required=true}}{% endverbatim %}</span>, <span style="color:#ffffff;">{% verbatim %}{{Datum Mieter;role=Mieter;type=date;required=true}}{% endverbatim %}</span> / Unterschrift</div>
+                <div class="sigline">Unterschrift</div>
+                <div style="margin-top:16pt;">Ort:&nbsp;&nbsp;<span style="color:#ffffff;">{% verbatim %}{{Ort Mieter;role=Mieter;type=text;required=true}}{% endverbatim %}</span></div>
+                <div style="margin-top:11pt;">Datum:&nbsp;&nbsp;<span style="color:#ffffff;">{% verbatim %}{{Datum Mieter;role=Mieter;type=date;required=true}}{% endverbatim %}</span></div>
                 <div style="margin-top:22pt;" class="sublabel">Mieter 2: {% if vertrag.mitmieter %}{{ vertrag.mitmieter.display_name }}{% else %}{{ vertrag.mitmieter_name }}{% endif %}</div>
                 <br><br>
                 <div class="sigline">Ort, Datum / Unterschrift</div>
             {% else %}
                 <div class="sublabel">Mieter</div>
                 <br><span style="color:#ffffff;font-size:13pt;">{% verbatim %}{{Unterschrift Mieter;role=Mieter;type=signature;required=true}}{% endverbatim %}</span><br>
-                <div class="sigline"><span style="color:#ffffff;">{% verbatim %}{{Ort Mieter;role=Mieter;type=text;required=true}}{% endverbatim %}</span>, <span style="color:#ffffff;">{% verbatim %}{{Datum Mieter;role=Mieter;type=date;required=true}}{% endverbatim %}</span> / Unterschrift</div>
+                <div class="sigline">Unterschrift</div>
+                <div style="margin-top:16pt;">Ort:&nbsp;&nbsp;<span style="color:#ffffff;">{% verbatim %}{{Ort Mieter;role=Mieter;type=text;required=true}}{% endverbatim %}</span></div>
+                <div style="margin-top:11pt;">Datum:&nbsp;&nbsp;<span style="color:#ffffff;">{% verbatim %}{{Datum Mieter;role=Mieter;type=date;required=true}}{% endverbatim %}</span></div>
             {% endif %}
         </td>
     </tr>
