@@ -5269,6 +5269,23 @@ class GeraetZaehlerTests(TestCase):
         self.assertContains(r, 'Allgemeine Geräte')
         self.assertContains(r, 'Boiler')
 
+    def test_objekt_merkmale_speichern_und_anzeige(self):
+        from portfolio.models import Einheit
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/objekte/{e.id}/merkmale/', {
+            'merkmale': ['Balkon', 'Lift'], 'merkmale_eigene': 'Weinkeller, Sauna'})
+        self.assertEqual(r.status_code, 302)
+        e.refresh_from_db()
+        self.assertIn('Balkon', e.merkmale)
+        self.assertIn('Lift', e.merkmale)
+        self.assertIn('Weinkeller', e.merkmale)
+        self.assertIn('Sauna', e.merkmale)
+        # Im Objekt-Detail sichtbar (Badges) + eigene Merkmale in der Optionsliste
+        body = c.get(f'/neu/objekte/{e.id}/').content.decode()
+        self.assertIn('Merkmale', body)
+        self.assertIn('Weinkeller', body)
+
     def test_objekt_raumbuch_accordion(self):
         from portfolio.models import Ausstattung
         lg, e, m, v = _basis_objekte()

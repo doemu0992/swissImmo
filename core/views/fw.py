@@ -1129,6 +1129,63 @@ def fw_liegenschaft_detail(request, pk):
     })
 
 
+# Kuratierte Standard-Ausstattungsmerkmale (CH) für die schnelle Häkchen-Liste
+MERKMALE_STANDARD = [
+    'Balkon', 'Terrasse', 'Sitzplatz', 'Garten (Mitbenützung)', 'Lift',
+    'Einbauküche', 'Geschirrspüler', 'Glaskeramik-Kochfeld', 'Steamer / Dampfgarer',
+    'Waschmaschine (in Wohnung)', 'Waschturm', 'Anschluss Waschmaschine',
+    'Keller / Kellerabteil', 'Estrich / Estrichabteil', 'Reduit',
+    'Cheminée', 'Parkett', 'Plattenboden', 'Laminat',
+    'Bad/WC', 'Sep. WC', 'Dusche', 'Badewanne',
+    'Kabel-TV', 'Glasfaser', 'Rollläden / Storen', 'Lamellenstoren',
+    'Barrierefrei / Rollstuhlgängig', 'Minergie', 'Bodenheizung',
+    'Garage', 'Aussenparkplatz', 'Veloraum', 'Trockenraum',
+    'Möbliert', 'Haustiere erlaubt',
+]
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_merkmale_speichern(request, pk):
+    """Speichert die Ausstattungsmerkmale (Häkchen + eigene) eines Objekts."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    e = get_object_or_404(Einheit, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/objekte/{e.id}/')
+    gewaehlt = [m.strip() for m in request.POST.getlist('merkmale') if m.strip()]
+    # Eigene Merkmale (Komma- oder Zeilen-getrennt) ergänzen
+    eigene = (request.POST.get('merkmale_eigene') or '').replace('\n', ',')
+    for m in eigene.split(','):
+        m = m.strip()
+        if m and m not in gewaehlt:
+            gewaehlt.append(m)
+    # Reihenfolge stabil + dedupliziert
+    seen, clean = set(), []
+    for m in gewaehlt:
+        if m not in seen:
+            seen.add(m); clean.append(m)
+    e.merkmale = clean
+    e.save(update_fields=['merkmale'])
+    log_aktion(request, "Ausstattungsmerkmale gespeichert", e.bezeichnung, f"{len(clean)} Merkmale")
+    messages.success(request, "✅ Ausstattungsmerkmale gespeichert.")
+    return redirect(f'/neu/objekte/{e.id}/')
+
+
+def merkmale_optionen(aktuelle=None):
+    """Standardliste + alle bereits irgendwo verwendeten eigenen Merkmale."""
+    optionen = list(MERKMALE_STANDARD)
+    seen = set(optionen)
+    for e in Einheit.objects.exclude(merkmale=[]).only('merkmale'):
+        for m in (e.merkmale or []):
+            if m and m not in seen:
+                seen.add(m); optionen.append(m)
+    for m in (aktuelle or []):
+        if m and m not in seen:
+            seen.add(m); optionen.append(m)
+    return optionen
+
+
 # Vorschlagslisten (datalist) für Geräte-Kategorien und Zähler-Typen
 GERAET_KATEGORIEN = [
     'Heizung', 'Boiler / Wassererwärmer', 'Wärmepumpe', 'Lüftung', 'Klimaanlage',
@@ -1289,6 +1346,8 @@ def fw_objekt_detail(request, pk):
         'zustand_choices': Ausstattung.ZUSTAND,
         'geraet_kategorien': GERAET_KATEGORIEN,
         'zaehler_typen': ZAEHLER_TYPEN,
+        'merkmale_gewaehlt': e.merkmale or [],
+        'merkmale_optionen': merkmale_optionen(e.merkmale or []),
         'tab_liste': tab_liste,
         'meldung': list(messages.get_messages(request)),
     })

@@ -63,6 +63,9 @@ class Einheit(models.Model):
 
     keller = models.CharField("Kellerabteil", max_length=50, blank=True, default='')
     estrich = models.CharField("Estrich", max_length=50, blank=True, default='')
+    # Schnelle Ausstattungs-Merkmale (Häkchen): Standardliste + eigene, als Liste
+    # von Strings. Ergänzt das detaillierte Raumbuch (Assets) um einen Überblick.
+    merkmale = models.JSONField("Ausstattungsmerkmale", default=list, blank=True)
 
     ewid = models.CharField("EWID", max_length=20, blank=True, null=True)
     oto_dose = models.CharField("OTO-Dose (Glasfaser)", max_length=50, blank=True, default='')
