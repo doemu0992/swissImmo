@@ -3811,6 +3811,9 @@ def fw_kreditoren(request):
             'offen_wv': k.offen_weiterzuverrechnen,
             'kann_weiterverrechnen': (k.status in ('freigegeben', 'in_zahlung', 'teilbezahlt', 'bezahlt')
                                       and k.offen_weiterzuverrechnen > 0),
+            'positionen': list(k.positionen.select_related('konto', 'einheit')) if k.status == 'neu' else [],
+            'pos_summe': k.positionen_summe if k.status == 'neu' else Decimal('0.00'),
+            'pos_diff': k.positionen_differenz if k.status == 'neu' else Decimal('0.00'),
         })
 
     status_chips = [('', 'Alle')] + [(k, v[0]) for k, v in KRED_PILL.items() if k != 'storniert']
@@ -9172,35 +9175,59 @@ def fw_kreditor_freigeben(request, pk):
         messages.info(request, "Rechnung ist bereits freigegeben oder bezahlt.")
         return redirect('fw_kreditoren')
 
-    # Aufwandskonto zuweisen (aus Formular oder bestehendes)
+    # Aufwandskonto zuweisen (aus Formular oder bestehendes). Mit Kostenaufteilung
+    # ist das Kopf-Konto optional — dann bucht jede Position ihr eigenes Konto.
     if request.POST.get('konto_id'):
         k.konto = Buchungskonto.objects.filter(id=request.POST['konto_id']).first()
-    if not k.konto:
-        messages.error(request, "Bitte zuerst ein Aufwandskonto zuweisen (in der Zeile wählen).")
+    positionen = list(k.positionen.select_related('konto', 'liegenschaft'))
+    if positionen:
+        # Aufteilung muss aufgehen (Summe der Positionen == Rechnungsbetrag).
+        if abs(k.positionen_differenz) > Decimal('0.01'):
+            messages.error(request, f"Die Kostenaufteilung stimmt nicht: Summe der Positionen "
+                                    f"weicht um CHF {k.positionen_differenz} vom Rechnungsbetrag ab.")
+            return redirect('fw_kreditoren')
+    elif not k.konto:
+        messages.error(request, "Bitte zuerst ein Aufwandskonto zuweisen (oder die Rechnung aufteilen).")
         return redirect('fw_kreditoren')
 
     with transaction.atomic():
         # NK-Relevanz automatisch vom Konto ableiten: HNK-Konto (4100–4140/4400)
         # ⇒ Rechnung fliesst in die Nebenkostenabrechnung — kein vergessenes
         # Häkchen mehr. (Nur aktivieren, nie eine manuelle Wahl deaktivieren.)
-        if k.konto and k.konto.is_hnk_relevant and not k.is_hnk_relevant:
+        if positionen and any(p.is_hnk_relevant for p in positionen) and not k.is_hnk_relevant:
+            k.is_hnk_relevant = True
+        elif k.konto and k.konto.is_hnk_relevant and not k.is_hnk_relevant:
             k.is_hnk_relevant = True
         k.status = 'freigegeben'
         k.save()
         from finance.booking import buche
         datum_b = k.datum or timezone.now().date()
         brutto = k.betrag or Decimal('0.00')
-        vorsteuer = Decimal('0.00')
-        if (k.mwst_satz or 0) > 0:
-            satz = k.mwst_satz
-            vorsteuer = (brutto * satz / (Decimal('100') + satz)).quantize(Decimal('0.01'))
-            k.mwst_betrag = vorsteuer
+        satz = k.mwst_satz or Decimal('0')
+
+        def _netto(brutto_teil):
+            if satz > 0:
+                vs = (brutto_teil * satz / (Decimal('100') + satz)).quantize(Decimal('0.01'))
+                return brutto_teil - vs, vs
+            return brutto_teil, Decimal('0.00')
+
+        vorsteuer_total = Decimal('0.00')
+        if positionen:
+            # Jede Position einzeln buchen (eigenes Konto/Objekt).
+            for p in positionen:
+                netto_p, vs_p = _netto(p.betrag)
+                vorsteuer_total += vs_p
+                text = f"Rechnung {k.lieferant}{f' · {p.bezeichnung}' if p.bezeichnung else ''}"
+                buche(p.konto, "2000", netto_p, text[:255], datum=datum_b,
+                      liegenschaft=p.liegenschaft or k.liegenschaft, kreditor=k, user=request.user)
+        else:
+            netto, vorsteuer_total = _netto(brutto)
+            buche(k.konto, "2000", netto, f"Rechnung {k.lieferant} - {k.referenz}",
+                  datum=datum_b, liegenschaft=k.liegenschaft, kreditor=k, user=request.user)
+        if vorsteuer_total > 0:
+            k.mwst_betrag = vorsteuer_total
             k.save(update_fields=['mwst_betrag'])
-        netto = brutto - vorsteuer
-        buche(k.konto, "2000", netto, f"Rechnung {k.lieferant} - {k.referenz}",
-              datum=datum_b, liegenschaft=k.liegenschaft, kreditor=k, user=request.user)
-        if vorsteuer > 0:
-            buche("1170", "2000", vorsteuer, f"Vorsteuer {k.mwst_satz}% {k.lieferant}",
+            buche("1170", "2000", vorsteuer_total, f"Vorsteuer {k.mwst_satz}% {k.lieferant}",
                   datum=datum_b, liegenschaft=k.liegenschaft, kreditor=k, user=request.user)
         # Lieferanten-Gedächtnis fortschreiben: dieses Konto wird künftig für
         # denselben Lieferanten automatisch vorgeschlagen.
@@ -9212,6 +9239,57 @@ def fw_kreditor_freigeben(request, pk):
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
     return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_kreditor_position_add(request, pk):
+    """Fügt einer noch nicht verbuchten Kreditorenrechnung eine Kostenposition
+    hinzu (Konto + optional Objekt + Betrag + HNK). Ermöglicht das Aufteilen
+    einer Sammel-/Mischrechnung."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import KreditorenRechnung, KreditorPosition, Buchungskonto
+    from core.auth import log_aktion
+    k = get_object_or_404(KreditorenRechnung, id=pk)
+    if request.method != 'POST':
+        return redirect('fw_kreditoren')
+    if k.status != 'neu':
+        messages.error(request, "Nur unverbuchte Rechnungen (Status Neu) können aufgeteilt werden.")
+        return redirect('fw_kreditoren')
+    konto = Buchungskonto.objects.filter(id=request.POST.get('konto_id') or None).first()
+    try:
+        betrag = Decimal((request.POST.get('betrag') or '').replace("'", '').replace(',', '.').strip())
+    except Exception:
+        betrag = None
+    if not konto or not betrag or betrag <= 0:
+        messages.error(request, "Konto und Betrag (> 0) sind für eine Position erforderlich.")
+        return redirect('fw_kreditoren')
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first() or k.liegenschaft
+    einheit = Einheit.objects.filter(id=request.POST.get('einheit_id') or None).first()
+    KreditorPosition.objects.create(
+        rechnung=k, konto=konto, betrag=betrag,
+        bezeichnung=(request.POST.get('bezeichnung') or '').strip()[:200],
+        liegenschaft=lg, einheit=einheit,
+        is_hnk_relevant=(request.POST.get('is_hnk_relevant') == 'on' or bool(konto.is_hnk_relevant)))
+    log_aktion(request, "Kreditor-Position hinzugefügt", k.lieferant, f"{konto.nummer} · CHF {betrag}")
+    messages.success(request, f"✅ Position {konto.nummer} über CHF {betrag} hinzugefügt.")
+    return redirect('/neu/kreditoren/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_kreditor_position_del(request, pk):
+    """Entfernt eine Kostenposition (nur solange die Rechnung unverbucht ist)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import KreditorPosition
+    p = get_object_or_404(KreditorPosition.objects.select_related('rechnung'), id=pk)
+    if request.method == 'POST':
+        if p.rechnung.status != 'neu':
+            messages.error(request, "Nur unverbuchte Rechnungen können geändert werden.")
+        else:
+            p.delete()
+            messages.success(request, "Position entfernt.")
+    return redirect('/neu/kreditoren/')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

@@ -6699,3 +6699,66 @@ class LieferantStandardkontoTests(TestCase):
         k = KreditorenRechnung(lieferant='EWZ', betrag=Decimal('10'), konto=konto('4000'))
         self.assertFalse(vorbelegen(k))               # bereits zugeteilt → kein Override
         self.assertEqual(k.konto.nummer, '4000')
+
+
+class KreditorSplitTests(TestCase):
+    """Kostenaufteilung: eine Rechnung auf mehrere Konten/Objekte splitten;
+    Freigabe bucht jede Position einzeln; Summe muss stimmen; hnk_betrag."""
+
+    def _konten(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+
+    def _rechnung(self, betrag='300.00'):
+        from finance.models import KreditorenRechnung
+        return KreditorenRechnung.objects.create(lieferant='Sammel AG',
+                                                 betrag=Decimal(betrag), status='neu')
+
+    def test_position_add_und_summe(self):
+        from finance.models import KreditorPosition
+        self._konten()
+        k = self._rechnung('300.00')
+        c = Client(); c.force_login(_team_user())
+        from finance.models import Buchungskonto
+        k4000 = Buchungskonto.objects.get(nummer='4000').id
+        k4120 = Buchungskonto.objects.get(nummer='4120').id
+        c.post(f'/neu/kreditoren/{k.id}/position/', {'konto_id': k4000, 'betrag': '200.00'})
+        c.post(f'/neu/kreditoren/{k.id}/position/', {'konto_id': k4120, 'betrag': '100.00'})
+        self.assertEqual(k.positionen.count(), 2)
+        self.assertEqual(k.positionen_summe, Decimal('300.00'))
+        self.assertEqual(k.positionen_differenz, Decimal('0.00'))
+        # 4120 ist HNK-relevant → Position automatisch HNK; hnk_betrag = 100
+        self.assertEqual(k.hnk_betrag, Decimal('100.00'))
+
+    def test_freigabe_bucht_pro_position(self):
+        from finance.models import Buchungskonto, Buchung
+        self._konten()
+        k = self._rechnung('300.00')
+        k4000 = Buchungskonto.objects.get(nummer='4000')
+        k4120 = Buchungskonto.objects.get(nummer='4120')
+        from finance.models import KreditorPosition
+        KreditorPosition.objects.create(rechnung=k, konto=k4000, betrag=Decimal('200.00'))
+        KreditorPosition.objects.create(rechnung=k, konto=k4120, betrag=Decimal('100.00'))
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/kreditoren/{k.id}/freigeben/')
+        k.refresh_from_db()
+        self.assertEqual(k.status, 'freigegeben')
+        # Zwei Aufwandsbuchungen (200 auf 4000, 100 auf 4120), Gegenkonto 2000
+        b4000 = Buchung.objects.filter(soll_konto=k4000, kreditoren_rechnung=k).first()
+        b4120 = Buchung.objects.filter(soll_konto=k4120, kreditoren_rechnung=k).first()
+        self.assertEqual(b4000.betrag, Decimal('200.00'))
+        self.assertEqual(b4120.betrag, Decimal('100.00'))
+        # Kreditor (2000) total = 300
+        haben2000 = Buchung.objects.filter(haben_konto__nummer='2000', kreditoren_rechnung=k)
+        self.assertEqual(sum(b.betrag for b in haben2000), Decimal('300.00'))
+
+    def test_freigabe_blockt_bei_falscher_summe(self):
+        from finance.models import Buchungskonto, KreditorPosition
+        self._konten()
+        k = self._rechnung('300.00')
+        KreditorPosition.objects.create(rechnung=k, konto=Buchungskonto.objects.get(nummer='4000'),
+                                        betrag=Decimal('150.00'))   # Summe 150 ≠ 300
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/kreditoren/{k.id}/freigeben/')
+        k.refresh_from_db()
+        self.assertEqual(k.status, 'neu')   # nicht freigegeben — Aufteilung stimmt nicht

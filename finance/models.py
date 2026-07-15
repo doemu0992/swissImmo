@@ -306,6 +306,50 @@ class KreditorenRechnung(models.Model):
     def offener_betrag(self):
         return max(Decimal('0.00'), (self.betrag or Decimal('0.00')) - self.bezahlt_betrag)
 
+    # --- Kostenaufteilung (Split auf mehrere Konten/Objekte) ---
+    @property
+    def hat_positionen(self):
+        return self.positionen.exists()
+
+    @property
+    def positionen_summe(self):
+        return (self.positionen.aggregate(s=Sum('betrag'))['s'] or Decimal('0.00'))
+
+    @property
+    def positionen_differenz(self):
+        """Rechnungsbetrag minus Summe der Positionen (0 = sauber aufgeteilt)."""
+        return (self.betrag or Decimal('0.00')) - self.positionen_summe
+
+    @property
+    def hnk_betrag(self):
+        """Der in die Nebenkostenabrechnung fliessende Brutto-Anteil dieser Rechnung.
+        Mit Split = Summe der HNK-Positionen, sonst der ganze Betrag wenn HNK-relevant."""
+        if self.hat_positionen:
+            return (self.positionen.filter(is_hnk_relevant=True)
+                    .aggregate(s=Sum('betrag'))['s'] or Decimal('0.00'))
+        return (self.betrag or Decimal('0.00')) if self.is_hnk_relevant else Decimal('0.00')
+
+
+class KreditorPosition(models.Model):
+    """Eine Kostenposition einer aufgeteilten Kreditorenrechnung: eigenes
+    Aufwandskonto, optionales Objekt und eigenes HNK-Flag. Ermöglicht das
+    Splitten einer Sammelrechnung (mehrere Häuser) bzw. das Trennen von
+    Unterhalt (Eigentümer) und HNK innerhalb einer Rechnung. Jede Position
+    wird bei der Freigabe einzeln gebucht."""
+    rechnung = models.ForeignKey(KreditorenRechnung, on_delete=models.CASCADE, related_name='positionen')
+    konto = models.ForeignKey(Buchungskonto, on_delete=models.PROTECT, related_name='kreditor_positionen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True)
+    bezeichnung = models.CharField(max_length=200, blank=True, default='')
+    betrag = models.DecimalField("Betrag (brutto)", max_digits=10, decimal_places=2)
+    is_hnk_relevant = models.BooleanField("HNK-relevant", default=False)
+
+    class Meta:
+        db_table = 'finance_kreditorposition'
+        ordering = ['id']
+
+    def __str__(self): return f"{self.konto} · CHF {self.betrag}"
+
 
 class KreditorenZahlung(models.Model):
     """Ausgangszahlung an einen Lieferanten (ermöglicht Teilzahlungen / OP)."""
