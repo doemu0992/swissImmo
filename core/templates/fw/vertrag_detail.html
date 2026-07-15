@@ -22,13 +22,11 @@
     </div>
     <div class="flex flex-col items-end gap-2">
         <div class="flex items-center gap-2">
-            {% if v.sign_status == 'unterzeichnet' %}<span class="text-[11px] font-semibold bg-emerald-50 text-emerald-700 rounded-md px-2 py-1"><i class="fa-solid fa-signature mr-1"></i>Unterzeichnet</span>
+            {# Rücklauf-Zeitstempel steht im Verlauf-Tab — hier nur der Status (Tooltip zeigt ihn trotzdem) #}
+            {% if v.sign_status == 'unterzeichnet' %}<span class="text-[11px] font-semibold bg-emerald-50 text-emerald-700 rounded-md px-2 py-1"{% if v.unterzeichnet_am %} title="Unterschrieben zurück am {{ v.unterzeichnet_am|date:'d.m.Y H:i' }} Uhr"{% endif %}><i class="fa-solid fa-signature mr-1"></i>Unterzeichnet</span>
             {% elif v.sign_status == 'gesendet' %}<span class="text-[11px] font-semibold bg-amber-50 text-amber-700 rounded-md px-2 py-1"><i class="fa-solid fa-paper-plane mr-1"></i>Zur Unterschrift gesendet</span>{% endif %}
             <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ vertrag_pill.cls }}">{{ vertrag_pill.label }}</span>
         </div>
-        {% if v.sign_status == 'unterzeichnet' and v.unterzeichnet_am %}
-        <div class="text-[11px] text-slate-400"><i class="fa-solid fa-clock-rotate-left mr-1"></i>Unterschrieben zurück am {{ v.unterzeichnet_am|date:"d.m.Y H:i" }} Uhr</div>
-        {% endif %}
         <!-- Status-Umschalter -->
         <form method="post" action="/neu/vertraege/{{ v.id }}/status/" class="flex items-center bg-slate-100 rounded-lg p-0.5 gap-0.5">
             {% csrf_token %}
@@ -381,7 +379,7 @@
                 </div>
                 <div class="text-xs text-slate-400 whitespace-nowrap text-right shrink-0">
                     {{ e.zeitpunkt|date:"d.m.Y H:i" }}<br>
-                    <span class="text-slate-400">{{ e.benutzer.get_full_name|default:e.benutzer.username|default:"System" }}</span>
+                    <span class="text-slate-400">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username }}{% else %}System{% endif %}</span>
                 </div>
             </div>
             {% empty %}

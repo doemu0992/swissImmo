@@ -5542,15 +5542,21 @@ class VertragUnterzeichnetTimestampTests(TestCase):
         v.refresh_from_db()
         self.assertIsNotNone(v.unterzeichnet_am)
 
-    def test_detail_zeigt_ruecklauf_zeit(self):
+    def test_detail_zeigt_ruecklauf_im_verlauf(self):
+        """Der Rücklauf-Zeitstempel steht als Ereignis im Verlauf-Tab (nicht als
+        eigene Zeile im Seitenkopf); der Status-Badge behält ihn als Tooltip."""
         lg, e, m, v = _basis_objekte()
         from django.utils import timezone
         v.sign_status = 'unterzeichnet'
         v.unterzeichnet_am = timezone.now()
         v.save()
         c = Client(); c.force_login(_team_user())
-        r = c.get(f'/neu/vertraege/{v.id}/')
-        self.assertContains(r, 'zurück am')
+        body = c.get(f'/neu/vertraege/{v.id}/').content.decode()
+        # Verlauf-Ereignis vorhanden
+        self.assertIn('Unterschriebener Vertrag zurückerhalten', body)
+        # Kopf: nur noch Tooltip (title="…"), keine sichtbare Zusatzzeile mehr
+        self.assertIn('title="Unterschrieben zurück am', body)
+        self.assertNotIn('<i class="fa-solid fa-clock-rotate-left mr-1"></i>Unterschrieben zurück am', body)
 
 
 class DocuSealWebhookTests(TestCase):

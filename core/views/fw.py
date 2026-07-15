@@ -2168,6 +2168,17 @@ def fw_vertrag_detail(request, pk):
     from core.models import AktivitaetsLog
     verlauf = list(AktivitaetsLog.objects.filter(ziel_typ='vertrag', ziel_id=v.id)
                    .select_related('benutzer')[:50])
+    # Meilensteine, die NICHT über log_aktion laufen (z.B. der Webhook-Rücklauf
+    # der digitalen Unterschrift), als synthetische Ereignisse einmischen — der
+    # Rücklauf-Zeitstempel gehört in den Verlauf, nicht in den Seitenkopf.
+    from types import SimpleNamespace
+    if v.unterzeichnet_am:
+        verlauf.append(SimpleNamespace(
+            benutzer=None,
+            aktion="Unterschriebener Vertrag zurückerhalten",
+            details=f"Digital unterzeichnet von {v.mieter.display_name} — Rücklauf via DocuSeal, automatisch abgelegt.",
+            zeitpunkt=v.unterzeichnet_am))
+    verlauf.sort(key=lambda x: x.zeitpunkt, reverse=True)
     tab_liste = [
         ('uebersicht', 'Übersicht', None),
         ('finanzen', 'Finanzen', len(offene) or None),
