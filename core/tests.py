@@ -2685,6 +2685,54 @@ class MietzinsAnpassungSollmietzinsTests(TestCase):
         self.assertFalse(Sollmietzins.objects.filter(einheit=e, gueltig_ab=date(2026, 4, 1)).exists())
 
 
+class VerhaeltnisseAblageTests(TestCase):
+    """Vertragsdokumente werden pro Mietverhältnis (= Vertrag) gebündelt und
+    erscheinen bei der Person UND am Objekt (Tab «Verhältnisse»). Die
+    Liegenschafts-Ablage zeigt sie NICHT mehr (nur gebäude-/objektbezogene
+    Dokumente ohne Vertragsbezug)."""
+
+    def _dok(self, titel, *, vertrag=None, mieter=None, einheit=None, liegenschaft=None, kategorie='vertrag'):
+        from rentals.models import Dokument
+        from django.core.files.base import ContentFile
+        d = Dokument(bezeichnung=titel, titel=titel, kategorie=kategorie,
+                     vertrag=vertrag, mieter=mieter, einheit=einheit, liegenschaft=liegenschaft)
+        d.datei.save(f'{titel}.pdf', ContentFile(b'%PDF-1.4 test'), save=True)
+        return d
+
+    def test_objekt_verhaeltnisse_tab_zeigt_vertragsdokumente(self):
+        lg, e, m, v = _basis_objekte()
+        self._dok('Mietvertrag (unterzeichnet)', vertrag=v)
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/objekte/{e.id}/').content.decode()
+        # Neuer Tab + Panel vorhanden, Historie-Panel weg
+        self.assertIn('id="obj-verhaeltnisse"', body)
+        self.assertNotIn('id="obj-historie"', body)
+        self.assertIn('Verhältnisse', body)
+        # Mietername + Dokument sichtbar im Verhältnis-Bündel
+        self.assertIn('Hans Muster', body)
+        self.assertIn('Mietvertrag (unterzeichnet)', body)
+
+    def test_person_dokumente_nach_verhaeltnis_gruppiert(self):
+        lg, e, m, v = _basis_objekte()
+        self._dok('Mietvertrag (unterzeichnet)', vertrag=v, mieter=m, einheit=e)
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/personen/{m.id}/').content.decode()
+        self.assertIn('Nach Mietverhältnis gruppiert', body)
+        self.assertIn('Mietvertrag (unterzeichnet)', body)
+        # Verhältnis-Label enthält Objekt + Zeitraum
+        self.assertIn('3.5 Zi', body)
+
+    def test_liegenschaft_ablage_ohne_vertragsdokumente(self):
+        lg, e, m, v = _basis_objekte()
+        self._dok('Mietvertrag (unterzeichnet)', vertrag=v, einheit=e, liegenschaft=lg)
+        self._dok('Gebäudeversicherung 2026', einheit=None, liegenschaft=lg, kategorie='sonstiges')
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/liegenschaften/{lg.id}/').content.decode()
+        # Gebäudedokument bleibt, Vertragsdokument ist hier ausgeblendet
+        self.assertIn('Gebäudeversicherung 2026', body)
+        self.assertNotIn('Mietvertrag (unterzeichnet)', body)
+
+
 class LogbuchTests(TestCase):
     """Audit-Trail / Logbuch: wer hat wann was getan, sichtbar unter /neu/logbuch/,
     mit Filtern, CSV-Export und rollenbasiertem Zugriff."""
@@ -5047,16 +5095,15 @@ class LiegenschaftDokumenteGruppenTests(TestCase):
         self.assertIn('2 Zi', labels)
         self.assertContains(r, 'Objekt-e-Doc')
 
-    def test_dokument_ueber_vertrag_dem_objekt_zugeordnet(self):
+    def test_vertragsdokument_nicht_in_liegenschaftsablage(self):
         lg, e, _m, v = _basis_objekte()
-        # Dokument nur am Vertrag → soll unter dem Objekt der Vertragseinheit erscheinen
+        # Vertragsgebundene Dokumente leben am Mietverhältnis (Objekt → «Verhältnisse»)
+        # und bei der Person — NICHT mehr in der gebäudeweiten Liegenschafts-Ablage.
         self._doc(vertrag=v, bezeichnung='Vertrags-Doc')
         c = Client(); c.force_login(_team_user())
         r = c.get(f'/neu/liegenschaften/{lg.id}/')
-        gruppen = {g['label']: g for g in r.context['dok_gruppen']}
-        self.assertIn('3.5 Zi', gruppen)
-        titel = [d['titel'] for d in gruppen['3.5 Zi']['dokumente']]
-        self.assertIn('Vertrags-Doc', titel)
+        self.assertEqual(r.context['dok_total'], 0)
+        self.assertNotContains(r, 'Vertrags-Doc')
 
     def test_keine_dokumente(self):
         lg, _e, _m, _v = _basis_objekte()
@@ -5116,7 +5163,8 @@ class PersonFirmaVereinTests(TestCase):
 
 
 class PersonDokumenteGruppenTests(TestCase):
-    """Person-Dokumente nach Objekt gruppiert (Akkordeon)."""
+    """Person-Dokumente nach Mietverhältnis (= Vertrag) gruppiert (Akkordeon);
+    Dokumente ohne Vertragsbezug landen zuletzt im «Persönlich»-Bündel."""
 
     def _doc(self, **kw):
         from rentals.models import Dokument
@@ -5126,16 +5174,19 @@ class PersonDokumenteGruppenTests(TestCase):
         d.save()
         return d
 
-    def test_gruppierung_objekt_und_persoenlich(self):
+    def test_gruppierung_verhaeltnis_und_persoenlich(self):
         lg, e, m, v = _basis_objekte()
-        self._doc(mieter=m, bezeichnung='Persoenlich-Doc')          # ohne Objektbezug
-        self._doc(vertrag=v, bezeichnung='Objekt-Doc')              # via Vertrag → Objekt e
+        self._doc(mieter=m, bezeichnung='Persoenlich-Doc')          # ohne Vertragsbezug
+        self._doc(vertrag=v, bezeichnung='Objekt-Doc')              # Verhältnis → Vertrag v
         c = Client(); c.force_login(_team_user())
         r = c.get(f'/neu/personen/{m.id}/')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.context['dok_total'], 2)
         gruppen = r.context['dok_gruppen']
-        self.assertIsNone(gruppen[0]['einheit'])   # Persönlich zuerst
+        # Verhältnis (Vertrag) zuerst, Persönlich zuletzt
+        self.assertEqual(gruppen[0]['vertrag'], v)
+        self.assertIsNone(gruppen[-1]['einheit'])
+        self.assertIsNone(gruppen[-1]['vertrag'])
         labels = [g['label'] for g in gruppen]
         self.assertTrue(any('3.5 Zi' in l for l in labels))
         self.assertContains(r, 'Objekt-Doc')
@@ -5243,17 +5294,21 @@ class DocuSealAblageTests(TestCase):
         # erscheint als rentals.Dokument (Person/Portal/Objekt)
         self.assertTrue(Dokument.objects.filter(vertrag=v, kategorie='vertrag').exists())
 
-    def test_signierter_vertrag_in_person_und_liegenschaft(self):
+    def test_signierter_vertrag_in_person_und_objekt(self):
         from core.services.ablage import ablage_signierter_vertrag
         lg, e, m, v = _basis_objekte()
         ablage_signierter_vertrag(v, pdf_bytes=b'%PDF-x')
         c = Client(); c.force_login(_team_user())
-        # Person-Akte
+        # Person-Akte (nach Verhältnis)
         rp = c.get(f'/neu/personen/{m.id}/')
         self.assertEqual(rp.context['dok_total'], 1)
-        # Liegenschaft-Akte (pro Objekt)
+        # Objekt → «Verhältnisse»: Dokument am Mietverhältnis
+        ro = c.get(f'/neu/objekte/{e.id}/')
+        self.assertEqual(ro.context['verhaeltnisse_dok_total'], 1)
+        self.assertContains(ro, 'Mietvertrag (unterzeichnet)')
+        # Liegenschafts-Ablage zeigt Vertragsdokumente NICHT mehr
         rl = c.get(f'/neu/liegenschaften/{lg.id}/')
-        self.assertEqual(rl.context['dok_total'], 1)
+        self.assertEqual(rl.context['dok_total'], 0)
 
     def test_docuseal_senden_ohne_key(self):
         from core.services.docuseal_service import docuseal_senden

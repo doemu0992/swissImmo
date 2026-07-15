@@ -1092,7 +1092,11 @@ def fw_liegenschaft_detail(request, pk):
     tickets = (SchadenMeldung.objects.filter(liegenschaft=lg)
                .exclude(status='erledigt').order_by('-erstellt_am')[:10])
 
-    # Dokumente der Liegenschaft — nach Objekt (Einheit) gruppiert.
+    # Dokumente der Liegenschaft — nach Objekt (Einheit) gruppiert. Vertrags-
+    # gebundene Dokumente (Mietvertrag, Mietzinsanpassung, Kündigung …) erscheinen
+    # hier bewusst NICHT — sie leben am Mietverhältnis (Objekt → «Verhältnisse»)
+    # und bei der Person. Der Liegenschafts-Tab zeigt nur gebäude-/objektbezogene
+    # Dokumente ohne Vertragsbezug (Versicherung, Pläne, Reglemente …).
     einheiten = [row['einheit'] for row in einheiten_rows]
     from collections import defaultdict
     buckets = defaultdict(list)
@@ -1105,9 +1109,10 @@ def fw_liegenschaft_detail(request, pk):
             return val.replace(tzinfo=None)
         return _dt.combine(val, _dt.min.time())
     for d in (RentalsDokument.objects
-              .filter(Q(liegenschaft=lg) | Q(einheit__liegenschaft=lg) | Q(vertrag__einheit__liegenschaft=lg))
-              .select_related('einheit', 'vertrag').distinct().order_by('-datum')):
-        eid = d.einheit_id or (d.vertrag.einheit_id if d.vertrag_id else None)
+              .filter(Q(liegenschaft=lg) | Q(einheit__liegenschaft=lg))
+              .filter(vertrag__isnull=True)
+              .select_related('einheit').distinct().order_by('-datum')):
+        eid = d.einheit_id
         buckets[eid].append({'titel': d.bezeichnung or d.titel, 'kategorie': d.kategorie,
                              'datum': d.ablage_zeit, 'url': d.datei.url if d.datei else None,
                              'id': d.id, 'del_url': f'/neu/dokument/{d.id}/loeschen/'})
@@ -1348,8 +1353,34 @@ def fw_objekt_detail(request, pk):
         aktiver_vertrag = (Mietvertrag.objects
                            .filter(nebenobjekte=e, status='aktiv')
                            .select_related('mieter').order_by('-beginn').first())
-    historie = (Mietvertrag.objects.filter(einheit=e).exclude(status='aktiv')
-                .select_related('mieter').order_by('-beginn')[:10])
+    # «Verhältnisse»: jedes Mietverhältnis (= Vertrag) an diesem Objekt — aktiv
+    # UND beendet — als Bündel mit den zugehörigen Dokumenten (Vertrag, Mietzins-
+    # anpassung, Kündigung, Protokoll …). Das Verhältnis IST der Vertrag; die
+    # Dokumente hängen bereits per FK daran (rentals.Dokument.vertrag).
+    from rentals.models import Dokument as RentalsDokument
+    from django.db.models import Q as _Q
+    from collections import defaultdict
+    _vertraege = (Mietvertrag.objects.filter(_Q(einheit=e) | _Q(nebenobjekte=e))
+                  .select_related('mieter', 'mitmieter')
+                  .distinct().order_by('-beginn'))
+    _dok_pro_vertrag = defaultdict(list)
+    for d in (RentalsDokument.objects.filter(vertrag__in=_vertraege)
+              .order_by('-datum')):
+        _dok_pro_vertrag[d.vertrag_id].append(d)
+    verhaeltnisse = []
+    for v in _vertraege:
+        namen = [v.mieter.display_name if v.mieter else '']
+        if v.mitmieter_id:
+            namen.append(v.mitmieter.display_name)
+        elif v.mitmieter_name:
+            namen.append(v.mitmieter_name)
+        verhaeltnisse.append({
+            'v': v,
+            'namen': ' · '.join(n for n in namen if n),
+            'pill': _vertrag_status_pill(v),
+            'dokumente': _dok_pro_vertrag.get(v.id, []),
+        })
+    verhaeltnisse_dok_total = sum(len(x['dokumente']) for x in verhaeltnisse)
 
     geraete = Geraet.objects.filter(einheit=e).order_by('kategorie')
     zaehler = Zaehler.objects.filter(einheit=e).order_by('typ')
@@ -1397,7 +1428,7 @@ def fw_objekt_detail(request, pk):
         ('uebersicht', 'Übersicht', None),
         ('fotos', 'Fotos', len(fotos) or None),
         ('raumbuch', 'Raumbuch', ausst_count or None),
-        ('historie', 'Historie', historie.count() or None),
+        ('verhaeltnisse', 'Verhältnisse', len(verhaeltnisse) or None),
         ('mietzins', 'Mietzins', len(sollmietzinse) or None),
         ('geraete', 'Geräte', geraete.count() or None),
         ('zaehler', 'Zähler', zaehler.count() or None),
@@ -1407,7 +1438,8 @@ def fw_objekt_detail(request, pk):
         **basis, 'nav': 'objekte', 'e': e,
         'aktiver_vertrag': aktiver_vertrag,
         'vertrag_pill': _vertrag_status_pill(aktiver_vertrag) if aktiver_vertrag else None,
-        'historie': historie,
+        'verhaeltnisse': verhaeltnisse,
+        'verhaeltnisse_dok_total': verhaeltnisse_dok_total,
         'geraete': geraete,
         'zaehler': zaehler,
         'sollmietzinse': sollmietzinse,
@@ -3159,25 +3191,38 @@ def fw_person_detail(request, pk):
                  .order_by('-datum_eingang')[:15])
     # Dokumente am Mieter ODER an seinen Verträgen (Vertrags-PDF, Mietzins,
     # Kündigung …) — pro Objekt gruppiert (Objekt = Einheit des Vertrags).
+    # Gruppierung nach Mietverhältnis (= Vertrag) — konsistent zum «Verhältnisse»-
+    # Tab am Objekt. Ohne Vertragsbezug → «Persönlich».
     from collections import defaultdict
     dok_buckets = defaultdict(list)
-    einheit_meta = {}
+    vtr_meta = {}
     for d in (RentalsDokument.objects.filter(_Q(mieter=m) | _Q(vertrag_id__in=_vids))
               .select_related('einheit__liegenschaft', 'vertrag__einheit__liegenschaft')
               .distinct().order_by('-datum')):
-        e = d.einheit or (d.vertrag.einheit if d.vertrag_id else None)
-        eid = e.id if e else None
-        if e and eid not in einheit_meta:
-            einheit_meta[eid] = e
-        dok_buckets[eid].append(d)   # Modell-Objekt behalten (Portal-Toggle braucht d.id)
+        vid = d.vertrag_id
+        if vid and vid not in vtr_meta:
+            vtr_meta[vid] = d.vertrag
+        dok_buckets[vid].append(d)   # Modell-Objekt behalten (Portal-Toggle braucht d.id)
+
+    def _verhaeltnis_label(v):
+        e = v.einheit
+        obj = f"{e.bezeichnung} · {e.liegenschaft.strasse}" if e else 'Objekt'
+        bis = v.ende.strftime('%d.%m.%Y') if v.ende else 'laufend'
+        return f"{obj} · {v.beginn:%d.%m.%Y}–{bis}"
+
     dok_gruppen = []
+    # Reihenfolge: Verhältnisse (Verträge) wie in der Vertragsliste (neueste zuerst)
+    geordnet = list(vertraege) + [v for vid, v in vtr_meta.items()
+                                  if vid not in {x.id for x in vertraege}]
+    for v in geordnet:
+        docs = dok_buckets.get(v.id)
+        if docs:
+            dok_gruppen.append({'einheit': v.einheit, 'vertrag': v,
+                                'label': _verhaeltnis_label(v), 'dokumente': docs})
     if dok_buckets.get(None):
-        dok_gruppen.append({'einheit': None, 'label': 'Persönlich (ohne Objektbezug)',
+        dok_gruppen.append({'einheit': None, 'vertrag': None,
+                            'label': 'Persönlich (ohne Vertragsbezug)',
                             'dokumente': dok_buckets[None]})
-    for eid, e in einheit_meta.items():
-        dok_gruppen.append({'einheit': e,
-                            'label': f"{e.bezeichnung} · {e.liegenschaft.strasse}",
-                            'dokumente': dok_buckets[eid]})
     dok_total = sum(len(g['dokumente']) for g in dok_gruppen)
 
     vertrag_rows = []

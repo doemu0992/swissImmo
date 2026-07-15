@@ -313,25 +313,40 @@
 </div>
 
 <!-- ===== TAB: HISTORIE ===== -->
-<div data-panel="obj" id="obj-historie" class="hidden">
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <table class="w-full text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Mieter</th><th class="px-5 py-3 font-semibold">Von</th><th class="px-5 py-3 font-semibold">Bis</th><th class="px-5 py-3 font-semibold">Status</th>
-            </tr></thead>
-            <tbody class="divide-y divide-slate-50">
-            {% for h in historie %}
-            <tr class="hover:bg-slate-50/60 cursor-pointer" onclick="window.location='/neu/vertraege/{{ h.id }}/'">
-                <td class="px-5 py-3 font-medium text-slate-900">{{ h.mieter.display_name }}</td>
-                <td class="px-5 py-3 text-slate-600">{{ h.beginn|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3 text-slate-600">{% if h.ende %}{{ h.ende|date:"d.m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-slate-500">{{ h.get_status_display }}</td></tr>
-            {% empty %}
-            <tr><td colspan="4" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine früheren Verträge.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
+<div data-panel="obj" id="obj-verhaeltnisse" class="hidden">
+    <p class="text-xs text-slate-400 mb-3"><i class="fa-solid fa-circle-info mr-1"></i>Jedes Mietverhältnis (aktiv und beendet) mit seinen Dokumenten — Mietvertrag, Mietzinsanpassung, Kündigung, Protokoll. Die Dokumente entstehen automatisch beim Generieren.</p>
+    {% if verhaeltnisse %}
+    <div class="space-y-3">
+        {% for r in verhaeltnisse %}
+        <details class="group bg-white rounded-xl border border-slate-200 overflow-hidden" {% if r.v.status == 'aktiv' %}open{% endif %}>
+            <summary class="px-5 py-3.5 flex items-center gap-3 cursor-pointer select-none hover:bg-slate-50/60 list-none">
+                <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform group-open:rotate-90"></i>
+                <div class="flex-1 min-w-0">
+                    <div class="font-bold text-slate-800 truncate">{{ r.namen }}</div>
+                    <div class="text-xs text-slate-400">{{ r.v.beginn|date:"d.m.Y" }} – {% if r.v.ende %}{{ r.v.ende|date:"d.m.Y" }}{% else %}laufend{% endif %}</div>
+                </div>
+                {% if r.pill %}<span class="text-[11px] font-semibold rounded-full px-2 py-0.5 {{ r.pill.cls }}">{{ r.pill.label }}</span>{% endif %}
+                <span class="text-[11px] font-semibold bg-slate-100 text-slate-500 rounded-md px-1.5 py-0.5">{{ r.dokumente|length }} Dok.</span>
+                <a href="/neu/vertraege/{{ r.v.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0" onclick="event.stopPropagation()">Vertrag <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
+            </summary>
+            <div class="border-t border-slate-100 divide-y divide-slate-50">
+                {% for d in r.dokumente %}
+                <div class="flex items-center gap-3 px-5 py-3">
+                    <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-paperclip"></i></div>
+                    <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ d.bezeichnung|default:d.titel }}</div>
+                        <div class="text-xs text-slate-400">{{ d.get_kategorie_display }}{% if d.ablage_zeit %} · {{ d.ablage_zeit|date:"d.m.Y H:i" }}{% endif %}</div></div>
+                    {% if d.datei %}<a href="{{ d.datei.url }}" class="text-xs text-indigo-600 font-medium hover:underline shrink-0" target="_blank">Öffnen</a>{% endif %}
+                </div>
+                {% empty %}
+                <div class="px-5 py-4 text-center text-xs text-slate-400 italic">Noch keine Dokumente zu diesem Verhältnis.</div>
+                {% endfor %}
+            </div>
+        </details>
+        {% endfor %}
     </div>
+    {% else %}
+    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch kein Mietverhältnis an diesem Objekt.</div>
+    {% endif %}
 </div>
 
 <!-- ===== TAB: GERÄTE ===== -->
