@@ -9093,16 +9093,28 @@ def fw_kreditor_neu(request):
 
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
     konto = Buchungskonto.objects.filter(id=request.POST.get('konto_id') or None).first() if request.POST.get('konto_id') else None
-    # Kein Konto gewählt? Aus dem Lieferanten-Gedächtnis vorschlagen (setzt darüber
-    # auch die HNK-Relevanz automatisch — is_hnk_relevant leitet unten aus dem Konto ab).
+    # Kein Konto gewählt? Aus Lieferanten-Gedächtnis bzw. Schlüsselwörtern vorschlagen
+    # (setzt darüber auch die HNK-Relevanz — is_hnk_relevant leitet unten aus dem Konto ab).
     if konto is None:
-        from finance.lieferanten import lieferant_vorschlag
+        from finance.lieferanten import lieferant_vorschlag, konto_aus_text
+        from finance.booking import konto as _konto
         _vp = lieferant_vorschlag(lieferant)
         if _vp and _vp.standard_konto_id:
             konto = _vp.standard_konto
+        else:
+            _nr = konto_aus_text(lieferant)
+            if _nr:
+                konto = _konto(_nr)
+
+    def _dat_iso(name):
+        try:
+            return date.fromisoformat(request.POST.get(name) or '')
+        except ValueError:
+            return None
     kr = KreditorenRechnung.objects.create(
         lieferant=lieferant, betrag=betrag, mwst_satz=(_dec('mwst_satz') or Decimal('0.0')),
         liegenschaft=lg, konto=konto,
+        leistungs_von=_dat_iso('leistungs_von'), leistungs_bis=_dat_iso('leistungs_bis'),
         datum=(date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.now().date()),
         faellig_am=(date.fromisoformat(request.POST['faellig_am']) if request.POST.get('faellig_am') else None),
         referenz=(request.POST.get('referenz') or '').strip(),
@@ -9203,6 +9215,8 @@ def fw_kreditor_bearbeiten(request, pk):
     k.betrag = betrag if betrag and betrag > 0 else None
     k.datum = _dat('datum') or k.datum
     k.faellig_am = _dat('faellig_am')
+    k.leistungs_von = _dat('leistungs_von')
+    k.leistungs_bis = _dat('leistungs_bis')
     k.referenz = (request.POST.get('referenz') or '').strip()
     k.iban = re.sub(r'\s+', '', request.POST.get('iban') or '')[:50]
     if request.POST.get('liegenschaft_id'):

@@ -47,10 +47,17 @@ def beleg_importieren(datei, liegenschaft=None, quelle=''):
             kr.faellig_am = date.fromisoformat(daten['faellig'])
         except ValueError:
             pass
-    # Lieferanten-Gedächtnis: bekanntes Standardkonto (+ HNK) automatisch vorbelegen,
-    # sofern der Scan noch kein Konto zugeteilt hat — spart das manuelle Zuteilen.
+    # Leistungsperiode (für taggenaue HNK-Zuordnung) aus dem Scan übernehmen.
+    for src, dst in (('leistung_von', 'leistungs_von'), ('leistung_bis', 'leistungs_bis')):
+        if daten.get(src):
+            try:
+                setattr(kr, dst, date.fromisoformat(daten[src]))
+            except ValueError:
+                pass
+    # Konto (+ HNK) automatisch vorbelegen: Lieferanten-Gedächtnis → KI-Kategorie →
+    # Schlüsselwörter. Spart das manuelle Zuteilen.
     from finance.lieferanten import vorbelegen
-    if vorbelegen(kr):
+    if vorbelegen(kr, kategorie=daten.get('kategorie')):
         daten['konto_auto'] = kr.konto.nummer
     hinweis = '' if daten.get('methode') in ('ki', 'vision', 'qr') else (daten.get('hinweis') or '')
     if quelle:

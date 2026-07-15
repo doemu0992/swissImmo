@@ -6882,3 +6882,59 @@ class NkAbrechnungSplitTests(TestCase):
                                           status='freigegeben', datum=date(2025, 6, 1))
         r = berechne_abrechnung(p.id)
         self.assertEqual(p.total_kosten, Decimal(str(r['total_kosten'])))
+
+
+class KontoVorschlagLeistungTests(TestCase):
+    """KI-Konto-Vorschlag (Kategorie/Schlüsselwort → Konto) + Leistungsperiode."""
+
+    def _konten(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+
+    def test_konto_aus_kategorie_und_text(self):
+        from finance.lieferanten import konto_aus_kategorie, konto_aus_text
+        self.assertEqual(konto_aus_kategorie('strom'), '4130')
+        self.assertEqual(konto_aus_kategorie('versicherung'), '4400')
+        self.assertIsNone(konto_aus_kategorie('quatsch'))
+        self.assertEqual(konto_aus_text('Wasserversorgung Zürich'), '4110')
+        self.assertEqual(konto_aus_text('EWZ Elektrizitätswerk'), '4130')
+        self.assertIsNone(konto_aus_text('Irgendwas Neutrales'))
+
+    def test_vorbelegen_prioritaet(self):
+        from finance.models import KreditorenRechnung, LieferantProfil
+        from finance.lieferanten import vorbelegen
+        from finance.booking import konto
+        self._konten()
+        # Kategorie schlägt Konto vor (kein Gedächtnis, kein Keyword)
+        k = KreditorenRechnung(lieferant='Neutrale Firma', betrag=Decimal('50'))
+        self.assertTrue(vorbelegen(k, kategorie='heizung'))
+        self.assertEqual(k.konto.nummer, '4100')
+        self.assertTrue(k.is_hnk_relevant)
+        # Gedächtnis hat Vorrang vor Kategorie
+        LieferantProfil.objects.create(name_key='neutrale firma', name_anzeige='Neutrale Firma',
+                                       standard_konto=konto('4000'))
+        k2 = KreditorenRechnung(lieferant='Neutrale Firma', betrag=Decimal('50'))
+        self.assertTrue(vorbelegen(k2, kategorie='heizung'))
+        self.assertEqual(k2.konto.nummer, '4000')   # Gedächtnis gewinnt
+
+    def test_erfassen_setzt_leistungsperiode_und_konto(self):
+        from finance.models import KreditorenRechnung
+        self._konten()
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/kreditoren/neu/', {
+            'lieferant': 'Wasserversorgung', 'betrag': '120.00',
+            'leistungs_von': '2025-01-01', 'leistungs_bis': '2025-12-31',
+        })
+        k = KreditorenRechnung.objects.latest('id')
+        self.assertEqual(k.leistungs_von, date(2025, 1, 1))
+        self.assertEqual(k.leistungs_bis, date(2025, 12, 31))
+        self.assertEqual(k.konto.nummer, '4110')   # aus Schlüsselwort «Wasser»
+        self.assertTrue(k.is_hnk_relevant)
+
+    def test_scanner_liefert_kategorie_und_periode_keys(self):
+        # Ohne KI liefert der Scanner die neuen Keys (leer) — Struktur stabil.
+        from finance.utils import _leer
+        d = _leer('leer', '')
+        self.assertIn('kategorie', d)
+        self.assertIn('leistung_von', d)
+        self.assertIn('leistung_bis', d)

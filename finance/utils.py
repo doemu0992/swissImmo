@@ -43,7 +43,13 @@ Antworte AUSSCHLIESSLICH als gültiges JSON mit exakt diesen Keys:
   gedruckt z.B. als «00 00506 37947 06000 08940 95003». NICHT die Rechnungs- oder
   Kundennummer! Nur wenn kein Zahlteil vorhanden ist: die Rechnungsnummer. Sonst "")
 - iban (string ohne Leerzeichen: bevorzugt die QR-IBAN aus dem Zahlteil bei
-  «Konto / Zahlbar an» — sie beginnt nach CHxx mit 30000–31999. Sonst "")"""
+  «Konto / Zahlbar an» — sie beginnt nach CHxx mit 30000–31999. Sonst "")
+- kategorie (string, worum es bei der Rechnung geht — GENAU einer dieser Werte:
+  "strom", "wasser", "heizung", "hauswartung", "kehricht", "versicherung",
+  "reparatur", "verwaltung", "sonstiges")
+- leistung_von (string, Beginn der Leistungs-/Abrechnungsperiode YYYY-MM-DD,
+  falls die Rechnung eine Periode nennt, z.B. «Abrechnung 01.01.–31.12.»; sonst null)
+- leistung_bis (string, Ende der Leistungsperiode YYYY-MM-DD; sonst null)"""
 
 # --- Schweizer QR-Zahlteil: deterministische Extraktion (übersteuert die KI) ---
 # Für QRR-Zahlungen zählen NUR die 27-stellige QR-Referenz (Mod10-rekursiv
@@ -169,9 +175,15 @@ def _qr_anwenden(ergebnis, qr):
     return ergebnis
 
 
+_KATEGORIEN = {"strom", "wasser", "heizung", "hauswartung", "kehricht",
+               "versicherung", "reparatur", "verwaltung", "sonstiges"}
+
+
 def _leer(methode, hinweis):
     return {"lieferant": "", "iban": "", "betrag": 0.0, "datum": None,
-            "faellig": None, "referenz": "", "methode": methode, "hinweis": hinweis}
+            "faellig": None, "referenz": "", "kategorie": "",
+            "leistung_von": None, "leistung_bis": None,
+            "methode": methode, "hinweis": hinweis}
 
 
 def _normalisiere(daten, methode, hinweis=""):
@@ -184,13 +196,15 @@ def _normalisiere(daten, methode, hinweis=""):
         out["betrag"] = round(float(daten.get("betrag") or 0), 2)
     except (TypeError, ValueError):
         out["betrag"] = 0.0
-    for feld in ("datum", "faellig"):
+    for feld in ("datum", "faellig", "leistung_von", "leistung_bis"):
         wert = daten.get(feld)
         if wert:
             try:
                 out[feld] = datetime.strptime(str(wert)[:10], "%Y-%m-%d").strftime("%Y-%m-%d")
             except ValueError:
                 out[feld] = None
+    kat = str(daten.get("kategorie") or "").strip().lower()
+    out["kategorie"] = kat if kat in _KATEGORIEN else ""
     return out
 
 

@@ -48,16 +48,66 @@ def lerne_lieferant(name, konto=None, iban=''):
     return prof
 
 
-def vorbelegen(kr):
+# Semantische Kategorie (aus dem KI-Scan) → Standard-Aufwandskonto.
+KATEGORIE_KONTO = {
+    'strom': '4130', 'wasser': '4110', 'heizung': '4100',
+    'hauswartung': '4120', 'kehricht': '4140', 'versicherung': '4400',
+    'reparatur': '4000', 'verwaltung': '4500', 'sonstiges': '4000',
+}
+
+# Schlüsselwörter → Konto (Fallback ohne KI, aus Lieferantenname/Text).
+_KONTO_REGELN = [
+    (['strom', 'elektr', 'elektrizit', 'ewz', 'ewb', 'iwb', 'bkw', 'ckw', 'romande energie'], '4130'),
+    (['wasser', 'abwasser', 'wasserversorgung'], '4110'),
+    (['heiz', 'brennstoff', 'heizöl', 'heizoel', 'erdgas', 'fernwärme', 'fernwaerme'], '4100'),
+    (['hauswart', 'reinigung', 'reinig'], '4120'),
+    (['kehricht', 'abfall', 'entsorgung'], '4140'),
+    (['versicherung', 'assurance', 'mobiliar', 'axa', 'allianz', 'helvetia', 'zurich vers'], '4400'),
+    (['verwaltung', 'honorar'], '4500'),
+    (['reparatur', 'sanitär', 'sanitaer', 'maler', 'elektriker', 'handwerk', 'service', 'unterhalt', 'garten'], '4000'),
+]
+
+
+def konto_aus_kategorie(kategorie):
+    """Kontonummer zu einer KI-Kategorie (oder None)."""
+    return KATEGORIE_KONTO.get((kategorie or '').strip().lower())
+
+
+def konto_aus_text(text):
+    """Kontonummer aus Schlüsselwörtern im Text/Lieferantennamen (oder None)."""
+    t = (text or '').lower()
+    for keys, nr in _KONTO_REGELN:
+        if any(k in t for k in keys):
+            return nr
+    return None
+
+
+def vorbelegen(kr, kategorie=None):
     """Belegt Konto + HNK-Relevanz einer noch nicht zugeteilten Kreditorenrechnung
-    aus dem Lieferanten-Gedächtnis vor. Überschreibt nie eine bereits getroffene
-    Konto-Wahl. Gibt True zurück, wenn etwas vorbelegt wurde."""
-    if kr.konto_id or not (kr.lieferant or '').strip():
+    vor — Priorität: (1) Lieferanten-Gedächtnis, (2) KI-Kategorie, (3) Schlüssel-
+    wörter im Lieferantennamen. Überschreibt nie eine bereits getroffene Konto-Wahl.
+    Gibt True zurück, wenn etwas vorbelegt wurde."""
+    if kr.konto_id:
         return False
+    from finance.booking import konto as _konto
+    ziel = None
+    # 1) Gelerntes Standardkonto des Lieferanten (am spezifischsten)
     prof = lieferant_vorschlag(kr.lieferant)
-    if not prof or not prof.standard_konto_id:
+    if prof and prof.standard_konto_id:
+        ziel = prof.standard_konto
+    # 2) KI-Kategorie aus dem Rechnungsinhalt
+    if ziel is None and kategorie:
+        nr = konto_aus_kategorie(kategorie)
+        if nr:
+            ziel = _konto(nr)
+    # 3) Schlüsselwörter im Lieferantennamen
+    if ziel is None:
+        nr = konto_aus_text(kr.lieferant or '')
+        if nr:
+            ziel = _konto(nr)
+    if ziel is None:
         return False
-    kr.konto = prof.standard_konto
-    if prof.standard_konto.is_hnk_relevant:
+    kr.konto = ziel
+    if ziel.is_hnk_relevant:
         kr.is_hnk_relevant = True
     return True
