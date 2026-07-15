@@ -284,6 +284,15 @@ class Mietvertrag(models.Model):
         if self.sign_status == 'unterzeichnet' and self.unterzeichnet_am is None:
             from django.utils import timezone
             self.unterzeichnet_am = timezone.now()
+        # `aktiv` folgt IMMER dem Status (Single Source of Truth = status) — verhindert
+        # die Drift, dass ein Entwurf (Default aktiv=True) oder ein gekündigter Vertrag
+        # fälschlich als „aktiv" in Dashboards/Filtern auftaucht.
+        soll_aktiv = (self.status == 'aktiv')
+        if self.aktiv != soll_aktiv:
+            self.aktiv = soll_aktiv
+            uf = kwargs.get('update_fields')
+            if uf is not None:
+                kwargs['update_fields'] = list(set(uf) | {'aktiv'})
         super().save(*args, **kwargs)
 
         # Unterzeichneten Vertrag zentral ablegen → erscheint überall (Portal,

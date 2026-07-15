@@ -7073,3 +7073,52 @@ class NkVertragsStatusTests(TestCase):
         namen = [str(a.get('name', '')) for a in r['abrechnungen']]
         self.assertFalse(any('Draft' in n for n in namen),
                          msg=f"Entwurf fälschlich abgerechnet: {namen}")
+
+
+class VertragAktivSyncTests(TestCase):
+    """Offener Punkt 1: `aktiv` folgt immer dem Status (kein Drift mehr)."""
+
+    def test_entwurf_ist_nicht_aktiv(self):
+        lg, e, m, v = _basis_objekte()
+        v2 = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2025, 1, 1),
+                                        netto_mietzins=Decimal('1000'), nebenkosten=Decimal('0'),
+                                        status='entwurf', aktiv=True)   # aktiv=True gesetzt …
+        v2.refresh_from_db()
+        self.assertFalse(v2.aktiv)   # … aber Status entwurf ⇒ aktiv=False
+
+    def test_statuswechsel_synct_aktiv(self):
+        lg, e, m, v = _basis_objekte()   # status='aktiv' → aktiv=True
+        v.refresh_from_db()
+        self.assertTrue(v.aktiv)
+        v.status = 'gekuendigt'
+        v.save()
+        v.refresh_from_db()
+        self.assertFalse(v.aktiv)
+        v.status = 'aktiv'
+        v.save(update_fields=['status'])   # aktiv wird trotz update_fields mitgezogen
+        v.refresh_from_db()
+        self.assertTrue(v.aktiv)
+
+
+class WeiterverrechnungSplitKontoTests(TestCase):
+    """Offener Punkt 2: Weiterverrechnung einer gesplitteten Rechnung nutzt das
+    Konto der grössten Position als Aufwand-Gegenkonto (statt pauschal 4000)."""
+
+    def test_aufwand_gegenkonto_aus_groesster_position(self):
+        from finance.booking import ensure_kontenplan, konto
+        from finance.models import KreditorenRechnung, KreditorPosition, Buchung, Buchungskonto
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        k = KreditorenRechnung.objects.create(lieferant='Split AG', betrag=Decimal('300.00'),
+                                              liegenschaft=lg, status='freigegeben')
+        # grösste Position: 200 auf 4130
+        KreditorPosition.objects.create(rechnung=k, konto=Buchungskonto.objects.get(nummer='4000'),
+                                        betrag=Decimal('100.00'))
+        KreditorPosition.objects.create(rechnung=k, konto=Buchungskonto.objects.get(nummer='4130'),
+                                        betrag=Decimal('200.00'))
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/kreditoren/{k.id}/weiterverrechnen/', {'vertrag_id': v.id, 'betrag': '300', 'zuschlag': '0'})
+        # Aufwandsminderung 1190 an 4130 (grösste Position), nicht 4000
+        gegen = Buchung.objects.filter(soll_konto__nummer='1190', kreditoren_rechnung=k).first()
+        self.assertIsNotNone(gegen)
+        self.assertEqual(gegen.haben_konto.nummer, '4130')

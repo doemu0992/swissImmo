@@ -527,7 +527,14 @@ def fw_weiterverrechnung(request, kreditor_id):
     basis = _global_filter(request)
     heute = timezone.localdate()
 
-    aufwand_konto = k.konto.nummer if k.konto_id else '4000'
+    # Gegenkonto der Aufwandsminderung: Kopf-Konto, sonst (bei Split) das Konto der
+    # grössten Position, sonst 4000. So trifft die Weiterverrechnung einer aufge-
+    # teilten Rechnung das tatsächliche Aufwandskonto statt pauschal 4000.
+    if k.konto_id:
+        aufwand_konto = k.konto.nummer
+    else:
+        _grp = k.positionen.order_by('-betrag').first()
+        aufwand_konto = _grp.konto.nummer if _grp else '4000'
 
     if request.method == 'POST':
         def _dec(x, d='0'):
