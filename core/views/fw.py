@@ -422,6 +422,26 @@ def fw_debitoren(request):
     if aktive_lg:
         aktive_vertraege = aktive_vertraege.filter(einheit__liegenschaft=aktive_lg)
 
+    # Live-Vorschau (wie im Vertragsassistenten): Empfänger je Vertrag + Absender.
+    vertrag_daten = {}
+    for v in aktive_vertraege:
+        m = v.mieter
+        lg = v.einheit.liegenschaft if v.einheit_id else None
+        vertrag_daten[str(v.id)] = {
+            'mieter': m.display_name if m else '',
+            'strasse': (m.strasse or '') if m else '',
+            'plz': (m.plz or '') if m else '', 'ort': (m.ort or '') if m else '',
+            'objekt': (v.einheit.bezeichnung if v.einheit_id else ''),
+            'adresse': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''),
+        }
+    from crm.models import Verwaltung
+    vw = Verwaltung.objects.first()
+    absender = {
+        'firma': vw.firma if vw else '', 'strasse': vw.strasse if vw else '',
+        'plz': vw.plz if vw else '', 'ort': vw.ort if vw else '',
+        'iban': (vw.iban or '') if vw else '',
+    }
+
     context = {
         **basis,
         'nav': 'debitoren',
@@ -433,6 +453,10 @@ def fw_debitoren(request):
         'anzahl_offen': anzahl_offen,
         'anzahl_ueberfaellig': anzahl_ueberfaellig,
         'aktive_vertraege': aktive_vertraege,
+        'vertrag_daten': vertrag_daten,
+        'absender': absender,
+        'heute_iso': heute.isoformat(),
+        'faellig_iso': (heute + _timedelta(days=30)).isoformat(),
     }
     return render(request, 'fw/debitoren.html', context)
 

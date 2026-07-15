@@ -5957,3 +5957,27 @@ class AnpassungLoeschenTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertFalse(MietzinsAnpassung.objects.filter(id=a.id).exists())
         self.assertEqual(v.effektiver_netto_mietzins(date(2026, 6, 1)), Decimal('3000'))
+
+
+class DebitorVorschauTests(TestCase):
+    """Live-Vorschau bei der Ad-hoc-Debitorenrechnung (wie im Vertragsassistenten)."""
+
+    def test_debitoren_seite_hat_vorschau(self):
+        lg = Liegenschaft.objects.create(strasse='Dv 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Dv-Whg', typ='whg',
+                                   nettomiete_aktuell=Decimal('1500'))
+        m = Mieter.objects.create(typ='person', vorname='Vor', nachname='Schau',
+                                  strasse='Weg 2', plz='8000', ort='Zürich')
+        Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2025, 1, 1),
+                                   netto_mietzins=Decimal('1500'), nebenkosten=Decimal('0'),
+                                   status='aktiv')
+        c = Client(); c.force_login(_team_user())
+        body = c.get('/neu/debitoren/').content.decode()
+        # Vorschau-Gerüst + Datenquellen vorhanden
+        self.assertIn('id="deb-pv"', body)
+        self.assertIn('function debPreview', body)
+        self.assertIn('vd-data', body)
+        self.assertIn('abs-data', body)
+        # Empfängerdaten des aktiven Vertrags im JSON
+        self.assertIn('Vor Schau', body)
