@@ -6423,3 +6423,66 @@ class HnkAutoAbleitungTests(TestCase):
         # Normale IBAN (IID nicht 30000–31999) → keine QR-IBAN
         _, qriban = _zahlteil_extrahieren("IBAN CH16 0900 0000 3000 03107")
         self.assertEqual(qriban, '')
+
+
+class QrDecoderTests(TestCase):
+    """Echter QR-Decoder (zxing-cpp): Der Schweizer QR-Code des Zahlteils wird
+    dekodiert und liefert IBAN/Referenz/Betrag/Empfänger verbindlich — auch bei
+    Foto-Belegen, wo kein Text-Postprocessing möglich ist."""
+
+    SPC = ("SPC\n0200\n1\nCH4030000008300003107\nS\nBKW Energie AG\nViktoriaplatz\n2\n"
+           "3013\nBern\nCH\n\n\n\n\n\n\n\n137.30\nCHF\nS\nHR Immobilien AG\nViaduktstrasse\n8\n"
+           "4512\nBellach\nCH\nQRR\n000050637947060000894095003\n\nEPD")
+
+    def _qr_png(self):
+        import io
+        import segno
+        buf = io.BytesIO()
+        segno.make(self.SPC, error='m').save(buf, kind='png', scale=6, border=4)
+        return buf.getvalue()
+
+    def test_spc_parsen(self):
+        from finance.utils import _spc_parsen
+        d = _spc_parsen(self.SPC)
+        self.assertEqual(d['iban'], 'CH4030000008300003107')
+        self.assertEqual(d['lieferant'], 'BKW Energie AG')
+        self.assertEqual(d['betrag'], 137.30)
+        self.assertEqual(d['referenz'], '000050637947060000894095003')
+        self.assertIsNone(_spc_parsen('kein spc'))
+
+    def test_foto_beleg_mit_qr_wird_dekodiert(self):
+        """Bild-Beleg OHNE KI-Key: früher 'nicht auslesbar' — jetzt liefert der
+        QR-Decoder die Zahlungsdaten trotzdem verbindlich."""
+        from django.test import override_settings
+        from finance.utils import scan_beleg
+        import tempfile, os as _os
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as fh:
+            fh.write(self._qr_png())
+            pfad = fh.name
+        try:
+            with override_settings(GROQ_API_KEY=None):
+                d = scan_beleg(pfad)
+            self.assertEqual(d['methode'], 'qr')
+            self.assertEqual(d['iban'], 'CH4030000008300003107')
+            self.assertEqual(d['referenz'], '000050637947060000894095003')
+            self.assertEqual(d['betrag'], 137.30)
+            self.assertEqual(d['lieferant'], 'BKW Energie AG')
+        finally:
+            _os.unlink(pfad)
+
+    def test_upload_qr_bild_erzeugt_saubere_rechnung(self):
+        """Upload eines QR-Bild-Belegs → Rechnung mit verbindlichen Zahlungsdaten,
+        kein Warnhinweis (QR gilt als Erfolg)."""
+        from django.test import override_settings
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import KreditorenRechnung
+        c = Client(); c.force_login(_team_user())
+        f = SimpleUploadedFile('zahlteil.png', self._qr_png(), content_type='image/png')
+        with override_settings(GROQ_API_KEY=None):
+            c.post('/neu/kreditoren/scan/', {'beleg_scan': f})
+        k = KreditorenRechnung.objects.latest('id')
+        self.assertEqual(k.lieferant, 'BKW Energie AG')
+        self.assertEqual(k.betrag, Decimal('137.30'))
+        self.assertEqual(k.iban, 'CH4030000008300003107')
+        self.assertEqual(k.referenz, '000050637947060000894095003')
+        self.assertEqual(k.fehlermeldung, '')

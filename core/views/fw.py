@@ -9009,7 +9009,7 @@ def _kreditor_scan_meldung(request, kr, daten, dateiname):
     zusammenfassung = (f"«{kr.lieferant or 'Lieferant unbekannt'}»"
                        f"{f' · CHF {kr.betrag}' if kr.betrag else ''}"
                        f"{f' · {kr.datum.strftime(chr(37)+chr(100)+chr(46)+chr(37)+chr(109)+chr(46)+chr(37)+chr(89))}' if kr.datum else ''}")
-    if methode in ('ki', 'vision'):
+    if methode in ('ki', 'vision', 'qr'):
         messages.success(request, f"🤖 Beleg gescannt ({daten.get('hinweis')}): {zusammenfassung} — bitte prüfen und freigeben.")
     elif methode == 'regex':
         messages.warning(request, f"Beleg regelbasiert ausgelesen (KI nicht aktiv/erreichbar): {zusammenfassung} — bitte Werte prüfen.")

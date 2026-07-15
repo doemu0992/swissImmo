@@ -83,6 +83,90 @@ def _zahlteil_anwenden(ergebnis, text):
     return ergebnis
 
 
+# --- Schweizer QR-Code (Swiss Payments Code) direkt dekodieren -----------------
+# Die verbindlichste Quelle: der QR-Code des Zahlteils enthält IBAN, Referenz,
+# Betrag und Zahlungsempfänger maschinenlesbar (SPC v2). Funktioniert für
+# Text-PDFs, Foto-Scan-PDFs UND direkte Bilder — kein KI-Raten mehr.
+
+def _spc_parsen(text):
+    """Parst einen Swiss-Payments-Code-Payload. None, wenn kein gültiger SPC."""
+    zeilen = text.replace('\r\n', '\n').split('\n')
+    if len(zeilen) < 29 or zeilen[0].strip() != 'SPC':
+        return None
+    daten = {
+        'iban': re.sub(r'\s+', '', zeilen[3]),
+        'lieferant': zeilen[5].strip(),           # Zahlungsempfänger (Creditor)
+        'referenz': re.sub(r'\s+', '', zeilen[28]) if len(zeilen) > 28 else '',
+    }
+    try:
+        daten['betrag'] = round(float(zeilen[18]), 2) if zeilen[18].strip() else 0.0
+    except (ValueError, IndexError):
+        daten['betrag'] = 0.0
+    return daten
+
+
+def _qr_rechnung_dekodieren(file_path, endung):
+    """Sucht in einem Beleg (PDF-Seiten via pdftoppm oder Bild) den Schweizer
+    QR-Code und gibt die SPC-Daten zurück — None, wenn keiner gefunden/lesbar.
+    zxing-cpp ist optional: fehlt es, greift still der Text-Fallback."""
+    try:
+        import zxingcpp
+        from PIL import Image
+    except ImportError:
+        logger.info("Rechnungsscan: zxing-cpp nicht installiert — QR-Decoder inaktiv.")
+        return None
+
+    def _aus_bild(img):
+        try:
+            for code in zxingcpp.read_barcodes(img):
+                spc = _spc_parsen(code.text or '')
+                if spc:
+                    return spc
+        except Exception as e:
+            logger.warning("Rechnungsscan: QR-Dekodierung fehlgeschlagen: %s", e)
+        return None
+
+    try:
+        if endung in BILD_ENDUNGEN:
+            with Image.open(file_path) as img:
+                return _aus_bild(img)
+        with tempfile.TemporaryDirectory() as tmp:
+            subprocess.run(["pdftoppm", "-png", "-r", "200", "-f", "1", "-l", "8",
+                            str(file_path), os.path.join(tmp, "s")],
+                           check=True, capture_output=True, timeout=120)
+            # Zahlteil liegt meist auf der LETZTEN Seite → rückwärts suchen
+            for name in sorted(os.listdir(tmp), reverse=True):
+                if not name.endswith('.png'):
+                    continue
+                with Image.open(os.path.join(tmp, name)) as img:
+                    spc = _aus_bild(img)
+                if spc:
+                    return spc
+    except Exception as e:
+        logger.warning("Rechnungsscan: QR-Suche fehlgeschlagen: %s", e)
+    return None
+
+
+def _qr_anwenden(ergebnis, qr):
+    """Übersteuert das Scan-Ergebnis mit den dekodierten QR-Daten (verbindlich)."""
+    if not qr:
+        return ergebnis
+    if qr.get('iban'):
+        ergebnis['iban'] = qr['iban'][:50]
+    if qr.get('referenz'):
+        ergebnis['referenz'] = qr['referenz'][:100]
+    if qr.get('betrag'):
+        ergebnis['betrag'] = qr['betrag']
+    if qr.get('lieferant'):
+        ergebnis['lieferant'] = qr['lieferant'][:200]
+    if ergebnis.get('methode') in ('regex', 'leer'):
+        ergebnis['methode'] = 'qr'
+        ergebnis['hinweis'] = 'Schweizer QR-Code dekodiert — Zahlungsdaten verbindlich'
+    else:
+        ergebnis['hinweis'] = (ergebnis.get('hinweis') or '') + ' · QR-Code dekodiert ✓'
+    return ergebnis
+
+
 def _leer(methode, hinweis):
     return {"lieferant": "", "iban": "", "betrag": 0.0, "datum": None,
             "referenz": "", "methode": methode, "hinweis": hinweis}
@@ -180,9 +264,19 @@ def _fallback_regex_scan(text, hinweis="Regelbasierte Erkennung (ohne KI) — bi
 
 def scan_beleg(file_path):
     """Scannt einen Kreditoren-Beleg (PDF oder Bild). Gibt immer ein Dict mit
-    lieferant/iban/betrag/datum/referenz + methode/hinweis zurück — wirft nie."""
-    api_key = getattr(settings, "GROQ_API_KEY", None)
+    lieferant/iban/betrag/datum/referenz + methode/hinweis zurück — wirft nie.
+
+    Reihenfolge: (1) Schweizer QR-Code dekodieren (verbindlichste Quelle für
+    IBAN/Referenz/Betrag/Empfänger), (2) KI/Regex für die restlichen Felder
+    (v.a. Datum), (3) QR-Daten übersteuern das KI-Ergebnis."""
     endung = os.path.splitext(str(file_path))[1].lower()
+    qr = _qr_rechnung_dekodieren(file_path, endung)
+    return _qr_anwenden(_scan_basis(file_path, endung), qr)
+
+
+def _scan_basis(file_path, endung):
+    """Text-/Vision-/Regex-Scan ohne QR-Overlay."""
+    api_key = getattr(settings, "GROQ_API_KEY", None)
 
     # --- Direktes Bild (Foto der Rechnung) ---
     if endung in BILD_ENDUNGEN:
