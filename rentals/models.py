@@ -208,6 +208,12 @@ class Mietvertrag(models.Model):
         basis = self.netto_mietzins or Decimal('0.00')
         if not self.pk:
             return basis
+        # Datierte Komponenten am Verhältnis haben Vorrang (Gratismonate/gestaffelter
+        # Start): die jüngste Komponente mit gueltig_ab <= Stichtag gilt.
+        komp = (self.mietzins_komponenten.filter(gueltig_ab__lte=stichtag)
+                .order_by('-gueltig_ab', '-id').first())
+        if komp:
+            return komp.netto_mietzins or Decimal('0.00')
         if self.mietzins_modell == 'staffel':
             stufe = (self.staffelstufen.filter(ab_datum__lte=stichtag)
                      .order_by('-ab_datum').first())
@@ -215,6 +221,18 @@ class Mietvertrag(models.Model):
         anp = (self.anpassungen.filter(wirksam_ab__lte=stichtag)
                .order_by('-wirksam_ab', '-id').first())
         return anp.neuer_netto_mietzins if anp else basis
+
+    def effektive_nebenkosten(self, fuer_datum=None):
+        """Nebenkosten (Akonto/Pauschal), die an einem Datum gelten — verrechnungs-
+        wirksam. Datierte Komponenten haben Vorrang; sonst der flache Vertragswert."""
+        from datetime import date as _d
+        stichtag = fuer_datum or _d.today()
+        if self.pk:
+            komp = (self.mietzins_komponenten.filter(gueltig_ab__lte=stichtag)
+                    .order_by('-gueltig_ab', '-id').first())
+            if komp:
+                return komp.nebenkosten or Decimal('0.00')
+        return self.nebenkosten or Decimal('0.00')
 
     def effektive_basis(self, fuer_datum=None):
         """(Referenzzins, LIK), auf denen der aktuell verrechnete Mietzins beruht:
@@ -321,6 +339,32 @@ class Staffelstufe(models.Model):
 
     def __str__(self):
         return f"ab {self.ab_datum:%d.%m.%Y}: CHF {self.netto_mietzins}"
+
+
+class VertragMietzins(models.Model):
+    """Datierte Mietzins-Komponente eines Mietverhältnisses: ab `gueltig_ab` gelten
+    `netto_mietzins` und `nebenkosten`. Erlaubt gestaffelte Starts und Gratismonate
+    ganz ohne Sonderfall — z.B. ab Mietbeginn eine Komponente mit Netto 0.00 (die
+    ersten Monate netto-mietzinsfrei), ab einem späteren Datum eine mit dem vollen
+    Netto. Sind Komponenten erfasst, sind sie die massgebliche Quelle für die
+    Sollstellung (pro Monat gilt die jüngste Komponente mit `gueltig_ab <= Monat`)."""
+    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='mietzins_komponenten')
+    gueltig_ab = models.DateField("Gültig ab")
+    netto_mietzins = models.DecimalField("Netto-Mietzins", max_digits=8, decimal_places=2, default=0)
+    nebenkosten = models.DecimalField("Nebenkosten", max_digits=8, decimal_places=2, default=0)
+    notiz = models.CharField(max_length=200, blank=True, default='')
+
+    class Meta:
+        db_table = 'rentals_vertragmietzins'
+        ordering = ['gueltig_ab', 'id']
+        verbose_name = "Mietzins-Komponente"
+
+    @property
+    def brutto(self):
+        return (self.netto_mietzins or Decimal('0.00')) + (self.nebenkosten or Decimal('0.00'))
+
+    def __str__(self):
+        return f"ab {self.gueltig_ab:%d.%m.%Y}: Netto CHF {self.netto_mietzins} / NK CHF {self.nebenkosten}"
 
 
 class MietzinsAnpassung(models.Model):

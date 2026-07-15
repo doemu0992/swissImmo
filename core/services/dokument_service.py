@@ -43,6 +43,15 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
     brutto = netto + nk
     kaution = vertrag.kautions_betrag or 0
 
+    # Datierte Mietzins-Komponenten (Gratismonate/gestaffelter Start) für den Vertrag
+    komponenten = [{
+        'ab': k.gueltig_ab.strftime('%d.%m.%Y'),
+        'netto': f"{(k.netto_mietzins or 0):,.2f}".replace(",", "'"),
+        'nk': f"{(k.nebenkosten or 0):,.2f}".replace(",", "'"),
+        'brutto': f"{k.brutto:,.2f}".replace(",", "'"),
+        'notiz': k.notiz or '',
+    } for k in vertrag.mietzins_komponenten.all()]
+
     # Zweiter Mieter (2-Personen-Vertrag): Objekt bevorzugt, sonst Freitext-Name
     mitmieter = vertrag.mitmieter
     mitmieter_name = (mitmieter.display_name if mitmieter else (vertrag.mitmieter_name or '')).strip()
@@ -56,6 +65,7 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
         'vermieter_plz': v_plz, 'vermieter_ort': v_ort,
         'brutto_fmt': f"{brutto:,.2f}".replace(",", "'"),
         'kaution_fmt': f"{kaution:,.2f}".replace(",", "'"),
+        'mietzins_komponenten': komponenten,
         **extra,
     }
 

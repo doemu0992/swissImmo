@@ -97,6 +97,19 @@
     <tr><td class="k">Zahlungsrhythmus</td><td>{{ vertrag.get_zahlungsrhythmus_display }}{% if vertrag.mwst_pflichtig %} (inkl. MWST){% endif %}</td></tr>
 </table>
 
+{% if vertrag.mietzins_komponenten.all %}
+<p class="note">Der Mietzins ist zeitlich gestaffelt vereinbart. Es gelten die folgenden Beträge ab dem jeweiligen Datum (im Voraus vereinbart; einer erneuten Mitteilung bedarf es nicht):</p>
+<table class="data">
+    <tr><td class="k b">Gültig ab</td><td class="b">Netto</td><td class="b">Nebenkosten</td><td class="b">Bruttomietzins</td></tr>
+    {% for k in vertrag.mietzins_komponenten.all %}
+    <tr><td class="k">{{ k.gueltig_ab|date:"d.m.Y" }}{% if k.notiz %} <span style="color:#888">({{ k.notiz }})</span>{% endif %}</td>
+        <td>CHF {{ k.netto_mietzins|floatformat:2 }}{% if k.netto_mietzins == 0 %} <span style="color:#888">(mietzinsfrei)</span>{% endif %}</td>
+        <td>CHF {{ k.nebenkosten|floatformat:2 }}</td>
+        <td class="b">CHF {{ k.brutto|floatformat:2 }}</td></tr>
+    {% endfor %}
+</table>
+{% endif %}
+
 <div class="subsec">4.1 Mietzinsbasis</div>
 <table class="data">
     <tr><td class="k">Referenzzinssatz</td><td>{{ vertrag.beginn|date:"m.Y" }}, {{ ref_fmt }}%</td></tr>

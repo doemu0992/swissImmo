@@ -7122,3 +7122,93 @@ class WeiterverrechnungSplitKontoTests(TestCase):
         gegen = Buchung.objects.filter(soll_konto__nummer='1190', kreditoren_rechnung=k).first()
         self.assertIsNotNone(gegen)
         self.assertEqual(gegen.haben_konto.nummer, '4130')
+
+
+class VertragMietzinsKomponentenTests(TestCase):
+    """Datierte Mietzins-Komponenten am Verhältnis: Gratismonate/gestaffelter
+    Start. Die Sollstellung greift pro Monat die gültige Komponente."""
+
+    def _setup(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        v.beginn = date(2026, 10, 1)
+        v.netto_mietzins = Decimal('1000'); v.nebenkosten = Decimal('250')
+        v.mietzins_modell = 'fest'
+        v.save()
+        return v
+
+    def test_gratismonate_via_komponenten(self):
+        from rentals.models import VertragMietzins
+        from finance.models import DebitorenRechnung
+        from core.services.automation import run_sollstellung
+        v = self._setup()
+        # Erste zwei Monate netto-frei (NK läuft), ab 01.12 voller Netto.
+        VertragMietzins.objects.create(vertrag=v, gueltig_ab=date(2026, 10, 1),
+                                       netto_mietzins=Decimal('0'), nebenkosten=Decimal('250'))
+        VertragMietzins.objects.create(vertrag=v, gueltig_ab=date(2026, 12, 1),
+                                       netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'))
+        # Auflösung pro Datum
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 10, 15)), Decimal('0'))
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 11, 30)), Decimal('0'))
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 12, 1)), Decimal('1000'))
+        self.assertEqual(v.effektive_nebenkosten(date(2026, 10, 15)), Decimal('250'))
+
+        # Sollstellung Oktober: nur NK 250 (Netto 0)
+        run_sollstellung(2026, 10)
+        okt = DebitorenRechnung.objects.get(vertrag=v, titel='Miete & NK 10/2026')
+        self.assertEqual(okt.betrag, Decimal('250.00'))
+        # Dezember: voll 1250
+        run_sollstellung(2026, 12)
+        dez = DebitorenRechnung.objects.get(vertrag=v, titel='Miete & NK 12/2026')
+        self.assertEqual(dez.betrag, Decimal('1250.00'))
+
+    def test_ohne_komponenten_unveraendert(self):
+        from finance.models import DebitorenRechnung
+        from core.services.automation import run_sollstellung
+        v = self._setup()   # keine Komponenten → flacher Wert
+        run_sollstellung(2026, 10)
+        okt = DebitorenRechnung.objects.get(vertrag=v, titel='Miete & NK 10/2026')
+        self.assertEqual(okt.betrag, Decimal('1250.00'))   # 1000 + 250 wie bisher
+
+
+class VertragMietzinsUITests(TestCase):
+    """Komponenten am Vertrag: UI (Mietzins-Tab), Add/Del, PDF-Anzeige."""
+
+    def test_add_del_und_anzeige(self):
+        from rentals.models import VertragMietzins
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        # Hinzufügen
+        c.post(f'/neu/vertrag-mietzins/{v.id}/', {
+            'gueltig_ab': '2026-10-01', 'netto_mietzins': '0.00', 'nebenkosten': '250.00',
+            'notiz': 'mietzinsfrei'})
+        c.post(f'/neu/vertrag-mietzins/{v.id}/', {
+            'gueltig_ab': '2026-12-01', 'netto_mietzins': '1000.00', 'nebenkosten': '250.00'})
+        self.assertEqual(v.mietzins_komponenten.count(), 2)
+        # Erscheint im Mietzins-Tab
+        body = c.get(f'/neu/vertraege/{v.id}/?tab=mietzins').content.decode()
+        self.assertIn('Mietzins-Komponenten', body)
+        self.assertIn('01.10.2026', body)
+        self.assertIn('mietzinsfrei', body)
+        # Löschen
+        k = v.mietzins_komponenten.first()
+        c.post(f'/neu/vertrag-mietzins/{k.id}/loeschen/')
+        self.assertEqual(v.mietzins_komponenten.count(), 1)
+
+    def test_komponenten_im_vertrags_pdf(self):
+        from rentals.models import VertragMietzins
+        from core.services.dokument_service import DOKUMENT_TYPEN
+        lg, e, m, v = _basis_objekte()
+        VertragMietzins.objects.create(vertrag=v, gueltig_ab=date(2026, 10, 1),
+                                       netto_mietzins=Decimal('0'), nebenkosten=Decimal('250'),
+                                       notiz='mietzinsfrei')
+        VertragMietzins.objects.create(vertrag=v, gueltig_ab=date(2026, 12, 1),
+                                       netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'))
+        # Der Vertrags-PDF-Template rendert die Komponenten (via vertrag.mietzins_komponenten)
+        from django.template.loader import get_template
+        html = get_template('core/mietvertrag_pdf.html').render({'vertrag': v, 'einheit': e,
+                'miete_fmt': '1000.00', 'nk_fmt': '250.00', 'brutto_fmt': '1250.00'})
+        self.assertIn('01.10.2026', html)
+        self.assertIn('mietzinsfrei', html)
+        self.assertIn('01.12.2026', html)

@@ -2269,6 +2269,7 @@ def fw_vertrag_detail(request, pk):
     zahlungen = (Zahlungseingang.objects.filter(vertrag=v, status='verbucht')
                  .order_by('-datum_eingang')[:15])
     anpassungen = v.anpassungen.order_by('-wirksam_ab')[:10]
+    mietzins_komponenten = list(v.mietzins_komponenten.all())
     dokumente = RentalsDokument.objects.filter(vertrag=v).order_by('-datum')[:15]
 
     rechnungs_rows = []
@@ -2308,6 +2309,8 @@ def fw_vertrag_detail(request, pk):
         'anzahl_offen': len(offene),
         'zahlungen': zahlungen,
         'anpassungen': anpassungen,
+        'mietzins_komponenten': mietzins_komponenten,
+        'heute_iso': timezone.localdate().isoformat(),
         'dokumente': dokumente,
         'nebenobjekte': v.nebenobjekte.all(),
         'erstellbare_dokumente': _erstellbare_dokumente(v),
@@ -9322,6 +9325,57 @@ def fw_kreditor_freigeben(request, pk):
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
     return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_vertrag_mietzins_add(request, pk):
+    """Fügt dem Mietverhältnis eine datierte Mietzins-Komponente hinzu (gültig ab,
+    Netto, NK) — für Gratismonate/gestaffelten Start. Massgeblich für die Sollstellung."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import Mietvertrag, VertragMietzins
+    from core.auth import log_aktion
+    v = get_object_or_404(Mietvertrag, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/vertraege/{v.id}/?tab=mietzins')
+
+    def _dec(name):
+        raw = (request.POST.get(name) or '').replace("'", '').replace(',', '.').strip()
+        try:
+            return Decimal(raw)
+        except Exception:
+            return None
+    try:
+        gab = date.fromisoformat(request.POST.get('gueltig_ab') or '')
+    except ValueError:
+        gab = None
+    netto = _dec('netto_mietzins')
+    nk = _dec('nebenkosten')
+    if not gab or netto is None or nk is None or netto < 0 or nk < 0:
+        messages.error(request, "Gültig-ab-Datum, Netto und NK (≥ 0) sind erforderlich.")
+        return redirect(f'/neu/vertraege/{v.id}/?tab=mietzins')
+    VertragMietzins.objects.update_or_create(
+        vertrag=v, gueltig_ab=gab,
+        defaults={'netto_mietzins': netto, 'nebenkosten': nk,
+                  'notiz': (request.POST.get('notiz') or '').strip()[:200]})
+    log_aktion(request, "Mietzins-Komponente erfasst", str(v),
+               f"ab {gab:%d.%m.%Y}: Netto {netto} / NK {nk}", ziel=v)
+    messages.success(request, f"✅ Komponente ab {gab:%d.%m.%Y} gespeichert (Netto CHF {netto} / NK CHF {nk}).")
+    return redirect(f'/neu/vertraege/{v.id}/?tab=mietzins')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_vertrag_mietzins_del(request, pk):
+    """Entfernt eine Mietzins-Komponente."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import VertragMietzins
+    k = get_object_or_404(VertragMietzins.objects.select_related('vertrag'), id=pk)
+    vid = k.vertrag_id
+    if request.method == 'POST':
+        k.delete()
+        messages.success(request, "Komponente entfernt.")
+    return redirect(f'/neu/vertraege/{vid}/?tab=mietzins')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

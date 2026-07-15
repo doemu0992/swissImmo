@@ -287,7 +287,55 @@
 
 <!-- ===== TAB: MIETZINS ===== -->
 <div data-panel="vt" id="vt-mietzins" class="hidden">
-    <div class="flex justify-end mb-3">
+
+    <!-- ===== MIETZINS-KOMPONENTEN (datiert, gültig ab) ===== -->
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
+        <div class="px-5 pt-4 pb-2">
+            <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-layer-group text-indigo-500 mr-1.5"></i>Mietzins-Komponenten</h3>
+            <p class="text-[11px] text-slate-400 mt-0.5">Datierte Miete ab Mietbeginn. Für Gratismonate/gestaffelten Start mehrere Komponenten erfassen (z.B. ab Beginn Netto 0.00, ab späterem Datum voller Netto). Sind Komponenten erfasst, sind sie die massgebliche Quelle für die Sollstellung.</p>
+        </div>
+        <table class="w-full text-sm">
+            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-y border-slate-100">
+                <th class="px-5 py-2.5 font-semibold">Gültig ab</th>
+                <th class="px-5 py-2.5 font-semibold text-right">Netto</th>
+                <th class="px-5 py-2.5 font-semibold text-right">NK</th>
+                <th class="px-5 py-2.5 font-semibold text-right">Brutto</th>
+                <th class="px-5 py-2.5 font-semibold">Notiz</th><th></th>
+            </tr></thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for k in mietzins_komponenten %}
+            <tr class="hover:bg-slate-50/60">
+                <td class="px-5 py-2.5 text-slate-700 whitespace-nowrap font-medium">{{ k.gueltig_ab|date:"d.m.Y" }}</td>
+                <td class="px-5 py-2.5 text-right {% if k.netto_mietzins == 0 %}text-emerald-600 font-semibold{% else %}text-slate-700{% endif %}">CHF {{ k.netto_mietzins|chf }}</td>
+                <td class="px-5 py-2.5 text-right text-slate-700">CHF {{ k.nebenkosten|chf }}</td>
+                <td class="px-5 py-2.5 text-right font-semibold text-slate-900">CHF {{ k.brutto|chf }}</td>
+                <td class="px-5 py-2.5 text-slate-500 truncate max-w-[160px]">{{ k.notiz|default:"—" }}</td>
+                <td class="px-5 py-2.5 text-right">
+                    <form method="post" action="/neu/vertrag-mietzins/{{ k.id }}/loeschen/" class="inline" onsubmit="return confirm('Komponente löschen?');">{% csrf_token %}
+                        <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </td></tr>
+            {% empty %}
+            <tr><td colspan="6" class="px-5 py-6 text-center text-xs text-slate-400 italic">Keine Komponenten — es gilt der Mietzins aus den Vertragsdaten (Netto CHF {{ v.netto_mietzins|chf }} / NK CHF {{ v.nebenkosten|chf }}).</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <form method="post" action="/neu/vertrag-mietzins/{{ v.id }}/" class="grid grid-cols-2 sm:grid-cols-5 gap-2 items-end px-5 py-3 bg-slate-50/60 border-t border-slate-100">
+            {% csrf_token %}
+            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">Gültig ab</label>
+                <input type="date" name="gueltig_ab" value="{{ v.beginn|date:'Y-m-d' }}" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5"></div>
+            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">Netto (CHF)</label>
+                <input name="netto_mietzins" inputmode="decimal" value="0.00" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5 text-right"></div>
+            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">NK (CHF)</label>
+                <input name="nebenkosten" inputmode="decimal" value="{{ v.nebenkosten|chf }}" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5 text-right"></div>
+            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">Notiz</label>
+                <input name="notiz" placeholder="z.B. mietzinsfrei" class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5"></div>
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Hinzufügen</button>
+        </form>
+    </div>
+
+    <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-percent text-slate-400 mr-1.5"></i>Amtliche Mietzinsanpassungen</h3>
         <a href="/neu/mietzins/{{ v.id }}/anpassung/" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg">
             <i class="fa-solid fa-percent"></i> Amtliche Anpassung erstellen
         </a>

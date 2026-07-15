@@ -45,7 +45,8 @@ def run_sollstellung(jahr, monat, user=None):
             # (vorab vereinbart → automatisch). Fest/Index nutzen den Basiswert.
             basis_netto = v.effektiver_netto_mietzins(start_date)
             netto = round((basis_netto or Decimal('0')) * faktor, 2)
-            nk = round((v.nebenkosten or Decimal('0')) * faktor, 2)
+            # NK ebenfalls datiert auflösen (Komponenten), sonst flacher Vertragswert.
+            nk = round((v.effektive_nebenkosten(start_date) or Decimal('0')) * faktor, 2)
             if netto + nk <= 0:
                 continue
             mwst = Decimal('0.00')

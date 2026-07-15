@@ -59,6 +59,16 @@
     <tr><td class="k b">Mietzins</td><td class="b">CHF {{ miete_fmt }}</td></tr>
     {% endif %}
 </table>
+{% if vertrag.mietzins_komponenten.all %}
+<p class="note">Der Mietzins ist zeitlich gestaffelt vereinbart — es gelten die folgenden Beträge ab dem jeweiligen Datum:</p>
+<table class="data">
+    <tr><td class="k b">Gültig ab</td><td class="b">Mietzins</td></tr>
+    {% for k in vertrag.mietzins_komponenten.all %}
+    <tr><td class="k">{{ k.gueltig_ab|date:"d.m.Y" }}{% if k.notiz %} <span style="color:#888">({{ k.notiz }})</span>{% endif %}</td>
+        <td>CHF {{ k.brutto|floatformat:2 }}{% if k.brutto == 0 %} <span style="color:#888">(mietzinsfrei)</span>{% endif %}</td></tr>
+    {% endfor %}
+</table>
+{% endif %}
 <p class="note">Der Mietzins ist jeweils am 1. Tag des Monats fällig. Soweit nichts anderes vereinbart ist, gelten die Bestimmungen des Schweizerischen Obligationenrechts (Art. 253 ff. OR).</p>
 
 <table class="sign">
