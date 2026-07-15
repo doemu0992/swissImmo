@@ -395,15 +395,18 @@ class AbrechnungsPeriode(models.Model):
 
     @property
     def total_kosten(self):
-        # Summiert Nebenkostenbelege UND HNK-relevante Kreditorenrechnungen
-        beleg_summe = self.belege.aggregate(total=Sum('betrag'))['total'] or Decimal('0.00')
-        kreditoren_summe = KreditorenRechnung.objects.filter(
-            liegenschaft=self.liegenschaft,
-            is_hnk_relevant=True,
-            leistungs_von__gte=self.start_datum,
-            leistungs_bis__lte=self.ende_datum
-        ).aggregate(total=Sum('betrag'))['total'] or Decimal('0.00')
-        return beleg_summe + kreditoren_summe
+        # EINE Quelle der Wahrheit: die kanonische Abrechnungs-Engine (identisch zu
+        # Detailansicht, PDF und Verbuchung). Sie ist split-aware (nur HNK-Anteile),
+        # vermeidet Doppelzählung Beleg/Kreditor und enthält Honorar + Öl-Bestand.
+        try:
+            from core.utils.billing import berechne_abrechnung
+            r = berechne_abrechnung(self.id)
+            if not r.get('error'):
+                return Decimal(str(r.get('total_kosten', 0) or 0))
+        except Exception:
+            pass
+        # Fallback (z.B. ohne Liegenschaft): reine Belegsumme
+        return self.belege.aggregate(total=Sum('betrag'))['total'] or Decimal('0.00')
 
     def berechne_mieter_anteil(self, vertrag):
         v_start = vertrag.beginn

@@ -6816,3 +6816,69 @@ class WeiterverrechnungVerteilenTests(TestCase):
         c.post(f'/neu/kreditoren/{k.id}/weiterverrechnen/',
                {'modus': 'verteilen', 'schluessel': 'einheit', 'hnk_override': 'on'})
         self.assertEqual(DebitorenRechnung.objects.filter(quell_kreditor=k).count(), 3)
+
+
+class NkAbrechnungSplitTests(TestCase):
+    """P4: Die NK-Abrechnung ist split-aware — nur der HNK-Anteil einer
+    aufgeteilten Kreditorenrechnung fliesst in die Mieterabrechnung, nicht der
+    volle Betrag. Nicht-aufgeteilte HNK-Rechnungen bleiben unverändert."""
+
+    def _setup(self):
+        from finance.booking import ensure_kontenplan
+        from portfolio.models import Liegenschaft, Einheit
+        from crm.models import Mieter
+        from finance.models import AbrechnungsPeriode
+        ensure_kontenplan()
+        lg = Liegenschaft.objects.create(strasse='NKweg 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='W1', typ='wohnung',
+                                   flaeche_m2=Decimal('100'), nettomiete_aktuell=Decimal('1000'))
+        m = Mieter.objects.create(typ='person', vorname='Anna', nachname='NK',
+                                  strasse='X', plz='8000', ort='Zürich')
+        Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2025, 1, 1),
+                                   netto_mietzins=Decimal('1000'), nebenkosten=Decimal('100'),
+                                   status='aktiv')
+        p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='2025',
+                                              start_datum=date(2025, 1, 1), ende_datum=date(2025, 12, 31))
+        return lg, e, p
+
+    def test_split_nur_hnk_anteil_in_abrechnung(self):
+        from finance.models import KreditorenRechnung, KreditorPosition, Buchungskonto
+        from core.utils.billing import berechne_abrechnung
+        lg, e, p = self._setup()
+        k = KreditorenRechnung.objects.create(lieferant='Handwerk AG', betrag=Decimal('300.00'),
+                                              liegenschaft=lg, is_hnk_relevant=True,
+                                              status='freigegeben', datum=date(2025, 6, 1))
+        # 100 HNK (Hauswartung 4120) + 200 Unterhalt (4000, nicht HNK)
+        KreditorPosition.objects.create(rechnung=k, konto=Buchungskonto.objects.get(nummer='4120'),
+                                        betrag=Decimal('100.00'), is_hnk_relevant=True)
+        KreditorPosition.objects.create(rechnung=k, konto=Buchungskonto.objects.get(nummer='4000'),
+                                        betrag=Decimal('200.00'), is_hnk_relevant=False)
+        r = berechne_abrechnung(p.id)
+        fibu = [d for d in r['belege_details'] if d.get('quelle') == 'FiBu']
+        self.assertEqual(sum(Decimal(str(d['betrag'])) for d in fibu), Decimal('100.00'))
+        # Gesamtkosten (inkl. Honorar) klar unter 300 → der 200-Anteil fliesst NICHT ein
+        self.assertLess(Decimal(str(r['total_kosten'])), Decimal('150.00'))
+
+    def test_ohne_split_voller_betrag(self):
+        from finance.models import KreditorenRechnung, Buchungskonto
+        from core.utils.billing import berechne_abrechnung
+        lg, e, p = self._setup()
+        KreditorenRechnung.objects.create(lieferant='Hauswart AG', betrag=Decimal('200.00'),
+                                          liegenschaft=lg, is_hnk_relevant=True,
+                                          konto=Buchungskonto.objects.get(nummer='4120'),
+                                          status='freigegeben', datum=date(2025, 6, 1))
+        r = berechne_abrechnung(p.id)
+        fibu = [d for d in r['belege_details'] if d.get('quelle') == 'FiBu']
+        self.assertEqual(sum(Decimal(str(d['betrag'])) for d in fibu), Decimal('200.00'))
+
+    def test_total_kosten_property_stimmt_mit_engine(self):
+        from finance.models import KreditorenRechnung, Buchungskonto
+        from core.utils.billing import berechne_abrechnung
+        lg, e, p = self._setup()
+        KreditorenRechnung.objects.create(lieferant='Hauswart AG', betrag=Decimal('200.00'),
+                                          liegenschaft=lg, is_hnk_relevant=True,
+                                          konto=Buchungskonto.objects.get(nummer='4120'),
+                                          status='freigegeben', datum=date(2025, 6, 1))
+        r = berechne_abrechnung(p.id)
+        self.assertEqual(p.total_kosten, Decimal(str(r['total_kosten'])))

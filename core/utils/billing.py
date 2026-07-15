@@ -108,12 +108,23 @@ def berechne_abrechnung(periode_id):
     zukauf_oel_l = Decimal('0.00')
     zukauf_oel_chf = Decimal('0.00')
 
-    for kred in kreditoren:
-        betrag = kred.betrag or Decimal('0.00')
-        if betrag <= 0: continue
+    def _hnk_teile(kred):
+        """Split-aware: die tatsächlich HNK-relevanten Kostenteile einer Rechnung.
+        Mit Kostenaufteilung nur die HNK-Positionen (Betrag + eigenes Konto), sonst
+        die ganze Rechnung. So fliesst z.B. bei einer 300er-Rechnung mit nur 100 HNK
+        auch nur 100 in die Nebenkostenabrechnung — nicht mehr der volle Betrag."""
+        if kred.hat_positionen:
+            return [(p.betrag or Decimal('0.00'), p.konto,
+                     f"{kred.lieferant} ({p.konto.bezeichnung}{f' · {p.bezeichnung}' if p.bezeichnung else ''})")
+                    for p in kred.positionen.filter(is_hnk_relevant=True)]
+        return [(kred.betrag or Decimal('0.00'), kred.konto,
+                 f"{kred.lieferant} ({kred.konto.bezeichnung if kred.konto else 'Kreditor'})")]
 
-        # Bestandes-Zukäufe (Öl/Gas) sammeln
+    for kred in kreditoren:
+        # Bestandes-Zukäufe (Öl/Gas) sammeln — auf Rechnungsebene (Menge am Kopf).
         if kred.menge_liter and kred.menge_liter > 0:
+            betrag = kred.betrag or Decimal('0.00')
+            if betrag <= 0: continue
             zukauf_oel_l += kred.menge_liter
             zukauf_oel_chf += betrag
             kategorien_liste.append({
@@ -122,23 +133,23 @@ def berechne_abrechnung(periode_id):
             })
             continue # Wird in Schritt C abgerechnet
 
-        # Direkte Kosten zuweisen
-        v_key = kred.konto.standard_verteilschluessel if kred.konto and kred.konto.standard_verteilschluessel else 'm2'
-
-        if kred.konto and ('heiz' in kred.konto.bezeichnung.lower() or 'wärme' in kred.konto.bezeichnung.lower()):
-            pool_heizkosten += betrag
-            v_key = 'm3'
-        elif v_key == 'einheit':
-            pool_nk_einheit += betrag
-        elif v_key == 'm3':
-            pool_heizkosten += betrag
-        else:
-            pool_nk_m2 += betrag
-
-        kategorien_liste.append({
-            'datum': kred.datum, 'text': f"{kred.lieferant} ({kred.konto.bezeichnung if kred.konto else 'Kreditor'})",
-            'kategorie': 'Kreditor', 'betrag': betrag, 'schluessel': v_key, 'quelle': 'FiBu'
-        })
+        # Direkte Kosten zuweisen — pro HNK-Teil (Split-aware)
+        for betrag, konto, text in _hnk_teile(kred):
+            if betrag <= 0: continue
+            v_key = konto.standard_verteilschluessel if konto and konto.standard_verteilschluessel else 'm2'
+            if konto and ('heiz' in konto.bezeichnung.lower() or 'wärme' in konto.bezeichnung.lower()):
+                pool_heizkosten += betrag
+                v_key = 'm3'
+            elif v_key == 'einheit':
+                pool_nk_einheit += betrag
+            elif v_key == 'm3':
+                pool_heizkosten += betrag
+            else:
+                pool_nk_m2 += betrag
+            kategorien_liste.append({
+                'datum': kred.datum, 'text': text,
+                'kategorie': 'Kreditor', 'betrag': betrag, 'schluessel': v_key, 'quelle': 'FiBu'
+            })
 
     # C) Bestandesrechnung Heizöl (Gewogener Durchschnittspreis)
     anfangs_l = periode.anfangsbestand_liter or Decimal('0.00')
