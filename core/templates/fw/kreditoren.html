@@ -81,9 +81,9 @@
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Aufwandskonto</label>
-            <select name="konto_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <select name="konto_id" onchange="fwHnkSync(this)" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— bei Freigabe wählen —</option>
-                {% for k in aufwand_konten %}<option value="{{ k.id }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
+                {% for k in aufwand_konten %}<option value="{{ k.id }}" {% if k.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
             </select></div>
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">MWST-Satz (%)</label>
             <input name="mwst_satz" inputmode="decimal" placeholder="z.B. 8.1 (0 = keine)" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
@@ -252,9 +252,9 @@
                                 {% for lgx in liegenschaften %}<option value="{{ lgx.id }}" {% if row.k.liegenschaft_id == lgx.id %}selected{% endif %}>{{ lgx.strasse }}, {{ lgx.ort }}</option>{% endfor %}
                             </select></div>
                         <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Aufwandskonto</label>
-                            <select name="konto_id" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
+                            <select name="konto_id" onchange="fwHnkSync(this)" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
                                 <option value="">— bei Freigabe wählen —</option>
-                                {% for kx in aufwand_konten %}<option value="{{ kx.id }}" {% if row.k.konto_id == kx.id %}selected{% endif %}>{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
+                                {% for kx in aufwand_konten %}<option value="{{ kx.id }}" {% if row.k.konto_id == kx.id %}selected{% endif %} {% if kx.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
                             </select></div>
                         <label class="col-span-2 flex items-center gap-2 text-sm text-slate-600">
                             <input type="checkbox" name="is_hnk_relevant" {% if row.k.is_hnk_relevant %}checked{% endif %} class="accent-indigo-600">
@@ -293,6 +293,15 @@
 function fwKZeile(ev, id){
     if (ev.target.closest('form,button,a,select,input,label')) return;
     document.getElementById('kedit-' + id).classList.toggle('hidden');
+}
+// Konto → HNK-Checkbox live synchronisieren: NK-relevantes Konto (Heizung,
+// Wasser, Hauswartung, Allgemeinstrom, Kehricht, Versicherung) hakt die
+// Checkbox sofort sichtbar an (Server erzwingt dieselbe Regel beim Speichern).
+function fwHnkSync(sel){
+    var f = sel.closest('form'); if (!f) return;
+    var cb = f.querySelector('input[name=is_hnk_relevant]'); if (!cb) return;
+    var opt = sel.options[sel.selectedIndex];
+    if (opt && opt.dataset.hnk === '1') cb.checked = true;
 }
 </script>
 {% include 'fw/_fwmodal.html' %}

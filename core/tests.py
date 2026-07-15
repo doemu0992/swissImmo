@@ -6344,3 +6344,16 @@ class HnkAutoAbleitungTests(TestCase):
         })
         k.refresh_from_db()
         self.assertTrue(k.is_hnk_relevant)
+
+    def test_konto_select_synct_checkbox_live(self):
+        """Aufwandskonto-Optionen tragen data-hnk; JS hakt die HNK-Checkbox
+        beim Wählen eines NK-Kontos (z.B. Allgemeinstrom) sichtbar an."""
+        from finance.booking import ensure_kontenplan
+        from finance.models import KreditorenRechnung
+        ensure_kontenplan()
+        KreditorenRechnung.objects.create(lieferant='Sync AG', betrag=Decimal('50'), status='neu')
+        c = Client(); c.force_login(_team_user())
+        body = c.get('/neu/kreditoren/').content.decode()
+        self.assertIn('function fwHnkSync', body)
+        self.assertIn('data-hnk="1"', body)
+        self.assertIn('onchange="fwHnkSync(this)"', body)
