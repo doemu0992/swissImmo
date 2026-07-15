@@ -530,46 +530,102 @@ def fw_weiterverrechnung(request, kreditor_id):
     aufwand_konto = k.konto.nummer if k.konto_id else '4000'
 
     if request.method == 'POST':
-        vertrag_id = request.POST.get('vertrag_id')
-        vertrag = Mietvertrag.objects.filter(id=vertrag_id).select_related('mieter', 'einheit__liegenschaft').first()
-        if not vertrag:
-            messages.error(request, "Bitte einen Mieter/Vertrag wählen.")
-            return redirect(request.path)
-
         def _dec(x, d='0'):
             try:
                 return Decimal(str(x).replace(',', '.').strip() or d)
             except Exception:
                 return Decimal(d)
+
+        def _verrechne(vertrag, grund, zuschlag, titel):
+            """Erstellt eine verknüpfte Debitorenrechnung + ertragsneutrale
+            Durchreichung über 1190 (Zuschlag als Ertrag 3600). Gibt (rechnung, total)."""
+            lg2 = vertrag.einheit.liegenschaft if vertrag.einheit_id else k.liegenschaft
+            total = (grund + max(zuschlag, Decimal('0'))).quantize(Decimal('0.01'))
+            rechnung = DebitorenRechnung.objects.create(
+                vertrag=vertrag, liegenschaft=lg2, einheit=vertrag.einheit,
+                titel=titel, beschreibung=f"Weiterverrechnung Lieferantenrechnung {k.lieferant}"
+                                          + (f" · {k.referenz}" if k.referenz else ''),
+                datum=heute, faellig_am=heute + _timedelta(days=30), betrag=total,
+                status='offen', quell_kreditor=k)
+            buche("1100", "1190", grund, f"Weiterverrechnung {vertrag.mieter}: {titel}",
+                  datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
+            buche("1190", aufwand_konto, grund, f"Aufwandsminderung Weiterverrechnung: {k.lieferant}",
+                  datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
+            if zuschlag > 0:
+                buche("1100", "3600", zuschlag, f"Zuschlag Weiterverrechnung {vertrag.mieter}",
+                      datum=heute, liegenschaft=lg2, debitor=rechnung, user=request.user)
+            return rechnung, total
+
+        # --- Doppelverrechnungs-Schutz (bindend): eine HNK-relevante Rechnung
+        # fliesst bereits über die periodische NK-Abrechnung an die Mieter. Sie
+        # zusätzlich direkt weiterzuverrechnen würde doppelt belasten. Nur mit
+        # bewusstem Override (Häkchen) zulassen.
+        if (k.is_hnk_relevant or k.hnk_betrag > 0) and request.POST.get('hnk_override') != 'on':
+            messages.error(request, "Diese Rechnung ist HNK-relevant und wird bereits über die "
+                                    "Nebenkostenabrechnung verteilt. Direkte Weiterverrechnung nur, wenn "
+                                    "du das Häkchen «Trotzdem direkt weiterverrechnen» setzt (sonst doppelte Belastung).")
+            return redirect(request.path)
+
+        # --- Modus «verteilen»: Fremdkosten in EINEM Schritt nach Verteilschlüssel
+        # auf alle aktiven Mieter der Liegenschaft aufteilen. ---
+        if request.POST.get('modus') == 'verteilen':
+            lg = k.liegenschaft
+            if not lg:
+                messages.error(request, "Für die Verteilung muss die Rechnung einer Liegenschaft zugeordnet sein.")
+                return redirect(request.path)
+            schluessel = request.POST.get('schluessel') or 'm2'
+            grund_total = k.offen_weiterzuverrechnen
+            if grund_total <= 0:
+                messages.error(request, "Nichts mehr offen zum Weiterverrechnen.")
+                return redirect(request.path)
+            zielvertraege = list(Mietvertrag.objects.filter(status='aktiv', einheit__liegenschaft=lg)
+                                 .select_related('mieter', 'einheit'))
+            if not zielvertraege:
+                messages.error(request, "Keine aktiven Mietverhältnisse in dieser Liegenschaft.")
+                return redirect(request.path)
+
+            def _gewicht(e):
+                if schluessel == 'einheit':
+                    return Decimal('1')
+                if schluessel == 'wertquote':
+                    return Decimal(str(e.wertquote or 0))
+                return Decimal(str(e.flaeche_m2 or 0))   # Default m²
+
+            gew = [(v, _gewicht(v.einheit)) for v in zielvertraege if v.einheit_id]
+            total_w = sum((w for _, w in gew), Decimal('0'))
+            if total_w <= 0:
+                messages.error(request, "Für diesen Verteilschlüssel fehlen die Werte (m²/Wertquote) an den Objekten.")
+                return redirect(request.path)
+
+            verteilt = Decimal('0.00'); anzahl = 0
+            titel = (request.POST.get('titel') or f"Weiterverrechnung: {k.lieferant}").strip()
+            for i, (v, w) in enumerate(gew):
+                anteil = (grund_total - verteilt) if i == len(gew) - 1 \
+                    else (grund_total * w / total_w).quantize(Decimal('0.01'))
+                if anteil <= 0:
+                    continue
+                _verrechne(v, anteil, Decimal('0'), titel)
+                verteilt += anteil; anzahl += 1
+            log_aktion(request, "Weiterverrechnung verteilt", str(lg),
+                       f"CHF {grund_total} aus {k.lieferant} auf {anzahl} Mieter ({schluessel})")
+            messages.success(request, f"✅ CHF {grund_total} nach {schluessel} auf {anzahl} Mieter verteilt — "
+                                      "QR-Rechnungen über den QR-Button in den Debitoren.")
+            return redirect('/neu/debitoren/')
+
+        # --- Einzel-Weiterverrechnung an einen Mieter ---
+        vertrag_id = request.POST.get('vertrag_id')
+        vertrag = Mietvertrag.objects.filter(id=vertrag_id).select_related('mieter', 'einheit__liegenschaft').first()
+        if not vertrag:
+            messages.error(request, "Bitte einen Mieter/Vertrag wählen.")
+            return redirect(request.path)
         grund = _dec(request.POST.get('betrag'), str(k.offen_weiterzuverrechnen))
         zuschlag = _dec(request.POST.get('zuschlag'), '0')
         if grund <= 0:
             messages.error(request, "Betrag muss grösser als 0 sein.")
             return redirect(request.path)
-        # Nicht mehr weiterverrechnen als noch offen ist (Grundbetrag = Fremdkosten)
         grund = min(grund, k.offen_weiterzuverrechnen)
-        total = (grund + max(zuschlag, Decimal('0'))).quantize(Decimal('0.01'))
-        lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else k.liegenschaft
         titel = (request.POST.get('titel') or f"Weiterverrechnung: {k.lieferant}").strip()
-
-        rechnung = DebitorenRechnung.objects.create(
-            vertrag=vertrag, liegenschaft=lg, einheit=vertrag.einheit,
-            titel=titel, beschreibung=f"Weiterverrechnung Lieferantenrechnung {k.lieferant}"
-                                      + (f" · {k.referenz}" if k.referenz else ''),
-            datum=heute, faellig_am=heute + _timedelta(days=30), betrag=total,
-            status='offen', quell_kreditor=k)
-
-        # Ertragsneutrale Durchreichung des Grundbetrags über 1190:
-        #   1100 Debitor  an 1190 Durchlauf   (Forderung an Mieter)
-        #   1190 Durchlauf an <Aufwand>        (mindert den Aufwand → netto null)
-        buche("1100", "1190", grund, f"Weiterverrechnung {vertrag.mieter}: {titel}",
-              datum=heute, liegenschaft=lg, debitor=rechnung, kreditor=k, user=request.user)
-        buche("1190", aufwand_konto, grund, f"Aufwandsminderung Weiterverrechnung: {k.lieferant}",
-              datum=heute, liegenschaft=lg, debitor=rechnung, kreditor=k, user=request.user)
-        # Zuschlag = echter Ertrag (übrige Erträge 3600)
-        if zuschlag > 0:
-            buche("1100", "3600", zuschlag, f"Zuschlag Weiterverrechnung {vertrag.mieter}",
-                  datum=heute, liegenschaft=lg, debitor=rechnung, user=request.user)
+        rechnung, total = _verrechne(vertrag, grund, zuschlag, titel)
 
         log_aktion(request, "Weiterverrechnung erstellt", str(vertrag.mieter),
                    f"CHF {total} aus {k.lieferant} (#{k.id})", ziel=vertrag)
@@ -607,12 +663,18 @@ def fw_weiterverrechnung(request, kreditor_id):
         'plz': _vw.plz if _vw else '', 'ort': _vw.ort if _vw else '',
         'iban': (_vw.iban or '') if _vw else '',
     }
+    # Verteil-Vorschau: aktive Mieter der Liegenschaft je Schlüssel
+    verteil_mieter = 0
+    if k.liegenschaft_id:
+        verteil_mieter = Mietvertrag.objects.filter(status='aktiv', einheit__liegenschaft=k.liegenschaft).count()
     return render(request, 'fw/weiterverrechnung.html', {
         **basis, 'nav': 'kreditoren', 'k': k, 'vertraege': vertraege,
         'offen_wv': k.offen_weiterzuverrechnen, 'aufwand_konto': aufwand_konto,
         'vertrag_daten': vertrag_daten, 'absender': absender,
         'heute_iso': heute.isoformat(),
         'faellig_iso': (heute + _timedelta(days=30)).isoformat(),
+        'ist_hnk': bool(k.is_hnk_relevant or k.hnk_betrag > 0),
+        'verteil_mieter': verteil_mieter,
     })
 
 

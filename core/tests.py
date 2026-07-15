@@ -6762,3 +6762,57 @@ class KreditorSplitTests(TestCase):
         c.post(f'/neu/kreditoren/{k.id}/freigeben/')
         k.refresh_from_db()
         self.assertEqual(k.status, 'neu')   # nicht freigegeben — Aufteilung stimmt nicht
+
+
+class WeiterverrechnungVerteilenTests(TestCase):
+    """Multi-Mieter-Weiterverrechnung nach Verteilschlüssel + HNK-Doppelschutz."""
+
+    def _konten(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+
+    def _lg_mit_mietern(self):
+        from portfolio.models import Liegenschaft, Einheit
+        from crm.models import Mieter
+        lg = Liegenschaft.objects.create(strasse='Verteilweg 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        daten = [('A', Decimal('50')), ('B', Decimal('100')), ('C', Decimal('50'))]  # m² 50/100/50 → 25/50/25%
+        for name, m2 in daten:
+            e = Einheit.objects.create(liegenschaft=lg, bezeichnung=name, typ='wohnung',
+                                       flaeche_m2=m2, nettomiete_aktuell=Decimal('1000'))
+            m = Mieter.objects.create(typ='person', vorname=name, nachname='Test',
+                                      strasse='X', plz='8000', ort='Zürich')
+            Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
+                                       netto_mietzins=Decimal('1000'), nebenkosten=Decimal('0'),
+                                       status='aktiv')
+        return lg
+
+    def test_verteilen_nach_m2(self):
+        from finance.models import KreditorenRechnung, DebitorenRechnung
+        self._konten()
+        lg = self._lg_mit_mietern()
+        k = KreditorenRechnung.objects.create(lieferant='Gärtner AG', betrag=Decimal('400.00'),
+                                              liegenschaft=lg, status='freigegeben')
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/kreditoren/{k.id}/weiterverrechnen/', {'modus': 'verteilen', 'schluessel': 'm2'})
+        rechnungen = DebitorenRechnung.objects.filter(quell_kreditor=k).order_by('betrag')
+        self.assertEqual(rechnungen.count(), 3)
+        # 400 nach 25/50/25 → 100/200/100
+        self.assertEqual(sorted(r.betrag for r in rechnungen), [Decimal('100.00'), Decimal('100.00'), Decimal('200.00')])
+        # Summe exakt = 400 (Rest auf letzten, keine Rundungsverluste)
+        self.assertEqual(sum(r.betrag for r in rechnungen), Decimal('400.00'))
+
+    def test_hnk_doppelschutz_blockt_ohne_override(self):
+        from finance.models import KreditorenRechnung, DebitorenRechnung
+        self._konten()
+        lg = self._lg_mit_mietern()
+        k = KreditorenRechnung.objects.create(lieferant='Heizöl AG', betrag=Decimal('300.00'),
+                                              liegenschaft=lg, is_hnk_relevant=True, status='freigegeben')
+        c = Client(); c.force_login(_team_user())
+        # Ohne Override → geblockt, keine Debitorenrechnung
+        c.post(f'/neu/kreditoren/{k.id}/weiterverrechnen/', {'modus': 'verteilen', 'schluessel': 'einheit'})
+        self.assertEqual(DebitorenRechnung.objects.filter(quell_kreditor=k).count(), 0)
+        # Mit Override → verteilt (3 Mieter gleich)
+        c.post(f'/neu/kreditoren/{k.id}/weiterverrechnen/',
+               {'modus': 'verteilen', 'schluessel': 'einheit', 'hnk_override': 'on'})
+        self.assertEqual(DebitorenRechnung.objects.filter(quell_kreditor=k).count(), 3)

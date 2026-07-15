@@ -8,6 +8,43 @@
 <p class="text-sm text-slate-500 mb-6">Lieferantenrechnung <b>{{ k.lieferant }}</b>{% if k.referenz %} · {{ k.referenz }}{% endif %}
     {% if k.liegenschaft %}· {{ k.liegenschaft.strasse }}, {{ k.liegenschaft.ort }}{% endif %}</p>
 
+{% if ist_hnk %}
+<div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 mb-5 text-[13px] text-rose-800">
+    <div class="font-bold mb-0.5"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Achtung: HNK-relevante Rechnung</div>
+    Diese Rechnung fliesst bereits über die <b>Nebenkostenabrechnung</b> an die Mieter. Eine zusätzliche direkte
+    Weiterverrechnung würde <b>doppelt belasten</b>. Nur fortfahren, wenn du das bewusst willst — dann unten das
+    Häkchen «Trotzdem direkt weiterverrechnen» setzen.
+</div>
+{% endif %}
+
+{% if verteil_mieter and k.liegenschaft %}
+<!-- Verteilen auf alle Mieter der Liegenschaft nach Verteilschlüssel -->
+<form method="post" class="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+    {% csrf_token %}
+    <input type="hidden" name="modus" value="verteilen">
+    <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-people-group text-indigo-500 mr-1.5"></i>Auf alle Mieter verteilen</h3>
+    <p class="text-[12px] text-slate-500 mb-3">Verteilt den offenen Betrag (CHF {{ offen_wv|chf }}) in einem Schritt auf die
+        <b>{{ verteil_mieter }}</b> aktiven Mietverhältnisse in {{ k.liegenschaft.strasse }} nach gewähltem Schlüssel.</p>
+    <div class="flex flex-wrap items-end gap-3">
+        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Verteilschlüssel</label>
+            <select name="schluessel" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <option value="m2">Fläche (m²)</option>
+                <option value="einheit">Pro Einheit (gleich)</option>
+                <option value="wertquote">Wertquote</option>
+            </select></div>
+        <div class="flex-1 min-w-[12rem]"><label class="block text-[11px] font-semibold text-slate-500 mb-1">Titel</label>
+            <input name="titel" value="Weiterverrechnung: {{ k.lieferant }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        {% if ist_hnk %}
+        <label class="flex items-center gap-2 text-[12px] text-rose-700 pb-2.5"><input type="checkbox" name="hnk_override" class="accent-rose-600">Trotzdem direkt weiterverrechnen</label>
+        {% endif %}
+        <button class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"
+                onclick="return confirm('Offenen Betrag auf alle {{ verteil_mieter }} Mieter verteilen?');">
+            <i class="fa-solid fa-share-nodes mr-1.5"></i>Verteilen
+        </button>
+    </div>
+</form>
+{% endif %}
+
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 <form method="post" class="space-y-5">
     {% csrf_token %}
@@ -65,6 +102,9 @@
         </div>
     </div>
 
+    {% if ist_hnk %}
+    <label class="flex items-center gap-2 text-[12.5px] text-rose-700 font-medium"><input type="checkbox" name="hnk_override" class="accent-rose-600">Trotzdem direkt weiterverrechnen (HNK-Doppelbelastung bewusst in Kauf nehmen)</label>
+    {% endif %}
     <div class="flex items-center gap-3">
         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             <i class="fa-solid fa-share mr-1.5"></i>Weiterverrechnen &amp; Debitor erstellen
