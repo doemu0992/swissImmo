@@ -179,6 +179,10 @@ class Sollmietzins(models.Model):
     # Art. 269a/269d). Neue Verträge übernehmen sie als Vertragsbasis.
     basis_referenzzinssatz = models.DecimalField("Basis Referenzzinssatz (%)", max_digits=4, decimal_places=2, null=True, blank=True)
     basis_lik_punkte = models.DecimalField("Basis LIK (Punkte)", max_digits=6, decimal_places=1, null=True, blank=True)
+    # Herkunft: gesetzt, wenn die Zeile aus einer amtlichen Mietzinsanpassung
+    # (Art. 269d) entstand — dann wird sie beim Löschen der Anpassung mit entfernt.
+    quelle_anpassung = models.ForeignKey('rentals.MietzinsAnpassung', on_delete=models.SET_NULL,
+                                         null=True, blank=True, related_name='sollmietzins_zeilen')
     notiz = models.CharField("Bemerkung", max_length=200, blank=True, default='')
     erstellt_am = models.DateTimeField("Erfasst am", auto_now_add=True, null=True)
 

@@ -2611,6 +2611,80 @@ class MietzinsAnpassungLiveTests(TestCase):
         self.assertIn('MZ_VORSCHLAG', body)
 
 
+class MietzinsAnpassungSollmietzinsTests(TestCase):
+    """Eine amtliche Mietzinsanpassung führt den neuen Mietzins auch im Objekt
+    als datierte Sollmietzins-Zeile (gültig ab = wirksam_ab). Beim Löschen der
+    Anpassung verschwindet die Zeile wieder und der aktuelle Mietzins wird neu
+    abgeleitet."""
+
+    def _setup(self):
+        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
+        lg, e, m, v = _basis_objekte()
+        v.basis_referenzzinssatz = Decimal('1.75')
+        v.basis_lik_punkte = Decimal('100')
+        v.mietzins_modell = 'fest'
+        v.save()
+        return e, v
+
+    def _anpassung_speichern(self, c, v, neu_netto='1600', wirksam='2026-04-01'):
+        return c.post(f'/neu/mietzins/{v.id}/anpassung/', {
+            'aktion': 'speichern',
+            'neu_netto': neu_netto,
+            'neu_zins': '1.50',
+            'neu_lik': '105',
+            'wirksam_ab': wirksam,
+            'begruendung': 'Anpassung Referenzzinssatz',
+        })
+
+    def test_anpassung_erzeugt_sollmietzins_zeile(self):
+        from portfolio.models import Sollmietzins
+        from rentals.models import MietzinsAnpassung
+        e, v = self._setup()
+        c = Client(); c.force_login(_team_user())
+        self._anpassung_speichern(c, v)
+
+        anp = MietzinsAnpassung.objects.get(vertrag=v)
+        z = Sollmietzins.objects.filter(einheit=e, quelle_anpassung=anp)
+        self.assertEqual(z.count(), 1)
+        zeile = z.first()
+        self.assertEqual(zeile.gueltig_ab, date(2026, 4, 1))
+        self.assertEqual(zeile.netto_mietzins, Decimal('1600'))
+        # NK bleibt unverändert (Anpassung betrifft nur den Netto)
+        self.assertEqual(zeile.nebenkosten, Decimal('200'))
+        # Indexbasis der Anpassung ist mitgeschrieben
+        self.assertEqual(zeile.basis_referenzzinssatz, Decimal('1.50'))
+        self.assertEqual(zeile.basis_lik_punkte, Decimal('105'))
+
+    def test_zeile_erscheint_im_objekt_detail(self):
+        e, v = self._setup()
+        c = Client(); c.force_login(_team_user())
+        self._anpassung_speichern(c, v)
+        body = c.get(f'/neu/objekte/{e.id}/?tab=mietzins').content.decode()
+        self.assertIn('01.04.2026', body)
+
+    def test_mehrfach_speichern_bleibt_idempotent(self):
+        from portfolio.models import Sollmietzins
+        e, v = self._setup()
+        c = Client(); c.force_login(_team_user())
+        # Zweimal PDF-Generieren desselben Formulars darf keine Duplikat-Zeilen erzeugen
+        for _ in range(2):
+            self._anpassung_speichern(c, v)
+        self.assertEqual(Sollmietzins.objects.filter(einheit=e, gueltig_ab=date(2026, 4, 1)).count(), 1)
+
+    def test_loeschen_entfernt_zeile_und_resynct(self):
+        from portfolio.models import Sollmietzins
+        from rentals.models import MietzinsAnpassung
+        e, v = self._setup()
+        c = Client(); c.force_login(_team_user())
+        self._anpassung_speichern(c, v)
+        anp = MietzinsAnpassung.objects.get(vertrag=v)
+        self.assertTrue(Sollmietzins.objects.filter(quelle_anpassung=anp).exists())
+
+        c.post(f'/neu/anpassung/{anp.id}/loeschen/')
+        self.assertFalse(MietzinsAnpassung.objects.filter(id=anp.id).exists())
+        self.assertFalse(Sollmietzins.objects.filter(einheit=e, gueltig_ab=date(2026, 4, 1)).exists())
+
+
 class LogbuchTests(TestCase):
     """Audit-Trail / Logbuch: wer hat wann was getan, sichtbar unter /neu/logbuch/,
     mit Filtern, CSV-Export und rollenbasiertem Zugriff."""

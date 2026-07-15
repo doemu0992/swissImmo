@@ -1956,12 +1956,20 @@ def fw_anpassung_del(request, pk):
     from django.contrib import messages
     from rentals.models import MietzinsAnpassung
     from core.auth import log_aktion
+    from portfolio.models import Sollmietzins
     a = get_object_or_404(MietzinsAnpassung, id=pk)
     vid = a.vertrag_id
     if request.method == 'POST':
         log_aktion(request, "Mietzinsanpassung gelöscht", str(a.vertrag),
                    f"wirksam {a.wirksam_ab}: CHF {a.neuer_netto_mietzins}")
+        # Die aus dieser Anpassung erzeugte Sollmietzins-Zeile im Objekt
+        # ebenfalls entfernen und den aktuellen Mietzins der Einheit neu ableiten.
+        einheiten = {z.einheit for z in a.sollmietzins_zeilen.all()}
+        Sollmietzins.objects.filter(quelle_anpassung=a).delete()
         a.delete()
+        for e in einheiten:
+            if e:
+                e.sync_aktuelle_miete()
         messages.success(request, "Mietzinsanpassung entfernt.")
     return redirect(f'/neu/vertraege/{vid}/?tab=mietzins')
 
@@ -5676,6 +5684,28 @@ def fw_mietzins(request):
     })
 
 
+def _sollmietzins_aus_anpassung(einheit, anp, neu_netto, neu_zins, neu_lik, label=''):
+    """Legt aus einer amtlichen Mietzinsanpassung eine datierte Sollmietzins-Zeile
+    am Objekt an (gültig ab = wirksam_ab), damit der neue Mietzins im Objekt-Detail
+    erscheint und neue Verträge ab dem Termin damit starten. Idempotent pro
+    (Einheit, Datum) — mehrfaches Generieren erzeugt keine Duplikate. NK bleibt
+    unverändert (die Anpassung betrifft nur den Nettomietzins)."""
+    if not einheit:
+        return
+    from portfolio.models import Sollmietzins
+    nk = Decimal('0.00') if einheit.ist_einstellplatz else (einheit.nebenkosten_aktuell or Decimal('0.00'))
+    Sollmietzins.objects.update_or_create(
+        einheit=einheit, gueltig_ab=anp.wirksam_ab,
+        defaults={
+            'netto_mietzins': neu_netto,
+            'nebenkosten': nk,
+            'basis_referenzzinssatz': neu_zins,
+            'basis_lik_punkte': neu_lik,
+            'quelle_anpassung': anp,
+            'notiz': f"Amtliche Mietzinsanpassung{f' ({label})' if label else ''}",
+        })
+
+
 @rolle_erforderlich(ROLLE_VERWALTUNG)
 def fw_mietzins_anpassung(request, vertrag_id):
     """Amtliches Mietzinsanpassungs-Formular (Art. 269d OR / Art. 19 VMWG) in der /neu/-Shell.
@@ -5765,6 +5795,11 @@ def fw_mietzins_anpassung(request, vertrag_id):
             erhoehung_prozent_total=pot.get('delta_prozent'),
             begruendung=begruendung or 'Anpassung an Referenzzinssatz und Teuerung',
         )
+        # Den neuen Mietzins auch im Objekt als datierte Sollmietzins-Zeile führen
+        # (gültig ab = wirksam_ab) → erscheint im Objekt-Detail unter «Mietzins» und
+        # neue Verträge starten ab dem Termin mit dem angepassten Wert.
+        _sollmietzins_aus_anpassung(v.einheit, anp, neu_netto, neu_zins, neu_lik,
+                                    label=v.mieter.display_name)
         log_aktion(request, "Mietzinsanpassung erstellt", str(v),
                    f"neu CHF {neu_netto}, wirksam {wirksam_ab}", ziel=v)
 
