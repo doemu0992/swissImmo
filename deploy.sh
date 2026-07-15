@@ -1,40 +1,65 @@
 #!/usr/bin/env bash
-# Deploy auf PythonAnywhere.
+# Deploy auf PythonAnywhere — selbstheilend.
 #
-# Zieht den aktuellen Stand des Branches, wendet Migrationen an, sammelt die
-# statischen Dateien und lädt die Web-App neu.
+# Holt den aktuellen Stand des Branches HART (fetch + reset --hard, damit stray
+# Dateien / lokale Änderungen den Deploy NICHT mehr blockieren), installiert
+# Abhängigkeiten, wendet Migrationen an, sammelt statische Dateien und lädt die
+# Web-App neu.
 #
-# Aufruf in der PythonAnywhere-Bash-Konsole (im Repo-Ordner):
-#     bash deploy.sh
-# Optional anderer Branch:
-#     bash deploy.sh mein/anderer-branch
+# Sicher, weil die Produktionsdaten NICHT im Git liegen (db.sqlite3, media/,
+# staticfiles/ sind .gitignore) — reset --hard fasst sie nicht an.
 #
-# Für den automatischen Reload muss ggf. der Pfad zur WSGI-Datei gesetzt sein:
-#     PA_WSGI=/var/www/DEINNAME_pythonanywhere_com_wsgi.py bash deploy.sh
-set -euo pipefail
+# Aufruf (im Repo-Ordner):        bash deploy.sh
+# Anderer Branch:                 bash deploy.sh mein/anderer-branch
+# WSGI-Pfad überschreiben:        PA_WSGI=/var/www/DEIN_wsgi.py bash deploy.sh
+# Anderer Python (venv):          PA_PY=/home/USER/.virtualenvs/ENV/bin/python bash deploy.sh
+set -uo pipefail
 
 cd "$(dirname "$0")"
 BRANCH="${1:-claude/fairwalter-rebuild}"
+PY="${PA_PY:-python}"
 
-echo "→ git pull origin $BRANCH"
-git pull origin "$BRANCH"
+# Repo-Umzug abfangen: Remote fest auf die kanonische neue URL setzen.
+CANONICAL="https://github.com/doemu0992/swissImmo.git"
+CUR_URL="$(git remote get-url origin 2>/dev/null || echo '')"
+case "$CUR_URL" in
+    *doemu0992/swissimmo*|*doemu0992/swissImmo*)
+        if [ "$CUR_URL" != "$CANONICAL" ]; then
+            echo "→ Remote auf neue URL setzen ($CANONICAL)"
+            git remote set-url origin "$CANONICAL" || true
+        fi ;;
+esac
 
-echo "→ python manage.py migrate"
-python manage.py migrate --noinput
+echo "→ git fetch origin $BRANCH"
+if ! git fetch origin "$BRANCH"; then
+    echo "✗ git fetch fehlgeschlagen — Abbruch (alte Version bleibt aktiv)."; exit 1
+fi
 
-echo "→ python manage.py collectstatic"
-python manage.py collectstatic --noinput
+echo "→ git reset --hard origin/$BRANCH"
+git reset --hard "origin/$BRANCH" || { echo "✗ reset fehlgeschlagen."; exit 1; }
+DEPLOY_COMMIT="$(git rev-parse --short HEAD)"
+echo "  jetzt auf Commit $DEPLOY_COMMIT"
 
-# Web-App neu laden = WSGI-Datei „berühren". Pfad über $PA_WSGI überschreibbar;
-# Standard rät ihn aus dem Benutzernamen (Standard-Domain <user>.pythonanywhere.com).
+echo "→ pip install -r requirements.txt"
+"$PY" -m pip install -q -r requirements.txt || echo "⚠ pip install meldete Fehler — fahre fort."
+
+echo "→ manage.py migrate"
+if ! "$PY" manage.py migrate --noinput; then
+    echo "✗ migrate fehlgeschlagen — KEIN Reload (alte Version bleibt aktiv)."; exit 1
+fi
+
+echo "→ manage.py collectstatic"
+"$PY" manage.py collectstatic --noinput || echo "⚠ collectstatic meldete Fehler — fahre fort."
+
+# Web-App neu laden = WSGI-Datei „berühren".
 WSGI="${PA_WSGI:-/var/www/${USER}_pythonanywhere_com_wsgi.py}"
 if [ -f "$WSGI" ]; then
     touch "$WSGI"
-    echo "→ Web-App neu geladen ($WSGI)"
+    echo "→ Web-App neu geladen ($WSGI) — Commit $DEPLOY_COMMIT ist live."
 else
     echo "⚠ WSGI-Datei nicht gefunden ($WSGI)."
-    echo "  Bitte einmal manuell im Web-Tab auf «Reload» klicken —"
-    echo "  oder PA_WSGI mit dem korrekten Pfad setzen und erneut ausführen."
+    echo "  PA_WSGI mit dem korrekten Pfad setzen — sonst läuft weiter die alte Version."
+    exit 1
 fi
 
-echo "✓ Deploy fertig."
+echo "✓ Deploy fertig — prüfen auf https://swissimmo.pythonanywhere.com/version/"

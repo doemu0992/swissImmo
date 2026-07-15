@@ -48,6 +48,13 @@ api.add_router("/mietprozess", mietprozess_router)
 # ========================================================
 # 1. Landing Page & Public Tickets
 from core.views.ticket_public import public_ticket_view, generate_hallway_poster, index_view, public_schaden_melden_view
+from django.http import JsonResponse
+
+
+def version_view(request):
+    """Öffentlicher Deploy-Check: JSON mit Commit/Branch des laufenden Prozesses."""
+    from core.version import deployed_version
+    return JsonResponse(deployed_version())
 from core.views.application import public_application_view
 
 # 2. Das neue Admin-Cockpit (Bereinigt um das alte Dashboard)
@@ -127,6 +134,10 @@ from core.views.email_views import send_abrechnung_email_view, send_mahnung_emai
 urlpatterns = [
     # --- STARTSEITE ---
     path('', index_view, name='index'),
+
+    # --- DEPLOY-CHECK (öffentlich, ohne Login): zeigt den Commit des WIRKLICH
+    #     laufenden Prozesses → belegt, ob der Auto-Deploy (pull + reload) griff.
+    path('version/', version_view, name='version'),
 
     # --- EIGENER SAAS LOGIN ---
     path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),

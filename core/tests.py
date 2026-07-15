@@ -7214,6 +7214,20 @@ class VertragMietzinsUITests(TestCase):
         self.assertIn('01.12.2026', html)
 
 
+class VersionEndpointTests(TestCase):
+    """Öffentlicher Deploy-Check /version/ — ohne Login erreichbar, liefert
+    Commit/Branch des laufenden Prozesses als JSON."""
+
+    def test_version_public_json(self):
+        c = Client()   # kein Login
+        r = c.get('/version/')
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        self.assertIn('commit', data)
+        self.assertIn('branch', data)
+        self.assertIn('process_started', data)
+
+
 class VertragMietzinsRabattTests(TestCase):
     """Option B — Referenz/Rabatt-Split: Gratismonat wird brutto gebucht
     (voller Referenzertrag 3000/3020) + Rabatt als Ertragsminderung (3090),
