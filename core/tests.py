@@ -6193,3 +6193,61 @@ class KIRechnungsscannerTests(TestCase):
         self.assertEqual(r.status_code, 302)
         k = KreditorenRechnung.objects.get(lieferant='Leer AG')
         self.assertIsNone(k.liegenschaft_id)
+
+    def test_mehrfach_upload(self):
+        """Mehrere Belege in einem Rutsch → je Beleg eine Rechnung."""
+        from django.test import override_settings
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import KreditorenRechnung
+        vorher = KreditorenRechnung.objects.count()
+        c = Client(); c.force_login(_team_user())
+        f1 = SimpleUploadedFile('r1.pdf', self._text_pdf(), content_type='application/pdf')
+        f2 = SimpleUploadedFile('r2.pdf', self._text_pdf(), content_type='application/pdf')
+        with override_settings(GROQ_API_KEY=None):
+            r = c.post('/neu/kreditoren/scan/', {'beleg_scan': [f1, f2]})
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(KreditorenRechnung.objects.count(), vorher + 2)
+
+    def test_zeile_klickbar_und_beleg_vorschau(self):
+        """Zeile (Status Neu) ist klickbar; Edit-Panel zeigt die Beleg-Vorschau."""
+        from django.test import override_settings
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        c = Client(); c.force_login(_team_user())
+        f = SimpleUploadedFile('vorschau.pdf', self._text_pdf(), content_type='application/pdf')
+        with override_settings(GROQ_API_KEY=None):
+            c.post('/neu/kreditoren/scan/', {'beleg_scan': f})
+        body = c.get('/neu/kreditoren/').content.decode()
+        self.assertIn('fwKZeile', body)                      # Klick-Handler
+        self.assertIn('cursor-pointer', body)                # Zeile klickbar
+        self.assertIn('Beleg-Vorschau', body)                # Vorschau im Edit-Panel
+        self.assertIn('type="application/pdf"', body)        # PDF-Embed
+        self.assertIn('multiple', body)                      # Mehrfach-Upload-Input
+
+    def test_rechnungsmail_import(self):
+        """E-Mail mit PDF-Anhang → Rechnung mit gescannten Werten + Herkunft."""
+        from django.test import override_settings
+        from email.message import EmailMessage
+        from core.services.belegimport import importiere_rechnungsmail
+        from finance.models import KreditorenRechnung
+        msg = EmailMessage()
+        msg['From'] = 'Hans Handwerker <hans@sanitaer-muster.ch>'
+        msg['Subject'] = 'Rechnung Reparatur'
+        msg.set_content('Anbei die Rechnung. Gruss Hans')
+        msg.add_attachment(self._text_pdf(), maintype='application', subtype='pdf',
+                           filename='rechnung_reparatur.pdf')
+        with override_settings(GROQ_API_KEY=None):
+            rechnungen = importiere_rechnungsmail(msg)
+        self.assertEqual(len(rechnungen), 1)
+        k = rechnungen[0]
+        self.assertEqual(k.status, 'neu')
+        self.assertEqual(k.betrag, Decimal('350.00'))
+        self.assertEqual(k.iban, 'CH9300762011623852957')
+        self.assertIn('Per E-Mail von hans@sanitaer-muster.ch', k.fehlermeldung)
+
+    def test_rechnungsmail_ohne_anhang(self):
+        from email.message import EmailMessage
+        from core.services.belegimport import importiere_rechnungsmail
+        msg = EmailMessage()
+        msg['From'] = 'x@y.ch'
+        msg.set_content('Nur Text, kein Anhang')
+        self.assertEqual(importiere_rechnungsmail(msg), [])

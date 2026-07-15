@@ -6,6 +6,7 @@ Referenz: Original-Screenshots in REBUILD.md. Server-gerendert, testbar.
 Der 'Globale Filter' (?lg=<id>) filtert alle Kennzahlen auf eine Liegenschaft —
 er wird in _global_filter() gelesen und an jede Seite durchgereicht.
 """
+import os
 import re
 from datetime import date
 from decimal import Decimal
@@ -3738,6 +3739,7 @@ def fw_kreditoren(request):
             'objekt': f"{k.liegenschaft.strasse}, {k.liegenschaft.ort}" if k.liegenschaft else '—',
             'konto': f"{k.konto.nummer} {k.konto.bezeichnung}" if k.konto else None,
             'beleg_url': k.beleg_scan.url if k.beleg_scan else None,
+            'beleg_ist_pdf': bool(k.beleg_scan and str(k.beleg_scan.name).lower().endswith('.pdf')),
             'kann_bezahlen': k.status in ('freigegeben', 'in_zahlung', 'teilbezahlt'),
             'in_zahlung': k.status == 'in_zahlung',
             'teilbezahlt': k.status == 'teilbezahlt',
@@ -3763,6 +3765,7 @@ def fw_kreditoren(request):
         'darf_bezahlen': hat_rolle(request.user, VERWALTUNGS_ROLLEN),
         'aufwand_konten': aufwand_konten, 'liegenschaften': liegenschaften,
         'ki_aktiv': bool(getattr(settings, 'GROQ_API_KEY', None)),
+        'rechnungs_mail': os.environ.get('RECHNUNGS_IMAP_USER', ''),
         'meldung': list(messages.get_messages(request)),
     })
 
@@ -6968,8 +6971,12 @@ def fw_integrationen(request):
          'aktion': None},
         {'key': 'ki', 'name': 'KI-Rechnungsscanner', 'icon': 'fa-robot', 'farbe': 'violet',
          'aktiv': gesetzt('GROQ_API_KEY'), 'status': 'Verbunden' if gesetzt('GROQ_API_KEY') else 'Nicht konfiguriert',
-         'beschreibung': 'Kreditoren-Belege beim Hochladen automatisch auslesen (Lieferant, Betrag, IBAN, QR-Referenz) — inkl. Foto-Belegen via Bild-KI.',
-         'detail': ('Nutzbar unter Kreditoren → «Beleg scannen (KI)».' if gesetzt('GROQ_API_KEY')
+         'beschreibung': 'Kreditoren-Belege beim Hochladen automatisch auslesen (Lieferant, Betrag, IBAN, QR-Referenz) — inkl. Foto-Belegen via Bild-KI und E-Mail-Eingang für Handwerker-Rechnungen.',
+         'detail': (('Nutzbar unter Kreditoren → «Beleg scannen (KI)» (Mehrfach-Upload). '
+                     + (f"E-Mail-Eingang aktiv: {os.environ.get('RECHNUNGS_IMAP_USER')} (fetch_rechnungen)."
+                        if os.environ.get('RECHNUNGS_IMAP_USER')
+                        else 'E-Mail-Eingang: RECHNUNGS_IMAP_USER/PASSWORD setzen + Scheduled Task «manage.py fetch_rechnungen --einmal».'))
+                    if gesetzt('GROQ_API_KEY')
                     else 'GROQ_API_KEY hinterlegen — ohne Key läuft nur die regelbasierte Erkennung aus Text-PDFs.'),
          'aktion': None},
         {'key': 'bank', 'name': 'Banken-Abgleich (camt.053 / QR)', 'icon': 'fa-building-columns', 'farbe': 'sky',
@@ -8952,59 +8959,49 @@ def fw_kreditor_neu(request):
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_kreditor_scan(request):
-    """KI-Rechnungsscanner: Beleg hochladen → wird DIREKT gescannt (Groq-KI,
-    Vision für Foto-Belege, Regex-Fallback) und als Kreditorenrechnung (Status
-    Neu) mit den erkannten Daten angelegt. Die Erkennungs-Methode wird ehrlich
-    gemeldet; Werte sind über den ✎-Button korrigierbar."""
+    """KI-Rechnungsscanner: Belege hochladen (auch MEHRERE gleichzeitig) → jeder
+    wird DIREKT gescannt (Groq-KI, Vision für Foto-Belege, Regex-Fallback) und
+    als Kreditorenrechnung (Status Neu) mit den erkannten Daten angelegt. Die
+    Erkennungs-Methode wird ehrlich gemeldet; Werte sind per Klick auf die
+    Zeile korrigierbar (Edit-Panel mit Beleg-Vorschau)."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from finance.models import KreditorenRechnung
-    from finance.utils import scan_beleg
+    from core.services.belegimport import beleg_importieren
     from core.auth import log_aktion
     if request.method != 'POST':
         return redirect('fw_kreditoren')
 
-    datei = request.FILES.get('beleg_scan')
-    if not datei:
-        messages.error(request, "Bitte einen Beleg (PDF oder Foto) auswählen.")
+    dateien = request.FILES.getlist('beleg_scan')[:20]
+    if not dateien:
+        messages.error(request, "Bitte mindestens einen Beleg (PDF oder Foto) auswählen.")
         return redirect('fw_kreditoren')
 
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
-    kr = KreditorenRechnung.objects.create(beleg_scan=datei, status='neu', liegenschaft=lg)
+    for datei in dateien:
+        kr, daten = beleg_importieren(datei, liegenschaft=lg)
+        methode = daten.get('methode')
+        log_aktion(request, "Beleg gescannt (KI-Rechnungsscanner)",
+                   kr.lieferant or datei.name, f"Methode: {methode} · CHF {kr.betrag or 0}")
+        _kreditor_scan_meldung(request, kr, daten, datei.name)
+    ziel = '/neu/kreditoren/'
+    if lgq := request.POST.get('lg'):
+        ziel += f'?lg={lgq}'
+    return redirect(ziel)
 
-    daten = scan_beleg(kr.beleg_scan.path)
-    kr.lieferant = daten.get('lieferant') or ''
-    kr.iban = daten.get('iban') or ''
-    kr.referenz = daten.get('referenz') or ''
-    try:
-        b = Decimal(str(daten.get('betrag') or 0)).quantize(Decimal('0.01'))
-        kr.betrag = b if b > 0 else None
-    except Exception:
-        kr.betrag = None
-    if daten.get('datum'):
-        try:
-            kr.datum = date.fromisoformat(daten['datum'])
-        except ValueError:
-            pass
-    kr.fehlermeldung = '' if daten.get('methode') in ('ki', 'vision') else (daten.get('hinweis') or '')
-    kr.save()
 
+def _kreditor_scan_meldung(request, kr, daten, dateiname):
+    """Toast je gescanntem Beleg — Methode ehrlich ausweisen."""
+    from django.contrib import messages
     methode = daten.get('methode')
-    log_aktion(request, "Beleg gescannt (KI-Rechnungsscanner)",
-               kr.lieferant or datei.name, f"Methode: {methode} · CHF {kr.betrag or 0}")
     zusammenfassung = (f"«{kr.lieferant or 'Lieferant unbekannt'}»"
                        f"{f' · CHF {kr.betrag}' if kr.betrag else ''}"
                        f"{f' · {kr.datum.strftime(chr(37)+chr(100)+chr(46)+chr(37)+chr(109)+chr(46)+chr(37)+chr(89))}' if kr.datum else ''}")
     if methode in ('ki', 'vision'):
         messages.success(request, f"🤖 Beleg gescannt ({daten.get('hinweis')}): {zusammenfassung} — bitte prüfen und freigeben.")
     elif methode == 'regex':
-        messages.warning(request, f"Beleg regelbasiert ausgelesen (KI nicht aktiv/erreichbar): {zusammenfassung} — bitte Werte prüfen (✎).")
+        messages.warning(request, f"Beleg regelbasiert ausgelesen (KI nicht aktiv/erreichbar): {zusammenfassung} — bitte Werte prüfen.")
     else:
-        messages.warning(request, f"Beleg gespeichert, aber nicht auslesbar: {daten.get('hinweis')} Werte bitte manuell ergänzen (✎).")
-    ziel = '/neu/kreditoren/'
-    if lgq := request.POST.get('lg'):
-        ziel += f'?lg={lgq}'
-    return redirect(ziel)
+        messages.warning(request, f"Beleg «{dateiname}» gespeichert, aber nicht auslesbar: {daten.get('hinweis')} Werte bitte manuell ergänzen.")
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
