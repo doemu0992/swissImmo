@@ -292,25 +292,25 @@
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
         <div class="px-5 pt-4 pb-2">
             <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-layer-group text-indigo-500 mr-1.5"></i>Mietzins-Komponenten</h3>
-            <p class="text-[11px] text-slate-400 mt-0.5">Datierte Miete ab Mietbeginn. Für Gratismonate/gestaffelten Start mehrere Komponenten erfassen (z.B. ab Beginn Netto 0.00, ab späterem Datum voller Netto). Sind Komponenten erfasst, sind sie die massgebliche Quelle für die Sollstellung.</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">Datierte Miete ab Mietbeginn. <b>Referenz</b> = die echte vereinbarte Miete (Mieterspiegel/Bilanz). <b>Rabatt/Erlass</b> mindert nur die Verrechnung — ein Gratismonat = Rabatt gleich der Referenz (zu zahlen 0.00), der volle Referenzertrag wird trotzdem gebucht (Rabatt als Ertragsminderung auf Konto 3090). Sind Komponenten erfasst, sind sie die massgebliche Quelle für die Sollstellung.</p>
         </div>
         <table class="w-full text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-y border-slate-100">
-                <th class="px-5 py-2.5 font-semibold">Gültig ab</th>
-                <th class="px-5 py-2.5 font-semibold text-right">Netto</th>
-                <th class="px-5 py-2.5 font-semibold text-right">NK</th>
-                <th class="px-5 py-2.5 font-semibold text-right">Brutto</th>
-                <th class="px-5 py-2.5 font-semibold">Notiz</th><th></th>
+                <th class="px-4 py-2.5 font-semibold">Gültig ab</th>
+                <th class="px-4 py-2.5 font-semibold text-right">Referenz<br><span class="text-[9px] normal-case text-slate-300">Netto / NK</span></th>
+                <th class="px-4 py-2.5 font-semibold text-right">Rabatt<br><span class="text-[9px] normal-case text-slate-300">Netto / NK</span></th>
+                <th class="px-4 py-2.5 font-semibold text-right">zu zahlen</th>
+                <th class="px-4 py-2.5 font-semibold">Notiz</th><th></th>
             </tr></thead>
             <tbody class="divide-y divide-slate-50">
             {% for k in mietzins_komponenten %}
             <tr class="hover:bg-slate-50/60">
-                <td class="px-5 py-2.5 text-slate-700 whitespace-nowrap font-medium">{{ k.gueltig_ab|date:"d.m.Y" }}</td>
-                <td class="px-5 py-2.5 text-right {% if k.netto_mietzins == 0 %}text-emerald-600 font-semibold{% else %}text-slate-700{% endif %}">CHF {{ k.netto_mietzins|chf }}</td>
-                <td class="px-5 py-2.5 text-right text-slate-700">CHF {{ k.nebenkosten|chf }}</td>
-                <td class="px-5 py-2.5 text-right font-semibold text-slate-900">CHF {{ k.brutto|chf }}</td>
-                <td class="px-5 py-2.5 text-slate-500 truncate max-w-[160px]">{{ k.notiz|default:"—" }}</td>
-                <td class="px-5 py-2.5 text-right">
+                <td class="px-4 py-2.5 text-slate-700 whitespace-nowrap font-medium">{{ k.gueltig_ab|date:"d.m.Y" }}</td>
+                <td class="px-4 py-2.5 text-right text-slate-700 whitespace-nowrap">{{ k.netto_mietzins|chf }} / {{ k.nebenkosten|chf }}</td>
+                <td class="px-4 py-2.5 text-right whitespace-nowrap {% if k.hat_rabatt %}text-amber-600 font-semibold{% else %}text-slate-300{% endif %}">{% if k.hat_rabatt %}−{{ k.rabatt_netto|chf }} / −{{ k.rabatt_nk|chf }}{% else %}—{% endif %}</td>
+                <td class="px-4 py-2.5 text-right font-semibold whitespace-nowrap {% if k.verrechnet_brutto == 0 %}text-emerald-600{% else %}text-slate-900{% endif %}">CHF {{ k.verrechnet_brutto|chf }}{% if k.verrechnet_brutto == 0 %} <span class="text-[10px] font-normal">(frei)</span>{% endif %}</td>
+                <td class="px-4 py-2.5 text-slate-500 truncate max-w-[140px]">{{ k.notiz|default:"—" }}</td>
+                <td class="px-4 py-2.5 text-right">
                     <form method="post" action="/neu/vertrag-mietzins/{{ k.id }}/loeschen/" class="inline" onsubmit="return confirm('Komponente löschen?');">{% csrf_token %}
                         <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
                     </form>
@@ -320,17 +320,23 @@
             {% endfor %}
             </tbody>
         </table>
-        <form method="post" action="/neu/vertrag-mietzins/{{ v.id }}/" class="grid grid-cols-2 sm:grid-cols-5 gap-2 items-end px-5 py-3 bg-slate-50/60 border-t border-slate-100">
+        <form method="post" action="/neu/vertrag-mietzins/{{ v.id }}/" class="grid grid-cols-2 sm:grid-cols-6 gap-2 items-end px-5 py-3 bg-slate-50/60 border-t border-slate-100">
             {% csrf_token %}
             <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">Gültig ab</label>
                 <input type="date" name="gueltig_ab" value="{{ v.beginn|date:'Y-m-d' }}" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5"></div>
-            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">Netto (CHF)</label>
-                <input name="netto_mietzins" inputmode="decimal" value="0.00" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5 text-right"></div>
-            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">NK (CHF)</label>
+            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">Netto Referenz</label>
+                <input name="netto_mietzins" inputmode="decimal" value="{{ v.netto_mietzins|chf }}" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5 text-right"></div>
+            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">NK Referenz</label>
                 <input name="nebenkosten" inputmode="decimal" value="{{ v.nebenkosten|chf }}" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5 text-right"></div>
+            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">Rabatt Netto</label>
+                <input name="rabatt_netto" inputmode="decimal" value="0.00" class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5 text-right"></div>
             <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">Notiz</label>
-                <input name="notiz" placeholder="z.B. mietzinsfrei" class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5"></div>
+                <input name="notiz" placeholder="z.B. Gratismonat" class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5"></div>
             <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Hinzufügen</button>
+            <label class="sm:col-span-6 flex items-center gap-2 text-[11px] text-slate-600 -mt-0.5">
+                <input type="checkbox" name="mietzinsfrei" value="1" class="rounded border-slate-300 text-indigo-600">
+                Nettomietzins vollständig erlassen (Gratismonat) — setzt den Rabatt automatisch auf den vollen Netto-Referenzbetrag.
+            </label>
         </form>
     </div>
 

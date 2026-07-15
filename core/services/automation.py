@@ -41,20 +41,29 @@ def run_sollstellung(jahr, monat, user=None):
             v_start = max(start_date, v.beginn)
             v_ende = min(end_date, v.ende) if v.ende else end_date
             faktor = Decimal((v_ende - v_start).days + 1) / Decimal(last_day)
-            # Staffelmiete: den zum Abrechnungsmonat gültigen Netto-Mietzins verwenden
-            # (vorab vereinbart → automatisch). Fest/Index nutzen den Basiswert.
-            basis_netto = v.effektiver_netto_mietzins(start_date)
-            netto = round((basis_netto or Decimal('0')) * faktor, 2)
-            # NK ebenfalls datiert auflösen (Komponenten), sonst flacher Vertragswert.
-            nk = round((v.effektive_nebenkosten(start_date) or Decimal('0')) * faktor, 2)
-            if netto + nk <= 0:
+            # --- Option B: Bruttobuchung ---
+            # Referenz = die ECHTE vereinbarte Miete (Mieterspiegel/Bilanz-Ertrag),
+            # verrechnet = was der Mieter effektiv zahlt (Referenz − Rabatt/Erlass).
+            # Datierte Komponenten (Gratismonate/gestaffelter Start) haben Vorrang;
+            # sonst Staffel/Anpassung/Basiswert.
+            ref_netto = round((v.effektiver_netto_mietzins(start_date) or Decimal('0')) * faktor, 2)
+            ref_nk = round((v.effektive_nebenkosten(start_date) or Decimal('0')) * faktor, 2)
+            verr_netto = round((v.verrechneter_netto_mietzins(start_date) or Decimal('0')) * faktor, 2)
+            verr_nk = round((v.verrechnete_nebenkosten(start_date) or Decimal('0')) * faktor, 2)
+            # Rabatt = Referenz − verrechnet (nie negativ), aus den gerundeten Werten
+            # abgeleitet, damit Debitor exakt auf den verrechneten Betrag nettoiert.
+            rabatt_netto = max(Decimal('0.00'), ref_netto - verr_netto)
+            rabatt_nk = max(Decimal('0.00'), ref_nk - verr_nk)
+            if ref_netto + ref_nk <= 0:
                 continue
+            # MWST folgt dem effektiv verrechneten Betrag (nicht dem Referenzwert).
             mwst = Decimal('0.00')
             if v.mwst_pflichtig and (v.mwst_satz or 0) > 0:
-                mwst = round((netto + nk) * (v.mwst_satz / Decimal('100')), 2)
+                mwst = round((verr_netto + verr_nk) * (v.mwst_satz / Decimal('100')), 2)
+            # Der Debitor schuldet nur den verrechneten Betrag (Gratismonat = 0).
             rechnung = DebitorenRechnung.objects.create(
                 vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
-                titel=titel, betrag=netto + nk + mwst, faellig_am=start_date)
+                titel=titel, betrag=verr_netto + verr_nk + mwst, faellig_am=start_date)
             lg = v.einheit.liegenschaft if v.einheit_id else None
             e = v.einheit
             # Mietertrag: Gewerbe/Parkplätze/Nebenobjekte → 3010, Wohnen → 3000.
@@ -65,9 +74,18 @@ def run_sollstellung(jahr, monat, user=None):
                 nk_konto, nk_label = "3021", "NK-Pauschal"
             else:
                 nk_konto, nk_label = "3020", "NK-Akonto"
-            buche("1100", ertrag_konto, netto, f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
+            # Vollen Referenzertrag als Ertrag buchen (Bilanz/Mieterspiegel korrekt) …
+            buche("1100", ertrag_konto, ref_netto, f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
-            buche("1100", nk_konto, nk, f"{nk_label} {v.mieter} - {monat:02d}/{jahr}",
+            buche("1100", nk_konto, ref_nk, f"{nk_label} {v.mieter} - {monat:02d}/{jahr}",
+                  datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
+            # … den Rabatt/Erlass als Ertragsminderung gegen den Debitor buchen
+            # (Soll 3090 / Haben 1100 → Debitor nettoiert auf den verrechneten Betrag).
+            buche("3090", "1100", rabatt_netto,
+                  f"Mietzinserlass {v.mieter} - {monat:02d}/{jahr}",
+                  datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
+            buche("3090", "1100", rabatt_nk,
+                  f"NK-Erlass {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
             buche("1100", "2200", mwst, f"MWST {v.mwst_satz}% {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)

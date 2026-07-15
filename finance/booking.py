@@ -30,6 +30,7 @@ STANDARD_KONTEN = [
     ('3010', 'Mieterträge Gewerbe/Parkplätze', 'ertrag', False, 'm2'),
     ('3020', 'Nebenkosten Akonto-Zahlungen', 'ertrag', False, 'm2'),
     ('3021', 'Nebenkosten Pauschal (Ertrag)', 'ertrag', False, 'm2'),
+    ('3090', 'Mietzinsrabatte / Mietzinserlass (Ertragsminderung)', 'ertrag', False, 'm2'),
     ('3600', 'Übrige Erträge / Weiterverrechnung (Zuschlag)', 'ertrag', False, 'm2'),
     ('4000', 'Unterhalt & Reparaturen', 'aufwand', False, 'm2'),
     ('4100', 'Heizkosten / Brennstoffe', 'aufwand', True, 'm2'),

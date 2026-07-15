@@ -234,6 +234,49 @@ class Mietvertrag(models.Model):
                 return komp.nebenkosten or Decimal('0.00')
         return self.nebenkosten or Decimal('0.00')
 
+    def _aktive_komponente(self, fuer_datum=None):
+        """Die am Stichtag geltende Mietzins-Komponente (jüngste mit
+        gueltig_ab <= Stichtag), oder None wenn keine erfasst ist."""
+        from datetime import date as _d
+        if not self.pk:
+            return None
+        stichtag = fuer_datum or _d.today()
+        return (self.mietzins_komponenten.filter(gueltig_ab__lte=stichtag)
+                .order_by('-gueltig_ab', '-id').first())
+
+    def verrechneter_netto_mietzins(self, fuer_datum=None):
+        """Netto-Mietzins, der an einem Datum tatsächlich VERRECHNET wird
+        (Sollstellung/Debitor) = Referenz − Rabatt/Erlass. In einem Gratismonat
+        (Rabatt == Referenz) ist das 0, während `effektiver_netto_mietzins` den
+        vollen Referenzwert für Mieterspiegel/Bilanz behält (Option B: brutto
+        buchen, Rabatt als Ertragsminderung)."""
+        komp = self._aktive_komponente(fuer_datum)
+        if komp:
+            return komp.verrechnet_netto
+        return self.effektiver_netto_mietzins(fuer_datum)
+
+    def verrechnete_nebenkosten(self, fuer_datum=None):
+        """Nebenkosten, die an einem Datum tatsächlich verrechnet werden =
+        Referenz-NK − Rabatt-NK. Ohne Komponente = effektive Nebenkosten."""
+        komp = self._aktive_komponente(fuer_datum)
+        if komp:
+            return komp.verrechnet_nk
+        return self.effektive_nebenkosten(fuer_datum)
+
+    def rabatt_netto_am(self, fuer_datum=None):
+        """Netto-Rabatt/-Erlass der am Datum geltenden Komponente (0 ohne)."""
+        komp = self._aktive_komponente(fuer_datum)
+        if komp:
+            return min(komp.rabatt_netto or Decimal('0.00'), komp.netto_mietzins or Decimal('0.00'))
+        return Decimal('0.00')
+
+    def rabatt_nk_am(self, fuer_datum=None):
+        """NK-Rabatt/-Erlass der am Datum geltenden Komponente (0 ohne)."""
+        komp = self._aktive_komponente(fuer_datum)
+        if komp:
+            return min(komp.rabatt_nk or Decimal('0.00'), komp.nebenkosten or Decimal('0.00'))
+        return Decimal('0.00')
+
     def effektive_basis(self, fuer_datum=None):
         """(Referenzzins, LIK), auf denen der aktuell verrechnete Mietzins beruht:
         aus der jüngsten am Stichtag wirksamen Anpassung, sonst die Vertragsbasis.
@@ -350,8 +393,15 @@ class VertragMietzins(models.Model):
     Sollstellung (pro Monat gilt die jüngste Komponente mit `gueltig_ab <= Monat`)."""
     vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='mietzins_komponenten')
     gueltig_ab = models.DateField("Gültig ab")
-    netto_mietzins = models.DecimalField("Netto-Mietzins", max_digits=8, decimal_places=2, default=0)
-    nebenkosten = models.DecimalField("Nebenkosten", max_digits=8, decimal_places=2, default=0)
+    # Referenz-/Sollmiete = die ECHTE vereinbarte Miete dieser Periode. Massgeblich
+    # für Mieterspiegel, Ertragspotenzial und die Bilanz-Sollwerte — bleibt auch in
+    # Gratismonaten der volle Betrag (nie 0 für ein vermietetes Objekt).
+    netto_mietzins = models.DecimalField("Netto-Mietzins (Referenz)", max_digits=8, decimal_places=2, default=0)
+    nebenkosten = models.DecimalField("Nebenkosten (Referenz)", max_digits=8, decimal_places=2, default=0)
+    # Rabatt/Erlass für diese Periode — mindert NUR die Verrechnung (Sollstellung),
+    # nicht die Referenz. Gratismonat = Rabatt Netto == Referenz Netto.
+    rabatt_netto = models.DecimalField("Rabatt Netto", max_digits=8, decimal_places=2, default=0)
+    rabatt_nk = models.DecimalField("Rabatt NK", max_digits=8, decimal_places=2, default=0)
     notiz = models.CharField(max_length=200, blank=True, default='')
 
     class Meta:
@@ -361,7 +411,31 @@ class VertragMietzins(models.Model):
 
     @property
     def brutto(self):
+        """Referenz-Brutto (Sollmiete) — für Reporting."""
         return (self.netto_mietzins or Decimal('0.00')) + (self.nebenkosten or Decimal('0.00'))
+
+    @property
+    def verrechnet_netto(self):
+        return max(Decimal('0.00'), (self.netto_mietzins or Decimal('0.00')) - (self.rabatt_netto or Decimal('0.00')))
+
+    @property
+    def verrechnet_nk(self):
+        return max(Decimal('0.00'), (self.nebenkosten or Decimal('0.00')) - (self.rabatt_nk or Decimal('0.00')))
+
+    @property
+    def verrechnet_brutto(self):
+        return self.verrechnet_netto + self.verrechnet_nk
+
+    @property
+    def rabatt_gesamt(self):
+        """Effektiver Rabatt/Erlass (Netto + NK), geklemmt auf die Referenz."""
+        rn = min(self.rabatt_netto or Decimal('0.00'), self.netto_mietzins or Decimal('0.00'))
+        rk = min(self.rabatt_nk or Decimal('0.00'), self.nebenkosten or Decimal('0.00'))
+        return rn + rk
+
+    @property
+    def hat_rabatt(self):
+        return (self.rabatt_netto or 0) > 0 or (self.rabatt_nk or 0) > 0
 
     def __str__(self):
         return f"ab {self.gueltig_ab:%d.%m.%Y}: Netto CHF {self.netto_mietzins} / NK CHF {self.nebenkosten}"

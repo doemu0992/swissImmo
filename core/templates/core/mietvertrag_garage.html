@@ -60,12 +60,19 @@
     {% endif %}
 </table>
 {% if vertrag.mietzins_komponenten.all %}
-<p class="note">Der Mietzins ist zeitlich gestaffelt vereinbart — es gelten die folgenden Beträge ab dem jeweiligen Datum:</p>
-<table class="data">
-    <tr><td class="k b">Gültig ab</td><td class="b">Mietzins</td></tr>
+<p class="note">Der Mietzins ist zeitlich gestaffelt vereinbart. Es gelten die folgenden Beträge ab dem jeweiligen Datum. Ein allfälliger Rabatt/Erlass (z.B. mietzinsfreie Anfangsmonate) mindert nur den in dieser Periode geschuldeten Betrag; die vereinbarte Referenzmiete bleibt unverändert:</p>
+<table class="data" style="border-collapse:collapse;">
+    <tr style="border-bottom:1px solid #cbd5e1;">
+        <td class="k b" style="width:26%;">Gültig ab</td>
+        <td class="b" style="text-align:right;">Mietzins</td>
+        <td class="b" style="text-align:right;">Rabatt/Erlass</td>
+        <td class="b" style="text-align:right;">Zu bezahlen</td></tr>
     {% for k in vertrag.mietzins_komponenten.all %}
-    <tr><td class="k">{{ k.gueltig_ab|date:"d.m.Y" }}{% if k.notiz %} <span style="color:#888">({{ k.notiz }})</span>{% endif %}</td>
-        <td>CHF {{ k.brutto|floatformat:2 }}{% if k.brutto == 0 %} <span style="color:#888">(mietzinsfrei)</span>{% endif %}</td></tr>
+    <tr>
+        <td class="k">{{ k.gueltig_ab|date:"d.m.Y" }}{% if k.notiz %} <span style="color:#888">({{ k.notiz }})</span>{% endif %}</td>
+        <td style="text-align:right;">CHF {{ k.brutto|floatformat:2 }}</td>
+        <td style="text-align:right;">{% if k.hat_rabatt %}– CHF {{ k.rabatt_gesamt|floatformat:2 }}{% else %}–{% endif %}</td>
+        <td class="b" style="text-align:right;">CHF {{ k.verrechnet_brutto|floatformat:2 }}{% if k.verrechnet_brutto == 0 %} <span style="color:#888">(mietzinsfrei)</span>{% endif %}</td></tr>
     {% endfor %}
 </table>
 {% endif %}

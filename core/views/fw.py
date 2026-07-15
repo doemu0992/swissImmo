@@ -9354,13 +9354,29 @@ def fw_vertrag_mietzins_add(request, pk):
     if not gab or netto is None or nk is None or netto < 0 or nk < 0:
         messages.error(request, "Gültig-ab-Datum, Netto und NK (≥ 0) sind erforderlich.")
         return redirect(f'/neu/vertraege/{v.id}/?tab=mietzins')
+    # Rabatt/Erlass (Option B): mindert nur die Verrechnung, nicht die Referenz.
+    # "mietzinsfrei" = Nettomietzins voll erlassen → Rabatt = Netto-Referenz.
+    if request.POST.get('mietzinsfrei'):
+        rabatt_netto = netto
+    else:
+        rabatt_netto = _dec('rabatt_netto') or Decimal('0.00')
+    rabatt_nk = _dec('rabatt_nk') or Decimal('0.00')
+    if rabatt_netto < 0 or rabatt_nk < 0:
+        messages.error(request, "Rabatt-Werte dürfen nicht negativ sein.")
+        return redirect(f'/neu/vertraege/{v.id}/?tab=mietzins')
+    rabatt_netto = min(rabatt_netto, netto)   # Rabatt nie grösser als Referenz
+    rabatt_nk = min(rabatt_nk, nk)
     VertragMietzins.objects.update_or_create(
         vertrag=v, gueltig_ab=gab,
         defaults={'netto_mietzins': netto, 'nebenkosten': nk,
+                  'rabatt_netto': rabatt_netto, 'rabatt_nk': rabatt_nk,
                   'notiz': (request.POST.get('notiz') or '').strip()[:200]})
+    zu_zahlen = max(Decimal('0'), netto - rabatt_netto) + max(Decimal('0'), nk - rabatt_nk)
     log_aktion(request, "Mietzins-Komponente erfasst", str(v),
-               f"ab {gab:%d.%m.%Y}: Netto {netto} / NK {nk}", ziel=v)
-    messages.success(request, f"✅ Komponente ab {gab:%d.%m.%Y} gespeichert (Netto CHF {netto} / NK CHF {nk}).")
+               f"ab {gab:%d.%m.%Y}: Referenz Netto {netto} / NK {nk}, "
+               f"Rabatt {rabatt_netto}/{rabatt_nk}, zu zahlen {zu_zahlen}", ziel=v)
+    messages.success(request, f"✅ Komponente ab {gab:%d.%m.%Y} gespeichert "
+                     f"(Referenz CHF {netto + nk}, zu zahlen CHF {zu_zahlen}).")
     return redirect(f'/neu/vertraege/{v.id}/?tab=mietzins')
 
 

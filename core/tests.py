@@ -7212,3 +7212,115 @@ class VertragMietzinsUITests(TestCase):
         self.assertIn('01.10.2026', html)
         self.assertIn('mietzinsfrei', html)
         self.assertIn('01.12.2026', html)
+
+
+class VertragMietzinsRabattTests(TestCase):
+    """Option B — Referenz/Rabatt-Split: Gratismonat wird brutto gebucht
+    (voller Referenzertrag 3000/3020) + Rabatt als Ertragsminderung (3090),
+    Debitor nettoiert auf den verrechneten Betrag. So bleiben Mieterspiegel
+    und Bilanz auf dem echten Ertragspotenzial, während der Mieter 0 zahlt."""
+
+    def _setup(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        v.beginn = date(2026, 10, 1)
+        v.netto_mietzins = Decimal('1000'); v.nebenkosten = Decimal('250')
+        v.mietzins_modell = 'fest'
+        v.save()
+        return lg, e, m, v
+
+    def test_resolver_referenz_vs_verrechnet(self):
+        from rentals.models import VertragMietzins
+        _lg, _e, _m, v = self._setup()
+        # Gratismonat: Referenz voll, Rabatt = Netto-Referenz → verrechnet 0.
+        VertragMietzins.objects.create(
+            vertrag=v, gueltig_ab=date(2026, 10, 1),
+            netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'),
+            rabatt_netto=Decimal('1000'), notiz='Gratismonat')
+        VertragMietzins.objects.create(
+            vertrag=v, gueltig_ab=date(2026, 12, 1),
+            netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'))
+        # Referenz (Reporting) bleibt voll …
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 10, 15)), Decimal('1000'))
+        self.assertEqual(v.effektive_nebenkosten(date(2026, 10, 15)), Decimal('250'))
+        # … verrechnet (Debitor) ist im Gratismonat 0 Netto (NK läuft).
+        self.assertEqual(v.verrechneter_netto_mietzins(date(2026, 10, 15)), Decimal('0'))
+        self.assertEqual(v.verrechnete_nebenkosten(date(2026, 10, 15)), Decimal('250'))
+        # Dezember voll.
+        self.assertEqual(v.verrechneter_netto_mietzins(date(2026, 12, 1)), Decimal('1000'))
+
+    def test_sollstellung_bruttobuchung(self):
+        from rentals.models import VertragMietzins
+        from finance.models import DebitorenRechnung, Buchung
+        from core.services.automation import run_sollstellung
+        _lg, e, _m, v = self._setup()
+        VertragMietzins.objects.create(
+            vertrag=v, gueltig_ab=date(2026, 10, 1),
+            netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'),
+            rabatt_netto=Decimal('1000'), notiz='Gratismonat')
+        run_sollstellung(2026, 10)
+        r = DebitorenRechnung.objects.get(vertrag=v, titel='Miete & NK 10/2026')
+        # Debitor schuldet nur die NK (Netto voll erlassen).
+        self.assertEqual(r.betrag, Decimal('250.00'))
+        buchungen = Buchung.objects.filter(debitoren_rechnung=r)
+        # Voller Referenzertrag auf 3000 (Wohnen) …
+        b3000 = buchungen.filter(haben_konto__nummer='3000')
+        self.assertEqual(sum(b.betrag for b in b3000), Decimal('1000.00'))
+        # NK-Ertrag auf 3020 …
+        b3020 = buchungen.filter(haben_konto__nummer='3020')
+        self.assertEqual(sum(b.betrag for b in b3020), Decimal('250.00'))
+        # … Rabatt als Ertragsminderung (Soll 3090 / Haben 1100).
+        b3090 = buchungen.filter(soll_konto__nummer='3090', haben_konto__nummer='1100')
+        self.assertEqual(sum(b.betrag for b in b3090), Decimal('1000.00'))
+        # Debitor (1100) nettoiert: Soll 1000+250, Haben 1000 → offen 250.
+        soll_1100 = sum(b.betrag for b in buchungen.filter(soll_konto__nummer='1100'))
+        haben_1100 = sum(b.betrag for b in buchungen.filter(haben_konto__nummer='1100'))
+        self.assertEqual(soll_1100 - haben_1100, Decimal('250.00'))
+
+    def test_teilrabatt(self):
+        from rentals.models import VertragMietzins
+        from finance.models import DebitorenRechnung, Buchung
+        from core.services.automation import run_sollstellung
+        _lg, _e, _m, v = self._setup()
+        # 300 Rabatt auf 1000 Netto → verrechnet 700 + 250 NK = 950.
+        VertragMietzins.objects.create(
+            vertrag=v, gueltig_ab=date(2026, 10, 1),
+            netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'),
+            rabatt_netto=Decimal('300'))
+        run_sollstellung(2026, 10)
+        r = DebitorenRechnung.objects.get(vertrag=v, titel='Miete & NK 10/2026')
+        self.assertEqual(r.betrag, Decimal('950.00'))
+        b3090 = Buchung.objects.filter(debitoren_rechnung=r, soll_konto__nummer='3090')
+        self.assertEqual(sum(b.betrag for b in b3090), Decimal('300.00'))
+
+    def test_ui_mietzinsfrei_checkbox_setzt_rabatt(self):
+        from rentals.models import VertragMietzins
+        _lg, _e, _m, v = self._setup()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertrag-mietzins/{v.id}/', {
+            'gueltig_ab': '2026-10-01', 'netto_mietzins': '1000.00',
+            'nebenkosten': '250.00', 'mietzinsfrei': '1', 'notiz': 'Gratismonat'})
+        k = VertragMietzins.objects.get(vertrag=v, gueltig_ab=date(2026, 10, 1))
+        self.assertEqual(k.netto_mietzins, Decimal('1000.00'))   # Referenz voll
+        self.assertEqual(k.rabatt_netto, Decimal('1000.00'))     # Rabatt = Netto
+        self.assertEqual(k.verrechnet_brutto, Decimal('250.00')) # zu zahlen = NK
+
+    def test_pdf_zeigt_referenz_und_zu_zahlen(self):
+        from rentals.models import VertragMietzins
+        from core.services.pdf_service import generate_vertrag_pdf_bytes
+        _lg, _e, _m, v = self._setup()
+        VertragMietzins.objects.create(
+            vertrag=v, gueltig_ab=date(2026, 10, 1),
+            netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'),
+            rabatt_netto=Decimal('1000'), notiz='Gratismonat')
+        # Über den echten PDF-Service (nicht nur Template-Direktrender).
+        pdf = generate_vertrag_pdf_bytes(v)
+        self.assertTrue(pdf.startswith(b'%PDF'))
+        # Template rendert Referenzmiete + Rabatt-Spalte.
+        from django.template.loader import get_template
+        html = get_template('core/mietvertrag_pdf.html').render({'vertrag': v, 'einheit': _e,
+                'miete_fmt': '1000.00', 'nk_fmt': '250.00', 'brutto_fmt': '1250.00'})
+        self.assertIn('Referenzmiete', html)
+        self.assertIn('Zu bezahlen', html)
+        self.assertIn('mietzinsfrei', html)
