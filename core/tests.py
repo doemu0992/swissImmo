@@ -6065,3 +6065,106 @@ class MietzinsKonsistenzTests(TestCase):
         self.assertIn('function wvPreview', body)
         self.assertIn('wv-vd-data', body)
         self.assertIn('G H', body)
+
+
+class KIRechnungsscannerTests(TestCase):
+    """KI-Rechnungsscanner in /neu/: Scan direkt beim Upload, Methode sichtbar,
+    Werte korrigierbar. Ohne GROQ-Key läuft die regelbasierte Erkennung."""
+
+    def _text_pdf(self):
+        import io
+        from reportlab.pdfgen import canvas as _c
+        buf = io.BytesIO()
+        c = _c.Canvas(buf)
+        c.drawString(72, 800, "Muster Sanitaer AG")
+        c.drawString(72, 780, "Rechnung Nr. 2026-042 vom 15.03.2026")
+        c.drawString(72, 760, "Total CHF 350.00")
+        c.drawString(72, 740, "IBAN CH93 0076 2011 6238 5295 7")
+        c.save()
+        return buf.getvalue()
+
+    def test_seite_zeigt_scanner_und_edit(self):
+        from finance.models import KreditorenRechnung
+        KreditorenRechnung.objects.create(lieferant='Alt AG', betrag=Decimal('100'), status='neu')
+        c = Client(); c.force_login(_team_user())
+        body = c.get('/neu/kreditoren/').content.decode()
+        self.assertIn('KI-Rechnungsscanner', body)
+        self.assertIn('/neu/kreditoren/scan/', body)
+        self.assertIn('kedit-', body)                     # Inline-Bearbeiten für Status Neu
+        self.assertIn('/bearbeiten/', body)
+
+    def test_scan_upload_regex_ohne_key(self):
+        from django.test import override_settings
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import KreditorenRechnung
+        c = Client(); c.force_login(_team_user())
+        f = SimpleUploadedFile('rechnung.pdf', self._text_pdf(), content_type='application/pdf')
+        with override_settings(GROQ_API_KEY=None):
+            r = c.post('/neu/kreditoren/scan/', {'beleg_scan': f})
+        self.assertEqual(r.status_code, 302)
+        k = KreditorenRechnung.objects.latest('id')
+        self.assertEqual(k.status, 'neu')
+        self.assertEqual(k.betrag, Decimal('350.00'))
+        self.assertEqual(k.iban, 'CH9300762011623852957')
+        self.assertEqual(k.datum, date(2026, 3, 15))
+        self.assertIn('Muster Sanitaer AG', k.lieferant)
+        # Regex-Methode → Hinweis am Datensatz (in der Edit-Zeile sichtbar)
+        self.assertIn('prüfen', k.fehlermeldung)
+
+    def test_scan_upload_mit_ki_mock(self):
+        from unittest.mock import patch, MagicMock
+        from django.test import override_settings
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import KreditorenRechnung
+        import json as _json
+        antwort = MagicMock()
+        antwort.raise_for_status.return_value = None
+        antwort.json.return_value = {'choices': [{'message': {'content': _json.dumps({
+            'lieferant': 'Elektro Muster GmbH', 'betrag': 1234.55,
+            'datum': '2026-05-02', 'referenz': 'RF18539007547034', 'iban': 'CH9300762011623852957',
+        })}}]}
+        c = Client(); c.force_login(_team_user())
+        f = SimpleUploadedFile('rechnung.pdf', self._text_pdf(), content_type='application/pdf')
+        with override_settings(GROQ_API_KEY='test-key'), \
+             patch('finance.utils.requests.post', return_value=antwort) as mocked:
+            c.post('/neu/kreditoren/scan/', {'beleg_scan': f})
+            # Aktuelles Modell wird verwendet (llama3-8b-8192 ist abgeschaltet)
+            self.assertEqual(mocked.call_args.kwargs['json']['model'], 'llama-3.3-70b-versatile')
+        k = KreditorenRechnung.objects.latest('id')
+        self.assertEqual(k.lieferant, 'Elektro Muster GmbH')
+        self.assertEqual(k.betrag, Decimal('1234.55'))
+        self.assertEqual(k.datum, date(2026, 5, 2))
+        self.assertEqual(k.fehlermeldung, '')            # KI-Erkennung → kein Hinweis
+
+    def test_bild_ohne_key_ergibt_hinweis(self):
+        from django.test import override_settings
+        from finance.utils import scan_beleg
+        import tempfile, os as _os
+        with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as fh:
+            fh.write(b'\xff\xd8\xff\xe0fakejpg')
+            pfad = fh.name
+        try:
+            with override_settings(GROQ_API_KEY=None):
+                d = scan_beleg(pfad)
+            self.assertEqual(d['methode'], 'leer')
+            self.assertIn('GROQ_API_KEY', d['hinweis'])
+        finally:
+            _os.unlink(pfad)
+
+    def test_kreditor_bearbeiten_nur_status_neu(self):
+        from finance.models import KreditorenRechnung
+        k = KreditorenRechnung.objects.create(lieferant='Scan AG', betrag=Decimal('100'), status='neu')
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/kreditoren/{k.id}/bearbeiten/', {
+            'lieferant': 'Scan AG korrigiert', 'betrag': '425.50',
+            'datum': '2026-06-01', 'referenz': 'R-77', 'iban': 'CH93 0076 2011 6238 5295 7',
+        })
+        k.refresh_from_db()
+        self.assertEqual(k.lieferant, 'Scan AG korrigiert')
+        self.assertEqual(k.betrag, Decimal('425.50'))
+        self.assertEqual(k.iban, 'CH9300762011623852957')
+        # Verbuchte Rechnung ist gesperrt
+        k.status = 'freigegeben'; k.save()
+        c.post(f'/neu/kreditoren/{k.id}/bearbeiten/', {'lieferant': 'Hack', 'betrag': '1'})
+        k.refresh_from_db()
+        self.assertEqual(k.lieferant, 'Scan AG korrigiert')

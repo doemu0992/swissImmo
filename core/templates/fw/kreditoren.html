@@ -12,6 +12,9 @@
             <i class="fa-solid fa-file-arrow-down mr-1.5"></i>Zahlungsdatei (pain.001) · {{ anzahl_zahlbar }}
         </a>
         {% endif %}
+        <button type="button" onclick="document.getElementById('scanform').classList.toggle('hidden')" class="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+            <i class="fa-solid fa-robot mr-1.5"></i> Beleg scannen (KI)
+        </button>
         <button type="button" onclick="document.getElementById('kredform').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
             <i class="fa-solid fa-plus mr-1.5"></i> Rechnung erfassen
         </button>
@@ -20,6 +23,41 @@
 <p class="text-sm text-slate-500 mb-5">Rechnungseingang → Freigabe → Zahlung (Aufwand an Kreditoren, dann Kreditoren an Bank)
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
     <a href="/neu/kreditoren/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+<!-- KI-Rechnungsscanner: Upload → Beleg wird direkt gescannt und als Rechnung angelegt -->
+<div id="scanform" class="hidden bg-white rounded-xl border border-violet-200 p-5 mb-6">
+    <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-robot text-violet-500 mr-1.5"></i>KI-Rechnungsscanner</h3>
+    <p class="text-xs text-slate-400 mb-4">Beleg (PDF oder Foto) hochladen — Lieferant, Betrag, Datum, IBAN und QR-Referenz werden
+        automatisch ausgelesen und die Rechnung mit Status «Neu» angelegt. Werte danach prüfen, ggf. über ✎ korrigieren und freigeben.</p>
+    {% if not ki_aktiv %}
+    <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[12.5px] text-amber-800">
+        <i class="fa-solid fa-circle-info mr-1"></i><b>KI nicht konfiguriert</b> — es läuft nur die regelbasierte Erkennung (IBAN/Betrag/Datum
+        aus Text-PDFs; Foto-Belege werden nicht ausgelesen). Für die volle KI-Erkennung den <code>GROQ_API_KEY</code> unter
+        <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.
+    </div>
+    {% endif %}
+    <form method="post" action="/neu/kreditoren/scan/" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3" onsubmit="fwScanStart(this)">
+        {% csrf_token %}
+        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+        <div class="grow min-w-[220px]"><label class="block text-xs font-semibold text-slate-500 mb-1">Beleg (PDF, JPG, PNG) *</label>
+            <input type="file" name="beleg_scan" required accept=".pdf,.jpg,.jpeg,.png,.webp"
+                   class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-600 file:text-white"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft (optional)</label>
+            <select name="liegenschaft_id" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5 min-w-[14rem]">
+                <option value="">— später zuordnen —</option>
+                {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
+            </select></div>
+        <button id="scan-btn" class="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
+            <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Hochladen &amp; scannen
+        </button>
+    </form>
+    <script>
+      function fwScanStart(f){
+        var b=document.getElementById('scan-btn');
+        b.disabled=true; b.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1.5"></i>Wird gescannt …';
+      }
+    </script>
+</div>
 
 <div id="kredform" class="hidden bg-white rounded-xl border border-indigo-200 p-5 mb-6">
     <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-file-invoice text-indigo-500 mr-1.5"></i>Kreditorenrechnung erfassen</h3>
@@ -156,6 +194,7 @@
                         </a>
                         {% endif %}
                         {% if row.k.status == 'neu' %}
+                        <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 text-xs" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
                         <form method="post" action="/neu/kreditoren/{{ row.k.id }}/loeschen/" class="inline" onsubmit="return confirm('Kreditorenrechnung «{{ row.lieferant|escapejs }}» löschen? (nur solange nicht verbucht)');">{% csrf_token %}
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
@@ -164,11 +203,50 @@
                     </div>
                 </td>
             </tr>
+            {% if row.k.status == 'neu' %}
+            <tr id="kedit-{{ row.k.id }}" class="hidden bg-indigo-50/40">
+                <td colspan="7" class="px-5 py-4">
+                    {% if row.k.fehlermeldung %}
+                    <div class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] text-amber-800"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ row.k.fehlermeldung }}</div>
+                    {% endif %}
+                    <form method="post" action="/neu/kreditoren/{{ row.k.id }}/bearbeiten/" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {% csrf_token %}
+                        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                        <div class="col-span-2"><label class="block text-[11px] font-semibold text-slate-500 mb-1">Lieferant</label>
+                            <input name="lieferant" value="{{ row.k.lieferant }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Betrag brutto (CHF)</label>
+                            <input name="betrag" value="{% if row.k.betrag %}{{ row.k.betrag|stringformat:'.2f' }}{% endif %}" inputmode="decimal" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5 text-right"></div>
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Rechnungsdatum</label>
+                            <input type="date" name="datum" value="{{ row.k.datum|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Fällig am</label>
+                            <input type="date" name="faellig_am" value="{{ row.k.faellig_am|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Referenz</label>
+                            <input name="referenz" value="{{ row.k.referenz }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div class="col-span-2"><label class="block text-[11px] font-semibold text-slate-500 mb-1">IBAN</label>
+                            <input name="iban" value="{{ row.k.iban }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5 font-mono"></div>
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Liegenschaft</label>
+                            <select name="liegenschaft_id" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
+                                <option value="">— keine —</option>
+                                {% for lgx in liegenschaften %}<option value="{{ lgx.id }}" {% if row.k.liegenschaft_id == lgx.id %}selected{% endif %}>{{ lgx.strasse }}, {{ lgx.ort }}</option>{% endfor %}
+                            </select></div>
+                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Aufwandskonto</label>
+                            <select name="konto_id" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
+                                <option value="">— bei Freigabe wählen —</option>
+                                {% for kx in aufwand_konten %}<option value="{{ kx.id }}" {% if row.k.konto_id == kx.id %}selected{% endif %}>{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
+                            </select></div>
+                        <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
+                            <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
+                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% endif %}
             {% empty %}
             <tr><td colspan="7" class="px-5 py-12 text-center">
                 <div class="w-10 h-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-file-invoice"></i></div>
                 <p class="text-sm font-medium text-slate-700">Keine Kreditorenrechnungen</p>
-                <p class="text-xs text-slate-400 mt-1">{% if status_filter %}Keine Rechnung in diesem Status.{% else %}Scanne eine Lieferantenrechnung in der klassischen Ansicht.{% endif %}</p>
+                <p class="text-xs text-slate-400 mt-1">{% if status_filter %}Keine Rechnung in diesem Status.{% else %}Lade oben einen Beleg hoch («Beleg scannen») oder erfasse die Rechnung manuell.{% endif %}</p>
             </td></tr>
             {% endfor %}
             </tbody>
@@ -179,7 +257,7 @@
 <p class="text-xs text-slate-400 mt-4">
     <i class="fa-solid fa-circle-info mr-1"></i>
     „Bezahlen" bucht die Zahlung (Kreditoren 2000 an Bank 1020) und setzt den Status auf bezahlt.
-    Die Freigabe (Konto zuordnen, Aufwand buchen) läuft aktuell noch in der klassischen Ansicht.
+    Der KI-Scanner liest hochgeladene Belege automatisch aus (Lieferant, Betrag, IBAN, QR-Referenz) — Werte vor der Freigabe prüfen.
 </p>
 {% include 'fw/_fwmodal.html' %}
 {% endblock %}

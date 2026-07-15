@@ -6,9 +6,11 @@ Referenz: Original-Screenshots in REBUILD.md. Server-gerendert, testbar.
 Der 'Globale Filter' (?lg=<id>) filtert alle Kennzahlen auf eine Liegenschaft —
 er wird in _global_filter() gelesen und an jede Seite durchgereicht.
 """
+import re
 from datetime import date
 from decimal import Decimal
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, Sum, F
 from django.shortcuts import render, get_object_or_404
@@ -3760,6 +3762,7 @@ def fw_kreditoren(request):
         'anzahl_zahlbar': len(zahlbar),
         'darf_bezahlen': hat_rolle(request.user, VERWALTUNGS_ROLLEN),
         'aufwand_konten': aufwand_konten, 'liegenschaften': liegenschaften,
+        'ki_aktiv': bool(getattr(settings, 'GROQ_API_KEY', None)),
         'meldung': list(messages.get_messages(request)),
     })
 
@@ -6965,8 +6968,9 @@ def fw_integrationen(request):
          'aktion': None},
         {'key': 'ki', 'name': 'KI-Rechnungsscanner', 'icon': 'fa-robot', 'farbe': 'violet',
          'aktiv': gesetzt('GROQ_API_KEY'), 'status': 'Verbunden' if gesetzt('GROQ_API_KEY') else 'Nicht konfiguriert',
-         'beschreibung': 'Kreditoren-Belege automatisch auslesen (Betrag, IBAN, QR-Referenz) und als Zahlung erfassen.',
-         'detail': 'Nutzbar im Bereich Kreditoren.' if gesetzt('GROQ_API_KEY') else 'GROQ_API_KEY hinterlegen.',
+         'beschreibung': 'Kreditoren-Belege beim Hochladen automatisch auslesen (Lieferant, Betrag, IBAN, QR-Referenz) — inkl. Foto-Belegen via Bild-KI.',
+         'detail': ('Nutzbar unter Kreditoren → «Beleg scannen (KI)».' if gesetzt('GROQ_API_KEY')
+                    else 'GROQ_API_KEY hinterlegen — ohne Key läuft nur die regelbasierte Erkennung aus Text-PDFs.'),
          'aktion': None},
         {'key': 'bank', 'name': 'Banken-Abgleich (camt.053 / QR)', 'icon': 'fa-building-columns', 'farbe': 'sky',
          'aktiv': True, 'status': 'Aktiv',
@@ -8940,6 +8944,112 @@ def fw_kreditor_neu(request):
         kr.save()
     log_aktion(request, "Kreditorenrechnung erfasst", lieferant, f"CHF {betrag}")
     messages.success(request, f"✅ Kreditorenrechnung '{lieferant}' über CHF {betrag} erfasst (Status: Neu — bitte freigeben).")
+    ziel = '/neu/kreditoren/'
+    if lgq := request.POST.get('lg'):
+        ziel += f'?lg={lgq}'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_kreditor_scan(request):
+    """KI-Rechnungsscanner: Beleg hochladen → wird DIREKT gescannt (Groq-KI,
+    Vision für Foto-Belege, Regex-Fallback) und als Kreditorenrechnung (Status
+    Neu) mit den erkannten Daten angelegt. Die Erkennungs-Methode wird ehrlich
+    gemeldet; Werte sind über den ✎-Button korrigierbar."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import KreditorenRechnung
+    from finance.utils import scan_beleg
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_kreditoren')
+
+    datei = request.FILES.get('beleg_scan')
+    if not datei:
+        messages.error(request, "Bitte einen Beleg (PDF oder Foto) auswählen.")
+        return redirect('fw_kreditoren')
+
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+    kr = KreditorenRechnung.objects.create(beleg_scan=datei, status='neu', liegenschaft=lg)
+
+    daten = scan_beleg(kr.beleg_scan.path)
+    kr.lieferant = daten.get('lieferant') or ''
+    kr.iban = daten.get('iban') or ''
+    kr.referenz = daten.get('referenz') or ''
+    try:
+        b = Decimal(str(daten.get('betrag') or 0)).quantize(Decimal('0.01'))
+        kr.betrag = b if b > 0 else None
+    except Exception:
+        kr.betrag = None
+    if daten.get('datum'):
+        try:
+            kr.datum = date.fromisoformat(daten['datum'])
+        except ValueError:
+            pass
+    kr.fehlermeldung = '' if daten.get('methode') in ('ki', 'vision') else (daten.get('hinweis') or '')
+    kr.save()
+
+    methode = daten.get('methode')
+    log_aktion(request, "Beleg gescannt (KI-Rechnungsscanner)",
+               kr.lieferant or datei.name, f"Methode: {methode} · CHF {kr.betrag or 0}")
+    zusammenfassung = (f"«{kr.lieferant or 'Lieferant unbekannt'}»"
+                       f"{f' · CHF {kr.betrag}' if kr.betrag else ''}"
+                       f"{f' · {kr.datum.strftime(chr(37)+chr(100)+chr(46)+chr(37)+chr(109)+chr(46)+chr(37)+chr(89))}' if kr.datum else ''}")
+    if methode in ('ki', 'vision'):
+        messages.success(request, f"🤖 Beleg gescannt ({daten.get('hinweis')}): {zusammenfassung} — bitte prüfen und freigeben.")
+    elif methode == 'regex':
+        messages.warning(request, f"Beleg regelbasiert ausgelesen (KI nicht aktiv/erreichbar): {zusammenfassung} — bitte Werte prüfen (✎).")
+    else:
+        messages.warning(request, f"Beleg gespeichert, aber nicht auslesbar: {daten.get('hinweis')} Werte bitte manuell ergänzen (✎).")
+    ziel = '/neu/kreditoren/'
+    if lgq := request.POST.get('lg'):
+        ziel += f'?lg={lgq}'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_kreditor_bearbeiten(request, pk):
+    """Korrigiert eine noch nicht verbuchte Kreditorenrechnung (Status Neu) —
+    v.a. zum Nachbessern gescannter Werte. Verbuchte Rechnungen sind gesperrt."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import KreditorenRechnung, Buchungskonto
+    from core.auth import log_aktion
+    k = get_object_or_404(KreditorenRechnung, id=pk)
+    if request.method != 'POST':
+        return redirect('fw_kreditoren')
+    if k.status != 'neu':
+        messages.error(request, "Nur unverbuchte Rechnungen (Status Neu) können bearbeitet werden.")
+        return redirect('fw_kreditoren')
+
+    def _dec(name):
+        raw = (request.POST.get(name) or '').strip().replace("'", '').replace(',', '.')
+        try:
+            return Decimal(raw) if raw else None
+        except Exception:
+            return None
+
+    def _dat(name):
+        try:
+            return date.fromisoformat(request.POST.get(name) or '')
+        except ValueError:
+            return None
+
+    k.lieferant = (request.POST.get('lieferant') or '').strip()
+    betrag = _dec('betrag')
+    k.betrag = betrag if betrag and betrag > 0 else None
+    k.datum = _dat('datum') or k.datum
+    k.faellig_am = _dat('faellig_am')
+    k.referenz = (request.POST.get('referenz') or '').strip()
+    k.iban = re.sub(r'\s+', '', request.POST.get('iban') or '')[:50]
+    if request.POST.get('liegenschaft_id'):
+        k.liegenschaft = Liegenschaft.objects.filter(id=request.POST['liegenschaft_id']).first()
+    if request.POST.get('konto_id'):
+        k.konto = Buchungskonto.objects.filter(id=request.POST['konto_id']).first()
+    k.fehlermeldung = ''
+    k.save()
+    log_aktion(request, "Kreditorenrechnung bearbeitet", k.lieferant, f"CHF {k.betrag or 0}")
+    messages.success(request, f"✅ Rechnung «{k.lieferant}» aktualisiert.")
     ziel = '/neu/kreditoren/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
