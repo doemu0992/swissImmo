@@ -6282,3 +6282,65 @@ class KIRechnungsscannerTests(TestCase):
         self.assertIsNotNone(e)
         self.assertIsNone(e.benutzer_id)
         self.assertIn('log@handwerk.ch', e.details)
+
+
+class HnkAutoAbleitungTests(TestCase):
+    """NK-Relevanz der Kreditorenrechnung folgt automatisch dem Konto:
+    HNK-Konto (4100–4140/4400) ⇒ Rechnung fliesst in die NK-Abrechnung —
+    kein vergessenes Häkchen mehr. Checkbox kann zusätzlich aktivieren."""
+
+    def _konto(self, nummer):
+        from finance.booking import konto
+        return konto(nummer)
+
+    def test_erfassen_mit_hnk_konto_setzt_flag(self):
+        from finance.models import KreditorenRechnung
+        heiz = self._konto('4100')   # Heizkosten, is_hnk_relevant=True
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/kreditoren/neu/', {
+            'lieferant': 'Öl AG', 'betrag': '900.00', 'konto_id': heiz.id,
+            # Checkbox bewusst NICHT gesetzt
+        })
+        k = KreditorenRechnung.objects.get(lieferant='Öl AG')
+        self.assertTrue(k.is_hnk_relevant)
+
+    def test_erfassen_mit_unterhalt_konto_ohne_haekchen_bleibt_false(self):
+        from finance.models import KreditorenRechnung
+        unterhalt = self._konto('4000')   # Unterhalt, is_hnk_relevant=False
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/kreditoren/neu/', {
+            'lieferant': 'Maler AG', 'betrag': '500.00', 'konto_id': unterhalt.id,
+        })
+        k = KreditorenRechnung.objects.get(lieferant='Maler AG')
+        self.assertFalse(k.is_hnk_relevant)
+
+    def test_freigabe_mit_hnk_konto_setzt_flag(self):
+        from finance.models import KreditorenRechnung
+        heiz = self._konto('4100')
+        k = KreditorenRechnung.objects.create(lieferant='Wasser AG', betrag=Decimal('300'),
+                                              status='neu')
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/kreditoren/{k.id}/freigeben/', {'konto_id': heiz.id})
+        k.refresh_from_db()
+        self.assertEqual(k.status, 'freigegeben')
+        self.assertTrue(k.is_hnk_relevant)
+
+    def test_bearbeiten_checkbox_und_konto(self):
+        from finance.models import KreditorenRechnung
+        unterhalt = self._konto('4000')
+        k = KreditorenRechnung.objects.create(lieferant='Mix AG', betrag=Decimal('100'),
+                                              status='neu', is_hnk_relevant=True)
+        c = Client(); c.force_login(_team_user())
+        # Nicht-HNK-Konto + Checkbox aus → Flag wird entfernt
+        c.post(f'/neu/kreditoren/{k.id}/bearbeiten/', {
+            'lieferant': 'Mix AG', 'betrag': '100', 'konto_id': unterhalt.id,
+        })
+        k.refresh_from_db()
+        self.assertFalse(k.is_hnk_relevant)
+        # Checkbox an → Flag trotz Nicht-HNK-Konto gesetzt (manuelle Wahl)
+        c.post(f'/neu/kreditoren/{k.id}/bearbeiten/', {
+            'lieferant': 'Mix AG', 'betrag': '100', 'konto_id': unterhalt.id,
+            'is_hnk_relevant': 'on',
+        })
+        k.refresh_from_db()
+        self.assertTrue(k.is_hnk_relevant)

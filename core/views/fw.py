@@ -8954,7 +8954,9 @@ def fw_kreditor_neu(request):
         datum=(date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.now().date()),
         faellig_am=(date.fromisoformat(request.POST['faellig_am']) if request.POST.get('faellig_am') else None),
         referenz=(request.POST.get('referenz') or '').strip(),
-        is_hnk_relevant=request.POST.get('is_hnk_relevant') == 'on',
+        # NK-relevant, wenn Checkbox gesetzt ODER das gewählte Konto HNK-relevant ist
+        is_hnk_relevant=(request.POST.get('is_hnk_relevant') == 'on'
+                         or bool(konto and konto.is_hnk_relevant)),
         status='neu',
     )
     if request.FILES.get('beleg_scan'):
@@ -9054,6 +9056,9 @@ def fw_kreditor_bearbeiten(request, pk):
         k.liegenschaft = Liegenschaft.objects.filter(id=request.POST['liegenschaft_id']).first()
     if request.POST.get('konto_id'):
         k.konto = Buchungskonto.objects.filter(id=request.POST['konto_id']).first()
+    # NK-Relevanz: Checkbox ODER (neu zugewiesenes) HNK-Konto
+    k.is_hnk_relevant = (request.POST.get('is_hnk_relevant') == 'on'
+                         or bool(k.konto and k.konto.is_hnk_relevant))
     k.fehlermeldung = ''
     k.save()
     log_aktion(request, "Kreditorenrechnung bearbeitet", k.lieferant, f"CHF {k.betrag or 0}")
@@ -9087,6 +9092,11 @@ def fw_kreditor_freigeben(request, pk):
         return redirect('fw_kreditoren')
 
     with transaction.atomic():
+        # NK-Relevanz automatisch vom Konto ableiten: HNK-Konto (4100–4140/4400)
+        # ⇒ Rechnung fliesst in die Nebenkostenabrechnung — kein vergessenes
+        # Häkchen mehr. (Nur aktivieren, nie eine manuelle Wahl deaktivieren.)
+        if k.konto and k.konto.is_hnk_relevant and not k.is_hnk_relevant:
+            k.is_hnk_relevant = True
         k.status = 'freigegeben'
         k.save()
         from finance.booking import buche
