@@ -42,6 +42,11 @@ def beleg_importieren(datei, liegenschaft=None, quelle=''):
             kr.datum = date.fromisoformat(daten['datum'])
         except ValueError:
             pass
+    if daten.get('faellig'):
+        try:
+            kr.faellig_am = date.fromisoformat(daten['faellig'])
+        except ValueError:
+            pass
     hinweis = '' if daten.get('methode') in ('ki', 'vision', 'qr') else (daten.get('hinweis') or '')
     if quelle:
         hinweis = quelle + (f" · {hinweis}" if hinweis else '')

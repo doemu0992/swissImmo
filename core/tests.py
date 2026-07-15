@@ -6486,3 +6486,36 @@ class QrDecoderTests(TestCase):
         self.assertEqual(k.iban, 'CH4030000008300003107')
         self.assertEqual(k.referenz, '000050637947060000894095003')
         self.assertEqual(k.fehlermeldung, '')
+
+    def test_faelligkeit_wird_ausgelesen(self):
+        """'Zahlbar bis' → faellig_am an der Rechnung; auch relative Fristen
+        ('zahlbar innert 30 Tagen') werden ab Rechnungsdatum gerechnet."""
+        import io
+        from reportlab.pdfgen import canvas as _c
+        from django.test import override_settings
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import KreditorenRechnung
+
+        def pdf(zeile):
+            buf = io.BytesIO()
+            c = _c.Canvas(buf)
+            c.drawString(72, 800, "Faellig AG")
+            c.drawString(72, 780, "Rechnung vom 20.07.2026")
+            c.drawString(72, 760, "Total CHF 100.00")
+            c.drawString(72, 740, zeile)
+            c.save()
+            return buf.getvalue()
+
+        cl = Client(); cl.force_login(_team_user())
+        # explizites Datum
+        f1 = SimpleUploadedFile('f1.pdf', pdf("Zahlbar bis: 19.08.2026"), content_type='application/pdf')
+        with override_settings(GROQ_API_KEY=None):
+            cl.post('/neu/kreditoren/scan/', {'beleg_scan': f1})
+        k1 = KreditorenRechnung.objects.latest('id')
+        self.assertEqual(k1.faellig_am, date(2026, 8, 19))
+        # relative Frist ab Rechnungsdatum
+        f2 = SimpleUploadedFile('f2.pdf', pdf("Zahlbar innert 30 Tagen"), content_type='application/pdf')
+        with override_settings(GROQ_API_KEY=None):
+            cl.post('/neu/kreditoren/scan/', {'beleg_scan': f2})
+        k2 = KreditorenRechnung.objects.latest('id')
+        self.assertEqual(k2.faellig_am, date(2026, 8, 19))   # 20.07. + 30 Tage

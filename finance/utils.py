@@ -37,6 +37,8 @@ Antworte AUSSCHLIESSLICH als gültiges JSON mit exakt diesen Keys:
 - lieferant (string, Name der Firma/des Rechnungsstellers — nicht der Empfänger)
 - betrag (number, der Brutto-Rechnungsbetrag/Total in CHF, max. 2 Nachkommastellen)
 - datum (string, Rechnungsdatum zwingend im Format YYYY-MM-DD, sonst null)
+- faellig (string, Fälligkeits-/Zahlbar-bis-Datum im Format YYYY-MM-DD — steht
+  z.B. bei «Zahlbar bis», «Fällig am», «Zahlungsziel»; sonst null)
 - referenz (string: die QR-REFERENZ aus dem Zahlteil/Empfangsschein — 27 Ziffern,
   gedruckt z.B. als «00 00506 37947 06000 08940 95003». NICHT die Rechnungs- oder
   Kundennummer! Nur wenn kein Zahlteil vorhanden ist: die Rechnungsnummer. Sonst "")
@@ -169,7 +171,7 @@ def _qr_anwenden(ergebnis, qr):
 
 def _leer(methode, hinweis):
     return {"lieferant": "", "iban": "", "betrag": 0.0, "datum": None,
-            "referenz": "", "methode": methode, "hinweis": hinweis}
+            "faellig": None, "referenz": "", "methode": methode, "hinweis": hinweis}
 
 
 def _normalisiere(daten, methode, hinweis=""):
@@ -182,12 +184,13 @@ def _normalisiere(daten, methode, hinweis=""):
         out["betrag"] = round(float(daten.get("betrag") or 0), 2)
     except (TypeError, ValueError):
         out["betrag"] = 0.0
-    datum = daten.get("datum")
-    if datum:
-        try:
-            out["datum"] = datetime.strptime(str(datum)[:10], "%Y-%m-%d").strftime("%Y-%m-%d")
-        except ValueError:
-            out["datum"] = None
+    for feld in ("datum", "faellig"):
+        wert = daten.get(feld)
+        if wert:
+            try:
+                out[feld] = datetime.strptime(str(wert)[:10], "%Y-%m-%d").strftime("%Y-%m-%d")
+            except ValueError:
+                out[feld] = None
     return out
 
 
@@ -252,6 +255,22 @@ def _fallback_regex_scan(text, hinweis="Regelbasierte Erkennung (ohne KI) — bi
         except ValueError:
             pass
 
+    # Fälligkeit: explizites Datum bei Zahlbar-bis/Fällig-am/Zahlungsziel …
+    faellig_val = None
+    fm = re.search(r'(?:zahlbar\s*bis|f[äa]llig(?:keit)?(?:\s*am)?|zahlungsziel|zahlungsfrist(?:\s*bis)?)\s*:?\D{0,10}(\d{1,2})\.(\d{1,2})\.(\d{4})', text_lower)
+    if fm:
+        try:
+            faellig_val = datetime.strptime(f"{fm.group(1)}.{fm.group(2)}.{fm.group(3)}", '%d.%m.%Y').strftime('%Y-%m-%d')
+        except ValueError:
+            pass
+    # … oder relative Frist «zahlbar innert 30 Tagen» ab Rechnungsdatum
+    if not faellig_val and date_val:
+        tm = re.search(r'(?:zahlbar|zahlung)\s*(?:innert|innerhalb|in)\s*(\d{1,3})\s*tag', text_lower)
+        if tm:
+            from datetime import timedelta
+            faellig_val = (datetime.strptime(date_val, '%Y-%m-%d')
+                           + timedelta(days=int(tm.group(1)))).strftime('%Y-%m-%d')
+
     ref_match = re.search(r'(\d{2}\s(?:\d{5}\s?){5})', text)
     reference = ref_match.group(0).replace(" ", "") if ref_match else ""
 
@@ -259,7 +278,8 @@ def _fallback_regex_scan(text, hinweis="Regelbasierte Erkennung (ohne KI) — bi
     lieferant = lines[0][:100] if lines else ""
 
     return _normalisiere({"lieferant": lieferant, "iban": iban, "betrag": amount,
-                          "datum": date_val, "referenz": reference}, "regex", hinweis)
+                          "datum": date_val, "faellig": faellig_val,
+                          "referenz": reference}, "regex", hinweis)
 
 
 def scan_beleg(file_path):
