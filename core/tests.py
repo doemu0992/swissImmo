@@ -6357,3 +6357,69 @@ class HnkAutoAbleitungTests(TestCase):
         self.assertIn('function fwHnkSync', body)
         self.assertIn('data-hnk="1"', body)
         self.assertIn('onchange="fwHnkSync(this)"', body)
+
+    def _qr_pdf(self):
+        """Text-PDF mit QR-Zahlteil: Rechnungsnummer UND echte QR-Referenz/QR-IBAN."""
+        import io
+        from reportlab.pdfgen import canvas as _c
+        buf = io.BytesIO()
+        c = _c.Canvas(buf)
+        c.drawString(72, 800, "BKW Energie AG")
+        c.drawString(72, 780, "Rechnung Nr. 751 700 231 252 vom 20.07.2026")
+        c.drawString(72, 760, "Total CHF 137.30")
+        c.drawString(72, 700, "Zahlteil")
+        c.drawString(72, 680, "Konto / Zahlbar an")
+        c.drawString(72, 660, "CH40 3000 0008 3000 0310 7")
+        c.drawString(72, 640, "Referenz")
+        c.drawString(72, 620, "00 00506 37947 06000 08940 95003")
+        c.drawString(72, 580, "IBAN CH16 0900 0000 3000 03107")
+        c.save()
+        return buf.getvalue()
+
+    def test_qr_zahlteil_uebersteuert_referenz_und_iban(self):
+        """Die 27-stellige QR-Referenz (Mod10-geprüft) und die QR-IBAN aus dem
+        Zahlteil übersteuern Rechnungsnummer/Konto-IBAN — deterministisch,
+        unabhängig davon, was die KI wählt."""
+        from django.test import override_settings
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import KreditorenRechnung
+        c = Client(); c.force_login(_team_user())
+        f = SimpleUploadedFile('bkw.pdf', self._qr_pdf(), content_type='application/pdf')
+        with override_settings(GROQ_API_KEY=None):
+            c.post('/neu/kreditoren/scan/', {'beleg_scan': f})
+        k = KreditorenRechnung.objects.latest('id')
+        self.assertEqual(k.referenz, '000050637947060000894095003')   # QRR, nicht RgNr
+        self.assertEqual(k.iban, 'CH4030000008300003107')            # QR-IBAN, nicht 09xx
+
+    def test_qr_zahlteil_uebersteuert_auch_ki_antwort(self):
+        """Auch wenn die KI die Rechnungsnummer als Referenz liefert, gewinnt
+        der geprüfte Zahlteil."""
+        from unittest.mock import patch, MagicMock
+        from django.test import override_settings
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import KreditorenRechnung
+        import json as _json
+        antwort = MagicMock()
+        antwort.raise_for_status.return_value = None
+        antwort.json.return_value = {'choices': [{'message': {'content': _json.dumps({
+            'lieferant': 'BKW Energie AG', 'betrag': 137.30, 'datum': '2026-07-20',
+            'referenz': '751700231252',                 # falsch: Rechnungsnummer
+            'iban': 'CH1609000000300003107',            # falsch: Konto-IBAN
+        })}}]}
+        c = Client(); c.force_login(_team_user())
+        f = SimpleUploadedFile('bkw.pdf', self._qr_pdf(), content_type='application/pdf')
+        with override_settings(GROQ_API_KEY='test-key'), \
+             patch('finance.utils.requests.post', return_value=antwort):
+            c.post('/neu/kreditoren/scan/', {'beleg_scan': f})
+        k = KreditorenRechnung.objects.latest('id')
+        self.assertEqual(k.referenz, '000050637947060000894095003')
+        self.assertEqual(k.iban, 'CH4030000008300003107')
+
+    def test_qrr_pruefziffer_verwirft_falsche_kandidaten(self):
+        from finance.utils import _zahlteil_extrahieren
+        # Ungültige Prüfziffer → keine QRR-Übernahme
+        qrr, _ = _zahlteil_extrahieren("Referenz 00 00506 37947 06000 08940 95004")
+        self.assertEqual(qrr, '')
+        # Normale IBAN (IID nicht 30000–31999) → keine QR-IBAN
+        _, qriban = _zahlteil_extrahieren("IBAN CH16 0900 0000 3000 03107")
+        self.assertEqual(qriban, '')

@@ -37,8 +37,50 @@ Antworte AUSSCHLIESSLICH als gültiges JSON mit exakt diesen Keys:
 - lieferant (string, Name der Firma/des Rechnungsstellers — nicht der Empfänger)
 - betrag (number, der Brutto-Rechnungsbetrag/Total in CHF, max. 2 Nachkommastellen)
 - datum (string, Rechnungsdatum zwingend im Format YYYY-MM-DD, sonst null)
-- referenz (string, QR-Referenz oder Rechnungsnummer, sonst "")
-- iban (string, IBAN ohne Leerzeichen, sonst "")"""
+- referenz (string: die QR-REFERENZ aus dem Zahlteil/Empfangsschein — 27 Ziffern,
+  gedruckt z.B. als «00 00506 37947 06000 08940 95003». NICHT die Rechnungs- oder
+  Kundennummer! Nur wenn kein Zahlteil vorhanden ist: die Rechnungsnummer. Sonst "")
+- iban (string ohne Leerzeichen: bevorzugt die QR-IBAN aus dem Zahlteil bei
+  «Konto / Zahlbar an» — sie beginnt nach CHxx mit 30000–31999. Sonst "")"""
+
+# --- Schweizer QR-Zahlteil: deterministische Extraktion (übersteuert die KI) ---
+# Für QRR-Zahlungen zählen NUR die 27-stellige QR-Referenz (Mod10-rekursiv
+# geprüft) und die QR-IBAN (IID 30000–31999) — nicht Rechnungsnummer/Konto-IBAN.
+_QRR_TABELLE = [0, 9, 4, 6, 8, 2, 7, 1, 3, 5]
+
+
+def _qrr_pruefziffer_ok(ref):
+    c = 0
+    for z in ref[:-1]:
+        c = _QRR_TABELLE[(c + int(z)) % 10]
+    return (10 - c) % 10 == int(ref[-1])
+
+
+def _zahlteil_extrahieren(text):
+    """(qr_referenz, qr_iban) aus dem Text des Zahlteils — '' wenn nicht gefunden."""
+    qrr = ''
+    for m in re.finditer(r'\b\d{2}(?:\s?\d{5}){5}\b', text):
+        kandidat = re.sub(r'\s+', '', m.group(0))
+        if len(kandidat) == 27 and _qrr_pruefziffer_ok(kandidat):
+            qrr = kandidat
+            break
+    qriban = ''
+    for m in re.finditer(r'\bCH\d{2}(?:\s?\d{4}){4}\s?\d\b', text):
+        kandidat = re.sub(r'\s+', '', m.group(0))
+        if len(kandidat) == 21 and kandidat[4:9].isdigit() and 30000 <= int(kandidat[4:9]) <= 31999:
+            qriban = kandidat
+            break
+    return qrr, qriban
+
+
+def _zahlteil_anwenden(ergebnis, text):
+    """Übersteuert Referenz/IBAN mit den geprüften Zahlteil-Werten (falls vorhanden)."""
+    qrr, qriban = _zahlteil_extrahieren(text)
+    if qrr:
+        ergebnis['referenz'] = qrr
+    if qriban:
+        ergebnis['iban'] = qriban
+    return ergebnis
 
 
 def _leer(methode, hinweis):
@@ -168,12 +210,12 @@ def scan_beleg(file_path):
     if full_text.strip():
         if api_key:
             try:
-                return _scan_text_ki(full_text, api_key)
+                return _zahlteil_anwenden(_scan_text_ki(full_text, api_key), full_text)
             except Exception as e:
                 logger.warning("Rechnungsscan: Groq-Text fehlgeschlagen: %s", e)
-                return _fallback_regex_scan(
-                    full_text, hinweis=f"KI nicht erreichbar ({e}) — regelbasierte Erkennung, bitte Werte prüfen")
-        return _fallback_regex_scan(full_text)
+                return _zahlteil_anwenden(_fallback_regex_scan(
+                    full_text, hinweis=f"KI nicht erreichbar ({e}) — regelbasierte Erkennung, bitte Werte prüfen"), full_text)
+        return _zahlteil_anwenden(_fallback_regex_scan(full_text), full_text)
 
     # --- PDF ohne Textebene (Foto-Scan) → Vision ---
     if api_key:
