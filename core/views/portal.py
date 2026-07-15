@@ -428,7 +428,7 @@ def mieter_kuendigung(request):
                  .select_related('einheit__liegenschaft'))
 
     if request.method == 'POST':
-        v = vertraege.filter(id=request.POST.get('vertrag_id')).first()
+        v = vertraege.filter(id=request.POST.get('vertrag_id') or None).first()
         if not v:
             messages.error(request, "Kein gültiges Mietobjekt gewählt.")
             return redirect('mieter_kuendigung')

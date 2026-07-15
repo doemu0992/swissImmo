@@ -6168,3 +6168,28 @@ class KIRechnungsscannerTests(TestCase):
         c.post(f'/neu/kreditoren/{k.id}/bearbeiten/', {'lieferant': 'Hack', 'betrag': '1'})
         k.refresh_from_db()
         self.assertEqual(k.lieferant, 'Scan AG korrigiert')
+
+    def test_scan_upload_ohne_liegenschaft_leerer_string(self):
+        """Regression: '— später zuordnen —' postet liegenschaft_id='' — darf
+        keinen 500er werfen (Field 'id' expected a number but got '')."""
+        from django.test import override_settings
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import KreditorenRechnung
+        c = Client(); c.force_login(_team_user())
+        f = SimpleUploadedFile('rechnung.pdf', self._text_pdf(), content_type='application/pdf')
+        with override_settings(GROQ_API_KEY=None):
+            r = c.post('/neu/kreditoren/scan/', {'beleg_scan': f, 'liegenschaft_id': ''})
+        self.assertEqual(r.status_code, 302)
+        k = KreditorenRechnung.objects.latest('id')
+        self.assertIsNone(k.liegenschaft_id)
+
+    def test_kreditor_neu_ohne_liegenschaft_leerer_string(self):
+        """Gleiche Regression im manuellen Erfassen-Formular ('— keine —')."""
+        from finance.models import KreditorenRechnung
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/kreditoren/neu/', {
+            'lieferant': 'Leer AG', 'betrag': '99.00', 'liegenschaft_id': '',
+        })
+        self.assertEqual(r.status_code, 302)
+        k = KreditorenRechnung.objects.get(lieferant='Leer AG')
+        self.assertIsNone(k.liegenschaft_id)

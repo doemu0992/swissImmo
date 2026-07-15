@@ -2060,7 +2060,7 @@ def fw_lebensdauer(request):
             else:
                 messages.error(request, "Kategorie und Jahre (> 0) sind Pflicht.")
         elif aktion == 'loeschen':
-            Lebensdauer.objects.filter(id=request.POST.get('id')).delete()
+            Lebensdauer.objects.filter(id=request.POST.get('id') or None).delete()
             messages.success(request, "Kategorie entfernt.")
         elif aktion == 'seed':
             from core.services.raumkatalog import seed_lebensdauer
@@ -4049,12 +4049,12 @@ def fw_schaden_neu(request):
         return redirect('fw_schaeden')
 
     titel = (request.POST.get('titel') or '').strip()
-    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
     if not titel or not lg:
         messages.error(request, "Titel und Liegenschaft sind erforderlich.")
         return redirect('fw_schaeden')
 
-    einheit = Einheit.objects.filter(id=request.POST.get('einheit_id')).first() if request.POST.get('einheit_id') else None
+    einheit = Einheit.objects.filter(id=request.POST.get('einheit_id') or None).first() if request.POST.get('einheit_id') else None
     t = SchadenMeldung.objects.create(
         liegenschaft=lg, betroffene_einheit=einheit,
         titel=titel, beschreibung=(request.POST.get('beschreibung') or '').strip(),
@@ -4646,7 +4646,7 @@ def fw_hypotheken(request):
     if request.method == 'POST' and hat_rolle(request.user, SCHREIB_ROLLEN):
         aktion = request.POST.get('aktion')
         if aktion == 'neu':
-            lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+            lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
 
             def _dec(x):
                 try:
@@ -4674,7 +4674,7 @@ def fw_hypotheken(request):
             else:
                 messages.error(request, "Liegenschaft ist Pflicht.")
         elif aktion == 'loeschen':
-            Hypothek.objects.filter(id=request.POST.get('id')).delete()
+            Hypothek.objects.filter(id=request.POST.get('id') or None).delete()
             messages.success(request, "Hypothek gelöscht.")
         return redirect('/neu/hypotheken/' + (f'?lg={aktive_lg.id}' if aktive_lg else ''))
 
@@ -4741,7 +4741,7 @@ def fw_anlagen(request):
     if request.method == 'POST':
         aktion = request.POST.get('aktion')
         if aktion == 'anlage_neu':
-            lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+            lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
             try:
                 adatum = date.fromisoformat(request.POST.get('anschaffungsdatum'))
             except Exception:
@@ -4763,7 +4763,7 @@ def fw_anlagen(request):
             messages.success(request, f"✅ AfA-Lauf {jahr}: {n} Abschreibung(en) gebucht (CHF {summe})." if n
                              else f"AfA-Lauf {jahr}: nichts zu buchen (bereits erledigt oder keine Anlagen).")
         elif aktion == 'fonds_set':
-            lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+            lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
             if lg:
                 f, _ = Erneuerungsfonds.objects.get_or_create(liegenschaft=lg)
                 f.jaehrliche_einlage = _dec(request.POST.get('jaehrliche_einlage'))
@@ -8928,8 +8928,8 @@ def fw_kreditor_neu(request):
         messages.error(request, "Lieferant und Betrag (> 0) sind erforderlich.")
         return redirect('fw_kreditoren')
 
-    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
-    konto = Buchungskonto.objects.filter(id=request.POST.get('konto_id')).first() if request.POST.get('konto_id') else None
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
+    konto = Buchungskonto.objects.filter(id=request.POST.get('konto_id') or None).first() if request.POST.get('konto_id') else None
     kr = KreditorenRechnung.objects.create(
         lieferant=lieferant, betrag=betrag, mwst_satz=(_dec('mwst_satz') or Decimal('0.0')),
         liegenschaft=lg, konto=konto,
@@ -8969,7 +8969,7 @@ def fw_kreditor_scan(request):
         messages.error(request, "Bitte einen Beleg (PDF oder Foto) auswählen.")
         return redirect('fw_kreditoren')
 
-    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
     kr = KreditorenRechnung.objects.create(beleg_scan=datei, status='neu', liegenschaft=lg)
 
     daten = scan_beleg(kr.beleg_scan.path)
@@ -9137,13 +9137,13 @@ def fw_asset_neu(request):
     from core.auth import log_aktion
     if request.method != 'POST':
         return redirect('fw_assets')
-    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
     if not lg:
         messages.error(request, "Liegenschaft ist erforderlich.")
         return redirect('fw_assets')
     g = Geraet.objects.create(
         liegenschaft=lg,
-        einheit=Einheit.objects.filter(id=request.POST.get('einheit_id')).first() if request.POST.get('einheit_id') else None,
+        einheit=Einheit.objects.filter(id=request.POST.get('einheit_id') or None).first() if request.POST.get('einheit_id') else None,
         kategorie=request.POST.get('kategorie', 'sonstiges'),
         sonstiges_bezeichnung=(request.POST.get('sonstiges_bezeichnung') or '').strip(),
         marke=(request.POST.get('marke') or '').strip(),
@@ -9175,12 +9175,12 @@ def fw_dokument_neu(request):
     if not request.FILES.get('datei'):
         messages.error(request, "Bitte eine Datei auswählen.")
         return redirect('fw_dokumente')
-    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
     PDokument.objects.create(
         titel=(request.POST.get('titel') or request.FILES['datei'].name).strip(),
         kategorie=request.POST.get('kategorie', 'sonstiges'),
         liegenschaft=lg,
-        einheit=Einheit.objects.filter(id=request.POST.get('einheit_id')).first() if request.POST.get('einheit_id') else None,
+        einheit=Einheit.objects.filter(id=request.POST.get('einheit_id') or None).first() if request.POST.get('einheit_id') else None,
         datei=request.FILES['datei'],
     )
     log_aktion(request, "Dokument hochgeladen", request.POST.get('titel', ''), '')
@@ -9219,7 +9219,7 @@ def fw_nebenkosten_neu(request):
     from core.auth import log_aktion
     if request.method != 'POST':
         return redirect('fw_nebenkosten')
-    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first()
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
     bez = (request.POST.get('bezeichnung') or '').strip()
     try:
         start = date.fromisoformat(request.POST.get('start_datum'))
@@ -9386,8 +9386,8 @@ def fw_buchung_neu(request):
     from core.auth import log_aktion
     if request.method != 'POST':
         return redirect('fw_buchhaltung')
-    soll = Buchungskonto.objects.filter(id=request.POST.get('soll_konto_id')).first()
-    haben = Buchungskonto.objects.filter(id=request.POST.get('haben_konto_id')).first()
+    soll = Buchungskonto.objects.filter(id=request.POST.get('soll_konto_id') or None).first()
+    haben = Buchungskonto.objects.filter(id=request.POST.get('haben_konto_id') or None).first()
     try:
         betrag = Decimal(str(request.POST.get('betrag') or '0').replace(',', '.'))
     except Exception:
@@ -9399,7 +9399,7 @@ def fw_buchung_neu(request):
     if soll.id == haben.id:
         messages.error(request, "Soll- und Haben-Konto müssen unterschiedlich sein.")
         return redirect('fw_buchhaltung')
-    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id')).first() if request.POST.get('liegenschaft_id') else None
+    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first() if request.POST.get('liegenschaft_id') else None
     Buchung.objects.create(
         datum=(date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.now().date()),
         beleg_text=text, liegenschaft=lg, soll_konto=soll, haben_konto=haben,
