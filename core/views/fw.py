@@ -1880,6 +1880,25 @@ def fw_staffel_del(request, pk):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_anpassung_del(request, pk):
+    """Entfernt eine (versehentlich erstellte) Mietzinsanpassung. Danach folgt die
+    Sollstellung wieder dem vorherigen Mietzins — bereits gestellte Rechnungen
+    bleiben unverändert (nur künftige Sollläufe)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import MietzinsAnpassung
+    from core.auth import log_aktion
+    a = get_object_or_404(MietzinsAnpassung, id=pk)
+    vid = a.vertrag_id
+    if request.method == 'POST':
+        log_aktion(request, "Mietzinsanpassung gelöscht", str(a.vertrag),
+                   f"wirksam {a.wirksam_ab}: CHF {a.neuer_netto_mietzins}")
+        a.delete()
+        messages.success(request, "Mietzinsanpassung entfernt.")
+    return redirect(f'/neu/vertraege/{vid}/?tab=mietzins')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_objekt_nkart(request, pk):
     """Setzt die Nebenkosten-Abrechnungsart des Objekts (Standard für neue Verträge)."""
     from django.shortcuts import redirect

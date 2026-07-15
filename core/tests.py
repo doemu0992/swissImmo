@@ -5928,3 +5928,32 @@ class StaffelVorlageTests(TestCase):
         body = c.get(f'/neu/vertraege/neu/?einheit={e.id}').content.decode()
         self.assertIn('staffelvorlage', body)
         self.assertIn('applyStaffelVorlage', body)
+
+
+class AnpassungLoeschenTests(TestCase):
+    """Versehentlich erstellte Mietzinsanpassung im Vertrag löschbar."""
+
+    def test_anpassung_del_und_wirkung(self):
+        from rentals.models import MietzinsAnpassung
+        lg = Liegenschaft.objects.create(strasse='AL 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='AL-Büro', typ='gew',
+                                   nettomiete_aktuell=Decimal('3000'))
+        m = Mieter.objects.create(typ='firma', firmen_name='AL AG')
+        v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2025, 1, 1),
+                                       netto_mietzins=Decimal('3000'), nebenkosten=Decimal('0'),
+                                       status='aktiv', mietzins_modell='index')
+        a = MietzinsAnpassung.objects.create(vertrag=v, wirksam_ab=date(2026, 1, 1),
+                                             alter_netto_mietzins=Decimal('3000'),
+                                             neuer_netto_mietzins=Decimal('3150'))
+        # wirksam → 3150
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 6, 1)), Decimal('3150'))
+        # Detailseite zeigt Löschen-Button
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/vertraege/{v.id}/').content.decode()
+        self.assertIn(f'/neu/anpassung/{a.id}/loeschen/', body)
+        # Löschen → zurück auf Basiswert
+        r = c.post(f'/neu/anpassung/{a.id}/loeschen/')
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(MietzinsAnpassung.objects.filter(id=a.id).exists())
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 6, 1)), Decimal('3000'))

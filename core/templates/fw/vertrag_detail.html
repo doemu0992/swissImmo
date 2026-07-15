@@ -297,16 +297,21 @@
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <table class="w-full text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Wirksam ab</th><th class="px-5 py-3 font-semibold text-right">Alt</th><th class="px-5 py-3 font-semibold text-right">Neu</th><th class="px-5 py-3 font-semibold">Grund</th>
+                <th class="px-5 py-3 font-semibold">Wirksam ab</th><th class="px-5 py-3 font-semibold text-right">Alt</th><th class="px-5 py-3 font-semibold text-right">Neu</th><th class="px-5 py-3 font-semibold">Grund</th><th class="px-5 py-3"></th>
             </tr></thead>
             <tbody class="divide-y divide-slate-50">
             {% for a in anpassungen %}
             <tr><td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ a.wirksam_ab|date:"d.m.Y" }}</td>
                 <td class="px-5 py-3 text-right text-slate-500">{% if a.alter_netto_mietzins %}{{ a.alter_netto_mietzins|chf }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-right font-semibold text-slate-900">{{ a.neuer_netto_mietzins|chf }}</td>
-                <td class="px-5 py-3 text-slate-500 truncate max-w-[220px]">{{ a.begruendung|default:"—" }}</td></tr>
+                <td class="px-5 py-3 text-slate-500 truncate max-w-[220px]">{{ a.begruendung|default:"—" }}</td>
+                <td class="px-5 py-3 text-right">
+                    <form method="post" action="/neu/anpassung/{{ a.id }}/loeschen/" class="inline" onsubmit="return confirm('Diese Mietzinsanpassung löschen? Künftige Sollläufe verrechnen dann wieder den vorherigen Mietzins.');">{% csrf_token %}
+                        <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </td></tr>
             {% empty %}
-            <tr><td colspan="4" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Mietzinsanpassungen.</td></tr>
+            <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Mietzinsanpassungen.</td></tr>
             {% endfor %}
             </tbody>
         </table>
