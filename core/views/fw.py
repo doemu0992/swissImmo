@@ -9028,6 +9028,13 @@ def fw_kreditor_neu(request):
 
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
     konto = Buchungskonto.objects.filter(id=request.POST.get('konto_id') or None).first() if request.POST.get('konto_id') else None
+    # Kein Konto gewählt? Aus dem Lieferanten-Gedächtnis vorschlagen (setzt darüber
+    # auch die HNK-Relevanz automatisch — is_hnk_relevant leitet unten aus dem Konto ab).
+    if konto is None:
+        from finance.lieferanten import lieferant_vorschlag
+        _vp = lieferant_vorschlag(lieferant)
+        if _vp and _vp.standard_konto_id:
+            konto = _vp.standard_konto
     kr = KreditorenRechnung.objects.create(
         lieferant=lieferant, betrag=betrag, mwst_satz=(_dec('mwst_satz') or Decimal('0.0')),
         liegenschaft=lg, konto=konto,
@@ -9089,8 +9096,9 @@ def _kreditor_scan_meldung(request, kr, daten, dateiname):
     zusammenfassung = (f"«{kr.lieferant or 'Lieferant unbekannt'}»"
                        f"{f' · CHF {kr.betrag}' if kr.betrag else ''}"
                        f"{f' · {kr.datum.strftime(chr(37)+chr(100)+chr(46)+chr(37)+chr(109)+chr(46)+chr(37)+chr(89))}' if kr.datum else ''}")
+    konto_hint = f" · Konto {daten['konto_auto']} automatisch zugeteilt" if daten.get('konto_auto') else ''
     if methode in ('ki', 'vision', 'qr'):
-        messages.success(request, f"🤖 Beleg gescannt ({daten.get('hinweis')}): {zusammenfassung} — bitte prüfen und freigeben.")
+        messages.success(request, f"🤖 Beleg gescannt ({daten.get('hinweis')}): {zusammenfassung}{konto_hint} — bitte prüfen und freigeben.")
     elif methode == 'regex':
         messages.warning(request, f"Beleg regelbasiert ausgelesen (KI nicht aktiv/erreichbar): {zusammenfassung} — bitte Werte prüfen.")
     else:
@@ -9194,6 +9202,10 @@ def fw_kreditor_freigeben(request, pk):
         if vorsteuer > 0:
             buche("1170", "2000", vorsteuer, f"Vorsteuer {k.mwst_satz}% {k.lieferant}",
                   datum=datum_b, liegenschaft=k.liegenschaft, kreditor=k, user=request.user)
+        # Lieferanten-Gedächtnis fortschreiben: dieses Konto wird künftig für
+        # denselben Lieferanten automatisch vorgeschlagen.
+        from finance.lieferanten import lerne_lieferant
+        lerne_lieferant(k.lieferant, konto=k.konto, iban=k.iban)
     log_aktion(request, "Kreditorenrechnung freigegeben", k.lieferant, f"CHF {k.betrag}")
     messages.success(request, f"✅ '{k.lieferant}' freigegeben und verbucht.")
     ziel = '/neu/kreditoren/'

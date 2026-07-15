@@ -41,6 +41,30 @@ class Buchungskonto(models.Model):
 
     def __str__(self): return f"{self.nummer} - {self.bezeichnung}"
 
+
+class LieferantProfil(models.Model):
+    """Gelernte Stammdaten pro Lieferant (Schlüssel = normalisierter Name).
+
+    Merkt sich das zuletzt verwendete Aufwandskonto (und die IBAN), damit
+    Erfassung und KI-Scanner das Konto — und damit die HNK-Relevanz —
+    automatisch vorbelegen. Wird bei jeder Kreditor-Freigabe fortgeschrieben.
+    """
+    name_key = models.CharField("Namensschlüssel", max_length=200, unique=True)
+    name_anzeige = models.CharField("Lieferant", max_length=200)
+    standard_konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL,
+                                       null=True, blank=True, related_name='lieferanten')
+    iban = models.CharField(max_length=50, blank=True)
+    treffer = models.PositiveIntegerField("Gelernte Belege", default=0)
+    aktualisiert_am = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'finance_lieferantprofil'
+        ordering = ['name_anzeige']
+        verbose_name = "Lieferantenprofil"
+
+    def __str__(self): return f"{self.name_anzeige} → {self.standard_konto or '—'}"
+
+
 # 🔥 NEU: Die doppelte Buchhaltung (Soll & Haben) mit Revisionssicherheit
 class Buchung(models.Model):
     datum = models.DateField(default=timezone.now)

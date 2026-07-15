@@ -6648,3 +6648,54 @@ class QrDecoderTests(TestCase):
             cl.post('/neu/kreditoren/scan/', {'beleg_scan': f2})
         k2 = KreditorenRechnung.objects.latest('id')
         self.assertEqual(k2.faellig_am, date(2026, 8, 19))   # 20.07. + 30 Tage
+
+
+class LieferantStandardkontoTests(TestCase):
+    """Lieferanten-Gedächtnis: Standardkonto wird bei Freigabe gelernt und bei
+    Erfassung/Scan für denselben Lieferanten automatisch vorbelegt (inkl. HNK)."""
+
+    def _konten(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+
+    def test_key_normalisierung(self):
+        from finance.lieferanten import lieferant_key
+        self.assertEqual(lieferant_key('EWZ AG'), lieferant_key('ewz'))
+        self.assertEqual(lieferant_key('Meier & Co. GmbH'), lieferant_key('meier co'))
+        self.assertEqual(lieferant_key('  '), '')
+
+    def test_freigabe_lernt_konto(self):
+        from finance.models import KreditorenRechnung, LieferantProfil
+        from finance.booking import konto
+        self._konten()
+        k = KreditorenRechnung.objects.create(lieferant='EWZ AG', betrag=Decimal('120.00'),
+                                              konto=konto('4130'), status='neu')
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/kreditoren/{k.id}/freigeben/')
+        prof = LieferantProfil.objects.filter(name_key='ewz').first()
+        self.assertIsNotNone(prof)
+        self.assertEqual(prof.standard_konto.nummer, '4130')
+
+    def test_erfassen_belegt_konto_und_hnk_vor(self):
+        from finance.models import KreditorenRechnung, LieferantProfil
+        from finance.booking import konto
+        self._konten()
+        # Vorgelernt: EWZ → 4130 (HNK-relevant)
+        LieferantProfil.objects.create(name_key='ewz', name_anzeige='EWZ AG',
+                                       standard_konto=konto('4130'))
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/kreditoren/neu/', {'lieferant': 'EWZ', 'betrag': '99.00'})
+        k = KreditorenRechnung.objects.latest('id')
+        self.assertEqual(k.konto.nummer, '4130')       # Konto automatisch zugeteilt
+        self.assertTrue(k.is_hnk_relevant)             # HNK aus dem Konto abgeleitet
+
+    def test_vorbelegen_ueberschreibt_gewaehltes_konto_nicht(self):
+        from finance.models import KreditorenRechnung, LieferantProfil
+        from finance.lieferanten import vorbelegen
+        from finance.booking import konto
+        self._konten()
+        LieferantProfil.objects.create(name_key='ewz', name_anzeige='EWZ',
+                                       standard_konto=konto('4130'))
+        k = KreditorenRechnung(lieferant='EWZ', betrag=Decimal('10'), konto=konto('4000'))
+        self.assertFalse(vorbelegen(k))               # bereits zugeteilt → kein Override
+        self.assertEqual(k.konto.nummer, '4000')

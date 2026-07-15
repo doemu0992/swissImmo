@@ -47,6 +47,11 @@ def beleg_importieren(datei, liegenschaft=None, quelle=''):
             kr.faellig_am = date.fromisoformat(daten['faellig'])
         except ValueError:
             pass
+    # Lieferanten-Gedächtnis: bekanntes Standardkonto (+ HNK) automatisch vorbelegen,
+    # sofern der Scan noch kein Konto zugeteilt hat — spart das manuelle Zuteilen.
+    from finance.lieferanten import vorbelegen
+    if vorbelegen(kr):
+        daten['konto_auto'] = kr.konto.nummer
     hinweis = '' if daten.get('methode') in ('ki', 'vision', 'qr') else (daten.get('hinweis') or '')
     if quelle:
         hinweis = quelle + (f" · {hinweis}" if hinweis else '')
