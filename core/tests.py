@@ -5981,3 +5981,81 @@ class DebitorVorschauTests(TestCase):
         self.assertIn('abs-data', body)
         # Empfängerdaten des aktiven Vertrags im JSON
         self.assertIn('Vor Schau', body)
+
+
+class MietzinsKonsistenzTests(TestCase):
+    """Sollmietzins mit Indexbasis (Ref-Zins/LIK), effektive Werte im Mietzins-View,
+    Live-Vorschau bei der Weiterverrechnung."""
+
+    def test_sollmietzins_mit_indexbasis_und_wizard_json(self):
+        from portfolio.models import Sollmietzins
+        lg = Liegenschaft.objects.create(strasse='Mk 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Mk-Whg', typ='whg')
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/sollmietzins/', {
+            'einheit_id': e.id, 'gueltig_ab': '2026-04-01',
+            'netto_mietzins': '1250', 'nebenkosten': '180',
+            'basis_referenzzinssatz': '1.25', 'basis_lik_punkte': '108.2',
+        })
+        s = Sollmietzins.objects.get(einheit=e)
+        self.assertEqual(s.basis_referenzzinssatz, Decimal('1.25'))
+        self.assertEqual(s.basis_lik_punkte, Decimal('108.2'))
+        # Objekt-Detail zeigt die Basis-Spalte + Formularfelder
+        body = c.get(f'/neu/objekte/{e.id}/').content.decode()
+        self.assertIn('Basis Ref.-Zins / LIK', body)
+        self.assertIn('name="basis_referenzzinssatz"', body)
+        # Wizard-JSON trägt die Indexbasis der Sollmietzins-Zeile
+        wbody = c.get(f'/neu/vertraege/neu/?einheit={e.id}').content.decode()
+        self.assertIn('"ref": 1.25', wbody)
+        self.assertIn('"lik": 108.2', wbody)
+
+    def test_mietzins_view_zeigt_effektive_werte(self):
+        from crm.models import Verwaltung
+        from rentals.models import MietzinsAnpassung
+        Verwaltung.objects.create(firma='VW', strasse='W 1', plz='8000', ort='Zürich',
+                                  aktueller_referenzzinssatz=Decimal('1.25'),
+                                  aktueller_lik_punkte=Decimal('107.1'))
+        lg = Liegenschaft.objects.create(strasse='Mk 2', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Mk-Whg2', typ='whg')
+        m = Mieter.objects.create(typ='person', vorname='E', nachname='F')
+        v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2023, 1, 1),
+                                       netto_mietzins=Decimal('1500'), nebenkosten=Decimal('0'),
+                                       status='aktiv',
+                                       basis_referenzzinssatz=Decimal('1.75'),
+                                       basis_lik_punkte=Decimal('106.0'))
+        # Alte Basis 1.75 vs aktuell 1.25 → Senkungsanspruch
+        self.assertEqual(v.mietzinspotenzial, 'decrease')
+        # Wirksame Anpassung AUF die aktuelle Basis → Potenzial neutral,
+        # effektiver Netto = angepasster Wert
+        MietzinsAnpassung.objects.create(vertrag=v, wirksam_ab=date(2025, 1, 1),
+                                         alter_netto_mietzins=Decimal('1500'),
+                                         neuer_netto_mietzins=Decimal('1430'),
+                                         neuer_referenzzinssatz=Decimal('1.25'),
+                                         neuer_lik_index=Decimal('107.1'))
+        self.assertEqual(v.mietzinspotenzial, 'neutral')
+        self.assertEqual(v.effektive_basis(date(2026, 1, 1)), (Decimal('1.25'), Decimal('107.1')))
+        c = Client(); c.force_login(_team_user())
+        body = c.get('/neu/mietzins/').content.decode()
+        self.assertIn("1'430.00", body)         # effektiver Netto in der Tabelle
+        self.assertIn('Netto effektiv', body)
+
+    def test_weiterverrechnung_hat_vorschau(self):
+        from finance.models import KreditorenRechnung
+        lg = Liegenschaft.objects.create(strasse='Mk 3', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Mk-Whg3', typ='whg')
+        m = Mieter.objects.create(typ='person', vorname='G', nachname='H',
+                                  strasse='Weg 9', plz='8000', ort='Zürich')
+        Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2025, 1, 1),
+                                   netto_mietzins=Decimal('1500'), nebenkosten=Decimal('0'),
+                                   status='aktiv')
+        k = KreditorenRechnung.objects.create(lieferant='Sanitär AG', betrag=Decimal('400'),
+                                              liegenschaft=lg)
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/kreditoren/{k.id}/weiterverrechnen/').content.decode()
+        self.assertIn('id="wv-pv"', body)
+        self.assertIn('function wvPreview', body)
+        self.assertIn('wv-vd-data', body)
+        self.assertIn('G H', body)

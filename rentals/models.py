@@ -216,6 +216,21 @@ class Mietvertrag(models.Model):
                .order_by('-wirksam_ab', '-id').first())
         return anp.neuer_netto_mietzins if anp else basis
 
+    def effektive_basis(self, fuer_datum=None):
+        """(Referenzzins, LIK), auf denen der aktuell verrechnete Mietzins beruht:
+        aus der jüngsten am Stichtag wirksamen Anpassung, sonst die Vertragsbasis.
+        Damit rechnet das Erhöhungs-/Senkungspotenzial nach einer Anpassung nicht
+        mehr auf der veralteten Ursprungsbasis weiter."""
+        from datetime import date as _d
+        stichtag = fuer_datum or _d.today()
+        if self.pk:
+            anp = (self.anpassungen.filter(wirksam_ab__lte=stichtag)
+                   .order_by('-wirksam_ab', '-id').first())
+            if anp:
+                return (anp.neuer_referenzzinssatz or self.basis_referenzzinssatz,
+                        anp.neuer_lik_index or self.basis_lik_punkte)
+        return (self.basis_referenzzinssatz, self.basis_lik_punkte)
+
     @property
     def kautions_status(self):
         """offen (keine) / erwartet / einbezahlt / zurueckbezahlt — für das Kautions-Register.
@@ -252,9 +267,13 @@ class Mietvertrag(models.Model):
             if not vw: return 'neutral'
             curr_zins = vw.aktueller_referenzzinssatz
             curr_lik = vw.aktueller_lik_punkte
-            if curr_zins < self.basis_referenzzinssatz: return 'decrease'
-            if curr_zins > self.basis_referenzzinssatz: return 'increase'
-            if curr_lik > (self.basis_lik_punkte + Decimal('1.5')): return 'increase'
+            # Auf der EFFEKTIVEN Basis rechnen (jüngste wirksame Anpassung) —
+            # sonst zeigt der Mietzins-View nach einer Anpassung weiterhin
+            # "Erhöhung möglich" auf der veralteten Ursprungsbasis.
+            basis_zins, basis_lik = self.effektive_basis()
+            if curr_zins < basis_zins: return 'decrease'
+            if curr_zins > basis_zins: return 'increase'
+            if curr_lik > (basis_lik + Decimal('1.5')): return 'increase'
             return 'neutral'
         except Exception:
             return 'neutral'

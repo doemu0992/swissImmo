@@ -584,9 +584,32 @@ def fw_weiterverrechnung(request, kreditor_id):
         vertraege = list(bevorzugt) + [v for v in vertraege if v.einheit and v.einheit.liegenschaft_id != k.liegenschaft_id]
     else:
         vertraege = list(vertraege)
+
+    # Live-Vorschau (wie bei der Ad-hoc-Rechnung): Empfänger je Vertrag + Absender
+    vertrag_daten = {}
+    for v in vertraege:
+        m = v.mieter
+        lg = v.einheit.liegenschaft if v.einheit_id else None
+        vertrag_daten[str(v.id)] = {
+            'mieter': m.display_name if m else '',
+            'strasse': (m.strasse or '') if m else '',
+            'plz': (m.plz or '') if m else '', 'ort': (m.ort or '') if m else '',
+            'objekt': (v.einheit.bezeichnung if v.einheit_id else ''),
+            'adresse': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''),
+        }
+    from crm.models import Verwaltung as _Vw
+    _vw = _Vw.objects.first()
+    absender = {
+        'firma': _vw.firma if _vw else '', 'strasse': _vw.strasse if _vw else '',
+        'plz': _vw.plz if _vw else '', 'ort': _vw.ort if _vw else '',
+        'iban': (_vw.iban or '') if _vw else '',
+    }
     return render(request, 'fw/weiterverrechnung.html', {
         **basis, 'nav': 'kreditoren', 'k': k, 'vertraege': vertraege,
         'offen_wv': k.offen_weiterzuverrechnen, 'aufwand_konto': aufwand_konto,
+        'vertrag_daten': vertrag_daten, 'absender': absender,
+        'heute_iso': heute.isoformat(),
+        'faellig_iso': (heute + _timedelta(days=30)).isoformat(),
     })
 
 
@@ -1344,6 +1367,12 @@ def fw_objekt_detail(request, pk):
     staffelstufen = list(aktiver_vertrag.staffelstufen.all()) if aktiver_vertrag else []
     zeige_staffel = bool(aktiver_vertrag) and aktiver_vertrag.mietzins_modell == 'staffel'
 
+    # Aktuelle Marktwerte als Vorbelegung für die Indexbasis neuer Sollmietzins-Zeilen
+    from crm.models import Verwaltung as _Vw
+    _vw = _Vw.objects.first()
+    aktueller_ref_zins = _vw.aktueller_referenzzinssatz if _vw else Decimal('1.75')
+    aktueller_lik = _vw.aktueller_lik_punkte if _vw else Decimal('107.1')
+
     # Ausstattung/Raumbuch — die Räume entstehen aus den erfassten Assets.
     ausst = list(Ausstattung.objects.filter(einheit=e)
                  .prefetch_related('schaeden__handwerker_auftraege'))
@@ -1384,6 +1413,8 @@ def fw_objekt_detail(request, pk):
         'zeige_staffel': zeige_staffel,
         'staffelvorlagen': staffelvorlagen,
         'zeige_staffelvorlage': zeige_staffelvorlage,
+        'aktueller_ref_zins': aktueller_ref_zins,
+        'aktueller_lik': aktueller_lik,
         'fotos': fotos,
         'raeume': raeume,
         'ausst_count': ausst_count,
@@ -1778,8 +1809,18 @@ def fw_sollmietzins_add(request):
     netto = _dec(request.POST.get('netto_mietzins'))
     # Einstellplatz → keine Nebenkosten
     nk = Decimal('0.00') if e.ist_einstellplatz else _dec(request.POST.get('nebenkosten'))
+
+    def _dec_opt(x):
+        v = (str(x) or '').replace("'", '').replace(',', '.').strip()
+        try:
+            return Decimal(v) if v else None
+        except Exception:
+            return None
+
     Sollmietzins.objects.create(
         einheit=e, gueltig_ab=ab, netto_mietzins=netto, nebenkosten=nk,
+        basis_referenzzinssatz=_dec_opt(request.POST.get('basis_referenzzinssatz')),
+        basis_lik_punkte=_dec_opt(request.POST.get('basis_lik_punkte')),
         notiz=(request.POST.get('notiz') or '').strip()[:200],
     )
     log_aktion(request, "Sollmietzins erfasst", e.bezeichnung, f"ab {ab}: {netto}+{nk}")
@@ -5557,6 +5598,7 @@ def fw_mietzins(request):
     from crm.models import Verwaltung
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
+    heute = timezone.now().date()
 
     vw = Verwaltung.objects.first()
     curr_zins = vw.aktueller_referenzzinssatz if vw else None
@@ -5583,11 +5625,15 @@ def fw_mietzins(request):
         label, cls, icon = POTENZIAL_PILL.get(pot, POTENZIAL_PILL['neutral'])
         letzte = v.anpassungen.all()
         letzte_anpassung = max((a.wirksam_ab for a in letzte), default=None)
+        # EFFEKTIVE Werte zeigen (wirksame Anpassungen + Staffelstufen) — nicht
+        # die eingefrorene Vertragsbasis. Sonst stimmen die Zahlen hier nicht mit
+        # den tatsächlich verrechneten/erfassten Mietzinsen überein.
+        eff_zins, eff_lik = v.effektive_basis(heute)
         rows.append({
             'v': v, 'mieter': v.mieter.display_name,
             'objekt': f"{v.einheit.liegenschaft.strasse} · {v.einheit.bezeichnung}",
-            'netto': v.netto_mietzins or Decimal('0'),
-            'basis_zins': v.basis_referenzzinssatz, 'basis_lik': v.basis_lik_punkte,
+            'netto': v.effektiver_netto_mietzins(heute) or Decimal('0'),
+            'basis_zins': eff_zins, 'basis_lik': eff_lik,
             'pot': pot, 'pot_label': label, 'pot_cls': cls, 'pot_icon': icon,
             'letzte_anpassung': letzte_anpassung,
             'anpassungen': letzte.count(),
@@ -5954,7 +6000,9 @@ def fw_vertrag_neu(request):
             # übernehmen die zum Mietbeginn gültige Zeile automatisch.
             sollplan = [{'ab': s.gueltig_ab.isoformat(),
                          'netto': float(s.netto_mietzins or 0),
-                         'nk': float(s.nebenkosten or 0)}
+                         'nk': float(s.nebenkosten or 0),
+                         'ref': float(s.basis_referenzzinssatz) if s.basis_referenzzinssatz is not None else None,
+                         'lik': float(s.basis_lik_punkte) if s.basis_lik_punkte is not None else None}
                         for s in e.sollmietzinse.all()]  # bereits -gueltig_ab sortiert
             # Objekt-Staffelmiete-Vorlage (aufsteigend nach gueltig_ab) → belegt
             # einen neuen Gewerbe-Vertrag als Staffelmiete vor.

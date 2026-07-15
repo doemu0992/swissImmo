@@ -175,6 +175,10 @@ class Sollmietzins(models.Model):
     gueltig_ab = models.DateField("Gültig ab", default=date.today)
     netto_mietzins = models.DecimalField("Netto-Mietzins (CHF)", max_digits=8, decimal_places=2, default=0.00)
     nebenkosten = models.DecimalField("Nebenkosten (CHF)", max_digits=6, decimal_places=2, default=0.00)
+    # Indexbasis, auf welcher dieser Sollmietzins beruht (für spätere Anpassungen,
+    # Art. 269a/269d). Neue Verträge übernehmen sie als Vertragsbasis.
+    basis_referenzzinssatz = models.DecimalField("Basis Referenzzinssatz (%)", max_digits=4, decimal_places=2, null=True, blank=True)
+    basis_lik_punkte = models.DecimalField("Basis LIK (Punkte)", max_digits=6, decimal_places=1, null=True, blank=True)
     notiz = models.CharField("Bemerkung", max_length=200, blank=True, default='')
     erstellt_am = models.DateTimeField("Erfasst am", auto_now_add=True, null=True)
 

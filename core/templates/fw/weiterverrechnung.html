@@ -2,11 +2,14 @@
 {% load chf l10n %}
 {% block title %}Weiterverrechnen — {{ k.lieferant }}{% endblock %}
 {% block content %}
+{{ vertrag_daten|json_script:"wv-vd-data" }}
+{{ absender|json_script:"wv-abs-data" }}
 <h1 class="text-2xl font-extrabold text-slate-900 mb-1">An Mieter weiterverrechnen</h1>
 <p class="text-sm text-slate-500 mb-6">Lieferantenrechnung <b>{{ k.lieferant }}</b>{% if k.referenz %} · {{ k.referenz }}{% endif %}
     {% if k.liegenschaft %}· {{ k.liegenschaft.strasse }}, {{ k.liegenschaft.ort }}{% endif %}</p>
 
-<form method="post" class="max-w-2xl space-y-5">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+<form method="post" class="space-y-5">
     {% csrf_token %}
     <input type="hidden" name="embed" id="wv_embed" value="">
     <script>if (window.self !== window.top) document.getElementById('wv_embed').value = '1';</script>
@@ -24,7 +27,7 @@
     <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
         <div>
             <label class="block text-xs font-semibold text-slate-500 mb-1">Mieter / Vertrag *</label>
-            <select name="vertrag_id" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <select name="vertrag_id" required onchange="wvPreview()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— wählen —</option>
                 {% for v in vertraege %}
                 <option value="{{ v.id }}">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}{% if v.einheit.liegenschaft %} ({{ v.einheit.liegenschaft.strasse }}){% endif %}</option>
@@ -33,18 +36,18 @@
         </div>
         <div>
             <label class="block text-xs font-semibold text-slate-500 mb-1">Titel</label>
-            <input name="titel" value="Weiterverrechnung: {{ k.lieferant }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <input name="titel" value="Weiterverrechnung: {{ k.lieferant }}" oninput="wvPreview()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
         </div>
         <div class="grid grid-cols-2 gap-3">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Weiterzuverrechnen (CHF)</label>
-                <input name="betrag" id="wv_betrag" oninput="wvCheck()" value="{% localize off %}{{ offen_wv }}{% endlocalize %}"
+                <input name="betrag" id="wv_betrag" oninput="wvCheck(); wvPreview()" value="{% localize off %}{{ offen_wv }}{% endlocalize %}"
                        class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-semibold">
                 <p class="text-[11px] text-slate-400 mt-1">Fremdkosten — wird ertragsneutral über Konto 1190 durchgereicht.</p>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Zuschlag (CHF, optional)</label>
-                <input name="zuschlag" id="wv_zuschlag" value="0" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <input name="zuschlag" id="wv_zuschlag" value="0" oninput="wvPreview()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <p class="text-[11px] text-slate-400 mt-1">Eigener Aufwand/Marge — wird als Ertrag (3600) gebucht.</p>
             </div>
         </div>
@@ -70,8 +73,17 @@
     </div>
 </form>
 
+<!-- RECHTS: Live-Vorschau der entstehenden Debitorenrechnung -->
+<div class="lg:sticky lg:top-24">
+    <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> Live-Vorschau</div>
+    <div id="wv-pv" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 text-[13px] text-slate-800 leading-relaxed"></div>
+</div>
+</div>
+
 <script>
 var WV_OFFEN = {% localize off %}{{ offen_wv }}{% endlocalize %};
+var WV_VD = JSON.parse(document.getElementById('wv-vd-data').textContent);
+var WV_ABS = JSON.parse(document.getElementById('wv-abs-data').textContent);
 function wvCheck(){
     var b = parseFloat((document.getElementById('wv_betrag').value||'').replace(',','.'));
     var box = document.getElementById('wv-warn'), t = document.getElementById('wv-warn-text');
@@ -82,6 +94,39 @@ function wvCheck(){
         box.classList.remove('hidden');
     } else { box.classList.add('hidden'); }
 }
+function wvFmt(n){ n=parseFloat(n)||0; return n.toLocaleString('de-CH',{minimumFractionDigits:2,maximumFractionDigits:2}).replace(/,/g,"'").replace(/'(\d{2})$/,'.$1'); }
+function wvDstr(v){ if(!v) return ''; var p=v.split('-'); return p[2]+'.'+p[1]+'.'+p[0]; }
+function wvEsc(s){ return (s||'').replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
+function wvPreview(){
+    var f = document.querySelector('form[method=post]');
+    var titel = (f.titel.value||'').trim();
+    // Grundbetrag wie beim Speichern auf den offenen Anteil begrenzen (min)
+    var grund = Math.min(Math.max(parseFloat((f.betrag.value||'').replace(',','.'))||0, 0), WV_OFFEN);
+    var zuschlag = Math.max(parseFloat((f.zuschlag.value||'').replace(',','.'))||0, 0);
+    var total = grund + zuschlag;
+    var vd = f.vertrag_id.value ? WV_VD[f.vertrag_id.value] : null;
+    var empf = vd
+      ? wvEsc(vd.mieter) + (vd.strasse?'<br>'+wvEsc(vd.strasse):'') + (vd.plz?'<br>'+wvEsc(vd.plz+' '+(vd.ort||'')):'')
+        + (vd.objekt?'<br><span class="text-xs text-slate-400">Objekt: '+wvEsc(vd.objekt)+(vd.adresse?', '+wvEsc(vd.adresse):'')+'</span>':'')
+      : '<span class="text-slate-400 italic">— Mieter/Vertrag wählen —</span>';
+    document.getElementById('wv-pv').innerHTML =
+      '<div class="text-[11px] text-slate-400 border-b border-slate-100 pb-2 mb-4">'+(wvEsc(WV_ABS.firma)||'—')
+        +(WV_ABS.strasse?' | '+wvEsc(WV_ABS.strasse):'')+(WV_ABS.plz?' | '+wvEsc(WV_ABS.plz+' '+(WV_ABS.ort||'')):'')+'</div>'
+      +'<div class="font-bold text-base mb-1">Rechnung</div>'
+      +'<div class="text-xs text-slate-400 mb-4">Datum '+wvDstr("{{ heute_iso }}")+' · fällig '+wvDstr("{{ faellig_iso }}")+'</div>'
+      +'<div class="mb-1 font-semibold text-xs text-slate-500">Rechnungsempfänger</div>'
+      +'<div class="mb-4">'+empf+'</div>'
+      +'<table class="w-full text-[13px] mb-3"><tbody>'
+      +'<tr class="border-b border-slate-100"><td class="py-1.5 text-slate-500">Position</td><td class="py-1.5 text-right font-medium">'+(wvEsc(titel)||'—')+'</td></tr>'
+      +'<tr class="border-b border-slate-100"><td class="py-1.5 text-slate-500">Fremdkosten ({{ k.lieferant }})</td><td class="py-1.5 text-right">CHF '+wvFmt(grund)+'</td></tr>'
+      +(zuschlag>0?'<tr class="border-b border-slate-100"><td class="py-1.5 text-slate-500">Zuschlag / Umtriebe</td><td class="py-1.5 text-right">CHF '+wvFmt(zuschlag)+'</td></tr>':'')
+      +'<tr><td class="py-2 font-semibold">Rechnungsbetrag</td><td class="py-2 text-right font-bold text-indigo-600">CHF '+wvFmt(total)+'</td></tr>'
+      +'</tbody></table>'
+      +'<div class="mt-4 rounded-lg bg-slate-50 border border-dashed border-slate-200 px-3 py-2.5 text-[11px] text-slate-400 flex items-center gap-2">'
+      +'<i class="fa-solid fa-qrcode text-slate-300 text-base"></i>'
+      +'<span>QR-Zahlteil mit Referenz wird nach dem Erstellen erzeugt'+(WV_ABS.iban?' · IBAN '+wvEsc(WV_ABS.iban):'')+'.</span></div>';
+}
 wvCheck();
+wvPreview();
 </script>
 {% endblock %}

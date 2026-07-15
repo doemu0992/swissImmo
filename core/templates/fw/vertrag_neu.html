@@ -491,6 +491,11 @@ function applySollplan(){
   if(row){
     document.getElementById('s_netto').value = row.netto;
     if(!o.ist_einstellplatz) document.getElementById('s_nk').value = row.nk;
+    // Indexbasis (Ref-Zins/LIK) der Sollmietzins-Zeile → Vertragsbasis des
+    // neuen Vertrags (nur wenn an der Zeile erfasst; sonst bleiben die
+    // aktuellen Marktwerte vorbelegt).
+    if(row.ref != null) document.getElementById('s_ref').value = row.ref;
+    if(row.lik != null) document.getElementById('s_lik').value = row.lik;
   }
 }
 // Objekt-Staffelmiete-Vorlage → neuen Gewerbe-Vertrag als Staffelmiete vorbelegen.
