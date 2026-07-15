@@ -222,7 +222,12 @@ def berechne_abrechnung(periode_id):
         anteil_nk_einheit = (pool_nk_m2 * (e_m2 / total_m2)) + (pool_nk_einheit * (Decimal('1') / Decimal(total_einheiten)))
 
         # Mieter in dieser Periode finden
-        vertraege = einheit.vertraege.filter(aktiv=True, beginn__lte=ende_p).filter(Q(ende__isnull=True) | Q(ende__gte=start_p))
+        # Alle Verträge, die die Objekt-Einheit während der Periode BEWOHNT haben —
+        # aktiv, gekündigt ODER archiviert (die Zeitüberschneidung unten filtert die
+        # Gültigkeit). Nur Entwürfe (nie ein echtes Mietverhältnis) fallen raus.
+        # (Früher `aktiv=True` — das schloss mitten in der Periode ausgezogene
+        # gekündigte Mieter fälschlich aus, ihr Anteil fiel dann auf Leerstand.)
+        vertraege = einheit.vertraege.exclude(status='entwurf').filter(beginn__lte=ende_p).filter(Q(ende__isnull=True) | Q(ende__gte=start_p))
 
         tage_vermietet_total = 0
         hgt_vermietet_total = Decimal('0.00')

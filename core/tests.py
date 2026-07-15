@@ -6938,3 +6938,138 @@ class KontoVorschlagLeistungTests(TestCase):
         self.assertIn('kategorie', d)
         self.assertIn('leistung_von', d)
         self.assertIn('leistung_bis', d)
+
+
+class NkEndToEndTests(TestCase):
+    """QA: kompletter NK-Kreislauf mit split-aware Kosten — Geld-Erhaltung
+    (Summe Mieteranteile == Gesamtkosten), Nicht-HNK-Anteil bleibt draussen,
+    Verbuchung erzeugt die richtigen Nachzahlungen."""
+
+    def _setup(self):
+        from finance.booking import ensure_kontenplan
+        from portfolio.models import Liegenschaft, Einheit
+        from crm.models import Mieter
+        from finance.models import AbrechnungsPeriode
+        ensure_kontenplan()
+        lg = Liegenschaft.objects.create(strasse='E2Eweg 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        verts = []
+        for name, m2 in [('A', Decimal('60')), ('B', Decimal('40'))]:
+            e = Einheit.objects.create(liegenschaft=lg, bezeichnung=name, typ='wohnung',
+                                       flaeche_m2=m2, nettomiete_aktuell=Decimal('1000'))
+            m = Mieter.objects.create(typ='person', vorname=name, nachname='E2E',
+                                      strasse='X', plz='8000', ort='Zürich')
+            v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
+                                           netto_mietzins=Decimal('1000'), nebenkosten=Decimal('50'),
+                                           status='aktiv', aktiv=True)
+            verts.append(v)
+        p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='2025',
+                                              start_datum=date(2025, 1, 1), ende_datum=date(2025, 12, 31))
+        return lg, p, verts
+
+    def test_kreislauf_geld_erhaltung_und_verbuchung(self):
+        from finance.models import KreditorenRechnung, KreditorPosition, Buchungskonto, DebitorenRechnung
+        from core.utils.billing import berechne_abrechnung
+        lg, p, verts = self._setup()
+        # Kreditor 1: Hauswartung 1200 (voll HNK, m²)
+        KreditorenRechnung.objects.create(lieferant='Hauswart AG', betrag=Decimal('1200.00'),
+                                          liegenschaft=lg, is_hnk_relevant=True,
+                                          konto=Buchungskonto.objects.get(nummer='4120'),
+                                          status='freigegeben', datum=date(2025, 6, 1))
+        # Kreditor 2: 500 gesplittet — 300 Allgemeinstrom (HNK) + 200 Unterhalt (nicht HNK)
+        k2 = KreditorenRechnung.objects.create(lieferant='Misch AG', betrag=Decimal('500.00'),
+                                               liegenschaft=lg, is_hnk_relevant=True,
+                                               status='freigegeben', datum=date(2025, 6, 1))
+        KreditorPosition.objects.create(rechnung=k2, konto=Buchungskonto.objects.get(nummer='4130'),
+                                        betrag=Decimal('300.00'), is_hnk_relevant=True)
+        KreditorPosition.objects.create(rechnung=k2, konto=Buchungskonto.objects.get(nummer='4000'),
+                                        betrag=Decimal('200.00'), is_hnk_relevant=False)
+
+        r = berechne_abrechnung(p.id)
+        total = Decimal(str(r['total_kosten']))
+        # HNK 1200 + 300 = 1500, + 3% Honorar = 1545. Die 200 Unterhalt sind NICHT drin.
+        self.assertEqual(total, Decimal('1545.00'))
+        # Geld-Erhaltung: Summe der Mieteranteile == Gesamtkosten (keine Leerstände hier)
+        mieter = [a for a in r['abrechnungen'] if a.get('typ') != 'leerstand']
+        summe_anteile = sum(Decimal(str(a['kosten_anteil'])) for a in mieter)
+        self.assertEqual(summe_anteile, total)
+        # 60/40-Verteilung
+        anteile = sorted(Decimal(str(a['kosten_anteil'])) for a in mieter)
+        self.assertEqual(anteile, [Decimal('618.00'), Decimal('927.00')])
+
+        # Verbuchung: beide zahlen nach (927/618 > 600 Akonto)
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/nebenkosten/{p.id}/verbuchen/')
+        p.refresh_from_db()
+        self.assertTrue(p.abgeschlossen)
+        nachzahlungen = DebitorenRechnung.objects.filter(titel__startswith='NK-Abrechnung Nachzahlung')
+        self.assertEqual(nachzahlungen.count(), 2)
+        # 927-600=327, 618-600=18 → total 345
+        self.assertEqual(sum(d.betrag for d in nachzahlungen), Decimal('345.00'))
+
+    def test_verbuchung_ist_idempotent(self):
+        from finance.models import KreditorenRechnung, Buchungskonto, DebitorenRechnung
+        lg, p, verts = self._setup()
+        KreditorenRechnung.objects.create(lieferant='Hauswart AG', betrag=Decimal('1200.00'),
+                                          liegenschaft=lg, is_hnk_relevant=True,
+                                          konto=Buchungskonto.objects.get(nummer='4120'),
+                                          status='freigegeben', datum=date(2025, 6, 1))
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/nebenkosten/{p.id}/verbuchen/')
+        n1 = DebitorenRechnung.objects.filter(titel__startswith='NK-Abrechnung').count()
+        # Zweiter Versuch darf keine Doppel-Debitoren erzeugen (Periode abgeschlossen)
+        c.post(f'/neu/nebenkosten/{p.id}/verbuchen/')
+        n2 = DebitorenRechnung.objects.filter(titel__startswith='NK-Abrechnung').count()
+        self.assertEqual(n1, n2)
+
+
+class NkVertragsStatusTests(TestCase):
+    """QA-Fund: die NK-Abrechnung muss mitten in der Periode ausgezogene
+    (gekündigte) Mieter einbeziehen (sie bewohnten das Objekt) und Entwürfe
+    ausschliessen."""
+
+    def _setup(self):
+        from finance.booking import ensure_kontenplan
+        from portfolio.models import Liegenschaft, Einheit
+        from finance.models import AbrechnungsPeriode, KreditorenRechnung, Buchungskonto
+        ensure_kontenplan()
+        lg = Liegenschaft.objects.create(strasse='Statusweg 1', plz='8000', ort='Zürich',
+                                         versicherungswert=Decimal('1000000'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='W1', typ='wohnung',
+                                   flaeche_m2=Decimal('100'), nettomiete_aktuell=Decimal('1000'))
+        p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='2025',
+                                              start_datum=date(2025, 1, 1), ende_datum=date(2025, 12, 31))
+        KreditorenRechnung.objects.create(lieferant='Hauswart AG', betrag=Decimal('1000.00'),
+                                          liegenschaft=lg, is_hnk_relevant=True,
+                                          konto=Buchungskonto.objects.get(nummer='4120'),
+                                          status='freigegeben', datum=date(2025, 6, 1))
+        return lg, e, p
+
+    def _mieter(self, name):
+        from crm.models import Mieter
+        return Mieter.objects.create(typ='person', vorname=name, nachname='S',
+                                     strasse='X', plz='8000', ort='Zürich')
+
+    def test_gekuendigter_mieter_wird_abgerechnet(self):
+        from core.utils.billing import berechne_abrechnung
+        lg, e, p = self._setup()
+        # Ausgezogen per 30.06.2025 → gekündigt, aktiv=False
+        Mietvertrag.objects.create(mieter=self._mieter('Weg'), einheit=e, beginn=date(2024, 1, 1),
+                                   ende=date(2025, 6, 30), netto_mietzins=Decimal('1000'),
+                                   nebenkosten=Decimal('50'), status='gekuendigt', aktiv=False)
+        r = berechne_abrechnung(p.id)
+        mieter = [a for a in r['abrechnungen'] if a.get('typ') != 'leerstand']
+        # Der gekündigte Mieter muss in der Abrechnung erscheinen (nicht als Leerstand)
+        self.assertTrue(any(a.get('mieter') == 'Weg S' or 'Weg' in str(a.get('name', '')) for a in mieter),
+                        msg=f"Gekündigter Mieter fehlt: {[a.get('name') for a in mieter]}")
+
+    def test_entwurf_wird_nicht_abgerechnet(self):
+        from core.utils.billing import berechne_abrechnung
+        lg, e, p = self._setup()
+        Mietvertrag.objects.create(mieter=self._mieter('Draft'), einheit=e, beginn=date(2024, 1, 1),
+                                   netto_mietzins=Decimal('1000'), nebenkosten=Decimal('50'),
+                                   status='entwurf', aktiv=True)   # Entwurf, aber aktiv=True (Default)
+        r = berechne_abrechnung(p.id)
+        namen = [str(a.get('name', '')) for a in r['abrechnungen']]
+        self.assertFalse(any('Draft' in n for n in namen),
+                         msg=f"Entwurf fälschlich abgerechnet: {namen}")
