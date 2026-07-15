@@ -93,6 +93,11 @@ def importiere_rechnungsmail(msg):
                                       quelle=f"Per E-Mail von {absender_kurz}")
         logger.info("Rechnungsmail-Import: %s von %s → Rechnung #%s (%s)",
                     dateiname, absender_kurz, kr.id, daten.get('methode'))
+        # Ins Aktivitätslog (Benutzer = System) → sichtbar im Logbuch und im
+        # Verlauf des Lieferantenkontos (Abgleich über den Lieferantennamen).
+        from core.auth import log_aktion
+        log_aktion(None, "Rechnung per E-Mail eingegangen", kr.lieferant or dateiname,
+                   f"Von {absender_kurz} · CHF {kr.betrag or 0} · Methode: {daten.get('methode')}")
         rechnungen.append(kr)
     return rechnungen
 

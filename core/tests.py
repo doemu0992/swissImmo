@@ -6251,3 +6251,34 @@ class KIRechnungsscannerTests(TestCase):
         msg['From'] = 'x@y.ch'
         msg.set_content('Nur Text, kein Anhang')
         self.assertEqual(importiere_rechnungsmail(msg), [])
+
+    def test_lieferantenkonto_zeigt_verlauf(self):
+        """Erstellen/Löschen von Kreditorenrechnungen erscheint im Verlauf des
+        Lieferantenkontos (Abgleich über den Lieferantennamen)."""
+        from finance.models import KreditorenRechnung
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/kreditoren/neu/', {'lieferant': 'Verlauf AG', 'betrag': '200.00'})
+        k = KreditorenRechnung.objects.get(lieferant='Verlauf AG')
+        c.post(f'/neu/kreditoren/{k.id}/loeschen/')
+        body = c.get('/neu/lieferantenkonto/?name=Verlauf AG').content.decode()
+        self.assertIn('Verlauf — wer hat was gemacht', body)
+        self.assertIn('Kreditorenrechnung erfasst', body)
+        self.assertIn('Kreditorenrechnung gelöscht', body)
+
+    def test_mailimport_loggt_aktivitaet(self):
+        """Mail-Import schreibt einen System-Eintrag ins Aktivitätslog."""
+        from django.test import override_settings
+        from email.message import EmailMessage
+        from core.services.belegimport import importiere_rechnungsmail
+        from core.models import AktivitaetsLog
+        msg = EmailMessage()
+        msg['From'] = 'log@handwerk.ch'
+        msg.set_content('Rechnung anbei')
+        msg.add_attachment(self._text_pdf(), maintype='application', subtype='pdf',
+                           filename='r.pdf')
+        with override_settings(GROQ_API_KEY=None):
+            importiere_rechnungsmail(msg)
+        e = AktivitaetsLog.objects.filter(aktion='Rechnung per E-Mail eingegangen').first()
+        self.assertIsNotNone(e)
+        self.assertIsNone(e.benutzer_id)
+        self.assertIn('log@handwerk.ch', e.details)

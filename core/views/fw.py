@@ -3458,12 +3458,23 @@ def fw_lieferantenkonto(request):
           for k in kred if k.offener_betrag > 0]
     op.sort(key=lambda o: (o['faellig'] or heute))
 
+    # Verlauf: alle protokollierten Aktionen zu diesem Lieferanten (Rechnung
+    # erstellt/gescannt/bearbeitet/freigegeben/bezahlt/gelöscht, Dienstleister-
+    # Änderungen). Kreditorenrechnungen tragen den Lieferanten als Log-Objekt —
+    # der Abgleich läuft über den Namen (kein FK am Modell).
+    from core.models import AktivitaetsLog
+    verlauf = []
+    if name and name != '— ohne Lieferant —':
+        verlauf = list(AktivitaetsLog.objects.filter(objekt__iexact=name)
+                       .select_related('benutzer')[:50])
+
     return render(request, 'fw/lieferantenkonto.html', {
         **basis, 'nav': 'lieferantenkonten', 'name': name,
         'bewegungen': bewegungen, 'endsaldo': saldo,
         'total_belastung': total_belastung, 'total_zahlung': total_zahlung,
         'op_rows': op, 'op_total': sum((o['offen'] for o in op), Decimal('0.00')),
         'rechnungen_n': len(kred),
+        'verlauf': verlauf,
     })
 
 
