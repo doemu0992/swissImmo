@@ -412,54 +412,65 @@ try {
 } catch (e) {}
 
 // Bearbeiten-Modus: bestehenden ENTWURF in den Assistenten vorbelegen.
-try {
+// WIRD GANZ AM ENDE aufgerufen (nach der Init-Sequenz), damit die Vorbelegung
+// nicht von monateStandard()/setNeuTyp()/goStep() wieder überschrieben wird.
+function prefillEditFromDraft(){
+ try {
   const ED = JSON.parse(document.getElementById('edit-data').textContent);
-  if (ED) {
-    const setV = (name, val) => { const el=document.querySelector('[name="'+name+'"]'); if(el && val!=null && val!=='') el.value=val; };
-    // 1. Objekt: Liegenschaft → Objektliste → Objekt (danach echte Miete überschreiben)
-    document.getElementById('s_lg').value = String(ED.lg_id); lgChange();
-    document.getElementById('s_obj').value = String(ED.einheit_id); objChange();
-    // 2. Hauptmieter (bestehend)
-    if (ED.mieter_id) document.getElementById('s_mieter').value = String(ED.mieter_id);
-    // 3. Zweiter Mieter
-    if (ED.mit_mieter_id) {
-      const zw=document.getElementById('zweiter_aktiv'); if(zw && !zw.checked){ zw.checked=true; if(typeof toggleZweiter==='function') toggleZweiter(); }
-      const s2=document.getElementById('s_mieter2'); if(s2) s2.value=String(ED.mit_mieter_id);
-    } else if (ED.mitmieter_name) {
-      const h=document.getElementById('f_mitmieter_name'); if(h) h.value=ED.mitmieter_name;
-    }
-    // 4. Fristen / Nutzung
-    if (document.getElementById('s_beginn')) document.getElementById('s_beginn').value = ED.beginn || '';
-    const unb=document.getElementById('unbefristet');
-    if (unb) { unb.checked = !!ED.unbefristet; }
-    if (!ED.unbefristet && document.getElementById('s_ende')) document.getElementById('s_ende').value = ED.ende || '';
-    setV('erstmals_kuendbar', ED.erstmals_kuendbar);
-    if (document.getElementById('s_frist')) document.getElementById('s_frist').value = ED.kuendigungsfrist;
-    setV('kuendigungstermine', ED.kuendigungstermine);
-    if (document.getElementById('s_personen')) document.getElementById('s_personen').value = ED.anzahl_personen;
-    setV('mitbenutzung', ED.mitbenutzung);
-    setV('nebenraeume', ED.nebenraeume);
-    setV('besondere_vereinbarungen', ED.besondere_vereinbarungen);
-    setV('weitere_vorbehalte', ED.weitere_vorbehalte);
-    setV('zahlungsrhythmus', ED.zahlungsrhythmus);
-    setV('nk_abrechnungsart', ED.nk_abrechnungsart);
-    setV('verteilschluessel', ED.verteilschluessel);
-    if (document.getElementById('s_zweck')) document.getElementById('s_zweck').value = ED.zweckbestimmung || '';
-    // 5. Mietzins — NACH objChange mit den echten Vertragswerten überschreiben
-    if (document.getElementById('s_netto')) document.getElementById('s_netto').value = ED.netto_mietzins;
-    if (document.getElementById('s_nk')) document.getElementById('s_nk').value = ED.nebenkosten;
-    if (ED.basis_referenzzinssatz!=null) setV('basis_referenzzinssatz', ED.basis_referenzzinssatz);
-    if (ED.basis_lik_punkte!=null) setV('basis_lik_punkte', ED.basis_lik_punkte);
-    setV('kautions_betrag', ED.kautions_betrag);
-    setV('kautions_konto', ED.kautions_konto);
-    const sm=document.getElementById('s_modell'); if(sm){ sm.value=ED.mietzins_modell; if(typeof modellChange==='function') modellChange(); }
-    const fw=document.getElementById('familienwohnung'); if(fw) fw.checked = !!ED.familienwohnung;
-    const mw=document.getElementById('s_mwst');
-    if(mw){ mw.checked=!!ED.mwst_pflichtig; const box=document.getElementById('mwst-satz-box'); if(box) box.classList.toggle('hidden', !ED.mwst_pflichtig); }
-    setV('mwst_satz', ED.mwst_satz);
-    live();
+  if (!ED) return;
+  const setV = (name, val) => { const el=document.querySelector('[name="'+name+'"]'); if(el && val!=null && val!=='') el.value=val; };
+  // 1. Mieter-Tab auf „Bestehende Person" (Init hat evtl. umgeschaltet)
+  if (typeof mieterTab==='function') mieterTab('best');
+  // 2. Objekt: Liegenschaft → Objektliste → Objekt (danach echte Miete überschreiben)
+  document.getElementById('s_lg').value = String(ED.lg_id); lgChange();
+  document.getElementById('s_obj').value = String(ED.einheit_id); objChange();
+  // 3. Hauptmieter (bestehend)
+  if (ED.mieter_id) document.getElementById('s_mieter').value = String(ED.mieter_id);
+  // 4. Zweiter Mieter
+  if (ED.mit_mieter_id) {
+    const zw=document.getElementById('zweiter_aktiv'); if(zw && !zw.checked){ zw.checked=true; if(typeof toggleZweiter==='function') toggleZweiter(); }
+    const s2=document.getElementById('s_mieter2'); if(s2) s2.value=String(ED.mit_mieter_id);
+  } else if (ED.mitmieter_name) {
+    const h=document.getElementById('f_mitmieter_name'); if(h) h.value=ED.mitmieter_name;
   }
-} catch (e) { if (window.console) console.warn('Vertrag-Prefill', e); }
+  // 5. Fristen / Nutzung
+  if (document.getElementById('s_beginn')) document.getElementById('s_beginn').value = ED.beginn || '';
+  const unb=document.getElementById('unbefristet'); if (unb) unb.checked = !!ED.unbefristet;
+  if (!ED.unbefristet && document.getElementById('s_ende')) document.getElementById('s_ende').value = ED.ende || '';
+  setV('erstmals_kuendbar', ED.erstmals_kuendbar);
+  if (document.getElementById('s_frist')) document.getElementById('s_frist').value = ED.kuendigungsfrist;
+  // Kündigungstermine → passende Monats-Checkboxen setzen
+  if (ED.kuendigungstermine) {
+    const t = ED.kuendigungstermine;
+    document.querySelectorAll('.monat-cb').forEach(cb => {
+      cb.checked = /ausser\s+Dezember/i.test(t) ? (cb.value !== 'Dezember') : t.indexOf(cb.value) !== -1;
+    });
+  }
+  if (document.getElementById('s_personen')) document.getElementById('s_personen').value = ED.anzahl_personen;
+  setV('mitbenutzung', ED.mitbenutzung);
+  setV('nebenraeume', ED.nebenraeume);
+  setV('besondere_vereinbarungen', ED.besondere_vereinbarungen);
+  setV('weitere_vorbehalte', ED.weitere_vorbehalte);
+  setV('zahlungsrhythmus', ED.zahlungsrhythmus);
+  setV('nk_abrechnungsart', ED.nk_abrechnungsart);
+  setV('verteilschluessel', ED.verteilschluessel);
+  if (document.getElementById('s_zweck')) document.getElementById('s_zweck').value = ED.zweckbestimmung || '';
+  // 6. Modell / MWST / Familienwohnung
+  const sm=document.getElementById('s_modell'); if(sm){ sm.value=ED.mietzins_modell; if(typeof modellChange==='function') modellChange(); }
+  const fw=document.getElementById('familienwohnung'); if(fw) fw.checked = !!ED.familienwohnung;
+  const mw=document.getElementById('s_mwst');
+  if(mw){ mw.checked=!!ED.mwst_pflichtig; const box=document.getElementById('mwst-satz-box'); if(box) box.classList.toggle('hidden', !ED.mwst_pflichtig); }
+  setV('mwst_satz', ED.mwst_satz);
+  // 7. Mietzins/Index — GANZ ZULETZT, damit objChange()/Init nichts überschreibt
+  if (document.getElementById('s_netto')) document.getElementById('s_netto').value = ED.netto_mietzins;
+  if (document.getElementById('s_nk')) document.getElementById('s_nk').value = ED.nebenkosten;
+  if (ED.basis_referenzzinssatz!=null) { const el=document.getElementById('s_ref'); if(el) el.value=ED.basis_referenzzinssatz; }
+  if (ED.basis_lik_punkte!=null) { const el=document.getElementById('s_lik'); if(el) el.value=ED.basis_lik_punkte; }
+  setV('kautions_betrag', ED.kautions_betrag);
+  setV('kautions_konto', ED.kautions_konto);
+  live();
+ } catch (e) { if (window.console) console.warn('Vertrag-Prefill', e); }
+}
 
 function curLg(){ return LG.find(l=>String(l.id)===document.getElementById('s_lg').value); }
 function curObj(){ const l=curLg(); if(!l) return null; return l.objekte.find(o=>String(o.id)===document.getElementById('s_obj').value); }
@@ -901,5 +912,6 @@ document.getElementById('s_ref').value = AKT_REF;
 if(AKT_LIK_STAND){ document.getElementById('s_lik_stand').value = AKT_LIK_STAND; }
 setNeuTyp('person');
 goStep(0);
+prefillEditFromDraft();   // Entwurf-Werte GANZ ZULETZT setzen (nach der Init-Sequenz)
 </script>
 {% endblock %}
