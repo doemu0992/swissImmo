@@ -288,8 +288,8 @@
 <!-- ===== TAB: MIETZINS ===== -->
 <div data-panel="vt" id="vt-mietzins" class="hidden">
 
-    <!-- ===== MIETZINS-KOMPONENTEN (nur Ansicht — verwaltet am Objekt) ===== -->
-    {% if mietzins_komponenten %}
+    <!-- ===== MIETZINS-ZEITPLAN (nur Ansicht — verwaltet am Objekt-Sollmietzins) ===== -->
+    {% if v.mietzins_zeitplan %}
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
         <div class="px-5 pt-4 pb-2 flex items-start justify-between">
             <div>
@@ -307,7 +307,7 @@
                 <th class="px-4 py-2.5 font-semibold">Notiz</th>
             </tr></thead>
             <tbody class="divide-y divide-slate-50">
-            {% for k in mietzins_komponenten %}
+            {% for k in v.mietzins_zeitplan %}
             <tr class="hover:bg-slate-50/60">
                 <td class="px-4 py-2.5 text-slate-700 whitespace-nowrap font-medium">{{ k.gueltig_ab|date:"d.m.Y" }}</td>
                 <td class="px-4 py-2.5 text-right text-slate-700 whitespace-nowrap">{{ k.netto_mietzins|chf }} / {{ k.nebenkosten|chf }}</td>

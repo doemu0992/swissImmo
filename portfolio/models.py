@@ -173,8 +173,14 @@ class Sollmietzins(models.Model):
     Formular, Art. 269d OR)."""
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='sollmietzinse')
     gueltig_ab = models.DateField("Gültig ab", default=date.today)
-    netto_mietzins = models.DecimalField("Netto-Mietzins (CHF)", max_digits=8, decimal_places=2, default=0.00)
+    netto_mietzins = models.DecimalField("Netto-Mietzins (Referenz, CHF)", max_digits=8, decimal_places=2, default=0.00)
     nebenkosten = models.DecimalField("Nebenkosten (CHF)", max_digits=6, decimal_places=2, default=0.00)
+    # Rabatt/Erlass dieser Periode (Gratismonate) — mindert NUR die Verrechnung
+    # (Sollstellung/Debitor), nicht die Referenz. Ein Gratismonat = rabatt_netto ==
+    # netto_mietzins → zu zahlen 0, aber der volle Referenzertrag wird gebucht
+    # (Ertragsminderung Konto 3090, Option B) → Mieterspiegel/Bilanz bleiben korrekt.
+    rabatt_netto = models.DecimalField("Rabatt Netto (CHF)", max_digits=8, decimal_places=2, default=0.00)
+    rabatt_nk = models.DecimalField("Rabatt NK (CHF)", max_digits=8, decimal_places=2, default=0.00)
     # Indexbasis, auf welcher dieser Sollmietzins beruht (für spätere Anpassungen,
     # Art. 269a/269d). Neue Verträge übernehmen sie als Vertragsbasis.
     basis_referenzzinssatz = models.DecimalField("Basis Referenzzinssatz (%)", max_digits=4, decimal_places=2, null=True, blank=True)
@@ -197,7 +203,30 @@ class Sollmietzins(models.Model):
 
     @property
     def brutto(self):
+        """Referenz-Brutto (vereinbarte Sollmiete)."""
         return (self.netto_mietzins or Decimal('0')) + (self.nebenkosten or Decimal('0'))
+
+    @property
+    def verrechnet_netto(self):
+        return max(Decimal('0.00'), (self.netto_mietzins or Decimal('0')) - (self.rabatt_netto or Decimal('0')))
+
+    @property
+    def verrechnet_nk(self):
+        return max(Decimal('0.00'), (self.nebenkosten or Decimal('0')) - (self.rabatt_nk or Decimal('0')))
+
+    @property
+    def verrechnet_brutto(self):
+        return self.verrechnet_netto + self.verrechnet_nk
+
+    @property
+    def rabatt_gesamt(self):
+        rn = min(self.rabatt_netto or Decimal('0'), self.netto_mietzins or Decimal('0'))
+        rk = min(self.rabatt_nk or Decimal('0'), self.nebenkosten or Decimal('0'))
+        return rn + rk
+
+    @property
+    def hat_rabatt(self):
+        return (self.rabatt_netto or 0) > 0 or (self.rabatt_nk or 0) > 0
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

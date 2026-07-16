@@ -1470,21 +1470,6 @@ def fw_objekt_detail(request, pk):
     staffelstufen = list(aktiver_vertrag.staffelstufen.all()) if aktiver_vertrag else []
     zeige_staffel = bool(aktiver_vertrag) and aktiver_vertrag.mietzins_modell == 'staffel'
 
-    # Gratismonate/Rabatt-Komponenten (mieterbezogen, Option B) werden hier am
-    # Objekt-Mietzins-Tab verwaltet (wie die Staffelstufen), die Daten bleiben aber
-    # am Vertrag (erscheinen im Vertragsdokument, kein Verschmutzen künftiger
-    # Verträge). Ziel-Vertrag: der aktive; sonst der neueste noch nicht beendete
-    # (z.B. ein frischer Entwurf nach Leerstand), damit man die Komponenten schon
-    # vor Vertragsstart erfassen kann.
-    mietzins_vertrag = aktiver_vertrag
-    if not mietzins_vertrag:
-        mietzins_vertrag = (Mietvertrag.objects
-                            .filter(_Q(einheit=e) | _Q(nebenobjekte=e))
-                            .exclude(status__in=['archiviert', 'gekuendigt'])
-                            .select_related('mieter').distinct()
-                            .order_by('-beginn').first())
-    vertrag_mietzins_komponenten = (list(mietzins_vertrag.mietzins_komponenten.all())
-                                    if mietzins_vertrag else [])
 
     # Aktuelle Marktwerte als Vorbelegung für die Indexbasis neuer Sollmietzins-Zeilen
     from crm.models import Verwaltung as _Vw
@@ -1514,7 +1499,7 @@ def fw_objekt_detail(request, pk):
         ('fotos', 'Fotos', len(fotos) or None),
         ('raumbuch', 'Raumbuch', ausst_count or None),
         ('verhaeltnisse', 'Verhältnisse', len(verhaeltnisse) or None),
-        ('mietzins', 'Mietzins', (len(sollmietzinse) + len(vertrag_mietzins_komponenten)) or None),
+        ('mietzins', 'Mietzins', len(sollmietzinse) or None),
         ('geraete', 'Geräte', geraete.count() or None),
         ('zaehler', 'Zähler', zaehler.count() or None),
     ]
@@ -1531,9 +1516,6 @@ def fw_objekt_detail(request, pk):
         'aktueller_soll_id': aktueller_soll_id,
         'staffelstufen': staffelstufen,
         'zeige_staffel': zeige_staffel,
-        'mietzins_vertrag': mietzins_vertrag,
-        'vertrag_mietzins_komponenten': vertrag_mietzins_komponenten,
-        'heute_iso': timezone.now().date().isoformat(),
         'staffelvorlagen': staffelvorlagen,
         'zeige_staffelvorlage': zeige_staffelvorlage,
         'aktueller_ref_zins': aktueller_ref_zins,
@@ -1932,6 +1914,15 @@ def fw_sollmietzins_add(request):
     netto = _dec(request.POST.get('netto_mietzins'))
     # Einstellplatz → keine Nebenkosten
     nk = Decimal('0.00') if e.ist_einstellplatz else _dec(request.POST.get('nebenkosten'))
+    # Rabatt/Erlass (Gratismonat): mindert nur die Verrechnung, nicht die Referenz.
+    # "mietzinsfrei" = voller Netto-Erlass → Rabatt = Netto-Referenz.
+    if request.POST.get('mietzinsfrei'):
+        rabatt_netto = netto
+    else:
+        rabatt_netto = _dec(request.POST.get('rabatt_netto'))
+    rabatt_nk = _dec(request.POST.get('rabatt_nk'))
+    rabatt_netto = min(max(rabatt_netto, Decimal('0.00')), netto)   # 0..Referenz
+    rabatt_nk = min(max(rabatt_nk, Decimal('0.00')), nk)
 
     def _dec_opt(x):
         v = (str(x) or '').replace("'", '').replace(',', '.').strip()
@@ -1942,12 +1933,16 @@ def fw_sollmietzins_add(request):
 
     Sollmietzins.objects.create(
         einheit=e, gueltig_ab=ab, netto_mietzins=netto, nebenkosten=nk,
+        rabatt_netto=rabatt_netto, rabatt_nk=rabatt_nk,
         basis_referenzzinssatz=_dec_opt(request.POST.get('basis_referenzzinssatz')),
         basis_lik_punkte=_dec_opt(request.POST.get('basis_lik_punkte')),
         notiz=(request.POST.get('notiz') or '').strip()[:200],
     )
-    log_aktion(request, "Sollmietzins erfasst", e.bezeichnung, f"ab {ab}: {netto}+{nk}")
-    messages.success(request, f"✅ Sollmietzins ab {ab.strftime('%d.%m.%Y')} erfasst.")
+    zu_zahlen = max(Decimal('0'), netto - rabatt_netto) + max(Decimal('0'), nk - rabatt_nk)
+    log_aktion(request, "Sollmietzins erfasst", e.bezeichnung,
+               f"ab {ab}: Referenz {netto}+{nk}, Rabatt {rabatt_netto}/{rabatt_nk}, zu zahlen {zu_zahlen}")
+    messages.success(request, f"✅ Sollmietzins ab {ab.strftime('%d.%m.%Y')} erfasst "
+                     f"(Referenz CHF {netto + nk}, zu zahlen CHF {zu_zahlen}).")
     return redirect(ziel)
 
 

@@ -6138,8 +6138,8 @@ class MietzinsKonsistenzTests(TestCase):
         self.assertEqual(s.basis_lik_punkte, Decimal('108.2'))
         # Objekt-Detail zeigt die Basis-Spalte + Formularfelder
         body = c.get(f'/neu/objekte/{e.id}/').content.decode()
-        self.assertIn('Basis Ref.-Zins / LIK', body)
         self.assertIn('name="basis_referenzzinssatz"', body)
+        self.assertIn('Basis Ref.-Zinssatz', body)   # Formular-Label
         # Wizard-JSON trägt die Indexbasis der Sollmietzins-Zeile
         wbody = c.get(f'/neu/vertraege/neu/?einheit={e.id}').content.decode()
         self.assertIn('"ref": 1.25', wbody)
@@ -7232,6 +7232,91 @@ class VertragMietzinsUITests(TestCase):
         self.assertIn('01.10.2026', html)
         self.assertIn('mietzinsfrei', html)
         self.assertIn('01.12.2026', html)
+
+
+class SollmietzinsSollstellungTests(TestCase):
+    """Der datierte Objekt-Sollmietzins (Gratismonate/Rabatt direkt in der
+    Sollmiete) treibt die Sollstellung automatisch pro Periode — für neue UND
+    bestehende Verträge, ohne dass am Vertrag etwas erfasst werden muss."""
+
+    def _setup(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        v.beginn = date(2026, 10, 1)
+        v.netto_mietzins = Decimal('1000'); v.nebenkosten = Decimal('250')
+        v.mietzins_modell = 'fest'; v.save()
+        return lg, e, m, v
+
+    def test_sollmietzins_zeitplan_treibt_sollstellung(self):
+        from portfolio.models import Sollmietzins
+        from finance.models import DebitorenRechnung, Buchung
+        from core.services.automation import run_sollstellung
+        _lg, e, _m, v = self._setup()
+        # Zeitplan am OBJEKT: Okt normal, Nov Netto gratis (Rabatt=Referenz), Dez normal.
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2026, 10, 1),
+                                    netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'))
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2026, 11, 1),
+                                    netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'),
+                                    rabatt_netto=Decimal('1000'), notiz='Gratismonat')
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2026, 12, 1),
+                                    netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'))
+        # Resolver pro Periode
+        self.assertEqual(v.verrechneter_netto_mietzins(date(2026, 10, 15)), Decimal('1000'))
+        self.assertEqual(v.verrechneter_netto_mietzins(date(2026, 11, 15)), Decimal('0'))
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 11, 15)), Decimal('1000'))  # Referenz voll
+        self.assertEqual(v.verrechneter_netto_mietzins(date(2026, 12, 15)), Decimal('1000'))
+        # Sollstellung folgt den gültig-ab-Daten
+        run_sollstellung(2026, 10)
+        run_sollstellung(2026, 11)
+        run_sollstellung(2026, 12)
+        okt = DebitorenRechnung.objects.get(vertrag=v, titel='Miete & NK 10/2026')
+        nov = DebitorenRechnung.objects.get(vertrag=v, titel='Miete & NK 11/2026')
+        dez = DebitorenRechnung.objects.get(vertrag=v, titel='Miete & NK 12/2026')
+        self.assertEqual(okt.betrag, Decimal('1250.00'))
+        self.assertEqual(nov.betrag, Decimal('250.00'))   # Netto erlassen
+        self.assertEqual(dez.betrag, Decimal('1250.00'))
+        # November: voller Referenzertrag gebucht + Rabatt als Ertragsminderung 3090
+        nov_b = Buchung.objects.filter(debitoren_rechnung=nov)
+        self.assertEqual(sum(b.betrag for b in nov_b.filter(haben_konto__nummer='3000')), Decimal('1000.00'))
+        self.assertEqual(sum(b.betrag for b in nov_b.filter(soll_konto__nummer='3090')), Decimal('1000.00'))
+
+    def test_stale_sollmietzins_hijackt_nicht(self):
+        """Eine alte Sollmietzins-Zeile VOR Mietbeginn (kein Zeitplan für dieses
+        Verhältnis) darf die Verrechnung NICHT übersteuern → Vertragsbasis gilt."""
+        from portfolio.models import Sollmietzins
+        _lg, e, _m, v = self._setup()
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2020, 1, 1),
+                                    netto_mietzins=Decimal('800'), nebenkosten=Decimal('200'))
+        # Keine Zeile ab Mietbeginn → Basis (1000) gilt, nicht die 800er-Altzeile.
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 10, 15)), Decimal('1000'))
+        self.assertEqual(v.verrechneter_netto_mietzins(date(2026, 10, 15)), Decimal('1000'))
+
+    def test_mietzinsfrei_checkbox_am_sollmietzins(self):
+        from portfolio.models import Sollmietzins
+        _lg, e, _m, _v = self._setup()
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/sollmietzins/', {
+            'einheit_id': str(e.id), 'gueltig_ab': '2026-11-01',
+            'netto_mietzins': '1000.00', 'nebenkosten': '250.00',
+            'mietzinsfrei': '1', 'notiz': 'Gratismonat'})
+        s = Sollmietzins.objects.get(einheit=e, gueltig_ab=date(2026, 11, 1))
+        self.assertEqual(s.netto_mietzins, Decimal('1000.00'))   # Referenz voll
+        self.assertEqual(s.rabatt_netto, Decimal('1000.00'))     # Rabatt = Netto
+        self.assertEqual(s.verrechnet_brutto, Decimal('250.00'))
+
+    def test_zeitplan_im_vertrags_pdf(self):
+        from portfolio.models import Sollmietzins
+        from core.services.pdf_service import generate_vertrag_pdf_bytes
+        _lg, e, _m, v = self._setup()
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2026, 11, 1),
+                                    netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'),
+                                    rabatt_netto=Decimal('1000'), notiz='Gratismonat')
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2026, 12, 1),
+                                    netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'))
+        self.assertTrue(len(v.mietzins_zeitplan()) >= 2)
+        pdf = generate_vertrag_pdf_bytes(v)
+        self.assertTrue(pdf.startswith(b'%PDF'))
 
 
 class VersionEndpointTests(TestCase):

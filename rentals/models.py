@@ -214,6 +214,11 @@ class Mietvertrag(models.Model):
                 .order_by('-gueltig_ab', '-id').first())
         if komp:
             return komp.netto_mietzins or Decimal('0.00')
+        # Datierter Sollmietzins-Zeitplan am OBJEKT (Gratismonate direkt in der
+        # Sollmiete): die zum Stichtag gültige Zeile treibt die Sollstellung.
+        soll = self._sollmietzins_zeile(stichtag)
+        if soll:
+            return soll.netto_mietzins or Decimal('0.00')
         if self.mietzins_modell == 'staffel':
             stufe = (self.staffelstufen.filter(ab_datum__lte=stichtag)
                      .order_by('-ab_datum').first())
@@ -232,7 +237,32 @@ class Mietvertrag(models.Model):
                     .order_by('-gueltig_ab', '-id').first())
             if komp:
                 return komp.nebenkosten or Decimal('0.00')
+            soll = self._sollmietzins_zeile(stichtag)
+            if soll:
+                return soll.nebenkosten or Decimal('0.00')
         return self.nebenkosten or Decimal('0.00')
+
+    def _sollmietzins_zeile(self, fuer_datum=None):
+        """Die zum Stichtag geltende, MANUELL erfasste Sollmietzins-Zeile des
+        Objekts (Gratismonat-Zeitplan). Nur wirksam, wenn für DIESES Verhältnis
+        ein Zeitplan hinterlegt ist (mind. eine manuelle Zeile mit gueltig_ab >=
+        Mietbeginn) — so treiben stehen gebliebene Alt-Zeilen die Sollstellung
+        nicht ungewollt. Amtliche-Anpassungs-Zeilen (quelle_anpassung) sind
+        ausgeschlossen — die laufen weiter über den Anpassungs-Pfad."""
+        from datetime import date as _d
+        if not self.pk or not self.einheit_id:
+            return None
+        stichtag = fuer_datum or _d.today()
+        zeilen = list(self.einheit.sollmietzinse.filter(quelle_anpassung__isnull=True))
+        if not zeilen:
+            return None
+        # Zeitplan muss zu diesem Verhältnis gehören (eine Zeile ab Mietbeginn).
+        if not any(z.gueltig_ab >= self.beginn for z in zeilen):
+            return None
+        passend = [z for z in zeilen if z.gueltig_ab <= stichtag]
+        if not passend:
+            return None
+        return max(passend, key=lambda z: (z.gueltig_ab, z.id or 0))
 
     def _aktive_komponente(self, fuer_datum=None):
         """Die am Stichtag geltende Mietzins-Komponente (jüngste mit
@@ -253,6 +283,9 @@ class Mietvertrag(models.Model):
         komp = self._aktive_komponente(fuer_datum)
         if komp:
             return komp.verrechnet_netto
+        soll = self._sollmietzins_zeile(fuer_datum)
+        if soll:
+            return soll.verrechnet_netto
         return self.effektiver_netto_mietzins(fuer_datum)
 
     def verrechnete_nebenkosten(self, fuer_datum=None):
@@ -261,6 +294,9 @@ class Mietvertrag(models.Model):
         komp = self._aktive_komponente(fuer_datum)
         if komp:
             return komp.verrechnet_nk
+        soll = self._sollmietzins_zeile(fuer_datum)
+        if soll:
+            return soll.verrechnet_nk
         return self.effektive_nebenkosten(fuer_datum)
 
     def rabatt_netto_am(self, fuer_datum=None):
@@ -268,6 +304,9 @@ class Mietvertrag(models.Model):
         komp = self._aktive_komponente(fuer_datum)
         if komp:
             return min(komp.rabatt_netto or Decimal('0.00'), komp.netto_mietzins or Decimal('0.00'))
+        soll = self._sollmietzins_zeile(fuer_datum)
+        if soll:
+            return min(soll.rabatt_netto or Decimal('0.00'), soll.netto_mietzins or Decimal('0.00'))
         return Decimal('0.00')
 
     def rabatt_nk_am(self, fuer_datum=None):
@@ -275,7 +314,35 @@ class Mietvertrag(models.Model):
         komp = self._aktive_komponente(fuer_datum)
         if komp:
             return min(komp.rabatt_nk or Decimal('0.00'), komp.nebenkosten or Decimal('0.00'))
+        soll = self._sollmietzins_zeile(fuer_datum)
+        if soll:
+            return min(soll.rabatt_nk or Decimal('0.00'), soll.nebenkosten or Decimal('0.00'))
         return Decimal('0.00')
+
+    def mietzins_zeitplan(self):
+        """Die datierten Mietzins-Zeilen, die diesen Vertrag steuern — für Anzeige
+        (Vertragsdetail) und das Vertragsdokument. Priorität wie in der Sollstellung:
+        vertragseigene Komponenten (falls vorhanden), sonst der Gratismonat-/Rabatt-
+        Zeitplan aus dem Objekt-Sollmietzins ab Mietbeginn. Beide Typen liefern
+        dieselben Anzeige-Properties (gueltig_ab, netto_mietzins, nebenkosten,
+        rabatt_gesamt, verrechnet_brutto, hat_rabatt, notiz). Leer, wenn nur ein
+        einzelner Mietzins gilt (kein datierter Verlauf)."""
+        if not self.pk:
+            return []
+        komps = list(self.mietzins_komponenten.all().order_by('gueltig_ab', 'id'))
+        if komps:
+            return komps
+        if not self.einheit_id:
+            return []
+        zeilen = list(self.einheit.sollmietzinse
+                      .filter(quelle_anpassung__isnull=True)
+                      .order_by('gueltig_ab', 'id'))
+        tenancy = [z for z in zeilen if z.gueltig_ab >= self.beginn]
+        # Nur als "Zeitplan" zeigen, wenn es mehr als eine Zeile ODER ein Rabatt gibt
+        # (ein einzelner Mietzins ohne Rabatt ist der normale Fall, keine Staffel).
+        if len(tenancy) > 1 or any(z.hat_rabatt for z in tenancy):
+            return tenancy
+        return []
 
     def effektive_basis(self, fuer_datum=None):
         """(Referenzzins, LIK), auf denen der aktuell verrechnete Mietzins beruht:
