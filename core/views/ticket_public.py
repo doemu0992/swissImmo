@@ -1,5 +1,4 @@
 # core/views/ticket_public.py
-import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
@@ -88,23 +87,13 @@ def public_schaden_melden_view(request):
         # WICHTIG: Auch beim Success-Return ein leeres JSON mitgeben, damit Alpine.js nicht abstürzt!
         return render(request, 'core/schaden_melden.html', {'success': True, 'liegenschaften_json': '[]'})
 
-    # GET-REQUEST: Bulletproof Auslesen der Liegenschaften
-    liegenschaften_query = Liegenschaft.objects.all().order_by('strasse')
-    liegenschaften_liste = []
-
-    for l in liegenschaften_query:
-        # Wir nutzen getattr, falls die Felder plz oder ort in der DB gar nicht existieren, um Abstürze zu vermeiden
-        plz = getattr(l, 'plz', '')
-        ort = getattr(l, 'ort', '')
-        adresse_komplett = f"{l.strasse}"
-        if plz or ort:
-            adresse_komplett += f", {plz} {ort}"
-
-        liegenschaften_liste.append({'id': l.id, 'text': adresse_komplett})
-
+    # GET-REQUEST: Das öffentliche (anonyme) Formular exponiert NICHT das gesamte
+    # Portfolio (Adress-Enumeration / DSG) — der Melder trägt seine Adresse als
+    # Freitext ein (Feld `adresse`, serverseitig via E-Mail/Fallback zugeordnet).
+    # Der gebäudespezifische Einstieg ist der QR-Aushang /report/<liegenschaft_id>/.
     context = {
         'success': False,
-        'liegenschaften_json': json.dumps(liegenschaften_liste)
+        'liegenschaften_json': '[]',
     }
     return render(request, 'core/schaden_melden.html', context)
 

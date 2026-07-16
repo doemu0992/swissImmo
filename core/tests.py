@@ -2626,13 +2626,21 @@ class MietzinsAnpassungSollmietzinsTests(TestCase):
         v.save()
         return e, v
 
-    def _anpassung_speichern(self, c, v, neu_netto='1600', wirksam='2026-04-01'):
+    def _valid_wirksam(self, v):
+        # Gültiger Erhöhungstermin (Art. 269d) — sonst greift die serverseitige
+        # Fristenkontrolle. Für die Tests ein fixer, klar zukünftiger Monatsanfang.
+        from rentals.services import naechster_anpassungstermin
+        from django.utils import timezone
+        return naechster_anpassungstermin(v, timezone.now().date())
+
+    def _anpassung_speichern(self, c, v, neu_netto='1600', wirksam=None):
+        wirksam = wirksam or self._valid_wirksam(v)
         return c.post(f'/neu/mietzins/{v.id}/anpassung/', {
             'aktion': 'speichern',
             'neu_netto': neu_netto,
             'neu_zins': '1.50',
             'neu_lik': '105',
-            'wirksam_ab': wirksam,
+            'wirksam_ab': wirksam.isoformat() if hasattr(wirksam, 'isoformat') else wirksam,
             'begruendung': 'Anpassung Referenzzinssatz',
         })
 
@@ -2640,14 +2648,15 @@ class MietzinsAnpassungSollmietzinsTests(TestCase):
         from portfolio.models import Sollmietzins
         from rentals.models import MietzinsAnpassung
         e, v = self._setup()
+        w = self._valid_wirksam(v)
         c = Client(); c.force_login(_team_user())
-        self._anpassung_speichern(c, v)
+        self._anpassung_speichern(c, v, wirksam=w)
 
         anp = MietzinsAnpassung.objects.get(vertrag=v)
         z = Sollmietzins.objects.filter(einheit=e, quelle_anpassung=anp)
         self.assertEqual(z.count(), 1)
         zeile = z.first()
-        self.assertEqual(zeile.gueltig_ab, date(2026, 4, 1))
+        self.assertEqual(zeile.gueltig_ab, w)
         self.assertEqual(zeile.netto_mietzins, Decimal('1600'))
         # NK bleibt unverändert (Anpassung betrifft nur den Netto)
         self.assertEqual(zeile.nebenkosten, Decimal('200'))
@@ -2657,32 +2666,35 @@ class MietzinsAnpassungSollmietzinsTests(TestCase):
 
     def test_zeile_erscheint_im_objekt_detail(self):
         e, v = self._setup()
+        w = self._valid_wirksam(v)
         c = Client(); c.force_login(_team_user())
-        self._anpassung_speichern(c, v)
+        self._anpassung_speichern(c, v, wirksam=w)
         body = c.get(f'/neu/objekte/{e.id}/?tab=mietzins').content.decode()
-        self.assertIn('01.04.2026', body)
+        self.assertIn(w.strftime('%d.%m.%Y'), body)
 
     def test_mehrfach_speichern_bleibt_idempotent(self):
         from portfolio.models import Sollmietzins
         e, v = self._setup()
+        w = self._valid_wirksam(v)
         c = Client(); c.force_login(_team_user())
         # Zweimal PDF-Generieren desselben Formulars darf keine Duplikat-Zeilen erzeugen
         for _ in range(2):
-            self._anpassung_speichern(c, v)
-        self.assertEqual(Sollmietzins.objects.filter(einheit=e, gueltig_ab=date(2026, 4, 1)).count(), 1)
+            self._anpassung_speichern(c, v, wirksam=w)
+        self.assertEqual(Sollmietzins.objects.filter(einheit=e, gueltig_ab=w).count(), 1)
 
     def test_loeschen_entfernt_zeile_und_resynct(self):
         from portfolio.models import Sollmietzins
         from rentals.models import MietzinsAnpassung
         e, v = self._setup()
+        w = self._valid_wirksam(v)
         c = Client(); c.force_login(_team_user())
-        self._anpassung_speichern(c, v)
+        self._anpassung_speichern(c, v, wirksam=w)
         anp = MietzinsAnpassung.objects.get(vertrag=v)
         self.assertTrue(Sollmietzins.objects.filter(quelle_anpassung=anp).exists())
 
         c.post(f'/neu/anpassung/{anp.id}/loeschen/')
         self.assertFalse(MietzinsAnpassung.objects.filter(id=anp.id).exists())
-        self.assertFalse(Sollmietzins.objects.filter(einheit=e, gueltig_ab=date(2026, 4, 1)).exists())
+        self.assertFalse(Sollmietzins.objects.filter(einheit=e, gueltig_ab=w).exists())
 
 
 class VerhaeltnisseAblageTests(TestCase):
@@ -8327,6 +8339,20 @@ class SecurityBatchTests(TestCase):
         idx = src.find('def fw_buchung_stornieren')
         deko = src[max(0, idx - 120):idx]
         self.assertRegex(deko, r"rolle_erforderlich\(ROLLE_VERWALTUNG\)")
+
+    def test_oeffentliches_schadenformular_leakt_kein_portfolio(self):
+        # Das anonyme Schadenformular darf nicht das gesamte Portfolio (alle
+        # Liegenschafts-Adressen) in die Seite dumpen (Adress-Enumeration/DSG).
+        Liegenschaft.objects.create(strasse='Geheimweg 7', plz='8000', ort='Zürich')
+        Liegenschaft.objects.create(strasse='Privatgasse 2', plz='3000', ort='Bern')
+        c = Client()
+        r = c.get('/schaden/melden/')
+        self.assertEqual(r.status_code, 200)
+        body = r.content.decode()
+        self.assertNotIn('Geheimweg 7', body)
+        self.assertNotIn('Privatgasse 2', body)
+        # Freitext-Adressfeld bleibt erhalten (Meldung weiterhin möglich).
+        self.assertIn('name="adresse"', body)
 
 
 class LegalBatchTests(TestCase):
