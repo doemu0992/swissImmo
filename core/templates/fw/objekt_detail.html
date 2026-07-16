@@ -563,6 +563,65 @@
     </div>
     {% endif %}
 
+    {% if mietzins_vertrag %}
+    <!-- Gratismonate / Rabatt des aktiven Vertrags (mieterbezogen, Option B) -->
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mt-6">
+        <div class="px-5 pt-4 pb-2 flex items-start justify-between">
+            <div>
+                <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-layer-group text-indigo-500 mr-1.5"></i>Gratismonate / Rabatt des aktiven Vertrags</h3>
+                <p class="text-[11px] text-slate-400 mt-0.5 max-w-2xl"><b>Referenz</b> = echte vereinbarte Miete (Mieterspiegel/Bilanz). <b>Rabatt/Erlass</b> mindert nur die Verrechnung — ein Gratismonat = Rabatt gleich der Referenz (zu zahlen 0.00), der volle Referenzertrag wird trotzdem gebucht (Ertragsminderung Konto 3090). Erscheint im Vertragsdokument. Sind Komponenten erfasst, sind sie die massgebliche Quelle für die Sollstellung dieses Vertrags.</p>
+            </div>
+            <a href="/neu/vertraege/{{ mietzins_vertrag.id }}/" class="text-xs text-indigo-600 hover:underline whitespace-nowrap mt-0.5">Aktiver Vertrag</a>
+        </div>
+        <table class="w-full text-sm">
+            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-y border-slate-100">
+                <th class="px-4 py-2.5 font-semibold">Gültig ab</th>
+                <th class="px-4 py-2.5 font-semibold text-right">Referenz<br><span class="text-[9px] normal-case text-slate-300">Netto / NK</span></th>
+                <th class="px-4 py-2.5 font-semibold text-right">Rabatt<br><span class="text-[9px] normal-case text-slate-300">Netto / NK</span></th>
+                <th class="px-4 py-2.5 font-semibold text-right">zu zahlen</th>
+                <th class="px-4 py-2.5 font-semibold">Notiz</th><th></th>
+            </tr></thead>
+            <tbody class="divide-y divide-slate-50">
+            {% for k in vertrag_mietzins_komponenten %}
+            <tr class="hover:bg-slate-50/60">
+                <td class="px-4 py-2.5 text-slate-700 whitespace-nowrap font-medium">{{ k.gueltig_ab|date:"d.m.Y" }}</td>
+                <td class="px-4 py-2.5 text-right text-slate-700 whitespace-nowrap">{{ k.netto_mietzins|chf }} / {{ k.nebenkosten|chf }}</td>
+                <td class="px-4 py-2.5 text-right whitespace-nowrap {% if k.hat_rabatt %}text-amber-600 font-semibold{% else %}text-slate-300{% endif %}">{% if k.hat_rabatt %}−{{ k.rabatt_netto|chf }} / −{{ k.rabatt_nk|chf }}{% else %}—{% endif %}</td>
+                <td class="px-4 py-2.5 text-right font-semibold whitespace-nowrap {% if k.verrechnet_brutto == 0 %}text-emerald-600{% else %}text-slate-900{% endif %}">CHF {{ k.verrechnet_brutto|chf }}{% if k.verrechnet_brutto == 0 %} <span class="text-[10px] font-normal">(frei)</span>{% endif %}</td>
+                <td class="px-4 py-2.5 text-slate-500 truncate max-w-[140px]">{{ k.notiz|default:"—" }}</td>
+                <td class="px-4 py-2.5 text-right">
+                    <form method="post" action="/neu/vertrag-mietzins/{{ k.id }}/loeschen/" class="inline" onsubmit="return confirm('Komponente löschen?');">{% csrf_token %}
+                        <input type="hidden" name="next" value="/neu/objekte/{{ e.id }}/?tab=mietzins">
+                        <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </td></tr>
+            {% empty %}
+            <tr><td colspan="6" class="px-5 py-6 text-center text-xs text-slate-400 italic">Keine Komponenten — es gilt der Mietzins aus den Vertragsdaten (Netto CHF {{ mietzins_vertrag.netto_mietzins|chf }} / NK CHF {{ mietzins_vertrag.nebenkosten|chf }}).</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <form method="post" action="/neu/vertrag-mietzins/{{ mietzins_vertrag.id }}/" class="grid grid-cols-2 sm:grid-cols-6 gap-2 items-end px-5 py-3 bg-slate-50/60 border-t border-slate-100">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="/neu/objekte/{{ e.id }}/?tab=mietzins">
+            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">Gültig ab</label>
+                <input type="date" name="gueltig_ab" value="{{ mietzins_vertrag.beginn|date:'Y-m-d' }}" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5"></div>
+            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">Netto Referenz</label>
+                <input name="netto_mietzins" inputmode="decimal" value="{{ mietzins_vertrag.netto_mietzins|chf }}" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5 text-right"></div>
+            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">NK Referenz</label>
+                <input name="nebenkosten" inputmode="decimal" value="{{ mietzins_vertrag.nebenkosten|chf }}" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5 text-right"></div>
+            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">Rabatt Netto</label>
+                <input name="rabatt_netto" inputmode="decimal" value="0.00" class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5 text-right"></div>
+            <div><label class="block text-[10px] font-semibold text-slate-500 mb-1">Notiz</label>
+                <input name="notiz" placeholder="z.B. Gratismonat" class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5"></div>
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Hinzufügen</button>
+            <label class="sm:col-span-6 flex items-center gap-2 text-[11px] text-slate-600 -mt-0.5">
+                <input type="checkbox" name="mietzinsfrei" value="1" class="rounded border-slate-300 text-indigo-600">
+                Nettomietzins vollständig erlassen (Gratismonat) — setzt den Rabatt automatisch auf den vollen Netto-Referenzbetrag.
+            </label>
+        </form>
+    </div>
+    {% endif %}
+
     {% if zeige_staffel %}
     <!-- Staffelmiete (Art. 269c) — vertragsgebunden, treibt die Sollstellung -->
     <div class="bg-white rounded-xl border border-slate-200 p-5 mt-6">

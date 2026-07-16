@@ -7179,21 +7179,41 @@ class VertragMietzinsUITests(TestCase):
         from rentals.models import VertragMietzins
         lg, e, m, v = _basis_objekte()
         c = Client(); c.force_login(_team_user())
-        # Hinzufügen
+        # Hinzufügen (Endpoint unverändert; verwaltet wird am Objekt-Mietzins-Tab)
         c.post(f'/neu/vertrag-mietzins/{v.id}/', {
-            'gueltig_ab': '2026-10-01', 'netto_mietzins': '0.00', 'nebenkosten': '250.00',
-            'notiz': 'mietzinsfrei'})
+            'gueltig_ab': '2026-10-01', 'netto_mietzins': '1000.00', 'nebenkosten': '250.00',
+            'mietzinsfrei': '1', 'notiz': 'Gratismonat',
+            'next': f'/neu/objekte/{e.id}/?tab=mietzins'})
         c.post(f'/neu/vertrag-mietzins/{v.id}/', {
             'gueltig_ab': '2026-12-01', 'netto_mietzins': '1000.00', 'nebenkosten': '250.00'})
         self.assertEqual(v.mietzins_komponenten.count(), 2)
-        # Erscheint im Mietzins-Tab
-        body = c.get(f'/neu/vertraege/{v.id}/?tab=mietzins').content.decode()
-        self.assertIn('Mietzins-Komponenten', body)
-        self.assertIn('01.10.2026', body)
-        self.assertIn('mietzinsfrei', body)
+        # Verwaltung am OBJEKT-Mietzins-Tab: Formular + Komponenten sichtbar
+        obj = c.get(f'/neu/objekte/{e.id}/?tab=mietzins').content.decode()
+        self.assertIn('Gratismonate / Rabatt', obj)
+        self.assertIn('01.10.2026', obj)
+        self.assertIn('mietzinsfrei', obj)   # Checkbox-Label im Objekt-Formular
+        # Am VERTRAG nur noch die Ansicht (read-only), kein Erfassen-Formular
+        vt = c.get(f'/neu/vertraege/{v.id}/?tab=mietzins').content.decode()
+        self.assertIn('Gratismonate / Rabatt', vt)
+        self.assertIn('01.10.2026', vt)
+        self.assertIn('Am Objekt bearbeiten', vt)
         # Löschen
         k = v.mietzins_komponenten.first()
         c.post(f'/neu/vertrag-mietzins/{k.id}/loeschen/')
+        self.assertEqual(v.mietzins_komponenten.count(), 1)
+
+    def test_objekt_tab_verwaltet_entwurf_vertrag(self):
+        """Gratismonate lassen sich am Objekt schon für einen frischen Entwurf
+        erfassen (mietzins_vertrag fällt auf den neuesten nicht-beendeten zurück)."""
+        from rentals.models import VertragMietzins
+        lg, e, m, v = _basis_objekte()
+        v.status = 'entwurf'; v.save()
+        c = Client(); c.force_login(_team_user())
+        obj = c.get(f'/neu/objekte/{e.id}/?tab=mietzins').content.decode()
+        self.assertIn('Gratismonate / Rabatt', obj)   # trotz Entwurf sichtbar
+        c.post(f'/neu/vertrag-mietzins/{v.id}/', {
+            'gueltig_ab': '2026-10-01', 'netto_mietzins': '1000.00', 'nebenkosten': '250.00',
+            'mietzinsfrei': '1', 'next': f'/neu/objekte/{e.id}/?tab=mietzins'})
         self.assertEqual(v.mietzins_komponenten.count(), 1)
 
     def test_komponenten_im_vertrags_pdf(self):

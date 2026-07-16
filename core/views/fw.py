@@ -1470,6 +1470,22 @@ def fw_objekt_detail(request, pk):
     staffelstufen = list(aktiver_vertrag.staffelstufen.all()) if aktiver_vertrag else []
     zeige_staffel = bool(aktiver_vertrag) and aktiver_vertrag.mietzins_modell == 'staffel'
 
+    # Gratismonate/Rabatt-Komponenten (mieterbezogen, Option B) werden hier am
+    # Objekt-Mietzins-Tab verwaltet (wie die Staffelstufen), die Daten bleiben aber
+    # am Vertrag (erscheinen im Vertragsdokument, kein Verschmutzen künftiger
+    # Verträge). Ziel-Vertrag: der aktive; sonst der neueste noch nicht beendete
+    # (z.B. ein frischer Entwurf nach Leerstand), damit man die Komponenten schon
+    # vor Vertragsstart erfassen kann.
+    mietzins_vertrag = aktiver_vertrag
+    if not mietzins_vertrag:
+        mietzins_vertrag = (Mietvertrag.objects
+                            .filter(_Q(einheit=e) | _Q(nebenobjekte=e))
+                            .exclude(status__in=['archiviert', 'gekuendigt'])
+                            .select_related('mieter').distinct()
+                            .order_by('-beginn').first())
+    vertrag_mietzins_komponenten = (list(mietzins_vertrag.mietzins_komponenten.all())
+                                    if mietzins_vertrag else [])
+
     # Aktuelle Marktwerte als Vorbelegung für die Indexbasis neuer Sollmietzins-Zeilen
     from crm.models import Verwaltung as _Vw
     _vw = _Vw.objects.first()
@@ -1498,7 +1514,7 @@ def fw_objekt_detail(request, pk):
         ('fotos', 'Fotos', len(fotos) or None),
         ('raumbuch', 'Raumbuch', ausst_count or None),
         ('verhaeltnisse', 'Verhältnisse', len(verhaeltnisse) or None),
-        ('mietzins', 'Mietzins', len(sollmietzinse) or None),
+        ('mietzins', 'Mietzins', (len(sollmietzinse) + len(vertrag_mietzins_komponenten)) or None),
         ('geraete', 'Geräte', geraete.count() or None),
         ('zaehler', 'Zähler', zaehler.count() or None),
     ]
@@ -1515,6 +1531,9 @@ def fw_objekt_detail(request, pk):
         'aktueller_soll_id': aktueller_soll_id,
         'staffelstufen': staffelstufen,
         'zeige_staffel': zeige_staffel,
+        'mietzins_vertrag': mietzins_vertrag,
+        'vertrag_mietzins_komponenten': vertrag_mietzins_komponenten,
+        'heute_iso': timezone.now().date().isoformat(),
         'staffelvorlagen': staffelvorlagen,
         'zeige_staffelvorlage': zeige_staffelvorlage,
         'aktueller_ref_zins': aktueller_ref_zins,
@@ -9336,8 +9355,11 @@ def fw_vertrag_mietzins_add(request, pk):
     from rentals.models import Mietvertrag, VertragMietzins
     from core.auth import log_aktion
     v = get_object_or_404(Mietvertrag, id=pk)
+    # Rücksprung: Objekt-Mietzins-Tab (wenn von dort erfasst) sonst Vertrag-Tab.
+    _nxt = request.POST.get('next') or ''
+    ziel = _nxt if _nxt.startswith('/neu/') else f'/neu/vertraege/{v.id}/?tab=mietzins'
     if request.method != 'POST':
-        return redirect(f'/neu/vertraege/{v.id}/?tab=mietzins')
+        return redirect(ziel)
 
     def _dec(name):
         raw = (request.POST.get(name) or '').replace("'", '').replace(',', '.').strip()
@@ -9353,7 +9375,7 @@ def fw_vertrag_mietzins_add(request, pk):
     nk = _dec('nebenkosten')
     if not gab or netto is None or nk is None or netto < 0 or nk < 0:
         messages.error(request, "Gültig-ab-Datum, Netto und NK (≥ 0) sind erforderlich.")
-        return redirect(f'/neu/vertraege/{v.id}/?tab=mietzins')
+        return redirect(ziel)
     # Rabatt/Erlass (Option B): mindert nur die Verrechnung, nicht die Referenz.
     # "mietzinsfrei" = Nettomietzins voll erlassen → Rabatt = Netto-Referenz.
     if request.POST.get('mietzinsfrei'):
@@ -9363,7 +9385,7 @@ def fw_vertrag_mietzins_add(request, pk):
     rabatt_nk = _dec('rabatt_nk') or Decimal('0.00')
     if rabatt_netto < 0 or rabatt_nk < 0:
         messages.error(request, "Rabatt-Werte dürfen nicht negativ sein.")
-        return redirect(f'/neu/vertraege/{v.id}/?tab=mietzins')
+        return redirect(ziel)
     rabatt_netto = min(rabatt_netto, netto)   # Rabatt nie grösser als Referenz
     rabatt_nk = min(rabatt_nk, nk)
     VertragMietzins.objects.update_or_create(
@@ -9377,7 +9399,7 @@ def fw_vertrag_mietzins_add(request, pk):
                f"Rabatt {rabatt_netto}/{rabatt_nk}, zu zahlen {zu_zahlen}", ziel=v)
     messages.success(request, f"✅ Komponente ab {gab:%d.%m.%Y} gespeichert "
                      f"(Referenz CHF {netto + nk}, zu zahlen CHF {zu_zahlen}).")
-    return redirect(f'/neu/vertraege/{v.id}/?tab=mietzins')
+    return redirect(ziel)
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -9388,10 +9410,12 @@ def fw_vertrag_mietzins_del(request, pk):
     from rentals.models import VertragMietzins
     k = get_object_or_404(VertragMietzins.objects.select_related('vertrag'), id=pk)
     vid = k.vertrag_id
+    _nxt = request.POST.get('next') or ''
+    ziel = _nxt if _nxt.startswith('/neu/') else f'/neu/vertraege/{vid}/?tab=mietzins'
     if request.method == 'POST':
         k.delete()
         messages.success(request, "Komponente entfernt.")
-    return redirect(f'/neu/vertraege/{vid}/?tab=mietzins')
+    return redirect(ziel)
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
