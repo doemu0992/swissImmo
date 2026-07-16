@@ -1,0 +1,156 @@
+{% extends 'fw/base.html' %}
+{% load l10n %}
+{% load chf %}
+{% block title %}Vertrag bearbeiten — {{ v.mieter.display_name }}{% endblock %}
+{% block content %}
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/vertraege/" class="hover:text-indigo-600">Verträge</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <a href="/neu/vertraege/{{ v.id }}/" class="hover:text-indigo-600">{{ v.mieter.display_name }}</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <span class="text-slate-600 font-medium">Bearbeiten</span>
+</nav>
+
+<h1 class="text-2xl font-extrabold text-slate-900 mb-1">Vertrag bearbeiten</h1>
+<p class="text-sm text-slate-500 mb-5">{{ v.einheit.bezeichnung }} · {{ v.einheit.liegenschaft.strasse }}</p>
+
+{% if gesperrt %}
+<div class="max-w-3xl bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-5 text-[13px] text-amber-800">
+    <div class="font-bold mb-0.5"><i class="fa-solid fa-lock mr-1.5"></i>Aktiver Vertrag — eingeschränkte Bearbeitung</div>
+    Miete, Objekt, Mieter, Mietbeginn und MWST sind gesperrt (nur zur Ansicht). Eine <b>Mietzinsänderung</b> läuft über das <a href="/neu/mietzins/{{ v.id }}/anpassung/" class="underline font-semibold">amtliche Formular (Art. 269d)</a>. Hier änderst du nur Detailfelder wie Fristen, Nebenräume und Vereinbarungen.
+</div>
+{% else %}
+<div class="max-w-3xl bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 mb-5 text-[13px] text-indigo-800">
+    <i class="fa-solid fa-pen-to-square mr-1.5"></i><b>Entwurf</b> — alle Felder frei editierbar. Der Mietzins-Zeitplan (Gratismonate) wird am <a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="underline font-semibold">Objekt → Mietzins</a> gepflegt.
+</div>
+{% endif %}
+
+<form method="post" class="max-w-3xl space-y-5">
+    {% csrf_token %}
+
+    <!-- Parteien & Objekt -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <h3 class="font-bold text-slate-800 text-sm">Parteien & Objekt</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mieter</label>
+                {% if gesperrt %}
+                <div class="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2.5 text-slate-600">{{ v.mieter.display_name }} <span class="text-[10px] text-slate-400 ml-1"><i class="fa-solid fa-lock"></i></span></div>
+                {% else %}
+                <select name="mieter_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    {% for m in mieter_liste %}<option value="{{ m.id }}" {% if m.id == v.mieter_id %}selected{% endif %}>{{ m.display_name }}</option>{% endfor %}
+                </select>{% endif %}
+            </div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Objekt</label>
+                {% if gesperrt %}
+                <div class="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2.5 text-slate-600">{{ v.einheit.bezeichnung }} — {{ v.einheit.liegenschaft.strasse }} <span class="text-[10px] text-slate-400 ml-1"><i class="fa-solid fa-lock"></i></span></div>
+                {% else %}
+                <select name="einheit_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    {% for o in objekte %}<option value="{{ o.id }}" {% if o.id == v.einheit_id %}selected{% endif %}>{{ o.bezeichnung }} — {{ o.liegenschaft.strasse }}</option>{% endfor %}
+                </select>{% endif %}
+            </div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Zweiter Mieter / Ehegatte (Name)</label>
+                <input name="mitmieter_name" value="{{ v.mitmieter_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Anzahl Personen</label>
+                <input name="anzahl_personen" type="number" min="1" value="{{ v.anzahl_personen|default:1 }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+        <label class="flex items-center gap-2 text-sm text-slate-600">
+            <input type="checkbox" name="familienwohnung" {% if v.familienwohnung %}checked{% endif %} class="rounded border-slate-300 text-indigo-600">
+            Familienwohnung (Art. 266n / 169 OR)
+        </label>
+    </div>
+
+    <!-- Mietdauer & Kündigung -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <h3 class="font-bold text-slate-800 text-sm">Mietdauer & Kündigung</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mietbeginn{% if gesperrt %} <i class="fa-solid fa-lock text-[10px] text-slate-400"></i>{% endif %}</label>
+                {% if gesperrt %}
+                <div class="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2.5 text-slate-600">{{ v.beginn|date:"d.m.Y" }}</div>
+                {% else %}
+                <input name="beginn" type="date" value="{{ v.beginn|date:'Y-m-d' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">{% endif %}
+            </div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mietende (leer = unbefristet)</label>
+                <input name="ende" type="date" value="{{ v.ende|date:'Y-m-d' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kündigungsfrist (Monate)</label>
+                <input name="kuendigungsfrist" type="number" min="1" value="{{ v.kuendigungsfrist_monate }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Erstmals kündbar auf</label>
+                <input name="erstmals_kuendbar" type="date" value="{{ v.erstmals_kuendbar_auf|date:'Y-m-d' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Kündigungstermine</label>
+                <input name="kuendigungstermine" value="{{ v.kuendigungstermine }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+    </div>
+
+    <!-- Mietzins -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <h3 class="font-bold text-slate-800 text-sm">Mietzins{% if gesperrt %} <span class="text-[11px] font-normal text-slate-400 ml-1"><i class="fa-solid fa-lock"></i> gesperrt (amtliches Formular für Änderungen)</span>{% endif %}</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nettomietzins (CHF)</label>
+                {% if gesperrt %}<div class="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2.5 text-slate-600">CHF {{ v.netto_mietzins|chf }}</div>
+                {% else %}<input name="netto_mietzins" type="number" step="0.01" value="{% localize off %}{{ v.netto_mietzins|default:'0' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">{% endif %}
+            </div>
+            {% if not v.einheit.ist_einstellplatz %}
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nebenkosten (CHF)</label>
+                {% if gesperrt %}<div class="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2.5 text-slate-600">CHF {{ v.nebenkosten|chf }}</div>
+                {% else %}<input name="nebenkosten" type="number" step="0.01" value="{% localize off %}{{ v.nebenkosten|default:'0' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">{% endif %}
+            </div>
+            {% endif %}
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Zahlungsrhythmus</label>
+                {% if gesperrt %}<div class="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2.5 text-slate-600">{{ v.get_zahlungsrhythmus_display }}</div>
+                {% else %}<select name="zahlungsrhythmus" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    {% for val, lbl in rhythmus_choices %}<option value="{{ val }}" {% if val == v.zahlungsrhythmus %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                </select>{% endif %}
+            </div>
+            {% if not v.einheit.ist_einstellplatz %}
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">NK-Abrechnungsart</label>
+                {% if gesperrt %}<div class="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2.5 text-slate-600">{{ v.get_nk_abrechnungsart_display }}</div>
+                {% else %}<select name="nk_abrechnungsart" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    {% for val, lbl in nk_arten %}<option value="{{ val }}" {% if val == v.nk_abrechnungsart %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                </select>{% endif %}
+            </div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Verteilschlüssel</label>
+                {% if gesperrt %}<div class="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2.5 text-slate-600">{{ v.get_verteilschluessel_display }}</div>
+                {% else %}<select name="verteilschluessel" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    {% for val, lbl in verteil_choices %}<option value="{{ val }}" {% if val == v.verteilschluessel %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                </select>{% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% if not gesperrt %}
+        <label class="flex items-center gap-2 text-sm text-slate-600">
+            <input type="checkbox" name="mwst_pflichtig" {% if v.mwst_pflichtig %}checked{% endif %} class="rounded border-slate-300 text-indigo-600">
+            MWST-pflichtig (Option, i.d.R. nur Gewerbe) — Satz
+            <input name="mwst_satz" type="number" step="0.1" value="{% localize off %}{{ v.mwst_satz|default:'8.1' }}{% endlocalize %}" class="w-20 bg-slate-100 rounded-lg text-sm px-2 py-1.5 text-right">%
+        </label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kaution (CHF)</label>
+                <input name="kautions_betrag" type="number" step="0.01" value="{% localize off %}{{ v.kautions_betrag|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kautionskonto (IBAN)</label>
+                <input name="kautions_konto" value="{{ v.kautions_konto }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+        {% endif %}
+        <p class="text-[11px] text-slate-400">Gratismonate/Rabatt und datierte Anpassungen: <a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="text-indigo-600 hover:underline">Objekt → Mietzins</a>.</p>
+    </div>
+
+    <!-- Nutzung & Vereinbarungen -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <h3 class="font-bold text-slate-800 text-sm">Nutzung & Vereinbarungen</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Zur Mitbenützung</label>
+                <input name="mitbenutzung" value="{{ v.mitbenutzung }}" placeholder="z. B. Waschküche, Veloraum" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nebenräume</label>
+                <input name="nebenraeume" value="{{ v.nebenraeume }}" placeholder="z. B. Kellerabteil Nr. 3" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Zweckbestimmung (v.a. Gewerbe)</label>
+            <input name="zweckbestimmung" value="{{ v.zweckbestimmung }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Besondere Bestimmungen</label>
+            <textarea name="besondere_vereinbarungen" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">{{ v.besondere_vereinbarungen }}</textarea></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Weitere Vorbehalte</label>
+            <textarea name="weitere_vorbehalte" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">{{ v.weitere_vorbehalte }}</textarea></div>
+    </div>
+
+    <div class="flex items-center gap-3">
+        <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Änderungen speichern</button>
+        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm font-medium text-slate-500 hover:text-slate-700">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}

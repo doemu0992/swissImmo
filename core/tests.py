@@ -7362,6 +7362,50 @@ class SollmietzinsSollstellungTests(TestCase):
         self.assertIn('Objekt auswählen', r.content.decode())
 
 
+class VertragBearbeitenTests(TestCase):
+    """Vertrag bearbeiten: Entwurf voll, aktiv nur Detailfelder (Miete gesperrt,
+    serverseitig erzwungen)."""
+
+    def test_entwurf_voll_editierbar(self):
+        lg, e, m, v = _basis_objekte()
+        v.status = 'entwurf'; v.netto_mietzins = Decimal('1500'); v.save()
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/vertraege/{v.id}/bearbeiten/')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('name="netto_mietzins"', r.content.decode())   # editierbar
+        c.post(f'/neu/vertraege/{v.id}/bearbeiten/', {
+            'mieter_id': str(m.id), 'einheit_id': str(e.id), 'beginn': '2024-02-01',
+            'netto_mietzins': '1650', 'nebenkosten': '220', 'zahlungsrhythmus': 'monatlich',
+            'nk_abrechnungsart': 'akonto', 'verteilschluessel': 'm2',
+            'kuendigungsfrist': '3', 'anzahl_personen': '2', 'nebenraeume': 'Keller 5'})
+        v.refresh_from_db()
+        self.assertEqual(v.netto_mietzins, Decimal('1650'))
+        self.assertEqual(v.nebenkosten, Decimal('220'))
+        self.assertEqual(v.beginn, date(2024, 2, 1))
+        self.assertEqual(v.nebenraeume, 'Keller 5')
+
+    def test_aktiv_miete_gesperrt(self):
+        lg, e, m, v = _basis_objekte()   # status='aktiv', netto 1500
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/vertraege/{v.id}/bearbeiten/').content.decode()
+        self.assertNotIn('name="netto_mietzins"', r)   # gesperrt → kein Eingabefeld
+        self.assertIn('eingeschränkte Bearbeitung', r)
+        # Versuch, die Miete + Beginn zu ändern → wird ignoriert; Detailfeld greift
+        c.post(f'/neu/vertraege/{v.id}/bearbeiten/', {
+            'netto_mietzins': '9999', 'beginn': '2020-01-01', 'nebenkosten': '9999',
+            'kuendigungsfrist': '3', 'nebenraeume': 'Estrich', 'anzahl_personen': '1'})
+        v.refresh_from_db()
+        self.assertEqual(v.netto_mietzins, Decimal('1500'))   # unverändert
+        self.assertEqual(v.beginn, date(2024, 1, 1))          # unverändert
+        self.assertEqual(v.nebenraeume, 'Estrich')            # Detailfeld geändert
+
+    def test_bearbeiten_button_auf_detailseite(self):
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/vertraege/{v.id}/').content.decode()
+        self.assertIn(f'/neu/vertraege/{v.id}/bearbeiten/', body)
+
+
 class ObjektFormMietzinsQuelleTests(TestCase):
     """Der Mietzins wird nur noch über den Sollmietzins (Mietzins-Tab) gepflegt —
     das Objekt-Bearbeiten-Formular schreibt ihn nicht mehr direkt (kein Drift)."""

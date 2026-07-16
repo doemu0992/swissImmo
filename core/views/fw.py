@@ -6572,6 +6572,102 @@ def fw_vertrag_vorschau(request):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_vertrag_bearbeiten(request, pk):
+    """Bearbeitet einen bestehenden Mietvertrag.
+
+    - Entwurf: alle Felder frei editierbar.
+    - Aktiv/gekündigt/archiviert: nur UNKRITISCHE Felder (Fristen-Detail, Nebenräume,
+      Vereinbarungen, Mitmieter …). Miete, Objekt, Mieter, Beginn, MWST und
+      Abrechnungsart sind GESPERRT — serverseitig erzwungen, nicht nur im UI
+      (Mietzinsänderungen laufen über das amtliche Formular Art. 269d). So bleibt
+      die Buchhaltung konsistent."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Mieter, Verwaltung
+    from core.auth import log_aktion, snapshot_model, diff_model
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=pk)
+    gesperrt = v.status != 'entwurf'   # nur Entwurf voll editierbar
+
+    if request.method == 'POST':
+        P = request.POST
+        alt = snapshot_model(v)
+
+        def dec(key, default=None):
+            raw = str(P.get(key) or '').replace("'", '').replace(',', '.').strip()
+            try:
+                return Decimal(raw) if raw else (Decimal(default) if default is not None else None)
+            except Exception:
+                return Decimal(default) if default is not None else None
+
+        def datum(key):
+            try:
+                return date.fromisoformat(P.get(key)) if P.get(key) else None
+            except ValueError:
+                return None
+
+        # --- Immer editierbar (unkritisch) ---
+        v.ende = datum('ende')
+        v.erstmals_kuendbar_auf = datum('erstmals_kuendbar')
+        try:
+            v.kuendigungsfrist_monate = int(P.get('kuendigungsfrist') or v.kuendigungsfrist_monate)
+        except ValueError:
+            pass
+        v.kuendigungstermine = P.get('kuendigungstermine', '').strip() or v.kuendigungstermine
+        v.familienwohnung = P.get('familienwohnung') == 'on'
+        v.mitmieter_name = P.get('mitmieter_name', '').strip()
+        try:
+            v.anzahl_personen = int(P.get('anzahl_personen') or v.anzahl_personen or 1)
+        except ValueError:
+            pass
+        v.mitbenutzung = P.get('mitbenutzung', '').strip()
+        v.nebenraeume = P.get('nebenraeume', '').strip()
+        v.zweckbestimmung = P.get('zweckbestimmung', '').strip()
+        v.besondere_vereinbarungen = P.get('besondere_vereinbarungen', '').strip()
+        v.weitere_vorbehalte = P.get('weitere_vorbehalte', '').strip()
+
+        # --- Nur bei Entwurf editierbar (kritisch) ---
+        if not gesperrt:
+            beginn = datum('beginn')
+            if beginn:
+                v.beginn = beginn
+            neue_einheit = Einheit.objects.filter(id=P.get('einheit_id') or 0).first()
+            if neue_einheit:
+                v.einheit = neue_einheit
+            neuer_mieter = Mieter.objects.filter(id=P.get('mieter_id') or 0).first()
+            if neuer_mieter:
+                v.mieter = neuer_mieter
+            v.netto_mietzins = dec('netto_mietzins', '0')
+            v.nebenkosten = Decimal('0.00') if v.einheit.ist_einstellplatz else dec('nebenkosten', '0')
+            v.nk_abrechnungsart = P.get('nk_abrechnungsart', v.nk_abrechnungsart)
+            v.verteilschluessel = P.get('verteilschluessel', v.verteilschluessel)
+            v.zahlungsrhythmus = P.get('zahlungsrhythmus', v.zahlungsrhythmus)
+            v.mwst_pflichtig = P.get('mwst_pflichtig') == 'on'
+            _ms = dec('mwst_satz')
+            if _ms is not None:
+                v.mwst_satz = _ms
+            v.kautions_betrag = dec('kautions_betrag') or None
+            v.kautions_konto = P.get('kautions_konto', '').strip()
+        v.save()
+        _diff = diff_model(alt, snapshot_model(v), v)
+        log_aktion(request, "Vertrag bearbeitet", str(v.mieter),
+                   f"{v.einheit.bezeichnung} · {'Entwurf' if not gesperrt else 'nur Detailfelder'}"
+                   + (f" · {_diff}" if _diff else ''), ziel=v)
+        messages.success(request, "✅ Vertrag aktualisiert."
+                         + ("" if not gesperrt else " (aktiver Vertrag — nur Detailfelder geändert)"))
+        return redirect(f'/neu/vertraege/{v.id}/')
+
+    verwaltung = v.einheit.liegenschaft.verwaltung or Verwaltung.objects.first()
+    return render(request, 'fw/vertrag_bearbeiten.html', {
+        **_global_filter(request), 'nav': 'vertraege', 'v': v, 'gesperrt': gesperrt,
+        'objekte': Einheit.objects.select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung'),
+        'mieter_liste': Mieter.objects.order_by('nachname', 'firmen_name'),
+        'nk_arten': Mietvertrag.NK_TYP_CHOICES,
+        'verteil_choices': Mietvertrag.VERTEIL_CHOICES,
+        'rhythmus_choices': Mietvertrag.ZAHLUNGSRHYTHMUS_CHOICES,
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_vertrag_signieren(request, pk):
     """Sendet einen bestehenden Vertrag zur digitalen Unterschrift (DocuSeal)."""
     from django.shortcuts import redirect
