@@ -3236,9 +3236,32 @@ def fw_camt_import(request):
 
         # 1) Exakte QRR-Referenz
         if rechnung and rechnung.vertrag_id and rechnung.offener_betrag > 0:
-            betrag = min(max(betrag_e, Decimal('0.01')), rechnung.offener_betrag)
+            offen = rechnung.offener_betrag
+            betrag = min(max(betrag_e, Decimal('0.01')), offen)
             _verbuche(rechnung, betrag, e, 'Referenz')
             verbucht += 1; zugeordnet_summe += betrag
+            # Überzahlung: den vollen Bankeingang abbilden — der Überschuss wird als
+            # Mieterguthaben aufs Durchlaufkonto 1190 gebucht. Ohne das läge auf 1020
+            # weniger als auf dem realen Kontoauszug → Bankabgleich geht nie auf und
+            # die Überzahlung verschwindet.
+            ueberschuss = betrag_e - offen
+            if ueberschuss > 0:
+                with transaction.atomic():
+                    z_ueber = Zahlungseingang.objects.create(
+                        vertrag=rechnung.vertrag, betrag=ueberschuss,
+                        datum_eingang=e['datum'] or heute,
+                        buchungs_monat=(e['datum'] or heute).replace(day=1),
+                        bemerkung=f"camt.053 Überzahlung {rechnung.titel} (Guthaben Mieter)"[:255],
+                        bank_referenz=f"{aref}:ueber"[:255], konto=konto_clearing,
+                        liegenschaft=rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None,
+                        erstellt_von=request.user, status='verbucht')
+                    from finance.booking import buche
+                    buche("1020", "1190", ueberschuss,
+                          f"camt.053 Überzahlung {rechnung.vertrag.mieter} - {rechnung.titel}",
+                          datum=e['datum'] or heute,
+                          liegenschaft=rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None,
+                          zahlung=z_ueber, user=request.user)
+                geklaert += 1; zugeordnet_summe += ueberschuss
             continue
 
         # 2) Fuzzy: exakter Betrag + Name des Auftraggebers passt eindeutig
@@ -8598,12 +8621,20 @@ def fw_mwst(request):
     vorsteuer = saldo('1170', soll_positiv=True)        # Vorsteuer-Guthaben (Soll-Saldo)
     zahllast = umsatzsteuer - vorsteuer
 
-    # Steuerbaren Umsatz aus den Ertragskonten (nur mit MWST belegte Erträge: 3010 Gewerbe)
+    # Steuerbarer Umsatz: Die MWST wird in der Sollstellung auf Netto + NK erhoben,
+    # aber die NK (3020) mischt steuerbare (Gewerbe) und ausgenommene (Wohnen) Anteile
+    # und lässt sich aus den Ertragskonten nicht sauber trennen. Damit Ziffer 289 × Satz
+    # = Ziffer 399 stimmt (ESTV-Abstimmung), wird der steuerbare Umsatz aus der
+    # geschuldeten Steuer zum Normalsatz zurückgerechnet — das erfasst auch NK und
+    # allfällige optierte Wohn-Verhältnisse (3000), die 3010 allein verfehlt.
     from crm.models import Verwaltung
-    from core.services.mwst_estv import berechne_estv
+    from core.services.mwst_estv import berechne_estv, MWST_NORMALSATZ
     vw = Verwaltung.objects.first()
-    umsatz_steuerbar = saldo('3010', soll_positiv=False)  # Gewerbe/Parkplätze (optiert)
     methode = getattr(vw, 'mwst_methode', 'effektiv') if vw else 'effektiv'
+    if methode != 'saldo' and umsatzsteuer > 0:
+        umsatz_steuerbar = (umsatzsteuer / (MWST_NORMALSATZ / Decimal('100'))).quantize(Decimal('0.01'))
+    else:
+        umsatz_steuerbar = saldo('3010', soll_positiv=False)
     saldosatz = getattr(vw, 'saldosteuersatz', Decimal('0')) if vw else Decimal('0')
     estv = berechne_estv(
         umsatz_steuerbar=umsatz_steuerbar, umsatzsteuer=umsatzsteuer,
@@ -8680,13 +8711,21 @@ def fw_mwst_estv_export(request):
         return (soll - haben) if soll_positiv else (haben - soll)
 
     vw = Verwaltung.objects.first()
-    from core.services.mwst_estv import berechne_estv
+    from core.services.mwst_estv import berechne_estv, MWST_NORMALSATZ
+    e_methode = getattr(vw, 'mwst_methode', 'effektiv') if vw else 'effektiv'
+    e_umsatzsteuer = saldo('2200', soll_positiv=False)
+    # Steuerbaren Umsatz aus der Steuer zum Normalsatz zurückrechnen (inkl. NK),
+    # damit Ziffer 289 × Satz = 399 stimmt — siehe fw_mwst.
+    if e_methode != 'saldo' and e_umsatzsteuer > 0:
+        e_umsatz = (e_umsatzsteuer / (MWST_NORMALSATZ / Decimal('100'))).quantize(Decimal('0.01'))
+    else:
+        e_umsatz = saldo('3010', soll_positiv=False)
     estv = berechne_estv(
-        umsatz_steuerbar=saldo('3010', soll_positiv=False),
-        umsatzsteuer=saldo('2200', soll_positiv=False),
+        umsatz_steuerbar=e_umsatz,
+        umsatzsteuer=e_umsatzsteuer,
         vorsteuer_material=saldo('1170', soll_positiv=True),
         vorsteuer_invest=Decimal('0'),
-        methode=getattr(vw, 'mwst_methode', 'effektiv') if vw else 'effektiv',
+        methode=e_methode,
         saldosteuersatz=getattr(vw, 'saldosteuersatz', Decimal('0')) if vw else Decimal('0'))
     csv_bytes = estv_csv(estv, firma=(vw.firma if vw else 'Verwaltung'),
                          uid=(vw.mwst_uid if vw else ''), periode_von=von, periode_bis=bis)
@@ -8825,7 +8864,13 @@ def fw_bewerber_entscheid(request, pk):
     entscheid = request.POST.get('entscheid')
     if entscheid not in ('zusage', 'absage'):
         return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
-    b.status = 'zugesagt' if entscheid == 'zusage' else 'abgelehnt'
+    ziel_status = 'zugesagt' if entscheid == 'zusage' else 'abgelehnt'
+    # Idempotenz: dieselbe Entscheidung nicht doppelt setzen (sonst geht bei jedem
+    # Klick erneut eine Zu-/Absage-Mail an den Bewerber raus).
+    if b.status == ziel_status:
+        messages.info(request, f"Diese Bewerbung wurde bereits {'zugesagt' if entscheid == 'zusage' else 'abgesagt'}.")
+        return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
+    b.status = ziel_status
     b.save(update_fields=['status'])
     ok = False
     if b.email:
@@ -8920,6 +8965,13 @@ def fw_bewerbung_zu_vertrag(request, pk):
     einheit = b.einheit
     lg = einheit.liegenschaft
 
+    # Idempotenz: wurde diese Bewerbung bereits umgewandelt (Status 'zugesagt'),
+    # nicht erneut einen Vertragsentwurf (und ggf. Doppel-Mieter) anlegen.
+    if b.status == 'zugesagt':
+        messages.info(request, "Für diese Bewerbung wurde bereits ein Vertragsentwurf erstellt.")
+        best = Mietvertrag.objects.filter(einheit=einheit, status='entwurf').order_by('-id').first()
+        return redirect(f'/neu/vertraege/{best.id}/' if best else f'/neu/bewerbungen/{pk}/')
+
     # 1. Mieter finden oder anlegen (Duplikat-Schutz über E-Mail + Name)
     mieter = None
     if b.email:
@@ -8958,6 +9010,10 @@ def fw_bewerbung_zu_vertrag(request, pk):
 
     b.status = 'zugesagt'
     b.save()
+    # Objekt ist vergeben → aus der Vermarktung/Feed/Exposé nehmen.
+    if einheit.zur_ausschreibung:
+        einheit.zur_ausschreibung = False
+        einheit.save(update_fields=['zur_ausschreibung'])
     log_aktion(request, "Bewerbung → Vertragsentwurf", f"{mieter.display_name}",
                f"{einheit.bezeichnung}, Entwurf #{vertrag.id}", ziel=vertrag)
     messages.success(request,
@@ -9307,16 +9363,21 @@ def fw_mahnung_erfassen(request):
         erstellt_von=request.user,
     )
 
-    # Mahngebühr als separate Debitorenrechnung (falls > 0)
+    # Mahngebühr als separate Debitorenrechnung (falls > 0) — inkl. Hauptbuch-Buchung
+    # (Forderung an übrigen Ertrag), sonst driften Neben- und Hauptbuch auseinander.
     if gebuehr > 0 and rechnung.vertrag_id:
-        DebitorenRechnung.objects.create(
+        lg_geb = rechnung.liegenschaft or (rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None)
+        geb_rechnung = DebitorenRechnung.objects.create(
             vertrag=rechnung.vertrag,
-            liegenschaft=rechnung.liegenschaft or (rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None),
+            liegenschaft=lg_geb,
             titel=f"Mahngebühr {stufe}. Mahnung",
             beschreibung=f"Mahngebühr zu: {rechnung.titel}",
             datum=heute, faellig_am=heute + _timedelta(days=30),
             betrag=gebuehr, status='offen',
         )
+        from finance.booking import buche
+        buche("1100", "3600", gebuehr, f"Mahngebühr {stufe}. Mahnung {rechnung.vertrag.mieter}",
+              datum=heute, liegenschaft=lg_geb, debitor=geb_rechnung, user=request.user)
 
     log_aktion(request, f"{stufe}. Mahnung erfasst",
                rechnung.vertrag.mieter.display_name if rechnung.vertrag_id else rechnung.titel,

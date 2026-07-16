@@ -22,7 +22,11 @@ def honorar_vorschau(mandant, jahr):
 
     prozent = mandant.honorar_prozent or Decimal('0.00')
     von, bis = date(jahr, 1, 1), date(jahr, 12, 31)
-    ertrag_konten = list(Buchungskonto.objects.filter(nummer__in=['3000', '3010']))
+    # 3090 (Mietzinserlass/Rabatt, Ertragsminderung der Option-B-Bruttobuchung) mit
+    # einbeziehen: dort ist (Haben−Soll) negativ und mindert den Ertrag → das Honorar
+    # wird auf der tatsächlich vereinnahmten Miete berechnet, nicht auf der vollen
+    # Referenzmiete inkl. erlassener Anteile.
+    ertrag_konten = list(Buchungskonto.objects.filter(nummer__in=['3000', '3010', '3090']))
 
     zeilen = []
     total = Decimal('0.00')

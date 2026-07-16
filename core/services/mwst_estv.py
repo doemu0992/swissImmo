@@ -18,6 +18,11 @@ import csv
 import io
 from decimal import Decimal, ROUND_HALF_UP
 
+# Schweizer MWST-Normalsatz (seit 01.01.2024). Basis für die Rückrechnung des
+# steuerbaren Umsatzes aus der geschuldeten Steuer (Vermietungen werden zum
+# Normalsatz optiert; NK teilt den Satz der Hauptleistung).
+MWST_NORMALSATZ = Decimal('8.1')
+
 
 def _q(v):
     return (Decimal(v)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)

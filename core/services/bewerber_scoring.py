@@ -13,19 +13,30 @@ from decimal import Decimal
 
 
 def parse_einkommen(text):
-    """Extrahiert die untere Grenze aus einer Einkommensangabe (Freitext/Spanne),
-    z. B. "80'000 – 100'000" → 80000. Gibt None zurück, wenn nichts erkennbar."""
+    """Extrahiert das Jahreseinkommen aus einer Freitext-/Spannenangabe, z. B.
+    "80'000 – 100'000" → 80000. Robust gegen Stör-Zahlen: ein angehängter
+    Rappen-Dezimalteil wird abgetrennt, Kalenderjahre (1900–2099) werden verworfen,
+    und wenn plausible Jahresbeträge vorhanden sind, werden monatsgrosse Kleinwerte
+    (< 12'000) ignoriert. Gibt None zurück, wenn nichts Plausibles erkennbar ist."""
     if not text:
         return None
-    # Zahlen mit ' oder . als Tausendertrenner (mind. 4 Stellen), Trenner entfernen
-    treffer = re.findall(r"\d[\d'’.\s]{2,}\d|\d{4,}", str(text))
     werte = []
-    for t in treffer:
-        digits = re.sub(r"[^\d]", "", t)
+    for m in re.finditer(r"\d[\d'’.\s]*\d|\d+", str(text)):
+        roh = m.group(0)
+        # Rappen-Dezimalteil (.dd / ,dd am Ende) abtrennen, damit "80'000.50" nicht
+        # zu 8000050 verschmilzt.
+        kern = re.sub(r"[.,]\d{2}$", "", roh)
+        digits = re.sub(r"[^\d]", "", kern)
         if digits:
             werte.append(int(digits))
-    werte = [w for w in werte if w >= 1000]
-    return min(werte) if werte else None
+    # Kalenderjahre und Kleinstwerte raus (Jahreszahlen wie 2024 sind kein Einkommen).
+    kandidaten = [w for w in werte if w >= 1000 and not (1900 <= w <= 2099)]
+    if not kandidaten:
+        return None
+    # Existiert ein plausibler Jahresbetrag (≥ 12'000), sind kleinere Werte fast immer
+    # Monatslöhne/Störzahlen → ignorieren. Sonst die untere Grenze der Spanne nehmen.
+    jahres = [w for w in kandidaten if w >= 12000]
+    return min(jahres) if jahres else min(kandidaten)
 
 
 def _ampel(pkt, maxpkt):

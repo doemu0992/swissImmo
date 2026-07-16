@@ -126,6 +126,7 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
     from finance.models import DebitorenRechnung, Mahnung
     from django.db.models import Q
     from core.utils.email_service import send_payment_reminder
+    from finance.booking import buche
 
     heute = timezone.localdate()
     qs = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
@@ -170,11 +171,17 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
                     teile.append(f"Mahngebühr {stufe}. Mahnung")
                 if zins > 0:
                     teile.append(f"Verzugszins {VERZUGSZINS_PROZENT}%")
-                DebitorenRechnung.objects.create(
+                gebuehr_rechnung = DebitorenRechnung.objects.create(
                     vertrag=r.vertrag, liegenschaft=lg,
                     titel=" + ".join(teile), beschreibung=f"Zu: {r.titel}",
                     datum=heute, faellig_am=heute + timedelta(days=30),
                     betrag=zusatz, status='offen')
+                # Ins Hauptbuch buchen (Forderung an übrigen Ertrag) — sonst driften
+                # Nebenbuch (OP/Debitoren) und Hauptbuch (1100) auseinander, der
+                # Gebühren-/Zinsertrag fehlt in der Erfolgsrechnung, und eine spätere
+                # Zahlung würde 1100 belasten, das nie bebucht wurde.
+                buche("1100", "3600", zusatz, f"{' + '.join(teile)} {r.vertrag.mieter}",
+                      datum=heute, liegenschaft=lg, debitor=gebuehr_rechnung, user=user)
         res['gemahnt'] += 1
         res['gebuehren'] += gebuehr
         res['zins'] += zins

@@ -34,13 +34,19 @@ def berechne_mieterspiegel(liegenschaften):
             soll_nk += nk
             v = belegt.get(e.id)
             if v:
-                ist_netto += netto
-                ist_nk += nk
+                # Ist = die tatsächliche Vertragsmiete (effektiver Mietzins, inkl.
+                # Staffel/Anpassung), NICHT die Objekt-Sollmiete — sonst wäre Ist per
+                # Konstruktion immer = Soll und der Vergleich wertlos, sobald ein
+                # Sitzmieter einen abweichenden (oft tieferen) Mietzins zahlt.
+                v_netto = v.effektiver_netto_mietzins() or Decimal('0.00')
+                v_nk = v.effektive_nebenkosten() or Decimal('0.00')
+                ist_netto += v_netto
+                ist_nk += v_nk
                 zeilen.append({
                     'einheit': e, 'bezeichnung': e.bezeichnung, 'typ': e.get_typ_display(),
                     'flaeche': e.flaeche_m2, 'zimmer': e.zimmer,
                     'belegt': True, 'mieter': v.mieter.display_name if v.mieter_id else '—',
-                    'netto': netto, 'nk': nk, 'brutto': netto + nk,
+                    'netto': v_netto, 'nk': v_nk, 'brutto': v_netto + v_nk,
                     'beginn': v.beginn, 'ende': v.ende,
                 })
             else:

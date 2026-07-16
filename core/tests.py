@@ -7818,3 +7818,144 @@ class DatenLebenszyklusTests(TestCase):
         c.post(f'/neu/mandate/{md.id}/loeschen/')
         self.assertFalse(Mandant.objects.filter(id=md.id).exists())
         self.assertFalse(User.objects.filter(id=u.id).exists())
+
+
+class PrueferFundeTests(TestCase):
+    """Funde aus dem Herz-und-Nieren-Test durch Buchhalter + Immobilienvermarkter.
+    Jeder Test sichert einen behobenen Fehler dauerhaft ab."""
+
+    def _camt(self, ref, betrag, acct_ref='BANKTX1'):
+        return (
+            '<?xml version="1.0"?><Document><BkToCstmrStmt><Stmt><Ntry>'
+            '<CdtDbtInd>CRDT</CdtDbtInd>'
+            f'<Amt Ccy="CHF">{betrag}</Amt><BookgDt><Dt>2024-03-20</Dt></BookgDt>'
+            '<NtryDtls><TxDtls>'
+            f'<Refs><AcctSvcrRef>{acct_ref}</AcctSvcrRef></Refs>'
+            f'<RmtInf><Strd><CdtrRefInf><Ref>{ref}</Ref></CdtrRefInf></Strd></RmtInf>'
+            '</TxDtls></NtryDtls></Ntry></Stmt></BkToCstmrStmt></Document>'
+        ).encode('utf-8')
+
+    def _saldo(self, nummer):
+        from finance.models import Buchung, Buchungskonto
+        from django.db.models import Sum
+        k = Buchungskonto.objects.filter(nummer=nummer).first()
+        if not k:
+            return Decimal('0.00'), Decimal('0.00')
+        s = Buchung.objects.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+        h = Buchung.objects.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+        return s, h
+
+    # ---- Buchhalter ----
+    def test_camt_ueberzahlung_geht_nicht_verloren(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung
+        _seed_konten()
+        _basis_objekte()
+        run_sollstellung(2024, 3)
+        r = DebitorenRechnung.objects.get(titel='Miete & NK 03/2024')  # brutto 1700
+        c = Client(); c.force_login(_team_user())
+        f = SimpleUploadedFile('camt.xml', self._camt(r.qr_referenz, '1900.00'),
+                               content_type='application/xml')
+        c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f})
+        # Voller Bankeingang 1900 auf 1020 (nicht auf 1700 gekappt) …
+        s1020, h1020 = self._saldo('1020')
+        self.assertEqual(s1020 - h1020, Decimal('1900.00'))
+        # … Überschuss 200 als Mieterguthaben (Haben) auf 1190 geparkt.
+        s1190, h1190 = self._saldo('1190')
+        self.assertEqual(h1190 - s1190, Decimal('200.00'))
+
+    def test_mahnlauf_bucht_gebuehr_ins_hauptbuch(self):
+        from core.services.automation import run_mahnlauf
+        from finance.models import DebitorenRechnung
+        _seed_konten()
+        lg, e, m, v = _basis_objekte()
+        DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, einheit=e, titel='Miete 12/2023',
+            datum=date(2023, 12, 1), faellig_am=date(2023, 12, 5),
+            betrag=Decimal('1700'), status='offen')
+        vor_s, vor_h = self._saldo('3600')
+        res = run_mahnlauf(mit_zins=True, send_email=False)
+        self.assertGreater(res['gebuehren'] + res['zins'], Decimal('0'))
+        nach_s, nach_h = self._saldo('3600')
+        # Gebühr + Zins als Ertrag auf 3600 gebucht (Haben-Zuwachs = zusatz).
+        self.assertEqual((nach_h - vor_h), res['gebuehren'] + res['zins'])
+
+    def test_mwst_estv_umsatz_stimmt_mit_steuer(self):
+        from core.services.automation import run_sollstellung
+        _seed_konten()
+        lg, e, m, v = _basis_objekte()
+        v.mwst_pflichtig = True; v.mwst_satz = Decimal('8.1'); v.save()
+        run_sollstellung(2024, 3)
+        c = Client(); c.force_login(_team_user())
+        resp = c.get('/neu/mwst/?jahr=2024')
+        ust = resp.context['umsatzsteuer']
+        umsatz = resp.context['umsatz_steuerbar']
+        self.assertGreater(ust, Decimal('0'))
+        # Ziffer 289 × Normalsatz muss die geschuldete Steuer (399) ergeben (Abstimmung).
+        self.assertEqual((umsatz * Decimal('8.1') / Decimal('100')).quantize(Decimal('0.01')), ust)
+
+    def test_honorar_zieht_ertragsminderung_ab(self):
+        from finance.booking import buche, ensure_kontenplan
+        from crm.models import Mandant
+        from core.services.verwaltungshonorar import honorar_vorschau
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        md = Mandant.objects.create(firma_oder_name='Eigentümer AG', honorar_prozent=Decimal('5'))
+        lg.mandant = md; lg.save()
+        # Voller Referenzertrag 1000, davon 400 Erlass (Option B) → Ist-Ertrag 600.
+        buche('1100', '3000', Decimal('1000'), 'Miete', datum=date(2024, 6, 1), liegenschaft=lg)
+        buche('3090', '1100', Decimal('400'), 'Erlass', datum=date(2024, 6, 1), liegenschaft=lg)
+        zeilen, _total, _pz = honorar_vorschau(md, 2024)
+        zeile = next(z for z in zeilen if z['lg'].id == lg.id)
+        self.assertEqual(zeile['mietertrag'], Decimal('600.00'))
+        self.assertEqual(zeile['honorar'], Decimal('30.00'))   # 5% von 600
+
+    # ---- Immobilienvermarkter ----
+    def test_mieterspiegel_ist_nutzt_vertragsmiete(self):
+        from core.services.mieterspiegel import berechne_mieterspiegel
+        lg, e, m, v = _basis_objekte()   # Vertrag 1500 + 200
+        e.nettomiete_aktuell = Decimal('1800'); e.nebenkosten_aktuell = Decimal('250'); e.save()
+        block = berechne_mieterspiegel([lg])[0]
+        t = block['totals']
+        self.assertEqual(t['soll_brutto'], Decimal('2050.00'))   # Objekt-Sollmiete
+        self.assertEqual(t['ist_brutto'], Decimal('1700.00'))    # tatsächliche Vertragsmiete
+
+    def test_parse_einkommen_robust(self):
+        from core.services.bewerber_scoring import parse_einkommen
+        self.assertEqual(parse_einkommen("90000, Bonus 2024"), 90000)
+        self.assertEqual(parse_einkommen("seit 2019: 90000"), 90000)
+        self.assertEqual(parse_einkommen("80'000.50"), 80000)
+        self.assertEqual(parse_einkommen("ca. 7500 pro Monat (90000/Jahr)"), 90000)
+        self.assertEqual(parse_einkommen("80'000 – 100'000"), 80000)  # untere Grenze
+        self.assertIsNone(parse_einkommen("keine Angabe"))
+
+    def test_bewerber_entscheid_idempotent(self):
+        from unittest.mock import patch
+        from mietprozess.models import Mietbewerbung
+        lg, e, m, v = _basis_objekte()
+        b = Mietbewerbung.objects.create(einheit=e, vorname='Anna', nachname='Test',
+                                         email='anna@example.ch', status='neu',
+                                         geburtsdatum=date(1990, 5, 1))
+        c = Client(); c.force_login(_team_user())
+        with patch('core.utils.email_service.send_ticket_email', return_value=True) as mock_mail:
+            c.post(f'/neu/bewerbungen/{b.id}/entscheid/', {'entscheid': 'zusage'})
+            c.post(f'/neu/bewerbungen/{b.id}/entscheid/', {'entscheid': 'zusage'})
+        b.refresh_from_db()
+        self.assertEqual(b.status, 'zugesagt')
+        self.assertEqual(mock_mail.call_count, 1)   # zweite Zusage schickt KEINE Mail
+
+    def test_bewerbung_zu_vertrag_idempotent_und_nimmt_aus_vermarktung(self):
+        from mietprozess.models import Mietbewerbung
+        lg, e, m, v_bestand = _basis_objekte()
+        e.zur_ausschreibung = True; e.save()
+        b = Mietbewerbung.objects.create(einheit=e, vorname='Beat', nachname='Neu',
+                                         email='beat@example.ch', status='neu',
+                                         geburtsdatum=date(1988, 3, 12))
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/bewerbungen/{b.id}/vertrag/')
+        c.post(f'/neu/bewerbungen/{b.id}/vertrag/')   # zweiter Klick
+        entwuerfe = Mietvertrag.objects.filter(einheit=e, status='entwurf').count()
+        self.assertEqual(entwuerfe, 1)   # kein Doppel-Entwurf
+        e.refresh_from_db()
+        self.assertFalse(e.zur_ausschreibung)   # Objekt aus der Vermarktung genommen
