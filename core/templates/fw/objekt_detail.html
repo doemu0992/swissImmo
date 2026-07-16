@@ -318,7 +318,7 @@
     {% if verhaeltnisse %}
     <div class="space-y-3">
         {% for r in verhaeltnisse %}
-        <details class="group bg-white rounded-xl border border-slate-200 overflow-hidden" {% if r.v.status == 'aktiv' %}open{% endif %}>
+        <details class="group bg-white rounded-xl border border-slate-200 overflow-hidden">
             <summary class="px-5 py-3.5 flex items-center gap-3 cursor-pointer select-none hover:bg-slate-50/60 list-none">
                 <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform group-open:rotate-90"></i>
                 <div class="flex-1 min-w-0">
