@@ -60,14 +60,16 @@ def _lik_ctx(vertrag, verwaltung):
     return vertrag_lik_context(vertrag, verwaltung)
 
 
-def generate_vertrag_pdf_bytes(vertrag):
+def build_vertrag_context(vertrag, *, mit_unterschrift=True):
+    """Baut den Template-Kontext für das Vertragsdokument. EINE Quelle für PDF
+    UND Live-Vorschau — so können die beiden nie auseinanderlaufen. Gibt
+    (template_name, context) zurück. Funktioniert auch für einen noch nicht
+    gespeicherten Vertrag (Vorschau); dann `mit_unterschrift=False`."""
     einheit = vertrag.einheit
-    liegenschaft = einheit.liegenschaft
-    mandant = liegenschaft.mandant
+    liegenschaft = einheit.liegenschaft if einheit else None
+    mandant = liegenschaft.mandant if liegenschaft else None
 
-    verwaltung = liegenschaft.verwaltung
-    if not verwaltung:
-        verwaltung = Verwaltung.objects.first()
+    verwaltung = (liegenschaft.verwaltung if liegenschaft else None) or Verwaltung.objects.first()
 
     netto = vertrag.netto_mietzins or 0
     nk = vertrag.nebenkosten or 0
@@ -75,20 +77,21 @@ def generate_vertrag_pdf_bytes(vertrag):
     kaution = vertrag.kautions_betrag or 0
 
     unterschrift_path = None
-    if verwaltung and hasattr(verwaltung, 'unterschrift') and verwaltung.unterschrift:
-        unterschrift_path = verwaltung.unterschrift.path
-    elif mandant and hasattr(mandant, 'unterschrift_bild') and mandant.unterschrift_bild:
-        unterschrift_path = mandant.unterschrift_bild.path
+    if mit_unterschrift:
+        if verwaltung and getattr(verwaltung, 'unterschrift', None):
+            unterschrift_path = verwaltung.unterschrift.path
+        elif mandant and getattr(mandant, 'unterschrift_bild', None):
+            unterschrift_path = mandant.unterschrift_bild.path
+        if not unterschrift_path:
+            dummy = finders.find("img/unterschrift_dummy_transparent.png")
+            if dummy:
+                unterschrift_path = dummy
+        if unterschrift_path:
+            unterschrift_path = make_image_transparent(unterschrift_path)
 
-    if not unterschrift_path:
-        dummy = finders.find("img/unterschrift_dummy_transparent.png")
-        if dummy: unterschrift_path = dummy
-
-    # 🔥 HIER WENDEN WIR DEN ZAUBERFILTER AN:
-    if unterschrift_path:
-        unterschrift_path = make_image_transparent(unterschrift_path)
-
-    template_name = 'core/mietvertrag_garage.html' if einheit.typ in ['pp', 'bas', 'gar'] else 'core/mietvertrag_pdf.html'
+    template_name = ('core/mietvertrag_garage.html'
+                     if (einheit and einheit.typ in ['pp', 'bas', 'gar'])
+                     else 'core/mietvertrag_pdf.html')
 
     context = {
         'vertrag': vertrag,
@@ -104,11 +107,24 @@ def generate_vertrag_pdf_bytes(vertrag):
         'kaution_fmt': f"{kaution:,.2f}".replace(",", "'"),
         'ref_fmt': f"{(vertrag.basis_referenzzinssatz or 0):.2f}",
         'lik_fmt': f"{(vertrag.basis_lik_punkte or 0):.1f}",
+        # Zeitplan + Klartext-Hinweise (Gratismonate) — auch für unsaved Vertrag.
+        'mietzins_zeitplan': vertrag.mietzins_zeitplan(),
+        'mietzins_hinweise': vertrag.mietzins_hinweise(),
         'unterschrift_path': unterschrift_path,
         # Einheitliche LIK-Angaben (Basis Dez. 2020 + Stand-Monat)
         **_lik_ctx(vertrag, verwaltung),
     }
+    return template_name, context
 
+
+def render_vertrag_html(vertrag, *, mit_unterschrift=True):
+    """Rendert das Vertragsdokument als HTML (für die Live-Vorschau)."""
+    template_name, context = build_vertrag_context(vertrag, mit_unterschrift=mit_unterschrift)
+    return get_template(template_name).render(context)
+
+
+def generate_vertrag_pdf_bytes(vertrag):
+    template_name, context = build_vertrag_context(vertrag)
     html = get_template(template_name).render(context)
     result_buffer = io.BytesIO()
     pisa_status = pisa.CreatePDF(html, dest=result_buffer, link_callback=link_callback, encoding='utf-8')

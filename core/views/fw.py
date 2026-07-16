@@ -6484,6 +6484,94 @@ def fw_vertrag_neu_speichern(request):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_vertrag_vorschau(request):
+    """Live-Vorschau des Vertragsassistenten: rendert das ECHTE Vertrags-PDF-
+    Template als HTML aus den aktuellen Formularwerten (ohne zu speichern). So
+    entspricht die Vorschau immer 1:1 dem generierten PDF — eine Quelle statt
+    zwei divergierender Implementierungen."""
+    from django.http import HttpResponse
+    from crm.models import Mieter
+    from core.services.pdf_service import render_vertrag_html
+    if request.method != 'POST':
+        return HttpResponse('', content_type='text/html')
+    P = request.POST
+    einheit = Einheit.objects.filter(id=P.get('einheit_id') or 0).select_related('liegenschaft').first()
+    if not einheit:
+        return HttpResponse(
+            '<div style="font-family:Helvetica,sans-serif;color:#64748b;padding:40px;'
+            'text-align:center;font-size:14px;">Bitte zuerst ein Objekt auswählen — '
+            'dann erscheint hier die 1:1-Vorschau des Vertrags.</div>',
+            content_type='text/html')
+
+    def dec(key, default='0'):
+        try:
+            return Decimal(str(P.get(key) or default).replace("'", '').replace(',', '.'))
+        except Exception:
+            return Decimal(default)
+
+    def datum(key):
+        try:
+            return date.fromisoformat(P.get(key)) if P.get(key) else None
+        except ValueError:
+            return None
+
+    # Mieter: bestehend oder transient aus den Feldern.
+    mieter = None
+    if P.get('mieter_id'):
+        mieter = Mieter.objects.filter(id=P.get('mieter_id')).first()
+    if mieter is None:
+        mieter = Mieter(
+            typ=P.get('mieter_typ', 'person'),
+            anrede=P.get('anrede', '') if P.get('mieter_typ', 'person') == 'person' else '',
+            vorname=P.get('vorname', '').strip(), nachname=P.get('nachname', '').strip(),
+            firmen_name=P.get('firmen_name', '').strip(),
+            strasse=P.get('m_strasse', '').strip(), plz=P.get('m_plz', '').strip(),
+            ort=P.get('m_ort', '').strip(), email=P.get('m_email', '').strip())
+
+    mitmieter = P.get('mitmieter_name', '').strip()
+    if not mitmieter and (P.get('mit_vorname') or P.get('mit_nachname')):
+        mitmieter = ' '.join(t for t in [P.get('mit_anrede', '').strip(),
+                                          P.get('mit_vorname', '').strip(),
+                                          P.get('mit_nachname', '').strip()] if t)
+
+    _nk = Decimal('0.00') if einheit.ist_einstellplatz else dec('nebenkosten')
+    _modell = P.get('mietzins_modell', 'fest')
+    if _modell not in ('fest', 'index', 'staffel'):
+        _modell = 'fest'
+    # Transienter (nicht gespeicherter) Vertrag — nur zum Rendern.
+    vertrag = Mietvertrag(
+        mieter=mieter, einheit=einheit,
+        beginn=datum('beginn') or timezone.now().date(), ende=datum('ende'),
+        erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
+        kuendigungsfrist_monate=int(P.get('kuendigungsfrist') or 3),
+        kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
+        mitmieter_name=mitmieter, familienwohnung=P.get('familienwohnung') == 'on',
+        anzahl_personen=int(P.get('anzahl_personen') or 1),
+        besondere_vereinbarungen=P.get('besondere_vereinbarungen', '').strip(),
+        mitbenutzung=P.get('mitbenutzung', '').strip(),
+        nebenraeume=P.get('nebenraeume', '').strip(),
+        netto_mietzins=dec('netto_mietzins'), nebenkosten=_nk,
+        nk_abrechnungsart=P.get('nk_abrechnungsart', 'akonto'),
+        verteilschluessel=P.get('verteilschluessel', 'm2'),
+        zahlungsrhythmus=P.get('zahlungsrhythmus', 'monatlich'),
+        mwst_pflichtig=P.get('mwst_pflichtig') == 'on',
+        mwst_satz=dec('mwst_satz') or Decimal('8.1'),
+        mietzins_modell=_modell,
+        zweckbestimmung=P.get('zweckbestimmung', '').strip(),
+        weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
+        basis_referenzzinssatz=dec('basis_referenzzinssatz') or Decimal('1.75'),
+        basis_lik_punkte=dec('basis_lik_punkte') or Decimal('107.1'),
+        kautions_betrag=dec('kautions_betrag') or None,
+        kautions_konto=P.get('kautions_konto', '').strip())
+    try:
+        html = render_vertrag_html(vertrag, mit_unterschrift=False)
+    except Exception as exc:
+        html = ('<div style="font-family:Helvetica,sans-serif;color:#b91c1c;padding:24px;'
+                f'font-size:13px;">Vorschau konnte nicht erstellt werden: {exc}</div>')
+    return HttpResponse(html, content_type='text/html')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_vertrag_signieren(request, pk):
     """Sendet einen bestehenden Vertrag zur digitalen Unterschrift (DocuSeal)."""
     from django.shortcuts import redirect

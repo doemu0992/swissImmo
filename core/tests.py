@@ -7225,10 +7225,11 @@ class VertragMietzinsUITests(TestCase):
                                        notiz='mietzinsfrei')
         VertragMietzins.objects.create(vertrag=v, gueltig_ab=date(2026, 12, 1),
                                        netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'))
-        # Der Vertrags-PDF-Template rendert die Komponenten (via vertrag.mietzins_komponenten)
+        # Der Vertrags-PDF-Template rendert den Zeitplan (via mietzins_zeitplan-Kontext)
         from django.template.loader import get_template
         html = get_template('core/mietvertrag_pdf.html').render({'vertrag': v, 'einheit': e,
-                'miete_fmt': '1000.00', 'nk_fmt': '250.00', 'brutto_fmt': '1250.00'})
+                'miete_fmt': '1000.00', 'nk_fmt': '250.00', 'brutto_fmt': '1250.00',
+                'mietzins_zeitplan': v.mietzins_zeitplan(), 'mietzins_hinweise': v.mietzins_hinweise()})
         self.assertIn('01.10.2026', html)
         self.assertIn('mietzinsfrei', html)
         self.assertIn('01.12.2026', html)
@@ -7317,6 +7318,48 @@ class SollmietzinsSollstellungTests(TestCase):
         self.assertTrue(len(v.mietzins_zeitplan()) >= 2)
         pdf = generate_vertrag_pdf_bytes(v)
         self.assertTrue(pdf.startswith(b'%PDF'))
+
+    def test_gratismonat_hinweise_prosa(self):
+        from portfolio.models import Sollmietzins
+        _lg, e, _m, v = self._setup()
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2026, 10, 1),
+                                    netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'),
+                                    rabatt_netto=Decimal('1000'))
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2026, 12, 1),
+                                    netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'))
+        hin = v.mietzins_hinweise()
+        self.assertEqual(len(hin), 2)
+        self.assertIn('01.10.2026 bis 30.11.2026', hin[0])
+        self.assertIn('mietzinsfrei', hin[0])
+        self.assertIn('nur die Nebenkosten', hin[0])
+        self.assertIn('Ab 01.12.2026', hin[1])
+        self.assertIn("1'250.00", hin[1])
+
+    def test_live_vorschau_entspricht_pdf_template(self):
+        """Die Live-Vorschau des Assistenten rendert dasselbe Template wie das PDF
+        (aus den Formularwerten, ohne Speichern) — inkl. Gratismonat-Zeitplan."""
+        from portfolio.models import Sollmietzins
+        _lg, e, m, _v = self._setup()
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2026, 10, 1),
+                                    netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'),
+                                    rabatt_netto=Decimal('1000'))
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2026, 12, 1),
+                                    netto_mietzins=Decimal('1000'), nebenkosten=Decimal('250'))
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/vertraege/vorschau/', {
+            'einheit_id': str(e.id), 'mieter_id': str(m.id), 'beginn': '2026-10-01',
+            'netto_mietzins': '1000', 'nebenkosten': '250'})
+        self.assertEqual(r.status_code, 200)
+        body = r.content.decode()
+        self.assertIn('mietzinsfrei', body)             # Zeitplan-Tabelle
+        self.assertIn('Gestaffelter Mietzins', body)    # Abschnitt
+        self.assertIn('01.10.2026 bis 30.11.2026', body)  # Klartext-Hinweis
+
+    def test_vorschau_ohne_objekt_platzhalter(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/vertraege/vorschau/', {'netto_mietzins': '1000'})
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('Objekt auswählen', r.content.decode())
 
 
 class VersionEndpointTests(TestCase):
@@ -7439,7 +7482,8 @@ class VertragMietzinsRabattTests(TestCase):
         # Template rendert Referenzmiete + Rabatt-Spalte.
         from django.template.loader import get_template
         html = get_template('core/mietvertrag_pdf.html').render({'vertrag': v, 'einheit': _e,
-                'miete_fmt': '1000.00', 'nk_fmt': '250.00', 'brutto_fmt': '1250.00'})
+                'miete_fmt': '1000.00', 'nk_fmt': '250.00', 'brutto_fmt': '1250.00',
+                'mietzins_zeitplan': v.mietzins_zeitplan(), 'mietzins_hinweise': v.mietzins_hinweise()})
         self.assertIn('Referenzmiete', html)
         self.assertIn('Zu bezahlen', html)
         self.assertIn('mietzinsfrei', html)

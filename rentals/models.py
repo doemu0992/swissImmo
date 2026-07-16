@@ -326,13 +326,13 @@ class Mietvertrag(models.Model):
         Zeitplan aus dem Objekt-Sollmietzins ab Mietbeginn. Beide Typen liefern
         dieselben Anzeige-Properties (gueltig_ab, netto_mietzins, nebenkosten,
         rabatt_gesamt, verrechnet_brutto, hat_rabatt, notiz). Leer, wenn nur ein
-        einzelner Mietzins gilt (kein datierter Verlauf)."""
-        if not self.pk:
-            return []
-        komps = list(self.mietzins_komponenten.all().order_by('gueltig_ab', 'id'))
+        einzelner Mietzins gilt (kein datierter Verlauf). Funktioniert auch für
+        einen noch NICHT gespeicherten Vertrag (Live-Vorschau) — dann zählt nur
+        der Objekt-Sollmietzins ab Mietbeginn."""
+        komps = list(self.mietzins_komponenten.all().order_by('gueltig_ab', 'id')) if self.pk else []
         if komps:
             return komps
-        if not self.einheit_id:
+        if not self.einheit_id or not self.beginn:
             return []
         zeilen = list(self.einheit.sollmietzinse
                       .filter(quelle_anpassung__isnull=True)
@@ -343,6 +343,45 @@ class Mietvertrag(models.Model):
         if len(tenancy) > 1 or any(z.hat_rabatt for z in tenancy):
             return tenancy
         return []
+
+    def mietzins_hinweise(self):
+        """Klartext-Sätze für gestaffelte Mietzinsen/Gratismonate — z.B. «Vom
+        01.08.2026 bis 30.09.2026 ist der Nettomietzins erlassen (mietzinsfrei);
+        es sind nur die Nebenkosten von CHF 200.00 geschuldet. Ab 01.10.2026 gilt
+        der volle Mietzins von CHF 1'000.00.» Fürs Vertragsdokument + Vorschau,
+        damit der Gratismonat auch in Worten ausgewiesen ist."""
+        from datetime import timedelta
+
+        def _chf(x):
+            return f"{(x or Decimal('0')):,.2f}".replace(",", "'")
+
+        zp = self.mietzins_zeitplan()
+        if not zp:
+            return []
+        hinweise = []
+        for i, z in enumerate(zp):
+            bis = None
+            if i + 1 < len(zp):
+                bis = zp[i + 1].gueltig_ab - timedelta(days=1)
+            zeitraum = f"Ab {z.gueltig_ab:%d.%m.%Y}"
+            if bis:
+                zeitraum = f"Vom {z.gueltig_ab:%d.%m.%Y} bis {bis:%d.%m.%Y}"
+            netto_frei = z.hat_rabatt and z.verrechnet_netto == 0 and (z.netto_mietzins or 0) > 0
+            if netto_frei:
+                if (z.verrechnet_nk or 0) > 0:
+                    hinweise.append(f"{zeitraum} ist der Nettomietzins erlassen (mietzinsfrei); "
+                                    f"es sind nur die Nebenkosten von CHF {_chf(z.verrechnet_nk)} geschuldet.")
+                else:
+                    hinweise.append(f"{zeitraum} ist die Miete vollständig erlassen (mietzinsfrei).")
+            elif z.hat_rabatt:
+                hinweise.append(f"{zeitraum} gilt ein Rabatt von CHF {_chf(z.rabatt_gesamt)} — "
+                                f"zu bezahlen sind CHF {_chf(z.verrechnet_brutto)} "
+                                f"(statt CHF {_chf(z.brutto)}).")
+            else:
+                hinweise.append(f"{zeitraum} gilt der volle Mietzins von CHF {_chf(z.verrechnet_brutto)}"
+                                + ("." if self.einheit and self.einheit.ist_einstellplatz
+                                   else f" (netto CHF {_chf(z.netto_mietzins)} + NK CHF {_chf(z.nebenkosten)})."))
+        return hinweise
 
     def effektive_basis(self, fuer_datum=None):
         """(Referenzzins, LIK), auf denen der aktuell verrechnete Mietzins beruht:

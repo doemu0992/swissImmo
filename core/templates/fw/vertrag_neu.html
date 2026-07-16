@@ -330,7 +330,10 @@
             <div class="font-bold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-scale-balanced"></i> Mietrechtlicher Hinweis</div>
             <ul id="mietrecht-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
         </div>
-        <div id="pv" class="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-[13px] text-slate-800 leading-relaxed max-h-[75vh] overflow-y-auto"></div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <iframe id="pvFrame" title="Vertrags-Vorschau" class="w-full block bg-white" style="height:75vh; border:0;"></iframe>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1.5 text-center"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Diese Vorschau entspricht 1:1 dem generierten Vertrags-PDF.</p>
     </div>
 </div>
 </form>
@@ -696,6 +699,19 @@ function mietrechtCheck(){
   if (warns.length) { list.innerHTML = warns.map(w => `<li>${w}</li>`).join(''); box.classList.remove('hidden'); }
   else { box.classList.add('hidden'); }
 }
+let _pvTimer=null, _pvSeq=0;
+function schedulePreview(){ clearTimeout(_pvTimer); _pvTimer=setTimeout(refreshServerPreview, 400); }
+function refreshServerPreview(){
+  const form=document.getElementById('vform');
+  const frame=document.getElementById('pvFrame');
+  if(!form || !frame) return;
+  const seq=++_pvSeq;
+  fetch('/neu/vertraege/vorschau/', {method:'POST', body:new FormData(form),
+        headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(r=>r.text())
+    .then(html=>{ if(seq===_pvSeq) frame.srcdoc = html; })
+    .catch(()=>{});
+}
 function live(){
   const l=curLg(), o=curObj(), m=curMieter();
   const vm = l?l.vermieter:{name:'{{ verwaltung.firma }}',strasse:'{{ verwaltung.strasse }}',plz:'{{ verwaltung.plz }}',ort:'{{ verwaltung.ort }}'};
@@ -714,6 +730,12 @@ function live(){
   const nkEcho=document.getElementById('nk-echo'); if(nkEcho) nkEcho.textContent = "CHF "+fmt(nk);
   mietrechtCheck();
 
+  // Die Live-Vorschau rendert jetzt SERVERSEITIG dasselbe Template wie das PDF
+  // (debounced), damit Vorschau und PDF nie auseinanderlaufen.
+  schedulePreview();
+  return;
+
+  // ----- ALTE JS-VORSCHAU (deaktiviert, dient nur noch als Referenz) -----
   // Einstellplatz (Parkplatz/Garage) → keine Nebenkosten in der Vorschau.
   // Abschnittsnummern laufen dynamisch, damit ohne NK keine Lücke entsteht.
   const eps = !!(o && o.ist_einstellplatz);
