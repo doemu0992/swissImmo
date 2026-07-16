@@ -472,6 +472,22 @@ class Mietvertrag(models.Model):
             except Exception:
                 pass
 
+    def delete(self, *args, **kwargs):
+        # Automatisch erzeugte Vertragspaket-Dokumente (Mietvertrag + Standard-
+        # Beilagen) mitlöschen. `Dokument.vertrag` ist SET_NULL — ohne diese
+        # Bereinigung blieben die Kopien als verwaiste (vertrag=None) Belege in der
+        # Personen-/Objekt-Akte und im Mieterportal hängen und tauchten dort
+        # doppelt / „ohne Vertragsbezug" auf. Zentral hier, damit UI (fw_vertrag_
+        # loeschen) UND API (delete_vertrag) und jeder künftige Löschpfad greifen.
+        try:
+            from core.views.pdf import VERTRAGSPAKET_TITEL
+            self.dokument_ablage.filter(
+                kategorie='vertrag', bezeichnung__in=VERTRAGSPAKET_TITEL
+            ).delete()
+        except Exception:
+            pass
+        return super().delete(*args, **kwargs)
+
 class Staffelstufe(models.Model):
     """Eine vereinbarte Staffelmietstufe (Art. 269c OR): ab `ab_datum` gilt
     `netto_mietzins`. Vorab im Vertrag vereinbart → im Mietenlauf automatisch

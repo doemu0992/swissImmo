@@ -1367,7 +1367,11 @@ def fw_wartungsfrist_loeschen(request, pk):
     lg_id = wf.liegenschaft_id
     if request.method == 'POST':
         from core.auth import log_aktion
+        from core.models import Pendenz
         bez = f"{wf.bezeichnung} · {wf.liegenschaft}"
+        # Zugehörige Auto-Frist-Pendenz(en) mitlöschen — sie hängen nur über einen
+        # `quelle`-String (kein FK) und würden sonst als verwaiste Frist stehen bleiben.
+        Pendenz.objects.filter(quelle__startswith=f"auto:wartung:{wf.id}:").delete()
         wf.delete()
         log_aktion(request, "Wartungsfrist gelöscht", bez, '')
         messages.success(request, "🗑️ Frist gelöscht.")
@@ -1773,6 +1777,9 @@ def fw_geraet_del(request, pk):
     g = get_object_or_404(Geraet, id=pk)
     eid, lid = g.einheit_id, g.liegenschaft_id
     if request.method == 'POST':
+        from core.models import Pendenz
+        # Verwaiste Auto-Garantie-Pendenz mitlöschen (hängt nur über `quelle`).
+        Pendenz.objects.filter(quelle=f"auto:garantie:{g.id}").delete()
         g.delete()
         messages.success(request, "Gerät entfernt.")
     if eid:
@@ -2387,6 +2394,20 @@ def fw_schlussabrechnung(request, vertrag_id):
         aktion = request.POST.get('aktion', 'pdf')
 
         if aktion == 'buchen':
+            # Idempotenz: eine Schlussabrechnung wird pro Vertrag nur EINMAL verbucht.
+            # Ohne diese Sperre erzeugte ein Doppelklick / Zurück-Navigieren einen
+            # zweiten Nachzahlungs-Debitor + eine doppelte 1100/3000-Buchung.
+            schon_verbucht = (
+                v.kautions_zurueckbezahlt_am is not None
+                or DebitorenRechnung.objects.filter(
+                    vertrag=v, titel="Schlussabrechnung (Nachzahlung)"
+                ).exclude(status='storniert').exists()
+            )
+            if schon_verbucht:
+                if request.POST.get('embed'):
+                    return render(request, 'fw/_modal_done.html', {'msg': 'Schlussabrechnung bereits verbucht'})
+                messages.info(request, "Diese Schlussabrechnung wurde bereits verbucht.")
+                return redirect(f'/neu/vertraege/{v.id}/')
             with transaction.atomic():
                 # Kaution als abgerechnet markieren
                 if kaution_verrechnen and (v.kautions_betrag or 0) > 0:
@@ -2657,14 +2678,9 @@ def fw_vertrag_loeschen(request, pk):
     if request.method == 'POST':
         name = str(v.mieter)
         einheit = v.einheit.bezeichnung
-        # Automatisch erzeugte Vertragspaket-Dokumente mitlöschen — sonst blieben
-        # sie als verwaiste (vertrag=None) Kopien in der Personen-Akte hängen
-        # (SET_NULL). Nur die Standard-Beilagen, keine sonstigen Uploads.
-        from core.views.pdf import VERTRAGSPAKET_TITEL
-        from rentals.models import Dokument as _Dok
-        _Dok.objects.filter(vertrag=v, kategorie='vertrag',
-                            bezeichnung__in=VERTRAGSPAKET_TITEL).delete()
         log_aktion(request, "Mietvertrag gelöscht", name, einheit)
+        # Bereinigung der verwaisten Vertragspaket-Dokumente passiert zentral in
+        # Mietvertrag.delete() (greift auch auf dem API-Löschpfad).
         v.delete()
         messages.success(request, f"🗑️ Vertrag ({name} · {einheit}) wurde gelöscht.")
         return redirect('/neu/vertraege/')
@@ -3104,7 +3120,12 @@ def _camt_parse(xml_bytes):
             elif ln == 'Ustrd' and not info and sub.text:
                 info = sub.text.strip()
             elif ln in ('AcctSvcrRef', 'TxId', 'EndToEndId') and not acct_ref and sub.text:
-                acct_ref = sub.text.strip()
+                # 'NOTPROVIDED' ist bei Swiss-QR-Gutschriften der Standard-EndToEndId
+                # und KEINE eindeutige Transaktionsreferenz — sonst würden mehrere
+                # verschiedene Zahlungen fälschlich als Duplikat verworfen (Datenverlust).
+                _cand = sub.text.strip()
+                if _cand.upper() != 'NOTPROVIDED':
+                    acct_ref = _cand
             elif ln == 'Dbtr':
                 in_dbtr = True
             elif ln == 'Nm' and in_dbtr and not dbtr_name and sub.text:
@@ -3196,9 +3217,17 @@ def fw_camt_import(request):
                 ref_index.pop(k, None)
 
     for e in eintraege:
-        # 0) Duplikatschutz über Bank-Transaktionsreferenz
+        # 0) Duplikatschutz über Bank-Transaktionsreferenz. Fehlt eine eindeutige
+        #    Referenz (kein AcctSvcrRef/TxId, EndToEndId=NOTPROVIDED), wird ein
+        #    zusammengesetzter Schlüssel aus Datum|Betrag|Auftraggeber|QRR gebildet —
+        #    so wird der erneute Import derselben Datei nicht doppelt verbucht, ohne
+        #    verschiedene ref-lose Zahlungen fälschlich zu verschmelzen.
         aref = e.get('acct_ref', '')
-        if aref and Zahlungseingang.objects.filter(bank_referenz=aref).exists():
+        if not aref:
+            _dat = (e.get('datum') or heute)
+            aref = f"camt:{_dat:%Y-%m-%d}|{e.get('betrag','')}|{_norm(e.get('dbtr_name',''))}|{e.get('referenz','')}"
+        e['acct_ref'] = aref
+        if Zahlungseingang.objects.filter(bank_referenz=aref).exists():
             duplikate += 1
             continue
 
@@ -9252,6 +9281,12 @@ def fw_mahnung_erfassen(request):
         stufe = 1
     stufe = min(max(stufe, 1), 3)
 
+    # Doppelerfassung derselben Mahnstufe verhindern (Doppelklick / erneutes Absenden).
+    # Sonst entstünde ein zweiter Historien-Eintrag + eine doppelte Mahngebühr-Rechnung.
+    if Mahnung.objects.filter(debitoren_rechnung=rechnung, stufe=stufe).exists():
+        messages.info(request, f"Die {stufe}. Mahnung wurde für diese Rechnung bereits erfasst.")
+        return redirect('fw_mahnwesen')
+
     try:
         gebuehr = Decimal(str(request.POST.get('gebuehr') or MAHN_GEBUEHR.get(stufe, Decimal('0'))).replace(',', '.'))
     except Exception:
@@ -9943,7 +9978,10 @@ def fw_asset_loeschen(request, pk):
     from core.auth import log_aktion
     g = get_object_or_404(Geraet, id=pk)
     if request.method == 'POST':
+        from core.models import Pendenz
         bez = f"{g.kategorie} {g.marke}".strip()
+        # Verwaiste Auto-Garantie-Pendenz mitlöschen (hängt nur über `quelle`).
+        Pendenz.objects.filter(quelle=f"auto:garantie:{g.id}").delete()
         g.delete()
         log_aktion(request, "Asset gelöscht", bez, '')
         messages.success(request, "🗑️ Asset gelöscht.")

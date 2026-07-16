@@ -7641,3 +7641,131 @@ class VertragMietzinsRabattTests(TestCase):
         self.assertIn('Referenzmiete', html)
         self.assertIn('Zu bezahlen', html)
         self.assertIn('mietzinsfrei', html)
+
+
+class DatenLebenszyklusTests(TestCase):
+    """Regression gegen die Klasse 'verwaiste/doppelte Daten beim Löschen &
+    Re-Trigger' (Audit nach dem Vertragsdokument-Bug): zentrale Dokument-
+    Bereinigung, CASCADE der Anpassungs-Sollmietzinse, Idempotenz von
+    Schlussabrechnung/Mahnung, camt-Dedup ohne Datenverlust, Auto-Frist-Cleanup."""
+
+    def _dok(self, v, e, m, titel='Mietvertrag', kategorie='vertrag'):
+        from rentals.models import Dokument
+        from django.core.files.base import ContentFile
+        d = Dokument.objects.create(vertrag=v, einheit=e, mieter=m,
+                                    kategorie=kategorie, bezeichnung=titel, titel=titel)
+        d.datei.save('x.pdf', ContentFile(b'%PDF-1.4'), save=True)
+        return d
+
+    def test_vertrag_delete_raeumt_vertragspaket_zentral(self):
+        # Modell-Ebene: deckt UI- UND API-Löschpfad ab (delete() override).
+        from rentals.models import Dokument
+        _lg, e, m, v = _basis_objekte()
+        self._dok(v, e, m, 'Mietvertrag')
+        self._dok(v, e, m, 'Hausordnung')
+        fremd = self._dok(v, e, m, 'Mieterbrief', kategorie='korrespondenz')
+        v.delete()
+        # Vertragspaket ist weg (kein verwaister vertrag=None-Rest)
+        self.assertEqual(Dokument.objects.filter(bezeichnung__in=['Mietvertrag', 'Hausordnung']).count(), 0)
+        # Fremd-Korrespondenz bleibt erhalten
+        self.assertTrue(Dokument.objects.filter(id=fremd.id).exists())
+
+    def test_anpassung_sollmietzins_cascade_kein_orphan(self):
+        # Löschen der Anpassung (bzw. via Vertrags-CASCADE) darf keine
+        # quelle_anpassung=NULL-Zeile zurücklassen, die als Basismiete gilt.
+        from rentals.models import MietzinsAnpassung
+        from portfolio.models import Sollmietzins
+        _lg, e, m, v = _basis_objekte()
+        anp = MietzinsAnpassung.objects.create(vertrag=v, wirksam_ab=date(2024, 7, 1),
+                                               neuer_netto_mietzins=Decimal('1600'))
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2024, 7, 1),
+                                    netto_mietzins=Decimal('1600'), nebenkosten=Decimal('200'),
+                                    quelle_anpassung=anp)
+        # Direktes Löschen der Anpassung
+        anp.delete()
+        self.assertEqual(Sollmietzins.objects.filter(einheit=e, quelle_anpassung__isnull=True).count(), 0)
+        # Auch der Vertrags-CASCADE-Pfad darf keine Waise erzeugen
+        anp2 = MietzinsAnpassung.objects.create(vertrag=v, wirksam_ab=date(2024, 8, 1),
+                                                neuer_netto_mietzins=Decimal('1700'))
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2024, 8, 1),
+                                    netto_mietzins=Decimal('1700'), nebenkosten=Decimal('200'),
+                                    quelle_anpassung=anp2)
+        v.delete()
+        self.assertEqual(Sollmietzins.objects.filter(quelle_anpassung__isnull=True).count(), 0)
+
+    def test_schlussabrechnung_nicht_doppelt_gebucht(self):
+        from finance.models import DebitorenRechnung
+        _seed_konten()
+        _lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        payload = {'auszug_datum': '2024-06-30', 'aktion': 'buchen',
+                   'pos_text': 'Reinigung', 'pos_betrag': '500', 'pos_richtung': 'zulasten'}
+        for _ in range(2):
+            c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/', payload)
+        # Trotz zweimaligem Absenden nur EIN Nachzahlungs-Debitor + eine Buchung.
+        self.assertEqual(DebitorenRechnung.objects.filter(
+            vertrag=v, titel='Schlussabrechnung (Nachzahlung)').count(), 1)
+
+    def test_camt_notprovided_gehen_nicht_verloren(self):
+        # Zwei verschiedene Gutschriften, beide EndToEndId=NOTPROVIDED, keine
+        # AcctSvcrRef → dürfen NICHT als Duplikat verworfen werden.
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import Zahlungseingang
+        _seed_konten()
+        _basis_objekte()
+        xml = (
+            '<?xml version="1.0"?><Document><BkToCstmrStmt><Stmt>'
+            '<Ntry><CdtDbtInd>CRDT</CdtDbtInd><Amt Ccy="CHF">1700.00</Amt>'
+            '<BookgDt><Dt>2024-03-05</Dt></BookgDt><NtryDtls><TxDtls>'
+            '<Refs><EndToEndId>NOTPROVIDED</EndToEndId></Refs></TxDtls></NtryDtls></Ntry>'
+            '<Ntry><CdtDbtInd>CRDT</CdtDbtInd><Amt Ccy="CHF">1800.00</Amt>'
+            '<BookgDt><Dt>2024-03-05</Dt></BookgDt><NtryDtls><TxDtls>'
+            '<Refs><EndToEndId>NOTPROVIDED</EndToEndId></Refs></TxDtls></NtryDtls></Ntry>'
+            '</Stmt></BkToCstmrStmt></Document>'
+        ).encode('utf-8')
+        c = Client(); c.force_login(_team_user())
+        f = SimpleUploadedFile('camt.xml', xml, content_type='application/xml')
+        c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f})
+        # Beide Zahlungen erfasst (auf Durchlaufkonto geparkt), keine fälschlich verworfen.
+        self.assertEqual(Zahlungseingang.objects.count(), 2)
+
+    def test_manuelle_mahnung_nicht_doppelt(self):
+        from finance.models import Mahnung, DebitorenRechnung
+        _seed_konten()
+        _lg, e, m, v = _basis_objekte()
+        rech = DebitorenRechnung.objects.create(vertrag=v, liegenschaft=_lg, einheit=e,
+                                                titel='Miete 01/2024', datum=date(2024, 1, 1),
+                                                faellig_am=date(2024, 1, 31), betrag=Decimal('1700'),
+                                                status='offen')
+        c = Client(); c.force_login(_team_user())
+        payload = {'rechnung_id': rech.id, 'stufe': '1', 'gebuehr': '20'}
+        for _ in range(2):
+            c.post('/neu/mahnwesen/erfassen/', payload)
+        self.assertEqual(Mahnung.objects.filter(debitoren_rechnung=rech, stufe=1).count(), 1)
+        self.assertEqual(DebitorenRechnung.objects.filter(
+            vertrag=v, titel='Mahngebühr 1. Mahnung').count(), 1)
+
+    def test_geraet_loeschen_raeumt_auto_pendenz(self):
+        from portfolio.models import Geraet
+        from core.models import Pendenz
+        lg, e, _m, _v = _basis_objekte()
+        g = Geraet.objects.create(liegenschaft=lg, kategorie='boiler',
+                                  garantie_bis=date(2024, 12, 31))
+        Pendenz.objects.create(titel='Garantie läuft ab: Boiler', kategorie='unterhalt',
+                               quelle=f'auto:garantie:{g.id}', liegenschaft=lg)
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/geraet/{g.id}/loeschen/')
+        self.assertFalse(Pendenz.objects.filter(quelle=f'auto:garantie:{g.id}').exists())
+
+    def test_wartungsfrist_loeschen_raeumt_auto_pendenz(self):
+        from portfolio.models import Wartungsfrist
+        from core.models import Pendenz
+        lg, _e, _m, _v = _basis_objekte()
+        wf = Wartungsfrist.objects.create(liegenschaft=lg, art='wartung', bezeichnung='Lift',
+                                          naechste_faelligkeit=date(2024, 12, 1),
+                                          intervall_monate=12, aktiv=True)
+        Pendenz.objects.create(titel='Wartung: Lift', kategorie='unterhalt',
+                               quelle=f'auto:wartung:{wf.id}:2024-12-01', liegenschaft=lg)
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/frist/{wf.id}/loeschen/')
+        self.assertFalse(Pendenz.objects.filter(quelle__startswith=f'auto:wartung:{wf.id}:').exists())
