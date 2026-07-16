@@ -41,7 +41,7 @@
                 <span class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs shrink-0"><i class="fa-solid {{ g.icon }}"></i></span>
                 <div class="min-w-0 flex-1">
                     {% if g.url %}
-                    <a href="{{ g.url }}" onclick="return fwModalOpen(this,'{{ g.titel|escapejs }}',{% if g.wide %}true{% else %}false{% endif %})" class="font-bold text-slate-800 text-sm hover:text-indigo-600 truncate block">{{ g.titel }}</a>
+                    <a href="{{ g.url }}" class="font-bold text-slate-800 text-sm hover:text-indigo-600 truncate block">{{ g.titel }}</a>
                     {% else %}<div class="font-bold text-slate-800 text-sm truncate">{{ g.titel }}</div>{% endif %}
                     {% if g.sub %}<div class="text-xs text-slate-400 truncate">{{ g.sub }}</div>{% endif %}
                 </div>
@@ -54,11 +54,11 @@
                         <button class="w-5 h-5 rounded border-2 border-slate-300 hover:border-emerald-500 flex items-center justify-center text-transparent hover:text-emerald-500" title="Als erledigt markieren"><i class="fa-solid fa-check text-[10px]"></i></button>
                     </form>
                     {% if p.ziel_url %}
-                    <a href="{{ p.ziel_url }}" onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})" class="min-w-0 flex-1 group">
+                    <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})"{% endif %} class="min-w-0 flex-1 group">
                         <div class="text-sm font-medium text-slate-900 group-hover:text-indigo-600">{{ p.titel }}</div>
                         <div class="text-xs text-slate-500">{{ p.get_kategorie_display }}</div>
                     </a>
-                    <a href="{{ p.ziel_url }}" onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-2.5 py-1 rounded-lg shrink-0 whitespace-nowrap">{{ p.ziel_label }}</a>
+                    <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})"{% endif %} class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-2.5 py-1 rounded-lg shrink-0 whitespace-nowrap">{{ p.ziel_label }}</a>
                     {% else %}
                     <div class="min-w-0 flex-1">
                         <div class="text-sm font-medium text-slate-900">{{ p.titel }}</div>

@@ -8464,6 +8464,45 @@ class Art266nDoppelzustellungTests(TestCase):
         self.assertEqual(n, 2)
 
 
+class PendenzModalTests(TestCase):
+    """Detailseiten-Pendenzen (Vertrag/Liegenschaft öffnen) navigieren voll —
+    nur Aktions-Schritte (Rücknahme) öffnen im Iframe-Popup. Verhindert die
+    Kollision «ganze Detailseite im engen Popup»."""
+
+    def test_ziel_detailseite_ohne_modal(self):
+        from core.views.fw import _pendenz_ziel
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        p = Pendenz.objects.create(titel='Anfechtungsfrist läuft ab', kategorie='frist',
+                                   vertrag=v, liegenschaft=lg)
+        url, _label, wide, modal = _pendenz_ziel(p)
+        self.assertEqual(url, f'/neu/vertraege/{v.id}/')
+        self.assertFalse(modal)      # volle Navigation, KEIN Popup
+        self.assertFalse(wide)
+
+    def test_ziel_ruecknahme_bleibt_modal(self):
+        from core.views.fw import _pendenz_ziel
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        p = Pendenz.objects.create(titel='Rücknahme', kategorie='auszug', vertrag=v,
+                                   quelle=f'auto:ruecknahme:{v.id}')
+        _url, _label, _wide, modal = _pendenz_ziel(p)
+        self.assertTrue(modal)       # Aktions-Schritt → Popup
+
+    def test_pendenzen_seite_hat_keinen_modal_onclick_fuer_vertrag(self):
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        Pendenz.objects.create(titel='Anfechtungsfrist Mietzinserhöhung läuft ab',
+                               kategorie='frist', vertrag=v, liegenschaft=lg)
+        c = Client(); c.force_login(_team_user())
+        body = c.get('/neu/pendenzen/').content.decode()
+        self.assertIn(f'/neu/vertraege/{v.id}/', body)
+        # Der Vertrags-Link darf NICHT mehr das Iframe-Popup öffnen.
+        import re
+        for m_ in re.finditer(r'<a href="/neu/vertraege/%d/"[^>]*>' % v.id, body):
+            self.assertNotIn('fwModalOpen', m_.group(0))
+
+
 class Art270AnfangsmietzinsTests(TestCase):
     """Art. 270 OR: Anfangsmietzins-Formular mit Vormiete + Anfechtungshinweis."""
 

@@ -145,7 +145,7 @@ def fw_dashboard(request):
                      .order_by(F('faellig_am').asc(nulls_last=True)))
     heute_todo = []
     for p in dringend_pend[:8]:
-        url, label, wide = _pendenz_ziel(p)
+        url, label, wide, modal = _pendenz_ziel(p)
         obj = ''
         if p.vertrag_id and p.vertrag and p.vertrag.einheit_id:
             obj = p.vertrag.einheit.bezeichnung
@@ -155,7 +155,7 @@ def fw_dashboard(request):
             'id': p.id, 'titel': p.titel, 'sub': obj,
             'faellig': p.faellig_am,
             'ueberfaellig': bool(p.faellig_am and p.faellig_am < heute),
-            'url': url, 'label': label or 'Öffnen', 'wide': wide,
+            'url': url, 'label': label or 'Öffnen', 'wide': wide, 'modal': modal,
         })
     heute_todo_mehr = max(_pend.filter(Q(faellig_am__lte=grenze14) | Q(faellig_am__isnull=True)).count() - 8, 0)
 
@@ -9265,16 +9265,20 @@ def _auto_fristen(aktive_lg, horizont_tage=90):
 
 
 def _pendenz_ziel(p):
-    """Verknüpft eine Pendenz mit dem passenden Objekt/Schritt (öffnet im Popup).
-    Rückgabe: (url, label, wide). Modulweit nutzbar (Pendenzen-Seite + Dashboard)."""
+    """Verknüpft eine Pendenz mit dem passenden Objekt/Schritt.
+    Rückgabe: (url, label, wide, modal). `modal=True` → im Iframe-Popup öffnen
+    (nur für Aktions-/Schritt-Formulare, deren Chrome im Embed ausgeblendet wird);
+    `modal=False` → volle Seiten-Navigation. Eine Detailseite (Vertrag/Liegenschaft)
+    gehört NICHT ins Popup — ihr Hero + Tabs + Tabellen werden im engen Iframe
+    (v.a. mobil) abgeschnitten und kollidieren mit dem Pendenz-Titel."""
     q = p.quelle or ''
     if p.vertrag_id:
         if q.startswith('auto:ruecknahme:'):
-            return (f'/neu/vertraege/{p.vertrag_id}/abnahme/neu/?typ=auszug', 'Rücknahme starten', False)
-        return (f'/neu/vertraege/{p.vertrag_id}/', 'Vertrag öffnen', True)
+            return (f'/neu/vertraege/{p.vertrag_id}/abnahme/neu/?typ=auszug', 'Rücknahme starten', False, True)
+        return (f'/neu/vertraege/{p.vertrag_id}/', 'Vertrag öffnen', False, False)
     if p.liegenschaft_id:
-        return (f'/neu/liegenschaften/{p.liegenschaft_id}/', 'Liegenschaft öffnen', True)
-    return (None, None, False)
+        return (f'/neu/liegenschaften/{p.liegenschaft_id}/', 'Liegenschaft öffnen', False, False)
+    return (None, None, False, False)
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -9304,7 +9308,7 @@ def fw_pendenzen(request):
 
     for p in offene:
         p.ueberfaellig = bool(p.faellig_am and p.faellig_am < heute)
-        p.ziel_url, p.ziel_label, p.ziel_wide = _pendenz_ziel(p)
+        p.ziel_url, p.ziel_label, p.ziel_wide, p.ziel_modal = _pendenz_ziel(p)
 
     # Nach Bezug gruppieren: pro Vertrag (Auszug/Mieterwechsel) eine Gruppe,
     # Liegenschafts-Fristen je Liegenschaft, der Rest unter „Allgemein".
@@ -9383,7 +9387,7 @@ def fw_fristen(request):
 
     eintraege = []
     for p in pq.order_by('faellig_am'):
-        url, label, wide = _pendenz_ziel(p)
+        url, label, wide, _modal = _pendenz_ziel(p)
         if p.vertrag_id and p.vertrag:
             bezug = p.vertrag.mieter.display_name if p.vertrag.mieter_id else ''
             if p.vertrag.einheit_id:
