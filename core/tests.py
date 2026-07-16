@@ -2658,6 +2658,8 @@ class MietzinsAnpassungSollmietzinsTests(TestCase):
         zeile = z.first()
         self.assertEqual(zeile.gueltig_ab, w)
         self.assertEqual(zeile.netto_mietzins, Decimal('1600'))
+        # Der Anpassungsgrund steht in der Objekt-Notiz (warum der Mietzins gilt).
+        self.assertIn('Anpassung Referenzzinssatz', zeile.notiz)
         # NK bleibt unverändert (Anpassung betrifft nur den Netto)
         self.assertEqual(zeile.nebenkosten, Decimal('200'))
         # Indexbasis der Anpassung ist mitgeschrieben
@@ -8406,3 +8408,87 @@ class UIConsistencyBatchTests(TestCase):
             src = self._read(f + '.html')
             self.assertNotIn('rounded-2xl', src, f'rounded-2xl noch in {f}')
             self.assertNotIn('font-black', src, f'font-black noch in {f}')
+
+
+class Art266nDoppelzustellungTests(TestCase):
+    """Art. 266n OR: Vermieter-Kündigung einer Familienwohnung → je Ehegatte eine
+    separat adressierte Kopie (sonst nichtig)."""
+
+    def _familienvertrag(self):
+        from crm.models import Mieter
+        lg, e, m, v = _basis_objekte()
+        gatte = Mieter.objects.create(typ='person', vorname='Petra', nachname='Muster',
+                                      email='petra@example.ch', strasse='Seeweg 3', plz='8000', ort='Zürich')
+        v.familienwohnung = True; v.mitmieter = gatte; v.save()
+        return lg, e, m, v, gatte
+
+    def test_vermieter_familienwohnung_zwei_kopien(self):
+        from core.services.formular_fill import kuendigung_zustellkopien
+        from rentals.models import Kuendigung
+        _lg, _e, _m, v, gatte = self._familienvertrag()
+        k = Kuendigung.objects.create(vertrag=v, absender='vermieter', per_datum=date(2027, 3, 31))
+        kopien = kuendigung_zustellkopien(v, k)
+        self.assertEqual(len(kopien), 2)
+        namen = {n for n, _ in kopien}
+        self.assertIn('Hans Muster', namen)
+        self.assertIn(gatte.display_name, namen)
+        for _n, pdf in kopien:
+            self.assertTrue(pdf.startswith(b'%PDF'))
+
+    def test_mieterkuendigung_nur_eine_kopie(self):
+        from core.services.formular_fill import kuendigung_zustellkopien
+        from rentals.models import Kuendigung
+        _lg, _e, _m, v, _g = self._familienvertrag()
+        k = Kuendigung.objects.create(vertrag=v, absender='mieter', per_datum=date(2027, 3, 31))
+        # Nur die Vermieter-Kündigung braucht die getrennte Zustellung.
+        self.assertEqual(len(kuendigung_zustellkopien(v, k)), 1)
+
+    def test_keine_familienwohnung_eine_kopie(self):
+        from core.services.formular_fill import kuendigung_zustellkopien
+        from rentals.models import Kuendigung
+        lg, e, m, v = _basis_objekte()   # familienwohnung=False
+        k = Kuendigung.objects.create(vertrag=v, absender='vermieter', per_datum=date(2027, 3, 31))
+        self.assertEqual(len(kuendigung_zustellkopien(v, k)), 1)
+
+    def test_view_liefert_pdf_und_legt_zwei_kopien_ab(self):
+        from rentals.models import Kuendigung
+        from rentals.models import Dokument
+        _lg, _e, _m, v, _g = self._familienvertrag()
+        k = Kuendigung.objects.create(vertrag=v, absender='vermieter', per_datum=date(2027, 3, 31))
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/kuendigung/{k.id}/formular/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        # Zwei separat adressierte Kopien abgelegt.
+        n = Dokument.objects.filter(vertrag=v, bezeichnung__contains='Zustellung an').count()
+        self.assertEqual(n, 2)
+
+
+class Art270AnfangsmietzinsTests(TestCase):
+    """Art. 270 OR: Anfangsmietzins-Formular mit Vormiete + Anfechtungshinweis."""
+
+    def test_pdf_generierung(self):
+        from core.services.amtliche_formulare_so import anfangsmietzins_so_pdf
+        _lg, _e, _m, v = _basis_objekte()
+        daten = {'anfang_netto': Decimal('1500'), 'anfang_nk': Decimal('200'),
+                 'vormiete_netto': Decimal('1350'), 'vormiete_nk': Decimal('180'),
+                 'beginn': date(2026, 1, 1), 'grund_choice': 'referenz', 'begruendung': ''}
+        pdf = anfangsmietzins_so_pdf(v, daten)
+        self.assertTrue(pdf.startswith(b'%PDF'))
+        self.assertGreater(len(pdf), 1500)
+
+    def test_view_get_und_post(self):
+        from rentals.models import Dokument
+        _lg, _e, _m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        # GET zeigt das Formular
+        g = c.get(f'/neu/mietzins/{v.id}/anfangsmietzins/')
+        self.assertEqual(g.status_code, 200)
+        self.assertIn('Anfangsmietzins', g.content.decode())
+        # POST erzeugt das PDF + legt es ab
+        p = c.post(f'/neu/mietzins/{v.id}/anfangsmietzins/', {
+            'anfang_netto': '1500', 'anfang_nk': '200',
+            'vormiete_netto': '1350', 'vormiete_nk': '180', 'grund_choice': 'referenz'})
+        self.assertEqual(p.status_code, 200)
+        self.assertEqual(p['Content-Type'], 'application/pdf')
+        self.assertTrue(Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Anfangsmietzins').exists())

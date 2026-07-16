@@ -1,0 +1,84 @@
+{% extends 'fw/base.html' %}
+{% load chf l10n %}
+{% block title %}Anfangsmietzins — {{ v.mieter.display_name }}{% endblock %}
+{% block content %}
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/mietzins/" class="hover:text-indigo-600">Mietzins</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <a href="/neu/vertraege/{{ v.id }}/" class="hover:text-indigo-600">{{ v.mieter.display_name }}</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <span class="text-slate-600 font-medium">Anfangsmietzins</span>
+</nav>
+
+<h1 class="text-2xl font-extrabold text-slate-900 mb-1">Anfangsmietzins-Formular</h1>
+<p class="text-sm text-slate-500 mb-6">Amtliches Formular nach Art. 270 OR / Art. 19 VMWG ·
+    {{ v.einheit.bezeichnung }}, {{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</p>
+
+<div class="max-w-3xl mb-5 text-xs bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-lg px-3 py-2.5">
+    <i class="fa-solid fa-circle-info mr-1"></i>Bei Neuabschluss muss der Mieterschaft in Kantonen mit
+    Formularpflicht der bisherige Mietzins (Vormiete) mitgeteilt werden. Sie kann den Anfangsmietzins
+    innert <b>30 Tagen</b> nach Übernahme bei der Schlichtungsbehörde anfechten.
+</div>
+
+<form method="post" class="max-w-3xl space-y-5">
+    {% csrf_token %}
+
+    <!-- Vormiete -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-4">Mietzins des Vormieters (Vormiete)</h3>
+        {% if vormiete %}
+        <div class="mb-4 text-xs bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-3 py-2">
+            <i class="fa-solid fa-clock-rotate-left mr-1"></i>Vorschlag aus dem letzten Vertrag dieses Objekts
+            (ab {{ vormiete.beginn|date:"d.m.Y" }}) — bitte prüfen.
+        </div>
+        {% endif %}
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Netto Vormiete (CHF)</label>
+                <input name="vormiete_netto" value="{% localize off %}{{ vormiete_netto }}{% endlocalize %}" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Nebenkosten Vormiete (CHF)</label>
+                <input name="vormiete_nk" value="{% localize off %}{{ vormiete_nk }}{% endlocalize %}" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums">
+            </div>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-2">Leer lassen, wenn die Vormiete nicht bekannt ist (wird als «unbekannt» ausgewiesen).</p>
+    </div>
+
+    <!-- Anfangsmietzins -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-4">Neuer Anfangsmietzins</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Netto Anfangsmietzins (CHF)</label>
+                <input name="anfang_netto" value="{% localize off %}{{ anfang_netto }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Nebenkosten (CHF)</label>
+                <input name="anfang_nk" value="{% localize off %}{{ anfang_nk }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums">
+            </div>
+        </div>
+    </div>
+
+    <!-- Begründung -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-4">Grund der Festsetzung</h3>
+        <select name="grund_choice" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 mb-3">
+            <option value="anpassung">Anpassung an Teuerung und gestiegene Kosten (Art. 269a OR)</option>
+            <option value="referenz">Anpassung an den Referenzzinssatz</option>
+            <option value="orts">Orts- und quartierüblich (Art. 269a lit. a OR)</option>
+            <option value="keine">Keine Erhöhung gegenüber der Vormiete</option>
+            <option value="unbekannt">Vormiete nicht bekannt</option>
+        </select>
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Eigener Begründungstext (optional)</label>
+        <textarea name="begruendung" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5" placeholder="Überschreibt die Auswahl oben…"></textarea>
+    </div>
+
+    <div class="flex items-center gap-3">
+        <button type="submit" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg px-5 py-2.5">
+            <i class="fa-solid fa-file-pdf"></i>Formular als PDF erstellen
+        </button>
+        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm text-slate-500 hover:text-slate-700">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}

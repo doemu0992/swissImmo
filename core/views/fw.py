@@ -5933,6 +5933,15 @@ def _sollmietzins_aus_anpassung(einheit, anp, neu_netto, neu_zins, neu_lik, labe
         return
     from portfolio.models import Sollmietzins
     nk = Decimal('0.00') if einheit.ist_einstellplatz else (einheit.nebenkosten_aktuell or Decimal('0.00'))
+    # Notiz trägt den echten Anpassungsgrund (z.B. «Referenzzinssatzerhöhung,
+    # Kostensteigerung») aus der Anpassung, plus den Mieternamen — so ist im
+    # Objekt-Detail sofort ersichtlich, WARUM der Mietzins ab dem Datum gilt.
+    grund = (anp.begruendung or '').strip()
+    teile = ["Amtliche Mietzinsanpassung"]
+    if grund:
+        teile.append(grund)
+    if label:
+        teile.append(label)
     Sollmietzins.objects.update_or_create(
         einheit=einheit, gueltig_ab=anp.wirksam_ab,
         defaults={
@@ -5941,7 +5950,7 @@ def _sollmietzins_aus_anpassung(einheit, anp, neu_netto, neu_zins, neu_lik, labe
             'basis_referenzzinssatz': neu_zins,
             'basis_lik_punkte': neu_lik,
             'quelle_anpassung': anp,
-            'notiz': f"Amtliche Mietzinsanpassung{f' ({label})' if label else ''}",
+            'notiz': " · ".join(teile),
         })
 
 
@@ -6113,6 +6122,60 @@ def fw_mietzins_anpassung(request, vertrag_id):
         'alt_lik_stand': v.basis_lik_stand, 'aktuell_lik_stand': aktuell_lik_stand,
         'vorschlag_netto': vorschlag_netto, 'naechster_termin': naechster_termin,
         'pot': pot,
+    })
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_anfangsmietzins(request, vertrag_id):
+    """Amtliches Formular zur Mitteilung des Anfangsmietzinses (Art. 270 OR /
+    Art. 19 VMWG) — bei Neuabschluss dem neuen Mieter mit Angabe der Vormiete und
+    Hinweis auf das 30-Tage-Anfechtungsrecht zuzustellen. GET: Formular · POST: PDF."""
+    from django.http import HttpResponse
+    from crm.models import Verwaltung
+    from core.services.amtliche_formulare_so import anfangsmietzins_so_pdf
+    from core.services.ablage import ablegen
+    from core.auth import log_aktion
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
+    basis = _global_filter(request)
+    vw = Verwaltung.objects.first()
+    lg = v.einheit.liegenschaft
+
+    def _dec(x, d='0'):
+        try:
+            return Decimal(str(x).replace(',', '.').strip() or d)
+        except Exception:
+            return Decimal(d)
+
+    # Vormiete-Vorschlag: letzter beendeter Vertrag desselben Objekts.
+    vormiete = (Mietvertrag.objects.filter(einheit=v.einheit).exclude(id=v.id)
+                .filter(beginn__lt=v.beginn or timezone.localdate())
+                .order_by('-beginn').first()) if v.einheit_id else None
+
+    if request.method == 'POST':
+        daten = {
+            'anfang_netto': _dec(request.POST.get('anfang_netto'), str(v.netto_mietzins or 0)),
+            'anfang_nk': _dec(request.POST.get('anfang_nk'), str(v.nebenkosten or 0)),
+            'vormiete_netto': _dec(request.POST.get('vormiete_netto')),
+            'vormiete_nk': _dec(request.POST.get('vormiete_nk')),
+            'beginn': v.beginn,
+            'grund_choice': request.POST.get('grund_choice') or 'anpassung',
+            'begruendung': (request.POST.get('begruendung') or '').strip(),
+        }
+        pdf = anfangsmietzins_so_pdf(v, daten, verwaltung=vw)
+        ablegen(pdf, f"Anfangsmietzins-Formular {v.beginn:%d.%m.%Y}" if v.beginn else "Anfangsmietzins-Formular",
+                kategorie='vertrag', vertrag=v, dedup=True)
+        log_aktion(request, "Anfangsmietzins-Formular erstellt", str(v),
+                   f"Anfangsmiete CHF {daten['anfang_netto']}", ziel=v)
+        resp = HttpResponse(pdf, content_type='application/pdf')
+        resp['Content-Disposition'] = f'inline; filename="Anfangsmietzins_{v.mieter.nachname}.pdf"'
+        return resp
+
+    return render(request, 'fw/anfangsmietzins.html', {
+        **basis, 'nav': 'mietzins', 'v': v, 'lg': lg,
+        'anfang_netto': v.netto_mietzins, 'anfang_nk': v.nebenkosten,
+        'vormiete': vormiete,
+        'vormiete_netto': vormiete.netto_mietzins if vormiete else '',
+        'vormiete_nk': vormiete.nebenkosten if vormiete else '',
     })
 
 
@@ -8504,25 +8567,46 @@ def fw_kuendigung_bestaetigen(request, pk):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_kuendigung_formular(request, pk):
-    """Amtliches Kündigungsformular (PDF) — Original des zuständigen Kantons ausfüllen."""
+    """Amtliches Kündigungsformular (PDF) — Original des zuständigen Kantons ausfüllen.
+    Art. 266n OR: Kündigt der Vermieter eine Familienwohnung, werden zwei separat an
+    Mieter UND Ehegatte adressierte Kopien erzeugt (sonst ist die Kündigung nichtig)."""
     from django.http import HttpResponse
+    from django.contrib import messages
     from rentals.models import Kuendigung
     from crm.models import Verwaltung
-    k = get_object_or_404(Kuendigung.objects.select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
+    k = get_object_or_404(Kuendigung.objects.select_related(
+        'vertrag__mieter', 'vertrag__mitmieter', 'vertrag__einheit__liegenschaft'), id=pk)
     vw = Verwaltung.objects.first()
-    from core.services.formular_fill import fill_kuendigung
-    pdf = fill_kuendigung(k.vertrag, k, verwaltung=vw)
-    if pdf is None:
-        from core.services.amtliche_formulare_so import kuendigung_so_pdf
-        pdf = kuendigung_so_pdf(k.vertrag, k, verwaltung=vw)
+    from core.services.formular_fill import kuendigung_zustellkopien
     from core.services.ablage import ablegen
-    ablegen(pdf, f"Kündigung {k.get_absender_display()} {k.eingang_datum:%d.%m.%Y}",
-            kategorie='vertrag', vertrag=k.vertrag, dedup=True)
+    kopien = kuendigung_zustellkopien(k.vertrag, k, verwaltung=vw)
+
+    for empf_name, pdf in kopien:
+        suffix = f" — Zustellung an {empf_name}" if empf_name else ""
+        ablegen(pdf, f"Kündigung {k.get_absender_display()} {k.eingang_datum:%d.%m.%Y}{suffix}",
+                kategorie='vertrag', vertrag=k.vertrag, dedup=True)
+
     # Amtliches Formular erstellt → 'schriftlich bestätigen / Formular versenden' abhaken
     from core.services.automation import erledige_pendenzen_fuer
     erledige_pendenzen_fuer(k.vertrag, ['schriftlich', 'Kündigungsformular'],
                             user=request.user)
-    resp = HttpResponse(pdf, content_type='application/pdf')
+
+    if len(kopien) > 1:
+        # Art. 266n: alle Kopien in EIN PDF bündeln (jede Seite separat versenden).
+        from pypdf import PdfReader, PdfWriter
+        import io as _io
+        writer = PdfWriter()
+        for _n, pdf in kopien:
+            for page in PdfReader(_io.BytesIO(pdf)).pages:
+                writer.add_page(page)
+        out = _io.BytesIO(); writer.write(out); pdf_bytes = out.getvalue()
+        messages.info(request, "Familienwohnung (Art. 266n OR): Es wurden zwei separat adressierte "
+                               "Kopien erstellt — je Ehegatte einzeln und mit separater Post zustellen, "
+                               "sonst ist die Kündigung nichtig.")
+    else:
+        pdf_bytes = kopien[0][1]
+
+    resp = HttpResponse(bytes(pdf_bytes), content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Kuendigung_{k.vertrag.mieter.nachname}.pdf"'
     return resp
 

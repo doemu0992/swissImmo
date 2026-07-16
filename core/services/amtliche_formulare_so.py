@@ -240,7 +240,7 @@ def mietzins_so_pdf(vertrag, daten, verwaltung=None):
 # ============================================================
 # 2) KÜNDIGUNG (Art. 266l / 298 OR, Art. 9 VMWG)
 # ============================================================
-def kuendigung_so_pdf(vertrag, kuendigung, verwaltung=None):
+def kuendigung_so_pdf(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     mieter = vertrag.mieter
@@ -259,17 +259,22 @@ def kuendigung_so_pdf(vertrag, kuendigung, verwaltung=None):
     c.setFont("Helvetica-Bold", 15)
     c.drawString(20*mm, 268*mm, "Kündigung von Wohn- und Geschäftsräumen")
 
-    # Mieterschaft
+    # Mieterschaft — bei getrennter Zustellung (Art. 266n) nur der eine Ehegatte.
     y = 256*mm
     c.setFont("Helvetica-Bold", 9); c.drawString(20*mm, y, "Mieterschaft")
     c.setFont("Helvetica", 9)
-    c.drawString(70*mm, y, f"{mieter.vorname} {mieter.nachname}")
-    if vertrag.mitmieter_id:
-        c.drawString(70*mm, y - 5*mm, vertrag.mitmieter.display_name)
-    elif vertrag.mitmieter_name:
-        c.drawString(70*mm, y - 5*mm, vertrag.mitmieter_name)
-    m_adr = f"{mieter.strasse or ''}, {mieter.plz or ''} {mieter.ort or ''}".strip(' ,')
-    c.drawString(70*mm, y - 10*mm, m_adr)
+    if empfaenger is not None:
+        c.drawString(70*mm, y, empfaenger.name)
+        m_adr = f"{empfaenger.strasse or ''}, {empfaenger.plz or ''} {empfaenger.ort or ''}".strip(' ,')
+        c.drawString(70*mm, y - 5*mm, m_adr)
+    else:
+        c.drawString(70*mm, y, f"{mieter.vorname} {mieter.nachname}")
+        if vertrag.mitmieter_id:
+            c.drawString(70*mm, y - 5*mm, vertrag.mitmieter.display_name)
+        elif vertrag.mitmieter_name:
+            c.drawString(70*mm, y - 5*mm, vertrag.mitmieter_name)
+        m_adr = f"{mieter.strasse or ''}, {mieter.plz or ''} {mieter.ort or ''}".strip(' ,')
+        c.drawString(70*mm, y - 10*mm, m_adr)
 
     # Vermieterschaft
     y -= 22*mm
@@ -358,3 +363,138 @@ def _wrap(text, breite=100):
     if akt:
         zeilen.append(akt)
     return zeilen or [""]
+
+
+# ============================================================
+# 3) ANFANGSMIETZINS (Art. 270 OR / Art. 19 VMWG)
+#    Mitteilung des Anfangsmietzinses an den neuen Mieter mit Angabe der
+#    Vormiete und Hinweis auf das Anfechtungsrecht innert 30 Tagen.
+# ============================================================
+def anfangsmietzins_so_pdf(vertrag, daten, verwaltung=None):
+    """Amtliches Formular zur Mitteilung des Anfangsmietzinses bei Neuabschluss.
+
+    `daten`: {anfang_netto, anfang_nk, vormiete_netto, vormiete_nk, beginn,
+              grund_choice ('referenz'|'orts'|'anpassung'|'keine'|'unbekannt'),
+              begruendung}."""
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4)
+    mieter = vertrag.mieter
+    einheit = vertrag.einheit
+    lg = einheit.liegenschaft
+    mandant = lg.mandant if lg else None
+    c.setTitle(f"Anfangsmietzins {mieter.nachname}")
+
+    from core.services.kantone import schlichtung_block
+    _kt, kanton_name, behoerden, exakt = schlichtung_block(lg)
+    _kopf(c, "Amtliches Formular zur Mitteilung des Anfangsmietzinses (Art. 270 OR / Art. 19 VMWG)",
+          kanton_name=kanton_name or "Solothurn")
+
+    # Absender / Adressat
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(20*mm, 275*mm, "Absender:")
+    c.drawString(110*mm, 275*mm, "Adressat (neue Mieterschaft):")
+    c.setFont("Helvetica", 9)
+    yy = 270*mm
+    for line in _absender(verwaltung, mandant):
+        c.drawString(20*mm, yy, line); yy -= 4.5*mm
+    c.drawString(110*mm, 270*mm, f"{mieter.vorname} {mieter.nachname}")
+    c.drawString(110*mm, 265.5*mm, mieter.strasse or "")
+    c.drawString(110*mm, 261*mm, f"{mieter.plz or ''} {mieter.ort or ''}".strip())
+    if vertrag.mitmieter_id:
+        c.drawString(150*mm, 270*mm, vertrag.mitmieter.display_name)
+    elif vertrag.mitmieter_name:
+        c.drawString(150*mm, 270*mm, vertrag.mitmieter_name)
+
+    # Objekt / Beginn
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(20*mm, 250*mm, "Mietobjekt:")
+    c.setFont("Helvetica", 9)
+    c.drawString(45*mm, 250*mm, f"{einheit.bezeichnung}, {lg.strasse}, {lg.plz} {lg.ort}")
+    beginn = daten.get('beginn') or vertrag.beginn
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(20*mm, 244*mm, "Beginn des Mietverhältnisses:")
+    c.setFont("Helvetica", 9)
+    c.drawString(75*mm, 244*mm, beginn.strftime('%d.%m.%Y') if hasattr(beginn, 'strftime') and beginn else "")
+
+    c.setFont("Helvetica-Bold", 15)
+    c.drawString(20*mm, 233*mm, "Mitteilung des Anfangsmietzinses")
+
+    anf_netto = Decimal(str(daten.get('anfang_netto') or vertrag.netto_mietzins or 0))
+    anf_nk = Decimal(str(daten.get('anfang_nk') or vertrag.nebenkosten or 0))
+    vor_netto = Decimal(str(daten.get('vormiete_netto') or 0))
+    vor_nk = Decimal(str(daten.get('vormiete_nk') or 0))
+    hat_vormiete = (vor_netto > 0 or vor_nk > 0)
+
+    # Tabelle: Vormiete vs. Anfangsmietzins
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(110*mm, 224*mm, "Mietzins des Vormieters")
+    c.drawString(155*mm, 224*mm, "Neuer Anfangsmietzins")
+    y = 217*mm
+    for label, a, b in [("Nettomietzins", vor_netto, anf_netto),
+                        ("Neben-/Betriebskosten", vor_nk, anf_nk)]:
+        c.setFont("Helvetica-Bold", 9); c.drawString(20*mm, y, label)
+        c.setFont("Helvetica", 9)
+        c.drawString(110*mm, y, f"Fr. {_fr(a)}" if hat_vormiete else "unbekannt")
+        c.drawString(155*mm, y, f"Fr. {_fr(b)}")
+        y -= 6*mm
+    c.setLineWidth(0.6); c.line(20*mm, y + 3*mm, 190*mm, y + 3*mm)
+    c.setFont("Helvetica-Bold", 10); c.drawString(20*mm, y, "Bruttomietzins:")
+    c.drawString(110*mm, y, f"Fr. {_fr(vor_netto + vor_nk)}" if hat_vormiete else "unbekannt")
+    c.drawString(155*mm, y, f"Fr. {_fr(anf_netto + anf_nk)}")
+
+    # Grund für die Festsetzung / allfällige Erhöhung
+    y -= 14*mm
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(20*mm, y, "Grund der Festsetzung des Anfangsmietzinses:")
+    grund_map = {
+        'referenz': "Anpassung an den Referenzzinssatz.",
+        'orts': "Orts- und quartierübliche Mietzinse (Art. 269a lit. a OR).",
+        'anpassung': "Anpassung an die Teuerung und gestiegene Kosten (Art. 269a OR).",
+        'keine': "Der Anfangsmietzins entspricht dem bisherigen Mietzins (keine Erhöhung).",
+        'unbekannt': "Der Mietzins des Vormieters ist der Vermieterschaft nicht bekannt.",
+    }
+    txt = daten.get('begruendung') or grund_map.get(daten.get('grund_choice'), grund_map['anpassung'])
+    c.setFont("Helvetica", 9)
+    y -= 6*mm
+    for zeile in _wrap(txt, 105):
+        c.drawString(22*mm, y, zeile); y -= 5*mm
+
+    # Rechtsbelehrung (Kurzform auf Seite 1)
+    y -= 6*mm
+    c.setFont("Helvetica-Oblique", 8)
+    for zeile in _wrap("Die Mieterschaft kann den Anfangsmietzins innert 30 Tagen nach Übernahme des Mietobjekts "
+                       "bei der Schlichtungsbehörde anfechten, wenn sie sich wegen einer persönlichen oder "
+                       "familiären Notlage oder wegen der Verhältnisse auf dem örtlichen Markt zum Vertragsabschluss "
+                       "gezwungen sah oder der Vermieter den Anfangsmietzins gegenüber dem früheren erheblich "
+                       "erhöht hat (Art. 270 OR).", 118):
+        c.drawString(20*mm, y, zeile); y -= 4.2*mm
+
+    # Ort/Datum + Unterschrift
+    y -= 8*mm
+    absn = _absender(verwaltung, mandant)
+    ort = (absn[2].split(' ', 1)[-1] if absn[2] else (lg.ort if lg else ''))
+    import datetime as _dt
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(20*mm, y, "Ort/Datum"); c.drawString(110*mm, y, "Unterschrift Vermieterschaft")
+    c.setFont("Helvetica", 9)
+    c.drawString(45*mm, y, f"{ort}, {_dt.date.today().strftime('%d.%m.%Y')}")
+    mu = getattr(mandant, 'unterschrift_bild', None) if mandant else None
+    if mu:
+        try:
+            c.drawImage(mu.path, 110*mm, y - 12*mm, width=45*mm, preserveAspectRatio=True, mask='auto')
+        except Exception:
+            pass
+    c.setFont("Helvetica-Oblique", 7.5)
+    c.setFillColor(colors.grey)
+    c.drawString(20*mm, 12*mm, "Nur gültig mit den Angaben der Schlichtungsbehörden und den Bestimmungen des OR (Seite 2).  Seite 1/2")
+    c.setFillColor(colors.black)
+
+    c.showPage()
+    _schlichtung_seite(c, [
+        "Ist für den Abschluss eines neuen Mietvertrags die Verwendung dieses Formulars vorgeschrieben, so",
+        "kann die Mieterschaft den Anfangsmietzins innert 30 Tagen nach Übernahme der Sache bei der",
+        "Schlichtungsbehörde anfechten (Art. 270 OR, Art. 19 VMWG).",
+    ], kanton_name=kanton_name, behoerden=behoerden, exakt=exakt)
+    c.drawRightString(190*mm, 12*mm, "Seite 2/2")
+    c.showPage(); c.save(); buf.seek(0)
+    return buf.read()

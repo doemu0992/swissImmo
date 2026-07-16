@@ -158,7 +158,7 @@ def fill_mietzins_so(vertrag, daten, verwaltung=None):
 # ============================================================
 # KÜNDIGUNG — Original SO ausfüllen
 # ============================================================
-def fill_kuendigung_so(vertrag, kuendigung, verwaltung=None):
+def fill_kuendigung_so(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     mieter = vertrag.mieter
     einheit = vertrag.einheit
     lg = einheit.liegenschaft
@@ -169,21 +169,23 @@ def fill_kuendigung_so(vertrag, kuendigung, verwaltung=None):
     per = getattr(kuendigung, 'per_datum', None) or getattr(kuendigung, 'berechneter_termin', None) or vertrag.ende
     grund = (getattr(kuendigung, 'ausserordentlich_grund', '') or getattr(kuendigung, 'bemerkung', '') or "").strip()
 
-    mit2 = ""
-    if vertrag.mitmieter_id:
-        mit2 = vertrag.mitmieter.display_name
-    elif vertrag.mitmieter_name:
-        mit2 = vertrag.mitmieter_name
+    # Art. 266n: getrennte Zustellung → nur der eine Ehegatte in der Adresse.
+    if empfaenger is not None:
+        e_name, e_adr, mit2 = empfaenger.name, f"{empfaenger.strasse or ''}, {empfaenger.plz or ''} {empfaenger.ort or ''}".strip(' ,'), ""
+    else:
+        e_name = f"{mieter.vorname} {mieter.nachname}"
+        e_adr = f"{mieter.strasse or ''}, {mieter.plz or ''} {mieter.ort or ''}".strip(' ,')
+        mit2 = vertrag.mitmieter.display_name if vertrag.mitmieter_id else (vertrag.mitmieter_name or "")
 
     def zeichnen(c):
         c.setFont("Helvetica", 9)
         # Mieterschaft
-        c.drawString(165, _y(155), f"{mieter.vorname} {mieter.nachname}")
+        c.drawString(165, _y(155), e_name)
         if mit2:
             c.drawString(165, _y(174), mit2)
-            c.drawString(165, _y(194), f"{mieter.strasse or ''}, {mieter.plz or ''} {mieter.ort or ''}".strip(' ,'))
+            c.drawString(165, _y(194), e_adr)
         else:
-            c.drawString(165, _y(174), f"{mieter.strasse or ''}, {mieter.plz or ''} {mieter.ort or ''}".strip(' ,'))
+            c.drawString(165, _y(174), e_adr)
         # Vermieterschaft
         for i, line in enumerate(absn):
             c.drawString(165, _y(224 + i*19), line)
@@ -292,6 +294,21 @@ def _objekt_zeile(vertrag):
     return f"{e.bezeichnung}, {lg.strasse}, {lg.plz} {lg.ort}"
 
 
+# ---- Einzel-Empfänger (Art. 266n: getrennte Zustellung je Ehegatte) ----
+from collections import namedtuple as _nt
+Empfaenger = _nt('Empfaenger', ['name', 'strasse', 'plz', 'ort'])
+
+
+def _empf_block(e, sep='\n'):
+    zeilen = [e.name.strip()]
+    if e.strasse:
+        zeilen.append(e.strasse)
+    ort = f"{e.plz or ''} {e.ort or ''}".strip()
+    if ort:
+        zeilen.append(ort)
+    return sep.join(z for z in zeilen if z)
+
+
 def _dstr(d):
     return d.strftime('%d.%m.%Y') if hasattr(d, 'strftime') and d else ''
 
@@ -354,7 +371,7 @@ def fill_mietzins_zh(vertrag, daten, verwaltung=None):
     return _fill_acroform(os.path.join(_DIR, 'ZH_mietzins_original.pdf'), tv, cbs)
 
 
-def fill_kuendigung_zh(vertrag, kuendigung, verwaltung=None):
+def fill_kuendigung_zh(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     mieter = vertrag.mieter
     lg = vertrag.einheit.liegenschaft
     mandant = lg.mandant if lg else None
@@ -362,9 +379,12 @@ def fill_kuendigung_zh(vertrag, kuendigung, verwaltung=None):
     grund = (getattr(kuendigung, 'ausserordentlich_grund', '') or getattr(kuendigung, 'bemerkung', '') or '').strip()
     g_zeilen = _wrap(grund, 92) if grund else []
 
+    # Art. 266n: getrennte Zustellung → nur der eine Ehegatte im Adressfeld links.
+    adr_links = _empf_block(empfaenger) if empfaenger is not None else _mieter_block(mieter)
+    adr_rechts = '' if empfaenger is not None else _mitmieter_block(vertrag)
     tv = {
-        'Einschreiben Feld Adresseingabe LINKS 5': _mieter_block(mieter),
-        'Einschreiben Feld Adresseingabe 1 RECHTS 5': _mitmieter_block(vertrag),
+        'Einschreiben Feld Adresseingabe LINKS 5': adr_links,
+        'Einschreiben Feld Adresseingabe 1 RECHTS 5': adr_rechts,
         'Absender/in Text Eingabefeld 5': _absender_block(verwaltung, mandant),
         'Vermieter/in Feld Texteingabe 7': _absender_block(verwaltung, mandant),
         'Textfeld 8': vertrag.einheit.bezeichnung,
@@ -424,7 +444,7 @@ def fill_mietzins_be(vertrag, daten, verwaltung=None):
     return _fill_acroform(os.path.join(_DIR, 'BE_mietzins_original.pdf'), tv, cbs)
 
 
-def fill_kuendigung_be(vertrag, kuendigung, verwaltung=None):
+def fill_kuendigung_be(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     mieter = vertrag.mieter
     lg = vertrag.einheit.liegenschaft
     mandant = lg.mandant if lg else None
@@ -432,14 +452,21 @@ def fill_kuendigung_be(vertrag, kuendigung, verwaltung=None):
     per = getattr(kuendigung, 'per_datum', None) or getattr(kuendigung, 'berechneter_termin', None) or vertrag.ende
     grund = (getattr(kuendigung, 'ausserordentlich_grund', '') or getattr(kuendigung, 'bemerkung', '') or '').strip()
 
-    mit = _mitmieter_block(vertrag, sep=', ')
+    # Art. 266n: getrennte Zustellung → nur der eine Ehegatte im Mieterfeld.
+    if empfaenger is not None:
+        m_name, m_str, m_ort, mit = empfaenger.name, empfaenger.strasse or '', f"{empfaenger.plz or ''} {empfaenger.ort or ''}".strip(), ''
+    else:
+        m_name = f"{mieter.vorname} {mieter.nachname}".strip()
+        m_str = mieter.strasse or ''
+        m_ort = f"{mieter.plz or ''} {mieter.ort or ''}".strip()
+        mit = _mitmieter_block(vertrag, sep=', ')
     tv = {
         # Vermieter links (Textfeld 1-5)
         'Textfeld 1': absn[0], 'Textfeld 2': absn[1], 'Textfeld 3': absn[2],
         # Mieter rechts (Textfeld 6-10)
-        'Textfeld 6': f"{mieter.vorname} {mieter.nachname}".strip(),
-        'Textfeld 7': mieter.strasse or '',
-        'Textfeld 8': f"{mieter.plz or ''} {mieter.ort or ''}".strip(),
+        'Textfeld 6': m_name,
+        'Textfeld 7': m_str,
+        'Textfeld 8': m_ort,
         'Textfeld 9': mit,
         # Vertreter/in (Textfeld 11-15)
         'Textfeld 11': _absender(verwaltung, mandant)[0],
@@ -485,8 +512,46 @@ def fill_mietzins(vertrag, daten, verwaltung=None, kanton=None):
     return fn(vertrag, daten, verwaltung=verwaltung) if fn else None
 
 
-def fill_kuendigung(vertrag, kuendigung, verwaltung=None, kanton=None):
+def fill_kuendigung(vertrag, kuendigung, verwaltung=None, kanton=None, empfaenger=None):
     from core.services.kantone import kanton_fuer_liegenschaft
     kt = (kanton or kanton_fuer_liegenschaft(vertrag.einheit.liegenschaft) or '').upper()
     fn = _KUENDIGUNG_FILLER.get(kt)
-    return fn(vertrag, kuendigung, verwaltung=verwaltung) if fn else None
+    return fn(vertrag, kuendigung, verwaltung=verwaltung, empfaenger=empfaenger) if fn else None
+
+
+def _kuendigung_render(vertrag, kuendigung, verwaltung=None, empfaenger=None):
+    """Rendert die Kündigung — Kantons-Original wenn vorhanden, sonst SO-Nachbildung.
+    `empfaenger` (Art. 266n) adressiert die Kopie an genau einen Ehegatten."""
+    pdf = fill_kuendigung(vertrag, kuendigung, verwaltung=verwaltung, empfaenger=empfaenger)
+    if pdf is None:
+        from core.services.amtliche_formulare_so import kuendigung_so_pdf
+        pdf = kuendigung_so_pdf(vertrag, kuendigung, verwaltung=verwaltung, empfaenger=empfaenger)
+    return pdf
+
+
+def kuendigung_zustellkopien(vertrag, kuendigung, verwaltung=None):
+    """Liste (label, pdf_bytes) der zuzustellenden Kündigungskopien.
+
+    Art. 266n OR: Kündigt der VERMIETER eine Familienwohnung, ist die Kündigung
+    dem Mieter UND seinem Ehegatten SEPARAT (je eigene Adresse) zuzustellen —
+    sonst ist sie nichtig. Dann zwei individuell adressierte Kopien; sonst eine
+    Kopie (Adressblock nennt wie bisher die ganze Mieterschaft)."""
+    mieter = vertrag.mieter
+    absender = getattr(kuendigung, 'absender', 'mieter')
+    hat_ehegatte = bool(vertrag.mitmieter_id or (vertrag.mitmieter_name or '').strip())
+    getrennt = (absender == 'vermieter' and vertrag.familienwohnung and hat_ehegatte)
+    if not getrennt:
+        return [(None, _kuendigung_render(vertrag, kuendigung, verwaltung=verwaltung))]
+
+    haupt = Empfaenger(name=f"{mieter.vorname} {mieter.nachname}".strip(),
+                       strasse=mieter.strasse, plz=mieter.plz, ort=mieter.ort)
+    if vertrag.mitmieter_id:
+        m2 = vertrag.mitmieter
+        gatte = Empfaenger(name=m2.display_name, strasse=m2.strasse or mieter.strasse,
+                           plz=m2.plz or mieter.plz, ort=m2.ort or mieter.ort)
+    else:
+        # Ehegatte ohne eigene Adresse → an die (gemeinsame) Wohnadresse zustellen.
+        gatte = Empfaenger(name=(vertrag.mitmieter_name or '').strip(),
+                           strasse=mieter.strasse, plz=mieter.plz, ort=mieter.ort)
+    return [(e.name, _kuendigung_render(vertrag, kuendigung, verwaltung=verwaltung, empfaenger=e))
+            for e in (haupt, gatte)]
