@@ -7408,6 +7408,44 @@ class VertragBearbeitenTests(TestCase):
         self.assertEqual(v.beginn, date(2024, 1, 1))          # unverändert
         self.assertEqual(v.nebenraeume, 'Estrich')            # Detailfeld geändert
 
+    def test_pdf_nur_bei_aktiv(self):
+        """PDFs werden nur erzeugt, wenn 'aktiv' angehakt ist — ein Entwurf
+        bleibt dokumentlos, bis er aktiviert wird."""
+        from rentals.models import Mietvertrag, Dokument
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        base = {'einheit_id': str(e.id), 'mieter_id': str(m.id), 'beginn': '2026-05-01',
+                'netto_mietzins': '1400', 'nebenkosten': '200', 'nk_abrechnungsart': 'akonto',
+                'zahlungsrhythmus': 'monatlich', 'verteilschluessel': 'm2',
+                'mietzins_modell': 'fest', 'kuendigungsfrist': '3', 'anzahl_personen': '1'}
+        # 1. Entwurf (ohne aktiv_setzen) → keine Dokumente
+        c.post('/neu/vertraege/neu/speichern/', base)
+        v1 = Mietvertrag.objects.filter(einheit=e, status='entwurf').order_by('-id').first()
+        self.assertIsNotNone(v1)
+        self.assertEqual(Dokument.objects.filter(vertrag=v1).count(), 0)
+        # 2. Aktiv gesetzt → Dokumente werden erzeugt
+        c.post('/neu/vertraege/neu/speichern/', {**base, 'aktiv_setzen': 'on'})
+        v2 = Mietvertrag.objects.filter(einheit=e, status='aktiv').order_by('-id').first()
+        self.assertIsNotNone(v2)
+        self.assertGreater(Dokument.objects.filter(vertrag=v2).count(), 0)
+
+    def test_entwurf_aktivieren_erzeugt_pdf(self):
+        """Wird ein Entwurf im Assistenten aktiviert, entstehen die PDFs."""
+        from rentals.models import Mietvertrag, Dokument
+        lg, e, m, v = _basis_objekte()
+        v.status = 'entwurf'; v.save()
+        self.assertEqual(Dokument.objects.filter(vertrag=v).count(), 0)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/vertraege/neu/speichern/', {
+            'edit_id': str(v.id), 'einheit_id': str(e.id), 'mieter_id': str(m.id),
+            'beginn': '2024-01-01', 'netto_mietzins': '1500', 'nebenkosten': '200',
+            'nk_abrechnungsart': 'akonto', 'zahlungsrhythmus': 'monatlich',
+            'verteilschluessel': 'm2', 'mietzins_modell': 'fest', 'kuendigungsfrist': '3',
+            'anzahl_personen': '1', 'aktiv_setzen': 'on'})
+        v.refresh_from_db()
+        self.assertEqual(v.status, 'aktiv')
+        self.assertGreater(Dokument.objects.filter(vertrag=v).count(), 0)
+
     def test_bearbeiten_button_auf_detailseite(self):
         lg, e, m, v = _basis_objekte()
         c = Client(); c.force_login(_team_user())

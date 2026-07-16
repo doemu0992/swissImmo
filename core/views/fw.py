@@ -6493,12 +6493,12 @@ def fw_vertrag_neu_speichern(request):
     setze_zukunftsadresse(mieter)
     setze_zukunftsadresse(zweiter_obj)
 
-    # Vertragsdokumente automatisch erzeugen und einzeln in die Akte legen
-    # (→ erscheinen sofort im Mieterportal). Fehler dürfen die Erstellung
-    # nicht blockieren. Beim Bearbeiten NICHT automatisch neu erzeugen (das PDF
-    # wird auf Wunsch neu generiert) — verhindert Dubletten in der Akte.
+    # Vertragsdokumente NUR erzeugen, wenn der Vertrag als AKTIV gesetzt wird
+    # (→ erscheinen in der Akte + im Mieterportal). Ein Entwurf bleibt dokumentlos,
+    # bis er aktiviert wird — dann werden die PDFs einmalig erzeugt (auch beim
+    # Aktivieren eines bearbeiteten Entwurfs). Fehler dürfen nicht blockieren.
     anzahl_dok = 0
-    if not editing:
+    if P.get('aktiv_setzen') == 'on':
         try:
             from core.views.pdf import erzeuge_und_ablege_vertragspaket
             anzahl_dok = len(erzeuge_und_ablege_vertragspaket(vertrag))
@@ -6519,15 +6519,17 @@ def fw_vertrag_neu_speichern(request):
 
     log_aktion(request, "Mietvertrag bearbeitet (Assistent)" if editing else "Mietvertrag erstellt (Assistent)",
                str(mieter), f"{einheit.bezeichnung}, ab {beginn}", ziel=vertrag)
-    if editing:
-        messages.success(request, f"✅ Vertrag (Entwurf) für {mieter.display_name} aktualisiert.")
-    elif anzahl_dok:
+    _verb = "aktualisiert" if editing else "erstellt"
+    if anzahl_dok:
         messages.success(
             request,
-            f"✅ Mietvertrag für {mieter.display_name} erstellt — "
+            f"✅ Mietvertrag für {mieter.display_name} {_verb} & aktiv gesetzt — "
             f"{anzahl_dok} Dokumente automatisch abgelegt (im Portal sichtbar).")
+    elif editing:
+        messages.success(request, f"✅ Vertrag (Entwurf) für {mieter.display_name} aktualisiert.")
     else:
-        messages.success(request, f"✅ Mietvertrag für {mieter.display_name} erstellt.")
+        messages.success(request, f"✅ Mietvertrag (Entwurf) für {mieter.display_name} erstellt — "
+                         "PDFs werden erst beim Aktivieren erzeugt.")
 
     # Optionaler Abschluss: direkt zur digitalen Unterschrift senden (DocuSeal).
     if P.get('abschluss') == 'senden':
