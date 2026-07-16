@@ -1901,8 +1901,10 @@ class PendenzAktionTests(TestCase):
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/pendenzen/').content.decode()
-        self.assertIn(f"fwModalOpen(this,'Vertragsende Muster',true)", body)
+        # Detailseite navigiert voll (kein Iframe-Popup) — verlinkt aber den Vertrag.
+        self.assertIn(f'/neu/vertraege/{v.id}/', body)
         self.assertIn('Vertrag öffnen', body)
+        self.assertNotIn("fwModalOpen(this,'Vertragsende Muster'", body)
 
     def test_freie_pendenz_ohne_link(self):
         """Eine Pendenz ohne Vertrag/Liegenschaft bleibt ein einfacher Eintrag."""
@@ -8462,6 +8464,87 @@ class Art266nDoppelzustellungTests(TestCase):
         # Zwei separat adressierte Kopien abgelegt.
         n = Dokument.objects.filter(vertrag=v, bezeichnung__contains='Zustellung an').count()
         self.assertEqual(n, 2)
+
+
+class MediaSchutzTests(TestCase):
+    """Sensible Media-Dateien (Verträge, Bewerber-Dokumente) nur für Team;
+    Objektfotos/Logos öffentlich."""
+
+    def test_klassifikation_oeffentlich_vs_sensibel(self):
+        from core.views.media_protected import ist_oeffentlich
+        self.assertFalse(ist_oeffentlich('bewerbungen/ausweis/hans.jpg'))   # PII trotz Bild
+        self.assertFalse(ist_oeffentlich('roh_vertraege/vertrag.pdf'))
+        self.assertFalse(ist_oeffentlich('uploads/2026-01-01/Mietvertrag.pdf'))  # PDF
+        self.assertTrue(ist_oeffentlich('uploads/2026-01-01/objektfoto.jpg'))    # Bild
+        self.assertTrue(ist_oeffentlich('logos/firma.png'))
+
+    def test_anonymer_zugriff_auf_sensible_datei_404(self):
+        import os
+        from django.conf import settings
+        rel = 'roh_vertraege/geheim_test.pdf'
+        pfad = os.path.join(settings.MEDIA_ROOT, rel)
+        os.makedirs(os.path.dirname(pfad), exist_ok=True)
+        with open(pfad, 'wb') as fh:
+            fh.write(b'%PDF-1.4 geheim')
+        try:
+            anon = Client()
+            self.assertEqual(anon.get('/media/' + rel).status_code, 404)   # anonym gesperrt
+            team = Client(); team.force_login(_team_user())
+            r = team.get('/media/' + rel)
+            self.assertEqual(r.status_code, 200)                            # Team darf
+        finally:
+            os.remove(pfad)
+
+
+class BewerbungRateLimitTests(TestCase):
+    def test_rate_limit_blockt_nach_limit(self):
+        from django.core.cache import cache
+        from core.utils.throttle import rate_limit
+        cache.clear()
+        key = 'test:1.2.3.4'
+        for _ in range(5):
+            self.assertTrue(rate_limit(key, limit=5, window_seconds=60))
+        self.assertFalse(rate_limit(key, limit=5, window_seconds=60))   # 6. blockiert
+
+
+class DSGAnonymisierungTests(TestCase):
+    def test_anonymisierung_scrubbt_pii_behaelt_beleg(self):
+        from core.services.dsg import anonymisiere_person
+        from finance.models import DebitorenRechnung
+        lg, e, m, v = _basis_objekte()
+        v.status = 'beendet'; v.save()   # kein aktiver Vertrag
+        rechnung = DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, einheit=e, titel='Miete 01/2024',
+            betrag=Decimal('1700'), status='offen')
+        ok, _msg = anonymisiere_person(m, grund='Auszug + Löschantrag')
+        self.assertTrue(ok)
+        m.refresh_from_db()
+        self.assertTrue(m.anonymisiert)
+        self.assertEqual(m.vorname, 'Anonymisiert')
+        self.assertEqual(m.email, '')
+        self.assertEqual(m.strasse, '')
+        # Buchungsbeleg bleibt erhalten (OR 958f).
+        self.assertTrue(DebitorenRechnung.objects.filter(id=rechnung.id).exists())
+
+    def test_aktiver_vertrag_blockt(self):
+        from core.services.dsg import anonymisiere_person, kann_anonymisieren
+        _lg, _e, m, v = _basis_objekte()   # Vertrag ist aktiv
+        ok, grund = kann_anonymisieren(m)
+        self.assertFalse(ok)
+        ok2, _ = anonymisiere_person(m)
+        self.assertFalse(ok2)
+        m.refresh_from_db()
+        self.assertFalse(m.anonymisiert)
+        self.assertEqual(m.vorname, 'Hans')   # unverändert
+
+    def test_view_anonymisiert(self):
+        lg, e, m, v = _basis_objekte()
+        v.status = 'beendet'; v.save()
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/personen/{m.id}/dsg-loeschen/', {'grund': 'Löschantrag'})
+        self.assertEqual(r.status_code, 302)
+        m.refresh_from_db()
+        self.assertTrue(m.anonymisiert)
 
 
 class PendenzModalTests(TestCase):

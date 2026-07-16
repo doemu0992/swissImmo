@@ -176,6 +176,9 @@ class Mieter(models.Model):
     bank_name = models.CharField("Bank", max_length=100, blank=True, default='')
     bonitaet_datum = models.DateField("Betreibungsauszug vom", null=True, blank=True)
     notizen = models.TextField("Interne Notizen", blank=True, default='')
+    # DSG: Personendaten anonymisiert (Buchungsbelege bleiben aufbewahrt, OR 958f)
+    anonymisiert = models.BooleanField("DSG-anonymisiert", default=False)
+    anonymisiert_am = models.DateField("Anonymisiert am", null=True, blank=True)
     # Mieterportal-Login (optional): verknüpfter Benutzer für das Self-Service-Portal
     benutzer = models.OneToOneField('auth.User', on_delete=models.SET_NULL, null=True, blank=True,
                                     related_name='mieter_profil')

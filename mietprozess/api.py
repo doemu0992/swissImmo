@@ -18,7 +18,7 @@ router = Router(tags=["Mietprozess"])
 
 # auth=None: Bewusst öffentlich — das ist das Bewerbungsformular für Interessenten
 # (alle anderen Endpoints erben die Session-Pflicht aus NinjaAPI(auth=django_auth)).
-@router.post("/public/bewerben", response={201: dict, 400: dict}, auth=None)
+@router.post("/public/bewerben", response={201: dict, 400: dict, 429: dict}, auth=None)
 @transaction.atomic
 def public_submit_bewerbung(
     request,
@@ -75,6 +75,12 @@ def public_submit_bewerbung(
     lohnausweis: Optional[UploadedFile] = File(None),
     weitere_dokumente: Optional[UploadedFile] = File(None)
 ):
+    # Spam-/Missbrauchsschutz: das Formular ist öffentlich (auth=None). Ein
+    # einzelner Absender darf nur wenige Bewerbungen pro Stunde einreichen.
+    from core.utils.throttle import client_ip, rate_limit
+    if not rate_limit(f"bewerbung:{client_ip(request)}", limit=5, window_seconds=3600):
+        return 429, {"success": False,
+                     "error": "Zu viele Bewerbungen in kurzer Zeit. Bitte versuchen Sie es später erneut."}
     try:
         einheit = get_object_or_404(Einheit, id=einheit_id)
 

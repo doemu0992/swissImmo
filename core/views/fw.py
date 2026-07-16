@@ -3830,6 +3830,29 @@ def fw_person_loeschen(request, pk):
     return redirect('/neu/personen/')
 
 
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_person_dsg_loeschen(request, pk):
+    """DSG-Löschung: anonymisiert die Personendaten (Recht auf Löschung), behält
+    aber die Buchungsbelege (10-Jahres-Aufbewahrung Art. 958f OR). Bewerber-
+    Dokumente (Ausweis/Lohn/Betreibung) werden physisch gelöscht."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.services.dsg import anonymisiere_person
+    from core.auth import log_aktion
+    m = get_object_or_404(Mieter, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/personen/{m.id}/')
+    name = m.display_name
+    grund = (request.POST.get('grund') or '').strip()
+    ok, meldung = anonymisiere_person(m, grund=grund, user=request.user)
+    if ok:
+        log_aktion(request, "DSG-Anonymisierung", name, grund or "Personendaten anonymisiert (Belege bleiben).")
+        messages.success(request, f"🔒 {meldung}")
+    else:
+        messages.error(request, f"❌ {meldung}")
+    return redirect(f'/neu/personen/{m.id}/')
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_person_form(request, pk=None):
     """Person (Mieter/Kontakt) erfassen oder bearbeiten — Fairwalter-Stil."""

@@ -25,6 +25,15 @@
         <a href="/neu/personen/{{ m.id }}/bearbeiten/" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
             <i class="fa-solid fa-pen text-xs mr-1"></i>Bearbeiten
         </a>
+        {% if not m.anonymisiert %}
+        <form method="post" action="/neu/personen/{{ m.id }}/dsg-loeschen/" class="inline"
+              onsubmit="return confirm('DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?');">
+            {% csrf_token %}
+            <button type="submit" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 transition-colors" title="Personendaten anonymisieren (Recht auf Löschung, DSG)">
+                <i class="fa-solid fa-user-shield text-xs mr-1"></i>DSG-Löschung
+            </button>
+        </form>
+        {% endif %}
         <form method="post" action="/neu/personen/{{ m.id }}/loeschen/" class="inline"
               onsubmit="return confirm('Person „{{ m.display_name|escapejs }}“ wirklich löschen?{% if anzahl_aktive %} Achtung: es besteht ein aktiver Vertrag – die Löschung wird blockiert.{% else %} Beendete/Entwurf-Verträge, Journal und Dokumente dieser Person werden mitgelöscht.{% endif %}');">
             {% csrf_token %}
@@ -34,6 +43,12 @@
         </form>
     </div>
 </div>
+{% if m.anonymisiert %}
+<div class="mt-4 text-sm bg-slate-100 border border-slate-200 text-slate-600 rounded-lg px-4 py-2.5">
+    <i class="fa-solid fa-user-shield mr-1.5"></i>Diese Person wurde am {{ m.anonymisiert_am|date:"d.m.Y" }}
+    DSG-anonymisiert. Die Buchungsbelege bleiben aus Aufbewahrungsgründen (OR 958f) erhalten.
+</div>
+{% endif %}
 
 <!-- KPI -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">

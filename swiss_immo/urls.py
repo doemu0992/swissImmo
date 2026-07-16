@@ -81,7 +81,7 @@ from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_auswertung
                            fw_wartungsfrist_neu, fw_wartungsfrist_bearbeiten, fw_wartungsfrist_loeschen,
                            fw_mahnwesen, fw_debitoren_aging, fw_mahnung_erfassen, fw_mahnlauf, fw_bankkonten,
                            fw_bankabgleich, fw_bankabgleich_verbuchen, fw_camt_import,
-                           fw_person_detail, fw_person_form, fw_person_loeschen, fw_dokument_portal_toggle, fw_rentals_dokument_loeschen, fw_kommunikation_neu, fw_kommunikation_loeschen, fw_mieter_portal_zugang, fw_mieterkonto_pdf,
+                           fw_person_detail, fw_person_form, fw_person_loeschen, fw_person_dsg_loeschen, fw_dokument_portal_toggle, fw_rentals_dokument_loeschen, fw_kommunikation_neu, fw_kommunikation_loeschen, fw_mieter_portal_zugang, fw_mieterkonto_pdf,
                            fw_mieterkonto, fw_mieterkonten, fw_lieferantenkonten, fw_lieferantenkonto,
                            fw_kreditoren, fw_kreditoren_pain001, fw_kreditor_bezahlen, fw_kreditor_neu, fw_kreditor_freigeben, fw_kreditor_loeschen, fw_weiterverrechnung,
                            fw_kreditor_scan, fw_kreditor_bearbeiten,
@@ -221,6 +221,7 @@ urlpatterns = [
     path('neu/vertraege/<int:vertrag_id>/kaution/', fw_kaution_aktion, name='fw_kaution_aktion'),
     path('neu/personen/<int:pk>/', fw_person_detail, name='fw_person_detail'),
     path('neu/personen/<int:pk>/loeschen/', fw_person_loeschen, name='fw_person_loeschen'),
+    path('neu/personen/<int:pk>/dsg-loeschen/', fw_person_dsg_loeschen, name='fw_person_dsg_loeschen'),
     path('neu/dokument/<int:pk>/portal-sichtbar/', fw_dokument_portal_toggle, name='fw_dokument_portal_toggle'),
     path('neu/personen/<int:pk>/portal-zugang/', fw_mieter_portal_zugang, name='fw_mieter_portal_zugang'),
     path('neu/mieterkonten/', fw_mieterkonten, name='fw_mieterkonten'),
@@ -417,5 +418,12 @@ urlpatterns = [
 
     # --- ÖFFENTLICHES BEWERBUNGSFORMULAR ---
     path('bewerben/<int:einheit_id>/', public_application_view, name='public_bewerbung'),
+]
 
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Media zugriffskontrolliert ausliefern: sensible Dokumente (Verträge, Bewerber-
+# Ausweise/Lohn/Betreibung, Belege) nur für eingeloggte Team-Mitglieder; öffentliche
+# Objektfotos/Logos frei. Ersetzt das frühere ungeschützte static(MEDIA_URL).
+from django.urls import re_path
+from core.views.media_protected import geschuetzte_media
+_media = settings.MEDIA_URL.lstrip('/')
+urlpatterns += [re_path(rf'^{_media}(?P<pfad>.*)$', geschuetzte_media, name='geschuetzte_media')]
