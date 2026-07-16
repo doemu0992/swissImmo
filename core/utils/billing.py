@@ -256,8 +256,12 @@ def berechne_abrechnung(periode_id):
             nk_typ = getattr(vertrag, 'nk_abrechnungsart', 'akonto')
 
             if nk_typ == 'akonto':
+                import calendar as _cal
                 nk_monat = vertrag.nebenkosten or Decimal('0.00')
-                bezahltes_akonto = (nk_monat * 12 / 365) * Decimal(tage_bewohnt)
+                # Tage des Kalenderjahres (Schaltjahr = 366) statt fix 365 — sonst wird
+                # das bezahlte Akonto in Schaltjahren um ~0.27 % zu hoch angesetzt.
+                _tage_jahr = Decimal(366 if _cal.isleap(start_p.year) else 365)
+                bezahltes_akonto = (nk_monat * 12 / _tage_jahr) * Decimal(tage_bewohnt)
                 saldo = mieter_total_kosten - bezahltes_akonto # Positiv = Nachzahlung
 
                 abrechnungen.append({

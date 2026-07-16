@@ -8101,3 +8101,29 @@ class PrueferRunde2Tests(TestCase):
         self.assertEqual(offene.count(), 1)          # nur die Schlussabrechnung, keine Doppelforderung
         self.assertEqual(offene.first().titel, 'Schlussabrechnung (Nachzahlung)')
         self.assertEqual(offene.first().betrag, Decimal('1700'))
+
+
+class PrueferRunde2QuickTests(TestCase):
+    """Weitere Quick-Fixes aus dem 2. Prüfdurchgang."""
+
+    def test_kaution_obergrenze_serverseitig(self):
+        # Art. 257e: max. 3 Monatsmieten bei Wohnräumen — serverseitig geklemmt.
+        lg, e, m, v = _basis_objekte()   # Wohnung, netto 1500 + NK 200 → max 5100
+        v.kautions_betrag = Decimal('10000')
+        v.save()
+        v.refresh_from_db()
+        self.assertEqual(v.kautions_betrag, Decimal('5100.00'))
+
+    def test_serienbrief_adressiert_mitmieter(self):
+        lg, e, m, v = _basis_objekte()
+        m2 = Mieter.objects.create(typ='person', vorname='Petra', nachname='Partner',
+                                   email='petra@example.ch')
+        v.mitmieter = m2
+        v.status = 'aktiv'
+        v.save()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/kommunikation/')
+        self.assertEqual(r.status_code, 200)
+        namen = [e['name'] for e in r.context['empfaenger']]
+        self.assertIn(m2.display_name, namen)   # Mitmieter erscheint als Empfänger
+        self.assertIn(m.display_name, namen)

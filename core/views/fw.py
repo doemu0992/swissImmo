@@ -6212,6 +6212,21 @@ def fw_kommunikation(request):
             'objekt': f"{lg.strasse}, {lg.ort} · {v.einheit.bezeichnung}",
             'lg_id': lg.id, 'lg_label': lg_label,
         })
+        # Mitmieter (Ehe-/Wohnpartner mit eigenem Mieter-Datensatz) separat
+        # adressieren — er ist Vertragspartei und muss z. B. bei Familienwohnungen
+        # eigene Post erhalten; bisher fiel er aus dem Serienbrief.
+        if v.mitmieter_id and v.mitmieter_id not in gesehen:
+            gesehen.add(v.mitmieter_id)
+            mm = v.mitmieter
+            empfaenger.append({
+                'id': mm.id, 'name': mm.display_name,
+                'anrede': mm.anrede or '',
+                'strasse': mm.strasse or lg.strasse,
+                'plz': mm.plz or lg.plz, 'ort': mm.ort or lg.ort,
+                'email': mm.email or '',
+                'objekt': f"{lg.strasse}, {lg.ort} · {v.einheit.bezeichnung}",
+                'lg_id': lg.id, 'lg_label': lg_label,
+            })
     empfaenger.sort(key=lambda e: e['name'])
     liegenschaften_wahl = [{'id': k, 'label': lbl} for k, lbl in sorted(lg_map.items(), key=lambda kv: kv[1])]
 
@@ -7519,10 +7534,12 @@ def fw_vermarktung_feed(request):
     import csv as _csv
     import io
 
+    import hmac
     vw = Verwaltung.objects.first()
     erwartet = (vw.portal_feed_token if vw else '') or ''
     token = request.GET.get('token', '')
-    if not erwartet or token != erwartet:
+    # Konstant-zeitiger Vergleich (kein Timing-Seitenkanal beim Token-Raten).
+    if not erwartet or not hmac.compare_digest(str(token), str(erwartet)):
         return HttpResponseForbidden("Ungültiger oder fehlender Feed-Token.")
 
     base = f"{request.scheme}://{request.get_host()}"
@@ -8312,9 +8329,14 @@ def fw_verzug_257d(request, vertrag_id):
     faellige = [r for r in offene if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) <= heute]
     offen_total = sum((r.offener_betrag for r in faellige), Decimal('0.00'))
 
-    # Mindestfrist: Wohn-/Geschäftsräume 30 Tage, sonst 10 Tage (Art. 257d Abs. 1)
+    # Mindestfrist: Wohn-/Geschäftsräume 30 Tage, sonst 10 Tage (Art. 257d Abs. 1).
+    # Die Frist läuft ab ZUGANG beim Mieter (Empfangstheorie), nicht ab Absendetag —
+    # daher einen Zustellpuffer (Postweg + 7-tägige Abholfrist beim eingeschriebenen
+    # Brief) aufschlagen, sonst wäre die Fristansetzung und eine darauf gestützte
+    # ausserordentliche Kündigung zu kurz und damit nichtig.
+    ZUSTELL_PUFFER = 7
     min_frist = 30 if v.ist_geschuetzt else 10
-    default_frist = (heute + timedelta(days=min_frist)).isoformat()
+    default_frist = (heute + timedelta(days=min_frist + ZUSTELL_PUFFER)).isoformat()
 
     if request.method == 'POST':
         try:
@@ -9066,7 +9088,7 @@ def _auto_fristen(aktive_lg, horizont_tage=90):
             'titel': f"Vertrag {v.mieter.display_name} endet",
             'sub': f"{v.einheit.bezeichnung}, {v.einheit.liegenschaft.strasse}",
             'faellig': v.ende, 'url': f'/neu/vertraege/{v.id}/',
-            'tage': (v.ende - heute).days,
+            'tage': (v.ende - heute).days, 'vertrag_id': v.id, 'kind': 'vertragsende',
         })
 
     # b) Gekündigte Verträge — Auszug/Übergabe steht an
@@ -9076,7 +9098,7 @@ def _auto_fristen(aktive_lg, horizont_tage=90):
             'titel': f"Auszug {v.mieter.display_name}",
             'sub': f"{v.einheit.bezeichnung} — Abnahme & Kautionsabrechnung vorbereiten",
             'faellig': v.ende, 'url': f'/neu/vertraege/{v.id}/',
-            'tage': (v.ende - heute).days,
+            'tage': (v.ende - heute).days, 'vertrag_id': v.id, 'kind': 'auszug',
         })
 
     # c) Erstmals kündbar im Horizont
@@ -9121,6 +9143,15 @@ def fw_pendenzen(request):
         pq = pq.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg) | Q(liegenschaft__isnull=True, vertrag__isnull=True))
     offene = list(pq.filter(erledigt=False))
     erledigte = list(pq.filter(erledigt=True)[:20])
+
+    # Doppelanzeige vermeiden: Vertragsende/Auszug erscheinen sowohl als read-only
+    # Auto-Frist (_auto_fristen) als auch — nach dem Tageslauf — als persistente
+    # Pendenz (auto:vertragsende:/auto:auszug:). Wo eine persistente Pendenz existiert,
+    # die Auto-Frist herausfiltern (die Pendenz ist abhakbar, die Frist nicht).
+    _pers = {(p.vertrag_id, 'vertragsende') for p in offene if (p.quelle or '').startswith('auto:vertragsende:')}
+    _pers |= {(p.vertrag_id, 'auszug') for p in offene if (p.quelle or '').startswith('auto:auszug:')}
+    if _pers:
+        auto = [f for f in auto if (f.get('vertrag_id'), f.get('kind')) not in _pers]
 
     for p in offene:
         p.ueberfaellig = bool(p.faellig_am and p.faellig_am < heute)

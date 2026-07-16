@@ -460,6 +460,17 @@ class Mietvertrag(models.Model):
             uf = kwargs.get('update_fields')
             if uf is not None:
                 kwargs['update_fields'] = list(set(uf) | {'aktiv'})
+        # Kaution-Obergrenze durchsetzen (Art. 257e OR: max. 3 Monatsmieten bei
+        # Wohnräumen). Bisher nur eine JS-Warnung — der überschiessende Teil ist
+        # gesetzlich nicht durchsetzbar, daher serverseitig auf 3× (netto+NK) klemmen.
+        if self.kaution_max_monate and self.kautions_betrag:
+            basis = (self.netto_mietzins or Decimal('0')) + (self.nebenkosten or Decimal('0'))
+            maxbetrag = basis * self.kaution_max_monate
+            if maxbetrag > 0 and self.kautions_betrag > maxbetrag:
+                self.kautions_betrag = maxbetrag
+                uf = kwargs.get('update_fields')
+                if uf is not None:
+                    kwargs['update_fields'] = list(set(uf) | {'kautions_betrag'})
         super().save(*args, **kwargs)
 
         # Unterzeichneten Vertrag zentral ablegen → erscheint überall (Portal,
