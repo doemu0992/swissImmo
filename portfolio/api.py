@@ -42,9 +42,16 @@ def update_liegenschaft(request, liegenschaft_id: int, payload: LiegenschaftUpda
     l.save()
     return 200, {"success": True}
 
-@router.delete("/liegenschaften/{liegenschaft_id}", response={204: None}, auth=auth_verwaltung)
+@router.delete("/liegenschaften/{liegenschaft_id}", response={204: None, 409: dict}, auth=auth_verwaltung)
 def delete_liegenschaft(request, liegenschaft_id: int):
+    from rentals.models import Mietvertrag
     lg = get_object_or_404(Liegenschaft, id=liegenschaft_id)
+    # Wie im UI-Pfad (fw_liegenschaft_loeschen): bei aktiven Verträgen blockieren,
+    # sonst würde der CASCADE Objekte + laufende Mietverhältnisse mitreissen.
+    aktive = Mietvertrag.objects.filter(einheit__liegenschaft=lg, status='aktiv').count()
+    if aktive:
+        return 409, {"success": False,
+                     "error": f"Liegenschaft hat {aktive} aktive(n) Vertrag/Verträge — zuerst kündigen/beenden."}
     log_aktion(request, "Liegenschaft gelöscht", str(lg), f"Liegenschaft-ID {lg.id}")
     lg.delete()
     return 204, None
@@ -71,9 +78,16 @@ def update_einheit(request, einheit_id: int, payload: EinheitCreateSchema):
     einheit.save()
     return einheit
 
-@router.delete("/einheiten/{einheit_id}", response={204: None}, auth=auth_verwaltung)
+@router.delete("/einheiten/{einheit_id}", response={204: None, 409: dict}, auth=auth_verwaltung)
 def delete_einheit(request, einheit_id: int):
+    from rentals.models import Mietvertrag
     einheit = get_object_or_404(Einheit, id=einheit_id)
+    # Bei aktivem Vertrag blockieren (Schutz vor versehentlichem Datenverlust,
+    # konsistent zum Liegenschafts-/Personen-Löschpfad im UI).
+    aktive = Mietvertrag.objects.filter(einheit=einheit, status='aktiv').count()
+    if aktive:
+        return 409, {"success": False,
+                     "error": f"Objekt hat {aktive} aktive(n) Vertrag/Verträge — zuerst kündigen/beenden."}
     log_aktion(request, "Einheit gelöscht", str(einheit), f"Einheit-ID {einheit.id}")
     einheit.delete()
     return 204, None

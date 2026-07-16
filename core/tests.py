@@ -7769,3 +7769,52 @@ class DatenLebenszyklusTests(TestCase):
         c = Client(); c.force_login(_team_user())
         c.post(f'/neu/frist/{wf.id}/loeschen/')
         self.assertFalse(Pendenz.objects.filter(quelle__startswith=f'auto:wartung:{wf.id}:').exists())
+
+    # --- API-Löschpfade an die UI angeglichen (django-ninja-Funktionen direkt) ---
+    def _req(self):
+        from django.test import RequestFactory
+        r = RequestFactory().delete('/')
+        r.user = _team_user()
+        return r
+
+    def test_api_delete_mieter_blockt_aktiven_vertrag(self):
+        from crm.api import delete_mieter
+        from crm.models import Mieter
+        _lg, _e, m, _v = _basis_objekte()   # v ist status='aktiv'
+        status, _body = delete_mieter(self._req(), m.id)
+        self.assertEqual(status, 409)
+        self.assertTrue(Mieter.objects.filter(id=m.id).exists())
+
+    def test_api_delete_mieter_raeumt_portal_login(self):
+        from crm.api import delete_mieter
+        _lg, _e, m, v = _basis_objekte()
+        v.status = 'beendet'; v.aktiv = False; v.save()
+        u = User.objects.create_user(username='portal_mieter', password='x')
+        m.benutzer = u; m.save()
+        status, _ = delete_mieter(self._req(), m.id)
+        self.assertEqual(status, 204)
+        self.assertFalse(User.objects.filter(id=u.id).exists())
+
+    def test_api_delete_liegenschaft_blockt_aktiven_vertrag(self):
+        from portfolio.api import delete_liegenschaft
+        lg, _e, _m, _v = _basis_objekte()
+        status, _ = delete_liegenschaft(self._req(), lg.id)
+        self.assertEqual(status, 409)
+        self.assertTrue(Liegenschaft.objects.filter(id=lg.id).exists())
+
+    def test_api_delete_einheit_blockt_aktiven_vertrag(self):
+        from portfolio.api import delete_einheit
+        _lg, e, _m, _v = _basis_objekte()
+        status, _ = delete_einheit(self._req(), e.id)
+        self.assertEqual(status, 409)
+        self.assertTrue(Einheit.objects.filter(id=e.id).exists())
+
+    def test_mandat_loeschen_raeumt_eigentuemer_login(self):
+        from crm.models import Mandant
+        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        u = User.objects.create_user(username='portal_owner', password='x')
+        md.benutzer = u; md.save()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/mandate/{md.id}/loeschen/')
+        self.assertFalse(Mandant.objects.filter(id=md.id).exists())
+        self.assertFalse(User.objects.filter(id=u.id).exists())

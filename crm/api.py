@@ -46,9 +46,21 @@ def update_mieter(request, mieter_id: int, payload: MieterUpdateSchema):
     m.save()
     return 200, {"success": True}
 
-@router.delete("/mieter/{mieter_id}", response={204: None}, auth=auth_verwaltung)
+@router.delete("/mieter/{mieter_id}", response={204: None, 409: dict}, auth=auth_verwaltung)
 def delete_mieter(request, mieter_id: int):
     mieter = get_object_or_404(Mieter, id=mieter_id)
+    # Wie im UI-Pfad (fw_person_loeschen): bei aktivem Vertrag blockieren …
+    aktive = mieter.vertraege.filter(status='aktiv').count()
+    if aktive:
+        return 409, {"success": False,
+                     "error": f"Person hat {aktive} aktive(n) Vertrag/Verträge — zuerst kündigen/beenden."}
+    # … und den verknüpften Mieterportal-Login mitentfernen (sonst bleibt ein
+    # Login zurück, dessen user.mieter_profil ins Leere zeigt).
+    if mieter.benutzer_id:
+        try:
+            mieter.benutzer.delete()
+        except Exception:
+            pass
     log_aktion(request, "Mieter gelöscht", mieter.display_name, f"Mieter-ID {mieter.id}")
     mieter.delete()
     return 204, None

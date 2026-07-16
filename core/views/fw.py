@@ -7992,6 +7992,13 @@ def fw_mandat_loeschen(request, pk):
                                     "Bitte zuerst die Zuordnung im Bearbeiten-Dialog entfernen, dann löschen.")
             return redirect('/neu/mandate/')
         name = md.firma_oder_name
+        # Verknüpften Eigentümer-Portal-Login mitentfernen — sonst bleibt ein
+        # Login zurück, dessen mandant_profil ins Leere zeigt.
+        if md.benutzer_id:
+            try:
+                md.benutzer.delete()
+            except Exception:
+                pass
         log_aktion(request, "Mandant gelöscht", name, '')
         md.delete()
         messages.success(request, f"🗑️ Mandant {name} gelöscht.")
