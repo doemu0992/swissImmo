@@ -7362,6 +7362,48 @@ class SollmietzinsSollstellungTests(TestCase):
         self.assertIn('Objekt auswählen', r.content.decode())
 
 
+class ObjektFormMietzinsQuelleTests(TestCase):
+    """Der Mietzins wird nur noch über den Sollmietzins (Mietzins-Tab) gepflegt —
+    das Objekt-Bearbeiten-Formular schreibt ihn nicht mehr direkt (kein Drift)."""
+
+    def test_neuanlage_seedet_sollmietzins(self):
+        from portfolio.models import Sollmietzins, Einheit
+        lg = Liegenschaft.objects.create(strasse='OF 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/objekte/neu/', {
+            'liegenschaft_id': str(lg.id), 'bezeichnung': 'Neu-1', 'typ': 'wohnung',
+            'nettomiete_aktuell': '1400', 'nebenkosten_aktuell': '250',
+            'soll_gueltig_ab': '2026-01-01'})
+        e = Einheit.objects.get(bezeichnung='Neu-1')
+        # Erste Sollmietzins-Zeile erzeugt + Aktuellwerte daraus abgeleitet
+        s = Sollmietzins.objects.get(einheit=e, gueltig_ab=date(2026, 1, 1))
+        self.assertEqual(s.netto_mietzins, Decimal('1400'))
+        self.assertEqual(e.nettomiete_aktuell, Decimal('1400.00'))
+        self.assertEqual(e.nebenkosten_aktuell, Decimal('250.00'))
+
+    def test_bearbeiten_aendert_miete_nicht_direkt(self):
+        """Beim Bearbeiten wird ein übermitteltes nettomiete_aktuell IGNORIERT —
+        die Miete bleibt beim Sollmietzins-Wert (einzige Quelle)."""
+        from portfolio.models import Sollmietzins, Einheit
+        lg, e, m, v = _basis_objekte()   # e.nettomiete_aktuell = 1500
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=date(2024, 1, 1),
+                                    netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'))
+        e.refresh_from_db()
+        c = Client(); c.force_login(_team_user())
+        # Bearbeiten-POST mit einem abweichenden Mietwert
+        c.post(f'/neu/objekte/{e.id}/bearbeiten/', {
+            'liegenschaft_id': str(lg.id), 'bezeichnung': e.bezeichnung, 'typ': e.typ,
+            'nettomiete_aktuell': '9999', 'nebenkosten_aktuell': '9999'})
+        e.refresh_from_db()
+        # Wert unverändert (9999 ignoriert), kein neuer Sollmietzins
+        self.assertEqual(e.nettomiete_aktuell, Decimal('1500'))
+        self.assertEqual(Sollmietzins.objects.filter(einheit=e).count(), 1)
+        # Bearbeiten-Maske zeigt kein editierbares Mietfeld mehr (nur Ansicht + Link)
+        body = c.get(f'/neu/objekte/{e.id}/bearbeiten/').content.decode()
+        self.assertNotIn('name="nettomiete_aktuell"', body)
+        self.assertIn('Mietzins verwalten', body)
+
+
 class VersionEndpointTests(TestCase):
     """Öffentlicher Deploy-Check /version/ — ohne Login erreichbar, liefert
     Commit/Branch des laufenden Prozesses als JSON."""

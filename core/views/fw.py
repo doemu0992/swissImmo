@@ -7574,27 +7574,30 @@ def fw_objekt_form(request, pk=None):
                 return None
         obj.zimmer = dec('zimmer')
         obj.flaeche_m2 = dec('flaeche_m2')
-        obj.nettomiete_aktuell = dec('nettomiete_aktuell') or Decimal('0.00')
-        obj.nebenkosten_aktuell = dec('nebenkosten_aktuell') or Decimal('0.00')
         obj.keller = P.get('keller', '').strip()
         obj.notizen = P.get('notizen', '').strip()
+        # Der Mietzins wird NICHT mehr direkt am Objekt gepflegt — einzige Quelle
+        # ist der datierte Sollmietzins (Objekt → Mietzins). nettomiete_aktuell/
+        # nebenkosten_aktuell sind rein abgeleitet (sync_aktuelle_miete beim
+        # Speichern einer Sollmietzins-Zeile) → kein Drift mehr zwischen Objekt-
+        # Maske und Mietzins-Tab.
         obj.save()
-        # Erste datierte Sollmietzins-Zeile aus dem Formular seeden (nur, wenn ein
-        # «gültig ab» angegeben ist und noch keine Historie besteht). Weitere Zeilen
-        # werden im Objekt-Detail unter «Mietzins» verwaltet.
+        # Nur bei NEUanlage: optionalen Anfangsmietzins als erste Sollmietzins-Zeile
+        # seeden (single source). Bestehende Objekte pflegen die Miete ausschliesslich
+        # über den Mietzins-Tab.
         from portfolio.models import Sollmietzins
-        soll_ab_raw = (P.get('soll_gueltig_ab') or '').strip()
-        if soll_ab_raw and not obj.sollmietzinse.exists():
-            try:
-                soll_ab = date.fromisoformat(soll_ab_raw)
+        if not pk:
+            netto0 = dec('nettomiete_aktuell') or Decimal('0.00')
+            nk0 = Decimal('0.00') if obj.ist_einstellplatz else (dec('nebenkosten_aktuell') or Decimal('0.00'))
+            if netto0 > 0 or nk0 > 0:
+                soll_ab_raw = (P.get('soll_gueltig_ab') or '').strip()
+                try:
+                    soll_ab = date.fromisoformat(soll_ab_raw) if soll_ab_raw else timezone.now().date()
+                except ValueError:
+                    soll_ab = timezone.now().date()
                 Sollmietzins.objects.create(
                     einheit=obj, gueltig_ab=soll_ab,
-                    netto_mietzins=obj.nettomiete_aktuell,
-                    nebenkosten=Decimal('0.00') if obj.ist_einstellplatz else obj.nebenkosten_aktuell,
-                    notiz='Ersterfassung',
-                )
-            except ValueError:
-                pass
+                    netto_mietzins=netto0, nebenkosten=nk0, notiz='Ersterfassung')
         _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
         log_aktion(request, "Objekt bearbeitet" if pk else "Objekt erstellt",
                    f"{obj.bezeichnung} ({obj.liegenschaft.strasse})", _diff, ziel=obj)
