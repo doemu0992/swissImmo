@@ -19,7 +19,7 @@ from .schemas import (
     HandwerkerOutSchema
 )
 
-from core.auth import auth_schreiben, auth_verwaltung, log_aktion
+from core.auth import auth_schreiben, auth_verwaltung, log_aktion, hat_rolle, SCHREIB_ROLLEN
 
 router = Router(tags=["Tickets"])
 
@@ -32,9 +32,11 @@ def list_tickets(request):
 def get_ticket(request, ticket_id: int):
     """Gibt alle Details eines Tickets zurück."""
     ticket = get_object_or_404(SchadenMeldung, id=ticket_id)
-    if not ticket.gelesen:
+    # «Gelesen» nur setzen, wenn der Betrachter eine Schreibrolle hat — eine reine
+    # Leserolle (z.B. Buchhaltung) darf beim Ansehen nichts mutieren (GET-Safety).
+    if not ticket.gelesen and hat_rolle(request.user, SCHREIB_ROLLEN):
         ticket.gelesen = True
-        ticket.save()
+        ticket.save(update_fields=['gelesen'])
     return ticket
 
 @router.patch("/{ticket_id}/status", response=SchadenMeldungListSchema, auth=auth_schreiben)

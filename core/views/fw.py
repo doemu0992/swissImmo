@@ -547,17 +547,32 @@ def fw_weiterverrechnung(request, kreditor_id):
             """Erstellt eine verknüpfte Debitorenrechnung + ertragsneutrale
             Durchreichung über 1190 (Zuschlag als Ertrag 3600). Gibt (rechnung, total)."""
             lg2 = vertrag.einheit.liegenschaft if vertrag.einheit_id else k.liegenschaft
-            total = (grund + max(zuschlag, Decimal('0'))).quantize(Decimal('0.01'))
+            zuschlag = max(zuschlag, Decimal('0'))
+            total = (grund + zuschlag).quantize(Decimal('0.01'))
             rechnung = DebitorenRechnung.objects.create(
                 vertrag=vertrag, liegenschaft=lg2, einheit=vertrag.einheit,
                 titel=titel, beschreibung=f"Weiterverrechnung Lieferantenrechnung {k.lieferant}"
                                           + (f" · {k.referenz}" if k.referenz else ''),
                 datum=heute, faellig_am=heute + _timedelta(days=30), betrag=total,
-                status='offen', quell_kreditor=k)
+                status='offen', quell_kreditor=k, weiterverrechnung_zuschlag=zuschlag)
             buche("1100", "1190", grund, f"Weiterverrechnung {vertrag.mieter}: {titel}",
                   datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
-            buche("1190", aufwand_konto, grund, f"Aufwandsminderung Weiterverrechnung: {k.lieferant}",
+            # Der Aufwand wurde bei der Freigabe nur mit dem NETTO gebucht (Vorsteuer
+            # separat auf 1170). Die Aufwandsminderung darf ihn deshalb ebenfalls nur
+            # netto entlasten; der im durchgereichten Brutto enthaltene MWST-Anteil ist
+            # AUSGANGS-Umsatzsteuer (2200) — sonst würde der Aufwand negativ und die
+            # zurückgeholte Vorsteuer bliebe unversteuert.
+            satz = k.mwst_satz or Decimal('0')
+            if satz > 0:
+                netto = (grund / (Decimal('1') + satz / Decimal('100'))).quantize(Decimal('0.01'))
+                mwst = grund - netto
+            else:
+                netto, mwst = grund, Decimal('0.00')
+            buche("1190", aufwand_konto, netto, f"Aufwandsminderung Weiterverrechnung: {k.lieferant}",
                   datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
+            if mwst > 0:
+                buche("1190", "2200", mwst, f"MWST Weiterverrechnung {satz}% {vertrag.mieter}",
+                      datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
             if zuschlag > 0:
                 buche("1100", "3600", zuschlag, f"Zuschlag Weiterverrechnung {vertrag.mieter}",
                       datum=heute, liegenschaft=lg2, debitor=rechnung, user=request.user)
@@ -2430,27 +2445,35 @@ def fw_schlussabrechnung(request, vertrag_id):
                     heute = timezone.now().date()
                     # Bereits offene Mietforderungen sind in daten['saldo'] enthalten
                     # (offen_total). Ohne Bereinigung würden sie ein zweites Mal gefordert
-                    # und der Mietertrag (3000) doppelt gebucht. Daher die sauber offenen
-                    # Forderungen revisionssicher stornieren → sie gehen in die
-                    # Schlussabrechnung über (teilbezahlte bleiben unberührt).
+                    # und der Mietertrag (3000) doppelt gebucht.
+                    #  - Sauber offene Forderungen (ohne Teilzahlung) werden revisions-
+                    #    sicher storniert und gehen in die Schlussabrechnung über.
+                    #  - Teilbezahlte (oder offene mit Teilzahlung) lassen sich nicht sauber
+                    #    stornieren (die Zahlung bliebe hängen) → sie bleiben als eigene OP
+                    #    bestehen und ihr offener Rest wird aus der Nachzahlung
+                    #    HERAUSGERECHNET, damit der Mieter nicht doppelt belastet wird.
                     offene_alt = (DebitorenRechnung.objects
-                                  .filter(vertrag=v, status='offen')
+                                  .filter(vertrag=v, status__in=['offen', 'teilbezahlt'])
                                   .exclude(titel__startswith='Schlussabrechnung'))
+                    rest_bleibt_op = Decimal('0.00')
                     for alt in offene_alt:
                         if alt.zahlungseingaenge.filter(status='verbucht').exists():
+                            rest_bleibt_op += alt.offener_betrag
                             continue
                         for b in Buchung.objects.filter(debitoren_rechnung=alt, ist_storno=False):
                             erstelle_storno_buchung(b, benutzer=request.user)
                         alt.status = 'storniert'
                         alt.save(update_fields=['status'])
-                    rech = DebitorenRechnung.objects.create(
-                        vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
-                        titel="Schlussabrechnung (Nachzahlung)", datum=heute,
-                        faellig_am=heute + _timedelta(days=30), betrag=daten['saldo'], status='offen')
-                    from finance.booking import buche
-                    buche("1100", "3000", daten['saldo'], f"Schlussabrechnung {v.mieter}",
-                          datum=heute, liegenschaft=v.einheit.liegenschaft, debitor=rech,
-                          user=request.user)
+                    buchbetrag = (daten['saldo'] - rest_bleibt_op).quantize(Decimal('0.01'))
+                    if buchbetrag > 0:
+                        rech = DebitorenRechnung.objects.create(
+                            vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
+                            titel="Schlussabrechnung (Nachzahlung)", datum=heute,
+                            faellig_am=heute + _timedelta(days=30), betrag=buchbetrag, status='offen')
+                        from finance.booking import buche
+                        buche("1100", "3000", buchbetrag, f"Schlussabrechnung {v.mieter}",
+                              datum=heute, liegenschaft=v.einheit.liegenschaft, debitor=rech,
+                              user=request.user)
             from core.services.automation import erledige_pendenzen_fuer
             erledige_pendenzen_fuer(v, ['Schlussabrechnung', 'Kaution'], user=request.user)
             log_aktion(request, "Schlussabrechnung verbucht", str(v.mieter), f"Saldo CHF {daten['saldo']}", ziel=v)
@@ -5986,6 +6009,18 @@ def fw_mietzins_anpassung(request, vertrag_id):
         mit_vorbehalt = request.POST.get('mit_vorbehalt') == 'on'
         vorbehalt_text = (request.POST.get('vorbehalt_text') or '').strip()
 
+        # Server-seitige Fristenkontrolle (Art. 269d OR): eine Mietzinserhöhung darf
+        # frühestens auf den nächsten ordentlichen Kündigungstermin nach Ablauf der
+        # 10-tägigen Ankündigungsfrist wirksam werden. Ein zu frühes Datum (Client
+        # manipuliert / Tippfehler) würde ein rechtlich anfechtbares Formular erzeugen.
+        if neu_netto > (v.netto_mietzins or Decimal('0')):
+            frueh = naechster_anpassungstermin(v, timezone.now().date())
+            if wirksam_ab < frueh:
+                messages.error(request, f"❌ Wirksamkeitsdatum zu früh: Eine Mietzinserhöhung kann "
+                                        f"frühestens auf {frueh.strftime('%d.%m.%Y')} wirksam werden "
+                                        f"(Kündigungsfrist + 10-Tage-Ankündigung, Art. 269d OR).")
+                return redirect(f'/neu/mietzins/{v.id}/anpassung/')
+
         pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik,
                                      _dec(request.POST.get('kosten_pct'), '0')) or {}
         daten = {
@@ -6003,25 +6038,30 @@ def fw_mietzins_anpassung(request, vertrag_id):
             'mit_vorbehalt': mit_vorbehalt, 'vorbehalt_text': vorbehalt_text,
         }
 
-        anp = MietzinsAnpassung.objects.create(
-            vertrag=v, wirksam_ab=wirksam_ab,
-            alter_netto_mietzins=v.netto_mietzins, neuer_netto_mietzins=neu_netto,
-            alter_referenzzinssatz=v.basis_referenzzinssatz, neuer_referenzzinssatz=neu_zins,
-            alter_lik_index=v.basis_lik_punkte, neuer_lik_index=neu_lik,
-            erhoehung_prozent_total=pot.get('delta_prozent'),
-            begruendung=begruendung or 'Anpassung an Referenzzinssatz und Teuerung',
-        )
+        # Idempotent pro (Vertrag, wirksam_ab, neuer Mietzins): Mehrfaches Generieren
+        # des PDF (Vorschau) darf keine Duplikate der Anpassung + Anfechtungs-Pendenz
+        # erzeugen. Nur beim erstmaligen Erfassen werden Pendenz + Log geschrieben.
+        anp, anp_created = MietzinsAnpassung.objects.get_or_create(
+            vertrag=v, wirksam_ab=wirksam_ab, neuer_netto_mietzins=neu_netto,
+            defaults={
+                'alter_netto_mietzins': v.netto_mietzins,
+                'alter_referenzzinssatz': v.basis_referenzzinssatz, 'neuer_referenzzinssatz': neu_zins,
+                'alter_lik_index': v.basis_lik_punkte, 'neuer_lik_index': neu_lik,
+                'erhoehung_prozent_total': pot.get('delta_prozent'),
+                'begruendung': begruendung or 'Anpassung an Referenzzinssatz und Teuerung',
+            })
         # Den neuen Mietzins auch im Objekt als datierte Sollmietzins-Zeile führen
         # (gültig ab = wirksam_ab) → erscheint im Objekt-Detail unter «Mietzins» und
-        # neue Verträge starten ab dem Termin mit dem angepassten Wert.
+        # neue Verträge starten ab dem Termin mit dem angepassten Wert. (idempotent)
         _sollmietzins_aus_anpassung(v.einheit, anp, neu_netto, neu_zins, neu_lik,
                                     label=v.mieter.display_name)
-        log_aktion(request, "Mietzinsanpassung erstellt", str(v),
-                   f"neu CHF {neu_netto}, wirksam {wirksam_ab}", ziel=v)
+        if anp_created:
+            log_aktion(request, "Mietzinsanpassung erstellt", str(v),
+                       f"neu CHF {neu_netto}, wirksam {wirksam_ab}", ziel=v)
 
         # Anfechtungsfrist-Pendenz bei einer Erhöhung: der Mieter kann die
         # Mietzinserhöhung innert 30 Tagen ab Empfang anfechten (Art. 270b OR).
-        if neu_netto > (v.netto_mietzins or Decimal('0')):
+        if anp_created and neu_netto > (v.netto_mietzins or Decimal('0')):
             from core.models import Pendenz
             frist = timezone.localdate() + _timedelta(days=30)
             Pendenz.objects.create(
@@ -8602,24 +8642,40 @@ def fw_kaution_aktion(request, vertrag_id):
         v.kautions_abzug_grund = P.get('abzug_grund', '').strip()
         v.save(update_fields=['kautions_zurueckbezahlt_am', 'kautions_rueckzahlung_betrag',
                               'kautions_abzug_betrag', 'kautions_abzug_grund'])
-        # Bilanz: Sperrkonto auflösen (2010 an 1015)
+        # Bilanz/Ertrag korrekt buchen. Der frühere Pfad buchte nur 2010→1015 und legte
+        # den Einbehalt als «bezahlten» Debitor OHNE Buchung ab (Status/OP inkonsistent,
+        # Einbehalts-Ertrag fehlte im Hauptbuch). Jetzt vollständig & ausgeglichen:
+        #  Sperrkonto:   1020 Bank an 1015 Sperrkonto (Freigabe des Depots)
+        #  Rückzahlung:  2010 Kautionsverbindlichkeit an 1020 Bank (an Mieter)
+        #  Einbehalt:    2010 Kautionsverbindlichkeit an 3600 (Ertrag Eigentümer)
         try:
-            from core.services.automation import buche_kaution_aufloesung
-            buche_kaution_aufloesung(v, v.kautions_zurueckbezahlt_am, user=request.user)
+            from finance.booking import buche as _buche
+            from finance.models import Buchung as _B, DebitorenRechnung
+            lg_k = v.einheit.liegenschaft if v.einheit_id else None
+            beleg = f"Kaution Auflösung {v.mieter}"
+            dat_k = v.kautions_zurueckbezahlt_am
+            already = _B.objects.filter(beleg_text__startswith=beleg, ist_storno=False).exists()
+            if v.ist_kautionsversicherung:
+                # Kein Depot → Einbehalt ist eine echte Schadenforderung an den Mieter.
+                if abzug > 0 and P.get('abzug_verrechnen') == 'on':
+                    rech_e = DebitorenRechnung.objects.create(
+                        vertrag=v, liegenschaft=lg_k, einheit=v.einheit,
+                        betrag=abzug, datum=dat_k, faellig_am=dat_k + _timedelta(days=30),
+                        status='offen', titel="Schadenersatz (Kautionsversicherung)",
+                        beschreibung=v.kautions_abzug_grund or "Einbehalt aus Kaution")
+                    _buche("1100", "3600", abzug, f"Schadenersatz {v.mieter}",
+                           datum=dat_k, liegenschaft=lg_k, debitor=rech_e, user=request.user)
+            elif (v.kautions_betrag or 0) > 0 and not already:
+                _buche("1020", "1015", v.kautions_betrag, f"{beleg} — Sperrkonto freigegeben",
+                       datum=dat_k, liegenschaft=lg_k, user=request.user)
+                if rueck > 0:
+                    _buche("2010", "1020", rueck, f"{beleg} — Rückzahlung an Mieter",
+                           datum=dat_k, liegenschaft=lg_k, user=request.user)
+                if abzug > 0:
+                    _buche("2010", "3600", abzug, f"{beleg} — Einbehalt (Ertrag)",
+                           datum=dat_k, liegenschaft=lg_k, user=request.user)
         except Exception:
             pass
-        # Einbehalt optional als Debitoren-Weiterverrechnung buchen (Schadenersatz)
-        if abzug > 0 and P.get('abzug_verrechnen') == 'on':
-            try:
-                from finance.models import DebitorenRechnung
-                DebitorenRechnung.objects.create(
-                    vertrag=v, betrag=abzug, datum=timezone.localdate(),
-                    faellig_am=timezone.localdate(), status='bezahlt',
-                    titel="Einbehalt Mietzinsdepot",
-                    beschreibung=v.kautions_abzug_grund or "Verrechnung aus Kaution",
-                )
-            except Exception:
-                pass
         from core.services.automation import erledige_pendenzen_fuer
         erledige_pendenzen_fuer(v, ['Kaution'], user=request.user)
         log_aktion(request, "Kaution zurückbezahlt", str(v.mieter),
@@ -10194,10 +10250,11 @@ def fw_buchung_neu(request):
     return redirect('fw_buchhaltung')
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(ROLLE_VERWALTUNG)
 def fw_buchung_stornieren(request, pk):
     """Storniert eine Journalbuchung durch eine revisionssichere Gegenbuchung.
-    Die Originalbuchung bleibt erhalten (append-only, OR 958f)."""
+    Die Originalbuchung bleibt erhalten (append-only, OR 958f). Nur Verwaltung —
+    ein Storno ist ein buchhalterischer Korrektureingriff (nicht Sachbearbeitung)."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from finance.models import Buchung

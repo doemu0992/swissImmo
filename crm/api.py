@@ -3,7 +3,6 @@ from ninja import Router, Schema
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from typing import List, Optional
-from datetime import date
 from .models import Mieter, Verwaltung, Handwerker  # 🔥 Handwerker importiert
 from .schemas import MieterSchemaOut, MieterUpdateSchema
 from core.utils import get_current_ref_zins, get_current_lik
@@ -19,18 +18,14 @@ router = Router(tags=["CRM"])
 
 @router.get("/mieter", response=List[MieterSchemaOut])
 def list_mieter(request):
-    # 🔥 DER WECKER
-    umzuege = Mieter.objects.filter(zukuenftig_ab__lte=date.today())
-    for m in umzuege:
-        m.check_and_update_adresse()
-
+    # Fällige Adresswechsel werden NICHT hier (Lesepfad) mutiert — GET muss
+    # seiteneffektfrei bleiben (Leserolle darf nichts schreiben). Der Wechsel
+    # läuft im täglichen Scheduler (run_adress_umzuege / taeglicher_lauf).
     return sorted(list(Mieter.objects.all()), key=lambda x: x.display_name.lower())
 
 @router.get("/mieter/{mieter_id}", response=MieterSchemaOut)
 def get_mieter(request, mieter_id: int):
-    m = get_object_or_404(Mieter, id=mieter_id)
-    m.check_and_update_adresse()
-    return m
+    return get_object_or_404(Mieter, id=mieter_id)
 
 @router.post("/mieter", response={201: MieterSchemaOut}, auth=auth_schreiben)
 def create_mieter(request, payload: MieterUpdateSchema):

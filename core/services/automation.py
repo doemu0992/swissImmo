@@ -194,6 +194,20 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
     return res
 
 
+def run_adress_umzuege():
+    """Aktiviert fällige Adresswechsel (Einzug erreicht). Läuft im täglichen
+    Scheduler statt in den GET-API-Endpoints — ein Lesezugriff darf keine
+    Datenmutation auslösen (GET muss idempotent/seiteneffektfrei sein).
+    Gibt die Anzahl aktualisierter Mieter zurück."""
+    from crm.models import Mieter
+    heute = timezone.localdate()
+    n = 0
+    for m in Mieter.objects.filter(zukuenftig_ab__lte=heute):
+        m.check_and_update_adresse()
+        n += 1
+    return n
+
+
 def erledige_pendenzen_fuer(vertrag, keywords, user=None):
     """Hakt offene Pendenzen dieses Vertrags automatisch ab, deren Titel eines der
     `keywords` enthält (case-insensitive). Wird aufgerufen, wenn der zugehörige

@@ -163,6 +163,12 @@ class DebitorenRechnung(models.Model):
     quell_kreditor = models.ForeignKey('KreditorenRechnung', on_delete=models.SET_NULL,
                                        null=True, blank=True, related_name='weiterverrechnungen',
                                        verbose_name="Weiterverrechnung aus Kreditorenrechnung")
+    # Anteil des Rechnungsbetrags, der ein Ertrags-ZUSCHLAG ist (nicht durchgereichte
+    # Fremdkosten). Für die Weiterverrechnungs-Abstimmung: nur (betrag − zuschlag)
+    # zählt als durchgereichte Lieferantenkosten, sonst zöge der Zuschlag den offen
+    # weiterzuverrechnenden Betrag fälschlich herunter.
+    weiterverrechnung_zuschlag = models.DecimalField("Weiterverrechnungs-Zuschlag (CHF)",
+                                                     max_digits=10, decimal_places=2, default=Decimal('0.00'))
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='offen')
     qr_referenz = models.CharField("QRR-Referenz (27-stellig)", max_length=27, blank=True, default='', db_index=True)  # 🔥 NEU (camt.053-Abgleich)
@@ -287,9 +293,11 @@ class KreditorenRechnung(models.Model):
 
     @property
     def weiterverrechnet_betrag(self):
-        """Summe der bereits an Mieter weiterverrechneten Beträge (ohne Stornos)."""
-        return (self.weiterverrechnungen.exclude(status='storniert')
-                .aggregate(s=Sum('betrag'))['s'] or Decimal('0.00'))
+        """Summe der bereits an Mieter durchgereichten Fremdkosten (ohne Stornos).
+        Der Ertrags-Zuschlag zählt NICHT als weiterverrechnete Lieferantenkosten."""
+        agg = (self.weiterverrechnungen.exclude(status='storniert')
+               .aggregate(s=Sum('betrag'), z=Sum('weiterverrechnung_zuschlag')))
+        return (agg['s'] or Decimal('0.00')) - (agg['z'] or Decimal('0.00'))
 
     @property
     def offen_weiterzuverrechnen(self):

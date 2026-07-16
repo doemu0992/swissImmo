@@ -346,7 +346,11 @@ def fill_mietzins_zh(vertrag, daten, verwaltung=None):
         'Textfeld 75': g_zeilen[3] if len(g_zeilen) > 3 else '',
         'Textfeld 69': _ort_datum(vertrag, verwaltung, mandant),
     }
-    cbs = ['Kontrollkästchen 1', 'Kontrollkästchen 3']  # Wohnung + Mietzinserhöhung
+    # Objekt-Art aus der mietrechtlichen Kategorie ableiten (nicht hart «Wohnung»):
+    # Kontrollkästchen 1 = Wohnung, 2 = Geschäftsräume. Wohnzweck-Objekte (wohnen)
+    # kreuzen Wohnung; Gewerbe/Geschäft kreuzt Geschäftsräume.
+    obj_cb = 'Kontrollkästchen 1' if vertrag.mietrecht_kategorie == 'wohnen' else 'Kontrollkästchen 2'
+    cbs = [obj_cb, 'Kontrollkästchen 3']  # Objekt-Art + Mietzinserhöhung
     return _fill_acroform(os.path.join(_DIR, 'ZH_mietzins_original.pdf'), tv, cbs)
 
 
@@ -370,7 +374,10 @@ def fill_kuendigung_zh(vertrag, kuendigung, verwaltung=None):
     }
     for i, z in enumerate(g_zeilen[:8]):
         tv[f'Textfeld {13 + i}'] = z
-    cbs = ['Kontrollkästchen 4', 'Kontrollkästchen 6', 'Kontrollkästchen 10']  # Miete + Wohnung + Mietvertrag
+    # Objekt-Art aus der mietrechtlichen Kategorie: Kontrollkästchen 6 = Wohnung,
+    # 7 = Geschäftsräume. Wohnzweck-Objekte kreuzen Wohnung, Gewerbe Geschäftsräume.
+    obj_cb = 'Kontrollkästchen 6' if vertrag.mietrecht_kategorie == 'wohnen' else 'Kontrollkästchen 7'
+    cbs = ['Kontrollkästchen 4', obj_cb, 'Kontrollkästchen 10']  # Mietverhältnis + Objekt-Art + Mietvertrag
     return _fill_acroform(os.path.join(_DIR, 'ZH_kuendigung_original.pdf'), tv, cbs)
 
 

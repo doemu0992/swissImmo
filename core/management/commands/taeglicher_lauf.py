@@ -6,7 +6,7 @@ einziger täglicher Scheduled Task."""
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.utils import timezone
-from core.services.automation import generate_auto_pendenzen
+from core.services.automation import generate_auto_pendenzen, run_adress_umzuege
 from core.models import AktivitaetsLog
 
 
@@ -21,6 +21,14 @@ class Command(BaseCommand):
     def handle(self, *args, **opts):
         neu = generate_auto_pendenzen(horizont_tage=opts['horizont'], user=None)
         details = [f"{neu} neue Pendenz(en)"]
+
+        # Fällige Adresswechsel aktivieren (aus dem GET-Lesepfad hierher verlagert)
+        try:
+            umz = run_adress_umzuege()
+            if umz:
+                details.append(f"{umz} Adresswechsel aktiviert")
+        except Exception as e:
+            details.append(f"Adresswechsel übersprungen ({e})")
 
         # Marktdaten (Referenzzins/LIK) best-effort aktualisieren
         try:

@@ -8152,3 +8152,205 @@ class PrueferRunde2SecurityUITests(TestCase):
         self.assertGreaterEqual(idx, 0)
         block = src[max(0, idx - 400):idx]
         self.assertRegex(block, r"absender\s*==\s*'vermieter'")
+
+
+class MoneyBugBatchTests(TestCase):
+    """Geld-Funde aus «Komplet alles umsetzen» — jeder Test sichert eine
+    korrekt ausgeglichene Buchung / Idempotenz dauerhaft ab."""
+
+    def _saldo(self, nummer):
+        from finance.models import Buchung, Buchungskonto
+        from django.db.models import Sum
+        k = Buchungskonto.objects.filter(nummer=nummer).first()
+        if not k:
+            return Decimal('0.00'), Decimal('0.00')
+        s = Buchung.objects.filter(soll_konto=k, ist_storno=False).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+        h = Buchung.objects.filter(haben_konto=k, ist_storno=False).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+        return s, h
+
+    def test_weiterverrechnung_spaltet_mwst_und_zuschlag(self):
+        # F1: Der Aufwand wurde nur netto gebucht (Vorsteuer separat). Die
+        # Weiterverrechnung darf ihn deshalb nur NETTO entlasten; der MWST-Anteil
+        # ist Ausgangs-Umsatzsteuer (2200), der Zuschlag ein Ertrag (3600).
+        from finance.booking import ensure_kontenplan, konto
+        from finance.models import KreditorenRechnung, DebitorenRechnung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        k = KreditorenRechnung.objects.create(
+            lieferant='Sanitär AG', betrag=Decimal('1081.00'), mwst_satz=Decimal('8.1'),
+            status='freigegeben', liegenschaft=lg, konto=konto('4000'),
+            datum=date(2024, 6, 1), faellig_am=date(2024, 6, 30))
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/kreditoren/{k.id}/weiterverrechnen/', {
+            'vertrag_id': str(v.id), 'betrag': '1081.00', 'zuschlag': '100.00',
+            'titel': 'Rohrbruch Küche'})
+        self.assertIn(r.status_code, (200, 302))
+        rech = DebitorenRechnung.objects.get(quell_kreditor=k)
+        self.assertEqual(rech.betrag, Decimal('1181.00'))              # grund + zuschlag
+        self.assertEqual(rech.weiterverrechnung_zuschlag, Decimal('100.00'))
+        # Aufwand (4000) nur um NETTO 1000 entlastet, 81 als 2200 Umsatzsteuer.
+        s4000, h4000 = self._saldo('4000')
+        self.assertEqual(h4000 - s4000, Decimal('1000.00'))
+        s2200, h2200 = self._saldo('2200')
+        self.assertEqual(h2200 - s2200, Decimal('81.00'))
+        s3600, h3600 = self._saldo('3600')
+        self.assertEqual(h3600 - s3600, Decimal('100.00'))            # Zuschlag = Ertrag
+        # Durchlaufkonto 1190 geht exakt auf null auf.
+        s1190, h1190 = self._saldo('1190')
+        self.assertEqual(s1190 - h1190, Decimal('0.00'))
+        # Kreditor gilt als voll (nur netto-relevant) weiterverrechnet — Zuschlag zählt nicht.
+        self.assertEqual(k.weiterverrechnet_betrag, Decimal('1081.00'))
+        self.assertEqual(k.offen_weiterzuverrechnen, Decimal('0.00'))
+
+    def test_kaution_einbehalt_ist_ausgeglichen_und_ertrag(self):
+        # Kaution-Auflösung: Sperrkonto-Freigabe 1020/1015, Rückzahlung 2010/1020,
+        # Einbehalt 2010/3600 (Ertrag). Früher: gefälschter «bezahlter» Debitor ohne Buchung.
+        from finance.booking import ensure_kontenplan, buche
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()   # Kaution 4500
+        v.kautions_art = 'sperrkonto'; v.kautions_konto = 'CH00'
+        v.kautions_einbezahlt_am = date(2024, 1, 1); v.save()
+        # Depot bei Einzahlung: 1015 Sperrkonto an 2010 Verbindlichkeit.
+        buche('1015', '2010', Decimal('4500'), 'Kaution Einzahlung', datum=date(2024, 1, 1), liegenschaft=lg)
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/vertraege/{v.id}/kaution/', {
+            'aktion': 'rueckzahlung', 'abzug_betrag': '500', 'abzug_grund': 'Reinigung',
+            'zurueckbezahlt_am': '2024-07-01'})
+        self.assertEqual(r.status_code, 302)
+        # 2010 vollständig ausgeglankt (Soll 4500 = Haben 4500).
+        s2010, h2010 = self._saldo('2010')
+        self.assertEqual(s2010, Decimal('4500.00'))
+        self.assertEqual(h2010, Decimal('4500.00'))
+        # 1015 Sperrkonto wieder auf null (4500 rein, 4500 raus).
+        s1015, h1015 = self._saldo('1015')
+        self.assertEqual(h1015 - s1015, Decimal('0.00'))
+        # Einbehalt 500 als Ertrag auf 3600.
+        s3600, h3600 = self._saldo('3600')
+        self.assertEqual(h3600 - s3600, Decimal('500.00'))
+
+    def test_kaution_einbehalt_idempotent(self):
+        from finance.booking import ensure_kontenplan, buche
+        from finance.models import Buchung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        v.kautions_art = 'sperrkonto'; v.kautions_einbezahlt_am = date(2024, 1, 1); v.save()
+        buche('1015', '2010', Decimal('4500'), 'Kaution Einzahlung', datum=date(2024, 1, 1), liegenschaft=lg)
+        c = Client(); c.force_login(_team_user())
+        for _ in range(2):
+            c.post(f'/neu/vertraege/{v.id}/kaution/', {
+                'aktion': 'rueckzahlung', 'abzug_betrag': '500',
+                'zurueckbezahlt_am': '2024-07-01'})
+        # Zweiter Klick bucht nicht erneut (beleg_text-Idempotenz).
+        n = Buchung.objects.filter(beleg_text__startswith=f"Kaution Auflösung {v.mieter}",
+                                   ist_storno=False).count()
+        self.assertEqual(n, 3)   # Freigabe + Rückzahlung + Einbehalt, genau einmal
+
+    def test_mietzins_anpassung_pdf_ist_idempotent(self):
+        # Mehrfaches PDF-Generieren darf keine doppelte Anpassung + Anfechtungs-Pendenz erzeugen.
+        from rentals.models import MietzinsAnpassung
+        from rentals.services import naechster_anpassungstermin
+        from core.models import Pendenz
+        from django.utils import timezone
+        lg, e, m, v = _basis_objekte()
+        v.basis_referenzzinssatz = Decimal('1.25'); v.basis_lik_punkte = Decimal('100.0'); v.save()
+        wirksam = naechster_anpassungstermin(v, timezone.now().date())  # gültiger Termin (Art. 269d)
+        c = Client(); c.force_login(_team_user())
+        payload = {'aktion': 'pdf', 'neu_netto': '1600', 'neu_zins': '1.50',
+                   'neu_lik': '105.0', 'wirksam_ab': wirksam.isoformat(),
+                   'begruendung': 'Referenzzins', 'formular': 'generisch'}
+        for _ in range(3):
+            c.post(f'/neu/mietzins/{v.id}/anpassung/', payload)
+        self.assertEqual(MietzinsAnpassung.objects.filter(vertrag=v, wirksam_ab=wirksam).count(), 1)
+        self.assertEqual(Pendenz.objects.filter(vertrag=v, kategorie='frist').count(), 1)
+
+    def test_schlussabrechnung_teilbezahlt_bleibt_op(self):
+        # Quellcode-Absicherung: der Buchbetrag zieht bereits teilbezahlte OPs ab,
+        # damit ein teilweise beglichener Saldo nicht doppelt als Ertrag gebucht wird.
+        src = open('core/views/fw.py', encoding='utf-8').read()
+        idx = src.find('rest_bleibt_op')
+        self.assertGreaterEqual(idx, 0)
+        block = src[idx:idx + 800]
+        self.assertRegex(block, r"buchbetrag\s*=\s*\(daten\['saldo'\]\s*-\s*rest_bleibt_op\)")
+        self.assertRegex(block, r"if\s+buchbetrag\s*>\s*0")
+
+
+class SecurityBatchTests(TestCase):
+    """GET-Endpoints müssen seiteneffektfrei sein; Storno ist Verwaltungs-only."""
+
+    def test_get_mieter_liste_mutiert_adresse_nicht(self):
+        # Fälliger Umzug darf beim reinen Lesen (GET) NICHT aktiviert werden.
+        from crm.api import list_mieter
+        from django.test import RequestFactory
+        _lg, _e, m, _v = _basis_objekte()
+        m.zukuenftige_strasse = 'Neuweg 9'; m.zukuenftige_plz = '3000'
+        m.zukuenftiger_ort = 'Bern'; m.zukuenftig_ab = date(2020, 1, 1)
+        m.save()
+        list_mieter(RequestFactory().get('/api/crm/mieter'))
+        m.refresh_from_db()
+        self.assertEqual(m.strasse, 'Seeweg 3')            # unverändert
+        self.assertEqual(m.zukuenftig_ab, date(2020, 1, 1))  # Trigger noch scharf
+
+    def test_scheduler_aktiviert_adresswechsel(self):
+        from core.services.automation import run_adress_umzuege
+        _lg, _e, m, _v = _basis_objekte()
+        m.zukuenftige_strasse = 'Neuweg 9'; m.zukuenftige_plz = '3000'
+        m.zukuenftiger_ort = 'Bern'; m.zukuenftig_ab = date(2020, 1, 1)
+        m.save()
+        n = run_adress_umzuege()
+        m.refresh_from_db()
+        self.assertGreaterEqual(n, 1)
+        self.assertEqual(m.strasse, 'Neuweg 9')            # jetzt aktiviert
+        self.assertIsNone(m.zukuenftig_ab)                 # Trigger geleert
+
+    def test_ticket_gelesen_nur_mit_schreibrolle(self):
+        from tickets.api import get_ticket
+        from tickets.models import SchadenMeldung
+        from django.test import RequestFactory
+        lg, _e, _m, _v = _basis_objekte()
+        t = SchadenMeldung.objects.create(liegenschaft=lg, titel='Leck', beschreibung='Wasser', gelesen=False)
+        # Reine Leserolle → kein Schreibzugriff, gelesen bleibt False.
+        req = RequestFactory().get(f'/api/tickets/{t.id}')
+        req.user = _team_user(rolle='Lesend')
+        get_ticket(req, t.id)
+        t.refresh_from_db()
+        self.assertFalse(t.gelesen)
+        # Schreibrolle → gelesen wird gesetzt.
+        req2 = RequestFactory().get(f'/api/tickets/{t.id}')
+        req2.user = _team_user(rolle='Verwaltung')
+        get_ticket(req2, t.id)
+        t.refresh_from_db()
+        self.assertTrue(t.gelesen)
+
+    def test_storno_ist_verwaltung_only(self):
+        # Storno einer Journalbuchung ist ein buchhalterischer Korrektureingriff.
+        src = open('core/views/fw.py', encoding='utf-8').read()
+        idx = src.find('def fw_buchung_stornieren')
+        deko = src[max(0, idx - 120):idx]
+        self.assertRegex(deko, r"rolle_erforderlich\(ROLLE_VERWALTUNG\)")
+
+
+class LegalBatchTests(TestCase):
+    """ZH-Amtsformulare kreuzen die Objekt-Art datengetrieben; 269d-Frist serverseitig."""
+
+    def test_zh_formulare_objektart_datengetrieben(self):
+        src = open('core/services/formular_fill.py', encoding='utf-8').read()
+        # Mietzins-Formular: Wohnung(1)/Geschäftsräume(2) aus mietrecht_kategorie
+        self.assertRegex(src, r"obj_cb\s*=\s*'Kontrollkästchen 1'\s+if\s+vertrag\.mietrecht_kategorie\s*==\s*'wohnen'\s+else\s+'Kontrollkästchen 2'")
+        # Kündigungs-Formular: Wohnung(6)/Geschäftsräume(7)
+        self.assertRegex(src, r"obj_cb\s*=\s*'Kontrollkästchen 6'\s+if\s+vertrag\.mietrecht_kategorie\s*==\s*'wohnen'\s+else\s+'Kontrollkästchen 7'")
+        self.assertNotRegex(src, r"cbs = \['Kontrollkästchen 1', 'Kontrollkästchen 3'\]")
+
+    def test_269d_zu_fruehes_datum_wird_abgelehnt(self):
+        from rentals.models import MietzinsAnpassung
+        lg, e, m, v = _basis_objekte()
+        v.basis_referenzzinssatz = Decimal('1.25'); v.basis_lik_punkte = Decimal('100.0')
+        v.kuendigungsfrist_monate = 3; v.save()
+        c = Client(); c.force_login(_team_user())
+        # Erhöhung mit Wirksamkeit morgen — deutlich vor dem nächsten Termin.
+        r = c.post(f'/neu/mietzins/{v.id}/anpassung/', {
+            'aktion': 'speichern', 'neu_netto': '1600', 'neu_zins': '1.50',
+            'neu_lik': '105.0', 'wirksam_ab': (date.today() + timedelta(days=1)).isoformat(),
+            'begruendung': 'Referenzzins', 'formular': 'generisch'})
+        self.assertEqual(r.status_code, 302)
+        # Kein Datensatz angelegt — die Frist wurde serverseitig durchgesetzt.
+        self.assertEqual(MietzinsAnpassung.objects.filter(vertrag=v).count(), 0)
