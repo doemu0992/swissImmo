@@ -2686,6 +2686,25 @@ class MietzinsAnpassungSollmietzinsTests(TestCase):
             self._anpassung_speichern(c, v, wirksam=w)
         self.assertEqual(Sollmietzins.objects.filter(einheit=e, gueltig_ab=w).count(), 1)
 
+    def test_direkte_anpassung_erzeugt_objektzeile(self):
+        # Auch eine ohne das /neu/-Formular erstellte Anpassung (Alt-View/Import/
+        # Admin) muss die Objekt-Sollmietzins-Zeile anlegen — via Model.save().
+        from portfolio.models import Sollmietzins
+        from rentals.models import MietzinsAnpassung
+        e, v = self._setup()
+        anp = MietzinsAnpassung.objects.create(
+            vertrag=v, wirksam_ab=date(2027, 10, 31),
+            neuer_netto_mietzins=Decimal('1269.67'), alter_netto_mietzins=Decimal('1250'),
+            neuer_referenzzinssatz=Decimal('1.50'), neuer_lik_index=Decimal('105'),
+            begruendung='Referenzzinssatzerhöhung, Kostensteigerung')
+        z = Sollmietzins.objects.get(einheit=e, gueltig_ab=date(2027, 10, 31))
+        self.assertEqual(z.netto_mietzins, Decimal('1269.67'))
+        self.assertEqual(z.quelle_anpassung_id, anp.id)
+        self.assertIn('Referenzzinssatzerhöhung', z.notiz)
+        # Löschen der Anpassung entfernt die Zeile (CASCADE).
+        anp.delete()
+        self.assertFalse(Sollmietzins.objects.filter(einheit=e, gueltig_ab=date(2027, 10, 31)).exists())
+
     def test_loeschen_entfernt_zeile_und_resynct(self):
         from portfolio.models import Sollmietzins
         from rentals.models import MietzinsAnpassung

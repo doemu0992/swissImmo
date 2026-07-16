@@ -589,6 +589,41 @@ class MietzinsAnpassung(models.Model):
     class Meta:
         db_table = 'core_mietzinsanpassung'
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Die Anpassung wird IMMER auch als datierte Sollmietzins-Zeile am OBJEKT
+        # geführt (gültig ab = wirksam_ab) — egal über welchen Weg sie entsteht
+        # (amtliches Formular, Alt-View, Import, Admin). So erscheint sie im
+        # Objekt-Mietzins und neue Verträge starten ab dem Termin mit dem neuen
+        # Wert. Gelöscht wird sie via CASCADE (Sollmietzins.quelle_anpassung).
+        self._sync_objekt_sollmietzins()
+
+    def _sync_objekt_sollmietzins(self):
+        from decimal import Decimal as _D
+        einheit = self.vertrag.einheit if self.vertrag_id else None
+        if not einheit or self.neuer_netto_mietzins is None:
+            return
+        from portfolio.models import Sollmietzins
+        nk = _D('0.00') if getattr(einheit, 'ist_einstellplatz', False) \
+            else (einheit.nebenkosten_aktuell or _D('0.00'))
+        teile = ["Amtliche Mietzinsanpassung"]
+        grund = (self.begruendung or '').strip()
+        if grund:
+            teile.append(grund)
+        name = self.vertrag.mieter.display_name if self.vertrag.mieter_id else ''
+        if name:
+            teile.append(name)
+        Sollmietzins.objects.update_or_create(
+            einheit=einheit, gueltig_ab=self.wirksam_ab,
+            defaults={
+                'netto_mietzins': self.neuer_netto_mietzins,
+                'nebenkosten': nk,
+                'basis_referenzzinssatz': self.neuer_referenzzinssatz,
+                'basis_lik_punkte': self.neuer_lik_index,
+                'quelle_anpassung': self,
+                'notiz': " · ".join(teile),
+            })
+
 class Leerstand(models.Model):
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='leerstaende')
     beginn = models.DateField()
