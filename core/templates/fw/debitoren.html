@@ -88,7 +88,7 @@
           <table class="w-full text-[13px] mb-3"><tbody>
             <tr class="border-b border-slate-100"><td class="py-1.5 text-slate-500">Position</td><td class="py-1.5 text-right font-medium">${debEsc(titel)||'<span class="text-slate-400 italic">Titel eingeben…</span>'}</td></tr>
             ${beschr?`<tr class="border-b border-slate-100"><td class="py-1.5 text-slate-500 align-top">Beschreibung</td><td class="py-1.5 text-right text-slate-600">${debEsc(beschr)}</td></tr>`:''}
-            <tr><td class="py-2 font-semibold">Rechnungsbetrag</td><td class="py-2 text-right font-bold text-indigo-600">CHF ${debFmt(betrag)}</td></tr>
+            <tr><td class="py-2 font-semibold">Rechnungsbetrag</td><td class="py-2 text-right tabular-nums font-bold text-indigo-600">CHF ${debFmt(betrag)}</td></tr>
           </tbody></table>
           <div class="mt-4 rounded-lg bg-slate-50 border border-dashed border-slate-200 px-3 py-2.5 text-[11px] text-slate-400 flex items-center gap-2">
             <i class="fa-solid fa-qrcode text-slate-300 text-base"></i>

@@ -35,8 +35,8 @@
             <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location='/neu/lieferantenkonto/?name={{ g.name|urlencode }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}'">
                 <td class="px-5 py-3 font-semibold text-slate-900">{{ g.name }}</td>
                 <td class="px-5 py-3 text-center text-slate-600">{{ g.anzahl }}</td>
-                <td class="px-5 py-3 text-right text-slate-600">CHF {{ g.volumen|chf }}</td>
-                <td class="px-5 py-3 text-right font-semibold {% if g.offen > 0 %}text-rose-600{% else %}text-slate-400{% endif %}">
+                <td class="px-5 py-3 text-right tabular-nums text-slate-600">CHF {{ g.volumen|chf }}</td>
+                <td class="px-5 py-3 text-right tabular-nums font-semibold {% if g.offen > 0 %}text-rose-600{% else %}text-slate-400{% endif %}">
                     {% if g.offen > 0 %}CHF {{ g.offen|chf }}{% else %}bezahlt{% endif %}
                 </td>
                 <td class="px-5 py-3 text-right"><i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i></td>

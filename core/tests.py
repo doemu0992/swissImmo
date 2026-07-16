@@ -8354,3 +8354,29 @@ class LegalBatchTests(TestCase):
         self.assertEqual(r.status_code, 302)
         # Kein Datensatz angelegt — die Frist wurde serverseitig durchgesetzt.
         self.assertEqual(MietzinsAnpassung.objects.filter(vertrag=v).count(), 0)
+
+
+class UIConsistencyBatchTests(TestCase):
+    """Tabellen-Header, Karten-Radius und Titel-Gewicht sind app-weit einheitlich."""
+
+    import os as _os
+    _FW = _os.path.join(_os.path.dirname(__file__), 'templates', 'fw')
+
+    def _read(self, name):
+        with open(self._os.path.join(self._FW, name), encoding='utf-8') as fh:
+            return fh.read()
+
+    def test_kein_grauer_thead_block_mehr(self):
+        # Der graue Header-Balken (bg-slate-50 …) wurde überall auf den kanonischen
+        # rahmenlosen Tabellen-Header umgestellt.
+        for f in ['anlagen', 'logbuch', 'kautionen', 'kontoblatt', 'abnahme_detail',
+                  'mandate', 'benutzer']:
+            self.assertNotIn('bg-slate-50 text-slate-500 text-xs uppercase tracking-wide',
+                             self._read(f + '.html'), f'grauer thead noch in {f}')
+
+    def test_design_inseln_nutzen_kanonische_klassen(self):
+        # rounded-xl statt rounded-2xl, font-extrabold statt font-black.
+        for f in ['abonnement', 'mieterwechsel', 'vermarktung', 'dashboard']:
+            src = self._read(f + '.html')
+            self.assertNotIn('rounded-2xl', src, f'rounded-2xl noch in {f}')
+            self.assertNotIn('font-black', src, f'font-black noch in {f}')

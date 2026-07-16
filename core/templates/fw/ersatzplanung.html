@@ -134,9 +134,9 @@
                     {% if r.rest is not None %}{{ r.rest }} J{% else %}—{% endif %}</td>
                 <td class="px-5 py-3"><span class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap {{ r.status_cls }}">{{ r.status_label }}</span></td>
                 <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{% if r.a.garantie_bis %}{{ r.a.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right whitespace-nowrap {% if r.schaden_anzahl %}text-slate-900{% else %}text-slate-300{% endif %}">
+                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap {% if r.schaden_anzahl %}text-slate-900{% else %}text-slate-300{% endif %}">
                     {% if r.schaden_anzahl %}{{ r.schaden_anzahl }}× · CHF {{ r.reparaturkosten|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right font-semibold text-slate-900 whitespace-nowrap">CHF {{ r.lebenszyklus|chf }}</td>
+                <td class="px-5 py-3 text-right tabular-nums font-semibold text-slate-900 whitespace-nowrap">CHF {{ r.lebenszyklus|chf }}</td>
                 <td class="px-5 py-3 text-right whitespace-nowrap"><a href="/neu/objekte/{{ r.a.einheit_id }}/#obj-raumbuch" class="text-xs text-indigo-600 font-medium hover:underline">Objekt</a></td>
             </tr>
             {% empty %}
