@@ -115,9 +115,10 @@ def public_schaden_melden_view(request):
 def public_ticket_view(request, liegenschaft_id):
     liegenschaft = get_object_or_404(Liegenschaft, pk=liegenschaft_id)
     einheiten = Einheit.objects.filter(liegenschaft=liegenschaft).order_by('etage', 'bezeichnung')
-    for e in einheiten:
-        aktiver_v = Mietvertrag.objects.filter(einheit=e, aktiv=True).first()
-        e.mieter_namen = f"{aktiver_v.mieter.nachname}" if aktiver_v else "Leerstand"
+    # KEINE Mieter-Namen / "Leerstand" ausgeben — diese Seite ist ohne Login über
+    # ?liegenschaft_id erreichbar (QR-Aushang). Sonst könnte jeder durch ID-Enumeration
+    # den Mieterbestand (Nachnamen) + leerstehende Wohnungen des ganzen Portfolios
+    # abgreifen (DSG/Datenschutz). Zur Auswahl genügt die Objektbezeichnung/Etage.
 
     if request.method == 'POST':
         process_public_ticket_form(liegenschaft, request.POST, request.FILES)

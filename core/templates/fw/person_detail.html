@@ -28,7 +28,7 @@
         <form method="post" action="/neu/personen/{{ m.id }}/loeschen/" class="inline"
               onsubmit="return confirm('Person „{{ m.display_name|escapejs }}“ wirklich löschen?{% if anzahl_aktive %} Achtung: es besteht ein aktiver Vertrag – die Löschung wird blockiert.{% else %} Beendete/Entwurf-Verträge, Journal und Dokumente dieser Person werden mitgelöscht.{% endif %}');">
             {% csrf_token %}
-            <button type="submit" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-red-200 text-red-600 hover:bg-red-50 transition-colors">
+            <button type="submit" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors">
                 <i class="fa-solid fa-trash text-xs mr-1"></i>Löschen
             </button>
         </form>
@@ -80,7 +80,7 @@
             <h3 class="font-bold text-slate-800 mb-3"><i class="fa-solid fa-key text-indigo-500 mr-1.5"></i>Mieterportal-Zugang</h3>
             {% if portal_user %}
                 <p class="text-sm text-slate-600 mb-1">Aktiv · Benutzername: <span class="font-mono font-semibold">{{ portal_user.username }}</span>
-                    {% if not portal_user.is_active %}<span class="text-red-500">(deaktiviert)</span>{% endif %}</p>
+                    {% if not portal_user.is_active %}<span class="text-rose-500">(deaktiviert)</span>{% endif %}</p>
                 <p class="text-xs text-slate-400 mb-3">Login unter <span class="font-mono">/login/</span>. „Passwort zurücksetzen" erzeugt ein neues Passwort und sendet es
                     {% if m.email %}an <span class="font-semibold">{{ m.email }}</span>{% else %}<span class="text-amber-600">(keine E-Mail hinterlegt — wird angezeigt)</span>{% endif %}.</p>
                 <div class="flex gap-2">
@@ -90,7 +90,7 @@
                     </form>
                     <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('Portal-Zugang deaktivieren?');">{% csrf_token %}
                         <input type="hidden" name="aktion" value="entfernen">
-                        <button class="text-xs font-semibold border border-red-100 text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg">Zugang deaktivieren</button>
+                        <button class="text-xs font-semibold border border-rose-100 text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-lg">Zugang deaktivieren</button>
                     </form>
                 </div>
             {% else %}

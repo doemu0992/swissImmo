@@ -2676,6 +2676,10 @@ def fw_vertrag_status(request, pk):
             v.status = neu
             v.aktiv = (neu == 'aktiv')
             v.save(update_fields=['status', 'aktiv'])
+            # Aktives Mietverhältnis → Objekt aus der Vermarktung/Feed nehmen.
+            if neu == 'aktiv' and v.einheit_id and v.einheit.zur_ausschreibung:
+                v.einheit.zur_ausschreibung = False
+                v.einheit.save(update_fields=['zur_ausschreibung'])
             log_aktion(request, "Vertragsstatus geändert", str(v.mieter), erlaubt[neu], ziel=v)
             messages.success(request, f"✅ Vertrag ist jetzt: {erlaubt[neu]}.")
         else:
@@ -6592,6 +6596,11 @@ def fw_vertrag_neu_speichern(request):
     # Aktivieren eines bearbeiteten Entwurfs). Fehler dürfen nicht blockieren.
     anzahl_dok = 0
     if P.get('aktiv_setzen') == 'on':
+        # Aktives Mietverhältnis → Objekt aus der Vermarktung/Feed/Exposé nehmen
+        # (auch beim direkten Vertragsweg, nicht nur über Bewerbung→Vertrag).
+        if vertrag.einheit_id and vertrag.einheit.zur_ausschreibung:
+            vertrag.einheit.zur_ausschreibung = False
+            vertrag.einheit.save(update_fields=['zur_ausschreibung'])
         try:
             from core.views.pdf import erzeuge_und_ablege_vertragspaket
             anzahl_dok = len(erzeuge_und_ablege_vertragspaket(vertrag))

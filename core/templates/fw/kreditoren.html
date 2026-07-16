@@ -12,7 +12,7 @@
             <i class="fa-solid fa-file-arrow-down mr-1.5"></i>Zahlungsdatei (pain.001) · {{ anzahl_zahlbar }}
         </a>
         {% endif %}
-        <button type="button" onclick="document.getElementById('scanform').classList.toggle('hidden')" class="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+        <button type="button" onclick="document.getElementById('scanform').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
             <i class="fa-solid fa-robot mr-1.5"></i> Beleg scannen (KI)
         </button>
         <button type="button" onclick="document.getElementById('kredform').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
@@ -48,13 +48,13 @@
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         <div class="grow min-w-[220px]"><label class="block text-xs font-semibold text-slate-500 mb-1">Belege (PDF, JPG, PNG — Mehrfachauswahl möglich) *</label>
             <input type="file" name="beleg_scan" required multiple accept=".pdf,.jpg,.jpeg,.png,.webp"
-                   class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-600 file:text-white"></div>
+                   class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white"></div>
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft (optional)</label>
             <select name="liegenschaft_id" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5 min-w-[14rem]">
                 <option value="">— später zuordnen —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
-        <button id="scan-btn" class="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
+        <button id="scan-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
             <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Hochladen &amp; scannen
         </button>
     </form>

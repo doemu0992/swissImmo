@@ -40,7 +40,7 @@ rechtzeitig einen Termin mit Ihnen vereinbaren.</p>
 
 <p>Bei Fragen stehen wir Ihnen gerne zur Verfügung.</p>
 
-{% if vertrag.ist_geschuetzt %}
+{% if vertrag.ist_geschuetzt and k.absender == 'vermieter' %}
 <div style="margin-top:14pt; padding:8pt 10pt; background:#f8fafc; border:0.5pt solid #e2e8f0; font-size:8pt; color:#64748b;">
     <b style="color:#334155;">Rechtliche Hinweise.</b>
     Diese Kündigung kann innert 30 Tagen nach Empfang bei der zuständigen Schlichtungsbehörde

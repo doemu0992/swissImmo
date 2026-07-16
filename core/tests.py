@@ -8127,3 +8127,28 @@ class PrueferRunde2QuickTests(TestCase):
         namen = [e['name'] for e in r.context['empfaenger']]
         self.assertIn(m2.display_name, namen)   # Mitmieter erscheint als Empfänger
         self.assertIn(m.display_name, namen)
+
+
+class PrueferRunde2SecurityUITests(TestCase):
+    """Security-/UI-Funde aus dem tiefen Durchgang."""
+
+    def test_public_report_leakt_keine_mieternamen(self):
+        # Öffentliche QR-Schadenseite (ohne Login) darf keine Mieter-Nachnamen
+        # oder "Leerstand" ausgeben (DSG / ID-Enumeration).
+        lg, e, m, v = _basis_objekte()   # Mieter Nachname 'Muster'
+        c = Client()
+        r = c.get(f'/report/{lg.id}/')
+        self.assertEqual(r.status_code, 200)
+        body = r.content.decode()
+        self.assertNotIn('Muster', body)
+        self.assertNotIn('Leerstand', body)
+        self.assertIn(e.bezeichnung, body)   # Objekt-Auswahl weiterhin möglich
+
+    def test_kuendigungsbestaetigung_kein_anfechtungshinweis_bei_mieterkuendigung(self):
+        # Anfechtung/Erstreckung (Art. 271/273 OR) gelten nur für Vermieterkündigung.
+        # Der Rechtshinweis-Block ist auf absender=='vermieter' gegated.
+        src = open('core/templates/core/dok_kuendigungsbestaetigung.html', encoding='utf-8').read()
+        idx = src.find('angefochten')
+        self.assertGreaterEqual(idx, 0)
+        block = src[max(0, idx - 400):idx]
+        self.assertRegex(block, r"absender\s*==\s*'vermieter'")
