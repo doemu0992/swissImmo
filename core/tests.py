@@ -7366,23 +7366,32 @@ class VertragBearbeitenTests(TestCase):
     """Vertrag bearbeiten: Entwurf voll, aktiv nur Detailfelder (Miete gesperrt,
     serverseitig erzwungen)."""
 
-    def test_entwurf_voll_editierbar(self):
+    def test_entwurf_bearbeiten_via_assistent(self):
+        from rentals.models import Mietvertrag
         lg, e, m, v = _basis_objekte()
         v.status = 'entwurf'; v.netto_mietzins = Decimal('1500'); v.save()
         c = Client(); c.force_login(_team_user())
+        # Entwurf → Bearbeiten leitet zum Assistenten (Wizard) mit ?edit=
         r = c.get(f'/neu/vertraege/{v.id}/bearbeiten/')
-        self.assertEqual(r.status_code, 200)
-        self.assertIn('name="netto_mietzins"', r.content.decode())   # editierbar
-        c.post(f'/neu/vertraege/{v.id}/bearbeiten/', {
-            'mieter_id': str(m.id), 'einheit_id': str(e.id), 'beginn': '2024-02-01',
-            'netto_mietzins': '1650', 'nebenkosten': '220', 'zahlungsrhythmus': 'monatlich',
-            'nk_abrechnungsart': 'akonto', 'verteilschluessel': 'm2',
-            'kuendigungsfrist': '3', 'anzahl_personen': '2', 'nebenraeume': 'Keller 5'})
+        self.assertEqual(r.status_code, 302)
+        self.assertIn(f'/neu/vertraege/neu/?edit={v.id}', r['Location'])
+        # Assistent im Edit-Modus: Prefill-Daten + verstecktes edit_id
+        body = c.get(f'/neu/vertraege/neu/?edit={v.id}').content.decode()
+        self.assertIn('id="edit-data"', body)
+        self.assertIn(f'name="edit_id" value="{v.id}"', body)
+        # Speichern mit edit_id aktualisiert denselben Vertrag (kein neuer)
+        vor = Mietvertrag.objects.count()
+        c.post('/neu/vertraege/neu/speichern/', {
+            'edit_id': str(v.id), 'einheit_id': str(e.id), 'mieter_id': str(m.id),
+            'beginn': '2024-01-01', 'netto_mietzins': '1700', 'nebenkosten': '210',
+            'nk_abrechnungsart': 'akonto', 'zahlungsrhythmus': 'monatlich',
+            'verteilschluessel': 'm2', 'mietzins_modell': 'fest', 'kuendigungsfrist': '3',
+            'anzahl_personen': '1', 'nebenraeume': 'Keller 9'})
+        self.assertEqual(Mietvertrag.objects.count(), vor)   # kein neuer Vertrag
         v.refresh_from_db()
-        self.assertEqual(v.netto_mietzins, Decimal('1650'))
-        self.assertEqual(v.nebenkosten, Decimal('220'))
-        self.assertEqual(v.beginn, date(2024, 2, 1))
-        self.assertEqual(v.nebenraeume, 'Keller 5')
+        self.assertEqual(v.netto_mietzins, Decimal('1700'))
+        self.assertEqual(v.nebenraeume, 'Keller 9')
+        self.assertEqual(v.status, 'entwurf')   # ohne aktiv_setzen bleibt Entwurf
 
     def test_aktiv_miete_gesperrt(self):
         lg, e, m, v = _basis_objekte()   # status='aktiv', netto 1500

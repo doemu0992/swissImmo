@@ -6162,6 +6162,13 @@ def fw_vertrag_neu(request):
         'plz': vw.plz if vw else '', 'ort': vw.ort if vw else '',
     }
 
+    # Bearbeiten-Modus: der Assistent editiert einen bestehenden ENTWURF (voll).
+    edit_id = request.GET.get('edit')
+    edit_vertrag = (Mietvertrag.objects
+                    .filter(id=edit_id, status='entwurf')
+                    .select_related('einheit__liegenschaft', 'mieter', 'mitmieter').first()
+                    if edit_id else None)
+
     # Vorwahl einer bestimmten Einheit (z.B. aus dem Mieterwechsel-Cockpit):
     # dann nur diese Liegenschaft + dieses Objekt anzeigen, keine Auswahl nötig.
     try:
@@ -6178,11 +6185,15 @@ def fw_vertrag_neu(request):
     # Die vorgewählte Einheit immer zeigen (Nachmieter-Vertrag beginnt nach Auszug,
     # der alte Vertrag kann noch aktiv/gekündigt sein).
     belegte.discard(vorwahl_einheit)
+    # Im Bearbeiten-Modus das Objekt des Entwurfs immer einschliessen (sonst kann
+    # der Assistent es nicht vorbelegen).
+    if edit_vertrag:
+        belegte.discard(edit_vertrag.einheit_id)
 
     lg_qs = Liegenschaft.objects.select_related('mandant').prefetch_related('einheiten').order_by('strasse')
     if vorwahl_e:
         lg_qs = lg_qs.filter(id=vorwahl_e.liegenschaft_id)
-    elif aktive_lg:
+    elif aktive_lg and not edit_vertrag:
         lg_qs = lg_qs.filter(id=aktive_lg.id)
 
     liegenschaften = []
@@ -6239,6 +6250,34 @@ def fw_vertrag_neu(request):
                'strasse': m.strasse or '', 'plz': m.plz or '', 'ort': m.ort or '', 'email': m.email or ''}
               for m in Mieter.objects.all().order_by('nachname', 'firmen_name')]
 
+    # Prefill-Daten für den Bearbeiten-Modus (Entwurf).
+    edit_json = None
+    if edit_vertrag:
+        ev = edit_vertrag
+        edit_json = {
+            'id': ev.id, 'lg_id': ev.einheit.liegenschaft_id, 'einheit_id': ev.einheit_id,
+            'mieter_id': ev.mieter_id, 'mit_mieter_id': ev.mitmieter_id or '',
+            'mitmieter_name': ev.mitmieter_name or '', 'familienwohnung': bool(ev.familienwohnung),
+            'anzahl_personen': ev.anzahl_personen or 1,
+            'beginn': ev.beginn.isoformat() if ev.beginn else '',
+            'ende': ev.ende.isoformat() if ev.ende else '', 'unbefristet': ev.ende is None,
+            'erstmals_kuendbar': ev.erstmals_kuendbar_auf.isoformat() if ev.erstmals_kuendbar_auf else '',
+            'kuendigungsfrist': ev.kuendigungsfrist_monate, 'kuendigungstermine': ev.kuendigungstermine or '',
+            'mitbenutzung': ev.mitbenutzung or '', 'nebenraeume': ev.nebenraeume or '',
+            'besondere_vereinbarungen': ev.besondere_vereinbarungen or '',
+            'weitere_vorbehalte': ev.weitere_vorbehalte or '', 'zweckbestimmung': ev.zweckbestimmung or '',
+            'zahlungsrhythmus': ev.zahlungsrhythmus or 'monatlich',
+            'netto_mietzins': float(ev.netto_mietzins or 0), 'nebenkosten': float(ev.nebenkosten or 0),
+            'nk_abrechnungsart': ev.nk_abrechnungsart or 'akonto',
+            'verteilschluessel': ev.verteilschluessel or 'm2',
+            'mwst_pflichtig': bool(ev.mwst_pflichtig), 'mwst_satz': float(ev.mwst_satz or 8.1),
+            'mietzins_modell': ev.mietzins_modell or 'fest',
+            'basis_referenzzinssatz': float(ev.basis_referenzzinssatz) if ev.basis_referenzzinssatz is not None else None,
+            'basis_lik_punkte': float(ev.basis_lik_punkte) if ev.basis_lik_punkte is not None else None,
+            'kautions_betrag': float(ev.kautions_betrag) if ev.kautions_betrag else '',
+            'kautions_konto': ev.kautions_konto or '',
+        }
+
     from core.services.docuseal_service import docuseal_konfiguriert
     return render(request, 'fw/vertrag_neu.html', {
         **basis, 'nav': 'vertraege',
@@ -6248,6 +6287,7 @@ def fw_vertrag_neu(request):
         **_lik_assistent_defaults(vw),
         'heute_iso': timezone.now().date().isoformat(),
         'vorwahl_einheit': vorwahl_einheit or '',
+        'edit_vertrag': edit_vertrag, 'edit_json': edit_json,
         'docuseal_konfiguriert': docuseal_konfiguriert(),
     })
 
@@ -6377,35 +6417,49 @@ def fw_vertrag_neu_speichern(request):
     # Nebenkosten — serverseitig hart auf 0 setzen, egal was übermittelt wurde.
     _nk = Decimal('0.00') if einheit.ist_einstellplatz else dec('nebenkosten')
 
+    # Bearbeiten-Modus: bestehenden ENTWURF aktualisieren statt neu anlegen.
+    edit_id = P.get('edit_id')
+    editing = (Mietvertrag.objects.filter(id=edit_id, status='entwurf').first()
+               if edit_id else None)
+
+    felder = dict(
+        mieter=mieter, einheit=einheit,
+        status='aktiv' if P.get('aktiv_setzen') == 'on' else 'entwurf',
+        beginn=beginn, ende=datum('ende'),
+        erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
+        kuendigungsfrist_monate=_kfrist,
+        kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
+        mitmieter_name=mitmieter, mitmieter=zweiter_obj, familienwohnung=familienwohnung,
+        anzahl_personen=int(P.get('anzahl_personen') or 1),
+        besondere_vereinbarungen=P.get('besondere_vereinbarungen', '').strip(),
+        mitbenutzung=P.get('mitbenutzung', '').strip(),
+        nebenraeume=P.get('nebenraeume', '').strip(),
+        netto_mietzins=dec('netto_mietzins'), nebenkosten=_nk,
+        nk_abrechnungsart=P.get('nk_abrechnungsart', 'akonto'),
+        verteilschluessel=P.get('verteilschluessel', 'm2'),
+        zahlungsrhythmus=P.get('zahlungsrhythmus', 'monatlich'),
+        mwst_pflichtig=P.get('mwst_pflichtig') == 'on',
+        mwst_satz=dec('mwst_satz') or Decimal('8.1'),
+        mietzins_modell=_mietzins_modell,
+        zweckbestimmung=P.get('zweckbestimmung', '').strip(),
+        weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
+        basis_referenzzinssatz=dec('basis_referenzzinssatz') or Decimal('1.75'),
+        basis_lik_punkte=dec('basis_lik_punkte') or Decimal('107.1'),
+        basis_lik_stand=basis_lik_stand,
+        kostensteigerung_datum=datum('kostensteigerung_datum'),
+        kautions_betrag=dec('kautions_betrag') or None,
+        kautions_konto=P.get('kautions_konto', '').strip(),
+    )
+
     with transaction.atomic():
-        vertrag = Mietvertrag.objects.create(
-            mieter=mieter, einheit=einheit,
-            status='aktiv' if P.get('aktiv_setzen') == 'on' else 'entwurf',
-            beginn=beginn, ende=datum('ende'),
-            erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
-            kuendigungsfrist_monate=_kfrist,
-            kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
-            mitmieter_name=mitmieter, mitmieter=zweiter_obj, familienwohnung=familienwohnung,
-            anzahl_personen=int(P.get('anzahl_personen') or 1),
-            besondere_vereinbarungen=P.get('besondere_vereinbarungen', '').strip(),
-            mitbenutzung=P.get('mitbenutzung', '').strip(),
-            nebenraeume=P.get('nebenraeume', '').strip(),
-            netto_mietzins=dec('netto_mietzins'), nebenkosten=_nk,
-            nk_abrechnungsart=P.get('nk_abrechnungsart', 'akonto'),
-            verteilschluessel=P.get('verteilschluessel', 'm2'),
-            zahlungsrhythmus=P.get('zahlungsrhythmus', 'monatlich'),
-            mwst_pflichtig=P.get('mwst_pflichtig') == 'on',
-            mwst_satz=dec('mwst_satz') or Decimal('8.1'),
-            mietzins_modell=_mietzins_modell,
-            zweckbestimmung=P.get('zweckbestimmung', '').strip(),
-            weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
-            basis_referenzzinssatz=dec('basis_referenzzinssatz') or Decimal('1.75'),
-            basis_lik_punkte=dec('basis_lik_punkte') or Decimal('107.1'),
-            basis_lik_stand=basis_lik_stand,
-            kostensteigerung_datum=datum('kostensteigerung_datum'),
-            kautions_betrag=dec('kautions_betrag') or None,
-            kautions_konto=P.get('kautions_konto', '').strip(),
-        )
+        if editing:
+            for _k, _v in felder.items():
+                setattr(editing, _k, _v)
+            editing.save()
+            vertrag = editing
+            vertrag.staffelstufen.all().delete()   # Staffel neu aus dem Formular aufbauen
+        else:
+            vertrag = Mietvertrag.objects.create(**felder)
         # Staffelstufen (parallele Listen ab_datum/netto) — nur bei Staffelmiete
         if _mietzins_modell == 'staffel':
             from rentals.models import Staffelstufe
@@ -6441,13 +6495,15 @@ def fw_vertrag_neu_speichern(request):
 
     # Vertragsdokumente automatisch erzeugen und einzeln in die Akte legen
     # (→ erscheinen sofort im Mieterportal). Fehler dürfen die Erstellung
-    # nicht blockieren.
+    # nicht blockieren. Beim Bearbeiten NICHT automatisch neu erzeugen (das PDF
+    # wird auf Wunsch neu generiert) — verhindert Dubletten in der Akte.
     anzahl_dok = 0
-    try:
-        from core.views.pdf import erzeuge_und_ablege_vertragspaket
-        anzahl_dok = len(erzeuge_und_ablege_vertragspaket(vertrag))
-    except Exception:
-        anzahl_dok = 0
+    if not editing:
+        try:
+            from core.views.pdf import erzeuge_und_ablege_vertragspaket
+            anzahl_dok = len(erzeuge_und_ablege_vertragspaket(vertrag))
+        except Exception:
+            anzahl_dok = 0
 
     # Mietrechtliche Plausibilitätsprüfung (Index ≥ 5 J / Staffel ≥ 3 J,
     # max. 1 Staffelerhöhung/Jahr) — als Warnung, nicht blockierend.
@@ -6461,9 +6517,11 @@ def fw_vertrag_neu_speichern(request):
     except Exception:
         pass
 
-    log_aktion(request, "Mietvertrag erstellt (Assistent)", str(mieter),
-               f"{einheit.bezeichnung}, ab {beginn}", ziel=vertrag)
-    if anzahl_dok:
+    log_aktion(request, "Mietvertrag bearbeitet (Assistent)" if editing else "Mietvertrag erstellt (Assistent)",
+               str(mieter), f"{einheit.bezeichnung}, ab {beginn}", ziel=vertrag)
+    if editing:
+        messages.success(request, f"✅ Vertrag (Entwurf) für {mieter.display_name} aktualisiert.")
+    elif anzahl_dok:
         messages.success(
             request,
             f"✅ Mietvertrag für {mieter.display_name} erstellt — "
@@ -6587,6 +6645,12 @@ def fw_vertrag_bearbeiten(request, pk):
     from core.auth import log_aktion, snapshot_model, diff_model
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=pk)
     gesperrt = v.status != 'entwurf'   # nur Entwurf voll editierbar
+
+    # Entwurf → voller Assistent (mit Live-Vorschau). Aktive/gekündigte Verträge
+    # → reduziertes Formular (Miete/Objekt gesperrt).
+    if not gesperrt and request.method == 'GET':
+        from django.shortcuts import redirect
+        return redirect(f'/neu/vertraege/neu/?edit={v.id}')
 
     if request.method == 'POST':
         P = request.POST

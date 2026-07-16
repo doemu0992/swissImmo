@@ -6,16 +6,19 @@
 {{ liegenschaften|json_script:"lg-data" }}
 {{ mieter|json_script:"mieter-data" }}
 {{ vorwahl_einheit|json_script:"vorwahl-einheit" }}
+{{ edit_json|json_script:"edit-data" }}
 
 <div class="flex items-center justify-between mb-4">
-    <h1 class="text-2xl font-extrabold text-slate-900">Vertragserfassung</h1>
-    <a href="/neu/vertraege/{{ lg_query }}" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></a>
+    <h1 class="text-2xl font-extrabold text-slate-900">{% if edit_vertrag %}Vertrag (Entwurf) bearbeiten{% else %}Vertragserfassung{% endif %}</h1>
+    <a href="{% if edit_vertrag %}/neu/vertraege/{{ edit_vertrag.id }}/{% else %}/neu/vertraege/{{ lg_query }}{% endif %}" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></a>
 </div>
 
 <form method="post" action="/neu/vertraege/neu/speichern/" id="vform" onsubmit="return vorSubmit()">
 {% csrf_token %}
+{% if edit_vertrag %}<input type="hidden" name="edit_id" value="{{ edit_vertrag.id }}">{% endif %}
 <input type="hidden" name="einheit_id" id="f_einheit_id">
 <input type="hidden" name="mieter_id" id="f_mieter_id">
+<input type="hidden" name="mitmieter_name" id="f_mitmieter_name">
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
@@ -407,6 +410,56 @@ try {
     }
   }
 } catch (e) {}
+
+// Bearbeiten-Modus: bestehenden ENTWURF in den Assistenten vorbelegen.
+try {
+  const ED = JSON.parse(document.getElementById('edit-data').textContent);
+  if (ED) {
+    const setV = (name, val) => { const el=document.querySelector('[name="'+name+'"]'); if(el && val!=null && val!=='') el.value=val; };
+    // 1. Objekt: Liegenschaft → Objektliste → Objekt (danach echte Miete überschreiben)
+    document.getElementById('s_lg').value = String(ED.lg_id); lgChange();
+    document.getElementById('s_obj').value = String(ED.einheit_id); objChange();
+    // 2. Hauptmieter (bestehend)
+    if (ED.mieter_id) document.getElementById('s_mieter').value = String(ED.mieter_id);
+    // 3. Zweiter Mieter
+    if (ED.mit_mieter_id) {
+      const zw=document.getElementById('zweiter_aktiv'); if(zw && !zw.checked){ zw.checked=true; if(typeof toggleZweiter==='function') toggleZweiter(); }
+      const s2=document.getElementById('s_mieter2'); if(s2) s2.value=String(ED.mit_mieter_id);
+    } else if (ED.mitmieter_name) {
+      const h=document.getElementById('f_mitmieter_name'); if(h) h.value=ED.mitmieter_name;
+    }
+    // 4. Fristen / Nutzung
+    if (document.getElementById('s_beginn')) document.getElementById('s_beginn').value = ED.beginn || '';
+    const unb=document.getElementById('unbefristet');
+    if (unb) { unb.checked = !!ED.unbefristet; }
+    if (!ED.unbefristet && document.getElementById('s_ende')) document.getElementById('s_ende').value = ED.ende || '';
+    setV('erstmals_kuendbar', ED.erstmals_kuendbar);
+    if (document.getElementById('s_frist')) document.getElementById('s_frist').value = ED.kuendigungsfrist;
+    setV('kuendigungstermine', ED.kuendigungstermine);
+    if (document.getElementById('s_personen')) document.getElementById('s_personen').value = ED.anzahl_personen;
+    setV('mitbenutzung', ED.mitbenutzung);
+    setV('nebenraeume', ED.nebenraeume);
+    setV('besondere_vereinbarungen', ED.besondere_vereinbarungen);
+    setV('weitere_vorbehalte', ED.weitere_vorbehalte);
+    setV('zahlungsrhythmus', ED.zahlungsrhythmus);
+    setV('nk_abrechnungsart', ED.nk_abrechnungsart);
+    setV('verteilschluessel', ED.verteilschluessel);
+    if (document.getElementById('s_zweck')) document.getElementById('s_zweck').value = ED.zweckbestimmung || '';
+    // 5. Mietzins — NACH objChange mit den echten Vertragswerten überschreiben
+    if (document.getElementById('s_netto')) document.getElementById('s_netto').value = ED.netto_mietzins;
+    if (document.getElementById('s_nk')) document.getElementById('s_nk').value = ED.nebenkosten;
+    if (ED.basis_referenzzinssatz!=null) setV('basis_referenzzinssatz', ED.basis_referenzzinssatz);
+    if (ED.basis_lik_punkte!=null) setV('basis_lik_punkte', ED.basis_lik_punkte);
+    setV('kautions_betrag', ED.kautions_betrag);
+    setV('kautions_konto', ED.kautions_konto);
+    const sm=document.getElementById('s_modell'); if(sm){ sm.value=ED.mietzins_modell; if(typeof modellChange==='function') modellChange(); }
+    const fw=document.getElementById('familienwohnung'); if(fw) fw.checked = !!ED.familienwohnung;
+    const mw=document.getElementById('s_mwst');
+    if(mw){ mw.checked=!!ED.mwst_pflichtig; const box=document.getElementById('mwst-satz-box'); if(box) box.classList.toggle('hidden', !ED.mwst_pflichtig); }
+    setV('mwst_satz', ED.mwst_satz);
+    live();
+  }
+} catch (e) { if (window.console) console.warn('Vertrag-Prefill', e); }
 
 function curLg(){ return LG.find(l=>String(l.id)===document.getElementById('s_lg').value); }
 function curObj(){ const l=curLg(); if(!l) return null; return l.objekte.find(o=>String(o.id)===document.getElementById('s_obj').value); }
