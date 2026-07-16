@@ -5744,12 +5744,22 @@ class DocuSealWebhookTests(TestCase):
             self.assertTrue(verarbeite_docuseal_event(payload))
 
     def test_webhook_endpoint_gibt_200(self):
-        # Endpunkt darf NIE 422/'Wert ungültig' liefern, auch bei leerem Body
+        # Mit gültigem Secret: Endpunkt darf NIE 422/'Wert ungültig' liefern, auch bei
+        # leerem/kaputtem Body (tolerantes Parsing). Ohne Secret → 403 (kein offener
+        # Endpoint, siehe docuseal_webhook-Härtung).
+        from django.test import override_settings
         c = Client()
-        r = c.post('/api/rentals/webhook/docuseal', data='{}', content_type='application/json')
-        self.assertEqual(r.status_code, 200)
-        r2 = c.post('/api/rentals/webhook/docuseal', data='kein json', content_type='application/json')
-        self.assertEqual(r2.status_code, 200)
+        with override_settings(DOCUSEAL_WEBHOOK_SECRET='geheim'):
+            hdr = {'HTTP_X_WEBHOOK_SECRET': 'geheim'}
+            r = c.post('/api/rentals/webhook/docuseal', data='{}',
+                       content_type='application/json', **hdr)
+            self.assertEqual(r.status_code, 200)
+            r2 = c.post('/api/rentals/webhook/docuseal', data='kein json',
+                        content_type='application/json', **hdr)
+            self.assertEqual(r2.status_code, 200)
+            r3 = c.post('/api/rentals/webhook/docuseal', data='{}',
+                        content_type='application/json')  # ohne Secret
+            self.assertEqual(r3.status_code, 403)
 
 
 class SollmietzinsTests(TestCase):
@@ -7993,3 +8003,101 @@ class BewerberScoringBelegTests(TestCase):
         r = bewerte_bewerbung(b, Decimal('1700'))   # 90000 / 20400 = 4.4× → Tragbarkeit gut
         # 45 (Tragbarkeit) + 25 (Betreibungen belegt) + 15 (Anstellung belegt) = 85
         self.assertGreaterEqual(r['score'], 85)
+
+
+class PrueferRunde2Tests(TestCase):
+    """Funde aus dem 2. Prüfdurchgang (Anwalt/Buchhalter/Bewirtschafter/Verwaltung)."""
+
+    def _req(self, rolle='Verwaltung'):
+        from django.test import RequestFactory
+        r = RequestFactory().post('/')
+        r.user = _team_user(rolle)
+        return r
+
+    # --- Buchhalter: pay_kreditor darf Teilzahlungen nicht ignorieren ---
+    def test_pay_kreditor_keine_doppelzahlung(self):
+        from finance.api import pay_kreditor
+        from finance.models import KreditorenRechnung, KreditorenZahlung, Buchung, Buchungskonto
+        from finance.booking import ensure_kontenplan, konto as _k
+        from django.db.models import Sum
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        k = KreditorenRechnung.objects.create(lieferant='Elektro AG', betrag=Decimal('1000'),
+                                              status='freigegeben', liegenschaft=lg, konto=_k('4000'))
+        KreditorenZahlung.objects.create(kreditor=k, betrag=Decimal('300'), datum=date(2024, 5, 1))
+        self.assertEqual(k.offener_betrag, Decimal('700'))
+        status, _b = pay_kreditor(self._req(), k.id)
+        self.assertEqual(status, 200)
+        k.refresh_from_db()
+        self.assertEqual(k.status, 'bezahlt')
+        self.assertEqual(k.bezahlt_betrag, Decimal('1000'))   # 300 + 700, NICHT 1300
+        bank = Buchungskonto.objects.get(nummer='1020')
+        h = Buchung.objects.filter(haben_konto=bank).aggregate(s=Sum('betrag'))['s'] or Decimal('0')
+        self.assertEqual(h, Decimal('700'))   # nur der offene Betrag wurde abgebucht
+
+    # --- Verwaltung/Security: DocuSeal-Webhook ohne Secret ablehnen ---
+    def test_docuseal_webhook_ohne_secret_403(self):
+        from rentals.api import docuseal_webhook
+        from django.test import RequestFactory, override_settings
+        req = RequestFactory().post('/', data='{}', content_type='application/json')
+        with override_settings(DOCUSEAL_WEBHOOK_SECRET=None):
+            self.assertEqual(docuseal_webhook(req).status_code, 403)
+        with override_settings(DOCUSEAL_WEBHOOK_SECRET='geheim'):
+            req2 = RequestFactory().post('/', data='{}', content_type='application/json')
+            self.assertEqual(docuseal_webhook(req2).status_code, 403)   # ohne Header
+            req3 = RequestFactory().post('/', data='{}', content_type='application/json',
+                                         HTTP_X_WEBHOOK_SECRET='geheim')
+            self.assertEqual(docuseal_webhook(req3).status_code, 200)   # korrektes Secret
+
+    # --- Verwaltung/Security: Legacy-Finance-API weist negative Beträge ab ---
+    def test_legacy_zahlung_negativ_abgewiesen(self):
+        from finance.api import create_zahlung, ZahlungCreateSchema
+        from finance.models import Zahlungseingang
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        payload = ZahlungCreateSchema(vertrag_id=v.id, betrag=Decimal('-5000'),
+                                      datum_eingang=date(2024, 5, 1), buchungs_monat=date(2024, 5, 1))
+        status, _b = create_zahlung(self._req('Sachbearbeitung'), payload)
+        self.assertEqual(status, 400)
+        self.assertEqual(Zahlungseingang.objects.count(), 0)
+
+    # --- Bewirtschafter: Mieterportal-Dok-Leck Vormieter → Nachmieter ---
+    def test_portal_kein_vormieter_dokumentenleck(self):
+        from core.views.portal import _mieter_dok_gruppen
+        from rentals.models import Dokument as RDokument
+        from django.core.files.base import ContentFile
+        lg, e, m_alt, v_alt = _basis_objekte()
+        m_neu = Mieter.objects.create(typ='person', vorname='Rita', nachname='Neu',
+                                      email='rita@example.ch')
+        v_neu = Mietvertrag.objects.create(mieter=m_neu, einheit=e, beginn=date(2025, 1, 1),
+                                           netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'),
+                                           status='aktiv')
+        d = RDokument.objects.create(vertrag=v_alt, einheit=e, mieter=m_alt, kategorie='vertrag',
+                                     bezeichnung='Schlussabrechnung Vormieter', im_portal_sichtbar=True)
+        d.datei.save('x.pdf', ContentFile(b'%PDF-1.4'), save=True)
+        gruppen = _mieter_dok_gruppen(m_neu, [v_neu])
+        titel_alle = [doc['titel'] for g in gruppen for doc in g['docs']]
+        self.assertNotIn('Schlussabrechnung Vormieter', titel_alle)
+
+    # --- Bewirtschafter: Schlussabrechnung storniert offene Forderungen (keine Doppel) ---
+    def test_schlussabrechnung_storniert_offene_forderung(self):
+        from finance.models import DebitorenRechnung
+        from finance.booking import buche, ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        alt = DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, einheit=e,
+                                               titel='Miete 05/2024', datum=date(2024, 5, 1),
+                                               faellig_am=date(2024, 5, 5), betrag=Decimal('1700'),
+                                               status='offen')
+        buche('1100', '3000', Decimal('1700'), 'Miete 05/2024', datum=date(2024, 5, 1),
+              liegenschaft=lg, debitor=alt)
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/',
+               {'auszug_datum': '2024-06-30', 'aktion': 'buchen'})
+        alt.refresh_from_db()
+        self.assertEqual(alt.status, 'storniert')   # alte offene Forderung übernommen
+        offene = DebitorenRechnung.objects.filter(vertrag=v, status='offen')
+        self.assertEqual(offene.count(), 1)          # nur die Schlussabrechnung, keine Doppelforderung
+        self.assertEqual(offene.first().titel, 'Schlussabrechnung (Nachzahlung)')
+        self.assertEqual(offene.first().betrag, Decimal('1700'))

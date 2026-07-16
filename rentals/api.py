@@ -333,9 +333,16 @@ def verarbeite_docuseal_event(payload):
 # DOCUSEAL_WEBHOOK_SECRET (Header "X-Webhook-Secret").
 @router.post("/webhook/docuseal", auth=None)
 def docuseal_webhook(request):
+    import hmac
     secret = getattr(settings, 'DOCUSEAL_WEBHOOK_SECRET', None)
-    if secret and request.headers.get('X-Webhook-Secret') != secret:
-        return HttpResponse('{"status":"forbidden"}', content_type='application/json', status=200)
+    provided = request.headers.get('X-Webhook-Secret', '')
+    # Secret ist PFLICHT. Ohne konfiguriertes Secret (oder bei falschem Secret) wird
+    # der Webhook NICHT verarbeitet — sonst könnte ein unauthentifizierter POST einen
+    # Vertrag als 'unterzeichnet' fälschen und über die combined_document_url eine
+    # angreiferkontrollierte URL abrufen lassen (SSRF/Überschreiben). Konstant-zeitiger
+    # Vergleich gegen Timing-Seitenkanäle.
+    if not secret or not hmac.compare_digest(str(provided), str(secret)):
+        return HttpResponse('{"status":"forbidden"}', content_type='application/json', status=403)
     try:
         payload = json.loads(request.body or b'{}')
     except Exception:

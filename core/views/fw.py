@@ -2426,7 +2426,23 @@ def fw_schlussabrechnung(request, vertrag_id):
                 # Nachzahlung als Debitor stellen
                 if daten['nachzahlung'] and daten['saldo'] > 0:
                     from finance.models import Buchungskonto, Buchung
+                    from finance.api import erstelle_storno_buchung
                     heute = timezone.now().date()
+                    # Bereits offene Mietforderungen sind in daten['saldo'] enthalten
+                    # (offen_total). Ohne Bereinigung würden sie ein zweites Mal gefordert
+                    # und der Mietertrag (3000) doppelt gebucht. Daher die sauber offenen
+                    # Forderungen revisionssicher stornieren → sie gehen in die
+                    # Schlussabrechnung über (teilbezahlte bleiben unberührt).
+                    offene_alt = (DebitorenRechnung.objects
+                                  .filter(vertrag=v, status='offen')
+                                  .exclude(titel__startswith='Schlussabrechnung'))
+                    for alt in offene_alt:
+                        if alt.zahlungseingaenge.filter(status='verbucht').exists():
+                            continue
+                        for b in Buchung.objects.filter(debitoren_rechnung=alt, ist_storno=False):
+                            erstelle_storno_buchung(b, benutzer=request.user)
+                        alt.status = 'storniert'
+                        alt.save(update_fields=['status'])
                     rech = DebitorenRechnung.objects.create(
                         vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
                         titel="Schlussabrechnung (Nachzahlung)", datum=heute,
@@ -5452,8 +5468,11 @@ def _sollstellung_kontext(request):
         v_ende = min(end_date, v.ende) if v.ende else end_date
         tage_aktiv = (v_ende - v_start).days + 1
         faktor = Decimal(tage_aktiv) / Decimal(last_day)
-        netto = round((v.netto_mietzins or Decimal('0')) * faktor, 2)
-        nk = round((v.nebenkosten or Decimal('0')) * faktor, 2)
+        # Wie im tatsächlichen Lauf (run_sollstellung) die VERRECHNETEN Werte nutzen
+        # (Staffel/Index/Gratismonat/Komponenten berücksichtigt) — sonst weicht die
+        # Vorschau-Summe vom real gestellten Debitor ab.
+        netto = round((v.verrechneter_netto_mietzins(start_date) or Decimal('0')) * faktor, 2)
+        nk = round((v.verrechnete_nebenkosten(start_date) or Decimal('0')) * faktor, 2)
         total = netto + nk
         if total <= 0:
             continue

@@ -60,6 +60,8 @@ def run_sollstellung(request, payload: SollstellungSchema):
     DEPRECATED-Pfad (alte /app/-SPA): delegiert an den EINEN kanonischen Dienst
     ``core.services.automation.run_sollstellung`` (mit MWST + Staffel/Index),
     damit /app/ und /neu/ NICHT auseinanderlaufen. Keine eigene Buchungslogik mehr."""
+    if not (1 <= payload.monat <= 12) or not (2000 <= payload.jahr <= 2100):
+        return 400, {"success": False, "error": "Ungültiger Monat (1–12) oder Jahr (2000–2100)."}
     from core.services.automation import run_sollstellung as _kanonisch
     erstellt = _kanonisch(payload.jahr, payload.monat, user=request.user)
     log_aktion(request, "Sollstellung ausgeführt", f"Miete & NK {payload.monat:02d}/{payload.jahr}",
@@ -77,6 +79,8 @@ class ZahlungCreateSchema(Schema):
 @transaction.atomic
 def create_zahlung(request, payload: ZahlungCreateSchema):
     """Verbucht einen Zahlungseingang (Bank an Debitoren) und verknüpft OPs."""
+    if payload.betrag <= 0 or payload.betrag > Decimal('100000000'):
+        return 400, {"success": False, "error": "Betrag muss positiv und plausibel sein."}
     vertrag = get_object_or_404(Mietvertrag, id=payload.vertrag_id)
 
     # Suche passende offene Rechnung für diesen Monat
@@ -281,18 +285,31 @@ def update_kreditor(request, rechnung_id: int, payload: KreditorUpdateSchema):
 @transaction.atomic
 def pay_kreditor(request, rechnung_id: int):
     """Bezahlung der Rechnung -> Bucht das Geld vom Bankkonto ab."""
+    from finance.models import KreditorenZahlung
     rechnung = get_object_or_404(KreditorenRechnung.objects.select_for_update(), id=rechnung_id)
-    if rechnung.status == 'bezahlt': return 400, {"success": False, "error": "Bereits bezahlt!"}
+    if rechnung.status in ('bezahlt', 'storniert'):
+        return 400, {"success": False, "error": "Bereits bezahlt oder storniert!"}
 
-    rechnung.status = 'bezahlt'
-    rechnung.save()
-    log_aktion(request, "Kreditorenrechnung bezahlt", rechnung.lieferant or f"Rechnung #{rechnung.id}",
-               f"CHF {rechnung.betrag}")
+    # Nur den OFFENEN Betrag zahlen (berücksichtigt bereits geleistete Teilzahlungen)
+    # — sonst würde eine bereits teilbezahlte Rechnung nochmals voll abgebucht
+    # (Bank überzahlt, Kreditor 2000 mit Soll-Saldo). Zahlung als KreditorenZahlung
+    # erfassen, damit offener_betrag/OP-Liste stimmen.
+    offen = rechnung.offener_betrag
+    if offen <= 0:
+        rechnung.status = 'bezahlt'
+        rechnung.save(update_fields=['status'])
+        return 400, {"success": False, "error": "Kein offener Betrag."}
 
-    # SCHRITT 2: Zahlung buchen (Kreditoren an Bank)
     from finance.booking import buche
-    buche("2000", "1020", rechnung.betrag, f"Zahlung {rechnung.lieferant} - {rechnung.referenz}",
+    KreditorenZahlung.objects.create(
+        kreditor=rechnung, betrag=offen, datum=timezone.localdate(),
+        bemerkung=f"Zahlung {rechnung.lieferant}", erstellt_von=request.user)
+    buche("2000", "1020", offen, f"Zahlung {rechnung.lieferant} - {rechnung.referenz}",
           liegenschaft=rechnung.liegenschaft, kreditor=rechnung, user=request.user)
+    rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
+    rechnung.save(update_fields=['status'])
+    log_aktion(request, "Kreditorenrechnung bezahlt", rechnung.lieferant or f"Rechnung #{rechnung.id}",
+               f"CHF {offen}")
 
     return 200, {"success": True}
 
@@ -326,9 +343,11 @@ class DebitorenRechnungCreateSchema(Schema):
     faellig_am: Optional[date] = None
     konto_haben_id: Optional[int] = None
 
-@router.post("/debitoren-rechnungen", response={201: dict}, auth=auth_schreiben)
+@router.post("/debitoren-rechnungen", response={201: dict, 400: dict}, auth=auth_schreiben)
 @transaction.atomic
 def create_debitorenrechnung(request, payload: DebitorenRechnungCreateSchema):
+    if payload.betrag <= 0 or payload.betrag > Decimal('100000000'):
+        return 400, {"success": False, "error": "Betrag muss positiv und plausibel sein."}
     vertrag = get_object_or_404(Mietvertrag, id=payload.vertrag_id)
     rechnung = DebitorenRechnung.objects.create(
         vertrag=vertrag, liegenschaft=vertrag.einheit.liegenschaft, einheit=vertrag.einheit,
@@ -588,56 +607,48 @@ def verbuchen_hnk_abrechnung(request, periode_id: int):
     if periode.abgeschlossen:
         return 400, {"success": False, "error": "Periode ist bereits abgeschlossen und verbucht."}
 
-    abrechnung_data = calculate_hnk_abrechnung(request, periode_id)
-
+    # KANONISCHE Engine verwenden — identisch zu /neu/ (fw_nebenkosten_verbuchen)
+    # und der dem Mieter zugestellten PDF. Die frühere eigene Rechnung
+    # (calculate_hnk_abrechnung) wich ab: unbestätigte OCR-Scans (status='neu') im
+    # Kostenpool, round(tage/30)-Akonto, Verteilung nur nach Fläche (ignoriert
+    # Heizung/Wasser/Einheit-Schlüssel), kein Verwaltungshonorar, kein Split — der
+    # Mieter erhielt so eine andere (teils vorzeichenverkehrte) Buchung als die PDF.
+    from core.utils.billing import berechne_abrechnung
+    from finance.booking import buche, konto as _konto
+    result = berechne_abrechnung(periode.id)
+    if result.get('error'):
+        return 400, {"success": False, "error": result['error']}
     try:
-        konto_debitoren = Buchungskonto.objects.get(nummer="1100")
-        konto_nk_ertrag = Buchungskonto.objects.get(nummer="3020")
-    except Buchungskonto.DoesNotExist:
-        return 400, {"success": False, "error": "Systemkonten (1100, 3020) fehlen. Bitte Standard-Kontenplan laden."}
+        konto_nk = _konto("3020")
+    except Exception:
+        return 400, {"success": False, "error": "Systemkonto 3020 fehlt. Bitte Standard-Kontenplan laden."}
 
-    for m_data in abrechnung_data["mieter_abrechnungen"]:
-        vertrag = Mietvertrag.objects.get(id=m_data["vertrag_id"])
-        saldo = Decimal(str(m_data["saldo"]))
-
-        if saldo > 0:
+    heute = timezone.now().date()
+    n_nach = n_gut = 0
+    for a in result.get('abrechnungen', []):
+        vid = a.get('vertrag_id')
+        saldo = Decimal(str(a.get('saldo', 0)))
+        if not vid or a.get('typ') == 'leerstand' or abs(saldo) < Decimal('0.01'):
+            continue
+        vertrag = Mietvertrag.objects.filter(id=vid).select_related('einheit__liegenschaft').first()
+        if not vertrag:
+            continue
+        if saldo > 0:  # Nachzahlung → Debitor
             rechnung = DebitorenRechnung.objects.create(
-                vertrag=vertrag,
-                liegenschaft=vertrag.einheit.liegenschaft,
-                einheit=vertrag.einheit,
+                vertrag=vertrag, liegenschaft=vertrag.einheit.liegenschaft, einheit=vertrag.einheit,
                 titel=f"HNK Nachzahlung - {periode.bezeichnung}",
-                beschreibung=f"Abrechnung für {periode.start_datum.strftime('%d.%m.%Y')} bis {periode.ende_datum.strftime('%d.%m.%Y')}",
-                betrag=saldo,
-                faellig_am=timezone.now().date() + timezone.timedelta(days=30),
-                konto_haben_id=konto_nk_ertrag.id
-            )
-
-            Buchung.objects.create(
-                datum=timezone.now().date(),
-                beleg_text=f"HNK Nachzahlung {vertrag.mieter}",
-                liegenschaft=vertrag.einheit.liegenschaft,
-                soll_konto=konto_debitoren,
-                haben_konto=konto_nk_ertrag,
-                betrag=saldo,
-                debitoren_rechnung=rechnung,
-                erstellt_von=request.user
-            )
-
-        elif saldo < 0:
-            gutschrift_betrag = abs(saldo)
-            Buchung.objects.create(
-                datum=timezone.now().date(),
-                beleg_text=f"HNK Gutschrift {vertrag.mieter} - {periode.bezeichnung}",
-                liegenschaft=vertrag.einheit.liegenschaft,
-                soll_konto=konto_nk_ertrag,
-                haben_konto=konto_debitoren,
-                betrag=gutschrift_betrag,
-                erstellt_von=request.user
-            )
+                beschreibung=f"Periode {periode.start_datum:%d.%m.%Y}–{periode.ende_datum:%d.%m.%Y}",
+                betrag=saldo, faellig_am=heute + timezone.timedelta(days=30), konto_haben=konto_nk)
+            buche("1100", "3020", saldo, f"HNK-Nachzahlung {vertrag.mieter} - {periode.bezeichnung}",
+                  datum=heute, liegenschaft=vertrag.einheit.liegenschaft, debitor=rechnung, user=request.user)
+            n_nach += 1
+        else:  # Guthaben → Gutschrift
+            buche("3020", "1100", abs(saldo), f"HNK-Gutschrift {vertrag.mieter} - {periode.bezeichnung}",
+                  datum=heute, liegenschaft=vertrag.einheit.liegenschaft, user=request.user)
+            n_gut += 1
 
     periode.abgeschlossen = True
-    periode.save()
+    periode.save(update_fields=['abgeschlossen'])
     log_aktion(request, "HNK-Abrechnung verbucht", periode.bezeichnung,
-               f"{len(abrechnung_data['mieter_abrechnungen'])} Mieter-Abrechnungen")
-
+               f"{n_nach} Nachzahlungen, {n_gut} Gutschriften")
     return 200, {"success": True}

@@ -288,8 +288,13 @@ def _mieter_dok_gruppen(mieter, vertraege):
     from rentals.models import Dokument as RDokument
     alle_vertrag_ids = list(Mietvertrag.objects.filter(_ist_mieter_q(mieter)).values_list('id', flat=True))
     einheit_ids = [v.einheit_id for v in vertraege if v.einheit_id]
+    # Die Einheit-Zuordnung darf NUR echte Objektdokumente einschliessen (ohne Mieter-/
+    # Vertragsbezug — z. B. Hausordnung). Sonst sähe der neue Mieter einer Einheit die
+    # portal-sichtbaren Dokumente des Vormieters (Datenschutz-Leck). Eigene Dokumente
+    # laufen über mieter=… bzw. die eigenen Verträge.
     dok_qs = (RDokument.objects.filter(
-                  Q(mieter=mieter) | Q(vertrag_id__in=alle_vertrag_ids) | Q(einheit_id__in=einheit_ids),
+                  Q(mieter=mieter) | Q(vertrag_id__in=alle_vertrag_ids)
+                  | Q(einheit_id__in=einheit_ids, mieter__isnull=True, vertrag__isnull=True),
                   im_portal_sichtbar=True)
               .distinct().order_by('-datum')[:120])
     KAT_LABEL = {'vertrag': 'Vertrag', 'protokoll': 'Protokolle',
@@ -561,9 +566,13 @@ def mieter_dokument_download(request, pk):
     meine = Mietvertrag.objects.filter(_ist_mieter_q(mieter))
     vertrag_ids = list(meine.values_list('id', flat=True))
     einheit_ids = [e for e in meine.values_list('einheit_id', flat=True) if e]
+    # Einheit-Zuordnung nur für echte Objektdokumente (ohne Mieter-/Vertragsbezug) —
+    # sonst könnte der neue Mieter einer Einheit die Dokumente des Vormieters per ID
+    # herunterladen (identisch zur Sichtbarkeitsregel in _mieter_dok_gruppen).
     dok = get_object_or_404(
         RDokument.objects.filter(
-            Q(mieter=mieter) | Q(vertrag_id__in=vertrag_ids) | Q(einheit_id__in=einheit_ids),
+            Q(mieter=mieter) | Q(vertrag_id__in=vertrag_ids)
+            | Q(einheit_id__in=einheit_ids, mieter__isnull=True, vertrag__isnull=True),
             im_portal_sichtbar=True),
         pk=pk)
     try:
