@@ -71,17 +71,31 @@ def bewerte_bewerbung(bewerbung, brutto_monat):
         faktor_txt = "—"
 
     # --- Betreibungen ---
+    # „Keine Betreibungen" nur werten, wenn tatsächlich BELEGT (Auszug hochgeladen
+    # oder digital eingeholt). `hat_betreibungen=False` ist sonst nur der ungeprüfte
+    # Modell-Default und darf keine 25 Punkte an eine leere Bewerbung verschenken.
+    betr_beleg = bool(bewerbung.betreibungsauszug) or bool(getattr(bewerbung, 'digitaler_betreibungsauszug', False))
     if bewerbung.hat_betreibungen:
         betr_pkt, betr_txt = 0, "Betreibungen vorhanden"
+    elif betr_beleg:
+        betr_pkt, betr_txt = 25, "Keine Betreibungen (belegt)"
     else:
-        betr_pkt, betr_txt = 25, "Keine Betreibungen"
+        betr_pkt, betr_txt = 0, "Betreibungsauszug fehlt"
 
     # --- Anstellung / Erwerbssituation ---
+    # Punkte nur, wenn die Erwerbssituation tatsächlich belegt/angegeben ist —
+    # Angestellte brauchen Arbeitgeber ODER Lohnausweis; Pensionierte/Selbständige
+    # tragen ihren Status selbst. Sonst greift der Default 'angestellt/unbefristet'
+    # und würde einer leeren Bewerbung 15 Punkte geben.
+    anst_beleg = (bool((bewerbung.arbeitgeber or '').strip()) or bool(bewerbung.lohnausweis)
+                  or bewerbung.erwerbsstatus in ('pensioniert', 'selbstaendig'))
     stabil_status = bewerbung.erwerbsstatus in ('angestellt', 'pensioniert', 'selbstaendig')
-    if stabil_status and bewerbung.ist_unbefristet:
+    if stabil_status and anst_beleg and bewerbung.ist_unbefristet:
         anst_pkt, anst_txt = 15, "Unbefristet"
-    elif stabil_status:
+    elif stabil_status and anst_beleg:
         anst_pkt, anst_txt = 8, "Befristet"
+    elif not anst_beleg:
+        anst_pkt, anst_txt = 0, "Keine Angabe"
     else:
         anst_pkt, anst_txt = 0, bewerbung.get_erwerbsstatus_display()
 

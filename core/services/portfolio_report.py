@@ -39,8 +39,8 @@ def generate_portfolio_report(mandant, daten):
         ("Einheiten", str(daten['total_einheiten'])),
         ("Vermietet", f"{daten['total_vermietet']}/{daten['total_einheiten']}"),
         ("Leerstand", f"{daten['leerquote']:.1f}%"),
-        ("Soll-Miete/Mt.", f"CHF {_chf(daten['total_soll'])}"),
-        ("Jahres-Soll", f"CHF {_chf(daten['jahres_soll'])}"),
+        ("Ist-Miete/Mt.", f"CHF {_chf(daten['total_soll'])}"),
+        ("Jahres-Ist", f"CHF {_chf(daten['jahres_soll'])}"),
     ]
     if daten.get('bruttorendite') is not None:
         kpis.append(("Bruttorendite*", f"{daten['bruttorendite']:.2f}%"))
@@ -91,7 +91,7 @@ def generate_portfolio_report(mandant, daten):
     if daten.get('bruttorendite') is not None:
         c.setFont("Helvetica-Oblique", 7); c.setFillColorRGB(0.5, 0.5, 0.5)
         c.drawString(20 * mm, 15 * mm,
-                     "* Bruttorendite = Jahres-Sollmiete / Gebäudeversicherungswert (Näherung, ersetzt keine Verkehrswertschätzung).")
+                     "* Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) / Gebäudeversicherungswert (Näherung, ersetzt keine Verkehrswertschätzung).")
 
     c.save(); buf.seek(0)
     return buf.read()

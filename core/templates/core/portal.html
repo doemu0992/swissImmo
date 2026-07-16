@@ -88,14 +88,14 @@
             <div class="kpi"><div class="wert">{{ liegenschaften|length }}</div><div class="label">Liegenschaften</div></div>
             <div class="kpi"><div class="wert">{{ total_vermietet }} / {{ total_einheiten }}</div><div class="label">Vermietet</div></div>
             <div class="kpi"><div class="wert">{{ leerquote|floatformat:1 }} %</div><div class="label">Leerstandsquote</div></div>
-            <div class="kpi"><div class="wert">CHF {{ total_soll|chf }}</div><div class="label">Soll-Miete / Monat</div></div>
-            <div class="kpi"><div class="wert">CHF {{ jahres_soll|chf }}</div><div class="label">Soll-Miete / Jahr</div></div>
+            <div class="kpi"><div class="wert">CHF {{ total_soll|chf }}</div><div class="label">Ist-Miete / Monat</div></div>
+            <div class="kpi"><div class="wert">CHF {{ jahres_soll|chf }}</div><div class="label">Ist-Miete / Jahr</div></div>
             {% if bruttorendite is not None %}
             <div class="kpi"><div class="wert">{{ bruttorendite|floatformat:2 }} %</div><div class="label">Bruttorendite*</div></div>
             {% endif %}
         </div>
         {% if bruttorendite is not None %}
-        <p style="font-size:11px; color:#94a3b8; margin:-12px 0 20px;">* Bruttorendite = Jahres-Sollmiete / Gebäudeversicherungswert (Näherung).</p>
+        <p style="font-size:11px; color:#94a3b8; margin:-12px 0 20px;">* Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) / Gebäudeversicherungswert (Näherung).</p>
         {% endif %}
 
         {% for lg in liegenschaften %}

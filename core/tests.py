@@ -3755,7 +3755,10 @@ class BewerberScoringTests(TestCase):
             einheit=e, vorname='Anna', nachname='Muster', geburtsdatum=date(1990, 1, 1),
             mobilnummer='079 000 00 00', email='anna@example.ch', beruf='Kauffrau',
             einkommen_jahr="90'000", erwerbsstatus='angestellt', ist_unbefristet=True,
-            hat_betreibungen=False, anzahl_erwachsene=1, status='geprueft')
+            hat_betreibungen=False, anzahl_erwachsene=1, status='geprueft',
+            # Belege vorhanden → Betreibungs-/Anstellungspunkte werden vergeben
+            # (ohne Beleg gibt es sie bewusst nicht mehr, siehe bewerber_scoring).
+            digitaler_betreibungsauszug=True, arbeitgeber='Muster AG')
         defaults.update(kw)
         return Mietbewerbung.objects.create(**defaults)
 
@@ -7959,3 +7962,34 @@ class PrueferFundeTests(TestCase):
         self.assertEqual(entwuerfe, 1)   # kein Doppel-Entwurf
         e.refresh_from_db()
         self.assertFalse(e.zur_ausschreibung)   # Objekt aus der Vermarktung genommen
+
+
+class BewerberScoringBelegTests(TestCase):
+    """Score-Punkte für Betreibungen/Anstellung nur bei tatsächlichem Beleg —
+    eine leere Bewerbung wirkt nicht mehr fälschlich 'mittel'."""
+
+    def test_leere_bewerbung_nicht_mittel(self):
+        from mietprozess.models import Mietbewerbung
+        from core.services.bewerber_scoring import bewerte_bewerbung
+        _lg, e, _m, _v = _basis_objekte()
+        b = Mietbewerbung.objects.create(einheit=e, vorname='Leer', nachname='Test',
+                                         email='leer@example.ch', geburtsdatum=date(1990, 1, 1))
+        r = bewerte_bewerbung(b, Decimal('1700'))
+        betr = next(i for i in r['indikatoren'] if i['label'] == 'Betreibungen')
+        anst = next(i for i in r['indikatoren'] if i['label'] == 'Anstellung')
+        self.assertEqual(betr['ampel'], 'schlecht')   # kein Auszug → 0 Punkte
+        self.assertEqual(anst['ampel'], 'schlecht')   # keine Angabe → 0 Punkte
+        self.assertLess(r['score'], 40)
+
+    def test_belegte_bewerbung_erhaelt_punkte(self):
+        from mietprozess.models import Mietbewerbung
+        from core.services.bewerber_scoring import bewerte_bewerbung
+        _lg, e, _m, _v = _basis_objekte()
+        b = Mietbewerbung.objects.create(
+            einheit=e, vorname='Beleg', nachname='Test', email='beleg@example.ch',
+            geburtsdatum=date(1990, 1, 1), digitaler_betreibungsauszug=True,
+            hat_betreibungen=False, erwerbsstatus='angestellt', ist_unbefristet=True,
+            arbeitgeber='Muster AG', einkommen_jahr='90000')
+        r = bewerte_bewerbung(b, Decimal('1700'))   # 90000 / 20400 = 4.4× → Tragbarkeit gut
+        # 45 (Tragbarkeit) + 25 (Betreibungen belegt) + 15 (Anstellung belegt) = 85
+        self.assertGreaterEqual(r['score'], 85)
