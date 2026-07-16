@@ -7446,6 +7446,27 @@ class VertragBearbeitenTests(TestCase):
         self.assertEqual(v.status, 'aktiv')
         self.assertGreater(Dokument.objects.filter(vertrag=v).count(), 0)
 
+    def test_vertrag_loeschen_raeumt_dokumente_auf(self):
+        """Beim Löschen eines Vertrags werden seine auto-erzeugten Vertragspaket-
+        Dokumente mitgelöscht — keine verwaisten Kopien in der Personen-Akte."""
+        from rentals.models import Mietvertrag, Dokument
+        lg, e, m, v = _basis_objekte()
+        # zwei automatische Vertragspaket-Dokumente + ein Fremd-Upload
+        Dokument.objects.create(vertrag=v, mieter=m, einheit=e, kategorie='vertrag',
+                                bezeichnung='Mietvertrag', titel='Mietvertrag')
+        Dokument.objects.create(vertrag=v, mieter=m, einheit=e, kategorie='vertrag',
+                                bezeichnung='Hausordnung', titel='Hausordnung')
+        upload = Dokument.objects.create(mieter=m, kategorie='korrespondenz',
+                                         bezeichnung='Ausweis-Kopie', titel='Ausweis-Kopie')
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/loeschen/')
+        self.assertFalse(Mietvertrag.objects.filter(id=v.id).exists())
+        # Vertragspaket-Dokumente weg, kein verwaistes (vertrag=None) übrig
+        self.assertEqual(Dokument.objects.filter(bezeichnung='Mietvertrag').count(), 0)
+        self.assertEqual(Dokument.objects.filter(bezeichnung='Hausordnung').count(), 0)
+        # Fremd-Upload bleibt erhalten
+        self.assertTrue(Dokument.objects.filter(id=upload.id).exists())
+
     def test_bearbeiten_button_auf_detailseite(self):
         lg, e, m, v = _basis_objekte()
         c = Client(); c.force_login(_team_user())

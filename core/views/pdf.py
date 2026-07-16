@@ -51,6 +51,11 @@ def _ablegen_vertragsdokument(pdf_bytes, titel, vertrag):
 VERTRAGSPAKET = ['allgemeine-bedingungen', 'hausordnung', 'merkblatt-lueften',
                  'wohnungsausweis', 'begleitbrief']
 
+# Titel der automatisch generierten Vertragspaket-Dokumente (kategorie='vertrag').
+# Diese gehören zum Vertrag und werden mit ihm gelöscht (keine verwaisten Kopien).
+VERTRAGSPAKET_TITEL = ['Mietvertrag', 'Allgemeine Bedingungen', 'Hausordnung',
+                       'Merkblatt Lüften', 'Wohnungsausweis', 'Begleitbrief Mietvertrag']
+
 
 def erzeuge_und_ablege_vertragspaket(vertrag):
     """Erzeugt Mietvertrag + Standard-Beilagen, legt jedes einzeln in die Akte

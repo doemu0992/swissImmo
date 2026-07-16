@@ -2657,6 +2657,13 @@ def fw_vertrag_loeschen(request, pk):
     if request.method == 'POST':
         name = str(v.mieter)
         einheit = v.einheit.bezeichnung
+        # Automatisch erzeugte Vertragspaket-Dokumente mitlöschen — sonst blieben
+        # sie als verwaiste (vertrag=None) Kopien in der Personen-Akte hängen
+        # (SET_NULL). Nur die Standard-Beilagen, keine sonstigen Uploads.
+        from core.views.pdf import VERTRAGSPAKET_TITEL
+        from rentals.models import Dokument as _Dok
+        _Dok.objects.filter(vertrag=v, kategorie='vertrag',
+                            bezeichnung__in=VERTRAGSPAKET_TITEL).delete()
         log_aktion(request, "Mietvertrag gelöscht", name, einheit)
         v.delete()
         messages.success(request, f"🗑️ Vertrag ({name} · {einheit}) wurde gelöscht.")
