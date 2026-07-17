@@ -142,6 +142,35 @@ def generate_kontokorrent_pdf(mandant, jahr, verwaltung=None):
     c.drawRightString(155 * mm, y, _fmt(kk['aufwand']))
     c.drawRightString(188 * mm, y, _fmt(kk['ergebnis']))
 
+    # Honorar-Transparenz: der Eigentümer sieht, wie das im Aufwand enthaltene
+    # Verwaltungshonorar berechnet wurde (Satz × Mietertrag je Liegenschaft).
+    if jahr and (mandant.honorar_prozent or 0) > 0:
+        from core.services.verwaltungshonorar import honorar_vorschau
+        h_zeilen, _h_total, h_prozent = honorar_vorschau(mandant, jahr)
+        h_zeilen = [z for z in h_zeilen if z['honorar'] or z['mietertrag']]
+        if h_zeilen:
+            y -= 14 * mm
+            c.setFont("Helvetica-Bold", 10)
+            c.drawString(20 * mm, y, f"Verwaltungshonorar {jahr} ({h_prozent}% der Mieterträge)")
+            y -= 7 * mm
+            c.setFont("Helvetica", 9)
+            h_sum = Decimal('0.00')
+            for z in h_zeilen:
+                if y < 45 * mm:
+                    c.showPage(); y = h - 30 * mm
+                status = "verbucht" if z['gebucht'] else "offen"
+                c.drawString(22 * mm, y, f"{z['lg'].strasse}"[:40])
+                c.setFillColor(colors.grey)
+                c.drawString(105 * mm, y, f"{h_prozent}% von {_fmt(z['mietertrag'])} · {status}")
+                c.setFillColor(colors.black)
+                c.drawRightString(188 * mm, y, _fmt(z['honorar']))
+                h_sum += z['honorar']
+                y -= 6 * mm
+            c.setLineWidth(0.6); c.line(120 * mm, y, 192 * mm, y); y -= 7 * mm
+            c.setFont("Helvetica-Bold", 10)
+            c.drawString(22 * mm, y, "Honorar Total")
+            c.drawRightString(188 * mm, y, _fmt(h_sum))
+
     # Auszahlungen
     y -= 14 * mm
     c.setFont("Helvetica-Bold", 10)

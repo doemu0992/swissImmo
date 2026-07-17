@@ -16,11 +16,12 @@ def _chf(v):
 
 
 def steuerauszug_daten(mandant, jahr):
-    """Aggregiert Erträge/Ausgaben/AfA je Liegenschaft des Mandanten für ein Jahr."""
+    """Aggregiert Erträge/Ausgaben/AfA/Honorar je Liegenschaft des Mandanten für ein Jahr."""
     from finance.models import Zahlungseingang, KreditorenRechnung, Abschreibung
     lgs = list(mandant.liegenschaften.all().order_by('strasse'))
     lg_ids = [l.id for l in lgs]
-    per = {l.id: {'ertrag': Decimal('0'), 'ausgaben': Decimal('0'), 'afa': Decimal('0')} for l in lgs}
+    per = {l.id: {'ertrag': Decimal('0'), 'ausgaben': Decimal('0'), 'afa': Decimal('0'),
+                  'honorar': Decimal('0')} for l in lgs}
 
     # 1) Ist-Mieterträge (verbuchte Zahlungseingänge im Jahr)
     zes = (Zahlungseingang.objects.filter(status='verbucht', datum_eingang__year=jahr)
@@ -49,13 +50,32 @@ def steuerauszug_daten(mandant, jahr):
         if lid in per:
             per[lid]['afa'] += a.betrag or Decimal('0')
 
+    # 4) Verwaltungshonorar (Konto 4500) — wird direkt gebucht (Soll 4500/Haben
+    # Bank), nie als Kreditorenrechnung, und fehlte deshalb in den Ausgaben.
+    # Netto Soll−Haben je Liegenschaft: Stornos heben sich damit von selbst auf.
+    from finance.models import Buchung, Buchungskonto
+    from django.db.models import Q
+    k4500 = Buchungskonto.objects.filter(nummer='4500').first()
+    if k4500:
+        hqs = (Buchung.objects
+               .filter(liegenschaft_id__in=lg_ids, datum__year=jahr)
+               .filter(Q(soll_konto=k4500) | Q(haben_konto=k4500)))
+        for b in hqs:
+            if b.liegenschaft_id not in per:
+                continue
+            if b.soll_konto_id == k4500.id:
+                per[b.liegenschaft_id]['honorar'] += b.betrag or Decimal('0')
+            if b.haben_konto_id == k4500.id:
+                per[b.liegenschaft_id]['honorar'] -= b.betrag or Decimal('0')
+
     zeilen = []
-    tot = {'ertrag': Decimal('0'), 'ausgaben': Decimal('0'), 'afa': Decimal('0'), 'netto': Decimal('0')}
+    tot = {'ertrag': Decimal('0'), 'ausgaben': Decimal('0'), 'afa': Decimal('0'),
+           'honorar': Decimal('0'), 'netto': Decimal('0')}
     for l in lgs:
         d = per[l.id]
-        netto = d['ertrag'] - d['ausgaben'] - d['afa']
+        netto = d['ertrag'] - d['ausgaben'] - d['afa'] - d['honorar']
         zeilen.append({'lg': l, **d, 'netto': netto})
-        for k in ('ertrag', 'ausgaben', 'afa'):
+        for k in ('ertrag', 'ausgaben', 'afa', 'honorar'):
             tot[k] += d[k]
         tot['netto'] += netto
     return {'jahr': jahr, 'zeilen': zeilen, 'total': tot,
@@ -108,6 +128,9 @@ def generate_steuerauszug_pdf(mandant, jahr):
         c.setFillColorRGB(0.5, 0.55, 0.6)
         c.drawRightString(w - 20 * mm, y, f"AfA {_chf(z['afa'])}")
         y -= 4.5 * mm
+        if z['honorar']:
+            c.setFillColorRGB(0.5, 0.55, 0.6)
+            c.drawRightString(w - 40 * mm, y, f"Verwaltungshonorar {_chf(z['honorar'])}")
         c.setFillColorRGB(0.0, 0.5, 0.25) if z['netto'] >= 0 else c.setFillColorRGB(0.8, 0.1, 0.1)
         c.setFont("Helvetica-Bold", 9)
         c.drawRightString(w - 20 * mm, y, f"Netto CHF {_chf(z['netto'])}")
@@ -126,11 +149,17 @@ def generate_steuerauszug_pdf(mandant, jahr):
     c.drawRightString(w - 62 * mm, y, _chf(t['ertrag']))
     c.drawRightString(w - 40 * mm, y, _chf(t['ausgaben']))
     c.drawRightString(w - 20 * mm, y, f"Netto CHF {_chf(t['netto'])}")
+    if t['honorar']:
+        y -= 5 * mm
+        c.setFont("Helvetica", 8.5)
+        c.setFillColorRGB(0.4, 0.45, 0.5)
+        c.drawString(20 * mm, y, "davon Verwaltungshonorar (Konto 4500, im Netto berücksichtigt)")
+        c.drawRightString(w - 40 * mm, y, _chf(t['honorar']))
 
     y -= 16 * mm
     c.setFont("Helvetica", 7.5)
     c.setFillColorRGB(0.5, 0.55, 0.6)
-    c.drawString(20 * mm, y, "Mieterträge = verbuchte Zahlungseingänge (Ist). Ausgaben = erfasste Kreditorenrechnungen.")
+    c.drawString(20 * mm, y, "Mieterträge = verbuchte Zahlungseingänge (Ist). Ausgaben = erfasste Kreditorenrechnungen + Verwaltungshonorar (Konto 4500).")
     c.drawString(20 * mm, y - 4 * mm, "AfA = gebuchte Abschreibungen des Jahres. Vereinfachte Aufstellung — keine Steuerberatung.")
 
     c.showPage()

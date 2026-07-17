@@ -114,11 +114,16 @@ def portal_freigabe(request, pk):
 def _portfolio_daten(mandant):
     """Sammelt Rendite-Cockpit-Kennzahlen, Objektlisten und Dokumente."""
     from portfolio.models import Dokument as PDokument
+    from finance.models import DebitorenRechnung
+    from django.utils import timezone
+    heute = timezone.localdate()
     liegenschaften = []
     total_soll = Decimal('0.00')
     total_einheiten = 0
     total_vermietet = 0
     total_versicherungswert = Decimal('0.00')
+    total_ausstand = Decimal('0.00')
+    total_ueberfaellig = Decimal('0.00')
 
     for lg in mandant.liegenschaften.all().prefetch_related('einheiten'):
         einheiten_rows = []
@@ -163,6 +168,23 @@ def _portfolio_daten(mandant):
         dokumente = [{'id': d.id, 'titel': d.titel, 'kategorie': d.kategorie, 'datum': d.datum}
                      for d in dok_qs]
 
+        # Ist vs. Soll: offene Mietforderungen dieser Liegenschaft (Ausstände).
+        # Der Eigentümer sieht so, ob die Soll-Mieten auch tatsächlich eingehen.
+        from django.db.models import Q as _Q
+        lg_ausstand = Decimal('0.00')
+        lg_ueberfaellig = Decimal('0.00')
+        offene_qs = (DebitorenRechnung.objects
+                     .filter(_Q(liegenschaft=lg) | _Q(vertrag__einheit__liegenschaft=lg),
+                             status__in=('offen', 'teilbezahlt'))
+                     .prefetch_related('zahlungseingaenge'))
+        for r in offene_qs:
+            offen = r.offener_betrag
+            lg_ausstand += offen
+            if (r.faellig_am or r.datum) < heute:
+                lg_ueberfaellig += offen
+        total_ausstand += lg_ausstand
+        total_ueberfaellig += lg_ueberfaellig
+
         liegenschaften.append({
             'id': lg.id,
             'adresse': f"{lg.strasse}, {lg.plz} {lg.ort}",
@@ -175,6 +197,8 @@ def _portfolio_daten(mandant):
             'leer': lg_leer,
             'leerquote': (lg_leer / lg_einheiten * 100) if lg_einheiten else 0,
             'dokumente': dokumente,
+            'ausstand': lg_ausstand,
+            'ueberfaellig': lg_ueberfaellig,
         })
 
     total_leer = total_einheiten - total_vermietet
@@ -192,6 +216,8 @@ def _portfolio_daten(mandant):
         'total_versicherungswert': total_versicherungswert if total_versicherungswert else None,
         'bruttorendite': bruttorendite,
         'leerquote': leerquote,
+        'total_ausstand': total_ausstand,
+        'total_ueberfaellig': total_ueberfaellig,
     }
 
 
@@ -249,6 +275,33 @@ def portal_steuerauszug_pdf(request):
     pdf = generate_steuerauszug_pdf(mandant, jahr)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Steuerauszug_{jahr}.pdf"'
+    return resp
+
+
+@never_cache
+@login_required
+def portal_kontokorrent_pdf(request):
+    """Kontokorrent-Auszug (Ergebnis, Auszahlungen, offener Saldo) — nur eigene Mandate.
+
+    ?jahr=YYYY für ein Geschäftsjahr, ohne Parameter kumuliert über alle Jahre."""
+    mandant = getattr(request.user, 'mandant_profil', None)
+    if mandant is None:
+        raise Http404
+    from django.utils import timezone
+    heute = timezone.localdate()
+    jahr = None
+    raw = request.GET.get('jahr')
+    if raw:
+        try:
+            jahr = max(2000, min(int(raw), heute.year))
+        except (TypeError, ValueError):
+            jahr = None
+    from core.services.eigentuemer_kontokorrent import generate_kontokorrent_pdf
+    from crm.models import Verwaltung
+    pdf = generate_kontokorrent_pdf(mandant, jahr, Verwaltung.objects.first())
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    name = f"Kontokorrent_{jahr}.pdf" if jahr else "Kontokorrent.pdf"
+    resp['Content-Disposition'] = f'inline; filename="{name}"'
     return resp
 
 
