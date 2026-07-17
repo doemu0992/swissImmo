@@ -3886,6 +3886,48 @@ def fw_person_form(request, pk=None):
             obj.geburtsdatum = date.fromisoformat(gd) if gd else None
         except ValueError:
             obj.geburtsdatum = None
+        # --- Identität / Vermietungsprüfung ---
+        obj.zivilstand = P.get('zivilstand', '').strip()
+        obj.nationalitaet = P.get('nationalitaet', '').strip()
+        obj.heimatort = P.get('heimatort', '').strip()
+        obj.ahv_nummer = P.get('ahv_nummer', '').strip()
+        obj.sprache = P.get('sprache', 'de').strip() or 'de'
+        obj.telefon_geschaeft = P.get('telefon_geschaeft', '').strip()
+        # --- Aufenthalt ---
+        obj.aufenthaltsbewilligung = P.get('aufenthaltsbewilligung', '').strip()
+        bgb = P.get('bewilligung_gueltig_bis', '').strip()
+        try:
+            obj.bewilligung_gueltig_bis = date.fromisoformat(bgb) if bgb else None
+        except ValueError:
+            obj.bewilligung_gueltig_bis = None
+        # --- Beruf & Bonität ---
+        obj.erwerbsstatus = P.get('erwerbsstatus', '').strip()
+        obj.beruf = P.get('beruf', '').strip()
+        obj.arbeitgeber = P.get('arbeitgeber', '').strip()
+        obj.einkommen_jahr = P.get('einkommen_jahr', '').strip()
+        bd = P.get('bonitaet_datum', '').strip()
+        try:
+            obj.bonitaet_datum = date.fromisoformat(bd) if bd else None
+        except ValueError:
+            obj.bonitaet_datum = None
+        # --- Versicherung & Notfall ---
+        obj.haftpflicht_gesellschaft = P.get('haftpflicht_gesellschaft', '').strip()
+        obj.haftpflicht_police = P.get('haftpflicht_police', '').strip()
+        obj.notfall_name = P.get('notfall_name', '').strip()
+        obj.notfall_telefon = P.get('notfall_telefon', '').strip()
+        obj.notfall_beziehung = P.get('notfall_beziehung', '').strip()
+        # --- Haushalt ---
+        def _pint(key):
+            try:
+                return max(0, int(P.get(key, '') or 0))
+            except ValueError:
+                return 0
+        obj.haushalt_erwachsene = _pint('haushalt_erwachsene')
+        obj.haushalt_kinder = _pint('haushalt_kinder')
+        obj.haustiere = P.get('haustiere') == 'on'
+        obj.haustiere_details = P.get('haustiere_details', '').strip()
+        # --- Finanzen ---
+        obj.bank_name = P.get('bank_name', '').strip()
         obj.iban = P.get('iban', '').strip()
         obj.notizen = P.get('notizen', '').strip()
 
@@ -9169,6 +9211,9 @@ def fw_bewerbung_zu_vertrag(request, pk):
             arbeitgeber=b.arbeitgeber or '', einkommen_jahr=b.einkommen_jahr or '',
             email=b.email or '', mobile=b.mobilnummer or '',
             strasse=b.adresse or '', plz=b.plz or '', ort=b.ort or '',
+            # Haushalt/Haustiere aus der Bewerbung in den Mieter-Stamm übernehmen.
+            haushalt_erwachsene=b.anzahl_erwachsene or 0, haushalt_kinder=b.anzahl_kinder or 0,
+            haustiere=bool(b.haustiere), haustiere_details=(b.haustiere_details or ''),
         )
 
     # 2. Vertragsentwurf anlegen (mit Objekt-Defaults)

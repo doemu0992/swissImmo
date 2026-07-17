@@ -8566,6 +8566,91 @@ class DSGAnonymisierungTests(TestCase):
         self.assertTrue(m.anonymisiert)
 
 
+class PersonenStammdatenTests(TestCase):
+    """Voll-Ausbau der Personen-Stammdaten: Formular erfasst alle fachlichen
+    Felder, Bewerbung→Mieter übernimmt Haushalt/Beruf, DSG scrubbt neue Felder."""
+
+    def test_formular_speichert_alle_felder(self):
+        from crm.models import Mieter
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/personen/neu/', {
+            'typ': 'person', 'vorname': 'Anna', 'nachname': 'Muster',
+            'zivilstand': 'verheiratet', 'nationalitaet': 'Deutschland', 'heimatort': 'Berlin',
+            'ahv_nummer': '756.1234.5678.90', 'sprache': 'fr', 'telefon_geschaeft': '044 111 22 33',
+            'aufenthaltsbewilligung': 'C', 'bewilligung_gueltig_bis': '2030-12-31',
+            'erwerbsstatus': 'angestellt', 'beruf': 'Ärztin', 'arbeitgeber': 'Spital AG',
+            'einkommen_jahr': "120'000", 'bonitaet_datum': '2026-01-15',
+            'haushalt_erwachsene': '2', 'haushalt_kinder': '1', 'haustiere': 'on',
+            'haustiere_details': '1 Katze', 'haftpflicht_gesellschaft': 'AXA',
+            'haftpflicht_police': 'P-4711', 'notfall_name': 'Beat Muster',
+            'notfall_telefon': '079 000 11 22', 'notfall_beziehung': 'Ehemann',
+            'bank_name': 'ZKB', 'dublette_ok': '1',
+        })
+        self.assertEqual(r.status_code, 302)
+        m = Mieter.objects.get(nachname='Muster', vorname='Anna')
+        self.assertEqual(m.zivilstand, 'verheiratet')
+        self.assertEqual(m.sprache, 'fr')
+        self.assertEqual(m.aufenthaltsbewilligung, 'C')
+        self.assertEqual(m.bewilligung_gueltig_bis, date(2030, 12, 31))
+        self.assertEqual(m.arbeitgeber, 'Spital AG')
+        self.assertEqual(m.haushalt_erwachsene, 2)
+        self.assertEqual(m.haushalt_kinder, 1)
+        self.assertTrue(m.haustiere)
+        self.assertEqual(m.haftpflicht_gesellschaft, 'AXA')
+        self.assertEqual(m.notfall_name, 'Beat Muster')
+        self.assertEqual(m.bank_name, 'ZKB')
+
+    def test_formular_get_rendert_alle_sektionen(self):
+        c = Client(); c.force_login(_team_user())
+        body = c.get('/neu/personen/neu/').content.decode()
+        for s in ['Aufenthaltsbewilligung', 'Korrespondenzsprache', 'Beruf & Bonität',
+                  'Haushalt', 'Notfallkontakt', 'box-person-extra']:
+            self.assertIn(s, body, f'{s} fehlt im Formular')
+
+    def test_detail_zeigt_neue_felder(self):
+        _lg, _e, m, _v = _basis_objekte()
+        m.aufenthaltsbewilligung = 'B'; m.beruf = 'Informatiker'; m.notfall_name = 'Eva Muster'
+        m.haushalt_erwachsene = 2; m.save()
+        c = Client(); c.force_login(_team_user())
+        body = c.get(f'/neu/personen/{m.id}/').content.decode()
+        self.assertIn('Persönliche Angaben', body)
+        self.assertIn('Informatiker', body)
+        self.assertIn('Eva Muster', body)
+
+    def test_bewerbung_uebernimmt_haushalt(self):
+        from mietprozess.models import Mietbewerbung
+        from crm.models import Mieter
+        _lg, e, _m, _v = _basis_objekte()
+        b = Mietbewerbung.objects.create(
+            einheit=e, vorname='Neu', nachname='Bewerber', email='neu@example.ch',
+            geburtsdatum=date(1990, 1, 1), anzahl_erwachsene=2, anzahl_kinder=3,
+            haustiere=True, haustiere_details='Hund', nationalitaet='Schweiz',
+            beruf='Lehrer', arbeitgeber='Schule XY')
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/bewerbungen/{b.id}/vertrag/')
+        m = Mieter.objects.get(nachname='Bewerber')
+        self.assertEqual(m.haushalt_erwachsene, 2)
+        self.assertEqual(m.haushalt_kinder, 3)
+        self.assertTrue(m.haustiere)
+        self.assertEqual(m.haustiere_details, 'Hund')
+        self.assertEqual(m.beruf, 'Lehrer')
+
+    def test_dsg_scrubbt_neue_felder(self):
+        from core.services.dsg import anonymisiere_person
+        _lg, _e, m, v = _basis_objekte()
+        v.status = 'beendet'; v.save()
+        m.aufenthaltsbewilligung = 'C'; m.haftpflicht_police = 'P-1'; m.notfall_name = 'X'
+        m.haushalt_erwachsene = 3; m.haustiere = True; m.save()
+        ok, _ = anonymisiere_person(m)
+        self.assertTrue(ok)
+        m.refresh_from_db()
+        self.assertEqual(m.aufenthaltsbewilligung, '')
+        self.assertEqual(m.haftpflicht_police, '')
+        self.assertEqual(m.notfall_name, '')
+        self.assertEqual(m.haushalt_erwachsene, 0)
+        self.assertFalse(m.haustiere)
+
+
 class PendenzModalTests(TestCase):
     """Detailseiten-Pendenzen (Vertrag/Liegenschaft öffnen) navigieren voll —
     nur Aktions-Schritte (Rücknahme) öffnen im Iframe-Popup. Verhindert die

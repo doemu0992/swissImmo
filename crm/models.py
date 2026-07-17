@@ -129,6 +129,19 @@ class Mieter(models.Model):
     ]
     typ = models.CharField("Kunden-Typ", max_length=20, choices=TYP_CHOICES, default='person')
 
+    AUFENTHALT_CHOICES = [
+        ('', '—'),
+        ('schweizer', 'Schweizer Bürger/in'),
+        ('C', 'Niederlassung C'),
+        ('B', 'Aufenthalt B'),
+        ('L', 'Kurzaufenthalt L'),
+        ('G', 'Grenzgänger G'),
+        ('Ci', 'Ci (Aufenthalt mit Erwerb)'),
+        ('F', 'Vorläufig aufgenommen F'),
+        ('N', 'Asylsuchend N'),
+        ('andere', 'Andere'),
+    ]
+
     # --- FIRMA / VEREIN ---
     firmen_name = models.CharField("Firmenname", max_length=200, blank=True, default='')
     uid_nummer = models.CharField("UID / CHE-Nummer", max_length=50, blank=True, default='')
@@ -170,6 +183,24 @@ class Mieter(models.Model):
     zukuenftige_plz = models.CharField("Zukünftige PLZ", max_length=10, blank=True, default='')
     zukuenftiger_ort = models.CharField("Zukünftiger Ort", max_length=100, blank=True, default='')
     zukuenftig_ab = models.DateField("Gültig ab (Einzug)", null=True, blank=True)
+
+    # --- AUFENTHALT (bei Vermietung an Ausländer Pflichtangabe) ---
+    aufenthaltsbewilligung = models.CharField("Aufenthaltsbewilligung", max_length=20,
+                                              choices=AUFENTHALT_CHOICES, blank=True, default='')
+    bewilligung_gueltig_bis = models.DateField("Bewilligung gültig bis", null=True, blank=True)
+
+    # --- VERSICHERUNG & NOTFALL ---
+    haftpflicht_gesellschaft = models.CharField("Haftpflicht-Versicherung", max_length=120, blank=True, default='')
+    haftpflicht_police = models.CharField("Policen-Nr.", max_length=60, blank=True, default='')
+    notfall_name = models.CharField("Notfallkontakt / Bürge", max_length=150, blank=True, default='')
+    notfall_telefon = models.CharField("Notfall-Telefon", max_length=50, blank=True, default='')
+    notfall_beziehung = models.CharField("Beziehung", max_length=80, blank=True, default='')
+
+    # --- HAUSHALT ---
+    haushalt_erwachsene = models.PositiveSmallIntegerField("Erwachsene im Haushalt", default=0)
+    haushalt_kinder = models.PositiveSmallIntegerField("Kinder im Haushalt", default=0)
+    haustiere = models.BooleanField("Haustiere", default=False)
+    haustiere_details = models.CharField("Haustiere (Details)", max_length=200, blank=True, default='')
 
     # --- FINANZEN & ADMIN ---
     iban = models.CharField("IBAN", max_length=34, blank=True, default='')

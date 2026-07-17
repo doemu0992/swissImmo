@@ -72,6 +72,11 @@ def anonymisiere_person(mieter, *, grund='', user=None):
     mieter.strasse = ''; mieter.adresszusatz = ''; mieter.postfach = ''; mieter.plz = ''; mieter.ort = ''
     mieter.zukuenftige_strasse = ''; mieter.zukuenftige_plz = ''; mieter.zukuenftiger_ort = ''
     mieter.zukuenftig_ab = None
+    mieter.aufenthaltsbewilligung = ''; mieter.bewilligung_gueltig_bis = None
+    mieter.haftpflicht_gesellschaft = ''; mieter.haftpflicht_police = ''
+    mieter.notfall_name = ''; mieter.notfall_telefon = ''; mieter.notfall_beziehung = ''
+    mieter.haushalt_erwachsene = 0; mieter.haushalt_kinder = 0
+    mieter.haustiere = False; mieter.haustiere_details = ''
     mieter.iban = ''; mieter.bank_name = ''; mieter.bonitaet_datum = None
     heute = timezone.localdate()
     mieter.notizen = f"[{heute:%d.%m.%Y}] DSG-Anonymisierung{f' — {grund}' if grund else ''}."

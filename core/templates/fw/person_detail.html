@@ -77,9 +77,39 @@
                 {% if m.email %}<div class="flex justify-between"><dt class="text-slate-500">E-Mail</dt><dd class="text-slate-800 font-medium">{{ m.email }}</dd></div>{% endif %}
                 {% if telefon %}<div class="flex justify-between"><dt class="text-slate-500">Telefon</dt><dd class="text-slate-800 font-medium">{{ telefon }}</dd></div>{% endif %}
                 {% if m.strasse %}<div class="flex justify-between"><dt class="text-slate-500">Adresse</dt><dd class="text-slate-800 font-medium text-right">{{ m.strasse }}, {{ m.plz }} {{ m.ort }}</dd></div>{% endif %}
+                {% if m.mobile %}<div class="flex justify-between"><dt class="text-slate-500">Mobile</dt><dd class="text-slate-800 font-medium">{{ m.mobile }}</dd></div>{% endif %}
+                {% if m.telefon_geschaeft %}<div class="flex justify-between"><dt class="text-slate-500">Telefon Geschäft</dt><dd class="text-slate-800 font-medium">{{ m.telefon_geschaeft }}</dd></div>{% endif %}
                 {% if m.iban %}<div class="flex justify-between"><dt class="text-slate-500">IBAN</dt><dd class="text-slate-800 font-medium font-mono text-xs">{{ m.iban }}</dd></div>{% endif %}
+                {% if m.bank_name %}<div class="flex justify-between"><dt class="text-slate-500">Bank</dt><dd class="text-slate-800 font-medium">{{ m.bank_name }}</dd></div>{% endif %}
             </dl>
         </div>
+        {% if m.typ == 'person' %}
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-800 mb-3">Persönliche Angaben</h3>
+            <dl class="text-sm space-y-2">
+                {% if m.geburtsdatum %}<div class="flex justify-between"><dt class="text-slate-500">Geburtsdatum</dt><dd class="text-slate-800 font-medium">{{ m.geburtsdatum|date:"d.m.Y" }}</dd></div>{% endif %}
+                {% if m.zivilstand %}<div class="flex justify-between"><dt class="text-slate-500">Zivilstand</dt><dd class="text-slate-800 font-medium">{{ m.zivilstand }}</dd></div>{% endif %}
+                {% if m.nationalitaet %}<div class="flex justify-between"><dt class="text-slate-500">Nationalität</dt><dd class="text-slate-800 font-medium">{{ m.nationalitaet }}{% if m.heimatort %} · {{ m.heimatort }}{% endif %}</dd></div>{% endif %}
+                {% if m.aufenthaltsbewilligung %}<div class="flex justify-between"><dt class="text-slate-500">Bewilligung</dt><dd class="text-slate-800 font-medium">{{ m.get_aufenthaltsbewilligung_display }}{% if m.bewilligung_gueltig_bis %} (bis {{ m.bewilligung_gueltig_bis|date:"d.m.Y" }}){% endif %}</dd></div>{% endif %}
+                {% if m.ahv_nummer %}<div class="flex justify-between"><dt class="text-slate-500">AHV-Nr.</dt><dd class="text-slate-800 font-medium font-mono text-xs">{{ m.ahv_nummer }}</dd></div>{% endif %}
+                {% if m.haushalt_erwachsene or m.haushalt_kinder or m.haustiere %}<div class="flex justify-between"><dt class="text-slate-500">Haushalt</dt><dd class="text-slate-800 font-medium text-right">{{ m.haushalt_erwachsene }} Erw.{% if m.haushalt_kinder %}, {{ m.haushalt_kinder }} Ki.{% endif %}{% if m.haustiere %} · 🐾 {{ m.haustiere_details|default:"Haustiere" }}{% endif %}</dd></div>{% endif %}
+            </dl>
+        </div>
+        {% if m.beruf or m.arbeitgeber or m.erwerbsstatus or m.einkommen_jahr or m.haftpflicht_gesellschaft or m.notfall_name %}
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h3 class="font-bold text-slate-800 mb-3">Beruf, Bonität & Notfall</h3>
+            <dl class="text-sm space-y-2">
+                {% if m.erwerbsstatus %}<div class="flex justify-between"><dt class="text-slate-500">Erwerbsstatus</dt><dd class="text-slate-800 font-medium">{{ m.erwerbsstatus }}</dd></div>{% endif %}
+                {% if m.beruf %}<div class="flex justify-between"><dt class="text-slate-500">Beruf</dt><dd class="text-slate-800 font-medium">{{ m.beruf }}</dd></div>{% endif %}
+                {% if m.arbeitgeber %}<div class="flex justify-between"><dt class="text-slate-500">Arbeitgeber</dt><dd class="text-slate-800 font-medium">{{ m.arbeitgeber }}</dd></div>{% endif %}
+                {% if m.einkommen_jahr %}<div class="flex justify-between"><dt class="text-slate-500">Jahreseinkommen</dt><dd class="text-slate-800 font-medium">CHF {{ m.einkommen_jahr }}</dd></div>{% endif %}
+                {% if m.bonitaet_datum %}<div class="flex justify-between"><dt class="text-slate-500">Betreibungsauszug</dt><dd class="text-slate-800 font-medium">{{ m.bonitaet_datum|date:"d.m.Y" }}</dd></div>{% endif %}
+                {% if m.haftpflicht_gesellschaft %}<div class="flex justify-between"><dt class="text-slate-500">Haftpflicht</dt><dd class="text-slate-800 font-medium text-right">{{ m.haftpflicht_gesellschaft }}{% if m.haftpflicht_police %} · {{ m.haftpflicht_police }}{% endif %}</dd></div>{% endif %}
+                {% if m.notfall_name %}<div class="flex justify-between"><dt class="text-slate-500">Notfallkontakt</dt><dd class="text-slate-800 font-medium text-right">{{ m.notfall_name }}{% if m.notfall_telefon %} · {{ m.notfall_telefon }}{% endif %}{% if m.notfall_beziehung %} ({{ m.notfall_beziehung }}){% endif %}</dd></div>{% endif %}
+            </dl>
+        </div>
+        {% endif %}
+        {% endif %}
         <div class="bg-white rounded-xl border border-slate-200 p-5">
             <h3 class="font-bold text-slate-800 mb-3">Aktuelle Vermietung</h3>
             {% if anzahl_aktive %}
