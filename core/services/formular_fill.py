@@ -482,6 +482,71 @@ def fill_kuendigung_be(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     return _fill_acroform(os.path.join(_DIR, 'BE_kuendigung_original.pdf'), tv, ())
 
 
+def fill_anfangsmietzins_be(vertrag, daten, verwaltung=None):
+    """Kanton Bern — «Formular zur Mitteilung des Anfangsmietzinses von Wohn-
+    räumen» (Art. 270 Abs. 2 OR, Art. 135a EG ZGB). Feldnamen aus dem amtlichen
+    Original (BE_anfangsmietzins_original.pdf, Obergericht BE 11/2025)."""
+    mieter = vertrag.mieter
+    einheit = vertrag.einheit
+    lg = einheit.liegenschaft
+    mandant = lg.mandant if lg else None
+    # Vermieter = Eigentümer (Mandant); Vertreter/in = Verwaltung. Ohne Mandant
+    # tritt die Verwaltung selbst als Vermieter auf.
+    if mandant:
+        vermieter = _absender(None, mandant)
+        vertreter = _absender(verwaltung, None) if verwaltung else ['', '', '']
+    else:
+        vermieter = _absender(verwaltung, None)
+        vertreter = ['', '', '']
+
+    def _d(x):
+        try:
+            s = str(x).replace("'", '').replace(',', '.').strip()
+            return Decimal(s) if s not in ('', 'None') else Decimal('0')
+        except Exception:
+            return Decimal('0')
+    anf_netto, anf_nk = _d(daten.get('anfang_netto')), _d(daten.get('anfang_nk'))
+    vor_netto, vor_nk = _d(daten.get('vormiete_netto')), _d(daten.get('vormiete_nk'))
+    hat_vormiete = (vor_netto > 0 or vor_nk > 0)
+    beginn = daten.get('beginn') or vertrag.beginn
+
+    tv = {
+        # Vermieter/in (Eigentümer) links, Mieter/in rechts
+        'Textfeld 1': vermieter[0], 'Textfeld 2': vermieter[1], 'Textfeld 3': vermieter[2], 'Textfeld 4': '',
+        'Textfeld 5': f"{mieter.vorname} {mieter.nachname}".strip(),
+        'Textfeld 6': mieter.strasse or '',
+        'Textfeld 7': f"{mieter.plz or ''} {mieter.ort or ''}".strip(),
+        'Textfeld 8': _mitmieter_block(vertrag, sep=', '),
+        # Vertreter/in (Verwaltung)
+        'Textfeld 9': vertreter[0], 'Textfeld 10': vertreter[1], 'Textfeld 11': vertreter[2], 'Textfeld 12': '',
+        # Liegenschaft / Mietobjekt / Beginn
+        'Textfeld 13': f"{lg.strasse}, {lg.plz} {lg.ort}".strip(' ,'),
+        'Textfeld 13a': einheit.bezeichnung,
+        'Textfeld 13b': _dstr(beginn),
+        # 1. Mietzins — Datumsangaben: bisheriger «seit» (leer bei Erstvermietung),
+        #    Anfangsmietzins «ab» = Mietbeginn
+        'Textfeld 14': _dstr(daten.get('vormiete_seit')) if hat_vormiete else '',
+        'Textfeld 14a': _dstr(beginn),
+        # Mietzins ohne NK | Nebenkosten | Total — je bisher (leer bei Erstverm.) / neu
+        'Textfeld 15': _fr(vor_netto) if hat_vormiete else '', 'Textfeld 16': _fr(anf_netto),
+        'Textfeld 17': _fr(vor_nk) if hat_vormiete else '', 'Textfeld 18': _fr(anf_nk),
+        'Textfeld 19': _fr(vor_netto + vor_nk) if hat_vormiete else '', 'Textfeld 20': _fr(anf_netto + anf_nk),
+        # Berechnungsgrundlagen bisheriger Mietzins (nur wenn bekannt)
+        'Textfeld 21': str(daten.get('basis_ref') or ''),
+        'Textfeld 22': str(daten.get('basis_lik') or ''),
+        'Textfeld 22a': str(daten.get('basis_lik_basis') or ''),
+        # 2. Vorbehalte · 3. Klare Begründung
+        'Textfeld 23': (daten.get('vorbehalte') or '')[:220],
+        'Textfeld 24': (daten.get('begruendung') or '')[:220],
+        # Seite 2: Ort/Datum + Unterschrift Vermieter/in (Mieter unterschreibt selbst)
+        'Ort und Datum 1': _ort_datum(vertrag, verwaltung, mandant),
+        'Unterschrift Vermieter/in': '', 'Ort und Datum 2': '', 'Unterschrift Mieter/in': '',
+    }
+    # Förderbeiträge für wertvermehrende Verbesserungen: Standard «Nein».
+    cbs = ['Ja'] if daten.get('foerderbeitraege') else ['Nein']
+    return _fill_acroform(os.path.join(_DIR, 'BE_anfangsmietzins_original.pdf'), tv, cbs)
+
+
 # ============================================================
 # DISPATCHER — Kanton automatisch wählen
 # ============================================================
@@ -500,9 +565,9 @@ _KUENDIGUNG_FILLER = {
 # AcroForm-Original. Der Filler wird nur verwendet, wenn die zugehörige
 # `<KT>_anfangsmietzins_original.pdf` tatsächlich im Ordner liegt (siehe
 # fill_anfangsmietzins) — sonst greift das kanton-adaptive Fallback-Formular.
-# Noch keine kantonalen Anfangsmietzins-Originale hinterlegt; sobald die
-# offizielle PDF eines Kantons vorliegt, hier {KT: filler_fn} registrieren.
-_ANFANG_FILLER = {}
+_ANFANG_FILLER = {
+    'BE': fill_anfangsmietzins_be,   # amtliches Original Obergericht BE 11/2025
+}
 
 
 def hat_original(kanton, typ):

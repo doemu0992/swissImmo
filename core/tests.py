@@ -8808,13 +8808,31 @@ class FormularpflichtTests(TestCase):
     def test_dispatcher_faellt_auf_reportlab_zurueck(self):
         from core.services.formular_fill import fill_anfangsmietzins, hat_original
         lg, e, m, v = _basis_objekte()
-        lg.kanton = 'BE'; lg.plz = '3000'; lg.ort = 'Bern'; lg.save()
-        self.assertFalse(hat_original('BE', 'anfangsmietzins'))  # kein Original hinterlegt
+        lg.kanton = 'ZH'; lg.plz = '8000'; lg.ort = 'Zürich'; lg.save()
+        self.assertFalse(hat_original('ZH', 'anfangsmietzins'))  # ZH: kein Original → Fallback
         daten = {'anfang_netto': Decimal('1500'), 'anfang_nk': Decimal('200'),
                  'vormiete_netto': Decimal('0'), 'vormiete_nk': Decimal('0'),
                  'beginn': v.beginn, 'grund_choice': 'referenz', 'begruendung': ''}
         pdf = fill_anfangsmietzins(v, daten)
         self.assertTrue(pdf.startswith(b'%PDF'))
+
+    def test_bern_nutzt_original_acroform(self):
+        from core.services.formular_fill import fill_anfangsmietzins, hat_original
+        from pypdf import PdfReader
+        import io
+        lg, e, m, v = _basis_objekte()
+        lg.kanton = 'BE'; lg.plz = '3000'; lg.ort = 'Bern'; lg.save()
+        self.assertTrue(hat_original('BE', 'anfangsmietzins'))  # Original hinterlegt
+        daten = {'anfang_netto': Decimal('1650'), 'anfang_nk': Decimal('250'),
+                 'vormiete_netto': Decimal('1500'), 'vormiete_nk': Decimal('230'),
+                 'beginn': v.beginn, 'grund_choice': 'anpassung', 'begruendung': 'Referenzzins'}
+        pdf = fill_anfangsmietzins(v, daten, kanton='BE')
+        self.assertTrue(pdf.startswith(b'%PDF'))
+        # Es ist das amtliche Original (AcroForm mit den Textfeld-Namen), gefüllt.
+        flds = PdfReader(io.BytesIO(pdf)).get_fields() or {}
+        self.assertIn('Textfeld 16', flds)                       # Feldname aus dem Original
+        self.assertEqual(flds['Textfeld 5'].get('/V'), f"{m.vorname} {m.nachname}")
+        self.assertEqual(flds['Textfeld 16'].get('/V'), "1'650.00")   # Anfangsmiete netto
 
     def test_aktivierung_erzeugt_formular_automatisch(self):
         from rentals.models import Dokument
