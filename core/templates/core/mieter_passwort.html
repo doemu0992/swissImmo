@@ -1,0 +1,31 @@
+{% extends 'core/portal_base.html' %}
+{% block title %}Passwort ändern — Mieterportal{% endblock %}
+{% block brand_icon %}fa-key{% endblock %}
+{% block brand_mobile %}Passwort{% endblock %}
+{% block nav %}{% include 'core/_mieter_nav.html' with aktiv='passwort' %}{% endblock %}
+
+{% block content %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-black tracking-tight text-slate-900">Passwort ändern</h1>
+        <p class="text-slate-500 mt-1">Wählen Sie ein sicheres Passwort (mind. 8 Zeichen).</p>
+    </div>
+
+    <form method="post" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4 max-w-lg">
+        {% csrf_token %}
+        {% if form.errors %}
+        <div class="bg-rose-50 border border-rose-100 text-rose-600 text-sm p-4 rounded-xl font-medium">
+            {% for field in form %}{% for e in field.errors %}<p>{{ e }}</p>{% endfor %}{% endfor %}
+            {% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}
+        </div>
+        {% endif %}
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Aktuelles Passwort</label>
+            <input type="password" name="old_password" required autocomplete="current-password" class="w-full bg-slate-100 rounded-xl text-sm px-3.5 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Neues Passwort</label>
+            <input type="password" name="new_password1" required autocomplete="new-password" class="w-full bg-slate-100 rounded-xl text-sm px-3.5 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Neues Passwort wiederholen</label>
+            <input type="password" name="new_password2" required autocomplete="new-password" class="w-full bg-slate-100 rounded-xl text-sm px-3.5 py-2.5"></div>
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-5 py-3 rounded-xl">
+            <i class="fa-solid fa-check mr-1.5"></i>Passwort ändern
+        </button>
+    </form>
+{% endblock %}

@@ -17,9 +17,17 @@
 <a href="/mieter/schaden/neu/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'schaden' %}bg-indigo-600 text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
     <i class="fa-solid fa-triangle-exclamation w-5 text-center"></i> Schaden melden
 </a>
-<a href="/mieter/kontoauszug/" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
-    <i class="fa-solid fa-file-lines w-5 text-center"></i> Kontoauszug (PDF)
+<a href="/mieter/konto/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'konto' %}bg-indigo-600 text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
+    <i class="fa-solid fa-scale-balanced w-5 text-center"></i> Mieterkonto
 </a>
 <a href="/mieter/kuendigung/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'kuendigung' %}bg-indigo-600 text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
     <i class="fa-solid fa-envelope-open-text w-5 text-center"></i> Kündigung
+</a>
+
+<div class="pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Konto</div>
+<a href="/mieter/daten/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'daten' %}bg-indigo-600 text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
+    <i class="fa-solid fa-id-card w-5 text-center"></i> Meine Daten
+</a>
+<a href="/mieter/passwort/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {% if aktiv == 'passwort' %}bg-indigo-600 text-white{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
+    <i class="fa-solid fa-key w-5 text-center"></i> Passwort ändern
 </a>

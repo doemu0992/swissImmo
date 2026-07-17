@@ -1,0 +1,13 @@
+Guten Tag
+
+Sie (oder jemand anderes) haben ein neues Passwort für das SwissImmo-Portal angefordert.
+
+Neues Passwort setzen:
+{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
+
+Ihr Benutzername: {{ user.get_username }}
+
+Falls Sie das nicht angefordert haben, können Sie diese E-Mail ignorieren — Ihr Passwort bleibt unverändert.
+
+Freundliche Grüsse
+Ihre Liegenschaftsverwaltung

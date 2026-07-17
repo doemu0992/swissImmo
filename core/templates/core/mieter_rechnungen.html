@@ -45,4 +45,30 @@
         <p class="text-sm text-slate-400 mt-1">Aktuell ist alles bezahlt. Für eine Aufstellung nutzen Sie den Kontoauszug.</p>
     </div>
     {% endif %}
+
+    {% if bezahlte %}
+    <details class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-6">
+        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
+            <span class="font-bold text-slate-900">Bezahlte Rechnungen <span class="text-slate-400 font-normal text-sm">(letzte 24 Monate)</span></span>
+            <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+        </summary>
+        <div class="divide-y divide-slate-100 border-t border-slate-100">
+            {% for r in bezahlte %}
+            <div class="flex items-center justify-between gap-3 px-5 py-3">
+                <div class="min-w-0">
+                    <div class="font-semibold text-sm text-slate-700 truncate">{{ r.titel }}</div>
+                    <div class="text-xs text-slate-400 mt-0.5">{{ r.datum|date:"d.m.Y" }} · <span class="text-emerald-600 font-semibold">bezahlt</span></div>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                    <span class="text-sm font-semibold text-slate-600 whitespace-nowrap">CHF {{ r.betrag|chf }}</span>
+                    <a href="/mieter/rechnung/{{ r.id }}/" target="_blank"
+                       class="border border-slate-200 hover:border-indigo-400 text-slate-500 hover:text-indigo-600 text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap">
+                        <i class="fa-solid fa-file-pdf"></i> Beleg
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </details>
+    {% endif %}
 {% endblock %}

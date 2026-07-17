@@ -1,0 +1,14 @@
+{% include 'core/_passwort_shell_top.html' %}
+<h3 class="text-lg font-bold text-slate-800 mb-2">Passwort vergessen?</h3>
+<p class="text-sm text-slate-500 mb-6">Geben Sie Ihre E-Mail-Adresse ein — Sie erhalten einen Link, um ein neues Passwort zu setzen.</p>
+<form method="post" class="space-y-5">
+    {% csrf_token %}
+    <div>
+        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">E-Mail</label>
+        <input type="email" name="email" required autofocus autocomplete="email"
+               class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500"
+               placeholder="ihre@email.ch">
+    </div>
+    <button type="submit" class="w-full bg-indigo-600 text-white py-3.5 px-4 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700">Link anfordern</button>
+</form>
+{% include 'core/_passwort_shell_bottom.html' %}

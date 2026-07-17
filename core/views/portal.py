@@ -363,13 +363,24 @@ def mieter_portal_view(request):
 @never_cache
 @login_required
 def mieter_rechnungen_view(request):
-    """Eigene Seite: offene Rechnungen mit QR-Einzahlschein."""
+    """Eigene Seite: offene Rechnungen mit QR-Einzahlschein + Archiv der
+    bezahlten Rechnungen (24 Monate) für Belege/Steuererklärung."""
+    from finance.models import DebitorenRechnung
+    from datetime import timedelta as _td
+    from django.utils import timezone
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         return redirect('mieter_portal')
     offene, total_offen = _mieter_offene(mieter)
+    vids = list(Mietvertrag.objects.filter(_ist_mieter_q(mieter)).values_list('id', flat=True))
+    grenze = timezone.localdate() - _td(days=730)
+    bezahlte = [{'id': r.id, 'titel': r.titel, 'betrag': r.betrag, 'datum': r.datum}
+                for r in (DebitorenRechnung.objects
+                          .filter(vertrag_id__in=vids, status='bezahlt', datum__gte=grenze)
+                          .order_by('-datum')[:60])]
     return render(request, 'core/mieter_rechnungen.html', {
-        'mieter': mieter, 'offene': offene, 'total_offen': total_offen})
+        'mieter': mieter, 'offene': offene, 'total_offen': total_offen,
+        'bezahlte': bezahlte})
 
 
 @never_cache
@@ -615,6 +626,16 @@ def mieter_schaden_melden(request):
         email_melder=mieter.email or '', tel_melder=mieter.mobile or mieter.telefon_privat or '',
         status='neu', gelesen=False)
 
+    # Fotos (mehrere) — ein Bild sagt mehr als jede Beschreibung und erspart
+    # Rückfragen. Gleiche Mechanik wie im öffentlichen Meldeformular.
+    try:
+        from tickets.models import SchadenFoto
+        for f in request.FILES.getlist('fotos')[:8]:
+            SchadenFoto.objects.create(schaden=t, bild=f,
+                                       beschreibung='Foto des Mieters (Portal)')
+    except Exception:
+        pass
+
     # 1) Eingangsbestätigung an den Mieter, 2) Benachrichtigung an die Verwaltung
     _benachrichtige_neue_meldung(t, v)
 
@@ -735,3 +756,109 @@ def mieter_ticket_nachricht(request, pk):
         pass
     messages.success(request, "✅ Ihre Nachricht wurde übermittelt. Die Verwaltung meldet sich.")
     return redirect(f'/mieter/ticket/{t.id}/')
+
+
+# ============================================================
+# MIETERPORTAL: Konto, Meine Daten, Passwort (Nacht-Audit N3)
+# ============================================================
+
+@never_cache
+@login_required
+def mieter_konto_view(request):
+    """Mieterkonto on-screen: alle Bewegungen (Sollstellungen + Zahlungen) mit
+    laufendem Saldo — laienverständlich beschriftet (statt Soll/Haben-Jargon).
+    Der PDF-Kontoauszug bleibt daneben bestehen."""
+    from core.services.mieterkonto import berechne_mieterkonto
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        return redirect('mieter_portal')
+    zeilen, endsaldo = berechne_mieterkonto(mieter)
+    zeilen = list(reversed(zeilen))[:60]   # jüngste zuerst, max. 60 Bewegungen
+    for z in zeilen:
+        z['ist_zahlung'] = z['haben'] > 0
+        z['betrag'] = z['haben'] if z['ist_zahlung'] else z['soll']
+    return render(request, 'core/mieter_konto.html', {
+        'mieter': mieter, 'zeilen': zeilen, 'endsaldo': endsaldo,
+        'saldo_abs': abs(endsaldo),
+    })
+
+
+@never_cache
+@login_required
+def mieter_daten_view(request):
+    """«Meine Daten»: Kontaktdaten ansehen; Telefon/E-Mail direkt ändern
+    (unkritisch), Änderungswünsche zur Adresse als Meldung an die Verwaltung.
+    Jede Änderung wird im Kommunikations-Journal protokolliert."""
+    from django.contrib import messages
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        return redirect('mieter_portal')
+
+    if request.method == 'POST':
+        aenderungen = []
+        neu_mobile = (request.POST.get('mobile') or '').strip()
+        neu_tel = (request.POST.get('telefon_privat') or '').strip()
+        neu_email = (request.POST.get('email') or '').strip()
+        if neu_mobile != (mieter.mobile or ''):
+            aenderungen.append(f"Mobile: «{mieter.mobile or '—'}» → «{neu_mobile or '—'}»")
+            mieter.mobile = neu_mobile
+        if neu_tel != (mieter.telefon_privat or ''):
+            aenderungen.append(f"Telefon: «{mieter.telefon_privat or '—'}» → «{neu_tel or '—'}»")
+            mieter.telefon_privat = neu_tel
+        if neu_email and neu_email != (mieter.email or ''):
+            aenderungen.append(f"E-Mail: «{mieter.email or '—'}» → «{neu_email}»")
+            mieter.email = neu_email
+        adress_wunsch = (request.POST.get('adresse_meldung') or '').strip()
+        if aenderungen:
+            mieter.save()
+        if aenderungen or adress_wunsch:
+            # Journal-Eintrag + Mail an die Verwaltung (wie bei der Portal-Kündigung)
+            try:
+                from crm.models import Kommunikation
+                text = "Selbst gemeldete Änderung über das Mieterportal:\n" + "\n".join(aenderungen)
+                if adress_wunsch:
+                    text += f"\nAdressänderung gewünscht: {adress_wunsch}"
+                Kommunikation.objects.create(mieter=mieter, typ='email', richtung='eingehend',
+                                             betreff='Kontaktdaten-Änderung (Mieterportal)',
+                                             inhalt=text)
+            except Exception:
+                pass
+            try:
+                from core.utils.email_service import send_ticket_email
+                from crm.models import Verwaltung
+                vw = Verwaltung.objects.first()
+                if vw and vw.email:
+                    send_ticket_email(vw.email, f"Kontaktdaten-Änderung: {mieter.display_name}",
+                                      ("Der Mieter hat über das Portal Daten geändert/gemeldet:\n\n"
+                                       + "\n".join(aenderungen)
+                                       + (f"\nAdressänderung gewünscht: {adress_wunsch}" if adress_wunsch else "")))
+            except Exception:
+                pass
+            messages.success(request, "✅ Ihre Angaben wurden aktualisiert und der Verwaltung gemeldet.")
+        else:
+            messages.info(request, "Keine Änderungen erkannt.")
+        return redirect('mieter_daten')
+
+    return render(request, 'core/mieter_daten.html', {'mieter': mieter})
+
+
+@never_cache
+@login_required
+def mieter_passwort_view(request):
+    """Passwort ändern im Portal-Look (Django PasswordChangeForm)."""
+    from django.contrib import messages
+    from django.contrib.auth.forms import PasswordChangeForm
+    from django.contrib.auth import update_session_auth_hash
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        return redirect('mieter_portal')
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)   # eingeloggt bleiben
+            messages.success(request, "✅ Passwort geändert.")
+            return redirect('mieter_portal')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'core/mieter_passwort.html', {'mieter': mieter, 'form': form})
