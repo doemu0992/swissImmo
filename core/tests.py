@@ -9147,3 +9147,51 @@ class Paket4ProzesseTests(TestCase):
         self.assertEqual(r['Content-Type'], 'application/pdf')
         self.assertTrue(Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Mängelrüge').exists())
         self.assertTrue(Pendenz.objects.filter(vertrag=v, titel__startswith='Mängelbehebung').exists())
+
+
+class Paket4RestTests(TestCase):
+    """Paket 4 Rest: Untermiete-Zustimmung, Versicherungsregister, Betriebskostenspiegel."""
+
+    def test_untermiete_pdf(self):
+        _lg, _e, _m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self.assertEqual(c.get(f'/neu/vertraege/{v.id}/untermiete/').status_code, 200)
+        r = c.post(f'/neu/vertraege/{v.id}/untermiete/', {
+            'untermieter': 'Peter Muster', 'entscheid': 'zustimmung', 'bedingungen': 'befristet bis Ende Jahr'})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+
+    def test_versicherung_crud(self):
+        from portfolio.models import Versicherung
+        lg, _e, _m, _v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/liegenschaften/{lg.id}/versicherung/', {
+            'art': 'gebaeude', 'gesellschaft': 'GVB', 'policennummer': 'P-123',
+            'versicherungssumme': '1200000', 'jahrespraemie': '3400', 'ablauf_datum': '2027-01-01'})
+        self.assertEqual(r.status_code, 302)
+        vs = Versicherung.objects.get(liegenschaft=lg)
+        self.assertEqual(vs.gesellschaft, 'GVB')
+        self.assertEqual(vs.jahrespraemie, Decimal('3400'))
+        # Anzeige auf der Detailseite
+        html = c.get(f'/neu/liegenschaften/{lg.id}/').content.decode()
+        self.assertIn('GVB', html)
+        # Löschen
+        r2 = c.post(f'/neu/versicherung/{vs.id}/loeschen/')
+        self.assertEqual(r2.status_code, 302)
+        self.assertFalse(Versicherung.objects.filter(id=vs.id).exists())
+
+    def test_betriebskostenspiegel_rechnet_pro_m2(self):
+        from finance.models import Buchung, Buchungskonto
+        lg, e, _m, _v = _basis_objekte()
+        e.flaeche_m2 = Decimal('100'); e.save()
+        aufwand, _ = Buchungskonto.objects.get_or_create(nummer='4000', defaults={'bezeichnung': 'Unterhalt', 'typ': 'aufwand'})
+        bank, _ = Buchungskonto.objects.get_or_create(nummer='1020', defaults={'bezeichnung': 'Bank', 'typ': 'bilanz'})
+        Buchung.objects.create(datum=date(date.today().year, 6, 1), liegenschaft=lg,
+                               soll_konto=aufwand, haben_konto=bank, betrag=Decimal('2500'),
+                               beleg_text='Test-Aufwand')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/berichte/betriebskostenspiegel/')
+        self.assertEqual(r.status_code, 200)
+        html = r.content.decode()
+        self.assertIn('Betriebskostenspiegel', html)
+        self.assertIn('25,00', html)   # 2500 / 100 m² = CHF 25.00/m² (de-Lokalisierung)

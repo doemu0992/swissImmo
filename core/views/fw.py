@@ -886,6 +886,44 @@ AUSWERTUNG_TYPEN = [
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
+def fw_betriebskostenspiegel(request):
+    """Betriebs-/Nebenkostenspiegel: Aufwand je Liegenschaft und Jahr, umgelegt
+    auf CHF/m² — quervergleichbar über das Portfolio."""
+    from finance.models import Buchung
+    from django.db.models import Sum
+    basis = _global_filter(request)
+    heute = timezone.localdate()
+    try:
+        jahr = int(request.GET.get('jahr') or heute.year)
+    except ValueError:
+        jahr = heute.year
+    von, bis = date(jahr, 1, 1), date(jahr, 12, 31)
+    lgs = Liegenschaft.objects.all().order_by('strasse')
+    if basis['aktive_lg']:
+        lgs = lgs.filter(id=basis['aktive_lg'].id)
+    rows, total_kosten, total_m2 = [], Decimal('0.00'), Decimal('0.00')
+    for lg in lgs:
+        kosten = (Buchung.objects.filter(liegenschaft=lg, datum__gte=von, datum__lte=bis,
+                                          soll_konto__typ='aufwand', ist_storno=False)
+                  .aggregate(s=Sum('betrag'))['s'] or Decimal('0.00'))
+        m2 = sum((e.flaeche_m2 or Decimal('0')) for e in lg.einheiten.all()) or Decimal('0.00')
+        pro_m2 = (kosten / m2) if m2 else None
+        rows.append({'lg': lg, 'kosten': kosten, 'm2': m2, 'pro_m2': pro_m2})
+        total_kosten += kosten
+        total_m2 += m2
+    schnitt = (total_kosten / total_m2) if total_m2 else None
+    # Farb-/Vergleichsmarker relativ zum Portfolioschnitt.
+    for r in rows:
+        if r['pro_m2'] is not None and schnitt:
+            r['abweichung'] = (r['pro_m2'] - schnitt)
+    return render(request, 'fw/betriebskostenspiegel.html', {
+        **basis, 'nav': 'berichte', 'rows': rows, 'jahr': jahr,
+        'total_kosten': total_kosten, 'total_m2': total_m2, 'schnitt': schnitt,
+        'jahre': list(range(heute.year, heute.year - 6, -1)),
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
 def fw_auswertung(request):
     """Interaktive Auswertung: Kennzahl (Mietertrag/Aufwand/Reparaturen/Ergebnis)
     im Monatsverlauf eines Jahres + Vergleich je Liegenschaft — mit Filtern."""
@@ -1284,6 +1322,8 @@ def fw_liegenschaft_detail(request, pk):
         'unterhalt': unterhalt,
         'wartungsfristen': wartungsfristen,
         'perioden': perioden,
+        'versicherungen': list(lg.versicherungen.all()),
+        'heute_iso': timezone.localdate().isoformat(),
         'lg_geraete': lg_geraete,
         'lg_zaehler': lg_zaehler,
         'geraet_kategorien': GERAET_KATEGORIEN,
@@ -8222,6 +8262,55 @@ def fw_liegenschaft_loeschen(request, pk):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_versicherung_add(request, lg_id):
+    """Versicherungspolice zu einer Liegenschaft erfassen (Register)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Versicherung
+    from core.auth import log_aktion
+    lg = get_object_or_404(Liegenschaft, id=lg_id)
+    if request.method != 'POST':
+        return redirect(f'/neu/liegenschaften/{lg.id}/')
+    P = request.POST
+
+    def dec(key):
+        v = str(P.get(key) or '').replace("'", '').replace(',', '.').strip()
+        try:
+            return Decimal(v) if v else None
+        except Exception:
+            return None
+    art = P.get('art', 'gebaeude')
+    ablauf = None
+    try:
+        ablauf = date.fromisoformat((P.get('ablauf_datum') or '').strip()) if P.get('ablauf_datum') else None
+    except ValueError:
+        ablauf = None
+    Versicherung.objects.create(
+        liegenschaft=lg, art=art if art in dict(Versicherung.ART_CHOICES) else 'andere',
+        gesellschaft=P.get('gesellschaft', '').strip(),
+        policennummer=P.get('policennummer', '').strip(),
+        versicherungssumme=dec('versicherungssumme'), jahrespraemie=dec('jahrespraemie'),
+        ablauf_datum=ablauf, notiz=P.get('notiz', '').strip())
+    log_aktion(request, "Versicherung erfasst", f"{lg.strasse}", P.get('gesellschaft', ''), ziel=lg)
+    messages.success(request, "✅ Versicherung erfasst.")
+    return redirect(f'/neu/liegenschaften/{lg.id}/?tab=finanzen')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_versicherung_loeschen(request, pk):
+    """Versicherungspolice entfernen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Versicherung
+    vs = get_object_or_404(Versicherung, id=pk)
+    lg_id = vs.liegenschaft_id
+    if request.method == 'POST':
+        vs.delete()
+        messages.success(request, "✅ Versicherung entfernt.")
+    return redirect(f'/neu/liegenschaften/{lg_id}/?tab=finanzen')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_objekt_form(request, pk=None):
     """Mietobjekt (Einheit) erfassen oder bearbeiten."""
     from django.shortcuts import redirect
@@ -9169,6 +9258,35 @@ def fw_maengelruege(request, vertrag_id):
         resp['Content-Disposition'] = f'inline; filename="Maengelruege_{v.mieter.nachname}.pdf"'
         return resp
     return render(request, 'fw/maengelruege.html', {**basis, 'nav': 'vertraege', 'v': v})
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_untermiete(request, vertrag_id):
+    """Zustimmung/Ablehnung zur Untervermietung (Art. 262 OR). GET: Formular · POST: PDF."""
+    from django.http import HttpResponse
+    from django.contrib import messages
+    from crm.models import Verwaltung
+    from core.services.mietprozess_briefe import untermiete_zustimmung_pdf
+    from core.services.ablage import ablegen
+    from core.auth import log_aktion
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
+    basis = _global_filter(request)
+    if request.method == 'POST':
+        untermieter = (request.POST.get('untermieter') or '').strip()
+        entscheid = request.POST.get('entscheid') if request.POST.get('entscheid') in ('zustimmung', 'ablehnung') else 'zustimmung'
+        bedingungen = (request.POST.get('bedingungen') or '').strip()
+        if not untermieter:
+            messages.error(request, "❌ Bitte die untermietende Person angeben.")
+            return redirect(f'/neu/vertraege/{v.id}/untermiete/')
+        vw = Verwaltung.objects.first()
+        pdf = untermiete_zustimmung_pdf(v, untermieter, entscheid=entscheid, bedingungen=bedingungen, verwaltung=vw)
+        wort = 'Zustimmung' if entscheid == 'zustimmung' else 'Ablehnung'
+        ablegen(pdf, f"Untermiete-{wort} {v.mieter.nachname}", kategorie='vertrag', vertrag=v, dedup=False)
+        log_aktion(request, f"Untermiete-{wort}", str(v.mieter), untermieter, ziel=v)
+        resp = HttpResponse(pdf, content_type='application/pdf')
+        resp['Content-Disposition'] = f'inline; filename="Untermiete_{v.mieter.nachname}.pdf"'
+        return resp
+    return render(request, 'fw/untermiete.html', {**basis, 'nav': 'vertraege', 'v': v})
 
 
 # ============================================================

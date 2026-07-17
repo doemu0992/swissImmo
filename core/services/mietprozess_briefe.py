@@ -173,3 +173,36 @@ def maengelruege_pdf(vertrag, mangel_text, frist_tage=14, verwaltung=None):
         "Für Rückfragen stehen wir Ihnen gerne zur Verfügung.",
     ]
     return _brief(absender, empf, ort, f"Mängelrüge / Fristansetzung — {objekt}", absaetze, name)
+
+
+def untermiete_zustimmung_pdf(vertrag, untermieter, entscheid='zustimmung',
+                              bedingungen='', verwaltung=None):
+    """Zustimmung oder Ablehnung zur Untervermietung (Art. 262 OR).
+    entscheid: 'zustimmung' | 'ablehnung'."""
+    mieter, einheit, lg, absender, ort, empf, objekt, name = _kontext(vertrag, verwaltung)
+    if entscheid == 'ablehnung':
+        betreff = f"Untervermietung — Ablehnung ({objekt})"
+        absaetze = [
+            "Sehr geehrte Damen und Herren",
+            f"Sie haben um Zustimmung zur Untervermietung des Mietobjekts {objekt} an "
+            f"{untermieter or 'die genannte Person'} ersucht.",
+            "Wir können der Untervermietung leider nicht zustimmen. Die Ablehnung stützt sich auf "
+            "Art. 262 Abs. 2 OR (z.B. missbräuchliche Bedingungen der Untermiete, wesentliche "
+            "Nachteile für die Vermieterschaft oder Verweigerung der Bekanntgabe der Bedingungen).",
+            (bedingungen or "").strip() or "Für Rückfragen stehen wir Ihnen gerne zur Verfügung.",
+        ]
+    else:
+        betreff = f"Untervermietung — Zustimmung ({objekt})"
+        absaetze = [
+            "Sehr geehrte Damen und Herren",
+            f"Wir bestätigen Ihnen unsere Zustimmung zur Untervermietung des Mietobjekts {objekt} "
+            f"an {untermieter or 'die genannte Person'} gemäss Art. 262 OR.",
+            "Die Zustimmung erfolgt unter folgenden Bedingungen: " + (
+                (bedingungen or "").strip() or
+                "Die Hauptmieterschaft bleibt für sämtliche Pflichten aus dem Hauptmietvertrag "
+                "verantwortlich (insb. Mietzins, Sorgfalt, Rückgabe). Der Untermietzins darf nicht "
+                "missbräuchlich sein."),
+            "Diese Zustimmung entbindet die Hauptmieterschaft nicht von ihren Verpflichtungen "
+            "gegenüber der Vermieterschaft.",
+        ]
+    return _brief(absender, empf, ort, betreff, absaetze, name)

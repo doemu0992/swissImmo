@@ -47,6 +47,8 @@
             <span class="text-slate-300">·</span>
             <a href="/neu/vertraege/{{ v.id }}/maengelruege/" class="text-xs font-semibold text-orange-600 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Mängelrüge</a>
             <span class="text-slate-300">·</span>
+            <a href="/neu/vertraege/{{ v.id }}/untermiete/" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700"><i class="fa-solid fa-people-arrows mr-1"></i>Untermiete</a>
+            <span class="text-slate-300">·</span>
             <a href="/vertrag/{{ v.id }}/pdf/" target="_blank" class="text-xs font-medium text-slate-500 hover:text-indigo-600"><i class="fa-solid fa-file-pdf mr-1"></i>PDF</a>
             <span class="text-slate-300">·</span>
             <form method="post" action="/neu/vertraege/{{ v.id }}/signieren/" onsubmit="return confirm('{% if v.sign_status == 'unterzeichnet' %}Dieser Vertrag ist bereits unterzeichnet. Wirklich erneut zur Unterschrift senden?{% else %}Vertrag an {{ v.mieter.display_name|escapejs }} zur digitalen Unterschrift senden?{% endif %}');"{% if not docuseal_konfiguriert %} title="DocuSeal ist noch nicht konfiguriert (Integrationen)"{% endif %}>

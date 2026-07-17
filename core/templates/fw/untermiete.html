@@ -1,0 +1,42 @@
+{% extends 'fw/base.html' %}
+{% block title %}Untervermietung — {{ v.mieter.display_name }}{% endblock %}
+{% block content %}
+<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/vertraege/" class="hover:text-indigo-600">Verträge</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <a href="/neu/vertraege/{{ v.id }}/" class="hover:text-indigo-600">{{ v.mieter.display_name }}</a>
+    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+    <span class="text-slate-600 font-medium">Untervermietung</span>
+</nav>
+
+<h1 class="text-2xl font-extrabold text-slate-900 mb-1">Untervermietung — Zustimmung / Ablehnung</h1>
+<p class="text-sm text-slate-500 mb-6">Art. 262 OR ·
+    {{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.plz }} {{ v.einheit.liegenschaft.ort }}</p>
+
+<div class="max-w-3xl mb-5 text-xs bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-lg px-3 py-2.5">
+    <i class="fa-solid fa-circle-info mr-1"></i>Die Vermieterschaft darf die Zustimmung nur verweigern, wenn die
+    Mieterschaft die Bedingungen nicht bekanntgibt, der Untermietzins missbräuchlich ist oder wesentliche
+    Nachteile entstehen (Art. 262 Abs. 2 OR).
+</div>
+
+<form method="post" class="max-w-3xl space-y-5">
+    {% csrf_token %}
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Untermietende Person *</label>
+            <input name="untermieter" required placeholder="Name der untermietenden Person" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Entscheid</label>
+            <select name="entscheid" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <option value="zustimmung">Zustimmung erteilen</option>
+                <option value="ablehnung">Ablehnung</option>
+            </select></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bedingungen / Begründung (optional)</label>
+            <textarea name="bedingungen" rows="3" placeholder="z. B. befristet bis …, Untermietzins max. CHF …" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></textarea></div>
+    </div>
+    <div class="flex items-center gap-3">
+        <button type="submit" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg px-5 py-2.5">
+            <i class="fa-solid fa-file-pdf"></i>Schreiben als PDF erstellen
+        </button>
+        <a href="/neu/vertraege/{{ v.id }}/" class="text-sm text-slate-500 hover:text-slate-700">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}

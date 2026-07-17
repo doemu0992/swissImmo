@@ -46,6 +46,39 @@ class Liegenschaft(models.Model):
         return f"{self.strasse}, {self.ort}"
 
 
+class Versicherung(models.Model):
+    """Versicherungspolice einer Liegenschaft (Gebäude, Haftpflicht, Wasser, Glas …).
+    Police-Register mit Summe/Prämie/Ablauf — löst die frühere Behelfslösung
+    «Versicherung als Frist-Art» ab."""
+    ART_CHOICES = [
+        ('gebaeude', 'Gebäudeversicherung'),
+        ('haftpflicht', 'Gebäude-Haftpflicht'),
+        ('wasser', 'Wasser / Elementar'),
+        ('glas', 'Glasbruch'),
+        ('bauherren', 'Bauherren / Bau'),
+        ('rechtsschutz', 'Rechtsschutz'),
+        ('andere', 'Andere'),
+    ]
+    liegenschaft = models.ForeignKey('Liegenschaft', on_delete=models.CASCADE, related_name='versicherungen')
+    art = models.CharField("Art", max_length=20, choices=ART_CHOICES, default='gebaeude')
+    gesellschaft = models.CharField("Gesellschaft", max_length=120, blank=True, default='')
+    policennummer = models.CharField("Policennummer", max_length=80, blank=True, default='')
+    versicherungssumme = models.DecimalField("Versicherungssumme (CHF)", max_digits=12, decimal_places=2, null=True, blank=True)
+    jahrespraemie = models.DecimalField("Jahresprämie (CHF)", max_digits=10, decimal_places=2, null=True, blank=True)
+    ablauf_datum = models.DateField("Ablauf / nächste Fälligkeit", null=True, blank=True)
+    notiz = models.CharField("Bemerkung", max_length=200, blank=True, default='')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Versicherung"
+        verbose_name_plural = "Versicherungen"
+        ordering = ['art', 'gesellschaft']
+        db_table = 'core_versicherung'
+
+    def __str__(self):
+        return f"{self.get_art_display()} · {self.gesellschaft}"
+
+
 class Einheit(models.Model):
     TYP_CHOICES = [
         ('whg', 'Wohnung'),
