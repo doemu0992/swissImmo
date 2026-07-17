@@ -27,6 +27,9 @@
 </div>
 
 <!-- Tabelle -->
+<form method="post" action="/neu/mietzins/massenanpassung/">
+{% csrf_token %}
+<input type="hidden" name="aktion" value="vorschau">
 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
     <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -36,13 +39,20 @@
                       {% if pot_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
-        <div class="ml-auto text-xs text-slate-400">{{ anzahl }} Vertrag/Verträge</div>
+        <div class="ml-auto flex items-center gap-3">
+            <span class="text-xs text-slate-400">{{ anzahl }} Vertrag/Verträge</span>
+            <button type="submit" id="massenBtn" disabled
+                    class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors">
+                <i class="fa-solid fa-layer-group"></i> Ausgewählte anpassen (Vorschau)
+            </button>
+        </div>
     </div>
 
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
             <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="pl-5 pr-1 py-3"><input type="checkbox" id="alleWahl" class="accent-indigo-600" title="Alle auswählen"></th>
                 <th class="px-5 py-3 font-semibold">Mieter</th>
                 <th class="px-5 py-3 font-semibold">Objekt</th>
                 <th class="px-5 py-3 font-semibold text-right">Netto effektiv</th>
@@ -55,6 +65,7 @@
             <tbody class="divide-y divide-slate-50">
             {% for row in rows %}
             <tr class="hover:bg-slate-50/60 transition-colors">
+                <td class="pl-5 pr-1 py-3.5"><input type="checkbox" name="vertrag_id" value="{{ row.v.id }}" class="vertragWahl accent-indigo-600"></td>
                 <td class="px-5 py-3.5 font-medium text-slate-900 whitespace-nowrap">
                     <a href="/neu/vertraege/{{ row.v.id }}/" class="hover:text-indigo-600">{{ row.mieter }}</a>
                 </td>
@@ -71,7 +82,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="px-5 py-12 text-center">
+            <tr><td colspan="8" class="px-5 py-12 text-center">
                 <div class="w-10 h-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-percent"></i></div>
                 <p class="text-sm font-medium text-slate-700">{% if pot_filter %}Keine Verträge mit diesem Potenzial{% else %}Keine aktiven Verträge{% endif %}</p>
             </td></tr>
@@ -80,6 +91,20 @@
         </table>
     </div>
 </div>
+</form>
+<script>
+  (function () {
+    var alle = document.getElementById('alleWahl'), btn = document.getElementById('massenBtn');
+    var boxen = document.querySelectorAll('input.vertragWahl');
+    function sync() {
+      var n = document.querySelectorAll('input.vertragWahl:checked').length;
+      btn.disabled = n === 0;
+      btn.innerHTML = '<i class="fa-solid fa-layer-group"></i> ' + (n ? n + ' ausgewählte anpassen (Vorschau)' : 'Ausgewählte anpassen (Vorschau)');
+    }
+    if (alle) alle.addEventListener('change', function () { boxen.forEach(function (b) { b.checked = alle.checked; }); sync(); });
+    boxen.forEach(function (b) { b.addEventListener('change', sync); });
+  })();
+</script>
 
 <p class="text-xs text-slate-400 mt-4">
     <i class="fa-solid fa-circle-info mr-1"></i>

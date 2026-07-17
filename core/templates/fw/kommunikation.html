@@ -43,7 +43,7 @@
             <div class="max-h-56 overflow-y-auto border border-slate-100 rounded-lg divide-y divide-slate-50">
                 {% for e in empfaenger %}
                 <label class="emp-row flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer" data-name="{{ e.name|lower }} {{ e.objekt|lower }}" data-lg="{{ e.lg_id }}">
-                    <input type="checkbox" class="emp-check accent-indigo-600" value="{{ e.id }}" onchange="aktualisiere()">
+                    <input type="checkbox" class="emp-check accent-indigo-600" value="{{ e.id }}" onchange="aktualisiere()" {% if vorwahl_mieter == e.id %}checked{% endif %}>
                     <div class="min-w-0">
                         <div class="text-sm font-medium text-slate-900 truncate">{{ e.name }}</div>
                         <div class="text-xs text-slate-400 truncate">{{ e.objekt }}</div>
@@ -173,6 +173,7 @@ Freundliche Grüsse</textarea>
 
 <script>
 const EMPF = JSON.parse(document.getElementById('empfaenger-data').textContent);
+document.addEventListener('DOMContentLoaded', function(){ if (document.querySelector('.emp-check:checked')) aktualisiere(); });
 const ABS = JSON.parse(document.getElementById('absender-data').textContent);
 const VORLAGEN = JSON.parse(document.getElementById('vorlagen-data').textContent);
 const LOGO_URL = document.getElementById('logo-url').dataset.url || '';

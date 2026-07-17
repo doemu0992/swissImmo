@@ -22,6 +22,11 @@
     </div>
     <div class="flex items-center gap-2">
         {% if anzahl_aktive %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-emerald-50 text-emerald-700">{{ anzahl_aktive }} aktiver Vertrag{{ anzahl_aktive|pluralize:",e" }}</span>{% endif %}
+        {% if m.email %}
+        <a href="/neu/kommunikation/?mieter={{ m.id }}" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors" title="Mitteilung an {{ m.email }} verfassen (wird im Journal dokumentiert)">
+            <i class="fa-solid fa-envelope text-xs mr-1"></i>E-Mail
+        </a>
+        {% endif %}
         <a href="/neu/personen/{{ m.id }}/bearbeiten/" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
             <i class="fa-solid fa-pen text-xs mr-1"></i>Bearbeiten
         </a>

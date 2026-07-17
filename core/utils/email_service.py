@@ -151,6 +151,27 @@ def send_neue_meldung_intern(ticket, to_emails):
     return ok
 
 
+def journal_email(betreff, inhalt, *, mieter=None, vertrag=None, liegenschaft=None,
+                  user=None, empfaenger=''):
+    """Dokumentiert eine versendete E-Mail im Kommunikations-Journal.
+
+    Ohne diesen Eintrag ist der Verlauf lückenhaft: Rundschreiben, Mahnungen und
+    Bewerber-Mails gingen raus, ohne dass die Akte des Kontakts sie zeigt.
+    Darf einen Versand nie zum Scheitern bringen → defensiv (best effort)."""
+    try:
+        from crm.models import Kommunikation
+        text = inhalt or ''
+        if empfaenger:
+            text = f"An: {empfaenger}\n\n{text}"
+        Kommunikation.objects.create(
+            mieter=mieter, vertrag=vertrag, liegenschaft=liegenschaft,
+            typ='email', richtung='ausgehend',
+            betreff=(betreff or '')[:200], inhalt=text, erstellt_von=user)
+        return True
+    except Exception:
+        return False
+
+
 def send_ticket_email(to_email, betreff, inhalt_text, foto_field=None):
     """Sendet eine Ticket-Mail (aus Vorlage) synchron. inhalt_text ist Klartext
     mit Zeilenumbrüchen; wird zu HTML gewandelt. Gibt True/False zurück."""
@@ -285,4 +306,7 @@ def send_payment_reminder(vertrag, monat_datum, offener_betrag):
     </body></html>
     """
     threading.Thread(target=send_via_hoststar, args=(mieter.email, subject, html_msg)).start()
+    journal_email(subject,
+                  f"Zahlungserinnerung Miete {monat_str} · offen CHF {offener_betrag:,.2f}",
+                  mieter=mieter, vertrag=vertrag, empfaenger=mieter.email)
     return True
