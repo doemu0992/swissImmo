@@ -496,11 +496,39 @@ _KUENDIGUNG_FILLER = {
     'ZH': fill_kuendigung_zh,
     'BE': fill_kuendigung_be,
 }
+# Anfangsmietzins-Formular (Art. 270 Abs. 2 OR): Kantone mit hinterlegtem
+# AcroForm-Original. Der Filler wird nur verwendet, wenn die zugehörige
+# `<KT>_anfangsmietzins_original.pdf` tatsächlich im Ordner liegt (siehe
+# fill_anfangsmietzins) — sonst greift das kanton-adaptive Fallback-Formular.
+# Noch keine kantonalen Anfangsmietzins-Originale hinterlegt; sobald die
+# offizielle PDF eines Kantons vorliegt, hier {KT: filler_fn} registrieren.
+_ANFANG_FILLER = {}
 
 
 def hat_original(kanton, typ):
+    kt = (kanton or '').upper()
+    if typ == 'anfangsmietzins':
+        # Original zählt nur, wenn Filler UND Template-Datei vorhanden sind.
+        return kt in _ANFANG_FILLER and os.path.exists(
+            os.path.join(_DIR, f'{kt}_anfangsmietzins_original.pdf'))
     reg = _MIETZINS_FILLER if typ == 'mietzins' else _KUENDIGUNG_FILLER
-    return (kanton or '').upper() in reg
+    return kt in reg
+
+
+def fill_anfangsmietzins(vertrag, daten, verwaltung=None, kanton=None):
+    """Amtliches Anfangsmietzins-Formular (Art. 270 Abs. 2 OR). Nutzt das
+    Original-AcroForm des Kantons, sobald `<KT>_anfangsmietzins_original.pdf`
+    hinterlegt und ein Filler registriert ist. Fällt sonst auf das
+    kanton-adaptive reportlab-Formular zurück (Schlichtungsbehörden + korrekter
+    Kantonsname werden dort ohnehin je Liegenschaft gesetzt)."""
+    from core.services.kantone import kanton_fuer_liegenschaft
+    kt = (kanton or kanton_fuer_liegenschaft(vertrag.einheit.liegenschaft) or '').upper()
+    fn = _ANFANG_FILLER.get(kt)
+    pfad = os.path.join(_DIR, f'{kt}_anfangsmietzins_original.pdf')
+    if fn and os.path.exists(pfad):
+        return fn(vertrag, daten, verwaltung=verwaltung)
+    from core.services.amtliche_formulare_so import anfangsmietzins_so_pdf
+    return anfangsmietzins_so_pdf(vertrag, daten, verwaltung=verwaltung)
 
 
 def fill_mietzins(vertrag, daten, verwaltung=None, kanton=None):

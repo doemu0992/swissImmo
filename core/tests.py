@@ -8762,6 +8762,78 @@ class FormularpflichtTests(TestCase):
         self.assertIn('Formularpflicht', g.content.decode())
         self.assertIn('Bern', g.content.decode())
 
+    def test_auto_ablage_bei_pflicht_wohnraum(self):
+        from core.views.fw import anfangsmietzins_auto_ablegen
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        lg.kanton = 'BE'; lg.plz = '3000'; lg.ort = 'Bern'; lg.save()
+        erzeugt, pflicht = anfangsmietzins_auto_ablegen(v)
+        self.assertTrue(erzeugt)
+        self.assertEqual(pflicht, 'ja')
+        self.assertTrue(Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Anfangsmietzins').exists())
+
+    def test_kein_auto_ohne_pflicht(self):
+        from core.views.fw import anfangsmietzins_auto_ablegen
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        lg.kanton = 'VS'; lg.plz = '1950'; lg.ort = 'Sion'; lg.save()  # keine Formularpflicht
+        erzeugt, grund = anfangsmietzins_auto_ablegen(v)
+        self.assertFalse(erzeugt)
+        self.assertEqual(grund, 'keine_pflicht')
+        self.assertFalse(Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Anfangsmietzins').exists())
+
+    def test_kein_auto_bei_gewerbe(self):
+        from core.views.fw import anfangsmietzins_auto_ablegen
+        lg, e, m, v = _basis_objekte()
+        lg.kanton = 'BE'; lg.plz = '3000'; lg.ort = 'Bern'; lg.save()
+        e.typ = 'gew'; e.save()   # Gewerbe → mietrecht_kategorie 'gewerbe'
+        erzeugt, grund = anfangsmietzins_auto_ablegen(v)
+        self.assertFalse(erzeugt)
+        self.assertEqual(grund, 'kein_wohnraum')
+
+    def test_anfangsmiete_aus_sollmietzins_vorbefuellt(self):
+        from portfolio.models import Sollmietzins
+        lg, e, m, v = _basis_objekte()
+        lg.kanton = 'BE'; lg.plz = '3000'; lg.ort = 'Bern'; lg.save()
+        # datierte Sollmietzins-Zeile gültig ab Vertragsbeginn mit abweichendem Wert
+        Sollmietzins.objects.create(einheit=e, gueltig_ab=v.beginn,
+                                    netto_mietzins=Decimal('1777'), nebenkosten=Decimal('222'))
+        c = Client(); c.force_login(_team_user())
+        g = c.get(f'/neu/mietzins/{v.id}/anfangsmietzins/')
+        self.assertEqual(g.status_code, 200)
+        html = g.content.decode()
+        self.assertIn('1777', html)   # aus Sollmietzins, nicht 1500 vom Vertrag
+        self.assertIn('gültig ab', html)
+
+    def test_dispatcher_faellt_auf_reportlab_zurueck(self):
+        from core.services.formular_fill import fill_anfangsmietzins, hat_original
+        lg, e, m, v = _basis_objekte()
+        lg.kanton = 'BE'; lg.plz = '3000'; lg.ort = 'Bern'; lg.save()
+        self.assertFalse(hat_original('BE', 'anfangsmietzins'))  # kein Original hinterlegt
+        daten = {'anfang_netto': Decimal('1500'), 'anfang_nk': Decimal('200'),
+                 'vormiete_netto': Decimal('0'), 'vormiete_nk': Decimal('0'),
+                 'beginn': v.beginn, 'grund_choice': 'referenz', 'begruendung': ''}
+        pdf = fill_anfangsmietzins(v, daten)
+        self.assertTrue(pdf.startswith(b'%PDF'))
+
+    def test_aktivierung_erzeugt_formular_automatisch(self):
+        from rentals.models import Dokument
+        lg, e, m, _v = _basis_objekte()
+        lg.kanton = 'BE'; lg.plz = '3000'; lg.ort = 'Bern'; lg.save()
+        # frisches Objekt ohne bestehenden Vertrag für saubere Aktivierung
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='2.5 Zi', typ='wohnung',
+                                    nettomiete_aktuell=Decimal('1400'), nebenkosten_aktuell=Decimal('180'))
+        c = Client(); c.force_login(_team_user())
+        beginn = date.today().replace(day=1)
+        r = c.post('/neu/vertraege/neu/speichern/', {
+            'mieter_id': str(m.id), 'einheit_id': str(e2.id),
+            'beginn': beginn.isoformat(), 'netto_mietzins': '1400', 'nebenkosten': '180',
+            'mietzins_modell': 'fest', 'kautions_betrag': '4200', 'aktiv_setzen': 'on',
+        })
+        self.assertIn(r.status_code, (200, 302))
+        v = Mietvertrag.objects.filter(einheit=e2).latest('id')
+        self.assertTrue(Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Anfangsmietzins').exists())
+
 
 class AdressHistorieTests(TestCase):
     """Datierte Adress-Historie (MieterAdresse) + Auto-Sync + Korrespondenz-Vorrang."""

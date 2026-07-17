@@ -6292,6 +6292,58 @@ def fw_mietzins_anpassung(request, vertrag_id):
     })
 
 
+def _vormiete_fuer(vertrag):
+    """Letzter beendeter Vertrag desselben Objekts (für die Vormiete-Angabe)."""
+    if not vertrag.einheit_id:
+        return None
+    return (Mietvertrag.objects.filter(einheit=vertrag.einheit).exclude(id=vertrag.id)
+            .filter(beginn__lt=vertrag.beginn or timezone.localdate())
+            .order_by('-beginn').first())
+
+
+def anfangsmietzins_auto_ablegen(vertrag, verwaltung=None):
+    """Erzeugt bei Vertrags-Aktivierung automatisch das amtliche Anfangsmietzins-
+    Formular (Art. 270 Abs. 2 OR) und legt es in der Akte ab — aber NUR wenn im
+    Kanton der Liegenschaft Formularpflicht besteht und es sich um Wohnraum handelt
+    (kein Gewerbe, kein Einstellplatz). So steht das Formular spätestens zur
+    Schlüsselübergabe bereit (30-Tage-Anfechtungsfrist ab Erhalt). Vormiete wird
+    aus dem letzten beendeten Vertrag gezogen, sonst «unbekannt» (Art. 270 zulässig).
+    Gibt (True, pflicht) bei Erzeugung zurück, sonst (False, grund)."""
+    from crm.models import Verwaltung
+    from core.services.formular_fill import fill_anfangsmietzins
+    from core.services.formularpflicht import formularpflicht_fuer_liegenschaft
+    from core.services.ablage import ablegen
+    einheit = vertrag.einheit
+    if not einheit:
+        return False, 'kein_objekt'
+    if getattr(einheit, 'mietrecht_kategorie', '') == 'gewerbe' or getattr(einheit, 'ist_einstellplatz', False):
+        return False, 'kein_wohnraum'
+    pflicht, info = formularpflicht_fuer_liegenschaft(einheit.liegenschaft)
+    if pflicht not in ('ja', 'teilweise'):
+        return False, 'keine_pflicht'
+    # Anfangsmiete aus der datierten Sollmietzins-Tabelle zum Vertragsbeginn.
+    soll = einheit.aktueller_sollmietzins(vertrag.beginn)
+    anf_netto = (soll.netto_mietzins if soll else vertrag.netto_mietzins) or Decimal('0')
+    anf_nk = (soll.nebenkosten if soll else vertrag.nebenkosten) or Decimal('0')
+    vor = _vormiete_fuer(vertrag)
+    vor_soll = vor.einheit.aktueller_sollmietzins(vor.beginn) if (vor and vor.einheit_id) else None
+    daten = {
+        'anfang_netto': anf_netto,
+        'anfang_nk': anf_nk,
+        'vormiete_netto': ((vor_soll.netto_mietzins if vor_soll else (vor.netto_mietzins if vor else 0)) or Decimal('0')),
+        'vormiete_nk': ((vor_soll.nebenkosten if vor_soll else (vor.nebenkosten if vor else 0)) or Decimal('0')),
+        'beginn': vertrag.beginn,
+        'grund_choice': 'unbekannt' if not vor else 'anpassung',
+        'begruendung': '',
+        'pflicht_info': info,
+    }
+    vw = verwaltung or (einheit.liegenschaft.verwaltung if einheit.liegenschaft else None) or Verwaltung.objects.first()
+    pdf = fill_anfangsmietzins(vertrag, daten, verwaltung=vw)
+    ablegen(pdf, f"Anfangsmietzins-Formular {vertrag.beginn:%d.%m.%Y}" if vertrag.beginn else "Anfangsmietzins-Formular",
+            kategorie='vertrag', vertrag=vertrag, dedup=True)
+    return True, pflicht
+
+
 @rolle_erforderlich(ROLLE_VERWALTUNG)
 def fw_anfangsmietzins(request, vertrag_id):
     """Amtliches Formular zur Mitteilung des Anfangsmietzinses (Art. 270 OR /
@@ -6299,7 +6351,7 @@ def fw_anfangsmietzins(request, vertrag_id):
     Hinweis auf das 30-Tage-Anfechtungsrecht zuzustellen. GET: Formular · POST: PDF."""
     from django.http import HttpResponse
     from crm.models import Verwaltung
-    from core.services.amtliche_formulare_so import anfangsmietzins_so_pdf
+    from core.services.formular_fill import fill_anfangsmietzins, hat_original
     from core.services.ablage import ablegen
     from core.auth import log_aktion
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
@@ -6313,15 +6365,26 @@ def fw_anfangsmietzins(request, vertrag_id):
         except Exception:
             return Decimal(d)
 
-    # Vormiete-Vorschlag: letzter beendeter Vertrag desselben Objekts.
-    vormiete = (Mietvertrag.objects.filter(einheit=v.einheit).exclude(id=v.id)
-                .filter(beginn__lt=v.beginn or timezone.localdate())
-                .order_by('-beginn').first()) if v.einheit_id else None
+    # Anfangsmiete aus der datierten Sollmietzins-Tabelle («Mietzins gültig ab»)
+    # zum Vertragsbeginn ziehen — Fallback auf die Vertrags-/Objektwerte.
+    soll = v.einheit.aktueller_sollmietzins(v.beginn) if v.einheit_id else None
+    soll_netto = soll.netto_mietzins if soll else (v.netto_mietzins or Decimal('0'))
+    soll_nk = soll.nebenkosten if soll else (v.nebenkosten or Decimal('0'))
+
+    # Vormiete-Vorschlag: letzter beendeter Vertrag desselben Objekts (Sollmietzins
+    # per dessen Beginn, sonst dessen Vertragswerte).
+    vormiete = _vormiete_fuer(v)
+    if vormiete and vormiete.einheit_id:
+        vsoll = vormiete.einheit.aktueller_sollmietzins(vormiete.beginn)
+        vor_netto = vsoll.netto_mietzins if vsoll else (vormiete.netto_mietzins or Decimal('0'))
+        vor_nk = vsoll.nebenkosten if vsoll else (vormiete.nebenkosten or Decimal('0'))
+    else:
+        vor_netto = vor_nk = ''
 
     if request.method == 'POST':
         daten = {
-            'anfang_netto': _dec(request.POST.get('anfang_netto'), str(v.netto_mietzins or 0)),
-            'anfang_nk': _dec(request.POST.get('anfang_nk'), str(v.nebenkosten or 0)),
+            'anfang_netto': _dec(request.POST.get('anfang_netto'), str(soll_netto or 0)),
+            'anfang_nk': _dec(request.POST.get('anfang_nk'), str(soll_nk or 0)),
             'vormiete_netto': _dec(request.POST.get('vormiete_netto')),
             'vormiete_nk': _dec(request.POST.get('vormiete_nk')),
             'beginn': v.beginn,
@@ -6331,7 +6394,9 @@ def fw_anfangsmietzins(request, vertrag_id):
         from core.services.formularpflicht import formularpflicht_fuer_liegenschaft
         _pflicht, pflicht_info = formularpflicht_fuer_liegenschaft(lg)
         daten['pflicht_info'] = pflicht_info
-        pdf = anfangsmietzins_so_pdf(v, daten, verwaltung=vw)
+        # Immer das Original-Formular des Kantons, wenn hinterlegt — sonst
+        # kanton-adaptives Fallback-Formular.
+        pdf = fill_anfangsmietzins(v, daten, verwaltung=vw)
         ablegen(pdf, f"Anfangsmietzins-Formular {v.beginn:%d.%m.%Y}" if v.beginn else "Anfangsmietzins-Formular",
                 kategorie='vertrag', vertrag=v, dedup=True)
         log_aktion(request, "Anfangsmietzins-Formular erstellt", str(v),
@@ -6341,15 +6406,18 @@ def fw_anfangsmietzins(request, vertrag_id):
         return resp
 
     from core.services.formularpflicht import formularpflicht_fuer_liegenschaft, pflicht_label
+    from core.services.kantone import kanton_fuer_liegenschaft
     pflicht, pflicht_info = formularpflicht_fuer_liegenschaft(lg)
     return render(request, 'fw/anfangsmietzins.html', {
         **basis, 'nav': 'mietzins', 'v': v, 'lg': lg,
-        'anfang_netto': v.netto_mietzins, 'anfang_nk': v.nebenkosten,
+        'anfang_netto': soll_netto, 'anfang_nk': soll_nk,
+        'soll': soll,
         'vormiete': vormiete,
-        'vormiete_netto': vormiete.netto_mietzins if vormiete else '',
-        'vormiete_nk': vormiete.nebenkosten if vormiete else '',
+        'vormiete_netto': vor_netto,
+        'vormiete_nk': vor_nk,
         'pflicht': pflicht, 'pflicht_info': pflicht_info,
         'pflicht_label': pflicht_label(pflicht),
+        'hat_original': hat_original(kanton_fuer_liegenschaft(lg), 'anfangsmietzins'),
     })
 
 
@@ -6888,6 +6956,16 @@ def fw_vertrag_neu_speichern(request):
             anzahl_dok = len(erzeuge_und_ablege_vertragspaket(vertrag))
         except Exception:
             anzahl_dok = 0
+        # Amtliches Anfangsmietzins-Formular (Art. 270 Abs. 2 OR) automatisch
+        # mitgenerieren, sofern Formularpflicht besteht — steht so zur
+        # Schlüsselübergabe bereit (30-Tage-Anfechtungsfrist ab Erhalt).
+        try:
+            erzeugt, _grund = anfangsmietzins_auto_ablegen(vertrag, verwaltung=_vw)
+            if erzeugt:
+                messages.info(request, "📄 Amtliches Anfangsmietzins-Formular wurde automatisch erstellt "
+                                       "(Formularpflicht) — bei Schlüsselübergabe aushändigen.")
+        except Exception:
+            pass
 
     # Mietrechtliche Plausibilitätsprüfung (Index ≥ 5 J / Staffel ≥ 3 J,
     # max. 1 Staffelerhöhung/Jahr) — als Warnung, nicht blockierend.
