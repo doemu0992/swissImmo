@@ -459,6 +459,20 @@ def anfangsmietzins_so_pdf(vertrag, daten, verwaltung=None):
     for zeile in _wrap(txt, 105):
         c.drawString(22*mm, y, zeile); y -= 5*mm
 
+    # Kantonale Formularpflicht (Rechtsgrundlage) — falls für den Kanton bekannt.
+    info = daten.get('pflicht_info') or {}
+    if info.get('pflicht') in ('ja', 'teilweise') and info.get('gesetz'):
+        y -= 9*mm
+        c.setFont("Helvetica-Bold", 8.5)
+        prefix = ("Im Kanton " + (info.get('kanton_name') or '') + " besteht Formularpflicht"
+                  if info.get('pflicht') == 'ja'
+                  else "Im Kanton " + (info.get('kanton_name') or '') + " besteht teilweise Formularpflicht")
+        leer = f" (Leerwohnungsziffer {info['leerziffer']} per {info.get('stand', '')})" if info.get('leerziffer') else ""
+        c.drawString(20*mm, y, f"{prefix}{leer}.")
+        c.setFont("Helvetica", 8)
+        y -= 4.5*mm
+        c.drawString(20*mm, y, f"Rechtsgrundlage: {info['gesetz']} · Art. 270 Abs. 2 OR.")
+
     # Rechtsbelehrung (Kurzform auf Seite 1)
     y -= 6*mm
     c.setFont("Helvetica-Oblique", 8)

@@ -122,6 +122,54 @@
             {% else %}<p class="text-sm text-slate-400 italic">Kein aktiver Vertrag.</p>{% endif %}
         </div>
         <div class="bg-white rounded-xl border border-slate-200 p-5 lg:col-span-2">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-800"><i class="fa-solid fa-map-location-dot text-indigo-500 mr-1.5"></i>Adressverlauf</h3>
+                <button type="button" onclick="document.getElementById('adr-neu-form').classList.toggle('hidden')"
+                        class="text-xs font-semibold text-indigo-600 hover:text-indigo-800"><i class="fa-solid fa-plus mr-1"></i>Adresse hinzufügen</button>
+            </div>
+            <p class="text-xs text-slate-400 mb-3">Datierte Adress-Zeilen («gültig ab») wie beim Sollmietzins. Die zum Stichtag
+                gültige Zeile ergibt die effektive Zustelladresse — eine Korrespondenzadresse hat dabei Vorrang vor der Wohnadresse.</p>
+            {% if adress_verlauf %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead><tr class="text-left text-xs text-slate-400 border-b border-slate-100">
+                        <th class="py-1.5 pr-3">Art</th><th class="py-1.5 pr-3">Gültig ab</th>
+                        <th class="py-1.5 pr-3">Adresse</th><th class="py-1.5 pr-3">Quelle</th><th></th></tr></thead>
+                    <tbody>
+                    {% for a in adress_verlauf %}
+                    <tr class="border-b border-slate-50 last:border-0">
+                        <td class="py-1.5 pr-3">
+                            {% if a.art == 'korrespondenz' %}<span class="inline-flex items-center rounded-full bg-amber-50 text-amber-700 px-2 py-0.5 text-xs font-semibold">Korrespondenz</span>
+                            {% else %}<span class="inline-flex items-center rounded-full bg-indigo-50 text-indigo-700 px-2 py-0.5 text-xs font-semibold">Wohnadresse</span>{% endif %}
+                        </td>
+                        <td class="py-1.5 pr-3 whitespace-nowrap font-medium text-slate-700">{{ a.gueltig_ab|date:"d.m.Y" }}</td>
+                        <td class="py-1.5 pr-3 text-slate-700">{{ a.einzeiler }}{% if a.notiz %}<span class="text-slate-400"> · {{ a.notiz }}</span>{% endif %}</td>
+                        <td class="py-1.5 pr-3 text-xs text-slate-400">{{ a.quelle }}</td>
+                        <td class="py-1.5 text-right">
+                            <form method="post" action="/neu/adresse/{{ a.id }}/loeschen/" onsubmit="return confirm('Diese Adress-Zeile entfernen?');">{% csrf_token %}
+                                <button class="text-xs text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}<p class="text-sm text-slate-400 italic">Noch keine datierten Adress-Zeilen.</p>{% endif %}
+            <form id="adr-neu-form" method="post" action="/neu/personen/{{ m.id }}/adresse/" class="hidden mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-6 gap-2">{% csrf_token %}
+                <select name="art" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2">
+                    <option value="wohn">Wohnadresse</option>
+                    <option value="korrespondenz">Korrespondenzadresse</option>
+                </select>
+                <input type="date" name="gueltig_ab" value="{{ heute }}" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2" required>
+                <input name="strasse" placeholder="Strasse & Nr. / c/o" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2">
+                <input name="adresszusatz" placeholder="Adresszusatz" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2">
+                <input name="plz" placeholder="PLZ" class="sm:col-span-1 bg-slate-100 rounded-lg text-sm px-3 py-2">
+                <input name="ort" placeholder="Ort" class="sm:col-span-3 bg-slate-100 rounded-lg text-sm px-3 py-2">
+                <button class="sm:col-span-6 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Adress-Zeile speichern</button>
+            </form>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 lg:col-span-2">
             <h3 class="font-bold text-slate-800 mb-3"><i class="fa-solid fa-key text-indigo-500 mr-1.5"></i>Mieterportal-Zugang</h3>
             {% if portal_user %}
                 <p class="text-sm text-slate-600 mb-1">Aktiv · Benutzername: <span class="font-mono font-semibold">{{ portal_user.username }}</span>

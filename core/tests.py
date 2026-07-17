@@ -8722,3 +8722,142 @@ class Art270AnfangsmietzinsTests(TestCase):
         self.assertEqual(p.status_code, 200)
         self.assertEqual(p['Content-Type'], 'application/pdf')
         self.assertTrue(Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Anfangsmietzins').exists())
+
+
+class FormularpflichtTests(TestCase):
+    """Verzeichnis der Formularpflicht (Art. 270 Abs. 2 OR) — inkl. Kanton Bern."""
+
+    def test_bern_hat_formularpflicht(self):
+        from core.services.formularpflicht import formularpflicht_fuer_kanton
+        p, info = formularpflicht_fuer_kanton('BE')
+        self.assertEqual(p, 'ja')
+        self.assertIn('135a', info['gesetz'])
+        self.assertEqual(info['kanton_name'], 'Bern')
+
+    def test_wallis_keine_pflicht_und_unbekannt(self):
+        from core.services.formularpflicht import formularpflicht_fuer_kanton
+        self.assertEqual(formularpflicht_fuer_kanton('VS')[0], 'nein')
+        self.assertEqual(formularpflicht_fuer_kanton('XX')[0], 'unbekannt')
+
+    def test_bern_pdf_zeigt_pflicht_grundlage(self):
+        from core.services.amtliche_formulare_so import anfangsmietzins_so_pdf
+        from core.services.formularpflicht import formularpflicht_fuer_kanton
+        lg, e, m, v = _basis_objekte()
+        lg.kanton = 'BE'; lg.plz = '3000'; lg.ort = 'Bern'; lg.save()
+        _p, info = formularpflicht_fuer_kanton('BE')
+        daten = {'anfang_netto': Decimal('1500'), 'anfang_nk': Decimal('200'),
+                 'vormiete_netto': Decimal('1350'), 'vormiete_nk': Decimal('180'),
+                 'beginn': date(2026, 1, 1), 'grund_choice': 'referenz',
+                 'begruendung': '', 'pflicht_info': info}
+        pdf = anfangsmietzins_so_pdf(v, daten)
+        self.assertTrue(pdf.startswith(b'%PDF'))
+        self.assertGreater(len(pdf), 1500)
+
+    def test_view_zeigt_pflicht_banner_bern(self):
+        lg, e, m, v = _basis_objekte()
+        lg.kanton = 'BE'; lg.plz = '3000'; lg.ort = 'Bern'; lg.save()
+        c = Client(); c.force_login(_team_user())
+        g = c.get(f'/neu/mietzins/{v.id}/anfangsmietzins/')
+        self.assertEqual(g.status_code, 200)
+        self.assertIn('Formularpflicht', g.content.decode())
+        self.assertIn('Bern', g.content.decode())
+
+
+class AdressHistorieTests(TestCase):
+    """Datierte Adress-Historie (MieterAdresse) + Auto-Sync + Korrespondenz-Vorrang."""
+
+    def test_stichtag_waehlt_gueltige_wohnadresse(self):
+        from crm.models import MieterAdresse
+        _lg, _e, m, _v = _basis_objekte()
+        MieterAdresse.objects.create(mieter=m, art='wohn', gueltig_ab=date(2000, 1, 1),
+                                     strasse='Altweg 1', plz='3000', ort='Bern')
+        MieterAdresse.objects.create(mieter=m, art='wohn', gueltig_ab=date(2030, 1, 1),
+                                     strasse='Neuweg 5', plz='8000', ort='Zürich')
+        self.assertEqual(m.aktuelle_wohnadresse(date(2026, 7, 17)).strasse, 'Altweg 1')
+        self.assertEqual(m.aktuelle_wohnadresse(date(2031, 1, 1)).strasse, 'Neuweg 5')
+
+    def test_korrespondenz_hat_vorrang(self):
+        from crm.models import MieterAdresse
+        _lg, _e, m, _v = _basis_objekte()
+        MieterAdresse.objects.create(mieter=m, art='wohn', gueltig_ab=date(2000, 1, 1),
+                                     strasse='Wohnweg 1', plz='3000', ort='Bern')
+        MieterAdresse.objects.create(mieter=m, art='korrespondenz', gueltig_ab=date(2000, 1, 1),
+                                     strasse='Postfach 9', plz='3011', ort='Bern')
+        self.assertEqual(m.zustelladresse(date(2026, 7, 17))[0], 'Postfach 9')
+        self.assertTrue(m.sync_effektive_adresse(date(2026, 7, 17)))
+        m.refresh_from_db()
+        self.assertEqual(m.strasse, 'Postfach 9')
+        self.assertEqual(m.plz, '3011')
+
+    def test_ohne_zeilen_faellt_auf_flat_zurueck(self):
+        _lg, _e, m, _v = _basis_objekte()      # hat nur Flat-Adresse, keine Zeilen
+        self.assertEqual(m.zustelladresse()[0], 'Seeweg 3')
+        self.assertFalse(m.sync_effektive_adresse())  # keine Änderung
+
+    def test_scheduler_synct_effektive_adresse(self):
+        from crm.models import MieterAdresse
+        from core.services.automation import run_adress_umzuege
+        _lg, _e, m, _v = _basis_objekte()
+        # Umzug ab heute → wird zur effektiven Adresse
+        MieterAdresse.objects.create(mieter=m, art='wohn', gueltig_ab=date(2000, 1, 1),
+                                     strasse='Seeweg 3', plz='8000', ort='Zürich')
+        MieterAdresse.objects.create(mieter=m, art='wohn', gueltig_ab=date(2020, 1, 1),
+                                     strasse='Zielweg 7', plz='4000', ort='Basel')
+        run_adress_umzuege()
+        m.refresh_from_db()
+        self.assertEqual(m.strasse, 'Zielweg 7')
+        self.assertEqual(m.ort, 'Basel')
+
+    def test_vertragsbeginn_legt_datierte_wohnadresse_an(self):
+        from crm.models import MieterAdresse
+        lg, e, m, _v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        beginn = (date.today().replace(day=1))
+        r = c.post('/neu/vertraege/neu/speichern/', {
+            'mieter_id': str(m.id), 'einheit_id': str(e.id),
+            'beginn': beginn.isoformat(), 'netto_mietzins': '1500', 'nebenkosten': '200',
+            'mietzins_modell': 'fest', 'kautions_betrag': '4500',
+        })
+        self.assertIn(r.status_code, (200, 302))
+        self.assertTrue(MieterAdresse.objects.filter(mieter=m, art='wohn', gueltig_ab=beginn).exists())
+
+    def test_person_form_pflegt_wohn_und_korrespondenz(self):
+        from crm.models import MieterAdresse
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/personen/neu/', {
+            'typ': 'person', 'vorname': 'Neu', 'nachname': 'Person',
+            'strasse': 'Hauptweg 2', 'plz': '3000', 'ort': 'Bern',
+            'k_strasse': 'c/o Muster', 'k_plz': '3011', 'k_ort': 'Bern',
+        })
+        self.assertIn(r.status_code, (200, 302))
+        m = Mieter.objects.get(nachname='Person')
+        self.assertTrue(MieterAdresse.objects.filter(mieter=m, art='wohn').exists())
+        self.assertTrue(MieterAdresse.objects.filter(mieter=m, art='korrespondenz').exists())
+        m.refresh_from_db()
+        # Korrespondenz hat Vorrang → effektive Adresse
+        self.assertEqual(m.strasse, 'c/o Muster')
+
+    def test_adresse_neu_und_loeschen_views(self):
+        from crm.models import MieterAdresse
+        _lg, _e, m, _v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/personen/{m.id}/adresse/', {
+            'art': 'wohn', 'gueltig_ab': '2027-01-01',
+            'strasse': 'Zukunftweg 1', 'plz': '9000', 'ort': 'St. Gallen'})
+        self.assertEqual(r.status_code, 302)
+        adr = MieterAdresse.objects.get(mieter=m, gueltig_ab=date(2027, 1, 1))
+        self.assertEqual(adr.ort, 'St. Gallen')
+        r2 = c.post(f'/neu/adresse/{adr.id}/loeschen/')
+        self.assertEqual(r2.status_code, 302)
+        self.assertFalse(MieterAdresse.objects.filter(id=adr.id).exists())
+
+    def test_dsg_anonymisierung_loescht_adress_historie(self):
+        from crm.models import MieterAdresse
+        from core.services.dsg import anonymisiere_person
+        _lg, _e, m, v = _basis_objekte()
+        v.status = 'archiviert'; v.save()
+        MieterAdresse.objects.create(mieter=m, art='wohn', gueltig_ab=date(2000, 1, 1),
+                                     strasse='Geheimweg 1', plz='3000', ort='Bern')
+        ok, _ = anonymisiere_person(m, grund='Test')
+        self.assertTrue(ok)
+        self.assertEqual(MieterAdresse.objects.filter(mieter=m).count(), 0)

@@ -25,6 +25,30 @@ from portfolio.models import Liegenschaft, Einheit
 from rentals.models import Mietvertrag
 
 
+def _parse_adresse(text):
+    """Grobe Zerlegung eines freien Adress-Strings in (strasse, plz, ort).
+    Erkennt Formate wie «Musterstrasse 1, 8000 Zürich» oder «Musterstrasse 1
+    8000 Zürich». Bei Unklarheit wandert der ganze Rest nach `ort`."""
+    text = (text or '').strip()
+    if not text:
+        return '', '', ''
+    teile = [t.strip() for t in text.split(',') if t.strip()]
+    if len(teile) >= 2:
+        strasse = teile[0]
+        rest = teile[1]
+    else:
+        # kein Komma → letzten «PLZ Ort»-Block vom Strassenteil trennen
+        m = re.search(r'(.*?)(\b\d{4}\b.*)$', text)
+        if m and m.group(1).strip():
+            strasse, rest = m.group(1).strip(), m.group(2).strip()
+        else:
+            return text, '', ''
+    m = re.match(r'^\s*(\d{4,6})\s+(.*)$', rest)
+    if m:
+        return strasse, m.group(1), m.group(2).strip()
+    return strasse, '', rest
+
+
 def _global_filter(request):
     """Liest den globalen Liegenschafts-Filter (?lg=) und liefert Basis-Kontext."""
     lg_id = request.GET.get('lg') or None
@@ -2619,6 +2643,22 @@ def fw_abnahme_neu(request, vertrag_id):
             if prot.schluessel_anzahl is not None:
                 kw.append('Schlüssel')
             erledige_pendenzen_fuer(v, kw, user=request.user)
+            # Neue Wohnadresse ab Auszugsdatum als datierte Adress-Zeile hinterlegen
+            # (Wegzug-Adresse) — für Haupt- und Mitmieter. Wird zum Stichtag zur
+            # effektiven Zustelladresse (Nachsendung an die neue Adresse).
+            neue_adr = (prot.neue_adresse or '').strip()
+            if neue_adr:
+                from crm.models import MieterAdresse
+                strasse, plz, ort = _parse_adresse(neue_adr)
+                for person in (v.mieter, v.mitmieter):
+                    if not person:
+                        continue
+                    MieterAdresse.objects.get_or_create(
+                        mieter=person, art='wohn', gueltig_ab=datum,
+                        defaults=dict(strasse=strasse, plz=plz, ort=ort,
+                                      quelle=f'auszug:{prot.id}',
+                                      notiz='Wegzug gemäss Abnahmeprotokoll'))
+                    person.sync_effektive_adresse()
         log_aktion(request, "Wohnungsabnahme erfasst", str(v.mieter), f"{prot.get_typ_display()} {datum}", ziel=v)
         if P.get('embed'):
             typ_txt = prot.get_typ_display()
@@ -3443,6 +3483,8 @@ def fw_person_detail(request, pk):
         'kommunikationen': m.kommunikationen.select_related('vertrag', 'erstellt_von')[:50],
         'portal_user': getattr(m, 'benutzer', None),
         'tab_liste': tab_liste,
+        'adress_verlauf': list(m.adressen.all()),
+        'heute': timezone.localdate().isoformat(),
     })
 
 
@@ -3854,6 +3896,63 @@ def fw_person_dsg_loeschen(request, pk):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_person_adresse_neu(request, pk):
+    """Fügt eine datierte Adress-Zeile hinzu (Wohn- oder Korrespondenzadresse)
+    mit «gültig ab» — analog zum Sollmietzins. Der Auto-Sync führt danach die
+    effektive Zustelladresse nach."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import MieterAdresse
+    from core.auth import log_aktion
+    m = get_object_or_404(Mieter, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/personen/{m.id}/')
+    P = request.POST
+    art = P.get('art', 'wohn')
+    if art not in ('wohn', 'korrespondenz'):
+        art = 'wohn'
+    try:
+        gab = date.fromisoformat((P.get('gueltig_ab') or '').strip())
+    except ValueError:
+        messages.error(request, "❌ Ungültiges «gültig ab»-Datum.")
+        return redirect(f'/neu/personen/{m.id}/')
+    strasse = P.get('strasse', '').strip()
+    plz = P.get('plz', '').strip()
+    ort = P.get('ort', '').strip()
+    if not (strasse or plz or ort):
+        messages.error(request, "❌ Bitte mindestens Strasse oder PLZ/Ort erfassen.")
+        return redirect(f'/neu/personen/{m.id}/')
+    MieterAdresse.objects.update_or_create(
+        mieter=m, art=art, gueltig_ab=gab,
+        defaults=dict(strasse=strasse, adresszusatz=P.get('adresszusatz', '').strip(),
+                      plz=plz, ort=ort, quelle='manuell',
+                      notiz=P.get('notiz', '').strip()))
+    m.sync_effektive_adresse()
+    log_aktion(request, "Adresse hinterlegt", m.display_name,
+               f"{art} ab {gab:%d.%m.%Y}: {strasse}, {plz} {ort}", ziel=m)
+    messages.success(request, "✅ Adresse gespeichert.")
+    return redirect(f'/neu/personen/{m.id}/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_person_adresse_loeschen(request, pk):
+    """Entfernt eine datierte Adress-Zeile und führt die effektive Adresse nach."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import MieterAdresse
+    from core.auth import log_aktion
+    adr = get_object_or_404(MieterAdresse, id=pk)
+    m = adr.mieter
+    if request.method == 'POST':
+        info = f"{adr.get_art_display()} ab {adr.gueltig_ab:%d.%m.%Y}"
+        adr.delete()
+        m.sync_effektive_adresse()
+        log_aktion(request, "Adresse entfernt", m.display_name, info, ziel=m)
+        messages.success(request, "✅ Adress-Zeile entfernt.")
+    return redirect(f'/neu/personen/{m.id}/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_person_form(request, pk=None):
     """Person (Mieter/Kontakt) erfassen oder bearbeiten — Fairwalter-Stil."""
     from django.shortcuts import redirect
@@ -3967,6 +4066,39 @@ def fw_person_form(request, pk=None):
                 })
 
         obj.save()
+        # --- Datierte Adress-Historie pflegen (Wohn- + Korrespondenzadresse) ---
+        # Die Formularfelder bearbeiten die AKTUELLE Zeile (Korrektur), nicht einen
+        # Umzug — ein Umzug entsteht über Vertragsbeginn/Auszug mit eigenem «gültig ab».
+        from crm.models import MieterAdresse
+        from datetime import date as _date
+        heute = timezone.localdate()
+        SENTINEL = _date(2000, 1, 1)
+        w = (P.get('strasse', '').strip(), P.get('adresszusatz', '').strip(),
+             P.get('plz', '').strip(), P.get('ort', '').strip())
+        wohn = obj.aktuelle_wohnadresse(heute)
+        if any(w):
+            if wohn:
+                if (wohn.strasse, wohn.adresszusatz, wohn.plz, wohn.ort) != w:
+                    wohn.strasse, wohn.adresszusatz, wohn.plz, wohn.ort = w
+                    wohn.save()
+            else:
+                MieterAdresse.objects.create(
+                    mieter=obj, art='wohn', gueltig_ab=SENTINEL,
+                    strasse=w[0], adresszusatz=w[1], plz=w[2], ort=w[3], quelle='manuell')
+        k = (P.get('k_strasse', '').strip(), P.get('k_adresszusatz', '').strip(),
+             P.get('k_plz', '').strip(), P.get('k_ort', '').strip())
+        korr = obj.aktuelle_korrespondenzadresse(heute)
+        if any(k):
+            if korr:
+                korr.strasse, korr.adresszusatz, korr.plz, korr.ort = k
+                korr.save()
+            else:
+                MieterAdresse.objects.create(
+                    mieter=obj, art='korrespondenz', gueltig_ab=SENTINEL,
+                    strasse=k[0], adresszusatz=k[1], plz=k[2], ort=k[3], quelle='manuell')
+        elif korr and korr.quelle == 'manuell':
+            korr.delete()  # Korrespondenzadresse geleert → kein Zustell-Vorrang mehr
+        obj.sync_effektive_adresse(heute)
         aenderungen = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
         log_aktion(request, "Person bearbeitet" if pk else "Person erstellt",
                    obj.display_name, aenderungen, ziel=obj)
@@ -3976,6 +4108,7 @@ def fw_person_form(request, pk=None):
     return render(request, 'fw/person_form.html', {
         **basis, 'nav': 'personen', 'm': m,
         'ist_neu': m is None,
+        'korr_adr': m.aktuelle_korrespondenzadresse() if m else None,
     })
 
 
@@ -6195,6 +6328,9 @@ def fw_anfangsmietzins(request, vertrag_id):
             'grund_choice': request.POST.get('grund_choice') or 'anpassung',
             'begruendung': (request.POST.get('begruendung') or '').strip(),
         }
+        from core.services.formularpflicht import formularpflicht_fuer_liegenschaft
+        _pflicht, pflicht_info = formularpflicht_fuer_liegenschaft(lg)
+        daten['pflicht_info'] = pflicht_info
         pdf = anfangsmietzins_so_pdf(v, daten, verwaltung=vw)
         ablegen(pdf, f"Anfangsmietzins-Formular {v.beginn:%d.%m.%Y}" if v.beginn else "Anfangsmietzins-Formular",
                 kategorie='vertrag', vertrag=v, dedup=True)
@@ -6204,12 +6340,16 @@ def fw_anfangsmietzins(request, vertrag_id):
         resp['Content-Disposition'] = f'inline; filename="Anfangsmietzins_{v.mieter.nachname}.pdf"'
         return resp
 
+    from core.services.formularpflicht import formularpflicht_fuer_liegenschaft, pflicht_label
+    pflicht, pflicht_info = formularpflicht_fuer_liegenschaft(lg)
     return render(request, 'fw/anfangsmietzins.html', {
         **basis, 'nav': 'mietzins', 'v': v, 'lg': lg,
         'anfang_netto': v.netto_mietzins, 'anfang_nk': v.nebenkosten,
         'vormiete': vormiete,
         'vormiete_netto': vormiete.netto_mietzins if vormiete else '',
         'vormiete_nk': vormiete.nebenkosten if vormiete else '',
+        'pflicht': pflicht, 'pflicht_info': pflicht_info,
+        'pflicht_label': pflicht_label(pflicht),
     })
 
 
@@ -6711,18 +6851,23 @@ def fw_vertrag_neu_speichern(request):
                     betrag = None
                 if ab_d and betrag and betrag > 0:
                     Staffelstufe.objects.create(vertrag=vertrag, ab_datum=ab_d, netto_mietzins=betrag)
-    # Zukünftige Adresse = Objektadresse ab Einzug (Auto-Wechsel via
-    # Mieter.check_and_update_adresse am Mietbeginn) — für beide Mieter.
+    # Wohnadresse = Objektadresse ab Mietbeginn — als datierte Adress-Zeile
+    # (gültig ab = Vertragsbeginn). Der tägliche Lauf (run_adress_umzuege) bzw.
+    # sync_effektive_adresse führt die effektiven Flat-Felder am Stichtag nach.
+    from crm.models import MieterAdresse
     lg = einheit.liegenschaft
     obj_strasse = f"{lg.strasse}{(', ' + einheit.etage) if einheit.etage else ''}"
 
     def setze_zukunftsadresse(person):
-        if person and beginn >= timezone.now().date() and (person.strasse or '') != lg.strasse:
-            person.zukuenftige_strasse = obj_strasse
-            person.zukuenftige_plz = lg.plz
-            person.zukuenftiger_ort = lg.ort
-            person.zukuenftig_ab = beginn
-            person.save()
+        if not person:
+            return
+        MieterAdresse.objects.get_or_create(
+            mieter=person, art='wohn', gueltig_ab=beginn,
+            defaults=dict(strasse=obj_strasse, plz=lg.plz, ort=lg.ort,
+                          quelle=f'vertrag:{vertrag.id}',
+                          notiz='Einzug gemäss Mietvertrag'))
+        # Wenn der Einzug bereits erreicht ist, effektive Adresse sofort nachführen.
+        person.sync_effektive_adresse()
 
     setze_zukunftsadresse(mieter)
     setze_zukunftsadresse(zweiter_obj)

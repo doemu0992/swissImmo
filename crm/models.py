@@ -228,10 +228,52 @@ class Mieter(models.Model):
             return self.firmen_name
         return f"{self.vorname} {self.nachname}".strip() or "Unbekannter Kontakt"
 
+    # ===== Datierte Adress-Historie (Wohn- + Korrespondenzadresse) =====
+    def _adr_zeile(self, art, stichtag=None):
+        from datetime import date as _d
+        if not self.pk:
+            return None
+        tag = stichtag or _d.today()
+        return (self.adressen.filter(art=art, gueltig_ab__lte=tag)
+                .order_by('-gueltig_ab', '-id').first())
+
+    def aktuelle_wohnadresse(self, stichtag=None):
+        """Die zum Stichtag gültige Wohnadress-Zeile (oder None)."""
+        return self._adr_zeile('wohn', stichtag)
+
+    def aktuelle_korrespondenzadresse(self, stichtag=None):
+        """Die zum Stichtag gültige Korrespondenzadress-Zeile (oder None)."""
+        return self._adr_zeile('korrespondenz', stichtag)
+
+    def zustelladresse(self, stichtag=None):
+        """Effektive Zustelladresse als (strasse, adresszusatz, plz, ort):
+        Korrespondenzadresse falls gesetzt, sonst Wohnadresse, sonst Flat-Felder."""
+        z = self.aktuelle_korrespondenzadresse(stichtag) or self.aktuelle_wohnadresse(stichtag)
+        if z:
+            return (z.strasse, z.adresszusatz, z.plz, z.ort)
+        return (self.strasse, self.adresszusatz, self.plz, self.ort)
+
+    def sync_effektive_adresse(self, stichtag=None, save=True):
+        """Schreibt die effektive Zustelladresse in die Flat-Felder (strasse/…),
+        damit alle bestehenden Leser (QR, Briefe, Formulare) automatisch die zum
+        Stichtag gültige Adresse inkl. Korrespondenz-Vorrang erhalten — analog zur
+        Sollmietzins→einheit.nettomiete_aktuell-Synchronisation. Gibt True zurück,
+        wenn sich etwas geändert hat."""
+        s, zusatz, plz, ort = self.zustelladresse(stichtag)
+        if not (s or plz or ort):
+            return False
+        if (self.strasse, self.adresszusatz, self.plz, self.ort) != (s, zusatz, plz, ort):
+            self.strasse, self.adresszusatz, self.plz, self.ort = s, zusatz, plz, ort
+            if save and self.pk:
+                self.save(update_fields=['strasse', 'adresszusatz', 'plz', 'ort'])
+            return True
+        return False
+
     def check_and_update_adresse(self):
         """
         Prüft, ob ein Einzugsdatum in der Zukunft hinterlegt war und heute erreicht wurde.
         Führt den Adresswechsel durch und protokolliert die alte Adresse.
+        (Alt-Mechanik; die neue Adress-Historie synchronisiert via sync_effektive_adresse.)
         """
         from datetime import date
         if self.zukuenftig_ab and date.today() >= self.zukuenftig_ab:
@@ -252,6 +294,40 @@ class Mieter(models.Model):
             self.zukuenftiger_ort = ''
             self.zukuenftig_ab = None
             self.save()
+
+
+class MieterAdresse(models.Model):
+    """Datierte Adress-Historie einer Person (wie Sollmietzins «gültig ab»).
+    `wohn` = tatsächliche Wohnadresse-Zeitachse (wechselt bei Ein-/Auszug),
+    `korrespondenz` = optionale «Post an»-Zeitachse (hat Vorrang für Zustellung).
+    Die zum Stichtag gültige Zeile bestimmt via Mieter.sync_effektive_adresse die
+    effektiven Flat-Felder am Mieter."""
+    ART_CHOICES = [('wohn', 'Wohnadresse'), ('korrespondenz', 'Korrespondenzadresse')]
+    mieter = models.ForeignKey(Mieter, on_delete=models.CASCADE, related_name='adressen')
+    art = models.CharField("Art", max_length=20, choices=ART_CHOICES, default='wohn')
+    gueltig_ab = models.DateField("Gültig ab")
+    strasse = models.CharField("Strasse & Nr.", max_length=200, blank=True, default='')
+    adresszusatz = models.CharField("Adresszusatz", max_length=100, blank=True, default='')
+    plz = models.CharField("PLZ", max_length=10, blank=True, default='')
+    ort = models.CharField("Ort", max_length=100, blank=True, default='')
+    land = models.CharField("Land", max_length=50, blank=True, default='Schweiz')
+    quelle = models.CharField("Quelle", max_length=50, blank=True, default='manuell')
+    notiz = models.CharField("Bemerkung", max_length=200, blank=True, default='')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Mieter-Adresse"
+        verbose_name_plural = "Mieter-Adressen"
+        ordering = ['-gueltig_ab', '-id']
+        db_table = 'core_mieteradresse'
+
+    def __str__(self):
+        return f"{self.get_art_display()} ab {self.gueltig_ab}: {self.einzeiler}"
+
+    @property
+    def einzeiler(self):
+        zus = f" ({self.adresszusatz})" if self.adresszusatz else ''
+        return f"{self.strasse}{zus}, {self.plz} {self.ort}".strip(' ,')
 
 
 # 🔥 DER NEUE HANDWERKER-STAMM FÜR DIE API

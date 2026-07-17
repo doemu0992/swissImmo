@@ -20,6 +20,30 @@
     innert <b>30 Tagen</b> nach Übernahme bei der Schlichtungsbehörde anfechten.
 </div>
 
+{% if pflicht == 'ja' %}
+<div class="max-w-3xl mb-5 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-3 py-2.5">
+    <i class="fa-solid fa-triangle-exclamation mr-1"></i><b>{{ pflicht_label }} im Kanton {{ pflicht_info.kanton_name }}.</b>
+    Die Verwendung dieses Formulars ist beim Neuabschluss obligatorisch.
+    {% if pflicht_info.gesetz %}<span class="text-amber-700">Grundlage: {{ pflicht_info.gesetz }}.</span>{% endif %}
+    {% if pflicht_info.leerziffer %}<span class="text-amber-700">Leerwohnungsziffer {{ pflicht_info.leerziffer }} (per {{ pflicht_info.stand }}).</span>{% endif %}
+</div>
+{% elif pflicht == 'teilweise' %}
+<div class="max-w-3xl mb-5 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-3 py-2.5">
+    <i class="fa-solid fa-triangle-exclamation mr-1"></i><b>{{ pflicht_label }} im Kanton {{ pflicht_info.kanton_name }}.</b>
+    {% if pflicht_info.gesetz %}{{ pflicht_info.gesetz }}.{% endif %} Bitte prüfen, ob dieses Objekt betroffen ist.
+</div>
+{% elif pflicht == 'nein' %}
+<div class="max-w-3xl mb-5 text-xs bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-3 py-2.5">
+    <i class="fa-solid fa-circle-info mr-1"></i>Im Kanton {{ pflicht_info.kanton_name }} besteht <b>keine Formularpflicht</b> —
+    das Formular kann freiwillig verwendet werden.
+</div>
+{% else %}
+<div class="max-w-3xl mb-5 text-xs bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-3 py-2.5">
+    <i class="fa-solid fa-circle-info mr-1"></i>Formularpflicht für diesen Kanton nicht hinterlegt — bitte die aktuelle
+    kantonale Bekanntmachung (Leerwohnungsziffer) prüfen.
+</div>
+{% endif %}
+
 <form method="post" class="max-w-3xl space-y-5">
     {% csrf_token %}
 

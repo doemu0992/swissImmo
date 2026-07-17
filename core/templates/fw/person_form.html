@@ -127,9 +127,11 @@
         </div>
     </div>
 
-    <!-- Adresse -->
+    <!-- Wohnadresse -->
     <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Adresse</h3>
+        <h3 class="font-bold text-slate-800 text-sm">Wohnadresse</h3>
+        <p class="text-[11px] text-slate-400 -mt-2">Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den
+            Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf siehst du auf der Personenseite.</p>
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Strasse & Nr.</label>
             <input name="strasse" value="{{ m.strasse }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Adresszusatz</label>
@@ -139,6 +141,23 @@
                 <input name="plz" value="{{ m.plz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
             <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Ort</label>
                 <input name="ort" value="{{ m.ort }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+    </div>
+
+    <!-- Korrespondenzadresse (optional, hat Vorrang für die Zustellung) -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <h3 class="font-bold text-slate-800 text-sm">Korrespondenzadresse <span class="font-normal text-slate-400">(optional)</span></h3>
+        <p class="text-[11px] text-slate-400 -mt-2">Nur ausfüllen, wenn die Post an eine andere Adresse gehen soll
+            (z.B. c/o, Postfach, Vertretung). Ist sie gesetzt, werden Briefe & amtliche Formulare dorthin adressiert.</p>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Strasse & Nr. / c/o</label>
+            <input name="k_strasse" value="{{ korr_adr.strasse }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Adresszusatz</label>
+            <input name="k_adresszusatz" value="{{ korr_adr.adresszusatz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">PLZ</label>
+                <input name="k_plz" value="{{ korr_adr.plz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Ort</label>
+                <input name="k_ort" value="{{ korr_adr.ort }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
 
