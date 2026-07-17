@@ -1637,6 +1637,21 @@ def fw_objekt_detail(request, pk):
             raeume.append({'raum': a.raum, 'elemente': [row]})
     ausst_count = len(ausst)
 
+    # Schlüsselregister: Bestand + offene Ausgaben je Schlüssel, Empfänger-Auswahl
+    from portfolio.models import Schluessel
+    from crm.models import Handwerker as _Hw
+    schluessel_rows = []
+    for sch in (Schluessel.objects.filter(einheit=e)
+                .prefetch_related('ausgaben__mieter', 'ausgaben__handwerker')):
+        offene = [a for a in sch.ausgaben.all() if a.rueckgabe_am is None]
+        schluessel_rows.append({'s': sch, 'offene': offene,
+                                'verfuegbar': max(0, sch.anzahl - len(offene))})
+    schluessel_empfaenger = {
+        'mieter': list({v.mieter for v in _vertraege if v.status == 'aktiv' and v.mieter_id}),
+        'handwerker': list(_Hw.objects.order_by('firma')),
+    }
+    schluessel_offen_count = sum(len(r['offene']) for r in schluessel_rows)
+
     tab_liste = [
         ('uebersicht', 'Übersicht', None),
         ('fotos', 'Fotos', len(fotos) or None),
@@ -1645,6 +1660,7 @@ def fw_objekt_detail(request, pk):
         ('mietzins', 'Mietzins', len(sollmietzinse) or None),
         ('geraete', 'Geräte', geraete.count() or None),
         ('zaehler', 'Zähler', zaehler.count() or None),
+        ('schluessel', 'Schlüssel', len(schluessel_rows) or None),
     ]
     from django.contrib import messages
     return render(request, 'fw/objekt_detail.html', {
@@ -1674,6 +1690,9 @@ def fw_objekt_detail(request, pk):
         'merkmale_gewaehlt': e.merkmale or [],
         'merkmale_optionen': merkmale_optionen(e.merkmale or []),
         'tab_liste': tab_liste,
+        'schluessel_rows': schluessel_rows,
+        'schluessel_empfaenger': schluessel_empfaenger,
+        'schluessel_offen_count': schluessel_offen_count,
         'meldung': list(messages.get_messages(request)),
     })
 
@@ -2026,6 +2045,103 @@ def fw_zaehler_del(request, pk):
     if eid:
         return redirect(f'/neu/objekte/{eid}/?tab=zaehler')
     return redirect(f'/neu/liegenschaften/{lid}/?tab=technik')
+
+
+# --- Schlüsselverwaltung (Register + Ausgabe/Rücknahme je Objekt) ---
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schluessel_add(request):
+    """Erfasst einen Schlüssel im Register eines Objekts."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Schluessel
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('/neu/objekte/')
+    e = get_object_or_404(Einheit.objects.select_related('liegenschaft'),
+                          id=request.POST.get('einheit_id'))
+    nummer = (request.POST.get('schluessel_nummer') or '').strip()
+    typ = (request.POST.get('typ') or 'Wohnung').strip()
+    try:
+        anzahl = max(1, int(request.POST.get('anzahl') or 1))
+    except (TypeError, ValueError):
+        anzahl = 1
+    if not nummer:
+        messages.error(request, "Schlüssel-Nr. ist ein Pflichtfeld.")
+        return redirect(f'/neu/objekte/{e.id}/?tab=schluessel')
+    Schluessel.objects.create(liegenschaft=e.liegenschaft, einheit=e,
+                              typ=typ, schluessel_nummer=nummer, anzahl=anzahl)
+    log_aktion(request, "Schlüssel erfasst", f"{e.bezeichnung}", f"{typ} {nummer} × {anzahl}")
+    messages.success(request, f"✅ Schlüssel {nummer} ({typ}, {anzahl}×) erfasst.")
+    return redirect(f'/neu/objekte/{e.id}/?tab=schluessel')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schluessel_del(request, pk):
+    """Entfernt einen Schlüssel aus dem Register (inkl. Ausgabe-Historie)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Schluessel
+    sch = get_object_or_404(Schluessel, id=pk)
+    eid = sch.einheit_id
+    if request.method == 'POST':
+        if sch.ausgaben.filter(rueckgabe_am__isnull=True).exists():
+            messages.error(request, "Schlüssel ist noch ausgegeben — zuerst Rücknahme erfassen.")
+        else:
+            sch.delete()
+            messages.success(request, "Schlüssel entfernt.")
+    return redirect(f'/neu/objekte/{eid}/?tab=schluessel' if eid else '/neu/objekte/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schluessel_ausgabe(request, pk):
+    """Gibt einen Schlüssel an einen Mieter oder Handwerker aus."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Schluessel, SchluesselAusgabe
+    from crm.models import Handwerker
+    from core.auth import log_aktion
+    sch = get_object_or_404(Schluessel, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/objekte/{sch.einheit_id}/?tab=schluessel')
+    offen = sch.ausgaben.filter(rueckgabe_am__isnull=True).count()
+    if offen >= sch.anzahl:
+        messages.error(request, f"Alle {sch.anzahl} Exemplare von {sch.schluessel_nummer} sind bereits ausgegeben.")
+        return redirect(f'/neu/objekte/{sch.einheit_id}/?tab=schluessel')
+    empf = (request.POST.get('empfaenger') or '')
+    mieter = handwerker = None
+    name = ''
+    if empf.startswith('mieter:'):
+        mieter = Mieter.objects.filter(id=empf.split(':', 1)[1]).first()
+        name = mieter.display_name if mieter else ''
+    elif empf.startswith('handwerker:'):
+        handwerker = Handwerker.objects.filter(id=empf.split(':', 1)[1]).first()
+        name = handwerker.firma if handwerker else ''
+    if not (mieter or handwerker):
+        messages.error(request, "Bitte Empfänger (Mieter oder Handwerker) wählen.")
+        return redirect(f'/neu/objekte/{sch.einheit_id}/?tab=schluessel')
+    SchluesselAusgabe.objects.create(schluessel=sch, mieter=mieter, handwerker=handwerker,
+                                     ausgegeben_am=timezone.localdate())
+    log_aktion(request, "Schlüssel ausgegeben", sch.schluessel_nummer, name)
+    messages.success(request, f"✅ Schlüssel {sch.schluessel_nummer} an {name} ausgegeben.")
+    return redirect(f'/neu/objekte/{sch.einheit_id}/?tab=schluessel')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schluessel_rueckgabe(request, pk):
+    """Erfasst die Rücknahme einer offenen Schlüsselausgabe."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import SchluesselAusgabe
+    from core.auth import log_aktion
+    a = get_object_or_404(SchluesselAusgabe.objects.select_related('schluessel'), id=pk)
+    if request.method == 'POST' and a.rueckgabe_am is None:
+        a.rueckgabe_am = timezone.localdate()
+        a.save(update_fields=['rueckgabe_am'])
+        wer = a.mieter.display_name if a.mieter_id else (a.handwerker.firma if a.handwerker_id else '')
+        log_aktion(request, "Schlüssel zurückgenommen", a.schluessel.schluessel_nummer, wer)
+        messages.success(request, f"✅ Schlüssel {a.schluessel.schluessel_nummer} zurückgenommen.")
+    return redirect(f'/neu/objekte/{a.schluessel.einheit_id}/?tab=schluessel')
 
 
 # --- Sollmietzins-Komponenten (datierte Netto-/NK-Historie je Objekt) ---
@@ -5148,7 +5264,24 @@ def fw_auftrag_kosten(request, pk):
     if a.freigabe_status in ('nicht_noetig', 'abgelehnt') and (freigabe_anfordern or ueber_schwelle):
         a.freigabe_status = 'ausstehend'
         a.freigabe_datum = None
-        messages.info(request, "ℹ️ Reparatur zur Freigabe an den Eigentümer weitergeleitet (Portal).")
+        # Eigentümer aktiv informieren — sonst bemerkt er die Anfrage erst beim
+        # nächsten Portal-Login und die Reparatur liegt tagelang auf Eis.
+        mandant = getattr(a.ticket.liegenschaft, 'mandant', None) if a.ticket.liegenschaft_id else None
+        mail_info = ""
+        if mandant and mandant.email:
+            from core.utils.email_service import send_ticket_email
+            lg = a.ticket.liegenschaft
+            kosten_txt = f"CHF {a.kosten_geschaetzt}" if a.kosten_geschaetzt else "noch offen"
+            text = (f"Guten Tag {mandant.kontaktperson or mandant.firma_oder_name}\n\n"
+                    f"Für Ihre Liegenschaft {lg.strasse}, {lg.plz} {lg.ort} liegt eine Reparatur "
+                    f"zur Freigabe bereit:\n\n"
+                    f"Schaden: {a.ticket.titel}\n"
+                    f"Geschätzte Kosten: {kosten_txt}\n\n"
+                    f"Bitte melden Sie sich im Eigentümer-Portal an, um die Reparatur "
+                    f"freizugeben oder abzulehnen.\n\nFreundliche Grüsse\nIhre Verwaltung")
+            if send_ticket_email(mandant.email, f"Reparaturfreigabe angefragt — {lg.strasse}", text):
+                mail_info = f" E-Mail an {mandant.email} gesendet."
+        messages.info(request, f"ℹ️ Reparatur zur Freigabe an den Eigentümer weitergeleitet (Portal).{mail_info}")
 
     # Optional Kreditorenrechnung erstellen
     if request.POST.get('kreditor_erstellen') == 'on' and a.kosten_effektiv and not a.kreditoren_rechnung_id:
@@ -6550,6 +6683,146 @@ def fw_mietzins_anpassung(request, vertrag_id):
     })
 
 
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_mietzins_massenanpassung(request):
+    """Mietzins-Massenanpassung nach Referenzzins-/LIK-Änderung: für die in der
+    Mietzins-Liste angehakten Verträge wird das Potenzial berechnet (Vorschau) und
+    per Bestätigung je Vertrag eine MietzinsAnpassung + amtliches Formular erzeugt
+    (Sammel-PDF). Fristen nach Art. 269d OR werden je Vertrag einzeln bestimmt."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from django.http import HttpResponse
+    from crm.models import Verwaltung
+    from rentals.models import MietzinsAnpassung
+    from rentals.services import berechne_mietpotenzial, naechster_anpassungstermin
+    from core.utils import get_current_ref_zins, get_current_lik
+    from core.auth import log_aktion
+
+    if request.method != 'POST':
+        return redirect('fw_mietzins')
+    basis = _global_filter(request)
+    vw = Verwaltung.objects.first()
+
+    def _dec(x, default='0'):
+        try:
+            return Decimal(str(x).replace(',', '.').strip())
+        except Exception:
+            return Decimal(default)
+
+    aktuell_ref = _dec(get_current_ref_zins())
+    aktuell_lik = _dec(get_current_lik())
+    from core.services.lik import aktueller_lik_wert
+    _auto_stand, _auto_lik, _auto_basis = aktueller_lik_wert()
+    aktuell_lik_stand = _auto_stand or (vw.aktueller_lik_stand if vw else None)
+    lik_basis = _auto_basis or (vw.lik_basis if vw else 'Dezember 2020')
+
+    ids = request.POST.getlist('vertrag_id')
+    vertraege = list(Mietvertrag.objects.filter(id__in=ids, status='aktiv')
+                     .select_related('mieter', 'einheit__liegenschaft'))
+    if not vertraege:
+        messages.error(request, "Keine Verträge ausgewählt.")
+        return redirect('fw_mietzins')
+
+    heute = timezone.localdate()
+    rows = []
+    for v in vertraege:
+        pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik) or {}
+        neu_netto = pot.get('neu_chf')
+        termin = naechster_anpassungstermin(v, heute)
+        delta = (neu_netto - (v.netto_mietzins or Decimal('0'))) if neu_netto is not None else None
+        rows.append({
+            'v': v, 'pot': pot, 'neu_netto': neu_netto, 'termin': termin,
+            'delta': delta,
+            'basis_fehlt': not ((v.basis_referenzzinssatz or 0) > 0 and (v.basis_lik_punkte or 0) > 0),
+            'unveraendert': (delta is not None and delta == 0),
+        })
+
+    aktion = request.POST.get('aktion', 'vorschau')
+    if aktion != 'ausfuehren':
+        machbar = [r for r in rows if not r['basis_fehlt'] and r['neu_netto'] is not None and r['delta']]
+        return render(request, 'fw/mietzins_massen.html', {
+            **basis, 'nav': 'mietzins', 'rows': rows, 'machbar': len(machbar),
+            'aktuell_ref': aktuell_ref, 'aktuell_lik': aktuell_lik,
+        })
+
+    # --- Ausführen: je Vertrag Anpassung erfassen + amtliches Formular, dann Sammel-PDF ---
+    from core.services.formular_fill import fill_mietzins
+    from core.services.amtliche_formulare_so import mietzins_so_pdf
+    from core.services.ablage import ablegen
+    from core.models import Pendenz
+    import io as _io
+    from pypdf import PdfReader, PdfWriter
+
+    writer = PdfWriter()
+    erfasst = uebersprungen = 0
+    for r in rows:
+        v = r['v']
+        if r['basis_fehlt'] or r['neu_netto'] is None or not r['delta']:
+            uebersprungen += 1
+            continue
+        neu_netto = r['neu_netto']
+        wirksam_ab = r['termin']
+        pot = r['pot']
+        anp, anp_created = MietzinsAnpassung.objects.get_or_create(
+            vertrag=v, wirksam_ab=wirksam_ab, neuer_netto_mietzins=neu_netto,
+            defaults={
+                'alter_netto_mietzins': v.netto_mietzins,
+                'alter_referenzzinssatz': v.basis_referenzzinssatz, 'neuer_referenzzinssatz': aktuell_ref,
+                'alter_lik_index': v.basis_lik_punkte, 'neuer_lik_index': aktuell_lik,
+                'erhoehung_prozent_total': pot.get('delta_prozent'),
+                'begruendung': 'Anpassung an Referenzzinssatz und Teuerung (Massenanpassung)',
+            })
+        if anp_created:
+            log_aktion(request, "Mietzinsanpassung erstellt (Massenlauf)", str(v),
+                       f"neu CHF {neu_netto}, wirksam {wirksam_ab}", ziel=v)
+            if neu_netto > (v.netto_mietzins or Decimal('0')):
+                Pendenz.objects.create(
+                    titel=f"Anfechtungsfrist Mietzinserhöhung läuft ab – {v.mieter.display_name}",
+                    beschreibung=(f"Erhöhung auf CHF {neu_netto} (wirksam {wirksam_ab:%d.%m.%Y}). Der Mieter kann "
+                                  "sie innert 30 Tagen ab Empfang des amtlichen Formulars bei der "
+                                  "Schlichtungsbehörde anfechten (Art. 270b OR)."),
+                    kategorie='frist', faellig_am=heute + _timedelta(days=30), vertrag=v,
+                    liegenschaft=v.einheit.liegenschaft if v.einheit_id else None,
+                    erstellt_von=request.user if request.user.is_authenticated else None,
+                )
+        daten = {
+            'alt_netto': v.netto_mietzins, 'neu_netto': neu_netto,
+            'nebenkosten': v.nebenkosten,
+            'alt_zins': v.basis_referenzzinssatz, 'neu_zins': aktuell_ref,
+            'alt_lik': v.basis_lik_punkte, 'neu_lik': aktuell_lik,
+            'lik_basis': lik_basis,
+            'alt_lik_stand': v.basis_lik_stand, 'neu_lik_stand': aktuell_lik_stand,
+            'zins_pct': None, 'lik_pct': None, 'kosten_pct': None,
+            'total_pct': pot.get('delta_prozent'),
+            'wirksam_ab': wirksam_ab,
+            'begruendung': 'Anpassung an Referenzzinssatz und Teuerung',
+            'schlichtungsbehoerde': '', 'mit_vorbehalt': False, 'vorbehalt_text': '',
+        }
+        pdf = fill_mietzins(v, daten, verwaltung=vw)
+        if pdf is None:
+            pdf = mietzins_so_pdf(v, daten, verwaltung=vw)
+        ablegen(pdf, f"Mietzinsanpassung wirksam {wirksam_ab:%d.%m.%Y}",
+                kategorie='vertrag', vertrag=v, dedup=True)
+        try:
+            for page in PdfReader(_io.BytesIO(pdf)).pages:
+                writer.add_page(page)
+        except Exception:
+            pass
+        erfasst += 1
+
+    if not erfasst:
+        messages.error(request, "Keine Anpassung möglich (Basisdaten fehlen oder kein Potenzial).")
+        return redirect('fw_mietzins')
+
+    log_aktion(request, "Mietzins-Massenanpassung", f"{erfasst} Verträge",
+               f"Ref {aktuell_ref}% · LIK {aktuell_lik}")
+    out = _io.BytesIO()
+    writer.write(out)
+    resp = HttpResponse(out.getvalue(), content_type='application/pdf')
+    resp['Content-Disposition'] = 'attachment; filename="Mietzinsanpassungen_Sammel.pdf"'
+    return resp
+
+
 def _vormiete_fuer(vertrag):
     """Letzter beendeter Vertrag desselben Objekts (für die Vormiete-Angabe)."""
     if not vertrag.einheit_id:
@@ -6855,12 +7128,19 @@ def fw_kommunikation(request):
     empfaenger.sort(key=lambda e: e['name'])
     liegenschaften_wahl = [{'id': k, 'label': lbl} for k, lbl in sorted(lg_map.items(), key=lambda kv: kv[1])]
 
+    # ?mieter=<id>: Empfänger vorauswählen (E-Mail-Button auf der Personenseite)
+    try:
+        vorwahl_mieter = int(request.GET.get('mieter') or 0)
+    except (TypeError, ValueError):
+        vorwahl_mieter = 0
+
     return render(request, 'fw/kommunikation.html', {
         **basis, 'nav': 'kommunikation',
         'absender': absender, 'empfaenger': empfaenger,
         'anzahl_empfaenger': len(empfaenger),
         'liegenschaften_wahl': liegenschaften_wahl,
         'vorlagen': vorlagen, 'logo_url': logo_url,
+        'vorwahl_mieter': vorwahl_mieter,
     })
 
 
@@ -9817,6 +10097,7 @@ def fw_mwst_estv_export(request):
 BEWERBUNG_SPALTEN = [
     ('neu', 'Neu eingegangen', 'bg-sky-50 text-sky-700'),
     ('geprueft', 'Bonität geprüft', 'bg-amber-50 text-amber-700'),
+    ('besichtigung', 'Besichtigung', 'bg-violet-50 text-violet-700'),
     ('zugesagt', 'Zusage erteilt', 'bg-emerald-50 text-emerald-700'),
     ('abgelehnt', 'Abgelehnt', 'bg-rose-50 text-rose-700'),
 ]
@@ -9925,6 +10206,69 @@ def _bewerber_mail(b, entscheid):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_bewerber_besichtigung(request, pk):
+    """Lädt einen Bewerber zur Besichtigung ein: Termin speichern, Status setzen,
+    Einladung per E-Mail (mit Journal-Eintrag)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from mietprozess.models import Mietbewerbung
+    from core.utils.email_service import send_ticket_email, journal_email
+    from core.auth import log_aktion
+    from datetime import datetime as _dt
+    b = get_object_or_404(Mietbewerbung.objects.select_related('einheit__liegenschaft'), id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
+    termin_raw = (request.POST.get('termin') or '').strip()   # datetime-local: YYYY-MM-DDTHH:MM
+    termin = None
+    if termin_raw:
+        try:
+            termin = timezone.make_aware(_dt.fromisoformat(termin_raw))
+        except Exception:
+            termin = None
+    if termin is None:
+        messages.error(request, "Bitte einen gültigen Besichtigungstermin wählen.")
+        return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
+    b.besichtigung_am = termin
+    if b.status in ('neu', 'geprueft'):
+        b.status = 'besichtigung'
+    b.save(update_fields=['besichtigung_am', 'status'])
+    lg = b.einheit.liegenschaft
+    ok = False
+    if b.email:
+        betreff = f"Einladung zur Besichtigung — {lg.strasse}, {b.einheit.bezeichnung}"
+        body = (f"Guten Tag {b.vorname} {b.nachname}\n\n"
+                f"Gerne laden wir Sie zur Besichtigung des Objekts "
+                f"{lg.strasse}, {lg.plz} {lg.ort} ({b.einheit.bezeichnung}) ein.\n\n"
+                f"Termin: {timezone.localtime(termin).strftime('%A, %d.%m.%Y um %H:%M Uhr')}\n"
+                f"Treffpunkt: Hauseingang {lg.strasse}\n\n"
+                f"Bitte bestätigen Sie uns den Termin kurz per E-Mail. Falls er Ihnen "
+                f"nicht passt, melden Sie sich für eine Alternative.\n\n"
+                f"Freundliche Grüsse\nIhre Verwaltung")
+        ok = send_ticket_email(b.email, betreff, body)
+        if ok:
+            journal_email(betreff, body, user=request.user,
+                          empfaenger=f"{b.vorname} {b.nachname} <{b.email}> (Bewerbung)")
+    # Termin ins Fristen-Center (idempotent pro Bewerbung — Termin-Änderung
+    # aktualisiert die bestehende Pendenz statt eine zweite zu erzeugen).
+    from core.models import Pendenz
+    Pendenz.objects.update_or_create(
+        quelle=f'besichtigung:{b.id}',
+        defaults={
+            'titel': f"Besichtigung {b.vorname} {b.nachname} — {b.einheit.bezeichnung}",
+            'beschreibung': (f"Besichtigungstermin {timezone.localtime(termin).strftime('%d.%m.%Y %H:%M')} · "
+                             f"{lg.strasse}, {lg.plz} {lg.ort}. Treffpunkt Hauseingang."),
+            'kategorie': 'frist', 'faellig_am': termin.date(),
+            'liegenschaft': lg, 'erledigt': False,
+            'erstellt_von': request.user if request.user.is_authenticated else None,
+        })
+    log_aktion(request, "Besichtigung eingeladen", f"{b.vorname} {b.nachname}",
+               timezone.localtime(termin).strftime('%d.%m.%Y %H:%M'))
+    messages.success(request, f"✅ Besichtigung {timezone.localtime(termin).strftime('%d.%m.%Y %H:%M')} erfasst"
+                              + (f" · Einladung an {b.email} gesendet." if ok else "."))
+    return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_bewerber_entscheid(request, pk):
     """Zusage/Absage einer Bewerbung: setzt Status + sendet dem Bewerber eine
     (Vorlagen-)E-Mail. entscheid = 'zusage' | 'absage'."""
@@ -9951,6 +10295,10 @@ def fw_bewerber_entscheid(request, pk):
     if b.email:
         betreff, body = _bewerber_mail(b, entscheid)
         ok = send_ticket_email(b.email, betreff, body)
+        if ok:
+            from core.utils.email_service import journal_email
+            journal_email(betreff, body, user=request.user,
+                          empfaenger=f"{b.vorname} {b.nachname} <{b.email}> (Bewerbung)")
     log_aktion(request, f"Bewerber-{entscheid.capitalize()}", f"{b.vorname} {b.nachname}",
                b.einheit.bezeichnung if b.einheit_id else '')
     wort = "Zusage" if entscheid == 'zusage' else "Absage"
@@ -9979,6 +10327,9 @@ def fw_bewerber_absage_uebrige(request, einheit_id):
             betreff, body = _bewerber_mail(b, 'absage')
             if send_ticket_email(b.email, betreff, body):
                 mails += 1
+                from core.utils.email_service import journal_email
+                journal_email(betreff, body, user=request.user,
+                              empfaenger=f"{b.vorname} {b.nachname} <{b.email}> (Bewerbung)")
     log_aktion(request, "Bewerber-Sammelabsage", f"Objekt #{einheit_id}", f"{n} abgesagt")
     messages.success(request, f"✅ {n} offene Bewerbung(en) abgesagt" + (f" · {mails} E-Mail(s) versendet." if mails else "."))
     return redirect(f'/neu/vermarktung/{einheit_id}/bewerber/')
@@ -11289,12 +11640,14 @@ def fw_kommunikation_senden(request):
     if not text or not ids:
         messages.error(request, "Text und mindestens ein Empfänger erforderlich.")
         return redirect('fw_kommunikation')
+    from core.utils.email_service import journal_email
     gesendet = 0
     for mid in ids:
         m = Mieter.objects.filter(id=mid).first()
         if m and m.email:
             if send_ticket_email(m.email, betreff, text):
                 gesendet += 1
+                journal_email(betreff, text, mieter=m, user=request.user, empfaenger=m.email)
     log_aktion(request, "Rundschreiben per E-Mail", betreff, f"{gesendet} Empfänger")
     messages.success(request, f"✅ {gesendet} E-Mail(s) versendet." if gesendet else "Keine E-Mail versendet (fehlende Adressen).")
     return redirect('fw_kommunikation')

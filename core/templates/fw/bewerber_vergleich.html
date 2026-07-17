@@ -74,6 +74,9 @@
                         <span class="text-xs font-semibold text-slate-400">Abgesagt</span>
                     {% else %}
                     <div class="inline-flex items-center gap-1.5">
+                        <button type="button" onclick="document.getElementById('besi-{{ k.b.id }}').classList.toggle('hidden')"
+                                class="text-xs font-semibold text-violet-600 border border-violet-200 hover:bg-violet-50 px-2.5 py-1.5 rounded-lg">
+                            <i class="fa-regular fa-calendar mr-1"></i>Besichtigung</button>
                         <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/entscheid/" class="inline"
                               onsubmit="return confirm('{{ k.name }} zusagen{% if k.b.email %} und E-Mail senden{% endif %}?');">
                             {% csrf_token %}<input type="hidden" name="entscheid" value="zusage">
@@ -86,8 +89,30 @@
                         </form>
                     </div>
                     {% endif %}
+                    {% if k.b.besichtigung_am %}
+                    <div class="text-[10px] font-semibold text-violet-600 mt-1"><i class="fa-regular fa-calendar mr-0.5"></i>Besichtigung {{ k.b.besichtigung_am|date:"d.m.Y H:i" }}</div>
+                    {% endif %}
                 </td>
             </tr>
+            {% if k.status != 'zugesagt' and k.status != 'abgelehnt' %}
+            <tr id="besi-{{ k.b.id }}" class="hidden bg-violet-50/40">
+                <td colspan="20" class="px-4 py-3">
+                    <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/besichtigung/" class="flex flex-wrap items-end gap-3">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-500 mb-1">Besichtigungstermin für {{ k.name }}</label>
+                            <input type="datetime-local" name="termin" required
+                                   value="{% if k.b.besichtigung_am %}{{ k.b.besichtigung_am|date:'Y-m-d\TH:i' }}{% endif %}"
+                                   class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+                        </div>
+                        <button class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold px-3.5 py-2.5 rounded-lg">
+                            <i class="fa-solid fa-paper-plane mr-1.5"></i>Einladen{% if k.b.email %} ({{ k.b.email }}){% endif %}
+                        </button>
+                        <span class="text-[11px] text-slate-400">Termin erscheint im Fristen-Center; Einladung per E-Mail mit Journal-Eintrag.</span>
+                    </form>
+                </td>
+            </tr>
+            {% endif %}
         {% endfor %}
         </tbody>
     </table>

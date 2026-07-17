@@ -44,6 +44,7 @@ class Mietbewerbung(models.Model):
     STATUS_CHOICES = [
         ('neu', 'Neu eingegangen'),
         ('geprueft', 'Bonität geprüft'),
+        ('besichtigung', 'Zur Besichtigung eingeladen'),
         ('zugesagt', 'Zusage erteilt'),
         ('abgelehnt', 'Abgelehnt'),
     ]
@@ -74,6 +75,7 @@ class Mietbewerbung(models.Model):
 
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name="bewerbungen")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='neu')
+    besichtigung_am = models.DateTimeField("Besichtigungstermin", null=True, blank=True)
 
     # --- Personalien Hauptmieter ---
     vorname = models.CharField(max_length=100)

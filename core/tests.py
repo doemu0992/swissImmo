@@ -9973,3 +9973,358 @@ class NachtN4UITests(TestCase):
         self.assertIn("5'500", body)
         body2 = c.get('/neu/debitoren/?seite=2').content.decode()
         self.assertIn('Seite 2/2', body2)
+
+
+class NachtN5EigentuemerTests(TestCase):
+    """Nacht-Audit N5: Kontokorrent-PDF im Portal, Ausstände-KPI,
+    Freigabe-Mail an den Eigentümer, Honorar-Transparenz."""
+
+    def _mandant_login(self, **kw):
+        lg, e, m, v = _basis_objekte()
+        md = Mandant.objects.create(firma_oder_name='Eigentümer AG', **kw)
+        lg.mandant = md; lg.save()
+        u = User.objects.create_user(username='eig_n5', password='x')
+        md.benutzer = u; md.save()
+        return md, lg, v, u
+
+    def test_portal_kontokorrent_pdf(self):
+        md, lg, v, u = self._mandant_login()
+        c = Client(); c.force_login(u)
+        for url in ('/portal/kontokorrent/', '/portal/kontokorrent/?jahr=2025'):
+            r = c.get(url)
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r['Content-Type'], 'application/pdf')
+            self.assertTrue(r.content.startswith(b'%PDF'))
+
+    def test_portal_kontokorrent_ohne_mandant_404(self):
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        self.assertEqual(c.get('/portal/kontokorrent/').status_code, 404)
+
+    def test_portal_ausstaende_kpi(self):
+        from finance.models import DebitorenRechnung
+        md, lg, v, u = self._mandant_login()
+        DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Miete Juni', betrag=Decimal('1800'),
+            datum=date.today() - timedelta(days=40),
+            faellig_am=date.today() - timedelta(days=35), status='offen')
+        c = Client(); c.force_login(u)
+        body = c.get('/portal/').content.decode()
+        self.assertIn('Ausstände offen', body)
+        self.assertIn("1'800", body)
+        self.assertIn('überfällig', body)
+
+    def test_freigabe_mail_an_eigentuemer(self):
+        from django.core import mail
+        from tickets.models import SchadenMeldung, HandwerkerAuftrag
+        from crm.models import Handwerker
+        md, lg, v, u_eig = self._mandant_login(email='eig@example.ch', kontaktperson='Peter Muster')
+        hw = Handwerker.objects.create(firma='Sanitär AG')
+        t = SchadenMeldung.objects.create(liegenschaft=lg, titel='Boiler defekt', beschreibung='x')
+        a = HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, freigabe_status='nicht_noetig')
+        u = _team_user(); c = Client(); c.force_login(u)
+        c.post(f'/neu/auftrag/{a.id}/kosten/', {'kosten_geschaetzt': '3000'})
+        a.refresh_from_db()
+        self.assertEqual(a.freigabe_status, 'ausstehend')
+        mails = [m for m in mail.outbox if 'Reparaturfreigabe' in m.subject]
+        self.assertEqual(len(mails), 1)
+        self.assertIn('eig@example.ch', mails[0].to)
+        self.assertIn('Boiler defekt', mails[0].body)
+
+    def test_freigabe_unter_schwelle_keine_mail(self):
+        from django.core import mail
+        from tickets.models import SchadenMeldung, HandwerkerAuftrag
+        from crm.models import Handwerker
+        md, lg, v, u_eig = self._mandant_login(email='eig@example.ch')
+        hw = Handwerker.objects.create(firma='Maler AG')
+        t = SchadenMeldung.objects.create(liegenschaft=lg, titel='Kratzer', beschreibung='x')
+        a = HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, freigabe_status='nicht_noetig')
+        u = _team_user(); c = Client(); c.force_login(u)
+        c.post(f'/neu/auftrag/{a.id}/kosten/', {'kosten_geschaetzt': '300'})
+        a.refresh_from_db()
+        self.assertEqual(a.freigabe_status, 'nicht_noetig')
+        self.assertEqual([m for m in mail.outbox if 'Reparaturfreigabe' in m.subject], [])
+
+    def test_steuerauszug_enthaelt_honorar(self):
+        from core.services.steuerauszug import steuerauszug_daten, generate_steuerauszug_pdf
+        from core.services.verwaltungshonorar import buche_honorar
+        from finance.booking import ensure_kontenplan, buche, konto
+        md, lg, v, u = self._mandant_login(honorar_prozent=Decimal('5.00'))
+        ensure_kontenplan()
+        jahr = date.today().year - 1
+        # Mietertrag im Jahr buchen (Haben 3000), dann Honorar berechnen + buchen
+        buche('1020', '3000', Decimal('12000'), 'Mieten', datum=date(jahr, 6, 30), liegenschaft=lg)
+        anzahl, summe = buche_honorar(md, jahr)
+        self.assertEqual(anzahl, 1)
+        self.assertEqual(summe, Decimal('600.00'))   # 5% von 12'000
+        d = steuerauszug_daten(md, jahr)
+        z = d['zeilen'][0]
+        self.assertEqual(z['honorar'], Decimal('600.00'))
+        self.assertEqual(d['total']['honorar'], Decimal('600.00'))
+        # Netto ist um das Honorar gemindert (kein Ertrag via Zahlungseingang hier → Netto negativ)
+        self.assertEqual(z['netto'], z['ertrag'] - z['ausgaben'] - z['afa'] - Decimal('600.00'))
+        pdf = generate_steuerauszug_pdf(md, jahr)
+        self.assertTrue(pdf.startswith(b'%PDF'))
+
+    def test_kontokorrent_pdf_mit_honorar_block(self):
+        from core.services.eigentuemer_kontokorrent import generate_kontokorrent_pdf
+        from finance.booking import ensure_kontenplan, buche
+        md, lg, v, u = self._mandant_login(honorar_prozent=Decimal('4.00'))
+        ensure_kontenplan()
+        jahr = date.today().year - 1
+        buche('1020', '3000', Decimal('10000'), 'Mieten', datum=date(jahr, 3, 31), liegenschaft=lg)
+        pdf = generate_kontokorrent_pdf(md, jahr)
+        self.assertTrue(pdf.startswith(b'%PDF'))
+
+
+class NachtN6BewirtschafterTests(TestCase):
+    """Nacht-Audit N6: E-Mail-Versand im Kommunikations-Journal +
+    Mietzins-Massenanpassung."""
+
+    def test_rundschreiben_landet_im_journal(self):
+        from crm.models import Kommunikation
+        lg, e, m, v = _basis_objekte()
+        m.email = 'hans@example.ch'; m.save()
+        u = _team_user(); c = Client(); c.force_login(u)
+        c.post('/neu/kommunikation/senden/', {
+            'betreff': 'Heizungsablesung', 'text': 'Am Dienstag kommt die Ablesung.',
+            'empfaenger_id': [str(m.id)],
+        })
+        k = Kommunikation.objects.filter(mieter=m, typ='email', richtung='ausgehend').first()
+        self.assertIsNotNone(k)
+        self.assertEqual(k.betreff, 'Heizungsablesung')
+        self.assertIn('hans@example.ch', k.inhalt)
+
+    def test_mahnlauf_landet_im_journal(self):
+        from crm.models import Kommunikation
+        from core.services.automation import run_mahnlauf
+        from finance.models import DebitorenRechnung
+        lg, e, m, v = _basis_objekte()
+        m.email = 'hans@example.ch'; m.save()
+        DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Miete', betrag=Decimal('1500'),
+            datum=date.today() - timedelta(days=40),
+            faellig_am=date.today() - timedelta(days=35), status='offen')
+        res = run_mahnlauf(send_email=True)
+        self.assertGreaterEqual(res['emails'], 1)
+        k = Kommunikation.objects.filter(mieter=m, typ='email', betreff__icontains='Zahlungserinnerung').first()
+        self.assertIsNotNone(k)
+        self.assertEqual(k.vertrag_id, v.id)
+
+    def test_bewerber_absage_landet_im_journal(self):
+        from crm.models import Kommunikation
+        from mietprozess.models import Mietbewerbung
+        lg, e, m, v = _basis_objekte()
+        b = Mietbewerbung.objects.create(
+            einheit=e, vorname='Anna', nachname='Muster', email='anna@example.ch',
+            geburtsdatum=date(1990, 5, 1), status='neu')
+        u = _team_user(); c = Client(); c.force_login(u)
+        c.post(f'/neu/bewerbungen/{b.id}/entscheid/', {'entscheid': 'absage'})
+        b.refresh_from_db()
+        self.assertEqual(b.status, 'abgelehnt')
+        k = Kommunikation.objects.filter(typ='email', inhalt__icontains='anna@example.ch').first()
+        self.assertIsNotNone(k)
+        self.assertIn('Bewerbung', k.inhalt)
+
+    def test_kommunikation_mieter_preselect(self):
+        lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        body = c.get(f'/neu/kommunikation/?mieter={m.id}').content.decode()
+        self.assertIn(f'value="{m.id}" onchange="aktualisiere()" checked', body)
+
+    def test_person_detail_email_button(self):
+        lg, e, m, v = _basis_objekte()
+        m.email = 'hans@example.ch'; m.save()
+        u = _team_user(); c = Client(); c.force_login(u)
+        body = c.get(f'/neu/personen/{m.id}/').content.decode()
+        self.assertIn(f'/neu/kommunikation/?mieter={m.id}', body)
+
+    def test_mietzins_liste_hat_massen_checkboxen(self):
+        _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        body = c.get('/neu/mietzins/').content.decode()
+        self.assertIn('name="vertrag_id"', body)
+        self.assertIn('/neu/mietzins/massenanpassung/', body)
+
+    def _vertrag_mit_potenzial(self):
+        from crm.models import Verwaltung
+        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.75'),
+                                  aktueller_lik_punkte=Decimal('100'))
+        lg, e, m, v = _basis_objekte()   # netto 1500
+        # Basis-Zins tiefer als aktuell → Erhöhungspotenzial (+2 Stufen à 3 %)
+        v.basis_referenzzinssatz = Decimal('1.25'); v.basis_lik_punkte = Decimal('100'); v.save()
+        return lg, m, v
+
+    def test_massenanpassung_vorschau(self):
+        lg, m, v = self._vertrag_mit_potenzial()
+        u = _team_user(); c = Client(); c.force_login(u)
+        r = c.post('/neu/mietzins/massenanpassung/', {'aktion': 'vorschau', 'vertrag_id': [str(v.id)]})
+        self.assertEqual(r.status_code, 200)
+        body = r.content.decode()
+        self.assertIn('Wird angepasst', body)
+        self.assertIn('Anpassung(en) erfassen', body)
+
+    def test_massenanpassung_ausfuehren_und_idempotent(self):
+        from rentals.models import MietzinsAnpassung
+        from core.models import Pendenz
+        lg, m, v = self._vertrag_mit_potenzial()
+        u = _team_user(); c = Client(); c.force_login(u)
+        r = c.post('/neu/mietzins/massenanpassung/', {'aktion': 'ausfuehren', 'vertrag_id': [str(v.id)]})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r.content.startswith(b'%PDF'))
+        self.assertEqual(MietzinsAnpassung.objects.filter(vertrag=v).count(), 1)
+        anp = MietzinsAnpassung.objects.get(vertrag=v)
+        self.assertGreater(anp.neuer_netto_mietzins, Decimal('1500'))
+        self.assertTrue(Pendenz.objects.filter(vertrag=v, titel__icontains='Anfechtungsfrist').exists())
+        # Zweiter Lauf mit denselben Verträgen: keine Duplikate
+        c.post('/neu/mietzins/massenanpassung/', {'aktion': 'ausfuehren', 'vertrag_id': [str(v.id)]})
+        self.assertEqual(MietzinsAnpassung.objects.filter(vertrag=v).count(), 1)
+        self.assertEqual(Pendenz.objects.filter(vertrag=v, titel__icontains='Anfechtungsfrist').count(), 1)
+
+    def test_massenanpassung_ohne_basis_uebersprungen(self):
+        from crm.models import Verwaltung
+        from rentals.models import MietzinsAnpassung
+        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.75'))
+        lg, e, m, v = _basis_objekte()
+        # Alt-/Importvertrag ohne Basisdaten (Modell-Default liefert sonst aktuelle Werte)
+        v.basis_referenzzinssatz = Decimal('0'); v.basis_lik_punkte = Decimal('0'); v.save()
+        u = _team_user(); c = Client(); c.force_login(u)
+        r = c.post('/neu/mietzins/massenanpassung/', {'aktion': 'vorschau', 'vertrag_id': [str(v.id)]})
+        self.assertIn('Basis fehlt', r.content.decode())
+        r2 = c.post('/neu/mietzins/massenanpassung/', {'aktion': 'ausfuehren', 'vertrag_id': [str(v.id)]})
+        self.assertEqual(r2.status_code, 302)   # nichts machbar → zurück mit Fehlermeldung
+        self.assertEqual(MietzinsAnpassung.objects.filter(vertrag=v).count(), 0)
+
+
+class NachtN7SchluesselTests(TestCase):
+    """Nacht-Audit N7: Schlüsselregister mit Ausgabe/Rücknahme je Objekt."""
+
+    def _heute(self):
+        from django.utils import timezone as tz
+        return tz.localdate()
+
+    def _setup(self):
+        lg, e, m, v = _basis_objekte()
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        return lg, e, m, v, c
+
+    def test_schluessel_erfassen_und_tab(self):
+        from portfolio.models import Schluessel
+        lg, e, m, v, c = self._setup()
+        r = c.post('/neu/schluessel/', {'einheit_id': e.id, 'typ': 'Wohnung',
+                                        'schluessel_nummer': 'W-101', 'anzahl': '3'})
+        self.assertEqual(r.status_code, 302)
+        sch = Schluessel.objects.get(einheit=e)
+        self.assertEqual(sch.schluessel_nummer, 'W-101')
+        self.assertEqual(sch.anzahl, 3)
+        self.assertEqual(sch.liegenschaft_id, lg.id)
+        body = c.get(f'/neu/objekte/{e.id}/').content.decode()
+        self.assertIn('Schlüssel', body)
+        self.assertIn('W-101', body)
+
+    def test_ausgabe_und_rueckgabe(self):
+        from portfolio.models import Schluessel, SchluesselAusgabe
+        lg, e, m, v, c = self._setup()
+        sch = Schluessel.objects.create(liegenschaft=lg, einheit=e, typ='Wohnung',
+                                        schluessel_nummer='W-1', anzahl=2)
+        r = c.post(f'/neu/schluessel/{sch.id}/ausgabe/', {'empfaenger': f'mieter:{m.id}'})
+        self.assertEqual(r.status_code, 302)
+        a = SchluesselAusgabe.objects.get(schluessel=sch)
+        self.assertEqual(a.mieter_id, m.id)
+        self.assertIsNone(a.rueckgabe_am)
+        c.post(f'/neu/schluessel/ausgabe/{a.id}/rueckgabe/')
+        a.refresh_from_db()
+        self.assertEqual(a.rueckgabe_am, self._heute())
+
+    def test_ausgabe_blockiert_wenn_alle_weg(self):
+        from portfolio.models import Schluessel, SchluesselAusgabe
+        lg, e, m, v, c = self._setup()
+        sch = Schluessel.objects.create(liegenschaft=lg, einheit=e, typ='Keller',
+                                        schluessel_nummer='K-1', anzahl=1)
+        c.post(f'/neu/schluessel/{sch.id}/ausgabe/', {'empfaenger': f'mieter:{m.id}'})
+        c.post(f'/neu/schluessel/{sch.id}/ausgabe/', {'empfaenger': f'mieter:{m.id}'})
+        self.assertEqual(SchluesselAusgabe.objects.filter(schluessel=sch).count(), 1)
+
+    def test_loeschen_blockiert_bei_offener_ausgabe(self):
+        from portfolio.models import Schluessel, SchluesselAusgabe
+        lg, e, m, v, c = self._setup()
+        sch = Schluessel.objects.create(liegenschaft=lg, einheit=e, typ='Wohnung',
+                                        schluessel_nummer='W-2', anzahl=1)
+        SchluesselAusgabe.objects.create(schluessel=sch, mieter=m)
+        c.post(f'/neu/schluessel/{sch.id}/loeschen/')
+        self.assertTrue(Schluessel.objects.filter(id=sch.id).exists())
+        # Nach Rücknahme klappt das Löschen
+        a = sch.ausgaben.first(); a.rueckgabe_am = self._heute(); a.save()
+        c.post(f'/neu/schluessel/{sch.id}/loeschen/')
+        self.assertFalse(Schluessel.objects.filter(id=sch.id).exists())
+
+    def test_handwerker_ausgabe(self):
+        from portfolio.models import Schluessel, SchluesselAusgabe
+        from crm.models import Handwerker
+        lg, e, m, v, c = self._setup()
+        hw = Handwerker.objects.create(firma='Sanitär AG')
+        sch = Schluessel.objects.create(liegenschaft=lg, einheit=e, typ='Haustüre',
+                                        schluessel_nummer='H-9', anzahl=5)
+        c.post(f'/neu/schluessel/{sch.id}/ausgabe/', {'empfaenger': f'handwerker:{hw.id}'})
+        a = SchluesselAusgabe.objects.get(schluessel=sch)
+        self.assertEqual(a.handwerker_id, hw.id)
+        self.assertIsNone(a.mieter_id)
+
+
+class NachtN8BesichtigungTests(TestCase):
+    """Nacht-Audit N8: Besichtigungsstufe im Bewerbungsprozess."""
+
+    def _bewerbung(self):
+        from mietprozess.models import Mietbewerbung
+        lg, e, m, v = _basis_objekte()
+        b = Mietbewerbung.objects.create(
+            einheit=e, vorname='Anna', nachname='Muster', email='anna@example.ch',
+            geburtsdatum=date(1990, 5, 1), status='neu')
+        u = _team_user(); c = Client(); c.force_login(u)
+        return b, c
+
+    def test_einladen_setzt_status_mail_journal_pendenz(self):
+        from django.core import mail
+        from crm.models import Kommunikation
+        from core.models import Pendenz
+        b, c = self._bewerbung()
+        termin = (date.today() + timedelta(days=5)).isoformat() + 'T18:30'
+        r = c.post(f'/neu/bewerbungen/{b.id}/besichtigung/', {'termin': termin})
+        self.assertEqual(r.status_code, 302)
+        b.refresh_from_db()
+        self.assertEqual(b.status, 'besichtigung')
+        self.assertIsNotNone(b.besichtigung_am)
+        mails = [m for m in mail.outbox if 'Besichtigung' in m.subject]
+        self.assertEqual(len(mails), 1)
+        self.assertIn('anna@example.ch', mails[0].to)
+        self.assertTrue(Kommunikation.objects.filter(typ='email', betreff__icontains='Besichtigung').exists())
+        p = Pendenz.objects.filter(quelle=f'besichtigung:{b.id}').first()
+        self.assertIsNotNone(p)
+        self.assertEqual(p.faellig_am, date.today() + timedelta(days=5))
+
+    def test_termin_aenderung_ist_idempotent(self):
+        from core.models import Pendenz
+        b, c = self._bewerbung()
+        t1 = (date.today() + timedelta(days=5)).isoformat() + 'T18:30'
+        t2 = (date.today() + timedelta(days=8)).isoformat() + 'T19:00'
+        c.post(f'/neu/bewerbungen/{b.id}/besichtigung/', {'termin': t1})
+        c.post(f'/neu/bewerbungen/{b.id}/besichtigung/', {'termin': t2})
+        pq = Pendenz.objects.filter(quelle=f'besichtigung:{b.id}')
+        self.assertEqual(pq.count(), 1)
+        self.assertEqual(pq.first().faellig_am, date.today() + timedelta(days=8))
+
+    def test_board_hat_besichtigung_spalte(self):
+        b, c = self._bewerbung()
+        b.status = 'besichtigung'; b.save(update_fields=['status'])
+        body = c.get('/neu/bewerbungen/').content.decode()
+        self.assertIn('Besichtigung', body)
+        self.assertIn('Anna', body)
+
+    def test_ungueltiger_termin_abgelehnt(self):
+        b, c = self._bewerbung()
+        c.post(f'/neu/bewerbungen/{b.id}/besichtigung/', {'termin': 'kein-datum'})
+        b.refresh_from_db()
+        self.assertEqual(b.status, 'neu')
+        self.assertIsNone(b.besichtigung_am)
