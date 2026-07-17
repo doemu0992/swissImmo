@@ -2428,6 +2428,17 @@ def _formulare_prozesse(v):
     return gruppen
 
 
+def _wg_kandidaten(vertrag):
+    """Personen, die als weitere WG-Mieter hinzugefügt werden können — alle Mieter
+    ausser den bereits am Vertrag beteiligten Parteien (max. 50 für die Auswahl)."""
+    from crm.models import Mieter
+    aus = {vertrag.mieter_id, vertrag.mitmieter_id}
+    if vertrag.pk:
+        aus |= {m.id for m in vertrag.weitere_mieter.all()}
+    return list(Mieter.objects.exclude(id__in=[i for i in aus if i])
+                .order_by('nachname', 'vorname')[:50])
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_vertrag_detail(request, pk):
     from rentals.models import Dokument as RentalsDokument
@@ -2489,6 +2500,8 @@ def fw_vertrag_detail(request, pk):
         'heute_iso': timezone.localdate().isoformat(),
         'dokumente': dokumente,
         'nebenobjekte': v.nebenobjekte.all(),
+        'weitere_mieter': list(v.weitere_mieter.all()),
+        'wg_kandidaten': _wg_kandidaten(v),
         'erstellbare_dokumente': _erstellbare_dokumente(v),
         'kuendigungen': v.kuendigungen.all(),
         'formular_kanton': _formular_kanton_label(v),
@@ -6408,6 +6421,15 @@ def fw_mietzins_anpassung(request, vertrag_id):
     vorschlag_netto = pot.get('neu_chf', v.netto_mietzins)
     naechster_termin = naechster_anpassungstermin(v, timezone.now().date())
 
+    # Indexmiete (Art. 269b): die amtliche Index-Mitteilung (Art. 269d) wird direkt
+    # aus der LIK-Entwicklung vorbefüllt — neuer Nettomietzins + fertige Begründung.
+    index_vorschlag = None
+    if v.mietzins_modell == 'index':
+        from core.services.mietrecht import index_anpassung_vorschlag
+        index_vorschlag = index_anpassung_vorschlag(v, aktuell_lik)
+        if index_vorschlag:
+            vorschlag_netto = index_vorschlag['neu_netto']
+
     # Basis-Vorbelegung: fehlt sie am Vertrag (Alt-/Importvertrag), aktuelle
     # Marktwerte vorschlagen, damit der Sachbearbeiter sie ergänzen kann.
     basis_zins = v.basis_referenzzinssatz if (v.basis_referenzzinssatz or 0) > 0 else aktuell_ref
@@ -6421,7 +6443,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
         'lik_basis': lik_basis,
         'alt_lik_stand': v.basis_lik_stand, 'aktuell_lik_stand': aktuell_lik_stand,
         'vorschlag_netto': vorschlag_netto, 'naechster_termin': naechster_termin,
-        'pot': pot,
+        'pot': pot, 'index_vorschlag': index_vorschlag,
     })
 
 
@@ -6853,7 +6875,7 @@ def fw_vertrag_neu(request):
             'mitmieter_name': ev.mitmieter_name or '', 'familienwohnung': bool(ev.familienwohnung),
             'anzahl_personen': ev.anzahl_personen or 1,
             'beginn': ev.beginn.isoformat() if ev.beginn else '',
-            'ende': ev.ende.isoformat() if ev.ende else '', 'unbefristet': ev.ende is None,
+            'ende': ev.ende.isoformat() if ev.ende else '', 'unbefristet': not ev.ist_befristet,
             'erstmals_kuendbar': ev.erstmals_kuendbar_auf.isoformat() if ev.erstmals_kuendbar_auf else '',
             'kuendigungsfrist': ev.kuendigungsfrist_monate, 'kuendigungstermine': ev.kuendigungstermine or '',
             'mitbenutzung': ev.mitbenutzung or '', 'nebenraeume': ev.nebenraeume or '',
@@ -7015,10 +7037,16 @@ def fw_vertrag_neu_speichern(request):
     editing = (Mietvertrag.objects.filter(id=edit_id, status='entwurf').first()
                if edit_id else None)
 
+    # Befristet = explizit angehakt (Checkbox «unbefristet» aus) UND ein Enddatum
+    # gesetzt. So bleibt `ende` bei einem unbefristeten Vertrag leer, und ein
+    # später via Kündigung gesetztes `ende` macht den Vertrag nicht «befristet».
+    _ende = datum('ende')
+    _ist_befristet = (P.get('ist_befristet') == '1') and bool(_ende)
+
     felder = dict(
         mieter=mieter, einheit=einheit,
         status='aktiv' if P.get('aktiv_setzen') == 'on' else 'entwurf',
-        beginn=beginn, ende=datum('ende'),
+        beginn=beginn, ende=_ende, ist_befristet=_ist_befristet,
         erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
         kuendigungsfrist_monate=_kfrist,
         kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
@@ -7042,7 +7070,11 @@ def fw_vertrag_neu_speichern(request):
         kostensteigerung_datum=datum('kostensteigerung_datum'),
         kautions_betrag=dec('kautions_betrag') or None,
         kautions_konto=P.get('kautions_konto', '').strip(),
+        solidarhaftung=P.get('solidarhaftung', 'on') != 'off',
     )
+
+    # Weitere WG-Mieter (bestehende Personen, mehrfach) — als M2M nach dem Save.
+    _wg_ids = [i for i in P.getlist('weitere_mieter') if str(i).strip().isdigit()]
 
     with transaction.atomic():
         if editing:
@@ -7070,6 +7102,15 @@ def fw_vertrag_neu_speichern(request):
                     betrag = None
                 if ab_d and betrag and betrag > 0:
                     Staffelstufe.objects.create(vertrag=vertrag, ab_datum=ab_d, netto_mietzins=betrag)
+        # WG: weitere Mieter setzen (Haupt- und 2. Mieter ausgenommen, keine Dubletten).
+        if _wg_ids:
+            aus = {mieter.id}
+            if zweiter_obj:
+                aus.add(zweiter_obj.id)
+            ids = [int(i) for i in _wg_ids if int(i) not in aus]
+            vertrag.weitere_mieter.set(Mieter.objects.filter(id__in=ids))
+        elif editing:
+            vertrag.weitere_mieter.clear()
     # Wohnadresse = Objektadresse ab Mietbeginn — als datierte Adress-Zeile
     # (gültig ab = Vertragsbeginn). Der tägliche Lauf (run_adress_umzuege) bzw.
     # sync_effektive_adresse führt die effektiven Flat-Felder am Stichtag nach.
@@ -7090,6 +7131,8 @@ def fw_vertrag_neu_speichern(request):
 
     setze_zukunftsadresse(mieter)
     setze_zukunftsadresse(zweiter_obj)
+    for _wg in vertrag.weitere_mieter.all():
+        setze_zukunftsadresse(_wg)
 
     # Vertragsdokumente NUR erzeugen, wenn der Vertrag als AKTIV gesetzt wird
     # (→ erscheinen in der Akte + im Mieterportal). Ein Entwurf bleibt dokumentlos,
@@ -7286,6 +7329,11 @@ def fw_vertrag_bearbeiten(request, pk):
 
         # --- Immer editierbar (unkritisch) ---
         v.ende = datum('ende')
+        # Befristung folgt bei einem AKTIVEN Vertrag dem Enddatum (leer = unbefristet).
+        # Bei gekündigten/archivierten Verträgen stammt `ende` aus der Kündigung —
+        # die Befristungs-Kennung nicht anrühren.
+        if v.status == 'aktiv':
+            v.ist_befristet = bool(v.ende)
         v.erstmals_kuendbar_auf = datum('erstmals_kuendbar')
         try:
             v.kuendigungsfrist_monate = int(P.get('kuendigungsfrist') or v.kuendigungsfrist_monate)
@@ -7761,8 +7809,10 @@ def fw_mieterwechsel(request):
         behandelte_vids.add(v.id)
         rows.append(_row(v, k.per_datum or k.berechneter_termin, gekuendigt=True, k=k))
 
-    # 2) Auslaufende befristete Verträge (aktiv, mit Ende, ohne laufende Kündigung)
-    vq = (Mietvertrag.objects.filter(status='aktiv', ende__isnull=False)
+    # 2) Auslaufende befristete Verträge (aktiv, befristet mit Ende, ohne laufende
+    #    Kündigung). `ist_befristet` grenzt sauber gegen unbefristete Verträge ab,
+    #    bei denen ein gesetztes `ende` aus einer Kündigung stammt.
+    vq = (Mietvertrag.objects.filter(status='aktiv', ist_befristet=True, ende__isnull=False)
           .select_related('mieter', 'einheit__liegenschaft'))
     if aktive_lg:
         vq = vq.filter(einheit__liegenschaft=aktive_lg)
@@ -9336,6 +9386,57 @@ def fw_maengelruege(request, vertrag_id):
     return render(request, 'fw/maengelruege.html', {**basis, 'nav': 'vertraege', 'v': v})
 
 
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_vertrag_wg(request, vertrag_id):
+    """WG-Mieter verwalten: weitere gleichberechtigte Mitmieter hinzufügen/entfernen
+    und die Solidarhaftung (Art. 143 ff. OR) umschalten. Additiv zum FK-Mitmieter
+    (2. Mieter/Ehegatte)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Mieter
+    from core.auth import log_aktion
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter'), id=vertrag_id)
+    if request.method != 'POST':
+        return redirect(f'/neu/vertraege/{v.id}/')
+    aktion = request.POST.get('aktion', '')
+    if aktion == 'hinzufuegen':
+        pid = request.POST.get('mieter_id')
+        person = Mieter.objects.filter(id=pid).first() if pid else None
+        ausgeschlossen = {v.mieter_id, v.mitmieter_id}
+        if not person:
+            messages.error(request, "❌ Bitte eine bestehende Person auswählen.")
+        elif person.id in ausgeschlossen:
+            messages.warning(request, "Diese Person ist bereits Vertragspartei.")
+        else:
+            v.weitere_mieter.add(person)
+            # Wohnadresse ab Mietbeginn auch für den WG-Mieter setzen.
+            try:
+                from crm.models import MieterAdresse
+                e = v.einheit
+                obj_strasse = f"{e.liegenschaft.strasse}{(', ' + e.etage) if e.etage else ''}"
+                MieterAdresse.objects.get_or_create(
+                    mieter=person, art='wohn', gueltig_ab=v.beginn,
+                    defaults=dict(strasse=obj_strasse, plz=e.liegenschaft.plz, ort=e.liegenschaft.ort,
+                                  quelle=f'vertrag:{v.id}', notiz='Einzug (WG) gemäss Mietvertrag'))
+                person.sync_effektive_adresse()
+            except Exception:
+                pass
+            log_aktion(request, "WG-Mieter hinzugefügt", str(person), str(v), ziel=v)
+            messages.success(request, f"✅ {person.display_name} als WG-Mieter erfasst.")
+    elif aktion == 'entfernen':
+        pid = request.POST.get('mieter_id')
+        person = Mieter.objects.filter(id=pid).first() if pid else None
+        if person:
+            v.weitere_mieter.remove(person)
+            log_aktion(request, "WG-Mieter entfernt", str(person), str(v), ziel=v)
+            messages.info(request, f"{person.display_name} als WG-Mieter entfernt.")
+    elif aktion == 'solidarhaftung':
+        v.solidarhaftung = request.POST.get('wert') == 'on'
+        v.save(update_fields=['solidarhaftung'])
+        messages.success(request, "Solidarhaftung aktualisiert.")
+    return redirect(f'/neu/vertraege/{v.id}/')
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_untermiete(request, vertrag_id):
     """Zustimmung/Ablehnung zur Untervermietung (Art. 262 OR). GET: Formular · POST: PDF."""
@@ -9836,8 +9937,8 @@ def _auto_fristen(aktive_lg, horizont_tage=90):
         aktive = aktive.filter(einheit__liegenschaft=aktive_lg)
         gek = gek.filter(einheit__liegenschaft=aktive_lg)
 
-    # a) Befristete Vertragsenden im Horizont
-    for v in aktive.filter(ende__range=[heute, grenze]).order_by('ende'):
+    # a) Befristete Vertragsenden im Horizont (nur echte befristete Verhältnisse)
+    for v in aktive.filter(ist_befristet=True, ende__range=[heute, grenze]).order_by('ende'):
         fristen.append({
             'kategorie': 'Befristetes Vertragsende', 'farbe': 'amber', 'icon': 'fa-hourglass-end',
             'titel': f"Vertrag {v.mieter.display_name} endet",

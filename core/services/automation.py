@@ -273,8 +273,8 @@ def generate_auto_pendenzen(horizont_tage=90, user=None):
                 obj.save(update_fields=['faellig_am', 'titel'])
         return obj
 
-    # a) Befristete Vertragsenden
-    for v in (Mietvertrag.objects.filter(status='aktiv', ende__range=[heute, grenze])
+    # a) Befristete Vertragsenden (nur echte befristete Verhältnisse)
+    for v in (Mietvertrag.objects.filter(status='aktiv', ist_befristet=True, ende__range=[heute, grenze])
               .select_related('mieter', 'einheit__liegenschaft')):
         _ensure(f"auto:vertragsende:{v.id}",
                 f"Vertragsende {v.mieter.display_name} ({v.einheit.bezeichnung})",

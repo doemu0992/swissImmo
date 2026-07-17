@@ -166,6 +166,49 @@ def pruefe_mietzinsmodell(modell, beginn, ende):
     return hinweise
 
 
+def index_anpassung_vorschlag(vertrag, aktuell_lik=None):
+    """Berechnet die fällige Indexmiet-Anpassung (Art. 269b OR) für die amtliche
+    Index-Mitteilung (Art. 269d): neuer Nettomietzins aus der LIK-Entwicklung
+    seit der Vertragsbasis, anteilig zur vereinbarten Weitergabe.
+
+    Rückgabe-Dict oder None (kein Indexvertrag / keine Basis / LIK nicht gestiegen):
+      neu_netto, alt_netto, basis_lik, aktuell_lik, delta_prozent, begruendung.
+    """
+    from decimal import Decimal
+    if getattr(vertrag, 'mietzins_modell', 'fest') != 'index':
+        return None
+    basis_lik = vertrag.basis_lik_punkte or Decimal('0')
+    if basis_lik <= 0:
+        return None
+    if aktuell_lik is None:
+        try:
+            from core.services.lik import aktueller_lik_wert
+            _stand, aktuell_lik, _b = aktueller_lik_wert(live=False)
+        except Exception:
+            aktuell_lik = None
+    if not aktuell_lik:
+        return None
+    aktuell_lik = Decimal(str(aktuell_lik))
+    if aktuell_lik <= basis_lik:
+        return None   # LIK nicht gestiegen → keine Erhöhung möglich
+    weiter = (vertrag.index_weitergabe_prozent or Decimal('100')) / Decimal('100')
+    faktor = Decimal('1') + (aktuell_lik - basis_lik) / basis_lik * weiter
+    alt_netto = vertrag.netto_mietzins or Decimal('0')
+    neu_netto = (alt_netto * faktor).quantize(Decimal('0.01'))
+    if neu_netto <= alt_netto:
+        return None
+    delta_prozent = ((neu_netto - alt_netto) / alt_netto * Decimal('100')).quantize(Decimal('0.01')) \
+        if alt_netto > 0 else Decimal('0')
+    weiter_txt = '' if weiter == Decimal('1') else f" (Weitergabe {vertrag.index_weitergabe_prozent}%)"
+    begruendung = (f"Indexanpassung an den Landesindex der Konsumentenpreise (Art. 269b OR){weiter_txt}: "
+                   f"LIK {basis_lik} → {aktuell_lik} Punkte. Nettomietzins CHF {alt_netto} → CHF {neu_netto}.")
+    return {
+        'neu_netto': neu_netto, 'alt_netto': alt_netto,
+        'basis_lik': basis_lik, 'aktuell_lik': aktuell_lik,
+        'delta_prozent': delta_prozent, 'begruendung': begruendung,
+    }
+
+
 def staffel_pruefung(stufen):
     """Prüft eine Liste von Staffelstufen (mit .ab_datum) auf die gesetzliche
     Vorgabe: höchstens eine Erhöhung pro Jahr (Art. 269c OR)."""

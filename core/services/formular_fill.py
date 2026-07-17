@@ -304,18 +304,27 @@ def _absender_block(verwaltung, mandant, sep='\n'):
 
 
 def _mitmieter_block(vertrag, sep='\n'):
-    if vertrag.mitmieter_id:
-        m = vertrag.mitmieter
+    def _person_zeilen(m):
         zeilen = [m.display_name]
         if m.strasse:
             zeilen.append(m.strasse)
         ort = f"{m.plz or ''} {m.ort or ''}".strip()
         if ort:
             zeilen.append(ort)
-        return sep.join(zeilen)
-    if vertrag.mitmieter_name:
-        return vertrag.mitmieter_name
-    return ''
+        return zeilen
+
+    teile = []
+    if vertrag.mitmieter_id:
+        teile.append(sep.join(_person_zeilen(vertrag.mitmieter)))
+    elif vertrag.mitmieter_name:
+        teile.append(vertrag.mitmieter_name)
+    # WG: weitere Mieter anfügen (jeder mit eigenem Adressblock).
+    if vertrag.pk:
+        for m in vertrag.weitere_mieter.all():
+            teile.append(sep.join(_person_zeilen(m)))
+    # Zwischen Personen eine Leerzeile bzw. '; ' je nach Trenner.
+    trenn = (sep + sep) if sep == '\n' else '; '
+    return trenn.join(t for t in teile if t)
 
 
 def _objekt_zeile(vertrag):

@@ -4075,7 +4075,7 @@ class MieterwechselAuslaufTests(TestCase):
 
     def test_auslaufender_vertrag_erscheint(self):
         lg, e, m, v = _basis_objekte()
-        v.ende = date.today() + timedelta(days=45); v.save()
+        v.ist_befristet = True; v.ende = date.today() + timedelta(days=45); v.save()
         c = Client(); c.force_login(_team_user())
         r = c.get('/neu/mieterwechsel/')
         self.assertEqual(r.status_code, 200)
@@ -4100,7 +4100,7 @@ class MieterwechselAuslaufTests(TestCase):
 
     def test_horizont_filter_nur_auslaufende(self):
         lg, e, m, v = _basis_objekte()
-        v.ende = date.today() + timedelta(days=300); v.save()   # > 6 Monate
+        v.ist_befristet = True; v.ende = date.today() + timedelta(days=300); v.save()   # > 6 Monate
         c = Client(); c.force_login(_team_user())
         self.assertEqual(c.get('/neu/mieterwechsel/?monate=6').context['auslaufend_n'], 0)
         self.assertEqual(c.get('/neu/mieterwechsel/?monate=12').context['auslaufend_n'], 1)
@@ -9227,3 +9227,225 @@ class FormulareTabTests(TestCase):
         kaution2 = {i['titel']: i for i in gr2['Kaution (Art. 257e)']['items']}
         self.assertTrue(kaution2['Hinterlegungsbestätigung']['verfuegbar'])
         self.assertTrue(kaution2['Freigabe an Bank']['verfuegbar'])
+
+
+class BefristungTests(TestCase):
+    """`ist_befristet` trennt sauber befristete Verhältnisse (Zeitablauf,
+    Art. 266 OR) von unbefristeten und von gekündigten Verträgen."""
+
+    def test_flag_und_properties(self):
+        _lg, _e, _m, v = _basis_objekte()
+        # Default: unbefristet
+        self.assertFalse(v.ist_befristet)
+        self.assertEqual(v.vertragsdauer_art, 'unbefristet')
+        self.assertIsNone(v.laeuft_aus_am)
+        # Befristet setzen
+        v.ist_befristet = True
+        v.ende = date(2027, 12, 31)
+        v.save()
+        self.assertEqual(v.vertragsdauer_art, 'befristet')
+        self.assertEqual(v.laeuft_aus_am, date(2027, 12, 31))
+
+    def test_gekuendigter_unbefristeter_hat_ende_aber_ist_nicht_befristet(self):
+        _lg, _e, _m, v = _basis_objekte()
+        # Kündigung setzt ende + status, aber NICHT ist_befristet
+        v.status = 'gekuendigt'
+        v.ende = date(2026, 3, 31)
+        v.save()
+        self.assertFalse(v.ist_befristet)
+        self.assertIsNone(v.laeuft_aus_am)  # Kündigungs-Ende zählt nicht als Auslauf
+
+    def test_mieterwechsel_listet_nur_echte_befristete(self):
+        from datetime import date as _d
+        lg, e, _m, v = _basis_objekte()
+        # unbefristeter aktiver Vertrag mit gesetztem ende (z.B. Alt-Daten) → NICHT gelistet
+        v.ende = _d.today() + timedelta(days=30)
+        v.ist_befristet = False
+        v.save()
+        # zweiter, echt befristeter Vertrag
+        m2 = Mieter.objects.create(typ='person', vorname='Eva', nachname='Meier',
+                                   strasse='Weg 2', plz='8000', ort='Zürich')
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='2.5 Zi', typ='wohnung',
+                                    nettomiete_aktuell=Decimal('1200'))
+        vb = Mietvertrag.objects.create(mieter=m2, einheit=e2, beginn=date(2024, 1, 1),
+                                        netto_mietzins=Decimal('1200'), nebenkosten=Decimal('0'),
+                                        status='aktiv', ist_befristet=True,
+                                        ende=_d.today() + timedelta(days=30))
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        r = c.get('/neu/mieterwechsel/')
+        self.assertEqual(r.status_code, 200)
+        html = r.content.decode()
+        self.assertIn('Meier', html)          # befristeter Vertrag gelistet
+        self.assertNotIn('Muster', html)      # unbefristeter (Alt-ende) NICHT als Auslauf
+
+    def test_form_erstellt_befristeten_vertrag(self):
+        lg, e, m, _v = _basis_objekte()
+        u = _team_user()
+        c = Client(); c.force_login(u)
+        r = c.post('/neu/vertraege/neu/speichern/', {
+            'mieter_id': m.id, 'einheit_id': e.id,
+            'beginn': '2026-01-01', 'ende': '2027-12-31', 'ist_befristet': '1',
+            'netto_mietzins': '1500', 'nebenkosten': '200',
+            'kuendigungsfrist': '3', 'anzahl_personen': '1',
+        })
+        self.assertIn(r.status_code, (200, 302))
+        vneu = Mietvertrag.objects.filter(einheit=e, beginn=date(2026, 1, 1)).first()
+        self.assertIsNotNone(vneu)
+        self.assertTrue(vneu.ist_befristet)
+        self.assertEqual(vneu.ende, date(2027, 12, 31))
+
+
+class SchlichtungRegisterTests(TestCase):
+    """Schlichtungsbehörden-Register: SO/BE/ZH exakt, sonst ehrlicher Fallback."""
+
+    class _LG:
+        def __init__(self, kanton, plz, ort):
+            self.kanton, self.plz, self.ort = kanton, plz, ort
+
+    def test_bern_vier_regionen_exakt(self):
+        from core.services.kantone import schlichtung_block
+        kt, name, beh, exakt = schlichtung_block(self._LG('BE', '3011', 'Bern'))
+        self.assertEqual(kt, 'BE')
+        self.assertTrue(exakt)
+        self.assertEqual(len(beh), 4)
+        self.assertIn('Bern-Mittelland', beh[0][0])
+
+    def test_zuerich_stadt_exakt(self):
+        from core.services.kantone import schlichtung_block
+        _kt, _name, beh, exakt = schlichtung_block(self._LG('ZH', '8004', 'Zürich'))
+        self.assertTrue(exakt)
+        self.assertIn('Zürich', beh[0][1])
+
+    def test_zuerich_unbekannte_plz_faellt_auf_generisch(self):
+        from core.services.kantone import schlichtung_block
+        _kt, _name, _beh, exakt = schlichtung_block(self._LG('ZH', '8620', 'Wetzikon'))
+        self.assertFalse(exakt)
+
+    def test_nicht_hinterlegter_kanton_generisch(self):
+        from core.services.kantone import schlichtung_block
+        _kt, name, beh, exakt = schlichtung_block(self._LG('AG', '5000', 'Aarau'))
+        self.assertFalse(exakt)
+        self.assertIn('Aargau', beh[0][0])
+
+
+class WGVertragTests(TestCase):
+    """WG-fähiger Vertrag: weitere_mieter (M2M) + Solidarhaftung, additiv zum
+    FK-Mitmieter (Ehepaar)."""
+
+    def _person(self, vn, nn):
+        return Mieter.objects.create(typ='person', vorname=vn, nachname=nn,
+                                     strasse='Gasse 1', plz='8000', ort='Zürich')
+
+    def test_alle_mieter_und_ist_wg(self):
+        _lg, e, m, v = _basis_objekte()
+        self.assertEqual(v.alle_mieter, [m])
+        self.assertFalse(v.ist_wg)
+        m2 = self._person('Eva', 'Meier'); v.mitmieter = m2; v.save()
+        self.assertEqual([p.pk for p in v.alle_mieter], [m.pk, m2.pk])
+        self.assertFalse(v.ist_wg)   # zwei Parteien = kein WG
+        m3 = self._person('Tim', 'Roth'); v.weitere_mieter.add(m3)
+        self.assertTrue(v.ist_wg)
+        self.assertEqual(len(v.alle_mieter), 3)
+        self.assertEqual([p.pk for p in v.mitmieter_alle], [m2.pk, m3.pk])
+
+    def test_mitmieter_block_enthaelt_wg(self):
+        from core.services.formular_fill import _mitmieter_block
+        _lg, e, m, v = _basis_objekte()
+        m2 = self._person('Eva', 'Meier'); v.mitmieter = m2; v.save()
+        m3 = self._person('Tim', 'Roth'); v.weitere_mieter.add(m3)
+        block = _mitmieter_block(v, sep=', ')
+        self.assertIn('Eva Meier', block)
+        self.assertIn('Tim Roth', block)
+
+    def test_view_hinzufuegen_entfernen(self):
+        _lg, e, m, v = _basis_objekte()
+        k = self._person('Kim', 'Wg')
+        u = _team_user(); c = Client(); c.force_login(u)
+        c.post(f'/neu/vertraege/{v.id}/wg-mieter/', {'aktion': 'hinzufuegen', 'mieter_id': k.id})
+        self.assertIn(k, list(v.weitere_mieter.all()))
+        c.post(f'/neu/vertraege/{v.id}/wg-mieter/', {'aktion': 'entfernen', 'mieter_id': k.id})
+        self.assertNotIn(k, list(v.weitere_mieter.all()))
+
+    def test_view_hinzufuegen_hauptmieter_abgelehnt(self):
+        _lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        c.post(f'/neu/vertraege/{v.id}/wg-mieter/', {'aktion': 'hinzufuegen', 'mieter_id': m.id})
+        self.assertEqual(v.weitere_mieter.count(), 0)   # Hauptmieter nicht als WG-Mieter
+
+    def test_solidarhaftung_toggle(self):
+        _lg, e, m, v = _basis_objekte()
+        self.assertTrue(v.solidarhaftung)   # Default an
+        u = _team_user(); c = Client(); c.force_login(u)
+        c.post(f'/neu/vertraege/{v.id}/wg-mieter/', {'aktion': 'solidarhaftung', 'wert': 'off'})
+        v.refresh_from_db()
+        self.assertFalse(v.solidarhaftung)
+
+    def test_wg_mieter_bekommt_wohnadresse(self):
+        _lg, e, m, v = _basis_objekte()
+        k = self._person('Kim', 'Wg')
+        u = _team_user(); c = Client(); c.force_login(u)
+        c.post(f'/neu/vertraege/{v.id}/wg-mieter/', {'aktion': 'hinzufuegen', 'mieter_id': k.id})
+        from crm.models import MieterAdresse
+        self.assertTrue(MieterAdresse.objects.filter(mieter=k, art='wohn').exists())
+
+    def test_detail_zeigt_wg_panel(self):
+        _lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        r = c.get(f'/neu/vertraege/{v.id}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('Weitere Mieter (WG)', r.content.decode())
+
+
+class IndexMitteilungTests(TestCase):
+    """Index-Mitteilung (Art. 269b/269d): Anpassungsvorschlag aus LIK-Entwicklung."""
+
+    def _index_vertrag(self):
+        lg, e, m, v = _basis_objekte()
+        v.mietzins_modell = 'index'
+        v.basis_lik_punkte = Decimal('100.0')
+        v.index_weitergabe_prozent = Decimal('100.0')
+        v.netto_mietzins = Decimal('1000.00')
+        v.ist_befristet = True
+        v.ende = date(2030, 1, 1)
+        v.save()
+        return v
+
+    def test_vorschlag_steigt_mit_lik(self):
+        from core.services.mietrecht import index_anpassung_vorschlag
+        v = self._index_vertrag()
+        r = index_anpassung_vorschlag(v, aktuell_lik=Decimal('105.0'))
+        self.assertIsNotNone(r)
+        self.assertEqual(r['neu_netto'], Decimal('1050.00'))   # +5%
+        self.assertEqual(r['delta_prozent'], Decimal('5.00'))
+        self.assertIn('Art. 269b', r['begruendung'])
+
+    def test_teilweise_weitergabe(self):
+        from core.services.mietrecht import index_anpassung_vorschlag
+        v = self._index_vertrag()
+        v.index_weitergabe_prozent = Decimal('80.0'); v.save()
+        r = index_anpassung_vorschlag(v, aktuell_lik=Decimal('110.0'))
+        # +10% LIK × 80% Weitergabe = +8%
+        self.assertEqual(r['neu_netto'], Decimal('1080.00'))
+
+    def test_kein_vorschlag_wenn_lik_nicht_gestiegen(self):
+        from core.services.mietrecht import index_anpassung_vorschlag
+        v = self._index_vertrag()
+        self.assertIsNone(index_anpassung_vorschlag(v, aktuell_lik=Decimal('100.0')))
+        self.assertIsNone(index_anpassung_vorschlag(v, aktuell_lik=Decimal('95.0')))
+
+    def test_kein_vorschlag_fuer_festmiete(self):
+        from core.services.mietrecht import index_anpassung_vorschlag
+        _lg, _e, _m, v = _basis_objekte()  # mietzins_modell default 'fest'
+        self.assertIsNone(index_anpassung_vorschlag(v, aktuell_lik=Decimal('110.0')))
+
+    def test_anpassung_view_zeigt_index_banner(self):
+        from crm.models import Verwaltung
+        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'),
+                                  aktueller_lik_punkte=Decimal('106.0'))
+        v = self._index_vertrag()
+        u = _team_user(); c = Client(); c.force_login(u)
+        r = c.get(f'/neu/mietzins/{v.id}/anpassung/')
+        self.assertEqual(r.status_code, 200)
+        self.assertIsNotNone(r.context.get('index_vorschlag'))
+        self.assertIn('Indexmiete (Art. 269b OR)', r.content.decode())

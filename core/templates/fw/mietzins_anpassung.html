@@ -92,9 +92,17 @@
     <!-- Begründung / Vorbehalt -->
     <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
         <h3 class="font-bold text-slate-800 text-sm">Begründung & Rechtliches</h3>
+        {% if index_vorschlag %}
+        <div class="bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2.5 text-xs text-indigo-800">
+            <i class="fa-solid fa-arrow-trend-up mr-1"></i><b>Indexmiete (Art. 269b OR):</b>
+            LIK {{ index_vorschlag.basis_lik }} → {{ index_vorschlag.aktuell_lik }} Punkte
+            → Netto CHF {{ index_vorschlag.alt_netto|chf }} → <b>CHF {{ index_vorschlag.neu_netto|chf }}</b>
+            (+{{ index_vorschlag.delta_prozent }}%). Begründung und neuer Mietzins sind vorbefüllt.
+        </div>
+        {% endif %}
         <div>
             <label class="block text-xs font-semibold text-slate-500 mb-1">Zusätzliche Begründung (optional)</label>
-            <textarea name="begruendung" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5" placeholder="z.B. wertvermehrende Investition (neue Küche)…"></textarea>
+            <textarea name="begruendung" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5" placeholder="z.B. wertvermehrende Investition (neue Küche)…">{% if index_vorschlag %}{{ index_vorschlag.begruendung }}{% endif %}</textarea>
         </div>
         <div>
             <label class="block text-xs font-semibold text-slate-500 mb-1">Schlichtungsbehörde (Adresse)</label>

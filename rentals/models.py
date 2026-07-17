@@ -48,6 +48,12 @@ class Mietvertrag(models.Model):
 
     # --- FRISTEN & TERMINE ---
     beginn = models.DateField()
+    # `ist_befristet` trennt sauber das befristete Verhältnis (endet ohne Kündigung
+    # mit Zeitablauf, Art. 266 OR) vom unbefristeten (läuft bis zur Kündigung).
+    # `ende` wird auch bei einem gekündigten UNbefristeten Vertrag gesetzt
+    # (per_datum) — erst dieses Flag macht die Unterscheidung eindeutig, statt
+    # `ende IS NOT NULL` mehrdeutig als «befristet» zu interpretieren.
+    ist_befristet = models.BooleanField("Befristetes Mietverhältnis", default=False)
     ende = models.DateField(null=True, blank=True)
     erstmals_kuendbar_auf = models.DateField("Erstmals kündbar auf", null=True, blank=True) # 🔥 NEU
     kuendigungsfrist_monate = models.IntegerField("Kündigungsfrist (Monate)", default=3)
@@ -58,6 +64,15 @@ class Mietvertrag(models.Model):
     mitmieter_name = models.CharField("Ehegatte / Mitmieter", max_length=150, blank=True, default='') # 🔥 NEU
     mitmieter = models.ForeignKey('crm.Mieter', on_delete=models.SET_NULL, null=True, blank=True,
                                   related_name='vertraege_als_mitmieter', verbose_name="Zweiter Mieter")  # 🔥 NEU (volle Adresse)
+    # WG / mehr als zwei Mieter: zusätzliche gleichberechtigte Mitmieter (3., 4., …).
+    # Additiv zum FK `mitmieter` (2. Mieter/Ehegatte) — der bewährte Ehepaar-/
+    # Familienwohnungs-Pfad bleibt unverändert; `weitere_mieter` deckt echte WGs.
+    weitere_mieter = models.ManyToManyField('crm.Mieter', blank=True,
+                                            related_name='vertraege_als_weiterer_mieter',
+                                            verbose_name="Weitere Mieter (WG)")
+    # Solidarhaftung (Art. 143 ff. OR): bei einer WG haften alle Mieter solidarisch
+    # für den ganzen Mietzins. Standard True — das ist die übliche WG-Vereinbarung.
+    solidarhaftung = models.BooleanField("Solidarische Haftung aller Mieter", default=True)
     anzahl_personen = models.IntegerField("Anzahl Personen", default=1)
     besondere_vereinbarungen = models.TextField("Besondere Vereinbarungen", blank=True, default='')
     mitbenutzung = models.TextField("Zur Mitbenützung", blank=True, default='')      # 🔥 NEU (z.B. Waschküche, Estrich)
@@ -135,6 +150,50 @@ class Mietvertrag(models.Model):
     @property
     def brutto_mietzins(self):
         return (self.netto_mietzins or Decimal('0.00')) + (self.nebenkosten or Decimal('0.00'))
+
+    @property
+    def alle_mieter(self):
+        """Alle Vertragsparteien in Reihenfolge: Hauptmieter, 2. Mieter (FK),
+        weitere WG-Mieter (M2M). Deduped, ohne None. Grundlage für Adressblöcke
+        auf amtlichen Formularen und die Zustellung."""
+        parteien = [self.mieter] if self.mieter_id else []
+        if self.mitmieter_id:
+            parteien.append(self.mitmieter)
+        if self.pk:
+            for m in self.weitere_mieter.all():
+                parteien.append(m)
+        gesehen, out = set(), []
+        for p in parteien:
+            if p and p.pk not in gesehen:
+                gesehen.add(p.pk)
+                out.append(p)
+        return out
+
+    @property
+    def mitmieter_alle(self):
+        """Alle Mitmieter (ohne Hauptmieter) — 2. Mieter + WG-Mieter."""
+        return [m for m in self.alle_mieter if not (self.mieter_id and m.pk == self.mieter_id)]
+
+    @property
+    def ist_wg(self):
+        """Wohngemeinschaft = mehr als zwei Vertragsparteien (Haupt + ≥ 2 weitere)."""
+        return len(self.alle_mieter) > 2
+
+    @property
+    def vertragsdauer_art(self):
+        """'befristet' | 'unbefristet' — massgeblich für Mieterwechsel-Pipeline,
+        Kündigungspflicht und amtliches Formular. Ein befristeter Vertrag endet
+        ohne Kündigung mit Zeitablauf (Art. 266 OR); ein unbefristeter läuft bis
+        zur Kündigung."""
+        return 'befristet' if self.ist_befristet else 'unbefristet'
+
+    @property
+    def laeuft_aus_am(self):
+        """Vereinbartes Zeitablauf-Ende — nur bei befristeten Verträgen. Ein bei
+        einem UNbefristeten Vertrag gesetztes `ende` stammt aus einer Kündigung
+        (per_datum) und ist hier bewusst None, damit die Auslauf-Pipeline nur
+        echte befristete Verhältnisse listet."""
+        return self.ende if self.ist_befristet else None
 
     # --- Mietrechtliche Einordnung (aus der Objektart der Haupteinheit) ---
     @property

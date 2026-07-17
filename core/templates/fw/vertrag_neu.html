@@ -139,6 +139,7 @@
                             <input name="beginn" id="s_beginn" type="date" oninput="applySollplan(); live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
                         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mietende</label>
                             <input name="ende" id="s_ende" type="date" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                            <input type="hidden" name="ist_befristet" id="ist_befristet_hidden" value="0">
                             <label class="text-xs text-slate-400 flex items-center gap-1 mt-1"><input type="checkbox" id="unbefristet" checked onchange="toggleEnde()"> unbefristet</label></div>
                     </div>
 
@@ -437,6 +438,7 @@ function prefillEditFromDraft(){
   if (document.getElementById('s_beginn')) document.getElementById('s_beginn').value = ED.beginn || '';
   const unb=document.getElementById('unbefristet'); if (unb) unb.checked = !!ED.unbefristet;
   if (!ED.unbefristet && document.getElementById('s_ende')) document.getElementById('s_ende').value = ED.ende || '';
+  if (typeof toggleEnde === 'function') toggleEnde();
   setV('erstmals_kuendbar', ED.erstmals_kuendbar);
   if (document.getElementById('s_frist')) document.getElementById('s_frist').value = ED.kuendigungsfrist;
   // Kündigungstermine → passende Monats-Checkboxen setzen
@@ -612,7 +614,9 @@ function mieterTab(m){
 }
 function toggleEnde(){
   const u=document.getElementById('unbefristet').checked;
-  document.getElementById('s_ende').disabled=u; if(u) document.getElementById('s_ende').value=''; live();
+  document.getElementById('s_ende').disabled=u; if(u) document.getElementById('s_ende').value='';
+  const h=document.getElementById('ist_befristet_hidden'); if(h) h.value = u ? '0' : '1';
+  live();
 }
 function curMieter2(){
   if(mieter2Mode==='best'){ return MIETER.find(m=>String(m.id)===document.getElementById('s_mieter2').value)||null; }

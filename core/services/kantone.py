@@ -75,8 +75,43 @@ _SO_ALLE = [
     ("Amtei Dorneck-Thierstein", "Schlichtungsbehörde für Miete und Pacht Dorneck-Thierstein, Amthaus, Amthausquai 23, 4601 Olten", "Tel. 061 785 77 20"),
 ]
 
+# Kanton Bern: Schlichtungsbehörden in Miet- und Pachtsachen bei den vier
+# Regionalgerichten. Der Vermieter reicht bei der für den Ort der gelegenen Sache
+# zuständigen regionalen Schlichtungsbehörde ein (Art. 200 ZPO i.V.m. kant. EG ZPO).
+_BE_ALLE = [
+    ("Region Bern-Mittelland", "Schlichtungsbehörde Miete/Pacht, Regionalgericht Bern-Mittelland, Amthaus, Hodlerstrasse 7, 3011 Bern", "Tel. 031 635 47 47"),
+    ("Region Emmental-Oberaargau", "Schlichtungsbehörde Miete/Pacht, Regionalgericht Emmental-Oberaargau, Dunantstrasse 1, 3400 Burgdorf", "Tel. 034 420 33 11"),
+    ("Region Oberland", "Schlichtungsbehörde Miete/Pacht, Regionalgericht Oberland, Scheibenstrasse 11, 3600 Thun", "Tel. 033 225 97 00"),
+    ("Region Berner Jura-Seeland", "Schlichtungsbehörde Miete/Pacht, Regionalgericht Berner Jura-Seeland, Spitalstrasse 14, 2502 Biel/Bienne", "Tel. 032 346 12 00"),
+]
+
+# Kanton Zürich: Mietschlichtungsbehörden je Bezirk. Nur die grossen, gut
+# dokumentierten Behörden sind exakt hinterlegt; für nicht abgedeckte PLZ fällt
+# der Block ehrlich auf den generischen Hinweis zurück (keine geratene Adresse).
+_ZH_BEHOERDEN = {
+    'zuerich': ("Bezirk Zürich", "Schlichtungsbehörde in Mietsachen des Bezirkes Zürich, Badenerstrasse 90, Postfach, 8004 Zürich", "Tel. 044 248 016 0"),
+    'winterthur': ("Bezirk Winterthur", "Schlichtungsbehörde in Mietsachen des Bezirkes Winterthur, Hermann-Götz-Strasse 24, 8400 Winterthur", "Tel. 052 268 12 00"),
+}
+
+
+def _zh_resolver(plz):
+    """Zuständige Zürcher Bezirks-Schlichtungsbehörde nach PLZ; None wenn nicht
+    exakt abgedeckt (→ generischer Fallback)."""
+    try:
+        p = int(str(plz).strip()[:4])
+    except (ValueError, TypeError):
+        return None
+    if 8000 <= p <= 8099:
+        return [_ZH_BEHOERDEN['zuerich']]
+    if 8400 <= p <= 8419:
+        return [_ZH_BEHOERDEN['winterthur']]
+    return None
+
+
 SCHLICHTUNG_REGISTER = {
     'SO': _SO_ALLE,   # Kanton exakt hinterlegt (aus amtlichem Formular)
+    'BE': _BE_ALLE,   # 4 regionale Schlichtungsbehörden (Ort der gelegenen Sache)
+    'ZH': _zh_resolver,  # PLZ-Resolver je Bezirk (grosse Bezirke exakt)
     # Weitere Kantone werden hier ergänzt, sobald die exakten Adressen vorliegen.
 }
 
@@ -89,7 +124,8 @@ def schlichtung_block(lg):
     eintrag = SCHLICHTUNG_REGISTER.get(kt)
     if eintrag:
         behoerden = eintrag(getattr(lg, 'plz', '')) if callable(eintrag) else eintrag
-        return kt, name, behoerden, True
+        if behoerden:   # Resolver kann None liefern (PLZ nicht abgedeckt) → Fallback
+            return kt, name, behoerden, True
     # Generischer Fallback (nichts erfunden)
     ort = getattr(lg, 'ort', '') if lg else ''
     generisch = [(
