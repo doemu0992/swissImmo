@@ -203,18 +203,14 @@ def run_adress_umzuege():
     Datenmutation auslösen (GET muss idempotent/seiteneffektfrei sein).
     Gibt die Anzahl aktualisierter Mieter zurück."""
     from crm.models import Mieter
-    from django.db.models import Q
     heute = timezone.localdate()
     n = 0
-    # 1) Neue datierte Adress-Historie: effektive Zustelladresse nachführen.
-    #    Betrifft jeden Mieter mit hinterlegten Adress-Zeilen (Sync ist idempotent).
+    # Datierte Adress-Historie: effektive Zustelladresse nachführen. Betrifft jeden
+    # Mieter mit hinterlegten Adress-Zeilen (Sync ist idempotent). Die frühere
+    # Alt-Mechanik (zukuenftig_ab) ist entfernt — MieterAdresse ist alleinige Quelle.
     for m in Mieter.objects.filter(adressen__isnull=False).distinct():
         if m.sync_effektive_adresse(heute):
             n += 1
-    # 2) Alt-Mechanik (zukuenftig_ab-Felder) — nur für Mieter OHNE Adress-Historie.
-    for m in Mieter.objects.filter(zukuenftig_ab__lte=heute, adressen__isnull=True):
-        m.check_and_update_adresse()
-        n += 1
     return n
 
 

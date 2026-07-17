@@ -70,8 +70,6 @@ def anonymisiere_person(mieter, *, grund='', user=None):
     mieter.erwerbsstatus = ''; mieter.beruf = ''; mieter.arbeitgeber = ''; mieter.einkommen_jahr = ''
     mieter.email = ''; mieter.telefon_privat = ''; mieter.telefon_geschaeft = ''; mieter.mobile = ''
     mieter.strasse = ''; mieter.adresszusatz = ''; mieter.postfach = ''; mieter.plz = ''; mieter.ort = ''
-    mieter.zukuenftige_strasse = ''; mieter.zukuenftige_plz = ''; mieter.zukuenftiger_ort = ''
-    mieter.zukuenftig_ab = None
     # Datierte Adress-Historie enthält frühere Wohnorte (Personendaten) → löschen.
     try:
         mieter.adressen.all().delete()

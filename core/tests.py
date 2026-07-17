@@ -8313,29 +8313,28 @@ class SecurityBatchTests(TestCase):
     """GET-Endpoints müssen seiteneffektfrei sein; Storno ist Verwaltungs-only."""
 
     def test_get_mieter_liste_mutiert_adresse_nicht(self):
-        # Fälliger Umzug darf beim reinen Lesen (GET) NICHT aktiviert werden.
+        # Fälliger Umzug (datierte Adress-Zeile) darf beim reinen Lesen (GET)
+        # NICHT auf die Flat-Felder synchronisiert werden.
         from crm.api import list_mieter
+        from crm.models import MieterAdresse
         from django.test import RequestFactory
         _lg, _e, m, _v = _basis_objekte()
-        m.zukuenftige_strasse = 'Neuweg 9'; m.zukuenftige_plz = '3000'
-        m.zukuenftiger_ort = 'Bern'; m.zukuenftig_ab = date(2020, 1, 1)
-        m.save()
+        MieterAdresse.objects.create(mieter=m, art='wohn', gueltig_ab=date(2020, 1, 1),
+                                     strasse='Neuweg 9', plz='3000', ort='Bern')
         list_mieter(RequestFactory().get('/api/crm/mieter'))
         m.refresh_from_db()
-        self.assertEqual(m.strasse, 'Seeweg 3')            # unverändert
-        self.assertEqual(m.zukuenftig_ab, date(2020, 1, 1))  # Trigger noch scharf
+        self.assertEqual(m.strasse, 'Seeweg 3')            # GET synchronisiert nicht
 
     def test_scheduler_aktiviert_adresswechsel(self):
         from core.services.automation import run_adress_umzuege
+        from crm.models import MieterAdresse
         _lg, _e, m, _v = _basis_objekte()
-        m.zukuenftige_strasse = 'Neuweg 9'; m.zukuenftige_plz = '3000'
-        m.zukuenftiger_ort = 'Bern'; m.zukuenftig_ab = date(2020, 1, 1)
-        m.save()
+        MieterAdresse.objects.create(mieter=m, art='wohn', gueltig_ab=date(2020, 1, 1),
+                                     strasse='Neuweg 9', plz='3000', ort='Bern')
         n = run_adress_umzuege()
         m.refresh_from_db()
         self.assertGreaterEqual(n, 1)
-        self.assertEqual(m.strasse, 'Neuweg 9')            # jetzt aktiviert
-        self.assertIsNone(m.zukuenftig_ab)                 # Trigger geleert
+        self.assertEqual(m.strasse, 'Neuweg 9')            # jetzt via Scheduler synchronisiert
 
     def test_ticket_gelesen_nur_mit_schreibrolle(self):
         from tickets.api import get_ticket

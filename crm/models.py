@@ -198,11 +198,10 @@ class Mieter(models.Model):
     ort = models.CharField("Ort", max_length=100, blank=True, default='')
     land = models.CharField("Land", max_length=50, default='Schweiz')
 
-    # --- ZUKÜNFTIGE ADRESSE (Auto-Wechsel beim Einzug) ---
-    zukuenftige_strasse = models.CharField("Zukünftige Strasse", max_length=200, blank=True, default='')
-    zukuenftige_plz = models.CharField("Zukünftige PLZ", max_length=10, blank=True, default='')
-    zukuenftiger_ort = models.CharField("Zukünftiger Ort", max_length=100, blank=True, default='')
-    zukuenftig_ab = models.DateField("Gültig ab (Einzug)", null=True, blank=True)
+    # Hinweis: Die frühere «zukünftige Adresse» (zukuenftige_strasse/plz/ort +
+    # zukuenftig_ab, check_and_update_adresse()) ist entfernt — die datierte
+    # Adress-Historie (MieterAdresse, gültig ab) ist die alleinige Quelle für
+    # Ein-/Auszugs-Adresswechsel (sync_effektive_adresse führt die Flat-Felder nach).
 
     # --- AUFENTHALT (bei Vermietung an Ausländer Pflichtangabe) ---
     aufenthaltsbewilligung = models.CharField("Aufenthaltsbewilligung", max_length=20,
@@ -310,33 +309,6 @@ class Mieter(models.Model):
                 self.save(update_fields=['strasse', 'adresszusatz', 'plz', 'ort'])
             return True
         return False
-
-    def check_and_update_adresse(self):
-        """
-        Prüft, ob ein Einzugsdatum in der Zukunft hinterlegt war und heute erreicht wurde.
-        Führt den Adresswechsel durch und protokolliert die alte Adresse.
-        (Alt-Mechanik; die neue Adress-Historie synchronisiert via sync_effektive_adresse.)
-        """
-        from datetime import date
-        if self.zukuenftig_ab and date.today() >= self.zukuenftig_ab:
-            # 1. Historie in den Notizen verewigen
-            alte_adr = f"{self.strasse} {self.adresszusatz}, {self.plz} {self.ort}".strip()
-            eintrag = f"[{date.today().strftime('%d.%m.%Y')}] SYSTEM: Adresse automatisch gewechselt wegen Einzug. Alte Adresse: {alte_adr}\n\n"
-            self.notizen = eintrag + (self.notizen or "")
-
-            # 2. Neue Adresse aktivieren
-            self.strasse = self.zukuenftige_strasse
-            self.plz = self.zukuenftige_plz
-            self.ort = self.zukuenftiger_ort
-            self.adresszusatz = "" # Kann bei Bedarf vom Mieter später ergänzt werden
-
-            # 3. Trigger leeren, damit es nicht nochmal ausgeführt wird
-            self.zukuenftige_strasse = ''
-            self.zukuenftige_plz = ''
-            self.zukuenftiger_ort = ''
-            self.zukuenftig_ab = None
-            self.save()
-
 
 class MieterAdresse(models.Model):
     """Datierte Adress-Historie einer Person (wie Sollmietzins «gültig ab»).

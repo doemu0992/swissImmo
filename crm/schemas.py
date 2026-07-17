@@ -25,8 +25,6 @@ class MieterSchemaOut(ModelSchema):
             'nationalitaet', 'ahv_nummer', 'zivilstand', 'bonitaet_datum', 'notizen',
             # 🔥 FLATFOX-FELDER:
             'heimatort', 'erwerbsstatus', 'beruf', 'arbeitgeber', 'einkommen_jahr',
-            # 🔥 ZUKÜNFTIGE ADRESSE FÜR FRONTEND FREISCHALTEN:
-            'zukuenftige_strasse', 'zukuenftige_plz', 'zukuenftiger_ort', 'zukuenftig_ab'
         ]
 
     @staticmethod
@@ -82,12 +80,6 @@ class MieterUpdateSchema(Schema):
     plz: Optional[str] = None
     ort: Optional[str] = None
     land: Optional[str] = None
-
-    # 🔥 DATEN-EMPFANG ZUKÜNFTIGE ADRESSE:
-    zukuenftige_strasse: Optional[str] = None
-    zukuenftige_plz: Optional[str] = None
-    zukuenftiger_ort: Optional[str] = None
-    zukuenftig_ab: Optional[date] = None
 
     iban: Optional[str] = None
     bank_name: Optional[str] = None

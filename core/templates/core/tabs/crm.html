@@ -111,23 +111,8 @@
                     <div class="col-span-2"><label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Ort</label><input type="text" v-model="selectedMieter.ort" class="w-full bg-slate-50 border-none p-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500"></div>
                 </div>
 
-                <div v-if="selectedMieter.zukuenftig_ab" class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start justify-between gap-4 animate-fade-in relative group">
-                    <div class="flex gap-4 items-start">
-                        <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                            <i class="fa-solid fa-truck-fast text-amber-600 text-lg"></i>
-                        </div>
-                        <div>
-                            <p class="text-[10px] font-black uppercase tracking-widest text-amber-700 mb-0.5">Geplanter Adresswechsel</p>
-                            <p class="text-sm font-bold text-slate-900">Einzug am {% verbatim %}{{ new Date(selectedMieter.zukuenftig_ab).toLocaleDateString('de-CH') }}{% endverbatim %}</p>
-                            <p class="text-xs text-amber-800 font-medium mt-1">Nach: {% verbatim %}{{ selectedMieter.zukuenftige_strasse }}, {{ selectedMieter.zukuenftige_plz }} {{ selectedMieter.zukuenftiger_ort }}{% endverbatim %}</p>
-                            <p class="text-[10px] text-amber-600/80 font-bold mt-2"><i class="fa-solid fa-robot mr-1"></i> System ändert Adresse an diesem Datum automatisch.</p>
-                        </div>
-                    </div>
-
-                    <button @click="cancelAdresswechsel(selectedMieter.id)" class="w-8 h-8 flex items-center justify-center rounded-full bg-amber-100/50 text-amber-500 hover:bg-rose-100 hover:text-rose-600 transition-colors" title="Adresswechsel stornieren">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
+                <!-- Geplanter Adresswechsel: jetzt über die datierte Adress-Historie
+                     (MieterAdresse) im /neu/-Personendetail verwaltet. -->
             </div>
         </div>
 

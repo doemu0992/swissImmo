@@ -142,12 +142,16 @@ def create_vertrag(request, payload: VertragCreateSchema):
     e.nebenkosten_aktuell = neuer_vertrag.nebenkosten
     e.save()
 
-    # 🔥 NEU: Zukünftige Adresse beim Mieter vollautomatisch hinterlegen
-    m.zukuenftige_strasse = e.liegenschaft.strasse
-    m.zukuenftige_plz = e.liegenschaft.plz
-    m.zukuenftiger_ort = e.liegenschaft.ort
-    m.zukuenftig_ab = neuer_vertrag.beginn
-    m.save()
+    # Wohnadresse = Objektadresse ab Mietbeginn — als datierte Adress-Zeile
+    # (MieterAdresse «gültig ab»). sync_effektive_adresse führt die Flat-Felder
+    # nach, sobald der Einzug erreicht ist.
+    from crm.models import MieterAdresse
+    obj_strasse = f"{e.liegenschaft.strasse}{(', ' + e.etage) if e.etage else ''}"
+    MieterAdresse.objects.get_or_create(
+        mieter=m, art='wohn', gueltig_ab=neuer_vertrag.beginn,
+        defaults=dict(strasse=obj_strasse, plz=e.liegenschaft.plz, ort=e.liegenschaft.ort,
+                      quelle=f'vertrag:{neuer_vertrag.id}', notiz='Einzug gemäss Mietvertrag'))
+    m.sync_effektive_adresse()
 
     return 201, neuer_vertrag
 
@@ -166,13 +170,15 @@ def update_vertrag(request, vertrag_id: int, payload: VertragUpdateSchema):
         setattr(v, k, val)
     v.save()
 
-    # Falls sich das Einzugsdatum bei einem noch nicht aktiven Vertrag ändert,
-    # ziehen wir die Info für den Mieter gleich mit glatt.
+    # Ändert sich das Einzugsdatum, die aus dem Vertrag stammende künftige
+    # Wohnadress-Zeile mitziehen (per quelle=vertrag:<id> identifiziert).
     if 'beginn' in data and v.beginn:
-        m = v.mieter
-        if m.zukuenftig_ab:  # Nur wenn er noch in der "Warteschlange" für den Adresswechsel ist
-            m.zukuenftig_ab = v.beginn
-            m.save()
+        from django.utils import timezone
+        zeile = v.mieter.adressen.filter(art='wohn', quelle=f'vertrag:{v.id}').first()
+        if zeile and zeile.gueltig_ab > timezone.localdate():
+            zeile.gueltig_ab = v.beginn
+            zeile.save(update_fields=['gueltig_ab'])
+            v.mieter.sync_effektive_adresse()
 
     return 200, {"success": True}
 
@@ -181,13 +187,11 @@ def delete_vertrag(request, vertrag_id: int):
     vertrag = get_object_or_404(Mietvertrag, id=vertrag_id)
     mieter = vertrag.mieter
 
-    # 🔥 NEU: Wenn dieser Vertrag der Grund für den Zukunfts-Umzug war, stornieren wir den Umzug!
-    if mieter.zukuenftig_ab == vertrag.beginn:
-        mieter.zukuenftige_strasse = ''
-        mieter.zukuenftige_plz = ''
-        mieter.zukuenftiger_ort = ''
-        mieter.zukuenftig_ab = None
-        mieter.save()
+    # War dieser Vertrag der Grund für einen noch nicht wirksamen Einzug, die
+    # daraus stammende künftige Wohnadress-Zeile mit entfernen.
+    from django.utils import timezone
+    mieter.adressen.filter(art='wohn', quelle=f'vertrag:{vertrag.id}',
+                           gueltig_ab__gt=timezone.localdate()).delete()
 
     log_aktion(request, "Mietvertrag gelöscht", str(vertrag), f"Vertrag-ID {vertrag.id}")
     vertrag.delete()

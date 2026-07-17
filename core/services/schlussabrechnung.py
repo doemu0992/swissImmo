@@ -92,10 +92,12 @@ def generate_schlussabrechnung_pdf(vertrag, daten, verwaltung=None):
     c.setFont("Helvetica-Bold", 9); c.drawString(20*mm, 280*mm, absender)
     c.setFont("Helvetica", 9); c.drawString(20*mm, 276*mm, a_str); c.drawString(20*mm, 272*mm, a_ort)
 
-    # Empfänger (Auszugsadresse: zukünftige Adresse falls vorhanden)
-    ziel_strasse = mieter.zukuenftige_strasse or mieter.strasse or ''
-    ziel_ort = (f"{mieter.zukuenftige_plz} {mieter.zukuenftiger_ort}".strip()
-                if mieter.zukuenftige_strasse else f"{mieter.plz or ''} {mieter.ort or ''}".strip())
+    # Empfänger (Auszugsadresse: zum heutigen Stichtag gültige Zustelladresse aus
+    # der datierten Adress-Historie — Korrespondenzadresse hat Vorrang, sonst
+    # die aktuelle Wohnadresse; Fallback auf die Flat-Felder).
+    _zs, _zz, _zplz, _zort = mieter.zustelladresse()
+    ziel_strasse = _zs or mieter.strasse or ''
+    ziel_ort = f"{_zplz or mieter.plz or ''} {_zort or mieter.ort or ''}".strip()
     c.setFont("Helvetica", 11)
     c.drawString(20*mm, 250*mm, f"{mieter.vorname} {mieter.nachname}")
     c.drawString(20*mm, 245*mm, ziel_strasse)
