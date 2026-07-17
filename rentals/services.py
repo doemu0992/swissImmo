@@ -123,12 +123,20 @@ def _monatsende(jahr: int, monat: int) -> _dt.date:
     return _dt.date(jahr, monat, calendar.monthrange(jahr, monat)[1])
 
 
+# Postweg + 7-Tage-Abholfrist eines Einschreibens: das Formular muss dem Mieter
+# ZUGEHEN (Empfangstheorie), nicht bloss versandt sein. Ohne Puffer wäre eine am
+# Stichtag versandte Erhöhung real zu spät zugestellt → erst am Folgetermin
+# wirksam bzw. anfechtbar. Gleicher Wert wie ZUSTELL_PUFFER in fw_verzug_257d.
+ZUSTELL_PUFFER_TAGE = 7
+
+
 def naechster_anpassungstermin(vertrag, ankuendigung_datum: _dt.date) -> _dt.date:
     """Frühester Termin, auf den eine Mietzinserhöhung wirksam werden kann.
-    Die Mitteilung muss den Mieter mindestens 10 Tage VOR Beginn der Kündigungsfrist
-    erreichen (Art. 269d OR). Wir behandeln daher (Ankündigung + 10 Tage) wie einen
-    Kündigungseingang und nehmen den nächsten ordentlichen Kündigungstermin."""
-    fiktiver_eingang = ankuendigung_datum + _dt.timedelta(days=10)
+    Die Mitteilung muss dem Mieter mindestens 10 Tage VOR Beginn der Kündigungs-
+    frist ZUGEHEN (Art. 269d OR, Empfangstheorie). Wir rechnen daher Ankündigung
+    + Zustellpuffer (Postweg/Abholfrist) + 10 Tage wie einen Kündigungseingang
+    und nehmen den nächsten ordentlichen Kündigungstermin."""
+    fiktiver_eingang = ankuendigung_datum + _dt.timedelta(days=ZUSTELL_PUFFER_TAGE + 10)
     return berechne_kuendigungstermin(vertrag, fiktiver_eingang)
 
 

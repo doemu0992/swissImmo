@@ -238,6 +238,9 @@ class Mahnung(models.Model):
     datum = models.DateField("Mahndatum", default=timezone.now)
     betrag_offen = models.DecimalField("Offener Betrag", max_digits=10, decimal_places=2, default=Decimal('0.00'))
     gebuehr = models.DecimalField("Mahngebühr", max_digits=8, decimal_places=2, default=Decimal('0.00'))
+    # Mit DIESER Mahnung fakturierter Verzugszins (nur das Delta zur Vorstufe) —
+    # verhindert, dass derselbe Verzugszeitraum bei jeder Stufe erneut verzinst wird.
+    zins = models.DecimalField("Verzugszins (fakturiert)", max_digits=8, decimal_places=2, default=Decimal('0.00'))
     versandart = models.CharField("Versand", max_length=20, choices=[('email', 'E-Mail'), ('brief', 'Brief'), ('manuell', 'Manuell erfasst')], default='manuell')
     bemerkung = models.CharField(max_length=255, blank=True, default='')
     erstellt_am = models.DateTimeField(auto_now_add=True)

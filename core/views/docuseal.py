@@ -111,7 +111,7 @@ def send_via_docuseal(request, vertrag_id):
             'mandant': mandant,
             'verwaltung': verwaltung,
             'verwaltungs_name': DEFAULT_VERWALTUNG_NAME,
-            'heute': timezone.now().date(),
+            'heute': timezone.localdate(),
             'miete_fmt': f"{netto:.2f}",
             'nk_fmt': f"{nk:.2f}",
             'brutto_fmt': f"{brutto:.2f}",

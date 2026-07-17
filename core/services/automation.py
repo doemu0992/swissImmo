@@ -144,6 +144,11 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
         if offen <= 0:
             continue
         tage = (heute - faellig).days
+        # Verjährte Mietzinsforderung (Art. 128 Ziff. 1 OR: 5 Jahre) nicht mehr
+        # mahnen — Mahnungen unterbrechen die Verjährung ohnehin nicht; der Fall
+        # gehört zur Abschreibung/Betreibung (eigene Verjährungs-Pendenz).
+        if tage > 5 * 365:
+            continue
         stufe = _stufe_fuer_tage(tage)
         if not stufe:
             continue
@@ -157,13 +162,20 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
             continue
 
         gebuehr = MAHN_GEBUEHR.get(stufe, Decimal('0.00'))
-        zins = verzugszins(offen, tage) if mit_zins else Decimal('0.00')
+        # Verzugszins nur als DELTA zur bereits fakturierten Summe (Art. 104 OR:
+        # derselbe Verzugszeitraum darf nicht bei jeder Mahnstufe erneut verzinst
+        # werden — früher stellte Stufe 3 die vollen 60 Tage nochmals in Rechnung,
+        # obwohl Stufe 2 bereits 30 Tage fakturiert hatte).
+        zins = Decimal('0.00')
+        if mit_zins:
+            bereits = sum((m.zins or Decimal('0.00')) for m in r.mahnungen.all())
+            zins = max(Decimal('0.00'), verzugszins(offen, tage) - bereits)
         with transaction.atomic():
             Mahnung.objects.create(
                 debitoren_rechnung=r, vertrag=r.vertrag, stufe=stufe, datum=heute,
-                betrag_offen=offen, gebuehr=gebuehr,
+                betrag_offen=offen, gebuehr=gebuehr, zins=zins,
                 versandart='email' if (send_email and r.vertrag and r.vertrag.mieter.email) else 'manuell',
-                bemerkung=(f"Verzugszins CHF {zins} ({tage} Tage)" if zins > 0 else ''),
+                bemerkung=(f"Verzugszins CHF {zins} ({tage} Tage, Delta zu Vorstufen)" if zins > 0 else ''),
                 erstellt_von=user,
             )
             zusatz = gebuehr + zins
@@ -413,6 +425,30 @@ def generate_auto_pendenzen(horizont_tage=90, user=None):
                  "Kaution vom Sperrkonto verlangen, sofern keine Ansprüche geltend gemacht oder "
                  "eingeklagt wurden (Art. 257e Abs. 3 OR). Kaution abrechnen und freigeben."),
                 liegenschaft=v.einheit.liegenschaft if v.einheit_id else None, vertrag=v)
+
+    # h) Verjährung von Mietzinsforderungen (Art. 128 Ziff. 1 OR: 5 Jahre für
+    # periodische Leistungen). Mahnen unterbricht die Verjährung NICHT — nur
+    # Betreibung/Klage (Art. 135 OR). 6 Monate vor Ablauf eine Pendenz stellen,
+    # damit die Forderung rechtzeitig durch Betreibung gesichert oder bewusst
+    # abgeschrieben wird.
+    from finance.models import DebitorenRechnung
+    verj_warnung_ab = heute - timedelta(days=int(4.5 * 365))   # älter als 4,5 Jahre
+    alte = (DebitorenRechnung.objects
+            .filter(status__in=['offen', 'teilbezahlt'], faellig_am__lt=verj_warnung_ab)
+            .select_related('vertrag__mieter', 'liegenschaft'))
+    for r in alte:
+        if r.offener_betrag <= 0:
+            continue
+        ablauf = r.faellig_am + timedelta(days=5 * 365)
+        wer = r.vertrag.mieter.display_name if (r.vertrag_id and r.vertrag.mieter_id) else (r.titel or 'Debitor')
+        _ensure(f"auto:verjaehrung:{r.id}",
+                f"Verjährung droht: {wer} — CHF {r.offener_betrag}",
+                min(ablauf, heute + timedelta(days=1)) if ablauf < heute else ablauf, 'frist',
+                (f"Forderung «{r.titel}» (fällig {r.faellig_am:%d.%m.%Y}) verjährt am "
+                 f"{ablauf:%d.%m.%Y} (Art. 128 Ziff. 1 OR, 5 Jahre). Mahnungen unterbrechen "
+                 "die Verjährung NICHT — Betreibung/Klage einleiten (Art. 135 OR) oder "
+                 "Forderung bewusst abschreiben."),
+                liegenschaft=r.liegenschaft, vertrag=r.vertrag)
 
     return neu
 

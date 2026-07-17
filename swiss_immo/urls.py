@@ -66,7 +66,8 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
                                 mieter_portal_view, mieter_dokument_download, mieter_schaden_melden, mieter_rechnung_qr,
                                 mieter_kontoauszug_pdf, mieter_kuendigung, mieter_kuendigung_pdf,
                                 mieter_tickets_view, mieter_ticket_detail, mieter_ticket_nachricht,
-                                mieter_rechnungen_view, mieter_dokumente_view, mieter_schaden_formular)
+                                mieter_rechnungen_view, mieter_dokumente_view, mieter_schaden_formular,
+                                mieter_konto_view, mieter_daten_view, mieter_passwort_view)
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_betriebskostenspiegel, fw_betriebsrechnung_pdf, fw_leerstand_verlauf, fw_auswertung, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_liegenschaften, fw_mieterspiegel, fw_objekte,
@@ -98,7 +99,7 @@ from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_betriebsko
                            fw_mietzins, fw_mietzins_anpassung, fw_anfangsmietzins, fw_dokumente, fw_kommunikation,
                            fw_vertrag_neu, fw_vertrag_neu_speichern, fw_vertrag_vorschau, fw_vertrag_bearbeiten,
                            fw_vertrag_status, fw_vertrag_loeschen, fw_schlussabrechnung, fw_vertrag_signieren,
-                           fw_abnahme_neu, fw_abnahme_detail, fw_abnahme_loeschen, fw_abnahme_pdf,
+                           fw_abnahme_neu, fw_abnahme_detail, fw_abnahme_loeschen, fw_abnahme_pdf, fw_abnahme_ruege_267a,
                            fw_kuendigung_erfassen, fw_kuendigung_zuruecknehmen, fw_kuendigung_bestaetigen, fw_kuendigung_formular,
                            fw_verzug_257d,
                            fw_kautionen, fw_kaution_aktion, fw_kaution_beleg, fw_maengelruege, fw_untermiete, fw_vertrag_wg, fw_mwst, fw_mwst_einstellungen, fw_mwst_estv_export,
@@ -141,6 +142,18 @@ urlpatterns = [
 
     # --- EIGENER SAAS LOGIN ---
     path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
+    # Passwort vergessen (Self-Service für Mieter/Eigentümer-Logins): Djangos
+    # eingebaute Reset-Kette mit eigenen, schlanken Templates.
+    path('passwort/vergessen/', auth_views.PasswordResetView.as_view(
+        template_name='core/passwort_reset.html',
+        email_template_name='core/passwort_reset_email.txt',
+        subject_template_name='core/passwort_reset_subject.txt'), name='password_reset'),
+    path('passwort/gesendet/', auth_views.PasswordResetDoneView.as_view(
+        template_name='core/passwort_reset_done.html'), name='password_reset_done'),
+    path('passwort/neu/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='core/passwort_reset_confirm.html'), name='password_reset_confirm'),
+    path('passwort/fertig/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='core/passwort_reset_complete.html'), name='password_reset_complete'),
     # Eigene Login-Seite für Mieter- und Eigentümer-Portal (gleiche Auth, eigenes Design)
     path('portal/login/', auth_views.LoginView.as_view(template_name='core/portal_login.html'), name='portal_login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
@@ -311,6 +324,7 @@ urlpatterns = [
     path('neu/mietzins/<int:vertrag_id>/anfangsmietzins/', fw_anfangsmietzins, name='fw_anfangsmietzins'),
     path('neu/vertraege/<int:vertrag_id>/abnahme/neu/', fw_abnahme_neu, name='fw_abnahme_neu'),
     path('neu/abnahme/<int:pk>/', fw_abnahme_detail, name='fw_abnahme_detail'),
+    path('neu/abnahme/<int:pk>/ruege-267a/', fw_abnahme_ruege_267a, name='fw_abnahme_ruege_267a'),
     path('neu/abnahme/<int:pk>/loeschen/', fw_abnahme_loeschen, name='fw_abnahme_loeschen'),
     path('neu/abnahme/<int:pk>/pdf/', fw_abnahme_pdf, name='fw_abnahme_pdf'),
     path('neu/dokumente/', fw_dokumente, name='fw_dokumente'),
@@ -381,6 +395,9 @@ urlpatterns = [
     path('mieter/ticket/<int:pk>/nachricht/', mieter_ticket_nachricht, name='mieter_ticket_nachricht'),
     path('mieter/rechnung/<int:pk>/', mieter_rechnung_qr, name='mieter_rechnung_qr'),
     path('mieter/kontoauszug/', mieter_kontoauszug_pdf, name='mieter_kontoauszug_pdf'),
+    path('mieter/konto/', mieter_konto_view, name='mieter_konto'),
+    path('mieter/daten/', mieter_daten_view, name='mieter_daten'),
+    path('mieter/passwort/', mieter_passwort_view, name='mieter_passwort'),
     path('mieter/kuendigung/', mieter_kuendigung, name='mieter_kuendigung'),
     path('mieter/kuendigung/<int:pk>/brief/', mieter_kuendigung_pdf, name='mieter_kuendigung_pdf'),
 

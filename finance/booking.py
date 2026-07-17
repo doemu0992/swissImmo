@@ -91,7 +91,7 @@ def buche(soll, haben, betrag, beleg_text, *, datum=None, liegenschaft=None, use
     sk = soll if isinstance(soll, Buchungskonto) else konto(soll)
     hk = haben if isinstance(haben, Buchungskonto) else konto(haben)
     return Buchung.objects.create(
-        datum=datum or timezone.now().date(),
+        datum=datum or timezone.localdate(),
         beleg_text=str(beleg_text)[:255],
         soll_konto=sk, haben_konto=hk, betrag=betrag,
         liegenschaft=liegenschaft, erstellt_von=user,
@@ -114,7 +114,7 @@ def storniere_buchung(buchung, *, user=None, datum=None):
 
     original_nr = buchung.beleg_nr
     gegen = Buchung.objects.create(
-        datum=datum or timezone.now().date(),
+        datum=datum or timezone.localdate(),
         beleg_text=f"Storno Beleg #{original_nr}: {buchung.beleg_text}"[:255],
         soll_konto=buchung.haben_konto, haben_konto=buchung.soll_konto,
         betrag=buchung.betrag, liegenschaft=buchung.liegenschaft,

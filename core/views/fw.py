@@ -64,7 +64,7 @@ def _global_filter(request):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_dashboard(request):
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
@@ -230,7 +230,7 @@ def fw_finanzen(request):
     from core.models import Pendenz
     import calendar as _cal
 
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
@@ -390,7 +390,7 @@ STATUS_PILL = {
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_debitoren(request):
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
@@ -512,7 +512,7 @@ def fw_debitor_neu(request):
     if request.POST.get('vertrag_id'):
         vertrag = Mietvertrag.objects.filter(id=request.POST['vertrag_id']).select_related('einheit__liegenschaft').first()
     lg = vertrag.einheit.liegenschaft if vertrag and vertrag.einheit_id else None
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     faellig = heute + _timedelta(days=30)
 
     with transaction.atomic():
@@ -750,7 +750,9 @@ def fw_debitor_stornieren(request, pk):
         return redirect('fw_debitoren')
 
     with transaction.atomic():
-        for b in Buchung.objects.filter(debitoren_rechnung=r, ist_storno=False):
+        # Nur noch nicht stornierte Originale umkehren (Doppel-Storno-Schutz).
+        for b in Buchung.objects.filter(debitoren_rechnung=r, ist_storno=False,
+                                        storniert_am__isnull=True):
             erstelle_storno_buchung(b, benutzer=request.user)
         r.status = 'storniert'
         r.save()
@@ -799,7 +801,7 @@ def fw_berichte(request):
     from tickets.models import HandwerkerAuftrag
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
-    heute = timezone.now().date()
+    heute = timezone.localdate()
 
     # --- Forderungen (Debitoren) ---
     deb = DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
@@ -971,7 +973,7 @@ def fw_auswertung(request):
     import calendar as _cal
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     try:
         jahr = int(request.GET.get('jahr') or heute.year)
     except ValueError:
@@ -1068,7 +1070,7 @@ def fw_mieterspiegel(request):
         uebersicht = berechne_mieterspiegel(alle_lgs)
         return render(request, 'fw/mieterspiegel_auswahl.html', {
             **basis, 'nav': 'liegenschaften', 'uebersicht': uebersicht,
-            'stichtag': timezone.now().date(),
+            'stichtag': timezone.localdate(),
         })
 
     spiegel = berechne_mieterspiegel([aktive_lg])
@@ -1076,7 +1078,7 @@ def fw_mieterspiegel(request):
     if request.GET.get('pdf') == '1':
         from crm.models import Verwaltung
         from django.http import HttpResponse
-        pdf = generate_mieterspiegel_pdf(spiegel, Verwaltung.objects.first(), stichtag=timezone.now().date())
+        pdf = generate_mieterspiegel_pdf(spiegel, Verwaltung.objects.first(), stichtag=timezone.localdate())
         resp = HttpResponse(pdf, content_type='application/pdf')
         fname = (aktive_lg.strasse or 'Mieterspiegel').replace(' ', '_')
         resp['Content-Disposition'] = f'inline; filename="Mieterspiegel_{fname}.pdf"'
@@ -1090,7 +1092,7 @@ def fw_mieterspiegel(request):
 
     return render(request, 'fw/mieterspiegel.html', {
         **basis, 'nav': 'liegenschaften', 'spiegel': spiegel, 'gesamt': gesamt,
-        'stichtag': timezone.now().date(), 'alle_lgs': alle_lgs,
+        'stichtag': timezone.localdate(), 'alle_lgs': alle_lgs,
     })
 
 
@@ -1214,7 +1216,9 @@ def fw_personen(request):
     q = (request.GET.get('q') or '').strip()
     if q:
         qs = qs.filter(Q(vorname__icontains=q) | Q(nachname__icontains=q)
-                       | Q(firmen_name__icontains=q) | Q(email__icontains=q) | Q(ort__icontains=q))
+                       | Q(firmen_name__icontains=q) | Q(email__icontains=q) | Q(ort__icontains=q)
+                       | Q(mobile__icontains=q) | Q(telefon_privat__icontains=q)
+                       | Q(telefon_geschaeft__icontains=q))
 
     aktive_vertraege = (Mietvertrag.objects.filter(status='aktiv')
                         .select_related('einheit__liegenschaft'))
@@ -2585,7 +2589,7 @@ def fw_schlussabrechnung(request, vertrag_id):
         try:
             auszug = date.fromisoformat(request.POST.get('auszug_datum') or '')
         except Exception:
-            auszug = v.ende or timezone.now().date()
+            auszug = v.ende or timezone.localdate()
         kaution_verrechnen = request.POST.get('kaution_verrechnen') == 'on'
 
         positionen = []
@@ -2637,7 +2641,7 @@ def fw_schlussabrechnung(request, vertrag_id):
                 if daten['nachzahlung'] and daten['saldo'] > 0:
                     from finance.models import Buchungskonto, Buchung
                     from finance.api import erstelle_storno_buchung
-                    heute = timezone.now().date()
+                    heute = timezone.localdate()
                     # Bereits offene Mietforderungen sind in daten['saldo'] enthalten
                     # (offen_total). Ohne Bereinigung würden sie ein zweites Mal gefordert
                     # und der Mietertrag (3000) doppelt gebucht.
@@ -2655,7 +2659,8 @@ def fw_schlussabrechnung(request, vertrag_id):
                         if alt.zahlungseingaenge.filter(status='verbucht').exists():
                             rest_bleibt_op += alt.offener_betrag
                             continue
-                        for b in Buchung.objects.filter(debitoren_rechnung=alt, ist_storno=False):
+                        for b in Buchung.objects.filter(debitoren_rechnung=alt, ist_storno=False,
+                                                        storniert_am__isnull=True):
                             erstelle_storno_buchung(b, benutzer=request.user)
                         alt.status = 'storniert'
                         alt.save(update_fields=['status'])
@@ -2720,7 +2725,7 @@ def fw_schlussabrechnung(request, vertrag_id):
         'schaden_prefill_betrag': schaden_betrag,
         'schaden_prefill_text': schaden_text,
         'prefill_positionen': prefill_positionen,
-        'auszug_default': (v.ende or timezone.now().date()).isoformat(),
+        'auszug_default': (v.ende or timezone.localdate()).isoformat(),
         'abnahmen': v.abnahmen.all(),
         'embed_base': ('fw/base_embed.html' if request.GET.get('embed') == '1' else None),
     })
@@ -2813,6 +2818,11 @@ def fw_abnahme_neu(request, vertrag_id):
                 kw.append('Zählerstände')
             if prot.schluessel_anzahl is not None:
                 kw.append('Schlüssel')
+            # Ohne dem Mieter zugeordnete Mängel gibt es nichts zu rügen — die
+            # 267a-Frist-Pendenz ist dann gegenstandslos. Mit Mieter-Mängeln
+            # bleibt sie offen, bis die Rüge (fw_abnahme_ruege_267a) erzeugt ist.
+            if not prot.maengel.filter(verursacher='mieter').exists():
+                kw.append('Mängelrüge Art. 267a')
             erledige_pendenzen_fuer(v, kw, user=request.user)
             # Neue Wohnadresse ab Auszugsdatum als datierte Adress-Zeile hinterlegen
             # (Wegzug-Adresse) — für Haupt- und Mitmieter. Wird zum Stichtag zur
@@ -2859,7 +2869,44 @@ def fw_abnahme_detail(request, pk):
     return render(request, 'fw/abnahme_detail.html', {
         **basis, 'nav': 'vertraege', 'p': prot, 'v': prot.vertrag,
         'maengel': prot.maengel.all(),
+        'hat_mieter_maengel': any(m.verursacher == 'mieter' for m in prot.maengel.all()),
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_abnahme_ruege_267a(request, pk):
+    """Sofortige Mängelrüge nach Rückgabe (Art. 267a OR) aus dem Auszugs-
+    Abnahmeprotokoll: rügt alle dem Mieter zugeordneten Mängel schriftlich —
+    muss SOFORT nach der Abnahme versendet werden, sonst verwirken die
+    Ersatzansprüche. Legt das PDF ab und hakt die Checklisten-Pendenz ab."""
+    from django.http import HttpResponse
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from rentals.models import Abnahmeprotokoll
+    from crm.models import Verwaltung
+    from core.services.mietprozess_briefe import rueckgabe_maengelruege_pdf
+    from core.services.ablage import ablegen
+    from core.auth import log_aktion
+    prot = get_object_or_404(Abnahmeprotokoll.objects.select_related(
+        'vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
+    v = prot.vertrag
+    maengel = [{'raum': m.raum, 'beschreibung': m.beschreibung,
+                'betrag': (m.mieteranteil if m.mieteranteil is not None else m.kostenschaetzung)}
+               for m in prot.maengel.all() if m.verursacher == 'mieter']
+    if not maengel:
+        messages.info(request, "Keine dem Mieter zugeordneten Mängel im Protokoll — keine Rüge nötig.")
+        return redirect(f'/neu/abnahme/{prot.id}/')
+    pdf = rueckgabe_maengelruege_pdf(v, maengel, verwaltung=Verwaltung.objects.first(),
+                                     abnahme_datum=prot.datum)
+    ablegen(pdf, f"Mängelrüge Art. 267a {prot.datum:%d.%m.%Y}",
+            kategorie='vertrag', vertrag=v, dedup=True)
+    from core.services.automation import erledige_pendenzen_fuer
+    erledige_pendenzen_fuer(v, ['Mängelrüge Art. 267a'], user=request.user)
+    log_aktion(request, "Mängelrüge Art. 267a erstellt", str(v.mieter),
+               f"{len(maengel)} Mängel", ziel=v)
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = f'inline; filename="Maengelruege_267a_{v.mieter.nachname}.pdf"'
+    return resp
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -2965,7 +3012,7 @@ def _stufe_fuer_tage(tage):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_mahnwesen(request):
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
@@ -3045,7 +3092,7 @@ def fw_debitoren_aging(request):
     """Debitoren-Altersstruktur (OP-Aging): offene Forderungen nach
     Fälligkeitsalter (nicht fällig / 1–30 / 31–60 / 61–90 / >90 Tage),
     gruppiert je Mieter — die Risikosicht fürs Mahnwesen."""
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
@@ -3211,7 +3258,7 @@ def _qrr_referenz(rechnung):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_bankabgleich(request):
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
@@ -3281,7 +3328,7 @@ def fw_bankabgleich_verbuchen(request):
         betrag = offen
     betrag = min(max(betrag, Decimal('0.01')), offen)
 
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     vertrag = rechnung.vertrag
     with transaction.atomic():
         zahlung = Zahlungseingang.objects.create(
@@ -3437,7 +3484,7 @@ def fw_camt_import(request):
     fuzzy = 0
     geklaert = 0            # auf Durchlaufkonto 1190 geparkt
     duplikate = 0
-    heute = timezone.now().date()
+    heute = timezone.localdate()
 
     konto_bank = Buchungskonto.objects.filter(nummer="1020").first()
     konto_deb = Buchungskonto.objects.filter(nummer="1100").first()
@@ -3767,7 +3814,7 @@ def fw_mieterkonto(request, pk):
     vids = list(Mietvertrag.objects.filter(_Q(mieter=m) | _Q(mitmieter=m)).values_list('id', flat=True))
     op = [r for r in DebitorenRechnung.objects.filter(vertrag_id__in=vids, status__in=['offen', 'teilbezahlt'])
           .select_related('vertrag__einheit__liegenschaft').order_by('faellig_am') if r.offener_betrag > 0]
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     op_rows = [{
         'r': r, 'offen': r.offener_betrag,
         'faellig': r.faellig_am or r.datum,
@@ -3875,7 +3922,7 @@ def fw_lieferantenkonto(request):
     from finance.models import KreditorenRechnung, KreditorenZahlung
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     name = (request.GET.get('name') or '').strip()
 
     kred = KreditorenRechnung.objects.exclude(status='storniert')
@@ -4342,7 +4389,7 @@ def fw_kreditoren(request):
     from finance.models import KreditorenRechnung
     from core.auth import hat_rolle, VERWALTUNGS_ROLLEN
     from django.contrib import messages
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
@@ -4618,7 +4665,7 @@ def fw_schaden_kosten(request):
     from tickets.models import SchadenMeldung, HandwerkerAuftrag
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     try:
         jahr = int(request.GET.get('jahr') or 0)
     except ValueError:
@@ -4828,7 +4875,7 @@ def fw_ersatzplanung(request):
     (Lebensdauertabelle), Jahres-Ersatzbudget und Lebenszykluskosten.
     ?pdf=1 → Budget-Report als PDF."""
     from core.services.ersatzplanung import berechne_ersatzplanung, fonds_deckung
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
@@ -5179,7 +5226,7 @@ ASSET_ICON = {
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_assets(request):
     from portfolio.models import Geraet
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     grenze = heute + _timedelta(days=90)
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
@@ -5282,7 +5329,7 @@ def fw_hypotheken(request):
     from django.contrib import messages
     from finance.models import Hypothek
     from core.auth import log_aktion, hat_rolle
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     grenze = heute + _timedelta(days=180)
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
@@ -5453,7 +5500,7 @@ def fw_buchhaltung(request):
     from finance.models import Buchung, Buchungskonto
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
-    heute = timezone.now().date()
+    heute = timezone.localdate()
 
     # --- Jahresfilter (Jahresabschluss) ---
     jahr_param = request.GET.get('jahr', str(heute.year))
@@ -5573,7 +5620,7 @@ def fw_kontoblatt(request, nummer):
     from finance.models import Buchung, Buchungskonto
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     konto = get_object_or_404(Buchungskonto, nummer=nummer)
     jahr_param = request.GET.get('jahr', str(heute.year))
     try:
@@ -5621,7 +5668,7 @@ def fw_buchhaltung_export(request):
     from finance.models import Buchung
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     try:
         jahr = int(request.GET.get('jahr', str(heute.year)))
     except ValueError:
@@ -5691,7 +5738,7 @@ def fw_mandat_abrechnung(request, pk):
     from crm.models import Mandant
     md = get_object_or_404(Mandant, id=pk)
     basis = _global_filter(request)
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     try:
         jahr = int(request.GET.get('jahr') or heute.year)
     except ValueError:
@@ -5724,7 +5771,7 @@ def fw_eigentuemer_kontokorrent(request, pk):
     from finance.models import Buchungskonto
     md = get_object_or_404(Mandant, id=pk)
     basis = _global_filter(request)
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     jahr_param = request.GET.get('jahr', '')
     jahr = None
     if jahr_param and jahr_param != 'alle':
@@ -5819,9 +5866,9 @@ def fw_eigentuemer_auszahlung(request, pk):
         messages.error(request, "Betrag muss grösser als 0 sein.")
         return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
     try:
-        datum = date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.now().date()
+        datum = date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.localdate()
     except ValueError:
-        datum = timezone.now().date()
+        datum = timezone.localdate()
     bank = Buchungskonto.objects.filter(nummer=request.POST.get('konto_nummer') or '1020').first() or _konto('1020')
     bemerkung = (request.POST.get('bemerkung') or '').strip()
 
@@ -5851,7 +5898,7 @@ import calendar as _calendar
 
 def _sollstellung_kontext(request):
     """Vorschau: aktive Verträge + Soll je Vertrag für den gewählten Monat."""
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     try:
         jahr = int(request.GET.get('jahr') or heute.year)
         monat = int(request.GET.get('monat') or heute.month)
@@ -5934,7 +5981,7 @@ def fw_sollstellung_run(request):
     if request.method != 'POST':
         return redirect('fw_sollstellung')
 
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     try:
         jahr = int(request.POST.get('jahr') or heute.year)
         monat = int(request.POST.get('monat') or heute.month)
@@ -6100,7 +6147,7 @@ def fw_nebenkosten_verbuchen(request, pk):
     from finance.booking import buche, konto as _konto
     konto_nk = _konto("3020")
 
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     n_nach = n_gut = 0
     with transaction.atomic():
         for a in result.get('abrechnungen', []):
@@ -6259,7 +6306,7 @@ def fw_mietzins(request):
     from crm.models import Verwaltung
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
-    heute = timezone.now().date()
+    heute = timezone.localdate()
 
     vw = Verwaltung.objects.first()
     curr_zins = vw.aktueller_referenzzinssatz if vw else None
@@ -6370,7 +6417,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
         try:
             wirksam_ab = date.fromisoformat(wirksam_str)
         except Exception:
-            wirksam_ab = naechster_anpassungstermin(v, timezone.now().date())
+            wirksam_ab = naechster_anpassungstermin(v, timezone.localdate())
         begruendung = (request.POST.get('begruendung') or '').strip()
         mit_vorbehalt = request.POST.get('mit_vorbehalt') == 'on'
         vorbehalt_text = (request.POST.get('vorbehalt_text') or '').strip()
@@ -6380,7 +6427,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
         # 10-tägigen Ankündigungsfrist wirksam werden. Ein zu frühes Datum (Client
         # manipuliert / Tippfehler) würde ein rechtlich anfechtbares Formular erzeugen.
         if neu_netto > (v.netto_mietzins or Decimal('0')):
-            frueh = naechster_anpassungstermin(v, timezone.now().date())
+            frueh = naechster_anpassungstermin(v, timezone.localdate())
             if wirksam_ab < frueh:
                 messages.error(request, f"❌ Wirksamkeitsdatum zu früh: Eine Mietzinserhöhung kann "
                                         f"frühestens auf {frueh.strftime('%d.%m.%Y')} wirksam werden "
@@ -6461,7 +6508,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
     # --- GET: Vorschlag berechnen ---
     pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik, Decimal('0.00')) or {}
     vorschlag_netto = pot.get('neu_chf', v.netto_mietzins)
-    naechster_termin = naechster_anpassungstermin(v, timezone.now().date())
+    naechster_termin = naechster_anpassungstermin(v, timezone.localdate())
 
     # Indexmiete (Art. 269b): die amtliche Index-Mitteilung (Art. 269d) wird direkt
     # aus der LIK-Entwicklung vorbefüllt — neuer Nettomietzins + fertige Begründung.
@@ -6942,7 +6989,7 @@ def fw_vertrag_neu(request):
         'verwaltung': verwaltung,
         'aktueller_ref_zins': float(vw.aktueller_referenzzinssatz) if vw else 1.75,
         **_lik_assistent_defaults(vw),
-        'heute_iso': timezone.now().date().isoformat(),
+        'heute_iso': timezone.localdate().isoformat(),
         'vorwahl_einheit': vorwahl_einheit or '',
         'edit_vertrag': edit_vertrag, 'edit_json': edit_json,
         'docuseal_konfiguriert': docuseal_konfiguriert(),
@@ -7041,7 +7088,7 @@ def fw_vertrag_neu_speichern(request):
             )
     familienwohnung = P.get('familienwohnung') == 'on'
 
-    beginn = datum('beginn') or timezone.now().date()
+    beginn = datum('beginn') or timezone.localdate()
 
     # LIK-Stand-Monat (aus dem die Basis-Punkte stammen): Formular-Override,
     # sonst automatisch der neueste veröffentlichte Monat (BFS-Tabelle,
@@ -7299,7 +7346,7 @@ def fw_vertrag_vorschau(request):
     # Transienter (nicht gespeicherter) Vertrag — nur zum Rendern.
     vertrag = Mietvertrag(
         mieter=mieter, einheit=einheit,
-        beginn=datum('beginn') or timezone.now().date(), ende=datum('ende'),
+        beginn=datum('beginn') or timezone.localdate(), ende=datum('ende'),
         erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
         kuendigungsfrist_monate=int(P.get('kuendigungsfrist') or 3),
         kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
@@ -8571,9 +8618,9 @@ def fw_objekt_form(request, pk=None):
             if netto0 > 0 or nk0 > 0:
                 soll_ab_raw = (P.get('soll_gueltig_ab') or '').strip()
                 try:
-                    soll_ab = date.fromisoformat(soll_ab_raw) if soll_ab_raw else timezone.now().date()
+                    soll_ab = date.fromisoformat(soll_ab_raw) if soll_ab_raw else timezone.localdate()
                 except ValueError:
-                    soll_ab = timezone.now().date()
+                    soll_ab = timezone.localdate()
                 Sollmietzins.objects.create(
                     einheit=obj, gueltig_ab=soll_ab,
                     netto_mietzins=netto0, nebenkosten=nk0, notiz='Ersterfassung')
@@ -8599,7 +8646,7 @@ def fw_objekt_form(request, pk=None):
         'typ_choices': Einheit.TYP_CHOICES,
         'sollmietzinse': sollmietzinse,
         'aktueller_soll_id': aktueller_soll.id if aktueller_soll else None,
-        'heute_iso': timezone.now().date().isoformat(),
+        'heute_iso': timezone.localdate().isoformat(),
         'hauptobjekte': hauptobjekte,
     })
 
@@ -8612,10 +8659,27 @@ def fw_suche(request):
     personen, liegenschaften, objekte, vertraege = [], [], [], []
 
     if q:
-        personen = list(Mieter.objects.filter(
-            Q(vorname__icontains=q) | Q(nachname__icontains=q) | Q(firmen_name__icontains=q)
-            | Q(email__icontains=q) | Q(ort__icontains=q)
-        ).order_by('nachname', 'firmen_name')[:20])
+        # Telefon-Suche: Nummern werden in vielen Formaten erfasst («079 123 45 67»,
+        # «+41791234567») — Query UND Feldwerte auf reine Ziffern normalisieren,
+        # damit der Anrufer vom Display direkt gefunden wird.
+        personen_q = (Q(vorname__icontains=q) | Q(nachname__icontains=q)
+                      | Q(firmen_name__icontains=q) | Q(email__icontains=q)
+                      | Q(ort__icontains=q)
+                      | Q(mobile__icontains=q) | Q(telefon_privat__icontains=q)
+                      | Q(telefon_geschaeft__icontains=q))
+        personen = list(Mieter.objects.filter(personen_q)
+                        .order_by('nachname', 'firmen_name')[:20])
+        ziffern = ''.join(ch for ch in q if ch.isdigit())
+        if len(ziffern) >= 5 and len(personen) < 20:
+            # Format-agnostischer Nachfilter über die Telefon-Felder.
+            vorhandene = {p.id for p in personen}
+            for p in Mieter.objects.exclude(id__in=vorhandene).exclude(
+                    mobile='', telefon_privat='', telefon_geschaeft='')[:500]:
+                nummern = ''.join(ch for ch in f"{p.mobile}|{p.telefon_privat}|{p.telefon_geschaeft}" if ch.isdigit())
+                if ziffern in nummern:
+                    personen.append(p)
+                    if len(personen) >= 20:
+                        break
 
         liegenschaften = list(Liegenschaft.objects.filter(
             Q(strasse__icontains=q) | Q(ort__icontains=q) | Q(plz__icontains=q) | Q(egid__icontains=q)
@@ -8896,7 +8960,7 @@ def _auszugscheckliste_anlegen(vertrag, kuendigung, per, user, mit_leerstand=Fal
     """Legt die Standard-Auszugscheckliste als Pendenzen an (mit Fälligkeit relativ
     zum Vertragsende). Gibt die Anzahl erstellter Pendenzen zurück."""
     from core.models import Pendenz
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else None
     ist_vermieter = getattr(kuendigung, 'absender', '') == 'vermieter'
 
@@ -8914,6 +8978,10 @@ def _auszugscheckliste_anlegen(vertrag, kuendigung, per, user, mit_leerstand=Fal
         (erste, heute, 'vertrag'),
         ("Abnahmetermin mit Mieter vereinbaren", tage(-30), 'aufgabe'),
         ("Wohnungsabnahme durchführen (Protokoll)", per or heute, 'protokoll' if False else 'aufgabe'),
+        # Art. 267a Abs. 1 OR: Mängel, für die der Mieter einzustehen hat, müssen
+        # SOFORT nach der Rückgabe gerügt werden — sonst sind die Ersatzansprüche
+        # verwirkt (Praxis: 2-3 Arbeitstage; versteckte Mängel bleiben vorbehalten).
+        ("Mängelrüge Art. 267a: sofort nach Abnahme versenden", tage(2), 'frist'),
         ("Zählerstände ablesen & Ummeldung", per or heute, 'aufgabe'),
         ("Schlüssel-Rückgabe kontrollieren", per or heute, 'aufgabe'),
         ("Schlussabrechnung erstellen", tage(7), 'finanzen'),
@@ -8963,8 +9031,20 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         termin = berechne_kuendigungstermin(v, eingang)
         gewuenscht = d('gewuenschtes_ende')
         ausserord = P.get('ausserordentlich') == 'on'
-        # Wirksames Ende: ausserordentlich/gewünscht -> gewünschtes Datum, sonst ordentlicher Termin
-        per = gewuenscht if (ausserord and gewuenscht) else (gewuenscht or termin)
+        # Wirksames Ende: ausserordentlich → gewünschtes Datum. Ordentlich: ein zu
+        # FRÜH gewünschtes Ende gilt von Gesetzes wegen auf den nächstmöglichen
+        # Termin (Art. 266a Abs. 2 OR) — serverseitig auf den berechneten
+        # ordentlichen Termin klemmen, sonst führen Vertragsende/Leerstand/
+        # Sollstellung ein rechtlich unwirksames Datum.
+        if ausserord and gewuenscht:
+            per = gewuenscht
+        elif gewuenscht and termin and gewuenscht < termin:
+            per = termin
+            messages.warning(request, f"⚠️ Gewünschtes Ende {gewuenscht:%d.%m.%Y} liegt vor dem "
+                                      f"nächsten zulässigen Termin — die Kündigung gilt auf "
+                                      f"{termin:%d.%m.%Y} (Art. 266a Abs. 2 OR).")
+        else:
+            per = gewuenscht or termin
 
         k = Kuendigung.objects.create(
             vertrag=v, absender=P.get('absender', 'mieter'),
@@ -9076,10 +9156,34 @@ def fw_verzug_257d(request, vertrag_id):
         absender = {'firma': getattr(vw, 'firma', '') if vw else '', 'strasse': getattr(vw, 'strasse', '') if vw else '',
                     'plz': getattr(vw, 'plz', '') if vw else '', 'ort': getattr(vw, 'ort', '') if vw else ''}
         m = v.mieter
-        emp = [{'name': m.display_name, 'anrede': f"Sehr geehrte/r {m.display_name}",
-                'strasse': m.strasse, 'plz': m.plz, 'ort': m.ort,
-                'objekt': v.einheit.bezeichnung if v.einheit_id else '',
-                'liegenschaft': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else '')}]
+        _obj = v.einheit.bezeichnung if v.einheit_id else ''
+        _lgz = f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''
+
+        def _empf(name, strasse, plz, ort):
+            return {'name': name, 'anrede': f"Sehr geehrte/r {name}",
+                    'strasse': strasse, 'plz': plz, 'ort': ort,
+                    'objekt': _obj, 'liegenschaft': _lgz}
+
+        # Art. 266n OR erfasst ausdrücklich auch die Fristansetzung nach Art. 257d:
+        # bei einer FAMILIENWOHNUNG muss sie dem Mieter UND dem Ehegatten SEPARAT
+        # zugestellt werden — sonst ist die darauf gestützte ausserordentliche
+        # Kündigung nichtig (Art. 266o OR). Zusätzlich erhalten solidarisch
+        # haftende Mitmieter (WG) je eine eigene Kopie.
+        emp = [_empf(m.display_name, m.strasse, m.plz, m.ort)]
+        if v.familienwohnung:
+            if v.mitmieter_id:
+                m2 = v.mitmieter
+                emp.append(_empf(m2.display_name, m2.strasse or m.strasse,
+                                 m2.plz or m.plz, m2.ort or m.ort))
+            elif (v.mitmieter_name or '').strip():
+                # Ehegatte ohne eigene Personenakte → an die gemeinsame Wohnadresse.
+                emp.append(_empf(v.mitmieter_name.strip(), m.strasse, m.plz, m.ort))
+        elif v.mitmieter_id:
+            emp.append(_empf(v.mitmieter.display_name, v.mitmieter.strasse or m.strasse,
+                             v.mitmieter.plz or m.plz, v.mitmieter.ort or m.ort))
+        for wm in (v.weitere_mieter.all() if v.pk else []):
+            emp.append(_empf(wm.display_name, wm.strasse or m.strasse,
+                             wm.plz or m.plz, wm.ort or m.ort))
         betreff = "Zahlungsaufforderung mit Fristansetzung (Art. 257d OR)"
         text = (
             "{anrede}\n\n"
@@ -9093,8 +9197,13 @@ def fw_verzug_257d(request, vertrag_id):
             "Freundliche Grüsse"
         )
         pdf = generate_serienbrief_pdf(absender, betreff, text, emp)
-        ablegen(pdf, f"Zahlungsaufforderung 257d – Frist {frist:%d.%m.%Y}",
+        _suffix = f" ({len(emp)} Zustellungen)" if len(emp) > 1 else ""
+        ablegen(pdf, f"Zahlungsaufforderung 257d – Frist {frist:%d.%m.%Y}{_suffix}",
                 kategorie='korrespondenz', vertrag=v, dedup=False)
+        if len(emp) > 1:
+            messages.info(request, f"📮 {len(emp)} separat adressierte Briefe erzeugt "
+                                   "(Art. 266n OR: Familienwohnung/Mitmieter) — jede Kopie "
+                                   "einzeln per Einschreiben zustellen.")
         # Fristen-Pendenz: läuft am Fristende ab → dann ausserordentliche Kündigung möglich
         Pendenz.objects.create(
             titel=f"Art. 257d: Zahlungsfrist läuft ab – {v.mieter.display_name}",
@@ -9541,7 +9650,7 @@ def fw_mwst(request):
     from django.db.models import Sum
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
-    heute = timezone.now().date()
+    heute = timezone.localdate()
 
     try:
         jahr = int(request.GET.get('jahr') or heute.year)
@@ -9638,7 +9747,7 @@ def fw_mwst_estv_export(request):
     from core.services.mwst_estv import estv_csv
     from finance.models import Buchungskonto, Buchung
     from django.db.models import Sum
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     try:
         jahr = int(request.GET.get('jahr') or heute.year)
     except ValueError:
@@ -9917,12 +10026,27 @@ def fw_bewerbung_zu_vertrag(request, pk):
     einheit = b.einheit
     lg = einheit.liegenschaft
 
-    # Idempotenz: wurde diese Bewerbung bereits umgewandelt (Status 'zugesagt'),
-    # nicht erneut einen Vertragsentwurf (und ggf. Doppel-Mieter) anlegen.
-    if b.status == 'zugesagt':
-        messages.info(request, "Für diese Bewerbung wurde bereits ein Vertragsentwurf erstellt.")
-        best = Mietvertrag.objects.filter(einheit=einheit, status='entwurf').order_by('-id').first()
-        return redirect(f'/neu/vertraege/{best.id}/' if best else f'/neu/bewerbungen/{pk}/')
+    # Idempotenz am ECHTEN Marker (nicht am Status): existiert für DIESEN Bewerber
+    # bereits ein Vertragsentwurf auf dieser Einheit, nicht erneut anlegen.
+    # Wichtig: `fw_bewerber_entscheid` (Bewerber-Vergleich) setzt 'zugesagt' OHNE
+    # Entwurf — der Status allein blockierte dann fälschlich die Umwandlung und
+    # leitete auf einen fremden Entwurf derselben Einheit um.
+    _bestehender = None
+    if b.email:
+        _bestehender = (Mietvertrag.objects
+                        .filter(einheit=einheit, status='entwurf',
+                                mieter__email__iexact=b.email,
+                                mieter__nachname__iexact=b.nachname)
+                        .order_by('-id').first())
+    if _bestehender is None:
+        _bestehender = (Mietvertrag.objects
+                        .filter(einheit=einheit, status='entwurf',
+                                mieter__vorname__iexact=b.vorname or '',
+                                mieter__nachname__iexact=b.nachname or '')
+                        .order_by('-id').first())
+    if _bestehender:
+        messages.info(request, "Für diese Bewerbung existiert bereits ein Vertragsentwurf.")
+        return redirect(f'/neu/vertraege/{_bestehender.id}/')
 
     # 1. Mieter finden oder anlegen (Duplikat-Schutz über E-Mail + Name)
     mieter = None
@@ -9952,7 +10076,7 @@ def fw_bewerbung_zu_vertrag(request, pk):
 
     # 2. Vertragsentwurf anlegen (mit Objekt-Defaults)
     from decimal import Decimal as _D
-    beginn = b.gewuenschter_bezugstermin or timezone.now().date()
+    beginn = b.gewuenschter_bezugstermin or timezone.localdate()
     kautionsmonate = einheit.standard_kautionsmonate or 0
     netto = einheit.nettomiete_aktuell or _D('0')
     nk = einheit.nebenkosten_aktuell or _D('0')
@@ -9991,7 +10115,7 @@ def _auto_fristen(aktive_lg, horizont_tage=90):
     """Automatisch berechnete Fristen aus dem Datenbestand (read-only):
     befristete Vertragsenden, Kündigungs-Vollzüge, erstmals kündbar."""
     from rentals.models import Kuendigung
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     grenze = heute + _timedelta(days=horizont_tage)
     fristen = []
 
@@ -10058,7 +10182,7 @@ def fw_pendenzen(request):
     from crm.models import Mandant  # noqa
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
-    heute = timezone.now().date()
+    heute = timezone.localdate()
 
     auto = _auto_fristen(aktive_lg)
 
@@ -10145,7 +10269,7 @@ def fw_fristen(request):
     from datetime import timedelta
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
-    heute = timezone.now().date()
+    heute = timezone.localdate()
 
     pq = (Pendenz.objects.filter(erledigt=False, faellig_am__isnull=False)
           .select_related('liegenschaft', 'vertrag__mieter', 'vertrag__einheit__liegenschaft'))
@@ -10271,7 +10395,7 @@ def fw_pendenz_toggle(request, pk):
         return redirect('fw_pendenzen')
     p = get_object_or_404(Pendenz, id=pk)
     p.erledigt = not p.erledigt
-    p.erledigt_am = timezone.now().date() if p.erledigt else None
+    p.erledigt_am = timezone.localdate() if p.erledigt else None
     p.save()
     return redirect('fw_pendenzen')
 
@@ -10329,7 +10453,7 @@ def fw_mahnung_erfassen(request):
     except Exception:
         gebuehr = MAHN_GEBUEHR.get(stufe, Decimal('0.00'))
 
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     m = Mahnung.objects.create(
         debitoren_rechnung=rechnung, vertrag=rechnung.vertrag, stufe=stufe,
         datum=heute, betrag_offen=rechnung.offener_betrag, gebuehr=gebuehr,
@@ -10476,7 +10600,7 @@ def fw_kreditor_neu(request):
         lieferant=lieferant, betrag=betrag, mwst_satz=(_dec('mwst_satz') or Decimal('0.0')),
         liegenschaft=lg, konto=konto,
         leistungs_von=_dat_iso('leistungs_von'), leistungs_bis=_dat_iso('leistungs_bis'),
-        datum=(date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.now().date()),
+        datum=(date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.localdate()),
         faellig_am=(date.fromisoformat(request.POST['faellig_am']) if request.POST.get('faellig_am') else None),
         referenz=(request.POST.get('referenz') or '').strip(),
         # NK-relevant, wenn Checkbox gesetzt ODER das gewählte Konto HNK-relevant ist
@@ -10638,7 +10762,7 @@ def fw_kreditor_freigeben(request, pk):
         k.status = 'freigegeben'
         k.save()
         from finance.booking import buche
-        datum_b = k.datum or timezone.now().date()
+        datum_b = k.datum or timezone.localdate()
         brutto = k.betrag or Decimal('0.00')
         satz = k.mwst_satz or Decimal('0')
 
@@ -11101,7 +11225,7 @@ def fw_buchung_neu(request):
         return redirect('fw_buchhaltung')
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first() if request.POST.get('liegenschaft_id') else None
     Buchung.objects.create(
-        datum=(date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.now().date()),
+        datum=(date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.localdate()),
         beleg_text=text, liegenschaft=lg, soll_konto=soll, haben_konto=haben,
         betrag=betrag, erstellt_von=request.user)
     log_aktion(request, "Manuelle Buchung", text, f"{soll.nummer}/{haben.nummer} CHF {betrag}")

@@ -206,3 +206,53 @@ def untermiete_zustimmung_pdf(vertrag, untermieter, entscheid='zustimmung',
             "gegenüber der Vermieterschaft.",
         ]
     return _brief(absender, empf, ort, betreff, absaetze, name)
+
+
+def rueckgabe_maengelruege_pdf(vertrag, maengel, verwaltung=None, abnahme_datum=None):
+    """Sofortige Mängelrüge nach Rückgabe des Mietobjekts (Art. 267a OR).
+
+    Muss dem ausgezogenen Mieter SOFORT nach der Abnahme zugehen (Praxis:
+    2-3 Arbeitstage), sonst sind die Ersatzansprüche der Vermieterschaft
+    verwirkt (Abs. 1-2). Versteckte, bei übungsgemässer Untersuchung nicht
+    erkennbare Mängel bleiben vorbehalten (Abs. 3).
+
+    `maengel`: Liste von dicts {'raum', 'beschreibung', 'betrag' (optional)}
+    oder von Strings."""
+    mieter, einheit, lg, absender, ort, empf, objekt, name = _kontext(vertrag, verwaltung)
+    datum_txt = (abnahme_datum.strftime('%d.%m.%Y') if abnahme_datum
+                 else (vertrag.ende.strftime('%d.%m.%Y') if vertrag.ende else '—'))
+    zeilen = []
+    total = Decimal('0.00')
+    for m in maengel:
+        if isinstance(m, str):
+            zeilen.append(f"– {m}")
+            continue
+        teil = f"– {m.get('raum') + ': ' if m.get('raum') else ''}{m.get('beschreibung', '')}"
+        if m.get('betrag'):
+            teil += f" (Kostenanteil ca. CHF {_fr(m['betrag'])})"
+            try:
+                total += Decimal(str(m['betrag']))
+            except Exception:
+                pass
+        zeilen.append(teil)
+    absaetze = [
+        "Sehr geehrte Damen und Herren",
+        f"Anlässlich der Rückgabe des Mietobjekts {objekt} am {datum_txt} haben wir "
+        "bei der Prüfung folgende Mängel festgestellt, für die Sie nach unserer "
+        "Auffassung einzustehen haben (Art. 267a OR):",
+        "\n".join(zeilen),
+    ]
+    if total > 0:
+        absaetze.append(f"Der voraussichtliche, von Ihnen zu tragende Kostenanteil beträgt "
+                        f"gesamthaft ca. CHF {_fr(total)} (Detail gemäss Abnahmeprotokoll; "
+                        f"massgeblich sind die effektiven Instandstellungskosten unter "
+                        f"Berücksichtigung der Lebensdauer, «neu für alt»).")
+    absaetze += [
+        "Wir behalten uns ausdrücklich die Geltendmachung von Mängeln vor, die bei der "
+        "übungsgemässen Untersuchung nicht erkennbar waren (versteckte Mängel, "
+        "Art. 267a Abs. 3 OR).",
+        "Die detaillierte Abrechnung folgt mit der Schlussabrechnung; ein allfälliger "
+        "Anteil wird mit dem Mietzinsdepot verrechnet.",
+    ]
+    return _brief(absender, empf, ort,
+                  f"Mängelrüge nach Rückgabe (Art. 267a OR) — {objekt}", absaetze, name)

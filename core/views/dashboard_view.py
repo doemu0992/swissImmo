@@ -62,7 +62,7 @@ def _generate_dashboard_context():
     """
     Führt die Kernberechnungen für KPIs, Finanzen und Charts durch.
     """
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     aktueller_monat = heute.replace(day=1)
 
     # 1. PORTFOLIO & LEERSTAND (Mit Nebenobjekten)

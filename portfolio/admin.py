@@ -223,7 +223,7 @@ class GeraetInline(TabularInline):
         if not obj.pk: return "-"
         from django.utils import timezone
         if obj.garantie_bis:
-            if obj.garantie_bis >= timezone.now().date():
+            if obj.garantie_bis >= timezone.localdate():
                 return format_html('<span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Bis {}</span>', obj.garantie_bis.strftime('%d.%m.%Y'))
             return format_html('<span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Abgelaufen</span>')
         return "-"
@@ -572,7 +572,7 @@ class GeraetAdmin(ModelAdmin):
     def garantie_badge(self, obj):
         from django.utils import timezone
         if obj.garantie_bis:
-            if obj.garantie_bis >= timezone.now().date(): return f"Bis {obj.garantie_bis.strftime('%d.%m.%Y')}", "success"
+            if obj.garantie_bis >= timezone.localdate(): return f"Bis {obj.garantie_bis.strftime('%d.%m.%Y')}", "success"
             return "Abgelaufen", "danger"
         return "Unbekannt", "info"
 

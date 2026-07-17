@@ -30,18 +30,16 @@ router = Router(tags=["Finanzen"])
 # HILFSFUNKTION: STORNO BUCHUNG (Revisionssicherheit)
 # ========================================================
 def erstelle_storno_buchung(original_buchung, benutzer=None):
-    """Erstellt eine exakte Umkehrbuchung für die Revisionssicherheit."""
-    return Buchung.objects.create(
-        datum=timezone.now().date(),
-        beleg_text=f"STORNO: {original_buchung.beleg_text}",
-        liegenschaft=original_buchung.liegenschaft,
-        soll_konto=original_buchung.haben_konto,  # Konten getauscht
-        haben_konto=original_buchung.soll_konto,  # Konten getauscht
-        betrag=original_buchung.betrag,
-        ist_storno=True,
-        storniert_am=timezone.now(),
-        erstellt_von=benutzer
-    )
+    """Erstellt die revisionssichere Umkehrbuchung.
+
+    Delegiert an die EINE kanonische Storno-Implementation
+    (finance.booking.storniere_buchung): markiert das Original als storniert
+    (storniert_am), verkettet Original↔Gegenbuchung (storno_von), führt die
+    Beleg-Verknüpfungen mit und verhindert Doppel-Storno. Die frühere lokale
+    Variante tat all das nicht — Storno-Kette war gebrochen, Kennzahlen
+    zählten stornierte Originale weiter."""
+    from finance.booking import storniere_buchung
+    return storniere_buchung(original_buchung, user=benutzer)
 
 
 # ========================================================
@@ -160,7 +158,7 @@ def storniere_zahlung(request, zahlung_id: int):
 @router.get("/mietzins-kontrolle", response=List[dict])
 def get_kontrolle(request):
     """Soll-Ist-Abgleich für den aktuellen Monat."""
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     aktueller_monat = heute.replace(day=1)
     aktive_vertraege = Mietvertrag.objects.filter(status='aktiv').select_related('mieter', 'einheit__liegenschaft')
     ergebnis = []
@@ -264,7 +262,7 @@ def update_kreditor(request, rechnung_id: int, payload: KreditorUpdateSchema):
     # SCHRITT 1: Aufwand buchen (Aufwand an Kreditoren) — mit Vorsteuer-Split
     if war_neu and rechnung.konto:
         from finance.booking import buche
-        datum_b = rechnung.datum or timezone.now().date()
+        datum_b = rechnung.datum or timezone.localdate()
         brutto = rechnung.betrag or Decimal('0.00')
         vorsteuer = Decimal('0.00')
         if (rechnung.mwst_satz or 0) > 0:
@@ -357,7 +355,7 @@ def create_debitorenrechnung(request, payload: DebitorenRechnungCreateSchema):
     from finance.booking import buche
     haben = rechnung.konto_haben.nummer if rechnung.konto_haben_id else "3000"
     buche("1100", haben, rechnung.betrag, f"Rechnung an {vertrag.mieter}: {rechnung.titel}",
-          datum=timezone.now().date(), liegenschaft=vertrag.einheit.liegenschaft,
+          datum=timezone.localdate(), liegenschaft=vertrag.einheit.liegenschaft,
           debitor=rechnung, user=request.user)
     return 201, {"success": True, "id": rechnung.id}
 
@@ -623,7 +621,7 @@ def verbuchen_hnk_abrechnung(request, periode_id: int):
     except Exception:
         return 400, {"success": False, "error": "Systemkonto 3020 fehlt. Bitte Standard-Kontenplan laden."}
 
-    heute = timezone.now().date()
+    heute = timezone.localdate()
     n_nach = n_gut = 0
     for a in result.get('abrechnungen', []):
         vid = a.get('vertrag_id')

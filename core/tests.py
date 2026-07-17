@@ -2341,14 +2341,14 @@ class GewerbeWizardTests(TestCase):
         # 2 Wochen (monate 0)
         v = MV.objects.create(einheit=e, mieter=mi, netto_mietzins=Decimal('120'),
                               nebenkosten=Decimal('0'), kuendigungsfrist_monate=0,
-                              beginn=timezone.now().date())
+                              beginn=timezone.localdate())
         self.assertIn('2 Wochen', v.kuendigungsfrist_anzeige)
         # längere Frist möglich (3 Monate auf Monatsende)
         v.kuendigungsfrist_monate = 3; v.save()
         self.assertIn('3 Monate auf Ende eines Monats', v.kuendigungsfrist_anzeige)
         # PDF (Garage-Template) ohne Nebenkosten-Zeile
         ctx = {'vertrag': v, 'mieter': mi, 'einheit': e, 'liegenschaft': lg,
-               'mandant': None, 'verwaltung': None, 'heute': timezone.now().date(),
+               'mandant': None, 'verwaltung': None, 'heute': timezone.localdate(),
                'miete_fmt': '120.00', 'nk_fmt': '0.00', 'brutto_fmt': '120.00',
                'kaution_fmt': '0.00', 'unterschrift_path': None}
         html = get_template('core/mietvertrag_garage.html').render(ctx)
@@ -2633,7 +2633,7 @@ class MietzinsAnpassungSollmietzinsTests(TestCase):
         # Fristenkontrolle. Für die Tests ein fixer, klar zukünftiger Monatsanfang.
         from rentals.services import naechster_anpassungstermin
         from django.utils import timezone
-        return naechster_anpassungstermin(v, timezone.now().date())
+        return naechster_anpassungstermin(v, timezone.localdate())
 
     def _anpassung_speichern(self, c, v, neu_netto='1600', wirksam=None):
         wirksam = wirksam or self._valid_wirksam(v)
@@ -3020,11 +3020,13 @@ class AnfechtungsfristTests(TestCase):
         Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
         lg, e, m, v = _basis_objekte()   # netto 1500
         v.basis_referenzzinssatz = Decimal('1.75'); v.basis_lik_punkte = Decimal('100'); v.save()
+        from rentals.services import naechster_anpassungstermin
+        wirksam = naechster_anpassungstermin(v, date.today())  # frühester gültiger Termin (269d inkl. Zustellpuffer)
         c = Client(); c.force_login(_team_user())
         c.post(f'/neu/mietzins/{v.id}/anpassung/', {
             'aktion': 'speichern', 'neu_netto': '1600', 'neu_zins': '1.50', 'neu_lik': '100',
             'basis_zins': '1.75', 'basis_lik': '100', 'kosten_pct': '0',
-            'wirksam_ab': (date.today() + timedelta(days=120)).isoformat(),
+            'wirksam_ab': wirksam.isoformat(),
         })
         p = Pendenz.objects.filter(vertrag=v, titel__icontains='Anfechtungsfrist Mietzins').first()
         self.assertIsNotNone(p)
@@ -4132,8 +4134,11 @@ class DebitorenAgingTests(TestCase):
             datum=faellig, faellig_am=faellig, status=status)
 
     def test_buckets_pro_mieter(self):
+        from django.utils import timezone as _tz
         lg, e, m, v = _basis_objekte()
-        heute = date.today()
+        # timezone.localdate() (Europe/Zurich) wie die View — date.today() (UTC)
+        # weicht um Mitternacht herum um einen Tag ab (Flake um 00:00 Lokalzeit).
+        heute = _tz.localdate()
         self._rechnung(v, lg, '100', heute + timedelta(days=10))    # nicht fällig
         self._rechnung(v, lg, '200', heute - timedelta(days=15))    # 1–30
         self._rechnung(v, lg, '300', heute - timedelta(days=45))    # 31–60
@@ -5398,12 +5403,12 @@ class VertragUnterschriftsblockTests(TestCase):
         v = Mietvertrag.objects.create(einheit=e, mieter=m,
                                        netto_mietzins=Decimal('1500'),
                                        nebenkosten=Decimal('200'),
-                                       beginn=timezone.now().date())
+                                       beginn=timezone.localdate())
         tpl = ('core/mietvertrag_garage.html' if typ in ('pp', 'bas', 'gar')
                else 'core/mietvertrag_pdf.html')
         ctx = {'vertrag': v, 'mieter': m, 'einheit': e, 'liegenschaft': lg,
                'mandant': None, 'verwaltung': Verwaltung.objects.first(),
-               'heute': timezone.now().date(), 'miete_fmt': '1500.00',
+               'heute': timezone.localdate(), 'miete_fmt': '1500.00',
                'nk_fmt': '200.00', 'brutto_fmt': '1700.00', 'kaution_fmt': '0.00',
                'unterschrift_path': None}
         return get_template(tpl).render(ctx)
@@ -5678,7 +5683,7 @@ class LoeschbarkeitTests(TestCase):
         from rentals.models import Abnahmeprotokoll
         from django.utils import timezone
         lg, e, m, v = _basis_objekte()
-        p = Abnahmeprotokoll.objects.create(vertrag=v, typ='einzug', datum=timezone.now().date())
+        p = Abnahmeprotokoll.objects.create(vertrag=v, typ='einzug', datum=timezone.localdate())
         c = Client(); c.force_login(_team_user())
         r = c.post(f'/neu/abnahme/{p.id}/loeschen/')
         self.assertEqual(r.status_code, 302)
@@ -8288,7 +8293,7 @@ class MoneyBugBatchTests(TestCase):
         from django.utils import timezone
         lg, e, m, v = _basis_objekte()
         v.basis_referenzzinssatz = Decimal('1.25'); v.basis_lik_punkte = Decimal('100.0'); v.save()
-        wirksam = naechster_anpassungstermin(v, timezone.now().date())  # gültiger Termin (Art. 269d)
+        wirksam = naechster_anpassungstermin(v, timezone.localdate())  # gültiger Termin (Art. 269d)
         c = Client(); c.force_login(_team_user())
         payload = {'aktion': 'pdf', 'neu_netto': '1600', 'neu_zins': '1.50',
                    'neu_lik': '105.0', 'wirksam_ab': wirksam.isoformat(),
@@ -9602,3 +9607,305 @@ class QualitaetscheckFixTests(TestCase):
         verbleibend = set(m.adressen.values_list('strasse', flat=True))
         self.assertNotIn('Vertragsweg 1', verbleibend)   # Vertrags-Einzug storniert
         self.assertIn('Manuellweg 2', verbleibend)       # manuelle Adresse geschont
+
+
+class NachtN1KritischeBugsTests(TestCase):
+    """Nacht-Audit N1: Storno-Kette, Verzugszins-Delta, 266a-Klemme,
+    269d-Zustellpuffer, Zusage-Idempotenz, Telefonsuche."""
+
+    def _konten(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+
+    def test_storno_kette_verkettet_und_markiert(self):
+        from finance.api import erstelle_storno_buchung
+        from finance.booking import buche
+        _lg, _e, _m, _v = _basis_objekte()
+        self._konten()
+        b = buche('1100', '3000', Decimal('1500'), 'Miete Test')
+        gegen = erstelle_storno_buchung(b)
+        b.refresh_from_db()
+        self.assertIsNotNone(b.storniert_am)          # Original markiert
+        self.assertEqual(gegen.storno_von_id, b.id)   # Kette verkettet
+        self.assertTrue(gegen.ist_storno)
+        # Doppel-Storno verhindert
+        with self.assertRaises(ValueError):
+            erstelle_storno_buchung(b)
+
+    def test_betriebsrechnung_nettoiert_nach_storno(self):
+        from core.services.rendite import betriebsrechnung
+        from finance.booking import buche, storniere_buchung
+        lg, _e, _m, _v = _basis_objekte()
+        self._konten()
+        from finance.models import Buchungskonto
+        Buchungskonto.objects.get_or_create(nummer='6000', defaults={'bezeichnung': 'Unterhalt', 'typ': 'aufwand'})
+        b = buche('6000', '1020', Decimal('800'), 'Reparatur', datum=date.today(), liegenschaft=lg)
+        storniere_buchung(b)
+        d = betriebsrechnung(lg, date.today().year)
+        self.assertEqual(d['aufwand_total'], Decimal('0.00'))   # storniert zählt nicht
+
+    def test_verzugszins_delta_statt_kumulativ(self):
+        from core.services.automation import run_mahnlauf, verzugszins
+        from finance.models import DebitorenRechnung, Mahnung
+        lg, e, m, v = _basis_objekte()
+        self._konten()
+        # 65 Tage überfällig → würde direkt Stufe 3 erreichen; wir simulieren
+        # zwei Läufe: erst Stufe 2 (31 Tage), dann Stufe 3 (65 Tage).
+        r = DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Miete Januar', betrag=Decimal('1000'),
+            datum=date.today() - timedelta(days=70),
+            faellig_am=date.today() - timedelta(days=31), status='offen')
+        run_mahnlauf(send_email=False, mit_zins=True)
+        m1 = r.mahnungen.order_by('-id').first()
+        self.assertEqual(m1.zins, verzugszins(Decimal('1000'), 31))
+        # Fälligkeit zurückdatieren → nächste Stufe wird fällig
+        r.faellig_am = date.today() - timedelta(days=65)
+        r.save(update_fields=['faellig_am'])
+        run_mahnlauf(send_email=False, mit_zins=True)
+        m2 = r.mahnungen.order_by('-id').first()
+        self.assertGreater(m2.stufe, m1.stufe)
+        # Stufe 2 fakturiert nur das DELTA: voller Zins(65) − bereits Zins(31)
+        erwartet = verzugszins(Decimal('1000'), 65) - m1.zins
+        self.assertEqual(m2.zins, erwartet)
+        total = sum(x.zins for x in r.mahnungen.all())
+        self.assertEqual(total, verzugszins(Decimal('1000'), 65))  # nie mehr als 1×
+
+    def test_266a_zu_fruehes_ende_geklemmt(self):
+        from rentals.services import berechne_kuendigungstermin
+        lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        heute = date.today()
+        zu_frueh = heute + timedelta(days=5)   # weit vor Frist+Termin
+        c.post(f'/neu/vertraege/{v.id}/kuendigen/', {
+            'absender': 'mieter', 'eingang_datum': heute.isoformat(),
+            'gewuenschtes_ende': zu_frueh.isoformat(),
+        })
+        v.refresh_from_db()
+        termin = berechne_kuendigungstermin(v, heute)
+        self.assertEqual(v.ende, termin)   # geklemmt auf ordentlichen Termin
+        k = v.kuendigungen.first()
+        self.assertEqual(k.per_datum, termin)
+        self.assertEqual(k.gewuenschtes_ende, zu_frueh)  # Wunsch bleibt dokumentiert
+
+    def test_269d_zustellpuffer(self):
+        from rentals.services import naechster_anpassungstermin, berechne_kuendigungstermin, ZUSTELL_PUFFER_TAGE
+        _lg, _e, _m, v = _basis_objekte()
+        heute = date.today()
+        erwartet = berechne_kuendigungstermin(v, heute + timedelta(days=ZUSTELL_PUFFER_TAGE + 10))
+        self.assertEqual(naechster_anpassungstermin(v, heute), erwartet)
+        self.assertGreaterEqual(ZUSTELL_PUFFER_TAGE, 7)
+
+    def test_zusage_nach_vergleich_blockiert_umwandlung_nicht(self):
+        from mietprozess.models import Mietbewerbung
+        lg, e, m, v = _basis_objekte()
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='1.5 Zi', typ='wohnung',
+                                    nettomiete_aktuell=Decimal('900'))
+        b = Mietbewerbung.objects.create(einheit=e2, vorname='Nina', nachname='Neu',
+                                         email='nina@example.ch', status='zugesagt',
+                                         geburtsdatum=date(1992, 3, 1))  # via Vergleich zugesagt, OHNE Entwurf
+        u = _team_user(); c = Client(); c.force_login(u)
+        r = c.post(f'/neu/bewerbungen/{b.id}/vertrag/')
+        self.assertEqual(r.status_code, 302)
+        entwurf = Mietvertrag.objects.filter(einheit=e2, status='entwurf',
+                                             mieter__nachname='Neu').first()
+        self.assertIsNotNone(entwurf)   # Entwurf wurde trotz Status 'zugesagt' erstellt
+        # Zweiter Aufruf: idempotent, kein zweiter Entwurf
+        c.post(f'/neu/bewerbungen/{b.id}/vertrag/')
+        self.assertEqual(Mietvertrag.objects.filter(einheit=e2, status='entwurf').count(), 1)
+
+    def test_telefonsuche(self):
+        _lg, _e, m, _v = _basis_objekte()
+        m.mobile = '079 123 45 67'; m.save()
+        u = _team_user(); c = Client(); c.force_login(u)
+        # Personenliste: Teilstring
+        r = c.get('/neu/personen/?q=079 123')
+        self.assertIn('Muster', r.content.decode())
+        # Globale Suche: formatfremde Schreibweise (ohne Leerzeichen)
+        r2 = c.get('/neu/suche/?q=0791234567')
+        self.assertIn('Muster', r2.content.decode())
+
+
+class NachtN2JuristTests(TestCase):
+    """Nacht-Audit N2: 257d-Doppelzustellung (266n), Rückgabe-Mängelrüge 267a,
+    Verjährungsüberwachung (Art. 128 Ziff. 1)."""
+
+    def test_257d_doppelzustellung_familienwohnung(self):
+        from finance.models import DebitorenRechnung
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()
+        v.familienwohnung = True; v.mitmieter_name = 'Erika Muster'; v.save()
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, titel='Miete',
+                                         betrag=Decimal('1500'),
+                                         datum=date.today() - timedelta(days=40),
+                                         faellig_am=date.today() - timedelta(days=35), status='offen')
+        u = _team_user(); c = Client(); c.force_login(u)
+        r = c.post(f'/neu/vertraege/{v.id}/verzug/', {'frist_bis': (date.today() + timedelta(days=40)).isoformat()})
+        self.assertEqual(r.status_code, 302)
+        dok = Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Zahlungsaufforderung 257d').first()
+        self.assertIsNotNone(dok)
+        self.assertIn('2 Zustellungen', dok.bezeichnung)   # Mieter + Ehegatte separat
+
+    def test_257d_einzelzustellung_ohne_familienwohnung(self):
+        from finance.models import DebitorenRechnung
+        from rentals.models import Dokument
+        lg, e, m, v = _basis_objekte()   # keine Familienwohnung, kein Mitmieter
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, titel='Miete',
+                                         betrag=Decimal('1500'),
+                                         datum=date.today() - timedelta(days=40),
+                                         faellig_am=date.today() - timedelta(days=35), status='offen')
+        u = _team_user(); c = Client(); c.force_login(u)
+        c.post(f'/neu/vertraege/{v.id}/verzug/', {'frist_bis': (date.today() + timedelta(days=40)).isoformat()})
+        dok = Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Zahlungsaufforderung 257d').first()
+        self.assertIsNotNone(dok)
+        self.assertNotIn('Zustellungen', dok.bezeichnung)
+
+    def test_auszugscheckliste_enthaelt_267a_pendenz(self):
+        from core.views.fw import _auszugscheckliste_anlegen
+        from core.models import Pendenz
+        _lg, _e, _m, v = _basis_objekte()
+        per = date.today() + timedelta(days=60)
+        _auszugscheckliste_anlegen(v, None, per, None)
+        p = Pendenz.objects.filter(vertrag=v, titel__icontains='267a').first()
+        self.assertIsNotNone(p)
+        self.assertEqual(p.faellig_am, per + timedelta(days=2))   # sofort nach Abnahme
+        self.assertEqual(p.kategorie, 'frist')
+
+    def test_rueckgabe_ruege_pdf_und_view(self):
+        from rentals.models import Abnahmeprotokoll, AbnahmeMangel, Dokument
+        _lg, _e, _m, v = _basis_objekte()
+        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        AbnahmeMangel.objects.create(protokoll=prot, raum='Küche', beschreibung='Kochfeld gesprungen',
+                                     verursacher='mieter', kostenschaetzung=Decimal('400'))
+        AbnahmeMangel.objects.create(protokoll=prot, raum='Bad', beschreibung='Normale Abnutzung',
+                                     verursacher='abnutzung')
+        u = _team_user(); c = Client(); c.force_login(u)
+        r = c.post(f'/neu/abnahme/{prot.id}/ruege-267a/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r.content.startswith(b'%PDF'))
+        self.assertTrue(Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Mängelrüge Art. 267a').exists())
+
+    def test_rueckgabe_ruege_ohne_mieter_maengel(self):
+        from rentals.models import Abnahmeprotokoll
+        _lg, _e, _m, v = _basis_objekte()
+        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        u = _team_user(); c = Client(); c.force_login(u)
+        r = c.post(f'/neu/abnahme/{prot.id}/ruege-267a/')
+        self.assertEqual(r.status_code, 302)   # kein PDF, Redirect mit Hinweis
+
+    def test_verjaehrungs_pendenz_und_mahnlauf_skip(self):
+        from core.services.automation import generate_auto_pendenzen, run_mahnlauf
+        from finance.models import DebitorenRechnung
+        from core.models import Pendenz
+        lg, e, m, v = _basis_objekte()
+        alt = DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Miete Uralt', betrag=Decimal('1000'),
+            datum=date.today() - timedelta(days=1700),
+            faellig_am=date.today() - timedelta(days=1700), status='offen')  # ~4.7 Jahre
+        generate_auto_pendenzen()
+        p = Pendenz.objects.filter(quelle=f'auto:verjaehrung:{alt.id}').first()
+        self.assertIsNotNone(p)
+        self.assertIn('Art. 128', p.beschreibung)
+        # Verjährte Forderung (> 5 J) wird im Mahnlauf übersprungen
+        alt.faellig_am = date.today() - timedelta(days=5 * 365 + 10)
+        alt.save(update_fields=['faellig_am'])
+        res = run_mahnlauf(send_email=False)
+        self.assertEqual(alt.mahnungen.count(), 0)
+
+
+class NachtN3MieterportalTests(TestCase):
+    """Nacht-Audit N3: Passwort-Reset/Ändern, Foto-Upload, Mieterkonto-Seite,
+    Meine Daten, Rechnungsarchiv."""
+
+    def _mieter_login(self):
+        lg, e, m, v = _basis_objekte()
+        u = User.objects.create_user(username='mieter_n3', password='altespasswort1', email='hans@example.ch')
+        m.benutzer = u; m.save()
+        return lg, m, v, u
+
+    def test_passwort_reset_flow(self):
+        from django.core import mail
+        _lg, _m, _v, u = self._mieter_login()
+        c = Client()
+        self.assertEqual(c.get('/passwort/vergessen/').status_code, 200)
+        r = c.post('/passwort/vergessen/', {'email': 'hans@example.ch'})
+        self.assertEqual(r.status_code, 302)   # → /passwort/gesendet/
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('Neues Passwort', mail.outbox[0].subject)
+        self.assertIn('/passwort/neu/', mail.outbox[0].body)
+
+    def test_login_zeigt_vergessen_link(self):
+        c = Client()
+        self.assertIn('/passwort/vergessen/', c.get('/login/').content.decode())
+
+    def test_passwort_aendern_im_portal(self):
+        _lg, _m, _v, u = self._mieter_login()
+        c = Client(); c.force_login(u)
+        self.assertEqual(c.get('/mieter/passwort/').status_code, 200)
+        r = c.post('/mieter/passwort/', {
+            'old_password': 'altespasswort1',
+            'new_password1': 'NeuUndSicher99', 'new_password2': 'NeuUndSicher99'})
+        self.assertEqual(r.status_code, 302)
+        u.refresh_from_db()
+        self.assertTrue(u.check_password('NeuUndSicher99'))
+
+    def test_schaden_mit_fotos(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from tickets.models import SchadenMeldung
+        _lg, _m, v, u = self._mieter_login()
+        c = Client(); c.force_login(u)
+        # 1x1-GIF als Mini-Bild
+        gif = (b'GIF89a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff!'
+               b'\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;')
+        r = c.post('/mieter/schaden/', {
+            'vertrag_id': str(v.id), 'titel': 'Wasserhahn tropft', 'beschreibung': 'Küche',
+            'fotos': [SimpleUploadedFile('a.gif', gif, 'image/gif'),
+                      SimpleUploadedFile('b.gif', gif, 'image/gif')]})
+        self.assertEqual(r.status_code, 302)
+        t = SchadenMeldung.objects.filter(titel='Wasserhahn tropft').first()
+        self.assertIsNotNone(t)
+        self.assertEqual(t.fotos.count(), 2)
+
+    def test_mieterkonto_seite(self):
+        from finance.models import DebitorenRechnung, Zahlungseingang
+        lg, m, v, u = self._mieter_login()
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, titel='Miete Juli',
+                                         betrag=Decimal('1700'), datum=date.today(),
+                                         faellig_am=date.today(), status='offen')
+        c = Client(); c.force_login(u)
+        r = c.get('/mieter/konto/')
+        self.assertEqual(r.status_code, 200)
+        body = r.content.decode()
+        self.assertIn('Offener Betrag', body)     # laienverständliche Saldo-Karte
+        self.assertIn('Miete Juli', body)
+
+    def test_meine_daten_aendern(self):
+        from crm.models import Kommunikation
+        _lg, m, _v, u = self._mieter_login()
+        c = Client(); c.force_login(u)
+        self.assertEqual(c.get('/mieter/daten/').status_code, 200)
+        r = c.post('/mieter/daten/', {'mobile': '079 999 88 77',
+                                      'telefon_privat': '', 'email': 'hans@example.ch',
+                                      'adresse_meldung': ''})
+        self.assertEqual(r.status_code, 302)
+        m.refresh_from_db()
+        self.assertEqual(m.mobile, '079 999 88 77')
+        self.assertTrue(Kommunikation.objects.filter(mieter=m, betreff__icontains='Kontaktdaten').exists())
+
+    def test_rechnungsarchiv_zeigt_bezahlte(self):
+        from finance.models import DebitorenRechnung
+        lg, m, v, u = self._mieter_login()
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, titel='Miete Alt-Monat',
+                                         betrag=Decimal('1700'), datum=date.today() - timedelta(days=90),
+                                         faellig_am=date.today() - timedelta(days=90), status='bezahlt')
+        c = Client(); c.force_login(u)
+        body = c.get('/mieter/rechnungen/').content.decode()
+        self.assertIn('Bezahlte Rechnungen', body)
+        self.assertIn('Miete Alt-Monat', body)
+
+    def test_nav_hat_neue_eintraege(self):
+        _lg, _m, _v, u = self._mieter_login()
+        c = Client(); c.force_login(u)
+        body = c.get('/mieter/').content.decode()
+        for pfad in ('/mieter/konto/', '/mieter/daten/', '/mieter/passwort/'):
+            self.assertIn(pfad, body)

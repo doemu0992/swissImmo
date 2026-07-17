@@ -27,7 +27,7 @@ class Command(BaseCommand):
         from django.contrib.auth.models import User
         from crm.models import Verwaltung
 
-        heute = timezone.now().date()
+        heute = timezone.localdate()
         grenze = heute + timedelta(days=opts['tage'])
         pq = (Pendenz.objects.filter(erledigt=False, faellig_am__isnull=False, faellig_am__lte=grenze)
               .select_related('liegenschaft', 'vertrag__mieter').order_by('faellig_am'))

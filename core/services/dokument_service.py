@@ -60,7 +60,7 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
         'vertrag': vertrag, 'mieter': vertrag.mieter, 'einheit': einheit,
         'mitmieter': mitmieter, 'mitmieter_name': mitmieter_name,
         'liegenschaft': liegenschaft, 'mandant': mandant, 'verwaltung': verwaltung,
-        'heute': timezone.now().date(),
+        'heute': timezone.localdate(),
         'vermieter_name': v_name, 'vermieter_strasse': v_str,
         'vermieter_plz': v_plz, 'vermieter_ort': v_ort,
         'brutto_fmt': f"{brutto:,.2f}".replace(",", "'"),

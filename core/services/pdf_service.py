@@ -100,7 +100,7 @@ def build_vertrag_context(vertrag, *, mit_unterschrift=True):
         'liegenschaft': liegenschaft,
         'mandant': mandant,
         'verwaltung': verwaltung,
-        'heute': timezone.now().date(),
+        'heute': timezone.localdate(),
         'miete_fmt': f"{netto:,.2f}".replace(",", "'"),
         'nk_fmt': f"{nk:,.2f}".replace(",", "'"),
         'brutto_fmt': f"{brutto:,.2f}".replace(",", "'"),

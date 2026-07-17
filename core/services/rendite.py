@@ -43,7 +43,11 @@ def betriebsaufwand_12m(lg, bis=None):
     bis = bis or date.today()
     von = _plus_monate(_monatsanfang(bis), -11)
     total = Decimal('0.00')
+    # ist_storno=False blendet die Gegenbuchung aus; storniert_am__isnull=True
+    # zusätzlich das stornierte Original — sonst zählt ein stornierter Aufwand
+    # weiter in die Kennzahlen (Storno-Paar wäre einseitig gefiltert).
     qs = (Buchung.objects.filter(liegenschaft=lg, ist_storno=False,
+                                 storniert_am__isnull=True,
                                  datum__gte=von, datum__lte=bis,
                                  soll_konto__typ='aufwand')
           .select_related('soll_konto'))
@@ -94,6 +98,7 @@ def betriebsrechnung(lg, jahr=None):
     ertrag_total = Decimal('0.00')
     aufwand_total = Decimal('0.00')
     qs = (Buchung.objects.filter(liegenschaft=lg, ist_storno=False,
+                                 storniert_am__isnull=True,
                                  datum__gte=von, datum__lte=bis)
           .select_related('soll_konto', 'haben_konto'))
     for b in qs:
