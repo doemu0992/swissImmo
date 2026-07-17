@@ -9118,3 +9118,32 @@ class Paket3ZahlungBonitaetTests(TestCase):
         self.assertEqual(m.zahler_name, '')
         self.assertEqual(m.ref_vermieter_name, '')
         self.assertEqual(m.vertretung_name, '')
+
+
+class Paket4ProzesseTests(TestCase):
+    """Paket 4: Kautions-Belege PDF + Mängelrüge (Art. 259)."""
+
+    def test_kaution_belege_pdf(self):
+        from rentals.models import Dokument
+        _lg, _e, m, v = _basis_objekte()
+        v.kautions_art = 'sperrkonto'; v.kautions_konto = 'CH93 0076…'
+        v.kautions_einbezahlt_am = date(2024, 1, 5); v.save()
+        c = Client(); c.force_login(_team_user())
+        for art in ('hinterlegung', 'freigabe'):
+            r = c.get(f'/neu/vertraege/{v.id}/kaution-beleg/{art}/')
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Kaution').exists())
+
+    def test_maengelruege_pdf_und_pendenz(self):
+        from rentals.models import Dokument
+        from core.models import Pendenz
+        _lg, _e, _m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        g = c.get(f'/neu/vertraege/{v.id}/maengelruege/')
+        self.assertEqual(g.status_code, 200)
+        r = c.post(f'/neu/vertraege/{v.id}/maengelruege/', {'mangel': 'Tropfender Wasserhahn im Bad', 'frist_tage': '10'})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Mängelrüge').exists())
+        self.assertTrue(Pendenz.objects.filter(vertrag=v, titel__startswith='Mängelbehebung').exists())

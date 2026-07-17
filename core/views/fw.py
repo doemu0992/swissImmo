@@ -9106,6 +9106,71 @@ def fw_kaution_aktion(request, vertrag_id):
     return redirect(f'/neu/vertraege/{v.id}/')
 
 
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_kaution_beleg(request, vertrag_id, art):
+    """Kautions-Beleg als PDF (Art. 257e OR): `hinterlegung` = Bestätigung an die
+    Mieterschaft, `freigabe` = Freigabeschreiben an die Bank. Wird in der Akte abgelegt."""
+    from django.http import HttpResponse
+    from crm.models import Verwaltung
+    from core.services.mietprozess_briefe import kaution_hinterlegung_pdf, kaution_freigabe_pdf
+    from core.services.ablage import ablegen
+    from core.auth import log_aktion
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
+    vw = Verwaltung.objects.first()
+    if art == 'freigabe':
+        pdf = kaution_freigabe_pdf(v, verwaltung=vw)
+        titel = f"Kaution-Freigabe (Bank) {v.mieter.nachname}"
+    else:
+        pdf = kaution_hinterlegung_pdf(v, verwaltung=vw)
+        titel = f"Kaution-Bestätigung {v.mieter.nachname}"
+    ablegen(pdf, titel, kategorie='vertrag', vertrag=v, dedup=True)
+    log_aktion(request, "Kautions-Beleg erstellt", str(v.mieter), titel, ziel=v)
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = f'inline; filename="{titel.replace(" ", "_")}.pdf"'
+    return resp
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_maengelruege(request, vertrag_id):
+    """Mängelrüge / Fristansetzung (Art. 259 OR). GET: Formular · POST: PDF + Frist-Pendenz."""
+    from django.http import HttpResponse
+    from django.contrib import messages
+    from crm.models import Verwaltung
+    from core.services.mietprozess_briefe import maengelruege_pdf
+    from core.services.ablage import ablegen
+    from core.auth import log_aktion
+    from datetime import timedelta
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
+    basis = _global_filter(request)
+    if request.method == 'POST':
+        mangel = (request.POST.get('mangel') or '').strip()
+        try:
+            frist = max(1, int(request.POST.get('frist_tage') or 14))
+        except ValueError:
+            frist = 14
+        if not mangel:
+            messages.error(request, "❌ Bitte den Mangel beschreiben.")
+            return redirect(f'/neu/vertraege/{v.id}/maengelruege/')
+        vw = Verwaltung.objects.first()
+        pdf = maengelruege_pdf(v, mangel, frist_tage=frist, verwaltung=vw)
+        ablegen(pdf, f"Mängelrüge {v.mieter.nachname} {timezone.localdate():%d.%m.%Y}",
+                kategorie='vertrag', vertrag=v, dedup=False)
+        # Frist-Pendenz zur Nachkontrolle der Mängelbehebung.
+        try:
+            from core.models import Pendenz
+            faellig = timezone.localdate() + timedelta(days=frist)
+            Pendenz.objects.create(
+                titel=f"Mängelbehebung prüfen — {v.einheit.bezeichnung if v.einheit_id else ''}",
+                beschreibung=(mangel[:200]), vertrag=v, faellig_am=faellig, kategorie='frist')
+        except Exception:
+            pass
+        log_aktion(request, "Mängelrüge erstellt", str(v.mieter), f"Frist {frist} Tage", ziel=v)
+        resp = HttpResponse(pdf, content_type='application/pdf')
+        resp['Content-Disposition'] = f'inline; filename="Maengelruege_{v.mieter.nachname}.pdf"'
+        return resp
+    return render(request, 'fw/maengelruege.html', {**basis, 'nav': 'vertraege', 'v': v})
+
+
 # ============================================================
 # MWST-AUSWERTUNG (Umsatzsteuer vs. Vorsteuer = Zahllast)
 # ============================================================

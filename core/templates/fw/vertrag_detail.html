@@ -45,6 +45,8 @@
             <span class="text-slate-300">·</span>
             <a href="/neu/vertraege/{{ v.id }}/abnahme/neu/" class="text-xs font-semibold text-teal-600 hover:text-teal-700"><i class="fa-solid fa-clipboard-check mr-1"></i>Wohnungsabnahme</a>
             <span class="text-slate-300">·</span>
+            <a href="/neu/vertraege/{{ v.id }}/maengelruege/" class="text-xs font-semibold text-orange-600 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Mängelrüge</a>
+            <span class="text-slate-300">·</span>
             <a href="/vertrag/{{ v.id }}/pdf/" target="_blank" class="text-xs font-medium text-slate-500 hover:text-indigo-600"><i class="fa-solid fa-file-pdf mr-1"></i>PDF</a>
             <span class="text-slate-300">·</span>
             <form method="post" action="/neu/vertraege/{{ v.id }}/signieren/" onsubmit="return confirm('{% if v.sign_status == 'unterzeichnet' %}Dieser Vertrag ist bereits unterzeichnet. Wirklich erneut zur Unterschrift senden?{% else %}Vertrag an {{ v.mieter.display_name|escapejs }} zur digitalen Unterschrift senden?{% endif %}');"{% if not docuseal_konfiguriert %} title="DocuSeal ist noch nicht konfiguriert (Integrationen)"{% endif %}>
@@ -168,6 +170,14 @@
             {% if v.kautions_abzug_betrag %}<div class="flex justify-between"><dt class="text-slate-500">Einbehalt</dt><dd class="text-rose-600 font-medium">CHF {{ v.kautions_abzug_betrag|chf }}</dd></div>{% endif %}
             {% endif %}
         </dl>
+        {% if v.kautions_einbezahlt_am %}
+        <div class="flex flex-wrap gap-2 mb-3">
+            <a href="/neu/vertraege/{{ v.id }}/kaution-beleg/hinterlegung/" target="_blank" class="text-[11px] font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-md px-2.5 py-1.5"><i class="fa-solid fa-file-pdf mr-1"></i>Bestätigung an Mieter</a>
+            {% if not v.ist_kautionsversicherung %}
+            <a href="/neu/vertraege/{{ v.id }}/kaution-beleg/freigabe/" target="_blank" class="text-[11px] font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-md px-2.5 py-1.5"><i class="fa-solid fa-building-columns mr-1"></i>Freigabe an Bank</a>
+            {% endif %}
+        </div>
+        {% endif %}
 
         {% if v.kautions_status == 'erwartet' %}
         <div class="border-t border-slate-100 pt-3">
