@@ -371,6 +371,43 @@
     </div>
 </div>
 
+<!-- ===== TAB: FORMULARE & PROZESSE (ein Ort für alles) ===== -->
+<div data-panel="vt" id="vt-formulare" class="hidden">
+    <p class="text-xs text-slate-400 mb-4"><i class="fa-solid fa-circle-info mr-1"></i>Alle amtlichen Formulare und Prozesse für diesen Vertrag an einem Ort — kontextabhängig nach Status und Objektart. Erzeugte Dokumente landen automatisch in der Akte (Tab «Dokumente»).</p>
+    <div class="space-y-4">
+        {% for g in formular_gruppen %}
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm"><i class="fa-solid {{ g.icon }} text-indigo-500 mr-1.5"></i>{{ g.titel }}</div>
+            <div class="divide-y divide-slate-50">
+                {% for it in g.items %}
+                {% if it.verfuegbar %}
+                <a href="{{ it.url }}" {% if '/pdf/' in it.url or '/qr/' in it.url or '/dokument/' in it.url or 'kaution-beleg' in it.url %}target="_blank"{% endif %} class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/70 group">
+                    <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid {{ it.icon }}"></i></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-semibold text-slate-800 truncate">{{ it.titel }}
+                            {% if it.pflicht %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700">Formularpflicht</span>{% endif %}
+                            {% if it.erledigt %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700">erstellt</span>{% endif %}
+                        </div>
+                        <div class="text-xs text-slate-400 truncate">{{ it.sub }}</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-slate-300 group-hover:text-indigo-400"></i>
+                </a>
+                {% else %}
+                <div class="flex items-center gap-3 px-5 py-3 opacity-40 cursor-not-allowed" title="Für diesen Vertragsstatus nicht verfügbar">
+                    <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center shrink-0"><i class="fa-solid {{ it.icon }}"></i></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-semibold text-slate-500 truncate">{{ it.titel }}</div>
+                        <div class="text-xs text-slate-400 truncate">{{ it.sub }} · derzeit nicht verfügbar</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
 <!-- ===== TAB: DOKUMENTE (Ablage + Erstellbare Dokumente) ===== -->
 <div data-panel="vt" id="vt-dokumente" class="hidden">
     <!-- Erstellbare Dokumente (Fairwalter-Stil) -->

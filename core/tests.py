@@ -9195,3 +9195,35 @@ class Paket4RestTests(TestCase):
         html = r.content.decode()
         self.assertIn('Betriebskostenspiegel', html)
         self.assertIn('25,00', html)   # 2500 / 100 m² = CHF 25.00/m² (de-Lokalisierung)
+
+
+class FormulareTabTests(TestCase):
+    """Zentraler «Formulare & Prozesse»-Tab am Vertrag."""
+
+    def test_tab_zeigt_alle_gruppen_und_formulare(self):
+        _lg, _e, _m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        html = c.get(f'/neu/vertraege/{v.id}/').content.decode()
+        # Tab existiert
+        self.assertIn('vt-formulare', html)
+        # Gruppen
+        for g in ('Mietrechtliche Formulare', 'Kaution (Art. 257e)', 'Prozesse', 'Beilagen'):
+            self.assertIn(g, html)
+        # Kern-Formulare verlinkt
+        self.assertIn(f'/neu/mietzins/{v.id}/anfangsmietzins/', html)
+        self.assertIn(f'/neu/vertraege/{v.id}/maengelruege/', html)
+        self.assertIn(f'/neu/vertraege/{v.id}/untermiete/', html)
+
+    def test_kontext_kaution_nur_wenn_einbezahlt(self):
+        from core.views.fw import _formulare_prozesse
+        _lg, _e, _m, v = _basis_objekte()
+        # ohne Einzahlung: Kautions-Belege nicht verfügbar
+        gr = {g['titel']: g for g in _formulare_prozesse(v)}
+        kaution = {i['titel']: i for i in gr['Kaution (Art. 257e)']['items']}
+        self.assertFalse(kaution['Hinterlegungsbestätigung']['verfuegbar'])
+        # nach Einzahlung: verfügbar
+        v.kautions_art = 'sperrkonto'; v.kautions_einbezahlt_am = date.today(); v.save()
+        gr2 = {g['titel']: g for g in _formulare_prozesse(v)}
+        kaution2 = {i['titel']: i for i in gr2['Kaution (Art. 257e)']['items']}
+        self.assertTrue(kaution2['Hinterlegungsbestätigung']['verfuegbar'])
+        self.assertTrue(kaution2['Freigabe an Bank']['verfuegbar'])

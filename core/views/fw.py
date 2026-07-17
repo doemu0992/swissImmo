@@ -2354,6 +2354,80 @@ def _erstellbare_dokumente(v):
     return docs
 
 
+def _formulare_prozesse(v):
+    """Bündelt ALLE für diesen Vertrag zutreffenden Formulare/Prozesse in Gruppen —
+    kontextabhängig nach Status/Objektart, mit «bereits erstellt»-Kennzeichnung.
+    Ein Ort für alles: der «Formulare & Prozesse»-Tab am Vertrag."""
+    from rentals.models import Dokument
+    from core.services.formularpflicht import formularpflicht_fuer_liegenschaft
+    e = v.einheit
+    lg = e.liegenschaft if e else None
+    wohnraum = bool(e) and getattr(e, 'mietrecht_kategorie', '') != 'gewerbe' and not getattr(e, 'ist_einstellplatz', False)
+    aktiv = v.status == 'aktiv'
+    gek = v.status == 'gekuendigt'
+    beendet = v.status in ('gekuendigt', 'archiviert')
+    hat_kaution = bool(v.kautions_einbezahlt_am)
+    sperrkonto = hat_kaution and not getattr(v, 'ist_kautionsversicherung', False)
+    pflicht = formularpflicht_fuer_liegenschaft(lg)[0] if lg else 'unbekannt'
+
+    labels = [b or '' for b in Dokument.objects.filter(vertrag=v).values_list('bezeichnung', flat=True)]
+
+    def hat(prefix):
+        return any(b.startswith(prefix) for b in labels)
+
+    gruppen = [
+        {'titel': 'Mietrechtliche Formulare', 'icon': 'fa-scale-balanced', 'items': [
+            {'titel': 'Anfangsmietzins (Art. 270)', 'icon': 'fa-file-invoice',
+             'url': f'/neu/mietzins/{v.id}/anfangsmietzins/', 'erledigt': hat('Anfangsmietzins'),
+             'pflicht': (pflicht == 'ja' and wohnraum),
+             'sub': ('Formularpflicht' if (pflicht == 'ja' and wohnraum) else 'Mitteilung des Anfangsmietzinses')},
+            {'titel': 'Mietzinsanpassung (Art. 269d)', 'icon': 'fa-arrow-trend-up',
+             'url': f'/neu/mietzins/{v.id}/anpassung/', 'verfuegbar': aktiv,
+             'sub': 'Erhöhung / Senkung amtlich mitteilen'},
+            {'titel': 'Kündigung (Art. 266)', 'icon': 'fa-file-circle-xmark',
+             'url': f'/neu/vertraege/{v.id}/kuendigen/', 'verfuegbar': not gek,
+             'erledigt': v.kuendigungen.exists(), 'sub': 'Vermieter- / Mieterkündigung'},
+        ]},
+        {'titel': 'Kaution (Art. 257e)', 'icon': 'fa-shield-halved', 'items': [
+            {'titel': 'Hinterlegungsbestätigung', 'icon': 'fa-file-pdf',
+             'url': f'/neu/vertraege/{v.id}/kaution-beleg/hinterlegung/', 'verfuegbar': hat_kaution,
+             'erledigt': hat('Kaution-Bestätigung'), 'sub': 'an die Mieterschaft'},
+            {'titel': 'Freigabe an Bank', 'icon': 'fa-building-columns',
+             'url': f'/neu/vertraege/{v.id}/kaution-beleg/freigabe/', 'verfuegbar': sperrkonto,
+             'erledigt': hat('Kaution-Freigabe'), 'sub': 'Sperrkonto freigeben'},
+        ]},
+        {'titel': 'Prozesse', 'icon': 'fa-gears', 'items': [
+            {'titel': 'Zahlungsverzug (Art. 257d)', 'icon': 'fa-gavel',
+             'url': f'/neu/vertraege/{v.id}/verzug/', 'sub': 'Frist + Kündigungsandrohung'},
+            {'titel': 'Mängelrüge (Art. 259)', 'icon': 'fa-triangle-exclamation',
+             'url': f'/neu/vertraege/{v.id}/maengelruege/', 'erledigt': hat('Mängelrüge'),
+             'sub': 'Fristansetzung zur Mängelbehebung'},
+            {'titel': 'Untermiete (Art. 262)', 'icon': 'fa-people-arrows',
+             'url': f'/neu/vertraege/{v.id}/untermiete/', 'erledigt': hat('Untermiete-'),
+             'sub': 'Zustimmung / Ablehnung'},
+            {'titel': 'Wohnungsabnahme', 'icon': 'fa-clipboard-check',
+             'url': f'/neu/vertraege/{v.id}/abnahme/neu/', 'sub': 'Ein- / Auszugsprotokoll'},
+            {'titel': 'Schlussabrechnung', 'icon': 'fa-file-invoice-dollar',
+             'url': f'/neu/vertraege/{v.id}/schlussabrechnung/', 'verfuegbar': (aktiv or beendet),
+             'sub': 'beim Auszug'},
+        ]},
+        {'titel': 'Vertrag & Beilagen', 'icon': 'fa-file-contract', 'items': [
+            {'titel': 'Mietvertrag (PDF)', 'icon': 'fa-file-contract', 'url': f'/vertrag/{v.id}/pdf/', 'sub': 'kompletter Vertrag'},
+            {'titel': 'QR-Rechnung', 'icon': 'fa-qrcode', 'url': f'/vertrag/{v.id}/qr/', 'sub': 'Einzahlungsschein QR-IBAN'},
+            {'titel': 'Begleitbrief', 'icon': 'fa-envelope', 'url': f'/vertrag/{v.id}/dokument/begleitbrief/', 'sub': 'Anschreiben zur Unterzeichnung'},
+            {'titel': 'Allgemeine Bedingungen', 'icon': 'fa-file-lines', 'url': f'/vertrag/{v.id}/dokument/allgemeine-bedingungen/', 'sub': 'Vertragsbeilage'},
+            {'titel': 'Hausordnung', 'icon': 'fa-list-check', 'url': f'/vertrag/{v.id}/dokument/hausordnung/', 'sub': 'Vertragsbeilage'},
+            {'titel': 'Wohnungsausweis', 'icon': 'fa-id-card', 'url': f'/vertrag/{v.id}/dokument/wohnungsausweis/', 'sub': 'Mieter- und Objektdaten'},
+        ]},
+    ]
+    for g in gruppen:
+        for it in g['items']:
+            it.setdefault('verfuegbar', True)
+            it.setdefault('erledigt', False)
+            it.setdefault('pflicht', False)
+    return gruppen
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_vertrag_detail(request, pk):
     from rentals.models import Dokument as RentalsDokument
@@ -2396,11 +2470,13 @@ def fw_vertrag_detail(request, pk):
         ('uebersicht', 'Übersicht', None),
         ('finanzen', 'Finanzen', len(offene) or None),
         ('mietzins', 'Mietzins', anpassungen.count() or None),
+        ('formulare', 'Formulare', None),
         ('dokumente', 'Dokumente', None),
         ('verlauf', 'Verlauf', len(verlauf) or None),
     ]
     from core.services.docuseal_service import docuseal_konfiguriert
     return render(request, 'fw/vertrag_detail.html', {
+        'formular_gruppen': _formulare_prozesse(v),
         **basis, 'nav': 'vertraege', 'v': v, 'verlauf': verlauf,
         'vertrag_pill': _vertrag_status_pill(v),
         'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0')),
