@@ -8825,7 +8825,9 @@ class FormularpflichtTests(TestCase):
         self.assertTrue(hat_original('BE', 'anfangsmietzins'))  # Original hinterlegt
         daten = {'anfang_netto': Decimal('1650'), 'anfang_nk': Decimal('250'),
                  'vormiete_netto': Decimal('1500'), 'vormiete_nk': Decimal('230'),
-                 'beginn': v.beginn, 'grund_choice': 'anpassung', 'begruendung': 'Referenzzins'}
+                 'beginn': v.beginn, 'grund_choice': 'anpassung', 'begruendung': 'Referenzzins',
+                 'basis_ref': Decimal('1.75'), 'basis_lik': Decimal('107.1'),
+                 'basis_lik_basis': 'Dezember 2020'}
         pdf = fill_anfangsmietzins(v, daten, kanton='BE')
         self.assertTrue(pdf.startswith(b'%PDF'))
         # Es ist das amtliche Original (AcroForm mit den Textfeld-Namen), gefüllt.
@@ -8833,6 +8835,23 @@ class FormularpflichtTests(TestCase):
         self.assertIn('Textfeld 16', flds)                       # Feldname aus dem Original
         self.assertEqual(flds['Textfeld 5'].get('/V'), f"{m.vorname} {m.nachname}")
         self.assertEqual(flds['Textfeld 16'].get('/V'), "1'650.00")   # Anfangsmiete netto
+        # Berechnungsgrundlagen (Referenzzinssatz / LIK / Basis)
+        self.assertEqual(flds['Textfeld 21'].get('/V'), '1.75')
+        self.assertEqual(flds['Textfeld 22'].get('/V'), '107.1')
+        self.assertEqual(flds['Textfeld 22a'].get('/V'), 'Dez. 2020')   # gekürzt (schmales Feld)
+
+    def test_view_fuellt_berechnungsgrundlagen(self):
+        # Der View muss Referenzzinssatz/LIK aus dem Vertrag in die daten geben.
+        lg, e, m, v = _basis_objekte()
+        lg.kanton = 'BE'; lg.plz = '3000'; lg.ort = 'Bern'; lg.save()
+        v.basis_referenzzinssatz = Decimal('1.75'); v.basis_lik_punkte = Decimal('107.1'); v.save()
+        c = Client(); c.force_login(_team_user())
+        g = c.get(f'/neu/mietzins/{v.id}/anfangsmietzins/')
+        self.assertEqual(g.status_code, 200)
+        html = g.content.decode()
+        self.assertIn('Berechnungsgrundlagen', html)
+        self.assertIn('1.75', html)
+        self.assertIn('107.1', html)
 
     def test_aktivierung_erzeugt_formular_automatisch(self):
         from rentals.models import Dokument

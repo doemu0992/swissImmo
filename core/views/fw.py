@@ -6327,6 +6327,8 @@ def anfangsmietzins_auto_ablegen(vertrag, verwaltung=None):
     anf_nk = (soll.nebenkosten if soll else vertrag.nebenkosten) or Decimal('0')
     vor = _vormiete_fuer(vertrag)
     vor_soll = vor.einheit.aktueller_sollmietzins(vor.beginn) if (vor and vor.einheit_id) else None
+    from core.services.lik import LIK_BASIS
+    _bq = vor or vertrag  # Berechnungsgrundlagen: Vorvertrag, sonst aktueller Vertrag
     daten = {
         'anfang_netto': anf_netto,
         'anfang_nk': anf_nk,
@@ -6335,6 +6337,9 @@ def anfangsmietzins_auto_ablegen(vertrag, verwaltung=None):
         'beginn': vertrag.beginn,
         'grund_choice': 'unbekannt' if not vor else 'anpassung',
         'begruendung': '',
+        'basis_ref': _bq.basis_referenzzinssatz,
+        'basis_lik': _bq.basis_lik_punkte,
+        'basis_lik_basis': LIK_BASIS,
         'pflicht_info': info,
     }
     vw = verwaltung or (einheit.liegenschaft.verwaltung if einheit.liegenschaft else None) or Verwaltung.objects.first()
@@ -6381,6 +6386,14 @@ def fw_anfangsmietzins(request, vertrag_id):
     else:
         vor_netto = vor_nk = ''
 
+    # Berechnungsgrundlagen: Referenzzinssatz + LIK-Punkte + LIK-Basis. Quelle =
+    # Vorvertrag (falls vorhanden), sonst der aktuelle Vertrag (immer gesetzt).
+    from core.services.lik import LIK_BASIS
+    _bq = vormiete or v
+    basis_ref = _bq.basis_referenzzinssatz
+    basis_lik = _bq.basis_lik_punkte
+    basis_lik_basis = LIK_BASIS
+
     if request.method == 'POST':
         daten = {
             'anfang_netto': _dec(request.POST.get('anfang_netto'), str(soll_netto or 0)),
@@ -6390,6 +6403,10 @@ def fw_anfangsmietzins(request, vertrag_id):
             'beginn': v.beginn,
             'grund_choice': request.POST.get('grund_choice') or 'anpassung',
             'begruendung': (request.POST.get('begruendung') or '').strip(),
+            'basis_ref': (request.POST.get('basis_ref') or basis_ref or ''),
+            'basis_lik': (request.POST.get('basis_lik') or basis_lik or ''),
+            'basis_lik_basis': (request.POST.get('basis_lik_basis') or basis_lik_basis or ''),
+            'vorbehalte': (request.POST.get('vorbehalte') or '').strip(),
         }
         from core.services.formularpflicht import formularpflicht_fuer_liegenschaft
         _pflicht, pflicht_info = formularpflicht_fuer_liegenschaft(lg)
@@ -6418,6 +6435,7 @@ def fw_anfangsmietzins(request, vertrag_id):
         'pflicht': pflicht, 'pflicht_info': pflicht_info,
         'pflicht_label': pflicht_label(pflicht),
         'hat_original': hat_original(kanton_fuer_liegenschaft(lg), 'anfangsmietzins'),
+        'basis_ref': basis_ref, 'basis_lik': basis_lik, 'basis_lik_basis': basis_lik_basis,
     })
 
 

@@ -29,6 +29,20 @@ def _fr(d):
         return ""
 
 
+def _num(d):
+    """Schlanke Zahl ohne Tausendertrenner (Referenzzinssatz/LIK), '' bei None/0/leer."""
+    if d in (None, '', 0):
+        return ''
+    try:
+        z = Decimal(str(d).replace("'", '').replace(',', '.'))
+        if z == 0:
+            return ''
+        s = f"{z:.2f}".rstrip('0').rstrip('.')
+        return s
+    except Exception:
+        return str(d)
+
+
 def _y(top):
     """pdfplumber top-origin → reportlab bottom-origin (Textbasislinie in der Box)."""
     return PAGE_H - top - 10
@@ -232,9 +246,12 @@ def _checkbox_on_states(reader):
     return states
 
 
-def _fill_acroform(original_pfad, text_values, checkbox_fields=()):
+def _fill_acroform(original_pfad, text_values, checkbox_fields=(), signaturen=()):
     """Befüllt ein AcroForm-PDF. text_values: {feldname: text}. checkbox_fields: Liste
-    von Feldnamen, die angekreuzt werden. Seiten/Recht/Layout bleiben unverändert."""
+    von Feldnamen, die angekreuzt werden. signaturen: Liste von
+    (seiten_index, bild_pfad, x, y, breite, hoehe) — stempelt ein Unterschriftsbild
+    per Overlay auf die Seite (PDF-Koordinaten, Ursprung unten links).
+    Seiten/Recht/Layout bleiben unverändert."""
     reader = PdfReader(original_pfad)
     writer = PdfWriter()
     writer.append(reader)
@@ -253,6 +270,19 @@ def _fill_acroform(original_pfad, text_values, checkbox_fields=()):
         writer.set_need_appearances_writer(True)  # Viewer rendert die Werte
     except Exception:
         pass
+
+    # Unterschriftsbilder als Overlay auf die jeweilige Seite legen.
+    for sig in signaturen or ():
+        try:
+            seite_idx, bild, x, y, w, h = sig
+            if not bild:
+                continue
+            ov = _overlay(lambda c, _b=bild, _x=x, _y=y, _w=w, _h=h:
+                          c.drawImage(_b, _x, _y, width=_w, height=_h,
+                                      preserveAspectRatio=True, mask='auto'))
+            writer.pages[seite_idx].merge_page(ov)
+        except Exception:
+            pass
 
     out = io.BytesIO()
     writer.write(out); out.seek(0)
@@ -531,10 +561,11 @@ def fill_anfangsmietzins_be(vertrag, daten, verwaltung=None):
         'Textfeld 15': _fr(vor_netto) if hat_vormiete else '', 'Textfeld 16': _fr(anf_netto),
         'Textfeld 17': _fr(vor_nk) if hat_vormiete else '', 'Textfeld 18': _fr(anf_nk),
         'Textfeld 19': _fr(vor_netto + vor_nk) if hat_vormiete else '', 'Textfeld 20': _fr(anf_netto + anf_nk),
-        # Berechnungsgrundlagen bisheriger Mietzins (nur wenn bekannt)
-        'Textfeld 21': str(daten.get('basis_ref') or ''),
-        'Textfeld 22': str(daten.get('basis_lik') or ''),
-        'Textfeld 22a': str(daten.get('basis_lik_basis') or ''),
+        # Berechnungsgrundlagen (Referenzzinssatz / LIK-Punkte / LIK-Basis)
+        'Textfeld 21': _num(daten.get('basis_ref')),
+        'Textfeld 22': _num(daten.get('basis_lik')),
+        # Basisfeld ist schmal → Monatsnamen kürzen, damit «Dezember 2020» passt.
+        'Textfeld 22a': str(daten.get('basis_lik_basis') or '').replace('Dezember', 'Dez.'),
         # 2. Vorbehalte · 3. Klare Begründung
         'Textfeld 23': (daten.get('vorbehalte') or '')[:220],
         'Textfeld 24': (daten.get('begruendung') or '')[:220],
@@ -544,7 +575,20 @@ def fill_anfangsmietzins_be(vertrag, daten, verwaltung=None):
     }
     # Förderbeiträge für wertvermehrende Verbesserungen: Standard «Nein».
     cbs = ['Ja'] if daten.get('foerderbeitraege') else ['Nein']
-    return _fill_acroform(os.path.join(_DIR, 'BE_anfangsmietzins_original.pdf'), tv, cbs)
+    # Digitale Unterschrift der Vermieterschaft (Mandant → sonst Verwaltung) als
+    # Overlay auf das Unterschriftsfeld auf Seite 2 (rect x≈305, y≈360).
+    sig_bild = None
+    for quelle in (mandant, verwaltung):
+        us = getattr(quelle, 'unterschrift_bild', None) if quelle else None
+        if us:
+            try:
+                sig_bild = us.path
+            except Exception:
+                sig_bild = None
+            if sig_bild:
+                break
+    signaturen = [(1, sig_bild, 310, 361, 150, 16)] if sig_bild else ()
+    return _fill_acroform(os.path.join(_DIR, 'BE_anfangsmietzins_original.pdf'), tv, cbs, signaturen)
 
 
 # ============================================================

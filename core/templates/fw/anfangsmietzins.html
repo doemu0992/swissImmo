@@ -90,6 +90,29 @@
         </div>
     </div>
 
+    <!-- Berechnungsgrundlagen -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-1">Berechnungsgrundlagen</h3>
+        <p class="text-[11px] text-slate-400 mb-3">Referenzzinssatz & Landesindex (LIK), auf denen der Mietzins beruht —
+            aus dem Vertrag übernommen, bei Bedarf anpassbar.</p>
+        <div class="grid grid-cols-3 gap-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Referenzzinssatz (%)</label>
+                <input name="basis_ref" value="{% localize off %}{{ basis_ref|default_if_none:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">LIK (Punkte)</label>
+                <input name="basis_lik" value="{% localize off %}{{ basis_lik|default_if_none:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Basis (=100)</label>
+                <input name="basis_lik_basis" value="{{ basis_lik_basis|default_if_none:'' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            </div>
+        </div>
+        <label class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Vorbehalte für spätere Mietzinserhöhungen (optional)</label>
+        <textarea name="vorbehalte" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5" placeholder="z. B. Referenzzinssatz 1.25 % vorbehalten…"></textarea>
+    </div>
+
     <!-- Begründung -->
     <div class="bg-white rounded-xl border border-slate-200 p-5">
         <h3 class="font-bold text-slate-800 text-sm mb-4">Grund der Festsetzung</h3>
