@@ -97,8 +97,8 @@
         </div>
     </details>
     {% empty %}
-    <div class="px-5 py-10 text-center text-sm text-slate-400 italic">
-        {% if q or typ_filter %}Keine Treffer für diesen Filter.{% else %}Noch keine Objekte erfasst.{% endif %}
+    <div>
+        {% if q or typ_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Objekte gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='fa-door-open' titel='Noch keine Objekte' subtext='Objekte gehören zu einer Liegenschaft — legen Sie zuerst eine Liegenschaft an oder importieren Sie die Wohnungen aus dem GWR.' cta_url='/neu/liegenschaften/neu/' cta_label='Liegenschaft erfassen' %}{% endif %}
     </div>
     {% endfor %}
 </div>

@@ -118,7 +118,7 @@
         <div class="flex items-start justify-between flex-wrap gap-3">
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1">
                 <div>
-                    <div class="text-2xl font-bold">CHF {{ rendite.jahres_netto|floatformat:0 }}</div>
+                    <div class="text-2xl font-bold">CHF {{ rendite.jahres_netto|chf:0 }}</div>
                     <div class="text-xs text-indigo-100">Soll-Nettomiete / Jahr</div>
                 </div>
                 <div>
@@ -130,7 +130,7 @@
                     <div class="text-xs text-indigo-100">Nettorendite (12 Mt.)</div>
                 </div>
                 <div>
-                    <div class="text-2xl font-bold">{% if rendite.wert %}CHF {{ rendite.wert|floatformat:0 }}{% else %}—{% endif %}</div>
+                    <div class="text-2xl font-bold">{% if rendite.wert %}CHF {{ rendite.wert|chf:0 }}{% else %}—{% endif %}</div>
                     <div class="text-xs text-indigo-100">{% if rendite.wert_quelle == 'verkehrswert' %}Verkehrswert{% elif rendite.wert_quelle == 'anlagekosten' %}Anlagekosten{% else %}Wert fehlt{% endif %}</div>
                 </div>
             </div>
@@ -150,9 +150,9 @@
                 {% if lg.mandant %}<div class="flex justify-between"><dt class="text-slate-500">Eigentümer</dt><dd class="text-slate-800 font-medium text-right">{{ lg.mandant.firma_oder_name }}</dd></div>{% endif %}
                 {% if lg.egid %}<div class="flex justify-between"><dt class="text-slate-500">EGID</dt><dd class="text-slate-800 font-medium">{{ lg.egid }}</dd></div>{% endif %}
                 {% if lg.kataster_nummer %}<div class="flex justify-between"><dt class="text-slate-500">Kataster-Nr.</dt><dd class="text-slate-800 font-medium">{{ lg.kataster_nummer }}</dd></div>{% endif %}
-                {% if lg.verkehrswert %}<div class="flex justify-between"><dt class="text-slate-500">Verkehrswert</dt><dd class="text-slate-800 font-medium">CHF {{ lg.verkehrswert|floatformat:0 }}</dd></div>{% endif %}
-                {% if lg.anlagekosten %}<div class="flex justify-between"><dt class="text-slate-500">Anlagekosten</dt><dd class="text-slate-800 font-medium">CHF {{ lg.anlagekosten|floatformat:0 }}</dd></div>{% endif %}
-                {% if lg.versicherungswert %}<div class="flex justify-between"><dt class="text-slate-500">Versicherungswert</dt><dd class="text-slate-800 font-medium">CHF {{ lg.versicherungswert|floatformat:0 }}</dd></div>{% endif %}
+                {% if lg.verkehrswert %}<div class="flex justify-between"><dt class="text-slate-500">Verkehrswert</dt><dd class="text-slate-800 font-medium">CHF {{ lg.verkehrswert|chf:0 }}</dd></div>{% endif %}
+                {% if lg.anlagekosten %}<div class="flex justify-between"><dt class="text-slate-500">Anlagekosten</dt><dd class="text-slate-800 font-medium">CHF {{ lg.anlagekosten|chf:0 }}</dd></div>{% endif %}
+                {% if lg.versicherungswert %}<div class="flex justify-between"><dt class="text-slate-500">Versicherungswert</dt><dd class="text-slate-800 font-medium">CHF {{ lg.versicherungswert|chf:0 }}</dd></div>{% endif %}
                 {% if lg.grundstuecksflaeche_m2 %}<div class="flex justify-between"><dt class="text-slate-500">Grundstücksfläche</dt><dd class="text-slate-800 font-medium">{{ lg.grundstuecksflaeche_m2|floatformat:0 }} m²</dd></div>{% endif %}
                 {% if lg.gebaeudevolumen_m3 %}<div class="flex justify-between"><dt class="text-slate-500">Gebäudevolumen</dt><dd class="text-slate-800 font-medium">{{ lg.gebaeudevolumen_m3|floatformat:0 }} m³</dd></div>{% endif %}
                 {% if lg.heizsystem %}<div class="flex justify-between"><dt class="text-slate-500">Heizsystem</dt><dd class="text-slate-800 font-medium">{{ lg.get_heizsystem_display }}</dd></div>{% endif %}
@@ -190,8 +190,8 @@
                     <td class="py-1.5 pr-3 font-medium text-slate-700">{{ vs.get_art_display }}</td>
                     <td class="py-1.5 pr-3 text-slate-700">{{ vs.gesellschaft }}</td>
                     <td class="py-1.5 pr-3 font-mono text-xs text-slate-500">{{ vs.policennummer }}</td>
-                    <td class="py-1.5 pr-3 text-right text-slate-700">{% if vs.versicherungssumme %}CHF {{ vs.versicherungssumme|floatformat:0 }}{% endif %}</td>
-                    <td class="py-1.5 pr-3 text-right text-slate-700">{% if vs.jahrespraemie %}CHF {{ vs.jahrespraemie|floatformat:0 }}{% endif %}</td>
+                    <td class="py-1.5 pr-3 text-right text-slate-700">{% if vs.versicherungssumme %}CHF {{ vs.versicherungssumme|chf:0 }}{% endif %}</td>
+                    <td class="py-1.5 pr-3 text-right text-slate-700">{% if vs.jahrespraemie %}CHF {{ vs.jahrespraemie|chf:0 }}{% endif %}</td>
                     <td class="py-1.5 pr-3 text-slate-600">{% if vs.ablauf_datum %}{{ vs.ablauf_datum|date:"d.m.Y" }}{% endif %}</td>
                     <td class="py-1.5 text-right">
                         <form method="post" action="/neu/versicherung/{{ vs.id }}/loeschen/" onsubmit="return confirm('Police entfernen?');">{% csrf_token %}

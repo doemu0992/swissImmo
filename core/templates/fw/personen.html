@@ -49,7 +49,7 @@
             {% for row in rows %}
             <tr class="person-row hover:bg-slate-50/60 transition-colors cursor-pointer" data-suche="{{ row.m.display_name|lower }} {{ row.m.email|lower }} {{ row.m.ort|lower }} {{ row.m.plz }}" onclick="window.location='/neu/personen/{{ row.m.id }}/'">
                 <td class="px-5 py-3.5">
-                    <div class="flex items-center gap-3">
+                    <a href="/neu/personen/{{ row.m.id }}/" class="flex items-center gap-3" onclick="event.stopPropagation()">
                         <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
                             <i class="fa-solid {% if row.m.typ == 'firma' %}fa-briefcase{% elif row.m.typ == 'verein' %}fa-people-group{% else %}fa-user{% endif %}"></i>
                         </div>
@@ -57,7 +57,7 @@
                             <div class="font-semibold text-slate-900 whitespace-nowrap">{{ row.m.display_name }}</div>
                             <div class="text-xs text-slate-400">{{ row.m.get_typ_display }}</div>
                         </div>
-                    </div>
+                    </a>
                 </td>
                 <td class="px-5 py-3.5 text-slate-600">
                     {% if row.m.email %}<div class="whitespace-nowrap"><i class="fa-regular fa-envelope text-slate-300 mr-1.5 text-xs"></i>{{ row.m.email }}</div>{% endif %}
@@ -76,8 +76,8 @@
                 <td class="px-5 py-3.5 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="px-5 py-10 text-center text-sm text-slate-400 italic">
-                {% if q or typ_filter %}Keine Treffer für diesen Filter.{% else %}Noch keine Personen erfasst.{% endif %}
+            <tr><td colspan="5">
+                {% if q or typ_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Personen gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='fa-user-plus' titel='Noch keine Personen' subtext='Erfassen Sie Mieter, Bewerber und weitere Kontakte.' cta_url='/neu/personen/neu/' cta_label='Erste Person erfassen' %}{% endif %}
             </td></tr>
             {% endfor %}
             </tbody>

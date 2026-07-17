@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}swissImmo{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -139,9 +140,6 @@
             </form>
             <!-- Account ganz rechts aussen -->
             <div class="ml-auto flex items-center gap-4">
-            <button class="relative text-slate-400 hover:text-slate-600 transition-colors" title="Benachrichtigungen">
-                <i class="fa-regular fa-bell text-lg"></i>
-            </button>
             <div class="relative">
                 <button onclick="fwProfilMenu()" class="flex items-center gap-2.5 group">
                     <span class="text-sm text-slate-500 hidden md:inline">Hallo, <span class="font-semibold text-slate-800">{{ request.user.first_name|default:request.user.username }}</span></span>
@@ -158,7 +156,6 @@
                             <div class="text-xs text-slate-400 truncate">{{ request.user.email|default:request.user.username }}</div>
                         </div>
                     </div>
-                    {% include 'fw/_menu_item.html' with ziel='/neu/personen/' icon='fa-user' label='Profil' %}
                     {% include 'fw/_menu_item.html' with ziel='/neu/account/' icon='fa-gear' label='Account' %}
                     {% include 'fw/_menu_item.html' with ziel='/neu/abonnement/' icon='fa-star' label='Abonnement' %}
                     {% include 'fw/_menu_item.html' with ziel='/neu/benutzer/' icon='fa-users' label='Benutzer' %}
@@ -262,6 +259,41 @@ document.addEventListener('DOMContentLoaded', function() {
         var btn = document.querySelector('[data-tab][data-target="' + t + '"]');
         if (btn) fwTab(btn.dataset.tab, t);
     } catch (e) {}
+});
+
+// Globaler Submit-Guard: verhindert Doppel-Submits (z.B. GWR-Import, Buchungen).
+// Beim Absenden wird der Submit-Button deaktiviert und zeigt einen Spinner;
+// Formulare mit data-no-guard sind ausgenommen (z.B. target=_blank-PDFs).
+document.addEventListener('submit', function(e) {
+    var form = e.target;
+    if (!(form instanceof HTMLFormElement) || form.hasAttribute('data-no-guard')
+        || form.target === '_blank') return;
+    var btn = form.querySelector('button[type="submit"], button:not([type])');
+    if (!btn || btn.disabled) return;
+    setTimeout(function() {                       // erst NACH dem Submit deaktivieren
+        btn.disabled = true;
+        btn.classList.add('opacity-60', 'cursor-wait');
+        var ic = btn.querySelector('i.fa-solid, i.fa-regular');
+        if (ic) { ic.className = 'fa-solid fa-circle-notch fa-spin mr-1.5'; }
+    }, 0);
+    // Sicherheitsnetz: nach 15 s wieder aktivieren (z.B. Validierungsfehler ohne Reload)
+    setTimeout(function() {
+        btn.disabled = false;
+        btn.classList.remove('opacity-60', 'cursor-wait');
+    }, 15000);
+});
+
+// Generischer Live-Filter für Listen: <input data-suche="#tbodyId"> filtert
+// Zeilen der Ziel-Tabelle beim Tippen (Suchtext gegen Zeilentext).
+document.addEventListener('input', function(e) {
+    var inp = e.target;
+    if (!inp.matches || !inp.matches('[data-suche]')) return;
+    var ziel = document.querySelector(inp.dataset.suche);
+    if (!ziel) return;
+    var q = (inp.value || '').toLowerCase();
+    ziel.querySelectorAll('tr[data-zeile]').forEach(function(tr) {
+        tr.classList.toggle('hidden', q && tr.textContent.toLowerCase().indexOf(q) === -1);
+    });
 });
 </script>
 {% block scripts %}{% endblock %}

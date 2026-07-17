@@ -15,8 +15,16 @@
         </a>
     </div>
 </div>
-<p class="text-sm text-slate-500 mb-5">{{ rows|length }} Liegenschaft(en) im Portfolio
+<p class="text-sm text-slate-500 mb-4">{{ rows|length }} Liegenschaft(en) im Portfolio
     {% if aktive_lg %}· gefiltert <a href="/neu/liegenschaften/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+
+<div class="mb-4">
+    <div class="relative max-w-sm">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
+        <input data-suche="#lgListe" placeholder="Liegenschaft suchen (Strasse, Ort, PLZ) …"
+               class="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400">
+    </div>
+</div>
 
 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
     <div class="overflow-x-auto">
@@ -32,17 +40,17 @@
                 <th class="px-5 py-3"></th>
             </tr>
             </thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody id="lgListe" class="divide-y divide-slate-50">
             {% for row in rows %}
-            <tr class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="window.location='/neu/liegenschaften/{{ row.lg.id }}/'">
+            <tr data-zeile class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="window.location='/neu/liegenschaften/{{ row.lg.id }}/'">
                 <td class="px-5 py-3.5">
-                    <div class="flex items-center gap-3">
+                    <a href="/neu/liegenschaften/{{ row.lg.id }}/" class="flex items-center gap-3" onclick="event.stopPropagation()">
                         <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-building"></i></div>
                         <div>
                             <div class="font-semibold text-slate-900">{{ row.lg.strasse }}</div>
                             {% if row.lg.baujahr %}<div class="text-xs text-slate-400">Baujahr {{ row.lg.baujahr }}</div>{% endif %}
                         </div>
-                    </div>
+                    </a>
                 </td>
                 <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.lg.plz }} {{ row.lg.ort }}</td>
                 <td class="px-5 py-3.5 text-center font-semibold text-slate-800">{{ row.einheiten_count }}</td>
@@ -58,7 +66,7 @@
                 <td class="px-5 py-3.5 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="px-5 py-10 text-center text-sm text-slate-400 italic">Noch keine Liegenschaften erfasst.</td></tr>
+            <tr><td colspan="7">{% include 'fw/_empty.html' with icon='fa-building' titel='Noch keine Liegenschaften' subtext='Erfassen Sie Ihre erste Liegenschaft — die Objekte können automatisch aus dem Gebäude- und Wohnungsregister (GWR) importiert werden.' cta_url='/neu/liegenschaften/neu/' cta_label='Erste Liegenschaft erfassen' %}</td></tr>
             {% endfor %}
             </tbody>
         </table>

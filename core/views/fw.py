@@ -444,6 +444,19 @@ def fw_debitoren(request):
     rows.sort(key=lambda x: (0, x['faellig'].toordinal()) if x['r'].status in ('offen', 'teilbezahlt')
               else (1, -x['faellig'].toordinal()))
 
+    # Pagination: die Debitorenliste wächst monatlich um eine Position je Vertrag —
+    # ohne Seiten wird sie nach einem Jahr unbrauchbar lang. KPI-Summen oben
+    # bleiben Gesamtwerte (vor dem Slicing berechnet).
+    from django.core.paginator import Paginator
+    paginator = Paginator(rows, 50)
+    try:
+        seite = max(1, int(request.GET.get('seite') or 1))
+    except ValueError:
+        seite = 1
+    page = paginator.get_page(seite)
+    rows_gesamt = len(rows)
+    rows = list(page.object_list)
+
     aktive_vertraege = (Mietvertrag.objects.filter(status='aktiv')
                         .select_related('mieter', 'einheit__liegenschaft').order_by('einheit__liegenschaft__strasse'))
     if aktive_lg:
@@ -484,6 +497,7 @@ def fw_debitoren(request):
         'absender': absender,
         'heute_iso': heute.isoformat(),
         'faellig_iso': (heute + _timedelta(days=30)).isoformat(),
+        'page': page, 'rows_gesamt': rows_gesamt,
     }
     return render(request, 'fw/debitoren.html', context)
 

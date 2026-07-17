@@ -191,16 +191,22 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="9" class="px-5 py-10 text-center text-sm text-slate-400 italic">
-                {% if q or status_filter %}Keine Treffer für diesen Filter.{% else %}Noch keine Debitorenrechnungen — starte die Sollstellung im Finanz-Modul.{% endif %}
+            <tr><td colspan="9">
+                {% if q or status_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Rechnungen gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='fa-file-invoice-dollar' titel='Noch keine Debitorenrechnungen' subtext='Der monatliche Mietenlauf (Sollstellung) erzeugt die Mietrechnungen automatisch.' cta_url='/neu/finanzen/' cta_label='Zur Sollstellung' %}{% endif %}
             </td></tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
 
-    <div class="px-5 py-3 border-t border-slate-100 text-xs text-slate-400">
-        {{ rows|length }} Position(en) · Mahnstufen werden bis zum Mahnwesen-Modul aus der Fälligkeit berechnet
+    <div class="px-5 py-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+        <span>{{ rows_gesamt }} Position(en){% if page.paginator.num_pages > 1 %} · Seite {{ page.number }}/{{ page.paginator.num_pages }}{% endif %} · Mahnstufen werden aus der Fälligkeit berechnet</span>
+        {% if page.paginator.num_pages > 1 %}
+        <span class="flex items-center gap-1.5">
+            {% if page.has_previous %}<a href="?seite={{ page.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}" class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-indigo-400 hover:text-indigo-600 font-semibold">‹ Zurück</a>{% endif %}
+            {% if page.has_next %}<a href="?seite={{ page.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}" class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-indigo-400 hover:text-indigo-600 font-semibold">Weiter ›</a>{% endif %}
+        </span>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

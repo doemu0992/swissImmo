@@ -9909,3 +9909,67 @@ class NachtN3MieterportalTests(TestCase):
         body = c.get('/mieter/').content.decode()
         for pfad in ('/mieter/konto/', '/mieter/daten/', '/mieter/passwort/'):
             self.assertIn(pfad, body)
+
+
+class NachtN4UITests(TestCase):
+    """Nacht-Audit N4: UI-Feinschliff — Favicon, Empty-States mit CTA,
+    echte Links in Listen-Zellen, Live-Filter, Debitoren-Pagination."""
+
+    def test_favicon_und_submit_guard_in_base(self):
+        _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        body = c.get('/neu/liegenschaften/').content.decode()
+        self.assertIn('rel="icon"', body)
+        self.assertIn('data:image/svg+xml', body)
+        # Doppelklick-Schutz (globaler Submit-Guard) ist eingebunden
+        self.assertIn("addEventListener('submit'", body)
+
+    def test_empty_state_mit_cta_liegenschaften(self):
+        u = _team_user(); c = Client(); c.force_login(u)
+        body = c.get('/neu/liegenschaften/').content.decode()
+        self.assertIn('Noch keine Liegenschaften', body)
+        self.assertIn('/neu/liegenschaften/neu/', body)
+        self.assertIn('Erste Liegenschaft erfassen', body)
+
+    def test_empty_state_filter_variante_personen(self):
+        _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        body = c.get('/neu/personen/?q=zzzz_nicht_vorhanden').content.decode()
+        self.assertIn('Keine Treffer', body)
+
+    def test_listen_erste_zelle_ist_echter_link(self):
+        lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        for url, href in (
+            ('/neu/liegenschaften/', f'/neu/liegenschaften/{lg.id}/'),
+            ('/neu/personen/', f'/neu/personen/{m.id}/'),
+            ('/neu/vertraege/', f'/neu/vertraege/{v.id}/'),
+        ):
+            body = c.get(url).content.decode()
+            self.assertIn(f'<a href="{href}"', body,
+                          f'Erste Zelle von {url} muss ein echter <a>-Link sein')
+
+    def test_liegenschaften_live_filter_verdrahtet(self):
+        _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        body = c.get('/neu/liegenschaften/').content.decode()
+        self.assertIn('data-suche="#lgListe"', body)
+        self.assertIn('id="lgListe"', body)
+        self.assertIn('data-zeile', body)
+
+    def test_debitoren_pagination(self):
+        from finance.models import DebitorenRechnung
+        lg, e, m, v = _basis_objekte()
+        for i in range(55):
+            DebitorenRechnung.objects.create(
+                vertrag=v, liegenschaft=lg, titel=f'Miete {i}', betrag=Decimal('100'),
+                datum=date.today() - timedelta(days=i),
+                faellig_am=date.today() - timedelta(days=i), status='offen')
+        u = _team_user(); c = Client(); c.force_login(u)
+        body = c.get('/neu/debitoren/').content.decode()
+        self.assertIn('Seite 1/2', body)
+        self.assertIn('55 Position(en)', body)
+        # KPI-Summe bleibt Gesamtwert trotz Slicing (55 × 100)
+        self.assertIn("5'500", body)
+        body2 = c.get('/neu/debitoren/?seite=2').content.decode()
+        self.assertIn('Seite 2/2', body2)
