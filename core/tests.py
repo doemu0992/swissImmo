@@ -8970,3 +8970,151 @@ class AdressHistorieTests(TestCase):
         ok, _ = anonymisiere_person(m, grund='Test')
         self.assertTrue(ok)
         self.assertEqual(MieterAdresse.objects.filter(mieter=m).count(), 0)
+
+
+class Paket1DatenUITests(TestCase):
+    """Paket 1: bisher tote Model-Felder sind im UI erfassbar/sichtbar."""
+
+    def test_liegenschaft_form_speichert_neue_felder(self):
+        from portfolio.models import Liegenschaft
+        lg = Liegenschaft.objects.create(strasse='Prüfweg 1', plz='3000', ort='Bern')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/liegenschaften/{lg.id}/bearbeiten/', {
+            'strasse': 'Prüfweg 1', 'plz': '3000', 'ort': 'Bern', 'kanton': 'BE',
+            'versicherungswert': '1250000', 'grundstuecksflaeche_m2': '640',
+            'gebaeudevolumen_m3': '2100', 'sanitaer_name': 'Meier AG',
+            'sanitaer_telefon': '0313334455', 'elektriker_name': 'Volt GmbH',
+            'elektriker_telefon': '0316667788', 'gwr_import': ''})
+        self.assertEqual(r.status_code, 302)
+        lg.refresh_from_db()
+        self.assertEqual(lg.versicherungswert, Decimal('1250000'))
+        self.assertEqual(lg.grundstuecksflaeche_m2, Decimal('640'))
+        self.assertEqual(lg.sanitaer_name, 'Meier AG')
+        self.assertEqual(lg.elektriker_name, 'Volt GmbH')
+
+    def test_objekt_form_speichert_neue_felder_und_gehoert_zu(self):
+        from portfolio.models import Liegenschaft, Einheit
+        lg = Liegenschaft.objects.create(strasse='Prüfweg 2', plz='3000', ort='Bern')
+        haupt = Einheit.objects.create(liegenschaft=lg, bezeichnung='Haupt 3.5', typ='whg')
+        pp = Einheit.objects.create(liegenschaft=lg, bezeichnung='PP 1', typ='pp')
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/objekte/{pp.id}/bearbeiten/', {
+            'liegenschaft_id': str(lg.id), 'bezeichnung': 'PP 1', 'typ': 'pp',
+            'wertquote': '25', 'volumen_m3': '40', 'estrich': 'nein', 'oto_dose': 'A12',
+            'bodenbelag': 'Beton', 'letzte_renovation': '2019',
+            'standard_kautionsmonate': '2', 'gehoert_zu_id': str(haupt.id)})
+        self.assertEqual(r.status_code, 302)
+        pp.refresh_from_db()
+        self.assertEqual(pp.wertquote, Decimal('25'))
+        self.assertEqual(pp.volumen_m3, Decimal('40'))
+        self.assertEqual(pp.bodenbelag, 'Beton')
+        self.assertEqual(pp.letzte_renovation, 2019)
+        self.assertEqual(pp.standard_kautionsmonate, 2)
+        self.assertEqual(pp.gehoert_zu_id, haupt.id)
+
+    def test_person_detail_zeigt_sprache_notizen_firma(self):
+        m = Mieter.objects.create(typ='firma', firmen_name='Bau AG', uid_nummer='CHE-123.456.789',
+                                  kontaktperson='Frau Muster', sprache='fr',
+                                  notizen='Zahlt immer pünktlich.')
+        c = Client(); c.force_login(_team_user())
+        html = c.get(f'/neu/personen/{m.id}/').content.decode()
+        self.assertIn('Firma / Organisation', html)
+        self.assertIn('CHE-123.456.789', html)
+        self.assertIn('Frau Muster', html)
+        self.assertIn('Zahlt immer pünktlich.', html)
+
+    def test_person_form_speichert_land(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/personen/neu/', {
+            'typ': 'person', 'vorname': 'Jean', 'nachname': 'Dupont',
+            'strasse': 'Rue 1', 'plz': '68000', 'ort': 'Colmar', 'land': 'Frankreich'})
+        self.assertIn(r.status_code, (200, 302))
+        m = Mieter.objects.get(nachname='Dupont')
+        self.assertEqual(m.land, 'Frankreich')
+
+
+class Paket2PlatzierungTests(TestCase):
+    """Paket 2: Formulare/Reports am richtigen Ort erreichbar."""
+
+    def test_objekt_verhaeltnis_zeigt_schnellaktionen(self):
+        _lg, e, _m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        html = c.get(f'/neu/objekte/{e.id}/').content.decode()
+        self.assertIn(f'/neu/mietzins/{v.id}/anfangsmietzins/', html)
+        self.assertIn(f'/neu/mietzins/{v.id}/anpassung/', html)
+        self.assertIn(f'/neu/vertraege/{v.id}/kuendigen/', html)
+
+    def test_liegenschaft_detail_verlinkt_berichte(self):
+        lg, _e, _m, _v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        html = c.get(f'/neu/liegenschaften/{lg.id}/').content.decode()
+        self.assertIn(f'/neu/mieterspiegel/?lg={lg.id}', html)
+
+    def test_vertrag_finanzen_verlinkt_nebenkosten(self):
+        lg, _e, _m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        html = c.get(f'/neu/vertraege/{v.id}/').content.decode()
+        self.assertIn(f'/neu/nebenkosten/?lg={lg.id}', html)
+
+    def test_mandate_in_sidebar_verwaltung(self):
+        _lg, _e, _m, _v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/personen/').content.decode()
+        self.assertIn('Eigentümer / Mandate', html)
+
+
+class Paket3ZahlungBonitaetTests(TestCase):
+    """Paket 3: Zahlungsverkehr, Bonität, Vorvermieter-Referenz, Vertretung, Mahnsperre."""
+
+    def test_person_form_speichert_zahlung_und_bonitaet(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/personen/neu/', {
+            'typ': 'person', 'vorname': 'Zora', 'nachname': 'Zahler',
+            'zahlungsart': 'lsv', 'ebill_email': 'zora@ebill.ch', 'mahnsperre': 'on',
+            'zahler_name': 'Sozialamt Bern', 'zahler_iban': 'CH..',
+            'betreibung_ergebnis': 'keine',
+            'ref_vermieter_name': 'Alt AG', 'ref_vermieter_telefon': '0310001122',
+            'vertretung_art': 'beistand', 'vertretung_name': 'KESB Bern'})
+        self.assertIn(r.status_code, (200, 302))
+        m = Mieter.objects.get(nachname='Zahler')
+        self.assertEqual(m.zahlungsart, 'lsv')
+        self.assertTrue(m.mahnsperre)
+        self.assertEqual(m.zahler_name, 'Sozialamt Bern')
+        self.assertEqual(m.betreibung_ergebnis, 'keine')
+        self.assertEqual(m.ref_vermieter_name, 'Alt AG')
+        self.assertEqual(m.vertretung_art, 'beistand')
+
+    def test_person_detail_zeigt_zahlung_und_vertretung(self):
+        m = Mieter.objects.create(typ='person', vorname='A', nachname='B',
+                                  zahlungsart='ebill', ebill_email='a@b.ch',
+                                  vertretung_art='kesb', vertretung_name='KESB Thun')
+        c = Client(); c.force_login(_team_user())
+        html = c.get(f'/neu/personen/{m.id}/').content.decode()
+        self.assertIn('Zahlungsverkehr', html)
+        self.assertIn('eBill', html)
+        self.assertIn('KESB Thun', html)
+
+    def test_mahnsperre_ueberspringt_mahnlauf(self):
+        from core.services.automation import run_mahnlauf
+        from finance.models import DebitorenRechnung
+        _lg, _e, m, v = _basis_objekte()
+        m.mahnsperre = True; m.save()
+        DebitorenRechnung.objects.create(
+            vertrag=v, titel='Miete', betrag=Decimal('1700'), datum=date(2025, 1, 1),
+            faellig_am=date(2025, 1, 1), status='offen')
+        res = run_mahnlauf(send_email=False)
+        self.assertEqual(res['gemahnt'], 0)   # Mahnsperre → nicht gemahnt
+
+    def test_dsg_scrub_loescht_zahlungsfelder(self):
+        from core.services.dsg import anonymisiere_person
+        _lg, _e, m, v = _basis_objekte()
+        v.status = 'archiviert'; v.save()
+        m.zahlungsart = 'lsv'; m.zahler_name = 'X'; m.ref_vermieter_name = 'Y'
+        m.vertretung_name = 'Z'; m.save()
+        ok, _ = anonymisiere_person(m, grund='Test')
+        self.assertTrue(ok)
+        m.refresh_from_db()
+        self.assertEqual(m.zahlungsart, '')
+        self.assertEqual(m.zahler_name, '')
+        self.assertEqual(m.ref_vermieter_name, '')
+        self.assertEqual(m.vertretung_name, '')

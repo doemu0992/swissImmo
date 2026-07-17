@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load l10n %}
 {% block title %}{% if ist_neu %}Neue Liegenschaft{% else %}{{ lg.strasse }} bearbeiten{% endif %} — swissImmo{% endblock %}
 {% block content %}
 <nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
@@ -38,6 +39,14 @@
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Baujahr</label>
                 <input name="baujahr" type="number" value="{{ lg.baujahr|default:'' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Versicherungswert (CHF)</label>
+                <input name="versicherungswert" value="{% localize off %}{{ lg.versicherungswert|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Grundstücksfläche (m²)</label>
+                <input name="grundstuecksflaeche_m2" value="{% localize off %}{{ lg.grundstuecksflaeche_m2|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gebäudevolumen (m³)</label>
+                <input name="gebaeudevolumen_m3" value="{% localize off %}{{ lg.gebaeudevolumen_m3|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+        </div>
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Eigentümer / Mandant</label>
             <select name="mandant_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— kein Mandant —</option>
@@ -53,9 +62,9 @@
     </div>
 
     <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Bank & Hauswart</h3>
+        <h3 class="font-bold text-slate-800 text-sm">Bank, Mietzinskonto & Notfallkontakte</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bankname</label>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bankname (Mietzinskonto)</label>
                 <input name="bank_name" value="{{ lg.bank_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">IBAN</label>
                 <input name="iban" value="{{ lg.iban }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
@@ -63,6 +72,14 @@
                 <input name="hauswart_name" value="{{ lg.hauswart_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Hauswart Telefon</label>
                 <input name="hauswart_telefon" value="{{ lg.hauswart_telefon }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Notfall Sanitär</label>
+                <input name="sanitaer_name" value="{{ lg.sanitaer_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Sanitär Telefon</label>
+                <input name="sanitaer_telefon" value="{{ lg.sanitaer_telefon }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Notfall Elektriker</label>
+                <input name="elektriker_name" value="{{ lg.elektriker_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Elektriker Telefon</label>
+                <input name="elektriker_telefon" value="{{ lg.elektriker_telefon }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
 

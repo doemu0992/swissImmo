@@ -81,7 +81,6 @@
 
         <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto text-sm">
             {% include 'fw/_nav_item.html' with ziel='/neu/' key='dashboard' icon='fa-table-cells-large' label='Dashboard' %}
-            {% include 'fw/_nav_item.html' with ziel='' key='erste_schritte' icon='fa-circle-half-stroke' label='Erste Schritte' %}
             {% include 'fw/_nav_item.html' with ziel='/neu/liegenschaften/' key='liegenschaften' icon='fa-building' label='Liegenschaften' %}
             {% include 'fw/_nav_item.html' with ziel='/neu/objekte/' key='objekte' icon='fa-house' label='Objekte' %}
             {% include 'fw/_nav_item.html' with ziel='/neu/dokumente/' key='dokumente' icon='fa-floppy-disk' label='Dokumente' %}
@@ -91,6 +90,7 @@
 
             <div class="sb-section pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Verwaltung</div>
             {% include 'fw/_nav_item.html' with ziel='/neu/personen/' key='personen' icon='fa-user-group' label='Personen' %}
+            {% include 'fw/_nav_item.html' with ziel='/neu/mandate/' key='mandate' icon='fa-briefcase' label='Eigentümer / Mandate' %}
             {% include 'fw/_nav_item.html' with ziel='/neu/bewerbungen/' key='bewerbungen' icon='fa-user-check' label='Bewerbungen' %}
             {% include 'fw/_nav_item.html' with ziel='/neu/vertraege/' key='vertraege' icon='fa-file-lines' label='Verträge' %}
             {% include 'fw/_nav_item.html' with ziel='/neu/mieterwechsel/' key='mieterwechsel' icon='fa-right-left' label='Mieterwechsel' %}
@@ -163,7 +163,6 @@
                     {% include 'fw/_menu_item.html' with ziel='/neu/abonnement/' icon='fa-star' label='Abonnement' %}
                     {% include 'fw/_menu_item.html' with ziel='/neu/benutzer/' icon='fa-users' label='Benutzer' %}
                     {% include 'fw/_menu_item.html' with ziel='/neu/logbuch/' icon='fa-clock-rotate-left' label='Logbuch' %}
-                    {% include 'fw/_menu_item.html' with ziel='/neu/mandate/' icon='fa-briefcase' label='Mandate' %}
                     {% include 'fw/_menu_item.html' with ziel='/neu/vorlagen/' icon='fa-file-lines' label='Vorlagen' %}
                     {% include 'fw/_menu_item.html' with ziel='/neu/dokumente/' icon='fa-folder-open' label='Dokumente' %}
                     {% include 'fw/_menu_item.html' with ziel='/neu/integrationen/' icon='fa-plug' label='Integrationen' %}

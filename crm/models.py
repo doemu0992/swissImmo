@@ -141,6 +141,26 @@ class Mieter(models.Model):
         ('N', 'Asylsuchend N'),
         ('andere', 'Andere'),
     ]
+    ZAHLUNGSART_CHOICES = [
+        ('', '—'),
+        ('dauerauftrag', 'Dauerauftrag'),
+        ('qr', 'QR-Einzahlung'),
+        ('lsv', 'LSV / CH-DD-Lastschrift'),
+        ('ebill', 'eBill'),
+    ]
+    BETREIBUNG_CHOICES = [
+        ('', '—'),
+        ('keine', 'Keine Betreibungen'),
+        ('offen', 'Offene Betreibungen'),
+        ('verlustscheine', 'Verlustscheine vorhanden'),
+    ]
+    VERTRETUNG_CHOICES = [
+        ('', '—'),
+        ('bevollmaechtigt', 'Bevollmächtigte Person'),
+        ('beistand', 'Beistand (Erwachsenenschutz)'),
+        ('kesb', 'KESB'),
+        ('erbengemeinschaft', 'Erbengemeinschaft / Willensvollstrecker'),
+    ]
 
     # --- FIRMA / VEREIN ---
     firmen_name = models.CharField("Firmenname", max_length=200, blank=True, default='')
@@ -206,6 +226,28 @@ class Mieter(models.Model):
     iban = models.CharField("IBAN", max_length=34, blank=True, default='')
     bank_name = models.CharField("Bank", max_length=100, blank=True, default='')
     bonitaet_datum = models.DateField("Betreibungsauszug vom", null=True, blank=True)
+    betreibung_ergebnis = models.CharField("Betreibungsauszug-Ergebnis", max_length=20,
+                                           choices=BETREIBUNG_CHOICES, blank=True, default='')
+
+    # --- ZAHLUNGSVERKEHR ---
+    zahlungsart = models.CharField("Zahlungsart", max_length=20, choices=ZAHLUNGSART_CHOICES, blank=True, default='')
+    ebill_email = models.EmailField("eBill-/E-Rechnungs-Adresse", blank=True, default='')
+    mahnsperre = models.BooleanField("Mahnsperre (Zahlungsvereinbarung)", default=False)
+    # Abweichender Zahler / Kostenträger (z.B. Sozialamt, Firma, Elternteil)
+    zahler_name = models.CharField("Abweichender Zahler", max_length=150, blank=True, default='')
+    zahler_adresse = models.CharField("Zahler-Adresse", max_length=200, blank=True, default='')
+    zahler_iban = models.CharField("Zahler-IBAN", max_length=34, blank=True, default='')
+
+    # --- VORVERMIETER-REFERENZ (aus der Bewerbung übernommen) ---
+    ref_vermieter_name = models.CharField("Referenz Vorvermieter", max_length=150, blank=True, default='')
+    ref_vermieter_telefon = models.CharField("Vorvermieter Telefon", max_length=50, blank=True, default='')
+    ref_vermieter_email = models.EmailField("Vorvermieter E-Mail", blank=True, default='')
+
+    # --- VERTRETUNG / BEISTAND ---
+    vertretung_art = models.CharField("Vertretung", max_length=30, choices=VERTRETUNG_CHOICES, blank=True, default='')
+    vertretung_name = models.CharField("Vertretung Name/Behörde", max_length=150, blank=True, default='')
+    vertretung_kontakt = models.CharField("Vertretung Kontakt", max_length=150, blank=True, default='')
+
     notizen = models.TextField("Interne Notizen", blank=True, default='')
     # DSG: Personendaten anonymisiert (Buchungsbelege bleiben aufbewahrt, OR 958f)
     anonymisiert = models.BooleanField("DSG-anonymisiert", default=False)

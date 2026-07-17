@@ -147,6 +147,9 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
         stufe = _stufe_fuer_tage(tage)
         if not stufe:
             continue
+        # Mahnsperre: Mieter mit laufender Zahlungsvereinbarung nicht mahnen.
+        if r.vertrag and r.vertrag.mieter_id and getattr(r.vertrag.mieter, 'mahnsperre', False):
+            continue
         res['geprueft'] += 1
         # Idempotenz: existiert bereits eine Mahnung dieser (oder höherer) Stufe?
         hoechste = r.mahnungen.order_by('-stufe').first()

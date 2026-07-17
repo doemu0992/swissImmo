@@ -3980,6 +3980,7 @@ def fw_person_form(request, pk=None):
         obj.adresszusatz = P.get('adresszusatz', '').strip()
         obj.plz = P.get('plz', '').strip()
         obj.ort = P.get('ort', '').strip()
+        obj.land = P.get('land', '').strip() or 'Schweiz'
         gd = P.get('geburtsdatum', '').strip()
         try:
             obj.geburtsdatum = date.fromisoformat(gd) if gd else None
@@ -4028,6 +4029,22 @@ def fw_person_form(request, pk=None):
         # --- Finanzen ---
         obj.bank_name = P.get('bank_name', '').strip()
         obj.iban = P.get('iban', '').strip()
+        obj.betreibung_ergebnis = P.get('betreibung_ergebnis', '').strip()
+        # --- Zahlungsverkehr ---
+        obj.zahlungsart = P.get('zahlungsart', '').strip()
+        obj.ebill_email = P.get('ebill_email', '').strip()
+        obj.mahnsperre = P.get('mahnsperre') == 'on'
+        obj.zahler_name = P.get('zahler_name', '').strip()
+        obj.zahler_adresse = P.get('zahler_adresse', '').strip()
+        obj.zahler_iban = P.get('zahler_iban', '').strip()
+        # --- Vorvermieter-Referenz ---
+        obj.ref_vermieter_name = P.get('ref_vermieter_name', '').strip()
+        obj.ref_vermieter_telefon = P.get('ref_vermieter_telefon', '').strip()
+        obj.ref_vermieter_email = P.get('ref_vermieter_email', '').strip()
+        # --- Vertretung / Beistand ---
+        obj.vertretung_art = P.get('vertretung_art', '').strip()
+        obj.vertretung_name = P.get('vertretung_name', '').strip()
+        obj.vertretung_kontakt = P.get('vertretung_kontakt', '').strip()
         obj.notizen = P.get('notizen', '').strip()
 
         # --- Pflichtfeld-Validierung ---
@@ -8096,11 +8113,25 @@ def fw_liegenschaft_form(request, pk=None):
                 return int(v) if v else None
             except ValueError:
                 return None
+
+        def decval(key):
+            v = str(P.get(key) or '').replace("'", '').replace(',', '.').strip()
+            try:
+                return Decimal(v) if v else None
+            except Exception:
+                return None
         obj.baujahr = intval('baujahr')
         md_id = P.get('mandant_id') or ''
         obj.mandant = Mandant.objects.filter(id=md_id).first() if md_id else None
+        obj.versicherungswert = decval('versicherungswert')
+        obj.grundstuecksflaeche_m2 = decval('grundstuecksflaeche_m2')
+        obj.gebaeudevolumen_m3 = decval('gebaeudevolumen_m3')
         obj.hauswart_name = P.get('hauswart_name', '').strip()
         obj.hauswart_telefon = P.get('hauswart_telefon', '').strip()
+        obj.sanitaer_name = P.get('sanitaer_name', '').strip()
+        obj.sanitaer_telefon = P.get('sanitaer_telefon', '').strip()
+        obj.elektriker_name = P.get('elektriker_name', '').strip()
+        obj.elektriker_telefon = P.get('elektriker_telefon', '').strip()
         obj.bank_name = P.get('bank_name', '').strip()
         obj.iban = P.get('iban', '').strip()
         obj.hkvo_aktiv = P.get('hkvo_aktiv') == 'on'
@@ -8218,7 +8249,32 @@ def fw_objekt_form(request, pk=None):
                 return None
         obj.zimmer = dec('zimmer')
         obj.flaeche_m2 = dec('flaeche_m2')
+        obj.volumen_m3 = dec('volumen_m3')
+        _wq = dec('wertquote')
+        if _wq is not None:
+            obj.wertquote = _wq
         obj.keller = P.get('keller', '').strip()
+        obj.estrich = P.get('estrich', '').strip()
+        obj.oto_dose = P.get('oto_dose', '').strip()
+        obj.bodenbelag = P.get('bodenbelag', '').strip()
+        obj.bodenbelag_nassraum = P.get('bodenbelag_nassraum', '').strip()
+
+        def intval(key):
+            v = str(P.get(key) or '').strip()
+            try:
+                return int(v) if v else None
+            except ValueError:
+                return None
+        obj.letzte_renovation = intval('letzte_renovation')
+        _km = intval('standard_kautionsmonate')
+        if _km is not None:
+            obj.standard_kautionsmonate = _km
+        # Nebenobjekt-Zuordnung (Parkplatz/Keller → Hauptobjekt derselben Liegenschaft)
+        gz_id = P.get('gehoert_zu_id') or ''
+        if gz_id and gz_id != str(obj.pk or ''):
+            obj.gehoert_zu = Einheit.objects.filter(id=gz_id, liegenschaft=obj.liegenschaft).first()
+        else:
+            obj.gehoert_zu = None
         obj.notizen = P.get('notizen', '').strip()
         # Der Mietzins wird NICHT mehr direkt am Objekt gepflegt — einzige Quelle
         # ist der datierte Sollmietzins (Objekt → Mietzins). nettomiete_aktuell/
@@ -8251,6 +8307,12 @@ def fw_objekt_form(request, pk=None):
     vorwahl_lg = request.GET.get('lg') or (e.liegenschaft_id if e else None)
     sollmietzinse = list(e.sollmietzinse.all()) if e else []
     aktueller_soll = e.aktueller_sollmietzins() if e else None
+    # Mögliche Hauptobjekte für die Nebenobjekt-Zuordnung (gehoert_zu): übrige
+    # Einheiten derselben Liegenschaft (ohne sich selbst).
+    hauptobjekte = []
+    if e and e.liegenschaft_id:
+        hauptobjekte = list(Einheit.objects.filter(liegenschaft_id=e.liegenschaft_id)
+                            .exclude(id=e.id).order_by('bezeichnung'))
     return render(request, 'fw/objekt_form.html', {
         **basis, 'nav': 'objekte', 'e': e, 'ist_neu': e is None,
         'liegenschaften': Liegenschaft.objects.all().order_by('strasse'),
@@ -8259,6 +8321,7 @@ def fw_objekt_form(request, pk=None):
         'sollmietzinse': sollmietzinse,
         'aktueller_soll_id': aktueller_soll.id if aktueller_soll else None,
         'heute_iso': timezone.now().date().isoformat(),
+        'hauptobjekte': hauptobjekte,
     })
 
 
@@ -9455,6 +9518,12 @@ def fw_bewerbung_zu_vertrag(request, pk):
             # Haushalt/Haustiere aus der Bewerbung in den Mieter-Stamm übernehmen.
             haushalt_erwachsene=b.anzahl_erwachsene or 0, haushalt_kinder=b.anzahl_kinder or 0,
             haustiere=bool(b.haustiere), haustiere_details=(b.haustiere_details or ''),
+            # Bonität + Vorvermieter-Referenz aus der Bewerbung übernehmen (sonst
+            # gehen sie beim Übergang Bewerber → Mieter verloren).
+            betreibung_ergebnis=('offen' if b.hat_betreibungen else 'keine'),
+            ref_vermieter_name=(b.aktueller_vermieter or ''),
+            ref_vermieter_telefon=(b.telefon_vermieter or ''),
+            ref_vermieter_email=(b.email_vermieter or ''),
         )
 
     # 2. Vertragsentwurf anlegen (mit Objekt-Defaults)

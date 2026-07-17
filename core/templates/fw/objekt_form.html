@@ -41,11 +41,39 @@
                 <input name="zimmer" type="number" step="0.5" value="{% localize off %}{{ e.zimmer|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Fläche (m²)</label>
                 <input name="flaeche_m2" type="number" step="0.01" value="{% localize off %}{{ e.flaeche_m2|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Volumen (m³)</label>
+                <input name="volumen_m3" type="number" step="0.01" value="{% localize off %}{{ e.volumen_m3|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Wertquote (‰)</label>
+                <input name="wertquote" type="number" step="0.01" value="{% localize off %}{{ e.wertquote|default:'' }}{% endlocalize %}" placeholder="STWE / NK-Verteilung" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">EWID</label>
                 <input name="ewid" value="{{ e.ewid|default:'' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kellerabteil</label>
                 <input name="keller" value="{{ e.keller }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Estrich</label>
+                <input name="estrich" value="{{ e.estrich }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">OTO-Dose (Glasfaser)</label>
+                <input name="oto_dose" value="{{ e.oto_dose }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div class="sm:col-span-1"><label class="block text-xs font-semibold text-slate-500 mb-1">Bodenbelag (Wohnraum)</label>
+                <input name="bodenbelag" value="{{ e.bodenbelag }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-1"><label class="block text-xs font-semibold text-slate-500 mb-1">Bodenbelag (Nassraum)</label>
+                <input name="bodenbelag_nassraum" value="{{ e.bodenbelag_nassraum }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Letzte Renovation (Jahr)</label>
+                <input name="letzte_renovation" type="number" value="{{ e.letzte_renovation|default:'' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Standard-Kaution (Monate)</label>
+                <input name="standard_kautionsmonate" type="number" value="{{ e.standard_kautionsmonate|default:'' }}" placeholder="3" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
+        {% if not ist_neu and hauptobjekte %}
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nebenobjekt von (Parkplatz/Keller → Hauptobjekt)</label>
+            <select name="gehoert_zu_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <option value="">— eigenständiges Objekt —</option>
+                {% for h in hauptobjekte %}<option value="{{ h.id }}" {% if e.gehoert_zu_id == h.id %}selected{% endif %}>{{ h.bezeichnung }}{% if h.etage %} · {{ h.etage }}{% endif %}</option>{% endfor %}
+            </select>
+            <p class="text-[11px] text-slate-400 mt-1">Ordnet dieses Objekt (z. B. Einstellplatz) einem Hauptmietobjekt derselben Liegenschaft zu.</p></div>
+        {% endif %}
     </div>
 
     <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
