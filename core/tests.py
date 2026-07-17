@@ -8606,6 +8606,10 @@ class PersonenStammdatenTests(TestCase):
         for s in ['Aufenthaltsbewilligung', 'Korrespondenzsprache', 'Beruf & Bonität',
                   'Haushalt', 'Notfallkontakt', 'box-person-extra']:
             self.assertIn(s, body, f'{s} fehlt im Formular')
+        # Kontextsensitive Bewilligungs-Hinweisbox (neutral, kein Mietverbot).
+        self.assertIn('bewilligung_hinweis', body)
+        self.assertIn('Grenzgänger G', body)
+        self.assertIn('Mieten ist für alle Aufenthaltstitel zulässig', body)
 
     def test_detail_zeigt_neue_felder(self):
         _lg, _e, m, _v = _basis_objekte()
