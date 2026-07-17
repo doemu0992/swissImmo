@@ -1,0 +1,46 @@
+{% extends 'fw/base.html' %}
+{% block title %}Leerstands-Verlauf — swissImmo{% endblock %}
+{% block content %}
+<div class="flex items-start justify-between flex-wrap gap-3 mb-6">
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Leerstands-Verlauf</h1>
+        <p class="text-sm text-slate-500 mt-1">Monatliche Leerquote der letzten {{ monate }} Monate.
+            {% if aktive_lg %}· <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% else %}· ganzes Portfolio{% endif %}</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="?monate=6" class="px-3 py-2 rounded-lg text-sm font-semibold {% if monate == 6 %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600{% endif %}">6 Mt.</a>
+        <a href="?monate=12" class="px-3 py-2 rounded-lg text-sm font-semibold {% if monate == 12 %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600{% endif %}">12 Mt.</a>
+        <a href="?monate=24" class="px-3 py-2 rounded-lg text-sm font-semibold {% if monate == 24 %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600{% endif %}">24 Mt.</a>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-2xl font-bold text-slate-800">{{ schnitt }}%</div>
+        <div class="text-sm text-slate-500">Ø Leerquote</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-2xl font-bold {% if max_quote > 5 %}text-rose-600{% else %}text-slate-800{% endif %}">{{ max_quote }}%</div>
+        <div class="text-sm text-slate-500">Spitze</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-2xl font-bold text-slate-800">{% if reihe %}{{ aktuell_quote }}%{% else %}—{% endif %}</div>
+        <div class="text-sm text-slate-500">Aktuell (letzter Monat)</div>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 p-5">
+    <div class="flex items-end gap-1.5 h-56">
+        {% for r in reihe %}
+        <div class="flex-1 flex flex-col items-center justify-end h-full group">
+            <div class="text-[9px] text-slate-400 mb-1">{% if r.quote %}{{ r.quote }}%{% endif %}</div>
+            <div class="w-full rounded-t {% if r.quote > 5 %}bg-rose-400{% elif r.quote > 0 %}bg-amber-400{% else %}bg-emerald-300{% endif %}"
+                 style="height: {% widthratio r.quote 100 100 %}%; min-height: 2px;"
+                 title="{{ r.monat|date:'M Y' }}: {{ r.leer }}/{{ r.total }} leer"></div>
+            <div class="text-[9px] text-slate-400 mt-1 rotate-0">{{ r.monat|date:'M' }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    <p class="text-xs text-slate-400 mt-3">Balkenhöhe = Leerquote (0–100%). Grün = voll vermietet, gelb = Leerstand, rot = &gt; 5%.</p>
+</div>
+{% endblock %}

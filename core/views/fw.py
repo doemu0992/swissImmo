@@ -886,6 +886,45 @@ AUSWERTUNG_TYPEN = [
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
+def fw_betriebsrechnung_pdf(request, pk):
+    """Gebäudescharfe Betriebsrechnung (Ertrag − Aufwand) einer Liegenschaft als
+    PDF, für ein wählbares Kalenderjahr (?jahr=YYYY)."""
+    from django.http import HttpResponse
+    from crm.models import Verwaltung
+    from core.services.gebaeude_report import betriebsrechnung_pdf
+    lg = get_object_or_404(Liegenschaft, id=pk)
+    try:
+        jahr = int(request.GET.get('jahr') or timezone.localdate().year)
+    except ValueError:
+        jahr = timezone.localdate().year
+    pdf = betriebsrechnung_pdf(lg, jahr, verwaltung=Verwaltung.objects.first())
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = f'inline; filename="Betriebsrechnung_{jahr}_{lg.strasse}.pdf"'
+    return resp
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_leerstand_verlauf(request):
+    """Leerstands-Zeitverlauf: monatliche Leerquote über die letzten Monate,
+    fürs ganze Portfolio oder gefiltert auf die aktive Liegenschaft."""
+    from core.services.rendite import leerstand_zeitverlauf
+    basis = _global_filter(request)
+    aktive_lg = basis.get('aktive_lg')
+    try:
+        monate = max(3, min(36, int(request.GET.get('monate') or 12)))
+    except ValueError:
+        monate = 12
+    reihe = leerstand_zeitverlauf(lg=aktive_lg, monate=monate)
+    max_quote = max((r['quote'] for r in reihe), default=0.0)
+    schnitt = round(sum(r['quote'] for r in reihe) / len(reihe), 1) if reihe else 0.0
+    aktuell_quote = reihe[-1]['quote'] if reihe else 0.0
+    return render(request, 'fw/leerstand_verlauf.html', {
+        **basis, 'nav': 'berichte', 'reihe': reihe, 'monate': monate,
+        'max_quote': max_quote, 'schnitt': schnitt, 'aktuell_quote': aktuell_quote,
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
 def fw_betriebskostenspiegel(request):
     """Betriebs-/Nebenkostenspiegel: Aufwand je Liegenschaft und Jahr, umgelegt
     auf CHF/m² — quervergleichbar über das Portfolio."""
@@ -1309,6 +1348,8 @@ def fw_liegenschaft_detail(request, pk):
         ('schaeden', 'Schäden', tickets.count() or None),
         ('dokumente', 'Dokumente', dok_total or None),
     ]
+    from core.services.rendite import liegenschaft_rendite
+    rendite = liegenschaft_rendite(lg)
     return render(request, 'fw/liegenschaft_detail.html', {
         **basis, 'nav': 'liegenschaften', 'lg': lg,
         'einheiten_rows': einheiten_rows,
@@ -1316,6 +1357,7 @@ def fw_liegenschaft_detail(request, pk):
         'vermietet': vermietet,
         'leerstand': len(einheiten_rows) - vermietet,
         'soll_monat': soll_monat,
+        'rendite': rendite,
         'tickets': tickets,
         'dok_gruppen': dok_gruppen,
         'dok_total': dok_total,
@@ -8292,6 +8334,25 @@ def fw_liegenschaft_form(request, pk=None):
         obj.versicherungswert = decval('versicherungswert')
         obj.grundstuecksflaeche_m2 = decval('grundstuecksflaeche_m2')
         obj.gebaeudevolumen_m3 = decval('gebaeudevolumen_m3')
+        # Bewertung (Rendite) + Energie/GEAK
+        obj.verkehrswert = decval('verkehrswert')
+        obj.anlagekosten = decval('anlagekosten')
+        obj.kaufpreis = decval('kaufpreis')
+        obj.energiebezugsflaeche_m2 = decval('energiebezugsflaeche_m2')
+        _heiz = P.get('heizsystem', '').strip()
+        obj.heizsystem = _heiz if _heiz in dict(Liegenschaft.HEIZ_CHOICES) else ''
+        _ww = P.get('warmwasser', '').strip()
+        obj.warmwasser = _ww if _ww in dict(Liegenschaft.WARMWASSER_CHOICES) else ''
+        _gk = P.get('geak_klasse', '').strip().upper()
+        obj.geak_klasse = _gk if _gk in dict(Liegenschaft.GEAK_KLASSEN) else ''
+        _gkg = P.get('geak_klasse_gesamt', '').strip().upper()
+        obj.geak_klasse_gesamt = _gkg if _gkg in dict(Liegenschaft.GEAK_KLASSEN) else ''
+        obj.energietraeger = P.get('energietraeger', '').strip()
+        try:
+            _gd = P.get('geak_datum') or ''
+            obj.geak_datum = date.fromisoformat(_gd) if _gd else None
+        except ValueError:
+            obj.geak_datum = None
         obj.hauswart_name = P.get('hauswart_name', '').strip()
         obj.hauswart_telefon = P.get('hauswart_telefon', '').strip()
         obj.sanitaer_name = P.get('sanitaer_name', '').strip()
@@ -8332,6 +8393,9 @@ def fw_liegenschaft_form(request, pk=None):
     return render(request, 'fw/liegenschaft_form.html', {
         **basis, 'nav': 'liegenschaften', 'lg': lg, 'ist_neu': lg is None,
         'mandanten': Mandant.objects.all().order_by('firma_oder_name'),
+        'heiz_choices': Liegenschaft.HEIZ_CHOICES,
+        'warmwasser_choices': Liegenschaft.WARMWASSER_CHOICES,
+        'geak_klassen': [k for k, _ in Liegenschaft.GEAK_KLASSEN],
     })
 
 
@@ -9401,7 +9465,7 @@ def fw_vertrag_wg(request, vertrag_id):
     aktion = request.POST.get('aktion', '')
     if aktion == 'hinzufuegen':
         pid = request.POST.get('mieter_id')
-        person = Mieter.objects.filter(id=pid).first() if pid else None
+        person = Mieter.objects.filter(id=pid).first() if (pid or '').isdigit() else None
         ausgeschlossen = {v.mieter_id, v.mitmieter_id}
         if not person:
             messages.error(request, "❌ Bitte eine bestehende Person auswählen.")
@@ -9425,7 +9489,7 @@ def fw_vertrag_wg(request, vertrag_id):
             messages.success(request, f"✅ {person.display_name} als WG-Mieter erfasst.")
     elif aktion == 'entfernen':
         pid = request.POST.get('mieter_id')
-        person = Mieter.objects.filter(id=pid).first() if pid else None
+        person = Mieter.objects.filter(id=pid).first() if (pid or '').isdigit() else None
         if person:
             v.weitere_mieter.remove(person)
             log_aktion(request, "WG-Mieter entfernt", str(person), str(v), ziel=v)

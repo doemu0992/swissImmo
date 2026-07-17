@@ -47,6 +47,44 @@
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gebäudevolumen (m³)</label>
                 <input name="gebaeudevolumen_m3" value="{% localize off %}{{ lg.gebaeudevolumen_m3|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
         </div>
+        <p class="text-xs font-bold uppercase tracking-wider text-slate-400 pt-1">Bewertung (für Rendite)</p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Verkehrswert (CHF)</label>
+                <input name="verkehrswert" value="{% localize off %}{{ lg.verkehrswert|default:'' }}{% endlocalize %}" placeholder="Marktwert" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Anlagekosten (CHF)</label>
+                <input name="anlagekosten" value="{% localize off %}{{ lg.anlagekosten|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kaufpreis (CHF)</label>
+                <input name="kaufpreis" value="{% localize off %}{{ lg.kaufpreis|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+        </div>
+        <p class="text-xs font-bold uppercase tracking-wider text-slate-400 pt-1">Energie & Gebäudetechnik (GEAK)</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Heizsystem</label>
+                <select name="heizsystem" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    <option value="">—</option>
+                    {% for val, lab in heiz_choices %}<option value="{{ val }}" {% if lg.heizsystem == val %}selected{% endif %}>{{ lab }}</option>{% endfor %}
+                </select></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Warmwasser</label>
+                <select name="warmwasser" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    <option value="">—</option>
+                    {% for val, lab in warmwasser_choices %}<option value="{{ val }}" {% if lg.warmwasser == val %}selected{% endif %}>{{ lab }}</option>{% endfor %}
+                </select></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">GEAK Hülle</label>
+                <select name="geak_klasse" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    <option value="">—</option>
+                    {% for k in geak_klassen %}<option value="{{ k }}" {% if lg.geak_klasse == k %}selected{% endif %}>{{ k }}</option>{% endfor %}
+                </select></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">GEAK Gesamt</label>
+                <select name="geak_klasse_gesamt" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    <option value="">—</option>
+                    {% for k in geak_klassen %}<option value="{{ k }}" {% if lg.geak_klasse_gesamt == k %}selected{% endif %}>{{ k }}</option>{% endfor %}
+                </select></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Energieträger (Zusatz)</label>
+                <input name="energietraeger" value="{{ lg.energietraeger }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Energiebezugsfl. (m²)</label>
+                <input name="energiebezugsflaeche_m2" value="{% localize off %}{{ lg.energiebezugsflaeche_m2|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1">GEAK ausgestellt</label>
+                <input name="geak_datum" type="date" value="{{ lg.geak_datum|date:'Y-m-d' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        </div>
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Eigentümer / Mandant</label>
             <select name="mandant_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— kein Mandant —</option>

@@ -9448,3 +9448,157 @@ class IndexMitteilungTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertIsNotNone(r.context.get('index_vorschlag'))
         self.assertIn('Indexmiete (Art. 269b OR)', r.content.decode())
+
+
+class RenditeGebaeudeTests(TestCase):
+    """Rendite-Kennzahlen (Verkehrswert-Nenner), gebäudescharfe Betriebsrechnung
+    und Leerstands-Zeitverlauf."""
+
+    def _konto(self, nummer, bez, typ):
+        from finance.models import Buchungskonto
+        return Buchungskonto.objects.get_or_create(nummer=nummer, defaults={'bezeichnung': bez, 'typ': typ})[0]
+
+    def test_bruttorendite_aus_verkehrswert(self):
+        from core.services.rendite import liegenschaft_rendite
+        lg, e, m, v = _basis_objekte()   # netto 1500 → jahr 18000
+        lg.verkehrswert = Decimal('500000'); lg.save()
+        r = liegenschaft_rendite(lg)
+        self.assertEqual(r['wert_quelle'], 'verkehrswert')
+        self.assertEqual(r['jahres_netto'], Decimal('18000.00'))
+        # 18000 / 500000 = 3.6%
+        self.assertAlmostEqual(r['bruttorendite'], 3.6, places=2)
+
+    def test_anlagekosten_fallback(self):
+        from core.services.rendite import liegenschaft_rendite
+        lg, e, m, v = _basis_objekte()
+        lg.anlagekosten = Decimal('600000'); lg.save()  # kein Verkehrswert
+        r = liegenschaft_rendite(lg)
+        self.assertEqual(r['wert_quelle'], 'anlagekosten')
+        self.assertAlmostEqual(r['bruttorendite'], 3.0, places=2)
+
+    def test_keine_rendite_ohne_wert(self):
+        from core.services.rendite import liegenschaft_rendite
+        lg, e, m, v = _basis_objekte()   # nur Versicherungswert
+        r = liegenschaft_rendite(lg)
+        self.assertIsNone(r['bruttorendite'])
+        self.assertIsNone(r['wert_quelle'])
+
+    def test_nettorendite_zieht_aufwand_ab(self):
+        from core.services.rendite import liegenschaft_rendite
+        from finance.booking import buche
+        lg, e, m, v = _basis_objekte()
+        lg.verkehrswert = Decimal('500000'); lg.save()
+        self._konto('6000', 'Unterhalt', 'aufwand')
+        self._konto('1020', 'Bank', 'bilanz')
+        buche('6000', '1020', Decimal('1800'), 'Unterhalt', datum=date.today(), liegenschaft=lg)
+        r = liegenschaft_rendite(lg)
+        # (18000 - 1800) / 500000 = 3.24%
+        self.assertAlmostEqual(r['nettorendite'], 3.24, places=2)
+
+    def test_betriebsrechnung_ertrag_minus_aufwand(self):
+        from core.services.rendite import betriebsrechnung
+        from finance.booking import buche
+        lg, e, m, v = _basis_objekte()
+        self._konto('3000', 'Mietertrag', 'ertrag')
+        self._konto('6000', 'Unterhalt', 'aufwand')
+        self._konto('1020', 'Bank', 'bilanz')
+        jahr = date.today().year
+        buche('1020', '3000', Decimal('12000'), 'Miete', datum=date(jahr, 3, 1), liegenschaft=lg)
+        buche('6000', '1020', Decimal('2000'), 'Reparatur', datum=date(jahr, 4, 1), liegenschaft=lg)
+        d = betriebsrechnung(lg, jahr)
+        self.assertEqual(d['ertrag_total'], Decimal('12000.00'))
+        self.assertEqual(d['aufwand_total'], Decimal('2000.00'))
+        self.assertEqual(d['ergebnis'], Decimal('10000.00'))
+
+    def test_betriebsrechnung_pdf(self):
+        from core.services.gebaeude_report import betriebsrechnung_pdf
+        lg, e, m, v = _basis_objekte()
+        pdf = betriebsrechnung_pdf(lg, date.today().year)
+        self.assertTrue(pdf.startswith(b'%PDF'))
+
+    def test_betriebsrechnung_pdf_view(self):
+        lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        r = c.get(f'/neu/liegenschaften/{lg.id}/betriebsrechnung/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+
+    def test_leerstand_verlauf(self):
+        from core.services.rendite import leerstand_zeitverlauf
+        from rentals.models import Leerstand
+        lg, e, m, v = _basis_objekte()
+        Leerstand.objects.create(einheit=e, beginn=date.today() - timedelta(days=40))
+        reihe = leerstand_zeitverlauf(lg=lg, monate=6)
+        self.assertEqual(len(reihe), 6)
+        self.assertEqual(reihe[-1]['quote'], 100.0)   # 1/1 leer aktuell
+
+    def test_leerstand_verlauf_view(self):
+        lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        r = c.get('/neu/berichte/leerstand-verlauf/?monate=12')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('Leerstands-Verlauf', r.content.decode())
+
+    def test_form_get_rendert_bewertung_und_energie(self):
+        lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        r = c.get(f'/neu/liegenschaften/{lg.id}/bearbeiten/')
+        self.assertEqual(r.status_code, 200)
+        html = r.content.decode()
+        self.assertIn('Verkehrswert', html)
+        self.assertIn('GEAK', html)
+
+    def test_form_speichert_verkehrswert_und_energie(self):
+        lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        r = c.post(f'/neu/liegenschaften/{lg.id}/bearbeiten/', {
+            'strasse': lg.strasse, 'plz': lg.plz, 'ort': lg.ort,
+            'verkehrswert': "750'000", 'heizsystem': 'waermepumpe',
+            'geak_klasse': 'B', 'warmwasser': 'zentral',
+        })
+        self.assertIn(r.status_code, (200, 302))
+        lg.refresh_from_db()
+        self.assertEqual(lg.verkehrswert, Decimal('750000'))
+        self.assertEqual(lg.heizsystem, 'waermepumpe')
+        self.assertEqual(lg.geak_klasse, 'B')
+
+
+class QualitaetscheckFixTests(TestCase):
+    """Fixes aus dem Abschluss-Qualitätscheck: cancel_umzug-Scoping,
+    Betriebsrechnung ohne Doppelzählung von Erfolgsumbuchungen."""
+
+    def test_betriebsrechnung_keine_doppelzaehlung_erfolgsumbuchung(self):
+        from core.services.rendite import betriebsrechnung
+        from finance.models import Buchungskonto, Buchung
+        lg, e, m, v = _basis_objekte()
+        Buchungskonto.objects.get_or_create(nummer='3000', defaults={'bezeichnung': 'Ertrag', 'typ': 'ertrag'})
+        Buchungskonto.objects.get_or_create(nummer='6000', defaults={'bezeichnung': 'Aufwand', 'typ': 'aufwand'})
+        auf = Buchungskonto.objects.get(nummer='6000')
+        ert = Buchungskonto.objects.get(nummer='3000')
+        jahr = date.today().year
+        # Reine Aufwand→Ertrag-Umbuchung: darf weder Ertrag- noch Aufwand-Total aufblähen
+        Buchung.objects.create(datum=date(jahr, 5, 1), liegenschaft=lg,
+                               soll_konto=auf, haben_konto=ert, betrag=Decimal('500'))
+        d = betriebsrechnung(lg, jahr)
+        self.assertEqual(d['ertrag_total'], Decimal('0.00'))
+        self.assertEqual(d['aufwand_total'], Decimal('0.00'))
+
+    def test_cancel_umzug_schont_manuelle_adresse(self):
+        from crm.api import cancel_umzug
+        from crm.models import MieterAdresse
+        from django.test import RequestFactory
+        _lg, _e, m, _v = _basis_objekte()
+        zukunft = date.today() + timedelta(days=30)
+        # aus Vertrag stammend (soll storniert werden)
+        MieterAdresse.objects.create(mieter=m, art='wohn', gueltig_ab=zukunft,
+                                     strasse='Vertragsweg 1', plz='3000', ort='Bern',
+                                     quelle='vertrag:99')
+        # manuell erfasst (soll BLEIBEN)
+        MieterAdresse.objects.create(mieter=m, art='wohn', gueltig_ab=zukunft + timedelta(days=5),
+                                     strasse='Manuellweg 2', plz='3001', ort='Bern', quelle='')
+        req = RequestFactory().post(f'/api/crm/mieter/{m.id}/cancel-umzug')
+        req.user = _team_user()
+        cancel_umzug(req, m.id)
+        verbleibend = set(m.adressen.values_list('strasse', flat=True))
+        self.assertNotIn('Vertragsweg 1', verbleibend)   # Vertrags-Einzug storniert
+        self.assertIn('Manuellweg 2', verbleibend)       # manuelle Adresse geschont

@@ -62,11 +62,14 @@ def delete_mieter(request, mieter_id: int):
 
 @router.post("/mieter/{mieter_id}/cancel-umzug", auth=auth_schreiben)
 def cancel_umzug(request, mieter_id: int):
-    """Storniert einen noch nicht wirksamen Einzug: entfernt die künftigen
-    (gueltig_ab > heute) Wohnadress-Zeilen aus der datierten Adress-Historie."""
+    """Storniert einen noch nicht wirksamen, aus einem Vertrag stammenden Einzug:
+    entfernt die künftigen (gueltig_ab > heute) Wohnadress-Zeilen mit
+    Vertragsherkunft. MANUELL erfasste künftige Adressen bleiben unangetastet
+    (sie werden über die Adress-Historie am Personendetail verwaltet)."""
     from django.utils import timezone
     m = get_object_or_404(Mieter, id=mieter_id)
-    m.adressen.filter(art='wohn', gueltig_ab__gt=timezone.localdate()).delete()
+    m.adressen.filter(art='wohn', gueltig_ab__gt=timezone.localdate(),
+                      quelle__startswith='vertrag:').delete()
     m.sync_effektive_adresse()
     return 200, {"success": True}
 

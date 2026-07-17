@@ -69,7 +69,7 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
                                 mieter_rechnungen_view, mieter_dokumente_view, mieter_schaden_formular)
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
-from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_betriebskostenspiegel, fw_auswertung, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_liegenschaften, fw_mieterspiegel, fw_objekte,
+from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_betriebskostenspiegel, fw_betriebsrechnung_pdf, fw_leerstand_verlauf, fw_auswertung, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_liegenschaften, fw_mieterspiegel, fw_objekte,
                            fw_personen, fw_vertraege, fw_mieterwechsel, fw_vermarktung, fw_objekt_ausschreiben, fw_expose_pdf,
                            fw_liegenschaft_detail, fw_objekt_detail, fw_objekt_foto_upload, fw_objekt_foto_loeschen, fw_vertrag_detail,
                            fw_ausstattung_add, fw_ausstattung_edit, fw_ausstattung_katalog, fw_ausstattung_del, fw_lebensdauer,
@@ -156,6 +156,8 @@ urlpatterns = [
     path('neu/mieterspiegel/', fw_mieterspiegel, name='fw_mieterspiegel'),
     path('neu/berichte/', fw_berichte, name='fw_berichte'),
     path('neu/berichte/betriebskostenspiegel/', fw_betriebskostenspiegel, name='fw_betriebskostenspiegel'),
+    path('neu/berichte/leerstand-verlauf/', fw_leerstand_verlauf, name='fw_leerstand_verlauf'),
+    path('neu/liegenschaften/<int:pk>/betriebsrechnung/', fw_betriebsrechnung_pdf, name='fw_betriebsrechnung_pdf'),
     path('neu/auswertung/', fw_auswertung, name='fw_auswertung'),
     path('neu/liegenschaften/neu/', fw_liegenschaft_form, name='fw_liegenschaft_neu'),
     path('neu/liegenschaften/<int:pk>/bearbeiten/', fw_liegenschaft_form, name='fw_liegenschaft_bearbeiten'),

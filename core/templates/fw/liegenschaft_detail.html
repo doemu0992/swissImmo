@@ -113,6 +113,36 @@
 
 <!-- ===== TAB: FINANZEN ===== -->
 <div data-panel="lg" id="lg-finanzen" class="hidden">
+    <!-- Rendite-Cockpit -->
+    <div class="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl p-5 mb-4 text-white">
+        <div class="flex items-start justify-between flex-wrap gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1">
+                <div>
+                    <div class="text-2xl font-bold">CHF {{ rendite.jahres_netto|floatformat:0 }}</div>
+                    <div class="text-xs text-indigo-100">Soll-Nettomiete / Jahr</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">{% if rendite.bruttorendite is not None %}{{ rendite.bruttorendite|floatformat:2 }}%{% else %}—{% endif %}</div>
+                    <div class="text-xs text-indigo-100">Bruttorendite</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">{% if rendite.nettorendite is not None %}{{ rendite.nettorendite|floatformat:2 }}%{% else %}—{% endif %}</div>
+                    <div class="text-xs text-indigo-100">Nettorendite (12 Mt.)</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">{% if rendite.wert %}CHF {{ rendite.wert|floatformat:0 }}{% else %}—{% endif %}</div>
+                    <div class="text-xs text-indigo-100">{% if rendite.wert_quelle == 'verkehrswert' %}Verkehrswert{% elif rendite.wert_quelle == 'anlagekosten' %}Anlagekosten{% else %}Wert fehlt{% endif %}</div>
+                </div>
+            </div>
+        </div>
+        {% if rendite.bruttorendite is None %}
+        <p class="text-xs text-indigo-100 mt-3"><i class="fa-solid fa-circle-info mr-1"></i>Für die Rendite bitte den <b>Verkehrswert</b> (oder Anlagekosten) in den Stammdaten erfassen — der Versicherungswert taugt nicht als Nenner.</p>
+        {% endif %}
+        <div class="flex flex-wrap gap-2 mt-4">
+            <a href="/neu/liegenschaften/{{ lg.id }}/betriebsrechnung/" class="bg-white/15 hover:bg-white/25 text-white text-xs font-semibold px-3 py-2 rounded-lg"><i class="fa-solid fa-file-invoice mr-1.5"></i>Betriebsrechnung (PDF)</a>
+            <a href="/neu/berichte/leerstand-verlauf/" class="bg-white/15 hover:bg-white/25 text-white text-xs font-semibold px-3 py-2 rounded-lg"><i class="fa-solid fa-chart-column mr-1.5"></i>Leerstands-Verlauf</a>
+        </div>
+    </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <div class="bg-white rounded-xl border border-slate-200 p-5">
             <h3 class="font-bold text-slate-800 mb-3">Stammdaten & Bank</h3>
@@ -120,9 +150,14 @@
                 {% if lg.mandant %}<div class="flex justify-between"><dt class="text-slate-500">Eigentümer</dt><dd class="text-slate-800 font-medium text-right">{{ lg.mandant.firma_oder_name }}</dd></div>{% endif %}
                 {% if lg.egid %}<div class="flex justify-between"><dt class="text-slate-500">EGID</dt><dd class="text-slate-800 font-medium">{{ lg.egid }}</dd></div>{% endif %}
                 {% if lg.kataster_nummer %}<div class="flex justify-between"><dt class="text-slate-500">Kataster-Nr.</dt><dd class="text-slate-800 font-medium">{{ lg.kataster_nummer }}</dd></div>{% endif %}
+                {% if lg.verkehrswert %}<div class="flex justify-between"><dt class="text-slate-500">Verkehrswert</dt><dd class="text-slate-800 font-medium">CHF {{ lg.verkehrswert|floatformat:0 }}</dd></div>{% endif %}
+                {% if lg.anlagekosten %}<div class="flex justify-between"><dt class="text-slate-500">Anlagekosten</dt><dd class="text-slate-800 font-medium">CHF {{ lg.anlagekosten|floatformat:0 }}</dd></div>{% endif %}
                 {% if lg.versicherungswert %}<div class="flex justify-between"><dt class="text-slate-500">Versicherungswert</dt><dd class="text-slate-800 font-medium">CHF {{ lg.versicherungswert|floatformat:0 }}</dd></div>{% endif %}
                 {% if lg.grundstuecksflaeche_m2 %}<div class="flex justify-between"><dt class="text-slate-500">Grundstücksfläche</dt><dd class="text-slate-800 font-medium">{{ lg.grundstuecksflaeche_m2|floatformat:0 }} m²</dd></div>{% endif %}
                 {% if lg.gebaeudevolumen_m3 %}<div class="flex justify-between"><dt class="text-slate-500">Gebäudevolumen</dt><dd class="text-slate-800 font-medium">{{ lg.gebaeudevolumen_m3|floatformat:0 }} m³</dd></div>{% endif %}
+                {% if lg.heizsystem %}<div class="flex justify-between"><dt class="text-slate-500">Heizsystem</dt><dd class="text-slate-800 font-medium">{{ lg.get_heizsystem_display }}</dd></div>{% endif %}
+                {% if lg.warmwasser %}<div class="flex justify-between"><dt class="text-slate-500">Warmwasser</dt><dd class="text-slate-800 font-medium">{{ lg.get_warmwasser_display }}</dd></div>{% endif %}
+                {% if lg.geak_klasse or lg.geak_klasse_gesamt %}<div class="flex justify-between"><dt class="text-slate-500">GEAK</dt><dd class="text-slate-800 font-medium">{% if lg.geak_klasse %}Hülle {{ lg.geak_klasse }}{% endif %}{% if lg.geak_klasse_gesamt %} · Gesamt {{ lg.geak_klasse_gesamt }}{% endif %}</dd></div>{% endif %}
                 {% if lg.bank_name %}<div class="flex justify-between"><dt class="text-slate-500">Mietzinskonto</dt><dd class="text-slate-800 font-medium text-right">{{ lg.bank_name }}</dd></div>{% endif %}
                 {% if lg.iban %}<div class="flex justify-between"><dt class="text-slate-500">IBAN</dt><dd class="text-slate-800 font-medium font-mono text-xs">{{ lg.iban }}</dd></div>{% endif %}
             </dl>

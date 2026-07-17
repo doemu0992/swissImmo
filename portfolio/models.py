@@ -20,6 +20,34 @@ class Liegenschaft(models.Model):
     grundstuecksflaeche_m2 = models.DecimalField("Grundstücksfläche (m²)", max_digits=10, decimal_places=2, null=True, blank=True)
     gebaeudevolumen_m3 = models.DecimalField("Gebäudevolumen (m³)", max_digits=10, decimal_places=2, null=True, blank=True)
 
+    # --- BEWERTUNG / RENDITE ---
+    # Verkehrswert (Marktwert) ist der massgebliche Renditenenner; Anlagekosten
+    # (Gestehungskosten) sind die Alternative. Versicherungswert eignet sich NICHT
+    # als Nenner (Neuwert Gebäudehülle ≠ Marktwert inkl. Land).
+    verkehrswert = models.DecimalField("Verkehrswert (Marktwert)", max_digits=12, decimal_places=2, null=True, blank=True)
+    anlagekosten = models.DecimalField("Anlage-/Gestehungskosten", max_digits=12, decimal_places=2, null=True, blank=True)
+    kaufpreis = models.DecimalField("Kaufpreis", max_digits=12, decimal_places=2, null=True, blank=True)
+    kaufdatum = models.DateField("Kaufdatum", null=True, blank=True)
+
+    # --- ENERGIE / GEBÄUDETECHNIK (GEAK) ---
+    GEAK_KLASSEN = [(c, c) for c in ('A', 'B', 'C', 'D', 'E', 'F', 'G')]
+    HEIZ_CHOICES = [
+        ('waermepumpe', 'Wärmepumpe'), ('gas', 'Gasheizung'), ('oel', 'Ölheizung'),
+        ('fernwaerme', 'Fernwärme'), ('holz', 'Holz / Pellets'), ('elektro', 'Elektro'),
+        ('solar', 'Solar / thermisch'), ('andere', 'Andere'),
+    ]
+    WARMWASSER_CHOICES = [
+        ('zentral', 'Zentral (Heizung)'), ('boiler', 'Elektroboiler'),
+        ('waermepumpe', 'Wärmepumpenboiler'), ('solar', 'Solar'), ('andere', 'Andere'),
+    ]
+    energiebezugsflaeche_m2 = models.DecimalField("Energiebezugsfläche (m²)", max_digits=10, decimal_places=2, null=True, blank=True)
+    geak_klasse = models.CharField("GEAK-Klasse (Gebäudehülle)", max_length=1, choices=GEAK_KLASSEN, blank=True, default='')
+    geak_klasse_gesamt = models.CharField("GEAK-Klasse (Gesamtenergie)", max_length=1, choices=GEAK_KLASSEN, blank=True, default='')
+    geak_datum = models.DateField("GEAK ausgestellt am", null=True, blank=True)
+    heizsystem = models.CharField("Heizsystem", max_length=20, choices=HEIZ_CHOICES, blank=True, default='')
+    energietraeger = models.CharField("Energieträger (Zusatz)", max_length=60, blank=True, default='')
+    warmwasser = models.CharField("Warmwasser", max_length=20, choices=WARMWASSER_CHOICES, blank=True, default='')
+
     kanton = models.CharField("Kanton", max_length=2, blank=True)
     bank_name = models.CharField("Bankname", max_length=100, blank=True)
     iban = models.CharField("IBAN", max_length=34, blank=True)
