@@ -777,18 +777,41 @@ function refreshServerPreview(){
   fetch('/neu/vertraege/vorschau/', {method:'POST', body:new FormData(form),
         headers:{'X-Requested-With':'XMLHttpRequest'}})
     .then(r=>r.text())
-    .then(html=>{
-      if(seq!==_pvSeq) return;
-      // Vorschau in A4-Breite (794px) layouten und vom Browser auf die
-      // iframe-Breite herunterskalieren → ganze Vertragsbreite ohne
-      // seitliches Scrollen sichtbar (mobil wie im Fairwalter-PDF-Viewer).
-      const vp = '<meta name="viewport" content="width=794">';
-      html = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, m => m + vp)
-                                       : vp + html;
-      frame.srcdoc = html;
-    })
+    .then(html=>{ if(seq===_pvSeq) frame.srcdoc = html; })
     .catch(()=>{});
 }
+// Vorschau in A4-Breite (794px) layouten und per CSS-Transform exakt auf die
+// verfügbare Spaltenbreite herunterskalieren → ganze Vertragsbreite ohne
+// horizontales Scrollen. Ab lg (Desktop) volle Breite ohne Skalierung.
+function fitPreviewFrame(){
+  const frame=document.getElementById('pvFrame'); if(!frame) return;
+  const wrap=frame.parentElement; if(!wrap) return;
+  const desktop = window.matchMedia('(min-width:1024px)').matches;
+  if(desktop){
+    frame.style.width='100%'; frame.style.transform='none';
+    frame.style.height='75vh'; wrap.style.height='';
+    return;
+  }
+  const targetW=794;
+  const availW=wrap.clientWidth||frame.clientWidth||360;
+  const scale=availW/targetW;
+  // Erst auf A4-Breite legen (Content reflowt), dann die echte Höhe messen.
+  frame.style.transform='none';
+  frame.style.width=targetW+'px';
+  frame.style.height='300px';
+  let h=1200;
+  try{ const d=frame.contentDocument; if(d&&d.body){ h=Math.max(d.body.scrollHeight, d.documentElement.scrollHeight, 600); } }catch(e){}
+  frame.style.transformOrigin='top left';
+  frame.style.transform='scale('+scale+')';
+  frame.style.height=h+'px';
+  wrap.style.height=Math.ceil(h*scale)+'px';
+}
+(function(){
+  const frame=document.getElementById('pvFrame');
+  if(frame){ frame.addEventListener('load', function(){ setTimeout(fitPreviewFrame, 30); }); }
+  let _rt=null;
+  window.addEventListener('resize', function(){ clearTimeout(_rt); _rt=setTimeout(fitPreviewFrame, 120); });
+})();
 function live(){
   const l=curLg(), o=curObj(), m=curMieter();
   const vm = l?l.vermieter:{name:'{{ verwaltung.firma }}',strasse:'{{ verwaltung.strasse }}',plz:'{{ verwaltung.plz }}',ort:'{{ verwaltung.ort }}'};
