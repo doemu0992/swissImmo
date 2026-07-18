@@ -20,7 +20,7 @@
             <p class="text-sm text-slate-500">{{ m.get_typ_display }}{% if m.ort %} · {{ m.plz }} {{ m.ort }}{% endif %}</p>
         </div>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
         {% if anzahl_aktive %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-emerald-50 text-emerald-700">{{ anzahl_aktive }} aktiver Vertrag{{ anzahl_aktive|pluralize:",e" }}</span>{% endif %}
         {% if m.email %}
         <a href="/neu/kommunikation/?mieter={{ m.id }}" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors" title="Mitteilung an {{ m.email }} verfassen (wird im Journal dokumentiert)">
@@ -30,22 +30,33 @@
         <a href="/neu/personen/{{ m.id }}/bearbeiten/" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
             <i class="fa-solid fa-pen text-xs mr-1"></i>Bearbeiten
         </a>
-        {% if not m.anonymisiert %}
-        <form method="post" action="/neu/personen/{{ m.id }}/dsg-loeschen/" class="inline"
-              onsubmit="return confirm('DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?');">
-            {% csrf_token %}
-            <button type="submit" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 transition-colors" title="Personendaten anonymisieren (Recht auf Löschung, DSG)">
-                <i class="fa-solid fa-user-shield text-xs mr-1"></i>DSG-Löschung
+        <div class="relative">
+            <button type="button" onclick="document.getElementById('pAktionen').classList.toggle('hidden'); event.stopPropagation();"
+                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+                <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
             </button>
-        </form>
-        {% endif %}
-        <form method="post" action="/neu/personen/{{ m.id }}/loeschen/" class="inline"
-              onsubmit="return confirm('Person „{{ m.display_name|escapejs }}“ wirklich löschen?{% if anzahl_aktive %} Achtung: es besteht ein aktiver Vertrag – die Löschung wird blockiert.{% else %} Beendete/Entwurf-Verträge, Journal und Dokumente dieser Person werden mitgelöscht.{% endif %}');">
-            {% csrf_token %}
-            <button type="submit" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors">
-                <i class="fa-solid fa-trash text-xs mr-1"></i>Löschen
-            </button>
-        </form>
+            <div id="pAktionen" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
+                {% if not m.anonymisiert %}
+                <form method="post" action="/neu/personen/{{ m.id }}/dsg-loeschen/"
+                      onsubmit="return confirm('DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?');">
+                    {% csrf_token %}
+                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-amber-700 hover:bg-amber-50"><i class="fa-solid fa-user-shield w-4"></i>DSG-Löschung (anonymisieren)</button>
+                </form>
+                <div class="my-1 border-t border-slate-100"></div>
+                {% endif %}
+                <form method="post" action="/neu/personen/{{ m.id }}/loeschen/"
+                      onsubmit="return confirm('Person „{{ m.display_name|escapejs }}“ wirklich löschen?{% if anzahl_aktive %} Achtung: es besteht ein aktiver Vertrag – die Löschung wird blockiert.{% else %} Beendete/Entwurf-Verträge, Journal und Dokumente dieser Person werden mitgelöscht.{% endif %}');">
+                    {% csrf_token %}
+                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50"><i class="fa-solid fa-trash w-4"></i>Person löschen</button>
+                </form>
+            </div>
+        </div>
+        <script>
+          document.addEventListener('click', function (ev) {
+            var d = document.getElementById('pAktionen');
+            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
+          });
+        </script>
     </div>
 </div>
 {% if m.anonymisiert %}

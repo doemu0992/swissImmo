@@ -10501,3 +10501,29 @@ class HotfixDashboardPerformanceTests(TestCase):
             total = sum((r.offener_betrag for r in qs), Decimal('0.00'))
         self.assertEqual(total, Decimal('45000.00'))   # 30 × (1700 - 200)
         self.assertLessEqual(len(ctx.captured_queries), 3)
+
+
+class DetailAktionsleisteTests(TestCase):
+    """Einheitliche Aktionsleiste (Bearbeiten-Button + '⋯ Mehr'-Dropdown) auf
+    allen Detailseiten — sekundäre/destruktive Aktionen liegen im Dropdown."""
+
+    def test_aktionsleisten_vorhanden(self):
+        lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        for url, drop_id, im_dropdown in (
+            (f'/neu/vertraege/{v.id}/', 'vAktionen', 'Vertrag löschen'),
+            (f'/neu/personen/{m.id}/', 'pAktionen', 'Person löschen'),
+            (f'/neu/liegenschaften/{lg.id}/', 'lAktionen', 'Liegenschaft löschen'),
+        ):
+            body = c.get(url).content.decode()
+            self.assertIn(f'id="{drop_id}"', body, f'{url}: Mehr-Dropdown fehlt')
+            self.assertIn('>Bearbeiten', body, f'{url}: Bearbeiten-Button fehlt')
+            self.assertIn(im_dropdown, body, f'{url}: {im_dropdown} fehlt')
+
+    def test_loeschen_weiterhin_funktionsfaehig(self):
+        # Der Löschen-Button im Dropdown postet weiterhin an die richtige URL
+        lg, e, m, v = _basis_objekte()
+        u = _team_user(); c = Client(); c.force_login(u)
+        body = c.get(f'/neu/personen/{m.id}/').content.decode()
+        self.assertIn(f'action="/neu/personen/{m.id}/loeschen/"', body)
+        self.assertIn(f'action="/neu/personen/{m.id}/dsg-loeschen/"', body)

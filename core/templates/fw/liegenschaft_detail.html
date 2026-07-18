@@ -22,23 +22,34 @@
             <p class="text-sm text-slate-500">{{ lg.plz }} {{ lg.ort }}{% if lg.baujahr %} · Baujahr {{ lg.baujahr }}{% endif %}{% if lg.kanton %} · {{ lg.kanton }}{% endif %}</p>
         </div>
     </div>
-    <div class="flex items-center gap-2">
-        <form method="post" action="/neu/liegenschaften/{{ lg.id }}/gwr-import/" class="inline">
-            {% csrf_token %}
-            <button type="submit" title="EGID ermitteln & Objekte aus dem GWR importieren" class="text-sm text-slate-700 hover:text-indigo-600 hover:border-indigo-400 border border-slate-200 px-3 py-2 rounded-lg font-semibold transition-colors">
-                <i class="fa-solid fa-cloud-arrow-down text-xs mr-1.5"></i>GWR-Import
-            </button>
-        </form>
-        <a href="/neu/liegenschaften/{{ lg.id }}/bearbeiten/" class="text-sm text-slate-700 hover:text-indigo-600 hover:border-indigo-400 border border-slate-200 px-3 py-2 rounded-lg font-semibold transition-colors">
-            <i class="fa-solid fa-pen text-xs mr-1.5"></i>Bearbeiten
+    <div class="flex flex-wrap items-center gap-2">
+        <a href="/neu/liegenschaften/{{ lg.id }}/bearbeiten/" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+            <i class="fa-solid fa-pen text-xs mr-1"></i>Bearbeiten
         </a>
-        <form method="post" action="/neu/liegenschaften/{{ lg.id }}/loeschen/" class="inline"
-              onsubmit="return confirm('Liegenschaft {{ lg.strasse|escapejs }} inkl. aller Objekte wirklich löschen? Dies kann nicht rückgängig gemacht werden.');">
-            {% csrf_token %}
-            <button type="submit" title="Liegenschaft löschen" class="text-sm text-rose-600 hover:text-white hover:bg-rose-600 hover:border-rose-600 border border-rose-200 px-3 py-2 rounded-lg font-semibold transition-colors">
-                <i class="fa-solid fa-trash text-xs mr-1.5"></i>Löschen
+        <div class="relative">
+            <button type="button" onclick="document.getElementById('lAktionen').classList.toggle('hidden'); event.stopPropagation();"
+                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+                <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
             </button>
-        </form>
+            <div id="lAktionen" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
+                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/gwr-import/">
+                    {% csrf_token %}
+                    <button title="EGID ermitteln & Objekte aus dem GWR importieren" class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-cloud-arrow-down w-4"></i>GWR-Import (Objekte)</button>
+                </form>
+                <div class="my-1 border-t border-slate-100"></div>
+                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/loeschen/"
+                      onsubmit="return confirm('Liegenschaft {{ lg.strasse|escapejs }} inkl. aller Objekte wirklich löschen? Dies kann nicht rückgängig gemacht werden.');">
+                    {% csrf_token %}
+                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50"><i class="fa-solid fa-trash w-4"></i>Liegenschaft löschen</button>
+                </form>
+            </div>
+        </div>
+        <script>
+          document.addEventListener('click', function (ev) {
+            var d = document.getElementById('lAktionen');
+            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
+          });
+        </script>
     </div>
 </div>
 
