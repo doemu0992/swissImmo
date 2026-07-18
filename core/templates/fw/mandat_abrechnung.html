@@ -8,12 +8,12 @@
     <span class="text-slate-600 font-medium">{{ md.firma_oder_name }} · Abrechnung {{ jahr }}</span>
 </nav>
 
-<div class="flex items-start justify-between gap-4 mb-5">
+<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-5">
     <div>
         <h1 class="text-2xl font-extrabold text-slate-900">Eigentümerabrechnung {{ jahr }}</h1>
         <p class="text-sm text-slate-500">{{ md.firma_oder_name }} · {{ von|date:"d.m.Y" }} – {{ bis|date:"d.m.Y" }}</p>
     </div>
-    <div class="flex items-center gap-2 shrink-0">
+    <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <a href="/neu/mandate/{{ md.id }}/kontokorrent/?jahr={{ jahr }}"
            class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg">
             <i class="fa-solid fa-scale-balanced mr-1.5"></i>Kontokorrent

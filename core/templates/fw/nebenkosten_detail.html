@@ -10,9 +10,9 @@
     <span class="text-slate-600 font-medium">{{ p.bezeichnung }}</span>
 </nav>
 
-<div class="flex items-start justify-between gap-4">
+<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
     <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-lg shadow-indigo-600/25">
+        <div class="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-lg shadow-indigo-600/25 shrink-0">
             <i class="fa-solid fa-file-invoice-dollar"></i>
         </div>
         <div>
@@ -20,7 +20,7 @@
             <p class="text-sm text-slate-500">{% if p.liegenschaft_id %}{{ p.liegenschaft.strasse }}, {{ p.liegenschaft.ort }} · {% endif %}{{ p.start_datum|date:"d.m.Y" }} – {{ p.ende_datum|date:"d.m.Y" }}</p>
         </div>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap">
         {% if hkvo_angewendet %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-50 text-sky-700" title="Verbrauchsabhängige Heizkostenabrechnung angewendet">HKVO ✓</span>{% endif %}
         <form method="post" action="/neu/nebenkosten/{{ p.id }}/versand/" title="Erzeugt je Mieter eine Abrechnung, legt sie ins Portal und lädt alle als Sammel-PDF">
             {% csrf_token %}
