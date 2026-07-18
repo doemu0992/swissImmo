@@ -10410,3 +10410,43 @@ class NachtN9BuchhalterTests(TestCase):
         r = berechne_abrechnung(p.id)
         honorar = [d for d in r['belege_details'] if d['kategorie'] == 'Verwaltung']
         self.assertEqual(honorar, [])
+
+
+class NachtN10UIDetailTests(TestCase):
+    """Nacht-Audit N10: Vertrag-Detail-Aktionsleiste mit Dropdown, Pflichtfelder,
+    CHF-Präfixe, echte Links in Detail-Tabellen."""
+
+    def _client(self):
+        u = _team_user(); c = Client(); c.force_login(u)
+        return c
+
+    def test_vertrag_detail_aktions_dropdown(self):
+        _lg, _e, _m, v = _basis_objekte()
+        body = self._client().get(f'/neu/vertraege/{v.id}/').content.decode()
+        self.assertIn('id="vAktionen"', body)
+        self.assertIn('Vertrag löschen', body)
+        self.assertIn('Schlussabrechnung', body)
+        self.assertIn('Kündigung erfassen', body)
+        # Die alte Punkte-Kette (Aktion · Aktion · …) ist weg
+        self.assertNotIn('<span class="text-slate-300">·</span>\n            <a href="/neu/vertraege/', body)
+
+    def test_frist_formular_pflichtfelder(self):
+        lg, _e, _m, _v = _basis_objekte()
+        body = self._client().get(f'/neu/liegenschaften/{lg.id}/').content.decode()
+        self.assertIn('name="bezeichnung" required', body)
+        self.assertIn('name="naechste_faelligkeit" required', body)
+
+    def test_objekte_liste_chf_praefix(self):
+        lg, e, _m, _v = _basis_objekte()
+        e.nettomiete_aktuell = Decimal('1500')
+        e.save(update_fields=['nettomiete_aktuell'])
+        body = self._client().get('/neu/objekte/').content.decode()
+        self.assertIn("CHF 1'500", body)
+
+    def test_detail_tabellen_erste_zelle_link(self):
+        lg, e, m, v = _basis_objekte()
+        c = self._client()
+        body = c.get(f'/neu/liegenschaften/{lg.id}/').content.decode()
+        self.assertIn(f'<a href="/neu/objekte/{e.id}/', body)
+        body2 = c.get(f'/neu/personen/{m.id}/').content.decode()
+        self.assertIn(f'<a href="/neu/vertraege/{v.id}/"', body2)

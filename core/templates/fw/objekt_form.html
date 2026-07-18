@@ -1,4 +1,5 @@
 {% extends 'fw/base.html' %}
+{% load chf %}
 {% load l10n %}
 {% block title %}{% if ist_neu %}Neues Objekt{% else %}{{ e.bezeichnung }} bearbeiten{% endif %} — swissImmo{% endblock %}
 {% block content %}
@@ -104,9 +105,9 @@
                 <tr>
                     <td class="px-4 py-2 font-medium text-slate-800">{{ s.gueltig_ab|date:"d.m.Y" }}
                         {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700">aktuell</span>{% endif %}</td>
-                    <td class="px-4 py-2 text-right text-slate-700">CHF {{ s.netto_mietzins|floatformat:2 }}</td>
-                    {% if not e.ist_einstellplatz %}<td class="px-4 py-2 text-right text-slate-700">CHF {{ s.nebenkosten|floatformat:2 }}</td>
-                    <td class="px-4 py-2 text-right font-semibold text-slate-900">CHF {{ s.brutto|floatformat:2 }}</td>{% endif %}
+                    <td class="px-4 py-2 text-right text-slate-700">CHF {{ s.netto_mietzins|chf }}</td>
+                    {% if not e.ist_einstellplatz %}<td class="px-4 py-2 text-right text-slate-700">CHF {{ s.nebenkosten|chf }}</td>
+                    <td class="px-4 py-2 text-right font-semibold text-slate-900">CHF {{ s.brutto|chf }}</td>{% endif %}
                 </tr>
                 {% endfor %}
                 </tbody>

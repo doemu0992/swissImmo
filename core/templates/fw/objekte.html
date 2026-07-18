@@ -77,7 +77,7 @@
                     <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.e.get_typ_display }}</td>
                     <td class="px-5 py-3.5 text-center text-slate-600">{% if row.e.zimmer %}{{ row.e.zimmer }}{% else %}—{% endif %}</td>
                     <td class="px-5 py-3.5 text-center text-slate-600 whitespace-nowrap">{% if row.e.flaeche_m2 %}{{ row.e.flaeche_m2|floatformat:0 }} m²{% else %}—{% endif %}</td>
-                    <td class="px-5 py-3.5 text-right font-medium text-slate-800 whitespace-nowrap">{% if row.e.nettomiete_aktuell %}{{ row.e.nettomiete_aktuell|chf }}{% else %}—{% endif %}</td>
+                    <td class="px-5 py-3.5 text-right font-medium text-slate-800 whitespace-nowrap">{% if row.e.nettomiete_aktuell %}CHF {{ row.e.nettomiete_aktuell|chf }}{% else %}—{% endif %}</td>
                     <td class="px-5 py-3.5">
                         {% if row.mieter %}
                         <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">Vermietet</span>

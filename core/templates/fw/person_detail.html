@@ -247,7 +247,7 @@
             <tbody class="divide-y divide-slate-50">
             {% for row in vertrag_rows %}
             <tr class="hover:bg-slate-50/60 cursor-pointer" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
-                <td class="px-5 py-3 font-medium text-slate-900">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</td>
+                <td class="px-5 py-3"><a href="/neu/vertraege/{{ row.v.id }}/" class="font-medium text-slate-900" onclick="event.stopPropagation()">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</a></td>
                 <td class="px-5 py-3 text-slate-600">{{ row.v.beginn|date:"d.m.Y" }}</td>
                 <td class="px-5 py-3 text-slate-600">{% if row.v.ende %}{{ row.v.ende|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-right font-semibold text-slate-900">CHF {{ row.brutto|chf }}</td>
