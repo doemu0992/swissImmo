@@ -10514,11 +10514,18 @@ class DetailAktionsleisteTests(TestCase):
             (f'/neu/vertraege/{v.id}/', 'vAktionen', 'Vertrag löschen'),
             (f'/neu/personen/{m.id}/', 'pAktionen', 'Person löschen'),
             (f'/neu/liegenschaften/{lg.id}/', 'lAktionen', 'Liegenschaft löschen'),
+            (f'/neu/objekte/{e.id}/', 'oAktionen', 'Bewerber vergleichen'),
         ):
             body = c.get(url).content.decode()
             self.assertIn(f'id="{drop_id}"', body, f'{url}: Mehr-Dropdown fehlt')
-            self.assertIn('>Bearbeiten', body, f'{url}: Bearbeiten-Button fehlt')
+            self.assertIn('>Mehr', body, f'{url}: Mehr-Button fehlt')
             self.assertIn(im_dropdown, body, f'{url}: {im_dropdown} fehlt')
+        # Schadenseite: Löschen liegt im Mehr-Dropdown
+        from tickets.models import SchadenMeldung
+        t = SchadenMeldung.objects.create(liegenschaft=lg, betroffene_einheit=e, titel='X', beschreibung='y')
+        sbody = c.get(f'/neu/schaeden/{t.id}/').content.decode()
+        self.assertIn('id="sAktionen"', sbody)
+        self.assertIn('Schadensmeldung löschen', sbody)
 
     def test_loeschen_weiterhin_funktionsfaehig(self):
         # Der Löschen-Button im Dropdown postet weiterhin an die richtige URL

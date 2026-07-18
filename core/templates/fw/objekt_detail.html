@@ -22,7 +22,7 @@
             <p class="text-sm text-slate-500">{{ e.get_typ_display }}{% if e.etage %} · {{ e.etage }}{% endif %} · {{ e.liegenschaft.strasse }}, {{ e.liegenschaft.ort }}</p>
         </div>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
         {% if aktiver_vertrag %}
         <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ vertrag_pill.cls }}">{{ vertrag_pill.label }}</span>
         {% else %}
@@ -31,6 +31,36 @@
         <a href="/neu/objekte/{{ e.id }}/bearbeiten/" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
             <i class="fa-solid fa-pen text-xs mr-1"></i>Bearbeiten
         </a>
+        <div class="relative">
+            <button type="button" onclick="document.getElementById('oAktionen').classList.toggle('hidden'); event.stopPropagation();"
+                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+                <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
+            </button>
+            <div id="oAktionen" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
+                {% if e.zur_ausschreibung %}
+                <form method="post" action="/neu/objekte/{{ e.id }}/ausschreiben/">
+                    {% csrf_token %}
+                    <input type="hidden" name="ziel" value="aus">
+                    <input type="hidden" name="weiter" value="/neu/objekte/{{ e.id }}/">
+                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-bullhorn w-4"></i>Ausschreibung beenden</button>
+                </form>
+                {% else %}
+                <form method="post" action="/neu/objekte/{{ e.id }}/ausschreiben/">
+                    {% csrf_token %}
+                    <input type="hidden" name="ziel" value="an">
+                    <input type="hidden" name="weiter" value="/neu/objekte/{{ e.id }}/">
+                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-bullhorn w-4"></i>Zur Vermarktung ausschreiben</button>
+                </form>
+                {% endif %}
+                <a href="/neu/vermarktung/{{ e.id }}/bewerber/" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-users w-4"></i>Bewerber vergleichen</a>
+            </div>
+        </div>
+        <script>
+          document.addEventListener('click', function (ev) {
+            var d = document.getElementById('oAktionen');
+            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
+          });
+        </script>
     </div>
 </div>
 
