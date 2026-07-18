@@ -295,6 +295,29 @@ document.addEventListener('input', function(e) {
         tr.classList.toggle('hidden', q && tr.textContent.toLowerCase().indexOf(q) === -1);
     });
 });
+
+// Globales "⋯ Mehr"-Dropdown: Markup ohne eigenes Script.
+//   <div class="relative" data-menu>
+//     <button data-menu-btn>… Mehr</button>
+//     <div data-menu-list class="hidden absolute …">…Aktionen…</div>
+//   </div>
+document.addEventListener('click', function(ev) {
+    var btn = ev.target.closest ? ev.target.closest('[data-menu-btn]') : null;
+    if (btn) {
+        ev.preventDefault();
+        var wrap = btn.closest('[data-menu]');
+        var list = wrap && wrap.querySelector('[data-menu-list]');
+        if (!list) return;
+        var willOpen = list.classList.contains('hidden');
+        document.querySelectorAll('[data-menu-list]').forEach(function(l) { l.classList.add('hidden'); });
+        if (willOpen) list.classList.remove('hidden');
+        return;
+    }
+    document.querySelectorAll('[data-menu-list]:not(.hidden)').forEach(function(l) {
+        var wrap = l.closest('[data-menu]');
+        if (wrap && !wrap.contains(ev.target)) l.classList.add('hidden');
+    });
+});
 </script>
 {% block scripts %}{% endblock %}
 </body>
