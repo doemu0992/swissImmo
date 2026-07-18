@@ -6,11 +6,11 @@
     <div class="flex items-center gap-2">
         <form method="post" action="/neu/vorlagen/standard/">
             {% csrf_token %}
-            <button class="bg-white border border-slate-200 hover:border-indigo-300 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors" title="Legt fehlende Standardvorlagen mit vorbelegtem Text an">
+            <button class="bg-white border border-slate-200 hover:border-indigo-300 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors" title="Legt fehlende Standardvorlagen mit vorbelegtem Text an">
                 <i class="fa-solid fa-wand-magic-sparkles mr-1.5 text-indigo-500"></i> Standardvorlagen erstellen
             </button>
         </form>
-        <a href="/neu/vorlagen/neu/" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+        <a href="/neu/vorlagen/neu/" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
             <i class="fa-solid fa-plus mr-1.5"></i> Vorlage erstellen
         </a>
     </div>
@@ -43,9 +43,9 @@
     <div class="flex items-center justify-center gap-2">
         <form method="post" action="/neu/vorlagen/standard/">
             {% csrf_token %}
-            <button class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Standardvorlagen erstellen</button>
+            <button class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Standardvorlagen erstellen</button>
         </form>
-        <a href="/neu/vorlagen/neu/" class="inline-block bg-white border border-slate-200 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-lg hover:border-indigo-300"><i class="fa-solid fa-plus mr-1.5"></i>Eigene Vorlage</a>
+        <a href="/neu/vorlagen/neu/" class="inline-block bg-white border border-slate-200 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg hover:border-indigo-300"><i class="fa-solid fa-plus mr-1.5"></i>Eigene Vorlage</a>
     </div>
 </div>
 {% endif %}

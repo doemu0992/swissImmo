@@ -126,7 +126,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="jahr" value="{{ jahr }}">
                 <input type="hidden" name="konto_nummer" value="1020">
-                <button class="w-full bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"
+                <button class="w-full bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold px-4 py-2 rounded-lg"
                         onclick="return confirm('Verwaltungshonorar {{ jahr }} verbuchen: CHF {{ honorar.total|chf }}?');">
                     <i class="fa-solid fa-percent mr-1.5"></i>Honorar {{ jahr }} buchen (CHF {{ honorar.total|chf }})
                 </button>
@@ -168,7 +168,7 @@
                     <input name="bemerkung" type="text" placeholder="z. B. Quartalsauszahlung Q2"
                            class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
                 </div>
-                <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg">
+                <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">
                     <i class="fa-solid fa-money-bill-transfer mr-1.5"></i>Auszahlung verbuchen
                 </button>
             </form>

@@ -13,18 +13,31 @@
         <h1 class="text-2xl font-extrabold text-slate-900">Wohnungsabnahme — {{ p.get_typ_display }}</h1>
         <p class="text-sm text-slate-500">{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ p.datum|date:"d.m.Y" }}</p>
     </div>
-    <div class="flex items-center gap-2">
-        <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" class="text-sm font-semibold text-slate-700 border border-slate-200 hover:border-indigo-400 px-3 py-2 rounded-lg"><i class="fa-solid fa-file-pdf mr-1.5"></i>PDF</a>
+    <div class="flex flex-wrap items-center gap-2">
         {% if p.kosten_mieter_total %}
-        <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/?abnahme={{ p.id }}" class="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg"><i class="fa-solid fa-file-invoice mr-1.5"></i>In Schlussabrechnung</a>
+        <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/?abnahme={{ p.id }}" class="px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"><i class="fa-solid fa-file-invoice mr-1.5"></i>In Schlussabrechnung</a>
         {% endif %}
-        <form method="post" action="/neu/abnahme/{{ p.id }}/loeschen/" class="inline"
-              onsubmit="return confirm('Abnahmeprotokoll wirklich löschen?');">
-            {% csrf_token %}
-            <button type="submit" title="Protokoll löschen" class="text-sm text-rose-600 hover:text-white hover:bg-rose-600 hover:border-rose-600 border border-rose-200 px-3 py-2 rounded-lg font-semibold transition-colors">
-                <i class="fa-solid fa-trash text-xs"></i>
+        <div class="relative">
+            <button type="button" onclick="document.getElementById('aAktionen').classList.toggle('hidden'); event.stopPropagation();"
+                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+                <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
             </button>
-        </form>
+            <div id="aAktionen" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
+                <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-file-pdf w-4"></i>Protokoll als PDF</a>
+                <div class="my-1 border-t border-slate-100"></div>
+                <form method="post" action="/neu/abnahme/{{ p.id }}/loeschen/"
+                      onsubmit="return confirm('Abnahmeprotokoll wirklich löschen?');">
+                    {% csrf_token %}
+                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50"><i class="fa-solid fa-trash w-4"></i>Protokoll löschen</button>
+                </form>
+            </div>
+        </div>
+        <script>
+          document.addEventListener('click', function (ev) {
+            var d = document.getElementById('aAktionen');
+            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
+          });
+        </script>
     </div>
 </div>
 

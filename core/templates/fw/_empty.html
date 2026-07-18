@@ -7,7 +7,7 @@ Parameter: icon (fa-Klasse), titel, subtext, cta_url (optional), cta_label (opti
     <p class="font-semibold text-slate-700">{{ titel }}</p>
     {% if subtext %}<p class="text-sm text-slate-400 mt-1 max-w-sm mx-auto">{{ subtext }}</p>{% endif %}
     {% if cta_url %}
-    <a href="{{ cta_url }}" class="inline-flex items-center gap-2 mt-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg">
+    <a href="{{ cta_url }}" class="inline-flex items-center gap-2 mt-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">
         <i class="fa-solid fa-plus"></i>{{ cta_label|default:'Erfassen' }}
     </a>
     {% endif %}

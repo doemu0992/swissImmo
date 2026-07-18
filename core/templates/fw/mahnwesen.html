@@ -16,7 +16,7 @@
     <form method="post" action="/neu/mahnwesen/lauf/" onsubmit="return confirm('Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt.');" class="shrink-0 text-right">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm whitespace-nowrap">
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm whitespace-nowrap">
             <i class="fa-solid fa-bolt mr-1.5"></i>Mahnlauf ausführen
         </button>
         <label class="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1.5 justify-end"><input type="checkbox" name="mit_zins" class="accent-indigo-600">Verzugszins (5%) berechnen</label>

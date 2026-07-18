@@ -28,10 +28,10 @@
     <table class="w-full text-sm min-w-[720px]">
         <thead class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
             <tr>
-                <th class="text-left px-4 py-2.5">Beleg</th><th class="text-left px-4 py-2.5">Datum</th>
-                <th class="text-left px-4 py-2.5">Text</th><th class="text-left px-4 py-2.5">Gegenkonto</th>
-                <th class="text-right px-4 py-2.5">Soll</th><th class="text-right px-4 py-2.5">Haben</th>
-                <th class="text-right px-4 py-2.5">Saldo</th>
+                <th class="text-left px-4 py-2">Beleg</th><th class="text-left px-4 py-2">Datum</th>
+                <th class="text-left px-4 py-2">Text</th><th class="text-left px-4 py-2">Gegenkonto</th>
+                <th class="text-right px-4 py-2">Soll</th><th class="text-right px-4 py-2">Haben</th>
+                <th class="text-right px-4 py-2">Saldo</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-50">
@@ -53,8 +53,8 @@
             <tr><td colspan="7" class="px-4 py-8 text-center text-slate-400 italic">Keine Buchungen in diesem Zeitraum.</td></tr>
             {% endfor %}
             <tr class="bg-slate-50 font-bold">
-                <td colspan="6" class="px-4 py-2.5 text-right">Endsaldo</td>
-                <td class="px-4 py-2.5 text-right tabular-nums {% if endsaldo < 0 %}text-rose-600{% else %}text-slate-900{% endif %}">CHF {{ endsaldo|chf }}</td>
+                <td colspan="6" class="px-4 py-2 text-right">Endsaldo</td>
+                <td class="px-4 py-2 text-right tabular-nums {% if endsaldo < 0 %}text-rose-600{% else %}text-slate-900{% endif %}">CHF {{ endsaldo|chf }}</td>
             </tr>
         </tbody>
     </table>

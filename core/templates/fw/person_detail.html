@@ -60,7 +60,7 @@
     </div>
 </div>
 {% if m.anonymisiert %}
-<div class="mt-4 text-sm bg-slate-100 border border-slate-200 text-slate-600 rounded-lg px-4 py-2.5">
+<div class="mt-4 text-sm bg-slate-100 border border-slate-200 text-slate-600 rounded-lg px-4 py-2">
     <i class="fa-solid fa-user-shield mr-1.5"></i>Diese Person wurde am {{ m.anonymisiert_am|date:"d.m.Y" }}
     DSG-anonymisiert. Die Buchungsbelege bleiben aus Aufbewahrungsgründen (OR 958f) erhalten.
 </div>
@@ -240,7 +240,7 @@
                 </p>
                 <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/">{% csrf_token %}
                     <input type="hidden" name="aktion" value="erstellen">
-                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"><i class="fa-solid fa-key mr-1.5"></i>Portal-Zugang erstellen{% if m.email %} &amp; per E-Mail senden{% endif %}</button>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-key mr-1.5"></i>Portal-Zugang erstellen{% if m.email %} &amp; per E-Mail senden{% endif %}</button>
                 </form>
             {% endif %}
         </div>

@@ -5,11 +5,11 @@
     <h1 class="text-3xl font-extrabold text-slate-900">Logbuch</h1>
     <div class="flex items-center gap-2">
         <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=pdf" target="_blank"
-           class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+           class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
             <i class="fa-solid fa-file-pdf mr-1.5 text-rose-500"></i> PDF-Bericht
         </a>
         <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=csv"
-           class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+           class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
             <i class="fa-solid fa-file-csv mr-1.5 text-emerald-600"></i> CSV-Export
         </a>
     </div>
@@ -84,7 +84,7 @@
             </select>
         </div>
         <div class="flex items-end gap-2 lg:col-span-4">
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm">
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm">
                 <i class="fa-solid fa-filter mr-1.5"></i>Filtern
             </button>
             <a href="/neu/logbuch/" class="text-sm text-slate-500 hover:text-slate-700 font-medium px-2 py-2.5">Zurücksetzen</a>

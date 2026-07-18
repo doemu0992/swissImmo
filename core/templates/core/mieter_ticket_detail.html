@@ -32,7 +32,7 @@
         <div class="p-5 space-y-3">
             {% for n in verlauf %}
             <div class="flex {% if n.is_von_verwaltung %}justify-start{% else %}justify-end{% endif %}">
-                <div class="max-w-[85%] rounded-2xl px-4 py-2.5 text-sm
+                <div class="max-w-[85%] rounded-2xl px-4 py-2 text-sm
                     {% if n.is_von_verwaltung %}bg-slate-100 text-slate-700 rounded-tl-sm{% elif n.typ == 'system' %}bg-amber-50 text-amber-800 text-xs w-full max-w-full text-center{% else %}bg-indigo-600 text-white rounded-tr-sm{% endif %}">
                     {% if n.typ != 'system' %}<div class="text-[10px] font-bold uppercase tracking-wide {% if n.is_von_verwaltung %}text-slate-400{% else %}text-indigo-200{% endif %} mb-0.5">{{ n.absender_name }}</div>{% endif %}
                     <div class="whitespace-pre-line">{{ n.nachricht }}</div>

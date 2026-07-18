@@ -15,7 +15,7 @@
         <p class="text-sm text-slate-500 mt-1">Raumbuch-Elemente nach Restnutzungsdauer (Lebensdauertabelle) mit Ersatzbudget je Jahr
             {% if aktive_lg %}· <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
     </div>
-    <a href="/neu/ersatzplanung/?pdf=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm"><i class="fa-solid fa-file-pdf mr-1.5"></i>Budget-PDF</a>
+    <a href="/neu/ersatzplanung/?pdf=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm"><i class="fa-solid fa-file-pdf mr-1.5"></i>Budget-PDF</a>
 </div>
 <div class="mb-4"></div>
 

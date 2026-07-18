@@ -37,7 +37,7 @@
         {% if ist_hnk %}
         <label class="flex items-center gap-2 text-[12px] text-rose-700 pb-2.5"><input type="checkbox" name="hnk_override" class="accent-rose-600">Trotzdem direkt weiterverrechnen</label>
         {% endif %}
-        <button class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2.5 rounded-lg"
+        <button class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-lg"
                 onclick="return confirm('Offenen Betrag auf alle {{ verteil_mieter }} Mieter verteilen?');">
             <i class="fa-solid fa-share-nodes mr-1.5"></i>Verteilen
         </button>
