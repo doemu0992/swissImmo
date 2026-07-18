@@ -12,6 +12,13 @@
         body { font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        /* iOS: native date/month/time-Felder haben eine Eigenbreite, die w-full
+           ignoriert und aus dem Container läuft. Auf Containerbreite zwingen. */
+        input[type="date"], input[type="month"], input[type="week"],
+        input[type="time"], input[type="datetime-local"] {
+            -webkit-appearance: none; appearance: none;
+            min-width: 0; max-width: 100%; box-sizing: border-box;
+        }
         /* Einklappbare Sidebar — nur auf Desktop (ab lg); mobil ist es ein Drawer */
         @media (min-width: 1024px) {
             #fwSidebar { transition: width .18s ease; }
