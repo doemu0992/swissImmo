@@ -3,7 +3,7 @@
 {% block content %}
 <div class="flex items-start justify-between flex-wrap gap-3 mb-6">
     <div>
-        <h1 class="text-3xl font-extrabold text-slate-900">Leerstands-Verlauf</h1>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Leerstands-Verlauf</h1>
         <p class="text-sm text-slate-500 mt-1">Monatliche Leerquote der letzten {{ monate }} Monate.
             {% if aktive_lg %}· <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% else %}· ganzes Portfolio{% endif %}</p>
     </div>

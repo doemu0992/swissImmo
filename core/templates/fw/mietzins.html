@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Mietzins</h1>
+<h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">Mietzins</h1>
 <p class="text-sm text-slate-500 mb-5">Anpassungspotenzial nach Referenzzins &amp; LIK
     {% if curr_zins != None %}· Aktuell: Referenzzins <span class="font-semibold text-slate-700">{% localize off %}{{ curr_zins }}{% endlocalize %}%</span>, LIK <span class="font-semibold text-slate-700">{% localize off %}{{ curr_lik }}{% endlocalize %}</span>{% endif %}
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>

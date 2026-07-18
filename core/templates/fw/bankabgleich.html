@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<h1 class="text-3xl font-extrabold text-slate-900 mb-1">Bankabgleich</h1>
+<h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">Bankabgleich</h1>
 <p class="text-sm text-slate-500 mb-5">Offene Posten mit Zahlungseingängen abgleichen und mit einem Klick verbuchen (Bank an Debitoren)
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
     <a href="/neu/bankabgleich/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>

@@ -8,9 +8,9 @@
     <span class="text-slate-600 font-medium">{{ aktive_lg.strasse }}</span>
 </nav>
 
-<div class="flex items-start justify-between flex-wrap gap-3 mb-1">
+<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-1">
     <div>
-        <h1 class="text-3xl font-extrabold text-slate-900">Mieterspiegel</h1>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Mieterspiegel</h1>
         <p class="text-sm text-slate-500 mt-1">Einheiten mit Mieter, Mietzins und Vertragsdaten · Stichtag {{ stichtag|date:"d.m.Y" }}
             · <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}, {{ aktive_lg.plz }} {{ aktive_lg.ort }}</span></p>
     </div>
