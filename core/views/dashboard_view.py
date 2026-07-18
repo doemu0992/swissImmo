@@ -157,7 +157,7 @@ def _berechne_aufgaben(heute, leerstand_count, potenzial_up, potenzial_down):
     # a) ÜBERFÄLLIGE FORDERUNGEN — das Wichtigste zuerst
     ueberfaellig = DebitorenRechnung.objects.filter(
         status__in=['offen', 'teilbezahlt'], faellig_am__lt=heute
-    )
+    ).prefetch_related('zahlungseingaenge')
     if ueberfaellig.exists():
         total_offen = sum(r.offener_betrag for r in ueberfaellig)
         aufgaben.append(aufgabe(

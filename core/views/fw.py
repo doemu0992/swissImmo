@@ -121,7 +121,8 @@ def fw_dashboard(request):
     # ertragsgewichtete Leerstandsquote (Fr.-Ausfall / Potenzial)
     leerstandsquote_ertrag = round(float(ausfall_leerstand) / float(soll_potenzial) * 100, 1) if soll_potenzial else 0.0
     # Offene überfällige Forderungen (Mietzinsausfall/Debitorenrisiko)
-    _deb = DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
+    _deb = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
+            .prefetch_related('zahlungseingaenge'))
     if aktive_lg:
         _deb = _deb.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
     offen_ueberfaellig = sum((r.offener_betrag for r in _deb
@@ -238,7 +239,7 @@ def fw_finanzen(request):
     deb = DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
     if aktive_lg:
         deb = deb.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
-    deb = [r for r in deb.select_related('vertrag') if r.offener_betrag > 0]
+    deb = [r for r in deb.select_related('vertrag').prefetch_related('zahlungseingaenge') if r.offener_betrag > 0]
     deb_offen_chf = sum((r.offener_betrag for r in deb), Decimal('0.00'))
     deb_ueberf = [r for r in deb if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) < heute]
     deb_ueberf_chf = sum((r.offener_betrag for r in deb_ueberf), Decimal('0.00'))
@@ -247,7 +248,7 @@ def fw_finanzen(request):
     kred = KreditorenRechnung.objects.exclude(status='storniert')
     if aktive_lg:
         kred = kred.filter(liegenschaft=aktive_lg)
-    kred = list(kred)
+    kred = list(kred.prefetch_related('zahlungen', 'weiterverrechnungen'))
     zur_freigabe = [k for k in kred if k.status == 'neu']
     zur_zahlung = [k for k in kred if k.status in ('freigegeben', 'teilbezahlt') and k.offener_betrag > 0]
     in_zahlung = [k for k in kred if k.status == 'in_zahlung']
@@ -860,7 +861,7 @@ def fw_berichte(request):
     deb = DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
     if aktive_lg:
         deb = deb.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
-    deb = [r for r in deb.select_related('vertrag') if r.offener_betrag > 0]
+    deb = [r for r in deb.select_related('vertrag').prefetch_related('zahlungseingaenge') if r.offener_betrag > 0]
     deb_offen = sum((r.offener_betrag for r in deb), Decimal('0.00'))
     deb_ueberf = sum((r.offener_betrag for r in deb
                       if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) < heute), Decimal('0.00'))
@@ -869,6 +870,7 @@ def fw_berichte(request):
     kred = KreditorenRechnung.objects.exclude(status='storniert')
     if aktive_lg:
         kred = kred.filter(liegenschaft=aktive_lg)
+    kred = kred.prefetch_related('zahlungen', 'weiterverrechnungen')
     kred_offen = sum((k.offener_betrag for k in kred), Decimal('0.00'))
 
     # --- Portfolio (Soll-Mietzins / Leerstand) ---

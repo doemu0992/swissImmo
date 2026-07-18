@@ -10450,3 +10450,54 @@ class NachtN10UIDetailTests(TestCase):
         self.assertIn(f'<a href="/neu/objekte/{e.id}/', body)
         body2 = c.get(f'/neu/personen/{m.id}/').content.decode()
         self.assertIn(f'<a href="/neu/vertraege/{v.id}/"', body2)
+
+
+class HotfixDashboardPerformanceTests(TestCase):
+    """Regression: Dashboard/offener_betrag dürfen nicht pro offener Rechnung eine
+    eigene SUM-Abfrage feuern (N+1 → Timeout auf grossen Portfolios)."""
+
+    def _seed(self, n):
+        from finance.models import DebitorenRechnung, Zahlungseingang
+        lg, e, m, v = _basis_objekte()
+        for k in range(n):
+            r = DebitorenRechnung.objects.create(
+                vertrag=v, liegenschaft=lg, titel=f'Miete {k}', betrag=Decimal('1700'),
+                datum=date.today() - timedelta(days=40),
+                faellig_am=date.today() - timedelta(days=35), status='offen')
+            Zahlungseingang.objects.create(vertrag=v, debitoren_rechnung=r,
+                                           betrag=Decimal('200'), status='verbucht',
+                                           datum_eingang=date.today())
+        return v
+
+    def _dashboard_queries(self, c):
+        from django.test.utils import CaptureQueriesContext
+        from django.db import connection
+        with CaptureQueriesContext(connection) as ctx:
+            c.get('/neu/')
+        return len(ctx.captured_queries)
+
+    def test_dashboard_query_zahl_waechst_nicht_mit_datenmenge(self):
+        u = _team_user(); c = Client(); c.force_login(u)
+        v = self._seed(5)
+        q_klein = self._dashboard_queries(c)
+        from finance.models import DebitorenRechnung
+        for k in range(50):
+            DebitorenRechnung.objects.create(
+                vertrag=v, liegenschaft=v.einheit.liegenschaft, titel=f'X{k}',
+                betrag=Decimal('100'), datum=date.today() - timedelta(days=40),
+                faellig_am=date.today() - timedelta(days=35), status='offen')
+        q_gross = self._dashboard_queries(c)
+        # 11× so viele Rechnungen → Query-Zahl bleibt praktisch konstant (kein N+1)
+        self.assertLessEqual(q_gross, q_klein + 3,
+                             f"Dashboard-Queries wachsen mit Datenmenge: {q_klein} → {q_gross}")
+
+    def test_offener_betrag_nutzt_prefetch(self):
+        from finance.models import DebitorenRechnung
+        from django.test.utils import CaptureQueriesContext
+        from django.db import connection
+        self._seed(30)
+        qs = DebitorenRechnung.objects.filter(status='offen').prefetch_related('zahlungseingaenge')
+        with CaptureQueriesContext(connection) as ctx:
+            total = sum((r.offener_betrag for r in qs), Decimal('0.00'))
+        self.assertEqual(total, Decimal('45000.00'))   # 30 × (1700 - 200)
+        self.assertLessEqual(len(ctx.captured_queries), 3)

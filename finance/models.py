@@ -198,7 +198,16 @@ class DebitorenRechnung(models.Model):
     # 🔥 NEU: OP-Verwaltung (Offener Betrag)
     @property
     def offener_betrag(self):
-        zahlungen = self.zahlungseingaenge.filter(status='verbucht').aggregate(Sum('betrag'))['betrag__sum'] or Decimal('0.00')
+        # Nutzt vorgeladene Zahlungseingänge (prefetch_related('zahlungseingaenge')),
+        # sonst löst jede Zeile einer Liste eine eigene SUM-Abfrage aus (N+1 →
+        # Timeout auf grossen Portfolios). .filter() umgeht den Prefetch-Cache,
+        # daher hier in Python filtern, wenn die Daten bereits geladen sind.
+        cache = getattr(self, '_prefetched_objects_cache', None) or {}
+        if 'zahlungseingaenge' in cache:
+            zahlungen = sum((z.betrag or Decimal('0.00'))
+                            for z in cache['zahlungseingaenge'] if z.status == 'verbucht')
+        else:
+            zahlungen = self.zahlungseingaenge.filter(status='verbucht').aggregate(Sum('betrag'))['betrag__sum'] or Decimal('0.00')
         return max(Decimal('0.00'), self.betrag - zahlungen)
 
 
@@ -299,6 +308,12 @@ class KreditorenRechnung(models.Model):
     def weiterverrechnet_betrag(self):
         """Summe der bereits an Mieter durchgereichten Fremdkosten (ohne Stornos).
         Der Ertrags-Zuschlag zählt NICHT als weiterverrechnete Lieferantenkosten."""
+        cache = getattr(self, '_prefetched_objects_cache', None) or {}
+        if 'weiterverrechnungen' in cache:
+            rows = [w for w in cache['weiterverrechnungen'] if w.status != 'storniert']
+            s = sum((w.betrag or Decimal('0.00')) for w in rows)
+            z = sum((w.weiterverrechnung_zuschlag or Decimal('0.00')) for w in rows)
+            return s - z
         agg = (self.weiterverrechnungen.exclude(status='storniert')
                .aggregate(s=Sum('betrag'), z=Sum('weiterverrechnung_zuschlag')))
         return (agg['s'] or Decimal('0.00')) - (agg['z'] or Decimal('0.00'))
@@ -311,6 +326,10 @@ class KreditorenRechnung(models.Model):
     # --- OP-Verwaltung auf der Kreditorenseite (analog Debitoren) ---
     @property
     def bezahlt_betrag(self):
+        cache = getattr(self, '_prefetched_objects_cache', None) or {}
+        if 'zahlungen' in cache:
+            return sum((z.betrag or Decimal('0.00'))
+                       for z in cache['zahlungen'] if z.status == 'verbucht')
         return (self.zahlungen.filter(status='verbucht').aggregate(s=Sum('betrag'))['s']
                 or Decimal('0.00'))
 
