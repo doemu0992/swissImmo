@@ -250,7 +250,7 @@
 <!-- VERTRÄGE -->
 <div data-panel="pd" id="pd-vertraege" class="hidden">
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Objekt</th><th class="px-5 py-3 font-semibold">Von</th><th class="px-5 py-3 font-semibold">Bis</th>
                 <th class="px-5 py-3 font-semibold text-right">Brutto</th><th class="px-5 py-3 font-semibold">Status</th><th class="px-5 py-3"></th>
@@ -269,7 +269,7 @@
             <tr><td colspan="6" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Verträge.</td></tr>
             {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     </div>
 </div>
 
@@ -285,7 +285,7 @@
     </div>
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
         <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Offene Posten</div>
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Fällig</th><th class="px-5 py-3 font-semibold">Titel</th><th class="px-5 py-3 font-semibold text-right">Offen</th>
             </tr></thead>
@@ -298,11 +298,11 @@
             <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine offenen Posten. 🎉</td></tr>
             {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     </div>
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Zahlungseingänge</div>
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full text-sm">
             <tbody class="divide-y divide-slate-50">
             {% for z in zahlungen %}
             <tr><td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</td>
@@ -312,7 +312,7 @@
             <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Zahlungen.</td></tr>
             {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     </div>
 </div>
 

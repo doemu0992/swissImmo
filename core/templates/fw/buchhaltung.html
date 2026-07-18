@@ -88,7 +88,7 @@
                 <span class="font-bold text-slate-800 text-sm">Ertrag</span>
                 <span class="text-sm font-bold text-emerald-600">CHF {{ total_ertrag|chf }}</span>
             </div>
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto"><table class="w-full text-sm">
                 <tbody class="divide-y divide-slate-50">
                 {% for e in ertraege %}
                 <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ e.nummer }}</td>
@@ -98,7 +98,7 @@
                 <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Ertragsbuchungen.</td></tr>
                 {% endfor %}
                 </tbody>
-            </table>
+            </table></div>
         </div>
         <!-- Aufwände -->
         <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -106,7 +106,7 @@
                 <span class="font-bold text-slate-800 text-sm">Aufwand</span>
                 <span class="text-sm font-bold text-rose-600">CHF {{ total_aufwand|chf }}</span>
             </div>
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto"><table class="w-full text-sm">
                 <tbody class="divide-y divide-slate-50">
                 {% for a in aufwaende %}
                 <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ a.nummer }}</td>
@@ -116,7 +116,7 @@
                 <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Aufwandbuchungen.</td></tr>
                 {% endfor %}
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </div>
     <!-- Ergebnis -->
@@ -137,7 +137,7 @@
                 <span class="font-bold text-slate-800 text-sm">Aktiven</span>
                 <span class="text-sm font-bold text-slate-800">CHF {{ total_aktiven|chf }}</span>
             </div>
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto"><table class="w-full text-sm">
                 <tbody class="divide-y divide-slate-50">
                 {% for a in aktiven %}
                 <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ a.nummer }}</td>
@@ -147,7 +147,7 @@
                 <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Aktivkonten mit Saldo.</td></tr>
                 {% endfor %}
                 </tbody>
-            </table>
+            </table></div>
         </div>
         <!-- Passiven -->
         <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -155,7 +155,7 @@
                 <span class="font-bold text-slate-800 text-sm">Passiven &amp; Eigenkapital</span>
                 <span class="text-sm font-bold text-slate-800">CHF {{ passiven_mit_erfolg|chf }}</span>
             </div>
-            <table class="w-full text-sm">
+            <div class="overflow-x-auto"><table class="w-full text-sm">
                 <tbody class="divide-y divide-slate-50">
                 {% for p in passiven %}
                 <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ p.nummer }}</td>
@@ -171,7 +171,7 @@
                     <td class="px-5 py-2.5 text-slate-700 font-medium">{% if erfolg >= 0 %}Jahresgewinn{% else %}Jahresverlust{% endif %} {{ jahr }}</td>
                     <td class="px-5 py-2.5 text-right font-medium {% if erfolg >= 0 %}text-emerald-600{% else %}text-rose-600{% endif %} whitespace-nowrap">{{ erfolg|chf }}</td></tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </div>
     <div class="bg-white rounded-xl border border-slate-200 p-5 mt-4 flex items-center justify-between">

@@ -309,7 +309,7 @@
     {% endif %}
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
         <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Offene Posten & Rechnungen</div>
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Datum</th><th class="px-5 py-3 font-semibold">Titel</th>
                 <th class="px-5 py-3 font-semibold text-right">Betrag</th><th class="px-5 py-3 font-semibold text-right">Offen</th><th class="px-5 py-3 font-semibold">Status</th>
@@ -325,11 +325,11 @@
             <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Rechnungen.</td></tr>
             {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     </div>
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Zahlungseingänge</div>
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Eingang</th><th class="px-5 py-3 font-semibold">Für Monat</th><th class="px-5 py-3 font-semibold text-right">Betrag</th>
             </tr></thead>
@@ -342,7 +342,7 @@
             <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Zahlungen erfasst.</td></tr>
             {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     </div>
     <a href="/neu/nebenkosten/?lg={{ v.einheit.liegenschaft_id }}" class="inline-flex items-center gap-1.5 mt-4 text-sm text-indigo-600 font-medium hover:underline"><i class="fa-solid fa-arrow-right"></i>Zur Nebenkosten-Abrechnung dieser Liegenschaft</a>
 </div>
@@ -360,7 +360,7 @@
             </div>
             {% if v.einheit_id %}<a href="/neu/objekte/{{ v.einheit_id }}/?tab=mietzins" class="text-xs text-indigo-600 hover:underline whitespace-nowrap mt-0.5">Am Objekt bearbeiten <i class="fa-solid fa-arrow-right ml-0.5 text-[10px]"></i></a>{% endif %}
         </div>
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-y border-slate-100">
                 <th class="px-4 py-2 font-semibold">Gültig ab</th>
                 <th class="px-4 py-2 font-semibold text-right">Referenz<br><span class="text-[9px] normal-case text-slate-300">Netto / NK</span></th>
@@ -379,7 +379,7 @@
             </tr>
             {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     </div>
     {% endif %}
 
@@ -395,7 +395,7 @@
         </div>
     </div>
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Wirksam ab</th><th class="px-5 py-3 font-semibold text-right">Alt</th><th class="px-5 py-3 font-semibold text-right">Neu</th><th class="px-5 py-3 font-semibold">Grund</th><th class="px-5 py-3"></th>
             </tr></thead>
@@ -414,7 +414,7 @@
             <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Mietzinsanpassungen.</td></tr>
             {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     </div>
 </div>
 

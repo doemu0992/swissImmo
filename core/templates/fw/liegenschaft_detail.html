@@ -264,7 +264,7 @@
             <span class="font-bold text-slate-800">Allgemeine Geräte</span>
             <span class="text-xs text-slate-400">Heizung, Boiler, Lüftung, Aufzug …</span>
         </div>
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Gerät</th><th class="px-5 py-3 font-semibold">Marke / Modell</th>
                 <th class="px-5 py-3 font-semibold">Installation</th><th class="px-5 py-3 font-semibold">Garantie bis</th><th class="px-5 py-3"></th>
@@ -314,7 +314,7 @@
             <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine allgemeinen Geräte erfasst.</td></tr>
             {% endfor %}
             </tbody>
-        </table>
+        </table></div>
         <div class="border-t border-slate-100 p-5 bg-slate-50/40">
             <form method="post" action="/neu/geraet/" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {% csrf_token %}
@@ -351,7 +351,7 @@
             <span class="font-bold text-slate-800">Allgemeine Zähler</span>
             <span class="text-xs text-slate-400">Allgemeinstrom, Hauptwasser …</span>
         </div>
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Typ</th><th class="px-5 py-3 font-semibold">Zähler-Nr.</th>
                 <th class="px-5 py-3 font-semibold">Standort</th><th class="px-5 py-3 font-semibold text-right">Stand</th><th class="px-5 py-3"></th>
@@ -390,7 +390,7 @@
             <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine allgemeinen Zähler erfasst.</td></tr>
             {% endfor %}
             </tbody>
-        </table>
+        </table></div>
         <div class="border-t border-slate-100 p-5 bg-slate-50/40">
             <form method="post" action="/neu/zaehler/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 {% csrf_token %}
@@ -414,7 +414,7 @@
 <!-- ===== TAB: UNTERHALT ===== -->
 <div data-panel="lg" id="lg-unterhalt" class="hidden">
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Datum</th><th class="px-5 py-3 font-semibold">Massnahme</th><th class="px-5 py-3 font-semibold text-right">Kosten</th>
             </tr></thead>
@@ -427,14 +427,14 @@
             <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Unterhaltsarbeiten erfasst.</td></tr>
             {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     </div>
 </div>
 
 <!-- ===== TAB: FRISTEN ===== -->
 <div data-panel="lg" id="lg-fristen" class="hidden">
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-5">
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Art</th><th class="px-5 py-3 font-semibold">Bezeichnung</th>
                 <th class="px-5 py-3 font-semibold">Anbieter</th><th class="px-5 py-3 font-semibold">Nächste Fälligkeit</th>
@@ -492,7 +492,7 @@
             <tr><td colspan="6" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Wartungs-/Versicherungsfristen erfasst.</td></tr>
             {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     </div>
     <div class="bg-white rounded-xl border border-slate-200 p-5">
         <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-calendar-plus text-indigo-500 mr-1.5"></i>Neue Frist erfassen</h3>

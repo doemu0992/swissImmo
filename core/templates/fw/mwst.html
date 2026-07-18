@@ -50,7 +50,8 @@
         <span>ESTV-Abrechnung ({% if mwst_methode == 'saldo' %}Saldosteuersatz {{ saldosteuersatz }} %{% else %}effektiv{% endif %})</span>
         {% if mwst_uid %}<span class="normal-case text-slate-500">{{ mwst_uid }}</span>{% endif %}
     </div>
-    <table class="w-full text-sm">
+    <div class="overflow-x-auto">
+<table class="w-full text-sm">
         <tbody class="divide-y divide-slate-50">
             <tr><td class="px-5 py-2.5 text-slate-400 w-14 tabular-nums">200</td><td class="px-2 py-2.5 text-slate-700">Total vereinbarte Entgelte (Umsatz)</td><td class="px-5 py-2.5 text-right tabular-nums">{{ estv.z200|chf }}</td></tr>
             <tr><td class="px-5 py-2.5 text-slate-400 tabular-nums">399</td><td class="px-2 py-2.5 text-slate-700">Total geschuldete Steuer</td><td class="px-5 py-2.5 text-right tabular-nums">{{ estv.z399|chf }}</td></tr>
@@ -61,6 +62,7 @@
             {% if estv.z510 %}<tr class="bg-emerald-50/40"><td class="px-5 py-2.5 text-slate-400 tabular-nums font-bold">510</td><td class="px-2 py-2.5 font-bold text-slate-900">Guthaben</td><td class="px-5 py-2.5 text-right tabular-nums font-extrabold text-emerald-600">{{ estv.z510|chf }}</td></tr>{% endif %}
         </tbody>
     </table>
+</div>
 </div>
 
 <!-- MWST-Einstellungen -->

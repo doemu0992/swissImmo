@@ -212,7 +212,7 @@
                     <span class="text-xs font-semibold text-slate-600 uppercase tracking-wider">{{ rb.raum }}</span>
                     <span class="text-[11px] text-slate-400">· {{ rb.elemente|length }}</span>
                 </div>
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto"><table class="w-full text-sm">
                     <tbody class="divide-y divide-slate-50">
                     {% for r in rb.elemente %}
                     <tr class="hover:bg-slate-50/60">
@@ -223,7 +223,7 @@
                     </tr>
                     {% endfor %}
                     </tbody>
-                </table>
+                </table></div>
                 {% endfor %}
             </div>
         </details>
