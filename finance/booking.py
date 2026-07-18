@@ -32,6 +32,7 @@ STANDARD_KONTEN = [
     ('3021', 'Nebenkosten Pauschal (Ertrag)', 'ertrag', False, 'm2'),
     ('3090', 'Mietzinsrabatte / Mietzinserlass (Ertragsminderung)', 'ertrag', False, 'm2'),
     ('3600', 'Übrige Erträge / Weiterverrechnung (Zuschlag)', 'ertrag', False, 'm2'),
+    ('3805', 'Debitorenverluste (Forderungsverluste)', 'aufwand', False, 'm2'),
     ('4000', 'Unterhalt & Reparaturen', 'aufwand', False, 'm2'),
     ('4100', 'Heizkosten / Brennstoffe', 'aufwand', True, 'm2'),
     ('4110', 'Wasser / Abwasser', 'aufwand', True, 'm3'),

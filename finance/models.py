@@ -145,6 +145,7 @@ class DebitorenRechnung(models.Model):
         ('teilbezahlt', 'Teilbezahlt'), # 🔥 NEU für saubere OP-Verwaltung
         ('bezahlt', 'Bezahlt'),
         ('storniert', 'Storniert'),     # 🔥 NEU statt Löschen
+        ('abgeschrieben', 'Abgeschrieben'),   # Forderungsverlust (Konto 3805)
     ]
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='debitoren_rechnungen')
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
@@ -445,13 +446,6 @@ class AbrechnungsPeriode(models.Model):
 
         total_anteil = round(anteil_m2 + anteil_einheit, 2)
         return Decimal(str(total_anteil))
-
-    def berechne_mieter_saldo(self, vertrag):
-        effektive_kosten = self.berechne_mieter_anteil(vertrag)
-        akonto_zahlungen = vertrag.zahlungen.filter(
-            datum_eingang__range=[self.start_datum, self.ende_datum]
-        ).aggregate(Sum('betrag'))['betrag__sum'] or Decimal('0.00')
-        return effektive_kosten - akonto_zahlungen
 
     # --- Die "Heizgradtage" Logik für Mieterwechsel ---
     def get_heizgradtage_faktor(self, monat):

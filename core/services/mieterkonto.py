@@ -14,7 +14,8 @@ def berechne_mieterkonto(mieter, von=None, bis=None):
     # Erst- UND Mitmieter (2-Personen-Verträge)
     vids = list(Mietvertrag.objects.filter(Q(mieter=mieter) | Q(mitmieter=mieter)).values_list('id', flat=True))
 
-    rech = DebitorenRechnung.objects.filter(vertrag_id__in=vids).exclude(status='storniert')
+    rech = (DebitorenRechnung.objects.filter(vertrag_id__in=vids)
+            .exclude(status__in=('storniert', 'abgeschrieben')))
     for r in rech:
         d = r.datum
         if (von and d < von) or (bis and d > bis):

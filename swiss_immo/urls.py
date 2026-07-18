@@ -70,7 +70,7 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
                                 mieter_konto_view, mieter_daten_view, mieter_passwort_view)
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
-from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_betriebskostenspiegel, fw_betriebsrechnung_pdf, fw_leerstand_verlauf, fw_auswertung, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_liegenschaften, fw_mieterspiegel, fw_objekte,
+from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_betriebskostenspiegel, fw_betriebsrechnung_pdf, fw_leerstand_verlauf, fw_auswertung, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_debitor_abschreiben, fw_liegenschaften, fw_mieterspiegel, fw_objekte,
                            fw_personen, fw_vertraege, fw_mieterwechsel, fw_vermarktung, fw_objekt_ausschreiben, fw_expose_pdf,
                            fw_liegenschaft_detail, fw_objekt_detail, fw_objekt_foto_upload, fw_objekt_foto_loeschen, fw_vertrag_detail,
                            fw_ausstattung_add, fw_ausstattung_edit, fw_ausstattung_katalog, fw_ausstattung_del, fw_lebensdauer,
@@ -165,6 +165,7 @@ urlpatterns = [
     path('neu/debitoren/', fw_debitoren, name='fw_debitoren'),
     path('neu/debitoren/neu/', fw_debitor_neu, name='fw_debitor_neu'),
     path('neu/debitoren/<int:pk>/stornieren/', fw_debitor_stornieren, name='fw_debitor_stornieren'),
+    path('neu/debitoren/<int:pk>/abschreiben/', fw_debitor_abschreiben, name='fw_debitor_abschreiben'),
     path('neu/debitoren/<int:pk>/qr-pdf/', fw_debitor_qr_pdf, name='fw_debitor_qr_pdf'),
     path('neu/liegenschaften/', fw_liegenschaften, name='fw_liegenschaften'),
     path('neu/mieterspiegel/', fw_mieterspiegel, name='fw_mieterspiegel'),

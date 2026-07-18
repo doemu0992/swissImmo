@@ -385,6 +385,7 @@ STATUS_PILL = {
     'teilbezahlt': ('Teilbezahlt', 'bg-sky-50 text-sky-700'),
     'bezahlt':     ('Bezahlt',     'bg-emerald-50 text-emerald-700'),
     'storniert':   ('Storniert',   'bg-slate-100 text-slate-500'),
+    'abgeschrieben': ('Abgeschrieben', 'bg-slate-100 text-slate-500'),
 }
 
 
@@ -736,6 +737,44 @@ def fw_weiterverrechnung(request, kreditor_id):
         'ist_hnk': bool(k.is_hnk_relevant or k.hnk_betrag > 0),
         'verteil_mieter': verteil_mieter,
     })
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_debitor_abschreiben(request, pk):
+    """Bucht eine uneinbringliche Forderung als Debitorenverlust ab (Aufwand 3805
+    an Forderungen 1100 über den offenen Betrag, Status 'abgeschrieben').
+    Teilzahlungen bleiben verbucht — abgeschrieben wird nur der Rest. Grund
+    (z.B. Verlustschein) wird im Beleg + Logbuch festgehalten."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.booking import buche, ensure_kontenplan
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_debitoren')
+    r = get_object_or_404(DebitorenRechnung.objects.select_related('vertrag__mieter'), id=pk)
+    if r.status not in ('offen', 'teilbezahlt'):
+        messages.info(request, "Nur offene oder teilbezahlte Forderungen können abgeschrieben werden.")
+        return redirect('fw_debitoren')
+    offen = r.offener_betrag
+    if offen <= 0:
+        messages.info(request, "Kein offener Betrag — nichts abzuschreiben.")
+        return redirect('fw_debitoren')
+    grund = (request.POST.get('grund') or '').strip()
+    mieter_name = r.vertrag.mieter.display_name if r.vertrag_id and r.vertrag.mieter_id else ''
+    lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag_id and r.vertrag.einheit_id else None)
+    with transaction.atomic():
+        ensure_kontenplan()
+        text = f"Forderungsverlust {r.titel} {mieter_name}".strip()
+        if grund:
+            text += f" ({grund})"
+        buche('3805', '1100', offen, text, datum=timezone.localdate(),
+              liegenschaft=lg, debitor=r, user=request.user)
+        r.status = 'abgeschrieben'
+        r.save(update_fields=['status'])
+    log_aktion(request, "Forderungsverlust gebucht", r.titel,
+               f"CHF {offen} · {grund or 'ohne Grundangabe'}")
+    messages.success(request, f"✅ Forderung '{r.titel}' als Debitorenverlust abgeschrieben (CHF {offen}, Konto 3805).")
+    return redirect('fw_debitoren')
 
 
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
@@ -7827,6 +7866,7 @@ def fw_account(request):
                 return fallback
         vw.aktueller_referenzzinssatz = dec('aktueller_referenzzinssatz', vw.aktueller_referenzzinssatz)
         vw.aktueller_lik_punkte = dec('aktueller_lik_punkte', vw.aktueller_lik_punkte)
+        vw.nk_honorar_prozent = dec('nk_honorar_prozent', vw.nk_honorar_prozent)
         # LIK-Basis + Stand-Monat
         vw.lik_basis = (P.get('lik_basis') or vw.lik_basis or 'Dezember 2020').strip()
         stand_raw = (P.get('aktueller_lik_stand') or '').strip()  # 'YYYY-MM' aus <input type=month>

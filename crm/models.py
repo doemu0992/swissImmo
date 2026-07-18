@@ -16,6 +16,8 @@ class Verwaltung(models.Model):
     logo = models.ImageField("Firmenlogo", upload_to="logos/", blank=True, null=True)
     unterschrift_bild = models.ImageField("Digitale Unterschrift", upload_to="unterschriften/", blank=True, null=True)
     aktueller_referenzzinssatz = models.DecimalField("Aktueller Ref.Zins", max_digits=4, decimal_places=2, default=1.75)
+    # Verwaltungshonorar auf die Nebenkosten-Abrechnung (Standard 3 %) — vorher hart codiert
+    nk_honorar_prozent = models.DecimalField("NK-Verwaltungshonorar (%)", max_digits=4, decimal_places=2, default=3.00)
     aktueller_lik_punkte = models.DecimalField("Aktueller LIK", max_digits=6, decimal_places=1, default=107.1)
     # LIK-Basis (Landesindex): aktuell «Dezember 2020 = 100». Muss auf dem
     # amtlichen Formular ausgewiesen werden; alt/neu-Werte müssen dieselbe Basis haben.

@@ -10328,3 +10328,85 @@ class NachtN8BesichtigungTests(TestCase):
         b.refresh_from_db()
         self.assertEqual(b.status, 'neu')
         self.assertIsNone(b.besichtigung_am)
+
+
+class NachtN9BuchhalterTests(TestCase):
+    """Nacht-Audit N9: Debitorenverluste (Konto 3805), Mieterkonto-Filter,
+    konfigurierbares NK-Verwaltungshonorar."""
+
+    def test_forderungsverlust_abschreiben(self):
+        from finance.models import DebitorenRechnung, Zahlungseingang, Buchung
+        from finance.booking import ensure_kontenplan
+        from core.services.mieterkonto import berechne_mieterkonto
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        r = DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Miete Januar', betrag=Decimal('1500'),
+            datum=date.today() - timedelta(days=120),
+            faellig_am=date.today() - timedelta(days=115), status='teilbezahlt')
+        Zahlungseingang.objects.create(vertrag=v, debitoren_rechnung=r,
+                                       betrag=Decimal('500'), status='verbucht',
+                                       datum_eingang=date.today() - timedelta(days=100))
+        self.assertEqual(r.offener_betrag, Decimal('1000.00'))
+        u = _team_user(); c = Client(); c.force_login(u)
+        resp = c.post(f'/neu/debitoren/{r.id}/abschreiben/', {'grund': 'Verlustschein Betreibungsamt'})
+        self.assertEqual(resp.status_code, 302)
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'abgeschrieben')
+        b = Buchung.objects.filter(soll_konto__nummer='3805', haben_konto__nummer='1100',
+                                   debitoren_rechnung=r).first()
+        self.assertIsNotNone(b)
+        self.assertEqual(b.betrag, Decimal('1000.00'))
+        self.assertIn('Verlustschein', b.beleg_text)
+        # Mieterkonto: der Mieter schuldet die abgeschriebene Forderung nicht mehr
+        _bewegungen, endsaldo = berechne_mieterkonto(m)
+        # Rechnung raus, die geleisteten 500 bleiben als Haben → Guthaben 500
+        self.assertEqual(endsaldo, Decimal('-500.00'))
+        # Debitoren-Liste zählt sie nicht mehr als offen
+        body = c.get('/neu/debitoren/').content.decode()
+        self.assertIn('Abgeschrieben', body)
+
+    def test_abschreiben_nur_offene(self):
+        from finance.models import DebitorenRechnung, Buchung
+        lg, e, m, v = _basis_objekte()
+        r = DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Miete', betrag=Decimal('1500'),
+            datum=date.today(), faellig_am=date.today(), status='bezahlt')
+        u = _team_user(); c = Client(); c.force_login(u)
+        c.post(f'/neu/debitoren/{r.id}/abschreiben/', {'grund': 'x'})
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'bezahlt')
+        self.assertFalse(Buchung.objects.filter(soll_konto__nummer='3805').exists())
+
+    def _nk_setup(self, honorar_pct):
+        from crm.models import Verwaltung
+        from finance.models import AbrechnungsPeriode, KreditorenRechnung, Buchungskonto
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        Verwaltung.objects.create(firma='V AG', strasse='X', plz='1', ort='Y',
+                                  nk_honorar_prozent=Decimal(str(honorar_pct)))
+        lg, e, m, v = _basis_objekte()
+        p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='NK Test',
+                                              start_datum=date(2025, 1, 1),
+                                              ende_datum=date(2025, 12, 31))
+        KreditorenRechnung.objects.create(lieferant='Hauswart AG', betrag=Decimal('200.00'),
+                                          liegenschaft=lg, is_hnk_relevant=True,
+                                          konto=Buchungskonto.objects.get(nummer='4120'),
+                                          status='freigegeben', datum=date(2025, 6, 1))
+        return p
+
+    def test_nk_honorar_konfigurierbar(self):
+        from core.utils.billing import berechne_abrechnung
+        p = self._nk_setup(2)
+        r = berechne_abrechnung(p.id)
+        honorar = [d for d in r['belege_details'] if d['kategorie'] == 'Verwaltung']
+        self.assertEqual(len(honorar), 1)
+        self.assertIn('2', honorar[0]['text'])
+        self.assertEqual(Decimal(str(honorar[0]['betrag'])), Decimal('4.00'))   # 2% von 200
+
+    def test_nk_honorar_null_kein_posten(self):
+        from core.utils.billing import berechne_abrechnung
+        p = self._nk_setup(0)
+        r = berechne_abrechnung(p.id)
+        honorar = [d for d in r['belege_details'] if d['kategorie'] == 'Verwaltung']
+        self.assertEqual(honorar, [])

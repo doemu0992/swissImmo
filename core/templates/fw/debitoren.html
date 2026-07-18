@@ -181,7 +181,15 @@
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     <a href="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" class="text-xs text-emerald-600 font-medium hover:underline mr-2" title="QR-Rechnung als PDF"><i class="fa-solid fa-qrcode"></i> QR</a>
                     {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" onclick="return fwModalOpen(this,'Vertrag',true)" class="text-xs text-indigo-600 font-medium hover:underline mr-2">Ansehen</a>{% endif %}
-                    {% if row.r.status != 'storniert' and row.r.status != 'bezahlt' and row.r.status != 'teilbezahlt' %}
+                    {% if row.mahn and row.r.status == 'offen' or row.mahn and row.r.status == 'teilbezahlt' %}
+                    <form method="post" action="/neu/debitoren/{{ row.r.id }}/abschreiben/" class="inline"
+                          onsubmit="var g = prompt('Forderungsverlust CHF {{ row.offen }} buchen (Konto 3805)?\nGrund (z.B. Verlustschein, Betreibung erfolglos):'); if (g === null) return false; this.grund.value = g; return true;">
+                        {% csrf_token %}
+                        <input type="hidden" name="grund" value="">
+                        <button type="submit" class="text-xs text-slate-500 font-medium hover:text-rose-700 mr-2" title="Als Debitorenverlust abschreiben (uneinbringlich)"><i class="fa-solid fa-file-circle-minus"></i> Abschreiben</button>
+                    </form>
+                    {% endif %}
+                    {% if row.r.status != 'storniert' and row.r.status != 'bezahlt' and row.r.status != 'teilbezahlt' and row.r.status != 'abgeschrieben' %}
                     <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" onsubmit="return confirm('Rechnung „{{ row.r.titel }}" stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.');">
                         {% csrf_token %}
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}

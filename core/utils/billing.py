@@ -171,16 +171,21 @@ def berechne_abrechnung(periode_id):
                 'kategorie': 'Heizmaterial', 'betrag': round(effektive_oel_kosten, 2), 'schluessel': 'm3', 'quelle': 'Bestand'
             })
 
-    # D) Verwaltungshonorar (Standardmässig 3% auf die Nebenkosten)
+    # D) Verwaltungshonorar auf die Nebenkosten — Satz aus den Account-Einstellungen
+    # (Verwaltung.nk_honorar_prozent, Standard 3 %); 0 % = kein Honorar-Posten.
+    from crm.models import Verwaltung as _Vw
+    _vw = _Vw.objects.first()
+    _satz_pct = _vw.nk_honorar_prozent if _vw else Decimal('3.00')
     subtotal = pool_heizkosten + pool_nk_m2 + pool_nk_einheit
-    honorarsatz = Decimal('0.03')
+    honorarsatz = (_satz_pct or Decimal('0')) / Decimal('100')
     honorar_betrag = subtotal * honorarsatz
     pool_nk_m2 += honorar_betrag
 
-    kategorien_liste.append({
-        'datum': ende_p, 'text': "Verwaltungshonorar (3%)",
-        'kategorie': 'Verwaltung', 'betrag': round(honorar_betrag, 2), 'schluessel': 'm2', 'quelle': 'System'
-    })
+    if honorar_betrag > 0:
+        kategorien_liste.append({
+            'datum': ende_p, 'text': f"Verwaltungshonorar ({_satz_pct}%)",
+            'kategorie': 'Verwaltung', 'betrag': round(honorar_betrag, 2), 'schluessel': 'm2', 'quelle': 'System'
+        })
 
     total_kosten_gesamt = pool_heizkosten + pool_nk_m2 + pool_nk_einheit
 
