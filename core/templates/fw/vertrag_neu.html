@@ -334,11 +334,10 @@
             <div class="font-bold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-scale-balanced"></i> Mietrechtlicher Hinweis</div>
             <ul id="mietrecht-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-            <iframe id="pvFrame" title="Vertrags-Vorschau" class="block bg-white w-[800px] min-w-[800px] lg:w-full lg:min-w-0" style="height:75vh; border:0;"></iframe>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <iframe id="pvFrame" title="Vertrags-Vorschau" class="block bg-white w-full" style="height:75vh; border:0;"></iframe>
         </div>
-        <p class="text-[11px] text-slate-400 mt-1.5 text-center lg:hidden"><i class="fa-solid fa-hand-point-left text-slate-400 mr-1"></i>Zum Lesen seitlich wischen · <i class="fa-solid fa-circle-check text-emerald-500 mx-1"></i>1:1 wie das PDF</p>
-        <p class="text-[11px] text-slate-400 mt-1.5 text-center hidden lg:block"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Diese Vorschau entspricht 1:1 dem generierten Vertrags-PDF.</p>
+        <p class="text-[11px] text-slate-400 mt-1.5 text-center"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Ganze Vertragsbreite auf einen Blick · 1:1 wie das generierte PDF.</p>
     </div>
 </div>
 </form>
@@ -778,7 +777,16 @@ function refreshServerPreview(){
   fetch('/neu/vertraege/vorschau/', {method:'POST', body:new FormData(form),
         headers:{'X-Requested-With':'XMLHttpRequest'}})
     .then(r=>r.text())
-    .then(html=>{ if(seq===_pvSeq) frame.srcdoc = html; })
+    .then(html=>{
+      if(seq!==_pvSeq) return;
+      // Vorschau in A4-Breite (794px) layouten und vom Browser auf die
+      // iframe-Breite herunterskalieren → ganze Vertragsbreite ohne
+      // seitliches Scrollen sichtbar (mobil wie im Fairwalter-PDF-Viewer).
+      const vp = '<meta name="viewport" content="width=794">';
+      html = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, m => m + vp)
+                                       : vp + html;
+      frame.srcdoc = html;
+    })
     .catch(()=>{});
 }
 function live(){
