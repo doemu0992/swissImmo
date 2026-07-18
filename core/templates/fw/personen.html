@@ -39,8 +39,8 @@
             <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Name</th>
-                <th class="px-5 py-3 font-semibold">Kontakt</th>
-                <th class="px-5 py-3 font-semibold">Adresse</th>
+                <th class="px-5 py-3 font-semibold hidden md:table-cell">Kontakt</th>
+                <th class="px-5 py-3 font-semibold hidden lg:table-cell">Adresse</th>
                 <th class="px-5 py-3 font-semibold">Mietet aktuell</th>
                 <th class="px-5 py-3"></th>
             </tr>
@@ -59,12 +59,12 @@
                         </div>
                     </a>
                 </td>
-                <td class="px-5 py-3.5 text-slate-600">
+                <td class="px-5 py-3.5 text-slate-600 hidden md:table-cell">
                     {% if row.m.email %}<div class="whitespace-nowrap"><i class="fa-regular fa-envelope text-slate-300 mr-1.5 text-xs"></i>{{ row.m.email }}</div>{% endif %}
                     {% if row.telefon %}<div class="whitespace-nowrap text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-phone text-slate-300 mr-1.5 text-[10px]"></i>{{ row.telefon }}</div>{% endif %}
                     {% if not row.m.email and not row.telefon %}<span class="text-slate-300">—</span>{% endif %}
                 </td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">
+                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap hidden lg:table-cell">
                     {% if row.m.strasse %}{{ row.m.strasse }}, {{ row.m.plz }} {{ row.m.ort }}{% else %}<span class="text-slate-300">—</span>{% endif %}
                 </td>
                 <td class="px-5 py-3.5 whitespace-nowrap">
