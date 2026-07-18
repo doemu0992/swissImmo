@@ -7,12 +7,24 @@
 <div class="flex items-center justify-between mb-1">
     <h1 class="text-3xl font-extrabold text-slate-900">Liegenschaften</h1>
     <div class="flex items-center gap-2">
-        <a href="/neu/mieterspiegel/{{ lg_query }}" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg">
-            <i class="fa-solid fa-table-list mr-1.5"></i>Mieterspiegel
-        </a>
         <a href="/neu/liegenschaften/neu/" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
             <i class="fa-solid fa-plus mr-1.5"></i> Liegenschaft erfassen
         </a>
+        <div class="relative">
+            <button type="button" onclick="document.getElementById('lgListMenu').classList.toggle('hidden'); event.stopPropagation();"
+                    class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg">
+                <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
+            </button>
+            <div id="lgListMenu" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
+                <a href="/neu/mieterspiegel/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-table-list w-4"></i>Mieterspiegel (Rent Roll)</a>
+            </div>
+        </div>
+        <script>
+          document.addEventListener('click', function (ev) {
+            var d = document.getElementById('lgListMenu');
+            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
+          });
+        </script>
     </div>
 </div>
 <p class="text-sm text-slate-500 mb-4">{{ rows|length }} Liegenschaft(en) im Portfolio
