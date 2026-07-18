@@ -178,7 +178,7 @@
                 gültige Zeile ergibt die effektive Zustelladresse — eine Korrespondenzadresse hat dabei Vorrang vor der Wohnadresse.</p>
             {% if adress_verlauf %}
             <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+                <table class="w-full min-w-max text-sm">
                     <thead><tr class="text-left text-xs text-slate-400 border-b border-slate-100">
                         <th class="py-1.5 pr-3">Art</th><th class="py-1.5 pr-3">Gültig ab</th>
                         <th class="py-1.5 pr-3">Adresse</th><th class="py-1.5 pr-3">Quelle</th><th></th></tr></thead>
@@ -250,7 +250,7 @@
 <!-- VERTRÄGE -->
 <div data-panel="pd" id="pd-vertraege" class="hidden">
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto"><table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Objekt</th><th class="px-5 py-3 font-semibold">Von</th><th class="px-5 py-3 font-semibold">Bis</th>
                 <th class="px-5 py-3 font-semibold text-right">Brutto</th><th class="px-5 py-3 font-semibold">Status</th><th class="px-5 py-3"></th>
@@ -285,7 +285,7 @@
     </div>
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
         <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Offene Posten</div>
-        <div class="overflow-x-auto"><table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Fällig</th><th class="px-5 py-3 font-semibold">Titel</th><th class="px-5 py-3 font-semibold text-right">Offen</th>
             </tr></thead>
@@ -302,7 +302,7 @@
     </div>
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Zahlungseingänge</div>
-        <div class="overflow-x-auto"><table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
             <tbody class="divide-y divide-slate-50">
             {% for z in zahlungen %}
             <tr><td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</td>

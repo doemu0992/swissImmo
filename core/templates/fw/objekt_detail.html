@@ -253,7 +253,7 @@
                 <span class="text-xs text-slate-400">· {{ r.elemente|length }} Element{{ r.elemente|length|pluralize:",e" }}</span>
             </summary>
             <div class="border-t border-slate-100 overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full min-w-max text-sm">
                 <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                     <th class="px-5 py-2.5 font-semibold">Kategorie</th>
                     <th class="px-5 py-2.5 font-semibold">Marke / Modell</th>
@@ -391,7 +391,7 @@
 <div data-panel="obj" id="obj-geraete" class="hidden">
     <datalist id="geraetkat">{% for k in geraet_kategorien %}<option value="{{ k }}">{% endfor %}</datalist>
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
-        <div class="overflow-x-auto"><table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Gerät</th><th class="px-5 py-3 font-semibold">Marke / Modell</th>
                 <th class="px-5 py-3 font-semibold">Installation</th><th class="px-5 py-3 font-semibold">Garantie bis</th><th class="px-5 py-3"></th>
@@ -501,7 +501,7 @@
         <i class="fa-solid fa-lightbulb mr-1"></i><b>Gratismonate / Rabatt:</b> Erfasse einfach eine datierte Zeile mit dem gewünschten Rabatt (oder «mietzinsfrei» für vollen Netto-Erlass). Die Sollstellung folgt den «gültig ab»-Daten automatisch — z.B. ab 01.11. mietzinsfrei, ab 01.12. voller Mietzins. Die <b>Referenz</b> bleibt die echte Sollmiete (Mieterspiegel/Bilanz korrekt), der Rabatt wird als Ertragsminderung gebucht.
     </div>
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
-        <div class="overflow-x-auto"><table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-4 py-3 font-semibold">Gültig ab</th>
                 <th class="px-4 py-3 font-semibold text-right">Netto{% if not e.ist_einstellplatz %} / NK{% endif %}<br><span class="text-[9px] normal-case text-slate-300">Referenz</span></th>
@@ -572,7 +572,7 @@
         <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-layer-group text-indigo-500 mr-1.5"></i>Staffelmiete-Vorlage (Objekt)</h3>
         <p class="text-[11px] text-slate-400 mb-3">Geplante, datierte Netto-Stufen für dieses Objekt. Ein <b>neuer Gewerbe-Vertrag</b> übernimmt sie automatisch als Staffelmiete (Art. 269c). Diese Vorlage wird selbst nicht verrechnet — die verrechnungswirksamen Stufen entstehen am konkreten Vertrag.</p>
         <div class="border border-slate-200 rounded-lg overflow-hidden mb-3">
-            <div class="overflow-x-auto"><table class="w-full text-sm">
+            <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
                 <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-slate-50/60">
                     <th class="px-4 py-2 font-semibold">Gültig ab</th>
                     <th class="px-4 py-2 font-semibold text-right">Netto-Mietzins</th>
@@ -620,7 +620,7 @@
         </div>
         <p class="text-[11px] text-slate-400 mb-3">Vorab vereinbarte Stufen des <b>aktiven Vertrags</b>. Ab dem Stichtag gilt der neue Netto-Mietzins automatisch im Mietenlauf (keine erneute Ankündigung). Zulässig bei fester Vertragsdauer ≥ 3 Jahren, max. 1 Erhöhung pro Jahr.</p>
         <div class="border border-slate-200 rounded-lg overflow-hidden mb-3">
-            <div class="overflow-x-auto"><table class="w-full text-sm">
+            <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
                 <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-slate-50/60">
                     <th class="px-4 py-2 font-semibold">Gültig ab</th>
                     <th class="px-4 py-2 font-semibold text-right">Netto-Mietzins</th>
@@ -664,7 +664,7 @@
 <div data-panel="obj" id="obj-zaehler" class="hidden">
     <datalist id="zaehlertyp">{% for t in zaehler_typen %}<option value="{{ t }}">{% endfor %}</datalist>
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
-        <div class="overflow-x-auto"><table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Typ</th><th class="px-5 py-3 font-semibold">Zähler-Nr.</th>
                 <th class="px-5 py-3 font-semibold">Standort</th><th class="px-5 py-3 font-semibold text-right">Stand</th><th class="px-5 py-3"></th>
@@ -727,7 +727,7 @@
 
 <div data-panel="obj" id="obj-schluessel" class="hidden">
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
-        <div class="overflow-x-auto"><table class="w-full text-sm">
+        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Typ</th><th class="px-5 py-3 font-semibold">Schlüssel-Nr.</th>
                 <th class="px-5 py-3 font-semibold text-center">Bestand</th>

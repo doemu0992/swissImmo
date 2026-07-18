@@ -88,7 +88,7 @@
                 <span class="font-bold text-slate-800 text-sm">Ertrag</span>
                 <span class="text-sm font-bold text-emerald-600">CHF {{ total_ertrag|chf }}</span>
             </div>
-            <div class="overflow-x-auto"><table class="w-full text-sm">
+            <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
                 <tbody class="divide-y divide-slate-50">
                 {% for e in ertraege %}
                 <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ e.nummer }}</td>
@@ -106,7 +106,7 @@
                 <span class="font-bold text-slate-800 text-sm">Aufwand</span>
                 <span class="text-sm font-bold text-rose-600">CHF {{ total_aufwand|chf }}</span>
             </div>
-            <div class="overflow-x-auto"><table class="w-full text-sm">
+            <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
                 <tbody class="divide-y divide-slate-50">
                 {% for a in aufwaende %}
                 <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ a.nummer }}</td>
@@ -137,7 +137,7 @@
                 <span class="font-bold text-slate-800 text-sm">Aktiven</span>
                 <span class="text-sm font-bold text-slate-800">CHF {{ total_aktiven|chf }}</span>
             </div>
-            <div class="overflow-x-auto"><table class="w-full text-sm">
+            <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
                 <tbody class="divide-y divide-slate-50">
                 {% for a in aktiven %}
                 <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ a.nummer }}</td>
@@ -155,7 +155,7 @@
                 <span class="font-bold text-slate-800 text-sm">Passiven &amp; Eigenkapital</span>
                 <span class="text-sm font-bold text-slate-800">CHF {{ passiven_mit_erfolg|chf }}</span>
             </div>
-            <div class="overflow-x-auto"><table class="w-full text-sm">
+            <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
                 <tbody class="divide-y divide-slate-50">
                 {% for p in passiven %}
                 <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ p.nummer }}</td>
@@ -189,7 +189,7 @@
 <div data-panel="bh" id="bh-journal" class="hidden">
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full min-w-max text-sm">
                 <thead>
                 <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                     <th class="px-5 py-3 font-semibold">Datum</th>
