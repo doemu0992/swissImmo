@@ -28,17 +28,17 @@
 <!-- Kennzahlen -->
 <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 my-5">
     <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Ergebnis Liegenschaften</div>
+        <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Ergebnis Liegenschaften</div>
         <div class="text-xl font-bold {% if kk.ergebnis < 0 %}text-rose-600{% else %}text-slate-900{% endif %} mt-0.5">CHF {{ kk.ergebnis|chf }}</div>
         <div class="text-xs text-slate-400 mt-0.5">Ertrag {{ kk.ertrag|chf }} − Aufwand {{ kk.aufwand|chf }}</div>
     </div>
     <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Bereits ausbezahlt</div>
+        <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Bereits ausbezahlt</div>
         <div class="text-xl font-bold text-slate-900 mt-0.5">CHF {{ kk.ausbezahlt|chf }}</div>
         <div class="text-xs text-slate-400 mt-0.5">{{ kk.auszahlungen|length }} Auszahlung(en)</div>
     </div>
     <div class="bg-white rounded-xl border {% if kk.offen > 0 %}border-emerald-200{% elif kk.offen < 0 %}border-rose-200{% else %}border-slate-200{% endif %} px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">
+        <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
             {% if kk.offen >= 0 %}Offen an Eigentümer{% else %}Überzahlung (Eigentümer schuldet){% endif %}
         </div>
         <div class="text-xl font-bold {% if kk.offen > 0 %}text-emerald-600{% elif kk.offen < 0 %}text-rose-600{% else %}text-slate-900{% endif %} mt-0.5">CHF {{ kk.offen|chf }}</div>
@@ -54,7 +54,7 @@
             <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
                 <thead>
-                    <tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-50">
+                    <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                         <th class="px-5 py-2.5 font-semibold">Liegenschaft</th>
                         <th class="px-5 py-2.5 font-semibold text-right">Ertrag</th>
                         <th class="px-5 py-2.5 font-semibold text-right">Aufwand</th>

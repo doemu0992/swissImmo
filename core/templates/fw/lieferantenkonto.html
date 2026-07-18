@@ -18,15 +18,15 @@
 <!-- Kennzahlen -->
 <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 my-5">
     <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Rechnungen (Belastung)</div>
+        <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Rechnungen (Belastung)</div>
         <div class="text-xl font-bold text-slate-900 mt-0.5">CHF {{ total_belastung|chf }}</div>
     </div>
     <div class="bg-white rounded-xl border border-slate-200 px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Zahlungen</div>
+        <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Zahlungen</div>
         <div class="text-xl font-bold text-emerald-600 mt-0.5">CHF {{ total_zahlung|chf }}</div>
     </div>
     <div class="bg-white rounded-xl border {% if endsaldo > 0 %}border-rose-200{% else %}border-slate-200{% endif %} px-4 py-3">
-        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">
+        <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
             {% if endsaldo > 0 %}Offen an Lieferant{% else %}Saldo{% endif %}
         </div>
         <div class="text-xl font-bold {% if endsaldo > 0 %}text-rose-600{% else %}text-slate-900{% endif %} mt-0.5">CHF {{ endsaldo|chf }}{% if endsaldo == 0 %} · ausgeglichen{% endif %}</div>
@@ -65,7 +65,7 @@
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
         <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-100">
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                 <th class="px-5 py-3 font-semibold">Datum</th>
                 <th class="px-5 py-3 font-semibold">Text</th>
                 <th class="px-5 py-3 font-semibold text-right">Belastung</th>

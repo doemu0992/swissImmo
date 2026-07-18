@@ -52,7 +52,7 @@
     <script>if (window.self !== window.top) document.getElementById('wv_embed').value = '1';</script>
 
     <!-- Übersicht der Rechnung -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 grid grid-cols-3 gap-4">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div><div class="text-xs text-slate-400">Rechnungsbetrag</div>
             <div class="text-lg font-bold text-slate-800">CHF {{ k.betrag|chf }}</div></div>
         <div><div class="text-xs text-slate-400">Bereits weiterverrechnet</div>
@@ -75,7 +75,7 @@
             <label class="block text-xs font-semibold text-slate-500 mb-1">Titel</label>
             <input name="titel" value="Weiterverrechnung: {{ k.lieferant }}" oninput="wvPreview()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Weiterzuverrechnen (CHF)</label>
                 <input name="betrag" id="wv_betrag" oninput="wvCheck(); wvPreview()" value="{% localize off %}{{ offen_wv }}{% endlocalize %}"

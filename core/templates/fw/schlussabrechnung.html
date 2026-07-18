@@ -53,7 +53,7 @@
         <p class="text-xs text-slate-400 mb-4">z.B. Nebenkosten-Nachzahlung/-Guthaben, Schäden, Endreinigung, Ersatz. „zulasten" = Mieter schuldet, „zugunsten" = Gutschrift an Mieter.</p>
         <div class="space-y-2">
             {% for p in prefill_positionen %}
-            <div class="grid grid-cols-12 gap-2 items-center">
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
                 <input name="pos_text" value="{{ p.text }}" placeholder="Bezeichnung" class="col-span-6 bg-slate-100 rounded-lg text-sm px-3 py-2">
                 <input name="pos_betrag" value="{{ p.betrag|unlocalize }}" inputmode="decimal" class="pos-betrag col-span-3 bg-slate-100 rounded-lg text-sm px-3 py-2 text-right" placeholder="Betrag CHF">
                 <select name="pos_richtung" class="pos-richtung col-span-3 bg-slate-100 rounded-lg text-sm px-2 py-2">
@@ -63,7 +63,7 @@
             </div>
             {% endfor %}
             {% for i in "12345" %}
-            <div class="grid grid-cols-12 gap-2 items-center">
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
                 <input name="pos_text" placeholder="Bezeichnung" class="col-span-6 bg-slate-100 rounded-lg text-sm px-3 py-2">
                 <input name="pos_betrag" inputmode="decimal" class="pos-betrag col-span-3 bg-slate-100 rounded-lg text-sm px-3 py-2 text-right" placeholder="Betrag CHF">
                 <select name="pos_richtung" class="pos-richtung col-span-3 bg-slate-100 rounded-lg text-sm px-2 py-2">

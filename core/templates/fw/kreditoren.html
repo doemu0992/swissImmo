@@ -237,7 +237,7 @@
                         <a href="{{ row.beleg_url }}" target="_blank" class="inline-block mt-1.5 text-[11px] text-indigo-600 hover:underline"><i class="fa-solid fa-up-right-from-square mr-1"></i>In neuem Tab öffnen</a>
                     </div>
                     {% endif %}
-                    <form method="post" action="/neu/kreditoren/{{ row.k.id }}/bearbeiten/" class="grid grid-cols-2 gap-3">
+                    <form method="post" action="/neu/kreditoren/{{ row.k.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {% csrf_token %}
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                         <div class="col-span-2"><label class="block text-[11px] font-semibold text-slate-500 mb-1">Lieferant</label>

@@ -56,7 +56,7 @@
             (ab {{ vormiete.beginn|date:"d.m.Y" }}) — bitte prüfen.
         </div>
         {% endif %}
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Netto Vormiete (CHF)</label>
                 <input name="vormiete_netto" value="{% localize off %}{{ vormiete_netto }}{% endlocalize %}" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums">
@@ -78,7 +78,7 @@
         {% else %}
         <p class="text-[11px] text-slate-400 mb-3">Aus dem Vertrag übernommen (keine datierte Sollmietzins-Zeile hinterlegt).</p>
         {% endif %}
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Netto Anfangsmietzins (CHF)</label>
                 <input name="anfang_netto" value="{% localize off %}{{ anfang_netto }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums">
@@ -95,7 +95,7 @@
         <h3 class="font-bold text-slate-800 text-sm mb-1">Berechnungsgrundlagen</h3>
         <p class="text-[11px] text-slate-400 mb-3">Referenzzinssatz & Landesindex (LIK), auf denen der Mietzins beruht —
             aus dem Vertrag übernommen, bei Bedarf anpassbar.</p>
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Referenzzinssatz (%)</label>
                 <input name="basis_ref" value="{% localize off %}{{ basis_ref|default_if_none:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums">

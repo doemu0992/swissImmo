@@ -8,7 +8,7 @@
             {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
     </div>
     <div class="flex flex-wrap gap-2">
-        <a href="/neu/auswertung/{{ lg_query }}" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm"><i class="fa-solid fa-chart-line mr-1.5"></i>Interaktive Auswertung</a>
+        <a href="/neu/auswertung/{{ lg_query }}" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors"><i class="fa-solid fa-chart-line mr-1.5"></i>Interaktive Auswertung</a>
         <div class="relative" data-menu>
             <button type="button" data-menu-btn class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-ellipsis mr-1"></i>Mehr</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">

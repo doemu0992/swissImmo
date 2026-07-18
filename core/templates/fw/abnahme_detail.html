@@ -8,7 +8,7 @@
     <span class="text-slate-600 font-medium">Abnahmeprotokoll</span>
 </nav>
 
-<div class="flex items-start justify-between gap-4 mb-4">
+<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-4">
     <div>
         <h1 class="text-2xl font-extrabold text-slate-900">Wohnungsabnahme — {{ p.get_typ_display }}</h1>
         <p class="text-sm text-slate-500">{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ p.datum|date:"d.m.Y" }}</p>
