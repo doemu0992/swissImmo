@@ -144,7 +144,56 @@
         </form>
     </div>
 
-    <div class="overflow-x-auto">
+    <!-- Mobile: Karten -->
+    <div class="md:hidden divide-y divide-slate-100">
+        {% for row in rows %}
+        <div class="px-4 py-3.5">
+            <div class="flex items-start gap-3">
+                <div class="min-w-0 flex-1">
+                    <div class="font-semibold text-slate-900 truncate">{{ row.mieter }}</div>
+                    <div class="text-xs text-slate-500 truncate">{{ row.r.titel }}</div>
+                    <div class="mt-1.5 flex items-center gap-2 flex-wrap">
+                        <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold {{ row.pill_cls }}">{{ row.status_label }}</span>
+                        {% if row.mahn %}<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold {{ row.mahn.cls }}">{{ row.mahn.label }}</span>{% endif %}
+                        <span class="text-[11px] text-slate-400">fällig {{ row.faellig|date:"d.m.Y" }}</span>
+                    </div>
+                </div>
+                <div class="text-right shrink-0">
+                    <div class="font-bold whitespace-nowrap {% if row.offen > 0 %}text-slate-900{% else %}text-slate-400{% endif %}">
+                        {% if row.r.status == 'storniert' %}—{% else %}{{ row.offen|chf }}{% endif %}
+                    </div>
+                    <div class="text-[11px] text-slate-400">offen</div>
+                </div>
+            </div>
+            <div class="mt-2.5 flex items-center gap-3 flex-wrap">
+                <a href="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" class="text-xs text-emerald-600 font-medium hover:underline"><i class="fa-solid fa-qrcode"></i> QR</a>
+                {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="text-xs text-indigo-600 font-medium hover:underline">Vertrag</a>{% endif %}
+                {% if row.mahn and row.r.status == 'offen' or row.mahn and row.r.status == 'teilbezahlt' %}
+                <form method="post" action="/neu/debitoren/{{ row.r.id }}/abschreiben/" class="inline"
+                      onsubmit="var g = prompt('Forderungsverlust CHF {{ row.offen }} buchen (Konto 3805)?\nGrund (z.B. Verlustschein, Betreibung erfolglos):'); if (g === null) return false; this.grund.value = g; return true;">
+                    {% csrf_token %}
+                    <input type="hidden" name="grund" value="">
+                    <button type="submit" class="text-xs text-slate-500 font-medium hover:text-rose-700"><i class="fa-solid fa-file-circle-minus"></i> Abschreiben</button>
+                </form>
+                {% endif %}
+                {% if row.r.status != 'storniert' and row.r.status != 'bezahlt' and row.r.status != 'teilbezahlt' and row.r.status != 'abgeschrieben' %}
+                <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" onsubmit="return confirm('Rechnung „{{ row.r.titel }}“ stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.');">
+                    {% csrf_token %}
+                    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                    <button type="submit" class="text-xs text-rose-500 font-medium hover:text-rose-700"><i class="fa-solid fa-trash"></i> Stornieren</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="px-4">
+            {% if q or status_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Rechnungen gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='fa-file-invoice-dollar' titel='Noch keine Debitorenrechnungen' subtext='Der monatliche Mietenlauf (Sollstellung) erzeugt die Mietrechnungen automatisch.' cta_url='/neu/finanzen/' cta_label='Zur Sollstellung' %}{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Desktop: Tabelle -->
+    <div class="overflow-x-auto hidden md:block">
         <table class="w-full text-sm">
             <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">

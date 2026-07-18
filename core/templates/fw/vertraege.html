@@ -34,7 +34,34 @@
         </form>
     </div>
 
-    <div class="overflow-x-auto">
+    <!-- Mobile: Karten -->
+    <div class="md:hidden divide-y divide-slate-100">
+        {% for row in rows %}
+        <a href="/neu/vertraege/{{ row.v.id }}/" class="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50/60 transition-colors">
+            <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-lines"></i></div>
+            <div class="min-w-0 flex-1">
+                <div class="font-semibold text-slate-900 truncate">{{ row.v.mieter.display_name }}</div>
+                <div class="text-xs text-slate-500 truncate">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</div>
+                <div class="mt-1.5 flex items-center gap-2 flex-wrap">
+                    <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold {{ row.pill_cls }}">{{ row.status_label }}</span>
+                    <span class="text-[11px] text-slate-400">ab {{ row.v.beginn|date:"d.m.Y" }}</span>
+                </div>
+            </div>
+            <div class="text-right shrink-0">
+                <div class="font-bold text-slate-900 whitespace-nowrap">{{ row.brutto|chf }}</div>
+                <div class="text-[11px] text-slate-400">Brutto</div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0"></i>
+        </a>
+        {% empty %}
+        <div class="px-4">
+            {% if q or status_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Verträge gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='fa-file-signature' titel='Noch keine Verträge' subtext='Der Vertragsassistent führt Schritt für Schritt durch Mieter, Konditionen und Vertragsdokumente.' cta_url='/neu/vertraege/neu/' cta_label='Ersten Vertrag erstellen' %}{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Desktop: Tabelle -->
+    <div class="overflow-x-auto hidden md:block">
         <table class="w-full text-sm">
             <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">

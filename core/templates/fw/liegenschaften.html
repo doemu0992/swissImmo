@@ -39,7 +39,37 @@
 </div>
 
 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-    <div class="overflow-x-auto">
+  <div id="lgListe">
+    <!-- Mobile: Karten -->
+    <div class="md:hidden divide-y divide-slate-100">
+        {% for row in rows %}
+        <a data-zeile href="/neu/liegenschaften/{{ row.lg.id }}/" class="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50/60 transition-colors">
+            <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-building"></i></div>
+            <div class="min-w-0 flex-1">
+                <div class="font-semibold text-slate-900 truncate">{{ row.lg.strasse }}</div>
+                <div class="text-xs text-slate-500 truncate">{{ row.lg.plz }} {{ row.lg.ort }}</div>
+                <div class="mt-1.5 flex items-center gap-2 flex-wrap">
+                    {% if row.leer %}
+                    <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700">{{ row.leer }} leer</span>
+                    {% else %}
+                    <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700">Voll vermietet</span>
+                    {% endif %}
+                    <span class="text-[11px] text-slate-400">{{ row.einheiten_count }} Objekt{{ row.einheiten_count|pluralize:"e" }}</span>
+                </div>
+            </div>
+            <div class="text-right shrink-0">
+                <div class="font-bold text-indigo-600 whitespace-nowrap">CHF {{ row.mietertrag|chf }}</div>
+                <div class="text-[11px] text-slate-400">Ertrag/Mt.</div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0"></i>
+        </a>
+        {% empty %}
+        <div class="px-4">{% include 'fw/_empty.html' with icon='fa-building' titel='Noch keine Liegenschaften' subtext='Erfassen Sie Ihre erste Liegenschaft — die Objekte können automatisch aus dem Gebäude- und Wohnungsregister (GWR) importiert werden.' cta_url='/neu/liegenschaften/neu/' cta_label='Erste Liegenschaft erfassen' %}</div>
+        {% endfor %}
+    </div>
+
+    <!-- Desktop: Tabelle -->
+    <div class="overflow-x-auto hidden md:block">
         <table class="w-full text-sm">
             <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
@@ -52,7 +82,7 @@
                 <th class="px-5 py-3"></th>
             </tr>
             </thead>
-            <tbody id="lgListe" class="divide-y divide-slate-50">
+            <tbody class="divide-y divide-slate-50">
             {% for row in rows %}
             <tr data-zeile class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="window.location='/neu/liegenschaften/{{ row.lg.id }}/'">
                 <td class="px-5 py-3.5">
@@ -83,5 +113,6 @@
             </tbody>
         </table>
     </div>
+  </div>
 </div>
 {% endblock %}

@@ -291,7 +291,7 @@ document.addEventListener('input', function(e) {
     var ziel = document.querySelector(inp.dataset.suche);
     if (!ziel) return;
     var q = (inp.value || '').toLowerCase();
-    ziel.querySelectorAll('tr[data-zeile]').forEach(function(tr) {
+    ziel.querySelectorAll('[data-zeile]').forEach(function(tr) {
         tr.classList.toggle('hidden', q && tr.textContent.toLowerCase().indexOf(q) === -1);
     });
 });

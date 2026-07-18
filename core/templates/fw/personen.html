@@ -34,7 +34,35 @@
         </form>
     </div>
 
-    <div class="overflow-x-auto">
+    <!-- Mobile: Karten -->
+    <div class="md:hidden divide-y divide-slate-100">
+        {% for row in rows %}
+        <a href="/neu/personen/{{ row.m.id }}/"
+           class="person-row flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50/60 transition-colors"
+           data-suche="{{ row.m.display_name|lower }} {{ row.m.email|lower }} {{ row.m.ort|lower }} {{ row.m.plz }}">
+            <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                <i class="fa-solid {% if row.m.typ == 'firma' %}fa-briefcase{% elif row.m.typ == 'verein' %}fa-people-group{% else %}fa-user{% endif %}"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <div class="font-semibold text-slate-900 truncate">{{ row.m.display_name }}</div>
+                {% if row.m.email %}<div class="text-xs text-slate-500 truncate">{{ row.m.email }}</div>
+                {% elif row.telefon %}<div class="text-xs text-slate-500 truncate">{{ row.telefon }}</div>
+                {% else %}<div class="text-xs text-slate-400">{{ row.m.get_typ_display }}</div>{% endif %}
+            </div>
+            {% if row.objekt %}
+            <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 shrink-0">{{ row.objekt }}</span>
+            {% endif %}
+            <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0"></i>
+        </a>
+        {% empty %}
+        <div class="px-4">
+            {% if q or typ_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Personen gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='fa-user-plus' titel='Noch keine Personen' subtext='Erfassen Sie Mieter, Bewerber und weitere Kontakte.' cta_url='/neu/personen/neu/' cta_label='Erste Person erfassen' %}{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Desktop: Tabelle -->
+    <div class="overflow-x-auto hidden md:block">
         <table class="w-full text-sm">
             <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
@@ -87,7 +115,7 @@
     <script>
       function livePersonFilter(term){
         term=(term||'').trim().toLowerCase();
-        var rows=document.querySelectorAll('tr.person-row'), sichtbar=0;
+        var rows=document.querySelectorAll('.person-row'), sichtbar=0;
         rows.forEach(function(r){
           var hit = !term || (r.getAttribute('data-suche')||'').indexOf(term)!==-1;
           r.style.display = hit ? '' : 'none';
