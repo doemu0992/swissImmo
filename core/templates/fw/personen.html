@@ -48,10 +48,10 @@
                 {% if row.m.email %}<div class="text-xs text-slate-500 truncate">{{ row.m.email }}</div>
                 {% elif row.telefon %}<div class="text-xs text-slate-500 truncate">{{ row.telefon }}</div>
                 {% else %}<div class="text-xs text-slate-400">{{ row.m.get_typ_display }}</div>{% endif %}
+                {% if row.objekt %}
+                <div class="mt-1"><span class="inline-block max-w-full truncate align-bottom px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700">{{ row.objekt }}</span></div>
+                {% endif %}
             </div>
-            {% if row.objekt %}
-            <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 shrink-0">{{ row.objekt }}</span>
-            {% endif %}
             <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0"></i>
         </a>
         {% empty %}
