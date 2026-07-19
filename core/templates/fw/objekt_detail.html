@@ -476,6 +476,10 @@
 <!-- ===== TAB: ZÄHLER ===== -->
 <!-- ===== TAB: MIETZINS (Sollmietzins-Komponenten, datiert) ===== -->
 <div data-panel="obj" id="obj-mietzins" class="hidden">
+    <div class="bg-indigo-50/60 border border-indigo-100 rounded-xl px-4 py-3 mb-4 text-[12px] text-indigo-800 leading-relaxed">
+        <i class="fa-solid fa-circle-info mr-1"></i><b>Sollmietzins datiert («gültig ab»).</b> Der aktuell gültige Wert steuert die Soll-Miete; <b>neue Verträge</b> übernehmen ihn zum Mietbeginn automatisch, <b>bestehende bleiben unverändert</b> (Änderung nur via amtliches Formular, Art. 269d OR).
+        <span class="block mt-1"><b>Gratismonate / Rabatt:</b> datierte Zeile mit Rabatt (oder «mietzinsfrei») erfassen — die <b>Referenz</b> bleibt die echte Sollmiete (Mieterspiegel/Bilanz korrekt), der Rabatt wird als Ertragsminderung gebucht.</span>
+    </div>
     {% if not e.ist_einstellplatz %}
     <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
         <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-sliders text-indigo-500 mr-1.5"></i>Nebenkosten-Abrechnungsart</h3>
@@ -491,10 +495,6 @@
         <p class="text-[11px] text-slate-400 mt-2">Gilt als Standard-Abrechnungsart für neue Verträge dieses Objekts.</p>
     </div>
     {% endif %}
-    <div class="bg-indigo-50/60 border border-indigo-100 rounded-xl px-4 py-3 mb-3 text-[12px] text-indigo-800 leading-relaxed">
-        <i class="fa-solid fa-circle-info mr-1"></i><b>Sollmietzins datiert («gültig ab»).</b> Der aktuell gültige Wert steuert die Soll-Miete; <b>neue Verträge</b> übernehmen ihn zum Mietbeginn automatisch, <b>bestehende bleiben unverändert</b> (Änderung nur via amtliches Formular, Art. 269d OR).
-        <span class="block mt-1"><b>Gratismonate / Rabatt:</b> datierte Zeile mit Rabatt (oder «mietzinsfrei») erfassen — die <b>Referenz</b> bleibt die echte Sollmiete (Mieterspiegel/Bilanz korrekt), der Rabatt wird als Ertragsminderung gebucht.</span>
-    </div>
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
         <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
