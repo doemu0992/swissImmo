@@ -2,10 +2,13 @@
 import pdfplumber
 import re
 import datetime
-from decimal import Decimal
+import logging
+from decimal import Decimal, InvalidOperation
 from django.db import models
 from django.utils import timezone
 from django.db.models import Sum
+
+logger = logging.getLogger(__name__)
 
 class Buchungskonto(models.Model):
     nummer = models.CharField("Kontonummer", max_length=10, unique=True)
@@ -89,7 +92,7 @@ class Buchung(models.Model):
     storno_von = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
                                    related_name='stornierungen')
     # Fortlaufende, lückenlose Belegnummer (OR 958f) — beim ersten Speichern vergeben
-    beleg_nr = models.PositiveIntegerField("Beleg-Nr", null=True, blank=True, db_index=True)
+    beleg_nr = models.PositiveIntegerField("Beleg-Nr", null=True, blank=True, unique=True)
 
     # Audit-Trail: wer hat diese Buchung ausgelöst (None = System/Migration)
     erstellt_von = models.ForeignKey(
@@ -101,23 +104,37 @@ class Buchung(models.Model):
         return f"{self.datum}: {self.soll_konto.nummer} an {self.haben_konto.nummer} | CHF {self.betrag}"
 
     def save(self, *args, **kwargs):
+        from django.db import IntegrityError, transaction
         # Periodensperre: neue Buchungen in einer abgeschlossenen Periode blockieren.
         if self._state.adding:
-            try:
-                from crm.models import Verwaltung
-                vw = Verwaltung.objects.first()
-                sperre = vw.buchung_gesperrt_bis if vw else None
-            except Exception:
-                sperre = None
+            from crm.models import Verwaltung
+            vw = Verwaltung.objects.first()
+            sperre = vw.buchung_gesperrt_bis if vw else None
             if sperre and self.datum and self.datum <= sperre:
                 raise PermissionError(
                     f"Periode gesperrt: Buchungen bis {sperre:%d.%m.%Y} sind abgeschlossen "
                     f"(Datum {self.datum:%d.%m.%Y}). Bitte spätere Periode wählen."
                 )
-            # Fortlaufende Belegnummer vergeben (lückenlos, OR 958f)
+            # Fortlaufende, EINDEUTIGE Belegnummer vergeben (lückenlos, OR 957a/958f).
+            # beleg_nr ist unique; bei Parallel-Buchungen (Postgres) kollidiert
+            # Max+1 → IntegrityError. Deshalb Retry: Nummer neu berechnen und den
+            # Insert im Savepoint wiederholen (funktioniert auch verschachtelt in
+            # einer äusseren transaction.atomic()).
             if self.beleg_nr is None:
-                letzte = Buchung.objects.aggregate(m=models.Max('beleg_nr'))['m'] or 0
-                self.beleg_nr = letzte + 1
+                last_exc = None
+                for _ in range(8):
+                    letzte = Buchung.objects.aggregate(m=models.Max('beleg_nr'))['m'] or 0
+                    self.beleg_nr = letzte + 1
+                    try:
+                        with transaction.atomic():
+                            super().save(*args, **kwargs)
+                        return
+                    except IntegrityError as exc:
+                        last_exc = exc
+                        continue
+                if last_exc:
+                    raise last_exc
+                return
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
@@ -193,7 +210,10 @@ class DebitorenRechnung(models.Model):
                 type(self).objects.filter(pk=self.pk).update(qr_referenz=raw)
                 self.qr_referenz = raw
             except Exception:
-                pass
+                logger.warning(
+                    "QRR-Referenz konnte für DebitorenRechnung %s (Vertrag %s) nicht gesetzt werden",
+                    self.pk, self.vertrag_id, exc_info=True,
+                )
 
     # 🔥 NEU: OP-Verwaltung (Offener Betrag)
     @property
@@ -261,6 +281,16 @@ class Mahnung(models.Model):
         verbose_name_plural = "Mahn-Historie"
         ordering = ['-datum', '-id']
         db_table = 'core_mahnung'
+        constraints = [
+            # Pro Debitorenrechnung darf jede Mahnstufe nur EINMAL existieren —
+            # verhindert doppelte Mahngebühren durch Doppelklick / Button+Scheduler.
+            # Nur wenn eine Rechnung verknüpft ist (vertrag-lose Mahnungen ausgenommen).
+            models.UniqueConstraint(
+                fields=['debitoren_rechnung', 'stufe'],
+                condition=models.Q(debitoren_rechnung__isnull=False),
+                name='uniq_mahnung_rechnung_stufe',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.stufe}. Mahnung – CHF {self.betrag_offen} ({self.datum})"
@@ -550,12 +580,14 @@ class NebenkostenBeleg(models.Model):
                     clean_amounts = []
                     for m in matches:
                         clean_val = m.replace("'", "").replace(" ", "")
-                        try: clean_amounts.append(float(clean_val))
-                        except: pass
+                        try:
+                            clean_amounts.append(Decimal(clean_val))
+                        except (InvalidOperation, ValueError):
+                            continue
                     if clean_amounts:
                         max_amount = max(clean_amounts)
-                        if max_amount < 100000:
-                            self.betrag = Decimal(str(max_amount))
+                        if max_amount < Decimal('100000'):
+                            self.betrag = max_amount
 
             if not self.text:
                 lines = [l.strip() for l in full_text.split('\n') if len(l.strip()) > 3]

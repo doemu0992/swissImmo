@@ -30,11 +30,19 @@ def run_sollstellung(jahr, monat, user=None):
 
     ensure_kontenplan()   # Kontenplan garantieren (kein stiller Buchungsverlust)
 
-    vertraege = (Mietvertrag.objects.filter(status='aktiv', beginn__lte=end_date)
-                 .exclude(ende__lt=start_date).select_related('mieter', 'einheit__liegenschaft'))
-
     erstellt = 0
     with transaction.atomic():
+        # Zeilensperre auf die aktiven Verträge: ein gleichzeitiger zweiter
+        # Sollstellungs-Lauf (Button + Scheduler) blockiert bis dieser fertig ist,
+        # dann greift der exists()-Check → keine doppelten Monatsmieten.
+        # Nur PKs sperren (kein Join → kein Nullable-Outer-Join-Problem unter
+        # Postgres; auf SQLite ohnehin No-op).
+        locked_ids = list(
+            Mietvertrag.objects.filter(status='aktiv', beginn__lte=end_date)
+            .exclude(ende__lt=start_date).select_for_update()
+            .values_list('pk', flat=True))
+        vertraege = (Mietvertrag.objects.filter(pk__in=locked_ids)
+                     .select_related('mieter', 'einheit__liegenschaft'))
         for v in vertraege:
             if DebitorenRechnung.objects.filter(vertrag=v, titel=titel).exclude(status='storniert').exists():
                 continue
@@ -486,8 +494,11 @@ def buche_kaution_einzahlung(vertrag, datum, user=None):
         return None
     soll = _konto('1015', 'Kautionssperrkonten (Mieterkautionen)', 'bilanz')
     haben = _konto('2010', 'Kautionsverbindlichkeiten', 'bilanz')
-    beleg = f"Mietkaution {vertrag.mieter} — Einzahlung Sperrkonto"
-    if Buchung.objects.filter(beleg_text=beleg, ist_storno=False).exists():
+    # Idempotenz per Vertrags-ID (nicht nur Mietername): sonst würde die Kaution
+    # eines zweiten Vertrags desselben Mieters nie gebucht.
+    beleg = f"Mietkaution [V{vertrag.pk}] {vertrag.mieter} — Einzahlung Sperrkonto"
+    if Buchung.objects.filter(beleg_text__startswith=f"Mietkaution [V{vertrag.pk}] ",
+                              ist_storno=False).exists():
         return None
     return Buchung.objects.create(
         datum=datum, beleg_text=beleg,
@@ -507,8 +518,9 @@ def buche_kaution_aufloesung(vertrag, datum, user=None):
         return None
     soll = _konto('2010', 'Kautionsverbindlichkeiten', 'bilanz')
     haben = _konto('1015', 'Kautionssperrkonten (Mieterkautionen)', 'bilanz')
-    beleg = f"Mietkaution {vertrag.mieter} — Auflösung Sperrkonto"
-    if Buchung.objects.filter(beleg_text=beleg, ist_storno=False).exists():
+    beleg = f"Mietkaution [V{vertrag.pk}] {vertrag.mieter} — Auflösung Sperrkonto"
+    if Buchung.objects.filter(beleg_text__startswith=f"Mietkaution [V{vertrag.pk}] {vertrag.mieter} — Auflösung",
+                              ist_storno=False).exists():
         return None
     return Buchung.objects.create(
         datum=datum, beleg_text=beleg,

@@ -577,125 +577,131 @@ def fw_weiterverrechnung(request, kreditor_id):
         aufwand_konto = _grp.konto.nummer if _grp else '4000'
 
     if request.method == 'POST':
-        def _dec(x, d='0'):
-            try:
-                return Decimal(str(x).replace(',', '.').strip() or d)
-            except Exception:
-                return Decimal(d)
+        # Alle Schreibvorgänge dieser Weiterverrechnung in EINER Transaktion +
+        # Zeilensperre auf die Kreditorenrechnung: verhindert Teilzustände (einige
+        # Mieter belastet, andere nicht) bei Abbruch und den Über-Weiterverrechnungs-
+        # Race (min(grund, offen) ist ohne Lock ein Check-then-act).
+        with transaction.atomic():
+            k = KreditorenRechnung.objects.select_for_update().get(id=k.id)
+            def _dec(x, d='0'):
+                try:
+                    return Decimal(str(x).replace(',', '.').strip() or d)
+                except Exception:
+                    return Decimal(d)
 
-        def _verrechne(vertrag, grund, zuschlag, titel):
-            """Erstellt eine verknüpfte Debitorenrechnung + ertragsneutrale
-            Durchreichung über 1190 (Zuschlag als Ertrag 3600). Gibt (rechnung, total)."""
-            lg2 = vertrag.einheit.liegenschaft if vertrag.einheit_id else k.liegenschaft
-            zuschlag = max(zuschlag, Decimal('0'))
-            total = (grund + zuschlag).quantize(Decimal('0.01'))
-            rechnung = DebitorenRechnung.objects.create(
-                vertrag=vertrag, liegenschaft=lg2, einheit=vertrag.einheit,
-                titel=titel, beschreibung=f"Weiterverrechnung Lieferantenrechnung {k.lieferant}"
-                                          + (f" · {k.referenz}" if k.referenz else ''),
-                datum=heute, faellig_am=heute + _timedelta(days=30), betrag=total,
-                status='offen', quell_kreditor=k, weiterverrechnung_zuschlag=zuschlag)
-            buche("1100", "1190", grund, f"Weiterverrechnung {vertrag.mieter}: {titel}",
-                  datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
-            # Der Aufwand wurde bei der Freigabe nur mit dem NETTO gebucht (Vorsteuer
-            # separat auf 1170). Die Aufwandsminderung darf ihn deshalb ebenfalls nur
-            # netto entlasten; der im durchgereichten Brutto enthaltene MWST-Anteil ist
-            # AUSGANGS-Umsatzsteuer (2200) — sonst würde der Aufwand negativ und die
-            # zurückgeholte Vorsteuer bliebe unversteuert.
-            satz = k.mwst_satz or Decimal('0')
-            if satz > 0:
-                netto = (grund / (Decimal('1') + satz / Decimal('100'))).quantize(Decimal('0.01'))
-                mwst = grund - netto
-            else:
-                netto, mwst = grund, Decimal('0.00')
-            buche("1190", aufwand_konto, netto, f"Aufwandsminderung Weiterverrechnung: {k.lieferant}",
-                  datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
-            if mwst > 0:
-                buche("1190", "2200", mwst, f"MWST Weiterverrechnung {satz}% {vertrag.mieter}",
+            def _verrechne(vertrag, grund, zuschlag, titel):
+                """Erstellt eine verknüpfte Debitorenrechnung + ertragsneutrale
+                Durchreichung über 1190 (Zuschlag als Ertrag 3600). Gibt (rechnung, total)."""
+                lg2 = vertrag.einheit.liegenschaft if vertrag.einheit_id else k.liegenschaft
+                zuschlag = max(zuschlag, Decimal('0'))
+                total = (grund + zuschlag).quantize(Decimal('0.01'))
+                rechnung = DebitorenRechnung.objects.create(
+                    vertrag=vertrag, liegenschaft=lg2, einheit=vertrag.einheit,
+                    titel=titel, beschreibung=f"Weiterverrechnung Lieferantenrechnung {k.lieferant}"
+                                              + (f" · {k.referenz}" if k.referenz else ''),
+                    datum=heute, faellig_am=heute + _timedelta(days=30), betrag=total,
+                    status='offen', quell_kreditor=k, weiterverrechnung_zuschlag=zuschlag)
+                buche("1100", "1190", grund, f"Weiterverrechnung {vertrag.mieter}: {titel}",
                       datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
-            if zuschlag > 0:
-                buche("1100", "3600", zuschlag, f"Zuschlag Weiterverrechnung {vertrag.mieter}",
-                      datum=heute, liegenschaft=lg2, debitor=rechnung, user=request.user)
-            return rechnung, total
+                # Der Aufwand wurde bei der Freigabe nur mit dem NETTO gebucht (Vorsteuer
+                # separat auf 1170). Die Aufwandsminderung darf ihn deshalb ebenfalls nur
+                # netto entlasten; der im durchgereichten Brutto enthaltene MWST-Anteil ist
+                # AUSGANGS-Umsatzsteuer (2200) — sonst würde der Aufwand negativ und die
+                # zurückgeholte Vorsteuer bliebe unversteuert.
+                satz = k.mwst_satz or Decimal('0')
+                if satz > 0:
+                    netto = (grund / (Decimal('1') + satz / Decimal('100'))).quantize(Decimal('0.01'))
+                    mwst = grund - netto
+                else:
+                    netto, mwst = grund, Decimal('0.00')
+                buche("1190", aufwand_konto, netto, f"Aufwandsminderung Weiterverrechnung: {k.lieferant}",
+                      datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
+                if mwst > 0:
+                    buche("1190", "2200", mwst, f"MWST Weiterverrechnung {satz}% {vertrag.mieter}",
+                          datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
+                if zuschlag > 0:
+                    buche("1100", "3600", zuschlag, f"Zuschlag Weiterverrechnung {vertrag.mieter}",
+                          datum=heute, liegenschaft=lg2, debitor=rechnung, user=request.user)
+                return rechnung, total
 
-        # --- Doppelverrechnungs-Schutz (bindend): eine HNK-relevante Rechnung
-        # fliesst bereits über die periodische NK-Abrechnung an die Mieter. Sie
-        # zusätzlich direkt weiterzuverrechnen würde doppelt belasten. Nur mit
-        # bewusstem Override (Häkchen) zulassen.
-        if (k.is_hnk_relevant or k.hnk_betrag > 0) and request.POST.get('hnk_override') != 'on':
-            messages.error(request, "Diese Rechnung ist HNK-relevant und wird bereits über die "
-                                    "Nebenkostenabrechnung verteilt. Direkte Weiterverrechnung nur, wenn "
-                                    "du das Häkchen «Trotzdem direkt weiterverrechnen» setzt (sonst doppelte Belastung).")
-            return redirect(request.path)
-
-        # --- Modus «verteilen»: Fremdkosten in EINEM Schritt nach Verteilschlüssel
-        # auf alle aktiven Mieter der Liegenschaft aufteilen. ---
-        if request.POST.get('modus') == 'verteilen':
-            lg = k.liegenschaft
-            if not lg:
-                messages.error(request, "Für die Verteilung muss die Rechnung einer Liegenschaft zugeordnet sein.")
-                return redirect(request.path)
-            schluessel = request.POST.get('schluessel') or 'm2'
-            grund_total = k.offen_weiterzuverrechnen
-            if grund_total <= 0:
-                messages.error(request, "Nichts mehr offen zum Weiterverrechnen.")
-                return redirect(request.path)
-            zielvertraege = list(Mietvertrag.objects.filter(status='aktiv', einheit__liegenschaft=lg)
-                                 .select_related('mieter', 'einheit'))
-            if not zielvertraege:
-                messages.error(request, "Keine aktiven Mietverhältnisse in dieser Liegenschaft.")
+            # --- Doppelverrechnungs-Schutz (bindend): eine HNK-relevante Rechnung
+            # fliesst bereits über die periodische NK-Abrechnung an die Mieter. Sie
+            # zusätzlich direkt weiterzuverrechnen würde doppelt belasten. Nur mit
+            # bewusstem Override (Häkchen) zulassen.
+            if (k.is_hnk_relevant or k.hnk_betrag > 0) and request.POST.get('hnk_override') != 'on':
+                messages.error(request, "Diese Rechnung ist HNK-relevant und wird bereits über die "
+                                        "Nebenkostenabrechnung verteilt. Direkte Weiterverrechnung nur, wenn "
+                                        "du das Häkchen «Trotzdem direkt weiterverrechnen» setzt (sonst doppelte Belastung).")
                 return redirect(request.path)
 
-            def _gewicht(e):
-                if schluessel == 'einheit':
-                    return Decimal('1')
-                if schluessel == 'wertquote':
-                    return Decimal(str(e.wertquote or 0))
-                return Decimal(str(e.flaeche_m2 or 0))   # Default m²
+            # --- Modus «verteilen»: Fremdkosten in EINEM Schritt nach Verteilschlüssel
+            # auf alle aktiven Mieter der Liegenschaft aufteilen. ---
+            if request.POST.get('modus') == 'verteilen':
+                lg = k.liegenschaft
+                if not lg:
+                    messages.error(request, "Für die Verteilung muss die Rechnung einer Liegenschaft zugeordnet sein.")
+                    return redirect(request.path)
+                schluessel = request.POST.get('schluessel') or 'm2'
+                grund_total = k.offen_weiterzuverrechnen
+                if grund_total <= 0:
+                    messages.error(request, "Nichts mehr offen zum Weiterverrechnen.")
+                    return redirect(request.path)
+                zielvertraege = list(Mietvertrag.objects.filter(status='aktiv', einheit__liegenschaft=lg)
+                                     .select_related('mieter', 'einheit'))
+                if not zielvertraege:
+                    messages.error(request, "Keine aktiven Mietverhältnisse in dieser Liegenschaft.")
+                    return redirect(request.path)
 
-            gew = [(v, _gewicht(v.einheit)) for v in zielvertraege if v.einheit_id]
-            total_w = sum((w for _, w in gew), Decimal('0'))
-            if total_w <= 0:
-                messages.error(request, "Für diesen Verteilschlüssel fehlen die Werte (m²/Wertquote) an den Objekten.")
+                def _gewicht(e):
+                    if schluessel == 'einheit':
+                        return Decimal('1')
+                    if schluessel == 'wertquote':
+                        return Decimal(str(e.wertquote or 0))
+                    return Decimal(str(e.flaeche_m2 or 0))   # Default m²
+
+                gew = [(v, _gewicht(v.einheit)) for v in zielvertraege if v.einheit_id]
+                total_w = sum((w for _, w in gew), Decimal('0'))
+                if total_w <= 0:
+                    messages.error(request, "Für diesen Verteilschlüssel fehlen die Werte (m²/Wertquote) an den Objekten.")
+                    return redirect(request.path)
+
+                verteilt = Decimal('0.00'); anzahl = 0
+                titel = (request.POST.get('titel') or f"Weiterverrechnung: {k.lieferant}").strip()
+                for i, (v, w) in enumerate(gew):
+                    anteil = (grund_total - verteilt) if i == len(gew) - 1 \
+                        else (grund_total * w / total_w).quantize(Decimal('0.01'))
+                    if anteil <= 0:
+                        continue
+                    _verrechne(v, anteil, Decimal('0'), titel)
+                    verteilt += anteil; anzahl += 1
+                log_aktion(request, "Weiterverrechnung verteilt", str(lg),
+                           f"CHF {grund_total} aus {k.lieferant} auf {anzahl} Mieter ({schluessel})")
+                messages.success(request, f"✅ CHF {grund_total} nach {schluessel} auf {anzahl} Mieter verteilt — "
+                                          "QR-Rechnungen über den QR-Button in den Debitoren.")
+                return redirect('/neu/debitoren/')
+
+            # --- Einzel-Weiterverrechnung an einen Mieter ---
+            vertrag_id = request.POST.get('vertrag_id')
+            vertrag = Mietvertrag.objects.filter(id=vertrag_id).select_related('mieter', 'einheit__liegenschaft').first()
+            if not vertrag:
+                messages.error(request, "Bitte einen Mieter/Vertrag wählen.")
                 return redirect(request.path)
-
-            verteilt = Decimal('0.00'); anzahl = 0
+            grund = _dec(request.POST.get('betrag'), str(k.offen_weiterzuverrechnen))
+            zuschlag = _dec(request.POST.get('zuschlag'), '0')
+            if grund <= 0:
+                messages.error(request, "Betrag muss grösser als 0 sein.")
+                return redirect(request.path)
+            grund = min(grund, k.offen_weiterzuverrechnen)
             titel = (request.POST.get('titel') or f"Weiterverrechnung: {k.lieferant}").strip()
-            for i, (v, w) in enumerate(gew):
-                anteil = (grund_total - verteilt) if i == len(gew) - 1 \
-                    else (grund_total * w / total_w).quantize(Decimal('0.01'))
-                if anteil <= 0:
-                    continue
-                _verrechne(v, anteil, Decimal('0'), titel)
-                verteilt += anteil; anzahl += 1
-            log_aktion(request, "Weiterverrechnung verteilt", str(lg),
-                       f"CHF {grund_total} aus {k.lieferant} auf {anzahl} Mieter ({schluessel})")
-            messages.success(request, f"✅ CHF {grund_total} nach {schluessel} auf {anzahl} Mieter verteilt — "
-                                      "QR-Rechnungen über den QR-Button in den Debitoren.")
+            rechnung, total = _verrechne(vertrag, grund, zuschlag, titel)
+
+            log_aktion(request, "Weiterverrechnung erstellt", str(vertrag.mieter),
+                       f"CHF {total} aus {k.lieferant} (#{k.id})", ziel=vertrag)
+            messages.success(request, f"✅ CHF {total} an {vertrag.mieter} weiterverrechnet — "
+                                      "QR-Rechnung über den QR-Button in den Debitoren.")
+            if request.POST.get('embed') == '1':
+                return render(request, 'fw/_modal_done.html', {})
             return redirect('/neu/debitoren/')
-
-        # --- Einzel-Weiterverrechnung an einen Mieter ---
-        vertrag_id = request.POST.get('vertrag_id')
-        vertrag = Mietvertrag.objects.filter(id=vertrag_id).select_related('mieter', 'einheit__liegenschaft').first()
-        if not vertrag:
-            messages.error(request, "Bitte einen Mieter/Vertrag wählen.")
-            return redirect(request.path)
-        grund = _dec(request.POST.get('betrag'), str(k.offen_weiterzuverrechnen))
-        zuschlag = _dec(request.POST.get('zuschlag'), '0')
-        if grund <= 0:
-            messages.error(request, "Betrag muss grösser als 0 sein.")
-            return redirect(request.path)
-        grund = min(grund, k.offen_weiterzuverrechnen)
-        titel = (request.POST.get('titel') or f"Weiterverrechnung: {k.lieferant}").strip()
-        rechnung, total = _verrechne(vertrag, grund, zuschlag, titel)
-
-        log_aktion(request, "Weiterverrechnung erstellt", str(vertrag.mieter),
-                   f"CHF {total} aus {k.lieferant} (#{k.id})", ziel=vertrag)
-        messages.success(request, f"✅ CHF {total} an {vertrag.mieter} weiterverrechnet — "
-                                  "QR-Rechnung über den QR-Button in den Debitoren.")
-        if request.POST.get('embed') == '1':
-            return render(request, 'fw/_modal_done.html', {})
-        return redirect('/neu/debitoren/')
 
     # GET — aktive Verträge zur Auswahl
     vertraege = (Mietvertrag.objects.filter(status='aktiv')
@@ -6338,6 +6344,13 @@ def fw_nebenkosten_verbuchen(request, pk):
     heute = timezone.localdate()
     n_nach = n_gut = 0
     with transaction.atomic():
+        # Zeilensperre + Re-Check gegen Doppelklick-Race: der p.abgeschlossen-Check
+        # oben läuft ohne Lock — zwei parallele Requests würden sonst beide buchen
+        # (doppelte NK-Nachzahlungsdebitoren + Buchungen).
+        p = AbrechnungsPeriode.objects.select_for_update().get(id=p.id)
+        if p.abgeschlossen:
+            messages.error(request, "Diese Periode ist bereits abgeschlossen und verbucht.")
+            return redirect(f'/neu/nebenkosten/{p.id}/')
         for a in result.get('abrechnungen', []):
             vid = a.get('vertrag_id')
             saldo = Decimal(str(a.get('saldo', 0)))
@@ -9735,17 +9748,24 @@ def fw_kaution_aktion(request, vertrag_id):
             return Decimal('0.00')
 
     if aktion == 'einzahlung':
-        # Sperrkonto: Einzahlung auf Mietkonto bestätigen
+        # Sperrkonto: Einzahlung auf Mietkonto bestätigen.
+        # Statusänderung UND Bilanzbuchung (1015 an 2010) in EINER Transaktion —
+        # scheitert die Buchung (z.B. Periodensperre), wird die Statusänderung
+        # zurückgerollt und der Fehler angezeigt (kein stiller Nebenbuch-Drift).
         v.kautions_art = 'sperrkonto'
         v.kautions_einbezahlt_am = d('einbezahlt_am') or timezone.localdate()
         v.kautions_konto = P.get('kautions_konto', v.kautions_konto).strip() or v.kautions_konto
-        v.save(update_fields=['kautions_art', 'kautions_einbezahlt_am', 'kautions_konto'])
-        # Bilanzbuchung: 1015 Kautionssperrkonto an 2010 Kautionsverbindlichkeit
         try:
-            from core.services.automation import buche_kaution_einzahlung
-            buche_kaution_einzahlung(v, v.kautions_einbezahlt_am, user=request.user)
-        except Exception:
-            pass
+            with transaction.atomic():
+                v.save(update_fields=['kautions_art', 'kautions_einbezahlt_am', 'kautions_konto'])
+                from core.services.automation import buche_kaution_einzahlung
+                buche_kaution_einzahlung(v, v.kautions_einbezahlt_am, user=request.user)
+        except PermissionError as exc:
+            messages.error(request, f"❌ {exc}")
+            return redirect(f'/neu/vertraege/{v.id}/')
+        except Exception as exc:
+            messages.error(request, f"❌ Kautions-Einzahlung konnte nicht gebucht werden: {exc}")
+            return redirect(f'/neu/vertraege/{v.id}/')
         log_aktion(request, "Kaution einbezahlt (Sperrkonto)", str(v.mieter), f"CHF {v.kautions_betrag}", ziel=v)
         messages.success(request, "✅ Kautions-Einzahlung auf Sperrkonto erfasst (bilanziert).")
 
@@ -9782,46 +9802,62 @@ def fw_kaution_aktion(request, vertrag_id):
             rueck = Decimal('0.00')
         else:
             rueck = dec('rueckzahlung_betrag') if P.get('rueckzahlung_betrag') else (total - abzug)
+        # Betragsvalidierung (B9): keine negativen Werte, und Rückzahlung + Einbehalt
+        # dürfen die Kaution nicht übersteigen (sonst 2010/1015 mit falschem Saldo).
+        if not v.ist_kautionsversicherung:
+            if rueck < 0 or abzug < 0:
+                messages.error(request, "❌ Rückzahlung und Einbehalt dürfen nicht negativ sein.")
+                return redirect(f'/neu/vertraege/{v.id}/')
+            if rueck + abzug > total + Decimal('0.01'):
+                messages.error(request, f"❌ Rückzahlung (CHF {rueck}) + Einbehalt (CHF {abzug}) "
+                                        f"übersteigt die Kaution (CHF {total}).")
+                return redirect(f'/neu/vertraege/{v.id}/')
         v.kautions_zurueckbezahlt_am = d('zurueckbezahlt_am') or timezone.localdate()
         v.kautions_rueckzahlung_betrag = rueck
         v.kautions_abzug_betrag = abzug
         v.kautions_abzug_grund = P.get('abzug_grund', '').strip()
-        v.save(update_fields=['kautions_zurueckbezahlt_am', 'kautions_rueckzahlung_betrag',
-                              'kautions_abzug_betrag', 'kautions_abzug_grund'])
-        # Bilanz/Ertrag korrekt buchen. Der frühere Pfad buchte nur 2010→1015 und legte
-        # den Einbehalt als «bezahlten» Debitor OHNE Buchung ab (Status/OP inkonsistent,
-        # Einbehalts-Ertrag fehlte im Hauptbuch). Jetzt vollständig & ausgeglichen:
+        # Statusfelder + alle Bilanz-/Ertragsbuchungen in EINER Transaktion — bricht
+        # eine der (bis zu 3) Buchungen ab, wird nichts persistiert (kein Teilzustand:
+        # Sperrkonto freigegeben, aber Rückzahlung fehlt). Der frühere Pfad buchte in
+        # try/except: pass und liess bei Fehler den Vertrag «zurückbezahlt» ohne Hauptbuch.
         #  Sperrkonto:   1020 Bank an 1015 Sperrkonto (Freigabe des Depots)
         #  Rückzahlung:  2010 Kautionsverbindlichkeit an 1020 Bank (an Mieter)
         #  Einbehalt:    2010 Kautionsverbindlichkeit an 3600 (Ertrag Eigentümer)
         try:
-            from finance.booking import buche as _buche
-            from finance.models import Buchung as _B, DebitorenRechnung
-            lg_k = v.einheit.liegenschaft if v.einheit_id else None
-            beleg = f"Kaution Auflösung {v.mieter}"
-            dat_k = v.kautions_zurueckbezahlt_am
-            already = _B.objects.filter(beleg_text__startswith=beleg, ist_storno=False).exists()
-            if v.ist_kautionsversicherung:
-                # Kein Depot → Einbehalt ist eine echte Schadenforderung an den Mieter.
-                if abzug > 0 and P.get('abzug_verrechnen') == 'on':
-                    rech_e = DebitorenRechnung.objects.create(
-                        vertrag=v, liegenschaft=lg_k, einheit=v.einheit,
-                        betrag=abzug, datum=dat_k, faellig_am=dat_k + _timedelta(days=30),
-                        status='offen', titel="Schadenersatz (Kautionsversicherung)",
-                        beschreibung=v.kautions_abzug_grund or "Einbehalt aus Kaution")
-                    _buche("1100", "3600", abzug, f"Schadenersatz {v.mieter}",
-                           datum=dat_k, liegenschaft=lg_k, debitor=rech_e, user=request.user)
-            elif (v.kautions_betrag or 0) > 0 and not already:
-                _buche("1020", "1015", v.kautions_betrag, f"{beleg} — Sperrkonto freigegeben",
-                       datum=dat_k, liegenschaft=lg_k, user=request.user)
-                if rueck > 0:
-                    _buche("2010", "1020", rueck, f"{beleg} — Rückzahlung an Mieter",
+            with transaction.atomic():
+                v.save(update_fields=['kautions_zurueckbezahlt_am', 'kautions_rueckzahlung_betrag',
+                                      'kautions_abzug_betrag', 'kautions_abzug_grund'])
+                from finance.booking import buche as _buche
+                from finance.models import Buchung as _B, DebitorenRechnung
+                lg_k = v.einheit.liegenschaft if v.einheit_id else None
+                beleg = f"Kaution Auflösung {v.mieter}"
+                dat_k = v.kautions_zurueckbezahlt_am
+                already = _B.objects.filter(beleg_text__startswith=beleg, ist_storno=False).exists()
+                if v.ist_kautionsversicherung:
+                    # Kein Depot → Einbehalt ist eine echte Schadenforderung an den Mieter.
+                    if abzug > 0 and P.get('abzug_verrechnen') == 'on':
+                        rech_e = DebitorenRechnung.objects.create(
+                            vertrag=v, liegenschaft=lg_k, einheit=v.einheit,
+                            betrag=abzug, datum=dat_k, faellig_am=dat_k + _timedelta(days=30),
+                            status='offen', titel="Schadenersatz (Kautionsversicherung)",
+                            beschreibung=v.kautions_abzug_grund or "Einbehalt aus Kaution")
+                        _buche("1100", "3600", abzug, f"Schadenersatz {v.mieter}",
+                               datum=dat_k, liegenschaft=lg_k, debitor=rech_e, user=request.user)
+                elif (v.kautions_betrag or 0) > 0 and not already:
+                    _buche("1020", "1015", v.kautions_betrag, f"{beleg} — Sperrkonto freigegeben",
                            datum=dat_k, liegenschaft=lg_k, user=request.user)
-                if abzug > 0:
-                    _buche("2010", "3600", abzug, f"{beleg} — Einbehalt (Ertrag)",
-                           datum=dat_k, liegenschaft=lg_k, user=request.user)
-        except Exception:
-            pass
+                    if rueck > 0:
+                        _buche("2010", "1020", rueck, f"{beleg} — Rückzahlung an Mieter",
+                               datum=dat_k, liegenschaft=lg_k, user=request.user)
+                    if abzug > 0:
+                        _buche("2010", "3600", abzug, f"{beleg} — Einbehalt (Ertrag)",
+                               datum=dat_k, liegenschaft=lg_k, user=request.user)
+        except PermissionError as exc:
+            messages.error(request, f"❌ {exc}")
+            return redirect(f'/neu/vertraege/{v.id}/')
+        except Exception as exc:
+            messages.error(request, f"❌ Kautions-Rückzahlung konnte nicht gebucht werden: {exc}")
+            return redirect(f'/neu/vertraege/{v.id}/')
         from core.services.automation import erledige_pendenzen_fuer
         erledige_pendenzen_fuer(v, ['Kaution'], user=request.user)
         log_aktion(request, "Kaution zurückbezahlt", str(v.mieter),
@@ -10861,28 +10897,43 @@ def fw_mahnung_erfassen(request):
         gebuehr = MAHN_GEBUEHR.get(stufe, Decimal('0.00'))
 
     heute = timezone.localdate()
-    m = Mahnung.objects.create(
-        debitoren_rechnung=rechnung, vertrag=rechnung.vertrag, stufe=stufe,
-        datum=heute, betrag_offen=rechnung.offener_betrag, gebuehr=gebuehr,
-        versandart=request.POST.get('versandart', 'manuell'),
-        erstellt_von=request.user,
-    )
-
-    # Mahngebühr als separate Debitorenrechnung (falls > 0) — inkl. Hauptbuch-Buchung
-    # (Forderung an übrigen Ertrag), sonst driften Neben- und Hauptbuch auseinander.
-    if gebuehr > 0 and rechnung.vertrag_id:
-        lg_geb = rechnung.liegenschaft or (rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None)
-        geb_rechnung = DebitorenRechnung.objects.create(
-            vertrag=rechnung.vertrag,
-            liegenschaft=lg_geb,
-            titel=f"Mahngebühr {stufe}. Mahnung",
-            beschreibung=f"Mahngebühr zu: {rechnung.titel}",
-            datum=heute, faellig_am=heute + _timedelta(days=30),
-            betrag=gebuehr, status='offen',
-        )
-        from finance.booking import buche
-        buche("1100", "3600", gebuehr, f"Mahngebühr {stufe}. Mahnung {rechnung.vertrag.mieter}",
-              datum=heute, liegenschaft=lg_geb, debitor=geb_rechnung, user=request.user)
+    # Mahnung + Mahngebühr-Rechnung + Hauptbuchbuchung in EINER Transaktion —
+    # scheitert die Buchung (Periodensperre), bleibt keine Mahnung/Gebühr ohne
+    # Gegenbuchung stehen. Das DB-Unique (debitoren_rechnung, stufe) fängt zudem
+    # den Doppelklick-Race ab (der exists()-Check oben ist ohne Lock).
+    from django.db import IntegrityError
+    try:
+        with transaction.atomic():
+            Mahnung.objects.create(
+                debitoren_rechnung=rechnung, vertrag=rechnung.vertrag, stufe=stufe,
+                datum=heute, betrag_offen=rechnung.offener_betrag, gebuehr=gebuehr,
+                versandart=request.POST.get('versandart', 'manuell'),
+                erstellt_von=request.user,
+            )
+            # Mahngebühr als separate Debitorenrechnung (falls > 0) — inkl. Hauptbuch-
+            # Buchung (Forderung an übrigen Ertrag), sonst driften Neben-/Hauptbuch.
+            if gebuehr > 0 and rechnung.vertrag_id:
+                lg_geb = rechnung.liegenschaft or (rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None)
+                geb_rechnung = DebitorenRechnung.objects.create(
+                    vertrag=rechnung.vertrag,
+                    liegenschaft=lg_geb,
+                    titel=f"Mahngebühr {stufe}. Mahnung",
+                    beschreibung=f"Mahngebühr zu: {rechnung.titel}",
+                    datum=heute, faellig_am=heute + _timedelta(days=30),
+                    betrag=gebuehr, status='offen',
+                )
+                from finance.booking import buche
+                buche("1100", "3600", gebuehr, f"Mahngebühr {stufe}. Mahnung {rechnung.vertrag.mieter}",
+                      datum=heute, liegenschaft=lg_geb, debitor=geb_rechnung, user=request.user)
+    except IntegrityError:
+        messages.info(request, f"Die {stufe}. Mahnung wurde für diese Rechnung bereits erfasst.")
+        return redirect('fw_mahnwesen')
+    except PermissionError as exc:
+        messages.error(request, f"❌ {exc}")
+        return redirect('fw_mahnwesen')
+    except Exception as exc:
+        messages.error(request, f"❌ Mahnung konnte nicht gebucht werden: {exc}")
+        return redirect('fw_mahnwesen')
 
     log_aktion(request, f"{stufe}. Mahnung erfasst",
                rechnung.vertrag.mieter.display_name if rechnung.vertrag_id else rechnung.titel,
@@ -11159,6 +11210,12 @@ def fw_kreditor_freigeben(request, pk):
         return redirect('fw_kreditoren')
 
     with transaction.atomic():
+        # Zeilensperre + Re-Check gegen Doppelklick-Race: der Status-Check oben ist
+        # ohne Lock — zwei parallele Requests würden sonst doppelten Aufwand buchen.
+        gesperrt = KreditorenRechnung.objects.select_for_update().filter(id=k.id).first()
+        if not gesperrt or gesperrt.status != 'neu':
+            messages.info(request, "Rechnung ist bereits freigegeben oder bezahlt.")
+            return redirect('fw_kreditoren')
         # NK-Relevanz automatisch vom Konto ableiten: HNK-Konto (4100–4140/4400)
         # ⇒ Rechnung fliesst in die Nebenkostenabrechnung — kein vergessenes
         # Häkchen mehr. (Nur aktivieren, nie eine manuelle Wahl deaktivieren.)
