@@ -196,6 +196,10 @@ class DebitorenRechnung(models.Model):
         verbose_name = "Debitorenrechnung (Weiterverrechnung)"
         verbose_name_plural = "Debitorenrechnungen"
         db_table = 'core_debitorenrechnung'
+        indexes = [
+            models.Index(fields=['status', 'faellig_am'], name='idx_debrech_status_faellig'),
+            models.Index(fields=['vertrag', 'status'], name='idx_debrech_vertrag_status'),
+        ]
 
     def __str__(self):
         return f"{self.titel} - CHF {self.betrag} ({self.get_status_display()})"

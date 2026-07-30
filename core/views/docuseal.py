@@ -178,9 +178,23 @@ def send_via_docuseal(request, vertrag_id):
 
 
 # 🔥 HIER IST DER REPARIERTE WEBHOOK 🔥
+def _webhook_secret_ok(request, konfig_secret):
+    """Konstant-zeitiger Vergleich des Webhook-Secrets (Header oder ?token=).
+    Ist kein Secret konfiguriert, bleibt der Webhook offen (Rückwärtskompatibilität)."""
+    import hmac
+    if not konfig_secret:
+        return True
+    gesendet = (request.headers.get('X-Webhook-Secret')
+                or request.GET.get('token', ''))
+    return hmac.compare_digest(str(gesendet), str(konfig_secret))
+
+
 @csrf_exempt
 def docuseal_webhook(request):
     if request.method == 'POST':
+        if not _webhook_secret_ok(request, getattr(settings, 'DOCUSEAL_WEBHOOK_SECRET', None)):
+            logger.warning("DocuSeal-Webhook: ungültiges/fehlendes Secret abgewiesen")
+            return HttpResponse("Forbidden", status=403)
         try:
             payload = json.loads(request.body)
             event_type = payload.get('event_type')
@@ -205,8 +219,19 @@ def docuseal_webhook(request):
                     if len(docs) > 0: doc_url = docs[0].get('url')
 
                 if doc_url:
+                    # SSRF-Schutz: nur HTTPS und erlaubte DocuSeal-Hosts herunterladen.
+                    from urllib.parse import urlparse
+                    parsed = urlparse(doc_url)
+                    erlaubte_hosts = getattr(settings, 'DOCUSEAL_DOWNLOAD_HOSTS', set())
+                    host_ok = parsed.hostname and any(
+                        parsed.hostname.lower() == h or parsed.hostname.lower().endswith('.' + h)
+                        for h in erlaubte_hosts
+                    )
+                    if parsed.scheme != 'https' or not host_ok:
+                        logger.warning("DocuSeal-Webhook: Download-URL abgewiesen (%s)", doc_url)
+                        return HttpResponse("OK", status=200)
                     # 3. PDF herunterladen
-                    r = requests.get(doc_url)
+                    r = requests.get(doc_url, timeout=30)
                     if r.status_code == 200:
                         filename = f"Unterschrieben_Mietvertrag_{vertrag.id}.pdf"
 

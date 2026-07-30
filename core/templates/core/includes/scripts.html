@@ -1,7 +1,15 @@
+{{ chart_labels|json_script:"chart-labels-data" }}
+{{ chart_ist|json_script:"chart-ist-data" }}
+{{ chart_soll|json_script:"chart-soll-data" }}
 <script>
-    const chartDataLabels = {{ chart_labels|safe|default:"[]" }};
-    const chartDataIst = {{ chart_ist|safe|default:"[]" }};
-    const chartDataSoll = {{ chart_soll|safe|default:"[]" }};
+    const _parseChartData = (id) => {
+        const el = document.getElementById(id);
+        try { return el ? (JSON.parse(el.textContent) || []) : []; }
+        catch (e) { return []; }
+    };
+    const chartDataLabels = _parseChartData('chart-labels-data');
+    const chartDataIst = _parseChartData('chart-ist-data');
+    const chartDataSoll = _parseChartData('chart-soll-data');
 
     const clickOutside = {
         beforeMount: (el, binding) => {

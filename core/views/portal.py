@@ -683,7 +683,11 @@ def mieter_schaden_melden(request):
     # Rückfragen. Gleiche Mechanik wie im öffentlichen Meldeformular.
     try:
         from tickets.models import SchadenFoto
+        from core.utils.uploads import validiere_bild
         for f in request.FILES.getlist('fotos')[:8]:
+            ok, _fehler = validiere_bild(f)
+            if not ok:
+                continue
             SchadenFoto.objects.create(schaden=t, bild=f,
                                        beschreibung='Foto des Mieters (Portal)')
     except Exception:

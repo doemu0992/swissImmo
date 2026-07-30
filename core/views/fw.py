@@ -2516,18 +2516,26 @@ def fw_objekt_foto_upload(request, pk):
     from django.contrib import messages
     from portfolio.models import EinheitFoto
     from core.auth import log_aktion
+    from core.utils.uploads import validiere_bild
     e = get_object_or_404(Einheit, id=pk)
     if request.method != 'POST':
         return redirect(f'/neu/objekte/{e.id}/')
     start = e.fotos.count()
     n = 0
+    abgelehnt = 0
     for f in request.FILES.getlist('fotos'):
+        ok, _fehler = validiere_bild(f)
+        if not ok:
+            abgelehnt += 1
+            continue
         EinheitFoto.objects.create(einheit=e, bild=f, reihenfolge=start + n)
         n += 1
     if n:
         log_aktion(request, "Objekt-Fotos hochgeladen", e.bezeichnung, f"{n} Foto(s)")
         messages.success(request, f"✅ {n} Foto(s) hinzugefügt.")
-    else:
+    if abgelehnt:
+        messages.error(request, f"{abgelehnt} Datei(en) abgelehnt (kein gültiges Bild oder zu gross).")
+    elif not n:
         messages.error(request, "Keine Datei ausgewählt.")
     return redirect(f'/neu/objekte/{e.id}/#obj-fotos')
 
@@ -5093,18 +5101,26 @@ def fw_schaden_foto_upload(request, pk):
     from django.contrib import messages
     from tickets.models import SchadenMeldung, SchadenFoto
     from core.auth import log_aktion
+    from core.utils.uploads import validiere_bild
     t = get_object_or_404(SchadenMeldung, id=pk)
     if request.method != 'POST':
         return redirect(f'/neu/schaeden/{t.id}/')
     dateien = request.FILES.getlist('fotos')
     n = 0
+    abgelehnt = 0
     for f in dateien:
+        ok, _fehler = validiere_bild(f)
+        if not ok:
+            abgelehnt += 1
+            continue
         SchadenFoto.objects.create(schaden=t, bild=f, hochgeladen_von=request.user)
         n += 1
     if n:
         log_aktion(request, "Schaden-Fotos hochgeladen", f"Ticket #{t.id}", f"{n} Foto(s)")
         messages.success(request, f"✅ {n} Foto(s) hinzugefügt.")
-    else:
+    if abgelehnt:
+        messages.error(request, f"{abgelehnt} Datei(en) abgelehnt (kein gültiges Bild oder zu gross).")
+    elif not n:
         messages.error(request, "Keine Datei ausgewählt.")
     return redirect(f'/neu/schaeden/{t.id}/#sc-fotos')
 
@@ -6513,18 +6529,38 @@ def fw_mietzins(request):
     curr_zins = vw.aktueller_referenzzinssatz if vw else None
     curr_lik = vw.aktueller_lik_punkte if vw else None
 
+    # N+1 vermeiden: alle datierten Relationen vorladen, damit die Mietzins-Methoden
+    # (effektive_basis / effektiver_netto_mietzins / _sollmietzins_zeile) den
+    # Prefetch-Cache nutzen statt pro Vertrag zu queryen.
     qs = (Mietvertrag.objects.filter(status='aktiv')
           .select_related('mieter', 'einheit__liegenschaft')
-          .prefetch_related('anpassungen').order_by('einheit__liegenschaft__strasse'))
+          .prefetch_related('anpassungen', 'staffelstufen',
+                            'mietzins_komponenten', 'einheit__sollmietzinse')
+          .order_by('einheit__liegenschaft__strasse'))
     if aktive_lg:
         qs = qs.filter(einheit__liegenschaft=aktive_lg)
 
     pot_filter = request.GET.get('potenzial', '')
+    # Verwaltung genau EINMAL laden (statt pro Vertrag via v.mietzinspotenzial).
+    curr_zins_vw = vw.aktueller_referenzzinssatz if vw else None
+    curr_lik_vw = vw.aktueller_lik_punkte if vw else None
+
+    def _potenzial(v):
+        if curr_zins_vw is None:
+            return 'neutral'
+        basis_zins, basis_lik = v.effektive_basis(heute)
+        if curr_zins_vw < basis_zins:
+            return 'decrease'
+        if curr_zins_vw > basis_zins:
+            return 'increase'
+        if curr_lik_vw is not None and curr_lik_vw > (basis_lik + Decimal('1.5')):
+            return 'increase'
+        return 'neutral'
 
     rows = []
     n_inc = n_dec = 0
     for v in qs:
-        pot = v.mietzinspotenzial
+        pot = _potenzial(v)
         if pot == 'increase':
             n_inc += 1
         elif pot == 'decrease':
@@ -6532,7 +6568,7 @@ def fw_mietzins(request):
         if pot_filter and pot_filter != pot:
             continue
         label, cls, icon = POTENZIAL_PILL.get(pot, POTENZIAL_PILL['neutral'])
-        letzte = v.anpassungen.all()
+        letzte = list(v.anpassungen.all())
         letzte_anpassung = max((a.wirksam_ab for a in letzte), default=None)
         # EFFEKTIVE Werte zeigen (wirksame Anpassungen + Staffelstufen) — nicht
         # die eingefrorene Vertragsbasis. Sonst stimmen die Zahlen hier nicht mit
@@ -6545,7 +6581,7 @@ def fw_mietzins(request):
             'basis_zins': eff_zins, 'basis_lik': eff_lik,
             'pot': pot, 'pot_label': label, 'pot_cls': cls, 'pot_icon': icon,
             'letzte_anpassung': letzte_anpassung,
-            'anpassungen': letzte.count(),
+            'anpassungen': len(letzte),
         })
 
     chips = [('', 'Alle'), ('increase', 'Erhöhung möglich'), ('decrease', 'Senkungsanspruch'), ('neutral', 'Aktuell')]
@@ -7597,6 +7633,12 @@ def fw_vertrag_neu_speichern(request):
                                        "(Formularpflicht) — bei Schlüsselübergabe aushändigen.")
         except Exception:
             pass
+
+    # Nettomietzins 0 ist fast immer ein vergessenes Feld — warnen (nicht blockieren),
+    # da ohne Mietzins die Sollstellung 0 verrechnet.
+    if (vertrag.netto_mietzins or Decimal('0')) <= 0:
+        messages.warning(request, "⚠️ Nettomietzins ist CHF 0 — bitte prüfen. Ohne Mietzins "
+                                  "erzeugt der Mietenlauf keine Forderung.")
 
     # Mietrechtliche Plausibilitätsprüfung (Index ≥ 5 J / Staffel ≥ 3 J,
     # max. 1 Staffelerhöhung/Jahr) — als Warnung, nicht blockierend.

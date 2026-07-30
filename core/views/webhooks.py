@@ -1,13 +1,24 @@
 from tickets.models import SchadenMeldung, TicketNachricht
 
 import json
+import hmac
+import logging
+from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import re
 
+logger = logging.getLogger(__name__)
+
 @csrf_exempt
 def brevo_inbound_webhook(request):
     if request.method == 'POST':
+        secret = getattr(settings, 'BREVO_WEBHOOK_SECRET', None)
+        if secret:
+            gesendet = request.headers.get('X-Webhook-Secret') or request.GET.get('token', '')
+            if not hmac.compare_digest(str(gesendet), str(secret)):
+                logger.warning("Brevo-Webhook: ungültiges/fehlendes Secret abgewiesen")
+                return JsonResponse({'status': 'forbidden'}, status=403)
         try:
             data = json.loads(request.body)
             # Brevo sendet Betreff im Feld 'Subject'

@@ -255,6 +255,15 @@ DOCUSEAL_URL = "https://api.docuseal.com"
 # Optional: gemeinsames Secret für den DocuSeal-Webhook. Wenn gesetzt, muss
 # DocuSeal denselben Wert als Header "X-Webhook-Secret" mitsenden.
 DOCUSEAL_WEBHOOK_SECRET = os.getenv('DOCUSEAL_WEBHOOK_SECRET')
+# Erlaubte Hosts für den PDF-Download im DocuSeal-Webhook (SSRF-Schutz).
+DOCUSEAL_DOWNLOAD_HOSTS = {
+    h.strip().lower() for h in os.getenv(
+        'DOCUSEAL_DOWNLOAD_HOSTS', 'docuseal.com,api.docuseal.com,docuseal.eu'
+    ).split(',') if h.strip()
+}
+# Optional: gemeinsames Secret für den Brevo-Inbound-Webhook (Query-Param ?token=
+# oder Header "X-Webhook-Secret"). Wenn gesetzt, werden nur signierte Requests akzeptiert.
+BREVO_WEBHOOK_SECRET = os.getenv('BREVO_WEBHOOK_SECRET')
 
 # SMTP KONFIGURATION (HOSTSTAR) - BLEIBT AKTIV!
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

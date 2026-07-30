@@ -35,7 +35,9 @@ SENSIBLE_PREFIXE = (
     'ticket_anhang/', 'unterschriften/', 'abnahme_fotos/',
 )
 # Öffentliche Bild-Endungen (Objektfotos/Exposé — vom Portal-Feed anonym gebraucht).
-OEFFENTLICHE_BILD_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.avif'}
+# .svg bewusst NICHT enthalten: SVG kann eingebettetes JavaScript ausführen (Stored XSS),
+# darf also nie inline und nie anonym ausgeliefert werden.
+OEFFENTLICHE_BILD_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'}
 OEFFENTLICHE_PREFIXE = ('logos/',)
 
 
@@ -61,4 +63,11 @@ def geschuetzte_media(request, pfad):
         u = getattr(request, 'user', None)
         if not (u and u.is_authenticated and hat_rolle(u, TEAM_ROLLEN)):
             raise Http404   # kein Existenz-Leak (404 statt 403)
-    return FileResponse(open(vollpfad, 'rb'))
+    resp = FileResponse(open(vollpfad, 'rb'))
+    # SVG kann Skripte enthalten → nie inline rendern (XSS-Schutz), immer als Download
+    # und ohne MIME-Sniffing ausliefern.
+    if os.path.splitext(pfad.lower())[1] == '.svg':
+        resp['Content-Type'] = 'image/svg+xml'
+        resp['Content-Disposition'] = 'attachment'
+        resp['X-Content-Type-Options'] = 'nosniff'
+    return resp

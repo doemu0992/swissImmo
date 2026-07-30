@@ -28,7 +28,8 @@
             <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ vertrag_pill.cls }}">{{ vertrag_pill.label }}</span>
         </div>
         <!-- Status-Umschalter -->
-        <form method="post" action="/neu/vertraege/{{ v.id }}/status/" class="flex items-center bg-slate-100 rounded-lg p-0.5 gap-0.5">
+        <form method="post" action="/neu/vertraege/{{ v.id }}/status/" class="flex items-center bg-slate-100 rounded-lg p-0.5 gap-0.5"
+              onsubmit="return confirm('Vertragsstatus wirklich ändern? Der Status steuert Sollstellung, Mieterspiegel und Auswertungen.');">
             {% csrf_token %}
             <button name="status" value="entwurf" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'entwurf' %}bg-white text-slate-800 shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Entwurf</button>
             <button name="status" value="aktiv" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'aktiv' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Aktiv</button>

@@ -38,6 +38,12 @@ def public_schaden_melden_view(request):
         liegenschaft_id = request.POST.get('liegenschaft_id', '')
         adresse_text = request.POST.get('adresse', '').strip()
         foto = request.FILES.get('foto')
+        # Öffentlicher (anonymer) Upload → Bild-Inhalt streng validieren.
+        if foto is not None:
+            from core.utils.uploads import validiere_bild
+            ok, _fehler = validiere_bild(foto)
+            if not ok:
+                foto = None
 
         titel_text = f"Meldung ({kategorie.capitalize()})"
         if raum and objekt:

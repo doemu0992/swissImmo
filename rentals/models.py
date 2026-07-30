@@ -139,6 +139,10 @@ class Mietvertrag(models.Model):
         verbose_name = "Mietvertrag"
         verbose_name_plural = "Mietverträge"
         db_table = 'core_mietvertrag'
+        indexes = [
+            models.Index(fields=['status'], name='idx_mietvertrag_status'),
+            models.Index(fields=['aktiv'], name='idx_mietvertrag_aktiv'),
+        ]
 
     def __str__(self):
         base_str = f"{self.mieter} - {self.einheit}"
@@ -269,8 +273,10 @@ class Mietvertrag(models.Model):
             return basis
         # Datierte Komponenten am Verhältnis haben Vorrang (Gratismonate/gestaffelter
         # Start): die jüngste Komponente mit gueltig_ab <= Stichtag gilt.
-        komp = (self.mietzins_komponenten.filter(gueltig_ab__lte=stichtag)
-                .order_by('-gueltig_ab', '-id').first())
+        # Python-Filter über .all() statt .filter() → nutzt prefetch_related (kein N+1).
+        komps = [k for k in self.mietzins_komponenten.all()
+                 if k.gueltig_ab and k.gueltig_ab <= stichtag]
+        komp = max(komps, key=lambda k: (k.gueltig_ab, k.id or 0)) if komps else None
         if komp:
             return komp.netto_mietzins or Decimal('0.00')
         # Datierter Sollmietzins-Zeitplan am OBJEKT (Gratismonate direkt in der
@@ -279,11 +285,13 @@ class Mietvertrag(models.Model):
         if soll:
             return soll.netto_mietzins or Decimal('0.00')
         if self.mietzins_modell == 'staffel':
-            stufe = (self.staffelstufen.filter(ab_datum__lte=stichtag)
-                     .order_by('-ab_datum').first())
+            stufen = [s for s in self.staffelstufen.all()
+                      if s.ab_datum and s.ab_datum <= stichtag]
+            stufe = max(stufen, key=lambda s: (s.ab_datum, s.id or 0)) if stufen else None
             return stufe.netto_mietzins if stufe else basis
-        anp = (self.anpassungen.filter(wirksam_ab__lte=stichtag)
-               .order_by('-wirksam_ab', '-id').first())
+        anps = [a for a in self.anpassungen.all()
+                if a.wirksam_ab and a.wirksam_ab <= stichtag]
+        anp = max(anps, key=lambda a: (a.wirksam_ab, a.id or 0)) if anps else None
         return anp.neuer_netto_mietzins if anp else basis
 
     def effektive_nebenkosten(self, fuer_datum=None):
@@ -292,8 +300,9 @@ class Mietvertrag(models.Model):
         from datetime import date as _d
         stichtag = fuer_datum or _d.today()
         if self.pk:
-            komp = (self.mietzins_komponenten.filter(gueltig_ab__lte=stichtag)
-                    .order_by('-gueltig_ab', '-id').first())
+            komps = [k for k in self.mietzins_komponenten.all()
+                     if k.gueltig_ab and k.gueltig_ab <= stichtag]
+            komp = max(komps, key=lambda k: (k.gueltig_ab, k.id or 0)) if komps else None
             if komp:
                 return komp.nebenkosten or Decimal('0.00')
             soll = self._sollmietzins_zeile(stichtag)
@@ -312,7 +321,8 @@ class Mietvertrag(models.Model):
         if not self.pk or not self.einheit_id:
             return None
         stichtag = fuer_datum or _d.today()
-        zeilen = list(self.einheit.sollmietzinse.filter(quelle_anpassung__isnull=True))
+        # Python-Filter über .all() statt .filter() → nutzt prefetch (einheit__sollmietzinse).
+        zeilen = [z for z in self.einheit.sollmietzinse.all() if z.quelle_anpassung_id is None]
         if not zeilen:
             return None
         # Zeitplan muss zu diesem Verhältnis gehören (eine Zeile ab Mietbeginn).
@@ -450,8 +460,9 @@ class Mietvertrag(models.Model):
         from datetime import date as _d
         stichtag = fuer_datum or _d.today()
         if self.pk:
-            anp = (self.anpassungen.filter(wirksam_ab__lte=stichtag)
-                   .order_by('-wirksam_ab', '-id').first())
+            anps = [a for a in self.anpassungen.all()
+                    if a.wirksam_ab and a.wirksam_ab <= stichtag]
+            anp = max(anps, key=lambda a: (a.wirksam_ab, a.id or 0)) if anps else None
             if anp:
                 return (anp.neuer_referenzzinssatz or self.basis_referenzzinssatz,
                         anp.neuer_lik_index or self.basis_lik_punkte)
