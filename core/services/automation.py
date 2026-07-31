@@ -92,7 +92,13 @@ def run_sollstellung(jahr, monat, user=None):
             buche("3090", "1100", rabatt_netto,
                   f"Mietzinserlass {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
-            buche("3090", "1100", rabatt_nk,
+            # NK-Erlass auf ein EIGENES Konto (3091), nicht auf 3090: Die
+            # Honorarbasis rechnet auf dem Netto-Mietertrag (3000/3010) und
+            # enthält die Nebenkosten gar nicht. Ein NK-Erlass auf 3090 hätte
+            # eine Basis gemindert, in der die Nebenkosten nie standen — das
+            # Honorar wurde systematisch zu tief und die Basis konnte bei
+            # überwiegend erlassenen Perioden sogar negativ werden (Audit).
+            buche("3091", "1100", rabatt_nk,
                   f"NK-Erlass {v.mieter} - {monat:02d}/{jahr}",
                   datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
             buche("1100", "2200", mwst, f"MWST {v.mwst_satz}% {v.mieter} - {monat:02d}/{jahr}",

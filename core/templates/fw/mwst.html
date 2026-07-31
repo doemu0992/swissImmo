@@ -53,9 +53,9 @@
         <div class="px-5 py-3 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
             {% if mwst_verbucht %}
             <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1"></i>Periode verbucht</span>
-            <span class="text-xs text-slate-400">Konto 2200 ist für diese Periode ausgebucht.</span>
+            <span class="text-xs text-slate-400">Konto 2200 ist für diese Periode ausgebucht. Die Schuld steht auf 2201 (ESTV) bis zur Zahlung.</span>
             {% else %}
-            <span class="text-xs text-slate-500">Bucht 2200 aus: Vorsteuer verrechnen und Zahllast gegen Bank{% if mwst_methode == 'saldo' %}, Saldosatz-Vorteil als Ertrag{% endif %}.</span>
+            <span class="text-xs text-slate-500">Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV){% if mwst_methode == 'saldo' %}, Saldosatz-Vorteil als Ertrag{% endif %}. Die Zahlung selbst wird später über den Bankabgleich gebucht.</span>
             <form method="post" action="/neu/mwst/verbuchen/" onsubmit="return confirm('MWST-Abrechnung dieser Periode verbuchen?');">
                 {% csrf_token %}
                 <input type="hidden" name="jahr" value="{{ jahr }}">

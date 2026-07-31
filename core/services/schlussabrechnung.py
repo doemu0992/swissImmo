@@ -21,8 +21,13 @@ def _fmt(d):
 
 
 def berechne_schlussabrechnung(vertrag, auszug_datum, positionen, kaution_verrechnen=True):
-    """positionen: Liste von dicts {'text': str, 'betrag': Decimal, 'zulasten': bool}.
+    """positionen: Liste von dicts {'text': str, 'betrag': Decimal, 'zulasten': bool,
+    'steuerbar': bool}.
     zulasten=True → Mieter schuldet; False → Gutschrift an Mieter.
+    steuerbar=True → die Position ist ein Entgelt und bei optierten Verhältnissen
+    MWST-pflichtig (typisch: der Nebenkosten-Abrechnungssaldo). Schadenersatz ist
+    nach Art. 18 Abs. 2 MWSTG KEIN Entgelt und bleibt steuerfrei — deshalb wird
+    pro Position entschieden statt pauschal.
     Gibt dict mit Zeilen + Saldo zurück."""
     from finance.models import DebitorenRechnung
     zeilen = []
@@ -31,19 +36,42 @@ def berechne_schlussabrechnung(vertrag, auszug_datum, positionen, kaution_verrec
     offene = (DebitorenRechnung.objects.filter(vertrag=vertrag, status__in=['offen', 'teilbezahlt']))
     offen_total = sum((r.offener_betrag for r in offene), Decimal('0.00'))
     if offen_total > 0:
-        zeilen.append({'text': 'Offene Mietforderungen', 'betrag': offen_total, 'zulasten': True})
+        # Bereits fakturiert (inkl. eigener MWST-Abgrenzung) → nicht nochmals besteuern.
+        zeilen.append({'text': 'Offene Mietforderungen', 'betrag': offen_total,
+                       'zulasten': True, 'steuerbar': False})
 
     # 2. Manuelle Positionen (NK-Saldo, Schäden, Reinigung, Gutschriften …)
     for p in positionen:
         b = p.get('betrag') or Decimal('0.00')
         if b == 0:
             continue
-        zeilen.append({'text': p.get('text', 'Position'), 'betrag': b, 'zulasten': bool(p.get('zulasten', True))})
+        zeilen.append({'text': p.get('text', 'Position'), 'betrag': b,
+                       'zulasten': bool(p.get('zulasten', True)),
+                       'steuerbar': bool(p.get('steuerbar', False))})
 
     # Zwischensaldo (ohne Kaution): positiv = Mieter schuldet
     zwischen = Decimal('0.00')
+    # Steuerbarer Teilsaldo der NEUEN Positionen — Basis der MWST-Abgrenzung.
+    steuerbar_saldo = Decimal('0.00')
     for z in zeilen:
-        zwischen += z['betrag'] if z['zulasten'] else -z['betrag']
+        vorzeichen = Decimal('1') if z['zulasten'] else Decimal('-1')
+        zwischen += z['betrag'] * vorzeichen
+        if z.get('steuerbar'):
+            steuerbar_saldo += z['betrag'] * vorzeichen
+
+    # MWST auf den steuerbaren Anteil (nur bei optiertem Vertrag). Die Beträge
+    # werden — wie in der Sollstellung — als NETTO erfasst, die Steuer kommt
+    # obendrauf. Ohne diese Abgrenzung fehlte die Steuer in der ESTV-Abrechnung
+    # und der Umsatz in Ziffer 289 (Audit).
+    satz = (vertrag.mwst_satz or Decimal('0')) if getattr(vertrag, 'mwst_pflichtig', False) else Decimal('0')
+    if satz > 0 and steuerbar_saldo != 0:
+        mwst_neu = (steuerbar_saldo * satz / Decimal('100')).quantize(Decimal('0.01'))
+    else:
+        mwst_neu = Decimal('0.00')
+    if mwst_neu:
+        zeilen.append({'text': f'MWST {satz} % auf steuerbaren Positionen',
+                       'betrag': abs(mwst_neu), 'zulasten': mwst_neu > 0, 'steuerbar': False})
+        zwischen += mwst_neu
 
     # 3. Kaution — art-abhängig:
     #    Sperrkonto: Guthaben des Mieters → wird ihm gutgeschrieben (zugunsten).
@@ -61,6 +89,9 @@ def berechne_schlussabrechnung(vertrag, auszug_datum, positionen, kaution_verrec
         'zeilen': zeilen,
         'offen_total': offen_total,
         'zwischen': zwischen,
+        'steuerbar_saldo': steuerbar_saldo,
+        'mwst_neu': mwst_neu,
+        'mwst_satz': satz,
         'kaution': kaution,
         'ist_versicherung': ist_versicherung,
         'kaution_verrechnen': kaution_gutschrift,

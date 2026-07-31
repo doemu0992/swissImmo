@@ -25,6 +25,11 @@ STANDARD_KONTEN = [
     ('2010', 'Kautionsverbindlichkeiten', 'bilanz', False, 'm2'),
     ('2030', 'Vorauszahlungen / Guthaben Mieter', 'passiv', False, 'm2'),
     ('2200', 'Geschuldete MWST (Umsatzsteuer)', 'bilanz', False, 'm2'),
+    # Abrechnungskonto ESTV: Die Zahllast entsteht am Periodenende, gezahlt wird
+    # erst mit der Abrechnung (Frist 60 Tage). Direkt gegen die Bank zu buchen
+    # liess 1020 ab dem Stichtag vom realen Kontoauszug abweichen und erzeugte
+    # beim späteren Bank-Import eine Doppelbuchung (Audit).
+    ('2201', 'Abrechnungskonto MWST (ESTV)', 'passiv', False, 'm2'),
     ('2800', 'Erneuerungsfonds (Rückstellung)', 'bilanz', False, 'm2'),
     ('2850', 'Kontokorrent Eigentümer', 'passiv', False, 'm2'),
     ('2970', 'Jahresergebnis / Gewinnvortrag', 'passiv', False, 'm2'),
@@ -33,6 +38,10 @@ STANDARD_KONTEN = [
     ('3020', 'Nebenkosten Akonto-Zahlungen', 'ertrag', False, 'm2'),
     ('3021', 'Nebenkosten Pauschal (Ertrag)', 'ertrag', False, 'm2'),
     ('3090', 'Mietzinsrabatte / Mietzinserlass (Ertragsminderung)', 'ertrag', False, 'm2'),
+    # Getrennt von 3090, weil die Honorarbasis auf dem NETTO-Mietertrag (3000/3010)
+    # rechnet und die Nebenkosten gar nicht enthält. Ein NK-Erlass auf 3090 hätte
+    # eine Basis gemindert, in der die Nebenkosten nie standen (Audit).
+    ('3091', 'Nebenkosten-Erlass (Ertragsminderung NK)', 'ertrag', False, 'm2'),
     ('3600', 'Übrige Erträge / Weiterverrechnung (Zuschlag)', 'ertrag', False, 'm2'),
     ('3805', 'Debitorenverluste (Forderungsverluste)', 'aufwand', False, 'm2'),
     ('4000', 'Unterhalt & Reparaturen', 'aufwand', False, 'm2'),

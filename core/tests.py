@@ -10947,6 +10947,98 @@ class BuchhalterFixesTests(TestCase):
         n, _ = buche_jahresabschluss(2024)
         self.assertGreater(n, 0)
 
+    # ---------- Nachgereichte Befunde ----------
+    def test_weiterverrechnung_mwst_wird_beim_abschreiben_reversiert(self):
+        # Die Weiterverrechnung bucht Ausgangs-MWST (1190/2200) nach dem
+        # KREDITOR-Satz — unabhängig davon, ob der Mietvertrag optiert ist. Die
+        # frühere Storno-Logik las dagegen v.mwst_pflichtig/v.mwst_satz: Bei einem
+        # nicht optierten Vertrag wurde die MWST nie zurückgeholt, bei
+        # abweichenden Sätzen der falsche Betrag (Audit).
+        from finance.models import DebitorenRechnung
+        from finance.booking import ensure_kontenplan, buche
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        v.mwst_pflichtig = False; v.save()          # Vertrag NICHT optiert
+        r = DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, einheit=e, titel='Weiterverrechnung Hauswartung',
+            datum=date(2024, 4, 1), faellig_am=date(2024, 4, 30),
+            betrag=Decimal('1081'), status='offen')
+        buche('1100', '1190', Decimal('1081'), 'Weiterverrechnung', datum=date(2024, 4, 1),
+              liegenschaft=lg, debitor=r)
+        buche('1190', '4000', Decimal('1000'), 'Aufwandsminderung', datum=date(2024, 4, 1),
+              liegenschaft=lg, debitor=r)
+        buche('1190', '2200', Decimal('81'), 'MWST Weiterverrechnung 8.1%',
+              datum=date(2024, 4, 1), liegenschaft=lg, debitor=r)
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post(f'/neu/debitoren/{r.id}/abschreiben/', {'grund': 'Verlustschein'})
+        # Die 81.00 werden aus 2200 zurückgeholt, 3805 traegt nur die Netto-1000.
+        self.assertEqual(self._saldo('2200'), Decimal('0.00'))
+        self.assertEqual(self._saldo('3805'), Decimal('1000.00'))
+
+    def test_schlussabrechnung_grenzt_mwst_ab(self):
+        # NK-Nachzahlung bei einem optierten Gewerbevertrag ist steuerbar,
+        # Schadenersatz nach Art. 18 Abs. 2 MWSTG nicht. Vorher wurde der ganze
+        # Delta-Betrag als Ertrag gebucht und die Steuer fehlte in der
+        # ESTV-Abrechnung (Audit).
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        v.mwst_pflichtig = True; v.mwst_satz = Decimal('8.1'); v.kautions_betrag = Decimal('0')
+        v.save()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/', {
+            'auszug_datum': '2024-06-30', 'aktion': 'buchen',
+            'pos_text': ['NK-Abrechnung 2024', 'Schaden Parkett'],
+            'pos_betrag': ['2000', '500'],
+            'pos_richtung': ['zulasten', 'zulasten'],
+            'pos_mwst': ['1', '0'],          # NK steuerbar, Schaden nicht
+        })
+        # 8.1 % NUR auf den steuerbaren 2000 → 162.00
+        self.assertEqual(self._saldo('2200'), Decimal('-162.00'))   # Haben-Saldo
+        self.assertEqual(self._saldo('3600'), Decimal('-2500.00'))  # Netto als Ertrag
+
+    def test_mwst_zahllast_geht_auf_abrechnungskonto_nicht_bank(self):
+        # Am Periodenende fliesst kein Geld — die Schuld gehoert auf 2201.
+        # Direkt gegen 1020 wich der Banksaldo ab dem Stichtag vom realen
+        # Kontoauszug ab und die echte Zahlung wurde spaeter doppelt gebucht.
+        from finance.booking import ensure_kontenplan, buche
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        buche('1100', '2200', Decimal('500'), 'MWST Q1', datum=date(2024, 3, 31), liegenschaft=lg)
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post('/neu/mwst/verbuchen/', {'jahr': '2024', 'quartal': '1'})
+        self.assertEqual(self._saldo('2201'), Decimal('-500.00'))   # Schuld im Haben
+        self.assertEqual(self._saldo('1020'), Decimal('0.00'))      # Bank unberuehrt
+
+    def test_nk_erlass_mindert_honorarbasis_nicht(self):
+        # Die Honorarbasis rechnet auf 3000/3010 und enthaelt die Nebenkosten gar
+        # nicht. Ein NK-Erlass auf 3090 haette eine Basis gemindert, in der die
+        # Nebenkosten nie standen (Audit) — er laeuft jetzt ueber 3091.
+        from core.services.automation import run_sollstellung
+        from finance.booking import ensure_kontenplan
+        from finance.models import Buchung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        run_sollstellung(2024, 3)
+        # Kein NK-Erlass auf 3090; falls einer entstand, steht er auf 3091.
+        nk_auf_3090 = Buchung.objects.filter(
+            soll_konto__nummer='3090', beleg_text__startswith='NK-Erlass').exists()
+        self.assertFalse(nk_auf_3090)
+
+    def test_kontenplan_import_deckt_alle_standardkonten(self):
+        # Der Import-Endpunkt pflegte eine ZWEITE Kontenliste, die auseinander-
+        # gedriftet war (u.a. fehlten 2030, 2850, 2970, 3090, 3600, 3805). Wer
+        # den Plan darüber importierte, bekam einen unvollständigen Kontenrahmen.
+        # Er leitet sich jetzt aus STANDARD_KONTEN ab — der EINEN Quelle.
+        from finance.api import import_standard_kontenplan
+        from finance.booking import STANDARD_KONTEN
+        from finance.models import Buchungskonto
+        from django.test.client import RequestFactory
+        import_standard_kontenplan(RequestFactory().post('/api/finance/konten/import-standard'))
+        vorhanden = set(Buchungskonto.objects.values_list('nummer', flat=True))
+        fehlend = {k[0] for k in STANDARD_KONTEN} - vorhanden
+        self.assertEqual(fehlend, set())
+
     # ---------- K2: Schäden landen auf 3600, nicht im Mietertrag 3000 ----------
     def test_k2_schaden_nicht_im_mietertrag(self):
         from finance.models import DebitorenRechnung
@@ -11119,7 +11211,11 @@ class BuchhalterFixesTests(TestCase):
                                         'vorsteuer': '200', 'zahllast': '610', 'methode': 'effektiv'})
         self.assertEqual(self._saldo('2200'), Decimal('0.00'))    # ausgebucht
         self.assertEqual(self._saldo('1170'), Decimal('0.00'))    # Vorsteuer verrechnet
-        self.assertEqual(self._saldo('1020'), Decimal('-610.00'))  # Zahlung an ESTV
+        # Die Zahllast ist am Stichtag eine SCHULD gegenüber der ESTV (2201) —
+        # gezahlt wird erst mit der Abrechnung. Eine Bankbuchung per 31.03. haette
+        # 1020 vom realen Kontoauszug abweichen lassen (Audit).
+        self.assertEqual(self._saldo('2201'), Decimal('-610.00'))  # Schuld ESTV
+        self.assertEqual(self._saldo('1020'), Decimal('0.00'))     # Bank unberuehrt
 
     # ---------- W5: Ad-hoc-Rechnung nicht auf 3000 ----------
     def test_w5_adhoc_debitor_auf_3600(self):

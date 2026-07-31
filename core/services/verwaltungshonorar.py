@@ -43,6 +43,10 @@ def honorar_vorschau(mandant, jahr):
             s = bqs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
             h = bqs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
             mietertrag += (h - s)
+        # Basis nie negativ: Bei überwiegend erlassenen Perioden (Sanierung,
+        # Leerstand mit Erlass) hätte die Zeile sonst «x % von −200» gezeigt und
+        # ein negatives Honorar ausgewiesen (Audit).
+        mietertrag = max(mietertrag, Decimal('0.00'))
         honorar = (mietertrag * prozent / Decimal('100')).quantize(Decimal('0.01'))
         bereits = Buchung.objects.filter(liegenschaft=lg, beleg_text=_beleg_text(jahr, lg),
                                          ist_storno=False).exists()

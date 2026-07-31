@@ -433,35 +433,20 @@ def create_konto(request, payload: KontoCreateSchema):
 
 @router.post("/konten/import-standard", response={200: dict}, auth=auth_verwaltung)
 def import_standard_kontenplan(request):
-    standard_konten = [
-        {"nummer": "1015", "bezeichnung": "Kautionssperrkonten (Mieterkautionen)", "typ": "bilanz", "is_hnk_relevant": False},
-        {"nummer": "1020", "bezeichnung": "Bank", "typ": "bilanz", "is_hnk_relevant": False},
-        {"nummer": "1100", "bezeichnung": "Forderungen (Debitoren)", "typ": "bilanz", "is_hnk_relevant": False},
-        {"nummer": "1170", "bezeichnung": "Vorsteuer (MWST)", "typ": "bilanz", "is_hnk_relevant": False},
-        {"nummer": "1190", "bezeichnung": "Durchlaufkonto Weiterverrechnungen", "typ": "bilanz", "is_hnk_relevant": False},
-        {"nummer": "1500", "bezeichnung": "Sachanlagen (Anlagegüter)", "typ": "bilanz", "is_hnk_relevant": False},
-        {"nummer": "2000", "bezeichnung": "Verbindlichkeiten (Kreditoren)", "typ": "bilanz", "is_hnk_relevant": False},
-        {"nummer": "2010", "bezeichnung": "Kautionsverbindlichkeiten", "typ": "bilanz", "is_hnk_relevant": False},
-        {"nummer": "2200", "bezeichnung": "Geschuldete MWST (Umsatzsteuer)", "typ": "bilanz", "is_hnk_relevant": False},
-        {"nummer": "2800", "bezeichnung": "Erneuerungsfonds (Rückstellung)", "typ": "bilanz", "is_hnk_relevant": False},
-        {"nummer": "6800", "bezeichnung": "Abschreibungen", "typ": "aufwand", "is_hnk_relevant": False},
-        {"nummer": "6900", "bezeichnung": "Einlage Erneuerungsfonds", "typ": "aufwand", "is_hnk_relevant": False},
-        {"nummer": "3000", "bezeichnung": "Mieterträge Wohnungen", "typ": "ertrag", "is_hnk_relevant": False},
-        {"nummer": "3010", "bezeichnung": "Mieterträge Gewerbe/Parkplätze", "typ": "ertrag", "is_hnk_relevant": False},
-        {"nummer": "3020", "bezeichnung": "Nebenkosten Akonto-Zahlungen", "typ": "ertrag", "is_hnk_relevant": False},
-        {"nummer": "4000", "bezeichnung": "Unterhalt & Reparaturen", "typ": "aufwand", "is_hnk_relevant": False},
-        {"nummer": "4100", "bezeichnung": "Heizkosten / Brennstoffe", "typ": "aufwand", "is_hnk_relevant": True, "standard_verteilschluessel": "m2"},
-        {"nummer": "4110", "bezeichnung": "Wasser / Abwasser", "typ": "aufwand", "is_hnk_relevant": True, "standard_verteilschluessel": "m3"},
-        {"nummer": "4120", "bezeichnung": "Hauswartung & Reinigung", "typ": "aufwand", "is_hnk_relevant": True, "standard_verteilschluessel": "m2"},
-        {"nummer": "4130", "bezeichnung": "Allgemeinstrom", "typ": "aufwand", "is_hnk_relevant": True, "standard_verteilschluessel": "m2"},
-        {"nummer": "4140", "bezeichnung": "Kehricht / Abgaben", "typ": "aufwand", "is_hnk_relevant": True, "standard_verteilschluessel": "einheit"},
-        {"nummer": "4400", "bezeichnung": "Sachversicherungen", "typ": "aufwand", "is_hnk_relevant": True, "standard_verteilschluessel": "m3"},
-        {"nummer": "4500", "bezeichnung": "Verwaltungshonorar", "typ": "aufwand", "is_hnk_relevant": False},
-    ]
-    for k in standard_konten:
-        Buchungskonto.objects.get_or_create(nummer=k['nummer'], defaults={
-            'bezeichnung': k['bezeichnung'], 'typ': k['typ'], 'is_hnk_relevant': k['is_hnk_relevant'],
-            'standard_verteilschluessel': k.get('standard_verteilschluessel', 'm2')
+    """Legt den Standard-Kontenplan an.
+
+    Die Kontenliste kommt aus finance.booking.STANDARD_KONTEN — der EINEN Quelle,
+    aus der auch `konto()` beim Buchen Konten anlegt. Vorher stand hier eine
+    zweite, handgepflegte Liste, die auseinandergedriftet war (u.a. fehlten
+    2030, 2850, 2970, 3021, 3090, 3600, 3805): Wer den Kontenplan über diesen
+    Endpunkt importierte, bekam einen unvollständigen Plan, und die fehlenden
+    Konten entstanden erst später beim ersten Buchungsvorgang (Audit N4).
+    """
+    from finance.booking import STANDARD_KONTEN
+    for nummer, bezeichnung, typ, hnk, schluessel in STANDARD_KONTEN:
+        Buchungskonto.objects.get_or_create(nummer=nummer, defaults={
+            'bezeichnung': bezeichnung, 'typ': typ, 'is_hnk_relevant': hnk,
+            'standard_verteilschluessel': schluessel or 'm2',
         })
     return 200, {"success": True}
 

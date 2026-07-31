@@ -2842,13 +2842,20 @@ def fw_schlussabrechnung(request, vertrag_id):
         texte = request.POST.getlist('pos_text')
         betraege = request.POST.getlist('pos_betrag')
         richtungen = request.POST.getlist('pos_richtung')
+        # `pos_mwst` ist ein <select> (nicht Checkbox), damit die Indizes mit den
+        # übrigen Listen ausgerichtet bleiben — eine nicht angehakte Checkbox
+        # sendet gar nichts und würde die Zuordnung verschieben.
+        steuerflags = request.POST.getlist('pos_mwst')
         for i, txt in enumerate(texte):
             txt = (txt or '').strip()
             betr = _dec(betraege[i] if i < len(betraege) else '0')
             if not txt or betr == 0:
                 continue
             richtung = richtungen[i] if i < len(richtungen) else 'zulasten'
-            positionen.append({'text': txt, 'betrag': betr, 'zulasten': (richtung == 'zulasten')})
+            steuerbar = (steuerflags[i] if i < len(steuerflags) else '0') == '1'
+            positionen.append({'text': txt, 'betrag': betr,
+                               'zulasten': (richtung == 'zulasten'),
+                               'steuerbar': steuerbar})
 
         daten = berechne_schlussabrechnung(v, auszug, positionen, kaution_verrechnen=kaution_verrechnen)
         aktion = request.POST.get('aktion', 'pdf')
@@ -2890,21 +2897,39 @@ def fw_schlussabrechnung(request, vertrag_id):
                     # Abgrenzung (2200) und verschob Schadenersatz in den Mietertrag —
                     # was Mieterspiegel und Honorarbasis verfälschte (Audit K2/W5).
                     neu_saldo = (daten['zwischen'] - daten['offen_total']).quantize(Decimal('0.01'))
+                    # MWST-Anteil aus dem Gesamtbetrag herauslösen: `zwischen`
+                    # enthält ihn bereits als eigene Zeile. Der Ertrag (3600) darf
+                    # nur den Nettoteil bekommen, die Steuer gehört auf 2200 —
+                    # sonst fehlt sie in der ESTV-Abrechnung (Audit).
+                    mwst_neu = daten.get('mwst_neu') or Decimal('0.00')
+                    netto_neu = (neu_saldo - mwst_neu).quantize(Decimal('0.01'))
                     if neu_saldo > 0:
                         rech = DebitorenRechnung.objects.create(
                             vertrag=v, liegenschaft=lg_s, einheit=v.einheit,
                             titel="Schlussabrechnung (Nachzahlung)", datum=dat_s,
                             faellig_am=dat_s + _timedelta(days=30), betrag=neu_saldo, status='offen')
-                        buche("1100", "3600", neu_saldo,
-                              f"Schlussabrechnung [V{v.pk}] {v.mieter} (Schäden/Nebenkosten)",
-                              datum=dat_s, liegenschaft=lg_s, debitor=rech, user=request.user)
+                        if netto_neu != 0:
+                            buche("1100", "3600", netto_neu,
+                                  f"Schlussabrechnung [V{v.pk}] {v.mieter} (Schäden/Nebenkosten)",
+                                  datum=dat_s, liegenschaft=lg_s, debitor=rech, user=request.user)
+                        if mwst_neu > 0:
+                            buche("1100", "2200", mwst_neu,
+                                  f"MWST Schlussabrechnung [V{v.pk}] {v.mieter}",
+                                  datum=dat_s, liegenschaft=lg_s, debitor=rech, user=request.user)
                     elif neu_saldo < 0:
                         # Gutschrift zugunsten Mieter → als echtes Guthaben (2030) führen,
                         # damit es im Mieterkonto sichtbar und auszahlbar ist.
                         from finance.booking import konto as _k_s
-                        buche("3600", "2030", abs(neu_saldo),
-                              f"Schlussabrechnung [V{v.pk}] {v.mieter} — Gutschrift",
-                              datum=dat_s, liegenschaft=lg_s, user=request.user)
+                        if netto_neu != 0:
+                            buche("3600", "2030", abs(netto_neu),
+                                  f"Schlussabrechnung [V{v.pk}] {v.mieter} — Gutschrift",
+                                  datum=dat_s, liegenschaft=lg_s, user=request.user)
+                        if mwst_neu < 0:
+                            # Spiegelbildliche Steuerkorrektur: der Umsatz wird
+                            # gemindert, also auch die geschuldete MWST.
+                            buche("2200", "2030", abs(mwst_neu),
+                                  f"MWST-Korrektur Schlussabrechnung [V{v.pk}] {v.mieter}",
+                                  datum=dat_s, liegenschaft=lg_s, user=request.user)
                         Zahlungseingang.objects.create(
                             vertrag=v, betrag=abs(neu_saldo), datum_eingang=dat_s,
                             buchungs_monat=dat_s.replace(day=1),
@@ -12665,10 +12690,17 @@ def _park_konto(nummer):
 def fw_mwst_verbuchen(request):
     """Bucht die MWST-Abrechnung einer Periode aus (Audit K4/N2).
 
-    Effektiv:  2200 an 1170 (Vorsteuer verrechnen) + 2200 an 1020 (Zahlung ESTV)
-    Saldosatz: 2200 an 1020 über die Saldosatz-Zahllast; der Überschuss auf 2200
+    Effektiv:  2200 an 1170 (Vorsteuer verrechnen) + 2200 an 2201 (Schuld ESTV)
+    Saldosatz: 2200 an 2201 über die Saldosatz-Zahllast; der Überschuss auf 2200
                (Differenz Normalsatz ./. Saldosatz) ist Ertrag → 2200 an 3600.
-    Ohne diese Ausbuchung wächst Konto 2200 unbegrenzt weiter."""
+    Ohne diese Ausbuchung wächst Konto 2200 unbegrenzt weiter.
+
+    Gegenkonto ist das Abrechnungskonto 2201, NICHT die Bank: Am Periodenende
+    entsteht nur die Schuld, gezahlt wird erst mit der Abrechnung (Frist 60
+    Tage). Die frühere Buchung gegen 1020 liess den Banksaldo ab dem Stichtag
+    vom realen Kontoauszug abweichen — der Bankabgleich zeigte eine
+    Dauerdifferenz, und die echte Zahlung wurde beim Import ein zweites Mal
+    gebucht (Audit). Die Zahlung selbst läuft später als 2201 an 1020."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from finance.booking import buche
@@ -12712,7 +12744,7 @@ def fw_mwst_verbuchen(request):
         with transaction.atomic():
             if methode == 'saldo':
                 if zahllast > 0:
-                    buche('2200', '1020', zahllast, f"{beleg} — Zahllast ESTV (Saldosatz)",
+                    buche('2200', '2201', zahllast, f"{beleg} — Zahllast ESTV (Saldosatz)",
                           datum=ende, liegenschaft=aktive_lg, user=request.user)
                 # Rest von 2200 ist der Saldosatz-Vorteil (Ertrag) bzw. — falls der
                 # Saldosatz teurer war als die effektiv fakturierte Steuer — ein
@@ -12743,10 +12775,10 @@ def fw_mwst_verbuchen(request):
                           f"{beleg} — Vorsteuer verrechnet",
                           datum=ende, liegenschaft=aktive_lg, user=request.user)
                 if zahllast > 0:
-                    buche('2200', '1020', zahllast, f"{beleg} — Zahllast ESTV",
+                    buche('2200', '2201', zahllast, f"{beleg} — Zahllast ESTV",
                           datum=ende, liegenschaft=aktive_lg, user=request.user)
                 elif zahllast < 0:
-                    buche('1020', '1170', abs(zahllast), f"{beleg} — Vorsteuerguthaben ESTV",
+                    buche('2201', '1170', abs(zahllast), f"{beleg} — Vorsteuerguthaben ESTV",
                           datum=ende, liegenschaft=aktive_lg, user=request.user)
     except PermissionError as exc:
         messages.error(request, f"❌ {exc}")

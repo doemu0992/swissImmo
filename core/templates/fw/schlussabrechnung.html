@@ -56,20 +56,34 @@
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
                 <input name="pos_text" value="{{ p.text }}" placeholder="Bezeichnung" class="col-span-6 bg-slate-100 rounded-lg text-sm px-3 py-2">
                 <input name="pos_betrag" value="{{ p.betrag|unlocalize }}" inputmode="decimal" class="pos-betrag col-span-3 bg-slate-100 rounded-lg text-sm px-3 py-2 text-right" placeholder="Betrag CHF">
-                <select name="pos_richtung" class="pos-richtung col-span-3 bg-slate-100 rounded-lg text-sm px-2 py-2">
+                <select name="pos_richtung" class="pos-richtung {% if v.mwst_pflichtig %}col-span-2{% else %}col-span-3{% endif %} bg-slate-100 rounded-lg text-sm px-2 py-2">
                     <option value="zulasten" selected>zulasten Mieter</option>
                     <option value="zugunsten">zugunsten Mieter</option>
                 </select>
+                {% if v.mwst_pflichtig %}
+                <select name="pos_mwst" title="MWST-pflichtig? Nebenkosten ja, Schadenersatz nein (Art. 18 Abs. 2 MWSTG)"
+                        class="col-span-1 bg-slate-100 rounded-lg text-sm px-2 py-2">
+                    <option value="0">ohne MWST</option>
+                    <option value="1">mit MWST</option>
+                </select>
+                {% endif %}
             </div>
             {% endfor %}
             {% for i in "12345" %}
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
                 <input name="pos_text" placeholder="Bezeichnung" class="col-span-6 bg-slate-100 rounded-lg text-sm px-3 py-2">
                 <input name="pos_betrag" inputmode="decimal" class="pos-betrag col-span-3 bg-slate-100 rounded-lg text-sm px-3 py-2 text-right" placeholder="Betrag CHF">
-                <select name="pos_richtung" class="pos-richtung col-span-3 bg-slate-100 rounded-lg text-sm px-2 py-2">
+                <select name="pos_richtung" class="pos-richtung {% if v.mwst_pflichtig %}col-span-2{% else %}col-span-3{% endif %} bg-slate-100 rounded-lg text-sm px-2 py-2">
                     <option value="zulasten">zulasten Mieter</option>
                     <option value="zugunsten">zugunsten Mieter</option>
                 </select>
+                {% if v.mwst_pflichtig %}
+                <select name="pos_mwst" title="MWST-pflichtig? Nebenkosten ja, Schadenersatz nein (Art. 18 Abs. 2 MWSTG)"
+                        class="col-span-1 bg-slate-100 rounded-lg text-sm px-2 py-2">
+                    <option value="0">ohne MWST</option>
+                    <option value="1">mit MWST</option>
+                </select>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
