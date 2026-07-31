@@ -25,10 +25,15 @@ def kontokorrent(mandant, jahr=None):
     von = date(jahr, 1, 1) if jahr else None
     bis = date(jahr, 12, 31) if jahr else None
 
+    # Abschlussbuchungen ausklammern: sie saldieren alle Erfolgskonten per 31.12.
+    # gegen 2970. Ohne den Ausschluss kippte das Eigentümer-Ergebnis nach dem
+    # Jahresabschluss auf null bzw. ins Negative (Audit).
+    from core.services.jahresabschluss import abschluss_buchungen_q
+
     zeilen = []
     sum_ertrag = sum_aufwand = Decimal('0.00')
     for lg in liegenschaften:
-        bqs = Buchung.objects.filter(liegenschaft=lg)
+        bqs = Buchung.objects.filter(liegenschaft=lg).exclude(abschluss_buchungen_q())
         if von:
             bqs = bqs.filter(datum__gte=von, datum__lte=bis)
         ertrag = Decimal('0.00')

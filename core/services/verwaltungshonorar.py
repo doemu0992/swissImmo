@@ -28,10 +28,16 @@ def honorar_vorschau(mandant, jahr):
     # Referenzmiete inkl. erlassener Anteile.
     ertrag_konten = list(Buchungskonto.objects.filter(nummer__in=['3000', '3010', '3090']))
 
+    # Abschlussbuchungen ausklammern: sie saldieren 3000/3010 per 31.12. gegen
+    # 2970. Ohne den Ausschluss wäre die Honorarbasis nach dem Jahresabschluss
+    # null und das Honorar verschwände (Audit).
+    from core.services.jahresabschluss import abschluss_buchungen_q
+
     zeilen = []
     total = Decimal('0.00')
     for lg in Liegenschaft.objects.filter(mandant=mandant).order_by('strasse'):
-        bqs = Buchung.objects.filter(liegenschaft=lg, datum__gte=von, datum__lte=bis)
+        bqs = (Buchung.objects.filter(liegenschaft=lg, datum__gte=von, datum__lte=bis)
+               .exclude(abschluss_buchungen_q()))
         mietertrag = Decimal('0.00')
         for k in ertrag_konten:
             s = bqs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
@@ -41,7 +47,11 @@ def honorar_vorschau(mandant, jahr):
         bereits = Buchung.objects.filter(liegenschaft=lg, beleg_text=_beleg_text(jahr, lg),
                                          ist_storno=False).exists()
         zeilen.append({'lg': lg, 'mietertrag': mietertrag, 'honorar': honorar, 'gebucht': bereits})
-        if not bereits:
+        # Nur zählen, was auch gebucht wird (buche_honorar überspringt <= 0).
+        # Sonst zeigte der Bestätigungsdialog eine andere Summe als die Buchung —
+        # eine Liegenschaft mit negativem Ertrag (Erlassjahr) zog das Total nach
+        # unten, ohne je gebucht zu werden (Audit).
+        if not bereits and honorar > 0:
             total += honorar
     return zeilen, total, prozent
 

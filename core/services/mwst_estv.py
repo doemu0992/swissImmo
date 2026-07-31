@@ -60,6 +60,14 @@ def berechne_estv(*, umsatz_steuerbar, umsatzsteuer, vorsteuer_material,
     return {
         'methode': 'effektiv',
         'z200': umsatz_steuerbar, 'z289': umsatz_steuerbar,
+        # Ziffer 300 (Normalsatz) explizit ausweisen. Die Buchhaltung führt keine
+        # satzgetrennten Konten, und die Option nach Art. 22 MWSTG für die
+        # Vermietung von Immobilien gilt zum NORMALSATZ — der gesamte steuerbare
+        # Umsatz gehört daher in Ziffer 300. Ziffer 310 (2.6 %) und 340 (3.8 %)
+        # bleiben leer: sie ohne Datengrundlage zu schätzen wäre eine
+        # Falschdeklaration. Wer reduzierte Sätze abrechnet, trägt sie im
+        # ESTV-Formular manuell nach.
+        'z300': umsatz_steuerbar, 'z310': Decimal('0.00'), 'z340': Decimal('0.00'),
         'z399': umsatzsteuer, 'z400': vm, 'z405': vi, 'z479': total_vst,
         'z500': saldo if saldo >= 0 else Decimal('0.00'),
         'z510': (-saldo) if saldo < 0 else Decimal('0.00'),
@@ -84,6 +92,8 @@ def estv_csv(daten, *, firma, uid, periode_von, periode_bis):
         ('399', 'Total geschuldete Steuer (Umsatzsteuer)', daten['z399']),
     ]
     if daten['methode'] == 'effektiv':
+        zeilen.insert(2, ('300', 'Leistungen zum Normalsatz (8.1 %)',
+                          daten.get('z300', daten['z289'])))
         zeilen += [
             ('400', 'Vorsteuer Material & Dienstleistungen', daten.get('z400', Decimal('0.00'))),
             ('405', 'Vorsteuer Investitionen/Betriebsaufwand', daten.get('z405', Decimal('0.00'))),

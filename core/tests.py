@@ -1580,6 +1580,10 @@ class KautionRueckzahlungTests(TestCase):
         _lg, _e, _m, v = _basis_objekte()   # kautions_betrag 4500
         team = _team_user()
         c = Client(); c.force_login(team)
+        # Kaution zuerst einzahlen — zurückbezahlt werden kann nur, was auch
+        # bilanziert ist (sonst würde eine nie geleistete Kaution ausbezahlt).
+        c.post(f'/neu/vertraege/{v.id}/kaution/',
+               {'aktion': 'einzahlung', 'einbezahlt_am': '2024-01-05'})
         r = c.post(f'/neu/vertraege/{v.id}/kaution/', {
             'aktion': 'rueckzahlung', 'abzug_betrag': '500', 'abzug_grund': 'Reinigung',
             'zurueckbezahlt_am': '2025-01-31'})
@@ -8373,8 +8377,10 @@ class MoneyBugBatchTests(TestCase):
             c.post(f'/neu/vertraege/{v.id}/kaution/', {
                 'aktion': 'rueckzahlung', 'abzug_betrag': '500',
                 'zurueckbezahlt_am': '2024-07-01'})
-        # Zweiter Klick bucht nicht erneut (beleg_text-Idempotenz).
-        n = Buchung.objects.filter(beleg_text__startswith=f"Kaution Auflösung {v.mieter}",
+        # Zweiter Klick bucht nicht erneut (beleg_text-Idempotenz). Der Belegtext
+        # trägt die Vertrags-ID, damit die Saldo-Prüfung diese Auflösung erkennt
+        # und die Schlussabrechnung dieselbe Kaution nicht nochmals freigibt.
+        n = Buchung.objects.filter(beleg_text__startswith=f"Kaution Auflösung [V{v.pk}]",
                                    ist_storno=False).count()
         self.assertEqual(n, 3)   # Freigabe + Rückzahlung + Einbehalt, genau einmal
 
@@ -10812,13 +10818,134 @@ class BuchhalterFixesTests(TestCase):
         lg, e, m, v = _basis_objekte()
         v.kautions_betrag = Decimal('3000'); v.kautions_art = 'sperrkonto'
         v.kautions_einbezahlt_am = date(2024, 1, 1); v.save()
-        buche('1015', '2010', Decimal('3000'), 'Kaution Einzahlung', datum=date(2024, 1, 1), liegenschaft=lg)
+        # Einzahlung über den Produktivpfad — der Belegtext trägt die Vertrags-ID,
+        # an der die Freigabe den bilanzierten Betrag erkennt.
+        from core.services.automation import buche_kaution_einzahlung
+        buche_kaution_einzahlung(v, date(2024, 1, 1))
         c = Client(); c.force_login(_team_user())
         c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/',
                {'auszug_datum': '2024-06-30', 'aktion': 'buchen', 'kaution_verrechnen': 'on'})
         # Sperrkonto + Verbindlichkeit müssen aufgelöst sein (vorher blieben sie ewig stehen)
         self.assertEqual(self._saldo('1015'), Decimal('0.00'))
         self.assertEqual(self._saldo('2010'), Decimal('0.00'))
+
+    def test_kaution_ohne_einzahlung_wird_nicht_ausbezahlt(self):
+        # Kritischer Audit-Befund: Die Freigabe entschied am VEREINBARTEN Betrag
+        # (Vertragsfeld). War die Kaution nie eingegangen, wurden 1015/2010 negativ
+        # und der Mieter bekam Geld, das er nie hinterlegt hatte.
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        v.kautions_betrag = Decimal('4500'); v.kautions_art = 'sperrkonto'
+        v.kautions_einbezahlt_am = None; v.save()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/',
+               {'auszug_datum': '2024-06-30', 'aktion': 'buchen', 'kaution_verrechnen': 'on'})
+        self.assertEqual(self._saldo('1015'), Decimal('0.00'))   # nicht ins Minus gedrückt
+        self.assertEqual(self._saldo('2010'), Decimal('0.00'))
+        v.refresh_from_db()
+        self.assertIn(v.kautions_rueckzahlung_betrag or Decimal('0'), (Decimal('0'), Decimal('0.00')))
+
+    def test_kaution_ohne_einzahlung_tilgt_keine_forderung(self):
+        # Zweite Hälfte desselben Befunds: die Phantom-Kaution wurde mit offenen
+        # Mietforderungen «verrechnet» — die Forderung galt als bezahlt, der
+        # Mietertrag als vereinnahmt, der echte Verlust verschwand.
+        from finance.models import DebitorenRechnung
+        from finance.booking import ensure_kontenplan, buche
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        v.kautions_betrag = Decimal('4500'); v.kautions_art = 'sperrkonto'
+        v.kautions_einbezahlt_am = None; v.save()
+        r = DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, einheit=e, titel='Miete 05/2024',
+            datum=date(2024, 5, 1), faellig_am=date(2024, 5, 5),
+            betrag=Decimal('1700'), status='offen')
+        buche('1100', '3000', Decimal('1700'), 'Miete 05/2024', datum=date(2024, 5, 1),
+              liegenschaft=lg, debitor=r)
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/',
+               {'auszug_datum': '2024-06-30', 'aktion': 'buchen', 'kaution_verrechnen': 'on'})
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'offen')
+        self.assertEqual(r.offener_betrag, Decimal('1700'))
+
+    def test_kaution_nicht_zweimal_aufloesbar(self):
+        # Rückzahlung über die Vertragsseite UND Schlussabrechnung hatten je eine
+        # eigene Belegtext-Sperre — zusammen konnten sie dieselbe Kaution zweimal
+        # freigeben (Audit). Der Saldo von 2010 ist jetzt die gemeinsame Grenze.
+        from finance.booking import ensure_kontenplan
+        from core.services.automation import buche_kaution_einzahlung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        v.kautions_betrag = Decimal('3000'); v.kautions_art = 'sperrkonto'
+        v.kautions_einbezahlt_am = date(2024, 1, 1); v.save()
+        buche_kaution_einzahlung(v, date(2024, 1, 1))
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/kaution/',
+               {'aktion': 'rueckzahlung', 'zurueckbezahlt_am': '2024-06-30',
+                'rueckzahlung_betrag': '3000', 'abzug_betrag': '0'})
+        self.assertEqual(self._saldo('2010'), Decimal('0.00'))
+        # Zweiter Versuch über die Schlussabrechnung darf nichts mehr bewegen
+        c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/',
+               {'auszug_datum': '2024-06-30', 'aktion': 'buchen', 'kaution_verrechnen': 'on'})
+        self.assertEqual(self._saldo('2010'), Decimal('0.00'))
+        self.assertEqual(self._saldo('1015'), Decimal('0.00'))
+
+    def test_schlussabrechnung_gutschrift_nur_einmal(self):
+        # Gutschrift-Fall ohne Kaution: die Idempotenz hing an
+        # `kautions_zurueckbezahlt_am`, das hier nie gesetzt wird — ein zweiter
+        # Aufruf buchte das Mieterguthaben ein zweites Mal (Audit).
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        v.kautions_betrag = Decimal('0'); v.save()
+        c = Client(); c.force_login(_team_user())
+        payload = {'auszug_datum': '2024-06-30', 'aktion': 'buchen',
+                   'pos_text': 'NK-Guthaben', 'pos_betrag': '400',
+                   'pos_richtung': 'zugunsten'}
+        c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/', payload)
+        erst = self._saldo('2030')
+        c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/', payload)
+        self.assertEqual(self._saldo('2030'), erst)   # kein zweites Guthaben
+
+    def test_jahresabschluss_nicht_doppelt_ueber_lg_filter(self):
+        # Portfolioweit abschliessen und danach je Liegenschaft nochmals: die
+        # Prüfung filterte auf dieselbe Liegenschaft und fand die portfolioweiten
+        # Buchungen (ohne Liegenschaft) nicht — 2970 verdoppelte sich (Audit).
+        from core.services.jahresabschluss import buche_jahresabschluss, ist_abgeschlossen
+        from finance.booking import ensure_kontenplan, buche
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        buche('1100', '3000', Decimal('1200'), 'Miete 01/2024',
+              datum=date(2024, 1, 31), liegenschaft=lg)
+        n1, _erg = buche_jahresabschluss(2024)
+        self.assertGreater(n1, 0)
+        saldo_nach_erstem = self._saldo('2970')
+        self.assertTrue(ist_abgeschlossen(2024, lg))          # deckt die LG mit ab
+        n2, _ = buche_jahresabschluss(2024, liegenschaft=lg)
+        self.assertEqual(n2, 0)
+        self.assertEqual(self._saldo('2970'), saldo_nach_erstem)
+
+    def test_jahresabschluss_nach_storno_wieder_moeglich(self):
+        # Eine stornierte Abschlussbuchung behält ist_storno=False (das Flag trägt
+        # die Gegenbuchung). Ohne Prüfung auf `storniert_am` galt das Jahr
+        # weiterhin als abgeschlossen und liess sich nie neu abschliessen (Audit).
+        from core.services.jahresabschluss import buche_jahresabschluss, ist_abgeschlossen
+        from finance.booking import ensure_kontenplan, buche
+        from finance.models import Buchung
+        from finance.api import erstelle_storno_buchung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        buche('1100', '3000', Decimal('900'), 'Miete 02/2024',
+              datum=date(2024, 2, 29), liegenschaft=lg)
+        buche_jahresabschluss(2024)
+        self.assertTrue(ist_abgeschlossen(2024))
+        for b in Buchung.objects.filter(beleg_text__startswith='Jahresabschluss 2024 —',
+                                        ist_storno=False, storniert_am__isnull=True):
+            erstelle_storno_buchung(b, benutzer=None)
+        self.assertFalse(ist_abgeschlossen(2024))
+        n, _ = buche_jahresabschluss(2024)
+        self.assertGreater(n, 0)
 
     # ---------- K2: Schäden landen auf 3600, nicht im Mietertrag 3000 ----------
     def test_k2_schaden_nicht_im_mietertrag(self):

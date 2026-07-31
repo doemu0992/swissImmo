@@ -23,12 +23,42 @@ def _beleg(jahr, konto_nr):
 
 
 def ist_abgeschlossen(jahr, liegenschaft=None):
-    """True, wenn für das Jahr bereits Abschlussbuchungen existieren."""
+    """True, wenn für das Jahr bereits (überlappende) Abschlussbuchungen existieren.
+
+    Ein Geschäftsjahr wird ENTWEDER portfolioweit ODER je Liegenschaft
+    abgeschlossen. Beides zusammen würde dieselben Erfolgskonten zweimal gegen
+    2970 saldieren und das Ergebnis verdoppeln.
+
+    Audit-Befund: Vorher wurde nur auf denselben Filter geprüft. Wer zuerst
+    portfolioweit abschloss (Buchungen ohne Liegenschaft) und danach mit
+    gesetztem Liegenschaftsfilter erneut abschloss, fand nichts — und buchte
+    alles ein zweites Mal.
+    """
     from finance.models import Buchung
-    qs = Buchung.objects.filter(beleg_text__startswith=f"{BELEG_PREFIX} {jahr} —", ist_storno=False)
-    if liegenschaft:
-        qs = qs.filter(liegenschaft=liegenschaft)
-    return qs.exists()
+    # `storniert_am` mitprüfen: Eine stornierte Abschlussbuchung behält
+    # ist_storno=False (das Flag trägt die Gegenbuchung). Ohne diese Bedingung
+    # galt ein zurückgenommener Abschluss weiterhin als erfolgt und das
+    # Geschäftsjahr liess sich nie wieder abschliessen (Audit).
+    basis = Buchung.objects.filter(beleg_text__startswith=f"{BELEG_PREFIX} {jahr} —",
+                                   ist_storno=False, storniert_am__isnull=True)
+    # Ein portfolioweiter Abschluss deckt jede Liegenschaft mit ab.
+    if basis.filter(liegenschaft__isnull=True).exists():
+        return True
+    if liegenschaft is None:
+        # Portfolioweit: jeder bereits erfolgte Einzelabschluss blockiert.
+        return basis.exists()
+    return basis.filter(liegenschaft=liegenschaft).exists()
+
+
+def abschluss_buchungen_q(jahr=None):
+    """Q-Objekt für alle Abschlussbuchungen (optional eines Jahres).
+
+    Auswertungen für ein Geschäftsjahr müssen diese Buchungen ausschliessen —
+    sonst saldiert sich die Erfolgsrechnung nach dem Abschluss auf null und
+    Honorarbasis wie Eigentümer-Kontokorrent kippen (Audit).
+    """
+    from django.db.models import Q
+    return Q(beleg_text__startswith=(f"{BELEG_PREFIX} {jahr} —" if jahr else BELEG_PREFIX))
 
 
 def salden_erfolgskonten(jahr, liegenschaft=None):
@@ -55,9 +85,20 @@ def salden_erfolgskonten(jahr, liegenschaft=None):
 def buche_jahresabschluss(jahr, *, liegenschaft=None, user=None):
     """Schliesst alle Erfolgskonten des Jahres gegen 2970 ab (idempotent).
     Gibt (anzahl_buchungen, ergebnis) zurück — ergebnis > 0 = Gewinn."""
+    from django.db import transaction
     from finance.booking import buche
     if ist_abgeschlossen(jahr, liegenschaft):
         return 0, Decimal('0.00')
+    with transaction.atomic():
+        # Innerhalb der Transaktion erneut prüfen — ein Doppelklick schickt zwei
+        # Requests, die beide den Vor-Check passiert haben.
+        if ist_abgeschlossen(jahr, liegenschaft):
+            return 0, Decimal('0.00')
+        return _buche(jahr, liegenschaft, user)
+
+
+def _buche(jahr, liegenschaft, user):
+    from finance.booking import buche
     posten = salden_erfolgskonten(jahr, liegenschaft)
     datum = date(jahr, 12, 31)
     anzahl = 0
