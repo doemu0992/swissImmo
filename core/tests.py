@@ -1361,6 +1361,85 @@ class CamtImportTests(TestCase):
         self.assertEqual(Zahlungseingang.objects.filter(bank_referenz='SAMEREF').count(), 1)
 
 
+class BankCsvImportTests(TestCase):
+    """Bank-CSV-Import über denselben Endpunkt wie camt.053 (Format-Weiche)."""
+
+    def _setup_rechnung(self):
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung
+        _seed_konten()
+        _basis_objekte()
+        run_sollstellung(2024, 3)
+        return DebitorenRechnung.objects.get(titel='Miete & NK 03/2024')
+
+    def test_csv_zahlung_per_qrr_referenz(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import Zahlungseingang
+        r = self._setup_rechnung()
+        csv = ("Datum;Buchungstext;Referenz;Gutschrift;Belastung\n"
+               f"05.03.2024;Gutschrift QR;{r.qr_referenz};1'700.00;\n"
+               "06.03.2024;Ladenmiete Dauerauftrag;;;-250.00\n").encode('utf-8')
+        team = _team_user(); c = Client(); c.force_login(team)
+        f = SimpleUploadedFile('auszug.csv', csv, content_type='text/csv')
+        resp = c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f})
+        self.assertEqual(resp.status_code, 302)
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'bezahlt')
+        self.assertEqual(Zahlungseingang.objects.filter(debitoren_rechnung=r, status='verbucht').count(), 1)
+
+    def test_csv_reimport_erzeugt_kein_duplikat(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import Zahlungseingang
+        r = self._setup_rechnung()
+        csv = ("Datum;Buchungstext;Referenz;Gutschrift\n"
+               f"05.03.2024;Gutschrift QR;{r.qr_referenz};1'700.00\n").encode('utf-8')
+        team = _team_user(); c = Client(); c.force_login(team)
+        for _ in range(2):
+            f = SimpleUploadedFile('auszug.csv', csv, content_type='text/csv')
+            c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f})
+        # zusammengesetzter Schlüssel (Datum|Betrag|Name|Ref) verhindert Doppelbuchung
+        self.assertEqual(Zahlungseingang.objects.filter(debitoren_rechnung=r).count(), 1)
+
+    def test_csv_fuzzy_name_und_betrag(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import Zahlungseingang
+        r = self._setup_rechnung()
+        nachname = r.vertrag.mieter.nachname
+        betrag = f"{r.offener_betrag:.2f}"
+        csv = ("Datum;Auftraggeber;Mitteilung;Betrag\n"
+               f"05.03.2024;Hans {nachname};Miete Maerz;{betrag}\n").encode('cp1252')
+        team = _team_user(); c = Client(); c.force_login(team)
+        f = SimpleUploadedFile('auszug.csv', csv, content_type='text/csv')
+        c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f})
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'bezahlt')
+        self.assertEqual(Zahlungseingang.objects.filter(debitoren_rechnung=r).count(), 1)
+
+    def test_csv_unzuordenbar_landet_auf_1190(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import Zahlungseingang
+        self._setup_rechnung()
+        csv = ("Datum;Auftraggeber;Betrag\n"
+               "05.03.2024;Unbekannte Person;99.95\n").encode('utf-8')
+        team = _team_user(); c = Client(); c.force_login(team)
+        f = SimpleUploadedFile('auszug.csv', csv, content_type='text/csv')
+        c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f})
+        z = Zahlungseingang.objects.filter(bemerkung__contains='UNGEKLÄRT').first()
+        self.assertIsNotNone(z)
+        self.assertEqual(z.konto.nummer, '1190')
+
+    def test_csv_ohne_kopfzeile_gibt_fehlermeldung(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import Zahlungseingang
+        self._setup_rechnung()
+        csv = b"foo;bar\n1;2\n"
+        team = _team_user(); c = Client(); c.force_login(team)
+        f = SimpleUploadedFile('auszug.csv', csv, content_type='text/csv')
+        resp = c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f}, follow=True)
+        self.assertContains(resp, 'CSV-Format nicht erkannt')
+        self.assertEqual(Zahlungseingang.objects.count(), 0)
+
+
 class MahnlaufTests(TestCase):
     def test_verzugszins_art104(self):
         from core.services.automation import verzugszins

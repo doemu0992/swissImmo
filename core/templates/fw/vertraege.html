@@ -4,8 +4,10 @@
 
 {% block content %}
 
+{% include 'fw/_pipeline.html' %}
+
 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Verträge</h1>
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">{% if ui_modus == 'einfach' %}Mieter & Verträge{% else %}Verträge{% endif %}</h1>
     <a href="/neu/vertraege/neu/{{ lg_query }}" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
         <i class="fa-solid fa-plus mr-1.5"></i> Vertrag erstellen
     </a>

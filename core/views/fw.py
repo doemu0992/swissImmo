@@ -1208,7 +1208,7 @@ def fw_vertraege(request):
         })
 
     return render(request, 'fw/vertraege.html', {
-        **basis, 'nav': 'vertraege', 'rows': rows,
+        **basis, **_vermietung_pipeline('vertraege', basis['lg_query']), 'nav': 'vertraege', 'rows': rows,
         'status_filter': status_filter, 'q': q,
         'status_chips': [('', 'Alle')] + [(k, v[0]) for k, v in VERTRAG_PILL.items()],
         'aktiv_count': sum(1 for r in rows if r['v'].status == 'aktiv'),
@@ -2663,10 +2663,27 @@ def fw_vertrag_detail(request, pk):
             details=f"Digital unterzeichnet von {v.mieter.display_name} — Rücklauf via DocuSeal, automatisch abgelegt.",
             zeitpunkt=v.unterzeichnet_am))
     verlauf.sort(key=lambda x: x.zeitpunkt, reverse=True)
+
+    # Akte komplettieren: Schäden am Mietobjekt + offene Pendenzen/Fristen zum
+    # Vertrag — alles zum Mietverhältnis an EINEM Ort (kein Menü-Wechsel nötig).
+    from tickets.models import SchadenMeldung
+    from core.models import Pendenz
+    schaeden = list(SchadenMeldung.objects.filter(betroffene_einheit=v.einheit)
+                    .order_by('-erstellt_am')[:15]) if v.einheit_id else []
+    vertrag_pendenzen = []
+    _heute = timezone.localdate()
+    for p in Pendenz.objects.filter(erledigt=False, vertrag=v).order_by('faellig_am'):
+        _purl, _plabel, _pwide, _pmodal = _pendenz_ziel(p)
+        vertrag_pendenzen.append({'p': p, 'url': _purl, 'label': _plabel or 'Öffnen',
+                                  'wide': _pwide, 'modal': _pmodal,
+                                  'ueberfaellig': bool(p.faellig_am and p.faellig_am < _heute)})
+
     tab_liste = [
         ('uebersicht', 'Übersicht', None),
         ('finanzen', 'Finanzen', len(offene) or None),
         ('mietzins', 'Mietzins', anpassungen.count() or None),
+        ('schaeden', 'Schäden', len(schaeden) or None),
+        ('pendenzen', 'Pendenzen', len(vertrag_pendenzen) or None),
         ('formulare', 'Formulare', None),
         ('dokumente', 'Dokumente', None),
         ('verlauf', 'Verlauf', len(verlauf) or None),
@@ -2692,6 +2709,8 @@ def fw_vertrag_detail(request, pk):
         'kuendigungen': v.kuendigungen.all(),
         'formular_kanton': _formular_kanton_label(v),
         'tab_liste': tab_liste,
+        'vertrag_schaeden': schaeden,
+        'vertrag_pendenzen': vertrag_pendenzen,
         'docuseal_konfiguriert': docuseal_konfiguriert(),
     })
 
@@ -3576,11 +3595,136 @@ def _camt_parse(xml_bytes):
     return eintraege
 
 
+def _bank_csv_parse(raw):
+    """Parst einen Bank-Kontoauszug als CSV (PostFinance/Raiffeisen/ZKB/UBS-Exporte).
+
+    Header-basiert und tolerant: Trennzeichen (; , Tab) wird erkannt, Spalten
+    werden über Schlüsselwörter gefunden (Datum, Betrag/Gutschrift, Referenz,
+    Text/Mitteilung, Auftraggeber). Nur Gutschriften (positive Beträge bzw.
+    Gutschrift-Spalte) werden übernommen. Rückgabe: gleiche Struktur wie
+    _camt_parse → derselbe Zuordnungs-/Verbuchungspfad."""
+    import csv as _csv
+    import io as _io
+    import re as _re
+
+    text = None
+    for enc in ('utf-8-sig', 'cp1252', 'latin-1'):
+        try:
+            text = raw.decode(enc)
+            break
+        except (UnicodeDecodeError, AttributeError):
+            continue
+    if text is None:
+        raise ValueError("Datei-Codierung nicht erkannt")
+
+    # Trennzeichen aus den ersten nicht-leeren Zeilen bestimmen
+    probe = [z for z in text.splitlines() if z.strip()][:10]
+    if not probe:
+        return []
+    zaehl = {d: sum(z.count(d) for z in probe) for d in (';', ',', '\t')}
+    delim = max(zaehl, key=zaehl.get)
+    zeilen = list(_csv.reader(_io.StringIO(text), delimiter=delim))
+
+    KEY = {
+        'datum': ('datum', 'date', 'buchungsdatum', 'valuta', 'booking'),
+        'betrag': ('betrag', 'amount', 'umsatz'),
+        'gut': ('gutschrift', 'credit', 'haben', 'eingang'),
+        'last': ('lastschrift', 'belastung', 'debit', 'soll', 'ausgang'),
+        'ref': ('referenz', 'reference', 'qrr', 'esr', 'referenznummer'),
+        'text': ('mitteilung', 'buchungstext', 'beschreibung', 'verwendungszweck',
+                 'text', 'details', 'avisierung', 'zahlungszweck'),
+        'name': ('auftraggeber', 'absender', 'zahlungspflichtiger', 'einzahler',
+                 'name', 'gegenpartei', 'debitor'),
+    }
+
+    def _spalte(kopf, schluessel):
+        for i, z in enumerate(kopf):
+            zl = (z or '').strip().lower()
+            if any(k in zl for k in KEY[schluessel]):
+                return i
+        return None
+
+    # Header-Zeile suchen (erste Zeile mit Datum- UND Betrag/Gutschrift-Spalte)
+    kopf_idx = None
+    sp = {}
+    for i, z in enumerate(zeilen[:15]):
+        if _spalte(z, 'datum') is not None and (
+                _spalte(z, 'betrag') is not None or _spalte(z, 'gut') is not None):
+            kopf_idx = i
+            sp = {k: _spalte(z, k) for k in KEY}
+            break
+    if kopf_idx is None:
+        raise ValueError("Keine Kopfzeile mit Datum- und Betrag-/Gutschrift-Spalte gefunden. "
+                         "Erwartet werden Spalten wie «Datum», «Betrag» oder «Gutschrift», "
+                         "optional «Referenz», «Mitteilung», «Auftraggeber».")
+
+    def _dec(s):
+        s = (s or '').strip().replace("'", '').replace(' ', '').replace(' ', '')
+        s = s.replace('CHF', '').replace('chf', '')
+        if not s:
+            return None
+        if ',' in s and '.' not in s:
+            s = s.replace(',', '.')
+        else:
+            s = s.replace(',', '')
+        try:
+            return Decimal(s)
+        except Exception:
+            return None
+
+    def _datum(s):
+        from datetime import datetime as _dt
+        s = (s or '').strip()[:10]
+        for fmt in ('%d.%m.%Y', '%Y-%m-%d', '%d/%m/%Y', '%d.%m.%y'):
+            try:
+                return _dt.strptime(s, fmt).date()
+            except ValueError:
+                continue
+        return None
+
+    eintraege = []
+    for z in zeilen[kopf_idx + 1:]:
+        if not any((c or '').strip() for c in z):
+            continue
+
+        def wert(k):
+            i = sp.get(k)
+            return z[i] if i is not None and i < len(z) else ''
+
+        # Gutschrift bestimmen: eigene Spalte hat Vorrang, sonst positiver Betrag
+        betrag = _dec(wert('gut')) if sp.get('gut') is not None else None
+        if betrag is None:
+            b = _dec(wert('betrag'))
+            if b is None or b <= 0:
+                continue   # Belastung/Leerzeile → kein Zahlungseingang
+            if sp.get('last') is not None and _dec(wert('last')):
+                continue   # Zeile ist als Belastung markiert
+            betrag = b
+        if betrag is None or betrag <= 0:
+            continue
+
+        info = (wert('text') or '').strip()
+        referenz = (wert('ref') or '').strip().replace(' ', '')
+        if not referenz:
+            # QRR (27-stellig) auch aus dem Buchungstext fischen
+            m27 = _re.search(r'\b(\d[\d ]{25,40}\d)\b', info)
+            if m27:
+                kandidat = m27.group(1).replace(' ', '')
+                if len(kandidat) == 27:
+                    referenz = kandidat
+        eintraege.append({
+            'betrag': betrag, 'referenz': referenz, 'datum': _datum(wert('datum')),
+            'info': info, 'acct_ref': '', 'dbtr_name': (wert('name') or '').strip(),
+        })
+    return eintraege
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_camt_import(request):
-    """Importiert einen camt.053-Kontoauszug: Gutschriften werden per QRR-Referenz
-    den offenen Debitorenrechnungen zugeordnet und als Zahlungseingang (Bank an
-    Debitoren) verbucht."""
+    """Importiert einen Bank-Kontoauszug — camt.053 (ISO 20022) ODER CSV-Export
+    der Bank. Gutschriften werden per QRR-Referenz den offenen Debitoren-
+    rechnungen zugeordnet und als Zahlungseingang (Bank an Debitoren) verbucht;
+    Unzuordenbares wird auf dem Durchlaufkonto 1190 geparkt."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from finance.models import Buchungskonto, Buchung
@@ -3595,14 +3739,23 @@ def fw_camt_import(request):
         messages.error(request, "Keine Datei ausgewählt.")
         return redirect('fw_bankabgleich')
 
+    roh = datei.read()
+    # Format erkennen: XML (camt.053) beginnt mit '<' — alles andere als Bank-CSV parsen.
+    kopf = roh.lstrip(b'\xef\xbb\xbf \t\r\n')
+    ist_xml = kopf.startswith(b'<')
     try:
-        eintraege = _camt_parse(datei.read())
+        if ist_xml:
+            eintraege = _camt_parse(roh)
+        else:
+            eintraege = _bank_csv_parse(roh)
     except Exception as e:
-        messages.error(request, f"Datei konnte nicht gelesen werden (kein gültiges camt.053?): {e}")
+        messages.error(request, f"Datei konnte nicht gelesen werden "
+                                f"({'kein gültiges camt.053' if ist_xml else 'CSV-Format nicht erkannt'}): {e}")
         return redirect('fw_bankabgleich')
 
+    quelle = 'camt.053' if ist_xml else 'Bank-CSV'
     if not eintraege:
-        messages.warning(request, "Keine Gutschriften (CRDT) im Kontoauszug gefunden.")
+        messages.warning(request, "Keine Gutschriften im Kontoauszug gefunden.")
         return redirect('fw_bankabgleich')
 
     # Referenz-Index aller offenen/teilbezahlten Rechnungen aufbauen
@@ -3641,7 +3794,7 @@ def fw_camt_import(request):
             zahlung = Zahlungseingang.objects.create(
                 vertrag=vertrag, betrag=betrag, datum_eingang=e['datum'] or heute,
                 buchungs_monat=(rechnung.faellig_am or rechnung.datum or heute).replace(day=1),
-                bemerkung=f"camt.053-Import ({via}) {rechnung.titel}",
+                bemerkung=f"{quelle}-Import ({via}) {rechnung.titel}",
                 bank_referenz=e.get('acct_ref', ''),
                 liegenschaft=vertrag.einheit.liegenschaft if vertrag and vertrag.einheit_id else None,
                 debitoren_rechnung=rechnung, erstellt_von=request.user, status='verbucht',
@@ -3649,7 +3802,7 @@ def fw_camt_import(request):
             rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
             rechnung.save()
             from finance.booking import buche
-            buche("1020", "1100", betrag, f"camt.053 {vertrag.mieter} - {rechnung.titel}",
+            buche("1020", "1100", betrag, f"{quelle} {vertrag.mieter} - {rechnung.titel}",
                   datum=e['datum'] or heute,
                   liegenschaft=vertrag.einheit.liegenschaft if vertrag and vertrag.einheit_id else None,
                   zahlung=zahlung, user=request.user)
@@ -3692,13 +3845,13 @@ def fw_camt_import(request):
                         vertrag=rechnung.vertrag, betrag=ueberschuss,
                         datum_eingang=e['datum'] or heute,
                         buchungs_monat=(e['datum'] or heute).replace(day=1),
-                        bemerkung=f"camt.053 Überzahlung {rechnung.titel} (Guthaben Mieter)"[:255],
+                        bemerkung=f"{quelle} Überzahlung {rechnung.titel} (Guthaben Mieter)"[:255],
                         bank_referenz=f"{aref}:ueber"[:255], konto=konto_clearing,
                         liegenschaft=rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None,
                         erstellt_von=request.user, status='verbucht')
                     from finance.booking import buche
                     buche("1020", "1190", ueberschuss,
-                          f"camt.053 Überzahlung {rechnung.vertrag.mieter} - {rechnung.titel}",
+                          f"{quelle} Überzahlung {rechnung.vertrag.mieter} - {rechnung.titel}",
                           datum=e['datum'] or heute,
                           liegenschaft=rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None,
                           zahlung=z_ueber, user=request.user)
@@ -3720,16 +3873,16 @@ def fw_camt_import(request):
             zahlung = Zahlungseingang.objects.create(
                 betrag=betrag_e, datum_eingang=e['datum'] or heute,
                 buchungs_monat=(e['datum'] or heute).replace(day=1),
-                bemerkung=f"camt.053 UNGEKLÄRT: {e.get('dbtr_name','') or e.get('info','') or e.get('referenz','')}"[:255],
+                bemerkung=f"{quelle} UNGEKLÄRT: {e.get('dbtr_name','') or e.get('info','') or e.get('referenz','')}"[:255],
                 bank_referenz=aref, konto=konto_clearing,
                 erstellt_von=request.user, status='verbucht')
             from finance.booking import buche
             buche("1020", "1190", betrag_e,
-                  f"camt.053 ungeklärt: {e.get('dbtr_name','') or e.get('referenz','')}",
+                  f"{quelle} ungeklärt: {e.get('dbtr_name','') or e.get('referenz','')}",
                   datum=e['datum'] or heute, zahlung=zahlung, user=request.user)
         geklaert += 1
 
-    log_aktion(request, "camt.053-Import", datei.name,
+    log_aktion(request, f"{quelle}-Import", datei.name,
                f"{verbucht} verbucht (davon {fuzzy} fuzzy), CHF {zugeordnet_summe}, {geklaert} auf 1190, {duplikate} Duplikate")
     if verbucht or geklaert:
         teile = [f"{verbucht} Zahlung(en) zugeordnet (CHF {zugeordnet_summe})"]
@@ -3739,7 +3892,7 @@ def fw_camt_import(request):
             teile.append(f"{geklaert} ungeklärt auf Durchlaufkonto 1190 geparkt")
         if duplikate:
             teile.append(f"{duplikate} Duplikat(e) übersprungen")
-        messages.success(request, "✅ camt.053-Import: " + ", ".join(teile) + ".")
+        messages.success(request, f"✅ {quelle}-Import: " + ", ".join(teile) + ".")
     else:
         messages.warning(request,
             f"Keine neuen Gutschriften verbucht ({duplikate} Duplikat(e) übersprungen).")
@@ -8262,7 +8415,7 @@ def fw_mieterwechsel(request):
     rows.sort(key=lambda r: (r['ende'] or heute))
     offen = [r for r in rows if r['stufe'] != 'Abgeschlossen']
     return render(request, 'fw/mieterwechsel.html', {
-        **basis, 'nav': 'mieterwechsel', 'rows': rows,
+        **basis, **_vermietung_pipeline('mieterwechsel', basis['lg_query']), 'nav': 'mieterwechsel', 'rows': rows,
         'anzahl': len(rows), 'offen': len(offen), 'monate': monate,
         'gekuendigt_n': sum(1 for r in rows if r['gekuendigt']),
         'auslaufend_n': sum(1 for r in rows if not r['gekuendigt']),
@@ -8364,7 +8517,7 @@ def fw_vermarktung(request):
             'notiz': e.ausschreibung_notiz,
         })
     return render(request, 'fw/vermarktung.html', {
-        **basis, 'nav': 'vermarktung', 'rows': rows, 'anzahl': len(rows),
+        **basis, **_vermietung_pipeline('vermarktung', basis['lg_query']), 'nav': 'vermarktung', 'rows': rows, 'anzahl': len(rows),
         'summe_bewerbungen': sum(r['bewerbungen'] for r in rows),
     })
 
@@ -10197,7 +10350,7 @@ def fw_bewerbungen(request):
         spalten.append({'key': key, 'label': label, 'cls': cls, 'items': eintraege, 'anzahl': len(eintraege)})
 
     return render(request, 'fw/bewerbungen.html', {
-        **basis, 'nav': 'bewerbungen', 'spalten': spalten, 'gesamt': len(alle),
+        **basis, **_vermietung_pipeline('bewerbungen', basis['lg_query']), 'nav': 'bewerbungen', 'spalten': spalten, 'gesamt': len(alle),
     })
 
 
@@ -11882,3 +12035,28 @@ def fw_einstellungen(request):
     return render(request, 'fw/einstellungen.html', {
         **basis, 'nav': 'einstellungen', 'karten': karten,
     })
+
+
+def _vermietung_pipeline(aktiv, lg_query=''):
+    """Kontext für die Vermietungs-Pipeline-Leiste (Vermarktung → Bewerbung →
+    Vertrag → Mieterwechsel) — auf allen vier Stufen-Seiten eingeblendet, damit
+    der Prozess als EIN Ablauf erlebbar ist statt als vier Menüpunkte."""
+    from mietprozess.models import Mietbewerbung
+    from rentals.models import Kuendigung
+    stufen = [
+        {'key': 'vermarktung', 'label': 'Vermarktung', 'icon': 'fa-bullhorn',
+         'url': '/neu/vermarktung/' + lg_query,
+         'n': Einheit.objects.filter(zur_ausschreibung=True).count()},
+        {'key': 'bewerbungen', 'label': 'Bewerbungen', 'icon': 'fa-user-check',
+         'url': '/neu/bewerbungen/' + lg_query,
+         'n': Mietbewerbung.objects.filter(status__in=['neu', 'geprueft']).count()},
+        {'key': 'vertraege', 'label': 'Verträge', 'icon': 'fa-file-lines',
+         'url': '/neu/vertraege/' + lg_query,
+         'n': Mietvertrag.objects.filter(status='entwurf').count()},
+        {'key': 'mieterwechsel', 'label': 'Mieterwechsel', 'icon': 'fa-right-left',
+         'url': '/neu/mieterwechsel/' + lg_query,
+         'n': Kuendigung.objects.filter(status__in=['erfasst', 'bestaetigt']).count()},
+    ]
+    for s in stufen:
+        s['aktiv'] = (s['key'] == aktiv)
+    return {'pipeline_stufen': stufen}

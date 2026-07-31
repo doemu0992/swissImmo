@@ -1,9 +1,11 @@
 {% extends 'fw/base.html' %}
 {% block title %}Vermarktung · swissImmo{% endblock %}
 {% block content %}
+
+{% include 'fw/_pipeline.html' %}
 <div class="mb-6 flex items-end justify-between gap-3 flex-wrap">
     <div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Vermarktung</h1>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">{% if ui_modus == 'einfach' %}Wohnung ausschreiben{% else %}Vermarktung{% endif %}</h1>
         <p class="text-slate-500 mt-1">Alle ausgeschriebenen Objekte für die Nachmietersuche auf einen Blick.</p>
     </div>
     <div class="flex gap-2">

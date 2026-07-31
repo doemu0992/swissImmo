@@ -1,0 +1,18 @@
+{% comment %}Vermietungs-Pipeline-Leiste: die vier Stufen als EIN Ablauf.
+Einbinden mit: {% include 'fw/_pipeline.html' %} (Kontext via _vermietung_pipeline).{% endcomment %}
+{% if pipeline_stufen %}
+<div class="bg-white rounded-xl border border-slate-200 px-3 py-2.5 mb-5 overflow-x-auto">
+    <div class="flex items-center gap-1 min-w-max">
+        {% for s in pipeline_stufen %}
+        {% if not forloop.first %}<i class="fa-solid fa-chevron-right text-slate-200 text-[10px] shrink-0 mx-0.5"></i>{% endif %}
+        <a href="{{ s.url }}"
+           class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors
+                  {% if s.aktiv %}bg-indigo-600 text-white shadow-sm{% else %}text-slate-500 hover:bg-slate-100 hover:text-slate-700{% endif %}">
+            <i class="fa-solid {{ s.icon }} text-[11px] {% if not s.aktiv %}text-slate-400{% endif %}"></i>
+            {{ s.label }}
+            {% if s.n %}<span class="min-w-[18px] text-center text-[10px] font-bold rounded-full px-1.5 py-0.5 {% if s.aktiv %}bg-white/20 text-white{% else %}bg-slate-100 text-slate-500{% endif %}">{{ s.n }}</span>{% endif %}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

@@ -6,7 +6,7 @@
 
 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-5">
     <div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">Mahnwesen</h1>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">{% if ui_modus == 'einfach' %}Mahnungen{% else %}Mahnwesen{% endif %}</h1>
         <p class="text-sm text-slate-500">Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt erzeugen
             {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
             <a href="/neu/mahnwesen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
