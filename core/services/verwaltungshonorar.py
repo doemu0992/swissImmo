@@ -46,19 +46,25 @@ def honorar_vorschau(mandant, jahr):
     return zeilen, total, prozent
 
 
-def buche_honorar(mandant, jahr, *, bank_nummer='1020', user=None):
+def buche_honorar(mandant, jahr, *, gegen_nummer='2850', user=None):
     """Bucht das Verwaltungshonorar je Liegenschaft (idempotent — bereits für das
-    Jahr gebuchte Liegenschaften werden übersprungen). Gibt (anzahl, summe) zurück."""
+    Jahr gebuchte Liegenschaften werden übersprungen). Gibt (anzahl, summe) zurück.
+
+    Gegenkonto ist das Eigentümer-Kontokorrent 2850 (Verbindlichkeit), NICHT die
+    Bank: Zum Buchungszeitpunkt (31.12.) fliesst kein Geld — die frühere Buchung
+    `4500 an 1020` liess den Banksaldo vom realen Kontoauszug abweichen
+    (Audit-Befund W3). Die effektive Zahlung wird separat über das Kontokorrent
+    ausgebucht."""
     from finance.booking import buche, konto
 
     zeilen, _total, _prozent = honorar_vorschau(mandant, jahr)
-    bank = konto(bank_nummer)
+    gegen = konto(gegen_nummer)
     anzahl = 0
     summe = Decimal('0.00')
     for z in zeilen:
         if z['gebucht'] or z['honorar'] <= 0:
             continue
-        buche('4500', bank, z['honorar'], _beleg_text(jahr, z['lg']),
+        buche('4500', gegen, z['honorar'], _beleg_text(jahr, z['lg']),
               datum=date(jahr, 12, 31), liegenschaft=z['lg'], user=user)
         anzahl += 1
         summe += z['honorar']

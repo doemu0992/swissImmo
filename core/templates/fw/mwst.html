@@ -37,10 +37,39 @@
                 <div class="text-xs text-slate-400">Konto 1170 · abziehbare MWST auf Kreditoren</div></div>
             <div class="text-lg font-bold text-emerald-600 tabular-nums">CHF {{ vorsteuer|chf }}</div>
         </div>
+        {% if mwst_methode == 'saldo' and saldo_vorteil %}
+        <div class="flex items-center justify-between px-5 py-3 border-t border-slate-100">
+            <div><div class="text-sm font-medium text-slate-800">Saldosteuersatz-Vorteil</div>
+                <div class="text-xs text-slate-400">Differenz Normalsatz ./. Saldosatz → Ertrag 3600</div></div>
+            <div class="text-lg font-bold text-emerald-600 tabular-nums">CHF {{ saldo_vorteil|chf }}</div>
+        </div>
+        {% endif %}
         <div class="flex items-center justify-between px-5 py-4 bg-indigo-50/40">
             <div><div class="text-sm font-bold text-slate-900">Zahllast an ESTV</div>
-                <div class="text-xs text-slate-400">Umsatzsteuer − Vorsteuer</div></div>
+                <div class="text-xs text-slate-400">{% if mwst_methode == 'saldo' %}Brutto-Entgelt × Saldosatz{% else %}Umsatzsteuer − Vorsteuer{% endif %}</div></div>
             <div class="text-2xl font-extrabold {% if zahllast >= 0 %}text-indigo-700{% else %}text-emerald-600{% endif %} tabular-nums">CHF {{ zahllast|chf }}</div>
+        </div>
+        <!-- Abrechnung verbuchen: 2200 ausbuchen (sonst wächst das Konto endlos) -->
+        <div class="px-5 py-3 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+            {% if mwst_verbucht %}
+            <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1"></i>Periode verbucht</span>
+            <span class="text-xs text-slate-400">Konto 2200 ist für diese Periode ausgebucht.</span>
+            {% else %}
+            <span class="text-xs text-slate-500">Bucht 2200 aus: Vorsteuer verrechnen und Zahllast gegen Bank{% if mwst_methode == 'saldo' %}, Saldosatz-Vorteil als Ertrag{% endif %}.</span>
+            <form method="post" action="/neu/mwst/verbuchen/" onsubmit="return confirm('MWST-Abrechnung dieser Periode verbuchen?');">
+                {% csrf_token %}
+                <input type="hidden" name="jahr" value="{{ jahr }}">
+                <input type="hidden" name="quartal" value="{{ quartal }}">
+                <input type="hidden" name="umsatzsteuer" value="{{ umsatzsteuer }}">
+                <input type="hidden" name="vorsteuer" value="{{ vorsteuer }}">
+                <input type="hidden" name="zahllast" value="{{ zahllast }}">
+                <input type="hidden" name="methode" value="{{ mwst_methode }}">
+                {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap transition-colors">
+                    <i class="fa-solid fa-check-double mr-1.5"></i>Abrechnung verbuchen
+                </button>
+            </form>
+            {% endif %}
         </div>
     </div>
 </div>

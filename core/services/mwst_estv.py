@@ -29,16 +29,25 @@ def _q(v):
 
 
 def berechne_estv(*, umsatz_steuerbar, umsatzsteuer, vorsteuer_material,
-                  vorsteuer_invest, methode='effektiv', saldosteuersatz=Decimal('0')):
-    """Gibt ein Dict mit den ESTV-Ziffern zurück."""
+                  vorsteuer_invest, methode='effektiv', saldosteuersatz=Decimal('0'),
+                  umsatz_brutto=None):
+    """Gibt ein Dict mit den ESTV-Ziffern zurück.
+
+    `umsatz_brutto` (Entgelt INKL. MWST) ist für die Saldosteuersatz-Methode
+    massgebend: Die ESTV wendet den Saldosatz auf das Brutto-Entgelt an, nicht
+    auf den Nettoumsatz (Audit-Befund K4). Fehlt der Wert, wird er aus
+    Nettoumsatz + Umsatzsteuer hergeleitet.
+    """
     umsatz_steuerbar = _q(umsatz_steuerbar or 0)
     if methode == 'saldo':
         satz = Decimal(saldosteuersatz or 0)
-        steuer = _q(umsatz_steuerbar * satz / Decimal('100'))
+        brutto = _q(umsatz_brutto if umsatz_brutto is not None
+                    else umsatz_steuerbar + _q(umsatzsteuer or 0))
+        steuer = _q(brutto * satz / Decimal('100'))
         zahllast = steuer
         return {
             'methode': 'saldo', 'saldosteuersatz': satz,
-            'z200': umsatz_steuerbar, 'z289': umsatz_steuerbar,
+            'z200': brutto, 'z289': brutto,
             'z399': steuer, 'z479': Decimal('0.00'),
             'z500': zahllast if zahllast >= 0 else Decimal('0.00'),
             'z510': Decimal('0.00'),

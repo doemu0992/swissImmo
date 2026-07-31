@@ -35,6 +35,43 @@
     </form>
 </div>
 
+{% if geparkt %}
+<!-- Geparkte / ungeklärte Zahlungen (1190 + Mieterguthaben 2030) -->
+<div class="bg-white rounded-xl border border-amber-200 overflow-hidden mb-6">
+    <div class="px-5 py-3 border-b border-amber-100 bg-amber-50/50 flex items-center justify-between flex-wrap gap-2">
+        <div class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-circle-question text-amber-500 mr-1.5"></i>Ungeklärte Zahlungen &amp; Guthaben</div>
+        <div class="text-xs text-slate-500">{{ geparkt|length }} Position(en) · CHF {{ geparkt_total|chf }} geparkt</div>
+    </div>
+    <div class="divide-y divide-slate-50">
+        {% for z in geparkt %}
+        <form method="post" action="/neu/bankabgleich/zuordnen/" class="flex items-center gap-3 px-5 py-3 flex-wrap">
+            {% csrf_token %}
+            <input type="hidden" name="zahlung_id" value="{{ z.id }}">
+            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 {% if z.konto.nummer == '2030' %}bg-emerald-50 text-emerald-700{% else %}bg-amber-50 text-amber-700{% endif %}">
+                {% if z.konto.nummer == '2030' %}Guthaben{% else %}Ungeklärt{% endif %}
+            </span>
+            <div class="min-w-0 flex-1">
+                <div class="text-sm font-medium text-slate-900 truncate">{{ z.bemerkung|default:"Zahlungseingang" }}</div>
+                <div class="text-xs text-slate-400">{{ z.datum_eingang|date:"d.m.Y" }}{% if z.vertrag_id %} · {{ z.vertrag.mieter.display_name }}{% endif %}</div>
+            </div>
+            <span class="text-sm font-semibold text-slate-800 whitespace-nowrap shrink-0">CHF {{ z.betrag|chf }}</span>
+            <select name="rechnung_id" required
+                    class="bg-slate-100 text-xs rounded-lg px-2.5 py-2 max-w-[240px] focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                <option value="">Offene Rechnung wählen…</option>
+                {% for row in rows %}
+                <option value="{{ row.r.id }}">{{ row.mieter }} · {{ row.r.titel }} (CHF {{ row.offen|chf }})</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shrink-0 transition-colors">
+                Zuordnen
+            </button>
+        </form>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <!-- Offene Posten -->
 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
     <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Offene Posten abgleichen</div>
@@ -91,11 +128,20 @@
     <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Kürzlich abgeglichen</div>
     <div class="divide-y divide-slate-50">
         {% for z in letzte %}
-        <div class="flex items-center gap-3 px-5 py-3">
+        <div class="flex items-center gap-3 px-5 py-3 flex-wrap">
             <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-check"></i></div>
-            <span class="text-sm flex-1 truncate">{{ z.vertrag.mieter.display_name }}{% if z.bemerkung %} · {{ z.bemerkung }}{% endif %}</span>
-            <span class="text-xs text-slate-400">{{ z.datum_eingang|date:"d.m.Y" }}</span>
-            <span class="text-sm font-semibold text-emerald-600">+{{ z.betrag|chf }}</span>
+            <span class="text-sm flex-1 min-w-0 truncate">{{ z.vertrag.mieter.display_name }}{% if z.bemerkung %} · {{ z.bemerkung }}{% endif %}</span>
+            <span class="text-xs text-slate-400 whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</span>
+            <span class="text-sm font-semibold text-emerald-600 whitespace-nowrap">+{{ z.betrag|chf }}</span>
+            <form method="post" action="/neu/zahlungen/{{ z.id }}/stornieren/" class="shrink-0"
+                  onsubmit="return confirm('Diese Zahlung stornieren? Die Buchungen werden per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet.');">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="/neu/bankabgleich/{{ lg_query }}">
+                <button type="submit" title="Zahlung stornieren"
+                        class="text-xs font-semibold text-rose-600 border border-rose-200 hover:bg-rose-50 px-2.5 py-1 rounded-lg whitespace-nowrap transition-colors">
+                    <i class="fa-solid fa-rotate-left mr-1"></i>Stornieren
+                </button>
+            </form>
         </div>
         {% endfor %}
     </div>

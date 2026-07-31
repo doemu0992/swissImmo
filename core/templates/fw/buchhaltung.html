@@ -183,6 +183,34 @@
     </div>
     <p class="text-xs text-slate-400 mt-3"><i class="fa-solid fa-circle-info mr-1"></i>
         Bilanz kumulativ bis Jahresende (Bilanzkonten tragen Eröffnungssalden über). Das kumulierte Ergebnis (Vortrag + laufendes Jahr) wird dem Eigenkapital zugerechnet.</p>
+
+    <!-- JAHRESABSCHLUSS: Erfolgskonten gegen 2970 saldieren -->
+    {% if jahr != 'alle' %}
+    <div class="bg-white rounded-xl border border-slate-200 p-5 mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <div class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-lock text-indigo-500 mr-1.5"></i>Jahresabschluss {{ jahr }}</div>
+            <p class="text-xs text-slate-500 mt-0.5 max-w-xl">
+                {% if jahr_abgeschlossen %}
+                Erfolgskonten sind gegen «2970 Jahresergebnis» saldiert — die Abschlussbuchungen stehen im Journal und im Treuhand-Export.
+                {% else %}
+                Saldiert alle Erfolgskonten des Jahres gegen «2970 Jahresergebnis». Ohne diese Buchungen fehlen dem Treuhandbüro die Abschlusssätze im Journal-Export.
+                {% endif %}
+            </p>
+        </div>
+        {% if jahr_abgeschlossen %}
+        <span class="shrink-0 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fa-solid fa-check mr-1"></i>Abgeschlossen</span>
+        {% else %}
+        <form method="post" class="shrink-0" onsubmit="return confirm('Jahresabschluss {{ jahr }} buchen? Alle Erfolgskonten werden gegen 2970 saldiert.');">
+            {% csrf_token %}
+            <input type="hidden" name="aktion" value="jahresabschluss">
+            <input type="hidden" name="jahr" value="{{ jahr }}">
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap transition-colors">
+                <i class="fa-solid fa-lock mr-1.5"></i>Jahr abschliessen
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 
 <!-- JOURNAL -->

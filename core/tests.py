@@ -4474,15 +4474,19 @@ class VerwaltungshonorarTests(TestCase):
         self.assertFalse(zeilen[0]['gebucht'])
         self.assertEqual(total, Decimal('400.00'))
 
-    def test_buchung_soll_4500_haben_bank(self):
+    def test_buchung_soll_4500_haben_kontokorrent(self):
+        # W3: Gegenkonto ist das Eigentümer-Kontokorrent (2850), NICHT die Bank —
+        # am 31.12. fliesst kein Geld; 1020 muss zum Bankauszug passen.
         from core.services.verwaltungshonorar import buche_honorar
         from finance.models import Buchung
         md, lg = self._setup('4')
         anzahl, summe = buche_honorar(md, 2025, user=None)
         self.assertEqual(anzahl, 1)
         self.assertEqual(summe, Decimal('400.00'))
-        self.assertTrue(Buchung.objects.filter(soll_konto__nummer='4500', haben_konto__nummer='1020',
+        self.assertTrue(Buchung.objects.filter(soll_konto__nummer='4500', haben_konto__nummer='2850',
                                                betrag=Decimal('400.00'), liegenschaft=lg).exists())
+        self.assertFalse(Buchung.objects.filter(soll_konto__nummer='4500',
+                                                haben_konto__nummer='1020').exists())
 
     def test_idempotent(self):
         from core.services.verwaltungshonorar import buche_honorar, honorar_vorschau
@@ -7997,9 +8001,12 @@ class PrueferFundeTests(TestCase):
         # Voller Bankeingang 1900 auf 1020 (nicht auf 1700 gekappt) …
         s1020, h1020 = self._saldo('1020')
         self.assertEqual(s1020 - h1020, Decimal('1900.00'))
-        # … Überschuss 200 als Mieterguthaben (Haben) auf 1190 geparkt.
+        # … Überschuss 200 als Mieterguthaben (Haben) auf 2030 — der Mieter ist über
+        # die QRR bekannt, das ist eine echte Verbindlichkeit, kein Durchlaufposten.
+        s2030, h2030 = self._saldo('2030')
+        self.assertEqual(h2030 - s2030, Decimal('200.00'))
         s1190, h1190 = self._saldo('1190')
-        self.assertEqual(h1190 - s1190, Decimal('200.00'))
+        self.assertEqual(h1190 - s1190, Decimal('0.00'))
 
     def test_mahnlauf_bucht_gebuehr_ins_hauptbuch(self):
         from core.services.automation import run_mahnlauf
@@ -8203,8 +8210,13 @@ class PrueferRunde2Tests(TestCase):
         titel_alle = [doc['titel'] for g in gruppen for doc in g['docs']]
         self.assertNotIn('Schlussabrechnung Vormieter', titel_alle)
 
-    # --- Bewirtschafter: Schlussabrechnung storniert offene Forderungen (keine Doppel) ---
-    def test_schlussabrechnung_storniert_offene_forderung(self):
+    # --- Bewirtschafter: Schlussabrechnung belastet offene Forderungen nicht doppelt ---
+    def test_schlussabrechnung_keine_doppelforderung(self):
+        # Seit dem Buchhalter-Audit (K2) werden bestehende Mietforderungen NICHT mehr
+        # storniert und auf 3000 neu gebucht (das vernichtete die MWST-Abgrenzung und
+        # verschob Schadenersatz in den Mietertrag). Sie bleiben bestehen; die
+        # Schlussabrechnung bucht nur die NEUEN Positionen. Invariante bleibt:
+        # der Mieter wird nicht doppelt belastet.
         from finance.models import DebitorenRechnung
         from finance.booking import buche, ensure_kontenplan
         ensure_kontenplan()
@@ -8219,11 +8231,9 @@ class PrueferRunde2Tests(TestCase):
         c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/',
                {'auszug_datum': '2024-06-30', 'aktion': 'buchen'})
         alt.refresh_from_db()
-        self.assertEqual(alt.status, 'storniert')   # alte offene Forderung übernommen
-        offene = DebitorenRechnung.objects.filter(vertrag=v, status='offen')
-        self.assertEqual(offene.count(), 1)          # nur die Schlussabrechnung, keine Doppelforderung
-        self.assertEqual(offene.first().titel, 'Schlussabrechnung (Nachzahlung)')
-        self.assertEqual(offene.first().betrag, Decimal('1700'))
+        self.assertEqual(alt.status, 'offen')        # Originalforderung bleibt (MWST intakt)
+        offene = DebitorenRechnung.objects.filter(vertrag=v, status__in=['offen', 'teilbezahlt'])
+        self.assertEqual(sum((r.offener_betrag for r in offene), Decimal('0')), Decimal('1700'))
 
 
 class PrueferRunde2QuickTests(TestCase):
@@ -8387,14 +8397,34 @@ class MoneyBugBatchTests(TestCase):
         self.assertEqual(Pendenz.objects.filter(vertrag=v, kategorie='frist').count(), 1)
 
     def test_schlussabrechnung_teilbezahlt_bleibt_op(self):
-        # Quellcode-Absicherung: der Buchbetrag zieht bereits teilbezahlte OPs ab,
-        # damit ein teilweise beglichener Saldo nicht doppelt als Ertrag gebucht wird.
-        src = open('core/views/fw.py', encoding='utf-8').read()
-        idx = src.find('rest_bleibt_op')
-        self.assertGreaterEqual(idx, 0)
-        block = src[idx:idx + 800]
-        self.assertRegex(block, r"buchbetrag\s*=\s*\(daten\['saldo'\]\s*-\s*rest_bleibt_op\)")
-        self.assertRegex(block, r"if\s+buchbetrag\s*>\s*0")
+        # Verhaltenstest (ersetzt die frühere Quellcode-Prüfung): eine teilbezahlte
+        # Mietforderung bleibt mit ihrem Restbetrag als OP bestehen und wird von der
+        # Schlussabrechnung weder storniert noch ein zweites Mal als Ertrag gebucht.
+        from finance.models import DebitorenRechnung, Zahlungseingang, Buchung
+        from finance.booking import buche, ensure_kontenplan
+        from django.db.models import Sum
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        alt = DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, einheit=e,
+                                               titel='Miete 05/2024', datum=date(2024, 5, 1),
+                                               faellig_am=date(2024, 5, 5), betrag=Decimal('1700'),
+                                               status='teilbezahlt')
+        buche('1100', '3000', Decimal('1700'), 'Miete 05/2024', datum=date(2024, 5, 1),
+              liegenschaft=lg, debitor=alt)
+        Zahlungseingang.objects.create(vertrag=v, betrag=Decimal('700'),
+                                       datum_eingang=date(2024, 5, 10),
+                                       buchungs_monat=date(2024, 5, 1),
+                                       debitoren_rechnung=alt, status='verbucht')
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/',
+               {'auszug_datum': '2024-06-30', 'aktion': 'buchen'})
+        alt.refresh_from_db()
+        self.assertEqual(alt.status, 'teilbezahlt')
+        self.assertEqual(alt.offener_betrag, Decimal('1000'))
+        # Mietertrag wurde nur EINMAL gebucht (kein Doppelertrag durch Neubuchung)
+        ertrag_3000 = (Buchung.objects.filter(haben_konto__nummer='3000')
+                       .aggregate(s=Sum('betrag'))['s'] or Decimal('0'))
+        self.assertEqual(ertrag_3000, Decimal('1700'))
 
 
 class SecurityBatchTests(TestCase):
@@ -10734,3 +10764,243 @@ class FinanzGuardTests(TestCase):
         self.assertEqual(resp.status_code, 409)
         r.refresh_from_db()
         self.assertNotEqual(r.status, 'storniert')
+
+
+class BuchhalterFixesTests(TestCase):
+    """F2–F4 aus dem Buchhalter-Audit: korrekte Buchungssätze + Sackgassen-Fixes."""
+
+    def _saldo(self, nummer):
+        """Saldo eines Kontos (Soll − Haben) über alle Buchungen."""
+        from finance.models import Buchung
+        from django.db.models import Sum
+        soll = Buchung.objects.filter(soll_konto__nummer=nummer).aggregate(s=Sum('betrag'))['s'] or Decimal('0')
+        haben = Buchung.objects.filter(haben_konto__nummer=nummer).aggregate(s=Sum('betrag'))['s'] or Decimal('0')
+        return soll - haben
+
+    def _soll_gleich_haben(self):
+        from finance.models import Buchung
+        from django.db.models import Sum
+        t = Buchung.objects.aggregate(s=Sum('betrag'))['s'] or Decimal('0')
+        return t  # jede Zeile ist ein Soll/Haben-Paar → Bilanz per Konstruktion
+
+    # ---------- K1: MWST-Korrektur beim Debitorenverlust ----------
+    def test_k1_debitorenverlust_korrigiert_mwst(self):
+        from finance.models import DebitorenRechnung, Buchung
+        from finance.booking import buche, ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        v.mwst_pflichtig = True; v.mwst_satz = Decimal('8.1'); v.save()
+        r = DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, einheit=e,
+                                             titel='Miete 03/2024', datum=date(2024, 3, 1),
+                                             faellig_am=date(2024, 3, 5),
+                                             betrag=Decimal('1081.00'), status='offen')
+        buche('1100', '3010', Decimal('1000'), 'Miete', datum=date(2024, 3, 1), liegenschaft=lg, debitor=r)
+        buche('1100', '2200', Decimal('81'), 'MWST', datum=date(2024, 3, 1), liegenschaft=lg, debitor=r)
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post(f'/neu/debitoren/{r.id}/abschreiben/', {'grund': 'Verlustschein'})
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'abgeschrieben')
+        # MWST muss zurückgeholt sein: 2200 wieder auf 0, Aufwand nur netto
+        self.assertEqual(self._saldo('2200'), Decimal('0.00'))
+        self.assertEqual(self._saldo('3805'), Decimal('1000.00'))
+        self.assertEqual(self._saldo('1100'), Decimal('0.00'))
+
+    # ---------- K3: Kaution wird in der Schlussabrechnung bilanziert ----------
+    def test_k3_schlussabrechnung_bucht_kaution(self):
+        from finance.booking import ensure_kontenplan, buche
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        v.kautions_betrag = Decimal('3000'); v.kautions_art = 'sperrkonto'
+        v.kautions_einbezahlt_am = date(2024, 1, 1); v.save()
+        buche('1015', '2010', Decimal('3000'), 'Kaution Einzahlung', datum=date(2024, 1, 1), liegenschaft=lg)
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/',
+               {'auszug_datum': '2024-06-30', 'aktion': 'buchen', 'kaution_verrechnen': 'on'})
+        # Sperrkonto + Verbindlichkeit müssen aufgelöst sein (vorher blieben sie ewig stehen)
+        self.assertEqual(self._saldo('1015'), Decimal('0.00'))
+        self.assertEqual(self._saldo('2010'), Decimal('0.00'))
+
+    # ---------- K2: Schäden landen auf 3600, nicht im Mietertrag 3000 ----------
+    def test_k2_schaden_nicht_im_mietertrag(self):
+        from finance.models import DebitorenRechnung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/',
+               {'auszug_datum': '2024-06-30', 'aktion': 'buchen',
+                'pos_text': 'Reinigung', 'pos_betrag': '500', 'pos_richtung': 'zulasten'})
+        self.assertEqual(self._saldo('3600'), Decimal('-500.00'))   # Ertrag im Haben
+        self.assertEqual(self._saldo('3000'), Decimal('0.00'))      # kein Mietertrag
+        self.assertTrue(DebitorenRechnung.objects.filter(
+            vertrag=v, titel='Schlussabrechnung (Nachzahlung)').exists())
+
+    def test_k2_offene_miete_bleibt_bestehen_keine_doppelbelastung(self):
+        # Neu: alte Forderung wird NICHT mehr storniert (MWST/Ertragskonto bleiben
+        # erhalten) — sie darf aber auch nicht doppelt gefordert werden.
+        from finance.models import DebitorenRechnung
+        from finance.booking import buche, ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        alt = DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, einheit=e,
+                                               titel='Miete 05/2024', datum=date(2024, 5, 1),
+                                               faellig_am=date(2024, 5, 5),
+                                               betrag=Decimal('1700'), status='offen')
+        buche('1100', '3000', Decimal('1700'), 'Miete 05/2024', datum=date(2024, 5, 1),
+              liegenschaft=lg, debitor=alt)
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/',
+               {'auszug_datum': '2024-06-30', 'aktion': 'buchen'})
+        alt.refresh_from_db()
+        self.assertEqual(alt.status, 'offen')          # bleibt bestehen (MWST intakt)
+        offene = DebitorenRechnung.objects.filter(vertrag=v, status__in=['offen', 'teilbezahlt'])
+        # Gesamtforderung unverändert 1700 — keine zweite Forderung über denselben Betrag
+        self.assertEqual(sum((r.offener_betrag for r in offene), Decimal('0')), Decimal('1700'))
+
+    def test_schlussabrechnung_idempotent(self):
+        from finance.models import DebitorenRechnung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        payload = {'auszug_datum': '2024-06-30', 'aktion': 'buchen',
+                   'pos_text': 'Reinigung', 'pos_betrag': '500', 'pos_richtung': 'zulasten'}
+        for _ in range(2):
+            c.post(f'/neu/vertraege/{v.id}/schlussabrechnung/', payload)
+        self.assertEqual(DebitorenRechnung.objects.filter(
+            vertrag=v, titel='Schlussabrechnung (Nachzahlung)').count(), 1)
+
+    # ---------- W1/F3: NK-Gutschrift wird echtes Guthaben (2030) ----------
+    def test_w1_nk_gutschrift_als_guthaben(self):
+        from finance.models import AbrechnungsPeriode, NebenkostenBeleg, Zahlungseingang
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='NK 2024',
+                                              start_datum=date(2024, 1, 1), ende_datum=date(2024, 12, 31))
+        NebenkostenBeleg.objects.create(periode=p, text='Heizung', kategorie='heizung',
+                                        betrag=Decimal('100'), datum=date(2024, 6, 1))
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post(f'/neu/nebenkosten/{p.id}/verbuchen/')
+        # Gutschrift (Akonto > Kosten) muss als Guthaben auf 2030 stehen, nicht 1100 entlasten
+        if self._saldo('2030') != Decimal('0.00'):
+            self.assertLess(self._saldo('2030'), Decimal('0.00'))   # Passivum im Haben
+            self.assertTrue(Zahlungseingang.objects.filter(konto__nummer='2030').exists())
+
+    # ---------- F3: geparkte Zahlung nachträglich zuordnen ----------
+    def test_f3_geparkte_zahlung_zuordnen(self):
+        from finance.models import DebitorenRechnung, Zahlungseingang
+        from finance.booking import buche, ensure_kontenplan, konto
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        r = DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, einheit=e,
+                                             titel='Miete 03/2024', datum=date(2024, 3, 1),
+                                             faellig_am=date(2024, 3, 5),
+                                             betrag=Decimal('1700'), status='offen')
+        buche('1100', '3000', Decimal('1700'), 'Miete', datum=date(2024, 3, 1), liegenschaft=lg, debitor=r)
+        z = Zahlungseingang.objects.create(betrag=Decimal('1700'), datum_eingang=date(2024, 3, 6),
+                                           buchungs_monat=date(2024, 3, 1),
+                                           bemerkung='UNGEKLÄRT: Unbekannte GmbH',
+                                           konto=konto('1190'), status='verbucht')
+        buche('1020', '1190', Decimal('1700'), 'ungeklärt', datum=date(2024, 3, 6), liegenschaft=lg, zahlung=z)
+        c = Client(); c.force_login(_team_user())
+        resp = c.post('/neu/bankabgleich/zuordnen/', {'zahlung_id': z.id, 'rechnung_id': r.id}, follow=True)
+        self.assertContains(resp, 'zugeordnet')
+        r.refresh_from_db(); z.refresh_from_db()
+        self.assertEqual(r.status, 'bezahlt')
+        self.assertEqual(z.debitoren_rechnung_id, r.id)
+        self.assertEqual(self._saldo('1190'), Decimal('0.00'))   # Parkkonto geleert
+        self.assertEqual(self._saldo('1100'), Decimal('0.00'))   # Forderung getilgt
+
+    # ---------- W7: Zahlungs-Storno in /neu/ ----------
+    def test_w7_zahlung_stornieren(self):
+        from finance.models import DebitorenRechnung, Zahlungseingang
+        from finance.booking import buche, ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        r = DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, einheit=e,
+                                             titel='Miete 03/2024', datum=date(2024, 3, 1),
+                                             faellig_am=date(2024, 3, 5),
+                                             betrag=Decimal('1700'), status='offen')
+        buche('1100', '3000', Decimal('1700'), 'Miete', datum=date(2024, 3, 1), liegenschaft=lg, debitor=r)
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post('/neu/bankabgleich/verbuchen/', {'rechnung_id': r.id})
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'bezahlt')
+        z = Zahlungseingang.objects.get(debitoren_rechnung=r)
+        c.post(f'/neu/zahlungen/{z.id}/stornieren/')
+        r.refresh_from_db(); z.refresh_from_db()
+        self.assertEqual(z.status, 'storniert')
+        self.assertEqual(r.status, 'offen')                       # OP wieder offen
+        self.assertEqual(self._saldo('1020'), Decimal('0.00'))    # Bankbuchung aufgehoben
+
+    # ---------- W4: Jahresabschluss saldiert Erfolgskonten gegen 2970 ----------
+    def test_w4_jahresabschluss_saldiert_erfolgskonten(self):
+        from finance.booking import buche, ensure_kontenplan
+        from core.services.jahresabschluss import buche_jahresabschluss, ist_abgeschlossen
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        buche('1100', '3000', Decimal('12000'), 'Mieten', datum=date(2024, 6, 30), liegenschaft=lg)
+        buche('4000', '1020', Decimal('2000'), 'Reparatur', datum=date(2024, 7, 1), liegenschaft=lg)
+        n, erg = buche_jahresabschluss(2024, user=None)
+        self.assertEqual(n, 2)
+        self.assertEqual(erg, Decimal('10000.00'))                # Gewinn
+        self.assertEqual(self._saldo('3000'), Decimal('0.00'))    # Erfolgskonten saldiert
+        self.assertEqual(self._saldo('4000'), Decimal('0.00'))
+        self.assertEqual(self._saldo('2970'), Decimal('-10000.00'))  # Ergebnis im Haben
+        self.assertTrue(ist_abgeschlossen(2024))
+        # idempotent
+        n2, _ = buche_jahresabschluss(2024, user=None)
+        self.assertEqual(n2, 0)
+
+    # ---------- K5: Anlage wird aktiviert (1500 läuft nicht negativ) ----------
+    def test_k5_anlage_wird_aktiviert(self):
+        from finance.booking import ensure_kontenplan
+        from core.services.automation import run_abschreibungen
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post('/neu/anlagen/', {'aktion': 'anlage_neu', 'liegenschaft_id': lg.id,
+                                 'bezeichnung': 'Heizung', 'anschaffungswert': '20000',
+                                 'anschaffungsdatum': '2024-01-01', 'nutzungsdauer_jahre': '10',
+                                 'gegenkonto': '2000', 'aktivieren': 'on'})
+        self.assertEqual(self._saldo('1500'), Decimal('20000.00'))
+        self.assertEqual(self._saldo('2000'), Decimal('-20000.00'))
+        run_abschreibungen(2024, user=None)
+        self.assertEqual(self._saldo('1500'), Decimal('18000.00'))   # nach AfA positiv!
+        self.assertGreater(self._saldo('1500'), Decimal('0'))
+
+    # ---------- K4: Saldosteuersatz auf Brutto-Entgelt ----------
+    def test_k4_saldosteuersatz_auf_brutto(self):
+        from core.services.mwst_estv import berechne_estv
+        d = berechne_estv(umsatz_steuerbar=Decimal('10000'), umsatzsteuer=Decimal('810'),
+                          vorsteuer_material=Decimal('0'), vorsteuer_invest=Decimal('0'),
+                          methode='saldo', saldosteuersatz=Decimal('6.5'),
+                          umsatz_brutto=Decimal('10810'))
+        self.assertEqual(d['z289'], Decimal('10810.00'))            # Brutto, nicht Netto
+        self.assertEqual(d['z399'], Decimal('702.65'))              # 6.5% von 10'810
+        self.assertEqual(d['z500'], Decimal('702.65'))
+
+    def test_k4_mwst_verbuchen_leert_2200(self):
+        from finance.booking import buche, ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        buche('1100', '2200', Decimal('810'), 'MWST Q1', datum=date(2024, 3, 31), liegenschaft=lg)
+        buche('1170', '2000', Decimal('200'), 'Vorsteuer', datum=date(2024, 3, 31), liegenschaft=lg)
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+        c.post('/neu/mwst/verbuchen/', {'jahr': '2024', 'quartal': '1', 'umsatzsteuer': '810',
+                                        'vorsteuer': '200', 'zahllast': '610', 'methode': 'effektiv'})
+        self.assertEqual(self._saldo('2200'), Decimal('0.00'))    # ausgebucht
+        self.assertEqual(self._saldo('1170'), Decimal('0.00'))    # Vorsteuer verrechnet
+        self.assertEqual(self._saldo('1020'), Decimal('-610.00'))  # Zahlung an ESTV
+
+    # ---------- W5: Ad-hoc-Rechnung nicht auf 3000 ----------
+    def test_w5_adhoc_debitor_auf_3600(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/debitoren/neu/', {'titel': 'Schlüsselersatz', 'betrag': '80',
+                                       'vertrag_id': v.id})
+        self.assertEqual(self._saldo('3600'), Decimal('-80.00'))
+        self.assertEqual(self._saldo('3000'), Decimal('0.00'))

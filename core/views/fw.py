@@ -462,7 +462,9 @@ def fw_debitoren(request):
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_debitor_neu(request):
     """Ad-hoc-Debitorenrechnung (Weiterverrechnung: Sonnerie/Schlüssel/Ersatz …).
-    Bucht Debitor an Ertrag (3000) und ermöglicht anschliessend die QR-Rechnung."""
+    Bucht Debitor an das gewählte Ertragskonto (Standard 3600 «Übrige Erträge»)
+    und ermöglicht anschliessend die QR-Rechnung. NICHT auf 3000 — Schlüssel-
+    ersatz & Co. sind kein Mietertrag (verfälscht Mieterspiegel + Honorarbasis)."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from finance.models import Buchungskonto, Buchung
@@ -486,15 +488,22 @@ def fw_debitor_neu(request):
     heute = timezone.localdate()
     faellig = heute + _timedelta(days=30)
 
+    # Ertragskonto: explizit gewählt (Feld konto_haben) oder Standard 3600.
+    konto_haben = None
+    if request.POST.get('konto_haben'):
+        konto_haben = Buchungskonto.objects.filter(id=request.POST['konto_haben']).first()
+    haben_nr = konto_haben.nummer if konto_haben else "3600"
+
     with transaction.atomic():
         rechnung = DebitorenRechnung.objects.create(
             vertrag=vertrag, liegenschaft=lg,
             einheit=(vertrag.einheit if vertrag else None),
             titel=titel, beschreibung=(request.POST.get('beschreibung') or '').strip(),
             datum=heute, faellig_am=faellig, betrag=betrag, status='offen',
+            konto_haben=konto_haben,
         )
         from finance.booking import buche
-        buche("1100", "3000", betrag, f"Weiterverrechnung: {titel}", datum=heute,
+        buche("1100", haben_nr, betrag, f"Weiterverrechnung: {titel}", datum=heute,
               liegenschaft=lg, debitor=rechnung, user=request.user)
 
     log_aktion(request, "Ad-hoc-Debitorenrechnung erstellt", titel, f"CHF {betrag}")
@@ -724,13 +733,26 @@ def fw_debitor_abschreiben(request, pk):
     grund = (request.POST.get('grund') or '').strip()
     mieter_name = r.vertrag.mieter.display_name if r.vertrag_id and r.vertrag.mieter_id else ''
     lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag_id and r.vertrag.einheit_id else None)
+    # MWST-Korrektur (Audit K1, Entgeltsminderung Art. 41 MWSTG): Bei optierten
+    # Verträgen steckt im offenen Betrag abgegrenzte MWST (2200), die nie
+    # vereinnahmt wird — sie muss zurückgeholt werden, sonst wird MWST an die
+    # ESTV abgeliefert, die es nie gab, und der Aufwand 3805 ist zu hoch.
+    mwst_anteil = Decimal('0.00')
+    v = r.vertrag if r.vertrag_id else None
+    if v is not None and getattr(v, 'mwst_pflichtig', False):
+        satz = getattr(v, 'mwst_satz', None) or Decimal('8.1')
+        mwst_anteil = (offen * satz / (Decimal('100') + satz)).quantize(Decimal('0.01'))
     with transaction.atomic():
         ensure_kontenplan()
         text = f"Forderungsverlust {r.titel} {mieter_name}".strip()
         if grund:
             text += f" ({grund})"
-        buche('3805', '1100', offen, text, datum=timezone.localdate(),
+        buche('3805', '1100', offen - mwst_anteil, text, datum=timezone.localdate(),
               liegenschaft=lg, debitor=r, user=request.user)
+        if mwst_anteil > 0:
+            buche('2200', '1100', mwst_anteil,
+                  f"MWST-Korrektur Forderungsverlust {r.titel} (Entgeltsminderung)",
+                  datum=timezone.localdate(), liegenschaft=lg, debitor=r, user=request.user)
         r.status = 'abgeschrieben'
         r.save(update_fields=['status'])
     log_aktion(request, "Forderungsverlust gebucht", r.titel,
@@ -2782,57 +2804,93 @@ def fw_schlussabrechnung(request, vertrag_id):
                 messages.info(request, "Diese Schlussabrechnung wurde bereits verbucht.")
                 return redirect(f'/neu/vertraege/{v.id}/')
             with transaction.atomic():
-                # Kaution als abgerechnet markieren
+                from finance.booking import buche
+                heute = timezone.localdate()
+                lg_s = v.einheit.liegenschaft if v.einheit_id else None
+                dat_s = auszug or heute
+
+                # ── 1) NUR die NEUEN Positionen buchen (Schäden, Reinigung, NK-Saldo) ──
+                # Bereits gestellte Mietforderungen bleiben unangetastet: Storno +
+                # Neubuchung auf 3000 (früheres Verhalten) vernichtete deren MWST-
+                # Abgrenzung (2200) und verschob Schadenersatz in den Mietertrag —
+                # was Mieterspiegel und Honorarbasis verfälschte (Audit K2/W5).
+                neu_saldo = (daten['zwischen'] - daten['offen_total']).quantize(Decimal('0.01'))
+                if neu_saldo > 0:
+                    rech = DebitorenRechnung.objects.create(
+                        vertrag=v, liegenschaft=lg_s, einheit=v.einheit,
+                        titel="Schlussabrechnung (Nachzahlung)", datum=dat_s,
+                        faellig_am=dat_s + _timedelta(days=30), betrag=neu_saldo, status='offen')
+                    buche("1100", "3600", neu_saldo,
+                          f"Schlussabrechnung {v.mieter} (Schäden/Nebenkosten)",
+                          datum=dat_s, liegenschaft=lg_s, debitor=rech, user=request.user)
+                elif neu_saldo < 0:
+                    # Gutschrift zugunsten Mieter → als echtes Guthaben (2030) führen,
+                    # damit es im Mieterkonto sichtbar und auszahlbar ist.
+                    from finance.booking import konto as _k_s
+                    buche("3600", "2030", abs(neu_saldo),
+                          f"Schlussabrechnung {v.mieter} — Gutschrift",
+                          datum=dat_s, liegenschaft=lg_s, user=request.user)
+                    Zahlungseingang.objects.create(
+                        vertrag=v, betrag=abs(neu_saldo), datum_eingang=dat_s,
+                        buchungs_monat=dat_s.replace(day=1),
+                        bemerkung="Schlussabrechnung — Guthaben Mieter"[:255],
+                        konto=_k_s("2030"), liegenschaft=lg_s,
+                        erstellt_von=request.user, status='verbucht')
+
+                # ── 2) Kaution bilanziell abwickeln (Audit K3) ──
+                # Früher wurden nur Vertragsfelder gesetzt — 1015/2010 blieben ewig
+                # in der Bilanz stehen (stille Drift bei jedem Mieterwechsel).
+                #   Sperrkonto freigeben:  1020 an 1015
+                #   Verrechnung mit OP:    2010 an 1100
+                #   Rest an Mieter:        2010 an 1020
                 if kaution_verrechnen and (v.kautions_betrag or 0) > 0:
+                    kaution = v.kautions_betrag or Decimal('0.00')
                     v.kautions_zurueckbezahlt_am = auszug
                     if v.ist_kautionsversicherung:
-                        # Versicherung: keine Rückzahlung an Mieter; Police wird aufgelöst.
+                        # Versicherung: kein Depot, keine Rückzahlung an den Mieter.
                         v.kautions_rueckzahlung_betrag = Decimal('0.00')
-                    elif daten['nachzahlung']:
-                        # Kaution ging an offene Forderungen → Abzug = ganze Kaution, Rückzahlung 0
-                        v.kautions_abzug_betrag = v.kautions_betrag
-                        v.kautions_rueckzahlung_betrag = Decimal('0.00')
+                        v.save()
                     else:
-                        v.kautions_rueckzahlung_betrag = daten['rueckzahlung']
-                        v.kautions_abzug_betrag = (v.kautions_betrag or Decimal('0')) - daten['rueckzahlung']
-                    v.save()
-                # Nachzahlung als Debitor stellen
-                if daten['nachzahlung'] and daten['saldo'] > 0:
-                    from finance.models import Buchungskonto, Buchung
-                    from finance.api import erstelle_storno_buchung
-                    heute = timezone.localdate()
-                    # Bereits offene Mietforderungen sind in daten['saldo'] enthalten
-                    # (offen_total). Ohne Bereinigung würden sie ein zweites Mal gefordert
-                    # und der Mietertrag (3000) doppelt gebucht.
-                    #  - Sauber offene Forderungen (ohne Teilzahlung) werden revisions-
-                    #    sicher storniert und gehen in die Schlussabrechnung über.
-                    #  - Teilbezahlte (oder offene mit Teilzahlung) lassen sich nicht sauber
-                    #    stornieren (die Zahlung bliebe hängen) → sie bleiben als eigene OP
-                    #    bestehen und ihr offener Rest wird aus der Nachzahlung
-                    #    HERAUSGERECHNET, damit der Mieter nicht doppelt belastet wird.
-                    offene_alt = (DebitorenRechnung.objects
-                                  .filter(vertrag=v, status__in=['offen', 'teilbezahlt'])
-                                  .exclude(titel__startswith='Schlussabrechnung'))
-                    rest_bleibt_op = Decimal('0.00')
-                    for alt in offene_alt:
-                        if alt.zahlungseingaenge.filter(status='verbucht').exists():
-                            rest_bleibt_op += alt.offener_betrag
-                            continue
-                        for b in Buchung.objects.filter(debitoren_rechnung=alt, ist_storno=False,
-                                                        storniert_am__isnull=True):
-                            erstelle_storno_buchung(b, benutzer=request.user)
-                        alt.status = 'storniert'
-                        alt.save(update_fields=['status'])
-                    buchbetrag = (daten['saldo'] - rest_bleibt_op).quantize(Decimal('0.01'))
-                    if buchbetrag > 0:
-                        rech = DebitorenRechnung.objects.create(
-                            vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
-                            titel="Schlussabrechnung (Nachzahlung)", datum=heute,
-                            faellig_am=heute + _timedelta(days=30), betrag=buchbetrag, status='offen')
-                        from finance.booking import buche
-                        buche("1100", "3000", buchbetrag, f"Schlussabrechnung {v.mieter}",
-                              datum=heute, liegenschaft=v.einheit.liegenschaft, debitor=rech,
-                              user=request.user)
+                        # Offene Forderungen NACH Schritt 1 (inkl. neuer Schlussabrechnung)
+                        offene_op = list(DebitorenRechnung.objects
+                                         .filter(vertrag=v, status__in=['offen', 'teilbezahlt'])
+                                         .order_by('faellig_am', 'id'))
+                        offen_nachher = sum((r.offener_betrag for r in offene_op), Decimal('0.00'))
+                        verrechnet = min(kaution, offen_nachher)
+                        rueck = (kaution - verrechnet).quantize(Decimal('0.01'))
+                        v.kautions_rueckzahlung_betrag = rueck
+                        v.kautions_abzug_betrag = verrechnet
+                        v.save()
+                        from finance.models import Buchung as _BS
+                        beleg_k = f"Kaution Schlussabrechnung [V{v.pk}] {v.mieter}"
+                        if not _BS.objects.filter(beleg_text__startswith=beleg_k, ist_storno=False).exists():
+                            buche("1020", "1015", kaution, f"{beleg_k} — Sperrkonto freigegeben",
+                                  datum=dat_s, liegenschaft=lg_s, user=request.user)
+                            if verrechnet > 0:
+                                buche("2010", "1100", verrechnet,
+                                      f"{beleg_k} — Verrechnung offene Forderungen",
+                                      datum=dat_s, liegenschaft=lg_s, user=request.user)
+                            if rueck > 0:
+                                buche("2010", "1020", rueck, f"{beleg_k} — Rückzahlung an Mieter",
+                                      datum=dat_s, liegenschaft=lg_s, user=request.user)
+                        # OP-Nebenbuch nachführen: die verrechnete Kaution tilgt die
+                        # offenen Rechnungen (sonst Drift Hauptbuch 1100 ↔ Debitorenliste).
+                        rest_v = verrechnet
+                        for r_op in offene_op:
+                            if rest_v <= 0:
+                                break
+                            teil = min(rest_v, r_op.offener_betrag)
+                            if teil <= 0:
+                                continue
+                            Zahlungseingang.objects.create(
+                                vertrag=v, betrag=teil, datum_eingang=dat_s,
+                                buchungs_monat=(r_op.faellig_am or r_op.datum or dat_s).replace(day=1),
+                                bemerkung=f"Verrechnung Mietkaution — {r_op.titel}"[:255],
+                                debitoren_rechnung=r_op, liegenschaft=lg_s,
+                                erstellt_von=request.user, status='verbucht')
+                            r_op.status = 'bezahlt' if r_op.offener_betrag <= 0 else 'teilbezahlt'
+                            r_op.save(update_fields=['status'])
+                            rest_v -= teil
             from core.services.automation import erledige_pendenzen_fuer
             erledige_pendenzen_fuer(v, ['Schlussabrechnung', 'Kaution'], user=request.user)
             log_aktion(request, "Schlussabrechnung verbucht", str(v.mieter), f"Saldo CHF {daten['saldo']}", ziel=v)
@@ -3454,11 +3512,21 @@ def fw_bankabgleich(request):
     if aktive_lg:
         letzte = letzte.filter(vertrag__einheit__liegenschaft=aktive_lg)
 
+    # Geparkte Zahlungen (Durchlaufkonto 1190 / Mieterguthaben 2030) mit
+    # Zuordnungs-Aktion — Audit-Befund: ohne diese Liste ist jede ungeklärte
+    # Gutschrift eine Sackgasse.
+    geparkt = list(Zahlungseingang.objects
+                   .filter(status='verbucht', konto__nummer__in=['1190', '2030'])
+                   .select_related('vertrag__mieter', 'konto')
+                   .order_by('-datum_eingang'))
+    geparkt_total = sum((z.betrag for z in geparkt), Decimal('0.00'))
+
     from django.contrib import messages
     return render(request, 'fw/bankabgleich.html', {
         **basis, 'nav': 'bankabgleich', 'rows': rows,
         'total_offen': total_offen, 'anzahl': len(rows),
         'letzte': letzte,
+        'geparkt': geparkt, 'geparkt_total': geparkt_total,
         'meldung': list(messages.get_messages(request)),
     })
 
@@ -3792,7 +3860,8 @@ def fw_camt_import(request):
     verbucht = 0
     zugeordnet_summe = Decimal('0.00')
     fuzzy = 0
-    geklaert = 0            # auf Durchlaufkonto 1190 geparkt
+    geklaert = 0            # auf Durchlaufkonto 1190 geparkt (Mieter unbekannt)
+    guthaben = 0            # Überzahlung auf 2030 (Mieter bekannt)
     duplikate = 0
     heute = timezone.localdate()
 
@@ -3800,6 +3869,9 @@ def fw_camt_import(request):
     konto_deb = Buchungskonto.objects.filter(nummer="1100").first()
     konto_clearing, _ = Buchungskonto.objects.get_or_create(
         nummer="1190", defaults={'bezeichnung': 'Durchlaufkonto (ungeklärte Zahlungen)', 'typ': 'bilanz'})
+    # W6: Überzahlung eines BEKANNTEN Mieters ist kein ungeklärter Posten, sondern
+    # eine echte Verbindlichkeit → 2030 «Guthaben Mieter» statt Durchlaufkonto 1190.
+    konto_guthaben = _park_konto("2030")
 
     # Fuzzy-Index: offener Betrag → Rechnungen (für referenzlose Gutschriften)
     def _norm(s):
@@ -3852,9 +3924,10 @@ def fw_camt_import(request):
             _verbuche(rechnung, betrag, e, 'Referenz')
             verbucht += 1; zugeordnet_summe += betrag
             # Überzahlung: den vollen Bankeingang abbilden — der Überschuss wird als
-            # Mieterguthaben aufs Durchlaufkonto 1190 gebucht. Ohne das läge auf 1020
-            # weniger als auf dem realen Kontoauszug → Bankabgleich geht nie auf und
-            # die Überzahlung verschwindet.
+            # Mieterguthaben auf 2030 gebucht. Ohne das läge auf 1020 weniger als auf
+            # dem realen Kontoauszug → Bankabgleich geht nie auf und die Überzahlung
+            # verschwindet. 2030 statt 1190 (Audit W6): der Mieter ist bekannt, das
+            # ist eine echte Verbindlichkeit und kein ungeklärter Durchlaufposten.
             ueberschuss = betrag_e - offen
             if ueberschuss > 0:
                 with transaction.atomic():
@@ -3863,16 +3936,16 @@ def fw_camt_import(request):
                         datum_eingang=e['datum'] or heute,
                         buchungs_monat=(e['datum'] or heute).replace(day=1),
                         bemerkung=f"{quelle} Überzahlung {rechnung.titel} (Guthaben Mieter)"[:255],
-                        bank_referenz=f"{aref}:ueber"[:255], konto=konto_clearing,
+                        bank_referenz=f"{aref}:ueber"[:255], konto=konto_guthaben,
                         liegenschaft=rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None,
                         erstellt_von=request.user, status='verbucht')
                     from finance.booking import buche
-                    buche("1020", "1190", ueberschuss,
+                    buche("1020", "2030", ueberschuss,
                           f"{quelle} Überzahlung {rechnung.vertrag.mieter} - {rechnung.titel}",
                           datum=e['datum'] or heute,
                           liegenschaft=rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None,
                           zahlung=z_ueber, user=request.user)
-                geklaert += 1; zugeordnet_summe += ueberschuss
+                guthaben += 1; zugeordnet_summe += ueberschuss
             continue
 
         # 2) Fuzzy: exakter Betrag + Name des Auftraggebers passt eindeutig
@@ -3900,11 +3973,14 @@ def fw_camt_import(request):
         geklaert += 1
 
     log_aktion(request, f"{quelle}-Import", datei.name,
-               f"{verbucht} verbucht (davon {fuzzy} fuzzy), CHF {zugeordnet_summe}, {geklaert} auf 1190, {duplikate} Duplikate")
-    if verbucht or geklaert:
+               f"{verbucht} verbucht (davon {fuzzy} fuzzy), CHF {zugeordnet_summe}, "
+               f"{geklaert} auf 1190, {guthaben} Guthaben auf 2030, {duplikate} Duplikate")
+    if verbucht or geklaert or guthaben:
         teile = [f"{verbucht} Zahlung(en) zugeordnet (CHF {zugeordnet_summe})"]
         if fuzzy:
             teile.append(f"davon {fuzzy} über Name/Betrag")
+        if guthaben:
+            teile.append(f"{guthaben} Überzahlung(en) als Mieterguthaben (2030)")
         if geklaert:
             teile.append(f"{geklaert} ungeklärt auf Durchlaufkonto 1190 geparkt")
         if duplikate:
@@ -5780,13 +5856,29 @@ def fw_anlagen(request):
             except Exception:
                 adatum = heute
             if lg and request.POST.get('bezeichnung', '').strip():
-                Anlage.objects.create(
+                wert = _dec(request.POST.get('anschaffungswert'))
+                anl = Anlage.objects.create(
                     liegenschaft=lg, bezeichnung=request.POST['bezeichnung'].strip(),
-                    anschaffungswert=_dec(request.POST.get('anschaffungswert')),
+                    anschaffungswert=wert,
                     anschaffungsdatum=adatum,
                     nutzungsdauer_jahre=int(request.POST.get('nutzungsdauer_jahre') or 10),
                     restwert=_dec(request.POST.get('restwert')))
-                messages.success(request, "✅ Anlage erfasst.")
+                # Aktivierung buchen (Audit K5): ohne Gegenbuchung wurde nur der
+                # AfA-Aufwand (6800 an 1500) gebucht → Konto 1500 lief negativ
+                # (Aktivum mit Habensaldo, falsche Bilanz). Gegenkonto wählbar:
+                # bereits bezahlt (Bank 1020) oder offen (Kreditor 2000).
+                gegen_nr = request.POST.get('gegenkonto') or '2000'
+                if gegen_nr not in ('1020', '2000'):
+                    gegen_nr = '2000'
+                if wert > 0 and request.POST.get('aktivieren', 'on') == 'on':
+                    from finance.booking import buche as _buche_a
+                    _buche_a('1500', gegen_nr, wert,
+                             f"Aktivierung Anlage: {anl.bezeichnung}",
+                             datum=adatum, liegenschaft=lg, user=request.user)
+                    messages.success(request, f"✅ Anlage erfasst und aktiviert "
+                                              f"(1500 an {gegen_nr}, CHF {wert}).")
+                else:
+                    messages.success(request, "✅ Anlage erfasst (ohne Aktivierungsbuchung).")
             else:
                 messages.error(request, "Bezeichnung und Liegenschaft sind Pflicht.")
         elif aktion == 'afa_lauf':
@@ -5837,12 +5929,51 @@ def fw_anlagen(request):
 # ETAPPE D: BUCHHALTUNG (Erfolgsrechnung + Journal)
 # ============================================================
 
+def _ist_abgeschlossen(jahr, liegenschaft=None):
+    from core.services.jahresabschluss import ist_abgeschlossen
+    return ist_abgeschlossen(jahr, liegenschaft)
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_buchhaltung(request):
     from finance.models import Buchung, Buchungskonto
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
     heute = timezone.localdate()
+
+    # --- Jahresabschluss buchen (Erfolgskonten an 2970) — Audit W4 ---
+    if request.method == 'POST' and request.POST.get('aktion') == 'jahresabschluss':
+        from django.shortcuts import redirect
+        from django.contrib import messages
+        from core.services.jahresabschluss import buche_jahresabschluss, ist_abgeschlossen
+        from core.auth import log_aktion
+        try:
+            j_ab = int(request.POST.get('jahr') or heute.year)
+        except ValueError:
+            j_ab = heute.year
+        if not (2000 <= j_ab <= 2100):
+            messages.error(request, "Ungültiges Geschäftsjahr.")
+            return redirect(f'/neu/buchhaltung/?jahr={heute.year}')
+        if ist_abgeschlossen(j_ab, aktive_lg):
+            messages.info(request, f"Das Geschäftsjahr {j_ab} ist bereits abgeschlossen.")
+            return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
+        try:
+            n_ab, erg = buche_jahresabschluss(j_ab, liegenschaft=aktive_lg, user=request.user)
+        except PermissionError as exc:
+            messages.error(request, f"❌ {exc}")
+            return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
+        except Exception as exc:
+            messages.error(request, f"❌ Jahresabschluss fehlgeschlagen: {exc}")
+            return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
+        log_aktion(request, "Jahresabschluss gebucht", str(j_ab),
+                   f"{n_ab} Konten, Ergebnis CHF {erg}")
+        if n_ab:
+            art = "Gewinn" if erg >= 0 else "Verlust"
+            messages.success(request, f"✅ Jahresabschluss {j_ab} gebucht: {n_ab} Erfolgskonto/-konten "
+                                      f"gegen 2970 saldiert · {art} CHF {abs(erg)}.")
+        else:
+            messages.info(request, f"Jahr {j_ab}: keine Erfolgsbuchungen zum Abschliessen.")
+        return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
 
     # --- Jahresfilter (Jahresabschluss) ---
     jahr_param = request.GET.get('jahr', str(heute.year))
@@ -5952,6 +6083,8 @@ def fw_buchhaltung(request):
         'jahr': jahr, 'jahre': list(range(heute.year, heute.year - 5, -1)),
         'alle_konten': Buchungskonto.objects.all().order_by('nummer'),
         'liegenschaften': Liegenschaft.objects.order_by('strasse'),
+        'jahr_abgeschlossen': (_ist_abgeschlossen(jahr, aktive_lg)
+                               if isinstance(jahr, int) else False),
     })
 
 
@@ -6172,16 +6305,18 @@ def fw_eigentuemer_honorar(request, pk):
     if not jahr:
         messages.error(request, "Kein Geschäftsjahr gewählt.")
         return redirect(f'/neu/mandate/{md.id}/kontokorrent/')
-    bank = request.POST.get('konto_nummer') or '1020'
+    # Gegenkonto: Eigentümer-Kontokorrent (kein Geldfluss am 31.12.) — siehe W3.
+    gegen = request.POST.get('konto_nummer') or '2850'
     try:
-        anzahl, summe = buche_honorar(md, jahr, bank_nummer=bank, user=request.user)
+        anzahl, summe = buche_honorar(md, jahr, gegen_nummer=gegen, user=request.user)
     except PermissionError as e:
         messages.error(request, str(e))
         return redirect(f'/neu/mandate/{md.id}/kontokorrent/?jahr={jahr}')
     if anzahl:
         log_aktion(request, "Verwaltungshonorar gebucht", md.firma_oder_name,
                    f"{jahr} · {anzahl} Liegenschaft(en) · CHF {summe}")
-        messages.success(request, f"✅ Verwaltungshonorar {jahr} verbucht: CHF {summe} über {anzahl} Liegenschaft(en) (Soll 4500 / Haben {bank}).")
+        messages.success(request, f"✅ Verwaltungshonorar {jahr} verbucht: CHF {summe} "
+                                  f"über {anzahl} Liegenschaft(en) (Soll 4500 / Haben {gegen}).")
     else:
         messages.warning(request, "Kein Honorar zu buchen (bereits gebucht oder kein Mietertrag).")
     return redirect(f'/neu/mandate/{md.id}/kontokorrent/?jahr={jahr}')
@@ -6521,9 +6656,21 @@ def fw_nebenkosten_verbuchen(request, pk):
                 buche("1100", "3020", saldo, f"NK-Nachzahlung {v.mieter} - {p.bezeichnung}",
                       datum=heute, liegenschaft=v.einheit.liegenschaft, debitor=rech, user=request.user)
                 n_nach += 1
-            else:  # Guthaben -> Gutschrift
-                buche("3020", "1100", abs(saldo), f"NK-Gutschrift {v.mieter} - {p.bezeichnung}",
+            else:  # Guthaben → als ECHTES Mieterguthaben führen (Audit-Befund W1):
+                # 3020 an 2030 (Verbindlichkeit gegenüber Mieter) statt 3020/1100 —
+                # 1100 wurde sonst ohne Nebenbuch-Beleg entlastet und das Guthaben
+                # war nirgends sichtbar. Der Zahlungseingang (Konto 2030) erscheint
+                # im Mieterkonto als Haben und kann dort mit einer offenen
+                # Rechnung verrechnet oder ausbezahlt werden.
+                konto_2030 = _konto("2030")
+                buche("3020", "2030", abs(saldo), f"NK-Gutschrift {v.mieter} - {p.bezeichnung}",
                       datum=heute, liegenschaft=v.einheit.liegenschaft, user=request.user)
+                Zahlungseingang.objects.create(
+                    vertrag=v, betrag=abs(saldo), datum_eingang=heute,
+                    buchungs_monat=heute.replace(day=1),
+                    bemerkung=f"NK-Gutschrift {p.bezeichnung} (Guthaben Mieter)",
+                    konto=konto_2030, liegenschaft=v.einheit.liegenschaft,
+                    erstellt_von=request.user, status='verbucht')
                 n_gut += 1
         p.abgeschlossen = True
         p.save(update_fields=['abgeschlossen'])
@@ -10194,6 +10341,18 @@ def fw_untermiete(request, vertrag_id):
 # MWST-AUSWERTUNG (Umsatzsteuer vs. Vorsteuer = Zahllast)
 # ============================================================
 
+def _mwst_beleg(jahr, quartal):
+    return f"MWST-Abrechnung {jahr}" + (f" Q{quartal}" if quartal in ('1', '2', '3', '4') else "")
+
+
+def _mwst_bereits_verbucht(jahr, quartal, liegenschaft=None):
+    from finance.models import Buchung
+    qs = Buchung.objects.filter(beleg_text__startswith=_mwst_beleg(jahr, quartal), ist_storno=False)
+    if liegenschaft:
+        qs = qs.filter(liegenschaft=liegenschaft)
+    return qs.exists()
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_mwst(request):
     """MWST-Abrechnung: geschuldete Umsatzsteuer (2200) minus Vorsteuer (1170) = Zahllast."""
@@ -10243,15 +10402,20 @@ def fw_mwst(request):
     from core.services.mwst_estv import berechne_estv, MWST_NORMALSATZ
     vw = Verwaltung.objects.first()
     methode = getattr(vw, 'mwst_methode', 'effektiv') if vw else 'effektiv'
-    if methode != 'saldo' and umsatzsteuer > 0:
+    # Nettoumsatz aus der geschuldeten Steuer zurückrechnen — erfasst NK (3020),
+    # optierte Wohnverhältnisse (3000) und Zuschläge (3600) gleichermassen.
+    # Konto 3010 allein verfehlte diese (Audit K4).
+    if umsatzsteuer > 0:
         umsatz_steuerbar = (umsatzsteuer / (MWST_NORMALSATZ / Decimal('100'))).quantize(Decimal('0.01'))
     else:
         umsatz_steuerbar = saldo('3010', soll_positiv=False)
+    # Saldosteuersatz wird auf das BRUTTO-Entgelt (inkl. MWST) angewendet (ESTV-Regel).
+    umsatz_brutto = (umsatz_steuerbar + umsatzsteuer).quantize(Decimal('0.01'))
     saldosatz = getattr(vw, 'saldosteuersatz', Decimal('0')) if vw else Decimal('0')
     estv = berechne_estv(
         umsatz_steuerbar=umsatz_steuerbar, umsatzsteuer=umsatzsteuer,
         vorsteuer_material=vorsteuer, vorsteuer_invest=Decimal('0'),
-        methode=methode, saldosteuersatz=saldosatz)
+        methode=methode, saldosteuersatz=saldosatz, umsatz_brutto=umsatz_brutto)
     if methode == 'saldo':
         zahllast = estv['z500']
 
@@ -10259,7 +10423,10 @@ def fw_mwst(request):
         **basis, 'nav': 'mwst', 'jahr': jahr, 'quartal': quartal,
         'von': von, 'bis': bis,
         'umsatzsteuer': umsatzsteuer, 'vorsteuer': vorsteuer, 'zahllast': zahllast,
-        'umsatz_steuerbar': umsatz_steuerbar, 'estv': estv,
+        'umsatz_steuerbar': umsatz_steuerbar, 'umsatz_brutto': umsatz_brutto, 'estv': estv,
+        'saldo_vorteil': ((umsatzsteuer - zahllast).quantize(Decimal('0.01'))
+                          if methode == 'saldo' else Decimal('0.00')),
+        'mwst_verbucht': _mwst_bereits_verbucht(jahr, quartal, aktive_lg),
         'mwst_methode': methode, 'saldosteuersatz': saldosatz,
         'mwst_uid': getattr(vw, 'mwst_uid', '') if vw else '',
         'jahre': list(range(heute.year, heute.year - 5, -1)),
@@ -12089,3 +12256,200 @@ def _vermietung_pipeline(aktiv, lg_query=''):
     for s in stufen:
         s['aktiv'] = (s['key'] == aktiv)
     return {'pipeline_stufen': stufen}
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_zahlung_zuordnen(request):
+    """Ordnet eine geparkte Zahlung (Durchlaufkonto 1190 / Mieterguthaben 2030)
+    nachträglich einer offenen Debitorenrechnung zu — Audit-Befund «1190 ist
+    eine Sackgasse». Bucht Parkkonto an 1100, verknüpft den Zahlungseingang
+    mit Vertrag+Rechnung und führt den OP-Status nach. Ein Überschuss über den
+    offenen Betrag bleibt als Rest-Guthaben auf dem Parkkonto liegen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.booking import buche
+    from core.auth import log_aktion
+
+    if request.method != 'POST':
+        return redirect('fw_bankabgleich')
+
+    zahlung = get_object_or_404(Zahlungseingang, id=request.POST.get('zahlung_id'))
+    rechnung = get_object_or_404(DebitorenRechnung, id=request.POST.get('rechnung_id'))
+    park_nr = zahlung.konto.nummer if zahlung.konto_id else ''
+    if park_nr not in ('1190', '2030') or zahlung.status != 'verbucht':
+        messages.error(request, "Diese Zahlung liegt nicht auf einem Park-/Guthabenkonto.")
+        return redirect('fw_bankabgleich')
+    if rechnung.status not in ('offen', 'teilbezahlt') or not rechnung.vertrag_id:
+        messages.error(request, "Zielrechnung ist nicht offen oder hat keinen Vertrag.")
+        return redirect('fw_bankabgleich')
+
+    offen = rechnung.offener_betrag
+    betrag = min(zahlung.betrag, offen)
+    rest = zahlung.betrag - betrag
+    heute = timezone.localdate()
+    vertrag = rechnung.vertrag
+    with transaction.atomic():
+        buche(park_nr, "1100", betrag,
+              f"Zuordnung {('Durchlaufkonto' if park_nr == '1190' else 'Guthaben')} → "
+              f"{vertrag.mieter} - {rechnung.titel}",
+              datum=heute, liegenschaft=vertrag.einheit.liegenschaft if vertrag.einheit_id else None,
+              user=request.user)
+        # Geparkten Eingang in eine echte Mieterzahlung umwandeln
+        zahlung.vertrag = vertrag
+        zahlung.debitoren_rechnung = rechnung
+        zahlung.konto = None
+        zahlung.betrag = betrag
+        zahlung.liegenschaft = vertrag.einheit.liegenschaft if vertrag.einheit_id else zahlung.liegenschaft
+        zahlung.bemerkung = (f"{zahlung.bemerkung} → zugeordnet {rechnung.titel}")[:255]
+        zahlung.save()
+        if rest > 0:
+            # Überschuss bleibt als eigenes Guthaben auf dem Parkkonto sichtbar
+            Zahlungseingang.objects.create(
+                vertrag=vertrag, betrag=rest, datum_eingang=zahlung.datum_eingang,
+                buchungs_monat=zahlung.buchungs_monat,
+                bemerkung=f"Rest-Guthaben aus Zuordnung ({rechnung.titel})"[:255],
+                bank_referenz=(f"{zahlung.bank_referenz}:rest"[:140] if zahlung.bank_referenz else ''),
+                konto=_park_konto(park_nr), liegenschaft=zahlung.liegenschaft,
+                erstellt_von=request.user, status='verbucht')
+        rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
+        rechnung.save()
+
+    log_aktion(request, "Geparkte Zahlung zugeordnet", str(vertrag),
+               f"CHF {betrag} von {park_nr} auf {rechnung.titel}")
+    messages.success(request, f"✅ CHF {betrag} zugeordnet — {vertrag.mieter.display_name} "
+                              f"({rechnung.titel}){f' · Rest CHF {rest} bleibt als Guthaben' if rest > 0 else ''}.")
+    ziel = '/neu/bankabgleich/'
+    if aktive := request.POST.get('lg'):
+        ziel += f'?lg={aktive}'
+    from django.shortcuts import redirect as _r
+    return _r(ziel)
+
+
+def _park_konto(nummer):
+    from finance.booking import konto as _k
+    return _k(nummer)
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_mwst_verbuchen(request):
+    """Bucht die MWST-Abrechnung einer Periode aus (Audit K4/N2).
+
+    Effektiv:  2200 an 1170 (Vorsteuer verrechnen) + 2200 an 1020 (Zahlung ESTV)
+    Saldosatz: 2200 an 1020 über die Saldosatz-Zahllast; der Überschuss auf 2200
+               (Differenz Normalsatz ./. Saldosatz) ist Ertrag → 2200 an 3600.
+    Ohne diese Ausbuchung wächst Konto 2200 unbegrenzt weiter."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.booking import buche
+    from core.auth import log_aktion
+
+    if request.method != 'POST':
+        return redirect('fw_mwst')
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.localdate()
+    try:
+        jahr = int(request.POST.get('jahr') or heute.year)
+    except ValueError:
+        jahr = heute.year
+    quartal = request.POST.get('quartal', '')
+    ziel = f'/neu/mwst/?jahr={jahr}' + (f'&quartal={quartal}' if quartal else '')
+
+    if _mwst_bereits_verbucht(jahr, quartal, aktive_lg):
+        messages.info(request, "Diese MWST-Periode wurde bereits verbucht.")
+        return redirect(ziel)
+
+    def _d(key):
+        try:
+            return Decimal(str(request.POST.get(key) or '0').replace("'", '').replace(',', '.'))
+        except Exception:
+            return Decimal('0.00')
+
+    umsatzsteuer = _d('umsatzsteuer')
+    vorsteuer = _d('vorsteuer')
+    zahllast = _d('zahllast')
+    methode = request.POST.get('methode', 'effektiv')
+    if umsatzsteuer <= 0 and vorsteuer <= 0:
+        messages.info(request, "Für diese Periode gibt es keine MWST zu verbuchen.")
+        return redirect(ziel)
+
+    beleg = _mwst_beleg(jahr, quartal)
+    ende = date(jahr, 12, 31) if quartal not in ('1', '2', '3', '4') else \
+        date(jahr, int(quartal) * 3, _calendar.monthrange(jahr, int(quartal) * 3)[1])
+    try:
+        with transaction.atomic():
+            if methode == 'saldo':
+                if zahllast > 0:
+                    buche('2200', '1020', zahllast, f"{beleg} — Zahllast ESTV (Saldosatz)",
+                          datum=ende, liegenschaft=aktive_lg, user=request.user)
+                vorteil = (umsatzsteuer - zahllast).quantize(Decimal('0.01'))
+                if vorteil > 0:
+                    buche('2200', '3600', vorteil,
+                          f"{beleg} — Saldosteuersatz-Vorteil (Ertrag)",
+                          datum=ende, liegenschaft=aktive_lg, user=request.user)
+            else:
+                if vorsteuer > 0:
+                    buche('2200', '1170', min(vorsteuer, umsatzsteuer),
+                          f"{beleg} — Vorsteuer verrechnet",
+                          datum=ende, liegenschaft=aktive_lg, user=request.user)
+                if zahllast > 0:
+                    buche('2200', '1020', zahllast, f"{beleg} — Zahllast ESTV",
+                          datum=ende, liegenschaft=aktive_lg, user=request.user)
+                elif zahllast < 0:
+                    buche('1020', '1170', abs(zahllast), f"{beleg} — Vorsteuerguthaben ESTV",
+                          datum=ende, liegenschaft=aktive_lg, user=request.user)
+    except PermissionError as exc:
+        messages.error(request, f"❌ {exc}")
+        return redirect(ziel)
+    except Exception as exc:
+        messages.error(request, f"❌ MWST-Abrechnung konnte nicht verbucht werden: {exc}")
+        return redirect(ziel)
+
+    log_aktion(request, "MWST-Abrechnung verbucht", beleg, f"Zahllast CHF {zahllast}")
+    messages.success(request, f"✅ {beleg} verbucht — Zahllast CHF {zahllast} "
+                              f"({'Saldosteuersatz' if methode == 'saldo' else 'effektive Methode'}).")
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_zahlung_stornieren(request, pk):
+    """Storniert einen Zahlungseingang revisionssicher (Audit W7): Gegenbuchungen
+    zu allen Buchungen der Zahlung, Status → storniert, OP-Status der Rechnung
+    wird zurückgerollt. Bisher gab es das nur in der Alt-API — eine falsch
+    zugeordnete Zahlung war in der neuen Oberfläche nur per Handbuchung zu
+    korrigieren (und der OP-Status blieb falsch)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import Buchung
+    from finance.api import erstelle_storno_buchung
+    from core.auth import log_aktion
+
+    if request.method != 'POST':
+        return redirect('fw_bankabgleich')
+    z = get_object_or_404(Zahlungseingang.objects.select_related('debitoren_rechnung', 'vertrag__mieter'), id=pk)
+    if z.status == 'storniert':
+        messages.info(request, "Diese Zahlung ist bereits storniert.")
+        return redirect(request.POST.get('next') or '/neu/bankabgleich/')
+
+    try:
+        with transaction.atomic():
+            for b in Buchung.objects.filter(zahlungseingang=z, ist_storno=False,
+                                            storniert_am__isnull=True):
+                erstelle_storno_buchung(b, benutzer=request.user)
+            z.status = 'storniert'
+            z.save(update_fields=['status'])
+            rech = z.debitoren_rechnung
+            if rech and rech.status not in ('storniert', 'abgeschrieben'):
+                rech.status = 'offen' if rech.offener_betrag >= rech.betrag else 'teilbezahlt'
+                rech.save(update_fields=['status'])
+    except PermissionError as exc:
+        messages.error(request, f"❌ {exc}")
+        return redirect(request.POST.get('next') or '/neu/bankabgleich/')
+    except Exception as exc:
+        messages.error(request, f"❌ Zahlung konnte nicht storniert werden: {exc}")
+        return redirect(request.POST.get('next') or '/neu/bankabgleich/')
+
+    log_aktion(request, "Zahlungseingang storniert", f"Zahlung #{z.id}",
+               f"CHF {z.betrag} · {z.vertrag.mieter if z.vertrag_id else 'ohne Vertrag'}")
+    messages.success(request, f"✅ Zahlung über CHF {z.betrag} storniert — offener Posten wieder offen.")
+    return redirect(request.POST.get('next') or '/neu/bankabgleich/')
