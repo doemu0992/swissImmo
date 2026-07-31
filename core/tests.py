@@ -10669,3 +10669,68 @@ class NavigationModusTests(TestCase):
         html = c.get('/neu/').content.decode()
         self.assertIn('fw-palette-data', html)
         self.assertIn('fwPalette', html)
+
+
+class FinanzGuardTests(TestCase):
+    """Sofort-Paket aus dem Buchhalter-Audit: Guards & Eingabe-Validierung."""
+
+    def _rechnung(self):
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung
+        _seed_konten()
+        _basis_objekte()
+        run_sollstellung(2024, 3)
+        return DebitorenRechnung.objects.get(titel='Miete & NK 03/2024')
+
+    def test_keine_zahlung_auf_stornierte_rechnung(self):
+        from finance.models import Zahlungseingang
+        r = self._rechnung()
+        r.status = 'storniert'; r.save()
+        team = _team_user(); c = Client(); c.force_login(team)
+        resp = c.post('/neu/bankabgleich/verbuchen/', {'rechnung_id': r.id, 'betrag': '100'}, follow=True)
+        self.assertContains(resp, 'kann keine Zahlung verbucht werden')
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'storniert')          # bleibt storniert
+        self.assertEqual(Zahlungseingang.objects.count(), 0)
+
+    def test_bankabgleich_betrag_null_abgelehnt(self):
+        from finance.models import Zahlungseingang
+        r = self._rechnung()
+        team = _team_user(); c = Client(); c.force_login(team)
+        resp = c.post('/neu/bankabgleich/verbuchen/', {'rechnung_id': r.id, 'betrag': '0'}, follow=True)
+        self.assertContains(resp, 'grösser als 0')
+        self.assertEqual(Zahlungseingang.objects.count(), 0)
+
+    def test_kreditor_zahlung_betrag_null_zahlt_nicht_voll(self):
+        # Regressionsschutz: Eingabe «0» zahlte früher still den VOLLEN Betrag
+        from finance.models import KreditorenRechnung, KreditorenZahlung
+        _seed_konten(); _basis_objekte()
+        k = KreditorenRechnung.objects.create(lieferant='Sanitär AG', betrag=Decimal('500.00'),
+                                              status='freigegeben')
+        team = _team_user(); c = Client(); c.force_login(team)
+        resp = c.post('/neu/kreditoren/bezahlen/', {'rechnung_id': k.id, 'betrag': '0'}, follow=True)
+        self.assertContains(resp, 'Ungültiger Betrag')
+        self.assertEqual(KreditorenZahlung.objects.count(), 0)
+        k.refresh_from_db()
+        self.assertEqual(k.status, 'freigegeben')
+
+    def test_sollstellung_monat_13_kein_500(self):
+        _seed_konten(); _basis_objekte()
+        team = _team_user(); c = Client(); c.force_login(team)
+        resp = c.post('/neu/sollstellung/starten/', {'jahr': '2024', 'monat': '13'}, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Ungültiger Monat')
+
+    def test_api_storno_mit_zahlung_geblockt(self):
+        # Alt-API darf (teil-)bezahlte Rechnungen nicht mehr stornieren (K6)
+        from finance.models import Zahlungseingang
+        r = self._rechnung()
+        Zahlungseingang.objects.create(vertrag=r.vertrag, betrag=Decimal('100'),
+                                       datum_eingang=date(2024, 3, 5),
+                                       buchungs_monat=date(2024, 3, 1),
+                                       debitoren_rechnung=r, status='verbucht')
+        team = _team_user(); c = Client(); c.force_login(team)
+        resp = c.delete(f'/api/finance/debitoren-rechnungen/{r.id}')
+        self.assertEqual(resp.status_code, 409)
+        r.refresh_from_db()
+        self.assertNotEqual(r.status, 'storniert')

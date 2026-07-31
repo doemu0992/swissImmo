@@ -3479,13 +3479,30 @@ def fw_bankabgleich_verbuchen(request):
     if not rechnung.vertrag_id:
         messages.error(request, "Position ohne Vertrag kann nicht automatisch verbucht werden.")
         return redirect('fw_bankabgleich')
+    # Status-Guard: auf stornierte/bezahlte Rechnungen darf keine Zahlung gebucht
+    # werden — sonst springt eine STORNIERTE Rechnung auf «bezahlt» und das
+    # Mieterkonto zeigt ein Haben ohne Soll (real im Audit passiert).
+    if rechnung.status not in ('offen', 'teilbezahlt'):
+        messages.error(request, f"«{rechnung.titel}» ist {rechnung.get_status_display()} — "
+                                "darauf kann keine Zahlung verbucht werden.")
+        return redirect('fw_bankabgleich')
 
     offen = rechnung.offener_betrag
-    try:
-        betrag = Decimal(str(request.POST.get('betrag') or offen))
-    except Exception:
+    raw = (request.POST.get('betrag') or '').strip()
+    if raw:
+        try:
+            betrag = Decimal(raw.replace("'", '').replace(',', '.'))
+        except Exception:
+            messages.error(request, f"Ungültiger Betrag «{raw}».")
+            return redirect('fw_bankabgleich')
+    else:
         betrag = offen
-    betrag = min(max(betrag, Decimal('0.01')), offen)
+    # Explizite 0/Negativ-Eingabe ist ein Tippfehler — abbrechen statt still
+    # auf 0.01 zu klemmen (verwirrende Mini-Teilzahlung).
+    if betrag <= 0:
+        messages.error(request, "Betrag muss grösser als 0 sein.")
+        return redirect('fw_bankabgleich')
+    betrag = min(betrag, offen)
 
     heute = timezone.localdate()
     vertrag = rechnung.vertrag
@@ -4831,8 +4848,15 @@ def fw_kreditor_bezahlen(request):
         except Exception:
             return None
     offen = k.offener_betrag
-    betrag = _dec(request.POST.get('betrag')) or offen
-    betrag = min(max(betrag, Decimal('0.00')), offen)
+    # Leeres Feld = Vollzahlung; eine EXPLIZITE 0 ist ein Tippfehler und darf
+    # NICHT still zur Vollzahlung werden (Decimal('0') ist falsy — die frühere
+    # `or offen`-Logik zahlte bei Eingabe «0» kommentarlos den vollen Betrag).
+    raw = (request.POST.get('betrag') or '').strip()
+    betrag = _dec(raw) if raw else offen
+    if betrag is None or betrag <= 0:
+        messages.error(request, f"Ungültiger Betrag «{raw}» — Zahlung nicht ausgeführt.")
+        return redirect('fw_kreditoren')
+    betrag = min(betrag, offen)
     if betrag <= 0:
         messages.error(request, "Kein offener Betrag zu bezahlen.")
         return redirect('fw_kreditoren')
@@ -6305,6 +6329,11 @@ def fw_sollstellung_run(request):
         monat = int(request.POST.get('monat') or heute.month)
     except ValueError:
         jahr, monat = heute.year, heute.month
+    # Bereichs-Validierung: Monat 13 / Jahr 20260 crashte sonst mit HTTP 500
+    # tief in run_sollstellung (date(jahr, 13, 1)).
+    if not (1 <= monat <= 12) or not (2000 <= jahr <= 2100):
+        messages.error(request, f"Ungültiger Monat {monat:02d}/{jahr} — bitte Monat 1–12 wählen.")
+        return redirect('fw_sollstellung')
 
     titel = f"Miete & NK {monat:02d}/{jahr}"
     from core.services.automation import run_sollstellung

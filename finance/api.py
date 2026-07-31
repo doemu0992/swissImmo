@@ -311,12 +311,17 @@ def pay_kreditor(request, rechnung_id: int):
 
     return 200, {"success": True}
 
-@router.delete("/kreditoren/{rechnung_id}", response={200: dict}, auth=auth_verwaltung)
+@router.delete("/kreditoren/{rechnung_id}", response={200: dict, 409: dict}, auth=auth_verwaltung)
 @transaction.atomic
 def storniere_kreditor(request, rechnung_id: int):
     """REVISIONSSICHER: Kreditor stornieren."""
     rechnung = get_object_or_404(KreditorenRechnung, id=rechnung_id)
     if rechnung.status == 'storniert': return 200, {"success": True}
+    # Guard (Audit K6): bezahlte/teilbezahlte Rechnungen erst nach Rückbuchung
+    # der Zahlung stornierbar — sonst inkonsistenter OP-/Hauptbuch-Zustand.
+    if rechnung.zahlungen.exists():
+        return 409, {"success": False,
+                     "error": "Rechnung hat erfasste Zahlungen — zuerst die Zahlung zurücksetzen."}
 
     fuer_storno = Buchung.objects.filter(kreditoren_rechnung=rechnung, ist_storno=False)
     for b in fuer_storno:
@@ -374,12 +379,18 @@ def list_debitorenrechnungen(request):
         } for r in rechnungen
     ]
 
-@router.delete("/debitoren-rechnungen/{rechnung_id}", response={200: dict}, auth=auth_verwaltung)
+@router.delete("/debitoren-rechnungen/{rechnung_id}", response={200: dict, 409: dict}, auth=auth_verwaltung)
 @transaction.atomic
 def storniere_debitorenrechnung(request, rechnung_id: int):
     """REVISIONSSICHER: Rechnung stornieren statt löschen (Gegenbuchung)."""
     rechnung = get_object_or_404(DebitorenRechnung, id=rechnung_id)
     if rechnung.status == 'storniert': return 200, {"success": True}
+    # Gleicher Guard wie in der /neu/-Oberfläche: mit verbuchten Zahlungen darf
+    # nicht storniert werden — sonst steht 1100 negativ und die Zahlung hängt
+    # ohne offenen Posten im Leeren (Audit-Befund K6).
+    if rechnung.zahlungseingaenge.filter(status='verbucht').exists():
+        return 409, {"success": False,
+                     "error": "Rechnung hat verbuchte Zahlungen — zuerst die Zahlung stornieren."}
 
     fuer_storno = Buchung.objects.filter(debitoren_rechnung=rechnung, ist_storno=False)
     for b in fuer_storno:
