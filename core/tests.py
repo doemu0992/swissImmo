@@ -335,21 +335,24 @@ class MieterPortalTests(TestCase):
 
 
 class DashboardCockpitTests(TestCase):
-    def test_cockpit_zaehlt_freigaben_und_fristen(self):
+    def test_inbox_zaehlt_freigaben_und_fristen(self):
+        # Die eine Inbox ersetzt die Cockpit-Widgets: Eigentümer-Freigaben und
+        # Wartungsfristen erscheinen als typisierte Aufgaben-Zeilen.
         from tickets.models import SchadenMeldung, HandwerkerAuftrag
         from crm.models import Handwerker
         lg, e, m, v = _basis_objekte()
         hw = Handwerker.objects.create(firma='HW AG')
         t = SchadenMeldung.objects.create(liegenschaft=lg, titel='X', beschreibung='y')
         HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, freigabe_status='ausstehend')
-        Wartungsfrist.objects.create(liegenschaft=lg, bezeichnung='Wartung',
+        Wartungsfrist.objects.create(liegenschaft=lg, bezeichnung='Heizungswartung',
                                      naechste_faelligkeit=date.today() + timedelta(days=10))
         u = _team_user()
         c = Client(); c.force_login(u)
         r = c.get('/neu/')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.context['cockpit']['freigaben'], 1)
-        self.assertEqual(r.context['cockpit']['fristen'], 1)
+        inbox = r.context['inbox']
+        self.assertTrue(any('Eigentümer-Freigabe' in x['titel'] for x in inbox))
+        self.assertTrue(any(x['titel'] == 'Heizungswartung' and x['typ'] == 'frist' for x in inbox))
 
 
 class MieterkontoTests(TestCase):
@@ -1821,7 +1824,7 @@ class MieterwechselCockpitTests(TestCase):
 
 class TagesstartCockpitTests(TestCase):
     def test_heute_zu_tun_zeigt_dringende_pendenz_mit_popup(self):
-        """Fällige Pendenzen erscheinen im 'Heute zu tun' und öffnen im Popup."""
+        """Fällige Pendenzen erscheinen in der Inbox und öffnen im Popup."""
         from core.models import Pendenz
         lg, e, m, v = _basis_objekte()
         Pendenz.objects.create(titel='Rücknahme vorbereiten', kategorie='vertrag',
@@ -1830,21 +1833,22 @@ class TagesstartCockpitTests(TestCase):
         team = _team_user(); c = Client(); c.force_login(team)
         r = c.get('/neu/')
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(len(r.context['heute_todo']), 1)
+        inbox = r.context['inbox']
+        self.assertTrue(any(x['titel'] == 'Rücknahme vorbereiten' for x in inbox))
         body = r.content.decode()
-        self.assertIn('Heute zu tun', body)
+        self.assertIn('Inbox', body)
         self.assertIn(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug', body)
         self.assertIn('id="fwModal"', body)
 
     def test_ferne_pendenz_nicht_im_heute(self):
-        """Pendenzen weit in der Zukunft (>14 Tage) erscheinen nicht im 'Heute zu tun'."""
+        """Pendenzen weit in der Zukunft (>14 Tage) erscheinen nicht in der Inbox."""
         from core.models import Pendenz
         lg, e, m, v = _basis_objekte()
         Pendenz.objects.create(titel='Weit weg', kategorie='aufgabe', vertrag=v,
                                faellig_am=date.today() + timedelta(days=40))
         team = _team_user(); c = Client(); c.force_login(team)
         r = c.get('/neu/')
-        self.assertEqual(len(r.context['heute_todo']), 0)
+        self.assertFalse(any(x['titel'] == 'Weit weg' for x in r.context['inbox']))
 
 
 class KuendigungModalTests(TestCase):

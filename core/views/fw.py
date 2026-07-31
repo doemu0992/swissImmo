@@ -136,63 +136,17 @@ def fw_dashboard(request):
         'offen_ueberfaellig': offen_ueberfaellig,
     }
 
-    # --- COCKPIT (handlungsorientierte Widgets, verlinkt) ---
-    from core.models import Pendenz
-    from tickets.models import HandwerkerAuftrag
-    from portfolio.models import Wartungsfrist
-    from rentals.models import Kuendigung
-    _pend = Pendenz.objects.filter(erledigt=False)
-    _frist = Wartungsfrist.objects.filter(aktiv=True, naechste_faelligkeit__lte=heute + _timedelta(days=30))
-    _freig = HandwerkerAuftrag.objects.filter(freigabe_status='ausstehend')
-    _portal_kuend = Kuendigung.objects.filter(status='erfasst', absender='mieter')
-    if aktive_lg:
-        _pend = _pend.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
-        _frist = _frist.filter(liegenschaft=aktive_lg)
-        _freig = _freig.filter(ticket__liegenschaft=aktive_lg)
-        _portal_kuend = _portal_kuend.filter(vertrag__einheit__liegenschaft=aktive_lg)
-    debitoren_ueberfaellig_n = sum(1 for r in _deb
-                                   if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) < heute)
-    cockpit = {
-        'pendenzen': _pend.count(),
-        'pendenzen_ueberfaellig': _pend.filter(faellig_am__lt=heute).count(),
-        'debitoren_n': debitoren_ueberfaellig_n,
-        'debitoren_chf': offen_ueberfaellig,
-        'freigaben': _freig.count(),
-        'fristen': _frist.count(),
-        'fristen_ueberfaellig': _frist.filter(naechste_faelligkeit__lt=heute).count(),
-        'portal_kuendigungen': _portal_kuend.count(),
-    }
-
-    # --- HEUTE ZU TUN (konkrete, per Popup erledigbare Einträge) ---
-    grenze14 = heute + _timedelta(days=14)
-    dringend_pend = (_pend.filter(Q(faellig_am__lte=grenze14) | Q(faellig_am__isnull=True))
-                     .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft')
-                     .order_by(F('faellig_am').asc(nulls_last=True)))
-    heute_todo = []
-    for p in dringend_pend[:8]:
-        url, label, wide, modal = _pendenz_ziel(p)
-        obj = ''
-        if p.vertrag_id and p.vertrag and p.vertrag.einheit_id:
-            obj = p.vertrag.einheit.bezeichnung
-        elif p.liegenschaft_id:
-            obj = p.liegenschaft.strasse
-        heute_todo.append({
-            'id': p.id, 'titel': p.titel, 'sub': obj,
-            'faellig': p.faellig_am,
-            'ueberfaellig': bool(p.faellig_am and p.faellig_am < heute),
-            'url': url, 'label': label or 'Öffnen', 'wide': wide, 'modal': modal,
-        })
-    heute_todo_mehr = max(_pend.filter(Q(faellig_am__lte=grenze14) | Q(faellig_am__isnull=True)).count() - 8, 0)
-
-    # --- AUFGABEN (bestehende Pendenzen-Engine wiederverwenden) ---
-    aufgaben = _berechne_aufgaben(heute, leerstand_objekte.count(), 0, 0)
-    # Aufgaben-Ziele auf die neue Oberfläche mappen, wo es ein Pendant gibt
-    tab_ziel = {
-        'finance': '/neu/debitoren/', 'rentals': '/neu/vertraege/',
-        'portfolio': '/neu/liegenschaften/', 'crm': '/neu/personen/',
-    }
-    for a in aufgaben:
-        a['ziel'] = tab_ziel.get(a.get('tab'), f"/app/?tab={a.get('tab')}")
+    # --- DIE EINE INBOX (ersetzt Cockpit-Widgets, «Heute zu tun» und Aufgaben) ---
+    from core.services.inbox import sammle_inbox, TYP_META
+    from core.navigation import aktueller_modus
+    ui_modus = aktueller_modus(request)
+    inbox, inbox_mehr, inbox_typen = sammle_inbox(
+        aktive_lg=aktive_lg, lg_query=basis['lg_query'], modus=ui_modus,
+        pendenz_ziel=_pendenz_ziel)
+    inbox_chips = [{'key': k, 'label': TYP_META[k]['label'], 'n': inbox_typen.get(k, 0)}
+                   for k in ('geld', 'frist', 'schaden', 'prozess', 'aufgabe')
+                   if inbox_typen.get(k)]
+    inbox_dringend = sum(1 for e in inbox if e['dringend'])
 
     context = {
         **basis,
@@ -209,11 +163,12 @@ def fw_dashboard(request):
         'gekuendigte_count': gekuendigte.count(),
         'bevorstehende': bevorstehende[:20],
         'bevorstehende_count': bevorstehende.count(),
-        'aufgaben': aufgaben,
         'kpis': kpis,
-        'cockpit': cockpit,
-        'heute_todo': heute_todo,
-        'heute_todo_mehr': heute_todo_mehr,
+        'heute': heute,
+        'inbox': inbox,
+        'inbox_mehr': inbox_mehr,
+        'inbox_chips': inbox_chips,
+        'inbox_dringend': inbox_dringend,
     }
     return render(request, 'fw/dashboard.html', context)
 

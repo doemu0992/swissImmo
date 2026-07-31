@@ -1,91 +1,75 @@
 {% extends 'fw/base.html' %}
 {% load chf %}
-{% block title %}Dashboard — swissImmo{% endblock %}
+{% block title %}Heute — swissImmo{% endblock %}
 
 {% block content %}
 
-<h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">Dashboard</h1>
+<div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between mb-1">
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Heute</h1>
+    <div class="text-sm text-slate-400">{{ heute|date:"l, d. F Y" }}</div>
+</div>
 {% if aktive_lg %}
 <p class="text-sm text-slate-500 mb-4">Gefiltert auf: <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}, {{ aktive_lg.ort }}</span>
     <a href="/neu/" class="ml-2 text-xs text-slate-400 hover:text-indigo-600">× Filter aufheben</a></p>
-{% endif %}
+{% else %}<div class="mb-4"></div>{% endif %}
 
-<!-- ================= HEUTE ZU TUN (konkrete Aufgaben, Popup) ================= -->
-{% if heute_todo %}
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-5">
-    <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-        <div class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-sun text-amber-500 mr-1.5"></i>Heute zu tun</div>
-        <a href="/neu/pendenzen/" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Alle Pendenzen</a>
+<!-- ================= DIE INBOX (eine Aufgabenliste statt vier Flächen) ================= -->
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-3 flex-wrap">
+        <div class="font-bold text-slate-800 text-sm">
+            <i class="fa-solid fa-inbox text-indigo-500 mr-1.5"></i>Inbox
+            {% if inbox %}<span class="ml-1 text-slate-400 font-medium">{{ inbox|length }} Aufgabe{{ inbox|length|pluralize:"n" }}{% if inbox_dringend %} · <span class="text-rose-600 font-semibold">{{ inbox_dringend }} dringend</span>{% endif %}</span>{% endif %}
+        </div>
+        {% if inbox_chips|length > 1 %}
+        <div class="flex items-center gap-1.5 flex-wrap ml-auto">
+            <button data-inbox-filter="" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-indigo-600 text-white">Alle</button>
+            {% for ch in inbox_chips %}
+            <button data-inbox-filter="{{ ch.key }}" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">{{ ch.label }} {{ ch.n }}</button>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
-    <div class="divide-y divide-slate-50">
-        {% for t in heute_todo %}
-        <div class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60">
-            <span class="w-2 h-2 rounded-full shrink-0 {% if t.ueberfaellig %}bg-rose-500{% else %}bg-amber-400{% endif %}"></span>
-            {% if t.url %}
-            <a href="{{ t.url }}"{% if t.modal %} onclick="return fwModalOpen(this,'{{ t.titel|escapejs }}',{% if t.wide %}true{% else %}false{% endif %})"{% endif %} class="min-w-0 flex-1 group">
-                <div class="text-sm font-medium text-slate-900 group-hover:text-indigo-600 truncate">{{ t.titel }}</div>
-                {% if t.sub %}<div class="text-xs text-slate-400 truncate">{{ t.sub }}</div>{% endif %}
+    <div class="divide-y divide-slate-50" id="inboxListe">
+        {% for e in inbox %}
+        <div class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60 flex-wrap sm:flex-nowrap" data-inbox-typ="{{ e.typ }}">
+            <span class="w-2 h-2 rounded-full shrink-0 {% if e.dringend %}bg-rose-500{% else %}bg-slate-300{% endif %}"></span>
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 {{ e.chip_cls }}">{{ e.typ_label }}</span>
+            {% if e.url %}
+            <a href="{{ e.url }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"{% endif %} class="min-w-0 flex-1 group">
+                <div class="text-sm font-medium text-slate-900 group-hover:text-indigo-600 truncate">{{ e.titel }}</div>
+                {% if e.sub %}<div class="text-xs text-slate-400 truncate">{{ e.sub }}</div>{% endif %}
             </a>
             {% else %}
             <div class="min-w-0 flex-1">
-                <div class="text-sm font-medium text-slate-900 truncate">{{ t.titel }}</div>
-                {% if t.sub %}<div class="text-xs text-slate-400 truncate">{{ t.sub }}</div>{% endif %}
+                <div class="text-sm font-medium text-slate-900 truncate">{{ e.titel }}</div>
+                {% if e.sub %}<div class="text-xs text-slate-400 truncate">{{ e.sub }}</div>{% endif %}
             </div>
             {% endif %}
-            {% if t.faellig %}<span class="text-xs font-semibold shrink-0 {% if t.ueberfaellig %}text-rose-600{% else %}text-slate-500{% endif %}">{{ t.faellig|date:"d.m.Y" }}{% if t.ueberfaellig %} <i class="fa-solid fa-triangle-exclamation"></i>{% endif %}</span>{% endif %}
-            {% if t.url %}<a href="{{ t.url }}"{% if t.modal %} onclick="return fwModalOpen(this,'{{ t.titel|escapejs }}',{% if t.wide %}true{% else %}false{% endif %})"{% endif %} class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-2.5 py-1 rounded-lg shrink-0 whitespace-nowrap">{{ t.label }}</a>{% endif %}
+            {% if e.chf %}<span class="text-xs font-semibold text-slate-600 shrink-0 whitespace-nowrap">CHF {{ e.chf|chf }}</span>{% endif %}
+            {% if e.faellig %}<span class="text-xs font-semibold shrink-0 whitespace-nowrap {% if e.dringend %}text-rose-600{% else %}text-slate-500{% endif %}">{{ e.faellig|date:"d.m.Y" }}{% if e.dringend %} <i class="fa-solid fa-triangle-exclamation"></i>{% endif %}</span>{% endif %}
+            {% if e.url %}<a href="{{ e.url }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"{% endif %} class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-2.5 py-1 rounded-lg shrink-0 whitespace-nowrap">{{ e.cta }}</a>{% endif %}
+        </div>
+        {% empty %}
+        <div class="flex flex-col items-center justify-center px-6 py-12 text-center">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-xl mb-3">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <p class="text-sm font-semibold text-slate-700">Alles erledigt</p>
+            <p class="text-xs text-slate-400 mt-1">Keine offenen Aufgaben — geniessen Sie den Tag.</p>
         </div>
         {% endfor %}
     </div>
-    {% if heute_todo_mehr %}
-    <a href="/neu/pendenzen/" class="block px-5 py-2.5 text-center text-xs font-semibold text-slate-500 hover:text-indigo-600 border-t border-slate-100">+ {{ heute_todo_mehr }} weitere in den nächsten 14 Tagen</a>
-    {% endif %}
+    <div class="px-5 py-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+        {% if inbox_mehr %}
+        <a href="/neu/pendenzen/{{ lg_query }}" class="font-semibold text-slate-500 hover:text-indigo-600">+ {{ inbox_mehr }} weitere Aufgaben</a>
+        {% else %}<span></span>{% endif %}
+        <span class="text-slate-400">
+            <a href="/neu/pendenzen/{{ lg_query }}" class="hover:text-indigo-600">Pendenzen</a> ·
+            <a href="/neu/fristen/{{ lg_query }}" class="hover:text-indigo-600">Fristen</a> ·
+            <a href="/neu/finanzen/{{ lg_query }}" class="hover:text-indigo-600">Finanz-Cockpit</a>
+        </span>
+    </div>
 </div>
-{% endif %}
-
-
-<!-- ================= COCKPIT: WAS IST ZU TUN? ================= -->
-{% if cockpit.pendenzen or cockpit.debitoren_n or cockpit.freigaben or cockpit.fristen or cockpit.portal_kuendigungen %}
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-    {% if cockpit.portal_kuendigungen %}
-    <a href="/neu/vertraege/" class="bg-white rounded-xl border border-amber-200 hover:border-amber-300 p-4 flex items-center gap-3 transition-colors">
-        <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-circle-xmark"></i></div>
-        <div>
-            <div class="text-xl font-bold text-slate-900">{{ cockpit.portal_kuendigungen }}</div>
-            <div class="text-xs text-slate-500">Kündigungen über Portal · zu bestätigen</div>
-        </div>
-    </a>
-    {% endif %}
-    <a href="/neu/pendenzen/" class="bg-white rounded-xl border border-slate-200 hover:border-indigo-300 p-4 flex items-center gap-3 transition-colors">
-        <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-list-check"></i></div>
-        <div>
-            <div class="text-xl font-bold text-slate-900">{{ cockpit.pendenzen }}</div>
-            <div class="text-xs text-slate-500">Offene Pendenzen{% if cockpit.pendenzen_ueberfaellig %} · <span class="text-rose-600 font-semibold">{{ cockpit.pendenzen_ueberfaellig }} überfällig</span>{% endif %}</div>
-        </div>
-    </a>
-    <a href="/neu/debitoren/" class="bg-white rounded-xl border border-slate-200 hover:border-rose-300 p-4 flex items-center gap-3 transition-colors">
-        <div class="w-10 h-10 rounded-lg {% if cockpit.debitoren_n %}bg-rose-50 text-rose-600{% else %}bg-emerald-50 text-emerald-600{% endif %} flex items-center justify-center shrink-0"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-        <div>
-            <div class="text-xl font-bold text-slate-900">{{ cockpit.debitoren_n }}</div>
-            <div class="text-xs text-slate-500">Überfällige Rechnungen{% if cockpit.debitoren_chf %} · CHF {{ cockpit.debitoren_chf|chf }}{% endif %}</div>
-        </div>
-    </a>
-    <a href="/neu/schaeden/" class="bg-white rounded-xl border border-slate-200 hover:border-amber-300 p-4 flex items-center gap-3 transition-colors">
-        <div class="w-10 h-10 rounded-lg {% if cockpit.freigaben %}bg-amber-50 text-amber-600{% else %}bg-slate-50 text-slate-400{% endif %} flex items-center justify-center shrink-0"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-        <div>
-            <div class="text-xl font-bold text-slate-900">{{ cockpit.freigaben }}</div>
-            <div class="text-xs text-slate-500">Reparaturen bei Eigentümer</div>
-        </div>
-    </a>
-    <a href="/neu/liegenschaften/" class="bg-white rounded-xl border border-slate-200 hover:border-indigo-300 p-4 flex items-center gap-3 transition-colors">
-        <div class="w-10 h-10 rounded-lg {% if cockpit.fristen_ueberfaellig %}bg-rose-50 text-rose-600{% elif cockpit.fristen %}bg-amber-50 text-amber-600{% else %}bg-slate-50 text-slate-400{% endif %} flex items-center justify-center shrink-0"><i class="fa-solid fa-calendar-check"></i></div>
-        <div>
-            <div class="text-xl font-bold text-slate-900">{{ cockpit.fristen }}</div>
-            <div class="text-xs text-slate-500">Fristen in 30 Tagen{% if cockpit.fristen_ueberfaellig %} · <span class="text-rose-600 font-semibold">{{ cockpit.fristen_ueberfaellig }} überfällig</span>{% endif %}</div>
-        </div>
-    </a>
-</div>
-{% endif %}
 
 <!-- ================= KENNZAHLEN ================= -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
@@ -180,8 +164,8 @@
     </div>
 </div>
 
-<!-- ================= LEERSTAND + AUFGABEN ================= -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8 items-start">
+<!-- ================= LEERSTAND ================= -->
+<div class="mt-8">
 
     <!-- LEERSTAND mit Tabs -->
     <div class="bg-white rounded-xl border border-slate-200">
@@ -238,40 +222,28 @@
         </div>
     </div>
 
-    <!-- AUFGABEN (Pendenzen-Engine) -->
-    <div class="bg-white rounded-xl border border-slate-200">
-        <div class="px-6 pt-5 pb-3 flex items-center gap-2">
-            <h2 class="text-lg font-bold text-slate-800">Aufgaben</h2>
-            <i class="fa-regular fa-circle-question text-indigo-300 text-sm" title="Automatisch aus deinen Daten berechnet"></i>
-        </div>
-        <div class="divide-y divide-slate-50 max-h-96 overflow-y-auto pb-2">
-            {% for a in aufgaben %}
-            <a href="{{ a.ziel }}" class="flex items-center gap-3 px-6 py-3 hover:bg-slate-50 transition-colors">
-                <div class="w-9 h-9 rounded-lg {{ a.bg }} {{ a.text }} flex items-center justify-center shrink-0 text-sm">
-                    <i class="fa-solid {{ a.icon }}"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-slate-900">{{ a.titel }}</div>
-                    <div class="text-xs text-slate-400">{{ a.sub }}</div>
-                </div>
-                <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
-            </a>
-            {% empty %}
-            <div class="flex flex-col items-center justify-center px-6 py-10 text-center">
-                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-lg mb-3">
-                    <i class="fa-solid fa-check"></i>
-                </div>
-                <p class="text-sm font-medium text-slate-700">Alles erledigt</p>
-                <p class="text-xs text-slate-400 mt-1">Keine dringenden Aufgaben.</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+// Inbox nach Typ filtern (Chips im Kopf)
+document.querySelectorAll('[data-inbox-filter]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var typ = btn.getAttribute('data-inbox-filter');
+        document.querySelectorAll('[data-inbox-filter]').forEach(function(b) {
+            var aktiv = b === btn;
+            b.classList.toggle('bg-indigo-600', aktiv);
+            b.classList.toggle('text-white', aktiv);
+            b.classList.toggle('bg-slate-100', !aktiv);
+            b.classList.toggle('text-slate-600', !aktiv);
+        });
+        document.querySelectorAll('#inboxListe [data-inbox-typ]').forEach(function(row) {
+            row.classList.toggle('hidden', !!typ && row.getAttribute('data-inbox-typ') !== typ);
+        });
+    });
+});
+
 function zeigeTab(name) {
     ['leerstand', 'gekuendigt', 'bevorstehend'].forEach(function(t) {
         document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
