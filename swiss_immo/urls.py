@@ -107,6 +107,7 @@ from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_betriebsko
                            fw_account, fw_datenreset, fw_hypotheken, fw_marktdaten_aktualisieren, fw_marktdaten_live,
                            fw_benutzer, fw_logbuch, fw_rechtsgrundlagen, fw_mandate, fw_vorlagen, fw_vorlagen_standard, fw_integrationen, fw_abonnemente,
                            fw_liegenschaft_form, fw_liegenschaft_gwr, fw_liegenschaft_loeschen, fw_versicherung_add, fw_versicherung_loeschen, fw_objekt_form, fw_suche,
+                           fw_modus_wechsel, fw_einstellungen,
                            fw_mandat_form, fw_mandat_loeschen, fw_mandat_abrechnung, fw_mandant_portal_zugang,
                            fw_eigentuemer_kontokorrent, fw_eigentuemer_auszahlung, fw_eigentuemer_honorar,
                            fw_benutzer_form, fw_benutzer_loeschen,
@@ -341,6 +342,8 @@ urlpatterns = [
     path('neu/dokument/<int:pk>/loeschen/', fw_rentals_dokument_loeschen, name='fw_rentals_dokument_loeschen'),
     # Profil-Menü
     path('neu/suche/', fw_suche, name='fw_suche'),
+    path('neu/modus/', fw_modus_wechsel, name='fw_modus_wechsel'),
+    path('neu/einstellungen/', fw_einstellungen, name='fw_einstellungen'),
     path('neu/account/', fw_account, name='fw_account'),
     path('neu/datenreset/', fw_datenreset, name='fw_datenreset'),
     path('neu/hypotheken/', fw_hypotheken, name='fw_hypotheken'),

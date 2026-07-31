@@ -1,0 +1,48 @@
+{% extends 'fw/base.html' %}
+{% block title %}Einstellungen — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Einstellungen</h1>
+</div>
+<p class="text-sm text-slate-500 mb-6">Konto, Team, Vorlagen und Integrationen — alles an einem Ort.</p>
+
+<!-- Ansicht / Modus -->
+<div class="bg-white rounded-xl border border-slate-200 p-5 mb-6 shadow-sm">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <div class="font-bold text-slate-800 mb-0.5"><i class="fa-solid fa-wand-magic-sparkles text-indigo-500 mr-2"></i>Ansicht</div>
+            <p class="text-sm text-slate-500 max-w-xl">
+                <b>Einfach</b> zeigt die wichtigsten Aufgaben in Klartext — Buchhaltung &amp; Profi-Module
+                liegen unter «Erweitert» und laufen im Hintergrund normal weiter.
+                <b>Profi</b> zeigt alle Module mit Fachbegriffen.
+            </p>
+        </div>
+        <div class="flex bg-slate-100 rounded-lg p-1 gap-1 shrink-0">
+            <form method="post" action="/neu/modus/" data-no-guard>{% csrf_token %}
+                <input type="hidden" name="modus" value="einfach">
+                <button type="submit" class="px-5 py-2 rounded-md text-sm font-semibold transition-colors {% if ui_modus == 'einfach' %}bg-indigo-600 text-white shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Einfach</button>
+            </form>
+            <form method="post" action="/neu/modus/" data-no-guard>{% csrf_token %}
+                <input type="hidden" name="modus" value="profi">
+                <button type="submit" class="px-5 py-2 rounded-md text-sm font-semibold transition-colors {% if ui_modus == 'profi' %}bg-indigo-600 text-white shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Profi</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Sektionen -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for k in karten %}
+    <a href="{{ k.url }}" class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all group">
+        <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+            <i class="fa-solid {{ k.icon }}"></i>
+        </div>
+        <div class="font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">{{ k.titel }}</div>
+        <div class="text-xs text-slate-500 mt-0.5">{{ k.sub }}</div>
+    </a>
+    {% endfor %}
+</div>
+
+{% endblock %}

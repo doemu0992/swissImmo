@@ -31,7 +31,10 @@
             html._sbc #fwSidebar .sb-item { justify-content: center; gap: 0; }
             html._sbc #fwSidebar .sb-logo { justify-content: center; }
             html._sbc #fwSidebar .sb-collapse-icon { transform: rotate(180deg); }
+            html._sbc #fwSidebar .sb-sub { display: none !important; }
         }
+        /* Aufklapp-Pfeil der Navigationsgruppen */
+        .nav-open .sb-chev i { transform: rotate(90deg); }
         /* Embed-Modus (im Modal geladen): Sidebar/Topbar aus, Inhalt füllt das Fenster */
         html._embed #fwSidebar,
         html._embed header,
@@ -87,48 +90,52 @@
             </select>
         </form>
 
-        <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto text-sm">
-            {% include 'fw/_nav_item.html' with ziel='/neu/' key='dashboard' icon='fa-table-cells-large' label='Dashboard' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/liegenschaften/' key='liegenschaften' icon='fa-building' label='Liegenschaften' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/objekte/' key='objekte' icon='fa-house' label='Objekte' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/dokumente/' key='dokumente' icon='fa-floppy-disk' label='Dokumente' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/kommunikation/' key='kommunikation' icon='fa-comment' label='Kommunikation' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/pendenzen/' key='pendenzen' icon='fa-list-check' label='Pendenzen' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/fristen/' key='fristen' icon='fa-hourglass-half' label='Fristen-Center' %}
-
-            <div class="sb-section pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Verwaltung</div>
-            {% include 'fw/_nav_item.html' with ziel='/neu/personen/' key='personen' icon='fa-user-group' label='Personen' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/mandate/' key='mandate' icon='fa-briefcase' label='Eigentümer / Mandate' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/bewerbungen/' key='bewerbungen' icon='fa-user-check' label='Bewerbungen' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/vertraege/' key='vertraege' icon='fa-file-lines' label='Verträge' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/mieterwechsel/' key='mieterwechsel' icon='fa-right-left' label='Mieterwechsel' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/vermarktung/' key='vermarktung' icon='fa-bullhorn' label='Vermarktung' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/mietzins/' key='mietzins' icon='fa-percent' label='Mietzins' %}
-
-            <div class="sb-section pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Finanzen</div>
-            {% include 'fw/_nav_item.html' with ziel='/neu/finanzen/' key='finanzen' icon='fa-gauge-high' label='Finanz-Cockpit' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/buchhaltung/' key='buchhaltung' icon='fa-calculator' label='Buchhaltung' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/bankkonten/' key='bankkonten' icon='fa-building-columns' label='Bankkonten' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/bankabgleich/' key='bankabgleich' icon='fa-right-left' label='Bankabgleich' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/sollstellung/' key='sollstellung' icon='fa-rotate' label='Sollstellung Miete' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/debitoren/' key='debitoren' icon='fa-layer-group' label='Debitoren' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/mieterkonten/' key='mieterkonten' icon='fa-file-invoice-dollar' label='Mieterkonten' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/kautionen/' key='kautionen' icon='fa-shield-halved' label='Kautionen' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/kreditoren/' key='kreditoren' icon='fa-credit-card' label='Kreditoren' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/lieferantenkonten/' key='lieferantenkonten' icon='fa-file-invoice' label='Lieferantenkonten' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/mahnwesen/' key='mahnwesen' icon='fa-envelope-open-text' label='Mahnwesen' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/nebenkosten/' key='nebenkosten' icon='fa-bolt' label='Nebenkosten' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/mwst/' key='mwst' icon='fa-percent' label='MWST' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/anlagen/' key='anlagen' icon='fa-building-columns' label='Anlagen & Abschluss' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/berichte/' key='berichte' icon='fa-chart-pie' label='Berichte' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/auswertung/' key='auswertung' icon='fa-chart-line' label='Auswertung' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/hypotheken/' key='hypotheken' icon='fa-chart-column' label='Hypotheken' %}
-
-            <div class="sb-section pt-5 pb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Gebäude</div>
-            {% include 'fw/_nav_item.html' with ziel='/neu/assets/' key='assets' icon='fa-house-chimney' label='Assets' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/dienstleister/' key='dienstleister' icon='fa-wrench' label='Dienstleister' %}
-            {% include 'fw/_nav_item.html' with ziel='/neu/schaeden/' key='schadensfaelle' icon='fa-cloud-bolt' label='Schadensfälle' %}
+        <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto text-sm">
+            {% for g in fw_nav_gruppen %}
+            <div class="{% if nav in g.alle_keys %}nav-open{% endif %}" id="navgrp-{{ g.key }}">
+                {% if g.ziel %}
+                <a href="{{ g.ziel }}{{ lg_query }}" title="{{ g.label }}"
+                   class="sb-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold transition-all
+                          {% if nav in g.alle_keys %}bg-indigo-600 text-white shadow-md{% else %}text-slate-300 hover:bg-white/5 hover:text-white{% endif %}">
+                    <i class="fa-solid {{ g.icon }} w-4 text-center text-[13px]"></i>
+                    <span class="sb-label flex-1">{{ g.label }}</span>
+                    {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="sb-label min-w-[18px] text-center text-[10px] font-bold bg-rose-500 text-white rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
+                    {% if g.items %}
+                    <span class="sb-label sb-chev text-[10px] {% if nav in g.alle_keys %}text-indigo-200{% else %}text-slate-500{% endif %} p-1 -m-1"
+                          onclick="event.preventDefault();event.stopPropagation();fwNavToggle('{{ g.key }}')"><i class="fa-solid fa-chevron-right transition-transform"></i></span>
+                    {% endif %}
+                </a>
+                {% else %}
+                <button type="button" onclick="fwNavToggle('{{ g.key }}')" title="{{ g.label }}"
+                        class="sb-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold text-slate-500 hover:bg-white/5 hover:text-slate-300 transition-all">
+                    <i class="fa-solid {{ g.icon }} w-4 text-center text-[13px]"></i>
+                    <span class="sb-label flex-1 text-left">{{ g.label }}</span>
+                    <span class="sb-label sb-chev text-[10px] text-slate-600 p-1 -m-1"><i class="fa-solid fa-chevron-right transition-transform"></i></span>
+                </button>
+                {% endif %}
+                {% if g.items %}
+                <div id="navsub-{{ g.key }}" class="sb-sub flex flex-col gap-0.5 pt-1 pb-1 pl-[26px] {% if nav not in g.alle_keys %}hidden{% endif %}">
+                    {% for it in g.items %}
+                    {% if it.section %}<div class="pt-2 pb-0.5 px-3 text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">{{ it.section }}</div>{% endif %}
+                    <a href="{{ it.ziel }}{{ lg_query }}"
+                       class="flex items-center gap-2 px-3 py-1.5 rounded-md text-[13px] transition-colors
+                              {% if nav in it.keys %}bg-white/10 text-white font-semibold{% else %}text-slate-400 hover:bg-white/5 hover:text-white{% endif %}">
+                        <span class="flex-1">{{ it.label }}</span>
+                        {% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="min-w-[18px] text-center text-[10px] font-bold bg-rose-500 text-white rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
         </nav>
+
+        <div class="px-3 pb-4 sb-filter">
+            <a href="/neu/einstellungen/{{ lg_query }}"
+               class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] {% if nav in fw_einstellungen_keys %}bg-white/10 text-white{% else %}text-slate-500 hover:bg-white/5 hover:text-slate-300{% endif %} transition-colors">
+                <i class="fa-solid fa-gear w-4 text-center text-[12px]"></i> <span class="sb-label">Einstellungen</span>
+            </a>
+        </div>
 
     </aside>
 
@@ -146,7 +153,15 @@
                 </div>
             </form>
             <!-- Account ganz rechts aussen -->
-            <div class="ml-auto flex items-center gap-4">
+            <div class="ml-auto flex items-center gap-2 md:gap-3">
+            <a href="/neu/dokumente/{{ lg_query }}" title="Dokumente"
+               class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors {% if nav == 'dokumente' %}bg-indigo-50 text-indigo-600{% else %}text-slate-500 hover:bg-slate-100 hover:text-slate-700{% endif %}">
+                <i class="fa-solid fa-folder-open text-[15px]"></i>
+            </a>
+            <a href="/neu/kommunikation/{{ lg_query }}" title="Kommunikation"
+               class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors {% if nav == 'kommunikation' %}bg-indigo-50 text-indigo-600{% else %}text-slate-500 hover:bg-slate-100 hover:text-slate-700{% endif %}">
+                <i class="fa-solid fa-comment text-[15px]"></i>
+            </a>
             <div class="relative">
                 <button onclick="fwProfilMenu()" class="flex items-center gap-2.5 group">
                     <span class="text-sm text-slate-500 hidden md:inline">Hallo, <span class="font-semibold text-slate-800">{{ request.user.first_name|default:request.user.username }}</span></span>
@@ -163,14 +178,21 @@
                             <div class="text-xs text-slate-400 truncate">{{ request.user.email|default:request.user.username }}</div>
                         </div>
                     </div>
-                    {% include 'fw/_menu_item.html' with ziel='/neu/account/' icon='fa-gear' label='Account' %}
-                    {% include 'fw/_menu_item.html' with ziel='/neu/abonnement/' icon='fa-star' label='Abonnement' %}
-                    {% include 'fw/_menu_item.html' with ziel='/neu/benutzer/' icon='fa-users' label='Benutzer' %}
-                    {% include 'fw/_menu_item.html' with ziel='/neu/logbuch/' icon='fa-clock-rotate-left' label='Logbuch' %}
-                    {% include 'fw/_menu_item.html' with ziel='/neu/vorlagen/' icon='fa-file-lines' label='Vorlagen' %}
-                    {% include 'fw/_menu_item.html' with ziel='/neu/dokumente/' icon='fa-folder-open' label='Dokumente' %}
-                    {% include 'fw/_menu_item.html' with ziel='/neu/integrationen/' icon='fa-plug' label='Integrationen' %}
-                    {% include 'fw/_menu_item.html' with ziel='/neu/rechtsgrundlagen/' icon='fa-scale-balanced' label='Rechtsgrundlagen' %}
+                    <div class="px-4 py-2">
+                        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Ansicht</div>
+                        <div class="flex bg-slate-100 rounded-lg p-0.5 gap-0.5">
+                            <form method="post" action="/neu/modus/" class="flex-1" data-no-guard>{% csrf_token %}
+                                <input type="hidden" name="modus" value="einfach">
+                                <button type="submit" class="w-full px-3 py-1.5 rounded-md text-xs font-semibold transition-colors {% if ui_modus == 'einfach' %}bg-indigo-600 text-white shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Einfach</button>
+                            </form>
+                            <form method="post" action="/neu/modus/" class="flex-1" data-no-guard>{% csrf_token %}
+                                <input type="hidden" name="modus" value="profi">
+                                <button type="submit" class="w-full px-3 py-1.5 rounded-md text-xs font-semibold transition-colors {% if ui_modus == 'profi' %}bg-indigo-600 text-white shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Profi</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-100 my-1.5"></div>
+                    {% include 'fw/_menu_item.html' with ziel='/neu/einstellungen/' icon='fa-gear' label='Einstellungen' %}
                     <div class="border-t border-slate-100 my-1.5"></div>
                     <a href="/logout/" class="flex items-center gap-3 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50">
                         <i class="fa-solid fa-right-from-bracket w-4 text-center"></i> Abmelden
@@ -209,6 +231,25 @@
         </main>
     </div>
 </div>
+{% if fw_palette %}
+{{ fw_palette|json_script:"fw-palette-data" }}
+<!-- ⌘K Command-Palette -->
+<div id="fwPalette" class="hidden fixed inset-0 z-[110]">
+    <div class="absolute inset-0 bg-black/40" onclick="fwPaletteClose()"></div>
+    <div class="relative max-w-lg mx-auto mt-[12vh] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+        <div class="flex items-center gap-3 px-4 border-b border-slate-100">
+            <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
+            <input id="fwPaletteInput" type="text" placeholder="Seite oder Suchbegriff eingeben …" autocomplete="off"
+                   class="flex-1 py-3.5 text-sm focus:outline-none placeholder:text-slate-400">
+            <span class="text-[10px] font-semibold text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">ESC</span>
+        </div>
+        <div id="fwPaletteList" class="max-h-[50vh] overflow-y-auto py-1.5"></div>
+        <div class="px-4 py-2 border-t border-slate-100 text-[11px] text-slate-400">
+            ↵ öffnen · Kein Treffer? ↵ sucht in Personen, Objekten &amp; Verträgen
+        </div>
+    </div>
+</div>
+{% endif %}
 <script>
 // Generische Tab-Umschaltung für Detailseiten:
 // Buttons: data-tab="<gruppe>" data-target="<name>"; Panels: id="<gruppe>-<name>"
@@ -231,6 +272,64 @@ function fwCloseMobileNav() {
 }
 // ESC schliesst das mobile Menü
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') fwCloseMobileNav(); });
+
+// Navigationsgruppe auf-/zuklappen (6-Türen-Sidebar)
+function fwNavToggle(key) {
+    var grp = document.getElementById('navgrp-' + key);
+    var sub = document.getElementById('navsub-' + key);
+    if (!grp || !sub) return;
+    sub.classList.toggle('hidden');
+    grp.classList.toggle('nav-open', !sub.classList.contains('hidden'));
+}
+
+// ─── ⌘K / Ctrl+K Command-Palette ───
+(function () {
+    var pal = document.getElementById('fwPalette');
+    if (!pal) return;
+    var input = document.getElementById('fwPaletteInput');
+    var list = document.getElementById('fwPaletteList');
+    var data = [];
+    try { data = JSON.parse(document.getElementById('fw-palette-data').textContent) || []; } catch (e) {}
+
+    function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function render(q) {
+        var ql = (q || '').toLowerCase();
+        var hits = data.filter(function (d) {
+            return !ql || d.label.toLowerCase().indexOf(ql) !== -1
+                || (d.gruppe && d.gruppe.toLowerCase().indexOf(ql) !== -1);
+        }).slice(0, 12);
+        if (!hits.length) {
+            list.innerHTML = '<div class="px-4 py-3 text-sm text-slate-400">Keine Seite gefunden — ↵ startet die Suche nach «' + esc(q) + '»</div>';
+            return;
+        }
+        list.innerHTML = hits.map(function (d, i) {
+            return '<a href="' + d.url + '" class="fw-pal-item flex items-center gap-3 px-4 py-2.5 text-sm ' +
+                   (i === 0 ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50') + '">' +
+                   '<i class="fa-solid fa-arrow-right text-[10px] text-slate-300"></i>' +
+                   '<span class="flex-1">' + esc(d.label) + '</span>' +
+                   (d.gruppe ? '<span class="text-[11px] text-slate-400">' + esc(d.gruppe) + '</span>' : '') + '</a>';
+        }).join('');
+    }
+    window.fwPaletteOpen = function () { pal.classList.remove('hidden'); input.value = ''; render(''); setTimeout(function(){ input.focus(); }, 30); };
+    window.fwPaletteClose = function () { pal.classList.add('hidden'); };
+    input.addEventListener('input', function () { render(input.value); });
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            var first = list.querySelector('.fw-pal-item');
+            if (first) { window.location.href = first.getAttribute('href'); }
+            else if (input.value.trim()) { window.location.href = '/neu/suche/?q=' + encodeURIComponent(input.value.trim()); }
+        }
+        if (e.key === 'Escape') fwPaletteClose();
+    });
+    document.addEventListener('keydown', function (e) {
+        if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+            e.preventDefault();
+            pal.classList.contains('hidden') ? fwPaletteOpen() : fwPaletteClose();
+        }
+        if (e.key === 'Escape') fwPaletteClose();
+    });
+})();
 
 // Profil-Dropdown öffnen/schliessen
 function fwProfilMenu() {

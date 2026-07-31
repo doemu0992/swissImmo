@@ -9061,10 +9061,15 @@ class Paket2PlatzierungTests(TestCase):
         self.assertIn(f'/neu/nebenkosten/?lg={lg.id}', html)
 
     def test_mandate_in_sidebar_verwaltung(self):
+        # Neue 6-Türen-Sidebar: Mandate liegen unter «Kontakte» (Profi) bzw.
+        # «Erweitert» (Einfach) — in beiden Modi als Link auf /neu/mandate/.
         _lg, _e, _m, _v = _basis_objekte()
         c = Client(); c.force_login(_team_user())
-        html = c.get('/neu/personen/').content.decode()
-        self.assertIn('Eigentümer / Mandate', html)
+        for modus in ('einfach', 'profi'):
+            c.post('/neu/modus/', {'modus': modus})
+            html = c.get('/neu/personen/').content.decode()
+            self.assertIn('/neu/mandate/', html)
+            self.assertIn('Mandate', html)
 
 
 class Paket3ZahlungBonitaetTests(TestCase):
@@ -10534,3 +10539,50 @@ class DetailAktionsleisteTests(TestCase):
         body = c.get(f'/neu/personen/{m.id}/').content.decode()
         self.assertIn(f'action="/neu/personen/{m.id}/loeschen/"', body)
         self.assertIn(f'action="/neu/personen/{m.id}/dsg-loeschen/"', body)
+
+
+class NavigationModusTests(TestCase):
+    """6-Türen-Sidebar: Einfach/Profi-Modus, Einstellungen-Hub, ⌘K-Palette."""
+
+    def test_default_ist_einfach(self):
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/').content.decode()
+        self.assertIn('Meine Immobilien', html)
+        self.assertIn('Wer hat bezahlt?', html)
+        # Profi-Module bleiben unter «Erweitert» erreichbar (eingeklappt)
+        self.assertIn('Erweitert', html)
+        self.assertIn('/neu/sollstellung/', html)
+
+    def test_modus_wechsel_und_profi_labels(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/modus/', {'modus': 'profi'})
+        self.assertIn(r.status_code, (301, 302))
+        html = c.get('/neu/').content.decode()
+        self.assertIn('Portfolio', html)
+        self.assertIn('Sollstellung', html)
+        self.assertIn('Debitoren', html)
+        # zurück auf Einfach
+        c.post('/neu/modus/', {'modus': 'einfach'})
+        html = c.get('/neu/').content.decode()
+        self.assertIn('Meine Immobilien', html)
+
+    def test_ungueltiger_modus_ignoriert(self):
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/modus/', {'modus': 'hacker'})
+        html = c.get('/neu/').content.decode()
+        self.assertIn('Meine Immobilien', html)   # bleibt Default
+
+    def test_einstellungen_hub(self):
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/einstellungen/')
+        self.assertEqual(r.status_code, 200)
+        for ziel in ('/neu/account/', '/neu/benutzer/', '/neu/vorlagen/',
+                     '/neu/integrationen/', '/neu/logbuch/', '/neu/rechtsgrundlagen/'):
+            self.assertContains(r, ziel)
+        self.assertContains(r, 'Ansicht')  # Modus-Schalter vorhanden
+
+    def test_palette_daten_vorhanden(self):
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/').content.decode()
+        self.assertIn('fw-palette-data', html)
+        self.assertIn('fwPalette', html)

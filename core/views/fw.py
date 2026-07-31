@@ -11890,3 +11890,40 @@ def fw_serienbrief_pdf(request):
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'attachment; filename="serienbrief_{date.today().isoformat()}.pdf"'
     return resp
+
+
+# ══════════════════════════════════════════════════════════════
+# UI-MODUS (Einfach/Profi) + EINSTELLUNGEN-HUB
+# ══════════════════════════════════════════════════════════════
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_modus_wechsel(request):
+    """Schaltet die Oberfläche zwischen Einfach- und Profi-Modus um (Session)."""
+    from django.shortcuts import redirect
+    from core.navigation import UI_MODI, SESSION_KEY
+    if request.method == 'POST':
+        modus = request.POST.get('modus')
+        if modus in UI_MODI:
+            request.session[SESSION_KEY] = modus
+    ziel = request.META.get('HTTP_REFERER') or '/neu/'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_einstellungen(request):
+    """Zentrale Einstellungen-Seite — bündelt die früheren 8 Profil-Dropdown-
+    Punkte (Account, Abonnement, Benutzer, Logbuch, Vorlagen, Integrationen,
+    Rechtsgrundlagen) als eine Hub-Seite mit Sektionen."""
+    basis = _global_filter(request)
+    karten = [
+        {'titel': 'Account', 'sub': 'Verwaltungs-Stammdaten, Logo, Absender', 'url': '/neu/account/', 'icon': 'fa-id-card'},
+        {'titel': 'Benutzer & Rollen', 'sub': 'Team-Mitglieder und Berechtigungen', 'url': '/neu/benutzer/', 'icon': 'fa-users'},
+        {'titel': 'Vorlagen', 'sub': 'Textvorlagen mit Platzhaltern', 'url': '/neu/vorlagen/', 'icon': 'fa-file-lines'},
+        {'titel': 'Integrationen', 'sub': 'E-Mail, DocuSeal, KI, Banken, Portal-Feed', 'url': '/neu/integrationen/', 'icon': 'fa-plug'},
+        {'titel': 'Abonnement', 'sub': 'Plan und Rechnungsstellung', 'url': '/neu/abonnement/', 'icon': 'fa-star'},
+        {'titel': 'Logbuch', 'sub': 'Wer hat wann was geändert', 'url': '/neu/logbuch/', 'icon': 'fa-clock-rotate-left'},
+        {'titel': 'Rechtsgrundlagen', 'sub': 'OR/VMWG-Artikel mit Anwendung im Programm', 'url': '/neu/rechtsgrundlagen/', 'icon': 'fa-scale-balanced'},
+    ]
+    return render(request, 'fw/einstellungen.html', {
+        **basis, 'nav': 'einstellungen', 'karten': karten,
+    })
