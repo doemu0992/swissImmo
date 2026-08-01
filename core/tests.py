@@ -3672,6 +3672,15 @@ class MieterkontoblattTests(TestCase):
         self.assertIn('data-stack-titel', html)         # Skript setzt das Attribut
         self.assertIn("td[data-stack-titel]::before { content: none; }", html)
 
+    def test_trennband_gilt_fuer_jede_karte_nicht_nur_die_erste(self):
+        """Tailwinds «divide-y» setzt auf jeder Zeile ausser der ersten
+        border-bottom-width: 0. Ohne Vorrang bekam nur die erste Karte ein
+        Trennband — gemeldet als «Trennstrich nur bei anderer Liegenschaft»,
+        was aber nur zufällig zum Datenbild passte."""
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/mieterkonten/').content.decode('utf-8')
+        self.assertIn('border-bottom: 8px solid #f1f5f9 !important', html)
+
 
 class JournalStornoTests(TestCase):
     """Revisionssichere Gegenbuchung: Original bleibt, Storno kehrt Soll/Haben um."""

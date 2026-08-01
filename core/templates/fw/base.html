@@ -44,9 +44,17 @@
             table[data-stack] td { display: block; width: auto; }
             /* Kräftiges Trennband statt Haarlinie: bei vier Feldern pro Zeile
                verschwimmen die Einträge sonst ineinander und man sieht nicht,
-               wo ein Mieter aufhört und der nächste anfängt. */
-            table[data-stack] tr { padding: 0.75rem 1rem; border-bottom: 8px solid #f1f5f9; }
-            table[data-stack] tr:last-child { border-bottom: 0; }
+               wo ein Mieter aufhört und der nächste anfängt.
+               !important ist hier nötig, nicht Bequemlichkeit: Tailwinds
+               «divide-y» setzt auf jeder Zeile ausser der ersten
+               border-bottom-width: 0 — ohne Vorrang bekäme nur die erste Karte
+               ein Trennband und der Rest bliebe an der Haarlinie hängen. */
+            table[data-stack] tr {
+                padding: 0.75rem 1rem;
+                border-top: 0 !important;
+                border-bottom: 8px solid #f1f5f9 !important;
+            }
+            table[data-stack] tr:last-child { border-bottom: 0 !important; }
             /* Erste Zelle ist die Überschrift der Zeile — ihr Wert benennt den
                Eintrag («Dominik Gerber»), das Label davor wäre nur Rauschen. */
             table[data-stack] td[data-stack-titel] {
