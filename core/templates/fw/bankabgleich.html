@@ -193,7 +193,10 @@
             {% endcomment %}
             <div class="min-w-0 flex-1">
                 {% if z.zahler %}
-                <div class="text-sm font-semibold text-slate-900 break-words">{{ z.zahler }}</div>
+                <div class="text-sm font-semibold text-slate-900 break-words">{{ z.zahler }}
+                    {% if z.zahler_geraten %}<span class="ml-1 align-middle px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-slate-100 text-slate-500"
+                          title="Die Bank liefert keine eigene Auftraggeber-Spalte — aus dem Buchungstext gelesen">aus Buchungstext</span>{% endif %}
+                </div>
                 {% else %}
                 <div class="text-sm font-medium text-slate-400 italic">Auftraggeber von der Bank nicht geliefert</div>
                 {% endif %}

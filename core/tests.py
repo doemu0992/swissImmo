@@ -11539,6 +11539,27 @@ class BankAbgleichP3Tests(TestCase):
         self.assertContains(r, 'Auftraggeber von der Bank nicht geliefert')
         self.assertContains(r, 'Gutschrift Dauerauftrag')
 
+    def test_zahler_aus_buchungstext_wenn_bank_keine_spalte_liefert(self):
+        """Viele Exporte haben keine Auftraggeber-Spalte, sondern «Name;PLZ Ort; Land»
+        im Buchungstext — real gesehen «Narrezauber Soledurn;4500 Solothurn; CH»."""
+        _basis_objekte()
+        self._geparkt(gegenpartei='', text='Narrezauber Soledurn;4500 Solothurn; CH')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/bankabgleich/')
+        self.assertContains(r, 'Narrezauber Soledurn')
+        self.assertContains(r, 'aus Buchungstext')          # als geraten markiert
+        self.assertContains(r, '4500 Solothurn')            # Rest bleibt als Detail
+        self.assertNotContains(r, 'nicht geliefert')
+
+    def test_einteiliger_buchungstext_bleibt_mitteilung(self):
+        """«Miete Juli» ist kein Name — daraus wird kein Auftraggeber erfunden."""
+        _basis_objekte()
+        self._geparkt(gegenpartei='', text='Miete Juli')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/bankabgleich/')
+        self.assertContains(r, 'Auftraggeber von der Bank nicht geliefert')
+        self.assertContains(r, 'Miete Juli')
+
     def test_csv_erkennt_weitere_auftraggeber_spalten(self):
         from core.views.fw import _bank_csv_parse
         csv = ("Datum;Gutschrift;Zahler;Mitteilung\n"

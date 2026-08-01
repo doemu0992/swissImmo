@@ -3705,6 +3705,7 @@ def fw_bankabgleich(request):
     for z in geparkt:
         bew = next(iter(z.bankbewegungen.all()), None)
         z.zahler = ((bew.gegenpartei if bew else '') or '').strip()
+        z.zahler_geraten = False
         if not z.zahler and z.vertrag_id and z.vertrag.mieter_id:
             z.zahler = z.vertrag.mieter.display_name
         z.mitteilung = ((bew.text if bew else '') or '').strip()
@@ -3713,6 +3714,16 @@ def fw_bankabgleich(request):
             # Altbestand (vor der Auszugszeile) trägt den Text nur in der Bemerkung.
             t = (z.bemerkung or '').split('UNGEKLÄRT:', 1)
             z.mitteilung = (t[1] if len(t) > 1 else t[0]).strip()
+        if not z.zahler and z.mitteilung:
+            # Viele Bank-Exporte haben keine eigene Auftraggeber-Spalte, sondern
+            # packen «Name;Strasse;PLZ Ort; Land» in den Buchungstext (real
+            # gesehen: «Narrezauber Soledurn;4500 Solothurn; CH»). Das erste
+            # Segment ist dann der Name. Als geraten markiert, damit die Anzeige
+            # nicht so tut, als hätte die Bank den Auftraggeber sauber geliefert.
+            teile = [t.strip() for t in re.split(r'[;|]', z.mitteilung) if t.strip()]
+            if len(teile) > 1:
+                z.zahler, z.zahler_geraten = teile[0][:160], True
+                z.mitteilung = ' · '.join(teile[1:])
     # 1190 (Aktiv, ungeklärt) und 2030 (Passiv, Mieterguthaben) sind fachlich
     # verschieden und werden nicht zu einer Summe vermischt.
     geparkt_unklar = sum((z.betrag for z in geparkt if z.konto and z.konto.nummer == '1190'),
