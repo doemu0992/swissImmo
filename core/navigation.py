@@ -68,6 +68,7 @@ def nav_gruppen(modus):
                 _i('Kreditoren', '/neu/kreditoren/', ['kreditoren'], section='Rechnungen'),
                 _i('Lieferantenkonten', '/neu/lieferantenkonten/', ['lieferantenkonten']),
                 _i('Buchhaltung', '/neu/buchhaltung/', ['buchhaltung'], section='Abschluss'),
+                _i('Kontenplan & Salden', '/neu/kontenplan/', ['kontenplan']),
                 _i('Nebenkosten', '/neu/nebenkosten/', ['nebenkosten']),
                 _i('MWST', '/neu/mwst/', ['mwst']),
                 _i('Anlagen & Abschluss', '/neu/anlagen/', ['anlagen']),
@@ -115,6 +116,7 @@ def nav_gruppen(modus):
         _g('erweitert', 'Erweitert', 'fa-toolbox', '', [
             _i('Finanz-Cockpit', '/neu/finanzen/', ['finanzen']),
             _i('Buchhaltung', '/neu/buchhaltung/', ['buchhaltung']),
+            _i('Kontenplan & Salden', '/neu/kontenplan/', ['kontenplan']),
             _i('Sollstellung', '/neu/sollstellung/', ['sollstellung']),
             _i('Debitoren', '/neu/debitoren/', ['debitoren']),
             _i('Bankabgleich', '/neu/bankabgleich/', ['bankabgleich']),

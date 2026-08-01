@@ -6368,15 +6368,73 @@ def fw_buchhaltung(request):
     bilanz_differenz = total_aktiven - passiven_mit_erfolg
     erfolg_vortrag = kum_erfolg - erfolg           # Ergebnisvortrag aus Vorjahren
 
-    # --- BUCHUNGSJOURNAL (letzte 60) ---
-    journal = (qs.select_related('soll_konto', 'haben_konto', 'liegenschaft')
-               .order_by('-datum', '-id')[:60])
+    # --- BUCHUNGSJOURNAL (durchsuch- und filterbar, seitenweise) ---
+    # Vorher: hart die letzten 60 Zeilen, ohne Suche und ohne Filter. Damit war
+    # der Alltag eines Buchhalters — einen Beleg wiederfinden, einen Monat
+    # durchsehen, ein Konto kontrollieren — schlicht nicht möglich (Audit).
+    # Die Abschlussbuchungen sind hier bewusst wieder drin: im JOURNAL müssen
+    # sie sichtbar sein, nur aus der Erfolgsrechnung sind sie ausgeklammert.
+    from django.db.models import Q as _QJ
+    j_qs = Buchung.objects.all()
+    if aktive_lg:
+        j_qs = j_qs.filter(liegenschaft=aktive_lg)
+    j_von = (request.GET.get('von') or '').strip()
+    j_bis = (request.GET.get('bis') or '').strip()
+    j_konto = (request.GET.get('konto') or '').strip()
+    j_suche = (request.GET.get('q') or '').strip()
+    if j_von:
+        try:
+            j_qs = j_qs.filter(datum__gte=date.fromisoformat(j_von))
+        except ValueError:
+            j_von = ''
+    if j_bis:
+        try:
+            j_qs = j_qs.filter(datum__lte=date.fromisoformat(j_bis))
+        except ValueError:
+            j_bis = ''
+    if not (j_von or j_bis) and jahr != 'alle':
+        # Ohne eigene Datumswahl gilt der Jahresfilter der Seite.
+        j_qs = j_qs.filter(datum__gte=date(jahr, 1, 1), datum__lte=date(jahr, 12, 31))
+    if j_konto:
+        j_qs = j_qs.filter(_QJ(soll_konto__nummer=j_konto) | _QJ(haben_konto__nummer=j_konto))
+    if j_suche:
+        # Belegtext ODER Beleg-Nr. Letztere ist numerisch — nur wenn die Eingabe
+        # eine Zahl ist (auch mit führendem #), wird sie als Nummer gesucht.
+        such_q = _QJ(beleg_text__icontains=j_suche)
+        _nr = j_suche.lstrip('#').strip()
+        if _nr.isdigit():
+            such_q = such_q | _QJ(beleg_nr=int(_nr))
+        j_qs = j_qs.filter(such_q)
+    j_qs = j_qs.select_related('soll_konto', 'haben_konto', 'liegenschaft').order_by('-datum', '-id')
+    j_total = j_qs.count()
+    j_summe = j_qs.aggregate(s=Sum('betrag'))['s'] or Decimal('0.00')
+    try:
+        j_seite = max(1, int(request.GET.get('seite') or 1))
+    except ValueError:
+        j_seite = 1
+    J_PRO_SEITE = 100
+    j_seiten = max(1, (j_total + J_PRO_SEITE - 1) // J_PRO_SEITE)
+    j_seite = min(j_seite, j_seiten)
+    journal = j_qs[(j_seite - 1) * J_PRO_SEITE: j_seite * J_PRO_SEITE]
+    # Filter beim Blättern erhalten (ohne `seite`, die wird pro Link gesetzt).
+    j_query = '&'.join(
+        f"{k}={v}" for k, v in (('von', j_von), ('bis', j_bis), ('konto', j_konto), ('q', j_suche))
+        if v)
 
     tab_liste = [
         ('erfolg', 'Erfolgsrechnung', None),
         ('bilanz', 'Bilanz', None),
-        ('journal', 'Journal', journal.count() or None),
+        ('journal', 'Journal', j_total or None),
     ]
+
+    # Werte des zuletzt erfassten Belegs (Serienerfassung)
+    _letzt = request.session.get('bu_letzt') or {}
+    _letzt_datum = None
+    if _letzt.get('datum'):
+        try:
+            _letzt_datum = date.fromisoformat(_letzt['datum'])
+        except ValueError:
+            _letzt_datum = None
     return render(request, 'fw/buchhaltung.html', {
         **basis, 'nav': 'buchhaltung',
         'ertraege': ertraege, 'aufwaende': aufwaende,
@@ -6386,12 +6444,115 @@ def fw_buchhaltung(request):
         'passiven_mit_erfolg': passiven_mit_erfolg, 'bilanz_differenz': bilanz_differenz,
         'kum_erfolg': kum_erfolg, 'erfolg_vortrag': erfolg_vortrag,
         'journal': journal,
+        'j_total': j_total, 'j_summe': j_summe, 'j_seite': j_seite, 'j_seiten': j_seiten,
+        'j_von': j_von, 'j_bis': j_bis, 'j_konto': j_konto, 'j_suche': j_suche,
+        'j_query': j_query,
         'tab_liste': tab_liste,
         'jahr': jahr, 'jahre': list(range(heute.year, heute.year - 5, -1)),
         'alle_konten': Buchungskonto.objects.all().order_by('nummer'),
         'liegenschaften': Liegenschaft.objects.order_by('strasse'),
+        # Vorbelegung der Erfassungsmaske aus dem letzten Beleg (Serienerfassung).
+        'serienerfassung': bool(request.session.pop('bu_serie', False)),
+        'letztes_datum': _letzt_datum, 'letztes_soll': _letzt.get('soll', ''),
+        'letztes_haben': _letzt.get('haben', ''), 'letzte_lg_id': _letzt.get('lg'),
         'jahr_abgeschlossen': (_ist_abgeschlossen(jahr, aktive_lg)
                                if isinstance(jahr, int) else False),
+    })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_kontenplan(request):
+    """Kontenplan mit SALDENLISTE und Pflege der Konten.
+
+    Zwei Lücken auf einmal (Audit): Es gab weder eine Saldenliste — das Werkzeug,
+    mit dem ein Buchhalter jeden Abschluss beginnt — noch eine Möglichkeit, im
+    neuen UI ein Konto anzulegen oder umzubenennen. Der Hinweis in der
+    Buchungsmaske verwies auf einen «Kontenplan-Tab», den es nicht gab; der
+    Kontenrahmen war faktisch eine Python-Liste.
+
+    Anders als Bilanz und Erfolgsrechnung blendet die Saldenliste Konten mit
+    Saldo 0 NICHT aus — sonst sind bebuchte, aber ausgeglichene Konten (z.B. ein
+    geleertes Durchlaufkonto) im ganzen UI unerreichbar.
+    """
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from django.db.models import Sum
+    from finance.models import Buchungskonto, Buchung
+    from core.auth import log_aktion, hat_rolle, VERWALTUNGS_ROLLEN
+
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.localdate()
+    kann_schreiben = hat_rolle(request.user, VERWALTUNGS_ROLLEN)
+
+    if request.method == 'POST' and kann_schreiben:
+        aktion = request.POST.get('aktion')
+        nr = (request.POST.get('nummer') or '').strip()
+        bez = (request.POST.get('bezeichnung') or '').strip()
+        typ = request.POST.get('typ') or 'bilanz'
+        if aktion == 'neu':
+            if not nr or not bez:
+                messages.error(request, "Nummer und Bezeichnung sind Pflicht.")
+            elif Buchungskonto.objects.filter(nummer=nr).exists():
+                messages.error(request, f"Konto {nr} existiert bereits.")
+            elif typ not in ('aufwand', 'ertrag', 'bilanz', 'aktiv', 'passiv'):
+                messages.error(request, "Ungültiger Kontotyp.")
+            else:
+                Buchungskonto.objects.create(
+                    nummer=nr, bezeichnung=bez, typ=typ,
+                    is_hnk_relevant=(request.POST.get('hnk') == 'on'),
+                    standard_verteilschluessel=(request.POST.get('schluessel') or 'm2'))
+                log_aktion(request, "Konto angelegt", f"{nr} {bez}", typ)
+                messages.success(request, f"✅ Konto {nr} «{bez}» angelegt.")
+        elif aktion == 'bearbeiten':
+            k = Buchungskonto.objects.filter(id=request.POST.get('konto_id') or None).first()
+            if not k:
+                messages.error(request, "Konto nicht gefunden.")
+            else:
+                # Die NUMMER bleibt unveränderlich: sie steckt in Belegtexten,
+                # Exporten und im Buchungscode. Umbenennen ja, umnummerieren nein.
+                k.bezeichnung = bez or k.bezeichnung
+                if typ in ('aufwand', 'ertrag', 'bilanz', 'aktiv', 'passiv'):
+                    k.typ = typ
+                k.is_hnk_relevant = (request.POST.get('hnk') == 'on')
+                if request.POST.get('schluessel'):
+                    k.standard_verteilschluessel = request.POST['schluessel']
+                k.save()
+                log_aktion(request, "Konto geändert", f"{k.nummer} {k.bezeichnung}", k.typ)
+                messages.success(request, f"✅ Konto {k.nummer} aktualisiert.")
+        return redirect(f'/neu/kontenplan/{basis["lg_query"]}')
+
+    # --- Saldenliste ---
+    jahr_param = request.GET.get('jahr', str(heute.year))
+    try:
+        jahr = int(jahr_param)
+    except ValueError:
+        jahr = heute.year
+    bqs = Buchung.objects.filter(datum__gte=date(jahr, 1, 1), datum__lte=date(jahr, 12, 31))
+    if aktive_lg:
+        bqs = bqs.filter(liegenschaft=aktive_lg)
+    soll_map = {r['soll_konto']: r['t'] for r in
+                bqs.values('soll_konto').annotate(t=Sum('betrag'))}
+    haben_map = {r['haben_konto']: r['t'] for r in
+                 bqs.values('haben_konto').annotate(t=Sum('betrag'))}
+
+    zeilen, t_soll, t_haben = [], Decimal('0.00'), Decimal('0.00')
+    for k in Buchungskonto.objects.all().order_by('nummer'):
+        s = soll_map.get(k.id) or Decimal('0.00')
+        h = haben_map.get(k.id) or Decimal('0.00')
+        zeilen.append({'k': k, 'soll': s, 'haben': h, 'saldo': s - h,
+                       'bewegt': bool(s or h)})
+        t_soll += s
+        t_haben += h
+
+    return render(request, 'fw/kontenplan.html', {
+        **basis, 'nav': 'buchhaltung', 'zeilen': zeilen,
+        'total_soll': t_soll, 'total_haben': t_haben,
+        'differenz': t_soll - t_haben,
+        'jahr': jahr, 'jahre': list(range(heute.year, heute.year - 5, -1)),
+        'kann_schreiben': kann_schreiben,
+        'typen': [('bilanz', 'Bilanz'), ('aktiv', 'Aktivum'), ('passiv', 'Passivum / Eigenkapital'),
+                  ('aufwand', 'Aufwand'), ('ertrag', 'Ertrag')],
     })
 
 
@@ -12357,27 +12518,63 @@ def fw_buchung_neu(request):
     from core.auth import log_aktion
     if request.method != 'POST':
         return redirect('fw_buchhaltung')
-    soll = Buchungskonto.objects.filter(id=request.POST.get('soll_konto_id') or None).first()
-    haben = Buchungskonto.objects.filter(id=request.POST.get('haben_konto_id') or None).first()
+
+    def _konto_aus_post(feld_nummer, feld_id):
+        """Akzeptiert die KONTONUMMER (Tastatureingabe) oder die ID (Alt-Formulare).
+        Die Nummer ist der Weg, den ein Buchhalter erwartet — vorher gab es nur
+        ein <select> über den ganzen Kontenplan (Audit)."""
+        nr = (request.POST.get(feld_nummer) or '').strip()
+        if nr:
+            # Die datalist zeigt «4000 Unterhalt» — nur der führende Zahlenteil zählt.
+            nr = nr.split()[0].strip()
+            k = Buchungskonto.objects.filter(nummer=nr).first()
+            if k:
+                return k
+        return Buchungskonto.objects.filter(id=request.POST.get(feld_id) or None).first()
+
+    # Serienerfassung: zurück zur Maske statt auf die Übersicht, damit ein Stapel
+    # ohne Neuaufklappen und ohne erneutes Tippen von Datum/Konten läuft.
+    weiter = request.POST.get('weiter') == '1'
+
+    def _zurueck(fehler=False):
+        if not weiter:
+            return redirect('fw_buchhaltung')
+        # Werte für die nächste Zeile in der Session merken.
+        request.session['bu_serie'] = True
+        return redirect('/neu/buchhaltung/?tab=journal#buchform')
+
+    soll = _konto_aus_post('soll_konto', 'soll_konto_id')
+    haben = _konto_aus_post('haben_konto', 'haben_konto_id')
     try:
-        betrag = Decimal(str(request.POST.get('betrag') or '0').replace(',', '.'))
+        betrag = Decimal(str(request.POST.get('betrag') or '0').replace("'", '').replace(',', '.'))
     except Exception:
         betrag = Decimal('0')
     text = (request.POST.get('beleg_text') or '').strip()
     if not soll or not haben or betrag <= 0 or not text:
-        messages.error(request, "Soll-, Haben-Konto, Betrag (> 0) und Belegtext sind erforderlich.")
-        return redirect('fw_buchhaltung')
+        messages.error(request, "Soll-, Haben-Konto (gültige Nummer), Betrag (> 0) und Belegtext sind erforderlich.")
+        return _zurueck(fehler=True)
     if soll.id == haben.id:
         messages.error(request, "Soll- und Haben-Konto müssen unterschiedlich sein.")
-        return redirect('fw_buchhaltung')
+        return _zurueck(fehler=True)
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first() if request.POST.get('liegenschaft_id') else None
-    Buchung.objects.create(
-        datum=(date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.localdate()),
-        beleg_text=text, liegenschaft=lg, soll_konto=soll, haben_konto=haben,
-        betrag=betrag, erstellt_von=request.user)
+    bu_datum = (date.fromisoformat(request.POST['datum']) if request.POST.get('datum')
+                else timezone.localdate())
+    try:
+        Buchung.objects.create(
+            datum=bu_datum, beleg_text=text, liegenschaft=lg,
+            soll_konto=soll, haben_konto=haben,
+            betrag=betrag, erstellt_von=request.user)
+    except PermissionError as exc:          # Periodensperre
+        messages.error(request, f"❌ {exc}")
+        return _zurueck(fehler=True)
     log_aktion(request, "Manuelle Buchung", text, f"{soll.nummer}/{haben.nummer} CHF {betrag}")
     messages.success(request, f"✅ Buchung erfasst: {soll.nummer} an {haben.nummer} · CHF {betrag}.")
-    return redirect('fw_buchhaltung')
+    # Datum, Konten und Liegenschaft für den nächsten Beleg vorhalten.
+    request.session['bu_letzt'] = {
+        'datum': bu_datum.isoformat(), 'soll': soll.nummer, 'haben': haben.nummer,
+        'lg': lg.id if lg else None,
+    }
+    return _zurueck()
 
 
 @rolle_erforderlich(ROLLE_VERWALTUNG)
