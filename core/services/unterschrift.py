@@ -16,6 +16,52 @@ import os
 from reportlab.lib.units import mm
 
 
+def hat_sichtbare_tinte(bild):
+    """True, wenn auf dem Bild überhaupt etwas zu sehen ist.
+
+    Ein leeres Zeichenfeld liefert ein vollständig durchsichtiges PNG, ein
+    abfotografiertes leeres Blatt ein weisses. Beides wurde bisher anstandslos
+    gespeichert: Die App meldete «hinterlegt», die Vorschau blieb leer und der
+    Brief ging unsigniert raus — ohne dass irgendwo ein Fehler auftauchte.
+    Genau dieses Bild ist reproduziert worden. Darum wird hier geprüft, ob es
+    dunkle, nicht durchsichtige Pixel gibt.
+    """
+    try:
+        bild = bild.convert('RGBA')
+        if bild.width * bild.height > 250_000:      # grosse Fotos verkleinern
+            bild.thumbnail((500, 500))
+        for r, g, b, a in bild.getdata():
+            if a > 40 and (r < 200 or g < 200 or b < 200):
+                return True
+    except Exception:
+        return True          # im Zweifel durchlassen, nie den Upload blockieren
+    return False
+
+
+def unterschrift_url(obj, feld='unterschrift_bild'):
+    """URL der hinterlegten Unterschrift — leer, wenn sie nicht brauchbar ist.
+
+    Die Vorlage leitet daraus sowohl die Vorschau als auch den Hinweis
+    «hinterlegt» ab. Bisher genügte dafür der Datenbankeintrag. Fehlte die
+    Datei auf dem Server oder war sie leer (durchsichtiges Canvas), behauptete
+    die App eine Unterschrift, die weder in der Vorschau noch auf einem Brief
+    je erschien. Darum hier beides prüfen.
+    """
+    bild = getattr(obj, feld, None) if obj else None
+    if not bild:
+        return ''
+    try:
+        if not bild.storage.exists(bild.name):
+            return ''
+        from PIL import Image
+        with bild.open('rb') as f:
+            if not hat_sichtbare_tinte(Image.open(f)):
+                return ''
+        return bild.url
+    except Exception:
+        return ''
+
+
 def unterschrift_pfad(*kandidaten):
     """Erster Kandidat (Verwaltung/Mandant) mit einer vorhandenen Bilddatei.
 
@@ -86,7 +132,16 @@ def uebernehme_aus_formular(obj, request, feld='unterschrift_bild'):
     import base64
     import io
 
+    from django.contrib import messages
     from django.core.files.base import ContentFile
+
+    def _leer_melden():
+        try:
+            messages.warning(request, "⚠️ Die Unterschrift war leer und wurde nicht "
+                                      "gespeichert — bitte nochmals unterschreiben.")
+        except Exception:
+            pass                       # ohne Message-Framework (Tests) einfach still
+        return False
 
     P = request.POST
     if P.get('unterschrift_entfernen') == '1' and getattr(obj, feld, None):
@@ -107,6 +162,8 @@ def uebernehme_aus_formular(obj, request, feld='unterschrift_bild'):
             bild = Image.open(io.BytesIO(daten))
             bild.verify()                       # nur echte Bilddaten zulassen
             bild = Image.open(io.BytesIO(daten)).convert('RGBA')
+            if not hat_sichtbare_tinte(bild):
+                return _leer_melden()
             puffer = io.BytesIO()
             bild.save(puffer, format='PNG')
             # NUR zuweisen, nicht speichern: obj.save() schreibt die Datei danach
@@ -119,6 +176,18 @@ def uebernehme_aus_formular(obj, request, feld='unterschrift_bild'):
 
     datei = request.FILES.get(feld)
     if datei:
+        try:
+            from PIL import Image
+            datei.seek(0)
+            if not hat_sichtbare_tinte(Image.open(datei)):
+                return _leer_melden()
+        except Exception:
+            pass                       # kein lesbares Bild → Modell meldet es
+        finally:
+            try:
+                datei.seek(0)
+            except Exception:
+                pass
         setattr(obj, feld, datei)
         return True
     return False

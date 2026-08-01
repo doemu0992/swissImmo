@@ -9211,9 +9211,12 @@ def fw_account(request):
             return f.url if f else ''
         except Exception:
             return ''
+    from core.services.unterschrift import unterschrift_url as _sig_url
+    sig_url = _sig_url(vw)
     return render(request, 'fw/account.html', {
         **basis, 'nav': 'account', 'vw': vw,
-        'logo_url': _url('logo'), 'unterschrift_url': _url('unterschrift_bild'),
+        'logo_url': _url('logo'), 'unterschrift_url': sig_url,
+        'unterschrift_verwaist': bool(getattr(vw, 'unterschrift_bild', None)) and not sig_url,
         'kann_reset': hat_rolle(request.user, [ROLLE_VERWALTUNG]),
     })
 
@@ -10395,16 +10398,21 @@ def fw_mandat_form(request, pk=None):
         from core.services.unterschrift import uebernehme_aus_formular
         uebernehme_aus_formular(obj, request)
         obj.save()
-        # Liegenschaften zuordnen: gewählte -> dieser Mandant; abgewählte (bisher dieser) -> ohne Mandant
-        gewaehlt = set(P.getlist('liegenschaften'))
-        for lg in Liegenschaft.objects.all():
-            sid = str(lg.id)
-            if sid in gewaehlt and lg.mandant_id != obj.id:
-                lg.mandant = obj
-                lg.save(update_fields=['mandant'])
-            elif sid not in gewaehlt and lg.mandant_id == obj.id:
-                lg.mandant = None
-                lg.save(update_fields=['mandant'])
+        # Liegenschaften zuordnen: gewählte -> dieser Mandant; abgewählte (bisher dieser) -> ohne Mandant.
+        # Nur wenn das Formular den Zuordnungsblock wirklich mitgeschickt hat: Ein POST
+        # ohne diesen Block (Teilformular, abgebrochenes Rendering) hätte sonst still
+        # ALLE Liegenschaften vom Eigentümer gelöst — und damit u.a. seine Unterschrift
+        # aus jedem Brief entfernt, weil die Briefe über die Liegenschaft an ihn kommen.
+        if P.get('lg_zuordnung') == '1':
+            gewaehlt = set(P.getlist('liegenschaften'))
+            for lg in Liegenschaft.objects.all():
+                sid = str(lg.id)
+                if sid in gewaehlt and lg.mandant_id != obj.id:
+                    lg.mandant = obj
+                    lg.save(update_fields=['mandant'])
+                elif sid not in gewaehlt and lg.mandant_id == obj.id:
+                    lg.mandant = None
+                    lg.save(update_fields=['mandant'])
         _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
         log_aktion(request, "Mandant bearbeitet" if pk else "Mandant erstellt", obj.firma_oder_name, _diff)
         messages.success(request, f"✅ Mandant {obj.firma_oder_name} gespeichert.")
@@ -10412,16 +10420,13 @@ def fw_mandat_form(request, pk=None):
 
     alle_lg = Liegenschaft.objects.all().order_by('strasse')
     zugeordnet = set(Liegenschaft.objects.filter(mandant=md).values_list('id', flat=True)) if md else set()
-    unterschrift_url = ''
-    if md and getattr(md, 'unterschrift_bild', None):
-        try:
-            unterschrift_url = md.unterschrift_bild.url
-        except Exception:
-            unterschrift_url = ''
+    from core.services.unterschrift import unterschrift_url as _sig_url
+    sig_url = _sig_url(md) if md else ''
     return render(request, 'fw/mandat_form.html', {
         **basis, 'nav': 'mandate', 'md': md, 'ist_neu': md is None,
         'alle_liegenschaften': alle_lg, 'zugeordnet': zugeordnet,
-        'unterschrift_url': unterschrift_url,
+        'unterschrift_url': sig_url,
+        'unterschrift_verwaist': bool(md and getattr(md, 'unterschrift_bild', None)) and not sig_url,
         'portal_user': getattr(md, 'benutzer', None) if md else None,
     })
 

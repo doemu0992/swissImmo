@@ -51,6 +51,8 @@
     <div class="bg-white rounded-xl border border-slate-200 p-5">
         <h3 class="font-bold text-slate-800 text-sm mb-1">Zugeordnete Liegenschaften</h3>
         <p class="text-xs text-slate-400 mb-3">Wähle die Liegenschaften, die diesem Eigentümer gehören.</p>
+        {# Beleg, dass dieser Block wirklich mitgeschickt wurde — sonst rührt die View die Zuordnung nicht an #}
+        <input type="hidden" name="lg_zuordnung" value="1">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto">
             {% for lg in alle_liegenschaften %}
             <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer text-sm">

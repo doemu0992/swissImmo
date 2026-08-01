@@ -12192,3 +12192,121 @@ class UnterschriftBriefeTests(TestCase):
             'unterschrift_gezeichnet': self._data_url()})
         md.refresh_from_db()
         self.assertTrue(md.unterschrift_bild)
+
+    # ---------- Leere «Unterschrift» ----------
+    def _leere_data_url(self, weiss=False):
+        """Was ein geleertes Canvas liefert. iOS Safari feuert beim Absenden ein
+        resize (URL-Leiste), das die Fläche leert und erst asynchron wieder
+        aufbaut — traf das submit dazwischen, ging genau das hier raus."""
+        import base64
+        import io as _io
+        from PIL import Image
+        farbe = (255, 255, 255, 255) if weiss else (0, 0, 0, 0)
+        img = Image.new("RGBA", (600, 200), farbe)
+        b = _io.BytesIO(); img.save(b, format="PNG")
+        return 'data:image/png;base64,' + base64.b64encode(b.getvalue()).decode()
+
+    def test_leeres_canvas_wird_nicht_gespeichert(self):
+        """Sonst meldet die App «hinterlegt», die Vorschau bleibt leer und jeder
+        Brief geht unsigniert raus — ohne dass irgendwo ein Fehler auftaucht."""
+        vw = self._verwaltung(False)
+        c = Client(); c.force_login(_team_user())
+        for weiss in (False, True):
+            c.post('/neu/account/', {**self._basis(vw),
+                                     'unterschrift_gezeichnet': self._leere_data_url(weiss)})
+            vw.refresh_from_db()
+            self.assertFalse(vw.unterschrift_bild, f"leeres Canvas gespeichert (weiss={weiss})")
+
+    def test_leeres_canvas_ueberschreibt_bestehende_unterschrift_nicht(self):
+        vw = self._verwaltung(True)
+        name = vw.unterschrift_bild.name
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/account/', {**self._basis(vw),
+                                 'unterschrift_gezeichnet': self._leere_data_url()})
+        vw.refresh_from_db()
+        self.assertEqual(vw.unterschrift_bild.name, name)
+
+    def test_leeres_canvas_meldet_es_dem_nutzer(self):
+        vw = self._verwaltung(False)
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/account/', {**self._basis(vw),
+                                     'unterschrift_gezeichnet': self._leere_data_url()},
+                   follow=True)
+        self.assertContains(r, 'Unterschrift war leer')
+
+    def test_leeres_blatt_als_upload_wird_abgewiesen(self):
+        import io as _io
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from PIL import Image
+        b = _io.BytesIO(); Image.new("RGB", (400, 120), "white").save(b, format="PNG")
+        vw = self._verwaltung(False)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/account/', {**self._basis(vw),
+                                 'unterschrift_bild': SimpleUploadedFile(
+                                     'leer.png', b.getvalue(), content_type='image/png')})
+        vw.refresh_from_db()
+        self.assertFalse(vw.unterschrift_bild)
+
+    # ---------- Datenbankeintrag ohne Datei ----------
+    def test_fehlende_bilddatei_wird_nicht_als_hinterlegt_ausgegeben(self):
+        """Fehlt die Datei auf dem Server, behauptete die App trotzdem eine
+        Unterschrift — Vorschau leer, Brief leer, kein Hinweis worauf es liegt."""
+        import os
+        from django.conf import settings
+        from core.services.unterschrift import unterschrift_url
+        vw = self._verwaltung(True)
+        os.remove(os.path.join(settings.MEDIA_ROOT, vw.unterschrift_bild.name))
+        self.assertEqual(unterschrift_url(vw), '')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/account/')
+        self.assertContains(r, 'nicht verwendbar')
+        self.assertNotContains(r, 'alt="Unterschrift"')
+
+    def test_leer_gespeicherte_unterschrift_gilt_nicht_als_hinterlegt(self):
+        """Altbestand aus dem Canvas-Bug: Datei da, aber vollständig durchsichtig."""
+        from django.core.files.base import ContentFile
+        from core.services.unterschrift import unterschrift_url
+        vw = self._verwaltung(False)
+        roh = self._leere_data_url().split(',', 1)[1]
+        import base64
+        vw.unterschrift_bild.save('leer.png', ContentFile(base64.b64decode(roh)), save=True)
+        self.assertEqual(unterschrift_url(vw), '')
+        c = Client(); c.force_login(_team_user())
+        self.assertContains(c.get('/neu/account/'), 'nicht verwendbar')
+
+    def test_vorhandene_bilddatei_liefert_url(self):
+        from core.services.unterschrift import unterschrift_url
+        vw = self._verwaltung(True)
+        self.assertTrue(unterschrift_url(vw))
+        c = Client(); c.force_login(_team_user())
+        self.assertContains(c.get('/neu/account/'), 'alt="Unterschrift"')
+
+    # ---------- Liegenschafts-Zuordnung am Mandat ----------
+    def test_mandat_speichern_ohne_zuordnungsblock_behaelt_liegenschaften(self):
+        """Ein POST ohne den Zuordnungsblock löste bisher still ALLE Liegenschaften
+        vom Eigentümer — und nahm damit seine Unterschrift aus jedem Brief."""
+        from crm.models import Mandant
+        lg, e, m, v = _basis_objekte()
+        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        lg.mandant = md; lg.save(update_fields=['mandant'])
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/mandate/{md.id}/bearbeiten/', {'firma_oder_name': md.firma_oder_name})
+        lg.refresh_from_db()
+        self.assertEqual(lg.mandant_id, md.id)
+
+    def test_mandat_zuordnung_bleibt_bewusst_aenderbar(self):
+        """Mit abgeschicktem Block soll das Abwählen weiterhin greifen."""
+        from crm.models import Mandant
+        lg, e, m, v = _basis_objekte()
+        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        lg.mandant = md; lg.save(update_fields=['mandant'])
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/mandate/{md.id}/bearbeiten/',
+               {'firma_oder_name': md.firma_oder_name, 'lg_zuordnung': '1'})
+        lg.refresh_from_db()
+        self.assertIsNone(lg.mandant_id)
+        c.post(f'/neu/mandate/{md.id}/bearbeiten/',
+               {'firma_oder_name': md.firma_oder_name, 'lg_zuordnung': '1',
+                'liegenschaften': [str(lg.id)]})
+        lg.refresh_from_db()
+        self.assertEqual(lg.mandant_id, md.id)

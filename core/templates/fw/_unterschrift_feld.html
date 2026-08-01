@@ -25,6 +25,10 @@ Das Formular MUSS enctype="multipart/form-data" haben.
         <span class="ml-auto inline-flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
             <i class="fa-solid fa-check"></i>hinterlegt
         </span>
+        {% elif unterschrift_verwaist %}
+        <span class="ml-auto inline-flex items-center gap-1.5 text-xs text-rose-600 font-medium">
+            <i class="fa-solid fa-triangle-exclamation"></i>nicht verwendbar
+        </span>
         {% endif %}
     </div>
 
@@ -77,6 +81,12 @@ Das Formular MUSS enctype="multipart/form-data" haben.
                 <input type="checkbox" name="unterschrift_entfernen" value="1" class="accent-rose-500">
                 Unterschrift entfernen
             </label>
+            {% elif unterschrift_verwaist %}
+            <p class="text-xs text-rose-600 mt-2.5">
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i>Es ist zwar eine Unterschrift eingetragen, sie ist aber
+                leer oder die Bilddatei fehlt auf dem Server. Bitte nochmals unterschreiben — bis dahin bleibt die Linie
+                auf jedem Brief leer.
+            </p>
             {% else %}
             <p class="text-xs text-amber-600 mt-2.5">
                 <i class="fa-solid fa-triangle-exclamation mr-1"></i>Ohne Unterschrift bleibt die Linie auf jedem Brief leer.
@@ -100,6 +110,13 @@ Das Formular MUSS enctype="multipart/form-data" haben.
         var platzhalter = wurzel.querySelector('[data-us-platzhalter]');
         var ctx = canvas.getContext('2d');
         var zeichnet = false, etwasGezeichnet = false;
+        // Letzte Fassung MIT sichtbarem Strich. Sie ist massgebend, nicht das
+        // Canvas zum Zeitpunkt des Absendens: iOS Safari feuert beim Antippen
+        // von «Speichern» ein resize (ein-/ausfahrende URL-Leiste), das die
+        // Fläche leert und erst asynchron wiederherstellt. Wer dann das Canvas
+        // ausliest, verschickt ein durchsichtiges PNG — die App meldete
+        // «hinterlegt», Vorschau und Brief blieben leer.
+        var letzteDatenUrl = '';
 
         // Retina: interne Auflösung an die Anzeigegrösse koppeln, sonst wird
         // die Linie unscharf und die gespeicherte PNG zu klein.
@@ -107,7 +124,7 @@ Das Formular MUSS enctype="multipart/form-data" haben.
             var dpr = window.devicePixelRatio || 1;
             var b = canvas.clientWidth, h = canvas.clientHeight;
             if (!b || !h) return;
-            var alt = etwasGezeichnet ? canvas.toDataURL('image/png') : null;
+            var alt = letzteDatenUrl || null;
             canvas.width = Math.round(b * dpr);
             canvas.height = Math.round(h * dpr);
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -152,6 +169,7 @@ Das Formular MUSS enctype="multipart/form-data" haben.
         function ende(e) {
             if (!zeichnet) return;
             zeichnet = false;
+            merken();
             uebernehmen();
             try {
                 if (e && e.pointerId != null && canvas.hasPointerCapture &&
@@ -164,10 +182,26 @@ Das Formular MUSS enctype="multipart/form-data" haben.
             etwasGezeichnet = true;
             if (platzhalter) platzhalter.style.display = 'none';
         }
+        function hatTinte() {
+            // Ein Zug kann durch ein zwischenzeitliches resize verschwunden sein.
+            try {
+                var d = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                // Jedes 4. Pixel genügt — ein Strich ist mehrere Pixel breit,
+                // und die volle Schleife kostet auf Retina spürbar Zeit.
+                for (var i = 3; i < d.length; i += 16) { if (d[i] > 40) return true; }
+                return false;
+            } catch (_) {
+                return true;              // getImageData gesperrt → nicht blockieren
+            }
+        }
+        function merken() {
+            if (etwasGezeichnet && hatTinte()) letzteDatenUrl = canvas.toDataURL('image/png');
+        }
         function uebernehmen() {
-            // Nur wenn wirklich gezeichnet wurde — sonst würde ein leeres Feld
-            // beim Speichern die bestehende Unterschrift überschreiben.
-            feld.value = etwasGezeichnet ? canvas.toDataURL('image/png') : '';
+            // Immer die letzte Fassung mit sichtbarem Strich — nie ein womöglich
+            // frisch geleertes Canvas. Ohne Zeichnung bleibt das Feld leer, sonst
+            // würde es beim Speichern die bestehende Unterschrift überschreiben.
+            feld.value = letzteDatenUrl;
         }
 
         if (window.PointerEvent) {
@@ -194,6 +228,7 @@ Das Formular MUSS enctype="multipart/form-data" haben.
         if (loeschen) loeschen.addEventListener('click', function () {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             etwasGezeichnet = false;
+            letzteDatenUrl = '';
             feld.value = '';
             if (platzhalter) platzhalter.style.display = '';
         });
