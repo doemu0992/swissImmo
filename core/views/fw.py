@@ -4801,17 +4801,29 @@ def fw_mieterkonten(request):
         if v.status == 'aktiv':
             eintrag['aktiv'] = True
 
+    # Suche: bei mehr als einer Handvoll Mieter ist Scrollen keine Bedienung.
+    q = (request.GET.get('q') or '').strip()
+    q_klein = q.lower()
+
     rows = []
     total_offen = Decimal('0.00')
+    gesamt_n = 0            # alle Mieter — unabhängig von Filter und Suche
+    offen_gesamt_n = 0
     for mid, data in mieter_map.items():
         _, saldo = berechne_mieterkonto(data['mieter'])
+        gesamt_n += 1
         if saldo > 0:
             total_offen += saldo
+            offen_gesamt_n += 1
         if filter_op and saldo <= 0:
+            continue
+        objekt_text = ' · '.join(sorted(data['objekte'])[:1]) or '—'
+        if q_klein and q_klein not in (data['mieter'].display_name or '').lower() \
+                and q_klein not in objekt_text.lower():
             continue
         rows.append({
             'm': data['mieter'], 'saldo': saldo,
-            'objekt': ' · '.join(sorted(data['objekte'])[:1]) or '—',
+            'objekt': objekt_text,
             'objekte_n': len(data['objekte']),
             'aktiv': data['aktiv'],
         })
@@ -4819,9 +4831,11 @@ def fw_mieterkonten(request):
     rows.sort(key=lambda r: (-(r['saldo'] if r['saldo'] > 0 else Decimal('0')), (r['m'].nachname or '').lower()))
 
     return render(request, 'fw/mieterkonten.html', {
-        **basis, 'nav': 'mieterkonten', 'rows': rows,
-        'total_offen': total_offen, 'anzahl': len(rows),
-        'offen_n': sum(1 for r in rows if r['saldo'] > 0),
+        **basis, 'nav': 'mieterkonten', 'rows': rows, 'q': q,
+        # «Alle (N)» zählte bisher die bereits gefilterten Zeilen — in der
+        # gefilterten Ansicht stand am «Alle»-Knopf also die falsche Zahl.
+        'total_offen': total_offen, 'anzahl': gesamt_n,
+        'offen_n': offen_gesamt_n, 'treffer_n': len(rows),
         'filter_op': filter_op,
     })
 

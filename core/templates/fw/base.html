@@ -42,8 +42,20 @@
             table[data-stack] tfoot,
             table[data-stack] tr,
             table[data-stack] td { display: block; width: auto; }
-            table[data-stack] tr { padding: 0.5rem 1rem; border-bottom: 1px solid #f1f5f9; }
+            /* Kräftiges Trennband statt Haarlinie: bei vier Feldern pro Zeile
+               verschwimmen die Einträge sonst ineinander und man sieht nicht,
+               wo ein Mieter aufhört und der nächste anfängt. */
+            table[data-stack] tr { padding: 0.75rem 1rem; border-bottom: 8px solid #f1f5f9; }
             table[data-stack] tr:last-child { border-bottom: 0; }
+            /* Erste Zelle ist die Überschrift der Zeile — ihr Wert benennt den
+               Eintrag («Dominik Gerber»), das Label davor wäre nur Rauschen. */
+            table[data-stack] td[data-stack-titel] {
+                display: block; text-align: left !important;
+                font-size: 1rem; font-weight: 700; color: #0f172a;
+                margin-bottom: 0.15rem;
+            }
+            table[data-stack] td[data-stack-titel]::before { content: none; }
+            table[data-stack] td[data-stack-titel] > .fw-wert { text-align: left; }
             table[data-stack] td {
                 padding: 0.2rem 0 !important;
                 text-align: right !important;
@@ -510,13 +522,20 @@ function fwTabellenStapeln(wurzel) {
         if (!titel.length) return;
         tab.setAttribute('data-stack', '');
         tab.querySelectorAll('tbody tr, tfoot tr').forEach(function (tr) {
-            var i = 0;
+            var i = 0, titelGesetzt = false;
             Array.prototype.forEach.call(tr.cells, function (td) {
                 if (!td.hasAttribute('colspan')) td.setAttribute('data-label', titel[i] || '');
                 // Leere Zellen (unbenutzte Aktionsspalte) mobil ausblenden statt
                 // eine Zeile mit nichts darin zu zeigen.
-                if (!(td.textContent || '').trim() && !td.querySelector('img,svg,input,button,a'))
+                var hatText = !!(td.textContent || '').trim();
+                if (!hatText && !td.querySelector('img,svg,input,button,a'))
                     td.setAttribute('data-leer', '');
+                // Die erste Zelle mit Inhalt benennt den Eintrag — sie wird zur
+                // Überschrift der Karte (Auswahlkästchen o.ä. überspringen).
+                if (!titelGesetzt && hatText && !td.hasAttribute('colspan')) {
+                    td.setAttribute('data-stack-titel', '');
+                    titelGesetzt = true;
+                }
                 // Inhalt in einen eigenen Kasten hängen, der schrumpfen darf.
                 // display:contents lässt ihn auf dem Desktop wirkungslos.
                 if (!td.querySelector(':scope > .fw-wert')) {

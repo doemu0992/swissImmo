@@ -3634,6 +3634,44 @@ class MieterkontoblattTests(TestCase):
         r2 = c.get('/neu/mieterkonten/?filter=offen')
         self.assertEqual(len(r2.context['rows']), 1)
 
+    def test_suche_filtert_nach_mieter_und_objekt(self):
+        """Gemeldet: «lange Liste, man kann die Mieter kaum unterscheiden» —
+        ohne Suche bleibt nur Scrollen."""
+        lg, e, m, v = self._konto()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/mieterkonten/?q=' + (m.nachname or '')[:4])
+        self.assertEqual(len(r.context['rows']), 1)
+        self.assertContains(r, 'Treffer für')
+        # Objektsuche findet denselben Mieter über die Adresse
+        r2 = c.get('/neu/mieterkonten/?q=' + lg.strasse[:5])
+        self.assertEqual(len(r2.context['rows']), 1)
+        # Kein Treffer → leere Liste, Seite bleibt bedienbar
+        r3 = c.get('/neu/mieterkonten/?q=zzzznichtvorhanden')
+        self.assertEqual(r3.status_code, 200)
+        self.assertEqual(len(r3.context['rows']), 0)
+
+    def test_alle_zaehler_bleibt_in_der_gefilterten_ansicht_korrekt(self):
+        """«Alle (N)» zählte die bereits gefilterten Zeilen — in der Ansicht
+        «nur offen» stand am Alle-Knopf also die falsche Zahl."""
+        from crm.models import Mieter
+        lg, e, m, v = self._konto()
+        m2 = Mieter.objects.create(vorname='Ohne', nachname='Ausstand')
+        Mietvertrag.objects.create(mieter=m2, einheit=e, status='aktiv',
+                                   beginn=date(2025, 1, 1),
+                                   netto_mietzins=Decimal('100'), nebenkosten=Decimal('0'))
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/mieterkonten/?filter=offen')
+        self.assertEqual(r.context['anzahl'], 2)        # alle Mieter
+        self.assertEqual(len(r.context['rows']), 1)     # angezeigt: nur der offene
+
+    def test_erste_zelle_wird_zur_ueberschrift_der_karte(self):
+        """Auf dem Handy ist «MIETER» als Beschriftung Rauschen — der Name ist
+        die Überschrift. Ohne das verschwimmen die Einträge ineinander."""
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/mieterkonten/').content.decode('utf-8')
+        self.assertIn('data-stack-titel', html)         # Skript setzt das Attribut
+        self.assertIn("td[data-stack-titel]::before { content: none; }", html)
+
 
 class JournalStornoTests(TestCase):
     """Revisionssichere Gegenbuchung: Original bleibt, Storno kehrt Soll/Haben um."""
