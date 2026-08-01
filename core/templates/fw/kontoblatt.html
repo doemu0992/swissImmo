@@ -24,7 +24,42 @@
 </div>
 
 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-    <div class="overflow-x-auto">
+    {% comment %}
+    Mobil als Karten: die 7-spaltige Tabelle liess auf dem Handy entweder den
+    Buchungstext ODER den Saldo sehen — man musste quer scrollen.
+    {% endcomment %}
+    <div class="md:hidden divide-y divide-slate-100">
+        {% if ist_bilanz %}
+        <div class="px-4 py-2.5 bg-slate-50/60 flex items-center justify-between">
+            <span class="text-slate-500 italic text-sm">Eröffnungssaldo{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</span>
+            <span class="font-semibold whitespace-nowrap">{{ eroeffnung|chf }}</span>
+        </div>
+        {% endif %}
+        {% for z in zeilen %}
+        <div class="px-4 py-3 {% if z.b.ist_storno %}text-rose-400 line-through{% endif %}">
+            <div class="flex items-start gap-3">
+                <div class="min-w-0 flex-1">
+                    <div class="text-slate-800">{{ z.b.beleg_text }}</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">{{ z.b.datum|date:"d.m.Y" }} · #{{ z.b.beleg_nr|default:z.b.id }}</div>
+                    <div class="text-[11px] text-slate-500 mt-1">{{ z.gegenkonto.nummer }} {{ z.gegenkonto.bezeichnung }}</div>
+                </div>
+                <div class="text-right shrink-0">
+                    <div class="whitespace-nowrap {% if z.soll %}text-slate-900{% else %}text-slate-500{% endif %}">
+                        {% if z.soll %}+ {{ z.soll|chf }}{% else %}− {{ z.haben|chf }}{% endif %}
+                    </div>
+                    <div class="text-[11px] text-slate-400 whitespace-nowrap mt-0.5">Saldo {{ z.saldo|chf }}</div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="px-4 py-8 text-center text-slate-400 italic">Keine Buchungen in diesem Zeitraum.</div>
+        {% endfor %}
+        <div class="px-4 py-3 bg-slate-50 font-bold flex items-center justify-between">
+            <span>Endsaldo</span>
+            <span class="whitespace-nowrap {% if endsaldo < 0 %}text-rose-600{% else %}text-slate-900{% endif %}">CHF {{ endsaldo|chf }}</span>
+        </div>
+    </div>
+    <div class="hidden md:block overflow-x-auto">
     <table class="w-full text-sm min-w-max">
         <thead class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
             <tr>

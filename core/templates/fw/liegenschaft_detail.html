@@ -558,7 +558,8 @@
                 <div class="flex items-center gap-3 px-5 py-3.5">
                     <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-lines"></i></div>
                     <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ d.titel }}</div>
-                        <div class="text-xs text-slate-400">{{ d.kategorie }}{% if d.datum %} · {{ d.datum|date:"d.m.Y H:i" }}{% endif %}</div></div>
+                        <div class="text-xs text-slate-400">{{ d.kategorie }}{# Dokument.datum ist ein DateField — «H:i» darauf wirft TypeError und die ganze Seite stirbt #}
+                        {% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}</div></div>
                     {% if d.url %}<a href="{{ d.url }}" target="_blank" rel="noopener" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Öffnen</a>{% endif %}
                     {% if d.del_url %}
                     <form method="post" action="{{ d.del_url }}" class="shrink-0" onsubmit="return confirm('Dokument «{{ d.titel|escapejs }}» löschen?');">{% csrf_token %}

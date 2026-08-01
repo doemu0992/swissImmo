@@ -17,6 +17,65 @@
            prüfen. Zentral statt in jedem Template, damit keine Tabelle vergessen
            geht (Praxis-Audit). Rechtsbündige Zellen sind hier immer Zahlen. */
         table td.text-right, table th.text-right { font-variant-numeric: tabular-nums; }
+        /* Auf dem Desktop ist die Wert-Hülle wirkungslos — display:contents
+           lässt die Zelle exakt so aussehen wie ohne sie. */
+        .fw-wert { display: contents; }
+        /* ---- Tabellen auf dem Handy: gestapelt statt quer scrollbar ----
+           Eine breite Tabelle in einem overflow-x-auto zwang zum Querscrollen —
+           man sah entweder die Bezeichnung ODER den Betrag, nie beides. Unter
+           768 px wird jede Zeile deshalb zu einer Karte: links die Spalten-
+           überschrift, rechts der Wert. Die Beschriftungen setzt das Skript am
+           Seitenende aus dem <thead>, damit das ohne Eingriff in die ~40
+           Tabellen-Templates greift und auch für neue Tabellen gilt. */
+        @media (max-width: 767px) {
+            /* Tabellen ohne Kopfzeile lassen sich nicht beschriften und werden
+               daher nicht gestapelt. Sie sind in der Praxis schmal (Nummer ·
+               Bezeichnung · Betrag); dort reicht es, die erzwungene Mindestbreite
+               aufzuheben, damit der Text umbricht statt quer zu scrollen. */
+            table.min-w-max { min-width: 0 !important; }
+            /* display:block auch auf der Tabelle selbst — sonst steckt der Browser
+               die Block-Zeilen in eine anonyme Tabellenzelle und misst die Breite
+               wieder am Inhalt, die Tabelle bleibt also breiter als der Bildschirm. */
+            table[data-stack] { display: block; min-width: 0 !important; width: 100% !important; }
+            table[data-stack] thead { display: none; }
+            table[data-stack] tbody,
+            table[data-stack] tfoot,
+            table[data-stack] tr,
+            table[data-stack] td { display: block; width: auto; }
+            table[data-stack] tr { padding: 0.5rem 1rem; border-bottom: 1px solid #f1f5f9; }
+            table[data-stack] tr:last-child { border-bottom: 0; }
+            table[data-stack] td {
+                padding: 0.2rem 0 !important;
+                text-align: right !important;
+                /* truncate / nowrap / max-w der Desktop-Spalten aufheben — mobil ist Platz nach unten */
+                white-space: normal !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
+                max-width: none !important;
+                display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem;
+            }
+            table[data-stack] td::before {
+                content: attr(data-label);
+                flex: 0 0 auto;
+                text-align: left;
+                font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+                text-transform: uppercase; color: #94a3b8;
+            }
+            /* Der Wert braucht einen eigenen Kasten mit min-width:0 — sonst
+               schrumpft ein Flex-Element nie unter seine Inhaltsbreite und ein
+               breiter Block in der Zelle (z.B. das aufklappbare Kostenaufteilungs-
+               Feld bei den Kreditoren) schiebt die Zeile wieder aus dem Bild. */
+            table[data-stack] td > .fw-wert {
+                display: block; flex: 1 1 auto; min-width: 0;
+                text-align: right; overflow-wrap: anywhere;
+            }
+            /* Zellen ohne Überschrift (Aktionsspalte): kein Label. Leere Zellen ganz weg. */
+            table[data-stack] td[data-label='']::before { content: none; }
+            table[data-stack] td[data-leer] { display: none; }
+            /* Zusammengefasste Zellen (Summenzeilen) über die volle Breite */
+            table[data-stack] td[colspan]::before { content: none; }
+            table[data-stack] tfoot tr { background: #f8fafc; font-weight: 600; }
+        }
         /* iOS: native date/month/time-Felder haben eine Eigenbreite, die w-full
            ignoriert und aus dem Container läuft. Auf Containerbreite zwingen. */
         input[type="date"], input[type="month"], input[type="week"],
@@ -430,6 +489,50 @@ document.addEventListener('click', function(ev) {
         if (wrap && !wrap.contains(ev.target)) l.classList.add('hidden');
     });
 });
+
+// ---- Tabellen mobil stapelbar machen ----
+// Jede Zelle bekommt die Überschrift ihrer Spalte als data-label; das CSS oben
+// blendet unter 768 px den Kopf aus und zeigt stattdessen «Label — Wert» pro
+// Zeile. Zentral statt in ~40 Templates: quer scrollen hiess bisher, entweder
+// die Bezeichnung ODER den Betrag zu sehen.
+// Tabellen, die bereits eine eigene Kartenansicht haben (Journal, Kontoblatt,
+// Debitoren …), stehen in einem `hidden md:block` und werden übersprungen.
+function fwTabellenStapeln(wurzel) {
+    (wurzel || document).querySelectorAll('table').forEach(function (tab) {
+        if (tab.dataset.stackGeprueft) return;
+        tab.dataset.stackGeprueft = '1';
+        var kopfZeile = tab.querySelector('thead tr');
+        if (!kopfZeile) return;                       // ohne Überschriften kein sinnvolles Label
+        if (tab.closest('.md\\:block')) return;       // Desktop-Variante einer Karten-Lösung
+        var titel = Array.prototype.map.call(kopfZeile.cells, function (th) {
+            return (th.textContent || '').trim().replace(/\s+/g, ' ');
+        });
+        if (!titel.length) return;
+        tab.setAttribute('data-stack', '');
+        tab.querySelectorAll('tbody tr, tfoot tr').forEach(function (tr) {
+            var i = 0;
+            Array.prototype.forEach.call(tr.cells, function (td) {
+                if (!td.hasAttribute('colspan')) td.setAttribute('data-label', titel[i] || '');
+                // Leere Zellen (unbenutzte Aktionsspalte) mobil ausblenden statt
+                // eine Zeile mit nichts darin zu zeigen.
+                if (!(td.textContent || '').trim() && !td.querySelector('img,svg,input,button,a'))
+                    td.setAttribute('data-leer', '');
+                // Inhalt in einen eigenen Kasten hängen, der schrumpfen darf.
+                // display:contents lässt ihn auf dem Desktop wirkungslos.
+                if (!td.querySelector(':scope > .fw-wert')) {
+                    var huelle = document.createElement('span');
+                    huelle.className = 'fw-wert';
+                    while (td.firstChild) huelle.appendChild(td.firstChild);
+                    td.appendChild(huelle);
+                }
+                i += td.colSpan || 1;
+            });
+        });
+    });
+}
+document.addEventListener('DOMContentLoaded', function () { fwTabellenStapeln(); });
+// Nachgeladene Inhalte (Tab-Wechsel, Modal) ebenfalls erfassen
+document.addEventListener('fw:content', function (e) { fwTabellenStapeln(e.target); });
 </script>
 {% block scripts %}{% endblock %}
 </body>

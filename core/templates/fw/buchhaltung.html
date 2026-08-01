@@ -118,17 +118,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="font-bold text-slate-800 text-sm">Ertrag</span>
                 <span class="text-sm font-bold text-emerald-600">CHF {{ total_ertrag|chf }}</span>
             </div>
-            <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
+            {% comment %}
+            Kein min-w-max: der Kontoname darf umbrechen. Sonst schob der lange
+            Name den Betrag aus dem Bild und man sah auf dem Handy entweder
+            Nummer+Name ODER den Betrag — nie beides.
+            {% endcomment %}
+            <table class="w-full text-sm">
                 <tbody class="divide-y divide-slate-50">
                 {% for e in ertraege %}
-                <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ e.nummer }}</td>
-                    <td class="px-5 py-2.5"><a href="/neu/buchhaltung/konto/{{ e.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-slate-700 hover:text-indigo-600 hover:underline">{{ e.bezeichnung }}</a></td>
-                    <td class="px-5 py-2.5 text-right font-medium text-slate-900 whitespace-nowrap">{{ e.saldo|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ e.nummer }}</td>
+                    <td class="pl-4 pr-2 sm:px-5 py-2.5"><span class="sm:hidden font-mono text-xs text-slate-400 mr-1.5">{{ e.nummer }}</span><a href="/neu/buchhaltung/konto/{{ e.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-slate-700 hover:text-indigo-600 hover:underline">{{ e.bezeichnung }}</a></td>
+                    <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium text-slate-900 whitespace-nowrap">{{ e.saldo|chf }}</td></tr>
                 {% empty %}
                 <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Ertragsbuchungen.</td></tr>
                 {% endfor %}
                 </tbody>
-            </table></div>
+            </table>
         </div>
         <!-- Aufwände -->
         <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -136,17 +141,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="font-bold text-slate-800 text-sm">Aufwand</span>
                 <span class="text-sm font-bold text-rose-600">CHF {{ total_aufwand|chf }}</span>
             </div>
-            <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
+            <table class="w-full text-sm">
                 <tbody class="divide-y divide-slate-50">
                 {% for a in aufwaende %}
-                <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ a.nummer }}</td>
-                    <td class="px-5 py-2.5"><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-slate-700 hover:text-indigo-600 hover:underline">{{ a.bezeichnung }}</a></td>
-                    <td class="px-5 py-2.5 text-right font-medium text-slate-900 whitespace-nowrap">{{ a.saldo|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ a.nummer }}</td>
+                    <td class="pl-4 pr-2 sm:px-5 py-2.5"><span class="sm:hidden font-mono text-xs text-slate-400 mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-slate-700 hover:text-indigo-600 hover:underline">{{ a.bezeichnung }}</a></td>
+                    <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium text-slate-900 whitespace-nowrap">{{ a.saldo|chf }}</td></tr>
                 {% empty %}
                 <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Aufwandbuchungen.</td></tr>
                 {% endfor %}
                 </tbody>
-            </table></div>
+            </table>
         </div>
     </div>
     <!-- Ergebnis -->
@@ -167,17 +172,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="font-bold text-slate-800 text-sm">Aktiven</span>
                 <span class="text-sm font-bold text-slate-800">CHF {{ total_aktiven|chf }}</span>
             </div>
-            <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
+            <table class="w-full text-sm">
                 <tbody class="divide-y divide-slate-50">
                 {% for a in aktiven %}
-                <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ a.nummer }}</td>
-                    <td class="px-5 py-2.5"><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-slate-700 hover:text-indigo-600 hover:underline">{{ a.bezeichnung }}</a></td>
-                    <td class="px-5 py-2.5 text-right font-medium text-slate-900 whitespace-nowrap">{{ a.saldo|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ a.nummer }}</td>
+                    <td class="pl-4 pr-2 sm:px-5 py-2.5"><span class="sm:hidden font-mono text-xs text-slate-400 mr-1.5">{{ a.nummer }}</span><a href="/neu/buchhaltung/konto/{{ a.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-slate-700 hover:text-indigo-600 hover:underline">{{ a.bezeichnung }}</a></td>
+                    <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium text-slate-900 whitespace-nowrap">{{ a.saldo|chf }}</td></tr>
                 {% empty %}
                 <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Aktivkonten mit Saldo.</td></tr>
                 {% endfor %}
                 </tbody>
-            </table></div>
+            </table>
         </div>
         <!-- Passiven -->
         <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -185,23 +190,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="font-bold text-slate-800 text-sm">Passiven &amp; Eigenkapital</span>
                 <span class="text-sm font-bold text-slate-800">CHF {{ passiven_mit_erfolg|chf }}</span>
             </div>
-            <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
+            <table class="w-full text-sm">
                 <tbody class="divide-y divide-slate-50">
                 {% for p in passiven %}
-                <tr><td class="px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ p.nummer }}</td>
-                    <td class="px-5 py-2.5"><a href="/neu/buchhaltung/konto/{{ p.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-slate-700 hover:text-indigo-600 hover:underline">{{ p.bezeichnung }}</a></td>
-                    <td class="px-5 py-2.5 text-right font-medium text-slate-900 whitespace-nowrap">{{ p.saldo|chf }}</td></tr>
+                <tr class="align-top"><td class="hidden sm:table-cell px-5 py-2.5 text-slate-400 font-mono text-xs w-16">{{ p.nummer }}</td>
+                    <td class="pl-4 pr-2 sm:px-5 py-2.5"><span class="sm:hidden font-mono text-xs text-slate-400 mr-1.5">{{ p.nummer }}</span><a href="/neu/buchhaltung/konto/{{ p.nummer }}/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-slate-700 hover:text-indigo-600 hover:underline">{{ p.bezeichnung }}</a></td>
+                    <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium text-slate-900 whitespace-nowrap">{{ p.saldo|chf }}</td></tr>
                 {% endfor %}
                 {% if erfolg_vortrag %}
-                <tr class="bg-slate-50/60"><td class="px-5 py-2.5 text-slate-400 font-mono text-xs">—</td>
-                    <td class="px-5 py-2.5 text-slate-700 font-medium">Ergebnisvortrag (Vorjahre)</td>
-                    <td class="px-5 py-2.5 text-right font-medium {% if erfolg_vortrag >= 0 %}text-emerald-600{% else %}text-rose-600{% endif %} whitespace-nowrap">{{ erfolg_vortrag|chf }}</td></tr>
+                <tr class="bg-slate-50/60 align-top"><td class="hidden sm:table-cell px-5 py-2.5 text-slate-400 font-mono text-xs">—</td>
+                    <td class="pl-4 pr-2 sm:px-5 py-2.5 text-slate-700 font-medium">Ergebnisvortrag (Vorjahre)</td>
+                    <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium {% if erfolg_vortrag >= 0 %}text-emerald-600{% else %}text-rose-600{% endif %} whitespace-nowrap">{{ erfolg_vortrag|chf }}</td></tr>
                 {% endif %}
-                <tr class="bg-slate-50/60"><td class="px-5 py-2.5 text-slate-400 font-mono text-xs">—</td>
-                    <td class="px-5 py-2.5 text-slate-700 font-medium">{% if erfolg >= 0 %}Jahresgewinn{% else %}Jahresverlust{% endif %} {{ jahr }}</td>
-                    <td class="px-5 py-2.5 text-right font-medium {% if erfolg >= 0 %}text-emerald-600{% else %}text-rose-600{% endif %} whitespace-nowrap">{{ erfolg|chf }}</td></tr>
+                <tr class="bg-slate-50/60 align-top"><td class="hidden sm:table-cell px-5 py-2.5 text-slate-400 font-mono text-xs">—</td>
+                    <td class="pl-4 pr-2 sm:px-5 py-2.5 text-slate-700 font-medium">{% if erfolg >= 0 %}Jahresgewinn{% else %}Jahresverlust{% endif %} {{ jahr }}</td>
+                    <td class="pr-4 pl-2 sm:px-5 py-2.5 text-right font-medium {% if erfolg >= 0 %}text-emerald-600{% else %}text-rose-600{% endif %} whitespace-nowrap">{{ erfolg|chf }}</td></tr>
                 </tbody>
-            </table></div>
+            </table>
         </div>
     </div>
     <div class="bg-white rounded-xl border border-slate-200 p-5 mt-4 flex items-center justify-between">
@@ -283,7 +288,59 @@ document.addEventListener('DOMContentLoaded', function () {
         {% for k in alle_konten %}<option value="{{ k.nummer }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
     </datalist>
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto">
+        {% comment %}
+        Mobil als Karten statt als 7-spaltige Tabelle: quer scrollen hiess bisher,
+        entweder Text ODER Betrag zu sehen — nie beides zusammen.
+        {% endcomment %}
+        <div class="md:hidden divide-y divide-slate-100">
+            {% for b in journal %}
+            <div class="px-4 py-3 {% if b.ist_storno or b.storniert_am %}bg-rose-50/30{% endif %}">
+                <div class="flex items-start gap-3">
+                    <div class="min-w-0 flex-1">
+                        <div class="text-slate-800 {% if b.storniert_am %}line-through{% endif %}">
+                            {% if b.ist_storno %}<span class="text-[10px] font-bold uppercase bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded mr-1.5">Storno</span>{% endif %}
+                            {% if b.storniert_am %}<span class="text-[10px] font-bold uppercase bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded mr-1.5">storniert</span>{% endif %}
+                            {{ b.beleg_text }}
+                        </div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">{{ b.datum|date:"d.m.Y" }} · #{{ b.beleg_nr }}</div>
+                        <div class="font-mono text-[11px] text-slate-500 mt-1 {% if b.storniert_am %}line-through{% endif %}">
+                            {{ b.soll_konto.nummer }} an {{ b.haben_konto.nummer }}
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0 font-bold whitespace-nowrap {% if b.storniert_am %}line-through text-slate-400{% else %}text-slate-900{% endif %}">
+                        {{ b.betrag|chf }}
+                    </div>
+                </div>
+                <div class="mt-2 flex items-center gap-3 flex-wrap">
+                    {% if b.kreditoren_rechnung_id %}
+                    <a href="/neu/kreditoren/{{ b.kreditoren_rechnung_id }}/bearbeiten/" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-file-invoice mr-1"></i>Beleg</a>
+                    {% elif b.debitoren_rechnung_id %}
+                    <a href="/neu/debitoren/{{ lg_query }}" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-file-invoice-dollar mr-1"></i>Beleg</a>
+                    {% elif b.zahlungseingang_id %}
+                    <a href="/neu/bankabgleich/{{ lg_query }}" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-right-left mr-1"></i>Zahlung</a>
+                    {% endif %}
+                    {% if not b.ist_storno and not b.storniert_am %}
+                    <form method="post" action="/neu/buchhaltung/buchung/{{ b.id }}/stornieren/{{ lg_query }}"
+                          onsubmit="return confirm('Beleg #{{ b.beleg_nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).');">
+                        {% csrf_token %}
+                        <button class="text-xs font-semibold text-rose-600 hover:underline"><i class="fa-solid fa-rotate-left mr-1"></i>Stornieren</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="px-5 py-8 text-center text-sm text-slate-400 italic">
+                {% if j_suche or j_konto or j_von or j_bis %}Keine Buchung passt zu diesem Filter.{% else %}Noch keine Buchungen.{% endif %}
+            </div>
+            {% endfor %}
+            {% if journal %}
+            <div class="px-4 py-3 bg-slate-50/60 flex items-center justify-between font-semibold text-slate-800">
+                <span class="text-xs uppercase tracking-wider text-slate-500">Summe ({{ j_total }})</span>
+                <span class="whitespace-nowrap">{{ j_summe|chf }}</span>
+            </div>
+            {% endif %}
+        </div>
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full min-w-max text-sm">
                 <thead>
                 <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">

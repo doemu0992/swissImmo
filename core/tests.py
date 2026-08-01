@@ -11914,6 +11914,81 @@ class FinanzUIP5Tests(TestCase):
         self.assertIn("confirm('Zahlung an O\\u0027Brien", html)
         self.assertNotIn("confirm('Zahlung an O&#x27;Brien", html)
 
+    # ---------- Buchhaltung auf dem Handy ----------
+    def test_erfolgsrechnung_erzwingt_keine_mindestbreite(self):
+        """min-w-max schob den Betrag aus dem Bild: auf dem Handy sah man
+        entweder Kontonummer+Name ODER den Betrag, nie beides."""
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/buchhaltung/').content.decode('utf-8')
+        erfolg = html.split('id="bh-erfolg"')[1].split('id="bh-bilanz"')[0]
+        self.assertNotIn('min-w-max', erfolg)
+        bilanz = html.split('id="bh-bilanz"')[1].split('id="bh-journal"')[0]
+        self.assertNotIn('min-w-max', bilanz)
+
+    def test_journal_hat_kartenansicht_fuers_handy(self):
+        """Sieben Spalten passen auf kein Telefon — mobil als Karten."""
+        lg, e, m, v = _basis_objekte()
+        from finance.booking import buche, ensure_kontenplan
+        ensure_kontenplan()
+        buche('1020', '3000', Decimal('1500.00'), 'Miete August', datum=date(2026, 8, 1),
+              liegenschaft=lg)
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/buchhaltung/?tab=journal').content.decode('utf-8')
+        journal = html.split('id="bh-journal"')[1]
+        self.assertIn('md:hidden', journal)          # Karten nur mobil
+        self.assertIn('hidden md:block', journal)    # Tabelle nur ab Tablet
+        # Beleg UND Betrag stehen in der Kartenansicht
+        karten = journal.split('hidden md:block')[0]
+        self.assertIn('Miete August', karten)
+        self.assertIn("1'500.00", karten)
+
+    def test_liegenschaft_detail_mit_dokument_stuerzt_nicht_ab(self):
+        """Dokument.datum ist ein DateField — das Template formatierte es mit
+        «H:i» und riss beim ersten abgelegten Dokument die ganze Seite in einen
+        500er (TypeError: format for date objects may not contain 'H')."""
+        import tempfile
+        from django.test import override_settings
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from portfolio.models import Dokument
+        tmp = tempfile.TemporaryDirectory(); self.addCleanup(tmp.cleanup)
+        ov = override_settings(MEDIA_ROOT=tmp.name); ov.enable()
+        self.addCleanup(ov.disable)
+        lg, e, m, v = _basis_objekte()
+        Dokument.objects.create(
+            liegenschaft=lg, titel='Hausordnung', kategorie='Allgemein',
+            datum=date(2026, 5, 4),
+            datei=SimpleUploadedFile('ho.pdf', b'%PDF-1.4', content_type='application/pdf'))
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/liegenschaften/{lg.id}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, '04.05.2026')
+
+    def test_tabellen_stapeln_sich_mobil_zentral(self):
+        """Statt ~40 Templates einzeln: base.html stapelt jede Tabelle mit
+        Kopfzeile unter 768 px zu «Spaltenname — Wert» pro Zeile."""
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/kreditoren/').content.decode('utf-8')
+        self.assertIn('fwTabellenStapeln', html)                 # Skript ausgeliefert
+        self.assertIn("table[data-stack]", html)                 # CSS vorhanden
+        self.assertIn('@media (max-width: 767px)', html)         # nur mobil
+        # display:block auf der Tabelle selbst — sonst misst der Browser die
+        # Breite über eine anonyme Tabellenzelle wieder am Inhalt.
+        self.assertIn('table[data-stack] { display: block;', html)
+
+    def test_kontoblatt_hat_kartenansicht_fuers_handy(self):
+        """Das Kontoblatt ist der nächste Klick aus der Erfolgsrechnung."""
+        lg, e, m, v = _basis_objekte()
+        from finance.booking import buche, ensure_kontenplan
+        ensure_kontenplan()
+        buche('1020', '3000', Decimal('1500.00'), 'Miete August', datum=date(2026, 8, 1),
+              liegenschaft=lg)
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/buchhaltung/konto/3000/?jahr=2026').content.decode('utf-8')
+        karten = html.split('hidden md:block')[0]
+        self.assertIn('md:hidden', karten)
+        self.assertIn('Miete August', karten)
+        self.assertIn("1'500.00", karten)
+
 
 # ============================================================
 # Digitale Unterschrift auf den Brief-PDFs
