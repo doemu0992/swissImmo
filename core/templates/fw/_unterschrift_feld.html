@@ -42,10 +42,11 @@ Das Formular MUSS enctype="multipart/form-data" haben.
             {# --- Zeichenfeld --- #}
             <div data-us-panel="zeichnen">
                 <div class="relative rounded-lg border-2 border-dashed border-slate-300 bg-white">
-                    {# touch-action: none — sonst scrollt das Handy beim Zeichnen weg #}
+                    {# iOS Safari wertet einen Zug sonst als Textauswahl oder Scroll #}
                     <canvas data-us-canvas
                             class="block w-full rounded-lg cursor-crosshair"
-                            style="height: 150px; touch-action: none;"></canvas>
+                            style="height: 150px; touch-action: none; user-select: none;
+                                   -webkit-user-select: none; -webkit-touch-callout: none;"></canvas>
                     {# Grundlinie als optische Hilfe #}
                     <div class="pointer-events-none absolute left-6 right-6 border-b border-slate-200" style="bottom: 34px;"></div>
                     <span data-us-platzhalter
@@ -129,7 +130,9 @@ Das Formular MUSS enctype="multipart/form-data" haben.
         }
         function start(e) {
             zeichnet = true;
-            canvas.setPointerCapture(e.pointerId);
+            if (e.pointerId != null && canvas.setPointerCapture) {
+                try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+            }
             var p = punkt(e);
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
@@ -137,22 +140,25 @@ Das Formular MUSS enctype="multipart/form-data" haben.
             ctx.lineTo(p.x + 0.1, p.y);
             ctx.stroke();
             markiereGezeichnet();
-            e.preventDefault();
+            if (e.preventDefault) e.preventDefault();
         }
         function zug(e) {
             if (!zeichnet) return;
             var p = punkt(e);
             ctx.lineTo(p.x, p.y);
             ctx.stroke();
-            e.preventDefault();
+            if (e.preventDefault) e.preventDefault();
         }
         function ende(e) {
             if (!zeichnet) return;
             zeichnet = false;
             uebernehmen();
-            if (e && e.pointerId != null && canvas.hasPointerCapture(e.pointerId)) {
-                canvas.releasePointerCapture(e.pointerId);
-            }
+            try {
+                if (e && e.pointerId != null && canvas.hasPointerCapture &&
+                    canvas.hasPointerCapture(e.pointerId)) {
+                    canvas.releasePointerCapture(e.pointerId);
+                }
+            } catch (_) {}
         }
         function markiereGezeichnet() {
             etwasGezeichnet = true;
@@ -164,11 +170,25 @@ Das Formular MUSS enctype="multipart/form-data" haben.
             feld.value = etwasGezeichnet ? canvas.toDataURL('image/png') : '';
         }
 
-        canvas.addEventListener('pointerdown', start);
-        canvas.addEventListener('pointermove', zug);
-        canvas.addEventListener('pointerup', ende);
-        canvas.addEventListener('pointercancel', ende);
-        canvas.addEventListener('pointerleave', ende);
+        if (window.PointerEvent) {
+            canvas.addEventListener('pointerdown', start);
+            canvas.addEventListener('pointermove', zug);
+            canvas.addEventListener('pointerup', ende);
+            canvas.addEventListener('pointercancel', ende);
+            canvas.addEventListener('pointerleave', ende);
+        } else {
+            // Ältere Browser ohne Pointer-Events. Nur ENTWEDER-ODER registrieren,
+            // sonst zeichnet jeder Zug doppelt.
+            var tp = function (e) { return e.touches[0] || e.changedTouches[0]; };
+            canvas.addEventListener('touchstart', function (e) { start(tp(e)); }, {passive: false});
+            canvas.addEventListener('touchmove', function (e) { zug(tp(e)); e.preventDefault(); }, {passive: false});
+            canvas.addEventListener('touchend', function (e) { ende(tp(e)); });
+            canvas.addEventListener('touchcancel', function (e) { ende(tp(e)); });
+            canvas.addEventListener('mousedown', start);
+            canvas.addEventListener('mousemove', zug);
+            canvas.addEventListener('mouseup', ende);
+            canvas.addEventListener('mouseleave', ende);
+        }
 
         var loeschen = wurzel.querySelector('[data-us-loeschen]');
         if (loeschen) loeschen.addEventListener('click', function () {
