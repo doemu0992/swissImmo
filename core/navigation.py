@@ -66,6 +66,7 @@ def nav_gruppen(modus):
                 _i('Mahnwesen', '/neu/mahnwesen/', ['mahnwesen']),
                 _i('Kautionen', '/neu/kautionen/', ['kautionen']),
                 _i('Kreditoren', '/neu/kreditoren/', ['kreditoren'], section='Rechnungen'),
+                _i('Zahllauf', '/neu/zahllauf/', ['zahllauf']),
                 _i('Lieferantenkonten', '/neu/lieferantenkonten/', ['lieferantenkonten']),
                 _i('Buchhaltung', '/neu/buchhaltung/', ['buchhaltung'], section='Abschluss'),
                 _i('Kontenplan & Salden', '/neu/kontenplan/', ['kontenplan']),

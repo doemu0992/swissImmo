@@ -14,9 +14,9 @@
             <button type="button" data-menu-btn class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-ellipsis mr-1"></i>Mehr</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-72 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
                 <button type="button" onclick="document.getElementById('scanform').classList.toggle('hidden')" class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-robot w-4 text-indigo-500"></i>Beleg scannen (KI)</button>
-                {% if anzahl_zahlbar and darf_bezahlen %}
+                {% if darf_bezahlen %}
                 <div class="my-1 border-t border-slate-100"></div>
-                <a href="/neu/kreditoren/pain001/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" title="ISO-20022 Zahlungsdatei für e-Banking" class="flex items-center gap-2.5 px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50"><i class="fa-solid fa-file-arrow-down w-4"></i>Zahlungsdatei (pain.001) · {{ anzahl_zahlbar }}</a>
+                <a href="/neu/zahllauf/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" title="Auswählen, pain.001 erzeugen, Lauf sammelverbuchen" class="flex items-center gap-2.5 px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50"><i class="fa-solid fa-money-bill-transfer w-4"></i>Zahllauf öffnen · {{ anzahl_zahlbar }} zahlbar</a>
                 {% endif %}
             </div>
         </div>
@@ -95,6 +95,9 @@
             <input type="date" name="faellig_am" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Referenz</label>
             <input name="referenz" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold text-slate-500 mb-1">IBAN des Lieferanten</label>
+            <input name="iban" placeholder="CH.." class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono">
+            <span class="text-[11px] text-slate-400">Ohne IBAN kann die Rechnung nicht in den Zahllauf.</span></div>
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Leistung von <span class="text-slate-300 font-normal">(HNK-Periode)</span></label>
             <input type="date" name="leistungs_von" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Leistung bis</label>
@@ -133,7 +136,23 @@
                       {% if status_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
-        <div class="ml-auto text-xs text-slate-400">{{ anzahl }} Rechnung(en)</div>
+        <form method="get" class="ml-auto flex items-center gap-2 flex-wrap">
+            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+            {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+            <input name="q" value="{{ suche }}" placeholder="Lieferant, Referenz, IBAN, Betrag …"
+                   class="bg-slate-100 rounded-lg text-xs px-3 py-2 w-56">
+            <select name="sort" onchange="this.form.submit()" class="bg-slate-100 rounded-lg text-xs px-2 py-2">
+                <option value="faellig" {% if sortierung == 'faellig' %}selected{% endif %}>Fällig ↑</option>
+                <option value="-faellig" {% if sortierung == '-faellig' %}selected{% endif %}>Fällig ↓</option>
+                <option value="-betrag" {% if sortierung == '-betrag' %}selected{% endif %}>Betrag ↓</option>
+                <option value="betrag" {% if sortierung == 'betrag' %}selected{% endif %}>Betrag ↑</option>
+                <option value="lieferant" {% if sortierung == 'lieferant' %}selected{% endif %}>Lieferant A–Z</option>
+                <option value="neu" {% if sortierung == 'neu' %}selected{% endif %}>Zuletzt erfasst</option>
+            </select>
+            <button class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-lg">Suchen</button>
+            {% if suche %}<a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if aktive_lg %}lg={{ aktive_lg.id }}{% endif %}" class="text-xs text-slate-400 hover:text-indigo-600">× {{ suche }}</a>{% endif %}
+            <span class="text-xs text-slate-400">{{ anzahl }} Rechnung(en)</span>
+        </form>
     </div>
 
     <div class="overflow-x-auto">
@@ -166,7 +185,7 @@
                     <div class="inline-flex items-center gap-2">
                         {% if row.beleg_url %}<a href="{{ row.beleg_url }}" target="_blank" class="text-slate-400 hover:text-indigo-600" title="Beleg ansehen"><i class="fa-solid fa-paperclip"></i></a>{% endif %}
                         {% if row.kann_bezahlen and darf_bezahlen %}
-                        <form method="post" action="/neu/kreditoren/bezahlen/" onsubmit="return confirm('Zahlung an {{ row.lieferant }} verbuchen?');" class="inline-flex items-center gap-1">
+                        <form method="post" action="/neu/kreditoren/bezahlen/" onsubmit="return confirm('Zahlung an {{ row.lieferant|escapejs }} verbuchen?');" class="inline-flex items-center gap-1">
                             {% csrf_token %}
                             <input type="hidden" name="rechnung_id" value="{{ row.k.id }}">
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
@@ -328,12 +347,38 @@
             <tr><td colspan="7" class="px-5 py-12 text-center">
                 <div class="w-10 h-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-file-invoice"></i></div>
                 <p class="text-sm font-medium text-slate-700">Keine Kreditorenrechnungen</p>
-                <p class="text-xs text-slate-400 mt-1">{% if status_filter %}Keine Rechnung in diesem Status.{% else %}Lade oben einen Beleg hoch («Beleg scannen») oder erfasse die Rechnung manuell.{% endif %}</p>
+                <p class="text-xs text-slate-400 mt-1">{% if suche %}Kein Treffer für «{{ suche }}».{% elif status_filter %}Keine Rechnung in diesem Status.{% else %}Lade oben einen Beleg hoch («Beleg scannen») oder erfasse die Rechnung manuell.{% endif %}</p>
             </td></tr>
             {% endfor %}
             </tbody>
+            {% if rows %}
+            <tfoot>
+            <tr class="border-t-2 border-slate-200 bg-slate-50/60 font-semibold text-slate-800">
+                <td class="px-5 py-3 text-xs uppercase tracking-wider text-slate-500" colspan="4">
+                    Offen (freigegeben/in Zahlung, diese Seite)
+                </td>
+                <td class="px-5 py-3 text-right whitespace-nowrap">{{ total_offen|chf }}</td>
+                <td class="px-5 py-3" colspan="2"></td>
+            </tr>
+            </tfoot>
+            {% endif %}
         </table>
     </div>
+    {% if seite.paginator.num_pages > 1 %}
+    <div class="px-5 py-3 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap text-xs text-slate-500">
+        <span>Seite {{ seite.number }} von {{ seite.paginator.num_pages }} · {{ anzahl }} Rechnung(en)</span>
+        <div class="flex items-center gap-2">
+            {% if seite.has_previous %}
+            <a href="?{{ query_ohne_seite }}{% if query_ohne_seite %}&{% endif %}seite={{ seite.previous_page_number }}"
+               class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">‹ Zurück</a>
+            {% endif %}
+            {% if seite.has_next %}
+            <a href="?{{ query_ohne_seite }}{% if query_ohne_seite %}&{% endif %}seite={{ seite.next_page_number }}"
+               class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">Weiter ›</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <p class="text-xs text-slate-400 mt-4">

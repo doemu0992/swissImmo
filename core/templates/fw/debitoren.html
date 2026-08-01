@@ -146,7 +146,7 @@
 
     <!-- Mobile: Karten -->
     <div class="md:hidden divide-y divide-slate-100">
-        {% for row in rows %}
+        {% for row in page %}
         <div class="px-4 py-3.5">
             <div class="flex items-start gap-3">
                 <div class="min-w-0 flex-1">
@@ -177,7 +177,7 @@
                 </form>
                 {% endif %}
                 {% if row.r.status != 'storniert' and row.r.status != 'bezahlt' and row.r.status != 'teilbezahlt' and row.r.status != 'abgeschrieben' %}
-                <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" onsubmit="return confirm('Rechnung „{{ row.r.titel }}“ stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.');">
+                <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" onsubmit="return confirm('Rechnung „{{ row.r.titel|escapejs }}“ stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.');">
                     {% csrf_token %}
                     {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                     <button type="submit" class="text-xs text-rose-500 font-medium hover:text-rose-700"><i class="fa-solid fa-trash"></i> Stornieren</button>
@@ -209,7 +209,7 @@
             </tr>
             </thead>
             <tbody class="divide-y divide-slate-50">
-            {% for row in rows %}
+            {% for row in page %}
             <tr class="hover:bg-slate-50/60 transition-colors">
                 <td class="px-5 py-3.5 whitespace-nowrap hidden lg:table-cell {% if row.mahn %}font-semibold text-rose-600{% else %}text-slate-600{% endif %}">
                     {{ row.faellig|date:"d.m.Y" }}
@@ -239,7 +239,7 @@
                     </form>
                     {% endif %}
                     {% if row.r.status != 'storniert' and row.r.status != 'bezahlt' and row.r.status != 'teilbezahlt' and row.r.status != 'abgeschrieben' %}
-                    <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" onsubmit="return confirm('Rechnung „{{ row.r.titel }}" stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.');">
+                    <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" onsubmit="return confirm('Rechnung „{{ row.r.titel|escapejs }}“ stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.');">
                         {% csrf_token %}
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                         <button type="submit" class="text-xs text-rose-500 font-medium hover:text-rose-700" title="Stornieren / löschen"><i class="fa-solid fa-trash"></i></button>
@@ -253,6 +253,20 @@
             </td></tr>
             {% endfor %}
             </tbody>
+            {% if rows %}
+            <tfoot>
+            <tr class="border-t-2 border-slate-200 bg-slate-50/60 font-semibold text-slate-800">
+                <td class="px-5 py-3 text-xs uppercase tracking-wider text-slate-500 hidden lg:table-cell"></td>
+                <td class="px-5 py-3 text-xs uppercase tracking-wider text-slate-500" colspan="2">Total (alle {{ rows_gesamt }})</td>
+                <td class="px-5 py-3 hidden md:table-cell"></td>
+                <td class="px-5 py-3 text-right whitespace-nowrap hidden lg:table-cell">{{ total_betrag|chf }}</td>
+                <td class="px-5 py-3 text-right whitespace-nowrap">{{ total_offen|chf }}</td>
+                <td class="px-5 py-3"></td>
+                <td class="px-5 py-3 hidden md:table-cell"></td>
+                <td class="px-5 py-3"></td>
+            </tr>
+            </tfoot>
+            {% endif %}
         </table>
     </div>
 
@@ -260,8 +274,8 @@
         <span>{{ rows_gesamt }} Position(en){% if page.paginator.num_pages > 1 %} · Seite {{ page.number }}/{{ page.paginator.num_pages }}{% endif %} · Mahnstufen werden aus der Fälligkeit berechnet</span>
         {% if page.paginator.num_pages > 1 %}
         <span class="flex items-center gap-1.5">
-            {% if page.has_previous %}<a href="?seite={{ page.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}" class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-indigo-400 hover:text-indigo-600 font-semibold">‹ Zurück</a>{% endif %}
-            {% if page.has_next %}<a href="?seite={{ page.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}" class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-indigo-400 hover:text-indigo-600 font-semibold">Weiter ›</a>{% endif %}
+            {% if page.has_previous %}<a href="?seite={{ page.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-indigo-400 hover:text-indigo-600 font-semibold">‹ Zurück</a>{% endif %}
+            {% if page.has_next %}<a href="?seite={{ page.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-indigo-400 hover:text-indigo-600 font-semibold">Weiter ›</a>{% endif %}
         </span>
         {% endif %}
     </div>

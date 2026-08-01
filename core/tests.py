@@ -11227,3 +11227,689 @@ class BuchhalterFixesTests(TestCase):
                                        'vertrag_id': v.id})
         self.assertEqual(self._saldo('3600'), Decimal('-80.00'))
         self.assertEqual(self._saldo('3000'), Decimal('0.00'))
+
+
+# ============================================================
+# P3 — Bank abstimmbar: Kontoauszug, Bankbewegungen, Zuordnung
+# ============================================================
+
+_P3_CAMT = """<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.04">
+ <BkToCstmrStmt><Stmt>
+  <Acct><Id><IBAN>CH9300762011623852957</IBAN></Id></Acct>
+  <FrToDt><FrDtTm>2024-03-01T00:00:00</FrDtTm><ToDtTm>2024-03-31T00:00:00</ToDtTm></FrToDt>
+  <Bal><Tp><CdOrPrtry><Cd>OPBD</Cd></CdOrPrtry></Tp><Amt Ccy="CHF">1000.00</Amt>
+       <CdtDbtInd>CRDT</CdtDbtInd></Bal>
+  <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="CHF">1450.00</Amt>
+       <CdtDbtInd>CRDT</CdtDbtInd></Bal>
+  <Ntry>
+   <Amt Ccy="CHF">800.00</Amt><CdtDbtInd>CRDT</CdtDbtInd>
+   <BookgDt><Dt>2024-03-05</Dt></BookgDt><ValDt><Dt>2024-03-04</Dt></ValDt>
+   <NtryDtls><TxDtls>
+     <Refs><AcctSvcrRef>P3-CRDT-1</AcctSvcrRef></Refs>
+     <RltdPties><Dbtr><Nm>Hans Muster</Nm></Dbtr></RltdPties>
+     <RmtInf><Ustrd>Miete Maerz</Ustrd></RmtInf>
+   </TxDtls></NtryDtls>
+  </Ntry>
+  <Ntry>
+   <Amt Ccy="CHF">350.00</Amt><CdtDbtInd>DBIT</CdtDbtInd>
+   <BookgDt><Dt>2024-03-07</Dt></BookgDt><ValDt><Dt>2024-03-06</Dt></ValDt>
+   <NtryDtls><TxDtls>
+     <Refs><AcctSvcrRef>P3-DBIT-1</AcctSvcrRef></Refs>
+     <RltdPties><Cdtr><Nm>Hauswartung AG</Nm></Cdtr></RltdPties>
+     <RmtInf><Ustrd>Hauswartung Februar</Ustrd></RmtInf>
+   </TxDtls></NtryDtls>
+  </Ntry>
+ </Stmt></BkToCstmrStmt>
+</Document>"""
+
+
+class BankAbgleichP3Tests(TestCase):
+    """Ohne Belastungen, Auszugszeilen und Schlusssaldo ist ein Bankkonto
+    strukturell nicht abstimmbar — genau das prüfen diese Tests."""
+
+    def _saldo(self, nummer):
+        from finance.models import Buchung
+        from django.db.models import Sum
+        soll = (Buchung.objects.filter(soll_konto__nummer=nummer, ist_storno=False)
+                .aggregate(s=Sum('betrag'))['s'] or Decimal('0'))
+        haben = (Buchung.objects.filter(haben_konto__nummer=nummer, ist_storno=False)
+                 .aggregate(s=Sum('betrag'))['s'] or Decimal('0'))
+        return soll - haben
+
+    def _import(self, client, xml=None, bank='1020'):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        f = SimpleUploadedFile("auszug.xml", (xml or _P3_CAMT).encode(),
+                               content_type="text/xml")
+        return client.post('/neu/bankabgleich/camt-import/',
+                           {'camt_datei': f, 'bank_konto': bank})
+
+    # ---------- Parser ----------
+    def test_camt_liest_belastungen_mit_negativem_vorzeichen(self):
+        from core.views.fw import _camt_parse
+        nur_gut = _camt_parse(_P3_CAMT.encode())
+        self.assertEqual(len(nur_gut), 1)
+        alle = _camt_parse(_P3_CAMT.encode(), nur_gutschriften=False)
+        self.assertEqual(len(alle), 2)
+        belastung = [e for e in alle if e['betrag'] < 0][0]
+        self.assertEqual(belastung['betrag'], Decimal('-350.00'))
+
+    def test_camt_gegenpartei_bei_belastung_ist_der_empfaenger(self):
+        """Bei einem Ausgang steht der Empfänger in <Cdtr>, nicht in <Dbtr> —
+        sonst bleibt der Lieferantenname im Bank-Eingang leer."""
+        from core.views.fw import _camt_parse
+        alle = _camt_parse(_P3_CAMT.encode(), nur_gutschriften=False)
+        belastung = [e for e in alle if e['betrag'] < 0][0]
+        gutschrift = [e for e in alle if e['betrag'] > 0][0]
+        self.assertEqual(belastung['dbtr_name'], 'Hauswartung AG')
+        self.assertEqual(gutschrift['dbtr_name'], 'Hans Muster')
+
+    def test_camt_liest_valuta_getrennt_vom_buchungsdatum(self):
+        from core.views.fw import _camt_parse
+        g = _camt_parse(_P3_CAMT.encode())[0]
+        self.assertEqual(g['datum'], date(2024, 3, 5))
+        self.assertEqual(g['valuta'], date(2024, 3, 4))
+
+    def test_camt_kopf_liest_iban_periode_und_saldi(self):
+        from core.views.fw import _camt_kopf
+        k = _camt_kopf(_P3_CAMT.encode())
+        self.assertEqual(k['iban'], 'CH9300762011623852957')
+        self.assertEqual(k['von'], date(2024, 3, 1))
+        self.assertEqual(k['bis'], date(2024, 3, 31))
+        self.assertEqual(k['eroeffnung'], Decimal('1000.00'))
+        self.assertEqual(k['schluss'], Decimal('1450.00'))
+
+    # ---------- Import ----------
+    def test_import_haelt_jede_auszugszeile_fest(self):
+        from finance.models import Kontoauszug, Bankbewegung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._import(c)
+        a = Kontoauszug.objects.get()
+        self.assertEqual(a.iban, 'CH9300762011623852957')
+        self.assertEqual(a.schlusssaldo, Decimal('1450.00'))
+        self.assertEqual(Bankbewegung.objects.filter(auszug=a).count(), 2)
+
+    def test_belastung_bleibt_offen_und_wird_nicht_geraten(self):
+        """Das Gegenkonto einer Belastung steht nicht im Auszug. Es zu raten wäre
+        eine Falschbuchung — die Zeile bleibt bis zur Zuordnung offen."""
+        from finance.models import Bankbewegung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._import(c)
+        b = Bankbewegung.objects.get(betrag__lt=0)
+        self.assertEqual(b.status, 'offen')
+        self.assertEqual(b.gegenpartei, 'Hauswartung AG')
+        self.assertEqual(self._saldo('6800'), Decimal('0.00'))
+
+    def test_geparkte_gutschrift_gilt_als_verbucht(self):
+        """Eine auf 1190 geparkte Gutschrift IST gebucht — bliebe sie «offen»,
+        zeigte der Saldoabgleich eine Differenz, die es gar nicht gibt."""
+        from finance.models import Bankbewegung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._import(c)
+        b = Bankbewegung.objects.get(betrag__gt=0)
+        self.assertEqual(b.status, 'verbucht')
+        self.assertEqual(self._saldo('1190'), Decimal('-800.00'))
+
+    def test_import_bucht_auf_gewaehltes_bankkonto(self):
+        """Vorher war «1020» im ganzen Import hart verdrahtet — ein zweites
+        Bankkonto war damit nicht importierbar."""
+        from finance.models import Buchungskonto
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        Buchungskonto.objects.create(nummer='1021', bezeichnung='Bank 2', typ='aktiv')
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._import(c, bank='1021')
+        self.assertEqual(self._saldo('1021'), Decimal('800.00'))
+        self.assertEqual(self._saldo('1020'), Decimal('0.00'))
+
+    def test_erneuter_import_erzeugt_keine_zweiten_bewegungen(self):
+        from finance.models import Bankbewegung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._import(c)
+        self._import(c)
+        self.assertEqual(Bankbewegung.objects.count(), 2)
+        self.assertEqual(self._saldo('1020'), Decimal('800.00'))
+
+    # ---------- Zuordnung ----------
+    def test_belastung_auf_aufwandkonto_zuordnen(self):
+        from finance.models import Bankbewegung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._import(c)
+        b = Bankbewegung.objects.get(betrag__lt=0)
+        c.post('/neu/bankabgleich/bewegung/', {
+            'bewegung_id': b.id, 'art': 'konto', 'gegenkonto': '6800',
+            'beleg_text': 'Hauswartung Februar'})
+        b.refresh_from_db()
+        self.assertEqual(b.status, 'verbucht')
+        self.assertIsNotNone(b.buchung_id)
+        self.assertEqual(self._saldo('6800'), Decimal('350.00'))
+        self.assertEqual(self._saldo('1020'), Decimal('450.00'))
+
+    def test_zuordnung_bucht_auf_das_valutadatum(self):
+        """Buchhalterisch massgebend ist die Valuta, nicht der Erfassungstag."""
+        from finance.models import Bankbewegung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._import(c)
+        b = Bankbewegung.objects.get(betrag__lt=0)
+        c.post('/neu/bankabgleich/bewegung/', {
+            'bewegung_id': b.id, 'art': 'konto', 'gegenkonto': '6800'})
+        b.refresh_from_db()
+        self.assertEqual(b.buchung.datum, date(2024, 3, 6))
+
+    def test_belastung_tilgt_kreditorenrechnung(self):
+        from finance.models import Bankbewegung, KreditorenRechnung
+        from finance.booking import ensure_kontenplan, buche
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        kr = KreditorenRechnung.objects.create(
+            lieferant='Hauswartung AG', referenz='RE-77', betrag=Decimal('350.00'),
+            datum=date(2024, 3, 1), faellig_am=date(2024, 3, 31),
+            liegenschaft=lg, status='freigegeben')
+        buche('6800', '2000', Decimal('350.00'), 'Hauswartung Februar',
+              datum=date(2024, 3, 1), liegenschaft=lg, kreditor=kr)
+        c = Client(); c.force_login(_team_user())
+        self._import(c)
+        b = Bankbewegung.objects.get(betrag__lt=0)
+        c.post('/neu/bankabgleich/bewegung/', {
+            'bewegung_id': b.id, 'art': 'kreditor', 'kreditor_id': kr.id})
+        b.refresh_from_db(); kr.refresh_from_db()
+        self.assertEqual(b.status, 'verbucht')
+        self.assertEqual(kr.status, 'bezahlt')
+        self.assertEqual(self._saldo('2000'), Decimal('0.00'))
+        self.assertEqual(self._saldo('1020'), Decimal('450.00'))
+
+    def test_gutschrift_kann_keine_kreditorenrechnung_tilgen(self):
+        from finance.models import Bankbewegung, KreditorenRechnung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        kr = KreditorenRechnung.objects.create(
+            lieferant='Hauswartung AG', referenz='RE-78', betrag=Decimal('350.00'),
+            datum=date(2024, 3, 1), faellig_am=date(2024, 3, 31),
+            liegenschaft=lg, status='freigegeben')
+        c = Client(); c.force_login(_team_user())
+        self._import(c)
+        # Die Gutschrift wurde beim Import geparkt → künstlich wieder öffnen
+        b = Bankbewegung.objects.get(betrag__gt=0)
+        b.status = 'offen'; b.save(update_fields=['status'])
+        c.post('/neu/bankabgleich/bewegung/', {
+            'bewegung_id': b.id, 'art': 'kreditor', 'kreditor_id': kr.id})
+        b.refresh_from_db(); kr.refresh_from_db()
+        self.assertEqual(b.status, 'offen')
+        self.assertEqual(kr.status, 'freigegeben')
+
+    def test_ignorierte_bewegung_erzeugt_keine_buchung(self):
+        from finance.models import Bankbewegung, Buchung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._import(c)
+        b = Bankbewegung.objects.get(betrag__lt=0)
+        vorher = Buchung.objects.count()
+        c.post('/neu/bankabgleich/bewegung/', {
+            'bewegung_id': b.id, 'art': 'ignorieren',
+            'bemerkung': 'Umbuchung eigenes Konto'})
+        b.refresh_from_db()
+        self.assertEqual(b.status, 'ignoriert')
+        self.assertEqual(Buchung.objects.count(), vorher)
+
+    def test_erledigte_bewegung_wird_nicht_zweimal_gebucht(self):
+        from finance.models import Bankbewegung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._import(c)
+        b = Bankbewegung.objects.get(betrag__lt=0)
+        daten = {'bewegung_id': b.id, 'art': 'konto', 'gegenkonto': '6800'}
+        c.post('/neu/bankabgleich/bewegung/', daten)
+        c.post('/neu/bankabgleich/bewegung/', daten)
+        self.assertEqual(self._saldo('6800'), Decimal('350.00'))
+
+    def test_bankabgleich_seite_zeigt_offene_bewegungen(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._import(c)
+        r = c.get('/neu/bankabgleich/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.context['bew_offen_n'], 1)
+        self.assertContains(r, 'Hauswartung AG')
+
+
+# ============================================================
+# P4 — Kreditoren durchsuchbar + Zahllauf als Prozess
+# ============================================================
+
+class KreditorenP4Tests(TestCase):
+    """Eine Liste ohne Suche ist bei 300 Rechnungen keine Liste, und ein Zahllauf
+    ohne Auswahl ist kein Zahllauf — beides Blocker aus dem Praxis-Audit."""
+
+    def _saldo(self, nummer):
+        from finance.models import Buchung
+        from django.db.models import Sum
+        soll = (Buchung.objects.filter(soll_konto__nummer=nummer, ist_storno=False)
+                .aggregate(s=Sum('betrag'))['s'] or Decimal('0'))
+        haben = (Buchung.objects.filter(haben_konto__nummer=nummer, ist_storno=False)
+                 .aggregate(s=Sum('betrag'))['s'] or Decimal('0'))
+        return soll - haben
+
+    def _rechnungen(self, lg):
+        from finance.models import KreditorenRechnung
+        daten = [('Alpha Sanitaer AG', 'CH9300762011623852957', '100.00'),
+                 ('Beta Elektro GmbH', 'CH5604835012345678009', '200.00'),
+                 ('Gamma Garten', '', '300.00')]
+        return [KreditorenRechnung.objects.create(
+            lieferant=n, referenz=f'RE-{i}', betrag=Decimal(b),
+            datum=date(2024, 4, 1), faellig_am=date(2024, 4, 20 + i),
+            iban=iban, liegenschaft=lg, status='freigegeben')
+            for i, (n, iban, b) in enumerate(daten)]
+
+    def _mit_iban(self):
+        from crm.models import Verwaltung
+        vw = Verwaltung.objects.first()
+        if vw is None:
+            vw = Verwaltung.objects.create(firma='Testverwaltung')
+        vw.iban = 'CH5604835012345678009'
+        vw.save()
+        return vw
+
+    # ---------- Liste ----------
+    def test_kreditorenliste_ist_durchsuchbar(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._rechnungen(lg)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/kreditoren/?q=Beta')
+        self.assertEqual(r.status_code, 200)
+        namen = [z['k'].lieferant for z in r.context['rows']]
+        self.assertEqual(namen, ['Beta Elektro GmbH'])
+
+    def test_kreditorenliste_findet_ueber_referenz_und_betrag(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._rechnungen(lg)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/kreditoren/?q=RE-2')
+        self.assertEqual([z['k'].lieferant for z in r.context['rows']], ['Gamma Garten'])
+        r = c.get('/neu/kreditoren/?q=200')
+        self.assertEqual([z['k'].lieferant for z in r.context['rows']], ['Beta Elektro GmbH'])
+
+    def test_kreditorenliste_sortiert_standardmaessig_nach_faelligkeit(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._rechnungen(lg)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/kreditoren/')
+        self.assertEqual([z['k'].lieferant for z in r.context['rows']],
+                         ['Alpha Sanitaer AG', 'Beta Elektro GmbH', 'Gamma Garten'])
+        r = c.get('/neu/kreditoren/?sort=-betrag')
+        self.assertEqual([z['k'].lieferant for z in r.context['rows']][0], 'Gamma Garten')
+
+    def test_kennzahlen_gelten_fuer_den_ganzen_bestand_nicht_die_seite(self):
+        """Beim Blättern darf die Kopfzahl nicht mitwandern."""
+        from finance.models import KreditorenRechnung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        for i in range(60):
+            KreditorenRechnung.objects.create(
+                lieferant=f'Lieferant {i}', betrag=Decimal('10.00'),
+                datum=date(2024, 4, 1), liegenschaft=lg, status='neu')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/kreditoren/')
+        self.assertEqual(r.context['anzahl_neu'], 60)
+        self.assertEqual(r.context['total_neu'], Decimal('600.00'))
+        self.assertEqual(len(r.context['rows']), 50)     # Seite 1
+        r2 = c.get('/neu/kreditoren/?seite=2')
+        self.assertEqual(r2.context['anzahl_neu'], 60)   # unverändert
+        self.assertEqual(len(r2.context['rows']), 10)
+
+    def test_erfassen_uebernimmt_die_iban(self):
+        """Ohne IBAN kommt eine manuell erfasste Rechnung nie in einen Zahllauf."""
+        from finance.models import KreditorenRechnung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/kreditoren/neu/', {'lieferant': 'Delta Malerei', 'betrag': '250',
+                                        'iban': 'CH93 0076 2011 6238 5295 7'})
+        k = KreditorenRechnung.objects.get(lieferant='Delta Malerei')
+        self.assertEqual(k.iban, 'CH9300762011623852957')
+
+    # ---------- Zahllauf ----------
+    def test_zahllauf_zeigt_vorschlag_und_fehlende_iban(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._rechnungen(lg)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/zahllauf/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(len(r.context['vorschlag']), 3)
+        self.assertEqual(r.context['ohne_iban'], 1)
+        self.assertEqual(r.context['summe_vorschlag'], Decimal('600.00'))
+
+    def test_zahllauf_nimmt_nur_die_ausgewaehlten_rechnungen(self):
+        """Vorher packte der Zahllauf ungefragt ALLE freigegebenen Rechnungen
+        in die Datei — eine Auswahl gab es nicht."""
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        krs = self._rechnungen(lg)
+        self._mit_iban()
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/zahllauf/', {'aktion': 'datei', 'rechnung_ids': [krs[0].id],
+                                      'ausfuehrungsdatum': '2024-04-15'})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/xml')
+        for k in krs:
+            k.refresh_from_db()
+        self.assertEqual(krs[0].status, 'in_zahlung')
+        self.assertEqual(krs[1].status, 'freigegeben')   # nicht ausgewählt
+        self.assertEqual(krs[2].status, 'freigegeben')
+
+    def test_zahllauf_haelt_das_ausfuehrungsdatum_fest(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        krs = self._rechnungen(lg)
+        self._mit_iban()
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/zahllauf/', {'aktion': 'datei', 'rechnung_ids': [krs[0].id],
+                                  'ausfuehrungsdatum': '2024-04-15'})
+        krs[0].refresh_from_db()
+        self.assertEqual(krs[0].zahlung_ausfuehrung, date(2024, 4, 15))
+
+    def test_zahllauf_ohne_verwaltungs_iban_erzeugt_keine_datei(self):
+        from crm.models import Verwaltung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        krs = self._rechnungen(lg)
+        Verwaltung.objects.update(iban='')
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/zahllauf/', {'aktion': 'datei', 'rechnung_ids': [krs[0].id]})
+        self.assertEqual(r.status_code, 302)
+        krs[0].refresh_from_db()
+        self.assertEqual(krs[0].status, 'freigegeben')
+
+    def test_zahllauf_verbucht_die_auswahl_sammelweise(self):
+        """Danach musste bisher jede der ~40 Zahlungen einzeln geklickt werden."""
+        from finance.models import KreditorenZahlung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        krs = self._rechnungen(lg)
+        self._mit_iban()
+        c = Client(); c.force_login(_team_user())
+        ids = [krs[0].id, krs[1].id]
+        c.post('/neu/zahllauf/', {'aktion': 'datei', 'rechnung_ids': ids,
+                                  'ausfuehrungsdatum': '2024-04-15'})
+        c.post('/neu/zahllauf/', {'aktion': 'bezahlt', 'rechnung_ids': ids,
+                                  'valuta': '2024-04-16', 'bank_konto': '1020'})
+        for k in krs:
+            k.refresh_from_db()
+        self.assertEqual(krs[0].status, 'bezahlt')
+        self.assertEqual(krs[1].status, 'bezahlt')
+        self.assertEqual(krs[2].status, 'freigegeben')
+        self.assertEqual(self._saldo('1020'), Decimal('-300.00'))
+        self.assertEqual(self._saldo('2000'), Decimal('300.00'))
+        self.assertEqual(KreditorenZahlung.objects.filter(kreditor__in=krs[:2]).count(), 2)
+
+    def test_zahllauf_bucht_auf_das_valutadatum(self):
+        from finance.models import KreditorenZahlung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        krs = self._rechnungen(lg)
+        self._mit_iban()
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/zahllauf/', {'aktion': 'bezahlt', 'rechnung_ids': [krs[0].id],
+                                  'valuta': '2024-04-16'})
+        z = KreditorenZahlung.objects.get(kreditor=krs[0])
+        self.assertEqual(z.datum, date(2024, 4, 16))
+
+    def test_zahllauf_bucht_auf_gewaehltes_bankkonto(self):
+        from finance.models import Buchungskonto
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        Buchungskonto.objects.create(nummer='1021', bezeichnung='Bank 2', typ='aktiv')
+        lg, e, m, v = _basis_objekte()
+        krs = self._rechnungen(lg)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/zahllauf/', {'aktion': 'bezahlt', 'rechnung_ids': [krs[0].id],
+                                  'valuta': '2024-04-16', 'bank_konto': '1021'})
+        self.assertEqual(self._saldo('1021'), Decimal('-100.00'))
+        self.assertEqual(self._saldo('1020'), Decimal('0.00'))
+
+    def test_zahllauf_zuruecksetzen_gibt_rechnungen_wieder_frei(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        krs = self._rechnungen(lg)
+        self._mit_iban()
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/zahllauf/', {'aktion': 'datei', 'rechnung_ids': [krs[0].id],
+                                  'ausfuehrungsdatum': '2024-04-15'})
+        c.post('/neu/zahllauf/', {'aktion': 'zuruecksetzen', 'rechnung_ids': [krs[0].id]})
+        krs[0].refresh_from_db()
+        self.assertEqual(krs[0].status, 'freigegeben')
+
+    def test_zahllauf_verbucht_nicht_doppelt(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        krs = self._rechnungen(lg)
+        c = Client(); c.force_login(_team_user())
+        daten = {'aktion': 'bezahlt', 'rechnung_ids': [krs[0].id], 'valuta': '2024-04-16'}
+        c.post('/neu/zahllauf/', daten)
+        c.post('/neu/zahllauf/', daten)
+        self.assertEqual(self._saldo('1020'), Decimal('-100.00'))
+
+    def test_einzelzahlung_nimmt_valuta_und_bankkonto(self):
+        from finance.models import Buchungskonto, KreditorenZahlung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        Buchungskonto.objects.create(nummer='1021', bezeichnung='Bank 2', typ='aktiv')
+        lg, e, m, v = _basis_objekte()
+        krs = self._rechnungen(lg)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/kreditoren/bezahlen/', {'rechnung_id': krs[0].id,
+                                             'valuta': '2024-04-16',
+                                             'bank_konto': '1021'})
+        z = KreditorenZahlung.objects.get(kreditor=krs[0])
+        self.assertEqual(z.datum, date(2024, 4, 16))
+        self.assertEqual(self._saldo('1021'), Decimal('-100.00'))
+
+
+# ============================================================
+# P5 — UI-Konsistenz + Datenverlust-Fallen in den Finanzen
+# ============================================================
+
+class FinanzUIP5Tests(TestCase):
+    """Fallen, die still Geld oder Arbeit kosten: der Tausender-Apostroph, eine
+    Sollstellung über das falsche Portfolio, eine wirkungslose Paginierung."""
+
+    def _saldo(self, nummer):
+        from finance.models import Buchung
+        from django.db.models import Sum
+        soll = (Buchung.objects.filter(soll_konto__nummer=nummer, ist_storno=False)
+                .aggregate(s=Sum('betrag'))['s'] or Decimal('0'))
+        haben = (Buchung.objects.filter(haben_konto__nummer=nummer, ist_storno=False)
+                 .aggregate(s=Sum('betrag'))['s'] or Decimal('0'))
+        return soll - haben
+
+    # ---------- Tausender-Apostroph ----------
+    def test_num_normalisiert_schweizer_betragsformate(self):
+        from core.views.fw import _num
+        self.assertEqual(_num("12'500.00"), '12500.00')
+        self.assertEqual(_num("1’200,50"), '1200.50')      # typografischer Apostroph
+        self.assertEqual(_num(" CHF 3 400.00 "), '3400.00')
+        self.assertEqual(_num('8.1'), '8.1')
+        self.assertEqual(_num(''), '')
+        self.assertEqual(_num(None), '')
+
+    def test_eigentuemer_auszahlung_akzeptiert_apostroph_betrag(self):
+        """Das Feld ist mit dem `chf`-Filter vorbelegt (12'500.00) — genau dieser
+        Wert kam zurück und liess `Decimal()` scheitern."""
+        from crm.models import Mandant
+        from finance.models import EigentuemerAuszahlung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        _basis_objekte()
+        md = Mandant.objects.create(firma_oder_name='Muster Immobilien AG')
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/mandate/{md.id}/auszahlung/',
+               {'betrag': "12'500.00", 'datum': '2024-05-01'})
+        a = EigentuemerAuszahlung.objects.get(mandant=md)
+        self.assertEqual(a.betrag, Decimal('12500.00'))
+        self.assertEqual(self._saldo('2850'), Decimal('12500.00'))
+        self.assertEqual(self._saldo('1020'), Decimal('-12500.00'))
+
+    def test_kreditor_zahlung_akzeptiert_apostroph_betrag(self):
+        from finance.models import KreditorenRechnung, KreditorenZahlung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        kr = KreditorenRechnung.objects.create(
+            lieferant='Grossbau AG', betrag=Decimal('12500.00'),
+            datum=date(2024, 5, 1), liegenschaft=lg, status='freigegeben')
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/kreditoren/bezahlen/', {'rechnung_id': kr.id, 'betrag': "12'500.00"})
+        z = KreditorenZahlung.objects.get(kreditor=kr)
+        self.assertEqual(z.betrag, Decimal('12500.00'))
+
+    # ---------- Sollstellung folgt dem Filter ----------
+    def test_sollstellung_beachtet_den_liegenschaftsfilter(self):
+        """Die Vorschau war gefiltert, der Lauf nicht — ein Klick stellte dem
+        ganzen Portfolio Rechnung."""
+        from finance.models import DebitorenRechnung
+        from finance.booking import ensure_kontenplan
+        from portfolio.models import Liegenschaft, Einheit
+        from crm.models import Mieter
+        from rentals.models import Mietvertrag
+        ensure_kontenplan()
+        lg1, e1, m1, v1 = _basis_objekte()
+        lg2 = Liegenschaft.objects.create(strasse='Andergasse 9', plz='3000', ort='Bern')
+        e2 = Einheit.objects.create(liegenschaft=lg2, bezeichnung='2. OG', typ='whg',
+                                    zimmer=Decimal('3.5'), flaeche_m2=80)
+        m2 = Mieter.objects.create(vorname='Rita', nachname='Zweitmieter')
+        Mietvertrag.objects.create(einheit=e2, mieter=m2, beginn=date(2024, 1, 1),
+                                   status='aktiv', netto_mietzins=Decimal('1500.00'),
+                                   nebenkosten=Decimal('150.00'))
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/sollstellung/starten/', {'jahr': 2024, 'monat': 5, 'lg': lg1.id})
+        titel = 'Miete & NK 05/2024'
+        self.assertTrue(DebitorenRechnung.objects.filter(vertrag=v1, titel=titel).exists())
+        self.assertFalse(DebitorenRechnung.objects.filter(vertrag__einheit=e2,
+                                                          titel=titel).exists())
+
+    def test_sollstellung_ohne_filter_deckt_das_portfolio_ab(self):
+        from finance.models import DebitorenRechnung
+        from finance.booking import ensure_kontenplan
+        from portfolio.models import Liegenschaft, Einheit
+        from crm.models import Mieter
+        from rentals.models import Mietvertrag
+        ensure_kontenplan()
+        lg1, e1, m1, v1 = _basis_objekte()
+        lg2 = Liegenschaft.objects.create(strasse='Andergasse 9', plz='3000', ort='Bern')
+        e2 = Einheit.objects.create(liegenschaft=lg2, bezeichnung='2. OG', typ='whg',
+                                    zimmer=Decimal('3.5'), flaeche_m2=80)
+        m2 = Mieter.objects.create(vorname='Rita', nachname='Zweitmieter')
+        Mietvertrag.objects.create(einheit=e2, mieter=m2, beginn=date(2024, 1, 1),
+                                   status='aktiv', netto_mietzins=Decimal('1500.00'),
+                                   nebenkosten=Decimal('150.00'))
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/sollstellung/starten/', {'jahr': 2024, 'monat': 5})
+        titel = 'Miete & NK 05/2024'
+        self.assertEqual(DebitorenRechnung.objects.filter(titel=titel).count(), 2)
+
+    # ---------- Paginierung ----------
+    def test_debitorenliste_liefert_nur_die_angeforderte_seite(self):
+        """Der Fuss zeigte «Seite 1/2», die Tabelle rendert(e) trotzdem alles."""
+        from finance.models import DebitorenRechnung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        for i in range(60):
+            DebitorenRechnung.objects.create(
+                vertrag=v, liegenschaft=lg, einheit=e, titel=f'Position {i}',
+                betrag=Decimal('100.00'), datum=date(2024, 5, 1),
+                faellig_am=date(2024, 5, 31), status='offen')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/debitoren/')
+        self.assertEqual(r.context['rows_gesamt'], 60)
+        self.assertEqual(len(r.context['page'].object_list), 50)
+        r2 = c.get('/neu/debitoren/?seite=2')
+        self.assertEqual(len(r2.context['page'].object_list), 10)
+
+    def test_debitorenliste_hat_spaltensummen_ueber_den_ganzen_filter(self):
+        from finance.models import DebitorenRechnung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        for i in range(60):
+            DebitorenRechnung.objects.create(
+                vertrag=v, liegenschaft=lg, einheit=e, titel=f'Position {i}',
+                betrag=Decimal('100.00'), datum=date(2024, 5, 1),
+                faellig_am=date(2024, 5, 31), status='offen')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/debitoren/')
+        # Summe über ALLE 60, nicht nur die 50 der ersten Seite
+        self.assertEqual(r.context['total_betrag'], Decimal('6000.00'))
+        self.assertEqual(r.context['total_offen'], Decimal('6000.00'))
+
+    def test_blaettern_behaelt_den_liegenschaftsfilter(self):
+        from finance.models import DebitorenRechnung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        for i in range(60):
+            DebitorenRechnung.objects.create(
+                vertrag=v, liegenschaft=lg, einheit=e, titel=f'Position {i}',
+                betrag=Decimal('100.00'), datum=date(2024, 5, 1),
+                faellig_am=date(2024, 5, 31), status='offen')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/debitoren/?lg={lg.id}')
+        self.assertContains(r, f'seite=2&status=&q=&lg={lg.id}'.replace('status=&q=&', ''))
+
+    # ---------- Apostroph im Namen bricht keinen Bestätigungsdialog ----------
+    def test_apostroph_im_lieferantennamen_bricht_den_dialog_nicht(self):
+        """Ein unmaskierter Name beendete den JS-String — der onsubmit-Handler
+        wurde gar nicht erst installiert und die Aktion lief ohne Rückfrage."""
+        from finance.models import KreditorenRechnung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        KreditorenRechnung.objects.create(
+            lieferant="O'Brien & Co AG", betrag=Decimal('100.00'),
+            datum=date(2024, 5, 1), liegenschaft=lg, status='freigegeben')
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/kreditoren/').content.decode('utf-8')
+        self.assertIn("confirm('Zahlung an O\\u0027Brien", html)
+        self.assertNotIn("confirm('Zahlung an O&#x27;Brien", html)

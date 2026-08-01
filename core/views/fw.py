@@ -49,6 +49,22 @@ def _parse_adresse(text):
     return strasse, '', rest
 
 
+def _num(wert):
+    """Normalisiert eine im Formular eingegebene Zahl zu einem Decimal-tauglichen
+    String: Schweizer Tausender-Apostroph (' und ’) raus, Komma → Punkt, CHF/
+    Leerzeichen raus.
+
+    Nötig, weil Beträge über den `chf`-Filter mit Apostroph angezeigt werden
+    (CHF 12'500.00) und exakt so wieder ins Formular zurückkommen — `Decimal()`
+    warf darauf eine InvalidOperation und die Aktion brach ab bzw. fiel still auf
+    den Standardwert zurück (Praxis-Audit).
+    """
+    t = str(wert or '').strip()
+    for weg in ("'", "\u2019", "\u00a0", " ", "CHF", "chf"):
+        t = t.replace(weg, '')
+    return t.replace(',', '.')
+
+
 def _global_filter(request):
     """Liest den globalen Liegenschafts-Filter (?lg=) und liefert Basis-Kontext."""
     lg_id = request.GET.get('lg') or None
@@ -371,6 +387,7 @@ def fw_debitoren(request):
 
     rows = []
     total_offen = Decimal('0.00')
+    total_betrag = Decimal('0.00')     # Spaltensumme «Betrag» für den Tabellenfuss
     anzahl_offen = 0
     anzahl_ueberfaellig = 0
     for r in qs:
@@ -379,6 +396,8 @@ def fw_debitoren(request):
         offen = r.offener_betrag if r.status in ('offen', 'teilbezahlt') else Decimal('0.00')
         faellig = r.faellig_am or r.datum
         mahn = _mahnstufe(faellig, heute, r.status)
+        if r.status != 'storniert':
+            total_betrag += (r.betrag or Decimal('0.00'))
         if r.status in ('offen', 'teilbezahlt'):
             total_offen += offen
             anzahl_offen += 1
@@ -447,6 +466,7 @@ def fw_debitoren(request):
         'q': q,
         'status_chips': [('', 'Alle')] + [(k, v[0]) for k, v in STATUS_PILL.items()],
         'total_offen': total_offen,
+        'total_betrag': total_betrag,
         'anzahl_offen': anzahl_offen,
         'anzahl_ueberfaellig': anzahl_ueberfaellig,
         'aktive_vertraege': aktive_vertraege,
@@ -474,7 +494,7 @@ def fw_debitor_neu(request):
 
     titel = (request.POST.get('titel') or '').strip()
     try:
-        betrag = Decimal(str(request.POST.get('betrag') or '0').replace(',', '.'))
+        betrag = Decimal((_num(request.POST.get('betrag')) or '0'))
     except Exception:
         betrag = Decimal('0')
     if not titel or betrag <= 0:
@@ -549,7 +569,7 @@ def fw_weiterverrechnung(request, kreditor_id):
             k = KreditorenRechnung.objects.select_for_update().get(id=k.id)
             def _dec(x, d='0'):
                 try:
-                    return Decimal(str(x).replace(',', '.').strip() or d)
+                    return Decimal(_num(x) or d)
                 except Exception:
                     return Decimal(d)
 
@@ -1756,7 +1776,7 @@ def fw_ausstattung_add(request, pk):
 
     def _dec(x):
         try:
-            v = (str(x) or '').replace(',', '.').strip()
+            v = _num(x)
             return Decimal(v) if v else None
         except Exception:
             return None
@@ -1817,7 +1837,7 @@ def fw_ausstattung_edit(request, pk):
 
     def _dec(x):
         try:
-            v = (str(x) or '').replace(',', '.').strip()
+            v = _num(x)
             return Decimal(v) if v else None
         except Exception:
             return None
@@ -1999,7 +2019,7 @@ def fw_zaehler_add(request):
 
     def _dec(x):
         try:
-            v = (str(x) or '').replace(',', '.').strip()
+            v = _num(x)
             return Decimal(v) if v else Decimal('0.00')
         except Exception:
             return Decimal('0.00')
@@ -2050,7 +2070,7 @@ def fw_zaehler_edit(request, pk):
 
     def _dec(x):
         try:
-            v = (str(x) or '').replace(',', '.').strip()
+            v = _num(x)
             return Decimal(v) if v else Decimal('0.00')
         except Exception:
             return z.aktueller_stand
@@ -2199,7 +2219,7 @@ def fw_sollmietzins_add(request):
 
     def _dec(x):
         try:
-            v = (str(x) or '').replace("'", '').replace(',', '.').strip()
+            v = _num(x)
             return Decimal(v) if v else Decimal('0.00')
         except Exception:
             return Decimal('0.00')
@@ -2226,7 +2246,7 @@ def fw_sollmietzins_add(request):
     rabatt_nk = min(max(rabatt_nk, Decimal('0.00')), nk)
 
     def _dec_opt(x):
-        v = (str(x) or '').replace("'", '').replace(',', '.').strip()
+        v = _num(x)
         try:
             return Decimal(v) if v else None
         except Exception:
@@ -2282,7 +2302,7 @@ def fw_staffelvorlage_add(request):
 
     def _dec(x):
         try:
-            return Decimal((str(x) or '').replace("'", '').replace(',', '.').strip())
+            return Decimal(_num(x))
         except Exception:
             return None
 
@@ -2332,7 +2352,7 @@ def fw_staffel_add(request):
 
     def _dec(x):
         try:
-            return Decimal((str(x) or '').replace("'", '').replace(',', '.').strip())
+            return Decimal(_num(x))
         except Exception:
             return None
 
@@ -2827,7 +2847,7 @@ def fw_schlussabrechnung(request, vertrag_id):
 
     def _dec(x):
         try:
-            return Decimal(str(x).replace(',', '.').strip())
+            return Decimal(_num(x))
         except Exception:
             return Decimal('0.00')
 
@@ -3116,7 +3136,7 @@ def fw_abnahme_neu(request, vertrag_id):
 
         def _dec(x):
             try:
-                return Decimal(str(x).replace(',', '.').strip()) if str(x).strip() else None
+                return Decimal(_num(x)) if str(x).strip() else None
             except Exception:
                 return None
         try:
@@ -3620,7 +3640,8 @@ def _qrr_referenz(rechnung):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_bankabgleich(request):
-    from django.db.models import Q as _Q
+    from django.db.models import Q as _Q, Sum
+    from finance.models import Buchungskonto, KreditorenRechnung
     heute = timezone.localdate()
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
@@ -3683,9 +3704,56 @@ def fw_bankabgleich(request):
     geparkt_guthaben = sum((z.betrag for z in geparkt if z.konto and z.konto.nummer == '2030'),
                            Decimal('0.00'))
 
+    # --- BANK-EINGANG: offene Auszugszeilen ---
+    # Das war der Kern des Befunds: Der Screen hiess «Bankabgleich», zeigte aber
+    # nie eine Bankbewegung — nur offene Debitoren zum Quittieren. Abstimmen
+    # konnte man damit nichts (Praxis-Audit).
+    from finance.models import Bankbewegung, Kontoauszug
+    bew_qs = (Bankbewegung.objects.filter(status='offen')
+              .select_related('konto', 'liegenschaft').order_by('-datum', '-id'))
+    if aktive_lg:
+        bew_qs = bew_qs.filter(_Q(liegenschaft=aktive_lg) | _Q(liegenschaft__isnull=True))
+    bewegungen = list(bew_qs[:100])
+    bew_offen_n = bew_qs.count()
+    # Summen über ALLE offenen Bewegungen, nicht nur die ersten 100 — sonst
+    # unterschlägt der Kopf Geld, das weiter unten in der Liste liegt.
+    bew_eingang = (bew_qs.filter(betrag__gt=0).aggregate(t=Sum('betrag'))['t']
+                   or Decimal('0.00'))
+    bew_ausgang = (bew_qs.filter(betrag__lt=0).aggregate(t=Sum('betrag'))['t']
+                   or Decimal('0.00'))
+
+    # Letzter Auszug je Bankkonto + Saldoabgleich
+    letzter_auszug = Kontoauszug.objects.select_related('konto').order_by('-bis', '-id').first()
+    saldo_abgleich = None
+    if letzter_auszug and letzter_auszug.schlusssaldo is not None:
+        from finance.models import Buchung as _BB
+        _bq = _BB.objects.filter(ist_storno=False)
+        if letzter_auszug.bis:
+            _bq = _bq.filter(datum__lte=letzter_auszug.bis)
+        _s = _bq.filter(soll_konto=letzter_auszug.konto).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+        _h = _bq.filter(haben_konto=letzter_auszug.konto).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+        _buch = (_s - _h).quantize(Decimal('0.01'))
+        saldo_abgleich = {
+            'auszug': letzter_auszug, 'buchhaltung': _buch,
+            'differenz': (letzter_auszug.schlusssaldo - _buch).quantize(Decimal('0.01')),
+        }
+
+    bankkonten = Buchungskonto.objects.filter(nummer__startswith='10').order_by('nummer')
+
     from django.contrib import messages
     return render(request, 'fw/bankabgleich.html', {
         **basis, 'nav': 'bankabgleich', 'rows': rows,
+        'bewegungen': bewegungen, 'bew_offen_n': bew_offen_n,
+        'bew_eingang': bew_eingang, 'bew_ausgang': bew_ausgang,
+        'saldo_abgleich': saldo_abgleich, 'bankkonten': bankkonten,
+        'aufwandkonten': Buchungskonto.objects.all().order_by('nummer'),
+        # 'neu' gehört dazu: die Belastung hat die Bank BEREITS verlassen. Wer nur
+        # freigegebene Rechnungen anbietet, lässt eine reale Zahlung unzuordenbar.
+        'offene_kreditoren': (KreditorenRechnung.objects
+                              .filter(status__in=['neu', 'freigegeben', 'in_zahlung',
+                                                  'teilbezahlt'])
+                              .select_related('liegenschaft')
+                              .order_by('faellig_am', 'id')[:200]),
         'total_offen': total_offen, 'anzahl': len(rows),
         'letzte': letzte,
         'geparkt': geparkt,
@@ -3722,7 +3790,7 @@ def fw_bankabgleich_verbuchen(request):
     raw = (request.POST.get('betrag') or '').strip()
     if raw:
         try:
-            betrag = Decimal(raw.replace("'", '').replace(',', '.'))
+            betrag = Decimal(_num(raw))
         except Exception:
             messages.error(request, f"Ungültiger Betrag «{raw}».")
             return redirect('fw_bankabgleich')
@@ -3782,10 +3850,15 @@ def _camt_find(el, *pfad):
     return cur
 
 
-def _camt_tx_details(el):
-    """Liest Referenz / Mitteilung / Bank-Tx-Ref / Auftraggeber aus einem
-    camt-Teilbaum (<Ntry> oder einzelne <TxDtls>)."""
+def _camt_tx_details(el, richtung='CRDT'):
+    """Liest Referenz / Mitteilung / Bank-Tx-Ref / Gegenpartei aus einem
+    camt-Teilbaum (<Ntry> oder einzelne <TxDtls>).
+
+    Die Gegenpartei ist bei einer Gutschrift der Auftraggeber (<Dbtr>), bei einer
+    Belastung der Zahlungsempfaenger (<Cdtr>) — sonst bleibt der Lieferantenname
+    im Bank-Eingang leer."""
     referenz = info = acct_ref = dbtr_name = ''
+    gegen_tag = 'Dbtr' if richtung == 'CRDT' else 'Cdtr'
     in_dbtr = False
     for sub in el.iter():
         ln = _camt_localname(sub.tag)
@@ -3801,7 +3874,7 @@ def _camt_tx_details(el):
             _cand = sub.text.strip()
             if _cand.upper() != 'NOTPROVIDED':
                 acct_ref = _cand
-        elif ln == 'Dbtr':
+        elif ln == gegen_tag:
             in_dbtr = True
         elif ln == 'Nm' and in_dbtr and not dbtr_name and sub.text:
             dbtr_name = sub.text.strip(); in_dbtr = False
@@ -3809,10 +3882,68 @@ def _camt_tx_details(el):
             'acct_ref': acct_ref, 'dbtr_name': dbtr_name}
 
 
-def _camt_parse(xml_bytes):
+def _camt_kopf(xml_bytes):
+    """Liest Kopfdaten des Auszugs: IBAN, Periode und Schlusssaldo.
+
+    Ohne den Schlusssaldo gibt es keinen Abstimmungsnachweis — man kann Zahlungen
+    zuordnen, aber nie belegen, dass das Buchhaltungskonto mit dem realen
+    Bankkonto übereinstimmt (Praxis-Audit).
+    """
+    import xml.etree.ElementTree as ET
+    try:
+        root = ET.fromstring(xml_bytes)
+    except Exception:
+        return {}
+    kopf = {'iban': '', 'von': None, 'bis': None,
+            'eroeffnung': None, 'schluss': None}
+    # IBAN des Auszugskontos
+    for el in root.iter():
+        if _camt_localname(el.tag) == 'IBAN' and el.text:
+            kopf['iban'] = el.text.strip().replace(' ', '')
+            break
+    # Periode <FrToDt><FrDtTm>/<ToDtTm>
+    for el in root.iter():
+        ln = _camt_localname(el.tag)
+        if ln in ('FrDtTm', 'ToDtTm') and el.text:
+            try:
+                d = date.fromisoformat(el.text.strip()[:10])
+            except ValueError:
+                continue
+            kopf['von' if ln == 'FrDtTm' else 'bis'] = d
+    # Salden: <Bal> mit <Cd> OPBD (Eröffnung) bzw. CLBD (Schluss)
+    for bal in root.iter():
+        if _camt_localname(bal.tag) != 'Bal':
+            continue
+        code = ''
+        for sub in bal.iter():
+            if _camt_localname(sub.tag) == 'Cd' and sub.text:
+                code = sub.text.strip().upper()
+                break
+        amt = _camt_find(bal, 'Amt')
+        if amt is None or not (amt.text or '').strip():
+            continue
+        try:
+            wert = Decimal(amt.text.strip())
+        except Exception:
+            continue
+        # Ein Habensaldo auf dem Bankkonto (CRDT) ist Guthaben → positiv.
+        vz = _camt_find(bal, 'CdtDbtInd')
+        if vz is not None and (vz.text or '').strip() == 'DBIT':
+            wert = -wert
+        if code in ('OPBD', 'PRCD'):
+            kopf['eroeffnung'] = wert
+        elif code in ('CLBD', 'CLAV'):
+            kopf['schluss'] = wert
+    return kopf
+
+
+def _camt_parse(xml_bytes, nur_gutschriften=True):
     """Parst einen camt.053-Kontoauszug (ISO 20022) namespace-agnostisch.
-    Gibt Liste von Gutschriften zurück: [{'betrag': Decimal, 'referenz': str,
-    'datum': date|None, 'info': str}]."""
+
+    `nur_gutschriften=False` liefert AUCH Belastungen (negatives Vorzeichen).
+    Ohne Belastungen — Lieferantenzahlungen, Gebühren, Zinsen, Daueraufträge —
+    ist das Bankkonto strukturell nicht abstimmbar (Praxis-Audit).
+    """
     import xml.etree.ElementTree as ET
     root = ET.fromstring(xml_bytes)
     eintraege = []
@@ -3821,8 +3952,12 @@ def _camt_parse(xml_bytes):
         if _camt_localname(ntry.tag) != 'Ntry':
             continue
         cdtdbt = _camt_find(ntry, 'CdtDbtInd')
-        if cdtdbt is None or (cdtdbt.text or '').strip() != 'CRDT':
-            continue  # nur Gutschriften (Zahlungseingänge)
+        richtung = (cdtdbt.text or '').strip() if cdtdbt is not None else ''
+        if richtung not in ('CRDT', 'DBIT'):
+            continue
+        if nur_gutschriften and richtung != 'CRDT':
+            continue
+        vorzeichen = Decimal('1') if richtung == 'CRDT' else Decimal('-1')
         amt_el = _camt_find(ntry, 'Amt')
         if amt_el is None or not (amt_el.text or '').strip():
             continue
@@ -3840,6 +3975,15 @@ def _camt_parse(xml_bytes):
                 datum = date.fromisoformat(dt_el.text.strip()[:10])
             except Exception:
                 datum = None
+        # Valutadatum separat — es ist das buchhalterisch massgebende Datum und
+        # wich bisher stillschweigend dem Erfassungstag (Praxis-Audit).
+        valuta = None
+        v_el = _camt_find(ntry, 'ValDt', 'Dt')
+        if v_el is not None and v_el.text:
+            try:
+                valuta = date.fromisoformat(v_el.text.strip()[:10])
+            except Exception:
+                valuta = None
         # Sammelbuchung: enthält der Eintrag mehrere <TxDtls>, ist jede davon eine
         # eigene Zahlung mit eigener QRR. Ohne diese Aufteilung würde der GESAMT-
         # betrag der zuletzt gefundenen Referenz zugeordnet und alle übrigen Mieter
@@ -3865,8 +4009,8 @@ def _camt_parse(xml_bytes):
             if teil_eintraege and summe_tx == betrag:
                 for tx, tx_betrag in teil_eintraege:
                     eintraege.append({
-                        'betrag': tx_betrag, 'datum': datum,
-                        **_camt_tx_details(tx),
+                        'betrag': tx_betrag * vorzeichen, 'datum': datum, 'valuta': valuta,
+                        **_camt_tx_details(tx, richtung),
                     })
                 continue
 
@@ -3875,6 +4019,10 @@ def _camt_parse(xml_bytes):
         info = ''
         acct_ref = ''
         dbtr_name = ''
+        # Bei einer BELASTUNG ist die Gegenpartei der Zahlungsempfänger (<Cdtr>),
+        # nicht der Auftraggeber — sonst bleibt der Lieferantenname im Bank-Eingang
+        # leer und die Zeile ist für den Buchhalter nicht zuordenbar (Praxis-Audit).
+        gegen_tag = 'Dbtr' if richtung == 'CRDT' else 'Cdtr'
         in_dbtr = False
         for sub in ntry.iter():
             ln = _camt_localname(sub.tag)
@@ -3891,11 +4039,12 @@ def _camt_parse(xml_bytes):
                 _cand = sub.text.strip()
                 if _cand.upper() != 'NOTPROVIDED':
                     acct_ref = _cand
-            elif ln == 'Dbtr':
+            elif ln == gegen_tag:
                 in_dbtr = True
             elif ln == 'Nm' and in_dbtr and not dbtr_name and sub.text:
                 dbtr_name = sub.text.strip(); in_dbtr = False
-        eintraege.append({'betrag': betrag, 'referenz': referenz, 'datum': datum,
+        eintraege.append({'betrag': betrag * vorzeichen, 'referenz': referenz,
+                          'datum': datum, 'valuta': valuta,
                           'info': info, 'acct_ref': acct_ref, 'dbtr_name': dbtr_name})
     return eintraege
 
@@ -4046,13 +4195,18 @@ def fw_camt_import(request):
 
     roh = datei.read()
     # Format erkennen: XML (camt.053) beginnt mit '<' — alles andere als Bank-CSV parsen.
-    kopf = roh.lstrip(b'\xef\xbb\xbf \t\r\n')
-    ist_xml = kopf.startswith(b'<')
+    kopf_bytes = roh.lstrip(b'\xef\xbb\xbf \t\r\n')
+    ist_xml = kopf_bytes.startswith(b'<')
     try:
         if ist_xml:
-            eintraege = _camt_parse(roh)
+            # nur_gutschriften=False: Belastungen (Lieferantenzahlungen, Gebühren,
+            # Zinsen, Daueraufträge) gehören dazu, sonst ist die Bank nicht
+            # abstimmbar (Praxis-Audit).
+            eintraege = _camt_parse(roh, nur_gutschriften=False)
+            auszug_kopf = _camt_kopf(roh)
         else:
             eintraege = _bank_csv_parse(roh)
+            auszug_kopf = {}
     except Exception as e:
         messages.error(request, f"Datei konnte nicht gelesen werden "
                                 f"({'kein gültiges camt.053' if ist_xml else 'CSV-Format nicht erkannt'}): {e}")
@@ -4060,8 +4214,24 @@ def fw_camt_import(request):
 
     quelle = 'camt.053' if ist_xml else 'Bank-CSV'
     if not eintraege:
-        messages.warning(request, "Keine Gutschriften im Kontoauszug gefunden.")
+        messages.warning(request, "Keine Bewegungen im Kontoauszug gefunden.")
         return redirect('fw_bankabgleich')
+
+    # Zielkonto der Bank: wählbar, damit mehrere Bankkonten buchbar sind.
+    # Vorher war «1020» im ganzen Import hart verdrahtet (Praxis-Audit).
+    bank_nr = (request.POST.get('bank_konto') or '1020').strip()
+    konto_bank_obj = Buchungskonto.objects.filter(nummer=bank_nr).first()
+    if konto_bank_obj is None:
+        bank_nr, konto_bank_obj = '1020', _park_konto('1020')
+
+    # Kontoauszug mit Schlusssaldo festhalten — die Grundlage des Abstimmungsnachweises.
+    from finance.models import Kontoauszug, Bankbewegung
+    auszug = Kontoauszug.objects.create(
+        konto=konto_bank_obj, iban=(auszug_kopf.get('iban') or '')[:34],
+        von=auszug_kopf.get('von'), bis=auszug_kopf.get('bis'),
+        eroeffnungssaldo=auszug_kopf.get('eroeffnung'),
+        schlusssaldo=auszug_kopf.get('schluss'),
+        dateiname=datei.name[:255], quelle=quelle, importiert_von=request.user)
 
     # Referenz-Index aller offenen/teilbezahlten Rechnungen aufbauen
     offene = list(DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
@@ -4084,11 +4254,12 @@ def fw_camt_import(request):
     guthaben = 0            # Überzahlung auf 2030 (Mieter bekannt)
     duplikate = 0
     gesperrt = 0            # von der Periodensperre abgewiesen
+    belastungen = 0         # Ausgänge — landen im Bank-Eingang zur Zuordnung
+    bewegungen_neu = []     # persistierte Auszugszeilen
     komposit_lauf = {}      # Laufnummern für referenzlose Zahlungen
     heute = timezone.localdate()
 
-    konto_bank = Buchungskonto.objects.filter(nummer="1020").first()
-    konto_deb = Buchungskonto.objects.filter(nummer="1100").first()
+    # Das Bankkonto steckt in bank_nr/konto_bank_obj — kein hart verdrahtetes 1020 mehr.
     konto_clearing, _ = Buchungskonto.objects.get_or_create(
         nummer="1190", defaults={'bezeichnung': 'Durchlaufkonto (ungeklärte Zahlungen)', 'typ': 'bilanz'})
     # W6: Überzahlung eines BEKANNTEN Mieters ist kein ungeklärter Posten, sondern
@@ -4113,10 +4284,19 @@ def fw_camt_import(request):
             rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
             rechnung.save()
             from finance.booking import buche
-            buche("1020", "1100", betrag, f"{quelle} {vertrag.mieter} - {rechnung.titel}",
+            buche(bank_nr, "1100", betrag, f"{quelle} {vertrag.mieter} - {rechnung.titel}",
                   datum=e['datum'] or heute,
                   liegenschaft=vertrag.einheit.liegenschaft if vertrag and vertrag.einheit_id else None,
                   zahlung=zahlung, user=request.user)
+        # Auszugszeile als erledigt markieren und mit der Zahlung verknüpfen —
+        # so ist im Bank-Eingang sichtbar, was noch offen ist.
+        _bew = Bankbewegung.objects.filter(bank_referenz=e.get('acct_ref', ''),
+                                           status='offen').first()
+        if _bew is not None:
+            _bew.status = 'verbucht'
+            _bew.zahlung = zahlung
+            _bew.liegenschaft = zahlung.liegenschaft
+            _bew.save(update_fields=['status', 'zahlung', 'liegenschaft'])
         if rechnung.status == 'bezahlt':
             for k in [k for k, v in ref_index.items() if v is rechnung]:
                 ref_index.pop(k, None)
@@ -4126,7 +4306,7 @@ def fw_camt_import(request):
         einem try/except für die Periodensperre — sonst reisst eine gesperrte
         Periode den ganzen Import mit HTTP 500 ab: die bis dahin verbuchten Zeilen
         blieben gespeichert, der Rest ginge kommentarlos verloren (Audit)."""
-        nonlocal verbucht, geklaert, guthaben, duplikate, fuzzy, zugeordnet_summe
+        nonlocal verbucht, geklaert, guthaben, duplikate, fuzzy, zugeordnet_summe, belastungen
 
         # 0) Duplikatschutz über Bank-Transaktionsreferenz. Fehlt eine eindeutige
         #    Referenz (kein AcctSvcrRef/TxId, EndToEndId=NOTPROVIDED), wird ein
@@ -4153,11 +4333,45 @@ def fw_camt_import(request):
                 aref = f"{aref}#{komposit_lauf[aref]}"
         aref = aref[:140]
         e['acct_ref'] = aref
-        if Zahlungseingang.objects.filter(bank_referenz=aref).exists():
+        if (Zahlungseingang.objects.filter(bank_referenz=aref).exists()
+                or Bankbewegung.objects.filter(bank_referenz=aref).exists()):
             duplikate += 1
             return
 
         betrag_e = e['betrag']
+
+        # Jede Zeile des Auszugs wird festgehalten — auch die, die sich nicht
+        # automatisch zuordnen lässt. Erst dadurch ist das Bankkonto abstimmbar
+        # und der Auszug im Programm nachvollziehbar (Praxis-Audit).
+        bew = Bankbewegung.objects.create(
+            auszug=auszug, konto=konto_bank_obj,
+            datum=e.get('datum') or heute, valuta=e.get('valuta'),
+            betrag=betrag_e,
+            text=(e.get('info') or '')[:255],
+            gegenpartei=(e.get('dbtr_name') or '')[:160],
+            referenz=(e.get('referenz') or '')[:40],
+            bank_referenz=aref, status='offen')
+        bewegungen_neu.append(bew)
+
+        def _bew_erledigt(zahlung_obj=None, notiz=''):
+            """Auszugszeile abhaken. Auch eine auf 1190 geparkte Gutschrift IST
+            gebucht — bliebe sie «offen», zeigte der Saldoabgleich eine Differenz,
+            die es gar nicht gibt."""
+            bew.status = 'verbucht'
+            if zahlung_obj is not None:
+                bew.zahlung = zahlung_obj
+                bew.liegenschaft = zahlung_obj.liegenschaft
+            if notiz:
+                bew.bemerkung = notiz[:255]
+            bew.save(update_fields=['status', 'zahlung', 'liegenschaft', 'bemerkung'])
+
+        # Belastungen wandern in den Bank-Eingang zur Zuordnung. Automatisch
+        # buchen wäre geraten — das Gegenkonto (Lieferant, Gebühr, Zins, Miete
+        # des Eigentümers) steht nicht im Auszug.
+        if betrag_e < 0:
+            belastungen += 1
+            return
+
         rechnung = ref_index.get(e['referenz']) if e['referenz'] else None
 
         # 1) Exakte QRR-Referenz
@@ -4183,7 +4397,7 @@ def fw_camt_import(request):
                         liegenschaft=rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None,
                         erstellt_von=request.user, status='verbucht')
                     from finance.booking import buche
-                    buche("1020", "2030", ueberschuss,
+                    buche(bank_nr, "2030", ueberschuss,
                           f"{quelle} Überzahlung {rechnung.vertrag.mieter} - {rechnung.titel}",
                           datum=e['datum'] or heute,
                           liegenschaft=rechnung.vertrag.einheit.liegenschaft if rechnung.vertrag.einheit_id else None,
@@ -4222,10 +4436,11 @@ def fw_camt_import(request):
                     bemerkung=f"{quelle} Doppelzahlung {bekannte.titel} (Guthaben Mieter)"[:255],
                     bank_referenz=aref, konto=konto_guthaben, liegenschaft=lg_b,
                     erstellt_von=request.user, status='verbucht')
-                buche("1020", "2030", betrag_e,
+                buche(bank_nr, "2030", betrag_e,
                       f"{quelle} Doppelzahlung {v_b.mieter} - {bekannte.titel}",
                       datum=e['datum'] or heute, liegenschaft=lg_b,
                       zahlung=zahlung, user=request.user)
+                _bew_erledigt(zahlung, f"Doppelzahlung → 2030 ({bekannte.titel})")
                 guthaben += 1
                 return
             zahlung = Zahlungseingang.objects.create(
@@ -4234,9 +4449,10 @@ def fw_camt_import(request):
                 bemerkung=f"{quelle} UNGEKLÄRT: {e.get('dbtr_name','') or e.get('info','') or e.get('referenz','')}"[:255],
                 bank_referenz=aref, konto=konto_clearing,
                 erstellt_von=request.user, status='verbucht')
-            buche("1020", "1190", betrag_e,
+            buche(bank_nr, "1190", betrag_e,
                   f"{quelle} ungeklärt: {e.get('dbtr_name','') or e.get('referenz','')}",
                   datum=e['datum'] or heute, zahlung=zahlung, user=request.user)
+        _bew_erledigt(zahlung, "ungeklärt → Durchlaufkonto 1190")
         geklaert += 1
 
     for e in eintraege:
@@ -4249,7 +4465,7 @@ def fw_camt_import(request):
                f"{verbucht} verbucht (davon {fuzzy} fuzzy), CHF {zugeordnet_summe}, "
                f"{geklaert} auf 1190, {guthaben} Guthaben auf 2030, {duplikate} Duplikate, "
                f"{gesperrt} Periodensperre")
-    if verbucht or geklaert or guthaben:
+    if verbucht or geklaert or guthaben or belastungen:
         teile = [f"{verbucht} Zahlung(en) zugeordnet (CHF {zugeordnet_summe})"]
         if fuzzy:
             teile.append(f"davon {fuzzy} über Name/Betrag")
@@ -4263,6 +4479,28 @@ def fw_camt_import(request):
     else:
         messages.warning(request,
             f"Keine neuen Gutschriften verbucht ({duplikate} Duplikat(e) übersprungen).")
+    if belastungen:
+        messages.info(request, f"ℹ️ {belastungen} Belastung(en) übernommen — sie liegen im "
+                               f"Bank-Eingang zur Zuordnung. Das Gegenkonto (Lieferant, "
+                               f"Gebühr, Zins) steht nicht im Auszug und wird bewusst nicht geraten.")
+    # Saldoabgleich: der Nachweis, dass Buchhaltung und Bankkonto übereinstimmen.
+    if auszug.schlusssaldo is not None:
+        from django.db.models import Sum as _SumB
+        _bq = Buchung.objects.filter(ist_storno=False)
+        if auszug.bis:
+            _bq = _bq.filter(datum__lte=auszug.bis)
+        _s = _bq.filter(soll_konto=konto_bank_obj).aggregate(t=_SumB('betrag'))['t'] or Decimal('0.00')
+        _h = _bq.filter(haben_konto=konto_bank_obj).aggregate(t=_SumB('betrag'))['t'] or Decimal('0.00')
+        buch_saldo = (_s - _h).quantize(Decimal('0.01'))
+        diff = (auszug.schlusssaldo - buch_saldo).quantize(Decimal('0.01'))
+        if diff == 0:
+            messages.success(request, f"✅ Saldoabgleich {bank_nr}: Buchhaltung und Auszug "
+                                      f"stimmen überein (CHF {buch_saldo}).")
+        else:
+            messages.warning(request, f"⚠️ Saldoabgleich {bank_nr}: Auszug CHF "
+                                      f"{auszug.schlusssaldo}, Buchhaltung CHF {buch_saldo} — "
+                                      f"Differenz CHF {diff}. Offene Bewegungen im Bank-Eingang "
+                                      f"zuordnen, dann stimmt es.")
     if gesperrt:
         # Nie stillschweigend überspringen — der Import gälte sonst als vollständig.
         messages.error(request, f"⚠️ {gesperrt} Zahlung(en) konnten nicht verbucht werden: "
@@ -5059,8 +5297,11 @@ def fw_kreditoren(request):
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
+    # prefetch_related: ohne 'zahlungen' löst offener_betrag je Zeile eine eigene
+    # SUM-Abfrage aus, ohne 'positionen' je Zeile zwei weitere (N+1 → Timeout).
     qs = (KreditorenRechnung.objects.exclude(status='storniert')
-          .select_related('liegenschaft', 'konto').order_by('-id'))
+          .select_related('liegenschaft', 'konto')
+          .prefetch_related('zahlungen', 'positionen__konto', 'positionen__einheit'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
 
@@ -5068,20 +5309,59 @@ def fw_kreditoren(request):
     if status_filter in KRED_PILL:
         qs = qs.filter(status=status_filter)
 
+    # Volltextsuche über Lieferant, Referenz und Betrag — bei einigen hundert
+    # Rechnungen ist Scrollen keine Suche (Praxis-Audit).
+    suche = (request.GET.get('q') or '').strip()
+    if suche:
+        from django.db.models import Q as _Qk
+        bedingung = (_Qk(lieferant__icontains=suche) | _Qk(referenz__icontains=suche)
+                     | _Qk(iban__icontains=suche.replace(' ', '')))
+        try:
+            bedingung |= _Qk(betrag=Decimal(_num(suche)))
+        except Exception:
+            pass
+        qs = qs.filter(bedingung)
+
+    # Sortierung: Fälligkeit zuerst ist die Arbeitsreihenfolge der Kreditoren-
+    # buchhaltung; '-id' (Erfassungsreihenfolge) bleibt als Option erhalten.
+    SORTIERUNGEN = {
+        'faellig': ['faellig_am', 'id'],
+        '-faellig': ['-faellig_am', '-id'],
+        'betrag': ['betrag', 'id'],
+        '-betrag': ['-betrag', '-id'],
+        'lieferant': ['lieferant', 'id'],
+        'neu': ['-id'],
+    }
+    sortierung = request.GET.get('sort') or 'faellig'
+    if sortierung not in SORTIERUNGEN:
+        sortierung = 'faellig'
+    qs = qs.order_by(*SORTIERUNGEN[sortierung])
+
+    # Kennzahlen über den GANZEN gefilterten Bestand — die Seite zeigt nur einen
+    # Ausschnitt, die Summen dürfen davon nicht abhängen.
+    from django.db.models import Sum as _SumK, Count as _CountK
+    _kpi = (KreditorenRechnung.objects.exclude(status='storniert')
+            .filter(status='neu'))
+    if aktive_lg:
+        _kpi = _kpi.filter(liegenschaft=aktive_lg)
+    _kpi_agg = _kpi.aggregate(s=_SumK('betrag'), n=_CountK('id'))
+    total_neu = _kpi_agg['s'] or Decimal('0.00')
+    anzahl_neu = _kpi_agg['n'] or 0
+    gesamt_anzahl = qs.count()
+
+    from django.core.paginator import Paginator
+    paginator = Paginator(qs, 50)
+    seite = paginator.get_page(request.GET.get('seite') or 1)
+
     rows = []
-    total_offen = Decimal('0.00')     # freigegeben, noch nicht bezahlt
-    total_neu = Decimal('0.00')       # zu prüfen
-    anzahl_neu = 0
-    for k in qs:
+    total_offen = Decimal('0.00')     # freigegeben, noch nicht bezahlt (diese Seite)
+    for k in seite.object_list:
         label, cls = KRED_PILL.get(k.status, (k.status, 'bg-slate-100 text-slate-500'))
         betrag = k.betrag or Decimal('0.00')
         offen_betrag = k.offener_betrag
         faellig = k.faellig_am
         if k.status in ('freigegeben', 'in_zahlung', 'teilbezahlt'):
             total_offen += offen_betrag
-        elif k.status == 'neu':
-            total_neu += betrag
-            anzahl_neu += 1
         rows.append({
             'k': k, 'betrag': betrag, 'status_label': label, 'pill_cls': cls,
             'faellig': faellig,
@@ -5098,7 +5378,7 @@ def fw_kreditoren(request):
             'offen_wv': k.offen_weiterzuverrechnen,
             'kann_weiterverrechnen': (k.status in ('freigegeben', 'in_zahlung', 'teilbezahlt', 'bezahlt')
                                       and k.offen_weiterzuverrechnen > 0),
-            'positionen': list(k.positionen.select_related('konto', 'einheit')) if k.status == 'neu' else [],
+            'positionen': list(k.positionen.all()) if k.status == 'neu' else [],
             'pos_summe': k.positionen_summe if k.status == 'neu' else Decimal('0.00'),
             'pos_diff': k.positionen_differenz if k.status == 'neu' else Decimal('0.00'),
         })
@@ -5109,13 +5389,24 @@ def fw_kreditoren(request):
     aufwand_konten = Buchungskonto.objects.filter(typ='aufwand').order_by('nummer')
     liegenschaften = Liegenschaft.objects.order_by('strasse')
     # Für pain.001: freigegebene Rechnungen mit gültiger IBAN
-    zahlbar = [r for r in rows if r['k'].status == 'freigegeben' and (r['k'].iban or '').strip()]
+    # «Zahlbar» zählt über den ganzen Bestand, nicht nur die aktuelle Seite —
+    # sonst behauptet der Zahllauf-Knopf eine falsche Zahl.
+    _zb = KreditorenRechnung.objects.filter(status='freigegeben').exclude(iban='')
+    if aktive_lg:
+        _zb = _zb.filter(liegenschaft=aktive_lg)
+    # Querystring ohne 'seite' — damit Filter/Suche/Sortierung beim Blättern
+    # erhalten bleiben (bisher fiel der Filter beim Seitenwechsel weg).
+    _qp = request.GET.copy()
+    _qp.pop('seite', None)
+    query_ohne_seite = _qp.urlencode()
     return render(request, 'fw/kreditoren.html', {
         **basis, 'nav': 'kreditoren', 'rows': rows,
         'status_filter': status_filter, 'status_chips': status_chips,
+        'suche': suche, 'sortierung': sortierung,
+        'seite': seite, 'query_ohne_seite': query_ohne_seite,
         'total_offen': total_offen, 'total_neu': total_neu, 'anzahl_neu': anzahl_neu,
-        'anzahl': len(rows),
-        'anzahl_zahlbar': len(zahlbar),
+        'anzahl': gesamt_anzahl,
+        'anzahl_zahlbar': _zb.count(),
         'darf_bezahlen': hat_rolle(request.user, VERWALTUNGS_ROLLEN),
         'aufwand_konten': aufwand_konten, 'liegenschaften': liegenschaften,
         'ki_aktiv': bool(getattr(settings, 'GROQ_API_KEY', None)),
@@ -5200,7 +5491,7 @@ def fw_kreditor_bezahlen(request):
     # Optionaler Teilbetrag; Standard = offener Betrag
     def _dec(x):
         try:
-            return Decimal(str(x).replace(',', '.').strip())
+            return Decimal(_num(x))
         except Exception:
             return None
     offen = k.offener_betrag
@@ -5217,15 +5508,28 @@ def fw_kreditor_bezahlen(request):
         messages.error(request, "Kein offener Betrag zu bezahlen.")
         return redirect('fw_kreditoren')
 
-    with transaction.atomic():
-        from finance.booking import buche
-        zahlung = KreditorenZahlung.objects.create(
-            kreditor=k, betrag=betrag, datum=timezone.localdate(),
-            bemerkung=f"Zahlung {k.lieferant}", erstellt_von=request.user)
-        buche("2000", "1020", betrag, f"Zahlung {k.lieferant} - {k.referenz}",
-              liegenschaft=k.liegenschaft, kreditor=k, user=request.user)
-        k.status = 'bezahlt' if k.offener_betrag <= 0 else 'teilbezahlt'
-        k.save(update_fields=['status'])
+    # Valutadatum und Bankkonto sind wählbar — «heute» und «1020» waren stille
+    # Annahmen und bei mehreren Bankkonten schlicht falsch (Praxis-Audit).
+    try:
+        valuta = date.fromisoformat(request.POST.get('valuta') or '')
+    except ValueError:
+        valuta = timezone.localdate()
+    bank_nr = (request.POST.get('bank_konto') or '1020').strip()
+    if not Buchungskonto.objects.filter(nummer=bank_nr).exists():
+        bank_nr = '1020'
+    try:
+        with transaction.atomic():
+            from finance.booking import buche
+            zahlung = KreditorenZahlung.objects.create(
+                kreditor=k, betrag=betrag, datum=valuta,
+                bemerkung=f"Zahlung {k.lieferant}", erstellt_von=request.user)
+            buche("2000", bank_nr, betrag, f"Zahlung {k.lieferant} - {k.referenz}",
+                  datum=valuta, liegenschaft=k.liegenschaft, kreditor=k, user=request.user)
+            k.status = 'bezahlt' if k.offener_betrag <= 0 else 'teilbezahlt'
+            k.save(update_fields=['status'])
+    except PermissionError as exc:
+        messages.error(request, f"❌ {exc}")
+        return redirect('fw_kreditoren')
 
     log_aktion(request, "Kreditorenrechnung bezahlt", k.lieferant or f"Rechnung #{k.id}",
                f"CHF {betrag}" + (f" (offen CHF {k.offener_betrag})" if k.status == 'teilbezahlt' else ""))
@@ -5235,6 +5539,190 @@ def fw_kreditor_bezahlen(request):
     if lg := request.POST.get('lg'):
         ziel += f'?lg={lg}'
     return redirect(ziel)
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_zahllauf(request):
+    """Zahllauf: Vorschlagsliste → Auswahl → pain.001 → Sammelbestätigung.
+
+    Vorher war der Zahllauf ein einzelner Link, der ALLE freigegebenen Rechnungen
+    ungefragt in eine Datei packte, und danach musste jede der ~40 Zahlungen
+    einzeln als bezahlt geklickt werden. Beides ist in der Praxis unbrauchbar:
+    ein Zahllauf ist eine bewusste Auswahl, und die Rückmeldung der Bank betrifft
+    den ganzen Lauf, nicht eine Rechnung.
+    """
+    from django.http import HttpResponse
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import KreditorenRechnung, KreditorenZahlung, Buchungskonto
+    from crm.models import Verwaltung
+    from core.services.pain001 import generate_pain001
+    from core.auth import log_aktion
+
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.localdate()
+
+    def _ziel():
+        z = '/neu/zahllauf/'
+        if aktive_lg:
+            z += f'?lg={aktive_lg.id}'
+        return z
+
+    def _auswahl(status):
+        ids = [i for i in request.POST.getlist('rechnung_ids') if str(i).isdigit()]
+        qs = KreditorenRechnung.objects.filter(id__in=ids, status__in=status)
+        if aktive_lg:
+            qs = qs.filter(liegenschaft=aktive_lg)
+        return list(qs.select_related('liegenschaft'))
+
+    def _datum(name, standard):
+        try:
+            return date.fromisoformat(request.POST.get(name) or '')
+        except ValueError:
+            return standard
+
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion')
+
+        # --- 1) Zahlungsdatei für die AUSGEWÄHLTEN Rechnungen ---
+        if aktion == 'datei':
+            rechnungen = _auswahl(['freigegeben'])
+            if not rechnungen:
+                messages.error(request, "Keine Rechnung ausgewählt.")
+                return redirect(_ziel())
+            vw = Verwaltung.objects.first()
+            debtor_iban = ((vw.iban if vw else '') or '').strip()
+            if not debtor_iban:
+                messages.error(request, "Für die Zahlungsdatei fehlt die IBAN der "
+                                        "Verwaltung (Profil → Account).")
+                return redirect(_ziel())
+            # Ausführungsdatum ist frei wählbar — die Bank führt den Lauf an
+            # diesem Tag aus; «heute» war eine stille Annahme (Praxis-Audit).
+            exec_date = _datum('ausfuehrungsdatum', heute)
+            jetzt = timezone.now()
+            msg_id = f"SWISSIMMO-{jetzt.strftime('%Y%m%d%H%M%S')}"
+            xml, anzahl, summe, skipped = generate_pain001(
+                rechnungen, debtor_name=(vw.firma if vw else 'Immobilienverwaltung'),
+                debtor_iban=debtor_iban, msg_id=msg_id,
+                exec_date=exec_date.isoformat(),
+                now_iso=jetzt.strftime('%Y-%m-%dT%H:%M:%S'))
+            if anzahl == 0:
+                messages.error(request, "Keine zahlbare Rechnung in der Auswahl "
+                                        "(IBAN oder Betrag fehlt).")
+                return redirect(_ziel())
+            uebersprungen = {rid for rid, _ in skipped}
+            n = 0
+            for r in rechnungen:
+                if r.id in uebersprungen:
+                    continue
+                r.status = 'in_zahlung'
+                r.zahlung_ausfuehrung = exec_date
+                r.save(update_fields=['status', 'zahlung_ausfuehrung'])
+                n += 1
+            log_aktion(request, "Zahllauf erzeugt", msg_id,
+                       f"{anzahl} Zahlungen, CHF {summe}, Ausführung {exec_date}")
+            resp = HttpResponse(xml, content_type='application/xml')
+            resp['Content-Disposition'] = f'attachment; filename="{msg_id}.xml"'
+            return resp
+
+        # --- 2) Sammelbestätigung: ausgewählte Zahlungen verbuchen ---
+        if aktion == 'bezahlt':
+            rechnungen = _auswahl(['in_zahlung', 'freigegeben', 'teilbezahlt'])
+            if not rechnungen:
+                messages.error(request, "Keine Rechnung ausgewählt.")
+                return redirect(_ziel())
+            bank_nr = (request.POST.get('bank_konto') or '1020').strip()
+            if not Buchungskonto.objects.filter(nummer=bank_nr).exists():
+                bank_nr = '1020'
+            valuta = _datum('valuta', heute)
+            from finance.booking import buche
+            n, summe, gesperrt = 0, Decimal('0.00'), 0
+            for r in rechnungen:
+                offen = r.offener_betrag
+                if offen <= 0:
+                    continue
+                try:
+                    with transaction.atomic():
+                        KreditorenZahlung.objects.create(
+                            kreditor=r, betrag=offen, datum=valuta,
+                            bemerkung=f"Zahllauf {valuta:%d.%m.%Y}"[:255],
+                            erstellt_von=request.user)
+                        buche('2000', bank_nr, offen,
+                              f"Zahlung {r.lieferant} - {r.referenz}"[:255],
+                              datum=valuta, liegenschaft=r.liegenschaft,
+                              kreditor=r, user=request.user)
+                        r.status = 'bezahlt' if r.offener_betrag <= 0 else 'teilbezahlt'
+                        r.save(update_fields=['status'])
+                    n += 1
+                    summe += offen
+                except PermissionError:
+                    # Nie stillschweigend überspringen — der Lauf gälte sonst
+                    # als vollständig verbucht.
+                    gesperrt += 1
+            log_aktion(request, "Zahllauf verbucht", f"{n} Zahlungen",
+                       f"CHF {summe} · Valuta {valuta} · Konto {bank_nr}")
+            if n:
+                messages.success(request, f"✅ {n} Zahlung(en) über CHF {summe} verbucht "
+                                          f"(2000 an {bank_nr}, Valuta {valuta:%d.%m.%Y}).")
+            if gesperrt:
+                messages.error(request, f"⚠️ {gesperrt} Zahlung(en) nicht verbucht: die "
+                                        f"Buchungsperiode ist gesperrt.")
+            return redirect(_ziel())
+
+        # --- 3) Auswahl zurück auf «freigegeben» (Lauf nicht ausgeführt) ---
+        if aktion == 'zuruecksetzen':
+            rechnungen = _auswahl(['in_zahlung'])
+            for r in rechnungen:
+                r.status = 'freigegeben'
+                r.save(update_fields=['status'])
+            log_aktion(request, "Zahllauf zurückgesetzt", f"{len(rechnungen)} Rechnungen", '')
+            messages.success(request, f"↩︎ {len(rechnungen)} Rechnung(en) wieder freigegeben.")
+            return redirect(_ziel())
+
+        return redirect(_ziel())
+
+    # --- GET: Vorschlagsliste ---
+    qs = (KreditorenRechnung.objects
+          .filter(status__in=['freigegeben', 'in_zahlung'])
+          .select_related('liegenschaft')
+          .prefetch_related('zahlungen')
+          .order_by('faellig_am', 'id'))
+    if aktive_lg:
+        qs = qs.filter(liegenschaft=aktive_lg)
+
+    vorschlag, laufend = [], []
+    summe_vorschlag = Decimal('0.00')
+    summe_laufend = Decimal('0.00')
+    ohne_iban = 0
+    for r in qs:
+        offen = r.offener_betrag
+        zeile = {
+            'k': r, 'offen': offen,
+            'iban': (r.iban or '').strip(),
+            'faellig': r.faellig_am,
+            'ueberfaellig': bool(r.faellig_am and r.faellig_am < heute),
+            'objekt': (f"{r.liegenschaft.strasse}, {r.liegenschaft.ort}"
+                       if r.liegenschaft else '—'),
+        }
+        if r.status == 'in_zahlung':
+            laufend.append(zeile); summe_laufend += offen
+        else:
+            vorschlag.append(zeile); summe_vorschlag += offen
+            if not zeile['iban']:
+                ohne_iban += 1
+
+    vw = Verwaltung.objects.first()
+    from django.contrib import messages as _msg
+    return render(request, 'fw/zahllauf.html', {
+        **basis, 'nav': 'kreditoren',
+        'vorschlag': vorschlag, 'laufend': laufend,
+        'summe_vorschlag': summe_vorschlag, 'summe_laufend': summe_laufend,
+        'ohne_iban': ohne_iban, 'heute': heute,
+        'verwaltung_iban': ((vw.iban if vw else '') or '').strip(),
+        'bankkonten': Buchungskonto.objects.filter(nummer__startswith='10').order_by('nummer'),
+        'meldung': list(_msg.get_messages(request)),
+    })
 
 
 @rolle_erforderlich(ROLLE_VERWALTUNG)
@@ -5797,7 +6285,7 @@ def fw_auftrag_kosten(request, pk):
     a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket__liegenschaft', 'handwerker'), id=pk)
 
     def _dec(name):
-        raw = (request.POST.get(name) or '').strip().replace(',', '.')
+        raw = _num(request.POST.get(name))
         if not raw:
             return None
         try:
@@ -6039,7 +6527,7 @@ def fw_hypotheken(request):
 
             def _dec(x):
                 try:
-                    return Decimal(str(x).replace(',', '.').strip() or '0')
+                    return Decimal(_num(x) or '0')
                 except Exception:
                     return Decimal('0.00')
 
@@ -6123,7 +6611,7 @@ def fw_anlagen(request):
 
     def _dec(x):
         try:
-            return Decimal(str(x).replace(',', '.').strip() or '0')
+            return Decimal(_num(x) or '0')
         except Exception:
             return Decimal('0.00')
 
@@ -6807,7 +7295,7 @@ def fw_eigentuemer_auszahlung(request, pk):
     if request.method != 'POST':
         return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
     try:
-        betrag = Decimal(str(request.POST.get('betrag') or '0').replace(',', '.')).quantize(Decimal('0.01'))
+        betrag = Decimal((_num(request.POST.get('betrag')) or '0')).quantize(Decimal('0.01'))
     except Exception:
         betrag = Decimal('0')
     if betrag <= 0:
@@ -6942,19 +7430,31 @@ def fw_sollstellung_run(request):
         return redirect('fw_sollstellung')
 
     titel = f"Miete & NK {monat:02d}/{jahr}"
+    # Der Lauf muss demselben Liegenschaftsfilter folgen wie die Vorschau darüber
+    # — sonst stellt ein Klick auf «Sollstellung starten» dem ganzen Portfolio
+    # Rechnung, obwohl der Dialog die gefilterte Anzahl nannte (Praxis-Audit).
+    # `lg` kommt beim POST aus dem Formular-Feld (_global_filter liest nur GET).
+    lauf_lg = Liegenschaft.objects.filter(id=request.POST.get('lg') or None).first()
     from core.services.automation import run_sollstellung
     try:
-        erstellt = run_sollstellung(jahr, monat, user=request.user)
+        erstellt = run_sollstellung(jahr, monat, user=request.user, liegenschaft=lauf_lg)
     except RuntimeError as e:
         messages.error(request, f"{e}")
         return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
 
-    log_aktion(request, "Sollstellung ausgeführt", titel, f"{erstellt} Rechnungen erstellt")
+    log_aktion(request, "Sollstellung ausgeführt", titel,
+               f"{erstellt} Rechnungen erstellt"
+               + (f" · nur {lauf_lg.strasse}" if lauf_lg else " · ganzes Portfolio"))
+    umfang = f" ({lauf_lg.strasse})" if lauf_lg else ""
     if erstellt:
-        messages.success(request, f"✅ Sollstellung {titel}: {erstellt} Rechnung(en) erstellt.")
+        messages.success(request, f"✅ Sollstellung {titel}{umfang}: {erstellt} Rechnung(en) erstellt.")
     else:
-        messages.success(request, f"Sollstellung {titel}: alles bereits gestellt — nichts Neues erzeugt.")
-    return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
+        messages.success(request, f"Sollstellung {titel}{umfang}: alles bereits gestellt — "
+                                  f"nichts Neues erzeugt.")
+    ziel = f'/neu/sollstellung/?jahr={jahr}&monat={monat}'
+    if lauf_lg:
+        ziel += f'&lg={lauf_lg.id}'
+    return redirect(ziel)
 
 
 # ============================================================
@@ -7239,7 +7739,7 @@ def fw_akonto_anpassen(request, pk):
         return redirect(f'/neu/nebenkosten/{p.id}/')
     angepasst = 0
     for vid in request.POST.getlist('vertrag_id'):
-        neu = (request.POST.get(f'akonto_{vid}') or '').strip().replace(',', '.')
+        neu = _num(request.POST.get(f'akonto_{vid}'))
         try:
             betrag = Decimal(neu)
         except Exception:
@@ -7373,7 +7873,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
 
     def _dec(x, default='0'):
         try:
-            return Decimal(str(x).replace(',', '.').strip())
+            return Decimal(_num(x))
         except Exception:
             return Decimal(default)
 
@@ -7550,7 +8050,7 @@ def fw_mietzins_massenanpassung(request):
 
     def _dec(x, default='0'):
         try:
-            return Decimal(str(x).replace(',', '.').strip())
+            return Decimal(_num(x))
         except Exception:
             return Decimal(default)
 
@@ -7742,7 +8242,7 @@ def fw_anfangsmietzins(request, vertrag_id):
 
     def _dec(x, d='0'):
         try:
-            return Decimal(str(x).replace(',', '.').strip() or d)
+            return Decimal(_num(x) or d)
         except Exception:
             return Decimal(d)
 
@@ -8185,7 +8685,7 @@ def fw_vertrag_neu_speichern(request):
 
     def dec(key, default='0'):
         try:
-            return Decimal(str(P.get(key) or default).replace("'", '').replace(',', '.'))
+            return Decimal((_num(P.get(key)) or str(default)))
         except Exception:
             return Decimal(default)
 
@@ -8325,7 +8825,7 @@ def fw_vertrag_neu_speichern(request):
                     continue
                 betrag = dec(f'__staffel_{i}') if False else None
                 try:
-                    betrag = Decimal(str(netto_list[i]).replace("'", '').replace(',', '.')) if i < len(netto_list) and str(netto_list[i]).strip() else None
+                    betrag = Decimal(_num(netto_list[i])) if i < len(netto_list) and str(netto_list[i]).strip() else None
                 except Exception:
                     betrag = None
                 if ab_d and betrag and betrag > 0:
@@ -8455,7 +8955,7 @@ def fw_vertrag_vorschau(request):
 
     def dec(key, default='0'):
         try:
-            return Decimal(str(P.get(key) or default).replace("'", '').replace(',', '.'))
+            return Decimal((_num(P.get(key)) or str(default)))
         except Exception:
             return Decimal(default)
 
@@ -8549,7 +9049,7 @@ def fw_vertrag_bearbeiten(request, pk):
         alt = snapshot_model(v)
 
         def dec(key, default=None):
-            raw = str(P.get(key) or '').replace("'", '').replace(',', '.').strip()
+            raw = _num(P.get(key))
             try:
                 return Decimal(raw) if raw else (Decimal(default) if default is not None else None)
             except Exception:
@@ -8673,7 +9173,7 @@ def fw_account(request):
 
         def dec(key, fallback):
             try:
-                return Decimal(str(P.get(key) or fallback).replace(',', '.'))
+                return Decimal((_num(P.get(key)) or str(fallback)))
             except Exception:
                 return fallback
         vw.aktueller_referenzzinssatz = dec('aktueller_referenzzinssatz', vw.aktueller_referenzzinssatz)
@@ -9516,7 +10016,7 @@ def fw_liegenschaft_form(request, pk=None):
                 return None
 
         def decval(key):
-            v = str(P.get(key) or '').replace("'", '').replace(',', '.').strip()
+            v = _num(P.get(key))
             try:
                 return Decimal(v) if v else None
             except Exception:
@@ -9657,7 +10157,7 @@ def fw_versicherung_add(request, lg_id):
     P = request.POST
 
     def dec(key):
-        v = str(P.get(key) or '').replace("'", '').replace(',', '.').strip()
+        v = _num(P.get(key))
         try:
             return Decimal(v) if v else None
         except Exception:
@@ -9714,7 +10214,7 @@ def fw_objekt_form(request, pk=None):
         obj.ewid = P.get('ewid', '').strip()
 
         def dec(key):
-            v = str(P.get(key) or '').replace(',', '.').strip()
+            v = _num(P.get(key))
             try:
                 return Decimal(v) if v else None
             except Exception:
@@ -9878,7 +10378,7 @@ def fw_mandat_form(request, pk=None):
         obj.bank_name = P.get('bank_name', '').strip()
         obj.iban = P.get('iban', '').strip()
         try:
-            obj.honorar_prozent = Decimal(str(P.get('honorar_prozent') or '0').replace(',', '.'))
+            obj.honorar_prozent = Decimal((_num(P.get('honorar_prozent')) or '0'))
         except Exception:
             obj.honorar_prozent = Decimal('0.00')
         if not obj.firma_oder_name:
@@ -10540,7 +11040,7 @@ def fw_kaution_aktion(request, vertrag_id):
 
     def dec(key):
         try:
-            return Decimal(str(P.get(key) or '0').replace(',', '.'))
+            return Decimal((_num(P.get(key)) or '0'))
         except Exception:
             return Decimal('0.00')
 
@@ -10705,6 +11205,7 @@ def fw_kaution_beleg(request, vertrag_id, art):
 def fw_maengelruege(request, vertrag_id):
     """Mängelrüge / Fristansetzung (Art. 259 OR). GET: Formular · POST: PDF + Frist-Pendenz."""
     from django.http import HttpResponse
+    from django.shortcuts import redirect
     from django.contrib import messages
     from crm.models import Verwaltung
     from core.services.mietprozess_briefe import maengelruege_pdf
@@ -10797,6 +11298,7 @@ def fw_vertrag_wg(request, vertrag_id):
 def fw_untermiete(request, vertrag_id):
     """Zustimmung/Ablehnung zur Untervermietung (Art. 262 OR). GET: Formular · POST: PDF."""
     from django.http import HttpResponse
+    from django.shortcuts import redirect
     from django.contrib import messages
     from crm.models import Verwaltung
     from core.services.mietprozess_briefe import untermiete_zustimmung_pdf
@@ -10974,7 +11476,7 @@ def fw_mwst_einstellungen(request):
     vw.mwst_methode = request.POST.get('mwst_methode', 'effektiv')
     vw.mwst_uid = (request.POST.get('mwst_uid') or '').strip()
     try:
-        vw.saldosteuersatz = Decimal((request.POST.get('saldosteuersatz') or '0').replace(',', '.'))
+        vw.saldosteuersatz = Decimal((_num(request.POST.get('saldosteuersatz')) or '0'))
     except Exception:
         vw.saldosteuersatz = Decimal('0')
     vw.save(update_fields=['mwst_methode', 'mwst_uid', 'saldosteuersatz'])
@@ -11736,7 +12238,7 @@ def fw_mahnung_erfassen(request):
         return redirect('fw_mahnwesen')
 
     try:
-        gebuehr = Decimal(str(request.POST.get('gebuehr') or MAHN_GEBUEHR.get(stufe, Decimal('0'))).replace(',', '.'))
+        gebuehr = Decimal((_num(request.POST.get('gebuehr')) or str(MAHN_GEBUEHR.get(stufe, Decimal('0')))))
     except Exception:
         gebuehr = MAHN_GEBUEHR.get(stufe, Decimal('0.00'))
 
@@ -11866,7 +12368,7 @@ def fw_kreditor_neu(request):
         return redirect('fw_kreditoren')
 
     def _dec(name):
-        raw = (request.POST.get(name) or '').strip().replace(',', '.')
+        raw = _num(request.POST.get(name))
         try:
             return Decimal(raw) if raw else None
         except Exception:
@@ -11905,6 +12407,9 @@ def fw_kreditor_neu(request):
         datum=(date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.localdate()),
         faellig_am=(date.fromisoformat(request.POST['faellig_am']) if request.POST.get('faellig_am') else None),
         referenz=(request.POST.get('referenz') or '').strip(),
+        # IBAN wurde bisher nur im Bearbeiten-Formular erfasst — eine manuell
+        # angelegte Rechnung konnte damit NIE in einen Zahllauf (Praxis-Audit).
+        iban=(request.POST.get('iban') or '').strip().replace(' ', ''),
         # NK-relevant, wenn Checkbox gesetzt ODER das gewählte Konto HNK-relevant ist
         is_hnk_relevant=(request.POST.get('is_hnk_relevant') == 'on'
                          or bool(konto and konto.is_hnk_relevant)),
@@ -11985,7 +12490,7 @@ def fw_kreditor_bearbeiten(request, pk):
         return redirect('fw_kreditoren')
 
     def _dec(name):
-        raw = (request.POST.get(name) or '').strip().replace("'", '').replace(',', '.')
+        raw = _num(request.POST.get(name))
         try:
             return Decimal(raw) if raw else None
         except Exception:
@@ -12126,7 +12631,7 @@ def fw_vertrag_mietzins_add(request, pk):
         return redirect(ziel)
 
     def _dec(name):
-        raw = (request.POST.get(name) or '').replace("'", '').replace(',', '.').strip()
+        raw = _num(request.POST.get(name))
         try:
             return Decimal(raw)
         except Exception:
@@ -12199,7 +12704,7 @@ def fw_kreditor_position_add(request, pk):
         return redirect('fw_kreditoren')
     konto = Buchungskonto.objects.filter(id=request.POST.get('konto_id') or None).first()
     try:
-        betrag = Decimal((request.POST.get('betrag') or '').replace("'", '').replace(',', '.').strip())
+        betrag = Decimal(_num(request.POST.get('betrag')))
     except Exception:
         betrag = None
     if not konto or not betrag or betrag <= 0:
@@ -12546,7 +13051,7 @@ def fw_buchung_neu(request):
     soll = _konto_aus_post('soll_konto', 'soll_konto_id')
     haben = _konto_aus_post('haben_konto', 'haben_konto_id')
     try:
-        betrag = Decimal(str(request.POST.get('betrag') or '0').replace("'", '').replace(',', '.'))
+        betrag = Decimal((_num(request.POST.get('betrag')) or '0'))
     except Exception:
         betrag = Decimal('0')
     text = (request.POST.get('beleg_text') or '').strip()
@@ -12876,6 +13381,116 @@ def fw_zahlung_zuordnen(request):
         ziel += f'?lg={aktive}'
     from django.shortcuts import redirect as _r
     return _r(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_bankbewegung_zuordnen(request):
+    """Ordnet eine offene Bankbewegung zu und bucht sie.
+
+    Ohne diesen Schritt bleibt eine Belastung ewig im Eingang liegen: Der Auszug
+    nennt kein Gegenkonto — ob eine Zahlung an einen Lieferanten, eine Gebühr,
+    ein Hypothekarzins oder eine Eigentümer-Auszahlung dahintersteckt, weiss nur
+    der Buchhalter. Deshalb wird geraten NICHTS, sondern gefragt.
+
+    Drei Wege:
+      kreditor  — Belastung tilgt eine Kreditorenrechnung: 2000 an Bank
+      konto     — freies Gegenkonto (Gebühr, Zins, Eigentümer): Gegenkonto an Bank
+                  bzw. bei einer Gutschrift Bank an Gegenkonto
+      ignorieren— gehört nicht in diese Buchhaltung (z.B. Umbuchung eigenes Konto)
+    """
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import Bankbewegung, KreditorenRechnung, Buchungskonto
+    from finance.booking import buche
+    from core.auth import log_aktion
+
+    if request.method != 'POST':
+        return redirect('fw_bankabgleich')
+    ziel = '/neu/bankabgleich/'
+    if aktive := request.POST.get('lg'):
+        ziel += f'?lg={aktive}'
+
+    bew = get_object_or_404(Bankbewegung, id=request.POST.get('bewegung_id'))
+    if bew.status != 'offen':
+        messages.info(request, "Diese Bankbewegung ist bereits erledigt.")
+        return redirect(ziel)
+
+    art = request.POST.get('art')
+    # Das VALUTADATUM ist buchhalterisch massgebend; vorher landete jede Zahlung
+    # im Datum des Erfassungstags (Praxis-Audit).
+    dat = bew.valuta or bew.datum
+    bank_nr = bew.konto.nummer
+    betrag = abs(bew.betrag)
+
+    if art == 'ignorieren':
+        bew.status = 'ignoriert'
+        bew.bemerkung = (request.POST.get('bemerkung') or 'Nicht buchungsrelevant')[:255]
+        bew.save(update_fields=['status', 'bemerkung'])
+        log_aktion(request, "Bankbewegung ignoriert", str(bew), bew.bemerkung)
+        messages.success(request, "Bewegung als nicht buchungsrelevant markiert.")
+        return redirect(ziel)
+
+    try:
+        with transaction.atomic():
+            if art == 'kreditor':
+                from finance.models import KreditorenZahlung
+                kr = get_object_or_404(KreditorenRechnung,
+                                       id=request.POST.get('kreditor_id'))
+                if bew.betrag >= 0:
+                    messages.error(request, "Eine Gutschrift kann keine Lieferantenrechnung tilgen.")
+                    return redirect(ziel)
+                offen_kr = kr.offener_betrag
+                if offen_kr <= 0:
+                    messages.error(request, "Diese Lieferantenrechnung ist bereits bezahlt.")
+                    return redirect(ziel)
+                # Nie mehr tilgen als offen ist — der Rest bleibt im Eingang.
+                betrag = min(betrag, offen_kr)
+                # Gleicher Weg wie die manuelle Zahlung (KreditorenZahlung +
+                # 2000 an Bank), damit es nur EINEN Zahlungspfad gibt.
+                KreditorenZahlung.objects.create(
+                    kreditor=kr, betrag=betrag, datum=dat,
+                    bemerkung=f"Bankabgleich {bew.text or bew.gegenpartei}"[:255],
+                    erstellt_von=request.user)
+                buchung = buche('2000', bank_nr, betrag,
+                                f"Zahlung {kr.lieferant} - {kr.referenz}"[:255],
+                                datum=dat, liegenschaft=kr.liegenschaft, kreditor=kr,
+                                user=request.user)
+                kr.status = 'bezahlt' if kr.offener_betrag <= 0 else 'teilbezahlt'
+                kr.save(update_fields=['status'])
+                bew.liegenschaft = kr.liegenschaft
+                text = f"Kreditor {kr.lieferant}"
+            else:
+                gegen_nr = (request.POST.get('gegenkonto') or '').strip().split()[0] if request.POST.get('gegenkonto') else ''
+                gegen = Buchungskonto.objects.filter(nummer=gegen_nr).first()
+                if not gegen:
+                    messages.error(request, "Bitte ein gültiges Gegenkonto angeben.")
+                    return redirect(ziel)
+                lg_b = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
+                bez = (request.POST.get('beleg_text') or bew.text or 'Bankbewegung')[:255]
+                if bew.betrag < 0:      # Ausgang: Aufwand/Aktivum an Bank
+                    buchung = buche(gegen, bank_nr, betrag, bez, datum=dat,
+                                    liegenschaft=lg_b, user=request.user)
+                else:                   # Eingang: Bank an Ertrag/Passivum
+                    buchung = buche(bank_nr, gegen, betrag, bez, datum=dat,
+                                    liegenschaft=lg_b, user=request.user)
+                bew.liegenschaft = lg_b
+                text = f"{gegen.nummer} {gegen.bezeichnung}"
+            bew.status = 'verbucht'
+            bew.bemerkung = text[:255]
+            # Beleg an der Auszugszeile festhalten — sonst ist im Nachhinein nicht
+            # belegbar, WELCHE Buchung diese Bankbewegung erledigt hat (Revision).
+            bew.buchung = buchung
+            bew.save(update_fields=['status', 'bemerkung', 'liegenschaft', 'buchung'])
+    except PermissionError as exc:
+        messages.error(request, f"❌ {exc}")
+        return redirect(ziel)
+    except Exception as exc:
+        messages.error(request, f"❌ Bewegung konnte nicht gebucht werden: {exc}")
+        return redirect(ziel)
+
+    log_aktion(request, "Bankbewegung verbucht", str(bew), text)
+    messages.success(request, f"✅ CHF {betrag} verbucht ({text}) — Valuta {dat:%d.%m.%Y}.")
+    return redirect(ziel)
 
 
 def _park_konto(nummer):

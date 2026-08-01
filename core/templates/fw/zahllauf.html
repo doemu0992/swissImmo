@@ -1,0 +1,207 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}Zahllauf — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Zahllauf</h1>
+    <a href="/neu/kreditoren/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}"
+       class="text-sm font-semibold text-slate-500 hover:text-indigo-600">
+        <i class="fa-solid fa-arrow-left mr-1"></i>Zurück zu den Kreditoren
+    </a>
+</div>
+<p class="text-sm text-slate-500 mb-5">
+    Rechnungen auswählen → Zahlungsdatei (pain.001) erzeugen → nach der Bankbestätigung
+    den ganzen Lauf auf einmal verbuchen
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/zahllauf/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}
+</p>
+
+{% if not verwaltung_iban %}
+<div class="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 mb-6 text-sm text-amber-800">
+    <i class="fa-solid fa-triangle-exclamation mr-1.5"></i>
+    Für die Zahlungsdatei fehlt die <b>IBAN der Verwaltung</b> —
+    unter <a href="/neu/account/" class="underline font-semibold">Profil → Account</a> hinterlegen.
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <div class="text-2xl font-bold text-sky-600 tabular-nums">CHF {{ summe_vorschlag|chf }}</div>
+        <div class="text-sm text-slate-500">Vorschlag ({{ vorschlag|length }} Rechnungen)</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <div class="text-2xl font-bold text-indigo-600 tabular-nums">CHF {{ summe_laufend|chf }}</div>
+        <div class="text-sm text-slate-500">In Zahlung ({{ laufend|length }})</div>
+    </div>
+    <div class="bg-white rounded-xl border p-5 {% if ohne_iban %}border-amber-300 bg-amber-50/40{% else %}border-slate-200{% endif %}">
+        <div class="text-2xl font-bold tabular-nums {% if ohne_iban %}text-amber-600{% else %}text-slate-800{% endif %}">{{ ohne_iban }}</div>
+        <div class="text-sm text-slate-500">
+            {% if ohne_iban %}ohne IBAN — nicht zahlbar{% else %}alle Rechnungen haben eine IBAN{% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ============ VORSCHLAG ============ -->
+<form method="post" action="/neu/zahllauf/" class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
+    {% csrf_token %}
+    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
+        <div class="font-bold text-slate-800 text-sm">
+            <i class="fa-solid fa-list-check text-sky-500 mr-1.5"></i>Zahlungsvorschlag (freigegeben)
+        </div>
+        <label class="flex items-center gap-2 text-xs text-slate-500">
+            <input type="date" name="ausfuehrungsdatum" value="{{ heute|date:'Y-m-d' }}"
+                   class="bg-slate-100 rounded-lg text-xs px-2 py-1.5">
+            Ausführungsdatum
+        </label>
+    </div>
+
+    {% if vorschlag %}
+    <div class="overflow-x-auto">
+        <table class="w-full min-w-max text-sm">
+            <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3"><input type="checkbox" onclick="fwZlAlle(this, 'vorschlag')" checked class="accent-indigo-600"></th>
+                <th class="px-5 py-3 font-semibold">Lieferant</th>
+                <th class="px-5 py-3 font-semibold">Objekt</th>
+                <th class="px-5 py-3 font-semibold">IBAN</th>
+                <th class="px-5 py-3 font-semibold">Fällig</th>
+                <th class="px-5 py-3 font-semibold text-right">Offen</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50" data-gruppe="vorschlag">
+            {% for z in vorschlag %}
+            <tr class="hover:bg-slate-50/60 {% if not z.iban %}bg-amber-50/40{% endif %}">
+                <td class="px-5 py-3">
+                    <input type="checkbox" name="rechnung_ids" value="{{ z.k.id }}"
+                           {% if z.iban %}checked{% else %}disabled title="Ohne IBAN nicht zahlbar"{% endif %}
+                           class="accent-indigo-600">
+                </td>
+                <td class="px-5 py-3 font-medium text-slate-900 whitespace-nowrap">
+                    {{ z.k.lieferant|default:"—" }}
+                    {% if z.k.referenz %}<div class="text-xs text-slate-400 font-normal">{{ z.k.referenz }}</div>{% endif %}
+                </td>
+                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ z.objekt }}</td>
+                <td class="px-5 py-3 font-mono text-xs whitespace-nowrap {% if not z.iban %}text-amber-700 font-semibold{% else %}text-slate-500{% endif %}">
+                    {{ z.iban|default:"fehlt" }}
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap {% if z.ueberfaellig %}text-rose-600 font-semibold{% else %}text-slate-600{% endif %}">
+                    {% if z.faellig %}{{ z.faellig|date:"d.m.Y" }}{% else %}—{% endif %}
+                </td>
+                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap font-semibold">{{ z.offen|chf }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+            <tr class="border-t-2 border-slate-200 bg-slate-50/60 font-semibold text-slate-800">
+                <td class="px-5 py-3 text-xs uppercase tracking-wider text-slate-500" colspan="5">Total Vorschlag</td>
+                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{{ summe_vorschlag|chf }}</td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="px-5 py-4 border-t border-slate-100 flex items-center gap-3 flex-wrap">
+        <button name="aktion" value="datei"
+                class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
+            <i class="fa-solid fa-file-arrow-down mr-1.5"></i>Zahlungsdatei erzeugen (pain.001)
+        </button>
+        <span class="text-xs text-slate-400">
+            Die enthaltenen Rechnungen wechseln auf «In Zahlung» und erscheinen unten —
+            dort werden sie nach der Bankbestätigung als bezahlt verbucht.
+        </span>
+    </div>
+    {% else %}
+    <div class="px-5 py-12 text-center text-sm text-slate-400 italic">
+        Keine freigegebenen Rechnungen. Rechnungen werden im Kreditoren-Tab freigegeben.
+    </div>
+    {% endif %}
+</form>
+
+<!-- ============ IN ZAHLUNG ============ -->
+<form method="post" action="/neu/zahllauf/" class="bg-white rounded-xl border border-indigo-200 overflow-hidden">
+    {% csrf_token %}
+    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+    <div class="px-5 py-3 border-b border-indigo-100 bg-indigo-50/40 flex items-center justify-between flex-wrap gap-3">
+        <div class="font-bold text-slate-800 text-sm">
+            <i class="fa-solid fa-hourglass-half text-indigo-500 mr-1.5"></i>In Zahlung — auf Bankbestätigung wartend
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+            <label class="flex items-center gap-2 text-xs text-slate-500">
+                <input type="date" name="valuta" value="{{ heute|date:'Y-m-d' }}"
+                       class="bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5">
+                Valuta
+            </label>
+            <label class="flex items-center gap-2 text-xs text-slate-500">
+                <select name="bank_konto" class="bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5">
+                    {% for k in bankkonten %}<option value="{{ k.nummer }}" {% if k.nummer == '1020' %}selected{% endif %}>{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
+                </select>
+                Bankkonto
+            </label>
+        </div>
+    </div>
+
+    {% if laufend %}
+    <div class="overflow-x-auto">
+        <table class="w-full min-w-max text-sm">
+            <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                <th class="px-5 py-3"><input type="checkbox" onclick="fwZlAlle(this, 'laufend')" checked class="accent-indigo-600"></th>
+                <th class="px-5 py-3 font-semibold">Lieferant</th>
+                <th class="px-5 py-3 font-semibold">Objekt</th>
+                <th class="px-5 py-3 font-semibold">Ausführung</th>
+                <th class="px-5 py-3 font-semibold text-right">Offen</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50" data-gruppe="laufend">
+            {% for z in laufend %}
+            <tr class="hover:bg-slate-50/60">
+                <td class="px-5 py-3"><input type="checkbox" name="rechnung_ids" value="{{ z.k.id }}" checked class="accent-indigo-600"></td>
+                <td class="px-5 py-3 font-medium text-slate-900 whitespace-nowrap">
+                    {{ z.k.lieferant|default:"—" }}
+                    {% if z.k.referenz %}<div class="text-xs text-slate-400 font-normal">{{ z.k.referenz }}</div>{% endif %}
+                </td>
+                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ z.objekt }}</td>
+                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">
+                    {% if z.k.zahlung_ausfuehrung %}{{ z.k.zahlung_ausfuehrung|date:"d.m.Y" }}{% else %}—{% endif %}
+                </td>
+                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap font-semibold">{{ z.offen|chf }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+            <tr class="border-t-2 border-slate-200 bg-slate-50/60 font-semibold text-slate-800">
+                <td class="px-5 py-3 text-xs uppercase tracking-wider text-slate-500" colspan="4">Total in Zahlung</td>
+                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{{ summe_laufend|chf }}</td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="px-5 py-4 border-t border-slate-100 flex items-center gap-3 flex-wrap">
+        <button name="aktion" value="bezahlt"
+                onsubmit="return true;"
+                onclick="return confirm('Ausgewählte Zahlungen verbuchen (2000 an Bank)?');"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
+            <i class="fa-solid fa-check mr-1.5"></i>Als bezahlt verbuchen
+        </button>
+        <button name="aktion" value="zuruecksetzen"
+                onclick="return confirm('Auswahl wieder auf «freigegeben» setzen? (Lauf wurde nicht ausgeführt)');"
+                class="text-xs text-slate-400 hover:text-rose-600 font-semibold">
+            Lauf nicht ausgeführt — zurücksetzen
+        </button>
+    </div>
+    {% else %}
+    <div class="px-5 py-12 text-center text-sm text-slate-400 italic">
+        Keine Rechnung in Zahlung. Oben eine Zahlungsdatei erzeugen.
+    </div>
+    {% endif %}
+</form>
+
+<script>
+function fwZlAlle(quelle, gruppe) {
+    document.querySelectorAll('tbody[data-gruppe="' + gruppe + '"] input[name="rechnung_ids"]')
+        .forEach(function (b) { if (!b.disabled) b.checked = quelle.checked; });
+}
+</script>
+{% endblock %}

@@ -12,6 +12,11 @@
         body { font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        /* Zahlenspalten immer mit gleich breiten Ziffern — sonst «tanzen» die
+           Beträge untereinander und Spaltensummen lassen sich nicht mit dem Auge
+           prüfen. Zentral statt in jedem Template, damit keine Tabelle vergessen
+           geht (Praxis-Audit). Rechtsbündige Zellen sind hier immer Zahlen. */
+        table td.text-right, table th.text-right { font-variant-numeric: tabular-nums; }
         /* iOS: native date/month/time-Felder haben eine Eigenbreite, die w-full
            ignoriert und aus dem Container läuft. Auf Containerbreite zwingen. */
         input[type="date"], input[type="month"], input[type="week"],

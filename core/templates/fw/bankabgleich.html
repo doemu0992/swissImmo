@@ -28,12 +28,143 @@
             <div class="text-sm font-semibold text-slate-700 mb-1.5">Kontoauszug importieren <span class="font-normal text-slate-400">(camt.053-XML oder Bank-CSV)</span></div>
             <input type="file" name="camt_datei" accept=".xml,.csv,.txt,text/xml,application/xml,text/csv" required
                    class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 file:cursor-pointer">
+            {% if bankkonten|length > 1 %}
+            {# Mehrere Bankkonten: vorher war «1020» im ganzen Import hart verdrahtet. #}
+            <select name="bank_konto" class="mt-2 w-full bg-slate-100 rounded-lg text-xs px-2 py-1.5">
+                {% for k in bankkonten %}<option value="{{ k.nummer }}" {% if k.nummer == '1020' %}selected{% endif %}>{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
+            </select>
+            {% endif %}
         </div>
         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shrink-0 transition-colors">
             <i class="fa-solid fa-upload mr-1"></i>Import
         </button>
     </form>
 </div>
+
+{% if saldo_abgleich %}
+<!-- Abstimmungsnachweis: stimmt die Buchhaltung mit dem Kontoauszug überein?
+     Ohne diesen Vergleich kann man Zahlungen zuordnen, aber nie belegen, dass
+     das Bankkonto stimmt — der erste Schritt jedes Monatsabschlusses. -->
+<div class="bg-white rounded-xl border p-5 mb-6 {% if saldo_abgleich.differenz %}border-amber-300{% else %}border-emerald-200{% endif %}">
+    <div class="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+            <div class="font-bold text-slate-800 text-sm mb-1">
+                <i class="fa-solid fa-scale-balanced {% if saldo_abgleich.differenz %}text-amber-500{% else %}text-emerald-500{% endif %} mr-1.5"></i>
+                Saldoabgleich {{ saldo_abgleich.auszug.konto.nummer }}
+            </div>
+            <div class="text-xs text-slate-500">
+                Auszug {{ saldo_abgleich.auszug.dateiname }}{% if saldo_abgleich.auszug.bis %} · per {{ saldo_abgleich.auszug.bis|date:"d.m.Y" }}{% endif %}
+            </div>
+        </div>
+        <div class="flex items-center gap-6 flex-wrap">
+            <div class="text-right">
+                <div class="text-lg font-bold text-slate-800 tabular-nums">CHF {{ saldo_abgleich.auszug.schlusssaldo|chf }}</div>
+                <div class="text-xs text-slate-500">laut Auszug</div>
+            </div>
+            <div class="text-right">
+                <div class="text-lg font-bold text-slate-800 tabular-nums">CHF {{ saldo_abgleich.buchhaltung|chf }}</div>
+                <div class="text-xs text-slate-500">laut Buchhaltung</div>
+            </div>
+            <div class="text-right">
+                <div class="text-lg font-bold tabular-nums {% if saldo_abgleich.differenz %}text-amber-600{% else %}text-emerald-600{% endif %}">CHF {{ saldo_abgleich.differenz|chf }}</div>
+                <div class="text-xs text-slate-500">
+                    {% if saldo_abgleich.differenz %}Differenz — offene Bewegungen zuordnen{% else %}stimmt überein{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if bewegungen %}
+<!-- BANK-EINGANG: die Zeilen des Kontoauszugs. Vorher zeigte dieser Screen die
+     Bankbewegungen gar nicht — er listete nur offene Debitoren zum Quittieren. -->
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+        <div class="font-bold text-slate-800 text-sm">
+            <i class="fa-solid fa-building-columns text-indigo-500 mr-1.5"></i>Bank-Eingang — offene Auszugszeilen
+        </div>
+        <div class="text-xs text-slate-500">
+            {{ bew_offen_n }} offen
+            {% if bew_eingang %}· Eingänge CHF {{ bew_eingang|chf }}{% endif %}
+            {% if bew_ausgang %}· Ausgänge CHF {{ bew_ausgang|chf }}{% endif %}
+        </div>
+    </div>
+    <div class="divide-y divide-slate-50">
+        {% for b in bewegungen %}
+        <div class="px-5 py-3">
+            <div class="flex items-center gap-3 flex-wrap mb-2">
+                <span class="text-xs text-slate-500 whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</span>
+                {% if b.valuta and b.valuta != b.datum %}<span class="text-[10px] text-slate-400 whitespace-nowrap">Val. {{ b.valuta|date:"d.m.Y" }}</span>{% endif %}
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 {% if b.betrag < 0 %}bg-rose-50 text-rose-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">
+                    {% if b.betrag < 0 %}Belastung{% else %}Gutschrift{% endif %}
+                </span>
+                <div class="min-w-0 flex-1">
+                    <div class="text-sm font-medium text-slate-900 truncate">{{ b.gegenpartei|default:b.text|default:"Bankbewegung" }}</div>
+                    {% if b.text and b.gegenpartei %}<div class="text-xs text-slate-400 truncate">{{ b.text }}</div>{% endif %}
+                </div>
+                <span class="text-sm font-semibold tabular-nums whitespace-nowrap {% if b.betrag < 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">{{ b.betrag|chf }}</span>
+                <button onclick="document.getElementById('bew-{{ b.id }}').classList.toggle('hidden')"
+                        class="text-xs font-semibold text-indigo-600 hover:underline whitespace-nowrap">Zuordnen</button>
+            </div>
+            <div id="bew-{{ b.id }}" class="hidden bg-slate-50 rounded-lg p-3 space-y-3">
+                {% if b.betrag < 0 %}
+                <form method="post" action="/neu/bankabgleich/bewegung/" class="flex items-end gap-2 flex-wrap">
+                    {% csrf_token %}
+                    <input type="hidden" name="bewegung_id" value="{{ b.id }}">
+                    <input type="hidden" name="art" value="kreditor">
+                    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                    <label class="block flex-1 min-w-[240px]">
+                        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Offene Lieferantenrechnung</span>
+                        <select name="kreditor_id" required class="mt-1 w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+                            <option value="">— wählen —</option>
+                            {% for k in offene_kreditoren %}<option value="{{ k.id }}">{{ k.lieferant }} · CHF {{ k.offener_betrag|chf }}{% if k.referenz %} · {{ k.referenz }}{% endif %}</option>{% endfor %}
+                        </select>
+                    </label>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Als Zahlung buchen</button>
+                </form>
+                {% endif %}
+                <form method="post" action="/neu/bankabgleich/bewegung/" class="flex items-end gap-2 flex-wrap">
+                    {% csrf_token %}
+                    <input type="hidden" name="bewegung_id" value="{{ b.id }}">
+                    <input type="hidden" name="art" value="konto">
+                    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                    <label class="block">
+                        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Gegenkonto</span>
+                        <input name="gegenkonto" list="bew-konten" required placeholder="Nummer"
+                               class="mt-1 bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 w-36 font-mono">
+                    </label>
+                    <label class="block flex-1 min-w-[180px]">
+                        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Belegtext</span>
+                        <input name="beleg_text" value="{{ b.text|default:b.gegenpartei }}"
+                               class="mt-1 w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+                    </label>
+                    <label class="block">
+                        <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Liegenschaft</span>
+                        <select name="liegenschaft_id" class="mt-1 bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+                            <option value="">— keine —</option>
+                            {% for lg in alle_liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}</option>{% endfor %}
+                        </select>
+                    </label>
+                    <button class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold px-4 py-2 rounded-lg">Auf Konto buchen</button>
+                </form>
+                <form method="post" action="/neu/bankabgleich/bewegung/"
+                      onsubmit="return confirm('Diese Bewegung als nicht buchungsrelevant markieren?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="bewegung_id" value="{{ b.id }}">
+                    <input type="hidden" name="art" value="ignorieren">
+                    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                    <button class="text-xs text-slate-400 hover:text-rose-600">Nicht buchungsrelevant (z.B. Umbuchung eigenes Konto)</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<datalist id="bew-konten">
+    {% for k in aufwandkonten %}<option value="{{ k.nummer }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
+</datalist>
+{% endif %}
 
 {% if geparkt %}
 <!-- Geparkte / ungeklärte Zahlungen (1190 + Mieterguthaben 2030) -->
@@ -101,7 +232,7 @@
                 <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">{{ row.offen|chf }}</td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     {% if row.kann_verbuchen %}
-                    <form method="post" action="/neu/bankabgleich/verbuchen/" onsubmit="return confirm('CHF {{ row.offen|chf }} von {{ row.mieter }} als bezahlt verbuchen?');" class="inline">
+                    <form method="post" action="/neu/bankabgleich/verbuchen/" onsubmit="return confirm('CHF {{ row.offen|chf }} von {{ row.mieter|escapejs }} als bezahlt verbuchen?');" class="inline">
                         {% csrf_token %}
                         <input type="hidden" name="rechnung_id" value="{{ row.r.id }}">
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}

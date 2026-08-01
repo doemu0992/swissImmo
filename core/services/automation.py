@@ -15,10 +15,17 @@ from django.utils import timezone
 # ============================================================
 # 1. SOLLSTELLUNG (monatlicher Mietenlauf)
 # ============================================================
-def run_sollstellung(jahr, monat, user=None):
+def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
     """Erzeugt für alle im Monat aktiven Verträge die Miet-/NK-Rechnung samt
     Buchungssätzen (idempotent — bereits gestellte Verträge werden übersprungen).
-    Gibt die Anzahl neu erstellter Rechnungen zurück."""
+    Gibt die Anzahl neu erstellter Rechnungen zurück.
+
+    `liegenschaft` grenzt den Lauf auf ein Objekt ein. Ohne diesen Parameter lief
+    der Knopf im UI IMMER über das ganze Portfolio — obwohl die Vorschau darüber
+    nur die gefilterten Verträge zeigte und der Bestätigungsdialog deren Anzahl
+    nannte. Wer auf eine Liegenschaft gefiltert hatte, stellte damit unbeabsichtigt
+    allen Mietern Rechnung (Praxis-Audit). Der Scheduler ruft weiterhin ohne
+    Parameter auf und deckt das ganze Portfolio ab."""
     from finance.models import DebitorenRechnung
     from finance.booking import buche, ensure_kontenplan
     from rentals.models import Mietvertrag
@@ -37,10 +44,11 @@ def run_sollstellung(jahr, monat, user=None):
         # dann greift der exists()-Check → keine doppelten Monatsmieten.
         # Nur PKs sperren (kein Join → kein Nullable-Outer-Join-Problem unter
         # Postgres; auf SQLite ohnehin No-op).
-        locked_ids = list(
-            Mietvertrag.objects.filter(status='aktiv', beginn__lte=end_date)
-            .exclude(ende__lt=start_date).select_for_update()
-            .values_list('pk', flat=True))
+        _basis = (Mietvertrag.objects.filter(status='aktiv', beginn__lte=end_date)
+                  .exclude(ende__lt=start_date))
+        if liegenschaft is not None:
+            _basis = _basis.filter(einheit__liegenschaft=liegenschaft)
+        locked_ids = list(_basis.select_for_update().values_list('pk', flat=True))
         vertraege = (Mietvertrag.objects.filter(pk__in=locked_ids)
                      .select_related('mieter', 'einheit__liegenschaft'))
         for v in vertraege:

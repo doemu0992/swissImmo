@@ -328,6 +328,10 @@ class KreditorenRechnung(models.Model):
     mwst_betrag = models.DecimalField("Vorsteuer (CHF)", max_digits=10, decimal_places=2, default=Decimal('0.00'))  # 🔥 NEU
     iban = models.CharField(max_length=50, blank=True)
     referenz = models.CharField(max_length=100, blank=True)
+    # Ausführungsdatum des Zahllaufs, in dem diese Rechnung enthalten ist.
+    # Ohne dieses Feld ist im Nachhinein nicht belegbar, auf WELCHEN Termin die
+    # Bank beauftragt wurde — «heute» war eine stille Annahme.
+    zahlung_ausfuehrung = models.DateField("Ausführung Zahllauf", null=True, blank=True)
 
     beleg_scan = models.FileField(upload_to='kreditoren_belege/', blank=True, null=True)
     fehlermeldung = models.TextField(blank=True)
@@ -372,12 +376,27 @@ class KreditorenRechnung(models.Model):
         return max(Decimal('0.00'), (self.betrag or Decimal('0.00')) - self.bezahlt_betrag)
 
     # --- Kostenaufteilung (Split auf mehrere Konten/Objekte) ---
+    # Beide Properties nutzen den Prefetch-Cache (prefetch_related('positionen')),
+    # sonst löst jede Zeile einer Liste eigene Abfragen aus (N+1).
+    @property
+    def _positionen_liste(self):
+        cache = getattr(self, '_prefetched_objects_cache', None) or {}
+        if 'positionen' in cache:
+            return list(cache['positionen'])
+        return None
+
     @property
     def hat_positionen(self):
+        vorgeladen = self._positionen_liste
+        if vorgeladen is not None:
+            return bool(vorgeladen)
         return self.positionen.exists()
 
     @property
     def positionen_summe(self):
+        vorgeladen = self._positionen_liste
+        if vorgeladen is not None:
+            return sum((p.betrag or Decimal('0.00') for p in vorgeladen), Decimal('0.00'))
         return (self.positionen.aggregate(s=Sum('betrag'))['s'] or Decimal('0.00'))
 
     @property
@@ -754,3 +773,95 @@ class Hypothek(models.Model):
     def jaehrlicher_zins(self):
         """Jährliche Zinskosten = Betrag × Zinssatz."""
         return (self.betrag * self.zinssatz / Decimal('100')).quantize(Decimal('0.01'))
+
+
+class Kontoauszug(models.Model):
+    """Ein importierter Bank-Kontoauszug mit seinem Schlusssaldo.
+
+    Ohne den Schlusssaldo gibt es keinen Abstimmungsnachweis: Man kann zwar
+    Zahlungen zuordnen, aber nie belegen, dass das Buchhaltungskonto mit dem
+    realen Bankkonto übereinstimmt. Genau das ist der erste Schritt jedes
+    Monatsabschlusses (Praxis-Audit).
+    """
+    konto = models.ForeignKey('finance.Buchungskonto', on_delete=models.PROTECT,
+                              related_name='kontoauszuege',
+                              help_text="Buchhaltungskonto, das dieses Bankkonto abbildet")
+    iban = models.CharField("IBAN", max_length=34, blank=True, default='', db_index=True)
+    von = models.DateField("Periode von", null=True, blank=True)
+    bis = models.DateField("Periode bis", null=True, blank=True)
+    eroeffnungssaldo = models.DecimalField("Eröffnungssaldo", max_digits=12, decimal_places=2,
+                                           null=True, blank=True)
+    schlusssaldo = models.DecimalField("Schlusssaldo laut Auszug", max_digits=12, decimal_places=2,
+                                       null=True, blank=True)
+    dateiname = models.CharField(max_length=255, blank=True, default='')
+    quelle = models.CharField(max_length=30, blank=True, default='')
+    importiert_am = models.DateTimeField(auto_now_add=True)
+    importiert_von = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Kontoauszug"
+        verbose_name_plural = "Kontoauszüge"
+        ordering = ['-bis', '-id']
+
+    def __str__(self):
+        return f"Auszug {self.konto.nummer} bis {self.bis or '?'}"
+
+
+class Bankbewegung(models.Model):
+    """EINE Zeile eines Bank-Kontoauszugs — dauerhaft gespeichert.
+
+    Bisher las der Import nur Gutschriften und warf sie nach der Zuordnung weg;
+    Belastungen (Lieferantenzahlungen, Gebühren, Zinsen, Daueraufträge) wurden
+    gar nicht erst gelesen. Damit war das Bankkonto strukturell nicht abstimmbar
+    und der «Bankabgleich» faktisch eine Liste offener Debitoren (Praxis-Audit).
+
+    Vorzeichen: positiv = Gutschrift (Eingang), negativ = Belastung (Ausgang) —
+    wie auf dem Kontoauszug.
+    """
+    STATUS = [
+        ('offen', 'Offen'),
+        ('verbucht', 'Verbucht'),
+        ('ignoriert', 'Ignoriert'),
+    ]
+    auszug = models.ForeignKey(Kontoauszug, on_delete=models.CASCADE, related_name='bewegungen',
+                               null=True, blank=True)
+    konto = models.ForeignKey('finance.Buchungskonto', on_delete=models.PROTECT,
+                              related_name='bankbewegungen',
+                              help_text="Bankkonto (Buchhaltungskonto) dieser Bewegung")
+    datum = models.DateField("Buchungsdatum", db_index=True)
+    valuta = models.DateField("Valutadatum", null=True, blank=True)
+    betrag = models.DecimalField("Betrag", max_digits=12, decimal_places=2,
+                                 help_text="positiv = Gutschrift, negativ = Belastung")
+    text = models.CharField("Text / Mitteilung", max_length=255, blank=True, default='')
+    gegenpartei = models.CharField("Auftraggeber / Empfänger", max_length=160, blank=True, default='')
+    referenz = models.CharField("QR-Referenz", max_length=40, blank=True, default='')
+    # Eindeutiger Schlüssel der Bank — verhindert Doppelimport derselben Zeile.
+    bank_referenz = models.CharField(max_length=140, blank=True, default='', db_index=True)
+    status = models.CharField(max_length=12, choices=STATUS, default='offen', db_index=True)
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL,
+                                     null=True, blank=True, related_name='bankbewegungen')
+    zahlung = models.ForeignKey('finance.Zahlungseingang', on_delete=models.SET_NULL,
+                                null=True, blank=True, related_name='bankbewegungen')
+    buchung = models.ForeignKey('finance.Buchung', on_delete=models.SET_NULL,
+                                null=True, blank=True, related_name='bankbewegungen')
+    bemerkung = models.CharField(max_length=255, blank=True, default='')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Bankbewegung"
+        verbose_name_plural = "Bankbewegungen"
+        ordering = ['-datum', '-id']
+        indexes = [
+            models.Index(fields=['status', 'datum'], name='idx_bankbew_status_datum'),
+        ]
+
+    def __str__(self):
+        return f"{self.datum} {self.betrag} {self.text[:40]}"
+
+    @property
+    def ist_gutschrift(self):
+        return self.betrag > 0
+
+    @property
+    def ist_belastung(self):
+        return self.betrag < 0
