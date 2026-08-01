@@ -11698,6 +11698,110 @@ class BankAbgleichP3Tests(TestCase):
         self.assertEqual(r.status, 'offen')
         self.assertTrue(Zahlungseingang.objects.filter(konto__nummer='1190').exists())
 
+    # ---------- Sammelzuordnung ----------
+    def _rechnung(self, vertrag, titel, betrag, faellig):
+        from finance.models import DebitorenRechnung
+        return DebitorenRechnung.objects.create(
+            vertrag=vertrag, titel=titel, betrag=Decimal(betrag),
+            datum=faellig, faellig_am=faellig, status='offen')
+
+    def test_sammelzuordnung_tilgt_aelteste_forderung_zuerst(self):
+        """Drei Monatsmieten, drei geparkte Zahlungen — auf einen Schlag. Die
+        Reihenfolge ist kein Detail: sonst mahnt man einen Monat, der längst
+        bezahlt ist."""
+        from finance.booking import ensure_kontenplan
+        from finance.models import Zahlungseingang
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        r_jul = self._rechnung(v, 'Miete Juli', '200.00', date(2026, 7, 1))
+        r_aug = self._rechnung(v, 'Miete August', '200.00', date(2026, 8, 1))
+        r_sep = self._rechnung(v, 'Miete September', '200.00', date(2026, 9, 1))
+        z = [self._geparkt(gegenpartei='Narrezauber Soledurn') for _ in range(3)]
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/bankabgleich/sammel-zuordnen/',
+                   {'zahlung_ids': [str(x.id) for x in z], 'vertrag_id': v.id}, follow=True)
+        self.assertEqual(r.status_code, 200)
+        for rech in (r_jul, r_aug, r_sep):
+            rech.refresh_from_db()
+            self.assertEqual(rech.status, 'bezahlt', rech.titel)
+        self.assertEqual(Zahlungseingang.objects.filter(konto__nummer='1190').count(), 0)
+
+    def test_sammelzuordnung_ueberschuss_bleibt_guthaben(self):
+        """Mehr Geld als Forderungen: Der Rest verfällt nicht, er wird
+        Mieterguthaben (2030)."""
+        from finance.booking import ensure_kontenplan
+        from finance.models import Zahlungseingang
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._rechnung(v, 'Miete Juli', '200.00', date(2026, 7, 1))
+        z = [self._geparkt(gegenpartei='Narrezauber Soledurn') for _ in range(2)]
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/bankabgleich/sammel-zuordnen/',
+                   {'zahlung_ids': [str(x.id) for x in z], 'vertrag_id': v.id}, follow=True)
+        # Die zweite Zahlung findet keine offene Forderung mehr und bleibt liegen
+        self.assertContains(r, 'keine offene Rechnung mehr')
+        self.assertTrue(Zahlungseingang.objects.filter(konto__nummer='1190').exists())
+
+    def test_sammelzuordnung_ohne_mieter_bucht_nichts(self):
+        from finance.booking import ensure_kontenplan
+        from finance.models import Zahlungseingang
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._rechnung(v, 'Miete Juli', '200.00', date(2026, 7, 1))
+        z = self._geparkt(gegenpartei='Narrezauber Soledurn')
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/bankabgleich/sammel-zuordnen/',
+                   {'zahlung_ids': [str(z.id)], 'vertrag_id': ''}, follow=True)
+        self.assertContains(r, 'Kein Mieter gewählt')
+        z.refresh_from_db()
+        self.assertEqual(z.konto.nummer, '1190')        # unverändert geparkt
+
+    def test_sammelzuordnung_ohne_auswahl_bucht_nichts(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/bankabgleich/sammel-zuordnen/', {'vertrag_id': v.id}, follow=True)
+        self.assertContains(r, 'Keine Zahlung ausgewählt')
+
+    def test_sammelzuordnung_merkt_sich_den_absender(self):
+        from finance.booking import ensure_kontenplan
+        from finance.models import ZahlerZuordnung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._rechnung(v, 'Miete Juli', '200.00', date(2026, 7, 1))
+        z = self._geparkt(gegenpartei='Narrezauber Soledurn')
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/bankabgleich/sammel-zuordnen/',
+               {'zahlung_ids': [str(z.id)], 'vertrag_id': v.id}, follow=True)
+        self.assertTrue(ZahlerZuordnung.objects.filter(
+            name_norm='narrezaubersoledurn', vertrag=v).exists())
+
+    def test_sammelzuordnung_fasst_fremdes_guthaben_nicht_an(self):
+        """Ein Guthaben auf 2030 gehört einem bestimmten Mieter — es darf nicht
+        die Forderung eines anderen tilgen."""
+        from finance.booking import ensure_kontenplan
+        from finance.models import Zahlungseingang, Buchungskonto
+        from crm.models import Mieter
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        r_jul = self._rechnung(v, 'Miete Juli', '200.00', date(2026, 7, 1))
+        m2 = Mieter.objects.create(vorname='Fremd', nachname='Person')
+        v2 = Mietvertrag.objects.create(mieter=m2, einheit=e, status='aktiv',
+                                        beginn=date(2025, 1, 1),
+                                        netto_mietzins=Decimal('100'), nebenkosten=Decimal('0'))
+        k2030, _ = Buchungskonto.objects.get_or_create(
+            nummer='2030', defaults={'bezeichnung': 'Guthaben Mieter', 'typ': 'bilanz'})
+        fremd = Zahlungseingang.objects.create(
+            vertrag=v2, betrag=Decimal('200.00'), datum_eingang=date(2026, 7, 31),
+            konto=k2030, status='verbucht', bemerkung='Guthaben Fremd')
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/bankabgleich/sammel-zuordnen/',
+                   {'zahlung_ids': [str(fremd.id)], 'vertrag_id': v.id}, follow=True)
+        r_jul.refresh_from_db()
+        self.assertEqual(r_jul.status, 'offen')
+        self.assertContains(r, 'gehört einem anderen Mieter')
+
     def test_csv_erkennt_weitere_auftraggeber_spalten(self):
         from core.views.fw import _bank_csv_parse
         csv = ("Datum;Gutschrift;Zahler;Mitteilung\n"

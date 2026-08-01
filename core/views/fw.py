@@ -3756,6 +3756,23 @@ def fw_bankabgleich(request):
             'differenz': (letzter_auszug.schlusssaldo - _buch).quantize(Decimal('0.01')),
         }
 
+    # Mieter-Auswahl für die Sammelzuordnung: je Vertrag EIN Eintrag, nur wo es
+    # überhaupt etwas zu tilgen gibt. `rows` enthält je offene Rechnung eine Zeile.
+    sammel_vertraege = []
+    _gesehen = set()
+    for _r in rows:
+        _v = getattr(_r.get('r'), 'vertrag', None) if isinstance(_r, dict) else None
+        if _v is None or _v.id in _gesehen:
+            continue
+        _gesehen.add(_v.id)
+        _offene = sum(1 for x in rows
+                      if isinstance(x, dict) and getattr(x.get('r'), 'vertrag_id', None) == _v.id)
+        sammel_vertraege.append({
+            'id': _v.id,
+            'label': f"{_r.get('mieter')} · {_r.get('objekt')} ({_offene} offen)",
+        })
+    sammel_vertraege.sort(key=lambda x: x['label'].lower())
+
     bankkonten = Buchungskonto.objects.filter(nummer__startswith='10').order_by('nummer')
 
     from django.contrib import messages
@@ -3775,6 +3792,10 @@ def fw_bankabgleich(request):
         'total_offen': total_offen, 'anzahl': len(rows),
         'letzte': letzte,
         'geparkt': geparkt,
+        # Für die Sammelzuordnung: je Mieter EIN Eintrag mit der Zahl seiner
+        # offenen Forderungen — die Auswahl trifft den Mieter, nicht die
+        # einzelne Rechnung; getilgt wird dann automatisch die älteste zuerst.
+        'sammel_vertraege': sammel_vertraege,
         'geparkt_unklar': geparkt_unklar, 'geparkt_guthaben': geparkt_guthaben,
         'meldung': list(messages.get_messages(request)),
     })
@@ -13393,7 +13414,8 @@ def fw_zahlung_zuordnen(request):
     if request.method != 'POST':
         return redirect('fw_bankabgleich')
 
-    heute = timezone.localdate()
+    from core.services.zahlungszuordnung import zuordnen, ZuordnungsFehler
+
     with transaction.atomic():
         # Zeilensperre: ohne sie buchen zwei parallele Zuordnungen dieselbe
         # Forderung doppelt aus.
@@ -13402,66 +13424,15 @@ def fw_zahlung_zuordnen(request):
         rechnung = get_object_or_404(
             DebitorenRechnung.objects.select_for_update(), id=request.POST.get('rechnung_id'))
         park_nr = zahlung.konto.nummer if zahlung.konto_id else ''
-        if park_nr not in ('1190', '2030') or zahlung.status != 'verbucht':
-            messages.error(request, "Diese Zahlung liegt nicht auf einem Park-/Guthabenkonto.")
-            return redirect('fw_bankabgleich')
-        if rechnung.status not in ('offen', 'teilbezahlt') or not rechnung.vertrag_id:
-            messages.error(request, "Zielrechnung ist nicht offen oder hat keinen Vertrag.")
-            return redirect('fw_bankabgleich')
-        # Ein Mieterguthaben (2030) gehört einem bestimmten Mieter — es darf nicht
-        # die Forderung eines anderen tilgen. Nur wirklich ungeklärtes Geld (1190,
-        # ohne bekannten Zahler) ist frei zuordenbar.
-        if zahlung.vertrag_id and zahlung.vertrag_id != rechnung.vertrag_id:
-            messages.error(request, "Dieses Guthaben gehört einem anderen Mieter und kann "
-                                    "diese Forderung nicht tilgen.")
-            return redirect('fw_bankabgleich')
-
-        offen = rechnung.offener_betrag
-        betrag = min(zahlung.betrag, offen)
-        rest = zahlung.betrag - betrag
         vertrag = rechnung.vertrag
-        lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else None
-        # zahlung= mitgeben, sonst hängt die Buchung an keinem Beleg und ein
-        # späteres Storno der Zahlung würde sie stehen lassen.
-        buche(park_nr, "1100", betrag,
-              f"Zuordnung {('Durchlaufkonto' if park_nr == '1190' else 'Guthaben')} → "
-              f"{vertrag.mieter} - {rechnung.titel}",
-              datum=heute, liegenschaft=lg, zahlung=zahlung, user=request.user)
-        # Geparkten Eingang in eine echte Mieterzahlung umwandeln
-        zahlung.vertrag = vertrag
-        zahlung.debitoren_rechnung = rechnung
-        zahlung.konto = None
-        zahlung.betrag = betrag
-        zahlung.liegenschaft = lg or zahlung.liegenschaft
-        zahlung.bemerkung = (f"{zahlung.bemerkung} → zugeordnet {rechnung.titel}")[:255]
-        zahlung.save()
-        if rest > 0:
-            # Der Zahler ist jetzt bekannt — der Überschuss ist ein Mieterguthaben
-            # (2030) und kein ungeklärter Durchlaufposten mehr. Lag er vorher auf
-            # 1190, wird er umgebucht, sonst bliebe er dauerhaft «ungeklärt».
-            if park_nr != '2030':
-                buche('1190', '2030', rest,
-                      f"Rest-Guthaben {vertrag.mieter} aus Zuordnung {rechnung.titel}",
-                      datum=heute, liegenschaft=lg, user=request.user)
-            Zahlungseingang.objects.create(
-                vertrag=vertrag, betrag=rest, datum_eingang=zahlung.datum_eingang,
-                buchungs_monat=zahlung.buchungs_monat,
-                bemerkung=f"Rest-Guthaben aus Zuordnung ({rechnung.titel})"[:255],
-                bank_referenz=(f"{zahlung.bank_referenz}:rest"[:140] if zahlung.bank_referenz else ''),
-                konto=_park_konto('2030'), liegenschaft=lg or zahlung.liegenschaft,
-                erstellt_von=request.user, status='verbucht')
-        rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
-        rechnung.save()
-
-        # Absender merken: zahlt derselbe jeden Monat ohne QR-Referenz, musste
-        # die Zahlung bisher jeden Monat neu von Hand zugeordnet werden.
-        from core.services import zahler as _zahler
-        _bew = zahlung.bankbewegungen.first()
-        gelernt = ''
-        if _bew is not None:
-            gelernt, _rest, _geraten = _zahler.aus_bewegung(_bew.gegenpartei, _bew.text)
-            if gelernt:
-                _zahler.lerne(gelernt, vertrag)
+        try:
+            betrag, rest, gelernt = zuordnen(zahlung, rechnung, user=request.user)
+        except ZuordnungsFehler as e:
+            messages.error(request, str(e))
+            return redirect('fw_bankabgleich')
+        except PermissionError as e:
+            messages.error(request, f"Periodensperre: {e}")
+            return redirect('fw_bankabgleich')
 
     log_aktion(request, "Geparkte Zahlung zugeordnet", str(vertrag),
                f"CHF {betrag} von {park_nr} auf {rechnung.titel}"
@@ -13473,6 +13444,67 @@ def fw_zahlung_zuordnen(request):
         ziel += f'?lg={aktive}'
     from django.shortcuts import redirect as _r
     return _r(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_zahlungen_sammel_zuordnen(request):
+    """Ordnet mehrere geparkte Zahlungen auf einen Schlag EINEM Mieter zu.
+
+    Zahlt jemand monatlich ohne QR-Referenz, sammeln sich auf dem Durchlaufkonto
+    schnell ein Dutzend gleich aussehender Posten an — einzeln zugeordnet ist das
+    eine Viertelstunde Klickarbeit. Hier wird pro Zahlung die ÄLTESTE offene
+    Forderung des Mieters getilgt; ein Überschuss bleibt als Guthaben stehen.
+    """
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    from core.services.zahlungszuordnung import sammel_zuordnen
+
+    if request.method != 'POST':
+        return redirect('fw_bankabgleich')
+
+    ziel = '/neu/bankabgleich/'
+    if aktive := request.POST.get('lg'):
+        ziel += f'?lg={aktive}'
+
+    ids = [i for i in request.POST.getlist('zahlung_ids') if i.isdigit()]
+    vertrag = Mietvertrag.objects.filter(id=request.POST.get('vertrag_id') or 0) \
+        .select_related('mieter', 'einheit__liegenschaft').first()
+    if not ids:
+        messages.warning(request, "Keine Zahlung ausgewählt.")
+        return redirect(ziel)
+    if vertrag is None:
+        messages.error(request, "Kein Mieter gewählt — die Zahlungen bleiben ungeklärt.")
+        return redirect(ziel)
+
+    with transaction.atomic():
+        # Zeilensperre wie bei der Einzelzuordnung: sonst bucht ein paralleler
+        # Lauf dieselbe Forderung ein zweites Mal aus.
+        zahlungen = list(Zahlungseingang.objects.select_for_update()
+                         .filter(id__in=ids, status='verbucht',
+                                 konto__nummer__in=['1190', '2030'])
+                         .select_related('konto'))
+        anzahl, summe, rest, fehler, gelernt = sammel_zuordnen(
+            zahlungen, vertrag, user=request.user)
+
+    if anzahl:
+        log_aktion(request, "Zahlungen sammelweise zugeordnet", str(vertrag),
+                   f"{anzahl} Zahlung(en), CHF {summe}"
+                   + (f", Rest CHF {rest} als Guthaben" if rest else "")
+                   + (f" · Absender «{gelernt}» gemerkt" if gelernt else ""))
+        messages.success(
+            request,
+            f"✅ {anzahl} Zahlung(en) zugeordnet (CHF {summe}) — "
+            f"{vertrag.mieter.display_name}"
+            + (f" · CHF {rest} bleiben als Guthaben" if rest else "")
+            + (f" · Absender «{gelernt}» gemerkt, künftige Zahlungen treffen selbst"
+               if gelernt else "") + ".")
+    for f in fehler:
+        messages.warning(request, f"Nicht zugeordnet — {f}")
+    if not anzahl and not fehler:
+        messages.warning(request, "Nichts zugeordnet — die gewählten Zahlungen liegen "
+                                  "nicht mehr auf einem Parkkonto.")
+    return redirect(ziel)
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

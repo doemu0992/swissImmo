@@ -177,12 +177,46 @@
             {% if geparkt_unklar %}· CHF {{ geparkt_unklar|chf }} ungeklärt (1190){% endif %}
             {% if geparkt_guthaben %}· CHF {{ geparkt_guthaben|chf }} Mieterguthaben (2030){% endif %}</div>
     </div>
+    {% comment %}
+    Sammelzuordnung: Zahlt jemand monatlich ohne QR-Referenz, liegen hier schnell
+    ein Dutzend gleich aussehender Posten — einzeln zugeordnet ist das eine
+    Viertelstunde Klickarbeit. Das Formular steht ausserhalb der Zeilen; die
+    Auswahlkästchen gehören ihm über das form-Attribut an, denn ein Formular
+    lässt sich nicht in ein anderes schachteln.
+    {% endcomment %}
+    {% if sammel_vertraege %}
+    <form method="post" action="/neu/bankabgleich/sammel-zuordnen/" id="sammelform"
+          class="px-5 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2 flex-wrap"
+          onsubmit="return document.querySelectorAll('input[name=zahlung_ids]:checked').length > 0
+                    || (alert('Bitte zuerst Zahlungen auswählen.'), false);">
+        {% csrf_token %}
+        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+        <label class="flex items-center gap-1.5 text-xs font-semibold text-slate-600 cursor-pointer">
+            <input type="checkbox" data-alle class="accent-indigo-600">Alle
+        </label>
+        <span class="text-xs text-slate-500" data-anzahl>0 ausgewählt</span>
+        <select name="vertrag_id" required
+                class="bg-white border border-slate-200 text-xs rounded-lg px-2.5 py-2 max-w-[260px] focus:outline-none focus:ring-2 focus:ring-indigo-200">
+            <option value="">Mieter wählen…</option>
+            {% for v in sammel_vertraege %}<option value="{{ v.id }}">{{ v.label }}</option>{% endfor %}
+        </select>
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors">
+            Ausgewählte zuordnen
+        </button>
+        <span class="text-[11px] text-slate-400 w-full sm:w-auto">Getilgt wird jeweils die älteste offene Forderung; ein Überschuss bleibt als Guthaben stehen.</span>
+    </form>
+    {% endif %}
     <div class="divide-y divide-slate-50">
         {% for z in geparkt %}
         <form method="post" action="/neu/bankabgleich/zuordnen/" class="flex items-center gap-3 px-5 py-3 flex-wrap">
             {% csrf_token %}
             <input type="hidden" name="zahlung_id" value="{{ z.id }}">
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+            {% if sammel_vertraege %}
+            <input type="checkbox" form="sammelform" name="zahlung_ids" value="{{ z.id }}"
+                   data-zahler="{{ z.zahler|lower }}" class="accent-indigo-600 shrink-0"
+                   title="Für die Sammelzuordnung auswählen">
+            {% endif %}
             <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 {% if z.konto.nummer == '2030' %}bg-emerald-50 text-emerald-700{% else %}bg-amber-50 text-amber-700{% endif %}">
                 {% if z.konto.nummer == '2030' %}Guthaben{% else %}Ungeklärt{% endif %}
             </span>
@@ -206,6 +240,10 @@
                 <div class="text-[11px] text-indigo-500 mt-1">
                     <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Nach dem Zuordnen wird dieser Absender gemerkt —
                     die nächste Zahlung von ihm ordnet sich selbst zu.
+                    {% if sammel_vertraege %}
+                    · <button type="button" data-alle-von="{{ z.zahler|lower }}"
+                              class="font-semibold text-indigo-600 hover:underline">alle von «{{ z.zahler }}» auswählen</button>
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>
@@ -224,6 +262,37 @@
         {% endfor %}
     </div>
 </div>
+<script>
+(function () {
+    var kaesten = function () { return document.querySelectorAll('input[name="zahlung_ids"]'); };
+    var anzeige = document.querySelector('[data-anzahl]');
+    var alle = document.querySelector('[data-alle]');
+    function zaehlen() {
+        var n = document.querySelectorAll('input[name="zahlung_ids"]:checked').length;
+        if (anzeige) anzeige.textContent = n + ' ausgewählt';
+        if (alle) alle.checked = n > 0 && n === kaesten().length;
+    }
+    document.addEventListener('change', function (e) {
+        if (e.target.name === 'zahlung_ids') zaehlen();
+        if (e.target.hasAttribute && e.target.hasAttribute('data-alle')) {
+            kaesten().forEach(function (k) { k.checked = e.target.checked; });
+            zaehlen();
+        }
+    });
+    // «alle von diesem Absender» — der eigentliche Zeitgewinn, wenn ein
+    // Dauerauftrag über Monate ungeklärt liegen geblieben ist.
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest && e.target.closest('[data-alle-von]');
+        if (!btn) return;
+        var name = btn.getAttribute('data-alle-von');
+        kaesten().forEach(function (k) {
+            if (k.getAttribute('data-zahler') === name) k.checked = true;
+        });
+        zaehlen();
+    });
+    zaehlen();
+})();
+</script>
 {% endif %}
 
 <!-- Offene Posten -->
