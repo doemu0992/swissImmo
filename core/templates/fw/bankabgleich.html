@@ -100,8 +100,10 @@
                     {% if b.betrag < 0 %}Belastung{% else %}Gutschrift{% endif %}
                 </span>
                 <div class="min-w-0 flex-1">
-                    <div class="text-sm font-medium text-slate-900 truncate">{{ b.gegenpartei|default:b.text|default:"Bankbewegung" }}</div>
-                    {% if b.text and b.gegenpartei %}<div class="text-xs text-slate-400 truncate">{{ b.text }}</div>{% endif %}
+                    {# Kein truncate — auf dem Handy war vom Auftraggeber sonst nur der Anfang zu sehen #}
+                    <div class="text-sm font-medium text-slate-900 break-words">{{ b.gegenpartei|default:b.text|default:"Bankbewegung" }}</div>
+                    {% if b.text and b.gegenpartei %}<div class="text-xs text-slate-400 break-words">{{ b.text }}</div>{% endif %}
+                    {% if b.referenz %}<div class="text-[11px] text-slate-400 font-mono break-all">Ref. {{ b.referenz }}</div>{% endif %}
                 </div>
                 <span class="text-sm font-semibold tabular-nums whitespace-nowrap {% if b.betrag < 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">{{ b.betrag|chf }}</span>
                 <button onclick="document.getElementById('bew-{{ b.id }}').classList.toggle('hidden')"
@@ -184,9 +186,19 @@
             <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 {% if z.konto.nummer == '2030' %}bg-emerald-50 text-emerald-700{% else %}bg-amber-50 text-amber-700{% endif %}">
                 {% if z.konto.nummer == '2030' %}Guthaben{% else %}Ungeklärt{% endif %}
             </span>
+            {% comment %}
+            Wer bezahlt hat, steht zuoberst — vorher stand hier der abgeschnittene
+            Importtext («Bank-CSV UNG…») und der Auftraggeber war nirgends sichtbar.
+            Kein truncate: auf dem Handy ist Platz nach unten, nicht nach rechts.
+            {% endcomment %}
             <div class="min-w-0 flex-1">
-                <div class="text-sm font-medium text-slate-900 truncate">{{ z.bemerkung|default:"Zahlungseingang" }}</div>
-                <div class="text-xs text-slate-400">{{ z.datum_eingang|date:"d.m.Y" }}{% if z.vertrag_id %} · {{ z.vertrag.mieter.display_name }}{% endif %}</div>
+                {% if z.zahler %}
+                <div class="text-sm font-semibold text-slate-900 break-words">{{ z.zahler }}</div>
+                {% else %}
+                <div class="text-sm font-medium text-slate-400 italic">Auftraggeber von der Bank nicht geliefert</div>
+                {% endif %}
+                <div class="text-xs text-slate-400">{{ z.datum_eingang|date:"d.m.Y" }}{% if z.ref %} · Ref. <span class="font-mono">{{ z.ref }}</span>{% endif %}</div>
+                {% if z.mitteilung %}<div class="text-xs text-slate-500 break-words mt-0.5">{{ z.mitteilung }}</div>{% endif %}
             </div>
             <span class="text-sm font-semibold text-slate-800 whitespace-nowrap shrink-0">CHF {{ z.betrag|chf }}</span>
             <select name="rechnung_id" required

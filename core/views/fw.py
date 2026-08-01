@@ -3696,7 +3696,23 @@ def fw_bankabgleich(request):
             _Q(liegenschaft=aktive_lg)
             | _Q(vertrag__einheit__liegenschaft=aktive_lg)
             | _Q(liegenschaft__isnull=True, vertrag__isnull=True))
-    geparkt = list(geparkt_qs.order_by('-datum_eingang'))
+    geparkt = list(geparkt_qs.order_by('-datum_eingang')
+                   .prefetch_related('bankbewegungen'))
+    # Wer hat bezahlt? Stand bisher nirgends — die Zeile zeigte nur den
+    # abgeschnittenen Importtext («Bank-CSV UNG…»). Der Auftraggeber liegt in
+    # der zugehörigen Auszugszeile (Bankbewegung.gegenpartei); Mitteilung und
+    # Referenz gleich mit, das sind die Anhaltspunkte für die Zuordnung.
+    for z in geparkt:
+        bew = next(iter(z.bankbewegungen.all()), None)
+        z.zahler = ((bew.gegenpartei if bew else '') or '').strip()
+        if not z.zahler and z.vertrag_id and z.vertrag.mieter_id:
+            z.zahler = z.vertrag.mieter.display_name
+        z.mitteilung = ((bew.text if bew else '') or '').strip()
+        z.ref = ((bew.referenz if bew else '') or '').strip()
+        if not z.mitteilung:
+            # Altbestand (vor der Auszugszeile) trägt den Text nur in der Bemerkung.
+            t = (z.bemerkung or '').split('UNGEKLÄRT:', 1)
+            z.mitteilung = (t[1] if len(t) > 1 else t[0]).strip()
     # 1190 (Aktiv, ungeklärt) und 2030 (Passiv, Mieterguthaben) sind fachlich
     # verschieden und werden nicht zu einer Summe vermischt.
     geparkt_unklar = sum((z.betrag for z in geparkt if z.konto and z.konto.nummer == '1190'),
@@ -4087,8 +4103,11 @@ def _bank_csv_parse(raw):
         'ref': ('referenz', 'reference', 'qrr', 'esr', 'referenznummer'),
         'text': ('mitteilung', 'buchungstext', 'beschreibung', 'verwendungszweck',
                  'text', 'details', 'avisierung', 'zahlungszweck'),
+        # Ohne Treffer hier bleibt der Auftraggeber leer und die Zeile im
+        # Bankabgleich sagt nur «von der Bank nicht geliefert» — darum breit fassen.
         'name': ('auftraggeber', 'absender', 'zahlungspflichtiger', 'einzahler',
-                 'name', 'gegenpartei', 'debitor'),
+                 'name', 'gegenpartei', 'debitor', 'begünstigter', 'beguenstigter',
+                 'partner', 'kontoinhaber', 'zahler', 'counterparty', 'payer'),
     }
 
     def _spalte(kopf, schluessel):

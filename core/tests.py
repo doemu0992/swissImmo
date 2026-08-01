@@ -11497,6 +11497,56 @@ class BankAbgleichP3Tests(TestCase):
         self.assertEqual(r.context['bew_offen_n'], 1)
         self.assertContains(r, 'Hauswartung AG')
 
+    # ---------- Wer hat bezahlt? ----------
+    def _geparkt(self, gegenpartei='', text='', referenz=''):
+        """Eine ungeklärte Zahlung auf 1190 samt zugehöriger Auszugszeile."""
+        from finance.models import Zahlungseingang, Buchungskonto, Bankbewegung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        k1190, _ = Buchungskonto.objects.get_or_create(
+            nummer='1190', defaults={'bezeichnung': 'Durchlaufkonto', 'typ': 'bilanz'})
+        bank = Buchungskonto.objects.get(nummer='1020')
+        z = Zahlungseingang.objects.create(
+            betrag=Decimal('200.00'), datum_eingang=date(2026, 7, 31),
+            bemerkung='Bank-CSV UNGEKLÄRT: ', konto=k1190,
+            bank_referenz='REF-1', status='verbucht')
+        Bankbewegung.objects.create(
+            konto=bank, datum=date(2026, 7, 31), betrag=Decimal('200.00'),
+            text=text, gegenpartei=gegenpartei, referenz=referenz,
+            bank_referenz='REF-1', status='verbucht', zahlung=z)
+        return z
+
+    def test_ungeklaerte_zahlung_zeigt_den_auftraggeber(self):
+        """Die Zeile zeigte nur den abgeschnittenen Importtext («Bank-CSV UNG…»)
+        — von wem das Geld kam, stand nirgends, obwohl die Bank es liefert."""
+        _basis_objekte()
+        self._geparkt(gegenpartei='Muster Handels AG', text='Miete Juli',
+                      referenz='210000000003139471430009017')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/bankabgleich/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Muster Handels AG')
+        self.assertContains(r, 'Miete Juli')
+        self.assertContains(r, '210000000003139471430009017')
+
+    def test_ohne_auftraggeber_wird_das_offen_gesagt(self):
+        """Liefert die Bank keinen Namen, soll das dastehen statt eines
+        abgeschnittenen Importtexts, der so aussieht wie ein Titel."""
+        _basis_objekte()
+        self._geparkt(gegenpartei='', text='Gutschrift Dauerauftrag')
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/bankabgleich/')
+        self.assertContains(r, 'Auftraggeber von der Bank nicht geliefert')
+        self.assertContains(r, 'Gutschrift Dauerauftrag')
+
+    def test_csv_erkennt_weitere_auftraggeber_spalten(self):
+        from core.views.fw import _bank_csv_parse
+        csv = ("Datum;Gutschrift;Zahler;Mitteilung\n"
+               "31.07.2026;200.00;Muster Handels AG;Miete Juli\n").encode()
+        e = _bank_csv_parse(csv)
+        self.assertEqual(len(e), 1)
+        self.assertEqual(e[0]['dbtr_name'], 'Muster Handels AG')
+
 
 # ============================================================
 # P4 — Kreditoren durchsuchbar + Zahllauf als Prozess
