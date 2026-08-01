@@ -9194,20 +9194,29 @@ def fw_account(request):
             vw.logo = None
         elif request.FILES.get('logo'):
             vw.logo = request.FILES['logo']
+        # Digitale Unterschrift — bisher nur im Django-Admin hinterlegbar, obwohl
+        # jeder Brief sie braucht. Verwaltung.save() macht den weissen Hintergrund
+        # automatisch transparent.
+        if P.get('unterschrift_entfernen') == '1' and vw.unterschrift_bild:
+            vw.unterschrift_bild.delete(save=False)
+            vw.unterschrift_bild = None
+        elif request.FILES.get('unterschrift_bild'):
+            vw.unterschrift_bild = request.FILES['unterschrift_bild']
         vw.save()
         log_aktion(request, "Account/Stammdaten bearbeitet", vw.firma,
                    diff_model(alt_snap, snapshot_model(vw), vw))
         messages.success(request, "✅ Stammdaten gespeichert.")
         return redirect('/neu/account/')
 
-    logo_url = ''
-    if getattr(vw, 'logo', None):
+    def _url(feld):
+        f = getattr(vw, feld, None)
         try:
-            logo_url = vw.logo.url
+            return f.url if f else ''
         except Exception:
-            logo_url = ''
+            return ''
     return render(request, 'fw/account.html', {
-        **basis, 'nav': 'account', 'vw': vw, 'logo_url': logo_url,
+        **basis, 'nav': 'account', 'vw': vw,
+        'logo_url': _url('logo'), 'unterschrift_url': _url('unterschrift_bild'),
         'kann_reset': hat_rolle(request.user, [ROLLE_VERWALTUNG]),
     })
 
@@ -10384,6 +10393,13 @@ def fw_mandat_form(request, pk=None):
         if not obj.firma_oder_name:
             messages.error(request, "Name / Firma ist erforderlich.")
             return redirect(request.path)
+        # Digitale Unterschrift des Eigentümers — Briefe, die in seinem Namen
+        # rausgehen (Schlussabrechnung, Kautionsbelege), tragen sie.
+        if P.get('unterschrift_entfernen') == '1' and obj.unterschrift_bild:
+            obj.unterschrift_bild.delete(save=False)
+            obj.unterschrift_bild = None
+        elif request.FILES.get('unterschrift_bild'):
+            obj.unterschrift_bild = request.FILES['unterschrift_bild']
         obj.save()
         # Liegenschaften zuordnen: gewählte -> dieser Mandant; abgewählte (bisher dieser) -> ohne Mandant
         gewaehlt = set(P.getlist('liegenschaften'))
@@ -10402,9 +10418,16 @@ def fw_mandat_form(request, pk=None):
 
     alle_lg = Liegenschaft.objects.all().order_by('strasse')
     zugeordnet = set(Liegenschaft.objects.filter(mandant=md).values_list('id', flat=True)) if md else set()
+    unterschrift_url = ''
+    if md and getattr(md, 'unterschrift_bild', None):
+        try:
+            unterschrift_url = md.unterschrift_bild.url
+        except Exception:
+            unterschrift_url = ''
     return render(request, 'fw/mandat_form.html', {
         **basis, 'nav': 'mandate', 'md': md, 'ist_neu': md is None,
         'alle_liegenschaften': alle_lg, 'zugeordnet': zugeordnet,
+        'unterschrift_url': unterschrift_url,
         'portal_user': getattr(md, 'benutzer', None) if md else None,
     })
 
@@ -10842,7 +10865,7 @@ def fw_verzug_257d(request, vertrag_id):
             "Frist von 30 Tagen auf Ende eines Monats.\n\n"
             "Freundliche Grüsse"
         )
-        pdf = generate_serienbrief_pdf(absender, betreff, text, emp)
+        pdf = generate_serienbrief_pdf(absender, betreff, text, emp, signatur=(vw,))
         _suffix = f" ({len(emp)} Zustellungen)" if len(emp) > 1 else ""
         ablegen(pdf, f"Zahlungsaufforderung 257d – Frist {frist:%d.%m.%Y}{_suffix}",
                 kategorie='korrespondenz', vertrag=v, dedup=False)
@@ -13211,7 +13234,8 @@ def fw_serienbrief_pdf(request):
         except Exception:
             logo_path = None
 
-    pdf = generate_serienbrief_pdf(absender, betreff, text, empfaenger, logo_path=logo_path)
+    pdf = generate_serienbrief_pdf(absender, betreff, text, empfaenger,
+                                   logo_path=logo_path, signatur=(vw,))
 
     # Auto-Ablage: pro Empfänger eine eigene (einseitige) Brief-Kopie in dessen
     # Akte ablegen — erscheint automatisch im Mieterportal (portal-sichtbar).
@@ -13221,7 +13245,8 @@ def fw_serienbrief_pdf(request):
         if not m:
             continue
         v = Mietvertrag.objects.filter(id=e.get('_vertrag_id')).first() if e.get('_vertrag_id') else None
-        einzel = generate_serienbrief_pdf(absender, betreff, text, [e], logo_path=logo_path)
+        einzel = generate_serienbrief_pdf(absender, betreff, text, [e],
+                                          logo_path=logo_path, signatur=(vw,))
         # Titel mit aufgelösten Platzhaltern ({liegenschaft} etc.) — nicht roh.
         from core.services.serienbrief import _ersetze
         betreff_aufgeloest = _ersetze(betreff, e) or betreff

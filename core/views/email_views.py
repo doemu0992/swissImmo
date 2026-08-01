@@ -138,10 +138,21 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
         f"{verwaltung.firma if verwaltung else 'Die Vermieterschaft'}"
     ]
 
+    sig_y = None
     for line in lines:
         if "30 TAGEN" in line or "KÜNDIGUNGSANDROHUNG" in line: c.setFont("Helvetica-Bold", 11)
         else: c.setFont("Helvetica", 11)
+        if line.startswith("____"):
+            sig_y = text_y            # Höhe der Unterschriftslinie merken
         c.drawString(left_margin, text_y, line); text_y -= 5.5*mm
+
+    # Digitale Unterschrift über die Linie setzen. Ein Schreiben, das per
+    # Einschreiben rausgeht und eine Kündigung androht, gehört unterschrieben.
+    if sig_y is not None:
+        from core.services.unterschrift import unterschrift_zeichnen
+        lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else None
+        unterschrift_zeichnen(c, left_margin, sig_y,
+                              verwaltung, getattr(lg, 'mandant', None))
 
     # --- SEITE 2: DIE QR-RECHNUNG ---
     iban = getattr(vertrag.einheit.liegenschaft, 'iban', None)

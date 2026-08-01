@@ -10,7 +10,7 @@
 <h1 class="text-2xl font-extrabold text-slate-900 mb-1">{% if ist_neu %}Neuen Mandanten erfassen{% else %}{{ md.firma_oder_name }} bearbeiten{% endif %}</h1>
 <p class="text-sm text-slate-500 mb-6">Eigentümer-Stammdaten und Zuordnung der Liegenschaften.</p>
 
-<form method="post" class="max-w-3xl space-y-5">
+<form method="post" enctype="multipart/form-data" class="max-w-3xl space-y-5">
     {% csrf_token %}
     <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
         <h3 class="font-bold text-slate-800 text-sm">Eigentümer</h3>
@@ -41,6 +41,24 @@
                 <input name="honorar_prozent" type="text" inputmode="decimal" value="{{ md.honorar_prozent|default:'0' }}"
                        placeholder="z. B. 4.5" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <p class="text-[11px] text-slate-400 mt-1">Wird im Kontokorrent je Geschäftsjahr gebucht (Soll 4500 / Haben Bank).</p></div>
+        </div>
+
+        <!-- Digitale Unterschrift: für Briefe, die im Namen des Eigentümers rausgehen -->
+        <div class="border-t border-slate-100 pt-4">
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Digitale Unterschrift <span class="font-normal text-slate-400">(für Briefe im Namen des Eigentümers)</span></label>
+            <div class="flex items-center gap-4">
+                <div class="w-28 h-20 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                    {% if unterschrift_url %}<img src="{{ unterschrift_url }}" alt="Unterschrift" class="max-h-full max-w-full object-contain">
+                    {% else %}<span class="text-xs text-slate-300"><i class="fa-solid fa-signature"></i></span>{% endif %}
+                </div>
+                <div class="flex-1">
+                    <input type="file" name="unterschrift_bild" accept="image/png,image/jpeg"
+                           class="block w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
+                    <p class="text-xs text-slate-400 mt-1">Unterschrift auf weissem Papier abfotografieren — der weisse Hintergrund wird automatisch transparent.</p>
+                    {% if unterschrift_url %}<label class="flex items-center gap-1.5 text-xs text-rose-500 mt-1.5 cursor-pointer">
+                        <input type="checkbox" name="unterschrift_entfernen" value="1" class="accent-rose-500"> Unterschrift entfernen</label>{% endif %}
+                </div>
+            </div>
         </div>
     </div>
 

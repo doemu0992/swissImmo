@@ -11913,3 +11913,181 @@ class FinanzUIP5Tests(TestCase):
         html = c.get('/neu/kreditoren/').content.decode('utf-8')
         self.assertIn("confirm('Zahlung an O\\u0027Brien", html)
         self.assertNotIn("confirm('Zahlung an O&#x27;Brien", html)
+
+
+# ============================================================
+# Digitale Unterschrift auf den Brief-PDFs
+# ============================================================
+
+def _sig_bytes():
+    """Kleines PNG als Ersatz für einen echten Unterschriften-Scan."""
+    import io as _io
+    from PIL import Image, ImageDraw
+    img = Image.new("RGB", (400, 120), "white")
+    d = ImageDraw.Draw(img)
+    d.line([(20, 90), (90, 30), (150, 95), (220, 35), (300, 80), (370, 45)],
+           fill="black", width=6)
+    b = _io.BytesIO(); img.save(b, format="PNG")
+    return b.getvalue()
+
+
+class UnterschriftBriefeTests(TestCase):
+    """Die Unterschrift lag nur auf Verträgen und Formularen — die reportlab-
+    Briefe zogen eine Linie und liessen sie leer. Ein Einschreiben, das eine
+    Kündigung androht, gehört unterschrieben."""
+
+    def setUp(self):
+        # Eigenes MEDIA_ROOT, damit die Testbilder nicht im echten media/ landen.
+        import tempfile
+        from django.test import override_settings
+        self._tmp = tempfile.TemporaryDirectory()
+        self._ov = override_settings(MEDIA_ROOT=self._tmp.name)
+        self._ov.enable()
+        self.addCleanup(self._tmp.cleanup)
+        self.addCleanup(self._ov.disable)
+
+    def _verwaltung(self, mit_unterschrift):
+        from django.core.files.base import ContentFile
+        from crm.models import Verwaltung
+        vw = Verwaltung.objects.first()
+        if vw is None:
+            vw = Verwaltung.objects.create(firma='Testverwaltung', strasse='Weg 1',
+                                           plz='4500', ort='Solothurn')
+        if mit_unterschrift:
+            vw.unterschrift_bild.save('sig.png', ContentFile(_sig_bytes()), save=True)
+        else:
+            Verwaltung.objects.filter(pk=vw.pk).update(unterschrift_bild='')
+        vw.refresh_from_db()
+        return vw
+
+    def _mahnung(self, vertrag, vw):
+        from core.views.email_views import generate_mahnung_combined_pdf_bytes
+        return generate_mahnung_combined_pdf_bytes(vertrag, vw, 'August 2026',
+                                                   '100.00', date(2026, 8, 1))
+
+    # ---------- Helfer ----------
+    def test_unterschrift_pfad_findet_das_bild(self):
+        from core.services.unterschrift import unterschrift_pfad
+        vw = self._verwaltung(True)
+        self.assertTrue(unterschrift_pfad(vw))
+
+    def test_unterschrift_pfad_ohne_bild_ist_none(self):
+        from core.services.unterschrift import unterschrift_pfad
+        vw = self._verwaltung(False)
+        self.assertIsNone(unterschrift_pfad(vw))
+        self.assertIsNone(unterschrift_pfad(None))
+
+    def test_unterschrift_pfad_nimmt_den_ersten_mit_bild(self):
+        """Reihenfolge = Unterzeichner-Reihenfolge des Aufrufers."""
+        from django.core.files.base import ContentFile
+        from core.services.unterschrift import unterschrift_pfad
+        from crm.models import Mandant
+        vw = self._verwaltung(False)
+        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        md.unterschrift_bild.save('sig_md.png', ContentFile(_sig_bytes()), save=True)
+        # Mandant.save() benennt das Bild in sig_man_<id>.png um (Hintergrund raus)
+        self.assertIn('sig_man', unterschrift_pfad(vw, md))
+
+    # ---------- Mahnung mit Kündigungsandrohung (Art. 257d OR) ----------
+    def test_mahnung_257d_traegt_die_unterschrift(self):
+        lg, e, m, v = _basis_objekte()
+        ohne = self._mahnung(v, self._verwaltung(False))
+        mit = self._mahnung(v, self._verwaltung(True))
+        self.assertGreater(len(mit), len(ohne) + 500)
+
+    def test_mahnung_257d_ohne_unterschrift_bleibt_erzeugbar(self):
+        """Fehlt das Bild, muss der Brief trotzdem rauskommen — nur eben leer."""
+        lg, e, m, v = _basis_objekte()
+        pdf = self._mahnung(v, self._verwaltung(False))
+        self.assertTrue(pdf.startswith(b'%PDF'))
+
+    # ---------- Mietprozess-Briefe ----------
+    def test_kautionsbestaetigung_traegt_die_unterschrift(self):
+        from core.services.mietprozess_briefe import kaution_hinterlegung_pdf
+        lg, e, m, v = _basis_objekte()
+        ohne = kaution_hinterlegung_pdf(v, self._verwaltung(False))
+        mit = kaution_hinterlegung_pdf(v, self._verwaltung(True))
+        self.assertGreater(len(mit), len(ohne) + 500)
+
+    def test_maengelruege_traegt_die_unterschrift(self):
+        from core.services.mietprozess_briefe import maengelruege_pdf
+        lg, e, m, v = _basis_objekte()
+        ohne = maengelruege_pdf(v, 'Heizung defekt', frist_tage=14,
+                                verwaltung=self._verwaltung(False))
+        mit = maengelruege_pdf(v, 'Heizung defekt', frist_tage=14,
+                               verwaltung=self._verwaltung(True))
+        self.assertGreater(len(mit), len(ohne) + 500)
+
+    # ---------- Serienbrief ----------
+    def test_serienbrief_traegt_die_unterschrift(self):
+        from core.services.serienbrief import generate_serienbrief_pdf
+        vw_ohne = self._verwaltung(False)
+        absender = {'firma': vw_ohne.firma, 'strasse': vw_ohne.strasse,
+                    'plz': vw_ohne.plz, 'ort': vw_ohne.ort}
+        emp = [{'name': 'Hans Muster', 'anrede': 'Sehr geehrter Herr Muster',
+                'strasse': 'Teststrasse 1', 'plz': '4500', 'ort': 'Solothurn'}]
+        ohne = generate_serienbrief_pdf(absender, 'Betreff', 'Text', emp,
+                                        signatur=(vw_ohne,))
+        mit = generate_serienbrief_pdf(absender, 'Betreff', 'Text', emp,
+                                       signatur=(self._verwaltung(True),))
+        self.assertGreater(len(mit), len(ohne) + 500)
+
+    def test_serienbrief_ohne_signatur_argument_bleibt_kompatibel(self):
+        from core.services.serienbrief import generate_serienbrief_pdf
+        self._verwaltung(True)
+        emp = [{'name': 'Hans Muster', 'strasse': 'Teststrasse 1',
+                'plz': '4500', 'ort': 'Solothurn'}]
+        pdf = generate_serienbrief_pdf({'firma': 'X'}, 'Betreff', 'Text', emp)
+        self.assertTrue(pdf.startswith(b'%PDF'))
+
+    # ---------- Upload-Weg in der App (vorher nur im Django-Admin) ----------
+    def test_account_bietet_unterschrift_upload(self):
+        from crm.models import Verwaltung
+        self._verwaltung(False)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/account/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'name="unterschrift_bild"')
+        self.assertContains(r, 'bleibt die Linie auf jedem Brief leer')
+
+    def test_account_speichert_hochgeladene_unterschrift(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from crm.models import Verwaltung
+        vw = self._verwaltung(False)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/account/', {
+            'firma': vw.firma, 'strasse': vw.strasse, 'plz': vw.plz, 'ort': vw.ort,
+            'unterschrift_bild': SimpleUploadedFile('sig.png', _sig_bytes(),
+                                                    content_type='image/png')})
+        vw.refresh_from_db()
+        self.assertTrue(vw.unterschrift_bild)
+
+    def test_account_kann_unterschrift_entfernen(self):
+        vw = self._verwaltung(True)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/account/', {'firma': vw.firma, 'strasse': vw.strasse,
+                                 'plz': vw.plz, 'ort': vw.ort,
+                                 'unterschrift_entfernen': '1'})
+        vw.refresh_from_db()
+        self.assertFalse(vw.unterschrift_bild)
+
+    def test_mandat_formular_nimmt_dateien_entgegen(self):
+        """Ohne enctype='multipart/form-data' verschwindet die Datei lautlos."""
+        from crm.models import Mandant
+        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/mandate/{md.id}/bearbeiten/')
+        self.assertContains(r, 'enctype="multipart/form-data"')
+        self.assertContains(r, 'name="unterschrift_bild"')
+
+    def test_mandat_speichert_hochgeladene_unterschrift(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from crm.models import Mandant
+        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/mandate/{md.id}/bearbeiten/', {
+            'firma_oder_name': md.firma_oder_name,
+            'unterschrift_bild': SimpleUploadedFile('sig.png', _sig_bytes(),
+                                                    content_type='image/png')})
+        md.refresh_from_db()
+        self.assertTrue(md.unterschrift_bild)

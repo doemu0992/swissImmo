@@ -189,6 +189,10 @@ def generate_schlussabrechnung_pdf(vertrag, daten, verwaltung=None):
 
     c.setFont("Helvetica", 10)
     c.drawString(20*mm, 42*mm, "Freundliche Grüsse")
+    # Digitale Unterschrift zwischen Gruss und Absendername — der Absender oben
+    # ist der Mandant (sonst die Verwaltung), also unterschreibt er auch.
+    from core.services.unterschrift import unterschrift_zeichnen
+    unterschrift_zeichnen(c, 20*mm, 34*mm, mandant, verwaltung, max_hoehe=7*mm)
     c.setFont("Helvetica-Bold", 10); c.drawString(20*mm, 33*mm, absender)
 
     # Rechtlicher Hinweis (Rückgabe/Mängelrüge + Kaution)

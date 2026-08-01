@@ -40,8 +40,12 @@ def _ersetze(text, e):
     return out
 
 
-def generate_serienbrief_pdf(absender, betreff, text, empfaenger, logo_path=None):
-    """absender: dict firma/strasse/plz/ort. empfaenger: Liste dicts."""
+def generate_serienbrief_pdf(absender, betreff, text, empfaenger, logo_path=None,
+                             signatur=()):
+    """absender: dict firma/strasse/plz/ort. empfaenger: Liste dicts.
+
+    `signatur`: Objekte (Verwaltung/Mandant) in Unterzeichner-Reihenfolge — der
+    Brief bekommt damit die digitale Unterschrift über den Absendernamen."""
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     heute = datetime.date.today().strftime('%d.%m.%Y')
@@ -85,10 +89,13 @@ def generate_serienbrief_pdf(absender, betreff, text, empfaenger, logo_path=None
                 break
             c.drawString(25 * mm, yy, zeile)
             yy -= 5.6 * mm
-        # Grussformel
+        # Grussformel + digitale Unterschrift darüber
         yy -= 6 * mm
         c.drawString(25 * mm, yy, "Freundliche Grüsse")
         yy -= 12 * mm
+        if signatur:
+            from core.services.unterschrift import unterschrift_zeichnen
+            unterschrift_zeichnen(c, 25 * mm, yy + 1 * mm, *signatur)
         c.setFont("Helvetica-Bold", 10)
         c.drawString(25 * mm, yy, absender.get('firma', ''))
         c.showPage()

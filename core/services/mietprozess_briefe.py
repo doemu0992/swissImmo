@@ -44,7 +44,8 @@ def _wrap(text, breite):
     return zeilen or ['']
 
 
-def _brief(absender, empfaenger_zeilen, ort, betreff, absaetze, gruss_name):
+def _brief(absender, empfaenger_zeilen, ort, betreff, absaetze, gruss_name,
+           signatur=()):
     """Rendert einen einfachen A4-Geschäftsbrief und gibt die PDF-Bytes zurück."""
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
@@ -72,9 +73,12 @@ def _brief(absender, empfaenger_zeilen, ort, betreff, absaetze, gruss_name):
         ty -= 3.5 * mm
         if ty < 45 * mm:
             c.showPage(); c.setFont("Helvetica", 10.5); ty = 270 * mm
-    # Grussformel
+    # Grussformel + digitale Unterschrift zwischen Gruss und Name
     ty -= 4 * mm
     c.drawString(25 * mm, ty, "Freundliche Grüsse")
+    if signatur:
+        from core.services.unterschrift import unterschrift_zeichnen
+        unterschrift_zeichnen(c, 25 * mm, ty - 15 * mm, *signatur)
     c.drawString(25 * mm, ty - 16 * mm, gruss_name)
     c.showPage(); c.save(); buf.seek(0)
     return buf.read()
@@ -97,12 +101,14 @@ def _kontext(vertrag, verwaltung=None):
     if (plz or o):
         empf.append(f"{plz or ''} {o or ''}".strip())
     objekt = f"{einheit.bezeichnung}, {lg.strasse}, {lg.plz} {lg.ort}" if einheit and lg else ''
-    return mieter, einheit, lg, absender, ort, empf, objekt, absender[0]
+    # (vw, mandant) mitgeben: _absender_zeilen macht daraus Strings, die
+    # Unterschrift braucht aber die Objekte.
+    return mieter, einheit, lg, absender, ort, empf, objekt, absender[0], (mandant, vw)
 
 
 def kaution_hinterlegung_pdf(vertrag, verwaltung=None):
     """Bestätigung der Kautionshinterlegung an die Mieterschaft (Art. 257e OR)."""
-    mieter, einheit, lg, absender, ort, empf, objekt, name = _kontext(vertrag, verwaltung)
+    mieter, einheit, lg, absender, ort, empf, objekt, name, sig = _kontext(vertrag, verwaltung)
     betrag = _fr(vertrag.kautions_betrag or 0)
     if getattr(vertrag, 'ist_kautionsversicherung', False):
         depot = (f"Die Sicherheit wurde als Kautionsversicherung bei "
@@ -125,12 +131,12 @@ def kaution_hinterlegung_pdf(vertrag, verwaltung=None):
         "Ansprüche geltend, so kann die Mieterschaft die Rückerstattung von der Bank verlangen "
         "(Art. 257e Abs. 3 OR).",
     ]
-    return _brief(absender, empf, ort, f"Bestätigung Mietkaution — {objekt}", absaetze, name)
+    return _brief(absender, empf, ort, f"Bestätigung Mietkaution — {objekt}", absaetze, name, signatur=sig)
 
 
 def kaution_freigabe_pdf(vertrag, verwaltung=None):
     """Freigabe-/Auszahlungsauftrag an die Bank (Sperrkonto-Freigabe)."""
-    mieter, einheit, lg, absender, ort, _empf, objekt, name = _kontext(vertrag, verwaltung)
+    mieter, einheit, lg, absender, ort, _empf, objekt, name, sig = _kontext(vertrag, verwaltung)
     betrag = _fr(vertrag.kautions_betrag or 0)
     ausz = vertrag.kautions_rueckzahlung_betrag
     abzug = vertrag.kautions_abzug_betrag
@@ -153,14 +159,14 @@ def kaution_freigabe_pdf(vertrag, verwaltung=None):
         absaetze.append("Wir bitten Sie, das Depot vollumfänglich gemäss beiliegender Vereinbarung "
                         "bzw. mit Zustimmung der Mieterschaft freizugeben.")
     absaetze.append("Bitte bestätigen Sie uns die Ausführung. Besten Dank für Ihre Bemühungen.")
-    return _brief(absender, bank_empf, ort, f"Freigabe Mietzinsdepot — {mieter.display_name}", absaetze, name)
+    return _brief(absender, bank_empf, ort, f"Freigabe Mietzinsdepot — {mieter.display_name}", absaetze, name, signatur=sig)
 
 
 def maengelruege_pdf(vertrag, mangel_text, frist_tage=14, verwaltung=None):
     """Mängelrüge / Fristansetzung zur Mängelbeseitigung (Art. 259a–259g OR).
     Kann sowohl als Aufforderung an die Mieterschaft (Schäden) wie als Beleg
     verwendet werden; Standard: Aufforderung zur Behebung innert Frist."""
-    mieter, einheit, lg, absender, ort, empf, objekt, name = _kontext(vertrag, verwaltung)
+    mieter, einheit, lg, absender, ort, empf, objekt, name, sig = _kontext(vertrag, verwaltung)
     frist_datum = (datetime.date.today() + datetime.timedelta(days=int(frist_tage))).strftime('%d.%m.%Y')
     absaetze = [
         "Sehr geehrte Damen und Herren",
@@ -172,14 +178,14 @@ def maengelruege_pdf(vertrag, mangel_text, frist_tage=14, verwaltung=None):
         f"Mietzinses, Schadenersatz, Hinterlegung des Mietzinses bei der Schlichtungsbehörde).",
         "Für Rückfragen stehen wir Ihnen gerne zur Verfügung.",
     ]
-    return _brief(absender, empf, ort, f"Mängelrüge / Fristansetzung — {objekt}", absaetze, name)
+    return _brief(absender, empf, ort, f"Mängelrüge / Fristansetzung — {objekt}", absaetze, name, signatur=sig)
 
 
 def untermiete_zustimmung_pdf(vertrag, untermieter, entscheid='zustimmung',
                               bedingungen='', verwaltung=None):
     """Zustimmung oder Ablehnung zur Untervermietung (Art. 262 OR).
     entscheid: 'zustimmung' | 'ablehnung'."""
-    mieter, einheit, lg, absender, ort, empf, objekt, name = _kontext(vertrag, verwaltung)
+    mieter, einheit, lg, absender, ort, empf, objekt, name, sig = _kontext(vertrag, verwaltung)
     if entscheid == 'ablehnung':
         betreff = f"Untervermietung — Ablehnung ({objekt})"
         absaetze = [
@@ -205,7 +211,7 @@ def untermiete_zustimmung_pdf(vertrag, untermieter, entscheid='zustimmung',
             "Diese Zustimmung entbindet die Hauptmieterschaft nicht von ihren Verpflichtungen "
             "gegenüber der Vermieterschaft.",
         ]
-    return _brief(absender, empf, ort, betreff, absaetze, name)
+    return _brief(absender, empf, ort, betreff, absaetze, name, signatur=sig)
 
 
 def rueckgabe_maengelruege_pdf(vertrag, maengel, verwaltung=None, abnahme_datum=None):
@@ -218,7 +224,7 @@ def rueckgabe_maengelruege_pdf(vertrag, maengel, verwaltung=None, abnahme_datum=
 
     `maengel`: Liste von dicts {'raum', 'beschreibung', 'betrag' (optional)}
     oder von Strings."""
-    mieter, einheit, lg, absender, ort, empf, objekt, name = _kontext(vertrag, verwaltung)
+    mieter, einheit, lg, absender, ort, empf, objekt, name, sig = _kontext(vertrag, verwaltung)
     datum_txt = (abnahme_datum.strftime('%d.%m.%Y') if abnahme_datum
                  else (vertrag.ende.strftime('%d.%m.%Y') if vertrag.ende else '—'))
     zeilen = []
@@ -255,4 +261,4 @@ def rueckgabe_maengelruege_pdf(vertrag, maengel, verwaltung=None, abnahme_datum=
         "Anteil wird mit dem Mietzinsdepot verrechnet.",
     ]
     return _brief(absender, empf, ort,
-                  f"Mängelrüge nach Rückgabe (Art. 267a OR) — {objekt}", absaetze, name)
+                  f"Mängelrüge nach Rückgabe (Art. 267a OR) — {objekt}", absaetze, name, signatur=sig)

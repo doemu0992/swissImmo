@@ -359,6 +359,14 @@ def generate_mahnung_pdf(vertrag, offener_betrag, verwaltung):
     c.drawString(20*mm, y_pos, "Freundliche Grüsse")
 
     y_pos -= 15*mm # Platz für Unterschrift
+    # Digitale Unterschrift in den freigehaltenen Platz setzen
+    try:
+        from core.services.unterschrift import unterschrift_zeichnen
+        _lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else None
+        unterschrift_zeichnen(c, 20*mm, y_pos + 2*mm,
+                              verwaltung, getattr(_lg, 'mandant', None))
+    except Exception:
+        pass
     c.setFont("Helvetica-Bold", 11)
     # Hier ziehen wir dynamisch den Namen der Kontaktperson aus der Verwaltung (oder Fallback auf die Firma)
     kontakt = getattr(verwaltung, 'kontaktperson', creditor['name'])
