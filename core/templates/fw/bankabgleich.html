@@ -202,6 +202,12 @@
                 {% endif %}
                 <div class="text-xs text-slate-400">{{ z.datum_eingang|date:"d.m.Y" }}{% if z.ref %} · Ref. <span class="font-mono">{{ z.ref }}</span>{% endif %}</div>
                 {% if z.mitteilung %}<div class="text-xs text-slate-500 break-words mt-0.5">{{ z.mitteilung }}</div>{% endif %}
+                {% if z.zahler %}
+                <div class="text-[11px] text-indigo-500 mt-1">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Nach dem Zuordnen wird dieser Absender gemerkt —
+                    die nächste Zahlung von ihm ordnet sich selbst zu.
+                </div>
+                {% endif %}
             </div>
             <span class="text-sm font-semibold text-slate-800 whitespace-nowrap shrink-0">CHF {{ z.betrag|chf }}</span>
             <select name="rechnung_id" required

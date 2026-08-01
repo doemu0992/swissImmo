@@ -3702,28 +3702,19 @@ def fw_bankabgleich(request):
     # abgeschnittenen Importtext («Bank-CSV UNG…»). Der Auftraggeber liegt in
     # der zugehörigen Auszugszeile (Bankbewegung.gegenpartei); Mitteilung und
     # Referenz gleich mit, das sind die Anhaltspunkte für die Zuordnung.
+    from core.services import zahler as _zahler
     for z in geparkt:
         bew = next(iter(z.bankbewegungen.all()), None)
-        z.zahler = ((bew.gegenpartei if bew else '') or '').strip()
-        z.zahler_geraten = False
-        if not z.zahler and z.vertrag_id and z.vertrag.mieter_id:
-            z.zahler = z.vertrag.mieter.display_name
-        z.mitteilung = ((bew.text if bew else '') or '').strip()
-        z.ref = ((bew.referenz if bew else '') or '').strip()
-        if not z.mitteilung:
+        roh_text = (bew.text if bew else '') or ''
+        if not roh_text:
             # Altbestand (vor der Auszugszeile) trägt den Text nur in der Bemerkung.
             t = (z.bemerkung or '').split('UNGEKLÄRT:', 1)
-            z.mitteilung = (t[1] if len(t) > 1 else t[0]).strip()
-        if not z.zahler and z.mitteilung:
-            # Viele Bank-Exporte haben keine eigene Auftraggeber-Spalte, sondern
-            # packen «Name;Strasse;PLZ Ort; Land» in den Buchungstext (real
-            # gesehen: «Narrezauber Soledurn;4500 Solothurn; CH»). Das erste
-            # Segment ist dann der Name. Als geraten markiert, damit die Anzeige
-            # nicht so tut, als hätte die Bank den Auftraggeber sauber geliefert.
-            teile = [t.strip() for t in re.split(r'[;|]', z.mitteilung) if t.strip()]
-            if len(teile) > 1:
-                z.zahler, z.zahler_geraten = teile[0][:160], True
-                z.mitteilung = ' · '.join(teile[1:])
+            roh_text = (t[1] if len(t) > 1 else t[0]).strip()
+        z.zahler, z.mitteilung, z.zahler_geraten = _zahler.aus_bewegung(
+            (bew.gegenpartei if bew else ''), roh_text)
+        if not z.zahler and z.vertrag_id and z.vertrag.mieter_id:
+            z.zahler, z.zahler_geraten = z.vertrag.mieter.display_name, False
+        z.ref = ((bew.referenz if bew else '') or '').strip()
     # 1190 (Aktiv, ungeklärt) und 2030 (Passiv, Mieterguthaben) sind fachlich
     # verschieden und werden nicht zu einer Summe vermischt.
     geparkt_unklar = sum((z.betrag for z in geparkt if z.konto and z.konto.nummer == '1190'),
@@ -4280,6 +4271,7 @@ def fw_camt_import(request):
     verbucht = 0
     zugeordnet_summe = Decimal('0.00')
     fuzzy = 0
+    gelernt_treffer = 0     # über einen früher von Hand zugeordneten Absender
     geklaert = 0            # auf Durchlaufkonto 1190 geparkt (Mieter unbekannt)
     guthaben = 0            # Überzahlung auf 2030 (Mieter bekannt)
     duplikate = 0
@@ -4337,6 +4329,7 @@ def fw_camt_import(request):
         Periode den ganzen Import mit HTTP 500 ab: die bis dahin verbuchten Zeilen
         blieben gespeichert, der Rest ginge kommentarlos verloren (Audit)."""
         nonlocal verbucht, geklaert, guthaben, duplikate, fuzzy, zugeordnet_summe, belastungen
+        nonlocal gelernt_treffer
 
         # 0) Duplikatschutz über Bank-Transaktionsreferenz. Fehlt eine eindeutige
         #    Referenz (kein AcctSvcrRef/TxId, EndToEndId=NOTPROVIDED), wird ein
@@ -4445,6 +4438,23 @@ def fw_camt_import(request):
             verbucht += 1; fuzzy += 1; zugeordnet_summe += betrag_e
             return
 
+        # 2b) Gelernter Absender: Wurde dieser Zahler schon einmal von Hand
+        # zugeordnet, gilt die Entscheidung weiter. Konservativ — nur wenn der
+        # Vertrag GENAU EINE offene Rechnung hat und der Betrag hineinpasst.
+        # Bei mehreren offenen Rechnungen wäre die Wahl geraten, und geratene
+        # Zahlungszuordnungen sind teurer als eine Minute Handarbeit.
+        from core.services import zahler as _zahler
+        absender, _rest_txt, _ = _zahler.aus_bewegung(e.get('dbtr_name'), e.get('info'))
+        gelernter_vertrag = _zahler.finde_vertrag(absender) if absender else None
+        if gelernter_vertrag is not None:
+            kand = [r for r in offene if r.vertrag_id == gelernter_vertrag.id
+                    and r.offener_betrag > 0]
+            if len(kand) == 1 and betrag_e <= kand[0].offener_betrag:
+                _verbuche(kand[0], betrag_e, e, f'gelernter Absender {absender}')
+                _zahler.zaehle_treffer(absender)
+                verbucht += 1; gelernt_treffer += 1; zugeordnet_summe += betrag_e
+                return
+
         # 3) Nicht zuordenbar → parken (nichts geht verloren).
         # Trägt die Zahlung eine QRR, deren Rechnung bereits bezahlt ist, ist der
         # Zahler bekannt: das ist eine Doppelzahlung des Mieters und gehört als
@@ -4492,13 +4502,16 @@ def fw_camt_import(request):
             gesperrt += 1
 
     log_aktion(request, f"{quelle}-Import", datei.name,
-               f"{verbucht} verbucht (davon {fuzzy} fuzzy), CHF {zugeordnet_summe}, "
+               f"{verbucht} verbucht (davon {fuzzy} fuzzy, {gelernt_treffer} gelernter "
+               f"Absender), CHF {zugeordnet_summe}, "
                f"{geklaert} auf 1190, {guthaben} Guthaben auf 2030, {duplikate} Duplikate, "
                f"{gesperrt} Periodensperre")
     if verbucht or geklaert or guthaben or belastungen:
         teile = [f"{verbucht} Zahlung(en) zugeordnet (CHF {zugeordnet_summe})"]
         if fuzzy:
             teile.append(f"davon {fuzzy} über Name/Betrag")
+        if gelernt_treffer:
+            teile.append(f"{gelernt_treffer} über einen früher zugeordneten Absender")
         if guthaben:
             teile.append(f"{guthaben} Überzahlung(en) als Mieterguthaben (2030)")
         if geklaert:
@@ -13426,8 +13439,19 @@ def fw_zahlung_zuordnen(request):
         rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
         rechnung.save()
 
+        # Absender merken: zahlt derselbe jeden Monat ohne QR-Referenz, musste
+        # die Zahlung bisher jeden Monat neu von Hand zugeordnet werden.
+        from core.services import zahler as _zahler
+        _bew = zahlung.bankbewegungen.first()
+        gelernt = ''
+        if _bew is not None:
+            gelernt, _rest, _geraten = _zahler.aus_bewegung(_bew.gegenpartei, _bew.text)
+            if gelernt:
+                _zahler.lerne(gelernt, vertrag)
+
     log_aktion(request, "Geparkte Zahlung zugeordnet", str(vertrag),
-               f"CHF {betrag} von {park_nr} auf {rechnung.titel}")
+               f"CHF {betrag} von {park_nr} auf {rechnung.titel}"
+               + (f" · Absender «{gelernt}» gemerkt" if gelernt else ""))
     messages.success(request, f"✅ CHF {betrag} zugeordnet — {vertrag.mieter.display_name} "
                               f"({rechnung.titel}){f' · Rest CHF {rest} bleibt als Guthaben' if rest > 0 else ''}.")
     ziel = '/neu/bankabgleich/'

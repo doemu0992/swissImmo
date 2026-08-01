@@ -11560,6 +11560,97 @@ class BankAbgleichP3Tests(TestCase):
         self.assertContains(r, 'Auftraggeber von der Bank nicht geliefert')
         self.assertContains(r, 'Miete Juli')
 
+    # ---------- Gelernter Absender ----------
+    def _csv(self, name='Narrezauber Soledurn;4500 Solothurn; CH', betrag='200.00',
+             datum='31.07.2026'):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        # Komma-getrennt: genau so kommt der reale Fall zustande — die Semikolon
+        # im Adressfeld bleiben dann im Feld stehen, statt es in Spalten zu zerlegen.
+        return SimpleUploadedFile(
+            'auszug.csv',
+            ("Datum,Gutschrift,Mitteilung\n"
+             f"{datum},{betrag},{name}\n").encode('utf-8'),
+            content_type='text/csv')
+
+    def _offene_rechnung(self, betrag='200.00'):
+        from finance.models import DebitorenRechnung
+        lg, e, m, v = _basis_objekte()
+        r = DebitorenRechnung.objects.create(
+            vertrag=v, titel='Miete August', betrag=Decimal(betrag),
+            datum=date(2026, 8, 1), faellig_am=date(2026, 8, 1), status='offen')
+        return v, r
+
+    def test_zuordnen_merkt_sich_den_absender(self):
+        """Nach der Handarbeit soll die nächste Zahlung desselben Absenders
+        von selbst treffen — sonst parkt ein Dauerauftrag jeden Monat neu."""
+        from finance.models import ZahlerZuordnung
+        v, r = self._offene_rechnung()
+        z = self._geparkt(gegenpartei='', text='Narrezauber Soledurn;4500 Solothurn; CH')
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/bankabgleich/zuordnen/', {'zahlung_id': z.id, 'rechnung_id': r.id})
+        eintrag = ZahlerZuordnung.objects.filter(vertrag=v).first()
+        self.assertIsNotNone(eintrag)
+        self.assertEqual(eintrag.name_norm, 'narrezaubersoledurn')
+
+    def test_gelernter_absender_wird_beim_import_zugeordnet(self):
+        from finance.booking import ensure_kontenplan
+        from finance.models import ZahlerZuordnung, Zahlungseingang
+        ensure_kontenplan()
+        v, r = self._offene_rechnung()
+        ZahlerZuordnung.objects.create(name_norm='narrezaubersoledurn',
+                                       name_anzeige='Narrezauber Soledurn', vertrag=v)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/bankabgleich/camt-import/', {'camt_datei': self._csv()}, follow=True)
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'bezahlt')
+        z = Zahlungseingang.objects.filter(debitoren_rechnung=r).first()
+        self.assertIsNotNone(z)
+        self.assertIsNone(z.konto)                      # nicht geparkt
+        self.assertEqual(ZahlerZuordnung.objects.get(vertrag=v).treffer, 1)
+
+    def test_gelernter_absender_raet_nicht_bei_mehreren_offenen(self):
+        """Zwei offene Rechnungen — welche gemeint ist, weiss nur der Mensch.
+        Falsch zugeordnetes Geld kostet mehr als eine Minute Handarbeit."""
+        from finance.booking import ensure_kontenplan
+        from finance.models import DebitorenRechnung, ZahlerZuordnung
+        ensure_kontenplan()
+        v, r = self._offene_rechnung()
+        DebitorenRechnung.objects.create(
+            vertrag=v, titel='Miete September', betrag=Decimal('200.00'),
+            datum=date(2026, 9, 1), faellig_am=date(2026, 9, 1), status='offen')
+        ZahlerZuordnung.objects.create(name_norm='narrezaubersoledurn',
+                                       name_anzeige='Narrezauber Soledurn', vertrag=v)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/bankabgleich/camt-import/', {'camt_datei': self._csv()}, follow=True)
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'offen')             # nichts geraten
+        self.assertEqual(ZahlerZuordnung.objects.get(vertrag=v).treffer, 0)
+
+    def test_gelernter_absender_ueberzahlung_wird_nicht_automatisch_gebucht(self):
+        """Mehr als offen ist → auch das gehört vor Augen, nicht in die Automatik."""
+        from finance.booking import ensure_kontenplan
+        from finance.models import ZahlerZuordnung
+        ensure_kontenplan()
+        v, r = self._offene_rechnung(betrag='150.00')
+        ZahlerZuordnung.objects.create(name_norm='narrezaubersoledurn',
+                                       name_anzeige='Narrezauber Soledurn', vertrag=v)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/bankabgleich/camt-import/', {'camt_datei': self._csv(betrag='200.00')}, follow=True)
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'offen')
+
+    def test_unbekannter_absender_parkt_weiterhin(self):
+        from finance.booking import ensure_kontenplan
+        from finance.models import Zahlungseingang
+        ensure_kontenplan()
+        v, r = self._offene_rechnung()
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/bankabgleich/camt-import/', {'camt_datei': self._csv(name='Fremd AG;4500 Solothurn')},
+               follow=True)
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'offen')
+        self.assertTrue(Zahlungseingang.objects.filter(konto__nummer='1190').exists())
+
     def test_csv_erkennt_weitere_auftraggeber_spalten(self):
         from core.views.fw import _bank_csv_parse
         csv = ("Datum;Gutschrift;Zahler;Mitteilung\n"

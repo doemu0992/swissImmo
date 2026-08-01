@@ -865,3 +865,33 @@ class Bankbewegung(models.Model):
     @property
     def ist_belastung(self):
         return self.betrag < 0
+
+
+class ZahlerZuordnung(models.Model):
+    """Gelernte Zuordnung «Absendername → Mietvertrag».
+
+    Zahlt jemand jeden Monat ohne QR-Referenz (Dauerauftrag eines Vereins, ein
+    Angehöriger, der für den Mieter überweist), landete die Zahlung bisher
+    jeden Monat neu auf dem Durchlaufkonto 1190 und musste jedes Mal von Hand
+    zugeordnet werden. Nach der ersten manuellen Zuordnung merkt sich das
+    Programm den Absender und trifft beim nächsten Import selbst.
+
+    Der Name wird normalisiert gespeichert (nur Kleinbuchstaben und Ziffern),
+    damit Schreibweisen der Bank («Muster AG», «MUSTER  AG.») zusammenfallen.
+    """
+    name_norm = models.CharField("Absender (normalisiert)", max_length=160,
+                                 unique=True, db_index=True)
+    name_anzeige = models.CharField("Absender", max_length=160, blank=True, default='')
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.CASCADE,
+                                related_name='zahler_zuordnungen')
+    treffer = models.PositiveIntegerField("Automatisch getroffen", default=0)
+    zuletzt = models.DateTimeField("Zuletzt getroffen", null=True, blank=True)
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Zahler-Zuordnung"
+        verbose_name_plural = "Zahler-Zuordnungen"
+        ordering = ['name_anzeige']
+
+    def __str__(self):
+        return f"{self.name_anzeige or self.name_norm} → {self.vertrag_id}"
