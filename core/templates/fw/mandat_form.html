@@ -43,22 +43,8 @@
                 <p class="text-[11px] text-slate-400 mt-1">Wird im Kontokorrent je Geschäftsjahr gebucht (Soll 4500 / Haben Bank).</p></div>
         </div>
 
-        <!-- Digitale Unterschrift: für Briefe, die im Namen des Eigentümers rausgehen -->
         <div class="border-t border-slate-100 pt-4">
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Digitale Unterschrift <span class="font-normal text-slate-400">(für Briefe im Namen des Eigentümers)</span></label>
-            <div class="flex items-center gap-4">
-                <div class="w-28 h-20 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
-                    {% if unterschrift_url %}<img src="{{ unterschrift_url }}" alt="Unterschrift" class="max-h-full max-w-full object-contain">
-                    {% else %}<span class="text-xs text-slate-300"><i class="fa-solid fa-signature"></i></span>{% endif %}
-                </div>
-                <div class="flex-1">
-                    <input type="file" name="unterschrift_bild" accept="image/png,image/jpeg"
-                           class="block w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
-                    <p class="text-xs text-slate-400 mt-1">Unterschrift auf weissem Papier abfotografieren — der weisse Hintergrund wird automatisch transparent.</p>
-                    {% if unterschrift_url %}<label class="flex items-center gap-1.5 text-xs text-rose-500 mt-1.5 cursor-pointer">
-                        <input type="checkbox" name="unterschrift_entfernen" value="1" class="accent-rose-500"> Unterschrift entfernen</label>{% endif %}
-                </div>
-            </div>
+            {% include 'fw/_unterschrift_feld.html' with unterschrift_hinweis="(für Briefe im Namen des Eigentümers)" %}
         </div>
     </div>
 

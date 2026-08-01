@@ -5,6 +5,44 @@ from PIL import Image
 from django.core.files.base import ContentFile
 from django.db import models
 
+
+def _unterschrift_aufbereiten(instanz, praefix):
+    """Macht den weissen Hintergrund einer neu gesetzten Unterschrift transparent.
+
+    Läuft NUR, wenn sich die Datei gegenüber der Datenbank geändert hat. Vorher
+    verarbeitete jedes save() das Bild erneut und legte dabei eine weitere Datei
+    an (`sig_vw_3.png`, `sig_vw_3_a1B2c3.png`, …) — schon ein paar Mal
+    «Stammdaten speichern» hinterliess einen Haufen Waisen im Medienordner.
+    Die ersetzte Datei wird zudem gelöscht.
+    """
+    bild_feld = instanz.unterschrift_bild
+    if not bild_feld:
+        return
+    alt_name = None
+    if instanz.pk:
+        alt_name = (type(instanz).objects
+                    .filter(pk=instanz.pk)
+                    .values_list('unterschrift_bild', flat=True).first()) or None
+    if bild_feld.name == alt_name:
+        return                      # unverändert → nichts zu tun
+    try:
+        img = Image.open(bild_feld).convert("RGBA")
+        img.putdata([(255, 255, 255, 0) if (p[0] > 200 and p[1] > 200 and p[2] > 200)
+                     else p for p in img.getdata()])
+        puffer = io.BytesIO()
+        img.save(puffer, format="PNG")
+        bild_feld.save(f"{praefix}{instanz.id or 'new'}.png",
+                       ContentFile(puffer.getvalue()), save=False)
+    except Exception as e:
+        print(f"Fehler bei Hintergrund-Entfernung ({praefix}): {e}")
+        return
+    # Ersetzte Datei entfernen — sonst bleibt sie unreferenziert liegen.
+    if alt_name and alt_name != instanz.unterschrift_bild.name:
+        try:
+            instanz.unterschrift_bild.storage.delete(alt_name)
+        except Exception:
+            pass
+
 class Verwaltung(models.Model):
     firma = models.CharField("Firmenname", max_length=100)
     strasse = models.CharField("Strasse & Nr.", max_length=100)
@@ -49,24 +87,7 @@ class Verwaltung(models.Model):
         return self.firma
 
     def save(self, *args, **kwargs):
-        if self.unterschrift_bild:
-            try:
-                img = Image.open(self.unterschrift_bild)
-                img = img.convert("RGBA")
-                datas = img.getdata()
-                newData = []
-                for item in datas:
-                    if item[0] > 200 and item[1] > 200 and item[2] > 200:
-                        newData.append((255, 255, 255, 0))
-                    else:
-                        newData.append(item)
-                img.putdata(newData)
-                buffer = io.BytesIO()
-                img.save(buffer, format="PNG")
-                filename = f"sig_vw_{self.id or 'new'}.png"
-                self.unterschrift_bild.save(filename, ContentFile(buffer.getvalue()), save=False)
-            except Exception as e:
-                print(f"Fehler bei Hintergrund-Entfernung (Verwaltung): {e}")
+        _unterschrift_aufbereiten(self, 'sig_vw_')
         super().save(*args, **kwargs)
 
 
@@ -101,24 +122,7 @@ class Mandant(models.Model):
         return self.firma_oder_name
 
     def save(self, *args, **kwargs):
-        if self.unterschrift_bild:
-            try:
-                img = Image.open(self.unterschrift_bild)
-                img = img.convert("RGBA")
-                datas = img.getdata()
-                newData = []
-                for item in datas:
-                    if item[0] > 200 and item[1] > 200 and item[2] > 200:
-                        newData.append((255, 255, 255, 0))
-                    else:
-                        newData.append(item)
-                img.putdata(newData)
-                buffer = io.BytesIO()
-                img.save(buffer, format="PNG")
-                filename = f"sig_man_{self.id or 'new'}.png"
-                self.unterschrift_bild.save(filename, ContentFile(buffer.getvalue()), save=False)
-            except Exception as e:
-                print(f"Fehler bei Hintergrund-Entfernung (Mandant): {e}")
+        _unterschrift_aufbereiten(self, 'sig_man_')
         super().save(*args, **kwargs)
 
 

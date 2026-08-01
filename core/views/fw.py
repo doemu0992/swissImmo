@@ -9194,14 +9194,11 @@ def fw_account(request):
             vw.logo = None
         elif request.FILES.get('logo'):
             vw.logo = request.FILES['logo']
-        # Digitale Unterschrift — bisher nur im Django-Admin hinterlegbar, obwohl
-        # jeder Brief sie braucht. Verwaltung.save() macht den weissen Hintergrund
-        # automatisch transparent.
-        if P.get('unterschrift_entfernen') == '1' and vw.unterschrift_bild:
-            vw.unterschrift_bild.delete(save=False)
-            vw.unterschrift_bild = None
-        elif request.FILES.get('unterschrift_bild'):
-            vw.unterschrift_bild = request.FILES['unterschrift_bild']
+        # Digitale Unterschrift: direkt gezeichnet ODER hochgeladen. Bisher nur
+        # im Django-Admin hinterlegbar, obwohl jeder Brief sie braucht.
+        # Verwaltung.save() macht den weissen Hintergrund automatisch transparent.
+        from core.services.unterschrift import uebernehme_aus_formular
+        uebernehme_aus_formular(vw, request)
         vw.save()
         log_aktion(request, "Account/Stammdaten bearbeitet", vw.firma,
                    diff_model(alt_snap, snapshot_model(vw), vw))
@@ -10395,11 +10392,8 @@ def fw_mandat_form(request, pk=None):
             return redirect(request.path)
         # Digitale Unterschrift des Eigentümers — Briefe, die in seinem Namen
         # rausgehen (Schlussabrechnung, Kautionsbelege), tragen sie.
-        if P.get('unterschrift_entfernen') == '1' and obj.unterschrift_bild:
-            obj.unterschrift_bild.delete(save=False)
-            obj.unterschrift_bild = None
-        elif request.FILES.get('unterschrift_bild'):
-            obj.unterschrift_bild = request.FILES['unterschrift_bild']
+        from core.services.unterschrift import uebernehme_aus_formular
+        uebernehme_aus_formular(obj, request)
         obj.save()
         # Liegenschaften zuordnen: gewählte -> dieser Mandant; abgewählte (bisher dieser) -> ohne Mandant
         gewaehlt = set(P.getlist('liegenschaften'))

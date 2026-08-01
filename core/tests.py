@@ -12091,3 +12091,104 @@ class UnterschriftBriefeTests(TestCase):
                                                     content_type='image/png')})
         md.refresh_from_db()
         self.assertTrue(md.unterschrift_bild)
+
+    # ---------- Direkt zeichnen (Signature-Pad) ----------
+    def _data_url(self):
+        """Was canvas.toDataURL('image/png') liefert: transparent + schwarzer Strich."""
+        import base64
+        import io as _io
+        from PIL import Image, ImageDraw
+        img = Image.new("RGBA", (600, 200), (0, 0, 0, 0))
+        d = ImageDraw.Draw(img)
+        d.line([(30, 140), (120, 50), (210, 150), (300, 55), (560, 70)],
+               fill=(17, 24, 39, 255), width=6)
+        b = _io.BytesIO(); img.save(b, format="PNG")
+        return 'data:image/png;base64,' + base64.b64encode(b.getvalue()).decode()
+
+    def _basis(self, vw):
+        return {f: getattr(vw, f) or '' for f in
+                ['firma', 'strasse', 'plz', 'ort', 'telefon', 'email', 'iban']}
+
+    def test_account_zeigt_das_zeichenfeld(self):
+        self._verwaltung(False)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/account/')
+        self.assertContains(r, 'data-us-canvas')
+        self.assertContains(r, 'name="unterschrift_gezeichnet"')
+        # touch-action: none — sonst scrollt das Handy beim Zeichnen weg
+        self.assertContains(r, 'touch-action: none')
+
+    def test_gezeichnete_unterschrift_wird_gespeichert(self):
+        vw = self._verwaltung(False)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/account/', {**self._basis(vw),
+                                 'unterschrift_gezeichnet': self._data_url()})
+        vw.refresh_from_db()
+        self.assertTrue(vw.unterschrift_bild)
+
+    def test_gezeichnete_unterschrift_landet_im_brief(self):
+        lg, e, m, v = _basis_objekte()
+        vw = self._verwaltung(False)
+        ohne = self._mahnung(v, vw)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/account/', {**self._basis(vw),
+                                 'unterschrift_gezeichnet': self._data_url()})
+        vw.refresh_from_db()
+        self.assertGreater(len(self._mahnung(v, vw)), len(ohne) + 500)
+
+    def test_leeres_zeichenfeld_loescht_die_unterschrift_nicht(self):
+        """Wer nur die Adresse ändert, darf die Unterschrift nicht verlieren."""
+        vw = self._verwaltung(True)
+        name = vw.unterschrift_bild.name
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/account/', {**self._basis(vw), 'unterschrift_gezeichnet': ''})
+        vw.refresh_from_db()
+        self.assertTrue(vw.unterschrift_bild)
+        self.assertEqual(vw.unterschrift_bild.name, name)
+
+    def test_ungueltige_zeichendaten_werden_verworfen(self):
+        vw = self._verwaltung(True)
+        name = vw.unterschrift_bild.name
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/account/', {**self._basis(vw),
+                                 'unterschrift_gezeichnet': 'data:image/png;base64,QUJD'})
+        vw.refresh_from_db()
+        self.assertEqual(vw.unterschrift_bild.name, name)
+
+    def test_mehrfaches_speichern_erzeugt_keine_dateileichen(self):
+        """save() verarbeitete das Bild bisher jedes Mal neu und legte dabei eine
+        weitere Datei an — der Medienordner füllte sich mit Waisen."""
+        import os
+        from django.conf import settings
+        vw = self._verwaltung(False)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/account/', {**self._basis(vw),
+                                 'unterschrift_gezeichnet': self._data_url()})
+        for _ in range(3):
+            c.post('/neu/account/', self._basis(vw))
+        ordner = os.path.join(settings.MEDIA_ROOT, 'unterschriften')
+        self.assertEqual(len(os.listdir(ordner)), 1)
+
+    def test_ersetzte_unterschrift_wird_geloescht(self):
+        import os
+        from django.conf import settings
+        vw = self._verwaltung(False)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/account/', {**self._basis(vw),
+                                 'unterschrift_gezeichnet': self._data_url()})
+        c.post('/neu/account/', {**self._basis(vw),
+                                 'unterschrift_gezeichnet': self._data_url()})
+        ordner = os.path.join(settings.MEDIA_ROOT, 'unterschriften')
+        self.assertEqual(len(os.listdir(ordner)), 1)
+
+    def test_mandat_nimmt_gezeichnete_unterschrift(self):
+        from crm.models import Mandant
+        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/mandate/{md.id}/bearbeiten/')
+        self.assertContains(r, 'data-us-canvas')
+        c.post(f'/neu/mandate/{md.id}/bearbeiten/', {
+            'firma_oder_name': md.firma_oder_name,
+            'unterschrift_gezeichnet': self._data_url()})
+        md.refresh_from_db()
+        self.assertTrue(md.unterschrift_bild)

@@ -60,8 +60,10 @@
                 {% csrf_token %}
                 <input type="hidden" name="jahr" value="{{ jahr }}">
                 <input type="hidden" name="quartal" value="{{ quartal }}">
-                {# Beträge und Methode werden serverseitig aus dem Hauptbuch gerechnet —
-                   sie dürfen nicht aus dem Formular kommen. #}
+                {% comment %}
+                Beträge und Methode werden serverseitig aus dem Hauptbuch gerechnet —
+                sie dürfen nicht aus dem Formular kommen.
+                {% endcomment %}
                 {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap transition-colors">
                     <i class="fa-solid fa-check-double mr-1.5"></i>Abrechnung verbuchen

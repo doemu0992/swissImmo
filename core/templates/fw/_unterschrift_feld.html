@@ -1,0 +1,202 @@
+{% comment %}
+Unterschriftsfeld: direkt zeichnen ODER Datei hochladen.
+Erwartet im Kontext: unterschrift_url (aktuell gespeichertes Bild, ggf. leer).
+Optional: unterschrift_hinweis (Zusatztext unter der Beschriftung).
+Das Formular MUSS enctype="multipart/form-data" haben.
+{# ist einzeilig — mehrzeilig braucht es {% comment %}. #}
+{% endcomment %}
+<div data-us-block>
+    <label class="block text-xs font-semibold text-slate-500 mb-1">
+        Digitale Unterschrift
+        <span class="font-normal text-slate-400">{{ unterschrift_hinweis|default:"(erscheint auf allen Briefen)" }}</span>
+    </label>
+
+    {# Umschalter: gezeichnet / hochgeladen #}
+    <div class="flex items-center gap-1.5 mb-3">
+        <button type="button" data-us-tab="zeichnen"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition-colors">
+            <i class="fa-solid fa-pen-nib mr-1"></i>Zeichnen
+        </button>
+        <button type="button" data-us-tab="datei"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+            <i class="fa-solid fa-image mr-1"></i>Bild hochladen
+        </button>
+        {% if unterschrift_url %}
+        <span class="ml-auto inline-flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
+            <i class="fa-solid fa-check"></i>hinterlegt
+        </span>
+        {% endif %}
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4">
+        {# Aktuell gespeicherte Unterschrift #}
+        <div class="shrink-0">
+            <div class="w-36 h-24 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden">
+                {% if unterschrift_url %}<img src="{{ unterschrift_url }}" alt="Unterschrift" class="max-h-full max-w-full object-contain">
+                {% else %}<span class="text-xs text-slate-300"><i class="fa-solid fa-signature text-lg"></i></span>{% endif %}
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1 text-center">aktuell</p>
+        </div>
+
+        <div class="flex-1 min-w-0">
+            {# --- Zeichenfeld --- #}
+            <div data-us-panel="zeichnen">
+                <div class="relative rounded-lg border-2 border-dashed border-slate-300 bg-white">
+                    {# touch-action: none — sonst scrollt das Handy beim Zeichnen weg #}
+                    <canvas data-us-canvas
+                            class="block w-full rounded-lg cursor-crosshair"
+                            style="height: 150px; touch-action: none;"></canvas>
+                    {# Grundlinie als optische Hilfe #}
+                    <div class="pointer-events-none absolute left-6 right-6 border-b border-slate-200" style="bottom: 34px;"></div>
+                    <span data-us-platzhalter
+                          class="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-slate-300">
+                        Hier mit Maus oder Finger unterschreiben
+                    </span>
+                </div>
+                <div class="flex items-center gap-3 mt-2 flex-wrap">
+                    <button type="button" data-us-loeschen
+                            class="text-xs font-semibold text-slate-500 hover:text-rose-600">
+                        <i class="fa-solid fa-eraser mr-1"></i>Nochmals
+                    </button>
+                    <span class="text-xs text-slate-400">Wird beim Speichern des Formulars übernommen.</span>
+                </div>
+                {# Das gezeichnete Bild als Data-URL; bleibt leer, solange nichts gezeichnet wurde #}
+                <input type="hidden" name="unterschrift_gezeichnet" data-us-feld value="">
+            </div>
+
+            {# --- Datei-Upload --- #}
+            <div data-us-panel="datei" class="hidden">
+                <input type="file" name="unterschrift_bild" accept="image/png,image/jpeg"
+                       class="block w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
+                <p class="text-xs text-slate-400 mt-1">Unterschrift auf weissem Papier abfotografieren — der weisse Hintergrund wird automatisch transparent.</p>
+            </div>
+
+            {% if unterschrift_url %}
+            <label class="flex items-center gap-1.5 text-xs text-rose-500 mt-2.5 cursor-pointer">
+                <input type="checkbox" name="unterschrift_entfernen" value="1" class="accent-rose-500">
+                Unterschrift entfernen
+            </label>
+            {% else %}
+            <p class="text-xs text-amber-600 mt-2.5">
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i>Ohne Unterschrift bleibt die Linie auf jedem Brief leer.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    // Mehrfach-Einbindung auf einer Seite ist möglich — jedes Feld eigenständig.
+    document.querySelectorAll('[data-us-canvas]').forEach(function (canvas) {
+        if (canvas.dataset.usBereit) return;
+        canvas.dataset.usBereit = '1';
+
+        // Anker statt Eltern-Zählerei: der Tab-Balken liegt ausserhalb der Panels.
+        var wurzel = canvas.closest('[data-us-block]');
+        if (!wurzel) return;
+        var feld = wurzel.querySelector('[data-us-feld]');
+        var platzhalter = wurzel.querySelector('[data-us-platzhalter]');
+        var ctx = canvas.getContext('2d');
+        var zeichnet = false, etwasGezeichnet = false;
+
+        // Retina: interne Auflösung an die Anzeigegrösse koppeln, sonst wird
+        // die Linie unscharf und die gespeicherte PNG zu klein.
+        function groesseSetzen() {
+            var dpr = window.devicePixelRatio || 1;
+            var b = canvas.clientWidth, h = canvas.clientHeight;
+            if (!b || !h) return;
+            var alt = etwasGezeichnet ? canvas.toDataURL('image/png') : null;
+            canvas.width = Math.round(b * dpr);
+            canvas.height = Math.round(h * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.lineWidth = 2.4;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#111827';
+            if (alt) {           // Zeichnung über den Resize retten
+                var img = new Image();
+                img.onload = function () { ctx.drawImage(img, 0, 0, b, h); };
+                img.src = alt;
+            }
+        }
+        groesseSetzen();
+        window.addEventListener('resize', groesseSetzen);
+
+        function punkt(e) {
+            var r = canvas.getBoundingClientRect();
+            return { x: e.clientX - r.left, y: e.clientY - r.top };
+        }
+        function start(e) {
+            zeichnet = true;
+            canvas.setPointerCapture(e.pointerId);
+            var p = punkt(e);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            // Ein einzelner Tipp soll auch einen Punkt hinterlassen
+            ctx.lineTo(p.x + 0.1, p.y);
+            ctx.stroke();
+            markiereGezeichnet();
+            e.preventDefault();
+        }
+        function zug(e) {
+            if (!zeichnet) return;
+            var p = punkt(e);
+            ctx.lineTo(p.x, p.y);
+            ctx.stroke();
+            e.preventDefault();
+        }
+        function ende(e) {
+            if (!zeichnet) return;
+            zeichnet = false;
+            uebernehmen();
+            if (e && e.pointerId != null && canvas.hasPointerCapture(e.pointerId)) {
+                canvas.releasePointerCapture(e.pointerId);
+            }
+        }
+        function markiereGezeichnet() {
+            etwasGezeichnet = true;
+            if (platzhalter) platzhalter.style.display = 'none';
+        }
+        function uebernehmen() {
+            // Nur wenn wirklich gezeichnet wurde — sonst würde ein leeres Feld
+            // beim Speichern die bestehende Unterschrift überschreiben.
+            feld.value = etwasGezeichnet ? canvas.toDataURL('image/png') : '';
+        }
+
+        canvas.addEventListener('pointerdown', start);
+        canvas.addEventListener('pointermove', zug);
+        canvas.addEventListener('pointerup', ende);
+        canvas.addEventListener('pointercancel', ende);
+        canvas.addEventListener('pointerleave', ende);
+
+        var loeschen = wurzel.querySelector('[data-us-loeschen]');
+        if (loeschen) loeschen.addEventListener('click', function () {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            etwasGezeichnet = false;
+            feld.value = '';
+            if (platzhalter) platzhalter.style.display = '';
+        });
+
+        // Umschalter zeichnen / Datei
+        wurzel.querySelectorAll('[data-us-tab]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var ziel = btn.dataset.usTab;
+                wurzel.querySelectorAll('[data-us-tab]').forEach(function (b) {
+                    var aktiv = b.dataset.usTab === ziel;
+                    b.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ' +
+                        (aktiv ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200');
+                });
+                wurzel.querySelectorAll('[data-us-panel]').forEach(function (p) {
+                    p.classList.toggle('hidden', p.dataset.usPanel !== ziel);
+                });
+                if (ziel === 'zeichnen') groesseSetzen();
+            });
+        });
+
+        // Sicherheitsnetz: falls pointerup ausserhalb des Canvas endet
+        var form = canvas.closest('form');
+        if (form) form.addEventListener('submit', uebernehmen);
+    });
+})();
+</script>

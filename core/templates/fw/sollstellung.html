@@ -34,8 +34,10 @@
             {% csrf_token %}
             <input type="hidden" name="jahr" value="{{ jahr }}">
             <input type="hidden" name="monat" value="{{ monat }}">
-            {# Ohne dieses Feld lief die Sollstellung ueber das ganze Portfolio,
-               obwohl die Vorschau darueber gefiltert war (Praxis-Audit). #}
+            {% comment %}
+            Ohne dieses Feld lief die Sollstellung ueber das ganze Portfolio,
+            obwohl die Vorschau darueber gefiltert war (Praxis-Audit).
+            {% endcomment %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors">
                 <i class="fa-solid fa-rotate mr-1.5"></i> Sollstellung starten ({{ n_offen }})
