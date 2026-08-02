@@ -46,8 +46,9 @@
         <a data-zeile href="/neu/liegenschaften/{{ row.lg.id }}/" class="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50/60 transition-colors">
             <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-building"></i></div>
             <div class="min-w-0 flex-1">
-                <div class="font-semibold text-slate-900 truncate">{{ row.lg.strasse }}</div>
-                <div class="text-xs text-slate-500 truncate">{{ row.lg.plz }} {{ row.lg.ort }}</div>
+                {# Kein truncate: «Selzacherstrasse 4» wurde zu «Selzacherstras…» — mobil ist Platz nach unten #}
+                <div class="font-semibold text-slate-900 break-words">{{ row.lg.strasse }}</div>
+                <div class="text-xs text-slate-500 break-words">{{ row.lg.plz }} {{ row.lg.ort }}</div>
                 <div class="mt-1.5 flex items-center gap-2 flex-wrap">
                     {% if row.leer %}
                     <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700">{{ row.leer }} leer</span>

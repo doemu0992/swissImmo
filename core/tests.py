@@ -3672,6 +3672,17 @@ class MieterkontoblattTests(TestCase):
         self.assertIn('data-stack-titel', html)         # Skript setzt das Attribut
         self.assertIn("td[data-stack-titel]::before { content: none; }", html)
 
+    def test_trennband_auch_in_den_handgebauten_kartenlisten(self):
+        """Liegenschaften, Personen, Verträge und Debitoren sind keine gestapelten
+        Tabellen, sondern eigene Karten-Listen — dort fehlte das Band, nebeneinander
+        sah das aus wie zwei verschiedene Regeln."""
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/liegenschaften/').content.decode('utf-8')
+        self.assertIn(r'.md\:hidden.divide-y > * + * { border-top: 8px solid #f1f5f9 !important; }',
+                      html)
+        # und der Strassenname wird nicht mehr abgeschnitten
+        self.assertNotIn('font-semibold text-slate-900 truncate">{{ row.lg.strasse', html)
+
     def test_trennband_gilt_fuer_jede_karte_nicht_nur_die_erste(self):
         """Tailwinds «divide-y» setzt auf jeder Zeile ausser der ersten
         border-bottom-width: 0. Ohne Vorrang bekam nur die erste Karte ein

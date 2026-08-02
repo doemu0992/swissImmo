@@ -150,8 +150,8 @@
         <div class="px-4 py-3.5">
             <div class="flex items-start gap-3">
                 <div class="min-w-0 flex-1">
-                    <div class="font-semibold text-slate-900 truncate">{{ row.mieter }}</div>
-                    <div class="text-xs text-slate-500 truncate">{{ row.r.titel }}</div>
+                    <div class="font-semibold text-slate-900 break-words">{{ row.mieter }}</div>
+                    <div class="text-xs text-slate-500 break-words">{{ row.r.titel }}</div>
                     <div class="mt-1.5 flex items-center gap-2 flex-wrap">
                         <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold {{ row.pill_cls }}">{{ row.status_label }}</span>
                         {% if row.mahn %}<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold {{ row.mahn.cls }}">{{ row.mahn.label }}</span>{% endif %}
