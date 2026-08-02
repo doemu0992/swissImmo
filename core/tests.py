@@ -12053,6 +12053,47 @@ class BankAbgleichP3Tests(TestCase):
                  .aggregate(s=Sum('betrag'))['s'] or Decimal('0'))
         return soll - haben
 
+    def test_saldoabgleich_zaehlt_stornierte_buchungen_nicht_mit(self):
+        """Ein Storno-Paar darf nicht einseitig gefiltert werden.
+
+        `ist_storno=False` blendet die Gegenbuchung aus — ohne
+        `storniert_am__isnull=True` zählt das stornierte ORIGINAL aber weiter.
+        Der Abstimmungsnachweis meldete dann eine Differenz zum Bankauszug, die
+        es gar nicht gibt, und der Monatsabschluss lässt sich nicht abschliessen.
+        `rendite.py`/`jahresabschluss.py` filtern seit jeher auf beides."""
+        from django.utils import timezone as _tz
+        from finance.booking import ensure_kontenplan, buche, storniere_buchung
+        from finance.models import Kontoauszug, Buchungskonto
+        ensure_kontenplan()
+        heute = _tz.localdate()
+        bank = Buchungskonto.objects.get(nummer='1020')
+        b = buche('1020', '1100', Decimal('100.00'), 'Testeingang', datum=heute)
+        storniere_buchung(b)
+        Kontoauszug.objects.create(konto=bank, bis=heute,
+                                   schlusssaldo=Decimal('0.00'), dateiname='a.xml')
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/bankabgleich/').content.decode('utf-8')
+        self.assertIn('Saldoabgleich', html)
+        # Buchhaltung muss 0.00 zeigen — nicht 100.00 aus dem stornierten Original
+        self.assertNotIn('100.00', html.split('Saldoabgleich', 1)[1][:900])
+
+    def test_auswertung_zaehlt_stornierte_buchungen_nicht_mit(self):
+        """Dasselbe Storno-Paar-Problem in /neu/auswertung/: ein stornierter
+        Mietertrag blieb in Monatsverlauf und Liegenschafts-Vergleich stehen."""
+        from django.utils import timezone as _tz
+        from finance.booking import ensure_kontenplan, buche, storniere_buchung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        heute = _tz.localdate()
+        b = buche('1100', '3000', Decimal('4321.00'), 'Miete storniert',
+                  datum=heute, liegenschaft=lg)
+        storniere_buchung(b)
+        c = Client(); c.force_login(_team_user())
+        html = c.get(f'/neu/auswertung/?jahr={heute.year}').content.decode('utf-8')
+        # Ohne den Fix stand hier «4'321.00» (gemessen) — das stornierte Original
+        # zählte weiter, seine Gegenbuchung war ausgeblendet.
+        self.assertNotIn("4'321.00", html)
+
     # ---------- Gelernte Zahler einsehen und korrigieren ----------
     # Eine Automatik, die man nicht einsehen und nicht korrigieren kann, ist ein
     # blinder Fleck: Beim Mieterwechsel ordnete das Programm sonst dauerhaft
@@ -12564,6 +12605,59 @@ class FinanzUIP5Tests(TestCase):
         self.assertNotIn("confirm('Zahlung an O&#x27;Brien", html)
 
     # ---------- Buchhaltung auf dem Handy ----------
+    # ---------- Erfolgsrechnung & Bilanz als PDF ----------
+    # Gemeldet: «Erfolgsrechnung Bilanz sind nicht als PDF verfügbar.» Der
+    # Berichte-Hub trug für diesen Bericht ein PDF-Abzeichen, dahinter lag aber
+    # nur ein CSV-Journal-Export — das Abzeichen war ein leeres Versprechen.
+
+    def _buchungen_fuer_abschluss(self):
+        from django.utils import timezone as _tz
+        from finance.booking import ensure_kontenplan, buche
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        heute = _tz.localdate()
+        buche('1100', '3000', Decimal('5000.00'), 'Miete', datum=heute, liegenschaft=lg)
+        buche('4000', '1020', Decimal('1200.00'), 'Reparatur', datum=heute, liegenschaft=lg)
+        return lg, heute
+
+    def test_abschluss_pdf_wird_ausgeliefert(self):
+        lg, heute = self._buchungen_fuer_abschluss()
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/buchhaltung/pdf/?jahr={heute.year}')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r.content.startswith(b'%PDF-'))
+
+    def test_abschluss_pdf_zeigt_dieselben_zahlen_wie_der_bildschirm(self):
+        """Ein Abschluss, der je nach Ausgabeweg anders aussieht, ist wertlos —
+        beide Wege rechnen deshalb über `_erfolg_bilanz`."""
+        from core.views.fw import _erfolg_bilanz
+        lg, heute = self._buchungen_fuer_abschluss()
+        daten = _erfolg_bilanz(None, heute.year)
+        self.assertEqual(daten['total_ertrag'], Decimal('5000.00'))
+        self.assertEqual(daten['total_aufwand'], Decimal('1200.00'))
+        self.assertEqual(daten['erfolg'], Decimal('3800.00'))
+        # und die Bilanz geht auf
+        self.assertEqual(daten['bilanz_differenz'], Decimal('0.00'))
+
+    def test_buchhaltung_seite_bietet_den_pdf_abzug_an(self):
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/buchhaltung/').content.decode('utf-8')
+        self.assertIn('/neu/buchhaltung/pdf/', html)
+        self.assertIn('Erfolgsrechnung &amp; Bilanz (PDF)', html)
+
+    def test_berichte_hub_pdf_abzeichen_ist_kein_leeres_versprechen(self):
+        """Das Abzeichen im Hub muss zu einem echten PDF führen."""
+        lg, heute = self._buchungen_fuer_abschluss()
+        c = Client(); c.force_login(_team_user())
+        self.assertContains(c.get('/neu/berichte/'), 'Erfolgsrechnung &amp; Bilanz')
+        self.assertEqual(c.get('/neu/buchhaltung/pdf/').status_code, 200)
+
+    def test_abschluss_pdf_vertraegt_alle_jahre_und_unsinn(self):
+        c = Client(); c.force_login(_team_user())
+        self.assertEqual(c.get('/neu/buchhaltung/pdf/?jahr=alle').status_code, 200)
+        self.assertEqual(c.get('/neu/buchhaltung/pdf/?jahr=xyz').status_code, 200)
+
     def test_erfolgsrechnung_erzwingt_keine_mindestbreite(self):
         """min-w-max schob den Betrag aus dem Bild: auf dem Handy sah man
         entweder Kontonummer+Name ODER den Betrag, nie beides."""

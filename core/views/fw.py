@@ -768,7 +768,10 @@ def fw_debitor_abschreiben(request, pk):
         # echte Korrektur unterschlagen.
         from django.db.models import Sum as _Sum
         from finance.models import Buchung as _B
-        _mw = _B.objects.filter(debitoren_rechnung=r, ist_storno=False)
+        # Storno-Paar beidseitig ausblenden: `ist_storno=False` entfernt die
+        # Gegenbuchung, `storniert_am__isnull=True` das stornierte Original.
+        _mw = _B.objects.filter(debitoren_rechnung=r, ist_storno=False,
+                                storniert_am__isnull=True)
         _h = _mw.filter(haben_konto__nummer='2200').aggregate(s=_Sum('betrag'))['s'] or Decimal('0.00')
         _s = _mw.filter(soll_konto__nummer='2200').aggregate(s=_Sum('betrag'))['s'] or Decimal('0.00')
         mwst_gebucht = _h - _s
@@ -1018,7 +1021,8 @@ def fw_betriebskostenspiegel(request):
     rows, total_kosten, total_m2 = [], Decimal('0.00'), Decimal('0.00')
     for lg in lgs:
         kosten = (Buchung.objects.filter(liegenschaft=lg, datum__gte=von, datum__lte=bis,
-                                          soll_konto__typ='aufwand', ist_storno=False)
+                                          soll_konto__typ='aufwand', ist_storno=False,
+                                          storniert_am__isnull=True)
                   .aggregate(s=Sum('betrag'))['s'] or Decimal('0.00'))
         m2 = sum((e.flaeche_m2 or Decimal('0')) for e in lg.einheiten.all()) or Decimal('0.00')
         pro_m2 = (kosten / m2) if m2 else None
@@ -1076,7 +1080,10 @@ def fw_auswertung(request):
             return saldo(reparatur_konten, False)
         return saldo(ertrag_konten, True) - saldo(aufwand_konten, False)   # ergebnis
 
-    base_q = Buchung.objects.filter(datum__year=jahr, ist_storno=False)
+    # Ein storniertes Original zählte hier weiter, seine Gegenbuchung war
+    # ausgeblendet — der Storno hob sich in der Auswertung also nie auf.
+    base_q = Buchung.objects.filter(datum__year=jahr, ist_storno=False,
+                                    storniert_am__isnull=True)
     if aktive_lg:
         base_q = base_q.filter(liegenschaft=aktive_lg)
 
@@ -1099,7 +1106,8 @@ def fw_auswertung(request):
     if not aktive_lg:
         max_lg = Decimal('0.01')
         for lg in Liegenschaft.objects.order_by('strasse'):
-            w = _wert(Buchung.objects.filter(datum__year=jahr, ist_storno=False, liegenschaft=lg))
+            w = _wert(Buchung.objects.filter(datum__year=jahr, ist_storno=False,
+                                             storniert_am__isnull=True, liegenschaft=lg))
             if w == 0:
                 continue
             lg_rows.append({'lg': lg, 'wert': w})
@@ -2799,7 +2807,7 @@ def _kaution_bilanziert(vertrag):
         s = qs.filter(soll_konto__nummer='2010').aggregate(s=Sum('betrag'))['s'] or Decimal('0.00')
         return (h - s).quantize(Decimal('0.01'))
 
-    offen = Buchung.objects.filter(ist_storno=False)
+    offen = Buchung.objects.filter(ist_storno=False, storniert_am__isnull=True)
     # 1) Bevorzugt die vertragsgetaggten Buchungen (`Mietkaution [V<pk>] …`) —
     #    präzise auch bei mehreren Verträgen desselben Mieters.
     getaggt = offen.filter(beleg_text__contains=f"[V{vertrag.pk}]")
@@ -3763,7 +3771,10 @@ def fw_bankabgleich(request):
     saldo_abgleich = None
     if letzter_auszug and letzter_auszug.schlusssaldo is not None:
         from finance.models import Buchung as _BB
-        _bq = _BB.objects.filter(ist_storno=False)
+        # Ohne `storniert_am__isnull=True` meldete der Abstimmungsnachweis eine
+        # Differenz zum Auszug, die es nicht gibt (storniertes Original zählte
+        # weiter, Gegenbuchung war ausgeblendet).
+        _bq = _BB.objects.filter(ist_storno=False, storniert_am__isnull=True)
         if letzter_auszug.bis:
             _bq = _bq.filter(datum__lte=letzter_auszug.bis)
         _s = _bq.filter(soll_konto=letzter_auszug.konto).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
@@ -4568,7 +4579,7 @@ def fw_camt_import(request):
     # Saldoabgleich: der Nachweis, dass Buchhaltung und Bankkonto übereinstimmen.
     if auszug.schlusssaldo is not None:
         from django.db.models import Sum as _SumB
-        _bq = Buchung.objects.filter(ist_storno=False)
+        _bq = Buchung.objects.filter(ist_storno=False, storniert_am__isnull=True)
         if auszug.bis:
             _bq = _bq.filter(datum__lte=auszug.bis)
         _s = _bq.filter(soll_konto=konto_bank_obj).aggregate(t=_SumB('betrag'))['t'] or Decimal('0.00')
@@ -6801,76 +6812,20 @@ def _ist_abgeschlossen(jahr, liegenschaft=None):
     return ist_abgeschlossen(jahr, liegenschaft)
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
-def fw_buchhaltung(request):
+def _erfolg_bilanz(aktive_lg, jahr):
+    """Erfolgsrechnung + Bilanz für ein Geschäftsjahr (oder 'alle').
+
+    Ausgelagert, weil die Seite /neu/buchhaltung/ UND ihr PDF-Abzug exakt
+    dieselben Zahlen zeigen müssen. Zwei Kopien dieser Rechnung würden
+    auseinanderdriften — und ein Abschluss, der je nach Ausgabeweg anders
+    aussieht, ist wertlos.
+    """
     from finance.models import Buchung, Buchungskonto
-    basis = _global_filter(request)
-    aktive_lg = basis['aktive_lg']
-    heute = timezone.localdate()
-
-    # --- Jahresabschluss buchen (Erfolgskonten an 2970) — Audit W4 ---
-    if request.method == 'POST' and request.POST.get('aktion') == 'jahresabschluss':
-        from django.shortcuts import redirect
-        from django.contrib import messages
-        from core.services.jahresabschluss import buche_jahresabschluss, ist_abgeschlossen
-        from core.auth import log_aktion
-        try:
-            j_ab = int(request.POST.get('jahr') or heute.year)
-        except ValueError:
-            j_ab = heute.year
-        if not (2000 <= j_ab <= 2100):
-            messages.error(request, "Ungültiges Geschäftsjahr.")
-            return redirect(f'/neu/buchhaltung/?jahr={heute.year}')
-        if ist_abgeschlossen(j_ab, aktive_lg):
-            messages.info(request, f"Das Geschäftsjahr {j_ab} ist bereits abgeschlossen.")
-            return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
-        try:
-            n_ab, erg = buche_jahresabschluss(j_ab, liegenschaft=aktive_lg, user=request.user)
-        except PermissionError as exc:
-            messages.error(request, f"❌ {exc}")
-            return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
-        except Exception as exc:
-            messages.error(request, f"❌ Jahresabschluss fehlgeschlagen: {exc}")
-            return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
-        log_aktion(request, "Jahresabschluss gebucht", str(j_ab),
-                   f"{n_ab} Konten, Ergebnis CHF {erg}")
-        gesperrt_hinweis = ""
-        if n_ab and not aktive_lg:
-            # Periode versiegeln: Ohne Sperre liessen sich nach dem Abschluss
-            # weiter Erfolgsbuchungen ins geschlossene Jahr schreiben, die nie
-            # mehr saldiert würden — Bilanz und Erfolgsrechnung liefen
-            # auseinander (Audit). Nur beim portfolioweiten Abschluss, ein
-            # Einzelabschluss sperrt die übrigen Liegenschaften nicht mit.
-            from crm.models import Verwaltung
-            vw_sperre = Verwaltung.objects.first()
-            if vw_sperre is not None:
-                stichtag = date(j_ab, 12, 31)
-                if not vw_sperre.buchung_gesperrt_bis or vw_sperre.buchung_gesperrt_bis < stichtag:
-                    vw_sperre.buchung_gesperrt_bis = stichtag
-                    vw_sperre.save(update_fields=['buchung_gesperrt_bis'])
-                    gesperrt_hinweis = (f" Die Periode bis 31.12.{j_ab} ist jetzt für "
-                                        f"Buchungen gesperrt.")
-        if n_ab:
-            art = "Gewinn" if erg >= 0 else "Verlust"
-            messages.success(request, f"✅ Jahresabschluss {j_ab} gebucht: {n_ab} Erfolgskonto/-konten "
-                                      f"gegen 2970 saldiert · {art} CHF {abs(erg)}.{gesperrt_hinweis}")
-        else:
-            messages.info(request, f"Jahr {j_ab}: keine Erfolgsbuchungen zum Abschliessen.")
-        return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
-
-    # --- Jahresfilter (Jahresabschluss) ---
-    jahr_param = request.GET.get('jahr', str(heute.year))
     qs = Buchung.objects.all()
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
-    if jahr_param and jahr_param != 'alle':
-        try:
-            jahr = int(jahr_param)
-            qs = qs.filter(datum__gte=date(jahr, 1, 1), datum__lte=date(jahr, 12, 31))
-        except ValueError:
-            jahr = heute.year
-    else:
-        jahr = 'alle'
+    if jahr != 'alle':
+        qs = qs.filter(datum__gte=date(jahr, 1, 1), datum__lte=date(jahr, 12, 31))
 
     # --- ZWEI SICHTEN (korrekte Rechnungslegung) ---
     # Erfolgsrechnung = NUR die Periode (Ertrags-/Aufwandskonten werden jährlich
@@ -6951,6 +6906,98 @@ def fw_buchhaltung(request):
     passiven_mit_erfolg = total_passiven + kum_erfolg
     bilanz_differenz = total_aktiven - passiven_mit_erfolg
     erfolg_vortrag = kum_erfolg - erfolg           # Ergebnisvortrag aus Vorjahren
+    return {
+        'ertraege': ertraege, 'aufwaende': aufwaende,
+        'total_ertrag': total_ertrag, 'total_aufwand': total_aufwand, 'erfolg': erfolg,
+        'aktiven': aktiven, 'passiven': passiven,
+        'total_aktiven': total_aktiven, 'total_passiven': total_passiven,
+        'passiven_mit_erfolg': passiven_mit_erfolg, 'bilanz_differenz': bilanz_differenz,
+        'kum_erfolg': kum_erfolg, 'erfolg_vortrag': erfolg_vortrag,
+    }
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_buchhaltung(request):
+    from finance.models import Buchung, Buchungskonto
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.localdate()
+
+    # --- Jahresabschluss buchen (Erfolgskonten an 2970) — Audit W4 ---
+    if request.method == 'POST' and request.POST.get('aktion') == 'jahresabschluss':
+        from django.shortcuts import redirect
+        from django.contrib import messages
+        from core.services.jahresabschluss import buche_jahresabschluss, ist_abgeschlossen
+        from core.auth import log_aktion
+        try:
+            j_ab = int(request.POST.get('jahr') or heute.year)
+        except ValueError:
+            j_ab = heute.year
+        if not (2000 <= j_ab <= 2100):
+            messages.error(request, "Ungültiges Geschäftsjahr.")
+            return redirect(f'/neu/buchhaltung/?jahr={heute.year}')
+        if ist_abgeschlossen(j_ab, aktive_lg):
+            messages.info(request, f"Das Geschäftsjahr {j_ab} ist bereits abgeschlossen.")
+            return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
+        try:
+            n_ab, erg = buche_jahresabschluss(j_ab, liegenschaft=aktive_lg, user=request.user)
+        except PermissionError as exc:
+            messages.error(request, f"❌ {exc}")
+            return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
+        except Exception as exc:
+            messages.error(request, f"❌ Jahresabschluss fehlgeschlagen: {exc}")
+            return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
+        log_aktion(request, "Jahresabschluss gebucht", str(j_ab),
+                   f"{n_ab} Konten, Ergebnis CHF {erg}")
+        gesperrt_hinweis = ""
+        if n_ab and not aktive_lg:
+            # Periode versiegeln: Ohne Sperre liessen sich nach dem Abschluss
+            # weiter Erfolgsbuchungen ins geschlossene Jahr schreiben, die nie
+            # mehr saldiert würden — Bilanz und Erfolgsrechnung liefen
+            # auseinander (Audit). Nur beim portfolioweiten Abschluss, ein
+            # Einzelabschluss sperrt die übrigen Liegenschaften nicht mit.
+            from crm.models import Verwaltung
+            vw_sperre = Verwaltung.objects.first()
+            if vw_sperre is not None:
+                stichtag = date(j_ab, 12, 31)
+                if not vw_sperre.buchung_gesperrt_bis or vw_sperre.buchung_gesperrt_bis < stichtag:
+                    vw_sperre.buchung_gesperrt_bis = stichtag
+                    vw_sperre.save(update_fields=['buchung_gesperrt_bis'])
+                    gesperrt_hinweis = (f" Die Periode bis 31.12.{j_ab} ist jetzt für "
+                                        f"Buchungen gesperrt.")
+        if n_ab:
+            art = "Gewinn" if erg >= 0 else "Verlust"
+            messages.success(request, f"✅ Jahresabschluss {j_ab} gebucht: {n_ab} Erfolgskonto/-konten "
+                                      f"gegen 2970 saldiert · {art} CHF {abs(erg)}.{gesperrt_hinweis}")
+        else:
+            messages.info(request, f"Jahr {j_ab}: keine Erfolgsbuchungen zum Abschliessen.")
+        return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
+
+    # --- Jahresfilter (Jahresabschluss) ---
+    jahr_param = request.GET.get('jahr', str(heute.year))
+    qs = Buchung.objects.all()
+    if aktive_lg:
+        qs = qs.filter(liegenschaft=aktive_lg)
+    if jahr_param and jahr_param != 'alle':
+        try:
+            jahr = int(jahr_param)
+            qs = qs.filter(datum__gte=date(jahr, 1, 1), datum__lte=date(jahr, 12, 31))
+        except ValueError:
+            jahr = heute.year
+    else:
+        jahr = 'alle'
+
+    # Erfolgsrechnung + Bilanz kommen aus EINER Quelle (siehe _erfolg_bilanz) —
+    # die Seite und ihr PDF-Abzug dürfen nie unterschiedliche Zahlen zeigen.
+    _eb = _erfolg_bilanz(aktive_lg, jahr)
+    ertraege = _eb['ertraege']; aufwaende = _eb['aufwaende']
+    total_ertrag = _eb['total_ertrag']; total_aufwand = _eb['total_aufwand']
+    erfolg = _eb['erfolg']
+    aktiven = _eb['aktiven']; passiven = _eb['passiven']
+    total_aktiven = _eb['total_aktiven']; total_passiven = _eb['total_passiven']
+    passiven_mit_erfolg = _eb['passiven_mit_erfolg']
+    bilanz_differenz = _eb['bilanz_differenz']
+    kum_erfolg = _eb['kum_erfolg']; erfolg_vortrag = _eb['erfolg_vortrag']
 
     # --- BUCHUNGSJOURNAL (durchsuch- und filterbar, seitenweise) ---
     # Vorher: hart die letzten 60 Zeilen, ohne Suche und ohne Filter. Damit war
@@ -7185,6 +7232,39 @@ def fw_kontoblatt(request, nummer):
         'eroeffnung': eroeffnung, 'endsaldo': saldo, 'ist_bilanz': ist_bilanz,
         'jahr': jahr or 'alle', 'jahre': list(range(heute.year, heute.year - 5, -1)),
     })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_buchhaltung_pdf(request):
+    """Erfolgsrechnung und Bilanz als PDF.
+
+    Der Berichte-Hub versprach für «Erfolgsrechnung & Bilanz» ein PDF, es gab
+    aber nur den CSV-Journal-Export. Für die Übergabe ans Treuhandbüro und die
+    Ablage beim Eigentümer braucht es den Abschluss auf Papier.
+    """
+    from django.http import HttpResponse
+    from core.services.abschluss_pdf import generate_abschluss_pdf
+    from crm.models import Verwaltung
+
+    basis = _global_filter(request)
+    aktive_lg = basis['aktive_lg']
+    heute = timezone.localdate()
+    jahr_param = request.GET.get('jahr', str(heute.year))
+    if jahr_param == 'alle':
+        jahr = 'alle'
+    else:
+        try:
+            jahr = int(jahr_param)
+        except ValueError:
+            jahr = heute.year
+
+    daten = _erfolg_bilanz(aktive_lg, jahr)
+    lg_name = f"{aktive_lg.strasse}, {aktive_lg.ort}" if aktive_lg else "Gesamtes Portfolio"
+    pdf = generate_abschluss_pdf(daten, jahr, lg_name,
+                                 verwaltung=Verwaltung.objects.first(), erstellt_am=heute)
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = f'inline; filename="Erfolgsrechnung_Bilanz_{jahr}.pdf"'
+    return resp
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -11501,7 +11581,8 @@ def _mwst_periode(jahr, quartal, liegenschaft=None):
     else:
         von, bis = date(jahr, 1, 1), date(jahr, 12, 31)
 
-    qs = Buchung.objects.filter(datum__gte=von, datum__lte=bis, ist_storno=False)
+    qs = Buchung.objects.filter(datum__gte=von, datum__lte=bis, ist_storno=False,
+                                storniert_am__isnull=True)
     if liegenschaft:
         qs = qs.filter(liegenschaft=liegenschaft)
     # Die eigenen Abrechnungsbuchungen dürfen die Basis der nächsten Periode

@@ -134,7 +134,10 @@ def storniere_zahlung(request, zahlung_id: int):
     if zahlung.status == 'storniert':
         return 200, {"success": True}
 
-    fuer_storno = Buchung.objects.filter(zahlungseingang=zahlung, ist_storno=False)
+    # storniert_am mitprüfen: eine bereits einzeln stornierte Buchung darf
+    # nicht ein zweites Mal umgekehrt werden (storniere_buchung wirft sonst).
+    fuer_storno = Buchung.objects.filter(zahlungseingang=zahlung, ist_storno=False,
+                                         storniert_am__isnull=True)
     for b in fuer_storno:
         erstelle_storno_buchung(b, benutzer=request.user)
 
@@ -323,7 +326,10 @@ def storniere_kreditor(request, rechnung_id: int):
         return 409, {"success": False,
                      "error": "Rechnung hat erfasste Zahlungen — zuerst die Zahlung zurücksetzen."}
 
-    fuer_storno = Buchung.objects.filter(kreditoren_rechnung=rechnung, ist_storno=False)
+    # storniert_am mitprüfen: eine bereits einzeln stornierte Buchung darf
+    # nicht ein zweites Mal umgekehrt werden (storniere_buchung wirft sonst).
+    fuer_storno = Buchung.objects.filter(kreditoren_rechnung=rechnung, ist_storno=False,
+                                         storniert_am__isnull=True)
     for b in fuer_storno:
         erstelle_storno_buchung(b, benutzer=request.user)
 
@@ -392,7 +398,10 @@ def storniere_debitorenrechnung(request, rechnung_id: int):
         return 409, {"success": False,
                      "error": "Rechnung hat verbuchte Zahlungen — zuerst die Zahlung stornieren."}
 
-    fuer_storno = Buchung.objects.filter(debitoren_rechnung=rechnung, ist_storno=False)
+    # storniert_am mitprüfen: eine bereits einzeln stornierte Buchung darf
+    # nicht ein zweites Mal umgekehrt werden (storniere_buchung wirft sonst).
+    fuer_storno = Buchung.objects.filter(debitoren_rechnung=rechnung, ist_storno=False,
+                                         storniert_am__isnull=True)
     for b in fuer_storno:
         erstelle_storno_buchung(b, benutzer=request.user)
 
