@@ -11821,6 +11821,58 @@ class BankAbgleichP3Tests(TestCase):
         self.assertEqual(len(e), 1)
         self.assertEqual(e[0]['dbtr_name'], 'Muster Handels AG')
 
+    # ---------- «Kürzlich abgeglichen» lesbar ----------
+
+    def _abgeglichen(self, vertrag=None, gegenpartei='', text='', bemerkung=''):
+        """Eine bereits verbuchte Zahlung samt Auszugszeile."""
+        from finance.models import Zahlungseingang, Buchungskonto, Bankbewegung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        bank = Buchungskonto.objects.get(nummer='1020')
+        z = Zahlungseingang.objects.create(
+            vertrag=vertrag, betrag=Decimal('100.00'), datum_eingang=date(2026, 7, 31),
+            bemerkung=bemerkung, konto=bank, bank_referenz='REF-A', status='verbucht')
+        Bankbewegung.objects.create(
+            konto=bank, datum=date(2026, 7, 31), betrag=Decimal('100.00'),
+            text=text, gegenpartei=gegenpartei, bank_referenz='REF-A',
+            status='verbucht', zahlung=z)
+        return z
+
+    def test_kuerzlich_abgeglichen_kuerzt_den_namen_nicht_mehr_ab(self):
+        """Mieter, Datum, Betrag und «Stornieren» standen in EINER Zeile — auf
+        dem Handy blieb vom Namen «B..» übrig. Name und Herkunft stehen jetzt
+        untereinander, ohne truncate."""
+        lg, e, m, v = _basis_objekte()
+        self._abgeglichen(vertrag=v, gegenpartei='Muster Handels AG',
+                          text='Miete Juli', bemerkung='Bank-CSV Import')
+        c = Client(); c.force_login(_team_user())
+        h = c.get('/neu/bankabgleich/').content.decode('utf-8')
+        block = h.split('Kürzlich abgeglichen', 1)[1]
+        self.assertIn(m.display_name, block)
+        self.assertIn('Muster Handels AG', block)
+        self.assertNotIn('flex-1 min-w-0 truncate', block)
+
+    def test_kuerzlich_abgeglichen_ohne_vertrag_beginnt_nicht_mit_trennzeichen(self):
+        """Ohne Vertrag war der Mietername leer und die Zeile begann mit « · »
+        — auf dem Handy war das die ganze sichtbare Information."""
+        _basis_objekte()
+        self._abgeglichen(gegenpartei='Narrezauber Soledurn', text='Miete Juli')
+        c = Client(); c.force_login(_team_user())
+        h = c.get('/neu/bankabgleich/').content.decode('utf-8')
+        block = h.split('Kürzlich abgeglichen', 1)[1]
+        self.assertIn('Narrezauber Soledurn', block)
+        self.assertNotIn('break-words"> · ', block)
+
+    def test_kuerzlich_abgeglichen_faellt_auf_die_bemerkung_zurueck(self):
+        """Ohne Vertrag UND ohne Auftraggeber bleibt nur die Herkunft des
+        Belegs — besser als eine leere Zeile."""
+        _basis_objekte()
+        self._abgeglichen(bemerkung='camt.053-Import ZZCAMTTEST')
+        c = Client(); c.force_login(_team_user())
+        block = (c.get('/neu/bankabgleich/').content.decode('utf-8')
+                 .split('Kürzlich abgeglichen', 1)[1])
+        self.assertIn('camt.053-Import ZZCAMTTEST', block)
+
     # ---------- Gelernte Zahler einsehen und korrigieren ----------
     # Eine Automatik, die man nicht einsehen und nicht korrigieren kann, ist ein
     # blinder Fleck: Beim Mieterwechsel ordnete das Programm sonst dauerhaft

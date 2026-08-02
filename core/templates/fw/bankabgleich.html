@@ -357,20 +357,31 @@
     <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Kürzlich abgeglichen</div>
     <div class="divide-y divide-slate-50">
         {% for z in letzte %}
-        <div class="flex items-center gap-3 px-5 py-3 flex-wrap">
-            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-check"></i></div>
-            <span class="text-sm flex-1 min-w-0 truncate">{{ z.vertrag.mieter.display_name }}{% if z.bemerkung %} · {{ z.bemerkung }}{% endif %}</span>
-            <span class="text-xs text-slate-400 whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</span>
-            <span class="text-sm font-semibold text-emerald-600 whitespace-nowrap">+{{ z.betrag|chf }}</span>
-            <form method="post" action="/neu/zahlungen/{{ z.id }}/stornieren/" class="shrink-0"
-                  onsubmit="return confirm('Diese Zahlung stornieren? Die Buchungen werden per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet.');">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="/neu/bankabgleich/{{ lg_query }}">
-                <button type="submit" title="Zahlung stornieren"
-                        class="text-xs font-semibold text-rose-600 border border-rose-200 hover:bg-rose-50 px-2.5 py-1 rounded-lg whitespace-nowrap transition-colors">
-                    <i class="fa-solid fa-rotate-left mr-1"></i>Stornieren
-                </button>
-            </form>
+        {% comment %}
+        Zwei Zeilen mobil: Datum, Betrag und «Stornieren» drückten den Namen
+        sonst auf «B..» zusammen. Ab sm wieder eine Zeile.
+        {% endcomment %}
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-5 py-3">
+            <div class="flex items-start gap-3 min-w-0 flex-1">
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-check"></i></div>
+                <div class="min-w-0">
+                    <div class="text-sm text-slate-800 break-words">{{ z.titel }}</div>
+                    {% if z.zusatz %}<div class="text-xs text-slate-400 break-words">{{ z.zusatz }}</div>{% endif %}
+                </div>
+            </div>
+            <div class="flex items-center gap-3 shrink-0 pl-11 sm:pl-0">
+                <span class="text-xs text-slate-400 whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</span>
+                <span class="text-sm font-semibold text-emerald-600 whitespace-nowrap">+{{ z.betrag|chf }}</span>
+                <form method="post" action="/neu/zahlungen/{{ z.id }}/stornieren/" class="shrink-0"
+                      onsubmit="return confirm('Diese Zahlung stornieren? Die Buchungen werden per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet.');">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="/neu/bankabgleich/{{ lg_query }}">
+                    <button type="submit" title="Zahlung stornieren"
+                            class="text-xs font-semibold text-rose-600 border border-rose-200 hover:bg-rose-50 px-2.5 py-1 rounded-lg whitespace-nowrap transition-colors">
+                        <i class="fa-solid fa-rotate-left mr-1"></i>Stornieren
+                    </button>
+                </form>
+            </div>
         </div>
         {% endfor %}
     </div>

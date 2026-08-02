@@ -3677,10 +3677,28 @@ def fw_bankabgleich(request):
     # Erst filtern, DANN slicen — ein bereits geslicetes QuerySet lässt sich nicht
     # mehr filtern (TypeError → HTTP 500, sobald ein Liegenschaftsfilter aktiv ist).
     letzte_qs = (Zahlungseingang.objects.filter(status='verbucht')
-                 .select_related('vertrag__mieter'))
+                 .select_related('vertrag__mieter')
+                 .prefetch_related('bankbewegungen'))
     if aktive_lg:
         letzte_qs = letzte_qs.filter(vertrag__einheit__liegenschaft=aktive_lg)
-    letzte = letzte_qs.order_by('-erstellt_am')[:8]
+    letzte = list(letzte_qs.order_by('-erstellt_am')[:8])
+    # Wer wurde da abgeglichen? Die Zeile zeigte «Mieter · Bemerkung» in EINER
+    # gekürzten Spalte — auf dem Handy blieb davon «B..» übrig. Titel (wer) und
+    # Herkunft (woher der Beleg kam) werden deshalb getrennt bereitgestellt;
+    # ohne Vertrag tritt der erkannte Absender an die Stelle des Mieternamens,
+    # sonst begann die Zeile mit einem führenden « · ».
+    from core.services import zahler as _zahler
+    for z in letzte:
+        bew = next(iter(z.bankbewegungen.all()), None)
+        name, rest, _geraten = _zahler.aus_bewegung(
+            (bew.gegenpartei if bew else ''),
+            (bew.text if bew else '') or (z.bemerkung or ''))
+        if z.vertrag_id and z.vertrag.mieter_id:
+            z.titel = z.vertrag.mieter.display_name
+            z.zusatz = ' · '.join(t for t in [name, rest] if t)
+        else:
+            z.titel = name or (rest or 'Ohne Vertrag')
+            z.zusatz = rest if name else ''
 
     # Geparkte Zahlungen (Durchlaufkonto 1190 / Mieterguthaben 2030) mit
     # Zuordnungs-Aktion — Audit-Befund: ohne diese Liste ist jede ungeklärte
