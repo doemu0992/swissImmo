@@ -13507,6 +13507,104 @@ def fw_zahlungen_sammel_zuordnen(request):
     return redirect(ziel)
 
 
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_zahler_zuordnungen(request):
+    """Die gelernten Absender: wer zahlt für welchen Mietvertrag.
+
+    Diese Zuordnungen entstehen still im Hintergrund — jede manuelle Zuordnung
+    einer geparkten Zahlung merkt sich den Absender, und beim nächsten Import
+    trifft die Zahlung von allein. Genau deshalb braucht es diese Seite: Eine
+    Automatik, die niemand einsehen und korrigieren kann, ist keine Hilfe,
+    sondern ein blinder Fleck. Zieht ein Mieter aus und der Nachmieter heisst
+    zufällig ähnlich, oder wurde beim ersten Mal danebengegriffen, ordnet das
+    Programm sonst dauerhaft falsch zu — und niemand sieht, warum.
+    """
+    from finance.models import ZahlerZuordnung
+    basis = _global_filter(request)
+
+    zuordnungen = list(ZahlerZuordnung.objects
+                       .select_related('vertrag__mieter',
+                                       'vertrag__einheit__liegenschaft')
+                       .order_by('-treffer', 'name_anzeige', 'name_norm'))
+
+    # Auswahl zum Umbiegen: aktive Verträge reichen — auf einen beendeten
+    # Vertrag zu zeigen wäre eine neue Fehlerquelle, keine Korrektur.
+    vertraege = []
+    for v in (Mietvertrag.objects.filter(status='aktiv')
+              .select_related('mieter', 'einheit__liegenschaft')
+              .order_by('id')):
+        lg = v.einheit.liegenschaft if v.einheit_id and v.einheit.liegenschaft_id else None
+        teile = [v.mieter.display_name if v.mieter_id else '—']
+        if lg:
+            teile.append(lg.strasse)
+        if v.einheit_id and v.einheit.bezeichnung:
+            teile.append(v.einheit.bezeichnung)
+        vertraege.append({'id': v.id, 'label': ' · '.join(teile)})
+    vertraege.sort(key=lambda x: x['label'].lower())
+
+    return render(request, 'fw/zahler_zuordnungen.html', {
+        **basis, 'nav': 'bankabgleich',
+        'zuordnungen': zuordnungen, 'vertraege': vertraege,
+        'getroffen_n': sum(z.treffer for z in zuordnungen),
+    })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_zahler_zuordnung_speichern(request):
+    """Gelernten Absender auf einen anderen Vertrag umbiegen oder vergessen.
+
+    Bewusst ohne Buchungswirkung: Bereits verbuchte Zahlungen bleiben, wie sie
+    gebucht wurden. Geändert wird nur, was das Programm beim NÄCHSTEN Import
+    tut — eine Regel für die Zukunft, keine rückwirkende Umbuchung.
+    """
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.auth import log_aktion
+    from finance.models import ZahlerZuordnung
+
+    if request.method != 'POST':
+        return redirect('fw_zahler_zuordnungen')
+
+    eintrag = (ZahlerZuordnung.objects
+               .filter(id=request.POST.get('id') or 0)
+               .select_related('vertrag__mieter').first())
+    if eintrag is None:
+        messages.error(request, "Diese Zuordnung gibt es nicht mehr.")
+        return redirect('fw_zahler_zuordnungen')
+
+    name = eintrag.name_anzeige or eintrag.name_norm
+
+    if request.POST.get('aktion') == 'loeschen':
+        eintrag.delete()
+        log_aktion(request, "Zahler-Zuordnung gelöscht", name, '')
+        messages.success(request, f"✅ «{name}» wird nicht mehr automatisch zugeordnet — "
+                                  f"künftige Zahlungen landen wieder zur Prüfung "
+                                  f"im Bankabgleich.")
+        return redirect('fw_zahler_zuordnungen')
+
+    ziel = (Mietvertrag.objects.filter(id=request.POST.get('vertrag_id') or 0)
+            .select_related('mieter').first())
+    if ziel is None:
+        messages.error(request, "Kein Mieter gewählt — die Zuordnung bleibt unverändert.")
+        return redirect('fw_zahler_zuordnungen')
+    if ziel.id == eintrag.vertrag_id:
+        return redirect('fw_zahler_zuordnungen')
+
+    alt = (eintrag.vertrag.mieter.display_name
+           if eintrag.vertrag_id and eintrag.vertrag.mieter_id else '—')
+    eintrag.vertrag = ziel
+    # Die Trefferzahl gehört zur alten Regel und würde die neue fälschlich
+    # als bewährt ausweisen.
+    eintrag.treffer = 0
+    eintrag.zuletzt = None
+    eintrag.save(update_fields=['vertrag', 'treffer', 'zuletzt'])
+    log_aktion(request, "Zahler-Zuordnung geändert", name,
+               f"{alt} → {ziel.mieter.display_name}")
+    messages.success(request, f"✅ «{name}» zahlt neu für {ziel.mieter.display_name}. "
+                              f"Bereits verbuchte Zahlungen bleiben unverändert.")
+    return redirect('fw_zahler_zuordnungen')
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_bankbewegung_zuordnen(request):
     """Ordnet eine offene Bankbewegung zu und bucht sie.

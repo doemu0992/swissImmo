@@ -1,0 +1,85 @@
+{% extends 'fw/base.html' %}
+{% block title %}Gelernte Zahler — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Gelernte Zahler</h1>
+    <a href="/neu/bankabgleich/" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg">
+        <i class="fa-solid fa-arrow-left mr-1.5"></i>Zum Bankabgleich
+    </a>
+</div>
+<p class="text-sm text-slate-500 mb-6 max-w-3xl">
+    Wer ohne QR-Referenz überweist, wird beim ersten Mal von Hand zugeordnet — danach merkt sich
+    das Programm den Absender und trifft beim nächsten Kontoauszug selbst.
+    Hier steht, welche Regeln dabei entstanden sind, und hier lassen sie sich korrigieren.
+    <span class="text-slate-400">Änderungen wirken nur auf künftige Importe; bereits verbuchte Zahlungen bleiben, wie sie gebucht wurden.</span>
+</p>
+
+{% if zuordnungen %}
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 max-w-2xl">
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-user-check"></i></div>
+        <div><div class="text-2xl font-bold text-slate-800">{{ zuordnungen|length }}</div><div class="text-sm text-slate-500">Gelernte Absender</div></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-bolt"></i></div>
+        <div><div class="text-2xl font-bold text-emerald-600">{{ getroffen_n }}</div><div class="text-sm text-slate-500">Zahlung(en) automatisch zugeordnet</div></div>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden max-w-5xl">
+    <div class="divide-y divide-slate-100">
+        {% for z in zuordnungen %}
+        <div class="px-4 sm:px-5 py-4">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="min-w-0 flex-1">
+                    <div class="font-semibold text-slate-900 break-words">{{ z.name_anzeige|default:z.name_norm }}</div>
+                    <div class="text-xs text-slate-500 break-words mt-0.5">
+                        <i class="fa-solid fa-arrow-right-long text-slate-300 mr-1"></i>
+                        {% if z.vertrag_id %}{{ z.vertrag.mieter.display_name }}{% if z.vertrag.einheit_id %} · {{ z.vertrag.einheit.liegenschaft.strasse }}{% if z.vertrag.einheit.bezeichnung %} · {{ z.vertrag.einheit.bezeichnung }}{% endif %}{% endif %}{% else %}—{% endif %}
+                    </div>
+                    <div class="mt-1.5 flex items-center gap-2 flex-wrap">
+                        {% if z.treffer %}
+                        <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700">{{ z.treffer }}× automatisch getroffen</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-500">Noch nicht angewendet</span>
+                        {% endif %}
+                        {% if z.zuletzt %}<span class="text-[11px] text-slate-400">zuletzt {{ z.zuletzt|date:"d.m.Y" }}</span>{% endif %}
+                        <span class="text-[11px] text-slate-400">gelernt {{ z.erstellt_am|date:"d.m.Y" }}</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <form method="post" action="/neu/bankabgleich/zahler/speichern/" class="flex items-center gap-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="id" value="{{ z.id }}">
+                        {# Kein Auto-Submit: Wer im Fahren scrollt, soll die Regel nicht versehentlich umbiegen. #}
+                        <select name="vertrag_id" class="bg-slate-100 rounded-lg text-xs px-2 py-2 max-w-[13rem]">
+                            {% for v in vertraege %}
+                            <option value="{{ v.id }}" {% if v.id == z.vertrag_id %}selected{% endif %}>{{ v.label }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors" title="Zuordnung auf diesen Mieter umbiegen">
+                            <i class="fa-solid fa-check"></i>
+                        </button>
+                    </form>
+                    <form method="post" action="/neu/bankabgleich/zahler/speichern/"
+                          onsubmit="return confirm('«{{ z.name_anzeige|default:z.name_norm|escapejs }}» vergessen? Künftige Zahlungen dieses Absenders landen wieder zur Prüfung im Bankabgleich.');">
+                        {% csrf_token %}
+                        <input type="hidden" name="id" value="{{ z.id }}">
+                        <input type="hidden" name="aktion" value="loeschen">
+                        <button class="text-slate-300 hover:text-rose-500 text-sm px-2 py-2" title="Absender vergessen">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+{% include 'fw/_empty.html' with icon='fa-user-check' titel='Noch keine gelernten Zahler' subtext='Sobald Sie im Bankabgleich eine ungeklärte Zahlung einem Mieter zuordnen, merkt sich das Programm den Absender — die nächste Zahlung desselben Absenders trifft dann von allein.' cta_url='/neu/bankabgleich/' cta_label='Zum Bankabgleich' %}
+{% endif %}
+
+{% endblock %}

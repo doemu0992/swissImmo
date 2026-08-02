@@ -11821,6 +11821,99 @@ class BankAbgleichP3Tests(TestCase):
         self.assertEqual(len(e), 1)
         self.assertEqual(e[0]['dbtr_name'], 'Muster Handels AG')
 
+    # ---------- Gelernte Zahler einsehen und korrigieren ----------
+    # Eine Automatik, die man nicht einsehen und nicht korrigieren kann, ist ein
+    # blinder Fleck: Beim Mieterwechsel ordnete das Programm sonst dauerhaft
+    # falsch zu, ohne dass jemand die Ursache finden könnte.
+
+    def test_gelernte_zahler_seite_zeigt_absender_und_mieter(self):
+        from finance.models import ZahlerZuordnung
+        lg, e, m, v = _basis_objekte()
+        ZahlerZuordnung.objects.create(name_norm='narrezaubersoledurn',
+                                       name_anzeige='Narrezauber Soledurn',
+                                       vertrag=v, treffer=3)
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/bankabgleich/zahler/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Narrezauber Soledurn')
+        self.assertContains(r, m.display_name)
+        self.assertContains(r, '3× automatisch getroffen')
+
+    def test_bankabgleich_verlinkt_die_gelernten_zahler(self):
+        """Ohne Einstieg findet die Seite niemand — die Regeln entstehen still."""
+        c = Client(); c.force_login(_team_user())
+        self.assertContains(c.get('/neu/bankabgleich/'), '/neu/bankabgleich/zahler/')
+
+    def test_gelernten_zahler_auf_anderen_mieter_umbiegen(self):
+        from crm.models import Mieter
+        from finance.models import ZahlerZuordnung
+        lg, e, m, v = _basis_objekte()
+        m2 = Mieter.objects.create(vorname='Neu', nachname='Mieter')
+        v2 = Mietvertrag.objects.create(mieter=m2, einheit=e, status='aktiv',
+                                        beginn=date(2026, 1, 1),
+                                        netto_mietzins=Decimal('100'),
+                                        nebenkosten=Decimal('0'))
+        z = ZahlerZuordnung.objects.create(name_norm='narrezaubersoledurn',
+                                           name_anzeige='Narrezauber Soledurn',
+                                           vertrag=v, treffer=5)
+        c = Client(); c.force_login(_team_user())
+        r = c.post('/neu/bankabgleich/zahler/speichern/',
+                   {'id': z.id, 'vertrag_id': v2.id}, follow=True)
+        z.refresh_from_db()
+        self.assertEqual(z.vertrag_id, v2.id)
+        # Die Trefferzahl gehörte zur alten Regel — sie darf die neue nicht
+        # fälschlich als bewährt ausweisen.
+        self.assertEqual(z.treffer, 0)
+        self.assertIsNone(z.zuletzt)
+        self.assertContains(r, 'zahlt neu für')
+
+    def test_gelernten_zahler_vergessen(self):
+        from finance.models import ZahlerZuordnung
+        lg, e, m, v = _basis_objekte()
+        z = ZahlerZuordnung.objects.create(name_norm='narrezaubersoledurn',
+                                           name_anzeige='Narrezauber Soledurn',
+                                           vertrag=v)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/bankabgleich/zahler/speichern/',
+               {'id': z.id, 'aktion': 'loeschen'}, follow=True)
+        self.assertFalse(ZahlerZuordnung.objects.filter(id=z.id).exists())
+
+    def test_gelernten_zahler_umbiegen_bucht_nichts_um(self):
+        """Die Regel gilt für den NÄCHSTEN Import — bereits verbuchte Zahlungen
+        bleiben, wie sie gebucht wurden. Sonst wäre eine Korrektur der Regel
+        stillschweigend eine rückwirkende Umbuchung."""
+        from crm.models import Mieter
+        from finance.booking import ensure_kontenplan
+        from finance.models import ZahlerZuordnung, Buchung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._rechnung(v, 'Miete Juli', '200.00', date(2026, 7, 1))
+        zahlung = self._geparkt(gegenpartei='Narrezauber Soledurn')
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/bankabgleich/sammel-zuordnen/',
+               {'zahlung_ids': [str(zahlung.id)], 'vertrag_id': v.id}, follow=True)
+        vorher = Buchung.objects.count()
+        m2 = Mieter.objects.create(vorname='Neu', nachname='Mieter')
+        v2 = Mietvertrag.objects.create(mieter=m2, einheit=e, status='aktiv',
+                                        beginn=date(2026, 1, 1),
+                                        netto_mietzins=Decimal('100'),
+                                        nebenkosten=Decimal('0'))
+        z = ZahlerZuordnung.objects.get(name_norm='narrezaubersoledurn')
+        c.post('/neu/bankabgleich/zahler/speichern/',
+               {'id': z.id, 'vertrag_id': v2.id}, follow=True)
+        self.assertEqual(Buchung.objects.count(), vorher)
+        zahlung.refresh_from_db()
+        self.assertEqual(zahlung.vertrag_id, v.id)
+
+    def test_gelernter_zahler_speichern_verlangt_post(self):
+        c = Client(); c.force_login(_team_user())
+        self.assertEqual(c.get('/neu/bankabgleich/zahler/speichern/').status_code, 302)
+
+    def test_gelernte_zahler_leerzustand_erklaert_die_automatik(self):
+        c = Client(); c.force_login(_team_user())
+        self.assertContains(c.get('/neu/bankabgleich/zahler/'),
+                            'Noch keine gelernten Zahler')
+
 
 # ============================================================
 # P4 — Kreditoren durchsuchbar + Zahllauf als Prozess
