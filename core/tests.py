@@ -11952,6 +11952,45 @@ class BankAbgleichP3Tests(TestCase):
                  .split('Kürzlich abgeglichen', 1)[1])
         self.assertIn('camt.053-Import ZZCAMTTEST', block)
 
+    def test_storno_hebt_auch_das_rest_guthaben_wieder_auf(self):
+        """Zahlt jemand mehr als offen ist, bleibt der Überschuss als Guthaben
+        auf 2030 stehen. Wird die Zahlung später storniert, muss dieses Guthaben
+        mit verschwinden — sonst behält der Mieter ein Guthaben aus einer
+        Zahlung, die es buchhalterisch nicht mehr gibt, und 1190/2030 sind
+        dauerhaft falsch."""
+        from finance.booking import ensure_kontenplan
+        from finance.models import Zahlungseingang
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._rechnung(v, 'Miete Juli', '200.00', date(2026, 7, 1))
+        z = self._geparkt(gegenpartei='Narrezauber Soledurn')   # CHF 200.00
+        z.betrag = Decimal('300.00'); z.save(update_fields=['betrag'])
+
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/bankabgleich/sammel-zuordnen/',
+               {'zahlung_ids': [str(z.id)], 'vertrag_id': v.id}, follow=True)
+        self.assertEqual(self._kontoblatt_saldo('2030'), Decimal('-100.00'))
+
+        c.post(f'/neu/zahlungen/{z.id}/stornieren/', {}, follow=True)
+        self.assertEqual(self._kontoblatt_saldo('2030'), Decimal('0.00'),
+                         "Guthaben auf 2030 blieb nach dem Storno stehen")
+        self.assertFalse(Zahlungseingang.objects
+                         .filter(bank_referenz__endswith=':rest', status='verbucht')
+                         .exists())
+
+    def _kontoblatt_saldo(self, nummer):
+        """Saldo wie im Kontoblatt: ALLE Buchungen, inkl. Storno-Gegenbuchungen.
+
+        `_saldo()` blendet `ist_storno=True` aus und misst damit nur die
+        Originale — für eine Storno-Prüfung ist das die falsche Sicht."""
+        from finance.models import Buchung
+        from django.db.models import Sum
+        soll = (Buchung.objects.filter(soll_konto__nummer=nummer)
+                .aggregate(s=Sum('betrag'))['s'] or Decimal('0'))
+        haben = (Buchung.objects.filter(haben_konto__nummer=nummer)
+                 .aggregate(s=Sum('betrag'))['s'] or Decimal('0'))
+        return soll - haben
+
     # ---------- Gelernte Zahler einsehen und korrigieren ----------
     # Eine Automatik, die man nicht einsehen und nicht korrigieren kann, ist ein
     # blinder Fleck: Beim Mieterwechsel ordnete das Programm sonst dauerhaft

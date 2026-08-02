@@ -71,17 +71,26 @@ def zuordnen(zahlung, rechnung, user=None, heute=None):
             # Der Zahler ist jetzt bekannt — der Überschuss ist ein Mieterguthaben
             # (2030) und kein ungeklärter Durchlaufposten mehr. Lag er vorher auf
             # 1190, wird er umgebucht, sonst bliebe er dauerhaft «ungeklärt».
-            if park_nr != '2030':
-                buche('1190', '2030', rest,
-                      f"Rest-Guthaben {vertrag.mieter} aus Zuordnung {rechnung.titel}",
-                      datum=heute, liegenschaft=lg, user=user)
-            Zahlungseingang.objects.create(
+            #
+            # Reihenfolge ist hier kein Stil, sondern Pflicht: erst den
+            # Zahlungseingang anlegen, DANN mit `zahlung=z_rest` buchen. Das
+            # Storno hebt nur Buchungen auf, die an einem Zahlungseingang hängen
+            # (`Buchung.objects.filter(zahlungseingang=…)`). Ohne diese
+            # Verknüpfung blieb das Guthaben nach dem Storno stehen — der Mieter
+            # behielt ein Guthaben aus einer Zahlung, die es buchhalterisch nicht
+            # mehr gibt, und 1190/2030 waren dauerhaft falsch. Der Import-Pfad
+            # für Überzahlungen macht es seit jeher so.
+            z_rest = Zahlungseingang.objects.create(
                 vertrag=vertrag, betrag=rest, datum_eingang=zahlung.datum_eingang,
                 buchungs_monat=zahlung.buchungs_monat,
                 bemerkung=f"Rest-Guthaben aus Zuordnung ({rechnung.titel})"[:255],
                 bank_referenz=(f"{zahlung.bank_referenz}:rest"[:140] if zahlung.bank_referenz else ''),
                 konto=_park_konto('2030'), liegenschaft=lg or zahlung.liegenschaft,
                 erstellt_von=user, status='verbucht')
+            if park_nr != '2030':
+                buche('1190', '2030', rest,
+                      f"Rest-Guthaben {vertrag.mieter} aus Zuordnung {rechnung.titel}",
+                      datum=heute, liegenschaft=lg, zahlung=z_rest, user=user)
         rechnung.status = 'bezahlt' if rechnung.offener_betrag <= 0 else 'teilbezahlt'
         rechnung.save()
 
