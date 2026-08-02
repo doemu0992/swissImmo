@@ -3683,6 +3683,27 @@ class MieterkontoblattTests(TestCase):
         # und der Strassenname wird nicht mehr abgeschnitten
         self.assertNotIn('font-semibold text-slate-900 truncate">{{ row.lg.strasse', html)
 
+    def test_aufklappgruppen_bekommen_mobil_ein_trennband(self):
+        """Auf /neu/objekte/ sitzen die Liegenschafts-Gruppen zu mehreren in
+        EINER Karte, getrennt nur durch die Haarlinie von «border-b» — gemeldet
+        als «Keine Trennlinie» zwischen zwei Liegenschaften.
+
+        Eine Stufe dunkler (#e2e8f0) als das Band zwischen einzelnen Einträgen
+        (#f1f5f9): sonst wäre die Gruppengrenze nicht von der Trennung ihrer
+        eigenen Zeilen zu unterscheiden, sobald eine Gruppe offen ist.
+
+        Gemessen bei iPhone-Breite: 36 Gruppen je 8px rgb(226,232,240),
+        letzte Gruppe 0px."""
+        _basis_objekte()          # sonst rendert die Seite gar keine Gruppe
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/objekte/').content.decode('utf-8')
+        self.assertIn('main details.group.border-b { border-bottom: 8px solid #e2e8f0 !important; }',
+                      html)
+        self.assertIn('main details.group.border-b:last-child { border-bottom-width: 0 !important; }',
+                      html)
+        # Die Gruppen tragen die Klassen, auf die die Regel zielt
+        self.assertIn('<details class="group border-b border-slate-100 last:border-0">', html)
+
     def test_truncate_wird_mobil_zentral_aufgehoben(self):
         """«truncate» schneidet auf dem Handy genau das weg, was die Zeile
         identifiziert («Selzacherstras…», «B..»). Statt in ~30 Templates einzeln

@@ -62,6 +62,16 @@
                Der Doppel-Selektor trifft genau diese Listen: nur mobil sichtbar UND
                unterteilt, das ist per Konstruktion eine Karten-Liste. */
             .md\:hidden.divide-y > * + * { border-top: 8px solid #f1f5f9 !important; }
+            /* Aufklapp-Gruppen (Objekte je Liegenschaft, Hypotheken je
+               Liegenschaft) sitzen zu mehreren in EINER Karte und waren nur
+               durch die Haarlinie von «border-b» getrennt — auf dem Handy las
+               sich das wie eine durchgehende Liste ohne Gruppengrenze.
+
+               Eine Stufe dunkler als das Band zwischen einzelnen Einträgen:
+               so bleibt die Hierarchie erkennbar, wenn eine Gruppe offen ist
+               (Gruppengrenze deutlicher als die Trennung ihrer Zeilen). */
+            main details.group.border-b { border-bottom: 8px solid #e2e8f0 !important; }
+            main details.group.border-b:last-child { border-bottom-width: 0 !important; }
             /* «truncate» im Inhaltsbereich mobil aufheben.
 
                Auf dem Handy schneidet es genau das weg, was die Zeile
