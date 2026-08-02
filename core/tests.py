@@ -3683,6 +3683,31 @@ class MieterkontoblattTests(TestCase):
         # und der Strassenname wird nicht mehr abgeschnitten
         self.assertNotIn('font-semibold text-slate-900 truncate">{{ row.lg.strasse', html)
 
+    def test_truncate_wird_mobil_zentral_aufgehoben(self):
+        """«truncate» schneidet auf dem Handy genau das weg, was die Zeile
+        identifiziert («Selzacherstras…», «B..»). Statt in ~30 Templates einzeln
+        zu flicken hebt base.html es mobil im Inhaltsbereich auf.
+
+        Gemessen bei 390 px (Playwright, Utilities injiziert): pendenzen 3,
+        fristen 12, kommunikation 16, finanzen 6 abgeschnittene Elemente vorher
+        — nachher 0."""
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/liegenschaften/').content.decode('utf-8')
+        self.assertIn('main .truncate {', html)
+        for regel in ('white-space: normal !important;',
+                      'overflow: visible !important;',
+                      'text-overflow: clip !important;'):
+            self.assertIn(regel, html)
+
+    def test_truncate_bleibt_in_topbar_und_seitenleiste(self):
+        """Die Regel ist auf <main> begrenzt: Benutzername und Menü-Labels
+        brauchen ihre feste Zeilenhöhe, dort ist truncate richtig."""
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/liegenschaften/').content.decode('utf-8')
+        self.assertNotIn('\n            .truncate {', html)
+        # Der Benutzername in der Topbar trägt weiterhin truncate
+        self.assertIn('text-sm font-semibold text-slate-900 truncate', html)
+
     def test_trennband_gilt_fuer_jede_karte_nicht_nur_die_erste(self):
         """Tailwinds «divide-y» setzt auf jeder Zeile ausser der ersten
         border-bottom-width: 0. Ohne Vorrang bekam nur die erste Karte ein

@@ -62,6 +62,23 @@
                Der Doppel-Selektor trifft genau diese Listen: nur mobil sichtbar UND
                unterteilt, das ist per Konstruktion eine Karten-Liste. */
             .md\:hidden.divide-y > * + * { border-top: 8px solid #f1f5f9 !important; }
+            /* «truncate» im Inhaltsbereich mobil aufheben.
+
+               Auf dem Handy schneidet es genau das weg, was die Zeile
+               identifiziert: «Selzacherstras…», «B..», «Narrezauber Sol…».
+               Auf dem Desktop ist truncate richtig (breite Spalten, eine Zeile
+               pro Datensatz) — mobil ist Platz nach unten, nicht nach rechts.
+
+               Nur innerhalb von <main>: Topbar und Seitenleiste (Benutzername,
+               Menü-Labels) brauchen ihre feste Zeilenhöhe, dort bleibt truncate.
+               Django-seitiges `truncatechars` bleibt ebenfalls unberührt — das
+               kürzt bewusst lange Freitexte und ist keine Layout-Notlösung. */
+            main .truncate {
+                white-space: normal !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
+                overflow-wrap: anywhere;
+            }
             /* Erste Zelle ist die Überschrift der Zeile — ihr Wert benennt den
                Eintrag («Dominik Gerber»), das Label davor wäre nur Rauschen. */
             table[data-stack] td[data-stack-titel] {
