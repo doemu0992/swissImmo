@@ -198,7 +198,13 @@ def send_mahnung_email_view(request, vertrag_id):
     if not vertrag.mieter.email:
         messages.error(request, "Mieter hat keine E-Mail."); return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
-    pdf_bytes = generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, datetime.date.today())
+    heute = datetime.date.today()
+    pdf_bytes = generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, heute)
+    # Dasselbe PDF, das der Mieter erhält, gehört in die Akte — sonst lässt sich
+    # später nicht belegen, WAS zugestellt wurde.
+    from core.services.ablage import ablage_mahnung
+    ablage_mahnung(vertrag, monat=monat_str, betrag=betrag_str, datum=heute,
+                   pdf_bytes=pdf_bytes)
 
     firma_name = getattr(vertrag.mieter, 'firma', None)
     anzeige_name = firma_name if firma_name else f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}"
@@ -238,7 +244,13 @@ def generate_mahnung_pdf_view(request, vertrag_id):
     default_betrag = f"{vertrag.netto_mietzins + vertrag.nebenkosten:.2f}"
     betrag_str = request.GET.get('betrag') or request.POST.get('betrag', default_betrag)
 
-    pdf_bytes = generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, datetime.date.today())
+    heute = datetime.date.today()
+    pdf_bytes = generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, heute)
+    # In die Vertrags-Akte legen: sonst existiert die Mahnung nur als Download im
+    # Moment des Klicks und ist unter Vertrag -> Dokumente nirgends nachweisbar.
+    from core.services.ablage import ablage_mahnung
+    ablage_mahnung(vertrag, monat=monat_str, betrag=betrag_str, datum=heute,
+                   pdf_bytes=pdf_bytes)
 
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="Mahnung_Art257d_{vertrag.mieter.nachname}.pdf"'

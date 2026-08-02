@@ -222,6 +222,17 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
         res['gemahnt'] += 1
         res['gebuehren'] += gebuehr
         res['zins'] += zins
+        # Beleg in die Vertrags-Akte — sonst weist der Mahnlauf zwar Historie und
+        # Gebühren aus, unter Vertrag → Dokumente liegt aber nichts. Ausserhalb
+        # der Transaktion und fehlertolerant: ein misslungenes PDF darf einen
+        # bereits gebuchten Mahnschritt nicht zurückrollen.
+        if r.vertrag_id:
+            try:
+                from core.services.ablage import ablage_mahnung
+                ablage_mahnung(r.vertrag, stufe=stufe, datum=heute,
+                               betrag=f"{offen:.2f}")
+            except Exception:
+                pass
         if send_email and r.vertrag and r.vertrag.mieter.email:
             try:
                 if send_payment_reminder(r.vertrag, faellig, offen):

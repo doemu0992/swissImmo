@@ -12399,6 +12399,14 @@ def fw_mahnung_erfassen(request):
         messages.error(request, f"❌ Mahnung konnte nicht gebucht werden: {exc}")
         return redirect('fw_mahnwesen')
 
+    # Beleg in die Vertrags-Akte. Ausserhalb der Transaktion und bewusst
+    # fehlertolerant: Historie und Gebühr sind bereits gebucht, ein misslungenes
+    # PDF darf den erfassten Mahnschritt nicht zurückrollen.
+    if rechnung.vertrag_id:
+        from core.services.ablage import ablage_mahnung
+        ablage_mahnung(rechnung.vertrag, stufe=stufe, datum=heute,
+                       betrag=f"{rechnung.offener_betrag:.2f}")
+
     log_aktion(request, f"{stufe}. Mahnung erfasst",
                rechnung.vertrag.mieter.display_name if rechnung.vertrag_id else rechnung.titel,
                f"offen CHF {rechnung.offener_betrag}, Gebühr CHF {gebuehr}")

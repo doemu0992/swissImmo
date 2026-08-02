@@ -1494,6 +1494,68 @@ class MahnlaufTests(TestCase):
         self.assertGreater(res['zins'], Decimal('0.00'))
         self.assertTrue(DebitorenRechnung.objects.filter(titel__icontains='Verzugszins').exists())
 
+    # ---------- Mahnung gehört in die Vertrags-Akte ----------
+    # Gemeldet: «Vertrag → Dokumente → Mahnung erstellt aber nirgends
+    # dokumentiert.» Historie und Gebühr wurden gebucht, das Schreiben selbst
+    # existierte nur als Download im Moment des Klicks. Bei Art. 257d OR hängt
+    # an der Mahnung die Kündigungsandrohung — ohne Beleg ist im Streitfall
+    # nicht nachweisbar, WAS zugestellt wurde.
+
+    def _mahn_dokumente(self, vertrag=None):
+        from rentals.models import Dokument
+        qs = Dokument.objects.filter(bezeichnung__icontains='Mahnung')
+        return list(qs.filter(vertrag=vertrag) if vertrag else qs)
+
+    def test_mahnlauf_legt_die_mahnung_in_die_akte(self):
+        from core.services.automation import run_mahnlauf
+        r = self._ueberfaellig(40)
+        run_mahnlauf(send_email=False)
+        dok = self._mahn_dokumente(r.vertrag)
+        self.assertEqual(len(dok), 1, "Mahnlauf legte kein Dokument am Vertrag ab")
+        self.assertIn('2. Mahnung', dok[0].bezeichnung)
+        self.assertTrue(dok[0].datei)
+
+    def test_mahnung_erfassen_legt_die_mahnung_in_die_akte(self):
+        r = self._ueberfaellig(40)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.id, 'stufe': 1}, follow=True)
+        dok = self._mahn_dokumente(r.vertrag)
+        self.assertEqual(len(dok), 1, "«Erfassen» legte kein Dokument am Vertrag ab")
+        self.assertIn('1. Mahnung', dok[0].bezeichnung)
+
+    def test_mahnung_pdf_button_legt_die_mahnung_in_die_akte(self):
+        r = self._ueberfaellig(40)
+        c = Client(); c.force_login(_team_user())
+        antwort = c.get(f'/vertrag/{r.vertrag_id}/mahnung/')
+        self.assertEqual(antwort.status_code, 200)
+        self.assertEqual(len(self._mahn_dokumente(r.vertrag)), 1)
+
+    def test_mahnung_wird_am_selben_tag_nicht_dupliziert(self):
+        """Zweimal klicken darf die Akte nicht aufblähen — dieselbe Stufe am
+        selben Tag überschreibt (dedup), eine höhere Stufe bekommt ein eigenes
+        Dokument."""
+        r = self._ueberfaellig(40)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.id, 'stufe': 1}, follow=True)
+        c.get(f'/vertrag/{r.vertrag_id}/mahnung/')
+        c.get(f'/vertrag/{r.vertrag_id}/mahnung/')
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.id, 'stufe': 2}, follow=True)
+        titel = sorted(d.bezeichnung for d in self._mahn_dokumente(r.vertrag))
+        # «1. Mahnung», «2. Mahnung» und die stufenlose «Mahnung» des PDF-Buttons
+        self.assertEqual(len(titel), 3, f"unerwartete Dokumente: {titel}")
+
+    def test_ablage_scheitert_lautlos_und_bricht_den_mahnlauf_nicht(self):
+        """Die Ablage ist Beiwerk: Geht die PDF-Erzeugung schief, muss der
+        gebuchte Mahnschritt trotzdem stehen bleiben."""
+        from unittest.mock import patch
+        from core.services.automation import run_mahnlauf
+        from finance.models import Mahnung
+        r = self._ueberfaellig(40)
+        with patch('core.services.ablage.ablage_mahnung', side_effect=RuntimeError('kaputt')):
+            res = run_mahnlauf(send_email=False)
+        self.assertEqual(res['gemahnt'], 1)
+        self.assertTrue(Mahnung.objects.filter(debitoren_rechnung=r).exists())
+
 
 class NkAbrechnungVersandTests(TestCase):
     def _periode(self):

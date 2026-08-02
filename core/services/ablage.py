@@ -51,6 +51,49 @@ def ablegen(pdf_bytes, titel, kategorie='korrespondenz', *,
 SIGNIERT_TITEL = "Mietvertrag (unterzeichnet)"
 
 
+def ablage_mahnung(vertrag, *, stufe=None, monat='', betrag='', datum=None,
+                   pdf_bytes=None):
+    """Legt die Mahnung als PDF in der Vertrags-Akte ab.
+
+    Eine Mahnung ist der Beleg für eine Zahlungsaufforderung — bei Art. 257d OR
+    hängt daran die Kündigungsandrohung. Sie landete bisher nirgends in der Akte:
+    Historie und Gebühr wurden gebucht, das Schreiben selbst existierte nur als
+    Download im Moment des Klicks. Wer später nachweisen musste, WAS dem Mieter
+    zugestellt wurde, fand unter Vertrag → Dokumente nichts.
+
+    Der Titel trägt Stufe und Datum, `dedup=True` überschreibt denselben Titel am
+    selben Vertrag — mehrfaches Klicken am selben Tag erzeugt kein Duplikat, eine
+    spätere Stufe aber ein eigenes Dokument.
+
+    Gibt das Dokument zurück (oder None). Die Ablage darf den Mahnvorgang nie
+    scheitern lassen — Buchung und Historie sind wichtiger als der Beleg.
+    """
+    from django.utils import timezone
+    if vertrag is None:
+        return None
+    datum = datum or timezone.localdate()
+    if pdf_bytes is None:
+        try:
+            from core.views.email_views import (generate_mahnung_combined_pdf_bytes,
+                                                get_aktueller_monat)
+            from crm.models import Verwaltung
+            monat = monat or get_aktueller_monat()
+            if not betrag:
+                betrag = f"{(vertrag.netto_mietzins or 0) + (vertrag.nebenkosten or 0):.2f}"
+            pdf_bytes = generate_mahnung_combined_pdf_bytes(
+                vertrag, Verwaltung.objects.first(), monat, str(betrag), datum)
+        except Exception:
+            return None
+    if not pdf_bytes:
+        return None
+
+    stufe_txt = f"{stufe}. Mahnung" if stufe else "Mahnung"
+    titel = f"{stufe_txt} vom {datum.strftime('%d.%m.%Y')}"
+    dateiname = f"Mahnung_{stufe or ''}_{getattr(vertrag, 'id', '')}_{datum:%Y%m%d}.pdf"
+    return ablegen(pdf_bytes, titel, kategorie='korrespondenz',
+                   vertrag=vertrag, dateiname=dateiname, dedup=True)
+
+
 def _file_sha256(fieldfile):
     """SHA-256 des Datei-Inhalts eines FieldFile (oder None)."""
     import hashlib
