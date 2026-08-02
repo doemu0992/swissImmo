@@ -35,12 +35,17 @@
             <span class="w-2 h-2 rounded-full shrink-0 {% if e.dringend %}bg-rose-500{% else %}bg-slate-300{% endif %}"></span>
             <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 {{ e.chip_cls }}">{{ e.typ_label }}</span>
             {% if e.url %}
-            <a href="{{ e.url }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"{% endif %} class="min-w-0 flex-1 group">
+            {% comment %}
+            basis-full auf dem Handy: Betrag und CTA sind nowrap und geben keine
+            Breite ab — der Titel wurde sonst auf eine Handbreit zusammengedrückt
+            und die Zeile dadurch turmhoch. Ab sm wieder eine Zeile.
+            {% endcomment %}
+            <a href="{{ e.url }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"{% endif %} class="min-w-0 basis-full sm:basis-0 flex-1 group">
                 <div class="text-sm font-medium text-slate-900 group-hover:text-indigo-600 truncate">{{ e.titel }}</div>
                 {% if e.sub %}<div class="text-xs text-slate-400 truncate">{{ e.sub }}</div>{% endif %}
             </a>
             {% else %}
-            <div class="min-w-0 flex-1">
+            <div class="min-w-0 basis-full sm:basis-0 flex-1">
                 <div class="text-sm font-medium text-slate-900 truncate">{{ e.titel }}</div>
                 {% if e.sub %}<div class="text-xs text-slate-400 truncate">{{ e.sub }}</div>{% endif %}
             </div>

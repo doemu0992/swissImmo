@@ -87,7 +87,13 @@
                 white-space: normal !important;
                 overflow: visible !important;
                 text-overflow: clip !important;
-                overflow-wrap: anywhere;
+                /* break-word, NICHT anywhere: `anywhere` senkt auch die
+                   min-content-Breite auf ein Zeichen. Ein Flex-Element daneben
+                   (Betrag, Button) drückt die Textspalte dann bis auf
+                   Buchstabenbreite und der Titel bricht mitten im Wort
+                   («überfälli/ge Forderun/gen») — real gemeldet auf der Inbox.
+                   Mit break-word bleibt das längste Wort die Untergrenze. */
+                overflow-wrap: break-word;
             }
             /* Erste Zelle ist die Überschrift der Zeile — ihr Wert benennt den
                Eintrag («Dominik Gerber»), das Label davor wäre nur Rauschen. */

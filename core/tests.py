@@ -3704,6 +3704,39 @@ class MieterkontoblattTests(TestCase):
         # Die Gruppen tragen die Klassen, auf die die Regel zielt
         self.assertIn('<details class="group border-b border-slate-100 last:border-0">', html)
 
+    def test_truncate_bricht_nicht_mitten_im_wort(self):
+        """`overflow-wrap: anywhere` senkt auch die min-content-Breite auf ein
+        Zeichen — der Titel brach dann mitten im Wort («überfälli/ge
+        Forderun/gen») und die Inbox-Kachel wurde turmhoch. `break-word` hält
+        das längste Wort als Untergrenze.
+
+        Gemessen bei 390 px auf /neu/fristen/: höchste Zeile 760 px → 133 px,
+        Median 760 px → 76 px."""
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/liegenschaften/').content.decode('utf-8')
+        block = html.split('main .truncate {', 1)[1].split('}', 1)[0]
+        self.assertIn('overflow-wrap: break-word;', block)
+        # Die Deklaration selbst darf nicht mehr vorkommen (das Wort steht noch
+        # in der Begründung darüber).
+        self.assertNotIn('overflow-wrap: anywhere', block)
+
+    def test_inbox_titel_bekommt_mobil_die_volle_breite(self):
+        """Betrag und CTA sind nowrap und geben keine Breite ab — die
+        Titelspalte blieb auf 55–95 px und die Zeile wurde bis 321 px hoch.
+
+        Gemessen bei 390 px: Titelbreite 55–95 px → durchgehend 246 px,
+        höchste Zeile 321 px → 174 px."""
+        from finance.models import DebitorenRechnung
+        lg, e, m, v = _basis_objekte()
+        # Eine überfällige Forderung erzeugt den Inbox-Eintrag «… mahnen».
+        DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Miete Januar',
+            betrag=Decimal('1500.00'), datum=date(2026, 1, 1),
+            faellig_am=date(2026, 1, 5), status='offen')
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/').content.decode('utf-8')
+        self.assertIn('class="min-w-0 basis-full sm:basis-0 flex-1', html)
+
     def test_truncate_wird_mobil_zentral_aufgehoben(self):
         """«truncate» schneidet auf dem Handy genau das weg, was die Zeile
         identifiziert («Selzacherstras…», «B..»). Statt in ~30 Templates einzeln
