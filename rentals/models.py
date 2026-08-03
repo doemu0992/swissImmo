@@ -335,13 +335,20 @@ class Mietvertrag(models.Model):
 
     def _aktive_komponente(self, fuer_datum=None):
         """Die am Stichtag geltende Mietzins-Komponente (jüngste mit
-        gueltig_ab <= Stichtag), oder None wenn keine erfasst ist."""
+        gueltig_ab <= Stichtag), oder None wenn keine erfasst ist.
+
+        Python-Filter über `.all()` statt `.filter()` — genau wie in
+        `effektiver_netto_mietzins` und `_sollmietzins_zeile`: `.filter()`
+        umgeht prefetch_related und stellt pro Vertrag eine eigene Abfrage.
+        Die Sollstellungs-Vorschau ruft das zweimal je Vertrag auf (Netto und
+        Nebenkosten) — gemessen 128 Abfragen allein für diese Tabelle."""
         from datetime import date as _d
         if not self.pk:
             return None
         stichtag = fuer_datum or _d.today()
-        return (self.mietzins_komponenten.filter(gueltig_ab__lte=stichtag)
-                .order_by('-gueltig_ab', '-id').first())
+        komps = [k for k in self.mietzins_komponenten.all()
+                 if k.gueltig_ab and k.gueltig_ab <= stichtag]
+        return max(komps, key=lambda k: (k.gueltig_ab, k.id or 0)) if komps else None
 
     def verrechneter_netto_mietzins(self, fuer_datum=None):
         """Netto-Mietzins, der an einem Datum tatsächlich VERRECHNET wird

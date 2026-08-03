@@ -40,6 +40,54 @@ def berechne_mieterkonto(mieter, von=None, bis=None):
     return bewegungen, saldo
 
 
+def saldi_fuer_mieter(mieter_liste):
+    """Endsaldo je Mieter — für die Übersichtsliste, in drei Abfragen.
+
+    `berechne_mieterkonto` baut den vollen Auszug auf und braucht dafür drei
+    Abfragen JE MIETER. Die Übersicht zeigt aber nur den Saldo; bei 31 Mietern
+    waren das gemessen 93 Abfragen für 31 Zahlen.
+
+    Gibt {mieter_id: Decimal} zurück. Muss dieselbe Zahl liefern wie
+    `berechne_mieterkonto(m)[1]` — dafür gibt es einen Gleichheitstest.
+    """
+    from collections import defaultdict
+    from finance.models import DebitorenRechnung, Zahlungseingang
+    from rentals.models import Mietvertrag
+    from django.db.models import Q, Sum
+
+    ids = [m.id for m in mieter_liste]
+    saldi = {i: Decimal('0') for i in ids}
+    if not ids:
+        return saldi
+
+    # Ein Vertrag kann für ZWEI Mieter zählen (Erst- und Mitmieter) — deshalb
+    # eine Liste je Vertrag, nicht eine einzelne Zuordnung.
+    vertrag_mieter = defaultdict(list)
+    for v_id, m_id, mm_id in Mietvertrag.objects.filter(
+            Q(mieter_id__in=ids) | Q(mitmieter_id__in=ids)).values_list(
+            'id', 'mieter_id', 'mitmieter_id'):
+        for wer in (m_id, mm_id):
+            if wer in saldi:
+                vertrag_mieter[v_id].append(wer)
+    if not vertrag_mieter:
+        return saldi
+
+    soll = (DebitorenRechnung.objects.filter(vertrag_id__in=vertrag_mieter)
+            .exclude(status__in=('storniert', 'abgeschrieben'))
+            .values('vertrag_id').annotate(s=Sum('betrag')))
+    for zeile in soll:
+        for wer in vertrag_mieter[zeile['vertrag_id']]:
+            saldi[wer] += zeile['s'] or Decimal('0')
+
+    haben = (Zahlungseingang.objects.filter(vertrag_id__in=vertrag_mieter, status='verbucht')
+             .values('vertrag_id').annotate(s=Sum('betrag')))
+    for zeile in haben:
+        for wer in vertrag_mieter[zeile['vertrag_id']]:
+            saldi[wer] -= zeile['s'] or Decimal('0')
+
+    return saldi
+
+
 def generate_mieterkonto_pdf(mieter, verwaltung=None, von=None, bis=None):
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas

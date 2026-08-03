@@ -8,6 +8,7 @@ er wird in _global_filter() gelesen und an jede Seite durchgereicht.
 """
 import os
 import re
+from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 
@@ -849,19 +850,48 @@ def fw_liegenschaften(request):
     if aktive_lg:
         liegenschaften = liegenschaften.filter(id=aktive_lg.id)
 
-    rows = []
-    for lg in liegenschaften:
-        einheiten = lg.einheiten.all()
-        aktive = Mietvertrag.objects.filter(einheit__liegenschaft=lg, status='aktiv')
-        belegte = set(aktive.values_list('einheit_id', flat=True))
-        for neben_id in aktive.values_list('nebenobjekte', flat=True):
+    # Drei Abfragen für das ganze Portfolio statt fünf je Liegenschaft. Die
+    # Liste ist der Einstieg in die Bewirtschaftung und wurde bei 38
+    # Liegenschaften mit 195 Abfragen aufgebaut — das wächst linear mit dem
+    # Bestand und bremst auf einem Ein-Worker-Hosting spürbar.
+    lgs = list(liegenschaften)
+    lg_ids = [lg.id for lg in lgs]
+
+    einheiten_je_lg = defaultdict(list)
+    for e_id, e_lg in Einheit.objects.filter(
+            liegenschaft_id__in=lg_ids).values_list('id', 'liegenschaft_id'):
+        einheiten_je_lg[e_lg].append(e_id)
+
+    belegt_je_lg = defaultdict(set)
+    ertrag_je_lg = defaultdict(lambda: Decimal('0.00'))
+    vertraege_je_lg = defaultdict(int)
+    vertrag_lg = {}
+    for v_id, v_lg, e_id, netto, nk in Mietvertrag.objects.filter(
+            status='aktiv', einheit__liegenschaft_id__in=lg_ids).values_list(
+            'id', 'einheit__liegenschaft_id', 'einheit_id', 'netto_mietzins', 'nebenkosten'):
+        vertrag_lg[v_id] = v_lg
+        vertraege_je_lg[v_lg] += 1
+        ertrag_je_lg[v_lg] += (netto or Decimal('0')) + (nk or Decimal('0'))
+        if e_id:
+            belegt_je_lg[v_lg].add(e_id)
+
+    # Nebenobjekte (Parkplatz, Keller) zählen als belegt. Zugeordnet werden sie
+    # der Liegenschaft des HAUPTobjekts — wie bisher; ein Parkplatz in einer
+    # anderen Liegenschaft färbt deren Leerstand also nicht ein.
+    if vertrag_lg:
+        for v_id, neben_id in Mietvertrag.objects.filter(
+                id__in=vertrag_lg).values_list('id', 'nebenobjekte'):
             if neben_id:
-                belegte.add(neben_id)
-        leer = sum(1 for e in einheiten if e.id not in belegte)
-        soll = aktive.aggregate(s=Sum('netto_mietzins'), n=Sum('nebenkosten'))
-        mietertrag = (soll['s'] or Decimal('0')) + (soll['n'] or Decimal('0'))
-        rows.append({'lg': lg, 'einheiten_count': len(einheiten), 'leer': leer,
-                     'mietertrag': mietertrag, 'vertraege_count': aktive.count()})
+                belegt_je_lg[vertrag_lg[v_id]].add(neben_id)
+
+    rows = []
+    for lg in lgs:
+        einheiten = einheiten_je_lg.get(lg.id, [])
+        belegte = belegt_je_lg.get(lg.id, set())
+        rows.append({'lg': lg, 'einheiten_count': len(einheiten),
+                     'leer': sum(1 for e_id in einheiten if e_id not in belegte),
+                     'mietertrag': ertrag_je_lg[lg.id],
+                     'vertraege_count': vertraege_je_lg[lg.id]})
 
     return render(request, 'fw/liegenschaften.html', {
         **basis, 'nav': 'liegenschaften', 'rows': rows,
@@ -4839,7 +4869,7 @@ def fw_mieterkonto(request, pk):
 def fw_mieterkonten(request):
     """Übersicht aller Mieterkonten: pro Mieter der aktuelle Saldo (Forderungen −
     Zahlungen). Einstieg ins einzelne Kontoblatt."""
-    from core.services.mieterkonto import berechne_mieterkonto
+    from core.services.mieterkonto import saldi_fuer_mieter
     from django.db.models import Q as _Q
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
@@ -4867,8 +4897,11 @@ def fw_mieterkonten(request):
     total_offen = Decimal('0.00')
     gesamt_n = 0            # alle Mieter — unabhängig von Filter und Suche
     offen_gesamt_n = 0
+    # Alle Salden auf einmal statt drei Abfragen je Mieter (gemessen: 98 → 8).
+    # Die Liste zeigt nur den Saldo; den vollen Auszug baut erst das Kontoblatt.
+    saldi = saldi_fuer_mieter([d['mieter'] for d in mieter_map.values()])
     for mid, data in mieter_map.items():
-        _, saldo = berechne_mieterkonto(data['mieter'])
+        saldo = saldi.get(mid, Decimal('0'))
         gesamt_n += 1
         if saldo > 0:
             total_offen += saldo
@@ -7536,9 +7569,20 @@ def _sollstellung_kontext(request):
 
     vertraege = (Mietvertrag.objects.filter(status='aktiv', beginn__lte=end_date)
                  .exclude(ende__lt=start_date)
-                 .select_related('mieter', 'einheit__liegenschaft'))
+                 .select_related('mieter', 'einheit__liegenschaft')
+                 # Alles, was `verrechneter_netto_mietzins` / `verrechnete_nebenkosten`
+                 # unten je Vertrag anfassen — sonst fragt die Vorschau pro Zeile
+                 # einzeln nach (gemessen: 325 Abfragen bei 34 Verträgen).
+                 .prefetch_related('mietzins_komponenten', 'staffelstufen',
+                                   'anpassungen', 'einheit__sollmietzinse'))
     if aktive_lg:
         vertraege = vertraege.filter(einheit__liegenschaft=aktive_lg)
+
+    # «Ist für diesen Vertrag schon gestellt?» in EINER Abfrage statt einer je
+    # Vertrag. Die Menge ist klein (ein Monat), das Nachschlagen im Set gratis.
+    schon_gestellt = set(
+        DebitorenRechnung.objects.filter(titel=titel, vertrag__in=vertraege)
+        .exclude(status='storniert').values_list('vertrag_id', flat=True))
 
     rows = []
     total_soll = Decimal('0.00')
@@ -7556,7 +7600,7 @@ def _sollstellung_kontext(request):
         total = netto + nk
         if total <= 0:
             continue
-        gestellt = DebitorenRechnung.objects.filter(vertrag=v, titel=titel).exclude(status='storniert').exists()
+        gestellt = v.id in schon_gestellt
         if gestellt:
             n_gestellt += 1
         else:
@@ -9506,7 +9550,11 @@ def fw_benutzer(request):
     from django.contrib.auth.models import User
     from core.auth import ROLLE_EIGENTUEMER
     basis = _global_filter(request)
-    users = User.objects.filter(is_active=True).order_by('username')
+    # Die drei Dinge, die unten je Benutzer geprüft werden, gleich mitladen —
+    # sonst sind es drei Abfragen pro Zeile (gemessen: 103 für 33 Benutzer).
+    users = (User.objects.filter(is_active=True)
+             .select_related('mieter_profil', 'mandant_profil')
+             .prefetch_related('groups').order_by('username'))
     rows = []
     for u in users:
         # Reine Portal-Zugänge ausblenden (Mieter- oder Eigentümer-Portal)
@@ -9514,7 +9562,9 @@ def fw_benutzer(request):
             continue
         if getattr(u, 'mandant_profil', None) is not None:
             continue
-        rollen = list(u.groups.values_list('name', flat=True))
+        # `.values_list()` umgeht prefetch_related und fragt je Benutzer nach —
+        # über `.all()` gehen wollen wir genau das nicht (gemessen: 32 Abfragen).
+        rollen = [g.name for g in u.groups.all()]
         if ROLLE_EIGENTUEMER in rollen and len(rollen) == 1:
             continue  # reiner Eigentümer (per Rolle) — auch ausblenden
         rows.append({'u': u, 'rolle': ', '.join(rollen) or ('Superuser' if u.is_superuser else '—'),

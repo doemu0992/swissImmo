@@ -12922,6 +12922,150 @@ def _sig_bytes():
     return b.getvalue()
 
 
+class AbfrageSkalierungTests(TestCase):
+    """Listenseiten dürfen nicht pro Zeile in die Datenbank greifen.
+
+    Gemessen am Entwicklungsbestand (38 Liegenschaften, 34 Verträge,
+    31 Mieter) brauchte der Seitenaufbau:
+
+        /neu/sollstellung/   325 Abfragen   (128× derselbe Mietzins-Zugriff)
+        /neu/mieterspiegel/  274            ( 71× dieselbe Objekt-Abfrage)
+        /neu/liegenschaften/ 195            ( 38× dieselbe Belegungs-Abfrage)
+        /neu/benutzer/       103            ( 33× dieselbe Rollen-Abfrage)
+        /neu/mieterkonten/    98            ( 31× dieselbe Rechnungs-Abfrage)
+
+    Das fällt bei einer Handvoll Objekten nicht auf und wird mit dem Portfolio
+    linear schlimmer — auf einem Hosting mit einem einzigen Arbeitsprozess ist
+    das der Unterschied zwischen «lädt» und «hängt».
+
+    Deshalb prüfen diese Tests keine feste Zahl (die wäre bei jeder harmlosen
+    Änderung falsch), sondern das VERHALTEN: Wird die Datenmenge verdoppelt,
+    darf die Zahl der Abfragen nur um eine kleine Konstante steigen.
+    """
+
+    def _bestand(self, n, ab=0):
+        """Legt n vollständige Vermietungen an (Liegenschaft, Objekt, Mieter,
+        Vertrag) — jede mit eigener Liegenschaft, damit auch die je-Liegenschaft-
+        Schleifen wachsen."""
+        from finance.models import DebitorenRechnung
+        for i in range(ab, ab + n):
+            lg = Liegenschaft.objects.create(strasse=f'Prüfweg {i}', plz='3000', ort='Bern',
+                                             versicherungswert=Decimal('900000'))
+            e = Einheit.objects.create(liegenschaft=lg, bezeichnung=f'Whg {i}', typ='wohnung',
+                                       nettomiete_aktuell=Decimal('1400'),
+                                       nebenkosten_aktuell=Decimal('180'))
+            m = Mieter.objects.create(typ='person', vorname='Test', nachname=f'Nr{i}',
+                                      email=f'nr{i}@example.ch', strasse='Weg 1',
+                                      plz='3000', ort='Bern')
+            v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
+                                           netto_mietzins=Decimal('1400'),
+                                           nebenkosten=Decimal('180'), status='aktiv')
+            DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, titel=f'Miete {i}',
+                                             betrag=Decimal('1580'), status='offen',
+                                             datum=date(2026, 1, 1),
+                                             faellig_am=date(2026, 1, 1))
+
+    def _abfragen(self, url, client):
+        from django.test.utils import CaptureQueriesContext
+        from django.db import connection
+        with CaptureQueriesContext(connection) as ctx:
+            r = client.get(url)
+        self.assertEqual(r.status_code, 200, f'{url} -> {r.status_code}')
+        return len(ctx.captured_queries)
+
+    def _waechst_nicht_mit(self, url, spielraum=4):
+        """Verdoppelt den Bestand und vergleicht. `spielraum` deckt ab, was
+        legitim mitwächst (z.B. eine zusätzliche Seite Paginierung)."""
+        c = Client(); c.force_login(_team_user())
+        self._bestand(3)
+        klein = self._abfragen(url, c)
+        self._bestand(3, ab=3)
+        gross = self._abfragen(url, c)
+        self.assertLessEqual(
+            gross, klein + spielraum,
+            f'{url}: bei doppeltem Bestand {klein} → {gross} Abfragen — '
+            f'die Seite fragt pro Zeile nach.')
+        return klein, gross
+
+    def test_sollstellung_fragt_nicht_je_vertrag_nach(self):
+        self._waechst_nicht_mit('/neu/sollstellung/')
+
+    def test_mieterspiegel_fragt_nicht_je_liegenschaft_nach(self):
+        self._waechst_nicht_mit('/neu/mieterspiegel/')
+
+    def test_liegenschaften_fragt_nicht_je_liegenschaft_nach(self):
+        self._waechst_nicht_mit('/neu/liegenschaften/')
+
+    def test_mieterkonten_fragt_nicht_je_mieter_nach(self):
+        self._waechst_nicht_mit('/neu/mieterkonten/')
+
+    def test_benutzer_fragt_nicht_je_benutzer_nach(self):
+        from django.contrib.auth.models import User
+        c = Client(); c.force_login(_team_user())
+        for i in range(3):
+            User.objects.create_user(username=f'p{i}', password='x')
+        klein = self._abfragen('/neu/benutzer/', c)
+        for i in range(3, 6):
+            User.objects.create_user(username=f'p{i}', password='x')
+        gross = self._abfragen('/neu/benutzer/', c)
+        self.assertLessEqual(gross, klein + 2,
+                             f'benutzer: {klein} → {gross} Abfragen bei doppelter Anzahl')
+
+    def test_pruefung_erkennt_ein_nachfragen_je_zeile(self):
+        """Gegenprobe für die Messmethode selbst.
+
+        Ohne sie bliebe offen, ob die Prüfungen oben überhaupt etwas merken
+        könnten — eine Messung, die immer dieselbe Zahl liefert, bestätigt
+        jede Seite. Hier wird absichtlich je Zeile nachgefragt (`.filter()`
+        auf der Beziehung statt `.all()` über einen Prefetch — genau der
+        Fehler, der auf der Sollstellung 128 Abfragen erzeugte). Das MUSS
+        als Wachstum auffallen."""
+        from django.test.utils import CaptureQueriesContext
+        from django.db import connection
+
+        def naiv():
+            with CaptureQueriesContext(connection) as ctx:
+                for v in Mietvertrag.objects.all():
+                    list(v.mietzins_komponenten.filter(gueltig_ab__isnull=False))
+            return len(ctx.captured_queries)
+
+        self._bestand(3)
+        klein = naiv()
+        self._bestand(3, ab=3)
+        gross = naiv()
+        self.assertGreater(gross, klein + 2,
+                           f'Messung merkt kein Nachfragen je Zeile ({klein} → {gross}) '
+                           f'— dann sind die Prüfungen oben wertlos.')
+
+    def test_saldi_stimmen_mit_dem_einzelauszug_ueberein(self):
+        """Die Sammelberechnung für die Liste muss dieselbe Zahl liefern wie
+        der Einzelauszug — sonst wäre die Übersicht schneller, aber falsch."""
+        from core.services.mieterkonto import berechne_mieterkonto, saldi_fuer_mieter
+        from finance.models import DebitorenRechnung, Zahlungseingang
+        lg, e, m, v = _basis_objekte()
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, titel='Miete 01',
+                                         betrag=Decimal('1700'), status='offen',
+                                         datum=date(2026, 1, 1))
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, titel='Miete 02',
+                                         betrag=Decimal('1700'), status='offen',
+                                         datum=date(2026, 2, 1))
+        # Storniertes zählt nicht, Abgeschriebenes auch nicht.
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, titel='Storno',
+                                         betrag=Decimal('999'), status='storniert',
+                                         datum=date(2026, 2, 1))
+        Zahlungseingang.objects.create(vertrag=v, betrag=Decimal('1700'),
+                                       datum_eingang=date(2026, 2, 5), status='verbucht')
+        self._bestand(2)                      # weitere Mieter dürfen nicht hineinfunken
+        alle = list(Mieter.objects.all())
+        saldi = saldi_fuer_mieter(alle)
+        for mieter in alle:
+            _, einzeln = berechne_mieterkonto(mieter)
+            self.assertEqual(saldi[mieter.id], einzeln,
+                             f'{mieter.display_name}: Liste {saldi[mieter.id]} '
+                             f'≠ Auszug {einzeln}')
+        self.assertEqual(saldi[m.id], Decimal('1700'))   # 3400 gestellt − 1700 bezahlt
+
+
 class IconKnopfBeschriftungTests(TestCase):
     """Ein Knopf, der nur aus einem Symbol besteht, sagt nichts.
 

@@ -5,24 +5,53 @@ from decimal import Decimal
 
 
 def berechne_mieterspiegel(liegenschaften):
-    """Gibt je Liegenschaft ein dict {lg, zeilen, totals} zurück."""
+    """Gibt je Liegenschaft ein dict {lg, zeilen, totals} zurück.
+
+    Alle Datenbank-Zugriffe passieren VOR der Schleife. Vorher fragte jede
+    Liegenschaft ihre Einheiten und Verträge einzeln nach, und jeder Vertrag
+    danach nochmals seine Nebenobjekte, Komponenten, Staffelstufen und
+    Anpassungen — die Auswahl-Übersicht über 38 Liegenschaften kam so auf
+    274 Abfragen. Das wächst mit dem Portfolio, und auf einem Ein-Worker-
+    Hosting kostet jede Abfrage spürbar.
+    """
+    from collections import defaultdict
     from portfolio.models import Einheit
     from rentals.models import Mietvertrag
     from django.db.models import Q
 
+    lg_ids = [lg.id for lg in liegenschaften]
+
+    einheiten_je_lg = defaultdict(list)
+    for e in Einheit.objects.filter(liegenschaft_id__in=lg_ids).order_by('bezeichnung'):
+        einheiten_je_lg[e.liegenschaft_id].append(e)
+
+    # `effektiver_netto_mietzins()` / `effektive_nebenkosten()` lesen unten
+    # Komponenten, Staffelstufen, Anpassungen und den Sollmietzins-Zeitplan des
+    # Objekts. Alle vier hier mitladen, sonst fragt jede Zeile einzeln nach.
+    vertraege = (Mietvertrag.objects.filter(status='aktiv')
+                 .filter(Q(einheit__liegenschaft_id__in=lg_ids)
+                         | Q(nebenobjekte__liegenschaft_id__in=lg_ids))
+                 .select_related('mieter', 'einheit')
+                 .prefetch_related('nebenobjekte', 'mietzins_komponenten',
+                                   'staffelstufen', 'anpassungen',
+                                   'einheit__sollmietzinse')
+                 .distinct().order_by('id'))
+
+    # einheit_id -> Vertrag. Die IDs sind portfolioweit eindeutig, eine Zuordnung
+    # je Liegenschaft wäre also nur dieselbe Karte in Scheiben.
+    # `order_by('id')` macht die Zuordnung reproduzierbar: Beanspruchen zwei
+    # aktive Verträge dasselbe Objekt (Datenfehler), gewinnt immer der ältere
+    # statt dem, den die Datenbank zufällig zuerst liefert.
+    belegt = {}
+    for v in vertraege:
+        if v.einheit_id:
+            belegt.setdefault(v.einheit_id, v)
+        for ne in v.nebenobjekte.all():
+            belegt.setdefault(ne.id, v)
+
     result = []
     for lg in liegenschaften:
-        einheiten = Einheit.objects.filter(liegenschaft=lg).order_by('bezeichnung')
-        # Aktive Verträge der Liegenschaft (als Haupt- oder Nebenobjekt) einsammeln
-        vertraege = (Mietvertrag.objects.filter(status='aktiv')
-                     .filter(Q(einheit__liegenschaft=lg) | Q(nebenobjekte__liegenschaft=lg))
-                     .select_related('mieter', 'einheit').distinct())
-        belegt = {}   # einheit_id -> vertrag
-        for v in vertraege:
-            if v.einheit_id:
-                belegt.setdefault(v.einheit_id, v)
-            for ne in v.nebenobjekte.all():
-                belegt.setdefault(ne.id, v)
+        einheiten = einheiten_je_lg.get(lg.id, [])
 
         zeilen = []
         soll_netto = soll_nk = ist_netto = ist_nk = leer_fr = Decimal('0.00')
