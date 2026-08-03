@@ -13006,6 +13006,132 @@ class GratismonatSichtbarTests(TestCase):
                          'Klickfläche geht wieder über die ganze Formularbreite')
 
 
+class PortalFremdzugriffTests(TestCase):
+    """Kein Portal-Nutzer darf über eine fremde ID an fremde Daten kommen.
+
+    Mieter- und Eigentümer-Portal sind die einzigen Stellen, an denen Aussen-
+    stehende eingeloggt sind. Jede Adresse mit einer ID darin ist damit ein
+    Versuch wert: Ändert Mieter B die Nummer in der Adresse auf ein Dokument,
+    eine Rechnung, ein Ticket oder eine Kündigung von Mieter A — bekommt er sie?
+
+    Der Test prüft nicht sieben Einzelfälle, sondern liest die Adressen aus der
+    URL-Konfiguration. Kommt eine neue Portal-Adresse mit ID dazu, ohne dass
+    hier steht, wie sie zu prüfen ist, schlägt er fehl. Genau das ist der Zweck:
+    Eine neue Portalseite soll nicht unbemerkt ungeprüft bleiben.
+    """
+
+    #: Adressname -> wie eine ID des ANDEREN Mandanten/Mieters entsteht
+    #: (Aufruf bekommt die Testdaten, gibt die fremde ID zurück), plus die
+    #: HTTP-Methode.
+    ERWARTET = {
+        'portal_dokument_download': ('get', lambda d: d['fremd_lg_dok'].id),
+        'portal_freigabe':          ('post', lambda d: d['fremd_auftrag'].id),
+        'mieter_dokument_download': ('get', lambda d: d['fremd_dok'].id),
+        'mieter_ticket_detail':     ('get', lambda d: d['fremd_ticket'].id),
+        'mieter_ticket_nachricht':  ('post', lambda d: d['fremd_ticket'].id),
+        'mieter_rechnung_qr':       ('get', lambda d: d['fremd_rechnung'].id),
+        'mieter_kuendigung_pdf':    ('get', lambda d: d['fremd_kuendigung'].id),
+    }
+
+    def _portal_adressen(self):
+        from django.urls import get_resolver
+        gefunden = {}
+        for p in get_resolver().url_patterns:
+            s = str(p.pattern)
+            if not (s.startswith('mieter/') or s.startswith('portal/')):
+                continue
+            if '<' not in s or not p.name:
+                continue
+            gefunden[p.name] = s
+        return gefunden
+
+    def _welt(self):
+        """Zwei getrennte Welten: A gehört dem einen, B dem anderen."""
+        from django.core.files.base import ContentFile
+        from finance.models import DebitorenRechnung
+        from portfolio.models import Dokument as PDokument
+        from rentals.models import Dokument, Kuendigung
+        from tickets.models import SchadenMeldung, HandwerkerAuftrag
+        from crm.models import Handwerker
+
+        def welt(kuerzel):
+            lg = Liegenschaft.objects.create(strasse=f'{kuerzel}-Weg 1', plz='3000', ort='Bern')
+            md = Mandant.objects.create(firma_oder_name=f'Eigentümer {kuerzel}')
+            lg.mandant = md; lg.save()
+            e = Einheit.objects.create(liegenschaft=lg, bezeichnung=f'{kuerzel}-Whg', typ='wohnung',
+                                       nettomiete_aktuell=Decimal('1500'))
+            m = Mieter.objects.create(typ='person', vorname=kuerzel, nachname='Test',
+                                      email=f'{kuerzel}@example.ch')
+            v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
+                                           netto_mietzins=Decimal('1500'),
+                                           nebenkosten=Decimal('200'), status='aktiv')
+            mu = User.objects.create_user(username=f'mieter_{kuerzel}', password='x')
+            m.benutzer = mu; m.save()
+            eu = User.objects.create_user(username=f'eig_{kuerzel}', password='x')
+            md.benutzer = eu; md.save()
+            return dict(lg=lg, md=md, e=e, m=m, v=v, mieter_user=mu, eig_user=eu)
+
+        a, b = welt('A'), welt('B')
+        # IBAN, damit der QR-Einzahlschein überhaupt erzeugt werden kann —
+        # sonst wäre die Gegenprobe unten (eigene Rechnung MUSS gehen) wertlos.
+        Verwaltung.objects.create(firma='Verwaltung AG', strasse='W 1', plz='8000',
+                                  ort='Zürich', iban='CH9300762011623852957')
+        # Daten, die NUR A gehören
+        dok = Dokument(bezeichnung='A-Vertrag', titel='A-Vertrag', kategorie='vertrag',
+                       vertrag=a['v'], mieter=a['m'], einheit=a['e'], liegenschaft=a['lg'],
+                       im_portal_sichtbar=True)
+        dok.datei.save('a.pdf', ContentFile(b'%PDF-1.4 A'), save=True)
+        lgdok = PDokument(liegenschaft=a['lg'], titel='A-Liegenschaft', kategorie='x')
+        lgdok.datei.save('alg.pdf', ContentFile(b'%PDF-1.4 A'), save=True)
+        rech = DebitorenRechnung.objects.create(vertrag=a['v'], liegenschaft=a['lg'],
+                                                titel='A-Miete', betrag=Decimal('1500'),
+                                                status='offen', datum=date(2026, 1, 1))
+        ticket = SchadenMeldung.objects.create(liegenschaft=a['lg'], betroffene_einheit=a['e'],
+                                               gemeldet_von=a['m'], titel='A-Schaden',
+                                               beschreibung='nur für A')
+        hw = Handwerker.objects.create(firma='Sanitär AG')
+        auftrag = HandwerkerAuftrag.objects.create(ticket=ticket, handwerker=hw)
+        kuend = Kuendigung.objects.create(vertrag=a['v'], absender='mieter',
+                                          eingang_datum=date(2026, 1, 5),
+                                          per_datum=date(2026, 3, 31))
+        return {'a': a, 'b': b, 'fremd_dok': dok, 'fremd_lg_dok': lgdok,
+                'fremd_rechnung': rech, 'fremd_ticket': ticket,
+                'fremd_auftrag': auftrag, 'fremd_kuendigung': kuend}
+
+    def test_jede_portal_adresse_mit_id_ist_hier_geprueft(self):
+        offen = set(self._portal_adressen()) - set(self.ERWARTET)
+        self.assertEqual(offen, set(),
+                         f'Neue Portal-Adresse(n) mit ID ohne Fremdzugriffs-Prüfung: {offen}')
+
+    def test_fremde_id_liefert_keine_daten(self):
+        """Für JEDE Adresse zwei Anfragen mit derselben ID: einmal als
+        Berechtigter, einmal als Fremder.
+
+        Nur der Fremde darf abgewiesen werden. Ohne die erste Anfrage wäre der
+        Test wertlos — eine Adresse, die IMMER 404 liefert (fehlende Testdaten,
+        vertippte Adresse), würde die Prüfung sonst bestehen, ohne irgendetwas
+        über die Berechtigung auszusagen."""
+        from django.urls import reverse
+        d = self._welt()
+        adressen = self._portal_adressen()
+        for name, (methode, hole_id) in self.ERWARTET.items():
+            if name not in adressen:
+                continue                  # Adresse entfernt — nicht Sache dieses Tests
+            wer = 'eig_user' if name.startswith('portal_') else 'mieter_user'
+            url = reverse(name, args=[hole_id(d)])
+
+            def anfrage(welt):
+                c = Client(); c.force_login(d[welt][wer])
+                return (c.post(url, {}) if methode == 'post' else c.get(url)).status_code
+
+            self.assertNotIn(anfrage('a'), (403, 404),
+                             f'{name}: der BERECHTIGTE kommt nicht an seine eigenen '
+                             f'Daten — die Fremdprüfung unten sagt damit nichts aus')
+            fremd = anfrage('b')
+            self.assertIn(fremd, (403, 404),
+                          f'{name}: fremde ID lieferte {fremd} statt 403/404')
+
+
 class ErfolgBilanzGruppiertTests(TestCase):
     """Erfolgsrechnung und Bilanz in vier Abfragen statt zwei je Konto.
 
