@@ -39,3 +39,30 @@ Migration wird NICHT neu geladen**. Dann bleibt die alte Version aktiv, statt
 eine halb migrierte auszuliefern.
 
 Welcher Stand gerade läuft: <https://swissimmo.pythonanywhere.com/version/>
+
+### Media-Schutz-Prüfung am Ende jedes Deploys
+
+Hochgeladene Dateien — Fotos aus Mieterwohnungen, gescannte Verträge, Belege —
+liefert `core/views/media_protected.py` nur an angemeldete Team-Mitglieder aus.
+Diese Schranke greift jedoch **nur, wenn die /media/-Anfragen bei Django
+ankommen**. Ist `/media/` im Web-Tab von PythonAnywhere als statisches
+Verzeichnis gemappt, liefert deren Webserver die Dateien direkt aus; der View
+wird nie aufgerufen und der Schutz ist wirkungslos — ohne jedes Anzeichen.
+
+Aus dem Code heraus lässt sich das nicht feststellen. Deshalb prüft `deploy.sh`
+es nach dem Reload von aussen:
+
+```
+python manage.py pruefe_media_schutz
+```
+
+Der Befehl legt kurz eine Kanarienvogel-Datei unter einem geschützten Prefix
+ab, ruft sie ohne Anmeldung über ihre öffentliche URL auf und löscht sie wieder.
+Kommt der Dateiinhalt zurück, steht der Befund im Deploy-Protokoll:
+
+```
+✗ MEDIA-SCHUTZ WIRKUNGSLOS
+```
+
+Dann im Web-Tab das statische Mapping für `/media/` entfernen. Für `/static/`
+bleibt es richtig — dort liegen nur öffentliche Assets.

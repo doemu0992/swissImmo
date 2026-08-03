@@ -13096,6 +13096,103 @@ class MediaZugriffTests(TestCase):
                           ignore_errors=True)
 
 
+class MediaDeployPruefungTests(TestCase):
+    """Der Media-Schutz greift nur, wenn /media/ überhaupt bei Django ankommt.
+
+    Ist /media/ beim Hoster als statisches Verzeichnis gemappt, liefert der
+    Webserver die Dateien direkt aus. Der View wird dann nie aufgerufen, alle
+    Regeln aus `media_protected` sind wirkungslos — und nichts weist darauf
+    hin. Aus dem Code heraus lässt sich das nicht feststellen, deshalb prüft
+    `pruefe_media_schutz` es beim Deploy von aussen: eine Kanarienvogel-Datei
+    unter geschütztem Prefix ablegen, ohne Anmeldung abrufen, wieder löschen.
+
+    Getestet wird die Auswertung (der Netzabruf selbst wird ersetzt) und die
+    Voraussetzung, auf der die ganze Prüfung ruht: dass der gewählte Pfad für
+    Django wirklich tabu ist.
+    """
+
+    def setUp(self):
+        import tempfile
+        from django.test import override_settings
+        self._tmp = tempfile.TemporaryDirectory()
+        self._ov = override_settings(MEDIA_ROOT=self._tmp.name)
+        self._ov.enable()
+
+    def tearDown(self):
+        self._ov.disable()
+        self._tmp.cleanup()
+
+    def _lauf(self, antwort):
+        """Führt den Befehl mit einer vorgegebenen HTTP-Antwort aus.
+
+        Gibt (ausgabe, exitcode) zurück; exitcode None = kein Abbruch."""
+        import io
+        from unittest import mock
+        from django.core.management import call_command
+        from core.management.commands import pruefe_media_schutz as cmd
+        raus, fehler = io.StringIO(), io.StringIO()
+        code = None
+        with mock.patch.object(cmd, '_hole', return_value=antwort):
+            try:
+                call_command('pruefe_media_schutz', '--url', 'https://example.ch',
+                             stdout=raus, stderr=fehler)
+            except SystemExit as e:
+                code = e.code
+        return raus.getvalue() + fehler.getvalue(), code
+
+    def test_kanarienvogel_pfad_ist_fuer_django_tabu(self):
+        """Trägt der Test überhaupt? Läge der Pfad in einem öffentlichen
+        Ordner, käme die Datei zu Recht zurück und die Prüfung würde bei jedem
+        Deploy fälschlich Alarm schlagen."""
+        from core.views.media_protected import ist_oeffentlich, ist_objektfoto
+        from core.management.commands.pruefe_media_schutz import KANARIENVOGEL_PFAD
+        self.assertFalse(ist_oeffentlich(KANARIENVOGEL_PFAD))
+        self.assertFalse(ist_objektfoto(KANARIENVOGEL_PFAD))
+
+    def test_inhalt_kommt_zurueck_ist_ein_befund(self):
+        from core.management.commands.pruefe_media_schutz import KANARIENVOGEL_INHALT
+        text, code = self._lauf((200, KANARIENVOGEL_INHALT))
+        self.assertEqual(code, 2, 'Befund muss den Lauf mit Code 2 markieren')
+        self.assertIn('MEDIA-SCHUTZ WIRKUNGSLOS', text)
+
+    def test_abweisung_ist_kein_befund(self):
+        text, code = self._lauf((404, b'<h1>Not Found</h1>'))
+        self.assertIsNone(code)
+        self.assertIn('Media-Schutz aktiv', text)
+
+    def test_anmeldeseite_mit_status_200_ist_kein_befund(self):
+        """Eine Weiterleitung auf die Anmeldung endet ebenfalls bei 200.
+        Entscheidend ist deshalb der Inhalt, nicht der Status."""
+        text, code = self._lauf((200, b'<html><form action="/login/">Anmelden</form>'))
+        self.assertIsNone(code)
+        self.assertIn('Media-Schutz aktiv', text)
+
+    def test_nicht_erreichbar_meldet_keine_aussage(self):
+        text, code = self._lauf((None, None))
+        self.assertIsNone(code)
+        self.assertIn('nicht geprüft', text)
+        self.assertNotIn('WIRKUNGSLOS', text)
+
+    def test_kanarienvogel_bleibt_nicht_liegen(self):
+        """Die Testdatei liegt unter geschütztem Prefix in der echten
+        Medienablage — sie darf nach dem Lauf nicht zurückbleiben."""
+        import os
+        from django.conf import settings
+        from core.management.commands.pruefe_media_schutz import (
+            KANARIENVOGEL_PFAD, KANARIENVOGEL_INHALT)
+        self._lauf((200, KANARIENVOGEL_INHALT))
+        self.assertFalse(os.path.exists(os.path.join(settings.MEDIA_ROOT,
+                                                     KANARIENVOGEL_PFAD)))
+
+    def test_deploy_ruft_die_pruefung_auf(self):
+        """Ein Befehl, den niemand ausführt, prüft nichts."""
+        import os
+        from django.conf import settings
+        with open(os.path.join(settings.BASE_DIR, 'deploy.sh')) as fh:
+            self.assertIn('pruefe_media_schutz', fh.read(),
+                          'deploy.sh ruft die Media-Schutz-Prüfung nicht auf')
+
+
 class BewerbungNurAusgeschriebenTests(TestCase):
     """Bewerbungen nur für Objekte, die auch ausgeschrieben sind.
 

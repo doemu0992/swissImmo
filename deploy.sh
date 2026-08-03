@@ -62,4 +62,12 @@ else
     exit 1
 fi
 
+# Der Zugriffsschutz für /media/ greift nur, wenn die Anfragen bei Django
+# ankommen. Ist /media/ beim Hoster als statisches Verzeichnis gemappt, liefert
+# der Webserver die Dateien direkt aus — sensible Uploads wären dann für jeden
+# mit der URL abrufbar, ohne dass es irgendwo auffällt. Deshalb nach dem Reload
+# ein Test von aussen. Schlägt er an, steht der Befund im Deploy-Protokoll.
+echo "→ manage.py pruefe_media_schutz"
+"$PY" manage.py pruefe_media_schutz || echo "⚠ Media-Schutz-Prüfung meldete einen Befund (siehe oben)."
+
 echo "✓ Deploy fertig — prüfen auf https://swissimmo.pythonanywhere.com/version/"
