@@ -181,6 +181,27 @@
             main table.min-w-max:has(thead th:nth-child(7)) td.px-5 {
                 padding-left: 0.75rem; padding-right: 0.75rem;
             }
+            /* Ab neun Spalten noch eine Stufe enger. Auf einem 1280-px-Laptop
+               (974 px Inhaltsspalte) fehlten den Debitoren sonst genau 16 px —
+               vom Papierkorb blieb die Hälfte im Bild. Die 8 px sparen 72 px
+               und senken die Zeile dort zusätzlich von 89 auf 69 px, weil die
+               Textspalten weniger umbrechen müssen. */
+            main table.min-w-max:has(thead th:nth-child(9)) th.px-5,
+            main table.min-w-max:has(thead th:nth-child(9)) td.px-5 {
+                padding-left: 0.5rem; padding-right: 0.5rem;
+            }
+        }
+        /* Auf einem schmalen Fenster ist die Aktionsspalte oft die breiteste
+           von allen (Debitoren 192 px, Kreditoren 341 px — mehr als jede
+           Datenspalte). Dort dürfen die Knöpfe umbrechen statt die ganze
+           Tabelle wegzuschieben. Nur unterhalb 1280 px: auf breiten Schirmen
+           bleibt die Aktionszeile wie gewohnt einzeilig.
+           `:has(a, button)` trennt Aktions- von Datenzellen — eine letzte
+           Spalte mit einem Betrag darf nicht umbrechen. */
+        @media (min-width: 768px) and (max-width: 1279px) {
+            main table.min-w-max tbody td:last-child:has(a, button) {
+                white-space: normal;
+            }
         }
         /* iOS: native date/month/time-Felder haben eine Eigenbreite, die w-full
            ignoriert und aus dem Container läuft. Auf Containerbreite zwingen. */
