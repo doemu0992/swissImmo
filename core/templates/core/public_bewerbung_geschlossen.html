@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Objekt nicht mehr ausgeschrieben – swissImmo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap');
+        body { font-family: 'Nunito', sans-serif; background-color: #f8fafc; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex items-center justify-center px-4 py-10">
+    {% comment %}
+        Bewusst eine eigene Seite statt eines nackten 404: Wer hier landet, ist
+        einem Link gefolgt, der einmal richtig war — die Wohnung ist inzwischen
+        vergeben oder die Ausschreibung beendet. Eine Fehlerseite würde wie ein
+        Defekt aussehen. Absichtlich OHNE Angaben zum Objekt: Diese Seite ist
+        ohne Anmeldung erreichbar, und über die Nummer in der Adresse liesse
+        sich sonst der ganze Bestand durchprobieren.
+    {% endcomment %}
+    <div class="w-full max-w-md bg-white rounded-2xl border border-slate-200 p-8 text-center">
+        <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-5 text-2xl">✓</div>
+        <h1 class="text-xl font-black mb-3">Dieses Objekt ist nicht mehr ausgeschrieben</h1>
+        <p class="text-sm text-slate-500 leading-relaxed">
+            Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits
+            vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden.
+        </p>
+        <p class="text-sm text-slate-500 leading-relaxed mt-4">
+            Bei Fragen wenden Sie sich bitte direkt an die Verwaltung.
+        </p>
+    </div>
+</body>
+</html>

@@ -84,15 +84,21 @@ def public_submit_bewerbung(
     try:
         einheit = get_object_or_404(Einheit, id=einheit_id)
 
-        # 🌟 Flexibler Check auf Vermietungsstatus
-        is_rented = False
-        if hasattr(einheit, 'ist_vermietet'):
-            is_rented = einheit.ist_vermietet
-        elif hasattr(einheit, 'vermietungs_status'):
-            is_rented = einheit.vermietungs_status == 'vermietet'
-
-        if is_rented:
-            return 400, {"success": False, "error": "Dieses Objekt ist leider bereits vermietet."}
+        # Bewerbungen nur für ausgeschriebene Objekte.
+        #
+        # Hier stand ein «flexibler Check auf Vermietungsstatus», der
+        # `ist_vermietet` bzw. `vermietungs_status` per hasattr abfragte —
+        # BEIDE Namen gibt es an `Einheit` nicht. `is_rented` blieb damit immer
+        # False, die Prüfung lief ins Leere und die Fehlermeldung war
+        # unerreichbar. Faktisch nahm die Adresse Bewerbungen für jede
+        # Objektnummer entgegen, auch für seit Jahren vermietete.
+        #
+        # `zur_ausschreibung` ist der Schalter, den die App ohnehin führt: Der
+        # Portal-Feed liefert danach aus, und beim Aktivwerden eines Vertrags
+        # wird er automatisch gelöscht.
+        if not einheit.zur_ausschreibung:
+            return 400, {"success": False,
+                         "error": "Dieses Objekt ist nicht mehr ausgeschrieben."}
 
         # Safe Helper für Datums-Parsing (YYYY-MM-DD)
         def parse_date_safely(date_str, field_name):

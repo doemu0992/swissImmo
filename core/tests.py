@@ -13006,6 +13006,90 @@ class GratismonatSichtbarTests(TestCase):
                          'Klickfläche geht wieder über die ganze Formularbreite')
 
 
+class BewerbungNurAusgeschriebenTests(TestCase):
+    """Bewerbungen nur für Objekte, die auch ausgeschrieben sind.
+
+    Das Bewerbungsformular ist ohne Anmeldung erreichbar. Es rendete für JEDE
+    Objektnummer — mit Adresse und Objektbezeichnung. Zwei Folgen:
+
+      - Über die Nummer in der Adresse liess sich der ganze Bestand
+        durchprobieren.
+      - Ein alter, geteilter Link sammelte weiter Bewerbungen — mit
+        Lohnausweis, Ausweiskopie und Betreibungsauszug — für eine längst
+        vergebene Wohnung.
+
+    Die Gegenprüfung im API-Endpunkt sah zwar vorhanden aus:
+
+        is_rented = False
+        if hasattr(einheit, 'ist_vermietet'):        # gibt es nicht
+            ...
+        elif hasattr(einheit, 'vermietungs_status'): # gibt es auch nicht
+            ...
+        if is_rented: ...
+
+    Beide Namen existieren an `Einheit` nicht. `is_rented` blieb damit immer
+    False, und die Fehlermeldung «bereits vermietet» war unerreichbar.
+    """
+
+    def _einheit(self, ausgeschrieben):
+        lg = Liegenschaft.objects.create(strasse='Inseratweg 3', plz='4500', ort='Solothurn')
+        return Einheit.objects.create(liegenschaft=lg, bezeichnung='2.5 Zi', typ='wohnung',
+                                      nettomiete_aktuell=Decimal('1200'),
+                                      zur_ausschreibung=ausgeschrieben)
+
+    def test_die_alte_pruefung_haette_nichts_geprueft(self):
+        """Warum der Umbau nötig war — schwarz auf weiss."""
+        self.assertFalse(hasattr(Einheit, 'ist_vermietet'))
+        self.assertFalse(hasattr(Einheit, 'vermietungs_status'))
+        self.assertTrue(hasattr(Einheit, 'zur_ausschreibung'))
+
+    def test_formular_nur_bei_ausschreibung(self):
+        c = Client()
+        offen = self._einheit(True)
+        r = c.get(f'/bewerben/{offen.id}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, '2.5 Zi')
+
+        zu = self._einheit(False)
+        r2 = c.get(f'/bewerben/{zu.id}/')
+        self.assertEqual(r2.status_code, 410)
+        self.assertNotContains(r2, 'Inseratweg', status_code=410)   # keine Adresse preisgeben
+        self.assertNotContains(r2, '2.5 Zi', status_code=410)
+
+    def _bewerben(self, einheit):
+        return Client().post('/api/mietprozess/public/bewerben', {
+            'einheit_id': einheit.id,
+            'vorname': 'Anna', 'nachname': 'Muster', 'zivilstand': 'ledig',
+            'geburtsdatum': '1990-05-05', 'geschlecht': 'weiblich',
+            'nationalitaet': 'CH', 'mobilnummer': '079 000 00 00',
+            'email': 'anna@example.ch', 'adresse': 'Altweg 4',
+            'plz': '4500', 'ort': 'Solothurn',
+            'aktueller_vermieter': 'Alt AG', 'kontaktperson_vermieter': 'Herr Alt',
+            'telefon_vermieter': '032 000 00 00',
+            'erwerbsstatus': 'angestellt', 'beruf': 'Fachfrau',
+            'einkommen_jahr': '80000-100000', 'arbeitgeber': 'Firma AG',
+            'angestellt_seit': '2020-01-01',
+            'kontaktperson_arbeitgeber': 'Frau Chef',
+            'telefon_arbeitgeber': '032 111 11 11',
+            'gewuenschter_bezugstermin': '2026-10-01',
+        })
+
+    def test_bewerbung_auf_nicht_ausgeschriebenes_objekt_abgelehnt(self):
+        zu = self._einheit(False)
+        r = self._bewerben(zu)
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('nicht mehr ausgeschrieben', r.json().get('error', ''))
+
+    def test_bewerbung_auf_ausgeschriebenes_objekt_geht(self):
+        """Gegenrichtung — sonst würde auch eine Prüfung bestehen, die ALLES
+        ablehnt."""
+        from mietprozess.models import Mietbewerbung
+        offen = self._einheit(True)
+        r = self._bewerben(offen)
+        self.assertEqual(r.status_code, 201, r.content[:300])
+        self.assertTrue(Mietbewerbung.objects.filter(einheit=offen, nachname='Muster').exists())
+
+
 class PortalFremdzugriffTests(TestCase):
     """Kein Portal-Nutzer darf über eine fremde ID an fremde Daten kommen.
 
