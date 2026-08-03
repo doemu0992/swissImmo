@@ -47,6 +47,53 @@ def _heiz_verbrauch_pro_einheit(liegenschaft, start_p, ende_p):
     return result
 
 
+
+def _verteile_rundungsrest(zeilen, ziel_total):
+    """Legt die Rundungsdifferenz auf einzelne Zeilen, damit die angezeigten
+    Kostenanteile sich exakt auf die Gesamtkosten summieren.
+
+    Jeder Anteil wird für sich auf 2 Stellen gerundet. Bei 100.00 auf drei
+    gleiche Einheiten ergibt das 3 × 33.33 = 99.99 — der Mieter bekommt eine
+    Abrechnung, deren Positionen nicht aufgehen. Bei vielen Einheiten und
+    mehreren Kostenarten summieren sich diese Rappen.
+
+    Verfahren: grösster Rest. Die Zeilen mit dem grössten weggerundeten Anteil
+    bekommen je einen Rappen dazu (bzw. weg) — das ist die übliche und für den
+    Mieter fairste Zuteilung, weil sie dort korrigiert, wo am meisten gerundet
+    wurde.
+
+    Begleitfelder wandern mit, sonst wäre die Zeile in sich widersprüchlich:
+      akonto/leerstand  saldo bewegt sich mit den Kosten
+      pauschal          akonto spiegelt die Kosten, saldo bleibt 0.00
+    """
+    if not zeilen:
+        return
+    rappen = Decimal('0.01')
+    ist = sum((z['kosten_anteil'] for z in zeilen), Decimal('0.00'))
+    diff = (ziel_total - ist).quantize(rappen)
+    if diff == 0:
+        return
+    schritte = int(abs(diff) / rappen)
+    richtung = rappen if diff > 0 else -rappen
+    # Grösster weggerundeter Rest zuerst; bei Aufrundung umgekehrt, damit der
+    # Rappen dort landet, wo er am ehesten hingehört.
+    def rest(z):
+        exakt = z.get('_exakt')
+        if exakt is None:
+            return Decimal('0')
+        return (Decimal(str(exakt)) - z['kosten_anteil'])
+    sortiert = sorted(zeilen, key=rest, reverse=(diff > 0))
+    for i in range(min(schritte, len(sortiert))):
+        z = sortiert[i]
+        z['kosten_anteil'] = (z['kosten_anteil'] + richtung).quantize(rappen)
+        if z.get('typ') == 'mieter_pauschal':
+            z['akonto'] = (z['akonto'] + richtung).quantize(rappen)
+        else:
+            z['saldo'] = (z['saldo'] + richtung).quantize(rappen)
+            z['nachzahlung'] = z['saldo'] > 0
+    for z in zeilen:
+        z.pop('_exakt', None)
+
 def berechne_abrechnung(periode_id):
     """
     Professionelle Schweizer HNK-Abrechnung (Expert-Version).
@@ -280,7 +327,8 @@ def berechne_abrechnung(periode_id):
                     'akonto': round(bezahltes_akonto, 2),
                     'saldo': round(saldo, 2),
                     'nachzahlung': saldo > 0,
-                    'info': 'Akonto-Abrechnung'
+                    'info': 'Akonto-Abrechnung',
+                    '_exakt': mieter_total_kosten,
                 })
                 kontroll_summe += mieter_total_kosten
 
@@ -297,7 +345,8 @@ def berechne_abrechnung(periode_id):
                     'akonto': round(mieter_total_kosten, 2), # Pauschale deckt Kosten
                     'saldo': Decimal('0.00'),
                     'nachzahlung': False,
-                    'info': f'Als {nk_typ.capitalize()} verrechnet'
+                    'info': f'Als {nk_typ.capitalize()} verrechnet',
+                    '_exakt': mieter_total_kosten,
                 })
                 kontroll_summe += mieter_total_kosten
 
@@ -321,18 +370,25 @@ def berechne_abrechnung(periode_id):
                     'akonto': Decimal('0.00'),
                     'saldo': round(leer_total, 2),
                     'nachzahlung': True,
-                    'info': 'Leerstandskosten'
+                    'info': 'Leerstandskosten',
+                    '_exakt': leer_total,
                 })
                 kontroll_summe += leer_total
 
     abrechnungen.sort(key=lambda x: x['einheit'])
+    _verteile_rundungsrest(abrechnungen, round(total_kosten_gesamt, 2))
+    # Kontrollzahl auf den ANGEZEIGTEN (gerundeten) Werten: vorher summierte sie
+    # die ungerundeten Beträge und meldete «Differenz 0.00», während die
+    # gedruckten Zeilen sich nicht auf das Total summierten. Ein Mieter, der
+    # nachrechnet, hatte dann recht und die Abrechnung unrecht.
+    kontroll_summe = sum((z['kosten_anteil'] for z in abrechnungen), Decimal('0.00'))
 
     return {
         'total_kosten': round(total_kosten_gesamt, 2),
         'total_flaeche': round(total_m2, 2),
         'belege_details': kategorien_liste,
         'abrechnungen': abrechnungen,
-        'kontroll_summe': round(kontroll_summe, 2),
-        'differenz': round(total_kosten_gesamt - kontroll_summe, 2),
+        'kontroll_summe': kontroll_summe,
+        'differenz': round(total_kosten_gesamt, 2) - kontroll_summe,
         'hkvo_angewendet': hkvo_angewendet,
     }

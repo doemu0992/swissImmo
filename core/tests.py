@@ -1557,6 +1557,78 @@ class MahnlaufTests(TestCase):
         self.assertTrue(Mahnung.objects.filter(debitoren_rechnung=r).exists())
 
 
+class NkRundungTests(TestCase):
+    """Die angezeigten Kostenanteile müssen sich auf die Gesamtkosten summieren.
+
+    Jeder Anteil wurde für sich gerundet, die Kontrollzahl summierte dagegen die
+    UNGERUNDETEN Werte. Ergebnis: Die Abrechnung meldete «Differenz 0.00»,
+    während die gedruckten Zeilen 1 Rappen zu wenig ergaben. Gemessen an 100.00
+    auf drei gleiche Einheiten: 3 × 34.33 = 102.99 bei Total 103.00.
+
+    Ein Mieter, der nachrechnet, hatte damit recht und die Abrechnung unrecht —
+    und bei vielen Einheiten mit mehreren Kostenarten summieren sich die Rappen.
+    """
+
+    def _periode(self, anzahl, betrag, schluessel='m2'):
+        from finance.models import AbrechnungsPeriode, NebenkostenBeleg
+        lg = Liegenschaft.objects.create(strasse=f'Rundung {anzahl}', plz='4500',
+                                         ort='SO', versicherungswert=Decimal('1'))
+        for i in range(anzahl):
+            e = Einheit.objects.create(liegenschaft=lg, bezeichnung=f'W{i:02d}',
+                                       typ='wohnung', flaeche_m2=Decimal('50'))
+            m = Mieter.objects.create(typ='person', vorname='M', nachname=str(i),
+                                      strasse='W', plz='4500', ort='SO')
+            Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
+                                       netto_mietzins=Decimal('1000'),
+                                       nebenkosten=Decimal('0'), status='aktiv',
+                                       nk_abrechnungsart='akonto')
+        p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='2024',
+                                              start_datum=date(2024, 1, 1),
+                                              ende_datum=date(2024, 12, 31))
+        NebenkostenBeleg.objects.create(periode=p, text='Hauswart', betrag=Decimal(betrag),
+                                        datum=date(2024, 6, 1), verteilschluessel=schluessel)
+        return p
+
+    def test_anteile_summieren_sich_auf_die_gesamtkosten(self):
+        from core.utils.billing import berechne_abrechnung
+        for anzahl, betrag in [(3, '100.00'), (7, '1000.00'), (13, '555.55')]:
+            with self.subTest(einheiten=anzahl):
+                r = berechne_abrechnung(self._periode(anzahl, betrag).id)
+                summe = sum((z['kosten_anteil'] for z in r['abrechnungen']), Decimal('0.00'))
+                self.assertEqual(summe, r['total_kosten'],
+                                 f"{anzahl} Einheiten: Anteile ergeben {summe}, "
+                                 f"Total ist {r['total_kosten']}")
+
+    def test_gemeldete_differenz_misst_die_angezeigten_werte(self):
+        """Die Kontrollzahl rechnete auf ungerundeten Beträgen und meldete
+        «geht auf», obwohl die Zeilen es nicht taten."""
+        from core.utils.billing import berechne_abrechnung
+        r = berechne_abrechnung(self._periode(3, '100.00').id)
+        summe = sum((z['kosten_anteil'] for z in r['abrechnungen']), Decimal('0.00'))
+        self.assertEqual(r['kontroll_summe'], summe)
+        self.assertEqual(r['differenz'], Decimal('0.00'))
+
+    def test_rundungsausgleich_bleibt_pro_zeile_stimmig(self):
+        """Wandert ein Rappen auf eine Zeile, muss der Saldo mitgehen — sonst
+        widerspricht die Zeile sich selbst (Kosten − Akonto ≠ Saldo)."""
+        from core.utils.billing import berechne_abrechnung
+        r = berechne_abrechnung(self._periode(7, '1000.00').id)
+        for z in r['abrechnungen']:
+            if z['typ'] == 'mieter_akonto':
+                self.assertEqual(z['saldo'],
+                                 (z['kosten_anteil'] - z['akonto']).quantize(Decimal('0.01')),
+                                 f"Saldo passt nicht zu Kosten − Akonto bei {z['name']}")
+
+    def test_ausgleich_verteilt_sich_und_haeuft_nicht_auf_einer_zeile(self):
+        """Grösster Rest: die Differenz geht als EIN Rappen je Zeile weg, nicht
+        als Klumpen auf die erste."""
+        from core.utils.billing import berechne_abrechnung
+        r = berechne_abrechnung(self._periode(3, '100.00').id)
+        anteile = sorted(z['kosten_anteil'] for z in r['abrechnungen'])
+        self.assertLessEqual(max(anteile) - min(anteile), Decimal('0.01'),
+                             f"Anteile weichen mehr als einen Rappen ab: {anteile}")
+
+
 class NkAbrechnungVersandTests(TestCase):
     def _periode(self):
         from finance.models import AbrechnungsPeriode, NebenkostenBeleg
