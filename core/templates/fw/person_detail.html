@@ -194,7 +194,7 @@
                         <td class="py-1.5 pr-3 text-xs text-slate-400">{{ a.quelle }}</td>
                         <td class="py-1.5 text-right">
                             <form method="post" action="/neu/adresse/{{ a.id }}/loeschen/" onsubmit="return confirm('Diese Adress-Zeile entfernen?');">{% csrf_token %}
-                                <button class="text-xs text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
+                                <button title="Adresszeile löschen" class="text-xs text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
                             </form>
                         </td>
                     </tr>
@@ -338,7 +338,8 @@
                         <div class="text-xs text-slate-400">{{ d.get_kategorie_display }}{% if d.ablage_zeit %} · {{ d.ablage_zeit|date:"d.m.Y H:i" }}{% endif %}</div></div>
                     <form method="post" action="/neu/dokument/{{ d.id }}/portal-sichtbar/" class="shrink-0" title="{% if d.im_portal_sichtbar %}Im Mieterportal sichtbar – klicken zum Ausblenden{% else %}Im Mieterportal ausgeblendet – klicken zum Anzeigen{% endif %}">
                         {% csrf_token %}
-                        <button class="w-8 h-8 rounded-lg flex items-center justify-center {% if d.im_portal_sichtbar %}bg-emerald-50 text-emerald-600 hover:bg-emerald-100{% else %}bg-slate-100 text-slate-400 hover:bg-slate-200{% endif %}">
+                        <button aria-label="{% if d.im_portal_sichtbar %}Im Mieterportal ausblenden{% else %}Im Mieterportal anzeigen{% endif %}"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center {% if d.im_portal_sichtbar %}bg-emerald-50 text-emerald-600 hover:bg-emerald-100{% else %}bg-slate-100 text-slate-400 hover:bg-slate-200{% endif %}">
                             <i class="fa-solid {% if d.im_portal_sichtbar %}fa-eye{% else %}fa-eye-slash{% endif %} text-xs"></i>
                         </button>
                     </form>

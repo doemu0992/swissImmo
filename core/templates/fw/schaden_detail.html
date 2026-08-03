@@ -261,7 +261,7 @@
         {% endif %}
         {% for f in fotos %}
         <div class="relative group">
-            <a href="{{ f.bild.url }}" target="_blank" class="block">
+            <a href="{{ f.bild.url }}" target="_blank" title="Foto in voller Grösse öffnen" class="block">
                 <img src="{{ f.bild.url }}" alt="Foto" class="rounded-lg w-full h-40 object-cover border border-slate-200">
             </a>
             <form method="post" action="/neu/schaeden/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1"

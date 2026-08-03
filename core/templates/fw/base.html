@@ -257,7 +257,7 @@
     <aside id="fwSidebar" class="w-60 bg-[#161926] text-white flex flex-col min-h-[100dvh] flex-shrink-0 fixed lg:static inset-y-0 left-0 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out">
 
         <div class="px-5 py-5 flex items-center gap-2.5 border-b border-white/5 sb-logo">
-            <a href="/neu/" class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-xs shadow-lg shadow-indigo-600/30 shrink-0">
+            <a href="/neu/" title="Zur Übersicht" class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-xs shadow-lg shadow-indigo-600/30 shrink-0">
                 <i class="fa-solid fa-building"></i>
             </a>
             <a href="/neu/" class="font-extrabold tracking-wide text-sm uppercase sb-logotext flex-1">swissImmo</a>
@@ -401,7 +401,7 @@
                 {% if 'error' in m.tags or 'warning' in m.tags %}data-persist="1"{% endif %}>
                 <i class="fa-solid {% if 'error' in m.tags %}fa-circle-exclamation{% elif 'warning' in m.tags %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %} mt-0.5"></i>
                 <div class="flex-1">{{ m }}</div>
-                <button type="button" onclick="this.closest('.fw-toast').remove()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="this.closest('.fw-toast').remove()" title="Meldung schliessen" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
             </div>
             {% endfor %}
         </div>

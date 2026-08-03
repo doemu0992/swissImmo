@@ -206,7 +206,7 @@
                     <td class="py-1.5 pr-3 text-slate-600">{% if vs.ablauf_datum %}{{ vs.ablauf_datum|date:"d.m.Y" }}{% endif %}</td>
                     <td class="py-1.5 text-right">
                         <form method="post" action="/neu/versicherung/{{ vs.id }}/loeschen/" onsubmit="return confirm('Police entfernen?');">{% csrf_token %}
-                            <button class="text-xs text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
+                            <button title="Police löschen" class="text-xs text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
                         </form>
                     </td>
                 </tr>
@@ -455,7 +455,7 @@
                 <td class="px-5 py-3 text-right whitespace-nowrap">
                     <button type="button" onclick="document.getElementById('wfedit-{{ f.wf.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 mr-2" title="Bearbeiten"><i class="fa-solid fa-pen text-xs"></i></button>
                     <form method="post" action="/neu/frist/{{ f.wf.id }}/loeschen/" class="inline" onsubmit="return confirm('Frist löschen?');">{% csrf_token %}
-                        <button class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <button title="Frist löschen" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash text-xs"></i></button>
                     </form>
                 </td>
             </tr>

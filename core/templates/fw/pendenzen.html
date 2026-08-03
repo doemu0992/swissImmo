@@ -89,7 +89,7 @@
                     <span class="text-sm text-slate-400 line-through flex-1">{{ p.titel }}</span>
                     <span class="text-xs text-slate-300">{{ p.erledigt_am|date:"d.m.Y" }}</span>
                     <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" onsubmit="return confirm('Pendenz löschen?');">{% csrf_token %}
-                        <button class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        <button title="Pendenz löschen" class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
                     </form>
                 </div>
                 {% endfor %}

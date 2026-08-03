@@ -12922,6 +12922,65 @@ def _sig_bytes():
     return b.getvalue()
 
 
+class IconKnopfBeschriftungTests(TestCase):
+    """Ein Knopf, der nur aus einem Symbol besteht, sagt nichts.
+
+    Beim Draufzeigen erscheint kein Hinweis, und eine Sprachausgabe liest
+    gar nichts vor — der Nutzer muss klicken, um zu erfahren, was passiert.
+    Bei einem Papierkorb ist das die falsche Reihenfolge.
+
+    Gemessen waren es 19 solcher Bedienelemente in den /neu/-Vorlagen:
+    das Stift-Symbol im Kontenplan, Papierkörbe an Policen, Fristen,
+    Pendenzen, Vorlagen und Adresszeilen, das Kreuz im Vertragsassistenten.
+    """
+
+    #: Prüft die Vorlagen direkt statt gerenderter Seiten — sonst hinge die
+    #: Abdeckung davon ab, welche Testdaten gerade eine Zeile erzeugen.
+    def _stumme_bedienelemente(self):
+        import re, pathlib
+        tag = re.compile(r'<(button|a)\b([^>]*)>(.*?)</\1>', re.S | re.I)
+        treffer = []
+        for p in sorted(pathlib.Path('core/templates/fw').rglob('*.html')):
+            s = p.read_text(encoding='utf-8')
+            for m in tag.finditer(s):
+                attrs, inner = m.group(2), m.group(3)
+                if '<button' in inner or '<a ' in inner:
+                    continue                      # verschachtelt, gehört zum äusseren
+                txt = re.sub(r'<[^>]+>', '', inner)
+                txt = re.sub(r'\{%.*?%\}', '', txt, flags=re.S)
+                txt = re.sub(r'\{\{.*?\}\}', 'X', txt, flags=re.S).strip()
+                if txt:
+                    continue                      # trägt sichtbaren Text
+                if not re.search(r'<i\b|<svg\b|<img\b', inner):
+                    continue                      # gar kein Symbol -> kein Knopf-Fall
+                if re.search(r'\b(title|aria-label)\s*=', attrs):
+                    continue
+                # title am umschliessenden <form> wirkt beim Zeigen mit
+                vor = s[max(0, m.start() - 400):m.start()]
+                if '<form' in vor and 'title=' in vor.rsplit('<form', 1)[-1]:
+                    continue
+                treffer.append(f"{p}:{s[:m.start()].count(chr(10)) + 1}")
+        return treffer
+
+    def test_kein_bedienelement_ohne_beschriftung(self):
+        stumm = self._stumme_bedienelemente()
+        self.assertEqual(stumm, [], "Symbol-Knöpfe ohne title/aria-label:\n  " +
+                                    "\n  ".join(stumm))
+
+    def test_pruefung_findet_einen_eingebauten_fehler(self):
+        """Gegenprobe: Ohne sie wäre der Test oben nur eine leere Behauptung —
+        eine kaputte Suche meldet ebenfalls «keine Treffer»."""
+        import pathlib, os
+        ordner = pathlib.Path('core/templates/fw')
+        pfad = ordner / '_test_stummer_knopf.html'
+        pfad.write_text('<button class="x"><i class="fa-solid fa-trash"></i></button>\n',
+                        encoding='utf-8')
+        try:
+            self.assertIn(f'{pfad}:1', self._stumme_bedienelemente())
+        finally:
+            os.remove(pfad)
+
+
 class UnterschriftBriefeTests(TestCase):
     """Die Unterschrift lag nur auf Verträgen und Formularen — die reportlab-
     Briefe zogen eine Linie und liessen sie leer. Ein Einschreiben, das eine

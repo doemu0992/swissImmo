@@ -29,7 +29,7 @@
             <span class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-indigo-50 text-indigo-700">{{ v.get_kategorie_display }}</span>
             <form method="post" action="/neu/vorlagen/{{ v.id }}/loeschen/" onsubmit="return confirm('Vorlage löschen?');">
                 {% csrf_token %}
-                <button class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                <button title="Vorlage löschen" class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
             </form>
         </div>
         <h3 class="font-bold text-slate-900 text-sm mb-1">{{ v.name }}</h3>

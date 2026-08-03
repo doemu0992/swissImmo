@@ -82,7 +82,7 @@
                 <td class="px-5 py-2.5 text-right tabular-nums text-slate-500">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% elif m.neuwert %}{{ m.neuwert|chf }}{% endif %}</td>
                 <td class="px-5 py-2.5 text-right tabular-nums font-semibold {% if m.verursacher == 'mieter' %}text-rose-600{% else %}text-slate-300{% endif %}">
                     {% if m.verursacher == 'mieter' and m.mieteranteil is not None %}{{ m.mieteranteil|chf }}{% elif m.verursacher == 'mieter' and m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-2.5 text-center">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank"><img src="{{ m.foto.url }}" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
+                <td class="px-5 py-2.5 text-center">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank" title="Foto in voller Grösse öffnen"><img src="{{ m.foto.url }}" alt="Foto des Mangels" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
             </tr>
             {% empty %}
             <tr><td colspan="6" class="px-5 py-6 text-center text-slate-400 italic">Keine Mängel festgestellt.</td></tr>

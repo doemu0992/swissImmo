@@ -169,7 +169,7 @@
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {% for f in fotos %}
         <div class="relative group">
-            <a href="{{ f.bild.url }}" target="_blank" class="block">
+            <a href="{{ f.bild.url }}" target="_blank" title="Foto in voller Grösse öffnen" class="block">
                 <img src="{{ f.bild.url }}" alt="Objektfoto" class="rounded-lg w-full h-40 object-cover border border-slate-200">
             </a>
             {% if forloop.first %}<span class="absolute bottom-1 left-1 text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded font-semibold">Titelbild</span>{% endif %}
@@ -760,7 +760,7 @@
                                 {% for h in schluessel_empfaenger.handwerker %}<option value="handwerker:{{ h.id }}">{{ h.firma }}</option>{% endfor %}
                             </optgroup>{% endif %}
                         </select>
-                        <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+                        <button title="Schlüssel ausgeben" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
                     </form>
                     {% else %}<span class="text-xs text-slate-400">Alle ausgegeben</span>{% endif %}
                 </td>
