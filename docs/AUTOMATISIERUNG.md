@@ -19,3 +19,23 @@ Jeder Lauf schreibt einen Eintrag ins Aktivitätslog (`AktivitaetsLog`).
 Die Buttons in der App (Sollstellung, Mahnlauf) rufen dieselbe Logik
 (`core/services/automation.py`) auf — Scheduler und manuelle Auslösung sind
 deckungsgleich.
+
+## Deploy
+
+Auch das Ausrollen läuft als Scheduled Task, nicht von Hand:
+
+| Task | Rhythmus | Wirkung |
+|------|----------|---------|
+| `bash deploy.sh` | zeitgesteuert | Holt `claude/fairwalter-rebuild`, migriert, sammelt statische Dateien, lädt die Web-App neu |
+
+Was gepusht ist, geht damit beim nächsten Lauf von selbst live — **inklusive
+Migrationen**. Es gibt keinen separaten Migrationsschritt, den jemand von Hand
+nachziehen müsste.
+
+Der Ablauf ist bewusst absichernd: `git reset --hard` (liegengebliebene lokale
+Dateien blockieren den Deploy nicht — die Produktionsdaten `db.sqlite3`,
+`media/`, `staticfiles/` liegen nicht im Git), und **bei gescheiterter
+Migration wird NICHT neu geladen**. Dann bleibt die alte Version aktiv, statt
+eine halb migrierte auszuliefern.
+
+Welcher Stand gerade läuft: <https://swissimmo.pythonanywhere.com/version/>
