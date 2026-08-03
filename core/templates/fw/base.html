@@ -631,8 +631,22 @@ function fwTabellenStapeln(wurzel) {
         var kopfZeile = tab.querySelector('thead tr');
         if (!kopfZeile) return;                       // ohne Überschriften kein sinnvolles Label
         if (tab.closest('.md\\:block')) return;       // Desktop-Variante einer Karten-Lösung
+        // textContent klebt über Element-Grenzen hinweg zusammen: Aus
+        //   <th>Netto / NK<br><span>Referenz</span></th>
+        // wurde mobil das Label «NETTO / NKREFERENZ». Deshalb an jeder
+        // Element- und <br>-Grenze ein Leerzeichen einfügen und Läufe
+        // anschliessend zusammenfassen.
         var titel = Array.prototype.map.call(kopfZeile.cells, function (th) {
-            return (th.textContent || '').trim().replace(/\s+/g, ' ');
+            var teile = [];
+            (function sammeln(knoten) {
+                Array.prototype.forEach.call(knoten.childNodes, function (k) {
+                    if (k.nodeType === 3) { teile.push(k.nodeValue); return; }
+                    teile.push(' ');
+                    if (k.nodeName !== 'BR') sammeln(k);
+                    teile.push(' ');
+                });
+            })(th);
+            return teile.join('').replace(/\s+/g, ' ').trim();
         });
         if (!titel.length) return;
         tab.setAttribute('data-stack', '');

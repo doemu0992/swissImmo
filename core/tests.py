@@ -13006,6 +13006,48 @@ class GratismonatSichtbarTests(TestCase):
                          'Klickfläche geht wieder über die ganze Formularbreite')
 
 
+class MobilBeschriftungTests(TestCase):
+    """Die mobilen Spalten-Beschriftungen dürfen nicht zusammenkleben.
+
+    Das Skript in base.html setzt jeder Zelle die Überschrift ihrer Spalte als
+    Label; mobil steht sie links neben dem Wert. Es las bisher `th.textContent`
+    — und das klebt über Element-Grenzen hinweg zusammen. Aus
+
+        <th>Netto / NK<br><span>Referenz</span></th>
+
+    wurde am Handy die Beschriftung «NETTO / NKREFERENZ». Im Browser gemessen
+    (390 px, echter Tailwind-Build): vorher «Netto / NKReferenz», nachher
+    «Netto / NK Referenz».
+
+    Das Verhalten selbst ist Browser-Sache und wird von dieser Suite nicht
+    ausgeführt; hier steht deshalb nur, dass die naive Fassung nicht
+    zurückkommt — plus die Liste der Überschriften, die davon betroffen wären.
+    """
+
+    def test_label_skript_klebt_nicht_mehr_zusammen(self):
+        import pathlib
+        s = pathlib.Path('core/templates/fw/base.html').read_text(encoding='utf-8')
+        self.assertNotIn("return (th.textContent || '').trim().replace(/\\s+/g, ' ');", s,
+                         'Beschriftungen werden wieder aus reinem textContent gebaut')
+        self.assertIn('nodeName !== \'BR\'', s)
+
+    def test_mehrteilige_ueberschriften_sind_bekannt(self):
+        """Wo Überschriften aus mehreren Elementen bestehen, greift die Regel.
+        Kommen neue dazu, ist das kein Fehler — der Test zeigt nur, dass es sie
+        gibt und der Fix damit gebraucht wird."""
+        import re, pathlib
+        mehrteilig = []
+        for p in sorted(pathlib.Path('core/templates/fw').rglob('*.html')):
+            s = p.read_text(encoding='utf-8')
+            for m in re.finditer(r'<th\b[^>]*>(.*?)</th>', s, re.S):
+                inner = m.group(1)
+                if '<br' in inner or '<span' in inner:
+                    mehrteilig.append(f"{p}:{s[:m.start()].count(chr(10)) + 1}")
+        self.assertTrue(mehrteilig,
+                        'keine mehrteilige Überschrift mehr — dann kann dieser '
+                        'Test weg (und der Fix bliebe harmlos)')
+
+
 class GeldKaestchenTests(TestCase):
     """Dieselbe Falle wie beim Gratismonat, an den übrigen Geld-Kästchen.
 
