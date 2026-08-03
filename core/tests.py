@@ -13006,6 +13006,123 @@ class GratismonatSichtbarTests(TestCase):
                          'Klickfläche geht wieder über die ganze Formularbreite')
 
 
+class ErfolgBilanzGruppiertTests(TestCase):
+    """Erfolgsrechnung und Bilanz in vier Abfragen statt zwei je Konto.
+
+    `_erfolg_bilanz` lief über den ganzen Kontenplan und fragte für jedes Konto
+    Soll und Haben einzeln ab — gemessen 90 Abfragen für einen Aufbau von
+    /neu/buchhaltung/, danach 2. Dieselbe Rechnung steckt im PDF-Abzug.
+
+    Bei so einem Umbau zählt nur eines: dass exakt dieselben Zahlen
+    herauskommen. Deshalb rechnet der Test unten dasselbe nochmals — naiv,
+    Konto für Konto — und vergleicht Feld für Feld.
+    """
+
+    def _daten(self):
+        from finance.booking import ensure_kontenplan, buche, storniere_buchung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        lg2 = Liegenschaft.objects.create(strasse='Nebenweg 2', plz='3000', ort='Bern',
+                                          versicherungswert=Decimal('500000'))
+        # Vorjahr — muss in der Bilanz kumulativ mitzählen, in der
+        # Erfolgsrechnung des Folgejahres aber nicht.
+        buche('1100', '3000', Decimal('4000.00'), 'Miete Vorjahr',
+              datum=date(2025, 6, 1), liegenschaft=lg)
+        buche('1020', '1100', Decimal('4000.00'), 'Zahlung Vorjahr',
+              datum=date(2025, 6, 5), liegenschaft=lg)
+        # Laufendes Jahr
+        buche('1100', '3000', Decimal('9000.00'), 'Miete', datum=date(2026, 3, 1), liegenschaft=lg)
+        buche('4000', '2000', Decimal('2500.00'), 'Reparatur', datum=date(2026, 3, 4), liegenschaft=lg)
+        buche('4000', '2000', Decimal('700.00'), 'Reparatur 2', datum=date(2026, 4, 4), liegenschaft=lg2)
+        # Ein Storno — beide Seiten müssen sich aufheben
+        b = buche('4000', '2000', Decimal('333.00'), 'Irrtum', datum=date(2026, 5, 1), liegenschaft=lg)
+        storniere_buchung(b, user=None, datum=date(2026, 5, 2))
+        return lg
+
+    def _naiv(self, aktive_lg, jahr):
+        """Dieselbe Rechnung, Konto für Konto — die Fassung von vor dem Umbau."""
+        from django.db.models import Sum
+        from finance.models import Buchung, Buchungskonto
+        from core.services.jahresabschluss import abschluss_buchungen_q
+        null = Decimal('0.00')
+        qs = Buchung.objects.all()
+        bil = Buchung.objects.all()
+        if aktive_lg:
+            qs = qs.filter(liegenschaft=aktive_lg); bil = bil.filter(liegenschaft=aktive_lg)
+        if jahr != 'alle':
+            qs = qs.filter(datum__gte=date(jahr, 1, 1), datum__lte=date(jahr, 12, 31))
+            bil = bil.filter(datum__lte=date(jahr, 12, 31))
+        qs = qs.exclude(abschluss_buchungen_q())
+        te = ta = tak = tpa = kum = null
+        for k in Buchungskonto.objects.all():
+            def summe(basis, feld):
+                return basis.filter(**{feld: k}).aggregate(t=Sum('betrag'))['t'] or null
+            if k.typ == 'ertrag':
+                te += summe(qs, 'haben_konto') - summe(qs, 'soll_konto')
+                kum += summe(bil, 'haben_konto') - summe(bil, 'soll_konto')
+            elif k.typ == 'aufwand':
+                ta += summe(qs, 'soll_konto') - summe(qs, 'haben_konto')
+                kum -= summe(bil, 'soll_konto') - summe(bil, 'haben_konto')
+            else:
+                saldo = summe(bil, 'soll_konto') - summe(bil, 'haben_konto')
+                if saldo == 0:
+                    continue
+                if k.typ == 'aktiv':
+                    tak += saldo
+                elif k.typ == 'passiv':
+                    tpa += -saldo
+                elif saldo > 0:
+                    tak += saldo
+                else:
+                    tpa += -saldo
+        return {'total_ertrag': te, 'total_aufwand': ta, 'total_aktiven': tak,
+                'total_passiven': tpa, 'kum_erfolg': kum}
+
+    def test_gruppierte_rechnung_ergibt_dieselben_zahlen(self):
+        from core.views.fw import _erfolg_bilanz
+        lg = self._daten()
+        for aktive_lg, jahr in ((None, 2026), (lg, 2026), (None, 2025), (None, 'alle')):
+            neu = _erfolg_bilanz(aktive_lg, jahr)
+            alt = self._naiv(aktive_lg, jahr)
+            for feld, wert in alt.items():
+                self.assertEqual(neu[feld], wert,
+                                 f"{feld} weicht ab (lg={aktive_lg}, jahr={jahr}): "
+                                 f"{neu[feld]} statt {wert}")
+
+    def test_zahlen_stimmen_auch_absolut(self):
+        """Der Vergleich oben würde auch bestehen, wenn BEIDE Fassungen falsch
+        rechnen. Deshalb zusätzlich von Hand nachgerechnet."""
+        from core.views.fw import _erfolg_bilanz
+        self._daten()
+        d = _erfolg_bilanz(None, 2026)
+        self.assertEqual(d['total_ertrag'], Decimal('9000.00'))
+        # 2500 + 700; die 333 sind storniert und heben sich auf
+        self.assertEqual(d['total_aufwand'], Decimal('3200.00'))
+        self.assertEqual(d['erfolg'], Decimal('5800.00'))
+        # Vorjahr 4000 Ertrag → Vortrag; kumuliert 9000 + 4000 − 3200
+        self.assertEqual(d['erfolg_vortrag'], Decimal('4000.00'))
+        self.assertEqual(d['bilanz_differenz'], Decimal('0.00'))
+
+    def test_buchhaltung_fragt_nicht_je_konto_nach(self):
+        """Mit jedem neuen Konto im Kontenplan wuchs der Seitenaufbau."""
+        from django.test.utils import CaptureQueriesContext
+        from django.db import connection
+        from finance.models import Buchungskonto
+        self._daten()
+        c = Client(); c.force_login(_team_user())
+        def messen():
+            with CaptureQueriesContext(connection) as ctx:
+                r = c.get('/neu/buchhaltung/')
+            self.assertEqual(r.status_code, 200)
+            return len(ctx.captured_queries)
+        klein = messen()
+        for i in range(10):
+            Buchungskonto.objects.create(nummer=f'89{i:02d}', bezeichnung=f'Test {i}', typ='aufwand')
+        gross = messen()
+        self.assertLessEqual(gross, klein + 2,
+                             f'zehn Konten mehr → {klein} statt {gross} Abfragen')
+
+
 class MobilBeschriftungTests(TestCase):
     """Die mobilen Spalten-Beschriftungen dürfen nicht zusammenkleben.
 

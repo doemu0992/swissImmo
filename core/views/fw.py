@@ -6910,6 +6910,21 @@ def _erfolg_bilanz(aktive_lg, jahr):
     from core.services.jahresabschluss import abschluss_buchungen_q
     qs = qs.exclude(abschluss_buchungen_q())
 
+    # Salden in VIER Abfragen statt zwei je Konto. Die Buchhaltungsseite lief
+    # über den Kontenplan und fragte je Konto Soll und Haben einzeln ab —
+    # gemessen 90 Abfragen für einen Seitenaufbau, und dieselbe Rechnung steckt
+    # im PDF-Abzug. Gruppiert liefert die Datenbank dasselbe in einem Durchgang.
+    def _salden(basis_qs):
+        soll = {kid: betrag for kid, betrag in
+                basis_qs.values_list('soll_konto').annotate(t=Sum('betrag'))}
+        haben = {kid: betrag for kid, betrag in
+                 basis_qs.values_list('haben_konto').annotate(t=Sum('betrag'))}
+        return soll, haben
+
+    p_soll, p_haben = _salden(qs)            # Periode (Erfolgsrechnung)
+    k_soll, k_haben = _salden(bilanz_qs)     # kumulativ bis Jahresende (Bilanz)
+    _0 = Decimal('0.00')
+
     ertraege, aufwaende = [], []
     aktiven, passiven = [], []
     total_ertrag = total_aufwand = Decimal('0.00')
@@ -6917,22 +6932,22 @@ def _erfolg_bilanz(aktive_lg, jahr):
     kum_erfolg = Decimal('0.00')   # kumuliertes Ergebnis bis Jahresende (Eigenkapital)
     for k in konten:
         if k.typ == 'ertrag':
-            soll = qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
-            haben = qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            soll = p_soll.get(k.id) or _0
+            haben = p_haben.get(k.id) or _0
             saldo = haben - soll
             if saldo:
                 ertraege.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': saldo})
                 total_ertrag += saldo
         elif k.typ == 'aufwand':
-            soll = qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
-            haben = qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            soll = p_soll.get(k.id) or _0
+            haben = p_haben.get(k.id) or _0
             saldo = soll - haben
             if saldo:
                 aufwaende.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': saldo})
                 total_aufwand += saldo
         else:  # bilanz / aktiv / passiv — kumulativ bis Jahresende
-            soll = bilanz_qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
-            haben = bilanz_qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+            soll = k_soll.get(k.id) or _0
+            haben = k_haben.get(k.id) or _0
             saldo = soll - haben  # Sollsaldo: >0 tendenziell Aktivum, <0 Passivum
             if saldo == 0:
                 continue
@@ -6954,13 +6969,9 @@ def _erfolg_bilanz(aktive_lg, jahr):
     # Kumuliertes Ergebnis (alle Erfolgskonten bis Jahresende) → Eigenkapital-Zeile
     for k in konten:
         if k.typ == 'ertrag':
-            s = bilanz_qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
-            h = bilanz_qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
-            kum_erfolg += (h - s)
+            kum_erfolg += (k_haben.get(k.id) or _0) - (k_soll.get(k.id) or _0)
         elif k.typ == 'aufwand':
-            s = bilanz_qs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
-            h = bilanz_qs.filter(haben_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
-            kum_erfolg -= (s - h)
+            kum_erfolg -= (k_soll.get(k.id) or _0) - (k_haben.get(k.id) or _0)
     for lst in (ertraege, aufwaende, aktiven, passiven):
         lst.sort(key=lambda x: x['nummer'])
     erfolg = total_ertrag - total_aufwand          # Ergebnis der Periode (Erfolgsrechnung)
