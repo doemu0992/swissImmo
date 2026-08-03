@@ -12789,6 +12789,58 @@ class FinanzUIP5Tests(TestCase):
         bilanz = html.split('id="bh-bilanz"')[1].split('id="bh-journal"')[0]
         self.assertNotIn('min-w-max', bilanz)
 
+    # ---------- Tabellen am PC: keine Querscroll-Pflicht ----------
+    # «min-w-max» machte die Tabelle so breit wie ihr Inhalt; auf
+    # /neu/debitoren/ waren das 1412 px in einer 1134 px breiten Spalte
+    # (1440 px Fenster), also lagen Mahnstufe und Aktionen ausserhalb des
+    # Bildes. Gelöst über eine zentrale Regel in base.html, die linksbündige
+    # Textspalten umbrechen lässt.
+
+    def _debitoren_tabelle(self):
+        """Der Desktop-Teil der Debitoren-Seite als HTML-Ausschnitt."""
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/debitoren/').content.decode('utf-8')
+        return html.split('<!-- Desktop: Tabelle -->')[1].split('</table>')[0]
+
+    def test_geldspalten_bleiben_rechtsbuendig(self):
+        """Die Umbruch-Regel unterscheidet Text von Zahl allein an
+        `text-right`. Verliert eine Betragsspalte diese Klasse, fängt der
+        Betrag an umzubrechen («1'450.» / «00») — die Zahlenkolonne wäre
+        nicht mehr lesbar. Diese Konvention wird hier gepinnt."""
+        import re
+        from finance.models import DebitorenRechnung
+        lg, e, m, v = _basis_objekte()
+        DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Miete & NK 08/2026',
+            betrag=Decimal('1450.00'), status='offen',
+            faellig_am=date(2026, 8, 1))
+        tabelle = self._debitoren_tabelle()
+        zellen = re.findall(r'<td\b([^>]*)>(.*?)</td>', tabelle, re.S)
+        self.assertTrue(zellen, 'keine Tabellenzeilen gerendert — Test wäre wertlos')
+        # Eine Betragszelle enthält NUR den Betrag. Über den Zellinhalt statt
+        # über ein Muster im Fliesstext, sonst zählt «01.08.2026» als Betrag.
+        def nur_betrag(inhalt):
+            txt = re.sub(r'<[^>]+>', '', inhalt)
+            txt = txt.replace('&nbsp;', ' ').strip()
+            return re.fullmatch(r"-?[\d'\u2019]{1,15}\.\d{2}", txt) is not None
+        betrags_zellen = [(a, i) for a, i in zellen if nur_betrag(i)]
+        self.assertTrue(betrags_zellen, 'kein Betrag in der Tabelle gefunden')
+        for attr, inhalt in betrags_zellen:
+            self.assertIn('text-right', attr,
+                          f'Betragszelle ohne text-right: {inhalt.strip()[:60]}')
+
+    def test_base_laesst_breite_tabellen_am_pc_umbrechen(self):
+        """Ohne diese Regel scrollt jede Tabelle mit vielen Spalten quer.
+        Sie steht zentral in base.html, damit sie auch für neue Tabellen
+        gilt — und ist deshalb leicht versehentlich zu entfernen."""
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/debitoren/').content.decode('utf-8')
+        self.assertIn('@media (min-width: 768px)', html)
+        self.assertIn('main table.min-w-max td:not(.text-right):not(.text-center)', html)
+        # Der Wrapper bleibt scrollbar — sehr breite Tabellen (Spalte je
+        # Bewerber) brauchen ihn weiterhin.
+        self.assertIn('overflow-x-auto', html)
+
     def test_journal_hat_kartenansicht_fuers_handy(self):
         """Sieben Spalten passen auf kein Telefon — mobil als Karten."""
         lg, e, m, v = _basis_objekte()

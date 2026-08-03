@@ -136,6 +136,52 @@
             table[data-stack] td[colspan]::before { content: none; }
             table[data-stack] tfoot tr { background: #f8fafc; font-weight: 600; }
         }
+        /* ---- Tabellen am PC: in die Spalte passen statt quer scrollen ----
+           «min-w-max» stammt aus der Zeit, als dieselbe Tabelle auch das Handy
+           bedienen musste. Seit die Handy-Ansicht gestapelt wird (Block oben),
+           bewirkt es am PC nur noch eines: Die Tabelle wird so breit wie ihr
+           Inhalt, und der Wrapper scrollt quer. Gemessen bei 1440 px Fenster
+           (1134 px Inhaltsspalte, echter Tailwind-Build):
+
+               /neu/debitoren/    1412 px nötig  (+278)
+               /neu/mietzins/     1295 px nötig  (+161)
+               /neu/kreditoren/   1230 px nötig   (+96)
+               /neu/vertraege/    1215 px nötig   (+81)
+
+           Man sah also nie die ganze Zeile — Mahnstufe und Aktionen lagen
+           ausserhalb des Bildes.
+
+           Die Mindestbreite allein aufzuheben bringt NICHTS (gemessen: exakt
+           dieselben 1412 px). Ursache ist «whitespace-nowrap» auf den Text-
+           spalten: eine Zelle, die nicht umbrechen darf, ist ihr eigener
+           Breiten-Boden. Deshalb dürfen linksbündige Textspalten hier
+           umbrechen — rechtsbündige (Beträge, Daten, Aktionsknöpfe) und
+           zentrierte bleiben einzeilig, sonst zerfällt die Zahlenkolonne.
+           Abzeichen behalten ihr nowrap: das sitzt am <span> in der Zelle,
+           nicht an der Zelle selbst.
+
+           Der Wrapper bleibt «overflow-x-auto». Querscrollen soll nicht
+           unmöglich sein (eine Tabelle mit Spalte je Bewerber braucht es
+           weiterhin) — es soll nur nicht der Normalfall sein. */
+        @media (min-width: 768px) {
+            main table.min-w-max { min-width: 100%; }
+            main table.min-w-max td:not(.text-right):not(.text-center) {
+                white-space: normal;
+                overflow-wrap: break-word;
+            }
+            /* Ab sieben Spalten sind 2×20 px Innenabstand je Spalte über
+               280 px allein für Luft — dann lieber enger als hoch. Der
+               Umbruch oben lässt die Debitoren-Zeile sonst von 49 auf 89 px
+               wachsen; mit dem engeren Abstand sind es 69 px, bei den
+               Kreditoren bleibt es bei den ursprünglichen 59 px.
+               Tabellen mit weniger Spalten passten ohnehin und bleiben
+               unverändert. Kennt ein Browser :has() nicht, fällt nur diese
+               Feinheit weg — die Tabelle passt trotzdem. */
+            main table.min-w-max:has(thead th:nth-child(7)) th.px-5,
+            main table.min-w-max:has(thead th:nth-child(7)) td.px-5 {
+                padding-left: 0.75rem; padding-right: 0.75rem;
+            }
+        }
         /* iOS: native date/month/time-Felder haben eine Eigenbreite, die w-full
            ignoriert und aus dem Container läuft. Auf Containerbreite zwingen. */
         input[type="date"], input[type="month"], input[type="week"],
