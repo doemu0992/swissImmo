@@ -158,6 +158,29 @@ def get_current_lik():
         return v.aktueller_lik_punkte if v else 107.1
     except: return 107.1
 
+#: Ablageordner je Modell. Sieben Dateifelder landeten bisher alle im selben
+#: Topf `uploads/<datum>/` — Objektfotos fürs Inserat neben Schadenfotos aus
+#: fremden Wohnungen und eingescannten Mieterdokumenten. Die Zugriffsregel in
+#: `core/views/media_protected.py` unterscheidet nach Pfad; in einem gemeinsamen
+#: Topf KANN sie nicht unterscheiden und liess jedes Bild anonym durch.
+#: Getrennte Ordner geben ihr die Information zurück.
+UPLOAD_ORDNER = {
+    'SchadenMeldung': 'schaden_fotos',      # Fotos aus der Wohnung des Mieters
+    'SchadenFoto':    'schaden_fotos',
+    'Dokument':       'dokumente',          # Verträge, Korrespondenz (auch als Bild)
+    'Unterhalt':      'unterhalt_belege',
+    'Ausstattung':    'ausstattung_fotos',  # Innenaufnahmen des Objekts
+    'EinheitFoto':    'objekt_fotos',       # fürs Inserat — bewusst öffentlich
+}
+
+
 def get_smart_upload_path(instance, filename):
+    """Ablagepfad einer hochgeladenen Datei: <ordner>/<datum>/<name>.
+
+    Der Ordner richtet sich nach dem Modell, damit die Zugriffsregel für
+    /media/ sensible von öffentlichen Dateien unterscheiden kann. Unbekannte
+    Modelle landen weiterhin in `uploads/` — das ist der Ordner, den die Regel
+    als schutzbedürftig behandelt, also die sichere Voreinstellung."""
     heute = datetime.date.today().strftime("%Y-%m-%d")
-    return os.path.join("uploads", heute, filename)
+    ordner = UPLOAD_ORDNER.get(type(instance).__name__, "uploads")
+    return os.path.join(ordner, heute, filename)

@@ -8911,7 +8911,13 @@ class MediaSchutzTests(TestCase):
         self.assertFalse(ist_oeffentlich('bewerbungen/ausweis/hans.jpg'))   # PII trotz Bild
         self.assertFalse(ist_oeffentlich('roh_vertraege/vertrag.pdf'))
         self.assertFalse(ist_oeffentlich('uploads/2026-01-01/Mietvertrag.pdf'))  # PDF
-        self.assertTrue(ist_oeffentlich('uploads/2026-01-01/objektfoto.jpg'))    # Bild
+        # Ein Bild im Alt-Ordner `uploads/` galt früher als öffentlich — die
+        # Annahme «Bild = Inseratfoto» stimmte aber nicht: Im selben Ordner
+        # lagen Schadenfotos aus fremden Wohnungen und eingescannte Dokumente.
+        # Der Ordner ist deshalb geschützt; Inseratfotos werden über die
+        # Datenbank erkannt (`ist_objektfoto`) bzw. liegen neu in `objekt_fotos/`.
+        self.assertFalse(ist_oeffentlich('uploads/2026-01-01/objektfoto.jpg'))
+        self.assertTrue(ist_oeffentlich('objekt_fotos/2026-01-01/inserat.jpg'))
         self.assertTrue(ist_oeffentlich('logos/firma.png'))
 
     def test_anonymer_zugriff_auf_sensible_datei_404(self):
@@ -13004,6 +13010,90 @@ class GratismonatSichtbarTests(TestCase):
         auf = html[label:stelle]
         self.assertNotIn('col-span-4', auf,
                          'Klickfläche geht wieder über die ganze Formularbreite')
+
+
+class MediaZugriffTests(TestCase):
+    """Welche hochgeladene Datei darf ein Fremder ohne Anmeldung abrufen?
+
+    Sieben Dateifelder landeten alle im selben Topf `uploads/<datum>/` —
+    Objektfotos fürs Inserat neben Schadenfotos aus fremden Wohnungen,
+    eingescannten Mieterdokumenten, Unterhaltsbelegen und Innenaufnahmen der
+    Ausstattung. Die Zugriffsregel unterscheidet nach Pfad und liess Bilder
+    anonym durch, weil der Portal-Feed die Inserat-Fotos braucht. In einem
+    gemeinsamen Topf KONNTE sie Inserat- nicht von Wohnungsfoto trennen.
+
+    Jetzt hat jedes Modell seinen Ordner. Dieser Test hält fest, welcher
+    öffentlich ist — und zwingt jedes NEUE Dateifeld zu einer Entscheidung.
+    """
+
+    #: Ordner, deren Bilder bewusst ohne Anmeldung ausgeliefert werden.
+    OEFFENTLICH_GEWOLLT = {'logos', 'objekt_fotos'}
+
+    def _felder(self):
+        from django.apps import apps
+        from django.db.models import FileField
+        for m in apps.get_models():
+            for f in m._meta.get_fields():
+                if not isinstance(f, FileField):
+                    continue
+                ut = f.upload_to
+                pfad = ut(m(), 'datei.jpg') if callable(ut) else (str(ut).rstrip('/') + '/datei.jpg')
+                yield f"{m.__name__}.{f.name}", pfad
+
+    def test_nur_inserat_und_logo_sind_oeffentlich(self):
+        from core.views.media_protected import ist_oeffentlich
+        offen = sorted({(name, pfad) for name, pfad in self._felder() if ist_oeffentlich(pfad)})
+        ordner = {p.split('/')[0] for _n, p in offen}
+        self.assertEqual(ordner, self.OEFFENTLICH_GEWOLLT,
+                         'Ohne Anmeldung abrufbar sind: ' +
+                         ', '.join(f'{n} ({p})' for n, p in offen))
+
+    def test_schadenfotos_und_dokumente_brauchen_anmeldung(self):
+        """Die konkreten Fälle beim Namen genannt — damit klar bleibt, worum
+        es geht, falls jemand die Ordner wieder zusammenlegt."""
+        from core.views.media_protected import ist_oeffentlich
+        for feld, pfad in self._felder():
+            if feld.split('.')[0] in ('SchadenMeldung', 'SchadenFoto', 'Dokument',
+                                      'Unterhalt', 'Ausstattung'):
+                self.assertFalse(ist_oeffentlich(pfad),
+                                 f'{feld} ({pfad}) wäre ohne Anmeldung abrufbar')
+
+    def test_alt_ordner_ist_geschuetzt_ausser_inseratfotos(self):
+        """Bereits hochgeladene Dateien liegen weiter in `uploads/`. Der Ordner
+        ist jetzt geschützt — sonst blieben die Alt-Bestände offen. Damit
+        veröffentlichte Inserate nicht ins Leere laufen, bleiben Objektfotos
+        auch dort öffentlich; erkannt über die Datenbank."""
+        from core.views.media_protected import ist_oeffentlich, ist_objektfoto
+        from portfolio.models import EinheitFoto
+        from django.core.files.base import ContentFile
+        alt = 'uploads/2026-01-01/wohnzimmer.jpg'
+        self.assertFalse(ist_oeffentlich(alt))
+        self.assertFalse(ist_objektfoto(alt))          # noch kein Objektfoto
+
+        lg = Liegenschaft.objects.create(strasse='Fotoweg 1', plz='3000', ort='Bern')
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='1 Zi', typ='wohnung')
+        foto = EinheitFoto(einheit=e)
+        foto.bild.name = alt                            # Alt-Pfad wie im Bestand
+        foto.save()
+        self.assertTrue(ist_objektfoto(alt))            # jetzt als Inserat-Bild erkannt
+
+    def test_fremder_bekommt_schadenfoto_nicht(self):
+        """Nicht nur die Regel, sondern die Auslieferung."""
+        import os, shutil
+        from django.conf import settings
+        from django.test import Client
+        rel = 'schaden_fotos/2026-01-01/bad.jpg'
+        ziel = os.path.join(settings.MEDIA_ROOT, rel)
+        os.makedirs(os.path.dirname(ziel), exist_ok=True)
+        with open(ziel, 'wb') as fh:
+            fh.write(b'\xff\xd8\xff\xe0JFIF-Testbild')
+        try:
+            self.assertEqual(Client().get('/media/' + rel).status_code, 404)
+            c = Client(); c.force_login(_team_user())
+            self.assertEqual(c.get('/media/' + rel).status_code, 200)
+        finally:
+            shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'schaden_fotos'),
+                          ignore_errors=True)
 
 
 class BewerbungNurAusgeschriebenTests(TestCase):

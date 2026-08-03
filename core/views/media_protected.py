@@ -33,12 +33,20 @@ SENSIBLE_PREFIXE = (
     'bewerbungen/', 'kautions_zertifikate/', 'roh_vertraege/', 'vertraege_pdfs/',
     'nebenkosten_belege/', 'kreditoren_belege/', 'debitoren_rechnungen/',
     'ticket_anhang/', 'unterschriften/', 'abnahme_fotos/',
+    # Diese vier lagen bis zur Trennung der Upload-Ordner alle in `uploads/`
+    # und damit — als Bilddatei — anonym abrufbar: Fotos aus der Wohnung des
+    # Mieters (Schadenmeldung), eingescannte Verträge und Korrespondenz,
+    # Unterhaltsbelege, Innenaufnahmen der Ausstattung.
+    'schaden_fotos/', 'dokumente/', 'unterhalt_belege/', 'ausstattung_fotos/',
+    # Der Alt-Topf: Was da liegt, ist nicht mehr unterscheidbar — deshalb
+    # geschützt. Ausnahme sind Objektfotos, siehe `ist_objektfoto`.
+    'uploads/',
 )
 # Öffentliche Bild-Endungen (Objektfotos/Exposé — vom Portal-Feed anonym gebraucht).
 # .svg bewusst NICHT enthalten: SVG kann eingebettetes JavaScript ausführen (Stored XSS),
 # darf also nie inline und nie anonym ausgeliefert werden.
 OEFFENTLICHE_BILD_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'}
-OEFFENTLICHE_PREFIXE = ('logos/',)
+OEFFENTLICHE_PREFIXE = ('logos/', 'objekt_fotos/')
 
 
 def ist_oeffentlich(pfad):
@@ -51,6 +59,26 @@ def ist_oeffentlich(pfad):
     return os.path.splitext(p)[1] in OEFFENTLICHE_BILD_EXT
 
 
+def ist_objektfoto(pfad):
+    """Gehört dieser Alt-Pfad zu einem Objektfoto? Dann anonym ausliefern.
+
+    Vor der Trennung der Upload-Ordner lagen Inserat-Fotos im selben `uploads/`
+    wie Schadenfotos und gescannte Dokumente. Der Ordner ist deshalb jetzt
+    geschützt — sonst blieben Wohnungsaufnahmen fremder Mieter frei abrufbar.
+    Damit bereits veröffentlichte Inserate nicht ins Leere laufen, wird für
+    Alt-Pfade in der Datenbank nachgesehen: Ist die Datei ein `EinheitFoto`,
+    ist sie fürs Inserat gedacht und bleibt öffentlich. Eine Abfrage je Bild,
+    und nur für den Alt-Ordner."""
+    p = (pfad or '').lstrip('/')
+    if not p.startswith('uploads/'):
+        return False
+    try:
+        from portfolio.models import EinheitFoto
+        return EinheitFoto.objects.filter(bild=p).exists()
+    except Exception:
+        return False
+
+
 def geschuetzte_media(request, pfad):
     """Liefert eine Media-Datei aus — sensible Dateien nur für Team-Mitglieder."""
     try:
@@ -59,7 +87,7 @@ def geschuetzte_media(request, pfad):
         raise Http404
     if not (os.path.exists(vollpfad) and os.path.isfile(vollpfad)):
         raise Http404
-    if not ist_oeffentlich(pfad):
+    if not (ist_oeffentlich(pfad) or ist_objektfoto(pfad)):
         u = getattr(request, 'user', None)
         if not (u and u.is_authenticated and hat_rolle(u, TEAM_ROLLEN)):
             raise Http404   # kein Existenz-Leak (404 statt 403)
