@@ -2903,8 +2903,14 @@ def fw_schlussabrechnung(request, vertrag_id):
                 DebitorenRechnung.objects.filter(
                     vertrag=v, titel="Schlussabrechnung (Nachzahlung)"
                 ).exclude(status='storniert').exists()
+                # storniert_am mitprüfen — sonst widerspricht diese Hälfte der
+                # ersten: die schliesst stornierte Rechnungen bereits aus, damit
+                # eine Schlussabrechnung nach einem Storno neu erstellt werden
+                # kann. Ohne den Filter blockierte die stehengebliebene
+                # Original-Buchung genau das.
                 or _BIdem.objects.filter(
-                    beleg_text__contains=f"Schlussabrechnung [V{v.pk}]", ist_storno=False
+                    beleg_text__contains=f"Schlussabrechnung [V{v.pk}]",
+                    ist_storno=False, storniert_am__isnull=True
                 ).exists()
             )
             if schon_verbucht:
@@ -3013,7 +3019,9 @@ def fw_schlussabrechnung(request, vertrag_id):
                             v.save()
                             from finance.models import Buchung as _BS
                             beleg_k = f"Kaution Schlussabrechnung [V{v.pk}] {v.mieter}"
-                            if not _BS.objects.filter(beleg_text__startswith=beleg_k, ist_storno=False).exists():
+                            if not _BS.objects.filter(beleg_text__startswith=beleg_k,
+                                                      ist_storno=False,
+                                                      storniert_am__isnull=True).exists():
                                 buche("1020", "1015", kaution, f"{beleg_k} — Sperrkonto freigegeben",
                                       datum=dat_s, liegenschaft=lg_s, user=request.user)
                                 if verrechnet > 0:
@@ -11341,7 +11349,8 @@ def fw_kaution_aktion(request, vertrag_id):
                 # Schlussabrechnung dieselbe Kaution ein zweites Mal freigibt.
                 beleg = f"Kaution Auflösung [V{v.pk}] {v.mieter}"
                 dat_k = v.kautions_zurueckbezahlt_am
-                already = _B.objects.filter(beleg_text__startswith=beleg, ist_storno=False).exists()
+                already = _B.objects.filter(beleg_text__startswith=beleg, ist_storno=False,
+                                            storniert_am__isnull=True).exists()
                 if v.ist_kautionsversicherung:
                     # Kein Depot → Einbehalt ist eine echte Schadenforderung an den Mieter.
                     if abzug > 0 and P.get('abzug_verrechnen') == 'on':

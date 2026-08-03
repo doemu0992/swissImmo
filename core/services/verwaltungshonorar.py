@@ -48,8 +48,12 @@ def honorar_vorschau(mandant, jahr):
         # ein negatives Honorar ausgewiesen (Audit).
         mietertrag = max(mietertrag, Decimal('0.00'))
         honorar = (mietertrag * prozent / Decimal('100')).quantize(Decimal('0.01'))
+        # storniert_am mitprüfen: sonst sieht der Wächter das stornierte
+        # ORIGINAL weiter und das Honorar liesse sich nach einer Korrektur
+        # (falscher Satz) nie wieder buchen.
         bereits = Buchung.objects.filter(liegenschaft=lg, beleg_text=_beleg_text(jahr, lg),
-                                         ist_storno=False).exists()
+                                         ist_storno=False,
+                                         storniert_am__isnull=True).exists()
         zeilen.append({'lg': lg, 'mietertrag': mietertrag, 'honorar': honorar, 'gebucht': bereits})
         # Nur zählen, was auch gebucht wird (buche_honorar überspringt <= 0).
         # Sonst zeigte der Bestätigungsdialog eine andere Summe als die Buchung —

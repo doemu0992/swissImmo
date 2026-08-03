@@ -4701,6 +4701,29 @@ class VerwaltungshonorarTests(TestCase):
         zeilen, _t, _p = honorar_vorschau(md, 2025)
         self.assertTrue(zeilen[0]['gebucht'])
 
+    def test_nach_storno_laesst_sich_das_honorar_neu_buchen(self):
+        """Der «schon gebucht?»-Wächter filtert nur `ist_storno=False` und sieht
+        damit das stornierte ORIGINAL weiter. Folge: Wer ein Honorar mit
+        falschem Satz storniert, kann es nie wieder buchen — die Liste zeigt
+        dauerhaft «gebucht», obwohl buchhalterisch nichts mehr steht.
+
+        Die Storno-Gegenbuchung wird korrekt ausgeblendet; ohne
+        `storniert_am__isnull=True` ist das Paar einseitig gefiltert."""
+        from core.services.verwaltungshonorar import buche_honorar, honorar_vorschau
+        from finance.booking import storniere_buchung
+        from finance.models import Buchung
+        md, lg = self._setup('4')
+        buche_honorar(md, 2025, user=None)
+        original = Buchung.objects.get(soll_konto__nummer='4500', ist_storno=False)
+        storniere_buchung(original)
+
+        zeilen, total, _p = honorar_vorschau(md, 2025)
+        self.assertFalse(zeilen[0]['gebucht'],
+                         "Honorar gilt nach dem Storno weiter als gebucht")
+        self.assertEqual(total, Decimal('400.00'))
+        anzahl, summe = buche_honorar(md, 2025, user=None)
+        self.assertEqual(anzahl, 1, "Honorar liess sich nach dem Storno nicht neu buchen")
+
     def test_honorar_mindert_eigentuemer_ergebnis(self):
         from core.services.verwaltungshonorar import buche_honorar
         from core.services.eigentuemer_kontokorrent import kontokorrent

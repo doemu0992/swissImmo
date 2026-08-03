@@ -522,8 +522,10 @@ def buche_kaution_einzahlung(vertrag, datum, user=None):
     # Idempotenz per Vertrags-ID (nicht nur Mietername): sonst würde die Kaution
     # eines zweiten Vertrags desselben Mieters nie gebucht.
     beleg = f"Mietkaution [V{vertrag.pk}] {vertrag.mieter} — Einzahlung Sperrkonto"
+    # storniert_am mitprüfen: sonst blockiert das stehengebliebene stornierte
+    # Original die Neubuchung nach einer Korrektur dauerhaft.
     if Buchung.objects.filter(beleg_text__startswith=f"Mietkaution [V{vertrag.pk}] ",
-                              ist_storno=False).exists():
+                              ist_storno=False, storniert_am__isnull=True).exists():
         return None
     return Buchung.objects.create(
         datum=datum, beleg_text=beleg,
@@ -545,7 +547,7 @@ def buche_kaution_aufloesung(vertrag, datum, user=None):
     haben = _konto('1015', 'Kautionssperrkonten (Mieterkautionen)', 'bilanz')
     beleg = f"Mietkaution [V{vertrag.pk}] {vertrag.mieter} — Auflösung Sperrkonto"
     if Buchung.objects.filter(beleg_text__startswith=f"Mietkaution [V{vertrag.pk}] {vertrag.mieter} — Auflösung",
-                              ist_storno=False).exists():
+                              ist_storno=False, storniert_am__isnull=True).exists():
         return None
     return Buchung.objects.create(
         datum=datum, beleg_text=beleg,
