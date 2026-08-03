@@ -12653,6 +12653,32 @@ class FinanzUIP5Tests(TestCase):
         self.assertContains(c.get('/neu/berichte/'), 'Erfolgsrechnung &amp; Bilanz')
         self.assertEqual(c.get('/neu/buchhaltung/pdf/').status_code, 200)
 
+    def test_jedes_pdf_abzeichen_im_hub_liefert_auch_ein_pdf(self):
+        """Das PDF-Abzeichen im Berichte-Hub ist ein reines Anzeige-Flag —
+        nichts prüfte, ob dahinter wirklich ein PDF liegt. Bei «Erfolgsrechnung
+        & Bilanz» war es deshalb ein leeres Versprechen (gemeldet).
+
+        Dieser Test pinnt die vier versprochenen Ausgaben. Verschwindet eine,
+        fällt es hier auf statt beim Nutzer."""
+        from crm.models import Mandant
+        lg, _heute = self._buchungen_fuer_abschluss()
+        mieter = Mieter.objects.first()
+        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        lg.mandant = md; lg.save(update_fields=['mandant'])
+        c = Client(); c.force_login(_team_user())
+        ziele = [
+            ('Erfolgsrechnung & Bilanz', '/neu/buchhaltung/pdf/'),
+            ('Mieterkonten', f'/neu/personen/{mieter.id}/kontoauszug/'),
+            ('Mieterspiegel', f'/neu/mieterspiegel/?pdf=1&lg={lg.id}'),
+            ('Mandatsabrechnung', f'/neu/mandate/{md.id}/abrechnung/?pdf=1'),
+            ('Kontokorrent', f'/neu/mandate/{md.id}/kontokorrent/?pdf=1'),
+        ]
+        for name, url in ziele:
+            r = c.get(url)
+            self.assertEqual(r.status_code, 200, f"{name}: {url} -> {r.status_code}")
+            self.assertIn('pdf', r.get('Content-Type', ''),
+                          f"{name} liefert kein PDF ({r.get('Content-Type')})")
+
     def test_abschluss_pdf_vertraegt_alle_jahre_und_unsinn(self):
         c = Client(); c.force_login(_team_user())
         self.assertEqual(c.get('/neu/buchhaltung/pdf/?jahr=alle').status_code, 200)
