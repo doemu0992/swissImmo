@@ -12922,6 +12922,72 @@ def _sig_bytes():
     return b.getvalue()
 
 
+class KomprimierungTests(TestCase):
+    """Antworten müssen komprimiert über die Leitung gehen.
+
+    Die Listenseiten bestehen fast nur aus sich wiederholendem Markup — je
+    Zeile eine Karte fürs Handy UND eine Tabellenzeile für den PC, dazu lange
+    Tailwind-Klassenketten. Gemessen über alle abrufbaren Seiten: 5.2 MB roh
+    gegen 0.81 MB gepackt, bei den grössten Seiten Faktor 13.
+    """
+
+    def test_grosse_seite_kommt_gepackt(self):
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/debitoren/', headers={'accept-encoding': 'gzip'})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.headers.get('Content-Encoding'), 'gzip')
+
+    @staticmethod
+    def _ohne_csrf(rohbytes):
+        """CSRF-Token herausrechnen — er ist je Antwort absichtlich anders."""
+        import re
+        return re.sub(rb'name="csrfmiddlewaretoken" value="[^"]+"',
+                      b'name="csrfmiddlewaretoken" value="X"', rohbytes)
+
+    def test_gepackter_inhalt_ist_derselbe(self):
+        """Eine kaputte Komprimierung wäre schlimmer als gar keine."""
+        import gzip
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        gepackt = c.get('/neu/debitoren/', headers={'accept-encoding': 'gzip'})
+        roh = c.get('/neu/debitoren/', headers={'accept-encoding': 'identity'})
+        self.assertEqual(self._ohne_csrf(gzip.decompress(gepackt.content)),
+                         self._ohne_csrf(roh.content))
+        self.assertLess(len(gepackt.content), len(roh.content))
+
+    def test_csrf_token_wechselt_je_anfrage(self):
+        """Der Grund, warum Komprimierung hier unbedenklich ist.
+
+        Wird eine Antwort gepackt, in der ein GLEICHBLEIBENDES Geheimnis
+        steht, lässt sich dieses über die Antwortgrösse erraten (BREACH).
+        Django maskiert den CSRF-Token seit 4.1 je Anfrage mit einem
+        Zufallswert — genau dagegen. Fiele das weg, wäre die Entscheidung für
+        gzip neu zu prüfen; deshalb steht die Annahme hier als Test.
+        """
+        import re
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        muster = re.compile(rb'name="csrfmiddlewaretoken" value="([^"]+)"')
+        tokens = set()
+        for _ in range(3):
+            treffer = muster.search(c.get('/neu/debitoren/').content)
+            self.assertIsNotNone(treffer, 'kein CSRF-Token auf der Seite')
+            tokens.add(treffer.group(1))
+        self.assertEqual(len(tokens), 3,
+                         'CSRF-Token bleibt über Anfragen gleich — mit '
+                         'Komprimierung wäre er über die Antwortgrösse angreifbar.')
+
+    def test_ohne_unterstuetzung_unverandert(self):
+        """Wer kein gzip anbietet, bekommt Klartext — nicht kaputte Bytes."""
+        _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/debitoren/', headers={'accept-encoding': 'identity'})
+        self.assertEqual(r.status_code, 200)
+        self.assertIsNone(r.headers.get('Content-Encoding'))
+        self.assertIn(b'<html', r.content.lower())
+
+
 class AbfrageSkalierungTests(TestCase):
     """Listenseiten dürfen nicht pro Zeile in die Datenbank greifen.
 
