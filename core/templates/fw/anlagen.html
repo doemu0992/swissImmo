@@ -63,10 +63,19 @@
                     <input name="nutzungsdauer_jahre" type="number" value="10" class="w-16 bg-white border border-slate-200 rounded-lg text-sm px-2 py-2 text-right"></div>
                 <button title="Anlage erfassen" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-3 py-2 rounded-lg self-end"><i class="fa-solid fa-plus"></i></button>
             </div>
-            <label class="sm:col-span-4 flex items-center gap-2 text-xs text-slate-500">
-                <input type="checkbox" name="aktivieren" checked class="accent-indigo-600">
-                Aktivierung buchen (1500 an Gegenkonto) — nötig, damit die Abschreibungen das Anlagekonto nicht ins Minus ziehen
-            </label>
+            <div class="sm:col-span-4">
+                {% comment %}
+                    Klickfläche nur Kästchen + Text: als formularbreites <label>
+                    lag sie direkt unter dem Erfassen-Knopf, und ein Tipper
+                    daneben nahm das Häkchen weg — die Anlage entstünde dann
+                    ohne Aktivierungsbuchung und das Anlagekonto liefe später
+                    ins Minus, ohne dass irgendwo etwas dazu stünde.
+                {% endcomment %}
+                <label class="inline-flex items-start gap-2 text-xs text-slate-500 cursor-pointer">
+                    <input type="checkbox" name="aktivieren" checked class="mt-0.5 accent-indigo-600">
+                    <span>Aktivierung buchen (1500 an Gegenkonto) — nötig, damit die Abschreibungen das Anlagekonto nicht ins Minus ziehen</span>
+                </label>
+            </div>
         </form>
     </div>
 </div>

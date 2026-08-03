@@ -6806,7 +6806,11 @@ def fw_anlagen(request):
                 # Kein Default 'on' — eine abgewählte Checkbox sendet gar nichts,
                 # der Default hätte sie damit unabwählbar gemacht und JEDE Anlage
                 # aktiviert (auch eine bereits in Vorjahren aktivierte).
-                if wert > 0 and request.POST.get('aktivieren') == 'on':
+                # Auf Anwesenheit prüfen, nicht auf den Wert 'on'. Den schickt der
+                # Browser nur, solange das Kästchen kein value-Attribut trägt —
+                # ein späteres value="1" hätte die Aktivierungsbuchung stillschweigend
+                # abgeschaltet, und das Anlagekonto liefe wieder ins Minus.
+                if wert > 0 and request.POST.get('aktivieren'):
                     from finance.booking import buche as _buche_a
                     _buche_a('1500', gegen_nr, wert,
                              f"Aktivierung Anlage: {anl.bezeichnung}",

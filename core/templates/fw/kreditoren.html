@@ -104,8 +104,9 @@
             <input type="date" name="leistungs_bis" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         <div><label class="block text-xs font-semibold text-slate-500 mb-1">Beleg (PDF/Bild)</label>
             <input type="file" name="beleg_scan" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white"></div>
-        <label class="flex items-center gap-2 text-sm text-slate-600 sm:col-span-2"><input type="checkbox" name="is_hnk_relevant" class="accent-indigo-600">In Nebenkostenabrechnung einbeziehen (HNK)
-            <span class="text-[11px] text-slate-400">— wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, Kehricht, Versicherung) automatisch gesetzt</span></label>
+        <div class="sm:col-span-2 flex items-center">
+            <label class="inline-flex items-center gap-2 text-sm text-slate-600 cursor-pointer"><input type="checkbox" name="is_hnk_relevant" class="accent-indigo-600">In Nebenkostenabrechnung einbeziehen (HNK)</label>
+            <span class="ml-2 text-[11px] text-slate-400">— wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, Kehricht, Versicherung) automatisch gesetzt</span></div>
         <div class="sm:col-span-3"><button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen (Status: Neu)</button></div>
     </form>
 </div>
@@ -177,7 +178,11 @@
                     {% if row.k.referenz %}<div class="text-xs text-slate-400 font-normal">{{ row.k.referenz }}</div>{% endif %}
                 </td>
                 <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.objekt }}</td>
-                <td class="px-5 py-3.5 text-slate-500 text-xs whitespace-nowrap">{% if row.konto %}{{ row.konto }}{% else %}<span class="text-amber-500">nicht zugeordnet</span>{% endif %}</td>
+                <td class="px-5 py-3.5 text-slate-500 text-xs whitespace-nowrap">{% if row.konto %}{{ row.konto }}{% else %}<span class="text-amber-500">nicht zugeordnet</span>{% endif %}{% comment %}
+                    HNK entscheidet, ob diese Rechnung den Mietern weiterverrechnet
+                    wird. Bisher stand das nur an den Teilpositionen — an der
+                    Rechnung selbst war es unsichtbar, bis die NK-Abrechnung lief.
+                {% endcomment %}{% if row.k.is_hnk_relevant %} <span class="ml-1 text-[10px] font-semibold bg-amber-50 text-amber-700 rounded px-1.5 py-0.5" title="Wird in die Nebenkostenabrechnung einbezogen und den Mietern weiterverrechnet">HNK</span>{% endif %}</td>
                 <td class="px-5 py-3.5 whitespace-nowrap {% if row.ueberfaellig %}font-semibold text-rose-600{% else %}text-slate-600{% endif %}">{% if row.faellig %}{{ row.faellig|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">{{ row.betrag|chf }}</td>
                 <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap {{ row.pill_cls }}">{{ row.status_label }}</span></td>
@@ -285,11 +290,13 @@
                                 <option value="">— bei Freigabe wählen —</option>
                                 {% for kx in aufwand_konten %}<option value="{{ kx.id }}" {% if row.k.konto_id == kx.id %}selected{% endif %} {% if kx.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
                             </select></div>
-                        <label class="col-span-2 flex items-center gap-2 text-sm text-slate-600">
-                            <input type="checkbox" name="is_hnk_relevant" {% if row.k.is_hnk_relevant %}checked{% endif %} class="accent-indigo-600">
-                            In Nebenkostenabrechnung einbeziehen (HNK)
-                            <span class="text-[11px] text-slate-400">— bei NK-relevantem Konto automatisch aktiv</span>
-                        </label>
+                        <div class="col-span-2 flex items-center">
+                            <label class="inline-flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                                <input type="checkbox" name="is_hnk_relevant" {% if row.k.is_hnk_relevant %}checked{% endif %} class="accent-indigo-600">
+                                In Nebenkostenabrechnung einbeziehen (HNK)
+                            </label>
+                            <span class="ml-2 text-[11px] text-slate-400">— bei NK-relevantem Konto automatisch aktiv</span>
+                        </div>
                         <div class="col-span-2 flex items-center gap-2 justify-end">
                             <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
                             <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
@@ -336,7 +343,7 @@
                                 <input name="bezeichnung" placeholder="optional" class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5"></div>
                             <div class="sm:col-span-2"><label class="block text-[10px] font-semibold text-slate-500 mb-1">Betrag</label>
                                 <input name="betrag" inputmode="decimal" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5 text-right"></div>
-                            <label class="sm:col-span-2 flex items-center gap-1.5 text-[11px] text-slate-600 pb-1.5"><input type="checkbox" name="is_hnk_relevant" class="accent-indigo-600">HNK</label>
+                            <div class="sm:col-span-2 flex items-center pb-1.5"><label class="inline-flex items-center gap-1.5 text-[11px] text-slate-600 cursor-pointer" title="In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet"><input type="checkbox" name="is_hnk_relevant" class="accent-indigo-600">HNK</label></div>
                             <div class="sm:col-span-1"><button class="w-full bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold px-2 py-1.5 rounded-lg" title="Position hinzufügen"><i class="fa-solid fa-plus"></i></button></div>
                         </form>
                     </div>

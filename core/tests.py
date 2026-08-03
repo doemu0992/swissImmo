@@ -13006,6 +13006,107 @@ class GratismonatSichtbarTests(TestCase):
                          'Klickfläche geht wieder über die ganze Formularbreite')
 
 
+class GeldKaestchenTests(TestCase):
+    """Dieselbe Falle wie beim Gratismonat, an den übrigen Geld-Kästchen.
+
+    Ein <label> mit `col-span` macht die ganze Formularzeile anklickbar. Liegt
+    sie neben oder über dem Speichern-Knopf, schaltet ein danebengegangener
+    Tipper eine Geld-Entscheidung um — ohne dass sich sichtbar etwas ändert.
+    Betroffen waren:
+
+      Anlagen     «Aktivierung buchen» (bucht 1500 an Gegenkonto)
+      Kreditoren  «In Nebenkostenabrechnung einbeziehen» (3×) — entscheidet,
+                  ob eine Rechnung den Mietern weiterverrechnet wird
+    """
+
+    def _kaestchen_mit_breiter_klickflaeche(self):
+        import re, pathlib
+        LABEL = re.compile(r'<label\b([^>]*)>(.*?)</label>', re.S | re.I)
+        treffer = []
+        for p in sorted(pathlib.Path('core/templates/fw').rglob('*.html')):
+            s = p.read_text(encoding='utf-8')
+            for m in LABEL.finditer(s):
+                attrs, inner = m.group(1), m.group(2)
+                if 'type="checkbox"' not in inner:
+                    continue
+                if 'col-span' not in attrs:
+                    continue
+                name = re.search(r'name="([^"]+)"', inner)
+                treffer.append(f"{p}:{s[:m.start()].count(chr(10)) + 1} "
+                               f"[{name.group(1) if name else '?'}]")
+        return treffer
+
+    def test_kein_geld_kaestchen_mit_formularbreiter_klickflaeche(self):
+        breit = self._kaestchen_mit_breiter_klickflaeche()
+        self.assertEqual(breit, [], "Kästchen mit formularbreiter Klickfläche:\n  " +
+                                    "\n  ".join(breit))
+
+    def test_pruefung_findet_eine_eingebaute_breite_klickflaeche(self):
+        """Gegenprobe — eine Suche, die nie etwas findet, bestätigt jede Vorlage."""
+        import pathlib, os
+        pfad = pathlib.Path('core/templates/fw/_test_breites_kaestchen.html')
+        pfad.write_text('<label class="sm:col-span-4 flex">'
+                        '<input type="checkbox" name="probe"></label>\n', encoding='utf-8')
+        try:
+            self.assertTrue(any('probe' in t for t in self._kaestchen_mit_breiter_klickflaeche()))
+        finally:
+            os.remove(pfad)
+
+    def test_aktivierung_wird_gebucht(self):
+        """Die Buchung hing an `POST.get('aktivieren') == 'on'` — dem Wert, den
+        der Browser nur ohne value-Attribut sendet. Hier wird geprüft, dass die
+        Buchung an der Anwesenheit hängt, nicht an dieser Zeichenkette."""
+        from finance.models import Buchung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        for wert, kennzeichen in (('1', 'value-Attribut'), ('on', 'ohne value')):
+            Buchung.objects.all().delete()
+            c.post('/neu/anlagen/', {
+                'aktion': 'anlage_neu', 'bezeichnung': f'Heizung {kennzeichen}',
+                'liegenschaft_id': lg.id, 'anschaffungswert': '12000',
+                'anschaffungsdatum': '2026-01-15', 'nutzungsdauer_jahre': '10',
+                'gegenkonto': '2000', 'aktivieren': wert}, follow=True)
+            self.assertTrue(
+                Buchung.objects.filter(soll_konto__nummer='1500').exists(),
+                f'Aktivierung wurde bei «{kennzeichen}» nicht gebucht')
+
+    def test_ohne_haekchen_keine_aktivierung(self):
+        """Der Gegenfall — sonst könnte die Prüfung oben auch dann bestehen,
+        wenn immer gebucht würde."""
+        from finance.models import Buchung
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/anlagen/', {
+            'aktion': 'anlage_neu', 'bezeichnung': 'Lift',
+            'liegenschaft_id': lg.id, 'anschaffungswert': '9000',
+            'anschaffungsdatum': '2026-01-15', 'nutzungsdauer_jahre': '20',
+            'gegenkonto': '2000'}, follow=True)
+        self.assertFalse(Buchung.objects.filter(soll_konto__nummer='1500').exists())
+
+    def test_hnk_steht_an_der_rechnungszeile(self):
+        """Ob eine Rechnung den Mietern weiterverrechnet wird, stand nur an den
+        Teilpositionen — an der Rechnung selbst war es unsichtbar."""
+        from finance.models import KreditorenRechnung
+        lg, e, m, v = _basis_objekte()
+        r = KreditorenRechnung.objects.create(
+            lieferant='Heizöl AG', liegenschaft=lg, betrag=Decimal('4000'),
+            datum=date(2026, 1, 10), status='neu', is_hnk_relevant=False)
+        c = Client(); c.force_login(_team_user())
+        # Auf das Abzeichen prüfen, nicht auf die Zeichenkette «HNK» — die steht
+        # ohnehin im Erfassungsformular, der Test wäre sonst immer grün.
+        abzeichen = 'title="Wird in die Nebenkostenabrechnung einbezogen'
+        ohne = c.get('/neu/kreditoren/').content.decode('utf-8')
+        self.assertNotIn(abzeichen, ohne)
+        r.is_hnk_relevant = True
+        r.save(update_fields=['is_hnk_relevant'])
+        mit = c.get('/neu/kreditoren/').content.decode('utf-8')
+        self.assertIn(abzeichen, mit)
+
+
 class KomprimierungTests(TestCase):
     """Antworten müssen komprimiert über die Leitung gehen.
 
