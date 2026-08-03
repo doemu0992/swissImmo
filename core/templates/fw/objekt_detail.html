@@ -512,7 +512,10 @@
                 <td class="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">{{ s.gueltig_ab|date:"d.m.Y" }}
                     {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-emerald-50 text-emerald-700">aktuell</span>{% endif %}</td>
                 <td class="px-4 py-3 text-right text-slate-700 whitespace-nowrap">{{ s.netto_mietzins|chf }}{% if not e.ist_einstellplatz %} / {{ s.nebenkosten|chf }}{% endif %}</td>
-                <td class="px-4 py-3 text-right whitespace-nowrap {% if s.hat_rabatt %}text-amber-600 font-semibold{% else %}text-slate-300{% endif %}">{% if s.hat_rabatt %}−{{ s.rabatt_gesamt|chf }}{% else %}—{% endif %}</td>
+                <td class="px-4 py-3 text-right whitespace-nowrap {% if s.hat_rabatt %}text-amber-600 font-semibold{% else %}text-slate-300{% endif %}">
+                    {% if s.hat_rabatt %}−{{ s.rabatt_gesamt|chf }}
+                    {% if s.ist_voller_erlass %}<span class="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-amber-50 text-amber-700 align-middle" title="Der Nettomietzins wurde für diese Periode vollständig erlassen (Gratismonat)">Gratismonat</span>{% endif %}
+                    {% else %}—{% endif %}</td>
                 <td class="px-4 py-3 text-right font-semibold whitespace-nowrap {% if s.verrechnet_brutto == 0 %}text-emerald-600{% else %}text-slate-900{% endif %}">CHF {{ s.verrechnet_brutto|chf }}{% if s.verrechnet_brutto == 0 %} <span class="text-[10px] font-normal">(frei)</span>{% endif %}</td>
                 <td class="px-4 py-3 text-center text-slate-500 whitespace-nowrap text-[11px]">{% localize off %}{% if s.basis_referenzzinssatz %}{{ s.basis_referenzzinssatz }}%{% else %}—{% endif %} / {% if s.basis_lik_punkte %}{{ s.basis_lik_punkte }}{% else %}—{% endif %}{% endlocalize %}</td>
                 <td class="px-4 py-3 text-slate-500 truncate max-w-[120px]">{{ s.notiz|default:"—" }}</td>
@@ -535,13 +538,13 @@
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gültig ab <span class="text-red-500">*</span></label>
                 <input name="gueltig_ab" type="date" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">{% if e.ist_einstellplatz %}Mietzins{% else %}Netto-Mietzins{% endif %} Referenz (CHF) <span class="text-red-500">*</span></label>
-                <input name="netto_mietzins" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                <input name="netto_mietzins" id="smz-netto" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
             {% if not e.ist_einstellplatz %}
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nebenkosten (CHF)</label>
                 <input name="nebenkosten" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
             {% endif %}
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Rabatt Netto (CHF)</label>
-                <input name="rabatt_netto" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <input name="rabatt_netto" id="smz-rabatt" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <p class="text-[11px] text-slate-400 mt-1">Erlass dieser Periode</p></div>
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Basis Ref.-Zinssatz (%)</label>
                 <input name="basis_referenzzinssatz" inputmode="decimal" value="{% localize off %}{{ aktueller_ref_zins }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
@@ -551,14 +554,57 @@
                 <p class="text-[11px] text-slate-400 mt-1">Neue Verträge übernehmen die Basis</p></div>
             <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bemerkung</label>
                 <input name="notiz" placeholder="z.B. Gratismonat" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <label class="sm:col-span-4 flex items-center gap-2 text-xs text-slate-600">
-                <input type="checkbox" name="mietzinsfrei" value="1" class="rounded border-slate-300 text-indigo-600">
-                {% if e.ist_einstellplatz %}Mietzins{% else %}Nettomietzins{% endif %} vollständig erlassen (Gratismonat) — setzt den Rabatt automatisch auf den vollen {% if e.ist_einstellplatz %}Mietzins{% else %}Netto-Referenzbetrag{% endif %}.
-            </label>
+            <div class="sm:col-span-4">
+                {% comment %}
+                    Die Schaltfläche trug bisher die Klasse sm:col-span-4 auf dem <label>
+                    selbst — anklickbar war damit das ganze, formularbreite Band direkt
+                    über «Speichern». Ein Tipper, der knapp zu hoch landet, setzte einen
+                    100-%-Erlass, ohne dass sich sonst irgendetwas sichtbar änderte.
+                    Jetzt: Klickfläche nur so breit wie Kästchen und Text (inline-flex),
+                    und beim Ankreuzen wird der Rabatt sichtbar eingetragen.
+                {% endcomment %}
+                <label class="inline-flex items-start gap-2 text-xs text-slate-600 cursor-pointer">
+                    <input type="checkbox" name="mietzinsfrei" value="1" id="smz-frei"
+                           class="mt-0.5 rounded border-slate-300 text-indigo-600">
+                    <span>{% if e.ist_einstellplatz %}Mietzins{% else %}Nettomietzins{% endif %} vollständig erlassen (Gratismonat) — setzt den Rabatt automatisch auf den vollen {% if e.ist_einstellplatz %}Mietzins{% else %}Netto-Referenzbetrag{% endif %}.</span>
+                </label>
+                <p id="smz-warnung" class="hidden mt-2 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                    Diese Zeile stellt den {% if e.ist_einstellplatz %}Mietzins{% else %}Nettomietzins{% endif %} <b>vollständig auf 0.00</b> — verrechnet wird nur noch <span id="smz-zuzahlen">die Nebenkosten</span>.
+                </p>
+            </div>
             <div class="sm:col-span-4">
                 <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Sollmietzins speichern</button>
             </div>
         </form>
+        <script>
+        // Ein voller Erlass darf nicht unbemerkt gesetzt werden können: Beim
+        // Ankreuzen wandert der Netto-Betrag sichtbar ins Rabatt-Feld und eine
+        // Warnung erscheint. Wer es nicht wollte, sieht sofort, was passiert ist.
+        // Die Rechnung macht weiterhin der Server — das hier ist reine Rückmeldung.
+        (function () {
+            var frei = document.getElementById('smz-frei');
+            if (!frei) return;
+            var netto = document.getElementById('smz-netto');
+            var rabatt = document.getElementById('smz-rabatt');
+            var warnung = document.getElementById('smz-warnung');
+            function zeigen() {
+                if (frei.checked) {
+                    rabatt.value = netto.value || '';
+                    rabatt.readOnly = true;
+                    rabatt.classList.add('text-amber-700', 'font-semibold');
+                    warnung.classList.remove('hidden');
+                } else {
+                    rabatt.readOnly = false;
+                    rabatt.classList.remove('text-amber-700', 'font-semibold');
+                    warnung.classList.add('hidden');
+                }
+            }
+            frei.addEventListener('change', zeigen);
+            netto.addEventListener('input', function () { if (frei.checked) rabatt.value = netto.value || ''; });
+            zeigen();
+        })();
+        </script>
     </div>
 
     {% if zeige_staffelvorlage %}

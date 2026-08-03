@@ -12922,6 +12922,90 @@ def _sig_bytes():
     return b.getvalue()
 
 
+class GratismonatSichtbarTests(TestCase):
+    """Ein voller Mietzins-Erlass darf nicht unbemerkt entstehen.
+
+    Gemeldet: Eine Sollmietzins-Zeile zeigte «−500.00» Rabatt, obwohl kein
+    Rabatt gewährt worden war. Die Zahl war echt (rabatt_netto = 500 in den
+    Daten) — nur konnte niemand nachvollziehen, woher sie kam:
+
+      - Anklickbar war das ganze, formularbreite Band über «Speichern». Ein
+        Tipper, der knapp zu hoch landet, setzte einen 100-%-Erlass.
+      - Sichtbar änderte sich dabei nichts: Das Rabatt-Feld blieb leer.
+      - Die Bestätigung nannte nur eine Summe, in der der Erlass schon
+        verrechnet war.
+      - Die fertige Zeile sagte «−500.00» und sonst nichts.
+    """
+
+    def _erfassen(self, client, einheit, **extra):
+        daten = {'einheit_id': einheit.id, 'gueltig_ab': '2026-01-01',
+                 'netto_mietzins': '500', 'nebenkosten': '50'}
+        daten.update(extra)
+        return client.post('/neu/sollmietzins/', daten, follow=True)
+
+    def test_ohne_ankreuzen_kein_rabatt(self):
+        """Der Normalfall — sonst wäre alles Weitere sinnlos."""
+        from portfolio.models import Sollmietzins
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._erfassen(c, e)
+        s = Sollmietzins.objects.filter(einheit=e).order_by('-id').first()
+        self.assertEqual(s.rabatt_netto, Decimal('0.00'))
+        self.assertFalse(s.hat_rabatt)
+        self.assertFalse(s.ist_voller_erlass)
+
+    def test_voller_erlass_wird_als_solcher_erkannt(self):
+        from portfolio.models import Sollmietzins
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._erfassen(c, e, mietzinsfrei='1')
+        s = Sollmietzins.objects.filter(einheit=e).order_by('-id').first()
+        self.assertEqual(s.rabatt_netto, Decimal('500.00'))
+        self.assertTrue(s.ist_voller_erlass)
+        self.assertEqual(s.verrechnet_brutto, Decimal('50.00'))
+
+    def test_teilrabatt_ist_kein_voller_erlass(self):
+        """Ein ausgehandelter Rabatt und ein Gratismonat sind nicht dasselbe."""
+        from portfolio.models import Sollmietzins
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._erfassen(c, e, rabatt_netto='100')
+        s = Sollmietzins.objects.filter(einheit=e).order_by('-id').first()
+        self.assertTrue(s.hat_rabatt)
+        self.assertFalse(s.ist_voller_erlass)
+
+    def test_bestaetigung_benennt_den_vollen_erlass(self):
+        """Die Meldung nannte bisher nur «zu zahlen CHF 50» — die Zahl allein
+        verrät nicht, dass 500 erlassen wurden."""
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        html = self._erfassen(c, e, mietzinsfrei='1').content.decode('utf-8')
+        self.assertIn('VOLLST', html.upper())
+        self.assertIn('Gratismonat', html)
+
+    def test_zeile_zeigt_woher_der_rabatt_kommt(self):
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        self._erfassen(c, e, mietzinsfrei='1')
+        html = c.get(f'/neu/objekte/{e.id}/?tab=mietzins').content.decode('utf-8')
+        self.assertIn('Gratismonat', html)
+
+    def test_klickflaeche_umfasst_nicht_mehr_die_ganze_formularbreite(self):
+        """Die Ursache selbst: Das Kästchen sass in einem <label>, das über die
+        volle Formularbreite ging und direkt über «Speichern» lag."""
+        import re
+        lg, e, m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        html = c.get(f'/neu/objekte/{e.id}/?tab=mietzins').content.decode('utf-8')
+        # das <label> um das Kästchen herum finden
+        stelle = html.find('name="mietzinsfrei"')
+        self.assertGreater(stelle, -1, 'Gratismonat-Kästchen nicht gefunden')
+        label = html.rfind('<label', 0, stelle)
+        auf = html[label:stelle]
+        self.assertNotIn('col-span-4', auf,
+                         'Klickfläche geht wieder über die ganze Formularbreite')
+
+
 class KomprimierungTests(TestCase):
     """Antworten müssen komprimiert über die Leitung gehen.
 

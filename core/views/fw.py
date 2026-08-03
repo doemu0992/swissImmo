@@ -2300,8 +2300,25 @@ def fw_sollmietzins_add(request):
     zu_zahlen = max(Decimal('0'), netto - rabatt_netto) + max(Decimal('0'), nk - rabatt_nk)
     log_aktion(request, "Sollmietzins erfasst", e.bezeichnung,
                f"ab {ab}: Referenz {netto}+{nk}, Rabatt {rabatt_netto}/{rabatt_nk}, zu zahlen {zu_zahlen}")
-    messages.success(request, f"✅ Sollmietzins ab {ab.strftime('%d.%m.%Y')} erfasst "
-                     f"(Referenz CHF {netto + nk}, zu zahlen CHF {zu_zahlen}).")
+    # Ein Erlass ist eine Geld-Entscheidung — die Bestätigung muss ihn benennen
+    # und nicht nur eine Summe zeigen, in der er schon verrechnet ist. Ein voller
+    # Erlass bekommt zusätzlich einen Warnton statt eines Häkchens.
+    if rabatt_netto >= netto > 0:
+        messages.warning(
+            request,
+            f"⚠️ Sollmietzins ab {ab.strftime('%d.%m.%Y')} erfasst — "
+            f"Nettomietzins CHF {netto} VOLLSTÄNDIG ERLASSEN (Gratismonat). "
+            f"Verrechnet wird nur CHF {zu_zahlen}. War das nicht beabsichtigt, "
+            f"Zeile löschen und ohne Rabatt neu erfassen.")
+    elif rabatt_netto > 0 or rabatt_nk > 0:
+        messages.success(
+            request,
+            f"✅ Sollmietzins ab {ab.strftime('%d.%m.%Y')} erfasst — Referenz "
+            f"CHF {netto + nk}, davon CHF {rabatt_netto + rabatt_nk} Rabatt, "
+            f"zu zahlen CHF {zu_zahlen}.")
+    else:
+        messages.success(request, f"✅ Sollmietzins ab {ab.strftime('%d.%m.%Y')} erfasst "
+                         f"(CHF {zu_zahlen}).")
     return redirect(ziel)
 
 

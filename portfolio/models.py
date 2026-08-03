@@ -294,6 +294,16 @@ class Sollmietzins(models.Model):
     def hat_rabatt(self):
         return (self.rabatt_netto or 0) > 0 or (self.rabatt_nk or 0) > 0
 
+    @property
+    def ist_voller_erlass(self):
+        """Der Nettomietzins wird für diese Periode ganz erlassen (Gratismonat).
+
+        Eine Zeile mit «−500.00» sagt für sich genommen nicht, ob jemand einen
+        Rabatt ausgehandelt oder versehentlich «vollständig erlassen»
+        angekreuzt hat. Die Unterscheidung gehört sichtbar an die Zeile."""
+        netto = self.netto_mietzins or Decimal('0')
+        return netto > 0 and (self.rabatt_netto or Decimal('0')) >= netto
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         # Nach jeder Änderung die abgeleiteten Aktuellwerte der Einheit nachführen.
