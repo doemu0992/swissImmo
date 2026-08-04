@@ -13806,6 +13806,50 @@ class AbfrageSkalierungTests(TestCase):
     def test_mieterkonten_fragt_nicht_je_mieter_nach(self):
         self._waechst_nicht_mit('/neu/mieterkonten/')
 
+    def _buchungen(self, n, ab=0):
+        """Je Liegenschaft eine Aufwand- und eine Ertragsbuchung — damit die
+        Berichtsseiten für jede Liegenschaft auch etwas zu rechnen haben."""
+        from finance.models import Buchung, Buchungskonto
+        _seed_konten()
+        aufwand, _ = Buchungskonto.objects.get_or_create(
+            nummer='4000', defaults={'bezeichnung': 'Reparaturen', 'typ': 'aufwand'})
+        ertrag = Buchungskonto.objects.get(nummer='3000')
+        bank = Buchungskonto.objects.get(nummer='1020')
+        lgs = list(Liegenschaft.objects.order_by('id')[ab:ab + n])
+        for i, lg in enumerate(lgs):
+            Buchung.objects.create(datum=date(2026, (i % 12) + 1, 5), liegenschaft=lg,
+                                   beleg_text=f'Aufwand {i}', soll_konto=aufwand,
+                                   haben_konto=bank, betrag=Decimal('500.00'))
+            Buchung.objects.create(datum=date(2026, (i % 12) + 1, 6), liegenschaft=lg,
+                                   beleg_text=f'Ertrag {i}', soll_konto=bank,
+                                   haben_konto=ertrag, betrag=Decimal('1400.00'))
+
+    def _bericht_waechst_nicht_mit(self, url, spielraum=4):
+        c = Client(); c.force_login(_team_user())
+        self._bestand(3); self._buchungen(3)
+        klein = self._abfragen(url, c)
+        self._bestand(3, ab=3); self._buchungen(3, ab=3)
+        gross = self._abfragen(url, c)
+        self.assertLessEqual(
+            gross, klein + spielraum,
+            f'{url}: bei doppeltem Bestand {klein} → {gross} Abfragen — '
+            f'die Seite rechnet je Liegenschaft einzeln nach.')
+
+    def test_betriebskostenspiegel_fragt_nicht_je_liegenschaft_nach(self):
+        """Aufwand und Fläche wurden je Liegenschaft einzeln aggregiert —
+        zwei Abfragen pro Zeile."""
+        self._bericht_waechst_nicht_mit('/neu/berichte/betriebskostenspiegel/')
+
+    def test_auswertung_fragt_nicht_je_monat_und_liegenschaft_nach(self):
+        """Der Monatsverlauf aggregierte je Monat einzeln, der Vergleich je
+        Liegenschaft — bei der Kennzahl «Ergebnis» vier Abfragen pro Zelle."""
+        self._bericht_waechst_nicht_mit('/neu/auswertung/')
+
+    def test_auswertung_ergebnis_fragt_nicht_je_zelle_nach(self):
+        """Die teuerste Kennzahl eigens geprüft: «Ergebnis» rechnet Ertrag UND
+        Aufwand, also doppelt so viele Einzelaggregate wie die übrigen."""
+        self._bericht_waechst_nicht_mit('/neu/auswertung/?typ=ergebnis')
+
     def test_benutzer_fragt_nicht_je_benutzer_nach(self):
         from django.contrib.auth.models import User
         c = Client(); c.force_login(_team_user())

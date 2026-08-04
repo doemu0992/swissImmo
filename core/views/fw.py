@@ -15,6 +15,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, Sum, F
+from django.db.models.functions import ExtractMonth
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 
@@ -1045,16 +1046,28 @@ def fw_betriebskostenspiegel(request):
     except ValueError:
         jahr = heute.year
     von, bis = date(jahr, 1, 1), date(jahr, 12, 31)
-    lgs = Liegenschaft.objects.all().order_by('strasse')
+    lgs = list(Liegenschaft.objects.all().order_by('strasse'))
     if basis['aktive_lg']:
-        lgs = lgs.filter(id=basis['aktive_lg'].id)
+        lgs = [lg for lg in lgs if lg.id == basis['aktive_lg'].id]
+
+    # Aufwand und Fläche in je EINER gruppierten Abfrage, nicht zwei je
+    # Liegenschaft — sonst wächst der Seitenaufbau linear mit dem Portfolio.
+    lg_ids = [lg.id for lg in lgs]
+    kosten_je_lg = {
+        r['liegenschaft']: r['s'] for r in
+        Buchung.objects.filter(liegenschaft_id__in=lg_ids, datum__gte=von, datum__lte=bis,
+                               soll_konto__typ='aufwand', ist_storno=False,
+                               storniert_am__isnull=True)
+        .order_by().values('liegenschaft').annotate(s=Sum('betrag'))}
+    m2_je_lg = {
+        r['liegenschaft']: r['s'] for r in
+        Einheit.objects.filter(liegenschaft_id__in=lg_ids)
+        .order_by().values('liegenschaft').annotate(s=Sum('flaeche_m2'))}
+
     rows, total_kosten, total_m2 = [], Decimal('0.00'), Decimal('0.00')
     for lg in lgs:
-        kosten = (Buchung.objects.filter(liegenschaft=lg, datum__gte=von, datum__lte=bis,
-                                          soll_konto__typ='aufwand', ist_storno=False,
-                                          storniert_am__isnull=True)
-                  .aggregate(s=Sum('betrag'))['s'] or Decimal('0.00'))
-        m2 = sum((e.flaeche_m2 or Decimal('0')) for e in lg.einheiten.all()) or Decimal('0.00')
+        kosten = kosten_je_lg.get(lg.id) or Decimal('0.00')
+        m2 = m2_je_lg.get(lg.id) or Decimal('0.00')
         pro_m2 = (kosten / m2) if m2 else None
         rows.append({'lg': lg, 'kosten': kosten, 'm2': m2, 'pro_m2': pro_m2})
         total_kosten += kosten
@@ -1090,17 +1103,52 @@ def fw_auswertung(request):
         typ = 'mietertrag'
     typ_label = dict((t[0], t[1]) for t in AUSWERTUNG_TYPEN)[typ]
 
-    ertrag_konten = list(Buchungskonto.objects.filter(typ='ertrag').values_list('id', flat=True))
-    aufwand_konten = list(Buchungskonto.objects.filter(typ='aufwand').values_list('id', flat=True))
-    mietertrag_konten = list(Buchungskonto.objects.filter(nummer__in=['3000', '3010']).values_list('id', flat=True))
-    reparatur_konten = list(Buchungskonto.objects.filter(nummer='4000').values_list('id', flat=True))
+    # Ein Durchgang durch den Kontenplan statt vier — die Zuordnung geschieht
+    # danach in Python.
+    ertrag_konten, aufwand_konten, mietertrag_konten, reparatur_konten = [], [], [], []
+    for kid, ktyp, knr in Buchungskonto.objects.values_list('id', 'typ', 'nummer'):
+        if ktyp == 'ertrag':
+            ertrag_konten.append(kid)
+        elif ktyp == 'aufwand':
+            aufwand_konten.append(kid)
+        if knr in ('3000', '3010'):
+            mietertrag_konten.append(kid)
+        elif knr == '4000':
+            reparatur_konten.append(kid)
 
-    def _wert(bqs):
+    # Ein storniertes Original zählte hier weiter, seine Gegenbuchung war
+    # ausgeblendet — der Storno hob sich in der Auswertung also nie auf.
+    base_q = Buchung.objects.filter(datum__year=jahr, ist_storno=False,
+                                    storniert_am__isnull=True)
+    if aktive_lg:
+        base_q = base_q.filter(liegenschaft=aktive_lg)
+
+    def _summen(bqs, gruppe):
+        """Soll- und Haben-Summen je (Gruppenwert, Konto) — ZWEI Abfragen für
+        die ganze Auswertung.
+
+        Vorher wurde je Monat und je Liegenschaft einzeln aggregiert: bei der
+        Kennzahl «Ergebnis» vier Abfragen pro Zelle, also 48 allein für den
+        Monatsverlauf plus vier je Liegenschaft. Das wächst mit dem Portfolio,
+        obwohl die Datenmenge dieselbe bleibt — gruppiert holt die Datenbank
+        alles in einem Durchgang."""
+        def hol(feld):
+            werte = {}
+            for r in bqs.order_by().values(gruppe, feld).annotate(t=Sum('betrag')):
+                werte.setdefault(r[gruppe], {})[r[feld]] = r['t']
+            return werte
+        return hol('soll_konto'), hol('haben_konto')
+
+    def _wert(soll_map, haben_map, schluessel):
+        """Kennzahl für eine Gruppe (ein Monat / eine Liegenschaft)."""
         def saldo(kids, positiv_haben):
             if not kids:
                 return Decimal('0.00')
-            s = bqs.filter(soll_konto_id__in=kids).aggregate(x=Sum('betrag'))['x'] or Decimal('0.00')
-            h = bqs.filter(haben_konto_id__in=kids).aggregate(x=Sum('betrag'))['x'] or Decimal('0.00')
+            kset = set(kids)
+            s = sum((b for k, b in soll_map.get(schluessel, {}).items() if k in kset),
+                    Decimal('0.00'))
+            h = sum((b for k, b in haben_map.get(schluessel, {}).items() if k in kset),
+                    Decimal('0.00'))
             return (h - s) if positiv_haben else (s - h)
         if typ == 'mietertrag':
             return saldo(mietertrag_konten, True)
@@ -1110,19 +1158,13 @@ def fw_auswertung(request):
             return saldo(reparatur_konten, False)
         return saldo(ertrag_konten, True) - saldo(aufwand_konten, False)   # ergebnis
 
-    # Ein storniertes Original zählte hier weiter, seine Gegenbuchung war
-    # ausgeblendet — der Storno hob sich in der Auswertung also nie auf.
-    base_q = Buchung.objects.filter(datum__year=jahr, ist_storno=False,
-                                    storniert_am__isnull=True)
-    if aktive_lg:
-        base_q = base_q.filter(liegenschaft=aktive_lg)
-
     # Monatsverlauf
+    m_soll, m_haben = _summen(base_q.annotate(_mon=ExtractMonth('datum')), '_mon')
     monate = []
     max_abs = Decimal('0.01')
     total = Decimal('0.00')
     for m in range(1, 13):
-        w = _wert(base_q.filter(datum__month=m))
+        w = _wert(m_soll, m_haben, m)
         monate.append({'m': m, 'name': date(2000, m, 1).strftime('%b'), 'wert': w})
         total += w
         if abs(w) > max_abs:
@@ -1134,10 +1176,10 @@ def fw_auswertung(request):
     # Vergleich je Liegenschaft (nur ohne aktiven LG-Filter sinnvoll)
     lg_rows = []
     if not aktive_lg:
+        lg_soll, lg_haben = _summen(base_q, 'liegenschaft')
         max_lg = Decimal('0.01')
         for lg in Liegenschaft.objects.order_by('strasse'):
-            w = _wert(Buchung.objects.filter(datum__year=jahr, ist_storno=False,
-                                             storniert_am__isnull=True, liegenschaft=lg))
+            w = _wert(lg_soll, lg_haben, lg.id)
             if w == 0:
                 continue
             lg_rows.append({'lg': lg, 'wert': w})
