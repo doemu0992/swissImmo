@@ -14553,3 +14553,149 @@ class RollentrennungTests(TestCase):
         r = Client().get(f'/neu/vertraege/{v.id}/maengelruege/')
         self.assertEqual(r.status_code, 302)
         self.assertIn('/login/', r['Location'])
+
+
+def _heute():
+    from django.utils import timezone
+    return timezone.localdate()
+
+
+class BewerbungAufbewahrungTests(TestCase):
+    """Bewerbungsdossiers nach dem Vermietungsentscheid.
+
+    Ein Dossier enthält Ausweiskopie, Lohnausweis, Betreibungsauszug, dazu
+    Geburtsdatum, Nationalität, Zivilstand, Einkommen, Arbeitgeber, Kinder —
+    die heikelsten Daten der Anwendung. Gesammelt bei Menschen, die zur
+    Verwaltung meist gar kein Vertragsverhältnis haben: Die Wohnung bekommt
+    eine Bewerberin, alle übrigen Dossiers sind nach dem Entscheid zwecklos.
+
+    Bisher blieben sie unbegrenzt liegen. `core.services.dsg` greift nur bei
+    Personen, die auch Mieter WURDEN — abgelehnte Bewerbungen erfasste es
+    nicht. Das DSG verlangt Vernichtung, sobald der Zweck entfällt (Art. 6
+    Abs. 4); eine Aufbewahrungspflicht wie für Buchungsbelege (Art. 958f OR)
+    gibt es hier gerade nicht.
+    """
+
+    def setUp(self):
+        import tempfile
+        from django.test import override_settings
+        self._tmp = tempfile.TemporaryDirectory()
+        self._ov = override_settings(MEDIA_ROOT=self._tmp.name)
+        self._ov.enable()
+        self.lg = Liegenschaft.objects.create(strasse='Bewerbweg 1', plz='3000', ort='Bern')
+        self.e = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='2.5 Zi', typ='wohnung')
+
+    def tearDown(self):
+        self._ov.disable()
+        self._tmp.cleanup()
+
+    def _bewerbung(self, *, status='abgelehnt', entschieden_vor_tagen=200, mit_dokumenten=True):
+        from django.core.files.base import ContentFile
+        from mietprozess.models import Mietbewerbung
+        b = Mietbewerbung.objects.create(
+            einheit=self.e, status=status, vorname='Anna', nachname='Bewerber',
+            geburtsdatum=date(1990, 5, 17), mobilnummer='079 000 00 00',
+            email='anna.bewerber@example.ch', beruf='Kauffrau', einkommen_jahr="90'000",
+            arbeitgeber='Muster AG', adresse='Alte Gasse 3', plz='3000', ort='Bern',
+            nationalitaet='Schweiz')
+        if mit_dokumenten:
+            b.ausweiskopie.save('ausweis.pdf', ContentFile(b'%PDF-Ausweis'), save=False)
+            b.lohnausweis.save('lohn.pdf', ContentFile(b'%PDF-Lohn'), save=False)
+            b.betreibungsauszug.save('betr.pdf', ContentFile(b'%PDF-Betreibung'), save=False)
+            b.save()
+        # erstellt_am/aktualisiert_am sind auto_now(_add) — direkt in der DB setzen.
+        from django.utils import timezone
+        wann = timezone.now() - timedelta(days=entschieden_vor_tagen)
+        type(b).objects.filter(pk=b.pk).update(erstellt_am=wann - timedelta(days=30),
+                                               aktualisiert_am=wann)
+        b.refresh_from_db()
+        return b
+
+    def _dateien_da(self, b):
+        import os
+        from django.conf import settings
+        b.refresh_from_db()
+        return [f for f in ('ausweiskopie', 'lohnausweis', 'betreibungsauszug')
+                if getattr(b, f) and os.path.exists(
+                    os.path.join(settings.MEDIA_ROOT, getattr(b, f).name))]
+
+    def test_abgelehntes_dossier_verliert_seine_dokumente(self):
+        from core.services.bewerbung_aufbewahrung import bereinige
+        b = self._bewerbung(entschieden_vor_tagen=120)
+        self.assertEqual(len(self._dateien_da(b)), 3, 'Ausgangslage: drei Dateien vorhanden')
+        bereinige(_heute(), anwenden=True)
+        self.assertEqual(self._dateien_da(b), [],
+                         'Ausweis/Lohnausweis/Betreibungsauszug liegen weiter auf der Platte')
+
+    def test_innerhalb_der_nachlauffrist_bleibt_alles(self):
+        """Die 90 Tage sind keine Aufbewahrung, sondern Luft für Rückfragen
+        zum Entscheid — vorher wird nichts angefasst."""
+        from core.services.bewerbung_aufbewahrung import bereinige
+        b = self._bewerbung(entschieden_vor_tagen=30)
+        bereinige(_heute(), anwenden=True)
+        self.assertEqual(len(self._dateien_da(b)), 3)
+
+    def test_offene_bewerbung_wird_nie_angefasst(self):
+        """Solange nicht entschieden ist, läuft keine Frist — sonst würde
+        einer Bewerberin das Dossier unter dem laufenden Verfahren gelöscht."""
+        from core.services.bewerbung_aufbewahrung import bereinige
+        b = self._bewerbung(status='neu', entschieden_vor_tagen=800)
+        bereinige(_heute(), anwenden=True)
+        self.assertEqual(len(self._dateien_da(b)), 3)
+        b.refresh_from_db()
+        self.assertEqual(b.vorname, 'Anna')
+
+    def test_zusage_wird_nie_automatisch_geloescht(self):
+        """Aus dem zugesagten Dossier entsteht das Mietverhältnis. Es läuft
+        über die Personen-Anonymisierung, nicht über diese Frist."""
+        from core.services.bewerbung_aufbewahrung import bereinige
+        b = self._bewerbung(status='zugesagt', entschieden_vor_tagen=900)
+        bereinige(_heute(), anwenden=True)
+        self.assertEqual(len(self._dateien_da(b)), 3)
+
+    def test_stille_absage_zaehlt_auch(self):
+        """Der häufigste Fall in der Praxis: nie beantwortet, aber die Wohnung
+        ist längst vermietet. Ohne diesen Weg bliebe der grösste Teil der
+        Dossiers für immer liegen."""
+        from core.services.bewerbung_aufbewahrung import bereinige, entschieden_am
+        b = self._bewerbung(status='geprueft', entschieden_vor_tagen=400)
+        m = Mieter.objects.create(typ='person', vorname='Neu', nachname='Mieter',
+                                  email='neu@example.ch', strasse='W 1', plz='3000', ort='Bern')
+        Mietvertrag.objects.create(mieter=m, einheit=self.e, status='aktiv',
+                                   beginn=_heute() - timedelta(days=300),
+                                   netto_mietzins=Decimal('1200'), nebenkosten=Decimal('150'))
+        self.assertIsNotNone(entschieden_am(b), 'Vermietetes Objekt = Entscheid gefallen')
+        bereinige(_heute(), anwenden=True)
+        self.assertEqual(self._dateien_da(b), [])
+
+    def test_nach_einem_jahr_verschwinden_auch_die_personalien(self):
+        from core.services.bewerbung_aufbewahrung import bereinige
+        b = self._bewerbung(entschieden_vor_tagen=400)
+        bereinige(_heute(), anwenden=True)
+        b.refresh_from_db()
+        self.assertEqual(b.vorname, 'Anonymisiert')
+        for feld, wert in (('arbeitgeber', 'Muster AG'), ('adresse', 'Alte Gasse 3'),
+                           ('einkommen_jahr', "90'000"), ('nationalitaet', 'Schweiz')):
+            self.assertNotEqual(getattr(b, feld), wert, f'{feld} steht noch im Dossier')
+        self.assertNotIn('anna.bewerber', b.email)
+        self.assertEqual(self._dateien_da(b), [])
+
+    def test_trockenlauf_aendert_nichts(self):
+        """Ohne --apply darf nichts verschwinden — sonst wäre die Vorschau
+        eine Löschung."""
+        from core.services.bewerbung_aufbewahrung import bereinige
+        b = self._bewerbung(entschieden_vor_tagen=400)
+        dok, anon = bereinige(_heute(), anwenden=False)
+        self.assertEqual((dok, anon), (0, 1), 'Vorschau meldet den Fall nicht')
+        self.assertEqual(len(self._dateien_da(b)), 3)
+        b.refresh_from_db()
+        self.assertEqual(b.vorname, 'Anna')
+
+    def test_taeglicher_lauf_fuehrt_die_bereinigung_aus(self):
+        """Eine Frist, die niemand auslöst, ist keine Frist."""
+        from django.core.management import call_command
+        import io
+        b = self._bewerbung(entschieden_vor_tagen=120)
+        call_command('taeglicher_lauf', stdout=io.StringIO())
+        self.assertEqual(self._dateien_da(b), [],
+                         'Der tägliche Lauf bereinigt die Bewerbungsdossiers nicht')

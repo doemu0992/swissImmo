@@ -8,7 +8,7 @@ Basis-Kommando (Pfad/venv anpassen):
 
 | Command | Empfohlener Rhythmus | Wirkung |
 |---------|---------------------|---------|
-| `taeglicher_lauf` | täglich (z.B. 06:00) | Auto-Pendenzen aus Fristen (Vertragsende, Auszug, Geräte-Garantien) + Referenzzins/LIK-Update |
+| `taeglicher_lauf` | täglich (z.B. 06:00) | Auto-Pendenzen aus Fristen (Vertragsende, Auszug, Geräte-Garantien) + Referenzzins/LIK-Update + Bereinigung der Bewerbungsdossiers (siehe unten) |
 | `mahnlauf` | wöchentlich (z.B. Mo 07:00) | Sammel-Mahnlauf über alle fälligen Debitoren + Zahlungserinnerung per E-Mail. Optional `--zins` (5% Verzugszins), `--kein-versand` |
 | `monatslauf` | monatlich (1. um 05:00) | Sollstellung (Mietenlauf) für den aktuellen Monat. `--jahr/--monat` überschreiben |
 | `jahresabschluss_lauf` | jährlich (2. Januar) | Lineare Abschreibungen (AfA) + Erneuerungsfonds-Einlagen fürs Vorjahr. `--jahr` überschreibt |
@@ -66,3 +66,57 @@ Kommt der Dateiinhalt zurück, steht der Befund im Deploy-Protokoll:
 
 Dann im Web-Tab das statische Mapping für `/media/` entfernen. Für `/static/`
 bleibt es richtig — dort liegen nur öffentliche Assets.
+
+---
+
+## Aufbewahrung von Personendaten (DSG)
+
+Zwei Automatismen, die Personendaten wieder loswerden. Beide sind nötig, weil
+sie unterschiedliche Menschen betreffen.
+
+### Bewerbungsdossiers — läuft täglich mit
+
+Ein Dossier enthält Ausweiskopie, Lohnausweis, Betreibungsauszug, dazu
+Geburtsdatum, Nationalität, Zivilstand, Einkommen, Arbeitgeber und Kinder —
+die heikelsten Daten der Anwendung. Die Wohnung bekommt **eine** Bewerberin;
+alle übrigen Dossiers stammen von Menschen ohne jedes Vertragsverhältnis zur
+Verwaltung und sind nach dem Entscheid zwecklos. Das DSG verlangt dann
+Vernichtung oder Anonymisierung (Art. 6 Abs. 4); eine Aufbewahrungspflicht wie
+für Buchungsbelege (Art. 958f OR) besteht hier gerade **nicht**.
+
+| Nach dem Entscheid | Was geschieht |
+|---|---|
+| 90 Tage | Die hochgeladenen Dateien werden gelöscht. Die Frist ist Luft für Rückfragen zum Entscheid, keine Aufbewahrung. |
+| 365 Tage | Das ganze Dossier wird anonymisiert. Die Hülle bleibt, damit nachvollziehbar ist, wie viele Bewerbungen ein Objekt hatte. |
+
+Als «entschieden» gilt eine Bewerbung, die **abgelehnt** wurde — oder deren
+Objekt **inzwischen vermietet** ist. Der zweite Weg ist in der Praxis der
+häufigere: Wer keine Absage verschickt, hat trotzdem entschieden. Ohne ihn
+bliebe der grösste Teil der Dossiers für immer liegen.
+
+Nicht angetastet wird, wer die **Zusage** erhalten hat — daraus entsteht das
+Mietverhältnis. Diese Daten laufen über die Personen-Anonymisierung.
+
+```
+python manage.py bewerbungen_bereinigen             # Vorschau
+python manage.py bewerbungen_bereinigen --apply     # ausführen
+python manage.py bewerbungen_bereinigen --dokumente-tage 30 --anonym-tage 180 --apply
+```
+
+### Ehemalige Mieterinnen und Mieter — von Hand anstossen
+
+```
+python manage.py dsg_anonymisieren            # Vorschau
+python manage.py dsg_anonymisieren --apply    # ausführen
+```
+
+Anonymisiert Personen, deren letztes Mietverhältnis vor mehr als 10 Jahren
+endete (`--jahre`), die kein aktives Verhältnis und keine offenen Forderungen
+mehr haben. Die **Buchungsbelege bleiben** — sie unterliegen der zehnjährigen
+Aufbewahrungspflicht (Art. 958f OR). Deshalb wird die Person nicht gelöscht,
+sondern ihre Stammdaten werden anonymisiert: Die Revision kann die Historie
+weiter prüfen, der Personenbezug ist aber weg.
+
+Bewusst **nicht** im täglichen Lauf: Diese Anonymisierung ist endgültig und
+betrifft Menschen mit einer Vertragsgeschichte. Sie soll jemand auslösen, der
+vorher in die Vorschau geschaut hat.

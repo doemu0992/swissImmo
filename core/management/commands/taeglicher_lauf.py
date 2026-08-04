@@ -38,6 +38,18 @@ class Command(BaseCommand):
         except Exception as e:
             details.append(f"Marktdaten übersprungen ({e})")
 
+        # Bewerbungsdossiers nach dem Vermietungsentscheid bereinigen (DSG).
+        # Ausweiskopie, Lohnausweis und Betreibungsauszug von Personen, die die
+        # Wohnung nicht bekommen haben, dürfen nicht liegen bleiben — sie haben
+        # keinen Zweck mehr und keine Aufbewahrungspflicht.
+        try:
+            from core.services.bewerbung_aufbewahrung import bereinige
+            n_dok, n_anon = bereinige(timezone.localdate(), anwenden=True)
+            if n_dok or n_anon:
+                details.append(f"{n_dok} Bewerbungsdossier(s) bereinigt, {n_anon} anonymisiert")
+        except Exception as e:
+            details.append(f"Bewerbungs-Bereinigung übersprungen ({e})")
+
         # Wöchentliches Fristen-Mail am gewählten Wochentag (Standard Montag)
         wd = opts['digest_weekday']
         if wd is not None and wd >= 0 and timezone.localdate().weekday() == wd:
