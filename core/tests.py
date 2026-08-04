@@ -14355,3 +14355,201 @@ class UnterschriftBriefeTests(TestCase):
                 'liegenschaften': [str(lg.id)]})
         lg.refresh_from_db()
         self.assertEqual(lg.mandant_id, md.id)
+
+
+class RollentrennungTests(TestCase):
+    """Was darf ein Team-Mitglied mit eingeschränkter Rolle?
+
+    Bisher geprüft war nur die äussere Schranke: Fremde kommen nicht an fremde
+    Daten. Innerhalb der Verwaltung gibt es jedoch drei Stufen — Verwaltung
+    (alles), Sachbearbeitung (erfassen/bearbeiten), Lesend (Treuhand/Revision,
+    nur Ansicht). Diese Trennung nützt nur, wenn sie auch dort greift, wo eine
+    Seite lesbar sein SOLL, aber einzelne Aktionen darauf nicht.
+
+    Gefunden und behoben wurden drei Stellen, die für alle Team-Rollen
+    schreibbar waren:
+
+      Jahresabschluss   ein Buchungslauf, der die Periode versiegelt
+      Mängelrüge        setzt eine Frist nach Art. 259 OR in Gang
+      Untermiete        rechtsverbindliche Zustimmung/Ablehnung, Art. 262 OR
+    """
+
+    #: Views, die für alle Team-Rollen schreiben dürfen — mit Begründung.
+    #: Wer hier etwas einträgt, trifft bewusst eine Entscheidung.
+    ERLAUBT_OHNE_SCHREIBSCHRANKE = {
+        'fw_modus_wechsel': 'setzt nur die eigene Ansicht (Einfach/Profi) in der Session',
+    }
+
+    def test_lesende_rolle_kann_nirgends_unbemerkt_schreiben(self):
+        """Register-Prüfung: Jede View, die für alle Team-Rollen erreichbar ist
+        und POST/Datei-Uploads verarbeitet, braucht INNEN eine Schreibschranke
+        — oder einen Eintrag in der Ausnahmeliste oben. Eine neue Seite, die
+        beides vergisst, fällt hier auf, nicht erst im Betrieb."""
+        import ast
+        import pathlib
+        offen = []
+        for pfad in sorted(pathlib.Path('core/views').rglob('*.py')):
+            quelle = pfad.read_text(encoding='utf-8')
+            try:
+                baum = ast.parse(quelle)
+            except SyntaxError:
+                continue
+            for knoten in baum.body:
+                if not isinstance(knoten, ast.FunctionDef):
+                    continue
+                rollen = []
+                for d in knoten.decorator_list:
+                    if isinstance(d, ast.Call) and getattr(d.func, 'id', '') == 'rolle_erforderlich':
+                        rollen = [getattr(a.value, 'id', '') for a in d.args
+                                  if isinstance(a, ast.Starred)]
+                if 'TEAM_ROLLEN' not in rollen:
+                    continue
+                seg = ast.get_source_segment(quelle, knoten) or ''
+                if 'request.POST' not in seg and 'request.FILES' not in seg:
+                    continue
+                if 'hat_rolle(request.user' in seg:
+                    continue                      # innere Schranke vorhanden
+                if knoten.name in self.ERLAUBT_OHNE_SCHREIBSCHRANKE:
+                    continue
+                offen.append(f'{knoten.name} ({pfad})')
+        self.assertEqual(offen, [], 'Für ALLE Team-Rollen schreibbar, auch «Lesend»: '
+                                    + ', '.join(offen))
+
+    def _lesend(self):
+        c = Client(); c.force_login(_team_user('Lesend')); return c
+
+    def _sachbearbeitung(self):
+        c = Client(); c.force_login(_team_user('Sachbearbeitung')); return c
+
+    def test_lesend_darf_die_buchhaltung_ansehen(self):
+        """Die Trennung soll nicht aussperren: Treuhand/Revision braucht die
+        Buchhaltung. Ohne diese Prüfung wäre «kein Abschluss» auch durch ein
+        pauschales Sperren der Seite erfüllt — das wäre die falsche Lösung."""
+        self.assertEqual(self._lesend().get('/neu/buchhaltung/').status_code, 200)
+
+    def _abschluss_versuch(self, client):
+        """Löst den Jahresabschluss aus und meldet, ob der Buchungslauf lief.
+
+        Gemessen wird der Aufruf selbst, nicht die Zahl neuer Buchungen: Ohne
+        Erfolgsbuchungen im Jahr bucht der Abschluss ohnehin nichts, die
+        Zählung bliebe also auch ohne Rollenschranke gleich — die Prüfung
+        würde dann nichts belegen. Beim Gegentest aufgefallen."""
+        from unittest import mock
+        with mock.patch('core.services.jahresabschluss.buche_jahresabschluss',
+                        return_value=(3, Decimal('1000.00'))) as gebucht:
+            client.post('/neu/buchhaltung/', {'aktion': 'jahresabschluss', 'jahr': '2025'})
+        return gebucht.called
+
+    def test_lesend_darf_den_jahresabschluss_nicht_buchen(self):
+        self.assertFalse(self._abschluss_versuch(self._lesend()),
+                         'Rolle «Lesend» hat einen Buchungslauf ausgelöst')
+
+    def test_sachbearbeitung_darf_den_jahresabschluss_nicht_buchen(self):
+        """Auch die Sachbearbeitung nicht — laut Rollenkonzept sind
+        Buchungsläufe der Verwaltung vorbehalten."""
+        self.assertFalse(self._abschluss_versuch(self._sachbearbeitung()),
+                         'Rolle «Sachbearbeitung» hat einen Buchungslauf ausgelöst')
+
+    def test_verwaltung_darf_den_jahresabschluss_buchen(self):
+        """Gegenstück — sonst würden die Prüfungen oben auch dann bestehen,
+        wenn der Abschluss für niemanden mehr funktioniert."""
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        self.assertTrue(self._abschluss_versuch(c),
+                        'Verwaltung kommt nicht mehr an den Jahresabschluss')
+
+    def test_lesend_kann_keine_maengelruege_und_keine_untermiete_erklaeren(self):
+        """Beides sind Erklärungen der Vermieterschaft mit Rechtsfolgen —
+        Frist nach Art. 259 OR bzw. Zustimmung nach Art. 262 OR. Sie landen in
+        der Vertragsakte. Die Rolle «Lesend» darf sie nicht abgeben."""
+        from rentals.models import Dokument
+        _lg, _e, _m, v = _basis_objekte()
+        c = self._lesend()
+        vorher = Dokument.objects.count()
+        r1 = c.post(f'/neu/vertraege/{v.id}/maengelruege/',
+                    {'mangel': 'Heizung defekt', 'frist_tage': '14'})
+        r2 = c.post(f'/neu/vertraege/{v.id}/untermiete/',
+                    {'untermieter': 'Frau Beispiel', 'entscheid': 'zustimmung'})
+        for r, name in ((r1, 'Mängelrüge'), (r2, 'Untermiete')):
+            self.assertEqual(r.status_code, 403,
+                             f'{name}: Rolle «Lesend» wurde nicht abgewiesen ({r.status_code})')
+        self.assertEqual(Dokument.objects.count(), vorher,
+                         'Rolle «Lesend» hat ein Vertragsdokument erzeugt')
+
+    def test_sachbearbeitung_darf_beides_weiterhin(self):
+        """Gegenstück: Die Verschärfung darf die Sachbearbeitung nicht treffen."""
+        from rentals.models import Dokument
+        _lg, _e, _m, v = _basis_objekte()
+        c = self._sachbearbeitung()
+        c.post(f'/neu/vertraege/{v.id}/maengelruege/',
+               {'mangel': 'Heizung defekt', 'frist_tage': '14'})
+        c.post(f'/neu/vertraege/{v.id}/untermiete/',
+               {'untermieter': 'Frau Beispiel', 'entscheid': 'zustimmung'})
+        self.assertEqual(Dokument.objects.count(), 2,
+                         'Sachbearbeitung kann Mängelrüge/Untermiete nicht mehr erstellen')
+
+    def test_jeder_schreibende_api_endpunkt_nennt_seine_rolle(self):
+        """Die API erbt `auth_lesen` als Vorgabe — ein POST/PUT/DELETE ohne
+        eigenes `auth=` stünde damit auch der Rolle «Lesend» offen. Diese
+        Prüfung hält fest, dass jeder schreibende Endpunkt seine Rolle
+        ausdrücklich nennt."""
+        import ast
+        import pathlib
+        ohne = []
+        for pfad in sorted(pathlib.Path('.').rglob('*api*.py')):
+            if '.venv' in str(pfad) or 'migrations' in str(pfad):
+                continue
+            quelle = pfad.read_text(encoding='utf-8')
+            try:
+                baum = ast.parse(quelle)
+            except SyntaxError:
+                continue
+            for knoten in ast.walk(baum):
+                if not isinstance(knoten, ast.FunctionDef):
+                    continue
+                for d in knoten.decorator_list:
+                    if not isinstance(d, ast.Call):
+                        continue
+                    if getattr(d.func, 'attr', '') not in ('post', 'put', 'patch', 'delete'):
+                        continue
+                    if not any(kw.arg == 'auth' for kw in d.keywords):
+                        ohne.append(f'{knoten.name} ({pfad})')
+        self.assertEqual(ohne, [], 'Schreib-Endpunkte ohne eigenes auth=: ' + ', '.join(ohne))
+
+    def test_gesperrte_knoepfe_werden_gar_nicht_erst_gezeigt(self):
+        """Die Schranke im View ist das Eine — ein Knopf, der die angemeldete
+        Person auf die Anmeldeseite wirft, sieht nach Defekt aus. Was eine
+        Rolle nicht darf, soll sie auch nicht sehen."""
+        _lg, _e, _m, v = _basis_objekte()
+        c_lesend, c_sb = self._lesend(), self._sachbearbeitung()
+        c_vw = Client(); c_vw.force_login(_team_user('Verwaltung'))
+
+        lesend = c_lesend.get(f'/neu/vertraege/{v.id}/').content.decode()
+        schreib = c_sb.get(f'/neu/vertraege/{v.id}/').content.decode()
+        for pfad in (f'/neu/vertraege/{v.id}/maengelruege/', f'/neu/vertraege/{v.id}/untermiete/'):
+            self.assertNotIn(f'href="{pfad}"', lesend,
+                             f'«Lesend» bekommt {pfad} noch als Verknüpfung angeboten')
+            self.assertIn(f'href="{pfad}"', schreib,
+                          f'Sachbearbeitung sieht {pfad} nicht mehr')
+        self.assertIn('nicht für Ihre Rolle', lesend,
+                      'Gesperrte Einträge werden «Lesend» nicht als gesperrt gekennzeichnet')
+
+        self.assertNotIn('value="jahresabschluss"',
+                         c_sb.get('/neu/buchhaltung/').content.decode(),
+                         'Sachbearbeitung sieht den Jahresabschluss-Knopf')
+        self.assertIn('value="jahresabschluss"', c_vw.get('/neu/buchhaltung/').content.decode(),
+                      'Verwaltung sieht den Jahresabschluss-Knopf nicht mehr')
+
+    def test_falsche_rolle_landet_nicht_wieder_auf_der_anmeldung(self):
+        """Angemeldet, aber falsche Rolle → 403, nicht zurück zur Anmeldung.
+        Der alte Weg führte im Kreis: erneut anmelden, wieder hier landen."""
+        _lg, _e, _m, v = _basis_objekte()
+        r = self._lesend().get(f'/neu/vertraege/{v.id}/maengelruege/')
+        self.assertEqual(r.status_code, 403, f'erwartet 403, kam {r.status_code}')
+
+    def test_nicht_angemeldet_geht_weiterhin_zur_anmeldung(self):
+        """Gegenstück: Für Nichtangemeldete bleibt die Weiterleitung richtig —
+        sie sollen sich ja anmelden können."""
+        _lg, _e, _m, v = _basis_objekte()
+        r = Client().get(f'/neu/vertraege/{v.id}/maengelruege/')
+        self.assertEqual(r.status_code, 302)
+        self.assertIn('/login/', r['Location'])

@@ -19,7 +19,8 @@ from django.db.models.functions import ExtractMonth
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 
-from core.auth import rolle_erforderlich, TEAM_ROLLEN, SCHREIB_ROLLEN, ROLLE_VERWALTUNG, VERWALTUNGS_ROLLEN
+from core.auth import (rolle_erforderlich, darf_oeffnen, TEAM_ROLLEN, SCHREIB_ROLLEN,
+                       ROLLE_VERWALTUNG, VERWALTUNGS_ROLLEN)
 from core.views.dashboard_view import _berechne_aufgaben
 from crm.models import Mieter
 from finance.models import DebitorenRechnung, Zahlungseingang
@@ -73,10 +74,17 @@ def _global_filter(request):
     aktive_lg = None
     if lg_id:
         aktive_lg = Liegenschaft.objects.filter(id=lg_id).first()
+    from core.auth import hat_rolle
     return {
         'alle_liegenschaften': Liegenschaft.objects.all().order_by('strasse'),
         'aktive_lg': aktive_lg,
         'lg_query': f"?lg={aktive_lg.id}" if aktive_lg else "",
+        # Rolle für die Vorlagen: Wer nicht schreiben darf, soll die Knöpfe gar
+        # nicht erst sehen. Sonst landet die Rolle «Lesend» beim Klick auf der
+        # Anmeldeseite, obwohl sie angemeldet ist — das sieht nach Defekt aus.
+        # Ersetzt keine Prüfung im View, blendet nur die Sackgasse aus.
+        'kann_schreiben': hat_rolle(request.user, SCHREIB_ROLLEN),
+        'ist_verwaltung': hat_rolle(request.user, VERWALTUNGS_ROLLEN),
     }
 
 
@@ -2694,7 +2702,7 @@ def _erstellbare_dokumente(v):
     return docs
 
 
-def _formulare_prozesse(v):
+def _formulare_prozesse(v, user=None):
     """Bündelt ALLE für diesen Vertrag zutreffenden Formulare/Prozesse in Gruppen —
     kontextabhängig nach Status/Objektart, mit «bereits erstellt»-Kennzeichnung.
     Ein Ort für alles: der «Formulare & Prozesse»-Tab am Vertrag."""
@@ -2765,6 +2773,13 @@ def _formulare_prozesse(v):
             it.setdefault('verfuegbar', True)
             it.setdefault('erledigt', False)
             it.setdefault('pflicht', False)
+            # Was die Rolle ohnehin nicht öffnen darf, gar nicht erst als
+            # Verknüpfung anbieten — sonst führt der Klick in eine Absage.
+            # Die Rollen stehen an der View selbst (siehe `darf_oeffnen`), es
+            # gibt hier also keine zweite Liste, die veralten könnte.
+            if user is not None and not darf_oeffnen(user, it['url']):
+                it['verfuegbar'] = False
+                it['gesperrt'] = True
     return gruppen
 
 
@@ -2844,7 +2859,7 @@ def fw_vertrag_detail(request, pk):
     ]
     from core.services.docuseal_service import docuseal_konfiguriert
     return render(request, 'fw/vertrag_detail.html', {
-        'formular_gruppen': _formulare_prozesse(v),
+        'formular_gruppen': _formulare_prozesse(v, request.user),
         **basis, 'nav': 'vertraege', 'v': v, 'verlauf': verlauf,
         'vertrag_pill': _vertrag_status_pill(v),
         'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0')),
@@ -7043,7 +7058,14 @@ def fw_buchhaltung(request):
         from django.shortcuts import redirect
         from django.contrib import messages
         from core.services.jahresabschluss import buche_jahresabschluss, ist_abgeschlossen
-        from core.auth import log_aktion
+        from core.auth import log_aktion, hat_rolle
+        # Die Seite selbst ist für alle Team-Rollen lesbar (Treuhand/Revision
+        # muss die Buchhaltung ansehen können). Der Abschluss ist etwas
+        # anderes: ein Buchungslauf, der die Periode versiegelt. Laut
+        # Rollenkonzept gehört er allein der Verwaltung.
+        if not hat_rolle(request.user, VERWALTUNGS_ROLLEN):
+            messages.error(request, "❌ Den Jahresabschluss darf nur die Verwaltung buchen.")
+            return redirect(f'/neu/buchhaltung/?jahr={heute.year}')
         try:
             j_ab = int(request.POST.get('jahr') or heute.year)
         except ValueError:
@@ -11532,9 +11554,14 @@ def fw_kaution_beleg(request, vertrag_id, art):
     return resp
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_maengelruege(request, vertrag_id):
-    """Mängelrüge / Fristansetzung (Art. 259 OR). GET: Formular · POST: PDF + Frist-Pendenz."""
+    """Mängelrüge / Fristansetzung (Art. 259 OR). GET: Formular · POST: PDF + Frist-Pendenz.
+
+    Nur Schreib-Rollen: Die Rüge ist eine Erklärung der Vermieterschaft, die
+    eine Frist in Gang setzt, wird in der Vertragsakte abgelegt und erzeugt
+    eine Pendenz. Die Rolle «Lesend» (Treuhand/Revision) darf so etwas nicht
+    auslösen."""
     from django.http import HttpResponse
     from django.shortcuts import redirect
     from django.contrib import messages
@@ -11625,9 +11652,13 @@ def fw_vertrag_wg(request, vertrag_id):
     return redirect(f'/neu/vertraege/{v.id}/')
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_untermiete(request, vertrag_id):
-    """Zustimmung/Ablehnung zur Untervermietung (Art. 262 OR). GET: Formular · POST: PDF."""
+    """Zustimmung/Ablehnung zur Untervermietung (Art. 262 OR). GET: Formular · POST: PDF.
+
+    Nur Schreib-Rollen: Zustimmung oder Ablehnung sind rechtsverbindliche
+    Erklärungen der Vermieterschaft und werden in der Vertragsakte abgelegt —
+    nichts, was die Rolle «Lesend» abgeben können soll."""
     from django.http import HttpResponse
     from django.shortcuts import redirect
     from django.contrib import messages

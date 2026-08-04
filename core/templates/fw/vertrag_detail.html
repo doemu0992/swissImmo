@@ -48,8 +48,10 @@
                 <div id="vAktionen" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
                     <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-file-invoice-dollar text-indigo-500 w-4"></i>Schlussabrechnung</a>
                     <a href="/neu/vertraege/{{ v.id }}/abnahme/neu/" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-clipboard-check text-teal-500 w-4"></i>Wohnungsabnahme</a>
+                    {% if kann_schreiben %}{# Erklärungen mit Rechtsfolgen — für «Lesend» ausgeblendet #}
                     <a href="/neu/vertraege/{{ v.id }}/maengelruege/" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-triangle-exclamation text-amber-500 w-4"></i>Mängelrüge</a>
                     <a href="/neu/vertraege/{{ v.id }}/untermiete/" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-people-arrows text-indigo-500 w-4"></i>Untermiete</a>
+                    {% endif %}
                     <a href="/vertrag/{{ v.id }}/pdf/" target="_blank" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-file-pdf text-slate-400 w-4"></i>Vertrag als PDF</a>
                     <form method="post" action="/neu/vertraege/{{ v.id }}/signieren/" onsubmit="return confirm('{% if v.sign_status == 'unterzeichnet' %}Dieser Vertrag ist bereits unterzeichnet. Wirklich erneut zur Unterschrift senden?{% else %}Vertrag an {{ v.mieter.display_name|escapejs }} zur digitalen Unterschrift senden?{% endif %}');"{% if not docuseal_konfiguriert %} title="DocuSeal ist noch nicht konfiguriert (Integrationen)"{% endif %}>
                         {% csrf_token %}
@@ -490,11 +492,11 @@
                     <i class="fa-solid fa-chevron-right text-xs text-slate-300 group-hover:text-indigo-400"></i>
                 </a>
                 {% else %}
-                <div class="flex items-center gap-3 px-5 py-3 opacity-40 cursor-not-allowed" title="Für diesen Vertragsstatus nicht verfügbar">
-                    <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center shrink-0"><i class="fa-solid {{ it.icon }}"></i></div>
+                <div class="flex items-center gap-3 px-5 py-3 opacity-40 cursor-not-allowed" title="{% if it.gesperrt %}Ihre Rolle darf diesen Vorgang nicht auslösen{% else %}Für diesen Vertragsstatus nicht verfügbar{% endif %}">
+                    <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center shrink-0"><i class="fa-solid {% if it.gesperrt %}fa-lock{% else %}{{ it.icon }}{% endif %}"></i></div>
                     <div class="flex-1 min-w-0">
                         <div class="text-sm font-semibold text-slate-500 truncate">{{ it.titel }}</div>
-                        <div class="text-xs text-slate-400 truncate">{{ it.sub }} · derzeit nicht verfügbar</div>
+                        <div class="text-xs text-slate-400 truncate">{{ it.sub }} · {% if it.gesperrt %}nicht für Ihre Rolle{% else %}derzeit nicht verfügbar{% endif %}</div>
                     </div>
                 </div>
                 {% endif %}

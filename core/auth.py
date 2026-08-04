@@ -83,8 +83,55 @@ auth_verwaltung = RollenAuth(VERWALTUNGS_ROLLEN) # Löschen, Buchungsläufe, Ver
 # ==========================================
 
 def rolle_erforderlich(*rollen):
-    """Wie login_required, prüft zusätzlich die Rolle. Ersatz für staff_member_required."""
-    return user_passes_test(lambda u: hat_rolle(u, rollen), login_url='/login/')
+    """Wie login_required, prüft zusätzlich die Rolle.
+
+    Zwei Fälle, bewusst unterschieden:
+
+    - **Nicht angemeldet** → Weiterleitung auf die Anmeldung (wie bisher).
+    - **Angemeldet, aber falsche Rolle** → 403. Früher ging auch dieser Fall
+      auf die Anmeldeseite. Für jemanden, der bereits angemeldet ist, sieht
+      das nach einem Defekt aus: Er meldet sich erneut an und landet wieder
+      am selben Punkt. Eine klare Absage ist ehrlicher — und das, was HTTP
+      dafür vorsieht.
+
+    Zusätzlich merkt sich die View ihre Rollen in `benoetigte_rollen`. Damit
+    kann die Oberfläche Einträge, die eine Rolle ohnehin nicht öffnen darf,
+    von vornherein ausgrauen, statt sie in die Absage laufen zu lassen —
+    siehe `darf_oeffnen`.
+    """
+    from functools import wraps
+    from django.contrib.auth.views import redirect_to_login
+    from django.core.exceptions import PermissionDenied
+
+    def deko(view):
+        @wraps(view)
+        def gehuellt(request, *args, **kwargs):
+            u = getattr(request, 'user', None)
+            if hat_rolle(u, rollen):
+                return view(request, *args, **kwargs)
+            if not (u and u.is_authenticated):
+                return redirect_to_login(request.get_full_path(), '/login/')
+            raise PermissionDenied(
+                "Für diesen Bereich fehlt die Berechtigung: " + ", ".join(rollen))
+        gehuellt.benoetigte_rollen = tuple(rollen)
+        return gehuellt
+    return deko
+
+
+def darf_oeffnen(user, pfad):
+    """Darf dieser Benutzer die View hinter `pfad` aufrufen?
+
+    Liest die Rollen direkt an der View ab (`benoetigte_rollen`, vom Dekorator
+    gesetzt) — es gibt also keine zweite, von Hand gepflegte Liste, die mit
+    den Dekoratoren auseinanderlaufen könnte. Für Aktionslisten in der
+    Oberfläche gedacht; ersetzt die Prüfung in der View nicht.
+    Unbekannter Pfad → True (nicht ausgrauen, was sich nicht beurteilen lässt)."""
+    from django.urls import resolve
+    try:
+        rollen = getattr(resolve(pfad.split('?')[0]).func, 'benoetigte_rollen', None)
+    except Exception:
+        return True
+    return True if rollen is None else hat_rolle(user, rollen)
 
 
 # ==========================================
