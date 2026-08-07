@@ -13103,6 +13103,60 @@ class MediaZugriffTests(TestCase):
             shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'schaden_fotos'),
                           ignore_errors=True)
 
+    def test_pfad_umweg_umgeht_den_schutz_nicht(self):
+        """Ein vorangestelltes «./» oder «x/../» darf die Sensibel-Prüfung
+        nicht austricksen. Vorher entschied `ist_oeffentlich` auf der rohen
+        URL, während `safe_join` den Umweg wieder wegnormalisierte und die
+        echte, sensible Datei öffnete — zwei Codestellen, zwei Pfade. Der
+        Client normalisiert «./» selbst weg, «%2e» aber nicht; getestet wird
+        deshalb der aufgelöste Pfad direkt über die View."""
+        import os, shutil
+        from django.conf import settings
+        from django.test import RequestFactory
+        from django.http import Http404
+        from core.views.media_protected import geschuetzte_media
+        rel = 'schaden_fotos/2026-01-01/geheim.jpg'
+        ziel = os.path.join(settings.MEDIA_ROOT, rel)
+        os.makedirs(os.path.dirname(ziel), exist_ok=True)
+        with open(ziel, 'wb') as fh:
+            fh.write(b'\xff\xd8\xff\xe0JFIF')
+        rf = RequestFactory()
+        try:
+            for umweg in ('./schaden_fotos/2026-01-01/geheim.jpg',
+                          'x/../schaden_fotos/2026-01-01/geheim.jpg',
+                          './/schaden_fotos/2026-01-01/geheim.jpg'):
+                req = rf.get('/media/' + umweg)
+                from django.contrib.auth.models import AnonymousUser
+                req.user = AnonymousUser()
+                with self.assertRaises(Http404,
+                                       msg=f'Umweg «{umweg}» lieferte die Datei aus'):
+                    geschuetzte_media(req, umweg)
+        finally:
+            shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'schaden_fotos'),
+                          ignore_errors=True)
+
+    def test_html_beleg_wird_nie_inline_gerendert(self):
+        """Ein hochgeladener «Beleg» rechnung.html liefe sonst als Stored XSS
+        gegen das nächste Team-Mitglied, das ihn öffnet. HTML/XML müssen wie
+        SVG als Download (attachment, nosniff) rausgehen, nicht inline."""
+        import os, shutil
+        from django.conf import settings
+        from django.test import Client
+        rel = 'kreditoren_belege/boese.html'
+        ziel = os.path.join(settings.MEDIA_ROOT, rel)
+        os.makedirs(os.path.dirname(ziel), exist_ok=True)
+        with open(ziel, 'w') as fh:
+            fh.write('<html><script>alert(1)</script></html>')
+        try:
+            c = Client(); c.force_login(_team_user())
+            r = c.get('/media/' + rel)
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r['Content-Disposition'], 'attachment')
+            self.assertEqual(r['X-Content-Type-Options'], 'nosniff')
+        finally:
+            shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'kreditoren_belege'),
+                          ignore_errors=True)
+
 
 class MediaDeployPruefungTests(TestCase):
     """Der Media-Schutz greift nur, wenn /media/ überhaupt bei Django ankommt.
@@ -15191,3 +15245,79 @@ class ReviewNachbesserungTests(TestCase):
         from django.conf import settings
         with open(os.path.join(settings.BASE_DIR, 'deploy.sh')) as fh:
             self.assertIn('pruefe_webhook_secrets', fh.read())
+
+
+class BetragUeberlaufTests(TestCase):
+    """Ein zu grosser Betrag darf die Datenbank nicht vergiften.
+
+    SQLite erzwingt `max_digits` nicht: ein Betrag mit zu vielen Vorkommastellen
+    (z.B. 999999999999.99 in ein max_digits=10-Feld) wird gespeichert und wirft
+    dann bei JEDEM Lesen `decimal.InvalidOperation` — die Kreditoren-/Debitoren-
+    Liste ist danach für alle dauerhaft 500, nur per Roh-SQL zu reparieren.
+    Ein einziger Tippfehler genügt. Ein pre_save-Signal fängt es ab.
+    """
+
+    def _konten(self):
+        from finance.models import Buchungskonto
+        a, _ = Buchungskonto.objects.get_or_create(nummer='4000', defaults={'bezeichnung': 'Aufwand', 'typ': 'aufwand'})
+        b, _ = Buchungskonto.objects.get_or_create(nummer='1020', defaults={'bezeichnung': 'Bank', 'typ': 'bilanz'})
+        return a, b
+
+    def test_ueberlauf_wird_abgewiesen_kreditor(self):
+        from finance.models import KreditorenRechnung
+        with self.assertRaises(ValueError):
+            KreditorenRechnung.objects.create(betrag=Decimal('999999999999.99'))
+        self.assertEqual(KreditorenRechnung.objects.count(), 0,
+                         'Überlauf-Betrag ist trotzdem in der DB gelandet')
+
+    def test_ueberlauf_wird_abgewiesen_buchung(self):
+        from finance.models import Buchung
+        a, b = self._konten()
+        with self.assertRaises(ValueError):
+            Buchung.objects.create(datum=date(2026, 1, 1), beleg_text='X',
+                                   soll_konto=a, haben_konto=b,
+                                   betrag=Decimal('100000000.00'))   # 9 Vorkomma, Feld erlaubt 8
+
+    def test_gueltiger_betrag_passiert(self):
+        """Gegenstück: Ein normaler Betrag muss durchgehen — sonst hätte die
+        Guard einfach alles abgewiesen."""
+        from finance.models import KreditorenRechnung
+        k = KreditorenRechnung.objects.create(betrag=Decimal('99999999.99'))   # Maximum
+        self.assertEqual(k.betrag, Decimal('99999999.99'))
+
+    def test_grenze_liegt_richtig(self):
+        from finance.models import KreditorenRechnung
+        KreditorenRechnung.objects.create(betrag=Decimal('99999999.99'))       # gerade noch
+        with self.assertRaises(ValueError):
+            KreditorenRechnung.objects.create(betrag=Decimal('100000000.00'))  # eins zu viel
+
+
+class QrBetragFormatTests(TestCase):
+    """Auf dem Zahlteil kein englisches Tausendertrennzeichen.
+
+    `f"{amount:,.2f}"` erzeugt «1,887.00» — auf einem Schweizer Einzahlungs-
+    schein ist das Komma nicht zulässig und für den Zahler zweideutig
+    (1,887 vs. 1'887). Der QR-Datenblock selbst war korrekt; nur die gedruckte
+    Anzeige nicht."""
+
+    def test_zahlteil_zeigt_apostroph_kein_komma(self):
+        import io
+        from unittest import mock
+        from core.utils import qr_code
+        from reportlab.pdfgen import canvas
+        gezeichnet = []
+        c = canvas.Canvas(io.BytesIO())
+        orig = c.drawString
+        with mock.patch.object(c, 'drawString',
+                               side_effect=lambda x, y, t: gezeichnet.append(t) or orig(x, y, t)):
+            with mock.patch.object(c, 'drawImage'):
+                qr_code.draw_qr_bill(
+                    c, iban='CH5800791123000889012',
+                    creditor={'name': 'V AG', 'line1': 'Weg 1', 'line2': '3000 Bern'},
+                    debtor={'name': 'A M', 'line1': 'Gasse 2', 'line2': '8000 Zürich'},
+                    amount=1234567.89, reference='', reason='Miete')
+        betraege = [t for t in gezeichnet if '567' in t]
+        self.assertTrue(betraege, 'Betrag wurde nicht gezeichnet')
+        for t in betraege:
+            self.assertNotIn(',', t, f'Komma im Zahlbetrag: «{t}»')
+            self.assertIn("'", t, f'Kein Apostroph-Tausender: «{t}»')

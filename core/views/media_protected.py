@@ -79,6 +79,13 @@ def ist_objektfoto(pfad):
         return False
 
 
+# Nur diese Endungen werden inline ausgeliefert. Alles andere geht als
+# Download (attachment) raus — HTML, XML, SVG können im App-Origin Skript
+# ausführen; ein hochgeladener «Beleg» rechnung.html liefe sonst als
+# Stored XSS gegen das nächste Team-Mitglied, das ihn öffnet.
+INLINE_ERLAUBT = {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif', '.pdf'}
+
+
 def geschuetzte_media(request, pfad):
     """Liefert eine Media-Datei aus — sensible Dateien nur für Team-Mitglieder."""
     try:
@@ -87,15 +94,26 @@ def geschuetzte_media(request, pfad):
         raise Http404
     if not (os.path.exists(vollpfad) and os.path.isfile(vollpfad)):
         raise Http404
-    if not (ist_oeffentlich(pfad) or ist_objektfoto(pfad)):
+
+    # KRITISCH: Über die Sensibilität entscheidet der AUFGELÖSTE Pfad, nicht die
+    # rohe URL. Sonst reicht ein vorangestelltes «%2e/» (oder «x/../»): Die rohe
+    # Zeichenkette beginnt dann nicht mehr mit «schaden_fotos/», die Sensibel-
+    # Prüfung greift nicht, die Bildendung gilt als «öffentlich» — und safe_join
+    # normalisiert den Umweg gleich wieder weg und öffnet die echte, sensible
+    # Datei. Entscheidung und Auslieferung müssen denselben Pfad meinen.
+    rel = os.path.relpath(vollpfad, settings.MEDIA_ROOT).replace(os.sep, '/')
+
+    if not (ist_oeffentlich(rel) or ist_objektfoto(rel)):
         u = getattr(request, 'user', None)
         if not (u and u.is_authenticated and hat_rolle(u, TEAM_ROLLEN)):
             raise Http404   # kein Existenz-Leak (404 statt 403)
+
     resp = FileResponse(open(vollpfad, 'rb'))
-    # SVG kann Skripte enthalten → nie inline rendern (XSS-Schutz), immer als Download
-    # und ohne MIME-Sniffing ausliefern.
-    if os.path.splitext(pfad.lower())[1] == '.svg':
+    endung = os.path.splitext(rel.lower())[1]
+    if endung == '.svg':
         resp['Content-Type'] = 'image/svg+xml'
+    if endung not in INLINE_ERLAUBT:
+        # Nie inline rendern (XSS-Schutz), immer als Download, kein MIME-Sniffing.
         resp['Content-Disposition'] = 'attachment'
         resp['X-Content-Type-Options'] = 'nosniff'
     return resp
