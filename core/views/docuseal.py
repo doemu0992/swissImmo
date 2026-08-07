@@ -160,7 +160,9 @@ def send_via_docuseal(request, vertrag_id):
         }
 
         headers = {"X-Auth-Token": api_key, "Content-Type": "application/json"}
-        response = requests.post(url, headers=headers, json=payload)
+        # Ohne Zeitlimit hängt der Arbeitsprozess unbegrenzt, wenn DocuSeal
+        # nicht antwortet — bei einem einzigen Prozess steht dann die ganze App.
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
 
         if response.status_code in [200, 201]:
             vertrag.sign_status = 'gesendet'
@@ -180,10 +182,16 @@ def send_via_docuseal(request, vertrag_id):
 # 🔥 HIER IST DER REPARIERTE WEBHOOK 🔥
 def _webhook_secret_ok(request, konfig_secret):
     """Konstant-zeitiger Vergleich des Webhook-Secrets (Header oder ?token=).
-    Ist kein Secret konfiguriert, bleibt der Webhook offen (Rückwärtskompatibilität)."""
+
+    Ohne konfiguriertes Secret wird ABGEWIESEN, nicht durchgelassen. Diese
+    Fassung liess den Webhook früher offen, „für die Rückwärtskompatibilität" —
+    und damit konnte ein beliebiger, nicht angemeldeter POST einen Vertrag auf
+    `sign_status = 'unterzeichnet'` setzen und dessen PDF ersetzen. Die
+    Zwillings-Route in `rentals/api.py` war bereits so abgesichert; hier fehlte
+    es. Fehlende Prüfmöglichkeit ist kein Grund, nicht zu prüfen."""
     import hmac
     if not konfig_secret:
-        return True
+        return False
     gesendet = (request.headers.get('X-Webhook-Secret')
                 or request.GET.get('token', ''))
     return hmac.compare_digest(str(gesendet), str(konfig_secret))

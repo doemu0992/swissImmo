@@ -13,12 +13,14 @@ logger = logging.getLogger(__name__)
 @csrf_exempt
 def brevo_inbound_webhook(request):
     if request.method == 'POST':
+        # Ohne konfiguriertes Secret wird ABGEWIESEN. Früher stand hier `if secret:`
+        # — war keines gesetzt, entfiel die Prüfung ganz und jeder konnte über
+        # diesen Endpunkt Nachrichten in fremde Ticketverläufe schreiben.
         secret = getattr(settings, 'BREVO_WEBHOOK_SECRET', None)
-        if secret:
-            gesendet = request.headers.get('X-Webhook-Secret') or request.GET.get('token', '')
-            if not hmac.compare_digest(str(gesendet), str(secret)):
-                logger.warning("Brevo-Webhook: ungültiges/fehlendes Secret abgewiesen")
-                return JsonResponse({'status': 'forbidden'}, status=403)
+        gesendet = request.headers.get('X-Webhook-Secret') or request.GET.get('token', '')
+        if not secret or not hmac.compare_digest(str(gesendet), str(secret)):
+            logger.warning("Brevo-Webhook: ungültiges/fehlendes Secret abgewiesen")
+            return JsonResponse({'status': 'forbidden'}, status=403)
         try:
             data = json.loads(request.body)
             # Brevo sendet Betreff im Feld 'Subject'

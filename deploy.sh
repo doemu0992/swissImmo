@@ -67,6 +67,12 @@ fi
 # der Webserver die Dateien direkt aus — sensible Uploads wären dann für jeden
 # mit der URL abrufbar, ohne dass es irgendwo auffällt. Deshalb nach dem Reload
 # ein Test von aussen. Schlägt er an, steht der Befund im Deploy-Protokoll.
+# Webhook-Secrets: Die Endpunkte weisen ohne Secret ab (fail-closed). Wer eine
+# Integration bisher ohne Secret betrieben hat, verliert sonst lautlos den
+# Rücklauf — bei DocuSeal die Ablage unterschriebener Verträge.
+echo "→ manage.py pruefe_webhook_secrets"
+"$PY" manage.py pruefe_webhook_secrets || true
+
 echo "→ manage.py pruefe_media_schutz"
 "$PY" manage.py pruefe_media_schutz || echo "⚠ Media-Schutz-Prüfung meldete einen Befund (siehe oben)."
 
