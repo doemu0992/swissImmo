@@ -10,6 +10,37 @@ from django.db.models import Sum
 
 logger = logging.getLogger(__name__)
 
+
+def pruefe_dezimalfelder(instance):
+    """Weist Beträge ab, die nicht in ihr DecimalField passen.
+
+    SQLite erzwingt `max_digits` NICHT — ein Betrag mit mehr Vorkommastellen
+    als das Feld erlaubt wird klaglos gespeichert und wirft dann bei JEDEM
+    späteren Lesen `decimal.InvalidOperation`. Eine einzige Fehleingabe
+    (z.B. 999999999999.99 in ein `max_digits=10`-Feld) legt damit die ganze
+    Liste dauerhaft lahm — für alle Nutzer, und nur noch per Roh-SQL zu
+    reparieren. Deshalb hier vor dem Speichern prüfen und laut abbrechen,
+    statt die Datenbank zu vergiften. Gilt für jedes Modell, das diese
+    Funktion in `save()` aufruft."""
+    for feld in instance._meta.concrete_fields:
+        if not isinstance(feld, models.DecimalField):
+            continue
+        wert = getattr(instance, feld.attname, None)
+        if wert in (None, ''):
+            continue
+        try:
+            d = Decimal(str(wert))
+        except (InvalidOperation, ValueError, TypeError):
+            raise ValueError(f"{feld.name}: «{wert}» ist kein gültiger Betrag.")
+        stellen = d.as_tuple()
+        vorkomma = len(stellen.digits) + stellen.exponent      # exponent ≤ 0
+        max_vorkomma = feld.max_digits - feld.decimal_places
+        if vorkomma > max_vorkomma:
+            grenze = 10 ** max_vorkomma
+            raise ValueError(
+                f"{feld.verbose_name or feld.name}: Betrag zu gross "
+                f"(maximal {grenze:,.0f}).".replace(',', "'"))
+
 class Buchungskonto(models.Model):
     nummer = models.CharField("Kontonummer", max_length=10, unique=True)
     bezeichnung = models.CharField("Bezeichnung", max_length=100)
@@ -895,3 +926,20 @@ class ZahlerZuordnung(models.Model):
 
     def __str__(self):
         return f"{self.name_anzeige or self.name_norm} → {self.vertrag_id}"
+
+
+# ---------------------------------------------------------------------------
+# Überlauf-Schutz für ALLE Modelle mit DecimalFields (nicht nur finance).
+# SQLite erzwingt max_digits nicht; ein zu grosser Betrag wird gespeichert und
+# legt danach bei jedem Lesen die Seite mit InvalidOperation lahm — für alle
+# Nutzer, nur per Roh-SQL zu beheben. Ein pre_save-Signal fängt es an EINER
+# Stelle ab, statt in einem Dutzend save()-Methoden. Für Modelle ohne
+# DecimalField ist die Prüfung ein no-op (leere Schleife).
+from django.db.models.signals import pre_save as _pre_save
+
+
+def _dezimalfeld_guard(sender, instance, **kwargs):
+    pruefe_dezimalfelder(instance)
+
+
+_pre_save.connect(_dezimalfeld_guard, dispatch_uid='finance.dezimalfeld_guard')

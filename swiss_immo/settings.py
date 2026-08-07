@@ -287,6 +287,13 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'lx37.hoststar.hosting'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+# Ohne Timeout blockiert ein langsamer/nicht erreichbarer SMTP-Server den
+# Arbeitsprozess UNBEGRENZT — und da mehrere Aktionen (Schaden melden,
+# Bewerber-Entscheid, Portal-Zugang, Reparaturfreigabe) synchron im
+# Request-Zyklus senden, hängt dann die ganze Seite, bis der Nutzer aufgibt
+# und womöglich doppelt absendet. 15 s sind grosszügig für einen gesunden
+# Server und begrenzen den Schaden, wenn er es nicht ist.
+EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '15'))
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = f'ImmoSwiss Verwaltung <{os.getenv("EMAIL_HOST_USER", "info@immoswiss.app")}>'
