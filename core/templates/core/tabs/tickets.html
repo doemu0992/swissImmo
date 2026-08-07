@@ -91,7 +91,7 @@
 
                 <div v-if="selectedTicket.foto" class="mb-6">
                     <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Angehängtes Foto</h3>
-                    <a :href="selectedTicket.foto" target="_blank" class="block w-full max-w-sm rounded-2xl overflow-hidden border border-slate-200 hover:opacity-90 transition-opacity">
+                    <a :href="selectedTicket.foto" target="_blank" rel="noopener" class="block w-full max-w-sm rounded-2xl overflow-hidden border border-slate-200 hover:opacity-90 transition-opacity">
                         <img :src="selectedTicket.foto" alt="Ticket Foto" class="w-full h-auto object-cover">
                     </a>
                 </div>

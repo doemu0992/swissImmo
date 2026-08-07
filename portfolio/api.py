@@ -1,3 +1,4 @@
+import logging
 # portfolio/api.py
 from ninja import Router, Schema, File, Form
 from ninja.files import UploadedFile
@@ -11,6 +12,9 @@ from .schemas import LiegenschaftListSchema, LiegenschaftDetailSchema, Liegensch
 from .services import sync_liegenschaft_with_gwr
 
 from core.auth import auth_schreiben, auth_verwaltung, log_aktion
+
+logger = logging.getLogger(__name__)
+
 
 router = Router(tags=["Portfolio"])
 
@@ -31,7 +35,7 @@ def create_liegenschaft(request, payload: LiegenschaftUpdateSchema):
     try:
         sync_liegenschaft_with_gwr(neue_liegenschaft)
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
     return 201, neue_liegenschaft
 
 @router.put("/liegenschaften/{liegenschaft_id}", response={200: dict}, auth=auth_schreiben)
@@ -140,7 +144,7 @@ def delete_dokument(request, id: int):
             try:
                 doc.datei.delete(save=False)
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
 
         doc.delete()
         return 200, {"success": True}

@@ -16,12 +16,16 @@ Aufruf:
     python manage.py fetch_rechnungen --einmal   # ein Durchlauf (Scheduled Task)
     python manage.py fetch_rechnungen            # Dauerschleife (alle 120 s)
 """
+import logging
 import imaplib
 import os
 import time
 
 from django.core.management.base import BaseCommand
 from django.db import connections
+
+logger = logging.getLogger(__name__)
+
 
 
 class Command(BaseCommand):
@@ -85,8 +89,8 @@ class Command(BaseCommand):
             try:
                 mail.close()
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
             try:
                 mail.logout()
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)

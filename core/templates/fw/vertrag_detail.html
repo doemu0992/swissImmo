@@ -52,7 +52,7 @@
                     <a href="/neu/vertraege/{{ v.id }}/maengelruege/" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-triangle-exclamation text-amber-500 w-4"></i>Mängelrüge</a>
                     <a href="/neu/vertraege/{{ v.id }}/untermiete/" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-people-arrows text-indigo-500 w-4"></i>Untermiete</a>
                     {% endif %}
-                    <a href="/vertrag/{{ v.id }}/pdf/" target="_blank" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-file-pdf text-slate-400 w-4"></i>Vertrag als PDF</a>
+                    <a href="/vertrag/{{ v.id }}/pdf/" target="_blank" rel="noopener" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-file-pdf text-slate-400 w-4"></i>Vertrag als PDF</a>
                     <form method="post" action="/neu/vertraege/{{ v.id }}/signieren/" onsubmit="return confirm('{% if v.sign_status == 'unterzeichnet' %}Dieser Vertrag ist bereits unterzeichnet. Wirklich erneut zur Unterschrift senden?{% else %}Vertrag an {{ v.mieter.display_name|escapejs }} zur digitalen Unterschrift senden?{% endif %}');"{% if not docuseal_konfiguriert %} title="DocuSeal ist noch nicht konfiguriert (Integrationen)"{% endif %}>
                         {% csrf_token %}
                         <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-signature text-indigo-500 w-4"></i>{% if v.sign_status == 'offen' %}Zur Unterschrift senden{% else %}Erneut zur Unterschrift{% endif %}</button>
@@ -186,8 +186,8 @@
                 {% endif %}
                 {% if k.status != 'zurueckgezogen' %}
                 <div class="flex items-center gap-3 mt-1.5">
-                    <a href="/neu/kuendigung/{{ k.id }}/formular/" target="_blank" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-file-contract mr-0.5"></i>Amtliches Formular{% if formular_kanton %} {{ formular_kanton }}{% endif %} (PDF)</a>
-                    <a href="/vertrag/{{ v.id }}/dokument/kuendigungsbestaetigung/" target="_blank" class="text-xs font-medium text-slate-500 hover:underline">Bestätigung</a>
+                    <a href="/neu/kuendigung/{{ k.id }}/formular/" target="_blank" rel="noopener" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-file-contract mr-0.5"></i>Amtliches Formular{% if formular_kanton %} {{ formular_kanton }}{% endif %} (PDF)</a>
+                    <a href="/vertrag/{{ v.id }}/dokument/kuendigungsbestaetigung/" target="_blank" rel="noopener" class="text-xs font-medium text-slate-500 hover:underline">Bestätigung</a>
                     <form method="post" action="/neu/kuendigung/{{ k.id }}/zuruecknehmen/" onsubmit="return confirm('Kündigung zurücknehmen und Vertrag reaktivieren?');" class="inline">
                         {% csrf_token %}
                         <button class="text-xs font-medium text-slate-400 hover:text-rose-600">zurücknehmen</button>
@@ -211,7 +211,7 @@
             {% if v.ist_kautionsversicherung %}
                 {% if v.kautions_versicherer %}<div class="flex justify-between"><dt class="text-slate-500">Versicherer</dt><dd class="text-slate-800">{{ v.kautions_versicherer }}</dd></div>{% endif %}
                 {% if v.kautions_policennummer %}<div class="flex justify-between"><dt class="text-slate-500">Policennummer</dt><dd class="font-mono text-xs text-slate-600">{{ v.kautions_policennummer }}</dd></div>{% endif %}
-                {% if v.kautions_zertifikat %}<div class="flex justify-between"><dt class="text-slate-500">Zertifikat</dt><dd><a href="{{ v.kautions_zertifikat.url }}" target="_blank" class="text-indigo-600 hover:underline text-xs font-semibold"><i class="fa-solid fa-file-pdf mr-0.5"></i>Police öffnen</a></dd></div>{% endif %}
+                {% if v.kautions_zertifikat %}<div class="flex justify-between"><dt class="text-slate-500">Zertifikat</dt><dd><a href="{{ v.kautions_zertifikat.url }}" target="_blank" rel="noopener" class="text-indigo-600 hover:underline text-xs font-semibold"><i class="fa-solid fa-file-pdf mr-0.5"></i>Police öffnen</a></dd></div>{% endif %}
                 {% if v.kautions_einbezahlt_am %}<div class="flex justify-between"><dt class="text-slate-500">Police aktiv ab</dt><dd class="text-slate-800">{{ v.kautions_einbezahlt_am|date:"d.m.Y" }}</dd></div>{% endif %}
             {% else %}
                 {% if v.kautions_konto %}<div class="flex justify-between"><dt class="text-slate-500">Sperrkonto</dt><dd class="font-mono text-xs text-slate-600">{{ v.kautions_konto }}</dd></div>{% endif %}
@@ -224,9 +224,9 @@
         </dl>
         {% if v.kautions_einbezahlt_am %}
         <div class="flex flex-wrap gap-2 mb-3">
-            <a href="/neu/vertraege/{{ v.id }}/kaution-beleg/hinterlegung/" target="_blank" class="text-[11px] font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-file-pdf mr-1"></i>Bestätigung an Mieter</a>
+            <a href="/neu/vertraege/{{ v.id }}/kaution-beleg/hinterlegung/" target="_blank" rel="noopener" class="text-[11px] font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-file-pdf mr-1"></i>Bestätigung an Mieter</a>
             {% if not v.ist_kautionsversicherung %}
-            <a href="/neu/vertraege/{{ v.id }}/kaution-beleg/freigabe/" target="_blank" class="text-[11px] font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-building-columns mr-1"></i>Freigabe an Bank</a>
+            <a href="/neu/vertraege/{{ v.id }}/kaution-beleg/freigabe/" target="_blank" rel="noopener" class="text-[11px] font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-building-columns mr-1"></i>Freigabe an Bank</a>
             {% endif %}
         </div>
         {% endif %}
@@ -480,7 +480,7 @@
             <div class="divide-y divide-slate-50">
                 {% for it in g.items %}
                 {% if it.verfuegbar %}
-                <a href="{{ it.url }}" {% if '/pdf/' in it.url or '/qr/' in it.url or '/dokument/' in it.url or 'kaution-beleg' in it.url %}target="_blank"{% endif %} class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/70 group">
+                <a href="{{ it.url }}" {% if '/pdf/' in it.url or '/qr/' in it.url or '/dokument/' in it.url or 'kaution-beleg' in it.url %}target="_blank" rel="noopener"{% endif %} class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/70 group">
                     <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid {{ it.icon }}"></i></div>
                     <div class="flex-1 min-w-0">
                         <div class="text-sm font-semibold text-slate-800 truncate">{{ it.titel }}
@@ -524,7 +524,7 @@
         <p class="text-[11px] text-slate-400 mb-4">„Alle als ZIP" erzeugt Mietvertrag + Beilagen, legt sie einzeln in die Akte (erscheinen im Mieterportal) und lädt sie gebündelt herunter.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {% for d in erstellbare_dokumente %}
-            <a href="{{ d.url }}" target="_blank"
+            <a href="{{ d.url }}" target="_blank" rel="noopener"
                class="flex items-center gap-3 p-3.5 rounded-lg border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition-all group">
                 <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                     <i class="fa-solid {{ d.icon }}"></i>

@@ -488,7 +488,7 @@ class AbrechnungsPeriode(models.Model):
             if not r.get('error'):
                 return Decimal(str(r.get('total_kosten', 0) or 0))
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
         # Fallback (z.B. ohne Liegenschaft): reine Belegsumme
         return self.belege.aggregate(total=Sum('betrag'))['total'] or Decimal('0.00')
 

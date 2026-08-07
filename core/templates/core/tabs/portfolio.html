@@ -98,7 +98,7 @@
                     <div v-for="d in selectedLiegenschaft.dokumente" :key="d.id" class="flex justify-between items-center p-3 bg-white/10 rounded-xl group">
                         <div class="flex items-center gap-3"><i class="fa-solid fa-file-pdf text-rose-400"></i><div><div class="font-bold text-xs">{% verbatim %}{{ d.titel }}{% endverbatim %}</div><div class="text-[10px] text-slate-400">{% verbatim %}{{ d.kategorie }}{% endverbatim %}</div></div></div>
                         <div class="flex gap-2">
-                            <a :href="d.datei_url" target="_blank" class="text-slate-400 hover:text-white"><i class="fa-solid fa-download"></i></a>
+                            <a :href="d.datei_url" target="_blank" rel="noopener" class="text-slate-400 hover:text-white"><i class="fa-solid fa-download"></i></a>
                             <button @click="deleteDokument(d.id, d.is_vertrag)" class="text-rose-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
@@ -313,7 +313,7 @@
                     <div v-for="d in selectedEinheit.dokumente" :key="d.id" class="flex justify-between items-center p-3 bg-white/10 rounded-xl group">
                         <div class="flex items-center gap-3"><i class="fa-solid fa-file-pdf text-rose-400"></i><div><div class="font-bold text-xs">{% verbatim %}{{ d.titel }}{% endverbatim %}</div><div class="text-[10px] text-slate-400">{% verbatim %}{{ d.kategorie }}{% endverbatim %}</div></div></div>
                         <div class="flex gap-2">
-                            <a :href="d.datei_url" target="_blank" class="text-slate-400 hover:text-white"><i class="fa-solid fa-download"></i></a>
+                            <a :href="d.datei_url" target="_blank" rel="noopener" class="text-slate-400 hover:text-white"><i class="fa-solid fa-download"></i></a>
                             <button @click="deleteDokument(d.id, d.is_vertrag)" class="text-rose-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>

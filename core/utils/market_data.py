@@ -160,11 +160,16 @@ def update_verwaltung_rates():
         msg.append(f"LIK (Basis 2020): {data['lik']}")
 
     # SPEICHERN
-    if updated:
+    # Der Zeitstempel hält fest, wann ZULETZT GEPRÜFT wurde — nicht, wann sich
+    # zuletzt ein Wert geändert hat. Referenzzins und LIK ändern sich nur ein
+    # paar Mal im Jahr; wäre der Stempel an eine Änderung gekoppelt, gälten die
+    # Daten dazwischen dauernd als veraltet und jeder Aufruf ginge erneut ins
+    # Internet. Genau daran scheiterte die Frischeprüfung in fw_marktdaten_live.
+    if msg:
         verwaltung.letztes_update_marktdaten = timezone.now()
         verwaltung.save()
-        return "Erfolgreich aktualisiert: " + " | ".join(msg), errors
-    elif msg:
+        if updated:
+            return "Erfolgreich aktualisiert: " + " | ".join(msg), errors
         return "Marktdaten geprüft, sie sind bereits aktuell: " + " | ".join(msg), errors
 
     return "Keine verwertbaren Daten gefunden.", errors

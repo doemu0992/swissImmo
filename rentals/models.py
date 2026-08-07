@@ -1,8 +1,12 @@
+import logging
 # rentals/models.py
 from django.db import models
 from django.utils import timezone
 from decimal import Decimal
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
+
+logger = logging.getLogger(__name__)
+
 
 class Mietvertrag(models.Model):
     STATUS_CHOICES = [('offen', 'Offen'), ('gesendet', 'Versendet'), ('unterzeichnet', 'Unterzeichnet')]
@@ -558,7 +562,7 @@ class Mietvertrag(models.Model):
                 from core.services.ablage import ablage_signierter_vertrag
                 ablage_signierter_vertrag(self)
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     def delete(self, *args, **kwargs):
         # Automatisch erzeugte Vertragspaket-Dokumente (Mietvertrag + Standard-
@@ -573,7 +577,7 @@ class Mietvertrag(models.Model):
                 kategorie='vertrag', bezeichnung__in=VERTRAGSPAKET_TITEL
             ).delete()
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
         return super().delete(*args, **kwargs)
 
 class Staffelstufe(models.Model):

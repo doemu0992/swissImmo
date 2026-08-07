@@ -6,6 +6,7 @@ Zwei Techniken je nach Original:
 - Kantone mit ausfüllbaren PDF-Formularfeldern (AcroForm: ZH, BE, …) → Felder direkt
   über ihren Feldnamen befüllen (sauberste Variante, keine Koordinaten).
 - Kantone ohne Formularfelder (SO) → Daten per Overlay auf das Original stempeln."""
+import logging
 import io
 import os
 import datetime
@@ -164,7 +165,7 @@ def fill_mietzins_so(vertrag, daten, verwaltung=None):
             try:
                 c.drawImage(us.path, 400, _y(755) - 4, width=110, height=22, preserveAspectRatio=True, mask='auto')
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     return _merge(SO_MIETZINS, _overlay(zeichnen))
 
@@ -219,7 +220,7 @@ def fill_kuendigung_so(vertrag, kuendigung, verwaltung=None, empfaenger=None):
             try:
                 c.drawImage(us.path, 330, _y(575) - 4, width=110, height=22, preserveAspectRatio=True, mask='auto')
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     return _merge(SO_KUENDIGUNG, _overlay(zeichnen))
 
@@ -265,11 +266,11 @@ def _fill_acroform(original_pfad, text_values, checkbox_fields=(), signaturen=()
         try:
             writer.update_page_form_field_values(page, werte, auto_regenerate=False)
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
     try:
         writer.set_need_appearances_writer(True)  # Viewer rendert die Werte
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     # Unterschriftsbilder als Overlay auf die jeweilige Seite legen.
     for sig in signaturen or ():
@@ -282,7 +283,7 @@ def _fill_acroform(original_pfad, text_values, checkbox_fields=(), signaturen=()
                                       preserveAspectRatio=True, mask='auto'))
             writer.pages[seite_idx].merge_page(ov)
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     out = io.BytesIO()
     writer.write(out); out.seek(0)
@@ -335,6 +336,9 @@ def _objekt_zeile(vertrag):
 
 # ---- Einzel-Empfänger (Art. 266n: getrennte Zustellung je Ehegatte) ----
 from collections import namedtuple as _nt
+
+logger = logging.getLogger(__name__)
+
 Empfaenger = _nt('Empfaenger', ['name', 'strasse', 'plz', 'ort'])
 
 

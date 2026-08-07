@@ -3,6 +3,7 @@
 Fasst offene Mietforderungen, Nebenkosten-Saldo, Schäden/Abzüge und die Kaution
 zu einer Endabrechnung zusammen und weist den Saldo (Nachzahlung durch bzw.
 Rückzahlung an den Mieter) aus. Erzeugt das PDF."""
+import logging
 import io
 import datetime
 from decimal import Decimal
@@ -11,6 +12,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
+
+logger = logging.getLogger(__name__)
+
 
 
 def _fmt(d):
@@ -115,7 +119,7 @@ def generate_schlussabrechnung_pdf(vertrag, daten, verwaltung=None):
         try:
             c.drawImage(verwaltung.logo.path, 155*mm, 272*mm, width=40*mm, preserveAspectRatio=True, mask='auto')
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     absender = mandant.firma_oder_name if mandant else (verwaltung.firma if verwaltung else 'Immobilienverwaltung')
     a_str = (mandant.strasse if mandant else (verwaltung.strasse if verwaltung else '')) or ''

@@ -27,7 +27,7 @@
               {% if jahr == 'alle' %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">Alle</a>
     {% if jahr != 'alle' %}
     <div class="ml-auto flex items-center gap-2 flex-wrap">
-        <a href="/neu/buchhaltung/pdf/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank"
+        <a href="/neu/buchhaltung/pdf/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener"
            class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700"><i class="fa-solid fa-file-pdf mr-1"></i>Erfolgsrechnung &amp; Bilanz (PDF)</a>
         <a href="/neu/buchhaltung/export/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
            class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700"><i class="fa-solid fa-file-csv mr-1"></i>Journal-Export (CSV)</a>

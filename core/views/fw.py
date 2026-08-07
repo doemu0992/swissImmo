@@ -6,6 +6,7 @@ Referenz: Original-Screenshots in REBUILD.md. Server-gerendert, testbar.
 Der 'Globale Filter' (?lg=<id>) filtert alle Kennzahlen auf eine Liegenschaft —
 er wird in _global_filter() gelesen und an jede Seite durchgereicht.
 """
+import logging
 import os
 import re
 from collections import defaultdict
@@ -26,6 +27,8 @@ from crm.models import Mieter
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Liegenschaft, Einheit
 from rentals.models import Mietvertrag
+
+logger = logging.getLogger(__name__)
 
 
 def _parse_adresse(text):
@@ -3598,8 +3601,15 @@ def fw_debitoren_aging(request):
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
+    # `offener_betrag` summiert die verbuchten Zahlungseingänge. Ohne Prefetch
+    # ist das EINE Abfrage je offener Rechnung — gemessen 88 Posten → 93
+    # Abfragen, 176 → 181. Ausgerechnet diese Seite öffnet man dann, wenn viel
+    # offen ist. Der Prefetch-Zweig in `offener_betrag` greift nur, wenn die
+    # Zahlungen hier auch vorgeladen werden; die übrigen Debitoren-Listen tun
+    # das seit dem N+1-Hotfix, diese Seite war nicht nachgezogen worden.
     qs = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
-          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft'))
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft')
+          .prefetch_related('zahlungseingaenge'))
     if aktive_lg:
         qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
 
@@ -5207,7 +5217,7 @@ def fw_person_loeschen(request, pk):
         try:
             m.benutzer.delete()
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
     log_aktion(request, "Person gelöscht", name,
                f"inkl. {anz_vertraege} Vertrag/Verträge + zugehörige Daten" if anz_vertraege else "")
     m.delete()   # cascade: Verträge (beendet/Entwurf), Kommunikation, Dokumente etc.
@@ -5541,7 +5551,7 @@ def fw_kreditoren(request):
         try:
             bedingung |= _Qk(betrag=Decimal(_num(suche)))
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
         qs = qs.filter(bedingung)
 
     # Sortierung: Fälligkeit zuerst ist die Arbeitsreihenfolge der Kreditoren-
@@ -8037,7 +8047,7 @@ def fw_nebenkosten_versand(request, pk):
                        vertrag=v, mieter=m, dedup=True):
                 abgelegt += 1
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     if not kontexte:
         messages.error(request, "Keine abzurechnenden Mieter in dieser Periode gefunden.")
@@ -8224,7 +8234,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
                 _jy, _jm = stand_raw.split('-')[:2]
                 v.basis_lik_stand = date(int(_jy), int(_jm), 1)
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
         v.save(update_fields=['basis_referenzzinssatz', 'basis_lik_punkte', 'basis_lik_stand'])
         neu_netto = _dec(request.POST.get('neu_netto'), str(v.netto_mietzins))
         neu_zins = _dec(request.POST.get('neu_zins'), str(aktuell_ref))
@@ -8476,7 +8486,7 @@ def fw_mietzins_massenanpassung(request):
             for page in PdfReader(_io.BytesIO(pdf)).pages:
                 writer.add_page(page)
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
         erfasst += 1
 
     if not erfasst:
@@ -9067,7 +9077,7 @@ def fw_vertrag_neu_speichern(request):
             _jahr, _monat = _stand_raw.split('-')[:2]
             basis_lik_stand = date(int(_jahr), int(_monat), 1)
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     # Kündigungsfrist: bei Geschäftsräumen gesetzlich min. 6 Monate (Art. 266d);
     # wird der Wert nicht gesetzt, greift der art-abhängige Default.
@@ -9211,7 +9221,7 @@ def fw_vertrag_neu_speichern(request):
                 messages.info(request, "📄 Amtliches Anfangsmietzins-Formular wurde automatisch erstellt "
                                        "(Formularpflicht) — bei Schlüsselübergabe aushändigen.")
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     # Nettomietzins 0 ist fast immer ein vergessenes Feld — warnen (nicht blockieren),
     # da ohne Mietzins die Sollstellung 0 verrechnet.
@@ -9229,7 +9239,7 @@ def fw_vertrag_neu_speichern(request):
         for _w in _warn:
             messages.warning(request, "⚠️ " + _w)
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     log_aktion(request, "Mietvertrag bearbeitet (Assistent)" if editing else "Mietvertrag erstellt (Assistent)",
                str(mieter), f"{einheit.bezeichnung}, ab {beginn}", ziel=vertrag)
@@ -9511,7 +9521,7 @@ def fw_account(request):
                 jahr, monat = stand_raw.split('-')[:2]
                 vw.aktueller_lik_stand = date(int(jahr), int(monat), 1)
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
         # Logo hochladen oder entfernen
         if P.get('logo_entfernen') == '1' and vw.logo:
             vw.logo.delete(save=False)
@@ -9585,11 +9595,11 @@ def fw_datenreset(request):
     try:
         ensure_kontenplan()
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
     try:
         seed_lebensdauer()
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     log_aktion(request, "Datenbank zurückgesetzt", f"{len(tabellen)} Tabellen geleert")
     messages.success(request, "✅ Alle Daten wurden gelöscht — du startest mit einer leeren Datenbank.")
@@ -9623,14 +9633,24 @@ def fw_marktdaten_live(request):
     from crm.models import Verwaltung
     from core.auth import hat_rolle
     quelle = 'gespeichert'
-    if hat_rolle(request.user, SCHREIB_ROLLEN):
+    vw = Verwaltung.objects.first()
+    # Nur nachladen, wenn der gespeicherte Stand wirklich alt ist. Der Aufruf
+    # holt zwei externe Seiten (je timeout=10) und war mit gut einer Sekunde
+    # die langsamste Route der Anwendung — bei nicht erreichbaren Quellen bis
+    # zu 20 s, in denen der Arbeitsprozess blockiert. Der tägliche Lauf
+    # aktualisiert die Werte ohnehin; dieser Weg ist nur die Handnachholung,
+    # wenn der Lauf ausgefallen ist.
+    stand = getattr(vw, 'letztes_update_marktdaten', None) if vw else None
+    veraltet = stand is None or (timezone.now() - stand).days >= 1
+    if veraltet and hat_rolle(request.user, SCHREIB_ROLLEN):
         try:
             from core.utils.market_data import update_verwaltung_rates
             update_verwaltung_rates()
             quelle = 'internet'
+            vw = Verwaltung.objects.first()
         except Exception:
+            logger.warning("Marktdaten-Livenachladen fehlgeschlagen", exc_info=True)
             quelle = 'gespeichert'
-    vw = Verwaltung.objects.first()
     return JsonResponse({
         'ref_zins': float(vw.aktueller_referenzzinssatz) if vw else 1.25,
         'lik': float(vw.aktueller_lik_punkte) if vw else 107.8,
@@ -10848,7 +10868,7 @@ def fw_mandat_loeschen(request, pk):
             try:
                 md.benutzer.delete()
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
         log_aktion(request, "Mandant gelöscht", name, '')
         md.delete()
         messages.success(request, f"🗑️ Mandant {name} gelöscht.")
@@ -11593,7 +11613,7 @@ def fw_maengelruege(request, vertrag_id):
                 titel=f"Mängelbehebung prüfen — {v.einheit.bezeichnung if v.einheit_id else ''}",
                 beschreibung=(mangel[:200]), vertrag=v, faellig_am=faellig, kategorie='frist')
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
         log_aktion(request, "Mängelrüge erstellt", str(v.mieter), f"Frist {frist} Tage", ziel=v)
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = f'inline; filename="Maengelruege_{v.mieter.nachname}.pdf"'
@@ -11635,7 +11655,7 @@ def fw_vertrag_wg(request, vertrag_id):
                                   quelle=f'vertrag:{v.id}', notiz='Einzug (WG) gemäss Mietvertrag'))
                 person.sync_effektive_adresse()
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
             log_aktion(request, "WG-Mieter hinzugefügt", str(person), str(v), ziel=v)
             messages.success(request, f"✅ {person.display_name} als WG-Mieter erfasst.")
     elif aktion == 'entfernen':
@@ -12142,6 +12162,40 @@ def fw_bewerbung_detail(request, pk):
         'status_label': status_label, 'status_wahl': BEWERBUNG_SPALTEN,
         'meldung': list(messages.get_messages(request)),
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_bewerbung_unterlagen(request, pk):
+    """Zweite Stufe: Ausweis und Einkommensnachweis nachtragen.
+
+    Das öffentliche Formular fragt diese Unterlagen nicht mehr ab — der EDÖB
+    lässt sie erst von der ausgewählten Person oder einer engeren Auswahl
+    verlangen, «sobald sich ein Vertragsabschluss konkretisiert». Damit das
+    keine leere Zusage bleibt, gibt es den Weg hier: Die Bewirtschaftung legt
+    die nachgereichten Unterlagen am Dossier ab. Für die Löschfristen zählen
+    sie wie alle anderen (siehe core.services.bewerbung_aufbewahrung)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from mietprozess.models import Mietbewerbung
+    from core.auth import log_aktion
+    b = get_object_or_404(Mietbewerbung, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/bewerbungen/{b.id}/')
+    abgelegt = []
+    for feld, label in (('ausweiskopie', 'Ausweiskopie'), ('lohnausweis', 'Einkommensnachweis'),
+                        ('weitere_dokumente', 'Weitere Unterlagen')):
+        datei = request.FILES.get(feld)
+        if datei:
+            getattr(b, feld).save(datei.name, datei, save=False)
+            abgelegt.append(label)
+    if abgelegt:
+        b.save()
+        log_aktion(request, "Bewerbungsunterlagen nachgetragen",
+                   f"{b.vorname} {b.nachname}", ", ".join(abgelegt))
+        messages.success(request, "✅ " + " und ".join(abgelegt) + " abgelegt.")
+    else:
+        messages.info(request, "Keine Datei gewählt.")
+    return redirect(f'/neu/bewerbungen/{b.id}/')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

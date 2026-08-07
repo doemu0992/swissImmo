@@ -1,8 +1,12 @@
 """Exposé / Inserat für ein ausgeschriebenes Mietobjekt — ein sauberes PDF
 mit Eckdaten, Mietzins, Verfügbarkeit, Beschreibung und Kontakt der Verwaltung.
 Das Dokument für Portale/Interessenten in der Nachmietersuche."""
+import logging
 import io
 from decimal import Decimal
+
+logger = logging.getLogger(__name__)
+
 
 
 def _fmt(d):
@@ -68,7 +72,7 @@ def generate_expose_pdf(einheit, verwaltung=None):
                         preserveAspectRatio=True, mask='auto')
             y -= bh + 6 * mm
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     # Eckdaten-Kacheln
     verf = einheit.verfuegbar_ab.strftime('%d.%m.%Y') if einheit.verfuegbar_ab else "sofort"

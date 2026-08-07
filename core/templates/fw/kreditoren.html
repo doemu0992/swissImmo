@@ -188,7 +188,7 @@
                 <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap {{ row.pill_cls }}">{{ row.status_label }}</span></td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     <div class="inline-flex items-center gap-2">
-                        {% if row.beleg_url %}<a href="{{ row.beleg_url }}" target="_blank" class="text-slate-400 hover:text-indigo-600" title="Beleg ansehen"><i class="fa-solid fa-paperclip"></i></a>{% endif %}
+                        {% if row.beleg_url %}<a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="text-slate-400 hover:text-indigo-600" title="Beleg ansehen"><i class="fa-solid fa-paperclip"></i></a>{% endif %}
                         {% if row.kann_bezahlen and darf_bezahlen %}
                         <form method="post" action="/neu/kreditoren/bezahlen/" onsubmit="return confirm('Zahlung an {{ row.lieferant|escapejs }} verbuchen?');" class="inline-flex items-center gap-1">
                             {% csrf_token %}
@@ -258,7 +258,7 @@
                         {% else %}
                         <img src="{{ row.beleg_url }}" alt="Beleg" class="max-h-[26rem] w-auto rounded-lg border border-slate-200 bg-white">
                         {% endif %}
-                        <a href="{{ row.beleg_url }}" target="_blank" class="inline-block mt-1.5 text-[11px] text-indigo-600 hover:underline"><i class="fa-solid fa-up-right-from-square mr-1"></i>In neuem Tab öffnen</a>
+                        <a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="inline-block mt-1.5 text-[11px] text-indigo-600 hover:underline"><i class="fa-solid fa-up-right-from-square mr-1"></i>In neuem Tab öffnen</a>
                     </div>
                     {% endif %}
                     <form method="post" action="/neu/kreditoren/{{ row.k.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">

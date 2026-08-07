@@ -2,6 +2,7 @@
 
 Stellt je Liegenschaft eines Mandanten Erträge und Aufwände eines Geschäftsjahres
 gegenüber und weist den Saldo (Auszahlung an den Eigentümer) aus."""
+import logging
 import io
 from decimal import Decimal
 
@@ -9,6 +10,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
+
+logger = logging.getLogger(__name__)
+
 
 
 def _fmt(d):
@@ -27,7 +31,7 @@ def generate_mandat_abrechnung_pdf(mandant, jahr, zeilen, totals, von, bis, verw
         try:
             c.drawImage(verwaltung.logo.path, 155*mm, 272*mm, width=40*mm, preserveAspectRatio=True, mask='auto')
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     # Absender
     if verwaltung:

@@ -72,7 +72,7 @@
                                     </form>
 
                                     <a :href="`/vertrag/${k.vertrag_id}/mahnung/?betrag=${(k.soll - k.ist).toFixed(2)}`"
-                                       target="_blank"
+                                       target="_blank" rel="noopener"
                                        class="bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white w-8 h-8 rounded-lg flex items-center justify-center transition-all shadow-sm"
                                        title="Rechtssichere Mahnung (PDF) generieren">
                                         <i class="fa-solid fa-file-pdf"></i>
@@ -201,7 +201,7 @@
                                 <button v-if="k.status === 'freigegeben' || k.status === 'bezahlt'" @click="openWeiterverrechnungModal(k)" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-indigo-600 hover:text-white transition-all" title="An Mieter weiterverrechnen">
                                     <i class="fa-solid fa-share-from-square mr-1"></i> Weiterverrechnen
                                 </button>
-                                <a :href="k.file_url" target="_blank" class="w-8 h-8 bg-slate-100 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-600 hover:text-white transition-all"><i class="fa-solid fa-eye text-xs"></i></a>
+                                <a :href="k.file_url" target="_blank" rel="noopener" class="w-8 h-8 bg-slate-100 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-600 hover:text-white transition-all"><i class="fa-solid fa-eye text-xs"></i></a>
                                 <button @click="storniereKreditor(k.id)" class="w-8 h-8 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Revisionssicher stornieren">
                                     <i class="fa-solid fa-rotate-left text-xs"></i>
                                 </button>

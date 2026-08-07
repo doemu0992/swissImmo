@@ -151,7 +151,7 @@ def get_current_lik():
         if pkt is not None:
             return pkt
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
     try:
         from crm.models import Verwaltung
         v = Verwaltung.objects.first()

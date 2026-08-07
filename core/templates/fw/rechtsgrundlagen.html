@@ -30,7 +30,7 @@
         {% for a in g.artikel %}
         <div class="px-5 py-4 flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
             <div class="sm:w-32 shrink-0">
-                <a href="{{ a.url }}" target="_blank" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 whitespace-nowrap">
+                <a href="{{ a.url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 whitespace-nowrap">
                     Art. {{ a.art }} {{ a.gesetz }}<i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
                 </a>
             </div>
@@ -62,7 +62,7 @@
 
 <p class="text-xs text-slate-400 mt-6 max-w-3xl">
     <b>Wichtig:</b> Die Kurzfassungen dienen der Orientierung und sind <b>nicht der amtliche Wortlaut</b>. Massgeblich
-    ist der aktuelle Gesetzestext auf <a href="https://www.fedlex.admin.ch" target="_blank" class="text-indigo-600 hover:underline">fedlex.admin.ch</a>
+    ist der aktuelle Gesetzestext auf <a href="https://www.fedlex.admin.ch" target="_blank" rel="noopener" class="text-indigo-600 hover:underline">fedlex.admin.ch</a>
     (je Artikel verlinkt). Diese Übersicht ersetzt keine Rechtsberatung; im Einzelfall — insbesondere bei Kündigungen und
     Mietzinsstreitigkeiten — ist eine anwaltliche/behördliche Abklärung angezeigt.
 </p>

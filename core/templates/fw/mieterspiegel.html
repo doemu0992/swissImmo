@@ -20,7 +20,7 @@
             {% for l in alle_lgs %}<option value="{{ l.id }}" {% if l.id == aktive_lg.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
         </select>
         {% endif %}
-        <a href="/neu/mieterspiegel/?pdf=1&lg={{ aktive_lg.id }}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm"><i class="fa-solid fa-file-pdf mr-1.5"></i>PDF</a>
+        <a href="/neu/mieterspiegel/?pdf=1&lg={{ aktive_lg.id }}" target="_blank" rel="noopener" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm"><i class="fa-solid fa-file-pdf mr-1.5"></i>PDF</a>
     </div>
 </div>
 

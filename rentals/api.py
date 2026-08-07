@@ -250,7 +250,9 @@ def send_to_docuseal(request, vertrag_id: int):
         }
 
         headers = {"X-Auth-Token": api_key, "Content-Type": "application/json"}
-        response = requests.post(url, headers=headers, json=payload)
+        # Ohne Zeitlimit hängt der Arbeitsprozess unbegrenzt, wenn DocuSeal
+        # nicht antwortet — bei einem einzigen Prozess steht dann die ganze App.
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
 
         if response.status_code in [200, 201]:
             vertrag.sign_status = 'gesendet'

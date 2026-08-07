@@ -1,7 +1,11 @@
+import logging
 import threading
 import os
 from django.core.mail import EmailMessage
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
 
 # Helper to send mail via Hoststar
 def send_via_hoststar(to_email, subject, html_content, attachment_name=None, attachment_content=None, cc_list=None):
@@ -100,7 +104,7 @@ def send_handyman_notification(auftrag):
                     att_content = f.read()
                     att_name = os.path.basename(ticket.foto.name)
             except:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
 
         threading.Thread(target=send_via_hoststar, args=(hw.email, subject, html_hw, att_name, att_content)).start()
 

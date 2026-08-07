@@ -11,9 +11,13 @@ Dieses Modul ist die eine Stelle dafür: `unterschrift_zeichnen()` findet das
 Bild, skaliert es proportional und setzt es über die Linie. Neue Briefe rufen
 denselben Helfer auf, damit die Lücke nicht erneut entsteht.
 """
+import logging
 import os
 
 from reportlab.lib.units import mm
+
+logger = logging.getLogger(__name__)
+
 
 
 def hat_sichtbare_tinte(bild):
@@ -187,7 +191,7 @@ def uebernehme_aus_formular(obj, request, feld='unterschrift_bild'):
             try:
                 datei.seek(0)
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
         setattr(obj, feld, datei)
         return True
     return False

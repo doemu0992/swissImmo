@@ -1,3 +1,4 @@
+import logging
 # crm/api.py
 from ninja import Router, Schema
 from django.shortcuts import get_object_or_404
@@ -9,6 +10,9 @@ from core.utils import get_current_ref_zins, get_current_lik
 from core.utils.qr_code import generate_mieter_qr_pdf
 
 from core.auth import auth_schreiben, auth_verwaltung, log_aktion
+
+logger = logging.getLogger(__name__)
+
 
 router = Router(tags=["CRM"])
 
@@ -55,7 +59,7 @@ def delete_mieter(request, mieter_id: int):
         try:
             mieter.benutzer.delete()
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
     log_aktion(request, "Mieter gelöscht", mieter.display_name, f"Mieter-ID {mieter.id}")
     mieter.delete()
     return 204, None
@@ -127,7 +131,7 @@ def delete_mieter_dokument(request, id: int):
             try:
                 doc.datei.delete(save=False)
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
 
         doc.delete()
         return 200, {"success": True}

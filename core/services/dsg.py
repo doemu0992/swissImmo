@@ -12,7 +12,11 @@ Zusätzlich werden die hochgeladenen Bewerber-Dokumente (Ausweis, Lohnausweis,
 Betreibungsauszug) physisch gelöscht — diese besonders schützenswerten Daten
 haben keine Aufbewahrungspflicht.
 """
+import logging
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
+
 
 
 def kann_anonymisieren(mieter):
@@ -39,7 +43,7 @@ def anonymisiere_person(mieter, *, grund='', user=None):
         try:
             mieter.benutzer.delete()
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
         mieter.benutzer = None
 
     # 2) Bewerbungen der Person anonymisieren + hochgeladene Dokumente löschen.
@@ -52,14 +56,14 @@ def anonymisiere_person(mieter, *, grund='', user=None):
                 try:
                     datei.delete(save=False)
                 except Exception:
-                    pass
+                    logger.debug("Fehler bewusst übergangen", exc_info=True)
         b.vorname = 'Anonymisiert'; b.nachname = f'#{pid}'
         b.email = f'anon-{pid}@example.invalid'; b.mobilnummer = ''
         b.adresse = ''; b.einkommen_jahr = ''; b.arbeitgeber = ''
         try:
             b.save()
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     # 3) Stammdaten der Person überschreiben (Buchungsbelege bleiben unberührt).
     mieter.anrede = ''; mieter.kontaktperson = ''
@@ -74,7 +78,7 @@ def anonymisiere_person(mieter, *, grund='', user=None):
     try:
         mieter.adressen.all().delete()
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
     mieter.aufenthaltsbewilligung = ''; mieter.bewilligung_gueltig_bis = None
     mieter.haftpflicht_gesellschaft = ''; mieter.haftpflicht_police = ''
     mieter.notfall_name = ''; mieter.notfall_telefon = ''; mieter.notfall_beziehung = ''

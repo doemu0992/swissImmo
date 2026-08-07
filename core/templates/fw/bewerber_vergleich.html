@@ -13,7 +13,7 @@
         <p class="text-sm text-slate-500 mt-1">{{ objekt }} · {{ e.bezeichnung }} · Bruttomiete CHF {{ brutto_monat|chf }}/Mt. ({{ jahresmiete|chf }}/Jahr)</p>
     </div>
     <div class="flex items-center gap-2">
-        <a href="/neu/vermarktung/{{ e.id }}/expose/" target="_blank" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-file-pdf mr-1.5"></i>Exposé</a>
+        <a href="/neu/vermarktung/{{ e.id }}/expose/" target="_blank" rel="noopener" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-file-pdf mr-1.5"></i>Exposé</a>
         <a href="?{% if not mit_abgelehnt %}alle=1{% endif %}{% if aktive_lg %}{% if not mit_abgelehnt %}&{% endif %}lg={{ aktive_lg.id }}{% endif %}" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 text-sm font-semibold px-4 py-2 rounded-lg">
             {% if mit_abgelehnt %}Abgelehnte ausblenden{% else %}Abgelehnte einblenden{% endif %}
         </a>

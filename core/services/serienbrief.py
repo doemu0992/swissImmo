@@ -1,11 +1,15 @@
 """Serienbrief: erzeugt ein Sammel-PDF mit einem Brief pro Empfänger
 (Fenstercouvert-Adressblock, Platzhalter-Ersetzung, ein Brief je Seite)."""
+import logging
 import io
 import datetime
 
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
+
+logger = logging.getLogger(__name__)
+
 
 
 def _wrap(text, breite):
@@ -63,7 +67,7 @@ def generate_serienbrief_pdf(absender, betreff, text, empfaenger, logo_path=None
                 c.drawImage(img, 25 * mm, 265 * mm, width=bw, height=bh,
                             preserveAspectRatio=True, mask='auto')
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
         # Absender-Zeile
         c.setFont("Helvetica", 8); c.setFillColorRGB(0.4, 0.4, 0.4)
         c.drawString(25 * mm, 272 * mm, f"{absender.get('firma','')} · {absender.get('strasse','')} · {absender.get('plz','')} {absender.get('ort','')}")

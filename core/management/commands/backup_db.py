@@ -6,6 +6,7 @@ Betrieb sicher). PostgreSQL: Hinweis auf pg_dump. Alte Backups werden rotiert.
 Aufruf:  python manage.py backup_db
 Planen:  täglich per PythonAnywhere-Scheduler / Cron.
 """
+import logging
 import datetime
 import shutil
 import sqlite3
@@ -13,6 +14,9 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+
+logger = logging.getLogger(__name__)
+
 
 
 class Command(BaseCommand):
@@ -57,4 +61,4 @@ class Command(BaseCommand):
                 alt.unlink()
                 self.stdout.write(f"  entfernt (Rotation): {alt.name}")
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)

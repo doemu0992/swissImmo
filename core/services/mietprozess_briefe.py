@@ -6,6 +6,7 @@
 
 Bewusst schlank gehalten (einfache Geschäftsbriefe), analog zum Serienbrief.
 """
+import logging
 import io
 import datetime
 from decimal import Decimal
@@ -13,6 +14,9 @@ from decimal import Decimal
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
+
+logger = logging.getLogger(__name__)
+
 
 
 def _absender_zeilen(verwaltung, mandant):
@@ -239,7 +243,7 @@ def rueckgabe_maengelruege_pdf(vertrag, maengel, verwaltung=None, abnahme_datum=
             try:
                 total += Decimal(str(m['betrag']))
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
         zeilen.append(teil)
     absaetze = [
         "Sehr geehrte Damen und Herren",

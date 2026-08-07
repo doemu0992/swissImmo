@@ -4,12 +4,16 @@ Diese Funktionen sind bewusst request-unabhängig, damit sie sowohl aus den View
 (Button) als auch aus Management-Commands (Scheduler / PythonAnywhere Task)
 aufgerufen werden können. Alle Läufe sind idempotent.
 """
+import logging
 import calendar as _calendar
 from datetime import date, timedelta
 from decimal import Decimal
 
 from django.db import transaction
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
+
 
 
 # ============================================================
@@ -232,13 +236,13 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
                 ablage_mahnung(r.vertrag, stufe=stufe, datum=heute,
                                betrag=f"{offen:.2f}")
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
         if send_email and r.vertrag and r.vertrag.mieter.email:
             try:
                 if send_payment_reminder(r.vertrag, faellig, offen):
                     res['emails'] += 1
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
     return res
 
 

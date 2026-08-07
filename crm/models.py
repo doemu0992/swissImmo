@@ -1,9 +1,13 @@
+import logging
 # crm/models.py
 import io
 from decimal import Decimal
 from PIL import Image
 from django.core.files.base import ContentFile
 from django.db import models
+
+logger = logging.getLogger(__name__)
+
 
 
 def _unterschrift_aufbereiten(instanz, praefix):
@@ -41,7 +45,7 @@ def _unterschrift_aufbereiten(instanz, praefix):
         try:
             instanz.unterschrift_bild.storage.delete(alt_name)
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
 class Verwaltung(models.Model):
     firma = models.CharField("Firmenname", max_length=100)

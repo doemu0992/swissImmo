@@ -88,7 +88,7 @@
                     {% if row.letzte_mahnung %}<div class="text-[10px] text-slate-400 mb-1">zuletzt: {{ row.letzte_mahnung.stufe }}. Mahnung {{ row.letzte_mahnung.datum|date:"d.m.Y" }}</div>{% endif %}
                     <div class="inline-flex items-center gap-1.5">
                     {% if row.mahn_url %}
-                    <a href="{{ row.mahn_url }}" target="_blank"
+                    <a href="{{ row.mahn_url }}" target="_blank" rel="noopener"
                        class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
                         <i class="fa-solid fa-file-pdf"></i> PDF
                     </a>

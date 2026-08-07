@@ -4,7 +4,11 @@ Schützt vor: zu grossen Dateien (DoS/Speicher), verkleideten Nicht-Bildern
 (z.B. .php/.svg mit falscher Endung) und kaputten Dateien. Prüft echten
 Bildinhalt via Pillow, nicht nur die vom Client gesendete Endung/Content-Type.
 """
+import logging
 from PIL import Image
+
+logger = logging.getLogger(__name__)
+
 
 # Max. 15 MB pro Bild — grosszügig für Handyfotos, aber begrenzt.
 MAX_BILD_BYTES = 15 * 1024 * 1024
@@ -36,7 +40,7 @@ def validiere_bild(f):
         try:
             f.seek(0)
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
     if fmt and fmt.upper() not in ERLAUBTE_FORMATE:
         return False, f"Bildformat {fmt} nicht erlaubt."
     return True, ""

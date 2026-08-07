@@ -40,7 +40,7 @@
         <a href="/vertrag/{{ v.id }}/pdf/" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-file-pdf mr-1.5"></i>Vertrag PDF</a>
         {% if kann_schreiben %}
         <a href="/vertrag/{{ v.id }}/qr/" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-qrcode mr-1.5"></i>QR-Rechnung</a>
-        <a href="/vertrag/{{ v.id }}/mahnung/" target="_blank" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Mahnung PDF</a>
+        <a href="/vertrag/{{ v.id }}/mahnung/" target="_blank" rel="noopener" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Mahnung PDF</a>
         {% endif %}
         {% if kann_verwalten %}
         <a href="/mietzins/{{ v.id }}/" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-percent mr-1.5"></i>Mietzinsanpassung</a>
@@ -166,7 +166,7 @@
                 <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Dokumente</div>
                 <div class="divide-y divide-slate-50">
                 {% for d in dokumente %}
-                    <a {% if d.datei %}href="{{ d.datei.url }}" target="_blank"{% endif %} class="flex items-center gap-3 px-5 py-2.5 hover:text-indigo-600 transition-colors">
+                    <a {% if d.datei %}href="{{ d.datei.url }}" target="_blank" rel="noopener"{% endif %} class="flex items-center gap-3 px-5 py-2.5 hover:text-indigo-600 transition-colors">
                         <i class="fa-solid fa-file-lines text-slate-300"></i>
                         <span class="text-sm flex-1 truncate">{{ d.bezeichnung }}</span>
                         <span class="text-xs text-slate-400">{{ d.datum|date:"d.m.y" }}</span>

@@ -1,3 +1,4 @@
+import logging
 # core/views/pdf.py
 from core.auth import rolle_erforderlich, ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG, ROLLE_LESEND
 from django.shortcuts import get_object_or_404
@@ -6,6 +7,9 @@ from django.utils.text import slugify
 from rentals.models import Mietvertrag
 from core.services.pdf_service import generate_vertrag_pdf_bytes
 from core.services.dokument_service import generate_dokument_pdf_bytes, DOKUMENT_TYPEN
+
+logger = logging.getLogger(__name__)
+
 
 @rolle_erforderlich(ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG, ROLLE_LESEND)
 def generate_pdf_view(request, vertrag_id):
@@ -43,7 +47,7 @@ def _ablegen_vertragsdokument(pdf_bytes, titel, vertrag):
                 return
         ablegen(pdf_bytes, titel, kategorie='vertrag', vertrag=vertrag, dedup=True)
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
 
 
 # Dokumentpaket, das bei Vertragserstellung erzeugt wird (ohne situative
@@ -66,7 +70,7 @@ def erzeuge_und_ablege_vertragspaket(vertrag):
         _ablegen_vertragsdokument(pdf, "Mietvertrag", vertrag)
         dateien.append((f"01_Mietvertrag_{slugify(vertrag.mieter.nachname)}.pdf", pdf))
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
     for i, doc_type in enumerate(VERTRAGSPAKET, start=2):
         if doc_type not in DOKUMENT_TYPEN:
             continue

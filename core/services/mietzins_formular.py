@@ -2,6 +2,7 @@
 
 Erzeugt ein rechtlich vollständiges „Mitteilung von Mietzinserhöhungen und
 anderen einseitigen Vertragsänderungen"-Formular als PDF (bytes)."""
+import logging
 import io
 import datetime
 from decimal import Decimal
@@ -10,6 +11,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
+
+logger = logging.getLogger(__name__)
+
 
 
 def _fmt(d):
@@ -69,7 +73,7 @@ def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, mandant=Non
         try:
             c.drawImage(verwaltung.logo.path, 155*mm, 272*mm, width=40*mm, preserveAspectRatio=True, mask='auto')
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     # Absender
     c.setFont("Helvetica-Bold", 9)
@@ -210,7 +214,7 @@ def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, mandant=Non
         try:
             c.drawImage(unterschrift_pfad, 20*mm, y - 22*mm, width=48*mm, preserveAspectRatio=True, mask='auto')
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
     c.setFont("Helvetica-Bold", 10)
     c.drawString(20*mm, 14*mm, absender_name)
     c.setFont("Helvetica", 8)

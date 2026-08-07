@@ -169,7 +169,7 @@
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {% for f in fotos %}
         <div class="relative group">
-            <a href="{{ f.bild.url }}" target="_blank" title="Foto in voller Grösse öffnen" class="block">
+            <a href="{{ f.bild.url }}" target="_blank" rel="noopener" title="Foto in voller Grösse öffnen" class="block">
                 <img src="{{ f.bild.url }}" alt="Objektfoto" class="rounded-lg w-full h-40 object-cover border border-slate-200">
             </a>
             {% if forloop.first %}<span class="absolute bottom-1 left-1 text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded font-semibold">Titelbild</span>{% endif %}
@@ -271,7 +271,7 @@
                             {% if row.ersatz_status == 'faellig' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-600">Ersatz fällig</span>{% elif row.ersatz_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-600">bald fällig</span>{% endif %}</div>
                         {% if row.a.bezeichnung %}<div class="text-xs text-slate-400">{{ row.a.bezeichnung }}</div>{% endif %}
                         <div class="flex items-center gap-2 mt-0.5">
-                            {% if row.a.foto %}<a href="{{ row.a.foto.url }}" target="_blank" class="text-[11px] text-indigo-600 hover:underline"><i class="fa-solid fa-image mr-0.5"></i>Foto</a>{% endif %}
+                            {% if row.a.foto %}<a href="{{ row.a.foto.url }}" target="_blank" rel="noopener" class="text-[11px] text-indigo-600 hover:underline"><i class="fa-solid fa-image mr-0.5"></i>Foto</a>{% endif %}
                             {% if row.schaden_anzahl %}<span class="text-[11px] text-slate-500"><i class="fa-solid fa-screwdriver-wrench mr-0.5 text-slate-400"></i>{{ row.schaden_anzahl }} Reparatur{{ row.schaden_anzahl|pluralize:"en" }} · CHF {{ row.reparaturkosten|chf }}</span>{% endif %}
                         </div>
                     </td>
@@ -373,7 +373,7 @@
                     <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-paperclip"></i></div>
                     <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ d.bezeichnung|default:d.titel }}</div>
                         <div class="text-xs text-slate-400">{{ d.get_kategorie_display }}{% if d.ablage_zeit %} · {{ d.ablage_zeit|date:"d.m.Y H:i" }}{% endif %}</div></div>
-                    {% if d.datei %}<a href="{{ d.datei.url }}" class="text-xs text-indigo-600 font-medium hover:underline shrink-0" target="_blank">Öffnen</a>{% endif %}
+                    {% if d.datei %}<a href="{{ d.datei.url }}" class="text-xs text-indigo-600 font-medium hover:underline shrink-0" target="_blank" rel="noopener">Öffnen</a>{% endif %}
                 </div>
                 {% empty %}
                 <div class="px-5 py-4 text-center text-xs text-slate-400 italic">Noch keine Dokumente zu diesem Verhältnis.</div>

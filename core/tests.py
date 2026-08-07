@@ -4170,7 +4170,11 @@ class BewerberScoringTests(TestCase):
         e.betreibungsauszug = 'x.pdf'; e.save()  # egal
         b = self._bewerbung(e, einkommen_jahr="90000")  # 90'000 / 20'400 = 4.4× → gut
         r = bewerte_bewerbung(b, Decimal('1700'))
-        self.assertEqual(r['score'], 45 + 25 + 15 + 0)   # keine Dokumente hochgeladen
+        # Doku 15: Der Betreibungsauszug wird digital bezogen — das ist in dieser
+        # Stufe die einzige verlangte Unterlage und damit vollständig. Vorher gab
+        # es dafür 0 Punkte, weil nur hochgeladene DATEIEN zählten; wer den von
+        # der App selbst angebotenen digitalen Weg wählte, wurde also bestraft.
+        self.assertEqual(r['score'], 45 + 25 + 15 + 15)
         self.assertEqual(r['ampel'], 'gut')
 
     def test_scoring_betreibungen_und_tragbarkeit(self):
@@ -4178,8 +4182,12 @@ class BewerberScoringTests(TestCase):
         lg, e, m, v = _basis_objekte()
         b = self._bewerbung(e, einkommen_jahr="30000", hat_betreibungen=True)  # 30'000/20'400=1.47× → 0 Pkt
         r = bewerte_bewerbung(b, Decimal('1700'))
-        # Tragbarkeit 0 + Betreibungen 0 + Anstellung 15 + Doku 0 = 15
-        self.assertEqual(r['score'], 15)
+        # Tragbarkeit 0 + Betreibungen 0 + Anstellung 15 + Doku 15 = 30.
+        # Doku zählt, weil der Betreibungsauszug digital bezogen wird — die
+        # Unterlagen sind vollständig, der Auszug ist inhaltlich nur eben
+        # negativ. Das ist der Sinn getrennter Indikatoren: «Unterlagen da»
+        # und «Betreibungen vorhanden» sind zwei verschiedene Aussagen.
+        self.assertEqual(r['score'], 30)
         self.assertEqual(r['ampel'], 'schlecht')
 
     def test_vergleich_view_sortiert_nach_score(self):
@@ -13835,6 +13843,37 @@ class AbfrageSkalierungTests(TestCase):
             f'{url}: bei doppeltem Bestand {klein} → {gross} Abfragen — '
             f'die Seite rechnet je Liegenschaft einzeln nach.')
 
+    def _offene_posten(self, anzahl):
+        """Legt `anzahl` OFFENE Rechnungen an — die Grösse, an der die
+        Altersstruktur wächst (nicht die Zahl der Liegenschaften)."""
+        from finance.models import DebitorenRechnung
+        v = Mietvertrag.objects.first()
+        lg = v.einheit.liegenschaft
+        vorhanden = DebitorenRechnung.objects.count()
+        for i in range(anzahl):
+            DebitorenRechnung.objects.create(
+                vertrag=v, liegenschaft=lg, titel=f'Offen {vorhanden + i}',
+                betrag=Decimal('1580.00'), status='offen',
+                datum=date(2026, 1, 1), faellig_am=date(2026, 1, 1))
+
+    def test_aging_fragt_nicht_je_offener_rechnung_nach(self):
+        """Die Altersstruktur summierte die Zahlungen je offener Rechnung
+        einzeln — die Seite wurde also genau dann langsam, wenn viel offen ist.
+
+        Gemessen wird an der Zahl der OFFENEN POSTEN. Ein erster Entwurf liess
+        nur den Liegenschaftsbestand wachsen: das ergab drei zusätzliche
+        Rechnungen, blieb im Spielraum und bestätigte die Seite auch ohne den
+        Prefetch. Die Gegenprobe hat das aufgedeckt."""
+        c = Client(); c.force_login(_team_user())
+        self._bestand(1)
+        self._offene_posten(25)
+        klein = self._abfragen('/neu/mahnwesen/aging/', c)
+        self._offene_posten(25)
+        gross = self._abfragen('/neu/mahnwesen/aging/', c)
+        self.assertLessEqual(gross, klein + 4,
+                             f'/neu/mahnwesen/aging/: {klein} → {gross} Abfragen bei '
+                             f'doppelt so vielen offenen Posten')
+
     def test_betriebskostenspiegel_fragt_nicht_je_liegenschaft_nach(self):
         """Aufwand und Fläche wurden je Liegenschaft einzeln aggregiert —
         zwei Abfragen pro Zeile."""
@@ -14628,10 +14667,14 @@ class BewerbungAufbewahrungTests(TestCase):
                          'Ausweis/Lohnausweis/Betreibungsauszug liegen weiter auf der Platte')
 
     def test_innerhalb_der_nachlauffrist_bleibt_alles(self):
-        """Die 90 Tage sind keine Aufbewahrung, sondern Luft für Rückfragen
-        zum Entscheid — vorher wird nichts angefasst."""
+        """Die wenigen Tage sind keine Aufbewahrung, sondern Nachlauf für den
+        Versand der Absagen — vorher wird nichts angefasst.
+
+        Stand ursprünglich auf 30 Tagen, weil die Frist 90 Tage betrug. Der
+        EDÖB verlangt Vernichtung «möglichst rasch»; die Frist ist deshalb auf
+        7 Tage verkürzt, und dieser Test zog nach."""
         from core.services.bewerbung_aufbewahrung import bereinige
-        b = self._bewerbung(entschieden_vor_tagen=30)
+        b = self._bewerbung(entschieden_vor_tagen=2)
         bereinige(_heute(), anwenden=True)
         self.assertEqual(len(self._dateien_da(b)), 3)
 
@@ -14699,3 +14742,452 @@ class BewerbungAufbewahrungTests(TestCase):
         call_command('taeglicher_lauf', stdout=io.StringIO())
         self.assertEqual(self._dateien_da(b), [],
                          'Der tägliche Lauf bereinigt die Bewerbungsdossiers nicht')
+
+
+class WebhookFailClosedTests(TestCase):
+    """Webhooks weisen ab, wenn kein Secret konfiguriert ist.
+
+    `/docuseal/webhook/` liess einen nicht angemeldeten POST durch, solange
+    DOCUSEAL_WEBHOOK_SECRET nicht gesetzt war — begründet mit
+    „Rückwärtskompatibilität". Der Endpunkt setzt aber `sign_status` auf
+    'unterzeichnet' und ersetzt das Vertrags-PDF. Ein Fremder konnte damit
+    eine Unterschrift vortäuschen.
+
+    Bitter daran: Dieselbe Route gibt es ein zweites Mal in `rentals/api.py`,
+    dort seit je fail-closed und durch Tests gehalten. Die ältere View-Fassung
+    war schlicht nicht nachgezogen worden. Fehlende Prüfmöglichkeit ist kein
+    Grund, nicht zu prüfen.
+    """
+
+    def _post(self, **extra):
+        return Client().post('/docuseal/webhook/', data='{}',
+                             content_type='application/json', **extra)
+
+    def test_ohne_konfiguriertes_secret_wird_abgewiesen(self):
+        from django.test import override_settings
+        with override_settings(DOCUSEAL_WEBHOOK_SECRET=None):
+            self.assertEqual(self._post().status_code, 403)
+
+    def test_falsches_secret_wird_abgewiesen(self):
+        from django.test import override_settings
+        with override_settings(DOCUSEAL_WEBHOOK_SECRET='richtig'):
+            self.assertEqual(self._post(HTTP_X_WEBHOOK_SECRET='falsch').status_code, 403)
+            self.assertEqual(self._post().status_code, 403)
+
+    def test_richtiges_secret_wird_verarbeitet(self):
+        """Gegenstück — sonst wäre „weist ab" auch dann erfüllt, wenn der
+        Webhook überhaupt nicht mehr funktioniert."""
+        from django.test import override_settings
+        with override_settings(DOCUSEAL_WEBHOOK_SECRET='richtig'):
+            self.assertEqual(self._post(HTTP_X_WEBHOOK_SECRET='richtig').status_code, 200)
+
+    def test_fremder_kann_keinen_vertrag_auf_unterzeichnet_setzen(self):
+        """Der Kern der Sache, nicht nur der Statuscode."""
+        from django.test import override_settings
+        _lg, _e, _m, v = _basis_objekte()
+        vorher = v.sign_status
+        nutzlast = ('{"event_type":"submission.completed","data":'
+                    f'{{"name":"Mietvertrag {v.id}"}}}}')
+        with override_settings(DOCUSEAL_WEBHOOK_SECRET=None):
+            Client().post('/docuseal/webhook/', data=nutzlast,
+                          content_type='application/json')
+        v.refresh_from_db()
+        self.assertEqual(v.sign_status, vorher,
+                         'Ein nicht angemeldeter POST hat den Vertrag verändert')
+
+    def test_brevo_webhook_ebenfalls_fail_closed(self):
+        """Nicht verdrahtet und damit heute nicht erreichbar — die Funktion
+        wird aber direkt geprüft, damit sie beim späteren Anschliessen nicht
+        offen ist."""
+        from core.views.webhooks import brevo_inbound_webhook
+        from django.test import RequestFactory, override_settings
+        req = RequestFactory().post('/', data='{}', content_type='application/json')
+        with override_settings(BREVO_WEBHOOK_SECRET=None):
+            self.assertEqual(brevo_inbound_webhook(req).status_code, 403)
+        with override_settings(BREVO_WEBHOOK_SECRET='geheim'):
+            r2 = RequestFactory().post('/', data='{}', content_type='application/json',
+                                       HTTP_X_WEBHOOK_SECRET='geheim')
+            self.assertEqual(brevo_inbound_webhook(r2).status_code, 200)
+
+    def test_kein_webhook_bleibt_ohne_secret_offen(self):
+        """Register-Prüfung: Jede csrf-freie View, die POST verarbeitet, muss
+        ihr Secret prüfen. Ein neuer Webhook ohne Schranke fällt hier auf."""
+        import ast
+        import pathlib
+        offen = []
+        for pfad in sorted(pathlib.Path('core/views').rglob('*.py')):
+            quelle = pfad.read_text(encoding='utf-8')
+            try:
+                baum = ast.parse(quelle)
+            except SyntaxError:
+                continue
+            for k in baum.body:
+                if not isinstance(k, ast.FunctionDef):
+                    continue
+                namen = [getattr(d, 'id', getattr(d, 'attr', '')) for d in k.decorator_list]
+                if 'csrf_exempt' not in namen:
+                    continue
+                seg = ast.get_source_segment(quelle, k) or ''
+                if 'compare_digest' not in seg and '_webhook_secret_ok' not in seg:
+                    offen.append(f'{k.name} ({pfad})')
+        self.assertEqual(offen, [], 'csrf-freie POST-Views ohne Secret-Prüfung: '
+                                    + ', '.join(offen))
+
+
+class AusgehendeAufrufeTests(TestCase):
+    """Kein ausgehender Aufruf ohne Zeitlimit, keiner unnötig im Anfragepfad.
+
+    Antwortet ein fremder Dienst nicht, wartet `requests` ohne `timeout`
+    unbegrenzt. Auf einem Hosting mit einem einzigen Arbeitsprozess hängt
+    damit die ganze Anwendung an einem fremden Server.
+    """
+
+    def test_kein_requests_aufruf_ohne_zeitlimit(self):
+        """Register-Prüfung über den ganzen Code — auch mehrzeilige Aufrufe."""
+        import ast
+        import pathlib
+        ohne = []
+        for pfad in sorted(pathlib.Path('.').glob('*/**/*.py')):
+            if any(t in pfad.parts for t in ('.git', 'migrations')) or pfad.name.startswith('test'):
+                continue
+            quelle = pfad.read_text(encoding='utf-8', errors='ignore')
+            if 'requests.' not in quelle:
+                continue
+            try:
+                baum = ast.parse(quelle)
+            except SyntaxError:
+                continue
+            for k in ast.walk(baum):
+                if not isinstance(k, ast.Call):
+                    continue
+                f = k.func
+                if not (isinstance(f, ast.Attribute)
+                        and getattr(f.value, 'id', '') in ('requests', 'httpx')
+                        and f.attr in ('get', 'post', 'put', 'patch', 'delete')):
+                    continue
+                if not any(kw.arg == 'timeout' for kw in k.keywords):
+                    ohne.append(f'{pfad}:{k.lineno}')
+        self.assertEqual(ohne, [], 'Ausgehende Aufrufe ohne timeout: ' + ', '.join(ohne))
+
+    def test_marktdaten_holt_nur_bei_altem_stand_nach(self):
+        """Der Endpunkt war mit gut einer Sekunde die langsamste Route. Ist der
+        gespeicherte Stand frisch, darf er gar nicht erst ins Internet."""
+        from unittest import mock
+        from django.utils import timezone
+        from crm.models import Verwaltung
+        vw = Verwaltung.objects.first() or Verwaltung.objects.create(
+            firma='Test AG', strasse='Weg 1', plz='3000', ort='Bern')
+        vw.letztes_update_marktdaten = timezone.now()
+        vw.save()
+        c = Client(); c.force_login(_team_user())
+        with mock.patch('core.utils.market_data.update_verwaltung_rates') as geholt:
+            r = c.get('/neu/marktdaten/live/')
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(geholt.called, 'Frischer Stand — trotzdem ins Internet gegangen')
+
+    def test_marktdaten_holt_bei_altem_stand_doch_nach(self):
+        """Gegenstück: Ist der Stand alt, muss der Weg noch funktionieren."""
+        from unittest import mock
+        from django.utils import timezone
+        from crm.models import Verwaltung
+        vw = Verwaltung.objects.first() or Verwaltung.objects.create(
+            firma='Test AG', strasse='Weg 1', plz='3000', ort='Bern')
+        vw.letztes_update_marktdaten = timezone.now() - timedelta(days=5)
+        vw.save()
+        c = Client(); c.force_login(_team_user())
+        with mock.patch('core.utils.market_data.update_verwaltung_rates') as geholt:
+            c.get('/neu/marktdaten/live/')
+        self.assertTrue(geholt.called, 'Alter Stand wird nicht mehr nachgeholt')
+
+
+class QrStrukturierteAdresseTests(TestCase):
+    """QR-Rechnung nach Swiss Implementation Guidelines v2.4.
+
+    Mit dem SIC-Release vom 13. November 2026 wird nur noch die
+    STRUKTURIERTE Adresse unterstützt; die kombinierte («K») entfällt und
+    Einzahlungsscheine damit werden abgewiesen. Der Datenblock verwendete
+    bisher durchgehend «K».
+
+    Die Aufrufer übergeben die Adresse als zwei Zeilen — die Zerlegung
+    passiert deshalb im QR-Modul, damit nicht jeder Aufrufer umgebaut werden
+    muss. Wer die Felder einzeln hat, kann sie direkt liefern.
+    """
+
+    def test_strasse_und_hausnummer_werden_getrennt(self):
+        from core.utils.qr_code import strasse_und_nummer
+        for zeile, erwartet in [
+            ('Musterstrasse 12', ('Musterstrasse', '12')),
+            ('Bahnhofstrasse 12a', ('Bahnhofstrasse', '12a')),
+            ('Chemin des Fleurs 3', ('Chemin des Fleurs', '3')),
+            ('Bergweg 12-14', ('Bergweg', '12-14')),
+            ('Postfach', ('Postfach', '')),          # ohne Nummer: zulässig
+            ('', ('', '')),
+        ]:
+            self.assertEqual(strasse_und_nummer(zeile), erwartet, f'bei «{zeile}»')
+
+    def test_plz_und_ort_werden_getrennt(self):
+        from core.utils.qr_code import plz_und_ort
+        for zeile, erwartet in [
+            ('3000 Bern', ('3000', 'Bern')),
+            ('CH-8001 Zürich', ('8001', 'Zürich')),
+            ('1211 Genève 12', ('1211', 'Genève 12')),
+            ('Bern', ('', 'Bern')),                  # ohne PLZ: Ort trotzdem füllen
+        ]:
+            self.assertEqual(plz_und_ort(zeile), erwartet, f'bei «{zeile}»')
+
+    def test_adressblock_ist_strukturiert(self):
+        from core.utils.qr_code import adressblock
+        block = adressblock({'name': 'Muster AG', 'line1': 'Musterstrasse 12',
+                             'line2': '3000 Bern'})
+        self.assertEqual(block, ['S', 'Muster AG', 'Musterstrasse', '12',
+                                 '3000', 'Bern', 'CH'])
+
+    def test_einzelfelder_gehen_vor(self):
+        """Wer die Adresse strukturiert vorliegen hat, soll sie direkt geben
+        können — geraten wird nur, wo nichts Genaueres da ist."""
+        from core.utils.qr_code import adressblock
+        block = adressblock({'name': 'X', 'line1': 'Falschweg 9', 'line2': '9999 Nirgends',
+                             'strasse': 'Richtigweg', 'hausnummer': '1',
+                             'plz': '3011', 'ort': 'Bern'})
+        self.assertEqual(block[2:6], ['Richtigweg', '1', '3011', 'Bern'])
+
+    def test_datenblock_enthaelt_kein_K_mehr(self):
+        """Der Kern: im erzeugten QR-Datenblock darf der Adresstyp nirgends
+        mehr «K» sein. Geprüft am echten Aufbau, nicht an den Helfern."""
+        import io
+        from unittest import mock
+        from core.utils import qr_code
+        gefangen = {}
+
+        echt = qr_code.segno.make
+
+        def merken(daten, error=None):
+            gefangen['daten'] = daten
+            return echt(daten, error=error)     # echt zeichnen, nur mitlesen
+
+        with mock.patch.object(qr_code.segno, 'make', side_effect=merken):
+            from reportlab.pdfgen import canvas as _canvas
+            c = _canvas.Canvas(io.BytesIO())
+            try:
+                qr_code.draw_qr_bill(
+                    c, iban='CH5800791123000889012',
+                    creditor={'name': 'Verwaltung AG', 'line1': 'Amtsweg 4', 'line2': '3011 Bern'},
+                    debtor={'name': 'Anna Muster', 'line1': 'Wohnweg 7a', 'line2': '8000 Zürich'},
+                    amount=1580.00, reference='', reason='Miete')
+            except TypeError:
+                self.skipTest('Signatur von draw_qr_bill weicht ab')
+        zeilen = gefangen['daten'].split('\n')
+        self.assertNotIn('K', zeilen, 'Datenblock enthält noch eine kombinierte Adresse')
+        self.assertEqual(zeilen.count('S'), 2, 'Es müssen zwei strukturierte Adressen sein')
+        self.assertIn('Amtsweg', zeilen)
+        self.assertIn('3011', zeilen)
+        self.assertIn('Wohnweg', zeilen)
+        self.assertIn('7a', zeilen)
+
+
+class BewerbungDatenschutzTests(TestCase):
+    """Was das öffentliche Bewerbungsformular fragen darf — und was es sagen muss.
+
+    Massgeblich sind das EDÖB-Merkblatt zu Anmeldeformularen für Mietwohnungen
+    und die darauf gestützte SVIT-Branchenempfehlung (Anhang E). Beide gehen
+    von einem ZWEISTUFIGEN Verfahren aus: Im ersten Schritt nur, was zur
+    Vorauswahl nötig ist; Belege erst, wenn sich ein Vertragsabschluss
+    konkretisiert. Das Formular fragte bisher alles auf einmal ab.
+    """
+
+    def setUp(self):
+        self.lg = Liegenschaft.objects.create(strasse='Inserat 1', plz='3000', ort='Bern')
+        self.e = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='3.5 Zi',
+                                        typ='wohnung', zur_ausschreibung=True)
+
+    def _formular(self):
+        return Client().get(f'/bewerben/{self.e.id}/').content.decode()
+
+    def test_zivilstand_wird_nicht_mehr_gefragt(self):
+        """«Die Frage nach dem Zivilstand ist aus Datenschutzüberlegungen nicht
+        verhältnismässig» — SVIT-Branchenempfehlung DSG, Anhang E."""
+        self.assertNotIn('form.zivilstand', self._formular())
+
+    def test_ausweis_und_lohnausweis_erst_in_der_engeren_auswahl(self):
+        """Belege zum Einkommen darf man erst von der ausgewählten Person oder
+        einer engeren Auswahl verlangen, nicht von allen Interessenten."""
+        html = self._formular()
+        self.assertNotIn("handleFile($event, 'lohnausweis')", html)
+        self.assertNotIn("handleFile($event, 'ausweiskopie')", html)
+
+    def test_betreibungsauszug_bleibt_zulaessig(self):
+        """Gegenstück: Der Betreibungsregisterauszug darf mit dem Formular von
+        allen eingefordert werden. Ohne diese Prüfung wäre «weniger fragen»
+        auch durch das Leeren des ganzen Formulars erfüllt."""
+        self.assertIn("handleFile($event, 'betreibungsauszug')", self._formular())
+
+    def test_formular_erfuellt_die_informationspflicht(self):
+        """Art. 19 revDSG: Information bei der Beschaffung. Der EDÖB verlangt
+        zusätzlich ausdrücklich den Hinweis auf mögliche Referenzauskünfte."""
+        html = self._formular()
+        for stichwort in ('Referenzauskunft', 'gelöscht', 'Auskunft', 'Datenschutzerklärung'):
+            self.assertIn(stichwort, html, f'Hinweis auf «{stichwort}» fehlt im Formular')
+        self.assertIn('/datenschutz/', html, 'Keine Verknüpfung zur Datenschutzerklärung')
+
+    def test_datenschutzerklaerung_ist_ohne_anmeldung_lesbar(self):
+        """Sie wird aus dem öffentlichen Formular verlinkt — wer dort landet,
+        ist nicht angemeldet."""
+        r = Client().get('/datenschutz/')
+        self.assertEqual(r.status_code, 200)
+        html = r.content.decode()
+        for stichwort in ('Verantwortliche', 'Aufbewahr', 'Ihre Rechte', '958f'):
+            self.assertIn(stichwort, html, f'«{stichwort}» fehlt in der Datenschutzerklärung')
+
+    def test_datenschutzerklaerung_nennt_die_verwaltung_aus_den_stammdaten(self):
+        """Kein zweiter Ort für Firma und Adresse, der veralten kann."""
+        from crm.models import Verwaltung
+        Verwaltung.objects.create(firma='Muster Immobilien AG', strasse='Amtsweg 4',
+                                  plz='3011', ort='Bern')
+        html = Client().get('/datenschutz/').content.decode()
+        self.assertIn('Muster Immobilien AG', html)
+        self.assertIn('3011', html)
+
+    def test_loeschfrist_folgt_dem_edoeb_massstab(self):
+        """Der EDÖB verlangt Vernichtung «möglichst rasch» nach dem Entscheid.
+        Die erste Fassung stand auf 90 Tagen — zu lang."""
+        import inspect
+        from core.services.bewerbung_aufbewahrung import bereinige
+        vorgabe = inspect.signature(bereinige).parameters['dokumente_tage'].default
+        self.assertLessEqual(vorgabe, 14,
+                             f'Standardfrist {vorgabe} Tage ist zu lang für «möglichst rasch»')
+
+
+class ReviewNachbesserungTests(TestCase):
+    """Nachbesserungen aus dem Code-Review der QS-Umsetzung.
+
+    Sechs Fehler in der eigenen Arbeit, zwei davon schlimmer als der
+    Ausgangszustand: Das Formular schickte nach dem Entfernen des Feldes
+    weiterhin «ledig» mit (erfundene Angabe statt gar keiner), und die
+    Bewerber-Bewertung konnte nach dem Wegfall der beiden Uploads für
+    niemanden mehr die volle Punktzahl erreichen.
+    """
+
+    def _bewerbung(self, **kw):
+        from mietprozess.models import Mietbewerbung
+        lg = Liegenschaft.objects.create(strasse='Prüfweg 1', plz='3000', ort='Bern')
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='wohnung',
+                                   nettomiete_aktuell=Decimal('1500'),
+                                   nebenkosten_aktuell=Decimal('200'))
+        vorgabe = dict(einheit=e, vorname='Anna', nachname='Muster',
+                       geburtsdatum=date(1990, 1, 1), mobilnummer='079', email='a@example.ch',
+                       beruf='Kauffrau', einkommen_jahr="120'000", erwerbsstatus='angestellt',
+                       ist_unbefristet=True, hat_betreibungen=False,
+                       digitaler_betreibungsauszug=True, arbeitgeber='Muster AG')
+        vorgabe.update(kw)
+        return Mietbewerbung.objects.create(**vorgabe)
+
+    def test_formular_schickt_keinen_erfundenen_zivilstand(self):
+        """Das Feld wurde aus der Anzeige entfernt, das Vue-Modell sendete aber
+        weiter 'ledig' — jede Bewerbung hätte eine Angabe gespeichert, die
+        niemand gemacht hat. «Nicht erhoben» muss leer bleiben."""
+        lg = Liegenschaft.objects.create(strasse='Inserat 2', plz='3000', ort='Bern')
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='wohnung',
+                                   zur_ausschreibung=True)
+        html = Client().get(f'/bewerben/{e.id}/').content.decode()
+        self.assertNotIn("zivilstand: 'ledig'", html)
+        self.assertIn("zivilstand: ''", html)
+
+    def test_zivilstand_darf_leer_bleiben(self):
+        b = self._bewerbung()
+        self.assertEqual(b.zivilstand, '', 'Modell erfindet weiterhin einen Zivilstand')
+
+    def test_volle_punktzahl_bleibt_erreichbar(self):
+        """Mit dem alten Massstab (3 Dokumente) hätte niemand mehr über 90 von
+        100 kommen können — die fehlenden Punkte sähen nach einem Mangel der
+        Bewerberin aus, obwohl WIR die Unterlagen nicht mehr wollen."""
+        from core.services.bewerber_scoring import bewerte_bewerbung
+        ergebnis = bewerte_bewerbung(self._bewerbung(), Decimal('1700'))
+        self.assertEqual(ergebnis['score'], 100,
+                         f"Bestmögliche Bewerbung erreicht nur {ergebnis['score']} Punkte")
+
+    def test_fehlender_betreibungsauszug_kostet_punkte(self):
+        """Gegenstück: Der Massstab darf nicht einfach immer volle Punkte geben."""
+        from core.services.bewerber_scoring import bewerte_bewerbung
+        b = self._bewerbung(digitaler_betreibungsauszug=False)
+        self.assertLess(bewerte_bewerbung(b, Decimal('1700'))['score'], 100)
+
+    def test_zweite_stufe_kann_unterlagen_nachtragen(self):
+        """Das Formular verspricht «fragen wir später an» — dieser Weg muss
+        also existieren, sonst ist es eine leere Zusage."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        b = self._bewerbung()
+        c = Client(); c.force_login(_team_user('Sachbearbeitung'))
+        c.post(f'/neu/bewerbungen/{b.id}/unterlagen/', {
+            'lohnausweis': SimpleUploadedFile('lohn.pdf', b'%PDF-1.4', content_type='application/pdf')})
+        b.refresh_from_db()
+        self.assertTrue(b.lohnausweis, 'Nachgetragener Einkommensnachweis wurde nicht abgelegt')
+
+    def test_lesende_rolle_kann_keine_unterlagen_nachtragen(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        b = self._bewerbung()
+        c = Client(); c.force_login(_team_user('Lesend'))
+        r = c.post(f'/neu/bewerbungen/{b.id}/unterlagen/', {
+            'lohnausweis': SimpleUploadedFile('l.pdf', b'%PDF', content_type='application/pdf')})
+        self.assertEqual(r.status_code, 403)
+        b.refresh_from_db()
+        self.assertFalse(b.lohnausweis)
+
+    def test_marktdaten_zeitstempel_haelt_die_pruefung_fest(self):
+        """Der Stempel muss bei JEDER erfolgreichen Prüfung gesetzt werden.
+        War er an eine Wertänderung gekoppelt, galten die Daten dazwischen
+        dauernd als veraltet — die Frischeprüfung lief damit ins Leere."""
+        from unittest import mock
+        from django.utils import timezone
+        from crm.models import Verwaltung
+        from core.utils import market_data
+        vw = Verwaltung.objects.create(firma='T AG', strasse='W 1', plz='3000', ort='Bern',
+                                       aktueller_referenzzinssatz=Decimal('1.25'))
+        vw.letztes_update_marktdaten = None
+        vw.save()
+        with mock.patch.object(market_data, 'fetch_market_rates',
+                               return_value=({'ref_zins': Decimal('1.25')}, [])):
+            market_data.update_verwaltung_rates()
+        vw.refresh_from_db()
+        self.assertIsNotNone(vw.letztes_update_marktdaten,
+                             'Unveränderter Wert → Zeitstempel bleibt leer → Prüfung wirkungslos')
+
+    def test_qr_ohne_schuldneradresse_laesst_den_block_leer(self):
+        """Ein «S»-Block ohne Postleitzahl und Ort ist ein ungültiger
+        Einzahlungsschein. Ist der Schuldner unbekannt (Leerstand), verlangt
+        die Spezifikation sieben LEERE Felder."""
+        from core.utils.qr_code import adressblock
+        self.assertEqual(adressblock({'name': '—', 'line1': '', 'line2': ''}, pflicht=False),
+                         ['', '', '', '', '', '', ''])
+        # Mit vollständiger Adresse bleibt es ein normaler strukturierter Block
+        voll = adressblock({'name': 'Anna', 'plz': '3000', 'ort': 'Bern'}, pflicht=False)
+        self.assertEqual(voll[0], 'S')
+
+    def test_deploy_warnt_wenn_das_webhook_secret_fehlt(self):
+        """Die Härtung hat eine Kehrseite: Wer DocuSeal bisher OHNE Secret
+        betrieben hat, verliert den Rücklauf — lautlos. Der Deploy muss das
+        sagen, sonst fällt es erst auf, wenn jemand einen unterschriebenen
+        Vertrag sucht."""
+        import io
+        from django.core.management import call_command
+        from django.test import override_settings
+        raus, fehler = io.StringIO(), io.StringIO()
+        with override_settings(DOCUSEAL_API_KEY='vorhanden', DOCUSEAL_WEBHOOK_SECRET=None):
+            call_command('pruefe_webhook_secrets', stdout=raus, stderr=fehler)
+        text = raus.getvalue() + fehler.getvalue()
+        self.assertIn('DOCUSEAL_WEBHOOK_SECRET', text)
+        self.assertIn('nicht abgelegt', text, 'Die Folge wird nicht benannt')
+
+    def test_deploy_schweigt_wenn_alles_gesetzt_ist(self):
+        import io
+        from django.core.management import call_command
+        from django.test import override_settings
+        raus = io.StringIO()
+        with override_settings(DOCUSEAL_API_KEY='vorhanden', DOCUSEAL_WEBHOOK_SECRET='geheim'):
+            call_command('pruefe_webhook_secrets', stdout=raus, stderr=io.StringIO())
+        self.assertIn('nichts offen', raus.getvalue())
+
+    def test_deploy_ruft_die_pruefung_auf(self):
+        import os
+        from django.conf import settings
+        with open(os.path.join(settings.BASE_DIR, 'deploy.sh')) as fh:
+            self.assertIn('pruefe_webhook_secrets', fh.read())

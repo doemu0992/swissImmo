@@ -1,3 +1,4 @@
+import logging
 from crm.models import Verwaltung
 from rentals.models import Mietvertrag, MietzinsAnpassung
 from core.utils import get_current_ref_zins, get_current_lik
@@ -14,6 +15,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
+
+logger = logging.getLogger(__name__)
+
 
 # Hilfsfunktionen für Marktdaten
 
@@ -177,7 +181,7 @@ def mietzins_anpassung_view(request, vertrag_id):
             try:
                 c.drawImage(unterschrift_pfad, 20*mm, y_sign_start - 25*mm, width=50*mm, preserveAspectRatio=True, mask='auto')
             except Exception as e:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
 
         c.drawString(20*mm, 15*mm, absender_name)
 

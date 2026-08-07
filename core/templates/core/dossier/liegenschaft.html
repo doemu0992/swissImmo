@@ -146,7 +146,7 @@
                 <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Dokumente</div>
                 <div class="divide-y divide-slate-50">
                 {% for d in dokumente %}
-                    <a {% if d.url %}href="{{ d.url }}" target="_blank"{% endif %} class="flex items-center gap-3 px-5 py-2.5 hover:text-indigo-600 transition-colors">
+                    <a {% if d.url %}href="{{ d.url }}" target="_blank" rel="noopener"{% endif %} class="flex items-center gap-3 px-5 py-2.5 hover:text-indigo-600 transition-colors">
                         <i class="fa-solid fa-file-lines text-slate-300"></i>
                         <span class="text-sm flex-1 truncate">{{ d.titel }}</span>
                         <span class="text-xs text-slate-400">{{ d.datum|date:"d.m.y" }}</span>

@@ -22,8 +22,12 @@ Verwendung klassische Views:
     @rolle_erforderlich(ROLLE_VERWALTUNG)
     def send_mahnung_email_view(request, ...):
 """
+import logging
 from django.contrib.auth.decorators import user_passes_test
 from ninja.security import SessionAuth
+
+logger = logging.getLogger(__name__)
+
 
 ROLLE_VERWALTUNG = "Verwaltung"
 ROLLE_SACHBEARBEITUNG = "Sachbearbeitung"
@@ -230,7 +234,7 @@ def snapshot_model(obj):
         try:
             snap[f.name] = getattr(obj, f.name)
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
     return snap
 
 
@@ -271,4 +275,4 @@ def log_aktion(request, aktion, objekt="", details="", ziel=None, kategorie=None
             ip_adresse=ip or (client_ip(request) if request else None),
         )
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)

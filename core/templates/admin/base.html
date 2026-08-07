@@ -106,7 +106,7 @@
                                                                 <a href="/admin/rentals/mietvertrag/{{ vertrag.id }}/change/" class="tree-item lvl-detail" {% if vertrag.aktiv %}style="color:green; flex-grow:1;"{% else %}style="color:#ccc; text-decoration:line-through; flex-grow:1;"{% endif %}>
                                                                     <span class="icon">👤</span> {{ vertrag.mieter }} <span style="font-size:0.85em; color:#888;">(ab {{ vertrag.beginn|date:"d.m.y" }})</span>
                                                                 </a>
-                                                                <a href="{% url 'generate_pdf' vertrag.id %}" target="_blank" title="Drucken" style="text-decoration:none; margin-right:5px;">🖨️</a>
+                                                                <a href="{% url 'generate_pdf' vertrag.id %}" target="_blank" rel="noopener" title="Drucken" style="text-decoration:none; margin-right:5px;">🖨️</a>
                                                             </li>
                                                         {% endfor %}
                                                     {% endif %}

@@ -5,6 +5,7 @@
 Originalgetreue Nachbildung (Seite 1 = Datenfelder, Seite 2 = Rechtsmittel-
 belehrung + Schlichtungsbehörden SO). Die mechanisch nachgebildete Unterschrift
 ist bei diesen Formularen zulässig (Art. 269d Abs. 4 OR)."""
+import logging
 import io
 from decimal import Decimal
 
@@ -12,6 +13,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
+
+logger = logging.getLogger(__name__)
+
 
 SCHLICHTUNGSBEHOERDEN_SO = [
     ("Amtei Solothurn-Lebern", "Schlichtungsbehörde für Miete und Pacht Solothurn-Lebern, Rötistrasse 4, 4501 Solothurn", "Tel. 032 627 75 27"),
@@ -220,7 +224,7 @@ def mietzins_so_pdf(vertrag, daten, verwaltung=None):
         try:
             c.drawImage(mandant_unterschrift.path, 110*mm, y - 12*mm, width=45*mm, preserveAspectRatio=True, mask='auto')
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
     c.setFont("Helvetica-Oblique", 7.5)
     c.setFillColor(colors.grey)
     c.drawString(20*mm, 12*mm, "Das Formular ist nur gültig mit den Angaben der Schlichtungsbehörden und den Bestimmungen des OR (Seite 2).  Seite 1/2")
@@ -335,7 +339,7 @@ def kuendigung_so_pdf(vertrag, kuendigung, verwaltung=None, empfaenger=None):
         try:
             c.drawImage(mandant_unterschrift.path, 110*mm, y - 20*mm, width=45*mm, preserveAspectRatio=True, mask='auto')
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     c.setFont("Helvetica-Oblique", 7.5); c.setFillColor(colors.grey)
     c.drawString(20*mm, 12*mm, "Das Formular ist nur gültig mit den Bestimmungen des OR (Seite 2).  Seite 1/2")
@@ -497,7 +501,7 @@ def anfangsmietzins_so_pdf(vertrag, daten, verwaltung=None):
         try:
             c.drawImage(mu.path, 110*mm, y - 12*mm, width=45*mm, preserveAspectRatio=True, mask='auto')
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
     c.setFont("Helvetica-Oblique", 7.5)
     c.setFillColor(colors.grey)
     c.drawString(20*mm, 12*mm, "Nur gültig mit den Angaben der Schlichtungsbehörden und den Bestimmungen des OR (Seite 2).  Seite 1/2")

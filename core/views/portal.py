@@ -7,6 +7,7 @@ verknüpft werden. Er sieht hier NUR seine eigenen Liegenschaften — keine
 Mieterdetails anderer Mandanten, kein SPA, keine API (core/auth.py sperrt
 Eigentümer-Logins dort aus).
 """
+import logging
 import datetime
 from decimal import Decimal
 
@@ -17,6 +18,9 @@ from django.views.decorators.cache import never_cache
 
 from core.auth import hat_rolle, ist_eigentuemer, TEAM_ROLLEN
 from rentals.models import Mietvertrag
+
+logger = logging.getLogger(__name__)
+
 
 
 @login_required
@@ -107,7 +111,7 @@ def portal_freigabe(request, pk):
             nachricht=f"Reparatur vom Eigentümer {label}." + (f" Kommentar: {kommentar}" if kommentar else ''),
             is_intern=True)
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
     return redirect('portal')
 
 
@@ -564,7 +568,7 @@ def _benachrichtige_verwaltung_kuendigung(vertrag, kuendigung):
             inhalt=f"Der Mieter hat über das Portal per {(kuendigung.per_datum or kuendigung.berechneter_termin)} gekündigt. "
                    "Bitte Eingang bestätigen und Kündigung prüfen (Familienwohnung/Unterschriften).")
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
     vw = Verwaltung.objects.first()
     empfaenger = (vw.email if vw and vw.email else None)
     if empfaenger:
@@ -580,7 +584,7 @@ def _benachrichtige_verwaltung_kuendigung(vertrag, kuendigung):
                     "Bitte im System bestätigen. Der Mieter versendet zusätzlich den Kündigungsbrief per Einschreiben.")
             send_ticket_email(empfaenger, "Kündigung über Mieterportal", text)
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
 
 @login_required
@@ -691,7 +695,7 @@ def mieter_schaden_melden(request):
             SchadenFoto.objects.create(schaden=t, bild=f,
                                        beschreibung='Foto des Mieters (Portal)')
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     # 1) Eingangsbestätigung an den Mieter, 2) Benachrichtigung an die Verwaltung
     _benachrichtige_neue_meldung(t, v)
@@ -714,12 +718,12 @@ def _benachrichtige_neue_meldung(ticket, vertrag):
                     f"Freundliche Grüsse\nIhre Liegenschaftsverwaltung")
             send_ticket_email(ticket.email_melder, f"Eingangsbestätigung: {ticket.titel} (Ticket #{ticket.id})", body)
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
     # Verwaltung/Eigentümer-Benachrichtigung
     try:
         send_neue_meldung_intern(ticket, _verwaltung_empfaenger(ticket.liegenschaft))
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
 
 
 def _verwaltung_empfaenger(lg):
@@ -810,7 +814,7 @@ def mieter_ticket_nachricht(request, pk):
         for adr in _verwaltung_empfaenger(t.liegenschaft):
             send_ticket_email(adr, f"Mieter-Nachricht zu Ticket #{t.id}: {t.titel}", body)
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
     messages.success(request, "✅ Ihre Nachricht wurde übermittelt. Die Verwaltung meldet sich.")
     return redirect(f'/mieter/ticket/{t.id}/')
 
@@ -879,7 +883,7 @@ def mieter_daten_view(request):
                                              betreff='Kontaktdaten-Änderung (Mieterportal)',
                                              inhalt=text)
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
             try:
                 from core.utils.email_service import send_ticket_email
                 from crm.models import Verwaltung
@@ -890,7 +894,7 @@ def mieter_daten_view(request):
                                        + "\n".join(aenderungen)
                                        + (f"\nAdressänderung gewünscht: {adress_wunsch}" if adress_wunsch else "")))
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
             messages.success(request, "✅ Ihre Angaben wurden aktualisiert und der Verwaltung gemeldet.")
         else:
             messages.info(request, "Keine Änderungen erkannt.")

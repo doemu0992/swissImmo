@@ -1,7 +1,11 @@
 """Auto-Ablage: legt generierte PDFs automatisch in die Dokument-Akte
 (core_dokument / rentals.Dokument) ab und verknüpft sie mit Vertrag,
 Mieter, Einheit und Liegenschaft."""
+import logging
 from django.core.files.base import ContentFile
+
+logger = logging.getLogger(__name__)
+
 
 
 def ablegen(pdf_bytes, titel, kategorie='korrespondenz', *,
@@ -140,7 +144,7 @@ def ablage_signierter_vertrag(vertrag, pdf_bytes=None):
             try:
                 datei.close()
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
     if not pdf_bytes:
         return None
 
@@ -170,7 +174,7 @@ def ablage_signierter_vertrag(vertrag, pdf_bytes=None):
             try:
                 d.delete()
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
         try:
             ziel.bezeichnung = titel[:200]
             ziel.titel = titel[:200]
@@ -207,7 +211,7 @@ def bereinige_signierte_dubletten():
                 d.delete()
                 geloescht += 1
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
     return geloescht
 
 
@@ -235,7 +239,7 @@ def bereinige_vertragsbeilagen_dubletten():
                 d.delete()
                 geloescht += 1
             except Exception:
-                pass
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
     return geloescht
 
 

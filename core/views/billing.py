@@ -1,3 +1,4 @@
+import logging
 from crm.models import Verwaltung, Mieter
 from portfolio.models import Liegenschaft
 from rentals.models import Mietvertrag, Leerstand
@@ -19,6 +20,9 @@ import reportlab.lib.utils
 
 from core.utils.billing import berechne_abrechnung
 from core.utils.qr_code import draw_qr_bill, ist_qr_iban, qrr_referenz
+
+logger = logging.getLogger(__name__)
+
 
 # ==========================================
 # 1. QR RECHNUNG FÜR MIETZINS
@@ -221,7 +225,7 @@ def qr_rechnung_pdf(request, vertrag_id):
         ablegen(pdf_bytes, f"QR-Rechnung Miete {monat_jahr}", kategorie='korrespondenz',
                 vertrag=vertrag, dedup=True)
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
     filename = f"QR_Rechnung_{mieter.nachname}_{monat_jahr.replace('/', '-')}.pdf"
     response['Content-Disposition'] = f'inline; filename="{filename}"'

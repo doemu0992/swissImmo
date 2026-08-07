@@ -23,7 +23,7 @@
                 <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
             </button>
             <div id="aAktionen" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
-                <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-file-pdf w-4"></i>Protokoll als PDF</a>
+                <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" rel="noopener" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-file-pdf w-4"></i>Protokoll als PDF</a>
                 <div class="my-1 border-t border-slate-100"></div>
                 <form method="post" action="/neu/abnahme/{{ p.id }}/loeschen/"
                       onsubmit="return confirm('Abnahmeprotokoll wirklich löschen?');">
@@ -82,7 +82,7 @@
                 <td class="px-5 py-2.5 text-right tabular-nums text-slate-500">{% if m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% elif m.neuwert %}{{ m.neuwert|chf }}{% endif %}</td>
                 <td class="px-5 py-2.5 text-right tabular-nums font-semibold {% if m.verursacher == 'mieter' %}text-rose-600{% else %}text-slate-300{% endif %}">
                     {% if m.verursacher == 'mieter' and m.mieteranteil is not None %}{{ m.mieteranteil|chf }}{% elif m.verursacher == 'mieter' and m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-2.5 text-center">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank" title="Foto in voller Grösse öffnen"><img src="{{ m.foto.url }}" alt="Foto des Mangels" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
+                <td class="px-5 py-2.5 text-center">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank" rel="noopener" title="Foto in voller Grösse öffnen"><img src="{{ m.foto.url }}" alt="Foto des Mangels" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
             </tr>
             {% empty %}
             <tr><td colspan="6" class="px-5 py-6 text-center text-slate-400 italic">Keine Mängel festgestellt.</td></tr>

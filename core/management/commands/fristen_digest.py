@@ -7,12 +7,16 @@
 Fasst die offenen, datierten Fristen zusammen und schickt sie an alle aktiven
 Team-Benutzer (Verwaltung/Sachbearbeitung) mit E-Mail-Adresse. Fällt keine
 Empfängeradresse an, wird an die Verwaltungs-Adresse gesendet."""
+import logging
 from datetime import timedelta
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.mail import EmailMultiAlternatives
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
+
 
 
 class Command(BaseCommand):
@@ -102,7 +106,7 @@ class Command(BaseCommand):
             from core.services.ical import build_ics, fristen_events
             mail.attach("swissimmo-fristen.ics", build_ics(fristen_events(fristen)), "text/calendar")
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
         mail.send()
 
         AktivitaetsLog.objects.create(
