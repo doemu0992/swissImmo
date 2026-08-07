@@ -50,9 +50,13 @@ def generate_single_pdf_bytes(periode, row, verwaltung, liegenschaft, vertrag):
     c = canvas.Canvas(buffer, pagesize=A4)
 
     if verwaltung:
-        creditor = {'name': verwaltung.firma, 'line1': verwaltung.strasse, 'line2': f"{verwaltung.plz} {verwaltung.ort}"}
+        creditor = {'name': verwaltung.firma, 'line1': verwaltung.strasse,
+                    'line2': f"{verwaltung.plz} {verwaltung.ort}",
+                    'plz': verwaltung.plz or '', 'ort': verwaltung.ort or ''}
     else:
-        creditor = {'name': "Immobilienverwaltung", 'line1': liegenschaft.strasse, 'line2': f"{liegenschaft.plz} {liegenschaft.ort}"}
+        creditor = {'name': "Immobilienverwaltung", 'line1': liegenschaft.strasse,
+                    'line2': f"{liegenschaft.plz} {liegenschaft.ort}",
+                    'plz': liegenschaft.plz or '', 'ort': liegenschaft.ort or ''}
 
     debtor = {'name': f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}", 'line1': vertrag.mieter.strasse, 'line2': f"{vertrag.mieter.plz} {vertrag.mieter.ort}"} if vertrag else {'name': row['name'], 'line1': '', 'line2': ''}
 
@@ -162,7 +166,9 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
             betrag_float = float(str(betrag_str).replace(',', '.'))
 
             if verwaltung:
-                creditor = {'name': verwaltung.firma, 'line1': verwaltung.strasse, 'line2': f"{verwaltung.plz} {verwaltung.ort}"}
+                creditor = {'name': verwaltung.firma, 'line1': verwaltung.strasse,
+                    'line2': f"{verwaltung.plz} {verwaltung.ort}",
+                    'plz': verwaltung.plz or '', 'ort': verwaltung.ort or ''}
             else:
                 creditor = {'name': "Verwaltung", 'line1': vertrag.einheit.liegenschaft.strasse, 'line2': f"{vertrag.einheit.liegenschaft.plz} {vertrag.einheit.liegenschaft.ort}"}
 

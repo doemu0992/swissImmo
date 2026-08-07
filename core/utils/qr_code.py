@@ -1,5 +1,7 @@
+import logging
 import io
 import os
+import re
 import segno
 import reportlab.lib.utils
 from reportlab.lib.units import mm
@@ -9,11 +11,87 @@ from reportlab.lib.pagesizes import A4
 from django.conf import settings
 from django.utils import timezone
 
+logger = logging.getLogger(__name__)
+
+
 def format_iban(iban):
     """Formatiert IBAN in 4er Blöcke"""
     if not iban: return ""
     iban = iban.replace(" ", "")
     return " ".join(iban[i:i+4] for i in range(0, len(iban), 4))
+
+
+def strasse_und_nummer(zeile):
+    """Zerlegt «Musterstrasse 12a» in ('Musterstrasse', '12a').
+
+    Ohne erkennbare Nummer bleibt die Hausnummer leer — das ist zulässig,
+    die Strasse allein genügt."""
+    text = (zeile or '').strip()
+    if not text:
+        return '', ''
+    # Hausnummer am Ende: Ziffern, optional Buchstabe, optional Bereich (12-14, 12/3)
+    m = re.search(r'\s(\d+\s*[a-zA-Z]?(?:\s*[-/]\s*\d+\s*[a-zA-Z]?)?)$', text)
+    if not m:
+        return text[:70], ''
+    return text[:m.start()].strip()[:70], m.group(1).replace(' ', '')[:16]
+
+
+def plz_und_ort(zeile):
+    """Zerlegt «3000 Bern» oder «CH-3000 Bern» in ('3000', 'Bern')."""
+    text = (zeile or '').strip()
+    if not text:
+        return '', ''
+    m = re.match(r'^(?:[A-Za-z]{2}\s*-\s*)?(\d{4,5})\s+(.*)$', text)
+    if not m:
+        return '', text[:35]
+    return m.group(1)[:16], m.group(2).strip()[:35]
+
+
+def adressblock(daten, pflicht=True):
+    """Sieben Felder der STRUKTURIERTEN Adresse für den QR-Datenblock.
+
+    Ab den Swiss Implementation Guidelines v2.4 — eingeführt mit dem
+    SIC-Release vom 13. November 2026 — wird ausschliesslich die strukturierte
+    Adresse unterstützt; die bisher hier verwendete kombinierte Adresse («K»)
+    entfällt. Einzahlungsscheine mit kombinierter Adresse werden dann
+    abgewiesen.
+
+    Die Aufrufer liefern die Adresse historisch als zwei Zeilen (`line1` =
+    Strasse mit Hausnummer, `line2` = «PLZ Ort»); die werden hier zerlegt.
+    Wer die Felder einzeln hat, gibt sie direkt mit (`strasse`, `hausnummer`,
+    `plz`, `ort`, `land`) — das ist der genauere Weg und geht vor. Die
+    Debitoren- und Mail-Wege tun das inzwischen; Zerlegen ist nur der Notnagel.
+
+    `pflicht=False` für den Schuldner: Ist er unbekannt oder fehlt ihm die
+    Adresse (Leerstand, Sammelposten), verlangt die Spezifikation, dass ALLE
+    sieben Felder leer bleiben — ein halb gefülltes «S» ohne Postleitzahl und
+    Ort wäre ein ungültiger Einzahlungsschein. Vorher war das eine kombinierte
+    Adresse, die diese Lücke noch verkraftete.
+    """
+    strasse = (daten.get('strasse') or '').strip()
+    hausnummer = (daten.get('hausnummer') or '').strip()
+    if not strasse:
+        strasse, nr_aus_zeile = strasse_und_nummer(daten.get('line1', ''))
+        hausnummer = hausnummer or nr_aus_zeile
+    plz = (daten.get('plz') or '').strip()
+    ort = (daten.get('ort') or '').strip()
+    if not (plz and ort):
+        plz_z, ort_z = plz_und_ort(daten.get('line2', ''))
+        plz = plz or plz_z
+        ort = ort or ort_z
+    name = (daten.get('name', '') or '').strip()
+
+    vollstaendig = bool(name and plz and ort)
+    if not vollstaendig:
+        if not pflicht:
+            return ['', '', '', '', '', '', '']      # Block bewusst weglassen
+        logger.warning(
+            "QR-Rechnung: unvollständige Empfängeradresse (Name=%r, PLZ=%r, Ort=%r) — "
+            "Stammdaten ergänzen, sonst weisen Banken den Einzahlungsschein ab.",
+            name, plz, ort)
+
+    return ['S', name[:70], strasse[:70], hausnummer[:16],
+            plz[:16], ort[:35], (daten.get('land') or 'CH')[:2]]
 
 
 def ist_qr_iban(iban):
@@ -81,13 +159,13 @@ def draw_qr_bill(c, iban, creditor, debtor, amount, reason, reference=None):
         'line2': debtor.get('line2', '')[:70],
     }
 
-    # QR Daten Payload (SIX Specs)
+    # QR Daten Payload (SIX Specs) — strukturierte Adressen, siehe adressblock().
     qr_data = "\n".join([
         "SPC", "0200", "1", raw_iban,
-        "K", creditor_data['name'], creditor_data['line1'], creditor_data['line2'], "", "", "CH",
+        *adressblock(creditor),
         "", "", "", "", "", "", "",
         f"{amount:.2f}", "CHF",
-        "K", debtor_data['name'], debtor_data['line1'], debtor_data['line2'], "", "", "CH",
+        *adressblock(debtor, pflicht=False),
         ref_typ, ref_val, reason[:140], "EPD", ""
     ])
 
@@ -366,7 +444,7 @@ def generate_mahnung_pdf(vertrag, offener_betrag, verwaltung):
         unterschrift_zeichnen(c, 20*mm, y_pos + 2*mm,
                               verwaltung, getattr(_lg, 'mandant', None))
     except Exception:
-        pass
+        logger.debug("Fehler bewusst übergangen", exc_info=True)
     c.setFont("Helvetica-Bold", 11)
     # Hier ziehen wir dynamisch den Namen der Kontaktperson aus der Verwaltung (oder Fallback auf die Firma)
     kontakt = getattr(verwaltung, 'kontaktperson', creditor['name'])

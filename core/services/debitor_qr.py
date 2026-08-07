@@ -1,6 +1,10 @@
 """Erzeugt den QR-Einzahlungsschein (A4) für eine Debitorenrechnung.
 Wiederverwendet von der Team-Ansicht und vom Mieterportal."""
+import logging
 import io
+
+logger = logging.getLogger(__name__)
+
 
 
 def schuldner_name(vertrag):
@@ -37,15 +41,23 @@ def generate_debitor_qr_pdf(rechnung):
         return None
 
     if mandant:
-        creditor = {'name': mandant.firma_oder_name, 'line1': mandant.strasse or '', 'line2': f"{mandant.plz or ''} {mandant.ort or ''}".strip()}
+        creditor = {'name': mandant.firma_oder_name, 'line1': mandant.strasse or '',
+                    'line2': f"{mandant.plz or ''} {mandant.ort or ''}".strip(),
+                    'plz': mandant.plz or '', 'ort': mandant.ort or ''}
     elif vw:
-        creditor = {'name': vw.firma, 'line1': vw.strasse or '', 'line2': f"{vw.plz or ''} {vw.ort or ''}".strip()}
+        creditor = {'name': vw.firma, 'line1': vw.strasse or '',
+                    'line2': f"{vw.plz or ''} {vw.ort or ''}".strip(),
+                    'plz': vw.plz or '', 'ort': vw.ort or ''}
     else:
-        creditor = {'name': 'Immobilienverwaltung', 'line1': lg.strasse if lg else '', 'line2': f"{lg.plz} {lg.ort}" if lg else ''}
+        creditor = {'name': 'Immobilienverwaltung', 'line1': lg.strasse if lg else '',
+                    'line2': f"{lg.plz} {lg.ort}" if lg else '',
+                    'plz': (lg.plz if lg else ''), 'ort': (lg.ort if lg else '')}
 
     mieter = r.vertrag.mieter if r.vertrag_id else None
     if mieter:
-        debtor = {'name': schuldner_name(r.vertrag), 'line1': mieter.strasse or '', 'line2': f"{mieter.plz or ''} {mieter.ort or ''}".strip()}
+        debtor = {'name': schuldner_name(r.vertrag), 'line1': mieter.strasse or '',
+                  'line2': f"{mieter.plz or ''} {mieter.ort or ''}".strip(),
+                  'plz': mieter.plz or '', 'ort': mieter.ort or ''}
     else:
         debtor = {'name': '—', 'line1': '', 'line2': ''}
 
@@ -59,7 +71,7 @@ def generate_debitor_qr_pdf(rechnung):
         try:
             c.drawImage(vw.logo.path, 150 * _mm, 265 * _mm, width=40 * _mm, preserveAspectRatio=True, mask='auto')
         except Exception:
-            pass
+            logger.debug("Fehler bewusst übergangen", exc_info=True)
     c.setFillColor(_colors.black)
     c.setFont("Helvetica-Bold", 18)
     c.drawString(20 * _mm, 270 * _mm, "Rechnung")
