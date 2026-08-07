@@ -100,10 +100,22 @@ def bewerte_bewerbung(bewerbung, brutto_monat):
         anst_pkt, anst_txt = 0, bewerbung.get_erwerbsstatus_display()
 
     # --- Dokumente ---
-    docs = [bool(bewerbung.betreibungsauszug), bool(bewerbung.ausweiskopie), bool(bewerbung.lohnausweis)]
-    docs_n = sum(docs)
-    dok_pkt = round(15 * docs_n / 3)
-    dok_txt = f"{docs_n}/3 Dokumente"
+    # Gewertet wird nur, was in dieser Stufe überhaupt verlangt werden DARF.
+    # Das öffentliche Formular fragt seit der DSG-Anpassung nur noch den
+    # Betreibungsauszug ab (Ausweis und Lohnausweis erst in der engeren
+    # Auswahl, EDÖB-Merkblatt). Würden hier weiterhin drei Dokumente erwartet,
+    # käme keine Bewerbung je über 90 von 100 Punkten — der Vergleich wäre für
+    # alle gleichermassen falsch und die fehlenden Punkte sähen nach einem
+    # Mangel der Bewerberin aus, obwohl WIR die Unterlagen gar nicht wollten.
+    erwartet = [bool(bewerbung.betreibungsauszug) or bewerbung.digitaler_betreibungsauszug]
+    # Was in der zweiten Stufe nachgereicht wurde, zählt zusätzlich positiv.
+    nachgereicht = [bool(bewerbung.ausweiskopie), bool(bewerbung.lohnausweis)]
+    docs_n = sum(erwartet) + sum(nachgereicht)
+    dok_pkt = 15 if all(erwartet) else 0
+    dok_txt = ("Betreibungsauszug vorhanden" if all(erwartet)
+               else "Betreibungsauszug fehlt")
+    if any(nachgereicht):
+        dok_txt += f" · {sum(nachgereicht)} weitere nachgereicht"
 
     score = trag_pkt + betr_pkt + anst_pkt + dok_pkt
     indikatoren = [

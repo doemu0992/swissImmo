@@ -24,3 +24,17 @@ def public_application_view(request, einheit_id):
     return render(request, 'core/public_bewerbung_form.html', {
         'einheit': einheit
     })
+
+def public_datenschutz_view(request):
+    """Datenschutzerklärung — ohne Anmeldung erreichbar.
+
+    Wird aus dem öffentlichen Bewerbungsformular verlinkt: Nach Art. 19 revDSG
+    muss die betroffene Person bei der Beschaffung informiert werden, und zwar
+    bevor sie ihre Daten abschickt. Firma und Adresse kommen aus dem
+    Verwaltungs-Datensatz, damit es keinen zweiten, veraltenden Ort dafür gibt."""
+    from django.utils import timezone
+    from crm.models import Verwaltung
+    return render(request, 'core/public_datenschutz.html', {
+        'verwaltung': Verwaltung.objects.first(),
+        'stand': timezone.localdate(),
+    })

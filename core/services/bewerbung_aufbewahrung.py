@@ -16,9 +16,11 @@ nichts, was dem Löschen entgegenstünde.
 
 Zwei Stufen, weil die beiden Teile unterschiedlich dringend sind:
 
-1. **Dokumente löschen** (Standard 90 Tage nach dem Entscheid). Die
-   hochgeladenen Dateien. Die Frist ist keine Aufbewahrung, sondern eine
-   Nachlauffrist für Rückfragen und Beanstandungen des Entscheids.
+1. **Dokumente löschen** (Standard 7 Tage nach dem Entscheid). Die
+   hochgeladenen Dateien. Der EDÖB verlangt Vernichtung «möglichst rasch»
+   bzw. unmittelbar nach dem Entscheid; die wenigen Tage sind nur der
+   Nachlauf für den Versand der Absagen, keine Aufbewahrung. Eine frühere
+   Fassung stand hier auf 90 Tagen — das war zu lang.
 2. **Dossier anonymisieren** (Standard 365 Tage). Auch die Personalien.
    Der Datensatz selbst bleibt als Hülle bestehen, damit nachvollziehbar
    bleibt, wie viele Bewerbungen ein Objekt hatte und wie entschieden wurde.
@@ -100,7 +102,7 @@ def anonymisiere_bewerbung(bewerbung):
     bewerbung.save()
 
 
-def faellige(heute, *, dokumente_tage=90, anonym_tage=365):
+def faellige(heute, *, dokumente_tage=7, anonym_tage=365):
     """(dokumente, anonymisieren) — was nach den Fristen ansteht.
 
     Eine Bewerbung erscheint nur in EINER der beiden Listen: Was ohnehin
@@ -124,7 +126,7 @@ def faellige(heute, *, dokumente_tage=90, anonym_tage=365):
     return dok, anon
 
 
-def bereinige(heute, *, dokumente_tage=90, anonym_tage=365, anwenden=False):
+def bereinige(heute, *, dokumente_tage=7, anonym_tage=365, anwenden=False):
     """Führt die Bereinigung aus. Gibt (anzahl_dokumente, anzahl_anonym) zurück."""
     dok, anon = faellige(heute, dokumente_tage=dokumente_tage, anonym_tage=anonym_tage)
     if not anwenden:
@@ -135,7 +137,7 @@ def bereinige(heute, *, dokumente_tage=90, anonym_tage=365, anwenden=False):
     return n_dok, len(anon)
 
 
-def naechste_frist(bewerbung, heute, *, dokumente_tage=90, anonym_tage=365):
+def naechste_frist(bewerbung, heute, *, dokumente_tage=7, anonym_tage=365):
     """Wann wird dieses Dossier bereinigt? None = noch offen / nicht betroffen.
     Für die Anzeige im Bewerbungsdossier gedacht — Transparenz gegenüber der
     Person, die dort Auskunft verlangt."""

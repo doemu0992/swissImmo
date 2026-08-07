@@ -61,12 +61,8 @@
                         <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Vorname *</label><input v-model="form.vorname" type="text" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
                         <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Nachname *</label><input v-model="form.nachname" type="text" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
                     </div>
+                    {% comment %}Zivilstand bewusst NICHT gefragt: Der EDÖB hält die Frage für die Auswahl der Mieterschaft für nicht verhältnismässig (SVIT-Branchenempfehlung DSG, Anhang E). Das Feld existiert im Modell weiter und wird beim Vertragsabschluss erhoben.{% endcomment %}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Zivilstand *</label>
-                            <select v-model="form.zivilstand" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
-                                <option value="ledig">Ledig</option><option value="verheiratet">Verheiratet</option><option value="eingetragene_partnerschaft">Eingetragene Partnerschaft</option><option value="geschieden">Geschieden</option><option value="verwitwet">Verwitwet</option><option value="getrennt">Getrennt</option>
-                            </select>
-                        </div>
                         <div><label class="block text-xs font-black uppercase text-slate-400 mb-2">Geburtsdatum *</label><input v-model="form.geburtsdatum" type="date" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -195,7 +191,7 @@
                         <div v-if="!form.digitaler_betreibungsauszug">
                             <div class="bg-blue-50 border border-blue-100 p-3 rounded-xl mb-4 text-xs text-blue-800">
                                 <i class="fa-solid fa-circle-info mr-1"></i> Keinen aktuellen Auszug zur Hand?
-                                <a href="https://www.e-service.admin.ch/crex/cms/content/strafregister/uebersicht_de" target="_blank" class="font-bold underline hover:text-blue-600">
+                                <a href="https://www.e-service.admin.ch/crex/cms/content/strafregister/uebersicht_de" target="_blank" rel="noopener" class="font-bold underline hover:text-blue-600">
                                     Hier beim Bund online bestellen (PDF)
                                 </a>
                             </div>
@@ -203,15 +199,23 @@
                         </div>
                     </div>
 
-                    <div class="border border-slate-200 rounded-xl p-5 hover:border-indigo-300 transition-colors">
-                        <h4 class="font-black text-slate-800 mb-1">Ausweiskopie (ID oder Pass) *</h4>
-                        <p class="text-xs text-slate-500 mb-3">Vorder- und Rückseite bei ID.</p>
-                        <input type="file" @change="handleFile($event, 'ausweiskopie')" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                    </div>
-
-                    <div class="border border-slate-200 rounded-xl p-5 hover:border-indigo-300 transition-colors">
-                        <h4 class="font-black text-slate-800 mb-1">Lohnausweis (Letzte 3 Monate) *</h4>
-                        <input type="file" @change="handleFile($event, 'lohnausweis')" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    {% comment %}
+                        Ausweiskopie und Lohnausweis werden hier NICHT verlangt.
+                        Der EDÖB geht von einem zweistufigen Verfahren aus: Belege
+                        zum Einkommen dürfen erst von der ausgewählten Person oder
+                        einer engeren Auswahl eingefordert werden, «sobald sich ein
+                        Vertragsabschluss konkretisiert». Alles von allen einzusammeln
+                        und danach wieder zu vernichten ist genau das, was die
+                        Verhältnismässigkeit verbietet. Die Felder bleiben im Modell
+                        und werden in der zweiten Stufe erhoben.
+                        Der Betreibungsregisterauszug darf dagegen von allen verlangt
+                        werden und bleibt oben stehen.
+                    {% endcomment %}
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+                        <h4 class="font-black text-slate-800 mb-1">Ausweis und Einkommensnachweis</h4>
+                        <p class="text-xs text-slate-500">Diese Unterlagen fragen wir erst an, wenn Sie in
+                        die engere Auswahl kommen — nicht schon jetzt von allen Interessentinnen und
+                        Interessenten.</p>
                     </div>
 
                     <div class="border border-slate-200 rounded-xl p-5 hover:border-indigo-300 transition-colors">
@@ -224,6 +228,32 @@
                         <label class="block text-xs font-black uppercase text-slate-400 mb-2 mt-4">Gewünschter Bezugstermin *</label>
                         <input v-model="form.gewuenschter_bezugstermin" type="date" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
+                </div>
+
+                {% comment %}
+                    Informationspflicht nach Art. 19 revDSG: Wer Personendaten
+                    beschafft, muss die betroffene Person darüber informieren —
+                    Zweck, Verantwortliche, Empfänger. Der EDÖB verlangt zudem
+                    ausdrücklich den Hinweis, dass die angegebenen Kontakte bei
+                    Vermieterschaft und Arbeitgeber für Referenzen angerufen
+                    werden können. Beides stand hier bisher nirgends.
+                    Sichtbar auf jedem Schritt, nicht in einer Fusszeile versteckt.
+                {% endcomment %}
+                <div v-show="step === 5" class="mt-8 bg-slate-50 border border-slate-200 rounded-xl p-5 text-xs text-slate-600 leading-relaxed">
+                    <p class="font-black text-slate-800 mb-2 text-sm">Was mit Ihren Angaben geschieht</p>
+                    <ul class="space-y-1.5 list-disc pl-4">
+                        <li>Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der
+                            Mieterschaft für dieses Objekt und werden für nichts anderes verwendet.</li>
+                        <li>Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem
+                            Arbeitgeber können wir für eine <strong>Referenzauskunft kontaktieren</strong>.</li>
+                        <li>Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich
+                            Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>.</li>
+                        <li>Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und
+                            Löschung</strong> Ihrer Daten.</li>
+                    </ul>
+                    <p class="mt-3">Ausführlich in der
+                        <a href="/datenschutz/" target="_blank" rel="noopener"
+                           class="text-indigo-600 font-bold underline">Datenschutzerklärung</a>.</p>
                 </div>
 
                 <div class="flex justify-between items-center mt-10 pt-6 border-t border-slate-100">
@@ -254,7 +284,7 @@
                     error: null,
                     form: {
                         einheit_id: '{{ einheit.id }}',
-                        vorname: '', nachname: '', zivilstand: 'ledig', geburtsdatum: '',
+                        vorname: '', nachname: '', zivilstand: '', geburtsdatum: '',
                         geschlecht: 'weiblich', nationalitaet: 'Schweiz', heimatort: '',
                         mobilnummer: '', email: '', adresse: '', plz: '', ort: '',
                         aktueller_vermieter: '', kontaktperson_vermieter: '', telefon_vermieter: '', email_vermieter: '',

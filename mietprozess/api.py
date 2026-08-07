@@ -26,7 +26,7 @@ def public_submit_bewerbung(
     # --- Personalien ---
     vorname: str = Form(...),
     nachname: str = Form(...),
-    zivilstand: str = Form(...),
+    zivilstand: str = Form(''),      # nicht mehr im Erstformular erhoben
     geburtsdatum: str = Form(...),
     geschlecht: str = Form(...),
     nationalitaet: str = Form(...),

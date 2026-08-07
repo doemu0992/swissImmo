@@ -86,7 +86,7 @@ für Buchungsbelege (Art. 958f OR) besteht hier gerade **nicht**.
 
 | Nach dem Entscheid | Was geschieht |
 |---|---|
-| 90 Tage | Die hochgeladenen Dateien werden gelöscht. Die Frist ist Luft für Rückfragen zum Entscheid, keine Aufbewahrung. |
+| 7 Tage | Die hochgeladenen Dateien werden gelöscht. Der EDÖB verlangt Vernichtung «möglichst rasch»; die wenigen Tage sind Nachlauf für den Versand der Absagen, keine Aufbewahrung. |
 | 365 Tage | Das ganze Dossier wird anonymisiert. Die Hülle bleibt, damit nachvollziehbar ist, wie viele Bewerbungen ein Objekt hatte. |
 
 Als «entschieden» gilt eine Bewerbung, die **abgelehnt** wurde — oder deren
@@ -100,7 +100,7 @@ Mietverhältnis. Diese Daten laufen über die Personen-Anonymisierung.
 ```
 python manage.py bewerbungen_bereinigen             # Vorschau
 python manage.py bewerbungen_bereinigen --apply     # ausführen
-python manage.py bewerbungen_bereinigen --dokumente-tage 30 --anonym-tage 180 --apply
+python manage.py bewerbungen_bereinigen --dokumente-tage 3 --anonym-tage 180 --apply
 ```
 
 ### Ehemalige Mieterinnen und Mieter — von Hand anstossen

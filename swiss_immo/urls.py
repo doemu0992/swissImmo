@@ -55,7 +55,7 @@ def version_view(request):
     """Öffentlicher Deploy-Check: JSON mit Commit/Branch des laufenden Prozesses."""
     from core.version import deployed_version
     return JsonResponse(deployed_version())
-from core.views.application import public_application_view
+from core.views.application import public_application_view, public_datenschutz_view
 
 # 2. Das neue Admin-Cockpit (Bereinigt um das alte Dashboard)
 from core.views.dashboard_view import update_market_data_view, spa_master_view
@@ -116,7 +116,7 @@ from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_betriebsko
                            fw_benutzer_form, fw_benutzer_loeschen,
                            fw_vorlage_form, fw_vorlage_loeschen, fw_integration_test_email,
                            fw_vermarktung_feed, fw_integration_portal_token,
-                           fw_bewerbungen, fw_bewerber_vergleich, fw_bewerber_entscheid, fw_bewerber_besichtigung, fw_bewerber_absage_uebrige, fw_bewerbung_detail, fw_bewerbung_status,
+                           fw_bewerbungen, fw_bewerber_vergleich, fw_bewerber_entscheid, fw_bewerber_besichtigung, fw_bewerber_absage_uebrige, fw_bewerbung_detail, fw_bewerbung_status, fw_bewerbung_unterlagen,
                            fw_bewerbung_zu_vertrag,
                            fw_pendenzen, fw_pendenz_neu, fw_pendenz_toggle, fw_pendenz_loeschen, fw_fristen,
                            fw_fristen_ical, fristen_ical_feed)
@@ -332,6 +332,7 @@ urlpatterns = [
     path('neu/vermarktung/<int:einheit_id>/bewerber/absage-uebrige/', fw_bewerber_absage_uebrige, name='fw_bewerber_absage_uebrige'),
     path('neu/bewerbungen/<int:pk>/', fw_bewerbung_detail, name='fw_bewerbung_detail'),
     path('neu/bewerbungen/<int:pk>/status/', fw_bewerbung_status, name='fw_bewerbung_status'),
+    path('neu/bewerbungen/<int:pk>/unterlagen/', fw_bewerbung_unterlagen, name='fw_bewerbung_unterlagen'),
     path('neu/bewerbungen/<int:pk>/vertrag/', fw_bewerbung_zu_vertrag, name='fw_bewerbung_zu_vertrag'),
     path('neu/mietzins/', fw_mietzins, name='fw_mietzins'),
     path('neu/mietzins/massenanpassung/', fw_mietzins_massenanpassung, name='fw_mietzins_massenanpassung'),
@@ -474,6 +475,9 @@ urlpatterns = [
 
     # --- ÖFFENTLICHES BEWERBUNGSFORMULAR ---
     path('bewerben/<int:einheit_id>/', public_application_view, name='public_bewerbung'),
+
+    # --- DATENSCHUTZERKLÄRUNG (öffentlich, Art. 19 revDSG) ---
+    path('datenschutz/', public_datenschutz_view, name='public_datenschutz'),
 ]
 
 # Media zugriffskontrolliert ausliefern: sensible Dokumente (Verträge, Bewerber-

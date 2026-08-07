@@ -7,7 +7,7 @@ anders als Buchungsbelege unterliegen sie keiner Aufbewahrungspflicht.
 
     python manage.py bewerbungen_bereinigen              # nur anzeigen
     python manage.py bewerbungen_bereinigen --apply      # tatsächlich löschen
-    python manage.py bewerbungen_bereinigen --dokumente-tage 30 --apply
+    python manage.py bewerbungen_bereinigen --dokumente-tage 3 --apply
 
 Läuft täglich mit `taeglicher_lauf`.
 """
@@ -21,8 +21,8 @@ class Command(BaseCommand):
     help = "Löscht Dokumente und anonymisiert Bewerbungen nach dem Entscheid (DSG)."
 
     def add_arguments(self, parser):
-        parser.add_argument('--dokumente-tage', type=int, default=90,
-                            help="Tage nach dem Entscheid bis die Dateien gelöscht werden (90).")
+        parser.add_argument('--dokumente-tage', type=int, default=7,
+                            help="Tage nach dem Entscheid bis die Dateien gelöscht werden (7).")
         parser.add_argument('--anonym-tage', type=int, default=365,
                             help="Tage bis das ganze Dossier anonymisiert wird (365).")
         parser.add_argument('--apply', action='store_true', help="Tatsächlich ausführen.")

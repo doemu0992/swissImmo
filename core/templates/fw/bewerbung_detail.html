@@ -31,7 +31,7 @@
             <h3 class="font-bold text-slate-800 text-sm mb-3">Personalien & Kontakt</h3>
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
                 <div class="flex justify-between"><dt class="text-slate-500">Geburtsdatum</dt><dd class="text-slate-800">{{ b.geburtsdatum|date:"d.m.Y" }}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">Zivilstand</dt><dd class="text-slate-800">{{ b.get_zivilstand_display }}</dd></div>
+                {% if b.zivilstand %}<div class="flex justify-between"><dt class="text-slate-500">Zivilstand</dt><dd class="text-slate-800">{{ b.get_zivilstand_display }}</dd></div>{% endif %}
                 <div class="flex justify-between"><dt class="text-slate-500">Nationalität</dt><dd class="text-slate-800">{{ b.nationalitaet }}</dd></div>
                 <div class="flex justify-between"><dt class="text-slate-500">Heimatort</dt><dd class="text-slate-800">{{ b.heimatort|default:"—" }}</dd></div>
                 <div class="flex justify-between"><dt class="text-slate-500">Mobil</dt><dd class="text-slate-800">{{ b.mobilnummer }}</dd></div>
@@ -73,7 +73,7 @@
             {% if dokumente %}
             <div class="space-y-2">
                 {% for d in dokumente %}
-                <a href="{{ d.url }}" target="_blank" class="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700">
+                <a href="{{ d.url }}" target="_blank" rel="noopener" class="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700">
                     <i class="fa-solid fa-file-pdf"></i>{{ d.label }}
                 </a>
                 {% endfor %}
@@ -83,6 +83,31 @@
 
         <div class="bg-white rounded-xl border border-slate-200 p-5">
             <h3 class="font-bold text-slate-800 text-sm mb-3">Status ändern</h3>
+            {% comment %}
+                Zweite Stufe des Bewerbungsverfahrens: Ausweis und
+                Einkommensnachweis werden im öffentlichen Formular bewusst
+                nicht mehr abgefragt (EDÖB — erst bei der engeren Auswahl).
+                Hier trägt die Bewirtschaftung sie nach, wenn sie vorliegen.
+            {% endcomment %}
+            <form method="post" action="/neu/bewerbungen/{{ b.id }}/unterlagen/"
+                  enctype="multipart/form-data" class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+                {% csrf_token %}
+                <h3 class="font-bold text-slate-800 mb-1">Unterlagen nachtragen</h3>
+                <p class="text-xs text-slate-500 mb-3">Ausweis und Einkommensnachweis werden erst
+                    in der engeren Auswahl verlangt — hier ablegen, sobald sie vorliegen.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <label class="text-xs text-slate-600">Ausweiskopie
+                        <input type="file" name="ausweiskopie" class="mt-1 w-full text-xs"></label>
+                    <label class="text-xs text-slate-600">Einkommensnachweis
+                        <input type="file" name="lohnausweis" class="mt-1 w-full text-xs"></label>
+                    <label class="text-xs text-slate-600">Weitere Unterlagen
+                        <input type="file" name="weitere_dokumente" class="mt-1 w-full text-xs"></label>
+                </div>
+                <button class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">
+                    Ablegen
+                </button>
+            </form>
+
             <form method="post" action="/neu/bewerbungen/{{ b.id }}/status/" class="flex items-center gap-2">
                 {% csrf_token %}
                 <select name="status" class="flex-1 bg-slate-100 rounded-lg text-sm px-3 py-2">

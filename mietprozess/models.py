@@ -80,7 +80,11 @@ class Mietbewerbung(models.Model):
     # --- Personalien Hauptmieter ---
     vorname = models.CharField(max_length=100)
     nachname = models.CharField(max_length=100)
-    zivilstand = models.CharField(max_length=50, choices=ZIVILSTAND_CHOICES, default='ledig')
+    # Leer = nicht erhoben. Das öffentliche Formular fragt den Zivilstand
+    # nicht mehr (EDÖB: nicht verhältnismässig); ein Default 'ledig' hätte
+    # für jede Bewerbung eine Angabe erfunden, die niemand gemacht hat.
+    zivilstand = models.CharField(max_length=50, choices=ZIVILSTAND_CHOICES,
+                                  blank=True, default='')
     geburtsdatum = models.DateField()
     geschlecht = models.CharField(max_length=20, choices=[('weiblich', 'Weiblich'), ('maennlich', 'Männlich')], default='weiblich')
     nationalitaet = models.CharField(max_length=100, default='Schweiz')
