@@ -96,11 +96,11 @@ def generate_debitor_qr_pdf(rechnung):
     c.setStrokeColor(_colors.lightgrey); c.line(20 * _mm, yt + 5 * _mm, 190 * _mm, yt + 5 * _mm)
     c.setFont("Helvetica", 10)
     c.drawString(20 * _mm, yt, r.beschreibung or r.titel)
-    c.drawRightString(190 * _mm, yt, f"CHF {float(r.betrag):,.2f}")
+    c.drawRightString(190 * _mm, yt, f"CHF {float(r.betrag):,.2f}".replace(",", "'"))
     c.setLineWidth(0.5); c.line(20 * _mm, yt - 4 * _mm, 190 * _mm, yt - 4 * _mm)
     c.setFont("Helvetica-Bold", 12)
     c.drawString(20 * _mm, yt - 11 * _mm, "Zu bezahlen")
-    c.drawRightString(190 * _mm, yt - 11 * _mm, f"CHF {betrag:,.2f}")
+    c.drawRightString(190 * _mm, yt - 11 * _mm, f"CHF {betrag:,.2f}".replace(",", "'"))
 
     draw_qr_bill(c, iban, creditor, debtor, betrag, r.titel, reference=ref)
     c.showPage(); c.save(); buf.seek(0)

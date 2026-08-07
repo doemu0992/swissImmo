@@ -248,7 +248,7 @@ def draw_qr_bill(c, iban, creditor, debtor, amount, reason, reference=None):
     # Währung/Betrag Links
     c.setFillColor(colors.black)
     c.setFont("Helvetica-Bold", 8); c.drawString(5*mm, 15*mm, "Währung"); c.drawString(18*mm, 15*mm, "Betrag")
-    c.setFont("Helvetica", 10); c.drawString(5*mm, 10*mm, "CHF"); c.drawString(18*mm, 10*mm, f"{amount:,.2f}")
+    c.setFont("Helvetica", 10); c.drawString(5*mm, 10*mm, "CHF"); c.drawString(18*mm, 10*mm, f"{amount:,.2f}".replace(",", "'"))
 
     # Rechter Teil (Zahlteil)
     draw_details(118*mm, is_receipt=False)
@@ -256,7 +256,7 @@ def draw_qr_bill(c, iban, creditor, debtor, amount, reason, reference=None):
     # Währung/Betrag Rechts
     c.setFillColor(colors.black)
     c.setFont("Helvetica-Bold", 8); c.drawString(67*mm, 15*mm, "Währung"); c.drawString(82*mm, 15*mm, "Betrag")
-    c.setFont("Helvetica", 10); c.drawString(67*mm, 10*mm, "CHF"); c.drawString(82*mm, 10*mm, f"{amount:,.2f}")
+    c.setFont("Helvetica", 10); c.drawString(67*mm, 10*mm, "CHF"); c.drawString(82*mm, 10*mm, f"{amount:,.2f}".replace(",", "'"))
 
     # Info Rechts
     c.setFont("Helvetica-Bold", 7); c.drawString(118*mm, 35*mm, "Zusätzliche Informationen")
