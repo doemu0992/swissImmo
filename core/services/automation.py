@@ -48,7 +48,13 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
         # dann greift der exists()-Check → keine doppelten Monatsmieten.
         # Nur PKs sperren (kein Join → kein Nullable-Outer-Join-Problem unter
         # Postgres; auf SQLite ohnehin No-op).
-        _basis = (Mietvertrag.objects.filter(status='aktiv', beginn__lte=end_date)
+        # Auch GEKÜNDIGTE Verträge fakturieren, solange ihr Ende nicht vor dem
+        # Monatsanfang liegt — die Miete der Kündigungsfrist ist geschuldet.
+        # Der status='aktiv'-Filter allein liess sie durchfallen: die
+        # Kündigung setzt den Status sofort auf 'gekuendigt', Monate vor dem
+        # Auszug, und die Miete bis dahin wurde nie gestellt (stiller Verlust).
+        _basis = (Mietvertrag.objects.filter(status__in=['aktiv', 'gekuendigt'],
+                                             beginn__lte=end_date)
                   .exclude(ende__lt=start_date))
         if liegenschaft is not None:
             _basis = _basis.filter(einheit__liegenschaft=liegenschaft)

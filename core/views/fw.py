@@ -7673,7 +7673,7 @@ def _sollstellung_kontext(request):
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
-    vertraege = (Mietvertrag.objects.filter(status='aktiv', beginn__lte=end_date)
+    vertraege = (Mietvertrag.objects.filter(status__in=['aktiv', 'gekuendigt'], beginn__lte=end_date)
                  .exclude(ende__lt=start_date)
                  .select_related('mieter', 'einheit__liegenschaft')
                  # Alles, was `verrechneter_netto_mietzins` / `verrechnete_nebenkosten`

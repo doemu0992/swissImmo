@@ -1284,6 +1284,37 @@ class QrrReferenzTests(TestCase):
 
 
 class SollstellungTests(TestCase):
+    def test_gekuendigter_vertrag_wird_bis_ende_fakturiert(self):
+        """Ein gekündigter Vertrag schuldet Miete bis zum Vertragsende. Der
+        status='aktiv'-Filter liess ihn durchfallen — die Miete der
+        Kündigungsfrist wurde nie gestellt (stiller Geldverlust)."""
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung
+        _seed_konten()
+        _lg, _e, _m, v = _basis_objekte()   # Vertrag ab 2024-01-01
+        v.status = 'gekuendigt'
+        v.ende = date(2024, 3, 31)          # Ende im Stellungsmonat
+        v.save()
+        # März: Ende >= Monatsanfang → volle Miete geschuldet
+        self.assertEqual(run_sollstellung(2024, 3), 1)
+        self.assertTrue(DebitorenRechnung.objects.filter(
+            titel='Miete & NK 03/2024', vertrag=v).exists())
+        # April: Vertrag ist beendet → nichts mehr
+        self.assertEqual(run_sollstellung(2024, 4), 0)
+
+    def test_entwurf_und_archiviert_werden_nicht_fakturiert(self):
+        """Gegenstück: Nur aktiv/gekündigt zählen — ein Entwurf oder ein
+        archivierter Vertrag darf keine Rechnung erzeugen."""
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung
+        _seed_konten()
+        _lg, _e, _m, v = _basis_objekte()
+        for status in ('entwurf', 'archiviert'):
+            v.status = status; v.ende = None; v.save()
+            DebitorenRechnung.objects.all().delete()
+            self.assertEqual(run_sollstellung(2024, 5), 0,
+                             f'Status «{status}» wurde fakturiert')
+
     def test_erstellt_und_idempotent(self):
         from core.services.automation import run_sollstellung
         from finance.models import DebitorenRechnung
