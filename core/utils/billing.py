@@ -162,6 +162,7 @@ def berechne_abrechnung(periode_id):
     pool_heizkosten = Decimal('0.00')   # Wird nach m3 und HGT verteilt
     pool_nk_m2 = Decimal('0.00')        # Wird nach m2 und Tagen verteilt
     pool_nk_einheit = Decimal('0.00')   # Wird nach Einheit und Tagen verteilt
+    pool_nk_personen = Decimal('0.00')  # Wird nach Personenzahl und Tagen verteilt (Live-Test G)
 
     kategorien_liste = []
 
@@ -174,6 +175,8 @@ def berechne_abrechnung(periode_id):
             pool_heizkosten += betrag
         elif beleg.verteilschluessel == 'einheit':
             pool_nk_einheit += betrag
+        elif beleg.verteilschluessel == 'personen':
+            pool_nk_personen += betrag
         else:
             pool_nk_m2 += betrag
 
@@ -229,6 +232,8 @@ def berechne_abrechnung(periode_id):
                 v_key = 'm3'
             elif v_key == 'einheit':
                 pool_nk_einheit += betrag
+            elif v_key == 'personen':
+                pool_nk_personen += betrag
             elif v_key == 'm3':
                 pool_heizkosten += betrag
             else:
@@ -263,7 +268,7 @@ def berechne_abrechnung(periode_id):
     from crm.models import Verwaltung as _Vw
     _vw = _Vw.objects.first()
     _satz_pct = _vw.nk_honorar_prozent if _vw else Decimal('3.00')
-    subtotal = pool_heizkosten + pool_nk_m2 + pool_nk_einheit
+    subtotal = pool_heizkosten + pool_nk_m2 + pool_nk_einheit + pool_nk_personen
     honorarsatz = (_satz_pct or Decimal('0')) / Decimal('100')
     honorar_betrag = subtotal * honorarsatz
     pool_nk_m2 += honorar_betrag
@@ -274,8 +279,6 @@ def berechne_abrechnung(periode_id):
             'kategorie': 'Verwaltung', 'betrag': round(honorar_betrag, 2), 'schluessel': 'm2', 'quelle': 'System'
         })
 
-    total_kosten_gesamt = pool_heizkosten + pool_nk_m2 + pool_nk_einheit
-
     # ---------------------------------------------------------
     # 2. GESAMT-BASIS DER LIEGENSCHAFT ERMITTELN
     # ---------------------------------------------------------
@@ -285,6 +288,29 @@ def berechne_abrechnung(periode_id):
     total_m3 = sum((e.volumen_m3 or Decimal('0')) for e in einheiten)
     if total_m3 <= 0: total_m3 = total_m2 # Fallback: m2 nehmen wenn m3 nicht konfiguriert ist
     total_einheiten = einheiten.count() or 1
+
+    # Personen-Basis (Live-Test G): Summe (Personenzahl × bewohnte Tage) über alle
+    # in der Periode gültigen Verträge. Personenabhängige Kosten (z.B. Kehricht,
+    # Wasser) werden danach verteilt. Leerstand hat 0 Personen und trägt keinen
+    # Anteil — der Pool wird voll auf die tatsächlichen Bewohner verteilt (so geht
+    # die Abrechnung auf). Ist niemand da (total_person_tage 0), fällt der Pool auf
+    # die Flächenverteilung zurück, damit die Kosten nicht verschwinden.
+    total_person_tage = Decimal('0')
+    if pool_nk_personen > 0:
+        for _e in einheiten:
+            _vtr = _e.vertraege.exclude(status='entwurf').filter(beginn__lte=ende_p).filter(
+                Q(ende__isnull=True) | Q(ende__gte=start_p)).distinct()
+            for _v in _vtr:
+                _vs = max(_v.beginn, start_p)
+                _ve = min(_v.ende, ende_p) if _v.ende else ende_p
+                _tage = (_ve - _vs).days + 1
+                if _tage > 0:
+                    total_person_tage += Decimal(max(1, _v.anzahl_personen or 1)) * _tage
+        if total_person_tage <= 0:
+            pool_nk_m2 += pool_nk_personen
+            pool_nk_personen = Decimal('0.00')
+
+    total_kosten_gesamt = pool_heizkosten + pool_nk_m2 + pool_nk_einheit + pool_nk_personen
 
     # HKVO: verbrauchsabhängige Heizkosten (Grundkosten nach m³ + Verbrauchskosten nach Zähler)
     hkvo_aktiv = getattr(liegenschaft, 'hkvo_aktiv', False)
@@ -343,7 +369,14 @@ def berechne_abrechnung(periode_id):
             # Kosten für diesen Mieter
             mieter_hk = anteil_hk_einheit * zeit_faktor_hk
             mieter_nk = anteil_nk_einheit * zeit_faktor_nk
-            mieter_total_kosten = mieter_hk + mieter_nk
+            # Personenabhängiger Anteil: (Personenzahl × bewohnte Tage) am Total
+            # aller Personen-Tage der Liegenschaft (Live-Test G).
+            mieter_personen = Decimal('0.00')
+            if total_person_tage > 0 and pool_nk_personen > 0:
+                mieter_personen = pool_nk_personen * (
+                    Decimal(max(1, vertrag.anzahl_personen or 1)) * Decimal(tage_bewohnt)
+                ) / total_person_tage
+            mieter_total_kosten = mieter_hk + mieter_nk + mieter_personen
 
             # Akonto vs. Pauschal Logik (Aus dem Vertrag)
             nk_typ = getattr(vertrag, 'nk_abrechnungsart', 'akonto')

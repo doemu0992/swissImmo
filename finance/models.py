@@ -593,7 +593,8 @@ class NebenkostenBeleg(models.Model):
         ('kehricht', 'Kehricht / Entsorgung'),
         ('diverse', 'Diverse Betriebskosten'),
     ]
-    VERTEIL_CHOICES = [('m2', 'Nach Fläche (m²)'), ('m3', 'Nach Volumen (m³)'), ('einheit', 'Pro Wohnung')]
+    VERTEIL_CHOICES = [('m2', 'Nach Fläche (m²)'), ('m3', 'Nach Volumen (m³)'),
+                       ('einheit', 'Pro Wohnung'), ('personen', 'Nach Personenzahl')]
 
     periode = models.ForeignKey(AbrechnungsPeriode, on_delete=models.CASCADE, related_name='belege')
     datum = models.DateField(default=timezone.now, blank=True, null=True)

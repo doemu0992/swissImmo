@@ -15859,3 +15859,42 @@ class NebenkostenGTests(TestCase):
         nach_live = Decimal(str(berechne_abrechnung(p.id)['total_kosten']))
         self.assertEqual(nach_snapshot, vor, 'Snapshot driftete nach Belegänderung')
         self.assertNotEqual(nach_live, vor, 'Testaufbau: Beleg wurde nicht wirksam geändert')
+
+
+class NebenkostenPersonenTests(TestCase):
+    """Live-Test G: Verteilschlüssel «Personen» — Beleg wird nach Personenzahl × Tage verteilt."""
+
+    def test_g_personen_verteilung_proportional(self):
+        from finance.booking import ensure_kontenplan
+        from finance.models import AbrechnungsPeriode, NebenkostenBeleg
+        from crm.models import Verwaltung, Mieter
+        from core.utils.billing import berechne_abrechnung
+        from portfolio.models import Einheit
+        from rentals.models import Mietvertrag
+        ensure_kontenplan()
+        # Honorar auf 0 → nur der Personen-Pool wirkt (saubere Prüfung)
+        Verwaltung.objects.create(firma='V AG', strasse='W 1', plz='8000', ort='Zürich',
+                                  nk_honorar_prozent=Decimal('0'))
+        lg, e1, m1, v1 = _basis_objekte()
+        v1.anzahl_personen = 1; v1.nebenkosten = Decimal('0'); v1.save()
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='B', typ='wohnung',
+                                    nettomiete_aktuell=Decimal('1500'), nebenkosten_aktuell=Decimal('0'),
+                                    flaeche_m2=Decimal('50'))
+        m2 = Mieter.objects.create(typ='person', vorname='Bea', nachname='Zweit',
+                                   strasse='S', plz='8000', ort='Zürich')
+        v2 = Mietvertrag.objects.create(mieter=m2, einheit=e2, beginn=date(2024, 1, 1),
+                                        netto_mietzins=Decimal('1500'), nebenkosten=Decimal('0'),
+                                        status='aktiv', anzahl_personen=3)
+        e1.flaeche_m2 = Decimal('50'); e1.save()
+        p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='NK 2024',
+                                              start_datum=date(2024, 1, 1), ende_datum=date(2024, 12, 31))
+        NebenkostenBeleg.objects.create(periode=p, text='Kehricht', kategorie='kehricht',
+                                        verteilschluessel='personen', betrag=Decimal('400'),
+                                        datum=date(2024, 6, 1))
+        r = berechne_abrechnung(p.id)
+        anteil = {a['vertrag_id']: Decimal(str(a['kosten_anteil']))
+                  for a in r['abrechnungen'] if a.get('vertrag_id')}
+        # 1 vs. 3 Personen → 100 / 300 (Pool 400)
+        self.assertEqual(anteil[v1.id], Decimal('100.00'))
+        self.assertEqual(anteil[v2.id], Decimal('300.00'))
+        self.assertEqual(Decimal(str(r['differenz'])), Decimal('0.00'))
