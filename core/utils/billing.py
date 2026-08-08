@@ -94,6 +94,46 @@ def _verteile_rundungsrest(zeilen, ziel_total):
     for z in zeilen:
         z.pop('_exakt', None)
 
+def _jsonable(obj):
+    """Rekursiv JSON-serialisierbar machen: Decimal→str (verlustfrei), date→ISO."""
+    from datetime import date as _d, datetime as _dt
+    if isinstance(obj, Decimal):
+        return str(obj)
+    if isinstance(obj, (_d, _dt)):
+        return obj.isoformat()
+    if isinstance(obj, dict):
+        return {k: _jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_jsonable(v) for v in obj]
+    return obj
+
+
+def snapshot_speichern(periode):
+    """Friert die aktuelle Abrechnung als JSON auf der Periode ein (beim Verbuchen)."""
+    import json
+    result = berechne_abrechnung(periode.id)
+    periode.snapshot_json = json.dumps(_jsonable(result))
+    periode.save(update_fields=['snapshot_json'])
+    return result
+
+
+def hole_abrechnung(periode):
+    """Kanonische Abrechnungs-Ausgabe für Anzeige/PDF/Versand.
+
+    Ist die Periode abgeschlossen UND ein Snapshot vorhanden, wird der EINGEFRORENE
+    Stand geliefert — so zeigen Detailseite, PDF und Versand exakt die verbuchten
+    Zahlen, unabhängig von späteren Änderungen an Belegen/Flächen/Verträgen
+    (Live-Test G). Sonst rechnet die Engine live.
+    """
+    import json
+    if getattr(periode, 'abgeschlossen', False) and (periode.snapshot_json or '').strip():
+        try:
+            return json.loads(periode.snapshot_json)
+        except Exception:
+            pass
+    return berechne_abrechnung(periode.id)
+
+
 def berechne_abrechnung(periode_id):
     """
     Professionelle Schweizer HNK-Abrechnung (Expert-Version).
@@ -240,7 +280,8 @@ def berechne_abrechnung(periode_id):
     # 2. GESAMT-BASIS DER LIEGENSCHAFT ERMITTELN
     # ---------------------------------------------------------
     einheiten = liegenschaft.einheiten.all()
-    total_m2 = sum((e.flaeche_m2 or Decimal('0')) for e in einheiten) or Decimal('1')
+    _real_total_m2 = sum((e.flaeche_m2 or Decimal('0')) for e in einheiten)
+    total_m2 = _real_total_m2 or Decimal('1')
     total_m3 = sum((e.volumen_m3 or Decimal('0')) for e in einheiten)
     if total_m3 <= 0: total_m3 = total_m2 # Fallback: m2 nehmen wenn m3 nicht konfiguriert ist
     total_einheiten = einheiten.count() or 1
@@ -375,6 +416,24 @@ def berechne_abrechnung(periode_id):
                 })
                 kontroll_summe += leer_total
 
+    # Warnung bei fehlenden Flächen: Flächenabhängige Kosten (m²-Pool inkl.
+    # Honorar) werden über e_m2/total_m2 verteilt. Fehlt die Fläche einer Einheit
+    # (None/0), ist ihr Anteil still 0 — die Kosten «verschwinden» bzw. landen bei
+    # den anderen. Fehlt sie überall, greift der total_m2-Fallback (1) und die
+    # ganze Verteilung ist unbrauchbar. In beiden Fällen: klar warnen statt still
+    # eine falsche Abrechnung ausweisen (Live-Test G).
+    warnungen = []
+    if pool_nk_m2 > 0:
+        if _real_total_m2 <= 0:
+            warnungen.append("Für keine Einheit ist eine Fläche (m²) erfasst — flächenabhängige "
+                             "Kosten konnten nicht verteilt werden. Bitte die Flächen der Einheiten "
+                             "ergänzen, sonst ist die Abrechnung nicht korrekt.")
+        else:
+            _fehlend = [e.bezeichnung for e in einheiten if (e.flaeche_m2 or Decimal('0')) <= 0]
+            if _fehlend:
+                warnungen.append("Fläche (m²) fehlt bei: " + ", ".join(_fehlend) +
+                                 " — ihr Anteil an flächenabhängigen Kosten ist 0. Bitte ergänzen.")
+
     abrechnungen.sort(key=lambda x: x['einheit'])
     _verteile_rundungsrest(abrechnungen, round(total_kosten_gesamt, 2))
     # Kontrollzahl auf den ANGEZEIGTEN (gerundeten) Werten: vorher summierte sie
@@ -391,4 +450,5 @@ def berechne_abrechnung(periode_id):
         'kontroll_summe': kontroll_summe,
         'differenz': round(total_kosten_gesamt, 2) - kontroll_summe,
         'hkvo_angewendet': hkvo_angewendet,
+        'warnungen': warnungen,
     }

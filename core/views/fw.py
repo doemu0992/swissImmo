@@ -8011,12 +8011,13 @@ def fw_nebenkosten_detail(request, pk):
     """Zeigt die Abrechnung — nutzt die EINE kanonische Engine (core.utils.billing),
     identisch zu PDF und Verbuchung (keine divergierenden Berechnungen mehr)."""
     from finance.models import AbrechnungsPeriode, KreditorenRechnung
-    from core.utils.billing import berechne_abrechnung
+    from core.utils.billing import hole_abrechnung
     p = get_object_or_404(AbrechnungsPeriode.objects.select_related('liegenschaft'), id=pk)
     basis = _global_filter(request)
     lg = p.liegenschaft
 
-    result = berechne_abrechnung(p.id)
+    # Nach dem Verbuchen den EINGEFRORENEN Stand zeigen (identisch zu den Buchungen).
+    result = hole_abrechnung(p)
     # Kanonische Ausgabe auf die Template-Keys mappen
     abrechnungen = []
     total_kosten_verteilt = Decimal('0.00')
@@ -8081,6 +8082,7 @@ def fw_nebenkosten_detail(request, pk):
         'hkvo_angewendet': result.get('hkvo_angewendet', False),
         'hkvo_aktiv': getattr(lg, 'hkvo_aktiv', False) if lg else False,
         'differenz': result.get('differenz', Decimal('0.00')),
+        'warnungen': result.get('warnungen', []),
         'tab_liste': tab_liste,
     })
 
@@ -8148,9 +8150,16 @@ def fw_nebenkosten_verbuchen(request, pk):
                     erstellt_von=request.user, status='verbucht')
                 n_gut += 1
         p.abgeschlossen = True
-        p.save(update_fields=['abgeschlossen'])
+        # Ergebnis EINFRIEREN: ab jetzt zeigen Detailseite/PDF/Versand genau diese
+        # verbuchten Zahlen, auch wenn Belege/Flächen/Verträge später ändern.
+        from core.utils.billing import _jsonable as _nk_jsonable
+        import json as _nk_json
+        p.snapshot_json = _nk_json.dumps(_nk_jsonable(result))
+        p.save(update_fields=['abgeschlossen', 'snapshot_json'])
     log_aktion(request, "NK-Abrechnung verbucht", p.bezeichnung, f"{n_nach} Nachzahlungen, {n_gut} Gutschriften")
     messages.success(request, f"✅ Abrechnung verbucht: {n_nach} Nachzahlung(en), {n_gut} Gutschrift(en).")
+    for _w in result.get('warnungen', []):
+        messages.warning(request, f"⚠️ {_w}")
     return redirect(f'/neu/nebenkosten/{p.id}/')
 
 
@@ -8163,7 +8172,7 @@ def fw_nebenkosten_versand(request, pk):
     from django.http import HttpResponse
     from finance.models import AbrechnungsPeriode
     from crm.models import Verwaltung
-    from core.utils.billing import berechne_abrechnung
+    from core.utils.billing import hole_abrechnung
     from core.services.nk_abrechnung import generate_nk_pdf_einzeln, generate_nk_pdf_sammel
     from core.services.ablage import ablegen
     from core.auth import log_aktion
@@ -8172,7 +8181,8 @@ def fw_nebenkosten_versand(request, pk):
     if request.method != 'POST':
         return redirect(f'/neu/nebenkosten/{p.id}/')
 
-    result = berechne_abrechnung(p.id)
+    # Verbuchte Periode → eingefrorener Stand (gleiche Zahlen wie die Buchungen).
+    result = hole_abrechnung(p)
     if result.get('error'):
         messages.error(request, result['error'])
         return redirect(f'/neu/nebenkosten/{p.id}/')

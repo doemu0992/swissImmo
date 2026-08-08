@@ -15816,3 +15816,46 @@ class VertragMieterspiegelFTests(TestCase):
         zeile = next(z for z in spiegel[0]['zeilen'] if z['einheit'].id == e.id)
         self.assertFalse(zeile['belegt'], 'künftiger Vertrag erscheint zu früh als belegt')
         self.assertEqual(spiegel[0]['totals']['leer'], 1)
+
+
+class NebenkostenGTests(TestCase):
+    """Live-Test G: HNK — Snapshot-Einfrieren beim Verbuchen + Warnung bei fehlender Fläche."""
+
+    def _periode(self, lg, betrag='1200'):
+        from finance.models import AbrechnungsPeriode, NebenkostenBeleg
+        p = AbrechnungsPeriode.objects.create(
+            liegenschaft=lg, bezeichnung='NK 2024',
+            start_datum=date(2024, 1, 1), ende_datum=date(2024, 12, 31))
+        b = NebenkostenBeleg.objects.create(
+            periode=p, text='Hauswartung', kategorie='hauswart',
+            verteilschluessel='m2', betrag=Decimal(betrag), datum=date(2024, 6, 1))
+        return p, b
+
+    def test_g_fehlende_flaeche_warnt(self):
+        from core.utils.billing import berechne_abrechnung
+        lg, e, m, v = _basis_objekte()   # Einheit ohne flaeche_m2 (None)
+        p, b = self._periode(lg)
+        r = berechne_abrechnung(p.id)
+        self.assertTrue(r.get('warnungen'), 'keine Warnung trotz fehlender Fläche')
+        self.assertIn('Fläche', r['warnungen'][0])
+
+    def test_g_verbuchte_abrechnung_ist_eingefroren(self):
+        from finance.booking import ensure_kontenplan
+        from core.utils.billing import hole_abrechnung, berechne_abrechnung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        e.flaeche_m2 = Decimal('100'); e.save()
+        v.nk_abrechnungsart = 'akonto'; v.nebenkosten = Decimal('50'); v.save()
+        p, b = self._periode(lg, '1200')
+        vor = Decimal(str(hole_abrechnung(p)['total_kosten']))
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        c.post(f'/neu/nebenkosten/{p.id}/verbuchen/', {})
+        p.refresh_from_db()
+        self.assertTrue(p.abgeschlossen)
+        self.assertTrue(p.snapshot_json.strip())
+        # Beleg NACH dem Verbuchen ändern → Snapshot bleibt, Live würde springen.
+        b.betrag = Decimal('6000'); b.save()
+        nach_snapshot = Decimal(str(hole_abrechnung(p)['total_kosten']))
+        nach_live = Decimal(str(berechne_abrechnung(p.id)['total_kosten']))
+        self.assertEqual(nach_snapshot, vor, 'Snapshot driftete nach Belegänderung')
+        self.assertNotEqual(nach_live, vor, 'Testaufbau: Beleg wurde nicht wirksam geändert')

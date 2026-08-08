@@ -36,6 +36,17 @@
     </div>
 </div>
 
+{% if warnungen %}
+<div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
+    <div class="flex items-start gap-2 text-amber-800">
+        <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+        <div class="text-sm">
+            {% for w in warnungen %}<div>{{ w }}</div>{% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
     <div class="bg-white rounded-xl border border-slate-200 p-4">

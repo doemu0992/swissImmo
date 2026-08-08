@@ -502,6 +502,12 @@ class AbrechnungsPeriode(models.Model):
     start_datum = models.DateField()
     ende_datum = models.DateField()
     abgeschlossen = models.BooleanField(default=False)
+    # Eingefrorene Abrechnung: Beim Verbuchen wird das berechnete Ergebnis (die
+    # kanonische Engine-Ausgabe) als JSON festgehalten. Danach zeigen Detailseite,
+    # PDF und Versand GENAU die gebuchten Zahlen — auch wenn Belege, Flächen oder
+    # Verträge später geändert werden. Ohne diesen Snapshot drifteten Anzeige/PDF
+    # von den tatsächlich verbuchten Nachzahlungen/Gutschriften weg (Live-Test G).
+    snapshot_json = models.TextField("Eingefrorene Abrechnung (JSON)", blank=True, default='')
 
     # Für die Bestandesrechnung (Heizöl/Gas)
     anfangsbestand_liter = models.DecimalField("Anfangsbestand (L)", max_digits=10, decimal_places=2, default=0)
@@ -521,8 +527,8 @@ class AbrechnungsPeriode(models.Model):
         # Detailansicht, PDF und Verbuchung). Sie ist split-aware (nur HNK-Anteile),
         # vermeidet Doppelzählung Beleg/Kreditor und enthält Honorar + Öl-Bestand.
         try:
-            from core.utils.billing import berechne_abrechnung
-            r = berechne_abrechnung(self.id)
+            from core.utils.billing import hole_abrechnung
+            r = hole_abrechnung(self)   # eingefroren, falls verbucht (Live-Test G)
             if not r.get('error'):
                 return Decimal(str(r.get('total_kosten', 0) or 0))
         except Exception:
