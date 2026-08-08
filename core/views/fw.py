@@ -5602,6 +5602,11 @@ def fw_kreditoren(request):
         betrag = k.betrag or Decimal('0.00')
         offen_betrag = k.offener_betrag
         faellig = k.faellig_am
+        # Letzte VERBUCHTE Zahlung (für «Zahlung stornieren»). Nutzt den Prefetch —
+        # keine Extra-Abfrage je Zeile.
+        _verbuchte = sorted((z for z in k.zahlungen.all() if z.status == 'verbucht'),
+                            key=lambda z: (z.datum, z.id))
+        letzte_zahlung = _verbuchte[-1] if _verbuchte else None
         if k.status in ('freigegeben', 'in_zahlung', 'teilbezahlt'):
             total_offen += offen_betrag
         rows.append({
@@ -5616,6 +5621,7 @@ def fw_kreditoren(request):
             'kann_bezahlen': k.status in ('freigegeben', 'in_zahlung', 'teilbezahlt'),
             'in_zahlung': k.status == 'in_zahlung',
             'teilbezahlt': k.status == 'teilbezahlt',
+            'letzte_zahlung': letzte_zahlung,
             'offen_betrag': offen_betrag,
             'offen_wv': k.offen_weiterzuverrechnen,
             'kann_weiterverrechnen': (k.status in ('freigegeben', 'in_zahlung', 'teilbezahlt', 'bezahlt')
@@ -5925,8 +5931,11 @@ def fw_zahllauf(request):
         return redirect(_ziel())
 
     # --- GET: Vorschlagsliste ---
+    # 'teilbezahlt' MUSS mit rein: Nach einer Teilzahlung bleibt ein offener Rest —
+    # ohne diesen Status verschwand die Rechnung aus dem Zahllauf und der Rest wurde
+    # nie zur Zahlung vorgeschlagen (Live-Test H9).
     qs = (KreditorenRechnung.objects
-          .filter(status__in=['freigegeben', 'in_zahlung'])
+          .filter(status__in=['freigegeben', 'in_zahlung', 'teilbezahlt'])
           .select_related('liegenschaft')
           .prefetch_related('zahlungen')
           .order_by('faellig_am', 'id'))
@@ -5988,6 +5997,68 @@ def fw_kreditor_zahlung_zuruecksetzen(request, pk):
     if lg := request.POST.get('lg'):
         ziel += f'?lg={lg}'
     return redirect(ziel)
+
+
+@rolle_erforderlich(ROLLE_VERWALTUNG)
+def fw_kreditor_zahlung_stornieren(request, pk):
+    """Storniert eine VERBUCHTE Lieferantenzahlung revisionssicher: Gegenbuchung
+    zur Zahlungsbuchung (2000 an Bank), Zahlung → 'storniert', der offene Posten
+    der Kreditorenrechnung öffnet sich wieder.
+
+    Live-Test H9: `fw_zahlung_stornieren` deckt nur EINGEHENDE Zahlungen
+    (Zahlungseingang) ab. Eine an den falschen Lieferanten oder mit falschem
+    Betrag AUSGEFÜHRTE Zahlung liess sich gar nicht mehr rückgängig machen — nur
+    per Handbuchung, und der offene Posten blieb falsch (bezahlt, obwohl das Geld
+    zurückkommt)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from finance.models import KreditorenZahlung, Buchung
+    from finance.api import erstelle_storno_buchung
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_kreditoren')
+    naechstes = request.POST.get('next') or '/neu/kreditoren/'
+    try:
+        with transaction.atomic():
+            # Zeilensperre gegen Doppel-Storno (zwei parallele Requests).
+            z = get_object_or_404(
+                KreditorenZahlung.objects.select_for_update().select_related('kreditor'), id=pk)
+            if z.status == 'storniert':
+                messages.info(request, "Diese Zahlung ist bereits storniert.")
+                return redirect(naechstes)
+            k = z.kreditor
+            # Die zur Zahlung gehörende Buchung finden und gegenbuchen. Diskriminator:
+            # Sollkonto 2000 (die Rechnungsbuchung trägt 2000 im HABEN, nur die
+            # Zahlung im SOLL), Betrag und Datum der Zahlung. Bei mehreren identischen
+            # Zahlungen ist jede Umkehr finanziell gleichwertig (gleiche Konten/Betrag).
+            buchung = (Buchung.objects.filter(
+                kreditoren_rechnung=k, soll_konto__nummer='2000',
+                betrag=z.betrag, datum=z.datum,
+                ist_storno=False, storniert_am__isnull=True).order_by('id').first())
+            if buchung is not None:
+                erstelle_storno_buchung(buchung, benutzer=request.user)
+            z.status = 'storniert'
+            z.save(update_fields=['status'])
+            # Rechnungsstatus nachführen (offener_betrag zählt nur 'verbucht'):
+            if k.status != 'storniert':
+                if k.offener_betrag <= 0:
+                    k.status = 'bezahlt'
+                elif k.offener_betrag >= (k.betrag or Decimal('0.00')):
+                    k.status = 'freigegeben'
+                else:
+                    k.status = 'teilbezahlt'
+                k.save(update_fields=['status'])
+    except PermissionError as exc:
+        messages.error(request, f"❌ {exc}")
+        return redirect(naechstes)
+    except Exception as exc:
+        messages.error(request, f"❌ Zahlung konnte nicht storniert werden: {exc}")
+        return redirect(naechstes)
+    log_aktion(request, "Lieferantenzahlung storniert", k.lieferant or f"Rechnung #{k.id}",
+               f"CHF {z.betrag}")
+    messages.success(request, f"✅ Zahlung über CHF {z.betrag} an {k.lieferant or 'Lieferant'} "
+                              f"storniert — offener Posten wieder offen.")
+    return redirect(naechstes)
 
 
 # ============================================================

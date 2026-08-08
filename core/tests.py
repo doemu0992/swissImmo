@@ -15569,3 +15569,78 @@ class JahresabschlussH5H6Tests(TestCase):
         nach = _erfolg_bilanz(None, 2024)
         self.assertEqual(nach['erfolg_offen'], Decimal('700.00'))
         self.assertEqual(nach['bilanz_differenz'], Decimal('0.00'))
+
+
+class ZahlungsverkehrH8H9Tests(TestCase):
+    """Live-Test H8/H9: Lieferantenzahlung stornierbar + Teilzahlungsrest im Zahllauf.
+
+    H9: `fw_zahlung_stornieren` deckte nur EINGEHENDE Zahlungen ab — eine falsch
+        ausgeführte Lieferantenzahlung war nicht rückgängig zu machen.
+        Und: nach einer Teilzahlung fiel die Rechnung aus dem Zahllauf-Vorschlag,
+        der offene Rest wurde nie wieder vorgeschlagen.
+    """
+
+    def _saldo(self, nummer):
+        from finance.models import Buchung
+        from django.db.models import Sum
+        soll = Buchung.objects.filter(soll_konto__nummer=nummer).aggregate(s=Sum('betrag'))['s'] or Decimal('0')
+        haben = Buchung.objects.filter(haben_konto__nummer=nummer).aggregate(s=Sum('betrag'))['s'] or Decimal('0')
+        return soll - haben
+
+    def _kreditor_freigegeben(self, lg, betrag='500.00'):
+        from finance.models import KreditorenRechnung
+        return KreditorenRechnung.objects.create(
+            lieferant='Sanitär AG', liegenschaft=lg, status='freigegeben',
+            datum=date(2024, 3, 1), faellig_am=date(2024, 3, 31),
+            betrag=Decimal(betrag), iban='CH9300762011623852957', referenz='RF-1')
+
+    def test_h9_verbuchte_lieferantenzahlung_stornierbar(self):
+        from finance.booking import ensure_kontenplan
+        from finance.models import KreditorenZahlung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        k = self._kreditor_freigegeben(lg)
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        c.post('/neu/kreditoren/bezahlen/', {'rechnung_id': str(k.id),
+                                             'bank_konto': '1020', 'valuta': '2024-03-05'})
+        k.refresh_from_db()
+        self.assertEqual(k.status, 'bezahlt')
+        self.assertEqual(k.offener_betrag, Decimal('0.00'))
+        z = KreditorenZahlung.objects.get(kreditor=k)
+        c.post(f'/neu/kreditoren/zahlung/{z.id}/stornieren/', {'next': '/neu/kreditoren/'})
+        z.refresh_from_db(); k.refresh_from_db()
+        self.assertEqual(z.status, 'storniert')
+        self.assertEqual(k.status, 'freigegeben')          # offener Posten wieder offen
+        self.assertEqual(k.offener_betrag, Decimal('500.00'))
+        self.assertEqual(self._saldo('1020'), Decimal('0.00'))   # Zahlung + Storno = 0
+
+    def test_h9_doppel_storno_wird_abgewiesen(self):
+        from finance.booking import ensure_kontenplan
+        from finance.models import KreditorenZahlung, Buchung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        k = self._kreditor_freigegeben(lg)
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        c.post('/neu/kreditoren/bezahlen/', {'rechnung_id': str(k.id), 'bank_konto': '1020'})
+        z = KreditorenZahlung.objects.get(kreditor=k)
+        c.post(f'/neu/kreditoren/zahlung/{z.id}/stornieren/', {})
+        n_storni = Buchung.objects.filter(ist_storno=True).count()
+        c.post(f'/neu/kreditoren/zahlung/{z.id}/stornieren/', {})   # zweites Mal
+        self.assertEqual(Buchung.objects.filter(ist_storno=True).count(), n_storni)
+
+    def test_h9_teilzahlungsrest_im_zahllauf_vorschlag(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        k = self._kreditor_freigegeben(lg, '500.00')
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        c.post('/neu/kreditoren/bezahlen/', {'rechnung_id': str(k.id), 'betrag': '200',
+                                             'bank_konto': '1020', 'valuta': '2024-03-05'})
+        k.refresh_from_db()
+        self.assertEqual(k.status, 'teilbezahlt')
+        self.assertEqual(k.offener_betrag, Decimal('300.00'))
+        r = c.get('/neu/zahllauf/')
+        vorschlag = r.context['vorschlag']
+        zeile = next((z for z in vorschlag if z['k'].id == k.id), None)
+        self.assertIsNotNone(zeile, 'Teilzahlungsrest fehlt im Zahllauf-Vorschlag')
+        self.assertEqual(zeile['offen'], Decimal('300.00'))

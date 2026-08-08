@@ -224,6 +224,13 @@
                         {% elif row.k.status == 'bezahlt' %}
                         <span class="text-emerald-600 text-xs"><i class="fa-solid fa-check-double"></i> erledigt</span>
                         {% endif %}
+                        {% if row.letzte_zahlung and darf_bezahlen %}
+                        <form method="post" action="/neu/kreditoren/zahlung/{{ row.letzte_zahlung.id }}/stornieren/" onsubmit="return confirm('Letzte Zahlung (CHF {{ row.letzte_zahlung.betrag|chf }}) an {{ row.lieferant|escapejs }} stornieren? Der offene Posten öffnet sich wieder.');" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="/neu/kreditoren/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}">
+                            <button type="submit" class="text-slate-400 hover:text-rose-600 text-xs" title="Letzte Zahlung stornieren"><i class="fa-solid fa-rotate-left"></i></button>
+                        </form>
+                        {% endif %}
                         {% if row.kann_weiterverrechnen %}
                         <a href="/neu/kreditoren/{{ row.k.id }}/weiterverrechnen/"
                            onclick="return fwModalOpen(this,'Weiterverrechnen',false)"
