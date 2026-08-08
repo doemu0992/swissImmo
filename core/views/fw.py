@@ -116,7 +116,12 @@ def fw_dashboard(request):
     v_beendet = vertraege.filter(status='archiviert').count() + \
                 vertraege.exclude(status='archiviert').filter(ende__lt=heute).count()
     v_aktiv = vertraege.filter(status='aktiv').exclude(ende__lt=heute).count()
-    v_gekuendigt = vertraege.filter(status='gekuendigt').count()
+    # «Gekündigt» = gekündigt UND noch laufend (ende in der Zukunft/offen). Ein
+    # gekündigter Vertrag, dessen Ende bereits vorbei ist, zählt als BEENDET
+    # (v_beendet oben) — sonst würde er doppelt gezählt und die Status-Summe
+    # stimmte nicht mit der Objektzahl überein (Live-Test J: «4 vs 5»).
+    v_gekuendigt = (vertraege.filter(status='gekuendigt')
+                    .filter(Q(ende__isnull=True) | Q(ende__gte=heute)).count())
     v_zukuenftig = vertraege.filter(beginn__gt=heute).exclude(status__in=['archiviert', 'gekuendigt']).count()
 
     # --- LEERSTAND-KARTE (Tabs: Leerstand / Gekündigt / Bevorstehend) ---
@@ -126,7 +131,11 @@ def fw_dashboard(request):
             belegte_ids.add(neben_id)
     leerstand_objekte = (einheiten.exclude(id__in=belegte_ids)
                          .select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung'))
+    # Nur noch LAUFENDE gekündigte Verträge (Ende offen/künftig) — bereits
+    # abgelaufene sind beendet und gehören nicht in die «Gekündigt»-Liste
+    # (konsistent zu v_gekuendigt, Live-Test J).
     gekuendigte = (vertraege.filter(status='gekuendigt')
+                   .filter(Q(ende__isnull=True) | Q(ende__gte=heute))
                    .select_related('mieter', 'einheit__liegenschaft').order_by('ende'))
     bevorstehende = (vertraege.filter(beginn__gt=heute)
                      .exclude(status__in=['archiviert', 'gekuendigt'])
@@ -6207,8 +6216,11 @@ def fw_schaden_kosten(request):
         g['schaeden'] = s_total.get(key, 0)
         g['schaeden_offen'] = s_offen.get(key, 0)
         g['name'] = f"{g['lg'].strasse}, {g['lg'].ort}" if g['lg'] else '— ohne Liegenschaft —'
+        # Gesamt (effektiv + offen) IN PYTHON summieren — der Template-Filter |add
+        # coerct Decimals nach int und schneidet die Rappen ab (Live-Test J).
+        g['gesamt'] = g['effektiv'] + g['offen']
         rows.append(g)
-    rows.sort(key=lambda g: (-(g['effektiv'] + g['offen']), g['name'].lower()))
+    rows.sort(key=lambda g: (-g['gesamt'], g['name'].lower()))
 
     total = {
         'auftraege': sum(g['auftraege'] for g in rows),
@@ -6217,6 +6229,7 @@ def fw_schaden_kosten(request):
         'offen': sum((g['offen'] for g in rows), Decimal('0.00')),
         'schaeden': sum(g['schaeden'] for g in rows),
     }
+    total['gesamt'] = total['effektiv'] + total['offen']
     return render(request, 'fw/schaden_kosten.html', {
         **basis, 'nav': 'schadensfaelle', 'rows': rows, 'total': total,
         'jahr': jahr, 'jahre': list(range(heute.year, heute.year - 5, -1)),

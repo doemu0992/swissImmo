@@ -15968,3 +15968,48 @@ class RechtstexteITests(TestCase):
         self.assertEqual(r['Content-Type'], 'application/pdf')
         txt = self._text(r.content)
         self.assertEqual(txt.count('Freundliche Grüsse'), 1, 'Grussformel doppelt/fehlend')
+
+
+class DashboardGekuendigtJTests(TestCase):
+    """Live-Test J: «Gekündigt»-Zähler doppelte einen bereits abgelaufenen Vertrag."""
+
+    def test_j_abgelaufener_gekuendigter_zaehlt_nur_als_beendet(self):
+        from rentals.models import Mietvertrag
+        from portfolio.models import Einheit
+        from crm.models import Mieter
+        lg, e1, m1, v1 = _basis_objekte()
+        # v1: gekündigt, läuft noch (Ende in der Zukunft)
+        v1.status = 'gekuendigt'; v1.ende = date.today() + timedelta(days=60); v1.save()
+        # v2: gekündigt, aber Ende bereits vorbei → beendet, NICHT mehr «gekündigt»
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='2Zi', typ='wohnung',
+                                    nettomiete_aktuell=Decimal('1000'), nebenkosten_aktuell=Decimal('100'))
+        m2 = Mieter.objects.create(typ='person', vorname='Alt', nachname='Weg',
+                                   strasse='S', plz='8000', ort='Zürich')
+        Mietvertrag.objects.create(mieter=m2, einheit=e2, beginn=date(2022, 1, 1),
+                                   ende=date.today() - timedelta(days=10),
+                                   netto_mietzins=Decimal('1000'), nebenkosten=Decimal('100'),
+                                   status='gekuendigt')
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        r = c.get('/neu/')
+        self.assertEqual(r.context['v_gekuendigt'], 1)        # nur der laufende
+        self.assertEqual(r.context['gekuendigte_count'], 1)   # Liste konsistent
+        self.assertGreaterEqual(r.context['v_beendet'], 1)    # der abgelaufene ist beendet
+
+
+class KostenkontrolleAddJTests(TestCase):
+    """Live-Test J: |add coerct Decimals nach int und schnitt die Rappen ab."""
+
+    def test_j_kostensumme_behaelt_rappen(self):
+        from tickets.models import SchadenMeldung, HandwerkerAuftrag
+        from crm.models import Handwerker
+        lg, e, m, v = _basis_objekte()
+        hw = Handwerker.objects.create(firma='Sanitär AG')
+        s = SchadenMeldung.objects.create(liegenschaft=lg, titel='Leck', beschreibung='x')
+        HandwerkerAuftrag.objects.create(ticket=s, handwerker=hw, kosten_effektiv=Decimal('10.50'))
+        HandwerkerAuftrag.objects.create(ticket=s, handwerker=hw, kosten_geschaetzt=Decimal('5.25'))  # offen
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        r = c.get('/neu/schaeden/kosten/')
+        self.assertEqual(r.context['total']['gesamt'], Decimal('15.75'))
+        self.assertEqual(r.context['rows'][0]['gesamt'], Decimal('15.75'))
+        # Und im gerenderten HTML stehen die Rappen (nicht auf 15 abgeschnitten)
+        self.assertContains(r, "15.75")

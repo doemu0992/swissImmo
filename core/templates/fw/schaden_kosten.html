@@ -62,7 +62,7 @@
                 <td class="px-5 py-3 text-center text-slate-600">{{ g.auftraege }}</td>
                 <td class="px-5 py-3 text-right {% if g.offen %}text-amber-600 font-medium{% else %}text-slate-300{% endif %}">{% if g.offen %}{{ g.offen|chf }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-right {% if g.effektiv %}text-slate-900 font-medium{% else %}text-slate-300{% endif %}">{% if g.effektiv %}{{ g.effektiv|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right font-semibold text-slate-900">CHF {{ g.effektiv|add:g.offen|chf }}</td>
+                <td class="px-5 py-3 text-right font-semibold text-slate-900">CHF {{ g.gesamt|chf }}</td>
             </tr>
         {% empty %}
             <tr><td colspan="6" class="px-5 py-10 text-center text-slate-400 text-sm">Keine Handwerker-Aufträge{% if jahr %} in {{ jahr }}{% endif %}.</td></tr>
@@ -76,7 +76,7 @@
                 <td class="px-5 py-3 text-center">{{ total.auftraege }}</td>
                 <td class="px-5 py-3 text-right text-amber-600">{{ total.offen|chf }}</td>
                 <td class="px-5 py-3 text-right">{{ total.effektiv|chf }}</td>
-                <td class="px-5 py-3 text-right">CHF {{ total.effektiv|add:total.offen|chf }}</td>
+                <td class="px-5 py-3 text-right">CHF {{ total.gesamt|chf }}</td>
             </tr>
         </tfoot>
         {% endif %}
