@@ -15352,3 +15352,89 @@ class QrBetragFormatTests(TestCase):
         for t in betraege:
             self.assertNotIn(',', t, f'Komma im Zahlbetrag: «{t}»')
             self.assertIn("'", t, f'Kein Apostroph-Tausender: «{t}»')
+
+
+class StilleDatenverlusteTests(TestCase):
+    """Ein Fehler in EINEM Feld darf keine andere, gültige Angabe wegräumen —
+    und schon gar nicht mit grüner Erfolgsmeldung. Drei belegte Fälle."""
+
+    def _team(self):
+        c = Client(); c.force_login(_team_user()); return c
+
+    def test_iban_fehler_loescht_die_korrespondenzadresse_nicht(self):
+        """Korrespondenzadresse erfassen → speichern. Dann IBAN vertippen →
+        Fehler. Auf der Fehlerseite die IBAN korrigieren → speichern. Die
+        Korrespondenzadresse muss erhalten bleiben (sie steuert, wohin
+        Mahnungen zugestellt werden)."""
+        from crm.models import Mieter, MieterAdresse
+        m = Mieter.objects.create(typ='person', vorname='Eva', nachname='Muster',
+                                  email='eva@example.ch', strasse='Weg 1', plz='3000', ort='Bern')
+        c = self._team()
+        basis = {'typ': 'person', 'vorname': 'Eva', 'nachname': 'Muster',
+                 'email': 'eva@example.ch', 'strasse': 'Weg 1', 'plz': '3000', 'ort': 'Bern',
+                 'k_strasse': 'Postfach 4711', 'k_plz': '6000', 'k_ort': 'Luzern'}
+        c.post(f'/neu/personen/{m.id}/bearbeiten/', basis)
+        self.assertTrue(MieterAdresse.objects.filter(mieter=m, art='korrespondenz').exists(),
+                        'Korrespondenzadresse wurde gar nicht erst gespeichert')
+        # Jetzt mit ungültiger IBAN — Fehler. Das gerenderte Formular muss die
+        # k_*-Felder zurückgeben, sonst kommen sie beim nächsten Speichern leer.
+        r = c.post(f'/neu/personen/{m.id}/bearbeiten/', {**basis, 'iban': 'CH00 0000'})
+        self.assertContains(r, 'Postfach 4711',
+                            msg_prefix='Fehlerseite gibt die Korrespondenzadresse nicht zurück')
+        # Zweiter Speichern mit korrekter IBAN + zurückgegebenen k_*-Feldern
+        c.post(f'/neu/personen/{m.id}/bearbeiten/',
+               {**basis, 'iban': '', 'k_strasse': 'Postfach 4711', 'k_plz': '6000', 'k_ort': 'Luzern'})
+        korr = MieterAdresse.objects.filter(mieter=m, art='korrespondenz').first()
+        self.assertIsNotNone(korr, 'Korrespondenzadresse wurde still gelöscht')
+        self.assertEqual(korr.ort, 'Luzern')
+
+    def test_kuendigung_zuruecknehmen_behaelt_befristetes_ende(self):
+        """Befristeter Vertrag, ausserordentlich gekündigt, dann Kündigung
+        zurückgenommen: das vereinbarte Zeitablauf-Ende muss bleiben. Vorher
+        wurde ende hart auf None gesetzt → Vertrag lief unbegrenzt weiter."""
+        from rentals.models import Kuendigung
+        _lg, _e, _m, v = _basis_objekte()
+        v.ist_befristet = True
+        v.beginn = date(2026, 9, 1); v.ende = date(2027, 8, 31)
+        v.status = 'gekuendigt'; v.save()
+        k = Kuendigung.objects.create(vertrag=v, eingang_datum=date(2026, 8, 1),
+                                      per_datum=date(2026, 12, 31), status='bestaetigt')
+        self._team().post(f'/neu/kuendigung/{k.id}/zuruecknehmen/')
+        v.refresh_from_db()
+        self.assertEqual(v.status, 'aktiv')
+        self.assertEqual(v.ende, date(2027, 8, 31),
+                         'Befristetes Enddatum wurde bei der Rücknahme gelöscht')
+
+    def test_kuendigung_zuruecknehmen_unbefristet_loescht_ende(self):
+        """Gegenstück: Ein UNbefristeter Vertrag verliert sein Ende zu Recht —
+        er läuft nach der Rücknahme wieder auf unbestimmte Zeit."""
+        from rentals.models import Kuendigung
+        _lg, _e, _m, v = _basis_objekte()
+        v.ist_befristet = False
+        v.ende = date(2026, 12, 31); v.status = 'gekuendigt'; v.save()
+        k = Kuendigung.objects.create(vertrag=v, eingang_datum=date(2026, 8, 1),
+                                      per_datum=date(2026, 12, 31), status='bestaetigt')
+        self._team().post(f'/neu/kuendigung/{k.id}/zuruecknehmen/')
+        v.refresh_from_db()
+        self.assertIsNone(v.ende)
+
+    def test_entwurf_bearbeiten_behaelt_staffelstufen(self):
+        """Einen Staffel-Entwurf am Nettomietzins bearbeiten (das Formular
+        sendet keine Staffeldaten zurück): die Stufen dürfen nicht verschwinden,
+        sonst stünde der Vertrag auf «Staffel» ohne eine einzige Stufe."""
+        from rentals.models import Staffelstufe
+        _lg, e, m, v = _basis_objekte()
+        v.mietzins_modell = 'staffel'; v.status = 'entwurf'; v.save()
+        Staffelstufe.objects.create(vertrag=v, ab_datum=date(2027, 1, 1),
+                                    netto_mietzins=Decimal('2100'))
+        Staffelstufe.objects.create(vertrag=v, ab_datum=date(2028, 1, 1),
+                                    netto_mietzins=Decimal('2200'))
+        c = self._team()
+        # Bearbeiten OHNE staffel_ab/staffel_netto (wie das Entwurf-Formular postet)
+        c.post('/neu/vertraege/neu/speichern/', {
+            'edit_id': str(v.id), 'einheit_id': str(e.id), 'mieter_id': str(m.id),
+            'beginn': '2026-01-01', 'unbefristet': '1',
+            'netto_mietzins': '2150', 'nebenkosten': '200',
+            'mietzins_modell': 'staffel'})
+        self.assertEqual(Staffelstufe.objects.filter(vertrag=v).count(), 2,
+                         'Staffelstufen wurden beim Bearbeiten still gelöscht')

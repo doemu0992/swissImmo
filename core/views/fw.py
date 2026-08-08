@@ -5422,8 +5422,18 @@ def fw_person_form(request, pk=None):
         if fehler:
             for f in fehler:
                 messages.error(request, f"❌ {f}")
+            # Die eingegebene Korrespondenzadresse zurückgeben, sonst rendert das
+            # Formular die k_*-Felder leer (sie kommen sonst aus `korr_adr`) — und
+            # beim nächsten Speichern löscht der leere-Felder-Zweig unten die
+            # bestehende Korrespondenzadresse. Ein Fehler in EINEM Feld (z.B. der
+            # IBAN) darf keine andere, gültige Angabe stillschweigend wegräumen.
+            from types import SimpleNamespace
+            korr_eingabe = SimpleNamespace(
+                strasse=P.get('k_strasse', ''), adresszusatz=P.get('k_adresszusatz', ''),
+                plz=P.get('k_plz', ''), ort=P.get('k_ort', ''))
             return render(request, 'fw/person_form.html', {
                 **basis, 'nav': 'personen', 'm': obj, 'ist_neu': pk is None,
+                'korr_adr': korr_eingabe,
             })
 
         # --- Dublettenprüfung (nur neue Person, überspringbar) ---
@@ -9138,13 +9148,22 @@ def fw_vertrag_neu_speichern(request):
     # Weitere WG-Mieter (bestehende Personen, mehrfach) — als M2M nach dem Save.
     _wg_ids = [i for i in P.getlist('weitere_mieter') if str(i).strip().isdigit()]
 
+    # Bringt das Formular überhaupt Staffeldaten mit? Das Bearbeiten-Formular
+    # eines Entwurfs befüllt die Staffelsektion NICHT — würde man die
+    # bestehenden Stufen trotzdem löschen und aus dem leeren Formular neu
+    # aufbauen, wären sie weg (stiller Verlust, das Modell stünde weiter auf
+    # «Staffel» ohne eine einzige Stufe → Miete stiege nie). Nur löschen, wenn
+    # echte Ersatzdaten kommen oder das Modell von «Staffel» weggewechselt wird.
+    _hat_staffel_input = any((ab or '').strip() for ab in P.getlist('staffel_ab'))
+
     with transaction.atomic():
         if editing:
             for _k, _v in felder.items():
                 setattr(editing, _k, _v)
             editing.save()
             vertrag = editing
-            vertrag.staffelstufen.all().delete()   # Staffel neu aus dem Formular aufbauen
+            if _hat_staffel_input or _mietzins_modell != 'staffel':
+                vertrag.staffelstufen.all().delete()   # neu aus dem Formular aufbauen
         else:
             vertrag = Mietvertrag.objects.create(**felder)
         # Staffelstufen (parallele Listen ab_datum/netto) — nur bei Staffelmiete
@@ -9171,7 +9190,11 @@ def fw_vertrag_neu_speichern(request):
                 aus.add(zweiter_obj.id)
             ids = [int(i) for i in _wg_ids if int(i) not in aus]
             vertrag.weitere_mieter.set(Mieter.objects.filter(id__in=ids))
-        elif editing:
+        elif editing and 'wg_sektion' in P:
+            # Nur leeren, wenn die WG-Sektion im Formular tatsächlich vorhanden
+            # war (verstecktes Feld). Sonst würde das Bearbeiten eines Entwurfs,
+            # dessen Formular die WG-Sektion nicht rendert, die solidarisch
+            # haftenden Mitmieter stillschweigend entfernen.
             vertrag.weitere_mieter.clear()
     # Wohnadresse = Objektadresse ab Mietbeginn — als datierte Adress-Zeile
     # (gültig ab = Vertragsbeginn). Der tägliche Lauf (run_adress_umzuege) bzw.
@@ -11267,7 +11290,14 @@ def fw_kuendigung_zuruecknehmen(request, pk):
         if not andere:
             v.status = 'aktiv'
             v.aktiv = True
-            v.ende = None
+            # Nur ein UNbefristeter Vertrag verliert sein Ende — er läuft nach
+            # der Rücknahme wieder auf unbestimmte Zeit. Bei einem BEFRISTETEN
+            # Vertrag ist `ende` das vereinbarte Zeitablauf-Datum (Art. 266 OR),
+            # nicht die Kündigung; es hart auf None zu setzen liess den Vertrag
+            # unbegrenzt weiterlaufen und machte die vereinbarte Dauer
+            # unwiederbringlich (Datenverlust).
+            if not v.ist_befristet:
+                v.ende = None
             v.save(update_fields=['status', 'aktiv', 'ende'])
         log_aktion(request, "Kündigung zurückgezogen", str(v.mieter), '', ziel=v)
         messages.success(request, "✅ Kündigung zurückgezogen, Vertrag reaktiviert.")
