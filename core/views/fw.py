@@ -9214,7 +9214,10 @@ def fw_vertrag_neu_speichern(request):
         _fehler.append("Der Netto-Mietzins darf nicht negativ sein.")
     if not einheit.ist_einstellplatz and _dec_val('nebenkosten') < 0:
         _fehler.append("Die Nebenkosten dürfen nicht negativ sein.")
-    if _v_ende and _v_ende < _v_beginn:
+    # Nur prüfen, wenn der Vertrag WIRKLICH befristet gespeichert wird — sonst wird
+    # `ende` beim Speichern ohnehin verworfen (siehe _ist_befristet weiter unten),
+    # und ein stehengebliebener Alt-Wert im Feld dürfte die Anlage nicht blockieren.
+    if P.get('ist_befristet') == '1' and _v_ende and _v_ende < _v_beginn:
         _fehler.append("Das Vertragsende darf nicht vor dem Vertragsbeginn liegen.")
     if not (P.get('mieter_id') or '').strip():
         _typ_neu = P.get('mieter_typ', 'person')
@@ -9338,7 +9341,11 @@ def fw_vertrag_neu_speichern(request):
     felder = dict(
         mieter=mieter, einheit=einheit,
         status='aktiv' if P.get('aktiv_setzen') == 'on' else 'entwurf',
-        beginn=beginn, ende=_ende, ist_befristet=_ist_befristet,
+        # `ende` NUR bei einem befristeten Vertrag speichern — sonst wird ein im
+        # Formular stehengebliebener Alt-Wert fälschlich als Enddatum eines
+        # unbefristeten Vertrags abgelegt (der Kommentar unten versprach das schon,
+        # der Code setzte es aber unbedingt; Review-Befund).
+        beginn=beginn, ende=(_ende if _ist_befristet else None), ist_befristet=_ist_befristet,
         erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
         kuendigungsfrist_monate=_kfrist,
         kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',

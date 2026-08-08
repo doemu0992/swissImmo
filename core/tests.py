@@ -15788,6 +15788,21 @@ class VertragMieterspiegelFTests(TestCase):
         self.assertEqual(Mietvertrag.objects.count(), n_vor)
         self.assertEqual(Mieter.objects.count(), m_vor)
 
+    def test_f_unbefristet_mit_altem_ende_wird_akzeptiert(self):
+        # Ende < Beginn, aber NICHT befristet → Ende wird beim Speichern verworfen;
+        # die Anlage darf nicht an einer Ende-vor-Beginn-Prüfung scheitern (Review).
+        from rentals.models import Mietvertrag
+        lg, e, m, v = _basis_objekte()
+        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='Unbef', typ='wohnung',
+                                        nettomiete_aktuell=Decimal('1000'), nebenkosten_aktuell=Decimal('100'))
+        n_vor = Mietvertrag.objects.count()
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        # ende in der Vergangenheit, ist_befristet NICHT gesetzt
+        self._post_vertrag(c, e2, beginn='2026-06-01', ende='2020-01-01')
+        self.assertEqual(Mietvertrag.objects.count(), n_vor + 1)
+        neu = Mietvertrag.objects.exclude(id=v.id).filter(einheit=e2).first()
+        self.assertIsNone(neu.ende, 'Ende wurde bei unbefristetem Vertrag nicht verworfen')
+
     def test_f_gueltiger_vertrag_wird_gespeichert(self):
         # Gegenstück: ein sauberer Vertrag muss weiterhin durchgehen.
         from rentals.models import Mietvertrag
@@ -15925,6 +15940,17 @@ class RechtstexteITests(TestCase):
         # Es ist der Tag NACH dem ordentlichen Kündigungstermin (Monatsende).
         roh = berechne_kuendigungstermin(v, date(2026, 1, 15) + _dt.timedelta(days=17))
         self.assertEqual(termin, roh + _dt.timedelta(days=1))
+
+    def test_i_anpassungstermin_immer_monatserster_auch_bei_mittemonat(self):
+        # Robustheit: liegt der frühestmögliche Termin via erstmals_kuendbar_auf
+        # ausnahmsweise mitten im Monat, muss die Anpassung trotzdem auf den
+        # Monatsersten fallen (nicht Mitte-Monat + 1 Tag). Review-Härtung.
+        from rentals.services import naechster_anpassungstermin
+        lg, e, m, v = _basis_objekte()
+        v.erstmals_kuendbar_auf = date(2030, 6, 15); v.save()   # Nicht-Monatsende
+        termin = naechster_anpassungstermin(v, date(2030, 1, 1))
+        self.assertEqual(termin.day, 1)
+        self.assertEqual(termin, date(2030, 7, 1))
 
     def test_i_257d_frist_mindestens_30_tage_geschuetzt(self):
         from finance.booking import ensure_kontenplan
