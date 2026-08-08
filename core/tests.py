@@ -15438,3 +15438,134 @@ class StilleDatenverlusteTests(TestCase):
             'mietzins_modell': 'staffel'})
         self.assertEqual(Staffelstufe.objects.filter(vertrag=v).count(), 2,
                          'Staffelstufen wurden beim Bearbeiten still gelöscht')
+
+
+class JahresabschlussH5H6Tests(TestCase):
+    """Live-Test H5+H6: Bilanz-Doppelung nach Abschluss + Abschluss-Storno.
+
+    H5: Nach dem Jahresabschluss zeigte die Bilanz das Periodenergebnis DOPPELT
+        (einmal in 2970, einmal als «Jahresgewinn»-Zeile) und erfand einen
+        «Ergebnisvortrag (Vorjahre)» in Höhe von −Ergebnis, um das auszugleichen.
+    H6: Eine einzelne Abschlussbuchung liess sich im Journal stornieren — das
+        liess das Jahr halb geschlossen zurück; und der Storno («Storno …»)
+        fiel aus dem Abschluss-Ausschlussfilter → verdoppelte den Ertrag.
+    """
+
+    def _saldo(self, nummer):
+        from finance.models import Buchung
+        from django.db.models import Sum
+        soll = Buchung.objects.filter(soll_konto__nummer=nummer).aggregate(s=Sum('betrag'))['s'] or Decimal('0')
+        haben = Buchung.objects.filter(haben_konto__nummer=nummer).aggregate(s=Sum('betrag'))['s'] or Decimal('0')
+        return soll - haben
+
+    def _period_bookings(self, lg):
+        from finance.booking import buche
+        buche('1100', '3000', Decimal('1200'), 'Miete 01/2024', datum=date(2024, 1, 31), liegenschaft=lg)
+        buche('4000', '1100', Decimal('500'), 'Reparatur 02/2024', datum=date(2024, 2, 15), liegenschaft=lg)
+        # erfolg = 1200 − 500 = 700 (Gewinn)
+
+    def test_h5_ergebnis_nicht_doppelt_in_bilanz_nach_abschluss(self):
+        from finance.booking import ensure_kontenplan
+        from core.services.jahresabschluss import buche_jahresabschluss
+        from core.views.fw import _erfolg_bilanz
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._period_bookings(lg)
+        vor = _erfolg_bilanz(None, 2024)
+        self.assertEqual(vor['erfolg'], Decimal('700.00'))
+        self.assertEqual(vor['erfolg_offen'], Decimal('700.00'))
+        self.assertEqual(vor['erfolg_vortrag'], Decimal('0.00'))
+        self.assertEqual(vor['bilanz_differenz'], Decimal('0.00'))
+        buche_jahresabschluss(2024)
+        nach = _erfolg_bilanz(None, 2024)
+        # Ergebnis ist in 2970 gebucht → keine separate Ergebniszeile mehr und
+        # KEIN erfundener Ergebnisvortrag von −700 (das war der Befund).
+        self.assertEqual(nach['erfolg_offen'], Decimal('0.00'))
+        self.assertEqual(nach['erfolg_vortrag'], Decimal('0.00'))
+        self.assertEqual(nach['bilanz_differenz'], Decimal('0.00'))
+        self.assertEqual(self._saldo('2970'), Decimal('-700.00'))  # Passivsaldo = Gewinn
+
+    def test_h6_einzelne_abschlussbuchung_nicht_stornierbar(self):
+        from finance.booking import ensure_kontenplan
+        from core.services.jahresabschluss import buche_jahresabschluss
+        from finance.models import Buchung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._period_bookings(lg)
+        buche_jahresabschluss(2024)
+        ab = Buchung.objects.filter(beleg_text__startswith='Jahresabschluss 2024 —').first()
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        r = c.post(f'/neu/buchhaltung/buchung/{ab.id}/stornieren/', follow=True)
+        ab.refresh_from_db()
+        self.assertIsNone(ab.storniert_am, 'Abschlussbuchung wurde einzeln storniert')
+        self.assertContains(r, 'nicht einzeln stornieren')
+
+    def test_h6_abschluss_zuruecknehmen_oeffnet_jahr_und_reversiert(self):
+        from finance.booking import ensure_kontenplan
+        from core.services.jahresabschluss import buche_jahresabschluss, ist_abgeschlossen
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._period_bookings(lg)
+        buche_jahresabschluss(2024)
+        self.assertTrue(ist_abgeschlossen(2024))
+        self.assertEqual(self._saldo('2970'), Decimal('-700.00'))
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        c.post('/neu/buchhaltung/', {'aktion': 'abschluss_zuruecknehmen', 'jahr': '2024'})
+        self.assertFalse(ist_abgeschlossen(2024))
+        self.assertEqual(self._saldo('2970'), Decimal('0.00'))  # vollständig reversiert
+
+    def test_h6_pl_nach_ruecknahme_nicht_verdoppelt(self):
+        from finance.booking import ensure_kontenplan
+        from core.services.jahresabschluss import buche_jahresabschluss, nimm_zurueck
+        from core.views.fw import _erfolg_bilanz
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._period_bookings(lg)
+        buche_jahresabschluss(2024)
+        nimm_zurueck(2024)
+        nach = _erfolg_bilanz(None, 2024)
+        self.assertEqual(nach['total_ertrag'], Decimal('1200.00'))
+        self.assertEqual(nach['total_aufwand'], Decimal('500.00'))
+        self.assertEqual(nach['erfolg'], Decimal('700.00'))
+        self.assertEqual(nach['erfolg_offen'], Decimal('700.00'))
+        self.assertEqual(nach['bilanz_differenz'], Decimal('0.00'))
+
+    def test_h6_wieder_abschliessbar_nach_ruecknahme(self):
+        from finance.booking import ensure_kontenplan
+        from core.services.jahresabschluss import buche_jahresabschluss, nimm_zurueck, ist_abgeschlossen
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        self._period_bookings(lg)
+        buche_jahresabschluss(2024)
+        nimm_zurueck(2024)
+        self.assertFalse(ist_abgeschlossen(2024))
+        n, erg = buche_jahresabschluss(2024)
+        self.assertGreater(n, 0)
+        self.assertEqual(erg, Decimal('700.00'))
+        self.assertEqual(self._saldo('2970'), Decimal('-700.00'))
+
+    def test_h6_view_roundtrip_loest_periodensperre_und_oeffnet_jahr(self):
+        # End-to-End über die View: Abschluss setzt die Periodensperre auf 31.12.,
+        # Rücknahme muss sie ZUERST lösen und die Storni auf den 31.12. zurückbuchen
+        # (sonst blockiert Buchung.save die Rücknahme und das Jahr bliebe halb offen).
+        from crm.models import Verwaltung
+        from finance.booking import ensure_kontenplan
+        from core.services.jahresabschluss import ist_abgeschlossen
+        from core.views.fw import _erfolg_bilanz
+        ensure_kontenplan()
+        Verwaltung.objects.create(firma='Verwaltung AG', strasse='Weg 1', plz='8000', ort='Zürich')
+        lg, e, m, v = _basis_objekte()
+        self._period_bookings(lg)
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        c.post('/neu/buchhaltung/', {'aktion': 'jahresabschluss', 'jahr': '2024'})
+        self.assertTrue(ist_abgeschlossen(2024))
+        self.assertEqual(Verwaltung.objects.first().buchung_gesperrt_bis, date(2024, 12, 31))
+        c.post('/neu/buchhaltung/', {'aktion': 'abschluss_zuruecknehmen', 'jahr': '2024'})
+        self.assertFalse(ist_abgeschlossen(2024))
+        # Periodensperre gelöst und Jahr im 31.12.-Blick wieder offen (Ergebnis
+        # zurück auf den Erfolgskonten, 2970 auf null).
+        self.assertNotEqual(Verwaltung.objects.first().buchung_gesperrt_bis, date(2024, 12, 31))
+        self.assertEqual(self._saldo('2970'), Decimal('0.00'))
+        nach = _erfolg_bilanz(None, 2024)
+        self.assertEqual(nach['erfolg_offen'], Decimal('700.00'))
+        self.assertEqual(nach['bilanz_differenz'], Decimal('0.00'))

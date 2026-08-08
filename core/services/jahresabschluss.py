@@ -51,14 +51,25 @@ def ist_abgeschlossen(jahr, liegenschaft=None):
 
 
 def abschluss_buchungen_q(jahr=None):
-    """Q-Objekt für alle Abschlussbuchungen (optional eines Jahres).
+    """Q-Objekt für alle Abschlussbuchungen (optional eines Jahres) — INKLUSIVE
+    ihrer Storno-Gegenbuchungen.
 
     Auswertungen für ein Geschäftsjahr müssen diese Buchungen ausschliessen —
     sonst saldiert sich die Erfolgsrechnung nach dem Abschluss auf null und
     Honorarbasis wie Eigentümer-Kontokorrent kippen (Audit).
+
+    Der Storno einer Abschlussbuchung beginnt mit «Storno Beleg #…: Jahresabschluss
+    …» — er beginnt also NICHT mit «Jahresabschluss» und fiel früher aus diesem
+    Filter. Folge: Nach einer Abschluss-Rücknahme zählte die Erfolgsrechnung die
+    stornierte Abschlussbuchung einseitig mit und verdoppelte den betroffenen
+    Ertrag/Aufwand (Audit-Befund H6). Deshalb fängt das Q-Objekt beide Formen:
+    das Original («… beginnt mit») und seinen Storno («… enthält : Jahresabschluss»).
     """
     from django.db.models import Q
-    return Q(beleg_text__startswith=(f"{BELEG_PREFIX} {jahr} —" if jahr else BELEG_PREFIX))
+    if jahr:
+        return (Q(beleg_text__startswith=f"{BELEG_PREFIX} {jahr} —")
+                | Q(beleg_text__contains=f": {BELEG_PREFIX} {jahr} —"))
+    return Q(beleg_text__startswith=BELEG_PREFIX) | Q(beleg_text__contains=f": {BELEG_PREFIX} ")
 
 
 def salden_erfolgskonten(jahr, liegenschaft=None):
@@ -70,8 +81,11 @@ def salden_erfolgskonten(jahr, liegenschaft=None):
     von, bis = date(jahr, 1, 1), date(jahr, 12, 31)
     ergebnis = []
     for k in Buchungskonto.objects.filter(typ__in=['ertrag', 'aufwand']).order_by('nummer'):
+        # Abschlussbuchungen UND ihre Storni ausschliessen — sonst zählte ein
+        # erneuter Abschluss nach einer Rücknahme die Storno-Gegenbuchung als
+        # echten Ertrag/Aufwand mit (H6).
         q = Buchung.objects.filter(datum__gte=von, datum__lte=bis).exclude(
-            beleg_text__startswith=f"{BELEG_PREFIX} {jahr} —")
+            abschluss_buchungen_q(jahr))
         if liegenschaft:
             q = q.filter(liegenschaft=liegenschaft)
         soll = q.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
@@ -95,6 +109,46 @@ def buche_jahresabschluss(jahr, *, liegenschaft=None, user=None):
         if ist_abgeschlossen(jahr, liegenschaft):
             return 0, Decimal('0.00')
         return _buche(jahr, liegenschaft, user)
+
+
+def nimm_zurueck(jahr, *, liegenschaft=None, user=None):
+    """Nimmt den Jahresabschluss eines Geschäftsjahres GESAMTHAFT zurück.
+
+    Audit-Befund H6: Eine einzelne Abschlussbuchung liess sich im Journal
+    stornieren. Das verschob Vorjahresaufwand ins laufende Jahr (das Storno
+    beginnt mit «Storno …», fällt also aus dem Abschluss-Ausschlussfilter) und
+    liess das Jahr HALB geschlossen zurück — ein Teil der Erfolgskonten gegen
+    2970 saldiert, der Rest offen. Ein Abschluss muss atomar zurückgenommen
+    werden: alle Abschlussbuchungen des Jahres werden storniert und die
+    Periodensperre (falls sie genau auf diesem Stichtag sass) wird gelöst.
+
+    Gibt die Anzahl stornierter Abschlussbuchungen zurück.
+    """
+    from django.db import transaction
+    from finance.models import Buchung
+    from finance.booking import storniere_buchung
+    with transaction.atomic():
+        offen = Buchung.objects.filter(
+            beleg_text__startswith=f"{BELEG_PREFIX} {jahr} —",
+            ist_storno=False, storniert_am__isnull=True)
+        if liegenschaft is not None:
+            # Nur die Liegenschaft zurücknehmen, deren Abschluss zurückgenommen wird.
+            # Ein portfolioweiter Abschluss (liegenschaft=None) kann nicht je LG
+            # teilzurückgenommen werden — dann gibt es keine LG-spezifischen Buchungen.
+            offen = offen.filter(liegenschaft=liegenschaft)
+        # Die Storni werden auf den 31.12. des Abschlussjahres DATIERT (nicht ins
+        # laufende Datum). Sonst läge die Rücknahme in einer anderen Periode als
+        # der Abschluss: der jahresbezogene Abschluss (Erfolgskonten gegen 2970)
+        # bliebe im 31.12.-Blick bestehen, während `ist_abgeschlossen` schon False
+        # meldet → das Jahr wäre halb offen und ein Neuabschluss verdoppelte 2970.
+        # Voraussetzung: Der Aufrufer hat eine etwaige Periodensperre auf diesem
+        # Stichtag zuvor gelöst (die Buchung.save-Sperre greift sonst).
+        datum = date(jahr, 12, 31)
+        n = 0
+        for b in list(offen):
+            storniere_buchung(b, user=user, datum=datum)
+            n += 1
+        return n
 
 
 def _buche(jahr, liegenschaft, user):

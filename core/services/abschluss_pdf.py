@@ -121,18 +121,26 @@ def generate_abschluss_pdf(daten, jahr, lg_name, verwaltung=None, erstellt_am=No
 
     if y < 46 * mm:
         c.showPage(); kopf("Bilanz"); y = h - 40 * mm
-    # Eigenkapital-Herleitung: Vortrag + Jahresergebnis. Ohne diese Zeilen ist
-    # nicht nachvollziehbar, warum die Bilanz aufgeht.
-    c.setFont("Helvetica", 9); c.setFillColor(grau)
-    c.drawString(20 * mm, y, "Ergebnisvortrag aus Vorjahren")
-    c.setFillColor(colors.black)
-    c.drawRightString(w - 20 * mm, y, _fmt(daten['erfolg_vortrag']))
-    y -= 5.6 * mm
-    c.setFillColor(grau)
-    c.drawString(20 * mm, y, "Ergebnis der Periode")
-    c.setFillColor(colors.black)
-    c.drawRightString(w - 20 * mm, y, _fmt(daten['erfolg']))
-    y -= 8 * mm
+    # Eigenkapital-Herleitung: NOCH OFFENER Vortrag + noch offenes Jahresergebnis.
+    # Ohne diese Zeilen ist nicht nachvollziehbar, warum die Bilanz aufgeht. Nach
+    # dem Jahresabschluss ist das Ergebnis gegen 2970 gebucht und in den Passiven
+    # enthalten → beide Herleitungszeilen sind dann null und entfallen (sonst
+    # würde das Ergebnis doppelt gezeigt, Audit-Befund H5).
+    vortrag = daten['erfolg_vortrag']
+    offen = daten.get('erfolg_offen', daten['erfolg'])
+    if vortrag:
+        c.setFont("Helvetica", 9); c.setFillColor(grau)
+        c.drawString(20 * mm, y, "Ergebnisvortrag aus Vorjahren")
+        c.setFillColor(colors.black)
+        c.drawRightString(w - 20 * mm, y, _fmt(vortrag))
+        y -= 5.6 * mm
+    if offen:
+        c.setFont("Helvetica", 9); c.setFillColor(grau)
+        c.drawString(20 * mm, y, "Ergebnis der Periode")
+        c.setFillColor(colors.black)
+        c.drawRightString(w - 20 * mm, y, _fmt(offen))
+        y -= 5.6 * mm
+    y -= 2.4 * mm
 
     c.setFillColor(colors.HexColor("#F1F5F9"))
     c.rect(20 * mm, y - 4 * mm, w - 40 * mm, 12 * mm, fill=1, stroke=0)

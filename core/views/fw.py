@@ -6985,7 +6985,8 @@ def _erfolg_bilanz(aktive_lg, jahr):
     # gelaufen ist (Audit). Die Bilanz braucht sie dagegen, weil erst sie das
     # Ergebnis auf 2970 stellt — bilanz_qs bleibt deshalb unangetastet.
     from core.services.jahresabschluss import abschluss_buchungen_q
-    qs = qs.exclude(abschluss_buchungen_q())
+    qs_periode_inkl = qs                       # Periode MIT Abschlussbuchungen (offener Erfolg)
+    qs = qs.exclude(abschluss_buchungen_q())   # Periode OHNE Abschluss (Erfolgsrechnung/P&L)
 
     # Salden in VIER Abfragen statt zwei je Konto. Die Buchhaltungsseite lief
     # über den Kontenplan und fragte je Konto Soll und Haben einzeln ab —
@@ -6998,8 +6999,9 @@ def _erfolg_bilanz(aktive_lg, jahr):
                  basis_qs.values_list('haben_konto').annotate(t=Sum('betrag'))}
         return soll, haben
 
-    p_soll, p_haben = _salden(qs)            # Periode (Erfolgsrechnung)
-    k_soll, k_haben = _salden(bilanz_qs)     # kumulativ bis Jahresende (Bilanz)
+    p_soll, p_haben = _salden(qs)                        # Periode (Erfolgsrechnung, ohne Abschluss)
+    k_soll, k_haben = _salden(bilanz_qs)                 # kumulativ bis Jahresende (Bilanz)
+    pi_soll, pi_haben = _salden(qs_periode_inkl)         # Periode MIT Abschluss (offener Erfolg)
     _0 = Decimal('0.00')
 
     ertraege, aufwaende = [], []
@@ -7043,26 +7045,44 @@ def _erfolg_bilanz(aktive_lg, jahr):
             else:
                 passiven.append({'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': -saldo})
                 total_passiven += -saldo
-    # Kumuliertes Ergebnis (alle Erfolgskonten bis Jahresende) → Eigenkapital-Zeile
+    # Kumuliertes NICHT-abgeschlossenes Ergebnis (alle Erfolgskonten bis Jahresende,
+    # INKL. Abschlussbuchungen). Nach dem Jahresabschluss stehen die Erfolgskonten
+    # auf null (gegen 2970 saldiert) → kum_erfolg = 0, und das Ergebnis steckt
+    # bereits in der Passivzeile 2970. Vor dem Abschluss trägt kum_erfolg das noch
+    # offene kumulierte Ergebnis, das die Bilanz ausgleicht.
     for k in konten:
         if k.typ == 'ertrag':
             kum_erfolg += (k_haben.get(k.id) or _0) - (k_soll.get(k.id) or _0)
         elif k.typ == 'aufwand':
             kum_erfolg -= (k_soll.get(k.id) or _0) - (k_haben.get(k.id) or _0)
+    # Offener Erfolg DER PERIODE = Erfolgskontensaldo dieses Jahres INKL. Abschluss.
+    # Ist das Jahr abgeschlossen, saldieren die Abschlussbuchungen dieses Jahr auf
+    # null → erfolg_offen = 0 (die Zeile «Jahresgewinn» verschwindet, das Ergebnis
+    # ist in 2970 gebucht). Vorher = erfolg (volles Periodenergebnis). So wird das
+    # Ergebnis nach dem Abschluss NICHT doppelt gezeigt und es entsteht kein
+    # erfundener «Ergebnisvortrag» in Höhe von −erfolg (Audit-Befund H5).
+    erfolg_offen = _0
+    for k in konten:
+        if k.typ == 'ertrag':
+            erfolg_offen += (pi_haben.get(k.id) or _0) - (pi_soll.get(k.id) or _0)
+        elif k.typ == 'aufwand':
+            erfolg_offen -= (pi_soll.get(k.id) or _0) - (pi_haben.get(k.id) or _0)
     for lst in (ertraege, aufwaende, aktiven, passiven):
         lst.sort(key=lambda x: x['nummer'])
-    erfolg = total_ertrag - total_aufwand          # Ergebnis der Periode (Erfolgsrechnung)
-    # Bilanz-Ausgleich: kumuliertes Ergebnis (Vortrag + laufendes Jahr) ins Eigenkapital
+    erfolg = total_ertrag - total_aufwand          # Ergebnis der Periode (Erfolgsrechnung/P&L)
+    # Bilanz-Ausgleich: noch offenes kumuliertes Ergebnis ins Eigenkapital
     passiven_mit_erfolg = total_passiven + kum_erfolg
     bilanz_differenz = total_aktiven - passiven_mit_erfolg
-    erfolg_vortrag = kum_erfolg - erfolg           # Ergebnisvortrag aus Vorjahren
+    # Ergebnisvortrag = offenes kumuliertes Ergebnis MINUS offener Periodenerfolg
+    # = noch offenes Ergebnis aus Vorjahren. Nach Abschluss beider = 0.
+    erfolg_vortrag = kum_erfolg - erfolg_offen
     return {
         'ertraege': ertraege, 'aufwaende': aufwaende,
         'total_ertrag': total_ertrag, 'total_aufwand': total_aufwand, 'erfolg': erfolg,
         'aktiven': aktiven, 'passiven': passiven,
         'total_aktiven': total_aktiven, 'total_passiven': total_passiven,
         'passiven_mit_erfolg': passiven_mit_erfolg, 'bilanz_differenz': bilanz_differenz,
-        'kum_erfolg': kum_erfolg, 'erfolg_vortrag': erfolg_vortrag,
+        'kum_erfolg': kum_erfolg, 'erfolg_vortrag': erfolg_vortrag, 'erfolg_offen': erfolg_offen,
     }
 
 
@@ -7130,6 +7150,51 @@ def fw_buchhaltung(request):
             messages.info(request, f"Jahr {j_ab}: keine Erfolgsbuchungen zum Abschliessen.")
         return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
 
+    # --- Jahresabschluss ZURÜCKNEHMEN (alle Abschlussbuchungen stornieren) — H6 ---
+    if request.method == 'POST' and request.POST.get('aktion') == 'abschluss_zuruecknehmen':
+        from django.shortcuts import redirect
+        from django.contrib import messages
+        from core.services.jahresabschluss import nimm_zurueck, ist_abgeschlossen
+        from core.auth import log_aktion, hat_rolle
+        if not hat_rolle(request.user, VERWALTUNGS_ROLLEN):
+            messages.error(request, "❌ Den Jahresabschluss darf nur die Verwaltung zurücknehmen.")
+            return redirect(f'/neu/buchhaltung/?jahr={heute.year}')
+        try:
+            j_zr = int(request.POST.get('jahr') or heute.year)
+        except ValueError:
+            j_zr = heute.year
+        if not (2000 <= j_zr <= 2100):
+            messages.error(request, "Ungültiges Geschäftsjahr.")
+            return redirect(f'/neu/buchhaltung/?jahr={heute.year}')
+        if not ist_abgeschlossen(j_zr, aktive_lg):
+            messages.info(request, f"Das Geschäftsjahr {j_zr} ist nicht abgeschlossen.")
+            return redirect(f'/neu/buchhaltung/?jahr={j_zr}')
+        # Periodensperre ZUERST lösen, sofern sie genau auf diesem Abschluss-Stichtag
+        # sass (portfolioweiter Abschluss). Die Rücknahme bucht die Storni auf den
+        # 31.12. des Jahres zurück — mit stehender Sperre würde Buchung.save() das
+        # blockieren. Nur beim portfolioweiten Abschluss (aktive_lg=None) wurde
+        # überhaupt gesperrt.
+        entsperrt = ""
+        if not aktive_lg:
+            from crm.models import Verwaltung
+            vw_e = Verwaltung.objects.first()
+            if vw_e is not None and vw_e.buchung_gesperrt_bis == date(j_zr, 12, 31):
+                vw_e.buchung_gesperrt_bis = date(j_zr - 1, 12, 31) if j_zr > 2000 else None
+                vw_e.save(update_fields=['buchung_gesperrt_bis'])
+                entsperrt = f" Die Periodensperre bis 31.12.{j_zr} wurde aufgehoben."
+        try:
+            n_zr = nimm_zurueck(j_zr, liegenschaft=aktive_lg, user=request.user)
+        except Exception as exc:
+            messages.error(request, f"❌ Rücknahme fehlgeschlagen: {exc}")
+            return redirect(f'/neu/buchhaltung/?jahr={j_zr}')
+        log_aktion(request, "Jahresabschluss zurückgenommen", str(j_zr), f"{n_zr} Buchungen storniert")
+        if n_zr:
+            messages.success(request, f"✅ Jahresabschluss {j_zr} zurückgenommen: "
+                                      f"{n_zr} Abschlussbuchung(en) storniert.{entsperrt}")
+        else:
+            messages.info(request, f"Jahr {j_zr}: keine Abschlussbuchungen zum Zurücknehmen.")
+        return redirect(f'/neu/buchhaltung/?jahr={j_zr}')
+
     # --- Jahresfilter (Jahresabschluss) ---
     jahr_param = request.GET.get('jahr', str(heute.year))
     qs = Buchung.objects.all()
@@ -7155,6 +7220,7 @@ def fw_buchhaltung(request):
     passiven_mit_erfolg = _eb['passiven_mit_erfolg']
     bilanz_differenz = _eb['bilanz_differenz']
     kum_erfolg = _eb['kum_erfolg']; erfolg_vortrag = _eb['erfolg_vortrag']
+    erfolg_offen = _eb['erfolg_offen']
 
     # --- BUCHUNGSJOURNAL (durchsuch- und filterbar, seitenweise) ---
     # Vorher: hart die letzten 60 Zeilen, ohne Suche und ohne Filter. Damit war
@@ -7230,7 +7296,7 @@ def fw_buchhaltung(request):
         'aktiven': aktiven, 'passiven': passiven,
         'total_aktiven': total_aktiven, 'total_passiven': total_passiven,
         'passiven_mit_erfolg': passiven_mit_erfolg, 'bilanz_differenz': bilanz_differenz,
-        'kum_erfolg': kum_erfolg, 'erfolg_vortrag': erfolg_vortrag,
+        'kum_erfolg': kum_erfolg, 'erfolg_vortrag': erfolg_vortrag, 'erfolg_offen': erfolg_offen,
         'journal': journal,
         'j_total': j_total, 'j_summe': j_summe, 'j_seite': j_seite, 'j_seiten': j_seiten,
         'j_von': j_von, 'j_bis': j_bis, 'j_konto': j_konto, 'j_suche': j_suche,
@@ -13550,6 +13616,16 @@ def fw_buchung_stornieren(request, pk):
     if request.method != 'POST':
         return redirect('fw_buchhaltung')
     b = get_object_or_404(Buchung, id=pk)
+    # Eine EINZELNE Abschlussbuchung darf nicht im Journal storniert werden — das
+    # liesse das Geschäftsjahr halb geschlossen zurück (ein Teil der Erfolgskonten
+    # gegen 2970 saldiert, der Rest offen) und verschöbe Vorjahresaufwand ins
+    # laufende Jahr. Ein Abschluss wird atomar über «Abschluss zurücknehmen»
+    # gelöst (Audit-Befund H6).
+    from core.services.jahresabschluss import BELEG_PREFIX as _ABSCHLUSS_PREFIX
+    if b.beleg_text.startswith(_ABSCHLUSS_PREFIX):
+        messages.error(request, "Abschlussbuchungen lassen sich nicht einzeln stornieren. "
+                                "Bitte den Jahresabschluss gesamthaft über «Abschluss zurücknehmen» aufheben.")
+        return redirect('fw_buchhaltung')
     try:
         gegen = storniere_buchung(b, user=request.user)
     except ValueError as e:
