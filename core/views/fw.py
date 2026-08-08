@@ -837,6 +837,15 @@ def fw_debitor_stornieren(request, pk):
         messages.error(request, "Diese Rechnung hat verbuchte Zahlungen — bitte zuerst die Zahlung(en) stornieren.")
         return redirect('fw_debitoren')
 
+    # Abgeleitete Mahngebühren/Zins-Forderungen mitstornieren: Wird die
+    # Hauptforderung aufgehoben, ist auch die darauf gestellte Mahngebühr
+    # gegenstandslos. Nur unbezahlte Folgeforderungen — eine bereits bezahlte
+    # Mahngebühr bräuchte erst eine Zahlungsstornierung (Live-Test E).
+    folge = list(DebitorenRechnung.objects.filter(stammrechnung=r)
+                 .exclude(status='storniert'))
+    folge_bezahlt = [f for f in folge
+                     if Zahlungseingang.objects.filter(debitoren_rechnung=f, status='verbucht').exists()]
+    n_folge = 0
     with transaction.atomic():
         # Nur noch nicht stornierte Originale umkehren (Doppel-Storno-Schutz).
         for b in Buchung.objects.filter(debitoren_rechnung=r, ist_storno=False,
@@ -844,9 +853,23 @@ def fw_debitor_stornieren(request, pk):
             erstelle_storno_buchung(b, benutzer=request.user)
         r.status = 'storniert'
         r.save()
+        for f in folge:
+            if f in folge_bezahlt:
+                continue
+            for b in Buchung.objects.filter(debitoren_rechnung=f, ist_storno=False,
+                                            storniert_am__isnull=True):
+                erstelle_storno_buchung(b, benutzer=request.user)
+            f.status = 'storniert'
+            f.save(update_fields=['status'])
+            n_folge += 1
 
-    log_aktion(request, "Debitorenrechnung storniert", r.titel, f"CHF {r.betrag}")
-    messages.success(request, f"✅ Rechnung '{r.titel}' storniert (revisionssicher, mit Gegenbuchung).")
+    log_aktion(request, "Debitorenrechnung storniert", r.titel,
+               f"CHF {r.betrag}" + (f" · {n_folge} Mahngebühr(en) mitstorniert" if n_folge else ""))
+    hinweis = f" {n_folge} zugehörige Mahngebühr(en) mitstorniert." if n_folge else ""
+    if folge_bezahlt:
+        hinweis += (f" {len(folge_bezahlt)} bereits bezahlte Mahngebühr(en) blieben bestehen — "
+                    f"dort zuerst die Zahlung stornieren.")
+    messages.success(request, f"✅ Rechnung '{r.titel}' storniert (revisionssicher, mit Gegenbuchung).{hinweis}")
     ziel = '/neu/debitoren/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
@@ -12815,10 +12838,22 @@ def fw_mahnung_erfassen(request):
         stufe = 1
     stufe = min(max(stufe, 1), 3)
 
-    # Doppelerfassung derselben Mahnstufe verhindern (Doppelklick / erneutes Absenden).
-    # Sonst entstünde ein zweiter Historien-Eintrag + eine doppelte Mahngebühr-Rechnung.
-    if Mahnung.objects.filter(debitoren_rechnung=rechnung, stufe=stufe).exists():
-        messages.info(request, f"Die {stufe}. Mahnung wurde für diese Rechnung bereits erfasst.")
+    # Eine bezahlte, stornierte oder abgeschriebene Forderung darf nicht (mehr)
+    # gemahnt werden — sonst wird eine Mahngebühr auf eine Forderung gestellt, die
+    # gar nicht mehr offen ist (Live-Test E). offener_betrag deckt den
+    # (teil-)bezahlten Fall mit ab.
+    if rechnung.status in ('bezahlt', 'storniert', 'abgeschrieben') or rechnung.offener_betrag <= 0:
+        messages.error(request, "Diese Forderung ist nicht (mehr) offen und kann nicht gemahnt werden.")
+        return redirect('fw_mahnwesen')
+
+    # Doppelerfassung UND Mahnstufen-Rückschritt verhindern: existiert bereits eine
+    # Mahnung dieser ODER höherer Stufe, wird nichts erfasst. Sonst entstünde ein
+    # zweiter Historien-Eintrag + doppelte Mahngebühr, oder man könnte nach der
+    # 2. Mahnung wieder eine 1. erfassen (Live-Test E).
+    hoechste = Mahnung.objects.filter(debitoren_rechnung=rechnung).order_by('-stufe').first()
+    if hoechste and hoechste.stufe >= stufe:
+        messages.info(request, f"Für diese Rechnung ist bereits die {hoechste.stufe}. Mahnung erfasst — "
+                               f"eine {stufe}. Mahnung wäre ein Rückschritt.")
         return redirect('fw_mahnwesen')
 
     try:
@@ -12851,6 +12886,7 @@ def fw_mahnung_erfassen(request):
                     beschreibung=f"Mahngebühr zu: {rechnung.titel}",
                     datum=heute, faellig_am=heute + _timedelta(days=30),
                     betrag=gebuehr, status='offen',
+                    stammrechnung=rechnung,   # für Storno-Kaskade (Live-Test E)
                 )
                 from finance.booking import buche
                 buche("1100", "3600", gebuehr, f"Mahngebühr {stufe}. Mahnung {rechnung.vertrag.mieter}",
@@ -12933,6 +12969,14 @@ def fw_debitor_qr_pdf(request, pk):
 
     r = get_object_or_404(DebitorenRechnung.objects.select_related(
         'vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft'), id=pk)
+    # Keinen Einzahlungsschein für eine Forderung ausstellen, die nicht mehr offen
+    # ist — ein QR-Beleg für eine bezahlte/stornierte/abgeschriebene Rechnung
+    # fordert den Mieter zu einer Zahlung auf, die es nicht (mehr) gibt (Live-Test E).
+    if r.status in ('storniert', 'abgeschrieben', 'bezahlt') or r.offener_betrag <= 0:
+        from django.http import HttpResponse
+        return HttpResponse(
+            f"Für diese Rechnung («{r.get_status_display()}») kann kein Einzahlungsschein "
+            f"erstellt werden — sie ist nicht mehr offen.", status=409)
     pdf = generate_debitor_qr_pdf(r)
     if pdf is None:
         return HttpResponse("Keine IBAN hinterlegt (Liegenschaft oder Verwaltung).", status=400)

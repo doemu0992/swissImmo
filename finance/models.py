@@ -220,6 +220,13 @@ class DebitorenRechnung(models.Model):
                                                      max_digits=10, decimal_places=2, default=Decimal('0.00'))
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='offen')
+    # Stammrechnung: verknüpft eine ABGELEITETE Forderung (Mahngebühr, Verzugszins)
+    # mit der Hauptforderung, aus der sie entstand. Wird die Hauptforderung
+    # storniert, müssen ihre Mahngebühren mitstorniert werden — ohne diese
+    # Verknüpfung blieben sie als offene Forderung stehen (Live-Test E).
+    stammrechnung = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='folgeforderungen',
+                                      verbose_name="Stammrechnung (Mahngebühr/Zins gehört zu)")
     qr_referenz = models.CharField("QRR-Referenz (27-stellig)", max_length=27, blank=True, default='', db_index=True)  # 🔥 NEU (camt.053-Abgleich)
     pdf_dokument = models.FileField(upload_to='debitoren_rechnungen/', blank=True, null=True)
 

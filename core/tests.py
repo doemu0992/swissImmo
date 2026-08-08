@@ -15644,3 +15644,97 @@ class ZahlungsverkehrH8H9Tests(TestCase):
         zeile = next((z for z in vorschlag if z['k'].id == k.id), None)
         self.assertIsNotNone(zeile, 'Teilzahlungsrest fehlt im Zahllauf-Vorschlag')
         self.assertEqual(zeile['offen'], Decimal('300.00'))
+
+
+class DebitorenStatusETests(TestCase):
+    """Live-Test E: Statusprüfungen im Debitoren-/Mahnwesen.
+
+    - Gratismonat (Netto-Schuld 0) darf keinen offenen 0.00-Posten erzeugen.
+    - Bezahlte/stornierte Forderung nicht mahnen; kein Mahnstufen-Rückschritt.
+    - Mahngebühr wird mit der Hauptforderung mitstorniert.
+    - Kein QR-Einzahlungsschein für eine nicht mehr offene Forderung.
+    """
+
+    def _offene_rechnung(self, lg, v, betrag='1500.00', mit_buchung=True):
+        from finance.models import DebitorenRechnung
+        from finance.booking import buche
+        r = DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Miete 05/2024',
+            datum=date(2024, 5, 1), faellig_am=date(2024, 5, 5),
+            betrag=Decimal(betrag), status='offen')
+        if mit_buchung:
+            buche('1100', '3000', Decimal(betrag), 'Miete 05/2024',
+                  datum=date(2024, 5, 1), liegenschaft=lg, debitor=r)
+        return r
+
+    def test_e_gratismonat_erzeugt_keinen_offenen_posten(self):
+        from finance.booking import ensure_kontenplan
+        from finance.models import DebitorenRechnung
+        from rentals.models import VertragMietzins
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        # Gratismonat: Referenz 1500/200, voller Erlass → Verrechnung 0
+        VertragMietzins.objects.create(vertrag=v, gueltig_ab=date(2024, 1, 1),
+                                       netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'),
+                                       rabatt_netto=Decimal('1500'), rabatt_nk=Decimal('200'))
+        from core.services.automation import run_sollstellung
+        run_sollstellung(2024, 6)
+        r = DebitorenRechnung.objects.get(vertrag=v, titel='Miete & NK 06/2024')
+        self.assertEqual(r.betrag, Decimal('0.00'))
+        self.assertEqual(r.status, 'bezahlt')          # kein offener Posten
+        self.assertEqual(r.offener_betrag, Decimal('0.00'))
+
+    def test_e_mahnung_nicht_auf_bezahlte_forderung(self):
+        from finance.booking import ensure_kontenplan
+        from finance.models import Mahnung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        r = self._offene_rechnung(lg, v)
+        r.status = 'bezahlt'; r.save(update_fields=['status'])
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        resp = c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': str(r.id), 'stufe': '1'}, follow=True)
+        self.assertEqual(Mahnung.objects.filter(debitoren_rechnung=r).count(), 0)
+        self.assertContains(resp, 'nicht (mehr) offen')
+
+    def test_e_kein_mahnstufen_rueckschritt(self):
+        from finance.booking import ensure_kontenplan
+        from finance.models import Mahnung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        r = self._offene_rechnung(lg, v)
+        Mahnung.objects.create(debitoren_rechnung=r, vertrag=v, stufe=2, datum=date(2024, 6, 1))
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': str(r.id), 'stufe': '1'})
+        # Keine neue (niedrigere) Mahnung erfasst — Stufe 2 bleibt die einzige.
+        self.assertEqual(Mahnung.objects.filter(debitoren_rechnung=r).count(), 1)
+        self.assertEqual(Mahnung.objects.filter(debitoren_rechnung=r).first().stufe, 2)
+
+    def test_e_mahngebuehr_wird_mit_hauptforderung_storniert(self):
+        from finance.booking import ensure_kontenplan
+        from finance.models import DebitorenRechnung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        r = self._offene_rechnung(lg, v)
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        # 2. Mahnung → Mahngebühr CHF 20 als eigene Debitorenrechnung mit stammrechnung=r
+        c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': str(r.id), 'stufe': '2'})
+        geb = DebitorenRechnung.objects.get(stammrechnung=r)
+        self.assertEqual(geb.status, 'offen')
+        # Hauptforderung stornieren → Mahngebühr wird mitstorniert
+        c.post(f'/neu/debitoren/{r.id}/stornieren/', {})
+        r.refresh_from_db(); geb.refresh_from_db()
+        self.assertEqual(r.status, 'storniert')
+        self.assertEqual(geb.status, 'storniert')
+
+    def test_e_qr_beleg_nicht_fuer_nicht_offene_rechnung(self):
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        # Liegenschaft/Verwaltung ohne IBAN würde ohnehin 400 geben — Status-Gate
+        # muss VORHER greifen (409), sonst wäre der Test nicht aussagekräftig.
+        lg.iban = 'CH9300762011623852957'; lg.save()
+        r = self._offene_rechnung(lg, v, mit_buchung=False)
+        r.status = 'bezahlt'; r.save(update_fields=['status'])
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        resp = c.get(f'/neu/debitoren/{r.id}/qr-pdf/')
+        self.assertEqual(resp.status_code, 409)

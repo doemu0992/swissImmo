@@ -87,9 +87,18 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
             if v.mwst_pflichtig and (v.mwst_satz or 0) > 0:
                 mwst = round((verr_netto + verr_nk) * (v.mwst_satz / Decimal('100')), 2)
             # Der Debitor schuldet nur den verrechneten Betrag (Gratismonat = 0).
+            # Schuldet der Mieter diesen Monat NICHTS (Gratismonat / voller Erlass),
+            # entsteht keine offene Forderung: Die Rechnung wird sofort als 'bezahlt'
+            # markiert (offener Betrag 0). Sonst stünde ein 0.00-Beleg dauerhaft als
+            # «offen» im OP-Buch und tauchte in Mahnlisten/QR-Vorschlägen auf
+            # (Live-Test E). Der volle Referenzertrag + Erlass werden trotzdem
+            # gebucht (Bilanz/Mieterspiegel korrekt), die Rechnung bleibt als
+            # Beleg/Idempotenz-Anker bestehen.
+            netto_schuld = verr_netto + verr_nk + mwst
             rechnung = DebitorenRechnung.objects.create(
                 vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
-                titel=titel, betrag=verr_netto + verr_nk + mwst, faellig_am=start_date)
+                titel=titel, betrag=netto_schuld, faellig_am=start_date,
+                status='bezahlt' if netto_schuld <= 0 else 'offen')
             lg = v.einheit.liegenschaft if v.einheit_id else None
             e = v.einheit
             # Mietertrag: Gewerbe/Parkplätze/Nebenobjekte → 3010, Wohnen → 3000.
@@ -222,7 +231,8 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
                     vertrag=r.vertrag, liegenschaft=lg,
                     titel=" + ".join(teile), beschreibung=f"Zu: {r.titel}",
                     datum=heute, faellig_am=heute + timedelta(days=30),
-                    betrag=zusatz, status='offen')
+                    betrag=zusatz, status='offen',
+                    stammrechnung=r)   # für Storno-Kaskade (Live-Test E)
                 # Ins Hauptbuch buchen (Forderung an übrigen Ertrag) — sonst driften
                 # Nebenbuch (OP/Debitoren) und Hauptbuch (1100) auseinander, der
                 # Gebühren-/Zinsertrag fehlt in der Erfolgsrechnung, und eine spätere
