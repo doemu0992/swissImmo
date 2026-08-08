@@ -137,7 +137,11 @@ def naechster_anpassungstermin(vertrag, ankuendigung_datum: _dt.date) -> _dt.dat
     + Zustellpuffer (Postweg/Abholfrist) + 10 Tage wie einen Kündigungseingang
     und nehmen den nächsten ordentlichen Kündigungstermin."""
     fiktiver_eingang = ankuendigung_datum + _dt.timedelta(days=ZUSTELL_PUFFER_TAGE + 10)
-    return berechne_kuendigungstermin(vertrag, fiktiver_eingang)
+    termin = berechne_kuendigungstermin(vertrag, fiktiver_eingang)
+    # Der Kündigungstermin ist ein Monatsende; der Mietzins ist jedoch periodengerecht
+    # ab Monatsbeginn geschuldet. Die Erhöhung wird deshalb auf den ERSTEN des
+    # Folgemonats wirksam (Live-Test I) — Monatsende + 1 Tag.
+    return termin + _dt.timedelta(days=1)
 
 
 def berechne_kuendigungstermin(vertrag, eingang_datum: _dt.date) -> _dt.date:

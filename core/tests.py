@@ -10154,8 +10154,10 @@ class NachtN1KritischeBugsTests(TestCase):
         from rentals.services import naechster_anpassungstermin, berechne_kuendigungstermin, ZUSTELL_PUFFER_TAGE
         _lg, _e, _m, v = _basis_objekte()
         heute = date.today()
-        erwartet = berechne_kuendigungstermin(v, heute + timedelta(days=ZUSTELL_PUFFER_TAGE + 10))
-        self.assertEqual(naechster_anpassungstermin(v, heute), erwartet)
+        # Die Erhöhung wird auf den ERSTEN des Folgemonats wirksam (Monatserster),
+        # nicht auf den Monatsende-Kündigungstermin selbst (Live-Test I).
+        termin = berechne_kuendigungstermin(v, heute + timedelta(days=ZUSTELL_PUFFER_TAGE + 10))
+        self.assertEqual(naechster_anpassungstermin(v, heute), termin + timedelta(days=1))
         self.assertGreaterEqual(ZUSTELL_PUFFER_TAGE, 7)
 
     def test_zusage_nach_vergleich_blockiert_umwandlung_nicht(self):
@@ -15898,3 +15900,71 @@ class NebenkostenPersonenTests(TestCase):
         self.assertEqual(anteil[v1.id], Decimal('100.00'))
         self.assertEqual(anteil[v2.id], Decimal('300.00'))
         self.assertEqual(Decimal(str(r['differenz'])), Decimal('0.00'))
+
+
+class RechtstexteITests(TestCase):
+    """Live-Test I: Korrektheit der Rechtstexte/-verweise."""
+
+    def _text(self, pdf):
+        import io
+        from pdfminer.high_level import extract_text
+        return extract_text(io.BytesIO(pdf))
+
+    def test_i_bern_formularpflicht_zitiert_eg_zgb(self):
+        from core.services.formularpflicht import _REGISTER
+        g = _REGISTER['BE']['gesetz']
+        self.assertIn('EG ZGB', g)
+        self.assertNotIn('Kantonsverfassung', g)
+
+    def test_i_mietzinsanpassung_wirksam_ab_monatserster(self):
+        from rentals.services import naechster_anpassungstermin, berechne_kuendigungstermin
+        import datetime as _dt
+        lg, e, m, v = _basis_objekte()
+        termin = naechster_anpassungstermin(v, date(2026, 1, 15))
+        self.assertEqual(termin.day, 1, 'Anpassung nicht auf Monatserster')
+        # Es ist der Tag NACH dem ordentlichen Kündigungstermin (Monatsende).
+        roh = berechne_kuendigungstermin(v, date(2026, 1, 15) + _dt.timedelta(days=17))
+        self.assertEqual(termin, roh + _dt.timedelta(days=1))
+
+    def test_i_257d_frist_mindestens_30_tage_geschuetzt(self):
+        from finance.booking import ensure_kontenplan
+        from finance.models import DebitorenRechnung
+        from core.models import Pendenz
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()   # Wohnung → geschützt
+        self.assertTrue(v.ist_geschuetzt)
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, einheit=e,
+            titel='Miete', datum=date(2024, 1, 1), faellig_am=date(2024, 1, 5),
+            betrag=Decimal('1500'), status='offen')
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        heute = date.today()
+        # Zu kurze Frist (5 Tage) einreichen → Server erzwingt ≥ 30 Tage
+        c.post(f'/neu/vertraege/{v.id}/verzug/',
+               {'frist_bis': (heute + timedelta(days=5)).isoformat()})
+        p = Pendenz.objects.filter(vertrag=v, titel__icontains='257d').first()
+        self.assertIsNotNone(p)
+        self.assertGreaterEqual((p.faellig_am - heute).days, 30)
+
+    def test_i_maengelruege_zitiert_257f_nicht_259(self):
+        from core.services.mietprozess_briefe import maengelruege_pdf
+        lg, e, m, v = _basis_objekte()
+        pdf = maengelruege_pdf(v, "Beschädigte Küchenfront durch unsachgemässen Gebrauch.")
+        txt = self._text(pdf)
+        self.assertIn('257f', txt)
+        self.assertNotIn('259', txt)
+
+    def test_i_257d_brief_hat_nur_eine_grussformel(self):
+        from finance.booking import ensure_kontenplan
+        from finance.models import DebitorenRechnung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        DebitorenRechnung.objects.create(vertrag=v, liegenschaft=lg, einheit=e,
+            titel='Miete', datum=date(2024, 1, 1), faellig_am=date(2024, 1, 5),
+            betrag=Decimal('1500'), status='offen')
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        heute = date.today()
+        r = c.post(f'/neu/vertraege/{v.id}/verzug/',
+                   {'frist_bis': (heute + timedelta(days=40)).isoformat(), 'als_pdf': '1'})
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        txt = self._text(r.content)
+        self.assertEqual(txt.count('Freundliche Grüsse'), 1, 'Grussformel doppelt/fehlend')

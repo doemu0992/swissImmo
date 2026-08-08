@@ -18,7 +18,7 @@ from core.services.kantone import kanton_fuer_liegenschaft, KANTON_NAMEN
 _REGISTER = {
     'BS': dict(pflicht='ja', gesetz='§ 214b EG ZGB (SG 211.100)',
                leerziffer='0.92 %', stand='1.6.2025'),
-    'BE': dict(pflicht='ja', gesetz='Art. 135a Kantonsverfassung Bern (BSG 101.1)',
+    'BE': dict(pflicht='ja', gesetz='Art. 135a EG ZGB (BSG 211.1)',
                leerziffer='1.12 %', stand='1.6.2025'),
     'FR': dict(pflicht='ja', gesetz='Art. 27 MPVG (SGF 222.3.1)',
                leerziffer='1.11 %', stand='1.6.2025'),

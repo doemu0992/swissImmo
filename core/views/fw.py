@@ -11400,6 +11400,15 @@ def fw_verzug_257d(request, vertrag_id):
             frist = date.fromisoformat(request.POST.get('frist_bis') or default_frist)
         except ValueError:
             frist = heute + timedelta(days=min_frist)
+        # Gesetzliche Mindestfrist SERVERSEITIG erzwingen: Für Wohn-/Geschäftsräume
+        # sind es 30 Tage (Art. 257d Abs. 1 OR). Ein aus dem Formular übermittelter
+        # zu kurzer Wert (z.B. 10 Tage) würde die Fristansetzung — und eine darauf
+        # gestützte ausserordentliche Kündigung — nichtig machen (Live-Test I).
+        _min_frist_bis = heute + timedelta(days=min_frist)
+        if frist < _min_frist_bis:
+            frist = _min_frist_bis
+            messages.info(request, f"Die Frist wurde auf die gesetzliche Mindestdauer "
+                                   f"({min_frist} Tage, Art. 257d Abs. 1 OR) verlängert.")
         vw = Verwaltung.objects.first()
         absender = {'firma': getattr(vw, 'firma', '') if vw else '', 'strasse': getattr(vw, 'strasse', '') if vw else '',
                     'plz': getattr(vw, 'plz', '') if vw else '', 'ort': getattr(vw, 'ort', '') if vw else ''}
@@ -11441,8 +11450,9 @@ def fw_verzug_257d(request, vertrag_id):
             "um den ausstehenden Betrag vollständig zu begleichen.\n\n"
             "Wir weisen Sie ausdrücklich darauf hin, dass wir das Mietverhältnis nach unbenutztem "
             "Ablauf dieser Frist ausserordentlich kündigen können (Art. 257d Abs. 2 OR), mit einer "
-            "Frist von 30 Tagen auf Ende eines Monats.\n\n"
-            "Freundliche Grüsse"
+            "Frist von 30 Tagen auf Ende eines Monats."
+            # KEIN "Freundliche Grüsse" hier — die Grussformel setzt der Serienbrief-
+            # Generator selbst (sonst erschien sie doppelt, Live-Test I).
         )
         pdf = generate_serienbrief_pdf(absender, betreff, text, emp, signatur=(vw,))
         _suffix = f" ({len(emp)} Zustellungen)" if len(emp) > 1 else ""

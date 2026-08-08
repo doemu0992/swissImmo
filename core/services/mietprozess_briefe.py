@@ -167,22 +167,33 @@ def kaution_freigabe_pdf(vertrag, verwaltung=None):
 
 
 def maengelruege_pdf(vertrag, mangel_text, frist_tage=14, verwaltung=None):
-    """Mängelrüge / Fristansetzung zur Mängelbeseitigung (Art. 259a–259g OR).
-    Kann sowohl als Aufforderung an die Mieterschaft (Schäden) wie als Beleg
-    verwendet werden; Standard: Aufforderung zur Behebung innert Frist."""
+    """Abmahnung der Mieterschaft wegen Verletzung der Sorgfalts-/Rücksichtnahme-
+    pflicht (Art. 257f OR) mit Fristansetzung zur Wiederherstellung des
+    vertragsgemässen Zustands.
+
+    Hinweis: Dies ist die Aufforderung der VERMIETERSCHAFT an die Mieterschaft
+    (z.B. verursachte Schäden, vertragswidriger Gebrauch). Die Mängelrechte nach
+    Art. 259a–259i OR sind das GEGENTEIL — die Rechte des Mieters, wenn die
+    VERMIETERIN einen Mangel nicht behebt — und gehören daher nicht in dieses
+    Schreiben (Live-Test I)."""
     mieter, einheit, lg, absender, ort, empf, objekt, name, sig = _kontext(vertrag, verwaltung)
     frist_datum = (datetime.date.today() + datetime.timedelta(days=int(frist_tage))).strftime('%d.%m.%Y')
     absaetze = [
         "Sehr geehrte Damen und Herren",
-        f"Am Mietobjekt {objekt} wurde folgender Mangel festgestellt bzw. gemeldet:",
+        f"Am Mietobjekt {objekt} haben wir folgende Verletzung der Ihnen obliegenden "
+        f"Sorgfalts- und Rücksichtnahmepflicht (Art. 257f OR) festgestellt:",
         mangel_text or "—",
-        f"Wir setzen Ihnen hiermit eine Frist bis zum {frist_datum} zur Behebung des Mangels "
-        f"an. Wird der Mangel innert dieser Frist nicht behoben, behalten wir uns die gesetzlich "
-        f"vorgesehenen Rechtsbehelfe vor (Art. 259a–259i OR: Mängelbeseitigung, Herabsetzung des "
-        f"Mietzinses, Schadenersatz, Hinterlegung des Mietzinses bei der Schlichtungsbehörde).",
+        f"Wir fordern Sie hiermit auf, den vertragsgemässen Zustand bis zum {frist_datum} "
+        f"wiederherzustellen bzw. das beanstandete Verhalten einzustellen. Sie sind nach "
+        f"Art. 257f OR zur sorgfältigen Behandlung der Mietsache und zur Rücksichtnahme "
+        f"verpflichtet.",
+        "Wird der vertragsgemässe Zustand innert Frist nicht wiederhergestellt bzw. die "
+        "Pflichtverletzung fortgesetzt, behalten wir uns Schadenersatz sowie — bei "
+        "fortdauernder Verletzung trotz dieser schriftlichen Mahnung — die "
+        "ausserordentliche Kündigung des Mietverhältnisses nach Art. 257f Abs. 3 OR vor.",
         "Für Rückfragen stehen wir Ihnen gerne zur Verfügung.",
     ]
-    return _brief(absender, empf, ort, f"Mängelrüge / Fristansetzung — {objekt}", absaetze, name, signatur=sig)
+    return _brief(absender, empf, ort, f"Abmahnung / Fristansetzung (Art. 257f OR) — {objekt}", absaetze, name, signatur=sig)
 
 
 def untermiete_zustimmung_pdf(vertrag, untermieter, entscheid='zustimmung',
