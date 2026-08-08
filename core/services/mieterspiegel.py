@@ -4,7 +4,7 @@ Das zentrale Bewirtschaftungs-Dokument für Eigentümer und Verwaltung."""
 from decimal import Decimal
 
 
-def berechne_mieterspiegel(liegenschaften):
+def berechne_mieterspiegel(liegenschaften, stichtag=None):
     """Gibt je Liegenschaft ein dict {lg, zeilen, totals} zurück.
 
     Alle Datenbank-Zugriffe passieren VOR der Schleife. Vorher fragte jede
@@ -13,12 +13,22 @@ def berechne_mieterspiegel(liegenschaften):
     Anpassungen — die Auswahl-Übersicht über 38 Liegenschaften kam so auf
     274 Abfragen. Das wächst mit dem Portfolio, und auf einem Ein-Worker-
     Hosting kostet jede Abfrage spürbar.
+
+    Belegung wird nach DATUM bestimmt, nicht nach dem Status-Label (Live-Test F):
+    massgeblich ist der Vertrag, der am `stichtag` tatsächlich IN KRAFT ist
+    (beginn ≤ Stichtag ≤ ende). Ein GEKÜNDIGTER Vertrag läuft bis zum
+    Vertragsende und gehört bis dahin in den Mieterspiegel; ein AKTIVER Vertrag
+    mit künftigem Beginn noch nicht; ein abgelaufener nicht mehr. Frühere Version
+    filterte nur `status='aktiv'` — gekündigte (aber laufende) Objekte fielen
+    fälschlich als Leerstand heraus, künftige Verträge erschienen zu früh.
     """
     from collections import defaultdict
     from portfolio.models import Einheit
     from rentals.models import Mietvertrag
     from django.db.models import Q
+    from django.utils import timezone
 
+    stichtag = stichtag or timezone.localdate()
     lg_ids = [lg.id for lg in liegenschaften]
 
     einheiten_je_lg = defaultdict(list)
@@ -28,7 +38,10 @@ def berechne_mieterspiegel(liegenschaften):
     # `effektiver_netto_mietzins()` / `effektive_nebenkosten()` lesen unten
     # Komponenten, Staffelstufen, Anpassungen und den Sollmietzins-Zeitplan des
     # Objekts. Alle vier hier mitladen, sonst fragt jede Zeile einzeln nach.
-    vertraege = (Mietvertrag.objects.filter(status='aktiv')
+    vertraege = (Mietvertrag.objects
+                 .filter(status__in=['aktiv', 'gekuendigt'])   # unterschriebene Verträge
+                 .filter(beginn__lte=stichtag)                 # bereits in Kraft
+                 .filter(Q(ende__isnull=True) | Q(ende__gte=stichtag))   # noch nicht abgelaufen
                  .filter(Q(einheit__liegenschaft_id__in=lg_ids)
                          | Q(nebenobjekte__liegenschaft_id__in=lg_ids))
                  .select_related('mieter', 'einheit')
@@ -67,8 +80,8 @@ def berechne_mieterspiegel(liegenschaften):
                 # Staffel/Anpassung), NICHT die Objekt-Sollmiete — sonst wäre Ist per
                 # Konstruktion immer = Soll und der Vergleich wertlos, sobald ein
                 # Sitzmieter einen abweichenden (oft tieferen) Mietzins zahlt.
-                v_netto = v.effektiver_netto_mietzins() or Decimal('0.00')
-                v_nk = v.effektive_nebenkosten() or Decimal('0.00')
+                v_netto = v.effektiver_netto_mietzins(stichtag) or Decimal('0.00')
+                v_nk = v.effektive_nebenkosten(stichtag) or Decimal('0.00')
                 ist_netto += v_netto
                 ist_nk += v_nk
                 zeilen.append({

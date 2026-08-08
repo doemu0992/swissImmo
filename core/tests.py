@@ -15738,3 +15738,81 @@ class DebitorenStatusETests(TestCase):
         c = Client(); c.force_login(_team_user('Verwaltung'))
         resp = c.get(f'/neu/debitoren/{r.id}/qr-pdf/')
         self.assertEqual(resp.status_code, 409)
+
+
+class VertragMieterspiegelFTests(TestCase):
+    """Live-Test F: Vertrags-Validierung (serverseitig) + Mieterspiegel nach Datum."""
+
+    def _post_vertrag(self, c, einheit, **overrides):
+        data = {
+            'einheit_id': str(einheit.id),
+            'mieter_typ': 'person', 'vorname': 'Anna', 'nachname': 'Beispiel',
+            'beginn': '2026-01-01', 'netto_mietzins': '1500', 'nebenkosten': '200',
+        }
+        data.update(overrides)
+        return c.post('/neu/vertraege/neu/speichern/', data)
+
+    def test_f_negative_miete_wird_abgewiesen(self):
+        from rentals.models import Mietvertrag
+        from crm.models import Mieter
+        lg, e, m, v = _basis_objekte()
+        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='Neu', typ='wohnung',
+                                        nettomiete_aktuell=Decimal('1000'), nebenkosten_aktuell=Decimal('100'))
+        n_vor = Mietvertrag.objects.count(); m_vor = Mieter.objects.count()
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        self._post_vertrag(c, e2, netto_mietzins='-100')
+        self.assertEqual(Mietvertrag.objects.count(), n_vor)   # kein Vertrag
+        self.assertEqual(Mieter.objects.count(), m_vor)        # kein Waisen-Mieter
+
+    def test_f_ende_vor_beginn_wird_abgewiesen(self):
+        from rentals.models import Mietvertrag
+        lg, e, m, v = _basis_objekte()
+        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='Neu2', typ='wohnung',
+                                        nettomiete_aktuell=Decimal('1000'), nebenkosten_aktuell=Decimal('100'))
+        n_vor = Mietvertrag.objects.count()
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        self._post_vertrag(c, e2, beginn='2026-06-01', ende='2026-03-01', ist_befristet='1')
+        self.assertEqual(Mietvertrag.objects.count(), n_vor)
+
+    def test_f_leerer_nachname_wird_abgewiesen(self):
+        from rentals.models import Mietvertrag
+        from crm.models import Mieter
+        lg, e, m, v = _basis_objekte()
+        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='Neu3', typ='wohnung',
+                                        nettomiete_aktuell=Decimal('1000'), nebenkosten_aktuell=Decimal('100'))
+        n_vor = Mietvertrag.objects.count(); m_vor = Mieter.objects.count()
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        self._post_vertrag(c, e2, nachname='', vorname='Nurvorname')
+        self.assertEqual(Mietvertrag.objects.count(), n_vor)
+        self.assertEqual(Mieter.objects.count(), m_vor)
+
+    def test_f_gueltiger_vertrag_wird_gespeichert(self):
+        # Gegenstück: ein sauberer Vertrag muss weiterhin durchgehen.
+        from rentals.models import Mietvertrag
+        lg, e, m, v = _basis_objekte()
+        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='OK', typ='wohnung',
+                                        nettomiete_aktuell=Decimal('1000'), nebenkosten_aktuell=Decimal('100'))
+        n_vor = Mietvertrag.objects.count()
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        self._post_vertrag(c, e2)
+        self.assertEqual(Mietvertrag.objects.count(), n_vor + 1)
+
+    def test_f_mieterspiegel_gekuendigter_laufender_vertrag_ist_belegt(self):
+        from core.services.mieterspiegel import berechne_mieterspiegel
+        lg, e, m, v = _basis_objekte()
+        # gekündigt, aber läuft bis Ende 2026 → am Stichtag 06/2026 in Kraft
+        v.status = 'gekuendigt'; v.beginn = date(2024, 1, 1); v.ende = date(2026, 12, 31); v.save()
+        spiegel = berechne_mieterspiegel([lg], stichtag=date(2026, 6, 1))
+        zeile = next(z for z in spiegel[0]['zeilen'] if z['einheit'].id == e.id)
+        self.assertTrue(zeile['belegt'], 'gekündigter aber laufender Vertrag fehlt im Mieterspiegel')
+        self.assertEqual(spiegel[0]['totals']['leer'], 0)
+
+    def test_f_mieterspiegel_zukuenftiger_vertrag_zaehlt_nicht(self):
+        from core.services.mieterspiegel import berechne_mieterspiegel
+        lg, e, m, v = _basis_objekte()
+        # aktiv, aber Beginn erst 09/2026 → am Stichtag 06/2026 noch nicht in Kraft
+        v.status = 'aktiv'; v.beginn = date(2026, 9, 1); v.ende = None; v.save()
+        spiegel = berechne_mieterspiegel([lg], stichtag=date(2026, 6, 1))
+        zeile = next(z for z in spiegel[0]['zeilen'] if z['einheit'].id == e.id)
+        self.assertFalse(zeile['belegt'], 'künftiger Vertrag erscheint zu früh als belegt')
+        self.assertEqual(spiegel[0]['totals']['leer'], 1)

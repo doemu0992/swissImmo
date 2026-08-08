@@ -9167,6 +9167,43 @@ def fw_vertrag_neu_speichern(request):
         messages.error(request, "Bitte wähle ein Objekt aus, bevor du den Vertrag erstellst.")
         return redirect('/neu/vertraege/neu/')
 
+    # --- Serverseitige Validierung VOR jeder DB-Änderung (Live-Test F) ---
+    # Clientseitige Prüfungen lassen sich umgehen; ein ungültiger Vertrag
+    # (negative Miete, Ende vor Beginn, Mieter ohne Namen) darf nie gespeichert
+    # werden. Bewusst vor der Mieter-Anlage — sonst bliebe bei einem Fehler ein
+    # Waisen-Mieter zurück.
+    def _dec_val(key):
+        try:
+            return Decimal((_num(P.get(key)) or '0'))
+        except Exception:
+            return Decimal('0')
+
+    def _datum_val(key):
+        try:
+            return date.fromisoformat(P.get(key)) if P.get(key) else None
+        except ValueError:
+            return None
+
+    _v_beginn = _datum_val('beginn') or timezone.localdate()
+    _v_ende = _datum_val('ende')
+    _fehler = []
+    if _dec_val('netto_mietzins') < 0:
+        _fehler.append("Der Netto-Mietzins darf nicht negativ sein.")
+    if not einheit.ist_einstellplatz and _dec_val('nebenkosten') < 0:
+        _fehler.append("Die Nebenkosten dürfen nicht negativ sein.")
+    if _v_ende and _v_ende < _v_beginn:
+        _fehler.append("Das Vertragsende darf nicht vor dem Vertragsbeginn liegen.")
+    if not (P.get('mieter_id') or '').strip():
+        _typ_neu = P.get('mieter_typ', 'person')
+        if _typ_neu in ('firma', 'verein') and not P.get('firmen_name', '').strip():
+            _fehler.append("Bitte den Firmen-/Vereinsnamen erfassen.")
+        elif _typ_neu == 'person' and not P.get('nachname', '').strip():
+            _fehler.append("Bitte den Nachnamen des Mieters erfassen.")
+    if _fehler:
+        for _f in _fehler:
+            messages.error(request, _f)
+        return redirect('/neu/vertraege/neu/')
+
     # Mieter: bestehend oder neu
     mieter_id = P.get('mieter_id') or ''
     if mieter_id:
