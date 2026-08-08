@@ -23,3 +23,33 @@ jobs:
         run: python manage.py makemigrations --check --dry-run
       - name: Tests
         run: python manage.py test --verbosity=2
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Python-Abhängigkeiten
+        run: pip install -r requirements.txt
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: npm install
+        run: npm install
+      - name: Playwright-Browser (Chromium) installieren
+        run: npx playwright install --with-deps chromium
+      - name: E2E-Tests (Playwright bootet Django selbst)
+        run: npx playwright test
+      - name: Playwright-Report als Artefakt
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

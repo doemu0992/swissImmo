@@ -1,0 +1,14 @@
+{
+  "name": "swissimmo-e2e",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Playwright-E2E-Tests für die swissImmo-Weboberfläche (/neu/).",
+  "scripts": {
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.0"
+  }
+}

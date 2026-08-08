@@ -209,7 +209,9 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            # SQLITE_NAME erlaubt eine separate DB-Datei (z.B. für E2E-Tests),
+            # ohne die Entwickler-DB db.sqlite3 anzufassen.
+            'NAME': os.getenv('SQLITE_NAME') or (BASE_DIR / 'db.sqlite3'),
             'OPTIONS': {
                 'timeout': 30,
             }
