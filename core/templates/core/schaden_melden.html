@@ -54,7 +54,7 @@
 }">
 
     {% if success %}
-    <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-10 text-center">
+    <div class="bg-white rounded-2xl shadow-[0_1px_2px_rgba(23,26,43,0.05),0_10px_30px_rgba(23,26,43,0.08)] border border-slate-200 p-10 text-center">
         <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
             <i class="fa-solid fa-check"></i>
         </div>
@@ -68,12 +68,12 @@
     {% else %}
 
     <div class="mb-8">
-        <div class="w-full bg-slate-200 rounded-full h-2.5">
-            <div class="bg-indigo-600 h-2.5 rounded-full transition-all duration-500 ease-out" :style="'width: ' + (step * 25) + '%'"></div>
+        <div class="w-full bg-slate-100 border border-slate-200 rounded-full h-2.5 overflow-hidden">
+            <div class="h-2.5 rounded-full transition-all duration-500 ease-out bg-gradient-to-r from-indigo-500 to-indigo-700" :style="'width: ' + (step * 25) + '%'"></div>
         </div>
     </div>
 
-    <form action="" method="POST" enctype="multipart/form-data" class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 sm:p-10 min-h-[400px] relative">
+    <form action="" method="POST" enctype="multipart/form-data" class="bg-white rounded-2xl shadow-[0_1px_2px_rgba(23,26,43,0.05),0_10px_30px_rgba(23,26,43,0.08)] border border-slate-200 p-6 sm:p-10 min-h-[400px] relative">
         {% csrf_token %}
 
         <input type="hidden" name="kategorie" x-model="formData.kategorie">
@@ -190,9 +190,9 @@
             <h2 class="text-2xl font-black text-slate-900 mb-6 text-center mt-10 md:mt-0">Details & Kontaktdaten</h2>
 
             <div class="flex flex-wrap gap-2 justify-center mb-6">
-                <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-xs font-bold" x-show="formData.kategorie" x-text="formData.kategorie"></span>
-                <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-xs font-bold" x-show="formData.raum" x-text="formData.raum"></span>
-                <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-xs font-bold" x-show="formData.objekt" x-text="formData.objekt"></span>
+                <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold" x-show="formData.kategorie" x-text="formData.kategorie"></span>
+                <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold" x-show="formData.raum" x-text="formData.raum"></span>
+                <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold" x-show="formData.objekt" x-text="formData.objekt"></span>
             </div>
 
             <div class="space-y-5">
@@ -271,7 +271,7 @@
                 </div>
 
                 <div class="pt-4">
-                    <button type="submit" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-700 hover:-translate-y-0.5 transition-all text-lg">
+                    <button type="submit" class="w-full text-white py-4 rounded-xl font-bold shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all text-lg bg-gradient-to-r from-emerald-500 to-emerald-700 hover:brightness-105">
                         Meldung jetzt absenden <i class="fa-solid fa-paper-plane ml-2"></i>
                     </button>
                 </div>
