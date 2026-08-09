@@ -10,8 +10,11 @@ const useSystemChromium = existsSync(PREINSTALLED_CHROMIUM);
 
 export default defineConfig({
   testDir: './e2e/tests',
-  timeout: 30_000,
-  expect: { timeout: 7_000 },
+  // Der Django-Dev-Server rendert die schweren /neu/-Seiten in dieser Umgebung
+  // langsam (viele Queries, grosses Base-Template) — 60 s Test-Budget gibt den
+  // mehrstufigen Flows Luft und vermeidet Umgebungs-Flakes.
+  timeout: 60_000,
+  expect: { timeout: 10_000 },
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 1 : 0,

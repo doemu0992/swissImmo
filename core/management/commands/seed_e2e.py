@@ -69,5 +69,28 @@ class Command(BaseCommand):
             buche("1100", "3000", Decimal("1500"), "E2E Mietertrag 2024",
                   datum=date(2024, 1, 31), liegenschaft=lg)
 
+        # Freigegebene Kreditorenrechnung (mit IBAN) → erscheint im Zahllauf-Vorschlag.
+        from finance.models import KreditorenRechnung, AbrechnungsPeriode, NebenkostenBeleg
+        KreditorenRechnung.objects.get_or_create(
+            lieferant="E2E Sanitär AG", referenz="E2E-RF-1",
+            defaults=dict(liegenschaft=lg, status="freigegeben",
+                          datum=date(2024, 3, 1), faellig_am=date(2024, 3, 31),
+                          betrag=Decimal("800"), iban="CH9300762011623852957"))
+
+        # Zweite Einheit OHNE Fläche + NK-Periode mit m²-Beleg → die NK-Abrechnung
+        # muss vor der fehlenden Fläche warnen (Warnbanner).
+        Einheit.objects.get_or_create(
+            liegenschaft=lg, bezeichnung="Keller E2E",
+            defaults=dict(typ="bas", nettomiete_aktuell=Decimal("0"),
+                          nebenkosten_aktuell=Decimal("0")))   # bewusst ohne flaeche_m2
+        periode, _ = AbrechnungsPeriode.objects.get_or_create(
+            liegenschaft=lg, bezeichnung="NK E2E 2024",
+            defaults=dict(start_datum=date(2024, 1, 1), ende_datum=date(2024, 12, 31)))
+        NebenkostenBeleg.objects.get_or_create(
+            periode=periode, text="E2E Hauswartung",
+            defaults=dict(kategorie="hauswart", verteilschluessel="m2",
+                          betrag=Decimal("1200"), datum=date(2024, 6, 1)))
+
         self.stdout.write(self.style.SUCCESS(
-            "E2E-Seed bereit: Login e2e / e2e-pass · 1 Liegenschaft, 1 Vertrag, 1 offene Rechnung."))
+            "E2E-Seed bereit: Login e2e / e2e-pass · Liegenschaft, Vertrag, offene Rechnung, "
+            "freigegebener Kreditor, NK-Periode (mit fehlender Fläche)."))
