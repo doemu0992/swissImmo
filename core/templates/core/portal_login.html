@@ -5,115 +5,205 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal-Login | SwissImmo</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+    <style>
+        :root {
+            --bg: #f6f7fb; --surface: #ffffff; --surface-2: #f1f2f8;
+            --ink: #171a2b; --muted: #5b6072; --faint: #8b90a4; --line: #e6e7f0;
+            --brand-500: #4f46e5; --brand-600: #4338ca; --brand-700: #3730a3;
+            --accent: var(--brand-500); --accent-strong: var(--brand-600); --accent-soft: #eef0fe;
+            --crit: #dc2626; --crit-soft: #fdeaea;
+            --shadow: 0 1px 2px rgba(23,26,43,.05), 0 10px 34px rgba(23,26,43,.10);
+            --radius: 18px; --radius-sm: 12px;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #0e1020; --surface: #171a2e; --surface-2: #1e2138;
+                --ink: #e7e8f2; --muted: #9aa0b8; --faint: #6b7192; --line: #262a44;
+                --brand-500: #6366f1; --brand-600: #818cf8; --brand-700: #a5b0ff;
+                --accent-soft: #20233d; --crit: #f87171; --crit-soft: #2b1618;
+                --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 40px rgba(0,0,0,.45);
+            }
+        }
+        :root[data-theme="dark"] {
+            --bg: #0e1020; --surface: #171a2e; --surface-2: #1e2138;
+            --ink: #e7e8f2; --muted: #9aa0b8; --faint: #6b7192; --line: #262a44;
+            --brand-500: #6366f1; --brand-600: #818cf8; --brand-700: #a5b0ff;
+            --accent-soft: #20233d; --crit: #f87171; --crit-soft: #2b1618;
+            --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 40px rgba(0,0,0,.45);
+        }
+        * { box-sizing: border-box; margin: 0; }
+        body {
+            background: var(--bg); color: var(--ink); min-height: 100dvh; font-family: 'Inter', -apple-system, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .shell { min-height: 100dvh; display: grid; grid-template-columns: 1.05fr 1fr; }
+        @media (max-width: 860px) { .shell { grid-template-columns: 1fr; } }
+
+        .brandpane {
+            position: relative; overflow: hidden; color: #fff;
+            background: linear-gradient(150deg, var(--brand-500), var(--brand-700));
+            padding: 44px 46px; display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .brandpane::before {
+            content: ""; position: absolute; inset: 0;
+            background:
+              radial-gradient(600px 300px at 85% 12%, rgba(255,255,255,.18), transparent 60%),
+              radial-gradient(500px 320px at 10% 92%, rgba(255,255,255,.10), transparent 60%);
+        }
+        .brandpane > * { position: relative; }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo .mark {
+            width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center;
+            background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.25);
+            font-weight: 800; font-size: 18px; letter-spacing: -.02em;
+        }
+        .logo .n { font-weight: 800; font-size: 18px; letter-spacing: -.01em; }
+        .pane-mid { max-width: 32ch; }
+        .pane-mid h1 { font-size: 30px; line-height: 1.15; letter-spacing: -.03em; }
+        .pane-mid p { margin-top: 12px; color: rgba(255,255,255,.82); font-size: 14.5px; line-height: 1.6; }
+        .feats { display: flex; flex-direction: column; gap: 11px; margin-top: 22px; }
+        .feat { display: flex; align-items: center; gap: 11px; font-size: 13.5px; color: rgba(255,255,255,.92); }
+        .feat .tick { width: 22px; height: 22px; border-radius: 7px; background: rgba(255,255,255,.16); display: grid; place-items: center; font-size: 12px; flex: none; }
+        .pane-foot { font-size: 12px; color: rgba(255,255,255,.6); }
+
+        .formpane { display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+        .authcard { width: 100%; max-width: 400px; }
+        .mobrand { display: none; }
+        @media (max-width: 860px) {
+            .brandpane { display: none; }
+            .mobrand { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 24px; }
+            .mobrand .mark { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; color:#fff; font-weight:800; background: linear-gradient(135deg, var(--brand-500), var(--brand-600)); }
+            .mobrand .n { font-weight: 800; font-size: 18px; letter-spacing: -.01em; }
+        }
+        .head { margin-bottom: 22px; }
+        .head h2 { font-size: 22px; letter-spacing: -.02em; }
+        .head p { color: var(--muted); font-size: 14px; margin-top: 3px; }
+
+        .card {
+            background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+            box-shadow: var(--shadow); padding: 26px 26px 28px;
+        }
+        .alert {
+            display: flex; gap: 10px; align-items: flex-start; font-size: 13px; font-weight: 500;
+            background: var(--crit-soft); color: var(--crit);
+            border: 1px solid color-mix(in srgb, var(--crit) 30%, var(--line)); border-radius: var(--radius-sm);
+            padding: 11px 13px; margin-bottom: 18px;
+        }
+        .field { margin-bottom: 15px; }
+        .field label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; color: var(--faint); margin-bottom: 6px; }
+        .inwrap { position: relative; }
+        .inwrap > svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--faint); }
+        .input {
+            width: 100%; font: inherit; font-size: 14px; font-weight: 500; color: var(--ink);
+            background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-sm);
+            padding: 11px 13px 11px 40px;
+        }
+        .input.haseye { padding-right: 42px; }
+        .input::placeholder { color: var(--faint); font-weight: 400; }
+        .input:focus { outline: none; background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+        .eye {
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            display: grid; place-items: center; width: 30px; height: 30px; border: 0; background: transparent;
+            color: var(--faint); cursor: pointer; border-radius: 8px;
+        }
+        .eye:hover { color: var(--muted); }
+        .submit {
+            width: 100%; font: inherit; font-size: 14px; font-weight: 700; color: #fff; cursor: pointer;
+            border: 0; border-radius: var(--radius-sm); padding: 13px 16px; margin-top: 4px;
+            background: linear-gradient(135deg, var(--brand-500), var(--brand-600));
+            box-shadow: 0 6px 16px color-mix(in srgb, var(--brand-500) 38%, transparent);
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform .06s, filter .15s;
+        }
+        .submit:hover { filter: brightness(1.04); transform: translateY(-1px); }
+        .submit:active { transform: translateY(0); }
+        .hint {
+            margin-top: 18px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+            border-radius: var(--radius-sm); padding: 12px 14px; font-size: 12.5px; color: var(--muted); line-height: 1.55;
+        }
+        .back { text-align: center; margin-top: 20px; }
+        .back a { font-size: 13px; font-weight: 500; color: var(--faint); text-decoration: none; }
+        .back a:hover { color: var(--muted); }
+
+        a:focus-visible, button:focus-visible, .input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
 </head>
-<body class="min-h-[100dvh] bg-slate-100 lg:grid lg:grid-cols-2">
-
-    <!-- Linke Markenseite (nur Desktop) -->
-    <div class="hidden lg:flex flex-col justify-between bg-[#161926] text-white p-12 relative overflow-hidden">
-        <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-indigo-600/20 blur-3xl"></div>
-        <div class="absolute -bottom-32 -left-16 w-96 h-96 rounded-full bg-indigo-500/10 blur-3xl"></div>
-
-        <div class="relative flex items-center gap-3">
-            <span class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/40">
-                <i class="fa-solid fa-building text-white"></i>
-            </span>
-            <span class="font-extrabold tracking-wide uppercase">swissImmo</span>
+<body>
+<div class="shell">
+    <aside class="brandpane">
+        <div class="logo">
+            <div class="mark">si</div>
+            <div class="n">swissImmo</div>
         </div>
-
-        <div class="relative">
-            <h1 class="text-4xl font-black leading-tight tracking-tight">Ihr persönliches<br>Immobilien-Portal</h1>
-            <p class="mt-4 text-slate-300 text-lg max-w-sm leading-relaxed">
-                Alle Unterlagen zu Ihrer Wohnung, offene Rechnungen und Ihr direkter Draht zur Verwaltung — an einem Ort.
-            </p>
-            <ul class="mt-8 space-y-3 text-slate-300 text-sm">
-                <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-indigo-400"></i> Mietvertrag &amp; Dokumente jederzeit abrufbar</li>
-                <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-indigo-400"></i> Rechnungen mit QR-Einzahlschein</li>
-                <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-indigo-400"></i> Schaden melden &amp; Kündigung erfassen</li>
-            </ul>
-        </div>
-
-        <p class="relative text-xs text-slate-500">© SwissImmo · Sicheres Login für Mietende und Eigentümer</p>
-    </div>
-
-    <!-- Rechte Login-Seite -->
-    <div class="flex items-center justify-center p-6 sm:p-10 min-h-[100dvh]">
-        <div class="w-full max-w-md">
-
-            <!-- Logo (Mobile) -->
-            <div class="lg:hidden text-center mb-8">
-                <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-indigo-200">
-                    <i class="fa-solid fa-building text-white text-xl"></i>
-                </div>
-                <h2 class="text-2xl font-black text-slate-900 tracking-tight">SwissImmo Portal</h2>
+        <div class="pane-mid">
+            <h1>Ihr persönliches Immobilien-Portal</h1>
+            <p>Alle Unterlagen zu Ihrer Wohnung, offene Rechnungen und Ihr direkter Draht zur Verwaltung — an einem Ort.</p>
+            <div class="feats">
+                <div class="feat"><span class="tick">✓</span> Mietvertrag &amp; Dokumente jederzeit abrufbar</div>
+                <div class="feat"><span class="tick">✓</span> Rechnungen mit QR-Einzahlschein</div>
+                <div class="feat"><span class="tick">✓</span> Schaden melden &amp; Kündigung erfassen</div>
             </div>
+        </div>
+        <div class="pane-foot">© swissImmo · Sicheres Login für Mietende und Eigentümer</div>
+    </aside>
 
-            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-8">
-                <h3 class="text-xl font-bold text-slate-900">Willkommen zurück</h3>
-                <p class="text-sm text-slate-500 mt-1 mb-6">Bitte melden Sie sich in Ihrem Portal an.</p>
-
+    <main class="formpane">
+        <div class="authcard">
+            <div class="mobrand">
+                <div class="mark">si</div>
+                <div class="n">swissImmo Portal</div>
+            </div>
+            <div class="head">
+                <h2>Willkommen zurück</h2>
+                <p>Bitte melden Sie sich in Ihrem Portal an.</p>
+            </div>
+            <form class="card" method="POST" action="{% url 'portal_login' %}">
+                {% csrf_token %}
                 {% if form.errors %}
-                <div class="bg-rose-50 border border-rose-100 text-rose-600 text-sm p-4 rounded-xl mb-6 font-medium flex items-start gap-3">
-                    <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
-                    <p>Benutzername oder Passwort ist falsch. Bitte versuchen Sie es erneut.</p>
+                <div class="alert">
+                    <span>⚠️</span>
+                    <span>Benutzername oder Passwort ist falsch. Bitte versuchen Sie es erneut.</span>
                 </div>
                 {% endif %}
 
-                <form method="POST" action="{% url 'portal_login' %}" class="space-y-5">
-                    {% csrf_token %}
-
-                    <div>
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">Benutzername</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                            <input type="text" name="username" required autofocus
-                                autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username" inputmode="email"
-                                class="w-full bg-slate-50 border border-slate-200 pl-11 pr-4 py-3 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all placeholder:text-slate-300 placeholder:font-medium"
-                                placeholder="Ihr Benutzername oder E-Mail">
-                        </div>
+                <div class="field">
+                    <label for="id_username">Benutzername</label>
+                    <div class="inwrap">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <input class="input" id="id_username" type="text" name="username" required autofocus
+                            autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username" inputmode="email"
+                            placeholder="Ihr Benutzername oder E-Mail">
                     </div>
+                </div>
 
-                    <div>
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">Passwort</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                            <input type="password" name="password" required id="pw"
-                                autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="current-password"
-                                class="w-full bg-slate-50 border border-slate-200 pl-11 pr-11 py-3 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all placeholder:text-slate-300 placeholder:font-medium"
-                                placeholder="••••••••">
-                            <button type="button" onclick="var p=document.getElementById('pw');p.type=p.type==='password'?'text':'password';this.querySelector('i').classList.toggle('fa-eye');this.querySelector('i').classList.toggle('fa-eye-slash');"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1" tabindex="-1" aria-label="Passwort anzeigen">
-                                <i class="fa-solid fa-eye text-sm"></i>
-                            </button>
-                        </div>
+                <div class="field">
+                    <label for="pw">Passwort</label>
+                    <div class="inwrap">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <input class="input haseye" id="pw" type="password" name="password" required
+                            autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="current-password"
+                            placeholder="••••••••">
+                        <button class="eye" type="button" tabindex="-1" aria-label="Passwort anzeigen"
+                            onclick="var p=document.getElementById('pw');p.type=p.type==='password'?'text':'password';">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
                     </div>
+                </div>
 
-                    <button type="submit" class="w-full bg-indigo-600 text-white py-3.5 px-4 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all flex justify-center items-center gap-2">
-                        <span>Anmelden</span> <i class="fa-solid fa-arrow-right"></i>
-                    </button>
+                <button class="submit" type="submit">Anmelden
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
 
-                    <input type="hidden" name="next" value="{{ next|default:'/nach-login/' }}">
-                </form>
+                <input type="hidden" name="next" value="{{ next|default:'/nach-login/' }}">
+            </form>
+
+            <div class="hint">
+                🔑 Zugangsdaten erhalten Sie per E-Mail von Ihrer Verwaltung. Noch keinen Zugang? Bitte wenden Sie sich an Ihre Liegenschaftsverwaltung.
             </div>
-
-            <div class="mt-6 rounded-xl bg-white/60 border border-slate-200 px-4 py-3 text-center">
-                <p class="text-xs text-slate-500 leading-relaxed">
-                    <i class="fa-solid fa-key text-indigo-500 mr-1"></i>
-                    Zugangsdaten erhalten Sie per E-Mail von Ihrer Verwaltung.
-                    Noch keinen Zugang? Bitte wenden Sie sich an Ihre Liegenschaftsverwaltung.
-                </p>
-            </div>
-
-            <div class="mt-6 text-center">
-                <a href="{% url 'index' %}" class="text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors">
-                    <i class="fa-solid fa-arrow-left mr-1"></i> Zurück zur Startseite
-                </a>
-            </div>
+            <div class="back"><a href="{% url 'index' %}">← Zurück zur Startseite</a></div>
         </div>
-    </div>
-
+    </main>
+</div>
 </body>
 </html>
