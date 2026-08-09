@@ -16260,3 +16260,26 @@ class FehlerseitenTests(TestCase):
         from django.template.loader import render_to_string
         html = render_to_string('403.html', {})
         self.assertIn('Berechtigung', html)
+
+
+class HealthzTests(TestCase):
+    """Produktionsreife: /healthz/ prüft die DB-Verbindung für Uptime-Monitoring.
+    Öffentlich (Monitore können sich nicht anmelden), ohne interne Details."""
+
+    def test_healthz_ok_ohne_login(self):
+        c = Client()
+        r = c.get('/healthz/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json().get('status'), 'ok')
+
+    def test_healthz_meldet_db_fehler_als_503(self):
+        # Wenn die DB-Abfrage scheitert, muss /healthz/ 503 liefern (nicht 200) —
+        # sonst schlägt das Monitoring nie Alarm.
+        from unittest.mock import patch
+        c = Client()
+        with patch('django.db.connection.cursor', side_effect=Exception('db weg')):
+            r = c.get('/healthz/')
+        self.assertEqual(r.status_code, 503)
+        self.assertEqual(r.json().get('status'), 'error')
+        # Kein interner Fehlertext nach aussen.
+        self.assertNotIn('db weg', r.content.decode())

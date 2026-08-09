@@ -55,6 +55,23 @@ def version_view(request):
     """Öffentlicher Deploy-Check: JSON mit Commit/Branch des laufenden Prozesses."""
     from core.version import deployed_version
     return JsonResponse(deployed_version())
+
+
+def healthz_view(request):
+    """Liveness/Readiness-Check für Uptime-Monitoring (UptimeRobot o. ä.).
+
+    Prüft, was tatsächlich ausfällt: die Datenbankverbindung (ein simples
+    SELECT 1). `/version/` sagt nur, welcher Commit läuft — nicht, ob die App
+    noch bedienbar ist. 200 = gesund, 503 = DB nicht erreichbar. Bewusst ohne
+    interne Details (kein Stacktrace, keine Query nach aussen)."""
+    from django.db import connection
+    try:
+        with connection.cursor() as cur:
+            cur.execute("SELECT 1")
+            cur.fetchone()
+    except Exception:
+        return JsonResponse({'status': 'error'}, status=503)
+    return JsonResponse({'status': 'ok'})
 from core.views.application import public_application_view, public_datenschutz_view
 
 # 2. Das neue Admin-Cockpit (Bereinigt um das alte Dashboard)
@@ -144,6 +161,10 @@ urlpatterns = [
     # --- DEPLOY-CHECK (öffentlich, ohne Login): zeigt den Commit des WIRKLICH
     #     laufenden Prozesses → belegt, ob der Auto-Deploy (pull + reload) griff.
     path('version/', version_view, name='version'),
+
+    # --- HEALTHCHECK (öffentlich, ohne Login): prüft die DB-Verbindung für
+    #     externes Uptime-Monitoring. 200 = gesund, 503 = DB weg.
+    path('healthz/', healthz_view, name='healthz'),
 
     # --- EIGENER SAAS LOGIN ---
     path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
