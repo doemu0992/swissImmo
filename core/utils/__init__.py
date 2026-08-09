@@ -139,8 +139,8 @@ def get_current_ref_zins():
     try:
         from crm.models import Verwaltung
         v = Verwaltung.objects.first()
-        return v.aktueller_referenzzinssatz if v else 1.75
-    except: return 1.75
+        return v.aktueller_referenzzinssatz if v else 1.25
+    except: return 1.25
 
 def get_current_lik():
     # Primär: automatischer LIK (Live-Abruf → BFS-Tabelle), damit überall

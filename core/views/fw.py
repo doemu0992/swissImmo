@@ -1799,7 +1799,7 @@ def fw_objekt_detail(request, pk):
     # Aktuelle Marktwerte als Vorbelegung für die Indexbasis neuer Sollmietzins-Zeilen
     from crm.models import Verwaltung as _Vw
     _vw = _Vw.objects.first()
-    aktueller_ref_zins = _vw.aktueller_referenzzinssatz if _vw else Decimal('1.75')
+    aktueller_ref_zins = _vw.aktueller_referenzzinssatz if _vw else Decimal('1.25')
     aktueller_lik = _vw.aktueller_lik_punkte if _vw else Decimal('107.1')
 
     # Ausstattung/Raumbuch — die Räume entstehen aus den erfassten Assets.
@@ -9153,7 +9153,7 @@ def fw_vertrag_neu(request):
         **basis, 'nav': 'vertraege',
         'liegenschaften': liegenschaften, 'mieter': mieter,
         'verwaltung': verwaltung,
-        'aktueller_ref_zins': float(vw.aktueller_referenzzinssatz) if vw else 1.75,
+        'aktueller_ref_zins': float(vw.aktueller_referenzzinssatz) if vw else 1.25,
         **_lik_assistent_defaults(vw),
         'heute_iso': timezone.localdate().isoformat(),
         'vorwahl_einheit': vorwahl_einheit or '',
@@ -9363,7 +9363,7 @@ def fw_vertrag_neu_speichern(request):
         mietzins_modell=_mietzins_modell,
         zweckbestimmung=P.get('zweckbestimmung', '').strip(),
         weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
-        basis_referenzzinssatz=dec('basis_referenzzinssatz') or Decimal('1.75'),
+        basis_referenzzinssatz=dec('basis_referenzzinssatz') or Decimal('1.25'),
         basis_lik_punkte=dec('basis_lik_punkte') or Decimal('107.1'),
         basis_lik_stand=basis_lik_stand,
         kostensteigerung_datum=datum('kostensteigerung_datum'),
@@ -9593,7 +9593,7 @@ def fw_vertrag_vorschau(request):
         mietzins_modell=_modell,
         zweckbestimmung=P.get('zweckbestimmung', '').strip(),
         weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
-        basis_referenzzinssatz=dec('basis_referenzzinssatz') or Decimal('1.75'),
+        basis_referenzzinssatz=dec('basis_referenzzinssatz') or Decimal('1.25'),
         basis_lik_punkte=dec('basis_lik_punkte') or Decimal('107.1'),
         kautions_betrag=dec('kautions_betrag') or None,
         kautions_konto=P.get('kautions_konto', '').strip())
@@ -12561,7 +12561,7 @@ def fw_bewerbung_zu_vertrag(request, pk):
         nk_abrechnungsart=einheit.nk_abrechnungsart or 'akonto',
         anzahl_personen=(b.anzahl_erwachsene or 1) + (b.anzahl_kinder or 0),
         kautions_betrag=kaution,
-        basis_referenzzinssatz=einheit.ref_zinssatz or _D('1.75'),
+        basis_referenzzinssatz=einheit.ref_zinssatz or _D('1.25'),
         basis_lik_punkte=einheit.lik_punkte or _D('107.1'),
         besondere_vereinbarungen=(f"Haustiere: {b.haustiere_details}" if b.haustiere and b.haustiere_details else ''),
     )
