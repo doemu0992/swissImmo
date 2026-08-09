@@ -16085,3 +16085,43 @@ class KostenkontrolleAddJTests(TestCase):
         self.assertEqual(r.context['rows'][0]['gesamt'], Decimal('15.75'))
         # Und im gerenderten HTML stehen die Rappen (nicht auf 15 abgeschnitten)
         self.assertContains(r, "15.75")
+
+
+class KuendigungSchlussabrechnungQSTests(TestCase):
+    """QS Kündigung/Schlussabrechnung: Anzeige-Kaution = Buchung; befristetes Ende
+    überlebt Kündigung + Rücknahme."""
+
+    def test_schlussabrechnung_gutschrift_hoechstens_bilanziert(self):
+        # Anzeige/PDF dürfen nur die BILANZIERTE Kaution gutschreiben, nicht die
+        # nominale — sonst verspricht das PDF mehr Rückzahlung als gebucht wird.
+        from core.services.schlussabrechnung import berechne_schlussabrechnung
+        lg, e, m, v = _basis_objekte()
+        v.kautions_betrag = Decimal('3000'); v.kautions_art = 'sperrkonto'; v.save()
+        # Nur CHF 2000 tatsächlich bilanziert
+        daten = berechne_schlussabrechnung(v, date(2024, 6, 30), [],
+                                           kaution_verrechnen=True, kaution_bilanziert=Decimal('2000'))
+        self.assertEqual(daten['kaution'], Decimal('2000'))
+        self.assertEqual(daten['rueckzahlung'], Decimal('2000.00'))   # nicht 3000
+        # Ohne den Parameter (Alt-Verhalten) bliebe es beim vereinbarten Betrag:
+        alt = berechne_schlussabrechnung(v, date(2024, 6, 30), [], kaution_verrechnen=True)
+        self.assertEqual(alt['kaution'], Decimal('3000'))
+
+    def test_befristetes_ende_ueberlebt_ausserordentliche_kuendigung_und_ruecknahme(self):
+        from rentals.models import Kuendigung
+        lg, e, m, v = _basis_objekte()
+        v.ist_befristet = True; v.ende = date(2030, 12, 31); v.save()
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        # Ausserordentliche Kündigung per 30.09.2026 → Vertrag endet früher
+        c.post(f'/neu/vertraege/{v.id}/kuendigen/',
+               {'eingang_datum': '2026-06-01', 'ausserordentlich': 'on',
+                'gewuenschtes_ende': '2026-09-30', 'bestaetigen': 'on'})
+        v.refresh_from_db()
+        self.assertEqual(v.ende, date(2026, 9, 30))
+        self.assertEqual(v.status, 'gekuendigt')
+        k = Kuendigung.objects.filter(vertrag=v).latest('id')
+        self.assertEqual(k.ende_vorher, date(2030, 12, 31))   # Snapshot
+        # Rücknahme → ursprüngliche Laufzeit wieder da
+        c.post(f'/neu/kuendigung/{k.id}/zuruecknehmen/', {})
+        v.refresh_from_db()
+        self.assertEqual(v.status, 'aktiv')
+        self.assertEqual(v.ende, date(2030, 12, 31))          # nicht 2026-09-30, nicht None

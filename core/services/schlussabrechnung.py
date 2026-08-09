@@ -24,9 +24,17 @@ def _fmt(d):
         return str(d)
 
 
-def berechne_schlussabrechnung(vertrag, auszug_datum, positionen, kaution_verrechnen=True):
+def berechne_schlussabrechnung(vertrag, auszug_datum, positionen, kaution_verrechnen=True,
+                               kaution_bilanziert=None):
     """positionen: Liste von dicts {'text': str, 'betrag': Decimal, 'zulasten': bool,
     'steuerbar': bool}.
+
+    kaution_bilanziert: die TATSÄCHLICH auf dem Sperrkonto bilanzierte Kaution
+    (2010-Saldo, via _kaution_bilanziert). Wird sie übergeben, ist sie die
+    Obergrenze der Gutschrift — sonst zeigte die Abrechnung/das PDF dem Mieter das
+    volle VEREINBARTE Depot als Guthaben, obwohl die Buchung nur den einbezahlten
+    Teil freigibt (nicht voll einbezahlt / teilweise schon aufgelöst). Anzeige und
+    Buchung liefen so auseinander (QS-Befund).
     zulasten=True → Mieter schuldet; False → Gutschrift an Mieter.
     steuerbar=True → die Position ist ein Entgelt und bei optierten Verhältnissen
     MWST-pflichtig (typisch: der Nebenkosten-Abrechnungssaldo). Schadenersatz ist
@@ -83,6 +91,10 @@ def berechne_schlussabrechnung(vertrag, auszug_datum, positionen, kaution_verrec
     #    gutgeschrieben; Schäden erscheinen als normale Positionen (zulasten).
     kaution = vertrag.kautions_betrag or Decimal('0.00')
     ist_versicherung = getattr(vertrag, 'ist_kautionsversicherung', False)
+    # Gutschrift höchstens in Höhe der bilanzierten (einbezahlten/noch offenen)
+    # Kaution — deckungsgleich mit der Buchung (min(vereinbart, bilanziert)).
+    if kaution_bilanziert is not None and not ist_versicherung:
+        kaution = min(kaution, max(Decimal('0.00'), kaution_bilanziert))
     kaution_gutschrift = bool(kaution_verrechnen and kaution > 0 and not ist_versicherung)
     if kaution_gutschrift:
         zeilen.append({'text': 'Mietkaution Sperrkonto (Guthaben Mieter)', 'betrag': kaution, 'zulasten': False})

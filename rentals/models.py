@@ -765,6 +765,12 @@ class Kuendigung(models.Model):
     gewuenschtes_ende = models.DateField("Gewünschtes Vertragsende", null=True, blank=True)
     berechneter_termin = models.DateField("Nächster ordentlicher Termin", null=True, blank=True)
     per_datum = models.DateField("Vertragsende (wirksam)", null=True, blank=True)
+    # Das VOR der Kündigung gültige Vertragsende (Snapshot). Bei einer
+    # ausserordentlichen Kündigung eines BEFRISTETEN Vertrags wird `vertrag.ende`
+    # auf den früheren Kündigungstermin gesetzt; wird die Kündigung später
+    # zurückgenommen, stellt dieser Snapshot die ursprünglich vereinbarte Laufzeit
+    # wieder her (sonst wäre sie unwiederbringlich verloren, QS-Befund).
+    ende_vorher = models.DateField("Vertragsende vor Kündigung", null=True, blank=True)
     ausserordentlich = models.BooleanField("Ausserordentliche Kündigung", default=False)
     ausserordentlich_grund = models.CharField("Grund (ausserordentlich)", max_length=200, blank=True, default='')
     erstreckung_bis = models.DateField("Erstreckung bis", null=True, blank=True)

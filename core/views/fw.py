@@ -3024,7 +3024,11 @@ def fw_schlussabrechnung(request, vertrag_id):
                                'zulasten': (richtung == 'zulasten'),
                                'steuerbar': steuerbar})
 
-        daten = berechne_schlussabrechnung(v, auszug, positionen, kaution_verrechnen=kaution_verrechnen)
+        # Die bilanzierte Kaution (2010-Saldo) als Obergrenze mitgeben, damit
+        # Anzeige/PDF exakt das gutschreiben, was die Buchung freigibt (QS-Befund).
+        daten = berechne_schlussabrechnung(v, auszug, positionen,
+                                           kaution_verrechnen=kaution_verrechnen,
+                                           kaution_bilanziert=_kaution_bilanziert(v))
         aktion = request.POST.get('aktion', 'pdf')
 
         if aktion == 'buchen':
@@ -11318,6 +11322,7 @@ def fw_kuendigung_erfassen(request, vertrag_id):
             vertrag=v, absender=P.get('absender', 'mieter'),
             eingang_datum=eingang, zustellung=P.get('zustellung', 'einschreiben'),
             gewuenschtes_ende=gewuenscht, berechneter_termin=termin, per_datum=per,
+            ende_vorher=v.ende,   # Snapshot der bisherigen Laufzeit (für Rücknahme)
             ausserordentlich=ausserord, ausserordentlich_grund=P.get('ausserordentlich_grund', '').strip(),
             erstreckung_bis=d('erstreckung_bis'), status='bestaetigt' if P.get('bestaetigen') == 'on' else 'erfasst',
             bemerkung=P.get('bemerkung', '').strip(),
@@ -11527,14 +11532,18 @@ def fw_kuendigung_zuruecknehmen(request, pk):
         if not andere:
             v.status = 'aktiv'
             v.aktiv = True
-            # Nur ein UNbefristeter Vertrag verliert sein Ende — er läuft nach
-            # der Rücknahme wieder auf unbestimmte Zeit. Bei einem BEFRISTETEN
-            # Vertrag ist `ende` das vereinbarte Zeitablauf-Datum (Art. 266 OR),
-            # nicht die Kündigung; es hart auf None zu setzen liess den Vertrag
-            # unbegrenzt weiterlaufen und machte die vereinbarte Dauer
-            # unwiederbringlich (Datenverlust).
+            # Vertragsende wiederherstellen. Ein UNbefristeter Vertrag läuft nach
+            # der Rücknahme wieder auf unbestimmte Zeit (ende = None). Bei einem
+            # BEFRISTETEN Vertrag wird die ursprünglich vereinbarte Laufzeit aus dem
+            # Snapshot (`ende_vorher`, bei Kündigungserfassung gesichert) restauriert
+            # — sonst bliebe der bei einer ausserordentlichen Kündigung gesetzte
+            # frühere Termin stehen und die vereinbarte Dauer wäre verloren (QS-Befund).
             if not v.ist_befristet:
                 v.ende = None
+            elif k.ende_vorher is not None:
+                v.ende = k.ende_vorher
+            # (befristet ohne Snapshot = Alt-Kündigung: `ende` unverändert lassen —
+            #  nicht auf None, der Vertrag ist befristet.)
             v.save(update_fields=['status', 'aktiv', 'ende'])
         log_aktion(request, "Kündigung zurückgezogen", str(v.mieter), '', ziel=v)
         messages.success(request, "✅ Kündigung zurückgezogen, Vertrag reaktiviert.")
