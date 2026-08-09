@@ -16283,3 +16283,31 @@ class HealthzTests(TestCase):
         self.assertEqual(r.json().get('status'), 'error')
         # Kein interner Fehlertext nach aussen.
         self.assertNotIn('db weg', r.content.decode())
+
+
+class FaviconKonsistenzTests(TestCase):
+    """Design: die aussenwirksamen Standalone-Seiten (Login, Portale,
+    Fehlerseiten) tragen dasselbe Favicon wie das Cockpit — sonst zeigen
+    Eigentümer/Mieter einen leeren Browser-Tab ohne Markenbezug.
+
+    Prüft die Template-Quelle direkt (kein Rendern nötig) — so bleibt der Test
+    stabil und schlägt an, wenn eine dieser Seiten das Favicon verliert."""
+
+    AUSSEN_TEMPLATES = [
+        'core/login.html', 'core/portal_login.html',
+        'core/portal_base.html', 'core/portal.html',
+        '403.html', '404.html', '500.html',
+    ]
+
+    def test_alle_aussen_seiten_haben_favicon(self):
+        from django.template.loader import get_template
+        for name in self.AUSSEN_TEMPLATES:
+            quelle = get_template(name).template.source
+            self.assertIn('rel="icon"', quelle, f'{name}: kein Favicon-Link')
+            self.assertIn('>si</text>', quelle, f'{name}: nicht das Haus-Favicon')
+
+    def test_login_seite_liefert_favicon(self):
+        # End-to-End: die Login-Seite (ohne Anmeldung erreichbar) rendert das Favicon.
+        r = Client().get('/login/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'rel="icon"')
