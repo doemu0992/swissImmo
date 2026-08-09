@@ -112,6 +112,36 @@
     </a>
 </div>
 
+<!-- ================= MIETERTRAG-VERLAUF (Analytics) ================= -->
+{% if dash_chart and dash_chart.has_data %}
+<div class="bg-white rounded-xl border border-slate-200 mb-4">
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-2 flex-wrap">
+        <div class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-chart-area text-indigo-500 mr-1.5"></i>Mietertrag — Soll vs. Ist</div>
+        <span class="text-xs text-slate-400">letzte 12 Monate</span>
+        <span class="ml-auto text-[10px] font-bold uppercase tracking-wide text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Neu</span>
+    </div>
+    <div class="px-3 pt-3">
+        <svg viewBox="0 0 620 210" preserveAspectRatio="none" class="w-full" style="height:190px" aria-hidden="true">
+            <defs><linearGradient id="fwMietGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#4f46e5" stop-opacity="0.24"/>
+                <stop offset="1" stop-color="#4f46e5" stop-opacity="0.02"/>
+            </linearGradient></defs>
+            <line x1="0" y1="45" x2="620" y2="45" stroke="#eef0f4"/>
+            <line x1="0" y1="105" x2="620" y2="105" stroke="#eef0f4"/>
+            <line x1="0" y1="165" x2="620" y2="165" stroke="#eef0f4"/>
+            <line x1="0" y1="{{ dash_chart.soll_y }}" x2="620" y2="{{ dash_chart.soll_y }}" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 4"/>
+            <path d="{{ dash_chart.area }}" fill="url(#fwMietGrad)"/>
+            <polyline points="{{ dash_chart.ist_points }}" fill="none" stroke="#4f46e5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="{{ dash_chart.last_x }}" cy="{{ dash_chart.last_y }}" r="3.6" fill="#4f46e5"/>
+        </svg>
+    </div>
+    <div class="flex gap-4 px-5 pb-3 text-xs text-slate-500">
+        <span class="inline-flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-sm" style="background:#4f46e5"></span>Ist-Mietertrag</span>
+        <span class="inline-flex items-center gap-1.5"><span class="inline-block w-3" style="height:2px;background:#94a3b8"></span>Soll-Potenzial</span>
+    </div>
+</div>
+{% endif %}
+
 <!-- ================= PORTFOLIO ================= -->
 <div class="flex items-center gap-2 mt-4 mb-3">
     <h2 class="text-lg font-bold text-slate-800">Portfolio</h2>
@@ -165,6 +195,57 @@
             <div><span class="font-bold text-emerald-600 mr-2">{{ v_aktiv }}</span><span class="text-slate-500">Aktiv</span></div>
             <div><span class="font-bold text-rose-600 mr-2">{{ v_gekuendigt }}</span><span class="text-slate-500">Gekündigt</span></div>
             <div><span class="font-bold text-amber-500 mr-2">{{ v_zukuenftig }}</span><span class="text-slate-500">Zukünftig</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= BELEGUNG + AKTIVITÄT (Analytics) ================= -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+
+    <!-- Belegung nach Nutzung (Donut aus breakdown) -->
+    <div class="bg-white rounded-xl border border-slate-200">
+        <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
+            <div class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-chart-pie text-indigo-500 mr-1.5"></i>Belegung nach Nutzung</div>
+            <span class="ml-auto text-[10px] font-bold uppercase tracking-wide text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Neu</span>
+        </div>
+        <div class="p-5 flex items-center gap-5 flex-wrap">
+            {% if belegung_conic %}
+            <div class="relative w-32 h-32 rounded-full shrink-0" style="background:{{ belegung_conic }}">
+                <div class="absolute inset-4 rounded-full bg-white flex flex-col items-center justify-center">
+                    <span class="text-2xl font-bold text-slate-800">{{ objekte_count }}</span>
+                    <span class="text-[10px] uppercase tracking-wide text-slate-400 font-semibold">Einheiten</span>
+                </div>
+            </div>
+            {% endif %}
+            <div class="flex-1 min-w-[130px] space-y-2 text-sm">
+                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm" style="background:#4f46e5"></span><span class="text-slate-500">Wohnen</span><span class="ml-auto font-bold text-slate-700">{{ breakdown.wohnen }}</span></div>
+                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm" style="background:#0891b2"></span><span class="text-slate-500">Parkplatz</span><span class="ml-auto font-bold text-slate-700">{{ breakdown.parkplatz }}</span></div>
+                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm" style="background:#d97706"></span><span class="text-slate-500">Gewerbe</span><span class="ml-auto font-bold text-slate-700">{{ breakdown.gewerbe }}</span></div>
+                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm" style="background:#94a3b8"></span><span class="text-slate-500">Weitere</span><span class="ml-auto font-bold text-slate-700">{{ breakdown.weitere }}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Letzte Aktivität (aus AktivitaetsLog) -->
+    <div class="bg-white rounded-xl border border-slate-200">
+        <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
+            <div class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-clock-rotate-left text-indigo-500 mr-1.5"></i>Letzte Aktivität</div>
+            <span class="ml-auto text-[10px] font-bold uppercase tracking-wide text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Neu</span>
+        </div>
+        <div class="divide-y divide-slate-50">
+            {% for a in dash_aktivitaet %}
+            <div class="flex items-start gap-3 px-5 py-2.5">
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0 {% if a.kategorie == 'finanzen' %}bg-emerald-50 text-emerald-600{% elif a.kategorie == 'geloescht' %}bg-rose-50 text-rose-500{% elif a.kategorie == 'versand' %}bg-sky-50 text-sky-600{% elif a.kategorie == 'sicherheit' %}bg-slate-100 text-slate-500{% else %}bg-indigo-50 text-indigo-600{% endif %}">
+                    <i class="fa-solid {% if a.kategorie == 'finanzen' %}fa-coins{% elif a.kategorie == 'geloescht' %}fa-trash{% elif a.kategorie == 'versand' %}fa-paper-plane{% elif a.kategorie == 'bearbeitet' %}fa-pen{% else %}fa-plus{% endif %}"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-sm text-slate-800 truncate">{{ a.aktion }}{% if a.objekt %} — <span class="text-slate-500">{{ a.objekt }}</span>{% endif %}</div>
+                    <div class="text-[11px] text-slate-400">{{ a.zeitpunkt|date:"d.m. H:i" }}{% if a.benutzer %} · {{ a.benutzer.username }}{% endif %}</div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="px-5 py-6 text-sm text-slate-400 italic">Noch keine Aktivität erfasst.</p>
+            {% endfor %}
         </div>
     </div>
 </div>

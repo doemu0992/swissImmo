@@ -186,9 +186,90 @@ def fw_dashboard(request):
                    if inbox_typen.get(k)]
     inbox_dringend = sum(1 for e in inbox if e['dringend'])
 
+    # --- Analytics fürs Dashboard (rein additiv, DEFENSIV: dürfen das Cockpit
+    #     nie brechen — jede Auswertung ist in try/except gekapselt und liefert
+    #     im Fehlerfall einfach nichts, die Karte wird dann ausgeblendet). ---
+    dash_aktivitaet = []
+    try:
+        from core.models import AktivitaetsLog
+        dash_aktivitaet = list(AktivitaetsLog.objects.select_related('benutzer')
+                               .order_by('-id')[:6])
+    except Exception:
+        logger.debug("Dashboard-Aktivität übersprungen", exc_info=True)
+
+    belegung_conic = ''
+    try:
+        _cols = {'wohnen': '#4f46e5', 'parkplatz': '#0891b2',
+                 'gewerbe': '#d97706', 'weitere': '#94a3b8'}
+        _tot = sum(breakdown.values())
+        if _tot:
+            _stops = []
+            _acc = 0.0
+            for _k in ('wohnen', 'parkplatz', 'gewerbe', 'weitere'):
+                _pct = breakdown.get(_k, 0) / _tot * 100
+                _stops.append(f"{_cols[_k]} {_acc:.2f}% {_acc + _pct:.2f}%")
+                _acc += _pct
+            belegung_conic = "conic-gradient(" + ", ".join(_stops) + ")"
+    except Exception:
+        logger.debug("Dashboard-Belegung übersprungen", exc_info=True)
+
+    dash_chart = None
+    try:
+        from finance.models import Buchung
+        import calendar as _cal
+        # 12 Monate rückwärts inkl. aktuellem Monat
+        _months = []
+        _y, _m = heute.year, heute.month
+        for _ in range(12):
+            _months.append((_y, _m))
+            _m -= 1
+            if _m == 0:
+                _m = 12
+                _y -= 1
+        _months.reverse()
+        _first = date(_months[0][0], _months[0][1], 1)
+        # Ist-Mietertrag = Habenbuchungen auf 3000/3010 (ohne Storni), pro Monat
+        _bq = Buchung.objects.filter(ist_storno=False,
+                                     haben_konto__nummer__in=['3000', '3010'],
+                                     datum__gte=_first)
+        if aktive_lg:
+            _bq = _bq.filter(liegenschaft=aktive_lg)
+        _sums = {}
+        for _r in _bq.values('datum__year', 'datum__month').annotate(s=Sum('betrag')):
+            _sums[(_r['datum__year'], _r['datum__month'])] = float(_r['s'] or 0)
+        _ist = [_sums.get((yy, mm), 0.0) for (yy, mm) in _months]
+        _soll = float(soll_potenzial or 0)
+        _mx = max(_ist + [_soll, 1.0])
+        _W, _H, _P = 620.0, 210.0, 24.0
+
+        def _pt(i, val):
+            x = (i / 11.0) * _W
+            yv = _H - _P - (val / _mx) * (_H - 2 * _P)
+            return (x, yv)
+
+        _ist_pairs = [_pt(i, v) for i, v in enumerate(_ist)]
+        _ist_points = " ".join(f"{x:.1f},{y:.1f}" for (x, y) in _ist_pairs)
+        _soll_y = _H - _P - (_soll / _mx) * (_H - 2 * _P)
+        _area = ("M" + " ".join(f"{x:.1f},{y:.1f}" for (x, y) in _ist_pairs)
+                 + f" L{_W:.0f},{_H:.0f} L0,{_H:.0f} Z")
+        dash_chart = {
+            'ist_points': _ist_points,
+            'soll_y': f"{_soll_y:.1f}",
+            'area': _area,
+            'last_x': f"{_ist_pairs[-1][0]:.1f}",
+            'last_y': f"{_ist_pairs[-1][1]:.1f}",
+            'has_data': any(v > 0 for v in _ist),
+        }
+    except Exception:
+        logger.debug("Dashboard-Chart übersprungen", exc_info=True)
+        dash_chart = None
+
     context = {
         **basis,
         'nav': 'dashboard',
+        'dash_aktivitaet': dash_aktivitaet,
+        'belegung_conic': belegung_conic,
+        'dash_chart': dash_chart,
         'liegenschaften_count': liegenschaften.count(),
         'objekte_count': einheiten.count(),
         'breakdown': breakdown,
