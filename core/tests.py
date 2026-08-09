@@ -16174,3 +16174,63 @@ class CamtGesperrtePeriodeQSTests(TestCase):
         r.refresh_from_db()
         self.assertEqual(r.status, 'bezahlt')
         self.assertEqual(Zahlungseingang.objects.filter(bank_referenz='GESPERRT1', status='verbucht').count(), 1)
+
+
+class CamtFuzzyNachnameQSTests(TestCase):
+    """QS Bankabgleich: die Fuzzy-Zuordnung «Betrag + Name» darf einen Nachnamen
+    nur als ganze Tokenfolge treffen, nicht als beliebige Teilzeichenkette —
+    sonst wird die Zahlung eines Fremden («Mustermann») dem Mieter «Muster»
+    automatisch gutgeschrieben."""
+
+    def _camt_named(self, dbtr, betrag='1700.00', acct_ref='FUZZY1'):
+        return (
+            '<?xml version="1.0"?><Document><BkToCstmrStmt><Stmt><Ntry>'
+            '<CdtDbtInd>CRDT</CdtDbtInd>'
+            f'<Amt Ccy="CHF">{betrag}</Amt>'
+            '<BookgDt><Dt>2024-03-05</Dt></BookgDt>'
+            '<NtryDtls><TxDtls>'
+            f'<Refs><AcctSvcrRef>{acct_ref}</AcctSvcrRef></Refs>'
+            f'<RltdPties><Dbtr><Nm>{dbtr}</Nm></Dbtr></RltdPties>'
+            '</TxDtls></NtryDtls>'
+            '</Ntry></Stmt></BkToCstmrStmt></Document>'
+        ).encode('utf-8')
+
+    def _setup(self):
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung
+        _seed_konten()
+        _basis_objekte()   # Mieter Nachname 'Muster', Miete+NK 1700
+        run_sollstellung(2024, 3)
+        return DebitorenRechnung.objects.get(titel='Miete & NK 03/2024')
+
+    def test_teilstring_nachname_bucht_nicht_falsch(self):
+        # Zahlung von «Peter Mustermann» (enthält 'muster' als Teilstring, aber
+        # NICHT als ganzes Token) darf dem Mieter «Muster» nicht gutgeschrieben
+        # werden. Ohne Referenz → Fuzzy-Pfad; exakter Betrag → einziger Kandidat.
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import Zahlungseingang
+        r = self._setup()
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        f = SimpleUploadedFile('camt.xml', self._camt_named('Peter Mustermann'),
+                               content_type='application/xml')
+        c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f})
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'offen',
+                         'Fremdzahlung «Mustermann» darf «Muster» nicht automatisch bezahlen')
+        self.assertEqual(
+            Zahlungseingang.objects.filter(debitoren_rechnung=r, status='verbucht').count(), 0)
+
+    def test_ganzes_token_nachname_bucht(self):
+        # Gegenprobe der Erwünschtheit: «Peter Muster» (Nachname als ganzes Token)
+        # wird weiterhin korrekt zugeordnet — die Härtung ist nicht zu streng.
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from finance.models import Zahlungseingang
+        r = self._setup()
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        f = SimpleUploadedFile('camt.xml', self._camt_named('Peter Muster'),
+                               content_type='application/xml')
+        c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f})
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'bezahlt')
+        self.assertEqual(
+            Zahlungseingang.objects.filter(debitoren_rechnung=r, status='verbucht').count(), 1)

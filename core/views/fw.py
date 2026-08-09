@@ -4500,6 +4500,26 @@ def fw_camt_import(request):
     def _norm(s):
         return ''.join(ch for ch in (s or '').lower() if ch.isalnum())
 
+    def _name_tokens(s):
+        """Wortweise normalisierte Tokens eines Namens (Reihenfolge erhalten)."""
+        return [t for t in (_norm(w) for w in re.split(r'\s+', s or '')) if t]
+
+    def _nachname_passt(nachname, dbtr):
+        """Nachname passt zum Auftraggeber, wenn er als zusammenhängende
+        Tokenfolge im Auftraggebernamen vorkommt.
+
+        Nicht als reine Teilzeichenkette (`_norm(nachname) in _norm(dbtr)`) —
+        ein kurzer Nachname («Ott») steckte sonst in einem fremden Namen
+        («Scott») und die Zahlung würde dem falschen Mieter automatisch
+        gutgeschrieben. Die Tokenfolge-Prüfung trägt mehrteilige Nachnamen
+        («Von Gunten») weiterhin, verlangt aber Wortgrenzen."""
+        ziel = _name_tokens(nachname)
+        hay = _name_tokens(dbtr)
+        if not ziel or not hay:
+            return False
+        n = len(ziel)
+        return any(hay[i:i + n] == ziel for i in range(len(hay) - n + 1))
+
     def _verbuche(rechnung, betrag, e, via):
         vertrag = rechnung.vertrag
         with transaction.atomic():
@@ -4637,9 +4657,12 @@ def fw_camt_import(request):
             return
 
         # 2) Fuzzy: exakter Betrag + Name des Auftraggebers passt eindeutig
-        name = _norm(e.get('dbtr_name', '')) or _norm(e.get('info', ''))
+        _dbtr_raw = e.get('dbtr_name', '')
+        if not _name_tokens(_dbtr_raw):
+            _dbtr_raw = e.get('info', '')
         kandidaten = [r for r in offene if r.vertrag_id and r.offener_betrag == betrag_e
-                      and name and r.vertrag.mieter and _norm(r.vertrag.mieter.nachname) and _norm(r.vertrag.mieter.nachname) in name]
+                      and r.vertrag.mieter
+                      and _nachname_passt(r.vertrag.mieter.nachname, _dbtr_raw)]
         if len(kandidaten) == 1:
             r = kandidaten[0]
             _verbuche(r, betrag_e, e, 'Name+Betrag')
