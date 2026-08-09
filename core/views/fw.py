@@ -4708,6 +4708,17 @@ def fw_camt_import(request):
             _eintrag_verarbeiten(e)
         except PermissionError:
             gesperrt += 1
+            # Die Bankbewegung wird in Autocommit angelegt, BEVOR die Buchung läuft;
+            # scheitert die Buchung an der Periodensperre, rollt nur das atomic der
+            # Buchung/Zahlung zurück — die Bewegung bliebe als Waise stehen. Beim
+            # Re-Import (nach Entsperren) gälte die Auszugszeile dann als Duplikat und
+            # die Zahlung würde NIE gebucht (QS-Befund). Deshalb die noch nicht mit
+            # einer Zahlung verknüpfte Bewegung dieser Zeile entfernen, damit der
+            # Re-Import sie neu anlegt und bucht.
+            _aref = e.get('acct_ref')
+            if _aref:
+                Bankbewegung.objects.filter(bank_referenz=_aref, zahlung__isnull=True,
+                                            status='offen').delete()
 
     log_aktion(request, f"{quelle}-Import", datei.name,
                f"{verbucht} verbucht (davon {fuzzy} fuzzy, {gelernt_treffer} gelernter "

@@ -16125,3 +16125,52 @@ class KuendigungSchlussabrechnungQSTests(TestCase):
         v.refresh_from_db()
         self.assertEqual(v.status, 'aktiv')
         self.assertEqual(v.ende, date(2030, 12, 31))          # nicht 2026-09-30, nicht None
+
+
+class CamtGesperrtePeriodeQSTests(TestCase):
+    """QS Bankabgleich: eine Zahlung, deren Buchung an der Periodensperre scheitert,
+    darf beim Re-Import (nach Entsperren) nicht als Duplikat verloren gehen."""
+
+    def _camt(self, ref, betrag='1700.00', acct_ref='GESPERRT1'):
+        return (
+            '<?xml version="1.0"?><Document><BkToCstmrStmt><Stmt><Ntry>'
+            '<CdtDbtInd>CRDT</CdtDbtInd>'
+            f'<Amt Ccy="CHF">{betrag}</Amt>'
+            '<BookgDt><Dt>2024-03-05</Dt></BookgDt>'
+            '<NtryDtls><TxDtls>'
+            f'<Refs><AcctSvcrRef>{acct_ref}</AcctSvcrRef></Refs>'
+            f'<RmtInf><Strd><CdtrRefInf><Ref>{ref}</Ref></CdtrRefInf></Strd></RmtInf>'
+            '</TxDtls></NtryDtls>'
+            '</Ntry></Stmt></BkToCstmrStmt></Document>'
+        ).encode('utf-8')
+
+    def test_gesperrte_periode_verliert_zahlung_beim_reimport_nicht(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from core.services.automation import run_sollstellung
+        from finance.models import DebitorenRechnung, Zahlungseingang, Bankbewegung
+        from crm.models import Verwaltung
+        _seed_konten()
+        _basis_objekte()
+        run_sollstellung(2024, 3)
+        r = DebitorenRechnung.objects.get(titel='Miete & NK 03/2024')
+        # Periode sperren, sodass die Buchung per 05.03.2024 scheitert.
+        Verwaltung.objects.create(firma='V AG', strasse='W 1', plz='8000', ort='Zürich',
+                                  buchung_gesperrt_bis=date(2024, 12, 31))
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+
+        # 1) Import in gesperrter Periode → nichts gebucht, KEINE Waisen-Bewegung.
+        f = SimpleUploadedFile('camt.xml', self._camt(r.qr_referenz), content_type='application/xml')
+        c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f})
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'offen')
+        self.assertEqual(Zahlungseingang.objects.filter(bank_referenz='GESPERRT1').count(), 0)
+        self.assertEqual(Bankbewegung.objects.filter(bank_referenz='GESPERRT1').count(), 0,
+                         'Waisen-Bankbewegung blockiert den Re-Import')
+
+        # 2) Periode öffnen, dieselbe Datei erneut importieren → jetzt gebucht.
+        vw = Verwaltung.objects.first(); vw.buchung_gesperrt_bis = None; vw.save()
+        f2 = SimpleUploadedFile('camt.xml', self._camt(r.qr_referenz), content_type='application/xml')
+        c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f2})
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'bezahlt')
+        self.assertEqual(Zahlungseingang.objects.filter(bank_referenz='GESPERRT1', status='verbucht').count(), 1)
