@@ -15,6 +15,24 @@ from django.utils import timezone
 logger = logging.getLogger(__name__)
 
 
+def download_url_erlaubt(url):
+    """SSRF-Schutz für DocuSeal-Dokument-Downloads: True nur bei HTTPS UND einem
+    Host aus DOCUSEAL_DOWNLOAD_HOSTS (exakt oder Subdomain).
+
+    Die doc_url stammt aus dem Webhook-Payload und ist damit von aussen
+    steuerbar; ohne diese Prüfung liesse sich der Server zu einem GET auf eine
+    beliebige (auch interne) URL bewegen. Von core/views/docuseal.py und
+    rentals/api.py gemeinsam genutzt, damit beide Webhook-Pfade identisch
+    abgesichert sind."""
+    from urllib.parse import urlparse
+    parsed = urlparse(url or '')
+    if parsed.scheme != 'https' or not parsed.hostname:
+        return False
+    host = parsed.hostname.lower()
+    erlaubte = getattr(settings, 'DOCUSEAL_DOWNLOAD_HOSTS', set()) or set()
+    return any(host == h or host.endswith('.' + h) for h in erlaubte)
+
+
 def docuseal_konfiguriert():
     return bool(getattr(settings, 'DOCUSEAL_API_KEY', None))
 

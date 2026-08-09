@@ -6187,7 +6187,7 @@ class DocuSealWebhookTests(TestCase):
         lg, e, m, v = _basis_objekte()
         resp = MagicMock(status_code=200, content=b'%PDF-signed')
         payload = {'event_type': 'submission.completed',
-                   'data': {'name': f'Mietvertrag {v.id}', 'combined_document_url': 'http://x/y.pdf'}}
+                   'data': {'name': f'Mietvertrag {v.id}', 'combined_document_url': 'https://api.docuseal.com/y.pdf'}}
         with patch('rentals.api.requests.get', return_value=resp):
             ok = verarbeite_docuseal_event(payload)
         self.assertTrue(ok)
@@ -6203,9 +6203,26 @@ class DocuSealWebhookTests(TestCase):
         lg, e, m, v = _basis_objekte()
         resp = MagicMock(status_code=200, content=b'%PDF-x')
         payload = {'event_type': 'form.completed',
-                   'data': {'name': f'Mietvertrag {v.id}', 'documents': [{'url': 'http://x/doc.pdf'}]}}
+                   'data': {'name': f'Mietvertrag {v.id}', 'documents': [{'url': 'https://api.docuseal.com/doc.pdf'}]}}
         with patch('rentals.api.requests.get', return_value=resp):
             self.assertTrue(verarbeite_docuseal_event(payload))
+
+    def test_completed_ssrf_fremde_url_wird_abgewiesen(self):
+        # SSRF-Schutz: eine doc_url auf fremdem/nicht-HTTPS-Host darf NICHT
+        # heruntergeladen werden — kein requests.get, kein Ablegen (Härtung).
+        from unittest.mock import patch, MagicMock
+        from rentals.api import verarbeite_docuseal_event
+        lg, e, m, v = _basis_objekte()
+        resp = MagicMock(status_code=200, content=b'%PDF-evil')
+        payload = {'event_type': 'submission.completed',
+                   'data': {'name': f'Mietvertrag {v.id}',
+                            'combined_document_url': 'http://169.254.169.254/latest/meta-data'}}
+        with patch('rentals.api.requests.get', return_value=resp) as g:
+            ok = verarbeite_docuseal_event(payload)
+        self.assertFalse(ok)
+        g.assert_not_called()
+        v.refresh_from_db()
+        self.assertNotEqual(v.sign_status, 'unterzeichnet')
 
     def test_webhook_endpoint_gibt_200(self):
         # Mit gültigem Secret: Endpunkt darf NIE 422/'Wert ungültig' liefern, auch bei

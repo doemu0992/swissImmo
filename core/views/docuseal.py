@@ -227,15 +227,10 @@ def docuseal_webhook(request):
                     if len(docs) > 0: doc_url = docs[0].get('url')
 
                 if doc_url:
-                    # SSRF-Schutz: nur HTTPS und erlaubte DocuSeal-Hosts herunterladen.
-                    from urllib.parse import urlparse
-                    parsed = urlparse(doc_url)
-                    erlaubte_hosts = getattr(settings, 'DOCUSEAL_DOWNLOAD_HOSTS', set())
-                    host_ok = parsed.hostname and any(
-                        parsed.hostname.lower() == h or parsed.hostname.lower().endswith('.' + h)
-                        for h in erlaubte_hosts
-                    )
-                    if parsed.scheme != 'https' or not host_ok:
+                    # SSRF-Schutz: nur HTTPS und erlaubte DocuSeal-Hosts herunterladen
+                    # (gemeinsamer Helper, identisch zu rentals/api.py).
+                    from core.services.docuseal_service import download_url_erlaubt
+                    if not download_url_erlaubt(doc_url):
                         logger.warning("DocuSeal-Webhook: Download-URL abgewiesen (%s)", doc_url)
                         return HttpResponse("OK", status=200)
                     # 3. PDF herunterladen

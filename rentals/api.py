@@ -318,6 +318,12 @@ def verarbeite_docuseal_event(payload):
                or _erster_dokument_url(submission.get('documents')))
     if not doc_url:
         return False
+    # SSRF-Schutz: die doc_url stammt aus dem Webhook-Payload — nur HTTPS und
+    # erlaubte DocuSeal-Hosts herunterladen (identisch zu core/views/docuseal.py).
+    from core.services.docuseal_service import download_url_erlaubt
+    if not download_url_erlaubt(doc_url):
+        logger.warning("DocuSeal-Event: Download-URL abgewiesen (%s)", doc_url)
+        return False
     try:
         r = requests.get(doc_url, timeout=30)
     except Exception:
