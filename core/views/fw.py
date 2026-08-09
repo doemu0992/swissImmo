@@ -11755,9 +11755,16 @@ def fw_kaution_aktion(request, vertrag_id):
             if rueck < 0 or abzug < 0:
                 messages.error(request, "❌ Rückzahlung und Einbehalt dürfen nicht negativ sein.")
                 return redirect(f'/neu/vertraege/{v.id}/')
-            if rueck + abzug > total + Decimal('0.01'):
+            # VOLLABDECKUNG: Rückzahlung + Einbehalt müssen die einbezahlte Kaution
+            # exakt abdecken. Bei einer Unter-Allokation (rueck+abzug < total) würde
+            # das Sperrkonto (1015) voll freigegeben, aber die Kautionsverbindlichkeit
+            # (2010) bliebe teilweise offen stehen — das Restgeld läge unerklärt auf
+            # dem Bankkonto (1020), während der Mieter buchhalterisch weiter Geld zugut
+            # hätte. Die Auflösung ist ein einmaliger Vorgang, kein Tranchen-Modell.
+            if abs((rueck + abzug) - total) > Decimal('0.01'):
                 messages.error(request, f"❌ Rückzahlung (CHF {rueck}) + Einbehalt (CHF {abzug}) "
-                                        f"übersteigt die Kaution (CHF {total}).")
+                                        f"müssen die einbezahlte Kaution (CHF {total}) vollständig "
+                                        f"abdecken.")
                 return redirect(f'/neu/vertraege/{v.id}/')
         v.kautions_zurueckbezahlt_am = d('zurueckbezahlt_am') or timezone.localdate()
         v.kautions_rueckzahlung_betrag = rueck

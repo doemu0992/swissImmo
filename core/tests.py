@@ -11249,6 +11249,35 @@ class BuchhalterFixesTests(TestCase):
         self.assertEqual(self._saldo('2010'), Decimal('0.00'))
         self.assertEqual(self._saldo('1015'), Decimal('0.00'))
 
+    def test_kaution_rueckzahlung_muss_voll_abdecken(self):
+        # Unter-Allokation (Rückzahlung + Einbehalt < Kaution) muss abgewiesen
+        # werden — sonst wird das Sperrkonto (1015) voll freigegeben, aber die
+        # Kautionsverbindlichkeit (2010) bliebe teilweise offen (Geld unerklärt
+        # auf 1020). Live-QS Kautionen.
+        from finance.booking import ensure_kontenplan
+        from core.services.automation import buche_kaution_einzahlung
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        v.kautions_betrag = Decimal('3000'); v.kautions_art = 'sperrkonto'
+        v.kautions_einbezahlt_am = date(2024, 1, 1); v.save()
+        buche_kaution_einzahlung(v, date(2024, 1, 1))
+        c = Client(); c.force_login(_team_user('Verwaltung'))
+        # 1500 zurück + 200 Einbehalt = 1700 < 3000 → abgelehnt
+        c.post(f'/neu/vertraege/{v.id}/kaution/',
+               {'aktion': 'rueckzahlung', 'zurueckbezahlt_am': '2024-06-30',
+                'rueckzahlung_betrag': '1500', 'abzug_betrag': '200'})
+        # Nichts gebucht: 2010 trägt weiter die volle Kaution, 1015 unverändert.
+        self.assertEqual(self._saldo('2010'), Decimal('-3000.00'))  # Haben-Saldo = Verbindlichkeit
+        self.assertEqual(self._saldo('1015'), Decimal('3000.00'))   # Soll-Saldo = Sperrkonto
+        v.refresh_from_db()
+        self.assertIsNone(v.kautions_zurueckbezahlt_am)
+        # Voll abgedeckt (1700 + 1300) geht durch:
+        c.post(f'/neu/vertraege/{v.id}/kaution/',
+               {'aktion': 'rueckzahlung', 'zurueckbezahlt_am': '2024-06-30',
+                'rueckzahlung_betrag': '2700', 'abzug_betrag': '300'})
+        self.assertEqual(self._saldo('2010'), Decimal('0.00'))
+        self.assertEqual(self._saldo('1015'), Decimal('0.00'))
+
     def test_schlussabrechnung_gutschrift_nur_einmal(self):
         # Gutschrift-Fall ohne Kaution: die Idempotenz hing an
         # `kautions_zurueckbezahlt_am`, das hier nie gesetzt wird — ein zweiter
