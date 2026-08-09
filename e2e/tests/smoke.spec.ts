@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login } from './helpers';
+import { login, goto } from './helpers';
 
 // Smoke: Nach dem Login müssen die zentralen /neu/-Seiten ohne Serverfehler
 // rendern. Fängt Template-/Rendering-Regressionen, die die Django-Unit-Tests
@@ -21,7 +21,7 @@ const SEITEN: Array<{ url: string; erwartet: RegExp }> = [
 
 for (const seite of SEITEN) {
   test(`Seite rendert: ${seite.url}`, async ({ page }) => {
-    const resp = await page.goto(seite.url);
+    const resp = await page.goto(seite.url, { waitUntil: 'domcontentloaded' });
     expect(resp?.status(), `HTTP-Status für ${seite.url}`).toBeLessThan(400);
     await expect(page.locator('body')).toContainText(seite.erwartet);
     // Keine Django-Debug-Fehlerseite
