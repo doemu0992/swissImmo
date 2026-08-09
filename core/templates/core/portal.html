@@ -6,143 +6,318 @@
     <title>Eigentümer-Portal — SwissImmo</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
     <style>
-        :root { color-scheme: light; }
+        :root {
+            --bg: #f6f7fb; --surface: #ffffff; --surface-2: #f1f2f8;
+            --ink: #171a2b; --muted: #5b6072; --faint: #8b90a4; --line: #e6e7f0;
+            --accent: #4f46e5; --accent-strong: #4338ca; --accent-soft: #eef0fe;
+            --good: #16a34a; --warn: #d97706; --warn-soft: #fdf1e1;
+            --crit: #dc2626; --crit-soft: #fdeaea;
+            --shadow: 0 1px 2px rgba(23,26,43,.05), 0 6px 20px rgba(23,26,43,.06);
+            --radius: 16px;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #0e1020; --surface: #171a2e; --surface-2: #1e2138;
+                --ink: #e7e8f2; --muted: #9aa0b8; --faint: #6b7192; --line: #262a44;
+                --accent: #6366f1; --accent-strong: #818cf8; --accent-soft: #20233d;
+                --good: #34d399; --warn: #fbbf24; --warn-soft: #2a2113;
+                --crit: #f87171; --crit-soft: #2b1618;
+                --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+            }
+        }
+        :root[data-theme="dark"] {
+            --bg: #0e1020; --surface: #171a2e; --surface-2: #1e2138;
+            --ink: #e7e8f2; --muted: #9aa0b8; --faint: #6b7192; --line: #262a44;
+            --accent: #6366f1; --accent-strong: #818cf8; --accent-soft: #20233d;
+            --good: #34d399; --warn: #fbbf24; --warn-soft: #2a2113;
+            --crit: #f87171; --crit-soft: #2b1618;
+            --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+        }
         * { box-sizing: border-box; margin: 0; }
         body {
-            font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: #f1f5f9; color: #0f172a; line-height: 1.5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg); color: var(--ink); line-height: 1.5; -webkit-font-smoothing: antialiased;
         }
-        header {
-            background: #1e3a8a; color: #fff;
-            padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;
+        .num { font-variant-numeric: tabular-nums; }
+
+        .topbar {
+            position: sticky; top: 0; z-index: 20;
+            display: flex; align-items: center; gap: 14px; padding: 12px 20px;
+            background: color-mix(in srgb, var(--surface) 88%, transparent);
+            backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--line);
         }
-        header h1 { font-size: 18px; font-weight: 600; }
-        header form { margin: 0; }
-        header button {
-            background: rgba(255,255,255,.15); color: #fff; border: 0;
-            padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px;
+        .brand { display: flex; align-items: center; gap: 11px; }
+        .brand .mark {
+            width: 34px; height: 34px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+            color: #fff; font-weight: 800; font-size: 15px; display: grid; place-items: center;
+            letter-spacing: -.02em; box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 45%, transparent);
         }
-        header button:hover { background: rgba(255,255,255,.25); }
-        main { max-width: 960px; margin: 0 auto; padding: 24px 16px 64px; }
-        .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
-        .kpi { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(15,23,42,.08); }
-        .kpi .wert { font-size: 24px; font-weight: 700; }
-        .kpi .label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
-        .card { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(15,23,42,.08); margin-bottom: 20px; overflow: hidden; }
-        .card h2 { font-size: 16px; padding: 14px 16px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; }
-        .card h2 .soll { font-size: 14px; color: #16a34a; font-weight: 600; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th { text-align: left; font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: .04em; padding: 10px 16px; border-bottom: 1px solid #e2e8f0; }
-        td { padding: 10px 16px; border-bottom: 1px solid #f1f5f9; }
-        tr:last-child td { border-bottom: 0; }
-        td.num, th.num { text-align: right; white-space: nowrap; }
-        .leer { color: #dc2626; font-weight: 600; }
-        .hinweis { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; padding: 16px; border-radius: 12px; }
-        footer { text-align: center; color: #94a3b8; font-size: 12px; padding: 24px; }
-        @media (max-width: 640px) {
-            th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3) { display: none; }
+        .brand .name { font-weight: 700; font-size: 15px; letter-spacing: -.01em; }
+        .brand .sub { font-size: 12px; color: var(--muted); }
+        .topbar .spacer { flex: 1; }
+        .iconbtn {
+            display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 10px;
+            border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; font-size: 15px;
+        }
+        .iconbtn:hover { color: var(--ink); border-color: var(--accent); }
+        .logout {
+            border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+            font: inherit; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 10px; cursor: pointer;
+        }
+        .logout:hover { color: var(--ink); border-color: var(--faint); }
+
+        main { max-width: 1080px; margin: 0 auto; padding: 26px 20px 72px; }
+
+        .hello { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-bottom: 22px; }
+        .hello h1 { font-size: 22px; letter-spacing: -.02em; text-wrap: balance; }
+        .hello p { color: var(--muted); font-size: 14px; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; text-decoration: none;
+            padding: 9px 14px; border-radius: 10px; cursor: pointer;
+            border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+        }
+        .btn:hover { border-color: var(--accent); }
+        .btn.primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-strong)); color: #fff; border-color: transparent;
+            box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 40%, transparent);
+        }
+
+        .attention {
+            background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--warn);
+            border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 22px; overflow: hidden;
+        }
+        .attention > .h {
+            display: flex; align-items: center; gap: 10px; padding: 14px 18px;
+            border-bottom: 1px solid var(--line); background: var(--warn-soft);
+        }
+        .attention > .h .t { font-weight: 700; font-size: 14px; }
+        .badge-count {
+            margin-left: auto; font-size: 12px; font-weight: 700; color: var(--warn);
+            background: color-mix(in srgb, var(--warn) 16%, transparent); padding: 3px 9px; border-radius: 999px;
+        }
+        .freigabe { padding: 14px 18px; }
+        .freigabe + .freigabe { border-top: 1px solid var(--line); }
+        .freigabe .top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .freigabe .titel { font-weight: 600; font-size: 14px; }
+        .freigabe .meta { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+        .freigabe .kosten { font-weight: 700; font-size: 14px; white-space: nowrap; }
+        .fform { margin-top: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .fform input {
+            flex: 1; min-width: 160px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+            border-radius: 9px; padding: 8px 11px; font: inherit; font-size: 13px;
+        }
+        .mini { font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; padding: 8px 14px; border-radius: 9px; border: 1px solid transparent; }
+        .mini.ok { background: var(--good); color: #fff; }
+        .mini.no { background: var(--surface); color: var(--crit); border-color: color-mix(in srgb, var(--crit) 35%, var(--line)); }
+        .mini.no:hover { background: var(--crit-soft); }
+
+        .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); gap: 12px; margin-bottom: 8px; }
+        .kpi {
+            background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 15px 16px;
+            box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 3px;
+        }
+        .kpi.accent { background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 12%, var(--surface)), var(--surface)); }
+        .kpi .label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--faint); font-weight: 600; }
+        .kpi .wert { font-size: 22px; font-weight: 750; letter-spacing: -.02em; }
+        .kpi .wert small { font-size: 13px; font-weight: 600; color: var(--muted); }
+        .kpi .foot { font-size: 11.5px; color: var(--muted); }
+        .kpi .foot.crit { color: var(--crit); font-weight: 600; }
+        .note { font-size: 11px; color: var(--faint); margin: 4px 2px 24px; }
+
+        .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 18px; overflow: hidden; }
+        .card > .h {
+            display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
+            padding: 15px 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap;
+        }
+        .card > .h .addr { font-weight: 700; font-size: 15px; letter-spacing: -.01em; }
+        .card > .h .addr .bj { color: var(--faint); font-weight: 500; font-size: 13px; }
+        .card > .h .fin { display: flex; align-items: center; gap: 10px; font-size: 13px; flex-wrap: wrap; }
+        .card > .h .fin .soll { font-weight: 700; }
+        .card > .h .fin .rendite { color: var(--muted); }
+        .chip { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+        .chip.leer { background: var(--warn-soft); color: var(--warn); }
+        .chip.crit { background: var(--crit-soft); color: var(--crit); }
+
+        .tablewrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        thead th {
+            text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--faint);
+            font-weight: 600; padding: 11px 18px; border-bottom: 1px solid var(--line); white-space: nowrap;
+        }
+        tbody td { padding: 12px 18px; border-bottom: 1px solid var(--line); }
+        tbody tr:last-child td { border-bottom: 0; }
+        td.right, th.right { text-align: right; white-space: nowrap; }
+        .obj { font-weight: 600; }
+        .since { color: var(--faint); font-size: 12px; }
+        .leerstand { color: var(--warn); font-weight: 600; }
+        .rent { font-weight: 650; }
+        .dash { color: var(--faint); }
+
+        .docs { padding: 13px 18px; border-top: 1px solid var(--line); background: var(--surface-2); }
+        .docs .dh { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--faint); font-weight: 600; margin-bottom: 8px; }
+        .docrow { display: flex; flex-wrap: wrap; gap: 8px; }
+        .doc {
+            display: inline-flex; align-items: center; gap: 7px; text-decoration: none; font-size: 12.5px;
+            color: var(--accent-strong); font-weight: 500; background: var(--surface); border: 1px solid var(--line);
+            border-radius: 9px; padding: 6px 11px;
+        }
+        .doc:hover { border-color: var(--accent); }
+        .doc .d { color: var(--faint); font-weight: 400; }
+
+        .hinweis { background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--line)); color: var(--warn); padding: 16px 18px; border-radius: var(--radius); font-size: 14px; }
+        footer.page { text-align: center; color: var(--faint); font-size: 12px; padding: 30px 0 0; }
+
+        a:focus-visible, button:focus-visible, .doc:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+        @media (max-width: 560px) {
+            .hello h1 { font-size: 20px; }
+            thead th:nth-child(2), tbody td:nth-child(2), thead th:nth-child(3), tbody td:nth-child(3) { display: none; }
         }
     </style>
 </head>
 <body>
-<header>
-    <h1>🏠 Eigentümer-Portal</h1>
-    <form method="post" action="/logout/">{% csrf_token %}<button type="submit">Abmelden</button></form>
-</header>
+<div class="topbar">
+    <div class="brand">
+        <div class="mark">si</div>
+        <div>
+            <div class="name">Eigentümer-Portal</div>
+            {% if mandant %}<div class="sub">{{ mandant.firma_oder_name }}</div>{% endif %}
+        </div>
+    </div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="themeToggle" type="button" title="Hell / Dunkel" aria-label="Farbschema wechseln">◐</button>
+    <form method="post" action="/logout/">{% csrf_token %}<button class="logout" type="submit">Abmelden</button></form>
+</div>
 <main>
     {% if mandant %}
-        <p style="margin-bottom:16px; color:#475569;">
-            Guten Tag {{ mandant.firma_oder_name }} — hier finden Sie den aktuellen Stand Ihrer Liegenschaften.
-        </p>
-
-        <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
-            <a href="/portal/report/" target="_blank" rel="noopener" style="background:#1e3a8a; color:#fff; text-decoration:none; padding:9px 16px; border-radius:8px; font-size:14px; font-weight:600;">📄 Portfolio-Report (PDF)</a>
-            <a href="/portal/steuerauszug/?jahr={{ steuerjahr }}" target="_blank" rel="noopener" style="background:#fff; border:1px solid #c7d2fe; color:#1e3a8a; text-decoration:none; padding:9px 16px; border-radius:8px; font-size:14px; font-weight:600;">🧾 Steuerauszug {{ steuerjahr }} (PDF)</a>
-            <a href="/portal/kontokorrent/" target="_blank" rel="noopener" style="background:#fff; border:1px solid #c7d2fe; color:#1e3a8a; text-decoration:none; padding:9px 16px; border-radius:8px; font-size:14px; font-weight:600;">📒 Kontokorrent (PDF)</a>
+        <div class="hello">
+            <div>
+                <h1>Guten Tag, {{ mandant.firma_oder_name }}</h1>
+                <p>Hier finden Sie den aktuellen Stand Ihrer Liegenschaften.</p>
+            </div>
+            <div class="actions">
+                <a class="btn primary" href="/portal/report/" target="_blank" rel="noopener">📄 Portfolio-Report</a>
+                <a class="btn" href="/portal/steuerauszug/?jahr={{ steuerjahr }}" target="_blank" rel="noopener">🧾 Steuerauszug {{ steuerjahr }}</a>
+                <a class="btn" href="/portal/kontokorrent/" target="_blank" rel="noopener">📒 Kontokorrent</a>
+            </div>
         </div>
 
         {% if freigaben %}
-        <div class="card" style="border:1px solid #fed7aa;">
-            <h2 style="background:#fff7ed; color:#9a3412;">⚠️ Reparaturen zur Freigabe <span class="soll" style="color:#9a3412;">{{ freigaben|length }}</span></h2>
-            <div style="padding:4px 0;">
-            {% for f in freigaben %}
-                <div style="padding:14px 16px; border-bottom:1px solid #f1f5f9;">
-                    <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-                        <div>
-                            <div style="font-weight:600; color:#0f172a;">{{ f.titel }}</div>
-                            <div style="font-size:13px; color:#64748b;">{{ f.liegenschaft }} · {{ f.handwerker }}{% if f.bemerkung %} · {{ f.bemerkung }}{% endif %}</div>
-                        </div>
-                        <div style="font-weight:700; white-space:nowrap;">{% if f.kosten %}CHF {{ f.kosten|chf }}{% else %}—{% endif %}</div>
-                    </div>
-                    <form method="post" action="/portal/freigabe/{{ f.id }}/" style="margin-top:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                        {% csrf_token %}
-                        <input type="text" name="kommentar" placeholder="Kommentar (optional)" style="flex:1; min-width:160px; border:1px solid #e2e8f0; border-radius:8px; padding:7px 10px; font-size:13px;">
-                        <button type="submit" name="aktion" value="freigeben" style="background:#16a34a; color:#fff; border:0; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">✓ Freigeben</button>
-                        <button type="submit" name="aktion" value="ablehnen" style="background:#fff; color:#dc2626; border:1px solid #fecaca; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">✗ Ablehnen</button>
-                    </form>
-                </div>
-            {% endfor %}
+        <section class="attention" aria-label="Reparaturen zur Freigabe">
+            <div class="h">
+                <span>⚠️</span>
+                <span class="t">Reparaturen zur Freigabe</span>
+                <span class="badge-count num">{{ freigaben|length }}</span>
             </div>
-        </div>
+            {% for f in freigaben %}
+            <div class="freigabe">
+                <div class="top">
+                    <div>
+                        <div class="titel">{{ f.titel }}</div>
+                        <div class="meta">{{ f.liegenschaft }} · {{ f.handwerker }}{% if f.bemerkung %} · {{ f.bemerkung }}{% endif %}</div>
+                    </div>
+                    <div class="kosten num">{% if f.kosten %}CHF {{ f.kosten|chf }}{% else %}—{% endif %}</div>
+                </div>
+                <form class="fform" method="post" action="/portal/freigabe/{{ f.id }}/">
+                    {% csrf_token %}
+                    <input type="text" name="kommentar" placeholder="Kommentar (optional)">
+                    <button class="mini ok" type="submit" name="aktion" value="freigeben">✓ Freigeben</button>
+                    <button class="mini no" type="submit" name="aktion" value="ablehnen">✗ Ablehnen</button>
+                </form>
+            </div>
+            {% endfor %}
+        </section>
         {% endif %}
 
         <div class="kpis">
-            <div class="kpi"><div class="wert">{{ liegenschaften|length }}</div><div class="label">Liegenschaften</div></div>
-            <div class="kpi"><div class="wert">{{ total_vermietet }} / {{ total_einheiten }}</div><div class="label">Vermietet</div></div>
-            <div class="kpi"><div class="wert">{{ leerquote|floatformat:1 }} %</div><div class="label">Leerstandsquote</div></div>
-            <div class="kpi"><div class="wert">CHF {{ total_soll|chf }}</div><div class="label">Ist-Miete / Monat</div></div>
-            <div class="kpi"><div class="wert">CHF {{ jahres_soll|chf }}</div><div class="label">Ist-Miete / Jahr</div></div>
+            <div class="kpi">
+                <span class="label">Liegenschaften</span>
+                <span class="wert num">{{ liegenschaften|length }}</span>
+                <span class="foot num">{{ total_einheiten }} Einheiten gesamt</span>
+            </div>
+            <div class="kpi">
+                <span class="label">Vermietet</span>
+                <span class="wert num">{{ total_vermietet }} <small>/ {{ total_einheiten }}</small></span>
+                <span class="foot num">{{ total_leer }} leer</span>
+            </div>
+            <div class="kpi">
+                <span class="label">Leerstandsquote</span>
+                <span class="wert num">{{ leerquote|floatformat:1 }} %</span>
+            </div>
+            <div class="kpi accent">
+                <span class="label">Ist-Miete / Monat</span>
+                <span class="wert num">CHF {{ total_soll|chf }}</span>
+                <span class="foot">brutto, ohne Leerstand</span>
+            </div>
+            <div class="kpi">
+                <span class="label">Ist-Miete / Jahr</span>
+                <span class="wert num">CHF {{ jahres_soll|chf }}</span>
+            </div>
             {% if total_ausstand %}
-            <div class="kpi"><div class="wert" style="color:{% if total_ueberfaellig %}#dc2626{% else %}#d97706{% endif %};">CHF {{ total_ausstand|chf }}</div><div class="label">Ausstände offen{% if total_ueberfaellig %} · CHF {{ total_ueberfaellig|chf }} überfällig{% endif %}</div></div>
+            <div class="kpi">
+                <span class="label">Ausstände offen</span>
+                <span class="wert num" style="color:{% if total_ueberfaellig %}var(--crit){% else %}var(--warn){% endif %};">CHF {{ total_ausstand|chf }}</span>
+                {% if total_ueberfaellig %}<span class="foot crit num">CHF {{ total_ueberfaellig|chf }} überfällig</span>{% endif %}
+            </div>
             {% endif %}
             {% if bruttorendite is not None %}
-            <div class="kpi"><div class="wert">{{ bruttorendite|floatformat:2 }} %</div><div class="label">Bruttorendite*</div></div>
+            <div class="kpi">
+                <span class="label">Bruttorendite*</span>
+                <span class="wert num">{{ bruttorendite|floatformat:2 }} %</span>
+            </div>
             {% endif %}
         </div>
         {% if bruttorendite is not None %}
-        <p style="font-size:11px; color:#94a3b8; margin:-12px 0 20px;">* Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) / Gebäudeversicherungswert (Näherung).</p>
+        <p class="note">* Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) ÷ Gebäudeversicherungswert (Näherung).</p>
         {% endif %}
 
         {% for lg in liegenschaften %}
-        <div class="card">
-            <h2>
-                <span>{{ lg.adresse }}{% if lg.baujahr %} · Bj. {{ lg.baujahr }}{% endif %}</span>
-                <span class="soll">CHF {{ lg.soll_monat|chf }} / Mt.{% if lg.rendite is not None %} · {{ lg.rendite|floatformat:2 }} %{% endif %}{% if lg.leer %} · <span class="leer">{{ lg.leer }} leer</span>{% endif %}{% if lg.ausstand %} · <span style="color:#dc2626;">CHF {{ lg.ausstand|chf }} offen</span>{% endif %}</span>
-            </h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Objekt</th><th>Typ</th><th>Zimmer / m²</th>
-                        <th>Mieter</th><th class="num">Bruttomiete</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for e in lg.einheiten %}
-                    <tr>
-                        <td>{{ e.bezeichnung }}</td>
-                        <td>{{ e.typ }}</td>
-                        <td>{% if e.zimmer %}{{ e.zimmer }} Zi.{% endif %}{% if e.flaeche %} · {{ e.flaeche|chf:0 }} m²{% endif %}</td>
-                        <td>{% if e.mieter %}{{ e.mieter }}{% if e.seit %} <span style="color:#94a3b8;">(seit {{ e.seit|date:"d.m.Y" }})</span>{% endif %}{% else %}<span class="leer">Leerstand</span>{% endif %}</td>
-                        <td class="num">{% if e.brutto %}CHF {{ e.brutto|chf }}{% else %}—{% endif %}</td>
-                    </tr>
-                {% empty %}
-                    <tr><td colspan="5" style="color:#94a3b8;">Keine Einheiten erfasst.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <article class="card">
+            <div class="h">
+                <div class="addr">{{ lg.adresse }}{% if lg.baujahr %} <span class="bj">· Bj. {{ lg.baujahr }}</span>{% endif %}</div>
+                <div class="fin">
+                    <span class="soll num">CHF {{ lg.soll_monat|chf }} / Mt.</span>
+                    {% if lg.rendite is not None %}<span class="rendite num">· {{ lg.rendite|floatformat:2 }} %</span>{% endif %}
+                    {% if lg.leer %}<span class="chip leer num">{{ lg.leer }} leer</span>{% endif %}
+                    {% if lg.ausstand %}<span class="chip crit num">CHF {{ lg.ausstand|chf }} offen</span>{% endif %}
+                </div>
+            </div>
+            <div class="tablewrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Objekt</th><th>Typ</th><th>Zimmer / m²</th>
+                            <th>Mieter</th><th class="right">Bruttomiete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for e in lg.einheiten %}
+                        <tr>
+                            <td class="obj">{{ e.bezeichnung }}</td>
+                            <td>{{ e.typ }}</td>
+                            <td class="num">{% if e.zimmer %}{{ e.zimmer }} Zi.{% endif %}{% if e.flaeche %} · {{ e.flaeche|chf:0 }} m²{% endif %}</td>
+                            <td>{% if e.mieter %}{{ e.mieter }}{% if e.seit %} <span class="since">(seit {{ e.seit|date:"d.m.Y" }})</span>{% endif %}{% else %}<span class="leerstand">Leerstand</span>{% endif %}</td>
+                            <td class="right num">{% if e.brutto %}<span class="rent">CHF {{ e.brutto|chf }}</span>{% else %}<span class="dash">—</span>{% endif %}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="5" class="dash">Keine Einheiten erfasst.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% if lg.dokumente %}
-            <div style="padding:12px 16px; border-top:1px solid #e2e8f0; background:#f8fafc;">
-                <div style="font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px;">Dokumente</div>
-                <div style="display:flex; flex-direction:column; gap:6px;">
+            <div class="docs">
+                <div class="dh">Dokumente</div>
+                <div class="docrow">
                 {% for d in lg.dokumente %}
-                    <a href="/portal/dokument/{{ d.id }}/" target="_blank" rel="noopener" style="font-size:14px; color:#1e3a8a; text-decoration:none;">
-                        📎 {{ d.titel }} <span style="color:#94a3b8;">· {{ d.datum|date:"d.m.Y" }}</span>
-                    </a>
+                    <a class="doc" href="/portal/dokument/{{ d.id }}/" target="_blank" rel="noopener">📎 {{ d.titel }} <span class="d">· {{ d.datum|date:"d.m.Y" }}</span></a>
                 {% endfor %}
                 </div>
             </div>
             {% endif %}
-        </div>
+        </article>
         {% empty %}
         <div class="hinweis">Ihrem Konto sind noch keine Liegenschaften zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</div>
         {% endfor %}
@@ -152,7 +327,19 @@
             Bitte wenden Sie sich an Ihre Verwaltung, damit der Zugang freigeschaltet wird.
         </div>
     {% endif %}
+    <footer class="page">SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr</footer>
 </main>
-<footer>SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr</footer>
+<script>
+    (function () {
+        var btn = document.getElementById('themeToggle');
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+            var root = document.documentElement;
+            var now = root.getAttribute('data-theme');
+            var dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            root.setAttribute('data-theme', dark ? 'light' : 'dark');
+        });
+    })();
+</script>
 </body>
 </html>
