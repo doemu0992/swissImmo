@@ -16234,3 +16234,29 @@ class CamtFuzzyNachnameQSTests(TestCase):
         self.assertEqual(r.status, 'bezahlt')
         self.assertEqual(
             Zahlungseingang.objects.filter(debitoren_rechnung=r, status='verbucht').count(), 1)
+
+
+class FehlerseitenTests(TestCase):
+    """Produktionsreife: eigene 404-/500-Seiten statt Djangos nackter
+    Standardausgabe. Die 500-Seite muss OHNE Template-Kontext rendern (Django
+    ruft sie kontextlos auf) — sonst schlägt der Fehlerfall selbst fehl."""
+
+    def test_404_zeigt_eigene_seite(self):
+        # Django nutzt 404.html nur bei DEBUG=False (Testlauf ist ohnehin False).
+        c = Client()
+        r = c.get('/diese-adresse-gibt-es-nicht/')
+        self.assertEqual(r.status_code, 404)
+        self.assertContains(r, 'Seite nicht gefunden', status_code=404)
+        # Kein Debug-Stacktrace nach aussen.
+        self.assertNotContains(r, 'Traceback', status_code=404)
+
+    def test_500_template_rendert_ohne_kontext(self):
+        # Django rendert 500.html mit leerem Kontext — hier exakt so nachstellen.
+        from django.template.loader import render_to_string
+        html = render_to_string('500.html', {})
+        self.assertIn('Ein Fehler ist aufgetreten', html)
+
+    def test_403_template_vorhanden(self):
+        from django.template.loader import render_to_string
+        html = render_to_string('403.html', {})
+        self.assertIn('Berechtigung', html)
