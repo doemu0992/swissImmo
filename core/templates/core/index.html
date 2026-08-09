@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>SwissImmo Portal</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
@@ -10,17 +10,17 @@
         :root {
             --bg: #f6f7fb; --surface: #ffffff; --surface-2: #f1f2f8;
             --ink: #171a2b; --muted: #5b6072; --faint: #8b90a4; --line: #e6e7f0;
-            --brand-500: #4f46e5; --brand-600: #4338ca; --brand-700: #3730a3;
+            --brand-500: #4f46e5; --brand-600: #4338ca;
             --accent: var(--brand-500); --accent-strong: var(--brand-600); --accent-soft: #eef0fe;
             --good: #16a34a; --good-soft: #e7f6ec;
             --shadow: 0 1px 2px rgba(23,26,43,.05), 0 10px 30px rgba(23,26,43,.08);
-            --radius: 20px; --radius-sm: 12px;
+            --radius: 20px;
         }
         @media (prefers-color-scheme: dark) {
             :root:not([data-theme="light"]) {
                 --bg: #0e1020; --surface: #171a2e; --surface-2: #1e2138;
                 --ink: #e7e8f2; --muted: #9aa0b8; --faint: #6b7192; --line: #262a44;
-                --brand-500: #6366f1; --brand-600: #818cf8; --brand-700: #a5b0ff;
+                --brand-500: #6366f1; --brand-600: #818cf8;
                 --accent-soft: #20233d; --good: #34d399; --good-soft: #12271f;
                 --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 40px rgba(0,0,0,.45);
             }
@@ -28,7 +28,7 @@
         :root[data-theme="dark"] {
             --bg: #0e1020; --surface: #171a2e; --surface-2: #1e2138;
             --ink: #e7e8f2; --muted: #9aa0b8; --faint: #6b7192; --line: #262a44;
-            --brand-500: #6366f1; --brand-600: #818cf8; --brand-700: #a5b0ff;
+            --brand-500: #6366f1; --brand-600: #818cf8;
             --accent-soft: #20233d; --good: #34d399; --good-soft: #12271f;
             --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 40px rgba(0,0,0,.45);
         }
@@ -36,48 +36,50 @@
         body {
             background: var(--bg); color: var(--ink); min-height: 100dvh;
             font-family: 'Inter', -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 22px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            /* Safe-Area: oben nicht hinter Uhr/Notch, unten nicht hinter der URL-Leiste */
+            padding: max(48px, calc(env(safe-area-inset-top) + 28px)) 22px max(40px, calc(env(safe-area-inset-bottom) + 28px));
         }
-        .theme { position: fixed; top: 18px; right: 20px; }
+        .theme { position: fixed; top: max(14px, calc(env(safe-area-inset-top) + 6px)); right: 18px; }
         .iconbtn {
             display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 10px;
             border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; font-size: 15px;
         }
         .iconbtn:hover { color: var(--ink); border-color: var(--accent); }
 
-        .hero { text-align: center; margin-bottom: 44px; }
+        .hero { text-align: center; margin-bottom: 40px; }
         .mark {
-            width: 66px; height: 66px; border-radius: 20px; display: grid; place-items: center; margin: 0 auto 20px;
+            width: 62px; height: 62px; border-radius: 19px; display: grid; place-items: center; margin: 0 auto 18px;
             background: linear-gradient(135deg, var(--brand-500), var(--brand-600)); color: #fff;
-            font-weight: 800; font-size: 30px; letter-spacing: -.03em;
+            font-weight: 800; font-size: 28px; letter-spacing: -.03em;
             box-shadow: 0 10px 26px color-mix(in srgb, var(--brand-500) 42%, transparent);
         }
-        .hero h1 { font-size: 38px; letter-spacing: -.03em; text-wrap: balance; }
-        .hero p { color: var(--muted); font-size: 16px; margin-top: 10px; max-width: 30ch; margin-inline: auto; }
+        .hero h1 { font-size: clamp(27px, 7.5vw, 40px); line-height: 1.1; letter-spacing: -.03em; text-wrap: balance; }
+        .hero p { color: var(--muted); font-size: clamp(14px, 4vw, 16px); margin-top: 10px; max-width: 30ch; margin-inline: auto; }
 
         .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; max-width: 780px; width: 100%; }
-        @media (max-width: 640px) { .cards { grid-template-columns: 1fr; } }
+        @media (max-width: 640px) { .cards { grid-template-columns: 1fr; gap: 14px; } }
         .tile {
             position: relative; overflow: hidden; text-decoration: none; color: inherit;
             background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-            box-shadow: var(--shadow); padding: 26px; display: flex; flex-direction: column;
+            box-shadow: var(--shadow); padding: 24px; display: flex; flex-direction: column;
             transition: transform .2s, box-shadow .2s, border-color .2s;
         }
         .tile:hover { transform: translateY(-3px); box-shadow: 0 1px 2px rgba(23,26,43,.05), 0 16px 40px rgba(23,26,43,.12); }
-        .tile .ic { width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center; margin-bottom: 18px; }
+        .tile .ic { width: 52px; height: 52px; border-radius: 15px; display: grid; place-items: center; margin-bottom: 16px; }
         .tile.repair:hover { border-color: color-mix(in srgb, var(--good) 40%, var(--line)); }
         .tile.repair .ic { background: var(--good-soft); color: var(--good); }
         .tile.login:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
         .tile.login .ic { background: var(--accent-soft); color: var(--accent-strong); }
         .tile h3 { font-size: 19px; letter-spacing: -.02em; margin-bottom: 8px; }
-        .tile p { color: var(--muted); font-size: 13.5px; line-height: 1.55; flex: 1; margin-bottom: 22px; }
+        .tile p { color: var(--muted); font-size: 13.5px; line-height: 1.55; flex: 1; margin-bottom: 20px; }
         .tile .go { font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 7px; }
         .tile.repair .go { color: var(--good); }
         .tile.login .go { color: var(--accent-strong); }
         .tile .go svg { transition: transform .2s; }
         .tile:hover .go svg { transform: translateX(3px); }
 
-        footer { margin-top: 48px; color: var(--faint); font-size: 13px; }
+        footer { margin-top: 42px; color: var(--faint); font-size: 13px; text-align: center; }
         a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
     </style>
