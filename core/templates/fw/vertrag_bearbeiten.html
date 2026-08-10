@@ -11,8 +11,12 @@
     <span class="text-slate-600 font-medium">Bearbeiten</span>
 </nav>
 
-<h1 class="text-2xl font-extrabold text-slate-900 mb-1">Vertrag bearbeiten</h1>
-<p class="text-sm text-slate-500 mb-5">{{ v.einheit.bezeichnung }} · {{ v.einheit.liegenschaft.strasse }}</p>
+<div class="fw-phead">
+    <div>
+        <h1>Vertrag bearbeiten</h1>
+        <p>{{ v.einheit.bezeichnung }} · {{ v.einheit.liegenschaft.strasse }}</p>
+    </div>
+</div>
 
 {% if gesperrt %}
 <div class="max-w-3xl bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-5 text-[13px] text-amber-800">

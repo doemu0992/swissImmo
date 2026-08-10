@@ -4,9 +4,12 @@
 {% block content %}
 {{ vertrag_daten|json_script:"wv-vd-data" }}
 {{ absender|json_script:"wv-abs-data" }}
-<h1 class="text-2xl font-extrabold text-slate-900 mb-1">An Mieter weiterverrechnen</h1>
-<p class="text-sm text-slate-500 mb-6">Lieferantenrechnung <b>{{ k.lieferant }}</b>{% if k.referenz %} · {{ k.referenz }}{% endif %}
-    {% if k.liegenschaft %}· {{ k.liegenschaft.strasse }}, {{ k.liegenschaft.ort }}{% endif %}</p>
+<div class="fw-phead">
+    <div>
+        <h1>An Mieter weiterverrechnen</h1>
+        <p>Lieferantenrechnung <b>{{ k.lieferant }}</b>{% if k.referenz %} · {{ k.referenz }}{% endif %}{% if k.liegenschaft %} · {{ k.liegenschaft.strasse }}, {{ k.liegenschaft.ort }}{% endif %}</p>
+    </div>
+</div>
 
 {% if ist_hnk %}
 <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 mb-5 text-[13px] text-rose-800">

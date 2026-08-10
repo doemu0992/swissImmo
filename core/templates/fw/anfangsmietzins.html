@@ -10,9 +10,12 @@
     <span class="text-slate-600 font-medium">Anfangsmietzins</span>
 </nav>
 
-<h1 class="text-2xl font-extrabold text-slate-900 mb-1">Anfangsmietzins-Formular</h1>
-<p class="text-sm text-slate-500 mb-6">Amtliches Formular nach Art. 270 OR / Art. 19 VMWG ·
-    {{ v.einheit.bezeichnung }}, {{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</p>
+<div class="fw-phead">
+    <div>
+        <h1>Anfangsmietzins-Formular</h1>
+        <p>Amtliches Formular nach Art. 270 OR / Art. 19 VMWG · {{ v.einheit.bezeichnung }}, {{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</p>
+    </div>
+</div>
 
 <div class="max-w-3xl mb-5 text-xs bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-lg px-3 py-2.5">
     <i class="fa-solid fa-circle-info mr-1"></i>Bei Neuabschluss muss der Mieterschaft in Kantonen mit

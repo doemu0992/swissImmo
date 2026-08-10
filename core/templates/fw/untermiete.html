@@ -9,9 +9,12 @@
     <span class="text-slate-600 font-medium">Untervermietung</span>
 </nav>
 
-<h1 class="text-2xl font-extrabold text-slate-900 mb-1">Untervermietung — Zustimmung / Ablehnung</h1>
-<p class="text-sm text-slate-500 mb-6">Art. 262 OR ·
-    {{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.plz }} {{ v.einheit.liegenschaft.ort }}</p>
+<div class="fw-phead">
+    <div>
+        <h1>Untervermietung — Zustimmung / Ablehnung</h1>
+        <p>Art. 262 OR · {{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.plz }} {{ v.einheit.liegenschaft.ort }}</p>
+    </div>
+</div>
 
 <div class="max-w-3xl mb-5 text-xs bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-lg px-3 py-2.5">
     <i class="fa-solid fa-circle-info mr-1"></i>Die Vermieterschaft darf die Zustimmung nur verweigern, wenn die

@@ -7,8 +7,12 @@
     <span class="text-slate-600 font-medium">{% if ist_neu %}Neu{% else %}{{ ziel.username }}{% endif %}</span>
 </nav>
 
-<h1 class="text-2xl font-extrabold text-slate-900 mb-1">{% if ist_neu %}Neuen Benutzer erfassen{% else %}{{ ziel.username }} bearbeiten{% endif %}</h1>
-<p class="text-sm text-slate-500 mb-6">Team-Mitglied mit Zugriff auf die Verwaltung.</p>
+<div class="fw-phead">
+    <div>
+        <h1>{% if ist_neu %}Neuen Benutzer erfassen{% else %}{{ ziel.username }} bearbeiten{% endif %}</h1>
+        <p>Team-Mitglied mit Zugriff auf die Verwaltung.</p>
+    </div>
+</div>
 
 <form method="post" class="max-w-2xl space-y-5">
     {% csrf_token %}

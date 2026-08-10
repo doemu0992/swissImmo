@@ -8,8 +8,12 @@
     <span class="text-slate-600 font-medium">Zahlungsverzug</span>
 </nav>
 
-<h1 class="text-2xl font-extrabold text-slate-900 mb-1">Zahlungsverzug — Frist ansetzen</h1>
-<p class="text-sm text-slate-500 mb-6">Art. 257d OR · {{ v.einheit.bezeichnung }}, {{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</p>
+<div class="fw-phead">
+    <div>
+        <h1>Zahlungsverzug — Frist ansetzen</h1>
+        <p>Art. 257d OR · {{ v.einheit.bezeichnung }}, {{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</p>
+    </div>
+</div>
 
 <form method="post" class="max-w-2xl space-y-5">
     {% csrf_token %}

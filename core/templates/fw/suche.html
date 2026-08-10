@@ -1,7 +1,7 @@
 {% extends 'fw/base.html' %}
 {% block title %}Suche{% if q %}: {{ q }}{% endif %} — swissImmo{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-extrabold text-slate-900 mb-1">Suche</h1>
+<div class="fw-phead"><h1>Suche</h1></div>
 {% if q %}
 <p class="text-sm text-slate-500 mb-6">{{ total }} Treffer für „<span class="font-semibold text-slate-700">{{ q }}</span>"</p>
 {% else %}

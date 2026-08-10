@@ -8,10 +8,10 @@
     <span class="text-slate-600 font-medium">Abnahmeprotokoll</span>
 </nav>
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-4">
+<div class="fw-phead">
     <div>
-        <h1 class="text-2xl font-extrabold text-slate-900">Wohnungsabnahme — {{ p.get_typ_display }}</h1>
-        <p class="text-sm text-slate-500">{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ p.datum|date:"d.m.Y" }}</p>
+        <h1>Wohnungsabnahme — {{ p.get_typ_display }}</h1>
+        <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ p.datum|date:"d.m.Y" }}</p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
         {% if p.kosten_mieter_total %}

@@ -12,8 +12,12 @@
 </nav>
 {% endif %}
 
-<h1 class="text-2xl font-extrabold text-slate-900 mb-1">Schlussabrechnung beim Auszug</h1>
-<p class="text-sm text-slate-500 mb-6">{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ v.mieter.display_name }}</p>
+<div class="fw-phead">
+    <div>
+        <h1>Schlussabrechnung beim Auszug</h1>
+        <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ v.mieter.display_name }}</p>
+    </div>
+</div>
 
 <form method="post" class="max-w-3xl space-y-5" id="sa-form"
       data-offen="{{ offen_total|unlocalize }}"

@@ -9,9 +9,12 @@
     <span class="text-slate-600 font-medium">Kündigung</span>
 </nav>
 
-<h1 class="text-2xl font-extrabold text-slate-900 mb-1">Kündigung erfassen</h1>
-<p class="text-sm text-slate-500 mb-6">{{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.ort }} · {{ v.einheit.bezeichnung }}
-    · Frist {{ v.kuendigungsfrist_monate }} Mt. · Termine: {{ v.kuendigungstermine }}</p>
+<div class="fw-phead">
+    <div>
+        <h1>Kündigung erfassen</h1>
+        <p>{{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.ort }} · {{ v.einheit.bezeichnung }} · Frist {{ v.kuendigungsfrist_monate }} Mt. · Termine: {{ v.kuendigungstermine }}</p>
+    </div>
+</div>
 
 <form method="post" class="max-w-2xl space-y-5">
     {% csrf_token %}

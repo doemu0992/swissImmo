@@ -8,8 +8,8 @@
 {{ vorwahl_einheit|json_script:"vorwahl-einheit" }}
 {{ edit_json|json_script:"edit-data" }}
 
-<div class="flex items-center justify-between mb-4">
-    <h1 class="text-2xl font-extrabold text-slate-900">{% if edit_vertrag %}Vertrag (Entwurf) bearbeiten{% else %}Vertragserfassung{% endif %}</h1>
+<div class="fw-phead">
+    <h1>{% if edit_vertrag %}Vertrag (Entwurf) bearbeiten{% else %}Vertragserfassung{% endif %}</h1>
     <a href="{% if edit_vertrag %}/neu/vertraege/{{ edit_vertrag.id }}/{% else %}/neu/vertraege/{{ lg_query }}{% endif %}" title="Erfassung schliessen" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></a>
 </div>
 
