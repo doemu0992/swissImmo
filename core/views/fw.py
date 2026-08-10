@@ -199,8 +199,10 @@ def fw_dashboard(request):
 
     belegung_conic = ''
     try:
-        _cols = {'wohnen': '#4f46e5', 'parkplatz': '#0891b2',
-                 'gewerbe': '#d97706', 'weitere': '#94a3b8'}
+        # Design-System-Tokens statt fester Hex-Werte → Donut-Segmente und
+        # Legenden-Swatches stimmen in Hell UND Dunkel exakt überein.
+        _cols = {'wohnen': 'var(--ds-brand)', 'parkplatz': 'var(--ds-info)',
+                 'gewerbe': 'var(--ds-warn)', 'weitere': 'var(--ds-faint)'}
         _tot = sum(breakdown.values())
         if _tot:
             _stops = []

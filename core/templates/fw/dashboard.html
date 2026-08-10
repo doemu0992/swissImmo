@@ -4,14 +4,13 @@
 
 {% block content %}
 
-<div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Heute</h1>
-    <div class="text-sm text-slate-400">{{ heute|date:"l, d. F Y" }}</div>
+<div class="fw-phead">
+    <div>
+        <h1>Heute</h1>
+        <p>{{ heute|date:"l, d. F Y" }}{% if aktive_lg %} · Gefiltert auf {{ aktive_lg.strasse }}, {{ aktive_lg.ort }}{% endif %}</p>
+    </div>
+    {% if aktive_lg %}<a href="/neu/" class="fw-btn">× Filter aufheben</a>{% endif %}
 </div>
-{% if aktive_lg %}
-<p class="text-sm text-slate-500 mb-4">Gefiltert auf: <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}, {{ aktive_lg.ort }}</span>
-    <a href="/neu/" class="ml-2 text-xs text-slate-400 hover:text-indigo-600">× Filter aufheben</a></p>
-{% else %}<div class="mb-4"></div>{% endif %}
 
 <!-- ================= DIE INBOX (eine Aufgabenliste statt vier Flächen) ================= -->
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
@@ -77,67 +76,54 @@
 </div>
 
 <!-- ================= KENNZAHLEN ================= -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="flex items-center justify-between">
-            <div class="text-2xl font-bold {% if kpis.leerstandsquote > 5 %}text-rose-600{% elif kpis.leerstandsquote > 0 %}text-amber-600{% else %}text-emerald-600{% endif %}">{{ kpis.leerstandsquote }}%</div>
-            <i class="fa-solid fa-door-open text-slate-300"></i>
-        </div>
-        <div class="text-sm text-slate-500">Leerstandsquote</div>
-        <div class="text-[11px] text-slate-400">ertragsgewichtet {{ kpis.leerstandsquote_ertrag }}%</div>
+<div class="fw-kpis">
+    <div class="fw-kpi">
+        <span class="fw-l">Leerstandsquote</span>
+        <span class="fw-v fw-num {% if kpis.leerstandsquote > 5 %}fw-crit{% elif kpis.leerstandsquote > 0 %}fw-warn{% else %}fw-good{% endif %}">{{ kpis.leerstandsquote }}%</span>
+        <span class="fw-f">ertragsgewichtet {{ kpis.leerstandsquote_ertrag }}%</span>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="flex items-center justify-between">
-            <div class="text-2xl font-bold text-slate-900">CHF {{ kpis.ist_miete|chf }}</div>
-            <i class="fa-solid fa-coins text-slate-300"></i>
-        </div>
-        <div class="text-sm text-slate-500">Ist-Miete / Monat</div>
-        <div class="text-[11px] text-slate-400">Soll-Potenzial CHF {{ kpis.soll_potenzial|chf }}</div>
+    <div class="fw-kpi fw-accent">
+        <span class="fw-l">Ist-Miete / Monat</span>
+        <span class="fw-v fw-num">CHF {{ kpis.ist_miete|chf }}</span>
+        <span class="fw-f">Soll-Potenzial CHF {{ kpis.soll_potenzial|chf }}</span>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="flex items-center justify-between">
-            <div class="text-2xl font-bold {% if kpis.ausfall_leerstand > 0 %}text-amber-600{% else %}text-emerald-600{% endif %}">CHF {{ kpis.ausfall_leerstand|chf }}</div>
-            <i class="fa-solid fa-house-circle-xmark text-slate-300"></i>
-        </div>
-        <div class="text-sm text-slate-500">Mietzinsausfall Leerstand</div>
-        <div class="text-[11px] text-slate-400">pro Monat</div>
+    <div class="fw-kpi">
+        <span class="fw-l">Mietzinsausfall Leerstand</span>
+        <span class="fw-v fw-num {% if kpis.ausfall_leerstand > 0 %}fw-warn{% else %}fw-good{% endif %}">CHF {{ kpis.ausfall_leerstand|chf }}</span>
+        <span class="fw-f">pro Monat</span>
     </div>
-    <a href="/neu/mahnwesen/" class="bg-white rounded-xl border border-slate-200 p-4 hover:border-indigo-300 transition-colors">
-        <div class="flex items-center justify-between">
-            <div class="text-2xl font-bold {% if kpis.offen_ueberfaellig > 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">CHF {{ kpis.offen_ueberfaellig|chf }}</div>
-            <i class="fa-solid fa-triangle-exclamation text-slate-300"></i>
-        </div>
-        <div class="text-sm text-slate-500">Überfällige Forderungen</div>
-        <div class="text-[11px] text-indigo-400">→ Mahnwesen</div>
+    <a href="/neu/mahnwesen/" class="fw-kpi">
+        <span class="fw-l">Überfällige Forderungen</span>
+        <span class="fw-v fw-num {% if kpis.offen_ueberfaellig > 0 %}fw-crit{% else %}fw-good{% endif %}">CHF {{ kpis.offen_ueberfaellig|chf }}</span>
+        <span class="fw-f" style="color:var(--ds-brand-600)">→ Mahnwesen</span>
     </a>
 </div>
 
 <!-- ================= MIETERTRAG-VERLAUF (Analytics) ================= -->
 {% if dash_chart and dash_chart.has_data %}
-<div class="bg-white rounded-xl border border-slate-200 mb-4">
-    <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-2 flex-wrap">
-        <div class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-chart-area text-indigo-500 mr-1.5"></i>Mietertrag — Soll vs. Ist</div>
-        <span class="text-xs text-slate-400">letzte 12 Monate</span>
-        <span class="ml-auto text-[10px] font-bold uppercase tracking-wide text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Neu</span>
+<div class="fw-card">
+    <div class="fw-h">
+        <span class="fw-t"><i class="fa-solid fa-chart-area" style="color:var(--ds-brand);margin-right:6px"></i>Mietertrag — Soll vs. Ist <small>letzte 12 Monate</small></span>
+        <div class="fw-r"><span class="fw-chip fw-brand">Neu</span></div>
     </div>
-    <div class="px-3 pt-3">
-        <svg viewBox="0 0 620 210" preserveAspectRatio="none" class="w-full" style="height:190px" aria-hidden="true">
+    <div style="padding:12px 12px 4px">
+        <svg viewBox="0 0 620 210" preserveAspectRatio="none" class="fw-chart" style="height:190px" aria-hidden="true">
             <defs><linearGradient id="fwMietGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#4f46e5" stop-opacity="0.24"/>
-                <stop offset="1" stop-color="#4f46e5" stop-opacity="0.02"/>
+                <stop offset="0" stop-color="var(--ds-brand)" stop-opacity="0.24"/>
+                <stop offset="1" stop-color="var(--ds-brand)" stop-opacity="0.02"/>
             </linearGradient></defs>
-            <line x1="0" y1="45" x2="620" y2="45" stroke="#eef0f4"/>
-            <line x1="0" y1="105" x2="620" y2="105" stroke="#eef0f4"/>
-            <line x1="0" y1="165" x2="620" y2="165" stroke="#eef0f4"/>
-            <line x1="0" y1="{{ dash_chart.soll_y }}" x2="620" y2="{{ dash_chart.soll_y }}" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 4"/>
+            <line x1="0" y1="45" x2="620" y2="45" stroke="var(--ds-line)"/>
+            <line x1="0" y1="105" x2="620" y2="105" stroke="var(--ds-line)"/>
+            <line x1="0" y1="165" x2="620" y2="165" stroke="var(--ds-line)"/>
+            <line x1="0" y1="{{ dash_chart.soll_y }}" x2="620" y2="{{ dash_chart.soll_y }}" stroke="var(--ds-faint)" stroke-width="1.6" stroke-dasharray="4 4"/>
             <path d="{{ dash_chart.area }}" fill="url(#fwMietGrad)"/>
-            <polyline points="{{ dash_chart.ist_points }}" fill="none" stroke="#4f46e5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="{{ dash_chart.last_x }}" cy="{{ dash_chart.last_y }}" r="3.6" fill="#4f46e5"/>
+            <polyline points="{{ dash_chart.ist_points }}" fill="none" stroke="var(--ds-brand)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="{{ dash_chart.last_x }}" cy="{{ dash_chart.last_y }}" r="3.6" fill="var(--ds-brand)"/>
         </svg>
     </div>
-    <div class="flex gap-4 px-5 pb-3 text-xs text-slate-500">
-        <span class="inline-flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-sm" style="background:#4f46e5"></span>Ist-Mietertrag</span>
-        <span class="inline-flex items-center gap-1.5"><span class="inline-block w-3" style="height:2px;background:#94a3b8"></span>Soll-Potenzial</span>
+    <div style="display:flex;gap:16px;padding:4px 18px 14px;font-size:12px;color:var(--ds-muted)">
+        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:var(--ds-brand)"></span>Ist-Mietertrag</span>
+        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:2px;background:var(--ds-faint)"></span>Soll-Potenzial</span>
     </div>
 </div>
 {% endif %}
@@ -203,25 +189,22 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
 
     <!-- Belegung nach Nutzung (Donut aus breakdown) -->
-    <div class="bg-white rounded-xl border border-slate-200">
-        <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
-            <div class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-chart-pie text-indigo-500 mr-1.5"></i>Belegung nach Nutzung</div>
-            <span class="ml-auto text-[10px] font-bold uppercase tracking-wide text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Neu</span>
+    <div class="fw-card">
+        <div class="fw-h">
+            <span class="fw-t"><i class="fa-solid fa-chart-pie" style="color:var(--ds-brand);margin-right:6px"></i>Belegung nach Nutzung</span>
+            <div class="fw-r"><span class="fw-chip fw-brand">Neu</span></div>
         </div>
-        <div class="p-5 flex items-center gap-5 flex-wrap">
+        <div style="padding:18px;display:flex;gap:18px;align-items:center;flex-wrap:wrap">
             {% if belegung_conic %}
-            <div class="relative w-32 h-32 rounded-full shrink-0" style="background:{{ belegung_conic }}">
-                <div class="absolute inset-4 rounded-full bg-white flex flex-col items-center justify-center">
-                    <span class="text-2xl font-bold text-slate-800">{{ objekte_count }}</span>
-                    <span class="text-[10px] uppercase tracking-wide text-slate-400 font-semibold">Einheiten</span>
-                </div>
+            <div class="fw-donut" style="background:{{ belegung_conic }}">
+                <div class="fw-c"><div><div class="fw-b fw-num">{{ objekte_count }}</div><div class="fw-s">Einheiten</div></div></div>
             </div>
             {% endif %}
-            <div class="flex-1 min-w-[130px] space-y-2 text-sm">
-                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm" style="background:#4f46e5"></span><span class="text-slate-500">Wohnen</span><span class="ml-auto font-bold text-slate-700">{{ breakdown.wohnen }}</span></div>
-                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm" style="background:#0891b2"></span><span class="text-slate-500">Parkplatz</span><span class="ml-auto font-bold text-slate-700">{{ breakdown.parkplatz }}</span></div>
-                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm" style="background:#d97706"></span><span class="text-slate-500">Gewerbe</span><span class="ml-auto font-bold text-slate-700">{{ breakdown.gewerbe }}</span></div>
-                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm" style="background:#94a3b8"></span><span class="text-slate-500">Weitere</span><span class="ml-auto font-bold text-slate-700">{{ breakdown.weitere }}</span></div>
+            <div class="fw-dleg">
+                <div class="fw-r"><i style="background:var(--ds-brand)"></i>Wohnen<span class="fw-n fw-num">{{ breakdown.wohnen }}</span></div>
+                <div class="fw-r"><i style="background:var(--ds-info)"></i>Parkplatz<span class="fw-n fw-num">{{ breakdown.parkplatz }}</span></div>
+                <div class="fw-r"><i style="background:var(--ds-warn)"></i>Gewerbe<span class="fw-n fw-num">{{ breakdown.gewerbe }}</span></div>
+                <div class="fw-r"><i style="background:var(--ds-faint)"></i>Weitere<span class="fw-n fw-num">{{ breakdown.weitere }}</span></div>
             </div>
         </div>
     </div>
