@@ -1441,6 +1441,9 @@ VERTRAG_PILL = {
     'gekuendigt': ('Gekündigt',  'bg-rose-50 text-rose-600'),
     'archiviert': ('Archiviert', 'bg-slate-100 text-slate-500'),
 }
+# Design-System-Chip-Variante je Status (fw-chip fw-<variant>)
+VERTRAG_CHIP = {'aktiv': 'good', 'gekuendigt': 'crit',
+                'entwurf': 'mut', 'archiviert': 'mut'}
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -1472,6 +1475,7 @@ def fw_vertraege(request):
             'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0')),
             'status_label': label,
             'pill_cls': pill_cls,
+            'chip': VERTRAG_CHIP.get(v.status, 'mut'),
         })
 
     return render(request, 'fw/vertraege.html', {

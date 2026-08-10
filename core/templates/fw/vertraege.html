@@ -6,28 +6,24 @@
 
 {% include 'fw/_pipeline.html' %}
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">{% if ui_modus == 'einfach' %}Mieter & Verträge{% else %}Verträge{% endif %}</h1>
-    <a href="/neu/vertraege/neu/{{ lg_query }}" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
-        <i class="fa-solid fa-plus mr-1.5"></i> Vertrag erstellen
-    </a>
+<div class="fw-phead">
+    <div>
+        <h1>{% if ui_modus == 'einfach' %}Mieter &amp; Verträge{% else %}Verträge{% endif %}</h1>
+        <p>{{ rows|length }} Vertrag/Verträge · <span style="color:var(--ds-good);font-weight:600">{{ aktiv_count }} aktiv</span>{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/vertraege/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+    </div>
+    <a href="/neu/vertraege/neu/{{ lg_query }}" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Vertrag erstellen</a>
 </div>
-<p class="text-sm text-slate-500 mb-5">{{ rows|length }} Vertrag/Verträge ·
-    <span class="text-emerald-600 font-medium">{{ aktiv_count }} aktiv</span>
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/vertraege/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+<div class="fw-card">
 
-    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
-        <div class="flex items-center gap-1.5 flex-wrap">
+    <div class="fw-h" style="flex-wrap:wrap">
+        <div class="fw-filters" style="margin-bottom:0">
             {% for wert, label in status_chips %}
             <a href="?status={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                      {% if status_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+               class="fw-fchip{% if status_filter == wert %} fw-on{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
-        <form method="get" class="ml-auto relative">
+        <form method="get" class="relative" style="margin-left:auto">
             {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -45,7 +41,7 @@
                 <div class="font-semibold text-slate-900 break-words">{{ row.v.mieter.display_name }}</div>
                 <div class="text-xs text-slate-500 break-words">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</div>
                 <div class="mt-1.5 flex items-center gap-2 flex-wrap">
-                    <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold {{ row.pill_cls }}">{{ row.status_label }}</span>
+                    <span class="fw-chip fw-{{ row.chip }} fw-dot">{{ row.status_label }}</span>
                     <span class="text-[11px] text-slate-400">ab {{ row.v.beginn|date:"d.m.Y" }}</span>
                 </div>
             </div>
@@ -63,40 +59,40 @@
     </div>
 
     <!-- Desktop: Tabelle -->
-    <div class="overflow-x-auto hidden md:block">
-        <table class="w-full min-w-max text-sm">
+    <div class="fw-tablewrap hidden md:block">
+        <table class="fw-table" style="min-width:max-content">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Mieter</th>
-                <th class="px-5 py-3 font-semibold hidden md:table-cell">Objekt</th>
-                <th class="px-5 py-3 font-semibold hidden lg:table-cell">Beginn</th>
-                <th class="px-5 py-3 font-semibold hidden lg:table-cell">Ende</th>
-                <th class="px-5 py-3 font-semibold text-right hidden lg:table-cell">Netto</th>
-                <th class="px-5 py-3 font-semibold text-right hidden lg:table-cell">NK</th>
-                <th class="px-5 py-3 font-semibold text-right">Brutto</th>
-                <th class="px-5 py-3 font-semibold">Status</th>
-                <th class="px-5 py-3"></th>
+            <tr>
+                <th>Mieter</th>
+                <th class="hidden md:table-cell">Objekt</th>
+                <th class="hidden lg:table-cell">Beginn</th>
+                <th class="hidden lg:table-cell">Ende</th>
+                <th class="fw-right hidden lg:table-cell">Netto</th>
+                <th class="fw-right hidden lg:table-cell">NK</th>
+                <th class="fw-right">Brutto</th>
+                <th>Status</th>
+                <th></th>
             </tr>
             </thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody>
             {% for row in rows %}
-            <tr class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
-                <td class="px-5 py-3.5">
+            <tr class="cursor-pointer" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
+                <td>
                     <a href="/neu/vertraege/{{ row.v.id }}/" class="flex items-center gap-3" onclick="event.stopPropagation()">
                         <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-lines"></i></div>
-                        <span class="font-semibold text-slate-900 whitespace-nowrap">{{ row.v.mieter.display_name }}</span>
+                        <span class="fw-strong" style="white-space:nowrap">{{ row.v.mieter.display_name }}</span>
                     </a>
                 </td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap hidden md:table-cell">{{ row.v.einheit.liegenschaft.strasse }} <span class="text-slate-400">· {{ row.v.einheit.bezeichnung }}</span></td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap hidden lg:table-cell">{{ row.v.beginn|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3.5 whitespace-nowrap hidden lg:table-cell {% if row.v.status == 'gekuendigt' %}font-semibold text-rose-600{% else %}text-slate-600{% endif %}">
-                    {% if row.v.ende %}{{ row.v.ende|date:"d.m.Y" }}{% else %}<span class="text-slate-300">unbefristet</span>{% endif %}
+                <td class="hidden md:table-cell" style="white-space:nowrap">{{ row.v.einheit.liegenschaft.strasse }} <span class="fw-sub2">· {{ row.v.einheit.bezeichnung }}</span></td>
+                <td class="hidden lg:table-cell fw-num" style="white-space:nowrap">{{ row.v.beginn|date:"d.m.Y" }}</td>
+                <td class="hidden lg:table-cell fw-num" style="white-space:nowrap{% if row.v.status == 'gekuendigt' %};color:var(--ds-crit);font-weight:600{% endif %}">
+                    {% if row.v.ende %}{{ row.v.ende|date:"d.m.Y" }}{% else %}<span class="fw-sub2">unbefristet</span>{% endif %}
                 </td>
-                <td class="px-5 py-3.5 text-right text-slate-700 whitespace-nowrap hidden lg:table-cell">{{ row.v.netto_mietzins|chf }}</td>
-                <td class="px-5 py-3.5 text-right text-slate-500 whitespace-nowrap hidden lg:table-cell">{{ row.v.nebenkosten|chf }}</td>
-                <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">{{ row.brutto|chf }}</td>
-                <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap {{ row.pill_cls }}">{{ row.status_label }}</span></td>
-                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                <td class="fw-right fw-num hidden lg:table-cell">{{ row.v.netto_mietzins|chf }}</td>
+                <td class="fw-right fw-num hidden lg:table-cell"><span class="fw-sub2">{{ row.v.nebenkosten|chf }}</span></td>
+                <td class="fw-right fw-num"><span class="fw-strong">{{ row.brutto|chf }}</span></td>
+                <td><span class="fw-chip fw-{{ row.chip }} fw-dot">{{ row.status_label }}</span></td>
+                <td class="fw-right" style="white-space:nowrap">
                     {% if row.v.status == 'aktiv' %}
                     <a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" onclick="event.stopPropagation(); return fwModalOpen(this,'Kündigung erfassen')" class="text-xs font-semibold text-amber-600 hover:text-amber-700 mr-1"><i class="fa-solid fa-file-circle-xmark mr-0.5"></i>Kündigen</a>
                     {% endif %}
