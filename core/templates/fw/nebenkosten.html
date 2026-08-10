@@ -4,11 +4,9 @@
 
 {% block content %}
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Nebenkosten</h1>
-    <button type="button" onclick="document.getElementById('nkform').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
-        <i class="fa-solid fa-plus mr-1.5"></i> Periode anlegen
-    </button>
+<div class="fw-phead">
+    <h1>Nebenkosten</h1>
+    <button type="button" onclick="document.getElementById('nkform').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Periode anlegen</button>
 </div>
 <p class="text-sm text-slate-500 mb-5">Heiz- und Nebenkosten-Abrechnungsperioden
     {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>

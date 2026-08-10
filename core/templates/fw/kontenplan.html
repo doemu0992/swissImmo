@@ -4,8 +4,8 @@
 
 {% block content %}
 
-<div class="flex items-start justify-between gap-4 flex-wrap mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Kontenplan &amp; Saldenliste</h1>
+<div class="fw-phead">
+    <h1>Kontenplan &amp; Saldenliste</h1>
     <form method="get" class="flex items-center gap-2">
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         <select name="jahr" onchange="this.form.submit()" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">

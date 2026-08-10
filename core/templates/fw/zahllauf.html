@@ -4,12 +4,9 @@
 
 {% block content %}
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Zahllauf</h1>
-    <a href="/neu/kreditoren/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}"
-       class="text-sm font-semibold text-slate-500 hover:text-indigo-600">
-        <i class="fa-solid fa-arrow-left mr-1"></i>Zurück zu den Kreditoren
-    </a>
+<div class="fw-phead">
+    <h1>Zahllauf</h1>
+    <a href="/neu/kreditoren/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" class="fw-btn"><i class="fa-solid fa-arrow-left"></i>Zurück zu den Kreditoren</a>
 </div>
 <p class="text-sm text-slate-500 mb-5">
     Rechnungen auswählen → Zahlungsdatei (pain.001) erzeugen → nach der Bankbestätigung
