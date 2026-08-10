@@ -9,15 +9,13 @@
     <span class="text-slate-600 font-medium">Ersatzplanung</span>
 </nav>
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-1">
+<div class="fw-phead">
     <div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Garantie- & Ersatzplanung</h1>
-        <p class="text-sm text-slate-500 mt-1">Raumbuch-Elemente nach Restnutzungsdauer (Lebensdauertabelle) mit Ersatzbudget je Jahr
-            {% if aktive_lg %}· <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+        <h1>Garantie- &amp; Ersatzplanung</h1>
+        <p>Raumbuch-Elemente nach Restnutzungsdauer (Lebensdauertabelle) mit Ersatzbudget je Jahr{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
     </div>
-    <a href="/neu/ersatzplanung/?pdf=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm"><i class="fa-solid fa-file-pdf mr-1.5"></i>Budget-PDF</a>
+    <a href="/neu/ersatzplanung/?pdf=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener" class="fw-btn fw-primary"><i class="fa-solid fa-file-pdf"></i>Budget-PDF</a>
 </div>
-<div class="mb-4"></div>
 
 <!-- KPI -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

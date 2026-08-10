@@ -4,17 +4,13 @@
 
 {% block content %}
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">{% if ui_modus == 'einfach' %}Wohnungen{% else %}Objekte{% endif %}</h1>
-    <a href="/neu/objekte/neu/" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
-        <i class="fa-solid fa-plus mr-1.5"></i> Objekt erfassen
-    </a>
+<div class="fw-phead">
+    <div>
+        <h1>{% if ui_modus == 'einfach' %}Wohnungen{% else %}Objekte{% endif %}</h1>
+        <p>{{ rows|length }} Mietobjekt(e) · <span style="color:var(--ds-good);font-weight:500">{{ vermietet_count }} vermietet</span> · <span style="font-weight:500;color:{% if leer_count %}var(--ds-warn){% else %}var(--ds-faint){% endif %}">{{ leer_count }} im Leerstand</span>{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/objekte/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+    </div>
+    <a href="/neu/objekte/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Objekt erfassen</a>
 </div>
-<p class="text-sm text-slate-500 mb-5">{{ rows|length }} Mietobjekt(e) ·
-    <span class="text-emerald-600 font-medium">{{ vermietet_count }} vermietet</span> ·
-    <span class="{% if leer_count %}text-amber-600{% else %}text-slate-400{% endif %} font-medium">{{ leer_count }} im Leerstand</span>
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/objekte/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
 
 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
 

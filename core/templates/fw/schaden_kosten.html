@@ -7,11 +7,10 @@
     <i class="fa-solid fa-chevron-right text-[8px] mx-1"></i>Kostenübersicht
 </div>
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-1">
+<div class="fw-phead">
     <div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Reparaturkosten</h1>
-        <p class="text-sm text-slate-500 mt-1">Kostenschätzungen (offen) und effektive Kosten aus den Handwerker-Aufträgen je Liegenschaft.
-            {% if aktive_lg %}· <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+        <h1>Reparaturkosten</h1>
+        <p>Kostenschätzungen (offen) und effektive Kosten aus den Handwerker-Aufträgen je Liegenschaft.{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
     </div>
     <form method="get" class="inline-flex items-center gap-1">
         {% if request.GET.lg %}<input type="hidden" name="lg" value="{{ request.GET.lg }}">{% endif %}

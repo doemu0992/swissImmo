@@ -3,24 +3,21 @@
 
 {% block content %}
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Schadensfälle</h1>
-    <div class="flex items-center gap-2">
-        <button type="button" onclick="document.getElementById('neuschaden').classList.toggle('hidden')"
-                class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
-            <i class="fa-solid fa-plus mr-1.5"></i> Schaden erfassen
-        </button>
+<div class="fw-phead">
+    <div>
+        <h1>Schadensfälle</h1>
+        <p>Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische Info an Melder{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/schaeden/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+        <button type="button" onclick="document.getElementById('neuschaden').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Schaden erfassen</button>
         <div class="relative" data-menu>
-            <button type="button" data-menu-btn class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-ellipsis mr-1"></i>Mehr</button>
+            <button type="button" data-menu-btn class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
                 <a href="/neu/schaeden/kosten/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-coins w-4"></i>Kostenübersicht</a>
             </div>
         </div>
     </div>
 </div>
-<p class="text-sm text-slate-500 mb-5">Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische Info an Melder
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/schaeden/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
 
 <!-- Schaden intern erfassen -->
 <div id="neuschaden" class="hidden bg-white rounded-xl border border-indigo-200 p-5 mb-6">

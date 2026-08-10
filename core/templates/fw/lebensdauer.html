@@ -8,18 +8,17 @@
     <span class="text-slate-600 font-medium">Lebensdauertabelle</span>
 </nav>
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-1">
+<div class="fw-phead">
     <div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Lebensdauertabelle</h1>
-        <p class="text-sm text-slate-500 mt-1">Paritätische Nutzungsdauern (Mieterverband/HEV) — Grundlage für den Zeitwert bei der Wohnungsabnahme.</p>
+        <h1>Lebensdauertabelle</h1>
+        <p>Paritätische Nutzungsdauern (Mieterverband/HEV) — Grundlage für den Zeitwert bei der Wohnungsabnahme.</p>
     </div>
     <form method="post" action="/neu/lebensdauer/">
         {% csrf_token %}
         <input type="hidden" name="aktion" value="seed">
-        <button class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-rotate mr-1.5"></i>Standardwerte ergänzen</button>
+        <button class="fw-btn"><i class="fa-solid fa-rotate"></i>Standardwerte ergänzen</button>
     </form>
 </div>
-<div class="mb-4"></div>
 
 <!-- Neue Kategorie -->
 <div class="bg-white rounded-xl border border-indigo-200 p-5 mb-5">
