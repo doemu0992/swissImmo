@@ -88,10 +88,11 @@
 
 <!-- ===== TAB: ÜBERSICHT ===== -->
 <div data-panel="obj" id="obj-uebersicht">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
         <!-- Aktueller Mieter -->
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <h3 class="font-bold text-slate-800 mb-3">Aktuelle Vermietung</h3>
+        <div class="fw-card fw-nomb">
+            <div class="fw-h"><span class="fw-ic b"><i class="fa-solid fa-file-signature"></i></span><span class="fw-t">Aktuelle Vermietung</span></div>
+            <div class="fw-cbody" style="padding:14px 16px">
             {% if aktiver_vertrag %}
             <div class="flex items-center gap-3 mb-3">
                 <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
@@ -105,25 +106,27 @@
             <p class="text-sm text-slate-400 italic">Dieses Objekt steht aktuell leer.</p>
             <a href="/neu/vertraege/neu/?einheit={{ e.id }}" class="text-sm text-indigo-600 font-medium hover:underline mt-2 inline-block">Vertrag erstellen <i class="fa-solid fa-arrow-right ml-1 text-xs"></i></a>
             {% endif %}
+            </div>
         </div>
         <!-- Ausstattung -->
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <h3 class="font-bold text-slate-800 mb-3">Ausstattung</h3>
-            <dl class="text-sm space-y-2">
-                {% if e.bodenbelag %}<div class="flex justify-between"><dt class="text-slate-500">Bodenbelag</dt><dd class="text-slate-800 font-medium">{{ e.bodenbelag }}</dd></div>{% endif %}
-                {% if e.keller %}<div class="flex justify-between"><dt class="text-slate-500">Kellerabteil</dt><dd class="text-slate-800 font-medium">{{ e.keller }}</dd></div>{% endif %}
-                {% if e.letzte_renovation %}<div class="flex justify-between"><dt class="text-slate-500">Letzte Renovation</dt><dd class="text-slate-800 font-medium">{{ e.letzte_renovation }}</dd></div>{% endif %}
-                {% if e.oto_dose %}<div class="flex justify-between"><dt class="text-slate-500">OTO-Dose</dt><dd class="text-slate-800 font-medium">{{ e.oto_dose }}</dd></div>{% endif %}
-                <div class="flex justify-between"><dt class="text-slate-500">Nebenkosten</dt><dd class="text-slate-800 font-medium">CHF {{ e.nebenkosten_aktuell|chf }}</dd></div>
-            </dl>
+        <div class="fw-card fw-nomb">
+            <div class="fw-h"><span class="fw-ic i"><i class="fa-solid fa-couch"></i></span><span class="fw-t">Ausstattung</span></div>
+            <div class="fw-cbody"><dl>
+                {% if e.bodenbelag %}<div class="fw-kv"><dt>Bodenbelag</dt><dd>{{ e.bodenbelag }}</dd></div>{% endif %}
+                {% if e.keller %}<div class="fw-kv"><dt>Kellerabteil</dt><dd>{{ e.keller }}</dd></div>{% endif %}
+                {% if e.letzte_renovation %}<div class="fw-kv"><dt>Letzte Renovation</dt><dd>{{ e.letzte_renovation }}</dd></div>{% endif %}
+                {% if e.oto_dose %}<div class="fw-kv"><dt>OTO-Dose</dt><dd>{{ e.oto_dose }}</dd></div>{% endif %}
+                <div class="fw-kv"><dt>Nebenkosten</dt><dd>CHF {{ e.nebenkosten_aktuell|chf }}</dd></div>
+            </dl></div>
         </div>
     </div>
 
     <!-- Ausstattungsmerkmale (schnelle Häkchen, ergänzt das Raumbuch) -->
     <div class="bg-white rounded-xl border border-slate-200 p-5 mt-4">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="font-bold text-slate-800"><i class="fa-solid fa-list-check text-indigo-500 mr-1.5"></i>Merkmale</h3>
-            <button type="button" onclick="document.getElementById('merkmale-edit').classList.toggle('hidden')" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-pen mr-1"></i>Bearbeiten</button>
+        <div class="flex items-center gap-2.5 mb-3">
+            <span class="fw-ic b"><i class="fa-solid fa-list-check"></i></span>
+            <h3 class="font-bold text-slate-800">Merkmale</h3>
+            <button type="button" onclick="document.getElementById('merkmale-edit').classList.toggle('hidden')" style="margin-left:auto" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-pen mr-1"></i>Bearbeiten</button>
         </div>
         {% if merkmale_gewaehlt %}
         <div class="flex flex-wrap gap-2">
