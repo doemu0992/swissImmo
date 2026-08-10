@@ -106,6 +106,21 @@
         .fw-dleg{display:flex;flex-direction:column;gap:8px;font-size:13px;flex:1;min-width:120px;color:var(--ds-ink)}
         .fw-dleg .fw-r{display:flex;align-items:center;gap:9px}.fw-dleg .fw-r i{width:10px;height:10px;border-radius:3px;flex:none}.fw-dleg .fw-r .fw-n{margin-left:auto;font-weight:700}
         .fw-avci{width:30px;height:30px;border-radius:50%;background:var(--ds-brand-soft);color:var(--ds-brand-600);display:grid;place-items:center;font-weight:700;font-size:11px;flex:none}
+        /* Info-Karten für Detailseiten: Icon-Kopf + Key/Value-Zeilen (Mockup-Look) */
+        .fw-nomb{margin-bottom:0}
+        .fw-ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none;font-size:13px}
+        .fw-ic.b{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+        .fw-ic.g{background:var(--ds-good-soft);color:var(--ds-good)}
+        .fw-ic.i{background:var(--ds-info-soft);color:var(--ds-info)}
+        .fw-ic.w{background:var(--ds-warn-soft);color:var(--ds-warn)}
+        .fw-ic.c{background:var(--ds-crit-soft);color:var(--ds-crit)}
+        .fw-cbody{padding:4px 16px 10px}
+        .fw-kv{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--ds-line) 55%,transparent);font-size:13px}
+        .fw-kv:last-child{border-bottom:0}
+        .fw-kv dt{color:var(--ds-muted)}
+        .fw-kv dd{color:var(--ds-ink);font-weight:600;text-align:right}
+        .fw-kv dd.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+        .fw-subhead{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ds-faint);font-weight:800;padding:10px 0 1px}
         /* Zahlenspalten immer mit gleich breiten Ziffern — sonst «tanzen» die
            Beträge untereinander und Spaltensummen lassen sich nicht mit dem Auge
            prüfen. Zentral statt in jedem Template, damit keine Tabelle vergessen
