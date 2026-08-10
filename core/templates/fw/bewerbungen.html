@@ -4,11 +4,12 @@
 
 {% include 'fw/_pipeline.html' %}
 
-<h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">Bewerbungen</h1>
-<p class="text-sm text-slate-500 mb-5">Mietinteressenten prüfen, zusagen und in einen Vertrag überführen
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/bewerbungen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}
-    · <span class="font-semibold text-slate-700">{{ gesamt }}</span> total</p>
+<div class="fw-phead">
+    <div>
+        <h1>Bewerbungen</h1>
+        <p>Mietinteressenten prüfen, zusagen und in einen Vertrag überführen{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/bewerbungen/" style="color:var(--ds-faint)">× aufheben</a>{% endif %} · <span style="color:var(--ds-ink);font-weight:600">{{ gesamt }}</span> total</p>
+    </div>
+</div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
     {% for sp in spalten %}
