@@ -1,16 +1,15 @@
 {% extends 'fw/base.html' %}
 {% block title %}Berichte — swissImmo{% endblock %}
 {% block content %}
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-1">
+<div class="fw-phead">
     <div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">{% if ui_modus == 'einfach' %}Übersichten{% else %}Berichte & Auswertungen{% endif %}</h1>
-        <p class="text-sm text-slate-500 mt-1 max-w-2xl">Alle Reports und Exporte an einem Ort.
-            {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+        <h1>{% if ui_modus == 'einfach' %}Übersichten{% else %}Berichte &amp; Auswertungen{% endif %}</h1>
+        <p>Alle Reports und Exporte an einem Ort.{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }}{% endif %}</p>
     </div>
-    <div class="flex flex-wrap gap-2">
-        <a href="/neu/auswertung/{{ lg_query }}" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors"><i class="fa-solid fa-chart-line mr-1.5"></i>Interaktive Auswertung</a>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <a href="/neu/auswertung/{{ lg_query }}" class="fw-btn fw-primary"><i class="fa-solid fa-chart-line"></i>Interaktive Auswertung</a>
         <div class="relative" data-menu>
-            <button type="button" data-menu-btn class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-ellipsis mr-1"></i>Mehr</button>
+            <button type="button" data-menu-btn class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
                 <a href="/neu/berichte/betriebskostenspiegel/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-gauge-high w-4"></i>Betriebskostenspiegel</a>
                 <a href="/neu/berichte/leerstand-verlauf/" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-chart-column w-4"></i>Leerstands-Verlauf</a>
