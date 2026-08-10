@@ -13,6 +13,99 @@
         body { font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+        /* ============================================================
+           DESIGN-SYSTEM (fw-*) — theme-fähige Komponenten-Ebene.
+           Token-Variablen (Hell/Dunkel via prefers-color-scheme UND
+           dem manuellen [data-theme]-Umschalter), darunter wieder-
+           verwendbare Bausteine. Rein additiv, alle Klassen `fw-`-
+           präfixiert → keine Kollision mit Tailwind oder Bestand.
+           Seiten werden Stück für Stück auf diese Klassen portiert.
+           ============================================================ */
+        :root{
+            --ds-bg:#f6f7fb;--ds-surface:#fff;--ds-surface-2:#f1f2f8;--ds-ink:#171a2b;--ds-muted:#5b6072;--ds-faint:#8b90a4;--ds-line:#e6e7f0;
+            --ds-brand:#4f46e5;--ds-brand-600:#4338ca;--ds-brand-soft:#eef0fe;
+            --ds-good:#16a34a;--ds-good-soft:#e7f6ec;--ds-warn:#d97706;--ds-warn-soft:#fdf1e1;--ds-crit:#dc2626;--ds-crit-soft:#fdeaea;--ds-info:#0891b2;--ds-info-soft:#e2f4f8;
+            --ds-shadow-sm:0 1px 2px rgba(23,26,43,.06);--ds-shadow:0 1px 2px rgba(23,26,43,.05),0 6px 20px rgba(23,26,43,.06);
+            --ds-radius:16px;--ds-radius-sm:11px;--ds-pill:999px;
+        }
+        @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+            --ds-bg:#0e1020;--ds-surface:#171a2e;--ds-surface-2:#1e2138;--ds-ink:#e7e8f2;--ds-muted:#9aa0b8;--ds-faint:#6b7192;--ds-line:#262a44;
+            --ds-brand:#6366f1;--ds-brand-600:#818cf8;--ds-brand-soft:#20233d;
+            --ds-good:#34d399;--ds-good-soft:#12271f;--ds-warn:#fbbf24;--ds-warn-soft:#2a2113;--ds-crit:#f87171;--ds-crit-soft:#2b1618;--ds-info:#38bdf8;--ds-info-soft:#0e2430;
+            --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+        }}
+        :root[data-theme="dark"]{
+            --ds-bg:#0e1020;--ds-surface:#171a2e;--ds-surface-2:#1e2138;--ds-ink:#e7e8f2;--ds-muted:#9aa0b8;--ds-faint:#6b7192;--ds-line:#262a44;
+            --ds-brand:#6366f1;--ds-brand-600:#818cf8;--ds-brand-soft:#20233d;
+            --ds-good:#34d399;--ds-good-soft:#12271f;--ds-warn:#fbbf24;--ds-warn-soft:#2a2113;--ds-crit:#f87171;--ds-crit-soft:#2b1618;--ds-info:#38bdf8;--ds-info-soft:#0e2430;
+            --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+        }
+        .fw-num{font-variant-numeric:tabular-nums}
+        /* Seitenkopf */
+        .fw-phead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+        .fw-phead h1{font-size:23px;letter-spacing:-.02em;font-weight:800;color:var(--ds-ink)}
+        .fw-phead p{font-size:13px;color:var(--ds-muted);margin-top:2px}
+        /* Buttons */
+        .fw-btn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;text-decoration:none;padding:9px 14px;border-radius:var(--ds-radius-sm);cursor:pointer;border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink)}
+        .fw-btn:hover{border-color:var(--ds-brand)}
+        .fw-btn.fw-primary{background:linear-gradient(135deg,var(--ds-brand),var(--ds-brand-600));color:#fff;border-color:transparent;box-shadow:0 4px 12px color-mix(in srgb,var(--ds-brand) 40%,transparent)}
+        /* KPI-Kacheln */
+        .fw-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:16px}
+        .fw-kpi{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:14px;padding:15px 16px;box-shadow:var(--ds-shadow);display:flex;flex-direction:column;gap:2px}
+        .fw-kpi.fw-accent{background:linear-gradient(150deg,color-mix(in srgb,var(--ds-brand) 12%,var(--ds-surface)),var(--ds-surface))}
+        .fw-kpi .fw-l{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-faint);font-weight:600}
+        .fw-kpi .fw-v{font-size:22px;font-weight:760;letter-spacing:-.02em;color:var(--ds-ink)}
+        .fw-kpi .fw-v.fw-crit{color:var(--ds-crit)}.fw-kpi .fw-v.fw-warn{color:var(--ds-warn)}.fw-kpi .fw-v.fw-good{color:var(--ds-good)}
+        .fw-kpi .fw-f{font-size:11.5px;color:var(--ds-muted)}
+        /* Karte */
+        .fw-card{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);margin-bottom:16px;overflow:hidden}
+        .fw-card>.fw-h{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--ds-line)}
+        .fw-card>.fw-h .fw-t{font-weight:700;font-size:14px;color:var(--ds-ink)}
+        .fw-card>.fw-h .fw-t small{color:var(--ds-faint);font-weight:500;font-size:12px;margin-left:6px}
+        .fw-card>.fw-h .fw-r{margin-left:auto;display:flex;gap:6px;align-items:center}
+        /* Tabelle (nur mit .fw-table — global bleibt unberührt) */
+        .fw-tablewrap{overflow-x:auto}
+        table.fw-table{width:100%;border-collapse:collapse;font-size:13px}
+        table.fw-table thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-faint);font-weight:600;padding:11px 18px;border-bottom:1px solid var(--ds-line);white-space:nowrap}
+        table.fw-table tbody td{padding:12px 18px;border-bottom:1px solid var(--ds-line);color:var(--ds-ink)}
+        table.fw-table tbody tr:last-child td{border-bottom:0}
+        table.fw-table tbody tr:hover{background:var(--ds-surface-2)}
+        table.fw-table td.fw-right,table.fw-table th.fw-right{text-align:right;white-space:nowrap}
+        .fw-strong{font-weight:600;color:var(--ds-ink)}.fw-sub2{color:var(--ds-faint);font-size:12px}
+        /* Chips */
+        .fw-chip{font-size:11px;font-weight:700;padding:2px 9px;border-radius:var(--ds-pill);white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+        .fw-chip.fw-good{background:var(--ds-good-soft);color:var(--ds-good)}.fw-chip.fw-warn{background:var(--ds-warn-soft);color:var(--ds-warn)}
+        .fw-chip.fw-crit{background:var(--ds-crit-soft);color:var(--ds-crit)}.fw-chip.fw-info{background:var(--ds-info-soft);color:var(--ds-info)}
+        .fw-chip.fw-brand{background:var(--ds-brand-soft);color:var(--ds-brand-600)}.fw-chip.fw-mut{background:var(--ds-surface-2);color:var(--ds-muted)}
+        .fw-chip.fw-dot::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+        /* Filter-Chips */
+        .fw-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+        .fw-fchip{font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:var(--ds-pill);border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-muted);cursor:pointer;text-decoration:none}
+        .fw-fchip.fw-on{background:var(--ds-brand-soft);color:var(--ds-brand-600);border-color:transparent}
+        /* Raster + Portfolio-Karten */
+        .fw-grid2{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
+        @media (max-width:860px){.fw-grid2{grid-template-columns:1fr}}
+        .fw-pcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+        .fw-pcard{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);overflow:hidden;display:block;color:inherit;text-decoration:none;transition:transform .15s,box-shadow .15s}
+        a.fw-pcard:hover{transform:translateY(-2px);box-shadow:0 1px 2px rgba(23,26,43,.05),0 14px 34px rgba(23,26,43,.12)}
+        .fw-pcard .fw-top{height:74px;background:linear-gradient(135deg,color-mix(in srgb,var(--ds-brand) 26%,var(--ds-surface)),color-mix(in srgb,var(--ds-brand-600) 12%,var(--ds-surface)));display:flex;align-items:flex-end;padding:12px 14px}
+        .fw-pcard .fw-top .fw-adr{font-weight:700;font-size:14px;color:var(--ds-ink)}
+        .fw-pcard .fw-bd{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+        .fw-pcard .fw-row{display:flex;justify-content:space-between;font-size:12.5px}
+        .fw-pcard .fw-row .fw-k{color:var(--ds-muted)}.fw-pcard .fw-row .fw-vv{font-weight:700;color:var(--ds-ink)}
+        .fw-bar{height:6px;border-radius:999px;background:var(--ds-surface-2);overflow:hidden}
+        .fw-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--ds-brand),var(--ds-brand-600))}
+        /* Chart + Donut */
+        svg.fw-chart{width:100%;height:150px;display:block}
+        .fw-donut{width:120px;height:120px;border-radius:50%;position:relative;flex:none}
+        .fw-donut::after{content:"";position:absolute;inset:14px;border-radius:50%;background:var(--ds-surface)}
+        .fw-donut .fw-c{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+        .fw-donut .fw-c .fw-b{font-size:22px;font-weight:780;color:var(--ds-ink)}
+        .fw-donut .fw-c .fw-s{font-size:10px;color:var(--ds-faint);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+        .fw-dleg{display:flex;flex-direction:column;gap:8px;font-size:13px;flex:1;min-width:120px;color:var(--ds-ink)}
+        .fw-dleg .fw-r{display:flex;align-items:center;gap:9px}.fw-dleg .fw-r i{width:10px;height:10px;border-radius:3px;flex:none}.fw-dleg .fw-r .fw-n{margin-left:auto;font-weight:700}
+        .fw-avci{width:30px;height:30px;border-radius:50%;background:var(--ds-brand-soft);color:var(--ds-brand-600);display:grid;place-items:center;font-weight:700;font-size:11px;flex:none}
         /* Zahlenspalten immer mit gleich breiten Ziffern — sonst «tanzen» die
            Beträge untereinander und Spaltensummen lassen sich nicht mit dem Auge
            prüfen. Zentral statt in jedem Template, damit keine Tabelle vergessen
