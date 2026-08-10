@@ -4,16 +4,13 @@
 
 {% block content %}
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Debitoren</h1>
-    <button type="button" onclick="document.getElementById('adhoc').classList.toggle('hidden')"
-            class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
-        <i class="fa-solid fa-plus mr-1.5"></i> Rechnung erstellen
-    </button>
+<div class="fw-phead">
+    <div>
+        <h1>Debitoren</h1>
+        <p>Offene Posten aus Sollstellung und Weiterverrechnung (Sonnerie, Schlüssel, Ersatz …){% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }}, {{ aktive_lg.ort }} <a href="/neu/debitoren/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+    </div>
+    <button type="button" onclick="document.getElementById('adhoc').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Rechnung erstellen</button>
 </div>
-<p class="text-sm text-slate-500 mb-5">Offene Posten aus Sollstellung und Weiterverrechnung (Sonnerie, Schlüssel, Ersatz …)
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}, {{ aktive_lg.ort }}</span>
-    <a href="/neu/debitoren/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
 
 
 <!-- Ad-hoc Rechnung mit Live-Vorschau -->
@@ -100,42 +97,35 @@
 </div>
 
 <!-- KPI-Zeile -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-coins"></i></div>
-        <div>
-            <div class="text-2xl font-bold text-indigo-600">CHF {{ total_offen|chf }}</div>
-            <div class="text-sm text-slate-500">Total offen</div>
-        </div>
+<div class="fw-kpis">
+    <div class="fw-kpi fw-accent">
+        <span class="fw-l">Total offen</span>
+        <span class="fw-v fw-num">CHF {{ total_offen|chf }}</span>
+        <span class="fw-f">aus Sollstellung + Weiterverrechnung</span>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-file-invoice"></i></div>
-        <div>
-            <div class="text-2xl font-bold text-slate-800">{{ anzahl_offen }}</div>
-            <div class="text-sm text-slate-500">Offene Posten</div>
-        </div>
+    <div class="fw-kpi">
+        <span class="fw-l">Offene Posten</span>
+        <span class="fw-v fw-num">{{ anzahl_offen }}</span>
+        <span class="fw-f">Rechnungen</span>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-triangle-exclamation"></i></div>
-        <div>
-            <div class="text-2xl font-bold {% if anzahl_ueberfaellig %}text-rose-600{% else %}text-slate-800{% endif %}">{{ anzahl_ueberfaellig }}</div>
-            <div class="text-sm text-slate-500">Überfällig</div>
-        </div>
+    <div class="fw-kpi">
+        <span class="fw-l">Überfällig</span>
+        <span class="fw-v fw-num {% if anzahl_ueberfaellig %}fw-crit{% endif %}">{{ anzahl_ueberfaellig }}</span>
+        <span class="fw-f">Mahnstufe aus Fälligkeit</span>
     </div>
 </div>
 
 <!-- Tabelle mit Filterzeile -->
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+<div class="fw-card">
 
-    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
-        <div class="flex items-center gap-1.5 flex-wrap">
+    <div class="fw-h" style="flex-wrap:wrap">
+        <div class="fw-filters" style="margin-bottom:0">
             {% for wert, label in status_chips %}
             <a href="?status={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                      {% if status_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+               class="fw-fchip{% if status_filter == wert %} fw-on{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
-        <form method="get" class="ml-auto relative">
+        <form method="get" class="relative" style="margin-left:auto">
             {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
