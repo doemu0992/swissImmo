@@ -1,11 +1,10 @@
 {% extends 'fw/base.html' %}
 {% block title %}Leerstands-Verlauf — swissImmo{% endblock %}
 {% block content %}
-<div class="flex items-start justify-between flex-wrap gap-3 mb-6">
+<div class="fw-phead">
     <div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Leerstands-Verlauf</h1>
-        <p class="text-sm text-slate-500 mt-1">Monatliche Leerquote der letzten {{ monate }} Monate.
-            {% if aktive_lg %}· <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% else %}· ganzes Portfolio{% endif %}</p>
+        <h1>Leerstands-Verlauf</h1>
+        <p>Monatliche Leerquote der letzten {{ monate }} Monate.{% if aktive_lg %} · {{ aktive_lg.strasse }}{% else %} · ganzes Portfolio{% endif %}</p>
     </div>
     <div class="flex gap-2">
         <a href="?monate=6" class="px-3 py-2 rounded-lg text-sm font-semibold {% if monate == 6 %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600{% endif %}">6 Mt.</a>

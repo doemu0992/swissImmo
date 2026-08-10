@@ -2,9 +2,12 @@
 {% load chf %}
 {% block title %}MWST-Abrechnung — swissImmo{% endblock %}
 {% block content %}
-<h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">MWST-Abrechnung</h1>
-<p class="text-sm text-slate-500 mb-5">Geschuldete Umsatzsteuer minus Vorsteuer = Zahllast gegenüber der ESTV.
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+<div class="fw-phead">
+    <div>
+        <h1>MWST-Abrechnung</h1>
+        <p>Geschuldete Umsatzsteuer minus Vorsteuer = Zahllast gegenüber der ESTV.{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }}{% endif %}</p>
+    </div>
+</div>
 
 <form method="get" class="flex flex-wrap items-end gap-3 mb-6">
     {% if request.GET.lg %}<input type="hidden" name="lg" value="{{ request.GET.lg }}">{% endif %}

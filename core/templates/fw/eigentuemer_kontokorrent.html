@@ -8,14 +8,14 @@
     <i class="fa-solid fa-chevron-right text-[8px] mx-1"></i>Kontokorrent
 </div>
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-1">
+<div class="fw-phead">
     <div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Kontokorrent Eigentümer</h1>
-        <p class="text-sm text-slate-500 mt-1">{{ md.firma_oder_name }} · Ergebnis der Liegenschaften abzüglich Auszahlungen.</p>
+        <h1>Kontokorrent Eigentümer</h1>
+        <p>{{ md.firma_oder_name }} · Ergebnis der Liegenschaften abzüglich Auszahlungen.</p>
     </div>
     <div class="flex items-center gap-2">
-        <a href="/neu/mandate/{{ md.id }}/kontokorrent/?pdf=1{% if jahr %}&jahr={{ jahr }}{% endif %}" target="_blank" rel="noopener" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-file-pdf mr-1.5"></i>PDF</a>
-        <a href="/neu/mandate/{{ md.id }}/abrechnung/{% if jahr %}?jahr={{ jahr }}{% endif %}" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-file-invoice mr-1.5"></i>Abrechnung</a>
+        <a href="/neu/mandate/{{ md.id }}/kontokorrent/?pdf=1{% if jahr %}&jahr={{ jahr }}{% endif %}" target="_blank" rel="noopener" class="fw-btn"><i class="fa-solid fa-file-pdf"></i>PDF</a>
+        <a href="/neu/mandate/{{ md.id }}/abrechnung/{% if jahr %}?jahr={{ jahr }}{% endif %}" class="fw-btn"><i class="fa-solid fa-file-invoice"></i>Abrechnung</a>
         <form method="get" class="inline-flex items-center gap-1">
             <select name="jahr" onchange="this.form.submit()" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
                 <option value="alle" {% if not jahr %}selected{% endif %}>Kumuliert</option>
