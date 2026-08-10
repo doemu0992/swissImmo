@@ -9096,7 +9096,7 @@ class PersonenStammdatenTests(TestCase):
         m.haushalt_erwachsene = 2; m.save()
         c = Client(); c.force_login(_team_user())
         body = c.get(f'/neu/personen/{m.id}/').content.decode()
-        self.assertIn('Persönliche Angaben', body)
+        self.assertIn('Stammdaten &amp; Herkunft', body)
         self.assertIn('Informatiker', body)
         self.assertIn('Eva Muster', body)
 
