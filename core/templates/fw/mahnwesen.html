@@ -4,10 +4,10 @@
 
 {% block content %}
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-5">
+<div class="fw-phead">
     <div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">{% if ui_modus == 'einfach' %}Mahnungen{% else %}Mahnwesen{% endif %}</h1>
-        <p class="text-sm text-slate-500">Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt erzeugen
+        <h1>{% if ui_modus == 'einfach' %}Mahnungen{% else %}Mahnwesen{% endif %}</h1>
+        <p>Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt erzeugen
             {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
             <a href="/neu/mahnwesen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
         <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="inline-block mt-2 text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-chart-column mr-1"></i>Altersstruktur (OP-Aging) ansehen</a>
@@ -16,9 +16,7 @@
     <form method="post" action="/neu/mahnwesen/lauf/" onsubmit="return confirm('Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt.');" class="shrink-0 text-right">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm whitespace-nowrap">
-            <i class="fa-solid fa-bolt mr-1.5"></i>Mahnlauf ausführen
-        </button>
+        <button type="submit" class="fw-btn fw-primary" style="white-space:nowrap"><i class="fa-solid fa-bolt"></i>Mahnlauf ausführen</button>
         <label class="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1.5 justify-end"><input type="checkbox" name="mit_zins" class="accent-indigo-600">Verzugszins (5%) berechnen</label>
         <label class="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1 justify-end"><input type="checkbox" name="kein_versand" class="accent-indigo-600">Testlauf: nur erstellen, keine E-Mails versenden</label>
     </form>

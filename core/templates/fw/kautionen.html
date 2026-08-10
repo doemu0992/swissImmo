@@ -2,10 +2,12 @@
 {% load chf %}
 {% block title %}Kautionen — swissImmo{% endblock %}
 {% block content %}
-<h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">Mietzinsdepots</h1>
-<p class="text-sm text-slate-500 mb-5">Register aller Kautionen — separat geführt nach <b>Art. 257e OR</b>
-    (Sperrkonto auf den Namen des Mieters).
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+<div class="fw-phead">
+    <div>
+        <h1>Mietzinsdepots</h1>
+        <p>Register aller Kautionen — separat geführt nach <b>Art. 257e OR</b> (Sperrkonto auf den Namen des Mieters).{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }}{% endif %}</p>
+    </div>
+</div>
 
 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-5 max-w-3xl">
     <div class="bg-white rounded-xl border border-slate-200 p-4">

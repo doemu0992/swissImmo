@@ -7,14 +7,14 @@
     <i class="fa-solid fa-chevron-right text-[8px] mx-1"></i>{{ m.display_name }}
 </div>
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-1">
+<div class="fw-phead">
     <div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Kontoblatt</h1>
-        <p class="text-sm text-slate-500 mt-1">{{ m.display_name }} · alle Forderungen und Zahlungen mit laufendem Saldo.</p>
+        <h1>Kontoblatt</h1>
+        <p>{{ m.display_name }} · alle Forderungen und Zahlungen mit laufendem Saldo.</p>
     </div>
-    <div class="flex items-center gap-2">
-        <a href="/neu/personen/{{ m.id }}/kontoauszug/" target="_blank" rel="noopener" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-file-pdf mr-1.5"></i>PDF</a>
-        <a href="/neu/personen/{{ m.id }}/" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-user mr-1.5"></i>Person</a>
+    <div style="display:flex;align-items:center;gap:8px">
+        <a href="/neu/personen/{{ m.id }}/kontoauszug/" target="_blank" rel="noopener" class="fw-btn"><i class="fa-solid fa-file-pdf"></i>PDF</a>
+        <a href="/neu/personen/{{ m.id }}/" class="fw-btn"><i class="fa-solid fa-user"></i>Person</a>
     </div>
 </div>
 

@@ -4,16 +4,14 @@
 
 {% block content %}
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Bankabgleich</h1>
+<div class="fw-phead">
+    <div>
+        <h1>Bankabgleich</h1>
+        <p>Offene Posten mit Zahlungseingängen abgleichen und mit einem Klick verbuchen (Bank an Debitoren){% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/bankabgleich/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+    </div>
     {# Einstieg zu den gelernten Absendern: Die Automatik ordnet sonst unsichtbar zu. #}
-    <a href="/neu/bankabgleich/zahler/" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg shrink-0">
-        <i class="fa-solid fa-user-check mr-1.5"></i>Gelernte Zahler
-    </a>
+    <a href="/neu/bankabgleich/zahler/" class="fw-btn"><i class="fa-solid fa-user-check"></i>Gelernte Zahler</a>
 </div>
-<p class="text-sm text-slate-500 mb-5">Offene Posten mit Zahlungseingängen abgleichen und mit einem Klick verbuchen (Bank an Debitoren)
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/bankabgleich/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
 
 <!-- KPI + Import-Hinweis -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

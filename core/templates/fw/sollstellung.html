@@ -4,9 +4,12 @@
 
 {% block content %}
 
-<h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">{% if ui_modus == 'einfach' %}Monatsmieten erzeugen{% else %}Sollstellung Miete{% endif %}</h1>
-<p class="text-sm text-slate-500 mb-5">Monatlicher Mietenlauf — erzeugt Debitorenrechnungen (Pro-Rata bei Ein-/Auszug mitten im Monat)
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>{% endif %}</p>
+<div class="fw-phead">
+    <div>
+        <h1>{% if ui_modus == 'einfach' %}Monatsmieten erzeugen{% else %}Sollstellung Miete{% endif %}</h1>
+        <p>Monatlicher Mietenlauf — erzeugt Debitorenrechnungen (Pro-Rata bei Ein-/Auszug mitten im Monat){% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }}{% endif %}</p>
+    </div>
+</div>
 
 <!-- Monatswähler + Aktion -->
 <div class="bg-white rounded-xl border border-slate-200 p-5 mb-6">

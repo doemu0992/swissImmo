@@ -4,15 +4,13 @@
 
 {% block content %}
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Bankkonten</h1>
-    <a href="/neu/liegenschaften/" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors" title="IBAN wird bei der Liegenschaft erfasst">
-        <i class="fa-solid fa-plus mr-1.5"></i> Konto hinterlegen
-    </a>
+<div class="fw-phead">
+    <div>
+        <h1>Bankkonten</h1>
+        <p>Miet-, Verwaltungs- und Eigentümerkonten mit QR-IBAN-Erkennung{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/bankkonten/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+    </div>
+    <a href="/neu/liegenschaften/" class="fw-btn fw-primary" title="IBAN wird bei der Liegenschaft erfasst"><i class="fa-solid fa-plus"></i> Konto hinterlegen</a>
 </div>
-<p class="text-sm text-slate-500 mb-5">Miet-, Verwaltungs- und Eigentümerkonten mit QR-IBAN-Erkennung
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/bankkonten/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
 
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
