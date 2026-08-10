@@ -8,11 +8,10 @@
     <span class="text-slate-600 font-medium">{{ aktive_lg.strasse }}</span>
 </nav>
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-1">
+<div class="fw-phead">
     <div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Mieterspiegel</h1>
-        <p class="text-sm text-slate-500 mt-1">Einheiten mit Mieter, Mietzins und Vertragsdaten · Stichtag {{ stichtag|date:"d.m.Y" }}
-            · <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}, {{ aktive_lg.plz }} {{ aktive_lg.ort }}</span></p>
+        <h1>Mieterspiegel</h1>
+        <p>Einheiten mit Mieter, Mietzins und Vertragsdaten · Stichtag {{ stichtag|date:"d.m.Y" }} · {{ aktive_lg.strasse }}, {{ aktive_lg.plz }} {{ aktive_lg.ort }}</p>
     </div>
     <div class="flex items-center gap-2">
         {% if alle_lgs|length > 1 %}
@@ -20,7 +19,7 @@
             {% for l in alle_lgs %}<option value="{{ l.id }}" {% if l.id == aktive_lg.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
         </select>
         {% endif %}
-        <a href="/neu/mieterspiegel/?pdf=1&lg={{ aktive_lg.id }}" target="_blank" rel="noopener" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm"><i class="fa-solid fa-file-pdf mr-1.5"></i>PDF</a>
+        <a href="/neu/mieterspiegel/?pdf=1&lg={{ aktive_lg.id }}" target="_blank" rel="noopener" class="fw-btn fw-primary"><i class="fa-solid fa-file-pdf"></i>PDF</a>
     </div>
 </div>
 

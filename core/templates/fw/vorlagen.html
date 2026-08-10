@@ -1,14 +1,12 @@
 {% extends 'fw/base.html' %}
 {% block title %}Vorlagen — swissImmo{% endblock %}
 {% block content %}
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Vorlagen</h1>
+<div class="fw-phead">
+    <h1>Vorlagen</h1>
     <div class="flex items-center gap-2">
-        <a href="/neu/vorlagen/neu/" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
-            <i class="fa-solid fa-plus mr-1.5"></i> Vorlage erstellen
-        </a>
+        <a href="/neu/vorlagen/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Vorlage erstellen</a>
         <div class="relative" data-menu>
-            <button type="button" data-menu-btn class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-ellipsis mr-1"></i>Mehr</button>
+            <button type="button" data-menu-btn class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
                 <form method="post" action="/neu/vorlagen/standard/">
                     {% csrf_token %}

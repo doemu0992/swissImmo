@@ -2,9 +2,11 @@
 {% load chf %}
 {% block title %}Mieterspiegel — swissImmo{% endblock %}
 {% block content %}
-<div class="mb-5">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Mieterspiegel</h1>
-    <p class="text-sm text-slate-500 mt-1">Rent Roll pro Liegenschaft — Liegenschaft wählen · Stichtag {{ stichtag|date:"d.m.Y" }}</p>
+<div class="fw-phead">
+    <div>
+        <h1>Mieterspiegel</h1>
+        <p>Rent Roll pro Liegenschaft — Liegenschaft wählen · Stichtag {{ stichtag|date:"d.m.Y" }}</p>
+    </div>
 </div>
 
 {% if uebersicht %}

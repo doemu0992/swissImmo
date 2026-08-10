@@ -1,17 +1,11 @@
 {% extends 'fw/base.html' %}
 {% block title %}Logbuch — swissImmo{% endblock %}
 {% block content %}
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1 flex-wrap gap-3">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Logbuch</h1>
+<div class="fw-phead">
+    <h1>Logbuch</h1>
     <div class="flex items-center gap-2">
-        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=pdf" target="_blank" rel="noopener"
-           class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
-            <i class="fa-solid fa-file-pdf mr-1.5 text-rose-500"></i> PDF-Bericht
-        </a>
-        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=csv"
-           class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
-            <i class="fa-solid fa-file-csv mr-1.5 text-emerald-600"></i> CSV-Export
-        </a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=pdf" target="_blank" rel="noopener" class="fw-btn"><i class="fa-solid fa-file-pdf text-rose-500"></i> PDF-Bericht</a>
+        <a href="?q={{ f_q|urlencode }}&benutzer={{ f_benutzer|urlencode }}&art={{ f_art|urlencode }}&tage={{ f_tage|urlencode }}&export=csv" class="fw-btn"><i class="fa-solid fa-file-csv text-emerald-600"></i> CSV-Export</a>
     </div>
 </div>
 <p class="text-sm text-slate-500 mb-5">Nachvollziehbarer Verlauf: <b>wer</b> hat <b>wann</b> <b>was</b> getan.

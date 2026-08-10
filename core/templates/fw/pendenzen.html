@@ -2,10 +2,12 @@
 {% block title %}Pendenzen & Fristen — swissImmo{% endblock %}
 {% block content %}
 
-<h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">Pendenzen &amp; Fristen</h1>
-<p class="text-sm text-slate-500 mb-5">Automatisch erkannte Fristen und eigene Pendenzen an einem Ort
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/pendenzen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+<div class="fw-phead">
+    <div>
+        <h1>Pendenzen &amp; Fristen</h1>
+        <p>Automatisch erkannte Fristen und eigene Pendenzen an einem Ort{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/pendenzen/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+    </div>
+</div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
     <!-- Linke Spalte: Fristen + Pendenzen -->

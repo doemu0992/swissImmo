@@ -3,11 +3,9 @@
 
 {% block content %}
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Dienstleister</h1>
-    <button type="button" onclick="document.getElementById('dlform').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
-        <i class="fa-solid fa-plus mr-1.5"></i> Handwerker erfassen
-    </button>
+<div class="fw-phead">
+    <h1>Dienstleister</h1>
+    <button type="button" onclick="document.getElementById('dlform').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Handwerker erfassen</button>
 </div>
 <p class="text-sm text-slate-500 mb-5">Handwerkerstamm für Reparaturaufträge · {{ anzahl }} Firma/Firmen in {{ anzahl_branchen }} Branchen</p>
 

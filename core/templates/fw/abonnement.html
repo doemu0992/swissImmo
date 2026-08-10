@@ -1,10 +1,11 @@
 {% extends 'fw/base.html' %}
 {% block title %}Abonnement · swissImmo{% endblock %}
 {% block content %}
-<div class="mb-6">
-    <h1 class="text-2xl font-extrabold text-slate-900">Abonnement</h1>
-    <p class="text-slate-500 mt-1">Preis pro verwaltete Einheit / Monat — aktuell
-        <span class="font-semibold text-slate-700">{{ einheiten }}</span> Einheit(en) im System.</p>
+<div class="fw-phead">
+    <div>
+        <h1>Abonnement</h1>
+        <p>Preis pro verwaltete Einheit / Monat — aktuell <span style="color:var(--ds-ink);font-weight:600">{{ einheiten }}</span> Einheit(en) im System.</p>
+    </div>
 </div>
 
 <!-- Monatlich / Jährlich -->

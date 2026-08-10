@@ -1,8 +1,8 @@
 {% extends 'fw/base.html' %}
 {% block title %}Fristen-Center — swissImmo{% endblock %}
 {% block content %}
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1 flex-wrap gap-3">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Fristen-Center</h1>
+<div class="fw-phead">
+    <h1>Fristen-Center</h1>
     <div class="flex items-center gap-2 text-sm">
         <a href="/neu/fristen/" class="px-3 py-2 rounded-lg font-semibold {% if not nur_frist %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">Alle</a>
         <a href="/neu/fristen/?nur=frist" class="px-3 py-2 rounded-lg font-semibold {% if nur_frist %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">Nur gesetzliche Fristen</a>
