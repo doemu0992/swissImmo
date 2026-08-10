@@ -4,17 +4,15 @@
 
 {% block content %}
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">{% if ui_modus == 'einfach' %}Meine Häuser{% else %}Liegenschaften{% endif %}</h1>
-    <div class="flex items-center gap-2">
-        <a href="/neu/liegenschaften/neu/" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
-            <i class="fa-solid fa-plus mr-1.5"></i> Liegenschaft erfassen
-        </a>
+<div class="fw-phead">
+    <div>
+        <h1>{% if ui_modus == 'einfach' %}Meine Häuser{% else %}Liegenschaften{% endif %}</h1>
+        <p>{{ rows|length }} Liegenschaft(en) im Portfolio{% if aktive_lg %} · gefiltert <a href="/neu/liegenschaften/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+        <a href="/neu/liegenschaften/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Liegenschaft erfassen</a>
         <div class="relative">
-            <button type="button" onclick="document.getElementById('lgListMenu').classList.toggle('hidden'); event.stopPropagation();"
-                    class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg">
-                <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
-            </button>
+            <button type="button" onclick="document.getElementById('lgListMenu').classList.toggle('hidden'); event.stopPropagation();" class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
             <div id="lgListMenu" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
                 <a href="/neu/mieterspiegel/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-table-list w-4"></i>Mieterspiegel (Rent Roll)</a>
             </div>
@@ -27,8 +25,6 @@
         </script>
     </div>
 </div>
-<p class="text-sm text-slate-500 mb-4">{{ rows|length }} Liegenschaft(en) im Portfolio
-    {% if aktive_lg %}· gefiltert <a href="/neu/liegenschaften/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
 
 <div class="mb-4">
     <div class="relative max-w-sm">
@@ -38,82 +34,25 @@
     </div>
 </div>
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-  <div id="lgListe">
-    <!-- Mobile: Karten -->
-    <div class="md:hidden divide-y divide-slate-100">
+<div id="lgListe">
+    {% if rows %}
+    <div class="fw-pcards">
         {% for row in rows %}
-        <a data-zeile href="/neu/liegenschaften/{{ row.lg.id }}/" class="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50/60 transition-colors">
-            <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-building"></i></div>
-            <div class="min-w-0 flex-1">
-                {# Kein truncate: «Selzacherstrasse 4» wurde zu «Selzacherstras…» — mobil ist Platz nach unten #}
-                <div class="font-semibold text-slate-900 break-words">{{ row.lg.strasse }}</div>
-                <div class="text-xs text-slate-500 break-words">{{ row.lg.plz }} {{ row.lg.ort }}</div>
-                <div class="mt-1.5 flex items-center gap-2 flex-wrap">
-                    {% if row.leer %}
-                    <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700">{{ row.leer }} leer</span>
-                    {% else %}
-                    <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700">Voll vermietet</span>
-                    {% endif %}
-                    <span class="text-[11px] text-slate-400">{{ row.einheiten_count }} Objekt{{ row.einheiten_count|pluralize:"e" }}</span>
-                </div>
+        <a href="/neu/liegenschaften/{{ row.lg.id }}/" data-zeile class="fw-pcard">
+            <div class="fw-top"><div class="fw-adr">{{ row.lg.strasse }}<br><span style="font-weight:500;font-size:12px;color:var(--ds-muted)">{{ row.lg.plz }} {{ row.lg.ort }}</span></div></div>
+            <div class="fw-bd">
+                <div class="fw-row"><span class="fw-k">Einheiten</span><span class="fw-vv fw-num">{{ row.einheiten_count }}{% if row.leer %} · {{ row.leer }} leer{% endif %}</span></div>
+                <div class="fw-row"><span class="fw-k">Ist-Miete / Mt.</span><span class="fw-vv fw-num">CHF {{ row.mietertrag|chf }}</span></div>
+                <div class="fw-bar"><i style="width:{{ row.verm_pct }}%"></i></div>
+                <div class="fw-row"><span class="fw-k">Vermietung</span><span class="fw-vv fw-num">{{ row.verm_pct }} %</span></div>
             </div>
-            <div class="text-right shrink-0">
-                <div class="font-bold text-indigo-600 whitespace-nowrap">CHF {{ row.mietertrag|chf }}</div>
-                <div class="text-[11px] text-slate-400">Ertrag/Mt.</div>
-            </div>
-            <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0"></i>
         </a>
-        {% empty %}
-        <div class="px-4">{% include 'fw/_empty.html' with icon='fa-building' titel='Noch keine Liegenschaften' subtext='Erfassen Sie Ihre erste Liegenschaft — die Objekte können automatisch aus dem Gebäude- und Wohnungsregister (GWR) importiert werden.' cta_url='/neu/liegenschaften/neu/' cta_label='Erste Liegenschaft erfassen' %}</div>
         {% endfor %}
     </div>
-
-    <!-- Desktop: Tabelle -->
-    <div class="overflow-x-auto hidden md:block">
-        <table class="w-full min-w-max text-sm">
-            <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Liegenschaft</th>
-                <th class="px-5 py-3 font-semibold hidden md:table-cell">Ort</th>
-                <th class="px-5 py-3 font-semibold text-center hidden lg:table-cell">Objekte</th>
-                <th class="px-5 py-3 font-semibold text-center hidden lg:table-cell">Aktive Verträge</th>
-                <th class="px-5 py-3 font-semibold text-center hidden md:table-cell">Leerstand</th>
-                <th class="px-5 py-3 font-semibold text-right">Mietertrag / Monat</th>
-                <th class="px-5 py-3"></th>
-            </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-50">
-            {% for row in rows %}
-            <tr data-zeile class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="window.location='/neu/liegenschaften/{{ row.lg.id }}/'">
-                <td class="px-5 py-3.5">
-                    <a href="/neu/liegenschaften/{{ row.lg.id }}/" class="flex items-center gap-3" onclick="event.stopPropagation()">
-                        <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-building"></i></div>
-                        <div>
-                            <div class="font-semibold text-slate-900">{{ row.lg.strasse }}</div>
-                            {% if row.lg.baujahr %}<div class="text-xs text-slate-400">Baujahr {{ row.lg.baujahr }}</div>{% endif %}
-                        </div>
-                    </a>
-                </td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap hidden md:table-cell">{{ row.lg.plz }} {{ row.lg.ort }}</td>
-                <td class="px-5 py-3.5 text-center font-semibold text-slate-800 hidden lg:table-cell">{{ row.einheiten_count }}</td>
-                <td class="px-5 py-3.5 text-center text-slate-600 hidden lg:table-cell">{{ row.vertraege_count }}</td>
-                <td class="px-5 py-3.5 text-center hidden md:table-cell">
-                    {% if row.leer %}
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700">{{ row.leer }} leer</span>
-                    {% else %}
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">Voll vermietet</span>
-                    {% endif %}
-                </td>
-                <td class="px-5 py-3.5 text-right font-semibold text-indigo-600 whitespace-nowrap">CHF {{ row.mietertrag|chf }}</td>
-                <td class="px-5 py-3.5 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="7">{% include 'fw/_empty.html' with icon='fa-building' titel='Noch keine Liegenschaften' subtext='Erfassen Sie Ihre erste Liegenschaft — die Objekte können automatisch aus dem Gebäude- und Wohnungsregister (GWR) importiert werden.' cta_url='/neu/liegenschaften/neu/' cta_label='Erste Liegenschaft erfassen' %}</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
+    {% else %}
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden px-4">
+        {% include 'fw/_empty.html' with icon='fa-building' titel='Noch keine Liegenschaften' subtext='Erfassen Sie Ihre erste Liegenschaft — die Objekte können automatisch aus dem Gebäude- und Wohnungsregister (GWR) importiert werden.' cta_url='/neu/liegenschaften/neu/' cta_label='Erste Liegenschaft erfassen' %}
     </div>
-  </div>
+    {% endif %}
 </div>
 {% endblock %}

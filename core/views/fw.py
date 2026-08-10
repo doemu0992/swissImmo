@@ -1015,8 +1015,12 @@ def fw_liegenschaften(request):
     for lg in lgs:
         einheiten = einheiten_je_lg.get(lg.id, [])
         belegte = belegt_je_lg.get(lg.id, set())
-        rows.append({'lg': lg, 'einheiten_count': len(einheiten),
-                     'leer': sum(1 for e_id in einheiten if e_id not in belegte),
+        anzahl = len(einheiten)
+        leer = sum(1 for e_id in einheiten if e_id not in belegte)
+        belegt = anzahl - leer
+        rows.append({'lg': lg, 'einheiten_count': anzahl,
+                     'leer': leer, 'belegt': belegt,
+                     'verm_pct': round(belegt / anzahl * 100) if anzahl else 0,
                      'mietertrag': ertrag_je_lg[lg.id],
                      'vertraege_count': vertraege_je_lg[lg.id]})
 
