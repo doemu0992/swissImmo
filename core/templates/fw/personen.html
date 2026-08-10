@@ -3,28 +3,24 @@
 
 {% block content %}
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Personen</h1>
-    <a href="/neu/personen/neu/" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
-        <i class="fa-solid fa-plus mr-1.5"></i> Person erfassen
-    </a>
+<div class="fw-phead">
+    <div>
+        <h1>Personen</h1>
+        <p>{{ rows|length }} Person(en) · <span style="color:var(--ds-good);font-weight:600">{{ mit_vertrag_count }} mit aktivem Vertrag</span>{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/personen/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+    </div>
+    <a href="/neu/personen/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Person erfassen</a>
 </div>
-<p class="text-sm text-slate-500 mb-5">{{ rows|length }} Person(en) ·
-    <span class="text-emerald-600 font-medium">{{ mit_vertrag_count }} mit aktivem Vertrag</span>
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/personen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+<div class="fw-card">
 
-    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
-        <div class="flex items-center gap-1.5 flex-wrap">
+    <div class="fw-h" style="flex-wrap:wrap">
+        <div class="fw-filters" style="margin-bottom:0">
             {% for wert, label in typ_chips %}
             <a href="?typ={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                      {% if typ_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+               class="fw-fchip{% if typ_filter == wert %} fw-on{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
-        <form method="get" class="ml-auto relative" onsubmit="return true;">
+        <form method="get" class="relative" style="margin-left:auto" onsubmit="return true;">
             {% if typ_filter %}<input type="hidden" name="typ" value="{{ typ_filter }}">{% endif %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -49,7 +45,7 @@
                 {% elif row.telefon %}<div class="text-xs text-slate-500 truncate">{{ row.telefon }}</div>
                 {% else %}<div class="text-xs text-slate-400">{{ row.m.get_typ_display }}</div>{% endif %}
                 {% if row.objekt %}
-                <div class="mt-1"><span class="inline-block max-w-full truncate align-bottom px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700">{{ row.objekt }}</span></div>
+                <div class="mt-1"><span class="fw-chip fw-good" style="max-width:100%;overflow:hidden;text-overflow:ellipsis">{{ row.objekt }}</span></div>
                 {% endif %}
             </div>
             <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0"></i>
@@ -62,46 +58,46 @@
     </div>
 
     <!-- Desktop: Tabelle -->
-    <div class="overflow-x-auto hidden md:block">
-        <table class="w-full min-w-max text-sm">
+    <div class="fw-tablewrap hidden md:block">
+        <table class="fw-table" style="min-width:max-content">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Name</th>
-                <th class="px-5 py-3 font-semibold hidden md:table-cell">Kontakt</th>
-                <th class="px-5 py-3 font-semibold hidden lg:table-cell">Adresse</th>
-                <th class="px-5 py-3 font-semibold">Mietet aktuell</th>
-                <th class="px-5 py-3"></th>
+            <tr>
+                <th>Name</th>
+                <th class="hidden md:table-cell">Kontakt</th>
+                <th class="hidden lg:table-cell">Adresse</th>
+                <th>Mietet aktuell</th>
+                <th></th>
             </tr>
             </thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody>
             {% for row in rows %}
-            <tr class="person-row hover:bg-slate-50/60 transition-colors cursor-pointer" data-suche="{{ row.m.display_name|lower }} {{ row.m.email|lower }} {{ row.m.ort|lower }} {{ row.m.plz }}" onclick="window.location='/neu/personen/{{ row.m.id }}/'">
-                <td class="px-5 py-3.5">
+            <tr class="person-row cursor-pointer" data-suche="{{ row.m.display_name|lower }} {{ row.m.email|lower }} {{ row.m.ort|lower }} {{ row.m.plz }}" onclick="window.location='/neu/personen/{{ row.m.id }}/'">
+                <td>
                     <a href="/neu/personen/{{ row.m.id }}/" class="flex items-center gap-3" onclick="event.stopPropagation()">
                         <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
                             <i class="fa-solid {% if row.m.typ == 'firma' %}fa-briefcase{% elif row.m.typ == 'verein' %}fa-people-group{% else %}fa-user{% endif %}"></i>
                         </div>
                         <div>
-                            <div class="font-semibold text-slate-900 whitespace-nowrap">{{ row.m.display_name }}</div>
-                            <div class="text-xs text-slate-400">{{ row.m.get_typ_display }}</div>
+                            <div class="fw-strong" style="white-space:nowrap">{{ row.m.display_name }}</div>
+                            <div class="fw-sub2">{{ row.m.get_typ_display }}</div>
                         </div>
                     </a>
                 </td>
-                <td class="px-5 py-3.5 text-slate-600 hidden md:table-cell">
-                    {% if row.m.email %}<div class="whitespace-nowrap"><i class="fa-regular fa-envelope text-slate-300 mr-1.5 text-xs"></i>{{ row.m.email }}</div>{% endif %}
-                    {% if row.telefon %}<div class="whitespace-nowrap text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-phone text-slate-300 mr-1.5 text-[10px]"></i>{{ row.telefon }}</div>{% endif %}
-                    {% if not row.m.email and not row.telefon %}<span class="text-slate-300">—</span>{% endif %}
+                <td class="hidden md:table-cell">
+                    {% if row.m.email %}<div style="white-space:nowrap"><i class="fa-regular fa-envelope text-slate-300 mr-1.5 text-xs"></i>{{ row.m.email }}</div>{% endif %}
+                    {% if row.telefon %}<div class="fw-sub2" style="white-space:nowrap;margin-top:2px"><i class="fa-solid fa-phone text-slate-300 mr-1.5 text-[10px]"></i>{{ row.telefon }}</div>{% endif %}
+                    {% if not row.m.email and not row.telefon %}<span class="fw-sub2">—</span>{% endif %}
                 </td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap hidden lg:table-cell">
-                    {% if row.m.strasse %}{{ row.m.strasse }}, {{ row.m.plz }} {{ row.m.ort }}{% else %}<span class="text-slate-300">—</span>{% endif %}
+                <td class="hidden lg:table-cell" style="white-space:nowrap">
+                    {% if row.m.strasse %}{{ row.m.strasse }}, {{ row.m.plz }} {{ row.m.ort }}{% else %}<span class="fw-sub2">—</span>{% endif %}
                 </td>
-                <td class="px-5 py-3.5 whitespace-nowrap">
+                <td style="white-space:nowrap">
                     {% if row.objekt %}
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">{{ row.objekt }}</span>
-                    {% if row.aktive|length > 1 %}<span class="ml-1 text-xs text-slate-400">+{{ row.aktive|length|add:"-1" }}</span>{% endif %}
-                    {% else %}<span class="text-slate-300">—</span>{% endif %}
+                    <span class="fw-chip fw-good">{{ row.objekt }}</span>
+                    {% if row.aktive|length > 1 %}<span class="fw-sub2" style="margin-left:4px">+{{ row.aktive|length|add:"-1" }}</span>{% endif %}
+                    {% else %}<span class="fw-sub2">—</span>{% endif %}
                 </td>
-                <td class="px-5 py-3.5 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
+                <td class="fw-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
             </tr>
             {% empty %}
             <tr><td colspan="5">
