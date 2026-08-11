@@ -119,19 +119,19 @@
                 </td>
                 <td class="px-5 py-3.5">
                     {% if e.kategorie == 'geloescht' %}
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-50 text-rose-700 whitespace-nowrap">{{ e.aktion }}</span>
+                    <span class="fw-chip bg-rose-50 text-rose-700 whitespace-nowrap">{{ e.aktion }}</span>
                     {% elif e.kategorie == 'erstellt' %}
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 whitespace-nowrap">{{ e.aktion }}</span>
+                    <span class="fw-chip bg-emerald-50 text-emerald-700 whitespace-nowrap">{{ e.aktion }}</span>
                     {% elif e.kategorie == 'bearbeitet' %}
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 whitespace-nowrap">{{ e.aktion }}</span>
+                    <span class="fw-chip bg-amber-50 text-amber-700 whitespace-nowrap">{{ e.aktion }}</span>
                     {% elif e.kategorie == 'finanzen' %}
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-sky-50 text-sky-700 whitespace-nowrap">{{ e.aktion }}</span>
+                    <span class="fw-chip bg-sky-50 text-sky-700 whitespace-nowrap">{{ e.aktion }}</span>
                     {% elif e.kategorie == 'sicherheit' %}
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-violet-50 text-violet-700 whitespace-nowrap"><i class="fa-solid fa-shield-halved text-[9px] mr-1"></i>{{ e.aktion }}</span>
+                    <span class="fw-chip bg-violet-50 text-violet-700 whitespace-nowrap"><i class="fa-solid fa-shield-halved text-[9px] mr-1"></i>{{ e.aktion }}</span>
                     {% elif e.kategorie == 'versand' %}
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-teal-50 text-teal-700 whitespace-nowrap">{{ e.aktion }}</span>
+                    <span class="fw-chip bg-teal-50 text-teal-700 whitespace-nowrap">{{ e.aktion }}</span>
                     {% else %}
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-600 whitespace-nowrap">{{ e.aktion }}</span>
+                    <span class="fw-chip bg-slate-100 text-slate-600 whitespace-nowrap">{{ e.aktion }}</span>
                     {% endif %}
                 </td>
                 <td class="px-5 py-3.5 text-slate-700">

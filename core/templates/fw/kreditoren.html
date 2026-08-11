@@ -183,7 +183,7 @@
                 {% endcomment %}{% if row.k.is_hnk_relevant %} <span class="ml-1 text-[10px] font-semibold bg-amber-50 text-amber-700 rounded px-1.5 py-0.5" title="Wird in die Nebenkostenabrechnung einbezogen und den Mietern weiterverrechnet">HNK</span>{% endif %}</td>
                 <td class="px-5 py-3.5 whitespace-nowrap {% if row.ueberfaellig %}font-semibold text-rose-600{% else %}text-slate-600{% endif %}">{% if row.faellig %}{{ row.faellig|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">{{ row.betrag|chf }}</td>
-                <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap {{ row.pill_cls }}">{{ row.status_label }}</span></td>
+                <td class="px-5 py-3.5"><span class="fw-chip whitespace-nowrap {{ row.pill_cls }}">● {{ row.status_label }}</span></td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     <div class="inline-flex items-center gap-2">
                         {% if row.beleg_url %}<a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="text-slate-400 hover:text-indigo-600" title="Beleg ansehen"><i class="fa-solid fa-paperclip"></i></a>{% endif %}

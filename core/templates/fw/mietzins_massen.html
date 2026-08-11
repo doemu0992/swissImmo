@@ -42,11 +42,11 @@
                 <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{% if r.termin %}{{ r.termin|date:"d.m.Y" }}{% endif %}</td>
                 <td class="px-5 py-3.5 whitespace-nowrap">
                     {% if r.basis_fehlt %}
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700">Basis fehlt — einzeln erfassen</span>
+                    <span class="fw-chip bg-amber-50 text-amber-700">● Basis fehlt — einzeln erfassen</span>
                     {% elif r.unveraendert %}
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-500">Kein Potenzial</span>
+                    <span class="fw-chip bg-slate-100 text-slate-500">● Kein Potenzial</span>
                     {% else %}
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">Wird angepasst</span>
+                    <span class="fw-chip bg-emerald-50 text-emerald-700">● Wird angepasst</span>
                     {% endif %}
                 </td>
             </tr>

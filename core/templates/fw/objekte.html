@@ -58,9 +58,9 @@
                     <div class="text-xs text-slate-500 truncate">{{ row.e.get_typ_display }}{% if row.mieter %} · {{ row.mieter }}{% endif %}</div>
                     <div class="mt-1.5">
                         {% if row.mieter %}
-                        <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700">Vermietet</span>
+                        <span class="fw-chip bg-emerald-50 text-emerald-700">● Vermietet</span>
                         {% else %}
-                        <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700">Leerstand</span>
+                        <span class="fw-chip bg-amber-50 text-amber-700">● Leerstand</span>
                         {% endif %}
                     </div>
                 </div>
@@ -108,9 +108,9 @@
                     <td class="px-5 py-3.5 text-right font-medium text-slate-800 whitespace-nowrap">{% if row.e.nettomiete_aktuell %}CHF {{ row.e.nettomiete_aktuell|chf }}{% else %}—{% endif %}</td>
                     <td class="px-5 py-3.5">
                         {% if row.mieter %}
-                        <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">Vermietet</span>
+                        <span class="fw-chip bg-emerald-50 text-emerald-700">● Vermietet</span>
                         {% else %}
-                        <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700">Leerstand</span>
+                        <span class="fw-chip bg-amber-50 text-amber-700">● Leerstand</span>
                         {% endif %}
                     </td>
                     <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap hidden lg:table-cell">{% if row.mieter %}{{ row.mieter }}{% else %}<span class="text-slate-300">—</span>{% endif %}</td>

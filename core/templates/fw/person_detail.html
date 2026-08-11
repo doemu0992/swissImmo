@@ -296,7 +296,7 @@
                 <td class="px-5 py-3 text-slate-600">{{ row.v.beginn|date:"d.m.Y" }}</td>
                 <td class="px-5 py-3 text-slate-600">{% if row.v.ende %}{{ row.v.ende|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-right font-semibold text-slate-900">CHF {{ row.brutto|chf }}</td>
-                <td class="px-5 py-3"><span class="px-2.5 py-1 rounded-md text-xs font-semibold {{ row.cls }}">{{ row.label }}</span></td>
+                <td class="px-5 py-3"><span class="fw-chip {{ row.cls }}">● {{ row.label }}</span></td>
                 <td class="px-5 py-3 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
             </tr>
             {% empty %}

@@ -107,8 +107,8 @@
                     <td class="px-5 py-3 text-slate-600">{{ row.einheit.get_typ_display }}</td>
                     <td class="px-5 py-3 text-center text-slate-600">{% if row.einheit.flaeche_m2 %}{{ row.einheit.flaeche_m2|floatformat:0 }} m²{% else %}—{% endif %}</td>
                     <td class="px-5 py-3">
-                        {% if row.vertrag %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">Vermietet</span>
-                        {% else %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700">Leerstand</span>{% endif %}
+                        {% if row.vertrag %}<span class="fw-chip bg-emerald-50 text-emerald-700">● Vermietet</span>
+                        {% else %}<span class="fw-chip bg-amber-50 text-amber-700">● Leerstand</span>{% endif %}
                     </td>
                     <td class="px-5 py-3 text-slate-600">{% if row.vertrag %}{{ row.vertrag.mieter.display_name }}{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
                     <td class="px-5 py-3 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
@@ -265,7 +265,7 @@
                 <div class="text-sm font-medium text-slate-900">{{ p.bezeichnung }}</div>
                 <div class="text-xs text-slate-400">{{ p.start_datum|date:"d.m.Y" }} – {{ p.ende_datum|date:"d.m.Y" }}</div>
             </div>
-            <span class="px-2.5 py-1 rounded-md text-xs font-semibold {% if p.abgeschlossen %}bg-emerald-50 text-emerald-700{% else %}bg-amber-50 text-amber-700{% endif %}">
+            <span class="fw-chip {% if p.abgeschlossen %}bg-emerald-50 text-emerald-700{% else %}bg-amber-50 text-amber-700{% endif %}">● 
                 {% if p.abgeschlossen %}Abgeschlossen{% else %}Offen{% endif %}
             </span>
         </div>

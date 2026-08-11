@@ -35,7 +35,7 @@
                 <td class="px-5 py-3.5">{% if row.v.ist_kautionsversicherung %}<span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 text-xs font-semibold"><i class="fa-solid fa-shield-halved mr-0.5"></i>Versicherung</span>{% else %}<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-500 text-xs font-semibold">Sperrkonto</span>{% endif %}</td>
                 <td class="px-5 py-3.5 font-mono text-xs text-slate-500">{% if row.v.ist_kautionsversicherung %}{{ row.v.kautions_versicherer|default:"—" }}{% if row.v.kautions_policennummer %} · {{ row.v.kautions_policennummer }}{% endif %}{% else %}{{ row.v.kautions_konto|default:"—" }}{% endif %}</td>
                 <td class="px-5 py-3.5 text-slate-500">{{ row.v.kautions_einbezahlt_am|date:"d.m.Y"|default:"—" }}</td>
-                <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold {{ row.cls }}">{{ row.label }}</span>
+                <td class="px-5 py-3.5"><span class="fw-chip {{ row.cls }}">● {{ row.label }}</span>
                     {% if row.status == 'zurueckbezahlt' and row.v.kautions_abzug_betrag %}<div class="text-xs text-rose-500 mt-0.5">Abzug CHF {{ row.v.kautions_abzug_betrag|chf }}</div>{% endif %}</td>
             </tr>
             {% empty %}

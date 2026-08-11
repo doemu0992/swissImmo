@@ -40,7 +40,7 @@
                     <div class="text-xs text-slate-400">{{ k.kontext }}</div>
                 </div>
             </div>
-            <span class="px-2.5 py-1 rounded-md text-xs font-semibold {% if k.ist_qr %}bg-emerald-50 text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">
+            <span class="fw-chip {% if k.ist_qr %}bg-emerald-50 text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">● 
                 {% if k.ist_qr %}QR-IBAN{% else %}IBAN{% endif %}
             </span>
         </div>

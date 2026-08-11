@@ -98,8 +98,8 @@
                 <td class="px-5 py-3.5 text-right text-slate-500 whitespace-nowrap">{{ row.nk|chf }}</td>
                 <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">{{ row.total|chf }}</td>
                 <td class="px-5 py-3.5">
-                    {% if row.gestellt %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">Gestellt</span>
-                    {% else %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700">Offen</span>{% endif %}
+                    {% if row.gestellt %}<span class="fw-chip bg-emerald-50 text-emerald-700">● Gestellt</span>
+                    {% else %}<span class="fw-chip bg-amber-50 text-amber-700">● Offen</span>{% endif %}
                 </td>
             </tr>
             {% empty %}

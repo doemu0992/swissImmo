@@ -24,7 +24,7 @@
                             <span class="text-xs text-slate-400 block">{{ row.u.username }}{% if not row.u.is_active %} · inaktiv{% endif %}</span></span>
                     </a>
                 </td>
-                <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700">{{ row.rolle }}</span></td>
+                <td class="px-5 py-3.5"><span class="fw-chip bg-indigo-50 text-indigo-700">{{ row.rolle }}</span></td>
                 <td class="px-5 py-3.5 text-slate-500">{{ row.u.email|default:"—" }}</td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="text-xs font-medium text-indigo-600 hover:underline mr-3"><i class="fa-solid fa-pen text-[10px] mr-0.5"></i>Bearbeiten</a>

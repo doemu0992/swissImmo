@@ -88,8 +88,8 @@
                 <td class="px-5 py-3.5 text-center text-slate-600">{{ row.belege }}</td>
                 <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">CHF {{ row.kosten|chf }}</td>
                 <td class="px-5 py-3.5">
-                    {% if row.p.abgeschlossen %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">Abgeschlossen</span>
-                    {% else %}<span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700">Offen</span>{% endif %}
+                    {% if row.p.abgeschlossen %}<span class="fw-chip bg-emerald-50 text-emerald-700">● Abgeschlossen</span>
+                    {% else %}<span class="fw-chip bg-amber-50 text-amber-700">● Offen</span>{% endif %}
                 </td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     {% if not row.p.abgeschlossen %}

@@ -324,7 +324,7 @@
                 <td class="px-5 py-3 text-slate-900">{{ row.r.titel }}</td>
                 <td class="px-5 py-3 text-right text-slate-700">{{ row.r.betrag|chf }}</td>
                 <td class="px-5 py-3 text-right font-semibold {% if row.offen %}text-slate-900{% else %}text-slate-400{% endif %}">{{ row.offen|chf }}</td>
-                <td class="px-5 py-3"><span class="px-2.5 py-1 rounded-md text-xs font-semibold {{ row.pill_cls }}">{{ row.status_label }}</span></td></tr>
+                <td class="px-5 py-3"><span class="fw-chip {{ row.pill_cls }}">● {{ row.status_label }}</span></td></tr>
             {% empty %}
             <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Rechnungen.</td></tr>
             {% endfor %}

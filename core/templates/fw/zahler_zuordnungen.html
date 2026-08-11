@@ -39,9 +39,9 @@
                     </div>
                     <div class="mt-1.5 flex items-center gap-2 flex-wrap">
                         {% if z.treffer %}
-                        <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700">{{ z.treffer }}× automatisch getroffen</span>
+                        <span class="fw-chip bg-emerald-50 text-emerald-700">{{ z.treffer }}× automatisch getroffen</span>
                         {% else %}
-                        <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-500">Noch nicht angewendet</span>
+                        <span class="fw-chip bg-slate-100 text-slate-500">Noch nicht angewendet</span>
                         {% endif %}
                         {% if z.zuletzt %}<span class="text-[11px] text-slate-400">zuletzt {{ z.zuletzt|date:"d.m.Y" }}</span>{% endif %}
                         <span class="text-[11px] text-slate-400">gelernt {{ z.erstellt_am|date:"d.m.Y" }}</span>

@@ -73,7 +73,7 @@
             {% for row in rows %}
             <tr class="hover:bg-slate-50/60 transition-colors">
                 <td class="px-5 py-3.5">
-                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap {{ row.stufe.cls }}">{{ row.stufe.label }}</span>
+                    <span class="fw-chip whitespace-nowrap {{ row.stufe.cls }}">● {{ row.stufe.label }}</span>
                 </td>
                 <td class="px-5 py-3.5 font-medium text-slate-900 whitespace-nowrap">
                     {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="hover:text-indigo-600">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}

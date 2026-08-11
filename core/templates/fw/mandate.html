@@ -27,7 +27,7 @@
                 </td>
                 <td class="px-5 py-3.5 text-slate-500">{{ row.md.kontaktperson|default:row.md.email|default:"—" }}</td>
                 <td class="px-5 py-3.5 text-slate-500">{% if row.md.ort %}{{ row.md.plz }} {{ row.md.ort }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3.5 text-center"><span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700">{{ row.anzahl_lg }}</span></td>
+                <td class="px-5 py-3.5 text-center"><span class="fw-chip bg-slate-100 text-slate-700">{{ row.anzahl_lg }}</span></td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     <a href="/neu/mandate/{{ row.md.id }}/abrechnung/" class="text-xs font-medium text-emerald-600 hover:underline mr-3"><i class="fa-solid fa-file-invoice-dollar text-[10px] mr-0.5"></i>Abrechnung</a>
                     <a href="/neu/mandate/{{ row.md.id }}/kontokorrent/" class="text-xs font-medium text-violet-600 hover:underline mr-3"><i class="fa-solid fa-scale-balanced text-[10px] mr-0.5"></i>Kontokorrent</a>
