@@ -46,11 +46,11 @@
     <form method="post" action="/neu/kreditoren/scan/" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3" onsubmit="fwScanStart(this)">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <div class="grow min-w-[220px]"><label class="block text-xs font-semibold text-slate-500 mb-1">Belege (PDF, JPG, PNG — Mehrfachauswahl möglich) *</label>
-            <input type="file" name="beleg_scan" required multiple accept=".pdf,.jpg,.jpeg,.png,.webp"
+        <div class="grow min-w-[220px]"><label for="up-beleg" class="block text-xs font-semibold text-slate-500 mb-1">Belege (PDF, JPG, PNG — Mehrfachauswahl möglich) *</label>
+            <input id="up-beleg" type="file" name="beleg_scan" required multiple accept=".pdf,.jpg,.jpeg,.png,.webp"
                    class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft (optional)</label>
-            <select name="liegenschaft_id" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5 min-w-[14rem]">
+        <div><label for="up-lg" class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft (optional)</label>
+            <select id="up-lg" name="liegenschaft_id" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5 min-w-[14rem]">
                 <option value="">— später zuordnen —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
@@ -71,37 +71,37 @@
     <form method="post" action="/neu/kreditoren/neu/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Lieferant *</label>
-            <input name="lieferant" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Betrag brutto (CHF) *</label>
-            <input name="betrag" required inputmode="decimal" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 text-right"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft</label>
-            <select name="liegenschaft_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div class="sm:col-span-2"><label for="kr-lieferant" class="block text-xs font-semibold text-slate-500 mb-1">Lieferant *</label>
+            <input id="kr-lieferant" name="lieferant" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-betrag" class="block text-xs font-semibold text-slate-500 mb-1">Betrag brutto (CHF) *</label>
+            <input id="kr-betrag" name="betrag" required inputmode="decimal" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 text-right tabular-nums"></div>
+        <div><label for="kr-lg" class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft</label>
+            <select id="kr-lg" name="liegenschaft_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— keine —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Aufwandskonto</label>
-            <select name="konto_id" onchange="fwHnkSync(this)" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label for="kr-konto" class="block text-xs font-semibold text-slate-500 mb-1">Aufwandskonto</label>
+            <select id="kr-konto" name="konto_id" onchange="fwHnkSync(this)" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— bei Freigabe wählen —</option>
                 {% for k in aufwand_konten %}<option value="{{ k.id }}" {% if k.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
             </select></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">MWST-Satz (%)</label>
-            <input name="mwst_satz" inputmode="decimal" placeholder="z.B. 8.1 (0 = keine)" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Rechnungsdatum</label>
-            <input type="date" name="datum" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Fällig am</label>
-            <input type="date" name="faellig_am" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Referenz</label>
-            <input name="referenz" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">IBAN des Lieferanten</label>
-            <input name="iban" placeholder="CH.." class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono">
+        <div><label for="kr-mwst" class="block text-xs font-semibold text-slate-500 mb-1">MWST-Satz (%)</label>
+            <input id="kr-mwst" name="mwst_satz" inputmode="decimal" placeholder="z.B. 8.1 (0 = keine)" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-datum" class="block text-xs font-semibold text-slate-500 mb-1">Rechnungsdatum</label>
+            <input id="kr-datum" type="date" name="datum" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-faellig" class="block text-xs font-semibold text-slate-500 mb-1">Fällig am</label>
+            <input id="kr-faellig" type="date" name="faellig_am" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-referenz" class="block text-xs font-semibold text-slate-500 mb-1">Referenz</label>
+            <input id="kr-referenz" name="referenz" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-iban" class="block text-xs font-semibold text-slate-500 mb-1">IBAN des Lieferanten</label>
+            <input id="kr-iban" name="iban" placeholder="CH.." class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono">
             <span class="text-[11px] text-slate-400">Ohne IBAN kann die Rechnung nicht in den Zahllauf.</span></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Leistung von <span class="text-slate-300 font-normal">(HNK-Periode)</span></label>
-            <input type="date" name="leistungs_von" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Leistung bis</label>
-            <input type="date" name="leistungs_bis" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Beleg (PDF/Bild)</label>
-            <input type="file" name="beleg_scan" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white"></div>
+        <div><label for="kr-leist-von" class="block text-xs font-semibold text-slate-500 mb-1">Leistung von <span class="text-slate-300 font-normal">(HNK-Periode)</span></label>
+            <input id="kr-leist-von" type="date" name="leistungs_von" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-leist-bis" class="block text-xs font-semibold text-slate-500 mb-1">Leistung bis</label>
+            <input id="kr-leist-bis" type="date" name="leistungs_bis" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-beleg" class="block text-xs font-semibold text-slate-500 mb-1">Beleg (PDF/Bild)</label>
+            <input id="kr-beleg" type="file" name="beleg_scan" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white"></div>
         <div class="sm:col-span-2 flex items-center">
             <label class="inline-flex items-center gap-2 text-sm text-slate-600 cursor-pointer"><input type="checkbox" name="is_hnk_relevant" class="accent-indigo-600">In Nebenkostenabrechnung einbeziehen (HNK)</label>
             <span class="ml-2 text-[11px] text-slate-400">— wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, Kehricht, Versicherung) automatisch gesetzt</span></div>
@@ -138,9 +138,9 @@
         <form method="get" class="ml-auto flex items-center gap-2 flex-wrap">
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
-            <input name="q" value="{{ suche }}" placeholder="Lieferant, Referenz, IBAN, Betrag …"
+            <input name="q" value="{{ suche }}" placeholder="Lieferant, Referenz, IBAN, Betrag …" aria-label="Kreditoren durchsuchen (Lieferant, Referenz, IBAN, Betrag)"
                    class="bg-slate-100 rounded-lg text-xs px-3 py-2 w-56">
-            <select name="sort" onchange="this.form.submit()" class="bg-slate-100 rounded-lg text-xs px-2 py-2">
+            <select name="sort" aria-label="Sortierung" onchange="this.form.submit()" class="bg-slate-100 rounded-lg text-xs px-2 py-2">
                 <option value="faellig" {% if sortierung == 'faellig' %}selected{% endif %}>Fällig ↑</option>
                 <option value="-faellig" {% if sortierung == '-faellig' %}selected{% endif %}>Fällig ↓</option>
                 <option value="-betrag" {% if sortierung == '-betrag' %}selected{% endif %}>Betrag ↓</option>
