@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>swissImmo · UI-Design-Review — Ist vs. Vorschlag</title>
+<style>
+/* ============================================================
+   swissImmo UI-Review — standalone, keine externen Abhängigkeiten
+   Phase 2 zum Design-Audit (Phase 1). Alle Tokens sind live editierbar
+   (Panel oben rechts) und wirken sofort auf die "Vorschlag"-Spalte.
+   ============================================================ */
+
+/* ---- Design-Tokens (Vorschlag-Seite). Live via JS überschreibbar ---- */
+:root{
+  /* Marke */
+  --ds-brand:#4f46e5;
+  --ds-brand-600:#4338ca;
+  --ds-brand-soft:#eef2ff;
+  /* Neutrale (Slate) */
+  --ds-ink:#0f172a;       /* Primärtext  */
+  --ds-ink-2:#475569;     /* Sekundärtext (AA-fest auf weiss: 7.5:1) */
+  --ds-ink-3:#64748b;     /* Tertiär (4.6:1 — AA large/UI) */
+  --ds-line:#e2e8f0;
+  --ds-bg:#f1f5f9;
+  --ds-card:#ffffff;
+  /* Semantik */
+  --ds-good:#16a34a; --ds-good-bg:#dcfce7;
+  --ds-warn:#b45309; --ds-warn-bg:#fef3c7;  /* dunkler als d97706 → AA auf bg */
+  --ds-crit:#dc2626; --ds-crit-bg:#fee2e2;
+  --ds-info:#2563eb; --ds-info-bg:#dbeafe;
+  /* Radius / Abstand / Typo — bewusst reduziert auf eine Skala */
+  --ds-r-lg:16px; --ds-r-md:11px; --ds-r-sm:8px;
+  --ds-sp:8px;                 /* Grundeinheit; Vielfache im Layout */
+  --ds-fs-xs:12px; --ds-fs-sm:13px; --ds-fs-base:14px;
+  --ds-fs-lg:16px; --ds-fs-xl:20px; --ds-fs-2xl:26px;
+  --ds-font:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --ds-shadow:0 1px 2px rgba(15,23,42,.06),0 1px 3px rgba(15,23,42,.05);
+  --ds-focus:0 0 0 3px rgba(79,70,229,.35);
+}
+
+/* ---- Reset / Grundlayout des Review-Tools ---- */
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:var(--ds-font);
+  color:var(--ds-ink);
+  background:var(--ds-bg);
+  font-size:14px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,p{margin:0}
+button{font-family:inherit}
+.wrap{max-width:1400px;margin:0 auto;padding:20px}
+
+/* ---- Kopfzeile des Tools ---- */
+.tool-head{
+  position:sticky;top:0;z-index:40;
+  background:#ffffffe6;backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--ds-line);
+}
+.tool-head .inner{max-width:1400px;margin:0 auto;padding:12px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.brand-badge{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:-.02em}
+.brand-badge .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--ds-brand),var(--ds-brand-600));display:grid;place-items:center;color:#fff;font-size:13px}
+.tool-head .sub{color:var(--ds-ink-3);font-size:12px}
+.spacer{flex:1}
+.seg{display:inline-flex;background:#eef2f7;border-radius:10px;padding:3px;gap:3px}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ds-ink-2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--ds-ink);box-shadow:var(--ds-shadow)}
+.ghost{border:1px solid var(--ds-line);background:#fff;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--ds-ink-2);cursor:pointer}
+.ghost:hover{border-color:#cbd5e1}
+
+/* ---- Screen-Navigation ---- */
+.screennav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 6px}
+.screennav button{
+  border:1px solid var(--ds-line);background:#fff;border-radius:999px;
+  padding:8px 15px;font-size:13px;font-weight:600;color:var(--ds-ink-2);cursor:pointer
+}
+.screennav button[aria-pressed="true"]{background:var(--ds-brand);border-color:var(--ds-brand);color:#fff}
+
+/* ---- Split Ist / Vorschlag ---- */
+.screen{display:none}
+.screen.active{display:block}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;margin-top:12px}
+@media (max-width:1080px){.split{grid-template-columns:1fr}}
+.pane{background:#fff;border:1px solid var(--ds-line);border-radius:var(--ds-r-lg);overflow:hidden}
+.pane-head{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--ds-line);font-weight:700;font-size:13px}
+.pane-head .tag{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:6px}
+.pane-head.ist .tag{background:#fee2e2;color:#b91c1c}
+.pane-head.neu .tag{background:#dcfce7;color:#15803d}
+.pane-body{padding:16px}
+/* Der Ist-Pane friert die alten Werte ein (unabhängig von den Live-Tokens) */
+.pane.ist .pane-body{--ds-brand:#6366f1;--ds-ink:#0f172a;--ds-card:#fff}
+
+/* ---- Problem-Callout (verlinkt jeden Vorschlag mit Phase-1-Befund) ---- */
+.callout{
+  margin:14px 0 0;padding:11px 13px;border-radius:var(--ds-r-md);
+  background:var(--ds-info-bg);border:1px solid #bfdbfe;color:#1e3a8a;font-size:12.5px;line-height:1.55
+}
+.callout b{color:#1d4ed8}
+.callout code{background:#fff;border:1px solid #bfdbfe;border-radius:5px;padding:0 5px;font-size:11.5px;color:#1e40af}
+
+/* ============================================================
+   GEMEINSAME UI-BAUSTEINE
+   ".old-*" = so wie es HEUTE im Repo aussieht (nachgestellt)
+   ".ds-*"  = Vorschlag mit Tokens
+   ============================================================ */
+
+/* --- ALT: bewusst leicht inkonsistent nachgebaut --- */
+.old-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.old-card+.old-card{margin-top:12px}
+.old-muted{color:#94a3b8}          /* <-- 2.56:1, der Kern-Kontrastfehler */
+.old-muted-2{color:#cbd5e1}        /* <-- 1.48:1 */
+.old-h{font-size:15px;font-weight:700;margin-bottom:10px}
+.old-kpi{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px}
+.old-kpi .n{font-size:22px;font-weight:800}
+.old-btn{background:#6366f1;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.old-btn.v2{background:#4f46e5;border-radius:10px;padding:9px 16px}     /* zweite "Primär"-Variante */
+.old-btn.v3{background:#4338ca;border-radius:6px;padding:7px 12px;font-weight:700} /* dritte */
+.old-input{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px;font-size:13px;outline:none}
+.old-input:focus{border-color:#6366f1}   /* kein sichtbarer Fokusring */
+.old-table{width:100%;border-collapse:collapse;font-size:13px}
+.old-table th{text-align:left;color:#94a3b8;font-weight:600;padding:8px 10px;border-bottom:1px solid #eef2f7;font-size:12px}
+.old-table td{padding:9px 10px;border-bottom:1px solid #f1f5f9}
+.old-iconbtn{width:30px;height:30px;border:1px solid #e5e7eb;border-radius:7px;background:#fff;cursor:pointer;color:#94a3b8}
+
+/* --- VORSCHLAG: alles aus Tokens --- */
+.ds-card{background:var(--ds-card);border:1px solid var(--ds-line);border-radius:var(--ds-r-lg);padding:calc(var(--ds-sp)*2);box-shadow:var(--ds-shadow)}
+.ds-card+.ds-card{margin-top:calc(var(--ds-sp)*1.5)}
+.ds-muted{color:var(--ds-ink-3)}
+.ds-h{font-size:var(--ds-fs-lg);font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:9px;margin-bottom:calc(var(--ds-sp)*1.5)}
+.ds-ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none}
+.ds-ic.b{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+.ds-ic.g{background:var(--ds-good-bg);color:var(--ds-good)}
+.ds-ic.w{background:var(--ds-warn-bg);color:var(--ds-warn)}
+.ds-ic.c{background:var(--ds-crit-bg);color:var(--ds-crit)}
+.ds-ic.i{background:var(--ds-info-bg);color:var(--ds-info)}
+.ds-kpi{background:var(--ds-card);border:1px solid var(--ds-line);border-radius:var(--ds-r-lg);padding:calc(var(--ds-sp)*2);box-shadow:var(--ds-shadow)}
+.ds-kpi .lbl{font-size:var(--ds-fs-xs);font-weight:600;color:var(--ds-ink-3);text-transform:uppercase;letter-spacing:.03em}
+.ds-kpi .n{font-size:var(--ds-fs-2xl);font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.ds-kpi .d{font-size:var(--ds-fs-xs);margin-top:3px;display:inline-flex;gap:4px;align-items:center}
+.ds-btn{background:var(--ds-brand);color:#fff;border:0;border-radius:var(--ds-r-md);padding:9px 16px;font-size:var(--ds-fs-sm);font-weight:600;cursor:pointer;transition:background .12s,box-shadow .12s;display:inline-flex;align-items:center;gap:7px}
+.ds-btn:hover{background:var(--ds-brand-600)}
+.ds-btn:focus-visible{outline:none;box-shadow:var(--ds-focus)}
+.ds-btn.sec{background:#fff;color:var(--ds-ink-2);border:1px solid var(--ds-line)}
+.ds-btn.sec:hover{border-color:#cbd5e1;background:#f8fafc}
+.ds-field{display:block}
+.ds-field label{display:block;font-size:var(--ds-fs-sm);font-weight:600;color:var(--ds-ink-2);margin-bottom:5px}
+.ds-input{width:100%;border:1px solid var(--ds-line);border-radius:var(--ds-r-sm);padding:9px 11px;font-size:var(--ds-fs-sm);color:var(--ds-ink);outline:none;transition:border-color .12s,box-shadow .12s;background:#fff}
+.ds-input:focus{border-color:var(--ds-brand);box-shadow:var(--ds-focus)}
+.ds-input[aria-invalid="true"]{border-color:var(--ds-crit);box-shadow:0 0 0 3px rgba(220,38,38,.18)}
+.ds-hint{font-size:var(--ds-fs-xs);color:var(--ds-ink-3);margin-top:5px}
+.ds-err{font-size:var(--ds-fs-xs);color:var(--ds-crit);margin-top:5px;display:flex;gap:5px;align-items:center;font-weight:600}
+.ds-table{width:100%;border-collapse:collapse;font-size:var(--ds-fs-sm)}
+.ds-table th{text-align:left;color:var(--ds-ink-3);font-weight:600;padding:9px 11px;border-bottom:1px solid var(--ds-line);font-size:var(--ds-fs-xs);text-transform:uppercase;letter-spacing:.03em}
+.ds-table td{padding:11px 11px;border-bottom:1px solid var(--ds-line);vertical-align:middle}
+.ds-table tbody tr{cursor:pointer;transition:background .1s}
+.ds-table tbody tr:hover{background:var(--ds-brand-soft)}
+.ds-table tbody tr:focus-within{background:var(--ds-brand-soft)}
+.ds-iconbtn{width:32px;height:32px;border:1px solid var(--ds-line);border-radius:var(--ds-r-sm);background:#fff;cursor:pointer;color:var(--ds-ink-2);display:inline-grid;place-items:center}
+.ds-iconbtn:hover{background:#f8fafc;border-color:#cbd5e1;color:var(--ds-ink)}
+.ds-iconbtn:focus-visible{outline:none;box-shadow:var(--ds-focus)}
+.ds-chip{display:inline-flex;align-items:center;gap:5px;font-size:var(--ds-fs-xs);font-weight:600;padding:3px 9px;border-radius:999px}
+.ds-chip.good{background:var(--ds-good-bg);color:var(--ds-good)}
+.ds-chip.warn{background:var(--ds-warn-bg);color:var(--ds-warn)}
+.ds-chip.crit{background:var(--ds-crit-bg);color:var(--ds-crit)}
+.ds-chip.info{background:var(--ds-info-bg);color:var(--ds-info)}
+.ds-chip.neutral{background:#f1f5f9;color:var(--ds-ink-2)}
+.ds-kv{display:grid;grid-template-columns:minmax(120px,40%) 1fr;gap:8px 14px}
+.ds-kv dt{font-size:var(--ds-fs-sm);color:var(--ds-ink-3)}
+.ds-kv dd{margin:0;font-size:var(--ds-fs-sm);color:var(--ds-ink);font-weight:500}
+.ds-kv dd.mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* ---- Leer- / Ladezustände ---- */
+.empty{text-align:center;padding:34px 16px;color:var(--ds-ink-3)}
+.empty .em-ic{width:52px;height:52px;border-radius:14px;background:var(--ds-brand-soft);color:var(--ds-brand-600);display:grid;place-items:center;margin:0 auto 12px;font-size:22px}
+.skl{background:linear-gradient(90deg,#eef2f7 25%,#e2e8f0 37%,#eef2f7 63%);background-size:400% 100%;animation:shimmer 1.3s ease infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
+/* ---- Mobile-Simulation ---- */
+body.mobile .split{grid-template-columns:1fr}
+body.mobile .pane-body .grid4{grid-template-columns:1fr 1fr}
+body.mobile .pane-body .grid3{grid-template-columns:1fr}
+body.mobile .pane-body .grid2{grid-template-columns:1fr}
+body.mobile .pane{max-width:420px;margin:0 auto}
+body.mobile .pane-body{padding:12px}
+
+/* ---- Token-Panel ---- */
+.tokpanel{
+  position:fixed;top:64px;right:20px;width:300px;z-index:50;
+  background:#fff;border:1px solid var(--ds-line);border-radius:14px;
+  box-shadow:0 12px 30px rgba(15,23,42,.16);overflow:hidden;display:none
+}
+.tokpanel.open{display:block}
+.tokpanel h3{padding:12px 14px;border-bottom:1px solid var(--ds-line);font-size:13px;display:flex;align-items:center;gap:8px}
+.tokpanel .body{padding:12px 14px;max-height:70vh;overflow:auto}
+.tokrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.tokrow label{font-size:12px;color:var(--ds-ink-2);font-weight:600}
+.tokrow input[type=color]{width:34px;height:26px;border:1px solid var(--ds-line);border-radius:6px;background:#fff;padding:2px;cursor:pointer}
+.tokrow input[type=range]{width:120px;accent-color:var(--ds-brand)}
+.tokrow .val{font-size:11px;color:var(--ds-ink-3);width:38px;text-align:right;font-variant-numeric:tabular-nums}
+.tok-sec{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ds-ink-3);margin:14px 0 8px}
+.tok-sec:first-child{margin-top:0}
+.tokpanel .foot{padding:10px 14px;border-top:1px solid var(--ds-line);display:flex;gap:8px}
+
+.legend{font-size:12px;color:var(--ds-ink-3);margin-top:6px}
+.note{font-size:12.5px;color:var(--ds-ink-2);background:#fff;border:1px solid var(--ds-line);border-radius:12px;padding:12px 14px;margin-top:14px}
+.contrast-tag{font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:5px;margin-left:6px;vertical-align:middle}
+.c-fail{background:#fee2e2;color:#b91c1c}
+.c-pass{background:#dcfce7;color:#15803d}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+
+<div class="tool-head">
+  <div class="inner">
+    <div class="brand-badge"><span class="dot">sI</span> swissImmo</div>
+    <div class="sub">UI-Design-Review · Ist&nbsp;↔&nbsp;Vorschlag · Phase&nbsp;2</div>
+    <div class="spacer"></div>
+    <div class="seg" role="group" aria-label="Ansicht">
+      <button id="btnDesk" aria-pressed="true" onclick="setView('desktop')">🖥 Desktop</button>
+      <button id="btnMob" aria-pressed="false" onclick="setView('mobile')">📱 Mobil</button>
+    </div>
+    <button class="ghost" onclick="toggleTokens()">🎨 Tokens</button>
+  </div>
+</div>
+
+<!-- ===================== TOKEN-PANEL ===================== -->
+<aside class="tokpanel" id="tokpanel" aria-label="Live-Token-Palette">
+  <h3>🎨 Live-Tokens <span class="sub" style="color:var(--ds-ink-3);font-weight:400;font-size:11px">wirkt auf «Vorschlag»</span></h3>
+  <div class="body">
+    <div class="tok-sec">Farben</div>
+    <div class="tokrow"><label>Marke</label><input type="color" value="#4f46e5" oninput="setTok('--ds-brand',this.value)"></div>
+    <div class="tokrow"><label>Marke dunkel (Hover)</label><input type="color" value="#4338ca" oninput="setTok('--ds-brand-600',this.value)"></div>
+    <div class="tokrow"><label>Primärtext</label><input type="color" value="#0f172a" oninput="setTok('--ds-ink',this.value)"></div>
+    <div class="tokrow"><label>Sekundärtext</label><input type="color" value="#475569" oninput="setTok('--ds-ink-2',this.value)"></div>
+    <div class="tokrow"><label>Erfolg</label><input type="color" value="#16a34a" oninput="setTok('--ds-good',this.value)"></div>
+    <div class="tokrow"><label>Warnung</label><input type="color" value="#b45309" oninput="setTok('--ds-warn',this.value)"></div>
+    <div class="tokrow"><label>Kritisch</label><input type="color" value="#dc2626" oninput="setTok('--ds-crit',this.value)"></div>
+
+    <div class="tok-sec">Schriftgrössen</div>
+    <div class="tokrow"><label>Basis</label><input type="range" min="12" max="17" value="14" oninput="setPx('--ds-fs-base',this.value);setPx('--ds-fs-sm',this.value-1);this.nextElementSibling.textContent=this.value+'px'"><span class="val">14px</span></div>
+    <div class="tokrow"><label>Überschrift</label><input type="range" min="15" max="22" value="16" oninput="setPx('--ds-fs-lg',this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="val">16px</span></div>
+    <div class="tokrow"><label>KPI-Zahl</label><input type="range" min="20" max="34" value="26" oninput="setPx('--ds-fs-2xl',this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="val">26px</span></div>
+
+    <div class="tok-sec">Abstände &amp; Radius</div>
+    <div class="tokrow"><label>Grundabstand</label><input type="range" min="4" max="14" value="8" oninput="setPx('--ds-sp',this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="val">8px</span></div>
+    <div class="tokrow"><label>Radius gross</label><input type="range" min="0" max="24" value="16" oninput="setPx('--ds-r-lg',this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="val">16px</span></div>
+    <div class="tokrow"><label>Radius mittel</label><input type="range" min="0" max="18" value="11" oninput="setPx('--ds-r-md',this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="val">11px</span></div>
+  </div>
+  <div class="foot">
+    <button class="ds-btn sec" style="flex:1" onclick="resetTokens()">Zurücksetzen</button>
+    <button class="ghost" onclick="toggleTokens()">Schliessen</button>
+  </div>
+</aside>
+
+<div class="wrap">
+
+  <div class="screennav" role="tablist" aria-label="Screens">
+    <button role="tab" aria-pressed="true"  onclick="showScreen('dash',this)">Dashboard</button>
+    <button role="tab" aria-pressed="false" onclick="showScreen('vertr',this)">Verträge-Liste</button>
+    <button role="tab" aria-pressed="false" onclick="showScreen('person',this)">Person-Detail</button>
+    <button role="tab" aria-pressed="false" onclick="showScreen('beleg',this)">Kreditoren-Belegscan</button>
+    <button role="tab" aria-pressed="false" onclick="showScreen('debi',this)">Debitoren</button>
+  </div>
+
+  <!-- ============================================================
+       1) DASHBOARD
+       ============================================================ -->
+  <section class="screen active" id="screen-dash">
+    <div class="split">
+      <!-- IST -->
+      <div class="pane ist">
+        <div class="pane-head ist"><span class="tag">Ist</span> Dashboard — heute im Repo</div>
+        <div class="pane-body">
+          <div class="grid4">
+            <div class="old-kpi"><div class="old-muted" style="font-size:12px">Liegenschaften</div><div class="n">14</div><div class="old-muted-2" style="font-size:11px">↑ vs. Vorjahr</div></div>
+            <div class="old-kpi"><div class="old-muted" style="font-size:12px">Sollmiete / Mt.</div><div class="n">CHF 128'450</div><div class="old-muted-2" style="font-size:11px">brutto</div></div>
+            <div class="old-kpi"><div class="old-muted" style="font-size:12px">Leerstand</div><div class="n">3.2%</div><div class="old-muted-2" style="font-size:11px">2 Objekte</div></div>
+            <div class="old-kpi"><div class="old-muted" style="font-size:12px">Offene Posten</div><div class="n">CHF 9'240</div><div class="old-muted-2" style="font-size:11px">7 Debitoren</div></div>
+          </div>
+          <div class="old-card" style="margin-top:12px">
+            <div class="old-h">Fällige Aufgaben</div>
+            <div class="old-muted" style="font-size:13px">Nächste Kündigungsfrist · 30.09.2026</div>
+            <div class="old-muted" style="font-size:13px;margin-top:6px">Heizkostenabrechnung · fällig</div>
+            <div style="margin-top:12px" class="row">
+              <button class="old-btn">Neue Aufgabe</button>
+              <button class="old-btn v2">Export</button>
+              <button class="old-btn v3">Filter</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- VORSCHLAG -->
+      <div class="pane">
+        <div class="pane-head neu"><span class="tag">Vorschlag</span> Dashboard — Token-basiert</div>
+        <div class="pane-body">
+          <div class="grid4">
+            <div class="ds-kpi"><div class="lbl">Liegenschaften</div><div class="n mono">14</div><div class="d"><span class="ds-chip good">▲ +2</span></div></div>
+            <div class="ds-kpi"><div class="lbl">Sollmiete / Mt.</div><div class="n mono">128’450</div><div class="d ds-muted">CHF · brutto</div></div>
+            <div class="ds-kpi"><div class="lbl">Leerstand</div><div class="n mono">3.2%</div><div class="d"><span class="ds-chip warn">2 Objekte</span></div></div>
+            <div class="ds-kpi"><div class="lbl">Offene Posten</div><div class="n mono">9’240</div><div class="d"><span class="ds-chip crit">7 Debitoren</span></div></div>
+          </div>
+          <div class="ds-card" style="margin-top:calc(var(--ds-sp)*1.5)">
+            <div class="ds-h"><span class="ds-ic w">⏰</span> Fällige Aufgaben</div>
+            <div class="ds-kv">
+              <dt>Kündigungsfrist</dt><dd class="mono">30.09.2026 · Objekt B2</dd>
+              <dt>Heizkostenabrechnung</dt><dd><span class="ds-chip crit">überfällig</span></dd>
+            </div>
+            <div class="row" style="margin-top:calc(var(--ds-sp)*2)">
+              <button class="ds-btn">＋ Neue Aufgabe</button>
+              <button class="ds-btn sec">Export</button>
+              <button class="ds-btn sec">Filter</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callout">
+      <b>Löst:</b> KPI-Untertexte in <code>text-slate-400</code> (#94a3b8 = <b>2.56:1</b> <span class="contrast-tag c-fail">FAIL AA</span>, u.&nbsp;a. <code>fw/dashboard.html:44,:49</code>, 740× im Repo) → im Vorschlag <code>--ds-ink-3</code> (#64748b ≥ 4.6:1 <span class="contrast-tag c-pass">AA</span>) bzw. semantische Chips statt Grautext.
+      <b>Und:</b> drei verschiedene „Primär"-Buttons (<code>#6366f1/#4f46e5/#4338ca</code>, 28 Klassen-Ketten) → eine <code>.ds-btn</code>-Klasse mit definiertem Hover/Fokus. Zahlen <code>tabular-nums</code> für saubere CHF-Spalten.
+    </div>
+  </section>
+
+  <!-- ============================================================
+       2) VERTRÄGE-LISTE
+       ============================================================ -->
+  <section class="screen" id="screen-vertr">
+    <div class="split">
+      <!-- IST -->
+      <div class="pane ist">
+        <div class="pane-head ist"><span class="tag">Ist</span> Verträge — Liste heute</div>
+        <div class="pane-body">
+          <table class="old-table">
+            <thead><tr><th>Objekt</th><th>Mieter</th><th>Beginn</th><th>Sollmiete</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>Bahnhofstr. 12, 3.OG</td><td>M. Bühlmann</td><td>01.04.2024</td><td>CHF 2'180</td><td><span class="old-muted">aktiv</span></td><td><button class="old-iconbtn" title="Bearbeiten">✎</button></td></tr>
+              <tr><td>Seeweg 4, EG</td><td>Familie Rüegg</td><td>15.11.2022</td><td>CHF 2'940</td><td><span class="old-muted">aktiv</span></td><td><button class="old-iconbtn" title="Bearbeiten">✎</button></td></tr>
+              <tr><td>Lindenhof 7, 1.OG</td><td>S. Kälin</td><td>01.01.2026</td><td>CHF 1'760</td><td><span style="color:#d97706">gekündigt</span></td><td><button class="old-iconbtn" title="Bearbeiten">✎</button></td></tr>
+            </tbody>
+          </table>
+          <div class="legend">Statusfarben inline, Icon-Button nur mit <code style="font-size:11px">title=</code>, Zeile nicht als Link erkennbar.</div>
+        </div>
+      </div>
+      <!-- VORSCHLAG -->
+      <div class="pane">
+        <div class="pane-head neu"><span class="tag">Vorschlag</span> Verträge — mit Zuständen</div>
+        <div class="pane-body">
+          <table class="ds-table">
+            <thead><tr><th>Objekt</th><th>Mieter</th><th>Beginn</th><th style="text-align:right">Sollmiete</th><th>Status</th><th><span class="sr">Aktionen</span></th></tr></thead>
+            <tbody>
+              <tr tabindex="0"><td>Bahnhofstr. 12, 3.OG</td><td>M. Bühlmann</td><td class="mono">01.04.2024</td><td class="mono" style="text-align:right">2’180.00</td><td><span class="ds-chip good">● aktiv</span></td><td><button class="ds-iconbtn" aria-label="Vertrag Bühlmann bearbeiten">✎</button></td></tr>
+              <tr tabindex="0"><td>Seeweg 4, EG</td><td>Familie Rüegg</td><td class="mono">15.11.2022</td><td class="mono" style="text-align:right">2’940.00</td><td><span class="ds-chip good">● aktiv</span></td><td><button class="ds-iconbtn" aria-label="Vertrag Rüegg bearbeiten">✎</button></td></tr>
+              <tr tabindex="0"><td>Lindenhof 7, 1.OG</td><td>S. Kälin</td><td class="mono">01.01.2026</td><td class="mono" style="text-align:right">1’760.00</td><td><span class="ds-chip warn">● gekündigt</span></td><td><button class="ds-iconbtn" aria-label="Vertrag Kälin bearbeiten">✎</button></td></tr>
+            </tbody>
+          </table>
+          <div class="legend">Ganze Zeile fokussierbar (<code>tabindex</code>) + Hover-/Fokus-Fläche, Betrag rechtsbündig <code>tabular-nums</code>, Icon-Button mit echtem <code>aria-label</code>.</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout">
+      <b>Löst:</b> 77 rohe <code>&lt;table&gt;</code> gegen nur 13 <code>fw-table</code> → eine Tabellen-Klasse mit einheitlichem Header (Uppercase, <code>--ds-ink-3</code> statt <code>text-slate-400</code>). 118× <code>title=</code> als Ersatz-Label → <code>aria-label</code>/<code>focus-visible</code>. Beträge als <code>tabular-nums</code> und rechtsbündig (CH-Konvention, Tausender-Hochkomma, zwei Nachkommastellen).
+    </div>
+  </section>
+
+  <!-- ============================================================
+       3) PERSON-DETAIL
+       ============================================================ -->
+  <section class="screen" id="screen-person">
+    <div class="split">
+      <!-- IST -->
+      <div class="pane ist">
+        <div class="pane-head ist"><span class="tag">Ist</span> Person — eine Grosskarte</div>
+        <div class="pane-body">
+          <div class="old-card">
+            <div class="old-h">Angaben zur Person</div>
+            <div style="font-size:13px;line-height:2">
+              <div><span class="old-muted">Name</span> &nbsp; Markus Bühlmann</div>
+              <div><span class="old-muted">Geburtsdatum</span> &nbsp; 12.03.1981</div>
+              <div><span class="old-muted">Telefon</span> &nbsp; 079 412 55 08</div>
+              <div><span class="old-muted">Beruf</span> &nbsp; Elektroingenieur</div>
+              <div><span class="old-muted">Bonität</span> &nbsp; geprüft</div>
+              <div><span class="old-muted">IBAN</span> &nbsp; CH93 0076 2011 6238 5295 7</div>
+              <div><span class="old-muted">Notfallkontakt</span> &nbsp; A. Bühlmann · 079 000 00 00</div>
+              <div><span class="old-muted">Versicherung</span> &nbsp; Haftpflicht Zürich</div>
+            </div>
+          </div>
+          <div class="legend">Beruf/Bonität, Zahlungsverkehr und Notfall in <b>einer</b> Karte vermischt.</div>
+        </div>
+      </div>
+      <!-- VORSCHLAG -->
+      <div class="pane">
+        <div class="pane-head neu"><span class="tag">Vorschlag</span> Person — getrennte Themenkarten</div>
+        <div class="pane-body">
+          <div class="ds-card">
+            <div class="ds-h"><span class="ds-ic b">👤</span> Kontakt</div>
+            <div class="ds-kv">
+              <dt>Name</dt><dd>Markus Bühlmann</dd>
+              <dt>Geburtsdatum</dt><dd class="mono">12.03.1981</dd>
+              <dt>Telefon</dt><dd class="mono">079 412 55 08</dd>
+            </div>
+          </div>
+          <div class="ds-card">
+            <div class="ds-h"><span class="ds-ic g">💼</span> Beruf &amp; Bonität</div>
+            <div class="ds-kv">
+              <dt>Beruf</dt><dd>Elektroingenieur</dd>
+              <dt>Bonität</dt><dd><span class="ds-chip good">geprüft</span></dd>
+            </div>
+          </div>
+          <div class="ds-card">
+            <div class="ds-h"><span class="ds-ic i">🏦</span> Zahlungsverkehr</div>
+            <div class="ds-kv">
+              <dt>IBAN</dt><dd class="mono">CH93 0076 2011 6238 5295 7</dd>
+            </div>
+          </div>
+          <div class="ds-card">
+            <div class="ds-h"><span class="ds-ic c">🚑</span> Versicherung &amp; Notfall</div>
+            <div class="ds-kv">
+              <dt>Notfallkontakt</dt><dd>A. Bühlmann · <span class="mono">079 000 00 00</span></dd>
+              <dt>Versicherung</dt><dd>Haftpflicht Zürich</dd>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callout">
+      <b>Löst:</b> genau die von dir gemeldete Vermischung (Beruf/Bonität neben Notfallkontakt). Themenkarten mit Icon-Chip + <code>&lt;dl&gt;</code>-Struktur (<code>.ds-kv</code>), semantische Bonitäts-/Status-Chips statt Grautext. Ersetzt zugleich das Muster „rohes <code>bg-white rounded-xl border</code>" (390× im Repo) durch <code>.ds-card</code> (heute nur 28×).
+    </div>
+  </section>
+
+  <!-- ============================================================
+       4) KREDITOREN-BELEGSCAN (FORMULAR)
+       ============================================================ -->
+  <section class="screen" id="screen-beleg">
+    <div class="split">
+      <!-- IST -->
+      <div class="pane ist">
+        <div class="pane-head ist"><span class="tag">Ist</span> Belegscan — Formular heute</div>
+        <div class="pane-body">
+          <div class="old-card">
+            <div class="old-h">Beleg erfassen</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div><div style="font-size:12px;margin-bottom:4px" class="old-muted">Kreditor</div><input class="old-input" value="Elektro Meier AG"></div>
+              <div><div style="font-size:12px;margin-bottom:4px" class="old-muted">Betrag</div><input class="old-input" value="1240.50"></div>
+              <div><div style="font-size:12px;margin-bottom:4px" class="old-muted">Datum</div><input class="old-input" value="2026-08-04"></div>
+              <div><div style="font-size:12px;margin-bottom:4px" class="old-muted">IBAN</div><input class="old-input" value="CH93 0076 ..."></div>
+            </div>
+            <div style="margin-top:12px"><button class="old-btn">Speichern</button></div>
+          </div>
+          <div class="legend">Labels sind <code style="font-size:11px">&lt;div&gt;</code> ohne <code style="font-size:11px">for=</code>, Datum ISO statt CH, kein Fokusring, keine Fehler-/Ladezustände.</div>
+        </div>
+      </div>
+      <!-- VORSCHLAG -->
+      <div class="pane">
+        <div class="pane-head neu"><span class="tag">Vorschlag</span> Belegscan — Zustände live</div>
+        <div class="pane-body">
+          <div class="ds-card">
+            <div class="ds-h" style="justify-content:space-between">
+              <span style="display:flex;align-items:center;gap:9px"><span class="ds-ic b">🧾</span> Beleg erfassen</span>
+              <span class="ds-chip info" id="scanState">● OCR erkannt</span>
+            </div>
+            <div class="grid2">
+              <div class="ds-field"><label for="f-kred">Kreditor</label><input id="f-kred" class="ds-input" value="Elektro Meier AG"></div>
+              <div class="ds-field"><label for="f-betr">Betrag (CHF)</label><input id="f-betr" class="ds-input mono" value="1’240.50"></div>
+              <div class="ds-field"><label for="f-dat">Rechnungsdatum</label><input id="f-dat" class="ds-input mono" value="04.08.2026"><div class="ds-hint">Format TT.MM.JJJJ</div></div>
+              <div class="ds-field">
+                <label for="f-iban">IBAN</label>
+                <input id="f-iban" class="ds-input mono" value="CH93 0076 20" aria-invalid="true" aria-describedby="f-iban-err">
+                <div class="ds-err" id="f-iban-err">⚠ IBAN unvollständig — 21 Zeichen erwartet</div>
+              </div>
+            </div>
+            <div class="row" style="margin-top:calc(var(--ds-sp)*2)">
+              <button class="ds-btn" onclick="fakeSave(this)">Speichern &amp; verbuchen</button>
+              <button class="ds-btn sec" onclick="cycleScan()">OCR-Zustand zeigen ⟳</button>
+            </div>
+          </div>
+          <div class="legend">Jedes Feld: <code>&lt;label for&gt;</code>, sichtbarer Fokusring, <code>aria-invalid</code>+Fehlertext, CH-Datum/Betrag. Button „OCR-Zustand" schaltet Erkannt → Lädt → Leer.</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout">
+      <b>Löst:</b> Formulare zu 100% handgeschrieben — 703 <code>&lt;input&gt;</code>, 564 <code>&lt;label&gt;</code> mit <b>0</b> <code>for=</code> (z.&nbsp;B. <code>fw/kreditoren.html:49,:52</code>), 0 <code>focus-visible</code>. Vorschlag: label-gebundene Felder, sichtbarer Fokus, echte Fehler-/Lade-/Leerzustände statt stumme Inputs. CHF/Datum in Schweizer Schreibweise.
+    </div>
+  </section>
+
+  <!-- ============================================================
+       5) DEBITOREN
+       ============================================================ -->
+  <section class="screen" id="screen-debi">
+    <div class="split">
+      <!-- IST -->
+      <div class="pane ist">
+        <div class="pane-head ist"><span class="tag">Ist</span> Debitoren — heute</div>
+        <div class="pane-body">
+          <table class="old-table">
+            <thead><tr><th>Mieter</th><th>Betrag</th><th>Fällig</th><th>Mahnstufe</th></tr></thead>
+            <tbody>
+              <tr><td>S. Kälin</td><td>CHF 1'760</td><td>01.07.2026</td><td><span style="color:#dc2626">3. Mahnung</span></td></tr>
+              <tr><td>P. Frei</td><td>CHF 980</td><td>01.08.2026</td><td><span style="color:#d97706">1. Mahnung</span></td></tr>
+            </tbody>
+          </table>
+          <div class="old-card" style="margin-top:12px">
+            <div class="old-h">Bezahlt</div>
+            <div class="old-muted">Keine offenen Posten in dieser Kategorie.</div>
+          </div>
+        </div>
+      </div>
+      <!-- VORSCHLAG -->
+      <div class="pane">
+        <div class="pane-head neu"><span class="tag">Vorschlag</span> Debitoren — Status + Leerzustand</div>
+        <div class="pane-body">
+          <table class="ds-table">
+            <thead><tr><th>Mieter</th><th style="text-align:right">Betrag</th><th>Fällig</th><th>Mahnstufe</th></tr></thead>
+            <tbody>
+              <tr tabindex="0"><td>S. Kälin</td><td class="mono" style="text-align:right">1’760.00</td><td class="mono">01.07.2026</td><td><span class="ds-chip crit">● 3. Mahnung</span></td></tr>
+              <tr tabindex="0"><td>P. Frei</td><td class="mono" style="text-align:right">980.00</td><td class="mono">01.08.2026</td><td><span class="ds-chip warn">● 1. Mahnung</span></td></tr>
+            </tbody>
+          </table>
+          <div class="ds-card" style="margin-top:calc(var(--ds-sp)*1.5)">
+            <div class="ds-h"><span class="ds-ic g">✓</span> Bezahlt</div>
+            <div class="empty">
+              <div class="em-ic">📭</div>
+              <div style="font-weight:600;color:var(--ds-ink-2)">Keine offenen Posten</div>
+              <div class="ds-muted" style="font-size:var(--ds-fs-sm);margin-top:3px">Alle Zahlungen in dieser Kategorie sind eingegangen.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callout">
+      <b>Löst:</b> inline gesetzte Mahn-/Statusfarben (<code>color:#dc2626</code>, <code>#d97706</code>) → semantische Chips aus <code>--ds-crit/--ds-warn</code> (Warnton auf #b45309 angehoben für AA). Leerer Zustand als gestalteter <code>.empty</code>-Block statt grauem Fliesstext. Damit auch Beleg für den durchgängigen Ersatz von Roh-<code>bg-white rounded-xl</code> durch die eine Karten-Klasse.
+    </div>
+  </section>
+
+  <div class="note">
+    <b>Hinweis:</b> Diese Datei ist ein eigenständiges Review-Artefakt (<code>mockups/ui-review.html</code>) — sie verändert keine App-Dateien und wird nicht ausgeliefert. Die linke Spalte bildet den heutigen Zustand nach (eingefrorene Alt-Werte), die rechte reagiert live auf die Token-Palette oben rechts. Jeder Callout referenziert einen Befund aus der Phase-1-Analyse mit Datei:Zeile.
+  </div>
+
+</div>
+
+<script>
+/* ---- Token-Panel ---- */
+function toggleTokens(){document.getElementById('tokpanel').classList.toggle('open')}
+function setTok(name,val){document.documentElement.style.setProperty(name,val);
+  if(name==='--ds-brand'){ // Soft-Variante grob mitziehen
+    document.documentElement.style.setProperty('--ds-brand-soft', val+'22');
+  }}
+function setPx(name,val){document.documentElement.style.setProperty(name,val+'px')}
+const DEFAULTS={
+ '--ds-brand':'#4f46e5','--ds-brand-600':'#4338ca','--ds-brand-soft':'#eef2ff',
+ '--ds-ink':'#0f172a','--ds-ink-2':'#475569','--ds-good':'#16a34a','--ds-warn':'#b45309','--ds-crit':'#dc2626',
+ '--ds-fs-base':'14px','--ds-fs-sm':'13px','--ds-fs-lg':'16px','--ds-fs-2xl':'26px',
+ '--ds-sp':'8px','--ds-r-lg':'16px','--ds-r-md':'11px'
+};
+function resetTokens(){
+  for(const k in DEFAULTS){document.documentElement.style.setProperty(k,DEFAULTS[k])}
+  document.querySelectorAll('.tokpanel input').forEach(inp=>{
+    // Slider-Anzeigen zurücksetzen
+    if(inp.type==='range'){const v=inp.getAttribute('value');inp.value=v;if(inp.nextElementSibling&&inp.nextElementSibling.classList.contains('val'))inp.nextElementSibling.textContent=v+'px';}
+    if(inp.type==='color'){inp.value=inp.getAttribute('value');}
+  });
+}
+
+/* ---- Desktop/Mobil ---- */
+function setView(v){
+  document.body.classList.toggle('mobile',v==='mobile');
+  document.getElementById('btnDesk').setAttribute('aria-pressed',v==='desktop');
+  document.getElementById('btnMob').setAttribute('aria-pressed',v==='mobile');
+}
+
+/* ---- Screen-Tabs ---- */
+function showScreen(id,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  document.querySelectorAll('.screennav button').forEach(b=>b.setAttribute('aria-pressed','false'));
+  btn.setAttribute('aria-pressed','true');
+}
+
+/* ---- Belegscan: Speichern-Ladezustand ---- */
+function fakeSave(b){
+  const t=b.textContent;b.disabled=true;b.style.opacity=.75;b.textContent='Wird gespeichert …';
+  setTimeout(()=>{b.textContent='✓ Gespeichert';setTimeout(()=>{b.disabled=false;b.style.opacity=1;b.textContent=t;},1100);},900);
+}
+/* ---- Belegscan: OCR-Zustände durchschalten (erkannt → lädt → leer) ---- */
+let scanIdx=0;
+const SCAN=[
+ {cls:'info',txt:'● OCR erkannt'},
+ {cls:'neutral',txt:'⟳ OCR läuft …'},
+ {cls:'warn',txt:'○ nichts erkannt'}
+];
+function cycleScan(){
+  scanIdx=(scanIdx+1)%SCAN.length;
+  const el=document.getElementById('scanState');
+  el.className='ds-chip '+SCAN[scanIdx].cls;
+  el.textContent=SCAN[scanIdx].txt;
+  // Felder als Skeleton während "läuft"
+  const fields=['f-kred','f-betr','f-dat','f-iban'];
+  fields.forEach(id=>{const f=document.getElementById(id);f.classList.toggle('skl',scanIdx===1);f.style.color=scanIdx===1?'transparent':'';});
+}
+</script>
+</body>
+</html>
