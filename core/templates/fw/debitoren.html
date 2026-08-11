@@ -34,17 +34,17 @@
         <form method="post" action="/neu/debitoren/neu/" class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
             {% csrf_token %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Titel *</label>
-                <input name="titel" required oninput="debPreview()" placeholder="z.B. Sonnerie-Beschriftung" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Betrag (CHF) *</label>
-                <input name="betrag" required inputmode="decimal" oninput="debPreview()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mieter / Vertrag</label>
-                <select name="vertrag_id" onchange="debPreview()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <div class="sm:col-span-2"><label for="deb-titel" class="block text-xs font-semibold text-slate-500 mb-1">Titel *</label>
+                <input id="deb-titel" name="titel" required oninput="debPreview()" placeholder="z.B. Sonnerie-Beschriftung" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="deb-betrag" class="block text-xs font-semibold text-slate-500 mb-1">Betrag (CHF) *</label>
+                <input id="deb-betrag" name="betrag" required inputmode="decimal" oninput="debPreview()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            <div><label for="deb-vertrag" class="block text-xs font-semibold text-slate-500 mb-1">Mieter / Vertrag</label>
+                <select id="deb-vertrag" name="vertrag_id" onchange="debPreview()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                     <option value="">— ohne Vertrag —</option>
                     {% for v in aktive_vertraege %}<option value="{{ v.id }}">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</option>{% endfor %}
                 </select></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Beschreibung</label>
-                <input name="beschreibung" oninput="debPreview()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label for="deb-beschreibung" class="block text-xs font-semibold text-slate-500 mb-1">Beschreibung</label>
+                <input id="deb-beschreibung" name="beschreibung" oninput="debPreview()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
             <div class="sm:col-span-2"><button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-check mr-1"></i>Rechnung erstellen</button></div>
             <p class="sm:col-span-2 text-xs text-slate-400">Bucht Debitor an Ertrag (3000). Die QR-Rechnung erzeugst du danach über den QR-Button in der Liste.</p>
         </form>
@@ -129,7 +129,7 @@
             {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input type="text" name="q" value="{{ q }}" placeholder="Mieter oder Titel suchen…"
+            <input type="text" name="q" value="{{ q }}" placeholder="Mieter oder Titel suchen…" aria-label="Debitoren nach Mieter oder Titel durchsuchen"
                    class="bg-slate-100 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
         </form>
     </div>
@@ -149,7 +149,7 @@
                     </div>
                 </div>
                 <div class="text-right shrink-0">
-                    <div class="font-bold whitespace-nowrap {% if row.offen > 0 %}text-slate-900{% else %}text-slate-400{% endif %}">
+                    <div class="font-bold whitespace-nowrap tabular-nums {% if row.offen > 0 %}text-slate-900{% else %}text-slate-400{% endif %}">
                         {% if row.r.status == 'storniert' %}—{% else %}{{ row.offen|chf }}{% endif %}
                     </div>
                     <div class="text-[11px] text-slate-400">offen</div>
@@ -207,8 +207,8 @@
                 <td class="px-5 py-3.5 font-medium text-slate-900 whitespace-nowrap">{{ row.mieter }}</td>
                 <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap hidden lg:table-cell">{{ row.objekt }}{% if row.einheit %} <span class="text-slate-400">· {{ row.einheit }}</span>{% endif %}</td>
                 <td class="px-5 py-3.5 text-slate-600 max-w-[220px] truncate hidden md:table-cell">{{ row.r.titel }}</td>
-                <td class="px-5 py-3.5 text-right text-slate-700 whitespace-nowrap hidden lg:table-cell">{{ row.r.betrag|chf }}</td>
-                <td class="px-5 py-3.5 text-right font-semibold whitespace-nowrap {% if row.offen > 0 %}text-slate-900{% else %}text-slate-400{% endif %}">
+                <td class="px-5 py-3.5 text-right text-slate-700 whitespace-nowrap tabular-nums hidden lg:table-cell">{{ row.r.betrag|chf }}</td>
+                <td class="px-5 py-3.5 text-right font-semibold whitespace-nowrap tabular-nums {% if row.offen > 0 %}text-slate-900{% else %}text-slate-400{% endif %}">
                     {% if row.r.status == 'storniert' %}—{% else %}{{ row.offen|chf }}{% endif %}
                 </td>
                 <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap {{ row.pill_cls }}">{{ row.status_label }}</span></td>
@@ -249,8 +249,8 @@
                 <td class="px-5 py-3 text-xs uppercase tracking-wider text-slate-500 hidden lg:table-cell"></td>
                 <td class="px-5 py-3 text-xs uppercase tracking-wider text-slate-500" colspan="2">Total (alle {{ rows_gesamt }})</td>
                 <td class="px-5 py-3 hidden md:table-cell"></td>
-                <td class="px-5 py-3 text-right whitespace-nowrap hidden lg:table-cell">{{ total_betrag|chf }}</td>
-                <td class="px-5 py-3 text-right whitespace-nowrap">{{ total_offen|chf }}</td>
+                <td class="px-5 py-3 text-right whitespace-nowrap tabular-nums hidden lg:table-cell">{{ total_betrag|chf }}</td>
+                <td class="px-5 py-3 text-right whitespace-nowrap tabular-nums">{{ total_offen|chf }}</td>
                 <td class="px-5 py-3"></td>
                 <td class="px-5 py-3 hidden md:table-cell"></td>
                 <td class="px-5 py-3"></td>
