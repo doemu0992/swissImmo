@@ -1,10 +1,10 @@
 {% comment %}Einheitlicher Leerzustand mit Handlungsaufforderung.
 Parameter: icon (fa-Klasse), titel, subtext, cta_url (optional), cta_label (optional){% endcomment %}
 <div class="py-12 text-center">
-    <span class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-4">
+    <span class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-4">
         <i class="fa-solid {{ icon|default:'fa-inbox' }} text-xl"></i>
     </span>
-    <p class="font-semibold text-slate-700">{{ titel }}</p>
+    <p class="font-semibold text-slate-800">{{ titel }}</p>
     {% if subtext %}<p class="text-sm text-slate-400 mt-1 max-w-sm mx-auto">{{ subtext }}</p>{% endif %}
     {% if cta_url %}
     <a href="{{ cta_url }}" class="inline-flex items-center gap-2 mt-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">
