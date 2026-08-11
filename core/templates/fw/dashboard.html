@@ -192,7 +192,8 @@
     <!-- Belegung nach Nutzung (Donut aus breakdown) -->
     <div class="fw-card">
         <div class="fw-h">
-            <span class="fw-t"><i class="fa-solid fa-chart-pie" style="color:var(--ds-brand);margin-right:6px"></i>Belegung nach Nutzung</span>
+            <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-chart-pie"></i></span>
+            <span class="fw-t">Belegung nach Nutzung</span>
             <div class="fw-r"><span class="fw-chip fw-brand">Neu</span></div>
         </div>
         <div style="padding:18px;display:flex;gap:18px;align-items:center;flex-wrap:wrap">
@@ -212,9 +213,10 @@
 
     <!-- Letzte Aktivität (aus AktivitaetsLog) -->
     <div class="bg-white rounded-xl border border-slate-200">
-        <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
-            <div class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-clock-rotate-left text-indigo-500 mr-1.5"></i>Letzte Aktivität</div>
-            <span class="ml-auto text-[10px] font-bold uppercase tracking-wide text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Neu</span>
+        <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-clock-rotate-left"></i></span>
+            <div class="font-bold text-slate-800 text-sm">Letzte Aktivität</div>
+            <span class="ml-auto fw-chip fw-brand">Neu</span>
         </div>
         <div class="divide-y divide-slate-50">
             {% for a in dash_aktivitaet %}
@@ -239,7 +241,8 @@
 
     <!-- LEERSTAND mit Tabs -->
     <div class="bg-white rounded-xl border border-slate-200">
-        <div class="px-6 pt-5 flex items-center gap-2">
+        <div class="px-6 pt-5 flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-door-open"></i></span>
             <h2 class="text-lg font-bold text-slate-800">Leerstand</h2>
             <i class="fa-regular fa-circle-question text-indigo-300 text-sm"></i>
         </div>
