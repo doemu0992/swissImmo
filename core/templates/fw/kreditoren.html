@@ -269,29 +269,29 @@
                     <form method="post" action="/neu/kreditoren/{{ row.k.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {% csrf_token %}
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                        <div class="col-span-2"><label class="block text-[11px] font-semibold text-slate-500 mb-1">Lieferant</label>
-                            <input name="lieferant" value="{{ row.k.lieferant }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Betrag brutto (CHF)</label>
-                            <input name="betrag" value="{% if row.k.betrag %}{{ row.k.betrag|stringformat:'.2f' }}{% endif %}" inputmode="decimal" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5 text-right"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Rechnungsdatum</label>
-                            <input type="date" name="datum" value="{{ row.k.datum|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Fällig am</label>
-                            <input type="date" name="faellig_am" value="{{ row.k.faellig_am|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Referenz</label>
-                            <input name="referenz" value="{{ row.k.referenz }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Leistung von <span class="text-slate-300 font-normal">(HNK)</span></label>
-                            <input type="date" name="leistungs_von" value="{{ row.k.leistungs_von|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Leistung bis</label>
-                            <input type="date" name="leistungs_bis" value="{{ row.k.leistungs_bis|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div class="col-span-2"><label class="block text-[11px] font-semibold text-slate-500 mb-1">IBAN</label>
-                            <input name="iban" value="{{ row.k.iban }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5 font-mono"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Liegenschaft</label>
-                            <select name="liegenschaft_id" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
+                        <div class="col-span-2"><label for="kc-lieferant-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Lieferant</label>
+                            <input id="kc-lieferant-{{ row.k.id }}" name="lieferant" value="{{ row.k.lieferant }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label for="kc-betrag-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Betrag brutto (CHF)</label>
+                            <input id="kc-betrag-{{ row.k.id }}" name="betrag" value="{% if row.k.betrag %}{{ row.k.betrag|stringformat:'.2f' }}{% endif %}" inputmode="decimal" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5 text-right tabular-nums"></div>
+                        <div><label for="kc-datum-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Rechnungsdatum</label>
+                            <input id="kc-datum-{{ row.k.id }}" type="date" name="datum" value="{{ row.k.datum|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label for="kc-faellig-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Fällig am</label>
+                            <input id="kc-faellig-{{ row.k.id }}" type="date" name="faellig_am" value="{{ row.k.faellig_am|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label for="kc-referenz-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Referenz</label>
+                            <input id="kc-referenz-{{ row.k.id }}" name="referenz" value="{{ row.k.referenz }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label for="kc-leist-von-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Leistung von <span class="text-slate-300 font-normal">(HNK)</span></label>
+                            <input id="kc-leist-von-{{ row.k.id }}" type="date" name="leistungs_von" value="{{ row.k.leistungs_von|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label for="kc-leist-bis-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Leistung bis</label>
+                            <input id="kc-leist-bis-{{ row.k.id }}" type="date" name="leistungs_bis" value="{{ row.k.leistungs_bis|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div class="col-span-2"><label for="kc-iban-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">IBAN</label>
+                            <input id="kc-iban-{{ row.k.id }}" name="iban" value="{{ row.k.iban }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5 font-mono"></div>
+                        <div><label for="kc-lg-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Liegenschaft</label>
+                            <select id="kc-lg-{{ row.k.id }}" name="liegenschaft_id" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
                                 <option value="">— keine —</option>
                                 {% for lgx in liegenschaften %}<option value="{{ lgx.id }}" {% if row.k.liegenschaft_id == lgx.id %}selected{% endif %}>{{ lgx.strasse }}, {{ lgx.ort }}</option>{% endfor %}
                             </select></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Aufwandskonto</label>
-                            <select name="konto_id" onchange="fwHnkSync(this)" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
+                        <div><label for="kc-konto-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Aufwandskonto</label>
+                            <select id="kc-konto-{{ row.k.id }}" name="konto_id" onchange="fwHnkSync(this)" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
                                 <option value="">— bei Freigabe wählen —</option>
                                 {% for kx in aufwand_konten %}<option value="{{ kx.id }}" {% if row.k.konto_id == kx.id %}selected{% endif %} {% if kx.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
                             </select></div>
@@ -339,15 +339,15 @@
                         {% endif %}
                         <form method="post" action="/neu/kreditoren/{{ row.k.id }}/position/" class="grid grid-cols-2 sm:grid-cols-12 gap-2 items-end">
                             {% csrf_token %}
-                            <div class="col-span-2 sm:col-span-4"><label class="block text-[10px] font-semibold text-slate-500 mb-1">Konto</label>
-                                <select name="konto_id" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5">
+                            <div class="col-span-2 sm:col-span-4"><label for="ks-konto-{{ row.k.id }}" class="block text-[10px] font-semibold text-slate-500 mb-1">Konto</label>
+                                <select id="ks-konto-{{ row.k.id }}" name="konto_id" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5">
                                     <option value="">Konto …</option>
                                     {% for kx in aufwand_konten %}<option value="{{ kx.id }}">{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
                                 </select></div>
-                            <div class="col-span-2 sm:col-span-3"><label class="block text-[10px] font-semibold text-slate-500 mb-1">Bezeichnung</label>
-                                <input name="bezeichnung" placeholder="optional" class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5"></div>
-                            <div class="sm:col-span-2"><label class="block text-[10px] font-semibold text-slate-500 mb-1">Betrag</label>
-                                <input name="betrag" inputmode="decimal" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5 text-right"></div>
+                            <div class="col-span-2 sm:col-span-3"><label for="ks-bez-{{ row.k.id }}" class="block text-[10px] font-semibold text-slate-500 mb-1">Bezeichnung</label>
+                                <input id="ks-bez-{{ row.k.id }}" name="bezeichnung" placeholder="optional" class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5"></div>
+                            <div class="sm:col-span-2"><label for="ks-betrag-{{ row.k.id }}" class="block text-[10px] font-semibold text-slate-500 mb-1">Betrag</label>
+                                <input id="ks-betrag-{{ row.k.id }}" name="betrag" inputmode="decimal" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5 text-right tabular-nums"></div>
                             <div class="sm:col-span-2 flex items-center pb-1.5"><label class="inline-flex items-center gap-1.5 text-[11px] text-slate-600 cursor-pointer" title="In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet"><input type="checkbox" name="is_hnk_relevant" class="accent-indigo-600">HNK</label></div>
                             <div class="sm:col-span-1"><button class="w-full bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold px-2 py-1.5 rounded-lg" title="Position hinzufügen"><i class="fa-solid fa-plus"></i></button></div>
                         </form>
