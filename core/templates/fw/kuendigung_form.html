@@ -23,12 +23,12 @@
     <script>if (window.self !== window.top) document.getElementById('k_embed').value = '1';</script>
     <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gekündigt durch *</label>
+            <div><label for="s_absender" class="block text-xs font-semibold text-slate-500 mb-1">Gekündigt durch *</label>
                 <select name="absender" onchange="syncZustellung(); kuendigungCheck()" id="s_absender" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                     <option value="mieter">Mieter</option>
                     <option value="vermieter">Vermieter</option>
                 </select></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Zustellung</label>
+            <div><label for="s_zustellung" class="block text-xs font-semibold text-slate-500 mb-1">Zustellung</label>
                 <select name="zustellung" id="s_zustellung" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                     <option value="einschreiben">Einschreiben (Mieter)</option>
                     <option value="amtliches_formular">Amtliches Formular (Vermieter)</option>
@@ -36,9 +36,9 @@
                 </select></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Eingang / Poststempel *</label>
+            <div><label for="s_eingang" class="block text-xs font-semibold text-slate-500 mb-1">Eingang / Poststempel *</label>
                 <input type="date" name="eingang_datum" id="s_eingang" value="{{ heute_iso }}" onchange="berechne()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gewünschtes Ende <span class="text-slate-400 font-normal">(optional)</span></label>
+            <div><label for="s_gew_ende" class="block text-xs font-semibold text-slate-500 mb-1">Gewünschtes Ende <span class="text-slate-400 font-normal">(optional)</span></label>
                 <input type="date" name="gewuenschtes_ende" id="s_gew_ende" onchange="kuendigungCheck()" {% if ao_termin %}value="{{ ao_termin|date:'Y-m-d' }}"{% endif %} class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
 
@@ -68,14 +68,14 @@
             <input type="checkbox" name="ausserordentlich" id="s_ao" {% if prefill_ao %}checked{% endif %} onchange="document.getElementById('ao-box').classList.toggle('hidden', !this.checked); kuendigungCheck()" class="accent-indigo-600"> Ausserordentliche Kündigung
         </label>
         <div id="ao-box" class="{% if not prefill_ao %}hidden {% endif %}space-y-3 pl-6">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Grund</label>
-                <input name="ausserordentlich_grund" value="{{ prefill_grund }}" placeholder="z. B. wichtiger Grund (Art. 266g), Zahlungsverzug (257d) …" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="s_ao_grund" class="block text-xs font-semibold text-slate-500 mb-1">Grund</label>
+                <input id="s_ao_grund" name="ausserordentlich_grund" value="{{ prefill_grund }}" placeholder="z. B. wichtiger Grund (Art. 266g), Zahlungsverzug (257d) …" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
 
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Erstreckung bis <span class="text-slate-400 font-normal">(optional)</span></label>
-            <input type="date" name="erstreckung_bis" class="w-full sm:w-56 bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bemerkung</label>
-            <textarea name="bemerkung" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></textarea></div>
+        <div><label for="s_erstreckung" class="block text-xs font-semibold text-slate-500 mb-1">Erstreckung bis <span class="text-slate-400 font-normal">(optional)</span></label>
+            <input id="s_erstreckung" type="date" name="erstreckung_bis" class="w-full sm:w-56 bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="s_bemerkung" class="block text-xs font-semibold text-slate-500 mb-1">Bemerkung</label>
+            <textarea id="s_bemerkung" name="bemerkung" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></textarea></div>
 
         <label class="flex items-center gap-2 text-sm text-slate-700">
             <input type="checkbox" name="bestaetigen" checked class="accent-indigo-600"> Kündigung als bestätigt markieren (Vertrag wird auf „Gekündigt" gesetzt)
