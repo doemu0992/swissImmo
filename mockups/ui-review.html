@@ -199,6 +199,12 @@ body.mobile .pane-body{padding:12px}
   box-shadow:0 12px 30px rgba(15,23,42,.16);overflow:hidden;display:none
 }
 .tokpanel.open{display:block}
+/* Auf schmalen Screens wird das Panel zum Bottom-Sheet (sonst ragt es raus) */
+@media (max-width:680px){
+  .tokpanel{top:auto;bottom:0;left:0;right:0;width:auto;border-radius:16px 16px 0 0}
+  .tokpanel .body{max-height:56vh}
+  .tokrow input[type=range]{width:44vw;max-width:150px}
+}
 .tokpanel h3{padding:12px 14px;border-bottom:1px solid var(--ds-line);font-size:13px;display:flex;align-items:center;gap:8px}
 .tokpanel .body{padding:12px 14px;max-height:70vh;overflow:auto}
 .tokrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
@@ -210,6 +216,17 @@ body.mobile .pane-body{padding:12px}
 .tok-sec:first-child{margin-top:0}
 .tokpanel .foot{padding:10px 14px;border-top:1px solid var(--ds-line);display:flex;gap:8px}
 
+/* ---- Mobile: Kopf-Steuerung & Screen-Tabs bedienbar halten ---- */
+@media (max-width:680px){
+  .tool-head .inner{padding:10px 14px;gap:10px}
+  .tool-head .sub{width:100%;order:5}
+  .seg button,.ghost{padding:9px 13px;font-size:13px}      /* grössere Tap-Ziele */
+  .wrap{padding:14px}
+  .screennav{gap:7px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;margin:14px 0 2px}
+  .screennav button{flex:none;white-space:nowrap}
+  .split{grid-template-columns:1fr}
+  .pane-head{position:sticky;top:52px;background:#fff;z-index:5}
+}
 .legend{font-size:12px;color:var(--ds-ink-3);margin-top:6px}
 .note{font-size:12.5px;color:var(--ds-ink-2);background:#fff;border:1px solid var(--ds-line);border-radius:12px;padding:12px 14px;margin-top:14px}
 .contrast-tag{font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:5px;margin-left:6px;vertical-align:middle}
@@ -547,6 +564,9 @@ body.mobile .pane-body{padding:12px}
 </div>
 
 <script>
+/* ---- Init: alle Buttons als type=button (kein versehentliches Submit) ---- */
+document.querySelectorAll('button').forEach(function(b){if(!b.type)b.type='button';});
+
 /* ---- Token-Panel ---- */
 function toggleTokens(){document.getElementById('tokpanel').classList.toggle('open')}
 function setTok(name,val){document.documentElement.style.setProperty(name,val);
