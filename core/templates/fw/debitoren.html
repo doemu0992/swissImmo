@@ -200,7 +200,7 @@
             </thead>
             <tbody class="divide-y divide-slate-50">
             {% for row in page %}
-            <tr class="hover:bg-slate-50/60 transition-colors">
+            <tr class="hover:bg-indigo-50/40 focus-within:bg-indigo-50/40 transition-colors">
                 <td class="px-5 py-3.5 whitespace-nowrap hidden lg:table-cell {% if row.mahn %}font-semibold text-rose-600{% else %}text-slate-600{% endif %}">
                     {{ row.faellig|date:"d.m.Y" }}
                 </td>
