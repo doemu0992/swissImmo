@@ -177,7 +177,7 @@
         </div>
         {% empty %}
         <div class="px-4">
-            {% if q or status_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Rechnungen gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='fa-file-invoice-dollar' titel='Noch keine Debitorenrechnungen' subtext='Der monatliche Mietenlauf (Sollstellung) erzeugt die Mietrechnungen automatisch.' cta_url='/neu/finanzen/' cta_label='Zur Sollstellung' %}{% endif %}
+            {% if q or status_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Rechnungen gefunden.' %}{% else %}{% include 'fw/_bezahlt_leer.html' %}{% endif %}
         </div>
         {% endfor %}
     </div>
@@ -238,8 +238,8 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="9">
-                {% if q or status_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Rechnungen gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='fa-file-invoice-dollar' titel='Noch keine Debitorenrechnungen' subtext='Der monatliche Mietenlauf (Sollstellung) erzeugt die Mietrechnungen automatisch.' cta_url='/neu/finanzen/' cta_label='Zur Sollstellung' %}{% endif %}
+            <tr><td colspan="9" class="p-0">
+                {% if q or status_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Rechnungen gefunden.' %}{% else %}{% include 'fw/_bezahlt_leer.html' %}{% endif %}
             </td></tr>
             {% endfor %}
             </tbody>
