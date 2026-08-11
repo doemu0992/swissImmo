@@ -30,11 +30,11 @@
         {% endif %}
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Referenzzins Vertrag (Basis, %)</label>
+                <label for="mz_basis_zins" class="block text-xs font-semibold text-slate-500 mb-1">Referenzzins Vertrag (Basis, %)</label>
                 <input name="basis_zins" id="mz_basis_zins" oninput="mietzinsCheck()" value="{% localize off %}{{ alt_zins }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 {% if basis_fehlt %}ring-2 ring-amber-300{% endif %}">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Neuer Referenzzins (%)</label>
+                <label for="mz_neu_zins" class="block text-xs font-semibold text-slate-500 mb-1">Neuer Referenzzins (%)</label>
                 <input name="neu_zins" id="mz_neu_zins" oninput="mietzinsCheck()" value="{% localize off %}{{ aktuell_ref }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
             </div>
             <div class="sm:col-span-2 -mb-1">
@@ -42,25 +42,25 @@
                 <span class="text-[11px] text-slate-400"> · alter und neuer Wert müssen dieselbe Basis haben</span>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">LIK Vertrag (Basis, Punkte)</label>
-                <input name="basis_lik" value="{% localize off %}{{ alt_lik }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 {% if basis_fehlt %}ring-2 ring-amber-300{% endif %}">
+                <label for="mz_basis_lik" class="block text-xs font-semibold text-slate-500 mb-1">LIK Vertrag (Basis, Punkte)</label>
+                <input id="mz_basis_lik" name="basis_lik" value="{% localize off %}{{ alt_lik }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 {% if basis_fehlt %}ring-2 ring-amber-300{% endif %}">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Neuer LIK (Punkte)</label>
-                <input name="neu_lik" value="{% localize off %}{{ aktuell_lik }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <label for="mz_neu_lik" class="block text-xs font-semibold text-slate-500 mb-1">Neuer LIK (Punkte)</label>
+                <input id="mz_neu_lik" name="neu_lik" value="{% localize off %}{{ aktuell_lik }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Stand-Monat (Basis-LIK)</label>
-                <input type="month" name="basis_lik_stand" value="{{ alt_lik_stand|date:'Y-m' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <label for="mz_basis_stand" class="block text-xs font-semibold text-slate-500 mb-1">Stand-Monat (Basis-LIK)</label>
+                <input id="mz_basis_stand" type="month" name="basis_lik_stand" value="{{ alt_lik_stand|date:'Y-m' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Stand-Monat (neuer LIK)</label>
-                <input type="month" value="{{ aktuell_lik_stand|date:'Y-m' }}" disabled class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 text-slate-400">
+                <label for="mz_neu_stand" class="block text-xs font-semibold text-slate-500 mb-1">Stand-Monat (neuer LIK)</label>
+                <input id="mz_neu_stand" type="month" value="{{ aktuell_lik_stand|date:'Y-m' }}" disabled class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 text-slate-400">
                 <p class="text-[11px] text-slate-400 mt-1">aus Account → Marktdaten</p>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Allg. Kostensteigerung (%)</label>
-                <input name="kosten_pct" value="0.5" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <label for="mz_kosten" class="block text-xs font-semibold text-slate-500 mb-1">Allg. Kostensteigerung (%)</label>
+                <input id="mz_kosten" name="kosten_pct" value="0.5" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
             </div>
         </div>
     </div>
@@ -74,12 +74,12 @@
                 <div class="text-lg font-bold text-slate-800">CHF {{ alt_netto|chf }}</div>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Netto neu (CHF)</label>
+                <label for="mz_neu" class="block text-xs font-semibold text-slate-500 mb-1">Netto neu (CHF)</label>
                 <input name="neu_netto" id="mz_neu" oninput="mietzinsCheck()" value="{% localize off %}{{ vorschlag_netto }}{% endlocalize %}" class="w-full bg-indigo-50 border border-indigo-200 rounded-lg text-sm px-3 py-2.5 font-semibold">
                 <p class="text-[11px] text-slate-400 mt-1">Vorschlag aus Referenzzins + Teuerung + Kosten</p>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Wirksam ab</label>
+                <label for="mz_wirksam" class="block text-xs font-semibold text-slate-500 mb-1">Wirksam ab</label>
                 <input type="date" name="wirksam_ab" id="mz_wirksam" onchange="mietzinsCheck()" value="{{ naechster_termin|date:'Y-m-d' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <p class="text-[11px] text-slate-400 mt-1">Nächster Termin mit gewahrter Ankündigungsfrist (+10 Tage)</p>
             </div>
@@ -104,12 +104,12 @@
         </div>
         {% endif %}
         <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Zusätzliche Begründung (optional)</label>
-            <textarea name="begruendung" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5" placeholder="z.B. wertvermehrende Investition (neue Küche)…">{% if index_vorschlag %}{{ index_vorschlag.begruendung }}{% endif %}</textarea>
+            <label for="mz_begruendung" class="block text-xs font-semibold text-slate-500 mb-1">Zusätzliche Begründung (optional)</label>
+            <textarea id="mz_begruendung" name="begruendung" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5" placeholder="z.B. wertvermehrende Investition (neue Küche)…">{% if index_vorschlag %}{{ index_vorschlag.begruendung }}{% endif %}</textarea>
         </div>
         <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Schlichtungsbehörde (Adresse)</label>
-            <input name="schlichtungsbehoerde" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5" placeholder="z.B. Schlichtungsbehörde für Mietsachen, {{ lg.ort }}">
+            <label for="mz_schlicht" class="block text-xs font-semibold text-slate-500 mb-1">Schlichtungsbehörde (Adresse)</label>
+            <input id="mz_schlicht" name="schlichtungsbehoerde" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5" placeholder="z.B. Schlichtungsbehörde für Mietsachen, {{ lg.ort }}">
         </div>
         <label class="flex items-center gap-2 text-sm text-slate-700">
             <input type="checkbox" name="mit_vorbehalt" onchange="document.getElementById('vb').classList.toggle('hidden', !this.checked)" class="accent-indigo-600">
