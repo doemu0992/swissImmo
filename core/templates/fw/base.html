@@ -42,6 +42,16 @@
             --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
         }
         .fw-num{font-variant-numeric:tabular-nums}
+        /* A11y-Fundament: Kontrast + Tastatur-Fokus (wirkt global auf /neu) */
+        /* text-slate-400 (#94a3b8 = 2.56:1) und -300 (1.48:1) erfüllen WCAG AA nicht.
+           Nur die Textfarbe auf --ds-muted (≥4.5:1, theme-aware) anheben — Border/BG unberührt. */
+        .text-slate-400{color:var(--ds-muted)!important}
+        .text-slate-300{color:var(--ds-muted)!important}
+        /* Sichtbarer Fokusring nur bei Tastaturnavigation (kein Maus-Klick-Ring) */
+        a:focus-visible,button:focus-visible,summary:focus-visible,[role="button"]:focus-visible,
+        input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+            outline:2px solid var(--ds-brand);outline-offset:2px;border-radius:6px
+        }
         /* Seitenkopf */
         .fw-phead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
         .fw-phead h1{font-size:23px;letter-spacing:-.02em;font-weight:800;color:var(--ds-ink)}
