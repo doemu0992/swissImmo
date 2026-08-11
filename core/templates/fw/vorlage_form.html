@@ -19,17 +19,17 @@
         {% csrf_token %}
         <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Bezeichnung *</label>
-                    <input name="name" required value="{{ vl.name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kategorie</label>
-                    <select name="kategorie" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <div class="sm:col-span-2"><label for="vf-name" class="block text-xs font-semibold text-slate-500 mb-1">Bezeichnung *</label>
+                    <input id="vf-name" name="name" required value="{{ vl.name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label for="vf-kat" class="block text-xs font-semibold text-slate-500 mb-1">Kategorie</label>
+                    <select id="vf-kat" name="kategorie" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                         {% for val, lbl in kategorien %}<option value="{{ val }}" {% if vl.kategorie == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                     </select></div>
             </div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Betreff</label>
-                <input name="betreff" value="{{ vl.betreff }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Inhalt</label>
-                <textarea name="inhalt" rows="14" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono leading-relaxed">{{ vl.inhalt }}</textarea></div>
+            <div><label for="vf-betreff" class="block text-xs font-semibold text-slate-500 mb-1">Betreff</label>
+                <input id="vf-betreff" name="betreff" value="{{ vl.betreff }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="vf-inhalt" class="block text-xs font-semibold text-slate-500 mb-1">Inhalt</label>
+                <textarea id="vf-inhalt" name="inhalt" rows="14" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono leading-relaxed">{{ vl.inhalt }}</textarea></div>
         </div>
         <div class="flex items-center gap-3">
             <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
