@@ -49,16 +49,16 @@
     <form method="post" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {% csrf_token %}
         <input type="hidden" name="aktion" value="neu">
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nummer *</label>
-            <input name="nummer" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono" placeholder="z.B. 4150"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bezeichnung *</label>
-            <input name="bezeichnung" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Typ *</label>
-            <select name="typ" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label for="kp-nummer" class="block text-xs font-semibold text-slate-500 mb-1">Nummer *</label>
+            <input id="kp-nummer" name="nummer" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono" placeholder="z.B. 4150"></div>
+        <div><label for="kp-bez" class="block text-xs font-semibold text-slate-500 mb-1">Bezeichnung *</label>
+            <input id="kp-bez" name="bezeichnung" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kp-typ" class="block text-xs font-semibold text-slate-500 mb-1">Typ *</label>
+            <select id="kp-typ" name="typ" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 {% for wert, label in typen %}<option value="{{ wert }}">{{ label }}</option>{% endfor %}
             </select></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Verteilschlüssel</label>
-            <select name="schluessel" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label for="kp-schluessel" class="block text-xs font-semibold text-slate-500 mb-1">Verteilschlüssel</label>
+            <select id="kp-schluessel" name="schluessel" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <option value="m2">m²</option><option value="m3">m³</option>
                 <option value="einheit">pro Einheit</option><option value="personen">Personen</option>
             </select></div>
