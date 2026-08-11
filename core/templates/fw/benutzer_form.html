@@ -17,19 +17,19 @@
 <form method="post" class="max-w-2xl space-y-5">
     {% csrf_token %}
     <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Benutzername *</label>
-            {% if ist_neu %}<input name="username" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-            {% else %}<input value="{{ ziel.username }}" disabled class="w-full bg-slate-50 text-slate-400 rounded-lg text-sm px-3 py-2.5">{% endif %}</div>
+        <div><label for="bf-username" class="block text-xs font-semibold text-slate-500 mb-1">Benutzername *</label>
+            {% if ist_neu %}<input id="bf-username" name="username" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            {% else %}<input id="bf-username" value="{{ ziel.username }}" disabled class="w-full bg-slate-50 text-slate-400 rounded-lg text-sm px-3 py-2.5">{% endif %}</div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Vorname</label>
-                <input name="first_name" value="{{ ziel.first_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nachname</label>
-                <input name="last_name" value="{{ ziel.last_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="bf-first" class="block text-xs font-semibold text-slate-500 mb-1">Vorname</label>
+                <input id="bf-first" name="first_name" value="{{ ziel.first_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label for="bf-last" class="block text-xs font-semibold text-slate-500 mb-1">Nachname</label>
+                <input id="bf-last" name="last_name" value="{{ ziel.last_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">E-Mail</label>
-            <input type="email" name="email" value="{{ ziel.email }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Passwort {% if not ist_neu %}<span class="text-slate-400 font-normal">(leer lassen = unverändert)</span>{% else %}*{% endif %}</label>
-            <input type="text" name="passwort" {% if ist_neu %}required{% endif %} autocomplete="new-password" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="bf-email" class="block text-xs font-semibold text-slate-500 mb-1">E-Mail</label>
+            <input id="bf-email" type="email" name="email" value="{{ ziel.email }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="bf-pw" class="block text-xs font-semibold text-slate-500 mb-1">Passwort {% if not ist_neu %}<span class="text-slate-400 font-normal">(leer lassen = unverändert)</span>{% else %}*{% endif %}</label>
+            <input id="bf-pw" type="text" name="passwort" {% if ist_neu %}required{% endif %} autocomplete="new-password" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
     </div>
 
     <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
@@ -37,8 +37,8 @@
         {% if ziel.is_superuser %}
         <p class="text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2">Dieser Benutzer ist ein Superuser (Admin) — die Rolle wird nicht verändert.</p>
         {% else %}
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Rolle</label>
-            <select name="rolle" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label for="bf-rolle" class="block text-xs font-semibold text-slate-500 mb-1">Rolle</label>
+            <select id="bf-rolle" name="rolle" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 {% for r in rollen %}<option value="{{ r }}" {% if aktuelle_rolle == r or ist_neu and r == 'Lesend' %}selected{% endif %}>{{ r }}</option>{% endfor %}
             </select>
             <p class="text-xs text-slate-400 mt-1">Verwaltung = Vollzugriff · Sachbearbeitung = schreibend · Lesend = nur ansehen</p></div>
