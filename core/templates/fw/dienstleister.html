@@ -14,10 +14,10 @@
     <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-screwdriver-wrench text-indigo-500 mr-1.5"></i>Handwerker / Dienstleister erfassen</h3>
     <form method="post" action="/neu/dienstleister/neu/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {% csrf_token %}
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Firma *</label>
-            <input name="firma" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Branche</label>
-            <select name="branche" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label for="dl-firma" class="block text-xs font-semibold text-slate-500 mb-1">Firma *</label>
+            <input id="dl-firma" name="firma" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="dl-branche" class="block text-xs font-semibold text-slate-500 mb-1">Branche</label>
+            <select id="dl-branche" name="branche" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
                 <option value="sanitaer">Sanitär / Heizung</option>
                 <option value="elektro">Elektroinstallation</option>
                 <option value="maler">Maler / Gipser</option>
@@ -27,12 +27,12 @@
                 <option value="garten">Gartenbau / Umgebung</option>
                 <option value="reinigung">Reinigungsinstitut</option>
             </select></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kontaktperson</label>
-            <input name="kontaktperson" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">E-Mail</label>
-            <input name="email" type="email" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Telefon</label>
-            <input name="telefon" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="dl-kontakt" class="block text-xs font-semibold text-slate-500 mb-1">Kontaktperson</label>
+            <input id="dl-kontakt" name="kontaktperson" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="dl-email" class="block text-xs font-semibold text-slate-500 mb-1">E-Mail</label>
+            <input id="dl-email" name="email" type="email" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="dl-telefon" class="block text-xs font-semibold text-slate-500 mb-1">Telefon</label>
+            <input id="dl-telefon" name="telefon" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="sm:col-span-2"><button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen</button></div>
     </form>
 </div>
@@ -49,7 +49,7 @@
     <form method="get" class="ml-auto relative">
         {% if branche_filter %}<input type="hidden" name="branche" value="{{ branche_filter }}">{% endif %}
         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-        <input type="text" name="q" value="{{ q }}" placeholder="Firma oder Kontakt suchen…"
+        <input type="text" name="q" value="{{ q }}" placeholder="Firma oder Kontakt suchen…" aria-label="Dienstleister nach Firma oder Kontakt durchsuchen"
                class="bg-white border border-slate-200 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
     </form>
 </div>
@@ -79,10 +79,10 @@
         <div id="dledit-{{ row.h.id }}" class="hidden mb-4 pb-4 border-b border-slate-100">
             <form method="post" action="/neu/dienstleister/{{ row.h.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {% csrf_token %}
-                <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Firma *</label>
-                    <input name="firma" value="{{ row.h.firma }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Branche</label>
-                    <select name="branche" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
+                <div><label for="dle-firma-{{ row.h.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Firma *</label>
+                    <input id="dle-firma-{{ row.h.id }}" name="firma" value="{{ row.h.firma }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                <div><label for="dle-branche-{{ row.h.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Branche</label>
+                    <select id="dle-branche-{{ row.h.id }}" name="branche" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
                         <option value="sanitaer" {% if row.h.branche == 'sanitaer' %}selected{% endif %}>Sanitär / Heizung</option>
                         <option value="elektro" {% if row.h.branche == 'elektro' %}selected{% endif %}>Elektroinstallation</option>
                         <option value="maler" {% if row.h.branche == 'maler' %}selected{% endif %}>Maler / Gipser</option>
@@ -92,12 +92,12 @@
                         <option value="garten" {% if row.h.branche == 'garten' %}selected{% endif %}>Gartenbau / Umgebung</option>
                         <option value="reinigung" {% if row.h.branche == 'reinigung' %}selected{% endif %}>Reinigungsinstitut</option>
                     </select></div>
-                <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Kontaktperson</label>
-                    <input name="kontaktperson" value="{{ row.h.kontaktperson }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">E-Mail</label>
-                    <input name="email" type="email" value="{{ row.h.email }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Telefon</label>
-                    <input name="telefon" value="{{ row.h.telefon }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                <div><label for="dle-kontakt-{{ row.h.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Kontaktperson</label>
+                    <input id="dle-kontakt-{{ row.h.id }}" name="kontaktperson" value="{{ row.h.kontaktperson }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                <div><label for="dle-email-{{ row.h.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">E-Mail</label>
+                    <input id="dle-email-{{ row.h.id }}" name="email" type="email" value="{{ row.h.email }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                <div><label for="dle-telefon-{{ row.h.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Telefon</label>
+                    <input id="dle-telefon-{{ row.h.id }}" name="telefon" value="{{ row.h.telefon }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
                 <div class="sm:col-span-2 flex items-center gap-2 justify-end">
                     <button type="button" onclick="document.getElementById('dledit-{{ row.h.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
                     <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
