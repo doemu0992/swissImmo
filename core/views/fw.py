@@ -11543,7 +11543,11 @@ def fw_verzug_257d(request, vertrag_id):
     # ausserordentliche Kündigung zu kurz und damit nichtig.
     ZUSTELL_PUFFER = 7
     min_frist = 30 if v.ist_geschuetzt else 10
-    default_frist = (heute + timedelta(days=min_frist + ZUSTELL_PUFFER)).isoformat()
+    # Standard-Frist: immer mindestens 30 Tage ab heute (Nutzerwunsch — 30 Tage ist
+    # für alle Objektarten sicher, da ≥ der gesetzlichen Mindestfrist). Bei Wohn-/
+    # Geschäftsräumen bleibt zusätzlich der Zustellpuffer erhalten (30+7 = 37 Tage),
+    # damit die Frist ab Zugang die gesetzlichen 30 Tage nicht unterschreitet.
+    default_frist = (heute + timedelta(days=max(30, min_frist + ZUSTELL_PUFFER))).isoformat()
 
     if request.method == 'POST':
         try:
