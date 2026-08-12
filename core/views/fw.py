@@ -2970,6 +2970,9 @@ def fw_vertrag_detail(request, pk):
         vertrag_pendenzen.append({'p': p, 'url': _purl, 'label': _plabel or 'Öffnen',
                                   'wide': _pwide, 'modal': _pmodal,
                                   'ueberfaellig': bool(p.faellig_am and p.faellig_am < _heute)})
+    # Datierte Fristen (Teilmenge) für die Finanzen-Karte — analog zum Kontakt, damit
+    # die 257d-Frist + Track & Trace auch unter «Finanzen» direkt sichtbar ist.
+    vertrag_fristen = [e for e in vertrag_pendenzen if e['p'].faellig_am]
 
     tab_liste = [
         ('uebersicht', 'Übersicht', None),
@@ -3004,7 +3007,9 @@ def fw_vertrag_detail(request, pk):
         'tab_liste': tab_liste,
         'vertrag_schaeden': schaeden,
         'vertrag_pendenzen': vertrag_pendenzen,
+        'vertrag_fristen': vertrag_fristen,
         'vt_zugang_next': f'/neu/vertraege/{v.id}/?tab=pendenzen',
+        'vt_fin_zugang_next': f'/neu/vertraege/{v.id}/?tab=finanzen',
         'docuseal_konfiguriert': docuseal_konfiguriert(),
     })
 

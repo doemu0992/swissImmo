@@ -3301,11 +3301,11 @@ class Verzug257dTests(TestCase):
         c.post(f'/neu/vertraege/{v.id}/verzug/',
                {'sendungsnummer': '98.00.123456.00000001',
                 'versand_am': date.today().isoformat()}, secure=True)
-        # Vertrag-Detail
+        # Vertrag-Detail: Frist steht in BEIDEN Tabs (Pendenzen UND Finanzen) → 2×.
         rv = c.get(f'/neu/vertraege/{v.id}/', secure=True)
         self.assertEqual(rv.status_code, 200)
-        self.assertContains(rv, 'swisspost-tracking')
-        self.assertContains(rv, 'Zugang bestätigen')
+        self.assertContains(rv, 'swisspost-tracking', count=2)
+        self.assertContains(rv, 'Zugang bestätigen', count=2)
         # Kontakt-Detail
         rp = c.get(f'/neu/personen/{m.id}/', secure=True)
         self.assertEqual(rp.status_code, 200)
