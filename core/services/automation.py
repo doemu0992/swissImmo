@@ -168,6 +168,8 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
     from django.db.models import Q
     from core.utils.email_service import send_payment_reminder
     from finance.booking import buche
+    # Mahnstufen + Gebuehr pro Mandant (crm.Mandant.mahn_konfig); Fallback Standard.
+    from core.services.mahnstufen import stufe_fuer_tage as _stufe_cfg, mandant_von_rechnung
 
     heute = timezone.localdate()
     qs = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
@@ -190,9 +192,10 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
         # gehört zur Abschreibung/Betreibung (eigene Verjährungs-Pendenz).
         if tage > 5 * 365:
             continue
-        stufe = _stufe_fuer_tage(tage)
-        if not stufe:
+        _s = _stufe_cfg(tage, mandant_von_rechnung(r))
+        if not _s:
             continue
+        stufe = _s['stufe']
         # Mahnsperre: Mieter mit laufender Zahlungsvereinbarung nicht mahnen.
         if r.vertrag and r.vertrag.mieter_id and getattr(r.vertrag.mieter, 'mahnsperre', False):
             continue
@@ -202,7 +205,7 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
         if hoechste and hoechste.stufe >= stufe:
             continue
 
-        gebuehr = MAHN_GEBUEHR.get(stufe, Decimal('0.00'))
+        gebuehr = _s['gebuehr']
         # Verzugszins nur als DELTA zur bereits fakturierten Summe (Art. 104 OR:
         # derselbe Verzugszeitraum darf nicht bei jeder Mahnstufe erneut verzinst
         # werden — früher stellte Stufe 3 die vollen 60 Tage nochmals in Rechnung,

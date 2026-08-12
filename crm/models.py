@@ -115,6 +115,10 @@ class Mandant(models.Model):
     # Verwaltungshonorar in % der Mieterträge (netto). 0 = kein Honorar.
     honorar_prozent = models.DecimalField("Verwaltungshonorar (%)", max_digits=5, decimal_places=2,
                                           default=Decimal('0.00'))
+    # Mahnwesen-Konfiguration (feste 3 Stufen je: aktiv / ab_tage / gebuehr /
+    # kuendigung). Leer (None) = Standard 14/30/60, Gebuehr 0/20/40,
+    # Kuendigungsandrohung ab Stufe 3 — siehe core.services.mahnstufen.
+    mahn_konfig = models.JSONField("Mahnstufen-Konfiguration", null=True, blank=True, default=None)
     unterschrift_bild = models.ImageField("Digitale Unterschrift", upload_to="unterschriften/", blank=True, null=True)
 
     class Meta:

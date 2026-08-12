@@ -1,0 +1,54 @@
+{% extends 'fw/base.html' %}
+{% block title %}Mahnstufen — {{ md.firma_oder_name }}{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <p class="text-xs text-slate-400 mb-1"><a href="/neu/mandate/" class="hover:text-indigo-600">Mandate</a> › {{ md.firma_oder_name }}</p>
+        <h1>Mahnstufen</h1>
+        <p>Regeln für {{ md.firma_oder_name }} — welche Stufen ab wie vielen Tagen überfällig greifen, Gebühr und ob eine Kündigungsandrohung (Art. 257d OR) mitgeschickt wird.</p>
+    </div>
+</div>
+
+<form method="post" class="max-w-3xl">
+    {% csrf_token %}
+    <div class="fw-card">
+        <div class="fw-h">
+            <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-gavel"></i></span>
+            <span class="fw-t">Mahnstufen-Regeln</span>
+        </div>
+        <div class="p-5 space-y-4">
+            {% for s in stufen %}
+            <div class="rounded-xl border border-slate-200 p-4 {% if not s.aktiv %}bg-slate-50/60{% endif %}">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="font-bold text-slate-800">{{ s.stufe }}. Mahnung</div>
+                    <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+                        <input type="checkbox" name="aktiv_{{ s.stufe }}" {% if s.aktiv %}checked{% endif %} class="accent-indigo-600 w-4 h-4">
+                        <span class="text-slate-600">aktiv</span>
+                    </label>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label for="ab_{{ s.stufe }}" class="block text-xs font-semibold text-slate-500 mb-1">Ab Tagen überfällig</label>
+                        <input id="ab_{{ s.stufe }}" type="number" min="0" name="ab_tage_{{ s.stufe }}" value="{{ s.ab_tage }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    </div>
+                    <div>
+                        <label for="geb_{{ s.stufe }}" class="block text-xs font-semibold text-slate-500 mb-1">Mahngebühr (CHF)</label>
+                        <input id="geb_{{ s.stufe }}" type="number" min="0" step="0.05" name="gebuehr_{{ s.stufe }}" value="{{ s.gebuehr }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    </div>
+                    <div class="flex items-end">
+                        <label class="inline-flex items-center gap-2 text-sm cursor-pointer pb-2.5">
+                            <input type="checkbox" name="kuendigung_{{ s.stufe }}" {% if s.kuendigung %}checked{% endif %} class="accent-rose-600 w-4 h-4">
+                            <span class="text-slate-600">Kündigungsandrohung (257d)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="px-5 py-4 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+            <p class="text-xs text-slate-400 max-w-md">Beispiel: nur „3. Mahnung" aktiv, „ab&nbsp;1&nbsp;Tag", Kündigungsandrohung&nbsp;an → jede überfällige Rechnung ist sofort ein 257d-Fall (keine 3&nbsp;Monate Verzug bis zur Kündigung).</p>
+            <button class="fw-btn fw-primary shrink-0"><i class="fa-solid fa-check"></i> Speichern</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

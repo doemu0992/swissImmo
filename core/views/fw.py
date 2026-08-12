@@ -442,18 +442,16 @@ def fw_finanzen(request):
 # ETAPPE B: LISTEN ALS DATENTABELLEN
 # ============================================================
 
-def _mahnstufe(faellig, heute, status):
-    """Heuristische Mahnstufe aus dem Fälligkeitsdatum (bis Etappe D
-    ein echtes Mahnwesen mit gespeicherten Stufen bringt)."""
+def _mahnstufe(faellig, heute, status, mandant=None):
+    """Mahnstufen-Badge aus Fälligkeit + der Mahnkonfig des Mandanten
+    (core.services.mahnstufen). 'Fällig' als Fallback, wenn überfällig, aber
+    noch unter der ersten aktiven Stufe. mandant=None → Standard (14/30/60)."""
     if status not in ('offen', 'teilbezahlt') or not faellig or faellig >= heute:
         return None
     tage = (heute - faellig).days
-    if tage > 60:
-        return {'label': '3. Mahnung', 'cls': 'bg-rose-100 text-rose-700', 'tage': tage}
-    if tage > 30:
-        return {'label': '2. Mahnung', 'cls': 'bg-rose-50 text-rose-600', 'tage': tage}
-    if tage > 14:
-        return {'label': '1. Mahnung', 'cls': 'bg-amber-100 text-amber-700', 'tage': tage}
+    s = _stufe_fuer_tage(tage, mandant)
+    if s:
+        return {'label': s['label'], 'cls': s['cls'], 'tage': tage}
     return {'label': 'Fällig', 'cls': 'bg-amber-50 text-amber-600', 'tage': tage}
 
 
@@ -473,8 +471,8 @@ def fw_debitoren(request):
     aktive_lg = basis['aktive_lg']
 
     qs = (DebitorenRechnung.objects
-          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft',
-                          'liegenschaft', 'einheit__liegenschaft')
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft__mandant',
+                          'liegenschaft__mandant', 'einheit__liegenschaft')
           .prefetch_related('zahlungseingaenge'))
     if aktive_lg:
         qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
@@ -500,7 +498,7 @@ def fw_debitoren(request):
         einheit = r.einheit or (r.vertrag.einheit if r.vertrag_id else None)
         offen = r.offener_betrag if r.status in ('offen', 'teilbezahlt') else Decimal('0.00')
         faellig = r.faellig_am or r.datum
-        mahn = _mahnstufe(faellig, heute, r.status)
+        mahn = _mahnstufe(faellig, heute, r.status, _mandant_von_rechnung(r))
         if r.status != 'storniert':
             total_betrag += (r.betrag or Decimal('0.00'))
         if r.status in ('offen', 'teilbezahlt'):
@@ -3624,22 +3622,15 @@ def fw_vertrag_loeschen(request, pk):
 # ETAPPE D: MAHNWESEN (Mahnstufen aus überfälligen Debitoren)
 # ============================================================
 
-# Mahnstufen-Schwellen (Tage überfällig) — zentrale Stellschraube.
-MAHN_STUFEN = [
-    {'stufe': 3, 'ab_tage': 60, 'label': '3. Mahnung', 'unter': 'Kündigungsandrohung (Art. 257d OR)',
-     'cls': 'bg-rose-100 text-rose-700', 'dot': 'bg-rose-500'},
-    {'stufe': 2, 'ab_tage': 30, 'label': '2. Mahnung', 'unter': 'Zweite schriftliche Erinnerung',
-     'cls': 'bg-rose-50 text-rose-600', 'dot': 'bg-rose-400'},
-    {'stufe': 1, 'ab_tage': 14, 'label': '1. Mahnung', 'unter': 'Erste Zahlungserinnerung',
-     'cls': 'bg-amber-100 text-amber-700', 'dot': 'bg-amber-500'},
-]
-
-
-def _stufe_fuer_tage(tage):
-    for s in MAHN_STUFEN:
-        if tage >= s['ab_tage']:
-            return s
-    return None
+# Mahnstufen-Konfiguration liegt jetzt PRO MANDANT (crm.Mandant.mahn_konfig) —
+# EINE Quelle der Wahrheit in core.services.mahnstufen. MAHN_STUFEN = Standard-
+# Legende (ohne Mandant); die View berechnet die effektive Legende pro Mandant.
+from core.services.mahnstufen import (  # noqa: E402
+    mahnstufen_config as _mahnstufen_config,
+    stufe_fuer_tage as _stufe_fuer_tage,
+    mandant_von_rechnung as _mandant_von_rechnung,
+)
+MAHN_STUFEN = _mahnstufen_config(None)
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -3650,12 +3641,15 @@ def fw_mahnwesen(request):
 
     qs = (DebitorenRechnung.objects
           .filter(status__in=['offen', 'teilbezahlt'])
-          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft')
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft__mandant',
+                          'liegenschaft__mandant')
           .prefetch_related('zahlungseingaenge'))
     if aktive_lg:
         qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
 
     stufe_filter = request.GET.get('stufe', '')
+    # Effektive Mahnstufen-Legende: die des gefilterten Mandanten, sonst Standard.
+    legende = _mahnstufen_config(getattr(aktive_lg, 'mandant', None) if aktive_lg else None)
 
     rows = []
     total = Decimal('0.00')
@@ -3666,9 +3660,9 @@ def fw_mahnwesen(request):
         if not faellig or faellig >= heute:
             continue
         tage = (heute - faellig).days
-        stufe = _stufe_fuer_tage(tage)
+        stufe = _stufe_fuer_tage(tage, _mandant_von_rechnung(r))
         if not stufe:
-            continue  # < 14 Tage: noch kein Mahnfall
+            continue  # unter der ersten aktiven Stufe: noch kein Mahnfall
         offen = r.offener_betrag
         if offen <= 0:
             continue
@@ -3691,7 +3685,7 @@ def fw_mahnwesen(request):
         })
     rows.sort(key=lambda x: (-x['stufe']['stufe'], -x['tage']))
 
-    stufe_chips = [('', 'Alle Stufen')] + [(str(s['stufe']), s['label']) for s in MAHN_STUFEN]
+    stufe_chips = [('', 'Alle Stufen')] + [(str(s['stufe']), s['label']) for s in legende]
 
     # Letzte erfasste Mahnung je Rechnung + Historie
     from finance.models import Mahnung
@@ -3711,7 +3705,7 @@ def fw_mahnwesen(request):
         **basis, 'nav': 'mahnwesen', 'rows': rows,
         'stufe_filter': stufe_filter, 'stufe_chips': stufe_chips,
         'total': total,
-        'mahnstufen': MAHN_STUFEN,
+        'mahnstufen': legende,
         'counts': counts, 'summe': summe,
         'anzahl_total': counts[1] + counts[2] + counts[3],
         'historie': historie,
@@ -7914,6 +7908,49 @@ def fw_eigentuemer_honorar(request, pk):
     else:
         messages.warning(request, "Kein Honorar zu buchen (bereits gebucht oder kein Mietertrag).")
     return redirect(f'/neu/mandate/{md.id}/kontokorrent/?jahr={jahr}')
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_mandant_mahnstufen(request, pk):
+    """Mahnstufen-Konfiguration eines Mandanten (feste 3 Stufen: aktiv / ab_tage /
+    gebuehr / kuendigung). Speichert nach Mandant.mahn_konfig (JSON). Leer =
+    Standard 14/30/60. Siehe core.services.mahnstufen."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from crm.models import Mandant
+    from core.services.mahnstufen import roh_konfig
+    from core.auth import log_aktion
+    md = get_object_or_404(Mandant, id=pk)
+    if request.method == 'POST':
+        std_tage = {1: 14, 2: 30, 3: 60}
+        konfig = []
+        for s in (1, 2, 3):
+            try:
+                ab = max(0, int(request.POST.get(f'ab_tage_{s}') or std_tage[s]))
+            except ValueError:
+                ab = std_tage[s]
+            try:
+                geb = Decimal(str(request.POST.get(f'gebuehr_{s}') or '0').replace(',', '.'))
+                geb = max(Decimal('0'), geb)
+            except Exception:
+                geb = Decimal('0')
+            konfig.append({
+                'stufe': s,
+                'aktiv': request.POST.get(f'aktiv_{s}') == 'on',
+                'ab_tage': ab,
+                'gebuehr': f"{geb:.2f}",
+                'kuendigung': request.POST.get(f'kuendigung_{s}') == 'on',
+            })
+        md.mahn_konfig = konfig
+        md.save(update_fields=['mahn_konfig'])
+        log_aktion(request, "Mahnstufen-Konfiguration geändert", md.firma_oder_name,
+                   " · ".join(f"St{c['stufe']}:{'an' if c['aktiv'] else 'aus'}/{c['ab_tage']}T"
+                              for c in konfig))
+        messages.success(request, "✅ Mahnstufen gespeichert.")
+        return redirect(f'/neu/mandate/{md.id}/mahnstufen/')
+    return render(request, 'fw/mandant_mahnstufen.html', {
+        **_global_filter(request), 'nav': 'mandate', 'md': md, 'stufen': roh_konfig(md),
+    })
 
 
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
