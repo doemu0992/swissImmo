@@ -344,7 +344,7 @@
                     <span class="w-2 h-2 rounded-full shrink-0 {% if e.ueberfaellig %}bg-rose-500{% else %}bg-amber-400{% endif %}"></span>
                     <div class="min-w-0 flex-1">
                         <div class="text-sm font-medium text-slate-900 truncate">{{ e.p.titel }}</div>
-                        {% if e.p.beschreibung %}<div class="text-xs text-slate-400 truncate">{{ e.p.beschreibung|truncatechars:90 }}</div>{% endif %}
+                        {% if e.p.beschreibung %}<div class="text-xs text-slate-500 leading-relaxed">{{ e.p.beschreibung }}</div>{% endif %}
                     </div>
                     <span class="text-xs font-semibold shrink-0 whitespace-nowrap {% if e.ueberfaellig %}text-rose-600{% else %}text-slate-500{% endif %}">
                         {{ e.p.faellig_am|date:"d.m.Y" }}{% if e.p.sendungsnummer and not e.p.zugang_am %} · <span class="text-amber-600">provisorisch</span>{% endif %}
