@@ -10223,9 +10223,13 @@ class NachtN2JuristTests(TestCase):
         u = _team_user(); c = Client(); c.force_login(u)
         r = c.post(f'/neu/vertraege/{v.id}/verzug/', {'frist_bis': (date.today() + timedelta(days=40)).isoformat()})
         self.assertEqual(r.status_code, 302)
-        dok = Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Zahlungsaufforderung 257d').first()
-        self.assertIsNotNone(dok)
-        self.assertIn('2 Zustellungen', dok.bezeichnung)   # Mieter + Ehegatte separat
+        # Neu: je Empfänger ein separat adressiertes 257d-Schreiben (statt eines
+        # Sammel-Dokuments «2 Zustellungen») — direkter Nachweis der Doppelzustellung.
+        doks = Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Zahlungsaufforderung 257d')
+        self.assertEqual(doks.count(), 2)                  # Mieter + Ehegatte separat (Art. 266n)
+        _namen = ' | '.join(d.bezeichnung for d in doks)
+        self.assertIn('Hans Muster', _namen)               # Mieter
+        self.assertIn('Erika Muster', _namen)              # Ehegatte separat
 
     def test_257d_einzelzustellung_ohne_familienwohnung(self):
         from finance.models import DebitorenRechnung

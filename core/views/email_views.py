@@ -87,9 +87,21 @@ def generate_single_pdf_bytes(periode, row, verwaltung, liegenschaft, vertrag):
 
 
 # 🔥 VERBESSERT: Hilfsfunktion für das kombinierte PDF (Brief S1 + QR S2)
-def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, heute):
+def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, heute,
+                                        empfaenger=None):
+    """257d-Zahlungsaufforderung mit Kuendigungsandrohung (+ QR-Rechnung).
+    empfaenger (optional): {firma, name, strasse, ort_line, nachname, anrede} —
+    ueberschreibt den Empfaenger fuer separat adressierte Kopien (Art. 266n OR:
+    Familienwohnung/Mitmieter). Ohne Override: vertrag.mieter."""
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
+    _e = empfaenger or {}
+    r_firma   = _e.get('firma')   if empfaenger else getattr(vertrag.mieter, 'firma', None)
+    r_name    = _e.get('name')    if empfaenger else f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}"
+    r_strasse = _e.get('strasse') if empfaenger else vertrag.mieter.strasse
+    r_ortline = _e.get('ort_line') if empfaenger else f"{vertrag.mieter.plz} {vertrag.mieter.ort}"
+    r_nachn   = _e.get('nachname') if empfaenger else vertrag.mieter.nachname
+    r_anrede  = _e.get('anrede')  if empfaenger else getattr(vertrag.mieter, 'anrede', '')
 
     # --- SEITE 1: DAS JURISTISCHE SCHREIBEN ---
     left_margin = 25*mm
@@ -108,22 +120,22 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
     y_addr -= 8*mm
     c.setFont("Helvetica", 11)
 
-    firma_name = getattr(vertrag.mieter, 'firma', None)
+    firma_name = r_firma
     if firma_name:
         c.drawString(right_window_margin, y_addr, firma_name); y_addr -= 5*mm
 
-    c.drawString(right_window_margin, y_addr, f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}")
-    c.drawString(right_window_margin, y_addr-5*mm, vertrag.mieter.strasse)
-    c.drawString(right_window_margin, y_addr-10*mm, f"{vertrag.mieter.plz} {vertrag.mieter.ort}")
+    c.drawString(right_window_margin, y_addr, r_name)
+    c.drawString(right_window_margin, y_addr-5*mm, r_strasse or '')
+    c.drawString(right_window_margin, y_addr-10*mm, r_ortline)
 
     c.setFont("Helvetica", 10); c.drawString(left_margin, 210*mm, f"{verwaltung.ort if verwaltung else 'Ort'}, {heute.strftime('%d.%m.%Y')}")
     c.setFont("Helvetica-Bold", 12); c.drawString(left_margin, 195*mm, f"Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung")
     c.setFont("Helvetica-Bold", 10); c.drawString(left_margin, 189*mm, f"Mietobjekt: {vertrag.einheit.bezeichnung}, {vertrag.einheit.liegenschaft.strasse}")
 
     c.setFont("Helvetica", 11); text_y = 175*mm
-    salutation = f"Sehr geehrte Damen und Herren,"
-    if getattr(vertrag.mieter, 'anrede', '') == "Herr": salutation = f"Sehr geehrter Herr {vertrag.mieter.nachname},"
-    elif getattr(vertrag.mieter, 'anrede', '') == "Frau": salutation = f"Sehr geehrte Frau {vertrag.mieter.nachname},"
+    salutation = "Sehr geehrte Damen und Herren,"
+    if r_anrede == "Herr": salutation = f"Sehr geehrter Herr {r_nachn},"
+    elif r_anrede == "Frau": salutation = f"Sehr geehrte Frau {r_nachn},"
     c.drawString(left_margin, text_y, salutation); text_y -= 10*mm
 
     lines = [
@@ -159,7 +171,10 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
                               verwaltung, getattr(lg, 'mandant', None))
 
     # --- SEITE 2: DIE QR-RECHNUNG ---
-    iban = getattr(vertrag.einheit.liegenschaft, 'iban', None)
+    # QR-Einzahlungsschein: IBAN der Liegenschaft, sonst die der Verwaltung
+    # (Kreditor ist die Verwaltung). Ohne diesen Fallback fehlte die QR-Seite,
+    # wenn die IBAN nur auf der Verwaltung hinterlegt ist (Nutzer-Bug).
+    iban = getattr(vertrag.einheit.liegenschaft, 'iban', None) or getattr(verwaltung, 'iban', None)
     if iban:
         try:
             c.showPage()
@@ -172,8 +187,8 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
             else:
                 creditor = {'name': "Verwaltung", 'line1': vertrag.einheit.liegenschaft.strasse, 'line2': f"{vertrag.einheit.liegenschaft.plz} {vertrag.einheit.liegenschaft.ort}"}
 
-            m_name = firma_name if firma_name else f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}"
-            debtor = {'name': m_name, 'line1': vertrag.mieter.strasse, 'line2': f"{vertrag.mieter.plz} {vertrag.mieter.ort}"}
+            m_name = firma_name if firma_name else r_name
+            debtor = {'name': m_name, 'line1': r_strasse or '', 'line2': r_ortline}
 
             draw_qr_bill(c, iban, creditor, debtor, betrag_float, f"Mahnung {monat_str} {vertrag.einheit.bezeichnung}")
         except: pass

@@ -317,6 +317,20 @@
             <i class="fa-solid fa-file-pdf"></i> PDF
         </a>
     </div>
+    {% if total_offen > 0 %}
+    <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-4 flex items-start gap-3 flex-wrap">
+        <i class="fa-solid fa-triangle-exclamation text-rose-500 mt-0.5"></i>
+        <div class="flex-1 min-w-0">
+            <div class="text-sm font-bold text-rose-800">Offener Betrag: CHF {{ total_offen|chf }}</div>
+            <p class="text-xs text-rose-600 mt-0.5">Bei Zahlungsverzug: Frist ansetzen (Art. 257d OR) — Zahlungsaufforderung mit Kündigungsandrohung, danach ausserordentliche Kündigung möglich.</p>
+        </div>
+        {% for vt in offene_vertraege %}
+        <a href="/neu/vertraege/{{ vt.id }}/verzug/" class="shrink-0 inline-flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg">
+            <i class="fa-solid fa-gavel"></i> Zahlungsverzug 257d{% if offene_vertraege|length > 1 %} · {{ vt.einheit.bezeichnung }}{% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
         <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Offene Posten</div>
         <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">

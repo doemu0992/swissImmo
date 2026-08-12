@@ -99,6 +99,18 @@ def roh_konfig(mandant):
     return out
 
 
+def gebuehr_fuer_stufe(stufe, mandant=None):
+    """Konfigurierte Mahngebühr (Decimal) für eine konkrete Stufe (1/2/3) — auch
+    wenn die Stufe inaktiv ist (roh_konfig). Fallback 0.00."""
+    for s in roh_konfig(mandant):
+        if s['stufe'] == stufe:
+            try:
+                return Decimal(str(s['gebuehr']))
+            except Exception:
+                return Decimal('0.00')
+    return Decimal('0.00')
+
+
 def mandant_von_rechnung(r):
     """Mandant (Eigentuemer) einer DebitorenRechnung ueber ihre Liegenschaft."""
     lg = getattr(r, 'liegenschaft', None)

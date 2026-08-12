@@ -4904,8 +4904,17 @@ def fw_person_detail(request, pk):
 
     offene = (DebitorenRechnung.objects
               .filter(vertrag_id__in=_vids, status__in=['offen', 'teilbezahlt'])
-              .select_related('vertrag').order_by('faellig_am'))
+              .select_related('vertrag__einheit').order_by('faellig_am'))
     total_offen = sum((r.offener_betrag for r in offene), Decimal('0.00'))
+    # Aktive Verträge mit offenem Posten → Ziel(e) für den 257d-Verzugsdialog
+    # (roter Zahlungsverzug-Alarm im Finanzen-Tab, analog zur Vertrag-Detailseite).
+    _seen_v = set()
+    offene_vertraege = []
+    for r in offene:
+        vt = r.vertrag
+        if vt and vt.id not in _seen_v and vt.status == 'aktiv':
+            _seen_v.add(vt.id)
+            offene_vertraege.append(vt)
 
     zahlungen = (Zahlungseingang.objects.filter(vertrag_id__in=_vids, status='verbucht')
                  .order_by('-datum_eingang')[:15])
@@ -4969,7 +4978,7 @@ def fw_person_detail(request, pk):
         'vertrag_rows': vertrag_rows,
         'anzahl_aktive': len(aktive),
         'brutto_monat': sum((r['brutto'] for r in vertrag_rows if r['v'].status == 'aktiv'), Decimal('0.00')),
-        'offene': offene, 'total_offen': total_offen,
+        'offene': offene, 'total_offen': total_offen, 'offene_vertraege': offene_vertraege,
         'zahlungen': zahlungen, 'dok_gruppen': dok_gruppen, 'dok_total': dok_total,
         'telefon': m.mobile or m.telefon_privat or m.telefon_geschaeft,
         'kommunikationen': m.kommunikationen.select_related('vertrag', 'erstellt_von')[:50],
@@ -11601,58 +11610,48 @@ def fw_verzug_257d(request, vertrag_id):
             messages.info(request, f"Die Frist wurde auf die gesetzliche Mindestdauer "
                                    f"({min_frist} Tage, Art. 257d Abs. 1 OR) verlängert.")
         vw = Verwaltung.objects.first()
-        absender = {'firma': getattr(vw, 'firma', '') if vw else '', 'strasse': getattr(vw, 'strasse', '') if vw else '',
-                    'plz': getattr(vw, 'plz', '') if vw else '', 'ort': getattr(vw, 'ort', '') if vw else ''}
         m = v.mieter
-        _obj = v.einheit.bezeichnung if v.einheit_id else ''
-        _lgz = f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''
+        # Dasselbe 257d-PDF wie /vertrag/<id>/mahnung/ (sauberer Brief mit
+        # Kuendigungsandrohung + QR-Rechnung) statt eines generischen Serienbriefs.
+        from core.views.email_views import generate_mahnung_combined_pdf_bytes
 
-        def _empf(name, strasse, plz, ort):
-            return {'name': name, 'anrede': f"Sehr geehrte/r {name}",
-                    'strasse': strasse, 'plz': plz, 'ort': ort,
-                    'objekt': _obj, 'liegenschaft': _lgz}
-
-        # Art. 266n OR erfasst ausdrücklich auch die Fristansetzung nach Art. 257d:
-        # bei einer FAMILIENWOHNUNG muss sie dem Mieter UND dem Ehegatten SEPARAT
-        # zugestellt werden — sonst ist die darauf gestützte ausserordentliche
-        # Kündigung nichtig (Art. 266o OR). Zusätzlich erhalten solidarisch
-        # haftende Mitmieter (WG) je eine eigene Kopie.
-        emp = [_empf(m.display_name, m.strasse, m.plz, m.ort)]
+        # Empfaenger: Primaer (Mieter) + separat adressierte Kopien. Art. 266n OR
+        # erfasst die Fristansetzung nach 257d: bei FAMILIENWOHNUNG muss sie Mieter
+        # UND Ehegatten SEPARAT zugestellt werden (sonst nichtig, Art. 266o), ebenso
+        # solidarisch haftende Mitmieter (WG). empfaenger=None → vertrag.mieter.
+        def _ovr(person=None, name=None):
+            if person is not None:
+                return {'firma': getattr(person, 'firma', None), 'name': person.display_name,
+                        'strasse': person.strasse or m.strasse,
+                        'ort_line': f"{person.plz or m.plz} {person.ort or m.ort}",
+                        'nachname': person.nachname, 'anrede': getattr(person, 'anrede', '')}
+            return {'firma': None, 'name': name, 'strasse': m.strasse,
+                    'ort_line': f"{m.plz} {m.ort}", 'nachname': name, 'anrede': ''}
+        zustellungen = [None]
         if v.familienwohnung:
             if v.mitmieter_id:
-                m2 = v.mitmieter
-                emp.append(_empf(m2.display_name, m2.strasse or m.strasse,
-                                 m2.plz or m.plz, m2.ort or m.ort))
+                zustellungen.append(_ovr(person=v.mitmieter))
             elif (v.mitmieter_name or '').strip():
-                # Ehegatte ohne eigene Personenakte → an die gemeinsame Wohnadresse.
-                emp.append(_empf(v.mitmieter_name.strip(), m.strasse, m.plz, m.ort))
+                zustellungen.append(_ovr(name=v.mitmieter_name.strip()))
         elif v.mitmieter_id:
-            emp.append(_empf(v.mitmieter.display_name, v.mitmieter.strasse or m.strasse,
-                             v.mitmieter.plz or m.plz, v.mitmieter.ort or m.ort))
+            zustellungen.append(_ovr(person=v.mitmieter))
         for wm in (v.weitere_mieter.all() if v.pk else []):
-            emp.append(_empf(wm.display_name, wm.strasse or m.strasse,
-                             wm.plz or m.plz, wm.ort or m.ort))
-        betreff = "Zahlungsaufforderung mit Fristansetzung (Art. 257d OR)"
-        text = (
-            "{anrede}\n\n"
-            "Für das Mietobjekt {objekt} an der {liegenschaft} sind offene Mietzinse von total "
-            f"CHF {offen_total:.2f} zur Zahlung fällig.\n\n"
-            f"Gestützt auf Art. 257d OR setzen wir Ihnen eine Frist bis zum {frist.strftime('%d.%m.%Y')}, "
-            "um den ausstehenden Betrag vollständig zu begleichen.\n\n"
-            "Wir weisen Sie ausdrücklich darauf hin, dass wir das Mietverhältnis nach unbenutztem "
-            "Ablauf dieser Frist ausserordentlich kündigen können (Art. 257d Abs. 2 OR), mit einer "
-            "Frist von 30 Tagen auf Ende eines Monats."
-            # KEIN "Freundliche Grüsse" hier — die Grussformel setzt der Serienbrief-
-            # Generator selbst (sonst erschien sie doppelt, Live-Test I).
-        )
-        pdf = generate_serienbrief_pdf(absender, betreff, text, emp, signatur=(vw,))
-        _suffix = f" ({len(emp)} Zustellungen)" if len(emp) > 1 else ""
-        ablegen(pdf, f"Zahlungsaufforderung 257d – Frist {frist:%d.%m.%Y}{_suffix}",
-                kategorie='korrespondenz', vertrag=v, dedup=False)
-        if len(emp) > 1:
-            messages.info(request, f"📮 {len(emp)} separat adressierte Briefe erzeugt "
-                                   "(Art. 266n OR: Familienwohnung/Mitmieter) — jede Kopie "
-                                   "einzeln per Einschreiben zustellen.")
+            zustellungen.append(_ovr(person=wm))
+
+        _monat = (min((r.faellig_am or r.datum) for r in faellige)).strftime('%m/%Y') if faellige else heute.strftime('%m/%Y')
+        _betrag = f"{offen_total:.2f}"
+        pdf = None
+        for i, ovr in enumerate(zustellungen):
+            _p = generate_mahnung_combined_pdf_bytes(v, vw, _monat, _betrag, heute, empfaenger=ovr)
+            if i == 0:
+                pdf = _p
+            _to = ovr['name'] if ovr else m.display_name
+            ablegen(_p, f"Zahlungsaufforderung 257d – {_to} – Frist {frist:%d.%m.%Y}",
+                    kategorie='korrespondenz', vertrag=v, dedup=False)
+        if len(zustellungen) > 1:
+            messages.info(request, f"📮 {len(zustellungen)} separat adressierte 257d-Briefe erzeugt "
+                                   "(Art. 266n OR: Familienwohnung/Mitmieter) — jede Kopie einzeln "
+                                   "per Einschreiben zustellen.")
         # Fristen-Pendenz: läuft am Fristende ab → dann ausserordentliche Kündigung möglich
         Pendenz.objects.create(
             titel=f"Art. 257d: Zahlungsfrist läuft ab – {v.mieter.display_name}",
@@ -13115,10 +13114,19 @@ def fw_mahnung_erfassen(request):
                                f"eine {stufe}. Mahnung wäre ein Rückschritt.")
         return redirect('fw_mahnwesen')
 
+    # Mahngebühr aus der Mandanten-Konfig (crm.Mandant.mahn_konfig) — NICHT mehr
+    # hartcodiert (fw.MAHN_GEBUEHR). Ein aus dem Formular übermittelter Wert
+    # überschreibt sie (manuelle Anpassung); fehlt er, gilt die konfigurierte
+    # Gebühr (z.B. 0 → dann wird KEINE 40.- geschrieben, Nutzer-Bug behoben).
+    from core.services.mahnstufen import gebuehr_fuer_stufe, mandant_von_rechnung
+    _cfg_geb = gebuehr_fuer_stufe(stufe, mandant_von_rechnung(rechnung))
+    _posted = _num(request.POST.get('gebuehr'))
     try:
-        gebuehr = Decimal((_num(request.POST.get('gebuehr')) or str(MAHN_GEBUEHR.get(stufe, Decimal('0')))))
+        gebuehr = Decimal(str(_posted)) if _posted not in (None, '') else _cfg_geb
     except Exception:
-        gebuehr = MAHN_GEBUEHR.get(stufe, Decimal('0.00'))
+        gebuehr = _cfg_geb
+    if gebuehr < 0:
+        gebuehr = Decimal('0.00')
 
     heute = timezone.localdate()
     # Mahnung + Mahngebühr-Rechnung + Hauptbuchbuchung in EINER Transaktion —
