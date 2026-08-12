@@ -31,5 +31,21 @@ Parameter (per {% include ... with %}):
         </button>
     </form>
     {% endif %}
+    <details class="text-[11px]">
+        <summary class="cursor-pointer text-slate-400 hover:text-indigo-600 select-none"><i class="fa-solid fa-pen-to-square mr-0.5"></i>Nummer korrigieren</summary>
+        <form method="post" action="/neu/fristen/verzug/{{ p.id }}/sendung/" class="mt-1.5 flex items-center gap-1.5 flex-wrap">
+            {% csrf_token %}
+            {% if zugang_next %}<input type="hidden" name="next" value="{{ zugang_next }}">{% endif %}
+            <input type="text" name="sendungsnummer" value="{{ p.sendungsnummer }}" inputmode="numeric"
+                   placeholder="Sendungsnummer" class="bg-slate-100 rounded-md px-2 py-1 text-[11px] font-mono w-56 max-w-full">
+            {% if not p.zugang_am %}
+            <input type="date" name="versand_am" value="{{ p.versand_am|date:'Y-m-d' }}" max="{{ zugang_heute }}"
+                   title="Versanddatum" class="bg-slate-100 rounded-md px-2 py-1 text-[11px]">
+            {% endif %}
+            <button type="submit" class="inline-flex items-center gap-1 font-semibold text-indigo-700 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-md whitespace-nowrap">
+                <i class="fa-solid fa-check"></i> Speichern
+            </button>
+        </form>
+    </details>
 </div>
 {% endif %}

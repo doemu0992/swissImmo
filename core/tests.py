@@ -3329,6 +3329,32 @@ class Verzug257dTests(TestCase):
                     {'zugang_am': date.today().isoformat(), 'next': 'https://evil.example/x'}, secure=True)
         self.assertEqual(r2['Location'], '/neu/fristen/')
 
+    def test_sendungsnummer_korrigieren(self):
+        """Vertippte Sendungsnummer kann nachträglich korrigiert werden; ein neues
+        Versanddatum rechnet die provisorische Frist neu (Versand+1+30)."""
+        from core.models import Pendenz
+        lg, e, m, v = self._setup_offen()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/verzug/',
+               {'sendungsnummer': '98.00.000000.00000000',
+                'versand_am': (date.today() - timedelta(days=3)).isoformat()}, secure=True)
+        p = Pendenz.objects.filter(vertrag=v, titel__icontains='257d').latest('id')
+        neu_versand = date.today() - timedelta(days=1)
+        r = c.post(f'/neu/fristen/verzug/{p.id}/sendung/',
+                   {'sendungsnummer': '99.11.222333.44445555',
+                    'versand_am': neu_versand.isoformat(),
+                    'next': f'/neu/vertraege/{v.id}/?tab=finanzen'}, secure=True)
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r['Location'], f'/neu/vertraege/{v.id}/?tab=finanzen')
+        p.refresh_from_db()
+        self.assertEqual(p.sendungsnummer, '99.11.222333.44445555')
+        self.assertEqual(p.versand_am, neu_versand)
+        self.assertEqual(p.faellig_am, neu_versand + timedelta(days=31))
+        # Fremdes Redirect-Ziel wird verworfen.
+        r2 = c.post(f'/neu/fristen/verzug/{p.id}/sendung/',
+                    {'sendungsnummer': '99.11.222333.44445555', 'next': 'https://evil.example/x'}, secure=True)
+        self.assertEqual(r2['Location'], '/neu/fristen/')
+
     def test_zugang_kein_zukunftsdatum(self):
         """Ein Zugang in der Zukunft ist unmöglich → auf heute geklemmt."""
         from core.models import Pendenz

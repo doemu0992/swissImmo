@@ -11803,6 +11803,45 @@ def fw_verzug_zugang(request, pk):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_verzug_sendung(request, pk):
+    """Korrigiert die Einschreiben-Sendungsnummer (und optional das Versanddatum)
+    einer 257d-Frist-Pendenz — z.B. wenn die Track-&-Trace-Nummer vertippt wurde.
+    Solange der Zugang noch nicht bestätigt ist, wird die provisorische Frist aus
+    dem neuen Versanddatum neu berechnet (Versand + 1 Tag Postweg + frist_tage)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from datetime import timedelta
+    from core.models import Pendenz
+    from core.auth import log_aktion
+    p = get_object_or_404(Pendenz.objects.select_related('vertrag__mieter'), id=pk)
+    if request.method != 'POST':
+        return redirect('fw_fristen')
+    heute = timezone.localdate()
+    p.sendungsnummer = (request.POST.get('sendungsnummer') or '').strip()[:40]
+    felder = ['sendungsnummer']
+    # Versanddatum nur vor bestätigtem Zugang anpassbar (danach zählt zugang_am).
+    if not p.zugang_am and request.POST.get('versand_am'):
+        try:
+            vs = date.fromisoformat(request.POST['versand_am'])
+        except ValueError:
+            vs = None
+        if vs and vs <= heute:
+            p.versand_am = vs
+            p.faellig_am = vs + timedelta(days=1 + (p.frist_tage or 30))
+            felder += ['versand_am', 'faellig_am']
+    p.save(update_fields=felder)
+    log_aktion(request, "257d-Sendungsnummer korrigiert",
+               str(p.vertrag.mieter) if p.vertrag_id and p.vertrag and p.vertrag.mieter_id else p.titel,
+               p.sendungsnummer or '—', ziel=p.vertrag if p.vertrag_id else None)
+    messages.success(request, "✅ Sendungsnummer aktualisiert." if p.sendungsnummer
+                     else "✅ Sendungsnummer entfernt.")
+    nxt = request.POST.get('next') or ''
+    if nxt.startswith('/neu/') and '//' not in nxt[1:]:
+        return redirect(nxt)
+    return redirect('fw_fristen')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_kuendigung_zuruecknehmen(request, pk):
     """Nimmt eine Kündigung zurück und reaktiviert den Vertrag."""
     from django.shortcuts import redirect
