@@ -23,7 +23,9 @@ Parameter (per {% include ... with %}):
     <form method="post" action="/neu/fristen/verzug/{{ p.id }}/zugang/" class="inline-flex items-center gap-1.5">
         {% csrf_token %}
         {% if zugang_next %}<input type="hidden" name="next" value="{{ zugang_next }}">{% endif %}
+        <label class="text-slate-500 font-semibold">Zustellung:</label>
         <input type="date" name="zugang_am" value="{{ zugang_heute }}" max="{{ zugang_heute }}"
+               title="Tatsächliches Zustell-/Abholdatum aus Track & Trace (z. B. gestern) — ab hier laufen die 30 Tage"
                class="bg-slate-100 rounded-md px-2 py-1 text-[11px]">
         <button type="submit"
                 class="inline-flex items-center gap-1 font-semibold text-emerald-700 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-md whitespace-nowrap">
