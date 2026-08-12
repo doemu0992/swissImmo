@@ -3292,6 +3292,43 @@ class Verzug257dTests(TestCase):
         self.assertIn('Zugang bestätigt', p.beschreibung)
         self.assertTrue(AktivitaetsLog.objects.filter(aktion__icontains='Zugang').exists())
 
+    def test_frist_sichtbar_bei_vertrag_und_kontakt(self):
+        """Die 257d-Einschreiben-Frist erscheint mit «Zugang bestätigen» sowohl auf der
+        Vertrags- als auch auf der Kontakt-Detailseite (nicht nur im Fristen-Center)."""
+        from core.models import Pendenz
+        lg, e, m, v = self._setup_offen()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/verzug/',
+               {'sendungsnummer': '98.00.123456.00000001',
+                'versand_am': date.today().isoformat()}, secure=True)
+        # Vertrag-Detail
+        rv = c.get(f'/neu/vertraege/{v.id}/', secure=True)
+        self.assertEqual(rv.status_code, 200)
+        self.assertContains(rv, 'swisspost-tracking')
+        self.assertContains(rv, 'Zugang bestätigen')
+        # Kontakt-Detail
+        rp = c.get(f'/neu/personen/{m.id}/', secure=True)
+        self.assertEqual(rp.status_code, 200)
+        self.assertContains(rp, 'swisspost-tracking')
+        self.assertContains(rp, 'Zugang bestätigen')
+
+    def test_zugang_next_springt_zurueck(self):
+        """«Zugang bestätigen» mit next-Param springt zur aufrufenden Seite zurück,
+        ein fremdes (open-redirect) Ziel wird verworfen → Fristen-Center."""
+        from core.models import Pendenz
+        lg, e, m, v = self._setup_offen()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/verzug/', {'sendungsnummer': '55.00.000000.00000001'}, secure=True)
+        p = Pendenz.objects.filter(vertrag=v, titel__icontains='257d').latest('id')
+        r = c.post(f'/neu/fristen/verzug/{p.id}/zugang/',
+                   {'zugang_am': date.today().isoformat(), 'next': f'/neu/vertraege/{v.id}/?tab=pendenzen'}, secure=True)
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r['Location'], f'/neu/vertraege/{v.id}/?tab=pendenzen')
+        # Open-Redirect-Versuch → ignoriert, Fallback Fristen-Center
+        r2 = c.post(f'/neu/fristen/verzug/{p.id}/zugang/',
+                    {'zugang_am': date.today().isoformat(), 'next': 'https://evil.example/x'}, secure=True)
+        self.assertEqual(r2['Location'], '/neu/fristen/')
+
     def test_zugang_kein_zukunftsdatum(self):
         """Ein Zugang in der Zukunft ist unmöglich → auf heute geklemmt."""
         from core.models import Pendenz

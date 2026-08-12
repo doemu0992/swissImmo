@@ -3004,6 +3004,7 @@ def fw_vertrag_detail(request, pk):
         'tab_liste': tab_liste,
         'vertrag_schaeden': schaeden,
         'vertrag_pendenzen': vertrag_pendenzen,
+        'vt_zugang_next': f'/neu/vertraege/{v.id}/?tab=pendenzen',
         'docuseal_konfiguriert': docuseal_konfiguriert(),
     })
 
@@ -4916,6 +4917,16 @@ def fw_person_detail(request, pk):
             _seen_v.add(vt.id)
             offene_vertraege.append(vt)
 
+    # Offene, datierte Fristen/Pendenzen über ALLE Verträge der Person — damit die
+    # 257d-Frist (inkl. Einschreiben-Zugang) auch am Kontakt sichtbar/erledigbar ist.
+    from core.models import Pendenz as _Pendenz
+    _heute_p = timezone.localdate()
+    person_fristen = []
+    for p in (_Pendenz.objects.filter(erledigt=False, faellig_am__isnull=False, vertrag_id__in=_vids)
+              .select_related('vertrag__einheit__liegenschaft').order_by('faellig_am')):
+        person_fristen.append({'p': p, 'ueberfaellig': p.faellig_am < _heute_p,
+                               'tage': (p.faellig_am - _heute_p).days})
+
     zahlungen = (Zahlungseingang.objects.filter(vertrag_id__in=_vids, status='verbucht')
                  .order_by('-datum_eingang')[:15])
     # Dokumente am Mieter ODER an seinen Verträgen (Vertrags-PDF, Mietzins,
@@ -4979,6 +4990,8 @@ def fw_person_detail(request, pk):
         'anzahl_aktive': len(aktive),
         'brutto_monat': sum((r['brutto'] for r in vertrag_rows if r['v'].status == 'aktiv'), Decimal('0.00')),
         'offene': offene, 'total_offen': total_offen, 'offene_vertraege': offene_vertraege,
+        'person_fristen': person_fristen, 'heute_iso': _heute_p.isoformat(),
+        'pe_zugang_next': f'/neu/personen/{m.id}/',
         'zahlungen': zahlungen, 'dok_gruppen': dok_gruppen, 'dok_total': dok_total,
         'telefon': m.mobile or m.telefon_privat or m.telefon_geschaeft,
         'kommunikationen': m.kommunikationen.select_related('vertrag', 'erstellt_von')[:50],
@@ -11746,6 +11759,11 @@ def fw_verzug_zugang(request, pk):
                ziel=p.vertrag if p.vertrag_id else None)
     messages.success(request, f"✅ Zugang bestätigt ({zugang:%d.%m.%Y}) — Zahlungsfrist läuft neu bis "
                               f"{neu_frist:%d.%m.%Y} (Art. 257d Abs. 1 OR).")
+    # Zurück zur aufrufenden Seite (Fristen-Center, Vertrag oder Kontakt) statt stur
+    # ins Fristen-Center — nur seiten-relative /neu/-Ziele zulassen (kein Open-Redirect).
+    nxt = request.POST.get('next') or ''
+    if nxt.startswith('/neu/') and '//' not in nxt[1:]:
+        return redirect(nxt)
     return redirect('fw_fristen')
 
 
@@ -13036,6 +13054,7 @@ def fw_fristen(request):
     from core.services.ical import feed_token
     return render(request, 'fw/fristen.html', {
         **basis, 'nav': 'fristen', 'buckets': buckets, 'heute': heute,
+        'heute_iso': heute.isoformat(),
         'gesamt': len(eintraege), 'nur_frist': nur_frist,
         'ueberfaellig_n': len(buckets[0]['items']),
         'feed_token': feed_token(),

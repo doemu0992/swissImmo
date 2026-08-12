@@ -331,6 +331,31 @@
         {% endfor %}
     </div>
     {% endif %}
+    {% if person_fristen %}
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
+        <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+            <div class="font-bold text-slate-800 text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-hourglass-half"></i></span>Fristen &amp; Pendenzen</div>
+            <a href="/neu/fristen/" class="text-xs font-semibold text-indigo-600 hover:underline">Fristen-Center</a>
+        </div>
+        <div class="divide-y divide-slate-50">
+            {% for e in person_fristen %}
+            <div class="px-5 py-3 hover:bg-slate-50/60">
+                <div class="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+                    <span class="w-2 h-2 rounded-full shrink-0 {% if e.ueberfaellig %}bg-rose-500{% else %}bg-amber-400{% endif %}"></span>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-sm font-medium text-slate-900 truncate">{{ e.p.titel }}</div>
+                        {% if e.p.beschreibung %}<div class="text-xs text-slate-400 truncate">{{ e.p.beschreibung|truncatechars:90 }}</div>{% endif %}
+                    </div>
+                    <span class="text-xs font-semibold shrink-0 whitespace-nowrap {% if e.ueberfaellig %}text-rose-600{% else %}text-slate-500{% endif %}">
+                        {{ e.p.faellig_am|date:"d.m.Y" }}{% if e.p.sendungsnummer and not e.p.zugang_am %} · <span class="text-amber-600">provisorisch</span>{% endif %}
+                    </span>
+                </div>
+                {% if e.p.sendungsnummer %}<div class="ml-5">{% include 'fw/_einschreiben_zugang.html' with p=e.p zugang_heute=heute_iso zugang_next=pe_zugang_next %}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
         <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Offene Posten</div>
         <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">

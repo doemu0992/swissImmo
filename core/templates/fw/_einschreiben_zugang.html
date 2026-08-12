@@ -1,0 +1,35 @@
+{% comment %}
+Einschreiben-Zeile für eine 257d-Frist-Pendenz: Track & Trace (Swiss Post) +
+«Zugang bestätigen» (strikte Empfangstheorie). Wird im Fristen-Center, auf der
+Vertrags- und der Kontakt-Detailseite eingebunden.
+Parameter (per {% include ... with %}):
+  p            – Pendenz-Objekt (mit sendungsnummer / zugang_am / faellig_am)
+  zugang_heute – heutiges Datum als 'YYYY-MM-DD' (Default + max für das Datumsfeld)
+  zugang_next  – seiten-relatives /neu/-Ziel für den Rücksprung nach Bestätigung
+{% endcomment %}
+{% if p.sendungsnummer %}
+<div class="mt-2 flex items-center gap-2 flex-wrap text-[11px]">
+    <a href="https://www.post.ch/swisspost-tracking?formattedParcelCodes={{ p.sendungsnummer|urlencode }}&p_language=de"
+       target="_blank" rel="noopener"
+       class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:underline">
+        <i class="fa-solid fa-truck-fast"></i> Track &amp; Trace
+        <span class="font-mono text-slate-500">{{ p.sendungsnummer }}</span>
+    </a>
+    {% if p.zugang_am %}
+    <span class="inline-flex items-center gap-1 text-emerald-600 font-semibold">
+        <i class="fa-solid fa-circle-check"></i> Zugang {{ p.zugang_am|date:"d.m.Y" }}
+    </span>
+    {% else %}
+    <form method="post" action="/neu/fristen/verzug/{{ p.id }}/zugang/" class="inline-flex items-center gap-1.5">
+        {% csrf_token %}
+        {% if zugang_next %}<input type="hidden" name="next" value="{{ zugang_next }}">{% endif %}
+        <input type="date" name="zugang_am" value="{{ zugang_heute }}" max="{{ zugang_heute }}"
+               class="bg-slate-100 rounded-md px-2 py-1 text-[11px]">
+        <button type="submit"
+                class="inline-flex items-center gap-1 font-semibold text-emerald-700 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-md whitespace-nowrap">
+            <i class="fa-solid fa-check"></i> Zugang bestätigen
+        </button>
+    </form>
+    {% endif %}
+</div>
+{% endif %}
