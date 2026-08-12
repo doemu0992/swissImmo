@@ -41,7 +41,7 @@
 {% if deckung %}
 <div class="bg-white rounded-xl border border-slate-200 p-5 mb-6">
     <div class="flex items-center justify-between mb-4">
-        <h2 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-piggy-bank text-indigo-500 mr-1.5"></i>Erneuerungsfonds-Deckung ({{ horizont_jahre }}-Jahres-Horizont)</h2>
+        <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-piggy-bank"></i></span>Erneuerungsfonds-Deckung ({{ horizont_jahre }}-Jahres-Horizont)</h2>
         {% if deckung.deckungsgrad is not None %}
         <span class="px-2.5 py-1 rounded-md text-xs font-bold {% if deckung.gedeckt %}bg-emerald-50 text-emerald-700{% else %}bg-rose-50 text-rose-700{% endif %}">{{ deckung.deckungsgrad }}% gedeckt</span>
         {% endif %}

@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function () {
     {% if jahr != 'alle' %}
     <div class="bg-white rounded-xl border border-slate-200 p-5 mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <div class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-lock text-indigo-500 mr-1.5"></i>Jahresabschluss {{ jahr }}</div>
+            <div class="font-bold text-slate-800 text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-lock"></i></span>Jahresabschluss {{ jahr }}</div>
             <p class="text-xs text-slate-500 mt-0.5 max-w-xl">
                 {% if jahr_abgeschlossen %}
                 Erfolgskonten sind gegen «2970 Jahresergebnis» saldiert — die Abschlussbuchungen stehen im Journal und im Treuhand-Export.

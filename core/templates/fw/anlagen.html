@@ -13,7 +13,7 @@
 <!-- ANLAGEN -->
 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
     <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-        <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-building-columns text-indigo-500 mr-1.5"></i>Anlagegüter</h3>
+        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-building-columns"></i></span>Anlagegüter</h3>
         <form method="post" class="flex items-center gap-2">{% csrf_token %}
             <input type="hidden" name="aktion" value="afa_lauf">
             <input type="number" name="jahr" value="{{ jahr_default }}" class="w-24 bg-slate-100 rounded-lg text-sm px-2 py-1.5 text-right">
@@ -87,7 +87,7 @@
 <!-- ERNEUERUNGSFONDS -->
 <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
     <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-        <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-piggy-bank text-emerald-500 mr-1.5"></i>Erneuerungsfonds (Rückstellung)</h3>
+        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-piggy-bank"></i></span>Erneuerungsfonds (Rückstellung)</h3>
         <form method="post" class="flex items-center gap-2">{% csrf_token %}
             <input type="hidden" name="aktion" value="fonds_lauf">
             <input type="number" name="jahr" value="{{ jahr_default }}" class="w-24 bg-slate-100 rounded-lg text-sm px-2 py-1.5 text-right">

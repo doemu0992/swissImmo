@@ -176,7 +176,7 @@
 <!-- Geparkte / ungeklärte Zahlungen (1190 + Mieterguthaben 2030) -->
 <div class="bg-white rounded-xl border border-amber-200 overflow-hidden mb-6">
     <div class="px-5 py-3 border-b border-amber-100 bg-amber-50/50 flex items-center justify-between flex-wrap gap-2">
-        <div class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-circle-question text-amber-500 mr-1.5"></i>Ungeklärte Zahlungen &amp; Guthaben</div>
+        <div class="font-bold text-slate-800 text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-circle-question"></i></span>Ungeklärte Zahlungen &amp; Guthaben</div>
         <div class="text-xs text-slate-500">{{ geparkt|length }} Position(en)
             {% if geparkt_unklar %}· CHF {{ geparkt_unklar|chf }} ungeklärt (1190){% endif %}
             {% if geparkt_guthaben %}· CHF {{ geparkt_guthaben|chf }} Mieterguthaben (2030){% endif %}</div>
