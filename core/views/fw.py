@@ -4045,6 +4045,9 @@ def fw_bankabgleich(request):
     bew_ausgang = (bew_qs.filter(betrag__lt=0).aggregate(t=Sum('betrag'))['t']
                    or Decimal('0.00'))
 
+    # Letzte Importe (für «Import rückgängig machen»).
+    letzte_auszuege = list(Kontoauszug.objects.select_related('konto')
+                           .order_by('-importiert_am', '-id')[:6])
     # Letzter Auszug je Bankkonto + Saldoabgleich
     letzter_auszug = Kontoauszug.objects.select_related('konto').order_by('-bis', '-id').first()
     saldo_abgleich = None
@@ -4089,6 +4092,7 @@ def fw_bankabgleich(request):
         'bewegungen': bewegungen, 'bew_offen_n': bew_offen_n,
         'bew_eingang': bew_eingang, 'bew_ausgang': bew_ausgang,
         'saldo_abgleich': saldo_abgleich, 'bankkonten': bankkonten,
+        'letzte_auszuege': letzte_auszuege,
         'aufwandkonten': Buchungskonto.objects.all().order_by('nummer'),
         # 'neu' gehört dazu: die Belastung hat die Bank BEREITS verlassen. Wer nur
         # freigegebene Rechnungen anbietet, lässt eine reale Zahlung unzuordenbar.
@@ -4705,7 +4709,10 @@ def fw_camt_import(request):
                 aref = f"{aref}#{komposit_lauf[aref]}"
         aref = aref[:140]
         e['acct_ref'] = aref
-        if (Zahlungseingang.objects.filter(bank_referenz=aref).exists()
+        # Stornierte Zahlungen NICHT als Duplikat werten — sonst liesse sich eine
+        # rückgängig gemachte Import-Datei nie wieder importieren (jede Zeile fiele
+        # als «Duplikat» durch). Nur aktive (verbuchte) Zahlungen/Bewegungen zählen.
+        if (Zahlungseingang.objects.filter(bank_referenz=aref).exclude(status='storniert').exists()
                 or Bankbewegung.objects.filter(bank_referenz=aref).exists()):
             duplikate += 1
             return
@@ -4914,6 +4921,76 @@ def fw_camt_import(request):
                                 f"Datei erneut importieren — bereits verbuchte Zahlungen "
                                 f"werden dabei als Duplikat übersprungen.")
 
+    ziel = '/neu/bankabgleich/'
+    if aktive := request.POST.get('lg'):
+        ziel += f'?lg={aktive}'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_kontoauszug_rueckgaengig(request, pk):
+    """Macht einen Bank-Import (camt.053 / CSV) rückgängig.
+
+    Storniert REVISIONSSICHER alle aus diesem Auszug erzeugten Zahlungen
+    (Gegenbuchung, Rechnungsstatus rollt auf offen/teilbezahlt zurück) und löscht
+    danach den Kontoauszug samt Auszugszeilen. Bereits stornierte Zahlungen werden
+    übersprungen. Läuft in EINER Transaktion — scheitert eine Gegenbuchung (z.B.
+    gesperrte Periode), bleibt der Import unverändert."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from django.db.models import Q as _Q
+    from finance.models import Kontoauszug, Zahlungseingang, Buchung
+    from finance.api import erstelle_storno_buchung
+    from core.auth import log_aktion
+    if request.method != 'POST':
+        return redirect('fw_bankabgleich')
+
+    auszug = get_object_or_404(Kontoauszug.objects.prefetch_related('bewegungen'), id=pk)
+    # Alle aus diesem Auszug gebuchten Zahlungen: über die Bank-Referenz der
+    # Auszugszeilen — inkl. der Überzahlungs-Zahlung (Suffix ':ueber').
+    arefs = {b.bank_referenz for b in auszug.bewegungen.all() if b.bank_referenz}
+    zahlungen = []
+    if arefs:
+        zahlungen = list(Zahlungseingang.objects.filter(
+            _Q(bank_referenz__in=arefs)
+            | _Q(bank_referenz__in=[f"{a}:ueber" for a in arefs])))
+
+    dateiname = auszug.dateiname or f"Auszug #{auszug.id}"
+    storniert = 0
+    uebersprungen = 0
+    try:
+        with transaction.atomic():
+            for z in zahlungen:
+                if z.status == 'storniert':
+                    uebersprungen += 1
+                    continue
+                for b in Buchung.objects.filter(zahlungseingang=z, ist_storno=False,
+                                                storniert_am__isnull=True):
+                    erstelle_storno_buchung(b, benutzer=request.user)
+                z.status = 'storniert'
+                z.save(update_fields=['status'])
+                # Rechnungsstatus zurückrollen (Gegenstück zu _verbuche()).
+                if z.debitoren_rechnung_id:
+                    rech = z.debitoren_rechnung
+                    rech.status = 'offen' if rech.offener_betrag >= rech.betrag else 'teilbezahlt'
+                    rech.save(update_fields=['status'])
+                storniert += 1
+            # Auszug + Auszugszeilen (Rohdaten, keine Buchungen) entfernen.
+            auszug.delete()
+    except PermissionError as exc:
+        messages.error(request, f"❌ Rückgängig nicht möglich — die Buchungsperiode ist "
+                                f"gesperrt: {exc}. Periode öffnen und erneut versuchen.")
+        return redirect('fw_bankabgleich')
+    except Exception as exc:
+        messages.error(request, f"❌ Import konnte nicht rückgängig gemacht werden: {exc}")
+        return redirect('fw_bankabgleich')
+
+    log_aktion(request, "Bank-Import rückgängig gemacht", dateiname,
+               f"{storniert} Zahlung(en) storniert" + (f", {uebersprungen} bereits storniert"
+                                                       if uebersprungen else ""))
+    messages.success(request, f"✅ Import '{dateiname}' rückgängig gemacht — {storniert} "
+                              f"Zahlung(en) revisionssicher storniert, Auszug entfernt."
+                              + (f" {uebersprungen} bereits zuvor storniert." if uebersprungen else ""))
     ziel = '/neu/bankabgleich/'
     if aktive := request.POST.get('lg'):
         ziel += f'?lg={aktive}'

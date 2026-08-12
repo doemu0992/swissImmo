@@ -99,7 +99,7 @@ from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_betriebsko
                            fw_schaden_ausstattung, fw_ersatzplanung,
                            fw_wartungsfrist_neu, fw_wartungsfrist_bearbeiten, fw_wartungsfrist_loeschen,
                            fw_mahnwesen, fw_debitoren_aging, fw_mahnung_erfassen, fw_mahnlauf, fw_bankkonten,
-                           fw_bankabgleich, fw_bankabgleich_verbuchen, fw_bankbewegung_zuordnen, fw_camt_import,
+                           fw_bankabgleich, fw_bankabgleich_verbuchen, fw_bankbewegung_zuordnen, fw_camt_import, fw_kontoauszug_rueckgaengig,
                            fw_person_detail, fw_person_form, fw_person_loeschen, fw_person_dsg_loeschen, fw_person_adresse_neu, fw_person_adresse_loeschen, fw_dokument_portal_toggle, fw_rentals_dokument_loeschen, fw_kommunikation_neu, fw_kommunikation_loeschen, fw_mieter_portal_zugang, fw_mieterkonto_pdf,
                            fw_mieterkonto, fw_mieterkonten, fw_lieferantenkonten, fw_lieferantenkonto,
                            fw_kreditoren, fw_kreditoren_pain001, fw_zahllauf, fw_kreditor_bezahlen, fw_kreditor_neu, fw_kreditor_freigeben, fw_kreditor_loeschen, fw_weiterverrechnung,
@@ -428,6 +428,7 @@ urlpatterns = [
     path('neu/mwst/verbuchen/', fw_mwst_verbuchen, name='fw_mwst_verbuchen'),
     path('neu/zahlungen/<int:pk>/stornieren/', fw_zahlung_stornieren, name='fw_zahlung_stornieren'),
     path('neu/bankabgleich/camt-import/', fw_camt_import, name='fw_camt_import'),
+    path('neu/bankabgleich/auszug/<int:pk>/rueckgaengig/', fw_kontoauszug_rueckgaengig, name='fw_kontoauszug_rueckgaengig'),
 
     # --- DIE NEUE WEB-APP (SPA) ---
     path('app/', spa_master_view, name='spa_master'),

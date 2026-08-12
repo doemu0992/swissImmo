@@ -16524,3 +16524,63 @@ class MahngebuehrStornoTests(TestCase):
         mn.refresh_from_db(); mn2.refresh_from_db()
         self.assertEqual(mn.gebuehr, Decimal('0.00'))     # storniert → bereinigt
         self.assertEqual(mn2.gebuehr, Decimal('40.00'))   # gültig → unangetastet
+
+
+class CamtImportRueckgaengigTests(TestCase):
+    """Ein Bank-Import (camt.053/CSV) lässt sich revisionssicher rückgängig machen:
+    Zahlungen storniert, Rechnung wieder offen, Auszug entfernt, Re-Import möglich."""
+
+    def _camt(self, ref, betrag='1700.00', acct_ref='UNDOTX1'):
+        return (
+            '<?xml version="1.0"?><Document><BkToCstmrStmt><Stmt><Ntry>'
+            '<CdtDbtInd>CRDT</CdtDbtInd>'
+            f'<Amt Ccy="CHF">{betrag}</Amt>'
+            '<BookgDt><Dt>2024-03-05</Dt></BookgDt>'
+            '<NtryDtls><TxDtls>'
+            f'<Refs><AcctSvcrRef>{acct_ref}</AcctSvcrRef></Refs>'
+            f'<RmtInf><Strd><CdtrRefInf><Ref>{ref}</Ref></CdtrRefInf></Strd></RmtInf>'
+            '</TxDtls></NtryDtls>'
+            '</Ntry></Stmt></BkToCstmrStmt></Document>'
+        ).encode('utf-8')
+
+    def _import(self, c, ref, acct_ref='UNDOTX1'):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        f = SimpleUploadedFile('camt.xml', self._camt(ref, acct_ref=acct_ref),
+                               content_type='application/xml')
+        return c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f}, secure=True)
+
+    def test_rueckgaengig_storniert_und_erlaubt_reimport(self):
+        from core.services.automation import run_sollstellung
+        from finance.models import (DebitorenRechnung, Zahlungseingang, Kontoauszug,
+                                    Bankbewegung, Buchung)
+        _seed_konten()
+        _basis_objekte()
+        run_sollstellung(2024, 3)
+        r = DebitorenRechnung.objects.get(titel='Miete & NK 03/2024')
+        c = Client(); c.force_login(_team_user())
+
+        self._import(c, r.qr_referenz)
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'bezahlt')
+        z = Zahlungseingang.objects.get(debitoren_rechnung=r)
+        self.assertEqual(z.status, 'verbucht')
+        auszug = Kontoauszug.objects.latest('id')
+        # Gegenbuchung existiert noch nicht.
+        self.assertFalse(Buchung.objects.filter(ist_storno=True).exists())
+
+        # --- Rückgängig ---
+        resp = c.post(f'/neu/bankabgleich/auszug/{auszug.id}/rueckgaengig/', secure=True)
+        self.assertEqual(resp.status_code, 302)
+        z.refresh_from_db(); r.refresh_from_db()
+        self.assertEqual(z.status, 'storniert')           # Zahlung storniert
+        self.assertEqual(r.status, 'offen')               # Rechnung wieder offen
+        self.assertTrue(Buchung.objects.filter(ist_storno=True).exists())  # Gegenbuchung
+        self.assertFalse(Kontoauszug.objects.filter(id=auszug.id).exists())  # Auszug weg
+        self.assertFalse(Bankbewegung.objects.filter(auszug_id=auszug.id).exists())
+
+        # --- Re-Import derselben Datei muss wieder verbuchen (kein Duplikat-Block) ---
+        self._import(c, r.qr_referenz)
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'bezahlt')
+        self.assertEqual(Zahlungseingang.objects.filter(debitoren_rechnung=r,
+                                                        status='verbucht').count(), 1)

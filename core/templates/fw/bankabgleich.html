@@ -45,6 +45,39 @@
     </form>
 </div>
 
+{% if letzte_auszuege %}
+<!-- Letzte Importe — jeder Import ist revisionssicher rückgängig machbar
+     (storniert alle daraus gebuchten Zahlungen und entfernt den Auszug). -->
+<div class="bg-white rounded-xl border border-slate-200 mb-6 overflow-hidden">
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-2.5">
+        <span class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-clock-rotate-left"></i></span>
+        <div class="font-bold text-slate-800 text-sm">Letzte Importe</div>
+    </div>
+    <div class="divide-y divide-slate-50">
+        {% for a in letzte_auszuege %}
+        <div class="flex items-center gap-3 px-5 py-3 flex-wrap sm:flex-nowrap">
+            <div class="min-w-0 flex-1">
+                <div class="text-sm font-medium text-slate-900 truncate">{{ a.dateiname|default:"Kontoauszug" }}</div>
+                <div class="text-xs text-slate-400">
+                    {{ a.quelle|default:"Import" }} · Konto {{ a.konto.nummer }}
+                    {% if a.bis %} · per {{ a.bis|date:"d.m.Y" }}{% endif %}
+                    · importiert {{ a.importiert_am|date:"d.m.Y H:i" }}
+                </div>
+            </div>
+            <form method="post" action="/neu/bankabgleich/auszug/{{ a.id }}/rueckgaengig/" class="shrink-0"
+                  onsubmit="return confirm('Import „{{ a.dateiname|default:'Kontoauszug'|escapejs }}“ wirklich rückgängig machen?\n\nAlle aus diesem Auszug gebuchten Zahlungen werden revisionssicher storniert (Gegenbuchung), die betroffenen Rechnungen gelten wieder als offen, und der Auszug wird entfernt.');">
+                {% csrf_token %}
+                {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                <button type="submit" class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 border border-rose-200 hover:bg-rose-50 px-3 py-1.5 rounded-lg whitespace-nowrap">
+                    <i class="fa-solid fa-rotate-left"></i> Import rückgängig
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 {% if saldo_abgleich %}
 <!-- Abstimmungsnachweis: stimmt die Buchhaltung mit dem Kontoauszug überein?
      Ohne diesen Vergleich kann man Zahlungen zuordnen, aber nie belegen, dass
