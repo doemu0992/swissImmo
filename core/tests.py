@@ -16415,3 +16415,86 @@ class FaviconKonsistenzTests(TestCase):
         r = Client().get('/login/')
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'rel="icon"')
+
+
+class InboxMahnenTests(TestCase):
+    """Die «Mahnen»-Aufgabe der Inbox verschwindet, sobald die für die
+    Überfälligkeit fällige Mahnstufe erfasst ist."""
+
+    def test_gemahnte_forderung_faellt_aus_mahnen(self):
+        from finance.models import DebitorenRechnung, Mahnung
+        from core.services.inbox import sammle_inbox
+        lg, e, m, v = _basis_objekte()
+        heute = date.today()
+        r = DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Miete',
+            datum=heute - timedelta(days=65), faellig_am=heute - timedelta(days=65),
+            betrag=Decimal('1700'), status='offen')
+        # Ohne Mahnung: die Forderung erscheint als «mahnen».
+        eintraege, _, _ = sammle_inbox()
+        self.assertTrue(any('mahnen' in x['titel'].lower() for x in eintraege))
+        # 3. Mahnung erfasst (Default-Config: Stufe 3 ab 60 Tagen fällig) → weg.
+        Mahnung.objects.create(debitoren_rechnung=r, vertrag=v, stufe=3, datum=heute,
+                               betrag_offen=Decimal('1700'))
+        eintraege2, _, _ = sammle_inbox()
+        self.assertFalse(any('mahnen' in x['titel'].lower() for x in eintraege2))
+
+
+class MahngebuehrStornoTests(TestCase):
+    """Storno einer Mahngebühr-Forderung nullt die Gebühr auch in der Mahn-Historie
+    (finance.Mahnung.gebuehr) — sonst zeigt die Historie weiter z.B. 40.-."""
+
+    def _stale(self):
+        from finance.models import DebitorenRechnung, Mahnung
+        lg, e, m, v = _basis_objekte()
+        heute = date.today()
+        orig = DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Miete',
+            datum=heute - timedelta(days=60), faellig_am=heute - timedelta(days=60),
+            betrag=Decimal('1700'), status='offen')
+        mn = Mahnung.objects.create(debitoren_rechnung=orig, vertrag=v, stufe=3,
+                                    datum=heute, betrag_offen=Decimal('1700'),
+                                    gebuehr=Decimal('40.00'))
+        fee = DebitorenRechnung.objects.create(
+            vertrag=v, liegenschaft=lg, titel='Mahngebühr 3. Mahnung',
+            datum=heute, faellig_am=heute, betrag=Decimal('40.00'),
+            status='offen', stammrechnung=orig)
+        return v, orig, mn, fee
+
+    def test_storno_nullt_historien_gebuehr(self):
+        v, orig, mn, fee = self._stale()
+        c = Client(); c.force_login(_team_user())
+        r = c.post(f'/neu/debitoren/{fee.id}/stornieren/', secure=True)
+        self.assertEqual(r.status_code, 302)
+        fee.refresh_from_db(); mn.refresh_from_db()
+        self.assertEqual(fee.status, 'storniert')
+        self.assertEqual(mn.gebuehr, Decimal('0.00'))
+        self.assertIn('storniert', mn.bemerkung)
+
+    def test_migration_bereinigt_altbestand(self):
+        """Bereits stornierte Gebühr, Historie noch 40.- → Reconcile-Migration nullt sie;
+        eine noch offene Gebühr bleibt unangetastet."""
+        import importlib
+        recon = importlib.import_module(
+            'finance.migrations.0032_reconcile_stornierte_mahngebuehr')
+        from django.apps import apps as _apps
+        # Fall A: Gebühr storniert → Historie muss auf 0.
+        v, orig, mn, fee = self._stale()
+        fee.status = 'storniert'; fee.save(update_fields=['status'])
+        # Fall B: gültige, offene Gebühr → bleibt.
+        from finance.models import DebitorenRechnung, Mahnung
+        lg2, e2, m2, v2 = _basis_objekte()
+        heute = date.today()
+        orig2 = DebitorenRechnung.objects.create(
+            vertrag=v2, liegenschaft=lg2, titel='Miete',
+            datum=heute - timedelta(days=60), betrag=Decimal('1700'), status='offen')
+        mn2 = Mahnung.objects.create(debitoren_rechnung=orig2, vertrag=v2, stufe=3,
+                                     datum=heute, betrag_offen=Decimal('1700'),
+                                     gebuehr=Decimal('40.00'))
+        DebitorenRechnung.objects.create(
+            vertrag=v2, liegenschaft=lg2, titel='Mahngebühr 3. Mahnung',
+            datum=heute, betrag=Decimal('40.00'), status='offen', stammrechnung=orig2)
+        recon.reconcile(_apps, None)
+        mn.refresh_from_db(); mn2.refresh_from_db()
+        self.assertEqual(mn.gebuehr, Decimal('0.00'))     # storniert → bereinigt
+        self.assertEqual(mn2.gebuehr, Decimal('40.00'))   # gültig → unangetastet

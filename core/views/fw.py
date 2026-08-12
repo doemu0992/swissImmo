@@ -902,6 +902,32 @@ def fw_debitor_abschreiben(request, pk):
     return redirect('fw_debitoren')
 
 
+def _mahngebuehr_historie_ausgleichen(rechnung, user=None):
+    """Wird eine Mahngebühr-Forderung storniert, ist die in der Mahn-Historie
+    (finance.Mahnung.gebuehr) ausgewiesene Gebühr gegenstandslos → auf 0 setzen
+    (mit Vermerk). Ohne das zeigt die Historie z.B. weiter 40.-, obwohl die Gebühr
+    per Gegenbuchung zurückgenommen wurde (Nutzer-Bug). Gibt die Anzahl korrigierter
+    Historien-Einträge zurück."""
+    import re
+    from finance.models import Mahnung
+    if not rechnung.stammrechnung_id:
+        return 0
+    m = re.match(r'\s*Mahngeb.hr\s+(\d)\.', rechnung.titel or '')
+    if not m:
+        return 0
+    stufe = int(m.group(1))
+    n = 0
+    for mn in Mahnung.objects.filter(debitoren_rechnung_id=rechnung.stammrechnung_id,
+                                     stufe=stufe, gebuehr__gt=0):
+        alt = mn.gebuehr
+        mn.gebuehr = Decimal('0.00')
+        verm = f"Mahngebühr CHF {alt} storniert"
+        mn.bemerkung = (f"{mn.bemerkung} · {verm}" if mn.bemerkung else verm)[:255]
+        mn.save(update_fields=['gebuehr', 'bemerkung'])
+        n += 1
+    return n
+
+
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def fw_debitor_stornieren(request, pk):
     """Storniert eine (versehentlich erstellte) Debitorenrechnung revisionssicher:
@@ -943,6 +969,9 @@ def fw_debitor_stornieren(request, pk):
             erstelle_storno_buchung(b, benutzer=request.user)
         r.status = 'storniert'
         r.save()
+        # Wird eine Mahngebühr-Forderung selbst storniert, die Historien-Gebühr
+        # gleich mit auf 0 ziehen (sonst zeigt die Mahn-Historie weiter z.B. 40.-).
+        _mahngebuehr_historie_ausgleichen(r, request.user)
         for f in folge:
             if f in folge_bezahlt:
                 continue
@@ -951,6 +980,7 @@ def fw_debitor_stornieren(request, pk):
                 erstelle_storno_buchung(b, benutzer=request.user)
             f.status = 'storniert'
             f.save(update_fields=['status'])
+            _mahngebuehr_historie_ausgleichen(f, request.user)
             n_folge += 1
 
     log_aktion(request, "Debitorenrechnung storniert", r.titel,
