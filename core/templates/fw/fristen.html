@@ -43,7 +43,8 @@
     </div>
     <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50 overflow-hidden">
         {% for e in b.items %}
-        <div class="flex items-center gap-4 px-5 py-3.5">
+        <div class="px-5 py-3.5">
+          <div class="flex items-center gap-4">
             <div class="text-center shrink-0 w-16">
                 <div class="text-sm font-bold text-slate-900">{{ e.faellig|date:"d.m." }}</div>
                 <div class="text-[11px] {% if e.tage < 0 %}text-rose-500 font-semibold{% else %}text-slate-400{% endif %}">
@@ -55,12 +56,39 @@
                 <div class="text-xs text-slate-400 truncate">
                     {% if e.bezug %}{{ e.bezug }}{% endif %}
                     {% if e.art %}<span class="ml-1 text-indigo-500 font-semibold">· {{ e.art }}</span>{% endif %}
+                    {% if e.p.sendungsnummer and not e.p.zugang_am %}<span class="ml-1 text-amber-600 font-semibold">· Frist provisorisch</span>{% endif %}
                 </div>
             </div>
             {% if e.url %}
             <a href="{{ e.url }}" onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"
                class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-2.5 py-1 rounded-lg shrink-0 whitespace-nowrap">{{ e.label }}</a>
             {% endif %}
+          </div>
+          {% if e.p.sendungsnummer %}
+          <div class="mt-2 ml-20 flex items-center gap-2 flex-wrap text-[11px]">
+              <a href="https://www.post.ch/swisspost-tracking?formattedParcelCodes={{ e.p.sendungsnummer|urlencode }}"
+                 target="_blank" rel="noopener"
+                 class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:underline">
+                  <i class="fa-solid fa-truck-fast"></i> Track &amp; Trace
+                  <span class="font-mono text-slate-500">{{ e.p.sendungsnummer }}</span>
+              </a>
+              {% if e.p.zugang_am %}
+              <span class="inline-flex items-center gap-1 text-emerald-600 font-semibold">
+                  <i class="fa-solid fa-circle-check"></i> Zugang {{ e.p.zugang_am|date:"d.m.Y" }}
+              </span>
+              {% else %}
+              <form method="post" action="/neu/fristen/verzug/{{ e.p.id }}/zugang/" class="inline-flex items-center gap-1.5">
+                  {% csrf_token %}
+                  <input type="date" name="zugang_am" value="{{ heute|date:'Y-m-d' }}" max="{{ heute|date:'Y-m-d' }}"
+                         class="bg-slate-100 rounded-md px-2 py-1 text-[11px]">
+                  <button type="submit"
+                          class="inline-flex items-center gap-1 font-semibold text-emerald-700 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-md whitespace-nowrap">
+                      <i class="fa-solid fa-check"></i> Zugang bestätigen
+                  </button>
+              </form>
+              {% endif %}
+          </div>
+          {% endif %}
         </div>
         {% endfor %}
     </div>

@@ -3242,6 +3242,69 @@ class Verzug257dTests(TestCase):
         # 05.03. + 30 Tage = 04.04. → Ende April
         self.assertEqual(termin_257d(date(2026, 3, 5)), date(2026, 4, 30))
 
+    def test_einschreiben_erfasst_provisorische_frist(self):
+        """Mit Sendungsnummer + Versanddatum: Pendenz speichert die Tracking-Felder,
+        faellig_am ist PROVISORISCH = Versand + Postweg(1) + 30 (strikte Empfangstheorie)."""
+        from core.models import Pendenz
+        lg, e, m, v = self._setup_offen()
+        c = Client(); c.force_login(_team_user())
+        versand = date.today() - timedelta(days=2)
+        r = c.post(f'/neu/vertraege/{v.id}/verzug/', {
+            'frist_bis': (date.today() + timedelta(days=40)).isoformat(),
+            'sendungsnummer': '98.00.123456.00000001',
+            'versand_am': versand.isoformat(),
+        })
+        self.assertEqual(r.status_code, 302)
+        p = Pendenz.objects.filter(vertrag=v, titel__icontains='257d').latest('id')
+        self.assertEqual(p.sendungsnummer, '98.00.123456.00000001')
+        self.assertEqual(p.versand_am, versand)
+        self.assertEqual(p.frist_tage, 30)
+        self.assertIsNone(p.zugang_am)
+        # PROVISORISCH: Versand + 1 (Postweg) + 30, NICHT das Formular-frist_bis (+40).
+        self.assertEqual(p.faellig_am, versand + timedelta(days=31))
+        self.assertIn('PROVISORISCH', p.beschreibung)
+        # Fristen-Center zeigt Track & Trace + «Zugang bestätigen» für dieses Einschreiben.
+        rf = c.get('/neu/fristen/', secure=True)
+        self.assertEqual(rf.status_code, 200)
+        self.assertContains(rf, 'swisspost-tracking')
+        self.assertContains(rf, '98.00.123456.00000001')
+        self.assertContains(rf, 'Zugang bestätigen')
+
+    def test_zugang_bestaetigen_zieht_frist_nach(self):
+        """Strikte Empfangstheorie: «Zugang bestätigen» setzt zugang_am und rechnet
+        faellig_am = zugang + frist_tage — unabhängig von der provisorischen Frist."""
+        from core.models import Pendenz, AktivitaetsLog
+        lg, e, m, v = self._setup_offen()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/verzug/', {
+            'sendungsnummer': '99.11.222333.00000009',
+            'versand_am': (date.today() - timedelta(days=5)).isoformat(),
+        })
+        p = Pendenz.objects.filter(vertrag=v, titel__icontains='257d').latest('id')
+        alt_frist = p.faellig_am
+        zugang = date.today() - timedelta(days=3)
+        r = c.post(f'/neu/fristen/verzug/{p.id}/zugang/', {'zugang_am': zugang.isoformat()})
+        self.assertEqual(r.status_code, 302)
+        p.refresh_from_db()
+        self.assertEqual(p.zugang_am, zugang)
+        self.assertEqual(p.faellig_am, zugang + timedelta(days=30))
+        self.assertNotEqual(p.faellig_am, alt_frist)
+        self.assertIn('Zugang bestätigt', p.beschreibung)
+        self.assertTrue(AktivitaetsLog.objects.filter(aktion__icontains='Zugang').exists())
+
+    def test_zugang_kein_zukunftsdatum(self):
+        """Ein Zugang in der Zukunft ist unmöglich → auf heute geklemmt."""
+        from core.models import Pendenz
+        lg, e, m, v = self._setup_offen()
+        c = Client(); c.force_login(_team_user())
+        c.post(f'/neu/vertraege/{v.id}/verzug/', {'sendungsnummer': '77.00.000000.00000001'})
+        p = Pendenz.objects.filter(vertrag=v, titel__icontains='257d').latest('id')
+        c.post(f'/neu/fristen/verzug/{p.id}/zugang/',
+               {'zugang_am': (date.today() + timedelta(days=10)).isoformat()})
+        p.refresh_from_db()
+        self.assertEqual(p.zugang_am, date.today())
+        self.assertEqual(p.faellig_am, date.today() + timedelta(days=30))
+
 
 class AnfechtungsfristTests(TestCase):
     """Anfechtungsfristen als Pendenz: Vermieterkündigung (Art. 271/273) und

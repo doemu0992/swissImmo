@@ -35,11 +35,12 @@
     <!-- Frist -->
     <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
         <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Zahlungsfrist bis</label>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Vorläufige Frist bis</label>
             <input type="date" name="frist_bis" id="v_frist" value="{{ default_frist }}" onchange="fristCheck()"
                    class="w-full sm:w-64 bg-slate-100 rounded-lg text-sm px-3 py-2.5">
             <p class="text-[11px] text-slate-400 mt-1">
                 Mindestfrist: <b>{{ min_frist }} Tage</b> ({% if min_frist == 30 %}Wohn-/Geschäftsräume{% else %}übrige Objekte{% endif %}, Art. 257d Abs. 1 OR).
+                Bei Einschreiben mit erfasstem Versanddatum <b>provisorisch</b> — definitiv ab bestätigtem Zugang.
             </p>
         </div>
 
@@ -54,6 +55,34 @@
             Beim Speichern wird eine <b>Zahlungsaufforderung mit Fristansetzung</b> (PDF) erstellt und in die Akte gelegt,
             sowie eine <b>Fristen-Pendenz</b> angelegt. Nach fruchtlosem Ablauf kann ausserordentlich gekündigt werden
             (Art. 257d Abs. 2 OR — 30 Tage auf Monatsende).
+        </div>
+    </div>
+
+    <!-- Einschreiben / Zugang (strikte Empfangstheorie) -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-envelope-circle-check text-indigo-500"></i>
+            <div class="text-sm font-bold text-slate-800">Einschreiben &amp; Zugang</div>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Sendungsnummer (Einschreiben)</label>
+                <input type="text" name="sendungsnummer" inputmode="numeric" placeholder="z. B. 98.00.123456.00000001"
+                       class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Versendet am</label>
+                <input type="date" name="versand_am" value="{{ heute_iso }}" max="{{ heute_iso }}"
+                       class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            </div>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-600 leading-relaxed">
+            <i class="fa-solid fa-scale-balanced text-slate-400 mr-1"></i>
+            <b>Strikte Empfangstheorie:</b> Die 30-Tage-Frist läuft ab dem <b>Zugang</b> (Zustellung bzw.
+            Abholeinladung tritt in den Machtbereich des Mieters) — nicht ab Versand und ohne 7-Tage-Fiktion.
+            Der Zugang wird später im <b>Fristen-Center</b> aus <b>Track&nbsp;&amp;&nbsp;Trace</b> per
+            «Zugang bestätigen» erfasst; die Frist wird dann exakt nachgezogen. Ohne Sendungsnummer gilt die
+            vorläufige Frist oben.
         </div>
     </div>
 

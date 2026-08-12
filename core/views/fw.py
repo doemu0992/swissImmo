@@ -11609,6 +11609,22 @@ def fw_verzug_257d(request, vertrag_id):
             frist = _min_frist_bis
             messages.info(request, f"Die Frist wurde auf die gesetzliche Mindestdauer "
                                    f"({min_frist} Tage, Art. 257d Abs. 1 OR) verlängert.")
+
+        # Einschreiben-Zustellung + STRIKTE Empfangstheorie (Nutzerwunsch): Die
+        # 30-Tage-Frist läuft ab ZUGANG (Eintritt in den Machtbereich = Zustellung /
+        # Abholeinladung bei der Post), nicht ab Versand und OHNE 7-Tage-Abholfiktion.
+        # Beim Erfassen ist der Zugang noch unbekannt → faellig_am ist PROVISORISCH und
+        # wird über «Zugang bestätigen» (aus Track & Trace) auf zugang_am + frist_tage
+        # nachgezogen. FRIST_TAGE = 30 = Brieftext «innert 30 Tagen ab Erhalt».
+        sendungsnummer = (request.POST.get('sendungsnummer') or '').strip()[:40]
+        try:
+            versand_am = date.fromisoformat(request.POST.get('versand_am')) if request.POST.get('versand_am') else None
+        except ValueError:
+            versand_am = None
+        FRIST_TAGE = 30
+        POSTWEG_TAGE = 1  # geschätzter Postweg bis Zustellung/Abholeinladung (nur provisorisch)
+        if versand_am:
+            frist = versand_am + timedelta(days=POSTWEG_TAGE + FRIST_TAGE)
         vw = Verwaltung.objects.first()
         m = v.mieter
         # Dasselbe 257d-PDF wie /vertrag/<id>/mahnung/ (sauberer Brief mit
@@ -11652,13 +11668,24 @@ def fw_verzug_257d(request, vertrag_id):
             messages.info(request, f"📮 {len(zustellungen)} separat adressierte 257d-Briefe erzeugt "
                                    "(Art. 266n OR: Familienwohnung/Mitmieter) — jede Kopie einzeln "
                                    "per Einschreiben zustellen.")
-        # Fristen-Pendenz: läuft am Fristende ab → dann ausserordentliche Kündigung möglich
+        # Fristen-Pendenz: läuft am Fristende ab → dann ausserordentliche Kündigung möglich.
+        # Bei Einschreiben ist faellig_am provisorisch (siehe oben) und wird über
+        # «Zugang bestätigen» definitiv gesetzt (zugang_am + frist_tage).
+        _provisorisch = bool(versand_am or sendungsnummer)
+        _bt = (f"Offene Miete CHF {offen_total:.2f}. "
+               + (f"Einschreiben {sendungsnummer or '—'}"
+                  + (f", versandt {versand_am:%d.%m.%Y}" if versand_am else "")
+                  + f". PROVISORISCH bis {frist:%d.%m.%Y} — definitive {FRIST_TAGE}-Tage-Frist läuft ab "
+                    "bestätigtem Zugang (strikte Empfangstheorie: Zustellung/Abholeinladung). "
+                  if _provisorisch else
+                  f"Zahlungsfrist bis {frist:%d.%m.%Y} (Art. 257d Abs. 1 OR). ")
+               + "Nach fruchtlosem Ablauf: ausserordentliche Kündigung mit 30 Tagen auf Monatsende "
+                 "(Art. 257d Abs. 2 OR).")
         Pendenz.objects.create(
             titel=f"Art. 257d: Zahlungsfrist läuft ab – {v.mieter.display_name}",
-            beschreibung=(f"Offene Miete CHF {offen_total:.2f}. Zahlungsfrist bis {frist:%d.%m.%Y} "
-                          "(Art. 257d Abs. 1 OR). Nach fruchtlosem Ablauf: ausserordentliche Kündigung "
-                          "mit 30 Tagen auf Monatsende (Art. 257d Abs. 2 OR)."),
+            beschreibung=_bt,
             kategorie='frist', faellig_am=frist, vertrag=v, liegenschaft=lg,
+            sendungsnummer=sendungsnummer, versand_am=versand_am, frist_tage=FRIST_TAGE,
             erstellt_von=request.user if request.user.is_authenticated else None,
         )
         log_aktion(request, "Zahlungsaufforderung 257d erstellt", str(v.mieter),
@@ -11678,6 +11705,48 @@ def fw_verzug_257d(request, vertrag_id):
         'min_frist': min_frist, 'default_frist': default_frist,
         'heute_iso': heute.isoformat(),
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_verzug_zugang(request, pk):
+    """Bestätigt den ZUGANG eines 257d-Einschreibens (strikte Empfangstheorie):
+    Die 30-Tage-Zahlungsfrist läuft ab dem bestätigten Zugangsdatum (Eintritt in den
+    Machtbereich = Zustellung/Abholeinladung laut Track & Trace), NICHT ab Versand und
+    ohne 7-Tage-Fiktion. Setzt zugang_am und zieht faellig_am auf zugang_am + frist_tage
+    nach — so steht im Fristen-Center die korrekte, verlässliche Frist."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from datetime import timedelta
+    from core.models import Pendenz
+    from core.auth import log_aktion
+    p = get_object_or_404(Pendenz.objects.select_related('vertrag__mieter'), id=pk)
+    if request.method != 'POST':
+        return redirect('fw_fristen')
+    heute = timezone.localdate()
+    try:
+        zugang = date.fromisoformat(request.POST.get('zugang_am')) if request.POST.get('zugang_am') else heute
+    except ValueError:
+        zugang = heute
+    # Zugang kann frühestens heute erfolgt sein — kein Zukunftsdatum.
+    if zugang > heute:
+        zugang = heute
+    tage = p.frist_tage or 30
+    neu_frist = zugang + timedelta(days=tage)
+    p.zugang_am = zugang
+    p.faellig_am = neu_frist
+    p.beschreibung = (f"Zugang bestätigt am {zugang:%d.%m.%Y}"
+                      + (f" (Einschreiben {p.sendungsnummer})" if p.sendungsnummer else "")
+                      + f". Definitive {tage}-Tage-Zahlungsfrist bis {neu_frist:%d.%m.%Y} "
+                        "(Art. 257d Abs. 1 OR, strikte Empfangstheorie). Nach fruchtlosem Ablauf: "
+                        "ausserordentliche Kündigung mit 30 Tagen auf Monatsende (Art. 257d Abs. 2 OR).")
+    p.save(update_fields=['zugang_am', 'faellig_am', 'beschreibung'])
+    log_aktion(request, "257d-Zugang bestätigt",
+               str(p.vertrag.mieter) if p.vertrag_id and p.vertrag and p.vertrag.mieter_id else p.titel,
+               f"Zugang {zugang:%d.%m.%Y}, Frist neu bis {neu_frist:%d.%m.%Y}",
+               ziel=p.vertrag if p.vertrag_id else None)
+    messages.success(request, f"✅ Zugang bestätigt ({zugang:%d.%m.%Y}) — Zahlungsfrist läuft neu bis "
+                              f"{neu_frist:%d.%m.%Y} (Art. 257d Abs. 1 OR).")
+    return redirect('fw_fristen')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

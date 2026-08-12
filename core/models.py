@@ -86,6 +86,15 @@ class Pendenz(models.Model):
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, null=True, blank=True, related_name='pendenzen')
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.CASCADE, null=True, blank=True, related_name='pendenzen')
 
+    # Einschreiben-Zustellung (v.a. 257d-Fristen): Sendungsnummer + Versand-/
+    # Zugangsdatum. Strikte Empfangstheorie — die Frist läuft ab ZUGANG (Eintritt
+    # in den Machtbereich = Zustellung/Abholeinladung), den der Nutzer aus
+    # Track&Trace bestätigt. Bis dahin ist faellig_am provisorisch.
+    sendungsnummer = models.CharField("Sendungsnummer (Einschreiben)", max_length=40, blank=True, default='')
+    versand_am = models.DateField("Versendet am", null=True, blank=True)
+    zugang_am = models.DateField("Zugang bestätigt am", null=True, blank=True)
+    frist_tage = models.PositiveSmallIntegerField("Fristdauer ab Zugang (Tage)", null=True, blank=True)
+
     erstellt_am = models.DateTimeField(auto_now_add=True)
     erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
