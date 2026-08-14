@@ -20,3 +20,7 @@ e2e_db.sqlite3
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Editor-Swapdateien (eine lag versehentlich im Wurzelverzeichnis)
+*.swp
+*.swo

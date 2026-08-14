@@ -331,7 +331,9 @@ Alles, was *innerhalb* eines Mandanten geschützt werden musste, ist geschützt.
 
 **TS-4 – Verweise auf nicht existierendes Modul.** `core.mietrecht_logic` wird an drei Stellen importiert (`core/dashboard.py`, `core/management/commands/check_rents.py`, `rentals/admin.py`), existiert aber nicht; die Funktion liegt in `rentals/services.py`. `check_rents` ist damit defekt. Unverändert seit dem alten Stand.
 
-**TS-5 – Toter Code.** `core/dashboard.py` importiert zusätzlich `finance.models.Zahlung` — ein Modell, das nicht existiert (es heisst `Zahlungseingang`) — und wird von niemandem importiert. `core/views/webhooks.py` (Brevo-Inbound) ist in keiner URL-Konfiguration registriert. `core/utils/core/` enthält weiterhin gleichzeitig eine Datei `utils.py` und ein Verzeichnis `utils/` und ist damit nicht importierbar; die dort liegende zweite Fassung von `get_current_ref_zins()` liefert einen abweichenden Wert. `.debug_lik.py.swp` (Vim-Swap-Datei) liegt weiterhin im Wurzelverzeichnis.
+**TS-5 – Toter Code.** ~~`core/dashboard.py`~~, ~~`core/utils/core/`~~ und ~~`.debug_lik.py.swp`~~ sind entfernt (P0.4). `core/dashboard.py` importierte zusätzlich `finance.models.Zahlung` — ein Modell, das nicht existiert (es heisst `Zahlungseingang`) — war dadurch überhaupt nicht importierbar (`ModuleNotFoundError`), wurde von niemandem importiert, und `UNFOLD` enthält keinen `DASHBOARD_CALLBACK`. `core/utils/core/` enthielt gleichzeitig eine Datei `utils.py` und ein Verzeichnis `utils/`; nichts importierte daraus.
+
+> **Korrektur beim Abarbeiten von P0.4.** `core/views/webhooks.py` (Brevo-Inbound) war hier als toter Code gelistet — **das ist falsch, die Datei bleibt.** Sie ist tatsächlich in keiner URL-Konfiguration registriert, aber bewusst geparkt und durch `test_brevo_webhook_ebenfalls_fail_closed` in `core/tests.py` abgesichert. Der Test prüft die Funktion direkt, damit sie beim späteren Anschliessen nicht ohne Secret offen ist; sein Docstring sagt das ausdrücklich. Zusätzlich zählt die Datei zur Abdeckung von `test_kein_webhook_bleibt_ohne_secret_offen`, das alle `csrf_exempt`-POST-Views in `core/views/` per AST auf eine Secret-Prüfung abklopft. Ein Löschen hätte einen Test gebrochen und eine geprüfte Schranke stillschweigend entfernt. Ob der Endpunkt verdrahtet oder samt Test entfernt wird, ist eine Produktentscheidung — keine Aufräumarbeit.
 
 **TS-6 – Zwei konkurrierende `Dokument`-Modelle.** `portfolio.Dokument` und `rentals.Dokument` existieren weiterhin parallel. Der ID-Offset-Hack (`id + 10000`, Rückrechnung beim Löschen) steht unverändert an vier Stellen. Ab 10'000 Dokumenten in `portfolio` kollidieren die Nummernkreise stillschweigend, und Löschanfragen träfen den falschen Datensatz. Immerhin ist der frühere Folgefehler behoben: `Mietvertrag.save()` legt jetzt über `core/services/ablage.py` korrekt ab.
 
@@ -363,8 +365,8 @@ Die Nummerierung ist die empfohlene Reihenfolge.
 |---|---|---|
 | P0.1 | **Entscheidung `/app/`-SPA:** entfernen oder als Zweitoberfläche behalten. Bei Entfernen fallen 7 Tab-Templates, 1'399 Zeilen JS und der Grossteil der 82 API-Endpunkte weg — das reduziert jede Folgephase erheblich. | S (Entscheidung), M (Umsetzung) |
 | P0.2 | Analoge Entscheidung für den Unfold-Admin: bleibt er, unterliegt er denselben Mandanten- und Rollenregeln | S |
-| P0.3 | TS-4 beheben: Importe auf `rentals.services` korrigieren, `check_rents` wieder lauffähig machen | XS |
-| P0.4 | TS-5 beheben: `core/dashboard.py`, `core/views/webhooks.py`, `core/utils/core/`, `.debug_lik.py.swp` entfernen; `.gitignore` um `*.swp` ergänzen | S |
+| ~~P0.3~~ | ~~TS-4 beheben: Importe auf `rentals.services` korrigieren, `check_rents` wieder lauffähig machen~~ — **erledigt** | XS |
+| ~~P0.4~~ | ~~TS-5 beheben~~ — **erledigt**, aber ohne `core/views/webhooks.py`: die Datei ist bewusst geparkt und testgesichert (siehe Korrektur bei TS-5) | S |
 | P0.5 | `psycopg` in `requirements.txt` nachtragen; `django-jazzmin`, `vulture` und die ungenutzten Pakete entfernen; `GEMINI_API_KEY` streichen | S |
 | P0.6 | Ruff plus `pyproject.toml` einführen und in die CI aufnehmen — sonst ist die Definition of Done ab Phase 2 nicht prüfbar | S |
 | P0.7 | Groq-Nutzung nachträglich formalisieren: Auftragsbearbeitungsvertrag, DSG-Bewertung, Kostenrahmen, Abschaltbarkeit dokumentieren | S |
