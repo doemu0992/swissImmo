@@ -5,6 +5,8 @@
 **Methode:** Vollständige Lektüre des Repositories, ergänzt durch `manage.py check`, `makemigrations --check`, die Testsuite sowie programmatische Auswertungen der Modell-Registry, der Ninja-Endpunkt-Registry und anonyme Live-Anfragen gegen den Django-Testclient. Es wurde kein bestehender Code verändert.
 
 > **Hinweis zur Branch-Wahl.** `origin/HEAD` zeigt auf `main`; dort ist der letzte Commit vom 21.05.2026. Die produktive Entwicklung läuft auf `claude/fairwalter-rebuild` — **501 Commits voraus** (363 im Juli, 138 im August), 416 geänderte Dateien, rund 75'000 Zeilen mehr. `main` ist ein reiner Vorfahre ohne eigene Commits. Diese Analyse bezieht sich ausschliesslich auf den Rebuild-Branch; eine frühere Fassung dieses Dokuments analysierte `main` und ist damit hinfällig.
+>
+> Dieser Zustand wird aufgelöst: Nach **E4** wird `claude/fairwalter-rebuild` zu `main` (siehe Abschnitt 0.1).
 
 ---
 
@@ -21,6 +23,23 @@ Der verbleibende Kern ist damit klar umrissen — und er ist gross:
 | **B3** | **`core/views/fw.py` mit 14'938 Zeilen und 232 Views in einer Datei.** | Die zentrale strukturelle Schuld. Jede mandantenbezogene Änderung muss durch diese Datei. |
 
 Anders als beim vorigen Stand gibt es **keinen Befund mehr, der einen Hotfix vor Phase 2 erzwingt.** Die Reihenfolge der Projektanweisung kann eingehalten werden.
+
+---
+
+## 0.1 Getroffene Grundsatzentscheide (verbindlich)
+
+Vier Fragen blockierten die Planung von Phase 2, weil an ihnen der Aufwand aller Folgephasen hängt. Sie sind **entschieden** und hier festgehalten, damit sie nicht in Gesprächsverläufen verloren gehen. Wer eine davon umstossen will, ändert diesen Abschnitt — nicht stillschweigend den Code.
+
+**Stand der Entscheide: 14.08.2026.**
+
+| # | Entscheid | Was daraus folgt |
+|---|---|---|
+| **E1** | **Die `/app/`-SPA wird entfernt.** | Sieben Tab-Templates, 1'399 Zeilen Inline-JavaScript und der Grossteil der 82 API-Endpunkte fallen weg. Damit gibt es für das Team **eine** Oberfläche (`/neu/`) statt zwei. Jede Mandanten-, Entitlement- und Übersetzungsregel muss nur noch dort gebaut werden. Betrifft P0.1 und reduziert die Phasen 2, 3 und 5 erheblich. Vor dem Entfernen ist zu prüfen, welche der 82 Endpunkte ausserhalb der SPA genutzt werden (Portale, Feeds, externe Aufrufer). |
+| **E2** | **Der Unfold-Admin bleibt, aber nur lesend.** | Er ist damit Auskunfts- und Kontrollwerkzeug, kein zweiter Schreibpfad. Das nimmt ihn aus der Pflicht, jede Mandanten- und Entitlement-Regel ein zweites Mal zu implementieren — die Isolation muss er trotzdem einhalten, sonst sieht ein Mandant im Admin fremde Daten. Betrifft P0.2. Umsetzung: Schreibrechte entziehen (`has_add/change/delete_permission`), nicht die Registrierung entfernen. |
+| **E3** | **`crm.Mandant` wird zu `Eigentuemer` umbenannt.** | Beseitigt die gefährlichste Namenskollision des Projekts: `Mandant` heisst im Bestandscode *Eigentümer einer Liegenschaft*, in der Projektanweisung dagegen *Tenant*. Der neue Tenant heisst `Organisation`. Die Umbenennung geschieht **vor** der Organisationsmodellierung, damit in Phase 2 kein Satz mehr zweideutig ist. Betrifft P1.5 und den Skill `mandantentrennung`. |
+| **E4** | **`claude/fairwalter-rebuild` wird zu `main`.** | `main` ist seit dem 21.05.2026 unverändert und liegt 501 Commits zurück; der Rebuild-Branch ist der faktische Hauptzweig. Die Umstellung macht das offiziell: `origin/HEAD` zeigt danach auf den Stand, gegen den auch entwickelt und getestet wird. Zu beachten: Die CI löst heute auf `main` **und** `claude/**` aus — nach der Umstellung ist das zu bereinigen, sonst laufen Doppelläufe oder es läuft gar nichts. |
+
+**Zwei Dinge, die bewusst offen bleiben:** der Zuschnitt der Abo-Stufen samt Modulgrenzen (Phase 3, siehe P3.1 und P3.3) und die Wahl des Zahlungsanbieters (P3.2). Beide brauchen kaufmännische Entscheide, keine technischen.
 
 ---
 
@@ -363,8 +382,8 @@ Die Nummerierung ist die empfohlene Reihenfolge.
 
 | Nr. | Massnahme | Aufwand |
 |---|---|---|
-| P0.1 | **Entscheidung `/app/`-SPA:** entfernen oder als Zweitoberfläche behalten. Bei Entfernen fallen 7 Tab-Templates, 1'399 Zeilen JS und der Grossteil der 82 API-Endpunkte weg — das reduziert jede Folgephase erheblich. | S (Entscheidung), M (Umsetzung) |
-| P0.2 | Analoge Entscheidung für den Unfold-Admin: bleibt er, unterliegt er denselben Mandanten- und Rollenregeln | S |
+| P0.1 | **`/app/`-SPA entfernen** — entschieden (E1). Vorher prüfen, welche der 82 API-Endpunkte ausserhalb der SPA genutzt werden (Portale, Feeds, externe Aufrufer); nur die übrigen fallen mit weg. | M |
+| P0.2 | **Unfold-Admin auf lesend stellen** — entschieden (E2). Schreibrechte entziehen, Registrierung behalten. Die Mandanten-Isolation gilt weiterhin auch für ihn. | S |
 | ~~P0.3~~ | ~~TS-4 beheben: Importe auf `rentals.services` korrigieren, `check_rents` wieder lauffähig machen~~ — **erledigt** | XS |
 | ~~P0.4~~ | ~~TS-5 beheben~~ — **erledigt**, aber ohne `core/views/webhooks.py`: die Datei ist bewusst geparkt und testgesichert (siehe Korrektur bei TS-5) | S |
 | P0.5 | `psycopg` in `requirements.txt` nachtragen; `django-jazzmin`, `vulture` und die ungenutzten Pakete entfernen; `GEMINI_API_KEY` streichen | S |
@@ -380,7 +399,7 @@ Die Nummerierung ist die empfohlene Reihenfolge.
 | P1.2 | **`fw.py` entlang der 34 Blockgrenzen aufteilen** — Voraussetzung dafür, dass die Isolation überhaupt reviewbar wird (TS-2) | M |
 | P1.3 | **`core/tests.py` nach Fachgebiet aufteilen**, in die jeweiligen Apps verschieben (TS-3) | M |
 | P1.4 | Wechsel auf PostgreSQL inklusive Datenmigration (TS-13) | M |
-| P1.5 | Modell `Organisation` einführen; Verhältnis zu `crm.Verwaltung` klären (Migration oder Ablösung); `Mandant` zu `Eigentuemer` umbenennen | M |
+| P1.5 | Modell `Organisation` einführen; Verhältnis zu `crm.Verwaltung` klären (Migration oder Ablösung); `Mandant` zu `Eigentuemer` umbenennen — entschieden (E3), und zwar **vor** der Organisationsmodellierung | M |
 | P1.6 | `organisation`-Fremdschlüssel auf alle 63 Modelle; Datenmigration weist Bestand einer Ausgangsorganisation zu; anschliessend `null=False`. Gruppen A und B (29 Modelle) brauchen dabei zusätzlich eine fachliche Entscheidung, woher der Bezug kommt | L |
 | P1.7 | Sechs globale Unique-Constraints zu `UniqueConstraint` mit der Organisation umbauen | S |
 | P1.8 | **Zentrale Isolation:** `TenantManager` als Default-Manager plus Middleware mit Kontextvariable. `_global_filter()` in `fw.py` ist der natürliche Ansatzpunkt für die Oberfläche — die Erzwingung gehört aber auf die Manager-Ebene, nicht dorthin | M |
