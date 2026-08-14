@@ -1,6 +1,14 @@
 # rentals/services.py
+import logging
+import re
 from decimal import Decimal
-from .models import Dokument
+
+import requests
+from django.core.files.base import ContentFile
+
+from .models import Dokument, Mietvertrag
+
+logger = logging.getLogger(__name__)
 
 def berechne_mietpotenzial(vertrag, aktuell_ref, aktuell_lik, allg_kosten_pct=Decimal('0.00')):
     """
@@ -199,3 +207,77 @@ def termin_257d(ab_datum: _dt.date) -> _dt.date:
     eines Monats. → Ende des Monats, in den (ab_datum + 30 Tage) fällt."""
     grenze = ab_datum + _dt.timedelta(days=30)
     return _monatsende(grenze.year, grenze.month)
+
+
+# ---------------------------------------------------------------------------
+# DocuSeal-Rueckläufer. Bisher in rentals/api.py, dort aber keine Endpunkte.
+# Herausgezogen in E1a, unveraendert uebernommen.
+# ---------------------------------------------------------------------------
+def _erster_dokument_url(dokumente):
+    """Extrahiert die erste Dokument-URL aus einer DocuSeal-Dokumentliste."""
+    if isinstance(dokumente, list):
+        for d in dokumente:
+            if isinstance(d, dict) and d.get('url'):
+                return d['url']
+    return None
+
+
+def _vertrag_id_aus_name(name):
+    """Zieht die Vertrags-ID aus einem Namen wie 'Mietvertrag 3'."""
+    if not name:
+        return 0
+    teil = str(name).split('Mietvertrag')[-1]
+    ziffern = re.sub(r'[^0-9]', '', teil)
+    try:
+        return int(ziffern) if ziffern else 0
+    except ValueError:
+        return 0
+
+
+def verarbeite_docuseal_event(payload):
+    """Verarbeitet ein DocuSeal-Webhook-Event tolerant (verschiedene Payload-
+    Varianten). Lädt bei Abschluss den unterschriebenen Vertrag herunter und
+    legt ihn über vertrag.save() zentral überall ab. Gibt True zurück, wenn ein
+    Vertrag aktualisiert wurde."""
+    if not isinstance(payload, dict):
+        return False
+    event = str(payload.get('event_type') or payload.get('event') or '').lower()
+    data = payload.get('data')
+    if not isinstance(data, dict):
+        data = payload
+    status = str(data.get('status') or '').lower()
+    if 'completed' not in event and status != 'completed':
+        return False   # nur vollständig unterschriebene Verträge ablegen
+
+    submission = data.get('submission') if isinstance(data.get('submission'), dict) else {}
+    name = data.get('name') or submission.get('name') or ''
+    vertrag_id = _vertrag_id_aus_name(name)
+    vertrag = Mietvertrag.objects.filter(id=vertrag_id).first() if vertrag_id else None
+    if not vertrag:
+        return False
+
+    doc_url = (data.get('combined_document_url')
+               or submission.get('combined_document_url')
+               or _erster_dokument_url(data.get('documents'))
+               or _erster_dokument_url(submission.get('documents')))
+    if not doc_url:
+        return False
+    # SSRF-Schutz: die doc_url stammt aus dem Webhook-Payload — nur HTTPS und
+    # erlaubte DocuSeal-Hosts herunterladen (identisch zu core/views/docuseal.py).
+    from core.services.docuseal_service import download_url_erlaubt
+    if not download_url_erlaubt(doc_url):
+        logger.warning("DocuSeal-Event: Download-URL abgewiesen (%s)", doc_url)
+        return False
+    try:
+        r = requests.get(doc_url, timeout=30)
+    except Exception:
+        return False
+    if r.status_code != 200:
+        return False
+    vertrag.pdf_datei.save(f"Unterschrieben_Mietvertrag_{vertrag.id}.pdf",
+                           ContentFile(r.content), save=False)
+    vertrag.sign_status = 'unterzeichnet'
+    if vertrag.status in ('entwurf', 'offen'):
+        vertrag.status = 'aktiv'
+    vertrag.save()   # → zentrale Ablage (Portal, Person, Objekt) via Model.save
+    return True

@@ -23,25 +23,9 @@ from core.utils.qr_code import generate_mahnung_pdf
 from .utils import scan_invoice_pdf
 
 from core.auth import auth_schreiben, auth_verwaltung, log_aktion
+from .services import erstelle_storno_buchung
 
 router = Router(tags=["Finanzen"])
-
-# ========================================================
-# HILFSFUNKTION: STORNO BUCHUNG (Revisionssicherheit)
-# ========================================================
-def erstelle_storno_buchung(original_buchung, benutzer=None):
-    """Erstellt die revisionssichere Umkehrbuchung.
-
-    Delegiert an die EINE kanonische Storno-Implementation
-    (finance.booking.storniere_buchung): markiert das Original als storniert
-    (storniert_am), verkettet Original↔Gegenbuchung (storno_von), führt die
-    Beleg-Verknüpfungen mit und verhindert Doppel-Storno. Die frühere lokale
-    Variante tat all das nicht — Storno-Kette war gebrochen, Kennzahlen
-    zählten stornierte Originale weiter."""
-    from finance.booking import storniere_buchung
-    return storniere_buchung(original_buchung, user=benutzer)
-
-
 # ========================================================
 # DEBITOREN / SOLLSTELLUNG / ZAHLUNGEN
 # ========================================================
