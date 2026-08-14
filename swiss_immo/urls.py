@@ -9,37 +9,30 @@ from django.contrib.auth import views as auth_views  # <-- Import für den Login
 # 🚀 API SETUP (DJANGO NINJA)
 # ========================================================
 from ninja import NinjaAPI
-from django.contrib.admin.views.decorators import staff_member_required
 from core.auth import auth_lesen
-# Router importieren
-from portfolio.api import router as portfolio_router
-from crm.api import router as crm_router
+# Seit E1c gibt es nur noch zwei Endpunkte, beide öffentlich (auth=None):
+#   POST /api/mietprozess/public/bewerben   → Bewerbungsformular
+#   POST /api/rentals/webhook/docuseal      → DocuSeal-Rücklauf
+# Die 80 übrigen bedienten die in E1b entfernte Vue-Oberfläche und sind weg,
+# mitsamt den Routern portfolio, crm, tickets und finance.
 from rentals.api import router as rentals_router
-from tickets.api import router as tickets_router
-from finance.api import router as finance_router
 from mietprozess.api import router as mietprozess_router
 
-# Wir initialisieren die zentrale API mit dem Rollenkonzept (core/auth.py):
-#   Standard (alle GETs):   auth_lesen      → Verwaltung, Sachbearbeitung, Lesend
-#   Erfassen/Bearbeiten:    auth_schreiben  → Verwaltung, Sachbearbeitung
-#   Löschen/Buchen/Senden:  auth_verwaltung → nur Verwaltung
-# Öffentliche Ausnahmen sind am Endpoint mit auth=None markiert
-# (Bewerbungsformular, DocuSeal-Webhook).
-# docs_decorator: API-Dokumentation (/api/docs) nur für Staff sichtbar.
+# `auth=auth_lesen` bleibt als Standard stehen — nicht weil noch etwas darauf
+# angewiesen wäre, sondern als Sicherung: Käme je ein Endpunkt dazu, ohne dass
+# jemand an die Berechtigung denkt, wäre er session-pflichtig statt offen.
+# `docs_url=None` schaltet /api/docs ab: Zwei öffentliche Endpunkte brauchen
+# keinen Schema-Browser, und was es nicht gibt, muss nicht abgesichert werden
+# (vorher hing die Seite an staff_member_required).
 api = NinjaAPI(
     title="swissImmo API",
-    version="1.0.0",
-    description="REST API für das Vue.js Frontend",
+    version="2.0.0",
+    description="Nur noch öffentliche Endpunkte: Bewerbungsformular und DocuSeal-Webhook.",
     auth=auth_lesen,
-    docs_decorator=staff_member_required,
+    docs_url=None,
 )
 
-# Wir registrieren die Module in der API
-api.add_router("/portfolio", portfolio_router)
-api.add_router("/crm", crm_router)
 api.add_router("/rentals", rentals_router)
-api.add_router("/tickets", tickets_router)
-api.add_router("/finance", finance_router)
 api.add_router("/mietprozess", mietprozess_router)
 
 

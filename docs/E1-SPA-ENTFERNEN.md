@@ -154,6 +154,71 @@ Die Definition of Done verlangt eine Erklärung für jede Abnahme. Sie gehört m
 
 **Abnahme E1c:** Beide öffentlichen Endpunkte antworten anonym wie zuvor, alle übrigen `/api/`-Pfade liefern 404, Testsuite grün, Abnahme der Testzahl beziffert und begründet, kein `+ 10000` mehr im Bestand.
 
+### E1c — erledigt am 14.08.2026
+
+Abnahme erfüllt: 80 von 82 Endpunkten entfernt, `/api/docs` abgeschaltet, kein `+ 10000` mehr
+im Bestand, 1'073 Tests grün. `ApiOberflaecheNachE1cTests` hält beides fest — je ein Pfad aus
+jedem entfernten Router liefert 404 (angemeldet geprüft, damit der 404 nicht bloss die
+Anmeldeweiche ist), und beide öffentlichen Endpunkte antworten weiterhin anonym.
+
+**Entscheid: `django-ninja` bleibt.** Der DocuSeal-Webhook wäre trivial auf einen normalen
+View umzustellen — er verzichtet bewusst auf ein Body-Schema. Das Bewerbungsformular nicht:
+`public_submit_bewerbung` hat **40 `Form(...)`-Parameter und 5 Datei-Felder**. Die durch
+Handarbeit zu ersetzen, an genau dem öffentlichen Formular, das in P5 DSG-fest gemacht wurde,
+gehört nicht in denselben PR wie 80 Löschungen. Die Angriffsfläche sinkt trotzdem von 82
+Endpunkten auf 2. Ob Ninja ganz raus soll, ist danach eine isolierte Frage.
+
+`NinjaAPI` behält `auth=auth_lesen` als Standard — nicht weil noch etwas darauf angewiesen
+wäre, sondern als Sicherung: Käme je ein Endpunkt dazu, ohne dass jemand an die Berechtigung
+denkt, wäre er session-pflichtig statt offen.
+
+#### Zur Testzahl: 1'074 → 1'073
+
+Die Zahl im Auftrag oben („rund 48 Testmethoden in sechs Klassen") stimmt nicht. Tatsächlich
+waren es **11 Tests**, und die meisten sprachen keinen URL-Pfad an, sondern importierten die
+API-Funktion und riefen sie mit `RequestFactory` auf. Es sind Regressionstests für echte
+Fehler, keine Endpunkt-Tests — entsprechend wurden acht davon **umgeschrieben statt gelöscht**:
+
+| Bisher geprüft über | Jetzt geprüft über |
+|---|---|
+| `crm.api.delete_mieter` (409 bei aktivem Vertrag) | `POST /neu/personen/<id>/loeschen/` |
+| `crm.api.delete_mieter` (Portal-Login mitlöschen) | `POST /neu/personen/<id>/loeschen/` |
+| `portfolio.api.delete_liegenschaft` (409) | `POST /neu/liegenschaften/<id>/loeschen/` |
+| `finance.api.pay_kreditor` (keine Doppelzahlung) | `POST /neu/kreditoren/bezahlen/` |
+| `finance.api.create_zahlung` (negativer Betrag) | `POST /neu/bankabgleich/verbuchen/` |
+| `crm.api.list_mieter` (GET seiteneffektfrei) | `GET /neu/personen/` |
+| `finance.api.import_standard_kontenplan` | `ensure_kontenplan()` — die eine Quelle |
+| `DELETE /api/finance/debitoren-rechnungen/<id>` | `POST /neu/debitoren/<id>/stornieren/` |
+
+Bilanz: **−3 entfernt, +2 neu, netto −1.** Die drei entfernten sind unten begründet.
+
+#### Drei Zusicherungen ohne Zuhause in `/neu/`
+
+**`delete_einheit` — Einheit löschen mit Vertragsschutz.** In `/neu/` gibt es überhaupt kein
+Einheit-Löschen; der API-Endpunkt war der einzige Weg. Erreichbar war er nur über die in E1b
+entfernte Vue-Oberfläche — die Fähigkeit ist also seit **E1b** weg, nicht erst durch E1c.
+E1c entfernt nur den toten Code dahinter.
+
+**`cancel_umzug` — Umzug stornieren, manuell erfasste Adressen schonen.** Gleiche Lage: kein
+`/neu/`-Pfad, einziger Zugang war die SPA.
+
+Beides gehört als Rückstand nach `/neu/`, wenn es gebraucht wird — eigener Auftrag, nicht
+Teil von E1.
+
+**`get_ticket` — reine Leserolle darf ein Ticket nicht als gelesen markieren.** Dieser Test
+liess sich **nicht** umschreiben, weil `/neu/` die Zusicherung nicht einhält:
+`fw_schaden_detail` läuft unter `TEAM_ROLLEN` (Leserolle eingeschlossen) und setzt
+`gelesen = True` beim Öffnen. Das ist ein bestehender kleiner Fehler in `/neu/`, nicht von
+E1c verursacht — und ein Ein-Zeilen-Fix. Er gehört in einen eigenen PR, nicht in diesen.
+
+#### Nebenbefund: drei PDF-Helfer in dreifacher Ausführung
+
+`rentals/api.py` hielt eigene Fassungen von `generate_vertrag_pdf_bytes`, `sanitize_filename`
+und `link_callback`. Sie wurden nur innerhalb derselben Datei gebraucht — die übrige
+Anwendung nutzt die Fassungen in `core/services/pdf_service.py`, und `core/views/docuseal.py`
+hält eine **dritte**. Die Kopien in `rentals/api.py` sind mit den Endpunkten weg; die
+verbleibende Doppelung `pdf_service.py` ↔ `views/docuseal.py` ist ein eigener Posten.
+
 ---
 
 ## Reihenfolge und Sicherung

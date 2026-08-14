@@ -1,20 +1,25 @@
-from ninja import Router, File, Form, Schema
+# mietprozess/api.py
+#
+# Nach E1c ist hier nur noch EIN Endpunkt: das oeffentliche Bewerbungsformular.
+# Es wird von core/templates/core/bewerbung.html und
+# core/templates/core/public_bewerbung_form.html per fetch() aufgerufen; der
+# Pfad /api/mietprozess/public/bewerben darf sich deshalb nicht aendern.
+#
+# Die vier Admin-Endpunkte (Liste, Status, Loeschen, Nachricht) sind entfallen —
+# sie wurden ausschliesslich von der in E1b geloeschten Vue-Oberflaeche
+# aufgerufen. Damit faellt auch mietprozess/schemas.py weg.
+from ninja import Router, File, Form
 from ninja.files import UploadedFile
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from django.core.mail import send_mail  # 🔥 NEU: Für den E-Mail Versand
-from django.conf import settings        # 🔥 NEU: Für die Absender-Adresse
-from typing import List, Optional
-from decimal import Decimal
+from typing import Optional
 from datetime import datetime
 
 from .models import Mietbewerbung
-from .schemas import BewerbungCreateSchema, BewerbungSchemaOut
 from portfolio.models import Einheit
 
-from core.auth import auth_schreiben, auth_verwaltung, log_aktion
-
 router = Router(tags=["Mietprozess"])
+
 
 # auth=None: Bewusst öffentlich — das ist das Bewerbungsformular für Interessenten
 # (alle anderen Endpoints erben die Session-Pflicht aus NinjaAPI(auth=django_auth)).
@@ -176,182 +181,3 @@ def public_submit_bewerbung(
 
     except Exception as e:
         return 400, {"success": False, "error": f"Django-Backend-Fehler: {str(e)}"}
-
-
-@router.get("/admin/liste", response=List[BewerbungSchemaOut])
-def list_bewerbungen(request):
-    bewerbungen = Mietbewerbung.objects.all().select_related('einheit__liegenschaft').order_by('-erstellt_am')
-
-    result = []
-    for b in bewerbungen:
-        result.append({
-            "id": b.id,
-            "einheit_id": b.einheit.id,
-            "objekt_bezeichnung": b.einheit.bezeichnung,
-            "liegenschaft_strasse": b.einheit.liegenschaft.strasse,
-            "status": b.status,
-            "vorname": b.vorname,
-            "nachname": b.nachname,
-            "zivilstand": b.zivilstand,
-            "geburtsdatum": b.geburtsdatum,
-            "geschlecht": b.geschlecht,
-            "nationalitaet": b.nationalitaet,
-            "heimatort": b.heimatort,
-            "mobilnummer": b.mobilnummer,
-            "email": b.email,
-            "adresse": b.adresse,
-            "plz": b.plz,
-            "ort": b.ort,
-            "aktueller_vermieter": b.aktueller_vermieter,
-            "kontaktperson_vermieter": b.kontaktperson_vermieter,
-            "telefon_vermieter": b.telefon_vermieter,
-            "email_vermieter": b.email_vermieter,
-            "erwerbsstatus": b.erwerbsstatus,
-            "beruf": b.beruf,
-            "einkommen_jahr": b.einkommen_jahr,
-            "arbeitgeber": b.arbeitgeber,
-            "angestellt_seit": b.angestellt_seit,
-            "kontaktperson_arbeitgeber": b.kontaktperson_arbeitgeber,
-            "telefon_arbeitgeber": b.telefon_arbeitgeber,
-            "email_arbeitgeber": b.email_arbeitgeber,
-            "ist_unbefristet": b.ist_unbefristet,
-            "hat_betreibungen": b.hat_betreibungen,
-            "grund_fuer_wechsel": b.grund_fuer_wechsel,
-            "anzahl_erwachsene": b.anzahl_erwachsene,
-            "anzahl_kinder": b.anzahl_kinder,
-            "haustiere": b.haustiere,
-            "haustiere_details": b.haustiere_details,
-            "musikinstrumente": b.musikinstrumente,
-            "interesse_parkplatz": b.interesse_parkplatz,
-            "gewuenschter_bezugstermin": b.gewuenschter_bezugstermin,
-            "bemerkungen": b.bemerkungen,
-            "schild_briefkasten": b.schild_briefkasten,
-            "schild_sonnerie": b.schild_sonnerie,
-            "wunsch_kautions_typ": b.wunsch_kautions_typ,
-            "digitaler_betreibungsauszug": getattr(b, 'digitaler_betreibungsauszug', False),
-            "betreibungsauszug_url": b.betreibungsauszug.url if b.betreibungsauszug else None,
-            "ausweiskopie_url": b.ausweiskopie.url if b.ausweiskopie else None,
-            "lohnausweis_url": b.lohnausweis.url if b.lohnausweis else None,
-            "weitere_dokumente_url": b.weitere_dokumente.url if b.weitere_dokumente else None,
-            "erstellt_am": b.erstellt_am
-        })
-    return result
-
-class StatusUpdateSchema(Schema):
-    status: str
-
-@router.patch("/admin/{bewerbung_id}/status", response={200: dict, 400: dict}, auth=auth_schreiben)
-@transaction.atomic
-def update_bewerbung_status(request, bewerbung_id: int, payload: StatusUpdateSchema):
-    bewerbung = get_object_or_404(Mietbewerbung.objects.select_for_update(), id=bewerbung_id)
-
-    valid_statuses = [choice[0] for choice in Mietbewerbung.STATUS_CHOICES]
-    if payload.status not in valid_statuses:
-        return 400, {"success": False, "error": "Ungültiger Status."}
-
-    bewerbung.status = payload.status
-    bewerbung.save()
-
-    return 200, {"success": True, "new_status": bewerbung.status}
-
-@router.delete("/admin/{bewerbung_id}", response={204: None}, auth=auth_verwaltung)
-@transaction.atomic
-def delete_bewerbung(request, bewerbung_id: int):
-    bewerbung = get_object_or_404(Mietbewerbung, id=bewerbung_id)
-
-    if bewerbung.betreibungsauszug:
-        bewerbung.betreibungsauszug.delete(save=False)
-    if bewerbung.ausweiskopie:
-        bewerbung.ausweiskopie.delete(save=False)
-    if bewerbung.lohnausweis:
-        bewerbung.lohnausweis.delete(save=False)
-    if hasattr(bewerbung, 'weitere_dokumente') and bewerbung.weitere_dokumente:
-        bewerbung.weitere_dokumente.delete(save=False)
-
-    log_aktion(request, "Bewerbung gelöscht", f"{bewerbung.vorname} {bewerbung.nachname}", f"Bewerbung-ID {bewerbung.id}")
-    bewerbung.delete()
-    return 204, None
-
-# ==============================================================================
-# 🔥 FLATFOX-STYLE KOMMUNIKATION (Echte E-Mails)
-# ==============================================================================
-class MessageSchema(Schema):
-    typ: str # 'einladung', 'nachforderung', 'absage'
-
-@router.post("/admin/{bewerbung_id}/message", response={200: dict, 400: dict}, auth=auth_schreiben)
-@transaction.atomic
-def send_bewerbung_message(request, bewerbung_id: int, payload: MessageSchema):
-    bewerbung = get_object_or_404(Mietbewerbung, id=bewerbung_id)
-
-    subject = ""
-    message_body = ""
-
-    if payload.typ == 'einladung':
-        subject = f"Einladung zur Wohnungsbesichtigung: {bewerbung.einheit.bezeichnung}"
-        message_body = f"""Guten Tag {bewerbung.vorname} {bewerbung.nachname},
-
-vielen Dank für Ihr Interesse an unserem Mietobjekt ({bewerbung.einheit.bezeichnung}).
-
-Ihre Unterlagen haben bei uns einen sehr positiven Eindruck hinterlassen! Gerne möchten wir Sie zu einer unverbindlichen Besichtigung einladen.
-
-Bitte antworten Sie kurz auf diese E-Mail, um einen passenden Termin in den kommenden Tagen abzustimmen.
-
-Freundliche Grüsse
-Ihre Hausverwaltung
-swissImmo"""
-        # Wenn Status noch 'neu' ist, rücken wir ihn automatisch auf 'geprüft' vor
-        if bewerbung.status == 'neu':
-            bewerbung.status = 'geprueft'
-
-    elif payload.typ == 'nachforderung':
-        subject = f"Fehlende Unterlagen zu Ihrer Bewerbung: {bewerbung.einheit.bezeichnung}"
-        message_body = f"""Guten Tag {bewerbung.vorname} {bewerbung.nachname},
-
-vielen Dank für Ihre Bewerbung für das Objekt {bewerbung.einheit.bezeichnung}.
-
-Um Ihr Dossier abschliessend prüfen zu können, benötigen wir noch weitere Unterlagen von Ihnen (z.B. einen aktuellen Betreibungsauszug oder Ausweiskopien).
-
-Bitte senden Sie uns diese zeitnah als Antwort auf diese E-Mail zu.
-
-Freundliche Grüsse
-Ihre Hausverwaltung
-swissImmo"""
-
-    elif payload.typ == 'absage':
-        subject = f"Ihre Bewerbung für: {bewerbung.einheit.bezeichnung}"
-        message_body = f"""Guten Tag {bewerbung.vorname} {bewerbung.nachname},
-
-vielen Dank für Ihr Interesse und die Einreichung Ihrer Unterlagen für das Objekt {bewerbung.einheit.bezeichnung}.
-
-Leider müssen wir Ihnen mitteilen, dass wir uns in diesem Fall für eine andere Mietpartei entschieden haben, welche noch etwas besser zum spezifischen Profil der Liegenschaft passt.
-
-Wir danken Ihnen für Ihr Verständnis und wünschen Ihnen für die weitere Wohnungssuche viel Erfolg.
-
-Freundliche Grüsse
-Ihre Hausverwaltung
-swissImmo"""
-        bewerbung.status = 'abgelehnt'
-
-    else:
-        return 400, {"success": False, "error": "Unbekannter Nachrichtentyp."}
-
-    # E-Mail versenden (Kugelsicherer Try-Except Block)
-    try:
-        send_mail(
-            subject=subject,
-            message=message_body,
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'info@swissimmo.ch'),
-            recipient_list=[bewerbung.email],
-            fail_silently=False,
-        )
-        message_out = f"E-Mail wurde erfolgreich an {bewerbung.email} versendet."
-    except Exception as e:
-        print(f"Wahrer Fehler beim E-Mail-Versand: {e}")
-        # 🔥 HIER IST DER FIX: Wir geben jetzt den ECHTEN Fehler ans Frontend weiter!
-        message_out = f"Fehler: {str(e)}"
-
-    # Wir speichern den Status IMMER ab, egal ob die E-Mail durchging oder nicht!
-    bewerbung.save()
-
-    # Wir geben immer 200 (Success) zurück, damit die UI keinen Error 500 wirft.
-    return 200, {"success": True, "message": message_out}

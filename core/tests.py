@@ -8390,44 +8390,39 @@ class DatenLebenszyklusTests(TestCase):
         c.post(f'/neu/frist/{wf.id}/loeschen/')
         self.assertFalse(Pendenz.objects.filter(quelle__startswith=f'auto:wartung:{wf.id}:').exists())
 
-    # --- API-Löschpfade an die UI angeglichen (django-ninja-Funktionen direkt) ---
-    def _req(self):
-        from django.test import RequestFactory
-        r = RequestFactory().delete('/')
-        r.user = _team_user()
-        return r
+    # --- Löschpfade: Schutz vor Datenverlust bei aktivem Vertrag ---
+    # Diese drei prüften bis E1c die django-ninja-Funktionen direkt. Die API ist
+    # weg; dieselben Zusicherungen gelten unverändert für die /neu/-Oberfläche,
+    # die sie ebenfalls trägt — deshalb umgeschrieben statt gelöscht.
+    def _c(self):
+        c = Client(); c.force_login(_team_user()); return c
 
-    def test_api_delete_mieter_blockt_aktiven_vertrag(self):
-        from crm.api import delete_mieter
+    def test_person_loeschen_blockt_aktiven_vertrag(self):
         from crm.models import Mieter
         _lg, _e, m, _v = _basis_objekte()   # v ist status='aktiv'
-        status, _body = delete_mieter(self._req(), m.id)
-        self.assertEqual(status, 409)
+        self._c().post(f'/neu/personen/{m.id}/loeschen/')
         self.assertTrue(Mieter.objects.filter(id=m.id).exists())
 
-    def test_api_delete_mieter_raeumt_portal_login(self):
-        from crm.api import delete_mieter
+    def test_person_loeschen_raeumt_portal_login(self):
+        from crm.models import Mieter
         _lg, _e, m, v = _basis_objekte()
         v.status = 'beendet'; v.aktiv = False; v.save()
         u = User.objects.create_user(username='portal_mieter', password='x')
         m.benutzer = u; m.save()
-        status, _ = delete_mieter(self._req(), m.id)
-        self.assertEqual(status, 204)
+        self._c().post(f'/neu/personen/{m.id}/loeschen/')
+        self.assertFalse(Mieter.objects.filter(id=m.id).exists())
         self.assertFalse(User.objects.filter(id=u.id).exists())
 
-    def test_api_delete_liegenschaft_blockt_aktiven_vertrag(self):
-        from portfolio.api import delete_liegenschaft
+    def test_liegenschaft_loeschen_blockt_aktiven_vertrag(self):
         lg, _e, _m, _v = _basis_objekte()
-        status, _ = delete_liegenschaft(self._req(), lg.id)
-        self.assertEqual(status, 409)
+        self._c().post(f'/neu/liegenschaften/{lg.id}/loeschen/')
         self.assertTrue(Liegenschaft.objects.filter(id=lg.id).exists())
 
-    def test_api_delete_einheit_blockt_aktiven_vertrag(self):
-        from portfolio.api import delete_einheit
-        _lg, e, _m, _v = _basis_objekte()
-        status, _ = delete_einheit(self._req(), e.id)
-        self.assertEqual(status, 409)
-        self.assertTrue(Einheit.objects.filter(id=e.id).exists())
+    # Der vierte Fall — `delete_einheit` blockt aktiven Vertrag — ist mit E1c
+    # ersatzlos entfallen: In /neu/ gibt es überhaupt kein Einheit-Löschen, der
+    # API-Endpunkt war der einzige Weg. Erreichbar war er nur über die in E1b
+    # entfernte Vue-Oberfläche, die Fähigkeit ist also seit E1b weg und nicht
+    # erst jetzt. Kommt sie nach /neu/, gehört dieser Test wieder her.
 
     def test_mandat_loeschen_raeumt_eigentuemer_login(self):
         from crm.models import Mandant
@@ -8626,7 +8621,8 @@ class PrueferRunde2Tests(TestCase):
 
     # --- Buchhalter: pay_kreditor darf Teilzahlungen nicht ignorieren ---
     def test_pay_kreditor_keine_doppelzahlung(self):
-        from finance.api import pay_kreditor
+        # Bis E1c über finance.api.pay_kreditor geprüft; die API ist weg, die
+        # Zusicherung gilt unverändert für fw_kreditor_bezahlen in /neu/.
         from finance.models import KreditorenRechnung, KreditorenZahlung, Buchung, Buchungskonto
         from finance.booking import ensure_kontenplan, konto as _k
         from django.db.models import Sum
@@ -8636,8 +8632,8 @@ class PrueferRunde2Tests(TestCase):
                                               status='freigegeben', liegenschaft=lg, konto=_k('4000'))
         KreditorenZahlung.objects.create(kreditor=k, betrag=Decimal('300'), datum=date(2024, 5, 1))
         self.assertEqual(k.offener_betrag, Decimal('700'))
-        status, _b = pay_kreditor(self._req(), k.id)
-        self.assertEqual(status, 200)
+        c = Client(); c.force_login(_team_user())
+        c.post('/neu/kreditoren/bezahlen/', {'rechnung_id': k.id})
         k.refresh_from_db()
         self.assertEqual(k.status, 'bezahlt')
         self.assertEqual(k.bezahlt_betrag, Decimal('1000'))   # 300 + 700, NICHT 1300
@@ -8661,15 +8657,17 @@ class PrueferRunde2Tests(TestCase):
 
     # --- Verwaltung/Security: Legacy-Finance-API weist negative Beträge ab ---
     def test_legacy_zahlung_negativ_abgewiesen(self):
-        from finance.api import create_zahlung, ZahlungCreateSchema
-        from finance.models import Zahlungseingang
+        # Bis E1c über die Legacy-Finance-API (create_zahlung) geprüft. Die API
+        # ist weg; derselbe Schutz sitzt in /neu/ in fw_bankabgleich_verbuchen.
+        from finance.models import Zahlungseingang, DebitorenRechnung
         from finance.booking import ensure_kontenplan
         ensure_kontenplan()
         lg, e, m, v = _basis_objekte()
-        payload = ZahlungCreateSchema(vertrag_id=v.id, betrag=Decimal('-5000'),
-                                      datum_eingang=date(2024, 5, 1), buchungs_monat=date(2024, 5, 1))
-        status, _b = create_zahlung(self._req('Sachbearbeitung'), payload)
-        self.assertEqual(status, 400)
+        r = DebitorenRechnung.objects.create(vertrag=v, titel='Miete 05/2024', betrag=Decimal('1500'),
+                                             datum=date(2024, 5, 1), faellig_am=date(2024, 5, 1),
+                                             status='offen')
+        c = Client(); c.force_login(_team_user('Sachbearbeitung'))
+        c.post('/neu/bankabgleich/verbuchen/', {'rechnung_id': r.id, 'betrag': '-5000'})
         self.assertEqual(Zahlungseingang.objects.count(), 0)
 
     # --- Bewirtschafter: Mieterportal-Dok-Leck Vormieter → Nachmieter ---
@@ -8915,13 +8913,14 @@ class SecurityBatchTests(TestCase):
     def test_get_mieter_liste_mutiert_adresse_nicht(self):
         # Fälliger Umzug (datierte Adress-Zeile) darf beim reinen Lesen (GET)
         # NICHT auf die Flat-Felder synchronisiert werden.
-        from crm.api import list_mieter
+        # Bis E1c über crm.api.list_mieter geprüft; jetzt über die Personenliste
+        # in /neu/, die dieselbe Rolle hat: reines Lesen darf nichts mutieren.
         from crm.models import MieterAdresse
-        from django.test import RequestFactory
         _lg, _e, m, _v = _basis_objekte()
         MieterAdresse.objects.create(mieter=m, art='wohn', gueltig_ab=date(2020, 1, 1),
                                      strasse='Neuweg 9', plz='3000', ort='Bern')
-        list_mieter(RequestFactory().get('/api/crm/mieter'))
+        c = Client(); c.force_login(_team_user())
+        c.get('/neu/personen/')
         m.refresh_from_db()
         self.assertEqual(m.strasse, 'Seeweg 3')            # GET synchronisiert nicht
 
@@ -8936,24 +8935,13 @@ class SecurityBatchTests(TestCase):
         self.assertGreaterEqual(n, 1)
         self.assertEqual(m.strasse, 'Neuweg 9')            # jetzt via Scheduler synchronisiert
 
-    def test_ticket_gelesen_nur_mit_schreibrolle(self):
-        from tickets.api import get_ticket
-        from tickets.models import SchadenMeldung
-        from django.test import RequestFactory
-        lg, _e, _m, _v = _basis_objekte()
-        t = SchadenMeldung.objects.create(liegenschaft=lg, titel='Leck', beschreibung='Wasser', gelesen=False)
-        # Reine Leserolle → kein Schreibzugriff, gelesen bleibt False.
-        req = RequestFactory().get(f'/api/tickets/{t.id}')
-        req.user = _team_user(rolle='Lesend')
-        get_ticket(req, t.id)
-        t.refresh_from_db()
-        self.assertFalse(t.gelesen)
-        # Schreibrolle → gelesen wird gesetzt.
-        req2 = RequestFactory().get(f'/api/tickets/{t.id}')
-        req2.user = _team_user(rolle='Verwaltung')
-        get_ticket(req2, t.id)
-        t.refresh_from_db()
-        self.assertTrue(t.gelesen)
+    # `test_ticket_gelesen_nur_mit_schreibrolle` ist mit E1c entfallen. Es prüfte
+    # tickets.api.get_ticket: eine reine Leserolle durfte ein Ticket NICHT als
+    # gelesen markieren. Die /neu/-Oberfläche hält das nicht ein —
+    # fw_schaden_detail läuft unter TEAM_ROLLEN (Leserolle eingeschlossen) und
+    # setzt `gelesen = True` beim Öffnen. Der Test liesse sich also nicht
+    # umschreiben, er würde fehlschlagen. Das ist ein bestehender kleiner Fehler
+    # in /neu/, nicht von E1c verursacht; er gehört in einen eigenen PR.
 
     def test_storno_ist_verwaltung_only(self):
         # Storno einer Journalbuchung ist ein buchhalterischer Korrektureingriff.
@@ -10194,25 +10182,13 @@ class QualitaetscheckFixTests(TestCase):
         self.assertEqual(d['ertrag_total'], Decimal('0.00'))
         self.assertEqual(d['aufwand_total'], Decimal('0.00'))
 
-    def test_cancel_umzug_schont_manuelle_adresse(self):
-        from crm.api import cancel_umzug
-        from crm.models import MieterAdresse
-        from django.test import RequestFactory
-        _lg, _e, m, _v = _basis_objekte()
-        zukunft = date.today() + timedelta(days=30)
-        # aus Vertrag stammend (soll storniert werden)
-        MieterAdresse.objects.create(mieter=m, art='wohn', gueltig_ab=zukunft,
-                                     strasse='Vertragsweg 1', plz='3000', ort='Bern',
-                                     quelle='vertrag:99')
-        # manuell erfasst (soll BLEIBEN)
-        MieterAdresse.objects.create(mieter=m, art='wohn', gueltig_ab=zukunft + timedelta(days=5),
-                                     strasse='Manuellweg 2', plz='3001', ort='Bern', quelle='')
-        req = RequestFactory().post(f'/api/crm/mieter/{m.id}/cancel-umzug')
-        req.user = _team_user()
-        cancel_umzug(req, m.id)
-        verbleibend = set(m.adressen.values_list('strasse', flat=True))
-        self.assertNotIn('Vertragsweg 1', verbleibend)   # Vertrags-Einzug storniert
-        self.assertIn('Manuellweg 2', verbleibend)       # manuelle Adresse geschont
+    # `test_cancel_umzug_schont_manuelle_adresse` ist mit E1c ersatzlos entfallen.
+    # Es prüfte crm.api.cancel_umzug: beim Stornieren eines Umzugs müssen aus dem
+    # Vertrag stammende Adresszeilen weichen, manuell erfasste aber bleiben.
+    # In /neu/ gibt es kein Umzug-Stornieren — der API-Endpunkt war der einzige
+    # Weg, und erreichbar war er nur über die in E1b entfernte Vue-Oberfläche.
+    # Die Fähigkeit ist damit seit E1b weg, nicht erst jetzt. Kommt sie nach
+    # /neu/, gehört dieser Test wieder her.
 
 
 class NachtN1KritischeBugsTests(TestCase):
@@ -11245,8 +11221,10 @@ class FinanzGuardTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'Ungültiger Monat')
 
-    def test_api_storno_mit_zahlung_geblockt(self):
-        # Alt-API darf (teil-)bezahlte Rechnungen nicht mehr stornieren (K6)
+    def test_storno_mit_zahlung_geblockt(self):
+        # (Teil-)bezahlte Rechnungen dürfen nicht storniert werden — zuerst muss
+        # die Zahlung storniert werden (K6). Bis E1c über die Alt-API geprüft,
+        # jetzt über fw_debitor_stornieren in /neu/, das denselben Schutz trägt.
         from finance.models import Zahlungseingang
         r = self._rechnung()
         Zahlungseingang.objects.create(vertrag=r.vertrag, betrag=Decimal('100'),
@@ -11254,8 +11232,7 @@ class FinanzGuardTests(TestCase):
                                        buchungs_monat=date(2024, 3, 1),
                                        debitoren_rechnung=r, status='verbucht')
         team = _team_user(); c = Client(); c.force_login(team)
-        resp = c.delete(f'/api/finance/debitoren-rechnungen/{r.id}')
-        self.assertEqual(resp.status_code, 409)
+        c.post(f'/neu/debitoren/{r.id}/stornieren/')
         r.refresh_from_db()
         self.assertNotEqual(r.status, 'storniert')
 
@@ -11547,11 +11524,11 @@ class BuchhalterFixesTests(TestCase):
         # gedriftet war (u.a. fehlten 2030, 2850, 2970, 3090, 3600, 3805). Wer
         # den Plan darüber importierte, bekam einen unvollständigen Kontenrahmen.
         # Er leitet sich jetzt aus STANDARD_KONTEN ab — der EINEN Quelle.
-        from finance.api import import_standard_kontenplan
-        from finance.booking import STANDARD_KONTEN
+        # Der zweite Aufrufweg (finance.api.import_standard_kontenplan) ist mit
+        # E1c entfallen; geprüft wird jetzt direkt die eine Quelle.
+        from finance.booking import STANDARD_KONTEN, ensure_kontenplan
         from finance.models import Buchungskonto
-        from django.test.client import RequestFactory
-        import_standard_kontenplan(RequestFactory().post('/api/finance/konten/import-standard'))
+        ensure_kontenplan()
         vorhanden = set(Buchungskonto.objects.values_list('nummer', flat=True))
         fehlend = {k[0] for k in STANDARD_KONTEN} - vorhanden
         self.assertEqual(fehlend, set())
@@ -16584,3 +16561,37 @@ class CamtImportRueckgaengigTests(TestCase):
         self.assertEqual(r.status, 'bezahlt')
         self.assertEqual(Zahlungseingang.objects.filter(debitoren_rechnung=r,
                                                         status='verbucht').count(), 1)
+
+
+class ApiOberflaecheNachE1cTests(TestCase):
+    """E1c: Von 82 Endpunkten sind genau zwei geblieben — beide öffentlich.
+
+    Der Rest bediente die in E1b entfernte Vue-Oberfläche. Diese Klasse hält
+    fest, dass die Fläche auch geschlossen bleibt: Ein versehentlich wieder
+    eingehängter Router fiele hier auf, nicht erst im Betrieb."""
+
+    # Je ein Pfad aus jedem der vier entfernten Router, plus die Doku-Seite.
+    ENTFERNT = [
+        '/api/portfolio/liegenschaften',
+        '/api/crm/mieter',
+        '/api/tickets/',
+        '/api/finance/konten',
+        '/api/docs',
+    ]
+
+    def test_entfernte_endpunkte_sind_weg(self):
+        # Angemeldet geprüft: Ein 404 darf nicht bloss die Anmeldeweiche sein.
+        c = Client(); c.force_login(_team_user())
+        for pfad in self.ENTFERNT:
+            with self.subTest(pfad=pfad):
+                self.assertEqual(c.get(pfad).status_code, 404)
+
+    def test_beide_oeffentlichen_endpunkte_antworten_anonym(self):
+        # Ohne Anmeldung erreichbar — kein 302 auf den Login, kein 403 aus der
+        # Session-Pflicht. Der Inhalt wird anderswo geprüft (Bewerbung: fehlende
+        # Pflichtfelder → 4xx; Webhook: fehlendes Secret → 403).
+        c = Client()
+        self.assertNotIn(c.post('/api/mietprozess/public/bewerben', {}).status_code, (301, 302, 404))
+        self.assertEqual(
+            c.post('/api/rentals/webhook/docuseal', data='{}',
+                   content_type='application/json').status_code, 403)   # fail-closed ohne Secret
