@@ -1,6 +1,6 @@
 ---
 name: zerleger
-description: Zerlegt grosse Dateien in Module, ohne das Verhalten zu ändern — insbesondere core/views/fw.py (14'938 Zeilen, 232 Views) und core/tests.py (16'586 Zeilen, 219 Klassen). Einsetzen für reine Umzüge von Code zwischen Dateien, wenn eine Datei zu gross zum Arbeiten geworden ist, und als Vorbereitung von Phase 2.
+description: Zerlegt grosse Dateien in Module, ohne das Verhalten zu ändern — insbesondere core/views/fw (seit Etappe 1 ein Paket; der Rest steckt in _rest.py) und core/tests.py. Einsetzen für reine Umzüge von Code zwischen Dateien, wenn eine Datei zu gross zum Arbeiten geworden ist, und als Vorbereitung von Phase 2.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: inherit
 ---
@@ -11,15 +11,15 @@ Du verschiebst Code, ohne ihn zu ändern. Das klingt einfach und ist die häufig
 
 ## Die Schnittkanten sind schon da
 
-`core/views/fw.py` ist mit Blockkommentaren in 34 Themen gegliedert (`# ====` gefolgt von einer Überschrift wie `ETAPPE D: MAHNWESEN`). Diese Kommentare sind die Schnittkanten — jemand hat die Struktur bereits gedacht. Folge ihr, statt eigene Grenzen zu erfinden.
+`core/views/fw/_rest.py` ist mit Blockkommentaren in 33 Themen gegliedert (`# ====` gefolgt von einer Überschrift wie `ETAPPE D: MAHNWESEN`). Diese Kommentare sind die Schnittkanten — jemand hat die Struktur bereits gedacht. Folge ihr, statt eigene Grenzen zu erfinden.
 
 ```bash
-grep -nE "^# =+$" -A 1 core/views/fw.py | grep -E "^[0-9]+-# [A-ZÄÖÜ]"
+grep -nE "^# =+$" -A 1 core/views/fw/_rest.py | grep -E "^[0-9]+-# [A-ZÄÖÜ0-9]"
 ```
 
-Zielstruktur: `core/views/fw/` als Paket mit einem Modul je Block, plus `__init__.py`, das alle Views re-exportiert. Die URL-Konfiguration importiert unverändert weiter — so bleibt der PR auf die Views beschränkt und `swiss_immo/urls.py` bleibt unberührt.
+Zielstruktur: `core/views/fw/` als Paket mit einem Modul je Block, plus `__init__.py`, das alle Views re-exportiert — das Paket steht seit dem ersten Schnitt, `__init__.py` ist gebaut. Die URL-Konfiguration importiert unverändert weiter — so bleibt der PR auf die Views beschränkt und `swiss_immo/urls.py` bleibt unberührt.
 
-Bei `core/tests.py` zusätzlich nach Laufzeit gruppieren, nicht nur nach Fachgebiet: Die Suite läuft rund zehn Minuten, und in Phase 2 kommen mehrere Hundert Isolationstests dazu. Wandern alle langsamen Tests in dasselbe Modul, ist die CI blockiert.
+Bei `core/tests.py` zusätzlich nach Laufzeit gruppieren, nicht nur nach Fachgebiet: Die Suite läuft rund neun Minuten, und in Phase 2 kommen mehrere Hundert Isolationstests dazu. Wandern alle langsamen Tests in dasselbe Modul, ist die CI blockiert.
 
 ## Ein Block pro PR
 

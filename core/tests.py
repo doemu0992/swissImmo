@@ -8963,8 +8963,18 @@ class SecurityBatchTests(TestCase):
 
     def test_storno_ist_verwaltung_only(self):
         # Storno einer Journalbuchung ist ein buchhalterischer Korrektureingriff.
-        src = open('core/views/fw.py', encoding='utf-8').read()
+        #
+        # Der Test las die Quelle bis Etappe 1 über den festen Pfad
+        # 'core/views/fw.py'. Seit der Zerlegung ist fw ein Paket, und die View
+        # wandert im Lauf der Etappe von Modul zu Modul. Deshalb wird jetzt die
+        # Datei gelesen, in der die Funktion TATSÄCHLICH steht — dann überlebt
+        # der Test jeden weiteren Block, ohne angefasst zu werden.
+        import inspect
+        from core.views.fw import fw_buchung_stornieren
+        quelle = inspect.getsourcefile(inspect.unwrap(fw_buchung_stornieren))
+        src = open(quelle, encoding='utf-8').read()
         idx = src.find('def fw_buchung_stornieren')
+        self.assertNotEqual(idx, -1, f"fw_buchung_stornieren nicht in {quelle} gefunden")
         deko = src[max(0, idx - 120):idx]
         self.assertRegex(deko, r"rolle_erforderlich\(ROLLE_VERWALTUNG\)")
 

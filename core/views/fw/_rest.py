@@ -1,4 +1,9 @@
-# core/views/fw.py
+# core/views/fw/_rest.py
+#
+# Der noch nicht aufgeteilte Rest der urspruenglichen fw.py (Etappe 1,
+# siehe docs/ETAPPE-1-ZERLEGEN.md). Schrumpft mit jedem Block und faellt
+# am Ende ganz weg. Importiert wird weiterhin ueber core.views.fw --
+# das __init__.py haelt die Fassade stabil.
 """
 Fairwalter-Rebuild: neue Oberfläche (/neu/…) auf bestehendem Backend.
 Referenz: Original-Screenshots in REBUILD.md. Server-gerendert, testbar.
