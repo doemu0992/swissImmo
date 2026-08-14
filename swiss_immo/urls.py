@@ -75,7 +75,7 @@ def healthz_view(request):
 from core.views.application import public_application_view, public_datenschutz_view
 
 # 2. Das neue Admin-Cockpit (Bereinigt um das alte Dashboard)
-from core.views.dashboard_view import update_market_data_view, spa_master_view
+from core.views.dashboard_view import update_market_data_view
 
 # 2b. Eigentümer-Portal & Login-Weiche
 from core.views.portal import (portal_view, nach_login_view, portal_dokument_download, portal_report_pdf, portal_freigabe,
@@ -429,9 +429,6 @@ urlpatterns = [
     path('neu/zahlungen/<int:pk>/stornieren/', fw_zahlung_stornieren, name='fw_zahlung_stornieren'),
     path('neu/bankabgleich/camt-import/', fw_camt_import, name='fw_camt_import'),
     path('neu/bankabgleich/auszug/<int:pk>/rueckgaengig/', fw_kontoauszug_rueckgaengig, name='fw_kontoauszug_rueckgaengig'),
-
-    # --- DIE NEUE WEB-APP (SPA) ---
-    path('app/', spa_master_view, name='spa_master'),
 
     # --- EIGENTÜMER-PORTAL (read-only, nur eigener Mandant) ---
     path('portal/', portal_view, name='portal'),

@@ -340,7 +340,7 @@ LOGGING = {
 UNFOLD = {
     "SITE_TITLE": "SwissImmo Verwaltung",
     "SITE_HEADER": "SwissImmo",
-    "SITE_URL": reverse_lazy("spa_master"), # Leitet Logo-Klick direkt in die App
+    "SITE_URL": reverse_lazy("fw_dashboard"), # Logo-Klick fuehrt in die aktive Oberflaeche /neu/
     "SITE_ICON": "real_estate_agent",
 
     # --- GLOBALER CLEAN-LOOK (RAHMENLOS) & INLINE-EDITING ---
@@ -375,7 +375,7 @@ UNFOLD = {
                 "title": "Hauptsystem",
                 "separator": True,
                 "items": [
-                    {"title": "Zurück zur App 🚀", "icon": "dashboard", "link": reverse_lazy("spa_master")},
+                    {"title": "Zur Verwaltung 🚀", "icon": "dashboard", "link": reverse_lazy("fw_dashboard")},
                 ],
             },
         ],

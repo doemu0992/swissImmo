@@ -94,6 +94,39 @@ Der Fall `core/views/webhooks.py` aus P0.4 ist die Erinnerung daran, warum: **ni
 
 **Abnahme E1b:** Alle verbleibenden URLs auflösbar, Testsuite grün, `/neu/`, `/portal/` und `/mieter/` per Testclient erreichbar.
 
+### E1b — erledigt am 14.08.2026
+
+Abnahme erfüllt: 293 benannte Routen auflösbar, 1'074 Tests grün, `/neu/` liefert 200,
+`/portal/` und `/mieter/` leiten rollenrichtig nach `/neu/` (200 nach Redirect), `/app/` ist 404.
+
+Zwei Abweichungen von dieser Vorgabe — beide zugunsten des Bestands:
+
+**1. Es waren fünfzehn Dateien, nicht zwölf.** Die Nachweispflicht oben hat drei weitere
+SPA-Dateien zutage gefördert, die hier nicht aufgeführt waren:
+
+| Datei | Einzige Referenz |
+|---|---|
+| `core/templates/core/components/side_panels.html` | `spa_master.html` |
+| `core/templates/core/components/toasts_and_loader.html` | `spa_master.html` |
+| `core/templates/core/includes/sidebar.html` | `spa_master.html` |
+
+Für alle fünfzehn gilt dasselbe Muster: genau eine Referenz, und die führt auf
+`spa_master.html`, das seinerseits nur von `spa_master_view` gerendert wurde. Die im
+Auftrag als riskant markierten `head.html`/`header.html`/`modals.html` haben sich damit
+als eindeutig SPA-eigen erwiesen — `fw/base.html` bindet keine davon ein.
+
+**2. `swiss_immo/settings.py` musste mitgeändert werden.** Nicht Aufräumen bei der
+Gelegenheit, sondern zwingende Folge: die Unfold-Konfiguration hielt an zwei Stellen ein
+`reverse_lazy("spa_master")` (Zeile 343 `SITE_URL`, Zeile 378 Navigationseintrag
+„Zurück zur App 🚀"). `reverse_lazy` löst erst beim Zugriff auf — die Route zu entfernen
+hätte das Admin also nicht beim Start, sondern beim Rendern zerrissen. Beide Stellen zeigen
+jetzt auf `fw_dashboard`, der Navigationseintrag heisst „Zur Verwaltung 🚀".
+
+Mit entfernt wurden `_generate_dashboard_context` und `_render_error` in
+`core/views/dashboard_view.py` — beide dienten ausschliesslich `spa_master_view`.
+`_berechne_aufgaben` bleibt: es wird von `core/views/fw.py:25` gebraucht.
+Die Datei schrumpft damit von 252 auf 141 Zeilen.
+
 ---
 
 ## E1c — Die API-Endpunkte entfernen
