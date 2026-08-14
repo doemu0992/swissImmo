@@ -6,6 +6,23 @@ on:
   pull_request:
 
 jobs:
+  # Läuft in Sekunden statt Minuten und braucht weder Datenbank noch Django.
+  # Bewusst ein eigener Job: So ist beim Blick auf den PR sofort erkennbar,
+  # ob eine rote Ampel vom Linter oder von den Tests kommt.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Ruff installieren
+        run: pip install ruff==0.15.8
+      - name: Ruff
+        run: ruff check . --output-format=github
+
   test:
     runs-on: ubuntu-latest
     steps:

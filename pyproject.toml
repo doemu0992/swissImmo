@@ -1,0 +1,75 @@
+# Projektkonfiguration swissImmo.
+#
+# Bislang gab es keine (TS-12 in docs/ANALYSE.md): Damit war die Definition of
+# Done „keine neuen Linter-Fehler" nicht überprüfbar. Diese Datei schliesst das.
+
+[tool.ruff]
+# Die CI fährt Python 3.11 — die untere Grenze bestimmt das Ziel.
+target-version = "py311"
+line-length = 120
+
+exclude = [
+    "*/migrations/*",   # von Django erzeugt, nicht von Hand gepflegt
+    "node_modules",
+    "e2e",              # nur Playwright/TypeScript, kein Python
+]
+
+[tool.ruff.lint]
+# ---------------------------------------------------------------------------
+# Ausgewählt sind Djangos Standardregeln (E4/E7/E9/F) plus vier Familien, die
+# im Bestand bereits VOLLSTÄNDIG sauber sind (jeweils 0 Treffer am 14.08.2026).
+# Sie kosten heute nichts und fangen ab sofort jeden Rückfall:
+#
+#   ISC  implizite String-Verkettung   (0)
+#   ICN  Import-Konventionen           (0)
+#   RSE  überflüssige Klammern bei raise (0)
+#   TID  Import-Hygiene                (0)
+#
+# Bewusst NICHT ausgewählt, weil sie den Bestand sofort rot färben würden und
+# damit das Werkzeug entwerten (Stand 14.08.2026):
+#   PL 3188 · RUF 1674 · UP 215 · S 125 · PTH 111 · DJ 56 · C4 42
+#   T20 39 · SIM 38 · B 21 · A 10 · RET 9 · PIE 7
+# Diese Familien sind Kandidaten für spätere, eigene PRs — nicht für diesen.
+# ---------------------------------------------------------------------------
+select = ["E4", "E7", "E9", "F", "ISC", "ICN", "RSE", "TID"]
+
+# ---------------------------------------------------------------------------
+# Bestehende Verstösse, bewusst ausgenommen — die Zahl ist der Stand vom
+# 14.08.2026 (ohne Migrationen). Jede Zeile ist ein offener Posten, der in
+# einem eigenen PR abgebaut werden kann; bis dahin bleibt die CI grün.
+#
+# Sie hier auszunehmen ist Absicht: Ein Linter, der beim Einschalten 1'818
+# Fehler meldet, wird ignoriert und ist damit wertlos.
+# ---------------------------------------------------------------------------
+ignore = [
+    "E702",   # 1378 — mehrere Anweisungen je Zeile (Semikolon), v.a. core/tests.py
+    "E701",   #  212 — mehrere Anweisungen je Zeile (Doppelpunkt)
+    "F401",   #  122 — ungenutzter Import
+    "E402",   #   22 — Import nicht am Dateikopf. Teils ABSICHT: fw.py umgeht
+              #        damit Importzyklen (siehe Agent `zerleger`).
+    "F841",   #   22 — ungenutzte lokale Variable
+    "E722",   #   21 — nacktes `except:`. Entspricht TS-8; Aufarbeitung ist P2.2.
+    "F541",   #   16 — f-String ohne Platzhalter
+    "E401",   #   12 — mehrere Importe auf einer Zeile
+    "E741",   #   12 — mehrdeutiger Variablenname (l, I, O)
+    "F811",   #    1 — erneut definiert, ohne zwischenzeitliche Nutzung
+]
+
+# ---------------------------------------------------------------------------
+# Was damit ab sofort SCHARF ist — alle heute bei 0, alle echte Fehler:
+#
+#   F821  undefinierter Name        ← fängt NameError vor der Laufzeit.
+#                                     Das Sicherheitsnetz für das Zerlegen von
+#                                     fw.py (Etappe 1): ein vergessener Import
+#                                     fiele sonst erst im Betrieb auf.
+#   F822  undefinierter Name in __all__
+#   F823  lokale Variable vor Zuweisung benutzt
+#   F632  `is` auf Literal statt `==`
+#   F502  ff. fehlerhafte Formatzeichenketten
+#   E9xx  Syntaxfehler
+# ---------------------------------------------------------------------------
+
+[tool.ruff.lint.per-file-ignores]
+# Django verlangt in Settings den Stern-Import-Stil an einzelnen Stellen und
+# `__init__.py` re-exportiert bewusst.
+"__init__.py" = ["F401"]

@@ -366,7 +366,13 @@ Alles, was *innerhalb* eines Mandanten geschützt werden musste, ist geschützt.
 
 **TS-11 – Abo-Feld ohne Wirkung.** `Verwaltung.abo_plan` kennt drei Stufen (Start, Pro, Premium) und es gibt eine Preisseite mit Mengenstaffel nach Einheiten. Die Auswahl setzt jedoch nur ein Feld — **es gibt keine einzige Stelle, an der eine Funktion abhängig vom Plan freigegeben oder gesperrt wird.** Für Phase 3 heisst das: Die Preislogik ist vorhanden, das Entitlement-System fehlt vollständig. Ausserdem verlangt die Projektanweisung **vier** Stufen, nicht drei.
 
-**TS-12 – Kein Linter, keine Projektkonfiguration.** Weder `ruff`/`flake8` noch `pyproject.toml`/`setup.cfg`. Die CI prüft `check`, Migrationen und Tests — die Definition of Done „keine neuen Linter-Fehler" ist derzeit nicht überprüfbar.
+**TS-12 – ~~Kein Linter, keine Projektkonfiguration.~~ Erledigt (P0.6).** `pyproject.toml` mit Ruff-Konfiguration, eigener CI-Job `lint`, `requirements-dev.txt` für Werkzeuge. Die Definition of Done „keine neuen Linter-Fehler" ist damit überprüfbar.
+
+> **Was dabei gemessen wurde.** Ruffs Standardregeln melden auf dem Bestand **1'818 Verstösse** — davon nur einer in Migrationen. Ein Linter, der beim Einschalten so anschlägt, wird ignoriert; deshalb sind die zehn betroffenen Regeln in `pyproject.toml` **einzeln mit Stückzahl ausgenommen** und bilden dort einen sichtbaren Rückstand statt einer roten Ampel. Grösster Posten ist `E702` (1'378, mehrere Anweisungen je Zeile, überwiegend in `core/tests.py`), gefolgt von `E701` (212) und `F401` (122, ungenutzte Importe).
+>
+> Scharf geschaltet ist dafür alles, was heute schon sauber ist: vier vollständig fehlerfreie Regelfamilien (`ISC`, `ICN`, `RSE`, `TID`) und die echten Fehlerregeln aus `F`/`E9`. Darunter **`F821` (undefinierter Name)** — die Regel fängt einen `NameError` vor der Laufzeit und ist damit das Sicherheitsnetz für Etappe 1: Beim Zerlegen von `fw.py` fiele ein vergessener Import sonst erst im Betrieb auf.
+>
+> `E722` (nacktes `except:`) ergibt **exakt 21** und bestätigt damit die Zahl aus TS-8. Die Aufarbeitung bleibt P2.2.
 
 **TS-13 – SQLite als Produktionsdatenbank.** PostgreSQL ist in den Settings vorbereitet, aber `psycopg` fehlt in `requirements.txt`, und der Standardpfad bleibt SQLite (`timeout: 30` deutet auf Sperrkonflikte hin). Bei gleichzeitigen Schreibzugriffen mehrerer Mandanten nicht tragfähig.
 
@@ -387,7 +393,7 @@ Die Nummerierung ist die empfohlene Reihenfolge.
 | ~~P0.3~~ | ~~TS-4 beheben: Importe auf `rentals.services` korrigieren, `check_rents` wieder lauffähig machen~~ — **erledigt** | XS |
 | ~~P0.4~~ | ~~TS-5 beheben~~ — **erledigt**, aber ohne `core/views/webhooks.py`: die Datei ist bewusst geparkt und testgesichert (siehe Korrektur bei TS-5) | S |
 | P0.5 | `psycopg` in `requirements.txt` nachtragen; `django-jazzmin`, `vulture` und die ungenutzten Pakete entfernen; `GEMINI_API_KEY` streichen | S |
-| P0.6 | Ruff plus `pyproject.toml` einführen und in die CI aufnehmen — sonst ist die Definition of Done ab Phase 2 nicht prüfbar | S |
+| ~~P0.6~~ | ~~Ruff plus `pyproject.toml` einführen und in die CI aufnehmen~~ — **erledigt.** Eigener CI-Job `lint`, Konfiguration in `pyproject.toml`, Werkzeug in `requirements-dev.txt` (nicht in `requirements.txt` — das wiederholte TS-14) | S |
 | P0.7 | Groq-Nutzung nachträglich formalisieren: Auftragsbearbeitungsvertrag, DSG-Bewertung, Kostenrahmen, Abschaltbarkeit dokumentieren | S |
 | P0.8 | `test_foto_beleg_mit_qr_wird_dekodiert` gegen fehlendes `zxing-cpp` absichern (`skipUnless`), damit ein unvollständiger Install nicht als Fachfehler erscheint (siehe Prüfprotokoll) | XS |
 

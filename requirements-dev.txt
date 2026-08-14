@@ -1,0 +1,13 @@
+# Werkzeuge für Entwicklung und CI — NICHT für den Betrieb.
+#
+# Bewusst getrennt von requirements.txt: Dort steht heute bereits `vulture`,
+# ein reines Analysewerkzeug, unter den Laufzeitabhängigkeiten (TS-14 in
+# docs/ANALYSE.md). Ruff dorthin zu legen würde denselben Fehler wiederholen.
+# Die vollständige Aufteilung in base/dev/prod ist P2.3; diese Datei ist ihr
+# erster Schritt.
+#
+#   pip install -r requirements-dev.txt
+
+-r requirements.txt
+
+ruff==0.15.8
