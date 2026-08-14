@@ -6286,20 +6286,20 @@ class DocuSealWebhookTests(TestCase):
     unterschriebener Vertrag wird zentral abgelegt."""
 
     def test_vertrag_id_aus_name(self):
-        from rentals.api import _vertrag_id_aus_name
+        from rentals.services import _vertrag_id_aus_name
         self.assertEqual(_vertrag_id_aus_name('Mietvertrag 42'), 42)
         self.assertEqual(_vertrag_id_aus_name('Mietvertrag42'), 42)
         self.assertEqual(_vertrag_id_aus_name(''), 0)
         self.assertEqual(_vertrag_id_aus_name('Foo'), 0)
 
     def test_erster_dokument_url(self):
-        from rentals.api import _erster_dokument_url
+        from rentals.services import _erster_dokument_url
         self.assertEqual(_erster_dokument_url([{'url': 'a'}, {'url': 'b'}]), 'a')
         self.assertIsNone(_erster_dokument_url([]))
         self.assertIsNone(_erster_dokument_url(None))
 
     def test_event_nicht_abgeschlossen_ignoriert(self):
-        from rentals.api import verarbeite_docuseal_event
+        from rentals.services import verarbeite_docuseal_event
         lg, e, m, v = _basis_objekte()
         # 'form.viewed' o.ä. → nichts tun, kein Fehler
         self.assertFalse(verarbeite_docuseal_event({'event_type': 'form.viewed', 'data': {'name': f'Mietvertrag {v.id}'}}))
@@ -6308,13 +6308,13 @@ class DocuSealWebhookTests(TestCase):
 
     def test_completed_legt_vertrag_ab(self):
         from unittest.mock import patch, MagicMock
-        from rentals.api import verarbeite_docuseal_event
+        from rentals.services import verarbeite_docuseal_event
         from rentals.models import Dokument
         lg, e, m, v = _basis_objekte()
         resp = MagicMock(status_code=200, content=b'%PDF-signed')
         payload = {'event_type': 'submission.completed',
                    'data': {'name': f'Mietvertrag {v.id}', 'combined_document_url': 'https://api.docuseal.com/y.pdf'}}
-        with patch('rentals.api.requests.get', return_value=resp):
+        with patch('rentals.services.requests.get', return_value=resp):
             ok = verarbeite_docuseal_event(payload)
         self.assertTrue(ok)
         v.refresh_from_db()
@@ -6325,25 +6325,25 @@ class DocuSealWebhookTests(TestCase):
 
     def test_completed_documents_liste(self):
         from unittest.mock import patch, MagicMock
-        from rentals.api import verarbeite_docuseal_event
+        from rentals.services import verarbeite_docuseal_event
         lg, e, m, v = _basis_objekte()
         resp = MagicMock(status_code=200, content=b'%PDF-x')
         payload = {'event_type': 'form.completed',
                    'data': {'name': f'Mietvertrag {v.id}', 'documents': [{'url': 'https://api.docuseal.com/doc.pdf'}]}}
-        with patch('rentals.api.requests.get', return_value=resp):
+        with patch('rentals.services.requests.get', return_value=resp):
             self.assertTrue(verarbeite_docuseal_event(payload))
 
     def test_completed_ssrf_fremde_url_wird_abgewiesen(self):
         # SSRF-Schutz: eine doc_url auf fremdem/nicht-HTTPS-Host darf NICHT
         # heruntergeladen werden — kein requests.get, kein Ablegen (Härtung).
         from unittest.mock import patch, MagicMock
-        from rentals.api import verarbeite_docuseal_event
+        from rentals.services import verarbeite_docuseal_event
         lg, e, m, v = _basis_objekte()
         resp = MagicMock(status_code=200, content=b'%PDF-evil')
         payload = {'event_type': 'submission.completed',
                    'data': {'name': f'Mietvertrag {v.id}',
                             'combined_document_url': 'http://169.254.169.254/latest/meta-data'}}
-        with patch('rentals.api.requests.get', return_value=resp) as g:
+        with patch('rentals.services.requests.get', return_value=resp) as g:
             ok = verarbeite_docuseal_event(payload)
         self.assertFalse(ok)
         g.assert_not_called()
@@ -10224,7 +10224,7 @@ class NachtN1KritischeBugsTests(TestCase):
         ensure_kontenplan()
 
     def test_storno_kette_verkettet_und_markiert(self):
-        from finance.api import erstelle_storno_buchung
+        from finance.services import erstelle_storno_buchung
         from finance.booking import buche
         _lg, _e, _m, _v = _basis_objekte()
         self._konten()
@@ -11450,7 +11450,7 @@ class BuchhalterFixesTests(TestCase):
         from core.services.jahresabschluss import buche_jahresabschluss, ist_abgeschlossen
         from finance.booking import ensure_kontenplan, buche
         from finance.models import Buchung
-        from finance.api import erstelle_storno_buchung
+        from finance.services import erstelle_storno_buchung
         ensure_kontenplan()
         lg, e, m, v = _basis_objekte()
         buche('1100', '3000', Decimal('900'), 'Miete 02/2024',

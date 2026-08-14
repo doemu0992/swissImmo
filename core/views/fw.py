@@ -982,7 +982,7 @@ def fw_debitor_stornieren(request, pk):
     from django.shortcuts import redirect
     from django.contrib import messages
     from finance.models import Buchung, Zahlungseingang
-    from finance.api import erstelle_storno_buchung
+    from finance.services import erstelle_storno_buchung
     from core.auth import log_aktion
     if request.method != 'POST':
         return redirect('fw_debitoren')
@@ -4985,7 +4985,7 @@ def fw_kontoauszug_rueckgaengig(request, pk):
     from django.contrib import messages
     from django.db.models import Q as _Q
     from finance.models import Kontoauszug, Zahlungseingang, Buchung
-    from finance.api import erstelle_storno_buchung
+    from finance.services import erstelle_storno_buchung
     from core.auth import log_aktion
     if request.method != 'POST':
         return redirect('fw_bankabgleich')
@@ -6347,7 +6347,7 @@ def fw_kreditor_zahlung_stornieren(request, pk):
     from django.shortcuts import redirect
     from django.contrib import messages
     from finance.models import KreditorenZahlung, Buchung
-    from finance.api import erstelle_storno_buchung
+    from finance.services import erstelle_storno_buchung
     from core.auth import log_aktion
     if request.method != 'POST':
         return redirect('fw_kreditoren')
@@ -14934,7 +14934,7 @@ def fw_zahlung_stornieren(request, pk):
     from django.shortcuts import redirect
     from django.contrib import messages
     from finance.models import Buchung
-    from finance.api import erstelle_storno_buchung
+    from finance.services import erstelle_storno_buchung
     from core.auth import log_aktion
 
     if request.method != 'POST':
