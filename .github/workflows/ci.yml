@@ -1,8 +1,12 @@
 name: CI
 
 on:
+  # Nur noch `main` — seit E4 ist das der Hauptzweig (vorher stand hier
+  # zusätzlich "claude/**"). Arbeitszweige werden über `pull_request`
+  # abgedeckt; beide Auslöser nebeneinander liessen jeden Push auf einen
+  # Zweig mit offenem PR doppelt laufen.
   push:
-    branches: [main, "claude/**"]
+    branches: [main]
   pull_request:
 
 jobs:
