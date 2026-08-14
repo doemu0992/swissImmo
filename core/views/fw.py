@@ -488,24 +488,79 @@ def fw_debitoren(request):
                        | Q(vertrag__mieter__nachname__icontains=q)
                        | Q(vertrag__mieter__firmen_name__icontains=q))
 
+    # --- KPI-Summen als DB-Aggregate ---------------------------------------
+    # Vorher lief hier eine Python-Schleife über ALLE Rechnungen (inkl. der
+    # vorgeladenen Zahlungen), nur um vier Summen zu bilden und danach auf 50
+    # Zeilen zu paginieren. Bei 12 Liegenschaften/1 Jahr waren das ~9'200 ORM-
+    # Objekte und ~500 ms für eine Seite, die 50 Zeilen zeigt — und es wächst
+    # linear mit jedem Monat Sollstellung. Die Summen rechnet jetzt die
+    # Datenbank, materialisiert wird nur die angezeigte Seite (Profiling).
+    from django.db.models import OuterRef, Subquery, Count, Value, DecimalField
+    from django.db.models.functions import Coalesce, Greatest
+    _GELD = DecimalField(max_digits=12, decimal_places=2)
+    _NULL = Value(Decimal('0.00'), output_field=_GELD)
+    _OFFEN_STATUS = ('offen', 'teilbezahlt')
+
+    # Verbuchte Zahlungen je Rechnung als SUBQUERY, nicht als JOIN: ein Join auf
+    # die Zahlungen vervielfacht die Rechnungszeilen (eine Zeile je Zahlung) und
+    # würde damit Sum('betrag') für Rechnungen mit Teilzahlungen verfälschen.
+    _bezahlt = Subquery(
+        Zahlungseingang.objects
+        .filter(debitoren_rechnung=OuterRef('pk'), status='verbucht')
+        .values('debitoren_rechnung').annotate(s=Sum('betrag')).values('s')[:1],
+        output_field=_GELD)
+    # Spiegelt DebitorenRechnung.offener_betrag: max(0, betrag − verbucht).
+    _offen_expr = Greatest(F('betrag') - Coalesce(_bezahlt, _NULL), _NULL, output_field=_GELD)
+    _faellig_expr = Coalesce('faellig_am', 'datum')   # datum hat Default → nie NULL
+
+    total_betrag = (qs.exclude(status='storniert')
+                    .aggregate(s=Sum('betrag'))['s'] or Decimal('0.00'))
+    offene_qs = qs.filter(status__in=_OFFEN_STATUS)
+    _agg = offene_qs.annotate(_o=_offen_expr).aggregate(s=Sum('_o'), n=Count('id'))
+    total_offen = _agg['s'] or Decimal('0.00')
+    anzahl_offen = _agg['n'] or 0
+    # _mahnstufe() liefert für JEDE überfällige offene Rechnung einen Treffer
+    # (Fallback «Fällig», wenn noch unter der ersten Stufe). Die Zahl ist damit
+    # exakt «offen und fällig vor heute» — reines SQL, ohne Mandanten-Lookup.
+    anzahl_ueberfaellig = (offene_qs.annotate(_f=_faellig_expr)
+                           .filter(_f__lt=heute).count())
+
+    # --- Sortierung + Pagination in SQL ------------------------------------
+    # Reihenfolge wie bisher: offene Posten zuerst (älteste Fälligkeit oben),
+    # erledigte danach (neuste oben). Zwei Querysets, weil eine einzelne
+    # ORDER BY-Klausel die Richtung nicht pro Gruppe umdrehen kann.
+    offene_sortiert = offene_qs.annotate(_f=_faellig_expr, _o=_offen_expr).order_by('_f', 'id')
+    andere_sortiert = (qs.exclude(status__in=_OFFEN_STATUS)
+                       .annotate(_f=_faellig_expr, _o=_offen_expr).order_by('-_f', '-id'))
+
+    from django.core.paginator import Paginator, Page
+    try:
+        seite = max(1, int(request.GET.get('seite') or 1))
+    except ValueError:
+        seite = 1
+    n_offen_rows = offene_sortiert.count()
+    rows_gesamt = n_offen_rows + andere_sortiert.count()
+    # Paginator über eine Platzhalter-Sequenz: das Template nutzt von `page` nur
+    # die Pager-Metadaten (Nummer, Seitenzahl, vor/zurück), nie object_list.
+    paginator = Paginator(range(rows_gesamt), 50)
+    page = paginator.get_page(seite)
+    _start = (page.number - 1) * paginator.per_page
+    _ende = _start + paginator.per_page
+    seiten_objekte = []
+    if _start < n_offen_rows:                       # Teil der Seite liegt in den offenen
+        seiten_objekte += list(offene_sortiert[_start:min(_ende, n_offen_rows)])
+    if _ende > n_offen_rows:                        # …und/oder in den erledigten
+        seiten_objekte += list(andere_sortiert[max(0, _start - n_offen_rows):_ende - n_offen_rows])
+
     rows = []
-    total_offen = Decimal('0.00')
-    total_betrag = Decimal('0.00')     # Spaltensumme «Betrag» für den Tabellenfuss
-    anzahl_offen = 0
-    anzahl_ueberfaellig = 0
-    for r in qs:
+    for r in seiten_objekte:
         lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag_id and r.vertrag.einheit_id else None)
         einheit = r.einheit or (r.vertrag.einheit if r.vertrag_id else None)
-        offen = r.offener_betrag if r.status in ('offen', 'teilbezahlt') else Decimal('0.00')
+        # `_o` kommt aus der Annotation (siehe oben) — identisch zu
+        # r.offener_betrag, aber ohne die Zahlungen nachzuladen.
+        offen = r._o if r.status in _OFFEN_STATUS else Decimal('0.00')
         faellig = r.faellig_am or r.datum
         mahn = _mahnstufe(faellig, heute, r.status, _mandant_von_rechnung(r))
-        if r.status != 'storniert':
-            total_betrag += (r.betrag or Decimal('0.00'))
-        if r.status in ('offen', 'teilbezahlt'):
-            total_offen += offen
-            anzahl_offen += 1
-            if mahn:
-                anzahl_ueberfaellig += 1
         label, pill_cls = STATUS_PILL.get(r.status, (r.status, 'bg-slate-100 text-slate-500'))
         rows.append({
             'r': r,
@@ -519,22 +574,12 @@ def fw_debitoren(request):
             'mahn': mahn,
             'vertrag_id': r.vertrag_id,
         })
-    # Offene zuerst (nach Fälligkeit), erledigte danach (neuste zuoberst)
-    rows.sort(key=lambda x: (0, x['faellig'].toordinal()) if x['r'].status in ('offen', 'teilbezahlt')
-              else (1, -x['faellig'].toordinal()))
-
-    # Pagination: die Debitorenliste wächst monatlich um eine Position je Vertrag —
-    # ohne Seiten wird sie nach einem Jahr unbrauchbar lang. KPI-Summen oben
-    # bleiben Gesamtwerte (vor dem Slicing berechnet).
-    from django.core.paginator import Paginator
-    paginator = Paginator(rows, 50)
-    try:
-        seite = max(1, int(request.GET.get('seite') or 1))
-    except ValueError:
-        seite = 1
-    page = paginator.get_page(seite)
-    rows_gesamt = len(rows)
-    rows = list(page.object_list)
+    # (Sortierung und Seitenauswahl sind oben bereits in SQL erledigt.)
+    # Das Template iteriert `page` (nicht `rows`) — ein Page-Objekt ist über
+    # seine object_list iterierbar. Der Paginator oben kennt nur die Platzhalter-
+    # Sequenz für die Metadaten (Seitenzahl, vor/zurück); die tatsächlichen
+    # Zeilen werden hier eingesetzt, damit beides zusammenpasst.
+    page = Page(rows, page.number, paginator)
 
     aktive_vertraege = (Mietvertrag.objects.filter(status='aktiv')
                         .select_related('mieter', 'einheit__liegenschaft').order_by('einheit__liegenschaft__strasse'))
