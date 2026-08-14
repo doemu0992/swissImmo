@@ -10,7 +10,7 @@ from datetime import date
 import urllib.parse
 
 # Unfold Imports
-from unfold.admin import ModelAdmin, TabularInline
+from core.admin_base import NurLesenModelAdmin, NurLesenTabularInline
 from unfold.decorators import action, display
 
 # Modelle aus der eigenen App (CRM)
@@ -42,7 +42,7 @@ for m in models_to_fix:
 # 1. INLINES (SaaS-Tabs für Mieter)
 # ==========================================
 
-class MietvertragMieterInline(TabularInline):
+class MietvertragMieterInline(NurLesenTabularInline):
     model = Mietvertrag
     extra = 0
     fk_name = "mieter"
@@ -81,7 +81,7 @@ class MietvertragMieterInline(TabularInline):
         return "-"
     def has_add_permission(self, request, obj=None): return False
 
-class SchadenMieterInline(TabularInline):
+class SchadenMieterInline(NurLesenTabularInline):
     model = SchadenMeldung
     extra = 0
     fk_name = "gemeldet_von"
@@ -112,7 +112,7 @@ class SchadenMieterInline(TabularInline):
         return "-"
     def has_add_permission(self, request, obj=None): return False
 
-class DokumentMieterInline(TabularInline):
+class DokumentMieterInline(NurLesenTabularInline):
     model = Dokument
     extra = 0
     fk_name = "mieter"
@@ -139,7 +139,7 @@ class DokumentMieterInline(TabularInline):
         return "-"
     def has_add_permission(self, request, obj=None): return False
 
-class SchluesselMieterInline(TabularInline):
+class SchluesselMieterInline(NurLesenTabularInline):
     model = SchluesselAusgabe
     extra = 0
     fk_name = "mieter"
@@ -171,7 +171,7 @@ class SchluesselMieterInline(TabularInline):
 # ==========================================
 
 @admin.register(Mieter)
-class MieterAdmin(ModelAdmin):
+class MieterAdmin(NurLesenModelAdmin):
     list_display = ('mieter_profil', 'kontakt_info', 'standort_info', 'schnell_aktionen')
     search_fields = ('nachname', 'vorname', 'email')
     inlines = [MietvertragMieterInline, DokumentMieterInline, SchadenMieterInline, SchluesselMieterInline]
@@ -260,7 +260,7 @@ class MieterAdmin(ModelAdmin):
 # ==========================================
 
 @admin.register(Handwerker)
-class HandwerkerAdmin(ModelAdmin):
+class HandwerkerAdmin(NurLesenModelAdmin):
     list_display = ('handwerker_profil', 'kontakt_info', 'standort_info', 'schnell_aktionen')
     search_fields = ('firma', 'gewerk')
 
@@ -334,7 +334,7 @@ class HandwerkerAdmin(ModelAdmin):
 # ==========================================
 
 @admin.register(Mandant)
-class MandantAdmin(ModelAdmin):
+class MandantAdmin(NurLesenModelAdmin):
     list_display = ('mandant_profil', 'kontakt_info', 'standort_info', 'schnell_aktionen')
     search_fields = ('firma_oder_name',)
 
@@ -402,7 +402,7 @@ class MandantAdmin(ModelAdmin):
 # ==========================================
 
 @admin.register(Verwaltung)
-class VerwaltungAdmin(ModelAdmin):
+class VerwaltungAdmin(NurLesenModelAdmin):
     list_display = ('firma', 'standort_info', 'get_zins_badge', 'aktueller_lik_punkte')
     actions_detail = ["action_check_rates"]
 

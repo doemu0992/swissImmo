@@ -6,7 +6,8 @@ from django.contrib import messages
 from django.template.defaultfilters import date as _date
 
 # Unfold Imports
-from unfold.admin import ModelAdmin, TabularInline, StackedInline
+from core.admin_base import (NurLesenModelAdmin, NurLesenTabularInline,
+                             NurLesenStackedInline)
 from unfold.decorators import action, display
 
 # Modelle
@@ -26,7 +27,7 @@ for m in models_to_fix:
 # 1. INLINES (Chat & Aufträge)
 # ==========================================
 
-class TicketHistoryInline(StackedInline):
+class TicketHistoryInline(NurLesenStackedInline):
     model = TicketNachricht
     extra = 0
     fk_name = "ticket"
@@ -71,7 +72,7 @@ class TicketHistoryInline(StackedInline):
 
     def has_add_permission(self, request, obj=None): return False
 
-class HandwerkerAuftragInline(TabularInline):
+class HandwerkerAuftragInline(NurLesenTabularInline):
     model = HandwerkerAuftrag
     extra = 0
     tab = True
@@ -110,7 +111,7 @@ class HandwerkerAuftragInline(TabularInline):
 # ==========================================
 
 @admin.register(SchadenMeldung)
-class SchadenMeldungAdmin(ModelAdmin):
+class SchadenMeldungAdmin(NurLesenModelAdmin):
     list_display = ('ticket_profil', 'einheit_info', 'prioritaet_badge', 'status_badge', 'schnell_aktionen')
     list_filter = ('status', 'prioritaet', 'betroffene_einheit__liegenschaft')
     search_fields = ('titel', 'beschreibung', 'email_melder')
@@ -244,7 +245,7 @@ class SchadenMeldungAdmin(ModelAdmin):
 # ==========================================
 
 @admin.register(HandwerkerAuftrag)
-class HandwerkerAuftragAdmin(ModelAdmin):
+class HandwerkerAuftragAdmin(NurLesenModelAdmin):
     list_display = ('auftrag_profil', 'ticket_info', 'status_badge')
     list_filter = ('status', 'handwerker')
 
@@ -269,6 +270,6 @@ class HandwerkerAuftragAdmin(ModelAdmin):
         return "Offen", "warning"
 
 @admin.register(TicketNachricht)
-class TicketNachrichtAdmin(ModelAdmin):
+class TicketNachrichtAdmin(NurLesenModelAdmin):
     list_display = ('ticket', 'typ', 'absender_name', 'erstellt_am')
     list_filter = ('typ',)

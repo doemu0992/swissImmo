@@ -8,7 +8,7 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 
 # Unfold Imports
-from unfold.admin import ModelAdmin, TabularInline
+from core.admin_base import NurLesenModelAdmin, NurLesenTabularInline
 from unfold.decorators import action, display
 
 # Lokale Modelle (Finance)
@@ -28,7 +28,7 @@ except ImportError:
 # 1. INLINES
 # ==========================================
 
-class NebenkostenBelegInline(TabularInline):
+class NebenkostenBelegInline(NurLesenTabularInline):
     model = NebenkostenBeleg
     extra = 1
     fields = ('datum', 'text', 'kategorie', 'verteilschluessel', 'betrag', 'beleg_scan')
@@ -40,7 +40,7 @@ class NebenkostenBelegInline(TabularInline):
 # ==========================================
 
 @admin.register(AbrechnungsPeriode)
-class AbrechnungAdmin(ModelAdmin):
+class AbrechnungAdmin(NurLesenModelAdmin):
     list_display = ('periode_profil', 'zeitraum_info', 'status_badge', 'schnell_aktionen')
     list_filter = ('liegenschaft', 'abgeschlossen')
     list_filter_submit = True
@@ -119,7 +119,7 @@ class AbrechnungAdmin(ModelAdmin):
 # ==========================================
 
 @admin.register(KreditorenRechnung)
-class KreditorenRechnungAdmin(ModelAdmin):
+class KreditorenRechnungAdmin(NurLesenModelAdmin):
     list_display = ('rechnung_profil', 'betrag_info', 'zuweisung_info', 'status_badge', 'hnk_badge', 'schnell_aktionen')
     list_filter = ('status', 'liegenschaft', 'konto', 'is_hnk_relevant')
     search_fields = ('lieferant', 'iban', 'referenz')
@@ -181,7 +181,7 @@ class KreditorenRechnungAdmin(ModelAdmin):
 # ==========================================
 
 @admin.register(Zahlungseingang)
-class ZahlungseingangAdmin(ModelAdmin):
+class ZahlungseingangAdmin(NurLesenModelAdmin):
     list_display = ('zahlung_profil', 'betrag_info', 'zuweisung_info', 'schnell_aktionen')
     list_filter = ('liegenschaft', 'buchungs_monat', 'konto')
     search_fields = ('vertrag__mieter__nachname', 'vertrag__mieter__vorname', 'bemerkung')
@@ -225,7 +225,7 @@ class ZahlungseingangAdmin(ModelAdmin):
 # ==========================================
 
 @admin.register(Buchungskonto)
-class BuchungskontoAdmin(ModelAdmin):
+class BuchungskontoAdmin(NurLesenModelAdmin):
     list_display = ('konto_profil', 'typ_badge', 'is_hnk_relevant_badge')
     search_fields = ('nummer', 'bezeichnung')
     list_filter = ('typ', 'is_hnk_relevant')
@@ -278,7 +278,7 @@ class BuchungskontoAdmin(ModelAdmin):
         return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
 @admin.register(Jahresabschluss)
-class JahresabschlussAdmin(ModelAdmin):
+class JahresabschlussAdmin(NurLesenModelAdmin):
     list_display = ('abschluss_profil', 'liegenschaft', 'schnell_aktionen')
     list_filter = ('liegenschaft', 'jahr')
 
@@ -305,7 +305,7 @@ class JahresabschlussAdmin(ModelAdmin):
         return format_html('<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse('admin:finance_jahresabschluss_change', args=[obj.id]))
 
 @admin.register(MietzinsKontrolle)
-class MietzinsKontrolleAdmin(ModelAdmin):
+class MietzinsKontrolleAdmin(NurLesenModelAdmin):
     list_display = ('kontrolle_profil', 'liegenschaft', 'schnell_aktionen')
     list_filter = ('liegenschaft',)
 

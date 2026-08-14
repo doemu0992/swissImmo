@@ -10,7 +10,7 @@ from django.template.loader import render_to_string
 from datetime import date
 
 # Unfold Imports
-from unfold.admin import ModelAdmin, TabularInline
+from core.admin_base import NurLesenModelAdmin, NurLesenTabularInline
 from unfold.decorators import display, action
 
 # Lokale Modelle (Rentals)
@@ -41,7 +41,7 @@ for m in models_to_fix:
 # 1. INLINES (SaaS-Tabs)
 # ==========================================
 
-class DokumentVertragInline(TabularInline):
+class DokumentVertragInline(NurLesenTabularInline):
     model = Dokument
     extra = 0
     fk_name = "vertrag"
@@ -84,7 +84,7 @@ class DokumentVertragInline(TabularInline):
 # ==========================================
 
 @admin.register(Mietvertrag)
-class MietvertragAdmin(ModelAdmin):
+class MietvertragAdmin(NurLesenModelAdmin):
     list_display = ('vertrag_profil', 'finanzen_info', 'laufzeit_info', 'docuseal_badge', 'schnell_aktionen')
     list_filter = ('sign_status', 'aktiv', 'nk_abrechnungsart')
     list_filter_submit = True
@@ -255,7 +255,7 @@ class MietvertragAdmin(ModelAdmin):
 # ... Die anderen Klassen (LeerstandAdmin, MietzinsAnpassungAdmin, DokumentAdmin) bleiben unverändert ...
 
 @admin.register(Leerstand)
-class LeerstandAdmin(ModelAdmin):
+class LeerstandAdmin(NurLesenModelAdmin):
     list_display = ('leerstand_profil', 'dauer_info', 'schnell_aktionen')
 
     fieldsets = (
@@ -299,7 +299,7 @@ class LeerstandAdmin(ModelAdmin):
 
 
 @admin.register(MietzinsAnpassung)
-class MietzinsAnpassungAdmin(ModelAdmin):
+class MietzinsAnpassungAdmin(NurLesenModelAdmin):
     list_display = ('anpassung_profil', 'datum_info', 'schnell_aktionen')
 
     fieldsets = (
@@ -345,7 +345,7 @@ class MietzinsAnpassungAdmin(ModelAdmin):
 
 
 @admin.register(Dokument)
-class DokumentAdmin(ModelAdmin):
+class DokumentAdmin(NurLesenModelAdmin):
     list_display = ('dokument_profil', 'kategorie_badge', 'schnell_aktionen')
     list_filter = ('kategorie',)
 

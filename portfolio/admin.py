@@ -7,7 +7,7 @@ from django.template.loader import render_to_string
 import urllib.parse
 
 # Unfold Imports
-from unfold.admin import ModelAdmin, TabularInline
+from core.admin_base import NurLesenModelAdmin, NurLesenTabularInline
 from unfold.decorators import display
 
 # Lokale Modelle (Portfolio)
@@ -38,7 +38,7 @@ for m in models_to_fix:
 # 1. INLINES (SaaS-Tabs für Liegenschaft)
 # ==========================================
 
-class EinheitInline(TabularInline):
+class EinheitInline(NurLesenTabularInline):
     model = Einheit
     extra = 0
     tab = True
@@ -86,7 +86,7 @@ class EinheitInline(TabularInline):
     def has_delete_permission(self, request, obj=None): return False
 
 
-class UnterhaltLiegenschaftInline(TabularInline):
+class UnterhaltLiegenschaftInline(NurLesenTabularInline):
     model = Unterhalt
     extra = 0
     tab = True
@@ -132,7 +132,7 @@ class UnterhaltLiegenschaftInline(TabularInline):
 # 2. INLINES (SaaS-Tabs für Wohnung/Einheit)
 # ==========================================
 
-class MietvertragInline(TabularInline):
+class MietvertragInline(NurLesenTabularInline):
     model = Mietvertrag
     extra = 0
     tab = True
@@ -172,7 +172,7 @@ class MietvertragInline(TabularInline):
     def has_change_permission(self, request, obj=None): return False
     def has_delete_permission(self, request, obj=None): return False
 
-class ZaehlerInline(TabularInline):
+class ZaehlerInline(NurLesenTabularInline):
     model = Zaehler
     extra = 0
     tab = True
@@ -200,7 +200,7 @@ class ZaehlerInline(TabularInline):
     def has_change_permission(self, request, obj=None): return False
     def has_delete_permission(self, request, obj=None): return False
 
-class GeraetInline(TabularInline):
+class GeraetInline(NurLesenTabularInline):
     model = Geraet
     extra = 0
     tab = True
@@ -236,7 +236,7 @@ class GeraetInline(TabularInline):
     def has_change_permission(self, request, obj=None): return False
     def has_delete_permission(self, request, obj=None): return False
 
-class UnterhaltEinheitInline(TabularInline):
+class UnterhaltEinheitInline(NurLesenTabularInline):
     model = Unterhalt
     extra = 0
     fk_name = "einheit"
@@ -275,7 +275,7 @@ class UnterhaltEinheitInline(TabularInline):
     def has_change_permission(self, request, obj=None): return False
     def has_delete_permission(self, request, obj=None): return False
 
-class SchadenEinheitInline(TabularInline):
+class SchadenEinheitInline(NurLesenTabularInline):
     model = SchadenMeldung
     extra = 0
     fk_name = "betroffene_einheit"
@@ -308,7 +308,7 @@ class SchadenEinheitInline(TabularInline):
     def has_change_permission(self, request, obj=None): return False
     def has_delete_permission(self, request, obj=None): return False
 
-class DokumentEinheitInline(TabularInline):
+class DokumentEinheitInline(NurLesenTabularInline):
     model = Dokument
     extra = 0
     fk_name = "einheit"
@@ -337,13 +337,13 @@ class DokumentEinheitInline(TabularInline):
     def has_change_permission(self, request, obj=None): return False
     def has_delete_permission(self, request, obj=None): return False
 
-class ZaehlerStandInline(TabularInline):
+class ZaehlerStandInline(NurLesenTabularInline):
     model = ZaehlerStand
     extra = 1
     ordering = ('-datum',)
     tab = True
 
-class SchluesselAusgabeInline(TabularInline):
+class SchluesselAusgabeInline(NurLesenTabularInline):
     model = SchluesselAusgabe
     extra = 0
     tab = True
@@ -354,7 +354,7 @@ class SchluesselAusgabeInline(TabularInline):
 # ==========================================
 
 @admin.register(Liegenschaft)
-class LiegenschaftAdmin(ModelAdmin):
+class LiegenschaftAdmin(NurLesenModelAdmin):
     list_display = ('liegenschaft_profil', 'standort_info', 'portfolio_stats', 'schnell_aktionen')
     search_fields = ('strasse', 'ort', 'egid')
     inlines = [EinheitInline, UnterhaltLiegenschaftInline]
@@ -446,7 +446,7 @@ class LiegenschaftAdmin(ModelAdmin):
 # ==========================================
 
 @admin.register(Einheit)
-class EinheitAdmin(ModelAdmin):
+class EinheitAdmin(NurLesenModelAdmin):
     list_display = ('einheit_profil', 'liegenschaft_info', 'details_info', 'get_status_badge', 'schnell_aktionen')
     list_filter = ('liegenschaft', 'typ'); list_filter_submit = True
     inlines = [MietvertragInline, ZaehlerInline, GeraetInline, UnterhaltEinheitInline, SchadenEinheitInline, DokumentEinheitInline]
@@ -520,7 +520,7 @@ class EinheitAdmin(ModelAdmin):
 # ==========================================
 
 @admin.register(Zaehler)
-class ZaehlerAdmin(ModelAdmin):
+class ZaehlerAdmin(NurLesenModelAdmin):
     list_display = ('zaehler_profil', 'standort_info', 'schnell_aktionen')
     list_filter = ('typ', 'einheit__liegenschaft')
     inlines = [ZaehlerStandInline]
@@ -550,7 +550,7 @@ class ZaehlerAdmin(ModelAdmin):
         return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse('admin:portfolio_zaehler_change', args=[obj.id]))
 
 @admin.register(Geraet)
-class GeraetAdmin(ModelAdmin):
+class GeraetAdmin(NurLesenModelAdmin):
     list_display = ('geraet_profil', 'garantie_badge', 'schnell_aktionen')
     list_filter = ('einheit__liegenschaft',)
 
@@ -581,7 +581,7 @@ class GeraetAdmin(ModelAdmin):
         return format_html('<a href="{}" class="text-gray-600 hover:text-blue-600 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse('admin:portfolio_geraet_change', args=[obj.id]))
 
 @admin.register(Unterhalt)
-class UnterhaltAdmin(ModelAdmin):
+class UnterhaltAdmin(NurLesenModelAdmin):
     list_display = ('unterhalt_profil', 'kosten_info', 'schnell_aktionen')
     list_filter = ('liegenschaft',)
 
@@ -608,7 +608,7 @@ class UnterhaltAdmin(ModelAdmin):
         return format_html('<a href="{}" class="text-amber-600 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse('admin:portfolio_unterhalt_change', args=[obj.id]))
 
 @admin.register(Schluessel)
-class SchluesselAdmin(ModelAdmin):
+class SchluesselAdmin(NurLesenModelAdmin):
     list_display = ('schluessel_profil', 'liegenschaft', 'schnell_aktionen')
     inlines = [SchluesselAusgabeInline]
 
@@ -630,7 +630,7 @@ class SchluesselAdmin(ModelAdmin):
         return format_html('<a href="{}" class="text-zinc-600 hover:text-zinc-900 bg-zinc-50 hover:bg-zinc-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>', reverse('admin:portfolio_schluessel_change', args=[obj.id]))
 
 @admin.register(SchluesselAusgabe)
-class SchluesselAusgabeAdmin(ModelAdmin):
+class SchluesselAusgabeAdmin(NurLesenModelAdmin):
     list_display = ('ausgabe_profil', 'datum_info', 'schnell_aktionen')
 
     fieldsets = (
