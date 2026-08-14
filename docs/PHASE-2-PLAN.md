@@ -8,14 +8,14 @@
 
 ## Getroffene Entscheide
 
-Diese vier blockierten die Planung und gelten hiermit:
+Diese vier blockierten die Planung. **Alle vier sind am 14.08.2026 ausgeführt.**
 
-| # | Entscheid | Begründung |
+| # | Entscheid | Begründung und Ergebnis |
 |---|---|---|
-| E1 | **`/app/`-SPA wird entfernt** | Kein `fw/`-Template ruft die API auf. Es fallen 80 von 82 Endpunkten, 7 Tab-Templates und 1'399 Zeilen JavaScript weg — und mit ihnen der ID-Offset-Hack aus TS-6, der ausschliesslich in SPA-Code steht. Halbiert den Aufwand jeder Folgephase. |
-| E2 | **Unfold-Admin bleibt, wird aber entwaffnet** | 14 von 25 ModelAdmins sind bereits schreibgeschützt. Künftig durchgängig lesend und nur für Superuser. Damit ist er Betriebswerkzeug statt Zweitoberfläche und braucht weder Entitlements noch Übersetzung. **Pflicht dabei:** Der Admin umgeht den `TenantManager` über `_base_manager` und als Superuser — das ist in Etappe 4 ausdrücklich zu schliessen. |
-| ~~E3~~ | ~~**`crm.Mandant` → `crm.Eigentuemer`**~~ — **erledigt am 14.08.2026.** | Es waren 623 Vorkommen in 56 Dateien (die Schätzung „135 Python- und 25 Template-Referenzen" zählte nur die Klassennamen, nicht die Feld- und Variablennamen). Ab Etappe 4 wäre daraus Code mit zwei kollidierenden Bedeutungen von „Mandant" geworden — kein Schönheitsfehler, sondern ein Datenleck-Risiko. |
-| E4 | **`claude/fairwalter-rebuild` wird `main`** | `main` steht seit dem 21.05.2026 still, 501 Commits zurück. Die gesamte Arbeit hängt an einem Branch, dessen Name nach Wegwerf-Experiment klingt. Danach laufen alle PRs gegen `main`, das geschützt wird. |
+| ~~E1~~ | ~~**`/app/`-SPA wird entfernt**~~ — **erledigt** (E1a/E1b/E1c, siehe `docs/E1-SPA-ENTFERNEN.md`) | Kein `fw/`-Template rief die API auf. Gefallen sind **80 von 82 Endpunkten**, **15** SPA-Templates (nicht 12 wie geplant) samt 1'399 Zeilen JavaScript — und mit ihnen der ID-Offset-Hack aus TS-6, der ausschliesslich in SPA-Code stand. Geblieben sind zwei öffentliche Endpunkte: Bewerbungsformular und DocuSeal-Webhook. Halbiert den Aufwand jeder Folgephase. |
+| ~~E2~~ | ~~**Unfold-Admin bleibt, wird aber entwaffnet**~~ — **erledigt** | Alle **27** registrierten Admins (25 eigene plus Djangos `auth.User`/`auth.Group`) und alle 18 Inlines sind lesend. **Die Annahme „14 von 25 ModelAdmins sind bereits schreibgeschützt" traf nicht zu:** Die vorhandenen Sperren sassen fast alle auf Inlines; schreibgeschützt war einzig `AktivitaetsLogAdmin`. Der Admin ist damit Betriebswerkzeug statt Zweitoberfläche und braucht weder Entitlements noch Übersetzung. **Pflicht bleibt:** Er umgeht den `TenantManager` über `_base_manager` und als Superuser — das ist in Etappe 4 ausdrücklich zu schliessen. |
+| ~~E3~~ | ~~**`crm.Mandant` → `crm.Eigentuemer`**~~ — **erledigt** | Es waren **623 Vorkommen in 56 Dateien** (die Schätzung „135 Python- und 25 Template-Referenzen" zählte nur die Klassennamen, nicht die Feld- und Variablennamen). Ab Etappe 4 wäre daraus Code mit zwei kollidierenden Bedeutungen von „Mandant" geworden — kein Schönheitsfehler, sondern ein Datenleck-Risiko. |
+| ~~E4~~ | ~~**`claude/fairwalter-rebuild` wird `main`**~~ — **erledigt** | `main` stand seit dem 21.05.2026 still. Die Umstellung lief als Fast-Forward: 0 Commits verloren, 513 dazugekommen. **Noch offen und nur über die GitHub-Oberfläche machbar:** `main` schützen. |
 
 ---
 
@@ -23,19 +23,30 @@ Diese vier blockierten die Planung und gelten hiermit:
 
 Jede Etappe endet an einem **Gate**: einer nachprüfbaren Bedingung. Ohne erfülltes Gate beginnt die nächste Etappe nicht.
 
-### Etappe 0 — Aufräumen *(läuft)*
+### Etappe 0 — Aufräumen ✅ *(abgeschlossen am 14.08.2026)*
 
-P0-Liste aus `docs/ANALYSE.md`, plus E3 und E4. Agent: `aufraeumer`.
+P0-Liste aus `docs/ANALYSE.md`, plus E1 bis E4. Agent: `aufraeumer`.
 
-**Gate:** Alle P0-PRs gemergt. Ruff läuft in der CI. `main` ist aktuell und geschützt. `Eigentuemer` durchgängig umbenannt.
+**Gate erfüllt:** Alle acht P0-Posten erledigt, Ruff läuft als eigener CI-Job, `main` ist aktuell (Schutz noch zu setzen), `Eigentuemer` durchgängig umbenannt.
 
 ### Etappe 1 — Zerlegen
 
 `core/views/fw.py` (14'938 Zeilen, 232 Views) in 34 Module entlang der vorhandenen Blockgrenzen. `core/tests.py` (16'586 Zeilen) nach Fachgebiet **und Laufzeit**. Agent: `zerleger`.
 
-**Diese Etappe braucht ein Freeze-Fenster.** Ein reiner Umzug kollidiert mit jeder parallelen Änderung an derselben Datei. Solange nebenher an `fw.py` entwickelt wird, ist der Split ein Fass ohne Boden. Vorschlag: zwei bis drei Tage, in denen `fw.py` niemand sonst anfasst — Feature-Arbeit an anderen Dateien läuft weiter.
+**Ein Block pro PR, sofort gemergt.** Nicht 34 Blöcke auf einem Zweig sammeln. Der eigentliche Feind bei einem Umzug ist nicht die parallele Arbeit, sondern die **lang lebende Umbau-Verzweigung**: Liegt `fw.py` zwei Wochen halb zerlegt auf einem Zweig, während am Original weitergearbeitet wird, kollidiert es. Wird jeder Block innerhalb einer Sitzung gemergt, existiert nie ein Zweig, mit dem etwas kollidieren könnte — und zwischen zwei Blöcken darf beliebig anderes passieren, auch an `fw.py`.
 
-**Gate:** Alle 298 URLs auflösbar, Testsuite grün, Zeilenbilanz geht auf, im Diff keine inhaltliche Änderung.
+Die einzige harte Regel: **nicht zwei Sitzungen gleichzeitig an `fw.py`.** Das ist der Fall, in dem es tatsächlich kracht — eine zerlegt, die andere baut ein Feature ein, beide gehen von verschiedenen Ständen aus.
+
+Billige Absicherung vor jedem Block-PR:
+
+```bash
+git fetch origin main
+git log --oneline HEAD..origin/main -- core/views/fw.py   # leer = sicher
+```
+
+*(Eine frühere Fassung dieses Plans verlangte hier ein Freeze-Fenster von zwei bis drei Tagen. Das war aus einem Standardvorgehen für Teams übernommen, ohne zu prüfen, ob die Voraussetzung vorliegt — das Repository hat einen einzigen Autor. Kleine Schnitte lösen dasselbe Problem, ohne dass Etappe 1 auf irgendetwas warten muss.)*
+
+**Gate:** Alle URLs auflösbar (nach E1 sind es 293, vorher 298 — die fünf entfielen mit der SPA), Testsuite grün, Zeilenbilanz geht auf, im Diff keine inhaltliche Änderung.
 
 ### Etappe 2 — Isolationstests rot schreiben *(parallel zu Etappe 1)*
 
@@ -49,7 +60,7 @@ Sie sind zu diesem Zeitpunkt **alle rot**, weil `Organisation` noch nicht existi
 
 Läuft parallel, weil die Tests gegen URL-Namen geschrieben werden — die überleben den Split aus Etappe 1.
 
-**Gate:** ~150 Tests vorhanden, alle rot, jeder mit nachvollziehbarer Fehlermeldung.
+**Gate:** 35 bis 40 Testmethoden über rund 240 Fälle vorhanden, alle rot, jede mit nachvollziehbarer Fehlermeldung.
 
 ### Etappe 3 — Custom User Model
 
@@ -77,9 +88,9 @@ Zwei Stellen zum Anhalten: Gruppe B mit Waisen (Bestandsdatensätze ohne Weg zur
 
 ### Etappe 6 — Alles, was den Prozess verlässt
 
-Dateiablage auf `organisation/<id>/`, 19 Management-Commands über Organisationen iterieren, PDF- und E-Mail-Absender aus der Organisation statt aus 132 Singleton-Lookups, `AktivitaetsLog` mit Organisationsspalte, Cache-Keys.
+Dateiablage auf `organisation/<id>/`, die Management-Commands über Organisationen iterieren, PDF- und E-Mail-Absender aus der Organisation statt aus 132 Singleton-Lookups, `AktivitaetsLog` mit Organisationsspalte, Cache-Keys.
 
-**Gate — und zugleich das Ende von Phase 2:** Alle ~150 Isolationstests grün. `mandanten-auditor` findet nichts.
+**Gate — und zugleich das Ende von Phase 2:** Alle Isolationstests grün. `mandanten-auditor` findet nichts.
 
 ---
 
@@ -93,13 +104,13 @@ Sinnvoll nach Etappe 3, weil sie am User Model hängt.
 
 ## Was den Plan zum Scheitern bringen kann
 
-**Parallele Feature-Entwicklung.** Commit `93b198d` entstand zwischen Bestandsanalyse und Push. Etappen 1, 3 und 4 fassen Dateien an, an denen sonst niemand gleichzeitig arbeiten darf. Ohne abgestimmte Fenster produziert das Konflikte, die teurer sind als die Arbeit selbst.
+**Lang lebende Umbau-Verzweigungen.** Nicht die parallele Arbeit ist das Risiko, sondern ein Zweig, der wochenlang halb umgebaut neben dem Original liegt. Etappen 1, 3 und 4 fassen Dateien an, die auch der laufende Betrieb braucht. Gegenmittel: kleine Schnitte, sofort mergen, und nie zwei Sitzungen gleichzeitig auf derselben Datei.
 
 **Agenten, die überzeugende Filter schreiben, die nicht isolieren.** Deshalb Etappe 2 vor Etappe 3, und deshalb ist der `mandanten-auditor` an jedem Gate Pflicht — auch wenn es lästig ist.
 
 **Etappe 5 als Fleissarbeit missverstehen.** 29 der 63 Modelle brauchen eine fachliche Entscheidung, keine Migration. Wer sie durchwinkt, löscht entweder Kundendaten oder legt sie offen.
 
-**PostgreSQL-Wechsel zu spät.** SQLite trägt gleichzeitige Schreibzugriffe mehrerer Mandanten nicht. Der Wechsel (P1.4) gehört spätestens zwischen Etappe 4 und 5, besser früher — und `psycopg` fehlt bis heute in `requirements.txt`.
+**PostgreSQL-Wechsel zu spät.** SQLite trägt gleichzeitige Schreibzugriffe mehrerer Mandanten nicht. Der Wechsel (P1.4) gehört spätestens zwischen Etappe 4 und 5, besser früher. Der Treiber ist seit P0.5 vorhanden (`psycopg[binary]` in `requirements.txt`) — es fehlt nur noch der Umzug selbst.
 
 ---
 
@@ -107,8 +118,8 @@ Sinnvoll nach Etappe 3, weil sie am User Model hängt.
 
 | Frage | Wann nötig |
 |---|---|
-| Freeze-Fenster für `fw.py`, zwei bis drei Tage | vor Etappe 1 |
 | Kostenrechnung je Mandant — trägt CHF 39 den Betrieb? | vor Preisfestlegung |
 | Hosting-Standort: PythonAnywhere oder Schweiz | vor Markteintritt, beeinflusst P1.4 |
 | Zahlungsanbieter — Offerten Payrexx, wallee, Stripe | Phase 3, freigabepflichtig |
 | Gespräche mit 5 bis 10 Verwaltungen zur Zahlungsbereitschaft | vor Preisfestlegung |
+| Groq: DPF-Zertifizierung prüfen, Auftragsbearbeitungsvertrag | offen aus P0.7, siehe `docs/GROQ-BELEGERKENNUNG.md` |
