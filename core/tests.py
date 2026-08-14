@@ -7,6 +7,21 @@ from decimal import Decimal
 
 from django.test import TestCase, Client, RequestFactory
 from django.contrib import admin
+from unittest import skipUnless
+
+try:                      # noqa: SIM105 — bewusst als Schalter, nicht als Import
+    import zxingcpp as _zxingcpp     # noqa: F401
+    ZXING_DA = True
+except ImportError:
+    ZXING_DA = False
+
+# Warum ein Schalter und kein harter Import (P0.8): `zxing-cpp` steht zwar in
+# requirements.txt, ist aber ein Wheel mit nativem Code — in einer Umgebung
+# ohne vollstaendigen Install fehlt es. finance/utils.py faengt das korrekt ab
+# und faellt still auf die Textsuche zurueck. Die beiden QR-Tests schlugen dann
+# mit `methode == 'leer'` statt `'qr'` fehl und sahen wie ein FACHFEHLER aus,
+# obwohl nur ein Paket fehlte. Unter `--parallel` verdeckte zusaetzlich ein
+# Pickle-Fehler des Prozesspools die Meldung ganz.
 from django.contrib.auth.models import User, Group
 
 from crm.models import Mieter, Eigentuemer, Verwaltung
@@ -7200,6 +7215,7 @@ class QrDecoderTests(TestCase):
         self.assertEqual(d['referenz'], '000050637947060000894095003')
         self.assertIsNone(_spc_parsen('kein spc'))
 
+    @skipUnless(ZXING_DA, 'zxing-cpp nicht installiert — QR-Decoder inaktiv')
     def test_foto_beleg_mit_qr_wird_dekodiert(self):
         """Bild-Beleg OHNE KI-Key: früher 'nicht auslesbar' — jetzt liefert der
         QR-Decoder die Zahlungsdaten trotzdem verbindlich."""
@@ -7220,6 +7236,7 @@ class QrDecoderTests(TestCase):
         finally:
             _os.unlink(pfad)
 
+    @skipUnless(ZXING_DA, 'zxing-cpp nicht installiert — QR-Decoder inaktiv')
     def test_upload_qr_bild_erzeugt_saubere_rechnung(self):
         """Upload eines QR-Bild-Belegs → Rechnung mit verbindlichen Zahlungsdaten,
         kein Warnhinweis (QR gilt als Erfolg)."""

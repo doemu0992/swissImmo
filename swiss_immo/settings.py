@@ -192,7 +192,9 @@ WSGI_APPLICATION = 'swiss_immo.wsgi.application'
 
 # Standard: SQLite (kein Umbau nötig). Für Produktion/Skalierung PostgreSQL
 # per Umgebungsvariablen aktivieren (DB_ENGINE=postgres + DB_NAME/USER/…).
-# Benötigt dann das Paket psycopg2-binary auf dem Server.
+# Der Treiber steht seit P0.5 in requirements.txt (psycopg[binary], Fassung 3 —
+# die von Django 5.2 empfohlene). Vorher fehlte er: Wer DB_ENGINE=postgres
+# setzte, bekam beim Start einen ImproperlyConfigured-Fehler (TS-13).
 if os.getenv('DB_ENGINE', '').lower() in ('postgres', 'postgresql'):
     DATABASES = {
         'default': {
@@ -267,7 +269,11 @@ CKEDITOR_CONFIGS = {'default': {'toolbar': 'full', 'height': 300, 'width': '100%
 # 9. EXTERNE DIENSTE & E-MAIL
 # ==========================================
 
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+# GEMINI_API_KEY ist am 14.08.2026 entfallen (P0.5): Er wurde eingelesen und
+# nirgends verwendet — die KI-Belegerkennung läuft über Groq. Eine tote
+# Schlüssel-Variable ist nicht harmlos: Sie legt nahe, es gäbe eine
+# Gemini-Anbindung, und lädt dazu ein, einen echten Schlüssel zu hinterlegen,
+# der dann ohne Zweck in der Umgebung steht.
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')  # Für den KI-Rechnungs-Scanner (finance/utils.py)
 DOCUSEAL_API_KEY = os.getenv('DOCUSEAL_API_KEY')
 DOCUSEAL_URL = "https://api.docuseal.com"
