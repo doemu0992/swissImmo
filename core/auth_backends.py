@@ -48,10 +48,10 @@ class CaseInsensitiveModelBackend(ModelBackend):
             return None
         # Eindeutig, weil Passwörter je Konto verschieden sind. Bei (sehr
         # unwahrscheinlichem) Gleichstand: aktive Konten und Portal-Konten
-        # (mieter_profil/mandant_profil) bevorzugen.
+        # (mieter_profil/eigentuemer_profil) bevorzugen.
         if len(treffer) > 1:
             treffer.sort(key=lambda u: (
                 not u.is_active,
-                getattr(u, 'mieter_profil', None) is None and getattr(u, 'mandant_profil', None) is None,
+                getattr(u, 'mieter_profil', None) is None and getattr(u, 'eigentuemer_profil', None) is None,
             ))
         return treffer[0]

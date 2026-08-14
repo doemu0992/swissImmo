@@ -13,7 +13,7 @@ from core.auth import log_aktion, client_ip
 
 def _ist_portal(user):
     """Reine Mieter-/Eigentümer-Portalkonten nicht mitschreiben — nur Team-Zugänge."""
-    return bool(getattr(user, 'mieter_profil', None) or getattr(user, 'mandant_profil', None))
+    return bool(getattr(user, 'mieter_profil', None) or getattr(user, 'eigentuemer_profil', None))
 
 
 @receiver(user_logged_in)

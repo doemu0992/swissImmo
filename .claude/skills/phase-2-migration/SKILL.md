@@ -28,7 +28,7 @@ for f in m._meta.concrete_fields:
 | **B** | Weg existiert, aber über `null=True` | Rezept B — Spalte, Bestand nachziehen, Kette pflichtig machen | 15 |
 | **A** | kein Weg | Rezept A — fachliche Entscheidung, dann Spalte | 14 |
 
-Gruppe A umfasst unter anderem `crm.Verwaltung`, `crm.Mandant`, `crm.Mieter`, `crm.Handwerker`, `crm.Vorlage`, `finance.Buchungskonto`, `finance.LieferantProfil`, `finance.NebenkostenLernRegel`, `finance.Kontoauszug`, `finance.EigentuemerAuszahlung`, `finance.Erneuerungsfonds`, `portfolio.Lebensdauer`, `core.AktivitaetsLog`.
+Gruppe A umfasst unter anderem `crm.Verwaltung`, `crm.Eigentuemer`, `crm.Mieter`, `crm.Handwerker`, `crm.Vorlage`, `finance.Buchungskonto`, `finance.LieferantProfil`, `finance.NebenkostenLernRegel`, `finance.Kontoauszug`, `finance.EigentuemerAuszahlung`, `finance.Erneuerungsfonds`, `portfolio.Lebensdauer`, `core.AktivitaetsLog`.
 
 ## Rezept C — Pflicht-Kette vorhanden
 

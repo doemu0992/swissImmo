@@ -6,7 +6,7 @@ from decimal import Decimal
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
 
 class Liegenschaft(models.Model):
-    mandant = models.ForeignKey('crm.Mandant', on_delete=models.CASCADE, related_name='liegenschaften', null=True, blank=True)
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.CASCADE, related_name='liegenschaften', null=True, blank=True)
     verwaltung = models.ForeignKey('crm.Verwaltung', on_delete=models.SET_NULL, null=True, blank=True, related_name='liegenschaften')
     strasse = models.CharField("Strasse & Nr.", max_length=200)
     plz = models.CharField("PLZ", max_length=10)

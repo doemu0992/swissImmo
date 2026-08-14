@@ -15,10 +15,10 @@ def _chf(v):
         return "0.00"
 
 
-def steuerauszug_daten(mandant, jahr):
-    """Aggregiert Erträge/Ausgaben/AfA/Honorar je Liegenschaft des Mandanten für ein Jahr."""
+def steuerauszug_daten(eigentuemer, jahr):
+    """Aggregiert Erträge/Ausgaben/AfA/Honorar je Liegenschaft des Eigentümers für ein Jahr."""
     from finance.models import Zahlungseingang, KreditorenRechnung, Abschreibung
-    lgs = list(mandant.liegenschaften.all().order_by('strasse'))
+    lgs = list(eigentuemer.liegenschaften.all().order_by('strasse'))
     lg_ids = [l.id for l in lgs]
     per = {l.id: {'ertrag': Decimal('0'), 'ausgaben': Decimal('0'), 'afa': Decimal('0'),
                   'honorar': Decimal('0')} for l in lgs}
@@ -79,16 +79,16 @@ def steuerauszug_daten(mandant, jahr):
             tot[k] += d[k]
         tot['netto'] += netto
     return {'jahr': jahr, 'zeilen': zeilen, 'total': tot,
-            'mandant': mandant.firma_oder_name if mandant else ''}
+            'eigentuemer': eigentuemer.firma_oder_name if eigentuemer else ''}
 
 
-def generate_steuerauszug_pdf(mandant, jahr):
+def generate_steuerauszug_pdf(eigentuemer, jahr):
     """Erzeugt den Steuerauszug als PDF (Bytes)."""
     from reportlab.pdfgen import canvas as _canvas
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.units import mm
 
-    daten = steuerauszug_daten(mandant, jahr)
+    daten = steuerauszug_daten(eigentuemer, jahr)
     buf = io.BytesIO()
     c = _canvas.Canvas(buf, pagesize=A4)
     w, h = A4
@@ -100,7 +100,7 @@ def generate_steuerauszug_pdf(mandant, jahr):
     c.setFont("Helvetica-Bold", 16)
     c.drawString(20 * mm, h - 15 * mm, f"Steuerauszug {jahr}")
     c.setFont("Helvetica", 10)
-    c.drawString(20 * mm, h - 23 * mm, f"{daten['mandant']} · Liegenschaftsrechnung (vereinfacht)")
+    c.drawString(20 * mm, h - 23 * mm, f"{daten['eigentuemer']} · Liegenschaftsrechnung (vereinfacht)")
 
     c.setFillColorRGB(0.1, 0.1, 0.1)
     y = h - 42 * mm

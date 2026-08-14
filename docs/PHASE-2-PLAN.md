@@ -14,7 +14,7 @@ Diese vier blockierten die Planung und gelten hiermit:
 |---|---|---|
 | E1 | **`/app/`-SPA wird entfernt** | Kein `fw/`-Template ruft die API auf. Es fallen 80 von 82 Endpunkten, 7 Tab-Templates und 1'399 Zeilen JavaScript weg — und mit ihnen der ID-Offset-Hack aus TS-6, der ausschliesslich in SPA-Code steht. Halbiert den Aufwand jeder Folgephase. |
 | E2 | **Unfold-Admin bleibt, wird aber entwaffnet** | 14 von 25 ModelAdmins sind bereits schreibgeschützt. Künftig durchgängig lesend und nur für Superuser. Damit ist er Betriebswerkzeug statt Zweitoberfläche und braucht weder Entitlements noch Übersetzung. **Pflicht dabei:** Der Admin umgeht den `TenantManager` über `_base_manager` und als Superuser — das ist in Etappe 4 ausdrücklich zu schliessen. |
-| E3 | **`crm.Mandant` → `crm.Eigentuemer`** | 135 Python- und 25 Template-Referenzen, heute noch überschaubar. Ab Etappe 4 entstünde Code mit zwei kollidierenden Bedeutungen von „Mandant" — dann ist die Verwechslung kein Schönheitsfehler mehr, sondern ein Datenleck-Risiko. |
+| ~~E3~~ | ~~**`crm.Mandant` → `crm.Eigentuemer`**~~ — **erledigt am 14.08.2026.** | Es waren 623 Vorkommen in 56 Dateien (die Schätzung „135 Python- und 25 Template-Referenzen" zählte nur die Klassennamen, nicht die Feld- und Variablennamen). Ab Etappe 4 wäre daraus Code mit zwei kollidierenden Bedeutungen von „Mandant" geworden — kein Schönheitsfehler, sondern ein Datenleck-Risiko. |
 | E4 | **`claude/fairwalter-rebuild` wird `main`** | `main` steht seit dem 21.05.2026 still, 501 Commits zurück. Die gesamte Arbeit hängt an einem Branch, dessen Name nach Wegwerf-Experiment klingt. Danach laufen alle PRs gegen `main`, das geschützt wird. |
 
 ---

@@ -1,4 +1,4 @@
-"""Kontokorrent Eigentümer (Mandant): das Ergebnis der bewirtschafteten
+"""Kontokorrent Eigentümer: das Ergebnis der bewirtschafteten
 Liegenschaften (Ertrag − Aufwand) abzüglich der bereits an den Eigentümer
 ausbezahlten Beträge = offener Saldo (Verbindlichkeit gegenüber dem Eigentümer).
 
@@ -9,7 +9,7 @@ from datetime import date
 from decimal import Decimal
 
 
-def kontokorrent(mandant, jahr=None):
+def kontokorrent(eigentuemer, jahr=None):
     """Gibt ein dict mit Ergebnis je Liegenschaft, Auszahlungen und offenem Saldo.
 
     jahr=None → kumulativ über alle Jahre. Sonst nur das Geschäftsjahr.
@@ -20,7 +20,7 @@ def kontokorrent(mandant, jahr=None):
 
     ertrag_konten = list(Buchungskonto.objects.filter(typ='ertrag'))
     aufwand_konten = list(Buchungskonto.objects.filter(typ='aufwand'))
-    liegenschaften = Liegenschaft.objects.filter(mandant=mandant).order_by('strasse')
+    liegenschaften = Liegenschaft.objects.filter(eigentuemer=eigentuemer).order_by('strasse')
 
     von = date(jahr, 1, 1) if jahr else None
     bis = date(jahr, 12, 31) if jahr else None
@@ -53,7 +53,7 @@ def kontokorrent(mandant, jahr=None):
         sum_aufwand += aufwand
     ergebnis = sum_ertrag - sum_aufwand
 
-    ausz = EigentuemerAuszahlung.objects.filter(mandant=mandant, status='verbucht')
+    ausz = EigentuemerAuszahlung.objects.filter(eigentuemer=eigentuemer, status='verbucht')
     if von:
         ausz = ausz.filter(datum__gte=von, datum__lte=bis)
     ausz = list(ausz.select_related('konto').order_by('-datum', '-id'))
@@ -75,7 +75,7 @@ def _fmt(d):
         return str(d)
 
 
-def generate_kontokorrent_pdf(mandant, jahr, verwaltung=None):
+def generate_kontokorrent_pdf(eigentuemer, jahr, verwaltung=None):
     """Kontokorrent-Auszug für den Eigentümer: Ergebnis je Liegenschaft,
     Auszahlungen und offener Saldo — das Dokument für den Eigentümer."""
     import io
@@ -84,12 +84,12 @@ def generate_kontokorrent_pdf(mandant, jahr, verwaltung=None):
     from reportlab.lib.units import mm
     from reportlab.lib import colors
 
-    kk = kontokorrent(mandant, jahr=jahr)
+    kk = kontokorrent(eigentuemer, jahr=jahr)
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     w, h = A4
     periode = str(jahr) if jahr else "kumuliert (alle Jahre)"
-    c.setTitle(f"Kontokorrent {mandant.firma_oder_name} {periode}")
+    c.setTitle(f"Kontokorrent {eigentuemer.firma_oder_name} {periode}")
 
     # Absender
     if verwaltung:
@@ -100,11 +100,11 @@ def generate_kontokorrent_pdf(mandant, jahr, verwaltung=None):
         c.drawString(20 * mm, h - 28 * mm, f"{verwaltung.plz or ''} {verwaltung.ort or ''}".strip())
     # Empfänger
     c.setFont("Helvetica", 11)
-    c.drawString(20 * mm, h - 48 * mm, mandant.firma_oder_name)
-    if mandant.kontaktperson:
-        c.drawString(20 * mm, h - 53 * mm, mandant.kontaktperson)
-    c.drawString(20 * mm, h - 58 * mm, mandant.strasse or "")
-    c.drawString(20 * mm, h - 63 * mm, f"{mandant.plz or ''} {mandant.ort or ''}".strip())
+    c.drawString(20 * mm, h - 48 * mm, eigentuemer.firma_oder_name)
+    if eigentuemer.kontaktperson:
+        c.drawString(20 * mm, h - 53 * mm, eigentuemer.kontaktperson)
+    c.drawString(20 * mm, h - 58 * mm, eigentuemer.strasse or "")
+    c.drawString(20 * mm, h - 63 * mm, f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip())
 
     # Titel
     c.setFont("Helvetica-Bold", 15)
@@ -149,9 +149,9 @@ def generate_kontokorrent_pdf(mandant, jahr, verwaltung=None):
 
     # Honorar-Transparenz: der Eigentümer sieht, wie das im Aufwand enthaltene
     # Verwaltungshonorar berechnet wurde (Satz × Mietertrag je Liegenschaft).
-    if jahr and (mandant.honorar_prozent or 0) > 0:
+    if jahr and (eigentuemer.honorar_prozent or 0) > 0:
         from core.services.verwaltungshonorar import honorar_vorschau
-        h_zeilen, _h_total, h_prozent = honorar_vorschau(mandant, jahr)
+        h_zeilen, _h_total, h_prozent = honorar_vorschau(eigentuemer, jahr)
         h_zeilen = [z for z in h_zeilen if z['honorar'] or z['mietertrag']]
         if h_zeilen:
             y -= 14 * mm
@@ -210,8 +210,8 @@ def generate_kontokorrent_pdf(mandant, jahr, verwaltung=None):
 
     c.setFont("Helvetica", 8); c.setFillColor(colors.grey)
     c.drawString(20 * mm, 18 * mm, "Ergebnis der bewirtschafteten Liegenschaften (inkl. Verwaltungshonorar) abzüglich der geleisteten Auszahlungen.")
-    if mandant.iban:
-        c.drawString(20 * mm, 14 * mm, f"Auszahlung auf: {mandant.iban}")
+    if eigentuemer.iban:
+        c.drawString(20 * mm, 14 * mm, f"Auszahlung auf: {eigentuemer.iban}")
     c.setFillColor(colors.black)
 
     c.showPage(); c.save(); buf.seek(0)

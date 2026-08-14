@@ -57,16 +57,16 @@ def docuseal_senden(vertrag):
 
         einheit = vertrag.einheit
         liegenschaft = einheit.liegenschaft
-        mandant = getattr(liegenschaft, 'mandant', None)
+        eigentuemer = getattr(liegenschaft, 'eigentuemer', None)
         verwaltung = getattr(liegenschaft, 'verwaltung', None) or Verwaltung.objects.first()
         template_path = ('core/mietvertrag_garage.html'
                          if einheit.typ in ('pp', 'bas', 'gar')
                          else 'core/mietvertrag_pdf.html')
 
         unterschrift_path = None
-        if mandant and getattr(mandant, 'unterschrift_bild', None):
+        if eigentuemer and getattr(eigentuemer, 'unterschrift_bild', None):
             try:
-                unterschrift_path = mandant.unterschrift_bild.path
+                unterschrift_path = eigentuemer.unterschrift_bild.path
             except Exception:
                 unterschrift_path = None
         if not unterschrift_path:
@@ -78,7 +78,7 @@ def docuseal_senden(vertrag):
         nk = vertrag.nebenkosten or 0
         context = {
             'vertrag': vertrag, 'mieter': mieter, 'einheit': einheit,
-            'liegenschaft': liegenschaft, 'mandant': mandant, 'verwaltung': verwaltung,
+            'liegenschaft': liegenschaft, 'eigentuemer': eigentuemer, 'verwaltung': verwaltung,
             'verwaltungs_name': getattr(settings, 'VERWALTUNG_NAME', 'SwissImmo Verwaltung'),
             'heute': timezone.localdate(),
             'miete_fmt': f"{netto:.2f}", 'nk_fmt': f"{nk:.2f}",

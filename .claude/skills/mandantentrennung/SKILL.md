@@ -15,7 +15,7 @@ Der Code enthält eine historische Namenskollision. Beim Lesen und Schreiben imm
 |---|---|---|
 | **`Organisation`** | Der Mandant im SaaS-Sinn: ein Verwaltungsunternehmen, ein Abo | Der Tenant-Anker. Neu ab Phase 2. |
 | **`crm.Verwaltung`** | Historisch der Singleton der einen Verwaltung | Wird von `Organisation` abgelöst bzw. darin überführt |
-| **`crm.Mandant`** | **Der Eigentümer einer Liegenschaft** — *nicht* der Tenant | Umbenennung nach `Eigentuemer` ist beschlossen. Bis dahin: nie unqualifiziert „Mandant" schreiben. |
+| **`crm.Eigentuemer`** | **Der Eigentümer einer Liegenschaft** — *nicht* der Tenant | Hiess bis E3 (14.08.2026) `crm.Mandant`. Die Kollision ist damit im Code aufgelöst; im Gespräch bleibt „Mandant" trotzdem zweideutig — dort weiter qualifizieren. |
 
 Wenn in einem Auftrag „Mandant" steht, zuerst klären, welche Bedeutung gemeint ist. Falsch geraten heisst hier: Daten des falschen Kreises freigegeben.
 

@@ -95,12 +95,12 @@ class Verwaltung(models.Model):
         super().save(*args, **kwargs)
 
 
-class Mandant(models.Model):
+class Eigentuemer(models.Model):
     # Portal-Zugang: verknüpfter Login für das Eigentümer-Portal (/portal/).
     # Eigentümer sehen dort NUR ihre eigenen Liegenschaften — kein SPA-/API-Zugriff.
     benutzer = models.OneToOneField(
         'auth.User', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='mandant_profil', verbose_name="Portal-Login",
+        related_name='eigentuemer_profil', verbose_name="Portal-Login",
         help_text="Optionaler Benutzer-Account für das Eigentümer-Portal."
     )
     firma_oder_name = models.CharField("Name / Firma (Eigentümer)", max_length=100)
@@ -110,7 +110,7 @@ class Mandant(models.Model):
     ort = models.CharField("Ort", max_length=100, blank=True)
     telefon = models.CharField("Telefon", max_length=30, blank=True)
     email = models.EmailField("E-Mail", blank=True)
-    bank_name = models.CharField("Bankname (Mandant)", max_length=100, blank=True)
+    bank_name = models.CharField("Bankname (Eigentümer)", max_length=100, blank=True)
     iban = models.CharField("IBAN", max_length=34, blank=True)
     # Verwaltungshonorar in % der Mieterträge (netto). 0 = kein Honorar.
     honorar_prozent = models.DecimalField("Verwaltungshonorar (%)", max_digits=5, decimal_places=2,
@@ -122,8 +122,14 @@ class Mandant(models.Model):
     unterschrift_bild = models.ImageField("Digitale Unterschrift", upload_to="unterschriften/", blank=True, null=True)
 
     class Meta:
-        verbose_name = "Mandant (Eigentümer)"
-        verbose_name_plural = "Mandanten (Eigentümer)"
+        verbose_name = "Eigentümer"
+        verbose_name_plural = "Eigentümer"
+        # Festgeschrieben und bewusst NICHT mit umbenannt (E3): Die Tabelle
+        # heisst seit jeher `core_mandant` (das Modell wohnte früher in `core`).
+        # Sie umzubenennen wäre echtes DDL auf dem Produktivbestand für null
+        # Gewinn — der Tabellenname kommt im Code nirgends vor. Weil `db_table`
+        # gesetzt ist, ist die Modell-Umbenennung eine reine Zustandsmigration
+        # ohne Datenrisiko.
         db_table = 'core_mandant'
 
     def __str__(self):

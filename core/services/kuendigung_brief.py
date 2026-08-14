@@ -25,7 +25,7 @@ def _wrap(text, breite):
     return zeilen
 
 
-def generate_kuendigung_mieter_pdf(vertrag, kuendigung, verwaltung=None, mandant=None):
+def generate_kuendigung_mieter_pdf(vertrag, kuendigung, verwaltung=None, eigentuemer=None):
     """vertrag: Mietvertrag, kuendigung: Kuendigung (per_datum/berechneter_termin)."""
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
@@ -33,11 +33,11 @@ def generate_kuendigung_mieter_pdf(vertrag, kuendigung, verwaltung=None, mandant
     einheit = vertrag.einheit
     lg = einheit.liegenschaft if einheit else None
 
-    # Empfänger: Mandant (Eigentümer) bevorzugt, sonst Verwaltung
-    if mandant is not None:
-        e_name = mandant.firma_oder_name
-        e_str = mandant.strasse or ''
-        e_ort = f"{mandant.plz or ''} {mandant.ort or ''}".strip()
+    # Empfänger: Eigentümer bevorzugt, sonst Verwaltung
+    if eigentuemer is not None:
+        e_name = eigentuemer.firma_oder_name
+        e_str = eigentuemer.strasse or ''
+        e_ort = f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip()
     elif verwaltung is not None:
         e_name = verwaltung.firma
         e_str = verwaltung.strasse or ''

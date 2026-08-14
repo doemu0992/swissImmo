@@ -11,7 +11,7 @@ Du führst die vier Schritte aus, die sich später nicht mehr oder nur sehr teue
 
 ## Die Reihenfolge ist bindend
 
-**1. Custom User Model.** Muss zuerst kommen. Django erlaubt den Wechsel nach Produktivgang praktisch nicht mehr. Beachte: Es hängen bereits zwei `OneToOneField` daran (`crm.Mandant.benutzer` für das Eigentümerportal, `crm.Mieter.benutzer` für das Mieterportal), das Rollenmodell arbeitet über `user.groups`, und es gibt eine Benutzerverwaltung in `/neu/`. Alle vier Stellen müssen im selben PR mitwandern, sonst ist der Zwischenzustand kaputt.
+**1. Custom User Model.** Muss zuerst kommen. Django erlaubt den Wechsel nach Produktivgang praktisch nicht mehr. Beachte: Es hängen bereits zwei `OneToOneField` daran (`crm.Eigentuemer.benutzer` für das Eigentümerportal, `crm.Mieter.benutzer` für das Mieterportal), das Rollenmodell arbeitet über `user.groups`, und es gibt eine Benutzerverwaltung in `/neu/`. Alle vier Stellen müssen im selben PR mitwandern, sonst ist der Zwischenzustand kaputt.
 
 **2. Modell `Organisation`.** Klären, ob `crm.Verwaltung` darin aufgeht oder daneben bestehen bleibt. `Verwaltung` wird heute an 132 Stellen über `.objects.first()` gelesen — diese Stellen sind die Landkarte für alles Weitere, und sie zeigen zugleich, wo überall implizit „es gibt nur eine" angenommen wird.
 

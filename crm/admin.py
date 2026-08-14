@@ -14,7 +14,7 @@ from core.admin_base import NurLesenModelAdmin, NurLesenTabularInline
 from unfold.decorators import action, display
 
 # Modelle aus der eigenen App (CRM)
-from .models import Verwaltung, Mandant, Mieter, Handwerker
+from .models import Verwaltung, Eigentuemer, Mieter, Handwerker
 
 # Modelle aus anderen Apps für die Inlines (Verknüpfungen)
 from rentals.models import Mietvertrag, Dokument
@@ -30,7 +30,7 @@ except ImportError:
 # ==========================================
 # 0. SICHERHEITS-CHECK (Gegen Reload-Abstürze)
 # ==========================================
-models_to_fix = [Verwaltung, Mandant, Mieter, Handwerker]
+models_to_fix = [Verwaltung, Eigentuemer, Mieter, Handwerker]
 for m in models_to_fix:
     try:
         admin.site.unregister(m)
@@ -333,19 +333,19 @@ class HandwerkerAdmin(NurLesenModelAdmin):
 # 4. MANDANTEN ADMIN (SaaS-Look: VIOLETT)
 # ==========================================
 
-@admin.register(Mandant)
-class MandantAdmin(NurLesenModelAdmin):
-    list_display = ('mandant_profil', 'kontakt_info', 'standort_info', 'schnell_aktionen')
+@admin.register(Eigentuemer)
+class EigentuemerAdmin(NurLesenModelAdmin):
+    list_display = ('eigentuemer_profil', 'kontakt_info', 'standort_info', 'schnell_aktionen')
     search_fields = ('firma_oder_name',)
 
-    readonly_fields = ('mandant_full_header',)
+    readonly_fields = ('eigentuemer_full_header',)
 
     fieldsets = (
         (None, {
-            'fields': ('mandant_full_header',),
+            'fields': ('eigentuemer_full_header',),
             'classes': ('map-fieldset',),
         }),
-        ("Mandanten Profil", {
+        ("Eigentümer Profil", {
             "fields": ("firma_oder_name", "bank_name", "unterschrift_bild")
         }),
         ("Adresse", {
@@ -354,8 +354,8 @@ class MandantAdmin(NurLesenModelAdmin):
     )
 
     @display(description="")
-    def mandant_full_header(self, obj):
-        if not obj.pk: return format_html('<div class="p-4 bg-purple-50 text-purple-700 rounded-xl font-bold border border-purple-100">✨ Neuen Mandanten anlegen</div>')
+    def eigentuemer_full_header(self, obj):
+        if not obj.pk: return format_html('<div class="p-4 bg-purple-50 text-purple-700 rounded-xl font-bold border border-purple-100">✨ Neuen Eigentümer anlegen</div>')
 
         addr_query = urllib.parse.quote(f"{obj.strasse}, {obj.plz} {obj.ort}") if getattr(obj, 'strasse', None) else ""
 
@@ -367,10 +367,10 @@ class MandantAdmin(NurLesenModelAdmin):
             'map_info': f"📍 {obj.strasse}, {obj.plz} {obj.ort}" if addr_query else "📍 Keine Adresse",
             'map_url': f"https://maps.google.com/maps?q={addr_query}&t=&z=15&ie=UTF8&iwloc=&output=embed" if addr_query else "https://maps.google.com/maps?q=Selzacherstrasse%204%2C%204512%20Bellach&t=&z=15&ie=UTF8&iwloc=&output=embed",
         }
-        return mark_safe(render_to_string('admin/crm/mandant_header.html', context))
+        return mark_safe(render_to_string('admin/crm/eigentuemer_header.html', context))
 
-    @display(description="Mandant / Eigentümer", ordering="firma_oder_name")
-    def mandant_profil(self, obj):
+    @display(description="Eigentuemer / Eigentümer", ordering="firma_oder_name")
+    def eigentuemer_profil(self, obj):
         name = getattr(obj, 'firma_oder_name', 'Unbekannt')
         return format_html(
             '<div class="flex items-center gap-3">'
@@ -394,7 +394,7 @@ class MandantAdmin(NurLesenModelAdmin):
     @display(description="Aktionen")
     def schnell_aktionen(self, obj):
         return format_html('<a href="{}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-sm">✏️ Bearbeiten</a>',
-            reverse('admin:crm_mandant_change', args=[obj.id]))
+            reverse('admin:crm_eigentuemer_change', args=[obj.id]))
 
 
 # ==========================================

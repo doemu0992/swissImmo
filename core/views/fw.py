@@ -442,14 +442,14 @@ def fw_finanzen(request):
 # ETAPPE B: LISTEN ALS DATENTABELLEN
 # ============================================================
 
-def _mahnstufe(faellig, heute, status, mandant=None):
-    """Mahnstufen-Badge aus Fälligkeit + der Mahnkonfig des Mandanten
+def _mahnstufe(faellig, heute, status, eigentuemer=None):
+    """Mahnstufen-Badge aus Fälligkeit + der Mahnkonfig des Eigentümers
     (core.services.mahnstufen). 'Fällig' als Fallback, wenn überfällig, aber
-    noch unter der ersten aktiven Stufe. mandant=None → Standard (14/30/60)."""
+    noch unter der ersten aktiven Stufe. eigentuemer=None → Standard (14/30/60)."""
     if status not in ('offen', 'teilbezahlt') or not faellig or faellig >= heute:
         return None
     tage = (heute - faellig).days
-    s = _stufe_fuer_tage(tage, mandant)
+    s = _stufe_fuer_tage(tage, eigentuemer)
     if s:
         return {'label': s['label'], 'cls': s['cls'], 'tage': tage}
     return {'label': 'Fällig', 'cls': 'bg-amber-50 text-amber-600', 'tage': tage}
@@ -471,8 +471,8 @@ def fw_debitoren(request):
     aktive_lg = basis['aktive_lg']
 
     qs = (DebitorenRechnung.objects
-          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft__mandant',
-                          'liegenschaft__mandant', 'einheit__liegenschaft')
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft__eigentuemer',
+                          'liegenschaft__eigentuemer', 'einheit__liegenschaft')
           .prefetch_related('zahlungseingaenge'))
     if aktive_lg:
         qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
@@ -521,7 +521,7 @@ def fw_debitoren(request):
     anzahl_offen = _agg['n'] or 0
     # _mahnstufe() liefert für JEDE überfällige offene Rechnung einen Treffer
     # (Fallback «Fällig», wenn noch unter der ersten Stufe). Die Zahl ist damit
-    # exakt «offen und fällig vor heute» — reines SQL, ohne Mandanten-Lookup.
+    # exakt «offen und fällig vor heute» — reines SQL, ohne Eigentümer-Lookup.
     anzahl_ueberfaellig = (offene_qs.annotate(_f=_faellig_expr)
                            .filter(_f__lt=heute).count())
 
@@ -560,7 +560,7 @@ def fw_debitoren(request):
         # r.offener_betrag, aber ohne die Zahlungen nachzuladen.
         offen = r._o if r.status in _OFFEN_STATUS else Decimal('0.00')
         faellig = r.faellig_am or r.datum
-        mahn = _mahnstufe(faellig, heute, r.status, _mandant_von_rechnung(r))
+        mahn = _mahnstufe(faellig, heute, r.status, _eigentuemer_von_rechnung(r))
         label, pill_cls = STATUS_PILL.get(r.status, (r.status, 'bg-slate-100 text-slate-500'))
         rows.append({
             'r': r,
@@ -1624,7 +1624,7 @@ def fw_liegenschaft_detail(request, pk):
     from rentals.models import Dokument as RentalsDokument
     from tickets.models import SchadenMeldung
 
-    lg = get_object_or_404(Liegenschaft.objects.select_related('mandant', 'verwaltung'), id=pk)
+    lg = get_object_or_404(Liegenschaft.objects.select_related('eigentuemer', 'verwaltung'), id=pk)
     basis = _global_filter(request)
 
     einheiten_rows = []
@@ -3703,13 +3703,13 @@ def fw_vertrag_loeschen(request, pk):
 # ETAPPE D: MAHNWESEN (Mahnstufen aus überfälligen Debitoren)
 # ============================================================
 
-# Mahnstufen-Konfiguration liegt jetzt PRO MANDANT (crm.Mandant.mahn_konfig) —
+# Mahnstufen-Konfiguration liegt jetzt PRO MANDANT (crm.Eigentuemer.mahn_konfig) —
 # EINE Quelle der Wahrheit in core.services.mahnstufen. MAHN_STUFEN = Standard-
-# Legende (ohne Mandant); die View berechnet die effektive Legende pro Mandant.
+# Legende (ohne Eigentuemer); die View berechnet die effektive Legende pro Eigentuemer.
 from core.services.mahnstufen import (  # noqa: E402
     mahnstufen_config as _mahnstufen_config,
     stufe_fuer_tage as _stufe_fuer_tage,
-    mandant_von_rechnung as _mandant_von_rechnung,
+    eigentuemer_von_rechnung as _eigentuemer_von_rechnung,
 )
 MAHN_STUFEN = _mahnstufen_config(None)
 
@@ -3722,15 +3722,15 @@ def fw_mahnwesen(request):
 
     qs = (DebitorenRechnung.objects
           .filter(status__in=['offen', 'teilbezahlt'])
-          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft__mandant',
-                          'liegenschaft__mandant')
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft__eigentuemer',
+                          'liegenschaft__eigentuemer')
           .prefetch_related('zahlungseingaenge'))
     if aktive_lg:
         qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
 
     stufe_filter = request.GET.get('stufe', '')
-    # Effektive Mahnstufen-Legende: die des gefilterten Mandanten, sonst Standard.
-    legende = _mahnstufen_config(getattr(aktive_lg, 'mandant', None) if aktive_lg else None)
+    # Effektive Mahnstufen-Legende: die des gefilterten Eigentümer, sonst Standard.
+    legende = _mahnstufen_config(getattr(aktive_lg, 'eigentuemer', None) if aktive_lg else None)
 
     rows = []
     total = Decimal('0.00')
@@ -3741,7 +3741,7 @@ def fw_mahnwesen(request):
         if not faellig or faellig >= heute:
             continue
         tage = (heute - faellig).days
-        stufe = _stufe_fuer_tage(tage, _mandant_von_rechnung(r))
+        stufe = _stufe_fuer_tage(tage, _eigentuemer_von_rechnung(r))
         if not stufe:
             continue  # unter der ersten aktiven Stufe: noch kein Mahnfall
         offen = r.offener_betrag
@@ -3893,7 +3893,7 @@ def _ist_qr_iban(iban):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_bankkonten(request):
-    from crm.models import Verwaltung, Mandant
+    from crm.models import Verwaltung, Eigentuemer
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
@@ -3932,7 +3932,7 @@ def fw_bankkonten(request):
                 'bank': getattr(vw, 'bank_name', ''), 'iban': _iban_format(vw.iban),
                 'ist_qr': is_qr, 'mietertrag': None, 'lg_id': None,
             })
-        for m in Mandant.objects.all().order_by('firma_oder_name'):
+        for m in Eigentuemer.objects.all().order_by('firma_oder_name'):
             if not _iban_clean(m.iban):
                 continue
             is_qr = _ist_qr_iban(m.iban)
@@ -6956,21 +6956,21 @@ def fw_auftrag_kosten(request, pk):
         a.freigabe_datum = None
         # Eigentümer aktiv informieren — sonst bemerkt er die Anfrage erst beim
         # nächsten Portal-Login und die Reparatur liegt tagelang auf Eis.
-        mandant = getattr(a.ticket.liegenschaft, 'mandant', None) if a.ticket.liegenschaft_id else None
+        eigentuemer = getattr(a.ticket.liegenschaft, 'eigentuemer', None) if a.ticket.liegenschaft_id else None
         mail_info = ""
-        if mandant and mandant.email:
+        if eigentuemer and eigentuemer.email:
             from core.utils.email_service import send_ticket_email
             lg = a.ticket.liegenschaft
             kosten_txt = f"CHF {a.kosten_geschaetzt}" if a.kosten_geschaetzt else "noch offen"
-            text = (f"Guten Tag {mandant.kontaktperson or mandant.firma_oder_name}\n\n"
+            text = (f"Guten Tag {eigentuemer.kontaktperson or eigentuemer.firma_oder_name}\n\n"
                     f"Für Ihre Liegenschaft {lg.strasse}, {lg.plz} {lg.ort} liegt eine Reparatur "
                     f"zur Freigabe bereit:\n\n"
                     f"Schaden: {a.ticket.titel}\n"
                     f"Geschätzte Kosten: {kosten_txt}\n\n"
                     f"Bitte melden Sie sich im Eigentümer-Portal an, um die Reparatur "
                     f"freizugeben oder abzulehnen.\n\nFreundliche Grüsse\nIhre Verwaltung")
-            if send_ticket_email(mandant.email, f"Reparaturfreigabe angefragt — {lg.strasse}", text):
-                mail_info = f" E-Mail an {mandant.email} gesendet."
+            if send_ticket_email(eigentuemer.email, f"Reparaturfreigabe angefragt — {lg.strasse}", text):
+                mail_info = f" E-Mail an {eigentuemer.email} gesendet."
         messages.info(request, f"ℹ️ Reparatur zur Freigabe an den Eigentümer weitergeleitet (Portal).{mail_info}")
 
     # Optional Kreditorenrechnung erstellen
@@ -7940,13 +7940,13 @@ def fw_buchhaltung_export(request):
 # EIGENTÜMER-/MANDATSABRECHNUNG
 # ============================================================
 
-def _mandat_abrechnung_daten(mandant, jahr):
-    """Erträge/Aufwände je Liegenschaft des Mandanten für das Geschäftsjahr.
+def _mandat_abrechnung_daten(eigentuemer, jahr):
+    """Erträge/Aufwände je Liegenschaft des Eigentümers für das Geschäftsjahr.
     Gibt (zeilen, totals) zurück — Basis für Anzeige und PDF."""
     from finance.models import Buchung, Buchungskonto
     import calendar as _cal
     von, bis = date(jahr, 1, 1), date(jahr, 12, 31)
-    liegenschaften = Liegenschaft.objects.filter(mandant=mandant).order_by('strasse')
+    liegenschaften = Liegenschaft.objects.filter(eigentuemer=eigentuemer).order_by('strasse')
     ertrag_konten = list(Buchungskonto.objects.filter(typ='ertrag'))
     aufwand_konten = list(Buchungskonto.objects.filter(typ='aufwand'))
 
@@ -7973,9 +7973,9 @@ def _mandat_abrechnung_daten(mandant, jahr):
 
 
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
-def fw_mandat_abrechnung(request, pk):
-    from crm.models import Mandant
-    md = get_object_or_404(Mandant, id=pk)
+def fw_eigentuemer_abrechnung(request, pk):
+    from crm.models import Eigentuemer
+    md = get_object_or_404(Eigentuemer, id=pk)
     basis = _global_filter(request)
     heute = timezone.localdate()
     try:
@@ -8005,10 +8005,10 @@ def fw_mandat_abrechnung(request, pk):
 def fw_eigentuemer_kontokorrent(request, pk):
     """Kontokorrent Eigentümer (on-screen): Ergebnis der Liegenschaften −
     Auszahlungen = offener Saldo. Einstieg zum Erfassen einer Auszahlung."""
-    from crm.models import Mandant
+    from crm.models import Eigentuemer
     from core.services.eigentuemer_kontokorrent import kontokorrent
     from finance.models import Buchungskonto
-    md = get_object_or_404(Mandant, id=pk)
+    md = get_object_or_404(Eigentuemer, id=pk)
     basis = _global_filter(request)
     heute = timezone.localdate()
     jahr_param = request.GET.get('jahr', '')
@@ -8056,10 +8056,10 @@ def fw_eigentuemer_honorar(request, pk):
     für das gewählte Geschäftsjahr. Idempotent."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Mandant
+    from crm.models import Eigentuemer
     from core.services.verwaltungshonorar import buche_honorar
     from core.auth import log_aktion
-    md = get_object_or_404(Mandant, id=pk)
+    md = get_object_or_404(Eigentuemer, id=pk)
     if request.method != 'POST':
         return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
     try:
@@ -8090,16 +8090,16 @@ def fw_eigentuemer_honorar(request, pk):
 
 
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
-def fw_mandant_mahnstufen(request, pk):
-    """Mahnstufen-Konfiguration eines Mandanten (feste 3 Stufen: aktiv / ab_tage /
-    gebuehr / kuendigung). Speichert nach Mandant.mahn_konfig (JSON). Leer =
+def fw_eigentuemer_mahnstufen(request, pk):
+    """Mahnstufen-Konfiguration eines Eigentümers (feste 3 Stufen: aktiv / ab_tage /
+    gebuehr / kuendigung). Speichert nach Eigentuemer.mahn_konfig (JSON). Leer =
     Standard 14/30/60. Siehe core.services.mahnstufen."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Mandant
+    from crm.models import Eigentuemer
     from core.services.mahnstufen import roh_konfig
     from core.auth import log_aktion
-    md = get_object_or_404(Mandant, id=pk)
+    md = get_object_or_404(Eigentuemer, id=pk)
     if request.method == 'POST':
         std_tage = {1: 14, 2: 30, 3: 60}
         konfig = []
@@ -8127,7 +8127,7 @@ def fw_mandant_mahnstufen(request, pk):
                               for c in konfig))
         messages.success(request, "✅ Mahnstufen gespeichert.")
         return redirect(f'/neu/mandate/{md.id}/mahnstufen/')
-    return render(request, 'fw/mandant_mahnstufen.html', {
+    return render(request, 'fw/eigentuemer_mahnstufen.html', {
         **_global_filter(request), 'nav': 'mandate', 'md': md, 'stufen': roh_konfig(md),
     })
 
@@ -8138,11 +8138,11 @@ def fw_eigentuemer_auszahlung(request, pk):
     Soll 2850 (Kontokorrent Eigentümer) / Haben Bank."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Mandant
+    from crm.models import Eigentuemer
     from finance.models import Buchungskonto, EigentuemerAuszahlung
     from finance.booking import buche, konto as _konto
     from core.auth import log_aktion
-    md = get_object_or_404(Mandant, id=pk)
+    md = get_object_or_404(Eigentuemer, id=pk)
     if request.method != 'POST':
         return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
     try:
@@ -8168,7 +8168,7 @@ def fw_eigentuemer_auszahlung(request, pk):
         return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
 
     EigentuemerAuszahlung.objects.create(
-        mandant=md, betrag=betrag, datum=datum, konto=bank,
+        eigentuemer=md, betrag=betrag, datum=datum, konto=bank,
         bemerkung=bemerkung, erstellt_von=request.user)
     log_aktion(request, "Eigentümer-Auszahlung", md.firma_oder_name,
                f"CHF {betrag} ab {bank.nummer} · Beleg #{buchung.beleg_nr if buchung else '—'}")
@@ -8741,7 +8741,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
     basis = _global_filter(request)
     vw = Verwaltung.objects.first()
     lg = v.einheit.liegenschaft
-    mandant = lg.mandant
+    eigentuemer = lg.eigentuemer
 
     def _dec(x, default='0'):
         try:
@@ -9405,7 +9405,7 @@ def fw_vertrag_neu(request):
     if edit_vertrag:
         belegte.discard(edit_vertrag.einheit_id)
 
-    lg_qs = Liegenschaft.objects.select_related('mandant').prefetch_related('einheiten').order_by('strasse')
+    lg_qs = Liegenschaft.objects.select_related('eigentuemer').prefetch_related('einheiten').order_by('strasse')
     if vorwahl_e:
         lg_qs = lg_qs.filter(id=vorwahl_e.liegenschaft_id)
     elif aktive_lg and not edit_vertrag:
@@ -9446,11 +9446,11 @@ def fw_vertrag_neu(request):
             })
         if not objekte:
             continue
-        # Vermieter = Mandant (Eigentümer) sonst Verwaltung
-        if lg.mandant_id:
-            vermieter = {'name': lg.mandant.firma_oder_name,
-                         'strasse': lg.mandant.strasse or lg.strasse,
-                         'plz': lg.mandant.plz or lg.plz, 'ort': lg.mandant.ort or lg.ort}
+        # Vermieter = Eigentümer sonst Verwaltung
+        if lg.eigentuemer_id:
+            vermieter = {'name': lg.eigentuemer.firma_oder_name,
+                         'strasse': lg.eigentuemer.strasse or lg.strasse,
+                         'plz': lg.eigentuemer.plz or lg.plz, 'ort': lg.eigentuemer.ort or lg.ort}
         else:
             vermieter = {'name': verwaltung['firma'], 'strasse': verwaltung['strasse'],
                          'plz': verwaltung['plz'], 'ort': verwaltung['ort']}
@@ -10257,21 +10257,21 @@ def fw_marktdaten_live(request):
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_benutzer(request):
     """Team-Mitglieder (Django-User + Rolle). Portal-Konten (Mieter/Eigentümer)
-    werden hier NICHT angezeigt — die werden über Person bzw. Mandant verwaltet."""
+    werden hier NICHT angezeigt — die werden über Person bzw. Eigentuemer verwaltet."""
     from django.contrib.auth.models import User
     from core.auth import ROLLE_EIGENTUEMER
     basis = _global_filter(request)
     # Die drei Dinge, die unten je Benutzer geprüft werden, gleich mitladen —
     # sonst sind es drei Abfragen pro Zeile (gemessen: 103 für 33 Benutzer).
     users = (User.objects.filter(is_active=True)
-             .select_related('mieter_profil', 'mandant_profil')
+             .select_related('mieter_profil', 'eigentuemer_profil')
              .prefetch_related('groups').order_by('username'))
     rows = []
     for u in users:
         # Reine Portal-Zugänge ausblenden (Mieter- oder Eigentümer-Portal)
         if getattr(u, 'mieter_profil', None) is not None:
             continue
-        if getattr(u, 'mandant_profil', None) is not None:
+        if getattr(u, 'eigentuemer_profil', None) is not None:
             continue
         # `.values_list()` umgeht prefetch_related und fragt je Benutzer nach —
         # über `.all()` gehen wollen wir genau das nicht (gemessen: 32 Abfragen).
@@ -10399,14 +10399,14 @@ def fw_rechtsgrundlagen(request):
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
-def fw_mandate(request):
-    """Mandanten (Eigentümer, für die verwaltet wird)."""
-    from crm.models import Mandant
+def fw_eigentuemer_liste(request):
+    """Eigentümer (Eigentümer, für die verwaltet wird)."""
+    from crm.models import Eigentuemer
     basis = _global_filter(request)
-    mandanten = Mandant.objects.all().order_by('firma_oder_name')
+    eigentuemer = Eigentuemer.objects.all().order_by('firma_oder_name')
     rows = []
-    for md in mandanten:
-        anzahl_lg = Liegenschaft.objects.filter(mandant=md).count()
+    for md in eigentuemer:
+        anzahl_lg = Liegenschaft.objects.filter(eigentuemer=md).count()
         rows.append({'md': md, 'anzahl_lg': anzahl_lg})
     return render(request, 'fw/mandate.html', {**basis, 'nav': 'mandate', 'rows': rows})
 
@@ -10886,11 +10886,11 @@ ABO_PLAENE = [
                   'camt.053-Import / pain.001-Export', 'Nebenkostenabrechnung & MWST',
                   'Mietzinsanpassung (amtl. Formular, LIK/Referenzzins)',
                   'Eigentümerportal & Reports', 'Serienbriefe & Schaden-/Handwerker-Flow'],
-     'nicht': ['Multi-Mandant (voll)', 'KI-Analysen', 'API-Zugang']},
+     'nicht': ['Multi-Eigentuemer (voll)', 'KI-Analysen', 'API-Zugang']},
     {'key': 'premium', 'name': 'Premium', 'preis_einheit': Decimal('2.90'),
      'grund': Decimal('149'), 'gratis_bis': 0, 'farbe': 'purple',
      'zielgruppe': 'Grössere Verwaltungen & Treuhänder',
-     'features': ['Alles aus Pro', 'Multi-Mandant & Mandatsabrechnung',
+     'features': ['Alles aus Pro', 'Multi-Eigentuemer & Mandatsabrechnung',
                   'KI-Analysen & Report-Assistent', 'DocuSeal-Vertragssignatur inkl.',
                   'API-Zugang', 'Prioritäts-Support & Onboarding'],
      'nicht': []},
@@ -10946,7 +10946,7 @@ def fw_liegenschaft_form(request, pk=None):
     """Liegenschaft erfassen oder bearbeiten."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Mandant
+    from crm.models import Eigentuemer
     from core.auth import log_aktion, snapshot_model, diff_model
     lg = get_object_or_404(Liegenschaft, id=pk) if pk else None
     basis = _global_filter(request)
@@ -10976,8 +10976,8 @@ def fw_liegenschaft_form(request, pk=None):
             except Exception:
                 return None
         obj.baujahr = intval('baujahr')
-        md_id = P.get('mandant_id') or ''
-        obj.mandant = Mandant.objects.filter(id=md_id).first() if md_id else None
+        md_id = P.get('eigentuemer_id') or ''
+        obj.eigentuemer = Eigentuemer.objects.filter(id=md_id).first() if md_id else None
         obj.versicherungswert = decval('versicherungswert')
         obj.grundstuecksflaeche_m2 = decval('grundstuecksflaeche_m2')
         obj.gebaeudevolumen_m3 = decval('gebaeudevolumen_m3')
@@ -11039,7 +11039,7 @@ def fw_liegenschaft_form(request, pk=None):
 
     return render(request, 'fw/liegenschaft_form.html', {
         **basis, 'nav': 'liegenschaften', 'lg': lg, 'ist_neu': lg is None,
-        'mandanten': Mandant.objects.all().order_by('firma_oder_name'),
+        'eigentuemer': Eigentuemer.objects.all().order_by('firma_oder_name'),
         'heiz_choices': Liegenschaft.HEIZ_CHOICES,
         'warmwasser_choices': Liegenschaft.WARMWASSER_CHOICES,
         'geak_klassen': [k for k, _ in Liegenschaft.GEAK_KLASSEN],
@@ -11309,19 +11309,19 @@ def fw_suche(request):
 # ============================================================
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
-def fw_mandat_form(request, pk=None):
-    """Mandant (Eigentümer) erfassen/bearbeiten + Liegenschaften zuordnen."""
+def fw_eigentuemer_form(request, pk=None):
+    """Eigentümer erfassen/bearbeiten + Liegenschaften zuordnen."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Mandant
+    from crm.models import Eigentuemer
     from core.auth import log_aktion, snapshot_model, diff_model
-    md = get_object_or_404(Mandant, id=pk) if pk else None
+    md = get_object_or_404(Eigentuemer, id=pk) if pk else None
     basis = _global_filter(request)
 
     if request.method == 'POST':
         P = request.POST
-        alt_snap = snapshot_model(Mandant.objects.get(pk=pk)) if pk else {}
-        obj = md or Mandant()
+        alt_snap = snapshot_model(Eigentuemer.objects.get(pk=pk)) if pk else {}
+        obj = md or Eigentuemer()
         obj.firma_oder_name = P.get('firma_oder_name', '').strip()
         obj.kontaktperson = P.get('kontaktperson', '').strip()
         obj.strasse = P.get('strasse', '').strip()
@@ -11343,7 +11343,7 @@ def fw_mandat_form(request, pk=None):
         from core.services.unterschrift import uebernehme_aus_formular
         uebernehme_aus_formular(obj, request)
         obj.save()
-        # Liegenschaften zuordnen: gewählte -> dieser Mandant; abgewählte (bisher dieser) -> ohne Mandant.
+        # Liegenschaften zuordnen: gewählte -> dieser Eigentuemer; abgewählte (bisher dieser) -> ohne Eigentuemer.
         # Nur wenn das Formular den Zuordnungsblock wirklich mitgeschickt hat: Ein POST
         # ohne diesen Block (Teilformular, abgebrochenes Rendering) hätte sonst still
         # ALLE Liegenschaften vom Eigentümer gelöst — und damit u.a. seine Unterschrift
@@ -11352,19 +11352,19 @@ def fw_mandat_form(request, pk=None):
             gewaehlt = set(P.getlist('liegenschaften'))
             for lg in Liegenschaft.objects.all():
                 sid = str(lg.id)
-                if sid in gewaehlt and lg.mandant_id != obj.id:
-                    lg.mandant = obj
-                    lg.save(update_fields=['mandant'])
-                elif sid not in gewaehlt and lg.mandant_id == obj.id:
-                    lg.mandant = None
-                    lg.save(update_fields=['mandant'])
+                if sid in gewaehlt and lg.eigentuemer_id != obj.id:
+                    lg.eigentuemer = obj
+                    lg.save(update_fields=['eigentuemer'])
+                elif sid not in gewaehlt and lg.eigentuemer_id == obj.id:
+                    lg.eigentuemer = None
+                    lg.save(update_fields=['eigentuemer'])
         _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
-        log_aktion(request, "Mandant bearbeitet" if pk else "Mandant erstellt", obj.firma_oder_name, _diff)
-        messages.success(request, f"✅ Mandant {obj.firma_oder_name} gespeichert.")
+        log_aktion(request, "Eigentuemer bearbeitet" if pk else "Eigentuemer erstellt", obj.firma_oder_name, _diff)
+        messages.success(request, f"✅ Eigentuemer {obj.firma_oder_name} gespeichert.")
         return redirect('/neu/mandate/')
 
     alle_lg = Liegenschaft.objects.all().order_by('strasse')
-    zugeordnet = set(Liegenschaft.objects.filter(mandant=md).values_list('id', flat=True)) if md else set()
+    zugeordnet = set(Liegenschaft.objects.filter(eigentuemer=md).values_list('id', flat=True)) if md else set()
     from core.services.unterschrift import unterschrift_url as _sig_url
     sig_url = _sig_url(md) if md else ''
     return render(request, 'fw/mandat_form.html', {
@@ -11377,15 +11377,15 @@ def fw_mandat_form(request, pk=None):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
-def fw_mandant_portal_zugang(request, pk):
+def fw_eigentuemer_portal_zugang(request, pk):
     """Erstellt/entfernt einen Eigentümer-Portal-Login und mailt die Zugangsdaten."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from django.contrib.auth.models import User
-    from crm.models import Mandant
+    from crm.models import Eigentuemer
     from core.auth import log_aktion
     import secrets
-    md = get_object_or_404(Mandant, id=pk)
+    md = get_object_or_404(Eigentuemer, id=pk)
     ziel = f'/neu/mandate/{md.id}/bearbeiten/'
     if request.method != 'POST':
         return redirect(ziel)
@@ -11442,31 +11442,31 @@ def fw_mandant_portal_zugang(request, pk):
 
 
 @rolle_erforderlich(ROLLE_VERWALTUNG)
-def fw_mandat_loeschen(request, pk):
-    """Löscht einen Mandanten — NUR wenn keine Liegenschaften zugeordnet sind
-    (mandant->liegenschaft ist CASCADE; sonst würden Objekte/Verträge mitgelöscht)."""
+def fw_eigentuemer_loeschen(request, pk):
+    """Löscht einen Eigentümer — NUR wenn keine Liegenschaften zugeordnet sind
+    (eigentuemer->liegenschaft ist CASCADE; sonst würden Objekte/Verträge mitgelöscht)."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Mandant
+    from crm.models import Eigentuemer
     from core.auth import log_aktion
-    md = get_object_or_404(Mandant, id=pk)
+    md = get_object_or_404(Eigentuemer, id=pk)
     if request.method == 'POST':
-        anzahl = Liegenschaft.objects.filter(mandant=md).count()
+        anzahl = Liegenschaft.objects.filter(eigentuemer=md).count()
         if anzahl > 0:
             messages.error(request, f"❌ '{md.firma_oder_name}' hat noch {anzahl} zugeordnete Liegenschaft(en). "
                                     "Bitte zuerst die Zuordnung im Bearbeiten-Dialog entfernen, dann löschen.")
             return redirect('/neu/mandate/')
         name = md.firma_oder_name
         # Verknüpften Eigentümer-Portal-Login mitentfernen — sonst bleibt ein
-        # Login zurück, dessen mandant_profil ins Leere zeigt.
+        # Login zurück, dessen eigentuemer_profil ins Leere zeigt.
         if md.benutzer_id:
             try:
                 md.benutzer.delete()
             except Exception:
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
-        log_aktion(request, "Mandant gelöscht", name, '')
+        log_aktion(request, "Eigentuemer gelöscht", name, '')
         md.delete()
-        messages.success(request, f"🗑️ Mandant {name} gelöscht.")
+        messages.success(request, f"🗑️ Eigentuemer {name} gelöscht.")
     return redirect('/neu/mandate/')
 
 
@@ -13116,7 +13116,7 @@ def _pendenz_ziel(p):
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_pendenzen(request):
     from core.models import Pendenz
-    from crm.models import Mandant  # noqa
+    from crm.models import Eigentuemer  # noqa
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
     heute = timezone.localdate()
@@ -13398,12 +13398,12 @@ def fw_mahnung_erfassen(request):
                                f"eine {stufe}. Mahnung wäre ein Rückschritt.")
         return redirect('fw_mahnwesen')
 
-    # Mahngebühr aus der Mandanten-Konfig (crm.Mandant.mahn_konfig) — NICHT mehr
+    # Mahngebühr aus der Eigentümer-Konfig (crm.Eigentuemer.mahn_konfig) — NICHT mehr
     # hartcodiert (fw.MAHN_GEBUEHR). Ein aus dem Formular übermittelter Wert
     # überschreibt sie (manuelle Anpassung); fehlt er, gilt die konfigurierte
     # Gebühr (z.B. 0 → dann wird KEINE 40.- geschrieben, Nutzer-Bug behoben).
-    from core.services.mahnstufen import gebuehr_fuer_stufe, mandant_von_rechnung
-    _cfg_geb = gebuehr_fuer_stufe(stufe, mandant_von_rechnung(rechnung))
+    from core.services.mahnstufen import gebuehr_fuer_stufe, eigentuemer_von_rechnung
+    _cfg_geb = gebuehr_fuer_stufe(stufe, eigentuemer_von_rechnung(rechnung))
     _posted = _num(request.POST.get('gebuehr'))
     try:
         gebuehr = Decimal(str(_posted)) if _posted not in (None, '') else _cfg_geb

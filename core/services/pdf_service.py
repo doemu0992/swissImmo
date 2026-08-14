@@ -67,7 +67,7 @@ def build_vertrag_context(vertrag, *, mit_unterschrift=True):
     gespeicherten Vertrag (Vorschau); dann `mit_unterschrift=False`."""
     einheit = vertrag.einheit
     liegenschaft = einheit.liegenschaft if einheit else None
-    mandant = liegenschaft.mandant if liegenschaft else None
+    eigentuemer = liegenschaft.eigentuemer if liegenschaft else None
 
     verwaltung = (liegenschaft.verwaltung if liegenschaft else None) or Verwaltung.objects.first()
 
@@ -80,8 +80,8 @@ def build_vertrag_context(vertrag, *, mit_unterschrift=True):
     if mit_unterschrift:
         if verwaltung and getattr(verwaltung, 'unterschrift', None):
             unterschrift_path = verwaltung.unterschrift.path
-        elif mandant and getattr(mandant, 'unterschrift_bild', None):
-            unterschrift_path = mandant.unterschrift_bild.path
+        elif eigentuemer and getattr(eigentuemer, 'unterschrift_bild', None):
+            unterschrift_path = eigentuemer.unterschrift_bild.path
         if not unterschrift_path:
             dummy = finders.find("img/unterschrift_dummy_transparent.png")
             if dummy:
@@ -98,7 +98,7 @@ def build_vertrag_context(vertrag, *, mit_unterschrift=True):
         'mieter': vertrag.mieter,
         'einheit': einheit,
         'liegenschaft': liegenschaft,
-        'mandant': mandant,
+        'eigentuemer': eigentuemer,
         'verwaltung': verwaltung,
         'heute': timezone.localdate(),
         'miete_fmt': f"{netto:,.2f}".replace(",", "'"),

@@ -48,7 +48,7 @@ def generate_serienbrief_pdf(absender, betreff, text, empfaenger, logo_path=None
                              signatur=()):
     """absender: dict firma/strasse/plz/ort. empfaenger: Liste dicts.
 
-    `signatur`: Objekte (Verwaltung/Mandant) in Unterzeichner-Reihenfolge — der
+    `signatur`: Objekte (Verwaltung/Eigentuemer) in Unterzeichner-Reihenfolge — der
     Brief bekommt damit die digitale Unterschrift über den Absendernamen."""
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)

@@ -52,8 +52,8 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
     deb_qs = DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
     if aktive_lg:
         deb_qs = deb_qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
-    deb = [r for r in deb_qs.select_related('liegenschaft__mandant',
-                                            'vertrag__einheit__liegenschaft__mandant')
+    deb = [r for r in deb_qs.select_related('liegenschaft__eigentuemer',
+                                            'vertrag__einheit__liegenschaft__eigentuemer')
                              .prefetch_related('zahlungseingaenge') if r.offener_betrag > 0]
     deb_ueberf = [r for r in deb if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) < heute]
     # «Mahnen» nur für Forderungen, deren für die Überfälligkeit fällige Mahnstufe
@@ -62,7 +62,7 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
     if deb_ueberf:
         from django.db.models import Max
         from finance.models import Mahnung
-        from core.services.mahnstufen import stufe_fuer_tage, mandant_von_rechnung
+        from core.services.mahnstufen import stufe_fuer_tage, eigentuemer_von_rechnung
         _ids = [r.id for r in deb_ueberf]
         _hoechste = {row['debitoren_rechnung_id']: row['mx'] for row in
                      Mahnung.objects.filter(debitoren_rechnung_id__in=_ids)
@@ -70,7 +70,7 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
 
         def _zu_mahnen(r):
             tage = (heute - (r.faellig_am or r.datum)).days
-            s = stufe_fuer_tage(tage, mandant_von_rechnung(r))
+            s = stufe_fuer_tage(tage, eigentuemer_von_rechnung(r))
             return bool(s) and s['stufe'] > (_hoechste.get(r.id) or 0)
         deb_ueberf = [r for r in deb_ueberf if _zu_mahnen(r)]
     if deb_ueberf:

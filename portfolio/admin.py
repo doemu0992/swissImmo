@@ -368,7 +368,7 @@ class LiegenschaftAdmin(NurLesenModelAdmin):
         }),
         ('Zuständigkeit & Standort', {
             'fields': (
-                ('mandant', 'verwaltung'),
+                ('eigentuemer', 'verwaltung'),
                 ('strasse', 'plz', 'ort', 'kanton'),
             )
         }),

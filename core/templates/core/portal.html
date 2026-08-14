@@ -183,7 +183,7 @@
         <div class="mark">si</div>
         <div>
             <div class="name">Eigentümer-Portal</div>
-            {% if mandant %}<div class="sub">{{ mandant.firma_oder_name }}</div>{% endif %}
+            {% if eigentuemer %}<div class="sub">{{ eigentuemer.firma_oder_name }}</div>{% endif %}
         </div>
     </div>
     <div class="spacer"></div>
@@ -191,10 +191,10 @@
     <form method="post" action="/logout/">{% csrf_token %}<button class="logout" type="submit">Abmelden</button></form>
 </div>
 <main>
-    {% if mandant %}
+    {% if eigentuemer %}
         <div class="hello">
             <div>
-                <h1>Guten Tag, {{ mandant.firma_oder_name }}</h1>
+                <h1>Guten Tag, {{ eigentuemer.firma_oder_name }}</h1>
                 <p>Hier finden Sie den aktuellen Stand Ihrer Liegenschaften.</p>
             </div>
             <div class="actions">

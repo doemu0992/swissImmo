@@ -80,7 +80,7 @@ def send_via_docuseal(request, vertrag_id):
     try:
         einheit = vertrag.einheit
         liegenschaft = einheit.liegenschaft
-        mandant = liegenschaft.mandant
+        eigentuemer = liegenschaft.eigentuemer
         verwaltung = getattr(liegenschaft, 'verwaltung', None) or Verwaltung.objects.first()
 
         if einheit.typ in ['pp', 'bas', 'gar']:
@@ -89,9 +89,9 @@ def send_via_docuseal(request, vertrag_id):
             template_path = 'core/mietvertrag_pdf.html'
 
         unterschrift_path = None
-        if mandant and mandant.unterschrift_bild:
+        if eigentuemer and eigentuemer.unterschrift_bild:
             try:
-                unterschrift_path = mandant.unterschrift_bild.path
+                unterschrift_path = eigentuemer.unterschrift_bild.path
             except: pass
 
         if not unterschrift_path:
@@ -108,7 +108,7 @@ def send_via_docuseal(request, vertrag_id):
             'mieter': vertrag.mieter,
             'einheit': einheit,
             'liegenschaft': liegenschaft,
-            'mandant': mandant,
+            'eigentuemer': eigentuemer,
             'verwaltung': verwaltung,
             'verwaltungs_name': DEFAULT_VERWALTUNG_NAME,
             'heute': timezone.localdate(),

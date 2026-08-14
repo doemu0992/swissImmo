@@ -33,9 +33,9 @@ def _fr(d):
         return ""
 
 
-def _absender(verwaltung, mandant):
-    if mandant:
-        return [mandant.firma_oder_name, mandant.strasse or "", f"{mandant.plz or ''} {mandant.ort or ''}".strip()]
+def _absender(verwaltung, eigentuemer):
+    if eigentuemer:
+        return [eigentuemer.firma_oder_name, eigentuemer.strasse or "", f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip()]
     if verwaltung:
         return [verwaltung.firma or "", verwaltung.strasse or "", f"{verwaltung.plz or ''} {verwaltung.ort or ''}".strip()]
     return ["Immobilienverwaltung", "", ""]
@@ -97,7 +97,7 @@ def mietzins_so_pdf(vertrag, daten, verwaltung=None):
     mieter = vertrag.mieter
     einheit = vertrag.einheit
     lg = einheit.liegenschaft
-    mandant = lg.mandant if lg else None
+    eigentuemer = lg.eigentuemer if lg else None
     c.setTitle(f"Mietzinsanpassung {mieter.nachname}")
 
     from core.services.kantone import schlichtung_block
@@ -113,7 +113,7 @@ def mietzins_so_pdf(vertrag, daten, verwaltung=None):
     c.drawString(110*mm, 270*mm, "Einschreiben R")
     c.setFont("Helvetica", 9)
     yy = 270*mm
-    for line in _absender(verwaltung, mandant):
+    for line in _absender(verwaltung, eigentuemer):
         c.drawString(20*mm, yy, line); yy -= 4.5*mm
     c.drawString(110*mm, 265*mm, f"{mieter.vorname} {mieter.nachname}")
     c.drawString(110*mm, 260.5*mm, mieter.strasse or "")
@@ -209,7 +209,7 @@ def mietzins_so_pdf(vertrag, daten, verwaltung=None):
 
     # Ort/Datum + Unterschrift
     y -= 16*mm
-    absn = _absender(verwaltung, mandant)
+    absn = _absender(verwaltung, eigentuemer)
     ort = (absn[2].split(' ', 1)[-1] if absn[2] else (lg.ort if lg else ''))
     import datetime as _dt
     c.setFont("Helvetica-Bold", 9)
@@ -219,10 +219,10 @@ def mietzins_so_pdf(vertrag, daten, verwaltung=None):
     c.drawString(45*mm, y, f"{ort}, ")
     if verwaltung and getattr(verwaltung, 'logo', None):
         pass
-    mandant_unterschrift = getattr(mandant, 'unterschrift_bild', None) if mandant else None
-    if mandant_unterschrift:
+    eigentuemer_unterschrift = getattr(eigentuemer, 'unterschrift_bild', None) if eigentuemer else None
+    if eigentuemer_unterschrift:
         try:
-            c.drawImage(mandant_unterschrift.path, 110*mm, y - 12*mm, width=45*mm, preserveAspectRatio=True, mask='auto')
+            c.drawImage(eigentuemer_unterschrift.path, 110*mm, y - 12*mm, width=45*mm, preserveAspectRatio=True, mask='auto')
         except Exception:
             logger.debug("Fehler bewusst übergangen", exc_info=True)
     c.setFont("Helvetica-Oblique", 7.5)
@@ -250,7 +250,7 @@ def kuendigung_so_pdf(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     mieter = vertrag.mieter
     einheit = vertrag.einheit
     lg = einheit.liegenschaft
-    mandant = lg.mandant if lg else None
+    eigentuemer = lg.eigentuemer if lg else None
     c.setTitle(f"Kündigung {mieter.nachname}")
 
     from core.services.kantone import schlichtung_block
@@ -284,7 +284,7 @@ def kuendigung_so_pdf(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     y -= 22*mm
     c.setFont("Helvetica-Bold", 9); c.drawString(20*mm, y, "Vermieterschaft")
     c.setFont("Helvetica", 9)
-    for i, line in enumerate(_absender(verwaltung, mandant)):
+    for i, line in enumerate(_absender(verwaltung, eigentuemer)):
         c.drawString(70*mm, y - i*5*mm, line)
 
     # Objekt
@@ -330,14 +330,14 @@ def kuendigung_so_pdf(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     c.setFont("Helvetica-Bold", 9)
     c.drawString(20*mm, y, "Ort / Datum")
     c.drawString(110*mm, y, "Unterschrift")
-    absn = _absender(verwaltung, mandant)
+    absn = _absender(verwaltung, eigentuemer)
     ort = (absn[2].split(' ', 1)[-1] if absn[2] else (lg.ort if lg else ''))
     c.setFont("Helvetica", 9)
     c.drawString(20*mm, y - 8*mm, f"{ort}, ")
-    mandant_unterschrift = getattr(mandant, 'unterschrift_bild', None) if mandant else None
-    if mandant_unterschrift:
+    eigentuemer_unterschrift = getattr(eigentuemer, 'unterschrift_bild', None) if eigentuemer else None
+    if eigentuemer_unterschrift:
         try:
-            c.drawImage(mandant_unterschrift.path, 110*mm, y - 20*mm, width=45*mm, preserveAspectRatio=True, mask='auto')
+            c.drawImage(eigentuemer_unterschrift.path, 110*mm, y - 20*mm, width=45*mm, preserveAspectRatio=True, mask='auto')
         except Exception:
             logger.debug("Fehler bewusst übergangen", exc_info=True)
 
@@ -385,7 +385,7 @@ def anfangsmietzins_so_pdf(vertrag, daten, verwaltung=None):
     mieter = vertrag.mieter
     einheit = vertrag.einheit
     lg = einheit.liegenschaft
-    mandant = lg.mandant if lg else None
+    eigentuemer = lg.eigentuemer if lg else None
     c.setTitle(f"Anfangsmietzins {mieter.nachname}")
 
     from core.services.kantone import schlichtung_block
@@ -399,7 +399,7 @@ def anfangsmietzins_so_pdf(vertrag, daten, verwaltung=None):
     c.drawString(110*mm, 275*mm, "Adressat (neue Mieterschaft):")
     c.setFont("Helvetica", 9)
     yy = 270*mm
-    for line in _absender(verwaltung, mandant):
+    for line in _absender(verwaltung, eigentuemer):
         c.drawString(20*mm, yy, line); yy -= 4.5*mm
     c.drawString(110*mm, 270*mm, f"{mieter.vorname} {mieter.nachname}")
     c.drawString(110*mm, 265.5*mm, mieter.strasse or "")
@@ -489,14 +489,14 @@ def anfangsmietzins_so_pdf(vertrag, daten, verwaltung=None):
 
     # Ort/Datum + Unterschrift
     y -= 8*mm
-    absn = _absender(verwaltung, mandant)
+    absn = _absender(verwaltung, eigentuemer)
     ort = (absn[2].split(' ', 1)[-1] if absn[2] else (lg.ort if lg else ''))
     import datetime as _dt
     c.setFont("Helvetica-Bold", 9)
     c.drawString(20*mm, y, "Ort/Datum"); c.drawString(110*mm, y, "Unterschrift Vermieterschaft")
     c.setFont("Helvetica", 9)
     c.drawString(45*mm, y, f"{ort}, {_dt.date.today().strftime('%d.%m.%Y')}")
-    mu = getattr(mandant, 'unterschrift_bild', None) if mandant else None
+    mu = getattr(eigentuemer, 'unterschrift_bild', None) if eigentuemer else None
     if mu:
         try:
             c.drawImage(mu.path, 110*mm, y - 12*mm, width=45*mm, preserveAspectRatio=True, mask='auto')

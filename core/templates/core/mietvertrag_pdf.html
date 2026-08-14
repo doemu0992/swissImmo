@@ -28,7 +28,7 @@
 </head>
 <body>
 
-{% if mandant %}{% with vname=mandant.firma_oder_name vstr=mandant.strasse vplz=mandant.plz vort=mandant.ort %}
+{% if eigentuemer %}{% with vname=eigentuemer.firma_oder_name vstr=eigentuemer.strasse vplz=eigentuemer.plz vort=eigentuemer.ort %}
 <div class="kopf">{{ vname }} | {{ vstr }} | {{ vplz }} {{ vort }}</div>
 {% endwith %}{% else %}
 <div class="kopf">{{ verwaltung.firma }} | {{ verwaltung.strasse }} | {{ verwaltung.plz }} {{ verwaltung.ort }}</div>
@@ -39,8 +39,8 @@
 
 <div class="sec">1. Vertragsparteien</div>
 <div class="sublabel">Vermieter</div>
-{% if mandant %}
-{{ mandant.firma_oder_name }}<br>{{ mandant.strasse }}<br>{{ mandant.plz }} {{ mandant.ort }}
+{% if eigentuemer %}
+{{ eigentuemer.firma_oder_name }}<br>{{ eigentuemer.strasse }}<br>{{ eigentuemer.plz }} {{ eigentuemer.ort }}
 {% else %}
 {{ verwaltung.firma }}<br>{{ verwaltung.strasse }}<br>{{ verwaltung.plz }} {{ verwaltung.ort }}
 {% endif %}
@@ -173,7 +173,7 @@ Form Art. 266l · Rückgabe Art. 267/267a{% if vertrag.ist_geschuetzt %} · Kün
         <td>
             <div class="sublabel">Vermieter</div>
             {% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg"><br>{% endif %}
-            <div class="sigline">{% if mandant %}{{ mandant.ort }}{% elif verwaltung %}{{ verwaltung.ort }}{% endif %}, {{ heute|date:"d.m.Y" }} / Unterschrift</div>
+            <div class="sigline">{% if eigentuemer %}{{ eigentuemer.ort }}{% elif verwaltung %}{{ verwaltung.ort }}{% endif %}, {{ heute|date:"d.m.Y" }} / Unterschrift</div>
         </td>
         <td>
             {% if vertrag.mitmieter or vertrag.mitmieter_name %}
@@ -201,7 +201,7 @@ Form Art. 266l · Rückgabe Art. 267/267a{% if vertrag.ist_geschuetzt %} · Kün
 </table>
 
 <div id="footerContent" style="font-size:7pt;color:#94a3b8;text-align:center;">
-    {% if mandant %}{{ mandant.firma_oder_name }}{% else %}{{ verwaltung.firma }}{% endif %} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }} · erstellt am {{ heute|date:"d.m.Y" }} · Seite <pdf:pagenumber> von <pdf:pagecount>
+    {% if eigentuemer %}{{ eigentuemer.firma_oder_name }}{% else %}{{ verwaltung.firma }}{% endif %} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }} · erstellt am {{ heute|date:"d.m.Y" }} · Seite <pdf:pagenumber> von <pdf:pagecount>
 </div>
 
 </body>

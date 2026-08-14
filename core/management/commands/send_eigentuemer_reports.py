@@ -1,4 +1,4 @@
-"""Versendet jedem Eigentümer (Mandant mit E-Mail) automatisch seinen
+"""Versendet jedem Eigentümer (Eigentuemer mit E-Mail) automatisch seinen
 Portfolio-Report + Steuerauszug als PDF-Anhang.
 
 Zum periodischen Planen (z.B. quartalsweise / jährlich) im
@@ -23,14 +23,14 @@ class Command(BaseCommand):
         parser.add_argument('--dry-run', action='store_true')
 
     def handle(self, *args, **opts):
-        from crm.models import Mandant
+        from crm.models import Eigentuemer
         from core.views.portal import _portfolio_daten
         from core.services.portfolio_report import generate_portfolio_report
         from core.services.steuerauszug import generate_steuerauszug_pdf
         from core.utils.email_service import send_report_mail
 
         jahr = opts['jahr'] or (datetime.date.today().year - 1)
-        qs = Mandant.objects.exclude(email='').filter(email__isnull=False)
+        qs = Eigentuemer.objects.exclude(email='').filter(email__isnull=False)
         if opts['nur_mit_portal']:
             qs = qs.filter(benutzer__isnull=False)
 

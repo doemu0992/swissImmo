@@ -39,7 +39,7 @@ def mietzins_anpassung_view(request, vertrag_id):
 
     # --- DATEN ERMITTELN ---
     liegenschaft = vertrag.einheit.liegenschaft
-    mandant = liegenschaft.mandant
+    eigentuemer = liegenschaft.eigentuemer
     verwaltung = Verwaltung.objects.first()
 
     absender_name = "Immobilienverwaltung"
@@ -47,12 +47,12 @@ def mietzins_anpassung_view(request, vertrag_id):
     absender_ort = ""
     unterschrift_pfad = None
 
-    if mandant:
-        absender_name = mandant.firma_oder_name
-        absender_strasse = mandant.strasse
-        absender_ort = f"{mandant.plz} {mandant.ort}"
-        if mandant.unterschrift_bild:
-            unterschrift_pfad = mandant.unterschrift_bild.path
+    if eigentuemer:
+        absender_name = eigentuemer.firma_oder_name
+        absender_strasse = eigentuemer.strasse
+        absender_ort = f"{eigentuemer.plz} {eigentuemer.ort}"
+        if eigentuemer.unterschrift_bild:
+            unterschrift_pfad = eigentuemer.unterschrift_bild.path
     elif verwaltung:
         absender_name = verwaltung.firma
         absender_strasse = verwaltung.strasse

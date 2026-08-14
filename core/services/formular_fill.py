@@ -72,9 +72,9 @@ def _merge(original_pfad, overlay_page):
     return out.read()
 
 
-def _absender(verwaltung, mandant):
-    if mandant:
-        return [mandant.firma_oder_name, mandant.strasse or "", f"{mandant.plz or ''} {mandant.ort or ''}".strip()]
+def _absender(verwaltung, eigentuemer):
+    if eigentuemer:
+        return [eigentuemer.firma_oder_name, eigentuemer.strasse or "", f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip()]
     if verwaltung:
         return [verwaltung.firma or "", verwaltung.strasse or "", f"{verwaltung.plz or ''} {verwaltung.ort or ''}".strip()]
     return ["Immobilienverwaltung", "", ""]
@@ -100,8 +100,8 @@ def fill_mietzins_so(vertrag, daten, verwaltung=None):
     mieter = vertrag.mieter
     einheit = vertrag.einheit
     lg = einheit.liegenschaft
-    mandant = lg.mandant if lg else None
-    absn = _absender(verwaltung, mandant)
+    eigentuemer = lg.eigentuemer if lg else None
+    absn = _absender(verwaltung, eigentuemer)
     ort_kopf = (absn[2].split(' ', 1)[-1] if absn[2] else (lg.ort if lg else ''))
     heute = datetime.date.today()
     wirksam = daten['wirksam_ab']
@@ -160,7 +160,7 @@ def fill_mietzins_so(vertrag, daten, verwaltung=None):
         # Ort/Datum
         c.drawString(142, _y(740), f"{ort_kopf}, {heute.strftime('%d.%m.%Y')}")
         # Unterschrift (mechanisch, zulässig Art. 269d Abs. 4)
-        us = getattr(mandant, 'unterschrift_bild', None) if mandant else None
+        us = getattr(eigentuemer, 'unterschrift_bild', None) if eigentuemer else None
         if us:
             try:
                 c.drawImage(us.path, 400, _y(755) - 4, width=110, height=22, preserveAspectRatio=True, mask='auto')
@@ -177,8 +177,8 @@ def fill_kuendigung_so(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     mieter = vertrag.mieter
     einheit = vertrag.einheit
     lg = einheit.liegenschaft
-    mandant = lg.mandant if lg else None
-    absn = _absender(verwaltung, mandant)
+    eigentuemer = lg.eigentuemer if lg else None
+    absn = _absender(verwaltung, eigentuemer)
     ort_kopf = (absn[2].split(' ', 1)[-1] if absn[2] else (lg.ort if lg else ''))
     heute = datetime.date.today()
     per = getattr(kuendigung, 'per_datum', None) or getattr(kuendigung, 'berechneter_termin', None) or vertrag.ende
@@ -215,7 +215,7 @@ def fill_kuendigung_so(vertrag, kuendigung, verwaltung=None, empfaenger=None):
             c.drawString(76, _y(yy), zeile); yy += 11
         # Ort/Datum
         c.drawString(76, _y(562), f"{ort_kopf}, {heute.strftime('%d.%m.%Y')}")
-        us = getattr(mandant, 'unterschrift_bild', None) if mandant else None
+        us = getattr(eigentuemer, 'unterschrift_bild', None) if eigentuemer else None
         if us:
             try:
                 c.drawImage(us.path, 330, _y(575) - 4, width=110, height=22, preserveAspectRatio=True, mask='auto')
@@ -300,8 +300,8 @@ def _mieter_block(mieter, sep='\n'):
     return sep.join(zeilen)
 
 
-def _absender_block(verwaltung, mandant, sep='\n'):
-    return sep.join(t for t in _absender(verwaltung, mandant) if t)
+def _absender_block(verwaltung, eigentuemer, sep='\n'):
+    return sep.join(t for t in _absender(verwaltung, eigentuemer) if t)
 
 
 def _mitmieter_block(vertrag, sep='\n'):
@@ -356,8 +356,8 @@ def _dstr(d):
     return d.strftime('%d.%m.%Y') if hasattr(d, 'strftime') and d else ''
 
 
-def _ort_datum(vertrag, verwaltung, mandant):
-    absn = _absender(verwaltung, mandant)
+def _ort_datum(vertrag, verwaltung, eigentuemer):
+    absn = _absender(verwaltung, eigentuemer)
     ort = (absn[2].split(' ', 1)[-1] if absn[2] else '') or (vertrag.einheit.liegenschaft.ort or '')
     return f"{ort}, {datetime.date.today().strftime('%d.%m.%Y')}"
 
@@ -368,10 +368,10 @@ def _ort_datum(vertrag, verwaltung, mandant):
 def fill_mietzins_zh(vertrag, daten, verwaltung=None):
     mieter = vertrag.mieter
     lg = vertrag.einheit.liegenschaft
-    mandant = lg.mandant if lg else None
+    eigentuemer = lg.eigentuemer if lg else None
     alt = Decimal(str(daten['alt_netto'])); neu = Decimal(str(daten['neu_netto']))
     nk = Decimal(str(daten.get('nebenkosten') or 0))
-    absn_block = _absender_block(verwaltung, mandant)
+    absn_block = _absender_block(verwaltung, eigentuemer)
 
     gruende = []
     if daten.get('alt_zins') is not None and daten.get('neu_zins') is not None and daten['alt_zins'] != daten['neu_zins']:
@@ -392,7 +392,7 @@ def fill_mietzins_zh(vertrag, daten, verwaltung=None):
         'Einschreiben Feld Adresseingabe LINKS 4': _mieter_block(mieter),
         'Einschreiben Feld Adresseingabe 1 RECHTS 4': _mitmieter_block(vertrag),
         'Absender/in Text Eingabefeld 4': absn_block,
-        'Textfeld 73': _absender_block(verwaltung, mandant, sep=', '),
+        'Textfeld 73': _absender_block(verwaltung, eigentuemer, sep=', '),
         'Textfeld 4': vertrag.einheit.bezeichnung,
         'Textfeld 5': f"{lg.strasse}, {lg.plz} {lg.ort}",
         'Textfeld 6': _dstr(daten['wirksam_ab']),
@@ -404,7 +404,7 @@ def fill_mietzins_zh(vertrag, daten, verwaltung=None):
         'Textfeld 76': g_zeilen[1] if len(g_zeilen) > 1 else '',
         'Textfeld 74': g_zeilen[2] if len(g_zeilen) > 2 else '',
         'Textfeld 75': g_zeilen[3] if len(g_zeilen) > 3 else '',
-        'Textfeld 69': _ort_datum(vertrag, verwaltung, mandant),
+        'Textfeld 69': _ort_datum(vertrag, verwaltung, eigentuemer),
     }
     # Objekt-Art aus der mietrechtlichen Kategorie ableiten (nicht hart «Wohnung»):
     # Kontrollkästchen 1 = Wohnung, 2 = Geschäftsräume. Wohnzweck-Objekte (wohnen)
@@ -417,7 +417,7 @@ def fill_mietzins_zh(vertrag, daten, verwaltung=None):
 def fill_kuendigung_zh(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     mieter = vertrag.mieter
     lg = vertrag.einheit.liegenschaft
-    mandant = lg.mandant if lg else None
+    eigentuemer = lg.eigentuemer if lg else None
     per = getattr(kuendigung, 'per_datum', None) or getattr(kuendigung, 'berechneter_termin', None) or vertrag.ende
     grund = (getattr(kuendigung, 'ausserordentlich_grund', '') or getattr(kuendigung, 'bemerkung', '') or '').strip()
     g_zeilen = _wrap(grund, 92) if grund else []
@@ -428,12 +428,12 @@ def fill_kuendigung_zh(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     tv = {
         'Einschreiben Feld Adresseingabe LINKS 5': adr_links,
         'Einschreiben Feld Adresseingabe 1 RECHTS 5': adr_rechts,
-        'Absender/in Text Eingabefeld 5': _absender_block(verwaltung, mandant),
-        'Vermieter/in Feld Texteingabe 7': _absender_block(verwaltung, mandant),
+        'Absender/in Text Eingabefeld 5': _absender_block(verwaltung, eigentuemer),
+        'Vermieter/in Feld Texteingabe 7': _absender_block(verwaltung, eigentuemer),
         'Textfeld 8': vertrag.einheit.bezeichnung,
         'Textfeld 9': f"{lg.strasse}, {lg.plz} {lg.ort}",
         'Textfeld 12': _dstr(per),
-        'Textfeld 111': _ort_datum(vertrag, verwaltung, mandant),
+        'Textfeld 111': _ort_datum(vertrag, verwaltung, eigentuemer),
     }
     for i, z in enumerate(g_zeilen[:8]):
         tv[f'Textfeld {13 + i}'] = z
@@ -450,10 +450,10 @@ def fill_kuendigung_zh(vertrag, kuendigung, verwaltung=None, empfaenger=None):
 def fill_mietzins_be(vertrag, daten, verwaltung=None):
     mieter = vertrag.mieter
     lg = vertrag.einheit.liegenschaft
-    mandant = lg.mandant if lg else None
+    eigentuemer = lg.eigentuemer if lg else None
     alt = Decimal(str(daten['alt_netto'])); neu = Decimal(str(daten['neu_netto']))
     nk = Decimal(str(daten.get('nebenkosten') or 0))
-    absn = _absender(verwaltung, mandant)
+    absn = _absender(verwaltung, eigentuemer)
 
     gruende = []
     if daten.get('alt_zins') is not None and daten.get('neu_zins') is not None and daten['alt_zins'] != daten['neu_zins']:
@@ -480,7 +480,7 @@ def fill_mietzins_be(vertrag, daten, verwaltung=None):
         'Textfeld 15': _fr(alt), 'Textfeld 16': _fr(neu),               # Zins ohne NK bisher/neu
         'Textfeld 17': _fr(nk) if nk else '', 'Textfeld 18': _fr(nk) if nk else '',  # NK
         'Textfeld 19': begr[:110],                                      # klare Begründung der Änderung
-        'Ort_Datum': _ort_datum(vertrag, verwaltung, mandant),
+        'Ort_Datum': _ort_datum(vertrag, verwaltung, eigentuemer),
         'Unterschrift': '',
     }
     cbs = ['Modification du loyer fermage']  # Miet-/Pachtzinsänderung
@@ -490,8 +490,8 @@ def fill_mietzins_be(vertrag, daten, verwaltung=None):
 def fill_kuendigung_be(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     mieter = vertrag.mieter
     lg = vertrag.einheit.liegenschaft
-    mandant = lg.mandant if lg else None
-    absn = _absender(verwaltung, mandant)
+    eigentuemer = lg.eigentuemer if lg else None
+    absn = _absender(verwaltung, eigentuemer)
     per = getattr(kuendigung, 'per_datum', None) or getattr(kuendigung, 'berechneter_termin', None) or vertrag.ende
     grund = (getattr(kuendigung, 'ausserordentlich_grund', '') or getattr(kuendigung, 'bemerkung', '') or '').strip()
 
@@ -512,15 +512,15 @@ def fill_kuendigung_be(vertrag, kuendigung, verwaltung=None, empfaenger=None):
         'Textfeld 8': m_ort,
         'Textfeld 9': mit,
         # Vertreter/in (Textfeld 11-15)
-        'Textfeld 11': _absender(verwaltung, mandant)[0],
-        'Textfeld 12': _absender(verwaltung, mandant)[1],
-        'Textfeld 13': _absender(verwaltung, mandant)[2],
+        'Textfeld 11': _absender(verwaltung, eigentuemer)[0],
+        'Textfeld 12': _absender(verwaltung, eigentuemer)[1],
+        'Textfeld 13': _absender(verwaltung, eigentuemer)[2],
         # Objekt / Daten / Begründung
         'Textfeld 16': _objekt_zeile(vertrag),
         'Textfeld 17': _dstr(vertrag.beginn),
         'Textfeld 18': _dstr(per),
         'Textfeld 19': grund,
-        'Ort / Datum': _ort_datum(vertrag, verwaltung, mandant),
+        'Ort / Datum': _ort_datum(vertrag, verwaltung, eigentuemer),
     }
     return _fill_acroform(os.path.join(_DIR, 'BE_kuendigung_original.pdf'), tv, ())
 
@@ -532,11 +532,11 @@ def fill_anfangsmietzins_be(vertrag, daten, verwaltung=None):
     mieter = vertrag.mieter
     einheit = vertrag.einheit
     lg = einheit.liegenschaft
-    mandant = lg.mandant if lg else None
-    # Vermieter = Eigentümer (Mandant); Vertreter/in = Verwaltung. Ohne Mandant
+    eigentuemer = lg.eigentuemer if lg else None
+    # Vermieter = Eigentümer; Vertreter/in = Verwaltung. Ohne Eigentuemer
     # tritt die Verwaltung selbst als Vermieter auf.
-    if mandant:
-        vermieter = _absender(None, mandant)
+    if eigentuemer:
+        vermieter = _absender(None, eigentuemer)
         vertreter = _absender(verwaltung, None) if verwaltung else ['', '', '']
     else:
         vermieter = _absender(verwaltung, None)
@@ -583,15 +583,15 @@ def fill_anfangsmietzins_be(vertrag, daten, verwaltung=None):
         'Textfeld 23': (daten.get('vorbehalte') or '')[:220],
         'Textfeld 24': (daten.get('begruendung') or '')[:220],
         # Seite 2: Ort/Datum + Unterschrift Vermieter/in (Mieter unterschreibt selbst)
-        'Ort und Datum 1': _ort_datum(vertrag, verwaltung, mandant),
+        'Ort und Datum 1': _ort_datum(vertrag, verwaltung, eigentuemer),
         'Unterschrift Vermieter/in': '', 'Ort und Datum 2': '', 'Unterschrift Mieter/in': '',
     }
     # Förderbeiträge für wertvermehrende Verbesserungen: Standard «Nein».
     cbs = ['Ja'] if daten.get('foerderbeitraege') else ['Nein']
-    # Digitale Unterschrift der Vermieterschaft (Mandant → sonst Verwaltung) als
+    # Digitale Unterschrift der Vermieterschaft (Eigentuemer → sonst Verwaltung) als
     # Overlay auf das Unterschriftsfeld auf Seite 2 (rect x≈305, y≈360).
     sig_bild = None
-    for quelle in (mandant, verwaltung):
+    for quelle in (eigentuemer, verwaltung):
         us = getattr(quelle, 'unterschrift_bild', None) if quelle else None
         if us:
             try:

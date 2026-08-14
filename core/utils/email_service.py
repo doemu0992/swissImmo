@@ -70,13 +70,13 @@ def send_handyman_notification(auftrag):
         subject = f"Auftrag: {ticket.liegenschaft.strasse} (Ticket #{ticket.id})"
 
         # Safe attribute access
-        mandant_info = "Keine Rechnungsadresse"
-        if ticket.liegenschaft.mandant:
-            m = ticket.liegenschaft.mandant
-            mandant_info = f"{m.firma_oder_name}, {m.strasse}, {m.plz} {m.ort}"
+        eigentuemer_info = "Keine Rechnungsadresse"
+        if ticket.liegenschaft.eigentuemer:
+            m = ticket.liegenschaft.eigentuemer
+            eigentuemer_info = f"{m.firma_oder_name}, {m.strasse}, {m.plz} {m.ort}"
         elif ticket.liegenschaft.verwaltung:
             v = ticket.liegenschaft.verwaltung
-            mandant_info = f"{v.firma}, {v.strasse}, {v.plz} {v.ort}"
+            eigentuemer_info = f"{v.firma}, {v.strasse}, {v.plz} {v.ort}"
 
         auftrags_text = auftrag.bemerkung if auftrag.bemerkung else "Bitte Auftrag ausführen."
 
@@ -89,7 +89,7 @@ def send_handyman_notification(auftrag):
                 <tr style="background:#eee;"><td><strong>Objekt:</strong></td><td>{ticket.liegenschaft.strasse}, {ticket.liegenschaft.ort}</td></tr>
                 <tr><td><strong>Schaden:</strong></td><td>{ticket.titel}<br>{ticket.beschreibung}</td></tr>
                 <tr style="background:#eee;"><td><strong>Kontakt vor Ort:</strong></td><td>{ticket.gemeldet_von}<br>{ticket.tel_melder}</td></tr>
-                <tr><td><strong>Rechnung an:</strong></td><td>{mandant_info}</td></tr>
+                <tr><td><strong>Rechnung an:</strong></td><td>{eigentuemer_info}</td></tr>
             </table>
             <p style="font-size:0.8em; color:gray;">Bitte Ticket #{ticket.id} als Referenz nutzen.</p>
         </body></html>
@@ -254,7 +254,7 @@ def send_report_mail(to_email, betreff, html_inhalt, anhaenge=None):
 
 
 def send_eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma=''):
-    """Sendet dem Eigentümer (Mandant) seine Portal-Zugangsdaten. True/False."""
+    """Sendet dem Eigentümer seine Portal-Zugangsdaten. True/False."""
     if not to_email:
         return False
     betreff = "Ihr Zugang zum Eigentümer-Portal"

@@ -766,10 +766,10 @@ class Erneuerungsfonds(models.Model):
 
 
 class EigentuemerAuszahlung(models.Model):
-    """Auszahlung an einen Eigentümer (Mandant) aus dem Kontokorrent Eigentümer.
+    """Auszahlung an einen Eigentümer aus dem Kontokorrent Eigentümer.
     Bucht Soll 2850 (Kontokorrent Eigentümer) / Haben Bank — reduziert die
     Verbindlichkeit gegenüber dem Eigentümer und die liquiden Mittel."""
-    mandant = models.ForeignKey('crm.Mandant', on_delete=models.CASCADE, related_name='auszahlungen')
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.CASCADE, related_name='auszahlungen')
     betrag = models.DecimalField(max_digits=12, decimal_places=2)
     datum = models.DateField(default=timezone.now)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True,
@@ -787,7 +787,7 @@ class EigentuemerAuszahlung(models.Model):
         db_table = 'core_eigentuemerauszahlung'
 
     def __str__(self):
-        return f"Auszahlung {self.mandant_id} — CHF {self.betrag} ({self.datum})"
+        return f"Auszahlung {self.eigentuemer_id} — CHF {self.betrag} ({self.datum})"
 
 
 class Hypothek(models.Model):

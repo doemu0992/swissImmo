@@ -34,16 +34,16 @@ def generate_debitor_qr_pdf(rechnung):
     r = rechnung
     lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag_id and r.vertrag.einheit_id else None)
     vw = Verwaltung.objects.first()
-    mandant = lg.mandant if lg else None
+    eigentuemer = lg.eigentuemer if lg else None
 
     iban = (lg.iban if lg and lg.iban else (getattr(vw, 'iban', '') or '')).replace(' ', '')
     if not iban:
         return None
 
-    if mandant:
-        creditor = {'name': mandant.firma_oder_name, 'line1': mandant.strasse or '',
-                    'line2': f"{mandant.plz or ''} {mandant.ort or ''}".strip(),
-                    'plz': mandant.plz or '', 'ort': mandant.ort or ''}
+    if eigentuemer:
+        creditor = {'name': eigentuemer.firma_oder_name, 'line1': eigentuemer.strasse or '',
+                    'line2': f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip(),
+                    'plz': eigentuemer.plz or '', 'ort': eigentuemer.ort or ''}
     elif vw:
         creditor = {'name': vw.firma, 'line1': vw.strasse or '',
                     'line2': f"{vw.plz or ''} {vw.ort or ''}".strip(),

@@ -716,7 +716,7 @@ class Leerstand(models.Model):
         db_table = 'core_leerstand'
 
 class Dokument(models.Model):
-    mandant = models.ForeignKey('crm.Mandant', on_delete=models.SET_NULL, null=True, blank=True)
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True)
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, null=True, blank=True)
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, null=True, blank=True)
     mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, null=True, blank=True)

@@ -168,8 +168,8 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
     from django.db.models import Q
     from core.utils.email_service import send_payment_reminder
     from finance.booking import buche
-    # Mahnstufen + Gebuehr pro Mandant (crm.Mandant.mahn_konfig); Fallback Standard.
-    from core.services.mahnstufen import stufe_fuer_tage as _stufe_cfg, mandant_von_rechnung
+    # Mahnstufen + Gebuehr pro Eigentuemer (crm.Eigentuemer.mahn_konfig); Fallback Standard.
+    from core.services.mahnstufen import stufe_fuer_tage as _stufe_cfg, eigentuemer_von_rechnung
 
     heute = timezone.localdate()
     qs = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
@@ -192,7 +192,7 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None):
         # gehört zur Abschreibung/Betreibung (eigene Verjährungs-Pendenz).
         if tage > 5 * 365:
             continue
-        _s = _stufe_cfg(tage, mandant_von_rechnung(r))
+        _s = _stufe_cfg(tage, eigentuemer_von_rechnung(r))
         if not _s:
             continue
         stufe = _s['stufe']

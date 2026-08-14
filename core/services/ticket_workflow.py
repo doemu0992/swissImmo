@@ -69,10 +69,10 @@ def ticket_kontext(ticket, handwerker=None, status=None):
               else f"{ticket.melder_vorname or ''} {ticket.melder_nachname or ''}".strip() or 'Mieter')
     objekt = ticket.betroffene_einheit.bezeichnung if ticket.betroffene_einheit_id else (lg.strasse if lg else '')
 
-    # Vermieter = Mandant (Eigentümer) der Liegenschaft, sonst Verwaltung
+    # Vermieter = Eigentümer der Liegenschaft, sonst Verwaltung
     vermieter = ''
-    if lg and lg.mandant_id:
-        vermieter = lg.mandant.firma_oder_name
+    if lg and lg.eigentuemer_id:
+        vermieter = lg.eigentuemer.firma_oder_name
     else:
         try:
             from crm.models import Verwaltung

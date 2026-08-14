@@ -76,9 +76,9 @@
 <!-- Schnellzugriff auf Berichte dieser Liegenschaft -->
 <div class="flex flex-wrap gap-2 mt-4">
     <a href="/neu/mieterspiegel/?lg={{ lg.id }}" class="text-xs font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-3 py-2"><i class="fa-solid fa-table-list mr-1.5"></i>Mieterspiegel</a>
-    {% if lg.mandant_id %}
-    <a href="/neu/mandate/{{ lg.mandant_id }}/abrechnung/" class="text-xs font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-3 py-2"><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i>Eigentümerabrechnung</a>
-    <a href="/neu/mandate/{{ lg.mandant_id }}/kontokorrent/" class="text-xs font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-3 py-2"><i class="fa-solid fa-scale-balanced mr-1.5"></i>Kontokorrent</a>
+    {% if lg.eigentuemer_id %}
+    <a href="/neu/mandate/{{ lg.eigentuemer_id }}/abrechnung/" class="text-xs font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-3 py-2"><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i>Eigentümerabrechnung</a>
+    <a href="/neu/mandate/{{ lg.eigentuemer_id }}/kontokorrent/" class="text-xs font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-3 py-2"><i class="fa-solid fa-scale-balanced mr-1.5"></i>Kontokorrent</a>
     {% endif %}
     <a href="/neu/hypotheken/" class="text-xs font-semibold text-slate-600 border border-slate-200 hover:bg-slate-100 rounded-lg px-3 py-2"><i class="fa-solid fa-landmark mr-1.5"></i>Hypotheken</a>
 </div>
@@ -155,11 +155,11 @@
         </div>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 items-start">
-        {% if lg.mandant or lg.egid or lg.kataster_nummer %}
+        {% if lg.eigentuemer or lg.egid or lg.kataster_nummer %}
         <div class="fw-card fw-nomb">
             <div class="fw-h"><span class="fw-ic i"><i class="fa-solid fa-landmark"></i></span><span class="fw-t">Eigentum &amp; Register</span></div>
             <div class="fw-cbody"><dl>
-                {% if lg.mandant %}<div class="fw-kv"><dt>Eigentümer</dt><dd>{{ lg.mandant.firma_oder_name }}</dd></div>{% endif %}
+                {% if lg.eigentuemer %}<div class="fw-kv"><dt>Eigentümer</dt><dd>{{ lg.eigentuemer.firma_oder_name }}</dd></div>{% endif %}
                 {% if lg.egid %}<div class="fw-kv"><dt>EGID</dt><dd>{{ lg.egid }}</dd></div>{% endif %}
                 {% if lg.kataster_nummer %}<div class="fw-kv"><dt>Kataster-Nr.</dt><dd>{{ lg.kataster_nummer }}</dd></div>{% endif %}
             </dl></div>

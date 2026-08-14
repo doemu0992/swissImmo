@@ -168,7 +168,7 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
         from core.services.unterschrift import unterschrift_zeichnen
         lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else None
         unterschrift_zeichnen(c, left_margin, sig_y,
-                              verwaltung, getattr(lg, 'mandant', None))
+                              verwaltung, getattr(lg, 'eigentuemer', None))
 
     # --- SEITE 2: DIE QR-RECHNUNG ---
     # QR-Einzahlungsschein: IBAN der Liegenschaft, sonst die der Verwaltung

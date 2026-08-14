@@ -145,7 +145,7 @@ def draw_qr_bill(c, iban, creditor, debtor, amount, reason, reference=None):
     else:
         ref_typ, ref_val = "NON", ""
 
-    # Creditor (Empfänger = Verwaltung/Mandant)
+    # Creditor (Empfänger = Verwaltung/Eigentuemer)
     creditor_data = {
         'name': creditor.get('name', '')[:70],
         'line1': creditor.get('line1', '')[:70],
@@ -442,7 +442,7 @@ def generate_mahnung_pdf(vertrag, offener_betrag, verwaltung):
         from core.services.unterschrift import unterschrift_zeichnen
         _lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else None
         unterschrift_zeichnen(c, 20*mm, y_pos + 2*mm,
-                              verwaltung, getattr(_lg, 'mandant', None))
+                              verwaltung, getattr(_lg, 'eigentuemer', None))
     except Exception:
         logger.debug("Fehler bewusst übergangen", exc_info=True)
     c.setFont("Helvetica-Bold", 11)

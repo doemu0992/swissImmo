@@ -2,9 +2,9 @@
 """
 Eigentümer-Portal (read-only).
 
-Ein Mandant (Eigentümer) kann über crm.Mandant.benutzer mit einem Login
+Ein Eigentümer kann über crm.Eigentuemer.benutzer mit einem Login
 verknüpft werden. Er sieht hier NUR seine eigenen Liegenschaften — keine
-Mieterdetails anderer Mandanten, kein SPA, keine API (core/auth.py sperrt
+Mieterdetails anderer Eigentümer, kein SPA, keine API (core/auth.py sperrt
 Eigentümer-Logins dort aus).
 """
 import logging
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 @login_required
 def nach_login_view(request):
     """Login-Weiche: Team → /neu/, Eigentümer → Portal, Mieter → Mieterportal."""
-    if getattr(request.user, 'mandant_profil', None) is not None:
+    if getattr(request.user, 'eigentuemer_profil', None) is not None:
         return redirect('portal')
     if hat_rolle(request.user, TEAM_ROLLEN):
         return redirect('fw_dashboard')
@@ -42,26 +42,26 @@ def nach_login_view(request):
 @never_cache
 @login_required
 def portal_view(request):
-    mandant = getattr(request.user, 'mandant_profil', None)
+    eigentuemer = getattr(request.user, 'eigentuemer_profil', None)
 
-    # Team-Mitglieder ohne Mandant-Verknüpfung gehören in die neue Oberfläche
-    if mandant is None:
+    # Team-Mitglieder ohne Eigentuemer-Verknüpfung gehören in die neue Oberfläche
+    if eigentuemer is None:
         if hat_rolle(request.user, TEAM_ROLLEN):
             return redirect('fw_dashboard')
-        return render(request, 'core/portal.html', {'mandant': None})
+        return render(request, 'core/portal.html', {'eigentuemer': None})
 
-    daten = _portfolio_daten(mandant)
-    freigaben = _offene_freigaben(mandant)
+    daten = _portfolio_daten(eigentuemer)
+    freigaben = _offene_freigaben(eigentuemer)
     from django.utils import timezone
     steuerjahr = timezone.localdate().year - 1
     return render(request, 'core/portal.html', {
-        'mandant': mandant, 'freigaben': freigaben, 'steuerjahr': steuerjahr, **daten})
+        'eigentuemer': eigentuemer, 'freigaben': freigaben, 'steuerjahr': steuerjahr, **daten})
 
 
-def _offene_freigaben(mandant):
+def _offene_freigaben(eigentuemer):
     """Handwerker-Aufträge, die auf die Freigabe dieses Eigentümers warten."""
     from tickets.models import HandwerkerAuftrag
-    lg_ids = list(mandant.liegenschaften.values_list('id', flat=True))
+    lg_ids = list(eigentuemer.liegenschaften.values_list('id', flat=True))
     qs = (HandwerkerAuftrag.objects
           .filter(freigabe_status='ausstehend', ticket__liegenschaft_id__in=lg_ids)
           .select_related('ticket__liegenschaft', 'handwerker').order_by('-id'))
@@ -84,10 +84,10 @@ def portal_freigabe(request, pk):
     """Eigentümer gibt einen Reparatur-Auftrag frei oder lehnt ihn ab."""
     from django.utils import timezone
     from tickets.models import HandwerkerAuftrag, TicketNachricht
-    mandant = getattr(request.user, 'mandant_profil', None)
-    if mandant is None or request.method != 'POST':
+    eigentuemer = getattr(request.user, 'eigentuemer_profil', None)
+    if eigentuemer is None or request.method != 'POST':
         raise Http404
-    lg_ids = list(mandant.liegenschaften.values_list('id', flat=True))
+    lg_ids = list(eigentuemer.liegenschaften.values_list('id', flat=True))
     a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket'),
                           pk=pk, ticket__liegenschaft_id__in=lg_ids)
     if a.freigabe_status != 'ausstehend':
@@ -107,7 +107,7 @@ def portal_freigabe(request, pk):
     try:
         label = 'freigegeben' if a.freigabe_status == 'freigegeben' else 'abgelehnt'
         TicketNachricht.objects.create(
-            ticket=a.ticket, absender_name=mandant.firma_oder_name, typ='system',
+            ticket=a.ticket, absender_name=eigentuemer.firma_oder_name, typ='system',
             nachricht=f"Reparatur vom Eigentümer {label}." + (f" Kommentar: {kommentar}" if kommentar else ''),
             is_intern=True)
     except Exception:
@@ -115,7 +115,7 @@ def portal_freigabe(request, pk):
     return redirect('portal')
 
 
-def _portfolio_daten(mandant):
+def _portfolio_daten(eigentuemer):
     """Sammelt Rendite-Cockpit-Kennzahlen, Objektlisten und Dokumente."""
     from portfolio.models import Dokument as PDokument
     from finance.models import DebitorenRechnung
@@ -129,7 +129,7 @@ def _portfolio_daten(mandant):
     total_ausstand = Decimal('0.00')
     total_ueberfaellig = Decimal('0.00')
 
-    for lg in mandant.liegenschaften.all().prefetch_related('einheiten'):
+    for lg in eigentuemer.liegenschaften.all().prefetch_related('einheiten'):
         einheiten_rows = []
         lg_soll = Decimal('0.00')
         lg_einheiten = 0
@@ -227,13 +227,13 @@ def _portfolio_daten(mandant):
 
 @login_required
 def portal_dokument_download(request, pk):
-    """Dokument-Download — nur für Dokumente von Liegenschaften des eigenen Mandanten."""
+    """Dokument-Download — nur für Dokumente von Liegenschaften des eigenen Eigentümer."""
     from portfolio.models import Dokument as PDokument
-    mandant = getattr(request.user, 'mandant_profil', None)
-    if mandant is None:
+    eigentuemer = getattr(request.user, 'eigentuemer_profil', None)
+    if eigentuemer is None:
         raise Http404
     dok = get_object_or_404(PDokument, pk=pk)
-    if not dok.liegenschaft_id or dok.liegenschaft.mandant_id != mandant.id:
+    if not dok.liegenschaft_id or dok.liegenschaft.eigentuemer_id != eigentuemer.id:
         raise Http404
     try:
         f = dok.datei.open('rb')
@@ -249,12 +249,12 @@ def portal_dokument_download(request, pk):
 @login_required
 def portal_report_pdf(request):
     """Portfolio-Report (PDF) für den eingeloggten Eigentümer."""
-    mandant = getattr(request.user, 'mandant_profil', None)
-    if mandant is None:
+    eigentuemer = getattr(request.user, 'eigentuemer_profil', None)
+    if eigentuemer is None:
         raise Http404
-    daten = _portfolio_daten(mandant)
+    daten = _portfolio_daten(eigentuemer)
     from core.services.portfolio_report import generate_portfolio_report
-    pdf = generate_portfolio_report(mandant, daten)
+    pdf = generate_portfolio_report(eigentuemer, daten)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = 'inline; filename="Portfolio-Report.pdf"'
     return resp
@@ -264,8 +264,8 @@ def portal_report_pdf(request):
 @login_required
 def portal_steuerauszug_pdf(request):
     """Steuerauszug (Liegenschaftsrechnung) für ein Jahr — nur eigene Mandate."""
-    mandant = getattr(request.user, 'mandant_profil', None)
-    if mandant is None:
+    eigentuemer = getattr(request.user, 'eigentuemer_profil', None)
+    if eigentuemer is None:
         raise Http404
     import datetime
     heute = datetime.date.today()
@@ -276,7 +276,7 @@ def portal_steuerauszug_pdf(request):
     # Plausibler Bereich
     jahr = max(2000, min(jahr, heute.year))
     from core.services.steuerauszug import generate_steuerauszug_pdf
-    pdf = generate_steuerauszug_pdf(mandant, jahr)
+    pdf = generate_steuerauszug_pdf(eigentuemer, jahr)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Steuerauszug_{jahr}.pdf"'
     return resp
@@ -288,8 +288,8 @@ def portal_kontokorrent_pdf(request):
     """Kontokorrent-Auszug (Ergebnis, Auszahlungen, offener Saldo) — nur eigene Mandate.
 
     ?jahr=YYYY für ein Geschäftsjahr, ohne Parameter kumuliert über alle Jahre."""
-    mandant = getattr(request.user, 'mandant_profil', None)
-    if mandant is None:
+    eigentuemer = getattr(request.user, 'eigentuemer_profil', None)
+    if eigentuemer is None:
         raise Http404
     from django.utils import timezone
     heute = timezone.localdate()
@@ -302,7 +302,7 @@ def portal_kontokorrent_pdf(request):
             jahr = None
     from core.services.eigentuemer_kontokorrent import generate_kontokorrent_pdf
     from crm.models import Verwaltung
-    pdf = generate_kontokorrent_pdf(mandant, jahr, Verwaltung.objects.first())
+    pdf = generate_kontokorrent_pdf(eigentuemer, jahr, Verwaltung.objects.first())
     resp = HttpResponse(pdf, content_type='application/pdf')
     name = f"Kontokorrent_{jahr}.pdf" if jahr else "Kontokorrent.pdf"
     resp['Content-Disposition'] = f'inline; filename="{name}"'
@@ -402,7 +402,7 @@ def mieter_portal_view(request):
     if mieter is None:
         if hat_rolle(request.user, TEAM_ROLLEN):
             return redirect('fw_dashboard')
-        if getattr(request.user, 'mandant_profil', None) is not None:
+        if getattr(request.user, 'eigentuemer_profil', None) is not None:
             return redirect('portal')
         return render(request, 'core/mieter_portal.html', {'mieter': None})
 
@@ -601,8 +601,8 @@ def mieter_kuendigung_pdf(request, pk):
         'vertrag__mieter', 'vertrag__einheit__liegenschaft'),
         pk=pk, vertrag_id__in=_vids)
     lg = k.vertrag.einheit.liegenschaft if k.vertrag.einheit_id else None
-    mandant = lg.mandant if lg else None
-    pdf = generate_kuendigung_mieter_pdf(k.vertrag, k, verwaltung=Verwaltung.objects.first(), mandant=mandant)
+    eigentuemer = lg.eigentuemer if lg else None
+    pdf = generate_kuendigung_mieter_pdf(k.vertrag, k, verwaltung=Verwaltung.objects.first(), eigentuemer=eigentuemer)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = 'inline; filename="Kuendigung.pdf"'
     return resp
@@ -733,8 +733,8 @@ def _verwaltung_empfaenger(lg):
     vw = (lg.verwaltung if lg and lg.verwaltung_id else None) or Verwaltung.objects.first()
     if vw and vw.email:
         empf.append(vw.email)
-    if lg and lg.mandant_id and lg.mandant.email:
-        empf.append(lg.mandant.email)
+    if lg and lg.eigentuemer_id and lg.eigentuemer.email:
+        empf.append(lg.eigentuemer.email)
     return empf
 
 

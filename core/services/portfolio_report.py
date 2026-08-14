@@ -14,7 +14,7 @@ def _chf(v):
         return '0'
 
 
-def generate_portfolio_report(mandant, daten):
+def generate_portfolio_report(eigentuemer, daten):
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     w, h = A4
@@ -27,7 +27,7 @@ def generate_portfolio_report(mandant, daten):
         c.setFont("Helvetica-Bold", 16)
         c.drawString(20 * mm, h - 18 * mm, titel)
         c.setFont("Helvetica", 9)
-        c.drawString(20 * mm, h - 24 * mm, f"{mandant.firma_oder_name} · Stand {heute}")
+        c.drawString(20 * mm, h - 24 * mm, f"{eigentuemer.firma_oder_name} · Stand {heute}")
         c.setFillColorRGB(0, 0, 0)
 
     kopf("Portfolio-Report")

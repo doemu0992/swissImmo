@@ -354,7 +354,7 @@ class DokumentAdmin(NurLesenModelAdmin):
             "fields": ("titel", "bezeichnung", "kategorie", "datei")
         }),
         ("Verknüpfungen", {
-            "fields": ("mandant", "liegenschaft", "einheit", "mieter", "vertrag")
+            "fields": ("eigentuemer", "liegenschaft", "einheit", "mieter", "vertrag")
         }),
     )
 

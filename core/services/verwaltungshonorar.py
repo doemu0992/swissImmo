@@ -1,5 +1,5 @@
 """Verwaltungshonorar: Honorarsatz (%) × Mieterträge je Liegenschaft eines
-Mandanten für ein Geschäftsjahr. Gebucht wird Soll 4500 (Verwaltungshonorar,
+Eigentümer für ein Geschäftsjahr. Gebucht wird Soll 4500 (Verwaltungshonorar,
 Aufwand der Liegenschaft) / Haben Bank — das mindert das Eigentümer-Ergebnis
 und die auszuzahlende Liquidität; die Bilanz bleibt ausgeglichen.
 
@@ -13,14 +13,14 @@ def _beleg_text(jahr, lg):
     return f"Verwaltungshonorar {jahr} — {lg.strasse}"
 
 
-def honorar_vorschau(mandant, jahr):
+def honorar_vorschau(eigentuemer, jahr):
     """Berechnet je Liegenschaft das Honorar (ohne zu buchen) und ob es für das
     Jahr bereits verbucht ist. Gibt (zeilen, total, prozent) zurück."""
     from finance.models import Buchung, Buchungskonto
     from portfolio.models import Liegenschaft
     from django.db.models import Sum
 
-    prozent = mandant.honorar_prozent or Decimal('0.00')
+    prozent = eigentuemer.honorar_prozent or Decimal('0.00')
     von, bis = date(jahr, 1, 1), date(jahr, 12, 31)
     # 3090 (Mietzinserlass/Rabatt, Ertragsminderung der Option-B-Bruttobuchung) mit
     # einbeziehen: dort ist (Haben−Soll) negativ und mindert den Ertrag → das Honorar
@@ -35,7 +35,7 @@ def honorar_vorschau(mandant, jahr):
 
     zeilen = []
     total = Decimal('0.00')
-    for lg in Liegenschaft.objects.filter(mandant=mandant).order_by('strasse'):
+    for lg in Liegenschaft.objects.filter(eigentuemer=eigentuemer).order_by('strasse'):
         bqs = (Buchung.objects.filter(liegenschaft=lg, datum__gte=von, datum__lte=bis)
                .exclude(abschluss_buchungen_q()))
         mietertrag = Decimal('0.00')
@@ -64,7 +64,7 @@ def honorar_vorschau(mandant, jahr):
     return zeilen, total, prozent
 
 
-def buche_honorar(mandant, jahr, *, gegen_nummer='2850', user=None):
+def buche_honorar(eigentuemer, jahr, *, gegen_nummer='2850', user=None):
     """Bucht das Verwaltungshonorar je Liegenschaft (idempotent — bereits für das
     Jahr gebuchte Liegenschaften werden übersprungen). Gibt (anzahl, summe) zurück.
 
@@ -75,7 +75,7 @@ def buche_honorar(mandant, jahr, *, gegen_nummer='2850', user=None):
     ausgebucht."""
     from finance.booking import buche, konto
 
-    zeilen, _total, _prozent = honorar_vorschau(mandant, jahr)
+    zeilen, _total, _prozent = honorar_vorschau(eigentuemer, jahr)
     gegen = konto(gegen_nummer)
     anzahl = 0
     summe = Decimal('0.00')

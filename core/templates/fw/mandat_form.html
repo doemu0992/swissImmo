@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% block title %}{% if ist_neu %}Neuer Mandant{% else %}{{ md.firma_oder_name }} bearbeiten{% endif %} — swissImmo{% endblock %}
+{% block title %}{% if ist_neu %}Neuer Eigentümer{% else %}{{ md.firma_oder_name }} bearbeiten{% endif %} — swissImmo{% endblock %}
 {% block content %}
 <nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
     <a href="/neu/mandate/" class="hover:text-indigo-600">Mandate</a>
@@ -9,7 +9,7 @@
 
 <div class="fw-phead">
     <div>
-        <h1>{% if ist_neu %}Neuen Mandanten erfassen{% else %}{{ md.firma_oder_name }} bearbeiten{% endif %}</h1>
+        <h1>{% if ist_neu %}Neuen Eigentümer erfassen{% else %}{{ md.firma_oder_name }} bearbeiten{% endif %}</h1>
         <p>Eigentümer-Stammdaten und Zuordnung der Liegenschaften.</p>
     </div>
 </div>
@@ -62,7 +62,7 @@
             <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer text-sm">
                 <input type="checkbox" name="liegenschaften" value="{{ lg.id }}" {% if lg.id in zugeordnet %}checked{% endif %} class="accent-indigo-600">
                 <span class="min-w-0"><span class="font-medium text-slate-800">{{ lg.strasse }}</span>
-                    <span class="text-xs text-slate-400 block">{{ lg.plz }} {{ lg.ort }}{% if lg.mandant and lg.mandant_id != md.id %} · aktuell: {{ lg.mandant.firma_oder_name }}{% endif %}</span></span>
+                    <span class="text-xs text-slate-400 block">{{ lg.plz }} {{ lg.ort }}{% if lg.eigentuemer and lg.eigentuemer_id != md.id %} · aktuell: {{ lg.eigentuemer.firma_oder_name }}{% endif %}</span></span>
             </label>
             {% empty %}
             <p class="text-sm text-slate-400 italic col-span-2">Noch keine Liegenschaften erfasst.</p>

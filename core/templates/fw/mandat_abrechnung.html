@@ -69,7 +69,7 @@
                 <td class="px-5 py-3 text-right font-semibold whitespace-nowrap {% if z.saldo < 0 %}text-rose-600{% else %}text-slate-900{% endif %}">{{ z.saldo|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Liegenschaften diesem Mandanten zugeordnet.</td></tr>
+            <tr><td colspan="4" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Liegenschaften diesem Eigentümer zugeordnet.</td></tr>
             {% endfor %}
             </tbody>
             {% if zeilen %}

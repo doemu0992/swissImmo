@@ -9,7 +9,7 @@ from django.test import TestCase, Client, RequestFactory
 from django.contrib import admin
 from django.contrib.auth.models import User, Group
 
-from crm.models import Mieter, Mandant, Verwaltung
+from crm.models import Mieter, Eigentuemer, Verwaltung
 from portfolio.models import Liegenschaft, Einheit, Wartungsfrist
 from rentals.models import Mietvertrag
 
@@ -70,16 +70,16 @@ class AblageTests(TestCase):
 
 
 class EigentuemerPortalTests(TestCase):
-    def _mandant_login(self):
+    def _eigentuemer_login(self):
         lg, e, m, v = _basis_objekte()
-        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
-        lg.mandant = md; lg.save()
+        md = Eigentuemer.objects.create(firma_oder_name='Eigentümer AG')
+        lg.eigentuemer = md; lg.save()
         u = User.objects.create_user(username='eig', password='x')
         md.benutzer = u; md.save()
         return md, lg, u
 
     def test_cockpit_kpis(self):
-        md, lg, u = self._mandant_login()
+        md, lg, u = self._eigentuemer_login()
         c = Client(); c.force_login(u)
         r = c.get('/portal/')
         self.assertEqual(r.status_code, 200)
@@ -87,7 +87,7 @@ class EigentuemerPortalTests(TestCase):
         self.assertContains(r, 'Bruttorendite')  # versicherungswert gesetzt
 
     def test_report_pdf(self):
-        md, lg, u = self._mandant_login()
+        md, lg, u = self._eigentuemer_login()
         c = Client(); c.force_login(u)
         r = c.get('/portal/report/')
         self.assertEqual(r.status_code, 200)
@@ -96,7 +96,7 @@ class EigentuemerPortalTests(TestCase):
     def test_fremddokument_404(self):
         from portfolio.models import Dokument as PDok
         from django.core.files.base import ContentFile
-        md, lg, u = self._mandant_login()
+        md, lg, u = self._eigentuemer_login()
         fremd = Liegenschaft.objects.create(strasse='X', plz='9', ort='Y')
         d = PDok(liegenschaft=fremd, titel='Fremd', kategorie='x')
         d.datei.save('f.pdf', ContentFile(b'%PDF'), save=True)
@@ -108,8 +108,8 @@ class ReparaturFreigabeTests(TestCase):
     def test_freigabe_flow(self):
         from tickets.models import SchadenMeldung, HandwerkerAuftrag
         lg, e, m, v = _basis_objekte()
-        md = Mandant.objects.create(firma_oder_name='Eig AG')
-        lg.mandant = md; lg.save()
+        md = Eigentuemer.objects.create(firma_oder_name='Eig AG')
+        lg.eigentuemer = md; lg.save()
         u = User.objects.create_user(username='eig2', password='x'); md.benutzer = u; md.save()
         from crm.models import Handwerker
         hw = Handwerker.objects.create(firma='Sanitär AG')
@@ -756,9 +756,9 @@ class SicherheitsIsolationTests(TestCase):
         from crm.models import Handwerker
         lg, e, m, v = _basis_objekte()
         eig_lg = Liegenschaft.objects.create(strasse='Eig 1', plz='3000', ort='Bern')
-        md = Mandant.objects.create(firma_oder_name='Eig AG'); eig_lg.mandant = md; eig_lg.save()
+        md = Eigentuemer.objects.create(firma_oder_name='Eig AG'); eig_lg.eigentuemer = md; eig_lg.save()
         u = User.objects.create_user(username='eig_iso', password='x'); md.benutzer = u; md.save()
-        # Freigabe an FREMDER Liegenschaft (nicht dem Mandanten zugeordnet)
+        # Freigabe an FREMDER Liegenschaft (nicht dem Eigentümer zugeordnet)
         hw = Handwerker.objects.create(firma='HW')
         t = SchadenMeldung.objects.create(liegenschaft=lg, titel='X', beschreibung='y')
         a = HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, freigabe_status='ausstehend')
@@ -1064,8 +1064,8 @@ class SteuerauszugTests(TestCase):
         from finance.models import Zahlungseingang, KreditorenRechnung, Anlage, Abschreibung
         from crm.models import Handwerker  # noqa
         lg, e, m, v = _basis_objekte()
-        md = Mandant.objects.create(firma_oder_name='Eig AG')
-        lg.mandant = md; lg.save()
+        md = Eigentuemer.objects.create(firma_oder_name='Eig AG')
+        lg.eigentuemer = md; lg.save()
         u = User.objects.create_user(username='eig_steuer', password='x'); md.benutzer = u; md.save()
         # Ertrag: Zahlungseingang 2024
         Zahlungseingang.objects.create(vertrag=v, betrag=Decimal('20000'),
@@ -1101,10 +1101,10 @@ class SteuerauszugTests(TestCase):
         # Button im Portal sichtbar
         self.assertContains(c.get('/portal/'), 'Steuerauszug')
 
-    def test_fremder_mandant_kein_zugriff(self):
+    def test_fremder_eigentuemer_kein_zugriff(self):
         md, lg, u = self._setup()
         # Anderer Eigentümer sieht die Zahlen nicht in seinem Auszug
-        md2 = Mandant.objects.create(firma_oder_name='Andere AG')
+        md2 = Eigentuemer.objects.create(firma_oder_name='Andere AG')
         u2 = User.objects.create_user(username='eig_andere', password='x'); md2.benutzer = u2; md2.save()
         from core.services.steuerauszug import steuerauszug_daten
         d = steuerauszug_daten(md2, 2024)
@@ -1112,13 +1112,13 @@ class SteuerauszugTests(TestCase):
 
 
 class EigentuemerZugangTests(TestCase):
-    def _mandant(self):
-        md = Mandant.objects.create(firma_oder_name='Eig AG', email='eig@example.ch')
+    def _eigentuemer(self):
+        md = Eigentuemer.objects.create(firma_oder_name='Eig AG', email='eig@example.ch')
         return md
 
     def test_zugang_erstellen_und_mail(self):
         from django.core import mail
-        md = self._mandant()
+        md = self._eigentuemer()
         team = _team_user()
         c = Client(); c.force_login(team)
         r = c.post(f'/neu/mandate/{md.id}/portal-zugang/')
@@ -1132,9 +1132,9 @@ class EigentuemerZugangTests(TestCase):
         self.assertIn('/portal/login/', mail.outbox[-1].body)
 
     def test_login_und_routing_ins_portal(self):
-        md = self._mandant()
+        md = self._eigentuemer()
         lg = Liegenschaft.objects.create(strasse='A', plz='1', ort='X', versicherungswert=Decimal('1'))
-        lg.mandant = md; lg.save()
+        lg.eigentuemer = md; lg.save()
         team = _team_user()
         c = Client(); c.force_login(team)
         c.post(f'/neu/mandate/{md.id}/portal-zugang/')
@@ -1147,7 +1147,7 @@ class EigentuemerZugangTests(TestCase):
         self.assertEqual(oc.get('/portal/').status_code, 200)
 
     def test_zugang_entfernen(self):
-        md = self._mandant()
+        md = self._eigentuemer()
         team = _team_user()
         c = Client(); c.force_login(team)
         c.post(f'/neu/mandate/{md.id}/portal-zugang/')
@@ -1158,7 +1158,7 @@ class EigentuemerZugangTests(TestCase):
         self.assertIsNone(md.benutzer_id)
 
     def test_button_in_mandatform(self):
-        md = self._mandant()
+        md = self._eigentuemer()
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get(f'/neu/mandate/{md.id}/bearbeiten/').content.decode()
@@ -1172,8 +1172,8 @@ class EigentuemerReportVersandTests(TestCase):
         from django.core.management import call_command
         import io
         lg, e, m, v = _basis_objekte()
-        md = Mandant.objects.create(firma_oder_name='Eig AG', email='eig@example.ch')
-        lg.mandant = md; lg.save()
+        md = Eigentuemer.objects.create(firma_oder_name='Eig AG', email='eig@example.ch')
+        lg.eigentuemer = md; lg.save()
         out = io.StringIO()
         call_command('send_eigentuemer_reports', '--jahr', '2024', stdout=out)
         self.assertIn('versendet', out.getvalue())
@@ -1190,7 +1190,7 @@ class EigentuemerReportVersandTests(TestCase):
         from django.core import mail
         from django.core.management import call_command
         import io
-        Mandant.objects.create(firma_oder_name='Eig AG', email='eig@example.ch')
+        Eigentuemer.objects.create(firma_oder_name='Eig AG', email='eig@example.ch')
         call_command('send_eigentuemer_reports', '--dry-run', stdout=io.StringIO())
         self.assertEqual(len(mail.outbox), 0)
 
@@ -1198,7 +1198,7 @@ class EigentuemerReportVersandTests(TestCase):
         from django.core import mail
         from django.core.management import call_command
         import io
-        Mandant.objects.create(firma_oder_name='Ohne Mail')  # keine E-Mail
+        Eigentuemer.objects.create(firma_oder_name='Ohne Mail')  # keine E-Mail
         call_command('send_eigentuemer_reports', stdout=io.StringIO())
         self.assertEqual(len(mail.outbox), 0)
 
@@ -2601,7 +2601,7 @@ class GewerbeWizardTests(TestCase):
         self.assertIn('3 Monate auf Ende eines Monats', v.kuendigungsfrist_anzeige)
         # PDF (Garage-Template) ohne Nebenkosten-Zeile
         ctx = {'vertrag': v, 'mieter': mi, 'einheit': e, 'liegenschaft': lg,
-               'mandant': None, 'verwaltung': None, 'heute': timezone.localdate(),
+               'eigentuemer': None, 'verwaltung': None, 'heute': timezone.localdate(),
                'miete_fmt': '120.00', 'nk_fmt': '0.00', 'brutto_fmt': '120.00',
                'kaution_fmt': '0.00', 'unterschrift_path': None}
         html = get_template('core/mietvertrag_garage.html').render(ctx)
@@ -4129,15 +4129,15 @@ class JournalStornoTests(TestCase):
 
 
 class EigentuemerKontokorrentTests(TestCase):
-    """Mandanten-Kontokorrent: Ergebnis − Auszahlungen, korrekte Passiv-Buchung."""
+    """Eigentümer-Kontokorrent: Ergebnis − Auszahlungen, korrekte Passiv-Buchung."""
 
     def _setup(self):
-        from crm.models import Mandant
+        from crm.models import Eigentuemer
         from finance.booking import buche, ensure_kontenplan
         ensure_kontenplan()
-        md = Mandant.objects.create(firma_oder_name='Eigentum AG', iban='CH9300762011623852957')
+        md = Eigentuemer.objects.create(firma_oder_name='Eigentum AG', iban='CH9300762011623852957')
         lg, e, m, v = _basis_objekte()
-        lg.mandant = md
+        lg.eigentuemer = md
         lg.save()
         buche('1020', '3000', Decimal('2000'), 'Miete', liegenschaft=lg)      # Ertrag 2000
         buche('4000', '1020', Decimal('500'), 'Reparatur', liegenschaft=lg)   # Aufwand 500
@@ -4168,7 +4168,7 @@ class EigentuemerKontokorrentTests(TestCase):
         # Buchung Soll 2850 / Haben 1020
         self.assertTrue(Buchung.objects.filter(soll_konto__nummer='2850', haben_konto__nummer='1020',
                                                betrag=Decimal('1000.00')).exists())
-        self.assertEqual(EigentuemerAuszahlung.objects.filter(mandant=md, status='verbucht').count(), 1)
+        self.assertEqual(EigentuemerAuszahlung.objects.filter(eigentuemer=md, status='verbucht').count(), 1)
         kk = kontokorrent(md)
         self.assertEqual(kk['ausbezahlt'], Decimal('1000.00'))
         self.assertEqual(kk['offen'], Decimal('500.00'))
@@ -4894,12 +4894,12 @@ class VerwaltungshonorarTests(TestCase):
     """Verwaltungshonorar: % der Mieterträge, Buchung Soll 4500 / Haben Bank."""
 
     def _setup(self, prozent='4'):
-        from crm.models import Mandant
+        from crm.models import Eigentuemer
         from finance.booking import buche, ensure_kontenplan
         ensure_kontenplan()
-        md = Mandant.objects.create(firma_oder_name='Eigentum AG', honorar_prozent=Decimal(prozent))
+        md = Eigentuemer.objects.create(firma_oder_name='Eigentum AG', honorar_prozent=Decimal(prozent))
         lg, e, m, v = _basis_objekte()
-        lg.mandant = md
+        lg.eigentuemer = md
         lg.save()
         # Mietertrag 10'000 im Jahr 2025 (Konto 3000)
         buche('1020', '3000', Decimal('10000'), 'Miete', datum=date(2025, 6, 1), liegenschaft=lg)
@@ -5958,7 +5958,7 @@ class VertragUnterschriftsblockTests(TestCase):
         tpl = ('core/mietvertrag_garage.html' if typ in ('pp', 'bas', 'gar')
                else 'core/mietvertrag_pdf.html')
         ctx = {'vertrag': v, 'mieter': m, 'einheit': e, 'liegenschaft': lg,
-               'mandant': None, 'verwaltung': Verwaltung.objects.first(),
+               'eigentuemer': None, 'verwaltung': Verwaltung.objects.first(),
                'heute': timezone.localdate(), 'miete_fmt': '1500.00',
                'nk_fmt': '200.00', 'brutto_fmt': '1700.00', 'kaution_fmt': '0.00',
                'unterschrift_path': None}
@@ -8426,13 +8426,13 @@ class DatenLebenszyklusTests(TestCase):
     # erst jetzt. Kommt sie nach /neu/, gehört dieser Test wieder her.
 
     def test_mandat_loeschen_raeumt_eigentuemer_login(self):
-        from crm.models import Mandant
-        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        from crm.models import Eigentuemer
+        md = Eigentuemer.objects.create(firma_oder_name='Eigentümer AG')
         u = User.objects.create_user(username='portal_owner', password='x')
         md.benutzer = u; md.save()
         c = Client(); c.force_login(_team_user())
         c.post(f'/neu/mandate/{md.id}/loeschen/')
-        self.assertFalse(Mandant.objects.filter(id=md.id).exists())
+        self.assertFalse(Eigentuemer.objects.filter(id=md.id).exists())
         self.assertFalse(User.objects.filter(id=u.id).exists())
 
 
@@ -8516,12 +8516,12 @@ class PrueferFundeTests(TestCase):
 
     def test_honorar_zieht_ertragsminderung_ab(self):
         from finance.booking import buche, ensure_kontenplan
-        from crm.models import Mandant
+        from crm.models import Eigentuemer
         from core.services.verwaltungshonorar import honorar_vorschau
         ensure_kontenplan()
         lg, e, m, v = _basis_objekte()
-        md = Mandant.objects.create(firma_oder_name='Eigentümer AG', honorar_prozent=Decimal('5'))
-        lg.mandant = md; lg.save()
+        md = Eigentuemer.objects.create(firma_oder_name='Eigentümer AG', honorar_prozent=Decimal('5'))
+        lg.eigentuemer = md; lg.save()
         # Voller Referenzertrag 1000, davon 400 Erlass (Option B) → Ist-Ertrag 600.
         buche('1100', '3000', Decimal('1000'), 'Miete', datum=date(2024, 6, 1), liegenschaft=lg)
         buche('3090', '1100', Decimal('400'), 'Erlass', datum=date(2024, 6, 1), liegenschaft=lg)
@@ -10568,16 +10568,16 @@ class NachtN5EigentuemerTests(TestCase):
     """Nacht-Audit N5: Kontokorrent-PDF im Portal, Ausstände-KPI,
     Freigabe-Mail an den Eigentümer, Honorar-Transparenz."""
 
-    def _mandant_login(self, **kw):
+    def _eigentuemer_login(self, **kw):
         lg, e, m, v = _basis_objekte()
-        md = Mandant.objects.create(firma_oder_name='Eigentümer AG', **kw)
-        lg.mandant = md; lg.save()
+        md = Eigentuemer.objects.create(firma_oder_name='Eigentümer AG', **kw)
+        lg.eigentuemer = md; lg.save()
         u = User.objects.create_user(username='eig_n5', password='x')
         md.benutzer = u; md.save()
         return md, lg, v, u
 
     def test_portal_kontokorrent_pdf(self):
-        md, lg, v, u = self._mandant_login()
+        md, lg, v, u = self._eigentuemer_login()
         c = Client(); c.force_login(u)
         for url in ('/portal/kontokorrent/', '/portal/kontokorrent/?jahr=2025'):
             r = c.get(url)
@@ -10585,14 +10585,14 @@ class NachtN5EigentuemerTests(TestCase):
             self.assertEqual(r['Content-Type'], 'application/pdf')
             self.assertTrue(r.content.startswith(b'%PDF'))
 
-    def test_portal_kontokorrent_ohne_mandant_404(self):
+    def test_portal_kontokorrent_ohne_eigentuemer_404(self):
         u = _team_user()
         c = Client(); c.force_login(u)
         self.assertEqual(c.get('/portal/kontokorrent/').status_code, 404)
 
     def test_portal_ausstaende_kpi(self):
         from finance.models import DebitorenRechnung
-        md, lg, v, u = self._mandant_login()
+        md, lg, v, u = self._eigentuemer_login()
         DebitorenRechnung.objects.create(
             vertrag=v, liegenschaft=lg, titel='Miete Juni', betrag=Decimal('1800'),
             datum=date.today() - timedelta(days=40),
@@ -10607,7 +10607,7 @@ class NachtN5EigentuemerTests(TestCase):
         from django.core import mail
         from tickets.models import SchadenMeldung, HandwerkerAuftrag
         from crm.models import Handwerker
-        md, lg, v, u_eig = self._mandant_login(email='eig@example.ch', kontaktperson='Peter Muster')
+        md, lg, v, u_eig = self._eigentuemer_login(email='eig@example.ch', kontaktperson='Peter Muster')
         hw = Handwerker.objects.create(firma='Sanitär AG')
         t = SchadenMeldung.objects.create(liegenschaft=lg, titel='Boiler defekt', beschreibung='x')
         a = HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, freigabe_status='nicht_noetig')
@@ -10624,7 +10624,7 @@ class NachtN5EigentuemerTests(TestCase):
         from django.core import mail
         from tickets.models import SchadenMeldung, HandwerkerAuftrag
         from crm.models import Handwerker
-        md, lg, v, u_eig = self._mandant_login(email='eig@example.ch')
+        md, lg, v, u_eig = self._eigentuemer_login(email='eig@example.ch')
         hw = Handwerker.objects.create(firma='Maler AG')
         t = SchadenMeldung.objects.create(liegenschaft=lg, titel='Kratzer', beschreibung='x')
         a = HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, freigabe_status='nicht_noetig')
@@ -10638,7 +10638,7 @@ class NachtN5EigentuemerTests(TestCase):
         from core.services.steuerauszug import steuerauszug_daten, generate_steuerauszug_pdf
         from core.services.verwaltungshonorar import buche_honorar
         from finance.booking import ensure_kontenplan, buche, konto
-        md, lg, v, u = self._mandant_login(honorar_prozent=Decimal('5.00'))
+        md, lg, v, u = self._eigentuemer_login(honorar_prozent=Decimal('5.00'))
         ensure_kontenplan()
         jahr = date.today().year - 1
         # Mietertrag im Jahr buchen (Haben 3000), dann Honorar berechnen + buchen
@@ -10658,7 +10658,7 @@ class NachtN5EigentuemerTests(TestCase):
     def test_kontokorrent_pdf_mit_honorar_block(self):
         from core.services.eigentuemer_kontokorrent import generate_kontokorrent_pdf
         from finance.booking import ensure_kontenplan, buche
-        md, lg, v, u = self._mandant_login(honorar_prozent=Decimal('4.00'))
+        md, lg, v, u = self._eigentuemer_login(honorar_prozent=Decimal('4.00'))
         ensure_kontenplan()
         jahr = date.today().year - 1
         buche('1020', '3000', Decimal('10000'), 'Mieten', datum=date(jahr, 3, 31), liegenschaft=lg)
@@ -12763,16 +12763,16 @@ class FinanzUIP5Tests(TestCase):
     def test_eigentuemer_auszahlung_akzeptiert_apostroph_betrag(self):
         """Das Feld ist mit dem `chf`-Filter vorbelegt (12'500.00) — genau dieser
         Wert kam zurück und liess `Decimal()` scheitern."""
-        from crm.models import Mandant
+        from crm.models import Eigentuemer
         from finance.models import EigentuemerAuszahlung
         from finance.booking import ensure_kontenplan
         ensure_kontenplan()
         _basis_objekte()
-        md = Mandant.objects.create(firma_oder_name='Muster Immobilien AG')
+        md = Eigentuemer.objects.create(firma_oder_name='Muster Immobilien AG')
         c = Client(); c.force_login(_team_user())
         c.post(f'/neu/mandate/{md.id}/auszahlung/',
                {'betrag': "12'500.00", 'datum': '2024-05-01'})
-        a = EigentuemerAuszahlung.objects.get(mandant=md)
+        a = EigentuemerAuszahlung.objects.get(eigentuemer=md)
         self.assertEqual(a.betrag, Decimal('12500.00'))
         self.assertEqual(self._saldo('2850'), Decimal('12500.00'))
         self.assertEqual(self._saldo('1020'), Decimal('-12500.00'))
@@ -12956,11 +12956,11 @@ class FinanzUIP5Tests(TestCase):
 
         Dieser Test pinnt die vier versprochenen Ausgaben. Verschwindet eine,
         fällt es hier auf statt beim Nutzer."""
-        from crm.models import Mandant
+        from crm.models import Eigentuemer
         lg, _heute = self._buchungen_fuer_abschluss()
         mieter = Mieter.objects.first()
-        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
-        lg.mandant = md; lg.save(update_fields=['mandant'])
+        md = Eigentuemer.objects.create(firma_oder_name='Eigentümer AG')
+        lg.eigentuemer = md; lg.save(update_fields=['eigentuemer'])
         c = Client(); c.force_login(_team_user())
         ziele = [
             ('Erfolgsrechnung & Bilanz', '/neu/buchhaltung/pdf/'),
@@ -13540,7 +13540,7 @@ class PortalFremdzugriffTests(TestCase):
     Eine neue Portalseite soll nicht unbemerkt ungeprüft bleiben.
     """
 
-    #: Adressname -> wie eine ID des ANDEREN Mandanten/Mieters entsteht
+    #: Adressname -> wie eine ID des ANDEREN Eigentümers/Mieters entsteht
     #: (Aufruf bekommt die Testdaten, gibt die fremde ID zurück), plus die
     #: HTTP-Methode.
     ERWARTET = {
@@ -13576,8 +13576,8 @@ class PortalFremdzugriffTests(TestCase):
 
         def welt(kuerzel):
             lg = Liegenschaft.objects.create(strasse=f'{kuerzel}-Weg 1', plz='3000', ort='Bern')
-            md = Mandant.objects.create(firma_oder_name=f'Eigentümer {kuerzel}')
-            lg.mandant = md; lg.save()
+            md = Eigentuemer.objects.create(firma_oder_name=f'Eigentümer {kuerzel}')
+            lg.eigentuemer = md; lg.save()
             e = Einheit.objects.create(liegenschaft=lg, bezeichnung=f'{kuerzel}-Whg', typ='wohnung',
                                        nettomiete_aktuell=Decimal('1500'))
             m = Mieter.objects.create(typ='person', vorname=kuerzel, nachname='Test',
@@ -14306,11 +14306,11 @@ class UnterschriftBriefeTests(TestCase):
         """Reihenfolge = Unterzeichner-Reihenfolge des Aufrufers."""
         from django.core.files.base import ContentFile
         from core.services.unterschrift import unterschrift_pfad
-        from crm.models import Mandant
+        from crm.models import Eigentuemer
         vw = self._verwaltung(False)
-        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        md = Eigentuemer.objects.create(firma_oder_name='Eigentümer AG')
         md.unterschrift_bild.save('sig_md.png', ContentFile(_sig_bytes()), save=True)
-        # Mandant.save() benennt das Bild in sig_man_<id>.png um (Hintergrund raus)
+        # Eigentuemer.save() benennt das Bild in sig_man_<id>.png um (Hintergrund raus)
         self.assertIn('sig_man', unterschrift_pfad(vw, md))
 
     # ---------- Mahnung mit Kündigungsandrohung (Art. 257d OR) ----------
@@ -14398,8 +14398,8 @@ class UnterschriftBriefeTests(TestCase):
 
     def test_mandat_formular_nimmt_dateien_entgegen(self):
         """Ohne enctype='multipart/form-data' verschwindet die Datei lautlos."""
-        from crm.models import Mandant
-        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        from crm.models import Eigentuemer
+        md = Eigentuemer.objects.create(firma_oder_name='Eigentümer AG')
         c = Client(); c.force_login(_team_user())
         r = c.get(f'/neu/mandate/{md.id}/bearbeiten/')
         self.assertContains(r, 'enctype="multipart/form-data"')
@@ -14407,8 +14407,8 @@ class UnterschriftBriefeTests(TestCase):
 
     def test_mandat_speichert_hochgeladene_unterschrift(self):
         from django.core.files.uploadedfile import SimpleUploadedFile
-        from crm.models import Mandant
-        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        from crm.models import Eigentuemer
+        md = Eigentuemer.objects.create(firma_oder_name='Eigentümer AG')
         c = Client(); c.force_login(_team_user())
         c.post(f'/neu/mandate/{md.id}/bearbeiten/', {
             'firma_oder_name': md.firma_oder_name,
@@ -14507,8 +14507,8 @@ class UnterschriftBriefeTests(TestCase):
         self.assertEqual(len(os.listdir(ordner)), 1)
 
     def test_mandat_nimmt_gezeichnete_unterschrift(self):
-        from crm.models import Mandant
-        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
+        from crm.models import Eigentuemer
+        md = Eigentuemer.objects.create(firma_oder_name='Eigentümer AG')
         c = Client(); c.force_login(_team_user())
         r = c.get(f'/neu/mandate/{md.id}/bearbeiten/')
         self.assertContains(r, 'data-us-canvas')
@@ -14610,31 +14610,31 @@ class UnterschriftBriefeTests(TestCase):
     def test_mandat_speichern_ohne_zuordnungsblock_behaelt_liegenschaften(self):
         """Ein POST ohne den Zuordnungsblock löste bisher still ALLE Liegenschaften
         vom Eigentümer — und nahm damit seine Unterschrift aus jedem Brief."""
-        from crm.models import Mandant
+        from crm.models import Eigentuemer
         lg, e, m, v = _basis_objekte()
-        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
-        lg.mandant = md; lg.save(update_fields=['mandant'])
+        md = Eigentuemer.objects.create(firma_oder_name='Eigentümer AG')
+        lg.eigentuemer = md; lg.save(update_fields=['eigentuemer'])
         c = Client(); c.force_login(_team_user())
         c.post(f'/neu/mandate/{md.id}/bearbeiten/', {'firma_oder_name': md.firma_oder_name})
         lg.refresh_from_db()
-        self.assertEqual(lg.mandant_id, md.id)
+        self.assertEqual(lg.eigentuemer_id, md.id)
 
     def test_mandat_zuordnung_bleibt_bewusst_aenderbar(self):
         """Mit abgeschicktem Block soll das Abwählen weiterhin greifen."""
-        from crm.models import Mandant
+        from crm.models import Eigentuemer
         lg, e, m, v = _basis_objekte()
-        md = Mandant.objects.create(firma_oder_name='Eigentümer AG')
-        lg.mandant = md; lg.save(update_fields=['mandant'])
+        md = Eigentuemer.objects.create(firma_oder_name='Eigentümer AG')
+        lg.eigentuemer = md; lg.save(update_fields=['eigentuemer'])
         c = Client(); c.force_login(_team_user())
         c.post(f'/neu/mandate/{md.id}/bearbeiten/',
                {'firma_oder_name': md.firma_oder_name, 'lg_zuordnung': '1'})
         lg.refresh_from_db()
-        self.assertIsNone(lg.mandant_id)
+        self.assertIsNone(lg.eigentuemer_id)
         c.post(f'/neu/mandate/{md.id}/bearbeiten/',
                {'firma_oder_name': md.firma_oder_name, 'lg_zuordnung': '1',
                 'liegenschaften': [str(lg.id)]})
         lg.refresh_from_db()
-        self.assertEqual(lg.mandant_id, md.id)
+        self.assertEqual(lg.eigentuemer_id, md.id)
 
 
 class RollentrennungTests(TestCase):

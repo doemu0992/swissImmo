@@ -48,7 +48,7 @@ def qr_rechnung_pdf(request, vertrag_id):
     einheit = vertrag.einheit
     liegenschaft = einheit.liegenschaft
     mieter = vertrag.mieter
-    mandant = liegenschaft.mandant
+    eigentuemer = liegenschaft.eigentuemer
     verwaltung = Verwaltung.objects.first()
 
     errors = []
@@ -60,7 +60,7 @@ def qr_rechnung_pdf(request, vertrag_id):
     formatted_iban = format_iban(raw_iban)
     total_betrag = vertrag.netto_mietzins + vertrag.nebenkosten
 
-    creditor_name = mandant.firma_oder_name if mandant else "Immobilienverwaltung"
+    creditor_name = eigentuemer.firma_oder_name if eigentuemer else "Immobilienverwaltung"
     creditor_line1 = liegenschaft.strasse
     creditor_line2 = f"{liegenschaft.plz} {liegenschaft.ort}"
 
@@ -255,7 +255,7 @@ def abrechnung_pdf_view(request, periode_id):
 
     abrechnungen = ergebnis.get('abrechnungen', [])
     verwaltung = Verwaltung.objects.first()
-    mandant = liegenschaft.mandant
+    eigentuemer = liegenschaft.eigentuemer
 
     if not liegenschaft.iban:
         return HttpResponse("Fehler: Keine IBAN bei der Liegenschaft hinterlegt!", status=400)
@@ -271,7 +271,7 @@ def abrechnung_pdf_view(request, periode_id):
 
     for row in abrechnungen:
         if row['typ'] == 'leerstand':
-            if mandant: debtor = {'name': mandant.firma_oder_name, 'line1': mandant.strasse, 'line2': f"{mandant.plz} {mandant.ort}"}
+            if eigentuemer: debtor = {'name': eigentuemer.firma_oder_name, 'line1': eigentuemer.strasse, 'line2': f"{eigentuemer.plz} {eigentuemer.ort}"}
             else: debtor = {'name': "Eigentümer (Leerstand)", 'line1': '', 'line2': ''}
         else:
             debtor = {'name': row['name'], 'line1': liegenschaft.strasse, 'line2': f"{liegenschaft.plz} {liegenschaft.ort}"}

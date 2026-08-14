@@ -46,7 +46,7 @@
     details > summary:hover { background-color: #f0f0f0; }
     details > summary::after { content: '▶'; font-size: 9px; float: right; color: #999; margin-top: 3px; transition: transform 0.2s; }
     details[open] > summary::after { transform: rotate(90deg); }
-    .summary-mandant { font-weight: bold; background: #eee; border-bottom: 1px solid #ccc; margin-top:10px; color: #333; }
+    .summary-eigentuemer { font-weight: bold; background: #eee; border-bottom: 1px solid #ccc; margin-top:10px; color: #333; }
     .summary-objekt { color: #000; font-weight: 500; }
 </style>
 </head>
@@ -72,12 +72,12 @@
             <div class="sidebar-content">
             {% if custom_admin_nav %}
                 <ul style="padding:0; margin:0; list-style:none;">
-                {% for mandant in custom_admin_nav %}
+                {% for eigentuemer in custom_admin_nav %}
                     <li style="margin-bottom:5px;">
-                        <details id="mandant-{{ mandant.id }}" open>
-                            <summary class="summary-mandant"><span onclick="window.location='/admin/crm/mandant/{{ mandant.id }}/change/'; event.preventDefault();" style="cursor:pointer;">🏢 {{ mandant.firma_oder_name }}</span></summary>
+                        <details id="eigentuemer-{{ eigentuemer.id }}" open>
+                            <summary class="summary-eigentuemer"><span onclick="window.location='/admin/crm/eigentuemer/{{ eigentuemer.id }}/change/'; event.preventDefault();" style="cursor:pointer;">🏢 {{ eigentuemer.firma_oder_name }}</span></summary>
                             <ul class="tree-ul">
-                            {% for lieg in mandant.liegenschaften.all %}
+                            {% for lieg in eigentuemer.liegenschaften.all %}
                                 <li style="margin-top:5px;">
                                     <a href="/admin/portfolio/liegenschaft/{{ lieg.id }}/change/" class="tree-item lvl-lieg">📍 {{ lieg.strasse }}</a>
                                     <ul class="tree-ul">

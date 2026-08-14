@@ -1,11 +1,11 @@
-"""Konfigurierbare Mahnstufen pro Mandant (feste 3 Stufen: aktiv / ab-Tage /
+"""Konfigurierbare Mahnstufen pro Eigentuemer (feste 3 Stufen: aktiv / ab-Tage /
 Gebuehr / Kuendigungsandrohung).
 
 EINE Quelle der Wahrheit — vorher dreifach hartcodiert (fw._mahnstufe,
 fw.MAHN_STUFEN, automation.MAHN_STUFEN_TAGE + MAHN_GEBUEHR). Die Konfiguration
-liegt pro Mandant (crm.Mandant.mahn_konfig, JSON). Fehlt sie, gilt der Standard
+liegt pro Eigentuemer (crm.Eigentuemer.mahn_konfig, JSON). Fehlt sie, gilt der Standard
 (14/30/60 Tage, Gebuehr 0/20/40, Kuendigungsandrohung ab Stufe 3) — damit ist das
-bisherige Verhalten Default und aendert sich fuer bestehende Mandanten nicht.
+bisherige Verhalten Default und aendert sich fuer bestehende Eigentümer nicht.
 """
 from decimal import Decimal
 
@@ -59,25 +59,25 @@ def _normalize(roh):
     return stufen
 
 
-def mahnstufen_config(mandant):
-    """Effektive, aktive Mahnstufen eines Mandanten (oder Standard bei None/leer)."""
-    roh = getattr(mandant, 'mahn_konfig', None) if mandant is not None else None
+def mahnstufen_config(eigentuemer):
+    """Effektive, aktive Mahnstufen eines Eigentümers (oder Standard bei None/leer)."""
+    roh = getattr(eigentuemer, 'mahn_konfig', None) if eigentuemer is not None else None
     return _normalize(roh)
 
 
-def stufe_fuer_tage(tage, mandant=None):
+def stufe_fuer_tage(tage, eigentuemer=None):
     """Hoechste zutreffende Stufe (dict) fuer 'tage' ueberfaellig — oder None."""
-    for s in mahnstufen_config(mandant):
+    for s in mahnstufen_config(eigentuemer):
         if tage >= s['ab_tage']:
             return s
     return None
 
 
-def roh_konfig(mandant):
+def roh_konfig(eigentuemer):
     """Alle 3 Stufen (auch inaktive) zum BEARBEITEN — DB-Werte über den Default
     gelegt. Anders als mahnstufen_config(): filtert nicht und sortiert nach Stufe."""
     by = {}
-    roh = getattr(mandant, 'mahn_konfig', None) if mandant is not None else None
+    roh = getattr(eigentuemer, 'mahn_konfig', None) if eigentuemer is not None else None
     for c in (roh or []):
         try:
             by[int(c['stufe'])] = c
@@ -99,10 +99,10 @@ def roh_konfig(mandant):
     return out
 
 
-def gebuehr_fuer_stufe(stufe, mandant=None):
+def gebuehr_fuer_stufe(stufe, eigentuemer=None):
     """Konfigurierte Mahngebühr (Decimal) für eine konkrete Stufe (1/2/3) — auch
     wenn die Stufe inaktiv ist (roh_konfig). Fallback 0.00."""
-    for s in roh_konfig(mandant):
+    for s in roh_konfig(eigentuemer):
         if s['stufe'] == stufe:
             try:
                 return Decimal(str(s['gebuehr']))
@@ -111,9 +111,9 @@ def gebuehr_fuer_stufe(stufe, mandant=None):
     return Decimal('0.00')
 
 
-def mandant_von_rechnung(r):
-    """Mandant (Eigentuemer) einer DebitorenRechnung ueber ihre Liegenschaft."""
+def eigentuemer_von_rechnung(r):
+    """Eigentuemer (Eigentuemer) einer DebitorenRechnung ueber ihre Liegenschaft."""
     lg = getattr(r, 'liegenschaft', None)
     if lg is None and getattr(r, 'vertrag_id', None) and getattr(r.vertrag, 'einheit_id', None):
         lg = r.vertrag.einheit.liegenschaft
-    return getattr(lg, 'mandant', None) if lg is not None else None
+    return getattr(lg, 'eigentuemer', None) if lg is not None else None

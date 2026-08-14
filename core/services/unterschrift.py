@@ -67,7 +67,7 @@ def unterschrift_url(obj, feld='unterschrift_bild'):
 
 
 def unterschrift_pfad(*kandidaten):
-    """Erster Kandidat (Verwaltung/Mandant) mit einer vorhandenen Bilddatei.
+    """Erster Kandidat (Verwaltung/Eigentuemer) mit einer vorhandenen Bilddatei.
 
     Die Reihenfolge gibt der Aufrufer vor: unterschreiben soll, wer unter der
     Linie steht. Fehlt die Datei auf der Platte (Medien nicht mitmigriert),

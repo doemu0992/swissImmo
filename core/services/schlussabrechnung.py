@@ -124,7 +124,7 @@ def generate_schlussabrechnung_pdf(vertrag, daten, verwaltung=None):
     mieter = vertrag.mieter
     einheit = vertrag.einheit
     lg = einheit.liegenschaft
-    mandant = lg.mandant if lg else None
+    eigentuemer = lg.eigentuemer if lg else None
     c.setTitle(f"Schlussabrechnung {mieter.nachname}")
 
     if verwaltung and getattr(verwaltung, 'logo', None):
@@ -133,9 +133,9 @@ def generate_schlussabrechnung_pdf(vertrag, daten, verwaltung=None):
         except Exception:
             logger.debug("Fehler bewusst übergangen", exc_info=True)
 
-    absender = mandant.firma_oder_name if mandant else (verwaltung.firma if verwaltung else 'Immobilienverwaltung')
-    a_str = (mandant.strasse if mandant else (verwaltung.strasse if verwaltung else '')) or ''
-    a_ort = (f"{mandant.plz} {mandant.ort}" if mandant else (f"{verwaltung.plz} {verwaltung.ort}" if verwaltung else '')) or ''
+    absender = eigentuemer.firma_oder_name if eigentuemer else (verwaltung.firma if verwaltung else 'Immobilienverwaltung')
+    a_str = (eigentuemer.strasse if eigentuemer else (verwaltung.strasse if verwaltung else '')) or ''
+    a_ort = (f"{eigentuemer.plz} {eigentuemer.ort}" if eigentuemer else (f"{verwaltung.plz} {verwaltung.ort}" if verwaltung else '')) or ''
     c.setFont("Helvetica-Bold", 9); c.drawString(20*mm, 280*mm, absender)
     c.setFont("Helvetica", 9); c.drawString(20*mm, 276*mm, a_str); c.drawString(20*mm, 272*mm, a_ort)
 
@@ -206,9 +206,9 @@ def generate_schlussabrechnung_pdf(vertrag, daten, verwaltung=None):
     c.setFont("Helvetica", 10)
     c.drawString(20*mm, 42*mm, "Freundliche Grüsse")
     # Digitale Unterschrift zwischen Gruss und Absendername — der Absender oben
-    # ist der Mandant (sonst die Verwaltung), also unterschreibt er auch.
+    # ist der Eigentuemer (sonst die Verwaltung), also unterschreibt er auch.
     from core.services.unterschrift import unterschrift_zeichnen
-    unterschrift_zeichnen(c, 20*mm, 34*mm, mandant, verwaltung, max_hoehe=7*mm)
+    unterschrift_zeichnen(c, 20*mm, 34*mm, eigentuemer, verwaltung, max_hoehe=7*mm)
     c.setFont("Helvetica-Bold", 10); c.drawString(20*mm, 33*mm, absender)
 
     # Rechtlicher Hinweis (Rückgabe/Mängelrüge + Kaution)

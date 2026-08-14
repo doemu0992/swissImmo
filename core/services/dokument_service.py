@@ -26,13 +26,13 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
 
     einheit = vertrag.einheit
     liegenschaft = einheit.liegenschaft
-    mandant = liegenschaft.mandant
+    eigentuemer = liegenschaft.eigentuemer
     verwaltung = liegenschaft.verwaltung or Verwaltung.objects.first()
 
-    # Vermieter = Mandant (Eigentümer) falls vorhanden, sonst Verwaltung
-    if mandant:
-        v_name = getattr(mandant, 'firma_oder_name', str(mandant))
-        v_str, v_plz, v_ort = mandant.strasse, mandant.plz, mandant.ort
+    # Vermieter = Eigentümer falls vorhanden, sonst Verwaltung
+    if eigentuemer:
+        v_name = getattr(eigentuemer, 'firma_oder_name', str(eigentuemer))
+        v_str, v_plz, v_ort = eigentuemer.strasse, eigentuemer.plz, eigentuemer.ort
     elif verwaltung:
         v_name, v_str, v_plz, v_ort = verwaltung.firma, verwaltung.strasse, verwaltung.plz, verwaltung.ort
     else:
@@ -59,7 +59,7 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
     context = {
         'vertrag': vertrag, 'mieter': vertrag.mieter, 'einheit': einheit,
         'mitmieter': mitmieter, 'mitmieter_name': mitmieter_name,
-        'liegenschaft': liegenschaft, 'mandant': mandant, 'verwaltung': verwaltung,
+        'liegenschaft': liegenschaft, 'eigentuemer': eigentuemer, 'verwaltung': verwaltung,
         'heute': timezone.localdate(),
         'vermieter_name': v_name, 'vermieter_strasse': v_str,
         'vermieter_plz': v_plz, 'vermieter_ort': v_ort,

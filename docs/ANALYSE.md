@@ -36,7 +36,7 @@ Vier Fragen blockierten die Planung von Phase 2, weil an ihnen der Aufwand aller
 |---|---|---|
 | ~~**E1**~~ | ~~**Die `/app/`-SPA wird entfernt.**~~ — **ausgeführt am 14.08.2026** (E1a/E1b/E1c, drei PRs, siehe `docs/E1-SPA-ENTFERNEN.md`). | Das Team hat jetzt **eine** Oberfläche (`/neu/`) statt zwei; jede Mandanten-, Entitlement- und Übersetzungsregel muss nur noch dort gebaut werden. Entfernt: 15 SPA-Templates (nicht 12 wie geplant) samt 1'399 Zeilen Inline-JavaScript, die Route `/app/`, und **80 der 82 API-Endpunkte**. Geblieben sind zwei öffentliche: das Bewerbungsformular und der DocuSeal-Webhook. `django-ninja` bleibt vorerst für diese beiden (Begründung im E1-Dokument). Erledigt damit **P0.1**. Zwei Fähigkeiten gingen mit der SPA verloren — Einheit löschen und Umzug stornieren; beide hatten nie einen `/neu/`-Pfad und gehören dorthin, falls sie gebraucht werden. |
 | ~~**E2**~~ | ~~**Der Unfold-Admin bleibt, aber nur lesend.**~~ — **ausgeführt am 14.08.2026.** | Er ist damit Auskunfts- und Kontrollwerkzeug, kein zweiter Schreibpfad. Das nimmt ihn aus der Pflicht, jede Mandanten- und Entitlement-Regel ein zweites Mal zu implementieren — die Isolation muss er trotzdem einhalten, sonst sieht ein Mandant im Admin fremde Daten. Betrifft P0.2. Umsetzung: Schreibrechte entziehen (`has_add/change/delete_permission`), nicht die Registrierung entfernen. |
-| **E3** | **`crm.Mandant` wird zu `Eigentuemer` umbenannt.** | Beseitigt die gefährlichste Namenskollision des Projekts: `Mandant` heisst im Bestandscode *Eigentümer einer Liegenschaft*, in der Projektanweisung dagegen *Tenant*. Der neue Tenant heisst `Organisation`. Die Umbenennung geschieht **vor** der Organisationsmodellierung, damit in Phase 2 kein Satz mehr zweideutig ist. Betrifft P1.5 und den Skill `mandantentrennung`. |
+| ~~**E3**~~ | ~~**`crm.Mandant` wird zu `Eigentuemer` umbenannt.**~~ — **ausgeführt am 14.08.2026.** | Beseitigt die gefährlichste Namenskollision des Projekts: `Mandant` heisst im Bestandscode *Eigentümer einer Liegenschaft*, in der Projektanweisung dagegen *Tenant*. Der neue Tenant heisst `Organisation`. Die Umbenennung geschieht **vor** der Organisationsmodellierung, damit in Phase 2 kein Satz mehr zweideutig ist. Betrifft P1.5 und den Skill `mandantentrennung`. |
 | ~~**E4**~~ | ~~**`claude/fairwalter-rebuild` wird zu `main`.**~~ — **ausgeführt am 14.08.2026.** | `main` stand seit dem 21.05.2026 auf `7949e32`. Die Umstellung lief als **Fast-Forward**: `origin/main` war ein reiner Vorfahre, 0 Commits gingen verloren, 513 kamen dazu (die Analyse nannte 501 — die Differenz sind die Commits dieser Sitzung). Kein `--force` nötig. Die CI-Auslöser sind bereinigt: `push` nur noch auf `main`, Arbeitszweige über `pull_request` — vorher hätte jeder Push auf einen Zweig mit offenem PR doppelt ausgelöst. **Offen und nur über die GitHub-Oberfläche machbar:** Standardzweig auf `main` setzen (falls nicht schon) und `main` schützen. |
 
 **Zwei Dinge, die bewusst offen bleiben:** der Zuschnitt der Abo-Stufen samt Modulgrenzen (Phase 3, siehe P3.1 und P3.3) und die Wahl des Zahlungsanbieters (P3.2). Beide brauchen kaufmännische Entscheide, keine technischen.
@@ -69,7 +69,7 @@ Der fachliche Kern:
 
 ```
 Verwaltung (Singleton, faktisch der Tenant)
-Mandant (= Eigentümer) ──┐
+Eigentuemer ─────────────┐
                          ├─ Liegenschaft ── Einheit ── Mietvertrag ── VertragMietzins
                          │       │             │            │          MietzinsAnpassung
                          │       │             │            │          Staffelstufe
@@ -92,10 +92,9 @@ Ohne Anbindung: Mieter, MieterAdresse, Handwerker, Vorlage, Kommunikation,
 ```
 
 > **Begriffswarnung – projektweit beachten**
-> `crm.Mandant` bezeichnet im bestehenden Code den **Eigentümer** einer Liegenschaft, nicht den Mandanten im SaaS-Sinn der Projektanweisung. Der Tenant-Begriff entspricht am ehesten `crm.Verwaltung`. Diese Kollision ist die grösste Verwechslungsgefahr in Phase 2 und wiegt jetzt schwerer als zuvor, weil `Mandant` inzwischen ein eigenes Login (`benutzer`), ein Portal und eine Abrechnung hat.
-> Empfehlung: Der neue Tenant heisst `Organisation`; `Mandant` wird bei Gelegenheit zu `Eigentuemer`. Solange beide Begriffe koexistieren, ist jede Verwendung in Code und Doku explizit zu qualifizieren.
+> **Aufgelöst am 14.08.2026 (E3).** `crm.Mandant` bezeichnete im Code den **Eigentümer** einer Liegenschaft, nicht den Mandanten im SaaS-Sinn der Projektanweisung — bei eigenem Login (`benutzer`), Portal und Abrechnung war das die grösste Verwechslungsgefahr für Phase 2. Das Modell heisst jetzt `crm.Eigentuemer`, die drei Fremdschlüssel heissen `eigentuemer`. Der Tenant-Begriff entspricht weiterhin am ehesten `crm.Verwaltung`; der neue Tenant heisst `Organisation`. Im Gespräch bleibt „Mandant" zweideutig — dort weiter qualifizieren.
 
-Zwei Benutzerverknüpfungen existieren bereits als `OneToOneField` auf `auth.User`: `Mandant.benutzer` (Eigentümer-Portal) und `Mieter.benutzer` (Mieterportal). Ein **Custom User Model gibt es nicht** — siehe TS-1.
+Zwei Benutzerverknüpfungen existieren bereits als `OneToOneField` auf `auth.User`: `Eigentuemer.benutzer` (Eigentümer-Portal) und `Mieter.benutzer` (Mieterportal). Ein **Custom User Model gibt es nicht** — siehe TS-1.
 
 ### 1.3 Views und URLs
 
@@ -198,12 +197,12 @@ Leitfrage: *Was müsste heute wahr sein, damit zwei Verwaltungen dieselbe Instan
 
 `crm.Verwaltung` ist der einzige Kandidat für einen Mandantenanker, wird aber weiterhin als **Singleton** behandelt: `verbose_name` „Meine Verwaltung", Zugriff durchgängig über `Verwaltung.objects.first()`. Es gibt keine Beziehung von `Verwaltung` zu `auth.User`.
 
-**Keines der 63 Modelle hat einen Tenant-Fremdschlüssel.** Die vier vorhandenen Treffer auf `Mandant`/`Verwaltung` meinen den Eigentümer, nicht den Tenant; `Liegenschaft.verwaltung` ist weiterhin `null=True` und wird nirgends ausgewertet.
+**Keines der 63 Modelle hat einen Tenant-Fremdschlüssel.** Die vier vorhandenen Treffer auf `Eigentuemer`/`Verwaltung` meinen den Eigentümer, nicht den Tenant; `Liegenschaft.verwaltung` ist weiterhin `null=True` und wird nirgends ausgewertet.
 
 Programmatische Einstufung aller 63 Modelle nach ihrem Weg zur `Liegenschaft`:
 
 **Gruppe A – kein Weg zur Liegenschaft, auch nicht indirekt (14 Modelle):**
-`core.AktivitaetsLog`, `crm.Verwaltung`, `crm.Mandant`, `crm.Mieter`, `crm.MieterAdresse`, `crm.Handwerker`, `crm.Vorlage`, `finance.Buchungskonto`, `finance.LieferantProfil`, `finance.NebenkostenLernRegel`, `finance.Kontoauszug`, `finance.EigentuemerAuszahlung`, `finance.Erneuerungsfonds`, `portfolio.Lebensdauer`.
+`core.AktivitaetsLog`, `crm.Verwaltung`, `crm.Eigentuemer`, `crm.Mieter`, `crm.MieterAdresse`, `crm.Handwerker`, `crm.Vorlage`, `finance.Buchungskonto`, `finance.LieferantProfil`, `finance.NebenkostenLernRegel`, `finance.Kontoauszug`, `finance.EigentuemerAuszahlung`, `finance.Erneuerungsfonds`, `portfolio.Lebensdauer`.
 
 Diese Gruppe ist gegenüber dem alten Stand von 4 auf 14 gewachsen — jedes neue Stammdaten- oder Querschnittsmodell kam ohne Mandantenbezug hinzu. `AktivitaetsLog` ist dabei besonders heikel: Das Audit-Log führt heute alle Aktionen aller künftigen Mandanten in einer Tabelle, und es ist genau das Modell, das man später am wenigsten nachträglich umschreiben möchte.
 
@@ -342,7 +341,7 @@ Alles, was *innerhalb* eines Mandanten geschützt werden musste, ist geschützt.
 
 ## 3. Technische Schulden
 
-**TS-1 – Kein Custom User Model.** Django verwendet `auth.User`. Ein späterer Wechsel ist nach Produktivgang unverhältnismässig teuer. Erschwerend: Es hängen bereits zwei `OneToOneField` daran (`Mandant.benutzer`, `Mieter.benutzer`), das Rollenmodell arbeitet über `user.groups`, und es gibt eine Benutzerverwaltung in `/neu/`. **Das ist die Entscheidung, die in Phase 2 zuerst fallen muss** — vor der Organisationsmodellierung, nicht als deren Nebenschritt.
+**TS-1 – Kein Custom User Model.** Django verwendet `auth.User`. Ein späterer Wechsel ist nach Produktivgang unverhältnismässig teuer. Erschwerend: Es hängen bereits zwei `OneToOneField` daran (`Eigentuemer.benutzer`, `Mieter.benutzer`), das Rollenmodell arbeitet über `user.groups`, und es gibt eine Benutzerverwaltung in `/neu/`. **Das ist die Entscheidung, die in Phase 2 zuerst fallen muss** — vor der Organisationsmodellierung, nicht als deren Nebenschritt.
 
 **TS-2 – `core/views/fw.py` mit 14'938 Zeilen.** 232 Views, 34 thematische Blöcke, in einer Datei. Dieselbe Datei enthält 50 der 132 `Verwaltung.objects`-Aufrufe. Jede mandantenbezogene Änderung, jedes Entitlement, jede Übersetzung muss hier hindurch. Die Aufteilung entlang der bereits vorhandenen Blockgrenzen (Debitoren, Kreditoren, Buchhaltung, Nebenkosten, Objekte, Verträge, Mietprozess, Profil) ist naheliegend und sollte **vor** Phase 2 geschehen, nicht danach.
 
@@ -405,7 +404,7 @@ Die Nummerierung ist die empfohlene Reihenfolge.
 | P1.2 | **`fw.py` entlang der 34 Blockgrenzen aufteilen** — Voraussetzung dafür, dass die Isolation überhaupt reviewbar wird (TS-2) | M |
 | P1.3 | **`core/tests.py` nach Fachgebiet aufteilen**, in die jeweiligen Apps verschieben (TS-3) | M |
 | P1.4 | Wechsel auf PostgreSQL inklusive Datenmigration (TS-13) | M |
-| P1.5 | Modell `Organisation` einführen; Verhältnis zu `crm.Verwaltung` klären (Migration oder Ablösung); `Mandant` zu `Eigentuemer` umbenennen — entschieden (E3), und zwar **vor** der Organisationsmodellierung | M |
+| P1.5 | Modell `Organisation` einführen; Verhältnis zu `crm.Verwaltung` klären (Migration oder Ablösung). ~~`Mandant` zu `Eigentuemer` umbenennen — entschieden (E3), und zwar **vor** der Organisationsmodellierung~~ — **die Umbenennung ist am 14.08.2026 erfolgt**, der Rest steht noch aus. | M |
 | P1.6 | `organisation`-Fremdschlüssel auf alle 63 Modelle; Datenmigration weist Bestand einer Ausgangsorganisation zu; anschliessend `null=False`. Gruppen A und B (29 Modelle) brauchen dabei zusätzlich eine fachliche Entscheidung, woher der Bezug kommt | L |
 | P1.7 | Sechs globale Unique-Constraints zu `UniqueConstraint` mit der Organisation umbauen | S |
 | P1.8 | **Zentrale Isolation:** `TenantManager` als Default-Manager plus Middleware mit Kontextvariable. `_global_filter()` in `fw.py` ist der natürliche Ansatzpunkt für die Oberfläche — die Erzwingung gehört aber auf die Manager-Ebene, nicht dorthin | M |

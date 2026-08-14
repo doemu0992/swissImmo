@@ -1,4 +1,4 @@
-from crm.models import Mandant
+from crm.models import Eigentuemer
 
 
 def fw_badges(request):
@@ -20,7 +20,7 @@ def fw_badges(request):
 
 def admin_baum_navigation(request):
     if request.path.startswith('/admin/'):
-        baum_daten = Mandant.objects.prefetch_related(
+        baum_daten = Eigentuemer.objects.prefetch_related(
             'liegenschaften',
             'liegenschaften__einheiten',
             'liegenschaften__einheiten__geraete',

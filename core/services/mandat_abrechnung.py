@@ -1,6 +1,6 @@
 """Eigentümer-/Mandatsabrechnung als PDF.
 
-Stellt je Liegenschaft eines Mandanten Erträge und Aufwände eines Geschäftsjahres
+Stellt je Liegenschaft eines Eigentümers Erträge und Aufwände eines Geschäftsjahres
 gegenüber und weist den Saldo (Auszahlung an den Eigentümer) aus."""
 import logging
 import io
@@ -22,10 +22,10 @@ def _fmt(d):
         return str(d)
 
 
-def generate_mandat_abrechnung_pdf(mandant, jahr, zeilen, totals, von, bis, verwaltung=None):
+def generate_mandat_abrechnung_pdf(eigentuemer, jahr, zeilen, totals, von, bis, verwaltung=None):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
-    c.setTitle(f"Mandatsabrechnung {mandant.firma_oder_name} {jahr}")
+    c.setTitle(f"Mandatsabrechnung {eigentuemer.firma_oder_name} {jahr}")
 
     if verwaltung and getattr(verwaltung, 'logo', None):
         try:
@@ -43,11 +43,11 @@ def generate_mandat_abrechnung_pdf(mandant, jahr, zeilen, totals, von, bis, verw
 
     # Empfänger (Eigentümer)
     c.setFont("Helvetica", 11)
-    c.drawString(20*mm, 250*mm, mandant.firma_oder_name)
-    if mandant.kontaktperson:
-        c.drawString(20*mm, 245*mm, mandant.kontaktperson)
-    c.drawString(20*mm, 240*mm, mandant.strasse or "")
-    c.drawString(20*mm, 235*mm, f"{mandant.plz or ''} {mandant.ort or ''}".strip())
+    c.drawString(20*mm, 250*mm, eigentuemer.firma_oder_name)
+    if eigentuemer.kontaktperson:
+        c.drawString(20*mm, 245*mm, eigentuemer.kontaktperson)
+    c.drawString(20*mm, 240*mm, eigentuemer.strasse or "")
+    c.drawString(20*mm, 235*mm, f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip())
 
     # Titel
     c.setFont("Helvetica-Bold", 15)
@@ -85,7 +85,7 @@ def generate_mandat_abrechnung_pdf(mandant, jahr, zeilen, totals, von, bis, verw
 
     if not zeilen:
         c.setFillColor(colors.grey)
-        c.drawString(22*mm, y, "Keine Liegenschaften diesem Mandanten zugeordnet.")
+        c.drawString(22*mm, y, "Keine Liegenschaften diesem Eigentümer zugeordnet.")
         c.setFillColor(colors.black)
         y -= 6*mm
 
@@ -115,8 +115,8 @@ def generate_mandat_abrechnung_pdf(mandant, jahr, zeilen, totals, von, bis, verw
     c.setFont("Helvetica", 8)
     c.setFillColor(colors.grey)
     c.drawString(20*mm, 20*mm, "Diese Abrechnung basiert auf den verbuchten Erträgen und Aufwänden der zugeordneten Liegenschaften.")
-    if mandant.iban:
-        c.drawString(20*mm, 16*mm, f"Auszahlung auf: {mandant.iban}")
+    if eigentuemer.iban:
+        c.drawString(20*mm, 16*mm, f"Auszahlung auf: {eigentuemer.iban}")
     c.setFillColor(colors.black)
 
     c.showPage()

@@ -35,7 +35,7 @@ ROLLE_LESEND = "Lesend"
 ROLLE_EIGENTUEMER = "Eigentümer"
 
 # Team-Rollen = dürfen ins SPA und die API lesen (Eigentümer bewusst NICHT —
-# sie würden sonst die Daten ALLER Mandanten sehen).
+# sie würden sonst die Daten ALLER Eigentümer sehen).
 TEAM_ROLLEN = (ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG, ROLLE_LESEND)
 SCHREIB_ROLLEN = (ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG)
 VERWALTUNGS_ROLLEN = (ROLLE_VERWALTUNG,)
@@ -51,10 +51,10 @@ def hat_rolle(user, rollen):
 
 
 def ist_eigentuemer(user):
-    """True wenn der User ein Eigentümer-Login ist (Mandant-Verknüpfung oder Gruppe)."""
+    """True wenn der User ein Eigentümer-Login ist (Eigentümer-Verknüpfung oder Gruppe)."""
     if not user or not user.is_authenticated:
         return False
-    if getattr(user, 'mandant_profil', None) is not None:
+    if getattr(user, 'eigentuemer_profil', None) is not None:
         return True
     return user.groups.filter(name=ROLLE_EIGENTUEMER).exists()
 

@@ -21,14 +21,14 @@
 </style>
 </head>
 <body>
-{% if mandant %}<div class="kopf">{{ mandant.firma_oder_name }} | {{ mandant.strasse }} | {{ mandant.plz }} {{ mandant.ort }}</div>
+{% if eigentuemer %}<div class="kopf">{{ eigentuemer.firma_oder_name }} | {{ eigentuemer.strasse }} | {{ eigentuemer.plz }} {{ eigentuemer.ort }}</div>
 {% else %}<div class="kopf">{{ verwaltung.firma }} | {{ verwaltung.strasse }} | {{ verwaltung.plz }} {{ verwaltung.ort }}</div>{% endif %}
 
 <h1>{{ vertrag.vertrag_titel }}</h1>
 
 <div class="sec">1. Vertragsparteien</div>
 <div class="sublabel">Vermieter</div>
-{% if mandant %}{{ mandant.firma_oder_name }}<br>{{ mandant.strasse }}<br>{{ mandant.plz }} {{ mandant.ort }}
+{% if eigentuemer %}{{ eigentuemer.firma_oder_name }}<br>{{ eigentuemer.strasse }}<br>{{ eigentuemer.plz }} {{ eigentuemer.ort }}
 {% else %}{{ verwaltung.firma }}<br>{{ verwaltung.strasse }}<br>{{ verwaltung.plz }} {{ verwaltung.ort }}{% endif %}
 <div class="sublabel">Mieter</div>
 {{ mieter.display_name }}{% if mieter.strasse %}<br>{{ mieter.strasse }}<br>{{ mieter.plz }} {{ mieter.ort }}{% endif %}
@@ -81,7 +81,7 @@
 
 <table class="sign">
     <tr>
-        <td><div class="sublabel">Vermieter</div>{% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg"><br>{% endif %}<div class="sigline">{% if mandant %}{{ mandant.ort }}{% elif verwaltung %}{{ verwaltung.ort }}{% endif %}, {{ heute|date:"d.m.Y" }} / Unterschrift</div></td>
+        <td><div class="sublabel">Vermieter</div>{% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg"><br>{% endif %}<div class="sigline">{% if eigentuemer %}{{ eigentuemer.ort }}{% elif verwaltung %}{{ verwaltung.ort }}{% endif %}, {{ heute|date:"d.m.Y" }} / Unterschrift</div></td>
         <td><div class="sublabel">Mieter</div><br><span style="color:#ffffff;font-size:13pt;">{% verbatim %}{{Unterschrift Mieter;role=Mieter;type=signature;required=true}}{% endverbatim %}</span><br><div class="sigline">Unterschrift</div><table style="width:100%;margin-top:14pt;"><tr><td style="width:58pt;padding:3pt 0;color:#64748b;">Ort</td><td style="padding:3pt 0 3pt 10pt;"><span style="color:#ffffff;">{% verbatim %}{{Ort Mieter;role=Mieter;type=text;required=true}}{% endverbatim %}</span></td></tr><tr><td style="padding:3pt 0;color:#64748b;">Datum</td><td style="padding:3pt 0 3pt 10pt;"><span style="color:#ffffff;">{% verbatim %}{{Datum Mieter;role=Mieter;type=date;required=true}}{% endverbatim %}</span></td></tr></table></td>
     </tr>
 </table>

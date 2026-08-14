@@ -19,10 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 
-def _absender_zeilen(verwaltung, mandant):
-    if mandant:
-        return [mandant.firma_oder_name, mandant.strasse or '',
-                f"{mandant.plz or ''} {mandant.ort or ''}".strip()]
+def _absender_zeilen(verwaltung, eigentuemer):
+    if eigentuemer:
+        return [eigentuemer.firma_oder_name, eigentuemer.strasse or '',
+                f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip()]
     if verwaltung:
         return [verwaltung.firma or '', verwaltung.strasse or '',
                 f"{verwaltung.plz or ''} {verwaltung.ort or ''}".strip()]
@@ -93,9 +93,9 @@ def _kontext(vertrag, verwaltung=None):
     mieter = vertrag.mieter
     einheit = vertrag.einheit
     lg = einheit.liegenschaft if einheit else None
-    mandant = lg.mandant if lg else None
+    eigentuemer = lg.eigentuemer if lg else None
     vw = verwaltung or (lg.verwaltung if lg else None) or Verwaltung.objects.first()
-    absender = _absender_zeilen(vw, mandant)
+    absender = _absender_zeilen(vw, eigentuemer)
     ort = absender[2].split(' ', 1)[-1] if absender[2] else (lg.ort if lg else '')
     empf = [mieter.display_name]
     zustell = mieter.zustelladresse() if hasattr(mieter, 'zustelladresse') else (mieter.strasse, '', mieter.plz, mieter.ort)
@@ -105,9 +105,9 @@ def _kontext(vertrag, verwaltung=None):
     if (plz or o):
         empf.append(f"{plz or ''} {o or ''}".strip())
     objekt = f"{einheit.bezeichnung}, {lg.strasse}, {lg.plz} {lg.ort}" if einheit and lg else ''
-    # (vw, mandant) mitgeben: _absender_zeilen macht daraus Strings, die
+    # (vw, eigentuemer) mitgeben: _absender_zeilen macht daraus Strings, die
     # Unterschrift braucht aber die Objekte.
-    return mieter, einheit, lg, absender, ort, empf, objekt, absender[0], (mandant, vw)
+    return mieter, einheit, lg, absender, ort, empf, objekt, absender[0], (eigentuemer, vw)
 
 
 def kaution_hinterlegung_pdf(vertrag, verwaltung=None):

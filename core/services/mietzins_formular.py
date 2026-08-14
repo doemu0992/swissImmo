@@ -38,7 +38,7 @@ def _wrap(text, breite=95):
     return zeilen or [""]
 
 
-def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, mandant=None):
+def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, eigentuemer=None):
     """daten: dict mit alt_netto, neu_netto, nebenkosten, alt_zins, neu_zins,
     alt_lik, neu_lik, zins_pct, lik_pct, kosten_pct, total_pct, wirksam_ab (date),
     begruendung, schlichtungsbehoerde (str), mit_vorbehalt (bool), vorbehalt_text."""
@@ -52,13 +52,13 @@ def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, mandant=Non
     absender_strasse = ""
     absender_ort = ""
     unterschrift_pfad = None
-    if mandant:
-        absender_name = mandant.firma_oder_name
-        absender_strasse = mandant.strasse or ""
-        absender_ort = f"{mandant.plz or ''} {mandant.ort or ''}".strip()
-        if getattr(mandant, 'unterschrift_bild', None):
+    if eigentuemer:
+        absender_name = eigentuemer.firma_oder_name
+        absender_strasse = eigentuemer.strasse or ""
+        absender_ort = f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip()
+        if getattr(eigentuemer, 'unterschrift_bild', None):
             try:
-                unterschrift_pfad = mandant.unterschrift_bild.path
+                unterschrift_pfad = eigentuemer.unterschrift_bild.path
             except Exception:
                 unterschrift_pfad = None
     elif verwaltung:

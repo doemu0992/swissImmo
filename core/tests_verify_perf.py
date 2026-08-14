@@ -39,7 +39,7 @@ class VerifyDebitoren(TestCase):
         ref_betrag = Decimal('0.00'); ref_offen = Decimal('0.00')
         ref_n_offen = 0; ref_n_ueber = 0
         qs = (DebitorenRechnung.objects
-              .select_related('vertrag__einheit__liegenschaft__mandant', 'liegenschaft__mandant')
+              .select_related('vertrag__einheit__liegenschaft__eigentuemer', 'liegenschaft__eigentuemer')
               .prefetch_related('zahlungseingaenge'))
         for r in qs:
             offen = r.offener_betrag if r.status in ('offen', 'teilbezahlt') else Decimal('0.00')
