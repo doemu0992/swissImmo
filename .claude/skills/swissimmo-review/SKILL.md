@@ -43,7 +43,16 @@ done
 python manage.py test crm portfolio rentals finance tickets mietprozess --parallel 8
 ```
 
-Die Summe der `Ran N tests`-Zeilen gehört in den PR. Erwartungswert derzeit: **1'068**. Weicht die Zahl nach unten ab, wurden Tests übersprungen oder ein Block ist nicht gelaufen.
+Die Summe der `Ran N tests`-Zeilen gehört in den PR.
+
+**Die Zahl wird relativ geprüft, nicht gegen einen festen Wert.** Sie darf gegenüber dem Basisbranch **nicht sinken**. Wächst sie, ist alles in Ordnung. Sinkt sie, gehört die Differenz erklärt: absichtlich zusammengelegt, absichtlich entfernt — oder ein Block ist stillschweigend nicht gelaufen, und genau das soll diese Prüfung finden.
+
+Ein fest eingetragener Erwartungswert wäre hier die schlechtere Lösung: Er ist nach der nächsten Woche falsch, produziert Fehlalarm, und ein Alarm, der regelmässig grundlos anschlägt, wird ignoriert. Zum Vergleich der Stand vom 14.08.2026: **1'074 Tests** — als Anhaltspunkt, nicht als Sollwert.
+
+```bash
+# Vergleichszahl aus dem Basisbranch holen, falls unbekannt
+git stash && git checkout <basis> && <Testlauf> && git checkout - && git stash pop
+```
 
 ### Zwei Fallen beim Testlauf
 
@@ -105,7 +114,7 @@ Der Anlass. Bei Bezug zur Analyse: die TS-/P-Nummer nennen.
 - check: ohne Beanstandung
 - makemigrations --check: keine Änderungen
 - ruff: sauber
-- Tests: 1'068 grün (Blöcke: 186/213/182/269/213/5)
+- Tests: 1'074 grün (Basis: 1'074, keine Abnahme)
 - Isolationstests: N neu, gegengeprüft (Filter entfernt → rot)
 
 ## Korrekturen an der Dokumentation
