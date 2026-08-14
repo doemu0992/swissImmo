@@ -51,6 +51,22 @@ Die Summe der `Ran N tests`-Zeilen gehört in den PR. Erwartungswert derzeit: **
 
 **Unvollständig installierte Abhängigkeiten sehen aus wie Fachfehler.** Fehlt etwa `zxing-cpp`, schlägt ein QR-Test mit `'leer' != 'qr'` fehl — was nach kaputter Fachlogik aussieht und keine ist. Vor der Fehlersuche immer `pip install -r requirements.txt` gegenprüfen.
 
+## Vorrang des Bestands vor der Dokumentation
+
+**Widerspricht der Bestand der Analyse, gilt der Bestand. Die Analyse wird im selben PR korrigiert.**
+
+`docs/ANALYSE.md` und die übrigen Dokumente sind ein Abbild eines Zeitpunkts, kein Auftrag. Sie können falsch sein — durch einen Irrtum bei der Erhebung, oder weil der Code sich seither bewegt hat. Ein Befund, der sich am Code nicht bestätigen lässt, wird nicht ausgeführt, sondern richtiggestellt.
+
+Das ist kein Nebensatz, sondern die wichtigste Regel dieses Skills. Der teuerste Fehler in einem dokumentgetriebenen Vorgehen ist, ein Dokument gegen die Wirklichkeit durchzusetzen.
+
+Konkret:
+
+- **Bevor etwas gelöscht wird, wird nachgewiesen, dass es tot ist.** Grep über den gesamten Bestand: Python, Templates, Migrationen, Management-Commands, Tests, CI-Konfiguration, `urls.py`, Settings. Ein Modul kann allein über einen String in einer Konfiguration referenziert sein.
+- **Nicht verdrahtet ist nicht dasselbe wie tot.** Ein Endpunkt ohne URL-Eintrag kann eine fertige, getestete, sicherheitsrelevante Komponente sein, die jemand einzubinden vergessen hat. Solche Fälle gehören vorgelegt, nicht entfernt. Beispiel aus dem Bestand: `core/views/webhooks.py` stand als toter Code in der Analyse, enthält aber einen gehärteten Webhook mit eigenem Test und einem Prüfbefehl. Die richtige Frage war „verdrahten oder bewusst streichen", nicht „löschen".
+- **Widersprechen sich zwei Punkte einer Liste, wird angehalten.** Nicht selbst auflösen und weitermachen. Die Auflösung gehört in die PR-Beschreibung, mit Begründung, welcher Punkt vorgeht und warum.
+
+Jede solche Korrektur wird im PR sichtbar gemacht — unter „Korrekturen an der Dokumentation". Stillschweigend richtigstellen ist fast so schlecht wie stillschweigend falsch ausführen: Beim nächsten Mal weiss wieder niemand, worauf er sich verlassen kann.
+
 ## Was einen PR scheitern lässt
 
 | Befund | Warum |
@@ -91,6 +107,10 @@ Der Anlass. Bei Bezug zur Analyse: die TS-/P-Nummer nennen.
 - ruff: sauber
 - Tests: 1'068 grün (Blöcke: 186/213/182/269/213/5)
 - Isolationstests: N neu, gegengeprüft (Filter entfernt → rot)
+
+## Korrekturen an der Dokumentation
+Nur falls zutreffend: Welcher Befund hielt der Prüfung am Code nicht
+stand, was gilt stattdessen, wo wurde es richtiggestellt.
 
 ## Bewusst nicht getan
 Was liegen bleibt und warum.

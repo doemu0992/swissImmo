@@ -35,6 +35,15 @@ Regeln, die über Sitzungen hinweg gelten. Werden von den Agenten gelesen.
 
 Der `mandanten-auditor` ist die wichtigste Rolle. Das Hauptrisiko ist nicht, dass ein Agent keinen Mandantenfilter schreibt — sondern dass er einen schreibt, der überzeugend aussieht und nicht isoliert.
 
+### Stand der Erprobung
+
+| Was | Stand |
+|---|---|
+| Inhalt der Definitionen | `aufraeumer` einmal durchlaufen und danach überarbeitet. Übrige ungetestet. |
+| Mechanismus (Aufruf als Subagent) | **Ungetestet.** Im ersten Durchlauf standen die Definitionen nicht als Subagenten zur Verfügung; die Vorgaben wurden von Hand abgearbeitet. Der inhaltliche Test ist damit gültig, der Mechanismus nicht. |
+
+Vor dem nächsten Einsatz zu klären: Werden die Dateien unter `.claude/agents/` in der jeweiligen Umgebung überhaupt geladen (in Claude Code über `/agents` prüfen, gegebenenfalls Sitzung neu starten)? Falls nicht, bleiben sie als Vorgabe zum Abarbeiten von Hand brauchbar — nur eben ohne eigenen Kontext und ohne Parallelität.
+
 ## Reihenfolge
 
 ```
