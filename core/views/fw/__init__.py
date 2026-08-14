@@ -13,6 +13,7 @@
 # der Stern-Import hier weg.
 
 from ._rest import *          # noqa: F401,F403 — Fassade, siehe oben
+from .mahnwesen import *      # noqa: F401,F403 — Block 3
 
 # Der Stern-Import überträgt KEINE Namen mit führendem Unterstrich. Diese
 # neun werden aber von aussen gebraucht (core/tests.py, core/services/) und
