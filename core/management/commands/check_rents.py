@@ -2,7 +2,7 @@ from crm.models import Verwaltung
 from rentals.models import Mietvertrag
 
 from django.core.management.base import BaseCommand
-from core.mietrecht_logic import berechne_mietpotenzial
+from rentals.services import berechne_mietpotenzial
 import sys
 
 class Command(BaseCommand):

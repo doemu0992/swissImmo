@@ -17,9 +17,12 @@ from unfold.decorators import display, action
 from .models import Mietvertrag, MietzinsAnpassung, Leerstand, Dokument
 from crm.models import Verwaltung
 
-# Helper-Funktion
+# Helper-Funktion. Der Import zeigte auf `core.mietrecht_logic` — ein Modul, das
+# es nicht gibt; die Funktion liegt in `rentals/services.py`. Der ImportError
+# wurde dadurch bei jedem Start gefangen und das Mietzins-Potenzial im Admin
+# still abgeschaltet, ohne dass es auffiel.
 try:
-    from core.mietrecht_logic import berechne_mietpotenzial
+    from rentals.services import berechne_mietpotenzial
 except ImportError:
     berechne_mietpotenzial = None
 
