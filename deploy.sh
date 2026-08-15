@@ -43,6 +43,20 @@ echo "  jetzt auf Commit $DEPLOY_COMMIT"
 echo "→ pip install -r requirements.txt"
 "$PY" -m pip install -q -r requirements.txt || echo "⚠ pip install meldete Fehler — fahre fort."
 
+# Seit Etappe 3 hat swissImmo ein eigenes Benutzermodell (benutzer.Benutzer),
+# das die bestehende Tabelle auth_user übernimmt. Auf einer Bestandsdatenbank
+# bricht `migrate` sonst ab, BEVOR eine Migration läuft:
+#   InconsistentMigrationHistory: admin.0001_initial is applied before its
+#   dependency benutzer.0001_initial
+# Keine Migration kann das lösen — Djangos Konsistenzprüfung greift davor.
+# Der Command ist idempotent: Er tut genau einmal etwas und ist danach (und auf
+# jeder frischen Datenbank) ein Leerlauf. Läuft er nicht, scheitert `migrate`
+# und es wird nicht neu geladen — die alte Version bleibt aktiv.
+echo "→ manage.py benutzer_uebernahme"
+if ! "$PY" manage.py benutzer_uebernahme; then
+    echo "✗ Benutzer-Übernahme fehlgeschlagen — KEIN Reload (alte Version bleibt aktiv)."; exit 1
+fi
+
 echo "→ manage.py migrate"
 if ! "$PY" manage.py migrate --noinput; then
     echo "✗ migrate fehlgeschlagen — KEIN Reload (alte Version bleibt aktiv)."; exit 1

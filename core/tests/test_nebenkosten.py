@@ -114,7 +114,8 @@ class NkAbrechnungVersandTests(TestCase):
 
     def test_sammel_pdf_und_ablage_ins_portal(self):
         from rentals.models import Dokument
-        from django.contrib.auth.models import User
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
         lg, e, m, v, p = self._periode()
         team = _team_user()
         c = Client(); c.force_login(team)
@@ -146,7 +147,8 @@ class NkAbrechnungVersandTests(TestCase):
 class NkNachzahlungQrTests(TestCase):
     def test_nachzahlung_wird_offene_qr_rechnung_im_portal(self):
         from finance.models import AbrechnungsPeriode, NebenkostenBeleg, DebitorenRechnung
-        from django.contrib.auth.models import User
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
         _seed_konten()
         vw = Verwaltung.objects.create(firma='V AG', strasse='W 1', plz='8000', ort='ZH',
                                        iban='CH9300762011623852957')

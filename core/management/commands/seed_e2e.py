@@ -16,12 +16,16 @@ class Command(BaseCommand):
     help = "Seedet einen deterministischen Datensatz für die Playwright-E2E-Tests."
 
     def handle(self, *args, **options):
-        from django.contrib.auth.models import User, Group
+        from django.contrib.auth import get_user_model
+        from django.contrib.auth.models import Group
         from crm.models import Verwaltung, Mieter
         from portfolio.models import Liegenschaft, Einheit
         from rentals.models import Mietvertrag
+
         from finance.models import DebitorenRechnung
         from finance.booking import ensure_kontenplan
+
+        User = get_user_model()
 
         ensure_kontenplan()
 

@@ -501,7 +501,8 @@ class AbfrageSkalierungTests(TestCase):
         self._bericht_waechst_nicht_mit('/neu/auswertung/?typ=ergebnis')
 
     def test_benutzer_fragt_nicht_je_benutzer_nach(self):
-        from django.contrib.auth.models import User
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
         c = Client(); c.force_login(_team_user())
         for i in range(3):
             User.objects.create_user(username=f'p{i}', password='x')

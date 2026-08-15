@@ -26,7 +26,9 @@ except ImportError:
 # mit `methode == 'leer'` statt `'qr'` fehl und sahen wie ein FACHFEHLER aus,
 # obwohl nur ein Paket fehlte. Unter `--parallel` verdeckte zusaetzlich ein
 # Pickle-Fehler des Prozesspools die Meldung ganz.
-from django.contrib.auth.models import User, Group
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+User = get_user_model()
 
 from crm.models import Mieter, Eigentuemer, Verwaltung
 from portfolio.models import Liegenschaft, Einheit, Wartungsfrist

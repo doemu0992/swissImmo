@@ -26,8 +26,11 @@ def fw_benutzer_form(request, pk=None):
     """Team-Benutzer erfassen/bearbeiten (Name, E-Mail, Rolle, Passwort, aktiv)."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from django.contrib.auth.models import User, Group
+    from django.contrib.auth import get_user_model
+    from django.contrib.auth.models import Group
     from core.auth import log_aktion, snapshot_model, diff_model
+
+    User = get_user_model()
     ziel = get_object_or_404(User, id=pk) if pk else None
     basis = _global_filter(request)
 
@@ -87,8 +90,10 @@ def fw_benutzer_loeschen(request, pk):
     """Benutzer löschen — nicht sich selbst, nicht den letzten Verwaltungs-Account."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from django.contrib.auth.models import User
+    from django.contrib.auth import get_user_model
     from core.auth import log_aktion
+
+    User = get_user_model()
     ziel = get_object_or_404(User, id=pk)
     if request.method == 'POST':
         if ziel == request.user:

@@ -240,7 +240,9 @@ class FristenKalenderTests(TestCase):
     def test_fristen_digest_mail(self):
         from django.core.management import call_command
         from django.core import mail
-        from django.contrib.auth.models import User, Group
+        from django.contrib.auth import get_user_model
+        from django.contrib.auth.models import Group
+        User = get_user_model()
         grp, _ = Group.objects.get_or_create(name='Verwaltung')
         u = User.objects.create_user(username='chef2', password='x', email='chef@example.ch')
         u.groups.add(grp)
@@ -261,7 +263,9 @@ class FristenKalenderTests(TestCase):
         from django.core.management import call_command
         from django.core import mail
         from django.utils import timezone
-        from django.contrib.auth.models import User, Group
+        from django.contrib.auth import get_user_model
+        from django.contrib.auth.models import Group
+        User = get_user_model()
         grp, _ = Group.objects.get_or_create(name='Verwaltung')
         u = User.objects.create_user('chef3', password='x', email='c3@example.ch'); u.groups.add(grp)
         self._frist('Frist morgen', 2)

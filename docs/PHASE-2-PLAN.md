@@ -81,26 +81,52 @@ Arbeitsauftrag warnt. Beide wurden verschärft und stehen im PR protokolliert. E
 `dossier_liegenschaft`, `dossier_mieter` und `dossier_vertrag` liefern heute **200** für fremde
 Daten.
 
-### Etappe 3 — Custom User Model
+### Etappe 3 — Custom User Model ✅ *(abgeschlossen am 15.08.2026)*
 
-Auftrag und Abnahme: **`docs/ETAPPE-3-USER-MODEL.md`**.
+Auftrag und Abnahme: **`docs/ETAPPE-3-USER-MODEL.md`** · Konzept und Messungen: **`docs/ETAPPE-3-KONZEPT.md`**.
 
 Ein PR, eine Hand. Agent: `chirurg`. Mitzunehmen im selben PR: `Eigentuemer.benutzer`, `Mieter.benutzer`, das Rollenmodell über `user.groups`, die Benutzerverwaltung in `/neu/`.
 
 Danach praktisch nicht mehr möglich — deshalb vor allem anderen Architekturschritt.
 
-**Erster Befund des Auftrags:** Im Bestand stehen **zwei Konventionen** nebeneinander — 10 harte
-`'auth.User'` gegen 2 `settings.AUTH_USER_MODEL`. Wird `AUTH_USER_MODEL` umgestellt, ohne die
-zehn vorher zu vereinheitlichen, ist das Ergebnis kein Startfehler, sondern **zwei Benutzertabellen
-im Betrieb**.
+`AUTH_USER_MODEL` zeigt auf `benutzer.Benutzer`. Das Modell übernimmt die bestehende Tabelle
+`auth_user` (`db_table`), statt die Daten zu kopieren — **keine Datenzeile wurde bewegt.** Der
+Ausschlag gab nicht die Bequemlichkeit, sondern die 15 Fremdschlüsselspalten: Beim Kopieren hätte
+Djangos Zustand behauptet, sie zeigten auf das neue Modell, während die Datenbank sie weiter auf
+`auth_user` richtet. Django erzeugt dafür von sich aus keine Operation — die Abweichung wäre
+unbemerkt geblieben und beim PostgreSQL-Umzug mitgewandert.
 
-**Gate:** Testsuite grün, Vorwärts- und Rückwärtsmigration ausgeführt, `mandanten-auditor` ohne Leckfund.
+**Drei Funde, die der Auftrag nicht hatte:**
+
+1. Auf einer **Bestandsdatenbank** bricht `migrate` mit `InconsistentMigrationHistory` ab,
+   **bevor** eine Migration läuft — Djangos Konsistenzprüfung greift davor, keine Migration kann
+   es lösen. Da `deploy.sh` unbeaufsichtigt läuft, ruft es jetzt `manage.py benutzer_uebernahme`
+   davor auf: idempotent, tut genau einmal etwas, danach Leerlauf.
+2. `core/migrations/0002_rollen_gruppen.py` holte das Benutzermodell hart über
+   `apps.get_model('auth','User')` und wäre auf **jeder frischen Datenbank** abgestürzt. Das
+   hätte die gesamte CI rot gemacht, ohne die Produktion zu berühren.
+3. Die Vereinheitlichung der 10 harten `'auth.User'` erzeugt **keine einzige Migration** — die
+   alte und die neue Schreibweise sind deckungsgleich.
+
+**Gate erfüllt:** 1'093 Tests, unverändert gegenüber Etappe 2 (11 `expectedFailure`, 4
+übersprungen). Die 11 Isolationstests sind weiterhin `expectedFailure`, die 3 Selbstprüfungen
+grün — das Fixture trägt. Vorwärts- und Rückwärtsweg auf der echten Datenbank ausgeführt; der
+Rückweg landet auf einem Zustand, der zeilenweise mit dem Ausgangspunkt übereinstimmt
+(Tabellen, Spalten, alle 7 Benutzer samt Hashes, `django_migrations`). Ruff, `manage.py check`
+und `makemigrations --check` sauber.
 
 ### Etappe 4 — Organisation und TenantManager
 
 Drei PRs nacheinander: `Organisation` (Verhältnis zu `crm.Verwaltung` klären), `TenantManager` plus Middleware, Rollen je Organisation.
 
 **Ohne gesetzte Organisation ist die richtige Antwort ein Fehler, nicht „alles zurückgeben".** Ein Manager, der im Zweifel alles liefert, ist schlimmer als keiner. Hier gehört auch die Admin-Umgehung aus E2 geschlossen.
+
+**Mitzunehmen aus Etappe 3: `Benutzer.username` ist global eindeutig.** Das ist Regel 5 des Skills
+`mandantentrennung` — zwei Verwaltungen können heute keinen Benutzer `info@` führen, und der
+Katalog aus Etappe 2 zählt diesen Fall unter seinen sechs Constraints **nicht** mit. Etappe 3 hat
+ihn nicht behoben: `username` stammt aus `AbstractUser`, eine Änderung bricht die Anmeldung und
+gehört zusammen mit der Mitgliedschaft je Organisation entschieden. Der Fall ist damit bekannt,
+aber noch ungetestet — er gehört als siebter in `UniqueConstraintsProOrganisationTests`.
 
 **Gate:** Erste Isolationstests werden grün. `mandanten-auditor` ohne Leckfund.
 

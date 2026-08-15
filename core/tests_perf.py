@@ -16,7 +16,11 @@ import time
 from datetime import date
 from decimal import Decimal
 
-from django.contrib.auth.models import Group, User
+from django.contrib.auth import get_user_model
+
+from django.contrib.auth.models import Group
+
+User = get_user_model()
 from django.test import Client, TestCase
 from unittest import skipUnless
 from django.test.utils import CaptureQueriesContext

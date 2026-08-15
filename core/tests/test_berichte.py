@@ -140,7 +140,8 @@ class SerienbriefMitmieterTests(TestCase):
         self.assertIn('data-lg="{}"'.format(lg.id), body)
 
     def test_zweitperson_sieht_brief_im_portal(self):
-        from django.contrib.auth.models import User
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
         lg, e, m1, m2, v = self._paar()
         team = _team_user()
         tc = Client(); tc.force_login(team)

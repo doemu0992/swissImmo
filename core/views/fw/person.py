@@ -152,9 +152,11 @@ def fw_mieter_portal_zugang(request, pk):
     """Erstellt/aktualisiert einen Mieterportal-Login und zeigt die Zugangsdaten einmalig."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from django.contrib.auth.models import User
+    from django.contrib.auth import get_user_model
     from core.auth import log_aktion
     import secrets
+
+    User = get_user_model()
     m = get_object_or_404(Mieter, id=pk)
     if request.method != 'POST':
         return redirect(f'/neu/personen/{m.id}/')

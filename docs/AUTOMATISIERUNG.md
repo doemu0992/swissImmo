@@ -38,6 +38,34 @@ Dateien blockieren den Deploy nicht — die Produktionsdaten `db.sqlite3`,
 Migration wird NICHT neu geladen**. Dann bleibt die alte Version aktiv, statt
 eine halb migrierte auszuliefern.
 
+### Ein Schritt vor `migrate`: `benutzer_uebernahme`
+
+Seit Etappe 3 (15.08.2026) hat swissImmo ein eigenes Benutzermodell
+(`benutzer.Benutzer`), das die bestehende Tabelle `auth_user` übernimmt. Auf
+einer **Bestandsdatenbank** bricht `migrate` sonst ab, **bevor** überhaupt eine
+Migration läuft:
+
+```
+InconsistentMigrationHistory: Migration admin.0001_initial is applied
+before its dependency benutzer.0001_initial
+```
+
+Djangos Konsistenzprüfung greift vor allen Migrationen — keine Migration kann
+das lösen. Deshalb ruft `deploy.sh` davor auf:
+
+```
+python manage.py benutzer_uebernahme
+```
+
+Der Command ist **idempotent**: Er benennt einmalig zwei Spalten um und trägt
+`benutzer.0001_initial` als angewendet ein; danach — und auf jeder frischen
+Datenbank — ist er ein Leerlauf. **Keine Datenzeile wird bewegt**, IDs,
+Passwort-Hashes, Gruppen und Sitzungen bleiben unberührt. `--rueckwaerts` nimmt
+ihn zurück, `--trocken` zeigt nur an.
+
+Die Zusicherung oben gilt damit unverändert: Es gibt weiterhin keinen Schritt,
+den jemand von Hand nachziehen müsste.
+
 Welcher Stand gerade läuft: <https://swissimmo.pythonanywhere.com/version/>
 
 ### Media-Schutz-Prüfung am Ende jedes Deploys

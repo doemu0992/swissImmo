@@ -1,5 +1,6 @@
 # tickets/models.py
 import uuid
+from django.conf import settings
 from django.db import models
 from core.utils import get_smart_upload_path
 
@@ -69,7 +70,7 @@ class SchadenFoto(models.Model):
     bild = models.ImageField(upload_to=get_smart_upload_path)
     beschreibung = models.CharField(max_length=200, blank=True, default='')
     hochgeladen_am = models.DateTimeField(auto_now_add=True)
-    hochgeladen_von = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    hochgeladen_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
     class Meta:
         verbose_name = "Schaden-Foto"

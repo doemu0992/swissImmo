@@ -195,3 +195,50 @@ Bekannt aus dem Spike, gehört zu Schritt 4: `core/admin.py` bricht beim Start m
 
 Der Versuchsaufbau liegt im Scratchpad unter `spike/` und ist nicht Teil des Repositories.
 Er lässt sich mit einer Kopie von `db.sqlite3` wiederholen.
+
+---
+
+## Ausgeführt am 15.08.2026
+
+Alle vier Schritte wie beschrieben, in einem PR. Zwei Abweichungen vom Konzept und ein Fund:
+
+**Abweichung 1 — `AutoField` statt `BigAutoField`.** Die zuerst erzeugte Migration deklarierte
+`id` als `BigAutoField` (der Projektstandard für neue Apps). Die übernommene Tabelle `auth_user`
+hat aber einen 32-Bit-Integer, ebenso die 15 Fremdschlüsselspalten darauf. Auf SQLite bliebe das
+unsichtbar — beim Wechsel auf PostgreSQL (P1.4) wäre es exakt die stille Abweichung zwischen
+Djangos Zustand und der Datenbank, die dieser Weg vermeiden soll. `BenutzerConfig` setzt deshalb
+`default_auto_field = 'django.db.models.AutoField'`, wie `django.contrib.auth` es tut.
+
+**Abweichung 2 — die Spaltenumbenennung fällt kleiner aus als gedacht.** Das Konzept vermutete,
+auch die Zwischentabellen müssten umbenannt werden. Falsch: Django leitet deren **Namen** aus
+`db_table` ab, sie heissen ohnehin schon `auth_user_groups` und `auth_user_user_permissions`.
+Nur die **Spalte** darin folgt dem Modellnamen. Es sind also zwei `RENAME COLUMN`, keine vier
+Operationen.
+
+**Fund — `Benutzer.username` ist global eindeutig.** Regel 5 des Skills `mandantentrennung`:
+Zwei Verwaltungen können keinen Benutzer `info@` führen. Der Katalog aus Etappe 2 zählt diesen
+Fall unter seinen sechs Constraints **nicht** mit. Nicht behoben — `username` stammt aus
+`AbstractUser`, eine Änderung bricht die Anmeldung und gehört zusammen mit der Mitgliedschaft je
+Organisation entschieden. Vermerkt in `PHASE-2-PLAN.md` bei Etappe 4.
+
+### Belege
+
+| Prüfung | Ergebnis |
+|---|---|
+| `ruff check .` | All checks passed |
+| `manage.py check` | no issues (1 silenced) |
+| `makemigrations --check --dry-run` | No changes detected |
+| Testsuite | **1'093** (1'082 + 6 + 5), 11 `expectedFailure`, 4 übersprungen — unverändert |
+| `IsolationstestsSelbstpruefungTests` | 3 grün |
+| Vorwärtsweg | auf unberührter Kopie der echten Datenbank: `benutzer_uebernahme` → `migrate` → OK |
+| Rückwärtsweg | `migrate crm 0030` + `benutzer_uebernahme --rueckwaerts` → Zustand zeilenweise identisch mit dem Ausgangspunkt (Tabellen, Spalten, 7 Benutzer samt Hashes, `django_migrations`) |
+| Nach dem Vorwärtsweg | IDs 1–7, Rollen (`Verwaltung`/`Sachbearbeitung`/`Lesend`), `ist_eigentuemer`, `Eigentuemer.benutzer`, `Mieter.benutzer` alle unverändert |
+
+### Was bewusst offen bleibt
+
+- Der Fund zu `username` (siehe oben) — Etappe 4.
+- `crm/0029` behält `to='auth.user'`. Statt Historie umzuschreiben entsteht die reguläre
+  Vorwärtsmigration `crm/0031`.
+- Nichts aufgeräumt in den ~20 berührten Dateien. Die einzigen Umstellungen ausserhalb des
+  Auftrags sind meine eigenen Einfügungen: `User = get_user_model()` steht hinter dem lokalen
+  Importblock, nicht mittendrin.

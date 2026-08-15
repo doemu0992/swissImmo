@@ -99,10 +99,12 @@ def fw_eigentuemer_portal_zugang(request, pk):
     """Erstellt/entfernt einen Eigentümer-Portal-Login und mailt die Zugangsdaten."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from django.contrib.auth.models import User
+    from django.contrib.auth import get_user_model
     from crm.models import Eigentuemer
     from core.auth import log_aktion
     import secrets
+
+    User = get_user_model()
     md = get_object_or_404(Eigentuemer, id=pk)
     ziel = f'/neu/mandate/{md.id}/bearbeiten/'
     if request.method != 'POST':

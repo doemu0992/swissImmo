@@ -94,7 +94,7 @@ Ohne Anbindung: Mieter, MieterAdresse, Handwerker, Vorlage, Kommunikation,
 > **Begriffswarnung – projektweit beachten**
 > **Aufgelöst am 14.08.2026 (E3).** `crm.Mandant` bezeichnete im Code den **Eigentümer** einer Liegenschaft, nicht den Mandanten im SaaS-Sinn der Projektanweisung — bei eigenem Login (`benutzer`), Portal und Abrechnung war das die grösste Verwechslungsgefahr für Phase 2. Das Modell heisst jetzt `crm.Eigentuemer`, die drei Fremdschlüssel heissen `eigentuemer`. Der Tenant-Begriff entspricht weiterhin am ehesten `crm.Verwaltung`; der neue Tenant heisst `Organisation`. Im Gespräch bleibt „Mandant" zweideutig — dort weiter qualifizieren.
 
-Zwei Benutzerverknüpfungen existieren bereits als `OneToOneField` auf `auth.User`: `Eigentuemer.benutzer` (Eigentümer-Portal) und `Mieter.benutzer` (Mieterportal). Ein **Custom User Model gibt es nicht** — siehe TS-1.
+Zwei Benutzerverknüpfungen existieren als `OneToOneField` auf das Benutzermodell: `Eigentuemer.benutzer` (Eigentümer-Portal) und `Mieter.benutzer` (Mieterportal). Seit Etappe 3 (15.08.2026) ist das **`benutzer.Benutzer`**, nicht mehr `auth.User` — siehe TS-1.
 
 ### 1.3 Views und URLs
 
@@ -341,7 +341,11 @@ Alles, was *innerhalb* eines Mandanten geschützt werden musste, ist geschützt.
 
 ## 3. Technische Schulden
 
-**TS-1 – Kein Custom User Model.** Django verwendet `auth.User`. Ein späterer Wechsel ist nach Produktivgang unverhältnismässig teuer. Erschwerend: Es hängen bereits zwei `OneToOneField` daran (`Eigentuemer.benutzer`, `Mieter.benutzer`), das Rollenmodell arbeitet über `user.groups`, und es gibt eine Benutzerverwaltung in `/neu/`. **Das ist die Entscheidung, die in Phase 2 zuerst fallen muss** — vor der Organisationsmodellierung, nicht als deren Nebenschritt.
+**TS-1 – ~~Kein Custom User Model.~~ Erledigt (Etappe 3, 15.08.2026).** `AUTH_USER_MODEL` zeigt auf `benutzer.Benutzer`. Das Modell übernimmt die bestehende Tabelle `auth_user` (`db_table`), statt die Daten in eine neue zu kopieren — **es wurde keine Datenzeile bewegt**, IDs, Passwort-Hashes, Gruppen, Sitzungen und alle 15 Fremdschlüssel sind unberührt.
+
+**Drei Funde, die die Analyse nicht hatte.** Erstens standen im Bestand **zwei Konventionen** nebeneinander: 10 harte `'auth.User'` gegen 2 `settings.AUTH_USER_MODEL`. Ohne vorherige Vereinheitlichung wäre das Ergebnis kein Startfehler gewesen, sondern zwei Benutzertabellen im Betrieb. Zweitens bricht `migrate` auf einer **Bestandsdatenbank** mit `InconsistentMigrationHistory` ab, **bevor** eine Migration läuft — dafür gibt es jetzt `manage.py benutzer_uebernahme`, das `deploy.sh` vor `migrate` aufruft. Drittens holte `core/migrations/0002_rollen_gruppen.py` das Benutzermodell hart über `apps.get_model('auth','User')` und wäre auf **jeder frischen Datenbank** abgestürzt — das hätte die gesamte CI rot gemacht, ohne die Produktion zu berühren.
+
+`core/auth.py` war nicht betroffen: Das Rollenmodell arbeitet ausschliesslich über `user.groups` und hat den Wechsel unverändert überstanden. Ebenso `core/auth_backends.py`, das das Modell schon vorher über `get_user_model()` holte.
 
 **TS-2 – `core/views/fw.py` mit 14'938 Zeilen.** 232 Views, 34 thematische Blöcke, in einer Datei. Dieselbe Datei enthält 50 der 132 `Verwaltung.objects`-Aufrufe. Jede mandantenbezogene Änderung, jedes Entitlement, jede Übersetzung muss hier hindurch. Die Aufteilung entlang der bereits vorhandenen Blockgrenzen (Debitoren, Kreditoren, Buchhaltung, Nebenkosten, Objekte, Verträge, Mietprozess, Profil) ist naheliegend und sollte **vor** Phase 2 geschehen, nicht danach.
 
@@ -400,7 +404,7 @@ Die Nummerierung ist die empfohlene Reihenfolge.
 
 | Nr. | Massnahme | Aufwand |
 |---|---|---|
-| P1.1 | **Custom User Model einführen** — muss vor allem anderen geschehen, danach kaum noch möglich (TS-1) | M |
+| ~~P1.1~~ | ~~**Custom User Model einführen**~~ — **erledigt am 15.08.2026** (Etappe 3, siehe `docs/ETAPPE-3-KONZEPT.md`). `benutzer.Benutzer` übernimmt die Tabelle `auth_user`; Vorwärts- und Rückwärtsweg beide ausgeführt, der Rückweg landet auf einem byteweise identischen Zustand. Testzahl unverändert bei 1'093 (TS-1) | M |
 | P1.2 | **`fw.py` entlang der 34 Blockgrenzen aufteilen** — Voraussetzung dafür, dass die Isolation überhaupt reviewbar wird (TS-2) | M |
 | P1.3 | **`core/tests.py` nach Fachgebiet aufteilen**, in die jeweiligen Apps verschieben (TS-3) | M |
 | P1.4 | Wechsel auf PostgreSQL inklusive Datenmigration (TS-13) | M |

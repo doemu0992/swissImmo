@@ -1,7 +1,8 @@
 # core/admin.py
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group
 
 from core.admin_base import NurLesenMixin, NurLesenModelAdmin
 
@@ -34,7 +35,12 @@ class AktivitaetsLogAdmin(NurLesenModelAdmin):
 # Rollenprüfung und Audit-Trail. Der allererste Superuser entsteht ohnehin
 # über `manage.py createsuperuser`, nicht über die Oberfläche.
 # ---------------------------------------------------------------------------
-admin.site.unregister(User)
+# Seit Etappe 3 ist das Benutzermodell getauscht. Django meldet dann seinen
+# eigenen Benutzer-Admin gar nicht mehr an — `unregister` liefe ins Leere und
+# bräche mit `NotRegistered` schon beim Start der Anwendung. Nur die Gruppe
+# kommt weiterhin von `django.contrib.auth` und muss abgemeldet werden.
+User = get_user_model()
+
 admin.site.unregister(Group)
 
 

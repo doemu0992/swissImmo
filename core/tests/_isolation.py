@@ -20,7 +20,11 @@ darauf aufbauenden Tests bleiben, wie sie sind.
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.contrib.auth.models import Group, User
+from django.contrib.auth import get_user_model
+
+from django.contrib.auth.models import Group
+
+User = get_user_model()
 
 
 # ---------------------------------------------------------------------------

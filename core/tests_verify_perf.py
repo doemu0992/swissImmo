@@ -2,7 +2,9 @@
 Python-Referenzrechnung (die alte Logik), inkl. Teilzahlungen und Storni."""
 from decimal import Decimal
 from datetime import date
-from django.contrib.auth.models import Group, User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+User = get_user_model()
 from django.test import Client, TestCase
 import core.tests_perf as _P
 from core.tests_perf import _seed

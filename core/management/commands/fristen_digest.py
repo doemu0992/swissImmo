@@ -28,8 +28,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **opts):
         from core.models import Pendenz, AktivitaetsLog
-        from django.contrib.auth.models import User
+        from django.contrib.auth import get_user_model
         from crm.models import Verwaltung
+
+        User = get_user_model()
 
         heute = timezone.localdate()
         grenze = heute + timedelta(days=opts['tage'])

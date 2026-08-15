@@ -10,7 +10,7 @@ Stellt sicher, dass der Mieter GENAU EIN aktives Login-Konto hat, setzt das
 angegebene Passwort und gibt den exakten Benutzernamen aus.
 """
 from django.core.management.base import BaseCommand, CommandError
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 
 class Command(BaseCommand):
@@ -23,6 +23,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **opts):
         from crm.models import Mieter
+
+        User = get_user_model()
 
         m = None
         if opts.get('mieter_id'):

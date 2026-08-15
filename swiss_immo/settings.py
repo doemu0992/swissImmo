@@ -114,6 +114,7 @@ INSTALLED_APPS = [
     "unfold.contrib.import_export",
 
     # --- Deine Apps (NEUE SPA-ARCHITEKTUR) ---
+    'benutzer',     # Benutzermodell (AUTH_USER_MODEL, siehe Etappe 3)
     'core',         # utils & views (Die Zentrale)
     'crm',          # Personendaten & Firmen
     'portfolio',    # Liegenschaften & Einheiten
@@ -236,6 +237,16 @@ LANGUAGE_CODE = 'de-ch'
 TIME_ZONE = 'Europe/Zurich'
 USE_I18N = True
 USE_TZ = True
+
+# --- BENUTZERMODELL ---
+# Eigenes Benutzermodell statt `auth.User`. Der Wechsel ist nach Produktivgang
+# praktisch nicht mehr möglich, deshalb steht er am Anfang der
+# Mandantenfähigkeit — siehe docs/ETAPPE-3-USER-MODEL.md.
+#
+# Das Modell übernimmt die bestehende Tabelle `auth_user`; es wurde keine Zeile
+# kopiert. Auf einer Bestandsdatenbank muss `manage.py benutzer_uebernahme`
+# EINMAL vor `migrate` laufen — deploy.sh ruft das auf.
+AUTH_USER_MODEL = 'benutzer.Benutzer'
 
 # --- AUTHENTICATION ---
 # Case-insensitive Login (Benutzername = E-Mail; Mobilgeräte gross-schreiben

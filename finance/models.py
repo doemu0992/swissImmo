@@ -4,6 +4,7 @@ import re
 import datetime
 import logging
 from decimal import Decimal, InvalidOperation
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.db.models import Sum
@@ -127,7 +128,7 @@ class Buchung(models.Model):
 
     # Audit-Trail: wer hat diese Buchung ausgelöst (None = System/Migration)
     erstellt_von = models.ForeignKey(
-        'auth.User', on_delete=models.SET_NULL, null=True, blank=True,
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='+', verbose_name="Erstellt von"
     )
 
@@ -294,7 +295,7 @@ class Zahlungseingang(models.Model):
 
     # Audit-Trail: wer hat die Zahlung erfasst (None = System/Import)
     erstellt_von = models.ForeignKey(
-        'auth.User', on_delete=models.SET_NULL, null=True, blank=True,
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='+', verbose_name="Erfasst von"
     )
 
@@ -316,7 +317,7 @@ class Mahnung(models.Model):
     versandart = models.CharField("Versand", max_length=20, choices=[('email', 'E-Mail'), ('brief', 'Brief'), ('manuell', 'Manuell erfasst')], default='manuell')
     bemerkung = models.CharField(max_length=255, blank=True, default='')
     erstellt_am = models.DateTimeField(auto_now_add=True)
-    erstellt_von = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
     class Meta:
         verbose_name = "Mahnung"
@@ -483,7 +484,7 @@ class KreditorenZahlung(models.Model):
     bemerkung = models.CharField(max_length=255, blank=True, default='')
     status = models.CharField(max_length=20, choices=[('verbucht', 'Verbucht'), ('storniert', 'Storniert')], default='verbucht')
     erstellt_am = models.DateTimeField(default=timezone.now)
-    erstellt_von = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
     class Meta:
         db_table = 'core_kreditorenzahlung'
@@ -778,7 +779,7 @@ class EigentuemerAuszahlung(models.Model):
     status = models.CharField(max_length=20, choices=[('verbucht', 'Verbucht'), ('storniert', 'Storniert')],
                               default='verbucht')
     erstellt_am = models.DateTimeField(default=timezone.now)
-    erstellt_von = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
     class Meta:
         verbose_name = "Eigentümer-Auszahlung"
@@ -841,7 +842,7 @@ class Kontoauszug(models.Model):
     dateiname = models.CharField(max_length=255, blank=True, default='')
     quelle = models.CharField(max_length=30, blank=True, default='')
     importiert_am = models.DateTimeField(auto_now_add=True)
-    importiert_von = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True)
+    importiert_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         verbose_name = "Kontoauszug"

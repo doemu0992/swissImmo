@@ -218,8 +218,10 @@ def fw_marktdaten_live(request):
 def fw_benutzer(request):
     """Team-Mitglieder (Django-User + Rolle). Portal-Konten (Mieter/Eigentümer)
     werden hier NICHT angezeigt — die werden über Person bzw. Eigentuemer verwaltet."""
-    from django.contrib.auth.models import User
+    from django.contrib.auth import get_user_model
     from core.auth import ROLLE_EIGENTUEMER
+
+    User = get_user_model()
     basis = _global_filter(request)
     # Die drei Dinge, die unten je Benutzer geprüft werden, gleich mitladen —
     # sonst sind es drei Abfragen pro Zeile (gemessen: 103 für 33 Benutzer).
@@ -249,9 +251,11 @@ def fw_logbuch(request):
     Dokumente, Buchungen, Löschungen …). Nur für die Verwaltung einsehbar,
     rein lesend. Filter: Freitext, Benutzer, Aktionsart, Zeitraum · seitenweise.
     Optionaler CSV-Export mit denselben Filtern (?export=csv)."""
-    from django.contrib.auth.models import User
+    from django.contrib.auth import get_user_model
     from django.core.paginator import Paginator
     from core.models import AktivitaetsLog
+
+    User = get_user_model()
     basis = _global_filter(request)
 
     qs = AktivitaetsLog.objects.select_related('benutzer').all()

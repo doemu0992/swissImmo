@@ -4,6 +4,7 @@ import io
 from decimal import Decimal
 from PIL import Image
 from django.core.files.base import ContentFile
+from django.conf import settings
 from django.db import models
 
 logger = logging.getLogger(__name__)
@@ -99,7 +100,7 @@ class Eigentuemer(models.Model):
     # Portal-Zugang: verknüpfter Login für das Eigentümer-Portal (/portal/).
     # Eigentümer sehen dort NUR ihre eigenen Liegenschaften — kein SPA-/API-Zugriff.
     benutzer = models.OneToOneField(
-        'auth.User', on_delete=models.SET_NULL, null=True, blank=True,
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='eigentuemer_profil', verbose_name="Portal-Login",
         help_text="Optionaler Benutzer-Account für das Eigentümer-Portal."
     )
@@ -272,7 +273,7 @@ class Mieter(models.Model):
     anonymisiert = models.BooleanField("DSG-anonymisiert", default=False)
     anonymisiert_am = models.DateField("Anonymisiert am", null=True, blank=True)
     # Mieterportal-Login (optional): verknüpfter Benutzer für das Self-Service-Portal
-    benutzer = models.OneToOneField('auth.User', on_delete=models.SET_NULL, null=True, blank=True,
+    benutzer = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
                                     related_name='mieter_profil')
 
     class Meta:
@@ -445,7 +446,7 @@ class Kommunikation(models.Model):
     betreff = models.CharField("Betreff", max_length=200, blank=True, default='')
     inhalt = models.TextField("Inhalt / Notiz")
     erledigt = models.BooleanField("Erledigt", default=True)
-    erstellt_von = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
     class Meta:
         verbose_name = "Kommunikation"
