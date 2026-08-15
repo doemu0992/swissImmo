@@ -46,7 +46,8 @@ from django.urls import NoReverseMatch, get_resolver, reverse
 
 from ._isolation import KEINE_OBJEKT_ID, MandantenFixture
 
-EIGENE_APPS = ('core', 'crm', 'portfolio', 'rentals', 'finance', 'tickets', 'mietprozess')
+EIGENE_APPS = ('benutzer', 'core', 'crm', 'portfolio', 'rentals', 'finance', 'tickets',
+               'mietprozess')
 
 # ---------------------------------------------------------------------------
 # Ausnahmen vom Registrylauf — benannt und begründet, nicht ausgefiltert.
@@ -372,9 +373,23 @@ class ModellbezugWaechterTests(TestCase):
     """
 
     #: Modelle ohne eigenen Bezug — jeder Eintrag braucht eine Begründung.
-    #: Heute leer: Der Zuschnitt entsteht erst in Etappe 5, und eine
-    #: vorweggenommene Ausnahmeliste wäre geraten, nicht entschieden.
-    BEGRUENDETE_AUSNAHMEN: dict = {}
+    #: Der Zuschnitt entsteht erst in Etappe 5; eine vorweggenommene
+    #: Ausnahmeliste wäre geraten, nicht entschieden. Genau ein Eintrag steht
+    #: heute schon fest.
+    BEGRUENDETE_AUSNAHMEN: dict = {
+        # Der Benutzer gehört keiner Organisation, er ist in mehreren MITGLIED
+        # — das ist Etappe 4, Schritt 4 (Rollen je Organisation). Ein Feld
+        # `organisation` am Benutzer wäre die falsche Modellierung: Es würde
+        # jeden Menschen auf eine Verwaltung festnageln.
+        #
+        # Der Eintrag steht hier und nicht in `EIGENE_APPS`, weil der Wächter
+        # sonst SCHWEIGEND blind wäre. Fehlte `benutzer` in `EIGENE_APPS`,
+        # würde dieser Test in Etappe 4 grün — und ausgerechnet das Modell,
+        # an dem die Mandantenzugehörigkeit hängt, wäre das einzige, das er
+        # nie prüft. Eine benannte Ausnahme kann man beim Lesen widerrufen,
+        # eine fehlende Zeile in einem Tupel nicht.
+        'benutzer.Benutzer': 'Mitgliedschaft je Organisation statt eigener Spalte — Etappe 4',
+    }
 
     @unittest.expectedFailure
     def test_jedes_modell_hat_einen_weg_zur_organisation(self):

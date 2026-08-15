@@ -81,6 +81,14 @@ Arbeitsauftrag warnt. Beide wurden verschärft und stehen im PR protokolliert. E
 `dossier_liegenschaft`, `dossier_mieter` und `dossier_vertrag` liefern heute **200** für fremde
 Daten.
 
+**Nachgetragene Abdeckungslücke (gefunden beim Auditor-Lauf über Etappe 3):** Bauform A sammelt
+über `_urls_mit_einem_parameter()` nur URLs mit genau **einem Pfadparameter**. Listen- und
+Exportpfade, die über den Querystring filtern, liegen damit vollständig ausserhalb — etwa
+`/neu/logbuch/?benutzer=<pk>`, `/neu/logbuch/?export=csv` und `/neu/benutzer/`. Die 152 erfassten
+URLs sind also nicht „fast alle". Das ist keine Regression, aber die Abdeckung wird sonst
+überschätzt. Es fehlt eine **Bauform E** für parameterlose Listen mit Querystring-Filtern,
+nachzuholen vor Etappe 4.
+
 ### Etappe 3 — Custom User Model ✅ *(abgeschlossen am 15.08.2026)*
 
 Auftrag und Abnahme: **`docs/ETAPPE-3-USER-MODEL.md`** · Konzept und Messungen: **`docs/ETAPPE-3-KONZEPT.md`**.
@@ -121,12 +129,38 @@ Drei PRs nacheinander: `Organisation` (Verhältnis zu `crm.Verwaltung` klären),
 
 **Ohne gesetzte Organisation ist die richtige Antwort ein Fehler, nicht „alles zurückgeben".** Ein Manager, der im Zweifel alles liefert, ist schlimmer als keiner. Hier gehört auch die Admin-Umgehung aus E2 geschlossen.
 
-**Mitzunehmen aus Etappe 3: `Benutzer.username` ist global eindeutig.** Das ist Regel 5 des Skills
-`mandantentrennung` — zwei Verwaltungen können heute keinen Benutzer `info@` führen, und der
-Katalog aus Etappe 2 zählt diesen Fall unter seinen sechs Constraints **nicht** mit. Etappe 3 hat
-ihn nicht behoben: `username` stammt aus `AbstractUser`, eine Änderung bricht die Anmeldung und
-gehört zusammen mit der Mitgliedschaft je Organisation entschieden. Der Fall ist damit bekannt,
-aber noch ungetestet — er gehört als siebter in `UniqueConstraintsProOrganisationTests`.
+#### Mitzunehmen aus Etappe 3
+
+Fünf Punkte, alle aus dem `mandanten-auditor`-Lauf über den E3-Diff. Keiner davon ist heute ein
+Leck — es gibt noch keine zweite Organisation. Alle fünf **werden** eines, sobald es sie gibt.
+
+**1 — `Benutzer.username` ist global eindeutig.** Regel 5 des Skills `mandantentrennung`: Zwei
+Verwaltungen können keinen Benutzer `info@` führen. Der Katalog aus Etappe 2 zählt diesen Fall
+unter seinen sechs Constraints **nicht** mit; er gehört als siebter in
+`UniqueConstraintsProOrganisationTests`. Etappe 3 hat ihn nicht behoben — `username` stammt aus
+`AbstractUser`, eine Änderung bricht die Anmeldung.
+
+**2 — Die Namensprüfung im Benutzerformular wird zum Existenz-Orakel.**
+`core/views/fw/benutzer.py:50` meldet „Benutzername ist bereits vergeben" gegen **alle**
+Organisationen. Verwaltung A erfährt damit durch Ausprobieren, welche E-Mail-Adressen Verwaltung B
+führt — dieselbe Klasse wie „403 statt 404", nur über das Formular.
+
+**3 — Der Aussperrschutz zählt über die Mandantengrenze.**
+`core/views/fw/benutzer.py:105` zählt die aktiven Verwaltungs-Accounts global. A hält sich für
+abgesichert, weil B noch Admins hat, und kann seinen letzten löschen. Kein Leck, aber
+Datenverlust aus derselben Wurzel.
+
+**4 — `email` identifiziert global, ist aber nicht eindeutig.**
+`core/auth_backends.py:37` sammelt Konten über `username` **oder** `email` und meldet das an,
+dessen Passwort passt — organisationsübergreifend. Heute unkritisch (Passwörter sind
+Zufallsgeheimnisse, `create_user` hängt nie ein bestehendes fremdes Konto an einen Mieter), aber
+die Annahme „E-Mail identifiziert eine Person global" steht nirgends geschrieben, und der
+`[:10]`-Deckel wird bei einer geteilten Adresse zur stillen Grenze.
+
+**5 — `eigentuemer_profil` und `mieter_profil` können am selben Konto koexistieren.**
+`core/views/portal.py:29` prüft Eigentümer zuerst. Ein Konto, das in A Eigentümer und in B Mieter
+ist, erreicht das Mieterportal nie. Routing-Frage, kein Leck — fällt aber erst auf, wenn Mandanten
+Konten teilen können.
 
 **Gate:** Erste Isolationstests werden grün. `mandanten-auditor` ohne Leckfund.
 

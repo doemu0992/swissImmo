@@ -234,6 +234,47 @@ Organisation entschieden. Vermerkt in `PHASE-2-PLAN.md` bei Etappe 4.
 | Rückwärtsweg | `migrate crm 0030` + `benutzer_uebernahme --rueckwaerts` → Zustand zeilenweise identisch mit dem Ausgangspunkt (Tabellen, Spalten, 7 Benutzer samt Hashes, `django_migrations`) |
 | Nach dem Vorwärtsweg | IDs 1–7, Rollen (`Verwaltung`/`Sachbearbeitung`/`Lesend`), `ist_eigentuemer`, `Eigentuemer.benutzer`, `Mieter.benutzer` alle unverändert |
 
+### Nachtrag: der Auditor-Lauf über den eigenen Diff
+
+Der `mandanten-auditor` fand **kein Leck**, aber drei Dinge, die im Diff selbst nachzubessern
+waren. Alle drei sind eingearbeitet:
+
+**Der Wächtertest wäre blind geworden.** `EIGENE_APPS` in `core/tests/test_isolation.py` zählte
+sieben Apps auf; Etappe 3 legt eine achte an und trug sie nicht nach. Folge in Etappe 4: Sobald
+die übrigen Modelle ihren Bezug haben, wird `test_jedes_modell_hat_einen_weg_zur_organisation`
+grün, der Marker fällt planmässig weg — und ausgerechnet `benutzer.Benutzer`, das Modell, an dem
+die Mandantenzugehörigkeit hängen wird, wäre das einzige, das der Wächter nie prüft. Ein Test, der
+aufhört zu prüfen, ohne dass es auffällt. `benutzer` steht jetzt in `EIGENE_APPS`, und `Benutzer`
+als **benannte** Ausnahme in `BEGRUENDETE_AUSNAHMEN` — eine Ausnahme kann man beim Lesen
+widerrufen, eine fehlende Zeile in einem Tupel nicht.
+
+**Die Zahl 13 war falsch.** Am Migrationsgraphen aufgelöst hängen **16** angewendete Migrationen
+an `benutzer.0001_initial` — die 13 Projektmigrationen mit `swappable_dependency` plus Djangos
+`admin.0001_initial` plus die beiden, die dieser Schritt selbst erzeugt. Meine 13 stammten aus
+einer Textsuche über die Projektdateien, nicht aus dem Graphen. Korrigiert im Docstring des
+Commands.
+
+**Zwei Löcher im Rückweg.** `--rueckwaerts` benannte die Spalten zurück, ohne zu prüfen, ob der
+laufende Code das verträgt — ein versehentlicher Aufruf hätte eine einwandfrei laufende Anwendung
+lahmgelegt (fail-closed, aber Ausfall). Der Command verlangt jetzt `--code-wird-zurueckgerollt`,
+solange `AUTH_USER_MODEL` noch auf dieses Modell zeigt; `--trocken` bleibt frei. Dazu ein
+Vorabcheck auf SQLite ≥ 3.25: `ALTER TABLE … RENAME COLUMN` ist die eine Anweisung, an der der
+ganze unbeaufsichtigte Deploy hängt, und ein Fehlschlag mittendrin liesse eine Spalte umbenannt
+und die andere nicht.
+
+**Und eine Zusicherung, die nicht mehr ganz galt.** `deploy.sh` versprach: „bei gescheiterter
+Migration bleibt die alte Version aktiv." Das stimmte, solange `migrate` an der Konsistenzprüfung
+abbrach, **bevor** es die Datenbank anfasste. Jetzt läuft die Übernahme davor — gelingt sie und
+scheitert `migrate` danach, liest der noch laufende alte Prozess gegen ein Schema, das er nicht
+kennt. Der Kommentar sagt das jetzt. Scheitert die Übernahme selbst, gilt die alte Zusicherung
+unverändert.
+
+Fünf weitere Funde betreffen erst Etappe 4 und stehen dort im Plan: `username` global eindeutig,
+das Existenz-Orakel in der Namensprüfung, der Aussperrschutz über die Mandantengrenze, `email` als
+globaler Identifikator, und Konten mit Eigentümer- **und** Mieterprofil. Dazu eine
+Abdeckungslücke der Etappe-2-Tests (Bauform A erfasst keine Querystring-Filter), vermerkt bei
+Etappe 2.
+
 ### Was bewusst offen bleibt
 
 - Der Fund zu `username` (siehe oben) — Etappe 4.

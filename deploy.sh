@@ -50,8 +50,17 @@ echo "→ pip install -r requirements.txt"
 #   dependency benutzer.0001_initial
 # Keine Migration kann das lösen — Djangos Konsistenzprüfung greift davor.
 # Der Command ist idempotent: Er tut genau einmal etwas und ist danach (und auf
-# jeder frischen Datenbank) ein Leerlauf. Läuft er nicht, scheitert `migrate`
-# und es wird nicht neu geladen — die alte Version bleibt aktiv.
+# jeder frischen Datenbank) ein Leerlauf.
+#
+# Einschränkung, die für DIESEN einen Umschalt-Deploy gilt: Weiter unten steht
+# "bei gescheiterter Migration bleibt die alte Version aktiv". Das galt
+# uneingeschränkt, solange `migrate` an der Konsistenzprüfung abbrach, BEVOR es
+# die Datenbank anfasste. Jetzt läuft die Übernahme davor. Gelingt sie und
+# scheitert `migrate` danach, sind die zwei Spalten bereits umbenannt und der
+# noch laufende alte WSGI-Prozess liest gegen ein Schema, das er nicht kennt —
+# "alte Version bleibt aktiv" heisst dann "alte Version liefert 500", bis der
+# nächste Deploy durchläuft. Scheitert dagegen die Übernahme selbst, ist die
+# Datenbank unberührt und die Zusicherung gilt wie zuvor.
 echo "→ manage.py benutzer_uebernahme"
 if ! "$PY" manage.py benutzer_uebernahme; then
     echo "✗ Benutzer-Übernahme fehlgeschlagen — KEIN Reload (alte Version bleibt aktiv)."; exit 1

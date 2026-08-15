@@ -2,10 +2,13 @@
 
 WARUM DAS NICHT ALS MIGRATION GEHT
 ----------------------------------
-Sobald `AUTH_USER_MODEL` auf `benutzer.Benutzer` zeigt, hängen die 13 bereits
-angewendeten Migrationen mit `swappable_dependency` formal an
-`benutzer.0001_initial` — die auf einer Bestandsdatenbank nicht angewendet ist.
-Djangos Konsistenzprüfung läuft **vor** der ersten Migration und bricht ab:
+Sobald `AUTH_USER_MODEL` auf `benutzer.Benutzer` zeigt, hängen **16** bereits
+angewendete Migrationen formal an `benutzer.0001_initial` — die auf einer
+Bestandsdatenbank nicht angewendet ist. (Nicht 13: Zu den 13 Projektmigrationen
+mit `swappable_dependency` kommen Djangos eigene `admin.0001_initial` sowie die
+beiden, die dieser Schritt erzeugt hat. Der Wert stammt aus dem aufgelösten
+Migrationsgraphen, nicht aus einer Textsuche.) Djangos Konsistenzprüfung läuft
+**vor** der ersten Migration und bricht ab:
 
     InconsistentMigrationHistory: Migration admin.0001_initial is applied
     before its dependency benutzer.0001_initial
@@ -33,11 +36,30 @@ Der Command läuft genau einmal wirklich. Danach — und auf jeder frischen
 Datenbank, wo `migrate` die Tabelle selbst anlegt — ist er ein Leerlauf. Er darf
 deshalb bei jedem Deploy mitlaufen.
 
-RÜCKWEG
--------
+RÜCKWEG — DIE REIHENFOLGE IST NICHT BELIEBIG
+--------------------------------------------
 `--rueckwaerts` macht beides rückgängig: Spalten zurückbenennen, den Eintrag aus
-`django_migrations` löschen. Danach läuft die Anwendung wieder mit `auth.User`,
-sobald `AUTH_USER_MODEL` aus den Settings genommen ist.
+`django_migrations` löschen.
+
+**Erst der Command, dann der Code.** Zwischen beidem liegt ein Fenster, in dem
+das ORM `auth_user_groups.benutzer_id` erwartet und die Datenbank `user_id`
+hat: Die Anmeldung gelingt noch (`auth_user` ist unberührt), aber jede
+Gruppenabfrage schlägt fehl — `/nach-login/` und alle `@rolle_erforderlich`-
+Views liefern 500. Das ist fail-closed, nicht fail-open, aber es ist ein
+Ausfall. Deshalb verlangt der Command `--code-wird-zurueckgerollt`, solange
+`AUTH_USER_MODEL` noch auf dieses Modell zeigt.
+
+**Wer den Code zuerst zurückrollt, hat kein Werkzeug mehr.** Nach einem
+`git reset --hard` auf einen Stand vor Etappe 3 gibt es weder `AUTH_USER_MODEL`
+noch diesen Command — nur eine Datenbank, deren M2M-Spalte `benutzer_id` heisst,
+und dieselbe 500-Wand. Der Ausweg ist dann, den neuen Stand nochmals
+auszuchecken, den Command zu fahren und erst danach zurückzurollen.
+
+Der Eintrag in `django_migrations` muss ebenfalls in dieser Reihenfolge
+verschwinden: Solange `AUTH_USER_MODEL` gesetzt ist, macht sein Löschen
+`migrate` für alle 16 abhängigen Migrationen unbrauchbar. Erst wenn die Settings
+zurückgenommen sind, wird `swappable_dependency` neu ausgewertet und der Graph
+löst sich wieder auf.
 
 ROHES SQL — BEGRÜNDETE AUSNAHME
 -------------------------------
@@ -49,7 +71,8 @@ Modell und läuft ausdrücklich **vor** den Migrationen, also zu einem Zeitpunkt
 an dem das ORM den Zustand der Datenbank noch gar nicht abbilden kann. Ein
 Manager wäre hier nicht bloss unnötig, er wäre nicht verwendbar.
 """
-from django.core.management.base import BaseCommand
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
 
 MIGRATION = ('benutzer', '0001_initial')
@@ -84,12 +107,30 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--rueckwaerts', action='store_true',
                             help='Übernahme rückgängig machen.')
+        parser.add_argument('--code-wird-zurueckgerollt', action='store_true',
+                            help='Bestätigt beim Rückweg, dass der Code unmittelbar danach auf '
+                                 'einen Stand vor Etappe 3 zurückgeht.')
         parser.add_argument('--trocken', action='store_true',
                             help='Nur anzeigen, was geschähe.')
 
     def handle(self, *args, **optionen):
         rueckwaerts = optionen['rueckwaerts']
         trocken = optionen['trocken']
+
+        # Der Rückweg hinterlässt ein Schema, das der laufende Code nicht mehr
+        # versteht (siehe Modul-Docstring). Ohne ausdrückliche Bestätigung
+        # nicht ausführen — sonst legt ein versehentlicher Aufruf die Anwendung
+        # lahm, obwohl sie einwandfrei lief.
+        if rueckwaerts and settings.AUTH_USER_MODEL == 'benutzer.Benutzer' \
+                and not optionen['code_wird_zurueckgerollt'] and not trocken:
+            raise CommandError(
+                'AUTH_USER_MODEL zeigt noch auf benutzer.Benutzer. Der Rückweg macht die '
+                'Anwendung dann sofort unbrauchbar (Gruppenabfragen laufen ins Leere). '
+                'Reihenfolge: erst diesen Command mit --code-wird-zurueckgerollt, dann den '
+                'Code zurückrollen. Nur ansehen: --trocken.'
+            )
+
+        self._pruefe_datenbank_kann_spalten_umbenennen()
 
         with connection.cursor() as cursor:
             tabellen = _tabellen(cursor)
@@ -157,6 +198,25 @@ class Command(BaseCommand):
         if eingetragen:
             self.stdout.write(f'{vorsatz}{MIGRATION[0]}.{MIGRATION[1]} ausgetragen')
         self.stdout.write(self.style.SUCCESS(f'{vorsatz}Übernahme zurückgenommen.'))
+
+    @staticmethod
+    def _pruefe_datenbank_kann_spalten_umbenennen():
+        """`ALTER TABLE … RENAME COLUMN` braucht SQLite ≥ 3.25 (2018).
+
+        Es ist die einzige Anweisung, an der der ganze unbeaufsichtigte Deploy
+        hängt. Scheitert sie mitten im Lauf, ist eine Spalte umbenannt und die
+        andere nicht — deshalb vorher fragen statt hinterher aufräumen.
+        PostgreSQL kann es seit jeher.
+        """
+        if connection.vendor != 'sqlite':
+            return
+        import sqlite3
+        teile = tuple(int(t) for t in sqlite3.sqlite_version.split('.')[:2])
+        if teile < (3, 25):
+            raise CommandError(
+                f'SQLite {sqlite3.sqlite_version} kann keine Spalten umbenennen '
+                f'(nötig: 3.25 von 2018). Übernahme abgebrochen, bevor sie halb läuft.'
+            )
 
     @staticmethod
     def _jetzt():
