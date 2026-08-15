@@ -78,7 +78,28 @@ class MandantenFixture:
         self._anlegen(plz, ort)
 
     def _anlegen(self, plz, ort):
-        from crm.models import Eigentuemer, Mieter, Organisation
+        """Legt den Bestand an — jeden IM KONTEXT SEINER EIGENEN ORGANISATION.
+
+        Seit Etappe 4.2 wirft der `TenantManager` ohne gesetzten Kontext. Das
+        ist hier keine Hürde, sondern die richtige Semantik: Ein Bestand, der
+        A gehört, entsteht als A. Würde das Fixture ohne Kontext bauen, wäre
+        schon die Erzeugung eine Stelle, an der die Organisation offen bleibt —
+        und genau solche Stellen sucht dieser Testsatz.
+
+        Die `Organisation` selbst entsteht ausserhalb: Sie IST der Mandant,
+        also kann sie keinen Mandantenkontext voraussetzen.
+        """
+        from core.tenancy import organisation_kontext
+        from crm.models import Organisation as _Organisation
+
+        k = self.kuerzel
+        self.organisation = _Organisation.objects.create(
+            firma=f'Verwaltung {k} AG', strasse=f'{k}-Strasse 1', plz=plz, ort=ort)
+        with organisation_kontext(self.organisation):
+            self._bestand_anlegen(plz, ort)
+
+    def _bestand_anlegen(self, plz, ort):
+        from crm.models import Eigentuemer, Mieter
         from finance.models import (AbrechnungsPeriode, Buchung, Buchungskonto,
                                     DebitorenRechnung, KreditorenRechnung, Zahlungseingang)
         from portfolio.models import Einheit, Liegenschaft, Wartungsfrist
@@ -87,13 +108,11 @@ class MandantenFixture:
 
         k = self.kuerzel
 
-        self.organisation = Organisation.objects.create(
-            firma=f'Verwaltung {k} AG', strasse=f'{k}-Strasse 1', plz=plz, ort=ort)
         self.eigentuemer = Eigentuemer.objects.create(
             firma_oder_name=f'Eigentuemer {k}', email=f'eig-{k.lower()}@example.ch')
         self.liegenschaft = Liegenschaft.objects.create(
             strasse=f'{k}-Weg 7', plz=plz, ort=ort, eigentuemer=self.eigentuemer,
-            versicherungswert=Decimal('1000000'))
+            organisation=self.organisation, versicherungswert=Decimal('1000000'))
         self.einheit = Einheit.objects.create(
             liegenschaft=self.liegenschaft, bezeichnung=f'3.5 Zi {k}', typ='wohnung',
             nettomiete_aktuell=Decimal('1500'), nebenkosten_aktuell=Decimal('200'))
@@ -211,11 +230,34 @@ class MandantenFixture:
             ticket=self.schaden, handwerker=self.handwerker)
 
     def _benutzer(self):
+        """Team-Benutzer dieses Mandanten — Gruppe UND Mitgliedschaft.
+
+        Die Gruppe trägt die Rolle (`core/auth.py` liest bis 4.3 weiterhin
+        `user.groups`), die Mitgliedschaft trägt die Organisation. Ohne sie
+        findet `OrganisationMiddleware` keinen Kontext, `_global_filter`
+        filtert nichts — und die Isolationstests wären rot, ohne dass ein
+        Isolationsfehler vorläge. Ein Fixture, das den Benutzer nicht
+        zuordnet, prüft die eigene Lückenhaftigkeit statt die Anwendung.
+        """
+        from crm.models import Mitgliedschaft
+
         grp, _ = Group.objects.get_or_create(name='Verwaltung')
         u = User.objects.create_user(username=f'team_{self.kuerzel.lower()}',
                                      password='geheim-egal', email=f'{self.kuerzel}@example.ch')
         u.groups.add(grp)
+        Mitgliedschaft.objects.create(benutzer=u, organisation=self.organisation,
+                                      rolle=Mitgliedschaft.ROLLE_VERWALTUNG)
         return u
+
+    def _alle_objekte(self):
+        """Alle im Fixture angelegten Modellinstanzen — für Registryläufe.
+
+        Bewusst über `vars(self)` statt über eine gepflegte Liste: Ein Objekt,
+        das oben dazukommt, ist hier automatisch dabei. Eine Liste, die jemand
+        nachzupflegen vergisst, wäre eine stille Prüflücke.
+        """
+        from django.db.models import Model
+        return [w for w in vars(self).values() if isinstance(w, Model)]
 
     # -- Zugriff für die Registryläufe -------------------------------------
 

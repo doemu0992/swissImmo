@@ -130,6 +130,51 @@ Keine Besitzprüfung an beiden Stellen — die Isolationstests weisen das bereit
 
 **Der Admin umgeht den Manager** über `_base_manager` und als Superuser. Seit E2 ist er lesend und Superuser-beschränkt, aber `AdminUmgehungTests` weist heute nach, dass ein Vertrag von B im QuerySet für A erscheint. Das gehört in diesen PR.
 
+### Teilweise ausgeführt am 15.08.2026 — und warum nur teilweise
+
+**Geliefert:** `core/tenancy.py` (Kontext, `TenantManager`, `AlleOrganisationenManager`,
+`cache_key`, `OrganisationsFehler`), `core/middleware_tenancy.py`, die Besitzprüfung in
+`_global_filter`, und die Mitgliedschaft im Test-Fixture. **Vier Tests sind grün geworden**, jeder
+mit durchgeführter und protokollierter Gegenprobe.
+
+**Nicht geliefert: die Anbindung des `TenantManager` an die Modelle.** Sie wurde gebaut,
+gemessen und wieder zurückgenommen. Der Grund steht in `.claude/agents/chirurg.md`: *„Wenn ein
+Schritt grösser wird als geplant: aufhören und melden, nicht durchziehen."*
+
+Die Messung, zweistufig:
+
+| Zustand | Fehlschläge von 1'072 bzw. 1'088 Tests |
+|---|---|
+| `TenantManager` als `objects` an `Liegenschaft` + `Mietvertrag` | **922** |
+| dasselbe, aber Schreiben ohne Kontext erlaubt | **638** |
+
+Die Diagnose dahinter ist der eigentliche Ertrag dieses Versuchs. In einem einzigen Testmodul
+waren **75 von 83** Fehlschlägen ein `objects.create` und nur **8** eine Abfrage — deshalb der
+zweite Messpunkt. Ein `create` gibt nichts heraus und braucht keinen Kontext; das ist im Manager
+jetzt so umgesetzt und begründet. Die verbleibenden 638 haben eine andere Ursache: **Testbenutzer
+haben keine Mitgliedschaft**, also setzt die Middleware keinen Kontext, also wirft jede lesende
+View. Das lässt sich nicht an einer Stelle beheben — es braucht die Zuordnung in jedem der
+20 Testmodule, die Bestände anlegen, und in den 46 Produktivmodulen, die `Liegenschaft` oder
+`Mietvertrag` lesen.
+
+**Das ist die Form von Etappe 5, nicht die von 4.2.** Der Plan sieht dort ohnehin sieben PRs vor,
+einen je App. Die Manager-Anbindung gehört in denselben PR wie der Organisationsbezug der
+jeweiligen App: Dann wandert je App ein überschaubarer Satz Aufrufstellen mit, statt dass ein
+einziger Schritt die ganze Anwendung gleichzeitig umstellt. Ein Big-Bang wäre genau die
+„lang lebende Umbau-Verzweigung", vor der der Plan unter *Was den Plan zum Scheitern bringen kann*
+warnt — nur in einem einzigen Commit statt über zwei Wochen.
+
+`core/tenancy.py` bleibt im Bestand. Es ist fertig, geprüft und ohne Nebenwirkung, solange kein
+Modell den Manager trägt — und es ist die Voraussetzung dafür, dass Etappe 5 je App nur noch zwei
+Zeilen setzen muss.
+
+**Offen aus 4.2, mitzunehmen nach Etappe 5:**
+
+- `TenantManager` an die Modelle, App für App
+- Die Admin-Umgehung über `_base_manager` (`AdminUmgehungTests` bleibt rot) — sie hängt am
+  Manager und ist ohne ihn nicht sinnvoll zu schliessen
+- `cache_key` ist gebaut, aber noch nirgends verwendet (`CacheSchluesselTests` bleibt rot)
+
 ---
 
 ## 4.3 — Rollen je Organisation

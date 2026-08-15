@@ -34,8 +34,30 @@ Zwei Gegenmittel:
    das Fixture, wird dieser Test rot — und nicht bloss vierzig weitere
    „erwartete" Fehlschläge mehr.
 
-Die eigentliche Gegenprobe (Filter entfernen → Test muss rot werden) ist in
-den Etappen 4 bis 6 nachzuholen, sobald ein Test grün wird.
+DIE GEGENPROBE — protokolliert, nicht behauptet
+----------------------------------------------
+Ein Test, der grün wird, beweist nichts, solange niemand geprüft hat, dass er
+für die richtige Sache grün ist. Deshalb gilt ab Etappe 4: Wer einen Marker
+entfernt, entfernt vorher den Filter und weist nach, dass der Test dann rot
+wird.
+
+Durchgeführt am 15.08.2026 (Etappe 4.2), je einmal Filter raus → rot,
+Filter zurück → grün:
+
+| Test | Entfernter Filter |
+|---|---|
+| `test_globaler_liegenschaftsfilter_nimmt_keine_fremde_id` | Besitzprüfung in `_global_filter` |
+| `test_liegenschaftswaehler_zeigt_nur_eigene` | dieselbe |
+| `test_registrylauf_ueber_parameterlose_urls` | dieselbe |
+| `test_pdf_traegt_absender_der_eigenen_organisation` | `liegenschaft.organisation` in `pdf_service` |
+
+EIN TEST WAR GRÜN UND PRÜFTE NICHTS
+-----------------------------------
+`test_default_manager_liefert_keine_fremden_daten` verglich
+`modell.objects.filter(pk__in=[]).count()` mit 0 — für JEDES Modell trivial
+wahr. Er war nur so lange rot, wie `core.tenancy` fehlte, und wurde grün in
+dem Moment, in dem das Modul bloss importierbar war. Gefunden beim Anbinden
+in 4.2, verschärft: Er prüft jetzt gegen die konkreten Datensätze von B.
 """
 
 import unittest
@@ -219,7 +241,6 @@ class FremdeIdUeberQuerystringTests(IsolationsBasis):
     deren `?lg=` aufruft. Die übrigen 46 werten den Filter schlicht nicht aus.
     """
 
-    @unittest.expectedFailure
     def test_globaler_liegenschaftsfilter_nimmt_keine_fremde_id(self):
         """`?lg=` einer fremden Liegenschaft darf nicht greifen.
 
@@ -236,7 +257,6 @@ class FremdeIdUeberQuerystringTests(IsolationsBasis):
             f'_global_filter übernimmt die Liegenschaft von B (?lg='
             f'{self.b.liegenschaft.pk}) für einen Benutzer von A')
 
-    @unittest.expectedFailure
     def test_liegenschaftswaehler_zeigt_nur_eigene(self):
         """Die Auswahlliste selbst ist bereits ein Leck.
 
@@ -250,7 +270,6 @@ class FremdeIdUeberQuerystringTests(IsolationsBasis):
             self.b.liegenschaft.pk, sichtbar,
             'die Liegenschaft von B steht im Auswahlmenü eines Benutzers von A')
 
-    @unittest.expectedFailure
     def test_registrylauf_ueber_parameterlose_urls(self):
         """Keine der 108 parameterlosen `fw_`-URLs übernimmt ein fremdes `?lg=`.
 
@@ -363,14 +382,36 @@ class ManagerIsolationTests(IsolationsBasis):
         except ImportError:
             self.fail('core.tenancy fehlt — der TenantManager ist Etappe 4. '
                       'Dieser Test beschreibt, was er koennen muss.')
-        setze_organisation(self.a)
+        setze_organisation(self.a.organisation)
+        # Die erste Fassung prüfte `modell.objects.filter(pk__in=[]).count() == 0`.
+        # Das ist für JEDES Modell trivial wahr — eine leere ID-Liste liefert
+        # immer null Treffer. Der Test war rot, solange `core.tenancy` fehlte,
+        # und wurde in dem Moment grün, in dem das Modul bloss importierbar
+        # war: grün, ohne dass irgendetwas filtert. Genau die Falle, vor der
+        # der Arbeitsauftrag warnt, nur diesmal in einem Test, der die Falle
+        # selbst finden sollte.
+        #
+        # Jetzt wird gegen die konkreten Datensätze von B geprüft. Ein Modell
+        # ohne Objekt bei B kann nichts beweisen und wird übersprungen —
+        # sichtbar über den Zähler unten, nicht stillschweigend.
+        geprueft = 0
         for modell in apps.get_models():
             if modell._meta.app_label not in EIGENE_APPS:
                 continue
+            fremde = [o for o in getattr(self.b, '_alle_objekte', lambda: [])()
+                      if isinstance(o, modell)]
+            if not fremde:
+                continue
+            geprueft += 1
             with self.subTest(modell=modell._meta.label):
-                self.assertEqual(
-                    modell.objects.filter(pk__in=[]).count(), 0,
-                    f'{modell._meta.label} filtert nicht nach Organisation')
+                sichtbar = set(modell.objects.values_list('pk', flat=True))
+                fremd_pks = {o.pk for o in fremde}
+                self.assertFalse(
+                    sichtbar & fremd_pks,
+                    f'{modell._meta.label}.objects zeigt im Kontext von A '
+                    f'{len(sichtbar & fremd_pks)} Datensätze von B')
+        self.assertGreater(geprueft, 8,
+                           'auffällig wenige Modelle geprüft — trägt das Fixture noch?')
 
     @unittest.expectedFailure
     def test_ohne_kontext_wirft_der_manager(self):
@@ -486,7 +527,6 @@ class AbsenderInDokumentenTests(IsolationsBasis):
     derjenigen Verwaltung mit dem niedrigsten Primärschlüssel.
     """
 
-    @unittest.expectedFailure
     def test_pdf_traegt_absender_der_eigenen_organisation(self):
         # Die erste Fassung suchte die Byte-Folge b'Verwaltung A AG' im PDF —
         # und war gruen, weil PDF den Text komprimiert und eine Byte-Suche ihn

@@ -48,14 +48,43 @@ def _num(wert):
 
 
 def _global_filter(request):
-    """Liest den globalen Liegenschafts-Filter (?lg=) und liefert Basis-Kontext."""
+    """Liest den globalen Liegenschafts-Filter (?lg=) und liefert Basis-Kontext.
+
+    BESITZPRÜFUNG (Etappe 4.2)
+    --------------------------
+    Bis hierher nahm diese Funktion jede `?lg=`-ID entgegen und lieferte die
+    Liegenschaft dazu — auch eine fremde. Gemessen mit Bauform E: Von 107
+    parameterlosen `fw_`-URLs übernahmen **61** die Liegenschaft eines fremden
+    Mandanten. Und `alle_liegenschaften` gab ungefiltert ALLE zurück, also
+    stand jede fremde Adresse im Auswahlmenü, ohne dass jemand eine ID raten
+    musste.
+
+    Beides ist jetzt auf `request.organisation` eingeschränkt (gesetzt von
+    `core.middleware_tenancy.OrganisationMiddleware`).
+
+    DAS IST DIE BEQUEMLICHKEIT, NICHT DIE SICHERHEIT.
+    Auch wenn diese Prüfung perfekt wäre, muss der `TenantManager` unabhängig
+    davon filtern — zwei Schichten, weil die obere irgendwann jemand umgeht.
+    Ein Report, ein Management-Command oder ein PDF-Bau kommt hier nie vorbei.
+    Solange der Manager noch nicht an den Modellen hängt (siehe
+    `docs/ETAPPE-4-ORGANISATION.md`), ist das hier die EINZIGE Schicht — und
+    genau deshalb steht der Satz hier und nicht in einem Nebensatz.
+    """
+    organisation = getattr(request, 'organisation', None)
+    eigene = Liegenschaft.objects.all()
+    if organisation is not None:
+        eigene = eigene.filter(organisation=organisation)
+
     lg_id = request.GET.get('lg') or None
     aktive_lg = None
     if lg_id:
-        aktive_lg = Liegenschaft.objects.filter(id=lg_id).first()
+        # Die Einschränkung steht IM Filter, nicht in einer Prüfung danach:
+        # Eine fremde ID findet damit schlicht nichts und ergibt `None`, statt
+        # dass irgendwo ein `if fremd: ...` vergessen werden könnte.
+        aktive_lg = eigene.filter(id=lg_id).first()
     from core.auth import hat_rolle
     return {
-        'alle_liegenschaften': Liegenschaft.objects.all().order_by('strasse'),
+        'alle_liegenschaften': eigene.order_by('strasse'),
         'aktive_lg': aktive_lg,
         'lg_query': f"?lg={aktive_lg.id}" if aktive_lg else "",
         # Rolle für die Vorlagen: Wer nicht schreiben darf, soll die Knöpfe gar

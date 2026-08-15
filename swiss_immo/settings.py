@@ -157,6 +157,10 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # Muss NACH AuthenticationMiddleware stehen — sie braucht `request.user`.
+    # Und vor allem, was Mandantendaten liest: Ohne gesetzten Kontext wirft
+    # der TenantManager, statt still den ganzen Bestand herauszugeben.
+    'core.middleware_tenancy.OrganisationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
