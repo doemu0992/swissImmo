@@ -12,18 +12,39 @@
 # schrumpft mit jedem Block und verschwindet am Ende ganz; dann fällt auch
 # der Stern-Import hier weg.
 
-from ._rest import *          # noqa: F401,F403 — Fassade, siehe oben
-from .mahnwesen import *      # noqa: F401,F403 — Block 3
+# Der noch nicht aufgeteilte Rest zuerst — die herausgeloesten Bloecke
+# danach. Die Reihenfolge ist kein Zufall: Bei einem Stern-Import gewinnt der
+# LETZTE. Bliebe beim Verschieben versehentlich eine alte Fassung in
+# _rest.py stehen, ueberschreibt sie so das bereits herausgeloeste Modul
+# nicht, sondern wird von ihm ueberschrieben.
+from ._rest import *                   # noqa: F401,F403
 
-from .assets import *        # noqa: F401,F403 — Block 9
-from .anlagen import *       # noqa: F401,F403 — Block 10
-from .sollstellung import *  # noqa: F401,F403 — Block 12
-from .eigentuemer import *   # noqa: F401,F403 — Block 19
-from .mwst import *          # noqa: F401,F403 — Block 22
-from .abnahme import *       # noqa: F401,F403 — Block 2
-from .nebenkosten import *   # noqa: F401,F403 — Block 11
-from .pendenzen import *     # noqa: F401,F403 — Block 21
-from .eigentuemer_abrechnung import * # noqa: F401,F403 — Block 10
+# Herausgeloeste Bloecke, alphabetisch. Die Blocknummern aus dem
+# Arbeitsauftrag stehen hier bewusst NICHT: Sie zaehlen die Kommentarbanner
+# in _rest.py durch und verschieben sich deshalb bei jedem Umzug — nach elf
+# Bloecken trug die Liste bereits dreimal "Block 11" fuer drei verschiedene
+# Module. Eine Nummer, die sich unter der Hand aendert, ist schlechter als
+# gar keine; der Modulname sagt ohnehin mehr.
+from .abnahme import *                 # noqa: F401,F403
+from .anlagen import *                 # noqa: F401,F403
+from .assets import *                  # noqa: F401,F403
+from .bankkonten import *              # noqa: F401,F403
+from .benutzer import *                # noqa: F401,F403
+from .debitor_qr import *              # noqa: F401,F403
+from .dienstleister import *           # noqa: F401,F403
+from .dokumente import *               # noqa: F401,F403
+from .eigentuemer import *             # noqa: F401,F403
+from .eigentuemer_abrechnung import *  # noqa: F401,F403
+from .hypotheken import *              # noqa: F401,F403
+from .kommunikation import *           # noqa: F401,F403
+from .mahnwesen import *               # noqa: F401,F403
+from .mwst import *                    # noqa: F401,F403
+from .nebenkosten import *             # noqa: F401,F403
+from .pendenzen import *               # noqa: F401,F403
+from .sollstellung import *            # noqa: F401,F403
+
+
+
 # Der Stern-Import überträgt KEINE Namen mit führendem Unterstrich. Diese
 # neun werden aber von aussen gebraucht (core/tests.py, core/services/) und
 # müssen deshalb einzeln stehen. Die Liste ist Absicht und kein Versehen:
