@@ -274,3 +274,26 @@ def _parse_adresse(text):
     if m:
         return strasse, m.group(1), m.group(2).strip()
     return strasse, '', rest
+
+
+# Der Sonderfall, den docs/ETAPPE-1-ZERLEGEN.md ausdruecklich benennt:
+# _park_konto stand im Profil-Menue-Block und wurde AUSSCHLIESSLICH vom
+# Bankabgleich benutzt — rund 10'000 Zeilen entfernt. Beim Umzug des
+# Bankabgleichs faellt genau das auf. Statt den Helfer dem einen oder dem
+# anderen Modul zuzuschlagen, steht er hier.
+def _park_konto(nummer):
+    from finance.booking import konto as _k
+    return _k(nummer)
+
+
+# Die Status-Beschriftungen der Vertraege. Kein Helfer, sondern eine
+# Konstante — aber dieselbe Lage: Sie stand im Listen-Block und wird auch
+# von der Personen-Detailseite gebraucht. Eine Kopie waere schlimmer als
+# ein gemeinsamer Ort: Zwei Fassungen driften auseinander, und dann heisst
+# derselbe Vertragsstatus auf zwei Seiten verschieden.
+VERTRAG_PILL = {
+    'entwurf':    ('Entwurf',    'bg-slate-100 text-slate-600'),
+    'aktiv':      ('Aktiv',      'bg-emerald-50 text-emerald-700'),
+    'gekuendigt': ('Gekündigt',  'bg-rose-50 text-rose-600'),
+    'archiviert': ('Archiviert', 'bg-slate-100 text-slate-500'),
+}
