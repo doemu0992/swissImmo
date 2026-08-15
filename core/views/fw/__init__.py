@@ -49,6 +49,10 @@ from .liegenschaft_crud import * # noqa: F401,F403 — Block 10
 from .kautionen import *     # noqa: F401,F403 — Block 11
 from .kuendigung import *    # noqa: F401,F403 — Block 10
 from .mietprozess import *   # noqa: F401,F403 — Block 10
+from .schaeden import *      # noqa: F401,F403 — Block 5
+from .buchhaltung import *   # noqa: F401,F403 — Block 5
+from .mietzins import *      # noqa: F401,F403 — Block 5
+from .kreditoren import *    # noqa: F401,F403 — Block 4
 # Der Stern-Import überträgt KEINE Namen mit führendem Unterstrich. Diese
 # neun werden aber von aussen gebraucht (core/tests.py,
 # core/services/abschluss_pdf.py) und müssen deshalb einzeln stehen.
@@ -58,13 +62,16 @@ from .mietprozess import *   # noqa: F401,F403 — Block 10
 # wo er wirklich steht. Jede Zeile zeigt hier auf den echten Fundort und
 # wandert mit, wenn der Block wandert. `AlleNeunNamenErreichbarTests` in
 # core/tests.py hält fest, dass keiner unterwegs verlorengeht.
-from ._basis import _num, _pendenz_ziel                    # noqa: F401
-from ._rest import (                                       # noqa: F401
+from ._basis import (                                # noqa: F401
+    _num,
+    _pendenz_ziel,
+)
+from ._rest import (                                 # noqa: F401
     _bank_csv_parse,
     _camt_kopf,
     _camt_parse,
-    _erfolg_bilanz,
     _formulare_prozesse,
 )
-from .kuendigung import _auszugscheckliste_anlegen         # noqa: F401
-from .mietprozess import _bewerber_mail                    # noqa: F401
+from .buchhaltung import _erfolg_bilanz                 # noqa: F401
+from .kuendigung import _auszugscheckliste_anlegen      # noqa: F401
+from .mietprozess import _bewerber_mail                 # noqa: F401
