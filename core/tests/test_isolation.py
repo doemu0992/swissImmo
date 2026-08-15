@@ -161,6 +161,189 @@ class FremdeIdUeberUrlsTests(IsolationsBasis):
 
 
 # ===========================================================================
+# Bauform E — Filter aus dem Querystring
+# ===========================================================================
+
+#: ID-tragende Querystring-Parameter, am Bestand ausgezählt (15.08.2026).
+#: `(URL-Name, Parameter, Fixture-Attribut, Kontextschlüssel, Fundstelle)`
+#:
+#: Der **URL-Name gehört dazu**. Die erste Fassung dieses Katalogs führte nur
+#: den Parameter und prüfte alles gegen `fw_dashboard` — eine View, die
+#: `?mieter=` gar nicht liest. Sie scheiterte trotzdem, weil `assertNotContains`
+#: die blosse Ziffer „2" in jedem HTML findet (gemessen: 438-mal). Rot aus dem
+#: falschen Grund ist derselbe Fehler wie grün aus dem falschen Grund, nur
+#: schwerer zu bemerken: Der Test sieht erfolgreich aus, solange man ihn nicht
+#: liest. Deshalb wird jetzt die View aufgerufen, die den Parameter wirklich
+#: auswertet, und der **Kontextwert** geprüft, nicht der Seitentext.
+ID_IM_QUERYSTRING = (
+    ('fw_kommunikation', 'mieter',  'mieter',
+     'vorwahl_mieter', 'core/views/fw/kommunikation.py:86'),
+    ('fw_vertrag_neu',   'einheit', 'einheit',
+     'vorwahl_einheit', 'core/views/fw/vertragserstellung.py:58'),
+)
+
+
+def _parameterlose_fw_urls():
+    """Alle `fw_`-URLs OHNE Pfadparameter. Am 15.08.2026 sind es 108."""
+    gefunden = []
+    for name, eintrag in get_resolver().reverse_dict.items():
+        if not isinstance(name, str) or not name.startswith('fw_'):
+            continue
+        for _pfad, params in eintrag[0]:
+            if not params:
+                gefunden.append(name)
+            break
+    return sorted(gefunden)
+
+
+class FremdeIdUeberQuerystringTests(IsolationsBasis):
+    """Die Lücke, die Bauform A prinzipbedingt nicht sieht.
+
+    Bauform A sammelt über `_urls_mit_einem_parameter()` nur URLs mit genau
+    einem **Pfad**parameter — am 15.08.2026 sind das 152. Daneben stehen 108
+    parameterlose `fw_`-URLs, die ihre Filter aus dem **Querystring** lesen.
+    Die lagen vollständig ausserhalb der Abdeckung.
+
+    Aufgefallen ist das erst beim `mandanten-auditor`-Lauf über Etappe 3, also
+    zwei Etappen nach dem Schreiben der Tests. Der Grund ist lehrreich: Bauform
+    A ist datengetrieben und deckt deshalb „alle URLs" ab — aber nur alle URLs
+    ihrer eigenen Bauform. Eine Registry-Abfrage sieht nie, wonach sie nicht
+    fragt. Wer aus „152 von 152 geprüft" auf Vollständigkeit schliesst, hat die
+    Frage mit der Antwort verwechselt.
+
+    Ohne diese Bauform würde Etappe 4 gegen eine Abdeckung abgenommen, die den
+    Haupteinstiegspunkt `_global_filter` nicht enthält.
+
+    Gemessen am 15.08.2026: Von 107 geprüften parameterlosen `fw_`-URLs
+    übernehmen **61** die Liegenschaft von B, wenn ein Benutzer von A sie mit
+    deren `?lg=` aufruft. Die übrigen 46 werten den Filter schlicht nicht aus.
+    """
+
+    @unittest.expectedFailure
+    def test_globaler_liegenschaftsfilter_nimmt_keine_fremde_id(self):
+        """`?lg=` einer fremden Liegenschaft darf nicht greifen.
+
+        `_global_filter` liest die ID heute ohne Besitzprüfung
+        (`Liegenschaft.objects.filter(id=lg_id).first()`). Er ist der Einstieg
+        **aller 33 View-Module** — greift er auf eine fremde Liegenschaft, sind
+        Bezeichnung und Adresse in jeder Kopfzeile sichtbar, und jede
+        nachgelagerte Auswertung rechnet auf fremdem Bestand.
+        """
+        antwort = self.client.get(reverse('fw_dashboard'), {'lg': self.b.liegenschaft.pk})
+        aktive = (antwort.context or {}).get('aktive_lg')
+        self.assertIsNone(
+            aktive,
+            f'_global_filter übernimmt die Liegenschaft von B (?lg='
+            f'{self.b.liegenschaft.pk}) für einen Benutzer von A')
+
+    @unittest.expectedFailure
+    def test_liegenschaftswaehler_zeigt_nur_eigene(self):
+        """Die Auswahlliste selbst ist bereits ein Leck.
+
+        `_global_filter` legt `alle_liegenschaften` ungefiltert in den Kontext
+        (`Liegenschaft.objects.all()`). Damit steht die Adresse jeder fremden
+        Liegenschaft im Auswahlmenü — ohne dass jemand eine ID raten müsste.
+        """
+        antwort = self.client.get(reverse('fw_dashboard'))
+        sichtbar = {lg.pk for lg in (antwort.context or {}).get('alle_liegenschaften', [])}
+        self.assertNotIn(
+            self.b.liegenschaft.pk, sichtbar,
+            'die Liegenschaft von B steht im Auswahlmenü eines Benutzers von A')
+
+    @unittest.expectedFailure
+    def test_registrylauf_ueber_parameterlose_urls(self):
+        """Keine der 108 parameterlosen `fw_`-URLs übernimmt ein fremdes `?lg=`.
+
+        Datengetrieben wie Bauform A: Eine neue View ist automatisch
+        mitgeprüft. Geprüft wird der Kontext, nicht der Statuscode — eine View,
+        die 200 liefert und dabei auf fremdem Bestand rechnet, ist der
+        gefährlichere Fall.
+        """
+        durchlaufen = 0
+        auffaellig = []
+        for name in _parameterlose_fw_urls():
+            if name in AUSNAHMEN:
+                continue
+            try:
+                pfad = reverse(name)
+            except NoReverseMatch:
+                continue
+            durchlaufen += 1
+            antwort = self.client.get(pfad, {'lg': self.b.liegenschaft.pk})
+            aktive = (antwort.context or {}).get('aktive_lg')
+            if aktive is not None and aktive.pk == self.b.liegenschaft.pk:
+                auffaellig.append(name)
+        self.assertGreater(durchlaufen, 90, 'auffällig wenige URLs geprüft')
+        self.assertEqual(
+            auffaellig, [],
+            f'{len(auffaellig)} von {durchlaufen} URLs rechnen auf der '
+            f'Liegenschaft von B: {auffaellig[:8]}…')
+
+    @unittest.expectedFailure
+    def test_logbuch_filtert_nicht_auf_fremden_benutzer(self):
+        """`/neu/logbuch/?benutzer=<B>` darf keine fremden Einträge zeigen.
+
+        `AktivitaetsLog` hat keinen Organisationsbezug, und die ID kommt
+        ungeprüft aus `request.GET` in ein `filter()`. Der Audit-Trail ist in
+        Regel 4 des Skills `mandantentrennung` ausdrücklich genannt.
+        """
+        from core.models import AktivitaetsLog
+        AktivitaetsLog.objects.create(benutzer=self.b.benutzer, aktion='test',
+                                      objekt='B-Vorgang', details='gehört B')
+        antwort = self.client.get(reverse('fw_logbuch'), {'benutzer': self.b.benutzer.pk})
+        self.assertNotContains(
+            antwort, 'B-Vorgang',
+            msg_prefix='das Logbuch von A zeigt einen Vorgang von B')
+
+    @unittest.expectedFailure
+    def test_csv_export_enthaelt_keine_fremden_daten(self):
+        """Der Export zieht heute den gesamten Audit-Trail.
+
+        Regel 4: „Exporte enthalten nur Daten einer Organisation, auch wenn der
+        Auslöser Superuser ist." Ein Export ist der Fall, in dem ein Leck nicht
+        angesehen, sondern mitgenommen wird.
+        """
+        from core.models import AktivitaetsLog
+        AktivitaetsLog.objects.create(benutzer=self.b.benutzer, aktion='test',
+                                      objekt='B-Export', details='gehört B')
+        antwort = self.client.get(reverse('fw_logbuch'), {'export': 'csv'})
+        inhalt = b''.join(antwort.streaming_content) if antwort.streaming \
+            else antwort.content
+        self.assertNotIn(
+            b'B-Export', inhalt,
+            'der CSV-Export von A enthält einen Vorgang von B')
+
+    @unittest.expectedFailure
+    def test_uebrige_id_parameter_im_querystring(self):
+        """Die restlichen ID-tragenden Querystring-Parameter, gesammelt.
+
+        Nicht einzeln ausgeschrieben, weil die Liste wächst: Wer einen neuen
+        `request.GET.get('<etwas>')`-Filter einbaut, der eine ID trägt, ergänzt
+        `ID_IM_QUERYSTRING` und bekommt die Prüfung geschenkt.
+
+        Geprüft wird der Kontextwert der View, die den Parameter auswertet —
+        nicht der Seitentext. Ein Substring-Vergleich auf eine Ziffer findet in
+        jedem HTML einen Treffer und wäre ein Test, der immer rot ist und
+        nichts zeigt.
+        """
+        self.assertTrue(ID_IM_QUERYSTRING, 'Katalog der Querystring-Parameter ist leer')
+        for url_name, parameter, attribut, schluessel, fundstelle in ID_IM_QUERYSTRING:
+            fremd = getattr(self.b, attribut)
+            with self.subTest(url=url_name, parameter=parameter):
+                antwort = self.client.get(reverse(url_name), {parameter: fremd.pk})
+                self.assertEqual(antwort.status_code, 200,
+                                 f'{fundstelle}: unerwarteter Status')
+                uebernommen = (antwort.context or {}).get(schluessel)
+                # Die Views legen teils die ID, teils das Objekt ab.
+                if uebernommen is not None and not isinstance(uebernommen, int):
+                    uebernommen = getattr(uebernommen, 'pk', uebernommen)
+                self.assertNotEqual(
+                    uebernommen, fremd.pk,
+                    f'{fundstelle}: ?{parameter}={fremd.pk} von B wird für einen '
+                    f'Benutzer von A übernommen (Kontext «{schluessel}»)')
+
+
+# ===========================================================================
 # Bauform B — Registrylauf über alle Modelle
 # ===========================================================================
 

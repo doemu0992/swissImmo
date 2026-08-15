@@ -81,13 +81,29 @@ Arbeitsauftrag warnt. Beide wurden verschärft und stehen im PR protokolliert. E
 `dossier_liegenschaft`, `dossier_mieter` und `dossier_vertrag` liefern heute **200** für fremde
 Daten.
 
-**Nachgetragene Abdeckungslücke (gefunden beim Auditor-Lauf über Etappe 3):** Bauform A sammelt
-über `_urls_mit_einem_parameter()` nur URLs mit genau **einem Pfadparameter**. Listen- und
-Exportpfade, die über den Querystring filtern, liegen damit vollständig ausserhalb — etwa
-`/neu/logbuch/?benutzer=<pk>`, `/neu/logbuch/?export=csv` und `/neu/benutzer/`. Die 152 erfassten
-URLs sind also nicht „fast alle". Das ist keine Regression, aber die Abdeckung wird sonst
-überschätzt. Es fehlt eine **Bauform E** für parameterlose Listen mit Querystring-Filtern,
-nachzuholen vor Etappe 4.
+**Bauform E nachgetragen am 15.08.2026** (die Lücke fand der Auditor-Lauf über Etappe 3). Bauform A
+sammelt über `_urls_mit_einem_parameter()` nur URLs mit genau **einem Pfadparameter** — daneben
+stehen 108 parameterlose `fw_`-URLs, die ihre Filter aus dem **Querystring** lesen. Die lagen
+vollständig ausserhalb.
+
+Der Grund ist lehrreich: Bauform A ist datengetrieben und deckt deshalb „alle URLs" ab — aber nur
+alle URLs ihrer eigenen Bauform. Eine Registry-Abfrage sieht nie, wonach sie nicht fragt. Wer aus
+„152 von 152 geprüft" auf Vollständigkeit schliesst, hat die Frage mit der Antwort verwechselt.
+
+`FremdeIdUeberQuerystringTests`, 6 Methoden, alle `expectedFailure`. Gemessen dabei: Von **107**
+geprüften parameterlosen URLs übernehmen **61** die Liegenschaft von B, wenn ein Benutzer von A
+sie mit deren `?lg=` aufruft. Auch der Liegenschaftswähler selbst liegt offen —
+`_global_filter` legt `Liegenschaft.objects.all()` in den Kontext, also steht die Adresse jeder
+fremden Liegenschaft im Auswahlmenü, ohne dass jemand eine ID raten müsste.
+
+Ein Test war zunächst **rot aus dem falschen Grund**: Er prüfte alle Querystring-Parameter gegen
+`fw_dashboard`, eine View, die `?mieter=` gar nicht liest, und scheiterte daran, dass
+`assertNotContains` die blosse Ziffer „2" in jedem HTML findet (gemessen: 438-mal). Rot aus dem
+falschen Grund ist derselbe Fehler wie grün aus dem falschen Grund, nur schwerer zu bemerken — der
+Test sieht erfolgreich aus, solange man ihn nicht liest. Er ruft jetzt die View auf, die den
+Parameter wirklich auswertet, und prüft den Kontextwert.
+
+Suite damit **1'099** (1'088 + perf 6 + übrige Apps 5), 17 `expectedFailure`.
 
 ### Etappe 3 — Custom User Model ✅ *(abgeschlossen am 15.08.2026)*
 

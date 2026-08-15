@@ -15,28 +15,31 @@ Ab dieser Etappe werden die ersten der **11 roten Tests** grün — und ab hier 
 
 ---
 
-## Ein Widerspruch im Auftrag, der vor 4.1 aufgelöst gehört
+## Zwei Entscheide, gefallen am 15.08.2026
 
-Der Auftrag sagt an zwei Stellen Verschiedenes über dasselbe:
+Der Auftrag sagte an zwei Stellen Verschiedenes über dasselbe — 4.1 „Ein Benutzer gehört zu genau einer Organisation", 4.3 „Mitgliedschaft je Organisation". Das sind zwei verschiedene Datenmodelle, und der Skill `swissimmo-review` verlangt in so einem Fall anhalten statt selbst auflösen. Beide Fragen sind entschieden:
 
-> **4.1:** „Ein Benutzer gehört zu genau einer Organisation."
-> **4.3:** „Künftig: Mitgliedschaft je Organisation."
+### Entscheid 1 — Mitgliedschaft, kein Fremdschlüssel am Benutzer
 
-Das ist nicht dasselbe Modell. Entweder trägt `Benutzer` einen Fremdschlüssel `organisation` — dann ist eine Person, die für zwei Verwaltungen arbeitet, zwei Konten mit zwei Passwörtern. Oder es gibt ein Mitgliedschaftsmodell `(Benutzer, Organisation, Rolle)` — dann trägt `Benutzer` **keinen** Organisationsfremdschlüssel, und 4.1 ist so nicht ausführbar.
+Es entsteht ein eigenes Modell `(Benutzer, Organisation, Rolle)`. **`Benutzer` bekommt keine Spalte `organisation`.**
 
-Der Skill `swissimmo-review` verlangt hier ausdrücklich: anhalten, nicht selbst auflösen. Deshalb steht es hier und nicht in einem Commit.
+Damit ist 4.1 in diesem Punkt anders auszuführen, als der Auftrag ihn formuliert: Statt eines Fremdschlüssels entsteht das Mitgliedschaftsmodell, und 4.3 baut nur noch die Rollen darauf aus, statt eine bestehende Struktur zu ersetzen.
 
-**Zwei Nebenbedingungen, die vorliegen und die Entscheidung einengen:**
+Was das trägt: Eine Person, die für zwei Verwaltungen arbeitet, hat **ein** Konto mit **einem** Passwort und je Organisation eine eigene Rolle. Und der Fall, der im Mietrecht real vorkommt — eine Liegenschaft wechselt von Verwaltung A zu B — kostet eine Zeile statt eines Kontowechsels für jeden betroffenen Mieter und Eigentümer.
 
-`core/tests/test_isolation.py` trägt seit dem Auditor-Lauf über Etappe 3 die benannte Ausnahme
+Was es kostet: Beim Login muss aufgelöst werden, in welcher Organisation jemand gerade arbeitet, sobald er in mehreren ist. Für den heutigen Bestand (alle in einer) ist das ein Vorgriff, kein Aufwand.
+
+Die Ausnahme in `core/tests/test_isolation.py` bleibt damit richtig und wird zur Entscheidung statt zur Notiz:
 
 ```python
 'benutzer.Benutzer': 'Mitgliedschaft je Organisation statt eigener Spalte — Etappe 4',
 ```
 
-Sie ist eine **Notiz**, keine Entscheidung — wer sich für den Fremdschlüssel entscheidet, streicht sie und trägt das Feld nach. Aber sie hält fest, wohin die Überlegung damals ging.
+### Entscheid 2 — `crm.Verwaltung` wird zu `Organisation` (Weg A)
 
-Und aus dem Mietrecht heraus: Ein Mieter oder Eigentümer, dessen Wohnung von Verwaltung A in die Verwaltung B übergeht, soll seine Zugangsdaten behalten. Mit einem Fremdschlüssel am Benutzer heisst das Kontowechsel; mit Mitgliedschaften heisst es eine Zeile mehr.
+Umbenennung wie `Mandant` → `Eigentuemer` in E3, mit `db_table` unverändert. Die 23 Felder bleiben, wo sie sind; die 79 Fundstellen werden zu `request.organisation`.
+
+**Die bekannte Schwäche, damit sie nicht vergessen wird:** `Organisation` trägt danach Fachdaten (Referenzzins, LIK, MWST-Angaben) neben Mandantendaten (Abo-Plan, Branding, Portal-Token). Das ist eine bewusst in Kauf genommene Vermischung, kein Versehen. Sie lässt sich später auflösen, indem die Fachfelder in ein eigenes Modell wandern — der umgekehrte Weg (zwei Modelle jetzt, jede der 79 Fundstellen einzeln zuordnen) ist der, bei dem Fehler entstehen.
 
 ---
 
@@ -52,19 +55,14 @@ Zuerst die Frage, die alles andere bestimmt: **Was wird aus `crm.Verwaltung`?**
 
 `Verwaltung` ist heute der Singleton mit **23 konkreten Feldern** — Firma, Adresse, IBAN, Logo, Unterschrift, Referenzzins, LIK, MWST-Angaben, Portal-Token und `abo_plan`. Sie wird an **79 Stellen** im Produktivcode über `Verwaltung.objects` gelesen; **76** davon sind wörtlich `.objects.first()`. Mit den Tests sind es 131.
 
-Zwei Wege, und die Entscheidung gehört **vorgelegt, nicht selbst getroffen**:
+**Entschieden: Weg A** (siehe oben). Was dieser PR enthält:
 
-**Weg A — `Verwaltung` wird zu `Organisation`.** Umbenennung wie bei `Mandant` → `Eigentuemer` in E3, mit `db_table` unverändert. Die 23 Felder bleiben, wo sie sind. Vorteil: ein Modell, keine Doppelung, die 79 Fundstellen werden zu `request.organisation`. Nachteil: `Organisation` trägt dann Fachdaten (Referenzzins, LIK, MWST) neben Mandantendaten (Abo, Branding).
+- `crm.Verwaltung` → `crm.Organisation`, `db_table` unverändert. Migration nach dem Muster von `crm/0029` (E3): `RenameModel` plus die abhängigen `RenameField` in den anderen Apps, in **einer** Migration mit ausdrücklichen `dependencies` über alle betroffenen Apps.
+- Das Mitgliedschaftsmodell `(Benutzer, Organisation, Rolle)`. **Kein** Fremdschlüssel am Benutzer.
+- Eine Datenmigration, die den bestehenden Bestand der einen vorhandenen Organisation zuweist und für jeden aktiven Benutzer eine Mitgliedschaft anlegt — mit der Rolle, die er heute über seine Django-Gruppe hat.
+- **Noch keinen Manager, noch keine Filterung.** Nur die Modelle und die Zuordnung.
 
-**Weg B — `Organisation` entsteht neu**, `Verwaltung` bleibt als Fachdatensatz daran hängen. Sauberere Trennung, aber zwei Modelle, zwei Migrationen, und jede Fundstelle muss entscheiden, welches der beiden sie meint.
-
-Einschätzung, ohne dass sie die Entscheidung ersetzt: Weg A ist bei 79 Fundstellen der kürzere und weniger fehleranfällige Weg, und die Vermischung lässt sich später auflösen. Aber das ist eine Produktentscheidung, keine technische.
-
-Unabhängig vom Weg braucht es in diesem PR:
-
-- Die Verbindung `Benutzer` ↔ `Organisation` — **in der Form, die der Widerspruch oben klärt.**
-- Eine Datenmigration, die den bestehenden Bestand einer Ausgangsorganisation zuweist.
-- **Noch keinen Manager, noch keine Filterung.** Nur das Modell und die Zuordnung.
+Nicht in diesem PR: das Ablösen der Django-Gruppen. `hat_rolle()` liest weiter `user.groups`, die Mitgliedschaft trägt die Rolle zunächst nur mit. Der Umschwung ist 4.3 — sonst hängen Anmeldung, Rollenprüfung und Datenmodell gleichzeitig in der Luft.
 
 ---
 
@@ -141,13 +139,28 @@ Für die Etappe insgesamt:
 - Mindestens die Tests aus `ManagerIsolationTests`, `FremdeIdUeberUrlsTests` und `AdminUmgehungTests` werden grün
 - **Für jeden grün gewordenen Test die Gegenprobe durchgeführt und protokolliert**: Filter entfernt → Test rot → Filter zurück. Mit Datum im PR. Ein Test ohne Gegenprobe gilt als nicht geschrieben.
 - Die drei Selbstprüfungstests bleiben grün
-- Testzahl nicht unter **1'093**
+- Testzahl nicht unter **1'099** (Stand nach Bauform E, 15.08.2026)
 - Noch rote Tests sind benannt, mit Zuordnung zu Etappe 5 oder 6
 - **`ModellbezugWaechterTests` bleibt aussagekräftig.** Er trägt heute genau eine benannte Ausnahme (`benutzer.Benutzer`). Wird der Test in dieser Etappe grün, ist zu prüfen, ob die Ausnahme noch gilt — ein Wächter mit einer überholten Ausnahme prüft weniger, als er behauptet.
 
-### Vorher nachzuholen: Bauform E
+### Bauform E — nachgeholt am 15.08.2026, vor 4.2
 
-`docs/PHASE-2-PLAN.md` vermerkt bei Etappe 2 eine Abdeckungslücke, die vor 4.2 zu schliessen ist: Bauform A sammelt nur URLs mit genau **einem Pfadparameter**. Listen- und Exportpfade, die über den Querystring filtern, liegen vollständig ausserhalb — `/neu/logbuch/?benutzer=<pk>`, `/neu/logbuch/?export=csv`, `/neu/benutzer/`. Wer 4.2 gegen die heutige Abdeckung abnimmt, hält die Isolation für belegt, wo sie ungeprüft ist.
+Die Abdeckungslücke ist geschlossen: `FremdeIdUeberQuerystringTests`, 6 Methoden, alle
+`expectedFailure`. Damit wird 4.2 nicht mehr gegen eine Abdeckung abgenommen, die den
+Haupteinstiegspunkt `_global_filter` gar nicht enthält.
+
+Was die Tests dabei gemessen haben — das ist zugleich die Arbeitsliste für 4.2:
+
+| Befund | Zahl |
+|---|---|
+| Parameterlose `fw_`-URLs geprüft | 107 |
+| davon übernehmen ein fremdes `?lg=` | **61** |
+| werten den Filter nicht aus | 46 |
+
+Dazu drei Einzelbefunde: Der **Liegenschaftswähler** selbst liegt offen (`_global_filter` legt
+`Liegenschaft.objects.all()` in den Kontext — jede fremde Adresse steht im Menü, ohne dass jemand
+eine ID raten müsste). Das **Logbuch** filtert auf `?benutzer=<fremde pk>` ohne Prüfung. Der
+**CSV-Export** zieht den gesamten Audit-Trail.
 
 ---
 
