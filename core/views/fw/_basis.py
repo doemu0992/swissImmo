@@ -19,6 +19,7 @@
 # hochzieht, holt die Zyklen zurueck und merkt es erst zur Laufzeit.
 
 import calendar as _calendar
+import re
 from datetime import date
 from decimal import Decimal
 
@@ -245,3 +246,31 @@ def _vermietung_pipeline(aktiv, lg_query=''):
     for s in stufen:
         s['aktiv'] = (s['key'] == aktiv)
     return {'pipeline_stufen': stufen}
+
+
+# Nachgezogen, als der Abnahme-Block auszog: _parse_adresse stand im
+# Kopfbereich und wurde nur von ihm gebraucht. Statt den Block auf _rest.py
+# zeigen zu lassen — eine Abhaengigkeit, die beim Verschwinden von _rest.py
+# wieder aufzuloesen waere — steht der Helfer jetzt hier.
+def _parse_adresse(text):
+    """Grobe Zerlegung eines freien Adress-Strings in (strasse, plz, ort).
+    Erkennt Formate wie «Musterstrasse 1, 8000 Zürich» oder «Musterstrasse 1
+    8000 Zürich». Bei Unklarheit wandert der ganze Rest nach `ort`."""
+    text = (text or '').strip()
+    if not text:
+        return '', '', ''
+    teile = [t.strip() for t in text.split(',') if t.strip()]
+    if len(teile) >= 2:
+        strasse = teile[0]
+        rest = teile[1]
+    else:
+        # kein Komma → letzten «PLZ Ort»-Block vom Strassenteil trennen
+        m = re.search(r'(.*?)(\b\d{4}\b.*)$', text)
+        if m and m.group(1).strip():
+            strasse, rest = m.group(1).strip(), m.group(2).strip()
+        else:
+            return text, '', ''
+    m = re.match(r'^\s*(\d{4,6})\s+(.*)$', rest)
+    if m:
+        return strasse, m.group(1), m.group(2).strip()
+    return strasse, '', rest

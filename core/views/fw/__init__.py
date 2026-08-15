@@ -20,6 +20,10 @@ from .anlagen import *       # noqa: F401,F403 — Block 10
 from .sollstellung import *  # noqa: F401,F403 — Block 12
 from .eigentuemer import *   # noqa: F401,F403 — Block 19
 from .mwst import *          # noqa: F401,F403 — Block 22
+from .abnahme import *       # noqa: F401,F403 — Block 2
+from .nebenkosten import *   # noqa: F401,F403 — Block 11
+from .pendenzen import *     # noqa: F401,F403 — Block 21
+from .eigentuemer_abrechnung import * # noqa: F401,F403 — Block 10
 # Der Stern-Import überträgt KEINE Namen mit führendem Unterstrich. Diese
 # neun werden aber von aussen gebraucht (core/tests.py, core/services/) und
 # müssen deshalb einzeln stehen. Die Liste ist Absicht und kein Versehen:
