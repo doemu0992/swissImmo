@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.test import TestCase, Client
 from ._helfer import (
-    _team_user, _basis_objekte, _seed_konten, Mieter, Verwaltung,
+    _team_user, _basis_objekte, _seed_konten, Mieter, Organisation,
     Liegenschaft, Einheit, Mietvertrag, User)
 
 
@@ -150,7 +150,7 @@ class NkNachzahlungQrTests(TestCase):
         from django.contrib.auth import get_user_model
         User = get_user_model()
         _seed_konten()
-        vw = Verwaltung.objects.create(firma='V AG', strasse='W 1', plz='8000', ort='ZH',
+        vw = Organisation.objects.create(firma='V AG', strasse='W 1', plz='8000', ort='ZH',
                                        iban='CH9300762011623852957')
         lg = Liegenschaft.objects.create(strasse='NKQ 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='wohnung', flaeche_m2=Decimal('80'))
@@ -428,13 +428,13 @@ class NebenkostenPersonenTests(TestCase):
     def test_g_personen_verteilung_proportional(self):
         from finance.booking import ensure_kontenplan
         from finance.models import AbrechnungsPeriode, NebenkostenBeleg
-        from crm.models import Verwaltung, Mieter
+        from crm.models import Organisation, Mieter
         from core.utils.billing import berechne_abrechnung
         from portfolio.models import Einheit
         from rentals.models import Mietvertrag
         ensure_kontenplan()
         # Honorar auf 0 → nur der Personen-Pool wirkt (saubere Prüfung)
-        Verwaltung.objects.create(firma='V AG', strasse='W 1', plz='8000', ort='Zürich',
+        Organisation.objects.create(firma='V AG', strasse='W 1', plz='8000', ort='Zürich',
                                   nk_honorar_prozent=Decimal('0'))
         lg, e1, m1, v1 = _basis_objekte()
         v1.anzahl_personen = 1; v1.nebenkosten = Decimal('0'); v1.save()

@@ -18,7 +18,7 @@ from django.utils import timezone
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
-from crm.models import Mieter, Verwaltung
+from crm.models import Mieter, Organisation
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
 
@@ -35,11 +35,11 @@ from ._basis import _global_filter, _num
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_vertrag_neu(request):
-    from crm.models import Verwaltung, Mieter
+    from crm.models import Organisation, Mieter
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     verwaltung = {
         'firma': vw.firma if vw else '', 'strasse': vw.strasse if vw else '',
         'plz': vw.plz if vw else '', 'ort': vw.ort if vw else '',
@@ -312,9 +312,9 @@ def fw_vertrag_neu_speichern(request):
     # LIK-Stand-Monat (aus dem die Basis-Punkte stammen): Formular-Override,
     # sonst automatisch der neueste veröffentlichte Monat (BFS-Tabelle,
     # Basis Dez. 2020), Fallback Account-Einstellung.
-    from crm.models import Verwaltung as _Vw
+    from crm.models import Organisation as _Vw
     from core.services.lik import aktueller_lik_wert
-    _vw = einheit.liegenschaft.verwaltung or _Vw.objects.first()
+    _vw = einheit.liegenschaft.organisation or _Vw.objects.first()
     _auto_stand, _auto_pkt, _ = aktueller_lik_wert()
     basis_lik_stand = _auto_stand or (_vw.aktueller_lik_stand if _vw else None)
     _stand_raw = (P.get('basis_lik_stand') or '').strip()  # 'YYYY-MM' aus <input type=month>
@@ -630,7 +630,7 @@ def fw_vertrag_bearbeiten(request, pk):
       die Buchhaltung konsistent."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Mieter, Verwaltung
+    from crm.models import Mieter, Organisation
     from core.auth import log_aktion, snapshot_model, diff_model
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=pk)
     gesperrt = v.status != 'entwurf'   # nur Entwurf voll editierbar
@@ -714,7 +714,7 @@ def fw_vertrag_bearbeiten(request, pk):
                          + ("" if not gesperrt else " (aktiver Vertrag — nur Detailfelder geändert)"))
         return redirect(f'/neu/vertraege/{v.id}/')
 
-    verwaltung = v.einheit.liegenschaft.verwaltung or Verwaltung.objects.first()
+    verwaltung = v.einheit.liegenschaft.organisation or Organisation.objects.first()
     return render(request, 'fw/vertrag_bearbeiten.html', {
         **_global_filter(request), 'nav': 'vertraege', 'v': v, 'gesperrt': gesperrt,
         'objekte': Einheit.objects.select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung'),

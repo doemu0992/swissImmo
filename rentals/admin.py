@@ -15,7 +15,7 @@ from unfold.decorators import display, action
 
 # Lokale Modelle (Rentals)
 from .models import Mietvertrag, MietzinsAnpassung, Leerstand, Dokument
-from crm.models import Verwaltung
+from crm.models import Organisation
 
 # Helper-Funktion. Der Import zeigte auf `core.mietrecht_logic` — ein Modul, das
 # es nicht gibt; die Funktion liegt in `rentals/services.py`. Der ImportError

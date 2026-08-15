@@ -131,16 +131,16 @@ def update_verwaltung_rates():
     Sie speichert die neuen Werte direkt in die Datenbank.
     """
     try:
-        from crm.models import Verwaltung
+        from crm.models import Organisation
     except ImportError:
         return "Systemfehler (Import Fehler crm.models)", []
 
     data, errors = fetch_market_rates()
 
     # Verwaltungsobjekt holen oder anlegen
-    verwaltung = Verwaltung.objects.first()
+    verwaltung = Organisation.objects.first()
     if not verwaltung:
-        verwaltung = Verwaltung.objects.create(firma="Meine Verwaltung")
+        verwaltung = Organisation.objects.create(firma="Meine Verwaltung")
 
     updated = False
     msg = []

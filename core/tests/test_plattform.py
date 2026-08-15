@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from django.test import TestCase, Client
 from ._helfer import (
-    _team_user, _basis_objekte, Mieter, Verwaltung, Liegenschaft, Einheit,
+    _team_user, _basis_objekte, Mieter, Organisation, Liegenschaft, Einheit,
     Mietvertrag, User)
 
 
@@ -22,19 +22,19 @@ class AbonnementTests(TestCase):
             self.assertContains(r, name)
 
     def test_plan_waehlen_speichert(self):
-        Verwaltung.objects.create(firma='V AG')
+        Organisation.objects.create(firma='V AG')
         team = _team_user()
         c = Client(); c.force_login(team)
         r = c.post('/neu/abonnement/', {'plan': 'premium'})
         self.assertEqual(r.status_code, 302)
-        self.assertEqual(Verwaltung.objects.first().abo_plan, 'premium')
+        self.assertEqual(Organisation.objects.first().abo_plan, 'premium')
 
     def test_jaehrlich_rabatt(self):
         # 100 Einheiten Pro: monatlich 190, jährlich -15 % -> ~161/Mt
         lg = Liegenschaft.objects.create(strasse='B', plz='1', ort='X', versicherungswert=Decimal('1'))
         for i in range(100):
             Einheit.objects.create(liegenschaft=lg, bezeichnung=f'W{i}', typ='wohnung')
-        Verwaltung.objects.create(firma='V AG')
+        Organisation.objects.create(firma='V AG')
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/abonnement/').content.decode()

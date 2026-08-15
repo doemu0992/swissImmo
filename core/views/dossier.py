@@ -73,7 +73,7 @@ def mieter_dossier(request, mieter_id):
 @rolle_erforderlich(*TEAM_ROLLEN)
 def liegenschaft_dossier(request, liegenschaft_id):
     lg = get_object_or_404(
-        Liegenschaft.objects.select_related('eigentuemer', 'verwaltung'),
+        Liegenschaft.objects.select_related('eigentuemer', 'organisation'),
         id=liegenschaft_id
     )
 

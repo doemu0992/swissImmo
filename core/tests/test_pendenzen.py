@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.test import TestCase, Client
 from ._helfer import (
-    _team_user, _basis_objekte, Mieter, Verwaltung, Liegenschaft, Einheit,
+    _team_user, _basis_objekte, Mieter, Organisation, Liegenschaft, Einheit,
     Wartungsfrist, Mietvertrag, User, Group)
 
 

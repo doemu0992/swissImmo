@@ -468,7 +468,7 @@ class HintergrundjobsTests(IsolationsBasis):
         vorher = set(DebitorenRechnung.objects.filter(
             vertrag__einheit__liegenschaft=self.b.liegenschaft).values_list('pk', flat=True))
         try:
-            call_command('monatslauf', organisation=self.a.verwaltung.pk)
+            call_command('monatslauf', organisation=self.a.organisation.pk)
         except TypeError:
             self.fail('monatslauf kennt keine Option --organisation und laeuft '
                       'damit ueber ALLE Bestaende (Etappe 6).')
@@ -605,7 +605,7 @@ class IsolationstestsSelbstpruefungTests(TestCase):
     def test_fixture_baut_zwei_getrennte_bestaende(self):
         a = MandantenFixture('A', '8000', 'Zürich')
         b = MandantenFixture('B', '3000', 'Bern')
-        for feld in ('verwaltung', 'eigentuemer', 'liegenschaft', 'einheit', 'mieter',
+        for feld in ('organisation', 'eigentuemer', 'liegenschaft', 'einheit', 'mieter',
                      'vertrag', 'buchung', 'debitor', 'kreditor', 'zahlung', 'periode',
                      'schaden', 'wartungsfrist', 'benutzer'):
             with self.subTest(feld=feld):

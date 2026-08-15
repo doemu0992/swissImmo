@@ -106,8 +106,8 @@ def fw_bewerber_vergleich(request, einheit_id):
 def _bewerber_mail(b, entscheid):
     """Baut (betreff, body) für Zusage/Absage — aus Vorlage (falls vorhanden) mit
     Platzhaltern, sonst Standardtext."""
-    from crm.models import Vorlage, Verwaltung
-    vw = Verwaltung.objects.first()
+    from crm.models import Vorlage, Organisation
+    vw = Organisation.objects.first()
     e = b.einheit
     lg = e.liegenschaft if e else None
     objekt = f"{e.bezeichnung}" + (f", {lg.strasse}, {lg.plz} {lg.ort}" if lg else "")

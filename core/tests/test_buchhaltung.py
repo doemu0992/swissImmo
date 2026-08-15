@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.test import TestCase, Client
 from ._helfer import (
     _team_user, _basis_objekte, _seed_konten, _P3_CAMT, Mieter, Eigentuemer,
-    Verwaltung, Liegenschaft, Einheit, Mietvertrag)
+    Organisation, Liegenschaft, Einheit, Mietvertrag)
 
 
 
@@ -1196,23 +1196,23 @@ class JahresabschlussH5H6Tests(TestCase):
         # End-to-End über die View: Abschluss setzt die Periodensperre auf 31.12.,
         # Rücknahme muss sie ZUERST lösen und die Storni auf den 31.12. zurückbuchen
         # (sonst blockiert Buchung.save die Rücknahme und das Jahr bliebe halb offen).
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         from finance.booking import ensure_kontenplan
         from core.services.jahresabschluss import ist_abgeschlossen
         from core.views.fw import _erfolg_bilanz
         ensure_kontenplan()
-        Verwaltung.objects.create(firma='Verwaltung AG', strasse='Weg 1', plz='8000', ort='Zürich')
+        Organisation.objects.create(firma='Verwaltung AG', strasse='Weg 1', plz='8000', ort='Zürich')
         lg, e, m, v = _basis_objekte()
         self._period_bookings(lg)
         c = Client(); c.force_login(_team_user('Verwaltung'))
         c.post('/neu/buchhaltung/', {'aktion': 'jahresabschluss', 'jahr': '2024'})
         self.assertTrue(ist_abgeschlossen(2024))
-        self.assertEqual(Verwaltung.objects.first().buchung_gesperrt_bis, date(2024, 12, 31))
+        self.assertEqual(Organisation.objects.first().buchung_gesperrt_bis, date(2024, 12, 31))
         c.post('/neu/buchhaltung/', {'aktion': 'abschluss_zuruecknehmen', 'jahr': '2024'})
         self.assertFalse(ist_abgeschlossen(2024))
         # Periodensperre gelöst und Jahr im 31.12.-Blick wieder offen (Ergebnis
         # zurück auf den Erfolgskonten, 2970 auf null).
-        self.assertNotEqual(Verwaltung.objects.first().buchung_gesperrt_bis, date(2024, 12, 31))
+        self.assertNotEqual(Organisation.objects.first().buchung_gesperrt_bis, date(2024, 12, 31))
         self.assertEqual(self._saldo('2970'), Decimal('0.00'))
         nach = _erfolg_bilanz(None, 2024)
         self.assertEqual(nach['erfolg_offen'], Decimal('700.00'))

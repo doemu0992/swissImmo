@@ -141,7 +141,11 @@ und `makemigrations --check` sauber.
 
 ### Etappe 4 — Organisation und TenantManager
 
-Drei PRs nacheinander: `Organisation` (Verhältnis zu `crm.Verwaltung` klären), `TenantManager` plus Middleware, Rollen je Organisation.
+Auftrag, Entscheide und Ausführung: **`docs/ETAPPE-4-ORGANISATION.md`**.
+
+Drei PRs nacheinander: `Organisation` (Verhältnis zu `crm.Verwaltung` geklärt), `TenantManager` plus Middleware, Rollen je Organisation.
+
+**4.1 erledigt am 15.08.2026.** `crm.Verwaltung` heisst `crm.Organisation` (276 NAME-Token in 67 Dateien, `db_table` unverändert), `Liegenschaft.verwaltung` heisst `.organisation`, und `crm.Mitgliedschaft` verbindet Benutzer und Organisation mit einer Rolle. Der Bestand ist zugeordnet: 12 von 12 Liegenschaften, 4 Mitgliedschaften. **Noch kein Manager, noch keine Filterung** — die 17 roten Tests bleiben rot. Entschieden wurde: Mitgliedschaft statt Fremdschlüssel am Benutzer (ein Konto, ein Passwort, je Organisation eine Rolle), und Weg A für `Verwaltung` (Umbenennung statt zweitem Modell).
 
 **Ohne gesetzte Organisation ist die richtige Antwort ein Fehler, nicht „alles zurückgeben".** Ein Manager, der im Zweifel alles liefert, ist schlimmer als keiner. Hier gehört auch die Admin-Umgehung aus E2 geschlossen.
 

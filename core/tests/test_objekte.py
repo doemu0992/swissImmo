@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.test import TestCase, Client
 from ._helfer import (
-    _team_user, _basis_objekte, _heute, Mieter, Verwaltung, Liegenschaft,
+    _team_user, _basis_objekte, _heute, Mieter, Organisation, Liegenschaft,
     Einheit, Wartungsfrist)
 
 
@@ -40,8 +40,8 @@ class ExposeTests(TestCase):
         self.assertEqual(objekt_titel(e), '4-Zimmer-Wohnung')
 
     def test_expose_pdf_view(self):
-        from crm.models import Verwaltung
-        Verwaltung.objects.create(firma='Verwaltung AG', strasse='Weg 1', plz='8000', ort='Zürich',
+        from crm.models import Organisation
+        Organisation.objects.create(firma='Verwaltung AG', strasse='Weg 1', plz='8000', ort='Zürich',
                                   telefon='044 000 00 00', email='info@vw.ch')
         lg, e, m, v = _basis_objekte()
         e.typ = 'whg'; e.zimmer = Decimal('3.5'); e.zur_ausschreibung = True
@@ -89,9 +89,9 @@ class ObjektFotoTests(TestCase):
         self.assertEqual(EinheitFoto.objects.filter(einheit=e).count(), 1)
 
     def test_feed_enthaelt_bilder(self):
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         from portfolio.models import EinheitFoto
-        Verwaltung.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='t')
+        Organisation.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='t')
         lg, e = self._objekt()
         EinheitFoto.objects.create(einheit=e, bild=self._bild())
         c = Client()
@@ -131,16 +131,16 @@ class PortalFeedTests(TestCase):
         return lg, e
 
     def test_feed_ohne_token_verboten(self):
-        from crm.models import Verwaltung
-        Verwaltung.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='geheim123')
+        from crm.models import Organisation
+        Organisation.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='geheim123')
         self._objekt()
         c = Client()   # kein Login nötig (öffentlich, aber token-gated)
         self.assertEqual(c.get('/neu/vermarktung/feed.json').status_code, 403)
         self.assertEqual(c.get('/neu/vermarktung/feed.json?token=falsch').status_code, 403)
 
     def test_feed_json_mit_token(self):
-        from crm.models import Verwaltung
-        Verwaltung.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='geheim123')
+        from crm.models import Organisation
+        Organisation.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='geheim123')
         lg, e = self._objekt()
         c = Client()
         r = c.get('/neu/vermarktung/feed.json?token=geheim123')
@@ -154,8 +154,8 @@ class PortalFeedTests(TestCase):
         self.assertIn('/neu/vermarktung/', o['expose_url'])
 
     def test_feed_csv(self):
-        from crm.models import Verwaltung
-        Verwaltung.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='t')
+        from crm.models import Organisation
+        Organisation.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='t')
         self._objekt()
         c = Client()
         r = c.get('/neu/vermarktung/feed.json?token=t&format=csv')
@@ -164,19 +164,19 @@ class PortalFeedTests(TestCase):
         self.assertIn(b'referenz;typ', r.content)
 
     def test_token_erzeugen_und_entfernen(self):
-        from crm.models import Verwaltung
-        Verwaltung.objects.create(firma='VW AG', strasse='', plz='', ort='')
+        from crm.models import Organisation
+        Organisation.objects.create(firma='VW AG', strasse='', plz='', ort='')
         c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
         c.post('/neu/integrationen/portal-token/')
-        vw = Verwaltung.objects.first()
+        vw = Organisation.objects.first()
         self.assertTrue(vw.portal_feed_token)
         c.post('/neu/integrationen/portal-token/', {'aktion': 'entfernen'})
         vw.refresh_from_db()
         self.assertEqual(vw.portal_feed_token, '')
 
     def test_integrationen_zeigt_portal_karte(self):
-        from crm.models import Verwaltung
-        Verwaltung.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='abc')
+        from crm.models import Organisation
+        Organisation.objects.create(firma='VW AG', strasse='', plz='', ort='', portal_feed_token='abc')
         c = Client(); c.force_login(_team_user())
         r = c.get('/neu/integrationen/')
         self.assertContains(r, 'Immobilien-Portale')

@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.test import TestCase, Client
 from ._helfer import (
     _team_user, _basis_objekte, _seed_konten, Mieter, Eigentuemer,
-    Verwaltung, Liegenschaft, Einheit, Mietvertrag, User)
+    Organisation, Liegenschaft, Einheit, Mietvertrag, User)
 
 
 
@@ -364,8 +364,8 @@ class MieterspiegelTests(TestCase):
         self.assertEqual(len(r.context['spiegel']), 1)
 
     def test_pdf_pro_liegenschaft(self):
-        from crm.models import Verwaltung
-        Verwaltung.objects.create(firma='VW AG', strasse='W 1', plz='8000', ort='ZH')
+        from crm.models import Organisation
+        Organisation.objects.create(firma='VW AG', strasse='W 1', plz='8000', ort='ZH')
         lg = self._setup()
         c = Client(); c.force_login(_team_user())
         r = c.get(f'/neu/mieterspiegel/?lg={lg.id}&pdf=1')

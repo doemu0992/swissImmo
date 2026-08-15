@@ -19,7 +19,7 @@ from django.utils import timezone
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
-from crm.models import Verwaltung
+from crm.models import Organisation
 from portfolio.models import Liegenschaft
 from rentals.models import Mietvertrag
 
@@ -41,12 +41,12 @@ POTENZIAL_PILL = {
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_mietzins(request):
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
     heute = timezone.localdate()
 
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     curr_zins = vw.aktueller_referenzzinssatz if vw else None
     curr_lik = vw.aktueller_lik_punkte if vw else None
 
@@ -124,7 +124,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
     from django.shortcuts import redirect
     from django.contrib import messages
     from django.http import HttpResponse
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from rentals.models import MietzinsAnpassung
     from rentals.services import berechne_mietpotenzial, naechster_anpassungstermin
     from core.utils import get_current_ref_zins, get_current_lik
@@ -133,7 +133,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
 
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
     basis = _global_filter(request)
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     lg = v.einheit.liegenschaft
     eigentuemer = lg.eigentuemer
 
@@ -303,7 +303,7 @@ def fw_mietzins_massenanpassung(request):
     from django.shortcuts import redirect
     from django.contrib import messages
     from django.http import HttpResponse
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from rentals.models import MietzinsAnpassung
     from rentals.services import berechne_mietpotenzial, naechster_anpassungstermin
     from core.utils import get_current_ref_zins, get_current_lik
@@ -312,7 +312,7 @@ def fw_mietzins_massenanpassung(request):
     if request.method != 'POST':
         return redirect('fw_mietzins')
     basis = _global_filter(request)
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
 
     def _dec(x, default='0'):
         try:
@@ -451,7 +451,7 @@ def anfangsmietzins_auto_ablegen(vertrag, verwaltung=None):
     Schlüsselübergabe bereit (30-Tage-Anfechtungsfrist ab Erhalt). Vormiete wird
     aus dem letzten beendeten Vertrag gezogen, sonst «unbekannt» (Art. 270 zulässig).
     Gibt (True, pflicht) bei Erzeugung zurück, sonst (False, grund)."""
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.formular_fill import fill_anfangsmietzins
     from core.services.formularpflicht import formularpflicht_fuer_liegenschaft
     from core.services.ablage import ablegen
@@ -484,7 +484,7 @@ def anfangsmietzins_auto_ablegen(vertrag, verwaltung=None):
         'basis_lik_basis': LIK_BASIS,
         'pflicht_info': info,
     }
-    vw = verwaltung or (einheit.liegenschaft.verwaltung if einheit.liegenschaft else None) or Verwaltung.objects.first()
+    vw = verwaltung or (einheit.liegenschaft.organisation if einheit.liegenschaft else None) or Organisation.objects.first()
     pdf = fill_anfangsmietzins(vertrag, daten, verwaltung=vw)
     ablegen(pdf, f"Anfangsmietzins-Formular {vertrag.beginn:%d.%m.%Y}" if vertrag.beginn else "Anfangsmietzins-Formular",
             kategorie='vertrag', vertrag=vertrag, dedup=True)
@@ -497,13 +497,13 @@ def fw_anfangsmietzins(request, vertrag_id):
     Art. 19 VMWG) — bei Neuabschluss dem neuen Mieter mit Angabe der Vormiete und
     Hinweis auf das 30-Tage-Anfechtungsrecht zuzustellen. GET: Formular · POST: PDF."""
     from django.http import HttpResponse
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.formular_fill import fill_anfangsmietzins, hat_original
     from core.services.ablage import ablegen
     from core.auth import log_aktion
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
     basis = _global_filter(request)
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     lg = v.einheit.liegenschaft
 
     def _dec(x, d='0'):

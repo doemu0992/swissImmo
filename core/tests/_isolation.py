@@ -78,7 +78,7 @@ class MandantenFixture:
         self._anlegen(plz, ort)
 
     def _anlegen(self, plz, ort):
-        from crm.models import Eigentuemer, Mieter, Verwaltung
+        from crm.models import Eigentuemer, Mieter, Organisation
         from finance.models import (AbrechnungsPeriode, Buchung, Buchungskonto,
                                     DebitorenRechnung, KreditorenRechnung, Zahlungseingang)
         from portfolio.models import Einheit, Liegenschaft, Wartungsfrist
@@ -87,7 +87,7 @@ class MandantenFixture:
 
         k = self.kuerzel
 
-        self.verwaltung = Verwaltung.objects.create(
+        self.organisation = Organisation.objects.create(
             firma=f'Verwaltung {k} AG', strasse=f'{k}-Strasse 1', plz=plz, ort=ort)
         self.eigentuemer = Eigentuemer.objects.create(
             firma_oder_name=f'Eigentuemer {k}', email=f'eig-{k.lower()}@example.ch')

@@ -139,8 +139,8 @@ class Buchung(models.Model):
         from django.db import IntegrityError, transaction
         # Periodensperre: neue Buchungen in einer abgeschlossenen Periode blockieren.
         if self._state.adding:
-            from crm.models import Verwaltung
-            vw = Verwaltung.objects.first()
+            from crm.models import Organisation
+            vw = Organisation.objects.first()
             sperre = vw.buchung_gesperrt_bis if vw else None
             if sperre and self.datum and self.datum <= sperre:
                 raise PermissionError(

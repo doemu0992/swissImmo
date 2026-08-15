@@ -14,7 +14,7 @@ from core.admin_base import NurLesenModelAdmin, NurLesenTabularInline
 from unfold.decorators import action, display
 
 # Modelle aus der eigenen App (CRM)
-from .models import Verwaltung, Eigentuemer, Mieter, Handwerker
+from .models import Organisation, Eigentuemer, Mieter, Handwerker, Mitgliedschaft
 
 # Modelle aus anderen Apps für die Inlines (Verknüpfungen)
 from rentals.models import Mietvertrag, Dokument
@@ -30,7 +30,7 @@ except ImportError:
 # ==========================================
 # 0. SICHERHEITS-CHECK (Gegen Reload-Abstürze)
 # ==========================================
-models_to_fix = [Verwaltung, Eigentuemer, Mieter, Handwerker]
+models_to_fix = [Organisation, Eigentuemer, Mieter, Handwerker]
 for m in models_to_fix:
     try:
         admin.site.unregister(m)
@@ -398,11 +398,11 @@ class EigentuemerAdmin(NurLesenModelAdmin):
 
 
 # ==========================================
-# 5. VERWALTUNG ADMIN (SaaS-Look: SCHIEFERGRAU)
+# 5. ORGANISATION ADMIN (SaaS-Look: SCHIEFERGRAU)
 # ==========================================
 
-@admin.register(Verwaltung)
-class VerwaltungAdmin(NurLesenModelAdmin):
+@admin.register(Organisation)
+class OrganisationAdmin(NurLesenModelAdmin):
     list_display = ('firma', 'standort_info', 'get_zins_badge', 'aktueller_lik_punkte')
     actions_detail = ["action_check_rates"]
 
@@ -457,3 +457,22 @@ class VerwaltungAdmin(NurLesenModelAdmin):
     def get_zins_badge(self, obj):
         zins = getattr(obj, 'aktueller_referenzzinssatz', None)
         return f"{zins} %" if zins else "Fehlt", "success" if zins else "danger"
+
+
+# ==========================================
+# 6. MITGLIEDSCHAFTEN (Etappe 4.1)
+# ==========================================
+
+@admin.register(Mitgliedschaft)
+class MitgliedschaftAdmin(NurLesenModelAdmin):
+    """Wer arbeitet fuer welche Organisation, in welcher Rolle.
+
+    Lesend wie alles im Admin seit E2. Vergeben werden Mitgliedschaften
+    ueber die Benutzerverwaltung in /neu/ — hier stehen sie zum Nachsehen,
+    weil ein Zugehoerigkeitsmodell, das niemand einsehen kann, im Betrieb
+    nicht diagnostizierbar ist.
+    """
+    list_display = ('benutzer', 'organisation', 'rolle', 'erstellt_am')
+    list_filter = ('rolle', 'organisation')
+    search_fields = ('benutzer__username', 'benutzer__email', 'organisation__firma')
+    ordering = ('organisation', 'benutzer')

@@ -27,7 +27,7 @@ def fw_anlagen(request):
     from django.shortcuts import redirect
     from django.contrib import messages
     from finance.models import Anlage, Erneuerungsfonds
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.automation import run_abschreibungen, run_erneuerungsfonds_einlage
     from core.auth import log_aktion
     basis = _global_filter(request)
@@ -102,7 +102,7 @@ def fw_anlagen(request):
             messages.success(request, f"✅ Erneuerungsfonds-Einlage {jahr}: {n} Buchung(en) (CHF {summe})." if n
                              else f"Erneuerungsfonds {jahr}: nichts zu buchen.")
         elif aktion == 'sperre_set':
-            vw = Verwaltung.objects.first()
+            vw = Organisation.objects.first()
             if vw:
                 try:
                     vw.buchung_gesperrt_bis = date.fromisoformat(request.POST.get('gesperrt_bis')) if request.POST.get('gesperrt_bis') else None
@@ -115,7 +115,7 @@ def fw_anlagen(request):
 
     anlagen = list(Anlage.objects.select_related('liegenschaft').all())
     fonds = list(Erneuerungsfonds.objects.select_related('liegenschaft').all())
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     return render(request, 'fw/anlagen.html', {
         **basis, 'nav': 'anlagen', 'anlagen': anlagen, 'fonds': fonds,
         'liegenschaften': Liegenschaft.objects.order_by('strasse'),

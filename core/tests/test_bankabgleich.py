@@ -7,7 +7,7 @@ from unittest import skipUnless
 from django.test import TestCase, Client
 from ._helfer import (
     ZXING_DA, _team_user, _basis_objekte, _seed_konten, _P3_CAMT, Mieter,
-    Verwaltung, Mietvertrag)
+    Organisation, Mietvertrag)
 
 
 
@@ -1150,13 +1150,13 @@ class CamtGesperrtePeriodeQSTests(TestCase):
         from django.core.files.uploadedfile import SimpleUploadedFile
         from core.services.automation import run_sollstellung
         from finance.models import DebitorenRechnung, Zahlungseingang, Bankbewegung
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         _seed_konten()
         _basis_objekte()
         run_sollstellung(2024, 3)
         r = DebitorenRechnung.objects.get(titel='Miete & NK 03/2024')
         # Periode sperren, sodass die Buchung per 05.03.2024 scheitert.
-        Verwaltung.objects.create(firma='V AG', strasse='W 1', plz='8000', ort='Zürich',
+        Organisation.objects.create(firma='V AG', strasse='W 1', plz='8000', ort='Zürich',
                                   buchung_gesperrt_bis=date(2024, 12, 31))
         c = Client(); c.force_login(_team_user('Verwaltung'))
 
@@ -1170,7 +1170,7 @@ class CamtGesperrtePeriodeQSTests(TestCase):
                          'Waisen-Bankbewegung blockiert den Re-Import')
 
         # 2) Periode öffnen, dieselbe Datei erneut importieren → jetzt gebucht.
-        vw = Verwaltung.objects.first(); vw.buchung_gesperrt_bis = None; vw.save()
+        vw = Organisation.objects.first(); vw.buchung_gesperrt_bis = None; vw.save()
         f2 = SimpleUploadedFile('camt.xml', self._camt(r.qr_referenz), content_type='application/xml')
         c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f2})
         r.refresh_from_db()

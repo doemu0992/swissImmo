@@ -74,8 +74,8 @@ def send_handyman_notification(auftrag):
         if ticket.liegenschaft.eigentuemer:
             m = ticket.liegenschaft.eigentuemer
             eigentuemer_info = f"{m.firma_oder_name}, {m.strasse}, {m.plz} {m.ort}"
-        elif ticket.liegenschaft.verwaltung:
-            v = ticket.liegenschaft.verwaltung
+        elif ticket.liegenschaft.organisation:
+            v = ticket.liegenschaft.organisation
             eigentuemer_info = f"{v.firma}, {v.strasse}, {v.plz} {v.ort}"
 
         auftrags_text = auftrag.bemerkung if auftrag.bemerkung else "Bitte Auftrag ausführen."

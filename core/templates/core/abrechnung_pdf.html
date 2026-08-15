@@ -64,17 +64,17 @@
                 <tr>
                     <td style="width: 55%; vertical-align: top;">
                         <span style="font-size: 8pt; color: #6b7280; text-decoration: underline;">
-                            {{ periode.liegenschaft.verwaltung.firma|default:"Verwaltung" }} | {{ periode.liegenschaft.verwaltung.strasse|default:"" }}
+                            {{ periode.liegenschaft.organisation.firma|default:"Verwaltung" }} | {{ periode.liegenschaft.organisation.strasse|default:"" }}
                         </span><br><br><br>
                         <strong>{{ a.name }}</strong><br>
                         {{ periode.liegenschaft.strasse }}<br>
                         {{ periode.liegenschaft.plz }} {{ periode.liegenschaft.ort }}
                     </td>
                     <td style="width: 45%; vertical-align: top; text-align: right; font-size: 9pt; color: #4b5563;">
-                        <strong>{{ periode.liegenschaft.verwaltung.firma|default:"Verwaltung" }}</strong><br>
-                        {{ periode.liegenschaft.verwaltung.strasse|default:"" }}<br>
-                        {{ periode.liegenschaft.verwaltung.plz|default:"" }} {{ periode.liegenschaft.verwaltung.ort|default:"" }}<br><br>
-                        Ort, Datum: {{ periode.liegenschaft.verwaltung.ort|default:periode.liegenschaft.ort }}, {% now "d.m.Y" %}
+                        <strong>{{ periode.liegenschaft.organisation.firma|default:"Verwaltung" }}</strong><br>
+                        {{ periode.liegenschaft.organisation.strasse|default:"" }}<br>
+                        {{ periode.liegenschaft.organisation.plz|default:"" }} {{ periode.liegenschaft.organisation.ort|default:"" }}<br><br>
+                        Ort, Datum: {{ periode.liegenschaft.organisation.ort|default:periode.liegenschaft.ort }}, {% now "d.m.Y" %}
                     </td>
                 </tr>
             </table>
@@ -139,7 +139,7 @@
                 </p>
                 <br>
                 Freundliche Grüsse<br><br>
-                <strong>{{ periode.liegenschaft.verwaltung.firma|default:"Ihre Verwaltung" }}</strong>
+                <strong>{{ periode.liegenschaft.organisation.firma|default:"Ihre Verwaltung" }}</strong>
             </div>
 
             {% if a.nachzahlung and a.qr_data_uri %}

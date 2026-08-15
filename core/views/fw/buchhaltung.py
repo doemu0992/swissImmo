@@ -215,8 +215,8 @@ def fw_buchhaltung(request):
             # mehr saldiert würden — Bilanz und Erfolgsrechnung liefen
             # auseinander (Audit). Nur beim portfolioweiten Abschluss, ein
             # Einzelabschluss sperrt die übrigen Liegenschaften nicht mit.
-            from crm.models import Verwaltung
-            vw_sperre = Verwaltung.objects.first()
+            from crm.models import Organisation
+            vw_sperre = Organisation.objects.first()
             if vw_sperre is not None:
                 stichtag = date(j_ab, 12, 31)
                 if not vw_sperre.buchung_gesperrt_bis or vw_sperre.buchung_gesperrt_bis < stichtag:
@@ -258,8 +258,8 @@ def fw_buchhaltung(request):
         # überhaupt gesperrt.
         entsperrt = ""
         if not aktive_lg:
-            from crm.models import Verwaltung
-            vw_e = Verwaltung.objects.first()
+            from crm.models import Organisation
+            vw_e = Organisation.objects.first()
             if vw_e is not None and vw_e.buchung_gesperrt_bis == date(j_zr, 12, 31):
                 vw_e.buchung_gesperrt_bis = date(j_zr - 1, 12, 31) if j_zr > 2000 else None
                 vw_e.save(update_fields=['buchung_gesperrt_bis'])
@@ -549,7 +549,7 @@ def fw_buchhaltung_pdf(request):
     """
     from django.http import HttpResponse
     from core.services.abschluss_pdf import generate_abschluss_pdf
-    from crm.models import Verwaltung
+    from crm.models import Organisation
 
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
@@ -566,7 +566,7 @@ def fw_buchhaltung_pdf(request):
     daten = _erfolg_bilanz(aktive_lg, jahr)
     lg_name = f"{aktive_lg.strasse}, {aktive_lg.ort}" if aktive_lg else "Gesamtes Portfolio"
     pdf = generate_abschluss_pdf(daten, jahr, lg_name,
-                                 verwaltung=Verwaltung.objects.first(), erstellt_am=heute)
+                                 verwaltung=Organisation.objects.first(), erstellt_am=heute)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Erfolgsrechnung_Bilanz_{jahr}.pdf"'
     return resp

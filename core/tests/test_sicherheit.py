@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.contrib import admin
 from django.test import TestCase, Client, RequestFactory
 from ._helfer import (
-    _team_user, _basis_objekte, _heute, Mieter, Verwaltung, Liegenschaft,
+    _team_user, _basis_objekte, _heute, Mieter, Organisation, Liegenschaft,
     Einheit, Mietvertrag, User)
 
 
@@ -741,8 +741,8 @@ class AusgehendeAufrufeTests(TestCase):
         gespeicherte Stand frisch, darf er gar nicht erst ins Internet."""
         from unittest import mock
         from django.utils import timezone
-        from crm.models import Verwaltung
-        vw = Verwaltung.objects.first() or Verwaltung.objects.create(
+        from crm.models import Organisation
+        vw = Organisation.objects.first() or Organisation.objects.create(
             firma='Test AG', strasse='Weg 1', plz='3000', ort='Bern')
         vw.letztes_update_marktdaten = timezone.now()
         vw.save()
@@ -756,8 +756,8 @@ class AusgehendeAufrufeTests(TestCase):
         """Gegenstück: Ist der Stand alt, muss der Weg noch funktionieren."""
         from unittest import mock
         from django.utils import timezone
-        from crm.models import Verwaltung
-        vw = Verwaltung.objects.first() or Verwaltung.objects.create(
+        from crm.models import Organisation
+        vw = Organisation.objects.first() or Organisation.objects.create(
             firma='Test AG', strasse='Weg 1', plz='3000', ort='Bern')
         vw.letztes_update_marktdaten = timezone.now() - timedelta(days=5)
         vw.save()

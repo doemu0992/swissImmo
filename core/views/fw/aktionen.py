@@ -25,7 +25,7 @@ from django.utils import timezone
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
-from crm.models import Mieter, Verwaltung
+from crm.models import Mieter, Organisation
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
@@ -837,7 +837,7 @@ def fw_serienbrief_pdf(request):
     from django.shortcuts import redirect
     from django.contrib import messages
     from django.http import HttpResponse
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.auth import log_aktion
     from core.services.serienbrief import generate_serienbrief_pdf
     from core.services.ablage import ablegen
@@ -850,7 +850,7 @@ def fw_serienbrief_pdf(request):
         messages.error(request, "Text und mindestens ein Empfänger erforderlich.")
         return redirect('fw_kommunikation')
 
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     absender = {
         'firma': vw.firma if vw else 'Meine Verwaltung',
         'strasse': vw.strasse if vw else '',

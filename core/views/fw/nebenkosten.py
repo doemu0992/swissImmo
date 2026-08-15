@@ -236,7 +236,7 @@ def fw_nebenkosten_versand(request, pk):
     from django.contrib import messages
     from django.http import HttpResponse
     from finance.models import AbrechnungsPeriode
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.utils.billing import hole_abrechnung
     from core.services.nk_abrechnung import generate_nk_pdf_einzeln, generate_nk_pdf_sammel
     from core.services.ablage import ablegen
@@ -252,7 +252,7 @@ def fw_nebenkosten_versand(request, pk):
         messages.error(request, result['error'])
         return redirect(f'/neu/nebenkosten/{p.id}/')
 
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     lg = p.liegenschaft
     periode_str = f"{p.bezeichnung} ({p.start_datum:%d.%m.%Y}–{p.ende_datum:%d.%m.%Y})"
     positionen = result.get('belege_details', [])

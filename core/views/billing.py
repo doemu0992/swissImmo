@@ -1,5 +1,5 @@
 import logging
-from crm.models import Verwaltung, Mieter
+from crm.models import Organisation, Mieter
 from portfolio.models import Liegenschaft
 from rentals.models import Mietvertrag, Leerstand
 from finance.models import AbrechnungsPeriode
@@ -49,7 +49,7 @@ def qr_rechnung_pdf(request, vertrag_id):
     liegenschaft = einheit.liegenschaft
     mieter = vertrag.mieter
     eigentuemer = liegenschaft.eigentuemer
-    verwaltung = Verwaltung.objects.first()
+    verwaltung = Organisation.objects.first()
 
     errors = []
     if not liegenschaft.iban: errors.append(f"Liegenschaft hat keine IBAN.")
@@ -254,7 +254,7 @@ def abrechnung_pdf_view(request, periode_id):
         return HttpResponse(f"Fehler: {ergebnis['error']}")
 
     abrechnungen = ergebnis.get('abrechnungen', [])
-    verwaltung = Verwaltung.objects.first()
+    verwaltung = Organisation.objects.first()
     eigentuemer = liegenschaft.eigentuemer
 
     if not liegenschaft.iban:

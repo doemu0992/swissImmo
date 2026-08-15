@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.contrib import admin
 from django.test import TestCase, Client
 from ._helfer import (
-    _team_user, _basis_objekte, Mieter, Eigentuemer, Verwaltung,
+    _team_user, _basis_objekte, Mieter, Eigentuemer, Organisation,
     Liegenschaft, Einheit, Mietvertrag, User)
 
 
@@ -94,10 +94,10 @@ class MieterPortalTests(TestCase):
 
     def test_offene_rechnung_und_qr(self):
         from finance.models import DebitorenRechnung
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         m, v, u = self._mieter_login()
         # IBAN für QR-Bill bereitstellen
-        Verwaltung.objects.create(firma='Verwaltung AG', strasse='W 1', plz='8000', ort='Zürich',
+        Organisation.objects.create(firma='Verwaltung AG', strasse='W 1', plz='8000', ort='Zürich',
                                   iban='CH9300762011623852957')
         DebitorenRechnung.objects.create(vertrag=v, liegenschaft=v.einheit.liegenschaft,
                                          titel='Miete Januar', betrag=Decimal('1700'),
@@ -423,7 +423,7 @@ class TicketPortalTests(TestCase):
     def _setup(self):
         lg, e, m, v = _basis_objekte()
         # Verwaltung mit E-Mail für die interne Benachrichtigung
-        Verwaltung.objects.create(firma='Verwaltung AG', email='verwaltung@example.ch')
+        Organisation.objects.create(firma='Verwaltung AG', email='verwaltung@example.ch')
         u = User.objects.create_user(username='ticket_mieter', password='x')
         m.email = 'mieter@example.ch'; m.benutzer = u; m.save()
         return lg, e, m, v, u
@@ -479,7 +479,7 @@ class MieterTicketPortalTests(TestCase):
 
     def _setup(self):
         lg, e, m, v = _basis_objekte()
-        Verwaltung.objects.create(firma='Verwaltung AG', email='verwaltung@example.ch')
+        Organisation.objects.create(firma='Verwaltung AG', email='verwaltung@example.ch')
         u = User.objects.create_user(username='tp_mieter', password='x')
         m.email = 'mieter@example.ch'; m.benutzer = u; m.save()
         from tickets.models import SchadenMeldung
@@ -890,7 +890,7 @@ class PortalFremdzugriffTests(TestCase):
         a, b = welt('A'), welt('B')
         # IBAN, damit der QR-Einzahlschein überhaupt erzeugt werden kann —
         # sonst wäre die Gegenprobe unten (eigene Rechnung MUSS gehen) wertlos.
-        Verwaltung.objects.create(firma='Verwaltung AG', strasse='W 1', plz='8000',
+        Organisation.objects.create(firma='Verwaltung AG', strasse='W 1', plz='8000',
                                   ort='Zürich', iban='CH9300762011623852957')
         # Daten, die NUR A gehören
         dok = Dokument(bezeichnung='A-Vertrag', titel='A-Vertrag', kategorie='vertrag',

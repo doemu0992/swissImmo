@@ -64,6 +64,44 @@ Zuerst die Frage, die alles andere bestimmt: **Was wird aus `crm.Verwaltung`?**
 
 Nicht in diesem PR: das Ablösen der Django-Gruppen. `hat_rolle()` liest weiter `user.groups`, die Mitgliedschaft trägt die Rolle zunächst nur mit. Der Umschwung ist 4.3 — sonst hängen Anmeldung, Rollenprüfung und Datenmodell gleichzeitig in der Luft.
 
+### Ausgeführt am 15.08.2026
+
+| | |
+|---|---|
+| `crm.Verwaltung` → `crm.Organisation` | 276 NAME-Token in 67 Dateien, `db_table` unverändert |
+| `Liegenschaft.verwaltung` → `.organisation` | echte Spaltenumbenennung, verlustfrei |
+| `crm.Mitgliedschaft` | neu, `(benutzer, organisation)` eindeutig |
+| Migrationen | `crm/0032`, `portfolio/0032`, `crm/0033`, `crm/0034` |
+| Bestand zugeordnet | 12 von 12 Liegenschaften, 4 Mitgliedschaften |
+
+Die Umbenennung lief **token-genau**, nicht per Textersetzung: Ein `sed` über `Verwaltung` hätte
+auch die 209 String-Vorkommen erwischt — darunter den Rollennamen `"Verwaltung"` aus
+`core/auth.py`, dessen Änderung die Rollenprüfung der ganzen Anwendung gebrochen hätte. Der
+Tokenizer unterscheidet NAME von STRING und COMMENT und fasst nur das Erste an.
+
+**Drei Stellen, die der Tokenizer prinzipbedingt nicht sieht** — und wie jede gefunden wurde:
+
+1. `Verwaltung` **innerhalb eines f-Strings** (`profil.py:881`). Python 3.11 liefert f-Strings als
+   ein einziges STRING-Token. Gefunden von **Ruff F821** beim ersten Lauf danach.
+2. **Feldnamen in ORM-Strings** — `select_related('verwaltung')` an zwei Stellen, ein
+   Admin-Fieldset, eine Feldliste im Test-Fixture. Für Ruff sind das gewöhnliche Zeichenketten;
+   gefunden hat sie erst die **Testsuite**.
+3. Der Testlauf meldete sie zunächst gar nicht, sondern `TypeError: cannot pickle 'traceback'
+   object` — die im Skill `swissimmo-review` beschriebene `--parallel`-Falle. Erst der Lauf **ohne
+   `--parallel`** zeigte die echte Meldung.
+
+Das ist dasselbe Muster wie in Etappe 1: Ruff und Testsuite decken verschiedene Fehlerklassen ab,
+und keine der beiden ersetzt die andere.
+
+**Wer keine Mitgliedschaft bekommt, und warum.** Portal-Konten (Mieter, Eigentümer) hängen über
+`Mieter.benutzer` und `Eigentuemer.benutzer` an ihren Datensätzen — `Eigentümer` ist eine
+Portal-Rolle, keine Team-Rolle. Konten ohne Team-Gruppe und ohne Portal-Profil bekommen ebenfalls
+keine: Sie haben heute keinen Team-Zugang, und eine Datenmigration ist nicht der Ort, ihnen einen
+zu geben.
+
+**Über den Auftrag hinaus:** `Mitgliedschaft` ist im Admin registriert (lesend, wie alles seit E2).
+Ein Zugehörigkeitsmodell, das im Betrieb niemand einsehen kann, ist nicht diagnostizierbar.
+
 ---
 
 ## 4.2 — `TenantManager` und Kontext

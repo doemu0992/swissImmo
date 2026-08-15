@@ -30,7 +30,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 User = get_user_model()
 
-from crm.models import Mieter, Eigentuemer, Verwaltung
+from crm.models import Mieter, Eigentuemer, Organisation
 from portfolio.models import Liegenschaft, Einheit, Wartungsfrist
 from rentals.models import Mietvertrag
 

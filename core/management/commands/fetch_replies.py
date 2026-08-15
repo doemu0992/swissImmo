@@ -1,4 +1,4 @@
-from crm.models import Verwaltung
+from crm.models import Organisation
 from tickets.models import SchadenMeldung, TicketNachricht
 
 import imaplib

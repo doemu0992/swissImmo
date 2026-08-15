@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.test import TestCase, Client
 from ._helfer import (
-    _team_user, _basis_objekte, _sig_bytes, Mieter, Eigentuemer, Verwaltung,
+    _team_user, _basis_objekte, _sig_bytes, Mieter, Eigentuemer, Organisation,
     Liegenschaft, Einheit, Mietvertrag)
 
 
@@ -433,10 +433,10 @@ class VertragUnterschriftsblockTests(TestCase):
 
     def _render(self, typ='whg'):
         from portfolio.models import Einheit
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         from django.template.loader import get_template
         from django.utils import timezone
-        Verwaltung.objects.create(firma='Test Verwaltung', strasse='Weg 1',
+        Organisation.objects.create(firma='Test Verwaltung', strasse='Weg 1',
                                   plz='8000', ort='Zürich')
         lg = Liegenschaft.objects.create(strasse='Musterweg 1', plz='8004', ort='Bern',
                                          versicherungswert=Decimal('1000000'))
@@ -451,7 +451,7 @@ class VertragUnterschriftsblockTests(TestCase):
         tpl = ('core/mietvertrag_garage.html' if typ in ('pp', 'bas', 'gar')
                else 'core/mietvertrag_pdf.html')
         ctx = {'vertrag': v, 'mieter': m, 'einheit': e, 'liegenschaft': lg,
-               'eigentuemer': None, 'verwaltung': Verwaltung.objects.first(),
+               'eigentuemer': None, 'verwaltung': Organisation.objects.first(),
                'heute': timezone.localdate(), 'miete_fmt': '1500.00',
                'nk_fmt': '200.00', 'brutto_fmt': '1700.00', 'kaution_fmt': '0.00',
                'unterschrift_path': None}
@@ -915,15 +915,15 @@ class UnterschriftBriefeTests(TestCase):
 
     def _verwaltung(self, mit_unterschrift):
         from django.core.files.base import ContentFile
-        from crm.models import Verwaltung
-        vw = Verwaltung.objects.first()
+        from crm.models import Organisation
+        vw = Organisation.objects.first()
         if vw is None:
-            vw = Verwaltung.objects.create(firma='Testverwaltung', strasse='Weg 1',
+            vw = Organisation.objects.create(firma='Testverwaltung', strasse='Weg 1',
                                            plz='4500', ort='Solothurn')
         if mit_unterschrift:
             vw.unterschrift_bild.save('sig.png', ContentFile(_sig_bytes()), save=True)
         else:
-            Verwaltung.objects.filter(pk=vw.pk).update(unterschrift_bild='')
+            Organisation.objects.filter(pk=vw.pk).update(unterschrift_bild='')
         vw.refresh_from_db()
         return vw
 
@@ -1009,7 +1009,7 @@ class UnterschriftBriefeTests(TestCase):
 
     # ---------- Upload-Weg in der App (vorher nur im Django-Admin) ----------
     def test_account_bietet_unterschrift_upload(self):
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         self._verwaltung(False)
         c = Client(); c.force_login(_team_user())
         r = c.get('/neu/account/')
@@ -1019,7 +1019,7 @@ class UnterschriftBriefeTests(TestCase):
 
     def test_account_speichert_hochgeladene_unterschrift(self):
         from django.core.files.uploadedfile import SimpleUploadedFile
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         vw = self._verwaltung(False)
         c = Client(); c.force_login(_team_user())
         c.post('/neu/account/', {

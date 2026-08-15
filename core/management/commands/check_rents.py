@@ -1,4 +1,4 @@
-from crm.models import Verwaltung
+from crm.models import Organisation
 from rentals.models import Mietvertrag
 
 from django.core.management.base import BaseCommand
@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # 1. Aktuelle Marktdaten laden
-        verwaltung = Verwaltung.objects.first()
+        verwaltung = Organisation.objects.first()
         if not verwaltung:
             self.stdout.write(self.style.ERROR("Keine Verwaltungs-Daten gefunden! Bitte erst update_rates laufen lassen."))
             return

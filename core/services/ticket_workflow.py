@@ -75,8 +75,8 @@ def ticket_kontext(ticket, handwerker=None, status=None):
         vermieter = lg.eigentuemer.firma_oder_name
     else:
         try:
-            from crm.models import Verwaltung
-            vw = Verwaltung.objects.first()
+            from crm.models import Organisation
+            vw = Organisation.objects.first()
             vermieter = (vw.firma if vw else '') or 'Ihre Liegenschaftsverwaltung'
         except Exception:
             vermieter = 'Ihre Liegenschaftsverwaltung'

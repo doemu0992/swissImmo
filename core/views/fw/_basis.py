@@ -145,7 +145,7 @@ def _mwst_periode(jahr, quartal, liegenschaft=None):
     """
     from finance.models import Buchungskonto, Buchung
     from django.db.models import Sum
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.mwst_estv import berechne_estv, MWST_NORMALSATZ
 
     if quartal in ('1', '2', '3', '4'):
@@ -176,7 +176,7 @@ def _mwst_periode(jahr, quartal, liegenschaft=None):
     vorsteuer = saldo('1170', soll_positiv=True)        # Vorsteuer-Guthaben (Soll-Saldo)
     zahllast = umsatzsteuer - vorsteuer
 
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     methode = getattr(vw, 'mwst_methode', 'effektiv') if vw else 'effektiv'
     # Nettoumsatz aus der geschuldeten Steuer zurückrechnen — erfasst NK (3020),
     # optierte Wohnverhältnisse (3000) und Zuschläge (3600) gleichermassen.

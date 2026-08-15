@@ -80,12 +80,12 @@ def ablage_mahnung(vertrag, *, stufe=None, monat='', betrag='', datum=None,
         try:
             from core.views.email_views import (generate_mahnung_combined_pdf_bytes,
                                                 get_aktueller_monat)
-            from crm.models import Verwaltung
+            from crm.models import Organisation
             monat = monat or get_aktueller_monat()
             if not betrag:
                 betrag = f"{(vertrag.netto_mietzins or 0) + (vertrag.nebenkosten or 0):.2f}"
             pdf_bytes = generate_mahnung_combined_pdf_bytes(
-                vertrag, Verwaltung.objects.first(), monat, str(betrag), datum)
+                vertrag, Organisation.objects.first(), monat, str(betrag), datum)
         except Exception:
             return None
     if not pdf_bytes:

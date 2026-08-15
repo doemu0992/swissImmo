@@ -21,7 +21,7 @@ from django.utils import timezone
 
 from core.auth import (darf_oeffnen, rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
-from crm.models import Mieter, Verwaltung
+from crm.models import Mieter, Organisation
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
@@ -48,7 +48,7 @@ def fw_liegenschaft_detail(request, pk):
     from rentals.models import Dokument as RentalsDokument
     from tickets.models import SchadenMeldung
 
-    lg = get_object_or_404(Liegenschaft.objects.select_related('eigentuemer', 'verwaltung'), id=pk)
+    lg = get_object_or_404(Liegenschaft.objects.select_related('eigentuemer', 'organisation'), id=pk)
     basis = _global_filter(request)
 
     einheiten_rows = []
@@ -385,7 +385,7 @@ def fw_objekt_detail(request, pk):
 
 
     # Aktuelle Marktwerte als Vorbelegung für die Indexbasis neuer Sollmietzins-Zeilen
-    from crm.models import Verwaltung as _Vw
+    from crm.models import Organisation as _Vw
     _vw = _Vw.objects.first()
     aktueller_ref_zins = _vw.aktueller_referenzzinssatz if _vw else Decimal('1.25')
     aktueller_lik = _vw.aktueller_lik_punkte if _vw else Decimal('107.1')
@@ -1547,7 +1547,7 @@ def fw_schlussabrechnung(request, vertrag_id):
     from django.shortcuts import redirect
     from django.contrib import messages
     from django.http import HttpResponse
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.schlussabrechnung import berechne_schlussabrechnung, generate_schlussabrechnung_pdf
     from core.auth import log_aktion
 
@@ -1787,7 +1787,7 @@ def fw_schlussabrechnung(request, vertrag_id):
             return redirect(f'/neu/vertraege/{v.id}/')
 
         try:
-            pdf = generate_schlussabrechnung_pdf(v, daten, verwaltung=Verwaltung.objects.first())
+            pdf = generate_schlussabrechnung_pdf(v, daten, verwaltung=Organisation.objects.first())
         except Exception as e:
             messages.error(request, f"❌ PDF konnte nicht erstellt werden: {e}")
             return redirect(f'/neu/vertraege/{v.id}/schlussabrechnung/')

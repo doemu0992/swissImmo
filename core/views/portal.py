@@ -301,8 +301,8 @@ def portal_kontokorrent_pdf(request):
         except (TypeError, ValueError):
             jahr = None
     from core.services.eigentuemer_kontokorrent import generate_kontokorrent_pdf
-    from crm.models import Verwaltung
-    pdf = generate_kontokorrent_pdf(eigentuemer, jahr, Verwaltung.objects.first())
+    from crm.models import Organisation
+    pdf = generate_kontokorrent_pdf(eigentuemer, jahr, Organisation.objects.first())
     resp = HttpResponse(pdf, content_type='application/pdf')
     name = f"Kontokorrent_{jahr}.pdf" if jahr else "Kontokorrent.pdf"
     resp['Content-Disposition'] = f'inline; filename="{name}"'
@@ -559,7 +559,7 @@ def mieter_kuendigung(request):
 
 
 def _benachrichtige_verwaltung_kuendigung(vertrag, kuendigung):
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     try:
         from crm.models import Kommunikation
         Kommunikation.objects.create(
@@ -569,7 +569,7 @@ def _benachrichtige_verwaltung_kuendigung(vertrag, kuendigung):
                    "Bitte Eingang bestätigen und Kündigung prüfen (Familienwohnung/Unterschriften).")
     except Exception:
         logger.debug("Fehler bewusst übergangen", exc_info=True)
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     empfaenger = (vw.email if vw and vw.email else None)
     if empfaenger:
         try:
@@ -591,7 +591,7 @@ def _benachrichtige_verwaltung_kuendigung(vertrag, kuendigung):
 def mieter_kuendigung_pdf(request, pk):
     """Kündigungsbrief (PDF) zu einer eigenen Kündigung."""
     from rentals.models import Kuendigung
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.kuendigung_brief import generate_kuendigung_mieter_pdf
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
@@ -602,7 +602,7 @@ def mieter_kuendigung_pdf(request, pk):
         pk=pk, vertrag_id__in=_vids)
     lg = k.vertrag.einheit.liegenschaft if k.vertrag.einheit_id else None
     eigentuemer = lg.eigentuemer if lg else None
-    pdf = generate_kuendigung_mieter_pdf(k.vertrag, k, verwaltung=Verwaltung.objects.first(), eigentuemer=eigentuemer)
+    pdf = generate_kuendigung_mieter_pdf(k.vertrag, k, verwaltung=Organisation.objects.first(), eigentuemer=eigentuemer)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = 'inline; filename="Kuendigung.pdf"'
     return resp
@@ -611,12 +611,12 @@ def mieter_kuendigung_pdf(request, pk):
 @login_required
 def mieter_kontoauszug_pdf(request):
     """Kontoauszug (PDF) des eingeloggten Mieters."""
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.mieterkonto import generate_mieterkonto_pdf
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         raise Http404
-    pdf = generate_mieterkonto_pdf(mieter, verwaltung=Verwaltung.objects.first())
+    pdf = generate_mieterkonto_pdf(mieter, verwaltung=Organisation.objects.first())
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = 'inline; filename="Kontoauszug.pdf"'
     return resp
@@ -708,7 +708,7 @@ def _benachrichtige_neue_meldung(ticket, vertrag):
     """Mieter erhält Eingangsbestätigung, Verwaltung/Eigentümer die Meldung.
     Fehler beim Mailversand dürfen die Schadenmeldung nie blockieren."""
     from core.utils.email_service import send_ticket_email, send_neue_meldung_intern
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     # Mieter-Bestätigung
     try:
         if ticket.email_melder:
@@ -728,9 +728,9 @@ def _benachrichtige_neue_meldung(ticket, vertrag):
 
 def _verwaltung_empfaenger(lg):
     """E-Mail-Empfänger auf Verwaltungsseite (Verwaltung + ggf. Eigentümer)."""
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     empf = []
-    vw = (lg.verwaltung if lg and lg.verwaltung_id else None) or Verwaltung.objects.first()
+    vw = (lg.organisation if lg and lg.organisation_id else None) or Organisation.objects.first()
     if vw and vw.email:
         empf.append(vw.email)
     if lg and lg.eigentuemer_id and lg.eigentuemer.email:
@@ -886,8 +886,8 @@ def mieter_daten_view(request):
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
             try:
                 from core.utils.email_service import send_ticket_email
-                from crm.models import Verwaltung
-                vw = Verwaltung.objects.first()
+                from crm.models import Organisation
+                vw = Organisation.objects.first()
                 if vw and vw.email:
                     send_ticket_email(vw.email, f"Kontaktdaten-Änderung: {mieter.display_name}",
                                       ("Der Mieter hat über das Portal Daten geändert/gemeldet:\n\n"

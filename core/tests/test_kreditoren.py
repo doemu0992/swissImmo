@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.test import TestCase, Client
 from ._helfer import (
-    _team_user, _basis_objekte, Mieter, Verwaltung, Liegenschaft, Einheit,
+    _team_user, _basis_objekte, Mieter, Organisation, Liegenschaft, Einheit,
     Mietvertrag)
 
 
@@ -67,10 +67,10 @@ class KreditorZahllaufTests(TestCase):
     """pain.001-Zahllauf: enthaltene Rechnungen → 'in Zahlung' (kein Doppelzahlen)."""
 
     def _setup(self):
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         from finance.models import KreditorenRechnung
         from finance.booking import konto as _k
-        Verwaltung.objects.create(firma='V AG', iban='CH9300762011623852957')
+        Organisation.objects.create(firma='V AG', iban='CH9300762011623852957')
         lg, e, m, v = _basis_objekte()
         k = KreditorenRechnung.objects.create(
             lieferant='Elektro AG', betrag=Decimal('800'), status='freigegeben',
@@ -828,10 +828,10 @@ class KreditorenP4Tests(TestCase):
             for i, (n, iban, b) in enumerate(daten)]
 
     def _mit_iban(self):
-        from crm.models import Verwaltung
-        vw = Verwaltung.objects.first()
+        from crm.models import Organisation
+        vw = Organisation.objects.first()
         if vw is None:
-            vw = Verwaltung.objects.create(firma='Testverwaltung')
+            vw = Organisation.objects.create(firma='Testverwaltung')
         vw.iban = 'CH5604835012345678009'
         vw.save()
         return vw
@@ -947,12 +947,12 @@ class KreditorenP4Tests(TestCase):
         self.assertEqual(krs[0].zahlung_ausfuehrung, date(2024, 4, 15))
 
     def test_zahllauf_ohne_verwaltungs_iban_erzeugt_keine_datei(self):
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         from finance.booking import ensure_kontenplan
         ensure_kontenplan()
         lg, e, m, v = _basis_objekte()
         krs = self._rechnungen(lg)
-        Verwaltung.objects.update(iban='')
+        Organisation.objects.update(iban='')
         c = Client(); c.force_login(_team_user())
         r = c.post('/neu/zahllauf/', {'aktion': 'datei', 'rechnung_ids': [krs[0].id]})
         self.assertEqual(r.status_code, 302)

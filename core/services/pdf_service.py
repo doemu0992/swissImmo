@@ -6,7 +6,7 @@ from django.contrib.staticfiles import finders
 from django.template.loader import get_template
 from django.utils import timezone
 from xhtml2pdf import pisa
-from crm.models import Verwaltung
+from crm.models import Organisation
 
 def make_image_transparent(image_path):
     """ Öffnet das Bild, entfernt den weissen Hintergrund und speichert es als transparentes PNG """
@@ -69,7 +69,7 @@ def build_vertrag_context(vertrag, *, mit_unterschrift=True):
     liegenschaft = einheit.liegenschaft if einheit else None
     eigentuemer = liegenschaft.eigentuemer if liegenschaft else None
 
-    verwaltung = (liegenschaft.verwaltung if liegenschaft else None) or Verwaltung.objects.first()
+    verwaltung = (liegenschaft.organisation if liegenschaft else None) or Organisation.objects.first()
 
     netto = vertrag.netto_mietzins or 0
     nk = vertrag.nebenkosten or 0

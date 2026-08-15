@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.test import TestCase, Client
 from ._helfer import (
-    _team_user, _basis_objekte, _seed_konten, _heute, Mieter, Verwaltung,
+    _team_user, _basis_objekte, _seed_konten, _heute, Mieter, Organisation,
     Liegenschaft, Einheit, Mietvertrag)
 
 
@@ -938,8 +938,8 @@ class BewerbungDatenschutzTests(TestCase):
 
     def test_datenschutzerklaerung_nennt_die_verwaltung_aus_den_stammdaten(self):
         """Kein zweiter Ort für Firma und Adresse, der veralten kann."""
-        from crm.models import Verwaltung
-        Verwaltung.objects.create(firma='Muster Immobilien AG', strasse='Amtsweg 4',
+        from crm.models import Organisation
+        Organisation.objects.create(firma='Muster Immobilien AG', strasse='Amtsweg 4',
                                   plz='3011', ort='Bern')
         html = Client().get('/datenschutz/').content.decode()
         self.assertIn('Muster Immobilien AG', html)

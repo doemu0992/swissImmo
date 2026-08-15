@@ -33,8 +33,8 @@ def public_datenschutz_view(request):
     bevor sie ihre Daten abschickt. Firma und Adresse kommen aus dem
     Verwaltungs-Datensatz, damit es keinen zweiten, veraltenden Ort dafür gibt."""
     from django.utils import timezone
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     return render(request, 'core/public_datenschutz.html', {
-        'verwaltung': Verwaltung.objects.first(),
+        'verwaltung': Organisation.objects.first(),
         'stand': timezone.localdate(),
     })

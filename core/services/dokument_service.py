@@ -4,7 +4,7 @@ import io
 from django.template.loader import get_template
 from django.utils import timezone
 from xhtml2pdf import pisa
-from crm.models import Verwaltung
+from crm.models import Organisation
 from core.services.pdf_service import link_callback
 
 # doc_type -> (Template, Titel, zusätzliche Kontext-Flags)
@@ -27,7 +27,7 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
     einheit = vertrag.einheit
     liegenschaft = einheit.liegenschaft
     eigentuemer = liegenschaft.eigentuemer
-    verwaltung = liegenschaft.verwaltung or Verwaltung.objects.first()
+    verwaltung = liegenschaft.organisation or Organisation.objects.first()
 
     # Vermieter = Eigentümer falls vorhanden, sonst Verwaltung
     if eigentuemer:

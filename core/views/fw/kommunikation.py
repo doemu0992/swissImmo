@@ -17,11 +17,11 @@ from ._basis import _global_filter
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_kommunikation(request):
-    from crm.models import Verwaltung, Vorlage
+    from crm.models import Organisation, Vorlage
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     absender = {
         'firma': vw.firma if vw else 'Meine Verwaltung',
         'strasse': vw.strasse if vw else '',

@@ -89,12 +89,12 @@ def _brief(absender, empfaenger_zeilen, ort, betreff, absaetze, gruss_name,
 
 
 def _kontext(vertrag, verwaltung=None):
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     mieter = vertrag.mieter
     einheit = vertrag.einheit
     lg = einheit.liegenschaft if einheit else None
     eigentuemer = lg.eigentuemer if lg else None
-    vw = verwaltung or (lg.verwaltung if lg else None) or Verwaltung.objects.first()
+    vw = verwaltung or (lg.organisation if lg else None) or Organisation.objects.first()
     absender = _absender_zeilen(vw, eigentuemer)
     ort = absender[2].split(' ', 1)[-1] if absender[2] else (lg.ort if lg else '')
     empf = [mieter.display_name]

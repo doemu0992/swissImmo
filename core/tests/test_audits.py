@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.test import TestCase, Client, RequestFactory
 from ._helfer import (
     _team_user, _basis_objekte, _seed_konten, Mieter, Eigentuemer,
-    Verwaltung, Liegenschaft, Einheit, Mietvertrag)
+    Organisation, Liegenschaft, Einheit, Mietvertrag)
 
 
 
@@ -731,8 +731,8 @@ class NachtN6BewirtschafterTests(TestCase):
         self.assertIn('/neu/mietzins/massenanpassung/', body)
 
     def _vertrag_mit_potenzial(self):
-        from crm.models import Verwaltung
-        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.75'),
+        from crm.models import Organisation
+        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.75'),
                                   aktueller_lik_punkte=Decimal('100'))
         lg, e, m, v = _basis_objekte()   # netto 1500
         # Basis-Zins tiefer als aktuell → Erhöhungspotenzial (+2 Stufen à 3 %)
@@ -767,9 +767,9 @@ class NachtN6BewirtschafterTests(TestCase):
         self.assertEqual(Pendenz.objects.filter(vertrag=v, titel__icontains='Anfechtungsfrist').count(), 1)
 
     def test_massenanpassung_ohne_basis_uebersprungen(self):
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         from rentals.models import MietzinsAnpassung
-        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.75'))
+        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.75'))
         lg, e, m, v = _basis_objekte()
         # Alt-/Importvertrag ohne Basisdaten (Modell-Default liefert sonst aktuelle Werte)
         v.basis_referenzzinssatz = Decimal('0'); v.basis_lik_punkte = Decimal('0'); v.save()
@@ -830,11 +830,11 @@ class NachtN9BuchhalterTests(TestCase):
         self.assertFalse(Buchung.objects.filter(soll_konto__nummer='3805').exists())
 
     def _nk_setup(self, honorar_pct):
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         from finance.models import AbrechnungsPeriode, KreditorenRechnung, Buchungskonto
         from finance.booking import ensure_kontenplan
         ensure_kontenplan()
-        Verwaltung.objects.create(firma='V AG', strasse='X', plz='1', ort='Y',
+        Organisation.objects.create(firma='V AG', strasse='X', plz='1', ort='Y',
                                   nk_honorar_prozent=Decimal(str(honorar_pct)))
         lg, e, m, v = _basis_objekte()
         p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='NK Test',
@@ -944,9 +944,9 @@ class ReviewNachbesserungTests(TestCase):
         dauernd als veraltet — die Frischeprüfung lief damit ins Leere."""
         from unittest import mock
         from django.utils import timezone
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         from core.utils import market_data
-        vw = Verwaltung.objects.create(firma='T AG', strasse='W 1', plz='3000', ort='Bern',
+        vw = Organisation.objects.create(firma='T AG', strasse='W 1', plz='3000', ort='Bern',
                                        aktueller_referenzzinssatz=Decimal('1.25'))
         vw.letztes_update_marktdaten = None
         vw.save()

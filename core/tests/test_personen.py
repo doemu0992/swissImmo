@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.test import TestCase, Client
 from ._helfer import (
     _team_user, _basis_objekte, _seed_konten, Mieter, Eigentuemer,
-    Verwaltung, Liegenschaft, Einheit, Wartungsfrist, Mietvertrag, User)
+    Organisation, Liegenschaft, Einheit, Wartungsfrist, Mietvertrag, User)
 
 
 

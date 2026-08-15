@@ -46,7 +46,7 @@ def _ist_qr_iban(iban):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_bankkonten(request):
-    from crm.models import Verwaltung, Eigentuemer
+    from crm.models import Organisation, Eigentuemer
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
@@ -75,7 +75,7 @@ def fw_bankkonten(request):
 
     # 2) Verwaltungs- und Eigentümer-Konten (nur ohne aktiven LG-Filter)
     if not aktive_lg:
-        vw = Verwaltung.objects.first()
+        vw = Organisation.objects.first()
         if vw and _iban_clean(vw.iban):
             is_qr = _ist_qr_iban(vw.iban)
             qr_count += 1 if is_qr else 0

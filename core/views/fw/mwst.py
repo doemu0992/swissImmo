@@ -63,10 +63,10 @@ def fw_mwst_einstellungen(request):
     """Speichert MWST-Methode, Saldosteuersatz und MWST-Nummer."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     if request.method != 'POST':
         return redirect('fw_mwst')
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     if not vw:
         messages.error(request, "Keine Verwaltung erfasst.")
         return redirect('fw_mwst')

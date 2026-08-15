@@ -53,12 +53,12 @@ def docuseal_senden(vertrag):
         from django.contrib.staticfiles import finders
         from core.views.docuseal import link_callback, sanitize_filename
 
-        from crm.models import Verwaltung
+        from crm.models import Organisation
 
         einheit = vertrag.einheit
         liegenschaft = einheit.liegenschaft
         eigentuemer = getattr(liegenschaft, 'eigentuemer', None)
-        verwaltung = getattr(liegenschaft, 'verwaltung', None) or Verwaltung.objects.first()
+        verwaltung = getattr(liegenschaft, 'verwaltung', None) or Organisation.objects.first()
         template_path = ('core/mietvertrag_garage.html'
                          if einheit.typ in ('pp', 'bas', 'gar')
                          else 'core/mietvertrag_pdf.html')

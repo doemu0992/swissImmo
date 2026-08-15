@@ -197,7 +197,7 @@ def fw_verzug_257d(request, vertrag_id):
     from django.contrib import messages
     from datetime import timedelta
     from finance.models import DebitorenRechnung
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.models import Pendenz
     from core.auth import log_aktion
     from core.services.serienbrief import generate_serienbrief_pdf
@@ -256,7 +256,7 @@ def fw_verzug_257d(request, vertrag_id):
         POSTWEG_TAGE = 1  # geschätzter Postweg bis Zustellung/Abholeinladung (nur provisorisch)
         if versand_am:
             frist = versand_am + timedelta(days=POSTWEG_TAGE + FRIST_TAGE)
-        vw = Verwaltung.objects.first()
+        vw = Organisation.objects.first()
         m = v.mieter
         # Dasselbe 257d-PDF wie /vertrag/<id>/mahnung/ (sauberer Brief mit
         # Kuendigungsandrohung + QR-Rechnung) statt eines generischen Serienbriefs.
@@ -502,10 +502,10 @@ def fw_kuendigung_formular(request, pk):
     from django.http import HttpResponse
     from django.contrib import messages
     from rentals.models import Kuendigung
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     k = get_object_or_404(Kuendigung.objects.select_related(
         'vertrag__mieter', 'vertrag__mitmieter', 'vertrag__einheit__liegenschaft'), id=pk)
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     from core.services.formular_fill import kuendigung_zustellkopien
     from core.services.ablage import ablegen
     kopien = kuendigung_zustellkopien(k.vertrag, k, verwaltung=vw)

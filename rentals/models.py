@@ -510,8 +510,8 @@ class Mietvertrag(models.Model):
     @property
     def mietzinspotenzial(self):
         try:
-            from crm.models import Verwaltung
-            vw = Verwaltung.objects.first()
+            from crm.models import Organisation
+            vw = Organisation.objects.first()
             if not vw: return 'neutral'
             curr_zins = vw.aktueller_referenzzinssatz
             curr_lik = vw.aktueller_lik_punkte

@@ -29,7 +29,7 @@ class Command(BaseCommand):
     def handle(self, *args, **opts):
         from core.models import Pendenz, AktivitaetsLog
         from django.contrib.auth import get_user_model
-        from crm.models import Verwaltung
+        from crm.models import Organisation
 
         User = get_user_model()
 
@@ -48,7 +48,7 @@ class Command(BaseCommand):
             is_active=True, groups__name__in=['Verwaltung', 'Sachbearbeitung']
         ).exclude(email='').values_list('email', flat=True).distinct())
         if not empfaenger:
-            vw = Verwaltung.objects.first()
+            vw = Organisation.objects.first()
             if vw and getattr(vw, 'email', ''):
                 empfaenger = [vw.email]
         if not empfaenger:

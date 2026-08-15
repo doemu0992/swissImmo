@@ -172,7 +172,7 @@ def fw_abnahme_ruege_267a(request, pk):
     from django.shortcuts import redirect
     from django.contrib import messages
     from rentals.models import Abnahmeprotokoll
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.mietprozess_briefe import rueckgabe_maengelruege_pdf
     from core.services.ablage import ablegen
     from core.auth import log_aktion
@@ -185,7 +185,7 @@ def fw_abnahme_ruege_267a(request, pk):
     if not maengel:
         messages.info(request, "Keine dem Mieter zugeordneten Mängel im Protokoll — keine Rüge nötig.")
         return redirect(f'/neu/abnahme/{prot.id}/')
-    pdf = rueckgabe_maengelruege_pdf(v, maengel, verwaltung=Verwaltung.objects.first(),
+    pdf = rueckgabe_maengelruege_pdf(v, maengel, verwaltung=Organisation.objects.first(),
                                      abnahme_datum=prot.datum)
     ablegen(pdf, f"Mängelrüge Art. 267a {prot.datum:%d.%m.%Y}",
             kategorie='vertrag', vertrag=v, dedup=True)
@@ -218,10 +218,10 @@ def fw_abnahme_loeschen(request, pk):
 def fw_abnahme_pdf(request, pk):
     from django.http import HttpResponse
     from rentals.models import Abnahmeprotokoll
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.abnahme_pdf import generate_abnahme_pdf
     prot = get_object_or_404(Abnahmeprotokoll.objects.select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
-    pdf = generate_abnahme_pdf(prot, verwaltung=Verwaltung.objects.first())
+    pdf = generate_abnahme_pdf(prot, verwaltung=Organisation.objects.first())
     # Auto-Ablage in die Vertrags-Akte (abgeschlossene Protokolle)
     if getattr(prot, 'abgeschlossen', False):
         from core.services.ablage import ablegen

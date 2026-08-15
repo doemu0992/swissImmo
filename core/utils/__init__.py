@@ -137,8 +137,8 @@ def generate_swiss_qr_base64(iban, name, strasse, ort, betrag, referenz):
 
 def get_current_ref_zins():
     try:
-        from crm.models import Verwaltung
-        v = Verwaltung.objects.first()
+        from crm.models import Organisation
+        v = Organisation.objects.first()
         return v.aktueller_referenzzinssatz if v else 1.25
     except: return 1.25
 
@@ -153,8 +153,8 @@ def get_current_lik():
     except Exception:
         logger.debug("Fehler bewusst übergangen", exc_info=True)
     try:
-        from crm.models import Verwaltung
-        v = Verwaltung.objects.first()
+        from crm.models import Organisation
+        v = Organisation.objects.first()
         return v.aktueller_lik_punkte if v else 107.1
     except: return 107.1
 

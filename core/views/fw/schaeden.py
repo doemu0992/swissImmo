@@ -329,11 +329,11 @@ def fw_ersatzplanung(request):
 
     if request.GET.get('pdf') == '1':
         from django.http import HttpResponse
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         from core.services.ersatzplanung_pdf import generate_ersatzplanung_pdf
         lg_name = (f"{aktive_lg.strasse}, {aktive_lg.ort}" if aktive_lg
                    else "Alle Liegenschaften")
-        pdf = generate_ersatzplanung_pdf(daten, lg_name, verwaltung=Verwaltung.objects.first(),
+        pdf = generate_ersatzplanung_pdf(daten, lg_name, verwaltung=Organisation.objects.first(),
                                          deckung=deckung)
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = 'inline; filename="Ersatzplanung.pdf"'
@@ -544,12 +544,12 @@ def fw_auftrag_pdf(request, pk):
     """Reparaturauftrag (PDF) für einen Handwerker-Auftrag."""
     from django.http import HttpResponse
     from tickets.models import HandwerkerAuftrag
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.handwerker_auftrag_pdf import generate_auftrag_pdf
     a = get_object_or_404(
         HandwerkerAuftrag.objects.select_related('ticket__liegenschaft', 'ticket__betroffene_einheit', 'handwerker'),
         id=pk)
-    pdf = generate_auftrag_pdf(a, Verwaltung.objects.first())
+    pdf = generate_auftrag_pdf(a, Organisation.objects.first())
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Reparaturauftrag_{a.id}.pdf"'
     return resp

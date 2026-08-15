@@ -1,4 +1,4 @@
-from crm.models import Verwaltung, Mieter
+from crm.models import Organisation, Mieter
 from portfolio.models import Liegenschaft, Einheit
 from rentals.models import Mietvertrag, Leerstand
 from finance.models import AbrechnungsPeriode
@@ -210,7 +210,7 @@ def send_abrechnung_email_view(request, periode_id):
 @rolle_erforderlich(ROLLE_VERWALTUNG)
 def send_mahnung_email_view(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
-    verwaltung = Verwaltung.objects.first()
+    verwaltung = Organisation.objects.first()
 
     # 🌟 NEU: Dynamischer Monat als Default
     monat_str = request.POST.get('monat') or get_aktueller_monat()
@@ -257,7 +257,7 @@ def send_mahnung_email_view(request, vertrag_id):
 @rolle_erforderlich(ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG)
 def generate_mahnung_pdf_view(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
-    verwaltung = Verwaltung.objects.first()
+    verwaltung = Organisation.objects.first()
 
     # 🌟 NEU: Dynamischer Monat als Default
     monat_str = request.GET.get('monat') or request.POST.get('monat') or get_aktueller_monat()

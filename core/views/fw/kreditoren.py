@@ -181,7 +181,7 @@ def fw_kreditoren_pain001(request):
     from django.contrib import messages
     from django.shortcuts import redirect
     from finance.models import KreditorenRechnung
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.pain001 import generate_pain001
     from core.auth import log_aktion
 
@@ -194,7 +194,7 @@ def fw_kreditoren_pain001(request):
         messages.error(request, "Keine freigegebenen Kreditorenrechnungen für die Zahlungsdatei.")
         return redirect('/neu/kreditoren/?status=freigegeben')
 
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     debtor_iban = (vw.iban if vw else '') or ''
     if not debtor_iban.strip():
         messages.error(request, "Für die Zahlungsdatei fehlt die IBAN der Verwaltung (Profil → Account).")
@@ -313,7 +313,7 @@ def fw_zahllauf(request):
     from django.shortcuts import redirect
     from django.contrib import messages
     from finance.models import KreditorenRechnung, KreditorenZahlung, Buchungskonto
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.pain001 import generate_pain001
     from core.auth import log_aktion
 
@@ -349,7 +349,7 @@ def fw_zahllauf(request):
             if not rechnungen:
                 messages.error(request, "Keine Rechnung ausgewählt.")
                 return redirect(_ziel())
-            vw = Verwaltung.objects.first()
+            vw = Organisation.objects.first()
             debtor_iban = ((vw.iban if vw else '') or '').strip()
             if not debtor_iban:
                 messages.error(request, "Für die Zahlungsdatei fehlt die IBAN der "
@@ -473,7 +473,7 @@ def fw_zahllauf(request):
             if not zeile['iban']:
                 ohne_iban += 1
 
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     from django.contrib import messages as _msg
     return render(request, 'fw/zahllauf.html', {
         **basis, 'nav': 'kreditoren',

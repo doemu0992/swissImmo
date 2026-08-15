@@ -48,7 +48,7 @@ def _unterschrift_aufbereiten(instanz, praefix):
         except Exception:
             logger.debug("Fehler bewusst übergangen", exc_info=True)
 
-class Verwaltung(models.Model):
+class Organisation(models.Model):
     firma = models.CharField("Firmenname", max_length=100)
     strasse = models.CharField("Strasse & Nr.", max_length=100)
     plz = models.CharField("PLZ", max_length=10)
@@ -84,8 +84,10 @@ class Verwaltung(models.Model):
     abo_jaehrlich = models.BooleanField("Jährliche Abrechnung", default=False)
 
     class Meta:
-        verbose_name = "Meine Verwaltung"
-        verbose_name_plural = "Meine Verwaltung"
+        verbose_name = "Organisation"
+        verbose_name_plural = "Organisationen"
+        # Unveraendert: Die Umbenennung ist eine reine Namensfrage, kein
+        # Tabellenumbau. Wie bei Mandant -> Eigentuemer in E3.
         db_table = 'core_verwaltung'
 
     def __str__(self):
@@ -94,6 +96,73 @@ class Verwaltung(models.Model):
     def save(self, *args, **kwargs):
         _unterschrift_aufbereiten(self, 'sig_vw_')
         super().save(*args, **kwargs)
+
+
+class Mitgliedschaft(models.Model):
+    """Ein Benutzer arbeitet für eine Organisation, mit einer Rolle.
+
+    WARUM EIN EIGENES MODELL UND KEIN FELD AM BENUTZER
+    --------------------------------------------------
+    Ein Fremdschlüssel `Benutzer.organisation` wäre kürzer, würde aber jeden
+    Menschen auf eine Verwaltung festnageln. Zwei Fälle, die real vorkommen,
+    scheitern daran:
+
+    - Eine Treuhänderin betreut zwei Verwaltungen. Mit einem Fremdschlüssel
+      braucht sie zwei Konten mit zwei Passwörtern.
+    - Eine Liegenschaft wechselt von Verwaltung A zu B. Mit einem
+      Fremdschlüssel bedeutet das einen Kontowechsel für jeden betroffenen
+      Mieter und Eigentümer; mit Mitgliedschaften ist es eine Zeile.
+
+    Entschieden am 15.08.2026, siehe `docs/ETAPPE-4-ORGANISATION.md`.
+
+    NUR TEAM-ROLLEN
+    ---------------
+    Mieter und Eigentümer hängen über `Mieter.benutzer` und
+    `Eigentuemer.benutzer` an ihren Datensätzen und bekommen **keine**
+    Mitgliedschaft. `Eigentümer` ist eine Portal-Rolle, keine Team-Rolle —
+    das nicht vermischen (siehe `.claude/agents/chirurg.md`).
+
+    NOCH NICHT WIRKSAM
+    ------------------
+    `core/auth.py` liest die Rolle weiterhin aus den Django-Gruppen. Dieses
+    Modell trägt sie zunächst nur mit. Der Umschwung ist 4.3 — sonst hingen
+    Anmeldung, Rollenprüfung und Datenmodell gleichzeitig in der Luft.
+    """
+
+    # Bewusst die HEUTIGEN vier Rollennamen aus `core/auth.py`, nicht die
+    # Zielrollen der Projektanweisung (Inhaber, Verwalter, Sachbearbeiter,
+    # Lesezugriff). Die Zuordnung zwischen beiden ist eine fachliche Frage und
+    # gehört in 4.3 vorgelegt; sie hier vorwegzunehmen hiesse raten.
+    ROLLE_VERWALTUNG = 'Verwaltung'
+    ROLLE_SACHBEARBEITUNG = 'Sachbearbeitung'
+    ROLLE_LESEND = 'Lesend'
+    ROLLEN = [
+        (ROLLE_VERWALTUNG, 'Verwaltung'),
+        (ROLLE_SACHBEARBEITUNG, 'Sachbearbeitung'),
+        (ROLLE_LESEND, 'Lesend'),
+    ]
+
+    benutzer = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='mitgliedschaften', verbose_name="Benutzer")
+    organisation = models.ForeignKey(
+        'crm.Organisation', on_delete=models.CASCADE,
+        related_name='mitgliedschaften', verbose_name="Organisation")
+    rolle = models.CharField("Rolle", max_length=20, choices=ROLLEN,
+                             default=ROLLE_SACHBEARBEITUNG)
+    erstellt_am = models.DateTimeField("Angelegt am", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Mitgliedschaft"
+        verbose_name_plural = "Mitgliedschaften"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['benutzer', 'organisation'],
+                name='eine_mitgliedschaft_je_benutzer_und_organisation'),
+        ]
+
+    def __str__(self):
+        return f"{self.benutzer} · {self.organisation} ({self.rolle})"
 
 
 class Eigentuemer(models.Model):

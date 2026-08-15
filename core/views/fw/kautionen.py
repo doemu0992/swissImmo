@@ -235,12 +235,12 @@ def fw_kaution_beleg(request, vertrag_id, art):
     """Kautions-Beleg als PDF (Art. 257e OR): `hinterlegung` = Bestätigung an die
     Mieterschaft, `freigabe` = Freigabeschreiben an die Bank. Wird in der Akte abgelegt."""
     from django.http import HttpResponse
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.mietprozess_briefe import kaution_hinterlegung_pdf, kaution_freigabe_pdf
     from core.services.ablage import ablegen
     from core.auth import log_aktion
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     if art == 'freigabe':
         pdf = kaution_freigabe_pdf(v, verwaltung=vw)
         titel = f"Kaution-Freigabe (Bank) {v.mieter.nachname}"
@@ -265,7 +265,7 @@ def fw_maengelruege(request, vertrag_id):
     from django.http import HttpResponse
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.mietprozess_briefe import maengelruege_pdf
     from core.services.ablage import ablegen
     from core.auth import log_aktion
@@ -281,7 +281,7 @@ def fw_maengelruege(request, vertrag_id):
         if not mangel:
             messages.error(request, "❌ Bitte den Mangel beschreiben.")
             return redirect(f'/neu/vertraege/{v.id}/maengelruege/')
-        vw = Verwaltung.objects.first()
+        vw = Organisation.objects.first()
         pdf = maengelruege_pdf(v, mangel, frist_tage=frist, verwaltung=vw)
         ablegen(pdf, f"Mängelrüge {v.mieter.nachname} {timezone.localdate():%d.%m.%Y}",
                 kategorie='vertrag', vertrag=v, dedup=False)
@@ -362,7 +362,7 @@ def fw_untermiete(request, vertrag_id):
     from django.http import HttpResponse
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.mietprozess_briefe import untermiete_zustimmung_pdf
     from core.services.ablage import ablegen
     from core.auth import log_aktion
@@ -375,7 +375,7 @@ def fw_untermiete(request, vertrag_id):
         if not untermieter:
             messages.error(request, "❌ Bitte die untermietende Person angeben.")
             return redirect(f'/neu/vertraege/{v.id}/untermiete/')
-        vw = Verwaltung.objects.first()
+        vw = Organisation.objects.first()
         pdf = untermiete_zustimmung_pdf(v, untermieter, entscheid=entscheid, bedingungen=bedingungen, verwaltung=vw)
         wort = 'Zustimmung' if entscheid == 'zustimmung' else 'Ablehnung'
         ablegen(pdf, f"Untermiete-{wort} {v.mieter.nachname}", kategorie='vertrag', vertrag=v, dedup=False)

@@ -1,4 +1,4 @@
-from crm.models import Verwaltung, Mieter
+from crm.models import Organisation, Mieter
 from rentals.models import Mietvertrag, Dokument
 
 import os
@@ -81,7 +81,7 @@ def send_via_docuseal(request, vertrag_id):
         einheit = vertrag.einheit
         liegenschaft = einheit.liegenschaft
         eigentuemer = liegenschaft.eigentuemer
-        verwaltung = getattr(liegenschaft, 'verwaltung', None) or Verwaltung.objects.first()
+        verwaltung = getattr(liegenschaft, 'verwaltung', None) or Organisation.objects.first()
 
         if einheit.typ in ['pp', 'bas', 'gar']:
             template_path = 'core/mietvertrag_garage.html'

@@ -265,7 +265,7 @@ def berechne_abrechnung(periode_id):
 
     # D) Verwaltungshonorar auf die Nebenkosten — Satz aus den Account-Einstellungen
     # (Verwaltung.nk_honorar_prozent, Standard 3 %); 0 % = kein Honorar-Posten.
-    from crm.models import Verwaltung as _Vw
+    from crm.models import Organisation as _Vw
     _vw = _Vw.objects.first()
     _satz_pct = _vw.nk_honorar_prozent if _vw else Decimal('3.00')
     subtotal = pool_heizkosten + pool_nk_m2 + pool_nk_einheit + pool_nk_personen

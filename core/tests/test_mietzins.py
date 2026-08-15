@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.test import TestCase, Client
 from ._helfer import (
-    _team_user, _basis_objekte, _seed_konten, Mieter, Verwaltung,
+    _team_user, _basis_objekte, _seed_konten, Mieter, Organisation,
     Liegenschaft, Einheit, Mietvertrag)
 
 
@@ -16,7 +16,7 @@ class LikVertragTests(TestCase):
     def test_lik_context_basis_und_stand(self):
         from core.services.lik import vertrag_lik_context
         lg, e, m, v = _basis_objekte()
-        vw = Verwaltung.objects.create(firma='V AG', lik_basis='Dezember 2020',
+        vw = Organisation.objects.create(firma='V AG', lik_basis='Dezember 2020',
                                        aktueller_lik_punkte=Decimal('107.1'),
                                        aktueller_lik_stand=date(2024, 8, 1))
         v.basis_lik_punkte = Decimal('106.3'); v.basis_lik_stand = date(2023, 5, 1); v.save()
@@ -28,7 +28,7 @@ class LikVertragTests(TestCase):
     def test_lik_context_fallback_auf_verwaltungsstand(self):
         from core.services.lik import vertrag_lik_context
         lg, e, m, v = _basis_objekte()
-        vw = Verwaltung.objects.create(firma='V AG', aktueller_lik_stand=date(2025, 3, 1))
+        vw = Organisation.objects.create(firma='V AG', aktueller_lik_stand=date(2025, 3, 1))
         v.basis_lik_stand = None; v.save()
         ctx = vertrag_lik_context(v, vw)
         self.assertEqual(ctx['lik_stand_label'], 'März 2025')   # Fallback
@@ -36,7 +36,7 @@ class LikVertragTests(TestCase):
     def test_vertrag_pdf_enthaelt_basis_und_stand(self):
         from core.services.pdf_service import generate_vertrag_pdf_bytes
         lg, e, m, v = _basis_objekte()
-        Verwaltung.objects.create(firma='V AG', lik_basis='Dezember 2020', aktueller_lik_stand=date(2024, 8, 1))
+        Organisation.objects.create(firma='V AG', lik_basis='Dezember 2020', aktueller_lik_stand=date(2024, 8, 1))
         v.basis_lik_punkte = Decimal('107.1'); v.basis_lik_stand = date(2024, 8, 1); v.save()
         pdf = generate_vertrag_pdf_bytes(v)
         self.assertTrue(pdf.startswith(b'%PDF'))
@@ -175,8 +175,8 @@ class MietzinsAnpassungLiveTests(TestCase):
     (Art. 269d/270a OR), nicht erst auf dem PDF."""
 
     def _setup(self):
-        from crm.models import Verwaltung
-        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
+        from crm.models import Organisation
+        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
         lg, e, m, v = _basis_objekte()
         v.basis_referenzzinssatz = Decimal('1.75')
         v.basis_lik_punkte = Decimal('100')
@@ -207,7 +207,7 @@ class MietzinsAnpassungSollmietzinsTests(TestCase):
     abgeleitet."""
 
     def _setup(self):
-        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
+        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
         lg, e, m, v = _basis_objekte()
         v.basis_referenzzinssatz = Decimal('1.75')
         v.basis_lik_punkte = Decimal('100')
@@ -603,9 +603,9 @@ class MietzinsKonsistenzTests(TestCase):
         self.assertIn('"lik": 108.2', wbody)
 
     def test_mietzins_view_zeigt_effektive_werte(self):
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         from rentals.models import MietzinsAnpassung
-        Verwaltung.objects.create(firma='VW', strasse='W 1', plz='8000', ort='Zürich',
+        Organisation.objects.create(firma='VW', strasse='W 1', plz='8000', ort='Zürich',
                                   aktueller_referenzzinssatz=Decimal('1.25'),
                                   aktueller_lik_punkte=Decimal('107.1'))
         lg = Liegenschaft.objects.create(strasse='Mk 2', plz='8000', ort='Zürich',

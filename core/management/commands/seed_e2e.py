@@ -18,7 +18,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from django.contrib.auth import get_user_model
         from django.contrib.auth.models import Group
-        from crm.models import Verwaltung, Mieter
+        from crm.models import Organisation, Mieter
         from portfolio.models import Liegenschaft, Einheit
         from rentals.models import Mietvertrag
 
@@ -37,7 +37,7 @@ class Command(BaseCommand):
         user.save()
         user.groups.add(grp)
 
-        Verwaltung.objects.get_or_create(
+        Organisation.objects.get_or_create(
             firma="E2E Verwaltung AG",
             defaults=dict(strasse="Teststrasse 1", plz="8000", ort="Zürich",
                           iban="CH9300762011623852957"))

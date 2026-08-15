@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.test import TestCase, Client
 from ._helfer import (
-    _team_user, _basis_objekte, Mieter, Verwaltung, Liegenschaft, Einheit,
+    _team_user, _basis_objekte, Mieter, Organisation, Liegenschaft, Einheit,
     Mietvertrag, User)
 
 
@@ -272,8 +272,8 @@ class ReferenzzinsSenkungTests(TestCase):
     informative Pendenz (Herabsetzung möglich) angelegt."""
 
     def _setup(self, basis, aktuell):
-        from crm.models import Verwaltung
-        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal(str(aktuell)))
+        from crm.models import Organisation
+        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal(str(aktuell)))
         lg, e, m, v = _basis_objekte()
         v.basis_referenzzinssatz = Decimal(str(basis))
         v.mietzins_modell = 'fest'
@@ -506,9 +506,9 @@ class AnfechtungsfristTests(TestCase):
         self.assertFalse(Pendenz.objects.filter(vertrag=v, titel__icontains='Anfechtungsfrist').exists())
 
     def test_mietzinserhoehung_legt_anfechtungsfrist_an(self):
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         from core.models import Pendenz
-        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
+        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
         lg, e, m, v = _basis_objekte()   # netto 1500
         v.basis_referenzzinssatz = Decimal('1.75'); v.basis_lik_punkte = Decimal('100'); v.save()
         from rentals.services import naechster_anpassungstermin
@@ -932,8 +932,8 @@ class IndexMitteilungTests(TestCase):
         self.assertIsNone(index_anpassung_vorschlag(v, aktuell_lik=Decimal('110.0')))
 
     def test_anpassung_view_zeigt_index_banner(self):
-        from crm.models import Verwaltung
-        Verwaltung.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'),
+        from crm.models import Organisation
+        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'),
                                   aktueller_lik_punkte=Decimal('106.0'))
         v = self._index_vertrag()
         u = _team_user(); c = Client(); c.force_login(u)

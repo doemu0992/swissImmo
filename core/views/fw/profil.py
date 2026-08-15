@@ -25,7 +25,7 @@ from django.utils import timezone
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
-from crm.models import Mieter, Verwaltung
+from crm.models import Mieter, Organisation
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
@@ -44,14 +44,14 @@ def fw_account(request):
     """Firmen-/Verwaltungs-Stammdaten + Marktdaten (Referenzzins/LIK)."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.auth import log_aktion, hat_rolle, snapshot_model, diff_model
-    vw = Verwaltung.objects.first() or Verwaltung.objects.create(firma="Meine Verwaltung")
+    vw = Organisation.objects.first() or Organisation.objects.create(firma="Meine Verwaltung")
     basis = _global_filter(request)
 
     if request.method == 'POST' and hat_rolle(request.user, SCHREIB_ROLLEN):
         P = request.POST
-        alt_snap = snapshot_model(Verwaltung.objects.get(pk=vw.pk))
+        alt_snap = snapshot_model(Organisation.objects.get(pk=vw.pk))
         vw.firma = P.get('firma', '').strip() or vw.firma
         vw.strasse = P.get('strasse', '').strip()
         vw.plz = P.get('plz', '').strip()
@@ -185,10 +185,10 @@ def fw_marktdaten_live(request):
     """JSON-Endpoint für den 'Aktuelle Werte'-Button im Vertragsassistenten.
     Versucht ein Live-Update, gibt aber immer die aktuell gespeicherten Werte zurück."""
     from django.http import JsonResponse
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.auth import hat_rolle
     quelle = 'gespeichert'
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     # Nur nachladen, wenn der gespeicherte Stand wirklich alt ist. Der Aufruf
     # holt zwei externe Seiten (je timeout=10) und war mit gut einer Sekunde
     # die langsamste Route der Anwendung — bei nicht erreichbaren Quellen bis
@@ -202,7 +202,7 @@ def fw_marktdaten_live(request):
             from core.utils.market_data import update_verwaltung_rates
             update_verwaltung_rates()
             quelle = 'internet'
-            vw = Verwaltung.objects.first()
+            vw = Organisation.objects.first()
         except Exception:
             logger.warning("Marktdaten-Livenachladen fehlgeschlagen", exc_info=True)
             quelle = 'gespeichert'
@@ -591,10 +591,10 @@ def fw_vermarktung(request):
 def fw_expose_pdf(request, pk):
     """Exposé/Inserat (PDF) für ein Mietobjekt — Eckdaten, Mietzins, Kontakt."""
     from django.http import HttpResponse
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.expose import generate_expose_pdf, objekt_titel
     e = get_object_or_404(Einheit.objects.select_related('liegenschaft'), id=pk)
-    pdf = generate_expose_pdf(e, Verwaltung.objects.first())
+    pdf = generate_expose_pdf(e, Organisation.objects.first())
     resp = HttpResponse(pdf, content_type='application/pdf')
     lg = e.liegenschaft
     fname = f"Expose_{(lg.strasse if lg else e.bezeichnung)}".replace(' ', '_').replace('/', '-')
@@ -732,9 +732,9 @@ def fw_integrationen(request):
          'aktion': 'bank_link'},
     ]
     # Vermarktungs-Portale (Objekt-Feed)
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from portfolio.models import Einheit
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     token = (vw.portal_feed_token if vw else '') or ''
     feed_pfad = f"/neu/vermarktung/feed.json?token={token}" if token else ''
     ausgeschrieben_n = Einheit.objects.filter(zur_ausschreibung=True).count()
@@ -752,13 +752,13 @@ def fw_vermarktung_feed(request):
     Kein Login — die Absicherung erfolgt über ?token= (Verwaltung.portal_feed_token).
     """
     from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.portal_feed import feed_objekte, feed_csv_rows
     import csv as _csv
     import io
 
     import hmac
-    vw = Verwaltung.objects.first()
+    vw = Organisation.objects.first()
     erwartet = (vw.portal_feed_token if vw else '') or ''
     token = request.GET.get('token', '')
     # Konstant-zeitiger Vergleich (kein Timing-Seitenkanal beim Token-Raten).
@@ -789,12 +789,12 @@ def fw_integration_portal_token(request):
     """Erzeugt/rotiert oder entfernt den Portal-Feed-Token."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.auth import log_aktion
     import secrets
     if request.method != 'POST':
         return redirect('/neu/integrationen/')
-    vw = Verwaltung.objects.first() or Verwaltung.objects.create(firma='Meine Verwaltung', strasse='', plz='', ort='')
+    vw = Organisation.objects.first() or Organisation.objects.create(firma='Meine Verwaltung', strasse='', plz='', ort='')
     if request.POST.get('aktion') == 'entfernen':
         vw.portal_feed_token = ''
         vw.save(update_fields=['portal_feed_token'])
@@ -866,19 +866,19 @@ def fw_abonnemente(request):
     """Abo-/Preisseite: 3 Stufen, Preis pro Einheit, aktueller Plan wählbar."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.auth import log_aktion, hat_rolle
-    vw = Verwaltung.objects.first() or Verwaltung.objects.create(firma="Meine Verwaltung")
+    vw = Organisation.objects.first() or Organisation.objects.create(firma="Meine Verwaltung")
     basis = _global_filter(request)
 
     if request.method == 'POST' and hat_rolle(request.user, SCHREIB_ROLLEN):
         plan = request.POST.get('plan')
-        if plan in dict(Verwaltung.ABO_CHOICES):
+        if plan in dict(Organisation.ABO_CHOICES):
             vw.abo_plan = plan
             vw.abo_jaehrlich = request.POST.get('jaehrlich') == 'on'
             vw.save(update_fields=['abo_plan', 'abo_jaehrlich'])
             log_aktion(request, "Abo-Plan gewählt", plan, 'jährlich' if vw.abo_jaehrlich else 'monatlich')
-            messages.success(request, f"✅ Plan «{dict(Verwaltung.ABO_CHOICES)[plan]}» aktiviert.")
+            messages.success(request, f"✅ Plan «{dict(Organisation.ABO_CHOICES)[plan]}» aktiviert.")
         return redirect('/neu/abonnement/')
 
     einheiten = Einheit.objects.count()

@@ -25,7 +25,7 @@ from core.services.mahnstufen import (stufe_fuer_tage as _stufe_fuer_tage,
                                       eigentuemer_von_rechnung as _eigentuemer_von_rechnung)
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
-from crm.models import Mieter, Verwaltung
+from crm.models import Mieter, Organisation
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
@@ -187,8 +187,8 @@ def fw_debitoren(request):
             'objekt': (v.einheit.bezeichnung if v.einheit_id else ''),
             'adresse': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''),
         }
-    from crm.models import Verwaltung
-    vw = Verwaltung.objects.first()
+    from crm.models import Organisation
+    vw = Organisation.objects.first()
     absender = {
         'firma': vw.firma if vw else '', 'strasse': vw.strasse if vw else '',
         'plz': vw.plz if vw else '', 'ort': vw.ort if vw else '',
@@ -445,7 +445,7 @@ def fw_weiterverrechnung(request, kreditor_id):
             'objekt': (v.einheit.bezeichnung if v.einheit_id else ''),
             'adresse': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''),
         }
-    from crm.models import Verwaltung as _Vw
+    from crm.models import Organisation as _Vw
     _vw = _Vw.objects.first()
     absender = {
         'firma': _vw.firma if _vw else '', 'strasse': _vw.strasse if _vw else '',
@@ -791,14 +791,14 @@ def fw_betriebsrechnung_pdf(request, pk):
     """Gebäudescharfe Betriebsrechnung (Ertrag − Aufwand) einer Liegenschaft als
     PDF, für ein wählbares Kalenderjahr (?jahr=YYYY)."""
     from django.http import HttpResponse
-    from crm.models import Verwaltung
+    from crm.models import Organisation
     from core.services.gebaeude_report import betriebsrechnung_pdf
     lg = get_object_or_404(Liegenschaft, id=pk)
     try:
         jahr = int(request.GET.get('jahr') or timezone.localdate().year)
     except ValueError:
         jahr = timezone.localdate().year
-    pdf = betriebsrechnung_pdf(lg, jahr, verwaltung=Verwaltung.objects.first())
+    pdf = betriebsrechnung_pdf(lg, jahr, verwaltung=Organisation.objects.first())
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Betriebsrechnung_{jahr}_{lg.strasse}.pdf"'
     return resp
@@ -983,12 +983,12 @@ def fw_auswertung(request):
             r['neg'] = r['wert'] < 0
 
     if request.GET.get('pdf') == '1':
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         from core.services.auswertung_pdf import generate_auswertung_pdf
         from django.http import HttpResponse
         lg_name = f"{aktive_lg.strasse}, {aktive_lg.ort}" if aktive_lg else "Alle Liegenschaften"
         pdf = generate_auswertung_pdf(typ_label, jahr, lg_name, total, monate, lg_rows,
-                                      Verwaltung.objects.first())
+                                      Organisation.objects.first())
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = f'inline; filename="Auswertung_{typ}_{jahr}.pdf"'
         return resp
@@ -1021,9 +1021,9 @@ def fw_mieterspiegel(request):
     spiegel = berechne_mieterspiegel([aktive_lg])
 
     if request.GET.get('pdf') == '1':
-        from crm.models import Verwaltung
+        from crm.models import Organisation
         from django.http import HttpResponse
-        pdf = generate_mieterspiegel_pdf(spiegel, Verwaltung.objects.first(), stichtag=timezone.localdate())
+        pdf = generate_mieterspiegel_pdf(spiegel, Organisation.objects.first(), stichtag=timezone.localdate())
         resp = HttpResponse(pdf, content_type='application/pdf')
         fname = (aktive_lg.strasse or 'Mieterspiegel').replace(' ', '_')
         resp['Content-Disposition'] = f'inline; filename="Mieterspiegel_{fname}.pdf"'
