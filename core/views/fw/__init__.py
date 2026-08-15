@@ -8,16 +8,9 @@
 # Deshalb bleiben alle 293 benannten URLs während der gesamten Zerlegung
 # unverändert — jeder Block ist für sich zurückrollbar.
 #
-# `_rest.py` ist der noch nicht aufgeteilte Rest der Originaldatei. Er
-# schrumpft mit jedem Block und verschwindet am Ende ganz; dann fällt auch
-# der Stern-Import hier weg.
-
-# Der noch nicht aufgeteilte Rest zuerst — die herausgeloesten Bloecke
-# danach. Die Reihenfolge ist kein Zufall: Bei einem Stern-Import gewinnt der
-# LETZTE. Bliebe beim Verschieben versehentlich eine alte Fassung in
-# _rest.py stehen, ueberschreibt sie so das bereits herausgeloeste Modul
-# nicht, sondern wird von ihm ueberschrieben.
-from ._rest import *                   # noqa: F401,F403
+# Etappe 1 ist abgeschlossen: Es gibt keine Restdatei mehr. Die 232 Views
+# liegen in 33 Fachmodulen, die blockübergreifenden Helfer in `_basis.py`.
+# Was hier steht, ist nur noch die Fassade.
 
 # Herausgeloeste Bloecke, alphabetisch. Die Blocknummern aus dem
 # Arbeitsauftrag stehen hier bewusst NICHT: Sie zaehlen die Kommentarbanner
@@ -31,6 +24,7 @@ from .assets import *                  # noqa: F401,F403
 from .bankkonten import *              # noqa: F401,F403
 from .benutzer import *                # noqa: F401,F403
 from .debitor_qr import *              # noqa: F401,F403
+from .dashboard import *               # noqa: F401,F403
 from .dienstleister import *           # noqa: F401,F403
 from .dokumente import *               # noqa: F401,F403
 from .eigentuemer import *             # noqa: F401,F403
@@ -56,6 +50,10 @@ from .kreditoren import *    # noqa: F401,F403 — Block 4
 from .bankabgleich import *  # noqa: F401,F403 — Block 2
 from .vertragserstellung import * # noqa: F401,F403 — Block 3
 from .person import *        # noqa: F401,F403 — Block 2
+from .profil import *        # noqa: F401,F403 — Block 2
+from .listen import *        # noqa: F401,F403 — Block 0
+from .aktionen import *      # noqa: F401,F403 — Block 1
+from .detailseiten import *  # noqa: F401,F403 — Block 0
 # Der Stern-Import überträgt KEINE Namen mit führendem Unterstrich. Diese
 # neun werden aber von aussen gebraucht (core/tests.py,
 # core/services/abschluss_pdf.py) und müssen deshalb einzeln stehen.
@@ -69,12 +67,12 @@ from ._basis import (                                  # noqa: F401
     _num,
     _pendenz_ziel,
 )
-from ._rest import _formulare_prozesse                    # noqa: F401
 from .bankabgleich import (                            # noqa: F401
     _bank_csv_parse,
     _camt_kopf,
     _camt_parse,
 )
 from .buchhaltung import _erfolg_bilanz                   # noqa: F401
+from .detailseiten import _formulare_prozesse             # noqa: F401
 from .kuendigung import _auszugscheckliste_anlegen        # noqa: F401
 from .mietprozess import _bewerber_mail                   # noqa: F401

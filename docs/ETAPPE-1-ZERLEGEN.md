@@ -141,4 +141,53 @@ Der Skill `swissimmo-review` gilt: Widerspricht der Bestand diesem Dokument, gil
 - Ruff sauber, `manage.py check` ohne Beanstandung
 - Im Gesamtdiff keine inhaltliche Änderung
 
+### Erledigt am 14.08.2026
+
+Alle 33 Blöcke plus der Kopfbereich sind verschoben. `core/views/fw.py` ist ein Paket
+aus 34 Modulen; **`_rest.py` existiert nicht mehr** — es gibt keine „noch nicht
+aufgeteilte" Restdatei.
+
+| | vorher | nachher |
+|---|---|---|
+| Dateien | 1 | 35 (33 Fachmodule + `_basis.py` + `__init__.py`) |
+| Grösste Datei | 14'988 Zeilen | 1'834 (`detailseiten.py`) |
+| Views | 232 | 232, unverändert verteilt |
+| Benannte URLs | 293 | 293 |
+
+Die Zeilenbilanz geht auf: +892 Zeilen gegenüber dem Original, ausschliesslich
+Kopfkommentare und die Importe, die jedes Modul nun selbst braucht. **Jeder einzelne
+Blockinhalt wurde zeilenweise gegen den Stand vor dem Umzug verglichen** — 33 von 33
+identisch. Das ist der Beleg für „kein Verhalten geändert", nicht die grüne Testsuite
+allein.
+
+**Was unterwegs gelernt wurde — für `core/tests.py` und künftige Umzüge:**
+
+1. **Ein Block liefert oft Namen nach aussen, nicht nur nach innen.** Der Mahnwesen-Block
+   importierte nebenbei zwei Funktionen, die der Rest der Datei benutzte; der Assets-Block
+   ein `timedelta`-Alias, das an 17 Stellen gebraucht wurde. Vor jedem Schnitt gehört die
+   Frage: *Was gibt dieser Block heraus?*
+
+2. **Ruffs `F821` fängt fehlende Importe, aber nicht fehlende Re-Exporte.** Es prüft
+   undefinierte Namen im eigenen Modul — dass `from ._rest import _erfolg_bilanz` dort
+   nichts mehr findet, sieht es nicht. Dafür braucht es einen eigenen Test
+   (`FwFassadeTests`), der die Fassade abklopft. Beide zusammen, nicht eines statt des
+   anderen.
+
+3. **Konstanten brauchen eine Klammerbilanz, keine Einrückungsregel.** Bei einem
+   mehrzeiligen Dict steht die schliessende Klammer selbst in Spalte 0 — die Regel „bis zur
+   nächsten Zeile in Spalte 0" schneidet sie ab. Dieser Fehler ist mir zweimal passiert.
+
+4. **Handgepflegte Listen brechen.** Die neun paketweit weitergereichten Helfer mussten
+   dreimal nachgezogen werden, bis ich die Liste generiert habe statt sie zu pflegen.
+
+**Bewusst nicht getan** — jeweils eigener PR, nicht in einem Umzug:
+
+- `fw_benutzer` (Liste) liegt in `profil.py`, `fw_benutzer_form`/`-_loeschen` in
+  `benutzer.py`. Drei Views eines Features in zwei Modulen, weil die Blockgrenze so lief.
+- `aktionen.py` (32 Views) und `detailseiten.py` (33 Views) sind thematisch gemischt und
+  liessen sich auf die Fachmodule verteilen.
+- `fw_schaden_detail` setzt `gelesen = True` auch für die reine Leserolle (Fund aus E1c).
+
+---
+
 Danach ist `core/tests.py` (16'670 Zeilen, 221 Klassen) an der Reihe — nach Fachgebiet **und Laufzeit**, sonst blockieren die langsamen Tests später die CI. Zur Grössenordnung: Der volle Lauf dauert derzeit rund **8½ Minuten**.

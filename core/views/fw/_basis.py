@@ -297,3 +297,16 @@ VERTRAG_PILL = {
     'gekuendigt': ('Gekündigt',  'bg-rose-50 text-rose-600'),
     'archiviert': ('Archiviert', 'bg-slate-100 text-slate-500'),
 }
+
+
+# Wie VERTRAG_PILL: Status-Beschriftungen, die mehrere Module brauchen.
+# Herausgeloest mit KLAMMERBILANZ, nicht mit der Einrueckungsregel — bei
+# VERTRAG_PILL hatte letztere die schliessende Klammer abgeschnitten, weil
+# sie bei einem mehrzeiligen Literal selbst in Spalte 0 steht.
+STATUS_PILL = {
+    'offen':       ('Offen',       'bg-amber-50 text-amber-700'),
+    'teilbezahlt': ('Teilbezahlt', 'bg-sky-50 text-sky-700'),
+    'bezahlt':     ('Bezahlt',     'bg-emerald-50 text-emerald-700'),
+    'storniert':   ('Storniert',   'bg-slate-100 text-slate-500'),
+    'abgeschrieben': ('Abgeschrieben', 'bg-slate-100 text-slate-500'),
+}
