@@ -16678,3 +16678,56 @@ class AdminNurLesendTests(TestCase):
         neuer = User.objects.filter(username='neuer_e2').first()
         self.assertIsNotNone(neuer, "Benutzer liess sich über /neu/ nicht anlegen")
         self.assertIn('Lesend', list(neuer.groups.values_list('name', flat=True)))
+
+
+class FwFassadeTests(TestCase):
+    """Etappe 1: Die Fassade `core.views.fw` muss den Split überleben.
+
+    Während der Zerlegung wandern Views und Helfer zwischen Modulen. Nach
+    aussen darf davon nichts sichtbar werden — `swiss_immo/urls.py` und diese
+    Testdatei importieren unverändert aus `core.views.fw`. Diese Klasse hält
+    das fest, damit ein Block nicht stillschweigend einen Namen mitnimmt.
+    """
+
+    # Die privaten Helfer, die ausserhalb des Pakets gebraucht werden. Ein
+    # Stern-Import überträgt sie NICHT — sie stehen einzeln im __init__.py und
+    # sind damit die Stelle, die beim Verschieben am leichtesten bricht.
+    PRIVATE = [
+        '_auszugscheckliste_anlegen', '_bank_csv_parse', '_bewerber_mail',
+        '_camt_kopf', '_camt_parse', '_erfolg_bilanz', '_formulare_prozesse',
+        '_num', '_pendenz_ziel',
+    ]
+
+    def test_private_helfer_bleiben_erreichbar(self):
+        import core.views.fw as fw
+        for name in self.PRIVATE:
+            with self.subTest(name=name):
+                self.assertTrue(hasattr(fw, name),
+                                f"core.views.fw.{name} ist beim Zerlegen verlorengegangen")
+
+    def test_alle_url_views_aufloesbar(self):
+        # Jede benannte /neu/-URL muss auf ein aufrufbares Objekt zeigen. Das
+        # fängt den Fall ab, dass ein Block umzieht und __init__.py ihn nicht
+        # re-exportiert — die URL-Konfiguration importiert dann zwar noch, aber
+        # der Name käme aus dem falschen Modul oder gar nicht.
+        from django.urls import get_resolver
+        aufloesbar = 0
+        for muster in get_resolver().url_patterns:
+            for name, ziel in [(getattr(muster, 'name', None), getattr(muster, 'callback', None))]:
+                if name and name.startswith('fw_'):
+                    self.assertTrue(callable(ziel), f"{name} zeigt auf nichts Aufrufbares")
+                    aufloesbar += 1
+        self.assertGreater(aufloesbar, 200, "auffällig wenige fw_-URLs — Fassade kaputt?")
+
+    def test_kein_view_name_doppelt(self):
+        # Zwei Module dürfen nicht denselben View definieren: Beim Stern-Import
+        # gewinnt sonst stillschweigend der zuletzt importierte.
+        import glob, re as _re, collections
+        gefunden = collections.defaultdict(list)
+        for datei in glob.glob('core/views/fw/*.py'):
+            for zeile in open(datei, encoding='utf-8'):
+                treffer = _re.match(r'^def (fw_\w+)', zeile)
+                if treffer:
+                    gefunden[treffer.group(1)].append(datei.split('/')[-1])
+        doppelt = {k: v for k, v in gefunden.items() if len(v) > 1}
+        self.assertEqual(doppelt, {}, f"View-Namen mehrfach definiert: {doppelt}")
