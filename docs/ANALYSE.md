@@ -289,7 +289,7 @@ Ein Betriebsrisiko ist im Code selbst dokumentiert: Auf PythonAnywhere darf `/me
 
 ### 2.5 Hintergrundjobs
 
-Keine Task-Queue; **19 Management-Commands** laufen über den PythonAnywhere-Scheduler, dokumentiert in `docs/AUTOMATISIERUNG.md`:
+Keine Task-Queue; **18 Management-Commands** laufen über den PythonAnywhere-Scheduler, dokumentiert in `docs/AUTOMATISIERUNG.md`:
 
 | Command | Rhythmus | Mandantenbezug |
 |---|---|---|
@@ -411,7 +411,7 @@ Die Nummerierung ist die empfohlene Reihenfolge.
 | P1.9 | Rollenmodell auf die Organisation beziehen: heute globale Django-Gruppen, künftig Mitgliedschaft je Organisation. Die Projektanweisung nennt Inhaber, Verwalter, Sachbearbeiter, Lesezugriff — Abgleich mit den bestehenden vier Rollen nötig | M |
 | P1.10 | **Isolationstests:** für jedes Modell und jeden Endpunkt ein Test, der einen mandantenübergreifenden Zugriff versucht und fehlschlagen **muss** | L |
 | P1.11 | Dateiablage auf `organisation/<id>/…` umstellen, Bestandsdateien migrieren; Deployment-Prüfung `pruefe_media_schutz` in die CI aufnehmen | M |
-| P1.12 | Alle 19 Management-Commands über Organisationen iterieren lassen; `fetch_replies`/`fetch_rechnungen` je Mandant trennen | M |
+| P1.12 | Alle 18 Management-Commands über Organisationen iterieren lassen; `fetch_replies`/`fetch_rechnungen` je Mandant trennen | M |
 | P1.13 | `AktivitaetsLog` um die Organisation erweitern; strukturiertes Logging mit Organisations-ID | S |
 | P1.14 | Absender für PDF und E-Mail aus der Organisation statt aus `Verwaltung.objects.first()` beziehen (132 Fundstellen) | M |
 

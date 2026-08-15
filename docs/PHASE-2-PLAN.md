@@ -29,9 +29,14 @@ P0-Liste aus `docs/ANALYSE.md`, plus E1 bis E4. Agent: `aufraeumer`.
 
 **Gate erfüllt:** Alle acht P0-Posten erledigt, Ruff läuft als eigener CI-Job, `main` ist aktuell (Schutz noch zu setzen), `Eigentuemer` durchgängig umbenannt.
 
-### Etappe 1 — Zerlegen
+### Etappe 1 — Zerlegen ✅ *(abgeschlossen am 15.08.2026)*
 
-`core/views/fw.py` (14'938 Zeilen, 232 Views) in 34 Module entlang der vorhandenen Blockgrenzen. `core/tests.py` (16'586 Zeilen) nach Fachgebiet **und Laufzeit**. Agent: `zerleger`.
+Auftrag und Abnahme: **`docs/ETAPPE-1-ZERLEGEN.md`**.
+
+`core/views/fw.py` (14'988 Zeilen, 232 Views) ist ein Paket aus 35 Dateien; die grösste
+hat 1'834 Zeilen. `core/tests.py` (16'733 Zeilen, 222 Klassen) ist ein Paket aus 22 Dateien,
+aufgeteilt nach Fachgebiet **und Laufzeit** — dafür wurde die Laufzeit je Testklasse einmal
+gemessen; kein Modul trägt mehr als 11 % der Testzeit. Agent: `zerleger`.
 
 **Ein Block pro PR, sofort gemergt.** Nicht 34 Blöcke auf einem Zweig sammeln. Der eigentliche Feind bei einem Umzug ist nicht die parallele Arbeit, sondern die **lang lebende Umbau-Verzweigung**: Liegt `fw.py` zwei Wochen halb zerlegt auf einem Zweig, während am Original weitergearbeitet wird, kollidiert es. Wird jeder Block innerhalb einer Sitzung gemergt, existiert nie ein Zweig, mit dem etwas kollidieren könnte — und zwischen zwei Blöcken darf beliebig anderes passieren, auch an `fw.py`.
 
@@ -46,11 +51,13 @@ git log --oneline HEAD..origin/main -- core/views/fw.py   # leer = sicher
 
 *(Eine frühere Fassung dieses Plans verlangte hier ein Freeze-Fenster von zwei bis drei Tagen. Das war aus einem Standardvorgehen für Teams übernommen, ohne zu prüfen, ob die Voraussetzung vorliegt — das Repository hat einen einzigen Autor. Kleine Schnitte lösen dasselbe Problem, ohne dass Etappe 1 auf irgendetwas warten muss.)*
 
-**Gate:** Alle URLs auflösbar (nach E1 sind es 293, vorher 298 — die fünf entfielen mit der SPA), Testsuite grün, Zeilenbilanz geht auf, im Diff keine inhaltliche Änderung.
+**Gate erfüllt:** 293 URLs auflösbar, 1'079 Tests grün, Zeilenbilanz geht auf (+892 Zeilen, nur
+Kopfkommentare und Importe), **jeder der 33 Blöcke und alle 222 Testklassen zeilenweise gegen
+den Stand davor verglichen und identisch**.
 
-### Etappe 2 — Isolationstests rot schreiben *(parallel zu Etappe 1)*
+### Etappe 2 — Isolationstests rot schreiben
 
-Katalog und Bauplan: **`docs/ISOLATIONSTESTS.md`**.
+Katalog: **`docs/ISOLATIONSTESTS.md`** · Arbeitsauftrag: **`docs/ETAPPE-2-ISOLATIONSTESTS.md`**.
 
 Rund 35 bis 40 Testmethoden, die über 240 Fälle abdecken — die Masse datengetrieben aus der URL- und Modell-Registry (152 URLs mit ID-Parameter, 63 Modelle), nicht abgetippt. Neue Views sind damit automatisch mitgeprüft. Dazu ein Wächter, der fehlschlägt, sobald ein Modell ohne Organisationsbezug hinzukommt.
 
@@ -88,7 +95,7 @@ Zwei Stellen zum Anhalten: Gruppe B mit Waisen (Bestandsdatensätze ohne Weg zur
 
 ### Etappe 6 — Alles, was den Prozess verlässt
 
-Dateiablage auf `organisation/<id>/`, die Management-Commands über Organisationen iterieren, PDF- und E-Mail-Absender aus der Organisation statt aus 132 Singleton-Lookups, `AktivitaetsLog` mit Organisationsspalte, Cache-Keys.
+Dateiablage auf `organisation/<id>/`, die 18 Management-Commands über Organisationen iterieren, PDF- und E-Mail-Absender aus der Organisation statt aus 132 Singleton-Lookups, `AktivitaetsLog` mit Organisationsspalte, Cache-Keys.
 
 **Gate — und zugleich das Ende von Phase 2:** Alle Isolationstests grün. `mandanten-auditor` findet nichts.
 
