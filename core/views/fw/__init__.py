@@ -17,6 +17,9 @@ from .mahnwesen import *      # noqa: F401,F403 — Block 3
 
 from .assets import *        # noqa: F401,F403 — Block 9
 from .anlagen import *       # noqa: F401,F403 — Block 10
+from .sollstellung import *  # noqa: F401,F403 — Block 12
+from .eigentuemer import *   # noqa: F401,F403 — Block 19
+from .mwst import *          # noqa: F401,F403 — Block 22
 # Der Stern-Import überträgt KEINE Namen mit führendem Unterstrich. Diese
 # neun werden aber von aussen gebraucht (core/tests.py, core/services/) und
 # müssen deshalb einzeln stehen. Die Liste ist Absicht und kein Versehen:
