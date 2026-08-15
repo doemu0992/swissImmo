@@ -55,7 +55,7 @@ git log --oneline HEAD..origin/main -- core/views/fw.py   # leer = sicher
 Kopfkommentare und Importe), **jeder der 33 Blöcke und alle 222 Testklassen zeilenweise gegen
 den Stand davor verglichen und identisch**.
 
-### Etappe 2 — Isolationstests rot schreiben
+### Etappe 2 — Isolationstests rot schreiben ✅ *(abgeschlossen am 15.08.2026)*
 
 Katalog: **`docs/ISOLATIONSTESTS.md`** · Arbeitsauftrag: **`docs/ETAPPE-2-ISOLATIONSTESTS.md`**.
 
@@ -67,13 +67,32 @@ Sie sind zu diesem Zeitpunkt **alle rot**, weil `Organisation` noch nicht existi
 
 Läuft parallel, weil die Tests gegen URL-Namen geschrieben werden — die überleben den Split aus Etappe 1.
 
-**Gate:** 35 bis 40 Testmethoden über rund 240 Fälle vorhanden, alle rot, jede mit nachvollziehbarer Fehlermeldung.
+**Gate erfüllt:** `core/tests/test_isolation.py`, **14 Testmethoden über 263 Fälle** — 11 mit
+`expectedFailure` plus 3 Selbstprüfungen ohne Marker. Die Fehlermeldungen wurden vor dem Setzen
+des Markers einzeln gelesen; jeder Test scheitert an einem `assert`, nicht an einer Exception.
+
+*(Der Gate nannte „35 bis 40 Testmethoden über rund 240 Fälle". Es wurden weniger Methoden bei
+mehr Fällen: Die datengetriebenen Läufe über die URL- und Modell-Registry bündeln je einen ganzen
+Prüfaspekt in einer Methode, statt ihn auf ein Dutzend aufzuteilen. Die Zahl, auf die es ankommt,
+ist die der Fälle.)*
+
+Zwei Tests waren zunächst **grün und bewiesen nichts** — genau die Falle, vor der der
+Arbeitsauftrag warnt. Beide wurden verschärft und stehen im PR protokolliert. Ebenfalls gemessen:
+`dossier_liegenschaft`, `dossier_mieter` und `dossier_vertrag` liefern heute **200** für fremde
+Daten.
 
 ### Etappe 3 — Custom User Model
+
+Auftrag und Abnahme: **`docs/ETAPPE-3-USER-MODEL.md`**.
 
 Ein PR, eine Hand. Agent: `chirurg`. Mitzunehmen im selben PR: `Eigentuemer.benutzer`, `Mieter.benutzer`, das Rollenmodell über `user.groups`, die Benutzerverwaltung in `/neu/`.
 
 Danach praktisch nicht mehr möglich — deshalb vor allem anderen Architekturschritt.
+
+**Erster Befund des Auftrags:** Im Bestand stehen **zwei Konventionen** nebeneinander — 10 harte
+`'auth.User'` gegen 2 `settings.AUTH_USER_MODEL`. Wird `AUTH_USER_MODEL` umgestellt, ohne die
+zehn vorher zu vereinheitlichen, ist das Ergebnis kein Startfehler, sondern **zwei Benutzertabellen
+im Betrieb**.
 
 **Gate:** Testsuite grün, Vorwärts- und Rückwärtsmigration ausgeführt, `mandanten-auditor` ohne Leckfund.
 
