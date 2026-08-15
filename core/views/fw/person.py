@@ -18,7 +18,7 @@ from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from core.auth import (rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN,
+from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
 from crm.models import Mieter
 from finance.models import DebitorenRechnung, Zahlungseingang
@@ -147,7 +147,7 @@ def fw_person_detail(request, pk):
     })
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_mieter_portal_zugang(request, pk):
     """Erstellt/aktualisiert einen Mieterportal-Login und zeigt die Zugangsdaten einmalig."""
     from django.shortcuts import redirect
@@ -517,7 +517,7 @@ def fw_rentals_dokument_loeschen(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_person_loeschen(request, pk):
     """Person (Mieter/Kontakt) löschen. Blockiert bei aktivem Vertrag —
     dieser muss zuerst gekündigt/beendet werden. Entfernt auch den
@@ -550,7 +550,7 @@ def fw_person_loeschen(request, pk):
     return redirect('/neu/personen/')
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_person_dsg_loeschen(request, pk):
     """DSG-Löschung: anonymisiert die Personendaten (Recht auf Löschung), behält
     aber die Buchungsbelege (10-Jahres-Aufbewahrung Art. 958f OR). Bewerber-

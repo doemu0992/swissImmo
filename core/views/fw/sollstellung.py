@@ -15,7 +15,7 @@ from decimal import Decimal
 from django.shortcuts import render
 from django.utils import timezone
 
-from core.auth import rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN, TEAM_ROLLEN
+from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_ROLLEN
 from finance.models import DebitorenRechnung
 from portfolio.models import Liegenschaft
 from rentals.models import Mietvertrag
@@ -114,7 +114,7 @@ def fw_sollstellung(request):
     return render(request, 'fw/sollstellung.html', ctx)
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_sollstellung_run(request):
     """Führt den Mietenlauf für den gewählten Monat aus (idempotent, Pro-Rata,
     Debitoren 1100 an Ertrag 3000 / NK-Akonto 3020) — wie die Finanz-API."""

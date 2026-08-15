@@ -122,24 +122,32 @@ class Mitgliedschaft(models.Model):
     Mitgliedschaft. `Eigentümer` ist eine Portal-Rolle, keine Team-Rolle —
     das nicht vermischen (siehe `.claude/agents/chirurg.md`).
 
-    NOCH NICHT WIRKSAM
-    ------------------
-    `core/auth.py` liest die Rolle weiterhin aus den Django-Gruppen. Dieses
-    Modell trägt sie zunächst nur mit. Der Umschwung ist 4.3 — sonst hingen
-    Anmeldung, Rollenprüfung und Datenmodell gleichzeitig in der Luft.
+    SEIT 4.3 IST SIE DIE QUELLE DER ROLLE
+    -------------------------------------
+    `core/auth.py::hat_rolle()` liest die Rolle aus dieser Zeile, nicht mehr
+    aus `user.groups`. Ohne Mitgliedschaft in der aktiven Organisation gibt es
+    keine Rechte — ohne Rückfall auf die Gruppe, weil ein Rückfall genau den
+    Pfad offenliesse, den 4.3 schliesst.
     """
 
-    # Bewusst die HEUTIGEN vier Rollennamen aus `core/auth.py`, nicht die
-    # Zielrollen der Projektanweisung (Inhaber, Verwalter, Sachbearbeiter,
-    # Lesezugriff). Die Zuordnung zwischen beiden ist eine fachliche Frage und
-    # gehört in 4.3 vorgelegt; sie hier vorwegzunehmen hiesse raten.
-    ROLLE_VERWALTUNG = 'Verwaltung'
-    ROLLE_SACHBEARBEITUNG = 'Sachbearbeitung'
-    ROLLE_LESEND = 'Lesend'
+    # Die vier Team-Rollen der Projektanweisung. Die Zuordnung zu den drei
+    # bisherigen Gruppen wurde am 15.08.2026 entschieden:
+    #   Verwaltung → Verwalter, Sachbearbeitung → Sachbearbeiter,
+    #   Lesend → Lesezugriff.
+    # `Inhaber` ist NEU und hatte im Bestand keine Entsprechung. Er bekommt,
+    # was heute niemand hat: Abo und Rechnung, die Organisation löschen,
+    # Mitglieder einladen. Die Migration setzt genau einen. Der umgekehrte Weg
+    # (Verwaltung → Inhaber) wurde verworfen, weil er allen heutigen
+    # Verwaltungs-Konten stillschweigend Abo- und Löschrechte gegeben hätte.
+    ROLLE_INHABER = 'Inhaber'
+    ROLLE_VERWALTER = 'Verwalter'
+    ROLLE_SACHBEARBEITER = 'Sachbearbeiter'
+    ROLLE_LESEZUGRIFF = 'Lesezugriff'
     ROLLEN = [
-        (ROLLE_VERWALTUNG, 'Verwaltung'),
-        (ROLLE_SACHBEARBEITUNG, 'Sachbearbeitung'),
-        (ROLLE_LESEND, 'Lesend'),
+        (ROLLE_INHABER, 'Inhaber'),
+        (ROLLE_VERWALTER, 'Verwalter'),
+        (ROLLE_SACHBEARBEITER, 'Sachbearbeiter'),
+        (ROLLE_LESEZUGRIFF, 'Lesezugriff'),
     ]
 
     benutzer = models.ForeignKey(
@@ -149,7 +157,7 @@ class Mitgliedschaft(models.Model):
         'crm.Organisation', on_delete=models.CASCADE,
         related_name='mitgliedschaften', verbose_name="Organisation")
     rolle = models.CharField("Rolle", max_length=20, choices=ROLLEN,
-                             default=ROLLE_SACHBEARBEITUNG)
+                             default=ROLLE_SACHBEARBEITER)
     erstellt_am = models.DateTimeField("Angelegt am", auto_now_add=True)
 
     class Meta:

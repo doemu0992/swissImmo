@@ -23,7 +23,7 @@ from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from core.auth import (rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN,
+from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
 from crm.models import Mieter, Organisation
 from finance.models import DebitorenRechnung, Zahlungseingang
@@ -211,7 +211,7 @@ def fw_kreditor_bearbeiten(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_kreditor_freigeben(request, pk):
     """Kreditorenrechnung freigeben: bucht Aufwand (netto) an Kreditoren (2000)
     + Vorsteuer-Split (1170). Erfordert ein Aufwandskonto."""
@@ -653,7 +653,7 @@ def fw_asset_loeschen(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_kreditor_loeschen(request, pk):
     """Kreditorenrechnung löschen — NUR solange sie noch nicht verbucht ist
     (Status 'neu'). Verbuchte Rechnungen werden aus Revisionsgründen nicht
@@ -765,7 +765,7 @@ def fw_buchung_neu(request):
     return _zurueck()
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_buchung_stornieren(request, pk):
     """Storniert eine Journalbuchung durch eine revisionssichere Gegenbuchung.
     Die Originalbuchung bleibt erhalten (append-only, OR 958f). Nur Verwaltung —
@@ -1285,7 +1285,7 @@ def fw_bankbewegung_zuordnen(request):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_mwst_verbuchen(request):
     """Bucht die MWST-Abrechnung einer Periode aus (Audit K4/N2).
 

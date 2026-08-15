@@ -5,6 +5,24 @@ from datetime import date
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 User = get_user_model()
+
+def _mitgliedschaft(benutzer, rolle='Verwalter'):
+    """Rolle je Organisation (Etappe 4.3).
+
+    Diese drei Perf-Module bauen ihren Benutzer selbst, statt `_team_user` aus
+    `core/tests/_helfer.py` zu nehmen. Seit `hat_rolle()` die Mitgliedschaft
+    liest, reicht die Django-Gruppe nicht mehr — ohne diese Zeilen antwortet
+    jede gemessene View mit 403, und die Messung misst die Fehlerseite.
+    """
+    from crm.models import Mitgliedschaft, Organisation
+    organisation = Organisation.objects.order_by('pk').first()
+    if organisation is None:
+        organisation = Organisation.objects.create(
+            firma='Perf AG', strasse='Perfstrasse 1', plz='8000', ort='Zürich')
+    Mitgliedschaft.objects.get_or_create(
+        benutzer=benutzer, organisation=organisation, defaults={'rolle': rolle})
+    return organisation
+
 from django.test import Client, TestCase
 import core.tests_perf as _P
 from core.tests_perf import _seed
@@ -16,7 +34,8 @@ class VerifyDebitoren(TestCase):
         _P.PERF_SKALA, _P.EINHEITEN_PRO_LG, _P.MONATE = 2, 4, 6
         _seed()
         u = User.objects.create_user(username='v', password='x')
-        u.groups.add(Group.objects.get_or_create(name='Verwaltung')[0])
+        u.groups.add(Group.objects.get_or_create(name='Verwalter')[0])
+        _mitgliedschaft(u)
 
         # Realistische Vielfalt erzeugen: Teilzahlungen, Vollzahlung, Storno,
         # stornierte Zahlung (darf NICHT zaehlen), ueberfaellig und zukuenftig.
@@ -73,7 +92,8 @@ class VerifyDebitoren(TestCase):
         _P.PERF_SKALA, _P.EINHEITEN_PRO_LG, _P.MONATE = 2, 4, 6
         _seed()
         u = User.objects.create_user(username='v2', password='x')
-        u.groups.add(Group.objects.get_or_create(name='Verwaltung')[0])
+        u.groups.add(Group.objects.get_or_create(name='Verwalter')[0])
+        _mitgliedschaft(u)
         c = Client(); c.force_login(u)
         gesamt = DebitorenRechnung.objects.count()
         gesehen, reihenfolge = [], []

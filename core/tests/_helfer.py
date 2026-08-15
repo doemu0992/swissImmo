@@ -35,15 +35,81 @@ from portfolio.models import Liegenschaft, Einheit, Wartungsfrist
 from rentals.models import Mietvertrag
 
 
+#: Alte Gruppennamen → Rolle der Mitgliedschaft (Etappe 4.3).
+#: Die 68 expliziten `_team_user('Verwaltung')`-Aufrufe im Bestand sprechen
+#: weiter das alte Vokabular; hier wird es einmal übersetzt, statt sie alle
+#: anzufassen. Unbekannte Namen (es gibt genau einen: 'Buchhaltung') bekommen
+#: bewusst KEINE Mitgliedschaft — ein Test, der eine erfundene Rolle verlangt,
+#: soll keine Rechte bekommen.
+_ROLLEN_UEBERSETZUNG = {
+    'Verwaltung': 'Verwalter',
+    'Sachbearbeitung': 'Sachbearbeiter',
+    'Lesend': 'Lesezugriff',
+    'Inhaber': 'Inhaber',
+    'Verwalter': 'Verwalter',
+    'Sachbearbeiter': 'Sachbearbeiter',
+    'Lesezugriff': 'Lesezugriff',
+}
+
+
+def _test_organisation(**felder):
+    """Die EINE Organisation, in der alle Testdaten leben.
+
+    Legt an, wenn keine da ist, und aktualisiert sonst die vorhandene. Wichtig
+    ist das „sonst": Ein zweiter Datensatz waere im Test schlimmer als im
+    Betrieb, weil 79 Stellen im Produktivcode `Organisation.objects.first()`
+    lesen — ein Test, der seine eigene Verwaltung als ZWEITE anlegt, prueft
+    dann gegen die falsche. Genau das ist beim Umstellen passiert: Drei
+    Portal-Tests erwarteten eine E-Mail an ihre Verwaltung und bekamen keine,
+    weil `first()` die Test-Organisation zurueckgab.
+
+    Geteilt zwischen `_team_user` und `_basis_objekte`: Seit Etappe 4.3 setzt
+    die Middleware den Kontext aus der Mitgliedschaft, und `_global_filter`
+    zeigt nur Liegenschaften DIESER Organisation. Legte der eine Helfer den
+    Benutzer in Organisation X und der andere die Liegenschaft in nichts,
+    saehe der Testbenutzer seinen eigenen Bestand nicht — und die Tests waeren
+    rot, ohne dass ein Fehler vorlaege.
+    """
+    organisation = Organisation.objects.order_by('pk').first()
+    if organisation is None:
+        organisation = Organisation.objects.create(
+            firma='Testverwaltung AG', strasse='Teststrasse 1', plz='8000', ort='Zürich')
+    if felder:
+        for name, wert in felder.items():
+            setattr(organisation, name, wert)
+        organisation.save(update_fields=list(felder))
+    return organisation
+
+
 def _team_user(rolle='Verwaltung'):
+    """Team-Benutzer mit Gruppe UND Mitgliedschaft.
+
+    Seit Etappe 4.3 liest `hat_rolle()` die Mitgliedschaft, nicht die Gruppe.
+    Ein Benutzer ohne Mitgliedschaft hat damit keine Rechte — jede View mit
+    `@rolle_erforderlich` antwortet ihm mit 403. Deshalb legt dieser Helfer
+    beides an; die Gruppe bleibt, weil `ist_eigentuemer()` und die
+    Benutzerliste sie weiterhin lesen.
+
+    Die Organisation wird geteilt (`get_or_create`): Alle Testbenutzer
+    arbeiten in derselben, so wie der Bestand vor Phase 2 auch. Wer zwei
+    Mandanten braucht, nimmt `MandantenFixture` aus `_isolation.py`.
+    """
+    from crm.models import Mitgliedschaft
+
     grp, _ = Group.objects.get_or_create(name=rolle)
     u = User.objects.create_user(username=f'team_{rolle}', password='x')
     u.groups.add(grp)
+
+    mitgliedsrolle = _ROLLEN_UEBERSETZUNG.get(rolle)
+    if mitgliedsrolle:
+        Mitgliedschaft.objects.create(benutzer=u, organisation=_test_organisation(),
+                                      rolle=mitgliedsrolle)
     return u
 
 
 def _basis_objekte():
     lg = Liegenschaft.objects.create(strasse='Teststrasse 1', plz='8000', ort='Zürich',
+                                     organisation=_test_organisation(),
                                      versicherungswert=Decimal('1000000'))
     e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='wohnung',
                                nettomiete_aktuell=Decimal('1500'), nebenkosten_aktuell=Decimal('200'))

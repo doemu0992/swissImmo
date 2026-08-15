@@ -8,14 +8,14 @@ from rentals.models import Mietvertrag
 from finance.models import DebitorenRechnung
 
 from django.shortcuts import redirect
-from core.auth import rolle_erforderlich, ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG
+from core.auth import rolle_erforderlich, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER
 from django.contrib import messages
 import datetime
 
 # Import für den Marktdaten-Sync
 from core.utils.market_data import update_verwaltung_rates
 
-@rolle_erforderlich(ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG)
+@rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER)
 def update_market_data_view(request):
     """
     Startet den manuellen Import von BWO (Zins) und BFS (LIK).

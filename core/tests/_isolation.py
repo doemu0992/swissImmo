@@ -246,7 +246,7 @@ class MandantenFixture:
                                      password='geheim-egal', email=f'{self.kuerzel}@example.ch')
         u.groups.add(grp)
         Mitgliedschaft.objects.create(benutzer=u, organisation=self.organisation,
-                                      rolle=Mitgliedschaft.ROLLE_VERWALTUNG)
+                                      rolle=Mitgliedschaft.ROLLE_VERWALTER)
         return u
 
     def _alle_objekte(self):

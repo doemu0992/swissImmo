@@ -23,7 +23,7 @@ from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from core.auth import (rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN,
+from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
 from crm.models import Mieter, Organisation
 from finance.models import DebitorenRechnung, Zahlungseingang
@@ -106,11 +106,11 @@ def fw_account(request):
         **basis, 'nav': 'account', 'vw': vw,
         'logo_url': _url('logo'), 'unterschrift_url': sig_url,
         'unterschrift_verwaist': bool(getattr(vw, 'unterschrift_bild', None)) and not sig_url,
-        'kann_reset': hat_rolle(request.user, [ROLLE_VERWALTUNG]),
+        'kann_reset': hat_rolle(request.user, [ROLLE_VERWALTER]),
     })
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_datenreset(request):
     """GEFAHRENZONE: löscht ALLE operativen Daten (Liegenschaften, Objekte,
     Verträge, Personen, Buchungen, Rechnungen, Schäden, Vorlagen, Mandate,
@@ -133,9 +133,22 @@ def fw_datenreset(request):
     OWN_APPS = {'core', 'crm', 'finance', 'mietprozess', 'portfolio', 'rentals', 'tickets'}
     # Auth-Tabellen NIE anfassen (Login/Rollen bleiben), auch wenn ein Modell
     # im 'core'-App-Label darauf zeigen sollte.
+    # Zwei Tabellen kamen mit Etappe 4 dazu, beide im App-Label 'crm' und
+    # deshalb ohne diesen Eintrag mitgeloescht:
+    #
+    # `crm_mitgliedschaft` traegt seit 4.3 die Rolle. Ohne sie haette nach dem
+    # Reset KEIN Benutzer mehr eine Rolle, und jede View antwortete mit 403 —
+    # gefunden von test_reset_behaelt_benutzer.
+    #
+    # `core_verwaltung` ist die Organisation. Sie IST der Mandant, nicht
+    # dessen Daten: Firmenname, IBAN, Logo, Referenzzins, MWST-Einstellungen.
+    # Sie zu loeschen und die Mitgliedschaft zu behalten hinterliess einen
+    # Fremdschluessel ins Leere (IntegrityError). Und fachlich ist «meine
+    # Daten zuruecksetzen» nicht «meine Firma abmelden».
     KEEP = {'auth_user', 'auth_group', 'auth_user_groups', 'auth_group_permissions',
             'auth_permission', 'auth_user_user_permissions', 'django_admin_log',
-            'django_content_type', 'django_session', 'django_migrations'}
+            'django_content_type', 'django_session', 'django_migrations',
+            'crm_mitgliedschaft', 'core_verwaltung'}
     tabellen = sorted({m._meta.db_table for m in apps.get_models()
                        if m._meta.app_label in OWN_APPS and m._meta.db_table not in KEEP})
 
@@ -245,7 +258,7 @@ def fw_benutzer(request):
     return render(request, 'fw/benutzer.html', {**basis, 'nav': 'benutzer', 'rows': rows})
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_logbuch(request):
     """Logbuch / Audit-Trail: wer hat wann was getan (Verträge, Personen,
     Dokumente, Buchungen, Löschungen …). Nur für die Verwaltung einsehbar,
@@ -784,7 +797,7 @@ def fw_vermarktung_feed(request):
     }, json_dumps_params={'ensure_ascii': False})
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_integration_portal_token(request):
     """Erzeugt/rotiert oder entfernt den Portal-Feed-Token."""
     from django.shortcuts import redirect

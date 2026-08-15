@@ -1,6 +1,6 @@
 import logging
 # core/views/pdf.py
-from core.auth import rolle_erforderlich, ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG, ROLLE_LESEND
+from core.auth import rolle_erforderlich, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from django.utils.text import slugify
@@ -11,7 +11,7 @@ from core.services.dokument_service import generate_dokument_pdf_bytes, DOKUMENT
 logger = logging.getLogger(__name__)
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG, ROLLE_LESEND)
+@rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF)
 def generate_pdf_view(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     try:
@@ -84,7 +84,7 @@ def erzeuge_und_ablege_vertragspaket(vertrag):
     return dateien
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG, ROLLE_LESEND)
+@rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF)
 def generate_vertragspaket_zip(request, vertrag_id):
     """Erzeugt Mietvertrag + Beilagen, legt sie einzeln in die Akte und liefert
     alles zusammen als ZIP zum Download."""
@@ -104,7 +104,7 @@ def generate_vertragspaket_zip(request, vertrag_id):
     return resp
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG, ROLLE_LESEND)
+@rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF)
 def generate_dokument_view(request, vertrag_id, doc_type):
     """Erstellt eines der Fairwalter-Begleitdokumente (Allgemeine Bedingungen,
     Hausordnung, Merkblatt, Wohnungsausweis, Begleitbriefe) als PDF."""

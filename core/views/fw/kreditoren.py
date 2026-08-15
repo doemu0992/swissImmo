@@ -17,7 +17,7 @@ from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from core.auth import (rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN,
+from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
 from portfolio.models import Liegenschaft
 
@@ -173,7 +173,7 @@ def fw_kreditoren(request):
     })
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_kreditoren_pain001(request):
     """Erzeugt eine ISO-20022 pain.001-Zahlungsdatei aus allen freigegebenen
     Kreditorenrechnungen (für den e-Banking-Massenupload)."""
@@ -228,7 +228,7 @@ def fw_kreditoren_pain001(request):
     return resp
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_kreditor_bezahlen(request):
     """Bezahlt eine freigegebene Kreditorenrechnung — Kreditoren 2000 an Bank 1020
     (dieselbe Doppelbuchung wie die Finanz-API pay_kreditor)."""
@@ -299,7 +299,7 @@ def fw_kreditor_bezahlen(request):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_zahllauf(request):
     """Zahllauf: Vorschlagsliste → Auswahl → pain.001 → Sammelbestätigung.
 
@@ -486,7 +486,7 @@ def fw_zahllauf(request):
     })
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_kreditor_zahlung_zuruecksetzen(request, pk):
     """Setzt eine 'in Zahlung' stehende Rechnung auf 'freigegeben' zurück —
     falls die pain.001-Datei doch nicht ausgeführt wurde. Dann kommt sie im
@@ -509,7 +509,7 @@ def fw_kreditor_zahlung_zuruecksetzen(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_kreditor_zahlung_stornieren(request, pk):
     """Storniert eine VERBUCHTE Lieferantenzahlung revisionssicher: Gegenbuchung
     zur Zahlungsbuchung (2000 an Bank), Zahlung → 'storniert', der offene Posten

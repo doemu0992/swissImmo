@@ -29,25 +29,63 @@ from ninja.security import SessionAuth
 logger = logging.getLogger(__name__)
 
 
-ROLLE_VERWALTUNG = "Verwaltung"
-ROLLE_SACHBEARBEITUNG = "Sachbearbeitung"
-ROLLE_LESEND = "Lesend"
+# Team-Rollen der Projektanweisung. Seit Etappe 4.3 hängen sie an der
+# `Mitgliedschaft` je Organisation, nicht mehr an globalen Django-Gruppen.
+ROLLE_INHABER = "Inhaber"
+ROLLE_VERWALTER = "Verwalter"
+ROLLE_SACHBEARBEITER = "Sachbearbeiter"
+ROLLE_LESEZUGRIFF = "Lesezugriff"
+
+#: Portal-Rolle, KEINE Team-Rolle. Eigentümer bekommen keine Mitgliedschaft;
+#: sie hängen über `Eigentuemer.benutzer` an ihrem Datensatz. Deshalb bleibt
+#: diese eine Rolle bei den Gruppen — sie beantwortet eine andere Frage.
 ROLLE_EIGENTUEMER = "Eigentümer"
 
-# Team-Rollen = dürfen ins SPA und die API lesen (Eigentümer bewusst NICHT —
+# Team-Rollen = dürfen die Oberfläche lesen (Eigentümer bewusst NICHT —
 # sie würden sonst die Daten ALLER Eigentümer sehen).
-TEAM_ROLLEN = (ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG, ROLLE_LESEND)
-SCHREIB_ROLLEN = (ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG)
-VERWALTUNGS_ROLLEN = (ROLLE_VERWALTUNG,)
+TEAM_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF)
+SCHREIB_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER)
+VERWALTUNGS_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER)
+
+#: Was nur der Inhaber darf: Abo und Rechnung, die Organisation löschen,
+#: Mitglieder einladen. Heute noch nirgends verdrahtet — die Konstante steht
+#: hier, damit der Unterschied zwischen Inhaber und Verwalter einen Ort hat
+#: und nicht beim ersten Bedarf neu erfunden wird.
+INHABER_ROLLEN = (ROLLE_INHABER,)
 
 
 def hat_rolle(user, rollen):
-    """True wenn der User (eingeloggt) eine der Rollen hat. Superuser: immer True."""
+    """True wenn der Benutzer in der AKTIVEN Organisation eine der Rollen hat.
+
+    Bis Etappe 4.2 las das `user.groups` — global. Eine Person, die für zwei
+    Verwaltungen arbeitet, hatte damit überall dieselbe Rolle, und wer bei A
+    „Verwaltung" war, war es bei B auch. Genau das schliesst 4.3.
+
+    STRENG, OHNE RÜCKFALL AUF DIE GRUPPE
+    ------------------------------------
+    Keine Mitgliedschaft in der aktiven Organisation heisst keine Rechte. Ein
+    Rückfall auf die Django-Gruppe wäre bequemer, liesse aber genau den Pfad
+    offen, den dieser Schritt schliessen soll — wer in B keine Mitgliedschaft
+    hat, behielte dort die Rechte seiner globalen Gruppe.
+
+    Ohne gesetzte Organisation ist die Antwort ebenfalls `False`, nicht
+    „alles": derselbe Grundsatz wie im `TenantManager`.
+
+    Superuser bleiben ausgenommen (Notfall-Zugang), wie bisher.
+    """
     if not user or not user.is_authenticated:
         return False
     if user.is_superuser:
         return True
-    return user.groups.filter(name__in=rollen).exists()
+
+    from core.tenancy import aktuelle_organisation
+    from crm.models import Mitgliedschaft
+
+    organisation = aktuelle_organisation()
+    if organisation is None:
+        return False
+    return Mitgliedschaft.objects.filter(
+        benutzer=user, organisation=organisation, rolle__in=rollen).exists()
 
 
 def ist_eigentuemer(user):

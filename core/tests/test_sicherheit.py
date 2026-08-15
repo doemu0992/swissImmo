@@ -120,7 +120,7 @@ class SecurityBatchTests(TestCase):
         idx = src.find('def fw_buchung_stornieren')
         self.assertNotEqual(idx, -1, f"fw_buchung_stornieren nicht in {quelle} gefunden")
         deko = src[max(0, idx - 120):idx]
-        self.assertRegex(deko, r"rolle_erforderlich\(ROLLE_VERWALTUNG\)")
+        self.assertRegex(deko, r"rolle_erforderlich\(ROLLE_VERWALTER\)")
 
     def test_oeffentliches_schadenformular_leakt_kein_portfolio(self):
         # Das anonyme Schadenformular darf nicht das gesamte Portfolio (alle
@@ -853,4 +853,4 @@ class AdminNurLesendTests(TestCase):
                                       'rolle': 'Lesend', 'vorname': 'Neu', 'nachname': 'Benutzer'})
         neuer = User.objects.filter(username='neuer_e2').first()
         self.assertIsNotNone(neuer, "Benutzer liess sich über /neu/ nicht anlegen")
-        self.assertIn('Lesend', list(neuer.groups.values_list('name', flat=True)))
+        self.assertIn('Lesezugriff', list(neuer.groups.values_list('name', flat=True)))

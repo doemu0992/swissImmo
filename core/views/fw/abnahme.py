@@ -14,7 +14,7 @@ from decimal import Decimal
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from core.auth import rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN, TEAM_ROLLEN
+from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_ROLLEN
 from rentals.models import Mietvertrag
 
 from ._basis import _global_filter, _num, _parse_adresse
@@ -257,7 +257,7 @@ def fw_vertrag_status(request, pk):
     return redirect(f'/neu/vertraege/{v.id}/')
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_vertrag_loeschen(request, pk):
     """Löscht einen Mietvertrag. Verknüpfte Rechnungen/Zahlungen bleiben erhalten
     (FK on_delete=SET_NULL) — die revisionssichere Buchhaltung wird nicht zerstört."""

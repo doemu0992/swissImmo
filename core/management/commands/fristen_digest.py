@@ -45,7 +45,7 @@ class Command(BaseCommand):
 
         # Empfänger: aktive Team-Benutzer mit E-Mail
         empfaenger = list(User.objects.filter(
-            is_active=True, groups__name__in=['Verwaltung', 'Sachbearbeitung']
+            is_active=True, groups__name__in=['Inhaber', 'Verwalter', 'Sachbearbeiter']
         ).exclude(email='').values_list('email', flat=True).distinct())
         if not empfaenger:
             vw = Organisation.objects.first()

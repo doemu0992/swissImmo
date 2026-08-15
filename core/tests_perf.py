@@ -21,6 +21,24 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
 User = get_user_model()
+
+def _mitgliedschaft(benutzer, rolle='Verwalter'):
+    """Rolle je Organisation (Etappe 4.3).
+
+    Diese drei Perf-Module bauen ihren Benutzer selbst, statt `_team_user` aus
+    `core/tests/_helfer.py` zu nehmen. Seit `hat_rolle()` die Mitgliedschaft
+    liest, reicht die Django-Gruppe nicht mehr — ohne diese Zeilen antwortet
+    jede gemessene View mit 403, und die Messung misst die Fehlerseite.
+    """
+    from crm.models import Mitgliedschaft, Organisation
+    organisation = Organisation.objects.order_by('pk').first()
+    if organisation is None:
+        organisation = Organisation.objects.create(
+            firma='Perf AG', strasse='Perfstrasse 1', plz='8000', ort='Zürich')
+    Mitgliedschaft.objects.get_or_create(
+        benutzer=benutzer, organisation=organisation, defaults={'rolle': rolle})
+    return organisation
+
 from django.test import Client, TestCase
 from unittest import skipUnless
 from django.test.utils import CaptureQueriesContext
@@ -108,9 +126,10 @@ class PerfHarness(TestCase):
     def test_profil_neu_seiten(self):
         lgs, einheiten, vertraege = _seed()
         from finance.models import DebitorenRechnung
-        grp, _ = Group.objects.get_or_create(name='Verwaltung')
+        grp, _ = Group.objects.get_or_create(name='Verwalter')
         u = User.objects.create_user(username='perf', password='x')
         u.groups.add(grp)
+        _mitgliedschaft(u)
         c = Client()
         c.force_login(u)
 

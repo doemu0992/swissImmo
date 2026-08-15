@@ -13,7 +13,7 @@ from decimal import Decimal
 from django.shortcuts import render
 from django.utils import timezone
 
-from core.auth import rolle_erforderlich, ROLLE_VERWALTUNG, TEAM_ROLLEN
+from core.auth import rolle_erforderlich, ROLLE_VERWALTER, TEAM_ROLLEN
 
 from ._basis import (_global_filter, _mwst_beleg, _mwst_bereits_verbucht,
                      _mwst_periode, _num)
@@ -58,7 +58,7 @@ def fw_mwst(request):
     })
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_mwst_einstellungen(request):
     """Speichert MWST-Methode, Saldosteuersatz und MWST-Nummer."""
     from django.shortcuts import redirect

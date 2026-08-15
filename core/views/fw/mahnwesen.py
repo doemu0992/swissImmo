@@ -19,7 +19,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from core.auth import rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN, TEAM_ROLLEN
+from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_ROLLEN
 from crm.models import Mieter
 from finance.models import DebitorenRechnung
 
@@ -320,7 +320,7 @@ def fw_mahnung_erfassen(request):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_mahnlauf(request):
     """Sammel-Mahnlauf über ALLE fälligen offenen Debitoren (statt einzeln).
     Erzeugt Mahnungen je Stufe (idempotent), stellt Mahngebühr + optional

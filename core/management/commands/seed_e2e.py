@@ -29,7 +29,7 @@ class Command(BaseCommand):
 
         ensure_kontenplan()
 
-        grp, _ = Group.objects.get_or_create(name="Verwaltung")
+        grp, _ = Group.objects.get_or_create(name="Verwalter")
         user, created = User.objects.get_or_create(
             username="e2e", defaults={"is_staff": True})
         user.set_password("e2e-pass")

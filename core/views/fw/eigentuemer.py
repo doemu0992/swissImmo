@@ -14,7 +14,7 @@ from decimal import Decimal
 
 from django.shortcuts import get_object_or_404, render
 
-from core.auth import rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN
+from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN
 from portfolio.models import Liegenschaft
 
 from ._basis import _global_filter, _num
@@ -161,7 +161,7 @@ def fw_eigentuemer_portal_zugang(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_eigentuemer_loeschen(request, pk):
     """Löscht einen Eigentümer — NUR wenn keine Liegenschaften zugeordnet sind
     (eigentuemer->liegenschaft ist CASCADE; sonst würden Objekte/Verträge mitgelöscht)."""

@@ -39,9 +39,9 @@
         {% else %}
         <div><label for="bf-rolle" class="block text-xs font-semibold text-slate-500 mb-1">Rolle</label>
             <select id="bf-rolle" name="rolle" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                {% for r in rollen %}<option value="{{ r }}" {% if aktuelle_rolle == r or ist_neu and r == 'Lesend' %}selected{% endif %}>{{ r }}</option>{% endfor %}
+                {% for r in rollen %}<option value="{{ r }}" {% if aktuelle_rolle == r or ist_neu and r == 'Lesezugriff' %}selected{% endif %}>{{ r }}</option>{% endfor %}
             </select>
-            <p class="text-xs text-slate-400 mt-1">Verwaltung = Vollzugriff · Sachbearbeitung = schreibend · Lesend = nur ansehen</p></div>
+            <p class="text-xs text-slate-400 mt-1">Inhaber = Vollzugriff inkl. Abo · Verwalter = Vollzugriff im Tagesgeschäft · Sachbearbeiter = schreibend · Lesezugriff = nur ansehen</p></div>
         {% endif %}
         <label class="flex items-center gap-2 text-sm text-slate-700">
             <input type="checkbox" name="is_active" {% if ist_neu or ziel.is_active %}checked{% endif %} {% if ist_selbst %}disabled{% endif %} class="accent-indigo-600"> Konto aktiv

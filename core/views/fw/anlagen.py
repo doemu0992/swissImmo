@@ -11,7 +11,7 @@ from decimal import Decimal
 from django.shortcuts import render
 from django.utils import timezone
 
-from core.auth import rolle_erforderlich, ROLLE_VERWALTUNG, TEAM_ROLLEN
+from core.auth import rolle_erforderlich, ROLLE_VERWALTER, TEAM_ROLLEN
 from portfolio.models import Liegenschaft
 
 from ._basis import _global_filter, _num
@@ -21,7 +21,7 @@ from ._basis import _global_filter, _num
 # ANLAGEN & ABSCHLUSS (AfA, Erneuerungsfonds, Periodensperre)
 # ============================================================
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_anlagen(request):
     """Anlagenbuchhaltung (lineare AfA), Erneuerungsfonds und Periodensperre."""
     from django.shortcuts import redirect

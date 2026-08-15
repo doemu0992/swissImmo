@@ -9,7 +9,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from core.auth import rolle_erforderlich, log_aktion, ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG
+from core.auth import rolle_erforderlich, log_aktion, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER
 from django.conf import settings
 from django.http import HttpResponse
 
@@ -201,13 +201,13 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
 # VIEWS
 # ==============================================================================
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def send_abrechnung_email_view(request, periode_id):
     # (Abrechnungs-Logik bleibt gleich...)
     pass
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def send_mahnung_email_view(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     verwaltung = Organisation.objects.first()
@@ -254,7 +254,7 @@ def send_mahnung_email_view(request, vertrag_id):
     return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG)
+@rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER)
 def generate_mahnung_pdf_view(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     verwaltung = Organisation.objects.first()

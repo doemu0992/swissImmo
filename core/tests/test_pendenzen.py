@@ -243,7 +243,7 @@ class FristenKalenderTests(TestCase):
         from django.contrib.auth import get_user_model
         from django.contrib.auth.models import Group
         User = get_user_model()
-        grp, _ = Group.objects.get_or_create(name='Verwaltung')
+        grp, _ = Group.objects.get_or_create(name='Verwalter')
         u = User.objects.create_user(username='chef2', password='x', email='chef@example.ch')
         u.groups.add(grp)
         self._frist('Zahlungsfrist läuft ab', 2)
@@ -266,7 +266,7 @@ class FristenKalenderTests(TestCase):
         from django.contrib.auth import get_user_model
         from django.contrib.auth.models import Group
         User = get_user_model()
-        grp, _ = Group.objects.get_or_create(name='Verwaltung')
+        grp, _ = Group.objects.get_or_create(name='Verwalter')
         u = User.objects.create_user('chef3', password='x', email='c3@example.ch'); u.groups.add(grp)
         self._frist('Frist morgen', 2)
         wd = timezone.localdate().weekday()

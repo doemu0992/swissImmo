@@ -183,7 +183,61 @@ Heute sind Rollen globale Django-Gruppen: `hat_rolle()` prüft `user.groups.filt
 
 Künftig: Mitgliedschaft je Organisation, mit den Rollen der Projektanweisung — **Inhaber, Verwalter, Sachbearbeiter, Lesezugriff**.
 
-Der Abgleich mit den vier bestehenden Rollen (Verwaltung, Sachbearbeitung, Lesend, Eigentümer) ist eine **fachliche Frage** und gehört vorgelegt. Ein Punkt dabei ist bereits klar: `Eigentümer` ist keine Team-Rolle, sondern eine Portal-Rolle — das nicht vermischen.
+### Ausgeführt am 15.08.2026
+
+**Die Zuordnung, entschieden:**
+
+| bisher (Django-Gruppe) | neu (Mitgliedschaft) |
+|---|---|
+| Verwaltung | **Verwalter** |
+| Sachbearbeitung | **Sachbearbeiter** |
+| Lesend | **Lesezugriff** |
+| Eigentümer | *gar nicht* — Portal-Rolle, keine Team-Rolle |
+| — | **Inhaber** (neu) |
+
+`Inhaber` hatte im Bestand keine Entsprechung. Er bekommt, was heute niemand hat: Abo und
+Rechnung, die Organisation löschen, Mitglieder einladen. Die Migration setzt genau einen je
+Organisation — den ältesten Superuser, ersatzweise die älteste Verwalter-Mitgliedschaft. Der
+umgekehrte Weg (Verwaltung → Inhaber) wurde verworfen, weil er allen heutigen
+Verwaltungs-Konten stillschweigend Abo- und Löschrechte gegeben hätte.
+
+**`hat_rolle()` ist streng, ohne Rückfall auf die Gruppe.** Keine Mitgliedschaft in der aktiven
+Organisation heisst keine Rechte. Ein Rückfall wäre bequemer gewesen, liesse aber genau den Pfad
+offen, den dieser Schritt schliesst.
+
+**Der Schritt war klein, weil die Architektur es hergab.** Gemessen: 250 `@rolle_erforderlich`-
+Dekoratoren, davon **246 über drei Konstanten-Tupel** (`SCHREIB_ROLLEN` 116, `TEAM_ROLLEN` 80,
+`VERWALTUNGS_ROLLEN` 10, `ROLLE_VERWALTER` 33, 7 Kombinationen) — und **alle** durch `hat_rolle()`.
+Eine einzige Funktion umzustellen kippt die ganze Anwendung. Das ist der Gegensatz zu 4.2, wo die
+Manager-Anbindung jede einzelne Aufrufstelle berührt hätte.
+
+Belegt am Fixture, mit zwei Mandanten:
+
+```
+Benutzer B in Organisation A: team=False   ← war vor 4.3 True
+Benutzer A in Organisation B: team=False   ← war vor 4.3 True
+ohne Kontext:                 team=False   ← streng, kein Rückfall
+Gruppen von Benutzer B: ['Verwaltung']     ← die Gruppe allein gibt keine Rechte mehr
+```
+
+**Zwei Fehler, die erst die Tests fanden:**
+
+Der **Datenreset** (`/neu/datenreset/`) löschte `crm_mitgliedschaft` mit — die Tabelle steht im
+App-Label `crm` und war in der Schutzliste nicht vorgesehen. Nach einem Reset hätte **kein
+Benutzer mehr eine Rolle** gehabt und jede View mit 403 geantwortet. Beim Nachziehen fiel der
+zweite auf: `core_verwaltung` wurde ebenfalls gelöscht, und die behaltene Mitgliedschaft zeigte
+ins Leere (`IntegrityError`). Beide Tabellen stehen jetzt in der Schutzliste — die Organisation
+**ist** der Mandant, nicht dessen Daten, und „meine Daten zurücksetzen" ist nicht „meine Firma
+abmelden".
+
+**Mitgenommen aus der Etappe-4-Liste:** Der Aussperrschutz in `fw_benutzer_loeschen` zählte
+Verwaltungs-Accounts über **alle** Organisationen — A hielt sich für abgesichert, weil B noch
+Admins hat. Er zählt jetzt innerhalb der Organisation (Punkt 3 der fünf Altlasten).
+
+**Was 4.3 NICHT abgelöst hat:** Die Django-Gruppen bleiben bestehen und werden weiter mitgeführt.
+`ist_eigentuemer()` und die Benutzerliste lesen sie, und ein zweiter Ort für dieselbe Information
+ist während der Umstellung weniger riskant als ein abrupter Schnitt. Sie abzulösen gehört in einen
+eigenen PR, nicht in diesen.
 
 ### Fünf Altlasten aus Etappe 3, die hier fällig werden
 

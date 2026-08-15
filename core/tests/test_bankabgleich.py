@@ -6,6 +6,7 @@ from unittest import skipUnless
 
 from django.test import TestCase, Client
 from ._helfer import (
+    _test_organisation,
     ZXING_DA, _team_user, _basis_objekte, _seed_konten, _P3_CAMT, Mieter,
     Organisation, Mietvertrag)
 
@@ -1156,8 +1157,8 @@ class CamtGesperrtePeriodeQSTests(TestCase):
         run_sollstellung(2024, 3)
         r = DebitorenRechnung.objects.get(titel='Miete & NK 03/2024')
         # Periode sperren, sodass die Buchung per 05.03.2024 scheitert.
-        Organisation.objects.create(firma='V AG', strasse='W 1', plz='8000', ort='Zürich',
-                                  buchung_gesperrt_bis=date(2024, 12, 31))
+        _test_organisation(firma='V AG', strasse='W 1', plz='8000', ort='Zürich',
+                           buchung_gesperrt_bis=date(2024, 12, 31))
         c = Client(); c.force_login(_team_user('Verwaltung'))
 
         # 1) Import in gesperrter Periode → nichts gebucht, KEINE Waisen-Bewegung.

@@ -15,7 +15,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from core.auth import rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN, TEAM_ROLLEN
+from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_ROLLEN
 from crm.models import Mieter
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Einheit, Liegenschaft
@@ -152,7 +152,7 @@ def fw_nebenkosten_detail(request, pk):
     })
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_nebenkosten_verbuchen(request, pk):
     """Verbucht die Abrechnung mit den GLEICHEN Zahlen wie Anzeige/PDF (kanonische Engine)."""
     from django.shortcuts import redirect
@@ -305,7 +305,7 @@ def fw_nebenkosten_versand(request, pk):
     return resp
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_akonto_anpassen(request, pk):
     """Übernimmt die vorgeschlagene neue Akonto-Höhe in die gewählten Verträge
     (nach der NK-Abrechnung). Setzt Vertrag.nebenkosten + Einheit.nebenkosten_aktuell."""

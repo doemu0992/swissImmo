@@ -8,7 +8,7 @@ import io
 import datetime
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
-from core.auth import rolle_erforderlich, ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG, ROLLE_LESEND
+from core.auth import rolle_erforderlich, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF
 
 # Profi-Tools
 import segno
@@ -42,7 +42,7 @@ def draw_cross(c, x, y):
     c.rect(x - bar_width/2, y - bar_length/2, bar_width, bar_length, fill=1, stroke=0)
     c.rect(x - bar_length/2, y - bar_width/2, bar_length, bar_width, fill=1, stroke=0)
 
-@rolle_erforderlich(ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG)
+@rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER)
 def qr_rechnung_pdf(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
     einheit = vertrag.einheit
@@ -244,7 +244,7 @@ def draw_header(c, verwaltung):
     c.setFont("Helvetica", 8)
     c.drawRightString(190*mm, 280*mm, f"{verwaltung.firma} | {verwaltung.strasse} | {verwaltung.plz} {verwaltung.ort}")
 
-@rolle_erforderlich(ROLLE_VERWALTUNG, ROLLE_SACHBEARBEITUNG, ROLLE_LESEND)
+@rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF)
 def abrechnung_pdf_view(request, periode_id):
     periode = get_object_or_404(AbrechnungsPeriode, pk=periode_id)
     liegenschaft = periode.liegenschaft

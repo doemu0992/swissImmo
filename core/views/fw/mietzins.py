@@ -17,7 +17,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from core.auth import (rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN,
+from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
 from crm.models import Organisation
 from portfolio.models import Liegenschaft
@@ -116,7 +116,7 @@ def fw_mietzins(request):
 
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_mietzins_anpassung(request, vertrag_id):
     """Amtliches Mietzinsanpassungs-Formular (Art. 269d OR / Art. 19 VMWG) in der /neu/-Shell.
     GET: Berechnungs-Formular · POST action=pdf: Formular als PDF · POST action=speichern:
@@ -294,7 +294,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
     })
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_mietzins_massenanpassung(request):
     """Mietzins-Massenanpassung nach Referenzzins-/LIK-Änderung: für die in der
     Mietzins-Liste angehakten Verträge wird das Potenzial berechnet (Vorschau) und
@@ -491,7 +491,7 @@ def anfangsmietzins_auto_ablegen(vertrag, verwaltung=None):
     return True, pflicht
 
 
-@rolle_erforderlich(ROLLE_VERWALTUNG)
+@rolle_erforderlich(ROLLE_VERWALTER)
 def fw_anfangsmietzins(request, vertrag_id):
     """Amtliches Formular zur Mitteilung des Anfangsmietzinses (Art. 270 OR /
     Art. 19 VMWG) — bei Neuabschluss dem neuen Mieter mit Angabe der Vormiete und

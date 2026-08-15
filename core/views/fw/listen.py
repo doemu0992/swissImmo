@@ -23,7 +23,7 @@ from django.utils import timezone
 
 from core.services.mahnstufen import (stufe_fuer_tage as _stufe_fuer_tage,
                                       eigentuemer_von_rechnung as _eigentuemer_von_rechnung)
-from core.auth import (rolle_erforderlich, ROLLE_VERWALTUNG, SCHREIB_ROLLEN,
+from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
 from crm.models import Mieter, Organisation
 from finance.models import DebitorenRechnung, Zahlungseingang
