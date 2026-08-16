@@ -178,6 +178,39 @@ class TenantManager(models.Manager.from_queryset(TenantQuerySet)):
     # dieser Fall in der Datenbank statt im Manager. Bis dahin ist es eine
     # bewusst offene Flanke und keine übersehene.
     # ------------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # ZWEI BEFUNDE AUS DEM ZWEITEN ANBINDUNGSVERSUCH (16.08.2026, Etappe 5)
+    #
+    # Die Anbindung an die zwölf portfolio-Modelle wurde gebaut, gemessen und
+    # wieder zurückgenommen — wie schon in 4.2, diesmal mit benannten Ursachen.
+    # Wer sie erneut versucht, muss vorher diese beiden lösen:
+    #
+    # 1. RÜCKBEZÜGE ERBEN DEN FILTER. Django baut den Manager eines Rückbezugs
+    #    aus `related_model._default_manager.__class__`. Steht der TenantManager
+    #    vorn, ist damit JEDES `liegenschaft.einheiten.all()` gefiltert — in
+    #    Services, Management-Commands, PDF-Erzeugung, Signals. `_base_manager`
+    #    bleibt ein gewöhnlicher `Manager` (Vorwärts-Fremdschlüssel wie
+    #    `ausgabe.schluessel` sind also sicher); die Rückwärtsrichtung ist es
+    #    nicht. Gemessen: 65 Fehlschläge in einem einzigen Testblock, drei
+    #    weitere Blöcke stürzten unter `--parallel` ganz ab.
+    #
+    # 2. `update_or_create` IST HIER BEWUSST NICHT AUFGEFÜHRT. Es fehlte beim
+    #    Messen und liess `rentals/models.py:697` scheitern
+    #    (`_sync_objekt_sollmietzins`). Die naheliegende Korrektur wäre, es zu
+    #    den drei Ausnahmen unten zu stellen — sie wäre falsch: `create` gibt
+    #    nichts heraus, `update_or_create` liest zuerst und würde ohne Filter
+    #    den Datensatz eines FREMDEN Mandanten aktualisieren. Das ist schlimmer
+    #    als ein Leseleck.
+    #
+    #    Dieselbe Kritik trifft `get_or_create` unten, das die Ausnahme heute
+    #    schon hat. Auch das gehört beim nächsten Anlauf geprüft, statt aus
+    #    Gewohnheit fortgeschrieben zu werden.
+    #
+    # Der richtige Weg für beide: Der Aufrufer setzt den Kontext
+    # (`with organisation_kontext(org):`), statt dass der Manager Ausnahmen
+    # sammelt. Das ist Arbeit in Etappe 6 — die Commands, Services und
+    # öffentlichen Endpunkte —, nicht in einem Modell-PR.
+    # ------------------------------------------------------------------
     def create(self, **kwargs):
         return super(models.Manager, self).get_queryset().create(**kwargs)
 
