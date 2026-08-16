@@ -5,7 +5,6 @@ from datetime import date
 from decimal import Decimal
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
 from core.organisation_kette import OrganisationAusKette, organisation_aus_kontext
-from core.tenancy import AlleOrganisationenManager, TenantManager
 
 class Liegenschaft(models.Model):
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.CASCADE, related_name='liegenschaften', null=True, blank=True)
@@ -76,11 +75,6 @@ class Liegenschaft(models.Model):
     sanitaer_telefon = models.CharField("Sanitär Telefon", max_length=50, blank=True, default='')
     elektriker_name = models.CharField("Notfall Elektriker", max_length=100, blank=True, default='')
     elektriker_telefon = models.CharField("Elektriker Telefon", max_length=50, blank=True, default='')
-
-    # Die Wurzel filtert auf ihre eigene Spalte. Reihenfolge wie ueberall:
-    # der gefilterte Manager zuerst, damit er `_default_manager` wird.
-    objects = TenantManager()
-    alle_organisationen = AlleOrganisationenManager()
 
     def save(self, *args, **kwargs):
         # Die Wurzel der Kette kann ihren Bezug nirgends herleiten — er steht
