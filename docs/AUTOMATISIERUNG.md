@@ -26,7 +26,20 @@ Auch das Ausrollen läuft als Scheduled Task, nicht von Hand:
 
 | Task | Rhythmus | Wirkung |
 |------|----------|---------|
-| `bash deploy.sh` | zeitgesteuert | Holt `claude/fairwalter-rebuild`, migriert, sammelt statische Dateien, lädt die Web-App neu |
+| `bash deploy.sh` | Always-on-Task, Schleife alle 30 s | Holt `claude/fairwalter-rebuild`, migriert, sammelt statische Dateien, lädt die Web-App neu |
+
+Der Always-on-Task ist bewusst dünn — er stellt nur fest, ob es etwas Neues
+gibt, und überlässt alles Weitere `deploy.sh`:
+
+```bash
+while true; do
+  cd ~/swiss-manager && git fetch -q origin claude/fairwalter-rebuild
+  if [ "$(git rev-parse HEAD)" != "$(git rev-parse FETCH_HEAD)" ]; then
+    PA_PY=/home/swissimmo/.virtualenvs/myenv/bin/python bash deploy.sh
+  fi
+  sleep 30
+done
+```
 
 Was gepusht ist, geht damit beim nächsten Lauf von selbst live — **inklusive
 Migrationen**. Es gibt keinen separaten Migrationsschritt, den jemand von Hand
@@ -71,15 +84,39 @@ den jemand von Hand nachziehen müsste.
 Die Startseite antwortete mit `OperationalError: no such table:
 crm_mitgliedschaft`. Der neue Code war live, die Migrationen waren es nicht.
 
-Der Grund liegt in der Reihenfolge, nicht in den Migrationen (die Sequenz
-`benutzer_uebernahme` → `migrate` läuft aus dem Ausgangszustand sauber durch,
-nachgespielt auf einer Kopie). `deploy.sh` holt den Code mit `git reset --hard`
-**vor** der Migration. Scheitert die Migration, wird zwar nicht neu geladen —
-aber auf der Platte liegt bereits der neue Code. Sobald der Hoster seinen
-Worker von sich aus recycelt, lädt er ihn gegen das alte Schema.
+Die Migrationen sind nicht die Ursache: Die Sequenz `benutzer_uebernahme` →
+`migrate` läuft aus dem Ausgangszustand sauber durch, auf einer Kopie
+nachgespielt. Ursache war der **Always-on-Task**, der damals alles selbst tat,
+statt `deploy.sh` aufzurufen:
 
-**„Die alte Version bleibt aktiv" galt also nur für den laufenden Prozess,
-nicht über einen Worker-Neustart hinweg.** Drei Änderungen schliessen das:
+```bash
+while true; do cd ~/swiss-manager && git fetch -q origin … \
+  && [ "$(git rev-parse HEAD)" != "$(git rev-parse FETCH_HEAD)" ] \
+  && git reset --hard FETCH_HEAD && pip install -q -r requirements.txt \
+  && python manage.py migrate --noinput && … ; sleep 30; done
+```
+
+Drei Fehler, die zusammen genau dieses Bild ergeben:
+
+1. **`benutzer_uebernahme` fehlte.** `migrate` bricht auf einer
+   Bestandsdatenbank deshalb mit `InconsistentMigrationHistory` ab — belegt
+   durch Nachspielen auf einer Kopie.
+2. **`git reset --hard` lief vorher und blieb stehen.** Der neue Code lag
+   damit auf der Platte, das alte Schema in der Datenbank. Der laufende
+   Prozess merkte nichts; der nächste Worker-Neustart lud den neuen Code gegen
+   das alte Schema — der Fehler auf der Startseite.
+3. **Die Schleife versuchte es nie wieder.** Nach dem `reset` gilt
+   `HEAD == FETCH_HEAD`; der Test davor ist falsch, die `&&`-Kette bricht ab,
+   bevor `migrate` überhaupt erneut aufgerufen wird. Alle 30 Sekunden aufs
+   Neue — ein Deploy, der einmal scheitert, bleibt für immer halb.
+
+Der Python-Pfad war übrigens korrekt. Eine erste Vermutung, es liege am
+System-Python ohne Django, war falsch; erst der Blick auf den echten Task hat
+es geklärt.
+
+**„Die alte Version bleibt aktiv" galt nur für den laufenden Prozess, nicht
+über einen Worker-Neustart hinweg.** Der Task ruft jetzt `deploy.sh` auf, und
+dort schliessen drei Änderungen die Lücke:
 
 1. **Django-Prüfung vor dem ersten Eingriff.** Ein Scheduled Task startet ohne
    aktiviertes virtualenv; ein blosses `python` ist dann der System-Python, in
@@ -92,6 +129,13 @@ nicht über einen Worker-Neustart hinweg.** Drei Änderungen schliessen das:
 3. **Nachkontrolle**: `showmigrations --plan` nach dem `migrate`. Bleiben
    offene Schritte, obwohl der Befehl durchlief, wird ebenfalls
    zurückgerollt und nicht neu geladen.
+
+Das Rückrollen macht die Schleife zugleich **selbstheilend**: Nach einem
+Fehlschlag zeigt `HEAD` wieder auf den alten Stand, `HEAD != FETCH_HEAD` ist
+erneut wahr, und der nächste Durchlauf probiert es in 30 Sekunden wieder. Ein
+dauerhaft kaputter Commit führt damit zu einem Deploy-Versuch alle 30 Sekunden
+— laut im Protokoll, aber die Website bleibt auf der alten, laufenden Version.
+Das ist der Zustand, den man will: sichtbar kaputt statt still halb.
 
 **Wiederherstellung von Hand**, falls es doch einmal auftritt:
 
