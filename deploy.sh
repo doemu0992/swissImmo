@@ -9,15 +9,71 @@
 # Sicher, weil die Produktionsdaten NICHT im Git liegen (db.sqlite3, media/,
 # staticfiles/ sind .gitignore) — reset --hard fasst sie nicht an.
 #
-# Aufruf (im Repo-Ordner):        bash deploy.sh
+# Aufruf (einmalig):              bash deploy.sh
+# Dauerlauf (Always-on-Task):     bash deploy.sh --dauerlauf
 # Anderer Branch:                 bash deploy.sh mein/anderer-branch
+# Anderes Intervall:              PA_INTERVALL=60 bash deploy.sh --dauerlauf
 # WSGI-Pfad überschreiben:        PA_WSGI=/var/www/DEIN_wsgi.py bash deploy.sh
 # Anderer Python (venv):          PA_PY=/home/USER/.virtualenvs/ENV/bin/python bash deploy.sh
 set -uo pipefail
 
 cd "$(dirname "$0")"
+
+# --- Dauerlauf ------------------------------------------------------------
+# `deploy.sh --dauerlauf` prüft alle 30 s und ruft sich dabei selbst auf.
+#
+# Warum das hier steht und nicht im Task-Feld des Hosters: Ein
+# `while true; do … done` im Task-Feld ist Shell-Code an einem Ort ohne
+# Versionierung, ohne Syntaxprüfung und mit genau einer Zeile Platz. Genau
+# daran ist es am 16.08.2026 gescheitert — erst inhaltlich, dann startete die
+# mehrzeilige Ersatzfassung gar nicht erst. Der Task lautet jetzt schlicht:
+#
+#     bash /home/swissimmo/swiss-manager/deploy.sh --dauerlauf
+#
+# Keine Schleife, keine Variablen, keine Anführungszeichen.
+INTERVALL="${PA_INTERVALL:-30}"
+if [ "${1:-}" = "--dauerlauf" ]; then
+    shift
+    echo "→ Dauerlauf, Prüfung alle ${INTERVALL} s. Abbruch mit Strg-C."
+    while true; do
+        bash "$0" "$@" || true      # ein Fehlschlag darf die Schleife nie beenden
+        sleep "$INTERVALL"
+    done
+fi
+
 BRANCH="${1:-claude/fairwalter-rebuild}"
-PY="${PA_PY:-python}"
+
+# --- Python finden --------------------------------------------------------
+# `PA_PY` hat Vorrang. Sonst: erst `python`, dann die virtualenvs im
+# Heimverzeichnis. Ein Scheduled Task startet ohne aktiviertes venv, und der
+# System-Python trägt Django nicht — statt das dem Aufrufer aufzubürden, wird
+# es hier gesucht. Was zählt, ist nicht der Name, sondern ob Django importiert.
+finde_python() {
+    local kandidat
+    for kandidat in "${PA_PY:-}" python python3 "$HOME"/.virtualenvs/*/bin/python; do
+        [ -n "$kandidat" ] || continue
+        if command -v "$kandidat" >/dev/null 2>&1 && "$kandidat" -c "import django" 2>/dev/null; then
+            echo "$kandidat"; return 0
+        fi
+    done
+    return 1
+}
+
+# Ein ausdrücklich gesetztes PA_PY, das nicht trägt, wird NICHT stillschweigend
+# übergangen. Der Ersatz mag funktionieren — aber wer den Wert gesetzt hat,
+# meinte ihn, und ein leiser Wechsel des Interpreters ist genau die Art
+# Abweichung, die man erst drei Fehlersuchen später bemerkt.
+if [ -n "${PA_PY:-}" ] && ! "${PA_PY}" -c "import django" 2>/dev/null; then
+    echo "⚠ PA_PY='${PA_PY}' kann Django nicht importieren — suche Ersatz."
+fi
+if ! PY="$(finde_python)"; then
+    echo "✗ Kein Python gefunden, das Django importieren kann."
+    echo "  Gesucht: \$PA_PY, python, python3, \$HOME/.virtualenvs/*/bin/python"
+    echo "  Setze PA_PY auf den Python des virtualenv, z.B.:"
+    echo "  PA_PY=\$HOME/.virtualenvs/myenv/bin/python bash deploy.sh"
+    exit 1
+fi
+[ "${PA_PY:-}" = "$PY" ] || echo "· Python: $PY"
 
 # Repo-Umzug abfangen: Remote fest auf die kanonische neue URL setzen.
 CANONICAL="https://github.com/doemu0992/swissImmo.git"
@@ -29,19 +85,6 @@ case "$CUR_URL" in
             git remote set-url origin "$CANONICAL" || true
         fi ;;
 esac
-
-# Trägt dieser Python überhaupt das Projekt? Ein Scheduled Task startet ohne
-# aktiviertes virtualenv; ein blosses `python` ist dann der System-Python, in
-# dem Django fehlt. Der Deploy holt trotzdem den neuen Code, `migrate`
-# scheitert, es wird nicht neu geladen — und beim nächsten Worker-Neustart
-# läuft neuer Code gegen ein altes Schema. Deshalb VOR dem `reset --hard`
-# fragen, solange ein Abbruch noch folgenlos ist.
-if ! "$PY" -c "import django" 2>/dev/null; then
-    echo "✗ '$PY' kann Django nicht importieren — Abbruch, BEVOR etwas angefasst wird."
-    echo "  Im Scheduled Task den Python des virtualenv angeben, z.B.:"
-    echo "  PA_PY=\$HOME/.virtualenvs/myenv/bin/python bash deploy.sh"
-    exit 1
-fi
 
 echo "→ git fetch origin $BRANCH"
 if ! git fetch origin "$BRANCH"; then

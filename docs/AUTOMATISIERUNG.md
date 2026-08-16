@@ -28,17 +28,26 @@ Auch das Ausrollen läuft als Scheduled Task, nicht von Hand:
 |------|----------|---------|
 | `bash deploy.sh` | Always-on-Task, Schleife alle 30 s | Holt `claude/fairwalter-rebuild`, migriert, sammelt statische Dateien, lädt die Web-App neu |
 
-Der Always-on-Task ist bewusst **dünn**: Er ruft nur auf, `deploy.sh`
-entscheidet. Alles, was entschieden werden muss, steht damit im Git und nicht
-in einem Textfeld der Hosting-Oberfläche.
+Der Always-on-Task besteht aus **einem Befehl ohne jede Shell-Konstruktion**:
 
-```bash
-while true; do
-  cd ~/swiss-manager
-  PA_PY=/home/swissimmo/.virtualenvs/myenv/bin/python bash deploy.sh
-  sleep 30
-done
 ```
+bash /home/swissimmo/swiss-manager/deploy.sh --dauerlauf
+```
+
+Keine Schleife, keine Variablen, keine Anführungszeichen, keine zweite Zeile.
+Das ist Absicht: Ein Task-Feld ist ein Ort ohne Versionierung, ohne
+Syntaxprüfung und mit genau einer Zeile Platz. Die alte Fassung enthielt dort
+ein vollständiges `while true; do … done` samt `&&`-Kette — erst war sie
+inhaltlich falsch, dann startete die mehrzeilige Ersatzfassung gar nicht erst.
+Schleife und Intervall stecken jetzt in `deploy.sh --dauerlauf` (Standard 30 s,
+über `PA_INTERVALL` änderbar), wo sie im Git stehen und geprüft werden können.
+
+**Den Python sucht sich das Skript selbst.** Der Reihe nach: `$PA_PY`,
+`python`, `python3`, dann `$HOME/.virtualenvs/*/bin/python`. Genommen wird der
+erste, der Django importieren kann — nicht der mit dem passenden Namen. Ein
+gesetztes `PA_PY`, das nicht trägt, wird dabei **gemeldet** und nicht
+stillschweigend übergangen: Der Ersatz mag funktionieren, aber wer den Wert
+gesetzt hat, meinte ihn.
 
 `deploy.sh` läuft alle 30 Sekunden und tut in aller Regel **nichts** — es
 meldet `· nichts zu tun` und endet. Gearbeitet wird nur, wenn einer von **zwei**
