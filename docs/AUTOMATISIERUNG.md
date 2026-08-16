@@ -96,6 +96,51 @@ Dateien blockieren den Deploy nicht — die Produktionsdaten `db.sqlite3`,
 Migration wird NICHT neu geladen**. Dann bleibt die alte Version aktiv, statt
 eine halb migrierte auszuliefern.
 
+### Warum sich `deploy.sh` selbst neu startet
+
+Die Python-Suche und alles andere oberhalb von `git reset --hard` läuft noch
+mit der Fassung, die **vor** dem Umschalten auf der Platte lag. Eine
+Verbesserung an genau diesen Zeilen wirkt also frühestens beim nächsten Lauf.
+
+Zusammen mit dem Rollback ergab das am 16.08.2026 eine Schleife, aus der sich
+der Deploy nicht mehr selbst befreien konnte:
+
+```
+alte Python-Prüfung (import django)
+  → System-Python 3.13 besteht sie
+    → pip baut pycairo für den falschen Interpreter, scheitert
+      → ModuleNotFoundError: No module named 'unfold'
+        → Rollback auf den alten Commit — samt alter deploy.sh
+          → von vorne
+```
+
+Die Korrektur wurde jedes Mal von ihrem eigenen Fehlschlag wieder entfernt.
+Zwei Änderungen brechen das auf:
+
+| Änderung | Wirkung |
+|---|---|
+| **Selbstneustart** — hat sich `deploy.sh` beim Umschalten geändert, wird der Lauf mit der neuen Fassung wiederholt (`DEPLOY_NEUSTART` verhindert eine Endlosschleife, `DEPLOY_VORHER` trägt den Rollback-Stand hinüber) | eine Deploy-Korrektur greift **im selben Lauf** |
+| **`deploy.sh` ist vom Rollback ausgenommen** (`git checkout origin/<branch> -- deploy.sh`) | ein Fehlschlag nimmt die Korrektur nicht wieder zurück |
+
+Der Rollback existiert, damit **Code und Datenbankschema** zusammenpassen.
+`deploy.sh` liest kein Schema und hat in diesem Vergleich nichts verloren. Die
+zweite Folge war noch unangenehmer: Die zurückgerollte Fassung kannte
+`--dauerlauf` noch gar nicht und hielt es für einen Branchnamen — der
+Always-on-Task fetchte `origin --dauerlauf`, scheiterte sofort und sah aus, als
+starte er nicht.
+
+Scheitert `pip install` so, dass der Interpreter das Projekt danach **nicht
+mehr laden kann**, bricht der Deploy jetzt dort ab und sagt das auch. Vorher
+marschierte er weiter und meldete den Schaden zwei Schritte später als rohen
+`ModuleNotFoundError` — eine Meldung, die in die falsche Richtung zeigt.
+
+**Wenn die Schleife doch einmal zuschnappt**, bricht ein Befehl sie auf, weil
+er den Interpreter unabhängig von der ausgecheckten Skriptfassung erzwingt:
+
+```
+PA_PY=/home/swissimmo/.virtualenvs/myenv/bin/python bash deploy.sh
+```
+
 ### Ein Schritt vor `migrate`: `benutzer_uebernahme`
 
 Seit Etappe 3 (15.08.2026) hat swissImmo ein eigenes Benutzermodell

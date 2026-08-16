@@ -133,7 +133,15 @@ fi
 
 # Stand VOR dem Umschalten merken. Er wird gebraucht, wenn die Migration
 # scheitert — siehe `zurueckrollen` unten.
-VORHER_COMMIT="$(git rev-parse HEAD)"
+#
+# `DEPLOY_VORHER` wird gesetzt, wenn sich dieses Skript weiter unten selbst neu
+# startet. Ohne das waere der gemerkte Stand nach dem Neustart der NEUE Commit,
+# und `zurueckrollen` wuerde auf genau den zurueckrollen, der gerade scheitert —
+# also auf nichts.
+VORHER_COMMIT="${DEPLOY_VORHER:-$(git rev-parse HEAD)}"
+
+# Fassung dieses Skripts VOR dem Umschalten. Siehe Selbstneustart unten.
+SKRIPT_VORHER="$(git rev-parse 'HEAD:deploy.sh' 2>/dev/null || echo '')"
 
 # ---------------------------------------------------------------------------
 # ZWEI GRUENDE, ETWAS ZU TUN — NICHT NUR EINER
@@ -154,6 +162,10 @@ VORHER_COMMIT="$(git rev-parse HEAD)"
 # ---------------------------------------------------------------------------
 NEUER_CODE=0
 [ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/$BRANCH")" ] && NEUER_CODE=1
+# Nach einem Selbstneustart steht der Checkout bereits auf dem neuen Stand —
+# der Vergleich oben meldet dann „nichts Neues", obwohl `pip install` und alles
+# Weitere noch aussteht. Der Neustart zaehlt deshalb selbst als neuer Code.
+[ "${DEPLOY_NEUSTART:-0}" = "1" ] && NEUER_CODE=1
 
 # Zaehlt die noch nicht angewendeten Migrationen. Wichtig ist der Fehlerfall:
 # Laesst sich das gar nicht feststellen, wird das NICHT als „null offene"
@@ -188,6 +200,35 @@ if [ "$NEUER_CODE" = "1" ]; then
     echo "→ git reset --hard origin/$BRANCH"
     git reset --hard "origin/$BRANCH" || { echo "✗ reset fehlgeschlagen."; exit 1; }
 fi
+
+# ---------------------------------------------------------------------------
+# WENN SICH DIESES SKRIPT SELBST GEAENDERT HAT: LAUF MIT DER NEUEN FASSUNG
+# WIEDERHOLEN
+#
+# Alles oberhalb — vor allem die Python-Suche — lief noch mit der ALTEN Fassung,
+# die zu diesem Zeitpunkt auf der Platte lag. Eine Verbesserung an genau diesen
+# Zeilen wirkt also erst beim naechsten Lauf. Zusammen mit `zurueckrollen`
+# (setzt den Checkout zurueck, frueher samt deploy.sh) ergab das eine Schleife,
+# aus der sich der Deploy nicht selbst befreien konnte:
+#
+#   alte Python-Pruefung  →  System-Python besteht sie  →  pip baut pycairo fuer
+#   den falschen Interpreter  →  `No module named 'unfold'`  →  Rollback auf die
+#   alte Fassung  →  von vorne.
+#
+# Real eingetreten am 16.08.2026, ueber mehrere Laeufe hinweg unveraendert.
+#
+# `DEPLOY_NEUSTART` verhindert eine Endlosschleife: Der neu gestartete Lauf
+# vergleicht nicht noch einmal.
+# ---------------------------------------------------------------------------
+if [ "${DEPLOY_NEUSTART:-0}" = "0" ]; then
+    SKRIPT_JETZT="$(git rev-parse 'HEAD:deploy.sh' 2>/dev/null || echo '')"
+    if [ -n "$SKRIPT_VORHER" ] && [ -n "$SKRIPT_JETZT" ] \
+       && [ "$SKRIPT_VORHER" != "$SKRIPT_JETZT" ]; then
+        echo "→ deploy.sh hat sich geaendert — Lauf mit der neuen Fassung wiederholen."
+        DEPLOY_NEUSTART=1 DEPLOY_VORHER="$VORHER_COMMIT" exec bash "$0" "$BRANCH"
+    fi
+fi
+
 DEPLOY_COMMIT="$(git rev-parse --short HEAD)"
 echo "  jetzt auf Commit $DEPLOY_COMMIT"
 
@@ -212,12 +253,40 @@ zurueckrollen() {
     echo "→ Code zurück auf $(git rev-parse --short "$VORHER_COMMIT") — sonst laedt der"
     echo "  naechste Worker-Neustart neuen Code gegen ein altes Schema."
     git reset --hard "$VORHER_COMMIT" || echo "⚠ Rueckrollen fehlgeschlagen — VON HAND pruefen!"
+
+    # DIESES SKRIPT IST VOM ROLLBACK AUSGENOMMEN.
+    #
+    # Der Rollback existiert, damit Code und Datenbankschema zusammenpassen.
+    # deploy.sh liest kein Schema — es hat in diesem Vergleich nichts verloren.
+    # Es mitzurollen hatte am 16.08.2026 zwei Folgen, beide beobachtet:
+    #
+    #   · Eine Korrektur am Deploy wurde von ihrem eigenen Fehlschlag wieder
+    #     entfernt. Der naechste Lauf machte denselben Fehler.
+    #   · Die zurueckgerollte Fassung kannte `--dauerlauf` noch nicht und hielt
+    #     es fuer einen Branchnamen. Der Always-on-Task fetchte `origin
+    #     --dauerlauf`, scheiterte sofort und sah aus, als starte er nicht.
+    #
+    # Der Arbeitsbaum ist danach absichtlich „schmutzig". Das stoert nicht: Der
+    # naechste Lauf sieht HEAD != origin, macht `reset --hard` und ueberschreibt
+    # die Datei ohnehin mit demselben Inhalt.
+    if git checkout "origin/$BRANCH" -- deploy.sh 2>/dev/null; then
+        echo "· deploy.sh bleibt auf der neuen Fassung (vom Rollback ausgenommen)."
+    fi
     exit 1
 }
 
 if [ "$NEUER_CODE" = "1" ]; then
     echo "→ pip install -r requirements.txt"
     "$PY" -m pip install -q -r requirements.txt || echo "⚠ pip install meldete Fehler — fahre fort."
+
+    # „fahre fort" gilt fuer eine einzelne unwichtige Abhaengigkeit, nicht fuer
+    # einen kaputten Interpreter. Ohne diese Zeile marschierte der Deploy weiter
+    # und meldete den Schaden erst zwei Schritte spaeter als rohen
+    # `ModuleNotFoundError: No module named 'unfold'` — eine Fehlermeldung, die
+    # in die falsche Richtung zeigt. Die echte Ursache war der falsche Python.
+    if ! projekt_python "$PY"; then
+        zurueckrollen "'$PY' kann das Projekt nach dem Update nicht mehr laden — fehlende Abhaengigkeit."
+    fi
 fi
 
 # Seit Etappe 3 hat swissImmo ein eigenes Benutzermodell (benutzer.Benutzer),
