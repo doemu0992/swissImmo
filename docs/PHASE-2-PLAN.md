@@ -196,6 +196,42 @@ Zwei Stellen zum Anhalten: Gruppe B mit Waisen (Bestandsdatensätze ohne Weg zur
 
 **Gate:** Alle **65** Modelle mit Bezug, `null=False` — ausser `crm.Organisation` (ist der Mandant) und `benutzer.Benutzer` (hängt über `Mitgliedschaft` daran). Sechs globale Unique-Constraints umgebaut. `makemigrations --check` leer.
 
+## ✅ Etappe 5 abgeschlossen am 16.08.2026
+
+**63 von 65 Modellen tragen den Organisationsbezug, `null=False`, null Waisen.** Die zwei ohne sind die begründeten: `crm.Organisation` ist der Anker, `benutzer.Benutzer` hängt über `Mitgliedschaft` daran.
+
+Neun PRs statt der geplanten sieben — `finance` und `crm` brauchten je zwei, weil die Waisenzahlen der Produktion dazwischen erhoben werden mussten.
+
+| PR | App | Modelle | Bemerkenswert |
+|---|---|---|---|
+| 1 | portfolio | 12 + Anker | `Liegenschaft.organisation` war `null=True, SET_NULL` — als Anker wertlos |
+| 2 | portfolio | 5 | `Lebensdauer` ist keine Referenztabelle: Es gibt eine Oberfläche zum Bearbeiten |
+| 3 | rentals | 8 | `AbnahmeMangel` war fälschlich Gruppe B eingeordnet |
+| 4+5 | tickets, mietprozess | 5 | `Mietbewerbung` entsteht über ein **öffentliches** Formular |
+| 6 | finance | 15 | `beleg_nr`-Vergabe je Organisation; Periodensperre las `first()` |
+| 7 | finance | 7 | `Zahlungseingang`: vier Wege statt eines eigenen Feldes |
+| 8 | crm | 6 | `Vorlage` bleibt nullbar — `NULL` = Systemvorlage |
+| 9 | core, rentals | 3 | `AktivitaetsLog` hat keinen ableitbaren Weg |
+
+### Sechs Fehler, die erst der Zwang zur Pflichtspalte sichtbar gemacht hat
+
+Keiner war vorher zu sehen, und vier davon wären in einer mandantenfähigen Anwendung echte Lecks gewesen:
+
+1. **`liegenschaft_crud.py`** legte `Liegenschaft()` an und setzte danach nur Formularfelder — nie die Organisation.
+2. **`seed_lebensdauer()`** suchte mit `get_or_create(kategorie=…)` ohne Bezug: Verwaltung B bekäme „Küche" nie angelegt und zurück käme *deren* Zeile.
+3. **`fw_lebensdauer`** las durchgehend `objects.all()` — A hätte die Werte von B gesehen, bearbeitet und über eine Formular-ID gelöscht.
+4. **`Buchung.beleg_nr`** wurde global vergeben. Die zweite Verwaltung hätte bei 1051 begonnen — aus der Lücke liesse sich fremdes Buchungsvolumen ablesen, und lückenlos nach OR 957a/958f wäre die Folge ohnehin nicht.
+5. **Die Periodensperre** las `Organisation.objects.first()`: Der Jahresabschluss von A hätte die Buchungen von B blockiert — oder B hätte in eine abgeschlossene Periode gebucht.
+6. **`0019_seed_lebensdauer`** legt Standardwerte an, bevor eine Organisation existiert. Auf jeder Neuinstallation wäre die Migration an `NOT NULL` gescheitert.
+
+### Was die Etappe methodisch gelehrt hat
+
+**Die Analyse lag dreimal daneben, und immer in dieselbe Richtung.** 63 statt 65 Modelle, 34/15/14 statt 32/16/15, bei rentals 6/2 statt 8/1. Ursache jedes Mal: Textsuche statt aufgelöstem Graph. Dazu ein blinder Fleck im eigenen Messskript — `OneToOneField` hat `many_to_one == False`, weshalb `Erneuerungsfonds` fälschlich in Gruppe A stand. **Je App neu messen, nie die Breitenmessung übernehmen.**
+
+**Mechanische Massenänderungen erzeugen eigene Fehler.** Drei in dieser Etappe: zerschossene mehrzeilige Importe (gefunden von Ruff), `_test_organisation()` als *zweite* Organisation eingefügt (gefunden von drei Tests, die einzeln bestanden und nur im Verbund umfielen), und eine *zweite* `save()`-Methode in `Eigentuemer` (gefunden erst vom `IntegrityError` — Python nimmt die spätere Definition). Ein Skript, das in Klassenkörper schreibt, muss wissen, was dort schon steht.
+
+**Der Bezug wird abgeleitet, nicht eingegeben.** Als gewöhnliches Pflichtfeld müssten ihn hunderte Schreibpfade mitgeben — die Bauform, die Etappe 4.2 mit 922 roten Tests beendet hat. `OrganisationAusKette` löst das an einer Stelle; `ORGANISATION_RUECKFALL` markiert greppbar die vier Belegarten, bei denen „noch nicht zugeordnet" ein regulärer Arbeitszustand ist.
+
 **Nachgemessen am 16.08.2026 (PR 1).** Die Analyse nannte 63 Modelle in den Gruppen 34/15/14; gezählt sind es **65** in **32/16/15**, plus zwei bereits fertige. Die Gruppengrenzen wurden über die Fremdschlüssel bestimmt, nicht über eine Textsuche — dieselbe Korrektur wie schon bei den Migrationszahlen (13 statt 16) und den `Mandant`-Vorkommen (623 statt 160).
 
 **PR 1 (portfolio) erledigt am 16.08.2026.** Zwölf Modelle der Gruppe C, plus der Anker: `Liegenschaft.organisation` war `null=True, SET_NULL` und damit als Anker wertlos — eine Kette ist nur so pflichtig wie ihr schwächstes Glied. Jetzt `null=False, CASCADE`. Der Bezug wird **abgeleitet**, nicht eingegeben (`core/organisation_kette.py`): Als gewöhnliches Pflichtfeld müsste ihn jeder der hunderten Schreibpfade mitgeben — die Bauform, die 4.2 mit 922 roten Tests beendet hat. **1'101 Tests grün.** Offen in portfolio: Gruppe B (`Dokument`, `Geraet`, `Zaehler`, `ZaehlerStand` — braucht die Waisen-Zahlen der Produktion) und `Lebensdauer` (Gruppe A, fachlicher Entscheid).

@@ -721,7 +721,14 @@ class Leerstand(OrganisationAusKette):
     class Meta:
         db_table = 'core_leerstand'
 
-class Dokument(models.Model):
+class Dokument(OrganisationAusKette):
+    # FUENF Wege, und seit PR 8 tragen sie alle die Organisation: `mieter`
+    # und `eigentuemer` haben sie dort selbst bekommen. Reihenfolge nach
+    # Genauigkeit — der Vertrag ist praeziser als die Liegenschaft.
+    #
+    # Produktiv gemessen (16.08.2026): 7 Zeilen, 0 ohne Weg. Lokal 158, 0.
+    ORGANISATION_PFAD = ('vertrag', 'einheit', 'liegenschaft', 'mieter', 'eigentuemer')
+    ORGANISATION_RUECKFALL = True   # alle fuenf optional
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True)
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, null=True, blank=True)
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, null=True, blank=True)

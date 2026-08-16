@@ -63,6 +63,9 @@ class BackupCommandTests(TestCase):
 class LogbuchTests(TestCase):
     """Audit-Trail / Logbuch: wer hat wann was getan, sichtbar unter /neu/logbuch/,
     mit Filtern, CSV-Export und rollenbasiertem Zugriff."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _log(self, aktion, objekt='', details='', user=None):
         from core.models import AktivitaetsLog

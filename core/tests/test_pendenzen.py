@@ -61,6 +61,9 @@ class TagesstartCockpitTests(TestCase):
 
 
 class PendenzAktionTests(TestCase):
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
     def test_ruecknahme_pendenz_verlinkt_abnahme(self):
         """Eine 'Wohnungsrücknahme planen'-Pendenz verlinkt direkt in die Rücknahme (Popup)."""
         from core.models import Pendenz
@@ -174,6 +177,9 @@ class PendenzAktionTests(TestCase):
 
 class FristenCenterTests(TestCase):
     """Fristen-Center bündelt datierte Pendenzen chronologisch in Zeitfenster."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _frist(self, titel, tage, besch='', vertrag=None):
         from core.models import Pendenz
@@ -208,6 +214,9 @@ class FristenCenterTests(TestCase):
 
 class FristenKalenderTests(TestCase):
     """iCal-Export (Download + Feed) und wöchentliches Fristen-Mail."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _frist(self, titel, tage):
         from core.models import Pendenz

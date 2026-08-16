@@ -1,6 +1,7 @@
 from core.utils import get_smart_upload_path, get_current_lik, get_current_ref_zins
 from django.conf import settings
 from django.db import models
+from core.organisation_kette import OrganisationAusKette, organisation_oder_einzige
 
 
 class AktivitaetsLog(models.Model):
@@ -9,6 +10,27 @@ class AktivitaetsLog(models.Model):
     Einträge werden über core.auth.log_aktion() geschrieben und sind im
     Notfall-Admin einsehbar (nur lesend).
     """
+    # DER AUDIT-TRAIL — und der Grund, warum er eine eigene Spalte braucht.
+    #
+    # AktivitaetsLog hat genau EINEN Fremdschluessel: `benutzer`. Und der fuehrt
+    # seit dem Entscheid vom 15.08.2026 bewusst nirgendwohin — `Benutzer` traegt
+    # keinen Organisationsbezug, weil eine Person ueber `Mitgliedschaft` fuer
+    # mehrere Verwaltungen arbeiten koennen soll. Es gibt hier also nichts
+    # abzuleiten; der Bezug muss beim Schreiben gesetzt werden.
+    #
+    # Der Skill `phase-2-migration` nennt dieses Modell ausdruecklich als den
+    # heikelsten Fall: Es waechst laufend, ist rechtlich relevant, und je
+    # spaeter man es anfasst, desto mehr Zeilen sind umzuschreiben. 546 sind es
+    # heute.
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+                                     editable=False, related_name='%(app_label)s_%(class)s',
+                                     verbose_name='Organisation')
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_oder_einzige().pk
+        super().save(*args, **kwargs)
+
     zeitpunkt = models.DateTimeField("Zeitpunkt", auto_now_add=True)
     benutzer = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
@@ -61,7 +83,13 @@ class AktivitaetsLog(models.Model):
         return ''
 
 
-class Pendenz(models.Model):
+class Pendenz(OrganisationAusKette):
+    # Beide Wege optional, und das ist fachlich richtig: Eine allgemeine
+    # Aufgabe der Verwaltung haengt weder an einer Liegenschaft noch an
+    # einem Vertrag. Deshalb Tupel plus Rueckfall statt CheckConstraint —
+    # eine Bedingung wuerde genau diese legitimen Pendenzen abweisen.
+    ORGANISATION_PFAD = ('vertrag', 'liegenschaft')
+    ORGANISATION_RUECKFALL = True
     """Persistente Pendenz / Frist. Ergänzt die automatisch berechneten Fristen
     (befristete Vertragsenden, Kündigungsfristen) um manuell erfassbare, abhakbare
     Aufgaben mit Fälligkeitsdatum."""

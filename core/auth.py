@@ -302,8 +302,38 @@ def log_aktion(request, aktion, objekt="", details="", ziel=None, kategorie=None
         if ziel is not None and getattr(ziel, 'pk', None):
             ziel_typ = _ZIEL_TYP_MAP.get(type(ziel).__name__, type(ziel).__name__.lower())
             ziel_id = ziel.pk
+        # DIE ORGANISATION AUSDRÜCKLICH BESTIMMEN — nicht dem Modell überlassen.
+        #
+        # `AktivitaetsLog.save()` fällt auf die einzige vorhandene Organisation
+        # zurück. Das trägt heute, aber nicht mehr, sobald es zwei gibt: Beim
+        # LOGIN ist noch kein Mandantenkontext gesetzt — die Middleware liest
+        # ihn aus der Mitgliedschaft, und die steht erst fest, wenn der Benutzer
+        # angemeldet IST. Genau dort schlüge die Ableitung fehl.
+        #
+        # Und weil diese Funktion jeden Fehler schluckt (zu Recht: Ein
+        # Logbucheintrag darf nie einen Geschäftsprozess brechen), wäre die
+        # Folge kein Fehler, sondern ein LEERER AUDIT-TRAIL für Anmeldungen.
+        # Ein Protokoll, das still aufhört zu protokollieren, ist schlimmer als
+        # keines — man verlässt sich darauf.
+        #
+        # Der Benutzer ist hier bekannt, also kommt die Organisation aus seiner
+        # Mitgliedschaft. Bei mehreren gewinnt die älteste; das ist eine
+        # Näherung, aber eine sichtbare — und allemal besser als gar kein
+        # Eintrag.
+        from core.tenancy import aktuelle_organisation
+        organisation = aktuelle_organisation()
+        if organisation is None and user is not None:
+            from crm.models import Mitgliedschaft
+            mitgliedschaft = (Mitgliedschaft.objects.filter(benutzer=user)
+                              .order_by('pk').select_related('organisation').first())
+            organisation = mitgliedschaft.organisation if mitgliedschaft else None
+
         AktivitaetsLog.objects.create(
             benutzer=user,
+            # `organisation=None` überlässt die Wahl dem Modell (Rückfall auf die
+            # einzige vorhandene) — der heutige Zustand für Konten ohne
+            # Mitgliedschaft, etwa Mieter im Portal.
+            **({'organisation': organisation} if organisation is not None else {}),
             aktion=str(aktion)[:100],
             objekt=str(objekt)[:200],
             details=str(details)[:2000],
