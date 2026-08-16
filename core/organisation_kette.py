@@ -37,6 +37,8 @@ existieren.
 """
 from django.db import models
 
+from core.tenancy import AlleOrganisationenManager, TenantManager
+
 
 def organisation_aus_kontext():
     """Die ID der Organisation des laufenden Mandantenkontexts, oder `None`.
@@ -93,6 +95,23 @@ class OrganisationAusKette(models.Model):
         related_name='%(app_label)s_%(class)s',
         verbose_name='Organisation',
     )
+
+    # Der Filter selbst. `pfad='organisation'` ist die denormalisierte Spalte
+    # oben — deshalb gibt es sie: Der Manager filtert ohne Join, auch bei
+    # `SchluesselAusgabe`, das drei Glieder von der Liegenschaft entfernt ist.
+    #
+    # Reihenfolge zählt: Der ERSTE Manager wird `_default_manager` und damit
+    # der, den Admin, ModelForms und `dumpdata` nehmen. Der gefilterte gehört
+    # also nach vorn.
+    #
+    # `_base_manager` bleibt unberührt — Django legt dafür still einen
+    # gewöhnlichen `Manager` an, solange `Meta.base_manager_name` nicht gesetzt
+    # ist. Das ist wichtig und kein Zufall: Fremdschlüssel-Zugriffe wie
+    # `ausgabe.schluessel` gehen über `_base_manager`. Wäre der gefiltert,
+    # würfe jeder Attributzugriff ausserhalb einer Anfrage — auch dort, wo
+    # längst feststeht, dass das Objekt dem Aufrufer gehört.
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
 
     class Meta:
         abstract = True
