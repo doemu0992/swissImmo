@@ -1203,6 +1203,29 @@ def fw_lebensdauer(request):
     from core.auth import log_aktion, hat_rolle
     basis = _global_filter(request)
 
+    # Seit Etappe 5 gehoert die Lebensdauertabelle der Organisation. Jede Zeile
+    # dieses Views muss deshalb auf sie eingeschraenkt sein — sonst saehe und
+    # bearbeitete Verwaltung A die Werte von B. Die Middleware setzt
+    # `request.organisation` aus der Mitgliedschaft.
+    organisation = getattr(request, 'organisation', None)
+    eigene = Lebensdauer.objects.filter(organisation=organisation)
+
+    # Erstbefuellung je Verwaltung.
+    #
+    # Bis Etappe 5 kam die Tabelle aus der Data-Migration `0019_seed_lebensdauer`
+    # und war nach der Installation gefuellt. Seit die Werte einer Organisation
+    # gehoeren, geht das nicht mehr: Zur Migrationszeit gibt es noch keine, und
+    # `0037` loescht die herrenlosen Zeilen deshalb.
+    #
+    # Ohne diese vier Zeilen begaenne JEDE neue Verwaltung mit einer leeren
+    # Tabelle und muesste erst den Knopf „Standardwerte ergaenzen" finden. Das
+    # waere eine Verschlechterung, die nur mit der Umstellung zu tun haette und
+    # nichts mit dem Fach. `seed_lebensdauer` ist idempotent; sobald eine eigene
+    # Zeile existiert, passiert hier nie wieder etwas.
+    if organisation is not None and not eigene.exists():
+        from core.services.raumkatalog import seed_lebensdauer
+        seed_lebensdauer(organisation)
+
     if request.method == 'POST':
         if not hat_rolle(request.user, SCHREIB_ROLLEN):
             messages.error(request, "Keine Berechtigung zum Bearbeiten.")
@@ -1210,7 +1233,7 @@ def fw_lebensdauer(request):
         aktion = request.POST.get('aktion')
         if aktion == 'speichern':
             n = 0
-            for row in Lebensdauer.objects.all():
+            for row in eigene:
                 val = request.POST.get(f'jahre_{row.id}')
                 bem = request.POST.get(f'bemerkung_{row.id}')
                 changed = False
@@ -1227,24 +1250,27 @@ def fw_lebensdauer(request):
             jahre = request.POST.get('jahre')
             if kat and jahre and jahre.isdigit() and int(jahre) > 0:
                 _, created = Lebensdauer.objects.get_or_create(
-                    kategorie=kat, defaults={'jahre': int(jahre),
-                                             'bemerkung': (request.POST.get('bemerkung') or '').strip()})
+                    kategorie=kat, organisation=organisation,
+                    defaults={'jahre': int(jahre),
+                              'bemerkung': (request.POST.get('bemerkung') or '').strip()})
                 messages.success(request, f"✅ «{kat}» hinzugefügt." if created else "Kategorie existiert bereits.")
             else:
                 messages.error(request, "Kategorie und Jahre (> 0) sind Pflicht.")
         elif aktion == 'loeschen':
-            Lebensdauer.objects.filter(id=request.POST.get('id') or None).delete()
+            # Ueber `eigene`, nicht ueber `objects`: Eine ID aus dem Formular
+            # ist eine Nutzereingabe, und eine fremde ID darf nichts loeschen.
+            eigene.filter(id=request.POST.get('id') or None).delete()
             messages.success(request, "Kategorie entfernt.")
         elif aktion == 'seed':
             from core.services.raumkatalog import seed_lebensdauer
-            n = seed_lebensdauer()
+            n = seed_lebensdauer(organisation)
             messages.success(request, f"✅ {n} Standardwert(e) ergänzt." if n else "Alle Standardwerte bereits vorhanden.")
         return redirect('/neu/lebensdauer/')
 
     from django.contrib import messages as _m
     return render(request, 'fw/lebensdauer.html', {
         **basis, 'nav': 'assets',
-        'rows': Lebensdauer.objects.all(),
+        'rows': eigene,
         'meldung': list(_m.get_messages(request)),
     })
 

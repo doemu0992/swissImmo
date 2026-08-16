@@ -92,13 +92,32 @@ for _elemente in RAUM_KATALOG.values():
             STANDARD_LEBENSDAUER[_kat] = _jahre
 
 
-def seed_lebensdauer():
-    """Legt fehlende Standard-Lebensdauern an (idempotent). Gibt Anzahl neu zurück."""
+def seed_lebensdauer(organisation=None):
+    """Legt fehlende Standard-Lebensdauern an (idempotent). Gibt Anzahl neu zurück.
+
+    Seit Etappe 5 gehört die Lebensdauertabelle der Organisation. Ohne den
+    Bezug im `get_or_create` würde hier quer gesucht: Verwaltung B bekäme
+    „Küche" nicht angelegt, weil Verwaltung A sie schon hat — und die
+    Rückgabe wäre deren Zeile. Das ist ein mandantenübergreifender Lesezugriff
+    in der harmlosesten denkbaren Verkleidung, einem Saat-Aufruf.
+
+    Ohne Kontext und ohne Argument wird NICHT geraten: Dann gibt es keine
+    Organisation, der die Werte gehören könnten.
+    """
     from portfolio.models import Lebensdauer
+    from core.tenancy import aktuelle_organisation
+
+    organisation = organisation or aktuelle_organisation()
+    if organisation is None:
+        raise ValueError(
+            'seed_lebensdauer() ohne Organisation. Die Standardwerte gehören '
+            'einer Verwaltung; ohne sie ist nicht bestimmt, wem.')
+
     n = 0
     for kat, jahre in STANDARD_LEBENSDAUER.items():
         _, created = Lebensdauer.objects.get_or_create(
-            kategorie=kat, defaults={'jahre': jahre, 'bemerkung': 'Standardwert (anpassbar)'})
+            kategorie=kat, organisation=organisation,
+            defaults={'jahre': jahre, 'bemerkung': 'Standardwert (anpassbar)'})
         if created:
             n += 1
     return n

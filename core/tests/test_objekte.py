@@ -188,14 +188,28 @@ class AusstattungRaumbuchTests(TestCase):
     aus den Assets), Katalog-Vorlagen, Zeitwert nach Lebensdauertabelle."""
 
     def test_lebensdauer_geseedet(self):
+        """Die Standardwerte entstehen jetzt JE VERWALTUNG, nicht mehr global.
+
+        Bis Etappe 5 legte die Data-Migration `0019_seed_lebensdauer` sie an —
+        ohne Bezug, weil es zur Migrationszeit keine Organisation gibt. Solche
+        herrenlosen Zeilen loescht `0037`, und `fw_lebensdauer` legt sie beim
+        ersten Aufruf fuer die eigene Verwaltung neu an.
+        """
         from portfolio.models import Lebensdauer
-        # Data-Migration 0019 seedet die Standardwerte
-        self.assertTrue(Lebensdauer.objects.filter(kategorie='Backofen').exists())
+        c = Client(); c.force_login(_team_user())
+        c.get('/neu/lebensdauer/')
+        self.assertTrue(
+            Lebensdauer.objects.filter(kategorie='Backofen',
+                                       organisation=_test_organisation()).exists())
 
     def test_effektive_lebensdauer_fallback_tabelle(self):
         from portfolio.models import Ausstattung, Lebensdauer
         _lg, e, _m, _v = _basis_objekte()
-        Lebensdauer.objects.update_or_create(kategorie='Backofen', defaults={'jahre': 15})
+        # Mit `organisation`: ohne den Bezug suchte `update_or_create` quer
+        # ueber alle Verwaltungen und traefe die Zeile einer fremden.
+        Lebensdauer.objects.update_or_create(
+            kategorie='Backofen', organisation=_test_organisation(),
+            defaults={'jahre': 15})
         a = Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Backofen')
         # kein manueller Wert → aus Tabelle
         self.assertEqual(a.effektive_lebensdauer(), 15)
@@ -421,7 +435,8 @@ class AbnahmeLebensdauerTests(TestCase):
 
     def test_lebensdauer_loeschen(self):
         from portfolio.models import Lebensdauer
-        row = Lebensdauer.objects.create(kategorie='Weg', jahre=5)
+        row = Lebensdauer.objects.create(kategorie='Weg', jahre=5,
+                                         organisation=_test_organisation())
         c = Client(); c.force_login(_team_user())
         r = c.post('/neu/lebensdauer/', {'aktion': 'loeschen', 'id': str(row.id)})
         self.assertEqual(r.status_code, 302)

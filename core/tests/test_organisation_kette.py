@@ -26,15 +26,37 @@ als Wächter gegen die entgegengesetzte Fehlerrichtung da (Ableitung
 
 `KettenPfadTests` scheitert bei einem Tippfehler im `ORGANISATION_PFAD` — der
 Fall, der sonst erst in der Datenmigration auf der Produktion auffiele.
+
+ZWEITE GEGENPROBE (PR 2) — die Bedingungen
+------------------------------------------
+Mit entfernten `CheckConstraint`s und ohne die `UniqueConstraint` im Modell:
+
+    KettenPfadTests.test_alternativpfade_sind_durch_eine_bedingung_gesichert
+        FEHLER für portfolio.Dokument, portfolio.Zaehler, portfolio.Geraet
+    AbleitungTests.test_ohne_jeden_bezug_weist_die_datenbank_ab        ok
+    AbleitungTests.test_lebensdauer_ist_je_organisation_eindeutig      ok
+
+**Die beiden grün gebliebenen beweisen hier weniger, als es aussieht**, und das
+soll nicht untergehen: Eine Bedingung aus dem Modell zu nehmen entfernt sie
+nicht aus der bereits migrierten Testdatenbank. Sie prüfen also die Datenbank,
+und die war unverändert. Eine echte Gegenprobe für sie hiesse, die Migration
+zurückzurollen — dann fehlte allerdings auch die Spalte, und sie scheiterten
+aus einem anderen Grund.
+
+Ihr Wert liegt darum woanders: Sie belegen, dass die Bedingung in der
+**Datenbank** tatsächlich greift und nicht nur im Modell steht. Der
+Modell-Test daneben deckt die andere Richtung ab — dass keine neue
+Alternativ-Kette ohne Bedingung hinzukommt.
 """
 from decimal import Decimal
 
 from django.apps import apps
+from django.db import models
 from django.test import TestCase
 
 from core.organisation_kette import OrganisationAusKette
 from crm.models import Organisation
-from portfolio.models import Liegenschaft, Einheit, Schluessel, SchluesselAusgabe
+from portfolio.models import Liegenschaft, Einheit, Schluessel, SchluesselAusgabe, Dokument
 
 from ._helfer import _test_organisation
 
@@ -80,27 +102,57 @@ class KettenPfadTests(TestCase):
     def test_pfad_ist_gesetzt_und_gueltig(self):
         for modell in _kettenmodelle():
             with self.subTest(modell=modell._meta.label):
-                pfad = modell.ORGANISATION_PFAD
+                pfade = modell.ORGANISATION_PFAD
                 self.assertTrue(
-                    pfad, f'{modell._meta.label}: ORGANISATION_PFAD ist leer')
+                    pfade, f'{modell._meta.label}: ORGANISATION_PFAD ist leer')
+                einzelpfad = isinstance(pfade, str)
+                if einzelpfad:
+                    pfade = (pfade,)
 
-                knoten = modell
-                for glied in pfad.split('__'):
-                    feld = knoten._meta.get_field(glied)   # wirft bei Tippfehler
+                for pfad in pfade:
+                    knoten = modell
+                    for glied in pfad.split('__'):
+                        feld = knoten._meta.get_field(glied)   # wirft bei Tippfehler
+                        self.assertTrue(
+                            feld.many_to_one,
+                            f'{knoten._meta.label}.{glied} ist kein Fremdschlüssel')
+                        if einzelpfad:
+                            # Ein EINZELNER Pfad muss pflichtig sein, sonst ist die
+                            # Kette nicht geschlossen. Bei mehreren Alternativen ist
+                            # gerade das Gegenteil der Fall — sie sind alle optional,
+                            # und die CheckConstraint garantiert, dass eine trägt.
+                            self.assertFalse(
+                                feld.null,
+                                f'{knoten._meta.label}.{glied} ist optional. Bei einem '
+                                f'einzelnen Pfad heisst das: die Kette ist nicht '
+                                f'pflichtig. Entweder gehört hier ein Tupel hin, oder '
+                                f'{modell._meta.label} ist nicht Gruppe C.')
+                        knoten = feld.related_model
+
                     self.assertTrue(
-                        feld.many_to_one,
-                        f'{knoten._meta.label}.{glied} ist kein Fremdschlüssel')
-                    self.assertFalse(
-                        feld.null,
-                        f'{knoten._meta.label}.{glied} ist optional — dann ist die '
-                        f'Kette nicht pflichtig und {modell._meta.label} gehört '
-                        f'nicht in Gruppe C.')
-                    knoten = feld.related_model
+                        any(f.name == 'organisation' for f in knoten._meta.concrete_fields),
+                        f'{modell._meta.label}: Pfad «{pfad}» endet bei '
+                        f'{knoten._meta.label}, und das trägt keine Organisation.')
 
+    def test_alternativpfade_sind_durch_eine_bedingung_gesichert(self):
+        """Mehrere Pfade ohne `CheckConstraint` sind ein Loch, kein Entwurf.
+
+        Sind alle Alternativen optional und keine erzwungen, entsteht genau die
+        Waise aus Rezept B: ein Datensatz, von dem kein Weg zur Organisation
+        führt — und der deshalb niemandem gehört. Dieser Test findet das beim
+        nächsten Modell, das ein Tupel bekommt, statt erst die Datenmigration
+        auf der Produktion.
+        """
+        for modell in _kettenmodelle():
+            if isinstance(modell.ORGANISATION_PFAD, str):
+                continue
+            with self.subTest(modell=modell._meta.label):
+                bedingungen = [c for c in modell._meta.constraints
+                               if isinstance(c, models.CheckConstraint)]
                 self.assertTrue(
-                    any(f.name == 'organisation' for f in knoten._meta.concrete_fields),
-                    f'{modell._meta.label}: Pfad endet bei {knoten._meta.label}, '
-                    f'und das trägt keine Organisation.')
+                    bedingungen,
+                    f'{modell._meta.label} hat mehrere ORGANISATION_PFADe, aber keine '
+                    f'CheckConstraint, die mindestens einen erzwingt.')
 
 
 class AbleitungTests(TestCase):
@@ -125,6 +177,57 @@ class AbleitungTests(TestCase):
         ausgabe = SchluesselAusgabe.objects.create(schluessel=schluessel)
         self.assertEqual(schluessel.organisation_id, self.organisation.pk)
         self.assertEqual(ausgabe.organisation_id, self.organisation.pk)
+
+    def test_entweder_oder_erbt_ueber_beide_wege(self):
+        """`Dokument` hängt an einer Einheit ODER an einer Liegenschaft.
+
+        Beide Wege müssen tragen — sonst hätte das Tupel keinen Zweck.
+        """
+        einheit = Einheit.objects.create(
+            liegenschaft=self.liegenschaft, bezeichnung='1.5 Zi', typ='wohnung',
+            nettomiete_aktuell=Decimal('900'), nebenkosten_aktuell=Decimal('100'))
+
+        ueber_einheit = Dokument.objects.create(einheit=einheit, titel='Grundriss')
+        ueber_liegenschaft = Dokument.objects.create(
+            liegenschaft=self.liegenschaft, titel='Gebäudeversicherung')
+
+        self.assertEqual(ueber_einheit.organisation_id, self.organisation.pk)
+        self.assertEqual(ueber_liegenschaft.organisation_id, self.organisation.pk)
+
+    def test_ohne_jeden_bezug_weist_die_datenbank_ab(self):
+        """Die Bedingung aus Rezept B: „mindestens einer der beiden".
+
+        Ohne sie entstünde ein Dokument ohne Weg zur Organisation — ein
+        Datensatz, der niemandem gehört und den deshalb jeder sieht.
+        """
+        from django.db import IntegrityError
+
+        with self.assertRaises(IntegrityError):
+            Dokument.objects.create(titel='Gehört niemandem')
+
+    def test_lebensdauer_ist_je_organisation_eindeutig(self):
+        """`kategorie` war global unique — dann könnte B «Küche» nie anlegen.
+
+        Die Eindeutigkeit gilt je Verwaltung. Innerhalb einer bleibt sie
+        bestehen, sonst wäre die Tabelle doppelt führbar.
+        """
+        from django.db import IntegrityError
+        from portfolio.models import Lebensdauer
+        from core.tenancy import organisation_kontext
+
+        andere = Organisation.objects.create(
+            firma='Zweite AG', strasse='Nebenweg 2', plz='3000', ort='Bern')
+
+        with organisation_kontext(self.organisation):
+            Lebensdauer.objects.create(kategorie='Testkategorie', jahre=20)
+        with organisation_kontext(andere):
+            # Dieselbe Kategorie bei einer ANDEREN Verwaltung: muss gehen.
+            zweite = Lebensdauer.objects.create(kategorie='Testkategorie', jahre=25)
+        self.assertEqual(zweite.organisation_id, andere.pk)
+
+        with organisation_kontext(andere), self.assertRaises(IntegrityError):
+            # Zweimal bei DERSELBEN: darf nicht.
+            Lebensdauer.objects.create(kategorie='Testkategorie', jahre=30)
 
     def test_bestehende_organisation_wird_nicht_ueberschrieben(self):
         """Ein ausdrücklich gesetzter Wert bleibt stehen.

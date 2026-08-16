@@ -420,7 +420,11 @@ class LiegenschaftVerteilschluessel(OrganisationAusKette):
         return f"{self.liegenschaft.strasse} - Standard {self.get_kostenart_display()}"
 
 
-class Dokument(models.Model):
+class Dokument(OrganisationAusKette):
+    # Entweder-oder: haengt an einer Einheit ODER an einer Liegenschaft,
+    # beide Fremdschluessel optional. Die Einheit steht vorn, weil sie die
+    # genauere Angabe ist; beide fuehren zur selben Organisation.
+    ORGANISATION_PFAD = ('einheit__liegenschaft', 'liegenschaft')
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, null=True, blank=True, related_name='dokumente')
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, null=True, blank=True, related_name='dokumente')
     titel = models.CharField(max_length=200)
@@ -431,6 +435,17 @@ class Dokument(models.Model):
     class Meta:
         verbose_name = "Dokument"
         db_table = 'portfolio_dokument'
+        constraints = [
+            # Ohne diese Bedingung entsteht die Waise aus Rezept B: ein
+            # Datensatz, von dem KEIN Weg zur Organisation fuehrt — und der
+            # damit niemandem gehoert. Auf der Produktion sind die drei
+            # Tabellen heute leer (nachgezaehlt am 16.08.2026), die Bedingung
+            # laesst sich also folgenlos setzen. Genau deshalb JETZT und nicht
+            # spaeter: Ab dem ersten Datensatz waere es eine Datenbereinigung.
+            models.CheckConstraint(
+                condition=models.Q(einheit__isnull=False) | models.Q(liegenschaft__isnull=False),
+                name='%(app_label)s_%(class)s_hat_bezug'),
+        ]
 
 
 class Unterhalt(OrganisationAusKette):
@@ -448,7 +463,11 @@ class Unterhalt(OrganisationAusKette):
         db_table = 'core_unterhalt'
 
 
-class Zaehler(models.Model):
+class Zaehler(OrganisationAusKette):
+    # Entweder-oder: haengt an einer Einheit ODER an einer Liegenschaft,
+    # beide Fremdschluessel optional. Die Einheit steht vorn, weil sie die
+    # genauere Angabe ist; beide fuehren zur selben Organisation.
+    ORGANISATION_PFAD = ('einheit__liegenschaft', 'liegenschaft')
     # Objekt-Zähler (einheit) ODER allgemeiner Liegenschafts-Zähler
     # (z.B. Allgemeinstrom, Hauptwasser) — genau eine der beiden Beziehungen ist gesetzt.
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='zaehler',
@@ -463,9 +482,23 @@ class Zaehler(models.Model):
     class Meta:
         verbose_name = "Zähler"
         db_table = 'core_zaehler'
+        constraints = [
+            # Ohne diese Bedingung entsteht die Waise aus Rezept B: ein
+            # Datensatz, von dem KEIN Weg zur Organisation fuehrt — und der
+            # damit niemandem gehoert. Auf der Produktion sind die drei
+            # Tabellen heute leer (nachgezaehlt am 16.08.2026), die Bedingung
+            # laesst sich also folgenlos setzen. Genau deshalb JETZT und nicht
+            # spaeter: Ab dem ersten Datensatz waere es eine Datenbereinigung.
+            models.CheckConstraint(
+                condition=models.Q(einheit__isnull=False) | models.Q(liegenschaft__isnull=False),
+                name='%(app_label)s_%(class)s_hat_bezug'),
+        ]
 
 
-class ZaehlerStand(models.Model):
+class ZaehlerStand(OrganisationAusKette):
+    # Pflichtig am Zaehler, und der traegt seit Etappe 5 selbst die
+    # Organisation — die Kette endet also schon nach einem Glied.
+    ORGANISATION_PFAD = 'zaehler'
     zaehler = models.ForeignKey(Zaehler, on_delete=models.CASCADE, related_name='staende')
     datum = models.DateField(default=timezone.now)
     wert = models.DecimalField("Zählerstand", max_digits=12, decimal_places=3)
@@ -475,7 +508,11 @@ class ZaehlerStand(models.Model):
         db_table = 'core_zaehlerstand'
 
 
-class Geraet(models.Model):
+class Geraet(OrganisationAusKette):
+    # Entweder-oder: haengt an einer Einheit ODER an einer Liegenschaft,
+    # beide Fremdschluessel optional. Die Einheit steht vorn, weil sie die
+    # genauere Angabe ist; beide fuehren zur selben Organisation.
+    ORGANISATION_PFAD = ('einheit__liegenschaft', 'liegenschaft')
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='allgemeine_geraete', null=True, blank=True)
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='geraete', null=True, blank=True)
     kategorie = models.CharField(max_length=100, default='sonstiges')
@@ -493,6 +530,13 @@ class Geraet(models.Model):
     class Meta:
         verbose_name = "Gerät"
         db_table = 'core_geraet'
+        constraints = [
+            # Siehe Dokument/Zaehler: ohne diese Bedingung entsteht ein
+            # Datensatz ohne Weg zur Organisation. Tabelle produktiv leer.
+            models.CheckConstraint(
+                condition=models.Q(einheit__isnull=False) | models.Q(liegenschaft__isnull=False),
+                name='%(app_label)s_%(class)s_hat_bezug'),
+        ]
 
 
 class Ausstattung(OrganisationAusKette):
@@ -590,15 +634,49 @@ class Ausstattung(OrganisationAusKette):
 class Lebensdauer(models.Model):
     """Paritätische Lebensdauertabelle (Mieterverband/HEV): erwartete Nutzungs-
     dauer je Ausstattungs-Kategorie. Editierbar; Standardwerte werden geseedet."""
-    kategorie = models.CharField(max_length=80, unique=True)
+    # WARUM JE ORGANISATION UND NICHT GLOBAL (Rezept A, entschieden 16.08.2026)
+    #
+    # Eine Lebensdauertabelle nach Branchenstandard sieht nach Referenzdatei
+    # aus — 69 Zeilen, produktiv wie lokal dieselben. Das Kriterium des Skills
+    # `phase-2-migration` lautet aber: global lassen nur dann, wenn niemand sie
+    # je bearbeiten darf. Hier darf jeder:
+    #
+    #     core/views/fw/detailseiten.py  'neu' → get_or_create
+    #                                    'loeschen' → delete
+    #                                    row.save() → „Lebensdauertabelle bearbeitet"
+    #
+    # Ohne eigene Spalte wuerde Verwaltung A mit „Kueche = 25 Jahre" den Wert
+    # von Verwaltung B ueberschreiben — ein mandantenuebergreifender SCHREIB-
+    # zugriff, und der ist schlimmer als ein Leseleck.
+    #
+    # Der Bestand bleibt bei der Ausgangsorganisation; neue Verwaltungen fuellen
+    # ihre eigene ueber das vorhandene `seed_lebensdauer()`.
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+                                     editable=False, related_name='lebensdauern',
+                                     verbose_name='Organisation')
+    kategorie = models.CharField(max_length=80)
     jahre = models.PositiveIntegerField("Lebensdauer (Jahre)")
     bemerkung = models.CharField(max_length=200, blank=True, default='')
+
+    def save(self, *args, **kwargs):
+        # Wie `Liegenschaft`: keine Kette, also aus dem Mandantenkontext. Der
+        # Bearbeitungspfad oben gibt die Organisation nirgends mit.
+        if self.organisation_id is None:
+            self.organisation_id = organisation_aus_kontext()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Lebensdauer"
         verbose_name_plural = "Lebensdauertabelle"
         ordering = ['kategorie']
         db_table = 'core_lebensdauer'
+        constraints = [
+            # `kategorie` war global `unique=True`. Damit koennte Verwaltung B
+            # „Kueche" gar nicht anlegen, weil A sie schon hat — die Eindeutigkeit
+            # gilt je Verwaltung, nicht ueber alle hinweg.
+            models.UniqueConstraint(fields=['organisation', 'kategorie'],
+                                    name='uniq_lebensdauer_je_organisation'),
+        ]
 
     def __str__(self):
         return f"{self.kategorie}: {self.jahre} J"

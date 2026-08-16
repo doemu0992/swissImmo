@@ -82,7 +82,23 @@ class OrganisationAusKette(models.Model):
     """
 
     #: Weg zum Träger der Organisation, `__`-getrennt. Pflicht in Unterklassen.
-    ORGANISATION_PFAD: str = ''
+    #:
+    #: Auch ein **Tupel** ist erlaubt, für Modelle mit einem Entweder-oder:
+    #: `Dokument`, `Geraet` und `Zaehler` hängen wahlweise an einer Einheit
+    #: ODER an einer Liegenschaft, beide Fremdschlüssel `null=True`. Dann gilt
+    #: der erste Pfad, der trägt:
+    #:
+    #:     ORGANISATION_PFAD = ('einheit__liegenschaft', 'liegenschaft')
+    #:
+    #: Die Einheit steht bewusst vorn — sie ist die genauere Angabe, und beide
+    #: führen ohnehin zur selben Organisation, weil eine Einheit ihrer
+    #: Liegenschaft gehört.
+    #:
+    #: Ein Tupel verlangt zusätzlich eine `CheckConstraint`, die mindestens
+    #: einen der beiden erzwingt. Ohne sie entstünde genau die Waise, die
+    #: Rezept B beschreibt: ein Datensatz, von dem kein Weg zur Organisation
+    #: führt — und der deshalb niemandem gehört.
+    ORGANISATION_PFAD = ''
 
     organisation = models.ForeignKey(
         'crm.Organisation',
@@ -104,13 +120,22 @@ class OrganisationAusKette(models.Model):
         Gruppe C nicht vorgesehen (alle Glieder sind pflichtig), kann aber
         vorkommen, solange ein Objekt im Speicher noch unvollständig ist.
         """
-        knoten = self
-        for glied in self.ORGANISATION_PFAD.split('__'):
-            # `getattr` statt `..._id`, weil unterwegs echte Objekte nötig sind.
-            knoten = getattr(knoten, glied, None)
-            if knoten is None:
-                return None
-        return getattr(knoten, 'organisation_id', None)
+        pfade = self.ORGANISATION_PFAD
+        if isinstance(pfade, str):
+            pfade = (pfade,)
+
+        for pfad in pfade:
+            knoten = self
+            for glied in pfad.split('__'):
+                # `getattr` statt `..._id`, weil unterwegs echte Objekte nötig sind.
+                knoten = getattr(knoten, glied, None)
+                if knoten is None:
+                    break                       # dieser Pfad trägt nicht — nächsten versuchen
+            else:
+                organisation_id = getattr(knoten, 'organisation_id', None)
+                if organisation_id is not None:
+                    return organisation_id
+        return None
 
     def save(self, *args, **kwargs):
         # Nur ergänzen, nie überschreiben: Wer die Organisation ausdrücklich
