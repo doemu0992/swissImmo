@@ -279,6 +279,10 @@ Sinnvoll nach Etappe 3, weil sie am User Model hängt.
 
 **PostgreSQL-Wechsel zu spät.** SQLite trägt gleichzeitige Schreibzugriffe mehrerer Mandanten nicht. Der Wechsel (P1.4) gehört spätestens zwischen Etappe 4 und 5, besser früher. Der Treiber ist seit P0.5 vorhanden (`psycopg[binary]` in `requirements.txt`) — es fehlt nur noch der Umzug selbst.
 
+> **Stand 16.08.2026:** PostgreSQL bei PythonAnywhere abonniert, das Werkzeug liegt bereit — `umzug_postgres.sh` (sieben Schritte mit Sicherung, Nachzählung und Sequenz-Reset), `manage.py bestand_zaehlen` als Kontrolle und `.datenbank-erwartet` + `manage.py datenbank_pruefen` als Wächter gegen den Fall „Web-App auf PostgreSQL, Deploy-Task auf SQLite". Anleitung: [`UMZUG-POSTGRESQL.md`](UMZUG-POSTGRESQL.md). Der Umzug selbst ist noch nicht ausgeführt; er braucht Zugangsdaten, die nur der Betreiber setzt.
+>
+> Zwischenzeitlich ist SQLite gehärtet (WAL, `transaction_mode=IMMEDIATE`, 30 s Timeout) — das trägt mehrere Mandanten mit üblichem Aufkommen, aber keine parallelen Massenläufe.
+
 ---
 
 ## Entscheide, die noch ausstehen

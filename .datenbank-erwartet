@@ -1,0 +1,14 @@
+# Auf welcher Datenbank dieses Repo laufen soll.
+#
+# Geprüft von `manage.py datenbank_pruefen`, aufgerufen von deploy.sh vor der
+# ersten Schreiboperation. Weicht die tatsächliche Datenbank ab, bricht der
+# Deploy ab, statt die falsche zu migrieren und Erfolg zu melden.
+#
+# Beim Umzug auf PostgreSQL: Erst umziehen (umzug_postgres.sh), dann hier
+# `postgres` eintragen und pushen. Andersherum bricht der erste Deploy nach
+# der Änderung ab — richtig so, denn dann steht die Umgebung noch nicht.
+#
+# `name` und `host` sind freiwillig. Wer sie einträgt, ist auch dagegen
+# geschützt, dass zwei PostgreSQL-Datenbanken verwechselt werden.
+
+engine = sqlite

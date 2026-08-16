@@ -311,6 +311,23 @@ if [ "$NEUER_CODE" = "1" ]; then
     fi
 fi
 
+# Bevor irgendetwas geschrieben wird: Ist das ueberhaupt die richtige Datenbank?
+#
+# Auf PythonAnywhere hat jeder Prozess eigene Umgebungsvariablen — Web-App,
+# Always-on-Task und Konsole. Setzt jemand DB_ENGINE=postgres nur im Web-Tab,
+# laeuft die Website auf PostgreSQL, waehrend DIESER Task weiter die
+# SQLite-Datei migriert. Beide Seiten funktionieren fuer sich, der Deploy meldet
+# Erfolg — und die Website sieht die Migration nie. Ein Fehler, der erst beim
+# Kunden auffaellt.
+#
+# `.datenbank-erwartet` liegt im Repo und kommt mit dem Code mit, ist also fuer
+# alle drei Prozesse dieselbe Angabe. Fehlt die Datei, prueft der Befehl nichts
+# und meldet Erfolg — bestehende Installationen bleiben unberuehrt.
+echo "→ manage.py datenbank_pruefen"
+if ! "$PY" manage.py datenbank_pruefen; then
+    zurueckrollen "Falsche Datenbank — KEIN migrate, KEIN Reload."
+fi
+
 # Seit Etappe 3 hat swissImmo ein eigenes Benutzermodell (benutzer.Benutzer),
 # das die bestehende Tabelle auth_user übernimmt. Auf einer Bestandsdatenbank
 # bricht `migrate` sonst ab, BEVOR eine Migration läuft:
