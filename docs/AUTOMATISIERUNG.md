@@ -42,10 +42,26 @@ inhaltlich falsch, dann startete die mehrzeilige Ersatzfassung gar nicht erst.
 Schleife und Intervall stecken jetzt in `deploy.sh --dauerlauf` (Standard 30 s,
 über `PA_INTERVALL` änderbar), wo sie im Git stehen und geprüft werden können.
 
-**Den Python sucht sich das Skript selbst.** Der Reihe nach: `$PA_PY`,
-`python`, `python3`, dann `$HOME/.virtualenvs/*/bin/python`. Genommen wird der
-erste, der Django importieren kann — nicht der mit dem passenden Namen. Ein
-gesetztes `PA_PY`, das nicht trägt, wird dabei **gemeldet** und nicht
+**Den Python sucht sich das Skript selbst.** Der Reihe nach: `$PA_PY`, dann
+`$HOME/.virtualenvs/*/bin/python`, dann `python` und `python3`. Auf einem
+Hoster ist das virtualenv fast immer das Richtige; der System-Python ist der
+Zufallsfund und steht deshalb hinten.
+
+Geprüft wird mit **`django.setup()`**, nicht mit `import django`. Der
+Unterschied ist nicht theoretisch: Auf der Produktion liegt Django **auch**
+systemweit (Python 3.13), das Projekt braucht aber das virtualenv (3.10) mit
+allen Abhängigkeiten. Ein blosses `import django` bestand am System-Python, und
+der Deploy scheiterte erst Sekunden später mit
+
+```
+ModuleNotFoundError: No module named 'unfold'
+```
+
+`django.setup()` lädt **jede** App aus `INSTALLED_APPS`. Was das übersteht,
+kann auch `manage.py migrate` — und es braucht keinen hartkodierten
+Paketnamen, weil die Liste in den Settings steht.
+
+Ein gesetztes `PA_PY`, das nicht trägt, wird **gemeldet** und nicht
 stillschweigend übergangen: Der Ersatz mag funktionieren, aber wer den Wert
 gesetzt hat, meinte ihn.
 

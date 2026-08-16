@@ -44,15 +44,32 @@ fi
 BRANCH="${1:-claude/fairwalter-rebuild}"
 
 # --- Python finden --------------------------------------------------------
-# `PA_PY` hat Vorrang. Sonst: erst `python`, dann die virtualenvs im
-# Heimverzeichnis. Ein Scheduled Task startet ohne aktiviertes venv, und der
-# System-Python trägt Django nicht — statt das dem Aufrufer aufzubürden, wird
-# es hier gesucht. Was zählt, ist nicht der Name, sondern ob Django importiert.
+# WAS HIER GEPRUEFT WIRD, UND WARUM NICHT WENIGER
+#
+# Die erste Fassung fragte nur `import django`. Das reichte nicht: Auf der
+# Produktion liegt Django AUCH systemweit (Python 3.13), das Projekt braucht
+# aber das virtualenv (3.10) mit allen Abhaengigkeiten. Der System-Python
+# bestand die Pruefung, und der Deploy scheiterte erst Sekunden spaeter mit
+#
+#     ModuleNotFoundError: No module named 'unfold'
+#
+# `django.setup()` ist der ehrliche Test: Es laedt JEDE App aus
+# INSTALLED_APPS. Was das ueberlebt, kann auch `manage.py migrate`. Kein
+# hartkodierter Paketname noetig — die Liste steht in den Settings.
+#
+# REIHENFOLGE: virtualenv VOR System-Python. Auf einem Hoster ist das venv
+# fast immer das Richtige; der System-Python ist der Zufallsfund.
+projekt_python() {
+    DJANGO_SETTINGS_MODULE=swiss_immo.settings \
+        "$1" -c "import django; django.setup()" >/dev/null 2>&1
+}
+
 finde_python() {
     local kandidat
-    for kandidat in "${PA_PY:-}" python python3 "$HOME"/.virtualenvs/*/bin/python; do
+    for kandidat in "${PA_PY:-}" "$HOME"/.virtualenvs/*/bin/python python python3; do
         [ -n "$kandidat" ] || continue
-        if command -v "$kandidat" >/dev/null 2>&1 && "$kandidat" -c "import django" 2>/dev/null; then
+        command -v "$kandidat" >/dev/null 2>&1 || continue
+        if projekt_python "$kandidat"; then
             echo "$kandidat"; return 0
         fi
     done
@@ -63,8 +80,8 @@ finde_python() {
 # übergangen. Der Ersatz mag funktionieren — aber wer den Wert gesetzt hat,
 # meinte ihn, und ein leiser Wechsel des Interpreters ist genau die Art
 # Abweichung, die man erst drei Fehlersuchen später bemerkt.
-if [ -n "${PA_PY:-}" ] && ! "${PA_PY}" -c "import django" 2>/dev/null; then
-    echo "⚠ PA_PY='${PA_PY}' kann Django nicht importieren — suche Ersatz."
+if [ -n "${PA_PY:-}" ] && ! projekt_python "${PA_PY}"; then
+    echo "⚠ PA_PY='${PA_PY}' kann das Projekt nicht laden — suche Ersatz."
 fi
 if ! PY="$(finde_python)"; then
     echo "✗ Kein Python gefunden, das Django importieren kann."
