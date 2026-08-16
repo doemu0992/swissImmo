@@ -40,7 +40,7 @@ class EigentuemerPortalTests(TestCase):
         from portfolio.models import Dokument as PDok
         from django.core.files.base import ContentFile
         md, lg, u = self._eigentuemer_login()
-        fremd = Liegenschaft.objects.create(strasse='X', plz='9', ort='Y')
+        fremd = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='X', plz='9', ort='Y')
         d = PDok(liegenschaft=fremd, titel='Fremd', kategorie='x')
         d.datei.save('f.pdf', ContentFile(b'%PDF'), save=True)
         c = Client(); c.force_login(u)
@@ -216,7 +216,7 @@ class MitmieterPortalTests(TestCase):
     def _setup(self):
         from django.core.files.base import ContentFile
         from rentals.models import Dokument
-        lg = Liegenschaft.objects.create(strasse='Paar 1', plz='3000', ort='Bern')
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Paar 1', plz='3000', ort='Bern')
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='4.5 Zi', typ='wohnung')
         m1 = Mieter.objects.create(typ='person', nachname='Erst')
         m2 = Mieter.objects.create(typ='person', nachname='Zweit')
@@ -389,7 +389,7 @@ class SicherheitsIsolationTests(TestCase):
         from tickets.models import SchadenMeldung, HandwerkerAuftrag
         from crm.models import Handwerker
         lg, e, m, v = _basis_objekte()
-        eig_lg = Liegenschaft.objects.create(strasse='Eig 1', plz='3000', ort='Bern')
+        eig_lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Eig 1', plz='3000', ort='Bern')
         md = Eigentuemer.objects.create(firma_oder_name='Eig AG'); eig_lg.eigentuemer = md; eig_lg.save()
         u = User.objects.create_user(username='eig_iso', password='x'); md.benutzer = u; md.save()
         # Freigabe an FREMDER Liegenschaft (nicht dem Eigentümer zugeordnet)
@@ -553,7 +553,7 @@ class EigentuemerZugangTests(TestCase):
 
     def test_login_und_routing_ins_portal(self):
         md = self._eigentuemer()
-        lg = Liegenschaft.objects.create(strasse='A', plz='1', ort='X', versicherungswert=Decimal('1'))
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='A', plz='1', ort='X', versicherungswert=Decimal('1'))
         lg.eigentuemer = md; lg.save()
         team = _team_user()
         c = Client(); c.force_login(team)
@@ -872,7 +872,7 @@ class PortalFremdzugriffTests(TestCase):
         from crm.models import Handwerker
 
         def welt(kuerzel):
-            lg = Liegenschaft.objects.create(strasse=f'{kuerzel}-Weg 1', plz='3000', ort='Bern')
+            lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse=f'{kuerzel}-Weg 1', plz='3000', ort='Bern')
             md = Eigentuemer.objects.create(firma_oder_name=f'Eigentümer {kuerzel}')
             lg.eigentuemer = md; lg.save()
             e = Einheit.objects.create(liegenschaft=lg, bezeichnung=f'{kuerzel}-Whg', typ='wohnung',

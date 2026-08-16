@@ -4,10 +4,21 @@ from django.utils import timezone
 from datetime import date
 from decimal import Decimal
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
+from core.organisation_kette import OrganisationAusKette, organisation_aus_kontext
 
 class Liegenschaft(models.Model):
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.CASCADE, related_name='liegenschaften', null=True, blank=True)
-    organisation = models.ForeignKey('crm.Organisation', on_delete=models.SET_NULL, null=True, blank=True, related_name='liegenschaften')
+    # Der Anker der ganzen Kette. Bis Etappe 5 war er `null=True, SET_NULL` —
+    # damit war er als Anker wertlos: Eine Kette ist nur so pflichtig wie ihr
+    # schwaechstes Glied, also haette kein abgeleitetes Modell `null=False`
+    # werden koennen. Und `SET_NULL` haette beim Loeschen einer Organisation
+    # deren Liegenschaften heimatlos zurueckgelassen, statt sie mitzunehmen —
+    # Datensaetze ohne Mandant sind in einer mandantenfaehigen Anwendung genau
+    # das, was es nicht geben darf.
+    #
+    # `CASCADE` + `null=False` ist dasselbe Muster wie `Mitgliedschaft`
+    # (Etappe 4.1): dieselbe Beziehung, dieselbe Semantik.
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, related_name='liegenschaften')
     strasse = models.CharField("Strasse & Nr.", max_length=200)
     plz = models.CharField("PLZ", max_length=10)
     ort = models.CharField("Ort", max_length=100)
@@ -65,6 +76,16 @@ class Liegenschaft(models.Model):
     elektriker_name = models.CharField("Notfall Elektriker", max_length=100, blank=True, default='')
     elektriker_telefon = models.CharField("Elektriker Telefon", max_length=50, blank=True, default='')
 
+    def save(self, *args, **kwargs):
+        # Die Wurzel der Kette kann ihren Bezug nirgends herleiten — er steht
+        # nur im Mandantenkontext. Ohne diese drei Zeilen muesste jeder
+        # Schreibpfad die Organisation selbst mitgeben; der Anlegepfad in
+        # `core/views/fw/liegenschaft_crud.py` tut das nachweislich nicht
+        # (`obj = lg or Liegenschaft()`, danach nur Formularfelder).
+        if self.organisation_id is None:
+            self.organisation_id = organisation_aus_kontext()
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = "Liegenschaft"
         verbose_name_plural = "Liegenschaften"
@@ -74,10 +95,11 @@ class Liegenschaft(models.Model):
         return f"{self.strasse}, {self.ort}"
 
 
-class Versicherung(models.Model):
+class Versicherung(OrganisationAusKette):
     """Versicherungspolice einer Liegenschaft (Gebäude, Haftpflicht, Wasser, Glas …).
     Police-Register mit Summe/Prämie/Ablauf — löst die frühere Behelfslösung
     «Versicherung als Frist-Art» ab."""
+    ORGANISATION_PFAD = 'liegenschaft'
     ART_CHOICES = [
         ('gebaeude', 'Gebäudeversicherung'),
         ('haftpflicht', 'Gebäude-Haftpflicht'),
@@ -107,7 +129,8 @@ class Versicherung(models.Model):
         return f"{self.get_art_display()} · {self.gesellschaft}"
 
 
-class Einheit(models.Model):
+class Einheit(OrganisationAusKette):
+    ORGANISATION_PFAD = 'liegenschaft'
     TYP_CHOICES = [
         ('whg', 'Wohnung'),
         ('gew', 'Gewerbe'),
@@ -225,13 +248,14 @@ class Einheit(models.Model):
         return f"{self.liegenschaft.strasse} - {self.bezeichnung}"
 
 
-class Sollmietzins(models.Model):
+class Sollmietzins(OrganisationAusKette):
     """Datierte Sollmietzins-Historie je Objekt (Komponenten): ab `gueltig_ab`
     gelten die hinterlegten Netto-/Nebenkostenwerte. Der aktuell gültige Wert
     wird auf die Einheit (nettomiete_aktuell/nebenkosten_aktuell) abgeleitet;
     NEUE Verträge übernehmen automatisch die zum Mietbeginn gültige Zeile.
     Bestehende Verträge bleiben unberührt (Mietzinsänderung nur über amtliches
     Formular, Art. 269d OR)."""
+    ORGANISATION_PFAD = 'einheit__liegenschaft'
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='sollmietzinse')
     gueltig_ab = models.DateField("Gültig ab", default=date.today)
     netto_mietzins = models.DecimalField("Netto-Mietzins (Referenz, CHF)", max_digits=8, decimal_places=2, default=0.00)
@@ -310,11 +334,12 @@ class Sollmietzins(models.Model):
         self.einheit.sync_aktuelle_miete()
 
 
-class StaffelVorlage(models.Model):
+class StaffelVorlage(OrganisationAusKette):
     """Objektbezogene Staffelmiete-Vorlage (Art. 269c): geplante, datierte
     Netto-Stufen. Wird NICHT direkt verrechnet — sie belegt einen NEUEN
     (Gewerbe-)Vertrag im Wizard als Staffelmiete vor. Die verrechnungswirksamen
     Stufen entstehen erst am konkreten Vertrag (rentals.Staffelstufe)."""
+    ORGANISATION_PFAD = 'einheit__liegenschaft'
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='staffelvorlagen')
     gueltig_ab = models.DateField("Gültig ab", default=date.today)
     netto_mietzins = models.DecimalField("Netto-Mietzins ab Stichtag (CHF)", max_digits=8, decimal_places=2, default=0.00)
@@ -331,8 +356,9 @@ class StaffelVorlage(models.Model):
         return f"{self.einheit.bezeichnung} ab {self.gueltig_ab}: {self.netto_mietzins}"
 
 
-class Verteilschluessel(models.Model):
+class Verteilschluessel(OrganisationAusKette):
     """Individuelle Verteilschlüssel pro Einheit."""
+    ORGANISATION_PFAD = 'einheit__liegenschaft'
     KOSTENART_CHOICES = [
         ('heizung', 'Heizkosten'),
         ('wasser', 'Wasser / Abwasser'),
@@ -374,8 +400,9 @@ class Verteilschluessel(models.Model):
         return f"{self.einheit.bezeichnung} - {self.get_kostenart_display()} ({self.wert})"
 
 
-class LiegenschaftVerteilschluessel(models.Model):
+class LiegenschaftVerteilschluessel(OrganisationAusKette):
     """Standard-Regeln für eine Liegenschaft (Vererbung)."""
+    ORGANISATION_PFAD = 'liegenschaft'
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='standard_schluessel')
     kostenart = models.CharField("Kostenart", max_length=50, choices=Verteilschluessel.KOSTENART_CHOICES)
     typ = models.CharField("Berechnung nach", max_length=20, choices=Verteilschluessel.TYP_CHOICES, default='m2')
@@ -406,7 +433,8 @@ class Dokument(models.Model):
         db_table = 'portfolio_dokument'
 
 
-class Unterhalt(models.Model):
+class Unterhalt(OrganisationAusKette):
+    ORGANISATION_PFAD = 'liegenschaft'
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE)
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, null=True, blank=True, related_name='unterhalte')
     titel = models.CharField(max_length=200)
@@ -467,10 +495,11 @@ class Geraet(models.Model):
         db_table = 'core_geraet'
 
 
-class Ausstattung(models.Model):
+class Ausstattung(OrganisationAusKette):
     """Ausstattungselement eines Objekts (Raumbuch). Der Raum entsteht aus den
     Assets heraus — `raum` ist ein Attribut, das Raumbuch ist die Gruppierung.
     Grundlage für Abnahme (Zeitwert nach Lebensdauertabelle) und Reparaturhistorie."""
+    ORGANISATION_PFAD = 'einheit__liegenschaft'
     ZUSTAND = [('neuwertig', 'Neuwertig'), ('gut', 'Gut'),
                ('gebraucht', 'Gebraucht'), ('defekt', 'Defekt')]
 
@@ -580,7 +609,8 @@ class Lebensdauer(models.Model):
         return row.jahre if row else None
 
 
-class Schluessel(models.Model):
+class Schluessel(OrganisationAusKette):
+    ORGANISATION_PFAD = 'liegenschaft'
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE)
     einheit = models.ForeignKey(Einheit, on_delete=models.SET_NULL, null=True, blank=True, related_name='schluessel_liste')
     typ = models.CharField(max_length=50, default='Wohnung')
@@ -592,7 +622,8 @@ class Schluessel(models.Model):
         db_table = 'core_schluessel'
 
 
-class SchluesselAusgabe(models.Model):
+class SchluesselAusgabe(OrganisationAusKette):
+    ORGANISATION_PFAD = 'schluessel__liegenschaft'
     schluessel = models.ForeignKey(Schluessel, on_delete=models.CASCADE, related_name='ausgaben')
     mieter = models.ForeignKey('crm.Mieter', on_delete=models.SET_NULL, null=True, blank=True)
     handwerker = models.ForeignKey('crm.Handwerker', on_delete=models.SET_NULL, null=True, blank=True)
@@ -604,9 +635,10 @@ class SchluesselAusgabe(models.Model):
         db_table = 'core_schluesselausgabe'
 
 
-class Wartungsfrist(models.Model):
+class Wartungsfrist(OrganisationAusKette):
     """Wiederkehrende Wartungs-/Service-/Versicherungsfrist einer Liegenschaft.
     Speist automatisch Pendenzen (generate_auto_pendenzen)."""
+    ORGANISATION_PFAD = 'liegenschaft'
     ART_CHOICES = [
         ('wartung', 'Wartung / Service'),
         ('versicherung', 'Versicherung'),
@@ -633,8 +665,9 @@ class Wartungsfrist(models.Model):
     def __str__(self):
         return f"{self.get_art_display()}: {self.bezeichnung}"
 
-class EinheitFoto(models.Model):
+class EinheitFoto(OrganisationAusKette):
     """Fotos eines Mietobjekts für Exposé, Portal-Feed und Vermarktung."""
+    ORGANISATION_PFAD = 'einheit__liegenschaft'
     einheit = models.ForeignKey('Einheit', on_delete=models.CASCADE, related_name='fotos')
     bild = models.ImageField(upload_to=get_smart_upload_path)
     beschreibung = models.CharField(max_length=200, blank=True, default='')

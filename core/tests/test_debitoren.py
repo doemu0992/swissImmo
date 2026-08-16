@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, _sig_bytes, _heute, Mieter,
     Eigentuemer, Organisation, Liegenschaft, Einheit, Mietvertrag, User)
 
@@ -97,7 +97,7 @@ class SollstellungTests(TestCase):
         from core.services.automation import run_sollstellung
         from finance.models import DebitorenRechnung
         _seed_konten()
-        lg = Liegenschaft.objects.create(strasse='PR 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='PR 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='wohnung')
         m = Mieter.objects.create(typ='person', nachname='Prorata')
         Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 3, 16),
@@ -547,7 +547,7 @@ class DebitorVorschauTests(TestCase):
     """Live-Vorschau bei der Ad-hoc-Debitorenrechnung (wie im Vertragsassistenten)."""
 
     def test_debitoren_seite_hat_vorschau(self):
-        lg = Liegenschaft.objects.create(strasse='Dv 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Dv 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Dv-Whg', typ='whg',
                                    nettomiete_aktuell=Decimal('1500'))
@@ -773,7 +773,7 @@ class FinanzUIP5Tests(TestCase):
         from rentals.models import Mietvertrag
         ensure_kontenplan()
         lg1, e1, m1, v1 = _basis_objekte()
-        lg2 = Liegenschaft.objects.create(strasse='Andergasse 9', plz='3000', ort='Bern')
+        lg2 = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Andergasse 9', plz='3000', ort='Bern')
         e2 = Einheit.objects.create(liegenschaft=lg2, bezeichnung='2. OG', typ='whg',
                                     zimmer=Decimal('3.5'), flaeche_m2=80)
         m2 = Mieter.objects.create(vorname='Rita', nachname='Zweitmieter')
@@ -795,7 +795,7 @@ class FinanzUIP5Tests(TestCase):
         from rentals.models import Mietvertrag
         ensure_kontenplan()
         lg1, e1, m1, v1 = _basis_objekte()
-        lg2 = Liegenschaft.objects.create(strasse='Andergasse 9', plz='3000', ort='Bern')
+        lg2 = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Andergasse 9', plz='3000', ort='Bern')
         e2 = Einheit.objects.create(liegenschaft=lg2, bezeichnung='2. OG', typ='whg',
                                     zimmer=Decimal('3.5'), flaeche_m2=80)
         m2 = Mieter.objects.create(vorname='Rita', nachname='Zweitmieter')

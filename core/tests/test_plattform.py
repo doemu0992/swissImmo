@@ -3,7 +3,7 @@ siehe docs/ETAPPE-1-ZERLEGEN.md). 5 Klassen, unveraendert uebernommen."""
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, Mieter, Organisation, Liegenschaft, Einheit,
     Mietvertrag, User)
 
@@ -11,7 +11,7 @@ from ._helfer import (
 
 class AbonnementTests(TestCase):
     def test_abo_seite_zeigt_drei_plaene(self):
-        Einheit.objects.create(liegenschaft=Liegenschaft.objects.create(
+        Einheit.objects.create(liegenschaft=Liegenschaft.objects.create(organisation=_test_organisation(), 
             strasse='A', plz='1', ort='X', versicherungswert=Decimal('1')),
             bezeichnung='W1', typ='wohnung')
         team = _team_user()
@@ -31,7 +31,7 @@ class AbonnementTests(TestCase):
 
     def test_jaehrlich_rabatt(self):
         # 100 Einheiten Pro: monatlich 190, jährlich -15 % -> ~161/Mt
-        lg = Liegenschaft.objects.create(strasse='B', plz='1', ort='X', versicherungswert=Decimal('1'))
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='B', plz='1', ort='X', versicherungswert=Decimal('1'))
         for i in range(100):
             Einheit.objects.create(liegenschaft=lg, bezeichnung=f'W{i}', typ='wohnung')
         Organisation.objects.create(firma='V AG')

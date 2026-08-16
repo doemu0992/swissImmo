@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _heute, Mieter, Organisation, Liegenschaft,
     Einheit, Wartungsfrist)
 
@@ -719,7 +719,7 @@ class ObjekteGruppierungTests(TestCase):
     def test_gruppierung_nach_liegenschaft(self):
         from portfolio.models import Einheit
         lg1, e1, _m, _v = _basis_objekte()
-        lg2 = Liegenschaft.objects.create(strasse='Andere Gasse 5', plz='3000', ort='Bern',
+        lg2 = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Andere Gasse 5', plz='3000', ort='Bern',
                                           versicherungswert=Decimal('500000'))
         Einheit.objects.create(liegenschaft=lg2, bezeichnung='2 Zi', typ='whg',
                                nettomiete_aktuell=Decimal('1000'))

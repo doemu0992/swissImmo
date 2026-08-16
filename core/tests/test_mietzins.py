@@ -4,7 +4,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, Mieter, Organisation,
     Liegenschaft, Einheit, Mietvertrag)
 
@@ -44,7 +44,7 @@ class LikVertragTests(TestCase):
     def test_assistent_setzt_stand_beim_erstellen(self):
         from rentals.models import Mietvertrag as MV
         from core.services.lik import aktueller_lik_wert
-        lg = Liegenschaft.objects.create(strasse='Neu 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Neu 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='wohnung')
         m = Mieter.objects.create(typ='person', nachname='Neu')
         team = _team_user()
@@ -60,7 +60,7 @@ class LikVertragTests(TestCase):
 
     def test_assistent_formular_override_stand(self):
         from rentals.models import Mietvertrag as MV
-        lg = Liegenschaft.objects.create(strasse='Neu 2', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Neu 2', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='wohnung')
         m = Mieter.objects.create(typ='person', nachname='Ovr')
         team = _team_user()
@@ -109,7 +109,7 @@ class GewerbeMietzinsTests(TestCase):
     """Stufe 1+2 Gewerbe: Mietzinsmodell (Staffel/Index) + Mietenlauf-Automatik."""
 
     def _vertrag(self, modell='fest', typ='gew', netto='2000'):
-        lg = Liegenschaft.objects.create(strasse='Gewerbe 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Gewerbe 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('2000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Ladenlokal', typ=typ,
                                    nettomiete_aktuell=Decimal(netto))
@@ -311,7 +311,7 @@ class SollmietzinsTests(TestCase):
     """Datierte Sollmietzins-Komponententabelle je Objekt (gültig ab)."""
 
     def _obj(self, typ='whg'):
-        lg = Liegenschaft.objects.create(strasse='Sollweg 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Sollweg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2.5 Zi', typ=typ,
                                    nettomiete_aktuell=Decimal('0'), nebenkosten_aktuell=Decimal('0'))
@@ -380,7 +380,7 @@ class SollmietzinsTests(TestCase):
 
     def test_objekt_form_seedet_erste_zeile(self):
         from portfolio.models import Sollmietzins
-        lg = Liegenschaft.objects.create(strasse='Neu 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Neu 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         c = Client(); c.force_login(_team_user())
         c.post('/neu/objekte/neu/', {
@@ -408,7 +408,7 @@ class MietzinsTabExtraTests(TestCase):
     """NK-Abrechnungsart im Mietzins-Tab + Meldungen nur als Toast (nicht inline)."""
 
     def _obj(self, typ='whg'):
-        lg = Liegenschaft.objects.create(strasse='Tabweg 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Tabweg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='1.5 Zi', typ=typ)
         return lg, e
@@ -448,7 +448,7 @@ class StaffelImTabTests(TestCase):
     """Staffelmiete des aktiven Gewerbe-Vertrags im Mietzins-Tab erfassen/löschen."""
 
     def _gew_vertrag(self):
-        lg = Liegenschaft.objects.create(strasse='Staf-Tab 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Staf-Tab 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Büro 1', typ='gew',
                                    nettomiete_aktuell=Decimal('2000'))
@@ -486,7 +486,7 @@ class StaffelImTabTests(TestCase):
         self.assertFalse(Staffelstufe.objects.filter(id=s.id).exists())
 
     def test_wohnung_ohne_staffel_kein_tab_abschnitt(self):
-        lg = Liegenschaft.objects.create(strasse='Wohn-Tab 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Wohn-Tab 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg 1', typ='whg',
                                    nettomiete_aktuell=Decimal('1500'))
@@ -503,7 +503,7 @@ class StaffelVorlageTests(TestCase):
     """Objektbezogene Staffelmiete-Vorlage (wie Sollmietzins) + Wizard-Prefill."""
 
     def _gew(self):
-        lg = Liegenschaft.objects.create(strasse='SV 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='SV 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Büro SV', typ='gew',
                                    nettomiete_aktuell=Decimal('2000'))
@@ -528,7 +528,7 @@ class StaffelVorlageTests(TestCase):
         self.assertIn('/neu/staffelvorlage/', body)
 
     def test_wohnung_keine_vorlage_karte(self):
-        lg = Liegenschaft.objects.create(strasse='SV Wohn', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='SV Wohn', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg SV', typ='whg')
         c = Client(); c.force_login(_team_user())
@@ -551,7 +551,7 @@ class AnpassungLoeschenTests(TestCase):
 
     def test_anpassung_del_und_wirkung(self):
         from rentals.models import MietzinsAnpassung
-        lg = Liegenschaft.objects.create(strasse='AL 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='AL 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='AL-Büro', typ='gew',
                                    nettomiete_aktuell=Decimal('3000'))
@@ -581,7 +581,7 @@ class MietzinsKonsistenzTests(TestCase):
 
     def test_sollmietzins_mit_indexbasis_und_wizard_json(self):
         from portfolio.models import Sollmietzins
-        lg = Liegenschaft.objects.create(strasse='Mk 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Mk 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Mk-Whg', typ='whg')
         c = Client(); c.force_login(_team_user())
@@ -608,7 +608,7 @@ class MietzinsKonsistenzTests(TestCase):
         Organisation.objects.create(firma='VW', strasse='W 1', plz='8000', ort='Zürich',
                                   aktueller_referenzzinssatz=Decimal('1.25'),
                                   aktueller_lik_punkte=Decimal('107.1'))
-        lg = Liegenschaft.objects.create(strasse='Mk 2', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Mk 2', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Mk-Whg2', typ='whg')
         m = Mieter.objects.create(typ='person', vorname='E', nachname='F')
@@ -635,7 +635,7 @@ class MietzinsKonsistenzTests(TestCase):
 
     def test_weiterverrechnung_hat_vorschau(self):
         from finance.models import KreditorenRechnung
-        lg = Liegenschaft.objects.create(strasse='Mk 3', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Mk 3', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Mk-Whg3', typ='whg')
         m = Mieter.objects.create(typ='person', vorname='G', nachname='H',
@@ -897,7 +897,7 @@ class ObjektFormMietzinsQuelleTests(TestCase):
 
     def test_neuanlage_seedet_sollmietzins(self):
         from portfolio.models import Sollmietzins, Einheit
-        lg = Liegenschaft.objects.create(strasse='OF 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='OF 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
         c = Client(); c.force_login(_team_user())
         c.post('/neu/objekte/neu/', {
             'liegenschaft_id': str(lg.id), 'bezeichnung': 'Neu-1', 'typ': 'wohnung',

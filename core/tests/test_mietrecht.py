@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, Mieter, Organisation, Liegenschaft, Einheit,
     Mietvertrag, User)
 
@@ -222,7 +222,7 @@ class EinstellplatzFristTests(TestCase):
         # Einstellplatz (pp/gar): gesetzliche 2-Wochen-Frist = monate 0; sonst 3
         if monate is None:
             monate = 0 if typ in ('pp', 'gar') else 3
-        lg = Liegenschaft.objects.create(strasse='Platz 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Platz 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('500000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='PP 12', typ=typ,
                                    nettomiete_aktuell=Decimal('120'))

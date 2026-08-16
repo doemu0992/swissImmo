@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, Mieter, Eigentuemer,
     Organisation, Liegenschaft, Einheit, Mietvertrag, User)
 
@@ -101,7 +101,7 @@ class SteuerauszugTests(TestCase):
 
 class SerienbriefMitmieterTests(TestCase):
     def _paar(self):
-        lg = Liegenschaft.objects.create(strasse='Paar 9', plz='3000', ort='Bern', versicherungswert=Decimal('1'))
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Paar 9', plz='3000', ort='Bern', versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='4.5 Zi', typ='wohnung')
         m1 = Mieter.objects.create(typ='person', anrede='Herr', vorname='Hans', nachname='Erst',
                                    strasse='Weg 1', plz='3000', ort='Bern')
@@ -289,7 +289,7 @@ class AuswertungTests(TestCase):
         from finance.booking import buche
         from portfolio.models import Liegenschaft
         lg, e, m, v = _basis_objekte()
-        lg2 = Liegenschaft.objects.create(strasse='Zweitweg 2', plz='8000', ort='Zürich',
+        lg2 = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Zweitweg 2', plz='8000', ort='Zürich',
                                           versicherungswert=Decimal('500000'))
         buche('1020', '3000', Decimal('2000'), 'A', datum=date(2025, 1, 1), liegenschaft=lg)
         buche('1020', '3000', Decimal('800'), 'B', datum=date(2025, 1, 1), liegenschaft=lg2)

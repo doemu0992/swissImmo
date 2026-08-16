@@ -4,7 +4,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, Mieter, Eigentuemer,
     Organisation, Liegenschaft, Einheit, Wartungsfrist, Mietvertrag, User)
 
@@ -106,7 +106,7 @@ class PersonFirmaVereinTests(TestCase):
 
     def test_wizard_neuer_mieter_firma(self):
         from portfolio.models import Einheit
-        lg = Liegenschaft.objects.create(strasse='Bahnhofstr 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Bahnhofstr 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Büro', typ='gew',
                                    nettomiete_aktuell=Decimal('2000'))

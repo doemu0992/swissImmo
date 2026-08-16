@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.contrib import admin
 from django.test import TestCase, Client, RequestFactory
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _heute, Mieter, Organisation, Liegenschaft,
     Einheit, Mietvertrag, User)
 
@@ -125,8 +125,8 @@ class SecurityBatchTests(TestCase):
     def test_oeffentliches_schadenformular_leakt_kein_portfolio(self):
         # Das anonyme Schadenformular darf nicht das gesamte Portfolio (alle
         # Liegenschafts-Adressen) in die Seite dumpen (Adress-Enumeration/DSG).
-        Liegenschaft.objects.create(strasse='Geheimweg 7', plz='8000', ort='Zürich')
-        Liegenschaft.objects.create(strasse='Privatgasse 2', plz='3000', ort='Bern')
+        Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Geheimweg 7', plz='8000', ort='Zürich')
+        Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Privatgasse 2', plz='3000', ort='Bern')
         c = Client()
         r = c.get('/schaden/melden/')
         self.assertEqual(r.status_code, 200)
@@ -231,7 +231,7 @@ class MediaZugriffTests(TestCase):
         self.assertFalse(ist_oeffentlich(alt))
         self.assertFalse(ist_objektfoto(alt))          # noch kein Objektfoto
 
-        lg = Liegenschaft.objects.create(strasse='Fotoweg 1', plz='3000', ort='Bern')
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Fotoweg 1', plz='3000', ort='Bern')
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='1 Zi', typ='wohnung')
         foto = EinheitFoto(einheit=e)
         foto.bild.name = alt                            # Alt-Pfad wie im Bestand

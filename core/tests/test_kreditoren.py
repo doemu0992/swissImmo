@@ -4,7 +4,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, Mieter, Organisation, Liegenschaft, Einheit,
     Mietvertrag)
 
@@ -679,7 +679,7 @@ class WeiterverrechnungVerteilenTests(TestCase):
     def _lg_mit_mietern(self):
         from portfolio.models import Liegenschaft, Einheit
         from crm.models import Mieter
-        lg = Liegenschaft.objects.create(strasse='Verteilweg 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Verteilweg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         daten = [('A', Decimal('50')), ('B', Decimal('100')), ('C', Decimal('50'))]  # m² 50/100/50 → 25/50/25%
         for name, m2 in daten:

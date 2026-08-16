@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, Mieter, Organisation, Liegenschaft, Einheit,
     Wartungsfrist, Mietvertrag, User, Group)
 
@@ -101,7 +101,7 @@ class PendenzAktionTests(TestCase):
         """Auszugs-Pendenzen mehrerer Kündigungen erscheinen unter getrennten
         Überschriften (Objekt), nicht vermischt."""
         from core.models import Pendenz
-        lg = Liegenschaft.objects.create(strasse='Bahnhofstrasse 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Bahnhofstrasse 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         e1 = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg A', typ='wohnung')
         e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg B', typ='wohnung')

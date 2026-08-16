@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, Mieter, Liegenschaft, Einheit,
     Mietvertrag, User)
 
@@ -375,7 +375,7 @@ class AbfrageSkalierungTests(TestCase):
         Schleifen wachsen."""
         from finance.models import DebitorenRechnung
         for i in range(ab, ab + n):
-            lg = Liegenschaft.objects.create(strasse=f'Prüfweg {i}', plz='3000', ort='Bern',
+            lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse=f'Prüfweg {i}', plz='3000', ort='Bern',
                                              versicherungswert=Decimal('900000'))
             e = Einheit.objects.create(liegenschaft=lg, bezeichnung=f'Whg {i}', typ='wohnung',
                                        nettomiete_aktuell=Decimal('1400'),

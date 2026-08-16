@@ -4,7 +4,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, Mieter, Organisation,
     Liegenschaft, Einheit, Mietvertrag, User)
 
@@ -38,7 +38,7 @@ class NkRundungTests(TestCase):
 
     def _periode(self, anzahl, betrag, schluessel='m2'):
         from finance.models import AbrechnungsPeriode, NebenkostenBeleg
-        lg = Liegenschaft.objects.create(strasse=f'Rundung {anzahl}', plz='4500',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse=f'Rundung {anzahl}', plz='4500',
                                          ort='SO', versicherungswert=Decimal('1'))
         for i in range(anzahl):
             e = Einheit.objects.create(liegenschaft=lg, bezeichnung=f'W{i:02d}',
@@ -99,7 +99,7 @@ class NkRundungTests(TestCase):
 class NkAbrechnungVersandTests(TestCase):
     def _periode(self):
         from finance.models import AbrechnungsPeriode, NebenkostenBeleg
-        lg = Liegenschaft.objects.create(strasse='NK 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='NK 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='wohnung', flaeche_m2=Decimal('80'))
         m = Mieter.objects.create(typ='person', vorname='Nina', nachname='Kosten',
                                   strasse='Weg 2', plz='8000', ort='ZH', email='nk@example.ch')
@@ -152,7 +152,7 @@ class NkNachzahlungQrTests(TestCase):
         _seed_konten()
         vw = Organisation.objects.create(firma='V AG', strasse='W 1', plz='8000', ort='ZH',
                                        iban='CH9300762011623852957')
-        lg = Liegenschaft.objects.create(strasse='NKQ 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='NKQ 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='wohnung', flaeche_m2=Decimal('80'))
         m = Mieter.objects.create(typ='person', nachname='Nach', email='n@example.ch')
         v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2023, 1, 1),
@@ -189,7 +189,7 @@ class NkAbrechnungSplitTests(TestCase):
         from crm.models import Mieter
         from finance.models import AbrechnungsPeriode
         ensure_kontenplan()
-        lg = Liegenschaft.objects.create(strasse='NKweg 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='NKweg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='W1', typ='wohnung',
                                    flaeche_m2=Decimal('100'), nettomiete_aktuell=Decimal('1000'))
@@ -255,7 +255,7 @@ class NkEndToEndTests(TestCase):
         from crm.models import Mieter
         from finance.models import AbrechnungsPeriode
         ensure_kontenplan()
-        lg = Liegenschaft.objects.create(strasse='E2Eweg 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='E2Eweg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         verts = []
         for name, m2 in [('A', Decimal('60')), ('B', Decimal('40'))]:
@@ -337,7 +337,7 @@ class NkVertragsStatusTests(TestCase):
         from portfolio.models import Liegenschaft, Einheit
         from finance.models import AbrechnungsPeriode, KreditorenRechnung, Buchungskonto
         ensure_kontenplan()
-        lg = Liegenschaft.objects.create(strasse='Statusweg 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Statusweg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='W1', typ='wohnung',
                                    flaeche_m2=Decimal('100'), nettomiete_aktuell=Decimal('1000'))

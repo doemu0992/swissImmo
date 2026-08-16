@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import TestCase, Client, RequestFactory
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, Mieter, Eigentuemer,
     Organisation, Liegenschaft, Einheit, Mietvertrag)
 
@@ -289,7 +289,7 @@ class Paket1DatenUITests(TestCase):
 
     def test_liegenschaft_form_speichert_neue_felder(self):
         from portfolio.models import Liegenschaft
-        lg = Liegenschaft.objects.create(strasse='Prüfweg 1', plz='3000', ort='Bern')
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Prüfweg 1', plz='3000', ort='Bern')
         c = Client(); c.force_login(_team_user())
         r = c.post(f'/neu/liegenschaften/{lg.id}/bearbeiten/', {
             'strasse': 'Prüfweg 1', 'plz': '3000', 'ort': 'Bern', 'kanton': 'BE',
@@ -306,7 +306,7 @@ class Paket1DatenUITests(TestCase):
 
     def test_objekt_form_speichert_neue_felder_und_gehoert_zu(self):
         from portfolio.models import Liegenschaft, Einheit
-        lg = Liegenschaft.objects.create(strasse='Prüfweg 2', plz='3000', ort='Bern')
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Prüfweg 2', plz='3000', ort='Bern')
         haupt = Einheit.objects.create(liegenschaft=lg, bezeichnung='Haupt 3.5', typ='whg')
         pp = Einheit.objects.create(liegenschaft=lg, bezeichnung='PP 1', typ='pp')
         c = Client(); c.force_login(_team_user())
@@ -875,7 +875,7 @@ class ReviewNachbesserungTests(TestCase):
 
     def _bewerbung(self, **kw):
         from mietprozess.models import Mietbewerbung
-        lg = Liegenschaft.objects.create(strasse='Prüfweg 1', plz='3000', ort='Bern')
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Prüfweg 1', plz='3000', ort='Bern')
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='wohnung',
                                    nettomiete_aktuell=Decimal('1500'),
                                    nebenkosten_aktuell=Decimal('200'))
@@ -891,7 +891,7 @@ class ReviewNachbesserungTests(TestCase):
         """Das Feld wurde aus der Anzeige entfernt, das Vue-Modell sendete aber
         weiter 'ledig' — jede Bewerbung hätte eine Angabe gespeichert, die
         niemand gemacht hat. «Nicht erhoben» muss leer bleiben."""
-        lg = Liegenschaft.objects.create(strasse='Inserat 2', plz='3000', ort='Bern')
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Inserat 2', plz='3000', ort='Bern')
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='wohnung',
                                    zur_ausschreibung=True)
         html = Client().get(f'/bewerben/{e.id}/').content.decode()

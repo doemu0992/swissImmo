@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _sig_bytes, Mieter, Eigentuemer, Organisation,
     Liegenschaft, Einheit, Mietvertrag)
 
@@ -14,7 +14,7 @@ class MietvertragObjektartTests(TestCase):
     """Vertrag richtet sich nach der Objektart (Titel + Mietrecht-Regime)."""
 
     def _einheit(self, typ):
-        lg = Liegenschaft.objects.create(strasse='Artweg 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Artweg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Objekt', typ=typ,
                                    nettomiete_aktuell=Decimal('150'))
@@ -99,7 +99,7 @@ class GewerbeWizardTests(TestCase):
     speichert korrekt (Kündigungsfrist-Default 6, Staffelstufen)."""
 
     def _gew_einheit(self):
-        lg = Liegenschaft.objects.create(strasse='Laden 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Laden 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('2000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='EG Laden', typ='gew',
                                    nettomiete_aktuell=Decimal('3000'), nebenkosten_aktuell=Decimal('300'))
@@ -116,7 +116,7 @@ class GewerbeWizardTests(TestCase):
 
     def test_wizard_parkplatz_einstellplatz_anpassung(self):
         from portfolio.models import Einheit
-        lg = Liegenschaft.objects.create(strasse='Weg 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Weg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='PP 1', typ='pp',
                                    nettomiete_aktuell=Decimal('120'))
@@ -133,7 +133,7 @@ class GewerbeWizardTests(TestCase):
         from rentals.models import Mietvertrag as MV
         from django.template.loader import get_template
         from django.utils import timezone
-        lg = Liegenschaft.objects.create(strasse='Weg 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Weg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='PP 1', typ='pp',
                                    nettomiete_aktuell=Decimal('120'))
@@ -159,7 +159,7 @@ class GewerbeWizardTests(TestCase):
         """Beim Einstellplatz muss NK aus Wizard/Vorschau verschwinden: NK-Feld
         ausblendbar, Schritt 6 (Nebenkosten) übersprungen, Vorschau ohne NK."""
         from portfolio.models import Einheit
-        lg = Liegenschaft.objects.create(strasse='Weg 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Weg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='PP 1', typ='pp',
                                    nettomiete_aktuell=Decimal('120'))
@@ -179,7 +179,7 @@ class GewerbeWizardTests(TestCase):
         """Auch wenn das Formular NK mitliefert, wird beim Einstellplatz 0 gespeichert."""
         from portfolio.models import Einheit
         from rentals.models import Mietvertrag as MV
-        lg = Liegenschaft.objects.create(strasse='Weg 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Weg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='PP 2', typ='pp',
                                    nettomiete_aktuell=Decimal('150'))
@@ -406,7 +406,7 @@ class DocuSealAblageTests(TestCase):
 
     def test_wizard_senden_ohne_key_erstellt_trotzdem(self):
         from portfolio.models import Einheit
-        lg = Liegenschaft.objects.create(strasse='Musterweg 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Musterweg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg', typ='whg',
                                    nettomiete_aktuell=Decimal('1500'))
@@ -438,7 +438,7 @@ class VertragUnterschriftsblockTests(TestCase):
         from django.utils import timezone
         Organisation.objects.create(firma='Test Verwaltung', strasse='Weg 1',
                                   plz='8000', ort='Zürich')
-        lg = Liegenschaft.objects.create(strasse='Musterweg 1', plz='8004', ort='Bern',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Musterweg 1', plz='8004', ort='Bern',
                                          versicherungswert=Decimal('1000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Obj', typ=typ,
                                    nettomiete_aktuell=Decimal('1500'))

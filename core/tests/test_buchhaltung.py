@@ -4,7 +4,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, _P3_CAMT, Mieter, Eigentuemer,
     Organisation, Liegenschaft, Einheit, Mietvertrag)
 
@@ -268,7 +268,7 @@ class SollstellungKontierungTests(TestCase):
     def test_gewerbe_pauschal_kontierung(self):
         from core.services.automation import run_sollstellung
         from finance.models import Buchung
-        lg = Liegenschaft.objects.create(strasse='Gew 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Gew 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Laden', typ='gew',
                                    nettomiete_aktuell=Decimal('2000'), nebenkosten_aktuell=Decimal('200'))
@@ -285,7 +285,7 @@ class SollstellungKontierungTests(TestCase):
     def test_wohnung_akonto_kontierung(self):
         from core.services.automation import run_sollstellung
         from finance.models import Buchung
-        lg = Liegenschaft.objects.create(strasse='Wohn 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Wohn 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg', typ='whg',
                                    nettomiete_aktuell=Decimal('1500'), nebenkosten_aktuell=Decimal('200'))
@@ -304,7 +304,7 @@ class SollstellungKontierungTests(TestCase):
         from core.services.automation import run_sollstellung
         from finance.models import DebitorenRechnung
         from rentals.models import MietzinsAnpassung
-        lg = Liegenschaft.objects.create(strasse='Idx 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Idx 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Idx-Büro', typ='gew',
                                    nettomiete_aktuell=Decimal('3000'))
@@ -325,7 +325,7 @@ class SollstellungKontierungTests(TestCase):
         from core.services.automation import run_sollstellung
         from finance.models import DebitorenRechnung
         from rentals.models import Staffelstufe
-        lg = Liegenschaft.objects.create(strasse='Staf 1', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Staf 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Büro', typ='gew',
                                    nettomiete_aktuell=Decimal('2000'))
@@ -942,7 +942,7 @@ class ErfolgBilanzGruppiertTests(TestCase):
         from finance.booking import ensure_kontenplan, buche, storniere_buchung
         ensure_kontenplan()
         lg, e, m, v = _basis_objekte()
-        lg2 = Liegenschaft.objects.create(strasse='Nebenweg 2', plz='3000', ort='Bern',
+        lg2 = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Nebenweg 2', plz='3000', ort='Bern',
                                           versicherungswert=Decimal('500000'))
         # Vorjahr — muss in der Bilanz kumulativ mitzählen, in der
         # Erfolgsrechnung des Folgejahres aber nicht.

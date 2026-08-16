@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import (
+from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, _heute, Mieter, Organisation,
     Liegenschaft, Einheit, Mietvertrag)
 
@@ -263,7 +263,7 @@ class MieterwechselCockpitTests(TestCase):
         setzt die Vorwahl — auch wenn der alte Vertrag noch aktiv ist."""
         lg, e, m, v, k, ende = self._kuendigung()   # v ist aktiv auf e
         # zweite Liegenschaft, die NICHT erscheinen darf
-        lg2 = Liegenschaft.objects.create(strasse='Andere 9', plz='3000', ort='Bern',
+        lg2 = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Andere 9', plz='3000', ort='Bern',
                                           versicherungswert=Decimal('500000'))
         Einheit.objects.create(liegenschaft=lg2, bezeichnung='2 Zi', typ='wohnung',
                                nettomiete_aktuell=Decimal('900'))
@@ -300,7 +300,7 @@ class MieterwechselE2ETests(TestCase):
         from core.models import Pendenz
         from rentals.models import Kuendigung, Abnahmeprotokoll
         self._konten()
-        lg = Liegenschaft.objects.create(strasse='Wechselweg 5', plz='8000', ort='Zürich',
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Wechselweg 5', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='4.5 Zi', typ='wohnung',
                                    nettomiete_aktuell=Decimal('1800'), nebenkosten_aktuell=Decimal('250'))
@@ -680,7 +680,7 @@ class BewerbungNurAusgeschriebenTests(TestCase):
     """
 
     def _einheit(self, ausgeschrieben):
-        lg = Liegenschaft.objects.create(strasse='Inseratweg 3', plz='4500', ort='Solothurn')
+        lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Inseratweg 3', plz='4500', ort='Solothurn')
         return Einheit.objects.create(liegenschaft=lg, bezeichnung='2.5 Zi', typ='wohnung',
                                       nettomiete_aktuell=Decimal('1200'),
                                       zur_ausschreibung=ausgeschrieben)
@@ -760,7 +760,7 @@ class BewerbungAufbewahrungTests(TestCase):
         self._tmp = tempfile.TemporaryDirectory()
         self._ov = override_settings(MEDIA_ROOT=self._tmp.name)
         self._ov.enable()
-        self.lg = Liegenschaft.objects.create(strasse='Bewerbweg 1', plz='3000', ort='Bern')
+        self.lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Bewerbweg 1', plz='3000', ort='Bern')
         self.e = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='2.5 Zi', typ='wohnung')
 
     def tearDown(self):
@@ -894,7 +894,7 @@ class BewerbungDatenschutzTests(TestCase):
     """
 
     def setUp(self):
-        self.lg = Liegenschaft.objects.create(strasse='Inserat 1', plz='3000', ort='Bern')
+        self.lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Inserat 1', plz='3000', ort='Bern')
         self.e = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='3.5 Zi',
                                         typ='wohnung', zur_ausschreibung=True)
 
