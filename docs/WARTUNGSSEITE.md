@@ -58,6 +58,38 @@ Vier Dinge, die den Unterschied zwischen Absicherung und neuer Fehlerquelle mach
 
 Erwägenswert, aber nicht zwingend: `/healthz/` und `/version/` von der Wartungsseite ausnehmen, damit man von aussen sieht, welcher Stand hängt.
 
+### Korrektur: `migration_plan` erkennt den entscheidenden Fall nicht
+
+Die erste Umsetzung fragte `executor.migration_plan(graph.leaf_nodes())` — also „was müsste ich jetzt ausführen?". Django beantwortet das unter der Annahme, die Buchführung sei in sich stimmig: Ist ein **späterer** Schritt in `django_migrations` vermerkt, gelten seine Vorgänger als erledigt.
+
+Belegt: Entfernt man `crm.0033` aus `django_migrations`, während `crm.0034` stehen bleibt, ist der Plan **leer** und die Wartungsseite löst nicht aus.
+
+Das ist kein Randfall, sondern die Form, in der der Ausfall auftrat: Am 16.08. meldete die Produktion `No migrations to apply`, während `crm_mitgliedschaft` nachweislich fehlte. Eine Wartungsseite, die ausgerechnet ihren eigenen Anlass nicht erkennt, ist keine.
+
+Richtig ist der Mengenvergleich, weil er die andere Frage stellt — „welcher Knoten des Graphen ist nicht als angewendet vermerkt?":
+
+```python
+offen = set(loader.graph.nodes) - set(loader.applied_migrations)
+```
+
+Darauf gibt es nur eine Antwort, und sie hängt von keiner Annahme über Reihenfolge ab.
+
+### Die `RuntimeWarning` aus `ready()`
+
+Der Startcheck löst aus:
+
+```
+RuntimeWarning: Accessing the database during app initialization is discouraged.
+To fix this warning, avoid executing queries in AppConfig.ready() or when your
+app modules are imported.
+```
+
+Django meint damit Abfragen, die **Modelle** lesen — die sind zu diesem Zeitpunkt womöglich noch nicht vollständig geladen. Hier wird kein Modell angefasst: `MigrationLoader` liest `django_migrations` über rohes SQL, eine Tabelle, die Django selbst verwaltet.
+
+Und die Abfrage muss dort stehen. Der ganze Zweck ist, den Zustand **einmal** festzustellen statt bei jeder Anfrage; verschöbe man sie in die erste Anfrage, hätte man die Datenbankabfrage im Anfragepfad.
+
+Unterdrückt wird deshalb gezielt diese eine Warnung, aus diesem einen Modul, für diesen einen Block — kein globales `filterwarnings('ignore')`, das auch die nächste verschluckt, die etwas Echtes meldet. Nachweis: `python -W error::RuntimeWarning` läuft durch.
+
 ## 2 — `deploy.sh` auf `main`
 
 ```bash

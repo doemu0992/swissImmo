@@ -25,9 +25,23 @@ ganz normalen Seite fehlen sie auch. Er belegte damit nichts. Erst die
 vorangestellte Statusprüfung macht ihn zu einer Aussage über die
 Wartungsseite. Die Gegenprobe hat das aufgedeckt, nicht das Nachdenken darüber
 — was genau ihr Zweck ist.
+
+ZWEITE GEGENPROBE — die Erkennungsart
+-------------------------------------
+Mit der ersten Fassung von `pruefe_migrationsstand()` (`migration_plan` statt
+Mengenvergleich):
+
+    StartcheckTests.test_luecke_mitten_in_der_kette_wird_erkannt       FEHLER
+        AssertionError: Lists differ: [] != ['crm.0033_mitgliedschaft']
+    alle übrigen                                                       ok
+
+Genau so war der Fehler gemeldet: Der Plan ist leer, obwohl eine Migration
+fehlt. Dass alle anderen Tests grün blieben, ist der Punkt — der Defekt lag
+ausserhalb dessen, was sie prüften.
 """
 from unittest.mock import patch
 
+from django.db import connection
 from django.test import TestCase, Client, override_settings
 
 from core import wartung
@@ -59,6 +73,44 @@ class StartcheckTests(TestCase):
                         f'`{befehl}` darf nicht geprüft werden — sonst ist die '
                         f'Anwendung nicht mehr zu migrieren.')
 
+    def test_luecke_mitten_in_der_kette_wird_erkannt(self):
+        """Der Fall, an dem die erste Fassung vorbeisah — und der einzige, der
+        wirklich vorgekommen ist.
+
+        `crm.0033` aus `django_migrations` entfernen, `crm.0034` stehen lassen.
+        Die alte Prüfung nahm `executor.migration_plan(graph.leaf_nodes())`, und
+        der ist in dieser Lage **leer**: Django beantwortet damit die Frage „was
+        müsste ich jetzt ausführen?" unter der Annahme, die Buchführung sei in
+        sich stimmig. Ist ein späterer Schritt vermerkt, gelten seine Vorgänger
+        als erledigt.
+
+        Das ist keine Spitzfindigkeit, sondern genau die Form des Ausfalls vom
+        15.08.2026: `migrate` meldete „No migrations to apply", während
+        `crm_mitgliedschaft` nachweislich fehlte. Eine Wartungsseite, die
+        ausgerechnet diesen Fall nicht erkennt, wäre für ihren eigenen Anlass
+        blind.
+        """
+        from django.db.migrations.recorder import MigrationRecorder
+
+        recorder = MigrationRecorder(connection)
+        vorher = recorder.migration_qs.filter(app='crm', name='0033_mitgliedschaft')
+        self.assertTrue(vorher.exists(), 'Voraussetzung: crm.0033 ist angewendet.')
+        self.assertTrue(
+            recorder.migration_qs.filter(app='crm', name='0034_bestand_der_organisation_zuordnen').exists(),
+            'Voraussetzung: der NACHFOLGER crm.0034 ist ebenfalls angewendet — '
+            'nur so entsteht die Lücke, um die es geht.')
+
+        vorher.delete()
+        try:
+            with patch.object(wartung.sys, 'argv', ['manage.py', 'runserver']):
+                offen = wartung.pruefe_migrationsstand()
+            self.assertEqual(
+                offen, ['crm.0033_mitgliedschaft'],
+                'Die Lücke mitten in der Kette wurde nicht erkannt. Genau dafür '
+                'steht hier ein Mengenvergleich und kein `migration_plan`.')
+        finally:
+            recorder.record_applied('crm', '0033_mitgliedschaft')
+
     def test_fehler_bei_der_pruefung_blockiert_nicht(self):
         """Datenbank kurz weg ist kein Grund für eine Wartungsseite.
 
@@ -67,7 +119,7 @@ class StartcheckTests(TestCase):
         geprüft" — und `None` löst keinen Wartungsmodus aus.
         """
         with patch.object(wartung.sys, 'argv', ['manage.py', 'runserver']), \
-             patch('django.db.migrations.executor.MigrationExecutor',
+             patch('django.db.migrations.loader.MigrationLoader',
                    side_effect=RuntimeError('Datenbank nicht erreichbar')):
             self.assertIsNone(wartung.pruefe_migrationsstand())
         self.assertIsNone(wartung.FEHLENDE_MIGRATIONEN)

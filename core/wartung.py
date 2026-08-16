@@ -35,6 +35,7 @@ Fehlerquelle ausmachen:
 """
 import logging
 import sys
+import warnings
 
 from django.http import HttpResponse
 
@@ -74,15 +75,56 @@ def pruefe_migrationsstand():
 
     try:
         from django.db import connection
-        from django.db.migrations.executor import MigrationExecutor
+        from django.db.migrations.loader import MigrationLoader
 
-        executor = MigrationExecutor(connection)
-        # `migration_plan` gegen alle Blätter des Graphen: Was hier steht, ist
-        # noch nicht angewendet. Dasselbe, was `showmigrations --plan` als
-        # `[ ]` zeigt — nur ohne Unterprozess.
-        plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
-        FEHLENDE_MIGRATIONEN = [f'{app}.{name}' for (migration, _rueckwaerts) in plan
-                                for app, name in [(migration.app_label, migration.name)]]
+        # DIE WARNUNG, DIE HIER ENTSTEHT, UND WARUM SIE UNTERDRÜCKT WIRD
+        #
+        #   RuntimeWarning: Accessing the database during app initialization is
+        #   discouraged. To fix this warning, avoid executing queries in
+        #   AppConfig.ready() or when your app modules are imported.
+        #
+        # Django meint damit Abfragen, die MODELLE lesen — die sind zu diesem
+        # Zeitpunkt womöglich noch nicht vollständig geladen, und eine solche
+        # Abfrage macht den Start von Zufällen abhängig. Hier wird kein Modell
+        # angefasst: `MigrationLoader` liest `django_migrations` über rohes SQL,
+        # eine Tabelle, die Django selbst verwaltet und die keiner App gehört.
+        #
+        # Und die Abfrage MUSS hier stehen. Der ganze Zweck ist, den Zustand
+        # einmal beim Start festzustellen statt bei jeder Anfrage. Verschöbe man
+        # sie in die erste Anfrage, hätte man die Datenbankabfrage im
+        # Anfragepfad — genau das, was die Bauform vermeidet.
+        #
+        # Deshalb gezielt DIESE eine Warnung, aus DIESEM einen Modul, für DIESEN
+        # Block. Ein globales `filterwarnings('ignore')` würde auch die nächste
+        # verschlucken, die etwas Echtes meldet.
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                'ignore',
+                message='Accessing the database during app initialization is discouraged',
+                category=RuntimeWarning)
+            loader = MigrationLoader(connection)
+
+        # MENGENVERGLEICH, NICHT `migration_plan`
+        #
+        # Die erste Fassung nahm `executor.migration_plan(graph.leaf_nodes())`.
+        # Das ist die Frage „was müsste ich jetzt ausführen?" — und die
+        # beantwortet Django unter der Annahme, dass die Buchführung in sich
+        # stimmig ist: Ist ein SPÄTERER Schritt als angewendet vermerkt, gelten
+        # seine Vorgänger als erledigt und tauchen im Plan nicht auf.
+        #
+        # Genau der Fall ist belegt: Entfernt man `crm.0033` aus
+        # `django_migrations`, während `crm.0034` stehen bleibt, ist der Plan
+        # LEER — und die Wartungsseite löste nicht aus. Das ist nicht der
+        # Randfall, für den man Verständnis haben könnte, sondern die Form, in
+        # der der Ausfall vom 15.08.2026 auftrat: Schema und Buchführung
+        # auseinandergelaufen, `migrate` meldete „No migrations to apply",
+        # während eine Tabelle fehlte.
+        #
+        # Der Mengenvergleich stellt die richtige Frage: „Welcher Knoten des
+        # Graphen ist NICHT als angewendet vermerkt?" Darauf gibt es nur eine
+        # Antwort, und sie hängt von keiner Annahme über Reihenfolge ab.
+            offen = set(loader.graph.nodes) - set(loader.applied_migrations)
+        FEHLENDE_MIGRATIONEN = sorted(f'{app}.{name}' for app, name in offen)
     except Exception as fehler:                     # noqa: BLE001 — siehe Punkt 3
         # Datenbank nicht erreichbar, Migrationsgraph unlesbar, was auch immer:
         # Das ist kein Grund, die Anwendung in den Wartungsmodus zu schicken.
