@@ -69,7 +69,7 @@ def build_vertrag_context(vertrag, *, mit_unterschrift=True):
     liegenschaft = einheit.liegenschaft if einheit else None
     eigentuemer = liegenschaft.eigentuemer if liegenschaft else None
 
-    verwaltung = (liegenschaft.organisation if liegenschaft else None) or Organisation.objects.first()
+    verwaltung = liegenschaft.organisation if liegenschaft else None
 
     netto = vertrag.netto_mietzins or 0
     nk = vertrag.nebenkosten or 0

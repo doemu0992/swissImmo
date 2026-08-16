@@ -256,7 +256,7 @@ def fw_verzug_257d(request, vertrag_id):
         POSTWEG_TAGE = 1  # geschätzter Postweg bis Zustellung/Abholeinladung (nur provisorisch)
         if versand_am:
             frist = versand_am + timedelta(days=POSTWEG_TAGE + FRIST_TAGE)
-        vw = Organisation.objects.first()
+        vw = v.organisation      # Briefkopf des Vertrags, nicht der aeltesten Verwaltung
         m = v.mieter
         # Dasselbe 257d-PDF wie /vertrag/<id>/mahnung/ (sauberer Brief mit
         # Kuendigungsandrohung + QR-Rechnung) statt eines generischen Serienbriefs.
@@ -505,7 +505,7 @@ def fw_kuendigung_formular(request, pk):
     from crm.models import Organisation
     k = get_object_or_404(Kuendigung.objects.select_related(
         'vertrag__mieter', 'vertrag__mitmieter', 'vertrag__einheit__liegenschaft'), id=pk)
-    vw = Organisation.objects.first()
+    vw = k.organisation      # Briefkopf der Kuendigung, nicht der aeltesten Verwaltung
     from core.services.formular_fill import kuendigung_zustellkopien
     from core.services.ablage import ablegen
     kopien = kuendigung_zustellkopien(k.vertrag, k, verwaltung=vw)

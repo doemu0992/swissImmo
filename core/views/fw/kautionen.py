@@ -240,7 +240,9 @@ def fw_kaution_beleg(request, vertrag_id, art):
     from core.services.ablage import ablegen
     from core.auth import log_aktion
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
-    vw = Organisation.objects.first()
+    # Die Verwaltung des VERTRAGS, nicht die aelteste im Bestand: Ein Brief
+    # traegt den Briefkopf dessen, der ihn schreibt.
+    vw = v.organisation
     if art == 'freigabe':
         pdf = kaution_freigabe_pdf(v, verwaltung=vw)
         titel = f"Kaution-Freigabe (Bank) {v.mieter.nachname}"
@@ -281,7 +283,7 @@ def fw_maengelruege(request, vertrag_id):
         if not mangel:
             messages.error(request, "❌ Bitte den Mangel beschreiben.")
             return redirect(f'/neu/vertraege/{v.id}/maengelruege/')
-        vw = Organisation.objects.first()
+        vw = v.organisation
         pdf = maengelruege_pdf(v, mangel, frist_tage=frist, verwaltung=vw)
         ablegen(pdf, f"Mängelrüge {v.mieter.nachname} {timezone.localdate():%d.%m.%Y}",
                 kategorie='vertrag', vertrag=v, dedup=False)
@@ -375,7 +377,7 @@ def fw_untermiete(request, vertrag_id):
         if not untermieter:
             messages.error(request, "❌ Bitte die untermietende Person angeben.")
             return redirect(f'/neu/vertraege/{v.id}/untermiete/')
-        vw = Organisation.objects.first()
+        vw = v.organisation
         pdf = untermiete_zustimmung_pdf(v, untermieter, entscheid=entscheid, bedingungen=bedingungen, verwaltung=vw)
         wort = 'Zustimmung' if entscheid == 'zustimmung' else 'Ablehnung'
         ablegen(pdf, f"Untermiete-{wort} {v.mieter.nachname}", kategorie='vertrag', vertrag=v, dedup=False)

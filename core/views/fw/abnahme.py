@@ -185,7 +185,7 @@ def fw_abnahme_ruege_267a(request, pk):
     if not maengel:
         messages.info(request, "Keine dem Mieter zugeordneten Mängel im Protokoll — keine Rüge nötig.")
         return redirect(f'/neu/abnahme/{prot.id}/')
-    pdf = rueckgabe_maengelruege_pdf(v, maengel, verwaltung=Organisation.objects.first(),
+    pdf = rueckgabe_maengelruege_pdf(v, maengel, verwaltung=v.organisation,
                                      abnahme_datum=prot.datum)
     ablegen(pdf, f"Mängelrüge Art. 267a {prot.datum:%d.%m.%Y}",
             kategorie='vertrag', vertrag=v, dedup=True)
@@ -221,7 +221,7 @@ def fw_abnahme_pdf(request, pk):
     from crm.models import Organisation
     from core.services.abnahme_pdf import generate_abnahme_pdf
     prot = get_object_or_404(Abnahmeprotokoll.objects.select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
-    pdf = generate_abnahme_pdf(prot, verwaltung=Organisation.objects.first())
+    pdf = generate_abnahme_pdf(prot, verwaltung=prot.organisation)
     # Auto-Ablage in die Vertrags-Akte (abgeschlossene Protokolle)
     if getattr(prot, 'abgeschlossen', False):
         from core.services.ablage import ablegen

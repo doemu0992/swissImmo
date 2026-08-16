@@ -714,7 +714,7 @@ def fw_vertrag_bearbeiten(request, pk):
                          + ("" if not gesperrt else " (aktiver Vertrag — nur Detailfelder geändert)"))
         return redirect(f'/neu/vertraege/{v.id}/')
 
-    verwaltung = v.einheit.liegenschaft.organisation or Organisation.objects.first()
+    verwaltung = v.einheit.liegenschaft.organisation
     return render(request, 'fw/vertrag_bearbeiten.html', {
         **_global_filter(request), 'nav': 'vertraege', 'v': v, 'gesperrt': gesperrt,
         'objekte': Einheit.objects.select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung'),

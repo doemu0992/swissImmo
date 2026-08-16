@@ -730,7 +730,7 @@ def _verwaltung_empfaenger(lg):
     """E-Mail-Empfänger auf Verwaltungsseite (Verwaltung + ggf. Eigentümer)."""
     from crm.models import Organisation
     empf = []
-    vw = (lg.organisation if lg and lg.organisation_id else None) or Organisation.objects.first()
+    vw = lg.organisation if lg else None
     if vw and vw.email:
         empf.append(vw.email)
     if lg and lg.eigentuemer_id and lg.eigentuemer.email:

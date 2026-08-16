@@ -27,7 +27,7 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
     einheit = vertrag.einheit
     liegenschaft = einheit.liegenschaft
     eigentuemer = liegenschaft.eigentuemer
-    verwaltung = liegenschaft.organisation or Organisation.objects.first()
+    verwaltung = liegenschaft.organisation
 
     # Vermieter = Eigentümer falls vorhanden, sonst Verwaltung
     if eigentuemer:

@@ -484,7 +484,7 @@ def anfangsmietzins_auto_ablegen(vertrag, verwaltung=None):
         'basis_lik_basis': LIK_BASIS,
         'pflicht_info': info,
     }
-    vw = verwaltung or (einheit.liegenschaft.organisation if einheit.liegenschaft else None) or Organisation.objects.first()
+    vw = verwaltung or (einheit.liegenschaft.organisation if einheit.liegenschaft else None)
     pdf = fill_anfangsmietzins(vertrag, daten, verwaltung=vw)
     ablegen(pdf, f"Anfangsmietzins-Formular {vertrag.beginn:%d.%m.%Y}" if vertrag.beginn else "Anfangsmietzins-Formular",
             kategorie='vertrag', vertrag=vertrag, dedup=True)
