@@ -282,7 +282,9 @@ class Buchung(OrganisationAusKette):
 
 
 # 🔥 NEU: Debitorenrechnungen (inkl. OP-Verwaltung)
-class DebitorenRechnung(models.Model):
+class DebitorenRechnung(OrganisationAusKette):
+    ORGANISATION_PFAD = ('vertrag', 'einheit', 'liegenschaft', 'konto_haben')
+    ORGANISATION_RUECKFALL = True   # alle Wege optional, siehe Zahlungseingang
     STATUS_CHOICES = [
         ('offen', 'Offen'),
         ('teilbezahlt', 'Teilbezahlt'), # 🔥 NEU für saubere OP-Verwaltung
@@ -368,7 +370,30 @@ class DebitorenRechnung(models.Model):
         return max(Decimal('0.00'), self.betrag - zahlungen)
 
 
-class Zahlungseingang(models.Model):
+class Zahlungseingang(OrganisationAusKette):
+    # VIER WEGE, UND WARUM ES KEIN EIGENES FELD GEWORDEN IST
+    #
+    # Der Auftrag (docs/ETAPPE-5-ABSCHLUSS.md) sah hier einen eigenen
+    # Fremdschluessel vor, gesetzt beim Import, und nannte dafuer fuenf Dateien
+    # mit neun Erzeugungsstellen. Die Begruendung stimmt — „der Bezug ueber
+    # Vertrag oder Liegenschaft entsteht spaeter oder nie" —, aber die
+    # Schlussfolgerung traegt weiter, als sie muss:
+    #
+    #   · Die 14 unzugeordneten aus dem Bankimport haben `konto` (alle
+    #     konto=86). Der Import bucht immer auf ein Konto.
+    #   · Die ueber die Oberflaeche erfassten haben `vertrag` — lokal gemessen
+    #     5 von 6 ganz OHNE Konto.
+    #
+    # Es gibt also keinen einzelnen verlaesslichen Weg, aber vier, die sich
+    # ergaenzen. Zusammen mit dem Kontext-Rueckfall in `save()` unten kann kein
+    # Zahlungseingang mehr ohne Bezug entstehen — an EINER Stelle statt an
+    # neun, und auch fuer jeden kuenftigen Erzeugungspfad, den niemand kennt.
+    ORGANISATION_PFAD = ('vertrag', 'liegenschaft', 'debitoren_rechnung', 'konto')
+    # Traegt keiner der vier Wege, kommt der Bezug aus dem Mandantenkontext.
+    # Ohne das braeche der Bankimport am Tag nach der Migration ab, sobald eine
+    # Zeile weder Vertrag noch Konto hat — genau die Sorge, die der Auftrag
+    # benennt, nur an einer Stelle geloest statt an neun.
+    ORGANISATION_RUECKFALL = True
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='zahlungen')
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
@@ -396,7 +421,9 @@ class Zahlungseingang(models.Model):
     class Meta: db_table = 'core_zahlungseingang'
 
 
-class Mahnung(models.Model):
+class Mahnung(OrganisationAusKette):
+    ORGANISATION_PFAD = ('debitoren_rechnung', 'vertrag')
+    ORGANISATION_RUECKFALL = True   # alle Wege optional, siehe Zahlungseingang
     """Revisionssichere Mahn-Historie: pro Mahnschritt ein unveränderlicher Eintrag
     mit Stufe, offenem Betrag und (optionaler) Mahngebühr."""
     debitoren_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.CASCADE, related_name='mahnungen', null=True, blank=True)
@@ -433,7 +460,9 @@ class Mahnung(models.Model):
         return f"{self.stufe}. Mahnung – CHF {self.betrag_offen} ({self.datum})"
 
 
-class KreditorenRechnung(models.Model):
+class KreditorenRechnung(OrganisationAusKette):
+    ORGANISATION_PFAD = ('einheit', 'liegenschaft', 'konto')
+    ORGANISATION_RUECKFALL = True   # alle Wege optional, siehe Zahlungseingang
     STATUS_CHOICES = [
         ('neu', 'Neu / Scan'),
         ('freigegeben', 'Freigegeben'),
@@ -547,7 +576,8 @@ class KreditorenRechnung(models.Model):
         return (self.betrag or Decimal('0.00')) if self.is_hnk_relevant else Decimal('0.00')
 
 
-class KreditorPosition(models.Model):
+class KreditorPosition(OrganisationAusKette):
+    ORGANISATION_PFAD = 'rechnung'
     """Eine Kostenposition einer aufgeteilten Kreditorenrechnung: eigenes
     Aufwandskonto, optionales Objekt und eigenes HNK-Flag. Ermöglicht das
     Splitten einer Sammelrechnung (mehrere Häuser) bzw. das Trennen von
@@ -568,7 +598,8 @@ class KreditorPosition(models.Model):
     def __str__(self): return f"{self.konto} · CHF {self.betrag}"
 
 
-class KreditorenZahlung(models.Model):
+class KreditorenZahlung(OrganisationAusKette):
+    ORGANISATION_PFAD = 'kreditor'
     """Ausgangszahlung an einen Lieferanten (ermöglicht Teilzahlungen / OP)."""
     kreditor = models.ForeignKey(KreditorenRechnung, on_delete=models.CASCADE, related_name='zahlungen')
     betrag = models.DecimalField(max_digits=10, decimal_places=2)
@@ -898,6 +929,19 @@ class EigentuemerAuszahlung(models.Model):
     """Auszahlung an einen Eigentümer aus dem Kontokorrent Eigentümer.
     Bucht Soll 2850 (Kontokorrent Eigentümer) / Haben Bank — reduziert die
     Verbindlichkeit gegenüber dem Eigentümer und die liquiden Mittel."""
+    # Kein ableitbarer Weg: `eigentuemer` ist pflichtig, aber `crm.Eigentuemer`
+    # bekommt seinen Bezug erst in PR 8. Eine Auszahlung gehoert ohnehin der
+    # Verwaltung, die sie vornimmt — eine eigene Spalte ist hier nicht die
+    # Notloesung, sondern die Sache.
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+                                     editable=False, related_name='%(app_label)s_%(class)s',
+                                     verbose_name='Organisation')
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_oder_einzige().pk
+        super().save(*args, **kwargs)
+
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.CASCADE, related_name='auszahlungen')
     betrag = models.DecimalField(max_digits=12, decimal_places=2)
     datum = models.DateField(default=timezone.now)

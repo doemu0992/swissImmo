@@ -161,6 +161,22 @@ class OrganisationAusKette(models.Model):
     #: führt — und der deshalb niemandem gehört.
     ORGANISATION_PFAD = ''
 
+    #: Darf der Bezug aus dem Mandantenkontext kommen, wenn KEIN Pfad trägt?
+    #:
+    #: Nur für Modelle, deren Wege **alle** optional sind und die trotzdem
+    #: entstehen dürfen, ohne dass einer davon gesetzt ist. Im Bestand sind das
+    #: die vier Belegarten der Buchhaltung: Ein Zahlungseingang aus dem
+    #: Bankabgleich hat oft weder Vertrag noch Liegenschaft — „noch nicht
+    #: zugeordnet" ist dort ein regulärer Arbeitszustand, kein Fehler.
+    #:
+    #: `False` überall sonst, und das ist der Normalfall: Wo eine Pflicht-Kette
+    #: besteht (`einheit`, `vertrag`, `protokoll`) oder eine `CheckConstraint`
+    #: mindestens einen Weg erzwingt, wäre ein Rückfall eine stille Umgehung —
+    #: er würde einen Datensatz retten, der gar nicht hätte entstehen dürfen.
+    #:
+    #: Der Rückfall ist Übergangsschuld, siehe `organisation_oder_einzige`.
+    ORGANISATION_RUECKFALL = False
+
     organisation = models.ForeignKey(
         'crm.Organisation',
         on_delete=models.CASCADE,
@@ -203,6 +219,8 @@ class OrganisationAusKette(models.Model):
         # gesetzt hat (Datenmigration, Test-Fixture), meint sie so.
         if self.organisation_id is None:
             self.organisation_id = self.organisation_aus_kette()
+        if self.organisation_id is None and self.ORGANISATION_RUECKFALL:
+            self.organisation_id = organisation_oder_einzige().pk
 
         # KEIN Sonderfall für `update_fields`, obwohl er sich aufdrängt:
         # `obj.save(update_fields=['bezeichnung'])` schriebe eine hier eben

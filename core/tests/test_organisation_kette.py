@@ -146,25 +146,69 @@ class KettenPfadTests(TestCase):
                         f'{modell._meta.label}: Pfad «{pfad}» endet bei '
                         f'{knoten._meta.label}, und das trägt keine Organisation.')
 
-    def test_alternativpfade_sind_durch_eine_bedingung_gesichert(self):
-        """Mehrere Pfade ohne `CheckConstraint` sind ein Loch, kein Entwurf.
+    def test_alternativpfade_koennen_keine_waise_erzeugen(self):
+        """Ein Pfad-Tupel braucht eine Absicherung — es gibt genau zwei gültige.
 
-        Sind alle Alternativen optional und keine erzwungen, entsteht genau die
+        Sind alle Alternativen optional und keine davon garantiert, entsteht die
         Waise aus Rezept B: ein Datensatz, von dem kein Weg zur Organisation
-        führt — und der deshalb niemandem gehört. Dieser Test findet das beim
-        nächsten Modell, das ein Tupel bekommt, statt erst die Datenmigration
-        auf der Produktion.
+        führt und der deshalb niemandem gehört. Dagegen hilft:
+
+        **(a) `CheckConstraint`** — die Datenbank erzwingt, dass mindestens ein
+        Weg gesetzt ist. Der stärkere Schutz, aber nur dort setzbar, wo der
+        Bestand ihn erfüllt. Bei `portfolio.Dokument`, `Geraet` und `Zaehler`
+        waren die Tabellen produktiv leer; die Bedingung war folgenlos zu setzen.
+
+        **(b) `ORGANISATION_RUECKFALL = True`** — trägt kein Weg, kommt der Bezug
+        aus dem Mandantenkontext. Für die vier Belegarten der Buchhaltung, bei
+        denen „noch nicht zugeordnet" ein regulärer Arbeitszustand ist: Ein
+        Zahlungseingang aus dem Bankabgleich hat oft weder Vertrag noch
+        Liegenschaft. Eine Bedingung hätte dort echte Daten abgewiesen, deren
+        Kombinationen niemand vollständig kennt.
+
+        Beide schliessen dasselbe Loch. **Keines von beiden ist der Fehler**, den
+        dieser Test sucht — nicht die Wahl zwischen ihnen.
+
+        Die erste Fassung kannte nur (a) und schlug bei den vier Belegarten an.
+        Das war kein Fehlalarm, sondern eine Regel, die einen Fall noch nicht
+        kannte: Sie entstand, als es nur leere Tabellen gab.
         """
         for modell in _kettenmodelle():
             if isinstance(modell.ORGANISATION_PFAD, str):
                 continue
             with self.subTest(modell=modell._meta.label):
-                bedingungen = [c for c in modell._meta.constraints
-                               if isinstance(c, models.CheckConstraint)]
+                hat_bedingung = any(isinstance(c, models.CheckConstraint)
+                                    for c in modell._meta.constraints)
+                hat_rueckfall = modell.ORGANISATION_RUECKFALL
                 self.assertTrue(
-                    bedingungen,
-                    f'{modell._meta.label} hat mehrere ORGANISATION_PFADe, aber keine '
-                    f'CheckConstraint, die mindestens einen erzwingt.')
+                    hat_bedingung or hat_rueckfall,
+                    f'{modell._meta.label} hat mehrere ORGANISATION_PFADe, aber weder '
+                    f'eine CheckConstraint noch ORGANISATION_RUECKFALL. Trägt keiner '
+                    f'der Wege, entsteht ein Datensatz ohne Organisation — und der '
+                    f'gehört niemandem.')
+
+    def test_rueckfall_nur_wo_kein_weg_garantiert_ist(self):
+        """Die Gegenrichtung: `ORGANISATION_RUECKFALL` darf keine Umgehung sein.
+
+        Wo eine Pflicht-Kette besteht oder eine `CheckConstraint` mindestens
+        einen Weg erzwingt, würde der Rückfall einen Datensatz retten, der gar
+        nicht hätte entstehen dürfen — und die Absicherung wäre still wertlos.
+        Der Rückfall gehört genau dorthin, wo es sonst keine gibt.
+        """
+        for modell in _kettenmodelle():
+            if not modell.ORGANISATION_RUECKFALL:
+                continue
+            with self.subTest(modell=modell._meta.label):
+                self.assertFalse(
+                    isinstance(modell.ORGANISATION_PFAD, str),
+                    f'{modell._meta.label} hat einen EINZELNEN (also pflichtigen) '
+                    f'Pfad und trotzdem ORGANISATION_RUECKFALL. Der Rückfall würde '
+                    f'hier nie greifen — oder er verdeckt, dass die Kette gebrochen ist.')
+                self.assertFalse(
+                    any(isinstance(c, models.CheckConstraint)
+                        for c in modell._meta.constraints),
+                    f'{modell._meta.label} hat eine CheckConstraint UND den Rückfall. '
+                    f'Eines von beidem ist zu viel: Die Bedingung garantiert bereits '
+                    f'einen Weg.')
 
 
 class AbleitungTests(TestCase):
