@@ -52,8 +52,59 @@ fi
 # scheitert — siehe `zurueckrollen` unten.
 VORHER_COMMIT="$(git rev-parse HEAD)"
 
-echo "→ git reset --hard origin/$BRANCH"
-git reset --hard "origin/$BRANCH" || { echo "✗ reset fehlgeschlagen."; exit 1; }
+# ---------------------------------------------------------------------------
+# ZWEI GRUENDE, ETWAS ZU TUN — NICHT NUR EINER
+#
+# Der Always-on-Task fragte bis zum 16.08.2026 nur: „gibt es einen neuen
+# Commit?" Damit war eine Datenbank, die aus IRGENDEINEM Grund hinter dem Code
+# zurueckliegt, fuer immer verloren: Kein neuer Commit heisst kein Deploy,
+# heisst kein `migrate`. Genau so blieb die Produktion mit neuem Code auf
+# altem Schema stehen und meldete `no such table: crm_mitgliedschaft`.
+#
+# Deshalb sind es hier ZWEI Bedingungen. Offene Migrationen loesen einen Lauf
+# auch dann aus, wenn sich am Code nichts geaendert hat — der Deploy holt die
+# Datenbank von selbst wieder ein.
+#
+# Und nur wenn eine davon zutrifft, wird die Web-App am Ende neu geladen.
+# Sonst wuerde ein Task, der alle 30 s laeuft, die Anwendung alle 30 s
+# durchstarten.
+# ---------------------------------------------------------------------------
+NEUER_CODE=0
+[ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/$BRANCH")" ] && NEUER_CODE=1
+
+# Zaehlt die noch nicht angewendeten Migrationen. Wichtig ist der Fehlerfall:
+# Laesst sich das gar nicht feststellen, wird das NICHT als „null offene"
+# gewertet, sondern als Grund, den Deploy laufen zu lassen. Ein Zaehler, der
+# bei einem Fehler still 0 meldet, haette dieselbe Bauart wie der Bug, den er
+# verhindern soll — er wuerde schweigen, wenn es darauf ankommt.
+#
+# (Geprueft: `showmigrations --plan` laeuft auch auf einer Datenbank, die noch
+# vor der Benutzer-Uebernahme steht — anders als `migrate`, das dort mit
+# InconsistentMigrationHistory abbricht. Der Zaehler meldet dort korrekt 8.)
+offene_migrationen() {
+    local ausgabe
+    if ! ausgabe="$("$PY" manage.py showmigrations --plan 2>/dev/null)"; then
+        echo "unbekannt"; return
+    fi
+    printf '%s\n' "$ausgabe" | grep -c '^\[ \]' || true
+}
+OFFEN="$(offene_migrationen)"
+
+if [ "$OFFEN" = "unbekannt" ]; then
+    echo "⚠ Migrationsstand nicht feststellbar — Deploy laeuft trotzdem."
+    OFFEN=1
+fi
+
+if [ "$NEUER_CODE" = "0" ] && [ "${OFFEN:-0}" -eq 0 ]; then
+    echo "· nichts zu tun (Code aktuell, keine offenen Migrationen)"
+    exit 0
+fi
+[ "${OFFEN:-0}" -gt 0 ] && echo "→ ${OFFEN} offene Migration(en) — Lauf auch ohne neuen Commit"
+
+if [ "$NEUER_CODE" = "1" ]; then
+    echo "→ git reset --hard origin/$BRANCH"
+    git reset --hard "origin/$BRANCH" || { echo "✗ reset fehlgeschlagen."; exit 1; }
+fi
 DEPLOY_COMMIT="$(git rev-parse --short HEAD)"
 echo "  jetzt auf Commit $DEPLOY_COMMIT"
 
@@ -81,8 +132,10 @@ zurueckrollen() {
     exit 1
 }
 
-echo "→ pip install -r requirements.txt"
-"$PY" -m pip install -q -r requirements.txt || echo "⚠ pip install meldete Fehler — fahre fort."
+if [ "$NEUER_CODE" = "1" ]; then
+    echo "→ pip install -r requirements.txt"
+    "$PY" -m pip install -q -r requirements.txt || echo "⚠ pip install meldete Fehler — fahre fort."
+fi
 
 # Seit Etappe 3 hat swissImmo ein eigenes Benutzermodell (benutzer.Benutzer),
 # das die bestehende Tabelle auth_user übernimmt. Auf einer Bestandsdatenbank
@@ -110,9 +163,9 @@ fi
 # Python, kein Django im Pfad). `showmigrations --plan` listet dann offene
 # Schritte. Ein Deploy, der ausstehende Migrationen zurücklaesst, darf nicht
 # neu laden.
-OFFEN="$("$PY" manage.py showmigrations --plan 2>/dev/null | grep -c "^\[ \]" || true)"
-if [ "${OFFEN:-0}" -gt 0 ]; then
-    zurueckrollen "$OFFEN Migration(en) nicht angewendet, obwohl migrate durchlief."
+NACHHER="$(offene_migrationen)"
+if [ "${NACHHER:-0}" -gt 0 ]; then
+    zurueckrollen "$NACHHER Migration(en) nicht angewendet, obwohl migrate durchlief."
 fi
 
 echo "→ manage.py collectstatic"

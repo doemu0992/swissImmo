@@ -28,18 +28,38 @@ Auch das Ausrollen läuft als Scheduled Task, nicht von Hand:
 |------|----------|---------|
 | `bash deploy.sh` | Always-on-Task, Schleife alle 30 s | Holt `claude/fairwalter-rebuild`, migriert, sammelt statische Dateien, lädt die Web-App neu |
 
-Der Always-on-Task ist bewusst dünn — er stellt nur fest, ob es etwas Neues
-gibt, und überlässt alles Weitere `deploy.sh`:
+Der Always-on-Task ist bewusst **dünn**: Er ruft nur auf, `deploy.sh`
+entscheidet. Alles, was entschieden werden muss, steht damit im Git und nicht
+in einem Textfeld der Hosting-Oberfläche.
 
 ```bash
 while true; do
-  cd ~/swiss-manager && git fetch -q origin claude/fairwalter-rebuild
-  if [ "$(git rev-parse HEAD)" != "$(git rev-parse FETCH_HEAD)" ]; then
-    PA_PY=/home/swissimmo/.virtualenvs/myenv/bin/python bash deploy.sh
-  fi
+  cd ~/swiss-manager
+  PA_PY=/home/swissimmo/.virtualenvs/myenv/bin/python bash deploy.sh
   sleep 30
 done
 ```
+
+`deploy.sh` läuft alle 30 Sekunden und tut in aller Regel **nichts** — es
+meldet `· nichts zu tun` und endet. Gearbeitet wird nur, wenn einer von **zwei**
+Gründen vorliegt:
+
+| Grund | Warum er dazugehört |
+|---|---|
+| **Neuer Commit** auf dem Branch | der Normalfall |
+| **Offene Migrationen** | die Datenbank hängt hinterher — egal warum |
+
+Der zweite ist der, der am 16.08.2026 gefehlt hat. Die alte Schleife fragte
+**nur** nach einem neuen Commit; eine Datenbank, die aus irgendeinem Grund
+hinter dem Code zurückblieb, wurde nie wieder eingeholt. Jetzt migriert der
+Task von selbst, auch wenn sich am Code nichts geändert hat.
+
+Kann der Migrationsstand gar nicht festgestellt werden, gilt das ebenfalls als
+Grund zu laufen — nicht als „null offene". Ein Zähler, der bei einem Fehler
+still 0 meldet, hätte dieselbe Bauart wie der Fehler, den er verhindern soll.
+
+Die Web-App wird nur bei einem echten Lauf neu geladen. Sonst startete ein
+30-Sekunden-Task die Anwendung alle 30 Sekunden durch.
 
 Was gepusht ist, geht damit beim nächsten Lauf von selbst live — **inklusive
 Migrationen**. Es gibt keinen separaten Migrationsschritt, den jemand von Hand
