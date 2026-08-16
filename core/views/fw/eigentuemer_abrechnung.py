@@ -74,7 +74,7 @@ def fw_eigentuemer_abrechnung(request, pk):
         from core.services.mandat_abrechnung import generate_mandat_abrechnung_pdf
         from django.http import HttpResponse
         zeilen, totals, von, bis = _mandat_abrechnung_daten(md, jahr)
-        pdf = generate_mandat_abrechnung_pdf(md, jahr, zeilen, totals, von, bis, Organisation.objects.first())
+        pdf = generate_mandat_abrechnung_pdf(md, jahr, zeilen, totals, von, bis, md.organisation)
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = f'inline; filename="Mandatsabrechnung_{md.firma_oder_name}_{jahr}.pdf"'
         return resp
@@ -109,7 +109,7 @@ def fw_eigentuemer_kontokorrent(request, pk):
         from crm.models import Organisation
         from core.services.eigentuemer_kontokorrent import generate_kontokorrent_pdf
         from django.http import HttpResponse
-        pdf = generate_kontokorrent_pdf(md, jahr, Organisation.objects.first())
+        pdf = generate_kontokorrent_pdf(md, jahr, md.organisation)
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = f'inline; filename="Kontokorrent_{md.firma_oder_name}_{jahr or "alle"}.pdf"'
         return resp

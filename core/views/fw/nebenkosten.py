@@ -252,7 +252,7 @@ def fw_nebenkosten_versand(request, pk):
         messages.error(request, result['error'])
         return redirect(f'/neu/nebenkosten/{p.id}/')
 
-    vw = Organisation.objects.first()
+    vw = p.organisation      # die Verwaltung DIESER Abrechnungsperiode
     lg = p.liegenschaft
     periode_str = f"{p.bezeichnung} ({p.start_datum:%d.%m.%Y}–{p.ende_datum:%d.%m.%Y})"
     positionen = result.get('belege_details', [])

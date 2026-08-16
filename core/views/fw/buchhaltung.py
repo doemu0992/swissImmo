@@ -216,7 +216,10 @@ def fw_buchhaltung(request):
             # auseinander (Audit). Nur beim portfolioweiten Abschluss, ein
             # Einzelabschluss sperrt die übrigen Liegenschaften nicht mit.
             from crm.models import Organisation
-            vw_sperre = Organisation.objects.first()
+            # Die Periodensperre ist eine Einstellung DER Verwaltung, nicht
+            # der aeltesten im Bestand. In einer Anfrage setzt die Middleware
+            # den Kontext aus der Mitgliedschaft.
+            vw_sperre = request.organisation
             if vw_sperre is not None:
                 stichtag = date(j_ab, 12, 31)
                 if not vw_sperre.buchung_gesperrt_bis or vw_sperre.buchung_gesperrt_bis < stichtag:
@@ -259,7 +262,7 @@ def fw_buchhaltung(request):
         entsperrt = ""
         if not aktive_lg:
             from crm.models import Organisation
-            vw_e = Organisation.objects.first()
+            vw_e = request.organisation
             if vw_e is not None and vw_e.buchung_gesperrt_bis == date(j_zr, 12, 31):
                 vw_e.buchung_gesperrt_bis = date(j_zr - 1, 12, 31) if j_zr > 2000 else None
                 vw_e.save(update_fields=['buchung_gesperrt_bis'])
@@ -566,7 +569,11 @@ def fw_buchhaltung_pdf(request):
     daten = _erfolg_bilanz(aktive_lg, jahr)
     lg_name = f"{aktive_lg.strasse}, {aktive_lg.ort}" if aktive_lg else "Gesamtes Portfolio"
     pdf = generate_abschluss_pdf(daten, jahr, lg_name,
-                                 verwaltung=Organisation.objects.first(), erstellt_am=heute)
+                                 # Beim Portfolio-Abschluss gibt es keine einzelne
+                                 # Liegenschaft — dann traegt der Anfragekontext.
+                                 verwaltung=(aktive_lg.organisation if aktive_lg
+                                             else request.organisation),
+                                 erstellt_am=heute)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Erfolgsrechnung_Bilanz_{jahr}.pdf"'
     return resp

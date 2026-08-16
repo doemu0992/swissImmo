@@ -226,7 +226,39 @@ else:
             # ohne die Entwickler-DB db.sqlite3 anzufassen.
             'NAME': os.getenv('SQLITE_NAME') or (BASE_DIR / 'db.sqlite3'),
             'OPTIONS': {
+                # 30 s warten, statt sofort `database is locked` zu werfen.
                 'timeout': 30,
+
+                # WAL — der eigentliche Hebel für gleichzeitige Zugriffe.
+                #
+                # Im Standardmodus (`journal_mode=DELETE`) sperrt EIN Schreiber
+                # die ganze Datei, auch für Leser. Mit WAL lesen beliebig viele
+                # weiter, während einer schreibt. Bei einer Anwendung, in der
+                # eine Verwaltung eine Liste öffnet, während eine andere eine
+                # Rechnung bucht, ist das der Unterschied zwischen „läuft" und
+                # `OperationalError: database is locked`.
+                #
+                # Was WAL NICHT ändert: Es bleibt bei genau EINEM Schreiber
+                # gleichzeitig. SQLite trägt damit mehrere Mandanten mit
+                # üblichem Aufkommen, aber keine parallelen Massenläufe (zwei
+                # Sollstellungen zur selben Sekunde). Das ist die Grenze, an der
+                # PostgreSQL (P1.4) nötig wird — nicht die Zahl der Mandanten.
+                #
+                # `synchronous=NORMAL` ist die zu WAL passende Einstellung:
+                # dauerhaft sicher gegen Programmabstürze, ein Fenster von
+                # Millisekunden nur bei Stromausfall des Servers.
+                'init_command': (
+                    'PRAGMA journal_mode=WAL;'
+                    'PRAGMA synchronous=NORMAL;'
+                ),
+
+                # IMMEDIATE statt DEFERRED: Django öffnet Transaktionen sonst
+                # lesend und will beim ersten Schreibzugriff hochstufen — genau
+                # dann kollidieren zwei Anfragen und eine bekommt sofort
+                # `database is locked`, OHNE dass `timeout` greift. Mit
+                # IMMEDIATE wird die Schreibsperre gleich zu Beginn geholt und
+                # das Warten funktioniert wie gedacht.
+                'transaction_mode': 'IMMEDIATE',
             }
         }
     }
