@@ -2,9 +2,11 @@
 import uuid
 from django.conf import settings
 from django.db import models
+from core.organisation_kette import OrganisationAusKette
 from core.utils import get_smart_upload_path
 
-class SchadenMeldung(models.Model):
+class SchadenMeldung(OrganisationAusKette):
+    ORGANISATION_PFAD = 'liegenschaft'
     STATUS_CHOICES = [
         ('neu', 'Neu'),
         ('in_bearbeitung', 'In Bearbeitung'),
@@ -63,7 +65,8 @@ class SchadenMeldung(models.Model):
         return f"Ticket #{self.id}: {self.titel}"
 
 
-class SchadenFoto(models.Model):
+class SchadenFoto(OrganisationAusKette):
+    ORGANISATION_PFAD = 'schaden'
     """Mehrere Fotos pro Schadenmeldung (Dokumentation). Das Legacy-Einzelfeld
     SchadenMeldung.foto bleibt bestehen und wird zusätzlich angezeigt."""
     schaden = models.ForeignKey(SchadenMeldung, on_delete=models.CASCADE, related_name='fotos')
@@ -82,7 +85,8 @@ class SchadenFoto(models.Model):
         return f"Foto zu Ticket #{self.schaden_id}"
 
 
-class HandwerkerAuftrag(models.Model):
+class HandwerkerAuftrag(OrganisationAusKette):
+    ORGANISATION_PFAD = 'ticket'
     ticket = models.ForeignKey(SchadenMeldung, on_delete=models.CASCADE, related_name='handwerker_auftraege')
     # 🔥 WIEDER ZURÜCK: Verweist auf den CRM Handwerker
     handwerker = models.ForeignKey('crm.Handwerker', on_delete=models.CASCADE, related_name='auftraege')
@@ -115,7 +119,8 @@ class HandwerkerAuftrag(models.Model):
         return self.freigabe_status == 'ausstehend'
 
 
-class TicketNachricht(models.Model):
+class TicketNachricht(OrganisationAusKette):
+    ORGANISATION_PFAD = 'ticket'
     ticket = models.ForeignKey(SchadenMeldung, on_delete=models.CASCADE, related_name='nachrichten')
     absender_name = models.CharField(max_length=100)
     TYP_CHOICES = [

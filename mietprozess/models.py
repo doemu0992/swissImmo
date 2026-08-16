@@ -1,5 +1,6 @@
 import pdfplumber
 from django.db import models
+from core.organisation_kette import OrganisationAusKette
 from portfolio.models import Einheit
 
 # ==========================================
@@ -40,7 +41,8 @@ def scan_pdf_for_betreibungen(file_obj):
 # ==========================================
 # DATENBANK MODELLE
 # ==========================================
-class Mietbewerbung(models.Model):
+class Mietbewerbung(OrganisationAusKette):
+    ORGANISATION_PFAD = 'einheit'
     STATUS_CHOICES = [
         ('neu', 'Neu eingegangen'),
         ('geprueft', 'Bonität geprüft'),
