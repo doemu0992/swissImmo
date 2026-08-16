@@ -1,6 +1,7 @@
 import logging
 # rentals/models.py
 from django.db import models
+from core.organisation_kette import OrganisationAusKette
 from django.utils import timezone
 from decimal import Decimal
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
@@ -8,7 +9,8 @@ from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_p
 logger = logging.getLogger(__name__)
 
 
-class Mietvertrag(models.Model):
+class Mietvertrag(OrganisationAusKette):
+    ORGANISATION_PFAD = 'einheit'
     STATUS_CHOICES = [('offen', 'Offen'), ('gesendet', 'Versendet'), ('unterzeichnet', 'Unterzeichnet')]
 
     VERTRAG_STATUS = [
@@ -580,7 +582,8 @@ class Mietvertrag(models.Model):
             logger.debug("Fehler bewusst übergangen", exc_info=True)
         return super().delete(*args, **kwargs)
 
-class Staffelstufe(models.Model):
+class Staffelstufe(OrganisationAusKette):
+    ORGANISATION_PFAD = 'vertrag'
     """Eine vereinbarte Staffelmietstufe (Art. 269c OR): ab `ab_datum` gilt
     `netto_mietzins`. Vorab im Vertrag vereinbart → im Mietenlauf automatisch
     (keine erneute Ankündigung nötig)."""
@@ -598,7 +601,8 @@ class Staffelstufe(models.Model):
         return f"ab {self.ab_datum:%d.%m.%Y}: CHF {self.netto_mietzins}"
 
 
-class VertragMietzins(models.Model):
+class VertragMietzins(OrganisationAusKette):
+    ORGANISATION_PFAD = 'vertrag'
     """Datierte Mietzins-Komponente eines Mietverhältnisses: ab `gueltig_ab` gelten
     `netto_mietzins` und `nebenkosten`. Erlaubt gestaffelte Starts und Gratismonate
     ganz ohne Sonderfall — z.B. ab Mietbeginn eine Komponente mit Netto 0.00 (die
@@ -655,7 +659,8 @@ class VertragMietzins(models.Model):
         return f"ab {self.gueltig_ab:%d.%m.%Y}: Netto CHF {self.netto_mietzins} / NK CHF {self.nebenkosten}"
 
 
-class MietzinsAnpassung(models.Model):
+class MietzinsAnpassung(OrganisationAusKette):
+    ORGANISATION_PFAD = 'vertrag'
     vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='anpassungen')
     wirksam_ab = models.DateField()
     neuer_netto_mietzins = models.DecimalField(max_digits=10, decimal_places=2)
@@ -705,7 +710,8 @@ class MietzinsAnpassung(models.Model):
                 'notiz': " · ".join(teile),
             })
 
-class Leerstand(models.Model):
+class Leerstand(OrganisationAusKette):
+    ORGANISATION_PFAD = 'einheit'
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='leerstaende')
     beginn = models.DateField()
     ende = models.DateField(null=True, blank=True)
@@ -743,7 +749,8 @@ class Dokument(models.Model):
     def __str__(self):
         return self.bezeichnung
 
-class Kuendigung(models.Model):
+class Kuendigung(OrganisationAusKette):
+    ORGANISATION_PFAD = 'vertrag'
     """Kündigung eines Mietvertrags (ordentlich/ausserordentlich) inkl. Fristenberechnung."""
     ABSENDER_CHOICES = [('mieter', 'Mieter'), ('vermieter', 'Vermieter')]
     ZUSTELLUNG_CHOICES = [
@@ -788,7 +795,8 @@ class Kuendigung(models.Model):
         return f"Kündigung {self.vertrag} durch {self.get_absender_display()}"
 
 
-class Abnahmeprotokoll(models.Model):
+class Abnahmeprotokoll(OrganisationAusKette):
+    ORGANISATION_PFAD = 'vertrag'
     """Wohnungsabnahme-Protokoll (Einzug/Auszug): Zustand Raum-für-Raum mit
     Mängeln, Verursacher-Zuordnung, Fotos, Zählerständen und Unterschriften."""
     TYP_CHOICES = [('einzug', 'Einzug / Übergabe'), ('auszug', 'Auszug / Rücknahme')]
@@ -834,7 +842,8 @@ class Abnahmeprotokoll(models.Model):
         return total
 
 
-class AbnahmeMangel(models.Model):
+class AbnahmeMangel(OrganisationAusKette):
+    ORGANISATION_PFAD = 'protokoll'
     """Einzelner Mangel im Abnahmeprotokoll, einem Raum + Verursacher zugeordnet.
     Kann mit einem Ausstattungselement (Raumbuch) verknüpft werden — dann fliesst
     die paritätische Lebensdauertabelle ein: der Mieter zahlt nur den Zeitwert-
