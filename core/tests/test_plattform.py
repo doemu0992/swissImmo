@@ -22,7 +22,7 @@ class AbonnementTests(TestCase):
             self.assertContains(r, name)
 
     def test_plan_waehlen_speichert(self):
-        Organisation.objects.create(firma='V AG')
+        _test_organisation(firma='V AG')
         team = _team_user()
         c = Client(); c.force_login(team)
         r = c.post('/neu/abonnement/', {'plan': 'premium'})
@@ -34,7 +34,7 @@ class AbonnementTests(TestCase):
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='B', plz='1', ort='X', versicherungswert=Decimal('1'))
         for i in range(100):
             Einheit.objects.create(liegenschaft=lg, bezeichnung=f'W{i}', typ='wohnung')
-        Organisation.objects.create(firma='V AG')
+        _test_organisation(firma='V AG')
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/abonnement/').content.decode()

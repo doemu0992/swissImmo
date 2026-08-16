@@ -368,6 +368,9 @@ class AbfrageSkalierungTests(TestCase):
     Änderung falsch), sondern das VERHALTEN: Wird die Datenmenge verdoppelt,
     darf die Zahl der Abfragen nur um eine kleine Konstante steigen.
     """
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _bestand(self, n, ab=0):
         """Legt n vollständige Vermietungen an (Liegenschaft, Objekt, Mieter,

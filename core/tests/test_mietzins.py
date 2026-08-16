@@ -16,7 +16,7 @@ class LikVertragTests(TestCase):
     def test_lik_context_basis_und_stand(self):
         from core.services.lik import vertrag_lik_context
         lg, e, m, v = _basis_objekte()
-        vw = Organisation.objects.create(firma='V AG', lik_basis='Dezember 2020',
+        vw = _test_organisation(firma='V AG', lik_basis='Dezember 2020',
                                        aktueller_lik_punkte=Decimal('107.1'),
                                        aktueller_lik_stand=date(2024, 8, 1))
         v.basis_lik_punkte = Decimal('106.3'); v.basis_lik_stand = date(2023, 5, 1); v.save()
@@ -28,7 +28,7 @@ class LikVertragTests(TestCase):
     def test_lik_context_fallback_auf_verwaltungsstand(self):
         from core.services.lik import vertrag_lik_context
         lg, e, m, v = _basis_objekte()
-        vw = Organisation.objects.create(firma='V AG', aktueller_lik_stand=date(2025, 3, 1))
+        vw = _test_organisation(firma='V AG', aktueller_lik_stand=date(2025, 3, 1))
         v.basis_lik_stand = None; v.save()
         ctx = vertrag_lik_context(v, vw)
         self.assertEqual(ctx['lik_stand_label'], 'März 2025')   # Fallback
@@ -36,7 +36,7 @@ class LikVertragTests(TestCase):
     def test_vertrag_pdf_enthaelt_basis_und_stand(self):
         from core.services.pdf_service import generate_vertrag_pdf_bytes
         lg, e, m, v = _basis_objekte()
-        Organisation.objects.create(firma='V AG', lik_basis='Dezember 2020', aktueller_lik_stand=date(2024, 8, 1))
+        _test_organisation(firma='V AG', lik_basis='Dezember 2020', aktueller_lik_stand=date(2024, 8, 1))
         v.basis_lik_punkte = Decimal('107.1'); v.basis_lik_stand = date(2024, 8, 1); v.save()
         pdf = generate_vertrag_pdf_bytes(v)
         self.assertTrue(pdf.startswith(b'%PDF'))
@@ -176,7 +176,7 @@ class MietzinsAnpassungLiveTests(TestCase):
 
     def _setup(self):
         from crm.models import Organisation
-        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
+        _test_organisation(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
         lg, e, m, v = _basis_objekte()
         v.basis_referenzzinssatz = Decimal('1.75')
         v.basis_lik_punkte = Decimal('100')
@@ -207,7 +207,7 @@ class MietzinsAnpassungSollmietzinsTests(TestCase):
     abgeleitet."""
 
     def _setup(self):
-        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
+        _test_organisation(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
         lg, e, m, v = _basis_objekte()
         v.basis_referenzzinssatz = Decimal('1.75')
         v.basis_lik_punkte = Decimal('100')
@@ -605,7 +605,7 @@ class MietzinsKonsistenzTests(TestCase):
     def test_mietzins_view_zeigt_effektive_werte(self):
         from crm.models import Organisation
         from rentals.models import MietzinsAnpassung
-        Organisation.objects.create(firma='VW', strasse='W 1', plz='8000', ort='Zürich',
+        _test_organisation(firma='VW', strasse='W 1', plz='8000', ort='Zürich',
                                   aktueller_referenzzinssatz=Decimal('1.25'),
                                   aktueller_lik_punkte=Decimal('107.1'))
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Mk 2', plz='8000', ort='Zürich',
@@ -656,6 +656,9 @@ class MietzinsKonsistenzTests(TestCase):
 class VertragMietzinsKomponentenTests(TestCase):
     """Datierte Mietzins-Komponenten am Verhältnis: Gratismonate/gestaffelter
     Start. Die Sollstellung greift pro Monat die gültige Komponente."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _setup(self):
         from finance.booking import ensure_kontenplan
@@ -768,6 +771,9 @@ class SollmietzinsSollstellungTests(TestCase):
     """Der datierte Objekt-Sollmietzins (Gratismonate/Rabatt direkt in der
     Sollmiete) treibt die Sollstellung automatisch pro Periode — für neue UND
     bestehende Verträge, ohne dass am Vertrag etwas erfasst werden muss."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _setup(self):
         from finance.booking import ensure_kontenplan
@@ -938,6 +944,9 @@ class VertragMietzinsRabattTests(TestCase):
     (voller Referenzertrag 3000/3020) + Rabatt als Ertragsminderung (3090),
     Debitor nettoiert auf den verrechneten Betrag. So bleiben Mieterspiegel
     und Bilanz auf dem echten Ertragspotenzial, während der Mieter 0 zahlt."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _setup(self):
         from finance.booking import ensure_kontenplan

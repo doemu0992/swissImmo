@@ -206,6 +206,21 @@ Dateiablage auf `organisation/<id>/`, die 18 Management-Commands über Organisat
 
 **Gate — und zugleich das Ende von Phase 2:** Alle Isolationstests grün. `mandanten-auditor` findet nichts.
 
+#### Schuld auf Zeit, die hier zu tilgen ist
+
+Etappe 5 hat dreimal an derselben Wand angehalten: **Code ausserhalb einer Anfrage hat keinen Mandantenkontext.** Statt sie dreimal zu umgehen, ist sie einmal benannt und mit einer klar begrenzten Übergangsregel überbrückt worden. Vor dem zweiten Mandanten muss beides weg.
+
+| Schuld | Wo | Warum sie entstand |
+|---|---|---|
+| **`organisation_oder_einzige()`** — Kontext, sonst die einzige Organisation, sonst Fehler | `core/organisation_kette.py`; genutzt von `finance/booking.py` und den drei Stammdaten-Modellen (`Buchungskonto`, `LieferantProfil`, `NebenkostenLernRegel`) | Der Kontenplan ist der Angelpunkt der Buchhaltung. Verlangt er ausnahmslos einen Kontext, ist **jeder** Pfad kontextabhängig, der etwas verbucht. Gemessen: **140 Fehlschläge in drei Testmodulen** |
+| **`TenantManager` nicht angebunden** | `core/tenancy.py`, Begründung dort im Code | Rückbezüge erben den Filter (`liegenschaft.einheiten`), und `update_or_create` liest, bevor es schreibt. Gemessen: 65 Fehlschläge in einem Block |
+| **Öffentliche Endpunkte ohne Kontext** | `core/views/fw/profil.py:774` (Portal-Feed prüft den Token gegen `Organisation.objects.first()`), Webhooks, öffentliche Formulare | Kein angemeldeter Benutzer, also keine Mitgliedschaft, also kein Kontext. Der Bezug muss aus dem Token bzw. dem adressierten Objekt kommen |
+| **Direkte `Buchungskonto`-Anlagen** | `core/services/automation.py:527`, `core/services/zahlungszuordnung.py:111`, `core/views/fw/bankabgleich.py:748`, `core/views/fw/buchhaltung.py:437`, `finance/admin.py:275` | dieselbe Ursache; sie gehen an `finance/booking.py` vorbei |
+
+**Warum die Übergangsregel kein Raten ist:** Mit genau **einer** Organisation kann daraus kein mandantenübergreifender Zugriff entstehen — es gibt kein „übergreifend". Sobald einer entstehen könnte, wird eine Ausnahme daraus. Dieselbe Regel wenden alle Datenmigrationen an (`crm/0034`, `portfolio/0037`, `finance/0036`): eine Organisation → zuordnen, mehrere → abbrechen. Innerhalb von `ohne_organisation()` weicht sie ausdrücklich **nicht** aus, sonst würde ausgerechnet der Block, der die Isolation belegen soll, stillschweigend etwas durchlassen.
+
+**Der Prüfstein für Etappe 6** ist damit einfach und hart: Sind alle vier Zeilen getilgt, lässt sich der `TenantManager` anbinden — und erst dann darf eine zweite Organisation angelegt werden.
+
 ---
 
 ## Parallelspur: 2FA

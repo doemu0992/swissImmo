@@ -3,7 +3,7 @@ siehe docs/ETAPPE-1-ZERLEGEN.md). 5 Klassen, unveraendert uebernommen."""
 from decimal import Decimal
 
 from django.test import TestCase, Client
-from ._helfer import _team_user, _basis_objekte, Eigentuemer, Organisation, Liegenschaft, User
+from ._helfer import _team_user, _basis_objekte, Eigentuemer, Organisation, Liegenschaft, User, _test_organisation
 
 
 
@@ -156,7 +156,7 @@ class AuftragPdfTests(TestCase):
     def test_auftrag_pdf(self):
         from tickets.models import SchadenMeldung, HandwerkerAuftrag
         from crm.models import Handwerker, Organisation
-        Organisation.objects.create(firma='Verwaltung AG', strasse='Weg 1', plz='8000', ort='Zürich',
+        _test_organisation(firma='Verwaltung AG', strasse='Weg 1', plz='8000', ort='Zürich',
                                   email='info@vw.ch', telefon='044 000 00 00')
         lg, e, m, v = _basis_objekte()
         hw = Handwerker.objects.create(firma='Sanitär AG', kontaktperson='H. Meier', email='hw@example.ch')

@@ -273,7 +273,7 @@ class ReferenzzinsSenkungTests(TestCase):
 
     def _setup(self, basis, aktuell):
         from crm.models import Organisation
-        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal(str(aktuell)))
+        _test_organisation(firma='V AG', aktueller_referenzzinssatz=Decimal(str(aktuell)))
         lg, e, m, v = _basis_objekte()
         v.basis_referenzzinssatz = Decimal(str(basis))
         v.mietzins_modell = 'fest'
@@ -508,7 +508,7 @@ class AnfechtungsfristTests(TestCase):
     def test_mietzinserhoehung_legt_anfechtungsfrist_an(self):
         from crm.models import Organisation
         from core.models import Pendenz
-        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
+        _test_organisation(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
         lg, e, m, v = _basis_objekte()   # netto 1500
         v.basis_referenzzinssatz = Decimal('1.75'); v.basis_lik_punkte = Decimal('100'); v.save()
         from rentals.services import naechster_anpassungstermin
@@ -933,7 +933,7 @@ class IndexMitteilungTests(TestCase):
 
     def test_anpassung_view_zeigt_index_banner(self):
         from crm.models import Organisation
-        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'),
+        _test_organisation(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'),
                                   aktueller_lik_punkte=Decimal('106.0'))
         v = self._index_vertrag()
         u = _team_user(); c = Client(); c.force_login(u)
@@ -1037,6 +1037,9 @@ class NachtN2JuristTests(TestCase):
 
 class RechtstexteITests(TestCase):
     """Live-Test I: Korrektheit der Rechtstexte/-verweise."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _text(self, pdf):
         import io

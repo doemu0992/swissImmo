@@ -162,6 +162,9 @@ def _seed_konten():
 
 class EigentuemerKontokorrentTests(TestCase):
     """Eigentümer-Kontokorrent: Ergebnis − Auszahlungen, korrekte Passiv-Buchung."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _setup(self):
         from crm.models import Eigentuemer
@@ -365,7 +368,7 @@ class MieterspiegelTests(TestCase):
 
     def test_pdf_pro_liegenschaft(self):
         from crm.models import Organisation
-        Organisation.objects.create(firma='VW AG', strasse='W 1', plz='8000', ort='ZH')
+        _test_organisation(firma='VW AG', strasse='W 1', plz='8000', ort='ZH')
         lg = self._setup()
         c = Client(); c.force_login(_team_user())
         r = c.get(f'/neu/mieterspiegel/?lg={lg.id}&pdf=1')
@@ -377,6 +380,9 @@ class MieterspiegelTests(TestCase):
 class RenditeGebaeudeTests(TestCase):
     """Rendite-Kennzahlen (Verkehrswert-Nenner), gebäudescharfe Betriebsrechnung
     und Leerstands-Zeitverlauf."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _konto(self, nummer, bez, typ):
         from finance.models import Buchungskonto

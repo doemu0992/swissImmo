@@ -59,6 +59,12 @@ class MwstEstvTests(TestCase):
 
 class BuchungsServiceTests(TestCase):
     """Zentrale Buchungsschicht: Kontenplan garantiert, kein stiller Verlust."""
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def test_ensure_und_konto_autocreate(self):
         from finance.booking import ensure_kontenplan, konto
@@ -169,6 +175,12 @@ class JournalStornoTests(TestCase):
 
 class VerwaltungshonorarTests(TestCase):
     """Verwaltungshonorar: % der Mieterträge, Buchung Soll 4500 / Haben Bank."""
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _setup(self, prozent='4'):
         from crm.models import Eigentuemer
@@ -407,6 +419,12 @@ class FinanzGuardTests(TestCase):
 
 class BuchhalterFixesTests(TestCase):
     """F2–F4 aus dem Buchhalter-Audit: korrekte Buchungssätze + Sackgassen-Fixes."""
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _saldo(self, nummer):
         """Saldo eines Kontos (Soll − Haben) über alle Buchungen."""
@@ -937,6 +955,12 @@ class ErfolgBilanzGruppiertTests(TestCase):
     herauskommen. Deshalb rechnet der Test unten dasselbe nochmals — naiv,
     Konto für Konto — und vergleicht Feld für Feld.
     """
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _daten(self):
         from finance.booking import ensure_kontenplan, buche, storniere_buchung
@@ -1037,7 +1061,8 @@ class ErfolgBilanzGruppiertTests(TestCase):
             return len(ctx.captured_queries)
         klein = messen()
         for i in range(10):
-            Buchungskonto.objects.create(nummer=f'89{i:02d}', bezeichnung=f'Test {i}', typ='aufwand')
+            Buchungskonto.objects.create(nummer=f'89{i:02d}', bezeichnung=f'Test {i}',
+                                        typ='aufwand', organisation=_test_organisation())
         gross = messen()
         self.assertLessEqual(gross, klein + 2,
                              f'zehn Konten mehr → {klein} statt {gross} Abfragen')
@@ -1052,11 +1077,25 @@ class BetragUeberlaufTests(TestCase):
     Liste ist danach für alle dauerhaft 500, nur per Roh-SQL zu reparieren.
     Ein einziger Tippfehler genügt. Ein pre_save-Signal fängt es ab.
     """
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _konten(self):
+        # `organisation` gehoert in die SUCHE, nicht in die Defaults: `nummer`
+        # ist seit Etappe 5 nur je Verwaltung eindeutig, und ohne den Bezug
+        # faende das get_or_create das Konto einer fremden.
         from finance.models import Buchungskonto
-        a, _ = Buchungskonto.objects.get_or_create(nummer='4000', defaults={'bezeichnung': 'Aufwand', 'typ': 'aufwand'})
-        b, _ = Buchungskonto.objects.get_or_create(nummer='1020', defaults={'bezeichnung': 'Bank', 'typ': 'bilanz'})
+        org = _test_organisation()
+        a, _ = Buchungskonto.objects.get_or_create(
+            nummer='4000', organisation=org,
+            defaults={'bezeichnung': 'Aufwand', 'typ': 'aufwand'})
+        b, _ = Buchungskonto.objects.get_or_create(
+            nummer='1020', organisation=org,
+            defaults={'bezeichnung': 'Bank', 'typ': 'bilanz'})
         return a, b
 
     def test_ueberlauf_wird_abgewiesen_kreditor(self):
@@ -1098,6 +1137,12 @@ class JahresabschlussH5H6Tests(TestCase):
         liess das Jahr halb geschlossen zurück; und der Storno («Storno …»)
         fiel aus dem Abschluss-Ausschlussfilter → verdoppelte den Ertrag.
     """
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _saldo(self, nummer):
         from finance.models import Buchung
@@ -1201,7 +1246,11 @@ class JahresabschlussH5H6Tests(TestCase):
         from core.services.jahresabschluss import ist_abgeschlossen
         from core.views.fw import _erfolg_bilanz
         ensure_kontenplan()
-        Organisation.objects.create(firma='Verwaltung AG', strasse='Weg 1', plz='8000', ort='Zürich')
+        # `_test_organisation(**felder)` statt `create`: Eine ZWEITE Organisation
+        # macht den Uebergangshelfer in `finance.booking` mehrdeutig — er
+        # verweigert dann die Auskunft, statt zu raten. Genau richtig; hier ist
+        # aber nur die eine Testverwaltung gemeint.
+        _test_organisation(firma='Verwaltung AG', strasse='Weg 1', plz='8000', ort='Zürich')
         lg, e, m, v = _basis_objekte()
         self._period_bookings(lg)
         c = Client(); c.force_login(_team_user('Verwaltung'))

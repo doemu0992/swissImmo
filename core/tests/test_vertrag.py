@@ -436,7 +436,7 @@ class VertragUnterschriftsblockTests(TestCase):
         from crm.models import Organisation
         from django.template.loader import get_template
         from django.utils import timezone
-        Organisation.objects.create(firma='Test Verwaltung', strasse='Weg 1',
+        _test_organisation(firma='Test Verwaltung', strasse='Weg 1',
                                   plz='8000', ort='Zürich')
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Musterweg 1', plz='8004', ort='Bern',
                                          versicherungswert=Decimal('1000000'))
@@ -918,7 +918,7 @@ class UnterschriftBriefeTests(TestCase):
         from crm.models import Organisation
         vw = Organisation.objects.first()
         if vw is None:
-            vw = Organisation.objects.create(firma='Testverwaltung', strasse='Weg 1',
+            vw = _test_organisation(firma='Testverwaltung', strasse='Weg 1',
                                            plz='4500', ort='Solothurn')
         if mit_unterschrift:
             vw.unterschrift_bild.save('sig.png', ContentFile(_sig_bytes()), save=True)

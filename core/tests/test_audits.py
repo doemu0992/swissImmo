@@ -13,6 +13,9 @@ from ._helfer import (_test_organisation,
 class PrueferFundeTests(TestCase):
     """Funde aus dem Herz-und-Nieren-Test durch Buchhalter + Immobilienvermarkter.
     Jeder Test sichert einen behobenen Fehler dauerhaft ab."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _camt(self, ref, betrag, acct_ref='BANKTX1'):
         return (
@@ -156,6 +159,9 @@ class PrueferFundeTests(TestCase):
 
 class PrueferRunde2Tests(TestCase):
     """Funde aus dem 2. Prüfdurchgang (Anwalt/Buchhalter/Bewirtschafter/Verwaltung)."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _req(self, rolle='Verwaltung'):
         from django.test import RequestFactory
@@ -468,6 +474,9 @@ class Paket4ProzesseTests(TestCase):
 
 class Paket4RestTests(TestCase):
     """Paket 4 Rest: Untermiete-Zustimmung, Versicherungsregister, Betriebskostenspiegel."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def test_untermiete_pdf(self):
         _lg, _e, _m, v = _basis_objekte()
@@ -517,6 +526,9 @@ class Paket4RestTests(TestCase):
 class QualitaetscheckFixTests(TestCase):
     """Fixes aus dem Abschluss-Qualitätscheck: cancel_umzug-Scoping,
     Betriebsrechnung ohne Doppelzählung von Erfolgsumbuchungen."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def test_betriebsrechnung_keine_doppelzaehlung_erfolgsumbuchung(self):
         from core.services.rendite import betriebsrechnung
@@ -546,6 +558,9 @@ class QualitaetscheckFixTests(TestCase):
 class NachtN1KritischeBugsTests(TestCase):
     """Nacht-Audit N1: Storno-Kette, Verzugszins-Delta, 266a-Klemme,
     269d-Zustellpuffer, Zusage-Idempotenz, Telefonsuche."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _konten(self):
         from finance.booking import ensure_kontenplan
@@ -732,7 +747,7 @@ class NachtN6BewirtschafterTests(TestCase):
 
     def _vertrag_mit_potenzial(self):
         from crm.models import Organisation
-        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.75'),
+        _test_organisation(firma='V AG', aktueller_referenzzinssatz=Decimal('1.75'),
                                   aktueller_lik_punkte=Decimal('100'))
         lg, e, m, v = _basis_objekte()   # netto 1500
         # Basis-Zins tiefer als aktuell → Erhöhungspotenzial (+2 Stufen à 3 %)
@@ -769,7 +784,7 @@ class NachtN6BewirtschafterTests(TestCase):
     def test_massenanpassung_ohne_basis_uebersprungen(self):
         from crm.models import Organisation
         from rentals.models import MietzinsAnpassung
-        Organisation.objects.create(firma='V AG', aktueller_referenzzinssatz=Decimal('1.75'))
+        _test_organisation(firma='V AG', aktueller_referenzzinssatz=Decimal('1.75'))
         lg, e, m, v = _basis_objekte()
         # Alt-/Importvertrag ohne Basisdaten (Modell-Default liefert sonst aktuelle Werte)
         v.basis_referenzzinssatz = Decimal('0'); v.basis_lik_punkte = Decimal('0'); v.save()
@@ -784,6 +799,9 @@ class NachtN6BewirtschafterTests(TestCase):
 class NachtN9BuchhalterTests(TestCase):
     """Nacht-Audit N9: Debitorenverluste (Konto 3805), Mieterkonto-Filter,
     konfigurierbares NK-Verwaltungshonorar."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def test_forderungsverlust_abschreiben(self):
         from finance.models import DebitorenRechnung, Zahlungseingang, Buchung
@@ -834,7 +852,7 @@ class NachtN9BuchhalterTests(TestCase):
         from finance.models import AbrechnungsPeriode, KreditorenRechnung, Buchungskonto
         from finance.booking import ensure_kontenplan
         ensure_kontenplan()
-        Organisation.objects.create(firma='V AG', strasse='X', plz='1', ort='Y',
+        _test_organisation(firma='V AG', strasse='X', plz='1', ort='Y',
                                   nk_honorar_prozent=Decimal(str(honorar_pct)))
         lg, e, m, v = _basis_objekte()
         p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='NK Test',
@@ -946,7 +964,7 @@ class ReviewNachbesserungTests(TestCase):
         from django.utils import timezone
         from crm.models import Organisation
         from core.utils import market_data
-        vw = Organisation.objects.create(firma='T AG', strasse='W 1', plz='3000', ort='Bern',
+        vw = _test_organisation(firma='T AG', strasse='W 1', plz='3000', ort='Bern',
                                        aktueller_referenzzinssatz=Decimal('1.25'))
         vw.letztes_update_marktdaten = None
         vw.save()

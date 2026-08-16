@@ -570,6 +570,12 @@ class DebitorVorschauTests(TestCase):
 class MoneyBugBatchTests(TestCase):
     """Geld-Funde aus «Komplet alles umsetzen» — jeder Test sichert eine
     korrekt ausgeglichene Buchung / Idempotenz dauerhaft ab."""
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _saldo(self, nummer):
         from finance.models import Buchung, Buchungskonto
@@ -712,6 +718,12 @@ class MoneyBugBatchTests(TestCase):
 class FinanzUIP5Tests(TestCase):
     """Fallen, die still Geld oder Arbeit kosten: der Tausender-Apostroph, eine
     Sollstellung über das falsche Portfolio, eine wirkungslose Paginierung."""
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _saldo(self, nummer):
         from finance.models import Buchung
@@ -1191,6 +1203,12 @@ class GeldKaestchenTests(TestCase):
       Kreditoren  «In Nebenkostenabrechnung einbeziehen» (3×) — entscheidet,
                   ob eine Rechnung den Mietern weiterverrechnet wird
     """
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _kaestchen_mit_breiter_klickflaeche(self):
         import re, pathlib
@@ -1288,6 +1306,12 @@ class DebitorenStatusETests(TestCase):
     - Mahngebühr wird mit der Hauptforderung mitstorniert.
     - Kein QR-Einzahlungsschein für eine nicht mehr offene Forderung.
     """
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _offene_rechnung(self, lg, v, betrag='1500.00', mit_buchung=True):
         from finance.models import DebitorenRechnung

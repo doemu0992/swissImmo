@@ -113,9 +113,21 @@ class KettenPfadTests(TestCase):
                     knoten = modell
                     for glied in pfad.split('__'):
                         feld = knoten._meta.get_field(glied)   # wirft bei Tippfehler
+                        # `one_to_one` MUSS mitgeprüft werden. Ein OneToOneField
+                        # hat `many_to_one == False`, ist aber genauso eine
+                        # einwertige Beziehung zum Träger.
+                        #
+                        # Derselbe blinde Fleck steckte zuerst im Skript, das die
+                        # Modelle in Gruppen einordnet: Es hielt
+                        # `finance.Erneuerungsfonds` für „kein Weg" (Gruppe A),
+                        # obwohl `liegenschaft` ein pflichtiges OneToOne ist —
+                        # also glattes Rezept C. Dass er hier ein zweites Mal
+                        # auftrat und dieser Test ihn gefunden hat, ist genau
+                        # sein Zweck.
                         self.assertTrue(
-                            feld.many_to_one,
-                            f'{knoten._meta.label}.{glied} ist kein Fremdschlüssel')
+                            feld.many_to_one or feld.one_to_one,
+                            f'{knoten._meta.label}.{glied} ist keine einwertige '
+                            f'Beziehung (weder ForeignKey noch OneToOneField)')
                         if einzelpfad:
                             # Ein EINZELNER Pfad muss pflichtig sein, sonst ist die
                             # Kette nicht geschlossen. Bei mehreren Alternativen ist
@@ -215,6 +227,9 @@ class AbleitungTests(TestCase):
         from portfolio.models import Lebensdauer
         from core.tenancy import organisation_kontext
 
+        # AUSDRUECKLICH eine zweite Verwaltung — nicht `_test_organisation()`,
+        # das ja gerade die vorhandene aktualisieren wuerde. Hier geht es darum,
+        # dass zwei nebeneinander bestehen koennen.
         andere = Organisation.objects.create(
             firma='Zweite AG', strasse='Nebenweg 2', plz='3000', ort='Bern')
 
@@ -236,6 +251,9 @@ class AbleitungTests(TestCase):
         danach aus der Kette überschreiben, wäre jede Korrektur von Hand
         wirkungslos.
         """
+        # AUSDRUECKLICH eine zweite Verwaltung — nicht `_test_organisation()`,
+        # das ja gerade die vorhandene aktualisieren wuerde. Hier geht es darum,
+        # dass zwei nebeneinander bestehen koennen.
         andere = Organisation.objects.create(
             firma='Zweite AG', strasse='Nebenweg 2', plz='3000', ort='Bern')
         einheit = Einheit(liegenschaft=self.liegenschaft, bezeichnung='2.5 Zi',

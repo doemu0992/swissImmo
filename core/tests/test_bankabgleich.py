@@ -287,6 +287,9 @@ class QrDecoderTests(TestCase):
 class BankAbgleichP3Tests(TestCase):
     """Ohne Belastungen, Auszugszeilen und Schlusssaldo ist ein Bankkonto
     strukturell nicht abstimmbar — genau das prüfen diese Tests."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _saldo(self, nummer):
         from finance.models import Buchung

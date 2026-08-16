@@ -128,10 +128,20 @@ def _basis_objekte():
 # hat sie gemeldet. Unveraendert uebernommen.
 
 def _seed_konten():
+    """Der Kontenplan der Test-Organisation.
+
+    Seit Etappe 5 (PR 6) gehoert ein Buchungskonto der Verwaltung: Konto 1020
+    «Bank» hat jede, und `nummer` ist nur noch JE ORGANISATION eindeutig. Das
+    `get_or_create` braucht den Bezug deshalb in der Suche, nicht bloss in den
+    Defaults — sonst faende es das Konto einer fremden Verwaltung und legte fuer
+    die eigene keines an.
+    """
     from finance.models import Buchungskonto
+    organisation = _test_organisation()
     for nr, bez, typ in [('1020', 'Bank', 'bilanz'), ('1100', 'Debitoren', 'bilanz'),
                          ('3000', 'Mietertrag', 'ertrag'), ('3020', 'NK-Akonto', 'ertrag')]:
-        Buchungskonto.objects.get_or_create(nummer=nr, defaults={'bezeichnung': bez, 'typ': typ})
+        Buchungskonto.objects.get_or_create(nummer=nr, organisation=organisation,
+                                            defaults={'bezeichnung': bez, 'typ': typ})
 
 
 _P3_CAMT = """<?xml version="1.0" encoding="UTF-8"?>

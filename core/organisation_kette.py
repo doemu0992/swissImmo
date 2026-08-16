@@ -64,6 +64,67 @@ def organisation_aus_kontext():
     return getattr(aktuelle_organisation(), 'pk', None)
 
 
+def organisation_oder_einzige(organisation=None):
+    """Übergangshelfer: Kontext, sonst die EINZIGE Organisation — sonst Fehler.
+
+    WARUM ES DEN GIBT, obwohl „im Zweifel raten" hier sonst verboten ist:
+
+    Der Kontenplan gehört seit Etappe 5 der Verwaltung. `finance/booking.py`
+    braucht deshalb bei jedem `konto('1020')` einen Bezug. Verlangt man dafür
+    ausnahmslos den Mandantenkontext, ist plötzlich **jeder** Pfad, der etwas
+    verbucht, kontextabhängig — Services, Management-Commands, Signale, Tests.
+    Gemessen am 16.08.2026: **140 Fehlschläge in nur drei Testmodulen**, mit
+    weiteren zu erwarten. Das ist dieselbe Form, die schon die Anbindung des
+    `TenantManager` zweimal gestoppt hat, und sie hat dieselbe Lösung: Der
+    Aufrufer muss den Kontext setzen, und das ist Etappe 6.
+
+    Bis dahin gilt hier eine Regel, die **kein Raten** ist:
+
+        Gibt es genau EINE Organisation, ist sie eindeutig gemeint.
+        Gibt es mehrere und keinen Kontext, ist es ein Fehler.
+
+    Mit einem einzigen Mandanten kann daraus kein mandantenübergreifender
+    Zugriff entstehen — es gibt kein „übergreifend". Und in dem Moment, in dem
+    einer entstehen könnte, wird daraus eine Ausnahme statt einer stillen
+    Fehlzuordnung. Genau dieselbe Regel wenden die Datenmigrationen an
+    (`crm/0034`, `portfolio/0037`, `finance/0036`): eine Organisation → zuordnen,
+    mehrere → abbrechen.
+
+    Das ist Schuld auf Zeit, keine Lösung. Sie steht in `docs/PHASE-2-PLAN.md`
+    unter Etappe 6 und muss dort getilgt werden, BEVOR der zweite Mandant
+    angelegt wird.
+    """
+    from core.tenancy import _kontextfrei, aktuelle_organisation
+    from crm.models import Organisation
+
+    if organisation is not None:
+        return organisation
+    aus_kontext = aktuelle_organisation()
+    if aus_kontext is not None:
+        return aus_kontext
+
+    # `ohne_organisation()` heisst AUSDRÜCKLICH kontextfrei — dort wird auch
+    # dann nicht ausgewichen, wenn es nur eine Organisation gibt. Sonst würde
+    # ausgerechnet der Block, der beweisen soll, dass ohne Kontext nichts geht,
+    # stillschweigend etwas gehen lassen.
+    if _kontextfrei.get():
+        raise ValueError(
+            'Ausdrücklich ohne Mandantenkontext (`ohne_organisation()`) — hier '
+            'wird auch nicht auf eine einzige vorhandene Organisation '
+            'ausgewichen.')
+
+    beiden = list(Organisation.objects.order_by('pk')[:2])
+    if len(beiden) == 1:
+        return beiden[0]
+    if not beiden:
+        raise ValueError(
+            'Kein Mandantenkontext und keine Organisation vorhanden. Ohne beides '
+            'ist nicht bestimmt, wem der Datensatz gehört.')
+    raise ValueError(
+        'Kein Mandantenkontext, aber mehrere Organisationen. Welche gemeint ist, '
+        'lässt sich nicht erraten — `with organisation_kontext(org):` setzen.')
+
+
 class OrganisationAusKette(models.Model):
     """Abstrakte Basis: trägt `organisation` und leitet sie beim Speichern ab.
 

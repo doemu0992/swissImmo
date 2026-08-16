@@ -742,7 +742,7 @@ class AusgehendeAufrufeTests(TestCase):
         from unittest import mock
         from django.utils import timezone
         from crm.models import Organisation
-        vw = Organisation.objects.first() or Organisation.objects.create(
+        vw = Organisation.objects.first() or _test_organisation(
             firma='Test AG', strasse='Weg 1', plz='3000', ort='Bern')
         vw.letztes_update_marktdaten = timezone.now()
         vw.save()
@@ -757,7 +757,7 @@ class AusgehendeAufrufeTests(TestCase):
         from unittest import mock
         from django.utils import timezone
         from crm.models import Organisation
-        vw = Organisation.objects.first() or Organisation.objects.create(
+        vw = Organisation.objects.first() or _test_organisation(
             firma='Test AG', strasse='Weg 1', plz='3000', ort='Bern')
         vw.letztes_update_marktdaten = timezone.now() - timedelta(days=5)
         vw.save()

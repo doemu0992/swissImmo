@@ -6,6 +6,7 @@ import logging
 from decimal import Decimal, InvalidOperation
 from django.conf import settings
 from django.db import models
+from core.organisation_kette import OrganisationAusKette, organisation_oder_einzige
 from django.utils import timezone
 from django.db.models import Sum
 
@@ -43,7 +44,15 @@ def pruefe_dezimalfelder(instance):
                 f"(maximal {grenze:,.0f}).".replace(',', "'"))
 
 class Buchungskonto(models.Model):
-    nummer = models.CharField("Kontonummer", max_length=10, unique=True)
+    # Stammdaten je Verwaltung (Rezept A). Der Skill `phase-2-migration` nennt
+    # genau diese Sorte als Normalfall — Buchungskonten, Lieferantenprofile,
+    # Vorlagen, Lernregeln baut jede Verwaltung neu auf. Kein Weg zur
+    # Liegenschaft, also aus dem Mandantenkontext wie bei `Liegenschaft` und
+    # `Lebensdauer`.
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+                                     editable=False, related_name='%(app_label)s_%(class)s',
+                                     verbose_name='Organisation')
+    nummer = models.CharField("Kontonummer", max_length=10)
     bezeichnung = models.CharField("Bezeichnung", max_length=100)
     # 'bilanz' = Bilanzkonto mit dynamischer Aktiv/Passiv-Zuordnung nach Saldo-Vorzeichen
     #   (korrekt für normale Konten: z.B. Bank im Minus = Passivum). 'aktiv'/'passiv'
@@ -73,6 +82,29 @@ class Buchungskonto(models.Model):
         verbose_name_plural = "Kontenplan"
         ordering = ['nummer']
         db_table = 'core_buchungskonto'
+        constraints = [
+            # `nummer` war global eindeutig. Ein Kontenplan gehoert aber der
+            # Verwaltung: Konto 1020 «Bank» hat jede, und keine darf der anderen
+            # die Nummer wegnehmen. Global waere schon das Einrichten der
+            # zweiten Verwaltung unmoeglich.
+            models.UniqueConstraint(fields=['organisation', 'nummer'],
+                                    name='uniq_konto_je_organisation'),
+        ]
+
+    def save(self, *args, **kwargs):
+        # `organisation_oder_einzige` statt des strengen `organisation_aus_kontext`
+        # wie bei `Liegenschaft`: Kontenplan, Lieferantenprofile und Lernregeln
+        # werden aus der Tiefe der Buchhaltung heraus angelegt — automation.py,
+        # zahlungszuordnung.py, bankabgleich.py, buchhaltung.py, admin.py —, und
+        # keiner dieser Pfade fuehrt heute einen Mandantenkontext. Sie umzustellen
+        # ist Etappe 6.
+        #
+        # Bei `Liegenschaft` und `Lebensdauer` bleibt es beim strengen Weg: Dort
+        # sind es wenige Schreibpfade, sie sind bereits versorgt, und der Anker
+        # der Mandantentrennung soll nicht ausweichen duerfen.
+        if self.organisation_id is None:
+            self.organisation_id = organisation_oder_einzige().pk
+        super().save(*args, **kwargs)
 
     def __str__(self): return f"{self.nummer} - {self.bezeichnung}"
 
@@ -84,7 +116,15 @@ class LieferantProfil(models.Model):
     Erfassung und KI-Scanner das Konto — und damit die HNK-Relevanz —
     automatisch vorbelegen. Wird bei jeder Kreditor-Freigabe fortgeschrieben.
     """
-    name_key = models.CharField("Namensschlüssel", max_length=200, unique=True)
+    # Stammdaten je Verwaltung (Rezept A). Der Skill `phase-2-migration` nennt
+    # genau diese Sorte als Normalfall — Buchungskonten, Lieferantenprofile,
+    # Vorlagen, Lernregeln baut jede Verwaltung neu auf. Kein Weg zur
+    # Liegenschaft, also aus dem Mandantenkontext wie bei `Liegenschaft` und
+    # `Lebensdauer`.
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+                                     editable=False, related_name='%(app_label)s_%(class)s',
+                                     verbose_name='Organisation')
+    name_key = models.CharField("Namensschlüssel", max_length=200)
     name_anzeige = models.CharField("Lieferant", max_length=200)
     standard_konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL,
                                        null=True, blank=True, related_name='lieferanten')
@@ -96,12 +136,35 @@ class LieferantProfil(models.Model):
         db_table = 'finance_lieferantprofil'
         ordering = ['name_anzeige']
         verbose_name = "Lieferantenprofil"
+        constraints = [
+            # War global eindeutig. Damit koennte Verwaltung B den Lieferanten
+            # «Muster AG» gar nicht lernen, weil A ihn schon hat — und bekaeme
+            # bei einem get_or_create DEREN Konto und IBAN vorgeschlagen.
+            models.UniqueConstraint(fields=['organisation', 'name_key'],
+                                    name='uniq_lieferant_je_organisation'),
+        ]
+
+    def save(self, *args, **kwargs):
+        # `organisation_oder_einzige` statt des strengen `organisation_aus_kontext`
+        # wie bei `Liegenschaft`: Kontenplan, Lieferantenprofile und Lernregeln
+        # werden aus der Tiefe der Buchhaltung heraus angelegt — automation.py,
+        # zahlungszuordnung.py, bankabgleich.py, buchhaltung.py, admin.py —, und
+        # keiner dieser Pfade fuehrt heute einen Mandantenkontext. Sie umzustellen
+        # ist Etappe 6.
+        #
+        # Bei `Liegenschaft` und `Lebensdauer` bleibt es beim strengen Weg: Dort
+        # sind es wenige Schreibpfade, sie sind bereits versorgt, und der Anker
+        # der Mandantentrennung soll nicht ausweichen duerfen.
+        if self.organisation_id is None:
+            self.organisation_id = organisation_oder_einzige().pk
+        super().save(*args, **kwargs)
 
     def __str__(self): return f"{self.name_anzeige} → {self.standard_konto or '—'}"
 
 
 # 🔥 NEU: Die doppelte Buchhaltung (Soll & Haben) mit Revisionssicherheit
-class Buchung(models.Model):
+class Buchung(OrganisationAusKette):
+    ORGANISATION_PFAD = 'soll_konto'
     datum = models.DateField(default=timezone.now)
     beleg_text = models.CharField(max_length=255)
 
@@ -123,8 +186,9 @@ class Buchung(models.Model):
     # Verweis der Gegenbuchung auf die ursprüngliche Buchung (Storno-Paar)
     storno_von = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
                                    related_name='stornierungen')
-    # Fortlaufende, lückenlose Belegnummer (OR 958f) — beim ersten Speichern vergeben
-    beleg_nr = models.PositiveIntegerField("Beleg-Nr", null=True, blank=True, unique=True)
+    # Fortlaufende, lückenlose Belegnummer (OR 958f) — beim ersten Speichern
+    # vergeben, seit Etappe 5 JE ORGANISATION (siehe `save()`).
+    beleg_nr = models.PositiveIntegerField("Beleg-Nr", null=True, blank=True)
 
     # Audit-Trail: wer hat diese Buchung ausgelöst (None = System/Migration)
     erstellt_von = models.ForeignKey(
@@ -137,10 +201,21 @@ class Buchung(models.Model):
 
     def save(self, *args, **kwargs):
         from django.db import IntegrityError, transaction
+
+        # Die Organisation MUSS vor allem Weiteren feststehen: Periodensperre
+        # und Belegnummer haengen beide an ihr, und beide laufen, BEVOR
+        # `OrganisationAusKette.save()` sie sonst ableiten wuerde.
+        if self.organisation_id is None:
+            self.organisation_id = self.organisation_aus_kette()
+
         # Periodensperre: neue Buchungen in einer abgeschlossenen Periode blockieren.
         if self._state.adding:
             from crm.models import Organisation
-            vw = Organisation.objects.first()
+            # Die Sperre der EIGENEN Verwaltung, nicht `Organisation.objects.first()`.
+            # Mit zwei Mandanten haette bisher der Abschluss von A die Buchungen
+            # von B blockiert — oder, schlimmer, B haette in eine abgeschlossene
+            # Periode buchen koennen, weil A noch offen war.
+            vw = Organisation.objects.filter(pk=self.organisation_id).first()
             sperre = vw.buchung_gesperrt_bis if vw else None
             if sperre and self.datum and self.datum <= sperre:
                 raise PermissionError(
@@ -148,14 +223,26 @@ class Buchung(models.Model):
                     f"(Datum {self.datum:%d.%m.%Y}). Bitte spätere Periode wählen."
                 )
             # Fortlaufende, EINDEUTIGE Belegnummer vergeben (lückenlos, OR 957a/958f).
-            # beleg_nr ist unique; bei Parallel-Buchungen (Postgres) kollidiert
+            # beleg_nr ist eindeutig; bei Parallel-Buchungen (Postgres) kollidiert
             # Max+1 → IntegrityError. Deshalb Retry: Nummer neu berechnen und den
             # Insert im Savepoint wiederholen (funktioniert auch verschachtelt in
             # einer äusseren transaction.atomic()).
+            #
+            # JE ORGANISATION, seit Etappe 5 — und das ist keine Formalie:
+            #
+            # Die Constraint allein genügt hier nicht, darauf weist der Skill
+            # `phase-2-migration` ausdrücklich hin. Zählte `Max` weiter global,
+            # bekäme die zweite Verwaltung als erste Buchung die Nummer 1051,
+            # weil die erste tausend Buchungen hat. Aus dieser Lücke liesse sich
+            # die Buchungsmenge eines fremden Mandanten ablesen — und eine
+            # Belegnummernfolge, die bei 1051 beginnt, ist nach OR 957a/958f
+            # ohnehin keine lückenlose mehr. Jede Verwaltung zählt bei 1.
             if self.beleg_nr is None:
                 last_exc = None
                 for _ in range(8):
-                    letzte = Buchung.objects.aggregate(m=models.Max('beleg_nr'))['m'] or 0
+                    letzte = (Buchung.objects
+                              .filter(organisation_id=self.organisation_id)
+                              .aggregate(m=models.Max('beleg_nr'))['m'] or 0)
                     self.beleg_nr = letzte + 1
                     try:
                         with transaction.atomic():
@@ -185,6 +272,13 @@ class Buchung(models.Model):
         verbose_name_plural = "Buchungen"
         ordering = ['-datum', '-id']
         db_table = 'core_buchung'
+        constraints = [
+            # War `unique=True` auf dem Feld, also global. Jede Verwaltung
+            # fuehrt ihre eigene Belegnummernfolge — siehe die Begruendung in
+            # `save()`, wo auch die VERGABE je Organisation zaehlt.
+            models.UniqueConstraint(fields=['organisation', 'beleg_nr'],
+                                    name='uniq_beleg_nr_je_organisation'),
+        ]
 
 
 # 🔥 NEU: Debitorenrechnungen (inkl. OP-Verwaltung)
@@ -497,7 +591,8 @@ class KreditorenZahlung(models.Model):
 # HNK ABRECHNUNG UND BELEGE
 # ========================================================
 
-class AbrechnungsPeriode(models.Model):
+class AbrechnungsPeriode(OrganisationAusKette):
+    ORGANISATION_PFAD = 'liegenschaft'
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='abrechnungen')
     bezeichnung = models.CharField("Titel", max_length=100)
     start_datum = models.DateField()
@@ -571,7 +666,15 @@ class AbrechnungsPeriode(models.Model):
         return Decimal(hgt.get(monat, 0)) / Decimal('100')
 
 class NebenkostenLernRegel(models.Model):
-    suchwort = models.CharField("Schlüsselwort (z.B. Firmenname)", max_length=100, unique=True)
+    # Stammdaten je Verwaltung (Rezept A). Der Skill `phase-2-migration` nennt
+    # genau diese Sorte als Normalfall — Buchungskonten, Lieferantenprofile,
+    # Vorlagen, Lernregeln baut jede Verwaltung neu auf. Kein Weg zur
+    # Liegenschaft, also aus dem Mandantenkontext wie bei `Liegenschaft` und
+    # `Lebensdauer`.
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+                                     editable=False, related_name='%(app_label)s_%(class)s',
+                                     verbose_name='Organisation')
+    suchwort = models.CharField("Schlüsselwort (z.B. Firmenname)", max_length=100)
     kategorie_zuweisung = models.CharField("Wird zugewiesen zu", max_length=50)
     treffer_quote = models.IntegerField("Erfolgreich angewendet", default=0)
 
@@ -579,10 +682,30 @@ class NebenkostenLernRegel(models.Model):
         verbose_name = "KI Lern-Regel"
         verbose_name_plural = "KI Lern-Regeln"
         db_table = 'core_nebenkostenlernregel'
+        constraints = [
+            models.UniqueConstraint(fields=['organisation', 'suchwort'],
+                                    name='uniq_lernregel_je_organisation'),
+        ]
+
+    def save(self, *args, **kwargs):
+        # `organisation_oder_einzige` statt des strengen `organisation_aus_kontext`
+        # wie bei `Liegenschaft`: Kontenplan, Lieferantenprofile und Lernregeln
+        # werden aus der Tiefe der Buchhaltung heraus angelegt — automation.py,
+        # zahlungszuordnung.py, bankabgleich.py, buchhaltung.py, admin.py —, und
+        # keiner dieser Pfade fuehrt heute einen Mandantenkontext. Sie umzustellen
+        # ist Etappe 6.
+        #
+        # Bei `Liegenschaft` und `Lebensdauer` bleibt es beim strengen Weg: Dort
+        # sind es wenige Schreibpfade, sie sind bereits versorgt, und der Anker
+        # der Mandantentrennung soll nicht ausweichen duerfen.
+        if self.organisation_id is None:
+            self.organisation_id = organisation_oder_einzige().pk
+        super().save(*args, **kwargs)
 
     def __str__(self): return f"'{self.suchwort}' -> {self.kategorie_zuweisung}"
 
-class NebenkostenBeleg(models.Model):
+class NebenkostenBeleg(OrganisationAusKette):
+    ORGANISATION_PFAD = 'periode'
     NK_KATEGORIE_CHOICES = [
         ('heizung', 'Heizung & Warmwasser'),
         ('wasser', 'Wasser / Abwasser'),
@@ -676,14 +799,16 @@ class NebenkostenBeleg(models.Model):
 
     def __str__(self): return f"{self.text or 'Beleg'} (CHF {self.betrag})"
 
-class Jahresabschluss(models.Model):
+class Jahresabschluss(OrganisationAusKette):
+    ORGANISATION_PFAD = 'liegenschaft'
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE)
     jahr = models.IntegerField(default=2026)
     notizen = models.TextField(blank=True, default='')
 
     class Meta: db_table = 'core_jahresabschluss'
 
-class MietzinsKontrolle(models.Model):
+class MietzinsKontrolle(OrganisationAusKette):
+    ORGANISATION_PFAD = 'liegenschaft'
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE)
     monat = models.DateField()
     notizen = models.TextField(blank=True, default='')
@@ -693,7 +818,8 @@ class MietzinsKontrolle(models.Model):
 # ============================================================
 # ANLAGENBUCHHALTUNG (lineare Abschreibung / AfA)
 # ============================================================
-class Anlage(models.Model):
+class Anlage(OrganisationAusKette):
+    ORGANISATION_PFAD = 'liegenschaft'
     """Anlagegut (z.B. Heizung, Lift, Küche) mit linearer Abschreibung.
     Jährliche AfA = Anschaffungswert / Nutzungsdauer (Jahre)."""
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='anlagen')
@@ -731,7 +857,8 @@ class Anlage(models.Model):
         return (self.anschaffungswert or Decimal('0')) - self.kumulierte_afa
 
 
-class Abschreibung(models.Model):
+class Abschreibung(OrganisationAusKette):
+    ORGANISATION_PFAD = 'anlage'
     """Ein AfA-Buchungsvorgang pro Anlage und Jahr (idempotent)."""
     anlage = models.ForeignKey(Anlage, on_delete=models.CASCADE, related_name='abschreibungen')
     jahr = models.PositiveIntegerField("Jahr")
@@ -749,7 +876,8 @@ class Abschreibung(models.Model):
         return f"AfA {self.jahr}: {self.anlage.bezeichnung} — CHF {self.betrag}"
 
 
-class Erneuerungsfonds(models.Model):
+class Erneuerungsfonds(OrganisationAusKette):
+    ORGANISATION_PFAD = 'liegenschaft'
     """Erneuerungsfonds / Rückstellung je Liegenschaft (STWEG-tauglich).
     Jährliche Einlage wird als Rückstellung gebucht."""
     liegenschaft = models.OneToOneField('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='erneuerungsfonds')
@@ -791,7 +919,8 @@ class EigentuemerAuszahlung(models.Model):
         return f"Auszahlung {self.eigentuemer_id} — CHF {self.betrag} ({self.datum})"
 
 
-class Hypothek(models.Model):
+class Hypothek(OrganisationAusKette):
+    ORGANISATION_PFAD = 'liegenschaft'
     """Hypothekartranche auf einer Liegenschaft (Fest/SARON/variabel).
     Grundlage für Zinskosten und Ablauf-/Refinanzierungsplanung."""
     TYP = [('fest', 'Festhypothek'), ('saron', 'SARON'), ('variabel', 'Variabel')]
@@ -821,7 +950,8 @@ class Hypothek(models.Model):
         return (self.betrag * self.zinssatz / Decimal('100')).quantize(Decimal('0.01'))
 
 
-class Kontoauszug(models.Model):
+class Kontoauszug(OrganisationAusKette):
+    ORGANISATION_PFAD = 'konto'
     """Ein importierter Bank-Kontoauszug mit seinem Schlusssaldo.
 
     Ohne den Schlusssaldo gibt es keinen Abstimmungsnachweis: Man kann zwar
@@ -853,7 +983,8 @@ class Kontoauszug(models.Model):
         return f"Auszug {self.konto.nummer} bis {self.bis or '?'}"
 
 
-class Bankbewegung(models.Model):
+class Bankbewegung(OrganisationAusKette):
+    ORGANISATION_PFAD = 'konto'
     """EINE Zeile eines Bank-Kontoauszugs — dauerhaft gespeichert.
 
     Bisher las der Import nur Gutschriften und warf sie nach der Zuordnung weg;
@@ -913,7 +1044,8 @@ class Bankbewegung(models.Model):
         return self.betrag < 0
 
 
-class ZahlerZuordnung(models.Model):
+class ZahlerZuordnung(OrganisationAusKette):
+    ORGANISATION_PFAD = 'vertrag'
     """Gelernte Zuordnung «Absendername → Mietvertrag».
 
     Zahlt jemand jeden Monat ohne QR-Referenz (Dauerauftrag eines Vereins, ein
@@ -926,7 +1058,7 @@ class ZahlerZuordnung(models.Model):
     damit Schreibweisen der Bank («Muster AG», «MUSTER  AG.») zusammenfallen.
     """
     name_norm = models.CharField("Absender (normalisiert)", max_length=160,
-                                 unique=True, db_index=True)
+                                 db_index=True)
     name_anzeige = models.CharField("Absender", max_length=160, blank=True, default='')
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.CASCADE,
                                 related_name='zahler_zuordnungen')
@@ -938,6 +1070,12 @@ class ZahlerZuordnung(models.Model):
         verbose_name = "Zahler-Zuordnung"
         verbose_name_plural = "Zahler-Zuordnungen"
         ordering = ['name_anzeige']
+        constraints = [
+            # War global eindeutig. Zwei Verwaltungen koennen denselben Absender
+            # haben — und muessen ihn auf ihren eigenen Vertrag zeigen lassen.
+            models.UniqueConstraint(fields=['organisation', 'name_norm'],
+                                    name='uniq_zahler_je_organisation'),
+        ]
 
     def __str__(self):
         return f"{self.name_anzeige or self.name_norm} → {self.vertrag_id}"

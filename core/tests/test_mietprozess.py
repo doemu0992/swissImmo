@@ -938,7 +938,7 @@ class BewerbungDatenschutzTests(TestCase):
 
     def test_datenschutzerklaerung_nennt_die_verwaltung_aus_den_stammdaten(self):
         """Kein zweiter Ort für Firma und Adresse, der veralten kann."""
-        # `_test_organisation(**felder)` statt `Organisation.objects.create(...)`:
+        # `_test_organisation(**felder)` statt `_test_organisation(...)`:
         # Seit die Liegenschaft im setUp eine Organisation braucht, gibt es
         # bereits eine — ein zweiter Datensatz waere nicht der, den die View
         # liest. Sie nimmt `Organisation.objects.first()`, und das ist die

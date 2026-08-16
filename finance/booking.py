@@ -59,13 +59,32 @@ STANDARD_KONTEN = [
 _STANDARD_MAP = {k[0]: k for k in STANDARD_KONTEN}
 
 
-def ensure_kontenplan():
+def _organisation(organisation=None):
+    """Die Verwaltung, deren Kontenplan gemeint ist.
+
+    Seit Etappe 5 gehoert ein Buchungskonto der Organisation, und `nummer` ist
+    nur noch JE ORGANISATION eindeutig. Jede Suche muss den Bezug deshalb
+    mitfuehren — sonst faende sie Konto 1020 einer fremden Verwaltung und buchte
+    darauf. Das waere kein Leseleck mehr, sondern ein fremder Buchungssatz in
+    fremden Buechern.
+
+    `organisation_oder_einzige` traegt das uebergangsweise: Kontext, sonst die
+    einzige vorhandene Organisation, sonst Fehler. Die Begruendung samt Messung
+    steht dort — hier genuegt, dass es Schuld auf Zeit ist und in Etappe 6
+    getilgt gehoert.
+    """
+    from core.organisation_kette import organisation_oder_einzige
+    return organisation_oder_einzige(organisation)
+
+
+def ensure_kontenplan(organisation=None):
     """Legt fehlende Standardkonten idempotent an. Gibt die Anzahl neu erstellter zurück."""
     from finance.models import Buchungskonto
+    organisation = _organisation(organisation)
     created = 0
     for nummer, bez, typ, hnk, vs in STANDARD_KONTEN:
         _, c = Buchungskonto.objects.get_or_create(
-            nummer=nummer,
+            nummer=nummer, organisation=organisation,
             defaults={'bezeichnung': bez, 'typ': typ, 'is_hnk_relevant': hnk,
                       'standard_verteilschluessel': vs})
         if c:
@@ -73,17 +92,19 @@ def ensure_kontenplan():
     return created
 
 
-def konto(nummer):
+def konto(nummer, organisation=None):
     """Holt ein Buchungskonto; legt ein bekanntes Standardkonto bei Bedarf nach.
     Wirft ValueError bei einer völlig unbekannten Kontonummer (statt stillem Skip)."""
     from finance.models import Buchungskonto
+    organisation = _organisation(organisation)
     nummer = str(nummer)
-    obj = Buchungskonto.objects.filter(nummer=nummer).first()
+    obj = Buchungskonto.objects.filter(nummer=nummer, organisation=organisation).first()
     if obj:
         return obj
     if nummer in _STANDARD_MAP:
         _, bez, typ, hnk, vs = _STANDARD_MAP[nummer]
-        return Buchungskonto.objects.create(nummer=nummer, bezeichnung=bez, typ=typ,
+        return Buchungskonto.objects.create(nummer=nummer, organisation=organisation,
+                                            bezeichnung=bez, typ=typ,
                                             is_hnk_relevant=hnk, standard_verteilschluessel=vs)
     raise ValueError(f"Unbekanntes Buchungskonto '{nummer}' — nicht im Standard-Kontenplan. "
                      "Bitte im Kontenplan anlegen.")

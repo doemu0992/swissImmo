@@ -70,7 +70,7 @@ class KreditorZahllaufTests(TestCase):
         from crm.models import Organisation
         from finance.models import KreditorenRechnung
         from finance.booking import konto as _k
-        Organisation.objects.create(firma='V AG', iban='CH9300762011623852957')
+        _test_organisation(firma='V AG', iban='CH9300762011623852957')
         lg, e, m, v = _basis_objekte()
         k = KreditorenRechnung.objects.create(
             lieferant='Elektro AG', betrag=Decimal('800'), status='freigegeben',
@@ -200,6 +200,12 @@ class LieferantenkontenTests(TestCase):
 class KIRechnungsscannerTests(TestCase):
     """KI-Rechnungsscanner in /neu/: Scan direkt beim Upload, Methode sichtbar,
     Werte korrigierbar. Ohne GROQ-Key läuft die regelbasierte Erkennung."""
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _text_pdf(self):
         import io
@@ -418,6 +424,12 @@ class HnkAutoAbleitungTests(TestCase):
     """NK-Relevanz der Kreditorenrechnung folgt automatisch dem Konto:
     HNK-Konto (4100–4140/4400) ⇒ Rechnung fliesst in die NK-Abrechnung —
     kein vergessenes Häkchen mehr. Checkbox kann zusätzlich aktivieren."""
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _konto(self, nummer):
         from finance.booking import konto
@@ -558,6 +570,12 @@ class HnkAutoAbleitungTests(TestCase):
 class LieferantStandardkontoTests(TestCase):
     """Lieferanten-Gedächtnis: Standardkonto wird bei Freigabe gelernt und bei
     Erfassung/Scan für denselben Lieferanten automatisch vorbelegt (inkl. HNK)."""
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _konten(self):
         from finance.booking import ensure_kontenplan
@@ -586,7 +604,7 @@ class LieferantStandardkontoTests(TestCase):
         from finance.booking import konto
         self._konten()
         # Vorgelernt: EWZ → 4130 (HNK-relevant)
-        LieferantProfil.objects.create(name_key='ewz', name_anzeige='EWZ AG',
+        LieferantProfil.objects.create(organisation=_test_organisation(), name_key='ewz', name_anzeige='EWZ AG',
                                        standard_konto=konto('4130'))
         c = Client(); c.force_login(_team_user())
         c.post('/neu/kreditoren/neu/', {'lieferant': 'EWZ', 'betrag': '99.00'})
@@ -599,7 +617,7 @@ class LieferantStandardkontoTests(TestCase):
         from finance.lieferanten import vorbelegen
         from finance.booking import konto
         self._konten()
-        LieferantProfil.objects.create(name_key='ewz', name_anzeige='EWZ',
+        LieferantProfil.objects.create(organisation=_test_organisation(), name_key='ewz', name_anzeige='EWZ',
                                        standard_konto=konto('4130'))
         k = KreditorenRechnung(lieferant='EWZ', betrag=Decimal('10'), konto=konto('4000'))
         self.assertFalse(vorbelegen(k))               # bereits zugeteilt → kein Override
@@ -609,6 +627,12 @@ class LieferantStandardkontoTests(TestCase):
 class KreditorSplitTests(TestCase):
     """Kostenaufteilung: eine Rechnung auf mehrere Konten/Objekte splitten;
     Freigabe bucht jede Position einzeln; Summe muss stimmen; hnk_betrag."""
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _konten(self):
         from finance.booking import ensure_kontenplan
@@ -671,6 +695,12 @@ class KreditorSplitTests(TestCase):
 
 class WeiterverrechnungVerteilenTests(TestCase):
     """Multi-Mieter-Weiterverrechnung nach Verteilschlüssel + HNK-Doppelschutz."""
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _konten(self):
         from finance.booking import ensure_kontenplan
@@ -725,6 +755,12 @@ class WeiterverrechnungVerteilenTests(TestCase):
 
 class KontoVorschlagLeistungTests(TestCase):
     """KI-Konto-Vorschlag (Kategorie/Schlüsselwort → Konto) + Leistungsperiode."""
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _konten(self):
         from finance.booking import ensure_kontenplan
@@ -750,7 +786,7 @@ class KontoVorschlagLeistungTests(TestCase):
         self.assertEqual(k.konto.nummer, '4100')
         self.assertTrue(k.is_hnk_relevant)
         # Gedächtnis hat Vorrang vor Kategorie
-        LieferantProfil.objects.create(name_key='neutrale firma', name_anzeige='Neutrale Firma',
+        LieferantProfil.objects.create(organisation=_test_organisation(), name_key='neutrale firma', name_anzeige='Neutrale Firma',
                                        standard_konto=konto('4000'))
         k2 = KreditorenRechnung(lieferant='Neutrale Firma', betrag=Decimal('50'))
         self.assertTrue(vorbelegen(k2, kategorie='heizung'))
@@ -782,6 +818,12 @@ class KontoVorschlagLeistungTests(TestCase):
 class WeiterverrechnungSplitKontoTests(TestCase):
     """Offener Punkt 2: Weiterverrechnung einer gesplitteten Rechnung nutzt das
     Konto der grössten Position als Aufwand-Gegenkonto (statt pauschal 4000)."""
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def test_aufwand_gegenkonto_aus_groesster_position(self):
         from finance.booking import ensure_kontenplan, konto
@@ -806,6 +848,12 @@ class WeiterverrechnungSplitKontoTests(TestCase):
 class KreditorenP4Tests(TestCase):
     """Eine Liste ohne Suche ist bei 300 Rechnungen keine Liste, und ein Zahllauf
     ohne Auswahl ist kein Zahllauf — beides Blocker aus dem Praxis-Audit."""
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _saldo(self, nummer):
         from finance.models import Buchung
@@ -831,7 +879,7 @@ class KreditorenP4Tests(TestCase):
         from crm.models import Organisation
         vw = Organisation.objects.first()
         if vw is None:
-            vw = Organisation.objects.create(firma='Testverwaltung')
+            vw = _test_organisation(firma='Testverwaltung')
         vw.iban = 'CH5604835012345678009'
         vw.save()
         return vw
@@ -999,7 +1047,8 @@ class KreditorenP4Tests(TestCase):
         from finance.models import Buchungskonto
         from finance.booking import ensure_kontenplan
         ensure_kontenplan()
-        Buchungskonto.objects.create(nummer='1021', bezeichnung='Bank 2', typ='aktiv')
+        Buchungskonto.objects.create(nummer='1021', bezeichnung='Bank 2', typ='aktiv',
+                                    organisation=_test_organisation())
         lg, e, m, v = _basis_objekte()
         krs = self._rechnungen(lg)
         c = Client(); c.force_login(_team_user())
@@ -1036,7 +1085,8 @@ class KreditorenP4Tests(TestCase):
         from finance.models import Buchungskonto, KreditorenZahlung
         from finance.booking import ensure_kontenplan
         ensure_kontenplan()
-        Buchungskonto.objects.create(nummer='1021', bezeichnung='Bank 2', typ='aktiv')
+        Buchungskonto.objects.create(nummer='1021', bezeichnung='Bank 2', typ='aktiv',
+                                    organisation=_test_organisation())
         lg, e, m, v = _basis_objekte()
         krs = self._rechnungen(lg)
         c = Client(); c.force_login(_team_user())
@@ -1061,6 +1111,12 @@ class ZahlungsverkehrH8H9Tests(TestCase):
         Und: nach einer Teilzahlung fiel die Rechnung aus dem Zahllauf-Vorschlag,
         der offene Rest wurde nie wieder vorgeschlagen.
     """
+    def setUp(self):
+        # Seit Etappe 5 (PR 6) gehoert der Kontenplan der Verwaltung. Diese
+        # Klasse bucht, ohne vorher eine anzulegen — dann ist nicht bestimmt,
+        # wessen Konto 1020 gemeint ist, und `finance.booking` sagt das auch.
+        _test_organisation()
+
 
     def _saldo(self, nummer):
         from finance.models import Buchung
