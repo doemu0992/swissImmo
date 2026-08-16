@@ -22,6 +22,10 @@
 #
 #     bash umzug_postgres.sh
 #
+# Die Datenbank selbst muss vorher bestehen — Django legt keine an. Dafür:
+#
+#     python postgres_anlegen.py --host <adresse> --port <port>
+#
 # Vorher gesetzt sein müssen (in DIESER Konsole):
 #     export DB_ENGINE=postgres
 #     export DB_NAME=swissimmo DB_USER=super DB_PASSWORD=...
@@ -100,23 +104,18 @@ fi
 # erste neue Datensatz kollidiert dann mit einer bestehenden ID. Der Fehler
 # tritt NICHT beim Umzug auf, sondern beim ersten Schreibzugriff danach — und
 # sieht dort aus wie ein Programmfehler, nicht wie ein Umzugsproblem.
+#
+# `sequenzen_richten` erzeugt dieselben Anweisungen wie `sqlsequencereset` und
+# fuehrt sie ueber Djangos eigene Verbindung aus. Der uebliche Weg waere
+# `sqlsequencereset | dbshell` — der startet aber das externe Programm `psql`.
+# Fehlt es auf dem Server, scheitert ausgerechnet dieser Schritt.
 echo "→ Sequenzen zurücksetzen"
-APPS=$("$PY" -c "
-import django, os
-os.environ.setdefault('DJANGO_SETTINGS_MODULE','swiss_immo.settings'); django.setup()
-from django.apps import apps
-print(' '.join(a.label for a in apps.get_app_configs()
-                if a.models_module is not None))
-")
-if ! "$PY" manage.py sqlsequencereset $APPS > "$STAND/sequenzen.sql"; then
-    echo "✗ sqlsequencereset fehlgeschlagen."; exit 1
-fi
-if ! "$PY" manage.py dbshell < "$STAND/sequenzen.sql"; then
+"$PY" manage.py sequenzen_richten --nur-zeigen > "$STAND/sequenzen.sql" 2>/dev/null || true
+if ! "$PY" manage.py sequenzen_richten; then
     echo "✗ Sequenzen konnten nicht gesetzt werden — NICHT in Betrieb nehmen."
     echo "  Ohne diesen Schritt kollidiert der erste neue Datensatz."
     exit 1
 fi
-echo "  $(grep -c setval "$STAND/sequenzen.sql") Sequenzen gesetzt"
 
 # --- 7. Nachzählen und vergleichen ----------------------------------------
 echo "→ Bestand auf Postgres gegen SQLite prüfen"

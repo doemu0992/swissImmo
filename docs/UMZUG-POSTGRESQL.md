@@ -26,7 +26,7 @@ Tausende Zeilen liegen. Alles funktioniert — bis jemand den ersten **neuen**
 Datensatz anlegt, dessen ID mit einem bestehenden kollidiert. Der Fehler tritt
 Tage später auf und sieht dort wie ein Programmfehler aus, nicht wie ein
 Umzugsproblem. `umzug_postgres.sh` behebt das in Schritt 6
-(`sqlsequencereset | dbshell`) und bricht ab, wenn der Schritt scheitert.
+(`manage.py sequenzen_richten`) und bricht ab, wenn der Schritt scheitert.
 
 **2. Die drei Umgebungen.** Auf PythonAnywhere hat **jeder** Prozess eigene
 Umgebungsvariablen:
@@ -51,32 +51,44 @@ Schritte macht der Betreiber selbst.
 Passwort für die Rolle `super` vergeben. Verbindungsdaten stehen auf derselben
 Seite (Adresse, Port).
 
-**2. Datenbank anlegen.** In einer Bash‑Konsole:
+**2. Datenbank anlegen.** Django kann das nicht selbst — `migrate` setzt
+voraus, dass die Datenbank schon da ist. In einer Bash-Konsole:
 
 ```bash
-psql -h <adresse> -p <port> -U super postgres
+workon myenv
+cd ~/swiss-manager
+python postgres_anlegen.py \
+    --host swissimmo-5420.postgres.pythonanywhere-services.com \
+    --port 15420
 ```
 
-Und dort:
+Das Skript fragt zuerst das Passwort von `super` ab, dann ein neues für die
+Anwendungs-Rolle. Es legt an:
+
+```
+Rolle     swissimmo_app   — die Anwendung läuft nicht als Superuser
+Datenbank swissimmo       — Eigentümerin ist swissimmo_app
+```
+
+Es ist wiederholbar: Was schon besteht, wird gemeldet und übersprungen; eine
+vorhandene Datenbank fasst es nicht an.
+
+> **Warum die Rolle Eigentümerin sein muss.** Seit PostgreSQL 15 darf eine
+> beliebige Rolle im Schema `public` nichts mehr anlegen. Wer die Datenbank dem
+> Superuser gibt und der Anwendung nur `GRANT ALL ON DATABASE`, bekommt beim
+> ersten `migrate` `permission denied for schema public` — eine Meldung, die
+> nach einem Django-Problem aussieht und keines ist. Als Eigentümerin hat die
+> Rolle das Recht ohne jeden zusätzlichen `GRANT`.
+
+Von Hand geht es genauso; das Skript nimmt nur die Fallstricke ab:
 
 ```sql
-CREATE DATABASE swissimmo ENCODING 'UTF8';
-
--- Für den laufenden Betrieb eine eigene Rolle, nicht der Superuser.
--- Der Superuser gehört zur Verwaltung, nicht in die Anwendung.
 CREATE ROLE swissimmo_app LOGIN PASSWORD '<gutes-passwort>';
-GRANT ALL PRIVILEGES ON DATABASE swissimmo TO swissimmo_app;
-\c swissimmo
-GRANT ALL ON SCHEMA public TO swissimmo_app;
-\q
+CREATE DATABASE swissimmo OWNER swissimmo_app ENCODING 'UTF8';
 ```
 
-> Der letzte `GRANT` ist seit PostgreSQL 15 nötig: Dort darf eine neue Rolle
-> im Schema `public` standardmässig **nicht** mehr anlegen. Ohne ihn scheitert
-> `migrate` mit `permission denied for schema public` — eine Meldung, die nach
-> einem Django‑Problem aussieht und keines ist.
-
-**3. Variablen setzen**, zunächst nur in der Konsole, in der der Umzug läuft:
+**3. Variablen setzen**, zunächst nur in der Konsole, in der der Umzug läuft —
+`postgres_anlegen.py` gibt diese Zeilen am Ende auch selbst aus:
 
 ```bash
 export DB_ENGINE=postgres
