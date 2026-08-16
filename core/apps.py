@@ -22,3 +22,13 @@ class CoreConfig(AppConfig):
 
         # Login-/Sicherheits-Ereignisse ins Logbuch schreiben.
         from core import signals  # noqa: F401
+
+        # Einmal beim Start: Passt das Schema zum Code? Wenn nicht, geht die
+        # Anwendung in den Wartungsmodus, statt auf jeder Seite einen
+        # Traceback zu zeigen (siehe docs/WARTUNGSSEITE.md).
+        #
+        # Hier und nicht in der Middleware, weil das sonst eine zusaetzliche
+        # Datenbankabfrage bei JEDEM Seitenaufruf waere — fuer einen Zustand,
+        # der sich zwischen zwei Anfragen nicht aendert.
+        from core.wartung import pruefe_migrationsstand
+        pruefe_migrationsstand()

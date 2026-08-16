@@ -137,6 +137,12 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # GANZ VORNE, direkt hinter der Sicherheits-Middleware: Passt das Schema
+    # nicht zum Code, darf keine der folgenden Schichten mehr laufen —
+    # Session und Authentifizierung lesen selbst aus der Datenbank und
+    # scheiterten an genau derselben fehlenden Tabelle. Die Wartungsseite
+    # braucht davon nichts (siehe docs/WARTUNGSSEITE.md).
+    'core.wartung.WartungsMiddleware',
     # Antworten komprimiert ausliefern. Die Listenseiten bestehen fast nur aus
     # sich wiederholendem Markup (Tailwind-Klassen, je Zeile eine Karte fürs
     # Handy UND eine Tabellenzeile für den PC) — das lässt sich hervorragend

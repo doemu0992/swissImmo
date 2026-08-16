@@ -41,7 +41,12 @@ if [ "${1:-}" = "--dauerlauf" ]; then
     done
 fi
 
-BRANCH="${1:-claude/fairwalter-rebuild}"
+# `main` ist seit Etappe 4 der Hauptzweig. Bis zum 16.08.2026 stand hier
+# `claude/fairwalter-rebuild` — solange beide auf denselben Commit zeigen,
+# faellt das nicht auf. Sobald sie auseinanderlaufen, deployt der Server den
+# falschen Stand UND meldet dabei Erfolg; das ist die unangenehmere Sorte
+# Fehler, weil nichts auf ihn hinweist.
+BRANCH="${1:-main}"
 
 # Eine Option, die diese Fassung nicht kennt, landete bisher als Branchname bei
 # `git fetch` — und git antwortete mit vierzig Zeilen Hilfetext, an deren Ende
@@ -359,6 +364,19 @@ fi
 # Webhook-Secrets: Die Endpunkte weisen ohne Secret ab (fail-closed). Wer eine
 # Integration bisher ohne Secret betrieben hat, verliert sonst lautlos den
 # Rücklauf — bei DocuSeal die Ablage unterschriebener Verträge.
+# Djangos eigene Produktionspruefung. Sie meldet unter anderem ein
+# eingeschaltetes DEBUG — am 15.08.2026 zeigte die Produktion eine vollstaendige
+# Fehlerseite mit Traceback, Dateipfaden und Python-Pfad, also stand die
+# Umgebungsvariable auf True. Auf einem oeffentlich erreichbaren System mit
+# Mieterdaten, Betreibungsauszuegen und Lohnausweisen ist das ein eigenes
+# Problem, unabhaengig vom damaligen Ausfall.
+#
+# Der Befund steht im Protokoll und bricht den Deploy NICHT ab: Er meldet auch
+# Dinge, die bewusst so sind, und ein Deploy, der an einer Empfehlung scheitert,
+# wird beim naechsten Mal umgangen.
+echo "→ manage.py check --deploy"
+"$PY" manage.py check --deploy || echo "⚠ check --deploy meldete Befunde (siehe oben)."
+
 echo "→ manage.py pruefe_webhook_secrets"
 "$PY" manage.py pruefe_webhook_secrets || true
 
