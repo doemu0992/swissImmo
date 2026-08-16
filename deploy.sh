@@ -75,14 +75,37 @@ if ! PY="$(finde_python)"; then
 fi
 [ "${PA_PY:-}" = "$PY" ] || echo "· Python: $PY"
 
-# Repo-Umzug abfangen: Remote fest auf die kanonische neue URL setzen.
+# ---------------------------------------------------------------------------
+# REMOTE AUF HTTPS ZWINGEN
+#
+# Zwei Gruende, historisch beide eingetreten:
+#
+# 1. Repo-Umzug — die alte URL zeigt ins Leere.
+# 2. SSH ohne Schluessel. Genau daran ist der Deploy am 12.08.2026 um 14:43
+#    gestorben und hat es danach nicht ein einziges Mal mehr geschafft:
+#
+#      git@github.com: Permission denied (publickey).
+#      fatal: Could not read from remote repository.
+#
+#    Der Always-on-Task lief weiter, holte aber nichts mehr. Weil `git fetch`
+#    der erste Befehl seiner &&-Kette war, blieb der Rest stumm — kein
+#    `migrate`, keine Meldung ausser dieser einen Zeile im Log.
+#
+# Das Repository ist oeffentlich, HTTPS braucht also keinerlei Anmeldung.
+# Deshalb wird die URL hier hart darauf gesetzt, statt auf einen Schluessel zu
+# hoffen, den im Zweifel niemand erneuert.
+# ---------------------------------------------------------------------------
 CANONICAL="https://github.com/doemu0992/swissImmo.git"
 CUR_URL="$(git remote get-url origin 2>/dev/null || echo '')"
 case "$CUR_URL" in
     *doemu0992/swissimmo*|*doemu0992/swissImmo*)
         if [ "$CUR_URL" != "$CANONICAL" ]; then
-            echo "→ Remote auf neue URL setzen ($CANONICAL)"
+            case "$CUR_URL" in
+                git@*|ssh://*) echo "→ Remote ist SSH ($CUR_URL) — auf HTTPS umstellen." ;;
+                *)             echo "→ Remote auf die kanonische URL setzen." ;;
+            esac
             git remote set-url origin "$CANONICAL" || true
+            echo "  jetzt: $CANONICAL"
         fi ;;
 esac
 

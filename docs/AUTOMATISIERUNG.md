@@ -125,7 +125,30 @@ while true; do cd ~/swiss-manager && git fetch -q origin … \
   && python manage.py migrate --noinput && … ; sleep 30; done
 ```
 
-Drei Fehler, die zusammen genau dieses Bild ergeben:
+**Der Auslöser lag vier Tage früher.** Das Always-on-Log zeigt es:
+
+| Zeitraum | Was im Log steht |
+|---|---|
+| Aug 10 – 12, 14:31 | Deploys laufen normal, letzter erfolgreicher Stand `f4f7e6f` |
+| ab Aug 12, 14:43 | `git@github.com: Permission denied (publickey).` |
+| bis Aug 13, 14:39 | dieselbe Meldung, immer wieder |
+| Aug 14 – 16 | **kein einziger Eintrag** |
+
+Der `origin`-Remote zeigte auf **SSH**, und der Schlüssel trug nicht mehr. Weil
+`git fetch` der **erste** Befehl der `&&`-Kette war, blieb danach alles stumm:
+kein `reset`, kein `migrate`, keine Meldung ausser dieser einen Zeile. Der Task
+lief weiter und tat nichts — vier Tage lang, ohne dass es auffiel.
+
+Dass trotzdem neuer Code auf der Produktion lag, heisst: Er kam nicht über
+diesen Task dorthin. Ein Deploy von Hand bringt den Code, aber nicht
+zwangsläufig die Migrationen — genau der Zustand, der die Startseite
+lahmlegte.
+
+`deploy.sh` setzt den Remote deshalb hart auf **HTTPS**. Das Repository ist
+öffentlich, HTTPS braucht also gar keine Anmeldung; auf einen Schlüssel zu
+hoffen, den im Zweifel niemand erneuert, ist die schlechtere Wette.
+
+Drei weitere Fehler kamen dazu:
 
 1. **`benutzer_uebernahme` fehlte.** `migrate` bricht auf einer
    Bestandsdatenbank deshalb mit `InconsistentMigrationHistory` ab — belegt
