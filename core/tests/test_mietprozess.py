@@ -938,9 +938,14 @@ class BewerbungDatenschutzTests(TestCase):
 
     def test_datenschutzerklaerung_nennt_die_verwaltung_aus_den_stammdaten(self):
         """Kein zweiter Ort für Firma und Adresse, der veralten kann."""
-        from crm.models import Organisation
-        Organisation.objects.create(firma='Muster Immobilien AG', strasse='Amtsweg 4',
-                                  plz='3011', ort='Bern')
+        # `_test_organisation(**felder)` statt `Organisation.objects.create(...)`:
+        # Seit die Liegenschaft im setUp eine Organisation braucht, gibt es
+        # bereits eine — ein zweiter Datensatz waere nicht der, den die View
+        # liest. Sie nimmt `Organisation.objects.first()`, und das ist die
+        # aeltere. Der Helfer aktualisiert deshalb die vorhandene, statt eine
+        # zweite anzulegen; genau dafuer nimmt er Felder entgegen.
+        _test_organisation(firma='Muster Immobilien AG', strasse='Amtsweg 4',
+                           plz='3011', ort='Bern')
         html = Client().get('/datenschutz/').content.decode()
         self.assertIn('Muster Immobilien AG', html)
         self.assertIn('3011', html)
