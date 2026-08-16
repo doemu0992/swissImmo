@@ -211,6 +211,54 @@ class KettenPfadTests(TestCase):
                     f'einen Weg.')
 
 
+class RueckfallBestandTests(TestCase):
+    """Wie viele Modelle weichen auf den Mandantenkontext aus — und welche.
+
+    WARUM DAS EIN TEST IST UND KEINE ZEILE IM DOKUMENT
+
+    `docs/PHASE-2-PLAN.md` nannte „vier Belegarten in `finance/models.py`". Das
+    stimmte, als es geschrieben wurde — in PR 7 gab es genau diese vier. PR 8
+    fügte `crm.Kommunikation` hinzu, PR 9 `core.Pendenz` und
+    `rentals.Dokument`, und die Tabelle wurde nicht nachgezogen. Wer in
+    Etappe 6 nach „vier" gesucht hätte, hätte drei stehen lassen — ausgerechnet
+    die beiden, die an Mieterdaten hängen.
+
+    Eine Zahl in einem Dokument veraltet, sobald jemand anderswo etwas
+    hinzufügt. Ein Test veraltet nicht: Er schlägt fehl.
+
+    Beim Tilgen in Etappe 6.3 zählt er rückwärts. Ist die Liste leer, gehört
+    das Attribut `ORGANISATION_RUECKFALL` selbst entfernt — und mit ihm dieser
+    Test.
+
+    Und `grep` genügt hier nicht: Das Attribut wird vererbt. Nur die Registry
+    sagt, welches konkrete Modell tatsächlich ausweicht.
+    """
+
+    #: Stand nach Etappe 5. Beim Tilgen in 6.3 schrumpft diese Liste.
+    ERWARTET = {
+        'core.Pendenz',
+        'crm.Kommunikation',
+        'rentals.Dokument',
+        'finance.DebitorenRechnung',
+        'finance.Zahlungseingang',
+        'finance.Mahnung',
+        'finance.KreditorenRechnung',
+    }
+
+    def test_genau_diese_modelle_weichen_aus(self):
+        tatsaechlich = {m._meta.label for m in _kettenmodelle()
+                        if m.ORGANISATION_RUECKFALL}
+        self.assertEqual(
+            tatsaechlich, self.ERWARTET,
+            'Die Liste der Modelle mit ORGANISATION_RUECKFALL hat sich geändert.\n'
+            f'  neu dazugekommen: {sorted(tatsaechlich - self.ERWARTET) or "—"}\n'
+            f'  weggefallen:      {sorted(self.ERWARTET - tatsaechlich) or "—"}\n'
+            'Neu dazugekommen heisst: ERWARTET hier UND die Schuldentabelle in '
+            'docs/PHASE-2-PLAN.md nachziehen. Weggefallen heisst: getilgt — dann '
+            'gehört es aus beiden Listen raus. Ist die Liste leer, gehört das '
+            'Attribut selbst entfernt, nicht auf False gesetzt.')
+
+
 class VorlagenAusnahmeTests(TestCase):
     """`crm.Vorlage` ist die einzige Stelle, an der `NULL` etwas BEDEUTET.
 
