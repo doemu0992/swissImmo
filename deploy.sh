@@ -30,15 +30,56 @@ case "$CUR_URL" in
         fi ;;
 esac
 
+# Trägt dieser Python überhaupt das Projekt? Ein Scheduled Task startet ohne
+# aktiviertes virtualenv; ein blosses `python` ist dann der System-Python, in
+# dem Django fehlt. Der Deploy holt trotzdem den neuen Code, `migrate`
+# scheitert, es wird nicht neu geladen — und beim nächsten Worker-Neustart
+# läuft neuer Code gegen ein altes Schema. Deshalb VOR dem `reset --hard`
+# fragen, solange ein Abbruch noch folgenlos ist.
+if ! "$PY" -c "import django" 2>/dev/null; then
+    echo "✗ '$PY' kann Django nicht importieren — Abbruch, BEVOR etwas angefasst wird."
+    echo "  Im Scheduled Task den Python des virtualenv angeben, z.B.:"
+    echo "  PA_PY=\$HOME/.virtualenvs/myenv/bin/python bash deploy.sh"
+    exit 1
+fi
+
 echo "→ git fetch origin $BRANCH"
 if ! git fetch origin "$BRANCH"; then
     echo "✗ git fetch fehlgeschlagen — Abbruch (alte Version bleibt aktiv)."; exit 1
 fi
 
+# Stand VOR dem Umschalten merken. Er wird gebraucht, wenn die Migration
+# scheitert — siehe `zurueckrollen` unten.
+VORHER_COMMIT="$(git rev-parse HEAD)"
+
 echo "→ git reset --hard origin/$BRANCH"
 git reset --hard "origin/$BRANCH" || { echo "✗ reset fehlgeschlagen."; exit 1; }
 DEPLOY_COMMIT="$(git rev-parse --short HEAD)"
 echo "  jetzt auf Commit $DEPLOY_COMMIT"
+
+# ---------------------------------------------------------------------------
+# WARUM DER CODE ZURUECKGEROLLT WIRD, WENN DIE MIGRATION SCHEITERT
+#
+# Die frühere Fassung sagte: „bei gescheiterter Migration wird NICHT neu
+# geladen — die alte Version bleibt aktiv." Das stimmte nur für den laufenden
+# Prozess. Auf der Platte lag nach `git reset --hard` bereits der NEUE Code.
+# Sobald der Hoster seinen Worker recycelt — und das tut er von sich aus —
+# lädt er den neuen Code gegen das ALTE Schema.
+#
+# Real passiert am 16.08.2026: `no such table: crm_mitgliedschaft` auf der
+# Startseite, obwohl kein Reload angestossen wurde.
+#
+# Deshalb: Scheitert ein Schritt, der die Datenbank braucht, geht der Code auf
+# den vorherigen Stand zurück. Damit passen Platte und Datenbank wieder
+# zusammen, und die Zusicherung stimmt auch über einen Worker-Neustart hinweg.
+# ---------------------------------------------------------------------------
+zurueckrollen() {
+    echo "✗ $1"
+    echo "→ Code zurück auf $(git rev-parse --short "$VORHER_COMMIT") — sonst laedt der"
+    echo "  naechste Worker-Neustart neuen Code gegen ein altes Schema."
+    git reset --hard "$VORHER_COMMIT" || echo "⚠ Rueckrollen fehlgeschlagen — VON HAND pruefen!"
+    exit 1
+}
 
 echo "→ pip install -r requirements.txt"
 "$PY" -m pip install -q -r requirements.txt || echo "⚠ pip install meldete Fehler — fahre fort."
@@ -52,23 +93,26 @@ echo "→ pip install -r requirements.txt"
 # Der Command ist idempotent: Er tut genau einmal etwas und ist danach (und auf
 # jeder frischen Datenbank) ein Leerlauf.
 #
-# Einschränkung, die für DIESEN einen Umschalt-Deploy gilt: Weiter unten steht
-# "bei gescheiterter Migration bleibt die alte Version aktiv". Das galt
-# uneingeschränkt, solange `migrate` an der Konsistenzprüfung abbrach, BEVOR es
-# die Datenbank anfasste. Jetzt läuft die Übernahme davor. Gelingt sie und
-# scheitert `migrate` danach, sind die zwei Spalten bereits umbenannt und der
-# noch laufende alte WSGI-Prozess liest gegen ein Schema, das er nicht kennt —
-# "alte Version bleibt aktiv" heisst dann "alte Version liefert 500", bis der
-# nächste Deploy durchläuft. Scheitert dagegen die Übernahme selbst, ist die
-# Datenbank unberührt und die Zusicherung gilt wie zuvor.
+# Scheitert die Übernahme, ist die Datenbank unberührt und `zurueckrollen`
+# stellt den alten Code wieder her.
 echo "→ manage.py benutzer_uebernahme"
 if ! "$PY" manage.py benutzer_uebernahme; then
-    echo "✗ Benutzer-Übernahme fehlgeschlagen — KEIN Reload (alte Version bleibt aktiv)."; exit 1
+    zurueckrollen "Benutzer-Übernahme fehlgeschlagen — KEIN Reload."
 fi
 
 echo "→ manage.py migrate"
 if ! "$PY" manage.py migrate --noinput; then
-    echo "✗ migrate fehlgeschlagen — KEIN Reload (alte Version bleibt aktiv)."; exit 1
+    zurueckrollen "migrate fehlgeschlagen — KEIN Reload."
+fi
+
+# Absicherung gegen den Fall, der am 16.08.2026 die Startseite lahmlegte: Der
+# Deploy meldete Erfolg, aber `migrate` war gar nicht gelaufen (falscher
+# Python, kein Django im Pfad). `showmigrations --plan` listet dann offene
+# Schritte. Ein Deploy, der ausstehende Migrationen zurücklaesst, darf nicht
+# neu laden.
+OFFEN="$("$PY" manage.py showmigrations --plan 2>/dev/null | grep -c "^\[ \]" || true)"
+if [ "${OFFEN:-0}" -gt 0 ]; then
+    zurueckrollen "$OFFEN Migration(en) nicht angewendet, obwohl migrate durchlief."
 fi
 
 echo "→ manage.py collectstatic"

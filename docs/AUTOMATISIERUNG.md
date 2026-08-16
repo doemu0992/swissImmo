@@ -66,6 +66,42 @@ ihn zurück, `--trocken` zeigt nur an.
 Die Zusicherung oben gilt damit unverändert: Es gibt weiterhin keinen Schritt,
 den jemand von Hand nachziehen müsste.
 
+### Was am 16.08.2026 schiefging — und was daraus folgt
+
+Die Startseite antwortete mit `OperationalError: no such table:
+crm_mitgliedschaft`. Der neue Code war live, die Migrationen waren es nicht.
+
+Der Grund liegt in der Reihenfolge, nicht in den Migrationen (die Sequenz
+`benutzer_uebernahme` → `migrate` läuft aus dem Ausgangszustand sauber durch,
+nachgespielt auf einer Kopie). `deploy.sh` holt den Code mit `git reset --hard`
+**vor** der Migration. Scheitert die Migration, wird zwar nicht neu geladen —
+aber auf der Platte liegt bereits der neue Code. Sobald der Hoster seinen
+Worker von sich aus recycelt, lädt er ihn gegen das alte Schema.
+
+**„Die alte Version bleibt aktiv" galt also nur für den laufenden Prozess,
+nicht über einen Worker-Neustart hinweg.** Drei Änderungen schliessen das:
+
+1. **Django-Prüfung vor dem ersten Eingriff.** Ein Scheduled Task startet ohne
+   aktiviertes virtualenv; ein blosses `python` ist dann der System-Python, in
+   dem Django fehlt. Das wird jetzt gefragt, solange ein Abbruch folgenlos ist.
+   Im Task deshalb den venv-Python angeben:
+   `PA_PY=$HOME/.virtualenvs/myenv/bin/python bash deploy.sh`
+2. **Rückrollen des Codes**, wenn Übernahme oder Migration scheitern. Danach
+   passen Platte und Datenbank wieder zusammen — auch für den nächsten
+   Worker-Neustart.
+3. **Nachkontrolle**: `showmigrations --plan` nach dem `migrate`. Bleiben
+   offene Schritte, obwohl der Befehl durchlief, wird ebenfalls
+   zurückgerollt und nicht neu geladen.
+
+**Wiederherstellung von Hand**, falls es doch einmal auftritt:
+
+```bash
+cd ~/swiss-manager
+~/.virtualenvs/myenv/bin/python manage.py benutzer_uebernahme
+~/.virtualenvs/myenv/bin/python manage.py migrate
+# danach die Web-App im Web-Tab neu laden
+```
+
 Welcher Stand gerade läuft: <https://swissimmo.pythonanywhere.com/version/>
 
 ### Media-Schutz-Prüfung am Ende jedes Deploys
