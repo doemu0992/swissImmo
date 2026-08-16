@@ -24,9 +24,16 @@ for f in m._meta.concrete_fields:
 
 | Gruppe | Kriterium | Weg | Anzahl im Bestand |
 |---|---|---|---|
-| **C** | geschlossene Pflicht-Kette zur Liegenschaft | Rezept C — denormalisierte Spalte, aus der Kette befüllt | 34 |
-| **B** | Weg existiert, aber über `null=True` | Rezept B — Spalte, Bestand nachziehen, Kette pflichtig machen | 15 |
-| **A** | kein Weg | Rezept A — fachliche Entscheidung, dann Spalte | 14 |
+| **C** | geschlossene Pflicht-Kette zur Liegenschaft | Rezept C — denormalisierte Spalte, aus der Kette befüllt | 32 |
+| **B** | Weg existiert, aber über `null=True` | Rezept B — Spalte, Bestand nachziehen, Kette pflichtig machen | 16 |
+| **A** | kein Weg | Rezept A — fachliche Entscheidung, dann Spalte | 15 |
+
+> **Die Zahlen sind am 16.08.2026 nachgemessen** (Etappe 5, PR 1) und weichen von
+> der Analyse ab, die 63 Modelle in 34/15/14 nannte. Gezählt sind **65** eigene
+> konkrete Modelle, davon zwei bereits fertig (`portfolio.Liegenschaft`,
+> `crm.Mitgliedschaft`). Von den 15 in Gruppe A brauchen zwei **keine** Spalte:
+> `crm.Organisation` ist der Mandant selbst, `benutzer.Benutzer` hängt über
+> `Mitgliedschaft` (n:m) daran. Es bleiben **13 fachliche Entscheide**, nicht 14.
 
 Gruppe A umfasst unter anderem `crm.Verwaltung`, `crm.Eigentuemer`, `crm.Mieter`, `crm.Handwerker`, `crm.Vorlage`, `finance.Buchungskonto`, `finance.LieferantProfil`, `finance.NebenkostenLernRegel`, `finance.Kontoauszug`, `finance.EigentuemerAuszahlung`, `finance.Erneuerungsfonds`, `portfolio.Lebensdauer`, `core.AktivitaetsLog`.
 
@@ -41,7 +48,7 @@ Drei getrennte Migrationen, in dieser Reihenfolge:
 migrations.AddField(
     model_name='buchung',
     name='organisation',
-    field=models.ForeignKey('core.Organisation', on_delete=models.CASCADE,
+    field=models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
                             null=True, related_name='buchungen'),
 )
 ```

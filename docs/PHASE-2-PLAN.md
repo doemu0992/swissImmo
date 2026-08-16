@@ -194,7 +194,11 @@ Sieben PRs, einer je App. Agent: `migrations-handwerker`, Rezepte im Skill `phas
 
 Zwei Stellen zum Anhalten: Gruppe B mit Waisen (Bestandsdatensätze ohne Weg zur Liegenschaft) und Gruppe A generell — beides fachliche Entscheide, keine technischen.
 
-**Gate:** Alle 63 Modelle mit Bezug, `null=False`. Sechs globale Unique-Constraints umgebaut. `makemigrations --check` leer.
+**Gate:** Alle **65** Modelle mit Bezug, `null=False` — ausser `crm.Organisation` (ist der Mandant) und `benutzer.Benutzer` (hängt über `Mitgliedschaft` daran). Sechs globale Unique-Constraints umgebaut. `makemigrations --check` leer.
+
+**Nachgemessen am 16.08.2026 (PR 1).** Die Analyse nannte 63 Modelle in den Gruppen 34/15/14; gezählt sind es **65** in **32/16/15**, plus zwei bereits fertige. Die Gruppengrenzen wurden über die Fremdschlüssel bestimmt, nicht über eine Textsuche — dieselbe Korrektur wie schon bei den Migrationszahlen (13 statt 16) und den `Mandant`-Vorkommen (623 statt 160).
+
+**PR 1 (portfolio) erledigt am 16.08.2026.** Zwölf Modelle der Gruppe C, plus der Anker: `Liegenschaft.organisation` war `null=True, SET_NULL` und damit als Anker wertlos — eine Kette ist nur so pflichtig wie ihr schwächstes Glied. Jetzt `null=False, CASCADE`. Der Bezug wird **abgeleitet**, nicht eingegeben (`core/organisation_kette.py`): Als gewöhnliches Pflichtfeld müsste ihn jeder der hunderten Schreibpfade mitgeben — die Bauform, die 4.2 mit 922 roten Tests beendet hat. **1'101 Tests grün.** Offen in portfolio: Gruppe B (`Dokument`, `Geraet`, `Zaehler`, `ZaehlerStand` — braucht die Waisen-Zahlen der Produktion) und `Lebensdauer` (Gruppe A, fachlicher Entscheid).
 
 ### Etappe 6 — Alles, was den Prozess verlässt
 
@@ -218,7 +222,7 @@ Sinnvoll nach Etappe 3, weil sie am User Model hängt.
 
 **Agenten, die überzeugende Filter schreiben, die nicht isolieren.** Deshalb Etappe 2 vor Etappe 3, und deshalb ist der `mandanten-auditor` an jedem Gate Pflicht — auch wenn es lästig ist.
 
-**Etappe 5 als Fleissarbeit missverstehen.** 29 der 63 Modelle brauchen eine fachliche Entscheidung, keine Migration. Wer sie durchwinkt, löscht entweder Kundendaten oder legt sie offen.
+**Etappe 5 als Fleissarbeit missverstehen.** 31 der 65 Modelle brauchen eine fachliche Entscheidung, keine Migration. Wer sie durchwinkt, löscht entweder Kundendaten oder legt sie offen.
 
 **PostgreSQL-Wechsel zu spät.** SQLite trägt gleichzeitige Schreibzugriffe mehrerer Mandanten nicht. Der Wechsel (P1.4) gehört spätestens zwischen Etappe 4 und 5, besser früher. Der Treiber ist seit P0.5 vorhanden (`psycopg[binary]` in `requirements.txt`) — es fehlt nur noch der Umzug selbst.
 
