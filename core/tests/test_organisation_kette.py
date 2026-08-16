@@ -211,6 +211,55 @@ class KettenPfadTests(TestCase):
                     f'einen Weg.')
 
 
+class VorlagenAusnahmeTests(TestCase):
+    """`crm.Vorlage` ist die einzige Stelle, an der `NULL` etwas BEDEUTET.
+
+    Überall sonst gilt Regel 1 des Skills `mandantentrennung`: Ein Datensatz
+    ohne Organisation gehört niemandem und ist damit für jeden sichtbar. Hier
+    ist genau das die Absicht — eine mitgelieferte Systemvorlage soll jede
+    Verwaltung sehen.
+
+    Diese Tests halten die Ausnahme fest, damit sie beim nächsten Audit nicht
+    als Versäumnis gilt und niemand sie „aufräumt". Und sie halten den Preis
+    fest: Wer nur `organisation=org` fragt, sieht die Systemvorlagen nicht.
+    """
+
+    def test_organisation_ist_nullbar_und_das_ist_gewollt(self):
+        from crm.models import Vorlage
+        feld = Vorlage._meta.get_field('organisation')
+        self.assertTrue(
+            feld.null,
+            'Vorlage.organisation muss nullbar bleiben: NULL = mitgelieferte '
+            'Systemvorlage. Ohne die Unterscheidung bekäme jede neue Verwaltung '
+            'alle Standardvorlagen kopiert, und eine Korrektur am Original '
+            'erreichte keine von ihnen mehr.')
+
+    def test_eine_reine_organisationsabfrage_sieht_systemvorlagen_nicht(self):
+        """Der Preis der Ausnahme, als Test statt als Kommentar.
+
+        Sechs Lesestellen im Bestand fragen heute ungefiltert (siehe
+        `docs/PHASE-2-PLAN.md`, Etappe 6). Sobald gefiltert wird, brauchen sie
+        `Q(organisation=org) | Q(organisation__isnull=True)` — sonst
+        verschwinden die Systemvorlagen lautlos aus der Oberfläche.
+        """
+        from django.db.models import Q
+        from crm.models import Vorlage
+
+        organisation = _test_organisation()
+        Vorlage.objects.create(name='System', kategorie='ticket_eingang',
+                               betreff='S', inhalt='S')          # organisation = NULL
+        Vorlage.objects.create(name='Eigene', kategorie='ticket_eingang',
+                               betreff='E', inhalt='E', organisation=organisation)
+
+        nur_eigene = Vorlage.objects.filter(organisation=organisation)
+        self.assertEqual(nur_eigene.count(), 1, 'Die reine Abfrage sieht nur die eigene.')
+
+        mit_system = Vorlage.objects.filter(
+            Q(organisation=organisation) | Q(organisation__isnull=True))
+        self.assertEqual(mit_system.count(), 2,
+                         'Erst die ODER-Abfrage liefert Systemvorlage UND eigene.')
+
+
 class AbleitungTests(TestCase):
     """Der normale Schreibpfad füllt die Spalte, ohne dass ein Aufrufer daran denkt."""
 

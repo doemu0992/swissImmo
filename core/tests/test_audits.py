@@ -292,6 +292,9 @@ class PrueferRunde2QuickTests(TestCase):
 
 class Paket1DatenUITests(TestCase):
     """Paket 1: bisher tote Model-Felder sind im UI erfassbar/sichtbar."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def test_liegenschaft_form_speichert_neue_felder(self):
         from portfolio.models import Liegenschaft
@@ -388,6 +391,9 @@ class Paket2PlatzierungTests(TestCase):
 
 class Paket3ZahlungBonitaetTests(TestCase):
     """Paket 3: Zahlungsverkehr, Bonität, Vorvermieter-Referenz, Vertretung, Mahnsperre."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def test_person_form_speichert_zahlung_und_bonitaet(self):
         c = Client(); c.force_login(_team_user())
@@ -1020,6 +1026,9 @@ class ReviewNachbesserungTests(TestCase):
 class StilleDatenverlusteTests(TestCase):
     """Ein Fehler in EINEM Feld darf keine andere, gültige Angabe wegräumen —
     und schon gar nicht mit grüner Erfolgsmeldung. Drei belegte Fälle."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _team(self):
         c = Client(); c.force_login(_team_user()); return c

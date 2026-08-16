@@ -6,6 +6,7 @@ from PIL import Image
 from django.core.files.base import ContentFile
 from django.conf import settings
 from django.db import models
+from core.organisation_kette import OrganisationAusKette, organisation_oder_einzige
 
 logger = logging.getLogger(__name__)
 
@@ -174,6 +175,12 @@ class Mitgliedschaft(models.Model):
 
 
 class Eigentuemer(models.Model):
+    # Kein Weg zur Liegenschaft: Ein Eigentuemer ist Kunde EINER Verwaltung.
+    # Der Bezug kommt aus dem Mandantenkontext.
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+                                     editable=False, related_name='%(app_label)s_%(class)s',
+                                     verbose_name='Organisation')
+
     # Portal-Zugang: verknüpfter Login für das Eigentümer-Portal (/portal/).
     # Eigentümer sehen dort NUR ihre eigenen Liegenschaften — kein SPA-/API-Zugriff.
     benutzer = models.OneToOneField(
@@ -214,12 +221,29 @@ class Eigentuemer(models.Model):
         return self.firma_oder_name
 
     def save(self, *args, **kwargs):
+        # Die Ableitung gehoert HIER hinein und nicht in ein zweites `save()`.
+        # Genau das war der erste Versuch: Die Klasse hatte bereits eines, das
+        # spaetere gewinnt in Python — die Ableitung lief nie, und das Anlegen
+        # scheiterte an `NOT NULL constraint failed: core_mandant.organisation_id`.
+        if self.organisation_id is None:
+            self.organisation_id = organisation_oder_einzige().pk
         _unterschrift_aufbereiten(self, 'sig_man_')
         super().save(*args, **kwargs)
 
 
 # 🔥 DER NEUE, AUFGERÜSTETE MIETER (Inkl. Flatfox-Felder & Adress-Historie)
 class Mieter(models.Model):
+    # Kein Weg zur Liegenschaft: Mieterdaten sind das Sensibelste im System — kein geteilter Bestand.
+    # Der Bezug kommt aus dem Mandantenkontext.
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+                                     editable=False, related_name='%(app_label)s_%(class)s',
+                                     verbose_name='Organisation')
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_oder_einzige().pk
+        super().save(*args, **kwargs)
+
     TYP_CHOICES = [
         ('person', 'Privatperson'),
         ('firma', 'Firma / Unternehmen'),
@@ -408,7 +432,9 @@ class Mieter(models.Model):
             return True
         return False
 
-class MieterAdresse(models.Model):
+class MieterAdresse(OrganisationAusKette):
+    # Reine Historie am Mieter, `mieter` ist pflichtig.
+    ORGANISATION_PFAD = 'mieter'
     """Datierte Adress-Historie einer Person (wie Sollmietzins «gültig ab»).
     `wohn` = tatsächliche Wohnadresse-Zeitachse (wechselt bei Ein-/Auszug),
     `korrespondenz` = optionale «Post an»-Zeitachse (hat Vorrang für Zustellung).
@@ -444,6 +470,17 @@ class MieterAdresse(models.Model):
 
 # 🔥 DER NEUE HANDWERKER-STAMM FÜR DIE API
 class Handwerker(models.Model):
+    # Kein Weg zur Liegenschaft: Konditionen und Ansprechpartner sind Geschaeftsgeheimnis der Verwaltung.
+    # Der Bezug kommt aus dem Mandantenkontext.
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+                                     editable=False, related_name='%(app_label)s_%(class)s',
+                                     verbose_name='Organisation')
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_oder_einzige().pk
+        super().save(*args, **kwargs)
+
     BRANCHEN_CHOICES = [
         ('sanitaer', 'Sanitär / Heizung'),
         ('elektro', 'Elektroinstallation'),
@@ -476,6 +513,22 @@ class Handwerker(models.Model):
 
 class Vorlage(models.Model):
     """Wiederverwendbare Text-/Brief-Vorlage mit Platzhaltern (z. B. {mieter_name})."""
+    # NULLBAR — die einzige begruendete Ausnahme von „nie null=True als
+    # Dauerloesung" (Skill `mandantentrennung`, Regel 1).
+    #
+    #     NULL     = mitgelieferte Systemvorlage, fuer alle Verwaltungen gleich
+    #     gesetzt  = eigene Vorlage dieser Verwaltung
+    #
+    # Ohne die Unterscheidung muesste jede neue Verwaltung saemtliche
+    # Standardvorlagen kopiert bekommen, und eine Korrektur am Original
+    # erreichte keine von ihnen mehr. Der Preis: Lesende Queries muessen
+    # `Q(organisation=org) | Q(organisation__isnull=True)` fragen — eine reine
+    # `organisation=org`-Abfrage sieht die Systemvorlagen NICHT.
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+                                     null=True, blank=True, editable=False,
+                                     related_name='%(app_label)s_%(class)s',
+                                     verbose_name='Organisation')
+
     KATEGORIE_CHOICES = [
         ('brief', 'Brief / Anschreiben'),
         ('kuendigung', 'Kündigung'),
@@ -507,7 +560,20 @@ class Vorlage(models.Model):
         return self.name
 
 
-class Kommunikation(models.Model):
+class Kommunikation(OrganisationAusKette):
+    # ABWEICHUNG VOM AUFTRAG, begruendet:
+    #
+    # Er sah eine eigene Spalte vor, weil „alle drei Wege null=True sind —
+    # ableiten ist unzuverlaessig". Das stimmt fuer einen EINZELNEN Weg.
+    # Seit PR 7 tragen `mieter`, `vertrag` und `liegenschaft` aber alle drei
+    # die Organisation, und das Tupel leitet dort ab, wo es geht.
+    #
+    # Der Unterschied ist fachlich: Eine Notiz ueber einen Mieter gehoert
+    # der Verwaltung DIESES Mieters — nicht der des gerade angemeldeten
+    # Benutzers. Mit zwei Mandanten faellt das auseinander, und dann waere
+    # die Kontext-Variante still falsch statt sichtbar leer.
+    ORGANISATION_PFAD = ('mieter', 'vertrag', 'liegenschaft')
+    ORGANISATION_RUECKFALL = True   # alle drei optional — Rueckfall noetig
     """Kommunikations-/Kontaktjournal: dokumentiert jede Interaktion mit einem
     Kontakt (Telefon, E-Mail, Brief, Notiz) — verknüpfbar mit Person/Vertrag/Schaden."""
     from django.utils import timezone as _tz

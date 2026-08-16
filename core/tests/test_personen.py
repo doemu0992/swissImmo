@@ -11,6 +11,9 @@ from ._helfer import (_test_organisation,
 
 
 class DatenqualitaetTests(TestCase):
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
     def test_pflichtfeld_nachname(self):
         u = _team_user()
         c = Client(); c.force_login(u)
@@ -31,6 +34,9 @@ class DatenqualitaetTests(TestCase):
 
 
 class PersonLoeschenTests(TestCase):
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
     def test_ohne_vertrag_loeschbar(self):
         m = Mieter.objects.create(typ='person', nachname='Weg')
         u = _team_user()
@@ -160,6 +166,9 @@ class PersonDokumenteGruppenTests(TestCase):
 
 class LoeschbarkeitTests(TestCase):
     """Addierbare Stammdaten/Listen müssen löschbar sein."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def test_dienstleister_loeschen(self):
         from crm.models import Handwerker
@@ -302,6 +311,9 @@ class DatenLebenszyklusTests(TestCase):
     Re-Trigger' (Audit nach dem Vertragsdokument-Bug): zentrale Dokument-
     Bereinigung, CASCADE der Anpassungs-Sollmietzinse, Idempotenz von
     Schlussabrechnung/Mahnung, camt-Dedup ohne Datenverlust, Auto-Frist-Cleanup."""
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
 
     def _dok(self, v, e, m, titel='Mietvertrag', kategorie='vertrag'):
         from rentals.models import Dokument

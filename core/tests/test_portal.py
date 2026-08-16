@@ -532,6 +532,9 @@ class MieterTicketPortalTests(TestCase):
 
 
 class EigentuemerZugangTests(TestCase):
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
     def _eigentuemer(self):
         md = Eigentuemer.objects.create(firma_oder_name='Eig AG', email='eig@example.ch')
         return md
@@ -587,6 +590,9 @@ class EigentuemerZugangTests(TestCase):
 
 
 class EigentuemerReportVersandTests(TestCase):
+    def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
+
     def test_command_sendet_mit_anhaengen(self):
         from django.core import mail
         from django.core.management import call_command

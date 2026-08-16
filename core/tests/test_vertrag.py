@@ -904,6 +904,7 @@ class UnterschriftBriefeTests(TestCase):
     Kündigung androht, gehört unterschrieben."""
 
     def setUp(self):
+        _test_organisation()   # bucht ohne eigene Liegenschaft — Verwaltung muss existieren
         # Eigenes MEDIA_ROOT, damit die Testbilder nicht im echten media/ landen.
         import tempfile
         from django.test import override_settings
