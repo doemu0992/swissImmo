@@ -43,6 +43,23 @@ fi
 
 BRANCH="${1:-claude/fairwalter-rebuild}"
 
+# Eine Option, die diese Fassung nicht kennt, landete bisher als Branchname bei
+# `git fetch` — und git antwortete mit vierzig Zeilen Hilfetext, an deren Ende
+# die eigentliche Meldung unterging. Genau so sah das Always-on-Log am
+# 16.08.2026 aus: Der Task rief `--dauerlauf` auf, auf der Platte lag die
+# zurueckgerollte Fassung, die das noch nicht kannte.
+#
+# Ein Branchname beginnt nie mit `--`. Also hier abfangen, mit einer Zeile.
+case "$BRANCH" in
+    --*)
+        echo "✗ Unbekannte Option '$BRANCH'."
+        echo "  Diese Fassung kennt: --dauerlauf"
+        echo "  Ein Branchname beginnt nicht mit '--'. Liegt hier eine aeltere"
+        echo "  Fassung von deploy.sh? Einmal von Hand nachziehen:"
+        echo "  PA_PY=\$HOME/.virtualenvs/myenv/bin/python bash deploy.sh"
+        exit 1 ;;
+esac
+
 # --- Python finden --------------------------------------------------------
 # WAS HIER GEPRUEFT WIRD, UND WARUM NICHT WENIGER
 #
