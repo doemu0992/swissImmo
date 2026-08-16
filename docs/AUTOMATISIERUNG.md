@@ -141,6 +141,69 @@ er den Interpreter unabhängig von der ausgecheckten Skriptfassung erzwingt:
 PA_PY=/home/swissimmo/.virtualenvs/myenv/bin/python bash deploy.sh
 ```
 
+### Was der Rollback NICHT leistet
+
+Der Rollback setzt auf `VORHER_COMMIT` zurück — den Stand, der vor diesem Lauf
+ausgecheckt war. Er stellt damit **nicht** „einen funktionierenden Zustand" her,
+sondern nur **den vorherigen**. Das schützt genau dann, wenn der vorherige
+Commit selbst noch zum Datenbankschema passte.
+
+Am 16.08.2026 war das nicht der Fall, und das ist wichtiger als es klingt: Der
+Rollback zielte auf `b6ba521` — einen Commit, der **nach** Etappe 4 liegt und
+`core/middleware_tenancy.py` samt Mitgliedschafts-Modell bereits enthält. Jeder
+Rollback stellte also einen Stand her, der gegen die alte Datenbank genauso
+kaputt war wie der neue. Die Produktion meldete durchgehend
+
+```
+OperationalError: no such table: crm_mitgliedschaft
+```
+
+**obwohl der Rollback exakt wie entworfen funktionierte.** Der Mechanismus war
+in Ordnung, seine Zusicherung war zu weit formuliert.
+
+Praktische Folge: Sobald mehrere Deploys hintereinander scheitern, wandert der
+Rollback-Anker mit — und irgendwann zeigt er auf einen Commit, der die
+Datenbank ebenfalls überholt hat. Der Rollback ist eine Bremse für **einen**
+fehlgeschlagenen Deploy, kein Netz für eine Datenbank, die über Tage
+zurückgeblieben ist. Dort hilft nur, die Migration nachzuziehen:
+
+```
+cd ~/swiss-manager
+/home/swissimmo/.virtualenvs/myenv/bin/python manage.py benutzer_uebernahme
+/home/swissimmo/.virtualenvs/myenv/bin/python manage.py migrate --noinput
+touch /var/www/swissimmo_pythonanywhere_com_wsgi.py
+```
+
+`benutzer_uebernahme` **muss** zuerst laufen (siehe unten) — sonst bricht
+`migrate` ab, bevor eine einzige Migration läuft.
+
+### Offen: `migrate` meldete „No migrations to apply" bei fehlender Tabelle
+
+Am 16.08.2026 lief auf der Produktion
+
+```
+Running migrations:
+  No migrations to apply.
+```
+
+während `crm_mitgliedschaft` nachweislich **nicht existierte**. `migrate` liest
+den Stand aus der Tabelle `django_migrations`, nicht aus dem Schema — dort stand
+`crm.0033_mitgliedschaft` als angewendet, ohne dass die Tabelle da war.
+
+Wie die beiden auseinandergelaufen sind, ist **nicht geklärt**. Es hier
+festzuhalten ist trotzdem richtig, weil der Zustand von aussen wie „alles
+migriert" aussieht und `showmigrations` ihn ebenfalls nicht bemerkt: Beide lesen
+dieselbe Buchführung, nicht die Wirklichkeit. Wer denselben Widerspruch wieder
+sieht, sucht sonst an der falschen Stelle.
+
+Prüfen lässt sich das nur direkt am Schema:
+
+```
+/home/swissimmo/.virtualenvs/myenv/bin/python manage.py shell -c \
+  "from django.db import connection; \
+   print(sorted(t for t in connection.introspection.table_names() if 'mitglied' in t))"
+```
+
 ### Ein Schritt vor `migrate`: `benutzer_uebernahme`
 
 Seit Etappe 3 (15.08.2026) hat swissImmo ein eigenes Benutzermodell
