@@ -25,7 +25,8 @@ irgendwann in der falschen Organisation arbeitet, ohne es zu merken.
 """
 import logging
 
-from core.tenancy import loesche_organisation, setze_organisation
+from core.tenancy import (aktuelle_organisation, loesche_organisation,
+                          setze_organisation)
 
 logger = logging.getLogger(__name__)
 
@@ -79,17 +80,29 @@ def _organisation_fuer(benutzer, session=None):
 class OrganisationMiddleware:
     """Setzt und räumt den Mandantenkontext je Anfrage.
 
-    Der Kontext wird im `finally` gelöscht, nicht am Ende des Erfolgspfads:
-    Eine Ausnahme im View darf die Organisation nicht in den nächsten
-    Durchlauf mitnehmen. Bei wiederverwendeten Worker-Threads wäre das ein
-    Datenleck mit Zeitverzögerung — dieselbe Klasse Fehler wie ein geteilter
-    Cache-Key.
+    Aufgeräumt wird im `finally`, nicht am Ende des Erfolgspfads: Eine Ausnahme
+    im View darf die Organisation nicht in den nächsten Durchlauf mitnehmen.
+    Bei wiederverwendeten Worker-Threads wäre das ein Datenleck mit
+    Zeitverzögerung — dieselbe Klasse Fehler wie ein geteilter Cache-Key.
+
+    WIEDERHERSTELLEN STATT LÖSCHEN (Etappe 6.2). Bis hierher rief das `finally`
+    schlicht `loesche_organisation()`. Im Betrieb ist das dasselbe — vor einer
+    Anfrage ist ohnehin nichts gesetzt. Wo eine Anfrage aber INNERHALB eines
+    bestehenden Kontexts läuft, ist es ein Unterschied, und der fiel beim
+    Anbinden des Managers auf: Ein Test setzt seine Organisation, ruft dann
+    `self.client.get(...)` — und stand danach ohne Kontext da, weil die
+    Middleware ihn mitgelöscht hatte. Fehlersuche in der falschen Datei.
+
+    Ein Middleware gehört auch sonst zurückzugeben, was sie vorgefunden hat,
+    statt fremden Zustand zu vernichten. `organisation_kontext()` macht es seit
+    jeher so; hier war es die Ausnahme.
     """
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
+        vorher = aktuelle_organisation()
         try:
             benutzer = getattr(request, 'user', None)
             if benutzer is not None and benutzer.is_authenticated:
@@ -102,4 +115,7 @@ class OrganisationMiddleware:
                 request.organisation = None
             return self.get_response(request)
         finally:
-            loesche_organisation()
+            if vorher is None:
+                loesche_organisation()
+            else:
+                setze_organisation(vorher)

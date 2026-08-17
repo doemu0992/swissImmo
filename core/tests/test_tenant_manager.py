@@ -174,3 +174,32 @@ class OhneOrganisationTests(TenantManagerBasis):
         with ohne_organisation():
             with self.assertRaises(OrganisationsFehler):
                 list(Haus.objects.all())
+
+
+class KontextLebensdauerTests(TestCase):
+    """Der Testläufer begrenzt den Kontext auf den einzelnen Test.
+
+    Die beiden Tests hängen absichtlich voneinander ab — und dürfen es genau
+    deshalb NICHT. `aaa_` und `zzz_` erzwingen die Reihenfolge (unittest sortiert
+    alphabetisch): Der erste setzt einen Kontext, der zweite prüft, dass er weg
+    ist. Ohne `core.test_runner.MandantenTestRunner` schlägt der zweite fehl.
+
+    Warum das eigens geprüft wird: Ein übergelaufener Kontext erzeugt Tests, die
+    grün sind, weil ein anderer Test vorher etwas gesetzt hat — und rot, sobald
+    jemand sie einzeln laufen lässt. Das ist die Sorte Fehler, die man erst
+    Monate später und dann in der falschen Datei sucht.
+    """
+
+    def test_aaa_setzt_einen_kontext(self):
+        from core.tenancy import aktuelle_organisation, setze_organisation
+        organisation = Organisation.objects.create(
+            firma='Leck AG', strasse='Weg 1', plz='8000', ort='Zürich')
+        setze_organisation(organisation)
+        self.assertIsNotNone(aktuelle_organisation())
+
+    def test_zzz_der_kontext_des_vorigen_tests_ist_weg(self):
+        from core.tenancy import aktuelle_organisation
+        self.assertIsNone(
+            aktuelle_organisation(),
+            'Der Mandantenkontext ist aus einem anderen Test übergelaufen — '
+            'ab hier hängt jedes Ergebnis von der Reihenfolge ab.')

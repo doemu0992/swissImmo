@@ -25,7 +25,13 @@ def ablegen(pdf_bytes, titel, kategorie='korrespondenz', *,
         liegenschaft = getattr(einheit, 'liegenschaft', None)
 
     if dedup and vertrag is not None:
-        vorhanden = Dokument.objects.filter(vertrag=vertrag, bezeichnung=(titel or 'Dokument')[:200]).first()
+        # `alle_organisationen`: Gesucht wird das Dokument zu GENAU DIESEM
+        # Vertrag — die Mandantengrenze steht in derselben Zeile
+        # (`vertrag=vertrag`), und ein Vertrag gehoert genau einer Verwaltung.
+        # Mit `objects` braeche die Ablage ueberall dort ab, wo sie aus einem
+        # Lauf heraus geschieht: Mahnung, Sollstellung, Vertragsversand.
+        vorhanden = Dokument.alle_organisationen.filter(
+            vertrag=vertrag, bezeichnung=(titel or 'Dokument')[:200]).first()
         if vorhanden is not None:
             try:
                 if not (dateiname or '').lower().endswith('.pdf'):

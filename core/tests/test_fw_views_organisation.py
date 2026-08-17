@@ -198,8 +198,12 @@ class AutomationZinsTests(ZweiBestaende):
         v = self._stand_setzen(self.b, '1.75')
         self._stand_setzen(self.a, '1.75')
         generate_auto_pendenzen(horizont_tage=90)
+        # `alle_organisationen`: Dieser Test prueft ausdruecklich UEBER beide
+        # Verwaltungen — er darf sich nicht auf einen Kontext stuetzen, dessen
+        # Filter die Aussage schon vorwegnimmt.
         self.assertFalse(
-            Pendenz.objects.filter(vertrag=v, titel__icontains='Referenzzinssenkung').exists(),
+            Pendenz.alle_organisationen.filter(
+                vertrag=v, titel__icontains='Referenzzinssenkung').exists(),
             'Senkungs-Pendenz angelegt, obwohl der Zins der eigenen Verwaltung hoeher liegt.')
 
     def test_gegenprobe_bei_echter_senkung_entsteht_die_pendenz(self):
@@ -211,7 +215,8 @@ class AutomationZinsTests(ZweiBestaende):
         self._stand_setzen(self.a, '1.75')
         generate_auto_pendenzen(horizont_tage=90)
         self.assertTrue(
-            Pendenz.objects.filter(vertrag=v, titel__icontains='Referenzzinssenkung').exists())
+            Pendenz.alle_organisationen.filter(
+                vertrag=v, titel__icontains='Referenzzinssenkung').exists())
 
     def test_jede_verwaltung_wird_an_ihrem_eigenen_stand_gemessen(self):
         # A gesenkt, B nicht — es darf genau eine Pendenz geben, und zwar bei A.
@@ -220,7 +225,7 @@ class AutomationZinsTests(ZweiBestaende):
         va = self._stand_setzen(self.a, '1.00')
         vb = self._stand_setzen(self.b, '1.75')
         generate_auto_pendenzen(horizont_tage=90)
-        offen = Pendenz.objects.filter(titel__icontains='Referenzzinssenkung')
+        offen = Pendenz.alle_organisationen.filter(titel__icontains='Referenzzinssenkung')
         self.assertTrue(offen.filter(vertrag=va).exists())
         self.assertFalse(offen.filter(vertrag=vb).exists())
 

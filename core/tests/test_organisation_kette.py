@@ -73,7 +73,12 @@ class WaisenTests(TestCase):
     def test_kein_datensatz_ohne_organisation(self):
         for modell in _kettenmodelle():
             with self.subTest(modell=modell._meta.label):
-                offen = modell.objects.filter(organisation__isnull=True).count()
+                # `alle_organisationen` ist hier PFLICHT, nicht Bequemlichkeit:
+                # Gesucht werden Zeilen OHNE Organisation. Ein Manager, der auf
+                # eine Organisation filtert, kann sie per Definition nie finden
+                # — der Test waere dann immer gruen und pruefte nichts.
+                offen = modell.alle_organisationen.filter(
+                    organisation__isnull=True).count()
                 self.assertEqual(
                     offen, 0,
                     f'{modell._meta.label}: {offen} Datensätze ohne Organisation. '

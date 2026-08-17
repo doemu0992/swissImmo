@@ -78,6 +78,26 @@ def _test_organisation(**felder):
         for name, wert in felder.items():
             setattr(organisation, name, wert)
         organisation.save(update_fields=list(felder))
+
+    # UND SIE WIRD ZUR AKTIVEN ORGANISATION DIESES TESTS (Etappe 6.2).
+    #
+    # In der Anwendung hat JEDE Anfrage einen Mandantenkontext — die Middleware
+    # setzt ihn aus der Mitgliedschaft. Ein Test, der `Buchung.objects.filter()`
+    # aufruft, ohne dass einer gesetzt ist, bildet damit eine Welt ab, die es
+    # nicht gibt; er wuerde mit dem TenantManager scheitern, obwohl der Code
+    # richtig ist. Gemessen am 17.08.2026: 49 von 65 Fehlern in
+    # test_buchhaltung kamen genau daher, 24 davon verschwanden mit dieser
+    # Zeile.
+    #
+    # Ueberlaufen kann der Kontext nicht: `core.test_runner.MandantenTestRunner`
+    # fuehrt jeden Test in einer Kopie des Kontexts aus, und
+    # `KontextLebensdauerTests` haelt das fest.
+    #
+    # Wer AUSDRUECKLICH ohne Kontext prueft (die Isolationstests, der
+    # Manager-Testsatz), ruft diesen Helfer schlicht nicht auf oder setzt den
+    # Kontext selbst mit `organisation_kontext(...)`.
+    from core.tenancy import setze_organisation
+    setze_organisation(organisation)
     return organisation
 
 

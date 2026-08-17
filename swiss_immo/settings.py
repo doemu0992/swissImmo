@@ -197,6 +197,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'swiss_immo.wsgi.application'
 
+# Eigener Testläufer: führt jeden Test in einer Kopie des Kontexts aus, damit
+# eine im Test gesetzte Organisation nicht in den nächsten Test überläuft.
+# Begründung ausführlich in core/test_runner.py.
+TEST_RUNNER = 'core.test_runner.MandantenTestRunner'
+
 # ==========================================
 # 6. DATENBANK
 # ==========================================

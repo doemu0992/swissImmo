@@ -413,13 +413,21 @@ class ManagerIsolationTests(IsolationsBasis):
         self.assertGreater(geprueft, 8,
                            'auffällig wenige Modelle geprüft — trägt das Fixture noch?')
 
-    @unittest.expectedFailure
     def test_ohne_kontext_wirft_der_manager(self):
         """Ohne gesetzte Organisation ist ein FEHLER die richtige Antwort.
 
         Wichtiger, als es aussieht: Ein Manager, der im Zweifel alles liefert,
         täuscht Sicherheit vor. Der Fehler fällt dann erst auf, wenn Daten
         bereits geflossen sind — in einem Report, einem Export, einer E-Mail.
+
+        **GRÜN SEIT ETAPPE 6.2 (17.08.2026)** — der erste der dreizehn.
+        `expectedFailure` ist entfernt; ab jetzt ist ein Fehlschlag hier ein
+        echter Rückschritt und kein bekannter Zustand mehr.
+
+        Gegenprobe durchgeführt: Mit `objects = models.Manager()` in
+        `core/organisation_kette.py` (dem Stand vor dem Umlegen) scheitert er
+        wieder — `list(...)` liefert dann die Verträge beider Verwaltungen,
+        statt zu werfen.
         """
         try:
             from core.tenancy import ohne_organisation

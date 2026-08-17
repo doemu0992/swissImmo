@@ -26,7 +26,11 @@ def feed_objekte(base_url='', organisation=None):
            'pp': 'parking', 'gar': 'parking', 'bas': 'storage'}
 
     objekte = []
-    qs = (Einheit.objects.filter(zur_ausschreibung=True)
+    # `alle_organisationen`: Diese Funktion bedient den OEFFENTLICHEN Feed —
+    # kein Login, also kein Mandantenkontext. Die Grenze zieht stattdessen der
+    # Parameter `organisation` ein paar Zeilen tiefer, und der oeffentliche
+    # Aufrufer gibt ihn zwingend mit (er leitet ihn aus dem Token ab).
+    qs = (Einheit.alle_organisationen.filter(zur_ausschreibung=True)
           .select_related('liegenschaft').prefetch_related('fotos')
           .order_by('liegenschaft__strasse', 'bezeichnung'))
     if organisation is not None:

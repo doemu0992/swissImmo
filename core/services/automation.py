@@ -309,9 +309,30 @@ def erledige_pendenzen_fuer(vertrag, keywords, user=None):
 # 3. AUTO-PENDENZEN (Fristen aus dem Datenbestand persistieren)
 # ============================================================
 def generate_auto_pendenzen(horizont_tage=90, user=None):
-    """Erzeugt/aktualisiert persistente Pendenzen aus terminierten Ereignissen
-    (Vertragsende, Auszug, Geräte-Garantien, Serviceabos). Idempotent über das
-    Feld Pendenz.quelle. Gibt die Anzahl neu erstellter Pendenzen zurück."""
+    """Erzeugt/aktualisiert persistente Pendenzen aus terminierten Ereignissen.
+
+    (Vertragsende, Auszug, Geräte-Garantien, Serviceabos.) Idempotent über das
+    Feld `Pendenz.quelle`. Gibt die Anzahl neu erstellter Pendenzen zurück.
+
+    JE ORGANISATION EIN DURCHGANG (Etappe 6.2). Die Funktion läuft aus dem
+    täglichen Lauf, also ohne Anfrage und damit ohne Mandantenkontext. Sie
+    hier zu setzen ist nicht Zierde: Ohne ihn sähe jede Abfrage den ganzen
+    Bestand, und die erzeugten Pendenzen landeten über `get_or_create` in einer
+    Reihenfolge, die von der Datenbank abhängt statt von der Zugehörigkeit.
+    """
+    from crm.models import Organisation
+
+    from core.tenancy import organisation_kontext
+
+    gesamt = 0
+    for organisation in Organisation.objects.order_by('pk'):
+        with organisation_kontext(organisation):
+            gesamt += _pendenzen_fuer_organisation(horizont_tage, user)
+    return gesamt
+
+
+def _pendenzen_fuer_organisation(horizont_tage, user):
+    """Ein Durchgang im Kontext genau einer Verwaltung."""
     from core.models import Pendenz
     from core.utils import get_current_ref_zins
     from rentals.models import Mietvertrag, Kuendigung
@@ -554,8 +575,13 @@ def buche_kaution_einzahlung(vertrag, datum, user=None):
     beleg = f"Mietkaution [V{vertrag.pk}] {vertrag.mieter} — Einzahlung Sperrkonto"
     # storniert_am mitprüfen: sonst blockiert das stehengebliebene stornierte
     # Original die Neubuchung nach einer Korrektur dauerhaft.
-    if Buchung.objects.filter(beleg_text__startswith=f"Mietkaution [V{vertrag.pk}] ",
-                              ist_storno=False, storniert_am__isnull=True).exists():
+    # `alle_organisationen`: Die Doppelungspruefung sucht die Buchung zu GENAU
+    # DIESEM Vertrag (`[V<pk>]` im Belegtext). Ueber eine Mandantengrenze kann
+    # das nicht fuehren — der Vertrag gehoert, wem er gehoert. Mit `objects`
+    # braeche stattdessen jeder Kautionslauf ausserhalb einer Anfrage ab.
+    if Buchung.alle_organisationen.filter(
+            beleg_text__startswith=f"Mietkaution [V{vertrag.pk}] ",
+            ist_storno=False, storniert_am__isnull=True).exists():
         return None
     return Buchung.objects.create(
         datum=datum, beleg_text=beleg,

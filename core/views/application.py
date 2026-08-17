@@ -16,7 +16,9 @@ def public_application_view(request, einheit_id):
     geteilter Link sammelte weiter Bewerbungen — mit Lohnausweis,
     Ausweiskopie und Betreibungsauszug — für eine längst vergebene Wohnung.
     """
-    einheit = get_object_or_404(Einheit, id=einheit_id)
+    # `alle_organisationen`: oeffentliches Formular, kein Login, kein Kontext.
+    # Die Absicherung ist `zur_ausschreibung` eine Zeile tiefer.
+    einheit = get_object_or_404(Einheit.alle_organisationen, id=einheit_id)
 
     if not einheit.zur_ausschreibung:
         return render(request, 'core/public_bewerbung_geschlossen.html', status=410)
@@ -50,7 +52,11 @@ def public_datenschutz_view(request, einheit_id=None):
 
     verwaltung, mehrdeutig = None, False
     if einheit_id is not None:
-        einheit = get_object_or_404(Einheit.objects.select_related('liegenschaft'), id=einheit_id)
+        # `alle_organisationen`: Die Seite ist ohne Anmeldung erreichbar, es
+        # gibt also keinen Kontext — das Objekt IST die Angabe, aus der die
+        # Verwaltung folgt (naechste Zeile).
+        einheit = get_object_or_404(
+            Einheit.alle_organisationen.select_related('liegenschaft'), id=einheit_id)
         verwaltung = einheit.liegenschaft.organisation
     else:
         moegliche = list(Organisation.objects.all()[:2])

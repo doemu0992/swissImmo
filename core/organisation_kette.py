@@ -206,30 +206,39 @@ class OrganisationAusKette(models.Model):
     # `_default_manager`. Er muss der filternde sein, denn `_default_manager`
     # ist es, den `get_object_or_404(Model, pk=…)` und das Admin benutzen —
     # also die Einstiege, an denen die Grenze gezogen wird.
-    # `objects` ist HEUTE NOCH der gewoehnliche Manager. Das ist der Stand von
-    # 6.2 nach der dritten Messung, und die Zeile daneben ist der ganze Rest:
+    # DIE ISOLATION — Etappe 6.2, an genau einer Stelle fuer 51 Modelle.
     #
-    #     objects = TenantManager()      # <- der Schalter
+    # `objects` filtert auf die Organisation des Kontexts und WIRFT, wenn keiner
+    # gesetzt ist. Das Werfen ist die Absicht: Die Alternative — im Zweifel den
+    # ganzen Bestand liefern — taeuscht Sicherheit vor, und der Fehler faellt
+    # dann erst auf, wenn Daten schon geflossen sind (Report, Export, E-Mail).
     #
-    # Umgelegt wurde er, gemessen und wieder zurueckgenommen — zum dritten Mal,
-    # diesmal aber mit einer Ursachenliste statt einer blossen Zahl (195 Fehler
-    # im ersten Block; die Auswertung steht in docs/ETAPPE-6-ISOLATION.md).
-    # Zwei Drittel davon sind Testklassen, die keinen Mandantenkontext setzen,
-    # obwohl in der Anwendung jede Anfrage einen hat; der Rest sind Services,
-    # die aus einem Command heraus laufen. Beides ist Fleissarbeit mit
-    # bekanntem Umfang — aber zu viel fuer denselben Schritt, in dem der
-    # Manager selbst repariert wurde.
+    # WARUM HIER UND NICHT JE MODELL: Die Basis traegt schon den Fremdschluessel
+    # und die Ableitung. Zwei Manager-Zeilen in 51 Klassen zu wiederholen hiesse,
+    # 51 Stellen zu haben, an denen eine fehlen kann — und ein Modell ohne
+    # Manager faellt nicht auf, es zeigt einfach alles.
     #
-    # Explizit deklariert, weil Django `objects` nur dann selbst anlegt, wenn
-    # gar kein Manager im Klassenkoerper steht.
-    objects = models.Manager()
+    # DIE REIHENFOLGE IST BEDEUTSAM: Der zuerst deklarierte Manager wird
+    # `_default_manager`. Er muss der filternde sein, denn `_default_manager` ist
+    # es, den `get_object_or_404(Model, pk=…)` und das Admin benutzen — also die
+    # Einstiege, an denen die Grenze ueberhaupt gezogen wird.
+    #
+    # WAS DAS UMLEGEN GEBRAUCHT HAT (dritter Anlauf, 17.08.2026; die ersten
+    # beiden endeten bei 65 bzw. 922 Fehlschlaegen):
+    #   · Rueckbezuege duerfen nicht filtern — `core/tenancy.py` erkennt sie an
+    #     `self.instance`. Ohne das brach jedes `liegenschaft.einheiten.all()`.
+    #   · Die Middleware STELLT den vorherigen Kontext WIEDER HER, statt ihn zu
+    #     loeschen. Vorher wischte jede Anfrage den umgebenden Kontext weg.
+    #   · Der Testlaeufer gibt jedem Test eine eigene Kontext-Kopie
+    #     (`core/test_runner.py`), damit gesetzter Kontext nicht ueberlaeuft.
+    #   · Selbstbezogene Zugriffe (`filter(pk=self.pk)`, `filter(vertrag=v)`)
+    #     nehmen `alle_organisationen` — dort steht die Grenze schon im Ausdruck.
+    objects = TenantManager()
 
-    # DER BENANNTE WEG VORBEI — schon jetzt vorhanden, obwohl noch nichts
-    # filtert. Zweck: Stellen, die ausdruecklich ueber alle Verwaltungen laufen
-    # duerfen (selbstbezogene Schreibvorgaenge im eigenen `save()`, der
-    # Anmeldefall in der Middleware), sagen das ab sofort im Code. Sie muessen
-    # dann beim Umlegen des Schalters nicht noch einmal gesucht werden — und
-    # bis dahin ist der Ausdruck bereits die richtige Dokumentation der Absicht.
+    # DER BENANNTE WEG VORBEI. Systemlaeufe und oeffentliche Endpunkte, die
+    # ausdruecklich ueber alle Verwaltungen lesen duerfen, nehmen ihn — sichtbar
+    # im Code und greppbar. Jede Verwendung traegt einen Kommentar, der das WARUM
+    # nennt (Skill `mandantentrennung`, Regel 2).
     alle_organisationen = AlleOrganisationenManager()
 
     class Meta:

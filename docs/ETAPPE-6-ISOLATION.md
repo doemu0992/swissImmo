@@ -58,46 +58,29 @@ Die sechs Schulden hängen voneinander ab. Diese Folge löst das auf:
 
 ---
 
-### 6.2 — Stand nach dem dritten Anlauf (17.08.2026)
+### 6.2 — erledigt (17.08.2026, dritter Anlauf)
 
-**Der Manager selbst ist repariert und belegt.** Beide Klippen sind gelöst, jede mit einer durchgeführten Gegenprobe (`core/tests/test_tenant_manager.py`, 13 Tests an einem eigens angelegten Modell):
+**Der Schalter liegt um.** `objects = TenantManager()` an `OrganisationAusKette` — 51 Modelle über eine Zeile. Volle Suite grün. Die ersten beiden Anläufe endeten bei 65 bzw. 922 Fehlschlägen; der dritte begann bei 195 im ersten Block und endete bei null, weil die Ursachen diesmal benannt statt gezählt wurden.
 
-| Klippe | Lösung | Gegenprobe |
+**Vier Dinge mussten stimmen, bevor der Filter tragen konnte:**
+
+| | Befund | Lösung |
 |---|---|---|
-| Rückbezüge erben den Filter | `get_queryset` filtert nicht, wenn `self.instance` gesetzt ist (Djangos Erkennungsmerkmal für Rückbezugs-Manager) | zurückgebaut → 2 Tests fallen |
-| `get_or_create` war ausgenommen | Ausnahme entfernt — es **liest** zuerst, `create` nicht | zurückgebaut → 2 Tests fallen |
+| 1 | Rückbezüge erben den Filter — jedes `liegenschaft.einheiten.all()` brach ohne Kontext ab | `get_queryset` filtert nicht, wenn `self.instance` gesetzt ist (Djangos Merkmal für Rückbezugs-Manager). Zulässig, weil das Kind seine Organisation seit Etappe 5 aus genau dieser Kette ableitet — der Filter wäre dort tautologisch. Die Grenze sitzt am **Einstieg**. |
+| 2 | Die Middleware **löschte** den Kontext im `finally` | Sie **stellt** jetzt den vorgefundenen **wieder her**. Im Betrieb identisch; wo eine Anfrage innerhalb eines bestehenden Kontexts läuft (Test, Systemlauf), war es ein stiller Verlust. |
+| 3 | Ein im Test gesetzter Kontext lebte für den ganzen Prozess weiter | `core/test_runner.py`: jeder Test in einer eigenen `contextvars`-Kopie. Ohne das entstünden reihenfolgeabhängige Tests — belegt durch `KontextLebensdauerTests`, das ohne den Läufer fehlschlägt. |
+| 4 | `get_or_create` stand in der Ausnahmeliste, `create` zu Recht | Ausnahme entfernt: `create` gibt nichts heraus, `get_or_create` **liest** zuerst und gäbe ohne Filter die Zeile eines fremden Mandanten zurück. |
 
-Warum das Weglassen des Filters bei Rückbezügen die Isolation nicht aufgibt: Ein Rückbezug geht immer von einem geladenen Objekt aus, und seit Etappe 5 leitet das Kind seine Organisation aus genau dieser Kette ab (`null=False`, null Waisen). Der Filter wäre dort tautologisch. Die Grenze wird am **Einstieg** gezogen — `Model.objects.filter(...)`, `get_object_or_404(Model, pk=…)` —, und der bleibt gefiltert.
+**Zwei Muster, die `alle_organisationen` bekommen — und warum das keine Aufweichung ist:**
 
-**Der Schalter ist gemessen und wieder zurückgenommen** — zum dritten Mal, diesmal aber mit einer Ursachenliste statt einer blossen Zahl. Angebunden an `OrganisationAusKette` (51 Modelle in einer Zeile), volle Suite:
+- **Selbstbezogene Zugriffe.** `filter(pk=self.pk).update(...)` in `DebitorenRechnung.save()`, `filter(organisation_id=self.organisation_id)` in `Buchung.save()`, `filter(vertrag=vertrag)` in `ablage.ablegen()`, `filter(beleg_text__startswith=f"…[V{pk}]…")` in der Kautionsbuchung. In all diesen steht die Mandantengrenze bereits **im Ausdruck selbst**. Den Kontext zusätzlich zu verlangen macht nichts sicherer, bricht aber jeden Lauf ausserhalb einer Anfrage ab.
+- **Öffentliche Endpunkte.** Bewerbungsformular, Datenschutzseite, Portal-Feed: kein Login, also kein Kontext. Die Grenze zieht dort das adressierte Objekt bzw. der Token — beides in 6.1 hergestellt.
 
-```
-Block 00: 355 Tests → 195 Fehler
-```
+**Der Kontext im Testaufbau** ist keine Abschwächung, sondern eine Korrektur: In der Anwendung hat **jede** Anfrage einen Kontext. `_test_organisation()` setzt ihn jetzt, und der Testläufer räumt ihn zwischen den Tests ab. Wirkung gemessen: `test_buchhaltung` von 49 Fehlern auf 0.
 
-Verteilung der Fehlerquellen:
+**Erster von dreizehn Isolationstests grün:** `test_ohne_kontext_wirft_der_manager` — `expectedFailure` entfernt, Gegenprobe protokolliert. Die übrigen zwölf gehören zu 6.3–6.5.
 
-| Ort | Treffer | Art |
-|---|---|---|
-| `finance/models.py` | 337 | zwei Stellen — **behoben**, siehe unten |
-| Testmodule (10 Dateien) | ~400 | Testklassen ohne Mandantenkontext |
-| `finance/booking.py` | 63 | Service, aus Command aufgerufen |
-| `core/services/automation.py` | 61 | Service, aus dem täglichen Lauf |
-
-**Zwei Produktivstellen sind bereits behoben**, weil sie ein eigenes, benennbares Muster sind — *selbstbezogene Schreibvorgänge im eigenen `save()`*:
-
-- `Buchung.save()` vergibt die Belegnummer mit `.filter(organisation_id=self.organisation_id)`. Die Mandantengrenze steht dort schon ausdrücklich; den Kontext zusätzlich zu verlangen macht nichts sicherer, bricht aber jedes Speichern ausserhalb einer Anfrage ab.
-- `DebitorenRechnung.save()` setzt die QRR-Referenz mit `filter(pk=self.pk).update(...)` — die Zeile aktualisiert sich selbst über ihren Primärschlüssel und kann über keine Grenze führen.
-
-Beide nutzen jetzt `alle_organisationen`. Deshalb ist dieser Manager **schon jetzt angebunden**, obwohl noch nichts filtert: Stellen, die ausdrücklich vorbei dürfen, sagen es ab sofort im Code und müssen beim Umlegen des Schalters nicht noch einmal gesucht werden. Ebenso der Anmeldefall in `middleware_tenancy` (die Zeile, die den Kontext gerade erst bestimmt) und `dumpdata --all` in Sicherung und Umzug — ohne das wäre eine Sicherung mit dem Bestand genau einer Verwaltung entstanden, die wie eine vollständige aussieht.
-
-**Was 6.2 noch braucht, in dieser Reihenfolge:**
-
-1. **Mandantenkontext in den Testklassen.** Ein Experiment (Kontext im Helfer `_test_organisation()`) halbierte die Fehler in `test_buchhaltung` von 49 auf 25. Das ist keine Abschwächung der Tests, sondern eine Korrektur: In der Anwendung hat **jede** Anfrage einen Kontext, die Tests bildeten eine Welt ab, die es nicht gibt. Es braucht dafür einen sauberen Mechanismus mit Aufräumen zwischen den Tests — der Helfer allein setzt den Kontext, ohne ihn je zu löschen.
-2. **Die Services**, die aus Commands laufen (`booking`, `automation`, `jahresabschluss`, `verwaltungshonorar`): Der Aufrufer setzt den Kontext, wie schon bei `fristen_digest` und `check_rents` in 6.1 geschehen.
-3. **Erst dann** `objects = TenantManager()` in `core/organisation_kette.py`. Das ist wörtlich eine Zeile.
-
-Die 12 Modelle mit eigener Organisationsspalte (ohne die abstrakte Basis) kommen danach einzeln dazu. `crm.Vorlage` gehört ausdrücklich **nicht** dazu, bevor 6.4 erledigt ist — sonst verschwinden die Systemvorlagen (`organisation__isnull=True`) aus der Oberfläche.
+**Noch offen in 6.2:** die 12 Modelle mit eigener Organisationsspalte (ohne die abstrakte Basis) — `crm.Eigentuemer`, `crm.Mieter`, `crm.Handwerker`, `portfolio.Liegenschaft`, `finance.Buchungskonto` und weitere. Sie kommen einzeln dazu, weil jedes eine eigene Frage stellt. **`crm.Vorlage` ausdrücklich erst nach 6.4** — sonst verschwinden die Systemvorlagen (`organisation__isnull=True`) aus der Oberfläche, und das sieht wie Datenverlust aus.
 
 ---
 
