@@ -46,12 +46,22 @@ mkdir -p "$STAND"
 echo "→ Arbeitsordner: $STAND"
 
 # --- 1. Sicherung ----------------------------------------------------------
-# Die SQLite-Datei IST der ganze Bestand. Vor allem anderen eine Kopie.
-if [ -f db.sqlite3 ]; then
-    cp db.sqlite3 "$STAND/db.sqlite3"
-    echo "✓ Sicherung: $STAND/db.sqlite3 ($(du -h db.sqlite3 | cut -f1))"
-else
+# Die SQLite-Datei IST der ganze Bestand. Vor allem anderen eine Sicherung.
+#
+# KEIN `cp`: Die Datenbank laeuft im WAL-Modus. Bestaetigte Transaktionen
+# stehen dort zunaechst in der Nebendatei `db.sqlite3-wal` und wandern erst
+# spaeter in die Hauptdatei. Wer nur `db.sqlite3` kopiert, bekommt auf einem
+# laufenden Server einen Stand, dem die letzten Buchungen fehlen — ohne dass
+# irgendetwas fehlschlaegt. `manage.py sicherung` nutzt stattdessen die
+# sqlite3-Sicherungsschnittstelle, prueft den Stand und legt ihn als EINE
+# Datei ab.
+if [ ! -f db.sqlite3 ]; then
     echo "✗ db.sqlite3 nicht gefunden — im falschen Ordner?"; exit 1
+fi
+echo "→ Sicherung anlegen (Datenbank + Medien)"
+if ! env -u DB_ENGINE "$PY" manage.py sicherung --ziel "$STAND" --behalten 0 --medien-behalten 0; then
+    echo "✗ Sicherung fehlgeschlagen — der Umzug bricht hier ab, BEVOR etwas passiert."
+    exit 1
 fi
 
 # --- 2. Zählen, solange noch SQLite gilt -----------------------------------
@@ -146,4 +156,4 @@ echo
 echo "  3. Web-App neu laden und /version/ pruefen."
 echo
 echo "  Rückweg jederzeit: Variablen entfernen, neu laden. SQLite liegt"
-echo "  unberührt in $STAND/db.sqlite3 und im Projektordner."
+echo "  unberührt im Projektordner, die geprüfte Sicherung liegt in $STAND."

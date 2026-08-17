@@ -176,5 +176,9 @@ wenn Schritt 3 oben sauber durchgelaufen ist.
   Entwicklungsumgebung und die Tests.
 - **`CONN_MAX_AGE = 600`** hält Verbindungen offen. Das ist bei PostgreSQL
   richtig und bei SQLite bedeutungslos.
-- **Sicherungen ändern sich.** Eine Datei kopieren reicht nicht mehr; es
-  braucht `pg_dump`. Das ist offen und gehört als eigener Punkt terminiert.
+- **Sicherungen laufen weiter.** `manage.py sicherung` erkennt den Motor selbst
+  und schaltet von der SQLite-Sicherungsschnittstelle auf `pg_dump -Fc` um; am
+  geplanten Task ändert sich nichts. Siehe [`SICHERUNG.md`](SICHERUNG.md).
+  Falls `pg_dump` auf dem Server fehlt, weicht der Befehl auf `dumpdata` aus —
+  laut und unter anderem Dateinamen, damit bei der Wiederherstellung niemand
+  das eine für das andere hält.

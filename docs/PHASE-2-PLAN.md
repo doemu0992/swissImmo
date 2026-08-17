@@ -294,3 +294,5 @@ Sinnvoll nach Etappe 3, weil sie am User Model hängt.
 | Zahlungsanbieter — Offerten Payrexx, wallee, Stripe | Phase 3, freigabepflichtig |
 | Gespräche mit 5 bis 10 Verwaltungen zur Zahlungsbereitschaft | vor Preisfestlegung |
 | Groq: DPF-Zertifizierung prüfen, Auftragsbearbeitungsvertrag | offen aus P0.7, siehe `docs/GROQ-BELEGERKENNUNG.md` |
+| Sicherung ausser Haus — externer Dienst, laufende Kosten, Mieterdaten verlassen das System (Standort, Auftragsbearbeitung) | vor Markteintritt; lokale Sicherung steht, siehe `docs/SICHERUNG.md` |
+| Wiederherstellungs-Probelauf auf einem Zweitsystem | vor Markteintritt — der Weg ist beschrieben, aber nie ganz durchlaufen |
