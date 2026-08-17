@@ -3,7 +3,7 @@ from django.conf import settings
 from django.db import models
 
 from core.tenancy import AlleOrganisationenManager, TenantManager
-from core.organisation_kette import OrganisationAusKette, organisation_oder_einzige
+from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
 
 
 class AktivitaetsLog(models.Model):
@@ -30,7 +30,7 @@ class AktivitaetsLog(models.Model):
 
     def save(self, *args, **kwargs):
         if self.organisation_id is None:
-            self.organisation_id = organisation_oder_einzige().pk
+            self.organisation_id = organisation_bestimmen().pk
         super().save(*args, **kwargs)
 
     zeitpunkt = models.DateTimeField("Zeitpunkt", auto_now_add=True)
@@ -94,7 +94,6 @@ class Pendenz(OrganisationAusKette):
     # einem Vertrag. Deshalb Tupel plus Rueckfall statt CheckConstraint —
     # eine Bedingung wuerde genau diese legitimen Pendenzen abweisen.
     ORGANISATION_PFAD = ('vertrag', 'liegenschaft')
-    ORGANISATION_RUECKFALL = True
     """Persistente Pendenz / Frist. Ergänzt die automatisch berechneten Fristen
     (befristete Vertragsenden, Kündigungsfristen) um manuell erfassbare, abhakbare
     Aufgaben mit Fälligkeitsdatum."""

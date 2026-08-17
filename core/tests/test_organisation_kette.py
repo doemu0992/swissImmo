@@ -55,6 +55,7 @@ from django.db import models
 from django.test import TestCase
 
 from core.organisation_kette import OrganisationAusKette
+from core.tenancy import ohne_organisation
 from crm.models import Organisation
 from portfolio.models import Liegenschaft, Einheit, Schluessel, SchluesselAusgabe, Dokument
 
@@ -166,12 +167,18 @@ class KettenPfadTests(TestCase):
         Bestand ihn erfüllt. Bei `portfolio.Dokument`, `Geraet` und `Zaehler`
         waren die Tabellen produktiv leer; die Bedingung war folgenlos zu setzen.
 
-        **(b) `ORGANISATION_RUECKFALL = True`** — trägt kein Weg, kommt der Bezug
-        aus dem Mandantenkontext. Für die vier Belegarten der Buchhaltung, bei
-        denen „noch nicht zugeordnet" ein regulärer Arbeitszustand ist: Ein
-        Zahlungseingang aus dem Bankabgleich hat oft weder Vertrag noch
-        Liegenschaft. Eine Bedingung hätte dort echte Daten abgewiesen, deren
-        Kombinationen niemand vollständig kennt.
+        **(b) Der Mandantenkontext** — trägt kein Weg, kommt der Bezug von dort.
+        Für die Belegarten der Buchhaltung, bei denen „noch nicht zugeordnet"
+        ein regulärer Arbeitszustand ist: Ein Zahlungseingang aus dem
+        Bankabgleich hat oft weder Vertrag noch Liegenschaft. Eine Bedingung
+        hätte dort echte Daten abgewiesen, deren Kombinationen niemand
+        vollständig kennt.
+
+        Seit Etappe 6.3 gilt (b) für **jedes** Modell gleich und braucht kein
+        Attribut mehr: Trägt die Kette nicht, entscheidet der Kontext — und ohne
+        Kontext bricht das Speichern ab. Vorher stand dort „die einzige
+        vorhandene Organisation", gesteuert über `ORGANISATION_RUECKFALL` an
+        sieben Modellen.
 
         Beide schliessen dasselbe Loch. **Keines von beiden ist der Fehler**, den
         dieser Test sucht — nicht die Wahl zwischen ihnen.
@@ -184,87 +191,44 @@ class KettenPfadTests(TestCase):
             if isinstance(modell.ORGANISATION_PFAD, str):
                 continue
             with self.subTest(modell=modell._meta.label):
-                hat_bedingung = any(isinstance(c, models.CheckConstraint)
-                                    for c in modell._meta.constraints)
-                hat_rueckfall = modell.ORGANISATION_RUECKFALL
-                self.assertTrue(
-                    hat_bedingung or hat_rueckfall,
-                    f'{modell._meta.label} hat mehrere ORGANISATION_PFADe, aber weder '
-                    f'eine CheckConstraint noch ORGANISATION_RUECKFALL. Trägt keiner '
-                    f'der Wege, entsteht ein Datensatz ohne Organisation — und der '
-                    f'gehört niemandem.')
+                # Seit 6.3 traegt (b) fuer jedes Modell, ohne Attribut. Der
+                # Test prueft deshalb die Zusicherung selbst statt ihrer
+                # Verkabelung: Traegt kein Weg UND fehlt der Kontext, muss das
+                # Speichern ABBRECHEN — es darf keine Waise entstehen.
+                leer = modell()
+                self.assertIsNone(
+                    leer.organisation_aus_kette(),
+                    f'{modell._meta.label}: Ein leeres Objekt loest die Kette bereits '
+                    f'auf — dann prueft dieser Test nicht, was er soll.')
+                with ohne_organisation():
+                    with self.assertRaises(Exception, msg=(
+                            f'{modell._meta.label} laesst sich ohne jeden Weg UND ohne '
+                            f'Kontext speichern. Der Datensatz gehoert dann niemandem.')):
+                        leer.save()
 
-    def test_rueckfall_nur_wo_kein_weg_garantiert_ist(self):
-        """Die Gegenrichtung: `ORGANISATION_RUECKFALL` darf keine Umgehung sein.
+    def test_das_rueckfall_attribut_ist_getilgt(self):
+        """Der Wächter gegen die Wiederkehr — Etappe 6.3.
 
-        Wo eine Pflicht-Kette besteht oder eine `CheckConstraint` mindestens
-        einen Weg erzwingt, würde der Rückfall einen Datensatz retten, der gar
-        nicht hätte entstehen dürfen — und die Absicherung wäre still wertlos.
-        Der Rückfall gehört genau dorthin, wo es sonst keine gibt.
+        Bis 6.3 steuerte `ORGANISATION_RUECKFALL` an sieben Modellen, ob bei
+        gebrochener Kette auf „die einzige vorhandene Organisation"
+        ausgewichen wird. Das war ausdrücklich Schuld auf Zeit: Es hielt jeden
+        Pfad am Leben, der ohne Mandantenkontext schrieb, und beim ersten
+        zweiten Mandanten wären sie alle gleichzeitig ausgefallen.
+
+        Der Vorgängertest an dieser Stelle zählte, WELCHE Modelle ausweichen —
+        er fand, dass es sieben waren und nicht vier, wie das Plandokument
+        behauptete. Seine Aufgabe ist erledigt; an seiner Stelle steht jetzt
+        die einfachere Frage, ob das Attribut wirklich weg ist. Ein `grep`
+        genügt dafür nicht, weil es vererbt würde.
         """
-        for modell in _kettenmodelle():
-            if not modell.ORGANISATION_RUECKFALL:
-                continue
-            with self.subTest(modell=modell._meta.label):
-                self.assertFalse(
-                    isinstance(modell.ORGANISATION_PFAD, str),
-                    f'{modell._meta.label} hat einen EINZELNEN (also pflichtigen) '
-                    f'Pfad und trotzdem ORGANISATION_RUECKFALL. Der Rückfall würde '
-                    f'hier nie greifen — oder er verdeckt, dass die Kette gebrochen ist.')
-                self.assertFalse(
-                    any(isinstance(c, models.CheckConstraint)
-                        for c in modell._meta.constraints),
-                    f'{modell._meta.label} hat eine CheckConstraint UND den Rückfall. '
-                    f'Eines von beidem ist zu viel: Die Bedingung garantiert bereits '
-                    f'einen Weg.')
-
-
-class RueckfallBestandTests(TestCase):
-    """Wie viele Modelle weichen auf den Mandantenkontext aus — und welche.
-
-    WARUM DAS EIN TEST IST UND KEINE ZEILE IM DOKUMENT
-
-    `docs/PHASE-2-PLAN.md` nannte „vier Belegarten in `finance/models.py`". Das
-    stimmte, als es geschrieben wurde — in PR 7 gab es genau diese vier. PR 8
-    fügte `crm.Kommunikation` hinzu, PR 9 `core.Pendenz` und
-    `rentals.Dokument`, und die Tabelle wurde nicht nachgezogen. Wer in
-    Etappe 6 nach „vier" gesucht hätte, hätte drei stehen lassen — ausgerechnet
-    die beiden, die an Mieterdaten hängen.
-
-    Eine Zahl in einem Dokument veraltet, sobald jemand anderswo etwas
-    hinzufügt. Ein Test veraltet nicht: Er schlägt fehl.
-
-    Beim Tilgen in Etappe 6.3 zählt er rückwärts. Ist die Liste leer, gehört
-    das Attribut `ORGANISATION_RUECKFALL` selbst entfernt — und mit ihm dieser
-    Test.
-
-    Und `grep` genügt hier nicht: Das Attribut wird vererbt. Nur die Registry
-    sagt, welches konkrete Modell tatsächlich ausweicht.
-    """
-
-    #: Stand nach Etappe 5. Beim Tilgen in 6.3 schrumpft diese Liste.
-    ERWARTET = {
-        'core.Pendenz',
-        'crm.Kommunikation',
-        'rentals.Dokument',
-        'finance.DebitorenRechnung',
-        'finance.Zahlungseingang',
-        'finance.Mahnung',
-        'finance.KreditorenRechnung',
-    }
-
-    def test_genau_diese_modelle_weichen_aus(self):
-        tatsaechlich = {m._meta.label for m in _kettenmodelle()
-                        if m.ORGANISATION_RUECKFALL}
+        mit_attribut = [m._meta.label for m in _kettenmodelle()
+                        if hasattr(m, 'ORGANISATION_RUECKFALL')]
         self.assertEqual(
-            tatsaechlich, self.ERWARTET,
-            'Die Liste der Modelle mit ORGANISATION_RUECKFALL hat sich geändert.\n'
-            f'  neu dazugekommen: {sorted(tatsaechlich - self.ERWARTET) or "—"}\n'
-            f'  weggefallen:      {sorted(self.ERWARTET - tatsaechlich) or "—"}\n'
-            'Neu dazugekommen heisst: ERWARTET hier UND die Schuldentabelle in '
-            'docs/PHASE-2-PLAN.md nachziehen. Weggefallen heisst: getilgt — dann '
-            'gehört es aus beiden Listen raus. Ist die Liste leer, gehört das '
-            'Attribut selbst entfernt, nicht auf False gesetzt.')
+            mit_attribut, [],
+            'ORGANISATION_RUECKFALL ist zurück. Seit Etappe 6.3 entscheidet bei '
+            'gebrochener Kette der Mandantenkontext — für jedes Modell gleich '
+            'und ohne Ausnahmeliste. Ein Attribut dafür wäre ein Rückschritt '
+            'auf „die einzige vorhandene Organisation".')
 
 
 class VorlagenAusnahmeTests(TestCase):

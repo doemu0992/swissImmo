@@ -729,7 +729,6 @@ class Dokument(OrganisationAusKette):
     #
     # Produktiv gemessen (16.08.2026): 7 Zeilen, 0 ohne Weg. Lokal 158, 0.
     ORGANISATION_PFAD = ('vertrag', 'einheit', 'liegenschaft', 'mieter', 'eigentuemer')
-    ORGANISATION_RUECKFALL = True   # alle fuenf optional
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True)
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, null=True, blank=True)
     einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, null=True, blank=True)

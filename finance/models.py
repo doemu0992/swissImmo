@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import models
 
 from core.tenancy import AlleOrganisationenManager, TenantManager
-from core.organisation_kette import OrganisationAusKette, organisation_oder_einzige
+from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
 from django.utils import timezone
 from django.db.models import Sum
 
@@ -97,7 +97,7 @@ class Buchungskonto(models.Model):
         ]
 
     def save(self, *args, **kwargs):
-        # `organisation_oder_einzige` statt des strengen `organisation_aus_kontext`
+        # `organisation_bestimmen` statt des strengen `organisation_aus_kontext`
         # wie bei `Liegenschaft`: Kontenplan, Lieferantenprofile und Lernregeln
         # werden aus der Tiefe der Buchhaltung heraus angelegt — automation.py,
         # zahlungszuordnung.py, bankabgleich.py, buchhaltung.py, admin.py —, und
@@ -108,7 +108,7 @@ class Buchungskonto(models.Model):
         # sind es wenige Schreibpfade, sie sind bereits versorgt, und der Anker
         # der Mandantentrennung soll nicht ausweichen duerfen.
         if self.organisation_id is None:
-            self.organisation_id = organisation_oder_einzige().pk
+            self.organisation_id = organisation_bestimmen().pk
         super().save(*args, **kwargs)
 
     def __str__(self): return f"{self.nummer} - {self.bezeichnung}"
@@ -153,7 +153,7 @@ class LieferantProfil(models.Model):
         ]
 
     def save(self, *args, **kwargs):
-        # `organisation_oder_einzige` statt des strengen `organisation_aus_kontext`
+        # `organisation_bestimmen` statt des strengen `organisation_aus_kontext`
         # wie bei `Liegenschaft`: Kontenplan, Lieferantenprofile und Lernregeln
         # werden aus der Tiefe der Buchhaltung heraus angelegt — automation.py,
         # zahlungszuordnung.py, bankabgleich.py, buchhaltung.py, admin.py —, und
@@ -164,7 +164,7 @@ class LieferantProfil(models.Model):
         # sind es wenige Schreibpfade, sie sind bereits versorgt, und der Anker
         # der Mandantentrennung soll nicht ausweichen duerfen.
         if self.organisation_id is None:
-            self.organisation_id = organisation_oder_einzige().pk
+            self.organisation_id = organisation_bestimmen().pk
         super().save(*args, **kwargs)
 
     def __str__(self): return f"{self.name_anzeige} → {self.standard_konto or '—'}"
@@ -298,7 +298,6 @@ class Buchung(OrganisationAusKette):
 # 🔥 NEU: Debitorenrechnungen (inkl. OP-Verwaltung)
 class DebitorenRechnung(OrganisationAusKette):
     ORGANISATION_PFAD = ('vertrag', 'einheit', 'liegenschaft', 'konto_haben')
-    ORGANISATION_RUECKFALL = True   # alle Wege optional, siehe Zahlungseingang
     STATUS_CHOICES = [
         ('offen', 'Offen'),
         ('teilbezahlt', 'Teilbezahlt'), # 🔥 NEU für saubere OP-Verwaltung
@@ -408,11 +407,6 @@ class Zahlungseingang(OrganisationAusKette):
     # Zahlungseingang mehr ohne Bezug entstehen — an EINER Stelle statt an
     # neun, und auch fuer jeden kuenftigen Erzeugungspfad, den niemand kennt.
     ORGANISATION_PFAD = ('vertrag', 'liegenschaft', 'debitoren_rechnung', 'konto')
-    # Traegt keiner der vier Wege, kommt der Bezug aus dem Mandantenkontext.
-    # Ohne das braeche der Bankimport am Tag nach der Migration ab, sobald eine
-    # Zeile weder Vertrag noch Konto hat — genau die Sorge, die der Auftrag
-    # benennt, nur an einer Stelle geloest statt an neun.
-    ORGANISATION_RUECKFALL = True
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='zahlungen')
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
@@ -442,7 +436,6 @@ class Zahlungseingang(OrganisationAusKette):
 
 class Mahnung(OrganisationAusKette):
     ORGANISATION_PFAD = ('debitoren_rechnung', 'vertrag')
-    ORGANISATION_RUECKFALL = True   # alle Wege optional, siehe Zahlungseingang
     """Revisionssichere Mahn-Historie: pro Mahnschritt ein unveränderlicher Eintrag
     mit Stufe, offenem Betrag und (optionaler) Mahngebühr."""
     debitoren_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.CASCADE, related_name='mahnungen', null=True, blank=True)
@@ -481,7 +474,6 @@ class Mahnung(OrganisationAusKette):
 
 class KreditorenRechnung(OrganisationAusKette):
     ORGANISATION_PFAD = ('einheit', 'liegenschaft', 'konto')
-    ORGANISATION_RUECKFALL = True   # alle Wege optional, siehe Zahlungseingang
     STATUS_CHOICES = [
         ('neu', 'Neu / Scan'),
         ('freigegeben', 'Freigegeben'),
@@ -741,7 +733,7 @@ class NebenkostenLernRegel(models.Model):
         ]
 
     def save(self, *args, **kwargs):
-        # `organisation_oder_einzige` statt des strengen `organisation_aus_kontext`
+        # `organisation_bestimmen` statt des strengen `organisation_aus_kontext`
         # wie bei `Liegenschaft`: Kontenplan, Lieferantenprofile und Lernregeln
         # werden aus der Tiefe der Buchhaltung heraus angelegt — automation.py,
         # zahlungszuordnung.py, bankabgleich.py, buchhaltung.py, admin.py —, und
@@ -752,7 +744,7 @@ class NebenkostenLernRegel(models.Model):
         # sind es wenige Schreibpfade, sie sind bereits versorgt, und der Anker
         # der Mandantentrennung soll nicht ausweichen duerfen.
         if self.organisation_id is None:
-            self.organisation_id = organisation_oder_einzige().pk
+            self.organisation_id = organisation_bestimmen().pk
         super().save(*args, **kwargs)
 
     def __str__(self): return f"'{self.suchwort}' -> {self.kategorie_zuweisung}"
@@ -961,7 +953,7 @@ class EigentuemerAuszahlung(models.Model):
 
     def save(self, *args, **kwargs):
         if self.organisation_id is None:
-            self.organisation_id = organisation_oder_einzige().pk
+            self.organisation_id = organisation_bestimmen().pk
         super().save(*args, **kwargs)
 
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.CASCADE, related_name='auszahlungen')

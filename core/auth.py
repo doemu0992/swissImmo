@@ -304,11 +304,13 @@ def log_aktion(request, aktion, objekt="", details="", ziel=None, kategorie=None
             ziel_id = ziel.pk
         # DIE ORGANISATION AUSDRÜCKLICH BESTIMMEN — nicht dem Modell überlassen.
         #
-        # `AktivitaetsLog.save()` fällt auf die einzige vorhandene Organisation
-        # zurück. Das trägt heute, aber nicht mehr, sobald es zwei gibt: Beim
-        # LOGIN ist noch kein Mandantenkontext gesetzt — die Middleware liest
-        # ihn aus der Mitgliedschaft, und die steht erst fest, wenn der Benutzer
-        # angemeldet IST. Genau dort schlüge die Ableitung fehl.
+        # `AktivitaetsLog.save()` nimmt sonst den Mandantenkontext — und beim
+        # LOGIN ist noch keiner gesetzt: Die Middleware liest ihn aus der
+        # Mitgliedschaft, und die steht erst fest, wenn der Benutzer angemeldet
+        # IST. Genau dort schlüge die Ableitung fehl, und weil diese Funktion
+        # alle Fehler schluckt, hörte der Audit-Trail still auf zu schreiben.
+        # (Bis Etappe 6.3 wich `save()` auf die einzige vorhandene Organisation
+        # aus. Das trug, solange es eine gab.)
         #
         # Und weil diese Funktion jeden Fehler schluckt (zu Recht: Ein
         # Logbucheintrag darf nie einen Geschäftsprozess brechen), wäre die
@@ -334,9 +336,10 @@ def log_aktion(request, aktion, objekt="", details="", ziel=None, kategorie=None
 
         AktivitaetsLog.objects.create(
             benutzer=user,
-            # `organisation=None` überlässt die Wahl dem Modell (Rückfall auf die
-            # einzige vorhandene) — der heutige Zustand für Konten ohne
-            # Mitgliedschaft, etwa Mieter im Portal.
+            # Ohne bestimmte Organisation gar nicht mitgeben: Dann entscheidet
+            # `AktivitaetsLog.save()` über den Kontext. Steht auch der nicht,
+            # bricht das Schreiben ab — und das ist richtiger, als den Eintrag
+            # irgendeiner Verwaltung zuzuschlagen.
             **({'organisation': organisation} if organisation is not None else {}),
             aktion=str(aktion)[:100],
             objekt=str(objekt)[:200],

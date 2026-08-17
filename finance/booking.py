@@ -68,13 +68,15 @@ def _organisation(organisation=None):
     darauf. Das waere kein Leseleck mehr, sondern ein fremder Buchungssatz in
     fremden Buechern.
 
-    `organisation_oder_einzige` traegt das uebergangsweise: Kontext, sonst die
-    einzige vorhandene Organisation, sonst Fehler. Die Begruendung samt Messung
-    steht dort — hier genuegt, dass es Schuld auf Zeit ist und in Etappe 6
-    getilgt gehoert.
+    `organisation_bestimmen` loest das auf: ausdrueckliches Argument, sonst der
+    Mandantenkontext, sonst ein Fehler. Bis Etappe 6.3 stand dazwischen noch
+    "die einzige vorhandene Organisation" — das hielt jeden Pfad am Leben, der
+    ohne Kontext buchte, und waere beim zweiten Mandanten geschlossen
+    ausgefallen. Getilgt, nachdem 6.1 und 6.2 den Kontext ueberall gesetzt
+    hatten.
     """
-    from core.organisation_kette import organisation_oder_einzige
-    return organisation_oder_einzige(organisation)
+    from core.organisation_kette import organisation_bestimmen
+    return organisation_bestimmen(organisation)
 
 
 def ensure_kontenplan(organisation=None):

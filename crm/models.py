@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import models
 
 from core.tenancy import AlleOrganisationenManager, TenantManager
-from core.organisation_kette import OrganisationAusKette, organisation_oder_einzige
+from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
 
 logger = logging.getLogger(__name__)
 
@@ -234,7 +234,7 @@ class Eigentuemer(models.Model):
         # spaetere gewinnt in Python — die Ableitung lief nie, und das Anlegen
         # scheiterte an `NOT NULL constraint failed: core_mandant.organisation_id`.
         if self.organisation_id is None:
-            self.organisation_id = organisation_oder_einzige().pk
+            self.organisation_id = organisation_bestimmen().pk
         _unterschrift_aufbereiten(self, 'sig_man_')
         super().save(*args, **kwargs)
 
@@ -249,7 +249,7 @@ class Mieter(models.Model):
 
     def save(self, *args, **kwargs):
         if self.organisation_id is None:
-            self.organisation_id = organisation_oder_einzige().pk
+            self.organisation_id = organisation_bestimmen().pk
         super().save(*args, **kwargs)
 
     TYP_CHOICES = [
@@ -489,7 +489,7 @@ class Handwerker(models.Model):
 
     def save(self, *args, **kwargs):
         if self.organisation_id is None:
-            self.organisation_id = organisation_oder_einzige().pk
+            self.organisation_id = organisation_bestimmen().pk
         super().save(*args, **kwargs)
 
     BRANCHEN_CHOICES = [
@@ -630,7 +630,6 @@ class Kommunikation(OrganisationAusKette):
     # Benutzers. Mit zwei Mandanten faellt das auseinander, und dann waere
     # die Kontext-Variante still falsch statt sichtbar leer.
     ORGANISATION_PFAD = ('mieter', 'vertrag', 'liegenschaft')
-    ORGANISATION_RUECKFALL = True   # alle drei optional — Rueckfall noetig
     """Kommunikations-/Kontaktjournal: dokumentiert jede Interaktion mit einem
     Kontakt (Telefon, E-Mail, Brief, Notiz) — verknüpfbar mit Person/Vertrag/Schaden."""
     from django.utils import timezone as _tz

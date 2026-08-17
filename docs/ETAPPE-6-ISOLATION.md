@@ -100,7 +100,23 @@ Damit stehen **3 von 13** Isolationstests auf grün. Die übrigen zehn gehören 
 
 ---
 
-**6.3 — Die sieben Rückfälle tilgen.** Danach ist `ORGANISATION_RUECKFALL` überflüssig; das Attribut selbst gehört mit entfernt, nicht nur auf `False` gesetzt. Ebenso `organisation_oder_einzige()` samt der fünf direkten `Buchungskonto`-Anlagen.
+**6.3 — erledigt (17.08.2026).** Die sieben Rückfälle sind getilgt, `ORGANISATION_RUECKFALL` existiert nicht mehr, und `organisation_oder_einzige()` heisst jetzt `organisation_bestimmen()` — ohne den mittleren Schritt.
+
+```
+vorher:  Argument → Kontext → die EINZIGE vorhandene Organisation → Fehler
+jetzt:   Argument → Kontext → Fehler
+```
+
+**Der gestrichene Schritt ratete nicht** — mit mehreren Organisationen brach er ab. Genau darin lag das Problem: Er hielt jeden Pfad am Leben, der ohne Mandantenkontext schrieb, und beim ersten zweiten Mandanten wären sie **alle gleichzeitig** ausgefallen. Solange es eine Organisation gab, sah alles in Ordnung aus.
+
+Tilgen liess er sich erst nach 6.1 und 6.2: Erst dort haben die öffentlichen Endpunkte, die Management-Commands und die Services ihren Kontext bekommen. Die Zahl, die den ersten Versuch gestoppt hatte — 140 Fehlschläge in drei Testmodulen —, war die Rechnung für genau diese fehlende Vorarbeit. Diesmal: **volle Suite grün, kein einziger Fehlschlag.**
+
+**Das Attribut ist weg, nicht auf `False` gesetzt.** Die Regel gilt jetzt für jedes Modell gleich: Trägt die Kette nicht, entscheidet der Kontext; ohne Kontext bricht das Speichern ab. Eine Ausnahmeliste, die pflegen muss, wer ein Modell hinzufügt, gibt es nicht mehr.
+
+**Zwei Tests haben ihre Aufgabe erfüllt und wurden ersetzt:**
+
+- `RueckfallBestandTests` zählte über die Registry, welche Modelle ausweichen — und fand, dass es **sieben** waren, nicht die vier, die das Plandokument nannte. An seiner Stelle steht jetzt ein Wächter, dass das Attribut nicht zurückkommt (ein `grep` genügte dafür nicht, weil es vererbt würde).
+- `test_rueckfall_nur_wo_kein_weg_garantiert_ist` prüfte die Verkabelung. An seiner Stelle steht die **Zusicherung selbst**: Ein Modell mit lauter optionalen Wegen, gespeichert ohne jeden Weg und ohne Kontext, muss abbrechen.
 
 **6.4 — erledigt (17.08.2026).** Die Lesezugriffe waren nur die Hälfte.
 

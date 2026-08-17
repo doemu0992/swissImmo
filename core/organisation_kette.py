@@ -66,65 +66,43 @@ def organisation_aus_kontext():
     return getattr(aktuelle_organisation(), 'pk', None)
 
 
-def organisation_oder_einzige(organisation=None):
-    """Übergangshelfer: Kontext, sonst die EINZIGE Organisation — sonst Fehler.
+def organisation_bestimmen(organisation=None):
+    """Die Organisation für einen Datensatz — ausdrücklich, sonst aus dem Kontext.
 
-    WARUM ES DEN GIBT, obwohl „im Zweifel raten" hier sonst verboten ist:
+    ETAPPE 6.3: Diese Funktion hiess `organisation_oder_einzige` und hatte einen
+    dritten Schritt, der jetzt weg ist:
 
-    Der Kontenplan gehört seit Etappe 5 der Verwaltung. `finance/booking.py`
-    braucht deshalb bei jedem `konto('1020')` einen Bezug. Verlangt man dafür
-    ausnahmslos den Mandantenkontext, ist plötzlich **jeder** Pfad, der etwas
-    verbucht, kontextabhängig — Services, Management-Commands, Signale, Tests.
-    Gemessen am 16.08.2026: **140 Fehlschläge in nur drei Testmodulen**, mit
-    weiteren zu erwarten. Das ist dieselbe Form, die schon die Anbindung des
-    `TenantManager` zweimal gestoppt hat, und sie hat dieselbe Lösung: Der
-    Aufrufer muss den Kontext setzen, und das ist Etappe 6.
+        vorher:  Argument → Kontext → **die einzige vorhandene** → Fehler
+        jetzt:   Argument → Kontext → Fehler
 
-    Bis dahin gilt hier eine Regel, die **kein Raten** ist:
+    Der gestrichene Schritt war ausdrücklich Schuld auf Zeit. Er ratete nicht —
+    mit mehreren Organisationen brach er ab —, aber genau darin lag das Problem:
+    Er hielt jeden Pfad am Leben, der ohne Mandantenkontext buchte, und beim
+    ersten zweiten Mandanten wären sie alle gleichzeitig ausgefallen. Solange
+    es eine Organisation gab, sah alles in Ordnung aus.
 
-        Gibt es genau EINE Organisation, ist sie eindeutig gemeint.
-        Gibt es mehrere und keinen Kontext, ist es ein Fehler.
+    Getilgt werden konnte er erst nach 6.1 und 6.2: Erst dort haben die
+    öffentlichen Endpunkte, die Management-Commands und die Services ihren
+    Kontext bekommen. Die Zahl, die den ersten Versuch gestoppt hatte —
+    140 Fehlschläge in drei Testmodulen —, war die Rechnung für genau diese
+    fehlende Vorarbeit.
 
-    Mit einem einzigen Mandanten kann daraus kein mandantenübergreifender
-    Zugriff entstehen — es gibt kein „übergreifend". Und in dem Moment, in dem
-    einer entstehen könnte, wird daraus eine Ausnahme statt einer stillen
-    Fehlzuordnung. Genau dieselbe Regel wenden die Datenmigrationen an
-    (`crm/0034`, `portfolio/0037`, `finance/0036`): eine Organisation → zuordnen,
-    mehrere → abbrechen.
-
-    Das ist Schuld auf Zeit, keine Lösung. Sie steht in `docs/PHASE-2-PLAN.md`
-    unter Etappe 6 und muss dort getilgt werden, BEVOR der zweite Mandant
-    angelegt wird.
+    Ohne Kontext ist ein Fehler die richtige Antwort. Die Alternative wäre, den
+    Datensatz irgendwem zuzuschlagen; das fällt niemandem auf, bis er in der
+    falschen Bilanz steht.
     """
-    from core.tenancy import _kontextfrei, aktuelle_organisation
-    from crm.models import Organisation
+    from core.tenancy import aktuelle_organisation
 
     if organisation is not None:
         return organisation
     aus_kontext = aktuelle_organisation()
     if aus_kontext is not None:
         return aus_kontext
-
-    # `ohne_organisation()` heisst AUSDRÜCKLICH kontextfrei — dort wird auch
-    # dann nicht ausgewichen, wenn es nur eine Organisation gibt. Sonst würde
-    # ausgerechnet der Block, der beweisen soll, dass ohne Kontext nichts geht,
-    # stillschweigend etwas gehen lassen.
-    if _kontextfrei.get():
-        raise ValueError(
-            'Ausdrücklich ohne Mandantenkontext (`ohne_organisation()`) — hier '
-            'wird auch nicht auf eine einzige vorhandene Organisation '
-            'ausgewichen.')
-
-    beiden = list(Organisation.objects.order_by('pk')[:2])
-    if len(beiden) == 1:
-        return beiden[0]
-    if not beiden:
-        raise ValueError(
-            'Kein Mandantenkontext und keine Organisation vorhanden. Ohne beides '
-            'ist nicht bestimmt, wem der Datensatz gehört.')
     raise ValueError(
-        'Kein Mandantenkontext, aber mehrere Organisationen. Welche gemeint ist, '
-        'lässt sich nicht erraten — `with organisation_kontext(org):` setzen.')
+        'Kein Mandantenkontext. Wem der Datensatz gehört, ist damit nicht '
+        'bestimmt — `with organisation_kontext(org):` setzen. (Bis Etappe 6.3 '
+        'wich diese Stelle auf eine einzige vorhandene Organisation aus; das '
+        'ging genau so lange gut, wie es nur eine gab.)')
 
 
 class OrganisationAusKette(models.Model):
@@ -162,22 +140,6 @@ class OrganisationAusKette(models.Model):
     #: Rezept B beschreibt: ein Datensatz, von dem kein Weg zur Organisation
     #: führt — und der deshalb niemandem gehört.
     ORGANISATION_PFAD = ''
-
-    #: Darf der Bezug aus dem Mandantenkontext kommen, wenn KEIN Pfad trägt?
-    #:
-    #: Nur für Modelle, deren Wege **alle** optional sind und die trotzdem
-    #: entstehen dürfen, ohne dass einer davon gesetzt ist. Im Bestand sind das
-    #: die vier Belegarten der Buchhaltung: Ein Zahlungseingang aus dem
-    #: Bankabgleich hat oft weder Vertrag noch Liegenschaft — „noch nicht
-    #: zugeordnet" ist dort ein regulärer Arbeitszustand, kein Fehler.
-    #:
-    #: `False` überall sonst, und das ist der Normalfall: Wo eine Pflicht-Kette
-    #: besteht (`einheit`, `vertrag`, `protokoll`) oder eine `CheckConstraint`
-    #: mindestens einen Weg erzwingt, wäre ein Rückfall eine stille Umgehung —
-    #: er würde einen Datensatz retten, der gar nicht hätte entstehen dürfen.
-    #:
-    #: Der Rückfall ist Übergangsschuld, siehe `organisation_oder_einzige`.
-    ORGANISATION_RUECKFALL = False
 
     organisation = models.ForeignKey(
         'crm.Organisation',
@@ -273,8 +235,19 @@ class OrganisationAusKette(models.Model):
         # gesetzt hat (Datenmigration, Test-Fixture), meint sie so.
         if self.organisation_id is None:
             self.organisation_id = self.organisation_aus_kette()
-        if self.organisation_id is None and self.ORGANISATION_RUECKFALL:
-            self.organisation_id = organisation_oder_einzige().pk
+        if self.organisation_id is None:
+            # Die Kette trug nicht. Das ist bei den meisten Modellen unmoeglich
+            # (ihre Glieder sind pflichtig) und bei einigen der Normalfall: Ein
+            # Zahlungseingang aus dem Bankabgleich hat oft weder Vertrag noch
+            # Liegenschaft — "noch nicht zugeordnet" ist dort ein regulaerer
+            # Arbeitszustand.
+            #
+            # Dann gilt der Mandantenkontext. Bis Etappe 6.3 stand hier
+            # stattdessen "die einzige vorhandene Organisation", gesteuert ueber
+            # ein Attribut `ORGANISATION_RUECKFALL` an sieben Modellen. Beides
+            # ist weg: Der Kontext ist die richtige Quelle, er gilt fuer jedes
+            # Modell gleich, und ohne ihn ist ein Fehler die ehrliche Antwort.
+            self.organisation_id = organisation_bestimmen().pk
 
         # KEIN Sonderfall für `update_fields`, obwohl er sich aufdrängt:
         # `obj.save(update_fields=['bezeichnung'])` schriebe eine hier eben
