@@ -6,6 +6,8 @@ import logging
 from decimal import Decimal, InvalidOperation
 from django.conf import settings
 from django.db import models
+
+from core.tenancy import AlleOrganisationenManager, TenantManager
 from core.organisation_kette import OrganisationAusKette, organisation_oder_einzige
 from django.utils import timezone
 from django.db.models import Sum
@@ -77,6 +79,9 @@ class Buchungskonto(models.Model):
         blank=True
     )
 
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
     class Meta:
         verbose_name = "Buchungskonto"
         verbose_name_plural = "Kontenplan"
@@ -132,6 +137,9 @@ class LieferantProfil(models.Model):
     treffer = models.PositiveIntegerField("Gelernte Belege", default=0)
     aktualisiert_am = models.DateTimeField(auto_now=True)
 
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
     class Meta:
         db_table = 'finance_lieferantprofil'
         ordering = ['name_anzeige']
@@ -720,6 +728,9 @@ class NebenkostenLernRegel(models.Model):
     kategorie_zuweisung = models.CharField("Wird zugewiesen zu", max_length=50)
     treffer_quote = models.IntegerField("Erfolgreich angewendet", default=0)
 
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
     class Meta:
         verbose_name = "KI Lern-Regel"
         verbose_name_plural = "KI Lern-Regeln"
@@ -964,6 +975,9 @@ class EigentuemerAuszahlung(models.Model):
     erstellt_am = models.DateTimeField(default=timezone.now)
     erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
     class Meta:
         verbose_name = "Eigentümer-Auszahlung"
         verbose_name_plural = "Eigentümer-Auszahlungen"

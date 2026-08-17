@@ -1,6 +1,8 @@
 from core.utils import get_smart_upload_path, get_current_lik, get_current_ref_zins
 from django.conf import settings
 from django.db import models
+
+from core.tenancy import AlleOrganisationenManager, TenantManager
 from core.organisation_kette import OrganisationAusKette, organisation_oder_einzige
 
 
@@ -56,6 +58,9 @@ class AktivitaetsLog(models.Model):
     kategorie = models.CharField("Kategorie", max_length=20, blank=True, default='', db_index=True)
     ip_adresse = models.GenericIPAddressField("IP-Adresse", null=True, blank=True)
 
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
     class Meta:
         verbose_name = "Aktivitätslog"
         verbose_name_plural = "Aktivitätslog"

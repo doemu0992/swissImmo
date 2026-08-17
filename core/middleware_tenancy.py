@@ -38,8 +38,11 @@ def _organisation_fuer(benutzer, session=None):
     """Die Organisation dieses Benutzers, oder `None`."""
     from crm.models import Mitgliedschaft
 
+    # `alle_organisationen`: DIESE Abfrage bestimmt den Kontext erst — sie
+    # kann ihn also unmoeglich voraussetzen. Genau dafuer gibt es den benannten
+    # Weg an der Isolation vorbei.
     mitgliedschaften = list(
-        Mitgliedschaft.objects.filter(benutzer=benutzer)
+        Mitgliedschaft.alle_organisationen.filter(benutzer=benutzer)
         .select_related('organisation').order_by('pk')[:5])
 
     if mitgliedschaften:

@@ -80,7 +80,23 @@ Die sechs Schulden hängen voneinander ab. Diese Folge löst das auf:
 
 **Erster von dreizehn Isolationstests grün:** `test_ohne_kontext_wirft_der_manager` — `expectedFailure` entfernt, Gegenprobe protokolliert. Die übrigen zwölf gehören zu 6.3–6.5.
 
-**Noch offen in 6.2:** die 12 Modelle mit eigener Organisationsspalte (ohne die abstrakte Basis) — `crm.Eigentuemer`, `crm.Mieter`, `crm.Handwerker`, `portfolio.Liegenschaft`, `finance.Buchungskonto` und weitere. Sie kommen einzeln dazu, weil jedes eine eigene Frage stellt. **`crm.Vorlage` ausdrücklich erst nach 6.4** — sonst verschwinden die Systemvorlagen (`organisation__isnull=True`) aus der Oberfläche, und das sieht wie Datenverlust aus.
+**Auch die 12 Modelle mit eigener Organisationsspalte sind angebunden** (17.08.2026): `Eigentuemer`, `Mieter`, `Handwerker`, `Mitgliedschaft`, `Liegenschaft`, `Lebensdauer`, `Buchungskonto`, `LieferantProfil`, `NebenkostenLernRegel`, `EigentuemerAuszahlung`, `AktivitaetsLog` — und `Vorlage` über den eigenen Manager aus 6.4.
+
+Die volle Suite meldete dabei **zwei** Fehler, beide in Testcode, der absichtlich über Verwaltungsgrenzen prüft. Dass es nach 195 im ersten Anlauf nur noch zwei waren, liegt an der Grundlage: Testläufer, Kontext im Testaufbau und die wiederherstellende Middleware waren zu diesem Zeitpunkt schon da.
+
+**Zwei Modelle stellten eigene Fragen:**
+
+- **`Mitgliedschaft` bestimmt den Kontext** und darf ihn deshalb nicht voraussetzen. Die zwei Stellen, die ihn *herleiten* — die Middleware und der Rückfall in `log_aktion` — nutzen `alle_organisationen`. Alle übrigen Abfragen (Benutzerverwaltung, Rollenprüfung) laufen im Kontext und filtern richtig.
+- **`AktivitaetsLog`** hat nichts abzuleiten: Sein einziger Fremdschlüssel ist `benutzer`, und der trägt bewusst keinen Organisationsbezug. Der Bezug muss beim Schreiben gesetzt werden.
+
+**Zwei weitere Isolationstests sind dadurch grün geworden** — beide zum Audit-Trail, beide mit protokollierter Gegenprobe:
+
+| Test | Was er verhindert |
+|---|---|
+| `test_logbuch_filtert_nicht_auf_fremden_benutzer` | `/neu/logbuch/?benutzer=<fremd>` zeigt fremde Vorgänge |
+| `test_csv_export_enthaelt_keine_fremden_daten` | der CSV-Export nimmt den fremden Audit-Trail mit |
+
+Damit stehen **3 von 13** Isolationstests auf grün. Die übrigen zehn gehören zu 6.3 und 6.5.
 
 ---
 

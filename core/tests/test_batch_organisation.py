@@ -47,7 +47,10 @@ class FristenDigestTests(ZweiBestaende):
             fixture.benutzer.email = f'team-{fixture.kuerzel.lower()}@example.ch'
             fixture.benutzer.is_active = True
             fixture.benutzer.save(update_fields=['email', 'is_active'])
-            Mitgliedschaft.objects.update_or_create(
+            # `alle_organisationen`: Das Fixture legt Mitgliedschaften fuer
+            # BEIDE Verwaltungen an — im Aufbau gibt es noch keinen Kontext,
+            # und es soll auch keinen geben.
+            Mitgliedschaft.alle_organisationen.update_or_create(
                 benutzer=fixture.benutzer, organisation=fixture.organisation,
                 defaults={'rolle': Mitgliedschaft.ROLLE_VERWALTER})
 

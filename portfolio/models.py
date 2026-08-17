@@ -1,5 +1,7 @@
 # portfolio/models.py
 from django.db import models
+
+from core.tenancy import AlleOrganisationenManager, TenantManager
 from django.utils import timezone
 from datetime import date
 from decimal import Decimal
@@ -86,6 +88,9 @@ class Liegenschaft(models.Model):
             self.organisation_id = organisation_aus_kontext()
         super().save(*args, **kwargs)
 
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
     class Meta:
         verbose_name = "Liegenschaft"
         verbose_name_plural = "Liegenschaften"
@@ -665,6 +670,9 @@ class Lebensdauer(models.Model):
             self.organisation_id = organisation_aus_kontext()
         super().save(*args, **kwargs)
 
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
     class Meta:
         verbose_name = "Lebensdauer"
         verbose_name_plural = "Lebensdauertabelle"

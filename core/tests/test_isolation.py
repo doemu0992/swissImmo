@@ -298,7 +298,6 @@ class FremdeIdUeberQuerystringTests(IsolationsBasis):
             f'{len(auffaellig)} von {durchlaufen} URLs rechnen auf der '
             f'Liegenschaft von B: {auffaellig[:8]}…')
 
-    @unittest.expectedFailure
     def test_logbuch_filtert_nicht_auf_fremden_benutzer(self):
         """`/neu/logbuch/?benutzer=<B>` darf keine fremden Einträge zeigen.
 
@@ -307,23 +306,34 @@ class FremdeIdUeberQuerystringTests(IsolationsBasis):
         Regel 4 des Skills `mandantentrennung` ausdrücklich genannt.
         """
         from core.models import AktivitaetsLog
-        AktivitaetsLog.objects.create(benutzer=self.b.benutzer, aktion='test',
+        # Die Organisation wird ausdruecklich gesetzt: `AktivitaetsLog` hat
+        # nichts abzuleiten (sein einziger Fremdschluessel ist `benutzer`, und
+        # der traegt keinen Bezug). Der Eintrag SOLL B gehoeren — das ist die
+        # Voraussetzung des Tests, nicht sein Gegenstand.
+        AktivitaetsLog.objects.create(benutzer=self.b.benutzer,
+                                      organisation=self.b.organisation,
+                                      aktion='test',
                                       objekt='B-Vorgang', details='gehört B')
         antwort = self.client.get(reverse('fw_logbuch'), {'benutzer': self.b.benutzer.pk})
         self.assertNotContains(
             antwort, 'B-Vorgang',
             msg_prefix='das Logbuch von A zeigt einen Vorgang von B')
 
-    @unittest.expectedFailure
     def test_csv_export_enthaelt_keine_fremden_daten(self):
-        """Der Export zieht heute den gesamten Audit-Trail.
+        """Der Export darf nur den eigenen Audit-Trail mitnehmen.
 
         Regel 4: „Exporte enthalten nur Daten einer Organisation, auch wenn der
         Auslöser Superuser ist." Ein Export ist der Fall, in dem ein Leck nicht
         angesehen, sondern mitgenommen wird.
+
+        **GRÜN SEIT ETAPPE 6.2 (17.08.2026)** — seit `AktivitaetsLog` den
+        `TenantManager` trägt. Gegenprobe durchgeführt: Ohne ihn steht
+        `B-Export` in der CSV von A.
         """
         from core.models import AktivitaetsLog
-        AktivitaetsLog.objects.create(benutzer=self.b.benutzer, aktion='test',
+        AktivitaetsLog.objects.create(benutzer=self.b.benutzer,
+                                      organisation=self.b.organisation,
+                                      aktion='test',
                                       objekt='B-Export', details='gehört B')
         antwort = self.client.get(reverse('fw_logbuch'), {'export': 'csv'})
         inhalt = b''.join(antwort.streaming_content) if antwort.streaming \

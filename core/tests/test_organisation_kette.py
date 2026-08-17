@@ -94,7 +94,10 @@ class WaisenTests(TestCase):
         feld = Liegenschaft._meta.get_field('organisation')
         self.assertFalse(feld.null, 'Liegenschaft.organisation muss pflichtig sein')
         self.assertEqual(
-            Liegenschaft.objects.filter(organisation__isnull=True).count(), 0)
+            # `alle_organisationen` ist Pflicht: Gesucht werden Zeilen OHNE
+            # Organisation — ein Mandantenfilter kann sie per Definition nie
+            # finden, der Test waere immer gruen.
+            Liegenschaft.alle_organisationen.filter(organisation__isnull=True).count(), 0)
 
 
 class KettenPfadTests(TestCase):

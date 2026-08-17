@@ -324,7 +324,11 @@ def log_aktion(request, aktion, objekt="", details="", ziel=None, kategorie=None
         organisation = aktuelle_organisation()
         if organisation is None and user is not None:
             from crm.models import Mitgliedschaft
-            mitgliedschaft = (Mitgliedschaft.objects.filter(benutzer=user)
+            # `alle_organisationen`: Der Zweig laeuft nur, wenn KEIN Kontext
+            # gesetzt ist — er sucht die Organisation ja gerade. Mit `objects`
+            # wuerde `log_aktion` werfen, und weil die Funktion alle Fehler
+            # schluckt, hoerte der Audit-Trail still auf zu schreiben.
+            mitgliedschaft = (Mitgliedschaft.alle_organisationen.filter(benutzer=user)
                               .order_by('pk').select_related('organisation').first())
             organisation = mitgliedschaft.organisation if mitgliedschaft else None
 

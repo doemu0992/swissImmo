@@ -163,6 +163,9 @@ class Mitgliedschaft(models.Model):
                              default=ROLLE_SACHBEARBEITER)
     erstellt_am = models.DateTimeField("Angelegt am", auto_now_add=True)
 
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
     class Meta:
         verbose_name = "Mitgliedschaft"
         verbose_name_plural = "Mitgliedschaften"
@@ -208,6 +211,9 @@ class Eigentuemer(models.Model):
     mahn_konfig = models.JSONField("Mahnstufen-Konfiguration", null=True, blank=True, default=None)
     unterschrift_bild = models.ImageField("Digitale Unterschrift", upload_to="unterschriften/", blank=True, null=True)
 
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
     class Meta:
         verbose_name = "Eigentümer"
         verbose_name_plural = "Eigentümer"
@@ -379,6 +385,9 @@ class Mieter(models.Model):
     benutzer = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
                                     related_name='mieter_profil')
 
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
     class Meta:
         verbose_name = "Mieter"
         verbose_name_plural = "Mieter"
@@ -501,6 +510,9 @@ class Handwerker(models.Model):
     telefon = models.CharField(max_length=50, blank=True, null=True, verbose_name="Telefonnummer")
     erstellt_am = models.DateTimeField(auto_now_add=True)
 
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
     class Meta:
         verbose_name = "Handwerker"
         verbose_name_plural = "Handwerkerstamm"
