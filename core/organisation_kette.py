@@ -37,6 +37,8 @@ existieren.
 """
 from django.db import models
 
+from core.tenancy import AlleOrganisationenManager, TenantManager
+
 
 def organisation_aus_kontext():
     """Die ID der Organisation des laufenden Mandantenkontexts, oder `None`.
@@ -186,6 +188,49 @@ class OrganisationAusKette(models.Model):
         related_name='%(app_label)s_%(class)s',
         verbose_name='Organisation',
     )
+
+    # DIE ISOLATION — Etappe 6.2, an genau einer Stelle fuer 51 Modelle.
+    #
+    # `objects` filtert auf die Organisation des Kontexts und wirft, wenn
+    # keiner gesetzt ist. Das Werfen ist die Absicht: Die Alternative waere,
+    # im Zweifel den ganzen Bestand herauszugeben — genau das Leck, das diese
+    # Etappe schliesst. Wer ausdruecklich ueber alle Verwaltungen laufen will,
+    # nimmt `alle_organisationen`; das ist im Code lesbar und greppbar.
+    #
+    # WARUM HIER UND NICHT JE MODELL: Die Basis traegt schon den
+    # Fremdschluessel und die Ableitung. Zwei Manager-Zeilen in 51 Klassen zu
+    # wiederholen hiesse, 51 Stellen zu haben, an denen eine davon fehlen kann
+    # — und ein Modell ohne Manager faellt nicht auf, es zeigt einfach alles.
+    #
+    # Die Reihenfolge ist bedeutsam: Der zuerst deklarierte Manager wird
+    # `_default_manager`. Er muss der filternde sein, denn `_default_manager`
+    # ist es, den `get_object_or_404(Model, pk=…)` und das Admin benutzen —
+    # also die Einstiege, an denen die Grenze gezogen wird.
+    # `objects` ist HEUTE NOCH der gewoehnliche Manager. Das ist der Stand von
+    # 6.2 nach der dritten Messung, und die Zeile daneben ist der ganze Rest:
+    #
+    #     objects = TenantManager()      # <- der Schalter
+    #
+    # Umgelegt wurde er, gemessen und wieder zurueckgenommen — zum dritten Mal,
+    # diesmal aber mit einer Ursachenliste statt einer blossen Zahl (195 Fehler
+    # im ersten Block; die Auswertung steht in docs/ETAPPE-6-ISOLATION.md).
+    # Zwei Drittel davon sind Testklassen, die keinen Mandantenkontext setzen,
+    # obwohl in der Anwendung jede Anfrage einen hat; der Rest sind Services,
+    # die aus einem Command heraus laufen. Beides ist Fleissarbeit mit
+    # bekanntem Umfang — aber zu viel fuer denselben Schritt, in dem der
+    # Manager selbst repariert wurde.
+    #
+    # Explizit deklariert, weil Django `objects` nur dann selbst anlegt, wenn
+    # gar kein Manager im Klassenkoerper steht.
+    objects = models.Manager()
+
+    # DER BENANNTE WEG VORBEI — schon jetzt vorhanden, obwohl noch nichts
+    # filtert. Zweck: Stellen, die ausdruecklich ueber alle Verwaltungen laufen
+    # duerfen (selbstbezogene Schreibvorgaenge im eigenen `save()`, der
+    # Anmeldefall in der Middleware), sagen das ab sofort im Code. Sie muessen
+    # dann beim Umlegen des Schalters nicht noch einmal gesucht werden — und
+    # bis dahin ist der Ausdruck bereits die richtige Dokumentation der Absicht.
+    alle_organisationen = AlleOrganisationenManager()
 
     class Meta:
         abstract = True

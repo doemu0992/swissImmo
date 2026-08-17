@@ -63,10 +63,11 @@ def _organisation_fuer(benutzer, session=None):
     profil = getattr(benutzer, 'mieter_profil', None)
     if profil is not None:
         from rentals.models import Mietvertrag
-        # `alle_organisationen`, sobald der Manager an `Mietvertrag` hängt
-        # (Etappe 5): Der Kontext steht hier ja gerade noch nicht fest — das
-        # ist genau der Anmeldefall, für den der benannte Weg gedacht ist.
-        vertrag = (Mietvertrag.objects
+        # `alle_organisationen` (Etappe 6.2, hier vorgemerkt seit 4.3): Der
+        # Kontext steht in DIESER Zeile ja gerade noch nicht fest — sie ist es,
+        # die ihn bestimmt. Das ist genau der Anmeldefall, für den der benannte
+        # Weg an der Isolation vorbei gedacht ist.
+        vertrag = (Mietvertrag.alle_organisationen
                    .filter(mieter=profil)
                    .select_related('einheit__liegenschaft__organisation')
                    .order_by('-id').first())

@@ -214,17 +214,58 @@ class TenantManager(models.Manager.from_queryset(TenantQuerySet)):
     def create(self, **kwargs):
         return super(models.Manager, self).get_queryset().create(**kwargs)
 
-    def get_or_create(self, defaults=None, **kwargs):
-        return super(models.Manager, self).get_queryset().get_or_create(
-            defaults=defaults, **kwargs)
-
     def bulk_create(self, objs, *args, **kwargs):
         return super(models.Manager, self).get_queryset().bulk_create(objs, *args, **kwargs)
+
+    # `get_or_create` HAT HIER BEWUSST KEINE AUSNAHME MEHR (Etappe 6.2).
+    #
+    # Es stand bis 6.2 neben `create` in der Liste, aus Gewohnheit statt aus
+    # Gruenden — der Kommentar oben hatte das schon angemerkt. Der Unterschied
+    # ist entscheidend: `create` gibt nichts heraus, `get_or_create` LIEST
+    # zuerst. Ohne Filter faende es die Zeile eines fremden Mandanten und gaebe
+    # sie zurueck, statt eine eigene anzulegen — ein Leseleck mit dem Anschein
+    # eines Schreibvorgangs. Mit Filter ist das Verhalten richtig: Was einer
+    # anderen Organisation gehoert, ist unsichtbar, also entsteht eine eigene
+    # Zeile. Dasselbe gilt fuer `update_or_create`, das nie eine Ausnahme hatte.
+    #
+    # Wo ein Aufrufer dadurch ohne Kontext scheitert, ist das die richtige
+    # Meldung: Er soll `with organisation_kontext(org):` setzen.
 
     def get_queryset(self):
         qs = super().get_queryset()
         if not self.filtert:
             return qs
+
+        # RUECKBEZUEGE FILTERN NICHT — die Klippe, an der 4.2 und 5 gescheitert
+        # sind (65 bzw. 922 Fehlschlaege).
+        #
+        # Django baut den Manager eines Rueckbezugs aus
+        # `related_model._default_manager.__class__`. Steht der TenantManager
+        # vorn, laeuft damit JEDES `liegenschaft.einheiten.all()` durch diese
+        # Methode — in Services, Commands, PDF-Erzeugung, Signals, also
+        # ueberwiegend ohne Anfrage und damit ohne Kontext. Der Aufruf brach ab,
+        # wo gar keine Mandantengrenze im Spiel war.
+        #
+        # Warum das Weglassen des Filters hier NICHT die Isolation aufgibt:
+        # Ein Rueckbezug geht immer von einem bereits geladenen Objekt aus, und
+        # seit Etappe 5 leitet das Kind seine Organisation aus genau dieser
+        # Kette ab (`ORGANISATION_PFAD`, `null=False`, null Waisen). Die Kinder
+        # einer Liegenschaft koennen deshalb gar keiner anderen Organisation
+        # gehoeren als die Liegenschaft selbst. Der Filter waere hier
+        # tautologisch — er kann nichts ausschliessen, was nicht schon
+        # ausgeschlossen ist.
+        #
+        # Die Grenze wird dort gezogen, wo sie hingehoert: am EINSTIEG
+        # (`Model.objects.filter(...)`, `get_object_or_404(Model, pk=…)`). Wer
+        # von einem fremden Objekt aus traversiert, hat es vorher ungefiltert
+        # geholt — und das ist genau der Aufruf, den diese Methode abfaengt.
+        #
+        # Erkennungsmerkmal: Django setzt `self.instance` auf dem
+        # Rueckbezugs-Manager (`RelatedManager.__init__`); ein gewoehnliches
+        # `Model.objects` hat das Attribut nicht.
+        if getattr(self, 'instance', None) is not None:
+            return qs
+
         org = aktuelle_organisation()
         if org is None:
             raise OrganisationsFehler(

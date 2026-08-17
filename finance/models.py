@@ -240,7 +240,13 @@ class Buchung(OrganisationAusKette):
             if self.beleg_nr is None:
                 last_exc = None
                 for _ in range(8):
-                    letzte = (Buchung.objects
+                    # `alle_organisationen`, weil die Mandantengrenze hier
+                    # eine Zeile tiefer AUSDRUECKLICH steht
+                    # (`organisation_id=self.organisation_id`). Der Kontext
+                    # zusaetzlich zu verlangen wuerde nichts sicherer machen,
+                    # aber jedes Speichern ausserhalb einer Anfrage abbrechen —
+                    # Sollstellungslauf, Import, Migration, Test.
+                    letzte = (Buchung.alle_organisationen
                               .filter(organisation_id=self.organisation_id)
                               .aggregate(m=models.Max('beleg_nr'))['m'] or 0)
                     self.beleg_nr = letzte + 1
@@ -346,7 +352,12 @@ class DebitorenRechnung(OrganisationAusKette):
             try:
                 from core.utils.qr_code import qrr_referenz
                 raw, _ = qrr_referenz(self.vertrag_id, self.pk)
-                type(self).objects.filter(pk=self.pk).update(qr_referenz=raw)
+                # `alle_organisationen`: Die Zeile aktualisiert sich SELBST
+                # ueber ihren Primaerschluessel. Ueber eine Mandantengrenze
+                # kann das nicht fuehren — die Zeile ist schon da und gehoert
+                # dem, dem sie gehoert. Mit `objects` braeche stattdessen jedes
+                # Anlegen einer Rechnung ausserhalb einer Anfrage ab.
+                type(self).alle_organisationen.filter(pk=self.pk).update(qr_referenz=raw)
                 self.qr_referenz = raw
             except Exception:
                 logger.warning(

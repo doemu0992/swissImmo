@@ -190,8 +190,12 @@ class Command(BaseCommand):
         datei = ziel / f'{stempel}-db.dumpdata.json'
         from django.core.management import call_command
         with open(datei, 'w', encoding='utf-8') as ausgabe:
+            # `all=True` → `_base_manager`. Ohne das nimmt dumpdata den
+            # Default-Manager, und der filtert seit 6.2 auf den Mandanten —
+            # eine Sicherung mit dem Bestand genau EINER Verwaltung, die wie
+            # eine vollstaendige aussieht.
             call_command('dumpdata', exclude=['contenttypes', 'auth.Permission'],
-                         indent=1, stdout=ausgabe)
+                         all=True, indent=1, stdout=ausgabe)
         if datei.stat().st_size < 100:
             datei.unlink(missing_ok=True)
             raise CommandError('dumpdata lieferte praktisch nichts — verworfen.')

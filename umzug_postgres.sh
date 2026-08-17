@@ -77,7 +77,11 @@ echo "  $(wc -l < "$STAND/vorher.txt") Modelle erfasst"
 # selbst an, mit eigenen IDs. Sie mitzunehmen erzeugt Kollisionen. Geprüft: Das
 # Projekt hat KEINE Fremdschlüssel auf ContentType, es hängt also nichts daran.
 echo "→ Daten ausspielen (dumpdata)"
-if ! env -u DB_ENGINE "$PY" manage.py dumpdata \
+# `--all` (= _base_manager): Ohne das nimmt dumpdata den Default-Manager, und
+# der filtert seit 6.2 auf den Mandanten — es wanderte dann der Bestand genau
+# EINER Verwaltung um, und die Nachzaehlung faende es nicht, weil sie denselben
+# Filter sieht.
+if ! env -u DB_ENGINE "$PY" manage.py dumpdata --all \
         --exclude contenttypes --exclude auth.Permission \
         --exclude sessions.Session --exclude admin.logentry \
         --indent 1 -o "$STAND/daten.json"; then
