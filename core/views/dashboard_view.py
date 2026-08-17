@@ -13,6 +13,7 @@ from django.contrib import messages
 import datetime
 
 # Import für den Marktdaten-Sync
+from core.tenancy import aktuelle_organisation
 from core.utils.market_data import update_verwaltung_rates
 
 @rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER)
@@ -20,7 +21,8 @@ def update_market_data_view(request):
     """
     Startet den manuellen Import von BWO (Zins) und BFS (LIK).
     """
-    msg, errors = update_verwaltung_rates()
+    # Nur die eigene Verwaltung — der Knopf gehoert dem angemeldeten Team.
+    msg, errors = update_verwaltung_rates(aktuelle_organisation())
 
     # Eventuelle Warnungen anzeigen
     if errors:

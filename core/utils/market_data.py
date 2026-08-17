@@ -125,23 +125,52 @@ def fetch_market_rates():
 
     return results, errors
 
-def update_verwaltung_rates():
-    """
-    Diese Funktion wird vom Dashboard-Button aufgerufen.
-    Sie speichert die neuen Werte direkt in die Datenbank.
+def update_verwaltung_rates(organisation=None):
+    """Holt Referenzzinssatz und LIK und schreibt sie in die Verwaltungsdaten.
+
+    `organisation` bestimmt, WESSEN Daten geschrieben werden:
+
+    - **Eine Organisation** — der Weg fuer jeden Aufruf aus der Oberflaeche.
+      Ein Knopfdruck darf nur die eigenen Daten aendern. Zwar sind
+      Referenzzins und LIK nationale Werte, aber `letztes_update_marktdaten`
+      ist es nicht: An diesem Stempel haengt die Frischepruefung, und ein
+      fremder Klick duerfte ihn nicht zuruecksetzen.
+    - **None** — alle Organisationen. Der Weg fuer den taeglichen Lauf und
+      `manage.py update_rates`. Vorher schrieb der Aufruf immer nur in die
+      ERSTE Verwaltung; alle weiteren blieben auf ihrem alten Zinssatz stehen
+      und rechneten Mietzinsanpassungen nach OR 269a gegen einen veralteten
+      Stand — ohne dass irgendwo ein Fehler erschienen waere.
     """
     try:
         from crm.models import Organisation
     except ImportError:
         return "Systemfehler (Import Fehler crm.models)", []
 
+    # Einmal ins Internet, egal wie viele Verwaltungen versorgt werden.
     data, errors = fetch_market_rates()
 
-    # Verwaltungsobjekt holen oder anlegen
-    verwaltung = Organisation.objects.first()
-    if not verwaltung:
-        verwaltung = Organisation.objects.create(firma="Meine Verwaltung")
+    if organisation is not None:
+        ziele = [organisation]
+    else:
+        ziele = list(Organisation.objects.order_by('pk'))
+        if not ziele:
+            # Erstinbetriebnahme: ohne Verwaltungsdatensatz gaebe es nichts zu
+            # schreiben. Das Anlegen bleibt auf genau diesen Fall beschraenkt.
+            ziele = [Organisation.objects.create(firma="Meine Verwaltung")]
 
+    ergebnisse = [_rates_schreiben(ziel, data) for ziel in ziele]
+    geaendert = [t for t, _ in ergebnisse if t]
+    texte = next((m for _, m in ergebnisse if m), [])
+
+    if not texte:
+        return "Keine verwertbaren Daten gefunden.", errors
+    if geaendert:
+        return "Erfolgreich aktualisiert: " + " | ".join(texte), errors
+    return "Marktdaten geprüft, sie sind bereits aktuell: " + " | ".join(texte), errors
+
+
+def _rates_schreiben(verwaltung, data):
+    """Schreibt die geholten Werte in EINE Verwaltung. Gibt (geaendert, texte)."""
     updated = False
     msg = []
 
@@ -168,8 +197,4 @@ def update_verwaltung_rates():
     if msg:
         verwaltung.letztes_update_marktdaten = timezone.now()
         verwaltung.save()
-        if updated:
-            return "Erfolgreich aktualisiert: " + " | ".join(msg), errors
-        return "Marktdaten geprüft, sie sind bereits aktuell: " + " | ".join(msg), errors
-
-    return "Keine verwertbaren Daten gefunden.", errors
+    return updated, msg

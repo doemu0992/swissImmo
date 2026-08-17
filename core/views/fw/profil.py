@@ -179,10 +179,13 @@ def fw_marktdaten_aktualisieren(request):
     """Holt Referenzzins + LIK aus dem Internet und speichert sie in Verwaltung."""
     from django.shortcuts import redirect
     from django.contrib import messages
+    from core.tenancy import aktuelle_organisation
     from core.utils.market_data import update_verwaltung_rates
     if request.method == 'POST':
         try:
-            msg, errors = update_verwaltung_rates()
+            # Nur die eigene Verwaltung: Ein Knopfdruck darf keinen fremden
+            # Frischestempel zuruecksetzen (siehe update_verwaltung_rates).
+            msg, errors = update_verwaltung_rates(aktuelle_organisation())
             messages.success(request, f"📡 {msg}")
             if errors:
                 messages.warning(request, "Hinweis: " + " | ".join(errors[:2]) +
@@ -212,10 +215,12 @@ def fw_marktdaten_live(request):
     veraltet = stand is None or (timezone.now() - stand).days >= 1
     if veraltet and hat_rolle(request.user, SCHREIB_ROLLEN):
         try:
+            from core.tenancy import aktuelle_organisation
             from core.utils.market_data import update_verwaltung_rates
-            update_verwaltung_rates()
+            eigene = aktuelle_organisation()
+            update_verwaltung_rates(eigene)
             quelle = 'internet'
-            vw = Organisation.objects.first()
+            vw = eigene
         except Exception:
             logger.warning("Marktdaten-Livenachladen fehlgeschlagen", exc_info=True)
             quelle = 'gespeichert'

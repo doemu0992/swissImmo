@@ -4,9 +4,20 @@
     python manage.py fristen_digest --tage 14
     python manage.py fristen_digest --dry-run  # nur anzeigen, nicht senden
 
-Fasst die offenen, datierten Fristen zusammen und schickt sie an alle aktiven
+Fasst die offenen, datierten Fristen zusammen und schickt sie an die aktiven
 Team-Benutzer (Verwaltung/Sachbearbeitung) mit E-Mail-Adresse. Fällt keine
-Empfängeradresse an, wird an die Verwaltungs-Adresse gesendet."""
+Empfängeradresse an, wird an die Verwaltungs-Adresse gesendet.
+
+JE ORGANISATION EIN LAUF — und das ist keine Kosmetik. Vorher las der Befehl
+alle Pendenzen ohne Filter und schickte sie an alle Team-Benutzer, die die
+richtige Gruppe hatten — quer über alle Verwaltungen. In der Zeile steht der
+Mietername (`p.vertrag.mieter.display_name`). Ab der zweiten Verwaltung hätte
+also jede Verwaltung wöchentlich eine Liste mit den Mietern der anderen
+bekommen, per Mail, ohne dass irgendetwas fehlgeschlagen wäre.
+
+Empfänger sind seit 4.3 die Mitglieder DIESER Organisation (`Mitgliedschaft`),
+nicht mehr die Django-Gruppen: Eine Treuhänderin, die zwei Verwaltungen
+betreut, bekommt zwei getrennte Mails statt einer vermischten."""
 import logging
 from datetime import timedelta
 
@@ -27,33 +38,51 @@ class Command(BaseCommand):
         parser.add_argument('--dry-run', action='store_true', help="Nicht senden, nur anzeigen")
 
     def handle(self, *args, **opts):
-        from core.models import Pendenz, AktivitaetsLog
-        from django.contrib.auth import get_user_model
         from crm.models import Organisation
 
-        User = get_user_model()
+        from core.tenancy import organisation_kontext
+
+        gesendet = 0
+        for organisation in Organisation.objects.order_by('pk'):
+            # Der Kontext gilt für den ganzen Lauf dieser Verwaltung: Sobald der
+            # `TenantManager` in 6.2 hängt, filtert die Pendenz-Abfrage darüber.
+            # Bis dahin filtert `_fuer_organisation` ausdrücklich — beides
+            # zusammen, damit die Trennung nicht erst mit 6.2 entsteht.
+            with organisation_kontext(organisation):
+                if self._fuer_organisation(organisation, opts):
+                    gesendet += 1
+
+        if gesendet == 0:
+            self.stdout.write(self.style.SUCCESS("Keine anstehenden Fristen — kein Mail gesendet."))
+
+    def _fuer_organisation(self, organisation, opts):
+        """Ein Lauf für eine Verwaltung. Gibt zurück, ob gesendet wurde."""
+        from core.models import Pendenz, AktivitaetsLog
+        from crm.models import Mitgliedschaft
 
         heute = timezone.localdate()
         grenze = heute + timedelta(days=opts['tage'])
-        pq = (Pendenz.objects.filter(erledigt=False, faellig_am__isnull=False, faellig_am__lte=grenze)
+        pq = (Pendenz.objects.filter(organisation=organisation, erledigt=False,
+                                     faellig_am__isnull=False, faellig_am__lte=grenze)
               .select_related('liegenschaft', 'vertrag__mieter').order_by('faellig_am'))
         fristen = list(pq)
 
         if not fristen:
-            self.stdout.write(self.style.SUCCESS("Keine anstehenden Fristen — kein Mail gesendet."))
-            return
+            return False
 
-        # Empfänger: aktive Team-Benutzer mit E-Mail
-        empfaenger = list(User.objects.filter(
-            is_active=True, groups__name__in=['Inhaber', 'Verwalter', 'Sachbearbeiter']
-        ).exclude(email='').values_list('email', flat=True).distinct())
+        # Empfänger: Mitglieder DIESER Organisation mit E-Mail. Vorher las das
+        # `groups__name__in=[…]` über alle Verwaltungen hinweg.
+        empfaenger = list(Mitgliedschaft.objects
+                          .filter(organisation=organisation, benutzer__is_active=True,
+                                  rolle__in=['Inhaber', 'Verwalter', 'Sachbearbeiter'])
+                          .exclude(benutzer__email='')
+                          .values_list('benutzer__email', flat=True).distinct())
+        if not empfaenger and getattr(organisation, 'email', ''):
+            empfaenger = [organisation.email]
         if not empfaenger:
-            vw = Organisation.objects.first()
-            if vw and getattr(vw, 'email', ''):
-                empfaenger = [vw.email]
-        if not empfaenger:
-            self.stdout.write(self.style.WARNING("Keine Empfängeradresse gefunden — abgebrochen."))
-            return
+            self.stdout.write(self.style.WARNING(
+                f"{organisation.firma}: keine Empfängeradresse gefunden — übersprungen."))
+            return False
 
         ueberfaellig = [p for p in fristen if p.faellig_am < heute]
         anstehend = [p for p in fristen if p.faellig_am >= heute]
@@ -96,9 +125,11 @@ class Command(BaseCommand):
                 "Details im Fristen-Center der Verwaltung.</p></div>")
 
         if opts['dry_run']:
+            self.stdout.write(f"--- {organisation.firma} ---")
             self.stdout.write(text)
-            self.stdout.write(self.style.WARNING(f"[dry-run] {len(empfaenger)} Empfänger, nicht gesendet."))
-            return
+            self.stdout.write(self.style.WARNING(
+                f"[dry-run] {len(empfaenger)} Empfänger, nicht gesendet."))
+            return True
 
         mail = EmailMultiAlternatives(subject=betreff, body=text,
                                       from_email=settings.DEFAULT_FROM_EMAIL, to=empfaenger)
@@ -111,8 +142,14 @@ class Command(BaseCommand):
             logger.debug("Fehler bewusst übergangen", exc_info=True)
         mail.send()
 
+        # AktivitaetsLog hat nichts abzuleiten (einziger Fremdschluessel ist
+        # `benutzer`, und der traegt keinen Organisationsbezug) — der Bezug muss
+        # hier gesetzt werden, sonst faellt der Audit-Trail aus dem Mandanten.
         AktivitaetsLog.objects.create(
+            organisation=organisation,
             aktion="Fristen-Mail versendet", objekt=f"{len(fristen)} Fristen",
             details=f"an {len(empfaenger)} Empfänger", kategorie='versand')
         self.stdout.write(self.style.SUCCESS(
-            f"Fristen-Mail an {len(empfaenger)} Empfänger gesendet ({len(fristen)} Fristen)."))
+            f"{organisation.firma}: Fristen-Mail an {len(empfaenger)} Empfänger "
+            f"gesendet ({len(fristen)} Fristen)."))
+        return True

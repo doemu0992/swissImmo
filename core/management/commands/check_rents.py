@@ -1,34 +1,61 @@
+"""Mietzins-Scanner: prüft aktive Mietverträge auf Anpassungspotenzial.
+
+    python manage.py check_rents
+
+JE ORGANISATION EIN DURCHGANG. Vorher nahm der Befehl den Referenzzinssatz und
+den LIK-Stand der ERSTEN Verwaltung und rechnete damit die Verträge ALLER
+durch. Beide Werte werden je Organisation gepflegt (`update_rates`); hat eine
+Verwaltung noch nicht aktualisiert, rechnete der Scanner ihre Verträge gegen
+einen fremden Stand — und die Ausgabe mischte die Mieternamen aller
+Verwaltungen in eine Liste.
+
+Der Referenzzinssatz ist zwar bundesweit derselbe, aber genau darauf darf man
+sich hier nicht verlassen: Massgeblich ist der Stand, den die jeweilige
+Verwaltung führt, denn an ihm hängt die Begründung einer Mietzinsanpassung
+nach OR 269a.
+"""
+from django.core.management.base import BaseCommand
+
 from crm.models import Organisation
 from rentals.models import Mietvertrag
-
-from django.core.management.base import BaseCommand
 from rentals.services import berechne_mietpotenzial
-import sys
+
 
 class Command(BaseCommand):
     help = 'Prüft alle Mietverträge auf Anpassungspotenzial'
 
     def handle(self, *args, **options):
-        # 1. Aktuelle Marktdaten laden
-        verwaltung = Organisation.objects.first()
-        if not verwaltung:
-            self.stdout.write(self.style.ERROR("Keine Verwaltungs-Daten gefunden! Bitte erst update_rates laufen lassen."))
+        from core.tenancy import organisation_kontext
+
+        organisationen = list(Organisation.objects.order_by('pk'))
+        if not organisationen:
+            self.stdout.write(self.style.ERROR(
+                "Keine Verwaltungs-Daten gefunden! Bitte erst update_rates laufen lassen."))
             return
 
+        for verwaltung in organisationen:
+            with organisation_kontext(verwaltung):
+                self._scannen(verwaltung)
+
+    def _scannen(self, verwaltung):
         curr_ref = verwaltung.aktueller_referenzzinssatz
         curr_lik = verwaltung.aktueller_lik_punkte
 
         if not curr_ref or not curr_lik:
-             self.stdout.write(self.style.ERROR("Marktdaten sind unvollständig (0.0). Bitte Update prüfen."))
-             return
+            self.stdout.write(self.style.ERROR(
+                f"{verwaltung.firma}: Marktdaten unvollständig (0.0) — übersprungen. "
+                f"Bitte Update prüfen."))
+            return
 
-        self.stdout.write(f"\n==========================================")
-        self.stdout.write(f" 🏢 MIETZINS-SCANNER")
+        self.stdout.write("\n==========================================")
+        self.stdout.write(" 🏢 MIETZINS-SCANNER")
+        self.stdout.write(f" {verwaltung.firma}")
         self.stdout.write(f" Basis heute: Ref.Zins {curr_ref}% | LIK {curr_lik} Punkte")
-        self.stdout.write(f"==========================================\n")
+        self.stdout.write("==========================================\n")
 
-        # 2. Verträge laden (nur aktive)
-        vertraege = Mietvertrag.objects.filter(aktiv=True)
+        # Nur die Verträge DIESER Verwaltung — sonst rechnet der Scanner fremde
+        # Verträge gegen den hiesigen Stand und nennt dabei fremde Mieternamen.
+        vertraege = Mietvertrag.objects.filter(organisation=verwaltung, aktiv=True)
 
         potenzial_total = 0.0
         risiko_total = 0.0

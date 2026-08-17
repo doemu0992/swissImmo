@@ -80,12 +80,14 @@ def ablage_mahnung(vertrag, *, stufe=None, monat='', betrag='', datum=None,
         try:
             from core.views.email_views import (generate_mahnung_combined_pdf_bytes,
                                                 get_aktueller_monat)
-            from crm.models import Organisation
             monat = monat or get_aktueller_monat()
             if not betrag:
                 betrag = f"{(vertrag.netto_mietzins or 0) + (vertrag.nebenkosten or 0):.2f}"
+            # Absender der Mahnung: die Verwaltung DIESES Vertrags. Eine Mahnung
+            # mit fremdem Briefkopf ist nach OR 257d nicht bloss unschoen — an
+            # ihr haengt die Kuendigungsandrohung.
             pdf_bytes = generate_mahnung_combined_pdf_bytes(
-                vertrag, Organisation.objects.first(), monat, str(betrag), datum)
+                vertrag, vertrag.organisation, monat, str(betrag), datum)
         except Exception:
             return None
     if not pdf_bytes:

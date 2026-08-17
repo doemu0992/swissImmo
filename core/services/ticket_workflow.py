@@ -74,9 +74,10 @@ def ticket_kontext(ticket, handwerker=None, status=None):
     if lg and lg.eigentuemer_id:
         vermieter = lg.eigentuemer.firma_oder_name
     else:
+        # Ohne Eigentuemer tritt die Verwaltung als Vermieterin auf — und zwar
+        # die des Tickets, nicht die erste im Bestand.
         try:
-            from crm.models import Organisation
-            vw = Organisation.objects.first()
+            vw = ticket.organisation
             vermieter = (vw.firma if vw else '') or 'Ihre Liegenschaftsverwaltung'
         except Exception:
             vermieter = 'Ihre Liegenschaftsverwaltung'

@@ -448,7 +448,10 @@ class OrganisationAdmin(NurLesenModelAdmin):
         if not update_verwaltung_rates:
             messages.error(request, "Das Modul 'update_verwaltung_rates' wurde nicht gefunden.")
             return redirect(request.META.get('HTTP_REFERER', '/admin/'))
-        msg, err = update_verwaltung_rates()
+        # Auf der Detailseite einer Verwaltung gilt die Aktion ihr; von der
+        # Liste aus allen (dort ist keine gemeint).
+        ziel = self.model.objects.filter(pk=object_id).first() if object_id else None
+        msg, err = update_verwaltung_rates(ziel)
         if err: messages.error(request, f"Fehler: {err}")
         else: messages.success(request, msg)
         return redirect(request.META.get('HTTP_REFERER', '/admin/'))

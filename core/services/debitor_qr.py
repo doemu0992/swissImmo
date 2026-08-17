@@ -28,12 +28,16 @@ def generate_debitor_qr_pdf(rechnung):
     from reportlab.lib.pagesizes import A4 as _A4
     from reportlab.lib.units import mm as _mm
     from reportlab.lib import colors as _colors
-    from crm.models import Organisation
     from core.utils.qr_code import draw_qr_bill
 
     r = rechnung
     lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag_id and r.vertrag.einheit_id else None)
-    vw = Organisation.objects.first()
+    # Der Zahlungsempfaenger der QR-Rechnung. Von allen Stellen mit
+    # `Organisation.objects.first()` war diese die folgenreichste: Steht dort
+    # die falsche Verwaltung, traegt der Einzahlungsschein einen fremden
+    # Empfaenger — im besten Fall weist die Bank ihn zurueck, im schlechteren
+    # zahlt der Mieter an die falsche Adresse und die Forderung bleibt offen.
+    vw = r.organisation
     eigentuemer = lg.eigentuemer if lg else None
 
     iban = (lg.iban if lg and lg.iban else (getattr(vw, 'iban', '') or '')).replace(' ', '')

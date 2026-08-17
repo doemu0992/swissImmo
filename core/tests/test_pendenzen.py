@@ -4,6 +4,8 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import TestCase, Client
+
+from crm.models import Mitgliedschaft
 from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, Mieter, Organisation, Liegenschaft, Einheit,
     Wartungsfrist, Mietvertrag, User, Group)
@@ -255,6 +257,13 @@ class FristenKalenderTests(TestCase):
         grp, _ = Group.objects.get_or_create(name='Verwalter')
         u = User.objects.create_user(username='chef2', password='x', email='chef@example.ch')
         u.groups.add(grp)
+        # Seit Etappe 4.3 ist die Mitgliedschaft die Quelle der Rolle, nicht die
+        # Gruppe — und seit 6.1 waehlt fristen_digest die Empfaenger danach aus.
+        # Ein Benutzer mit blosser Gruppe steht in keiner Verwaltung und kann
+        # deshalb auch kein Fristen-Mail bekommen; sonst laege der Weg wieder
+        # offen, den 4.3 geschlossen hat.
+        Mitgliedschaft.objects.create(benutzer=u, organisation=_test_organisation(),
+                                      rolle=Mitgliedschaft.ROLLE_VERWALTER)
         self._frist('Zahlungsfrist läuft ab', 2)
         self._frist('Alte Frist', -5)
         call_command('fristen_digest', '--tage', '7')
@@ -277,6 +286,8 @@ class FristenKalenderTests(TestCase):
         User = get_user_model()
         grp, _ = Group.objects.get_or_create(name='Verwalter')
         u = User.objects.create_user('chef3', password='x', email='c3@example.ch'); u.groups.add(grp)
+        Mitgliedschaft.objects.create(benutzer=u, organisation=_test_organisation(),
+                                      rolle=Mitgliedschaft.ROLLE_VERWALTER)
         self._frist('Frist morgen', 2)
         wd = timezone.localdate().weekday()
         call_command('taeglicher_lauf', '--digest-weekday', str(wd))
