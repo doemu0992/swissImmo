@@ -60,21 +60,31 @@ def _global_filter(request):
     stand jede fremde Adresse im Auswahlmenü, ohne dass jemand eine ID raten
     musste.
 
-    Beides ist jetzt auf `request.organisation` eingeschränkt (gesetzt von
-    `core.middleware_tenancy.OrganisationMiddleware`).
+    Beides wurde damals auf `request.organisation` eingeschränkt — mit dem
+    ausdrücklichen Vermerk, dass dies die Bequemlichkeit sei und nicht die
+    Sicherheit, und dass der `TenantManager` unabhängig davon filtern müsse.
 
-    DAS IST DIE BEQUEMLICHKEIT, NICHT DIE SICHERHEIT.
-    Auch wenn diese Prüfung perfekt wäre, muss der `TenantManager` unabhängig
-    davon filtern — zwei Schichten, weil die obere irgendwann jemand umgeht.
-    Ein Report, ein Management-Command oder ein PDF-Bau kommt hier nie vorbei.
-    Solange der Manager noch nicht an den Modellen hängt (siehe
-    `docs/ETAPPE-4-ORGANISATION.md`), ist das hier die EINZIGE Schicht — und
-    genau deshalb steht der Satz hier und nicht in einem Nebensatz.
+    SEIT ETAPPE 6.2 TUT ER DAS, UND DIE ZEILE IST WEG (17.08.2026)
+    --------------------------------------------------------------
+    `Liegenschaft.objects` läuft jetzt durch den `TenantManager` und ist damit
+    bereits auf die Organisation des Kontexts eingeschränkt. Die zusätzliche
+    Zeile `if organisation is not None: …filter(organisation=organisation)` war
+    danach tautologisch — gemessen: Sie auszubauen macht **keinen einzigen**
+    Test rot, vor der Manager-Anbindung waren es drei.
+
+    Entfernt statt behalten, und der Grund ist nicht Sparsamkeit: Die Zeile war
+    in einem Punkt SCHWÄCHER als der Manager und sah trotzdem wie die
+    tragende Prüfung aus. Ohne Kontext übersprang sie den Filter kommentarlos
+    (`if organisation is not None`), während der Manager in derselben Lage
+    einen `OrganisationsFehler` wirft. Zwei Prüfungen mit unterschiedlicher
+    Strenge nebeneinander laden dazu ein, die schwächere für die Zusage zu
+    halten — der Skill `mandantentrennung` verlangt genau deshalb die zentrale
+    Erzwingung.
+
+    Wer hier wieder von Hand filtern will, sollte vorher wissen, warum der
+    Manager nicht reicht — und es hinschreiben.
     """
-    organisation = getattr(request, 'organisation', None)
     eigene = Liegenschaft.objects.all()
-    if organisation is not None:
-        eigene = eigene.filter(organisation=organisation)
 
     lg_id = request.GET.get('lg') or None
     aktive_lg = None

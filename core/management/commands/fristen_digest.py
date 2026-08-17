@@ -44,10 +44,13 @@ class Command(BaseCommand):
 
         gesendet = 0
         for organisation in Organisation.objects.order_by('pk'):
-            # Der Kontext gilt für den ganzen Lauf dieser Verwaltung: Sobald der
-            # `TenantManager` in 6.2 hängt, filtert die Pendenz-Abfrage darüber.
-            # Bis dahin filtert `_fuer_organisation` ausdrücklich — beides
-            # zusammen, damit die Trennung nicht erst mit 6.2 entsteht.
+            # Der Kontext gilt für den ganzen Lauf dieser Verwaltung; seit
+            # Etappe 6.2 filtert die Pendenz-Abfrage darüber. Der ausdrückliche
+            # `organisation=`-Filter in `_fuer_organisation` ist damit
+            # redundant — er bleibt trotzdem stehen: In einer Schleife über
+            # Verwaltungen ist er die lesbare Absicht, und er ist NICHT
+            # schwächer als der Manager (anders als die entfernte Zeile in
+            # `_global_filter`, die ohne Kontext kommentarlos durchliess).
             with organisation_kontext(organisation):
                 if self._fuer_organisation(organisation, opts):
                     gesendet += 1

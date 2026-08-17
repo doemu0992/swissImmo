@@ -38,10 +38,23 @@ class Command(BaseCommand):
             help='Gegen eine frühere Ausgabe vergleichen. Endet mit Code 1 bei Abweichung.')
 
     def handle(self, *args, **optionen):
+        from django.db import connection
+
+        # Modelle ohne Tabelle bekommen eine eigene, STABILE Zeile statt eines
+        # `FEHLER:OperationalError`. Der Unterschied zählt: Die Fehlerzeile
+        # trägt den Ausnahmetyp und sagt nichts darüber, WAS fehlt; die Zeile
+        # unten ist auf beiden Seiten des Umzugs identisch, solange die
+        # Tabelle beidseits fehlt — und fällt im `diff` sofort auf, sobald sie
+        # nur auf einer Seite fehlt. Genau das soll die Nachzählung zeigen.
+        vorhanden = set(connection.introspection.table_names())
+
         zeilen = []
         for modell in apps.get_models():
             label = modell._meta.label
             if label in AUSGENOMMEN:
+                continue
+            if modell._meta.db_table not in vorhanden:
+                zeilen.append(f'{label} OHNE-TABELLE')
                 continue
             try:
                 # Ausdrücklich über ALLE Verwaltungen zählen (Skill

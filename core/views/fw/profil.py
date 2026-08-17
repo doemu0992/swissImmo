@@ -150,8 +150,15 @@ def fw_datenreset(request):
             'auth_permission', 'auth_user_user_permissions', 'django_admin_log',
             'django_content_type', 'django_session', 'django_migrations',
             'crm_mitgliedschaft', 'core_verwaltung'}
+    # Nur Tabellen, die es wirklich gibt. Ein `DELETE FROM` auf eine fehlende
+    # Tabelle bricht den GANZEN Reset ab — der Nutzer sieht einen Serverfehler
+    # und weiss nicht, ob halb gelöscht wurde. Ein Modell ohne Tabelle ist
+    # nicht erfunden: eine nicht angewandte Migration reicht, und im Testlauf
+    # stehen die Modelle aus `test_tenant_manager.py` in der Registry.
+    vorhanden = set(connection.introspection.table_names())
     tabellen = sorted({m._meta.db_table for m in apps.get_models()
-                       if m._meta.app_label in OWN_APPS and m._meta.db_table not in KEEP})
+                       if m._meta.app_label in OWN_APPS and m._meta.db_table not in KEEP
+                       and m._meta.db_table in vorhanden})
 
     with connection.constraint_checks_disabled():
         with connection.cursor() as cur:

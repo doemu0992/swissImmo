@@ -19,8 +19,24 @@ def _mitgliedschaft(benutzer, rolle='Verwalter'):
     if organisation is None:
         organisation = Organisation.objects.create(
             firma='Perf AG', strasse='Perfstrasse 1', plz='8000', ort='Zürich')
-    Mitgliedschaft.objects.get_or_create(
+    # `alle_organisationen`: Die Mitgliedschaft wird angelegt, BEVOR ein
+    # Mandantenkontext existiert — sie ist ja gerade das, woraus die
+    # Middleware ihn später ableitet. Über `objects` wäre das ein Henne-Ei
+    # und seit Etappe 6.2 ein OrganisationsFehler.
+    Mitgliedschaft.alle_organisationen.get_or_create(
         benutzer=benutzer, organisation=organisation, defaults={'rolle': rolle})
+    # Kontext fuer die Abfragen des Tests selbst setzen — dieselbe Rolle, die
+    # `_helfer._test_organisation()` fuer die uebrigen Tests spielt. In den
+    # gemessenen Views setzt ihn die Middleware je Anfrage; was der Test
+    # DANEBEN abfragt (`DebitorenRechnung.objects.count()` als Referenzwert)
+    # laeuft ohne Anfrage und braucht ihn hier.
+    #
+    # NICHT als allgemeine Bequemlichkeit verstehen: Genau dieser beilaeufig
+    # gesetzte Kontext hat am 17.08.2026 acht kaputte Scheduler-Befehle
+    # verdeckt. Wer einen Management-Command testet, benutzt `MandantenFixture`
+    # und setzt NICHTS.
+    from core.tenancy import setze_organisation
+    setze_organisation(organisation)
     return organisation
 
 from django.test import Client, TestCase

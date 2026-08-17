@@ -1207,6 +1207,11 @@ def fw_lebensdauer(request):
     # dieses Views muss deshalb auf sie eingeschraenkt sein — sonst saehe und
     # bearbeitete Verwaltung A die Werte von B. Die Middleware setzt
     # `request.organisation` aus der Mitgliedschaft.
+    #
+    # Seit Etappe 6.2 filtert `Lebensdauer.objects` ohnehin ueber den
+    # Mandantenkontext; der Filter hier ist redundant. Er bleibt, weil er
+    # NICHT schwaecher ist (ohne Organisation liefert er nichts) und weil das
+    # Anlegen unten dieselbe Variable braucht.
     organisation = getattr(request, 'organisation', None)
     eigene = Lebensdauer.objects.filter(organisation=organisation)
 

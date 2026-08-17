@@ -35,8 +35,24 @@ def _mitgliedschaft(benutzer, rolle='Verwalter'):
     if organisation is None:
         organisation = Organisation.objects.create(
             firma='Perf AG', strasse='Perfstrasse 1', plz='8000', ort='Zürich')
-    Mitgliedschaft.objects.get_or_create(
+    # `alle_organisationen`: Die Mitgliedschaft wird angelegt, BEVOR ein
+    # Mandantenkontext existiert — sie ist ja gerade das, woraus die
+    # Middleware ihn später ableitet. Über `objects` wäre das ein Henne-Ei
+    # und seit Etappe 6.2 ein OrganisationsFehler.
+    Mitgliedschaft.alle_organisationen.get_or_create(
         benutzer=benutzer, organisation=organisation, defaults={'rolle': rolle})
+    # Kontext fuer die Abfragen des Tests selbst setzen — dieselbe Rolle, die
+    # `_helfer._test_organisation()` fuer die uebrigen Tests spielt. In den
+    # gemessenen Views setzt ihn die Middleware je Anfrage; was der Test
+    # DANEBEN abfragt (`DebitorenRechnung.objects.count()` als Referenzwert)
+    # laeuft ohne Anfrage und braucht ihn hier.
+    #
+    # NICHT als allgemeine Bequemlichkeit verstehen: Genau dieser beilaeufig
+    # gesetzte Kontext hat am 17.08.2026 acht kaputte Scheduler-Befehle
+    # verdeckt. Wer einen Management-Command testet, benutzt `MandantenFixture`
+    # und setzt NICHTS.
+    from core.tenancy import setze_organisation
+    setze_organisation(organisation)
     return organisation
 
 from django.test import Client, TestCase
@@ -69,7 +85,30 @@ ROUTEN = [
 
 
 def _seed():
-    """Realistisches Portfolio: LG → Einheiten → Mieter → Verträge → Rechnungen."""
+    """Realistisches Portfolio: LG → Einheiten → Mieter → Verträge → Rechnungen.
+
+    MANDANTENKONTEXT UND `bulk_create` — zwei Dinge, die hier zusammenkommen:
+
+    Seit Etappe 6.2 wirft `Model.objects` ohne Kontext, und ein Test hat
+    keinen, solange er ihn nicht setzt. Und `bulk_create` umgeht `save()`,
+    also auch die Stelle, die die Organisation aus dem Kontext einträgt — sie
+    muss darum an JEDEM Objekt von Hand stehen. Fehlt eines von beidem,
+    scheitert das Seeding, und das Messwerkzeug misst nichts.
+    """
+    from finance.models import Buchungskonto, DebitorenRechnung
+
+    from core.tenancy import organisation_kontext
+    from crm.models import Organisation
+
+    organisation = Organisation.objects.order_by('pk').first()
+    if organisation is None:
+        organisation = Organisation.objects.create(
+            firma='Perf AG', strasse='Perfstrasse 1', plz='8000', ort='Zürich')
+    with organisation_kontext(organisation):
+        return _seed_im_kontext(organisation)
+
+
+def _seed_im_kontext(organisation):
     from finance.models import Buchungskonto, DebitorenRechnung
     for nr, bez, typ in [('1020', 'Bank', 'bilanz'), ('1100', 'Debitoren', 'bilanz'),
                          ('1190', 'Durchlauf', 'bilanz'), ('2030', 'Guthaben Mieter', 'bilanz'),
@@ -77,7 +116,7 @@ def _seed():
         Buchungskonto.objects.get_or_create(nummer=nr, defaults={'bezeichnung': bez, 'typ': typ})
 
     lgs = [Liegenschaft(strasse=f'Teststrasse {i}', plz='4500', ort='Solothurn',
-                        versicherungswert=Decimal('2450000'))
+                        versicherungswert=Decimal('2450000'), organisation=organisation)
            for i in range(1, PERF_SKALA + 1)]
     Liegenschaft.objects.bulk_create(lgs)
     lgs = list(Liegenschaft.objects.all())
@@ -87,20 +126,22 @@ def _seed():
         for j in range(1, EINHEITEN_PRO_LG + 1):
             einheiten.append(Einheit(liegenschaft=lg, bezeichnung=f'Whg {j}', typ='wohnung',
                                      nettomiete_aktuell=Decimal('1500'),
-                                     nebenkosten_aktuell=Decimal('200')))
+                                     nebenkosten_aktuell=Decimal('200'),
+                                     organisation=organisation))
     Einheit.objects.bulk_create(einheiten)
     einheiten = list(Einheit.objects.all())
 
     for k in range(len(einheiten)):
         mieter.append(Mieter(typ='person', vorname=f'Vorname{k}', nachname=f'Nachname{k}',
                              email=f'm{k}@example.ch', strasse='Seeweg 3',
-                             plz='4500', ort='Solothurn'))
+                             plz='4500', ort='Solothurn', organisation=organisation))
     Mieter.objects.bulk_create(mieter)
     mieter = list(Mieter.objects.all())
 
     vertraege = [Mietvertrag(mieter=m, einheit=e, beginn=date(2024, 1, 1),
                              netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'),
-                             status='aktiv', kautions_betrag=Decimal('4500'))
+                             status='aktiv', kautions_betrag=Decimal('4500'),
+                             organisation=organisation)
                  for e, m in zip(einheiten, mieter)]
     Mietvertrag.objects.bulk_create(vertraege)
     vertraege = list(Mietvertrag.objects.all())
@@ -114,7 +155,8 @@ def _seed():
             rechnungen.append(DebitorenRechnung(
                 vertrag=v, titel=f'Miete & NK {monat:02d}/{jahr}', betrag=Decimal('1700'),
                 datum=date(jahr, monat, 1), faellig_am=date(jahr, monat, 1),
-                status='bezahlt' if mo < MONATE - 2 else 'offen'))
+                status='bezahlt' if mo < MONATE - 2 else 'offen',
+                organisation=organisation))
     DebitorenRechnung.objects.bulk_create(rechnungen, batch_size=500)
     return lgs, einheiten, vertraege
 

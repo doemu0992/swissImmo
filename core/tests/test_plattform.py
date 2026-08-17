@@ -238,6 +238,31 @@ class LogbuchTests(TestCase):
 class DatenResetTests(TestCase):
     """Gefahrenzone: alle Daten löschen und von vorne beginnen."""
 
+    def test_reset_ueberlebt_ein_modell_ohne_tabelle(self):
+        """Ein registriertes Modell ohne Tabelle darf den Reset nicht abbrechen.
+
+        `DELETE FROM "core_haus"` auf eine fehlende Tabelle warf einen
+        `OperationalError` — mitten in der Schleife, nach einigen bereits
+        geleerten Tabellen. Der Nutzer sah einen Serverfehler und wusste nicht,
+        ob halb gelöscht wurde. Ein Modell ohne Tabelle ist nicht erfunden:
+        eine nicht angewandte Migration reicht.
+
+        Gefunden am 17.08.2026, weil `core/tests/test_tenant_manager.py` zwei
+        Testmodelle mit `app_label = 'core'` in der Registry hinterlässt, deren
+        Tabellen nur während jener Testklasse existieren. Im Blocklauf fiel es
+        nie auf — nur wenn die ganze Suite am Stück läuft.
+        """
+        import core.tests.test_tenant_manager  # noqa: F401  (registriert Haus/Zimmer)
+        from django.apps import apps
+
+        self.assertIn('core.Haus', [m._meta.label for m in apps.get_models()],
+                      'Testmodell nicht registriert — dieser Test prüft dann nichts.')
+
+        c = Client()
+        c.force_login(_team_user())
+        antwort = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'}, secure=True)
+        self.assertIn(antwort.status_code, (302, 200))
+
     def test_reset_loescht_alles(self):
         from finance.models import Buchung
         from portfolio.models import Ausstattung

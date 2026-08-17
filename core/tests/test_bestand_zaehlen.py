@@ -79,3 +79,32 @@ class NachzaehlungTests(TestCase):
         raus = StringIO()
         call_command('bestand_zaehlen', pruefe=pfad, stdout=raus, stderr=StringIO())
         self.assertIn('identisch', raus.getvalue())
+
+
+class ModellOhneTabelleTests(TestCase):
+    """Die Nachzählung bricht an einem Modell ohne Tabelle nicht ab.
+
+    `Model.objects.count()` auf eine fehlende Tabelle warf einen
+    `OperationalError`, den der Auffangmechanismus als
+    `FEHLER:OperationalError` protokollierte — eine Zeile, die den
+    Ausnahmetyp trägt und nicht sagt, WAS fehlt. Jetzt steht dort
+    `OHNE-TABELLE`: auf beiden Seiten des Umzugs identisch, solange die
+    Tabelle beidseits fehlt, und im `diff` sofort sichtbar, sobald sie nur
+    auf einer Seite fehlt.
+    """
+
+    def test_meldet_ohne_tabelle_statt_eines_ausnahmetyps(self):
+        import core.tests.test_tenant_manager  # noqa: F401  (registriert Haus/Zimmer)
+        from django.apps import apps
+
+        self.assertIn('core.Haus', [m._meta.label for m in apps.get_models()],
+                      'Testmodell nicht registriert — dieser Test prüft dann nichts.')
+
+        raus = StringIO()
+        call_command('bestand_zaehlen', stdout=raus)
+        zeilen = raus.getvalue().strip().split('\n')
+
+        self.assertIn('core.Haus OHNE-TABELLE', zeilen)
+        self.assertEqual([z for z in zeilen if 'FEHLER:' in z], [],
+                         'Ein Modell ohne Tabelle wird als Ausnahmetyp gemeldet '
+                         'statt benannt.')
