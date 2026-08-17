@@ -158,7 +158,10 @@ class MediaSchutzTests(TestCase):
     def test_anonymer_zugriff_auf_sensible_datei_404(self):
         import os
         from django.conf import settings
-        rel = 'roh_vertraege/geheim_test.pdf'
+        # Seit Etappe 6.5 sagt das Praefix, welcher Verwaltung die Datei
+        # gehoert. Eine Datei OHNE bestimmbaren Besitzer ist fuer niemanden
+        # erreichbar — genau das ist der neue Schutz.
+        rel = f'organisation/{_test_organisation().pk}/roh_vertraege/geheim_test.pdf'
         pfad = os.path.join(settings.MEDIA_ROOT, rel)
         os.makedirs(os.path.dirname(pfad), exist_ok=True)
         with open(pfad, 'wb') as fh:
@@ -243,7 +246,7 @@ class MediaZugriffTests(TestCase):
         import os, shutil
         from django.conf import settings
         from django.test import Client
-        rel = 'schaden_fotos/2026-01-01/bad.jpg'
+        rel = f'organisation/{_test_organisation().pk}/schaden_fotos/2026-01-01/bad.jpg'
         ziel = os.path.join(settings.MEDIA_ROOT, rel)
         os.makedirs(os.path.dirname(ziel), exist_ok=True)
         with open(ziel, 'wb') as fh:
@@ -253,7 +256,7 @@ class MediaZugriffTests(TestCase):
             c = Client(); c.force_login(_team_user())
             self.assertEqual(c.get('/media/' + rel).status_code, 200)
         finally:
-            shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'schaden_fotos'),
+            shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'organisation'),
                           ignore_errors=True)
 
     def test_pfad_umweg_umgeht_den_schutz_nicht(self):
@@ -285,7 +288,7 @@ class MediaZugriffTests(TestCase):
                                        msg=f'Umweg «{umweg}» lieferte die Datei aus'):
                     geschuetzte_media(req, umweg)
         finally:
-            shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'schaden_fotos'),
+            shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'organisation'),
                           ignore_errors=True)
 
     def test_html_beleg_wird_nie_inline_gerendert(self):
@@ -295,7 +298,7 @@ class MediaZugriffTests(TestCase):
         import os, shutil
         from django.conf import settings
         from django.test import Client
-        rel = 'kreditoren_belege/boese.html'
+        rel = f'organisation/{_test_organisation().pk}/kreditoren_belege/boese.html'
         ziel = os.path.join(settings.MEDIA_ROOT, rel)
         os.makedirs(os.path.dirname(ziel), exist_ok=True)
         with open(ziel, 'w') as fh:
@@ -307,7 +310,7 @@ class MediaZugriffTests(TestCase):
             self.assertEqual(r['Content-Disposition'], 'attachment')
             self.assertEqual(r['X-Content-Type-Options'], 'nosniff')
         finally:
-            shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'kreditoren_belege'),
+            shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'organisation'),
                           ignore_errors=True)
 
 

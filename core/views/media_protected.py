@@ -49,9 +49,28 @@ OEFFENTLICHE_BILD_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'}
 OEFFENTLICHE_PREFIXE = ('logos/', 'objekt_fotos/')
 
 
+def ohne_organisationspraefix(pfad):
+    """`organisation/7/schaden_fotos/…` → `schaden_fotos/…`.
+
+    WARUM DAS EINE EIGENE FUNKTION IST: Die Sensibilität wird am ORDNER
+    abgelesen (`schaden_fotos/`, `dokumente/`, …). Das Präfix aus Etappe 6.5
+    schiebt sich davor — ohne dieses Abziehen begönne kein Pfad mehr mit einem
+    sensiblen Ordner, die Prüfung liefe ins Leere, und jedes Bild wäre über
+    seine Endung anonym abrufbar. Also auch Wohnungsaufnahmen aus
+    Schadenmeldungen.
+
+    Gefunden von `test_fremder_bekommt_schadenfoto_nicht`, unmittelbar nachdem
+    das Präfix eingeführt war.
+    """
+    teile = (pfad or '').lstrip('/').split('/')
+    if len(teile) >= 3 and teile[0] == 'organisation' and teile[1].isdigit():
+        return '/'.join(teile[2:])
+    return (pfad or '').lstrip('/')
+
+
 def ist_oeffentlich(pfad):
     """True → Datei darf ohne Login ausgeliefert werden."""
-    p = (pfad or '').lower().lstrip('/')
+    p = ohne_organisationspraefix(pfad).lower()
     if any(p.startswith(x) for x in SENSIBLE_PREFIXE):
         return False
     if any(p.startswith(x) for x in OEFFENTLICHE_PREFIXE):
@@ -69,7 +88,7 @@ def ist_objektfoto(pfad):
     Alt-Pfade in der Datenbank nachgesehen: Ist die Datei ein `EinheitFoto`,
     ist sie fürs Inserat gedacht und bleibt öffentlich. Eine Abfrage je Bild,
     und nur für den Alt-Ordner."""
-    p = (pfad or '').lstrip('/')
+    p = ohne_organisationspraefix(pfad)
     if not p.startswith('uploads/'):
         return False
     try:
@@ -77,6 +96,61 @@ def ist_objektfoto(pfad):
         return EinheitFoto.objects.filter(bild=p).exists()
     except Exception:
         return False
+
+
+#: Modelle, deren Dateifelder geprüft werden müssen — aus der Registry, nicht
+#: abgetippt. Ein neues Dateifeld ist damit automatisch mit abgedeckt.
+def _dateifelder():
+    from django.apps import apps
+    from django.db import models as _m
+    for modell in apps.get_models():
+        for feld in modell._meta.get_fields():
+            if isinstance(feld, _m.FileField):
+                yield modell, feld.name
+
+
+def organisation_id_der_datei(rel):
+    """Wem gehört diese Datei? Gibt die Organisations-ID zurück oder `None`.
+
+    ZWEI WEGE, und der erste ist der schnelle:
+
+    1. **Am Pfad.** Seit Etappe 6.5 liegen neue Dateien unter
+       `organisation/<id>/…`. Das kostet keine Abfrage.
+    2. **In der Datenbank.** Für den Alt-Bestand — dieselbe Technik, die
+       `ist_objektfoto` schon für Objektfotos benutzt: nachsehen, welcher
+       Datensatz auf diese Datei zeigt, und dessen Organisation nehmen.
+
+    `None` heisst „nicht bestimmbar". Der Aufrufer behandelt das als **nicht
+    freigegeben** — bei einer Datei, deren Zugehörigkeit niemand kennt, ist
+    Verweigern die einzige vertretbare Antwort.
+    """
+    teile = (rel or '').split('/')
+    if len(teile) >= 3 and teile[0] == 'organisation' and teile[1].isdigit():
+        return int(teile[1])
+
+    for modell, feldname in _dateifelder():
+        try:
+            treffer = (modell.alle_organisationen if hasattr(modell, 'alle_organisationen')
+                       else modell._base_manager).filter(**{feldname: rel}).first()
+        except Exception:
+            continue
+        if treffer is None:
+            continue
+        if type(treffer).__name__ == 'Organisation':
+            return treffer.pk          # Logo/Unterschrift: sie IST der Mandant
+        return getattr(treffer, 'organisation_id', None)
+    return None
+
+
+def gehoert_zur_eigenen_organisation(rel):
+    """Darf die aktive Verwaltung diese Datei sehen?"""
+    from core.tenancy import aktuelle_organisation
+
+    eigene = aktuelle_organisation()
+    if eigene is None:
+        return False                   # ohne Kontext kein Zugriff auf Sensibles
+    besitzer = organisation_id_der_datei(rel)
+    return besitzer is not None and besitzer == eigene.pk
 
 
 # Nur diese Endungen werden inline ausgeliefert. Alles andere geht als
@@ -107,6 +181,20 @@ def geschuetzte_media(request, pfad):
         u = getattr(request, 'user', None)
         if not (u and u.is_authenticated and hat_rolle(u, TEAM_ROLLEN)):
             raise Http404   # kein Existenz-Leak (404 statt 403)
+
+        # UND ZWAR AUS DER RICHTIGEN VERWALTUNG (Etappe 6.5).
+        #
+        # Bis hierher endete die Pruefung eine Zeile weiter oben: „ist im Team".
+        # In WELCHEM Team, stand nirgends. Jedes angemeldete Team-Mitglied
+        # konnte damit jede geschuetzte Datei abrufen, sofern es den Pfad kannte
+        # — und die Pfade sind ratbar (Ordner, Datum, Dateiname). Betroffen sind
+        # unter anderem Ausweiskopien, Betreibungsausz'uege und Lohnausweise von
+        # Mietbewerbern.
+        #
+        # 404 statt 403, aus demselben Grund wie oben: Ein 403 bestaetigt, dass
+        # die Datei existiert.
+        if not gehoert_zur_eigenen_organisation(rel):
+            raise Http404
 
     resp = FileResponse(open(vollpfad, 'rb'))
     endung = os.path.splitext(rel.lower())[1]

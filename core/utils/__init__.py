@@ -190,13 +190,51 @@ UPLOAD_ORDNER = {
 }
 
 
-def get_smart_upload_path(instance, filename):
-    """Ablagepfad einer hochgeladenen Datei: <ordner>/<datum>/<name>.
+def organisation_id_fuer_ablage(instance):
+    """Die Organisations-ID, unter der eine Datei dieses Objekts liegt.
 
-    Der Ordner richtet sich nach dem Modell, damit die Zugriffsregel für
+    `crm.Organisation` ist ihr eigener Mandant (Logo, Unterschrift). Alles
+    andere trägt seit Etappe 5 eine `organisation` — beim Hochladen ist sie
+    allerdings noch nicht gesetzt, wenn das Objekt neu ist. Dann gilt der
+    Mandantenkontext, und wenn auch der fehlt, landet die Datei im
+    mandantenlosen Alt-Bereich (die Zugriffsregel behandelt den wie sensibel).
+    """
+    from core.tenancy import aktuelle_organisation
+
+    if type(instance).__name__ == 'Organisation':
+        return instance.pk
+    org_id = getattr(instance, 'organisation_id', None)
+    if org_id:
+        return org_id
+    aus_kontext = aktuelle_organisation()
+    return getattr(aus_kontext, 'pk', None)
+
+
+def get_smart_upload_path(instance, filename):
+    """Ablagepfad einer hochgeladenen Datei: organisation/<id>/<ordner>/<datum>/<name>.
+
+    ZWEI TRENNUNGEN IN EINEM PFAD.
+
+    Der **Ordner** richtet sich nach dem Modell, damit die Zugriffsregel für
     /media/ sensible von öffentlichen Dateien unterscheiden kann. Unbekannte
-    Modelle landen weiterhin in `uploads/` — das ist der Ordner, den die Regel
-    als schutzbedürftig behandelt, also die sichere Voreinstellung."""
+    Modelle landen weiterhin in `uploads/` — der Ordner, den die Regel als
+    schutzbedürftig behandelt, also die sichere Voreinstellung.
+
+    Das **Präfix `organisation/<id>/`** kam mit Etappe 6.5 dazu. Es leistet
+    zweierlei: Die Zugriffsregel kann die Zugehörigkeit am Pfad ablesen, statt
+    für jede Datei in der Datenbank nachzusehen — und zwei Verwaltungen können
+    dieselbe Datei gleich benennen, ohne sich zu überschreiben. Eine
+    `vertrag.pdf` von A und eine von B landeten vorher am selben Tag im selben
+    Ordner; Django hängt dann ein Suffix an, aber verlassen möchte man sich
+    darauf nicht.
+
+    Ohne bestimmbare Organisation bleibt der Pfad wie bisher (ohne Präfix).
+    Das ist der Alt-Bestand und der Fall "Bewerbung ohne Login"; beide sind
+    über die Zugriffsregel abgedeckt, die dann in der Datenbank nachsieht.
+    """
     heute = datetime.date.today().strftime("%Y-%m-%d")
     ordner = UPLOAD_ORDNER.get(type(instance).__name__, "uploads")
-    return os.path.join(ordner, heute, filename)
+    org_id = organisation_id_fuer_ablage(instance)
+    if org_id is None:
+        return os.path.join(ordner, heute, filename)
+    return os.path.join('organisation', str(org_id), ordner, heute, filename)

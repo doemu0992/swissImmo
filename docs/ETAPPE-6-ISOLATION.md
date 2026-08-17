@@ -138,7 +138,25 @@ Der erste Fund kam nicht aus dem Code-Lesen, sondern aus dem Fixture: Dessen Vor
 
 **Gegenprobe durchgeführt:** Mit zurückgebautem Manager, `save()` und Kopier-Regel fallen 5 der 12 Tests.
 
-**6.5 — Alles, was den Prozess verlässt.** Dateiablage auf `organisation/<id>/` mit Migration der Bestandsdateien, PDF- und E-Mail-Absender aus der Organisation des Datensatzes, Cache-Keys mit Organisations-ID, `AktivitaetsLog` beim Schreiben.
+**6.5 — Dateiablage erledigt (17.08.2026); Absender und Cache-Keys geprüft.**
+
+**Der Befund war nicht das Ordnerlayout, sondern die Zugriffsregel.** `geschuetzte_media` prüfte genau eine Sache: „ist im Team". In **welchem** Team, stand nirgends. Jedes angemeldete Team-Mitglied konnte jede geschützte Datei abrufen, sofern es den Pfad kannte — und die Pfade sind ratbar (Ordner, Datum, Dateiname). Dort liegen Ausweiskopien, Betreibungsauszüge und Lohnausweise von Mietbewerbern, Wohnungsaufnahmen aus Schadenmeldungen, gescannte Verträge.
+
+Zwei Mechanismen schliessen das:
+
+1. **Pfad-Präfix `organisation/<id>/`** bei neuen Uploads — die Zugehörigkeit ohne Datenbankabfrage ablesbar.
+2. **Rückgriff auf die Datenbank** für den Alt-Bestand: nachsehen, welcher Datensatz auf die Datei zeigt (dieselbe Technik, die `ist_objektfoto` schon benutzte).
+
+Lässt sich die Zugehörigkeit nicht bestimmen, wird **verweigert** — 404, nicht 403, damit kein Existenz-Leak entsteht.
+
+> **Eine Falle, in die das Präfix beim Einbau selbst geführt hat.** Die Sensibilität wird am *Ordner* abgelesen (`schaden_fotos/`, `dokumente/`). Das Präfix schiebt sich davor — ohne Abziehen begann kein Pfad mehr mit einem sensiblen Ordner, die Prüfung lief ins Leere, und jedes Bild wäre über seine Endung **anonym** abrufbar gewesen. Gefunden vom bestehenden `test_fremder_bekommt_schadenfoto_nicht`, im ersten Lauf nach der Änderung. `ohne_organisationspraefix()` zieht das Präfix jetzt ab, bevor die Ordnerprüfung greift; ein eigener Testsatz hält den Fall fest.
+
+**`medien_umziehen`** zieht den Bestand nach — Trockenlauf ist die Voreinstellung. Auf der Entwicklungsdatenbank: 161 Verweise, 4 übersprungen (Dateien fehlen auf der Platte; gemeldet statt verschwiegen). Der Befehl kopiert erst, setzt dann das Feld, löscht das Original zuletzt — bricht es dazwischen ab, liegt die Datei doppelt: Speicherplatz, kein Datenverlust. Mehrfachverweise auf dieselbe Datei bekommen denselben neuen Pfad, ohne sie erneut zu bewegen.
+
+**Absender in PDF und E-Mail** waren bereits in 6.1 erledigt — sie kommen aus der Organisation des jeweiligen Objekts (Vertrag, Mieter, Liegenschaft, Ticket), nicht aus dem Bestand.
+
+**Cache-Keys:** Es gibt zwei. Der LIK-Cache (`core/services/lik.py`) hält eine **nationale** Zahl des BFS; ein geteilter Key ist dort richtig und kein Leck. Die Ratenbremse (`core/utils/throttle.py`) begrenzt Bewerbungen je IP — sie koppelt heute Verwaltungen aneinander (fünf Bewerbungen bei A sperren die Bewerbung bei B), was mildes Denial-of-Service, aber kein Datenleck ist. Vermerkt, nicht mitkorrigiert.
+
 
 ---
 
