@@ -5,6 +5,7 @@ import segno
 import io
 import base64
 import logging
+from core.tenancy import aktuelle_organisation
 
 # BeautifulSoup wird nicht mehr benötigt, da wir die API nutzen
 # from bs4 import BeautifulSoup
@@ -135,14 +136,29 @@ def generate_swiss_qr_base64(iban, name, strasse, ort, betrag, referenz):
 # --- NEUE HELPER FUNKTIONEN FÜR DIE APP-AUFTEILUNG ---
 # ==============================================================================
 
-def get_current_ref_zins():
-    try:
-        from crm.models import Organisation
-        v = Organisation.objects.first()
-        return v.aktueller_referenzzinssatz if v else 1.25
-    except: return 1.25
+def get_current_ref_zins(organisation=None):
+    """Aktueller Referenzzinssatz — vorrangig der der uebergebenen Verwaltung.
 
-def get_current_lik():
+    Die Reihenfolge ist bewusst: erst das ausdruecklich genannte Objekt, dann
+    der Mandantenkontext, und erst zuletzt der feste Notwert. Der Notwert ist
+    die schlechteste Antwort, weil er in eine Mietzinsrechnung nach OR 269a
+    eingeht, ohne dass jemand es merkt — deshalb wird er protokolliert.
+
+    Bleibt ohne Argument aufrufbar: Die Funktion ist zugleich der Default zweier
+    Modellfelder (`Mietvertrag.basis_referenzzinssatz`, `Einheit.ref_zinssatz`).
+    """
+    org = organisation or aktuelle_organisation()
+    if org is not None:
+        return org.aktueller_referenzzinssatz
+    # Bewusst nur `debug`: Als Feldvorgabe wird die Funktion bei JEDER
+    # Objekterzeugung aufgerufen, auch ausserhalb einer Anfrage — eine Warnung
+    # feuerte allein in der Testsuite 1'874-mal und waere damit unlesbar.
+    # Dass Fachlogik den Wert nicht ohne Bezug holt, sichert stattdessen
+    # `test_zinshelfer_werden_nie_ohne_bezug_aufgerufen` ab.
+    logger.debug("Referenzzinssatz ohne Verwaltungsbezug — Notwert 1.25.")
+    return 1.25
+
+def get_current_lik(organisation=None):
     # Primär: automatischer LIK (Live-Abruf → BFS-Tabelle), damit überall
     # derselbe, immer aktuelle Wert gilt. Fallback: Account-Einstellung.
     try:
@@ -152,11 +168,11 @@ def get_current_lik():
             return pkt
     except Exception:
         logger.debug("Fehler bewusst übergangen", exc_info=True)
-    try:
-        from crm.models import Organisation
-        v = Organisation.objects.first()
-        return v.aktueller_lik_punkte if v else 107.1
-    except: return 107.1
+    org = organisation or aktuelle_organisation()
+    if org is not None:
+        return org.aktueller_lik_punkte
+    logger.debug("LIK ohne Verwaltungsbezug — Notwert 107.1.")
+    return 107.1
 
 #: Ablageordner je Modell. Sieben Dateifelder landeten bisher alle im selben
 #: Topf `uploads/<datum>/` — Objektfotos fürs Inserat neben Schadenfotos aus

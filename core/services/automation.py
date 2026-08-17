@@ -313,6 +313,7 @@ def generate_auto_pendenzen(horizont_tage=90, user=None):
     (Vertragsende, Auszug, Geräte-Garantien, Serviceabos). Idempotent über das
     Feld Pendenz.quelle. Gibt die Anzahl neu erstellter Pendenzen zurück."""
     from core.models import Pendenz
+    from core.utils import get_current_ref_zins
     from rentals.models import Mietvertrag, Kuendigung
     from portfolio.models import Geraet, Wartungsfrist
 
@@ -438,27 +439,33 @@ def generate_auto_pendenzen(horizont_tage=90, user=None):
     # f) Referenzzinssenkung: liegt der aktuelle Referenzzinssatz unter der
     # Vertragsbasis, kann der Mieter eine Herabsetzung verlangen (Art. 270a OR).
     # Informativ — nicht für Index-/Staffelverträge (die folgen anderer Logik).
-    try:
-        from core.utils import get_current_ref_zins
-        aktuell_ref = Decimal(str(get_current_ref_zins()))
-    except Exception:
-        aktuell_ref = None
-    if aktuell_ref is not None:
-        for v in (Mietvertrag.objects.filter(status='aktiv', mietzins_modell='fest')
-                  .select_related('mieter', 'einheit__liegenschaft')):
-            basis_ref = v.basis_referenzzinssatz or Decimal('0')
-            if not v.einheit_id or basis_ref <= 0 or aktuell_ref >= basis_ref:
-                continue
-            # Näherung: ~2.91 % Mietzinssenkung je 0.25-Prozentpunkt-Schritt (VMWG).
-            schritte = (basis_ref - aktuell_ref) / Decimal('0.25')
-            senkung_pct = (schritte * Decimal('2.91')).quantize(Decimal('0.1'))
-            _ensure(f"auto:refsenkung:{v.id}:{aktuell_ref}",
-                    f"Referenzzinssenkung prüfen: {v.mieter.display_name} ({v.einheit.bezeichnung})",
-                    heute, 'vertrag',
-                    (f"Referenzzins {basis_ref}%→{aktuell_ref}%: Der Mieter kann eine "
-                     f"Herabsetzung verlangen (Art. 270a OR), Richtwert ca. −{senkung_pct}% "
-                     f"(VMWG). Allfällige Anpassung prüfen."),
-                    liegenschaft=v.einheit.liegenschaft, vertrag=v)
+    #
+    # DER ZINSSTAND KOMMT JE VERTRAG VON SEINER VERWALTUNG. Diese Funktion laeuft
+    # aus der Automation, also OHNE Mandantenkontext — ein globaler Aufruf von
+    # `get_current_ref_zins()` faellt hier auf den festen Notwert 1.25 zurueck
+    # und legt dann fuer jeden Vertrag mit hoeherer Basis eine Senkungs-Pendenz
+    # an, die es gar nicht gibt. Mit mehreren Verwaltungen kaeme dazu, dass eine
+    # fremde Verwaltung den Massstab liefert.
+    for v in (Mietvertrag.objects.filter(status='aktiv', mietzins_modell='fest')
+              .select_related('mieter', 'einheit__liegenschaft', 'organisation')):
+        aktuell_ref = get_current_ref_zins(v.organisation)
+        try:
+            aktuell_ref = Decimal(str(aktuell_ref))
+        except Exception:
+            continue
+        basis_ref = v.basis_referenzzinssatz or Decimal('0')
+        if not v.einheit_id or basis_ref <= 0 or aktuell_ref >= basis_ref:
+            continue
+        # Näherung: ~2.91 % Mietzinssenkung je 0.25-Prozentpunkt-Schritt (VMWG).
+        schritte = (basis_ref - aktuell_ref) / Decimal('0.25')
+        senkung_pct = (schritte * Decimal('2.91')).quantize(Decimal('0.1'))
+        _ensure(f"auto:refsenkung:{v.id}:{aktuell_ref}",
+                f"Referenzzinssenkung prüfen: {v.mieter.display_name} ({v.einheit.bezeichnung})",
+                heute, 'vertrag',
+                (f"Referenzzins {basis_ref}%→{aktuell_ref}%: Der Mieter kann eine "
+                 f"Herabsetzung verlangen (Art. 270a OR), Richtwert ca. −{senkung_pct}% "
+                 f"(VMWG). Allfällige Anpassung prüfen."),
+                liegenschaft=v.einheit.liegenschaft, vertrag=v)
 
     # g) Kautions-Freigabefrist (Art. 257e Abs. 3): nach beendetem Mietverhältnis
     # kann der Mieter die Freigabe der Kaution verlangen, wenn der Vermieter nicht

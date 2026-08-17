@@ -29,6 +29,7 @@ from django.utils import timezone
 from core.auth import SCHREIB_ROLLEN, VERWALTUNGS_ROLLEN
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
+from core.tenancy import aktuelle_organisation
 
 
 def _num(wert):
@@ -205,7 +206,7 @@ def _mwst_periode(jahr, quartal, liegenschaft=None):
     vorsteuer = saldo('1170', soll_positiv=True)        # Vorsteuer-Guthaben (Soll-Saldo)
     zahllast = umsatzsteuer - vorsteuer
 
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
     methode = getattr(vw, 'mwst_methode', 'effektiv') if vw else 'effektiv'
     # Nettoumsatz aus der geschuldeten Steuer zurückrechnen — erfasst NK (3020),
     # optierte Wohnverhältnisse (3000) und Zuschläge (3600) gleichermassen.

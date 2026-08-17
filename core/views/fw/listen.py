@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 
 from ._basis import (_global_filter, _num, _vermietung_pipeline,
                      STATUS_PILL, VERTRAG_PILL)
+from core.tenancy import aktuelle_organisation
 
 
 # ============================================================
@@ -188,7 +189,7 @@ def fw_debitoren(request):
             'adresse': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''),
         }
     from crm.models import Organisation
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
     absender = {
         'firma': vw.firma if vw else '', 'strasse': vw.strasse if vw else '',
         'plz': vw.plz if vw else '', 'ort': vw.ort if vw else '',
@@ -798,7 +799,8 @@ def fw_betriebsrechnung_pdf(request, pk):
         jahr = int(request.GET.get('jahr') or timezone.localdate().year)
     except ValueError:
         jahr = timezone.localdate().year
-    pdf = betriebsrechnung_pdf(lg, jahr, verwaltung=Organisation.objects.first())
+    # Briefkopf vom Objekt der Auswertung.
+    pdf = betriebsrechnung_pdf(lg, jahr, verwaltung=lg.organisation)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Betriebsrechnung_{jahr}_{lg.strasse}.pdf"'
     return resp
@@ -988,7 +990,7 @@ def fw_auswertung(request):
         from django.http import HttpResponse
         lg_name = f"{aktive_lg.strasse}, {aktive_lg.ort}" if aktive_lg else "Alle Liegenschaften"
         pdf = generate_auswertung_pdf(typ_label, jahr, lg_name, total, monate, lg_rows,
-                                      Organisation.objects.first())
+                                      aktuelle_organisation())
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = f'inline; filename="Auswertung_{typ}_{jahr}.pdf"'
         return resp
@@ -1023,7 +1025,7 @@ def fw_mieterspiegel(request):
     if request.GET.get('pdf') == '1':
         from crm.models import Organisation
         from django.http import HttpResponse
-        pdf = generate_mieterspiegel_pdf(spiegel, Organisation.objects.first(), stichtag=timezone.localdate())
+        pdf = generate_mieterspiegel_pdf(spiegel, aktuelle_organisation(), stichtag=timezone.localdate())
         resp = HttpResponse(pdf, content_type='application/pdf')
         fname = (aktive_lg.strasse or 'Mieterspiegel').replace(' ', '_')
         resp['Content-Disposition'] = f'inline; filename="Mieterspiegel_{fname}.pdf"'

@@ -26,6 +26,7 @@ from rentals.models import Mietvertrag
 logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num
+from core.tenancy import aktuelle_organisation
 
 
 # ============================================================
@@ -333,7 +334,7 @@ def fw_ersatzplanung(request):
         from core.services.ersatzplanung_pdf import generate_ersatzplanung_pdf
         lg_name = (f"{aktive_lg.strasse}, {aktive_lg.ort}" if aktive_lg
                    else "Alle Liegenschaften")
-        pdf = generate_ersatzplanung_pdf(daten, lg_name, verwaltung=Organisation.objects.first(),
+        pdf = generate_ersatzplanung_pdf(daten, lg_name, verwaltung=aktuelle_organisation(),
                                          deckung=deckung)
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = 'inline; filename="Ersatzplanung.pdf"'
@@ -549,7 +550,9 @@ def fw_auftrag_pdf(request, pk):
     a = get_object_or_404(
         HandwerkerAuftrag.objects.select_related('ticket__liegenschaft', 'ticket__betroffene_einheit', 'handwerker'),
         id=pk)
-    pdf = generate_auftrag_pdf(a, Organisation.objects.first())
+    # Der Reparaturauftrag geht an einen Handwerker und nennt den Auftraggeber —
+    # das ist die Verwaltung des Tickets, nicht die erste im Bestand.
+    pdf = generate_auftrag_pdf(a, a.ticket.organisation)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Reparaturauftrag_{a.id}.pdf"'
     return resp

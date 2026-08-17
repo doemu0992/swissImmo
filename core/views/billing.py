@@ -49,7 +49,7 @@ def qr_rechnung_pdf(request, vertrag_id):
     liegenschaft = einheit.liegenschaft
     mieter = vertrag.mieter
     eigentuemer = liegenschaft.eigentuemer
-    verwaltung = Organisation.objects.first()
+    verwaltung = vertrag.organisation
 
     errors = []
     if not liegenschaft.iban: errors.append(f"Liegenschaft hat keine IBAN.")
@@ -254,7 +254,7 @@ def abrechnung_pdf_view(request, periode_id):
         return HttpResponse(f"Fehler: {ergebnis['error']}")
 
     abrechnungen = ergebnis.get('abrechnungen', [])
-    verwaltung = Organisation.objects.first()
+    verwaltung = liegenschaft.organisation
     eigentuemer = liegenschaft.eigentuemer
 
     if not liegenschaft.iban:

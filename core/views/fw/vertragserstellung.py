@@ -27,6 +27,7 @@ from .mietzins import anfangsmietzins_auto_ablegen
 logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num
+from core.tenancy import aktuelle_organisation
 
 
 # ============================================================
@@ -39,7 +40,7 @@ def fw_vertrag_neu(request):
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
     verwaltung = {
         'firma': vw.firma if vw else '', 'strasse': vw.strasse if vw else '',
         'plz': vw.plz if vw else '', 'ort': vw.ort if vw else '',

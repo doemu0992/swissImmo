@@ -15,6 +15,7 @@ from core.auth import rolle_erforderlich, ROLLE_VERWALTER, TEAM_ROLLEN
 from portfolio.models import Liegenschaft
 
 from ._basis import _global_filter, _num
+from core.tenancy import aktuelle_organisation
 
 
 # ============================================================
@@ -102,7 +103,7 @@ def fw_anlagen(request):
             messages.success(request, f"✅ Erneuerungsfonds-Einlage {jahr}: {n} Buchung(en) (CHF {summe})." if n
                              else f"Erneuerungsfonds {jahr}: nichts zu buchen.")
         elif aktion == 'sperre_set':
-            vw = Organisation.objects.first()
+            vw = aktuelle_organisation()
             if vw:
                 try:
                     vw.buchung_gesperrt_bis = date.fromisoformat(request.POST.get('gesperrt_bis')) if request.POST.get('gesperrt_bis') else None
@@ -115,7 +116,7 @@ def fw_anlagen(request):
 
     anlagen = list(Anlage.objects.select_related('liegenschaft').all())
     fonds = list(Erneuerungsfonds.objects.select_related('liegenschaft').all())
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
     return render(request, 'fw/anlagen.html', {
         **basis, 'nav': 'anlagen', 'anlagen': anlagen, 'fonds': fonds,
         'liegenschaften': Liegenschaft.objects.order_by('strasse'),

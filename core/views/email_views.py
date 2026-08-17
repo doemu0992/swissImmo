@@ -210,7 +210,9 @@ def send_abrechnung_email_view(request, periode_id):
 @rolle_erforderlich(ROLLE_VERWALTER)
 def send_mahnung_email_view(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
-    verwaltung = Organisation.objects.first()
+    # Absender der Mahnung: die Verwaltung DIESES Vertrags — an ihrem Briefkopf
+    # haengt nach OR 257d die Kuendigungsandrohung.
+    verwaltung = vertrag.organisation
 
     # 🌟 NEU: Dynamischer Monat als Default
     monat_str = request.POST.get('monat') or get_aktueller_monat()
@@ -257,7 +259,7 @@ def send_mahnung_email_view(request, vertrag_id):
 @rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER)
 def generate_mahnung_pdf_view(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
-    verwaltung = Organisation.objects.first()
+    verwaltung = vertrag.organisation
 
     # 🌟 NEU: Dynamischer Monat als Default
     monat_str = request.GET.get('monat') or request.POST.get('monat') or get_aktueller_monat()

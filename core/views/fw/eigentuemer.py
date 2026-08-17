@@ -146,7 +146,8 @@ def fw_eigentuemer_portal_zugang(request, pk):
         from core.utils.email_service import send_eigentuemer_portal_zugang
         from crm.models import Organisation
         from django.conf import settings as _settings
-        vw = Organisation.objects.first()
+        # Absender der Zugangsmail: die Verwaltung DIESES Eigentuemers.
+        vw = md.organisation
         login_url = _settings.PORTAL_BASE_URL.rstrip('/') + '/portal/login/'
         mail_ok = send_eigentuemer_portal_zugang(
             md.email, md.firma_oder_name, u.username, passwort, login_url,

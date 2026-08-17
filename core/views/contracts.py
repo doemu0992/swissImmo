@@ -60,8 +60,8 @@ def mietzins_anpassung_view(request, vertrag_id):
 
 
     # 🔥 FIX: Die externen Daten sofort in Decimal umwandeln! 🔥
-    aktueller_zins = parse_decimal(get_current_ref_zins())
-    aktueller_lik = parse_decimal(get_current_lik())
+    aktueller_zins = parse_decimal(get_current_ref_zins(verwaltung))
+    aktueller_lik = parse_decimal(get_current_lik(verwaltung))
 
     # --- WENN FORMULAR GESENDET WURDE (POST) ---
     if request.method == 'POST':

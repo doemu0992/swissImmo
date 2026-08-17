@@ -33,6 +33,7 @@ from rentals.models import Mietvertrag
 logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num, _vermietung_pipeline
+from core.tenancy import aktuelle_organisation
 
 
 # ============================================================
@@ -46,7 +47,7 @@ def fw_account(request):
     from django.contrib import messages
     from crm.models import Organisation
     from core.auth import log_aktion, hat_rolle, snapshot_model, diff_model
-    vw = Organisation.objects.first() or Organisation.objects.create(firma="Meine Verwaltung")
+    vw = aktuelle_organisation()
     basis = _global_filter(request)
 
     if request.method == 'POST' and hat_rolle(request.user, SCHREIB_ROLLEN):
@@ -179,7 +180,6 @@ def fw_marktdaten_aktualisieren(request):
     """Holt Referenzzins + LIK aus dem Internet und speichert sie in Verwaltung."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from core.tenancy import aktuelle_organisation
     from core.utils.market_data import update_verwaltung_rates
     if request.method == 'POST':
         try:
@@ -204,7 +204,7 @@ def fw_marktdaten_live(request):
     from crm.models import Organisation
     from core.auth import hat_rolle
     quelle = 'gespeichert'
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
     # Nur nachladen, wenn der gespeicherte Stand wirklich alt ist. Der Aufruf
     # holt zwei externe Seiten (je timeout=10) und war mit gut einer Sekunde
     # die langsamste Route der Anwendung — bei nicht erreichbaren Quellen bis
@@ -215,12 +215,11 @@ def fw_marktdaten_live(request):
     veraltet = stand is None or (timezone.now() - stand).days >= 1
     if veraltet and hat_rolle(request.user, SCHREIB_ROLLEN):
         try:
-            from core.tenancy import aktuelle_organisation
             from core.utils.market_data import update_verwaltung_rates
-            eigene = aktuelle_organisation()
-            update_verwaltung_rates(eigene)
+            # Nur die eigene Verwaltung — `vw` ist sie bereits.
+            update_verwaltung_rates(vw)
             quelle = 'internet'
-            vw = eigene
+            vw.refresh_from_db()
         except Exception:
             logger.warning("Marktdaten-Livenachladen fehlgeschlagen", exc_info=True)
             quelle = 'gespeichert'
@@ -612,7 +611,7 @@ def fw_expose_pdf(request, pk):
     from crm.models import Organisation
     from core.services.expose import generate_expose_pdf, objekt_titel
     e = get_object_or_404(Einheit.objects.select_related('liegenschaft'), id=pk)
-    pdf = generate_expose_pdf(e, Organisation.objects.first())
+    pdf = generate_expose_pdf(e, e.liegenschaft.organisation)
     resp = HttpResponse(pdf, content_type='application/pdf')
     lg = e.liegenschaft
     fname = f"Expose_{(lg.strasse if lg else e.bezeichnung)}".replace(' ', '_').replace('/', '-')
@@ -752,7 +751,7 @@ def fw_integrationen(request):
     # Vermarktungs-Portale (Objekt-Feed)
     from crm.models import Organisation
     from portfolio.models import Einheit
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
     token = (vw.portal_feed_token if vw else '') or ''
     feed_pfad = f"/neu/vermarktung/feed.json?token={token}" if token else ''
     ausgeschrieben_n = Einheit.objects.filter(zur_ausschreibung=True).count()
@@ -776,15 +775,31 @@ def fw_vermarktung_feed(request):
     import io
 
     import hmac
-    vw = Organisation.objects.first()
-    erwartet = (vw.portal_feed_token if vw else '') or ''
+    # DER TOKEN BESTIMMT DIE VERWALTUNG — nicht umgekehrt.
+    #
+    # Vorher wurde er gegen den Token der ERSTEN Organisation gehalten. Das ist
+    # die falsche Richtung, und sie geht auf zwei Arten schief: Der Token der
+    # zweiten Verwaltung wird abgewiesen, obwohl er gültig ist — und wer den
+    # Token der ersten hat, bekam anschliessend die Ausschreibungen ALLER
+    # Verwaltungen geliefert, weil `feed_objekte()` ungefiltert las.
+    #
+    # Die Schleife statt einer `filter(portal_feed_token=…)`-Abfrage: So bleibt
+    # der konstant-zeitige Vergleich erhalten, der einen Timing-Seitenkanal
+    # beim Token-Raten verhindert. Bei einer Handvoll Verwaltungen kostet das
+    # nichts.
     token = request.GET.get('token', '')
-    # Konstant-zeitiger Vergleich (kein Timing-Seitenkanal beim Token-Raten).
-    if not erwartet or not hmac.compare_digest(str(token), str(erwartet)):
+    vw = None
+    if token:
+        for kandidat in Organisation.objects.exclude(portal_feed_token='').exclude(
+                portal_feed_token__isnull=True):
+            if hmac.compare_digest(str(token), str(kandidat.portal_feed_token)):
+                vw = kandidat
+                break
+    if vw is None:
         return HttpResponseForbidden("Ungültiger oder fehlender Feed-Token.")
 
     base = f"{request.scheme}://{request.get_host()}"
-    objekte = feed_objekte(base_url=base)
+    objekte = feed_objekte(base_url=base, organisation=vw)
 
     if request.GET.get('format') == 'csv':
         buf = io.StringIO()
@@ -812,7 +827,7 @@ def fw_integration_portal_token(request):
     import secrets
     if request.method != 'POST':
         return redirect('/neu/integrationen/')
-    vw = Organisation.objects.first() or Organisation.objects.create(firma='Meine Verwaltung', strasse='', plz='', ort='')
+    vw = aktuelle_organisation()
     if request.POST.get('aktion') == 'entfernen':
         vw.portal_feed_token = ''
         vw.save(update_fields=['portal_feed_token'])
@@ -886,7 +901,7 @@ def fw_abonnemente(request):
     from django.contrib import messages
     from crm.models import Organisation
     from core.auth import log_aktion, hat_rolle
-    vw = Organisation.objects.first() or Organisation.objects.create(firma="Meine Verwaltung")
+    vw = aktuelle_organisation()
     basis = _global_filter(request)
 
     if request.method == 'POST' and hat_rolle(request.user, SCHREIB_ROLLEN):

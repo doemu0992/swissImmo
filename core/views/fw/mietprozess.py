@@ -22,6 +22,7 @@ from portfolio.models import Einheit
 from rentals.models import Mietvertrag
 
 from ._basis import _global_filter, _vermietung_pipeline
+from core.tenancy import aktuelle_organisation
 
 
 # ============================================================
@@ -107,7 +108,7 @@ def _bewerber_mail(b, entscheid):
     """Baut (betreff, body) für Zusage/Absage — aus Vorlage (falls vorhanden) mit
     Platzhaltern, sonst Standardtext."""
     from crm.models import Vorlage, Organisation
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
     e = b.einheit
     lg = e.liegenschaft if e else None
     objekt = f"{e.bezeichnung}" + (f", {lg.strasse}, {lg.plz} {lg.ort}" if lg else "")

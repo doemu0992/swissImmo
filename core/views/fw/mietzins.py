@@ -26,6 +26,7 @@ from rentals.models import Mietvertrag
 logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num
+from core.tenancy import aktuelle_organisation
 
 
 # ============================================================
@@ -46,7 +47,7 @@ def fw_mietzins(request):
     aktive_lg = basis['aktive_lg']
     heute = timezone.localdate()
 
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
     curr_zins = vw.aktueller_referenzzinssatz if vw else None
     curr_lik = vw.aktueller_lik_punkte if vw else None
 
@@ -133,7 +134,9 @@ def fw_mietzins_anpassung(request, vertrag_id):
 
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
     basis = _global_filter(request)
-    vw = Organisation.objects.first()
+    # Die Mietzinsanpassung wird gegen den Stand DIESER Verwaltung
+    # begruendet (OR 269a) und traegt ihren Briefkopf.
+    vw = v.organisation
     lg = v.einheit.liegenschaft
     eigentuemer = lg.eigentuemer
 
@@ -143,8 +146,10 @@ def fw_mietzins_anpassung(request, vertrag_id):
         except Exception:
             return Decimal(default)
 
-    aktuell_ref = _dec(get_current_ref_zins())
-    aktuell_lik = _dec(get_current_lik())
+    # Der Stand DIESER Verwaltung — an ihm wird die Anpassung nach OR 269a
+    # begruendet.
+    aktuell_ref = _dec(get_current_ref_zins(vw))
+    aktuell_lik = _dec(get_current_lik(vw))
     # Automatischer LIK-Stand (Live-Abruf → BFS-Tabelle) für die Anzeige
     from core.services.lik import aktueller_lik_wert
     _auto_stand, _auto_lik, _auto_basis = aktueller_lik_wert()
@@ -312,7 +317,7 @@ def fw_mietzins_massenanpassung(request):
     if request.method != 'POST':
         return redirect('fw_mietzins')
     basis = _global_filter(request)
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
 
     def _dec(x, default='0'):
         try:
@@ -320,8 +325,8 @@ def fw_mietzins_massenanpassung(request):
         except Exception:
             return Decimal(default)
 
-    aktuell_ref = _dec(get_current_ref_zins())
-    aktuell_lik = _dec(get_current_lik())
+    aktuell_ref = _dec(get_current_ref_zins(vw))
+    aktuell_lik = _dec(get_current_lik(vw))
     from core.services.lik import aktueller_lik_wert
     _auto_stand, _auto_lik, _auto_basis = aktueller_lik_wert()
     aktuell_lik_stand = _auto_stand or (vw.aktueller_lik_stand if vw else None)
@@ -503,7 +508,7 @@ def fw_anfangsmietzins(request, vertrag_id):
     from core.auth import log_aktion
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
     basis = _global_filter(request)
-    vw = Organisation.objects.first()
+    vw = v.organisation
     lg = v.einheit.liegenschaft
 
     def _dec(x, d='0'):

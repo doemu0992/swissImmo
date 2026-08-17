@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 
 from ._basis import (_global_filter, _mwst_beleg, _mwst_bereits_verbucht,
                      _mwst_periode, _num)
+from core.tenancy import aktuelle_organisation
 
 
 # ============================================================
@@ -850,7 +851,7 @@ def fw_serienbrief_pdf(request):
         messages.error(request, "Text und mindestens ein Empfänger erforderlich.")
         return redirect('fw_kommunikation')
 
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
     absender = {
         'firma': vw.firma if vw else 'Meine Verwaltung',
         'strasse': vw.strasse if vw else '',

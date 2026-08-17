@@ -12,9 +12,15 @@ def _num(d):
     return float(d)
 
 
-def feed_objekte(base_url=''):
+def feed_objekte(base_url='', organisation=None):
     """Gibt die Liste der ausgeschriebenen Objekte als serialisierbare dicts.
-    base_url (optional) wird den Exposé-Links vorangestellt (absolute URLs)."""
+
+    base_url (optional) wird den Exposé-Links vorangestellt (absolute URLs).
+
+    `organisation` schraenkt auf eine Verwaltung ein — Pflicht fuer den
+    oeffentlichen Feed. Ohne sie lieferte der Feed die Ausschreibungen ALLER
+    Verwaltungen an jeden, der irgendeinen gueltigen Token hatte.
+    """
     from portfolio.models import Einheit
     TYP = {'whg': 'apartment', 'stwe': 'apartment', 'gew': 'commercial',
            'pp': 'parking', 'gar': 'parking', 'bas': 'storage'}
@@ -23,6 +29,8 @@ def feed_objekte(base_url=''):
     qs = (Einheit.objects.filter(zur_ausschreibung=True)
           .select_related('liegenschaft').prefetch_related('fotos')
           .order_by('liegenschaft__strasse', 'bezeichnung'))
+    if organisation is not None:
+        qs = qs.filter(liegenschaft__organisation=organisation)
     for e in qs:
         lg = e.liegenschaft
         netto = e.nettomiete_aktuell or Decimal('0')

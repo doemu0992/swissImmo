@@ -1813,7 +1813,7 @@ def fw_schlussabrechnung(request, vertrag_id):
             return redirect(f'/neu/vertraege/{v.id}/')
 
         try:
-            pdf = generate_schlussabrechnung_pdf(v, daten, verwaltung=Organisation.objects.first())
+            pdf = generate_schlussabrechnung_pdf(v, daten, verwaltung=v.organisation)
         except Exception as e:
             messages.error(request, f"❌ PDF konnte nicht erstellt werden: {e}")
             return redirect(f'/neu/vertraege/{v.id}/schlussabrechnung/')

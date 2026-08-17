@@ -24,6 +24,7 @@ from portfolio.models import Liegenschaft
 logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num
+from core.tenancy import aktuelle_organisation
 
 
 # ============================================================
@@ -194,7 +195,7 @@ def fw_kreditoren_pain001(request):
         messages.error(request, "Keine freigegebenen Kreditorenrechnungen für die Zahlungsdatei.")
         return redirect('/neu/kreditoren/?status=freigegeben')
 
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
     debtor_iban = (vw.iban if vw else '') or ''
     if not debtor_iban.strip():
         messages.error(request, "Für die Zahlungsdatei fehlt die IBAN der Verwaltung (Profil → Account).")
@@ -349,7 +350,7 @@ def fw_zahllauf(request):
             if not rechnungen:
                 messages.error(request, "Keine Rechnung ausgewählt.")
                 return redirect(_ziel())
-            vw = Organisation.objects.first()
+            vw = aktuelle_organisation()
             debtor_iban = ((vw.iban if vw else '') or '').strip()
             if not debtor_iban:
                 messages.error(request, "Für die Zahlungsdatei fehlt die IBAN der "
@@ -473,7 +474,7 @@ def fw_zahllauf(request):
             if not zeile['iban']:
                 ohne_iban += 1
 
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
     from django.contrib import messages as _msg
     return render(request, 'fw/zahllauf.html', {
         **basis, 'nav': 'kreditoren',

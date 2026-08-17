@@ -16,6 +16,7 @@ from portfolio.models import Liegenschaft
 from rentals.models import Mietvertrag
 
 from ._basis import _global_filter
+from core.tenancy import aktuelle_organisation
 
 
 # ============================================================
@@ -75,7 +76,7 @@ def fw_bankkonten(request):
 
     # 2) Verwaltungs- und Eigentümer-Konten (nur ohne aktiven LG-Filter)
     if not aktive_lg:
-        vw = Organisation.objects.first()
+        vw = aktuelle_organisation()
         if vw and _iban_clean(vw.iban):
             is_qr = _ist_qr_iban(vw.iban)
             qr_count += 1 if is_qr else 0

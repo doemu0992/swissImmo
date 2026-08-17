@@ -512,8 +512,9 @@ class Mietvertrag(OrganisationAusKette):
     @property
     def mietzinspotenzial(self):
         try:
-            from crm.models import Organisation
-            vw = Organisation.objects.first()
+            # Der Vertrag kennt seine Verwaltung — und nur deren Zinsstand ist
+            # fuer eine Anpassung nach OR 269a massgeblich.
+            vw = self.organisation
             if not vw: return 'neutral'
             curr_zins = vw.aktueller_referenzzinssatz
             curr_lik = vw.aktueller_lik_punkte

@@ -198,8 +198,8 @@ def fw_mieter_portal_zugang(request, pk):
     mail_ok = False
     if m.email:
         from core.utils.email_service import send_mieter_portal_zugang
-        from crm.models import Organisation
-        vw = Organisation.objects.first()
+        # Absender der Zugangsmail: die Verwaltung DIESES Mieters.
+        vw = m.organisation
         # Feste Produktions-Basis-URL (settings) statt Request-Host — der Link
         # muss immer auf die öffentliche Portal-Adresse zeigen.
         from django.conf import settings as _settings
@@ -225,7 +225,7 @@ def fw_mieterkonto_pdf(request, pk):
     from crm.models import Organisation
     from core.services.mieterkonto import generate_mieterkonto_pdf
     m = get_object_or_404(Mieter, id=pk)
-    pdf = generate_mieterkonto_pdf(m, verwaltung=Organisation.objects.first())
+    pdf = generate_mieterkonto_pdf(m, verwaltung=m.organisation)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Kontoauszug_{m.nachname or m.id}.pdf"'
     return resp

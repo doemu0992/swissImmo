@@ -9,6 +9,7 @@ from core.auth import rolle_erforderlich, TEAM_ROLLEN
 from rentals.models import Mietvertrag
 
 from ._basis import _global_filter
+from core.tenancy import aktuelle_organisation
 
 
 # ============================================================
@@ -21,7 +22,7 @@ def fw_kommunikation(request):
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
     absender = {
         'firma': vw.firma if vw else 'Meine Verwaltung',
         'strasse': vw.strasse if vw else '',

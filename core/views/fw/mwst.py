@@ -17,6 +17,7 @@ from core.auth import rolle_erforderlich, ROLLE_VERWALTER, TEAM_ROLLEN
 
 from ._basis import (_global_filter, _mwst_beleg, _mwst_bereits_verbucht,
                      _mwst_periode, _num)
+from core.tenancy import aktuelle_organisation
 
 
 # ============================================================
@@ -66,7 +67,7 @@ def fw_mwst_einstellungen(request):
     from crm.models import Organisation
     if request.method != 'POST':
         return redirect('fw_mwst')
-    vw = Organisation.objects.first()
+    vw = aktuelle_organisation()
     if not vw:
         messages.error(request, "Keine Verwaltung erfasst.")
         return redirect('fw_mwst')
