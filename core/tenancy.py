@@ -33,10 +33,13 @@ benannten Weg `Model.alle_organisationen` — nicht `ohne_organisation()`. Der
 Unterschied ist Absicht: `alle_organisationen` steht sichtbar im Code und lässt
 sich greppen; ein stiller Kontextverzicht nicht.
 """
+import logging
 from contextlib import contextmanager
 from contextvars import ContextVar
 
 from django.db import models
+
+logger = logging.getLogger(__name__)
 
 #: Die Organisation des laufenden Kontexts. `None` heisst „nicht gesetzt" und
 #: führt im `TenantManager` zu einem Fehler — nicht zu „alles".
@@ -111,6 +114,50 @@ def ohne_organisation():
     finally:
         _organisation.set(vorher_org)
         _kontextfrei.set(vorher_frei)
+
+
+def je_organisation(arbeit, auswahl=None, ausgabe=None):
+    """Führt `arbeit(organisation)` je Verwaltung mit gesetztem Kontext aus.
+
+    DER WEG FÜR JEDEN SCHEDULER-BEFEHL. Ein Management-Command läuft ohne
+    Anfrage und damit ohne Mandantenkontext; seit Etappe 6.2 wirft jeder
+    Zugriff auf `Model.objects` dann. Das ist beabsichtigt — geraten werden
+    darf hier nichts —, also muss der Befehl selbst sagen, für wen er läuft.
+
+    `auswahl` ist eine Organisations-ID oder None (= alle). Damit lässt sich
+    ein Lauf nachholen, ohne die übrigen Verwaltungen erneut anzufassen.
+
+    EIN FEHLER IN EINER VERWALTUNG DARF DIE ÜBRIGEN NICHT ANHALTEN. Bricht
+    der Mietenlauf bei Verwaltung 3 ab, weil dort ein Konto fehlt, dürfen die
+    Verwaltungen 4 bis 20 nicht ungestellt bleiben — der Fehler fällt sonst
+    erst auf, wenn zwanzig Mieter keine Rechnung bekommen haben. Deshalb wird
+    je Verwaltung gefangen, weitergemacht und am Schluss gesammelt gemeldet;
+    der Rückgabewert trägt die Fehler, damit der Aufrufer den Exitcode setzen
+    kann. Der Scheduler sieht so, dass etwas schieflief, und trotzdem hat
+    jede heile Verwaltung ihren Lauf.
+
+    Gibt `(ergebnisse, fehler)` zurück: `ergebnisse` ist die Liste der
+    Rückgabewerte von `arbeit`, `fehler` eine Liste `(organisation, ausnahme)`.
+    """
+    from crm.models import Organisation
+
+    organisationen = Organisation.objects.order_by('pk')
+    if auswahl is not None:
+        organisationen = organisationen.filter(pk=auswahl)
+        if not organisationen.exists():
+            raise ValueError(f'Keine Verwaltung mit ID {auswahl}.')
+
+    ergebnisse, fehler = [], []
+    for organisation in organisationen:
+        try:
+            with organisation_kontext(organisation):
+                ergebnisse.append(arbeit(organisation))
+        except Exception as ausnahme:                     # noqa: BLE001
+            fehler.append((organisation, ausnahme))
+            logger.exception('%s: Lauf abgebrochen', organisation)
+            if ausgabe is not None:
+                ausgabe.write(f'FEHLER {organisation}: {ausnahme}')
+    return ergebnisse, fehler
 
 
 def cache_key(*teile):

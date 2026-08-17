@@ -44,7 +44,14 @@ class Command(BaseCommand):
             if label in AUSGENOMMEN:
                 continue
             try:
-                zeilen.append(f'{label} {modell.objects.count()}')
+                # Ausdrücklich über ALLE Verwaltungen zählen (Skill
+                # `mandantentrennung`, Regel 2): Der Umzug bewegt die ganze
+                # Datenbank, nicht den Bestand einer Verwaltung. Über `objects`
+                # gezählt lieferte jede Zeile seit Etappe 6.2 nur noch
+                # `FEHLER:OrganisationsFehler` — die Nachzählung, die den Umzug
+                # absichern soll, hätte also gar nichts mehr abgesichert.
+                manager = getattr(modell, 'alle_organisationen', None) or modell._base_manager
+                zeilen.append(f'{label} {manager.count()}')
             except Exception as fehler:                 # noqa: BLE001
                 # Eine Tabelle, die nicht lesbar ist, gehört gemeldet und nicht
                 # übersprungen — sonst sieht ein unvollständiger Umzug wie ein

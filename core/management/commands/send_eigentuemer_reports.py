@@ -8,10 +8,16 @@ Optionen:
     --jahr 2025          Steuerauszug-Jahr (Standard: Vorjahr)
     --nur-mit-portal     nur Mandate mit aktivem Portal-Login
     --dry-run            nichts senden, nur auflisten
+    --organisation 3     nur diese Verwaltung
+
+JE VERWALTUNG EIN LAUF. Der Report nennt Liegenschaften, Mieterträge und
+Leerstände — ein Lauf über den gesamten Bestand schickte einem Eigentümer die
+Zahlen fremder Portfolios. Seit Etappe 6.2 wirft `Eigentuemer.objects` ohne
+Kontext, statt die falschen Empfänger zu bedienen.
 """
 import datetime
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 
 class Command(BaseCommand):
@@ -21,15 +27,26 @@ class Command(BaseCommand):
         parser.add_argument('--jahr', type=int, default=None)
         parser.add_argument('--nur-mit-portal', action='store_true')
         parser.add_argument('--dry-run', action='store_true')
+        parser.add_argument('--organisation', type=int, default=None,
+                            help='Nur diese Verwaltung (ID). Ohne Angabe: alle.')
 
     def handle(self, *args, **opts):
+        from core.tenancy import je_organisation
+
+        jahr = opts['jahr'] or (datetime.date.today().year - 1)
+        _, fehler = je_organisation(lambda organisation: self._senden(organisation, jahr, opts),
+                                    auswahl=opts.get('organisation'), ausgabe=self.stderr)
+        if fehler:
+            raise CommandError(f"{len(fehler)} Verwaltung(en) abgebrochen — "
+                               f"{', '.join(str(o) for o, _ in fehler)}.")
+
+    def _senden(self, organisation, jahr, opts):
         from crm.models import Eigentuemer
         from core.views.portal import _portfolio_daten
         from core.services.portfolio_report import generate_portfolio_report
         from core.services.steuerauszug import generate_steuerauszug_pdf
         from core.utils.email_service import send_report_mail
 
-        jahr = opts['jahr'] or (datetime.date.today().year - 1)
         qs = Eigentuemer.objects.exclude(email='').filter(email__isnull=False)
         if opts['nur_mit_portal']:
             qs = qs.filter(benutzer__isnull=False)
@@ -62,4 +79,5 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f"  ✓ {md.firma_oder_name} <{md.email}>"))
 
         self.stdout.write(self.style.SUCCESS(
-            f"Fertig. {gesendet} Report-Mail(s) versendet (Jahr {jahr})."))
+            f"{organisation}: {gesendet} Report-Mail(s) versendet (Jahr {jahr})."))
+        return gesendet

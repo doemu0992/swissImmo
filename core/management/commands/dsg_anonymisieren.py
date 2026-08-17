@@ -8,8 +8,13 @@ Trockenlauf — erst mit --apply wird tatsächlich anonymisiert.
     python manage.py dsg_anonymisieren            # nur anzeigen (dry-run)
     python manage.py dsg_anonymisieren --apply     # tatsächlich anonymisieren
     python manage.py dsg_anonymisieren --jahre 5 --apply
+    python manage.py dsg_anonymisieren --organisation 3
+
+JE VERWALTUNG EIN LAUF. Anonymisieren ist unumkehrbar: Der Name ist danach weg,
+auch wenn er in der falschen Verwaltung stand. Seit Etappe 6.2 wirft
+`Mieter.objects` ohne Kontext, statt über den gesamten Bestand zu gehen.
 """
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 from crm.models import Mieter
 from core.services.dsg import anonymisiere_person, kann_anonymisieren
@@ -22,8 +27,19 @@ class Command(BaseCommand):
         parser.add_argument('--jahre', type=int, default=10,
                             help="Jahre seit Ende des letzten Mietverhältnisses (Default 10)")
         parser.add_argument('--apply', action='store_true', help="Tatsächlich anonymisieren")
+        parser.add_argument('--organisation', type=int, default=None,
+                            help='Nur diese Verwaltung (ID). Ohne Angabe: alle.')
 
     def handle(self, *args, **opts):
+        from core.tenancy import je_organisation
+
+        _, fehler = je_organisation(lambda organisation: self._anonymisieren(organisation, opts),
+                                    auswahl=opts.get('organisation'), ausgabe=self.stderr)
+        if fehler:
+            raise CommandError(f"{len(fehler)} Verwaltung(en) abgebrochen — "
+                               f"{', '.join(str(o) for o, _ in fehler)}.")
+
+    def _anonymisieren(self, organisation, opts):
         heute = timezone.localdate()
         grenze = heute.replace(year=heute.year - opts['jahre'])
         kandidaten = []
@@ -44,7 +60,7 @@ class Command(BaseCommand):
                 continue
             kandidaten.append(m)
 
-        self.stdout.write(f"{len(kandidaten)} Person(en) älter als {opts['jahre']} Jahre "
+        self.stdout.write(f"{organisation}: {len(kandidaten)} Person(en) älter als {opts['jahre']} Jahre "
                           f"(letztes Verhältnis vor {grenze:%d.%m.%Y}).")
         n = 0
         for m in kandidaten:
@@ -59,3 +75,4 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"{n} Person(en) anonymisiert."))
         else:
             self.stdout.write("Trockenlauf — mit --apply tatsächlich anonymisieren.")
+        return n

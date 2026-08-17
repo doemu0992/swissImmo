@@ -160,6 +160,52 @@ Lässt sich die Zugehörigkeit nicht bestimmen, wird **verweigert** — 404, nic
 
 ---
 
+### 6.6 — Nachtrag: acht Scheduler-Befehle liefen nicht mehr (17.08.2026)
+
+**Der Fund.** 6.2 hängt den `TenantManager` an alle Modelle; ausserhalb einer Anfrage wirft damit jeder Zugriff auf `Model.objects`. Acht der zehn Scheduler-Befehle hatten keinen Kontext und brachen ab dem Moment ab, in dem 6.2 ausgeliefert war — **darunter der Mietenlauf**:
+
+| Befehl | brach ab an |
+|---|---|
+| `monatslauf` | Sollstellung — `Mietvertrag.objects` |
+| `mahnlauf` | `DebitorenRechnung.objects` |
+| `taeglicher_lauf` | Adresswechsel + Bewerbungs-Bereinigung |
+| `jahresabschluss_lauf` | `Buchungskonto.objects` |
+| `send_eigentuemer_reports` | `Eigentuemer.objects` |
+| `dsg_anonymisieren` | `Mieter.objects` |
+| `bewerbungen_bereinigen` | `Mietbewerbung.objects` |
+| `sync_contracts` | `Mietvertrag.objects` |
+
+Heil waren nur `fristen_digest` und `check_rents` — die beiden, die 6.1 angefasst hatte.
+
+**Warum es niemand gemerkt hat — und das ist der lehrreichere Teil.** Sechs der acht Befehle rief kein Test je auf; die Suite war grün, die Befehle waren tot. Zwei aber *wurden* aufgerufen: `taeglicher_lauf` (`test_pendenzen.py`, `test_mietprozess.py`) und `send_eigentuemer_reports` (`test_portal.py`) — und ihre Tests blieben trotzdem grün. Der Grund steht in `core/tests/_helfer.py:100`: `_test_organisation()` ruft `setze_organisation(...)`. Jeder Test, der den klassischen Helfer benutzt, läuft also mit gesetztem Kontext — **genau die Bedingung, die im Scheduler nie gilt**. Die Tests prüften eine Welt, die es im Betrieb nicht gibt.
+
+Daraus folgt für neue Tests an Befehlen: Sie müssen den Kontext-losen Zustand herstellen (`MandantenFixture` statt `_test_organisation`), sonst prüfen sie den Befehl unter Bedingungen, die der Scheduler nie hat. Die acht Tests in `core/tests/test_scheduler_organisation.py` tun das; die Gegenprobe „`monatslauf` ohne Schleife" belegt es.
+
+**`bestand_zaehlen` war schlimmer betroffen als der Rest.** Der Befehl fängt Ausnahmen je Modell ab und schreibt `FEHLER:<Typ>` statt einer Zahl — gedacht, damit eine unlesbare Tabelle auffällt. Genau dieser Auffangmechanismus verdeckte den eigenen Ausfall: Der Befehl lief durch, mit `FEHLER:OrganisationsFehler` in jeder Zeile, und ein `diff` zweier solcher Listen ist **grün**. Die Nachzählung, die den PostgreSQL-Umzug absichern soll, hätte nichts abgesichert. Sie zählt jetzt über `alle_organisationen` — der Umzug bewegt die ganze Datenbank, nicht den Bestand einer Verwaltung.
+
+**`je_organisation(arbeit, auswahl=None)`** (`core/tenancy.py`) ist ab jetzt der Weg für jeden Scheduler-Befehl. Zwei Entscheidungen darin sind bewusst:
+
+- **Ein Fehler in einer Verwaltung hält die übrigen nicht an.** Bricht der Mietenlauf bei Verwaltung 3 ab, weil dort ein Konto fehlt, dürfen 4 bis 20 nicht ungestellt bleiben — das fiele erst auf, wenn zwanzig Mieter keine Rechnung bekommen haben. Gefangen wird je Verwaltung, gemeldet gesammelt; der Befehl endet trotzdem mit `CommandError`, damit der Scheduler es sieht.
+- **`--organisation <id>`** holt einen Lauf nach, ohne die übrigen erneut anzufassen. Eine unbekannte ID ist ein Fehler, kein stiller Leerlauf — sonst meldete der Scheduler Erfolg und es wäre nichts gestellt worden.
+
+**Was `taeglicher_lauf` dabei nicht tun darf:** `generate_auto_pendenzen`, `update_verwaltung_rates` und `fristen_digest` gehen selbst über alle Verwaltungen. In der Schleife liefe jeder n-mal über n Verwaltungen — das Fristen-Mail käme n-fach an. Sie stehen darum ausserhalb, und ein Test zählt die Aufrufe.
+
+**Gegenproben (17.08.2026, alle bestanden).** Je Sicherung einzeln ausgehebelt, zugehöriger Test muss rot werden:
+
+| Ausgehebelt | Test wird rot |
+|---|---|
+| Kontext im Durchgang nicht setzen | `test_jeder_durchgang_hat_den_eigenen_kontext` |
+| Beim ersten Fehler abbrechen | `test_die_uebrigen_laufen_weiter` |
+| `--organisation` ignorieren | `test_nur_die_gewaehlte_verwaltung` |
+| `monatslauf` ohne Schleife (Zustand davor) | `test_monatslauf` |
+| Fehler schlucken statt melden | `test_der_befehl_endet_trotzdem_mit_fehler` |
+| Marktdaten in die Schleife stecken | `test_marktdaten_werden_genau_einmal_abgeholt` |
+| `bestand_zaehlen` über `objects` (Zustand davor) | 3 der 4 Nachzähl-Tests |
+
+**Offen, gleiche Ursache, nicht mitkorrigiert:** `fetch_replies` (eingehende Ticket-Antworten — `SchadenMeldung.objects.get(id=…)` aus dem Mailbetreff, das Postfach ist verwaltungsübergreifend), `fetch_rechnungen` (Rechnungseingang per Mail) und `mieter_zugang` (Support-Werkzeug, sucht eine Person per E-Mail). Alle drei brauchen eine bewusste Entscheidung, wie ein eingehendes Mail der richtigen Verwaltung zugeordnet wird — das ist Zuordnungslogik, keine Schleife, und gehört in einen eigenen Schritt.
+
+---
+
 ## Die Gegenprobe — hier wird sie fällig
 
 Bisher waren alle Isolationstests rot, weil `Organisation` fehlte. **Das hat nichts bewiesen:** Ein Test, der am fehlenden Modell scheitert, würde auch scheitern, wenn er gar nichts prüft.
