@@ -1,4 +1,4 @@
-from crm.models import Organisation, Mieter
+from crm.models import Mieter
 from rentals.models import Mietvertrag, Dokument
 
 import os
@@ -81,7 +81,11 @@ def send_via_docuseal(request, vertrag_id):
         einheit = vertrag.einheit
         liegenschaft = einheit.liegenschaft
         eigentuemer = liegenschaft.eigentuemer
-        verwaltung = getattr(liegenschaft, 'verwaltung', None) or Organisation.objects.first()
+        # `getattr(liegenschaft, 'verwaltung', ...)` war eine Absicherung ohne
+        # Wirkung: Das Feld gibt es auf Liegenschaft nicht, der Ausdruck fiel
+        # IMMER auf die erste Organisation zurueck. Der echte Bezug ist
+        # `liegenschaft.organisation`.
+        verwaltung = liegenschaft.organisation
 
         if einheit.typ in ['pp', 'bas', 'gar']:
             template_path = 'core/mietvertrag_garage.html'

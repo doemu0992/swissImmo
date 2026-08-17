@@ -495,6 +495,10 @@ urlpatterns = [
 
     # --- DATENSCHUTZERKLÄRUNG (öffentlich, Art. 19 revDSG) ---
     path('datenschutz/', public_datenschutz_view, name='public_datenschutz'),
+    # Mit Objektbezug: Die Erklaerung nennt den Verantwortlichen, und der ist je
+    # Verwaltung ein anderer. Das Bewerbungsformular verlinkt diese Fassung.
+    path('bewerben/<int:einheit_id>/datenschutz/', public_datenschutz_view,
+         name='public_datenschutz_objekt'),
 ]
 
 # Media zugriffskontrolliert ausliefern: sensible Dokumente (Verträge, Bewerber-

@@ -301,8 +301,11 @@ def portal_kontokorrent_pdf(request):
         except (TypeError, ValueError):
             jahr = None
     from core.services.eigentuemer_kontokorrent import generate_kontokorrent_pdf
-    from crm.models import Organisation
-    pdf = generate_kontokorrent_pdf(eigentuemer, jahr, Organisation.objects.first())
+    # Der Briefkopf kommt vom Eigentümer, nicht aus dem Bestand: Ein Eigentümer
+    # im Portal hat keine Mitgliedschaft, also auch keinen Mandantenkontext —
+    # `Organisation.objects.first()` lieferte hier ab der zweiten Verwaltung
+    # eine fremde Absenderadresse auf dem eigenen Auszug.
+    pdf = generate_kontokorrent_pdf(eigentuemer, jahr, eigentuemer.organisation)
     resp = HttpResponse(pdf, content_type='application/pdf')
     name = f"Kontokorrent_{jahr}.pdf" if jahr else "Kontokorrent.pdf"
     resp['Content-Disposition'] = f'inline; filename="{name}"'
@@ -559,7 +562,6 @@ def mieter_kuendigung(request):
 
 
 def _benachrichtige_verwaltung_kuendigung(vertrag, kuendigung):
-    from crm.models import Organisation
     try:
         from crm.models import Kommunikation
         Kommunikation.objects.create(
@@ -569,7 +571,10 @@ def _benachrichtige_verwaltung_kuendigung(vertrag, kuendigung):
                    "Bitte Eingang bestätigen und Kündigung prüfen (Familienwohnung/Unterschriften).")
     except Exception:
         logger.debug("Fehler bewusst übergangen", exc_info=True)
-    vw = Organisation.objects.first()
+    # Die Kündigung geht an die Verwaltung DIESES Vertrags. Mit
+    # `Organisation.objects.first()` landete eine Kündigung ab der zweiten
+    # Verwaltung im Postfach der falschen — mit Mietername und Adresse darin.
+    vw = vertrag.organisation
     empfaenger = (vw.email if vw and vw.email else None)
     if empfaenger:
         try:
@@ -602,7 +607,8 @@ def mieter_kuendigung_pdf(request, pk):
         pk=pk, vertrag_id__in=_vids)
     lg = k.vertrag.einheit.liegenschaft if k.vertrag.einheit_id else None
     eigentuemer = lg.eigentuemer if lg else None
-    pdf = generate_kuendigung_mieter_pdf(k.vertrag, k, verwaltung=Organisation.objects.first(), eigentuemer=eigentuemer)
+    pdf = generate_kuendigung_mieter_pdf(k.vertrag, k, verwaltung=k.vertrag.organisation,
+                                         eigentuemer=eigentuemer)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = 'inline; filename="Kuendigung.pdf"'
     return resp
@@ -616,7 +622,7 @@ def mieter_kontoauszug_pdf(request):
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         raise Http404
-    pdf = generate_mieterkonto_pdf(mieter, verwaltung=Organisation.objects.first())
+    pdf = generate_mieterkonto_pdf(mieter, verwaltung=mieter.organisation)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = 'inline; filename="Kontoauszug.pdf"'
     return resp
@@ -886,8 +892,9 @@ def mieter_daten_view(request):
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
             try:
                 from core.utils.email_service import send_ticket_email
-                from crm.models import Organisation
-                vw = Organisation.objects.first()
+                # Die Meldung geht an die Verwaltung DIESES Mieters — sonst
+                # gingen Name, Telefon und Adresswunsch an eine fremde.
+                vw = mieter.organisation
                 if vw and vw.email:
                     send_ticket_email(vw.email, f"Kontaktdaten-Änderung: {mieter.display_name}",
                                       ("Der Mieter hat über das Portal Daten geändert/gemeldet:\n\n"

@@ -1,5 +1,4 @@
 import logging
-from crm.models import Organisation
 from rentals.models import Mietvertrag, MietzinsAnpassung
 from core.utils import get_current_ref_zins, get_current_lik
 
@@ -40,7 +39,8 @@ def mietzins_anpassung_view(request, vertrag_id):
     # --- DATEN ERMITTELN ---
     liegenschaft = vertrag.einheit.liegenschaft
     eigentuemer = liegenschaft.eigentuemer
-    verwaltung = Organisation.objects.first()
+    # Der Briefkopf kommt vom Vertrag, nicht aus dem Bestand.
+    verwaltung = vertrag.organisation
 
     absender_name = "Immobilienverwaltung"
     absender_strasse = ""
