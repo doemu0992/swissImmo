@@ -242,9 +242,18 @@ def fw_benutzer(request):
     basis = _global_filter(request)
     # Die drei Dinge, die unten je Benutzer geprüft werden, gleich mitladen —
     # sonst sind es drei Abfragen pro Zeile (gemessen: 103 für 33 Benutzer).
-    users = (User.objects.filter(is_active=True)
+    # NUR das eigene Team. `Benutzer` trägt keine Organisationsspalte (ein
+    # Mensch kann in mehreren Verwaltungen Mitglied sein), der TenantManager
+    # greift hier also nicht — gefiltert wird über `Mitgliedschaft`.
+    #
+    # Ohne diesen Filter zeigte die gewöhnliche Benutzerseite jeder Verwaltung
+    # das VOLLSTÄNDIGE Team aller anderen: Name, Anmeldename, E-Mail, Rolle.
+    # Kein Registrylauf fand das, weil diese URL keinen ID-Parameter hat und
+    # damit durch das Raster der Bauform A fiel (gemessen 17.08.2026).
+    organisation = getattr(request, 'organisation', None)
+    users = (User.objects.filter(is_active=True, mitgliedschaften__organisation=organisation)
              .select_related('mieter_profil', 'eigentuemer_profil')
-             .prefetch_related('groups').order_by('username'))
+             .prefetch_related('groups').order_by('username').distinct())
     rows = []
     for u in users:
         # Reine Portal-Zugänge ausblenden (Mieter- oder Eigentümer-Portal)

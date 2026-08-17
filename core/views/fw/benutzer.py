@@ -25,6 +25,40 @@ from ._basis import _global_filter
 # Nachfolge regeln koennen. Eigentuemer fehlt — das ist eine Portal-Rolle.
 _ROLLEN_WAHL = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF)
 
+
+def _team_benutzer_oder_404(request, pk):
+    """Ein Benutzer, den DIESE Verwaltung verwalten darf — sonst 404.
+
+    HIER GREIFT DER TenantManager NICHT, und das ist kein Versehen: `Benutzer`
+    trägt keine Organisationsspalte, weil ein Mensch in mehreren Verwaltungen
+    MITGLIED sein kann (eine Treuhänderin ist EIN Konto mit ZWEI
+    Mitgliedschaften). Gefiltert wird darum über `Mitgliedschaft` — und wer
+    das an einer Stelle vergisst, hat dort keinen Schutz.
+
+    Vergessen war es an zwei Stellen, gemessen am 17.08.2026: Ein Verwalter
+    von A konnte über `/neu/benutzer/<id>/` das Konto eines Menschen aus
+    Verwaltung B bearbeiten (die Bearbeitung legte ihm sogar eine
+    Mitgliedschaft in A an) und über `…/loeschen/` löschen. Das war kein
+    Leseleck, sondern ein Schreib- und Löschzugriff über die Mandantengrenze.
+
+    404 und nicht 403: Ein 403 bestätigt, dass das Konto existiert, und
+    erlaubt über fortlaufende IDs das Abzählen fremder Teams.
+    """
+    from django.contrib.auth import get_user_model
+    from django.http import Http404
+
+    from crm.models import Mitgliedschaft
+
+    User = get_user_model()
+    organisation = getattr(request, 'organisation', None)
+    if organisation is None:
+        raise Http404
+    ziel = get_object_or_404(User, id=pk)
+    if not Mitgliedschaft.objects.filter(benutzer=ziel, organisation=organisation).exists():
+        raise Http404
+    return ziel
+
+
 @rolle_erforderlich(ROLLE_VERWALTER)
 def fw_benutzer_form(request, pk=None):
     """Team-Benutzer erfassen/bearbeiten (Name, E-Mail, Rolle, Passwort, aktiv)."""
@@ -36,7 +70,7 @@ def fw_benutzer_form(request, pk=None):
     from crm.models import Mitgliedschaft
 
     User = get_user_model()
-    ziel = get_object_or_404(User, id=pk) if pk else None
+    ziel = _team_benutzer_oder_404(request, pk) if pk else None
     basis = _global_filter(request)
 
     if request.method == 'POST':
@@ -114,7 +148,7 @@ def fw_benutzer_loeschen(request, pk):
     from core.auth import log_aktion
 
     User = get_user_model()
-    ziel = get_object_or_404(User, id=pk)
+    ziel = _team_benutzer_oder_404(request, pk)
     if request.method == 'POST':
         if ziel == request.user:
             messages.error(request, "Du kannst deinen eigenen Account nicht löschen.")

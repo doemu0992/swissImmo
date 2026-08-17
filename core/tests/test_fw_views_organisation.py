@@ -277,3 +277,61 @@ class ZinshelferBezugTests(TestCase):
                     funde.append(f'{rel}:{nr}: {zeile.strip()}')
 
         self.assertEqual(funde, [], 'Zinsstand ohne Verwaltungsbezug geholt:\n' + '\n'.join(funde))
+
+
+class BenutzerlisteTests(ZweiBestaende):
+    """Die Benutzerseite zeigt nur das eigene Team.
+
+    GEFUNDEN AM 17.08.2026, und der Weg dorthin ist die eigentliche Lehre: Der
+    Registrylauf über URLs mit ID-Parameter (Bauform A) fand die beiden
+    Benutzer-Aktionen `bearbeiten` und `loeschen`. Die LISTE fand er nicht —
+    `/neu/benutzer/` trägt keinen Parameter und fiel damit durch das Raster
+    einer Prüfung, die „alle URLs" abzudecken schien.
+
+    Sie war der grössere Fund: Für die Aktionen musste man eine ID raten, die
+    Liste lieferte Name, Anmeldename, E-Mail und Rolle jedes fremden Teams
+    frei Haus.
+
+    `Benutzer` trägt keine Organisationsspalte (ein Mensch kann in mehreren
+    Verwaltungen Mitglied sein), der `TenantManager` greift hier also nicht.
+    Gefiltert wird über `Mitgliedschaft` — an jeder Stelle einzeln.
+    """
+
+    def _als_a(self):
+        self.client.force_login(self.a.benutzer)
+
+    def test_fremdes_teammitglied_steht_nicht_in_der_liste(self):
+        self._als_a()
+        antwort = self.client.get(reverse('fw_benutzer'))
+        self.assertEqual(antwort.status_code, 200)
+        namen = {z['u'].username for z in antwort.context['rows']}
+        self.assertNotIn(self.b.benutzer.username, namen,
+                         'Die Benutzerseite von A zeigt das Team von B.')
+
+    def test_das_eigene_teammitglied_schon(self):
+        # Ohne diese Gegenprobe wäre der Test auch bei einer leeren Liste grün
+        # — und eine leere Benutzerverwaltung belegt keine Trennung.
+        self._als_a()
+        antwort = self.client.get(reverse('fw_benutzer'))
+        namen = {z['u'].username for z in antwort.context['rows']}
+        self.assertIn(self.a.benutzer.username, namen,
+                      'A sieht nicht einmal sich selbst — die Liste ist leer, '
+                      'nicht gefiltert.')
+
+    def test_fremdes_konto_laesst_sich_nicht_oeffnen(self):
+        self._als_a()
+        antwort = self.client.get(reverse('fw_benutzer_bearbeiten', args=[self.b.benutzer.pk]))
+        self.assertEqual(antwort.status_code, 404)
+
+    def test_fremdes_konto_laesst_sich_nicht_loeschen(self):
+        from benutzer.models import Benutzer
+        self._als_a()
+        self.client.post(reverse('fw_benutzer_loeschen', args=[self.b.benutzer.pk]))
+        self.assertTrue(Benutzer.objects.filter(pk=self.b.benutzer.pk).exists(),
+                        'Ein Verwalter von A hat das Konto eines Menschen aus B gelöscht.')
+
+    def test_das_eigene_konto_laesst_sich_oeffnen(self):
+        # Gegenprobe: Der Schutz meint fremde Konten, nicht jedes Konto.
+        self._als_a()
+        antwort = self.client.get(reverse('fw_benutzer_bearbeiten', args=[self.a.benutzer.pk]))
+        self.assertEqual(antwort.status_code, 200)

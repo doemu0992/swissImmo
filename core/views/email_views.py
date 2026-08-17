@@ -203,8 +203,20 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
 
 @rolle_erforderlich(ROLLE_VERWALTER)
 def send_abrechnung_email_view(request, periode_id):
-    # (Abrechnungs-Logik bleibt gleich...)
-    pass
+    """Nie fertiggebaut — und darum ein 404 statt eines Serverfehlers.
+
+    Der Rumpf war `pass`. Eine View, die None zurückgibt, quittiert JEDEN
+    Aufruf mit einem 500 (`didn't return an HttpResponse object`); im
+    Isolations-Registrylauf sah das aus wie ein Fehlschlag der
+    Mandantentrennung und war in Wahrheit eine tote Route.
+
+    Sie bleibt eingetragen, weil `finance/admin.py:86` einen Knopf darauf
+    verlinkt — der Knopf ist damit ebenfalls tot und gehört entfernt oder die
+    Funktion gebaut. Beides ist eine eigene Aufgabe; hier wird nur der
+    Serverfehler zum ehrlichen 404.
+    """
+    from django.http import Http404
+    raise Http404('Abrechnungsversand ist nicht implementiert.')
 
 
 @rolle_erforderlich(ROLLE_VERWALTER)

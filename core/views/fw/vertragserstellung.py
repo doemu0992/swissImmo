@@ -60,6 +60,11 @@ def fw_vertrag_neu(request):
     except ValueError:
         vorwahl_einheit = None
     vorwahl_e = Einheit.objects.select_related('liegenschaft').filter(id=vorwahl_einheit).first() if vorwahl_einheit else None
+    # Die aufgelöste Einheit ist massgeblich, nicht die Zahl aus der URL:
+    # `Einheit.objects` filtert auf den Mandanten, `vorwahl_e` ist bei einer
+    # fremden ID also None — die rohe Zahl blieb aber im Kontext stehen und
+    # damit eine fremde Objekt-ID im Formularzustand.
+    vorwahl_einheit = vorwahl_e.pk if vorwahl_e else None
 
     # Belegte Einheiten (aktiver Vertrag inkl. Nebenobjekte) ausschliessen
     belegte = set(Mietvertrag.objects.filter(status='aktiv').values_list('einheit_id', flat=True))

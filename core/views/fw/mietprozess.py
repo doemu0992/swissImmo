@@ -252,6 +252,14 @@ def fw_bewerber_absage_uebrige(request, einheit_id):
     from core.auth import log_aktion
     if request.method != 'POST':
         return redirect(f'/neu/vermarktung/{einheit_id}/bewerber/')
+    # Gehört die Einheit überhaupt hierher? Die Bewerbungsabfrage unten ist
+    # zwar gefiltert und fand bei einer fremden Einheit ohnehin nichts — aber
+    # der Lauf schrieb trotzdem einen Logbucheintrag „Bewerber-Sammelabsage,
+    # Objekt #<fremde id>". Ein Eintrag über einen fremden Datensatz gehört
+    # nicht ins eigene Logbuch, und die Rückmeldung „0 abgesagt" verrät
+    # ausserdem, dass die ID existiert.
+    from portfolio.models import Einheit
+    get_object_or_404(Einheit, id=einheit_id)
     offene = Mietbewerbung.objects.filter(einheit_id=einheit_id, status__in=['neu', 'geprueft'])
     n = mails = 0
     for b in offene.select_related('einheit__liegenschaft'):

@@ -83,10 +83,19 @@ def fw_kommunikation(request):
     liegenschaften_wahl = [{'id': k, 'label': lbl} for k, lbl in sorted(lg_map.items(), key=lambda kv: kv[1])]
 
     # ?mieter=<id>: Empfänger vorauswählen (E-Mail-Button auf der Personenseite)
+    #
+    # Die ID wird gegen den EIGENEN Bestand aufgelöst, nicht bloss in eine Zahl
+    # verwandelt. Vorher landete jede beliebige Zahl in der Vorauswahl — bei
+    # einer fremden ID war damit im Maskenzustand ein Empfänger vorgewählt,
+    # den diese Verwaltung nicht kennt. `Mieter.objects` filtert auf den
+    # Mandanten, ein fremder Treffer kommt hier also gar nicht erst an.
+    from crm.models import Mieter
     try:
-        vorwahl_mieter = int(request.GET.get('mieter') or 0)
+        _wunsch = int(request.GET.get('mieter') or 0)
     except (TypeError, ValueError):
-        vorwahl_mieter = 0
+        _wunsch = 0
+    vorwahl_mieter = (Mieter.objects.filter(id=_wunsch).values_list('id', flat=True).first() or 0
+                      if _wunsch else 0)
 
     return render(request, 'fw/kommunikation.html', {
         **basis, 'nav': 'kommunikation',

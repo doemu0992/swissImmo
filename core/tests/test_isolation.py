@@ -81,6 +81,12 @@ AUSNAHMEN = {
     'geschuetzte_media':      'Pfad statt ID — wird in Bauform C von Hand geprüft',
     'public_bewerbung':       'bewusst öffentlich (Bewerbungsformular für Interessenten)',
     'public_datenschutz':     'bewusst öffentlich (Datenschutzerklärung, P5)',
+    # Die objektbezogene Fassung MUSS die fremde Verwaltung nennen: Art. 19
+    # revDSG verlangt, dass der Verantwortliche erkennbar ist, und
+    # verantwortlich ist die Verwaltung DIESES Objekts. Sie hier zu verbergen
+    # wäre nicht Datenschutz, sondern sein Gegenteil. Dass die richtige
+    # genannt wird, prüft `test_oeffentliche_endpunkte_organisation.py`.
+    'public_datenschutz_objekt': 'nennt den Verantwortlichen des Objekts — Art. 19 revDSG',
     'public_ticket':          'bewusst öffentlich (Schadenmeldung ohne Login)',
     'fw_vermarktung_feed':    'token-gesichert, kein Login — eigener Test in Bauform C',
     'fw_kontoblatt':          'Kontonummer statt Objekt-ID — Bauform C',
@@ -118,6 +124,25 @@ OHNE_MANDANTENFILTER = {
     # nur die eigene); auf der Modellebene ginge es nicht anders.
     'crm.Organisation': 'ist selbst der Mandant — ein Selbstbezug filtert nichts',
 }
+
+
+def _bestandszaehlung():
+    """Zeilenzahl je Modell — der Vorher/Nachher-Vergleich für Schreibpfade.
+
+    Über `alle_organisationen`, weil hier ausdrücklich der GANZE Bestand
+    gemeint ist: Die Frage lautet „hat sich irgendwo etwas verändert", nicht
+    „hat sich im eigenen Bestand etwas verändert".
+    """
+    stand = {}
+    for modell in apps.get_models():
+        if modell._meta.app_label not in EIGENE_APPS:
+            continue
+        manager = getattr(modell, 'alle_organisationen', None) or modell._base_manager
+        try:
+            stand[modell._meta.label] = manager.count()
+        except Exception:                                      # noqa: BLE001
+            pass
+    return stand
 
 
 def _urls_mit_einem_parameter():
@@ -160,16 +185,43 @@ class IsolationsBasis(TestCase):
 # ===========================================================================
 
 class FremdeIdUeberUrlsTests(IsolationsBasis):
-    """Keine URL gibt ein fremdes Objekt heraus."""
+    """Keine URL gibt ein fremdes Objekt heraus — und keine verändert eines.
 
-    @unittest.expectedFailure
-    def test_keine_fremde_id_ueber_benannte_urls(self):
-        """Jede URL mit ID-Parameter liefert für ein fremdes Objekt 404.
+    WARUM DIESE TESTS NICHT MEHR AUF 404 BESTEHEN (17.08.2026)
 
-        404 und nicht 403: Ein 403 bestätigt, dass der Datensatz existiert,
-        und erlaubt über fortlaufende IDs das Abzählen fremder Bestände.
-        `core/views/media_protected.py` macht das bereits richtig.
-        """
+    Die erste Fassung verlangte für jede URL mit fremder ID exakt 404. Damit
+    meldete sie 25 Fälle — und eine Messung Fall für Fall zeigte, dass die
+    allermeisten davon keine sind: Sehr viele fw-Aktionen beginnen mit
+    `if request.method != 'POST': return redirect(...)`. Der GET-Lauf bekommt
+    dort 302, ohne dass die View das Objekt je angefasst hätte. Ein
+    Portal-Pfad leitet einen Team-Benutzer nach `/mieter/` um, `hallway_poster`
+    zur Admin-Anmeldung. Nichts davon gibt etwas heraus.
+
+    Ein Test, der 20 harmlose Weiterleitungen anzeigt, wird irgendwann mit
+    einer Ausnahmeliste beruhigt — und eine Ausnahmeliste mit 20 Einträgen ist
+    eine Blindstelle mit 20 Einträgen. Deshalb fragen die Tests jetzt nach dem,
+    worauf es ankommt:
+
+    * **GET**: Es darf nichts von B im Ergebnis stehen. Ein 302 oder 404 ist
+      dabei gleich gut; ein 200 mit fremden Daten ist der Befund. Und ein 500
+      ist immer ein Befund, weil niemand weiss, wie weit die View kam.
+    * **POST**: Der Bestand darf sich um KEINE ZEILE ändern — über alle
+      Modelle gezählt, nicht nur am adressierten Datensatz. Genau daran hing
+      der eigentliche Fund: Löschen und Bearbeiten fremder Benutzerkonten
+      liefen durch, während beide „nur" ein 302 lieferten.
+
+    So gefunden am 17.08.2026: `fw_benutzer_loeschen` löschte das Konto eines
+    Menschen aus Verwaltung B samt seiner Mitgliedschaften,
+    `fw_benutzer_bearbeiten` schrieb hinein und legte ihm eine Mitgliedschaft
+    in A an. Beide hätten unter der 404-Regel in einer Liste mit 23 anderen
+    gestanden.
+    """
+
+    #: Kennzeichen aus dem Bestand von B. Tauchen sie in einer Antwort auf,
+    #: hat die View fremde Daten herausgegeben.
+    VERRAETERISCH = ('Verwaltung B', 'Mieter B', 'Testgasse')
+
+    def test_keine_fremde_id_gibt_fremde_daten_heraus(self):
         durchlaufen = 0
         for name, parameter in _urls_mit_einem_parameter():
             if name in AUSNAHMEN or parameter in KEINE_OBJEKT_ID:
@@ -182,36 +234,44 @@ class FremdeIdUeberUrlsTests(IsolationsBasis):
             durchlaufen += 1
             with self.subTest(url=name):
                 antwort = self.client.get(pfad)
+                self.assertLess(
+                    antwort.status_code, 500,
+                    f'{name} stürzt bei einer fremden ID ab (Status '
+                    f'{antwort.status_code}) — wie weit die View kam, ist damit offen.')
+                if antwort.status_code != 200:
+                    continue
+                inhalt = antwort.content.decode('utf-8', 'ignore')
+                verraten = [m for m in self.VERRAETERISCH if m in inhalt]
                 self.assertEqual(
-                    antwort.status_code, 404,
-                    f'{name} gibt ein Objekt von B an einen Benutzer von A heraus '
-                    f'(Status {antwort.status_code}, erwartet 404)')
+                    verraten, [],
+                    f'{name} zeigt einem Benutzer von A Daten von B: {verraten}')
         self.assertGreater(durchlaufen, 100, 'auffällig wenige URLs geprüft')
 
-    @unittest.expectedFailure
-    def test_keine_fremde_id_ueber_schreibpfade(self):
-        """Auch POST auf fremde IDs muss 404 liefern — nicht nur GET.
+    def test_kein_post_auf_eine_fremde_id_veraendert_den_bestand(self):
+        """Kein Schreibpfad — auch keiner mit harmlos aussehendem 302.
 
-        Löschpfade sind erfahrungsgemäss am häufigsten ungeschützt und am
-        teuersten, wenn sie es sind: Ein 302 bedeutet hier, dass der fremde
-        Datensatz weg ist.
+        Gezählt wird über ALLE Modelle. Die erste Messung beobachtete nur den
+        adressierten Datensatz und hätte eine Sammelabsage, eine
+        Gegenbuchung oder eine angelegte Mitgliedschaft nicht gesehen.
         """
-        schreibend = [(n, p) for n, p in _urls_mit_einem_parameter()
-                      if n not in AUSNAHMEN and p not in KEINE_OBJEKT_ID
-                      and any(w in n for w in ('loeschen', 'stornieren', 'bearbeiten', 'form'))]
-        self.assertGreater(len(schreibend), 20, 'Auswahl der Schreibpfade ist leer')
-        for name, parameter in schreibend:
+        for name, parameter in _urls_mit_einem_parameter():
+            if name in AUSNAHMEN or parameter in KEINE_OBJEKT_ID:
+                continue
             objekt = self.b.objekt_fuer(parameter, name)
             try:
                 pfad = reverse(name, args=[objekt.pk])
             except NoReverseMatch:
                 continue
             with self.subTest(url=name):
-                antwort = self.client.post(pfad, {})
+                vorher = _bestandszaehlung()
+                self.client.post(pfad, {})
+                nachher = _bestandszaehlung()
+                geaendert = {k: (vorher[k], nachher[k])
+                             for k in vorher if vorher[k] != nachher.get(k)}
                 self.assertEqual(
-                    antwort.status_code, 404,
-                    f'{name} nimmt einen POST auf ein Objekt von B entgegen '
-                    f'(Status {antwort.status_code})')
+                    geaendert, {},
+                    f'{name} hat bei einem POST auf ein Objekt von B den Bestand '
+                    f'verändert: {geaendert}')
 
 
 # ===========================================================================
@@ -374,7 +434,6 @@ class FremdeIdUeberQuerystringTests(IsolationsBasis):
             b'B-Export', inhalt,
             'der CSV-Export von A enthält einen Vorgang von B')
 
-    @unittest.expectedFailure
     def test_uebrige_id_parameter_im_querystring(self):
         """Die restlichen ID-tragenden Querystring-Parameter, gesammelt.
 

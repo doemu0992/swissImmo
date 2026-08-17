@@ -245,6 +245,53 @@ Dass die Liste die gefährlichste Stelle im ganzen Testsatz ist, ist ihr eigener
 
 ---
 
+### 6.8 — die letzten drei: von 25 gemeldeten Fällen waren 4 echt (17.08.2026)
+
+**Alle 25 Isolationstests sind grün.** Der Weg dorthin ist der interessante Teil.
+
+Die beiden Registryläufe verlangten für jede URL mit fremder ID exakt **404** und meldeten 25 Fälle. Eine Messung Fall für Fall — Status, Weiterleitungsziel, veränderter Datensatz, verratener Inhalt — ergab:
+
+| Kategorie | Anzahl | Beispiel |
+|---|---|---|
+| POST-only-Route, GET wird umgeleitet, **ohne das Objekt anzufassen** | 17 | `fw_pendenz_toggle`, `fw_schaden_status`, `fw_buchung_stornieren` |
+| Portal-/Admin-Umleitung eines Team-Benutzers | 3 | `mieter_ticket_detail`, `hallway_poster` |
+| Rechtlich geboten öffentlich | 1 | `public_datenschutz_objekt` |
+| **Echte Befunde** | **4** | siehe unten |
+
+Sehr viele fw-Aktionen beginnen mit `if request.method != 'POST': return redirect(...)`. Der GET-Lauf bekommt dort 302, bevor irgendetwas gelesen wird. Diese 20 Fälle mit einer Ausnahmeliste zu beruhigen wäre die falsche Reparatur gewesen: **Eine Ausnahmeliste mit 20 Einträgen ist eine Blindstelle mit 20 Einträgen.** Stattdessen fragen die Tests jetzt nach dem, worauf es ankommt:
+
+- **GET:** Es darf nichts von B im Ergebnis stehen. Ob 302 oder 404 ist gleichgültig; ein 200 mit fremden Daten ist der Befund — und ein 500 ebenfalls, weil dann niemand weiss, wie weit die View kam.
+- **POST:** Der Bestand darf sich um **keine Zeile** ändern, über **alle** Modelle gezählt. Genau daran hing der Fund: Die erste Messung beobachtete nur den adressierten Datensatz und hätte eine angelegte Mitgliedschaft, eine Gegenbuchung oder eine Sammelabsage nicht gesehen.
+
+Die einzige neue Ausnahme ist `public_datenschutz_objekt` — die objektbezogene Datenschutzerklärung **muss** die fremde Verwaltung nennen, weil Art. 19 revDSG verlangt, dass der Verantwortliche erkennbar ist. Sie hier zu verbergen wäre nicht Datenschutz, sondern sein Gegenteil.
+
+**Die vier echten Befunde:**
+
+1. **`fw_benutzer_loeschen`** — ein Verwalter von A löschte das Konto eines Menschen aus Verwaltung B samt seiner Mitgliedschaften (gemessen: `benutzer.Benutzer` 2 → 1, `crm.Mitgliedschaft` 3 → 1).
+2. **`fw_benutzer_bearbeiten`** — GET zeigte das Formular mit den Daten des fremden Kontos, POST schrieb hinein und legte dem Menschen zusätzlich eine **Mitgliedschaft in A** an.
+3. **`fw_bewerber_absage_uebrige`** — die Bewerbungsabfrage war gefiltert und fand nichts, der Lauf schrieb aber einen Logbucheintrag „Objekt #\<fremde id\>" und meldete „0 abgesagt" — was verrät, dass die ID existiert.
+4. **`abrechnung_send_mail`** — der Rumpf war `pass`. Eine View, die `None` zurückgibt, quittiert **jeden** Aufruf mit 500. Keine Isolationslücke, eine tote Route; sie liefert jetzt einen ehrlichen 404. **Offen:** `finance/admin.py:86` verlinkt einen Knopf darauf — der Knopf ist tot und gehört entfernt oder die Funktion gebaut.
+
+**Der grösste Fund stand gar nicht in der Liste.** Beim Beheben von 1 und 2 fiel auf, dass auch die **Benutzerliste** `/neu/benutzer/` ungefiltert war: Name, Anmeldename, E-Mail und Rolle jedes fremden Teams, ohne dass jemand eine ID hätte raten müssen. Kein Registrylauf fand das — die URL trägt keinen Parameter und fiel damit durch das Raster einer Prüfung, die „alle URLs" abzudecken schien. Dieselbe Lehre wie bei `FremdeIdUeberQuerystringTests`: **Eine Registry-Abfrage sieht nie, wonach sie nicht fragt.**
+
+Gemeinsame Wurzel von 1, 2 und der Liste: `benutzer.Benutzer` steht aus gutem Grund in `OHNE_MANDANTENFILTER` — und wo der Manager nicht greift, muss **jede Stelle einzeln** über `Mitgliedschaft` filtern. Dafür gibt es jetzt `_team_benutzer_oder_404(request, pk)`.
+
+**Zuletzt die zwei Querystring-Vorwahlen:** `?mieter=` (`kommunikation.py`) und `?einheit=` (`vertragserstellung.py`) verwandelten den Parameter nur in eine Zahl und legten ihn in den Maskenzustand. Beide lösen die ID jetzt gegen den eigenen Bestand auf.
+
+**Gegenproben (17.08.2026, alle sieben bestanden):**
+
+| Ausgehebelt | Test wird rot |
+|---|---|
+| Benutzer bearbeiten ohne Mitgliedschaftsprüfung | `FremdeIdUeberUrlsTests` |
+| Benutzer löschen ohne Mitgliedschaftsprüfung | `test_kein_post_auf_eine_fremde_id_veraendert_den_bestand` |
+| Sammelabsage ohne Einheitsprüfung | dieselbe |
+| Abrechnungs-Stub gibt wieder `None` zurück | `test_keine_fremde_id_gibt_fremde_daten_heraus` |
+| Kommunikation nimmt jede Zahl als Empfänger-Vorwahl | `test_uebrige_id_parameter_im_querystring` |
+| Vertragserstellung behält die rohe Einheit-ID | dieselbe |
+| Benutzerliste ohne Mitgliedschaftsfilter | `BenutzerlisteTests` |
+
+---
+
 ## Die Gegenprobe — hier wird sie fällig
 
 Bisher waren alle Isolationstests rot, weil `Organisation` fehlte. **Das hat nichts bewiesen:** Ein Test, der am fehlenden Modell scheitert, würde auch scheitern, wenn er gar nichts prüft.
@@ -268,7 +315,7 @@ Je PR: Testsuite grün, Testzahl nicht unter **1'122**, `check`, `makemigrations
 
 **Für die Etappe — und damit für Phase 2:**
 
-- Alle Isolationstests grün, jeder mit protokollierter Gegenprobe — **Stand 17.08.2026: 22 von 25 grün, drei offen** (die zwei URL-Registryläufe und der Querystring-Test). Aus den ursprünglich 13 sind 25 geworden, weil jeder aufgelöste Test seine eigene Gegenprobe als Zeile mitbekam.
+- **Alle 25 Isolationstests grün** (17.08.2026), jeder mit protokollierter Gegenprobe. Aus den ursprünglich 13 sind 25 geworden, weil jeder aufgelöste Test seine eigene Gegenprobe als Zeile mitbekam. Kein `expectedFailure` ist mehr im Modul.
 - `ORGANISATION_RUECKFALL` existiert nicht mehr — weder als `True` noch als Attribut
 - `organisation_oder_einzige()` entfernt
 - Kein `Verwaltung.objects.first()`-Muster mehr für Absender in PDF und E-Mail
