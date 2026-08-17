@@ -678,7 +678,23 @@ def fw_vorlage_form(request, pk=None):
     basis = _global_filter(request)
     if request.method == 'POST':
         alt_snap = snapshot_model(Vorlage.objects.get(pk=pk)) if pk else {}
-        obj = vl or Vorlage()
+
+        # KOPIE STATT UEBERSCHREIBEN BEI SYSTEMVORLAGEN (Etappe 6.4).
+        #
+        # Eine Vorlage mit `organisation IS NULL` ist mitgeliefert und gilt fuer
+        # ALLE Verwaltungen. Sie hier zu speichern hiesse, den Text bei jeder
+        # anderen Verwaltung mitzuaendern — ein Schreibzugriff ueber die
+        # Mandantengrenze, ausgeloest durch ein gewoehnliches Bearbeiten-Formular.
+        # Stattdessen entsteht eine eigene Fassung; das Original bleibt, wie es
+        # ist, und kuenftige Korrekturen daran erreichen weiterhin alle, die
+        # keine eigene angelegt haben.
+        if vl is not None and vl.organisation_id is None:
+            obj = Vorlage()
+            alt_snap = {}
+        else:
+            obj = vl or Vorlage()
+        # Die Zuordnung zur eigenen Verwaltung macht `Vorlage.save()` — dort
+        # gilt sie fuer JEDEN Aufrufer, nicht nur fuer dieses Formular.
         obj.name = request.POST.get('name', '').strip()
         obj.kategorie = request.POST.get('kategorie', 'brief')
         obj.betreff = request.POST.get('betreff', '').strip()
@@ -687,9 +703,16 @@ def fw_vorlage_form(request, pk=None):
             messages.error(request, "Bezeichnung ist erforderlich.")
             return redirect(request.path)
         obj.save()
-        _diff = diff_model(alt_snap, snapshot_model(obj), obj) if pk else ''
-        log_aktion(request, "Vorlage bearbeitet" if pk else "Vorlage erstellt", obj.name, _diff)
-        messages.success(request, f"✅ Vorlage '{obj.name}' gespeichert.")
+        kopiert = pk and (vl is not None and vl.organisation_id is None)
+        _diff = diff_model(alt_snap, snapshot_model(obj), obj) if (pk and not kopiert) else ''
+        log_aktion(request, "Vorlage bearbeitet" if (pk and not kopiert) else "Vorlage erstellt",
+                   obj.name, _diff)
+        if kopiert:
+            messages.success(
+                request, f"✅ Eigene Fassung von '{obj.name}' angelegt. "
+                         f"Die mitgelieferte Vorlage bleibt unverändert.")
+        else:
+            messages.success(request, f"✅ Vorlage '{obj.name}' gespeichert.")
         return redirect('/neu/vorlagen/')
     return render(request, 'fw/vorlage_form.html', {
         **basis, 'nav': 'vorlagen', 'vl': vl, 'ist_neu': vl is None,
@@ -704,6 +727,12 @@ def fw_vorlage_loeschen(request, pk):
     from crm.models import Vorlage
     from core.auth import log_aktion
     vl = get_object_or_404(Vorlage, id=pk)
+    if vl.organisation_id is None:
+        # Eine mitgelieferte Vorlage gehoert keiner Verwaltung — sie zu loeschen
+        # naehme sie allen weg. Wer sie nicht mag, legt eine eigene Fassung an.
+        messages.error(request, "Mitgelieferte Vorlagen lassen sich nicht löschen. "
+                                "Sie können sie bearbeiten — dabei entsteht eine eigene Fassung.")
+        return redirect('/neu/vorlagen/')
     if request.method == 'POST':
         name = vl.name
         log_aktion(request, "Vorlage gelöscht", name, '')

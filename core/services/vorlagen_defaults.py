@@ -127,7 +127,14 @@ def seed_standard_vorlagen():
     from crm.models import Vorlage
     erstellt = 0
     for d in STANDARD_VORLAGEN:
-        if not Vorlage.objects.filter(name=d['name']).exists():
+        # `alle_organisationen`: Diese Vorlagen SIND die mitgelieferten
+        # (`organisation IS NULL`) und gelten fuer alle Verwaltungen. Die
+        # Vorhandenseins-Pruefung muss sie deshalb unabhaengig vom Kontext
+        # sehen — mit einem Mandantenfilter wuerde sie sie uebersehen und bei
+        # jedem Lauf ein Duplikat anlegen. Der Aufruf geschieht ausserdem aus
+        # dem Datenreset und aus Migrationen, also ohnehin ohne Kontext.
+        if not Vorlage.alle_organisationen.filter(
+                name=d['name'], organisation__isnull=True).exists():
             Vorlage.objects.create(**d)
             erstellt += 1
     return erstellt

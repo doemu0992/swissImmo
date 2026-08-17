@@ -6,6 +6,8 @@ from PIL import Image
 from django.core.files.base import ContentFile
 from django.conf import settings
 from django.db import models
+
+from core.tenancy import AlleOrganisationenManager, TenantManager
 from core.organisation_kette import OrganisationAusKette, organisation_oder_einzige
 
 logger = logging.getLogger(__name__)
@@ -511,6 +513,22 @@ class Handwerker(models.Model):
         except:
             return self.firma
 
+class VorlagenManager(TenantManager):
+    """Sichtbar sind die EIGENEN Vorlagen und die mitgelieferten.
+
+    Die Ausnahme steckt in `organisation IS NULL`: Das ist keine Waise, sondern
+    die Systemvorlage, die für alle Verwaltungen gilt (siehe die Begründung am
+    Feld). Ein gewöhnlicher Mandantenfilter liesse sie verschwinden — und das
+    sähe in der Oberfläche wie Datenverlust aus, obwohl nichts fehlt.
+
+    Alles Übrige (Rückbezüge, Kontextzwang, `create` ohne Kontext) erbt sie vom
+    `TenantManager`, damit es nur eine Stelle gibt, an der sich das ändern kann.
+    """
+
+    def _einschraenken(self, qs, org):
+        return qs.filter(models.Q(organisation=org) | models.Q(organisation__isnull=True))
+
+
 class Vorlage(models.Model):
     """Wiederverwendbare Text-/Brief-Vorlage mit Platzhaltern (z. B. {mieter_name})."""
     # NULLBAR — die einzige begruendete Ausnahme von „nie null=True als
@@ -528,6 +546,33 @@ class Vorlage(models.Model):
                                      null=True, blank=True, editable=False,
                                      related_name='%(app_label)s_%(class)s',
                                      verbose_name='Organisation')
+
+    objects = VorlagenManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    def save(self, *args, **kwargs):
+        """Eine NEUE Vorlage gehoert der Verwaltung, in deren Kontext sie entsteht.
+
+        DAS LOCH, DAS DAS SCHLIESST: `organisation` ist nullbar, weil NULL die
+        mitgelieferte Systemvorlage bezeichnet. Wer eine Vorlage anlegte, ohne
+        das Feld zu setzen, erzeugte damit unbeabsichtigt eine SYSTEMvorlage —
+        sichtbar fuer jede Verwaltung. Das betraf das Bearbeiten-Formular
+        ebenso wie jeden Aufruf aus Code und Tests; gefunden ueber ein Fixture,
+        dessen Vorlage ploetzlich in beiden Bestaenden auftauchte.
+
+        Die Regel gilt nur beim Anlegen (`pk is None`). Eine bestehende
+        Systemvorlage bleibt eine — sie im Vorbeigehen einer Verwaltung
+        zuzuschlagen waere ein Diebstahl an allen anderen. Wer sie aendern will,
+        bekommt eine eigene Fassung (Kopie beim Bearbeiten, siehe
+        `fw_vorlage_bearbeiten`).
+
+        OHNE KONTEXT bleibt `organisation` NULL — und genau das ist richtig: So
+        entstehen die mitgelieferten Vorlagen beim Seeden und in Migrationen.
+        """
+        if self.pk is None and self.organisation_id is None:
+            from core.tenancy import aktuelle_organisation
+            self.organisation = aktuelle_organisation()
+        super().save(*args, **kwargs)
 
     KATEGORIE_CHOICES = [
         ('brief', 'Brief / Anschreiben'),

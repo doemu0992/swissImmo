@@ -288,29 +288,44 @@ class VorlagenAusnahmeTests(TestCase):
             'erreichte keine von ihnen mehr.')
 
     def test_eine_reine_organisationsabfrage_sieht_systemvorlagen_nicht(self):
-        """Der Preis der Ausnahme, als Test statt als Kommentar.
+        """Der Preis der Ausnahme — und wer ihn seit Etappe 6.4 bezahlt.
 
-        Sechs Lesestellen im Bestand fragen heute ungefiltert (siehe
-        `docs/PHASE-2-PLAN.md`, Etappe 6). Sobald gefiltert wird, brauchen sie
-        `Q(organisation=org) | Q(organisation__isnull=True)` — sonst
-        verschwinden die Systemvorlagen lautlos aus der Oberfläche.
+        Eine Abfrage `filter(organisation=org)` sieht die mitgelieferten
+        Vorlagen nicht; daran hat sich nichts geändert. Geändert hat sich, wer
+        daran denken muss: Seit 6.4 erledigt es der `VorlagenManager`, statt
+        dass sieben Abfragestellen die ODER-Bedingung wiederholen. Dieser Test
+        hält beides fest — den Preis und die Stelle, an der er bezahlt wird.
+
+        Zum Anlegen der Systemvorlage: `Vorlage.save()` ordnet eine NEUE
+        Vorlage der Organisation des Kontexts zu. Eine mitgelieferte entsteht
+        deshalb OHNE Kontext — genau so, wie `seed_standard_vorlagen()` und die
+        Migrationen es tun. Die Richtung ist die sichere: Im Zweifel wird eine
+        Vorlage privat, nicht versehentlich global.
         """
         from django.db.models import Q
+
+        from core.tenancy import ohne_organisation, organisation_kontext
         from crm.models import Vorlage
 
         organisation = _test_organisation()
-        Vorlage.objects.create(name='System', kategorie='ticket_eingang',
-                               betreff='S', inhalt='S')          # organisation = NULL
+        with ohne_organisation():
+            Vorlage.objects.create(name='System', kategorie='ticket_eingang',
+                                   betreff='S', inhalt='S')      # organisation = NULL
         Vorlage.objects.create(name='Eigene', kategorie='ticket_eingang',
                                betreff='E', inhalt='E', organisation=organisation)
 
-        nur_eigene = Vorlage.objects.filter(organisation=organisation)
+        nur_eigene = Vorlage.alle_organisationen.filter(organisation=organisation)
         self.assertEqual(nur_eigene.count(), 1, 'Die reine Abfrage sieht nur die eigene.')
 
-        mit_system = Vorlage.objects.filter(
+        mit_system = Vorlage.alle_organisationen.filter(
             Q(organisation=organisation) | Q(organisation__isnull=True))
         self.assertEqual(mit_system.count(), 2,
                          'Erst die ODER-Abfrage liefert Systemvorlage UND eigene.')
+
+        # Und genau das tut der Manager von sich aus — die eigentliche Aussage.
+        with organisation_kontext(organisation):
+            self.assertEqual(Vorlage.objects.count(), 2,
+                             'Der VorlagenManager liefert eigene UND mitgelieferte.')
 
 
 class AbleitungTests(TestCase):

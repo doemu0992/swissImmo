@@ -86,7 +86,25 @@ Die sechs Schulden hängen voneinander ab. Diese Folge löst das auf:
 
 **6.3 — Die sieben Rückfälle tilgen.** Danach ist `ORGANISATION_RUECKFALL` überflüssig; das Attribut selbst gehört mit entfernt, nicht nur auf `False` gesetzt. Ebenso `organisation_oder_einzige()` samt der fünf direkten `Buchungskonto`-Anlagen.
 
-**6.4 — Die sechs `Vorlage`-Lesezugriffe** auf `Q(organisation=org) | Q(organisation__isnull=True)` umstellen. Sonst verschwinden ab der Filterung die mitgelieferten Systemvorlagen aus der Oberfläche — ein Fehler, der wie ein Datenverlust aussieht.
+**6.4 — erledigt (17.08.2026).** Die Lesezugriffe waren nur die Hälfte.
+
+`crm.Vorlage` ist die einzige begründete Ausnahme von „nie `null=True` als Dauerlösung": NULL bezeichnet die **mitgelieferte Systemvorlage**, die für alle Verwaltungen gilt. Der Plan sah vor, die sechs Lesezugriffe auf `Q(organisation=org) | Q(organisation__isnull=True)` umzustellen. Beim Umsetzen zeigte sich, dass das an sieben Stellen zu wiederholen wäre — und dass die Schreibseite die grösseren Löcher hatte.
+
+**Gelöst über einen eigenen Manager statt über sieben Abfragen.** `VorlagenManager(TenantManager)` überschreibt genau eine Methode (`_einschraenken`) und zeigt eigene *und* mitgelieferte Vorlagen. Alles Übrige — Rückbezüge, Kontextzwang, `create` — erbt er, damit es nur eine Stelle gibt, an der sich das ändern kann. Die sieben Abfragestellen brauchten keine Änderung; an einer davon wäre die Q-Bedingung irgendwann vergessen worden, und dann hätten in einer einzelnen Maske Vorlagen gefehlt.
+
+**Drei Schreibpfade, die die Trennung ausgehebelt hätten:**
+
+| Fund | Folge | Lösung |
+|---|---|---|
+| Eine im Formular angelegte Vorlage bekam `organisation = NULL` | Jede selbst geschriebene Vorlage war eine **System**vorlage — sichtbar für jede Verwaltung | `Vorlage.save()` setzt beim **Anlegen** die Organisation des Kontexts. Ohne Kontext bleibt NULL — genau so entstehen die mitgelieferten beim Seeden. |
+| Eine Systemvorlage liess sich im Bearbeiten-Formular überschreiben | Schreibzugriff über die Mandantengrenze, ausgelöst durch ein gewöhnliches Formular | Kopie statt Überschreiben: Es entsteht eine eigene Fassung, das Original bleibt. |
+| Eine Systemvorlage liess sich löschen | Sie fehlte danach **allen** | Abgelehnt, mit Hinweis auf den Bearbeiten-Weg. |
+
+Der erste Fund kam nicht aus dem Code-Lesen, sondern aus dem Fixture: Dessen Vorlage tauchte plötzlich in **beiden** Beständen auf. Deshalb sitzt die Korrektur im Modell und nicht in der View — dort gilt sie für jeden Aufrufer, auch für Code und Tests.
+
+`seed_standard_vorlagen()` nutzt `alle_organisationen`: Die Systemvorlagen sind per Definition kontextlos, und die Vorhandenseins-Prüfung muss sie unabhängig vom Kontext sehen — sonst legte jeder Lauf Duplikate an.
+
+**Gegenprobe durchgeführt:** Mit zurückgebautem Manager, `save()` und Kopier-Regel fallen 5 der 12 Tests.
 
 **6.5 — Alles, was den Prozess verlässt.** Dateiablage auf `organisation/<id>/` mit Migration der Bestandsdateien, PDF- und E-Mail-Absender aus der Organisation des Datensatzes, Cache-Keys mit Organisations-ID, `AktivitaetsLog` beim Schreiben.
 

@@ -275,6 +275,17 @@ class TenantManager(models.Manager.from_queryset(TenantQuerySet)):
                 f'`with organisation_kontext(org):` darum. Wer absichtlich über '
                 f'alle Organisationen läuft, nimmt '
                 f'`{self.model._meta.object_name}.alle_organisationen`.')
+        return self._einschraenken(qs, org)
+
+    def _einschraenken(self, qs, org):
+        """Die eigentliche Einschraenkung. Ueberschreibbar fuer Sonderfaelle.
+
+        `crm.Vorlage` ist der eine begruendete: Dort gehoert neben der eigenen
+        auch die mitgelieferte Systemvorlage (`organisation IS NULL`) zum
+        Sichtbaren. Diesen Unterschied in eine Methode zu legen ist besser, als
+        ihn an sieben Abfragestellen zu wiederholen — dort waere er irgendwann
+        an einer vergessen, und dann fehlten Vorlagen in einer einzelnen Maske.
+        """
         return qs.filter(**{self.pfad: org})
 
 
