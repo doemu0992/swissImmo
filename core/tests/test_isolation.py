@@ -87,6 +87,38 @@ AUSNAHMEN = {
     'portal_report':          'Eigentümer-Report, datensatzbezogen bereits isoliert',
 }
 
+# ---------------------------------------------------------------------------
+# Die zwei Modelle, die KEINEN Mandantenfilter tragen können — und warum.
+#
+# Diese Liste ist die heikelste im ganzen Testsatz: Wer ein Modell hier
+# einträgt, nimmt es aus der Prüfung. Genau so macht man einen Wächter blind.
+# Deshalb steht neben jedem Eintrag der Grund, und deshalb prüft
+# `AusnahmenSindBegruendetTests` unten, dass die Liste nicht wächst, ohne dass
+# es jemand merkt. Ein drittes Modell hier einzutragen ist eine Entscheidung,
+# keine Reparatur.
+# ---------------------------------------------------------------------------
+OHNE_MANDANTENFILTER = {
+    # Der Benutzer gehört keiner Organisation, er ist in mehreren MITGLIED.
+    # Ein Feld `organisation` am Benutzer wäre die falsche Modellierung: Es
+    # würde jeden Menschen auf eine Verwaltung festnageln. Eine Treuhänderin,
+    # die zwei Verwaltungen betreut, ist EIN Benutzer mit ZWEI
+    # Mitgliedschaften. Gefiltert wird über `Mitgliedschaft` (Etappe 4.3).
+    'benutzer.Benutzer': 'Mitgliedschaft je Organisation statt eigener Spalte',
+
+    # Die Organisation IST der Mandant. Ein Filter `organisation=self` wäre
+    # ein Selbstbezug ohne Aussage, und ein Filter auf den Kontext machte die
+    # Tabelle unbrauchbar für genau die Läufe, die sie brauchen: Jede
+    # Schleife über die Verwaltungen (`je_organisation`) liest sie, BEVOR ein
+    # Kontext gesetzt ist. Wäre sie gefiltert, könnte kein Scheduler-Befehl
+    # mehr die zweite Verwaltung finden.
+    #
+    # Das Leseinteresse ist damit nicht geschützt — wer angemeldet ist, kann
+    # theoretisch die Firmennamen anderer Verwaltungen lesen. Das ist bewusst
+    # in Kauf genommen und liegt auf der Ansichtsebene (die fw-Views zeigen
+    # nur die eigene); auf der Modellebene ginge es nicht anders.
+    'crm.Organisation': 'ist selbst der Mandant — ein Selbstbezug filtert nichts',
+}
+
 
 def _urls_mit_einem_parameter():
     """Alle benannten URLs mit genau einem Parameter, aus der Registry.
@@ -379,7 +411,6 @@ class FremdeIdUeberQuerystringTests(IsolationsBasis):
 class ManagerIsolationTests(IsolationsBasis):
     """Die Isolation muss im ORM sitzen, nicht erst in der View."""
 
-    @unittest.expectedFailure
     def test_default_manager_liefert_keine_fremden_daten(self):
         """Im Kontext von A enthält `Model.objects.all()` nichts von B.
 
@@ -407,6 +438,11 @@ class ManagerIsolationTests(IsolationsBasis):
         geprueft = 0
         for modell in apps.get_models():
             if modell._meta.app_label not in EIGENE_APPS:
+                continue
+            if modell._meta.label in OHNE_MANDANTENFILTER:
+                # Nicht stillschweigend übersprungen: der Grund steht in
+                # OHNE_MANDANTENFILTER, und `AusnahmenSindBegruendetTests`
+                # merkt, wenn die Liste wächst.
                 continue
             fremde = [o for o in getattr(self.b, '_alle_objekte', lambda: [])()
                       if isinstance(o, modell)]
@@ -472,43 +508,106 @@ class UniqueConstraintsProOrganisationTests(IsolationsBasis):
         'portfolio.Lebensdauer.kategorie':     'eigene Lebensdauertabelle je Organisation',
     }
 
-    @unittest.expectedFailure
     def test_gleiche_kontonummer_in_beiden_organisationen(self):
+        """Beide Verwaltungen führen ein Konto 4000.
+
+        Die erste Fassung legte beide Konten OHNE Mandantenkontext an. Seit
+        6.2 bestimmt `organisation_bestimmen()` die Zugehörigkeit aus dem
+        Kontext und wirft ohne — der Test scheiterte also, bevor er zur
+        eigentlichen Frage kam, und sagte über die Eindeutigkeit nichts.
+        Jetzt wird angelegt, wie es der Betrieb tut: je Verwaltung im
+        eigenen Kontext.
+        """
         from django.db import IntegrityError, transaction
+
+        from core.tenancy import organisation_kontext
         from finance.models import Buchungskonto
-        Buchungskonto.objects.create(nummer='4000', bezeichnung='Aufwand A', typ='aufwand')
+
+        with organisation_kontext(self.a.organisation):
+            Buchungskonto.objects.create(nummer='4000', bezeichnung='Aufwand A', typ='aufwand')
         try:
-            with transaction.atomic():
+            with transaction.atomic(), organisation_kontext(self.b.organisation):
                 Buchungskonto.objects.create(nummer='4000', bezeichnung='Aufwand B',
                                              typ='aufwand')
         except IntegrityError:
             self.fail('Buchungskonto.nummer ist global eindeutig — zwei '
                       'Verwaltungen koennen kein gemeinsames Konto 4000 fuehren.')
-        self.assertEqual(Buchungskonto.objects.filter(nummer='4000').count(), 2,
-                         'Konto 4000 ist global eindeutig — je Organisation muss es gehen')
 
-    @unittest.expectedFailure
+        self.assertEqual(
+            Buchungskonto.alle_organisationen.filter(nummer='4000').count(), 2,
+            'Konto 4000 ist global eindeutig — je Organisation muss es gehen')
+        # Gegenprobe zur Sichtbarkeit: Jede Verwaltung sieht GENAU EIN 4000.
+        # Ohne diese Zeile bewiese der Test nur, dass zwei Zeilen in der
+        # Tabelle stehen — nicht, dass sie getrennt sind.
+        for fixture, bezeichnung in ((self.a, 'Aufwand A'), (self.b, 'Aufwand B')):
+            with organisation_kontext(fixture.organisation):
+                treffer = list(Buchungskonto.objects.filter(nummer='4000'))
+            self.assertEqual([k.bezeichnung for k in treffer], [bezeichnung])
+
+        # Und die andere Hälfte des Nachweises: INNERHALB einer Verwaltung ist
+        # 4000 weiterhin eindeutig. Ohne diese Zeile wäre der Test auch dann
+        # grün, wenn die Eindeutigkeit ganz fehlte — dann könnte eine
+        # Verwaltung zwei Konten 4000 führen, und die Buchhaltung wüsste bei
+        # jeder Buchung nicht, welches gemeint ist.
+        with self.assertRaises(IntegrityError), transaction.atomic(), \
+                organisation_kontext(self.a.organisation):
+            Buchungskonto.objects.create(nummer='4000', bezeichnung='Aufwand A zwei',
+                                         typ='aufwand')
+
     def test_belegnummernkreis_zaehlt_je_organisation(self):
         """Beide Organisationen muessen einen Beleg Nr. 1 fuehren koennen.
 
+        Das ist keine Kosmetik: OR 957a verlangt eine lückenlose,
+        nachvollziehbare Belegfolge JE BUCHFÜHRUNG. Wäre `beleg_nr` global
+        eindeutig, hätte die zweite Verwaltung eine Buchhaltung, die bei 4711
+        beginnt und Lücken hat, wo die erste gebucht hat.
+
         Die erste Fassung dieses Tests verglich nur, ob alle vergebenen
-        Belegnummern verschieden sind — das ist trivial wahr, solange
-        `beleg_nr` global eindeutig ist. Er war gruen und prueft nichts;
-        `expectedFailure` hat ihn als "unexpected success" aufgedeckt.
-        Jetzt wird der eigentliche Vorgang versucht.
+        Belegnummern verschieden sind — trivial wahr, solange `beleg_nr`
+        global eindeutig ist. Er war gruen und prueft nichts;
+        `expectedFailure` hat ihn als "unexpected success" aufgedeckt. Die
+        zweite Fassung versuchte den richtigen Vorgang, aber ohne
+        Mandantenkontext und scheiterte deshalb schon am Manager.
         """
         from django.db import IntegrityError, transaction
+
+        from core.tenancy import organisation_kontext
         from finance.models import Buchung
-        Buchung.objects.filter(beleg_nr=1).delete()
-        self.a.buchung.beleg_nr = 1
-        self.a.buchung.save(update_fields=['beleg_nr'])
+
+        # Nummer 1 freiräumen — aber NICHT die beiden Buchungen, die gleich
+        # umnummeriert werden. Die erste Fassung löschte sie mit und scheiterte
+        # danach an „Save with update_fields did not affect any rows".
+        Buchung.alle_organisationen.filter(beleg_nr=1).exclude(
+            pk__in=[self.a.buchung.pk, self.b.buchung.pk]).delete()
+        with organisation_kontext(self.a.organisation):
+            self.a.buchung.beleg_nr = 1
+            self.a.buchung.save(update_fields=['beleg_nr'])
         try:
-            with transaction.atomic():
+            with transaction.atomic(), organisation_kontext(self.b.organisation):
                 self.b.buchung.beleg_nr = 1
                 self.b.buchung.save(update_fields=['beleg_nr'])
         except IntegrityError:
             self.fail('Buchung.beleg_nr ist global eindeutig — der '
                       'Belegnummernkreis muss je Organisation zaehlen.')
+
+        self.assertEqual(Buchung.alle_organisationen.filter(beleg_nr=1).count(), 2,
+                         'Es steht nur ein Beleg Nr. 1 in der Tabelle.')
+
+        # Andere Hälfte des Nachweises: INNERHALB einer Verwaltung bleibt die
+        # Nummer eindeutig. Ohne sie wäre der Test auch bei ganz fehlender
+        # Eindeutigkeit grün — und zwei Belege Nr. 1 in derselben Buchführung
+        # sind genau das, was OR 957a ausschliesst.
+        from datetime import date
+        from decimal import Decimal
+
+        with organisation_kontext(self.a.organisation):
+            zweite = Buchung.objects.create(
+                beleg_text='Zweite Buchung A', soll_konto=self.a.konto_soll,
+                haben_konto=self.a.konto_haben, betrag=Decimal('42'), datum=date(2024, 2, 2))
+        with self.assertRaises(IntegrityError), transaction.atomic(), \
+                organisation_kontext(self.a.organisation):
+            zweite.beleg_nr = 1
+            zweite.save(update_fields=['beleg_nr'])
 
 
 class HintergrundjobsTests(IsolationsBasis):
@@ -520,21 +619,46 @@ class HintergrundjobsTests(IsolationsBasis):
     Organisationskontext setzen könnte.
     """
 
-    @unittest.expectedFailure
     def test_monatslauf_laesst_fremden_bestand_unberuehrt(self):
+        """Ein Lauf für A erzeugt keine Rechnung im Bestand von B.
+
+        Die Abfragen laufen im Kontext von B — der Befehl selbst hat keinen,
+        das ist gerade der Punkt. Ohne `organisation_kontext` scheiterte der
+        Test schon am Manager und sagte über den Mietenlauf nichts.
+        """
+        from io import StringIO
+
         from django.core.management import call_command
+
+        from core.tenancy import organisation_kontext
         from finance.models import DebitorenRechnung
-        vorher = set(DebitorenRechnung.objects.filter(
-            vertrag__einheit__liegenschaft=self.b.liegenschaft).values_list('pk', flat=True))
+
+        def bestand_von_b():
+            with organisation_kontext(self.b.organisation):
+                return set(DebitorenRechnung.objects.filter(
+                    vertrag__einheit__liegenschaft=self.b.liegenschaft)
+                    .values_list('pk', flat=True))
+
+        vorher = bestand_von_b()
         try:
-            call_command('monatslauf', organisation=self.a.organisation.pk)
+            call_command('monatslauf', organisation=self.a.organisation.pk,
+                         stdout=StringIO(), stderr=StringIO())
         except TypeError:
             self.fail('monatslauf kennt keine Option --organisation und laeuft '
                       'damit ueber ALLE Bestaende (Etappe 6).')
-        nachher = set(DebitorenRechnung.objects.filter(
-            vertrag__einheit__liegenschaft=self.b.liegenschaft).values_list('pk', flat=True))
-        self.assertEqual(vorher, nachher,
+
+        self.assertEqual(vorher, bestand_von_b(),
                          'monatslauf hat Rechnungen im Bestand von B erzeugt oder verändert')
+
+        # Gegenprobe im Test selbst: Bei A MUSS etwas entstanden sein. Ohne
+        # diese Zeile wäre der Test auch grün, wenn der Befehl gar nichts täte
+        # — und ein Mietenlauf, der nichts stellt, ist kein Erfolg.
+        with organisation_kontext(self.a.organisation):
+            neu_bei_a = DebitorenRechnung.objects.filter(
+                vertrag__einheit__liegenschaft=self.a.liegenschaft).count()
+        self.assertGreater(neu_bei_a, 0,
+                           'Der Lauf hat auch bei A nichts erzeugt — der Test '
+                           'belegt dann keine Trennung, sondern Untätigkeit.')
 
 
 class AbsenderInDokumentenTests(IsolationsBasis):
@@ -573,31 +697,87 @@ class AdminUmgehungTests(IsolationsBasis):
     nicht anzunehmen.
     """
 
-    @unittest.expectedFailure
     def test_admin_zeigt_keine_fremden_datensaetze(self):
+        """Die Annahme im Klassennamen stimmt nicht — geprüft statt geglaubt.
+
+        Erwartet war, dass `ModelAdmin.get_queryset` über `_base_manager`
+        geht und den `TenantManager` damit umgeht. Django nimmt dort aber
+        `_default_manager` (`django/contrib/admin/options.py:436`), also
+        genau den gefilterten Manager. Die Umgehung, gegen die dieser Test
+        geschrieben wurde, existiert nicht.
+        """
         from django.contrib import admin
+
+        from core.tenancy import organisation_kontext
         from rentals.models import Mietvertrag
+
         modeladmin = admin.site._registry[Mietvertrag]
         anfrage = self.client.get('/admin/').wsgi_request
         anfrage.user = self.a.benutzer
-        sichtbar = modeladmin.get_queryset(anfrage)
-        self.assertNotIn(self.b.vertrag, sichtbar,
-                         'Der Admin zeigt einem Benutzer von A den Vertrag von B '
-                         '(_base_manager umgeht den TenantManager)')
+
+        with organisation_kontext(self.a.organisation):
+            sichtbar = set(modeladmin.get_queryset(anfrage).values_list('pk', flat=True))
+
+        # Der eigene Vertrag MUSS drin sein. Ohne diese Zeile wäre der Test
+        # auch bei einer leeren Liste grün — und eine leere Liste beweist
+        # nichts über Isolation.
+        self.assertIn(self.a.vertrag.pk, sichtbar,
+                      'Der Admin zeigt dem Benutzer nicht einmal den eigenen Vertrag — '
+                      'ein leeres Ergebnis belegt keine Trennung.')
+        self.assertNotIn(self.b.vertrag.pk, sichtbar,
+                         'Der Admin zeigt einem Benutzer von A den Vertrag von B.')
+
+    def test_admin_wirft_ohne_kontext_statt_alles_zu_zeigen(self):
+        """Und ohne Kontext zeigt er gar nichts — er wirft.
+
+        Das ist die schärfere Zusage: Ein Admin, der im Zweifel den ganzen
+        Bestand zeigt, sieht funktionierend aus. Einer, der wirft, zwingt zur
+        Entscheidung, wessen Daten gemeint sind.
+        """
+        from django.contrib import admin
+
+        from core.tenancy import OrganisationsFehler, ohne_organisation
+        from rentals.models import Mietvertrag
+
+        modeladmin = admin.site._registry[Mietvertrag]
+        anfrage = self.client.get('/admin/').wsgi_request
+        anfrage.user = self.a.benutzer
+
+        with ohne_organisation(), self.assertRaises(OrganisationsFehler):
+            list(modeladmin.get_queryset(anfrage))
 
 
 class CacheSchluesselTests(IsolationsBasis):
     """Ein Cache-Key ohne Organisations-ID ist ein Datenleck mit Verzögerung."""
 
-    @unittest.expectedFailure
     def test_cache_schluessel_tragen_die_organisation(self):
-        try:
-            from core.tenancy import cache_key
-        except ImportError:
-            self.fail('core.tenancy.cache_key fehlt — Cache-Keys tragen heute '
-                      'keine Organisation (Etappe 6).')
-        self.assertNotEqual(cache_key('dashboard', self.a), cache_key('dashboard', self.b),
+        """Derselbe Schlüsselname ergibt je Verwaltung einen anderen Key.
+
+        Die erste Fassung rief `cache_key('dashboard', self.a)` — sie nahm
+        an, die Organisation werde als Argument übergeben. `cache_key(*teile)`
+        liest sie stattdessen aus dem Kontext, damit an keiner Aufrufstelle
+        jemand vergessen kann, sie mitzugeben. Der Test rief also richtig
+        auf, was es nicht gibt, und hängte die Verwaltung als Namensteil an.
+        """
+        from core.tenancy import cache_key, organisation_kontext
+
+        with organisation_kontext(self.a.organisation):
+            key_a = cache_key('dashboard')
+        with organisation_kontext(self.b.organisation):
+            key_b = cache_key('dashboard')
+
+        self.assertNotEqual(key_a, key_b,
                             'Beide Organisationen benutzen denselben Cache-Key')
+        self.assertIn(str(self.a.organisation.pk), key_a)
+
+    def test_cache_key_wirft_ohne_kontext(self):
+        # Ein Key ohne Organisations-ID ist genau der geteilte Key — der
+        # erste Mandant füllt ihn, der zweite liest ihn. Kein stiller Rückfall
+        # auf einen kontextlosen Namen.
+        from core.tenancy import OrganisationsFehler, cache_key, ohne_organisation
+
+        with ohne_organisation(), self.assertRaises(OrganisationsFehler):
+            cache_key('dashboard')
 
 
 # ===========================================================================
@@ -614,25 +794,18 @@ class ModellbezugWaechterTests(TestCase):
     """
 
     #: Modelle ohne eigenen Bezug — jeder Eintrag braucht eine Begründung.
-    #: Der Zuschnitt entsteht erst in Etappe 5; eine vorweggenommene
-    #: Ausnahmeliste wäre geraten, nicht entschieden. Genau ein Eintrag steht
-    #: heute schon fest.
-    BEGRUENDETE_AUSNAHMEN: dict = {
-        # Der Benutzer gehört keiner Organisation, er ist in mehreren MITGLIED
-        # — das ist Etappe 4, Schritt 4 (Rollen je Organisation). Ein Feld
-        # `organisation` am Benutzer wäre die falsche Modellierung: Es würde
-        # jeden Menschen auf eine Verwaltung festnageln.
-        #
-        # Der Eintrag steht hier und nicht in `EIGENE_APPS`, weil der Wächter
-        # sonst SCHWEIGEND blind wäre. Fehlte `benutzer` in `EIGENE_APPS`,
-        # würde dieser Test in Etappe 4 grün — und ausgerechnet das Modell,
-        # an dem die Mandantenzugehörigkeit hängt, wäre das einzige, das er
-        # nie prüft. Eine benannte Ausnahme kann man beim Lesen widerrufen,
-        # eine fehlende Zeile in einem Tupel nicht.
-        'benutzer.Benutzer': 'Mitgliedschaft je Organisation statt eigener Spalte — Etappe 4',
-    }
+    #:
+    #: Seit 6.6 ist das dieselbe Liste, die `ManagerIsolationTests` benutzt.
+    #: Zwei getrennte Listen wären zwei Orte, an denen jemand eine Ausnahme
+    #: einträgt, und nur einer davon fiele beim Lesen auf.
+    #:
+    #: Die Einträge stehen dort und nicht in `EIGENE_APPS`, weil der Wächter
+    #: sonst SCHWEIGEND blind wäre: Fehlte `benutzer` in `EIGENE_APPS`, wäre
+    #: ausgerechnet das Modell, an dem die Mandantenzugehörigkeit hängt, das
+    #: einzige, das er nie prüft. Eine benannte Ausnahme kann man beim Lesen
+    #: widerrufen, eine fehlende Zeile in einem Tupel nicht.
+    BEGRUENDETE_AUSNAHMEN: dict = OHNE_MANDANTENFILTER
 
-    @unittest.expectedFailure
     def test_jedes_modell_hat_einen_weg_zur_organisation(self):
         ohne = []
         for modell in apps.get_models():
@@ -645,6 +818,34 @@ class ModellbezugWaechterTests(TestCase):
                 ohne.append(modell._meta.label)
         self.assertEqual(ohne, [],
                          f'{len(ohne)} Modelle ohne Organisationsbezug: {ohne[:8]}…')
+
+
+class AusnahmenSindBegruendetTests(TestCase):
+    """Die Ausnahmeliste darf nicht wachsen, ohne dass es jemand merkt.
+
+    `OHNE_MANDANTENFILTER` ist die einzige Stelle, an der ein Modell aus der
+    Prüfung fällt. Genau so macht man einen Wächter blind: Ein neues Modell
+    ohne Bezug, ein Eintrag in die Liste, Test wieder grün — und niemand hat
+    entschieden, nur repariert. Diese Klasse macht das Wachsen sichtbar.
+    """
+
+    def test_es_sind_genau_diese_zwei(self):
+        self.assertEqual(sorted(OHNE_MANDANTENFILTER), ['benutzer.Benutzer', 'crm.Organisation'],
+                         'Die Ausnahmeliste hat sich geändert. Das ist eine Entscheidung, '
+                         'keine Reparatur: Grund in OHNE_MANDANTENFILTER schreiben und '
+                         'diesen Test bewusst nachziehen.')
+
+    def test_jeder_eintrag_traegt_eine_begruendung(self):
+        for label, grund in OHNE_MANDANTENFILTER.items():
+            self.assertGreater(len(grund), 25,
+                               f'{label} steht ohne brauchbare Begründung in der Liste.')
+
+    def test_die_ausgenommenen_modelle_gibt_es_wirklich(self):
+        # Ein Tippfehler im Label nähme nichts aus — er täuschte nur vor,
+        # etwas sei begründet, während der Wächter das Modell weiter prüft
+        # (oder, schlimmer, ein anderes stillschweigend durchliesse).
+        for label in OHNE_MANDANTENFILTER:
+            apps.get_model(label)
 
 
 # ===========================================================================

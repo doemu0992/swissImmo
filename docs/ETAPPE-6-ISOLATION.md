@@ -206,6 +206,45 @@ Daraus folgt für neue Tests an Befehlen: Sie müssen den Kontext-losen Zustand 
 
 ---
 
+### 6.7 — Sieben der dreizehn waren keine Produktfehler (17.08.2026)
+
+Nach 6.6 blieben zehn Isolationstests rot. Die Diagnose ergab: **vier davon prüften falsch**, zwei stellten eine Frage, die so nicht beantwortbar ist, einer wartete auf eine Zusage, die 6.6 nachgeliefert hat. Nur drei sind echte, offene Lücken.
+
+**Die vier Testfehler.** Die Zusage hielt bereits, der Test kam nicht bis dorthin:
+
+| Test | Was wirklich los war |
+|---|---|
+| `test_gleiche_kontonummer…` | `uniq_konto_je_organisation` existiert. Der Test legte die Konten ohne Mandantenkontext an und scheiterte an `organisation_bestimmen()`, bevor er zur Eindeutigkeit kam. |
+| `test_belegnummernkreis…` | `uniq_beleg_nr_je_organisation` existiert (`finance/models.py:293`). Gleiche Ursache. |
+| `test_admin_zeigt_keine_fremden…` | Die Annahme stimmt nicht: Django nimmt im Admin `_default_manager` (`admin/options.py:436`), also den `TenantManager`. Die Umgehung, gegen die der Test geschrieben war, gibt es nicht. |
+| `test_cache_schluessel…` | `cache_key` existiert seit 6.5, hat aber die Signatur `cache_key(*teile)` und liest den Kontext. Der Test übergab die Verwaltung als Argument — er rief richtig auf, was es nicht gibt. |
+
+Beide Constraint-Tests führen den Nachweis jetzt vollständig: gleiche Nummer in **zwei** Verwaltungen muss gehen, gleiche Nummer **zweimal in derselben** muss am `IntegrityError` scheitern. Ohne die zweite Hälfte wäre der Test auch bei ganz fehlender Eindeutigkeit grün — und zwei Belege Nr. 1 in derselben Buchführung sind genau das, was OR 957a ausschliesst. Beim Admin-Test kam die Zeile dazu, dass der **eigene** Vertrag sichtbar sein muss: Eine leere Liste besteht jedes `assertNotIn` und belegt nichts.
+
+**Die zwei Definitionsfragen.** `benutzer.Benutzer` und `crm.Organisation` können keinen Mandantenfilter tragen — der eine ist in mehreren Verwaltungen *Mitglied*, die andere *ist* der Mandant. Ein Filter `organisation=self` wäre ein Selbstbezug ohne Aussage; ein Filter auf den Kontext machte die Tabelle für genau die Läufe unbrauchbar, die sie brauchen (`je_organisation` liest sie, **bevor** ein Kontext gesetzt ist). Beide stehen jetzt in **einer** Liste `OHNE_MANDANTENFILTER`, die sich `ManagerIsolationTests` und `ModellbezugWaechterTests` teilen — zwei Listen wären zwei Orte, an denen jemand eine Ausnahme einträgt, und nur einer fiele beim Lesen auf.
+
+Dass die Liste die gefährlichste Stelle im ganzen Testsatz ist, ist ihr eigener Test: `AusnahmenSindBegruendetTests` prüft, dass es genau diese zwei sind, dass jeder Eintrag eine Begründung trägt und dass die Labels wirklich existieren (ein Tippfehler nähme nichts aus, er täuschte nur vor, etwas sei begründet). Ein drittes Modell einzutragen ist damit eine Entscheidung, die auffällt — keine Reparatur, die durchrutscht.
+
+**Offen bleibt, was das Leseinteresse angeht:** Wer angemeldet ist, kann über `Organisation.objects` theoretisch die Firmennamen anderer Verwaltungen lesen. Das liegt auf der Ansichtsebene (die fw-Views zeigen nur die eigene) und ist bewusst in Kauf genommen; auf der Modellebene ginge es nicht anders.
+
+**`test_monatslauf_laesst_fremden_bestand_unberuehrt`** wurde grün, weil 6.6 `--organisation` nachgeliefert hat. Auch hier eine Gegenprobe im Test selbst: Bei A **muss** etwas entstanden sein, sonst belegte er Untätigkeit statt Trennung.
+
+**Gegenproben (17.08.2026, alle bestanden):**
+
+| Ausgehebelt | Test wird rot |
+|---|---|
+| `TenantManager._einschraenken` filtert nicht mehr | Manager-, Admin- und Kontonummern-Test (34 Fehlschläge) |
+| Manager liefert ohne Kontext alles statt zu werfen | `test_admin_wirft_ohne_kontext_statt_alles_zu_zeigen` |
+| `cache_key` ignoriert die Organisation | `test_cache_schluessel_tragen_die_organisation` |
+| `cache_key` fällt ohne Kontext auf einen geteilten Key zurück | `test_cache_key_wirft_ohne_kontext` |
+| Ausnahmeliste geleert | Wächter + `test_es_sind_genau_diese_zwei` |
+| Dritter Eintrag heimlich in die Ausnahmeliste | `test_es_sind_genau_diese_zwei` |
+| `monatslauf` ignoriert `--organisation` | `test_monatslauf_laesst_fremden_bestand_unberuehrt` |
+
+**Es bleiben drei rote Tests, und die sind echt:** 20 benannte URLs geben ein fremdes Objekt heraus (302/500 statt 404), fünf davon nehmen auch einen POST entgegen (`fw_benutzer_bearbeiten`, `fw_benutzer_loeschen`, `fw_zahlung_stornieren`, `fw_kreditor_zahlung_stornieren`, `amtliches_formular`), und zwei Views übernehmen eine fremde ID aus dem Querystring (`?mieter=` in `kommunikation.py:86`, `?einheit=` in `vertragserstellung.py:58`). `abrechnung_send_mail` liefert dabei 500, weil die View gar nichts zurückgibt.
+
+---
+
 ## Die Gegenprobe — hier wird sie fällig
 
 Bisher waren alle Isolationstests rot, weil `Organisation` fehlte. **Das hat nichts bewiesen:** Ein Test, der am fehlenden Modell scheitert, würde auch scheitern, wenn er gar nichts prüft.
@@ -229,7 +268,7 @@ Je PR: Testsuite grün, Testzahl nicht unter **1'122**, `check`, `makemigrations
 
 **Für die Etappe — und damit für Phase 2:**
 
-- Alle **13** Isolationstests grün, jeder mit protokollierter Gegenprobe
+- Alle Isolationstests grün, jeder mit protokollierter Gegenprobe — **Stand 17.08.2026: 22 von 25 grün, drei offen** (die zwei URL-Registryläufe und der Querystring-Test). Aus den ursprünglich 13 sind 25 geworden, weil jeder aufgelöste Test seine eigene Gegenprobe als Zeile mitbekam.
 - `ORGANISATION_RUECKFALL` existiert nicht mehr — weder als `True` noch als Attribut
 - `organisation_oder_einzige()` entfernt
 - Kein `Verwaltung.objects.first()`-Muster mehr für Absender in PDF und E-Mail
