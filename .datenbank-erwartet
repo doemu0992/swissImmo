@@ -11,4 +11,6 @@
 # `name` und `host` sind freiwillig. Wer sie einträgt, ist auch dagegen
 # geschützt, dass zwei PostgreSQL-Datenbanken verwechselt werden.
 
-engine = sqlite
+engine = postgres
+name   = swissimmo
+host   = swissimmo-5420.postgres.pythonanywhere-services.com

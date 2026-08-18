@@ -127,14 +127,50 @@ class DateiTests(SimpleTestCase):
 
 
 class RepoDateiTests(SimpleTestCase):
-    """Die Datei im Repo muss zu der Datenbank passen, auf der wir laufen."""
+    """Die Datei im Repo muss vorhanden und lesbar sein.
 
-    def test_repo_erwartung_passt_zur_laufenden_datenbank(self):
-        # Schlaegt dieser Test fehl, ist entweder die Datei falsch gepflegt
-        # oder die Testumgebung laeuft auf einer anderen Datenbank als
-        # angenommen. Beides gehoert gesehen.
+    Hier stand bis zum 18.08.2026 zusätzlich die Zusage, die Datei müsse zur
+    Datenbank passen, auf der die Suite gerade läuft. Das war nur so lange
+    richtig, wie beide dieselbe waren — mit dem Umzug der Produktion auf
+    PostgreSQL trennen sie sich:
+
+      · `.datenbank-erwartet` beschreibt die **Produktionsdatenbank**. Sie kommt
+        mit dem Code mit, damit Web-App, Always-on-Task und Konsole dieselbe
+        Angabe sehen.
+      · Die Testsuite läuft bewusst auf SQLite — in einer temporären Datenbank,
+        ohne Server, in Sekunden.
+
+    Ein Vergleich der beiden hätte die Suite ab dem Umzug rot gemacht, und zwar
+    ohne dass irgendetwas defekt wäre. Die eigentliche Prüfung gehört dorthin,
+    wo sie hingehört: `deploy.sh` ruft `datenbank_pruefen` auf dem Server auf,
+    vor dem ersten `migrate`. Dass diese Prüfung bei Abweichung wirklich
+    abbricht, belegen die Tests oben mit `override_settings`.
+    """
+
+    def test_die_datei_ist_vorhanden_und_lesbar(self):
         from django.conf import settings
+
+        from core.management.commands.datenbank_pruefen import erwartung_lesen
+
         pfad = Path(settings.BASE_DIR) / '.datenbank-erwartet'
         self.assertTrue(pfad.exists(), '.datenbank-erwartet fehlt — der Deploy prüft dann nichts.')
-        erfolg, ausgabe = _lauf(str(pfad))
-        self.assertTrue(erfolg, ausgabe)
+        # Wirft bei kaputtem Inhalt; ein unlesbarer Wächter bricht sonst erst
+        # auf dem Server ab, mitten im Deploy.
+        erwartet = erwartung_lesen(pfad)
+        self.assertIn(erwartet['engine'], {'sqlite', 'postgres', 'mysql'})
+
+    def test_die_datei_beschreibt_die_produktion_nicht_die_testumgebung(self):
+        # Der Grund, warum der frühere Vergleich weg ist — als Zusage
+        # festgehalten, damit ihn niemand «repariert» und die Suite an den
+        # nächsten Umzug koppelt.
+        from django.conf import settings
+
+        from core.management.commands.datenbank_pruefen import erwartung_lesen, kurzname
+
+        pfad = Path(settings.BASE_DIR) / '.datenbank-erwartet'
+        erwartet = erwartung_lesen(pfad)['engine']
+        laeuft = kurzname(settings.DATABASES['default'].get('ENGINE', ''))
+        if erwartet != laeuft:
+            # Genau dieser Zustand ist seit dem Umzug der Normalfall.
+            self.assertEqual(laeuft, 'sqlite',
+                             'Die Suite läuft weder auf der erwarteten noch auf SQLite.')
