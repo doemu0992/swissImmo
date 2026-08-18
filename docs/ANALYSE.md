@@ -185,7 +185,7 @@ Die grösste Veränderung gegenüber `main`.
 
 Kritisch anzumerken: Die gesamte Testmasse liegt in **einer Datei** von 16'586 Zeilen — dasselbe Muster wie bei `fw.py`. Für die Isolationstests aus Phase 2 (ein Test je Modell und Endpunkt) braucht es eine Aufteilung, sonst wächst die Datei unbedienbar weiter.
 
-Betrieb: `LOGGING` mit `RotatingFileHandler` (5 MB, 5 Generationen) ist konfiguriert. Management-Commands `backup_db`, `pruefe_media_schutz` und `pruefe_webhook_secrets` prüfen die Betriebsannahmen selbst. `docs/AUTOMATISIERUNG.md` dokumentiert die geplanten Scheduled Tasks; alle Läufe sind als idempotent beschrieben und schreiben ins Aktivitätslog.
+Betrieb: `LOGGING` mit `RotatingFileHandler` (5 MB, 5 Generationen) ist konfiguriert. Management-Commands `sicherung`, `medien_pruefen`, `pruefe_media_schutz` und `pruefe_webhook_secrets` prüfen die Betriebsannahmen selbst. (`backup_db` ist am 18.08.2026 entfernt worden — er meldete unter PostgreSQL folgenlos Erfolg; siehe `SICHERUNG.md`.) `docs/AUTOMATISIERUNG.md` dokumentiert die geplanten Scheduled Tasks; alle Läufe sind als idempotent beschrieben und schreiben ins Aktivitätslog.
 
 ---
 
@@ -299,7 +299,7 @@ Keine Task-Queue; **18 Management-Commands** laufen über den PythonAnywhere-Sch
 | `jahresabschluss_lauf` | jährlich | keiner — AfA und Erneuerungsfonds über alle Liegenschaften |
 | `update_rates`, `check_rents`, `fristen_digest`, `send_eigentuemer_reports` | div. | `Verwaltung.objects.first()` |
 | `fetch_replies`, `fetch_rechnungen` | Dauerlauf | ein IMAP-Postfach für alles |
-| `backup_db`, `dsg_anonymisieren`, `bewerbungen_bereinigen`, `mieter_zugang`, `seed_e2e`, `sync_contracts`, `pruefe_*` | div. | keiner |
+| `dsg_anonymisieren`, `bewerbungen_bereinigen`, `mieter_zugang`, `seed_e2e`, `sync_contracts`, `pruefe_*` | div. | keiner |
 
 Alle Läufe sind als idempotent beschrieben und protokollieren ins Aktivitätslog — eine gute Grundlage. Für Mandantenfähigkeit muss jeder Lauf über Organisationen iterieren statt global zu arbeiten, und `fetch_replies`/`fetch_rechnungen` brauchen je Mandant ein eigenes Postfach oder eine eindeutige Zuordnung.
 

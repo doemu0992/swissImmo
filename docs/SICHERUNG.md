@@ -1,10 +1,11 @@
 # Sicherung und Wiederherstellung
 
-Stand: 17.08.2026.
+Stand: 18.08.2026 — Wiederherstellung durchgespielt (siehe unten).
 
 Eine Sicherung, die niemand je zurückgespielt hat, ist eine Hoffnung. Der
 zweite Teil dieses Dokuments — **Wiederherstellen** — ist deshalb der
-wichtigere. Er gehört einmal ausprobiert, bevor man ihn braucht.
+wichtigere. Er ist am 18.08.2026 einmal vollständig durchgespielt worden;
+was dabei herauskam, steht unter «Durchgespielt am 18.08.2026».
 
 ## Was gesichert wird
 
@@ -115,8 +116,13 @@ pg_restore -h $DB_HOST -p $DB_PORT -U swissimmo_app \
 # Nachzählen, bevor umgeschaltet wird:
 DB_NAME=swissimmo_wieder python manage.py bestand_zaehlen | head -20
 
-# Passt es: DB_NAME an allen drei Stellen umstellen (Web-Tab,
-# Always-on-Task, Konsole), .datenbank-erwartet nachziehen, Task neu starten.
+# Und die Dateien mitprüfen — Zeilen zählen sieht sie nicht:
+DB_NAME=swissimmo_wieder python manage.py medien_pruefen \
+        --sicherung ~/sicherungen/20260817-030000-medien.tar.gz
+
+# Passt es: DB_NAME in der .env umstellen (sie bedient Web-App,
+# Always-on-Task und Konsole), .datenbank-erwartet nachziehen,
+# Web-App neu laden.
 ```
 
 > Steht statt `-db.dump` eine Datei `-db.dumpdata.json` da, war `pg_dump` auf
@@ -139,6 +145,105 @@ Auftragsverarbeitung). Das ist ein Entscheid, kein Implementierungsdetail, und
 deshalb hier bewusst nicht eingebaut. Aufgeführt in `PHASE-2-PLAN.md` unter den
 offenen Entscheiden.
 
-Ebenfalls offen: Ein **Wiederherstellungs-Probelauf**. Der Weg oben ist
-beschrieben und die Sicherung wird bei jedem Lauf gegengelesen — aber ein
-vollständiger Durchlauf auf einem Zweitsystem hat noch nicht stattgefunden.
+## Durchgespielt am 18.08.2026
+
+Der Probelauf hat stattgefunden — gegen einen **echten PostgreSQL 16.13**, mit
+dem vollständigen Bestand, in eine **separate Datenbank** (`swissimmo_probe`).
+Die Ausgangsdatenbank blieb unberührt.
+
+### Die Zahlen
+
+| | |
+|---|---|
+| Sicherung (`manage.py sicherung`) | **41 s** — 412 kB Datenbank, 100 MB Medien |
+| Gegengelesen | 826 Objekte (`pg_restore --list`), 24 678 Mediendateien |
+| `pg_restore` | **1 s**, Exitcode 0, **keine einzige Warnung** |
+| Medien entpacken | 4 s |
+| Nachzählung | 67 Modelle, 3067 Datensätze — **identisch** |
+| Sequenzen | 76 von 76, `last_value` **überall identisch** |
+
+Die Wiederherstellung selbst dauert also **Sekunden**. Der Zeitaufwand im
+Ernstfall liegt bei der Sicherung und beim Entpacken der Medien, nicht beim
+Zurückspielen — und er wächst mit den Medien, nicht mit dem Bestand.
+
+### Was der Probelauf beantwortet hat
+
+**`sequenzen_richten` wird nach `pg_restore` NICHT gebraucht.** Das war die
+offene Frage, denn nach dem `loaddata`-Weg ist es zwingend. Gemessen: Alle 76
+Sequenzen kamen mit ihrem `last_value` aus dem Dump, und ein `INSERT` in der
+zurückgespielten Datenbank vergab die nächste freie ID sauber:
+
+```
+hoechste bestehende Mieter-ID: 52
+INSERT ergab ID: 53      → keine Kollision
+```
+
+> Für den **JSON-Ersatzstand** (`-db.dumpdata.json`, wenn `pg_dump` fehlt) gilt
+> das Gegenteil unverändert: dort ist `sequenzen_richten` Pflicht.
+
+**Die fachliche Stichprobe stimmt.** Verglichen wurden nicht Zeilenzahlen,
+sondern Inhalte: ein Mietvertrag mit Anpassung, Mietzins-Komponenten,
+27 Debitorenrechnungen und einer Kündigung, dazu eine Abrechnungsperiode —
+33 Objekte, über Djangos Serializer ausgegeben und Zeichen für Zeichen
+verglichen. Identisch.
+
+### Was nicht funktioniert hat
+
+Das ist der eigentliche Ertrag.
+
+**1. Vier Dateiverweise zeigten ins Leere.** 165 Verweise geprüft, 4 ohne
+Datei (`schaden_fotos/2026-08-08/…`). Nachgesehen: Die Dateien fehlten **auch
+im Original**. Die Sicherung war treu, der Bestand nicht. `bestand_zaehlen`
+meldete gleichzeitig «identisch» — Zeilen zählen sieht Dateien nicht.
+
+Daraus ist `manage.py medien_pruefen` entstanden:
+
+```bash
+python manage.py medien_pruefen                              # nur melden
+python manage.py medien_pruefen --sicherung ~/sicherungen/…-medien.tar.gz
+```
+
+Er trennt die beiden Fälle, die verschiedene Ursachen haben:
+
+| Befund | Bedeutung |
+|---|---|
+| Verweis ohne Datei auf der Platte | Mangel im **Bestand** — was fehlt, kann nicht gesichert werden |
+| Datei da, aber nicht im Tar | Die **Sicherung** ist unvollständig — der gefährliche Fall |
+
+**Gehört auf der Produktion einmal gelaufen.** Die vier Funde stammen aus den
+Entwicklungsdaten; wie viele es produktiv sind, ist offen.
+
+**2. Zwei Vergleiche verglichen nichts — und meldeten Erfolg.** Beim Aufbau der
+Stichprobe lief das Skript zweimal in einen Fehler (`ModuleNotFoundError`,
+danach ein falscher Feldname). Beide Male blieben beide Ausgabedateien leer,
+und `diff` meldete pflichtgemäss Übereinstimmung:
+
+```
+Original: 0 Bytes, Probe: 0 Bytes
+→ fachlich identisch
+```
+
+Zwei fehlgeschlagene Läufe sehen im Vergleich aus wie ein geglückter. Seither
+prüft das Skript auf leere Ausgabe und endet mit Code 2. Dieselbe Falle steckte
+im Feldkatalog von Hand: Er ging bei einer Umbenennung kaputt und erzeugte
+genau diese leere Ausgabe — deshalb serialisiert die Stichprobe jetzt über
+Djangos eigenen Serializer, der die Felder aus dem Modell nimmt.
+
+**3. `manage.py backup_db` sicherte unter PostgreSQL nicht** und meldete
+trotzdem Erfolg (Exitcode 0, keine Datei — nur ein Hinweistext auf `pg_dump`).
+Der Befehl ist **entfernt**; `manage.py sicherung` kann beide Motoren, bricht
+bei Fehlschlag mit `CommandError` ab und liest den Stand gegen. Zwei Befehle
+für dieselbe Aufgabe, von denen einer stillschweigend nichts tut, sind
+gefährlicher als einer. Ein Aufruf von `backup_db` scheitert jetzt laut.
+
+### Was weiterhin offen ist
+
+**Der Probelauf lief nicht auf der Produktion**, sondern auf einer
+gleichwertigen PostgreSQL-16-Installation mit demselben Bestand. Was er
+belegt, ist der Weg und das Werkzeug. Was er nicht belegt, sind die Laufzeiten
+auf PythonAnywhere — dort teilen sich mehrere Konten einen Server, und die
+100 MB Medien gehen über das Netz statt über einen lokalen Socket. Rechne
+eher mit Minuten als mit Sekunden.
+
+**Eine Kopie ausser Haus** fehlt weiterhin (siehe oben) — daran ändert ein
+geglückter Probelauf nichts.

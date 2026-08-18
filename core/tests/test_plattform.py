@@ -44,20 +44,53 @@ class AbonnementTests(TestCase):
 
 
 class BackupCommandTests(TestCase):
-    def test_backup_db_sqlite(self):
-        import io, sqlite3, tempfile
-        from pathlib import Path
-        from django.test import override_settings
+    """Es gibt genau EINEN Sicherungsweg — entschieden am 18.08.2026.
+
+    Hier stand ein Test für `manage.py backup_db`. Der Befehl ist entfernt, und
+    das ist der eigentliche Befund des Wiederherstellungs-Probelaufs:
+
+    `backup_db` sicherte unter SQLite echt, gab unter PostgreSQL nur einen
+    Hinweistext auf `pg_dump` aus und kehrte mit **Exitcode 0** zurück. Ein
+    Befehl, der je nach Datenbank etwas anderes tut und immer dasselbe
+    verspricht, ist eine Falle: Seit dem Umzug hätte jeder Aufruf «Erfolg»
+    gemeldet, ohne eine Datei zu erzeugen.
+
+    Daneben stand die ganze Zeit `manage.py sicherung`, die beide Motoren kann,
+    bei Fehlschlag mit `CommandError` abbricht und den Stand gegenliest. Zwei
+    Befehle für dieselbe Aufgabe, von denen einer stillschweigend nichts tut —
+    der überflüssige ist weg statt geflickt.
+    """
+
+    def test_backup_db_gibt_es_nicht_mehr(self):
+        # Ein entfernter Befehl scheitert laut. Das ist der Unterschied zu
+        # vorher: Er meldet nie wieder folgenlos Erfolg.
         from django.core.management import call_command
-        tmp = Path(tempfile.mkdtemp())
-        dbfile = tmp / 'db.sqlite3'
-        sqlite3.connect(str(dbfile)).close()   # leere echte DB-Datei
-        with override_settings(BASE_DIR=tmp, DATABASES={'default': {
-                'ENGINE': 'django.db.backends.sqlite3', 'NAME': str(dbfile)}}):
-            out = io.StringIO()
-            call_command('backup_db', stdout=out)
-            self.assertIn('Backup erstellt', out.getvalue())
-            self.assertTrue(list((tmp / 'backups').glob('db-*.sqlite3')))
+        from django.core.management.base import CommandError
+
+        with self.assertRaises(CommandError):
+            call_command('backup_db')
+
+    def test_sicherung_kann_beide_motoren(self):
+        # Der Grund, warum der andere Befehl entbehrlich war: Diese hier
+        # verzweigt selbst — und wirft, statt still zurückzukehren.
+        import inspect
+
+        from core.management.commands import sicherung
+
+        quelle = inspect.getsource(sicherung)
+        self.assertIn("connection.vendor == 'postgresql'", quelle)
+        self.assertIn('pg_dump', quelle)
+        self.assertIn('CommandError', quelle)
+
+    # Dass `sicherung` wirklich eine brauchbare Datei erzeugt, prüft
+    # `core/tests/test_sicherung.py` — dort mit einer echten, gefüllten
+    # Quelldatei. Ein zweiter, schwächerer Nachweis an dieser Stelle wäre
+    # genau die Doppelung, gegen die dieser ganze Entscheid gerichtet ist.
+    #
+    # Beim Schreiben ist der Versuch daran gescheitert, dass `sicherung` eine
+    # Sicherung mit 1 Tabelle und 1 Migration verwirft:
+    #   CommandError: Sicherung wirkt leer (1 Tabellen, 1 Migrationen) — verworfen.
+    # Der Test war falsch, nicht der Befehl.
 
 
 class LogbuchTests(TestCase):

@@ -44,6 +44,8 @@ Alle Zahlen am 15.08.2026 gegen den Bestand geprüft.
 >
 > **Es sind 18 Management-Commands, nicht 19.** Die Zahl 19 steht auch in `docs/ANALYSE.md` und in `docs/PHASE-2-PLAN.md` (Etappe 6) und ist an allen drei Stellen falsch. Gezählt: `backup_db`, `bewerbungen_bereinigen`, `check_rents`, `dsg_anonymisieren`, `fetch_rechnungen`, `fetch_replies`, `fristen_digest`, `jahresabschluss_lauf`, `mahnlauf`, `mieter_zugang`, `monatslauf`, `pruefe_media_schutz`, `pruefe_webhook_secrets`, `seed_e2e`, `send_eigentuemer_reports`, `sync_contracts`, `taeglicher_lauf`, `update_rates`.
 >
+> **Nachtrag 18.08.2026:** `backup_db` ist entfernt (er meldete unter PostgreSQL folgenlos Erfolg, siehe `SICHERUNG.md`). Die Liste oben bleibt als Beleg der damaligen Zählung stehen; die aktuelle Zahl steht in `manage.py help`, nicht hier.
+>
 > **„6 globale Unique-Constraints" ist richtig, aber missverständlich.** Im Bestand gibt es **zwölf** Eindeutigkeits-Zusicherungen; sechs davon sind unproblematisch, weil sie ohnehin je Datensatz gelten (`Mieter.benutzer` und `Eigentuemer.benutzer` als 1:1 auf `auth.User`, `SchadenMeldung.uuid`, `Erneuerungsfonds.liegenschaft`, `Mahnung(rechnung, stufe)`, `Abschreibung(anlage, jahr)` — alle über einen Fremdschlüssel gebunden). Umzubauen sind genau diese sechs:
 >
 > `Buchungskonto.nummer` · `Buchung.beleg_nr` · `LieferantProfil.name_key` · `NebenkostenLernRegel.suchwort` · `ZahlerZuordnung.name_norm` · `Lebensdauer.kategorie`
