@@ -62,6 +62,10 @@ Der Unterschied ist nicht nur der Name: `ensure_` sagt, dass die Funktion idempo
 
 Die zweite Organisation entsteht zuerst in einer **Kopie des Produktivbestands**. Der Weg dafür ist seit dem Wiederherstellungs-Probelauf beschrieben und einmal gelaufen — `SICHERUNG.md`, Abschnitt „Durchgespielt am 18.08.2026".
 
+> Bestätigt am 18.08.2026: Der Server trägt die Kopie. Sie kostet eine zweite
+> PostgreSQL-Datenbank und rund 190 MB Medien, und sie bleibt für die Dauer der
+> Etappe stehen — anders als die Probedatenbank, die nach einer Stunde wieder weg war.
+
 Grund: Wenn die Isolation an einer Stelle nicht hält, sind in der Kopie zwei Testbestände betroffen. In der Produktion wären es die echten Daten der ersten Verwaltung — und die gehören einem Kunden.
 
 ### Schritt 2 — Der Anlageweg
@@ -90,7 +94,26 @@ Der gefährlichste Teil, weil er unbeaufsichtigt läuft. `taeglicher_lauf`, `mon
 
 Je Lauf: Verarbeitet er beide Organisationen? Bleibt der Bestand der jeweils anderen unberührt? Und tragen die Ausgaben — Mahnung, Bericht, E-Mail — den Absender der richtigen Verwaltung?
 
-`fetch_replies` und `fetch_rechnungen` verdienen besondere Aufmerksamkeit: **ein IMAP-Postfach für alles.** Wie wird eine eingehende Rechnung der richtigen Verwaltung zugeordnet? Das war schon in `ANALYSE.md` als offen vermerkt und ist bisher nicht beantwortet.
+`fetch_replies` und `fetch_rechnungen` verdienen besondere Aufmerksamkeit: **ein IMAP-Postfach für alles.** Wie wird eine eingehende Rechnung der richtigen Verwaltung zugeordnet? Das war schon in `ANALYSE.md` als offen vermerkt.
+
+### Entschieden am 18.08.2026: ein Postfach JE VERWALTUNG
+
+Nicht ein gemeinsames Postfach mit Zuordnungsregeln, sondern **je Organisation ein eigenes**, in der Oberfläche konfigurierbar. Der Betreiber hat das so festgelegt.
+
+Das ist die robustere Antwort, und zwar aus einem Grund, der über Bequemlichkeit hinausgeht: Eine Zuordnung *nach dem Empfang* — an der Empfängeradresse, an einem Präfix im Betreff — rät. Rät sie falsch, landet die Rechnung einer fremden Verwaltung im Bestand der eigenen, und niemand merkt es, weil eine Kreditorenrechnung nun einmal von aussen kommt. Getrennte Postfächer machen die Zuordnung zur **Voraussetzung** statt zum Ergebnis: Was in Postfach B liegt, gehört B, ohne Interpretation.
+
+Heute stehen die Zugangsdaten in Umgebungsvariablen — `RECHNUNGS_IMAP_USER`, `RECHNUNGS_IMAP_PASSWORD`, `RECHNUNGS_IMAP_HOST` (`fetch_rechnungen`), und in `fetch_replies.py:104` steht der Server sogar fest im Code. Für die Umstellung heisst das:
+
+| | |
+|---|---|
+| Felder an der `Organisation` | Host, Port, Benutzer, Passwort, Ordner — plus ein Schalter «Eingang aktiv» |
+| Beide Befehle | laufen über `je_organisation` und nehmen die Zugangsdaten der jeweiligen Verwaltung |
+| Rückfall | Ist an einer Organisation nichts konfiguriert, wird sie übersprungen — **nicht** stillschweigend auf die Umgebungsvariablen zurückgefallen. Sonst holt Verwaltung B aus dem Postfach von A. |
+| Der feste Server in `fetch_replies` | muss weg, sonst gilt er für alle |
+
+> **Eine Frage, die dabei entschieden werden muss und heute niemandem gehört: das Passwort.** Es wandert damit aus einer Umgebungsvariablen in die **Datenbank** — und damit in jede Sicherung und in jeden `pg_dump`, der auf dem Konto liegt. Django hat kein eingebautes verschlüsseltes Feld; alles, was mit dem `SECRET_KEY` signiert wird, ist umkehrbar, sobald jemand beides hat. Möglichkeiten: hinnehmen (die Sicherungen liegen ohnehin auf demselben Konto), oder ein anwendungsseitig verschlüsseltes Feld mit einem Schlüssel, der **nicht** in der Datenbank steht. Das ist eine Entscheidung für Dominik, kein Implementierungsdetail — und sie gehört vor die Umsetzung, nicht danach.
+
+**Nicht Teil dieser Etappe.** Für den Betriebstest genügt es, die Läufe mit zwei Organisationen zu fahren und festzuhalten, was heute passiert; die Umstellung auf Postfächer je Verwaltung ist ein eigener Auftrag.
 
 ---
 
