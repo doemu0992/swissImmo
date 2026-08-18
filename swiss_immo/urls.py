@@ -75,6 +75,8 @@ from core.views.zweifaktor import (zweifaktor_login, zweifaktor_bestaetigen,
                                   zweifaktor_uebersicht, zweifaktor_einrichten,
                                   zweifaktor_codes_neu, zweifaktor_aus,
                                   zweifaktor_pflicht_setzen)
+from core.views.postfach import (postfach_liste, postfach_form, postfach_test,
+                                 postfach_loeschen)
 from core.views.portal import (portal_view, nach_login_view, portal_dokument_download, portal_report_pdf, portal_freigabe,
                                 portal_steuerauszug_pdf, portal_kontokorrent_pdf,
                                 mieter_portal_view, mieter_dokument_download, mieter_schaden_melden, mieter_rechnung_qr,
@@ -194,6 +196,13 @@ urlpatterns = [
     path('konto/zwei-faktor/codes/', zweifaktor_codes_neu, name='zweifaktor_codes_neu'),
     path('konto/zwei-faktor/aus/', zweifaktor_aus, name='zweifaktor_aus'),
     path('konto/zwei-faktor/pflicht/', zweifaktor_pflicht_setzen, name='zweifaktor_pflicht_setzen'),
+
+    # E-Mail-Eingang je Verwaltung. Unter /neu/, weil es zur Verwaltung gehört
+    # und nicht zum Konto — anders als der zweite Faktor, der am Menschen hängt.
+    path('neu/postfaecher/', postfach_liste, name='postfach_liste'),
+    path('neu/postfaecher/<str:zweck>/', postfach_form, name='postfach_form'),
+    path('neu/postfaecher/<str:zweck>/test/', postfach_test, name='postfach_test'),
+    path('neu/postfaecher/<str:zweck>/loeschen/', postfach_loeschen, name='postfach_loeschen'),
 
     # --- FAIRWALTER-REBUILD (neue Oberfläche, wächst etappenweise) ---
     path('neu/', fw_dashboard, name='fw_dashboard'),

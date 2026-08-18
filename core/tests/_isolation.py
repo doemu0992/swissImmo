@@ -50,13 +50,21 @@ PARAMETER_MODELL = {
     'kreditor_id':     'kreditor',
     'nummer':          None,          # Kontonummer, keine Objekt-ID — Bauform C
     'pfad':            None,          # Dateipfad, keine Objekt-ID — Bauform C
+    'zweck':           None,          # 'antworten'/'rechnungen' — keine Objekt-ID
 }
 
-# Die beiden Parameter ohne Objektbezug. Sie sind KEINE Ausnahme im Sinne von
-# „unkritisch": `pfad` ist der Media-Schutz und `nummer` das Kontoblatt — beide
-# werden in Bauform C von Hand geprüft. Hier stehen sie nur, weil der
-# Registrylauf mit ihnen nichts anfangen kann.
-KEINE_OBJEKT_ID = {'nummer', 'pfad'}
+# Die Parameter ohne Objektbezug. Sie sind KEINE Ausnahme im Sinne von
+# „unkritisch": `pfad` ist der Media-Schutz, `nummer` das Kontoblatt und
+# `zweck` der Postfach-Zweck — alle drei werden in Bauform C von Hand geprüft.
+# Hier stehen sie nur, weil der Registrylauf mit ihnen nichts anfangen kann.
+#
+# `zweck` ist dabei der harmloseste der drei: Er ist eine feste Auswahl aus
+# zwei Werten und trägt gar keine ID. Die Mandantentrennung der Postfächer
+# hängt nicht an ihm, sondern am `TenantManager` — `Postfach.objects` liefert
+# je Verwaltung höchstens ein Postfach dieses Zwecks. Geprüft in
+# `core/tests/test_postfach.py` (PostfachMandantTests) und im Registrylauf
+# über das Fixture-Postfach.
+KEINE_OBJEKT_ID = {'nummer', 'pfad', 'zweck'}
 
 
 class MandantenFixture:

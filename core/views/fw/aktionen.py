@@ -962,6 +962,8 @@ def fw_einstellungen(request):
         {'titel': 'Abonnement', 'sub': 'Plan und Rechnungsstellung', 'url': '/neu/abonnement/', 'icon': 'fa-star'},
         {'titel': 'Anmeldung & Sicherheit', 'sub': 'Zwei-Faktor-Anmeldung für Sie und Ihr Team',
          'url': '/konto/zwei-faktor/', 'icon': 'fa-shield-halved'},
+        {'titel': 'Postfächer', 'sub': 'E-Mail-Eingang für Ticket-Antworten und Rechnungen',
+         'url': '/neu/postfaecher/', 'icon': 'fa-inbox'},
         {'titel': 'Logbuch', 'sub': 'Wer hat wann was geändert', 'url': '/neu/logbuch/', 'icon': 'fa-clock-rotate-left'},
         {'titel': 'Rechtsgrundlagen', 'sub': 'OR/VMWG-Artikel mit Anwendung im Programm', 'url': '/neu/rechtsgrundlagen/', 'icon': 'fa-scale-balanced'},
     ]

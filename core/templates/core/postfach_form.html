@@ -1,0 +1,153 @@
+{% extends 'fw/base.html' %}
+{% block title %}{{ zweck_text }} — Postfach — swissImmo{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>{{ zweck_text }}</h1>
+        <p>Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt.</p>
+    </div>
+</div>
+
+<div class="max-w-2xl space-y-5">
+    {% if messages %}{% for m in messages %}
+    <div class="rounded-xl p-4 text-sm border
+                {% if m.tags == 'error' %}bg-red-50 border-red-200 text-red-700
+                {% elif m.tags == 'warning' %}bg-amber-50 border-amber-200 text-amber-900
+                {% else %}bg-emerald-50 border-emerald-200 text-emerald-800{% endif %}">{{ m }}</div>
+    {% endfor %}{% endif %}
+
+    {# Der Hinweis steht bewusst HIER und nicht im Handbuch: Wer Gmail mit dem #}
+    {# Kontopasswort probiert, sucht den Fehler sonst bei sich.               #}
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-600 space-y-2">
+        <p><strong>Klassischer Hoster</strong> (Hoststar, cyon, Infomaniak, eigener Server):
+           Benutzername und Passwort.</p>
+        <p><strong>Gmail:</strong> Benutzername und <strong>App-Passwort</strong> — nicht das
+           Kontopasswort. Setzt die Zwei-Faktor-Anmeldung im Google-Konto voraus. Bei Google
+           Workspace kann der Administrator App-Passwörter gesperrt haben; dann bitte bei ihm
+           nachfragen.</p>
+        <p><strong>Microsoft 365 / Exchange Online:</strong> <strong>nur OAuth2</strong> —
+           Microsoft hat den Zugang mit Benutzername und Passwort abgeschaltet. Diese Anbindung
+           ist neu und noch nicht mit einem Kundenverzeichnis erprobt; bitte melden Sie sich bei
+           uns, wenn etwas nicht funktioniert.</p>
+    </div>
+
+    {% if schluessel_fehlt %}
+    <div class="rounded-xl p-4 text-sm border bg-amber-50 border-amber-200 text-amber-900">
+        <strong>Auf dem Server fehlt {{ schluessel_name }}.</strong>
+        Solange er fehlt, lässt sich kein Passwort speichern. Bitte melden Sie sich bei uns.
+    </div>
+    {% endif %}
+
+    <form method="post" class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Verfahren</label>
+            <select name="verfahren"
+                    class="border border-slate-300 rounded-lg px-3 py-2.5 text-sm w-full">
+                {% for wert, text in verfahren_wahl %}
+                <option value="{{ wert }}"
+                    {% if eingabe %}{% if eingabe.verfahren == wert %}selected{% endif %}
+                    {% elif postfach %}{% if postfach.verfahren == wert %}selected{% endif %}
+                    {% elif wert == 'passwort' %}selected{% endif %}>{{ text }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">
+                Benutzername / E-Mail-Adresse</label>
+            <input type="text" name="benutzer" required
+                   value="{% if eingabe %}{{ eingabe.benutzer }}{% elif postfach %}{{ postfach.benutzer }}{% endif %}"
+                   autocomplete="off"
+                   class="border border-slate-300 rounded-lg px-3 py-2.5 text-sm w-full">
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+            <div class="col-span-2">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">IMAP-Server</label>
+                <input type="text" name="server" placeholder="imap.example.ch"
+                       value="{% if eingabe %}{{ eingabe.server }}{% elif postfach %}{{ postfach.server }}{% endif %}"
+                       class="border border-slate-300 rounded-lg px-3 py-2.5 text-sm w-full">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Port</label>
+                <input type="number" name="port" min="1" max="65535"
+                       value="{% if eingabe %}{{ eingabe.port }}{% elif postfach %}{{ postfach.port }}{% else %}993{% endif %}"
+                       class="border border-slate-300 rounded-lg px-3 py-2.5 text-sm w-full">
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Ordner</label>
+            <input type="text" name="ordner"
+                   value="{% if eingabe %}{{ eingabe.ordner }}{% elif postfach %}{{ postfach.ordner }}{% else %}INBOX{% endif %}"
+                   class="border border-slate-300 rounded-lg px-3 py-2.5 text-sm w-full">
+        </div>
+
+        {# KEIN `value` — das gespeicherte Geheimnis geht nie zurück ins Formular. #}
+        <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Passwort</label>
+            <input type="password" name="passwort" autocomplete="new-password"
+                   placeholder="{% if postfach and postfach.passwort_geheim %}gespeichert — leer lassen, um es nicht zu ändern{% else %}Passwort oder App-Passwort{% endif %}"
+                   class="border border-slate-300 rounded-lg px-3 py-2.5 text-sm w-full">
+            <p class="text-xs text-slate-500 mt-1">
+                {% if postfach and postfach.passwort_geheim %}
+                    Ein Passwort ist hinterlegt. Aus Sicherheitsgründen wird es hier nicht
+                    angezeigt. <strong>Leer lassen heisst: unverändert.</strong>
+                {% else %}
+                    Wird verschlüsselt gespeichert und nie im Klartext angezeigt.
+                {% endif %}
+            </p>
+        </div>
+
+        <details class="border-t border-slate-100 pt-4">
+            <summary class="text-xs font-semibold text-slate-600 cursor-pointer">
+                Nur für OAuth2 (Microsoft 365)</summary>
+            <div class="space-y-3 mt-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">
+                        Verzeichnis-ID (Tenant)</label>
+                    <input type="text" name="mandant_id"
+                           value="{% if eingabe %}{{ eingabe.mandant_id }}{% elif postfach %}{{ postfach.mandant_id }}{% endif %}"
+                           class="border border-slate-300 rounded-lg px-3 py-2.5 text-sm w-full">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">
+                        Anwendungs-ID (Client)</label>
+                    <input type="text" name="anwendung_id"
+                           value="{% if eingabe %}{{ eingabe.anwendung_id }}{% elif postfach %}{{ postfach.anwendung_id }}{% endif %}"
+                           class="border border-slate-300 rounded-lg px-3 py-2.5 text-sm w-full">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">
+                        Refresh-Token</label>
+                    <input type="password" name="refresh_token" autocomplete="new-password"
+                           placeholder="{% if postfach and postfach.refresh_token_geheim %}gespeichert — leer lassen, um es nicht zu ändern{% endif %}"
+                           class="border border-slate-300 rounded-lg px-3 py-2.5 text-sm w-full">
+                </div>
+                <p class="text-xs text-slate-500">
+                    Der geführte Zustimmungsablauf für Microsoft 365 ist noch nicht
+                    freigeschaltet. Bitte melden Sie sich bei uns.
+                </p>
+            </div>
+        </details>
+
+        <label class="flex items-center gap-2 text-sm text-slate-700 border-t border-slate-100 pt-4">
+            <input type="checkbox" name="aktiv" value="an"
+                   {% if eingabe %}{% if eingabe.aktiv %}checked{% endif %}
+                   {% elif not postfach or postfach.aktiv %}checked{% endif %}
+                   class="rounded border-slate-300">
+            Eingang aktiv — Mails aus diesem Postfach abholen
+        </label>
+
+        <div class="flex gap-3 pt-2">
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold
+                           px-5 py-2.5 rounded-lg shadow-sm">Speichern</button>
+            <a href="{% url 'postfach_liste' %}"
+               class="bg-white border border-slate-300 text-slate-700 text-sm font-semibold
+                      px-5 py-2.5 rounded-lg">Abbrechen</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
