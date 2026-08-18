@@ -26,11 +26,18 @@
 #
 #     python postgres_anlegen.py --host <adresse> --port <port>
 #
-# Vorher gesetzt sein müssen (in DIESER Konsole):
+# Vorher gesetzt sein müssen — als `export` IN DIESER KONSOLE, nicht in der
+# `.env`. Das Skript liest in Schritt 4 die Shell-Variable, und die Schritte
+# 0–3 schalten mit `env -u DB_ENGINE` bewusst auf SQLite zurück; aus der `.env`
+# käme `DB_ENGINE` dabei wieder herein (siehe Hinweis bei Schritt 4).
 #     export DB_ENGINE=postgres
 #     export DB_NAME=swissimmo DB_USER=super DB_PASSWORD=...
 #     export DB_HOST=swissimmo-5420.postgres.pythonanywhere-services.com
 #     export DB_PORT=15420
+#
+# Für den laufenden BETRIEB gilt das Gegenteil: dort gehören die Werte in die
+# `.env` (siehe Schlusshinweis unten). Die beiden Wege widersprechen sich
+# nicht — der Umzug braucht die Umschaltbarkeit, der Betrieb die eine Quelle.
 #
 # Das Skript ändert an der SQLite-Datei NICHTS. Geht etwas schief, ist der
 # Rückweg: Umgebungsvariablen entfernen, Web-App neu laden — die alte Datenbank
@@ -112,9 +119,24 @@ fi
 echo "  $(du -h "$STAND/daten.json" | cut -f1)"
 
 # --- 4. Zieldatenbank prüfen und aufbauen ----------------------------------
+# Geprüft wird die SHELL-Variable, nicht das, was Django am Ende nutzt. Das ist
+# Absicht: Die Schritte 0–3 oben schalten mit `env -u DB_ENGINE` auf SQLite
+# zurück, und diese Umschaltung wirkt nur auf die Shell-Umgebung. Stünde
+# `DB_ENGINE=postgres` in der `.env`, holte `load_dotenv` es trotz `env -u`
+# wieder herein — dumpdata liefe dann gegen die ZIELdatenbank statt gegen den
+# Bestand. Solange der Umzug läuft, gehören die Werte deshalb in die Konsole.
 if [ "${DB_ENGINE:-}" != "postgres" ] && [ "${DB_ENGINE:-}" != "postgresql" ]; then
     echo "✗ DB_ENGINE steht nicht auf postgres — die Variablen fehlen in DIESER Konsole."
     echo "  Der Umzug bricht hier ab, BEVOR etwas geschrieben wird."
+    echo "  Hinweis: Eine .env genügt hier NICHT (Grund siehe Kommentar im Skript)."
+    exit 1
+fi
+# Gegenprobe zur Shell-Variablen: Baut Django daraus wirklich eine
+# PostgreSQL-Verbindung? Eine vertippte Variable (DB_HOSTT) fiele sonst erst
+# beim `migrate` auf — nach Sicherung und dumpdata.
+if ! "$PY" -c "import os,django;os.environ.setdefault('DJANGO_SETTINGS_MODULE','swiss_immo.settings');django.setup();from django.conf import settings as s;import sys;sys.exit(0 if 'postgresql' in s.DATABASES['default']['ENGINE'] else 1)"; then
+    echo "✗ Django baut trotz gesetzter Variablen KEINE PostgreSQL-Verbindung."
+    echo "  Vermutlich ein Tippfehler in einem der DB_-Namen. Nichts geschrieben."
     exit 1
 fi
 echo "→ Ziel: ${DB_ENGINE} auf ${DB_HOST:-?}:${DB_PORT:-?}/${DB_NAME:-?}"
@@ -165,11 +187,14 @@ fi
 echo
 echo "✓ Umzug abgeschlossen. Was jetzt noch fehlt:"
 echo
-echo "  1. Umgebungsvariablen an ALLEN DREI Stellen setzen:"
-echo "     · Web  → Environment variables   (die Web-App)"
-echo "     · den Always-on-Task neu starten (er erbt sie NICHT vom Web-Tab —"
-echo "       sie gehören in ~/.bashrc oder in die Task-Zeile)"
-echo "     · diese Konsole (hier stehen sie schon)"
+echo "  1. Die sechs DB_-Zeilen in die .env im Projektordner eintragen."
+echo "     settings.py lädt sie über load_dotenv, und ALLE drei Prozesse —"
+echo "     Web-App, Always-on-Task, Konsole — gehen durch settings.py."
+echo "     Eine Datei genügt also; die .env steht in .gitignore."
+echo
+echo "     Danach: Web-App neu laden (der Prozess liest die Datei nur beim"
+echo "     Start). Der Always-on-Task braucht KEINEN Neustart — deploy.sh"
+echo "     startet je Durchgang ein frisches manage.py, das neu liest."
 echo
 echo "  2. In .datenbank-erwartet 'engine = sqlite' auf 'engine = postgres'"
 echo "     aendern und pushen. Ab dann bricht deploy.sh ab, statt still die"

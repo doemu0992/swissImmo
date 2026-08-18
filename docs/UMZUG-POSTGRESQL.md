@@ -29,18 +29,36 @@ Umzugsproblem. `umzug_postgres.sh` behebt das in Schritt 6
 (`manage.py sequenzen_richten`) und bricht ab, wenn der Schritt scheitert.
 
 **2. Die drei Umgebungen.** Auf PythonAnywhere hat **jeder** Prozess eigene
-Umgebungsvariablen:
+Umgebungsvariablen: Web‑App, Always‑on‑Task und Bash‑Konsole. Setzt man sie nur
+an einer Stelle, läuft die Website auf PostgreSQL, während der Deploy‑Task
+weiter die SQLite‑Datei migriert. Beide Seiten funktionieren für sich, der
+Deploy meldet Erfolg — und die Website bekommt die Migration nie zu sehen.
+Dagegen steht `.datenbank-erwartet` (siehe unten).
 
-| Prozess | Wo die Variablen stehen |
+**Für dieses Projekt löst sich das über die `.env`.** `settings.py` lädt beim
+Start `BASE_DIR/.env` (`load_dotenv`), und alle drei Prozesse gehen durch
+`settings.py`. Eine Datei genügt also; sie steht in `.gitignore`, das Passwort
+kommt damit nicht ins Repo.
+
+| Prozess | Nötig nach einer Änderung der `.env` |
 |---|---|
-| Web‑App | Web‑Tab → *Environment variables* |
-| Always‑on‑Task (Deploy) | erbt sie **nicht** vom Web‑Tab — sie gehören in `~/.bashrc` oder in die Task‑Zeile; **Neustart nötig** |
-| Bash‑Konsole | `export` in der jeweiligen Sitzung, oder `~/.bashrc` |
+| Web‑App | **Reload** — der Prozess liest die Datei nur beim Start |
+| Always‑on‑Task (Deploy) | **nichts** — `deploy.sh` startet je Durchgang ein frisches `manage.py`, das neu liest |
+| Bash‑Konsole | nichts — jeder `manage.py`‑Aufruf ist ein neuer Prozess |
 
-Setzt man sie nur im Web‑Tab, läuft die Website auf PostgreSQL, während der
-Deploy‑Task weiter die SQLite‑Datei migriert. Beide Seiten funktionieren für
-sich, der Deploy meldet Erfolg — und die Website bekommt die Migration nie zu
-sehen. Dagegen steht `.datenbank-erwartet` (siehe unten).
+> Frühere Fassungen dieses Dokuments nannten hier den Web‑Tab, `~/.bashrc` und
+> die Task‑Zeile und verlangten einen Neustart des Tasks. Das ist der allgemeine
+> PythonAnywhere‑Weg und für dieses Projekt unnötig umständlich — korrigiert am
+> 18.08.2026, nachdem die Suche nach dem nicht existierenden Feld
+> «Environment variables» im Web‑Tab Zeit gekostet hat.
+
+**Ausnahme: der Umzug selbst.** Während `umzug_postgres.sh` läuft, gehören die
+Werte als `export` in die Konsole und **nicht** in die `.env`. Grund: Die
+Schritte 0–3 lesen den Bestand noch aus SQLite und schalten dafür mit
+`env -u DB_ENGINE` zurück — das wirkt nur auf die Shell‑Umgebung. Stünde
+`DB_ENGINE=postgres` in der `.env`, holte `load_dotenv` es trotzdem wieder
+herein, und `dumpdata` liefe gegen die noch leere Zieldatenbank. In die `.env`
+kommen die Werte also erst **nach** dem geglückten Lauf.
 
 ## Vorbereitung — was von Hand geschieht
 
@@ -193,8 +211,10 @@ jedem Schritt derselbe: Variablen entfernen, Web‑App neu laden.
 
 ## Nach dem Umzug
 
-**1. Variablen an allen drei Stellen setzen** (Tabelle oben). Den Always‑on‑
-Task danach **neu starten** — er übernimmt neue Variablen nicht im Lauf.
+**1. Die sechs `DB_`‑Zeilen in die `.env`** im Projektordner eintragen — ohne
+`export`, ohne Anführungszeichen (das ist eine dotenv‑Datei, keine Shell; ein
+`#` im Passwort leitet dort einen Kommentar ein). Danach die **Web‑App neu
+laden**; der Always‑on‑Task braucht keinen Neustart (Tabelle oben).
 
 **2. `.datenbank-erwartet` umstellen** und pushen:
 
@@ -206,9 +226,9 @@ name   = swissimmo
 Ab dann prüft `deploy.sh` vor jedem `migrate`, ob er auf der richtigen
 Datenbank steht, und bricht sonst ab, statt still die falsche zu migrieren.
 
-**Reihenfolge beachten:** erst die Variablen setzen und den Task neu starten,
-dann pushen. Andersherum schlägt der erste Deploy fehl. Das ist richtig so —
-aber es macht unnötig Lärm, weil der Task alle 30 s erneut anläuft.
+**Reihenfolge beachten:** erst die `.env` setzen, dann pushen. Andersherum
+schlägt der erste Deploy fehl. Das ist richtig so — aber es macht unnötig Lärm,
+weil der Task alle 30 s erneut anläuft.
 
 **3. Prüfen:**
 
@@ -224,9 +244,11 @@ aufrufen.
 Die SQLite‑Datei liegt unberührt im Projektordner **und** als Kopie unter
 `~/umzug-<zeitstempel>/db.sqlite3`. Rückweg:
 
-1. `DB_ENGINE` an allen drei Stellen entfernen
+1. `DB_ENGINE` aus der `.env` entfernen (die übrigen `DB_`‑Zeilen dürfen
+   stehen bleiben — ohne `DB_ENGINE` betritt `settings.py` den
+   PostgreSQL‑Zweig nicht)
 2. `.datenbank-erwartet` zurück auf `engine = sqlite`, pushen
-3. Always‑on‑Task neu starten, Web‑App neu laden
+3. Web‑App neu laden
 
 Alles läuft weiter wie vorher. Es geht dabei nur verloren, was **nach** dem
 Umzug in PostgreSQL geschrieben wurde — deshalb den Betrieb erst freigeben,
