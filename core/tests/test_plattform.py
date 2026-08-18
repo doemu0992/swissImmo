@@ -316,6 +316,34 @@ class DatenResetTests(TestCase):
                 organisation=a.organisation).count(), 0,
             'Der eigene Bestand wurde nicht gelöscht — der Reset tut nichts.')
 
+    def test_reset_laesst_das_betreiberlog_stehen(self):
+        """Sicherheitsereignisse sind Betriebsdaten, keine Mandantendaten.
+
+        Im Betreiberlog stehen die Anmeldeversuche, die KEINER Verwaltung
+        gehören — Versuche mit Benutzernamen, die es gar nicht gibt. Sie
+        gehören dem Betreiber der Installation. «Meine Daten zurücksetzen»
+        einer Verwaltung darf sie nicht löschen; sonst wäre der Reset ein
+        bequemer Weg, die eigenen Spuren zu verwischen.
+
+        Aufgefallen bei der Gegenprobe zum Entscheid vom 18.08.2026: Die
+        Sicherung war gebaut (Eintrag in `KEEP`), aber kein Test hielt sie
+        fest — sie auszuhebeln machte nichts rot.
+        """
+        from core.models import SicherheitsEreignis
+
+        SicherheitsEreignis.objects.create(
+            aktion='Anmeldung fehlgeschlagen', objekt='angreifer',
+            details='Test', ip_adresse='198.51.100.7')
+        _basis_objekte()
+
+        c = Client()
+        c.force_login(_team_user(rolle='Verwaltung'))
+        c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
+
+        self.assertTrue(
+            SicherheitsEreignis.objects.filter(objekt='angreifer').exists(),
+            'Der Datenreset hat das Betreiberlog gelöscht.')
+
     def test_reset_loescht_alles(self):
         from finance.models import Buchung
         from portfolio.models import Ausstattung

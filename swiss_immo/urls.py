@@ -143,6 +143,7 @@ from core.views.pdf import generate_pdf_view, generate_dokument_view, generate_v
 
 # 5. DocuSeal
 from core.views.docuseal import send_via_docuseal, docuseal_webhook
+from core.views.webhooks import brevo_inbound_webhook
 
 # 6. Abrechnung, QR, Finanzen & Mahnungen
 from core.views.billing import abrechnung_pdf_view, qr_rechnung_pdf
@@ -482,6 +483,14 @@ urlpatterns = [
     # --- DOCUSEAL ---
     path('vertrag/<int:vertrag_id>/senden/', send_via_docuseal, name='send_docuseal'),
     path('docuseal/webhook/', docuseal_webhook, name='docuseal_webhook'),
+    # Eingehende Mail-Antworten auf Schadenmeldungen. Die View gab es seit
+    # Langem, sie war aber in KEINER URL-Zeile eingetragen — Antworten
+    # landeten nirgends (Audit 18.08.2026). Scharfgeschaltet am 18.08.2026.
+    #
+    # Ohne gesetztes BREVO_WEBHOOK_SECRET weist die View JEDEN Aufruf mit
+    # 403 ab — sie ist damit auch offen erreichbar nicht missbrauchbar.
+    path('webhooks/brevo/inbound/', brevo_inbound_webhook,
+         name='brevo_inbound_webhook'),
 
     # --- QR CODE SYSTEM (Aushang) ---
     path('report/<int:liegenschaft_id>/', public_ticket_view, name='public_report'),

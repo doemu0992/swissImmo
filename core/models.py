@@ -6,6 +6,52 @@ from core.tenancy import AlleOrganisationenManager, TenantManager
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
 
 
+class SicherheitsEreignis(models.Model):
+    """Sicherheitsereignisse OHNE bestimmbare Verwaltung — das Betreiberlog.
+
+    WARUM ES DIESE TABELLE GIBT (Entscheid 18.08.2026, Audit Lü2)
+
+    `AktivitaetsLog` verlangt eine Organisation, und das ist richtig: Jeder
+    Eintrag dort gehört einer Verwaltung und erscheint in deren Logbuch. Nur
+    gibt es eine Sorte Ereignis, die keiner gehört — der Anmeldeversuch mit
+    einem Benutzernamen, den es gar nicht gibt. Er trifft die INSTALLATION,
+    nicht einen Mandanten.
+
+    Vor dieser Tabelle fiel er durch: `log_aktion` fand keine Organisation,
+    das Schreiben warf, und die Ausnahme wurde geschluckt. Gemessen im Audit:
+    546 → 547 Einträge vor der Etappe, 546 → 546 danach. Brute-Force-Versuche
+    hinterliessen KEINE Spur, obwohl die Kategorie `sicherheit` als
+    revisionsrelevant gilt.
+
+    DIE ALTERNATIVE, UND WARUM SIE VERWORFEN WURDE. Man hätte `organisation`
+    an `AktivitaetsLog` nullbar machen können. Dann wäre aber ausgerechnet in
+    der revisionsrelevanten Tabelle wieder unklar, ob NULL «gehört niemandem»
+    oder «wurde vergessen» heisst — genau die Zweideutigkeit, die Etappe 5 aus
+    dem ganzen Datenmodell entfernt hat. Eine eigene Tabelle sagt es im Namen.
+
+    SIE TRÄGT BEWUSST KEINEN ORGANISATIONSBEZUG und steht deshalb in
+    `test_isolation.OHNE_MANDANTENFILTER` — als dritter und einziger neuer
+    Eintrag seit dem Bestehen dieser Liste. Der Datenreset fasst sie nicht an
+    (Eintrag in `KEEP`): Sie sind Betriebsdaten, nicht Mandantendaten.
+
+    Gelesen wird sie über `manage.py sicherheitslog`.
+    """
+    zeitpunkt = models.DateTimeField("Zeitpunkt", auto_now_add=True, db_index=True)
+    aktion = models.CharField("Aktion", max_length=100)
+    objekt = models.CharField("Betroffen", max_length=200, blank=True, default='')
+    details = models.TextField("Details", blank=True, default='')
+    ip_adresse = models.GenericIPAddressField("IP-Adresse", null=True, blank=True,
+                                              db_index=True)
+
+    class Meta:
+        verbose_name = "Sicherheitsereignis"
+        verbose_name_plural = "Sicherheitsereignisse"
+        ordering = ['-zeitpunkt']
+
+    def __str__(self):
+        return f"{self.zeitpunkt:%d.%m.%Y %H:%M} {self.aktion} — {self.objekt}"
+
+
 class AktivitaetsLog(models.Model):
     """
     Audit-Trail: Wer hat wann was getan (Buchungsläufe, Löschungen, Versand …).

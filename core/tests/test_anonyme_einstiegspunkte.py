@@ -127,43 +127,54 @@ class DocusealWebhookTests(OhneKontext):
 class BrevoWebhookTests(OhneKontext):
     """Eine Mail-Antwort auf ein Ticket geht nicht verloren.
 
-    NEBENBEFUND, hier festgehalten: `brevo_inbound_webhook` ist in KEINER
-    URL-Zeile eingetragen (geprüft am 18.08.2026). Die View ist damit von
-    aussen nicht erreichbar — eingehende Mail-Antworten landen heute nirgends,
-    unabhängig von der Mandantentrennung. Der Testsatz ruft sie deshalb direkt
-    auf: Er sichert das Verhalten für den Tag, an dem die Route eingetragen
-    wird, statt eine Erreichbarkeit zu behaupten, die es nicht gibt.
+    ZWEI DEFEKTE ÜBEREINANDER, gefunden am 18.08.2026. Der erste: `objects`
+    statt `alle_organisationen` — der Webhook warf ohne Mandantenkontext. Der
+    zweite fiel erst beim Test dafür auf: Die View war in **keiner** URL-Zeile
+    eingetragen. Sie war von aussen gar nicht erreichbar, eingehende Antworten
+    landeten also ohnehin nirgends.
+
+    Beides behoben, die Route ist seit dem 18.08.2026 scharfgeschaltet. Dieser
+    Testsatz ruft sie deshalb über HTTP auf, nicht mehr direkt — vorher stand
+    hier ein Wächter, der festhielt, dass es die Route NICHT gibt.
     """
 
-    def test_die_view_ist_nirgends_eingetragen(self):
-        # Damit der Befund nicht wieder verloren geht: Wird die Route
-        # nachgetragen, wird dieser Test rot und verlangt eine Entscheidung.
-        from django.urls import get_resolver
-        alle = str(get_resolver().url_patterns)
-        self.assertNotIn('brevo', alle.lower(),
-                         'Die Brevo-Route ist jetzt eingetragen — dann gehört '
-                         'der Test oben auf einen echten HTTP-Aufruf umgestellt.')
+    def _senden(self, betreff, text='Handwerker kommt Dienstag.', secret='geheim',
+                mitgeben='geheim'):
+        kopf = {'HTTP_X_WEBHOOK_SECRET': mitgeben} if mitgeben else {}
+        with self.settings(BREVO_WEBHOOK_SECRET=secret):
+            return self.client.post(
+                reverse('brevo_inbound_webhook'),
+                json.dumps({'Subject': betreff, 'RawTextBody': text,
+                            'From': 'mieter@example.ch'}),
+                content_type='application/json', **kopf)
 
     def test_antwort_landet_am_ticket_der_richtigen_verwaltung(self):
-        from django.test import RequestFactory
-
-        from core.views.webhooks import brevo_inbound_webhook
         from tickets.models import TicketNachricht
 
-        anfrage = RequestFactory().post(
-            '/x/', json.dumps({'Subject': f'Re: Schaden #{self.b.schaden.pk}',
-                               'RawTextBody': 'Handwerker kommt Dienstag.',
-                               'From': 'mieter@example.ch'}),
-            content_type='application/json')
-        anfrage.META['HTTP_X_WEBHOOK_SECRET'] = 'geheim'
-        with self.settings(BREVO_WEBHOOK_SECRET='geheim'):
-            antwort = brevo_inbound_webhook(anfrage)
+        antwort = self._senden(f'Re: Schaden #{self.b.schaden.pk}')
         self.assertEqual(antwort.status_code, 200, antwort.content[:200])
 
         nachricht = TicketNachricht.alle_organisationen.filter(
             nachricht__contains='Dienstag').first()
         self.assertIsNotNone(nachricht, 'Die Mail-Antwort wurde nicht gespeichert.')
         self.assertEqual(nachricht.ticket_id, self.b.schaden.pk)
+        self.assertEqual(nachricht.organisation_id, self.b.organisation.pk,
+                         'Die Nachricht landete in der falschen Verwaltung.')
+
+    def test_ohne_secret_wird_abgewiesen(self):
+        # Die Route ist jetzt öffentlich erreichbar — ohne diese Prüfung könnte
+        # jeder Nachrichten in fremde Ticketverläufe schreiben.
+        self.assertEqual(self._senden('Re: Schaden #1', mitgeben=None).status_code, 403)
+
+    def test_mit_falschem_secret_wird_abgewiesen(self):
+        self.assertEqual(
+            self._senden('Re: Schaden #1', mitgeben='falsch').status_code, 403)
+
+    def test_ohne_konfiguriertes_secret_wird_abgewiesen(self):
+        # Fail-closed: Ist auf dem Server kein Secret gesetzt, ist der Endpunkt
+        # zu — nicht offen. Sonst wäre eine vergessene Variable eine offene Tür.
+        self.assertEqual(
+            self._senden('Re: Schaden #1', secret=None, mitgeben='egal').status_code, 403)
 
 
 class IcalFeedTests(OhneKontext):

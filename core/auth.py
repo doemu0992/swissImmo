@@ -402,7 +402,23 @@ def log_aktion(request, aktion, objekt="", details="", ziel=None, kategorie=None
         # eine Spur ausserhalb der Datenbank ist unendlich viel mehr als
         # keine. Alles Uebrige bleibt auf `debug`.
         if (kategorie or '') == 'sicherheit':
-            logger.warning('Sicherheits-Protokolleintrag nicht geschrieben: %s / %s (%s)',
-                           aktion, objekt, details, exc_info=True)
+            # Kein Mandant bestimmbar — dann gehoert das Ereignis ins
+            # Betreiberlog. Ein Anmeldeversuch mit einem Benutzernamen, den es
+            # gar nicht gibt, trifft die INSTALLATION, nicht eine Verwaltung.
+            # Ohne diese Zeilen verschwand er spurlos (Audit Lueecke 2).
+            try:
+                from core.models import SicherheitsEreignis
+                SicherheitsEreignis.objects.create(
+                    aktion=str(aktion)[:100],
+                    objekt=str(objekt)[:200],
+                    details=str(details)[:2000],
+                    ip_adresse=ip or (client_ip(request) if request else None),
+                )
+            except Exception:
+                # Auch das Betreiberlog darf die eigentliche Aktion nicht
+                # abbrechen — aber jetzt ist wirklich Schluss, und die Spur
+                # geht ins Server-Log.
+                logger.warning('Sicherheitsereignis nirgends geschrieben: %s / %s (%s)',
+                               aktion, objekt, details, exc_info=True)
         else:
             logger.debug("Fehler bewusst übergangen", exc_info=True)

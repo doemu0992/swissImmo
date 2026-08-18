@@ -149,7 +149,11 @@ def fw_datenreset(request):
     KEEP = {'auth_user', 'auth_group', 'auth_user_groups', 'auth_group_permissions',
             'auth_permission', 'auth_user_user_permissions', 'django_admin_log',
             'django_content_type', 'django_session', 'django_migrations',
-            'crm_mitgliedschaft', 'core_verwaltung'}
+            'crm_mitgliedschaft', 'core_verwaltung',
+            # Das Betreiberlog (Anmeldeversuche ohne bestimmbare Verwaltung)
+            # sind Betriebsdaten der Installation, nicht Daten dieser
+            # Verwaltung. «Meine Daten zuruecksetzen» loescht sie nicht.
+            'core_sicherheitsereignis'}
     # Nur Tabellen, die es wirklich gibt. Ein `DELETE FROM` auf eine fehlende
     # Tabelle bricht den GANZEN Reset ab — der Nutzer sieht einen Serverfehler
     # und weiss nicht, ob halb gelöscht wurde. Ein Modell ohne Tabelle ist

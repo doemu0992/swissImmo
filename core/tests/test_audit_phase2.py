@@ -137,6 +137,56 @@ class FehlversuchProtokollTests(ZweiBestaende):
         self.assertEqual(eintrag.organisation_id, self.b.organisation.pk,
                          'Der Eintrag landete in der falschen Verwaltung.')
 
+    def test_fehlversuch_mit_unbekanntem_namen_geht_ins_betreiberlog(self):
+        """Der Versuch, der KEINER Verwaltung gehört — Entscheid 18.08.2026.
+
+        Ein Anmeldeversuch mit einem Benutzernamen, den es gar nicht gibt,
+        trifft die Installation, nicht einen Mandanten. Er kann also nicht in
+        `AktivitaetsLog` (das eine Organisation verlangt) und darf trotzdem
+        nicht verschwinden — genau das war der Auditbefund.
+
+        Gewählt wurde eine eigene Tabelle statt einer nullbaren Spalte: In der
+        revisionsrelevanten Tabelle wäre sonst wieder unklar, ob NULL «gehört
+        niemandem» oder «wurde vergessen» heisst.
+        """
+        from core.models import AktivitaetsLog, SicherheitsEreignis
+
+        vorher_log = AktivitaetsLog.alle_organisationen.count()
+        vorher_sicherheit = SicherheitsEreignis.objects.count()
+
+        self.client.post(reverse('login'),
+                         {'username': 'gibtesnicht', 'password': 'egal'})
+
+        self.assertEqual(AktivitaetsLog.alle_organisationen.count(), vorher_log,
+                         'Ein Versuch ohne bestimmbaren Mandanten landete im '
+                         'Logbuch einer Verwaltung.')
+        self.assertEqual(SicherheitsEreignis.objects.count(), vorher_sicherheit + 1,
+                         'Der Versuch hinterlässt keine Spur.')
+
+        ereignis = SicherheitsEreignis.objects.first()
+        self.assertEqual(ereignis.aktion, 'Anmeldung fehlgeschlagen')
+        self.assertEqual(ereignis.objekt, 'gibtesnicht')
+
+    def test_das_betreiberlog_traegt_keinen_organisationsbezug(self):
+        # Der Grund, warum es diese Tabelle überhaupt gibt. Bekäme sie eine
+        # Spalte `organisation`, wäre sie wieder das, was sie nicht sein soll.
+        from core.models import SicherheitsEreignis
+
+        felder = {f.name for f in SicherheitsEreignis._meta.get_fields()}
+        self.assertNotIn('organisation', felder)
+
+    def test_es_ist_ueber_den_befehl_lesbar(self):
+        # Ein Log, das niemand lesen kann, ist nur wenig besser als keines.
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        self.client.post(reverse('login'),
+                         {'username': 'angreifer', 'password': 'egal'})
+        raus = StringIO()
+        call_command('sicherheitslog', stdout=raus)
+        self.assertIn('angreifer', raus.getvalue())
+
 
 class GeteiltesKontoPortalTests(ZweiBestaende):
     """Portalzugänge reissen fremde Konten nicht mehr mit.

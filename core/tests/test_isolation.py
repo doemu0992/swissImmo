@@ -129,6 +129,19 @@ OHNE_MANDANTENFILTER = {
     # in Kauf genommen und liegt auf der Ansichtsebene (die fw-Views zeigen
     # nur die eigene); auf der Modellebene ginge es nicht anders.
     'crm.Organisation': 'ist selbst der Mandant — ein Selbstbezug filtert nichts',
+
+    # Das Betreiberlog. Es nimmt genau die Ereignisse auf, die KEINER
+    # Verwaltung gehören: den Anmeldeversuch mit einem Benutzernamen, den es
+    # gar nicht gibt. Der trifft die Installation, nicht einen Mandanten.
+    #
+    # DRITTER EINTRAG SEIT BESTEHEN DIESER LISTE, und er ist eine
+    # Entscheidung, keine Reparatur (Entscheid 18.08.2026): Die Alternative
+    # wäre gewesen, `AktivitaetsLog.organisation` nullbar zu machen. Dann
+    # wäre aber ausgerechnet in der revisionsrelevanten Tabelle wieder
+    # unklar, ob NULL «gehört niemandem» oder «wurde vergessen» heisst —
+    # genau die Zweideutigkeit, die Etappe 5 aus dem Datenmodell entfernt
+    # hat. Eine eigene Tabelle sagt es im Namen.
+    'core.SicherheitsEreignis': 'Betreiberlog — Ereignisse ohne bestimmbaren Mandanten',
 }
 
 
@@ -900,7 +913,9 @@ class AusnahmenSindBegruendetTests(TestCase):
     """
 
     def test_es_sind_genau_diese_zwei(self):
-        self.assertEqual(sorted(OHNE_MANDANTENFILTER), ['benutzer.Benutzer', 'crm.Organisation'],
+        self.assertEqual(sorted(OHNE_MANDANTENFILTER),
+                         ['benutzer.Benutzer', 'core.SicherheitsEreignis',
+                          'crm.Organisation'],
                          'Die Ausnahmeliste hat sich geändert. Das ist eine Entscheidung, '
                          'keine Reparatur: Grund in OHNE_MANDANTENFILTER schreiben und '
                          'diesen Test bewusst nachziehen.')
