@@ -71,6 +71,9 @@ from core.views.application import public_application_view, public_datenschutz_v
 from core.views.dashboard_view import update_market_data_view
 
 # 2b. Eigentümer-Portal & Login-Weiche
+from core.views.zweifaktor import (zweifaktor_login, zweifaktor_bestaetigen,
+                                  zweifaktor_uebersicht, zweifaktor_einrichten,
+                                  zweifaktor_codes_neu, zweifaktor_aus)
 from core.views.portal import (portal_view, nach_login_view, portal_dokument_download, portal_report_pdf, portal_freigabe,
                                 portal_steuerauszug_pdf, portal_kontokorrent_pdf,
                                 mieter_portal_view, mieter_dokument_download, mieter_schaden_melden, mieter_rechnung_qr,
@@ -162,7 +165,10 @@ urlpatterns = [
     path('healthz/', healthz_view, name='healthz'),
 
     # --- EIGENER SAAS LOGIN ---
-    path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
+    # Eigene Anmeldung statt `auth_views.LoginView`: Sie meldet erst an,
+    # wenn ein ausstehender zweiter Faktor bestaetigt ist. Ein Faktor, der
+    # NACH `login()` abgefragt wird, ist keiner — siehe core/views/zweifaktor.py.
+    path('login/', zweifaktor_login, name='login'),
     # Passwort vergessen (Self-Service für Mieter/Eigentümer-Logins): Djangos
     # eingebaute Reset-Kette mit eigenen, schlanken Templates.
     path('passwort/vergessen/', auth_views.PasswordResetView.as_view(
@@ -176,9 +182,16 @@ urlpatterns = [
     path('passwort/fertig/', auth_views.PasswordResetCompleteView.as_view(
         template_name='core/passwort_reset_complete.html'), name='password_reset_complete'),
     # Eigene Login-Seite für Mieter- und Eigentümer-Portal (gleiche Auth, eigenes Design)
-    path('portal/login/', auth_views.LoginView.as_view(template_name='core/portal_login.html'), name='portal_login'),
+    path('portal/login/',
+         lambda r: zweifaktor_login(r, template_name='core/portal_login.html'),
+         name='portal_login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('nach-login/', nach_login_view, name='nach_login'),
+    path('anmeldung/bestaetigen/', zweifaktor_bestaetigen, name='zweifaktor_bestaetigen'),
+    path('konto/zwei-faktor/', zweifaktor_uebersicht, name='zweifaktor_uebersicht'),
+    path('konto/zwei-faktor/einrichten/', zweifaktor_einrichten, name='zweifaktor_einrichten'),
+    path('konto/zwei-faktor/codes/', zweifaktor_codes_neu, name='zweifaktor_codes_neu'),
+    path('konto/zwei-faktor/aus/', zweifaktor_aus, name='zweifaktor_aus'),
 
     # --- FAIRWALTER-REBUILD (neue Oberfläche, wächst etappenweise) ---
     path('neu/', fw_dashboard, name='fw_dashboard'),

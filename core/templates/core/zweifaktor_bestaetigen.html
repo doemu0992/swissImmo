@@ -1,0 +1,70 @@
+{% comment %}
+Der zweite Schritt der Anmeldung. Bewusst eine eigenständige, schlanke Seite
+ohne Navigation: Der Benutzer ist an dieser Stelle NICHT angemeldet, es gibt
+also nichts, wohin eine Navigation führen dürfte.
+{% endcomment %}<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bestätigung | swissImmo</title>
+    <style>
+        :root { --bg:#f6f7fb; --surface:#fff; --ink:#171a2b; --muted:#5b6072;
+                --line:#e6e7f0; --brand:#4f46e5; --crit:#dc2626; --crit-soft:#fdeaea; }
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) { --bg:#0e1020; --surface:#171a2e; --ink:#e7e8f2;
+                --muted:#9aa0b8; --line:#262a44; --brand:#6366f1; --crit:#f87171; --crit-soft:#2b1618; }
+        }
+        * { box-sizing:border-box; margin:0; }
+        body { background:var(--bg); color:var(--ink); min-height:100dvh; display:grid;
+               place-items:center; padding:24px;
+               font-family:'Inter',-apple-system,"Segoe UI",Roboto,sans-serif; }
+        .card { background:var(--surface); border:1px solid var(--line); border-radius:18px;
+                padding:32px; width:100%; max-width:420px;
+                box-shadow:0 10px 34px rgba(23,26,43,.10); }
+        h1 { font-size:20px; font-weight:800; margin-bottom:8px; }
+        p  { color:var(--muted); font-size:14px; line-height:1.55; margin-bottom:20px; }
+        label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; }
+        input { width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:12px;
+                background:var(--bg); color:var(--ink); font-size:20px; letter-spacing:.32em;
+                text-align:center; font-variant-numeric:tabular-nums; }
+        button { width:100%; margin-top:16px; padding:12px; border:0; border-radius:12px;
+                 background:var(--brand); color:#fff; font-weight:700; font-size:14px;
+                 cursor:pointer; }
+        .alert { background:var(--crit-soft); color:var(--crit); border-radius:12px;
+                 padding:10px 14px; font-size:13px; margin-bottom:16px; }
+        .fuss { margin-top:20px; font-size:12px; color:var(--muted); line-height:1.6; }
+        a { color:var(--brand); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Bestätigung</h1>
+
+        {% if abgebrochen %}
+            <div class="alert">{{ fehler }}</div>
+            <p>Aus Sicherheitsgründen wurde der Vorgang abgebrochen.</p>
+            <p><a href="{% url 'login' %}">Zurück zur Anmeldung</a></p>
+        {% else %}
+            <p>Öffnen Sie Ihre Authenticator-App und geben Sie den angezeigten
+               sechsstelligen Code ein. Er wechselt alle 30 Sekunden.</p>
+
+            {% if fehler %}<div class="alert">{{ fehler }}</div>{% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <label for="id_code">Code</label>
+                <input id="id_code" name="code" inputmode="numeric" autocomplete="one-time-code"
+                       autofocus required maxlength="14" placeholder="000000">
+                <button type="submit">Bestätigen</button>
+            </form>
+
+            <p class="fuss">
+                Telefon nicht zur Hand? Geben Sie stattdessen einen Ihrer
+                <strong>Notfallcodes</strong> ein — jeder gilt genau einmal.<br>
+                <a href="{% url 'login' %}">Abbrechen und neu anmelden</a>
+            </p>
+        {% endif %}
+    </div>
+</body>
+</html>

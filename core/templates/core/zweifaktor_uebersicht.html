@@ -1,0 +1,83 @@
+{% extends 'fw/base.html' %}
+{% block title %}Zwei-Faktor-Anmeldung — swissImmo{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>Zwei-Faktor-Anmeldung</h1>
+        <p>Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen
+           Code aus Ihrer Authenticator-App.</p>
+    </div>
+</div>
+
+<div class="max-w-2xl space-y-5">
+    {% if messages %}{% for m in messages %}
+    <div class="rounded-xl p-4 text-sm border
+                {% if m.tags == 'error' %}bg-red-50 border-red-200 text-red-700
+                {% elif m.tags == 'warning' %}bg-amber-50 border-amber-200 text-amber-900
+                {% else %}bg-emerald-50 border-emerald-200 text-emerald-800{% endif %}">{{ m }}</div>
+    {% endfor %}{% endif %}
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        {% if faktor %}
+            <div class="flex items-center gap-2 mb-1">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                <h3 class="font-bold text-slate-800 text-sm">Aktiv</h3>
+            </div>
+            <p class="text-xs text-slate-500">
+                Eingerichtet am {{ faktor.bestaetigt_am|date:"d.m.Y" }}.
+                {% if faktor.letzte_verwendung %}Zuletzt verwendet am
+                {{ faktor.letzte_verwendung|date:"d.m.Y H:i" }}.{% endif %}
+            </p>
+            <p class="text-xs mt-3 {% if offene_codes < 3 %}text-amber-700 font-semibold{% else %}text-slate-500{% endif %}">
+                Offene Notfallcodes: {{ offene_codes }}{% if offene_codes < 3 %} — neue erzeugen{% endif %}
+            </p>
+        {% else %}
+            <div class="flex items-center gap-2 mb-1">
+                <span class="inline-block w-2 h-2 rounded-full bg-slate-300"></span>
+                <h3 class="font-bold text-slate-800 text-sm">Nicht eingerichtet</h3>
+            </div>
+            <p class="text-xs text-slate-500">
+                Ihr Konto ist derzeit nur durch das Passwort geschützt.
+            </p>
+            <a href="{% url 'zweifaktor_einrichten' %}"
+               class="inline-block mt-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm
+                      font-semibold px-5 py-2.5 rounded-lg shadow-sm">Jetzt einrichten</a>
+        {% endif %}
+    </div>
+
+    {% if faktor %}
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-1">Notfallcodes</h3>
+        <p class="text-xs text-slate-500 mb-4">
+            Neue Codes erzeugen macht alle bisherigen ungültig.
+        </p>
+        <form method="post" action="{% url 'zweifaktor_codes_neu' %}">
+            {% csrf_token %}
+            <button class="bg-white border border-slate-300 text-slate-700 text-sm font-semibold
+                           px-4 py-2.5 rounded-lg">Neue Codes erzeugen</button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-1">Abschalten</h3>
+        {% if pflicht %}
+        <p class="text-xs text-slate-500">
+            Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung — sie lässt sich nicht abschalten.
+        </p>
+        {% else %}
+        <p class="text-xs text-slate-500 mb-4">
+            Zur Sicherheit ist dafür Ihr Passwort nötig.
+        </p>
+        <form method="post" action="{% url 'zweifaktor_aus' %}" class="flex flex-wrap gap-3 items-center">
+            {% csrf_token %}
+            <input type="password" name="password" required placeholder="Passwort"
+                   autocomplete="current-password"
+                   class="border border-slate-300 rounded-lg px-4 py-2.5 text-sm w-56">
+            <button class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold
+                           px-5 py-2.5 rounded-lg">Abschalten</button>
+        </form>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

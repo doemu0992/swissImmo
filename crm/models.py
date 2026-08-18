@@ -85,6 +85,12 @@ class Organisation(models.Model):
     ABO_CHOICES = [('start', 'Start'), ('pro', 'Pro'), ('premium', 'Premium')]
     abo_plan = models.CharField("Abo-Plan", max_length=10, choices=ABO_CHOICES, default='pro')
     abo_jaehrlich = models.BooleanField("Jährliche Abrechnung", default=False)
+    # Standard AUS: Ein Schalter, der beim Einführen sofort greift, sperrt jeden
+    # aus, der gerade kein Telefon zur Hand hat — die Inhaberin eingeschlossen.
+    # Wer ihn setzt, zwingt sein Team beim nächsten Anmelden durch die
+    # Einrichtung (core.views.zweifaktor).
+    zweifaktor_pflicht = models.BooleanField(
+        "Zwei-Faktor für alle Konten dieser Verwaltung verlangen", default=False)
 
     class Meta:
         verbose_name = "Organisation"

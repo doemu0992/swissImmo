@@ -167,6 +167,10 @@ MIDDLEWARE = [
     # Und vor allem, was Mandantendaten liest: Ohne gesetzten Kontext wirft
     # der TenantManager, statt still den ganzen Bestand herauszugeben.
     'core.middleware_tenancy.OrganisationMiddleware',
+    # Nach der Mandanten-Middleware: Sie braucht `request.user` (steht schon)
+    # und darf erst greifen, wenn der Kontext gesetzt ist. Erzwingt die
+    # Einrichtung des zweiten Faktors, wenn eine Verwaltung ihn verlangt.
+    'core.middleware_zweifaktor.ZweiFaktorPflichtMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

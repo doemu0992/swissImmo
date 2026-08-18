@@ -100,14 +100,18 @@ AUSNAHMEN = {
 }
 
 # ---------------------------------------------------------------------------
-# Die zwei Modelle, die KEINEN Mandantenfilter tragen können — und warum.
+# Die Modelle, die KEINEN Mandantenfilter tragen können — und warum.
 #
 # Diese Liste ist die heikelste im ganzen Testsatz: Wer ein Modell hier
 # einträgt, nimmt es aus der Prüfung. Genau so macht man einen Wächter blind.
 # Deshalb steht neben jedem Eintrag der Grund, und deshalb prüft
 # `AusnahmenSindBegruendetTests` unten, dass die Liste nicht wächst, ohne dass
-# es jemand merkt. Ein drittes Modell hier einzutragen ist eine Entscheidung,
+# es jemand merkt. Ein weiteres Modell hier einzutragen ist eine Entscheidung,
 # keine Reparatur.
+#
+# Stand 18.08.2026: fünf. Zwei aus der Modellierung (Benutzer, Organisation),
+# drei, weil sie VOR jedem Mandantenkontext gelesen oder geschrieben werden
+# (Betreiberlog, zweiter Faktor, Notfallcodes) — alle drei am Anmeldevorgang.
 # ---------------------------------------------------------------------------
 OHNE_MANDANTENFILTER = {
     # Der Benutzer gehört keiner Organisation, er ist in mehreren MITGLIED.
@@ -142,6 +146,22 @@ OHNE_MANDANTENFILTER = {
     # genau die Zweideutigkeit, die Etappe 5 aus dem Datenmodell entfernt
     # hat. Eine eigene Tabelle sagt es im Namen.
     'core.SicherheitsEreignis': 'Betreiberlog — Ereignisse ohne bestimmbaren Mandanten',
+
+    # Der zweite Anmeldefaktor und seine Notfallcodes hängen am KONTO, nicht
+    # an der Verwaltung — aus demselben Grund wie `benutzer.Benutzer` ganz
+    # oben: Eine Treuhänderin, die zwei Verwaltungen betreut, ist EIN Mensch
+    # mit EINEM Telefon. Ein Faktor je Mitgliedschaft wäre nicht sicherer, nur
+    # lästiger; beim Wechsel der aktiven Verwaltung müsste sie sich erneut
+    # ausweisen, ohne dass dabei irgendetwas geprüft würde.
+    #
+    # Dazu kommt ein zwingender technischer Grund: Beide Datensätze werden
+    # WÄHREND der Anmeldung gelesen — also bevor überhaupt ein Mandantenkontext
+    # gesetzt ist. Ein gefilterter Manager würde dort werfen, und zwar an der
+    # einen Stelle, an der ein Fehler die ganze Anwendung unbenutzbar macht.
+    #
+    # Vierter und fünfter Eintrag dieser Liste (Entscheid 18.08.2026).
+    'core.ZweiterFaktor': 'hängt am Konto, nicht an der Verwaltung — und wird vor dem Anmelden gelesen',
+    'core.Wiederherstellungscode': 'wie ZweiterFaktor — Notfallcodes eines Kontos',
 }
 
 
@@ -912,9 +932,12 @@ class AusnahmenSindBegruendetTests(TestCase):
     entschieden, nur repariert. Diese Klasse macht das Wachsen sichtbar.
     """
 
-    def test_es_sind_genau_diese_zwei(self):
+    def test_es_sind_genau_diese_fuenf(self):
+        # Der Name zählt bewusst mit: Wächst die Liste, ändert sich auch er,
+        # und die Änderung steht im Diff statt in einer Zahl im Rumpf.
         self.assertEqual(sorted(OHNE_MANDANTENFILTER),
                          ['benutzer.Benutzer', 'core.SicherheitsEreignis',
+                          'core.Wiederherstellungscode', 'core.ZweiterFaktor',
                           'crm.Organisation'],
                          'Die Ausnahmeliste hat sich geändert. Das ist eine Entscheidung, '
                          'keine Reparatur: Grund in OHNE_MANDANTENFILTER schreiben und '

@@ -52,6 +52,100 @@ class SicherheitsEreignis(models.Model):
         return f"{self.zeitpunkt:%d.%m.%Y %H:%M} {self.aktion} — {self.objekt}"
 
 
+class ZweiterFaktor(models.Model):
+    """Der zweite Anmeldefaktor eines Kontos (TOTP).
+
+    WARUM OHNE ORGANISATIONSBEZUG
+
+    Wie `SicherheitsEreignis` trägt dieses Modell bewusst **keine**
+    `organisation`. Der zweite Faktor hängt am **Konto**, nicht an der
+    Verwaltung: Ein Mensch kann in mehreren Verwaltungen Mitglied sein — sein
+    Telefon ist trotzdem dasselbe. Ein Faktor je Mitgliedschaft wäre nicht
+    sicherer, nur lästiger, und beim Wechsel der aktiven Verwaltung müsste
+    man sich erneut ausweisen, ohne dass dabei irgendetwas geprüft würde.
+
+    Der Datensatz entsteht ausserdem **vor** dem Anmelden, also zu einem
+    Zeitpunkt, an dem noch gar kein Mandantenkontext gesetzt ist. Er steht
+    deshalb in `test_isolation.OHNE_MANDANTENFILTER`.
+
+    DER WIEDERGABESCHUTZ SITZT HIER, nicht im Rechenmodul: Ein TOTP-Code gilt
+    bis zu 90 Sekunden (eigenes Fenster ± eines). Ohne Gedächtnis liesse sich
+    ein abgefangener Code in dieser Zeit ein zweites Mal einlösen — etwa von
+    jemandem, der über die Schulter geschaut hat. `letztes_fenster` merkt das
+    zuletzt verbrauchte Fenster; alles, was nicht echt danach liegt, wird
+    abgewiesen.
+    """
+    benutzer = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                    related_name='zweiter_faktor',
+                                    verbose_name="Benutzer")
+    geheimnis = models.CharField("Geheimnis (Base32)", max_length=64)
+    bestaetigt_am = models.DateTimeField("Bestätigt am", null=True, blank=True)
+    letztes_fenster = models.BigIntegerField("Zuletzt verbrauchtes Fenster", default=0)
+    erstellt_am = models.DateTimeField("Erstellt am", auto_now_add=True)
+    letzte_verwendung = models.DateTimeField("Zuletzt verwendet", null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Zweiter Faktor"
+        verbose_name_plural = "Zweite Faktoren"
+
+    def __str__(self):
+        stand = "aktiv" if self.ist_aktiv else "eingerichtet, nicht bestätigt"
+        return f"{self.benutzer} — {stand}"
+
+    @property
+    def ist_aktiv(self) -> bool:
+        """Erst ein bestätigter Faktor zählt.
+
+        Zwischen «QR-Code angezeigt» und «erster Code richtig eingegeben» darf
+        der Faktor NICHT gelten — sonst sperrt sich aus, wer die Einrichtung
+        abbricht oder den Code falsch abscannt.
+        """
+        return self.bestaetigt_am is not None
+
+    def pruefen(self, eingabe: str, zeitpunkt: float | None = None) -> bool:
+        """Code prüfen und, wenn er stimmt, sein Fenster verbrauchen."""
+        from django.utils import timezone
+
+        from core.services import totp
+
+        fenster = totp.passendes_fenster(self.geheimnis, eingabe, zeitpunkt)
+        if fenster is None or fenster <= self.letztes_fenster:
+            return False
+        self.letztes_fenster = fenster
+        self.letzte_verwendung = timezone.now()
+        self.save(update_fields=['letztes_fenster', 'letzte_verwendung'])
+        return True
+
+
+class Wiederherstellungscode(models.Model):
+    """Einmalcodes für den Fall «Telefon weg».
+
+    OHNE DIESE CODES IST 2FA EIN RISIKO STATT EINES SCHUTZES. swissImmo hat
+    keine Hotline, die sich von einem Anrufer überzeugen lässt. Verliert die
+    Inhaberin ihr Telefon, käme ohne Wiederherstellungscodes niemand mehr an
+    den Bestand ihrer Verwaltung — der Schutz wäre dann selbst der Schaden.
+
+    Gespeichert wird nur der **Hash**, mit demselben Verfahren wie bei
+    Passwörtern. Ein Datenbankauszug gibt die Codes damit nicht preis, und wer
+    die Liste verloren hat, kann sie nicht nachlesen, sondern nur neu erzeugen
+    — das ist beabsichtigt und wird im Formular gesagt.
+    """
+    benutzer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                 related_name='wiederherstellungscodes',
+                                 verbose_name="Benutzer")
+    code_hash = models.CharField("Code (Hash)", max_length=255)
+    erstellt_am = models.DateTimeField("Erstellt am", auto_now_add=True)
+    eingeloest_am = models.DateTimeField("Eingelöst am", null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Wiederherstellungscode"
+        verbose_name_plural = "Wiederherstellungscodes"
+        ordering = ['erstellt_am']
+
+    def __str__(self):
+        return f"{self.benutzer} — {'eingelöst' if self.eingeloest_am else 'offen'}"
+
+
 class AktivitaetsLog(models.Model):
     """
     Audit-Trail: Wer hat wann was getan (Buchungsläufe, Löschungen, Versand …).

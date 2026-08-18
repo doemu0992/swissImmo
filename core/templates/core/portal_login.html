@@ -160,10 +160,10 @@
             </div>
             <form class="card" method="POST" action="{% url 'portal_login' %}">
                 {% csrf_token %}
-                {% if form.errors %}
+                {% if form.errors or fehler %}
                 <div class="alert">
                     <span>⚠️</span>
-                    <span>Benutzername oder Passwort ist falsch. Bitte versuchen Sie es erneut.</span>
+                    <span>{{ fehler|default:'Benutzername oder Passwort ist falsch. Bitte versuchen Sie es erneut.' }}</span>
                 </div>
                 {% endif %}
 

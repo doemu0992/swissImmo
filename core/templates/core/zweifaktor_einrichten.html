@@ -1,0 +1,58 @@
+{% extends 'fw/base.html' %}
+{% block title %}Zwei-Faktor einrichten — swissImmo{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>Zwei-Faktor-Anmeldung einrichten</h1>
+        <p>Ein zweiter Faktor schützt den Zugang auch dann, wenn das Passwort in fremde Hände gerät.</p>
+    </div>
+</div>
+
+<div class="max-w-2xl space-y-5">
+    {% if pflicht_hinweis %}
+    <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4 text-sm">
+        Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung. Ohne Einrichtung ist die Oberfläche gesperrt.
+    </div>
+    {% endif %}
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-1">Schritt 1 — Code scannen</h3>
+        <p class="text-xs text-slate-500 mb-4">
+            Scannen Sie den QR-Code mit einer Authenticator-App (Google Authenticator,
+            1Password, Aegis, Microsoft Authenticator — alle funktionieren).
+        </p>
+        <div class="flex flex-col sm:flex-row gap-5 items-start">
+            <div class="bg-white p-3 rounded-lg border border-slate-200 shrink-0" style="width:200px">
+                {{ qr|safe }}
+            </div>
+            <div class="text-xs text-slate-500 space-y-2">
+                <p class="font-semibold text-slate-700">Kein Scanner zur Hand?</p>
+                <p>Geben Sie diesen Schlüssel von Hand in der App ein:</p>
+                <code class="block bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono
+                             text-[11px] break-all select-all">{{ geheimnis }}</code>
+                <p class="text-slate-400">Typ: zeitbasiert (TOTP) · 6 Stellen · 30 Sekunden</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-1">Schritt 2 — Code bestätigen</h3>
+        <p class="text-xs text-slate-500 mb-4">
+            Damit ist belegt, dass die App richtig eingerichtet ist. Erst danach gilt
+            der zweite Faktor — wer hier abbricht, sperrt sich nicht aus.
+        </p>
+        {% if fehler %}
+        <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm mb-4">{{ fehler }}</div>
+        {% endif %}
+        <form method="post" class="flex flex-wrap gap-3 items-center">
+            {% csrf_token %}
+            <input name="code" inputmode="numeric" autocomplete="one-time-code" required
+                   maxlength="14" placeholder="000000"
+                   class="border border-slate-300 rounded-lg px-4 py-2.5 text-lg tracking-[.3em]
+                          text-center font-mono w-44">
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold
+                           px-5 py-2.5 rounded-lg shadow-sm">Aktivieren</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
