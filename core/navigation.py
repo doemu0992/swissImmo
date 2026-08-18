@@ -166,6 +166,7 @@ def fw_navigation(request):
         {'label': 'Dokumente', 'url': '/neu/dokumente/'},
         {'label': 'Kommunikation', 'url': '/neu/kommunikation/'},
         {'label': 'Einstellungen', 'url': '/neu/einstellungen/'},
+        {'label': 'Zwei-Faktor-Anmeldung', 'url': '/konto/zwei-faktor/'},
     ]
     return {'ui_modus': modus, 'fw_nav_gruppen': gruppen, 'fw_palette': palette,
             'fw_einstellungen_keys': EINSTELLUNGEN_KEYS}

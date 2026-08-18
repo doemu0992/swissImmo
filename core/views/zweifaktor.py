@@ -259,13 +259,75 @@ def zweifaktor_einrichten(request):
 @never_cache
 @login_required
 def zweifaktor_uebersicht(request):
+    from core.auth import SCHREIB_ROLLEN, hat_rolle
+    from core.tenancy import aktuelle_organisation
+
+    organisation = aktuelle_organisation()
+    darf_verwalten = hat_rolle(request.user, SCHREIB_ROLLEN) and organisation is not None
+
     faktor = ZweiterFaktor.objects.filter(benutzer=request.user).first()
     return render(request, 'core/zweifaktor_uebersicht.html', {
         'faktor': faktor if (faktor and faktor.ist_aktiv) else None,
         'offene_codes': Wiederherstellungscode.objects.filter(
             benutzer=request.user, eingeloest_am__isnull=True).count(),
         'pflicht': _pflicht_fuer(request.user),
+        'organisation': organisation,
+        'darf_verwalten': darf_verwalten,
+        'ohne_faktor': _team_ohne_faktor(organisation) if darf_verwalten else [],
     })
+
+
+def _team_ohne_faktor(organisation):
+    """Wer in dieser Verwaltung noch keinen zweiten Faktor hat.
+
+    Ohne diese Liste wäre der Pflichtschalter eine Blindaktion: Wer ihn setzt,
+    sieht nicht, wie viele Kolleginnen beim nächsten Anmelden vor der
+    Einrichtung stehen — und ob darunter jemand ist, der gerade im Urlaub ist.
+    """
+    if organisation is None:
+        return []
+    from crm.models import Mitgliedschaft
+
+    mit_faktor = set(ZweiterFaktor.objects.filter(bestaetigt_am__isnull=False)
+                     .values_list('benutzer_id', flat=True))
+    return [m.benutzer for m in Mitgliedschaft.alle_organisationen
+            .filter(organisation=organisation).select_related('benutzer')
+            if m.benutzer_id not in mit_faktor]
+
+
+@never_cache
+@login_required
+def zweifaktor_pflicht_setzen(request):
+    """Den Schalter der Verwaltung umlegen — nur mit Schreibrolle."""
+    from core.auth import SCHREIB_ROLLEN, hat_rolle, log_aktion
+    from core.tenancy import aktuelle_organisation
+
+    if request.method != 'POST':
+        return redirect('zweifaktor_uebersicht')
+    organisation = aktuelle_organisation()
+    if organisation is None or not hat_rolle(request.user, SCHREIB_ROLLEN):
+        messages.error(request, 'Dafür fehlt Ihnen die Berechtigung.')
+        return redirect('zweifaktor_uebersicht')
+
+    an = request.POST.get('pflicht') == 'an'
+    if an:
+        # Wer den Schalter setzt, muss selbst durch — sonst legt jemand die
+        # Pflicht für sein Team fest und steht als Einziger daneben.
+        eigener = ZweiterFaktor.objects.filter(benutzer=request.user).first()
+        if eigener is None or not eigener.ist_aktiv:
+            messages.error(request, 'Richten Sie den zweiten Faktor zuerst für sich '
+                                    'selbst ein — dann lässt er sich für alle verlangen.')
+            return redirect('zweifaktor_einrichten')
+
+    organisation.zweifaktor_pflicht = an
+    organisation.save(update_fields=['zweifaktor_pflicht'])
+    log_aktion(request, 'Zwei-Faktor-Pflicht ' + ('aktiviert' if an else 'aufgehoben'),
+               objekt=str(organisation), kategorie='sicherheit')
+    messages.success(request,
+                     'Zwei-Faktor-Anmeldung ist ab sofort für alle Konten dieser '
+                     'Verwaltung Pflicht.' if an else
+                     'Die Pflicht ist aufgehoben — eingerichtete Faktoren bleiben aktiv.')
+    return redirect('zweifaktor_uebersicht')
 
 
 @never_cache

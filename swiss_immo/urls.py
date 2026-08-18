@@ -73,7 +73,8 @@ from core.views.dashboard_view import update_market_data_view
 # 2b. Eigentümer-Portal & Login-Weiche
 from core.views.zweifaktor import (zweifaktor_login, zweifaktor_bestaetigen,
                                   zweifaktor_uebersicht, zweifaktor_einrichten,
-                                  zweifaktor_codes_neu, zweifaktor_aus)
+                                  zweifaktor_codes_neu, zweifaktor_aus,
+                                  zweifaktor_pflicht_setzen)
 from core.views.portal import (portal_view, nach_login_view, portal_dokument_download, portal_report_pdf, portal_freigabe,
                                 portal_steuerauszug_pdf, portal_kontokorrent_pdf,
                                 mieter_portal_view, mieter_dokument_download, mieter_schaden_melden, mieter_rechnung_qr,
@@ -192,6 +193,7 @@ urlpatterns = [
     path('konto/zwei-faktor/einrichten/', zweifaktor_einrichten, name='zweifaktor_einrichten'),
     path('konto/zwei-faktor/codes/', zweifaktor_codes_neu, name='zweifaktor_codes_neu'),
     path('konto/zwei-faktor/aus/', zweifaktor_aus, name='zweifaktor_aus'),
+    path('konto/zwei-faktor/pflicht/', zweifaktor_pflicht_setzen, name='zweifaktor_pflicht_setzen'),
 
     # --- FAIRWALTER-REBUILD (neue Oberfläche, wächst etappenweise) ---
     path('neu/', fw_dashboard, name='fw_dashboard'),

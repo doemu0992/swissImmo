@@ -335,3 +335,72 @@ class ModellTests(ZweiFaktorBasis):
         self.assertNotIn('organisation', felder)
         self.assertNotIn('organisation',
                          {f.name for f in Wiederherstellungscode._meta.get_fields()})
+
+
+class ErreichbarkeitTests(ZweiFaktorBasis):
+    """Eine Funktion, die niemand findet, ist nicht geliefert.
+
+    Beim ersten Anlauf waren Seiten und Adressen fertig — aber nirgends
+    verlinkt, und der Pflichtschalter hatte gar keine Bedienung. Vom Bildschirm
+    aus gab es 2FA schlicht nicht. Diese Klasse hält beides fest.
+    """
+
+    def test_die_einstellungen_verlinken_die_zwei_faktor_seite(self):
+        self.client.force_login(self.benutzer)
+        antwort = self.client.get('/neu/einstellungen/')
+        self.assertContains(antwort, '/konto/zwei-faktor/')
+
+    def test_die_uebersicht_ist_erreichbar(self):
+        self.client.force_login(self.benutzer)
+        self.assertEqual(self.client.get(reverse('zweifaktor_uebersicht')).status_code, 200)
+
+
+class PflichtschalterTests(ZweiFaktorBasis):
+    def test_schalter_verlangt_den_eigenen_faktor_zuerst(self):
+        """Sonst legt jemand die Pflicht fürs Team fest und steht selbst daneben."""
+        self.client.force_login(self.benutzer)
+        antwort = self.client.post(reverse('zweifaktor_pflicht_setzen'), {'pflicht': 'an'})
+
+        self.a.organisation.refresh_from_db()
+        self.assertFalse(self.a.organisation.zweifaktor_pflicht)
+        self.assertRedirects(antwort, reverse('zweifaktor_einrichten'))
+
+    def test_mit_eigenem_faktor_laesst_sich_die_pflicht_setzen(self):
+        self.faktor_aktivieren()
+        self.client.force_login(self.benutzer)
+        self.client.post(reverse('zweifaktor_pflicht_setzen'), {'pflicht': 'an'})
+
+        self.a.organisation.refresh_from_db()
+        self.assertTrue(self.a.organisation.zweifaktor_pflicht)
+
+    def test_die_pflicht_laesst_sich_wieder_aufheben(self):
+        self.faktor_aktivieren()
+        self.client.force_login(self.benutzer)
+        self.client.post(reverse('zweifaktor_pflicht_setzen'), {'pflicht': 'an'})
+        self.client.post(reverse('zweifaktor_pflicht_setzen'), {'pflicht': 'aus'})
+
+        self.a.organisation.refresh_from_db()
+        self.assertFalse(self.a.organisation.zweifaktor_pflicht)
+
+    def test_get_aendert_nichts(self):
+        # Ein Schalter, den ein Seitenaufruf umlegt, ist über einen
+        # untergeschobenen Link fernsteuerbar.
+        self.faktor_aktivieren()
+        self.client.force_login(self.benutzer)
+        self.client.get(reverse('zweifaktor_pflicht_setzen'))
+        self.a.organisation.refresh_from_db()
+        self.assertFalse(self.a.organisation.zweifaktor_pflicht)
+
+    def test_die_uebersicht_nennt_wer_noch_keinen_faktor_hat(self):
+        # Ohne diese Liste wäre das Einschalten eine Blindaktion.
+        self.faktor_aktivieren()
+        from benutzer.models import Benutzer
+        from crm.models import Mitgliedschaft
+        kollege = Benutzer.objects.create_user(username='ohne-telefon', password='x')
+        Mitgliedschaft.alle_organisationen.create(
+            benutzer=kollege, organisation=self.a.organisation,
+            rolle=Mitgliedschaft.ROLLE_SACHBEARBEITER)
+
+        self.client.force_login(self.benutzer)
+        antwort = self.client.get(reverse('zweifaktor_uebersicht'))
+        self.assertContains(antwort, 'ohne-telefon')

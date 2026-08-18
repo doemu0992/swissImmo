@@ -960,6 +960,8 @@ def fw_einstellungen(request):
         {'titel': 'Vorlagen', 'sub': 'Textvorlagen mit Platzhaltern', 'url': '/neu/vorlagen/', 'icon': 'fa-file-lines'},
         {'titel': 'Integrationen', 'sub': 'E-Mail, DocuSeal, KI, Banken, Portal-Feed', 'url': '/neu/integrationen/', 'icon': 'fa-plug'},
         {'titel': 'Abonnement', 'sub': 'Plan und Rechnungsstellung', 'url': '/neu/abonnement/', 'icon': 'fa-star'},
+        {'titel': 'Anmeldung & Sicherheit', 'sub': 'Zwei-Faktor-Anmeldung für Sie und Ihr Team',
+         'url': '/konto/zwei-faktor/', 'icon': 'fa-shield-halved'},
         {'titel': 'Logbuch', 'sub': 'Wer hat wann was geändert', 'url': '/neu/logbuch/', 'icon': 'fa-clock-rotate-left'},
         {'titel': 'Rechtsgrundlagen', 'sub': 'OR/VMWG-Artikel mit Anwendung im Programm', 'url': '/neu/rechtsgrundlagen/', 'icon': 'fa-scale-balanced'},
     ]

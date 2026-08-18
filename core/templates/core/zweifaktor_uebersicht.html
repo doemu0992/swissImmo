@@ -79,5 +79,45 @@
         {% endif %}
     </div>
     {% endif %}
+
+    {% if darf_verwalten %}
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-1">Für die ganze Verwaltung</h3>
+        {% if organisation.zweifaktor_pflicht %}
+            <p class="text-xs text-slate-500 mb-4">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 align-middle"></span>
+                Alle Konten von <strong>{{ organisation.firma }}</strong> müssen den zweiten
+                Faktor einrichten. Wer ihn noch nicht hat, landet beim nächsten Aufruf
+                auf der Einrichtungsseite.
+            </p>
+            <form method="post" action="{% url 'zweifaktor_pflicht_setzen' %}">
+                {% csrf_token %}
+                <input type="hidden" name="pflicht" value="aus">
+                <button class="bg-white border border-slate-300 text-slate-700 text-sm
+                               font-semibold px-4 py-2.5 rounded-lg">Pflicht aufheben</button>
+            </form>
+        {% else %}
+            <p class="text-xs text-slate-500 mb-3">
+                Verlangt die Einrichtung von allen Konten dieser Verwaltung. Bereits
+                angemeldete Sitzungen sind ab sofort betroffen — nicht erst beim nächsten Login.
+            </p>
+            {% if ohne_faktor %}
+            <div class="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-3 text-xs mb-4">
+                <strong>{{ ohne_faktor|length }} Konto/Konten ohne zweiten Faktor:</strong>
+                {% for b in ohne_faktor %}{{ b.get_username }}{% if not forloop.last %}, {% endif %}{% endfor %}.<br>
+                Sie können ab dem Einschalten nur noch die Einrichtungsseite aufrufen.
+                Wer gerade kein Telefon zur Hand hat, kommt bis dahin nicht weiter.
+            </div>
+            {% endif %}
+            <form method="post" action="{% url 'zweifaktor_pflicht_setzen' %}">
+                {% csrf_token %}
+                <input type="hidden" name="pflicht" value="an">
+                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm
+                               font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+                    Für alle verlangen</button>
+            </form>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
