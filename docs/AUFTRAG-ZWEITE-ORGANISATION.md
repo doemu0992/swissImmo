@@ -96,6 +96,19 @@ Je Lauf: Verarbeitet er beide Organisationen? Bleibt der Bestand der jeweils and
 
 `fetch_replies` und `fetch_rechnungen` verdienen besondere Aufmerksamkeit: **ein IMAP-Postfach für alles.** Wie wird eine eingehende Rechnung der richtigen Verwaltung zugeordnet? Das war schon in `ANALYSE.md` als offen vermerkt.
 
+> **Überholt, 18.08.2026.** Der Zustand «ein Postfach für alles» ist kein
+> Zielzustand, sondern eine Übergangserscheinung aus der Zeit mit genau einer
+> Verwaltung. Jede Verwaltung bekommt ihre **eigene Adresse und ihr eigenes
+> Postfach**, das sie selbst hinterlegt — Gmail, Microsoft 365, klassischer
+> Hoster, wie sie es ohnehin betreibt. Umgesetzt in
+> `docs/AUFTRAG-IMAP-VOLL.md`, **vor** dieser Etappe.
+>
+> Für den Betriebstest ändert das die Frage: Nicht mehr «wie trennen wir einen
+> gemeinsamen Eingang», sondern «holt jede Verwaltung aus ihrem eigenen
+> Postfach, und wird eine ohne Konfiguration wirklich übersprungen». Das
+> gemeinsame Postfach zu beobachten hätte nichts gelehrt — es wäre nur ein
+> Zustand gewesen, den wir ohnehin abschaffen.
+
 ### Entschieden am 18.08.2026: ein Postfach JE VERWALTUNG
 
 Nicht ein gemeinsames Postfach mit Zuordnungsregeln, sondern **je Organisation ein eigenes**, in der Oberfläche konfigurierbar. Der Betreiber hat das so festgelegt.
