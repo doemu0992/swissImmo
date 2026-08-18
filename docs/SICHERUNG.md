@@ -63,14 +63,46 @@ als gar keiner.
 
 ## Täglich laufen lassen
 
-Bei PythonAnywhere unter **Tasks → Scheduled tasks**, täglich:
+Bei PythonAnywhere unter **Tasks → Scheduled tasks**. Der Task erbt nichts:
+kein `workon`, kein Arbeitsverzeichnis. Deshalb beide Pfade vollständig. Die
+`.env` liest er selbst, wie jeder `manage.py`-Aufruf — Umgebungsvariablen sind
+dort nicht nötig.
+
+> **Zeitzone:** PythonAnywhere plant in UTC, sofern in den Account-Einstellungen
+> nichts anderes gesetzt ist; neben dem Feld steht, welche Zone gilt. Für 03:00
+> Schweizer Sommerzeit trägt man **01:00** ein.
+
+**Zwei Tasks statt einem — wegen der Grössenordnung.** Gemessen am 18.08.2026:
+die Datenbank ist **364 kB** und ändert sich täglich, das Medien-Archiv ist
+**189 MB** und ändert sich kaum. Die Voreinstellung hält vier Medien-Archive,
+das sind 760 MB für Dateien, die weitgehend gleich bleiben — auf einem Konto
+mit begrenztem Speicher spürbar.
+
+Täglich, nur die Datenbank (dauert Sekunden):
 
 ```
-/home/swissimmo/.virtualenvs/myenv/bin/python /home/swissimmo/swiss-manager/manage.py sicherung
+/home/swissimmo/.virtualenvs/myenv/bin/python /home/swissimmo/swiss-manager/manage.py sicherung --ohne-medien
 ```
 
-Eine Uhrzeit ausserhalb der Bürozeiten wählen (z. B. 03:00). Der Befehl läuft
-neben dem laufenden Betrieb — SQLite muss dafür nicht angehalten werden.
+Wöchentlich, vollständig (die vier Minuten):
+
+```
+/home/swissimmo/.virtualenvs/myenv/bin/python /home/swissimmo/swiss-manager/manage.py sicherung --medien-behalten 2
+```
+
+Erlaubt das Konto nur einen Task, den vollständigen Befehl täglich nehmen und
+`--medien-behalten 2` setzen. Der Befehl läuft neben dem Betrieb — weder SQLite
+noch PostgreSQL müssen dafür angehalten werden.
+
+**Nachprüfen, dass er wirklich feuert.** Ein eingerichteter Task ist noch kein
+gelaufener. Am Morgen danach:
+
+```bash
+ls -la ~/sicherungen/
+```
+
+Steht dort ein `-db.dump` mit dem Datum der Nacht, läuft es. Steht nur der alte
+Stand, ins Task-Log auf der Tasks-Seite schauen.
 
 ## Wiederherstellen
 
@@ -270,13 +302,21 @@ nachweislich aus den Entwicklungsdaten.
 > ganze Archiv aus und damit die vier Minuten. Ein Aufräumen wäre eine eigene,
 > vorsichtige Prüfung wert; ein schnelles `rm` wäre es nicht.
 
-### Was weiterhin offen ist
+### Der tägliche Lauf — nie eingerichtet, jetzt nachgeholt
 
-**Der tägliche Lauf war nie eingerichtet.** Am 18.08.2026 stellte sich beim
-ersten Aufruf von `medien_pruefen --sicherung` heraus, dass `~/sicherungen`
-gar nicht existierte — der oben beschriebene Scheduled Task ist beschrieben,
-aber nie angelegt worden. Der erste Stand entstand von Hand am selben Tag.
-Solange der Task fehlt, altert er.
+Am 18.08.2026 stellte sich beim ersten Aufruf von `medien_pruefen --sicherung`
+heraus, dass `~/sicherungen` **gar nicht existierte**. Der oben beschriebene
+Scheduled Task stand seit jeher in diesem Dokument, war aber nie angelegt
+worden — es gab also nie eine automatische Sicherung, auch nicht zu
+SQLite-Zeiten. Aufgefallen ist es erst, als ein Werkzeug den Ordner anfassen
+wollte; das Dokument allein hat den Zustand ein halbes Jahr lang verdeckt.
+
+Der erste Stand entstand am selben Tag von Hand, der Task ist eingerichtet.
+
+> **Noch nicht belegt ist, dass er feuert.** Eingerichtet und gelaufen sind
+> zwei verschiedene Dinge — genau der Unterschied, der oben aufgeflogen ist.
+> Der Nachweis ist eine Datei mit dem Datum der ersten Nacht; bis dahin gilt
+> dieser Punkt als offen.
 
 **Eine Kopie ausser Haus** fehlt weiterhin (siehe oben) — daran ändert ein
 geglückter Probelauf nichts.
