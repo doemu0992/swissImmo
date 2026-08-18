@@ -111,7 +111,35 @@ Heute stehen die Zugangsdaten in Umgebungsvariablen — `RECHNUNGS_IMAP_USER`, `
 | Rückfall | Ist an einer Organisation nichts konfiguriert, wird sie übersprungen — **nicht** stillschweigend auf die Umgebungsvariablen zurückgefallen. Sonst holt Verwaltung B aus dem Postfach von A. |
 | Der feste Server in `fetch_replies` | muss weg, sonst gilt er für alle |
 
-> **Eine Frage, die dabei entschieden werden muss und heute niemandem gehört: das Passwort.** Es wandert damit aus einer Umgebungsvariablen in die **Datenbank** — und damit in jede Sicherung und in jeden `pg_dump`, der auf dem Konto liegt. Django hat kein eingebautes verschlüsseltes Feld; alles, was mit dem `SECRET_KEY` signiert wird, ist umkehrbar, sobald jemand beides hat. Möglichkeiten: hinnehmen (die Sicherungen liegen ohnehin auf demselben Konto), oder ein anwendungsseitig verschlüsseltes Feld mit einem Schlüssel, der **nicht** in der Datenbank steht. Das ist eine Entscheidung für Dominik, kein Implementierungsdetail — und sie gehört vor die Umsetzung, nicht danach.
+#### Das Passwort: verschlüsselt, Schlüssel ausserhalb der Datenbank
+
+Mit der Konfiguration in der Oberfläche wandert das Postfachpasswort aus einer Umgebungsvariablen in die **Datenbank** — und damit in jede Sicherung und jeden `pg_dump`. Entschieden am 18.08.2026: **anwendungsseitig verschlüsselt**, mit einem Schlüssel, der nicht in der Datenbank steht.
+
+Der Weg kostet nichts an Abhängigkeiten: `cryptography==46.0.3` steht bereits in `requirements.txt:32`. Fernet genügt.
+
+**Was das leistet — und was nicht.** Es schützt gegen einen abhandengekommenen **Datenbankauszug**: eine kopierte Sicherung, ein `pg_dump` auf einem falschen Datenträger, ein Zugang zur Datenbank ohne Zugang zum Dateisystem. Es schützt **nicht** gegen jemanden, der auf dem Server ist — dort liegt der Schlüssel in der `.env` daneben. Das ist kein Einwand, aber es gehört hier festgehalten, damit später niemand mehr Sicherheit annimmt, als da ist.
+
+**Der Preis:** Schlüssel weg heisst Passwörter weg. Nicht dramatisch — jede Verwaltung tippt ihres neu ein —, aber der Schlüssel gehört an dieselbe Stelle und in dieselbe Sorgfalt wie das Datenbankpasswort, und der Wiederanlauf gehört dokumentiert.
+
+#### Die Grenze, die nicht bei uns liegt: nicht jeder Anbieter kann das
+
+«Nach Wahl, was die Verwaltung ohnehin hat» ist der richtige Gedanke, stösst aber an eine Grenze beim Anbieter:
+
+| Anbieter | IMAP mit Benutzer + Passwort |
+|---|---|
+| Hoststar, cyon, Infomaniak, eigener Server | funktioniert |
+| Gmail / Google Workspace | nur mit **App-Passwort**, das setzt 2FA im Google-Konto voraus |
+| **Microsoft 365 / Exchange Online** | **funktioniert nicht** — Microsoft hat Basic Auth für IMAP abgeschaltet, es geht nur über OAuth2 |
+
+Ein erheblicher Teil kleiner Schweizer Verwaltungen sitzt auf Microsoft 365. Für die ist das Feature mit Benutzer und Passwort nicht benutzbar — und sie merken es erst beim Einrichten.
+
+**Trotzdem so bauen.** Benutzer und Passwort deckt die klassischen Hoster ab, und OAuth2 für Microsoft ist ein eigenes Vorhaben (App-Registrierung im Azure-Portal, Token-Erneuerung, ein weiterer Geheimnis-Speicher). Aber es gehört **ins Formular**, nicht ins Handbuch: ein Satz neben dem Feld, dass Microsoft 365 derzeit nicht unterstützt wird. Sonst suchen Leute den Fehler bei sich.
+
+#### Drei Randbedingungen, die beim Bauen nicht neu verhandelt werden
+
+1. **Ein «Verbindung testen»-Knopf, und erst danach speichern.** Ohne ihn merkt eine Verwaltung erst nachts um drei im Scheduled Task, dass ihre Zugangsdaten nicht stimmen — und der Task schweigt, weil er niemanden hat, dem er es sagen könnte. Der Knopf verbindet sich, meldet den gefundenen Ordner und die Zahl ungelesener Nachrichten.
+2. **Das Passwortfeld ist schreibend, nie lesend.** Es wird nie wieder in den Browser gerendert, auch nicht maskiert mit den echten Zeichen dahinter. Angezeigt wird «gesetzt am …» plus die Möglichkeit, es zu ersetzen. Sonst steht das Postfachpasswort im HTML jeder Einstellungsseite.
+3. **Kein stiller Rückfall** (siehe Tabelle oben) — der wichtigste der drei.
 
 **Nicht Teil dieser Etappe.** Für den Betriebstest genügt es, die Läufe mit zwei Organisationen zu fahren und festzuhalten, was heute passiert; die Umstellung auf Postfächer je Verwaltung ist ein eigener Auftrag.
 
