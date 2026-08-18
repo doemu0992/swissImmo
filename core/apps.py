@@ -32,3 +32,7 @@ class CoreConfig(AppConfig):
         # der sich zwischen zwei Anfragen nicht aendert.
         from core.wartung import pruefe_migrationsstand
         pruefe_migrationsstand()
+
+        # Startprüfungen registrieren (siehe core/checks.py). Nur der Import
+        # zählt — die Funktionen tragen sich über `@register()` selbst ein.
+        from core import checks  # noqa: F401

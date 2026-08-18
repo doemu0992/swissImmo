@@ -83,6 +83,25 @@ alle_organisationen = AlleOrganisationenManager()
 
 Die beiden Manager **explizit** setzen — sie werden nicht global angehängt. Das ist die Bauform, die im Bestand rund vierzigmal vorkommt (`portfolio/models.py:92`, `crm/models.py:173` und weitere).
 
+### Beim Umbau gefunden: `fetch_replies` war kaputt (18.08.2026)
+
+Nicht Teil des Auftrags, aber beim Lesen aufgefallen und mit Schnitt 2 behoben. `SchadenMeldung` erbt von `OrganisationAusKette`, sein `objects` ist also ein `TenantManager` — und der wirft seit Etappe 6.2 ohne gesetzten Mandantenkontext. Die alte Fassung rief
+
+```python
+ticket = SchadenMeldung.objects.get(id=ticket_id)
+```
+
+mitten aus dem Befehl heraus auf, wo es nie einen Kontext gab, und fing das Ergebnis wieder ein:
+
+```python
+except Exception as db_err:
+    self.stdout.write(self.style.ERROR(f"❌ DB Fehler: {db_err}"))
+```
+
+**Jede eingehende Ticket-Antwort scheiterte damit still** — mit einer Protokollzeile, die nach einem Datenbankproblem aussah. Das ist der Grund, warum ein `except Exception` mit einer Sammelmeldung so teuer ist: Der Fehler war nicht unsichtbar, er war nur nicht als Fehler erkennbar. Wie lange das so lief, lässt sich aus dem Code nicht sagen; Etappe 6.2 ist der früheste mögliche Zeitpunkt.
+
+**Für den Betrieb heisst das:** Antworten, die in dieser Zeit eingingen, wurden am Server als gelesen markiert (`RFC822` setzt das Flag beim Holen) und sind nicht in die Tickets gelangt. Sie liegen noch im Postfach — sichtbar, aber ungelesen in der Anwendung. Der neue Abruf holt mit `BODY.PEEK[]` und setzt das Flag erst nach erfolgreicher Verarbeitung; wer die alten Antworten nachholen will, markiert sie im Postfach wieder als ungelesen.
+
 ---
 
 ## Umsetzung
@@ -108,6 +127,12 @@ Preis beschreiben: Schlüssel weg heisst Zugänge weg, jede Verwaltung richtet n
 Beide über `je_organisation` (`core/tenancy.py:171`).
 
 **Kein stiller Rückfall auf die Umgebungsvariablen.** Der gefährlichste Punkt: Fällt eine Verwaltung ohne Postfach darauf zurück, holt B aus dem Postfach von A. Ohne Konfiguration wird **übersprungen**, mit Protokolleintrag. Der fest verdrahtete Server in `fetch_replies.py:104` muss weg.
+
+> **Abweichung, bewusst (18.08.2026): nicht über `je_organisation`, sondern über die Postfächer.**
+>
+> `je_organisation` läuft über **alle** Verwaltungen und ruft je eine Funktion. Hier ist die Liste der eingerichteten Postfächer die natürliche Schleife: Eine Verwaltung ohne Postfach hat in diesem Lauf nichts verloren, und über sie zu iterieren, nur um dann festzustellen, dass nichts zu tun ist, kehrt die Sache um. Ausserdem hätte jede Verwaltung dann **zwei** Postfächer (Antworten, Rechnungen) — die Schleife über Organisationen bräuchte innen ohnehin eine über Postfächer.
+>
+> **Die Zusage von `je_organisation` wird trotzdem eingelöst:** Der Lauf fängt je Postfach, damit ein Fehler bei Verwaltung 3 die Verwaltungen 4 bis 20 nicht ohne Abruf lässt. Das ist getestet (`test_eine_kaputte_verwaltung_haelt_die_uebrigen_nicht_auf`), mit protokollierter Gegenprobe.
 
 ### 4 — OAuth2
 

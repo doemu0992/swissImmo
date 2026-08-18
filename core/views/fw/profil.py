@@ -796,6 +796,15 @@ def fw_integrationen(request):
         return bool(getattr(dj_settings, key, None))
 
     email_ok = gesetzt('EMAIL_HOST_USER') and gesetzt('EMAIL_HOST_PASSWORD')
+
+    # Seit 18.08.2026 steht der Rechnungseingang je Verwaltung in der Datenbank
+    # und nicht mehr in `RECHNUNGS_IMAP_USER`. Diese Kachel las bis dahin die
+    # Umgebungsvariable — sie hätte also für jede Verwaltung dasselbe angezeigt
+    # und ausserdem zu einer Einstellung geraten, die nichts mehr bewirkt.
+    from core.models import Postfach
+    rechnungs_postfach = Postfach.objects.filter(
+        zweck=Postfach.ZWECK_RECHNUNGEN, aktiv=True).first()
+
     integrationen = [
         {'key': 'email', 'name': 'E-Mail-Versand', 'icon': 'fa-envelope', 'farbe': 'indigo',
          'aktiv': email_ok, 'status': 'Verbunden' if email_ok else 'Nicht konfiguriert',
@@ -811,9 +820,10 @@ def fw_integrationen(request):
          'aktiv': gesetzt('GROQ_API_KEY'), 'status': 'Verbunden' if gesetzt('GROQ_API_KEY') else 'Nicht konfiguriert',
          'beschreibung': 'Kreditoren-Belege beim Hochladen automatisch auslesen (Lieferant, Betrag, IBAN, QR-Referenz) — inkl. Foto-Belegen via Bild-KI und E-Mail-Eingang für Handwerker-Rechnungen.',
          'detail': (('Nutzbar unter Kreditoren → «Beleg scannen (KI)» (Mehrfach-Upload). '
-                     + (f"E-Mail-Eingang aktiv: {os.environ.get('RECHNUNGS_IMAP_USER')} (fetch_rechnungen)."
-                        if os.environ.get('RECHNUNGS_IMAP_USER')
-                        else 'E-Mail-Eingang: RECHNUNGS_IMAP_USER/PASSWORD setzen + Scheduled Task «manage.py fetch_rechnungen --einmal».'))
+                     + (f'E-Mail-Eingang aktiv: {rechnungs_postfach.benutzer} (fetch_rechnungen).'
+                        if rechnungs_postfach
+                        else 'E-Mail-Eingang: Postfach in den Einstellungen hinterlegen '
+                             '+ Scheduled Task «manage.py fetch_rechnungen --einmal».'))
                     if gesetzt('GROQ_API_KEY')
                     else 'GROQ_API_KEY hinterlegen — ohne Key läuft nur die regelbasierte Erkennung aus Text-PDFs.'),
          'aktion': None},

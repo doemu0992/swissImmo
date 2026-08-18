@@ -52,6 +52,156 @@ class SicherheitsEreignis(models.Model):
         return f"{self.zeitpunkt:%d.%m.%Y %H:%M} {self.aktion} — {self.objekt}"
 
 
+class Postfach(models.Model):
+    """Das E-Mail-Postfach EINER Verwaltung — Antworten oder Rechnungen.
+
+    WARUM JE VERWALTUNG EIN EIGENES (Entscheid 18.08.2026)
+
+    Die Alternative wäre ein gemeinsamer Eingang mit Zuordnungsregeln gewesen:
+    an der Empfängeradresse, an einem Präfix im Betreff. Eine solche Zuordnung
+    **rät** — und rät sie falsch, landet die Rechnung einer fremden Verwaltung
+    im eigenen Bestand. Auffallen würde es niemandem, weil eine
+    Kreditorenrechnung nun einmal von aussen kommt.
+
+    Getrennte Postfächer machen die Zuordnung zur **Voraussetzung** statt zum
+    Ergebnis: Was in Postfach B liegt, gehört B, ohne Interpretation. Jede
+    Verwaltung hinterlegt ihr eigenes — Gmail, Microsoft 365, klassischer
+    Hoster, wie sie es ohnehin betreibt.
+
+    WARUM EIN EIGENES MODELL STATT FELDER AN DER ORGANISATION
+
+    Es sind zwei Zwecke mit demselben Feldsatz. An der `Organisation` stünden
+    sie doppelt (`antwort_host`, `rechnung_host`, …) — und ein dritter Zweck
+    verdreifachte sie.
+
+    WARUM DIREKTER FREMDSCHLÜSSEL UND KEINE `OrganisationAusKette`
+
+    Jene Basisklasse ist für Modelle mit einer geschlossenen Pflicht-**Kette**
+    gedacht, wo die Organisation aus `liegenschaft.organisation` abgeleitet und
+    NICHT eingegeben wird. Ein Postfach hängt an nichts dergleichen; es gehört
+    unmittelbar der Verwaltung. Bauform daher wie `portfolio.Liegenschaft`:
+    direkter FK plus die beiden Manager, ausdrücklich gesetzt.
+
+    ALLE GEHEIMNISSE VERSCHLÜSSELT, nicht nur das Passwort. Ein Refresh-Token
+    ist genauso wertvoll — damit liest jemand das Postfach, bis es widerrufen
+    wird.
+    """
+    ZWECK_ANTWORTEN = 'antworten'
+    ZWECK_RECHNUNGEN = 'rechnungen'
+    ZWECKE = [
+        (ZWECK_ANTWORTEN, 'Antworten auf Ticket-Mails'),
+        (ZWECK_RECHNUNGEN, 'Eingehende Kreditorenrechnungen'),
+    ]
+
+    VERFAHREN_PASSWORT = 'passwort'
+    VERFAHREN_OAUTH2 = 'oauth2'
+    VERFAHREN = [
+        (VERFAHREN_PASSWORT, 'Benutzername und Passwort'),
+        (VERFAHREN_OAUTH2, 'OAuth2 (Microsoft 365)'),
+    ]
+
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+                                     related_name='postfaecher',
+                                     verbose_name='Organisation')
+    zweck = models.CharField('Zweck', max_length=20, choices=ZWECKE)
+    verfahren = models.CharField('Verfahren', max_length=20, choices=VERFAHREN,
+                                 default=VERFAHREN_PASSWORT)
+    aktiv = models.BooleanField('Eingang aktiv', default=True)
+
+    server = models.CharField('IMAP-Server', max_length=200, blank=True, default='')
+    port = models.PositiveIntegerField('Port', default=993)
+    benutzer = models.CharField('Benutzername / Adresse', max_length=200,
+                                blank=True, default='')
+    ordner = models.CharField('Ordner', max_length=100, default='INBOX')
+
+    #: Verschlüsselt (Fernet). Nie direkt lesen — `passwort` benutzen.
+    passwort_geheim = models.TextField('Passwort (verschlüsselt)', blank=True, default='')
+
+    # --- OAuth2 -------------------------------------------------------
+    mandant_id = models.CharField('Verzeichnis-ID (Tenant)', max_length=100,
+                                  blank=True, default='')
+    anwendung_id = models.CharField('Anwendungs-ID (Client)', max_length=100,
+                                    blank=True, default='')
+    #: Ebenfalls verschlüsselt — siehe Klassenkommentar.
+    refresh_token_geheim = models.TextField('Refresh-Token (verschlüsselt)',
+                                            blank=True, default='')
+
+    # --- Status -------------------------------------------------------
+    letzter_abruf = models.DateTimeField('Letzter erfolgreicher Abruf',
+                                         null=True, blank=True)
+    letzter_test = models.DateTimeField('Letzter Verbindungstest',
+                                        null=True, blank=True)
+    letzter_fehler_am = models.DateTimeField('Letzter Fehler', null=True, blank=True)
+    letzter_fehler = models.TextField('Fehlertext', blank=True, default='')
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = 'Postfach'
+        verbose_name_plural = 'Postfächer'
+        # Je Verwaltung EIN Postfach pro Zweck. Zwei würden bedeuten, dass
+        # niemand sagen kann, aus welchem geholt wird.
+        constraints = [
+            models.UniqueConstraint(fields=['organisation', 'zweck'],
+                                    name='ein_postfach_je_zweck_und_organisation'),
+        ]
+
+    def __str__(self):
+        return f'{self.organisation} — {self.get_zweck_display()}'
+
+    # -- Geheimnisse ---------------------------------------------------
+    @property
+    def passwort(self) -> str:
+        from core.services.geheimnis import entschluesseln
+        return entschluesseln(self.passwort_geheim)
+
+    @passwort.setter
+    def passwort(self, klartext):
+        from core.services.geheimnis import verschluesseln
+        self.passwort_geheim = verschluesseln(klartext)
+
+    @property
+    def refresh_token(self) -> str:
+        from core.services.geheimnis import entschluesseln
+        return entschluesseln(self.refresh_token_geheim)
+
+    @refresh_token.setter
+    def refresh_token(self, klartext):
+        from core.services.geheimnis import verschluesseln
+        self.refresh_token_geheim = verschluesseln(klartext)
+
+    # -- Zustand -------------------------------------------------------
+    @property
+    def ist_einsatzbereit(self) -> bool:
+        """Reicht das Hinterlegte, um überhaupt einen Abruf zu versuchen?
+
+        Bewusst streng: Ein halb ausgefülltes Postfach wird übersprungen, statt
+        einen Verbindungsversuch zu starten, der ohnehin scheitert und dabei
+        nur das Fehlerprotokoll füllt.
+        """
+        if not self.aktiv or not self.benutzer:
+            return False
+        if self.verfahren == self.VERFAHREN_OAUTH2:
+            return bool(self.mandant_id and self.anwendung_id and self.refresh_token_geheim)
+        return bool(self.server and self.passwort_geheim)
+
+    def fehler_vermerken(self, text: str):
+        from django.utils import timezone
+
+        self.letzter_fehler = (text or '')[:2000]
+        self.letzter_fehler_am = timezone.now()
+        self.save(update_fields=['letzter_fehler', 'letzter_fehler_am'])
+
+    def erfolg_vermerken(self):
+        from django.utils import timezone
+
+        self.letzter_abruf = timezone.now()
+        self.letzter_fehler = ''
+        self.letzter_fehler_am = None
+        self.save(update_fields=['letzter_abruf', 'letzter_fehler', 'letzter_fehler_am'])
+
+
 class ZweiterFaktor(models.Model):
     """Der zweite Anmeldefaktor eines Kontos (TOTP).
 

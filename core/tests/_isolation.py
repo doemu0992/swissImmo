@@ -174,7 +174,7 @@ class MandantenFixture:
         `get_object_or_404` abgelesen.
         """
         from crm.models import Handwerker, Kommunikation, Vorlage
-        from core.models import Pendenz
+        from core.models import Pendenz, Postfach
         from mietprozess.models import Mietbewerbung
         from portfolio.models import (Ausstattung, Dokument as PDokument, Geraet, Schluessel,
                                       SchluesselAusgabe, Sollmietzins, StaffelVorlage,
@@ -208,6 +208,13 @@ class MandantenFixture:
         self.kuendigung = Kuendigung.objects.create(vertrag=self.vertrag)
         self.pendenz = Pendenz.objects.create(
             titel=f'Frist {k}', liegenschaft=self.liegenschaft)
+        # Ohne Geheimnis angelegt: Der Registrylauf prüft SICHTBARKEIT, und
+        # dafür braucht es keinen Schlüssel. Ein verschlüsseltes Passwort
+        # hier hiesse, dass das ganze Fixture — und damit jeder Test, der es
+        # benutzt — an einer gesetzten Umgebungsvariablen hinge.
+        self.postfach = Postfach.objects.create(
+            organisation=self.organisation, zweck=Postfach.ZWECK_RECHNUNGEN,
+            server=f'imap.{k.lower()}.example.ch', benutzer=f'rechnungen@{k.lower()}.ch')
         self.schluessel = Schluessel.objects.create(
             liegenschaft=self.liegenschaft, schluessel_nummer=f'S-{k}-01')
         self.schluessel_ausgabe = SchluesselAusgabe.objects.create(

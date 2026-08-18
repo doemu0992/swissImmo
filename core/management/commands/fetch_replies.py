@@ -1,211 +1,262 @@
-from crm.models import Organisation
-from tickets.models import SchadenMeldung, TicketNachricht
+"""Antworten auf Ticket-Mails einlesen — je Verwaltung ein Postfach.
 
-import imaplib
+Mieter und Handwerker antworten auf die Benachrichtigung zu einem Ticket. Der
+Betreff trägt «Ticket #123»; diese Nummer ordnet die Antwort dem Ticket zu.
+
+ZWEI DINGE HABEN SICH AM 18.08.2026 GEÄNDERT
+
+**1. Das Postfach kommt aus der Datenbank, nicht aus dem Code.** Bis dahin
+stand der Server fest in dieser Datei (`IMAP_SERVER = "lx37.hoststar.hosting"`)
+und die Zugangsdaten in `EMAIL_REPLY_USER` / `EMAIL_REPLY_PASSWORD` — ein
+Postfach für alle Verwaltungen. Jetzt: `core.Postfach`, Zweck «antworten».
+Kein stiller Rückfall auf die Umgebungsvariablen.
+
+**2. Der Mandantenkontext wird gesetzt — vorher fehlte er, und der Befehl war
+dadurch KAPUTT.** `SchadenMeldung` erbt von `OrganisationAusKette`, sein
+`objects` ist also ein `TenantManager`. Der wirft seit Etappe 6.2 ohne
+gesetzten Kontext. Der alte Code rief `SchadenMeldung.objects.get(id=…)`
+mitten aus dem Befehl heraus auf, wo es nie einen Kontext gab — und fing das
+Ergebnis mit
+
+    except Exception as db_err:
+        self.stdout.write(self.style.ERROR(f"❌ DB Fehler: {db_err}"))
+
+wieder ein. Jede eingehende Antwort scheiterte also still, mit einer Zeile im
+Protokoll, die nach einem Datenbankproblem aussah. Genau das ist der Grund,
+warum ein `except Exception` mit einer Sammelmeldung so teuer ist: Der Fehler
+war nicht unsichtbar — er war nur nicht als Fehler erkennbar.
+
+DIE ZUORDNUNG IST JETZT ZWEISTUFIG
+
+Postfach → Verwaltung, dann Ticketnummer **innerhalb** dieser Verwaltung. Eine
+Nummer aus einem fremden Bestand findet damit nichts, statt in den falschen
+Bestand zu schreiben.
+
+Aufruf:
+    python manage.py fetch_replies --einmal
+    python manage.py fetch_replies                  # Dauerschleife (alle 60 s)
+"""
 import email
-import re
-import os
-import time
 import html
+import logging
+import re
+import time
 from email.header import decode_header
+
 from django.core.management.base import BaseCommand
 from django.db import connections
 from django.utils.html import strip_tags
 
+from core.services.postfach_abruf import AbrufFehler, hole_ungelesene, postfaecher_fuer
+from core.tenancy import organisation_kontext
+
+logger = logging.getLogger(__name__)
+
+PAUSE_SEKUNDEN = 60
+
+#: Ab hier beginnt das zitierte Original. Alles danach wird abgeschnitten —
+#: sonst steht die ganze Verlaufskette in jeder Antwort.
+ZITAT_MUSTER = [
+    r'ImmoSwiss Verwaltung\s+schrieb am',
+    r'schrieb am.*?um.*?:',
+    r'On\s+.*?wrote:',
+    r'Am\s+.*?schrieb.*?:',
+    r'-+Original\s+Message-+',
+    r'From:\s+.*',
+    r'Von:\s+.*',
+    r'Gesendet von meinem iPhone',
+    r'Sent from my iPhone',
+]
+
+PLATZHALTER = '[[ZEILENUMBRUCH]]'
+
+
 class Command(BaseCommand):
-    help = 'Holt Antworten von reply@immoswiss.app ab (Brechstangen-Methode)'
+    help = 'Holt Antworten auf Ticket-Mails ab, je Verwaltung aus ihrem eigenen Postfach.'
+
+    def add_arguments(self, parser):
+        parser.add_argument('--einmal', action='store_true',
+                            help='Nur ein Durchlauf (für Scheduled Tasks) statt Dauerschleife.')
+        parser.add_argument('--verwaltung', type=int, default=None,
+                            help='Nur diese Organisations-ID abrufen.')
 
     def handle(self, *args, **options):
-        self.stdout.write("🚀 Starte E-Mail-Abruf (Final Force Mode)...")
-
+        if options['einmal']:
+            self.durchlauf(options['verwaltung'])
+            return
+        self.stdout.write(f'Antwort-Abruf gestartet (Schleife, alle {PAUSE_SEKUNDEN} s) …')
         while True:
             try:
-                self.check_emails()
-            except Exception as e:
-                self.stdout.write(self.style.ERROR(f"💥 Kritischer Fehler im Loop: {e}"))
+                self.durchlauf(options['verwaltung'])
+            except Exception as fehler:                        # noqa: BLE001
+                logger.exception('Antwort-Abruf: Durchlauf abgebrochen')
+                self.stdout.write(self.style.ERROR(f'Fehler im Lauf: {fehler}'))
+            for verbindung in connections.all():
+                verbindung.close()
+            time.sleep(PAUSE_SEKUNDEN)
 
-            for conn in connections.all():
-                conn.close()
+    def durchlauf(self, nur_verwaltung=None):
+        postfaecher = postfaecher_fuer('antworten')
+        if nur_verwaltung is not None:
+            postfaecher = postfaecher.filter(organisation_id=nur_verwaltung)
 
-            self.stdout.write("💤 Warte 60 Sekunden...")
-            time.sleep(60)
-
-    def advanced_clean_body(self, html_content):
-        if not html_content: return ""
-
-        text = html_content
-
-        # 1. PLATZHALTER EINFÜGEN (Die Brechstange)
-        # Wir ersetzen alles, was wie ein Umbruch aussieht, durch ein eindeutiges Wort.
-
-        placeholder = "[[ZEILENUMBRUCH]]"
-
-        # <br> -> Platzhalter
-        text = re.sub(r'<br\s*/?>', placeholder, text, flags=re.IGNORECASE)
-        # </div>, </p>, </h1> -> Platzhalter
-        text = re.sub(r'</(div|p|h[1-6]|table|tr|li|blockquote)>', placeholder, text, flags=re.IGNORECASE)
-        # Block-Start -> Platzhalter (sicher ist sicher)
-        text = re.sub(r'<(div|p|h[1-6]|table|tr|li|blockquote)[^>]*>', placeholder, text, flags=re.IGNORECASE)
-        # Tabellenzellen -> Leerzeichen
-        text = re.sub(r'<(td|th)[^>]*>', ' ', text, flags=re.IGNORECASE)
-        text = re.sub(r'</(td|th)[^>]*>', ' ', text, flags=re.IGNORECASE)
-
-        # 2. ALLES ANDERE HTML LÖSCHEN
-        text = strip_tags(text)
-
-        # 3. PLATZHALTER IN ECHTE UMBRÜCHE WANDELN
-        text = text.replace(placeholder, "\n")
-
-        # 4. Entities auflösen
-        text = html.unescape(text)
-        text = text.replace("\xa0", " ")
-
-        # 5. ZITAT ABSCHNEIDEN
-        cutoff_patterns = [
-            r'ImmoSwiss Verwaltung\s+schrieb am',
-            r'schrieb am.*?um.*?:',
-            r'On\s+.*?wrote:',
-            r'Am\s+.*?schrieb.*?:',
-            r'-+Original\s+Message-+',
-            r'From:\s+.*',
-            r'Von:\s+.*',
-            r'Gesendet von meinem iPhone',
-            r'Sent from my iPhone'
-        ]
-
-        first_match_index = len(text)
-        found = False
-
-        for pattern in cutoff_patterns:
-            match = re.search(pattern, text, re.IGNORECASE)
-            if match:
-                if match.start() < first_match_index:
-                    first_match_index = match.start()
-                    found = True
-                    self.stdout.write(f"   ✂️ Schnitt bei: '{match.group()[:30]}...'")
-
-        if found:
-            text = text[:first_match_index]
-
-        # 6. SAUBER MACHEN
-        lines = [line.strip() for line in text.splitlines()]
-        clean_text = ""
-        for line in lines:
-            if line:
-                clean_text += line + "\n"
-            else:
-                # Max 1 Leerzeile
-                if not clean_text.endswith("\n\n"):
-                    clean_text += "\n"
-
-        return clean_text.strip()
-
-    def check_emails(self):
-        IMAP_SERVER = "lx37.hoststar.hosting"
-        EMAIL_USER = os.environ.get('EMAIL_REPLY_USER')
-        EMAIL_PASS = os.environ.get('EMAIL_REPLY_PASSWORD')
-
-        if not EMAIL_USER or not EMAIL_PASS:
-            self.stdout.write(self.style.ERROR('❌ Fehler: Zugangsdaten fehlen in .env'))
+        if not postfaecher.exists():
+            self.stdout.write(self.style.WARNING(
+                'Kein eingerichtetes Antwort-Postfach gefunden. In den Einstellungen '
+                'der Verwaltung unter «Postfächer» hinterlegen.'))
             return
 
+        for postfach in postfaecher:
+            self.stdout.write(f'{postfach.organisation} · {postfach.benutzer}')
+            try:
+                # DER KONTEXT — siehe Kopf. Ohne ihn wirft jeder Zugriff auf
+                # SchadenMeldung.objects, und zwar zu Recht.
+                with organisation_kontext(postfach.organisation):
+                    self._ein_postfach(postfach)
+            except Exception as fehler:                        # noqa: BLE001
+                # Dieselbe Zusage wie `je_organisation` (core/tenancy.py:171):
+                # Ein Fehler bei Verwaltung 3 darf 4 bis 20 nicht ohne Abruf
+                # lassen — sonst fällt er erst auf, wenn wochenlang bei
+                # niemandem mehr Antworten ankamen.
+                logger.exception('%s: Abruf abgebrochen', postfach.organisation)
+                self.stdout.write(self.style.ERROR(f'   FEHLER: {fehler}'))
+
+    def _ein_postfach(self, postfach):
         try:
-            mail = imaplib.IMAP4_SSL(IMAP_SERVER)
-            mail.login(EMAIL_USER, EMAIL_PASS)
-            mail.select("inbox")
+            verarbeitet, fehlgeschlagen = hole_ungelesene(
+                postfach, self.verarbeite_mail, self.stdout)
+        except AbrufFehler as fehler:
+            postfach.fehler_vermerken(str(fehler))
+            self.stdout.write(self.style.ERROR(f'   {fehler}'))
+            return
 
-            status, messages = mail.search(None, 'UNSEEN')
+        if fehlgeschlagen:
+            postfach.fehler_vermerken(
+                f'{fehlgeschlagen} von {verarbeitet + fehlgeschlagen} Mails liessen sich '
+                'nicht verarbeiten. Einzelheiten im Serverprotokoll.')
+        else:
+            postfach.erfolg_vermerken()
 
-            mail_ids = messages[0].split()
-            if not mail_ids:
-                print("   (Verbunden, keine ungelesenen Mails)")
-                mail.close(); mail.logout()
-                return
+    # -- Eine einzelne Mail -------------------------------------------------
 
-            self.stdout.write(self.style.SUCCESS(f"📨 {len(mail_ids)} neue Nachricht(en)!"))
+    def verarbeite_mail(self, roh):
+        """Wird je ungelesener Mail aufgerufen — im Kontext ihrer Verwaltung.
 
-            for i in mail_ids:
-                try:
-                    res, msg_data = mail.fetch(i, "(RFC822)")
-                    for response_part in msg_data:
-                        if isinstance(response_part, tuple):
-                            msg = email.message_from_bytes(response_part[1])
+        Wirft bei einem Fehler; der Aufrufer zählt ihn und macht weiter. Das
+        ist der Unterschied zur alten Fassung: Ein Fehler ist hier ein Fehler
+        und keine Protokollzeile.
+        """
+        from tickets.models import SchadenMeldung, TicketNachricht
 
-                            subject = "Kein Betreff"
-                            if msg["Subject"]:
-                                decoded_list = decode_header(msg["Subject"])
-                                parts = []
-                                for content, encoding in decoded_list:
-                                    if isinstance(content, bytes):
-                                        parts.append(content.decode(encoding or "utf-8", errors="ignore"))
-                                    else:
-                                        parts.append(str(content))
-                                subject = "".join(parts)
+        nachricht = email.message_from_bytes(roh)
+        betreff = self._betreff(nachricht)
+        absender = nachricht.get('From', 'Unbekannt')
+        self.stdout.write(f'   Prüfe: {betreff}')
 
-                            sender = msg.get("From", "Unbekannt")
-                            self.stdout.write(f"🔎 Prüfe: {subject}")
+        treffer = re.search(r'Ticket #(\d+)', betreff, re.IGNORECASE)
+        if not treffer:
+            self.stdout.write('   Keine Ticketnummer im Betreff — übersprungen.')
+            return
+        nummer = treffer.group(1)
 
-                            match = re.search(r'Ticket #(\d+)', subject, re.IGNORECASE)
+        # `objects` und NICHT `alle_organisationen`: Der gefilterte Manager ist
+        # hier die eigentliche Absicherung. Eine Nummer aus einem fremden
+        # Bestand findet damit nichts, statt fremde Post zu ergänzen.
+        ticket = SchadenMeldung.objects.filter(pk=nummer).first()
+        if ticket is None:
+            self.stdout.write(self.style.WARNING(
+                f'   Ticket #{nummer} gibt es in dieser Verwaltung nicht — übersprungen.'))
+            return
 
-                            if match:
-                                ticket_id = match.group(1)
-                                try:
-                                    ticket = SchadenMeldung.objects.get(id=ticket_id)
+        inhalt = self._inhalt(nachricht)
+        if not inhalt.strip():
+            self.stdout.write('   Inhalt leer — übersprungen.')
+            return
 
-                                    raw_html = ""
-                                    raw_text = ""
+        TicketNachricht.objects.create(
+            ticket=ticket, absender_name=absender, typ='mail_antwort',
+            nachricht=inhalt, gelesen=False)
+        ticket.gelesen = False
+        ticket.save(update_fields=['gelesen'])
+        self.stdout.write(self.style.SUCCESS(f'   In Ticket #{nummer} übernommen.'))
 
-                                    if msg.is_multipart():
-                                        for part in msg.walk():
-                                            ctype = part.get_content_type()
-                                            payload = part.get_payload(decode=True)
-                                            if payload:
-                                                decoded = payload.decode('utf-8', errors='ignore')
-                                                if ctype == "text/html": raw_html = decoded
-                                                elif ctype == "text/plain": raw_text = decoded
-                                    else:
-                                        payload = msg.get_payload(decode=True)
-                                        if payload:
-                                            decoded = payload.decode('utf-8', errors='ignore')
-                                            if msg.get_content_type() == "text/html": raw_html = decoded
-                                            else: raw_text = decoded
+    @staticmethod
+    def _betreff(nachricht):
+        roh = nachricht.get('Subject')
+        if not roh:
+            return 'Kein Betreff'
+        teile = []
+        for inhalt, kodierung in decode_header(roh):
+            if isinstance(inhalt, bytes):
+                teile.append(inhalt.decode(kodierung or 'utf-8', errors='ignore'))
+            else:
+                teile.append(str(inhalt))
+        return ''.join(teile)
 
-                                    content = raw_html if raw_html else raw_text
+    def _inhalt(self, nachricht):
+        """HTML bevorzugt, sonst Text — und in beiden Fällen aufbereitet."""
+        roh_html = roh_text = ''
+        if nachricht.is_multipart():
+            for teil in nachricht.walk():
+                nutzlast = teil.get_payload(decode=True)
+                if not nutzlast:
+                    continue
+                lesbar = nutzlast.decode('utf-8', errors='ignore')
+                if teil.get_content_type() == 'text/html':
+                    roh_html = lesbar
+                elif teil.get_content_type() == 'text/plain':
+                    roh_text = lesbar
+        else:
+            nutzlast = nachricht.get_payload(decode=True)
+            if nutzlast:
+                lesbar = nutzlast.decode('utf-8', errors='ignore')
+                if nachricht.get_content_type() == 'text/html':
+                    roh_html = lesbar
+                else:
+                    roh_text = lesbar
+        if roh_html:
+            return self.aufbereiten(roh_html)
+        return self._zitat_abschneiden(roh_text or '').strip()
 
-                                    if content:
-                                        final_msg = self.advanced_clean_body(content)
+    def aufbereiten(self, html_inhalt):
+        """HTML-Mail zu lesbarem Text.
 
-                                        # --- DEBUGGING AUSGABE ---
-                                        # Zeigt uns, ob Umbrüche (\n) WIRKLICH da sind
-                                        print("---------------- VORSCHAU ----------------")
-                                        print(final_msg)
-                                        print("------------------------------------------")
+        Der Umweg über einen Platzhalter ist Absicht: `strip_tags` wirft die
+        Tags weg, ohne einen Umbruch zu hinterlassen — aus einer Mail mit zehn
+        Absätzen würde sonst eine einzige Textwurst. Also erst die
+        block-schliessenden Tags durch eine Marke ersetzen, dann entkernen,
+        dann die Marke zum Umbruch machen.
+        """
+        if not html_inhalt:
+            return ''
+        text = html_inhalt
+        text = re.sub(r'<br\s*/?>', PLATZHALTER, text, flags=re.IGNORECASE)
+        text = re.sub(r'</(div|p|h[1-6]|table|tr|li|blockquote)>', PLATZHALTER, text,
+                      flags=re.IGNORECASE)
+        text = re.sub(r'<(div|p|h[1-6]|table|tr|li|blockquote)[^>]*>', PLATZHALTER, text,
+                      flags=re.IGNORECASE)
+        text = re.sub(r'</?(td|th)[^>]*>', ' ', text, flags=re.IGNORECASE)
+        text = strip_tags(text)
+        text = text.replace(PLATZHALTER, '\n')
+        text = html.unescape(text).replace('\xa0', ' ')
+        text = self._zitat_abschneiden(text)
+        return self._leerzeilen_zusammenfassen(text)
 
-                                        TicketNachricht.objects.create(
-                                            ticket=ticket,
-                                            absender_name=sender,
-                                            typ='mail_antwort',
-                                            nachricht=final_msg,
-                                            gelesen=False
-                                        )
-                                        ticket.gelesen = False
-                                        ticket.save()
-                                        self.stdout.write(self.style.SUCCESS(f"✅ Importiert in Ticket #{ticket_id}"))
-                                    else:
-                                        self.stdout.write("⚠️ Inhalt leer.")
+    @staticmethod
+    def _zitat_abschneiden(text):
+        frueheste = len(text)
+        for muster in ZITAT_MUSTER:
+            treffer = re.search(muster, text, re.IGNORECASE)
+            if treffer and treffer.start() < frueheste:
+                frueheste = treffer.start()
+        return text[:frueheste]
 
-                                except SchadenMeldung.DoesNotExist:
-                                    self.stdout.write(self.style.WARNING(f"⚠️ Ticket #{ticket_id} nicht gefunden."))
-                                except Exception as db_err:
-                                     self.stdout.write(self.style.ERROR(f"❌ DB Fehler: {db_err}"))
-                            else:
-                                self.stdout.write(f"ℹ️ Kein Ticket # gefunden")
-
-                except Exception as inner_e:
-                    self.stdout.write(self.style.ERROR(f"Fehler bei Mail: {inner_e}"))
-
-            mail.close()
-            mail.logout()
-
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(f"Verbindungsfehler: {e}"))
+    @staticmethod
+    def _leerzeilen_zusammenfassen(text):
+        ergebnis = ''
+        for zeile in (z.strip() for z in text.splitlines()):
+            if zeile:
+                ergebnis += zeile + '\n'
+            elif not ergebnis.endswith('\n\n'):
+                ergebnis += '\n'
+        return ergebnis.strip()
