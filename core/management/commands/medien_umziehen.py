@@ -111,8 +111,33 @@ class Command(BaseCommand):
                     umgezogen[alt] = neu
 
                 if not trocken:
-                    setattr(datensatz, feldname, neu)
-                    datensatz.save(update_fields=[feldname])
+                    # NUR die Spalte schreiben — bewusst ohne `save()`.
+                    #
+                    # Gemessen am 18.08.2026 auf der Produktion: `save()` ruft
+                    # die Modell-Hooks auf, und die machen hier zwei Dinge, die
+                    # beide nicht gewollt sind.
+                    #
+                    # (1) Sie werfen. `crm.Eigentuemer.save` ruft
+                    #     `_unterschrift_aufbereiten`, das über `objects` liest
+                    #     — also über den TenantManager. Dieser Befehl läuft
+                    #     ausserhalb jeder Anfrage und liest selbst bewusst über
+                    #     `alle_organisationen`; seine Hooks tun das nicht:
+                    #       OrganisationsFehler: crm.Eigentuemer.objects ohne
+                    #       gesetzte Organisation
+                    #     Der Umzug brach nach zwei von zehn Dateien ab.
+                    #
+                    # (2) Schlimmer: Wo sie NICHT werfen, arbeiten sie.
+                    #     `_unterschrift_aufbereiten` vergleicht den neuen
+                    #     Feldwert mit dem in der Datenbank; weil wir ihn gerade
+                    #     geändert haben, hält es die Datei für neu hochgeladen,
+                    #     rechnet den Hintergrund heraus und speichert sie unter
+                    #     einem NEUEN Namen über `upload_to`. Das Feld landet
+                    #     dann irgendwo — nur nicht unter `organisation/<id>/`.
+                    #     Der Umzug hätte gemeldet, was er nicht getan hat.
+                    #
+                    # Ein Pfadwechsel ist kein neuer Upload. `.update()` schreibt
+                    # die Spalte und ruft weder `save()` noch Signale auf.
+                    manager.filter(pk=datensatz.pk).update(**{feldname: neu})
                 anzahl += 1
                 self.stdout.write(f'  {alt}\n    → {neu}')
 
