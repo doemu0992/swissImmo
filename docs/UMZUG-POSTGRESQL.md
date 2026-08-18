@@ -99,6 +99,66 @@ export DB_HOST=<adresse>
 export DB_PORT=<port>
 ```
 
+## Der Probelauf vom 18.08.2026 — was er ergeben hat
+
+Der Umzug wurde einmal **vollständig durchgespielt**: echter PostgreSQL-16-Server, echter Bestand, `umzug_postgres.sh` von vorne bis hinten. Nicht gelesen — gelaufen.
+
+**Er brach beim ersten Versuch ab**, in Schritt 3:
+
+```
+CommandError: Unable to serialize database: [<class 'decimal.InvalidOperation'>]
+```
+
+Kein Modell, keine Zeile, kein Feld. Ursache: zwei Datensätze in
+`core_kreditorenrechnung` mit `betrag = 999999999999.99` — bei einem Feld
+`DecimalField(max_digits=10, decimal_places=2)`, das bis 99'999'999.99 reicht.
+
+**Warum so etwas überhaupt in der Datenbank steht:** SQLite erzwingt
+Spaltenbreiten **nicht**. `max_digits` und `max_length` sind dort
+Absichtserklärungen; wer mehr hineinschreibt, bekommt es gespeichert.
+PostgreSQL erzwingt beide. Ein Bestand kann jahrelang laufen und beim Umzug an
+einer einzigen Zeile scheitern.
+
+Diese Zeilen sind übrigens **für Django gar nicht lesbar** — auch im laufenden
+Betrieb nicht: Django setzt beim Lesen die Rechengenauigkeit auf `max_digits`
+und rundet dann; schon das wirft. Jede Abfrage, die sie berührt, bricht ab.
+
+**Daraus entstanden ist `manage.py umzug_pruefen`** — Schritt 0 des Umzugs. Er
+nennt Tabelle, Primärschlüssel, Feld, Wert und Grenzwert:
+
+```
+✗ 2 Wert(e) passen NICHT in ihre deklarierte Spalte.
+  finance.KreditorenRechnung  pk=24  betrag
+      Wert:  999999999999.99
+      zu gross fuer max_digits=10, decimal_places=2 (erlaubt bis 99999999.99)
+```
+
+Nach Bereinigung lief der Umzug **vollständig durch**:
+
+| Schritt | Ergebnis |
+|---|---|
+| Sicherung | 78 Tabellen, 203 Migrationen, 24'602 Mediendateien — geprüft |
+| Zählen (SQLite) | 67 Modelle |
+| `dumpdata --all` | 3'067 Objekte |
+| `migrate` (Postgres) | alle Migrationen sauber |
+| `loaddata` | 3'067 Objekte |
+| **Sequenzen** | 75 gesetzt |
+| Nachzählen | **Bestand identisch — 67 Modelle, 3'067 Datensätze** |
+
+**Zusätzlich geprüft, was das Skript selbst nicht prüft:**
+
+- **Die Sequenzen wirklich.** Eine neue Buchung bekam ID 1053 bei höchster bestehender ID 1052 — keine Kollision. Über alle 70 Tabellen mit Sequenz nachgemessen: jede liegt auf oder über der höchsten vergebenen ID. Das ist der Fehler, vor dem dieses Dokument oben warnt, und er tritt nicht ein.
+- **Der Wächter in beide Richtungen.** `datenbank_pruefen` endet mit Code 1, wenn Engine und `.datenbank-erwartet` auseinanderlaufen, und mit 0, wenn sie zusammenpassen. In `deploy.sh` steht er vor beiden Schreibpfaden (Benutzer-Übernahme und `migrate`).
+- **Die Sicherung auf PostgreSQL.** `manage.py sicherung` schaltet selbst auf `pg_dump -Fc` um und liest den Stand zur Kontrolle zurück: 826 Objekte.
+
+**Was der Probelauf NICHT abdeckt:** PythonAnywhere selbst — die drei
+Umgebungen, der Always-on-Task, der Web-Tab. Das lässt sich nur dort prüfen.
+Und: Der Probelauf lief auf dem Entwicklungsbestand. Auf der Produktion können
+weitere Werte ausserhalb ihrer Spaltenbreite liegen; **darum ist Schritt 0 Teil
+des Skripts und keine einmalige Aufräumaktion.**
+
+---
+
 ## Der Umzug
 
 ```bash
@@ -108,8 +168,11 @@ git pull origin main
 bash umzug_postgres.sh
 ```
 
-Das Skript macht sieben Schritte und bricht bei jedem Fehler ab:
+Das Skript macht acht Schritte und bricht bei jedem Fehler ab:
 
+0. **Spaltenbreiten prüfen** (`umzug_pruefen --streng`) — findet Werte, die
+   SQLite annimmt und PostgreSQL abweist. Steht vor der Sicherung, weil er
+   nichts anfasst und Minuten spart.
 1. Sicherung von `db.sqlite3` nach `~/umzug-<zeitstempel>/`
 2. Bestand auf SQLite zählen (`bestand_zaehlen`)
 3. `dumpdata` ohne contenttypes/permissions/sessions/admin.logentry

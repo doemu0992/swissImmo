@@ -45,6 +45,28 @@ mkdir -p "$STAND"
 
 echo "→ Arbeitsordner: $STAND"
 
+# --- 0. Passen die Daten ueberhaupt hinueber? ------------------------------
+# VOR der Sicherung, weil dieser Schritt nichts anfasst und Minuten spart:
+# Scheitert er, hat der Umzug ohnehin keinen Zweck.
+#
+# SQLite erzwingt Spaltenbreiten NICHT. `DecimalField(max_digits=10)` ist dort
+# eine Absichtserklaerung; PostgreSQL erzwingt sie und weist mit
+# `numeric field overflow` ab. Dasselbe bei `CharField(max_length=…)`.
+#
+# Im Probelauf vom 18.08.2026 brach der Umzug ohne diesen Schritt beim
+# `dumpdata` ab — mit der Meldung "Unable to serialize database:
+# [<class 'decimal.InvalidOperation'>]", die weder Modell noch Zeile noch Feld
+# nennt. Ursache waren zwei Zeilen mit einem Betrag von 999'999'999'999.99 in
+# einem Feld, das bis 99'999'999.99 reicht. `umzug_pruefen` nennt sie beim
+# Namen, statt den Betreiber raten zu lassen.
+echo "→ Daten auf Spaltenbreiten pruefen"
+if ! env -u DB_ENGINE "$PY" manage.py umzug_pruefen --streng; then
+    echo
+    echo "✗ Der Bestand enthaelt Werte, die PostgreSQL abweisen wird."
+    echo "  Erst bereinigen, dann erneut starten. Es wurde NICHTS veraendert."
+    exit 1
+fi
+
 # --- 1. Sicherung ----------------------------------------------------------
 # Die SQLite-Datei IST der ganze Bestand. Vor allem anderen eine Sicherung.
 #
