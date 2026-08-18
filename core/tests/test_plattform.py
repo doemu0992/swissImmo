@@ -263,6 +263,59 @@ class DatenResetTests(TestCase):
         antwort = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'}, secure=True)
         self.assertIn(antwort.status_code, (302, 200))
 
+    def test_reset_von_a_laesst_den_bestand_von_b_stehen(self):
+        """Der Reset ist auf die eigene Verwaltung begrenzt.
+
+        DER SCHWERSTE FUND DES AUDITS VOM 18.08.2026. `fw_datenreset` sammelte
+        alle Tabellen der eigenen Apps und führte `DELETE FROM "<tabelle>"`
+        aus — ohne jede Einschränkung auf die Organisation. Rolle Verwalter
+        genügte, kein Superuser, ein Bestätigungswort. Gemessen wurde es vom
+        Auditor gegen eine Kopie der Entwicklungsdatenbank:
+
+            vorher   A(LG, Mieter) = (12, 49)   B(LG, Mieter) = (1, 1)
+            POST /neu/datenreset/ {'bestaetigung': 'LÖSCHEN'}  ->  302
+            nachher  A(LG, Mieter) = (0, 0)     B(LG, Mieter) = (0, 0)
+
+        Für B war es unsichtbar: Mitgliedschaft und Verwaltungsdaten blieben
+        stehen, die Anmeldung funktionierte weiter, die Anwendung war einfach
+        leer. Nicht wiederherstellbar ausser aus der Sicherung.
+
+        WARUM DIE ÜBRIGEN TESTS DIESER KLASSE ES NICHT FANDEN: Sie arbeiten
+        mit `_basis_objekte()` und `_team_user()`, also mit GENAU EINER
+        Verwaltung. `test_reset_loescht_alles` prüft, DASS gelöscht wird —
+        die Frage, FÜR WEN, kann er mit einem einzigen Bestand gar nicht
+        stellen. Deshalb baut dieser Test zwei auf.
+        """
+        from crm.models import Mieter
+        from portfolio.models import Liegenschaft
+        from rentals.models import Mietvertrag as _MV
+
+        from ._isolation import MandantenFixture
+
+        a = MandantenFixture('A', '8000', 'Zürich')
+        b = MandantenFixture('B', '3000', 'Bern')
+
+        c = Client()
+        c.force_login(a.benutzer)
+        antwort = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
+        self.assertIn(antwort.status_code, (302, 200))
+
+        for modell, name in ((Liegenschaft, 'Liegenschaft'), (Mieter, 'Mieter'),
+                             (_MV, 'Mietvertrag')):
+            uebrig = modell.alle_organisationen.filter(
+                organisation=b.organisation).count()
+            self.assertGreater(
+                uebrig, 0,
+                f'Der Reset von A hat die {name}-Daten von B gelöscht.')
+
+        # Und der eigene Bestand MUSS weg sein. Ohne diese Zeile bestünde den
+        # Test auch ein Reset, der gar nichts tut — er prüfte dann nur noch,
+        # dass nichts passiert.
+        self.assertEqual(
+            Liegenschaft.alle_organisationen.filter(
+                organisation=a.organisation).count(), 0,
+            'Der eigene Bestand wurde nicht gelöscht — der Reset tut nichts.')
+
     def test_reset_loescht_alles(self):
         from finance.models import Buchung
         from portfolio.models import Ausstattung

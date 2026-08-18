@@ -25,50 +25,15 @@ class ZweiBestaende(TestCase):
         self.client = Client(raise_request_exception=False)
 
 
-class DatenresetTests(ZweiBestaende):
-    """Der schwerste Fund: «meine Daten zurücksetzen» löschte alle.
-
-    `fw_datenreset` sammelte alle Tabellen der eigenen Apps und führte
-    `DELETE FROM "<tabelle>"` aus — ohne jede Einschränkung auf die
-    Organisation. Ein Verwalter (kein Superuser nötig, ein Bestätigungswort)
-    löschte damit Liegenschaften, Mieter, Verträge, Buchungen und Belege JEDER
-    Verwaltung auf der Installation.
-
-    Für die anderen war es unsichtbar: Mitgliedschaft und Verwaltungsdaten
-    blieben stehen, die Anmeldung funktionierte weiter, die Anwendung war
-    einfach leer. Nicht wiederherstellbar ausser aus der Sicherung.
-
-    Der bestehende `test_reset_loescht_alles` prüfte, DASS gelöscht wird —
-    nicht, für wen.
-    """
-
-    def test_reset_von_a_laesst_den_bestand_von_b_stehen(self):
-        from crm.models import Mieter
-        from portfolio.models import Liegenschaft
-        from rentals.models import Mietvertrag
-
-        self.client.force_login(self.a.benutzer)
-        antwort = self.client.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
-        self.assertIn(antwort.status_code, (302, 200))
-
-        for modell, name in ((Liegenschaft, 'Liegenschaft'), (Mieter, 'Mieter'),
-                             (Mietvertrag, 'Mietvertrag')):
-            uebrig = modell.alle_organisationen.filter(
-                organisation=self.b.organisation).count()
-            self.assertGreater(uebrig, 0,
-                               f'Der Reset von A hat die {name}-Daten von B gelöscht.')
-
-    def test_gegenprobe_der_eigene_bestand_ist_weg(self):
-        # Ohne diese Gegenprobe wäre nicht belegt, dass überhaupt noch gelöscht
-        # wird — ein Reset, der nichts tut, bestünde den Test oben mühelos.
-        from portfolio.models import Liegenschaft
-
-        self.client.force_login(self.a.benutzer)
-        self.client.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
-        self.assertEqual(
-            Liegenschaft.alle_organisationen.filter(
-                organisation=self.a.organisation).count(), 0,
-            'Der eigene Bestand wurde nicht gelöscht — der Reset tut nichts.')
+# Der Datenreset-Fund (Leck 1) wird NICHT hier geprüft, sondern in
+# `test_plattform.DatenResetTests.test_reset_von_a_laesst_den_bestand_von_b_stehen`
+# — bei den übrigen Reset-Tests, wo ihn findet, wer an der View arbeitet.
+#
+# Hier stand kurzzeitig eine zweite Klasse `DatenresetTests`, die sich vom
+# bestehenden `DatenResetTests` nur durch ein kleines r unterschied. Zwei
+# fast gleichnamige Klassen für dieselbe Zusage in zwei Dateien sind genau
+# die Art Doppelung, bei der später jemand die eine ändert und die andere
+# übersieht.
 
 
 class KeinRatenDerVerwaltungTests(ZweiBestaende):

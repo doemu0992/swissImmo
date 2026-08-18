@@ -44,7 +44,25 @@ nachher  A(LG, Mieter) = (0, 0)     B(LG, Mieter) = (0, 0)
 
 Für B war es unsichtbar: Mitgliedschaft und Verwaltungsdaten blieben stehen, die Anmeldung funktionierte weiter, die Anwendung war einfach leer. Nicht wiederherstellbar ausser aus der Sicherung.
 
-**Behoben.** Gelöscht wird jetzt über die **Modelle** statt über die Tabelle: Im gesetzten Kontext schränkt der `TenantManager` bereits ein, Modelle ohne Mandantenfilter werden übersprungen. Der bestehende `test_reset_loescht_alles` prüfte, *dass* gelöscht wird — nicht, für wen; `DatenresetTests` prüft jetzt beides.
+**Behoben.** Gelöscht wird jetzt über die **Modelle** statt über die Tabelle: Im gesetzten Kontext schränkt der `TenantManager` bereits ein, Modelle ohne Mandantenfilter werden übersprungen.
+
+**Warum die bestehenden Tests es nicht fanden.** `core/tests/test_plattform.py::DatenResetTests` deckte den Reset bereits mit sechs Tests ab — aber alle arbeiten mit `_basis_objekte()` und `_team_user()`, also mit **genau einer** Verwaltung. `test_reset_loescht_alles` prüft, *dass* gelöscht wird; die Frage, *für wen*, lässt sich mit einem einzigen Bestand nicht einmal stellen. Nicht die Prüftiefe fehlte, sondern der zweite Mandant.
+
+Der neue Test steht deshalb in derselben Klasse, wo ihn findet, wer an der View arbeitet:
+
+> `core/tests/test_plattform.py::DatenResetTests::test_reset_von_a_laesst_den_bestand_von_b_stehen`
+
+Er baut zwei `MandantenFixture`-Bestände auf, setzt den Reset als Verwalter von A ab und prüft, dass Liegenschaften, Mieter und Verträge von B danach noch da sind — dazu, dass A's eigener Bestand **weg** ist, denn sonst bestünde ihn auch ein Reset, der gar nichts tut.
+
+**Gegenprobe (18.08.2026, bestanden).** Die Behebung ausgehebelt — Löschen wieder über `DELETE FROM "<tabelle>"` je Tabelle statt über die Modelle, also exakt der Zustand davor:
+
+```
+FAIL: test_reset_von_a_laesst_den_bestand_von_b_stehen
+AssertionError: 0 not greater than 0 :
+    Der Reset von A hat die Liegenschaft-Daten von B gelöscht.
+```
+
+Anschliessend zurückgesetzt, Test wieder grün.
 
 ### L2 — Vier überlebende `Organisation.objects.first()`, versteckt hinter einem Alias
 
@@ -192,7 +210,7 @@ Je Sicherung einzeln ausgehebelt, zugehöriger Test muss rot werden. Alle elf be
 
 | Ausgehebelt | Test wird rot |
 |---|---|
-| Datenreset wieder über alle Mandanten | `DatenresetTests` |
+| Datenreset wieder über Tabellen statt Modelle | `DatenResetTests.test_reset_von_a_laesst_den_bestand_von_b_stehen` |
 | Honorar wieder aus der ersten Verwaltung | `test_kein_objects_first_auf_der_organisation` |
 | Fehlversuch wieder ohne Benutzer melden | `FehlversuchProtokollTests` |
 | Konto wieder immer ganz löschen | `GeteiltesKontoPortalTests` |
