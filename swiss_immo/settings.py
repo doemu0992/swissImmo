@@ -221,6 +221,28 @@ if os.getenv('DB_ENGINE', '').lower() in ('postgres', 'postgresql'):
             'HOST': os.getenv('DB_HOST', 'localhost'),
             'PORT': os.getenv('DB_PORT', '5432'),
             'CONN_MAX_AGE': 600,
+            # Ohne diesen Schalter bricht die Website mit
+            #   OperationalError: consuming input failed: SSL SYSCALL error: EOF detected
+            # ab — gemessen am 18.08.2026, gleich nach dem Umzug, auf /neu/.
+            #
+            # Der Grund ist das Zusammenspiel mit der Zeile darüber:
+            # `CONN_MAX_AGE = 600` hält die Verbindung über den Request hinaus
+            # offen. Der PostgreSQL-Server (bzw. die Strecke dorthin) schliesst
+            # eine untätige Verbindung aber früher. Django weiss davon nichts,
+            # nimmt die tote Verbindung aus dem Bestand und schickt die erste
+            # Abfrage des nächsten Requests hinein — hier die Sitzungsabfrage,
+            # also noch bevor überhaupt ein View läuft.
+            #
+            # `CONN_HEALTH_CHECKS` (Django 4.1+) prüft die wiederverwendete
+            # Verbindung zu Beginn jedes Requests mit einem billigen Ping und
+            # baut sie bei Bedarf neu auf. Kosten: eine Rundreise pro Request.
+            # Die Alternative wäre `CONN_MAX_AGE = 0` — dann aber ein voller
+            # Verbindungsaufbau samt TLS-Handshake bei JEDEM Request.
+            #
+            # Auf SQLite stellte sich die Frage nie: dort ist die «Verbindung»
+            # eine offene Datei. Der Fehler konnte deshalb erst nach dem Umzug
+            # auftreten, und er tritt nur nach einer Pause auf — nicht sofort.
+            'CONN_HEALTH_CHECKS': True,
         }
     }
 else:
