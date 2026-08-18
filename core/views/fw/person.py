@@ -167,11 +167,8 @@ def fw_mieter_portal_zugang(request, pk):
             m.benutzer = None
             m.save(update_fields=['benutzer'])
             # Konto vollständig entfernen (kein verwaistes .1/.2-Konto zurücklassen)
-            try:
-                u.delete()
-            except Exception:
-                u.is_active = False
-                u.save(update_fields=['is_active'])
+            from core.auth import konto_freigeben
+            konto_freigeben(u, getattr(request, 'organisation', None))
         messages.success(request, "Portal-Zugang entfernt.")
         return redirect(f'/neu/personen/{m.id}/')
 
@@ -538,10 +535,11 @@ def fw_person_loeschen(request, pk):
     anz_vertraege = m.vertraege.count()
     # Verknüpften Portal-Login mitentfernen
     if m.benutzer_id:
-        try:
-            m.benutzer.delete()
-        except Exception:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
+        from core.auth import konto_freigeben
+        _konto = m.benutzer
+        m.benutzer = None
+        m.save(update_fields=['benutzer'])
+        konto_freigeben(_konto, getattr(request, 'organisation', None))
     log_aktion(request, "Person gelöscht", name,
                f"inkl. {anz_vertraege} Vertrag/Verträge + zugehörige Daten" if anz_vertraege else "")
     m.delete()   # cascade: Verträge (beendet/Entwurf), Kommunikation, Dokumente etc.

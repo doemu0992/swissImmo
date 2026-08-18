@@ -44,15 +44,28 @@ class Command(BaseCommand):
         from core.tenancy import je_organisation
 
         gemeinsam = []
+        nur_eine = opts.get('organisation')
 
         # ── Teile mit eigener Schleife: genau einmal ──────────────────────
-        neu = generate_auto_pendenzen(horizont_tage=opts['horizont'], user=None)
+        #
+        # `--organisation` MUSS auch hier greifen. Sonst holte ein Nachlauf für
+        # eine einzelne Verwaltung die Marktdaten aller ab und verschickte das
+        # Fristen-Mail an ALLE Teams erneut — ein zweites Mail mit denselben
+        # Fristen, ausgelöst von jemandem, der eine einzelne Verwaltung
+        # nachziehen wollte. Die Teilläufe kennen ihre eigene Einschränkung;
+        # wo sie keine haben (`fristen_digest`), wird sie durchgereicht.
+        neu = generate_auto_pendenzen(horizont_tage=opts['horizont'], user=None,
+                                      organisation=nur_eine)
         gemeinsam.append(f"{neu} neue Pendenz(en)")
 
         # Marktdaten (Referenzzins/LIK) best-effort aktualisieren
         try:
             from core.utils.market_data import update_verwaltung_rates
-            update_verwaltung_rates()
+            from crm.models import Organisation
+            if nur_eine is None:
+                update_verwaltung_rates(alle=True)
+            else:
+                update_verwaltung_rates(Organisation.objects.get(pk=nur_eine))
             gemeinsam.append("Marktdaten aktualisiert")
         except Exception as e:
             gemeinsam.append(f"Marktdaten übersprungen ({e})")
@@ -61,7 +74,10 @@ class Command(BaseCommand):
         wd = opts['digest_weekday']
         if wd is not None and wd >= 0 and timezone.localdate().weekday() == wd:
             try:
-                call_command('fristen_digest')
+                if nur_eine is None:
+                    call_command('fristen_digest')
+                else:
+                    call_command('fristen_digest', organisation=nur_eine)
                 gemeinsam.append("Fristen-Mail versendet")
             except Exception as e:
                 gemeinsam.append(f"Fristen-Mail übersprungen ({e})")

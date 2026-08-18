@@ -50,45 +50,71 @@ def public_schaden_melden_view(request):
             titel_text = f"[{raum.capitalize()}] Defekt an {objekt.capitalize()}"
 
         # 3. CRM ABGLEICH & ADRESS-ZUORDNUNG
-        gefundener_mieter = Mieter.objects.filter(email__iexact=email).first()
+        #
+        # `alle_organisationen` an genau diesen drei Zeilen: Das Formular ist
+        # oeffentlich, es gibt keine Anmeldung und damit keinen Mandanten-
+        # kontext. Ueber `objects` warf jede der drei seit Etappe 6.2, und das
+        # Formular nahm gar keine Meldung mehr an (Audit 18.08.2026). Die
+        # Zuordnung IST hier die Aufgabe: Aus E-Mail bzw. gewaehlter
+        # Liegenschaft ergibt sich, wem die Meldung gehoert — und ab dem Fund
+        # laeuft alles Weitere in deren Kontext.
+        gefundener_mieter = Mieter.alle_organisationen.filter(email__iexact=email).first()
         zugewiesene_liegenschaft = None
         zugewiesene_einheit = None
 
         # A) Wurde sauber via Dropdown ausgewählt (Sicherstellen, dass es eine Zahl ist)
         if liegenschaft_id and liegenschaft_id.isdigit():
-            zugewiesene_liegenschaft = Liegenschaft.objects.filter(pk=int(liegenschaft_id)).first()
+            zugewiesene_liegenschaft = Liegenschaft.alle_organisationen.filter(
+                pk=int(liegenschaft_id)).first()
 
         # B) Auto-Abgleich via E-Mail
         if gefundener_mieter and not zugewiesene_liegenschaft:
-            vertrag = Mietvertrag.objects.filter(mieter=gefundener_mieter, aktiv=True).first()
+            vertrag = Mietvertrag.alle_organisationen.filter(
+                mieter=gefundener_mieter, aktiv=True).first()
             if vertrag:
                 zugewiesene_einheit = vertrag.einheit
                 zugewiesene_liegenschaft = zugewiesene_einheit.liegenschaft
 
-        # 4. Fallbacks (Sicherstellen, dass keine Infos verloren gehen)
+        # 4. KEIN RUECKFALL AUF "IRGENDEINE" LIEGENSCHAFT.
+        #
+        # Hier stand `Liegenschaft.objects.first()`: Liess sich die Adresse
+        # eines anonymen Melders nicht zuordnen, wurde die Meldung der ERSTEN
+        # Liegenschaft der Installation angehaengt — mit Name, E-Mail, Telefon,
+        # Adressfreitext und Foto. Bei zwei Verwaltungen landet die Meldung
+        # eines Mieters von B damit in der Ticketliste von A (Audit 18.08.2026).
+        #
+        # Eine Meldung ohne zuordenbare Liegenschaft wird deshalb NICHT
+        # angelegt. Der Aufrufer erfaehrt es ueber den Rueckgabewert und kann
+        # die Adresse erneut erfragen; erfundene Zuordnungen sind schlechter
+        # als eine ehrliche Rueckfrage.
         if not zugewiesene_liegenschaft:
-            zugewiesene_liegenschaft = Liegenschaft.objects.first()
-            beschreibung = f"⚠️ ZUWEISUNG UNKLAR ⚠️\nAngegebene Adresse: {adresse_text}\n\n{beschreibung}"
+            return render(request, 'core/schaden_melden.html', {
+                'fehler': 'Wir konnten die Adresse keiner Liegenschaft zuordnen. '
+                          'Bitte wählen Sie Ihre Liegenschaft aus der Liste oder '
+                          'melden Sie sich direkt bei Ihrer Verwaltung.',
+                'liegenschaften_json': '[]'})
 
         # 5. Ticket erstellen (Mit den neuen getrennten Namensfeldern)
-        SchadenMeldung.objects.create(
-            liegenschaft=zugewiesene_liegenschaft,
-            betroffene_einheit=zugewiesene_einheit,
-            gemeldet_von=gefundener_mieter,
-            melder_vorname=vorname,   # 🔥 NEU: Sicher gespeichert
-            melder_nachname=nachname, # 🔥 NEU: Sicher gespeichert
-            kategorie=kategorie,
-            raum=raum,
-            objekt=objekt,
-            titel=titel_text,
-            beschreibung=beschreibung, # <-- HIER IST DIE BESCHREIBUNG NUN 100% SAUBER
-            email_melder=email,
-            tel_melder=telefon,
-            foto=foto,
-            status='neu',
-            prioritaet='mittel',
-            zutritt='telefon' if erreichbarkeit in ['telefon', 'immer'] else 'passpartout'
-        )
+        from core.tenancy import kontext_des_objekts
+        with kontext_des_objekts(zugewiesene_liegenschaft):
+            SchadenMeldung.objects.create(
+                liegenschaft=zugewiesene_liegenschaft,
+                betroffene_einheit=zugewiesene_einheit,
+                gemeldet_von=gefundener_mieter,
+                melder_vorname=vorname,   # 🔥 NEU: Sicher gespeichert
+                melder_nachname=nachname, # 🔥 NEU: Sicher gespeichert
+                kategorie=kategorie,
+                raum=raum,
+                objekt=objekt,
+                titel=titel_text,
+                beschreibung=beschreibung, # <-- HIER IST DIE BESCHREIBUNG NUN 100% SAUBER
+                email_melder=email,
+                tel_melder=telefon,
+                foto=foto,
+                status='neu',
+                prioritaet='mittel',
+                zutritt='telefon' if erreichbarkeit in ['telefon', 'immer'] else 'passpartout'
+            )
 
         # WICHTIG: Auch beim Success-Return ein leeres JSON mitgeben, damit Alpine.js nicht abstürzt!
         return render(request, 'core/schaden_melden.html', {'success': True, 'liegenschaften_json': '[]'})
@@ -108,7 +134,24 @@ def public_schaden_melden_view(request):
 # 3. QR-CODE FORMULAR (SPEZIFISCH PRO LIEGENSCHAFT)
 # ==========================================
 def public_ticket_view(request, liegenschaft_id):
-    liegenschaft = get_object_or_404(Liegenschaft, pk=liegenschaft_id)
+    """QR-Aushang im Treppenhaus — ohne Login erreichbar.
+
+    `alle_organisationen` plus Kontext: Es gibt keine Anmeldung, aus der die
+    Middleware eine Verwaltung ableiten koennte. Ueber `Liegenschaft.objects`
+    warf diese Zeile seit Etappe 6.2, und der Aushang antwortete
+    installationsweit mit einem Serverfehler (Audit 18.08.2026). Wessen
+    Liegenschaft gemeint ist, sagt die Liegenschaft selbst — und ab da laeuft
+    alles Weitere in IHREM Kontext, damit das Ticket, die Einheitenliste und
+    die Foto-Ablage nicht kontextlos weitermachen.
+    """
+    from core.tenancy import kontext_des_objekts
+
+    liegenschaft = get_object_or_404(Liegenschaft.alle_organisationen, pk=liegenschaft_id)
+    with kontext_des_objekts(liegenschaft):
+        return _qr_formular(request, liegenschaft)
+
+
+def _qr_formular(request, liegenschaft):
     einheiten = Einheit.objects.filter(liegenschaft=liegenschaft).order_by('etage', 'bezeichnung')
     # KEINE Mieter-Namen / "Leerstand" ausgeben — diese Seite ist ohne Login über
     # ?liegenschaft_id erreichbar (QR-Aushang). Sonst könnte jeder durch ID-Enumeration

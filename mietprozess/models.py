@@ -160,7 +160,12 @@ class Mietbewerbung(OrganisationAusKette):
             if not self.pk:
                 scan_needed = True  # Neue Bewerbung
             else:
-                alt = Mietbewerbung.objects.filter(pk=self.pk).first()
+                # `alle_organisationen`: Ein Objekt fragt hier nach seinem
+                # EIGENEN vorherigen Zustand. Ueber `objects` haengt das am
+                # Kontext des Aufrufers — und `save()` laeuft auch aus
+                # Datenmigrationen und aus `medien_umziehen`, wo es keinen
+                # gibt. Der Datensatz kann sich nicht selbst fremd sein.
+                alt = Mietbewerbung.alle_organisationen.filter(pk=self.pk).first()
                 if alt and alt.betreibungsauszug != self.betreibungsauszug:
                     scan_needed = True  # Datei wurde aktualisiert
 

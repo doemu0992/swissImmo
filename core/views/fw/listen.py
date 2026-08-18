@@ -446,8 +446,12 @@ def fw_weiterverrechnung(request, kreditor_id):
             'objekt': (v.einheit.bezeichnung if v.einheit_id else ''),
             'adresse': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''),
         }
-    from crm.models import Organisation as _Vw
-    _vw = _Vw.objects.first()
+    # Absenderblock INKLUSIVE IBAN — der gehoert der Verwaltung dieser
+    # Kreditorenrechnung, nicht der ersten der Installation. Eine fremde IBAN
+    # im Absender heisst im schlechtesten Fall: Der Mieter zahlt an die
+    # falsche Bankverbindung (Audit 18.08.2026; der Alias `_Vw` liess die
+    # Zeile durch jede Suche nach `Organisation.objects.first()` fallen).
+    _vw = k.organisation
     absender = {
         'firma': _vw.firma if _vw else '', 'strasse': _vw.strasse if _vw else '',
         'plz': _vw.plz if _vw else '', 'ort': _vw.ort if _vw else '',

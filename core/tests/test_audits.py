@@ -976,7 +976,11 @@ class ReviewNachbesserungTests(TestCase):
         vw.save()
         with mock.patch.object(market_data, 'fetch_market_rates',
                                return_value=({'ref_zins': Decimal('1.25')}, [])):
-            market_data.update_verwaltung_rates()
+            # `alle=True`: Seit dem Audit vom 18.08.2026 muss „alle
+            # Verwaltungen" ausdruecklich gesagt werden — `None` war
+            # vorher gleichbedeutend und kippte bei leerem Kontext die
+            # Bedeutung eines Aufrufs um.
+            market_data.update_verwaltung_rates(alle=True)
         vw.refresh_from_db()
         self.assertIsNotNone(vw.letztes_update_marktdaten,
                              'Unveränderter Wert → Zeitstempel bleibt leer → Prüfung wirkungslos')

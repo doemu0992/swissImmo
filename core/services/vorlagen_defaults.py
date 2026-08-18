@@ -125,6 +125,23 @@ STANDARD_VORLAGEN = [
 def seed_standard_vorlagen():
     """Legt fehlende Standardvorlagen an (idempotent). Gibt Anzahl erstellter zurück."""
     from crm.models import Vorlage
+
+    from core.tenancy import ohne_organisation
+
+    erstellt = 0
+    # `ohne_organisation()`: Die mitgelieferten Vorlagen gehoeren NIEMANDEM
+    # (`organisation IS NULL`). `Vorlage.save()` traegt seit Etappe 6.4 die
+    # Organisation des Kontexts ein, wenn einer gesetzt ist — und aus der
+    # Oberflaeche IST einer gesetzt. Folge ohne diese Zeile: Der Seed legte
+    # eine Vorlage der aufrufenden Verwaltung an, die Vorhandenseins-Pruefung
+    # (`organisation__isnull=True`) sah sie nicht, und JEDER Knopfdruck
+    # erzeugte den vollen Satz erneut (gemessen: 9 + 9 = 20 Vorlagen).
+    with ohne_organisation():
+        erstellt = _anlegen(Vorlage)
+    return erstellt
+
+
+def _anlegen(Vorlage):
     erstellt = 0
     for d in STANDARD_VORLAGEN:
         # `alle_organisationen`: Diese Vorlagen SIND die mitgelieferten

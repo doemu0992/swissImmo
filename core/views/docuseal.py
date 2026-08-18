@@ -219,7 +219,11 @@ def docuseal_webhook(request):
                 # 1. Vertrags-ID sicher extrahieren
                 try:
                     vertrag_id = int(name.replace("Mietvertrag", "").strip())
-                    vertrag = Mietvertrag.objects.get(id=vertrag_id)
+                    # `alle_organisationen`: Webhook ohne Anmeldung, also
+                    # ohne Mandantenkontext. Ueber `objects` warf die Zeile
+                    # seit Etappe 6.2 einen OrganisationsFehler, der nicht im
+                    # gefangenen Tupel steht -> HTTP 500 statt Ablage.
+                    vertrag = Mietvertrag.alle_organisationen.get(id=vertrag_id)
                 except (ValueError, Mietvertrag.DoesNotExist):
                     logger.error(f"DocuSeal: Vertrag nicht gefunden für '{name}'")
                     return HttpResponse("OK", status=200)

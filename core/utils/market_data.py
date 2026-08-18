@@ -125,7 +125,7 @@ def fetch_market_rates():
 
     return results, errors
 
-def update_verwaltung_rates(organisation=None):
+def update_verwaltung_rates(organisation=None, *, alle=False):
     """Holt Referenzzinssatz und LIK und schreibt sie in die Verwaltungsdaten.
 
     `organisation` bestimmt, WESSEN Daten geschrieben werden:
@@ -135,12 +135,25 @@ def update_verwaltung_rates(organisation=None):
       Referenzzins und LIK nationale Werte, aber `letztes_update_marktdaten`
       ist es nicht: An diesem Stempel haengt die Frischepruefung, und ein
       fremder Klick duerfte ihn nicht zuruecksetzen.
-    - **None** — alle Organisationen. Der Weg fuer den taeglichen Lauf und
-      `manage.py update_rates`. Vorher schrieb der Aufruf immer nur in die
+    - **`alle=True`** — alle Organisationen. Der Weg fuer den taeglichen Lauf
+      und `manage.py update_rates`. Vorher schrieb der Aufruf immer nur in die
       ERSTE Verwaltung; alle weiteren blieben auf ihrem alten Zinssatz stehen
       und rechneten Mietzinsanpassungen nach OR 269a gegen einen veralteten
       Stand — ohne dass irgendwo ein Fehler erschienen waere.
+
+    WARUM `alle` UND NICHT EINFACH `None` (18.08.2026): Bis hierher bedeutete
+    `None` „alle". Zwei Aufrufer uebergaben aber `aktuelle_organisation()` —
+    und der ist None, sobald kein Kontext gesetzt ist. Aus „schreibe in MEINE
+    Verwaltung" wurde damit stillschweigend „schreibe in ALLE", inklusive des
+    Frischestempels, an dem die Frischepruefung haengt (gemessen: beide
+    Verwaltungen landeten auf demselben Wert). Ein vergessener Kontext darf
+    nicht die Bedeutung eines Aufrufs umdrehen; „alle" muss man jetzt sagen.
     """
+    if organisation is None and not alle:
+        raise ValueError(
+            'update_verwaltung_rates ohne Organisation: Fuer alle Verwaltungen '
+            'ausdruecklich alle=True setzen. Ein leerer Kontext ist kein '
+            '„alle" — er ist ein Fehler.')
     try:
         from crm.models import Organisation
     except ImportError:

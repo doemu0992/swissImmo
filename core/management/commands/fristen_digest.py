@@ -36,6 +36,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--tage', type=int, default=7, help="Vorlauf in Tagen (Standard 7)")
         parser.add_argument('--dry-run', action='store_true', help="Nicht senden, nur anzeigen")
+        parser.add_argument('--organisation', type=int, default=None,
+                            help='Nur diese Verwaltung (ID). Ohne Angabe: alle.')
 
     def handle(self, *args, **opts):
         from crm.models import Organisation
@@ -43,7 +45,10 @@ class Command(BaseCommand):
         from core.tenancy import organisation_kontext
 
         gesendet = 0
-        for organisation in Organisation.objects.order_by('pk'):
+        organisationen = Organisation.objects.order_by('pk')
+        if opts.get('organisation') is not None:
+            organisationen = organisationen.filter(pk=opts['organisation'])
+        for organisation in organisationen:
             # Der Kontext gilt für den ganzen Lauf dieser Verwaltung; seit
             # Etappe 6.2 filtert die Pendenz-Abfrage darüber. Der ausdrückliche
             # `organisation=`-Filter in `_fuer_organisation` ist damit

@@ -88,6 +88,12 @@ AUSNAHMEN = {
     # genannt wird, prüft `test_oeffentliche_endpunkte_organisation.py`.
     'public_datenschutz_objekt': 'nennt den Verantwortlichen des Objekts — Art. 19 revDSG',
     'public_ticket':          'bewusst öffentlich (Schadenmeldung ohne Login)',
+    # Der QR-Aushang im Treppenhaus. Er zeigt die Adresse des Hauses, in dem
+    # er haengt, und nimmt von jedem Vorbeigehenden eine Meldung entgegen —
+    # beides ist der Zweck, nicht ein Leck. Bis zum Audit vom 18.08.2026 fiel
+    # er nicht auf, weil er seit Etappe 6.2 mit 500 antwortete und darum
+    # weder etwas zeigte noch etwas anlegte.
+    'public_report':          'QR-Aushang im Haus — oeffentlich by design',
     'fw_vermarktung_feed':    'token-gesichert, kein Login — eigener Test in Bauform C',
     'fw_kontoblatt':          'Kontonummer statt Objekt-ID — Bauform C',
     'portal_report':          'Eigentümer-Report, datensatzbezogen bereits isoliert',
@@ -219,7 +225,12 @@ class FremdeIdUeberUrlsTests(IsolationsBasis):
 
     #: Kennzeichen aus dem Bestand von B. Tauchen sie in einer Antwort auf,
     #: hat die View fremde Daten herausgegeben.
-    VERRAETERISCH = ('Verwaltung B', 'Mieter B', 'Testgasse')
+    #: `'Testgasse'` stand hier bis zum Audit vom 18.08.2026 — die Zeichenkette
+    #: kommt im ganzen Projekt nur in dieser Zeile vor. Das Fixture legt B's
+    #: Mieter unter `B-Gasse 2` an. Ein Drittel des Detektors konnte also nie
+    #: feuern, und niemand haette es gemerkt: Ein Marker, der nichts findet,
+    #: sieht genauso aus wie einer, der nichts zu finden hat.
+    VERRAETERISCH = ('Verwaltung B', 'Mieter B', 'B-Gasse', 'B-Weg')
 
     def test_keine_fremde_id_gibt_fremde_daten_heraus(self):
         durchlaufen = 0

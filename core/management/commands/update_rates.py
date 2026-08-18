@@ -23,7 +23,7 @@ class Command(BaseCommand):
         timestamp = now_zurich.strftime('%d.%m.%Y %H:%M:%S')
 
         # 4. Update starten
-        status, errors = update_verwaltung_rates()
+        status, errors = update_verwaltung_rates(alle=True)
 
         # 5. Ergebnis schreiben
         if errors:

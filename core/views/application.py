@@ -57,6 +57,20 @@ def public_datenschutz_view(request, einheit_id=None):
         # Verwaltung folgt (naechste Zeile).
         einheit = get_object_or_404(
             Einheit.alle_organisationen.select_related('liegenschaft'), id=einheit_id)
+        # KEINE `zur_ausschreibung`-Schranke, und das ist eine Entscheidung
+        # gegen einen Auditvorschlag (18.08.2026). Der Einwand stimmt: Die
+        # Seite beantwortet fuer jede Objektnummer «welche Verwaltung betreut
+        # dieses Objekt» — Firma, Strasse, PLZ, Ort, E-Mail.
+        #
+        # Sie bleibt trotzdem offen. Erstens sind das Geschaeftsdaten der
+        # Verwaltung, keine Mieterdaten, und sie stehen ohnehin in jedem
+        # Inserat. Zweitens — und das gibt den Ausschlag — muss eine Person,
+        # die sich beworben hat, spaeter nachlesen koennen, WER ihre Daten
+        # erhoben hat: Daran haengen Auskunfts- und Loeschbegehren nach
+        # revDSG. Eine Wohnung ist Tage nach der Bewerbung nicht mehr
+        # ausgeschrieben; die Erklaerung dann wegzunehmen kehrte den Zweck
+        # der Vorschrift um. `test_mit_objekt_nennt_die_verwaltung_des_objekts`
+        # haelt diese Zusage fest.
         verwaltung = einheit.liegenschaft.organisation
     else:
         moegliche = list(Organisation.objects.all()[:2])

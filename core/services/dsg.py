@@ -40,11 +40,13 @@ def anonymisiere_person(mieter, *, grund='', user=None):
     pid = mieter.id
     # 1) Verknüpften Portal-Login entfernen (enthält Name/E-Mail).
     if mieter.benutzer_id:
-        try:
-            mieter.benutzer.delete()
-        except Exception:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
+        # Loslassen statt ueberall loeschen: Dasselbe Konto kann in einer
+        # anderen Verwaltung noch ein Profil oder eine Mitgliedschaft haben.
+        # Die Anonymisierung DIESER Person darf dort nichts entfernen.
+        from core.auth import konto_freigeben
+        _konto = mieter.benutzer
         mieter.benutzer = None
+        konto_freigeben(_konto, getattr(mieter, 'organisation', None))
 
     # 2) Bewerbungen der Person anonymisieren + hochgeladene Dokumente löschen.
     from mietprozess.models import Mietbewerbung

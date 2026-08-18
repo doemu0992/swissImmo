@@ -215,7 +215,7 @@ def fw_fristen(request):
         'heute_iso': heute.isoformat(),
         'gesamt': len(eintraege), 'nur_frist': nur_frist,
         'ueberfaellig_n': len(buckets[0]['items']),
-        'feed_token': feed_token(),
+        'feed_token': feed_token(getattr(request, 'organisation', None)),
     })
 
 
@@ -246,10 +246,20 @@ def fristen_ical_feed(request):
     """Öffentlicher, abonnierbarer iCal-Feed (Token-gesichert, ohne Login) —
     damit Outlook/Google/Apple Calendar die Fristen automatisch synchronisieren."""
     from django.http import HttpResponse, HttpResponseForbidden
-    from core.services.ical import build_ics, fristen_events, token_gueltig
-    if not token_gueltig(request.GET.get('token')):
+    from core.services.ical import (build_ics, fristen_events,
+                                    organisation_aus_token)
+
+    from core.tenancy import kontext_des_objekts
+
+    # Der Token sagt, WESSEN Fristen — vorher signierte er eine Konstante und
+    # galt fuer jede Verwaltung. Ohne Anmeldung gibt es hier keinen anderen
+    # Weg zur Organisation, und ohne sie warf `Pendenz.objects` seit Etappe
+    # 6.2: Der Feed lieferte einen Serverfehler statt eines Kalenders.
+    organisation = organisation_aus_token(request.GET.get('token'))
+    if organisation is None:
         return HttpResponseForbidden("Ungültiger oder fehlender Token.")
-    ics = build_ics(fristen_events(_offene_fristen_pendenzen()))
+    with kontext_des_objekts(organisation):
+        ics = build_ics(fristen_events(_offene_fristen_pendenzen()))
     resp = HttpResponse(ics, content_type='text/calendar; charset=utf-8')
     resp['Content-Disposition'] = 'inline; filename="swissimmo-fristen.ics"'
     return resp

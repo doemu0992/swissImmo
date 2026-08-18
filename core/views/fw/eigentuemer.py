@@ -115,11 +115,9 @@ def fw_eigentuemer_portal_zugang(request, pk):
             u = md.benutzer
             md.benutzer = None
             md.save(update_fields=['benutzer'])
-            try:
-                u.delete()
-            except Exception:
-                u.is_active = False
-                u.save(update_fields=['is_active'])
+            # Nur loslassen, nicht ueberall loeschen (siehe konto_freigeben).
+            from core.auth import konto_freigeben
+            konto_freigeben(u, getattr(request, 'organisation', None))
         messages.success(request, "Portal-Zugang entfernt.")
         return redirect(ziel)
 
@@ -181,10 +179,11 @@ def fw_eigentuemer_loeschen(request, pk):
         # Verknüpften Eigentümer-Portal-Login mitentfernen — sonst bleibt ein
         # Login zurück, dessen eigentuemer_profil ins Leere zeigt.
         if md.benutzer_id:
-            try:
-                md.benutzer.delete()
-            except Exception:
-                logger.debug("Fehler bewusst übergangen", exc_info=True)
+            from core.auth import konto_freigeben
+            _konto = md.benutzer
+            md.benutzer = None
+            md.save(update_fields=['benutzer'])
+            konto_freigeben(_konto, getattr(request, 'organisation', None))
         log_aktion(request, "Eigentuemer gelöscht", name, '')
         md.delete()
         messages.success(request, f"🗑️ Eigentuemer {name} gelöscht.")

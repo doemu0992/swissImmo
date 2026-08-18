@@ -308,7 +308,7 @@ def erledige_pendenzen_fuer(vertrag, keywords, user=None):
 # ============================================================
 # 3. AUTO-PENDENZEN (Fristen aus dem Datenbestand persistieren)
 # ============================================================
-def generate_auto_pendenzen(horizont_tage=90, user=None):
+def generate_auto_pendenzen(horizont_tage=90, user=None, organisation=None):
     """Erzeugt/aktualisiert persistente Pendenzen aus terminierten Ereignissen.
 
     (Vertragsende, Auszug, Geräte-Garantien, Serviceabos.) Idempotent über das
@@ -325,7 +325,13 @@ def generate_auto_pendenzen(horizont_tage=90, user=None):
     from core.tenancy import organisation_kontext
 
     gesamt = 0
-    for organisation in Organisation.objects.order_by('pk'):
+    # `organisation` schraenkt auf eine Verwaltung ein (Nachlauf). Der Name
+    # ueberdeckt bewusst die Schleifenvariable nicht — deshalb `nur_eine`.
+    nur_eine = organisation
+    alle = Organisation.objects.order_by('pk')
+    if nur_eine is not None:
+        alle = alle.filter(pk=getattr(nur_eine, 'pk', nur_eine))
+    for organisation in alle:
         with organisation_kontext(organisation):
             gesamt += _pendenzen_fuer_organisation(horizont_tage, user)
     return gesamt

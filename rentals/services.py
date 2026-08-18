@@ -252,7 +252,15 @@ def verarbeite_docuseal_event(payload):
     submission = data.get('submission') if isinstance(data.get('submission'), dict) else {}
     name = data.get('name') or submission.get('name') or ''
     vertrag_id = _vertrag_id_aus_name(name)
-    vertrag = Mietvertrag.objects.filter(id=vertrag_id).first() if vertrag_id else None
+    # `alle_organisationen`: DocuSeal ruft als Webhook auf — keine Anmeldung,
+    # kein Mandantenkontext. Ueber `objects` fand die Zeile seit Etappe 6.2
+    # nichts mehr, sondern warf; die Ausnahme wurde vom Aufrufer geschluckt und
+    # der Webhook meldete 200 OK. Folge: Ein unterschriebener Vertrag wurde
+    # NIE abgelegt, ohne dass irgendwo ein Fehler erschien.
+    #
+    # Die Vertrags-ID stammt aus dem Namen der Submission, den wir selbst
+    # gesetzt haben. Ab dem Fund gilt der Kontext dieses Vertrags.
+    vertrag = Mietvertrag.alle_organisationen.filter(id=vertrag_id).first() if vertrag_id else None
     if not vertrag:
         return False
 

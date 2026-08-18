@@ -265,8 +265,14 @@ def berechne_abrechnung(periode_id):
 
     # D) Verwaltungshonorar auf die Nebenkosten — Satz aus den Account-Einstellungen
     # (Verwaltung.nk_honorar_prozent, Standard 3 %); 0 % = kein Honorar-Posten.
-    from crm.models import Organisation as _Vw
-    _vw = _Vw.objects.first()
+    # Der Satz kommt aus der Verwaltung DIESER Periode, nicht aus der
+    # ersten der Installation. Das Honorar ist ein Geldbetrag auf einer
+    # Abrechnung, die dem Mieter zugestellt wird — mit dem Satz einer
+    # fremden Verwaltung gerechnet ist sie schlicht falsch.
+    #
+    # Der Alias `_Vw` liess `Organisation.objects.first()` durch jede
+    # Suche nach genau dieser Zeichenkette fallen (Audit 18.08.2026).
+    _vw = getattr(periode, 'organisation', None)
     _satz_pct = _vw.nk_honorar_prozent if _vw else Decimal('3.00')
     subtotal = pool_heizkosten + pool_nk_m2 + pool_nk_einheit + pool_nk_personen
     honorarsatz = (_satz_pct or Decimal('0')) / Decimal('100')

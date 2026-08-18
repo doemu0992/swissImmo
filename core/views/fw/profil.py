@@ -33,7 +33,7 @@ from rentals.models import Mietvertrag
 logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num, _vermietung_pipeline
-from core.tenancy import aktuelle_organisation
+from core.tenancy import aktuelle_organisation, organisation_der_anfrage
 
 
 # ============================================================
@@ -160,10 +160,36 @@ def fw_datenreset(request):
                        if m._meta.app_label in OWN_APPS and m._meta.db_table not in KEEP
                        and m._meta.db_table in vorhanden})
 
+    # NUR DER EIGENE BESTAND. Bis zum Audit vom 18.08.2026 stand hier ein
+    # `DELETE FROM "<tabelle>"` je Tabelle — ohne jede Einschränkung auf die
+    # Organisation. Ein Verwalter (kein Superuser nötig, ein Bestätigungswort)
+    # löschte damit die Liegenschaften, Mieter, Verträge, Buchungen und Belege
+    # JEDER Verwaltung auf dieser Installation. Gemessen: A(12 LG/49 Mieter)
+    # und B(1/1) → beide auf (0/0). Nicht wiederherstellbar ausser aus der
+    # Sicherung, und für B ohne jeden Hinweis: Mitgliedschaft und
+    # Verwaltungsdaten blieben stehen, die Anwendung war einfach leer.
+    #
+    # Gelöscht wird darum über die MODELLE, nicht über die Tabelle: Im
+    # gesetzten Kontext schränkt der `TenantManager` bereits ein, und was
+    # keinen Bezug hat (`Benutzer`, `Organisation`), steht ohnehin in KEEP.
+    # `constraint_checks_disabled` bleibt, damit die Reihenfolge der
+    # Fremdschlüssel keine Rolle spielt.
+    organisation = organisation_der_anfrage(request)
+    modelle = [m for m in apps.get_models()
+               if m._meta.app_label in OWN_APPS and m._meta.db_table not in KEEP
+               and m._meta.db_table in vorhanden]
     with connection.constraint_checks_disabled():
-        with connection.cursor() as cur:
-            for t in tabellen:
-                cur.execute(f'DELETE FROM "{t}"')
+        for modell in modelle:
+            manager = getattr(modell, 'objects', None)
+            if getattr(type(manager), 'filtert', True) is False or manager is None:
+                # Modell ohne Mandantenfilter: nicht anfassen. Es gehört
+                # entweder allen (Systemvorlagen) oder niemandem.
+                continue
+            try:
+                modell.objects.all().delete()
+            except Exception:
+                logger.warning('Datenreset: %s konnte nicht geleert werden',
+                               modell._meta.label, exc_info=True)
 
     # Referenz-/Stammdaten frisch aufsetzen
     from finance.booking import ensure_kontenplan
@@ -177,7 +203,7 @@ def fw_datenreset(request):
     except Exception:
         logger.debug("Fehler bewusst übergangen", exc_info=True)
 
-    log_aktion(request, "Datenbank zurückgesetzt", f"{len(tabellen)} Tabellen geleert")
+    log_aktion(request, "Datenbank zurückgesetzt", f"{len(modelle)} Modelle geleert")
     messages.success(request, "✅ Alle Daten wurden gelöscht — du startest mit einer leeren Datenbank.")
     return redirect('/neu/')
 
@@ -192,7 +218,7 @@ def fw_marktdaten_aktualisieren(request):
         try:
             # Nur die eigene Verwaltung: Ein Knopfdruck darf keinen fremden
             # Frischestempel zuruecksetzen (siehe update_verwaltung_rates).
-            msg, errors = update_verwaltung_rates(aktuelle_organisation())
+            msg, errors = update_verwaltung_rates(organisation_der_anfrage(request))
             messages.success(request, f"📡 {msg}")
             if errors:
                 messages.warning(request, "Hinweis: " + " | ".join(errors[:2]) +

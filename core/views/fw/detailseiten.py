@@ -385,8 +385,12 @@ def fw_objekt_detail(request, pk):
 
 
     # Aktuelle Marktwerte als Vorbelegung für die Indexbasis neuer Sollmietzins-Zeilen
-    from crm.models import Organisation as _Vw
-    _vw = _Vw.objects.first()
+    # Referenzzins und LIK der Verwaltung DIESES Objekts: An ihnen haengt
+    # die Begruendung einer Mietzinsanpassung nach OR 269a. Aus der ersten
+    # Verwaltung der Installation genommen, stuende in der Anpassung eine
+    # fremde Basis (Audit 18.08.2026 — der Alias `_Vw` machte die Zaehlung
+    # der `Organisation.objects.first()`-Stellen blind).
+    _vw = e.liegenschaft.organisation if e.liegenschaft_id else None
     aktueller_ref_zins = _vw.aktueller_referenzzinssatz if _vw else Decimal('1.25')
     aktueller_lik = _vw.aktueller_lik_punkte if _vw else Decimal('107.1')
 

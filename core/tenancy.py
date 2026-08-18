@@ -116,6 +116,58 @@ def ohne_organisation():
         _kontextfrei.set(vorher_frei)
 
 
+def organisation_der_anfrage(request):
+    """Die Verwaltung DIESER Anfrage — niemals None.
+
+    Zwei Aufrufer uebergaben `aktuelle_organisation()` an
+    `update_verwaltung_rates()`. Das ist im Normalfall richtig und im Fehlerfall
+    fatal: Ist der Kontext leer, wird daraus None — und None bedeutete dort
+    „alle Verwaltungen". Aus „schreibe meinen Zinssatz" wurde damit
+    stillschweigend „schreibe in jede fremde Verwaltung".
+
+    Diese Funktion macht den Fehlerfall zum Fehler statt zu einer anderen
+    Bedeutung. Innerhalb einer Anfrage ist die Verwaltung immer da (die
+    Middleware setzt sie aus der Mitgliedschaft); fehlt sie, stimmt etwas
+    Grundsaetzliches nicht, und das gehoert gemeldet, nicht umgedeutet.
+    """
+    org = getattr(request, 'organisation', None) or aktuelle_organisation()
+    if org is None:
+        raise OrganisationsFehler(
+            'Anfrage ohne Verwaltung. Die Middleware setzt sie aus der '
+            'Mitgliedschaft — fehlt sie hier, ist der Benutzer in keiner '
+            'Verwaltung Mitglied oder die Middleware haengt nicht in der Kette.')
+    return org
+
+
+@contextmanager
+def kontext_des_objekts(objekt):
+    """Setzt den Kontext auf die Organisation eines vorliegenden Datensatzes.
+
+    DER WEG FÜR ANONYME EINSTIEGSPUNKTE — Webhooks, öffentliche Formulare,
+    Token-Feeds. Dort gibt es keine Anmeldung, aus der die Middleware eine
+    Verwaltung ableiten könnte, und trotzdem ist eindeutig, um wessen Daten es
+    geht: Der eingehende Aufruf nennt einen Datensatz, und der trägt seine
+    Organisation.
+
+    Das Muster ist immer dasselbe und steht bewusst hier statt fünfmal
+    ausgeschrieben:
+
+        vertrag = Mietvertrag.alle_organisationen.filter(id=…).first()
+        if vertrag:
+            with kontext_des_objekts(vertrag):
+                …alles Weitere…
+
+    `alle_organisationen` ist an dieser einen Stelle nötig (ohne Kontext kann
+    `objects` nichts finden) und genau deshalb gefährlich: Sie sieht ALLE
+    Verwaltungen. Die Zeile danach schliesst das Fenster wieder — alles, was
+    folgt, läuft im Kontext des gefundenen Datensatzes und kann nicht in eine
+    fremde Verwaltung schreiben.
+    """
+    organisation = getattr(objekt, 'organisation', None) or objekt
+    with organisation_kontext(organisation):
+        yield organisation
+
+
 def je_organisation(arbeit, auswahl=None, ausgabe=None):
     """Führt `arbeit(organisation)` je Verwaltung mit gesetztem Kontext aus.
 

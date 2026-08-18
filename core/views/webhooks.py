@@ -33,15 +33,22 @@ def brevo_inbound_webhook(request):
             if match:
                 ticket_id = match.group(1)
                 try:
-                    ticket = SchadenMeldung.objects.get(id=ticket_id)
+                    # `alle_organisationen`: Brevo liefert eingehende Mails
+                    # als Webhook — keine Anmeldung, kein Mandantenkontext.
+                    # Ueber `objects` warf die Zeile seit Etappe 6.2 -> HTTP 500,
+                    # und jede Mail-Antwort auf ein Ticket ging verloren.
+                    ticket = SchadenMeldung.alle_organisationen.get(id=ticket_id)
 
-                    # Nachricht speichern
-                    TicketNachricht.objects.create(
-                        ticket=ticket,
-                        absender_name=sender,
-                        typ='mail_antwort',
-                        nachricht=text_body
-                    )
+                    # Nachricht im Kontext DIESES Tickets speichern — sonst
+                    # wuesste der Datensatz nicht, wem er gehoert.
+                    from core.tenancy import kontext_des_objekts
+                    with kontext_des_objekts(ticket):
+                        TicketNachricht.objects.create(
+                            ticket=ticket,
+                            absender_name=sender,
+                            typ='mail_antwort',
+                            nachricht=text_body,
+                        )
                     return JsonResponse({'status': 'ok, saved'})
                 except SchadenMeldung.DoesNotExist:
                     return JsonResponse({'status': 'ticket not found'}, status=404)

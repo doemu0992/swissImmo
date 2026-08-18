@@ -142,7 +142,7 @@ class MarktdatenTests(ZweiBestaende):
 
         with patch('core.utils.market_data.fetch_market_rates',
                    return_value=(self.DATEN, [])):
-            update_verwaltung_rates()
+            update_verwaltung_rates(alle=True)
 
         for fixture in (self.a, self.b):
             fixture.organisation.refresh_from_db()

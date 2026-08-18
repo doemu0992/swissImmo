@@ -282,6 +282,48 @@ def diff_model(alt, neu, obj):
     return diff_text(alt, neu, labels)
 
 
+def konto_freigeben(benutzer, organisation=None):
+    """Ein Konto loslassen, ohne fremde Zugaenge mitzureissen.
+
+    `Benutzer` traegt bewusst keinen Organisationsbezug: Ein Mensch kann in
+    mehreren Verwaltungen Mitglied sein und in einer weiteren ein Portalkonto
+    haben. `benutzer.delete()` entfernte ihn ueberall — samt Mitgliedschaften
+    (CASCADE) und samt der Verknuepfung zu fremden Mieter-/Eigentuemerprofilen
+    (SET_NULL). Verwaltung A haette so den Zugang von Verwaltung B geloescht,
+    ohne es zu bemerken (Audit 18.08.2026, gleiche Wurzel wie in
+    `fw_benutzer_loeschen`).
+
+    Deshalb: die Mitgliedschaft DIESER Verwaltung loesen, und das Konto nur
+    fallen lassen, wenn danach nichts mehr daran haengt — weder eine
+    Mitgliedschaft noch ein Mieter- oder Eigentuemerprofil. Gibt zurueck, ob
+    das Konto geloescht wurde.
+    """
+    if benutzer is None:
+        return False
+    from crm.models import Mitgliedschaft
+
+    if organisation is not None:
+        Mitgliedschaft.alle_organisationen.filter(
+            benutzer=benutzer, organisation=organisation).delete()
+
+    haengt_dran = (
+        Mitgliedschaft.alle_organisationen.filter(benutzer=benutzer).exists()
+        or getattr(benutzer, 'mieter_profil', None) is not None
+        or getattr(benutzer, 'eigentuemer_profil', None) is not None
+    )
+    if haengt_dran:
+        return False
+    try:
+        benutzer.delete()
+        return True
+    except Exception:
+        # Bleibt ein Fremdschluessel haengen, wird das Konto stillgelegt statt
+        # geloescht — ein aktiver Zugang ohne Profil waere das Schlimmere.
+        benutzer.is_active = False
+        benutzer.save(update_fields=['is_active'])
+        return False
+
+
 def log_aktion(request, aktion, objekt="", details="", ziel=None, kategorie=None, ip=None, user=None):
     """
     Schreibt einen Eintrag ins Aktivitätslog (wer hat wann was getan).
@@ -350,4 +392,17 @@ def log_aktion(request, aktion, objekt="", details="", ziel=None, kategorie=None
             ip_adresse=ip or (client_ip(request) if request else None),
         )
     except Exception:
-        logger.debug("Fehler bewusst übergangen", exc_info=True)
+        # NICHT mehr stumm. `log_aktion` schluckt Fehler bewusst — ein
+        # misslungener Protokolleintrag darf die eigentliche Aktion nicht
+        # abbrechen. Aber schweigen darf er nicht: Genau hier verschwanden
+        # seit Etappe 6.2 alle fehlgeschlagenen Anmeldungen ohne bestimmbare
+        # Organisation, und niemand konnte es sehen (Audit 18.08.2026).
+        #
+        # Sicherheitsereignisse gehen deshalb mindestens ins Server-Log —
+        # eine Spur ausserhalb der Datenbank ist unendlich viel mehr als
+        # keine. Alles Uebrige bleibt auf `debug`.
+        if (kategorie or '') == 'sicherheit':
+            logger.warning('Sicherheits-Protokolleintrag nicht geschrieben: %s / %s (%s)',
+                           aktion, objekt, details, exc_info=True)
+        else:
+            logger.debug("Fehler bewusst übergangen", exc_info=True)

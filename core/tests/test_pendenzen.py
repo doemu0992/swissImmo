@@ -241,7 +241,9 @@ class FristenKalenderTests(TestCase):
         self._frist('Frist X', 3)
         c = Client()  # ohne Login
         # gültiger Token
-        r = c.get(f'/fristen.ics?token={feed_token()}')
+        # Der Token traegt seit dem Audit die Verwaltung — ein Token ohne
+        # sie galt fuer jede, und in den Fristen stehen Mieternamen.
+        r = c.get(f'/fristen.ics?token={feed_token(_test_organisation())}')
         self.assertEqual(r.status_code, 200)
         self.assertIn('BEGIN:VCALENDAR', r.content.decode('utf-8'))
         # ungültiger Token

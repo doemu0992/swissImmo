@@ -176,7 +176,27 @@ def fw_benutzer_loeschen(request, pk):
                 messages.error(request, "Das ist der letzte Verwaltungs-Account — er kann nicht gelöscht werden.")
                 return redirect('/neu/benutzer/')
         name = ziel.username
-        log_aktion(request, "Benutzer gelöscht", name, '')
-        ziel.delete()
-        messages.success(request, f"🗑️ Benutzer {name} gelöscht.")
+        # GETEILTE KONTEN NICHT GANZ LOESCHEN. Ein Mensch kann in mehreren
+        # Verwaltungen Mitglied sein — eine Treuhaenderin ist EIN Konto mit
+        # ZWEI Mitgliedschaften. `ziel.delete()` haette es ueberall entfernt:
+        # Verwaltung A haette den Zugang von Verwaltung B geloescht, samt
+        # deren Logbucheintraegen, und im schlimmsten Fall deren letzten
+        # Administrator — ein Aussperren, das A gar nicht bemerkt haette.
+        #
+        # «Aus meinem Team entfernen» heisst deshalb: DIESE Mitgliedschaft
+        # loeschen. Das ganze Konto faellt nur, wenn danach keine einzige
+        # Mitgliedschaft mehr uebrig ist.
+        Mitgliedschaft.objects.filter(benutzer=ziel, organisation=organisation).delete()
+        rest = Mitgliedschaft.alle_organisationen.filter(benutzer=ziel).count()
+        if rest == 0:
+            log_aktion(request, "Benutzer gelöscht", name, '')
+            ziel.delete()
+            messages.success(request, f"🗑️ Benutzer {name} gelöscht.")
+        else:
+            log_aktion(request, "Benutzer aus Team entfernt", name,
+                       f"noch in {rest} weiteren Verwaltung(en)")
+            messages.success(
+                request, f"🗑️ {name} wurde aus deinem Team entfernt. "
+                         f"Das Konto bleibt bestehen — es wird in einer anderen "
+                         f"Verwaltung genutzt.")
     return redirect('/neu/benutzer/')

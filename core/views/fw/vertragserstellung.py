@@ -318,9 +318,11 @@ def fw_vertrag_neu_speichern(request):
     # LIK-Stand-Monat (aus dem die Basis-Punkte stammen): Formular-Override,
     # sonst automatisch der neueste veröffentlichte Monat (BFS-Tabelle,
     # Basis Dez. 2020), Fallback Account-Einstellung.
-    from crm.models import Organisation as _Vw
     from core.services.lik import aktueller_lik_wert
-    _vw = einheit.liegenschaft.organisation or _Vw.objects.first()
+    # Kein Rueckfall mehr: `Liegenschaft.organisation` ist seit Etappe 5
+    # `null=False`, der `or`-Zweig war damit tot — und haette, waere er je
+    # erreichbar geworden, die erste Verwaltung der Installation geliefert.
+    _vw = einheit.liegenschaft.organisation
     _auto_stand, _auto_pkt, _ = aktueller_lik_wert()
     basis_lik_stand = _auto_stand or (_vw.aktueller_lik_stand if _vw else None)
     _stand_raw = (P.get('basis_lik_stand') or '').strip()  # 'YYYY-MM' aus <input type=month>

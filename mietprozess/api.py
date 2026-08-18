@@ -87,7 +87,21 @@ def public_submit_bewerbung(
         return 429, {"success": False,
                      "error": "Zu viele Bewerbungen in kurzer Zeit. Bitte versuchen Sie es später erneut."}
     try:
-        einheit = get_object_or_404(Einheit, id=einheit_id)
+        # `alle_organisationen`: Das Bewerbungsformular ist ÖFFENTLICH (auth=None).
+        # Es gibt keine Anmeldung, aus der die Middleware eine Verwaltung
+        # ableiten könnte — über `Einheit.objects` fand dieser Endpunkt seit
+        # Etappe 6.2 gar nichts mehr und quittierte jede Bewerbung mit einem
+        # Fehler. Wessen Objekt gemeint ist, sagt die Einheit selbst.
+        #
+        # Die Absicherung ist `zur_ausschreibung` weiter unten (identisch zu
+        # `core/views/application.py`), nicht der Manager.
+        einheit = get_object_or_404(Einheit.alle_organisationen, id=einheit_id)
+
+        # Ab hier im Kontext DIESER Verwaltung: Die Bewerbung, die gleich
+        # angelegt wird, und alles Nachgelagerte gehören ihr. Die Middleware
+        # stellt den vorherigen (leeren) Kontext nach der Antwort wieder her.
+        from core.tenancy import setze_organisation
+        setze_organisation(einheit.organisation)
 
         # Bewerbungen nur für ausgeschriebene Objekte.
         #

@@ -6,16 +6,43 @@ from django.core import signing
 FEED_SALT = 'fristen-feed'
 
 
-def feed_token():
-    """Signierter, nicht-ablaufender Token für die abonnierbare Feed-URL."""
-    return signing.Signer(salt=FEED_SALT).sign('fristen')
+def feed_token(organisation):
+    """Signierter, nicht-ablaufender Token für die abonnierbare Feed-URL.
+
+    DER TOKEN TRÄGT DIE VERWALTUNG (18.08.2026). Vorher signierte er die
+    Konstante `'fristen'` — derselbe Token galt damit für JEDE Verwaltung.
+    Mit einer war das folgenlos; ab der zweiten hätte ein Abonnent von A den
+    Kalender von B abrufen können, und in den Fristen stehen Mieternamen.
+
+    Der Token ist kein Geheimnis pro Nutzer, sondern pro Verwaltung: Wer ihn
+    hat, sieht deren Fristen. Das ist die bewusste Zusage einer abonnierbaren
+    URL ohne Anmeldung — sie darf nur nicht über die Mandantengrenze reichen.
+
+    Alte Tokens werden ungültig; bestehende Kalender-Abonnements müssen einmal
+    neu eingerichtet werden. Das ist der Preis dafür, dass der Token vorher
+    nicht sagte, wessen Kalender er öffnet.
+    """
+    pk = getattr(organisation, 'pk', organisation)
+    return signing.Signer(salt=FEED_SALT).sign(f'fristen:{pk}')
 
 
-def token_gueltig(token):
+def organisation_aus_token(token):
+    """Die Verwaltung zu einem Feed-Token — oder None.
+
+    Gibt die Organisation zurück statt eines Wahrheitswerts: Der Aufrufer
+    braucht sie, um den Mandantenkontext zu setzen, und ein `True` hätte ihn
+    genau darüber im Unklaren gelassen, wessen Fristen er gleich ausliefert.
+    """
+    from crm.models import Organisation
     try:
-        return signing.Signer(salt=FEED_SALT).unsign(token or '') == 'fristen'
+        roh = signing.Signer(salt=FEED_SALT).unsign(token or '')
     except signing.BadSignature:
-        return False
+        return None
+    if not roh.startswith('fristen:'):
+        return None
+    # `alle_organisationen` gibt es an `Organisation` nicht — sie IST der
+    # Mandant und wird nie gefiltert (siehe `OHNE_MANDANTENFILTER`).
+    return Organisation.objects.filter(pk=roh.split(':', 1)[1]).first()
 
 
 def _esc(text):

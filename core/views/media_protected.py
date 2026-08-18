@@ -91,11 +91,14 @@ def ist_objektfoto(pfad):
     p = ohne_organisationspraefix(pfad)
     if not p.startswith('uploads/'):
         return False
-    try:
-        from portfolio.models import EinheitFoto
-        return EinheitFoto.objects.filter(bild=p).exists()
-    except Exception:
-        return False
+    # `alle_organisationen`: Die Frage lautet «ist dieser PFAD ein Inseratfoto»,
+    # nicht «gehoert er mir» — die Antwort haengt nicht von einer Verwaltung ab,
+    # und der Aufrufer ist ein anonymer Besucher ohne Kontext. Ueber `objects`
+    # warf die Zeile seit Etappe 6.2, das `except` verschluckte es, und die
+    # Funktion sagte fuer JEDES Alt-Bild `False`. Damit lief genau die Zusage
+    # ins Leere, die der Docstring gibt (Audit 18.08.2026).
+    from portfolio.models import EinheitFoto
+    return EinheitFoto.alle_organisationen.filter(bild=p).exists()
 
 
 #: Modelle, deren Dateifelder geprüft werden müssen — aus der Registry, nicht
