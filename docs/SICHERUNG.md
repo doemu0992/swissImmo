@@ -236,14 +236,47 @@ bei Fehlschlag mit `CommandError` ab und liest den Stand gegen. Zwei Befehle
 für dieselbe Aufgabe, von denen einer stillschweigend nichts tut, sind
 gefährlicher als einer. Ein Aufruf von `backup_db` scheitert jetzt laut.
 
+### Nachgemessen auf der Produktion, 18.08.2026
+
+Der Probelauf selbst lief auf einer gleichwertigen PostgreSQL-16-Installation,
+nicht auf PythonAnywhere. Sicherung und Medienprüfung sind dort inzwischen
+nachgeholt — und die Vermutung «eher Minuten als Sekunden» hat sich bestätigt:
+
+| | Probelauf | Produktion |
+|---|---|---|
+| Datenbank | 412 kB, 826 Objekte | 364 kB, **826 Objekte** |
+| Medien | 100 MB in 41 s | 189 MB in **~4 Minuten** (12:51 → 12:55) |
+
+Die Objektzahl stimmt auf den Punkt überein; die Dauer nicht. Der Unterschied
+steckt allein in den Medien: geteilter Server, und das Archiv geht über das
+Netz statt über einen lokalen Socket. Für die **Wiederherstellung** heisst das
+dasselbe — die Datenbank ist in Sekunden zurück, das Entpacken der Medien
+bestimmt die Dauer.
+
+`medien_pruefen` gegen diesen Stand meldete:
+
+```
+· 10 Verweis(e) auf 10 Datei(en) geprüft.
+· Sicherungsstand enthält 336 Datei(en).
+✓ Jeder Verweis zeigt auf eine vorhandene Datei.
+```
+
+Beide Richtungen sauber: kein toter Verweis, keine Datei, die auf der Platte
+liegt und im Archiv fehlt. Die vier Funde des Probelaufs stammten damit
+nachweislich aus den Entwicklungsdaten.
+
+> **336 Dateien, 10 Verweise.** Rund 326 Dateien gehören zu keinem Datensatz —
+> vermutlich Reste gelöschter Einträge. Kein Schaden, aber sie machen fast das
+> ganze Archiv aus und damit die vier Minuten. Ein Aufräumen wäre eine eigene,
+> vorsichtige Prüfung wert; ein schnelles `rm` wäre es nicht.
+
 ### Was weiterhin offen ist
 
-**Der Probelauf lief nicht auf der Produktion**, sondern auf einer
-gleichwertigen PostgreSQL-16-Installation mit demselben Bestand. Was er
-belegt, ist der Weg und das Werkzeug. Was er nicht belegt, sind die Laufzeiten
-auf PythonAnywhere — dort teilen sich mehrere Konten einen Server, und die
-100 MB Medien gehen über das Netz statt über einen lokalen Socket. Rechne
-eher mit Minuten als mit Sekunden.
+**Der tägliche Lauf war nie eingerichtet.** Am 18.08.2026 stellte sich beim
+ersten Aufruf von `medien_pruefen --sicherung` heraus, dass `~/sicherungen`
+gar nicht existierte — der oben beschriebene Scheduled Task ist beschrieben,
+aber nie angelegt worden. Der erste Stand entstand von Hand am selben Tag.
+Solange der Task fehlt, altert er.
 
 **Eine Kopie ausser Haus** fehlt weiterhin (siehe oben) — daran ändert ein
 geglückter Probelauf nichts.
