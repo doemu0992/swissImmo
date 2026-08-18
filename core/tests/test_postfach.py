@@ -28,6 +28,8 @@ GEGENPROBE (durchgeführt, nicht behauptet — 18.08.2026)
 
     Rückgängig gemacht, danach wieder grün.
 """
+from unittest import mock
+
 from django.core.checks import WARNING
 from django.db import IntegrityError, connection, transaction
 from django.test import TestCase, override_settings
@@ -335,6 +337,118 @@ class StartpruefungTests(TestCase):
         # Warnung, nicht Fehler: Ein Fehler bräche `migrate` im Deploy ab und
         # nähme die ganze Anwendung vom Netz — wegen eines Postfachs.
         self.assertEqual(meldungen[0].level, WARNING)
+
+
+class UebernahmeTests(TestCase):
+    """Die Übernahme der alten Umgebungsvariablen — wiederholbar, nie werfend.
+
+    Der Punkt, an dem es sonst klemmt: Die Migration läuft **einmal**. War der
+    Schlüssel zu dem Zeitpunkt nicht gesetzt, wäre die Übernahme endgültig
+    verpasst — ein zweites `migrate` führt sie nicht erneut aus. Deshalb liegt
+    die Arbeit in einer Funktion, die auch als Befehl aufrufbar ist.
+
+    GEGENPROBE (durchgeführt 18.08.2026)
+
+        postfach_uebernahme.py:  `if Postfach.objects.filter(…).exists():`
+                                 → `if False:`   (Schutz gegen Überschreiben weg)
+          → test_bestehendes_postfach_wird_nicht_ueberschrieben   ERROR
+            test_zweiter_lauf_aendert_nichts                      ERROR
+            (beide am UniqueConstraint — genau der Doppeleintrag, den der
+             Schutz verhindert)
+
+        Rückgängig gemacht, danach wieder grün.
+    """
+
+    ALT = {'RECHNUNGS_IMAP_USER': 'r@alt.ch', 'RECHNUNGS_IMAP_PASSWORD': 'geheim-r',
+           'RECHNUNGS_IMAP_HOST': 'imap.alt.ch',
+           'EMAIL_REPLY_USER': 'a@alt.ch', 'EMAIL_REPLY_PASSWORD': 'geheim-a'}
+
+    def setUp(self):
+        self.organisation = _organisation()
+
+    def _lauf(self):
+        from core.services.postfach_uebernahme import uebernehmen
+
+        class OhneFilter:
+            objects = Postfach.alle_organisationen
+
+        return uebernehmen(OhneFilter, Organisation, melden=lambda text: None)
+
+    @override_settings(**{UMGEBUNGSNAME: SCHLUESSEL_A})
+    def test_beide_quellen_werden_uebernommen(self):
+        # Zwei Quellen, nicht eine — der Auftrag nannte nur RECHNUNGS_IMAP_*.
+        # Der Antwort-Zugang stand unter EMAIL_REPLY_*, sein Server sogar fest
+        # im Code.
+        with mock.patch.dict('os.environ', self.ALT):
+            self.assertEqual(self._lauf(), 2)
+        zwecke = set(Postfach.alle_organisationen.values_list('zweck', flat=True))
+        self.assertEqual(zwecke, {'rechnungen', 'antworten'})
+
+        antworten = Postfach.alle_organisationen.get(zweck='antworten')
+        self.assertEqual(antworten.server, 'lx37.hoststar.hosting',
+                         'Der bisher fest verdrahtete Server ging verloren.')
+        self.assertEqual(antworten.passwort, 'geheim-a')
+
+    @override_settings(**{UMGEBUNGSNAME: SCHLUESSEL_A})
+    def test_zweiter_lauf_aendert_nichts(self):
+        with mock.patch.dict('os.environ', self.ALT):
+            self._lauf()
+            self.assertEqual(self._lauf(), 0)
+        self.assertEqual(Postfach.alle_organisationen.count(), 2)
+
+    @override_settings(**{UMGEBUNGSNAME: SCHLUESSEL_A})
+    def test_bestehendes_postfach_wird_nicht_ueberschrieben(self):
+        # Sonst überschriebe ein nachgeholter Lauf die von Hand eingerichteten
+        # Zugangsdaten mit den alten aus der Umgebung.
+        eigenes = Postfach(organisation=self.organisation, zweck='rechnungen',
+                           server='imap.neu.ch', benutzer='neu@example.ch')
+        eigenes.passwort = 'neues-passwort'
+        eigenes.save()
+        with mock.patch.dict('os.environ', self.ALT):
+            self._lauf()
+        eigenes.refresh_from_db()
+        self.assertEqual(eigenes.benutzer, 'neu@example.ch')
+        self.assertEqual(eigenes.passwort, 'neues-passwort')
+
+    @override_settings(**{UMGEBUNGSNAME: ''})
+    def test_ohne_schluessel_wird_uebersprungen_statt_geworfen(self):
+        # DER Grund, warum die Migration nie scheitert: Ein abgebrochenes
+        # `migrate` im Deploy nimmt die ganze Anwendung vom Netz.
+        with mock.patch.dict('os.environ', self.ALT):
+            self.assertEqual(self._lauf(), 0)
+        self.assertEqual(Postfach.alle_organisationen.count(), 0)
+
+    @override_settings(**{UMGEBUNGSNAME: SCHLUESSEL_A})
+    def test_ohne_umgebungsvariablen_passiert_nichts(self):
+        # Die Variablen ausdrücklich LEEREN und nicht bloss darauf bauen, dass
+        # sie in der Testumgebung ohnehin fehlen: Sonst wäre der Test grün,
+        # ohne je etwas geprüft zu haben — und auf einem Entwicklungsrechner,
+        # der sie gesetzt hat, plötzlich rot.
+        with mock.patch.dict('os.environ', {name: '' for name in self.ALT}):
+            self.assertEqual(self._lauf(), 0)
+        self.assertEqual(Postfach.alle_organisationen.count(), 0)
+
+    @override_settings(**{UMGEBUNGSNAME: SCHLUESSEL_A})
+    def test_der_befehl_holt_die_uebernahme_nach(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        with mock.patch.dict('os.environ', self.ALT):
+            call_command('postfaecher_uebernehmen', stdout=StringIO())
+        self.assertEqual(Postfach.alle_organisationen.count(), 2)
+
+    @override_settings(**{UMGEBUNGSNAME: ''})
+    def test_der_befehl_endet_mit_fehlercode_ohne_schluessel(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        # Nicht bloss eine Zeile Text: Ein Scheduler soll den Fehlschlag am
+        # Exitcode sehen und nicht in einer beruhigenden Ausgabe suchen.
+        with mock.patch.dict('os.environ', self.ALT):
+            with self.assertRaises(SystemExit):
+                call_command('postfaecher_uebernehmen', stdout=StringIO(), stderr=StringIO())
 
 
 @override_settings(**{UMGEBUNGSNAME: SCHLUESSEL_A})

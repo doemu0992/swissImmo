@@ -186,6 +186,16 @@ Datenmigration überträgt die heutigen Umgebungsvariablen einmalig auf das Post
 
 **Reihenfolge auf dem Server:** Schlüssel setzen → deployen → Migration läuft → Verbindungstest in der Oberfläche → **erst dann** die Umgebungsvariablen entfernen.
 
+> **Nachtrag 18.08.2026 — die Reihenfolge ist keine Bedingung mehr.** Eine Migration läuft **einmal**. Wäre der Schlüssel beim Deploy noch nicht gesetzt gewesen, hätte die Übernahme übersprungen — und ein zweites `migrate` holt sie nicht nach. Damit hinge der Mail-Eingang an einer Reihenfolge, die irgendwann jemand nicht einhält, und niemand wüsste, wie er ihn zurückbekommt.
+>
+> Die Arbeit liegt deshalb in `core/services/postfach_uebernahme.py` und ist von zwei Seiten aufrufbar: aus der Migration und als Befehl.
+>
+> ```bash
+> python manage.py postfaecher_uebernehmen
+> ```
+>
+> Wiederholbar; ein bestehendes Postfach wird nie überschrieben (mit Gegenprobe belegt). Die obige Reihenfolge bleibt die bequemste, ist aber nicht mehr die einzige, die funktioniert.
+
 Nicht beides dauerhaft parallel — zwei Quellen für dieselbe Angabe sind das Muster, das in dieser Phase schon zweimal zu Fehlern geführt hat. Der Übergang ist eine geordnete Abfolge, kein Rückfall im Code.
 
 ---
