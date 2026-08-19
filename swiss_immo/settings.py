@@ -122,6 +122,7 @@ INSTALLED_APPS = [
     'finance',      # Rechnungen & Buchhaltung
     'tickets',      # Schadensmeldungen
     'mietprozess',  # Bewerber- & Mietprozesse
+    'faelle',       # Fallmaschine (Phase 4a)
 
     # --- Standard Django ---
     'django.contrib.admin',

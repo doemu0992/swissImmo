@@ -183,6 +183,7 @@ class MandantenFixture:
         """
         from crm.models import Handwerker, Kommunikation, Vorlage
         from core.models import Pendenz, Postfach
+        from faelle.models import Fall, Fallart, Fallschritt, SchrittVorlage, Zeiteintrag
         from mietprozess.models import Mietbewerbung
         from portfolio.models import (Ausstattung, Dokument as PDokument, Geraet, Schluessel,
                                       SchluesselAusgabe, Sollmietzins, StaffelVorlage,
@@ -243,6 +244,25 @@ class MandantenFixture:
             typ='strom', zaehler_nummer=f'Z-{k}-1')
         self.auftrag = HandwerkerAuftrag.objects.create(
             ticket=self.schaden, handwerker=self.handwerker)
+
+        # Fallmaschine (Phase 4a, Etappe 1). Ohne diese fünf Objekte laufen die
+        # Registryprüfungen zwar über die neue App, finden aber keinen
+        # Datensatz von B und überspringen jedes Modell — grün, ohne etwas
+        # geprüft zu haben. `_alle_objekte` liest `vars(self)`, deshalb genügt
+        # es, sie als Attribute abzulegen.
+        self.fallart = Fallart.objects.create(
+            organisation=self.organisation, schluessel='mieterwechsel',
+            bezeichnung=f'Mieterwechsel {k}')
+        self.schrittvorlage = SchrittVorlage.objects.create(
+            fallart=self.fallart, nr=1, etappe_nr=1, etappe='Kündigung',
+            bezeichnung='Kündigung erfassen')
+        self.fall = Fall.objects.create(
+            fallart=self.fallart, organisation=self.organisation,
+            betreff=f'Mieterwechsel {k}')
+        self.fallschritt = Fallschritt.objects.create(
+            fall=self.fall, vorlage=self.schrittvorlage, nr=1, etappe_nr=1,
+            etappe='Kündigung', bezeichnung='Kündigung erfassen')
+        self.zeiteintrag = Zeiteintrag.objects.create(fall=self.fall, minuten=30)
 
     def _benutzer(self):
         """Team-Benutzer dieses Mandanten — Gruppe UND Mitgliedschaft.

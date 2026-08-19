@@ -69,7 +69,7 @@ from django.urls import NoReverseMatch, get_resolver, reverse
 from ._isolation import KEINE_OBJEKT_ID, MandantenFixture
 
 EIGENE_APPS = ('benutzer', 'core', 'crm', 'portfolio', 'rentals', 'finance', 'tickets',
-               'mietprozess')
+               'mietprozess', 'faelle')
 
 # ---------------------------------------------------------------------------
 # Ausnahmen vom Registrylauf — benannt und begründet, nicht ausgefiltert.
