@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>swissImmo — Konzept v4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:#0b0d13;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#eff2f3;--surface:#fff;--surface-2:#f4f7f7;--surface-3:#e9eef0;
+  --ink:#0e2227;--muted:#4c6169;--faint:#7f959c;--line:#dde6e8;--line-stark:#c7d5d9;
+  --brand:#0f6f6a;--brand-600:#0b5450;--brand-soft:#d9efed;
+  --good:#166534;--good-soft:#e0f2e5;--warn:#a35a09;--warn-soft:#fbeeda;
+  --crit:#b32133;--crit-soft:#fbe6e9;--info:#0b5c8f;--info-soft:#e0eff8;
+  --r:10px;--r-s:7px;--sh:0 1px 2px rgba(14,34,39,.05),0 4px 14px rgba(14,34,39,.04);
+  --nav:linear-gradient(180deg,#122b31,#0a1c20);--nav-ink:#8fadb4;--nav-linie:rgba(255,255,255,.08);
+}
+.labor{position:sticky;top:0;z-index:200;background:#12141d;border-bottom:1px solid #232739;padding:13px 20px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.labor .marke{font-size:11.5px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:#8b90a8}
+.labor .satz{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.labor .satz>span{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5d6280;margin-right:3px}
+.labor button{font:inherit;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:8px;border:1px solid #2b3048;background:#1a1e2c;color:#a8adc4;cursor:pointer}
+.labor button:hover{border-color:#3d4364;color:#e2e5f0}
+.labor button[aria-pressed="true"]{background:#e8eaf3;border-color:#e8eaf3;color:#12141d}
+.labor .hinweis{margin-left:auto;font-size:11.5px;color:#5d6280;max-width:270px;line-height:1.5}
+.buehne{padding:20px;display:flex;justify-content:center}
+.rahmen{width:100%;max-width:1440px;border-radius:13px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55);display:flex;min-height:900px;background:var(--bg);color:var(--ink);font-size:14px}
+.rahmen[data-modus="portal"] .seiten{display:none}
+.rahmen[data-modus="portal"] .kopfleiste{display:none}
+
+.seiten{width:214px;flex:0 0 214px;background:var(--nav);display:flex;flex-direction:column}
+.sb-kopf{padding:16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--nav-linie)}
+.sb-logo{width:29px;height:29px;border-radius:var(--r-s);background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 29px}
+.sb-logo svg{width:15px;height:15px}
+.sb-wort{font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#fff}
+.sb-nav{flex:1;padding:11px 10px;overflow-y:auto}
+.sb-item{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:var(--r-s);color:var(--nav-ink);font-size:13.5px;font-weight:600;cursor:pointer;user-select:none;margin-bottom:1px}
+.sb-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.sb-item svg{width:15px;height:15px;flex:0 0 15px;opacity:.85}
+.sb-item .z{margin-left:auto;font-size:10px;font-weight:800;border-radius:999px;padding:1px 6px;min-width:19px;text-align:center;background:rgba(255,255,255,.12);color:#cfe0e3}
+.sb-item .z.rot{background:var(--crit);color:#fff}
+.sb-gruppe.aktiv>.sb-item{background:var(--brand);color:#fff}
+.sb-unter{display:none;padding:2px 0 6px 26px;flex-direction:column;gap:1px}
+.sb-gruppe.aktiv .sb-unter{display:flex}
+.sb-unter a{padding:5px 11px;border-radius:var(--r-s);font-size:12.5px;color:var(--nav-ink);cursor:pointer}
+.sb-unter a:hover{background:rgba(255,255,255,.06);color:#fff}
+.sb-unter a.hier{background:rgba(255,255,255,.11);color:#fff;font-weight:600}
+.sb-fuss{padding:10px;border-top:1px solid var(--nav-linie)}
+.haupt{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
+.kopfleiste{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;flex:0 0 56px}
+.suche{position:relative;width:100%;max-width:360px}
+.suche svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--faint)}
+.suche input{width:100%;background:var(--surface-2);border:1px solid transparent;border-radius:var(--r-s);padding:8px 12px 8px 34px;font:inherit;font-size:13px;color:var(--ink);outline:0}
+.kopf-rechts{margin-left:auto;display:flex;align-items:center;gap:9px}
+.kuerzel{width:30px;height:30px;border-radius:999px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.inhalt{flex:1;padding:20px 24px 46px;overflow-y:auto;max-width:1340px;width:100%;margin:0 auto}
+
+.seitenkopf{display:flex;align-items:flex-end;gap:16px;margin-bottom:15px;flex-wrap:wrap}
+.seitenkopf h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em}
+.seitenkopf p{margin:3px 0 0;font-size:13px;color:var(--muted)}
+.seitenkopf .taten{margin-left:auto;display:flex;gap:8px}
+.knopf{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:var(--r-s);border:1px solid var(--line-stark);background:var(--surface);color:var(--ink);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.knopf:hover{background:var(--surface-2)}
+.knopf svg{width:13px;height:13px}
+.knopf.haupt{background:var(--brand);border-color:var(--brand);color:#fff}
+.knopf.klein{padding:4px 10px;font-size:11.5px}
+.knopf.gefahr{color:var(--crit);border-color:rgba(179,33,51,.35)}
+.chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:700;background:var(--surface-3);color:var(--muted);white-space:nowrap}
+.chip.gut{background:var(--good-soft);color:var(--good)}.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.krit{background:var(--crit-soft);color:var(--crit)}.chip.info{background:var(--info-soft);color:var(--info)}
+.chip.marke{background:var(--brand-soft);color:var(--brand)}
+
+.karte{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:16px;overflow:hidden}
+.karte-kopf{padding:11px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.karte-kopf .ikon{width:27px;height:27px;border-radius:var(--r-s);background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;flex:0 0 27px}
+.karte-kopf .ikon svg{width:14px;height:14px}
+.karte-kopf .ikon.warn{background:var(--warn-soft);color:var(--warn)}
+.karte-kopf .ikon.krit{background:var(--crit-soft);color:var(--crit)}
+.karte-kopf .ikon.gut{background:var(--good-soft);color:var(--good)}
+.karte-kopf h2{margin:0;font-size:14px;font-weight:700}
+.karte-kopf .neben{font-size:12.5px;color:var(--faint)}
+.karte-kopf .rechts{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.karte-fuss{padding:8px 15px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12px;color:var(--faint);gap:12px;flex-wrap:wrap}
+.karte-fuss a{color:var(--muted);font-weight:600;cursor:pointer}
+.zeile{display:flex;align-items:center;gap:12px;padding:11px 15px;border-bottom:1px solid var(--line)}
+.zeile:last-child{border-bottom:0}
+.zeile.klick{cursor:pointer}.zeile.klick:hover{background:var(--surface-2)}
+.zeile .mitte{flex:1;min-width:0}
+.zeile .t{font-size:13.5px;font-weight:600;color:var(--ink)}
+.zeile .s{font-size:11.5px;color:var(--faint);margin-top:2px;line-height:1.45}
+.zeile .zeit{font-size:12.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.marker{width:3px;align-self:stretch;border-radius:2px;background:var(--line-stark);flex:0 0 3px;min-height:32px}
+.marker.krit{background:var(--crit)}.marker.warn{background:var(--warn)}.marker.marke{background:var(--brand)}.marker.gut{background:var(--good)}
+.zwei{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.zwei-schmal{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
+.kzn{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.kzn>div{padding:12px 20px;border-right:1px solid var(--line)}
+.kzn>div:last-child{border-right:0}
+.kzn .l{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.kzn .w{font-size:17px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+.kzn .w.warn{color:var(--warn)}.kzn .w.krit{color:var(--crit)}.kzn .w.gut{color:var(--good)}
+.kzn .f{font-size:11.5px;color:var(--faint);margin-top:2px}
+
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);padding:9px 15px;border-bottom:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
+tbody td{padding:10px 15px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+tfoot td{padding:10px 15px;font-size:13px;font-weight:700;color:var(--ink);background:var(--surface-2);border-top:2px solid var(--line-stark)}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2)}
+td.stark{color:var(--ink);font-weight:600}
+td.zahl,th.zahl,tfoot td.zahl{text-align:right;font-variant-numeric:tabular-nums}
+td.minus{color:var(--crit);font-weight:600}
+td.plus{color:var(--good);font-weight:600}
+tr.raus td{background:var(--crit-soft)}
+tr.raus td.stark{color:var(--crit)}
+
+.hinweisbox{padding:13px 16px;display:flex;gap:12px;align-items:flex-start;border-bottom:1px solid var(--line)}
+.hinweisbox:last-child{border-bottom:0}
+.hinweisbox.warn{background:var(--warn-soft)}.hinweisbox.info{background:var(--info-soft)}
+.hinweisbox.krit{background:var(--crit-soft)}.hinweisbox.gut{background:var(--good-soft)}
+.hinweisbox .hi{width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex:0 0 26px;color:#fff}
+.hinweisbox.warn .hi{background:var(--warn)}.hinweisbox.info .hi{background:var(--info)}
+.hinweisbox.krit .hi{background:var(--crit)}.hinweisbox.gut .hi{background:var(--good)}
+.hinweisbox .hi svg{width:13px;height:13px}
+.hinweisbox .ht{flex:1;font-size:13px;line-height:1.55;color:var(--muted)}
+.hinweisbox .ht b{display:block;margin-bottom:3px;color:var(--ink)}
+.hinweisbox .ht .knopf{margin-top:9px}
+
+/* Schrittkette */
+.schritte{display:flex;padding:16px 16px 14px;gap:0;align-items:flex-start;background:var(--surface);border-bottom:1px solid var(--line)}
+.sch{flex:1;text-align:center;position:relative}
+.sch .pk{width:28px;height:28px;border-radius:999px;background:var(--surface-3);color:var(--faint);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:12px;font-weight:800;position:relative;z-index:2}
+.sch.fertig .pk{background:var(--brand);color:#fff}
+.sch.jetzt .pk{background:var(--warn);color:#fff}
+.sch::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;background:var(--surface-3);z-index:1}
+.sch:last-child::after{display:none}
+.sch.fertig::after{background:var(--brand)}
+.sch .sl{font-size:12px;font-weight:600;color:var(--muted);line-height:1.35}
+.sch .sd{font-size:11px;color:var(--faint);margin-top:2px}
+.sch.jetzt .sl{color:var(--warn)}
+
+/* Abgleich */
+.ab{display:flex;gap:0;border-bottom:1px solid var(--line);align-items:stretch}
+.ab:last-child{border-bottom:0}
+.ab .links{flex:0 0 39%;padding:12px 15px;border-right:1px solid var(--line);background:var(--surface-2)}
+.ab .links .b1{font-size:14px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.ab .links .b2{font-size:12.5px;color:var(--muted);margin-top:3px}
+.ab .links .b3{font-size:11px;color:var(--faint);margin-top:4px;font-family:ui-monospace,monospace;word-break:break-all}
+.ab .rechtss{flex:1;padding:12px 15px;display:flex;gap:12px;align-items:flex-start}
+.ab .vs{width:26px;height:26px;border-radius:var(--r-s);display:flex;align-items:center;justify-content:center;flex:0 0 26px;background:var(--brand-soft);color:var(--brand)}
+.ab .vs.warn{background:var(--warn-soft);color:var(--warn)}
+.ab .vs.grau{background:var(--surface-3);color:var(--faint)}
+.ab .vs svg{width:13px;height:13px}
+.ab .vt{flex:1;min-width:0}
+.ab .vt .a{font-size:13.5px;font-weight:600;color:var(--ink)}
+.ab .vt .b{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.5}
+.ab .vt .knopfzeile{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+
+/* Bewerber */
+.score{width:74px;flex:0 0 74px}
+.score .bar{height:6px;border-radius:999px;background:var(--surface-3);overflow:hidden}
+.score .bar i{display:block;height:100%;background:var(--good)}
+.score .bar i.warn{background:var(--warn)}.score .bar i.krit{background:var(--crit)}
+.score .lbl{font-size:11px;color:var(--faint);margin-top:3px;text-align:right;font-variant-numeric:tabular-nums}
+.pruefpunkt{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600}
+.pruefpunkt svg{width:11px;height:11px}
+.pruefpunkt.ok{color:var(--good)}.pruefpunkt.nok{color:var(--crit)}.pruefpunkt.offen{color:var(--warn)}
+
+/* Portal */
+.portalkopf{background:var(--surface);border-bottom:1px solid var(--line);padding:15px 26px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.portalkopf .plogo{width:34px;height:34px;border-radius:var(--r-s);background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 34px}
+.portalkopf .plogo svg{width:17px;height:17px}
+.portalkopf .pt .a{font-size:15px;font-weight:700}
+.portalkopf .pt .b{font-size:12px;color:var(--faint);margin-top:1px}
+.portalkopf .pnav{margin-left:26px;display:flex;gap:3px}
+.portalkopf .pnav a{padding:7px 13px;border-radius:var(--r-s);font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.portalkopf .pnav a.hier{background:var(--brand-soft);color:var(--brand)}
+.portalkopf .prechts{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+/* Abo */
+.stufen4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stufe4{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--sh)}
+.stufe4.jetzt{border-color:var(--brand);border-width:2px;padding:15px}
+.stufe4 .sn{font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+.stufe4 .sp{font-size:23px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums}
+.stufe4 .sp small{font-size:12px;font-weight:500;color:var(--faint)}
+.stufe4 .sg{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.5}
+.stufe4 .sb2{margin-top:12px}
+.modul{display:flex;align-items:center;gap:13px;padding:12px 15px;border-bottom:1px solid var(--line)}
+.modul:last-child{border-bottom:0}
+.modul .mi{width:30px;height:30px;border-radius:var(--r-s);display:flex;align-items:center;justify-content:center;flex:0 0 30px;background:var(--surface-3);color:var(--faint)}
+.modul .mi.an{background:var(--brand-soft);color:var(--brand)}
+.modul .mi svg{width:14px;height:14px}
+.modul .mt{flex:1}
+.modul .mt .a{font-size:13.5px;font-weight:600;color:var(--ink)}
+.modul .mt .b{font-size:11.5px;color:var(--faint);margin-top:2px}
+.modul .mp{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.schalter{width:38px;height:21px;border-radius:999px;background:var(--line-stark);position:relative;flex:0 0 38px;cursor:pointer}
+.schalter::after{content:'';position:absolute;top:2.5px;left:2.5px;width:16px;height:16px;border-radius:999px;background:#fff;transition:.15s}
+.schalter.an{background:var(--brand)}
+.schalter.an::after{left:19.5px}
+.grenze{padding:13px 15px;border-bottom:1px solid var(--line)}
+.grenze .g1{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}
+.grenze .g1 b{font-variant-numeric:tabular-nums}
+.grenze .bar{height:7px;border-radius:999px;background:var(--surface-3);overflow:hidden}
+.grenze .bar i{display:block;height:100%;background:var(--brand)}
+.grenze .bar i.warn{background:var(--warn)}
+
+.screen{display:none}.screen.sichtbar{display:block}
+.notizen{max-width:1440px;margin:0 auto;padding:24px 22px 60px;color:#c3c7d8;font-size:13.5px;line-height:1.65}
+.notizen .kasten{background:#12141d;border:1px solid #232739;border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.notizen h3{font-size:15px;color:#fff;margin:0 0 9px;font-weight:700}
+.notizen p{margin:0 0 10px}.notizen p:last-child{margin:0}
+.notizen b{color:#e8eaf3}
+.notizen code{background:#1a1e2c;border:1px solid #2b3048;border-radius:4px;padding:1px 5px;font-size:12px;color:#a8adc4}
+.notizen .warnung{border-color:#4a3320;background:#1d1710}
+.notizen .warnung h3{color:#f0c07a}
+@media (max-width:1150px){.zwei,.zwei-schmal{grid-template-columns:1fr}.seiten{display:none}.kzn,.stufen4{grid-template-columns:1fr 1fr}.ab{flex-direction:column}.ab .links{flex:none;border-right:0;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+
+<svg style="display:none">
+<symbol id="i-haus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5"/></symbol>
+<symbol id="i-arbeit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h13"/><circle cx="19" cy="17.5" r="3.2"/></symbol>
+<symbol id="i-akte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-lauf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.2-8.56"/><path d="M21 3v6h-6"/></symbol>
+<symbol id="i-zahlen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 15l4-5 3 3 5-7"/></symbol>
+<symbol id="i-zahnrad" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+<symbol id="i-lupe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></symbol>
+<symbol id="i-flamme" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4 0 7-2.7 7-6.5 0-4.5-5-5.5-4-11.5-3 1.5-6 5-6 9 0-1.5-1-3-2-3.5-.7 1.2-1 2.6-1 4C6 19.3 8 22 12 22z"/></symbol>
+<symbol id="i-fr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+<symbol id="i-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></symbol>
+<symbol id="i-haken" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+<symbol id="i-funke" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-teilen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h6M15 12h6M9 6l-6 6 6 6M15 6l6 6-6 6"/></symbol>
+<symbol id="i-frage" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.5a2.9 2.9 0 0 1 5.6 1c0 2-2.8 2.5-2.8 2.5M12 17h.01"/></symbol>
+<symbol id="i-person" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-schluessel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3"/></symbol>
+<symbol id="i-doku" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></symbol>
+<symbol id="i-stift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></symbol>
+<symbol id="i-auge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-schild" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+<symbol id="i-stern" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></symbol>
+<symbol id="i-schnitt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h6a4 4 0 0 1 4 4v2a4 4 0 0 0 4 4h2M4 17h6"/><circle cx="20" cy="7" r="2"/></symbol>
+</svg>
+
+<div class="labor">
+  <span class="marke">swissImmo · Konzept v4</span>
+  <div class="satz">
+    <span>Konzept</span>
+    <button data-s="nk" aria-pressed="true">Nebenkostenlauf</button>
+    <button data-s="bank" aria-pressed="false">Bankabgleich</button>
+    <button data-s="bew" aria-pressed="false">Bewerbervergleich</button>
+    <button data-s="portal" aria-pressed="false">Eigentümerportal</button>
+    <button data-s="abo" aria-pressed="false">Abo &amp; Module</button>
+  </div>
+  <div class="hinweis">Das Eigentümerportal zeigt <b>eine andere Nutzerrolle</b> — deshalb ohne Sidebar.</div>
+</div>
+
+<div class="buehne">
+<div class="rahmen" id="rahmen">
+  <aside class="seiten">
+    <div class="sb-kopf"><div class="sb-logo"><svg><use href="#i-haus"/></svg></div><div class="sb-wort">swissImmo</div></div>
+    <nav class="sb-nav">
+      <div class="sb-gruppe"><div class="sb-item"><svg><use href="#i-arbeit"/></svg><span>Arbeit</span><span class="z rot">6</span></div></div>
+      <div class="sb-gruppe" data-g="bew">
+        <div class="sb-item"><svg><use href="#i-akte"/></svg><span>Akten</span></div>
+        <div class="sb-unter"><a>Mandate</a><a>Liegenschaften</a><a>Objekte</a><a>Mietverhältnisse</a><a class="hier" data-zu="bew">Vermarktung</a><a>Personen</a></div>
+      </div>
+      <div class="sb-gruppe aktiv" data-g="nk">
+        <div class="sb-item"><svg><use href="#i-lauf"/></svg><span>Läufe</span><span class="z rot">2</span></div>
+        <div class="sb-unter"><a>Monatslauf August</a><a class="hier" data-zu="nk">Nebenkosten 2025</a><a data-zu="bank">Bankabgleich</a><a>Jahresabschluss</a></div>
+      </div>
+      <div class="sb-gruppe"><div class="sb-item"><svg><use href="#i-zahlen"/></svg><span>Zahlen</span></div></div>
+    </nav>
+    <div class="sb-fuss"><div class="sb-item" data-zu="abo"><svg><use href="#i-zahnrad"/></svg><span>Einstellungen</span></div></div>
+  </aside>
+
+  <div class="haupt">
+    <header class="kopfleiste">
+      <div class="suche"><svg><use href="#i-lupe"/></svg><input placeholder="Akte, Person, Objekt oder Fall suchen …"></div>
+      <div class="kopf-rechts"><span style="font-size:12.5px;color:var(--muted)">Dominik M.</span><span class="kuerzel">DM</span></div>
+    </header>
+
+    <!-- Portalkopf, nur im Portalmodus -->
+    <div class="portalkopf" id="portalkopf" style="display:none">
+      <div class="plogo"><svg><use href="#i-haus"/></svg></div>
+      <div class="pt"><div class="a">Eigentümerportal</div><div class="b">Erbengemeinschaft Blattner</div></div>
+      <div class="pnav"><a class="hier">Übersicht</a><a>Liegenschaften</a><a>Abrechnungen</a><a>Dokumente</a><a>Nachrichten</a></div>
+      <div class="prechts"><span style="font-size:12.5px;color:var(--muted)">R. Blattner-Suter</span><span class="kuerzel">RB</span></div>
+    </div>
+
+    <main class="inhalt">
+
+    <!-- ══════════ NEBENKOSTENLAUF ══════════ -->
+    <section class="screen sichtbar" data-s="nk">
+      <div class="seitenkopf">
+        <div><h1>Nebenkosten 2025 — Bahnhofstrasse 12</h1>
+          <p>Periode 01.07.2024 – 30.06.2025 · 15 Einheiten · Abgabefrist 30.09.2026 · <b style="color:var(--warn)">Schritt 3 blockiert</b></p></div>
+        <div class="taten"><button class="knopf">Andere Liegenschaft</button><button class="knopf haupt">Weiter</button></div>
+      </div>
+
+      <div class="karte">
+        <div class="schritte">
+          <div class="sch fertig"><div class="pk"><svg style="width:13px;height:13px"><use href="#i-haken"/></svg></div><div class="sl">Periode und Schlüssel</div><div class="sd">geprüft 04.08.</div></div>
+          <div class="sch fertig"><div class="pk"><svg style="width:13px;height:13px"><use href="#i-haken"/></svg></div><div class="sl">Kosten erfassen</div><div class="sd">31 Belege</div></div>
+          <div class="sch jetzt"><div class="pk">3</div><div class="sl">Verbrauchsdaten</div><div class="sd">VHKA fehlt</div></div>
+          <div class="sch"><div class="pk">4</div><div class="sl">Verteilen und prüfen</div><div class="sd">—</div></div>
+          <div class="sch"><div class="pk">5</div><div class="sl">Freigabe Eigentümer</div><div class="sd">—</div></div>
+          <div class="sch"><div class="pk">6</div><div class="sl">Versand und Sollstellung</div><div class="sd">—</div></div>
+        </div>
+        <div class="hinweisbox krit">
+          <span class="hi"><svg><use href="#i-warn"/></svg></span>
+          <div class="ht"><b>Blockiert: Verbrauchsablesung Techem fehlt seit 50 Tagen</b>
+            Die VHKA-Ablesung per 30.06.2025 ist nicht eingegangen. Ohne Verbrauchswerte lassen sich 46 % der Kosten nicht verteilen. Zweimal angefordert (22.07., 05.08.). Bei einer Abrechnung ohne Verbrauchsdaten wäre der verbrauchsabhängige Anteil angreifbar.
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+              <button class="knopf klein haupt">Techem erneut anfordern</button>
+              <button class="knopf klein">Frist eskalieren</button>
+              <button class="knopf klein">Ohne VHKA fortfahren</button>
+            </div></div></div>
+      </div>
+
+      <div class="zwei-schmal">
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-fr"/></svg></div><h2>Kostenzusammenstellung</h2>
+              <span class="neben">31 Belege · geprüft auf Abrechenbarkeit</span></div>
+            <table>
+              <thead><tr><th>Position</th><th>Verteilschlüssel</th><th class="zahl">Betrag</th><th class="zahl">Vorjahr</th><th class="zahl">Δ</th></tr></thead>
+              <tbody>
+                <tr><td class="stark">Heizung und Warmwasser</td><td>Verbrauch VHKA</td><td class="zahl">48'200.00</td><td class="zahl">34'900.00</td><td class="zahl" style="color:var(--warn);font-weight:700">+38 %</td></tr>
+                <tr><td class="stark">Hauswartung</td><td>Fläche m²</td><td class="zahl">14'400.00</td><td class="zahl">14'400.00</td><td class="zahl">0 %</td></tr>
+                <tr><td class="stark">Wasser und Abwasser</td><td>Personen</td><td class="zahl">6'200.00</td><td class="zahl">5'980.00</td><td class="zahl">+4 %</td></tr>
+                <tr><td class="stark">Kehricht</td><td>Personen</td><td class="zahl">4'100.00</td><td class="zahl">4'020.00</td><td class="zahl">+2 %</td></tr>
+                <tr><td class="stark">Strom Allgemein</td><td>Fläche m²</td><td class="zahl">3'840.00</td><td class="zahl">3'510.00</td><td class="zahl">+9 %</td></tr>
+                <tr><td class="stark">Serviceabonnemente Lift/Heizung</td><td>Fläche m²</td><td class="zahl">2'950.00</td><td class="zahl">2'880.00</td><td class="zahl">+2 %</td></tr>
+                <tr class="raus"><td class="stark">Verwaltungshonorar</td><td colspan="2">nicht abrechenbar</td><td class="zahl" style="text-decoration:line-through">9'600.00</td><td class="zahl">—</td></tr>
+                <tr class="raus"><td class="stark">Storenmotor Ersatz 2.4</td><td colspan="2">Unterhalt, nicht Nebenkosten</td><td class="zahl" style="text-decoration:line-through">640.00</td><td class="zahl">—</td></tr>
+              </tbody>
+              <tfoot>
+                <tr><td colspan="2">Abrechenbar total</td><td class="zahl">79'690.00</td><td class="zahl">65'690.00</td><td class="zahl" style="color:var(--warn)">+21 %</td></tr>
+              </tfoot>
+            </table>
+            <div class="hinweisbox warn">
+              <span class="hi"><svg><use href="#i-warn"/></svg></span>
+              <div class="ht"><b>Zwei Positionen automatisch ausgeschlossen</b>
+                Das Verwaltungshonorar ist ohne ausdrückliche Vereinbarung im Mietvertrag nicht auf die Mieterschaft überwälzbar — im Vertrag der Bahnhofstrasse 12 fehlt eine solche Klausel. Der Storenmotor ist wertvermehrender Unterhalt und gehört in die Instandhaltung des Eigentümers. Beide bleiben sichtbar, damit die Entscheidung nachvollziehbar ist.</div></div>
+            <div class="hinweisbox info">
+              <span class="hi"><svg><use href="#i-info"/></svg></span>
+              <div class="ht"><b>Auffällig: Heizung +38 %</b>
+                Verbrauch nach Gradtagen liegt nur 4 % über dem Vorjahr — der Anstieg kommt praktisch vollständig aus dem Gaspreis. Das gehört ins Begleitschreiben, sonst kommen 15 Anrufe.
+                <button class="knopf klein">Begleitschreiben ergänzen</button></div></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon warn"><svg><use href="#i-zahlen"/></svg></div><h2>Akonto-Deckung</h2><span class="neben">Vorschau</span></div>
+            <div class="zeile"><div class="mitte"><div class="t">Akonto total CHF 62'400</div><div class="s">gegen abrechenbare Kosten CHF 79'690</div></div></div>
+            <div class="hinweisbox warn" style="border-bottom:0">
+              <span class="hi"><svg><use href="#i-warn"/></svg></span>
+              <div class="ht"><b>Deckungsgrad 78 % — hohe Nachzahlungen</b>
+                Im Schnitt CHF 1'150 pro Einheit. Bei drei Mietverhältnissen liegt die Nachzahlung über einer Monatsmiete. Empfehlung: Akonto ab 01.01.2027 anpassen und die Anpassung im selben Versand ankündigen.
+                <button class="knopf klein">Akonto-Anpassung vorbereiten</button></div></div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-frage"/></svg></div><h2>Sonderfälle in dieser Periode</h2>
+              <span class="neben">4 · brauchen eine Entscheidung</span></div>
+            <div class="zeile"><span class="marker warn"></span><div class="mitte">
+              <div class="t">Whg. 2.4 — Leerstand 62 Tage</div>
+              <div class="s">Anteil für die Leerstandszeit geht zulasten der Eigentümerschaft</div></div>
+              <span class="chip warn">automatisch</span></div>
+            <div class="zeile"><span class="marker warn"></span><div class="mitte">
+              <div class="t">Whg. 1.2 — Mieterwechsel per 31.10.2024</div>
+              <div class="s">Pro-rata-Aufteilung zwischen Hodel (neu) und Rey (alt), 4 zu 8 Monate</div></div>
+              <span class="chip warn">automatisch</span></div>
+            <div class="zeile"><span class="marker krit"></span><div class="mitte">
+              <div class="t">Whg. 3.2 — Beendigung per 30.09.2026</div>
+              <div class="s">Abrechnung 2025 ergeht noch an Blaser; Periode 2026 wird anteilig und separat abzurechnen sein</div></div>
+              <span class="chip krit">prüfen</span></div>
+            <div class="zeile"><span class="marker krit"></span><div class="mitte">
+              <div class="t">Gewerbe EG — Personenzahl unbekannt</div>
+              <div class="s">Wasser und Kehricht werden nach Personen verteilt; für Gewerbe fehlt eine Bemessungsgrundlage</div></div>
+              <span class="chip krit">entscheiden</span></div>
+            <div class="karte-fuss"><span>Sonderfälle werden ins Protokoll geschrieben</span><a>Protokoll ansehen</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ BANKABGLEICH ══════════ -->
+    <section class="screen" data-s="bank">
+      <div class="seitenkopf">
+        <div><h1>Bankabgleich</h1><p>CAMT.053 vom 18.08.2026 · Raiffeisen Nyon-La Côte · 119 Positionen</p></div>
+        <div class="taten"><button class="knopf">Datei importieren</button><button class="knopf haupt">7 offene abarbeiten</button></div>
+      </div>
+
+      <div class="karte">
+        <div class="kzn" style="border-top:0">
+          <div><div class="l">Automatisch zugeordnet</div><div class="w gut">112</div><div class="f">94 % · über QR-Referenz</div></div>
+          <div><div class="l">Offen</div><div class="w warn">7</div><div class="f">CHF 9'870.00</div></div>
+          <div><div class="l">Bearbeitungszeit</div><div class="w">Ø 40 Sek.</div><div class="f">pro offene Position</div></div>
+          <div><div class="l">Gelernte Regeln</div><div class="w">23</div><div class="f">sparen ~14 Zuordnungen / Monat</div></div>
+        </div>
+        <div class="hinweisbox krit">
+          <span class="hi"><svg><use href="#i-warn"/></svg></span>
+          <div class="ht"><b>Der Mahnlauf August wartet auf diesen Abgleich</b>
+            Drei der sieben offenen Eingänge gleichen rechnerisch überfällige Forderungen aus. Wird jetzt gemahnt, gehen mindestens drei Mahnungen an Mieter, die bereits bezahlt haben.</div></div>
+      </div>
+
+      <div class="karte">
+        <div class="karte-kopf"><div class="ikon warn"><svg><use href="#i-teilen"/></svg></div><h2>Offene Eingänge</h2>
+          <div class="rechts"><span class="chip">Zahlung links · Vorschlag rechts</span></div></div>
+
+        <div class="ab">
+          <div class="links">
+            <div class="b1">CHF 1'890.00</div>
+            <div class="b2">15.08.2026 · Blaser Marc, Lausanne</div>
+            <div class="b3">Mitteilung: «Miete Juni 3.2 Bahnhofstr»</div>
+          </div>
+          <div class="rechtss">
+            <span class="vs"><svg><use href="#i-funke"/></svg></span>
+            <div class="vt">
+              <div class="a">Mietverhältnis M. Blaser · Bahnhofstr. 12 / 3.2 — Sollstellung Juni 2026</div>
+              <div class="b">Ohne QR-Referenz einbezahlt, Zuordnung über Zahlername und Mitteilungstext. Deckt die seit 79 Tagen offene Forderung. <b style="color:var(--good)">Der laufende Mahnfall würde damit gegenstandslos.</b></div>
+              <div class="knopfzeile"><button class="knopf klein haupt">Zuordnen</button><button class="knopf klein">Andere Akte</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ab">
+          <div class="links">
+            <div class="b1">CHF 3'780.00</div>
+            <div class="b2">14.08.2026 · Girod Patrick</div>
+            <div class="b3">QR 21 00000 00000 00000 00003 31</div>
+          </div>
+          <div class="rechtss">
+            <span class="vs"><svg><use href="#i-teilen"/></svg></span>
+            <div class="vt">
+              <div class="a">Aufteilen: zwei Monatsmieten in einer Zahlung</div>
+              <div class="b">QR-Referenz zeigt auf Mietverhältnis Girod · 3.3. Betrag entspricht exakt 2 × CHF 1'890 — Vorschlag: August 2026 ausgleichen, Rest als Vorauszahlung September verbuchen.</div>
+              <div class="knopfzeile"><button class="knopf klein haupt">So aufteilen</button><button class="knopf klein">Manuell splitten</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ab">
+          <div class="links">
+            <div class="b1">CHF 1'420.00</div>
+            <div class="b2">12.08.2026 · Service social régional Nyon</div>
+            <div class="b3">Mitteilung: «Aeschlimann / loyer août»</div>
+          </div>
+          <div class="rechtss">
+            <span class="vs warn"><svg><use href="#i-funke"/></svg></span>
+            <div class="vt">
+              <div class="a">Drittzahler — Mietverhältnis S. Aeschlimann · Vignes 7 / 2.1</div>
+              <div class="b">Soll ist CHF 2'150; die Zahlung deckt <b>66 %</b>. Teilzahlung verbuchen, Restforderung CHF 730 bleibt offen. <b style="color:var(--warn)">Der Fall Zahlungsverzug nach Art. 257d läuft weiter</b> — die Frist wird durch die Teilzahlung nicht unterbrochen.</div>
+              <div class="knopfzeile">
+                <button class="knopf klein haupt">Als Teilzahlung verbuchen</button>
+                <button class="knopf klein">Regel anlegen: Sozialdienst → Aeschlimann</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ab">
+          <div class="links">
+            <div class="b1">CHF 5'670.00</div>
+            <div class="b2">11.08.2026 · Roux Thibaut</div>
+            <div class="b3">Mitteilung: «caution Perdtemps»</div>
+          </div>
+          <div class="rechtss">
+            <span class="vs"><svg><use href="#i-schild"/></svg></span>
+            <div class="vt">
+              <div class="a">Kaution — nicht auf das Mietkonto buchen</div>
+              <div class="b">Betrag entspricht 3 Monatsmieten des neuen Vertrags Perdtemps 3 / EG. Kautionen gehören auf ein Sperrkonto, lautend auf den Mieter — eine Verbuchung auf dem Mieterkonto wäre falsch.</div>
+              <div class="knopfzeile"><button class="knopf klein haupt">Als Kaution weiterleiten</button><button class="knopf klein">Details</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ab">
+          <div class="links">
+            <div class="b1">− CHF 1'650.00</div>
+            <div class="b2">13.08.2026 · Rückbuchung LSV</div>
+            <div class="b3">Grund: Konto ungenügend gedeckt</div>
+          </div>
+          <div class="rechtss">
+            <span class="vs warn"><svg><use href="#i-warn"/></svg></span>
+            <div class="vt">
+              <div class="a">Storno — Mietverhältnis M. Hodel · Bahnhofstr. 12 / 1.2</div>
+              <div class="b">Die Augustmiete wurde am 02.08. gutgeschrieben und ist nun zurückgebucht. Das Konto fällt auf CHF −1'650 zurück; der Mahnzyklus muss neu starten, nicht fortgesetzt werden.</div>
+              <div class="knopfzeile"><button class="knopf klein haupt">Storno verbuchen</button><button class="knopf klein">Mieter benachrichtigen</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ab">
+          <div class="links">
+            <div class="b1">CHF 250.00</div>
+            <div class="b2">16.08.2026 · Zahler unklar «M.B.»</div>
+            <div class="b3">keine Referenz, keine Mitteilung</div>
+          </div>
+          <div class="rechtss">
+            <span class="vs grau"><svg><use href="#i-frage"/></svg></span>
+            <div class="vt">
+              <div class="a">Kein belastbarer Vorschlag</div>
+              <div class="b">Kein Soll in dieser Höhe offen. Möglich: Anteilszahlung, Schadenersatz oder Fremdzahlung. Vorschlag: auf Verrechnungskonto parken und beim nächsten Kontakt klären — nicht raten.</div>
+              <div class="knopfzeile"><button class="knopf klein">Parken</button><button class="knopf klein">Akte suchen</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="karte-fuss"><span>6 von 7 gezeigt · Regeln greifen ab dem nächsten Import automatisch</span><a>Gelernte Regeln verwalten</a></div>
+      </div>
+    </section>
+
+    <!-- ══════════ BEWERBERVERGLEICH ══════════ -->
+    <section class="screen" data-s="bew">
+      <div class="seitenkopf">
+        <div><h1>Bewerbungen — Bahnhofstrasse 12, Whg. 3.2</h1>
+          <p>3.5 Zi · 78 m² · frei ab 01.10.2026 · ausgeschrieben seit 14.08. · 6 Bewerbungen · 4 Besichtigungen</p></div>
+        <div class="taten"><button class="knopf">Ausschreibung</button><button class="knopf haupt">Entscheid festhalten</button></div>
+      </div>
+
+      <div class="karte">
+        <div class="hinweisbox info">
+          <span class="hi"><svg><use href="#i-info"/></svg></span>
+          <div class="ht"><b>Kriterien vor der ersten Sichtung festgelegt am 13.08.2026</b>
+            Tragbarkeit höchstens ein Drittel des Nettoeinkommens · keine offenen Betreibungen · Referenz der Vorverwaltung · Einzug bis spätestens 01.11.2026. Die Reihenfolge unten folgt diesen Kriterien; sie ist eine Rechenhilfe und ersetzt den Entscheid nicht.</div></div>
+        <table>
+          <thead><tr><th>Bewerber</th><th>Haushalt</th><th class="zahl">Einkommen</th><th class="zahl">Quote</th><th>Prüfungen</th><th>Einzug</th><th style="width:100px">Passung</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="stark">C. Lehmann<div style="font-weight:400;font-size:11.5px;color:var(--faint);margin-top:2px">besichtigt 16.08.</div></td>
+              <td>2 Erwachsene</td><td class="zahl">10'400</td><td class="zahl" style="color:var(--good);font-weight:700">18 %</td>
+              <td>
+                <span class="pruefpunkt ok"><svg><use href="#i-haken"/></svg>Betreibung</span> ·
+                <span class="pruefpunkt ok"><svg><use href="#i-haken"/></svg>Referenz</span>
+              </td>
+              <td>01.10.2026</td>
+              <td><div class="score"><div class="bar"><i style="width:94%"></i></div><div class="lbl">94</div></div></td>
+            </tr>
+            <tr>
+              <td class="stark">Fam. Dubois<div style="font-weight:400;font-size:11.5px;color:var(--faint);margin-top:2px">besichtigt 16.08.</div></td>
+              <td>2 Erw. · 2 Kinder</td><td class="zahl">8'900</td><td class="zahl" style="color:var(--good);font-weight:700">21 %</td>
+              <td>
+                <span class="pruefpunkt ok"><svg><use href="#i-haken"/></svg>Betreibung</span> ·
+                <span class="pruefpunkt offen"><svg><use href="#i-warn"/></svg>Referenz ausstehend</span>
+              </td>
+              <td>01.11.2026</td>
+              <td><div class="score"><div class="bar"><i style="width:81%"></i></div><div class="lbl">81</div></div></td>
+            </tr>
+            <tr>
+              <td class="stark">S. Kaufmann<div style="font-weight:400;font-size:11.5px;color:var(--faint);margin-top:2px">besichtigt 17.08.</div></td>
+              <td>1 Erwachsener</td><td class="zahl">6'200</td><td class="zahl" style="color:var(--warn);font-weight:700">29 %</td>
+              <td>
+                <span class="pruefpunkt ok"><svg><use href="#i-haken"/></svg>Betreibung</span> ·
+                <span class="pruefpunkt ok"><svg><use href="#i-haken"/></svg>Referenz</span>
+              </td>
+              <td>01.10.2026</td>
+              <td><div class="score"><div class="bar"><i style="width:72%"></i></div><div class="lbl">72</div></div></td>
+            </tr>
+            <tr>
+              <td class="stark">M. Trüeb<div style="font-weight:400;font-size:11.5px;color:var(--faint);margin-top:2px">nicht besichtigt</div></td>
+              <td>2 Erwachsene</td><td class="zahl">7'100</td><td class="zahl" style="color:var(--warn);font-weight:700">26 %</td>
+              <td><span class="pruefpunkt offen"><svg><use href="#i-warn"/></svg>Unterlagen unvollständig</span></td>
+              <td>offen</td>
+              <td><div class="score"><div class="bar"><i class="warn" style="width:48%"></i></div><div class="lbl">48</div></div></td>
+            </tr>
+            <tr>
+              <td class="stark">J. Perrin<div style="font-weight:400;font-size:11.5px;color:var(--faint);margin-top:2px">besichtigt 17.08.</div></td>
+              <td>1 Erw. · 1 Kind</td><td class="zahl">4'800</td><td class="zahl" style="color:var(--crit);font-weight:700">38 %</td>
+              <td><span class="pruefpunkt nok"><svg><use href="#i-x"/></svg>2 offene Betreibungen</span></td>
+              <td>01.10.2026</td>
+              <td><div class="score"><div class="bar"><i class="krit" style="width:22%"></i></div><div class="lbl">22</div></div></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="karte-fuss">
+          <span>5 von 6 · Quote = Bruttomiete CHF 1'820 zum Nettoeinkommen</span>
+          <a>Vollständige Dossiers</a></div>
+      </div>
+
+      <div class="zwei">
+        <div class="karte">
+          <div class="karte-kopf"><div class="ikon warn"><svg><use href="#i-warn"/></svg></div><h2>Vor dem Vertrag zu klären</h2></div>
+          <div class="zeile"><span class="marker krit"></span><div class="mitte">
+            <div class="t">Anfangsmietzins CHF 1'620 → 1'820 (+12.3 %)</div>
+            <div class="s">Erhöhung gegenüber dem Vormieter. Wo die Formularpflicht für den Anfangsmietzins gilt, ist das amtliche Formular mit Begründung zwingend — die Pflicht ist pro Kanton hinterlegt und für diese Liegenschaft zu bestätigen.</div></div>
+            <button class="knopf klein">Formular vorbereiten</button></div>
+          <div class="zeile"><span class="marker warn"></span><div class="mitte">
+            <div class="t">Referenz Dubois ausstehend</div>
+            <div class="s">Vorverwaltung seit 4 Tagen nicht erreicht — vor einer Zusage einholen</div></div>
+            <button class="knopf klein">Nachfassen</button></div>
+          <div class="zeile"><span class="marker marke"></span><div class="mitte">
+            <div class="t">Wohnung ist ab 01.10. frei, Lehmann kann per 01.10.</div>
+            <div class="s">Kein Leerstand bei Zuschlag an Lehmann; bei Dubois ein Monat Leerstand, rund CHF 1'820</div></div></div>
+        </div>
+
+        <div class="karte">
+          <div class="karte-kopf"><div class="ikon"><svg><use href="#i-schild"/></svg></div><h2>Absagen und Datenschutz</h2></div>
+          <div class="zeile"><div class="mitte">
+            <div class="t">5 Absagen vorbereitet</div><div class="s">neutral formuliert, ohne Begründung der Ablehnung</div></div>
+            <button class="knopf klein">Ansehen</button></div>
+          <div class="zeile"><div class="mitte">
+            <div class="t">Löschung nach 3 Monaten vorgemerkt</div><div class="s">Dossiers nicht berücksichtigter Bewerber inkl. Betreibungsauszüge · 19.11.2026</div></div>
+            <span class="chip marke">automatisch</span></div>
+          <div class="zeile"><div class="mitte">
+            <div class="t">Entscheidprotokoll</div><div class="s">Kriterien, Zeitpunkt der Festlegung und Begründung des Zuschlags werden im Fall abgelegt</div></div></div>
+          <div class="karte-fuss"><span>Nachvollziehbarkeit bei Rückfragen</span><a>Protokoll</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ EIGENTÜMERPORTAL ══════════ -->
+    <section class="screen" data-s="portal">
+      <div class="karte">
+        <div class="hinweisbox info">
+          <span class="hi"><svg><use href="#i-auge"/></svg></span>
+          <div class="ht"><b>Andere Nutzerrolle, andere Oberfläche</b>
+            Die Eigentümerin sieht ausschliesslich ihr eigenes Mandat — keine Fälle, keine Läufe, keine anderen Mandanten. Was sie hier freigibt, ist drüben im Fall sofort erledigt. Diese Trennung ist zugleich der sichtbare Beweis der Mandantentrennung aus Phase 2.</div></div>
+      </div>
+
+      <div class="seitenkopf">
+        <div><h1>Guten Tag, Frau Blattner-Suter</h1><p>Ihr Portfolio per 19. August 2026 · betreut von Dominik M.</p></div>
+        <div class="taten"><button class="knopf haupt">Nachricht an die Verwaltung</button></div>
+      </div>
+
+      <div class="karte">
+        <div class="kzn" style="border-top:0">
+          <div><div class="l">Mietertrag laufendes Jahr</div><div class="w">CHF 341'900</div><div class="f">Budget 352'000 · 97 %</div></div>
+          <div><div class="l">Ausschüttung bisher</div><div class="w gut">CHF 192'800</div><div class="f">letzte am 15.07.2026</div></div>
+          <div><div class="l">Vermietung</div><div class="w warn">21 von 22</div><div class="f">1 Wohnung frei seit 62 Tagen</div></div>
+          <div><div class="l">Unterhalt</div><div class="w">CHF 38'900</div><div class="f">Budget 52'000</div></div>
+        </div>
+      </div>
+
+      <div class="zwei-schmal">
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon krit"><svg><use href="#i-stift"/></svg></div><h2>Ihre Entscheidung ist nötig</h2>
+              <span class="neben">1 offen seit 9 Tagen</span></div>
+            <div class="zeile" style="align-items:flex-start;padding:15px">
+              <span class="marker krit"></span>
+              <div class="mitte">
+                <div class="t">Storenersatz Bahnhofstrasse 12, Wohnung 2.4 — CHF 890</div>
+                <div class="s" style="font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.6">
+                  Der Storenmotor ist defekt und nicht mehr reparierbar. Der Betrag liegt über der vereinbarten Kompetenzsumme von CHF 500, deshalb brauchen wir Ihr Einverständnis.<br>
+                  Zwei Offerten eingeholt: Rollex CHF 890, Sonnex CHF 1'140. Empfehlung der Verwaltung: Rollex.<br>
+                  <span style="color:var(--faint)">Die Wohnung steht leer und wird ausgeschrieben — funktionierende Storen sind für die Vermietung relevant.</span>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+                  <button class="knopf haupt">Freigeben</button>
+                  <button class="knopf">Ablehnen</button>
+                  <button class="knopf">Rückfrage stellen</button>
+                  <button class="knopf">Offerten ansehen</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-haus"/></svg></div><h2>Ihre Liegenschaften</h2></div>
+            <table>
+              <thead><tr><th>Liegenschaft</th><th class="zahl">Einheiten</th><th class="zahl">Vermietet</th><th class="zahl">Ertrag / Monat</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td class="stark">Bahnhofstrasse 12, Gland</td><td class="zahl">15</td><td class="zahl">14</td><td class="zahl">26'700</td><td><span class="chip warn">1 frei</span></td></tr>
+                <tr><td class="stark">Chemin du Verger 5, Gland</td><td class="zahl">7</td><td class="zahl">7</td><td class="zahl">11'800</td><td><span class="chip gut">voll</span></td></tr>
+              </tbody>
+            </table>
+            <div class="karte-fuss"><span>22 Einheiten total</span><a>Details ansehen</a></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-doku"/></svg></div><h2>Dokumente</h2></div>
+            <div class="zeile klick"><div class="mitte"><div class="t">Halbjahresbericht 2026</div><div class="s">wird am Donnerstag mit Ihnen besprochen</div></div><span class="chip warn">Entwurf</span></div>
+            <div class="zeile klick"><div class="mitte"><div class="t">Nebenkostenabrechnung 2025</div><div class="s">in Bearbeitung · Abgabe bis 30.09.2026</div></div><span class="chip warn">läuft</span></div>
+            <div class="zeile klick"><div class="mitte"><div class="t">Jahresrechnung 2025</div><div class="s">freigegeben 12.03.2026</div></div><span class="chip gut">PDF</span></div>
+            <div class="zeile klick"><div class="mitte"><div class="t">Verwaltungsvertrag</div><div class="s">gültig bis 31.12.2027</div></div><span class="chip gut">PDF</span></div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon gut"><svg><use href="#i-fr"/></svg></div><h2>Ausschüttungen</h2></div>
+            <div class="zeile"><div class="mitte"><div class="t">Q2 2026</div><div class="s">überwiesen 15.07.2026</div></div><span class="zeit">CHF 96'400</span></div>
+            <div class="zeile"><div class="mitte"><div class="t">Q1 2026</div><div class="s">überwiesen 14.04.2026</div></div><span class="zeit">CHF 96'400</span></div>
+            <div class="zeile"><div class="mitte"><div class="t">Q3 2026 geplant</div><div class="s">voraussichtlich 15.10.2026</div></div><span class="zeit" style="color:var(--faint)">ca. CHF 94'000</span></div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-mail"/></svg></div><h2>Ihre Ansprechperson</h2></div>
+            <div class="zeile" style="gap:14px">
+              <span class="kuerzel" style="width:38px;height:38px;font-size:13px">DM</span>
+              <div class="mitte"><div class="t">Dominik M.</div><div class="s">022 361 88 40 · erreichbar Mo–Fr 08:00–12:00 und 13:30–17:00</div></div>
+            </div>
+            <div class="karte-fuss"><span>Vertretung bei Abwesenheit: Silvia R.</span><a>Nachricht schreiben</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ ABO UND MODULE ══════════ -->
+    <section class="screen" data-s="abo">
+      <div class="seitenkopf">
+        <div><h1>Abonnement und Module</h1><p>swissImmo Verwaltung AG · Kunde seit 01.02.2025 · nächste Rechnung 01.09.2026</p></div>
+        <div class="taten"><button class="knopf">Rechnungen</button></div>
+      </div>
+
+      <div class="stufen4">
+        <div class="stufe4">
+          <div class="sn">Basis</div><div class="sp">39.—<small> / Mt.</small></div>
+          <div class="sg">bis 60 Einheiten · 1 Nutzer<br>Akten, Monatslauf, Dokumente</div>
+          <div class="sb2"><button class="knopf klein" style="width:100%;justify-content:center">Wechseln</button></div>
+        </div>
+        <div class="stufe4">
+          <div class="sn">Aufbau</div><div class="sp">119.—<small> / Mt.</small></div>
+          <div class="sg">bis 120 Einheiten · 3 Nutzer<br>zusätzlich Fälle, Fristenwächter</div>
+          <div class="sb2"><button class="knopf klein" style="width:100%;justify-content:center">Wechseln</button></div>
+        </div>
+        <div class="stufe4 jetzt">
+          <div class="sn" style="color:var(--brand)">Verwaltung · aktiv</div><div class="sp">329.—<small> / Mt.</small></div>
+          <div class="sg">bis 250 Einheiten · 5 Nutzer<br>zusätzlich Nebenkosten, Vor-Ort-Modus, Eigentümerportal</div>
+          <div class="sb2"><span class="chip marke">Ihre Stufe</span></div>
+        </div>
+        <div class="stufe4">
+          <div class="sn">Portfolio</div><div class="sp">749.—<small> / Mt.</small></div>
+          <div class="sg">bis 800 Einheiten · 15 Nutzer<br>zusätzlich Mandatsrentabilität, Schnittstellen</div>
+          <div class="sb2"><button class="knopf klein" style="width:100%;justify-content:center">Wechseln</button></div>
+        </div>
+      </div>
+
+      <div class="zwei-schmal">
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-zahlen"/></svg></div><h2>Nutzung Ihrer Stufe</h2></div>
+            <div class="grenze">
+              <div class="g1"><span>Einheiten</span><b>178 von 250</b></div>
+              <div class="bar"><i style="width:71%"></i></div>
+            </div>
+            <div class="grenze">
+              <div class="g1"><span>Nutzer</span><b>3 von 5</b></div>
+              <div class="bar"><i style="width:60%"></i></div>
+            </div>
+            <div class="grenze" style="border-bottom:0">
+              <div class="g1"><span>Dokumentenspeicher</span><b>18.4 von 50 GB</b></div>
+              <div class="bar"><i style="width:37%"></i></div>
+            </div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-schnitt"/></svg></div><h2>Zubuchbare Module</h2>
+              <span class="neben">jederzeit ein- und ausschaltbar</span></div>
+            <div class="modul">
+              <span class="mi an"><svg><use href="#i-stift"/></svg></span>
+              <div class="mt"><div class="a">Digitale Unterschrift</div><div class="b">Verträge und Protokolle rechtsgültig signieren · 47 Signaturen im Juli</div></div>
+              <span class="mp">39.—</span><span class="schalter an"></span>
+            </div>
+            <div class="modul">
+              <span class="mi an"><svg><use href="#i-funke"/></svg></span>
+              <div class="mt"><div class="a">Dokumentenerkennung</div><div class="b">Zulauf automatisch zuordnen, QR und Rechnungen auslesen · 1'240 Belege im Juli</div></div>
+              <span class="mp">49.—</span><span class="schalter an"></span>
+            </div>
+            <div class="modul">
+              <span class="mi"><svg><use href="#i-zahlen"/></svg></span>
+              <div class="mt"><div class="a">Erweitertes Reporting</div><div class="b">Eigene Auswertungen, Exportvorlagen, Vergleich über Mandate</div></div>
+              <span class="mp">59.—</span><span class="schalter"></span>
+            </div>
+            <div class="modul">
+              <span class="mi"><svg><use href="#i-schnitt"/></svg></span>
+              <div class="mt"><div class="a">Schnittstellen</div><div class="b">Buchhaltungsexport, Immobilienportale, Kalendersynchronisation</div></div>
+              <span class="mp">79.—</span><span class="schalter"></span>
+            </div>
+            <div class="karte-fuss">
+              <span>Abonnement CHF 329 + Module CHF 88 = CHF 417 · zzgl. 8.1 % MWST CHF 33.78</span>
+              <b style="color:var(--ink)">CHF 450.78 / Monat</b></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon warn"><svg><use href="#i-info"/></svg></div><h2>Wenn Sie herabstufen</h2>
+              <span class="neben">Beispiel: Wechsel auf «Aufbau»</span></div>
+            <div class="hinweisbox gut">
+              <span class="hi"><svg><use href="#i-haken"/></svg></span>
+              <div class="ht"><b>Ihre Daten bleiben vollständig erhalten</b>
+                Es wird nichts gelöscht — weder Akten noch Dokumente noch Fälle. Funktionen werden gesperrt, nicht Daten entfernt.</div></div>
+            <div class="zeile"><span class="marker warn"></span><div class="mitte">
+              <div class="t">178 Einheiten über der Grenze von 120</div>
+              <div class="s">Bestehende Einheiten bleiben lesbar und abrechenbar. Neue Einheiten lassen sich erst wieder erfassen, wenn Sie unter der Grenze sind.</div></div></div>
+            <div class="zeile"><span class="marker warn"></span><div class="mitte">
+              <div class="t">Nebenkostenlauf wird schreibgeschützt</div>
+              <div class="s">Bisherige Abrechnungen bleiben einsehbar und als PDF abrufbar; neue Perioden lassen sich nicht starten.</div></div></div>
+            <div class="zeile"><span class="marker warn"></span><div class="mitte">
+              <div class="t">Eigentümerportal wird abgeschaltet</div>
+              <div class="s">Ihre 4 Eigentümer verlieren den Zugang. Wir empfehlen, sie vorher zu informieren — ein Hinweistext ist vorbereitet.</div></div></div>
+            <div class="zeile"><span class="marker warn"></span><div class="mitte">
+              <div class="t">Vor-Ort-Modus entfällt</div>
+              <div class="s">Bestehende Protokolle bleiben in den Akten; neue Abnahmen erfassen Sie wieder am Bildschirm.</div></div></div>
+            <div class="karte-fuss"><span>Wirksam ab der nächsten Rechnungsperiode, keine Sofortabschaltung</span><a>Vergleich ansehen</a></div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon krit"><svg><use href="#i-warn"/></svg></div><h2>Wenn eine Zahlung ausbleibt</h2>
+              <span class="neben">vorab transparent, damit es keine Überraschung gibt</span></div>
+            <div class="zeile"><span class="zeit">Tag 7</span><div class="mitte"><div class="t">Hinweis im Programm und per E-Mail</div><div class="s">nichts ändert sich</div></div></div>
+            <div class="zeile"><span class="zeit">Tag 14</span><div class="mitte"><div class="t">Läufe und Versand gesperrt</div><div class="s">Erfassen und Lesen bleiben möglich</div></div></div>
+            <div class="zeile"><span class="zeit">Tag 30</span><div class="mitte"><div class="t">Nur noch Lesen und Export</div><div class="s">vollständiger Datenexport bleibt jederzeit möglich</div></div></div>
+            <div class="zeile"><span class="zeit">12 Mt.</span><div class="mitte"><div class="t">Frühestens Löschung</div><div class="s">nach vorheriger Ankündigung und Exportfrist</div></div></div>
+            <div class="karte-fuss"><span>Ein gesperrter Zugang darf nie zu Datenverlust führen</span><a>Vollständiger Datenexport</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    </main>
+  </div>
+</div>
+</div>
+
+<div class="notizen">
+  <div class="kasten">
+    <h3>Nebenkostenlauf — der Wert liegt im Ausschliessen</h3>
+    <p>Rechnen kann jede Software. Interessant ist, was <b>nicht</b> in die Abrechnung darf: Das Verwaltungshonorar von CHF 9'600 ist ohne ausdrückliche Vertragsklausel nicht überwälzbar, der Storenmotor ist Unterhalt des Eigentümers. Beide bleiben durchgestrichen sichtbar, damit der Ausschluss nachvollziehbar ist und nicht stillschweigend passiert.</p>
+    <p>Ebenso wichtig ist die Plausibilisierung: Heizung +38 %, Verbrauch aber nur +4 % — der Rest ist Gaspreis. Steht das im Begleitschreiben, entfallen fünfzehn Anrufe. Und der Deckungsgrad von 78 % ist keine Zahl für die Ablage, sondern der Auslöser für eine Akontoanpassung, die im selben Versand mitgeht.</p>
+  </div>
+  <div class="kasten">
+    <h3>Bankabgleich — die sieben schwierigen Fälle</h3>
+    <p>112 von 119 Positionen ordnet die QR-Referenz automatisch zu. Der Aufwand steckt in den restlichen sieben, und jede ist ein anderer Fehlertyp: Zahlung ohne Referenz, zwei Monatsmieten in einem Betrag, Drittzahler (Sozialdienst) mit Teilzahlung, eine Kaution die fälschlich aufs Mietkonto liefe, eine LSV-Rückbuchung, und eine Zahlung ohne jeden Anhaltspunkt.</p>
+    <p>Bei der Teilzahlung steht ausdrücklich, dass die Frist nach Art. 257d dadurch <b>nicht</b> unterbrochen wird — genau dort passiert der teure Denkfehler. Und beim Drittzahler bietet die Maske an, eine Regel zu lernen: künftige Zahlungen desselben Sozialdiensts gehen automatisch an dieselbe Akte.</p>
+  </div>
+  <div class="kasten">
+    <h3>Eigentümerportal und Abo</h3>
+    <p>Das Portal ist die sichtbare Seite der Mandantentrennung: eine andere Rolle, eine andere Oberfläche, ausschliesslich das eigene Mandat. Die Freigabe des Storenersatzes ist derselbe Vorgang wie drüben im Fall — er wird nur von der anderen Seite bedient. Das ersetzt genau die Telefonate, die eine kleine Verwaltung Zeit kosten.</p>
+    <p>Beim Abo ist der eigentliche Inhalt nicht die Preistabelle, sondern die beiden Kästen rechts. Deine Vorgabe lautet, dass beim Herabstufen und beim Zahlungsausfall Daten erhalten bleiben und nur Funktionen sperren. Wenn das <b>vor</b> dem Klick sichtbar ist — welche vier Dinge sich ändern, dass die Eigentümer den Portalzugang verlieren, dass Export immer möglich bleibt — wird aus einer Einschränkung ein Vertrauensbeweis.</p>
+  </div>
+  <div class="kasten warnung">
+    <h3>Gegenlesen</h3>
+    <p>Die Abgrenzung abrechenbarer Nebenkosten, die Formularpflicht beim Anfangsmietzins, die Behandlung von Teilzahlungen im Verzugsverfahren und die Frage, ob eine Bewerberbewertung überhaupt als Punktzahl dargestellt werden soll, sind alles Punkte, an denen ich aus allgemeiner Kenntnis argumentiere. Die Tragbarkeitsregel von einem Drittel ist Praxis, nicht Gesetz. Die Preise sind aus <code>docs/MARKT.md</code> übernommen, nicht neu hergeleitet.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  var rahmen=document.getElementById('rahmen'), pk=document.getElementById('portalkopf');
+  function zeige(s){
+    document.querySelectorAll('.screen').forEach(function(x){x.classList.toggle('sichtbar',x.dataset.s===s);});
+    document.querySelectorAll('.labor button[data-s]').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.s===s?'true':'false');});
+    rahmen.setAttribute('data-modus', s==='portal'?'portal':'app');
+    pk.style.display = s==='portal' ? 'flex' : 'none';
+    document.querySelectorAll('.sb-gruppe').forEach(function(g){g.classList.toggle('aktiv',g.dataset.g===s||(g.dataset.g==='nk'&&s==='bank'));});
+    document.querySelector('.inhalt').scrollTop=0;
+  }
+  document.querySelectorAll('.labor button[data-s]').forEach(function(b){b.addEventListener('click',function(){zeige(b.dataset.s);});});
+  document.querySelectorAll('[data-zu]').forEach(function(e){e.addEventListener('click',function(ev){ev.stopPropagation();zeige(e.dataset.zu);});});
+  document.querySelectorAll('.schalter').forEach(function(s){s.addEventListener('click',function(){s.classList.toggle('an');});});
+  document.querySelectorAll('.pnav a').forEach(function(a){
+    a.addEventListener('click',function(){a.parentElement.querySelectorAll('a').forEach(function(x){x.classList.remove('hier');});a.classList.add('hier');});
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>swissImmo — Strukturkonzept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#0b0d13;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+
+:root{
+  --bg:#eff2f3; --surface:#fff; --surface-2:#f4f7f7; --surface-3:#e9eef0;
+  --ink:#0e2227; --muted:#4c6169; --faint:#7f959c; --line:#dde6e8; --line-stark:#c7d5d9;
+  --brand:#0f6f6a; --brand-600:#0b5450; --brand-soft:#d9efed;
+  --good:#166534; --good-soft:#e0f2e5; --warn:#a35a09; --warn-soft:#fbeeda;
+  --crit:#b32133; --crit-soft:#fbe6e9; --info:#0b5c8f; --info-soft:#e0eff8;
+  --r:10px; --r-s:7px;
+  --sh:0 1px 2px rgba(14,34,39,.05),0 4px 14px rgba(14,34,39,.04);
+  --nav:linear-gradient(180deg,#122b31,#0a1c20);
+  --nav-ink:#8fadb4; --nav-linie:rgba(255,255,255,.08); --nav-gruppe:#5c7d85;
+}
+
+/* ── Laborleiste ── */
+.labor{position:sticky;top:0;z-index:200;background:#12141d;border-bottom:1px solid #232739;padding:13px 20px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.labor .marke{font-size:11.5px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:#8b90a8}
+.labor .hinweis{margin-left:auto;font-size:11.5px;color:#5d6280;max-width:420px;line-height:1.5}
+.labor .hinweis b{color:#a8adc4}
+
+.buehne{padding:20px;display:flex;justify-content:center}
+.rahmen{width:100%;max-width:1440px;border-radius:13px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55);display:flex;min-height:860px;background:var(--bg);color:var(--ink);font-size:14px}
+
+/* ── Sidebar ── */
+.seiten{width:224px;flex:0 0 224px;background:var(--nav);display:flex;flex-direction:column}
+.sb-kopf{padding:16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--nav-linie)}
+.sb-logo{width:29px;height:29px;border-radius:var(--r-s);background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 29px}
+.sb-logo svg{width:15px;height:15px}
+.sb-wort{font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#fff}
+.sb-nav{flex:1;padding:11px 10px;overflow-y:auto}
+.sb-item{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:var(--r-s);color:var(--nav-ink);font-size:13.5px;font-weight:600;cursor:pointer;user-select:none;margin-bottom:1px}
+.sb-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.sb-item svg{width:15px;height:15px;flex:0 0 15px;opacity:.85}
+.sb-item .z{margin-left:auto;font-size:10px;font-weight:800;border-radius:999px;padding:1px 6px;min-width:19px;text-align:center;background:rgba(255,255,255,.12);color:#cfe0e3}
+.sb-item .z.rot{background:var(--crit);color:#fff}
+.sb-gruppe.aktiv > .sb-item{background:var(--brand);color:#fff}
+.sb-gruppe.aktiv > .sb-item svg{opacity:1}
+.sb-unter{display:none;padding:2px 0 6px 26px;flex-direction:column;gap:1px}
+.sb-gruppe.aktiv .sb-unter{display:flex}
+.sb-unter a{padding:5px 11px;border-radius:var(--r-s);font-size:12.5px;color:var(--nav-ink);text-decoration:none;cursor:pointer}
+.sb-unter a:hover{background:rgba(255,255,255,.06);color:#fff}
+.sb-unter a.hier{background:rgba(255,255,255,.11);color:#fff;font-weight:600}
+.sb-fuss{padding:10px;border-top:1px solid var(--nav-linie)}
+
+.haupt{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
+.kopfleiste{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;flex:0 0 56px}
+.suche{position:relative;width:100%;max-width:380px}
+.suche svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--faint)}
+.suche input{width:100%;background:var(--surface-2);border:1px solid transparent;border-radius:var(--r-s);padding:8px 12px 8px 34px;font:inherit;font-size:13px;color:var(--ink);outline:0}
+.suche input::placeholder{color:var(--faint)}
+.kopf-rechts{margin-left:auto;display:flex;align-items:center;gap:9px}
+.kuerzel{width:30px;height:30px;border-radius:999px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.inhalt{flex:1;padding:20px 24px 46px;overflow-y:auto;max-width:1340px;width:100%;margin:0 auto}
+
+/* ── Bausteine ── */
+.seitenkopf{display:flex;align-items:flex-end;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.seitenkopf h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em}
+.seitenkopf p{margin:3px 0 0;font-size:13px;color:var(--muted)}
+.seitenkopf .taten{margin-left:auto;display:flex;gap:8px}
+
+.knopf{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:var(--r-s);border:1px solid var(--line-stark);background:var(--surface);color:var(--ink);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.knopf:hover{background:var(--surface-2)}
+.knopf svg{width:13px;height:13px}
+.knopf.haupt{background:var(--brand);border-color:var(--brand);color:#fff}
+.knopf.haupt:hover{background:var(--brand-600)}
+.knopf.klein{padding:4px 10px;font-size:11.5px}
+
+.leiste{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.leiste .lbl{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-right:2px}
+.fchip{padding:5px 11px;border-radius:999px;font-size:12px;font-weight:600;background:var(--surface);color:var(--muted);cursor:pointer;border:1px solid var(--line)}
+.fchip:hover{border-color:var(--line-stark)}
+.fchip.an{background:var(--brand);color:#fff;border-color:var(--brand)}
+.leiste select{font:inherit;font-size:12.5px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+
+.karte{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:16px;overflow:hidden}
+.karte-kopf{padding:11px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.karte-kopf .ikon{width:27px;height:27px;border-radius:var(--r-s);background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;flex:0 0 27px}
+.karte-kopf .ikon svg{width:14px;height:14px}
+.karte-kopf .ikon.warn{background:var(--warn-soft);color:var(--warn)}
+.karte-kopf .ikon.krit{background:var(--crit-soft);color:var(--crit)}
+.karte-kopf h2{margin:0;font-size:14px;font-weight:700;letter-spacing:-.01em}
+.karte-kopf .neben{font-size:12.5px;color:var(--faint)}
+.karte-kopf .rechts{margin-left:auto;display:flex;gap:6px;align-items:center}
+.karte-fuss{padding:8px 15px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12px;color:var(--faint)}
+.karte-fuss a{color:var(--muted);font-weight:600;cursor:pointer;text-decoration:none}
+
+.chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:700;background:var(--surface-3);color:var(--muted);white-space:nowrap}
+.chip.gut{background:var(--good-soft);color:var(--good)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.krit{background:var(--crit-soft);color:var(--crit)}
+.chip.info{background:var(--info-soft);color:var(--info)}
+.chip.marke{background:var(--brand-soft);color:var(--brand)}
+
+.zeile{display:flex;align-items:center;gap:12px;padding:11px 15px;border-bottom:1px solid var(--line);cursor:pointer}
+.zeile:last-child{border-bottom:0}
+.zeile:hover{background:var(--surface-2)}
+.zeile .mitte{flex:1;min-width:0}
+.zeile .t{font-size:13.5px;font-weight:600;color:var(--ink)}
+.zeile .s{font-size:11.5px;color:var(--faint);margin-top:2px}
+.zeile .zeit{font-size:12.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.zeile .betrag{font-size:12.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.zeile.dringend .zeit{color:var(--crit)}
+.marker{width:3px;align-self:stretch;border-radius:2px;background:var(--line-stark);flex:0 0 3px;min-height:30px}
+.marker.krit{background:var(--crit)}.marker.warn{background:var(--warn)}.marker.gut{background:var(--good)}.marker.marke{background:var(--brand)}
+
+.zwei{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.zwei-schmal{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
+
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);padding:9px 15px;border-bottom:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
+tbody td{padding:11px 15px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2);cursor:pointer}
+td.stark{color:var(--ink);font-weight:600}
+td.zahl,th.zahl{text-align:right;font-variant-numeric:tabular-nums}
+
+/* Pipeline im Fall */
+.pipe{display:flex;align-items:center;gap:0;min-width:210px}
+.pipe span{flex:1;height:5px;background:var(--surface-3);position:relative}
+.pipe span:first-child{border-radius:999px 0 0 999px}
+.pipe span:last-child{border-radius:0 999px 999px 0}
+.pipe span.fertig{background:var(--brand)}
+.pipe span.jetzt{background:var(--warn)}
+.pipe-lbl{font-size:11px;color:var(--faint);margin-top:4px}
+
+/* Posteingang */
+.post .zeile{align-items:flex-start}
+.post .quelle{width:28px;height:28px;border-radius:var(--r-s);background:var(--surface-3);color:var(--muted);display:flex;align-items:center;justify-content:center;flex:0 0 28px;margin-top:1px}
+.post .quelle svg{width:13px;height:13px}
+.vorschlag{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:3px 9px;border-radius:999px;background:var(--brand-soft);color:var(--brand);font-size:11.5px;font-weight:600}
+.vorschlag svg{width:11px;height:11px}
+
+/* Akte */
+.akte-kopf{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:16px;overflow:hidden}
+.akte-oben{padding:17px 20px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.akte-bild{width:48px;height:48px;border-radius:var(--r-s);background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;flex:0 0 48px}
+.akte-bild svg{width:22px;height:22px}
+.akte-oben h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em}
+.akte-oben .pfad{font-size:12px;color:var(--faint);margin-top:4px}
+.akte-oben .pfad b{color:var(--muted);font-weight:600}
+.akte-oben .rechts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.akte-zahlen{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.akte-zahlen div{padding:12px 20px;border-right:1px solid var(--line)}
+.akte-zahlen div:last-child{border-right:0}
+.akte-zahlen .l{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.akte-zahlen .w{font-size:17px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+.akte-zahlen .w.krit{color:var(--crit)}
+.akte-zahlen .f{font-size:11.5px;color:var(--faint);margin-top:2px}
+.reiter{display:flex;gap:2px;border-top:1px solid var(--line);padding:0 12px;background:var(--surface-2)}
+.reiter a{padding:10px 14px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+.reiter a:hover{color:var(--ink)}
+.reiter a.hier{color:var(--brand);border-bottom-color:var(--brand)}
+.reiter a .z{font-size:10px;background:var(--surface-3);border-radius:999px;padding:1px 6px;margin-left:5px}
+
+.chronik{padding:4px 0}
+.ce{display:flex;gap:13px;padding:12px 18px;border-bottom:1px solid var(--line)}
+.ce:last-child{border-bottom:0}
+.ce .pkt{width:29px;height:29px;border-radius:var(--r-s);display:flex;align-items:center;justify-content:center;flex:0 0 29px;background:var(--surface-3);color:var(--muted)}
+.ce .pkt svg{width:13px;height:13px}
+.ce .pkt.marke{background:var(--brand-soft);color:var(--brand)}
+.ce .pkt.warn{background:var(--warn-soft);color:var(--warn)}
+.ce .pkt.krit{background:var(--crit-soft);color:var(--crit)}
+.ce .pkt.gut{background:var(--good-soft);color:var(--good)}
+.ce .txt{flex:1;min-width:0}
+.ce .txt .a{font-size:13.5px;font-weight:600;color:var(--ink)}
+.ce .txt .b{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.ce .txt .c{font-size:11.5px;color:var(--faint);margin-top:5px}
+.ce .dat{font-size:11.5px;color:var(--faint);white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right;flex:0 0 78px}
+
+/* Läufe */
+.lauf{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--line);cursor:pointer}
+.lauf:last-child{border-bottom:0}
+.lauf:hover{background:var(--surface-2)}
+.lauf .st{width:32px;height:32px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex:0 0 32px;background:var(--surface-3);color:var(--faint)}
+.lauf .st svg{width:15px;height:15px}
+.lauf .st.gut{background:var(--good-soft);color:var(--good)}
+.lauf .st.warn{background:var(--warn-soft);color:var(--warn)}
+.lauf .st.krit{background:var(--crit-soft);color:var(--crit)}
+.lauf .st.marke{background:var(--brand-soft);color:var(--brand)}
+.lauf .mitte{flex:1;min-width:0}
+.lauf .t{font-size:14px;font-weight:600;color:var(--ink)}
+.lauf .s{font-size:12px;color:var(--faint);margin-top:3px}
+.lauf .fort{width:110px;flex:0 0 110px}
+.lauf .fort .bar{height:5px;border-radius:999px;background:var(--surface-3);overflow:hidden}
+.lauf .fort .bar i{display:block;height:100%;background:var(--brand)}
+.lauf .fort .bar i.warn{background:var(--warn)}
+.lauf .fort .lbl{font-size:11px;color:var(--faint);margin-top:4px;text-align:right}
+
+.screen{display:none}.screen.sichtbar{display:block}
+
+.notizen{max-width:1440px;margin:0 auto;padding:24px 22px 60px;color:#c3c7d8;font-size:13.5px;line-height:1.65}
+.notizen .kasten{background:#12141d;border:1px solid #232739;border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.notizen h3{font-size:15px;color:#fff;margin:0 0 9px;font-weight:700}
+.notizen p{margin:0 0 10px}
+.notizen p:last-child{margin-bottom:0}
+.notizen b{color:#e8eaf3}
+.notizen code{background:#1a1e2c;border:1px solid #2b3048;border-radius:4px;padding:1px 5px;font-size:12px;color:#a8adc4}
+
+@media (max-width:1100px){.zwei,.zwei-schmal{grid-template-columns:1fr}.seiten{display:none}.akte-zahlen{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<svg style="display:none">
+  <symbol id="i-haus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5"/></symbol>
+  <symbol id="i-sonne" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-fall" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h13"/><circle cx="19" cy="17.5" r="3.2"/></symbol>
+  <symbol id="i-akte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-lauf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.2-8.56"/><path d="M21 3v6h-6"/></symbol>
+  <symbol id="i-zahlen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 15l4-5 3 3 5-7"/></symbol>
+  <symbol id="i-zahnrad" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="i-lupe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></symbol>
+  <symbol id="i-uhr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-haken" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></symbol>
+  <symbol id="i-brief" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
+  <symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M3 12h18"/></symbol>
+  <symbol id="i-tel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></symbol>
+  <symbol id="i-fr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+  <symbol id="i-funke" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-doku" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8"/></symbol>
+</svg>
+
+<div class="labor">
+  <span class="marke">swissImmo · Strukturkonzept</span>
+  <div class="hinweis">Neue Informationsarchitektur, nicht neues Design. Sidebar und Reiter sind klickbar. Annahme: <b>kleine Verwaltung, 3 Personen, 4 Mandate, 6 Liegenschaften, 178 Einheiten</b>.</div>
+</div>
+
+<div class="buehne">
+<div class="rahmen">
+
+  <aside class="seiten">
+    <div class="sb-kopf">
+      <div class="sb-logo"><svg><use href="#i-haus"/></svg></div>
+      <div class="sb-wort">swissImmo</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-gruppe aktiv" data-g="heute"><div class="sb-item"><svg><use href="#i-sonne"/></svg><span>Heute</span><span class="z rot">4</span></div></div>
+
+      <div class="sb-gruppe" data-g="faelle">
+        <div class="sb-item"><svg><use href="#i-fall"/></svg><span>Fälle</span><span class="z">12</span></div>
+        <div class="sb-unter"><a class="hier">Alle offenen</a><a>Mieterwechsel</a><a>Zahlungsverzug</a><a>Schäden</a><a>Mietzinsanpassung</a><a>Abgeschlossen</a></div>
+      </div>
+
+      <div class="sb-gruppe" data-g="akte">
+        <div class="sb-item"><svg><use href="#i-akte"/></svg><span>Akten</span></div>
+        <div class="sb-unter"><a>Mandate <span style="opacity:.6">4</span></a><a>Liegenschaften <span style="opacity:.6">6</span></a><a>Objekte <span style="opacity:.6">178</span></a><a class="hier">Mietverhältnisse <span style="opacity:.6">171</span></a><a>Personen</a></div>
+      </div>
+
+      <div class="sb-gruppe" data-g="laeufe">
+        <div class="sb-item"><svg><use href="#i-lauf"/></svg><span>Läufe</span><span class="z rot">2</span></div>
+        <div class="sb-unter"><a class="hier">Monatslauf August</a><a>Nebenkosten 2025</a><a>Jahresabschluss</a><a>Archiv</a></div>
+      </div>
+
+      <div class="sb-gruppe" data-g="zahlen">
+        <div class="sb-item"><svg><use href="#i-zahlen"/></svg><span>Zahlen</span></div>
+        <div class="sb-unter"><a>Eigentümerreporting</a><a>Leerstand &amp; Ertrag</a><a>Debitorenspiegel</a><a>Mandatsrentabilität</a></div>
+      </div>
+    </nav>
+    <div class="sb-fuss"><div class="sb-item"><svg><use href="#i-zahnrad"/></svg><span>Einstellungen</span></div></div>
+  </aside>
+
+  <div class="haupt">
+    <header class="kopfleiste">
+      <div class="suche"><svg><use href="#i-lupe"/></svg><input placeholder="Akte, Person, Objekt oder Fall suchen …"></div>
+      <div class="kopf-rechts"><span style="font-size:12.5px;color:var(--muted)">Dominik M.</span><span class="kuerzel">DM</span></div>
+    </header>
+
+    <main class="inhalt">
+
+    <!-- ══════════ HEUTE ══════════ -->
+    <section class="screen sichtbar" data-s="heute">
+      <div class="seitenkopf">
+        <div><h1>Heute</h1><p>Mittwoch, 19. August 2026</p></div>
+        <div class="taten"><button class="knopf"><svg><use href="#i-plus"/></svg>Fall eröffnen</button></div>
+      </div>
+
+      <div class="leiste">
+        <span class="lbl">Zuständig</span>
+        <span class="fchip an">Dominik</span><span class="fchip">Silvia</span><span class="fchip">Marc</span><span class="fchip">Alle</span>
+        <span style="width:12px"></span>
+        <select><option>Alle Mandate</option><option>Erbengem. Blattner</option><option>Immo Léman SA</option><option>PK Vaudoise</option><option>Familie Kunz</option></select>
+      </div>
+
+      <div class="zwei-schmal">
+        <div>
+          <!-- Was reisst -->
+          <div class="karte">
+            <div class="karte-kopf">
+              <div class="ikon krit"><svg><use href="#i-warn"/></svg></div>
+              <h2>Was reisst</h2><span class="neben">4 Fristen in den nächsten 14 Tagen</span>
+            </div>
+            <div class="zeile dringend">
+              <span class="marker krit"></span>
+              <div class="mitte"><div class="t">Mahnlauf August nicht ausgelöst</div><div class="s">7 Positionen · CHF 12'480 · Stichtag war der 15.</div></div>
+              <span class="zeit">4 Tage über</span><button class="knopf klein">Zum Lauf</button>
+            </div>
+            <div class="zeile dringend">
+              <span class="marker krit"></span>
+              <div class="mitte"><div class="t">Antwortfrist Kündigung Blaser läuft ab</div><div class="s">Bahnhofstr. 12 / 3.2 · Kündigung per 30.09. eingegangen 12.08.</div></div>
+              <span class="zeit">22.08.</span><button class="knopf klein">Fall öffnen</button>
+            </div>
+            <div class="zeile">
+              <span class="marker warn"></span>
+              <div class="mitte"><div class="t">Zahlungsfrist Art. 257d Aeschlimann</div><div class="s">Vignes 7 / 2.1 · 30-Tage-Frist mit Kündigungsandrohung seit 05.08.</div></div>
+              <span class="zeit">04.09.</span><button class="knopf klein">Fall öffnen</button>
+            </div>
+            <div class="zeile">
+              <span class="marker warn"></span>
+              <div class="mitte"><div class="t">Mietzinsanpassung Referenzzins — Formular 269d</div><div class="s">Route de Suisse 44 · 12 Objekte · Zustellung bis 10 Tage vor Kündigungstermin</div></div>
+              <span class="zeit">20.09.</span><button class="knopf klein">Fall öffnen</button>
+            </div>
+            <div class="karte-fuss"><a>Alle Fristen (17)</a><span>Nächste danach: 30.09. Rückgabe 3.2</span></div>
+          </div>
+
+          <!-- Posteingang -->
+          <div class="karte post">
+            <div class="karte-kopf">
+              <div class="ikon"><svg><use href="#i-mail"/></svg></div>
+              <h2>Posteingang</h2><span class="neben">5 nicht zugeordnet · 23 heute eingegangen</span>
+              <div class="rechts"><button class="knopf klein">Alle bestätigen</button></div>
+            </div>
+            <div class="zeile">
+              <span class="quelle"><svg><use href="#i-mail"/></svg></span>
+              <div class="mitte">
+                <div class="t">«Heizung im Bad wieder kalt» — a.weber@bluewin.ch</div>
+                <div class="s">Heute 07:42 · kein Anhang</div>
+                <span class="vorschlag"><svg><use href="#i-funke"/></svg>Vorschlag: Mietverhältnis A. Weber · Bahnhofstr. 12 / 1.1 → Fall «Schaden» eröffnen</span>
+              </div>
+              <button class="knopf klein haupt" style="border-color:var(--brand)">Übernehmen</button>
+            </div>
+            <div class="zeile">
+              <span class="quelle"><svg><use href="#i-scan"/></svg></span>
+              <div class="mitte">
+                <div class="t">Rechnung Sanitär Meier AG · Nr. 2026-4471</div>
+                <div class="s">Scan 18.08. · CHF 1'240.00 · QR-Referenz erkannt</div>
+                <span class="vorschlag"><svg><use href="#i-funke"/></svg>Vorschlag: Liegenschaft Vignes 7 → Kreditor, Freigabe Eigentümer nötig</span>
+              </div>
+              <button class="knopf klein haupt" style="border-color:var(--brand)">Übernehmen</button>
+            </div>
+            <div class="zeile">
+              <span class="quelle"><svg><use href="#i-brief"/></svg></span>
+              <div class="mitte">
+                <div class="t">Einschreiben — Kündigung Mietverhältnis</div>
+                <div class="s">Post 18.08. · Absender L. Ferrari · Route de Suisse 44 / 1.4</div>
+                <span class="vorschlag"><svg><use href="#i-funke"/></svg>Vorschlag: Fall «Mieterwechsel» eröffnen · Termin prüfen (ortsüblich 31.03./30.06./30.09.)</span>
+              </div>
+              <button class="knopf klein haupt" style="border-color:var(--brand)">Übernehmen</button>
+            </div>
+            <div class="zeile">
+              <span class="quelle"><svg><use href="#i-mail"/></svg></span>
+              <div class="mitte">
+                <div class="t">«Wann kommt die NK-Abrechnung 2025?» — Erbengem. Blattner</div>
+                <div class="s">Gestern 16:20</div>
+                <span class="vorschlag"><svg><use href="#i-funke"/></svg>Vorschlag: Mandat Erbengemeinschaft Blattner</span>
+              </div>
+              <button class="knopf klein">Zuordnen</button>
+            </div>
+            <div class="zeile">
+              <span class="quelle"><svg><use href="#i-mail"/></svg></span>
+              <div class="mitte">
+                <div class="t">Offerte Storenersatz — Rollex Sonnenschutz GmbH</div>
+                <div class="s">Gestern 11:05 · PDF · CHF 890.00</div>
+                <span class="vorschlag" style="background:var(--surface-3);color:var(--muted)">Kein sicherer Vorschlag — bitte zuordnen</span>
+              </div>
+              <button class="knopf klein">Zuordnen</button>
+            </div>
+            <div class="karte-fuss"><a>Ganzer Posteingang</a><span>18 automatisch zugeordnet</span></div>
+          </div>
+        </div>
+
+        <div>
+          <!-- Termine -->
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-pin"/></svg></div><h2>Termine</h2></div>
+            <div class="zeile">
+              <span class="marker marke"></span><span class="zeit">09:00</span>
+              <div class="mitte"><div class="t">Wohnungsabnahme</div><div class="s">Perdtemps 3, EG · Protokoll vorbereitet</div></div>
+            </div>
+            <div class="zeile">
+              <span class="marker marke"></span><span class="zeit">14:00</span>
+              <div class="mitte"><div class="t">Besichtigung</div><div class="s">Bahnhofstr. 12 / 3.2 · 4 Interessenten</div></div>
+            </div>
+            <div class="zeile">
+              <span class="marker"></span><span class="zeit">Do 10:30</span>
+              <div class="mitte"><div class="t">Eigentümergespräch</div><div class="s">Erbengem. Blattner · Reporting H1</div></div>
+            </div>
+            <div class="karte-fuss"><a>Kalender</a><span>3 diese Woche</span></div>
+          </div>
+
+          <!-- Wartet auf mich -->
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon warn"><svg><use href="#i-haken"/></svg></div><h2>Wartet auf mich</h2><span class="neben">3 Freigaben</span></div>
+            <div class="zeile">
+              <div class="mitte"><div class="t">Rechnung Sanitär Meier AG</div><div class="s">Vignes 7 · Heizungsservice</div></div>
+              <span class="betrag">1'240.00</span>
+            </div>
+            <div class="zeile">
+              <div class="mitte"><div class="t">Offerte Storenersatz</div><div class="s">Bahnhofstr. 12 / 2.4 · über Budget</div></div>
+              <span class="betrag">890.00</span>
+            </div>
+            <div class="zeile">
+              <div class="mitte"><div class="t">Mietvertrag T. Roux</div><div class="s">Perdtemps 3, EG · zur Unterschrift</div></div>
+              <span class="chip marke">Signatur</span>
+            </div>
+            <div class="karte-fuss"><a>Alle Freigaben</a><span>Ø Liegezeit 1.4 Tage</span></div>
+          </div>
+
+          <!-- Vertretung -->
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-uhr"/></svg></div><h2>Vertretung</h2></div>
+            <div class="zeile">
+              <div class="mitte"><div class="t">Silvia R. — abwesend bis 25.08.</div><div class="s">2 Mandate · 5 offene Fälle laufen auf dich</div></div>
+              <button class="knopf klein">Ansehen</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ FÄLLE ══════════ -->
+    <section class="screen" data-s="faelle">
+      <div class="seitenkopf">
+        <div><h1>Fälle</h1><p>12 offen · 3 überfällig · 4 warten auf Dritte</p></div>
+        <div class="taten"><button class="knopf haupt"><svg><use href="#i-plus"/></svg>Fall eröffnen</button></div>
+      </div>
+
+      <div class="leiste">
+        <span class="lbl">Filter</span>
+        <span class="fchip an">Offen 12</span><span class="fchip">Überfällig 3</span><span class="fchip">Wartet auf Dritte 4</span><span class="fchip">Meine 7</span>
+        <span style="width:12px"></span>
+        <select><option>Alle Mandate</option><option>Erbengem. Blattner</option><option>Immo Léman SA</option></select>
+      </div>
+
+      <div class="karte">
+        <table>
+          <thead><tr><th style="width:34%">Fall</th><th>Akte</th><th style="width:230px">Stand</th><th>Nächster Schritt</th><th>Zuständig</th><th class="zahl">Frist</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="stark">Mieterwechsel<div style="font-weight:400;font-size:11.5px;color:var(--faint);margin-top:2px">Kündigung Mieter · seit 12.08.</div></td>
+              <td>Bahnhofstr. 12 / 3.2 · Blaser</td>
+              <td><div class="pipe"><span class="fertig"></span><span class="fertig"></span><span class="jetzt"></span><span></span><span></span><span></span></div><div class="pipe-lbl">Kündigung · Bestätigung · <b style="color:var(--warn)">Ausschreibung</b> · Bewerbung · Abnahme · Abrechnung</div></td>
+              <td>Besichtigung 22.08.</td><td>Dominik</td><td class="zahl" style="color:var(--crit);font-weight:700">22.08.</td>
+            </tr>
+            <tr>
+              <td class="stark">Zahlungsverzug<div style="font-weight:400;font-size:11.5px;color:var(--faint);margin-top:2px">Art. 257d OR · seit 05.08.</div></td>
+              <td>Vignes 7 / 2.1 · Aeschlimann</td>
+              <td><div class="pipe"><span class="fertig"></span><span class="fertig"></span><span class="jetzt"></span><span></span><span></span></div><div class="pipe-lbl">Mahnung · Androhung · <b style="color:var(--warn)">30-Tage-Frist</b> · Kündigung · Betreibung</div></td>
+              <td>Frist überwachen</td><td>Dominik</td><td class="zahl" style="font-weight:700">04.09.</td>
+            </tr>
+            <tr>
+              <td class="stark">Schaden<div style="font-weight:400;font-size:11.5px;color:var(--faint);margin-top:2px">Wasser Küche · seit 14.08.</div></td>
+              <td>Vignes 7 / 1.1 · Nguyen</td>
+              <td><div class="pipe"><span class="fertig"></span><span class="fertig"></span><span class="jetzt"></span><span></span></div><div class="pipe-lbl">Meldung · Offerte · <b style="color:var(--warn)">Freigabe Eigentümer</b> · Ausführung</div></td>
+              <td>PK Vaudoise erinnern</td><td>Silvia</td><td class="zahl">—</td>
+            </tr>
+            <tr>
+              <td class="stark">Mietzinsanpassung<div style="font-weight:400;font-size:11.5px;color:var(--faint);margin-top:2px">Referenzzins 1.25 % · 12 Objekte</div></td>
+              <td>Route de Suisse 44 · Sammelfall</td>
+              <td><div class="pipe"><span class="fertig"></span><span class="jetzt"></span><span></span><span></span></div><div class="pipe-lbl">Berechnung · <b style="color:var(--warn)">Formular 269d</b> · Zustellung · Wirksamkeit</div></td>
+              <td>Formulare drucken</td><td>Dominik</td><td class="zahl">20.09.</td>
+            </tr>
+            <tr>
+              <td class="stark">Erstvermietung<div style="font-weight:400;font-size:11.5px;color:var(--faint);margin-top:2px">6 Bewerbungen eingegangen</div></td>
+              <td>Grand-Rue 18 / 4.1</td>
+              <td><div class="pipe"><span class="fertig"></span><span class="fertig"></span><span class="jetzt"></span><span></span></div><div class="pipe-lbl">Ausschreibung · Besichtigung · <b style="color:var(--warn)">Auswahl</b> · Vertrag</div></td>
+              <td>Bewerber vergleichen</td><td>Marc</td><td class="zahl">31.08.</td>
+            </tr>
+            <tr>
+              <td class="stark">Mieterwechsel<div style="font-weight:400;font-size:11.5px;color:var(--faint);margin-top:2px">Abnahme terminiert</div></td>
+              <td>Perdtemps 3 / EG · Roux</td>
+              <td><div class="pipe"><span class="fertig"></span><span class="fertig"></span><span class="fertig"></span><span class="fertig"></span><span class="jetzt"></span><span></span></div><div class="pipe-lbl">… · <b style="color:var(--warn)">Abnahme heute 09:00</b> · Endabrechnung</div></td>
+              <td>Protokoll erfassen</td><td>Dominik</td><td class="zahl" style="color:var(--crit);font-weight:700">heute</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="karte-fuss"><span>6 von 12 Fällen</span><span>Ø Laufzeit Mieterwechsel: 118 Tage</span></div>
+      </div>
+    </section>
+
+    <!-- ══════════ AKTE ══════════ -->
+    <section class="screen" data-s="akte">
+      <div class="akte-kopf">
+        <div class="akte-oben">
+          <div class="akte-bild"><svg><use href="#i-akte"/></svg></div>
+          <div>
+            <h1>Mietverhältnis M. Blaser</h1>
+            <div class="pfad">Mandat <b>Erbengemeinschaft Blattner</b> › Liegenschaft <b>Bahnhofstrasse 12, 1196 Gland</b> › Objekt <b>3.2 · 3.5 Zi · 78 m²</b></div>
+            <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap">
+              <span class="chip krit">Gekündigt per 30.09.2026</span>
+              <span class="chip warn">1 Monatsmiete offen</span>
+              <span class="chip">Vertrag seit 01.04.2019</span>
+            </div>
+          </div>
+          <div class="rechts">
+            <button class="knopf">Dokument erstellen</button>
+            <button class="knopf haupt">Fall eröffnen</button>
+          </div>
+        </div>
+        <div class="akte-zahlen">
+          <div><div class="l">Bruttomiete</div><div class="w">CHF 1'890</div><div class="f">netto 1'620 + NK akonto 270</div></div>
+          <div><div class="l">Saldo Mieterkonto</div><div class="w krit">− CHF 1'890</div><div class="f">Juni 2026 offen · Mahnstufe 3</div></div>
+          <div><div class="l">Kaution</div><div class="w">CHF 5'670</div><div class="f">Sperrkonto ZKB · 3 Monatsmieten</div></div>
+          <div><div class="l">Nächste Frist</div><div class="w" style="font-size:15px">22.08.2026</div><div class="f">Antwort auf Kündigung</div></div>
+        </div>
+        <div class="reiter">
+          <a class="hier">Chronik</a><a>Vertrag</a><a>Konto</a><a>Nebenkosten</a><a>Dokumente <span class="z">23</span></a><a>Fälle <span class="z">2</span></a>
+        </div>
+      </div>
+
+      <div class="karte">
+        <div class="karte-kopf">
+          <h2>Chronik</h2><span class="neben">alles zu dieser Akte, chronologisch</span>
+          <div class="rechts"><span class="fchip an">Alles</span><span class="fchip">Korrespondenz</span><span class="fchip">Zahlungen</span><span class="fchip">Dokumente</span></div>
+        </div>
+        <div class="chronik">
+          <div class="ce">
+            <span class="pkt warn"><svg><use href="#i-pin"/></svg></span>
+            <div class="txt"><div class="a">Besichtigung angesetzt</div><div class="b">22.08.2026, 14:00 · 4 Interessenten eingeladen über das Vermarktungsportal.</div><div class="c">Fall «Mieterwechsel» · Dominik M.</div></div>
+            <span class="dat">geplant<br>22.08.</span>
+          </div>
+          <div class="ce">
+            <span class="pkt marke"><svg><use href="#i-doku"/></svg></span>
+            <div class="txt"><div class="a">Kündigungsbestätigung versandt</div><div class="b">Termin geprüft: 30.09.2026 ist ortsüblicher Kündigungstermin, dreimonatige Frist gewahrt. Rückgabe auf 30.09. terminiert.</div><div class="c">A-Post · PDF im Dossier · Dominik M.</div></div>
+            <span class="dat">14.08.</span>
+          </div>
+          <div class="ce">
+            <span class="pkt krit"><svg><use href="#i-brief"/></svg></span>
+            <div class="txt"><div class="a">Kündigung des Mieters eingegangen</div><div class="b">Eingeschrieben, Poststempel 11.08.2026. Auf Ende September, ohne Begründung.</div><div class="c">Scan · Posteingang automatisch zugeordnet</div></div>
+            <span class="dat">12.08.</span>
+          </div>
+          <div class="ce">
+            <span class="pkt"><svg><use href="#i-tel"/></svg></span>
+            <div class="txt"><div class="a">Telefonnotiz</div><div class="b">Mieter meldet Wohnungswechsel nach Lausanne per Oktober. Auf offene Junimiete angesprochen — sagt Zahlung bis Ende August zu.</div><div class="c">Silvia R. · 8 Min.</div></div>
+            <span class="dat">08.08.</span>
+          </div>
+          <div class="ce">
+            <span class="pkt krit"><svg><use href="#i-warn"/></svg></span>
+            <div class="txt"><div class="a">Mahnung Stufe 3 versandt</div><div class="b">Juni 2026, CHF 1'890.00. Nächster Schritt gemäss Mahnstufenplan: Zahlungsfrist mit Kündigungsandrohung nach Art. 257d OR.</div><div class="c">Mahnlauf Juli · automatisch</div></div>
+            <span class="dat">28.07.</span>
+          </div>
+          <div class="ce">
+            <span class="pkt gut"><svg><use href="#i-fr"/></svg></span>
+            <div class="txt"><div class="a">Zahlungseingang zugeordnet</div><div class="b">CHF 1'890.00 · QR-Referenz erkannt · Juli 2026 ausgeglichen.</div><div class="c">Bankabgleich CAMT.053 · automatisch</div></div>
+            <span class="dat">03.07.</span>
+          </div>
+          <div class="ce">
+            <span class="pkt"><svg><use href="#i-doku"/></svg></span>
+            <div class="txt"><div class="a">Nebenkostenabrechnung 2024 zugestellt</div><div class="b">Nachzahlung CHF 312.40, beglichen am 12.05.2025.</div><div class="c">Lauf «Nebenkosten 2024»</div></div>
+            <span class="dat">28.04.<br>2025</span>
+          </div>
+        </div>
+        <div class="karte-fuss"><a>Ältere Einträge (74)</a><span>Vertragsbeginn 01.04.2019</span></div>
+      </div>
+    </section>
+
+    <!-- ══════════ LÄUFE ══════════ -->
+    <section class="screen" data-s="laeufe">
+      <div class="seitenkopf">
+        <div><h1>Monatslauf August 2026</h1><p>Wiederkehrende Verarbeitung · 4 Mandate · 178 Einheiten</p></div>
+        <div class="taten"><button class="knopf">Juli ansehen</button><button class="knopf haupt">Mahnlauf starten</button></div>
+      </div>
+
+      <div class="karte">
+        <div class="karte-kopf"><div class="ikon"><svg><use href="#i-lauf"/></svg></div><h2>Monatsrhythmus</h2><span class="neben">2 überfällig · 1 läuft</span></div>
+
+        <div class="lauf">
+          <span class="st gut"><svg><use href="#i-haken"/></svg></span>
+          <div class="mitte"><div class="t">Sollstellung August</div><div class="s">Abgeschlossen am 01.08. · 178 Positionen · CHF 184'250 · keine Ausnahmen</div></div>
+          <div class="fort"><div class="bar"><i style="width:100%"></i></div><div class="lbl">178 / 178</div></div>
+        </div>
+
+        <div class="lauf">
+          <span class="st marke"><svg><use href="#i-lauf"/></svg></span>
+          <div class="mitte"><div class="t">Bankabgleich</div><div class="s">Laufend · letzter Import CAMT.053 vom 18.08. · <b style="color:var(--warn)">7 Eingänge ohne Zuordnung</b></div></div>
+          <div class="fort"><div class="bar"><i style="width:94%"></i></div><div class="lbl">112 / 119</div></div>
+        </div>
+
+        <div class="lauf">
+          <span class="st krit"><svg><use href="#i-warn"/></svg></span>
+          <div class="mitte"><div class="t">Mahnlauf August</div><div class="s"><b style="color:var(--crit)">Überfällig seit 15.08.</b> · 7 Positionen · CHF 12'480 · 2 erreichen Stufe 3</div></div>
+          <div class="fort"><div class="bar"><i class="warn" style="width:0%"></i></div><div class="lbl">nicht gestartet</div></div>
+        </div>
+
+        <div class="lauf">
+          <span class="st"><svg><use href="#i-uhr"/></svg></span>
+          <div class="mitte"><div class="t">Zahllauf Kreditoren</div><div class="s">Geplant 25.08. · 14 Rechnungen · CHF 23'140 · <b style="color:var(--warn)">3 warten auf Freigabe</b></div></div>
+          <div class="fort"><div class="bar"><i style="width:79%"></i></div><div class="lbl">11 / 14 frei</div></div>
+        </div>
+
+        <div class="lauf">
+          <span class="st warn"><svg><use href="#i-lauf"/></svg></span>
+          <div class="mitte"><div class="t">Nebenkostenabrechnung 2025</div><div class="s">Laufend · Abgabefrist 30.09. · Heizkosten Prangins fehlen noch</div></div>
+          <div class="fort"><div class="bar"><i class="warn" style="width:67%"></i></div><div class="lbl">4 / 6 Liegensch.</div></div>
+        </div>
+
+        <div class="lauf">
+          <span class="st"><svg><use href="#i-pause"/></svg></span>
+          <div class="mitte"><div class="t">MWST-Abrechnung Q3</div><div class="s">Öffnet am 01.10. · 1 Mandat optiert (Immo Léman SA)</div></div>
+          <div class="fort"><div class="bar"><i style="width:0%"></i></div><div class="lbl">später</div></div>
+        </div>
+
+        <div class="karte-fuss"><a>Laufhistorie</a><span>Jahresabschluss 2025: 3 von 4 Mandaten abgeschlossen</span></div>
+      </div>
+
+      <div class="zwei">
+        <div class="karte">
+          <div class="karte-kopf"><div class="ikon warn"><svg><use href="#i-warn"/></svg></div><h2>Was den Mahnlauf blockiert</h2></div>
+          <div class="zeile"><div class="mitte"><div class="t">2 Positionen erreichen Stufe 3</div><div class="s">Danach ist der nächste Schritt Art. 257d — Freigabe nötig</div></div><button class="knopf klein">Prüfen</button></div>
+          <div class="zeile"><div class="mitte"><div class="t">7 Zahlungseingänge unzugeordnet</div><div class="s">Könnten Positionen ausgleichen · zuerst abgleichen</div></div><button class="knopf klein">Abgleichen</button></div>
+        </div>
+        <div class="karte">
+          <div class="karte-kopf"><div class="ikon"><svg><use href="#i-uhr"/></svg></div><h2>Nächste 30 Tage</h2></div>
+          <div class="zeile"><span class="zeit">25.08.</span><div class="mitte"><div class="t">Zahllauf Kreditoren</div></div></div>
+          <div class="zeile"><span class="zeit">01.09.</span><div class="mitte"><div class="t">Sollstellung September</div></div></div>
+          <div class="zeile"><span class="zeit">15.09.</span><div class="mitte"><div class="t">Mahnlauf September</div></div></div>
+          <div class="zeile"><span class="zeit">30.09.</span><div class="mitte"><div class="t">Nebenkosten 2025 — Abgabefrist</div></div></div>
+        </div>
+      </div>
+    </section>
+
+    </main>
+  </div>
+</div>
+</div>
+
+<div class="notizen">
+  <div class="kasten">
+    <h3>Was sich gegenüber heute ändert</h3>
+    <p><b>Heute</b> zeigt keine Kennzahlen mehr. Leerstandsquote und Rendite interessieren die Eigentümerin, nicht die Sachbearbeiterin um 08:15. Stattdessen: was reisst, was steht an, was wartet auf mich, was ist noch nicht zugeordnet. Gefiltert nach Zuständigkeit — nicht nach Rolle, weil in einer Verwaltung mit drei Leuten niemand nur eine Rolle hat.</p>
+    <p><b>Fälle</b> sind neu. Heute existieren Mieterwechsel, Kündigungsprozess und Vertragsassistent als Menüpunkte in <code>fw.py</code>, aber ohne Status, Zuständigen und Frist. Damit ist das Büro sein eigenes Gedächtnis. Ein Fall bündelt einen Vorgang über Monate und weiss selbst, welcher Schritt als Nächstes kommt.</p>
+    <p><b>Akten</b> ersetzen das Modul-Hüpfen. Mieterkonto, Dokumente, Korrespondenz und Fristen sind keine eigenen Seiten mehr, sondern Reiter einer Akte. Die Chronik ist der eigentliche Gewinn: eine Zeile pro Ereignis, egal ob E-Mail, Zahlung, Mahnung oder Protokoll.</p>
+    <p><b>Läufe</b> machen aus den heutigen 16 flachen Finanz-Menüpunkten eine Maschine mit Kalender und Zustand. Sollstellung, Bankabgleich, Mahnlauf, Zahllauf, Nebenkosten, MWST — jeder mit «fällig / läuft / abgeschlossen» und der Angabe, was ihn blockiert. Der überfällige Mahnlauf taucht dadurch von selbst auf «Heute» auf.</p>
+    <p><b>Der Posteingang</b> rückt von einem Topbar-Icon auf die Startseite, mit Zuordnungsvorschlag. Das ist die Stelle mit dem grössten Zeitgewinn in einem kleinen Büro — und gleichzeitig die, an der die OCR-/KI-Module aus Phase 3 ihren Wert zeigen.</p>
+  </div>
+  <div class="kasten">
+    <h3>Was Einfach- und Profimodus ersetzt</h3>
+    <p>Statt eines Session-Schalters, der nur Etiketten tauscht: Die Struktur bleibt für alle gleich, aber <b>Fälle</b> und die volle Tiefe der <b>Läufe</b> sind Entitlement höherer Abostufen. Ein privater Eigentümer mit acht Wohnungen sieht Heute, Akten und einen schlanken Monatslauf. Damit ist die Modusfrage eine Phase-3-Frage und keine Navigationsfrage mehr.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  function zeige(s){
+    document.querySelectorAll('.screen').forEach(function(x){x.classList.toggle('sichtbar', x.dataset.s===s);});
+    document.querySelectorAll('.sb-gruppe').forEach(function(g){g.classList.toggle('aktiv', g.dataset.g===s);});
+    document.querySelector('.inhalt').scrollTop=0;
+  }
+  document.querySelectorAll('.sb-gruppe').forEach(function(g){
+    g.querySelector('.sb-item').addEventListener('click',function(){
+      if(document.querySelector('.screen[data-s="'+g.dataset.g+'"]')) zeige(g.dataset.g);
+      else g.classList.toggle('aktiv');
+    });
+  });
+  // Querverweise: Fall öffnen → Fälle, Zum Lauf → Läufe, Akte aus Falltabelle
+  document.querySelectorAll('.knopf').forEach(function(b){
+    var t=b.textContent.trim();
+    if(t==='Fall öffnen'||t==='Fall eröffnen') b.addEventListener('click',function(e){e.stopPropagation();zeige('faelle');});
+    if(t==='Zum Lauf'||t==='Abgleichen'||t==='Prüfen') b.addEventListener('click',function(e){e.stopPropagation();zeige('laeufe');});
+  });
+  document.querySelectorAll('.screen[data-s="faelle"] tbody tr').forEach(function(r){
+    r.addEventListener('click',function(){zeige('akte');});
+  });
+  document.querySelectorAll('.reiter a').forEach(function(a){
+    a.addEventListener('click',function(){
+      document.querySelectorAll('.reiter a').forEach(function(x){x.classList.remove('hier');});
+      a.classList.add('hier');
+    });
+  });
+  document.querySelectorAll('.fchip').forEach(function(c){
+    c.addEventListener('click',function(){
+      c.parentElement.querySelectorAll('.fchip').forEach(function(x){x.classList.remove('an');});
+      c.classList.add('an');
+    });
+  });
+})();
+</script>
+</body>
+</html>

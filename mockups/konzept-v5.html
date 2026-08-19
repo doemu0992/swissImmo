@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>swissImmo — Konzept v5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:#0b0d13;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#eff2f3;--surface:#fff;--surface-2:#f4f7f7;--surface-3:#e9eef0;
+  --ink:#0e2227;--muted:#4c6169;--faint:#7f959c;--line:#dde6e8;--line-stark:#c7d5d9;
+  --brand:#0f6f6a;--brand-600:#0b5450;--brand-soft:#d9efed;
+  --good:#166534;--good-soft:#e0f2e5;--warn:#a35a09;--warn-soft:#fbeeda;
+  --crit:#b32133;--crit-soft:#fbe6e9;--info:#0b5c8f;--info-soft:#e0eff8;
+  --r:10px;--r-s:7px;--sh:0 1px 2px rgba(14,34,39,.05),0 4px 14px rgba(14,34,39,.04);
+  --nav:linear-gradient(180deg,#122b31,#0a1c20);--nav-ink:#8fadb4;--nav-linie:rgba(255,255,255,.08);
+}
+.labor{position:sticky;top:0;z-index:200;background:#12141d;border-bottom:1px solid #232739;padding:13px 20px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.labor .marke{font-size:11.5px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:#8b90a8}
+.labor .satz{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.labor .satz>span{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5d6280;margin-right:3px}
+.labor button{font:inherit;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:8px;border:1px solid #2b3048;background:#1a1e2c;color:#a8adc4;cursor:pointer}
+.labor button:hover{border-color:#3d4364;color:#e2e5f0}
+.labor button[aria-pressed="true"]{background:#e8eaf3;border-color:#e8eaf3;color:#12141d}
+.labor .hinweis{margin-left:auto;font-size:11.5px;color:#5d6280;max-width:250px;line-height:1.5}
+.buehne{padding:20px;display:flex;justify-content:center}
+.rahmen{width:100%;max-width:1440px;border-radius:13px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55);display:flex;min-height:900px;background:var(--bg);color:var(--ink);font-size:14px}
+.rahmen[data-modus="portal"] .seiten,.rahmen[data-modus="portal"] .kopfleiste{display:none}
+.seiten{width:214px;flex:0 0 214px;background:var(--nav);display:flex;flex-direction:column}
+.sb-kopf{padding:16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--nav-linie)}
+.sb-logo{width:29px;height:29px;border-radius:var(--r-s);background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 29px}
+.sb-logo svg{width:15px;height:15px}
+.sb-wort{font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#fff}
+.sb-nav{flex:1;padding:11px 10px;overflow-y:auto}
+.sb-item{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:var(--r-s);color:var(--nav-ink);font-size:13.5px;font-weight:600;cursor:pointer;user-select:none;margin-bottom:1px}
+.sb-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.sb-item svg{width:15px;height:15px;flex:0 0 15px;opacity:.85}
+.sb-item .z{margin-left:auto;font-size:10px;font-weight:800;border-radius:999px;padding:1px 6px;min-width:19px;text-align:center;background:rgba(255,255,255,.12);color:#cfe0e3}
+.sb-item .z.rot{background:var(--crit);color:#fff}
+.sb-gruppe.aktiv>.sb-item{background:var(--brand);color:#fff}
+.sb-unter{display:none;padding:2px 0 6px 26px;flex-direction:column;gap:1px}
+.sb-gruppe.aktiv .sb-unter{display:flex}
+.sb-unter a{padding:5px 11px;border-radius:var(--r-s);font-size:12.5px;color:var(--nav-ink);cursor:pointer}
+.sb-unter a:hover{background:rgba(255,255,255,.06);color:#fff}
+.sb-unter a.hier{background:rgba(255,255,255,.11);color:#fff;font-weight:600}
+.sb-fuss{padding:10px;border-top:1px solid var(--nav-linie)}
+.haupt{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
+.kopfleiste{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;flex:0 0 56px}
+.suche{position:relative;width:100%;max-width:360px}
+.suche svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--faint)}
+.suche input{width:100%;background:var(--surface-2);border:1px solid transparent;border-radius:var(--r-s);padding:8px 12px 8px 34px;font:inherit;font-size:13px;color:var(--ink);outline:0}
+.kopf-rechts{margin-left:auto;display:flex;align-items:center;gap:9px}
+.kuerzel{width:30px;height:30px;border-radius:999px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.inhalt{flex:1;padding:20px 24px 46px;overflow-y:auto;max-width:1340px;width:100%;margin:0 auto}
+.seitenkopf{display:flex;align-items:flex-end;gap:16px;margin-bottom:15px;flex-wrap:wrap}
+.seitenkopf h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em}
+.seitenkopf p{margin:3px 0 0;font-size:13px;color:var(--muted)}
+.seitenkopf .taten{margin-left:auto;display:flex;gap:8px}
+.knopf{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:var(--r-s);border:1px solid var(--line-stark);background:var(--surface);color:var(--ink);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.knopf:hover{background:var(--surface-2)}
+.knopf svg{width:13px;height:13px}
+.knopf.haupt{background:var(--brand);border-color:var(--brand);color:#fff}
+.knopf.klein{padding:4px 10px;font-size:11.5px}
+.chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:700;background:var(--surface-3);color:var(--muted);white-space:nowrap}
+.chip.gut{background:var(--good-soft);color:var(--good)}.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.krit{background:var(--crit-soft);color:var(--crit)}.chip.info{background:var(--info-soft);color:var(--info)}
+.chip.marke{background:var(--brand-soft);color:var(--brand)}
+.karte{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:16px;overflow:hidden}
+.karte-kopf{padding:11px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.karte-kopf .ikon{width:27px;height:27px;border-radius:var(--r-s);background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;flex:0 0 27px}
+.karte-kopf .ikon svg{width:14px;height:14px}
+.karte-kopf .ikon.warn{background:var(--warn-soft);color:var(--warn)}
+.karte-kopf .ikon.krit{background:var(--crit-soft);color:var(--crit)}
+.karte-kopf .ikon.gut{background:var(--good-soft);color:var(--good)}
+.karte-kopf h2{margin:0;font-size:14px;font-weight:700}
+.karte-kopf .neben{font-size:12.5px;color:var(--faint)}
+.karte-kopf .rechts{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.karte-fuss{padding:8px 15px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12px;color:var(--faint);gap:12px;flex-wrap:wrap}
+.karte-fuss a{color:var(--muted);font-weight:600;cursor:pointer}
+.zeile{display:flex;align-items:center;gap:12px;padding:11px 15px;border-bottom:1px solid var(--line)}
+.zeile:last-child{border-bottom:0}
+.zeile.klick{cursor:pointer}.zeile.klick:hover{background:var(--surface-2)}
+.zeile .mitte{flex:1;min-width:0}
+.zeile .t{font-size:13.5px;font-weight:600;color:var(--ink)}
+.zeile .s{font-size:11.5px;color:var(--faint);margin-top:2px;line-height:1.45}
+.zeile .zeit{font-size:12.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.marker{width:3px;align-self:stretch;border-radius:2px;background:var(--line-stark);flex:0 0 3px;min-height:32px}
+.marker.krit{background:var(--crit)}.marker.warn{background:var(--warn)}.marker.marke{background:var(--brand)}.marker.gut{background:var(--good)}
+.zwei{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.zwei-schmal{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
+.kzn{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.kzn>div{padding:12px 20px;border-right:1px solid var(--line)}
+.kzn>div:last-child{border-right:0}
+.kzn .l{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.kzn .w{font-size:17px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+.kzn .w.warn{color:var(--warn)}.kzn .w.krit{color:var(--crit)}.kzn .w.gut{color:var(--good)}
+.kzn .f{font-size:11.5px;color:var(--faint);margin-top:2px}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);padding:9px 15px;border-bottom:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
+tbody td{padding:10px 15px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+tfoot td{padding:10px 15px;font-size:13px;font-weight:700;color:var(--ink);background:var(--surface-2);border-top:2px solid var(--line-stark)}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2)}
+td.stark{color:var(--ink);font-weight:600}
+td.zahl,th.zahl,tfoot td.zahl{text-align:right;font-variant-numeric:tabular-nums}
+td.minus{color:var(--crit);font-weight:600}td.plus{color:var(--good);font-weight:600}
+.hinweisbox{padding:13px 16px;display:flex;gap:12px;align-items:flex-start;border-bottom:1px solid var(--line)}
+.hinweisbox:last-child{border-bottom:0}
+.hinweisbox.warn{background:var(--warn-soft)}.hinweisbox.info{background:var(--info-soft)}
+.hinweisbox.krit{background:var(--crit-soft)}.hinweisbox.gut{background:var(--good-soft)}
+.hinweisbox .hi{width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex:0 0 26px;color:#fff}
+.hinweisbox.warn .hi{background:var(--warn)}.hinweisbox.info .hi{background:var(--info)}
+.hinweisbox.krit .hi{background:var(--crit)}.hinweisbox.gut .hi{background:var(--good)}
+.hinweisbox .hi svg{width:13px;height:13px}
+.hinweisbox .ht{flex:1;font-size:13px;line-height:1.55;color:var(--muted)}
+.hinweisbox .ht b{display:block;margin-bottom:3px;color:var(--ink)}
+.hinweisbox .ht .knopf{margin-top:9px}
+.schritte{display:flex;padding:16px 16px 14px;gap:0;align-items:flex-start;background:var(--surface);border-bottom:1px solid var(--line)}
+.sch{flex:1;text-align:center;position:relative}
+.sch .pk{width:28px;height:28px;border-radius:999px;background:var(--surface-3);color:var(--faint);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:12px;font-weight:800;position:relative;z-index:2}
+.sch.fertig .pk{background:var(--brand);color:#fff}
+.sch.jetzt .pk{background:var(--warn);color:#fff}
+.sch::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;background:var(--surface-3);z-index:1}
+.sch:last-child::after{display:none}
+.sch.fertig::after{background:var(--brand)}
+.sch .sl{font-size:12px;font-weight:600;color:var(--muted);line-height:1.35}
+.sch .sd{font-size:11px;color:var(--faint);margin-top:2px}
+.sch.jetzt .sl{color:var(--warn)}
+/* Feldzuordnung */
+.fz{display:flex;align-items:center;gap:12px;padding:9px 15px;border-bottom:1px solid var(--line)}
+.fz:last-child{border-bottom:0}
+.fz .q{flex:1;font-size:12.5px;color:var(--muted);font-family:ui-monospace,monospace;background:var(--surface-2);padding:5px 9px;border-radius:5px}
+.fz .pfeil{color:var(--faint);flex:0 0 auto}
+.fz .pfeil svg{width:14px;height:14px;display:block}
+.fz .z2{flex:1;font-size:13px;font-weight:600;color:var(--ink)}
+.fz .g{flex:0 0 auto}
+.fz.offen .q{background:var(--warn-soft);color:var(--warn)}
+/* Fehlerliste */
+.fe{display:flex;align-items:flex-start;gap:12px;padding:12px 15px;border-bottom:1px solid var(--line)}
+.fe:last-child{border-bottom:0}
+.fe .fn{width:38px;flex:0 0 38px;text-align:center;font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.fe.krit .fn{color:var(--crit)}.fe.warn .fn{color:var(--warn)}.fe.info .fn{color:var(--info)}
+.fe .ft{flex:1}
+.fe .ft .a{font-size:13.5px;font-weight:600;color:var(--ink)}
+.fe .ft .b{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+/* Telefon */
+.tel-buehne{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start}
+.tel{width:340px;border-radius:32px;background:#0a1c20;padding:11px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.tel-innen{background:var(--bg);border-radius:24px;overflow:hidden;height:690px;display:flex;flex-direction:column}
+.tel-kopf{background:var(--brand);color:#fff;padding:14px 16px}
+.tel-kopf .a{font-size:11px;opacity:.8;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+.tel-kopf .b{font-size:16px;font-weight:700;margin-top:3px}
+.tel-kopf .c{font-size:12px;opacity:.85;margin-top:2px}
+.tel-koerper{flex:1;overflow-y:auto;padding:12px}
+.tk{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-s);padding:13px;margin-bottom:10px}
+.tk .k1{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.tk .k2{font-size:19px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.tk .k3{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.tkacht{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+.tkn{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-s);padding:13px 11px;text-align:center}
+.tkn .ti{width:32px;height:32px;border-radius:999px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;margin:0 auto 7px}
+.tkn .ti svg{width:15px;height:15px}
+.tkn .tl{font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.tel-fuss{border-top:1px solid var(--line);background:var(--surface);padding:11px 13px}
+.tel-knopf{width:100%;padding:12px;border-radius:var(--r-s);background:var(--brand);color:#fff;border:0;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+/* Rollenmatrix */
+.matrix td,.matrix th{text-align:center}
+.matrix td:first-child,.matrix th:first-child{text-align:left}
+.mj{color:var(--good);font-weight:800}
+.mn{color:var(--line-stark);font-weight:800}
+.mt2{color:var(--warn);font-weight:800}
+.mitgl{display:flex;align-items:center;gap:13px;padding:12px 15px;border-bottom:1px solid var(--line)}
+.mitgl:last-child{border-bottom:0}
+.mitgl .mk{width:34px;height:34px;border-radius:999px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 34px;font-size:12px;font-weight:700}
+.mitgl .mk.grau{background:var(--surface-3);color:var(--muted)}
+.mitgl .mm{flex:1}
+.mitgl .mm .a{font-size:13.5px;font-weight:600;color:var(--ink)}
+.mitgl .mm .b{font-size:11.5px;color:var(--faint);margin-top:2px}
+.screen{display:none}.screen.sichtbar{display:block}
+.notizen{max-width:1440px;margin:0 auto;padding:24px 22px 60px;color:#c3c7d8;font-size:13.5px;line-height:1.65}
+.notizen .kasten{background:#12141d;border:1px solid #232739;border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.notizen h3{font-size:15px;color:#fff;margin:0 0 9px;font-weight:700}
+.notizen p{margin:0 0 10px}.notizen p:last-child{margin:0}
+.notizen b{color:#e8eaf3}
+.notizen code{background:#1a1e2c;border:1px solid #2b3048;border-radius:4px;padding:1px 5px;font-size:12px;color:#a8adc4}
+.notizen .warnung{border-color:#4a3320;background:#1d1710}
+.notizen .warnung h3{color:#f0c07a}
+@media (max-width:1150px){.zwei,.zwei-schmal,.tel-buehne{grid-template-columns:1fr}.seiten{display:none}.kzn{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<svg style="display:none">
+<symbol id="i-haus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5"/></symbol>
+<symbol id="i-arbeit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h13"/><circle cx="19" cy="17.5" r="3.2"/></symbol>
+<symbol id="i-akte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-lauf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.2-8.56"/><path d="M21 3v6h-6"/></symbol>
+<symbol id="i-zahlen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 15l4-5 3 3 5-7"/></symbol>
+<symbol id="i-zahnrad" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+<symbol id="i-lupe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></symbol>
+<symbol id="i-import" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+<symbol id="i-pfeil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></symbol>
+<symbol id="i-haken" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-fr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+<symbol id="i-doku" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></symbol>
+<symbol id="i-werkzeug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+<symbol id="i-person" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></symbol>
+<symbol id="i-schild" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+<symbol id="i-waage" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 21h10M5 7h14M5 7 2 14h6zM19 7l-3 7h6z"/></symbol>
+<symbol id="i-qr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v3M17 20h4"/></symbol>
+<symbol id="i-uhr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-kamera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+<symbol id="i-schluessel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3"/></symbol>
+<symbol id="i-tausch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4M3 6h18M7 22l-4-4 4-4M21 18H3"/></symbol>
+<symbol id="i-protokoll" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 0-10-10"/><path d="M2 12l3 3 3-3M12 7v5l4 2"/></symbol>
+</svg>
+
+<div class="labor">
+  <span class="marke">swissImmo · Konzept v5</span>
+  <div class="satz">
+    <span>Konzept</span>
+    <button data-s="import" aria-pressed="true">Datenübernahme</button>
+    <button data-s="mieter" aria-pressed="false">Mieterportal</button>
+    <button data-s="mz" aria-pressed="false">Mietzinsanpassung</button>
+    <button data-s="kred" aria-pressed="false">Kreditoren &amp; Zahllauf</button>
+    <button data-s="team" aria-pressed="false">Organisation &amp; Team</button>
+  </div>
+  <div class="hinweis">Das Mieterportal ist die <b>dritte</b> Nutzerrolle neben Verwaltung und Eigentümerschaft.</div>
+</div>
+
+<div class="buehne">
+<div class="rahmen" id="rahmen">
+  <aside class="seiten">
+    <div class="sb-kopf"><div class="sb-logo"><svg><use href="#i-haus"/></svg></div><div class="sb-wort">swissImmo</div></div>
+    <nav class="sb-nav">
+      <div class="sb-gruppe" data-g="mz"><div class="sb-item"><svg><use href="#i-arbeit"/></svg><span>Arbeit</span><span class="z rot">6</span></div></div>
+      <div class="sb-gruppe"><div class="sb-item"><svg><use href="#i-akte"/></svg><span>Akten</span></div></div>
+      <div class="sb-gruppe" data-g="kred">
+        <div class="sb-item"><svg><use href="#i-lauf"/></svg><span>Läufe</span><span class="z rot">2</span></div>
+        <div class="sb-unter"><a>Monatslauf August</a><a class="hier" data-zu="kred">Zahllauf 25.08.</a><a>Nebenkosten 2025</a></div>
+      </div>
+      <div class="sb-gruppe"><div class="sb-item"><svg><use href="#i-zahlen"/></svg><span>Zahlen</span></div></div>
+    </nav>
+    <div class="sb-fuss">
+      <div class="sb-gruppe aktiv" data-g="team">
+        <div class="sb-item" data-zu="team"><svg><use href="#i-zahnrad"/></svg><span>Einstellungen</span></div>
+        <div class="sb-unter"><a class="hier" data-zu="team">Organisation</a><a data-zu="import">Datenübernahme</a><a>Abonnement</a><a>Vorlagen</a></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="haupt">
+    <header class="kopfleiste">
+      <div class="suche"><svg><use href="#i-lupe"/></svg><input placeholder="Akte, Person, Objekt oder Fall suchen …"></div>
+      <div class="kopf-rechts"><span style="font-size:12.5px;color:var(--muted)">Dominik M.</span><span class="kuerzel">DM</span></div>
+    </header>
+
+    <main class="inhalt">
+
+    <!-- ══════════ DATENÜBERNAHME ══════════ -->
+    <section class="screen sichtbar" data-s="import">
+      <div class="seitenkopf">
+        <div><h1>Datenübernahme</h1><p>Aus Fairwalter-Export und 3 Excel-Dateien · Stichtag 01.09.2026 · Schritt 3 von 5</p></div>
+        <div class="taten"><button class="knopf">Abbrechen</button><button class="knopf haupt">Zum Probelauf</button></div>
+      </div>
+
+      <div class="karte">
+        <div class="schritte">
+          <div class="sch fertig"><div class="pk"><svg style="width:13px;height:13px"><use href="#i-haken"/></svg></div><div class="sl">Quellen</div><div class="sd">4 Dateien</div></div>
+          <div class="sch fertig"><div class="pk"><svg style="width:13px;height:13px"><use href="#i-haken"/></svg></div><div class="sl">Felder zuordnen</div><div class="sd">41 von 44</div></div>
+          <div class="sch jetzt"><div class="pk">3</div><div class="sl">Prüfen und bereinigen</div><div class="sd">46 offene Punkte</div></div>
+          <div class="sch"><div class="pk">4</div><div class="sl">Probelauf</div><div class="sd">—</div></div>
+          <div class="sch"><div class="pk">5</div><div class="sl">Übernehmen</div><div class="sd">—</div></div>
+        </div>
+        <div class="kzn">
+          <div><div class="l">Liegenschaften</div><div class="w gut">6</div><div class="f">alle vollständig</div></div>
+          <div><div class="l">Objekte</div><div class="w warn">178</div><div class="f">4 ohne Fläche</div></div>
+          <div><div class="l">Mietverhältnisse</div><div class="w warn">171</div><div class="f">23 ohne NK-Aufteilung</div></div>
+          <div><div class="l">Personen</div><div class="w warn">412</div><div class="f">31 mutmasslich doppelt</div></div>
+        </div>
+      </div>
+
+      <div class="zwei-schmal">
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon warn"><svg><use href="#i-warn"/></svg></div><h2>Was noch geklärt werden muss</h2>
+              <span class="neben">46 Punkte · geschätzt 3 bis 4 Stunden</span></div>
+
+            <div class="fe krit">
+              <div class="fn">23</div>
+              <div class="ft"><div class="a">Mietverhältnisse ohne Aufteilung Netto / Nebenkosten</div>
+                <div class="b">In der Quelle steht nur die Bruttomiete. Ohne die Aufteilung lässt sich keine Nebenkostenabrechnung erstellen und keine Mietzinsanpassung rechnen. <b>Das blockiert die Übernahme.</b> Vorschlag: Aufteilung aus den Mietverträgen übernehmen — die PDF liegen im Ordner «Verträge» und lassen sich auslesen.</div>
+                <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
+                  <button class="knopf klein haupt">Aus Verträgen auslesen</button>
+                  <button class="knopf klein">Liste als Excel</button></div></div>
+            </div>
+
+            <div class="fe krit">
+              <div class="fn">9</div>
+              <div class="ft"><div class="a">Verträge ohne Kündigungstermine</div>
+                <div class="b">Ohne Termine kann der Fristenwächter keine Kündigung prüfen. Vorschlag: ortsübliche Termine der Gemeinde als Vorgabe setzen und pro Vertrag bestätigen. <b>Das blockiert die Übernahme.</b></div>
+                <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
+                  <button class="knopf klein haupt">Ortsübliche Termine setzen</button>
+                  <button class="knopf klein">Einzeln prüfen</button></div></div>
+            </div>
+
+            <div class="fe warn">
+              <div class="fn">31</div>
+              <div class="ft"><div class="a">Personen mehrfach erfasst</div>
+                <div class="b">Gleiche Person mit unterschiedlicher Schreibweise oder als Mieter und Bewerber doppelt angelegt. Beispiel: «Blaser Marc» / «M. Blaser» / «Blaser, Marc». Vorschlag zum Zusammenführen liegt vor; die Zuordnung der Mietverhältnisse bleibt dabei erhalten.</div>
+                <div style="display:flex;gap:7px;margin-top:9px"><button class="knopf klein">Vorschläge durchgehen</button></div></div>
+            </div>
+
+            <div class="fe warn">
+              <div class="fn">14</div>
+              <div class="ft"><div class="a">Kautionen ohne Institut oder Beleg</div>
+                <div class="b">Betrag vorhanden, aber Bank und Kontonummer fehlen. Für die Rückgabe am Vertragsende ist der Nachweis nötig. Übernahme ist möglich; die Akten werden als unvollständig markiert und tauchen im Arbeitsvorrat auf.</div></div>
+            </div>
+
+            <div class="fe warn">
+              <div class="fn">4</div>
+              <div class="ft"><div class="a">Objekte ohne Flächenangabe</div>
+                <div class="b">Betrifft zwei Kellerräume, einen Bastelraum und das Gewerbe im EG der Bahnhofstrasse. Ohne m² schlägt die Nebenkostenverteilung nach Fläche fehl.</div></div>
+            </div>
+
+            <div class="fe info">
+              <div class="fn">2</div>
+              <div class="ft"><div class="a">Referenzzinssatz bei Vertragsschluss unbekannt</div>
+                <div class="b">Ohne diesen Wert lässt sich kein Senkungs- oder Erhöhungsanspruch berechnen. Steht üblicherweise im Mietvertrag oder im letzten Anpassungsformular.</div></div>
+            </div>
+
+            <div class="karte-fuss"><span>2 blockierende, 3 wichtige, 1 unkritischer Punkt</span><a>Alle 46 einzeln</a></div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-tausch"/></svg></div><h2>Feldzuordnung</h2>
+              <span class="neben">41 automatisch erkannt, 3 offen</span></div>
+            <div class="fz"><span class="q">Objekt_Bez</span><span class="pfeil"><svg><use href="#i-pfeil"/></svg></span><span class="z2">Objekt · Bezeichnung</span><span class="g"><span class="chip gut">sicher</span></span></div>
+            <div class="fz"><span class="q">MZ_Netto</span><span class="pfeil"><svg><use href="#i-pfeil"/></svg></span><span class="z2">Mietverhältnis · Nettomietzins</span><span class="g"><span class="chip gut">sicher</span></span></div>
+            <div class="fz"><span class="q">NK_Akonto</span><span class="pfeil"><svg><use href="#i-pfeil"/></svg></span><span class="z2">Mietverhältnis · Nebenkosten akonto</span><span class="g"><span class="chip gut">sicher</span></span></div>
+            <div class="fz offen"><span class="q">Bemerkung_2</span><span class="pfeil"><svg><use href="#i-pfeil"/></svg></span><span class="z2" style="color:var(--warn)">nicht zugeordnet — Inhalt gemischt</span><span class="g"><button class="knopf klein">Zuordnen</button></span></div>
+            <div class="fz offen"><span class="q">Zusatz_CHF</span><span class="pfeil"><svg><use href="#i-pfeil"/></svg></span><span class="z2" style="color:var(--warn)">Garage oder Nebenobjekt?</span><span class="g"><button class="knopf klein">Zuordnen</button></span></div>
+            <div class="karte-fuss"><span>Nicht zugeordnete Spalten werden als Notiz in der Akte abgelegt, nicht verworfen</span><a>Alle 44</a></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon gut"><svg><use href="#i-haken"/></svg></div><h2>Probelauf</h2>
+              <span class="neben">rechnet, ohne zu speichern</span></div>
+            <div class="hinweisbox gut">
+              <span class="hi"><svg><use href="#i-haken"/></svg></span>
+              <div class="ht"><b>Sollstellung September stimmt auf CHF 0.00 überein</b>
+                Aus den übernommenen Daten gerechnet: 171 Positionen, CHF 184'250.00. Ihre letzte Sollstellung im Altsystem: 171 Positionen, CHF 184'250.00. <b>Keine Abweichung.</b></div></div>
+            <div class="zeile"><span class="marker gut"></span><div class="mitte"><div class="t">Debitorensaldo</div><div class="s">CHF 27'340 gegen CHF 27'340 im Altsystem</div></div><span class="chip gut">gleich</span></div>
+            <div class="zeile"><span class="marker warn"></span><div class="mitte"><div class="t">Kautionssumme</div><div class="s">CHF 486'200 gegen CHF 491'870 — Differenz CHF 5'670</div></div><span class="chip warn">prüfen</span></div>
+            <div class="zeile"><span class="marker gut"></span><div class="mitte"><div class="t">Nebenkostenakonto</div><div class="s">CHF 47'340 pro Monat, identisch</div></div><span class="chip gut">gleich</span></div>
+            <div class="hinweisbox warn" style="border-bottom:0">
+              <span class="hi"><svg><use href="#i-warn"/></svg></span>
+              <div class="ht"><b>Die Kautionsdifferenz von CHF 5'670</b>
+                Entspricht genau einer Kaution: Perdtemps 3 / EG, Mieter Roux. Der Vertrag beginnt am 01.09.2026 — die Kaution ist im Altsystem erfasst, im Export vom 15.08. aber noch nicht enthalten. Kein Fehler, sondern ein Stichtagseffekt.</div></div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-uhr"/></svg></div><h2>Vorgehen und Stichtag</h2></div>
+            <div class="zeile"><span class="zeit">bis 31.08.</span><div class="mitte"><div class="t">Bereinigen und Probeläufe</div><div class="s">Altsystem bleibt führend, beide laufen parallel</div></div></div>
+            <div class="zeile"><span class="zeit">01.09.</span><div class="mitte"><div class="t">Stichtag — Übernahme</div><div class="s">nach der Sollstellung September, vor dem Zahllauf</div></div></div>
+            <div class="zeile"><span class="zeit">ab 01.09.</span><div class="mitte"><div class="t">Altsystem nur noch lesend</div><div class="s">bleibt 12 Monate zugänglich für Rückfragen</div></div></div>
+            <div class="zeile"><span class="zeit">30.09.</span><div class="mitte"><div class="t">Erste vollständige Periode</div><div class="s">Sollstellung, Bankabgleich und Mahnlauf im neuen System</div></div></div>
+            <div class="karte-fuss"><span>Rückweg jederzeit möglich: vollständiger Export im Ursprungsformat</span><a>Plan drucken</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ MIETERPORTAL ══════════ -->
+    <section class="screen" data-s="mieter">
+      <div class="seitenkopf">
+        <div><h1>Mieterportal</h1><p>Sicht von A. Weber · Bahnhofstrasse 12, Whg. 1.1 · Sprache Deutsch</p></div>
+      </div>
+
+      <div class="tel-buehne">
+        <div class="tel">
+          <div class="tel-innen">
+            <div class="tel-kopf">
+              <div class="a">Meine Wohnung</div>
+              <div class="b">Bahnhofstrasse 12, 1.1</div>
+              <div class="c">1196 Gland · 3.5 Zimmer</div>
+            </div>
+            <div class="tel-koerper">
+              <div class="tk">
+                <div class="k1">Miete September</div>
+                <div class="k2">CHF 1'850.00</div>
+                <div class="k3">fällig am 01.09.2026 · Konto ausgeglichen<br><span style="color:var(--good);font-weight:600">Keine offenen Beträge</span></div>
+                <button class="knopf klein haupt" style="margin-top:10px;width:100%;justify-content:center">QR-Rechnung öffnen</button>
+              </div>
+
+              <div class="tkacht">
+                <div class="tkn"><div class="ti"><svg><use href="#i-werkzeug"/></svg></div><div class="tl">Schaden melden</div></div>
+                <div class="tkn"><div class="ti"><svg><use href="#i-doku"/></svg></div><div class="tl">Meine Dokumente</div></div>
+                <div class="tkn"><div class="ti"><svg><use href="#i-fr"/></svg></div><div class="tl">Kontoauszug</div></div>
+                <div class="tkn"><div class="ti"><svg><use href="#i-mail"/></svg></div><div class="tl">Nachricht</div></div>
+              </div>
+
+              <div class="tk">
+                <div class="k1">Aktuell</div>
+                <div style="display:flex;gap:10px;align-items:flex-start;margin-top:9px">
+                  <span class="marker warn" style="min-height:34px"></span>
+                  <div><div style="font-size:13px;font-weight:600">Heizung Bad — Meldung eingegangen</div>
+                    <div style="font-size:11.5px;color:var(--faint);margin-top:3px;line-height:1.5">Wir haben Ihre Meldung vom 19.08. erhalten. Sanitär Meier AG meldet sich bis morgen bei Ihnen.</div></div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;margin-top:12px">
+                  <span class="marker marke" style="min-height:34px"></span>
+                  <div><div style="font-size:13px;font-weight:600">Nebenkostenabrechnung 2025</div>
+                    <div style="font-size:11.5px;color:var(--faint);margin-top:3px;line-height:1.5">Wird bis Ende September zugestellt. Die Heizkosten sind dieses Jahr deutlich höher — der Grund ist der Gaspreis.</div></div>
+                </div>
+              </div>
+
+              <div class="tk">
+                <div class="k1">Ansprechperson</div>
+                <div style="display:flex;gap:11px;align-items:center;margin-top:9px">
+                  <span class="kuerzel" style="width:36px;height:36px">DM</span>
+                  <div><div style="font-size:13px;font-weight:600">Dominik M.</div>
+                    <div style="font-size:11.5px;color:var(--faint);margin-top:2px">022 361 88 40 · Mo–Fr 08–12 / 13.30–17</div></div>
+                </div>
+                <div style="font-size:11.5px;color:var(--faint);margin-top:10px;padding-top:10px;border-top:1px solid var(--line);line-height:1.5">
+                  <b style="color:var(--muted)">Notfall ausserhalb der Bürozeit</b><br>Wasser, Heizung, Strom: 0800 22 44 66
+                </div>
+              </div>
+            </div>
+            <div class="tel-fuss">
+              <button class="tel-knopf">Schaden melden</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-info"/></svg></div><h2>Was das Portal für die Verwaltung ändert</h2></div>
+            <div class="zeile"><span class="marker marke"></span><div class="mitte">
+              <div class="t">Eine Schadenmeldung wird sofort ein Fall</div>
+              <div class="s">Mit Fotos, Raum, Objektbezug und Zeitstempel — statt eines Telefonats, das jemand später aus dem Gedächtnis erfasst. Der Fall landet direkt im Arbeitsvorrat und in der Akte des Mietverhältnisses.</div></div></div>
+            <div class="zeile"><span class="marker marke"></span><div class="mitte">
+              <div class="t">Die drei häufigsten Anrufe verschwinden</div>
+              <div class="s">«Habe ich bezahlt?», «Wo finde ich meinen Vertrag?», «Wann kommt die Abrechnung?» — alle drei beantwortet das Portal ohne Zutun.</div></div></div>
+            <div class="zeile"><span class="marker warn"></span><div class="mitte">
+              <div class="t">Und die Erwartung steigt</div>
+              <div class="s">Wer sieht, dass die Meldung angekommen ist, erwartet auch eine Reaktion. Ein Portal ohne verbindliche Rückmeldezeiten schafft mehr Ärger als es löst — die Zusage «Antwort innert 2 Arbeitstagen» gehört ins Konzept, nicht in die Werbung.</div></div></div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon warn"><svg><use href="#i-waage"/></svg></div><h2>Was hier bewusst nicht steht</h2></div>
+            <div class="zeile"><div class="mitte"><div class="t">Keine Mahnstufe, kein Betreibungsstand</div>
+              <div class="s">Rechtlich Heikles gehört in ein zugestelltes Schreiben, nicht in eine App-Kachel</div></div></div>
+            <div class="zeile"><div class="mitte"><div class="t">Keine Daten anderer Mieter</div>
+              <div class="s">Auch keine Verbrauchsvergleiche «Sie liegen über dem Hausdurchschnitt»</div></div></div>
+            <div class="zeile"><div class="mitte"><div class="t">Keine Kündigung per Klick</div>
+              <div class="s">Eine Kündigung braucht Schriftform; ein Formular im Portal würde falsche Sicherheit erzeugen</div></div></div>
+            <div class="karte-fuss"><span>Sprache folgt der Korrespondenzsprache des Mietverhältnisses</span><a>DE · FR · IT · EN</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ MIETZINSANPASSUNG ══════════ -->
+    <section class="screen" data-s="mz">
+      <div class="seitenkopf">
+        <div><h1>Mietzinsanpassung — Referenzzinssatz</h1>
+          <p>Sammelfall · Route de Suisse 44, Nyon · 12 Mietverhältnisse · Mandat Immo Léman SA</p></div>
+        <div class="taten"><button class="knopf">Berechnung exportieren</button><button class="knopf haupt">Eigentümer vorlegen</button></div>
+      </div>
+
+      <div class="karte">
+        <div class="hinweisbox info">
+          <span class="hi"><svg><use href="#i-info"/></svg></span>
+          <div class="ht"><b>Ausgangslage: Referenzzinssatz auf 1.25 % gesenkt</b>
+            Für Mietverhältnisse, die auf einem höheren Referenzzins beruhen, entsteht ein Senkungsanspruch. Gegengerechnet werden dürfen die aufgelaufene Teuerung und die allgemeinen Kostensteigerungen seit der letzten Festsetzung. Die Berechnung unten macht beides sichtbar — das Ergebnis ist nicht bei allen Verträgen eine Senkung.</div></div>
+        <table>
+          <thead><tr>
+            <th>Mietverhältnis</th><th class="zahl">Netto heute</th><th class="zahl">Ref. bei Festsetzung</th>
+            <th class="zahl">Senkung</th><th class="zahl">Teuerung</th><th class="zahl">Kosten</th>
+            <th class="zahl">Netto neu</th><th>Formular</th></tr></thead>
+          <tbody>
+            <tr><td class="stark">L. Ferrari · 1.4</td><td class="zahl">2'150.00</td><td class="zahl">1.75 %</td>
+              <td class="zahl" style="color:var(--good)">−5.66 %</td><td class="zahl">+2.10 %</td><td class="zahl">+1.20 %</td>
+              <td class="zahl stark" style="color:var(--good)">2'097.00</td><td><span class="chip">Brief</span></td></tr>
+            <tr><td class="stark">P. Marchand · 2.1</td><td class="zahl">1'980.00</td><td class="zahl">1.50 %</td>
+              <td class="zahl" style="color:var(--good)">−2.91 %</td><td class="zahl">+2.10 %</td><td class="zahl">+1.20 %</td>
+              <td class="zahl stark">1'988.00</td><td><span class="chip krit">269d nötig</span></td></tr>
+            <tr><td class="stark">S. Blaser-Kunz · 2.3</td><td class="zahl">1'840.00</td><td class="zahl">1.25 %</td>
+              <td class="zahl">0.00 %</td><td class="zahl">+1.40 %</td><td class="zahl">+0.90 %</td>
+              <td class="zahl stark">1'882.00</td><td><span class="chip krit">269d nötig</span></td></tr>
+            <tr><td class="stark">Fam. Odermatt · 3.1</td><td class="zahl">2'240.00</td><td class="zahl">2.00 %</td>
+              <td class="zahl" style="color:var(--good)">−8.26 %</td><td class="zahl">+2.40 %</td><td class="zahl">+1.50 %</td>
+              <td class="zahl stark" style="color:var(--good)">2'145.00</td><td><span class="chip">Brief</span></td></tr>
+            <tr><td class="stark">R. Corminboeuf · 3.4</td><td class="zahl">1'760.00</td><td class="zahl">1.75 %</td>
+              <td class="zahl" style="color:var(--good)">−5.66 %</td><td class="zahl">+2.10 %</td><td class="zahl">+1.20 %</td>
+              <td class="zahl stark" style="color:var(--good)">1'717.00</td><td><span class="chip">Brief</span></td></tr>
+          </tbody>
+          <tfoot><tr><td colspan="6">12 Mietverhältnisse · Ertragswirkung pro Monat</td><td class="zahl" style="color:var(--crit)">− 418.00</td><td></td></tr></tfoot>
+        </table>
+        <div class="karte-fuss"><span>5 von 12 gezeigt · 8 Senkungen, 3 Erhöhungen, 1 unverändert</span><a>Berechnungsweg je Vertrag</a></div>
+      </div>
+
+      <div class="zwei-schmal">
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon krit"><svg><use href="#i-waage"/></svg></div><h2>Entscheidung des Eigentümers nötig</h2></div>
+            <div class="hinweisbox warn">
+              <span class="hi"><svg><use href="#i-warn"/></svg></span>
+              <div class="ht"><b>Von sich aus senken oder auf Begehren warten?</b>
+                Beides ist zulässig. Wer wartet, senkt später und nur für die, die es verlangen — muss aber damit rechnen, dass ein Begehren auch rückwirkende Ansprüche und Nachfragen zu allen übrigen Verträgen auslöst. Wer von sich aus anpasst, verliert rund CHF 418 im Monat, gewinnt aber Ruhe und kann die drei Erhöhungen im selben Versand mitschicken.
+                <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+                  <button class="knopf klein haupt">Empfehlung an Immo Léman SA</button>
+                  <button class="knopf klein">Nur auf Begehren</button></div></div></div>
+            <div class="zeile"><span class="marker krit"></span><div class="mitte">
+              <div class="t">3 Erhöhungen brauchen das amtliche Formular</div>
+              <div class="s">Marchand, Blaser-Kunz und ein weiterer Vertrag. Ohne das kantonale Formular mit Begründung ist eine Erhöhung nichtig — ein formloser Brief genügt nicht.</div></div>
+              <button class="knopf klein">Formulare erzeugen</button></div>
+            <div class="zeile"><span class="marker warn"></span><div class="mitte">
+              <div class="t">Zustellfrist beachten</div>
+              <div class="s">Erhöhungen müssen spätestens 10 Tage vor Beginn der Kündigungsfrist beim Mieter sein. Für den Termin 31.03.2027 heisst das: Zustellung bis <b>21.12.2026</b>, mit Reserve für die Post.</div></div></div>
+            <div class="zeile"><span class="marker marke"></span><div class="mitte">
+              <div class="t">Senkungen ohne Formular</div>
+              <div class="s">Für eine Senkung genügt ein Schreiben mit Angabe des neuen Mietzinses und des Wirksamkeitsdatums.</div></div></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-lauf"/></svg></div><h2>Ablauf des Sammelfalls</h2><span class="neben">Schritt 2 von 5</span></div>
+            <div class="zeile"><span class="marker gut"></span><div class="mitte"><div class="t">1 · Berechnung je Vertrag</div><div class="s">abgeschlossen 18.08.</div></div><span class="chip gut">fertig</span></div>
+            <div class="zeile"><span class="marker warn"></span><div class="mitte"><div class="t">2 · Freigabe Eigentümer</div><div class="s">vorgelegt, wartet auf Immo Léman SA</div></div><span class="chip warn">läuft</span></div>
+            <div class="zeile"><div class="mitte"><div class="t">3 · Formulare und Briefe</div><div class="s">3 × amtliches Formular, 9 × Schreiben</div></div></div>
+            <div class="zeile"><div class="mitte"><div class="t">4 · Zustellung bis 21.12.2026</div><div class="s">eingeschrieben für Erhöhungen</div></div></div>
+            <div class="zeile"><div class="mitte"><div class="t">5 · Wirksam 01.04.2027</div><div class="s">Sollstellung passt sich automatisch an</div></div></div>
+            <div class="karte-fuss"><span>Anfechtungsfrist 30 Tage ab Zustellung wird je Vertrag überwacht</span><a>Fristenkette</a></div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-schild"/></svg></div><h2>Was die Berechnung offenlegt</h2></div>
+            <div class="zeile"><div class="mitte"><div class="t">Alle drei Faktoren einzeln ausgewiesen</div>
+              <div class="s">Referenzzins, Teuerung, Kostensteigerung — nicht als eine Zahl. Bei einer Anfechtung ist genau diese Aufschlüsselung verlangt.</div></div></div>
+            <div class="zeile"><div class="mitte"><div class="t">Stand der Faktoren datiert</div>
+              <div class="s">Teuerung per Landesindex, Kostensteigerung nach hinterlegtem Ansatz und Zeitraum</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ KREDITOREN UND ZAHLLAUF ══════════ -->
+    <section class="screen" data-s="kred">
+      <div class="seitenkopf">
+        <div><h1>Kreditoren und Zahllauf</h1><p>Zahllauf geplant für 25.08.2026 · 14 Rechnungen · CHF 23'140.00</p></div>
+        <div class="taten"><button class="knopf">Rechnung erfassen</button><button class="knopf haupt">Zahllauf vorbereiten</button></div>
+      </div>
+
+      <div class="zwei-schmal">
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-qr"/></svg></div><h2>Aus dem Zulauf gelesen</h2>
+              <span class="neben">QR-Rechnung · Sanitär Meier AG</span>
+              <div class="rechts"><span class="chip marke">wartet auf Freigabe</span></div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+              <div style="padding:14px 16px;border-right:1px solid var(--line)">
+                <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)">Automatisch erkannt</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:9px;line-height:1.9">
+                  Kreditor <b style="color:var(--ink)">Sanitär Meier AG</b><br>
+                  Betrag <b style="color:var(--ink)">CHF 1'240.00</b><br>
+                  Rechnung <b style="color:var(--ink)">2026-4471</b><br>
+                  Fällig <b style="color:var(--ink)">17.09.2026</b><br>
+                  Skonto <b style="color:var(--good)">2 % bis 28.08. — CHF 24.80</b><br>
+                  QR-Referenz <span style="font-family:ui-monospace,monospace;font-size:11.5px">21 00000 …0447 12</span>
+                </div>
+              </div>
+              <div style="padding:14px 16px">
+                <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)">Zuordnung</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:9px;line-height:1.9">
+                  Liegenschaft <b style="color:var(--ink)">Chemin des Vignes 7</b><br>
+                  Objekt <b style="color:var(--ink)">gesamte Liegenschaft</b><br>
+                  Kostenart <b style="color:var(--ink)">Serviceabonnement Heizung</b><br>
+                  Mandat <b style="color:var(--ink)">PK Vaudoise</b>
+                </div>
+              </div>
+            </div>
+            <div class="hinweisbox info">
+              <span class="hi"><svg><use href="#i-info"/></svg></span>
+              <div class="ht"><b>Wichtigste Frage der Erfassung: abrechenbar oder nicht</b>
+                Diese Rechnung ist als <b>Nebenkosten</b> klassiert und fliesst damit im nächsten Jahr in die Abrechnung der Mieter. Wäre es eine Reparatur, wäre sie Unterhalt zulasten des Eigentümers; wäre es ein Ersatz mit Mehrwert, wäre sie wertvermehrend und teilweise überwälzbar. Diese Entscheidung fällt hier — nicht ein Jahr später beim Nebenkostenlauf.
+                <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+                  <button class="knopf klein haupt">Nebenkosten</button>
+                  <button class="knopf klein">Unterhalt</button>
+                  <button class="knopf klein">Wertvermehrend</button></div></div></div>
+            <div class="karte-fuss"><span>Freigabe nötig: über Kompetenzsumme CHF 500 der Verwaltung</span><a>Beleg ansehen</a></div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon warn"><svg><use href="#i-uhr"/></svg></div><h2>Zahllauf 25.08.2026</h2>
+              <span class="neben">14 Rechnungen · pain.001 für Raiffeisen</span></div>
+            <table>
+              <thead><tr><th>Kreditor</th><th>Liegenschaft</th><th>Fällig</th><th class="zahl">Betrag</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td class="stark">Techem AG</td><td>Bahnhofstr. 12</td><td>29.08.</td><td class="zahl">1'860.00</td><td><span class="chip gut">frei</span></td></tr>
+                <tr><td class="stark">Romande Energie</td><td>alle</td><td>31.08.</td><td class="zahl">4'210.00</td><td><span class="chip gut">frei</span></td></tr>
+                <tr><td class="stark">Schindler Aufzüge</td><td>Bahnhofstr. 12</td><td>05.09.</td><td class="zahl">1'480.00</td><td><span class="chip gut">frei</span></td></tr>
+                <tr style="background:var(--warn-soft)"><td class="stark">Sanitär Meier AG</td><td>Vignes 7</td><td>17.09.</td><td class="zahl">1'240.00</td><td><span class="chip warn">Freigabe</span></td></tr>
+                <tr style="background:var(--warn-soft)"><td class="stark">Rollex Sonnenschutz</td><td>Bahnhofstr. 12</td><td>20.09.</td><td class="zahl">890.00</td><td><span class="chip warn">Eigentümer</span></td></tr>
+                <tr><td class="stark">Gemeinde Gland</td><td>Bahnhofstr. 12</td><td>10.09.</td><td class="zahl">3'120.00</td><td><span class="chip gut">frei</span></td></tr>
+              </tbody>
+              <tfoot><tr><td colspan="3">Freigegeben · noch offen</td><td class="zahl">20'... / 2'130.00</td><td></td></tr></tfoot>
+            </table>
+            <div class="hinweisbox krit">
+              <span class="hi"><svg><use href="#i-warn"/></svg></span>
+              <div class="ht"><b>Skonto verfällt am 28.08. — drei Tage nach dem Zahllauf</b>
+                Bei Sanitär Meier gehen CHF 24.80 verloren, wenn die Freigabe nicht bis zum 25.08. erfolgt. Über alle offenen Positionen sind es CHF 61.40. Kleine Beträge, aber jedes Mal dieselbe Ursache: Freigaben liegen zu lange.</div></div>
+            <div class="karte-fuss"><span>Erzeugt eine pain.001-Datei · Ausführung durch die Bank am 25.08.</span><a>Vorschau</a></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-schild"/></svg></div><h2>Kompetenzstufen</h2><span class="neben">pro Mandat einstellbar</span></div>
+            <div class="zeile"><div class="mitte"><div class="t">bis CHF 500</div><div class="s">Sachbearbeitung, ohne weitere Freigabe</div></div><span class="chip gut">Marc</span></div>
+            <div class="zeile"><div class="mitte"><div class="t">bis CHF 2'000</div><div class="s">Bewirtschaftung</div></div><span class="chip marke">Dominik, Silvia</span></div>
+            <div class="zeile"><div class="mitte"><div class="t">über CHF 2'000</div><div class="s">Eigentümerschaft, über das Portal</div></div><span class="chip warn">Eigentümer</span></div>
+            <div class="zeile"><div class="mitte"><div class="t">Notfall jederzeit</div><div class="s">Wasser, Heizung, Sicherheit — nachträgliche Meldung genügt</div></div><span class="chip krit">Ausnahme</span></div>
+            <div class="karte-fuss"><span>Vier-Augen-Prinzip beim Zahllauf: erfassen und freigeben nie dieselbe Person</span><a>Regeln</a></div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-zahlen"/></svg></div><h2>Fälligkeitsvorschau</h2></div>
+            <div class="zeile"><span class="zeit">25.08.</span><div class="mitte"><div class="t">Zahllauf August</div><div class="s">14 Rechnungen</div></div><span class="zeit">23'140</span></div>
+            <div class="zeile"><span class="zeit">10.09.</span><div class="mitte"><div class="t">Zahllauf September</div><div class="s">bisher 6 Rechnungen</div></div><span class="zeit">9'480</span></div>
+            <div class="zeile"><span class="zeit">25.09.</span><div class="mitte"><div class="t">Zahllauf September II</div><div class="s">geplant</div></div><span class="zeit" style="color:var(--faint)">—</span></div>
+            <div class="karte-fuss"><span>Liquidität der Mandate wird je Konto geprüft</span><a>Kontostände</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ ORGANISATION UND TEAM ══════════ -->
+    <section class="screen" data-s="team">
+      <div class="seitenkopf">
+        <div><h1>Organisation und Team</h1><p>swissImmo Verwaltung AG · 3 Mitglieder · 1 externer Zugang · 4 Mandate</p></div>
+        <div class="taten"><button class="knopf">Protokoll</button><button class="knopf haupt">Person einladen</button></div>
+      </div>
+
+      <div class="zwei-schmal">
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-person"/></svg></div><h2>Mitglieder</h2></div>
+            <div class="mitgl">
+              <span class="mk">DM</span>
+              <div class="mm"><div class="a">Dominik M. — Inhaber</div>
+                <div class="b">alle 4 Mandate · Zwei-Faktor aktiv · zuletzt heute 07:12</div></div>
+              <span class="chip marke">Inhaber</span>
+            </div>
+            <div class="mitgl">
+              <span class="mk">SR</span>
+              <div class="mm"><div class="a">Silvia R. — Verwalterin</div>
+                <div class="b">Mandate PK Vaudoise, Familie Kunz · Zwei-Faktor aktiv · <b style="color:var(--warn)">abwesend bis 25.08.</b></div></div>
+              <span class="chip">Verwalter</span>
+            </div>
+            <div class="mitgl">
+              <span class="mk">MP</span>
+              <div class="mm"><div class="a">Marc P. — Sachbearbeiter</div>
+                <div class="b">Mandat Immo Léman SA · Zwei-Faktor <b style="color:var(--crit)">nicht eingerichtet</b> · zuletzt gestern 16:40</div></div>
+              <span class="chip">Sachbearbeiter</span>
+            </div>
+            <div class="mitgl">
+              <span class="mk grau">TB</span>
+              <div class="mm"><div class="a">Treuhand Bühler — externer Zugang</div>
+                <div class="b">nur Mandat Erbengemeinschaft Blattner · nur lesend · befristet bis 31.03.2027</div></div>
+              <span class="chip">Lesezugriff</span>
+            </div>
+            <div class="hinweisbox krit" style="border-bottom:0">
+              <span class="hi"><svg><use href="#i-warn"/></svg></span>
+              <div class="ht"><b>Marc P. hat keine Zwei-Faktor-Anmeldung</b>
+                Er hat Zugriff auf Mieterdaten und Zahlungsinformationen. Empfehlung: für alle Mitglieder verbindlich machen.
+                <button class="knopf klein">Für alle verlangen</button></div></div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-waage"/></svg></div><h2>Was die Rollen dürfen</h2></div>
+            <table class="matrix">
+              <thead><tr><th>Handlung</th><th>Inhaber</th><th>Verwalter</th><th>Sachbearbeiter</th><th>Lesezugriff</th></tr></thead>
+              <tbody>
+                <tr><td class="stark">Akten und Fälle lesen</td><td class="mj">✓</td><td class="mj">✓</td><td class="mj">✓</td><td class="mj">✓</td></tr>
+                <tr><td class="stark">Akten bearbeiten, Fälle führen</td><td class="mj">✓</td><td class="mj">✓</td><td class="mj">✓</td><td class="mn">—</td></tr>
+                <tr><td class="stark">Kündigung erfassen und bestätigen</td><td class="mj">✓</td><td class="mj">✓</td><td class="mn">—</td><td class="mn">—</td></tr>
+                <tr><td class="stark">Rechnungen freigeben</td><td class="mj">✓</td><td class="mt2">bis 2'000</td><td class="mt2">bis 500</td><td class="mn">—</td></tr>
+                <tr><td class="stark">Zahllauf auslösen</td><td class="mj">✓</td><td class="mj">✓</td><td class="mn">—</td><td class="mn">—</td></tr>
+                <tr><td class="stark">Mahnlauf und Betreibung</td><td class="mj">✓</td><td class="mj">✓</td><td class="mn">—</td><td class="mn">—</td></tr>
+                <tr><td class="stark">Nebenkostenabrechnung freigeben</td><td class="mj">✓</td><td class="mj">✓</td><td class="mn">—</td><td class="mn">—</td></tr>
+                <tr><td class="stark">Mitglieder und Rollen verwalten</td><td class="mj">✓</td><td class="mn">—</td><td class="mn">—</td><td class="mn">—</td></tr>
+                <tr><td class="stark">Abonnement und Module ändern</td><td class="mj">✓</td><td class="mn">—</td><td class="mn">—</td><td class="mn">—</td></tr>
+                <tr><td class="stark">Daten exportieren</td><td class="mj">✓</td><td class="mj">✓</td><td class="mn">—</td><td class="mn">—</td></tr>
+              </tbody>
+            </table>
+            <div class="karte-fuss"><span>Zusätzlich begrenzt die Mandatszuteilung, <b>welche</b> Akten überhaupt sichtbar sind</span><a>Rollen anpassen</a></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon warn"><svg><use href="#i-tausch"/></svg></div><h2>Vertretung</h2></div>
+            <div class="hinweisbox warn">
+              <span class="hi"><svg><use href="#i-uhr"/></svg></span>
+              <div class="ht"><b>Silvia R. abwesend bis 25.08.2026</b>
+                2 Mandate und 5 offene Fälle laufen bis dahin auf Dominik. Die Vertretung endet automatisch; Fälle gehen dann zurück, offene Fristen bleiben sichtbar bei beiden.</div></div>
+            <div class="zeile"><div class="mitte"><div class="t">Übernommen: 5 Fälle</div><div class="s">darunter Schaden Vignes 7 · seit 11 Tagen ohne Reaktion des Eigentümers</div></div></div>
+            <div class="zeile"><div class="mitte"><div class="t">Eigentümer informiert</div><div class="s">PK Vaudoise und Familie Kunz haben die Vertretung im Portal gesehen</div></div><span class="chip gut">ja</span></div>
+            <div class="karte-fuss"><span>Vertretung ist zeitlich begrenzt, nicht dauerhafte Rechteerweiterung</span><a>Verlängern</a></div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-protokoll"/></svg></div><h2>Protokoll</h2><span class="neben">letzte Einträge</span></div>
+            <div class="zeile"><span class="zeit">07:41</span><div class="mitte"><div class="t">Dominik M. · Kündigungstermin geändert</div><div class="s">MV Ferrari · 30.09.2026 → 31.03.2027 · Grund: Fristenprüfung</div></div></div>
+            <div class="zeile"><span class="zeit">gestern</span><div class="mitte"><div class="t">Marc P. · Rechnung freigegeben</div><div class="s">Gemeinde Gland · CHF 3'120 · innerhalb Kompetenz</div></div></div>
+            <div class="zeile"><span class="zeit">gestern</span><div class="mitte"><div class="t">Dominik M. · Vertretung aktiviert</div><div class="s">Silvia R. → Dominik M. bis 25.08.</div></div></div>
+            <div class="zeile"><span class="zeit">16.08.</span><div class="mitte"><div class="t">Treuhand Bühler · Export erzeugt</div><div class="s">Kontenauszug Blattner 2026 · nur eigenes Mandat</div></div></div>
+            <div class="karte-fuss"><span>Änderungen an Mietzins, Fristen, Freigaben und Rollen werden dauerhaft protokolliert</span><a>Ganzes Protokoll</a></div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf"><div class="ikon"><svg><use href="#i-schild"/></svg></div><h2>Ihre Organisation</h2></div>
+            <div class="zeile"><div class="mitte"><div class="t">Getrennt von allen anderen Verwaltungen</div>
+              <div class="s">Kein Zugriff auf Daten anderer Organisationen — technisch erzwungen, nicht pro Bildschirm geprüft</div></div><span class="chip gut">aktiv</span></div>
+            <div class="zeile"><div class="mitte"><div class="t">Vollständiger Datenexport</div><div class="s">jederzeit, ohne Rückfrage, im offenen Format</div></div><button class="knopf klein">Export</button></div>
+            <div class="zeile"><div class="mitte"><div class="t">Aufbewahrung</div><div class="s">10 Jahre für Geschäftsunterlagen, danach Löschung nach Ankündigung</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    </main>
+  </div>
+</div>
+</div>
+
+<div class="notizen">
+  <div class="kasten">
+    <h3>Datenübernahme — der Probelauf ist das Verkaufsargument</h3>
+    <p>Der Wechselblocker bei einer kleinen Verwaltung ist nicht der Funktionsumfang, sondern die Angst, dass beim Umzug etwas verlorengeht. Dagegen hilft keine Zusicherung, sondern eine Rechnung: <b>Sollstellung aus den übernommenen Daten gegen die letzte Sollstellung im Altsystem, Abweichung CHF 0.00.</b> Dasselbe für Debitorensaldo, Kautionssumme und Akonto.</p>
+    <p>Genauso wichtig ist, dass die Software zwischen <b>blockierend</b> und <b>unschön</b> unterscheidet. 23 Mietverhältnisse ohne Aufteilung Netto/Nebenkosten blockieren, weil sonst weder Nebenkostenabrechnung noch Mietzinsanpassung funktionieren. 14 Kautionen ohne Beleg blockieren nicht — die Akten werden als unvollständig markiert und tauchen im Arbeitsvorrat auf, wo sie nach und nach abgearbeitet werden.</p>
+    <p>Und die Kautionsdifferenz von CHF 5'670 ist bewusst drin: Sie sieht nach einem Fehler aus, ist aber ein Stichtagseffekt. Eine Übernahme, die solche Differenzen erklärt statt nur meldet, nimmt die Angst.</p>
+  </div>
+  <div class="kasten">
+    <h3>Mieterportal — die Weglassungen sind der Entwurf</h3>
+    <p>Was drinsteht, ist unstrittig: Miete, QR-Rechnung, Schaden melden, Dokumente, Ansprechperson. Interessanter ist, was fehlt. <b>Keine Mahnstufe, kein Betreibungsstand</b> — rechtlich Heikles gehört in ein zugestelltes Schreiben, nicht in eine Kachel. <b>Keine Verbrauchsvergleiche</b> mit anderen Wohnungen. <b>Keine Kündigung per Klick</b>, weil sie Schriftform braucht und ein Formular falsche Sicherheit erzeugt.</p>
+    <p>Der ehrliche Preis steht auch dort: Wer sieht, dass seine Meldung angekommen ist, erwartet eine Antwort. Ein Portal ohne zugesagte Rückmeldezeit erzeugt mehr Ärger als es löst.</p>
+  </div>
+  <div class="kasten">
+    <h3>Zwei Entscheidungen, die früher fallen als gedacht</h3>
+    <p>Bei der <b>Kreditorenerfassung</b> entscheidet die Klassierung — Nebenkosten, Unterhalt oder wertvermehrend — darüber, was ein Jahr später in der Nebenkostenabrechnung landet. Diese Frage gehört an den Beleg, nicht in den Abrechnungslauf. Deshalb steht sie im Erfassungsbildschirm als dritte Zeile und nicht in einem Untermenü.</p>
+    <p>Bei der <b>Mietzinsanpassung</b> ist die eigentliche Arbeit nicht das Rechnen, sondern die Vorlage an die Eigentümerschaft: von sich aus senken und Ruhe haben, oder auf Begehren warten und weniger verlieren. Beides ist zulässig, und die Software soll die Konsequenz beider Wege zeigen, nicht die Entscheidung treffen. Dass drei Verträge trotz gesunkenem Referenzzins eine <b>Erhöhung</b> ergeben, ist genau die Stelle, an der Hand-Rechnungen scheitern.</p>
+  </div>
+  <div class="kasten warnung">
+    <h3>Gegenlesen</h3>
+    <p>Die Prozentwerte in der Mietzinstabelle sind gerechnete Beispiele, nicht geprüfte Fälle — Teuerungsanteil und Ansatz für allgemeine Kostensteigerungen sind Annahmen. Die Formularpflicht bei Erhöhungen, die Zustellfrist und die Anfechtungsfrist müssen im Regelwerk juristisch abgesichert und pro Kanton konfigurierbar sein. Die Kompetenzstufen (500 / 2'000 / Eigentümer) sind erfunden und gehören pro Mandat in den Verwaltungsvertrag. Ob die Rollenmatrix zu deinem Betrieb passt, weisst nur du — insbesondere, ob Sachbearbeitung wirklich keine Kündigung erfassen darf.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  var rahmen=document.getElementById('rahmen');
+  function zeige(s){
+    document.querySelectorAll('.screen').forEach(function(x){x.classList.toggle('sichtbar',x.dataset.s===s);});
+    document.querySelectorAll('.labor button[data-s]').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.s===s?'true':'false');});
+    document.querySelectorAll('.sb-gruppe').forEach(function(g){g.classList.toggle('aktiv',g.dataset.g===s||(g.dataset.g==='team'&&s==='import'));});
+    document.querySelector('.inhalt').scrollTop=0;
+  }
+  document.querySelectorAll('.labor button[data-s]').forEach(function(b){b.addEventListener('click',function(){zeige(b.dataset.s);});});
+  document.querySelectorAll('[data-zu]').forEach(function(e){e.addEventListener('click',function(ev){ev.stopPropagation();zeige(e.dataset.zu);});});
+})();
+</script>
+</body>
+</html>

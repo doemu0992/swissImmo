@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>swissImmo — Design-Varianten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════
+   0 — Laborrahmen (gehört nicht zum Produkt)
+   ══════════════════════════════════════════════════════════════ */
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#0b0d13;font-family:Inter,ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+
+.labor{position:sticky;top:0;z-index:200;background:#12141d;border-bottom:1px solid #232739;padding:14px 20px;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.labor .marke{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#8b90a8}
+.labor .satz{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.labor .satz > span{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5d6280;margin-right:4px}
+.labor button{font:inherit;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:8px;border:1px solid #2b3048;background:#1a1e2c;color:#a8adc4;cursor:pointer;transition:.15s}
+.labor button:hover{border-color:#3d4364;color:#e2e5f0}
+.labor button[aria-pressed="true"]{background:#e8eaf3;border-color:#e8eaf3;color:#12141d}
+.labor .hinweis{margin-left:auto;font-size:11.5px;color:#5d6280;max-width:280px;line-height:1.5}
+
+.buehne{padding:22px;display:flex;justify-content:center}
+
+/* ══════════════════════════════════════════════════════════════
+   1 — Token-Sätze der vier Varianten
+   ══════════════════════════════════════════════════════════════ */
+.rahmen{
+  width:100%;max-width:1440px;border-radius:14px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.55);display:flex;min-height:820px;
+  background:var(--bg);color:var(--ink);font-family:var(--font-ui);
+}
+
+/* ── A · Zürich Hell ─────────────────────────────────────────── */
+.rahmen[data-v="a"]{
+  --bg:#f6f7f9; --surface:#ffffff; --surface-2:#f0f2f5;
+  --ink:#101828; --muted:#475467; --faint:#8a93a5; --line:#e4e7ec; --line-stark:#d0d5dd;
+  --brand:#2f5d9c; --brand-600:#25497b; --brand-soft:#eaf1fa;
+  --good:#15803d; --good-soft:#e7f6ec; --warn:#a15c07; --warn-soft:#fdf3e3;
+  --crit:#b42318; --crit-soft:#fdecea; --info:#175cd3; --info-soft:#eaf1fd;
+  --radius:8px; --radius-sm:6px; --pill:6px;
+  --shadow:0 1px 2px rgba(16,24,40,.05); --shadow-hoch:0 4px 14px rgba(16,24,40,.08);
+  --font-ui:Inter,system-ui,sans-serif; --font-titel:Inter,system-ui,sans-serif;
+  --titel-gewicht:700; --titel-abstand:-.02em;
+  --nav-bg:#ffffff; --nav-linie:#e4e7ec; --nav-ink:#475467; --nav-ink-aktiv:#ffffff;
+  --nav-aktiv:#2f5d9c; --nav-hover:#f0f2f5; --nav-kopf-ink:#101828; --nav-gruppe:#98a2b3;
+  --zeile-y:9px; --karte-y:16px; --raum:16px; --schrift:13.5px;
+}
+/* ── B · Seegrund ────────────────────────────────────────────── */
+.rahmen[data-v="b"]{
+  --bg:#edf2f3; --surface:#ffffff; --surface-2:#f3f7f7;
+  --ink:#0d2126; --muted:#4a6169; --faint:#7d949b; --line:#dde6e8; --line-stark:#c8d6d9;
+  --brand:#0f766e; --brand-600:#0b5c56; --brand-soft:#d8f1ed;
+  --good:#0f766e; --good-soft:#d8f1ed; --warn:#b45309; --warn-soft:#fdf0dc;
+  --crit:#be123c; --crit-soft:#fde7ec; --info:#0369a1; --info-soft:#e0f2fd;
+  --radius:14px; --radius-sm:10px; --pill:999px;
+  --shadow:0 1px 2px rgba(13,33,38,.05),0 6px 18px rgba(13,33,38,.05);
+  --shadow-hoch:0 8px 30px rgba(13,33,38,.12);
+  --font-ui:Inter,system-ui,sans-serif; --font-titel:Inter,system-ui,sans-serif;
+  --titel-gewicht:700; --titel-abstand:-.022em;
+  --nav-bg:linear-gradient(180deg,#10262c,#08171b); --nav-linie:rgba(255,255,255,.07);
+  --nav-ink:#93aeb4; --nav-ink-aktiv:#ffffff; --nav-aktiv:#0f766e; --nav-hover:rgba(255,255,255,.06);
+  --nav-kopf-ink:#ffffff; --nav-gruppe:#5d7b82;
+  --zeile-y:12px; --karte-y:20px; --raum:20px; --schrift:14px;
+}
+/* ── C · Signal ──────────────────────────────────────────────── */
+.rahmen[data-v="c"]{
+  --bg:#f4f5f7; --surface:#ffffff; --surface-2:#eef0f4;
+  --ink:#0b0c0e; --muted:#5a6270; --faint:#8b93a3; --line:#e3e5ea; --line-stark:#cfd3dc;
+  --brand:#2563eb; --brand-600:#1d4ed8; --brand-soft:#e5edfe;
+  --good:#047857; --good-soft:#dcfaef; --warn:#b45309; --warn-soft:#fef2da;
+  --crit:#dc2626; --crit-soft:#fee6e6; --info:#2563eb; --info-soft:#e5edfe;
+  --radius:6px; --radius-sm:4px; --pill:4px;
+  --shadow:0 1px 1px rgba(11,12,14,.05); --shadow-hoch:0 6px 20px rgba(11,12,14,.1);
+  --font-ui:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --font-titel:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --titel-gewicht:600; --titel-abstand:-.012em;
+  --nav-bg:#101115; --nav-linie:rgba(255,255,255,.08); --nav-ink:#9aa1af;
+  --nav-ink-aktiv:#ffffff; --nav-aktiv:#2563eb; --nav-hover:rgba(255,255,255,.07);
+  --nav-kopf-ink:#ffffff; --nav-gruppe:#646b7a;
+  --zeile-y:7px; --karte-y:13px; --raum:13px; --schrift:13px;
+}
+/* ── D · Alpin ───────────────────────────────────────────────── */
+.rahmen[data-v="d"]{
+  --bg:#f7f5f0; --surface:#fffdf9; --surface-2:#f1eee5;
+  --ink:#1f2a1d; --muted:#5c6455; --faint:#8d9484; --line:#e6e1d5; --line-stark:#d5cec0;
+  --brand:#3f6b46; --brand-600:#2f5335; --brand-soft:#e7efe6;
+  --good:#3f6b46; --good-soft:#e7efe6; --warn:#9a6524; --warn-soft:#f8eeda;
+  --crit:#a13a2e; --crit-soft:#f7e5e1; --info:#3c5f7a; --info-soft:#e6eef4;
+  --radius:12px; --radius-sm:9px; --pill:999px;
+  --shadow:0 1px 2px rgba(31,42,29,.05),0 4px 16px rgba(31,42,29,.05);
+  --shadow-hoch:0 10px 34px rgba(31,42,29,.12);
+  --font-ui:Inter,system-ui,sans-serif; --font-titel:"Source Serif 4",Georgia,serif;
+  --titel-gewicht:600; --titel-abstand:0;
+  --nav-bg:#2b3a29; --nav-linie:rgba(255,255,255,.09); --nav-ink:#b3bfad;
+  --nav-ink-aktiv:#ffffff; --nav-aktiv:#3f6b46; --nav-hover:rgba(255,255,255,.07);
+  --nav-kopf-ink:#ffffff; --nav-gruppe:#7d8a79;
+  --zeile-y:13px; --karte-y:22px; --raum:22px; --schrift:14px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   2 — Shell: Sidebar / Topbar
+   ══════════════════════════════════════════════════════════════ */
+.seiten{width:236px;flex:0 0 236px;background:var(--nav-bg);border-right:1px solid var(--nav-linie);display:flex;flex-direction:column}
+.rahmen[data-v="c"] .seiten{display:none}
+
+.sb-kopf{padding:16px 16px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--nav-linie)}
+.sb-logo{width:30px;height:30px;border-radius:var(--radius-sm);background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 30px}
+.sb-logo svg{width:15px;height:15px}
+.sb-wort{font-size:13px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--nav-kopf-ink)}
+.rahmen[data-v="d"] .sb-wort{font-family:var(--font-titel);font-weight:600;letter-spacing:.04em;text-transform:none;font-size:16px}
+
+.sb-filter{padding:11px 16px;border-bottom:1px solid var(--nav-linie)}
+.sb-filter label{display:block;font-size:9.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--nav-gruppe);margin-bottom:4px}
+.sb-filter select{width:100%;background:transparent;border:0;color:var(--nav-ink);font:inherit;font-size:12.5px;cursor:pointer;padding:0}
+.sb-filter select option{color:#111}
+
+.sb-nav{flex:1;padding:10px;overflow-y:auto}
+.sb-gruppe{margin-bottom:1px}
+.sb-item{display:flex;align-items:center;gap:11px;padding:8px 11px;border-radius:var(--radius-sm);color:var(--nav-ink);font-size:13px;font-weight:600;cursor:pointer;user-select:none;transition:.12s}
+.sb-item:hover{background:var(--nav-hover);color:var(--nav-ink-aktiv)}
+.sb-item svg{width:14px;height:14px;flex:0 0 14px;opacity:.85}
+.sb-item .zaehler{margin-left:auto;font-size:10px;font-weight:800;background:var(--crit);color:#fff;border-radius:999px;padding:1px 6px;min-width:18px;text-align:center}
+.sb-gruppe.aktiv > .sb-item{background:var(--nav-aktiv);color:var(--nav-ink-aktiv)}
+.sb-gruppe.aktiv > .sb-item svg{opacity:1}
+.sb-unter{display:none;padding:3px 0 5px 25px;flex-direction:column;gap:1px}
+.sb-gruppe.aktiv .sb-unter{display:flex}
+.sb-unter a{padding:5px 11px;border-radius:var(--radius-sm);font-size:12.5px;color:var(--nav-ink);text-decoration:none;transition:.12s}
+.sb-unter a:hover{background:var(--nav-hover);color:var(--nav-ink-aktiv)}
+.sb-unter a.hier{background:rgba(255,255,255,.1);color:var(--nav-ink-aktiv);font-weight:600}
+.rahmen[data-v="a"] .sb-unter a.hier{background:var(--brand-soft);color:var(--brand-600)}
+.rahmen[data-v="a"] .sb-item:hover,.rahmen[data-v="a"] .sb-unter a:hover{background:var(--nav-hover);color:var(--ink)}
+.sb-abschnitt{padding:9px 11px 3px;font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--nav-gruppe)}
+.sb-fuss{padding:10px;border-top:1px solid var(--nav-linie)}
+
+.haupt{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
+
+/* Topnavigation nur in Variante C */
+.topnav{display:none;background:var(--nav-bg);padding:0 20px;height:50px;align-items:center;gap:26px}
+.rahmen[data-v="c"] .topnav{display:flex}
+.topnav .marke{display:flex;align-items:center;gap:9px;color:#fff;font-size:12.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding-right:8px}
+.topnav .marke .sb-logo{width:24px;height:24px;flex:0 0 24px}
+.topnav .tabs{display:flex;gap:2px;height:100%}
+.topnav .tabs a{display:flex;align-items:center;padding:0 13px;color:var(--nav-ink);font-size:13px;font-weight:600;text-decoration:none;border-bottom:2px solid transparent}
+.topnav .tabs a:hover{color:#fff}
+.topnav .tabs a.hier{color:#fff;border-bottom-color:var(--brand)}
+.topnav .rechts{margin-left:auto;display:flex;align-items:center;gap:12px}
+.topnav .lgw{font-size:12px;color:var(--nav-ink);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-sm);padding:4px 9px}
+
+.kopfleiste{height:58px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 var(--raum);flex:0 0 58px}
+.rahmen[data-v="c"] .kopfleiste{height:48px;flex-basis:48px}
+.suche{position:relative;width:100%;max-width:400px}
+.suche svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--faint)}
+.suche input{width:100%;background:var(--surface-2);border:1px solid transparent;border-radius:var(--radius-sm);padding:8px 12px 8px 34px;font:inherit;font-size:13px;color:var(--ink);outline:0}
+.suche input::placeholder{color:var(--faint)}
+.suche input:focus{border-color:var(--brand);background:var(--surface)}
+.kopf-rechts{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ikon-knopf{width:32px;height:32px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer}
+.ikon-knopf:hover{background:var(--surface-2);color:var(--ink)}
+.ikon-knopf svg{width:15px;height:15px}
+.konto{display:flex;align-items:center;gap:9px;cursor:pointer}
+.konto .name{font-size:12.5px;color:var(--muted)}
+.konto .name b{color:var(--ink);font-weight:600}
+.konto .kuerzel{width:31px;height:31px;border-radius:999px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+
+.inhalt{flex:1;padding:var(--raum) calc(var(--raum) + 8px) 44px;overflow-y:auto;max-width:1360px;width:100%;margin:0 auto}
+.rahmen[data-v="c"] .inhalt{max-width:none}
+
+/* ══════════════════════════════════════════════════════════════
+   3 — Bausteine
+   ══════════════════════════════════════════════════════════════ */
+.seitenkopf{display:flex;align-items:flex-end;gap:16px;margin-bottom:var(--raum);flex-wrap:wrap}
+.seitenkopf h1{margin:0;font-family:var(--font-titel);font-size:23px;font-weight:var(--titel-gewicht);letter-spacing:var(--titel-abstand);color:var(--ink)}
+.rahmen[data-v="c"] .seitenkopf h1{font-size:19px}
+.rahmen[data-v="d"] .seitenkopf h1{font-size:27px}
+.seitenkopf p{margin:3px 0 0;font-size:13px;color:var(--muted)}
+.seitenkopf .taten{margin-left:auto;display:flex;gap:8px}
+
+.knopf{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--line-stark);background:var(--surface);color:var(--ink);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+.knopf:hover{background:var(--surface-2)}
+.knopf svg{width:13px;height:13px}
+.knopf.haupt{background:var(--brand);border-color:var(--brand);color:#fff}
+.knopf.haupt:hover{background:var(--brand-600);border-color:var(--brand-600)}
+.knopf.klein{padding:4px 10px;font-size:11.5px}
+
+.karte{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:var(--raum);overflow:hidden}
+.karte-kopf{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.karte-kopf .ikon{width:28px;height:28px;border-radius:var(--radius-sm);background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;flex:0 0 28px}
+.karte-kopf .ikon svg{width:14px;height:14px}
+.karte-kopf h2{margin:0;font-family:var(--font-titel);font-size:14px;font-weight:var(--titel-gewicht);color:var(--ink);letter-spacing:var(--titel-abstand)}
+.karte-kopf .neben{font-size:12.5px;color:var(--faint);font-weight:500}
+.karte-kopf .rechts{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.karte-fuss{padding:9px 16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--faint)}
+.karte-fuss a{color:var(--muted);text-decoration:none;font-weight:600}
+.karte-fuss a:hover{color:var(--brand)}
+
+.chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:var(--pill);font-size:10.5px;font-weight:700;letter-spacing:.02em;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.chip.gut{background:var(--good-soft);color:var(--good)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.krit{background:var(--crit-soft);color:var(--crit)}
+.chip.info{background:var(--info-soft);color:var(--info)}
+.chip.marke{background:var(--brand-soft);color:var(--brand)}
+.filterchip{padding:4px 10px;border-radius:var(--pill);font-size:11.5px;font-weight:600;background:var(--surface-2);color:var(--muted);cursor:pointer;border:1px solid transparent}
+.filterchip:hover{border-color:var(--line-stark)}
+.filterchip.an{background:var(--brand);color:#fff}
+
+/* Inbox */
+.inbox .zeile{display:flex;align-items:center;gap:12px;padding:var(--zeile-y) 16px;border-bottom:1px solid var(--line);cursor:pointer}
+.inbox .zeile:last-child{border-bottom:0}
+.inbox .zeile:hover{background:var(--surface-2)}
+.inbox .punkt{width:7px;height:7px;border-radius:999px;background:var(--line-stark);flex:0 0 7px}
+.inbox .zeile.dringend .punkt{background:var(--crit)}
+.inbox .mitte{flex:1;min-width:0}
+.inbox .titel{font-size:13.5px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.inbox .sub{font-size:11.5px;color:var(--faint);margin-top:2px}
+.inbox .betrag{font-size:12.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.inbox .frist{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.inbox .zeile.dringend .frist{color:var(--crit)}
+
+/* Kennzahlen */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--raum);margin-bottom:var(--raum)}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:var(--karte-y) 16px;display:flex;flex-direction:column;gap:5px;text-decoration:none}
+.kpi .l{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+.kpi .w{font-family:var(--font-titel);font-size:25px;font-weight:var(--titel-gewicht);color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:var(--titel-abstand)}
+.rahmen[data-v="c"] .kpi .w{font-size:22px}
+.kpi .w.gut{color:var(--good)}.kpi .w.warn{color:var(--warn)}.kpi .w.krit{color:var(--crit)}
+.kpi .f{font-size:11.5px;color:var(--faint)}
+.kpi.akzent{border-left:3px solid var(--brand)}
+.rahmen[data-v="c"] .kpi.akzent{border-left-width:2px}
+
+/* Tabelle */
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:9px 16px;border-bottom:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
+tbody td{padding:var(--zeile-y) 16px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2);cursor:pointer}
+td.stark{color:var(--ink);font-weight:600}
+td.zahl,th.zahl{text-align:right;font-variant-numeric:tabular-nums}
+.rahmen[data-v="c"] td.zahl{font-family:ui-monospace,"IBM Plex Mono",monospace;font-size:12.5px}
+.objekt{display:flex;align-items:center;gap:11px}
+.objekt .bild{width:34px;height:34px;border-radius:var(--radius-sm);background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;flex:0 0 34px}
+.objekt .bild svg{width:15px;height:15px}
+.objekt .zeilen .a{font-size:13px;font-weight:600;color:var(--ink)}
+.objekt .zeilen .b{font-size:11.5px;color:var(--faint);margin-top:1px}
+
+.balken{height:5px;border-radius:999px;background:var(--surface-2);overflow:hidden;min-width:64px}
+.balken i{display:block;height:100%;background:var(--good);border-radius:999px}
+.balken i.warn{background:var(--warn)}
+.balken i.krit{background:var(--crit)}
+
+/* Diagramm */
+.chart{padding:14px 16px 6px}
+.chart svg{width:100%;height:180px;display:block}
+.legende{display:flex;gap:16px;padding:0 16px 12px;font-size:11.5px;color:var(--faint)}
+.legende span{display:flex;align-items:center;gap:6px}
+.legende i{width:9px;height:9px;border-radius:2px;display:block}
+
+.zweispalt{display:grid;grid-template-columns:1.55fr 1fr;gap:var(--raum);align-items:start}
+
+.leer{display:flex;flex-direction:column;align-items:center;text-align:center;padding:44px 20px}
+.leer .kreis{width:44px;height:44px;border-radius:999px;background:var(--good-soft);color:var(--good);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.leer .kreis svg{width:20px;height:20px}
+.leer b{font-size:13.5px;color:var(--ink)}
+.leer p{margin:4px 0 0;font-size:12px;color:var(--faint)}
+
+/* Screens */
+.screen{display:none}
+.screen.sichtbar{display:block}
+
+/* Notizen */
+.notizen{max-width:1440px;margin:0 auto;padding:26px 22px 60px;color:#c3c7d8;font-size:13.5px;line-height:1.65}
+.notizen h3{font-size:15px;color:#fff;margin:0 0 8px;font-weight:700}
+.notizen .kasten{background:#12141d;border:1px solid #232739;border-radius:12px;padding:20px 22px}
+.notizen p{margin:0 0 10px}
+.notizen .paar{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.notizen .farbe{display:flex;align-items:center;gap:8px;background:#1a1e2c;border:1px solid #2b3048;border-radius:8px;padding:6px 11px;font-size:11.5px;color:#8b90a8;font-family:ui-monospace,monospace}
+.notizen .farbe em{width:15px;height:15px;border-radius:4px;display:block;border:1px solid rgba(255,255,255,.15)}
+.notizen .zeile2{margin-top:12px;font-size:12.5px;color:#8b90a8}
+.notizen .zeile2 b{color:#c3c7d8}
+.notiz{display:none}.notiz.sichtbar{display:block}
+
+@media (max-width:1100px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .zweispalt{grid-template-columns:1fr}
+  .seiten{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ SVG-Vorrat ═══ -->
+<svg style="display:none">
+  <symbol id="i-haus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
+  <symbol id="i-schluessel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3"/></symbol>
+  <symbol id="i-muenzen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18M7 6h1v4M16.71 13.88l.7.71-2.82 2.82"/></symbol>
+  <symbol id="i-diagramm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83M22 12A10 10 0 0 0 12 2v10z"/></symbol>
+  <symbol id="i-leute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-werkzeug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+  <symbol id="i-zahnrad" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="i-lupe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></symbol>
+  <symbol id="i-ordner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-sprech" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-export" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+</svg>
+
+<!-- ═══ Laborleiste ═══ -->
+<div class="labor">
+  <span class="marke">swissImmo · Design-Labor</span>
+  <div class="satz">
+    <span>Variante</span>
+    <button data-v="a" aria-pressed="true">A · Zürich Hell</button>
+    <button data-v="b" aria-pressed="false">B · Seegrund</button>
+    <button data-v="c" aria-pressed="false">C · Signal</button>
+    <button data-v="d" aria-pressed="false">D · Alpin</button>
+  </div>
+  <div class="satz">
+    <span>Screen</span>
+    <button data-s="heute" aria-pressed="true">Heute</button>
+    <button data-s="liegenschaften" aria-pressed="false">Liegenschaften</button>
+    <button data-s="debitoren" aria-pressed="false">Debitoren</button>
+  </div>
+  <div class="hinweis">Alle Zahlen sind erfunden. Struktur und Navigation entsprechen <code>core/navigation.py</code>.</div>
+</div>
+
+<div class="buehne">
+<div class="rahmen" id="rahmen" data-v="a">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="seiten">
+    <div class="sb-kopf">
+      <div class="sb-logo"><svg><use href="#i-haus"/></svg></div>
+      <div class="sb-wort">swissImmo</div>
+    </div>
+    <div class="sb-filter">
+      <label>Globaler Filter</label>
+      <select><option>Alle Liegenschaften</option><option>Bahnhofstrasse 12, Gland</option><option>Route de Suisse 44, Nyon</option></select>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-gruppe" data-g="heute">
+        <div class="sb-item"><svg><use href="#i-inbox"/></svg><span>Heute</span></div>
+        <div class="sb-unter"><a class="hier">Pendenzen</a><a>Fristen-Center</a></div>
+      </div>
+      <div class="sb-gruppe" data-g="liegenschaften">
+        <div class="sb-item"><svg><use href="#i-haus"/></svg><span>Portfolio</span><span class="zaehler">3</span></div>
+        <div class="sb-unter"><a class="hier">Liegenschaften</a><a>Objekte</a><a>Schadensfälle</a><a>Assets &amp; Ausstattung</a><a>Hypotheken</a></div>
+      </div>
+      <div class="sb-gruppe" data-g="vermietung">
+        <div class="sb-item"><svg><use href="#i-schluessel"/></svg><span>Vermietung</span></div>
+        <div class="sb-unter"><a>Vermarktung</a><a>Bewerbungen</a><a>Verträge</a><a>Mieterwechsel</a><a>Mietzins</a></div>
+      </div>
+      <div class="sb-gruppe" data-g="debitoren">
+        <div class="sb-item"><svg><use href="#i-muenzen"/></svg><span>Finanzen</span></div>
+        <div class="sb-unter">
+          <a>Finanz-Cockpit</a>
+          <div class="sb-abschnitt">Zahlungsverkehr</div><a>Bankabgleich</a><a>Bankkonten</a>
+          <div class="sb-abschnitt">Mieten</div><a>Sollstellung</a><a class="hier">Debitoren</a><a>Mieterkonten</a><a>Mahnwesen</a><a>Kautionen</a>
+          <div class="sb-abschnitt">Rechnungen</div><a>Kreditoren</a><a>Zahllauf</a>
+          <div class="sb-abschnitt">Abschluss</div><a>Buchhaltung</a><a>Nebenkosten</a><a>MWST</a>
+        </div>
+      </div>
+      <div class="sb-gruppe" data-g="berichte">
+        <div class="sb-item"><svg><use href="#i-diagramm"/></svg><span>Berichte</span></div>
+        <div class="sb-unter"><a>Berichte-Hub</a><a>Auswertung</a></div>
+      </div>
+      <div class="sb-gruppe" data-g="kontakte">
+        <div class="sb-item"><svg><use href="#i-leute"/></svg><span>Kontakte</span></div>
+        <div class="sb-unter"><a>Personen</a><a>Dienstleister</a><a>Eigentümer &amp; Mandate</a></div>
+      </div>
+    </nav>
+    <div class="sb-fuss">
+      <div class="sb-item"><svg><use href="#i-zahnrad"/></svg><span>Einstellungen</span></div>
+    </div>
+  </aside>
+
+  <!-- ═══ HAUPT ═══ -->
+  <div class="haupt">
+
+    <!-- Topnavigation (nur Variante C) -->
+    <div class="topnav">
+      <div class="marke"><div class="sb-logo"><svg><use href="#i-haus"/></svg></div>swissImmo</div>
+      <div class="tabs">
+        <a data-tab="heute" class="hier">Heute</a>
+        <a data-tab="liegenschaften">Portfolio</a>
+        <a data-tab="vermietung">Vermietung</a>
+        <a data-tab="debitoren">Finanzen</a>
+        <a data-tab="berichte">Berichte</a>
+        <a data-tab="kontakte">Kontakte</a>
+      </div>
+      <div class="rechts"><span class="lgw">Alle Liegenschaften ▾</span></div>
+    </div>
+
+    <header class="kopfleiste">
+      <div class="suche">
+        <svg><use href="#i-lupe"/></svg>
+        <input placeholder="Suche nach Person, Objekt, Vertrag …">
+      </div>
+      <div class="kopf-rechts">
+        <div class="ikon-knopf"><svg><use href="#i-ordner"/></svg></div>
+        <div class="ikon-knopf"><svg><use href="#i-sprech"/></svg></div>
+        <div class="konto"><span class="name">Hallo, <b>Dominik</b></span><span class="kuerzel">DM</span></div>
+      </div>
+    </header>
+
+    <main class="inhalt">
+
+      <!-- ────────── SCREEN: HEUTE ────────── -->
+      <section class="screen sichtbar" data-s="heute">
+        <div class="seitenkopf">
+          <div>
+            <h1>Heute</h1>
+            <p>Mittwoch, 19. August 2026 · 4 Liegenschaften · 38 Einheiten</p>
+          </div>
+          <div class="taten">
+            <button class="knopf"><svg><use href="#i-export"/></svg>Export</button>
+            <button class="knopf haupt"><svg><use href="#i-plus"/></svg>Neu erfassen</button>
+          </div>
+        </div>
+
+        <div class="karte inbox">
+          <div class="karte-kopf">
+            <div class="ikon"><svg><use href="#i-inbox"/></svg></div>
+            <h2>Inbox</h2>
+            <span class="neben">6 Aufgaben · <b style="color:var(--crit)">2 dringend</b></span>
+            <div class="rechts">
+              <span class="filterchip an">Alle</span>
+              <span class="filterchip">Fristen 2</span>
+              <span class="filterchip">Zahlungen 2</span>
+              <span class="filterchip">Schäden 1</span>
+              <span class="filterchip">Verträge 1</span>
+            </div>
+          </div>
+
+          <div class="zeile dringend">
+            <span class="punkt"></span><span class="chip krit">Frist</span>
+            <div class="mitte"><div class="titel">Kündigung Whg. 3.2 — Antwortfrist läuft ab</div><div class="sub">Bahnhofstrasse 12, 1196 Gland · M. Blaser</div></div>
+            <span class="frist">22.08.2026</span>
+            <button class="knopf klein">Bearbeiten</button>
+          </div>
+          <div class="zeile dringend">
+            <span class="punkt"></span><span class="chip warn">Kreditor</span>
+            <div class="mitte"><div class="titel">Rechnung Sanitär Meier AG wartet auf Freigabe</div><div class="sub">Heizungsservice · Route de Suisse 44</div></div>
+            <span class="betrag">CHF 1'240.00</span><span class="frist">25.08.2026</span>
+            <button class="knopf klein">Freigeben</button>
+          </div>
+          <div class="zeile">
+            <span class="punkt"></span><span class="chip info">Bank</span>
+            <div class="mitte"><div class="titel">7 Zahlungseingänge ohne Zuordnung</div><div class="sub">Import CAMT.053 vom 18.08.2026</div></div>
+            <span class="betrag">CHF 9'870.00</span>
+            <button class="knopf klein">Abgleichen</button>
+          </div>
+          <div class="zeile">
+            <span class="punkt"></span><span class="chip">Schaden</span>
+            <div class="mitte"><div class="titel">Wasserschaden Küche gemeldet</div><div class="sub">Chemin des Vignes 7, 1197 Prangins · Whg. 1.1</div></div>
+            <span class="frist">gestern</span>
+            <button class="knopf klein">Ansehen</button>
+          </div>
+          <div class="zeile">
+            <span class="punkt"></span><span class="chip marke">Vertrag</span>
+            <div class="mitte"><div class="titel">Mietvertrag zur Unterschrift bereit</div><div class="sub">T. Roux · Avenue Perdtemps 3, 1260 Nyon</div></div>
+            <span class="frist">01.09.2026</span>
+            <button class="knopf klein">Senden</button>
+          </div>
+          <div class="zeile">
+            <span class="punkt"></span><span class="chip">Nebenkosten</span>
+            <div class="mitte"><div class="titel">Abrechnungsperiode 2025 abschliessen</div><div class="sub">3 von 4 Liegenschaften erfasst</div></div>
+            <span class="frist">30.09.2026</span>
+            <button class="knopf klein">Fortsetzen</button>
+          </div>
+
+          <div class="karte-fuss">
+            <a>+ 4 weitere Aufgaben</a>
+            <span><a>Pendenzen</a> · <a>Fristen</a> · <a>Finanz-Cockpit</a></span>
+          </div>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi">
+            <span class="l">Leerstandsquote</span>
+            <span class="w warn">3.4 %</span>
+            <span class="f">ertragsgewichtet 2.9 %</span>
+          </div>
+          <div class="kpi akzent">
+            <span class="l">Ist-Miete / Monat</span>
+            <span class="w">CHF 184'250</span>
+            <span class="f">Soll-Potenzial CHF 190'700</span>
+          </div>
+          <div class="kpi">
+            <span class="l">Ausfall Leerstand</span>
+            <span class="w warn">CHF 6'320</span>
+            <span class="f">pro Monat</span>
+          </div>
+          <div class="kpi">
+            <span class="l">Überfällige Forderungen</span>
+            <span class="w krit">CHF 12'480</span>
+            <span class="f" style="color:var(--brand)">→ Mahnwesen</span>
+          </div>
+        </div>
+
+        <div class="zweispalt">
+          <div class="karte">
+            <div class="karte-kopf">
+              <div class="ikon"><svg><use href="#i-diagramm"/></svg></div>
+              <h2>Mietertrag — Soll gegen Ist</h2>
+              <span class="neben">letzte 12 Monate</span>
+              <div class="rechts"><span class="chip gut">+ 2.1 %</span></div>
+            </div>
+            <div class="chart">
+              <svg viewBox="0 0 620 200" preserveAspectRatio="none">
+                <defs><linearGradient id="verlauf" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="var(--brand)" stop-opacity=".22"/>
+                  <stop offset="1" stop-color="var(--brand)" stop-opacity=".01"/>
+                </linearGradient></defs>
+                <line x1="0" y1="40" x2="620" y2="40" stroke="var(--line)"/>
+                <line x1="0" y1="100" x2="620" y2="100" stroke="var(--line)"/>
+                <line x1="0" y1="160" x2="620" y2="160" stroke="var(--line)"/>
+                <line x1="0" y1="52" x2="620" y2="52" stroke="var(--faint)" stroke-width="1.4" stroke-dasharray="5 5"/>
+                <path d="M0,132 L56,124 L113,128 L169,112 L226,116 L282,96 L338,104 L395,84 L451,90 L507,72 L564,66 L620,58 L620,200 L0,200 Z" fill="url(#verlauf)"/>
+                <polyline points="0,132 56,124 113,128 169,112 226,116 282,96 338,104 395,84 451,90 507,72 564,66 620,58"
+                          fill="none" stroke="var(--brand)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="legende">
+              <span><i style="background:var(--brand)"></i>Ist-Ertrag</span>
+              <span><i style="background:var(--faint)"></i>Soll-Ertrag</span>
+            </div>
+          </div>
+
+          <div class="karte">
+            <div class="karte-kopf">
+              <div class="ikon"><svg><use href="#i-werkzeug"/></svg></div>
+              <h2>Offene Schadensfälle</h2>
+              <div class="rechts"><span class="chip krit">3 offen</span></div>
+            </div>
+            <table>
+              <tbody>
+                <tr><td class="stark">Wasserschaden Küche<div style="font-size:11.5px;color:var(--faint);font-weight:400;margin-top:2px">Prangins · Whg. 1.1</div></td><td style="width:1%"><span class="chip krit">Neu</span></td></tr>
+                <tr><td class="stark">Heizung fällt aus<div style="font-size:11.5px;color:var(--faint);font-weight:400;margin-top:2px">Nyon · gesamtes Haus</div></td><td><span class="chip warn">In Arbeit</span></td></tr>
+                <tr><td class="stark">Storen defekt<div style="font-size:11.5px;color:var(--faint);font-weight:400;margin-top:2px">Gland · Whg. 2.4</div></td><td><span class="chip info">Offerte</span></td></tr>
+              </tbody>
+            </table>
+            <div class="karte-fuss"><a>Alle Schadensfälle</a><span>Ø 4.2 Tage bis Zuweisung</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────── SCREEN: LIEGENSCHAFTEN ────────── -->
+      <section class="screen" data-s="liegenschaften">
+        <div class="seitenkopf">
+          <div>
+            <h1>Liegenschaften</h1>
+            <p>4 Objekte · 38 Einheiten · Portfoliowert CHF 24.6 Mio.</p>
+          </div>
+          <div class="taten">
+            <button class="knopf"><svg><use href="#i-export"/></svg>Export</button>
+            <button class="knopf haupt"><svg><use href="#i-plus"/></svg>Liegenschaft erfassen</button>
+          </div>
+        </div>
+
+        <div class="karte">
+          <div class="karte-kopf">
+            <span class="filterchip an">Alle 4</span>
+            <span class="filterchip">Vollvermietet 2</span>
+            <span class="filterchip">Leerstand 2</span>
+            <div class="rechts"><span class="neben">Sortiert nach Ertrag</span></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Liegenschaft</th><th>Gemeinde</th><th class="zahl">Einheiten</th>
+                <th style="width:150px">Vermietung</th><th class="zahl">Ist-Miete / Mt.</th><th class="zahl">Rendite</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="objekt"><div class="bild"><svg><use href="#i-haus"/></svg></div>
+                  <div class="zeilen"><div class="a">Bahnhofstrasse 12</div><div class="b">Baujahr 1998 · MFH</div></div></div></td>
+                <td>1196 Gland</td><td class="zahl">14</td>
+                <td><div style="display:flex;align-items:center;gap:9px"><div class="balken" style="flex:1"><i style="width:93%"></i></div><span style="font-size:12px;font-variant-numeric:tabular-nums">13/14</span></div></td>
+                <td class="zahl stark">CHF 68'400</td><td class="zahl">4.1 %</td><td><span class="chip warn">1 leer</span></td>
+              </tr>
+              <tr>
+                <td><div class="objekt"><div class="bild"><svg><use href="#i-haus"/></svg></div>
+                  <div class="zeilen"><div class="a">Route de Suisse 44</div><div class="b">Baujahr 2011 · MFH</div></div></div></td>
+                <td>1260 Nyon</td><td class="zahl">12</td>
+                <td><div style="display:flex;align-items:center;gap:9px"><div class="balken" style="flex:1"><i style="width:100%"></i></div><span style="font-size:12px;font-variant-numeric:tabular-nums">12/12</span></div></td>
+                <td class="zahl stark">CHF 61'800</td><td class="zahl">3.8 %</td><td><span class="chip gut">Voll</span></td>
+              </tr>
+              <tr>
+                <td><div class="objekt"><div class="bild"><svg><use href="#i-haus"/></svg></div>
+                  <div class="zeilen"><div class="a">Chemin des Vignes 7</div><div class="b">Baujahr 1974 · MFH</div></div></div></td>
+                <td>1197 Prangins</td><td class="zahl">8</td>
+                <td><div style="display:flex;align-items:center;gap:9px"><div class="balken" style="flex:1"><i class="warn" style="width:75%"></i></div><span style="font-size:12px;font-variant-numeric:tabular-nums">6/8</span></div></td>
+                <td class="zahl stark">CHF 31'250</td><td class="zahl">3.2 %</td><td><span class="chip krit">2 leer</span></td>
+              </tr>
+              <tr>
+                <td><div class="objekt"><div class="bild"><svg><use href="#i-haus"/></svg></div>
+                  <div class="zeilen"><div class="a">Avenue Perdtemps 3</div><div class="b">Baujahr 2019 · Gewerbe/Wohnen</div></div></div></td>
+                <td>1260 Nyon</td><td class="zahl">4</td>
+                <td><div style="display:flex;align-items:center;gap:9px"><div class="balken" style="flex:1"><i style="width:100%"></i></div><span style="font-size:12px;font-variant-numeric:tabular-nums">4/4</span></div></td>
+                <td class="zahl stark">CHF 22'800</td><td class="zahl">4.6 %</td><td><span class="chip gut">Voll</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="karte-fuss"><span>4 von 4 Liegenschaften</span><span>Total CHF 184'250 / Monat</span></div>
+        </div>
+      </section>
+
+      <!-- ────────── SCREEN: DEBITOREN ────────── -->
+      <section class="screen" data-s="debitoren">
+        <div class="seitenkopf">
+          <div>
+            <h1>Debitoren</h1>
+            <p>Offene Mietforderungen · Stichtag 19.08.2026</p>
+          </div>
+          <div class="taten">
+            <button class="knopf"><svg><use href="#i-export"/></svg>Liste exportieren</button>
+            <button class="knopf haupt">Mahnlauf starten</button>
+          </div>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><span class="l">Offen gesamt</span><span class="w">CHF 27'340</span><span class="f">18 Positionen</span></div>
+          <div class="kpi"><span class="l">Nicht fällig</span><span class="w gut">CHF 14'860</span><span class="f">11 Positionen</span></div>
+          <div class="kpi akzent"><span class="l">1–30 Tage</span><span class="w warn">CHF 8'420</span><span class="f">4 Positionen</span></div>
+          <div class="kpi"><span class="l">Über 60 Tage</span><span class="w krit">CHF 4'060</span><span class="f">3 Positionen</span></div>
+        </div>
+
+        <div class="karte">
+          <div class="karte-kopf">
+            <div class="ikon"><svg><use href="#i-muenzen"/></svg></div>
+            <h2>Überfällige Positionen</h2>
+            <div class="rechts">
+              <span class="filterchip an">Überfällig 7</span>
+              <span class="filterchip">Mahnstufe 1 · 3</span>
+              <span class="filterchip">Mahnstufe 2 · 2</span>
+              <span class="filterchip">Betreibung 1</span>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Mieter</th><th>Objekt</th><th>Periode</th><th class="zahl">Betrag</th><th class="zahl">Tage</th><th>Mahnstufe</th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="stark">M. Blaser</td><td>Bahnhofstrasse 12 · 3.2</td><td>Juni 2026</td>
+                <td class="zahl stark">CHF 1'890.00</td><td class="zahl">79</td><td><span class="chip krit">Betreibung</span></td>
+                <td style="width:1%"><button class="knopf klein">Öffnen</button></td>
+              </tr>
+              <tr>
+                <td class="stark">S. Aeschlimann</td><td>Chemin des Vignes 7 · 2.1</td><td>Juli 2026</td>
+                <td class="zahl stark">CHF 1'420.00</td><td class="zahl">48</td><td><span class="chip warn">Stufe 2</span></td>
+                <td><button class="knopf klein">Öffnen</button></td>
+              </tr>
+              <tr>
+                <td class="stark">L. Ferrari</td><td>Route de Suisse 44 · 1.4</td><td>Juli 2026</td>
+                <td class="zahl stark">CHF 2'150.00</td><td class="zahl">48</td><td><span class="chip warn">Stufe 2</span></td>
+                <td><button class="knopf klein">Öffnen</button></td>
+              </tr>
+              <tr>
+                <td class="stark">T. Roux</td><td>Avenue Perdtemps 3 · EG</td><td>August 2026</td>
+                <td class="zahl stark">CHF 3'200.00</td><td class="zahl">18</td><td><span class="chip info">Stufe 1</span></td>
+                <td><button class="knopf klein">Öffnen</button></td>
+              </tr>
+              <tr>
+                <td class="stark">A. Weber</td><td>Bahnhofstrasse 12 · 1.1</td><td>August 2026</td>
+                <td class="zahl stark">CHF 1'640.00</td><td class="zahl">18</td><td><span class="chip info">Stufe 1</span></td>
+                <td><button class="knopf klein">Öffnen</button></td>
+              </tr>
+              <tr>
+                <td class="stark">C. Nguyen</td><td>Chemin des Vignes 7 · 3.3</td><td>August 2026</td>
+                <td class="zahl stark">CHF 1'180.00</td><td class="zahl">11</td><td><span class="chip">Keine</span></td>
+                <td><button class="knopf klein">Öffnen</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="karte-fuss"><span>6 von 7 Positionen</span><span>Auswahl: CHF 11'480.00</span></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+</div>
+
+<!-- ═══ Begründungen ═══ -->
+<div class="notizen">
+
+  <div class="kasten notiz sichtbar" data-n="a">
+    <h3>A · Zürich Hell — die nüchterne Fachanwendung</h3>
+    <p>Helle Navigationsleiste statt dunkler Sidebar, kleine Radien (8 px), starke Trennlinien, dichte Zeilen. Das Vorbild sind Schweizer Bank- und Treuhandoberflächen: Die Software tritt zurück, die Zahlen treten hervor. Wer acht Stunden am Tag Debitoren abgleicht, ermüdet hier am wenigsten.</p>
+    <p><b>Risiko:</b> Ohne dunkle Sidebar fehlt der optische Anker — die Navigation muss über Typografie und Linien Halt geben, sonst wirkt die Seite flach. <b>Aufwand:</b> Höchster der vier, weil die Sidebar strukturell umgebaut wird.</p>
+    <div class="paar">
+      <span class="farbe"><em style="background:#2f5d9c"></em>#2f5d9c Marke</span>
+      <span class="farbe"><em style="background:#101828"></em>#101828 Text</span>
+      <span class="farbe"><em style="background:#f6f7f9"></em>#f6f7f9 Fläche</span>
+      <span class="farbe"><em style="background:#e4e7ec"></em>#e4e7ec Linie</span>
+    </div>
+    <div class="zeile2">Schrift <b>Inter</b> · Radius <b>8 px</b> · Zeilenhöhe dicht · Herkunft: Arctic Frost / Modern Minimalist</div>
+  </div>
+
+  <div class="kasten notiz" data-n="b">
+    <h3>B · Seegrund — die behutsame Weiterentwicklung</h3>
+    <p>Behält die dunkle Sidebar und die 14-px-Radien des heutigen <code>fw/base.html</code>, tauscht aber Indigo gegen ein ruhigeres Petrol und das kühle Slate gegen wärmere Blaugrautöne. Wer die Anwendung heute kennt, findet sich sofort zurecht — es sieht nur aufgeräumter und weniger nach Bootstrap-Standard aus.</p>
+    <p><b>Stärke:</b> Klar der kleinste Umstellungsaufwand. Praktisch nur ein neuer Token-Satz, die Struktur bleibt. <b>Schwäche:</b> Wenig Differenzierung gegenüber Fairwalter — die Konkurrenz sieht ähnlich aus.</p>
+    <div class="paar">
+      <span class="farbe"><em style="background:#0f766e"></em>#0f766e Marke</span>
+      <span class="farbe"><em style="background:#10262c"></em>#10262c Navigation</span>
+      <span class="farbe"><em style="background:#edf2f3"></em>#edf2f3 Fläche</span>
+      <span class="farbe"><em style="background:#0d2126"></em>#0d2126 Text</span>
+    </div>
+    <div class="zeile2">Schrift <b>Inter</b> · Radius <b>14 px</b> · Zeilenhöhe normal · Herkunft: Ocean Depths</div>
+  </div>
+
+  <div class="kasten notiz" data-n="c">
+    <h3>C · Signal — maximale Informationsdichte</h3>
+    <p>Die Sidebar verschwindet zugunsten einer schmalen dunklen Topnavigation; der gewonnene Platz geht an die Tabellen. Radien 6 px, Zeilen 7 px hoch, Beträge in Festbreitenschrift. Auf einem 24-Zoll-Bildschirm passen hier rund ein Drittel mehr Zeilen aufs Bild als in Variante D.</p>
+    <p><b>Konflikt mit der bestehenden Struktur:</b> Die sechs Bereiche passen in eine Topnavigation, die 16 Finanz-Untereinträge des Profimodus nicht — die bräuchten eine zweite Ebene oder eine Kontextspalte pro Bereich. Das ist eine echte Produktentscheidung, keine Stilfrage.</p>
+    <div class="paar">
+      <span class="farbe"><em style="background:#2563eb"></em>#2563eb Marke</span>
+      <span class="farbe"><em style="background:#101115"></em>#101115 Navigation</span>
+      <span class="farbe"><em style="background:#f4f5f7"></em>#f4f5f7 Fläche</span>
+      <span class="farbe"><em style="background:#0b0c0e"></em>#0b0c0e Text</span>
+    </div>
+    <div class="zeile2">Schrift <b>IBM Plex Sans</b> · Radius <b>6 px</b> · Zeilenhöhe sehr dicht · Herkunft: Tech Innovation</div>
+  </div>
+
+  <div class="kasten notiz" data-n="d">
+    <h3>D · Alpin — das Premium-Gegenstück</h3>
+    <p>Warmes Elfenbein statt kaltem Grau, Serifentitel (Source Serif), grosszügige Abstände, gedecktes Waldgrün. Signalisiert Sorgfalt statt Durchsatz — passend, wenn swissImmo sich gegen Fairwalter nicht über den Preis, sondern über Anmutung abgrenzen soll.</p>
+    <p><b>Preis:</b> Rund 20 % weniger Zeilen pro Bildschirm. Für eine Verwaltung mit 40 Einheiten angenehm, für eine mit 800 Einheiten hinderlich. <b>Chance:</b> Die warme Palette verträgt mandantenspezifische Akzentfarben (Phase 4) deutlich besser als ein gesättigtes Indigo.</p>
+    <div class="paar">
+      <span class="farbe"><em style="background:#3f6b46"></em>#3f6b46 Marke</span>
+      <span class="farbe"><em style="background:#2b3a29"></em>#2b3a29 Navigation</span>
+      <span class="farbe"><em style="background:#f7f5f0"></em>#f7f5f0 Fläche</span>
+      <span class="farbe"><em style="background:#1f2a1d"></em>#1f2a1d Text</span>
+    </div>
+    <div class="zeile2">Schrift <b>Source Serif 4</b> (Titel) + <b>Inter</b> (Text) · Radius <b>12 px</b> · Zeilenhöhe grosszügig · Herkunft: Forest Canopy</div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var rahmen = document.getElementById('rahmen');
+
+  function setzeVariante(v){
+    rahmen.setAttribute('data-v', v);
+    document.querySelectorAll('.labor button[data-v]').forEach(function(b){
+      b.setAttribute('aria-pressed', b.dataset.v === v ? 'true' : 'false');
+    });
+    document.querySelectorAll('.notiz').forEach(function(n){
+      n.classList.toggle('sichtbar', n.dataset.n === v);
+    });
+  }
+
+  function setzeScreen(s){
+    document.querySelectorAll('.screen').forEach(function(sec){
+      sec.classList.toggle('sichtbar', sec.dataset.s === s);
+    });
+    document.querySelectorAll('.labor button[data-s]').forEach(function(b){
+      b.setAttribute('aria-pressed', b.dataset.s === s ? 'true' : 'false');
+    });
+    document.querySelectorAll('.sb-gruppe').forEach(function(g){
+      g.classList.toggle('aktiv', g.dataset.g === s);
+    });
+    document.querySelectorAll('.topnav .tabs a').forEach(function(a){
+      a.classList.toggle('hier', a.dataset.tab === s);
+    });
+    rahmen.querySelector('.inhalt').scrollTop = 0;
+  }
+
+  document.querySelectorAll('.labor button[data-v]').forEach(function(b){
+    b.addEventListener('click', function(){ setzeVariante(b.dataset.v); });
+  });
+  document.querySelectorAll('.labor button[data-s]').forEach(function(b){
+    b.addEventListener('click', function(){ setzeScreen(b.dataset.s); });
+  });
+
+  // Sidebar-Gruppen: Klick navigiert dorthin, wenn ein Screen existiert
+  document.querySelectorAll('.sb-gruppe').forEach(function(g){
+    g.querySelector('.sb-item').addEventListener('click', function(){
+      var ziel = g.dataset.g;
+      if (document.querySelector('.screen[data-s="' + ziel + '"]')) { setzeScreen(ziel); }
+      else { g.classList.toggle('aktiv'); }
+    });
+  });
+  document.querySelectorAll('.topnav .tabs a').forEach(function(a){
+    a.addEventListener('click', function(){
+      var ziel = a.dataset.tab;
+      if (document.querySelector('.screen[data-s="' + ziel + '"]')) { setzeScreen(ziel); }
+    });
+  });
+
+  // Tastatur: 1–4 Variante, ←/→ Screen
+  var screens = ['heute','liegenschaften','debitoren'];
+  var varianten = ['a','b','c','d'];
+  document.addEventListener('keydown', function(e){
+    if (e.target.tagName === 'INPUT') return;
+    var i = varianten.indexOf(e.key === '1' ? 'a' : e.key === '2' ? 'b' : e.key === '3' ? 'c' : e.key === '4' ? 'd' : '');
+    if (i > -1) { setzeVariante(varianten[i]); return; }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      var akt = document.querySelector('.screen.sichtbar').dataset.s;
+      var n = screens.indexOf(akt) + (e.key === 'ArrowRight' ? 1 : -1);
+      setzeScreen(screens[(n + screens.length) % screens.length]);
+    }
+  });
+
+  setzeScreen('heute');
+})();
+</script>
+</body>
+</html>
