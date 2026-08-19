@@ -195,7 +195,9 @@ class LogbuchTests(TestCase):
         AktivitaetsLog.objects.all().update(ziel_typ='vertrag', ziel_id=v.id)
         r = c.get(f'/neu/vertraege/{v.id}/')
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, 'id="vt-verlauf"')
+        # Seit Etappe 4a.5b heisst das Panel `vt-chronik` — der Verlauf ist
+        # derselbe, nur der Reiter wurde auf den einheitlichen Satz umbenannt.
+        self.assertContains(r, 'id="vt-chronik"')
         self.assertContains(r, 'Kaution einbezahlt')
 
     # --- #4 Strukturierte Kategorie ---

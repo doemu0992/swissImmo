@@ -738,8 +738,13 @@ class FormulareTabTests(TestCase):
         _lg, _e, _m, v = _basis_objekte()
         c = Client(); c.force_login(_team_user())
         html = c.get(f'/neu/vertraege/{v.id}/').content.decode()
-        # Tab existiert
-        self.assertIn('vt-formulare', html)
+        # Seit Etappe 4a.5b liegen die Formulare als Abschnitt im Panel
+        # `vt-dokumente` — es gibt keinen eigenen Formulare-Reiter mehr.
+        # Geprüft wird deshalb das Panel UND die Überschrift des Abschnitts;
+        # nur das Panel abzufragen würde auch dann bestehen, wenn die
+        # Formulare beim Zusammenlegen verlorengegangen wären.
+        self.assertIn('vt-dokumente', html)
+        self.assertIn('Formulare und Prozesse', html)
         # Gruppen
         for g in ('Mietrechtliche Formulare', 'Kaution (Art. 257e)', 'Prozesse', 'Beilagen'):
             self.assertIn(g, html)
