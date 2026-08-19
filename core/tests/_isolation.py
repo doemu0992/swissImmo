@@ -185,6 +185,7 @@ class MandantenFixture:
         from core.models import Pendenz, Postfach
         from faelle.models import Fall, Fallart, Fallschritt, SchrittVorlage, Zeiteintrag
         from faelle.regelwerk_models import Regel, Regelanwendung, Regelsatz
+        from faelle.lauf_models import Blockade, Lauf, Laufart
         from faelle.zulauf_models import Eingang, Zuordnungsregel
         from mietprozess.models import Mietbewerbung
         from portfolio.models import (Ausstattung, Dokument as PDokument, Geraet, Schluessel,
@@ -280,6 +281,19 @@ class MandantenFixture:
         # Anwendung nicht in der Kohorte, die ein Test über einen bestimmten
         # Stand abfragt — und sie bildet zugleich den realistischen Fall ab,
         # dass Protokolleinträge aus früheren Regelfassungen stammen.
+        # Laeufe (Phase 4a, Etappe 4). Der Lauf ist bewusst NICHT ueberfaellig:
+        # Ein ueberfaelliger Lauf im Fixture veraendert die Zaehlung in jedem
+        # Test, der ueberfaellige Laeufe zaehlt. Die Blockade haengt trotzdem
+        # daran, damit die Registry auch dieses Modell zu sehen bekommt.
+        self.laufart = Laufart.objects.create(
+            organisation=self.organisation, schluessel='sollstellung',
+            bezeichnung=f'Sollstellung {k}', faellig_am_tag=1)
+        self.lauf = Lauf.objects.create(
+            organisation=self.organisation, laufart=self.laufart,
+            periode='2099-01', faellig_am=date(2099, 1, 1))
+        self.blockade = Blockade.objects.create(
+            lauf=self.lauf, grund=f'Beispielblockade {k}', quelle='Fixture')
+
         # Zulauf (Phase 4a, Etappe 3) — dritte Runde derselben Sache. Ohne
         # Objekte von B ueberspringt die Registry die Modelle und ist gruen,
         # ohne etwas geprueft zu haben. Die Zuordnungsregel ist dabei die

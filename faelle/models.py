@@ -407,3 +407,6 @@ from faelle.regelwerk_models import (  # noqa: E402,F401
 from faelle.zulauf_models import (  # noqa: E402,F401
     Eingang, Zuordnungsregel,
 )
+from faelle.lauf_models import (  # noqa: E402,F401
+    Blockade, Lauf, Laufart,
+)
