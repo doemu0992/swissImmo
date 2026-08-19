@@ -404,3 +404,6 @@ class Zeiteintrag(OrganisationAusKette):
 from faelle.regelwerk_models import (  # noqa: E402,F401
     Regel, Regelanwendung, Regelsatz,
 )
+from faelle.zulauf_models import (  # noqa: E402,F401
+    Eingang, Zuordnungsregel,
+)

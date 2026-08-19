@@ -185,6 +185,7 @@ class MandantenFixture:
         from core.models import Pendenz, Postfach
         from faelle.models import Fall, Fallart, Fallschritt, SchrittVorlage, Zeiteintrag
         from faelle.regelwerk_models import Regel, Regelanwendung, Regelsatz
+        from faelle.zulauf_models import Eingang, Zuordnungsregel
         from mietprozess.models import Mietbewerbung
         from portfolio.models import (Ausstattung, Dokument as PDokument, Geraet, Schluessel,
                                       SchluesselAusgabe, Sollmietzins, StaffelVorlage,
@@ -279,6 +280,20 @@ class MandantenFixture:
         # Anwendung nicht in der Kohorte, die ein Test über einen bestimmten
         # Stand abfragt — und sie bildet zugleich den realistischen Fall ab,
         # dass Protokolleinträge aus früheren Regelfassungen stammen.
+        # Zulauf (Phase 4a, Etappe 3) — dritte Runde derselben Sache. Ohne
+        # Objekte von B ueberspringt die Registry die Modelle und ist gruen,
+        # ohne etwas geprueft zu haben. Die Zuordnungsregel ist dabei die
+        # heikelste: Griffe sie ueber die Mandantengrenze, landete die Post
+        # einer Verwaltung in der Akte einer anderen.
+        self.eingang = Eingang.objects.create(
+            organisation=self.organisation, quelle=Eingang.MAIL,
+            betreff=f'Eingang {k}', absender=f'Absender {k}',
+            referenz=f'QR-{k}-0001')
+        self.zuordnungsregel = Zuordnungsregel.objects.create(
+            organisation=self.organisation, merkmal=Zuordnungsregel.REFERENZ,
+            wert=f'qr{k.lower()}0001', wert_anzeige=f'QR-{k}-0001',
+            akte=self.vertrag)
+
         self.regelanwendung = Regelanwendung.objects.create(
             organisation=self.organisation, art=Regel.KUENDIGUNGSTERMIN,
             regel_stand=date(2026, 1, 15), fall=self.fall,
