@@ -10,8 +10,8 @@
     <b>{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</b>
 </nav>
 
-{# ===== AKTENKOPF nach mockups/konzept-v3: Typ, Titel, Pfad, Zustand,
-       darunter vier Kennzahlen, darunter die Reiter. ===== #}
+{% comment %} ===== AKTENKOPF nach mockups/konzept-v3: Typ, Titel, Pfad, Zustand,
+       darunter vier Kennzahlen, darunter die Reiter. ===== {% endcomment %}
 <div class="fw-aktenkopf">
     <div class="fw-akte-oben">
         <div class="fw-akte-bild"><i class="fa-solid fa-file-contract"></i></div>
@@ -30,11 +30,11 @@
             </div>
         </div>
         <div class="fw-akte-rechts">
-{# Statusumschalter. Beim Umbau auf den Aktenkopf (Phase 4b) war er ersatzlos
+{% comment %} Statusumschalter. Beim Umbau auf den Aktenkopf (Phase 4b) war er ersatzlos
    entfallen — die View `fw_vertrag_status` und ihre Route blieben bestehen,
    aber kein Template rief sie mehr auf. Der Status steuert Sollstellung,
    Mieterspiegel und Auswertungen; ohne diese Leiste liesse er sich in der
-   Oberflaeche nicht mehr aendern. `core/tests/test_vertrag.py` haelt das fest. #}
+   Oberflaeche nicht mehr aendern. `core/tests/test_vertrag.py` haelt das fest. {% endcomment %}
 <form method="post" action="/neu/vertraege/{{ v.id }}/status/" class="flex items-center bg-slate-100 rounded-lg p-0.5 gap-0.5"
       onsubmit="return confirm('Vertragsstatus wirklich ändern? Der Status steuert Sollstellung, Mieterspiegel und Auswertungen.');">
     {% csrf_token %}
@@ -79,8 +79,8 @@
             </script>
         </div>
     </div>{# Ende fw-akte-rechts #}
-    </div>{# Ende fw-akte-oben — ohne dieses div sass die Kennzahlenleiste
-             INNERHALB des Kopfblocks statt darunter. #}
+    </div>{% comment %} Ende fw-akte-oben — ohne dieses div sass die Kennzahlenleiste
+             INNERHALB des Kopfblocks statt darunter. {% endcomment %}
 
     <div class="fw-kzn">
         <div>

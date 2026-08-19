@@ -1,9 +1,9 @@
-{# Reiterleiste fuer Aktenseiten. Erwartet: gruppe (str), tabs (Liste [key,label,badge])
+{% comment %} Reiterleiste fuer Aktenseiten. Erwartet: gruppe (str), tabs (Liste [key,label,badge])
 
    Phase 4b: Gestaltung nach mockups/konzept-v3 — Kapitaelchen auf getoenter
    Flaeche, aktiver Reiter mit Unterstrich in der Markenfarbe. Die Klassen, die
    `fwTab` in base.html umschaltet, bleiben unveraendert; nur `hier` kommt dazu,
-   damit die Farbe aus den Tokens statt aus Tailwind-Utilities kommt. #}
+   damit die Farbe aus den Tokens statt aus Tailwind-Utilities kommt. {% endcomment %}
 <div class="fw-reiter">
     {% for key, label, badge in tabs %}
     <button data-tab="{{ gruppe }}" data-target="{{ key }}" onclick="fwTab('{{ gruppe }}', '{{ key }}')"

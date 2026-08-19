@@ -73,3 +73,66 @@ class StrukturTests(TestCase):
         p = _Pruefer()
         p.feed('<div><span>Text</div>')
         self.assertTrue(p.stapel or p.fehler)
+
+
+class KommentarTests(TestCase):
+    """`{# … #}` ist in Django **einzeilig**. Mehrzeilig wird es zu Text.
+
+    WARUM
+
+    Djangos Lexer benutzt `({%.*?%}|{{.*?}}|{#.*?#})` — **ohne** `re.DOTALL`.
+    Ein `{# … #}`, das eine Zeilengrenze ueberschreitet, wird deshalb gar nicht
+    als Kommentar erkannt und landet woertlich auf der Seite.
+
+    Am 19.08.2026 stand deswegen ein voller Absatz Entwicklerkommentar mitten
+    in der Vertragsakte, im Fliesstext zwischen Zustands-Chip und
+    Statusumschalter — auf der Produktivseite, fuer jeden Nutzer sichtbar.
+    Aufgefallen ist es einem Menschen im Browser, nicht der Suite: 1616 Tests
+    waren gruen. Sie fragten nach Panel-IDs, Tokens und Verschachtelung, nie
+    danach, ob Text auf der Seite steht, der dort nicht hingehoert.
+
+    Zwei weitere Bloecke gleicher Art lagen schon laenger im Bestand
+    (`public_datenschutz.html`, `base.html`) und waren nie bemerkt worden.
+    """
+
+    #: Alle Vorlagen, nicht nur die umgestellten: Der Fehler ist nicht an den
+    #: Aktenumbau gebunden, und zwei der drei Altfaelle standen ausserhalb.
+    def test_keine_mehrzeiligen_rautenkommentare(self):
+        import re
+        gefunden = []
+        for pfad in sorted(WURZEL.rglob('*.html')):
+            for nr, zeile in enumerate(pfad.read_text(encoding='utf-8').split('\n'), 1):
+                for treffer in re.finditer(r'\{#', zeile):
+                    if '#}' not in zeile[treffer.start():]:
+                        gefunden.append(f'{pfad}:{nr}')
+        self.assertEqual(
+            gefunden, [],
+            'Diese `{# … #}` gehen ueber mehrere Zeilen und erscheinen damit '
+            'als Text auf der Seite. Fuer mehrzeilige Kommentare '
+            '`{% comment %} … {% endcomment %}` verwenden:\n  '
+            + '\n  '.join(gefunden))
+
+    def test_die_vertragsakte_zeigt_keine_kommentarzeichen(self):
+        """Gegenprobe am fertigen HTML.
+
+        Die Pruefung darueber liest Vorlagen. Diese hier ruft die Seite auf —
+        sie faellt auch dann um, wenn der Text ueber einen anderen Weg
+        durchschlaegt, etwa aus einem eingebundenen Baustein.
+        """
+        from django.test import Client
+
+        from core.tenancy import organisation_kontext as mandant
+        from core.tests._isolation import MandantenFixture
+        a = MandantenFixture('K', '8000', 'Zürich')
+        c = Client()
+        c.force_login(a.benutzer)
+        with mandant(a.organisation):
+            antwort = c.get(f'/neu/vertraege/{a.vertrag.pk}/')
+        self.assertEqual(antwort.status_code, 200)
+        html = antwort.content.decode()
+        for zeichen in ('{#', '#}', '{% comment %}', '{% endcomment %}'):
+            with self.subTest(zeichen=zeichen):
+                self.assertNotIn(
+                    zeichen, html,
+                    f'{zeichen!r} steht im ausgelieferten HTML — ein '
+                    f'Kommentar wurde nicht als solcher erkannt.')
