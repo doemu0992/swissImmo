@@ -353,6 +353,98 @@
         html._embed header,
         html._embed #fwBackdrop { display: none !important; }
         html._embed main { padding: 1.25rem !important; max-width: none !important; }
+    
+        /* ---- Aktenrahmen nach mockups/konzept-v3 (Phase 4b) --------------
+           Nur Tokens, die in :root oben tatsaechlich definiert sind. Der
+           Test core/tests/test_ds_tokens.py prueft das nach — eine frühere
+           Fassung benutzte --ds-brand-100 und --ds-line-stark, die es nie
+           gab, und machte die Regeln damit unwirksam. */
+        .fw-aktenkopf{background:var(--ds-surface);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);
+            margin-bottom:16px;overflow:hidden}
+        .fw-akte-oben{padding:17px 20px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+        .fw-akte-bild{width:48px;height:48px;border-radius:var(--ds-radius-sm);
+            background:var(--ds-brand-soft);color:var(--ds-brand);display:flex;
+            align-items:center;justify-content:center;flex:0 0 48px;font-size:20px}
+        .fw-akte-typ{font-size:10px;font-weight:800;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--ds-faint);margin-bottom:4px}
+        .fw-akte-oben h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--ds-ink)}
+        .fw-akte-pfad{font-size:12px;color:var(--ds-faint);margin-top:4px;line-height:1.55}
+        .fw-akte-pfad b{color:var(--ds-muted);font-weight:600}
+        .fw-akte-rechts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+        .fw-kzn{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--ds-line)}
+        .fw-kzn>div{padding:12px 20px;border-right:1px solid var(--ds-line)}
+        .fw-kzn>div:last-child{border-right:0}
+        .fw-kzn .fw-l{font-size:10px;font-weight:700;letter-spacing:.1em;
+            text-transform:uppercase;color:var(--ds-faint)}
+        .fw-kzn .fw-w{font-size:17px;font-weight:700;margin-top:3px;
+            font-variant-numeric:tabular-nums;color:var(--ds-ink)}
+        .fw-kzn .fw-w.warn{color:var(--ds-warn)}
+        .fw-kzn .fw-w.crit{color:var(--ds-crit)}
+        .fw-kzn .fw-w.good{color:var(--ds-good)}
+        .fw-kzn .fw-f{font-size:11.5px;color:var(--ds-faint);margin-top:2px}
+        @media(max-width:900px){.fw-kzn{grid-template-columns:1fr 1fr}}
+
+        .fw-reiter{display:flex;gap:2px;border-top:1px solid var(--ds-line);
+            padding:0 12px;background:var(--ds-surface-2);flex-wrap:wrap;overflow-x:auto}
+        .fw-reiter button{padding:10px 14px;font-size:13px;font-weight:600;
+            color:var(--ds-muted);cursor:pointer;background:none;border:0;
+            border-bottom:2px solid transparent;white-space:nowrap;
+            display:flex;align-items:center;gap:7px}
+        .fw-reiter button:hover{color:var(--ds-ink)}
+        .fw-reiter button.hier{color:var(--ds-brand);border-bottom-color:var(--ds-brand)}
+        .fw-reiter .fw-z{font-size:10px;font-weight:800;background:var(--ds-surface);
+            border:1px solid var(--ds-line);border-radius:var(--ds-pill);padding:1px 6px}
+
+        .fw-kopf{padding:11px 15px;border-bottom:1px solid var(--ds-line);
+            display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .fw-kopf h2,.fw-kopf .fw-t{margin:0;font-size:14px;font-weight:700;color:var(--ds-ink)}
+        .fw-kopf .fw-neben{font-size:12.5px;color:var(--ds-faint)}
+        .fw-kopf .fw-rechts{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+        .fw-ikon{width:27px;height:27px;border-radius:var(--ds-radius-sm);
+            background:var(--ds-brand-soft);color:var(--ds-brand);display:flex;
+            align-items:center;justify-content:center;flex:0 0 27px;font-size:13px}
+        .fw-ikon.warn{background:var(--ds-warn-soft);color:var(--ds-warn)}
+        .fw-ikon.crit{background:var(--ds-crit-soft);color:var(--ds-crit)}
+        .fw-ikon.good{background:var(--ds-good-soft);color:var(--ds-good)}
+        .fw-fuss{padding:8px 15px;border-top:1px solid var(--ds-line);display:flex;
+            justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ds-faint)}
+
+        .fw-zeile{display:flex;align-items:center;gap:12px;padding:11px 15px;
+            border-bottom:1px solid var(--ds-line)}
+        .fw-zeile:last-child{border-bottom:0}
+        .fw-zeile.klick{cursor:pointer}
+        .fw-zeile.klick:hover{background:var(--ds-surface-2)}
+        .fw-zeile .fw-mitte{flex:1;min-width:0}
+        .fw-zeile .fw-t{font-size:13.5px;font-weight:600;color:var(--ds-ink)}
+        .fw-zeile .fw-s{font-size:11.5px;color:var(--ds-faint);margin-top:2px;line-height:1.45}
+        .fw-zeile .fw-zeit{font-size:12.5px;font-weight:700;color:var(--ds-muted);
+            font-variant-numeric:tabular-nums;white-space:nowrap}
+
+        .fw-marker{width:3px;align-self:stretch;border-radius:2px;background:var(--ds-line);
+            flex:0 0 3px;min-height:32px}
+        .fw-marker.crit{background:var(--ds-crit)}
+        .fw-marker.warn{background:var(--ds-warn)}
+        .fw-marker.good{background:var(--ds-good)}
+        .fw-marker.brand{background:var(--ds-brand)}
+
+        .fw-hinweis{padding:13px 16px;display:flex;gap:12px;align-items:flex-start;
+            border-bottom:1px solid var(--ds-line)}
+        .fw-hinweis:last-child{border-bottom:0}
+        .fw-hinweis.warn{background:var(--ds-warn-soft)}
+        .fw-hinweis.crit{background:var(--ds-crit-soft)}
+        .fw-hinweis.info{background:var(--ds-info-soft)}
+        .fw-hinweis.good{background:var(--ds-good-soft)}
+        .fw-hinweis .fw-hi{width:26px;height:26px;border-radius:999px;display:flex;
+            align-items:center;justify-content:center;flex:0 0 26px;color:#fff;font-size:12px}
+        .fw-hinweis.warn .fw-hi{background:var(--ds-warn)}
+        .fw-hinweis.crit .fw-hi{background:var(--ds-crit)}
+        .fw-hinweis.info .fw-hi{background:var(--ds-info)}
+        .fw-hinweis.good .fw-hi{background:var(--ds-good)}
+        .fw-hinweis .fw-ht{flex:1;font-size:13px;line-height:1.55;color:var(--ds-muted)}
+        .fw-hinweis .fw-ht b{display:block;margin-bottom:3px;color:var(--ds-ink)}
+
     </style>
     <script>
         // Zustand vor dem ersten Paint anwenden (kein Flackern)
@@ -745,6 +837,10 @@ function fwTab(gruppe, name) {
     });
     document.querySelectorAll('[data-tab="' + gruppe + '"]').forEach(function(b) {
         var aktiv = b.dataset.target === name;
+        // `hier` ist die Klasse der neuen Reiterleiste (Phase 4b, Tokens).
+        // Die vier Tailwind-Klassen bleiben, solange noch Seiten die alte
+        // Leiste benutzen — sie schaden der neuen nicht.
+        b.classList.toggle('hier', aktiv);
         b.classList.toggle('border-indigo-600', aktiv);
         b.classList.toggle('text-indigo-600', aktiv);
         b.classList.toggle('border-transparent', !aktiv);

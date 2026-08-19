@@ -195,9 +195,11 @@ class LogbuchTests(TestCase):
         AktivitaetsLog.objects.all().update(ziel_typ='vertrag', ziel_id=v.id)
         r = c.get(f'/neu/vertraege/{v.id}/')
         self.assertEqual(r.status_code, 200)
-        # Seit Etappe 4a.5b heisst das Panel `vt-chronik` — der Verlauf ist
-        # derselbe, nur der Reiter wurde auf den einheitlichen Satz umbenannt.
+        # Etappe 4a.5b: Das Panel heisst nicht mehr `vt-verlauf`, sondern
+        # `vt-chronik` — der Reitersatz ist seither fuer alle Aktentypen gleich.
+        # Der Inhalt ist derselbe; nur der Name hat gewechselt.
         self.assertContains(r, 'id="vt-chronik"')
+        self.assertNotContains(r, 'id="vt-verlauf"')
         self.assertContains(r, 'Kaution einbezahlt')
 
     # --- #4 Strukturierte Kategorie ---

@@ -4,38 +4,45 @@
 
 {% block content %}
 
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/vertraege/{{ lg_query }}" class="hover:text-indigo-600">Verträge</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <span class="text-slate-600 font-medium">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</span>
+<nav class="fw-akte-pfad" style="margin-bottom:10px">
+    <a href="/neu/vertraege/{{ lg_query }}">Verträge</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:9px"></i>
+    <b>{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</b>
 </nav>
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-    <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-lg shadow-indigo-600/25">
-            <i class="fa-solid fa-file-contract"></i>
+{# ===== AKTENKOPF nach mockups/konzept-v3: Typ, Titel, Pfad, Zustand,
+       darunter vier Kennzahlen, darunter die Reiter. ===== #}
+<div class="fw-aktenkopf">
+    <div class="fw-akte-oben">
+        <div class="fw-akte-bild"><i class="fa-solid fa-file-contract"></i></div>
+        <div style="min-width:0">
+            <div class="fw-akte-typ">Mietverhältnis · MV-{{ v.id }}</div>
+            <h1>{{ v.mieter.display_name }}</h1>
+            <div class="fw-akte-pfad">
+                Liegenschaft <b>{{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.ort }}</b>
+                › Objekt <b>{{ v.einheit.bezeichnung }}</b><br>
+                Vertrag <b>{{ v.beginn|date:"d.m.Y" }}{% if v.ende %} – {{ v.ende|date:"d.m.Y" }}{% endif %}</b>
+            </div>
+            <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            {% if v.sign_status == 'unterzeichnet' %}<span class="fw-chip fw-good"{% if v.unterzeichnet_am %} title="Unterschrieben zurück am {{ v.unterzeichnet_am|date:'d.m.Y H:i' }} Uhr"{% endif %}><i class="fa-solid fa-signature mr-1"></i>Unterzeichnet</span>
+            {% elif v.sign_status == 'gesendet' %}<span class="fw-chip fw-warn"><i class="fa-solid fa-paper-plane mr-1"></i>Zur Unterschrift gesendet</span>{% endif %}
+            <span class="fw-chip {{ vertrag_pill.cls }}">{{ vertrag_pill.label }}</span>
+            </div>
         </div>
-        <div>
-            <h1 class="text-2xl font-extrabold text-slate-900">{{ v.mieter.display_name }}</h1>
-            <p class="text-sm text-slate-500">{{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.ort }} · {{ v.einheit.bezeichnung }}</p>
-        </div>
-    </div>
-    <div class="flex flex-col items-end gap-2">
-        <div class="flex items-center gap-2">
-            {# Rücklauf-Zeitstempel steht im Verlauf-Tab — hier nur der Status (Tooltip zeigt ihn trotzdem) #}
-            {% if v.sign_status == 'unterzeichnet' %}<span class="text-[11px] font-semibold bg-emerald-50 text-emerald-700 rounded-md px-2 py-1"{% if v.unterzeichnet_am %} title="Unterschrieben zurück am {{ v.unterzeichnet_am|date:'d.m.Y H:i' }} Uhr"{% endif %}><i class="fa-solid fa-signature mr-1"></i>Unterzeichnet</span>
-            {% elif v.sign_status == 'gesendet' %}<span class="text-[11px] font-semibold bg-amber-50 text-amber-700 rounded-md px-2 py-1"><i class="fa-solid fa-paper-plane mr-1"></i>Zur Unterschrift gesendet</span>{% endif %}
-            <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ vertrag_pill.cls }}">{{ vertrag_pill.label }}</span>
-        </div>
-        <!-- Status-Umschalter -->
-        <form method="post" action="/neu/vertraege/{{ v.id }}/status/" class="flex items-center bg-slate-100 rounded-lg p-0.5 gap-0.5"
-              onsubmit="return confirm('Vertragsstatus wirklich ändern? Der Status steuert Sollstellung, Mieterspiegel und Auswertungen.');">
-            {% csrf_token %}
-            <button name="status" value="entwurf" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'entwurf' %}bg-white text-slate-800 shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Entwurf</button>
-            <button name="status" value="aktiv" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'aktiv' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Aktiv</button>
-            <button name="status" value="archiviert" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'archiviert' or v.status == 'gekuendigt' %}bg-slate-600 text-white shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Inaktiv</button>
-        </form>
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="fw-akte-rechts">
+{# Statusumschalter. Beim Umbau auf den Aktenkopf (Phase 4b) war er ersatzlos
+   entfallen — die View `fw_vertrag_status` und ihre Route blieben bestehen,
+   aber kein Template rief sie mehr auf. Der Status steuert Sollstellung,
+   Mieterspiegel und Auswertungen; ohne diese Leiste liesse er sich in der
+   Oberflaeche nicht mehr aendern. `core/tests/test_vertrag.py` haelt das fest. #}
+<form method="post" action="/neu/vertraege/{{ v.id }}/status/" class="flex items-center bg-slate-100 rounded-lg p-0.5 gap-0.5"
+      onsubmit="return confirm('Vertragsstatus wirklich ändern? Der Status steuert Sollstellung, Mieterspiegel und Auswertungen.');">
+    {% csrf_token %}
+    <button name="status" value="entwurf" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'entwurf' %}bg-white text-slate-800 shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Entwurf</button>
+    <button name="status" value="aktiv" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'aktiv' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Aktiv</button>
+    <button name="status" value="archiviert" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'archiviert' or v.status == 'gekuendigt' %}bg-slate-600 text-white shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Inaktiv</button>
+</form>
+<div class="flex flex-wrap items-center gap-2">
             <a href="/neu/vertraege/{{ v.id }}/bearbeiten/" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors"><i class="fa-solid fa-pen-to-square mr-1"></i>Bearbeiten{% if v.status == 'entwurf' %} <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700">Entwurf</span>{% endif %}</a>
             {% if v.status != 'gekuendigt' %}
             <a href="/neu/vertraege/{{ v.id }}/kuendigen/" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 transition-colors"><i class="fa-solid fa-file-circle-xmark mr-1"></i>Kündigung erfassen</a>
@@ -71,56 +78,34 @@
               });
             </script>
         </div>
-    </div>
-</div>
+    </div>{# Ende fw-akte-rechts #}
+    </div>{# Ende fw-akte-oben — ohne dieses div sass die Kennzahlenleiste
+             INNERHALB des Kopfblocks statt darunter. #}
 
-<!-- KPI -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold text-indigo-600">CHF {{ brutto|chf }}</div>
-        <div class="text-sm text-slate-500">Brutto / Monat</div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-lg font-bold text-slate-800">{{ v.beginn|date:"d.m.Y" }}</div>
-        <div class="text-sm text-slate-500">Beginn</div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-lg font-bold text-slate-800">{% if v.ende %}{{ v.ende|date:"d.m.Y" }}{% else %}unbefristet{% endif %}</div>
-        <div class="text-sm text-slate-500">{% if v.status == 'gekuendigt' %}Gekündigt per{% elif v.ist_befristet %}Ende (befristet){% else %}Ende{% endif %}</div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold {% if total_offen %}text-rose-600{% else %}text-emerald-600{% endif %}">CHF {{ total_offen|chf }}</div>
-        <div class="text-sm text-slate-500">Offen ({{ anzahl_offen }})</div>
-    </div>
-</div>
-
-{% include 'fw/_detail_tabs.html' with gruppe='vt' tabs=tab_liste %}
-
-<!-- ===== REITER: CHRONIK ===== -->
-<div data-panel="vt" id="vt-chronik" class="hidden">
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div class="px-5 py-3 font-bold text-slate-800 text-sm border-b border-slate-100">Verlauf — wer hat was gemacht</div>
-        <div class="divide-y divide-slate-50">
-            {% for e in verlauf %}
-            <div class="flex items-start gap-3 px-5 py-3.5">
-                <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
-                    {% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}<i class="fa-solid fa-robot"></i>{% endif %}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-slate-900">{{ e.aktion }}</div>
-                    {% if e.details %}<div class="text-xs text-slate-500">{{ e.details }}</div>{% endif %}
-                </div>
-                <div class="text-xs text-slate-400 whitespace-nowrap text-right shrink-0">
-                    {{ e.zeitpunkt|date:"d.m.Y H:i" }}<br>
-                    <span class="text-slate-400">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username }}{% else %}System{% endif %}</span>
-                </div>
-            </div>
-            {% empty %}
-            <p class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine protokollierten Aktionen zu diesem Vertrag.</p>
-            {% endfor %}
+    <div class="fw-kzn">
+        <div>
+            <div class="fw-l">Bruttomiete</div>
+            <div class="fw-w">CHF {{ brutto|chf }}</div>
+            <div class="fw-f">pro Monat</div>
+        </div>
+        <div>
+            <div class="fw-l">Offen</div>
+            <div class="fw-w {% if total_offen %}crit{% else %}good{% endif %}">CHF {{ total_offen|chf }}</div>
+            <div class="fw-f">{{ anzahl_offen }} Position{{ anzahl_offen|pluralize:"en" }}</div>
+        </div>
+        <div>
+            <div class="fw-l">Beginn</div>
+            <div class="fw-w" style="font-size:15px">{{ v.beginn|date:"d.m.Y" }}</div>
+            <div class="fw-f">{{ v.status|title }}</div>
+        </div>
+        <div>
+            <div class="fw-l">{% if v.status == 'gekuendigt' %}Gekündigt per{% elif v.ist_befristet %}Ende (befristet){% else %}Ende{% endif %}</div>
+            <div class="fw-w {% if v.status == 'gekuendigt' %}crit{% endif %}" style="font-size:15px">{% if v.ende %}{{ v.ende|date:"d.m.Y" }}{% else %}unbefristet{% endif %}</div>
+            <div class="fw-f">{% if v.ende %}Rückgabe planen{% else %}kein Enddatum{% endif %}</div>
         </div>
     </div>
-    <p class="text-xs text-slate-400 mt-3">Vollständiges Logbuch aller Objekte unter <a href="/neu/logbuch/" class="text-indigo-600 hover:underline">Profil → Logbuch</a>.</p>
+
+    {% include 'fw/_detail_tabs.html' with gruppe='vt' tabs=tab_liste %}
 </div>
 
 <!-- ===== REITER: STAMMDATEN ===== -->
@@ -390,6 +375,33 @@
             </tbody>
         </table></div>
     </div>
+</div>
+
+<!-- ===== REITER: CHRONIK ===== -->
+<div data-panel="vt" id="vt-chronik" class="hidden">
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div class="px-5 py-3 font-bold text-slate-800 text-sm border-b border-slate-100">Verlauf — wer hat was gemacht</div>
+        <div class="divide-y divide-slate-50">
+            {% for e in verlauf %}
+            <div class="flex items-start gap-3 px-5 py-3.5">
+                <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                    {% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}<i class="fa-solid fa-robot"></i>{% endif %}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-slate-900">{{ e.aktion }}</div>
+                    {% if e.details %}<div class="text-xs text-slate-500">{{ e.details }}</div>{% endif %}
+                </div>
+                <div class="text-xs text-slate-400 whitespace-nowrap text-right shrink-0">
+                    {{ e.zeitpunkt|date:"d.m.Y H:i" }}<br>
+                    <span class="text-slate-400">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username }}{% else %}System{% endif %}</span>
+                </div>
+            </div>
+            {% empty %}
+            <p class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine protokollierten Aktionen zu diesem Vertrag.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <p class="text-xs text-slate-400 mt-3">Vollständiges Logbuch aller Objekte unter <a href="/neu/logbuch/" class="text-indigo-600 hover:underline">Profil → Logbuch</a>.</p>
 </div>
 
 <!-- ===== REITER: FINANZEN ===== -->

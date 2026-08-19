@@ -1,5 +1,6 @@
 """Testmodul vertrag — aus core/tests.py herausgeloest (Etappe 1,
 siehe docs/ETAPPE-1-ZERLEGEN.md). 13 Klassen, unveraendert uebernommen."""
+import re
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -729,6 +730,74 @@ class VertragBearbeitenTests(TestCase):
         c = Client(); c.force_login(_team_user())
         body = c.get(f'/neu/vertraege/{v.id}/').content.decode()
         self.assertIn(f'/neu/vertraege/{v.id}/bearbeiten/', body)
+
+
+class StatusUmschalterTests(TestCase):
+    """Der Statusumschalter muss auf der Vertragsakte erreichbar bleiben.
+
+    WARUM ES DIESEN TEST GIBT
+
+    Beim Umbau auf den Aktenkopf (Phase 4b, 19.08.2026) fiel das Formular
+    ersatzlos aus `vertrag_detail.html`. Auffaellig war daran nichts: Die View
+    `fw_vertrag_status` blieb bestehen, ihre Route blieb registriert, ihre
+    eigenen Tests blieben gruen — nur rief sie niemand mehr auf. Der Vertrag
+    liesse sich in der Oberflaeche nicht mehr von Entwurf auf Aktiv setzen,
+    und der Status steuert Sollstellung, Mieterspiegel und Auswertungen.
+
+    Eine View ohne Aufrufer ist von aussen dasselbe wie eine geloeschte. Dieser
+    Test prueft deshalb die Seite, nicht die Route.
+    """
+
+    def test_akte_bietet_alle_drei_statuswerte_an(self):
+        _lg, _e, _m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        html = c.get(f'/neu/vertraege/{v.id}/').content.decode()
+        self.assertIn(f'action="/neu/vertraege/{v.id}/status/"', html)
+        # Die einzelnen Werte einzeln pruefen: Ein Formular, das nur noch
+        # «Aktiv» anboete, bestuende eine blosse Abfrage nach dem action-Ziel.
+        for wert in ('entwurf', 'aktiv', 'archiviert'):
+            with self.subTest(status=wert):
+                self.assertIn(f'name="status" value="{wert}"', html)
+
+    def test_die_angebotenen_werte_sind_die_von_der_view_erlaubten(self):
+        """Gegenprobe gegen Auseinanderlaufen.
+
+        Ein Knopf mit einem Wert, den `fw_vertrag_status` nicht kennt, liefe
+        stillschweigend in «Unbekannter Status» — sichtbar nur als Fehlermeldung
+        nach dem Klick.
+        """
+        _lg, _e, _m, v = _basis_objekte()
+        c = Client(); c.force_login(_team_user())
+        html = c.get(f'/neu/vertraege/{v.id}/').content.decode()
+        angeboten = set(re.findall(r'name="status" value="([a-z]+)"', html))
+        self.assertEqual(angeboten, {'entwurf', 'aktiv', 'archiviert'})
+
+    def test_der_umschalter_wirkt_wirklich(self):
+        """Ohne diesen Teil pruefte der Test nur Zeichenketten im HTML.
+
+        Der Zielwert muss vom Ausgangswert abweichen. Die erste Fassung setzte
+        auf `aktiv` — was `_basis_objekte()` ohnehin schon anlegt. Eine
+        Gegenprobe, die `v.save()` aus der View entfernte, blieb deshalb gruen:
+        Der Test las den unveraenderten Ausgangszustand und hielt ihn fuer das
+        Ergebnis. Geprueft wird jetzt ein echter Wechsel in beide Richtungen.
+        """
+        _lg, _e, _m, v = _basis_objekte()
+        self.assertEqual(v.status, 'aktiv', 'Ausgangslage der Fixture geaendert.')
+        c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
+
+        c.post(f'/neu/vertraege/{v.id}/status/', {'status': 'entwurf'})
+        v.refresh_from_db()
+        self.assertEqual(v.status, 'entwurf')
+        # `aktiv` wird von `Mietvertrag.save()` erzwungen, nicht von der View —
+        # deren eigene Zuweisung ist redundant. Eine Gegenprobe, die sie auf
+        # `True` festnagelte, blieb daher gruen, und das ist richtig so:
+        # Geprueft wird das beobachtbare Ergebnis, nicht der Weg dorthin.
+        self.assertFalse(v.aktiv, 'Das Kennzeichen `aktiv` muss mitlaufen.')
+
+        c.post(f'/neu/vertraege/{v.id}/status/', {'status': 'aktiv'})
+        v.refresh_from_db()
+        self.assertEqual(v.status, 'aktiv')
+        self.assertTrue(v.aktiv)
 
 
 class FormulareTabTests(TestCase):
