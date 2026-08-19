@@ -1508,7 +1508,13 @@ def fw_vertrag_detail(request, pk):
     # die 257d-Frist + Track & Trace auch unter «Finanzen» direkt sichtbar ist.
     vertrag_fristen = [e for e in vertrag_pendenzen if e['p'].faellig_am]
 
-    tab_liste = [
+    # Etappe 4a.5b: Reiter aus dem Aktenregister statt aus dieser View.
+    # Die Panels in fw/vertrag_detail.html sind auf denselben Satz umbenannt —
+    # beides muss gemeinsam wandern, sonst zeigt ein Reiter auf kein Panel und
+    # der Klick hinterlaesst eine leere Seite.
+    from faelle.akten import aus_alt as _reiter_aus_alt
+    from core.tenancy import aktuelle_organisation as _akt_org
+    tab_liste = _reiter_aus_alt('mietverhaeltnis', [
         ('uebersicht', 'Übersicht', None),
         ('finanzen', 'Finanzen', len(offene) or None),
         ('mietzins', 'Mietzins', anpassungen.count() or None),
@@ -1517,7 +1523,7 @@ def fw_vertrag_detail(request, pk):
         ('formulare', 'Formulare', None),
         ('dokumente', 'Dokumente', None),
         ('verlauf', 'Verlauf', len(verlauf) or None),
-    ]
+    ], organisation=getattr(request, 'organisation', None) or _akt_org())
     from core.services.docuseal_service import docuseal_konfiguriert
     return render(request, 'fw/vertrag_detail.html', {
         'formular_gruppen': _formulare_prozesse(v, request.user),
