@@ -389,8 +389,12 @@
     html[data-theme="dark"] .text-slate-700 { color:#cdd2e6 !important; }
     html[data-theme="dark"] .text-slate-600 { color:#aeb4ca !important; }
     html[data-theme="dark"] .text-slate-500 { color:#9aa0b8 !important; }
-    html[data-theme="dark"] .text-slate-400 { color:#7f86a6 !important; }
-    html[data-theme="dark"] .text-slate-300 { color:#6b7193 !important; }
+    {# .text-slate-400 und -300 stehen bewusst NICHT hier: Die Kontrastregel
+       oben setzt sie auf var(--ds-muted), und das Token schaltet selbst um
+       (hell #475569, dunkel #9aa0b8). Feste Hexwerte an dieser Stelle machten
+       die Regel im Dunkeln wieder zunichte — .text-slate-300 lag mit #6b7193
+       bei 3.60:1 auf --ds-surface und damit unter WCAG AA. Mit dem Token sind
+       es 6.62:1. #}
     html[data-theme="dark"] .text-gray-900, html[data-theme="dark"] .text-gray-800 { color:#e7e8f2 !important; }
 
     html[data-theme="dark"] .border-slate-200 { border-color:#262a44 !important; }

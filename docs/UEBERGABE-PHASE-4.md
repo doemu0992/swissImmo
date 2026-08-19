@@ -53,11 +53,21 @@ Das ist eine tragfähige Grundlage. Der Entwurf sollte sie erweitern, nicht erse
 
 Die Beschreibung stimmt bis ins Detail: Der Umschaltblock ist als `@media (prefers-color-scheme:dark){:root:not([data-theme="light"])}` geschrieben, die manuelle Wahl gewinnt also in beide Richtungen, und das Skript gegen das Flackern steht in Zeile 7, noch vor jedem Stylesheet.
 
-**Aber: eine Komponentenschicht gibt es nicht.** Der erste Entwurf nannte hier „24 `ds-`-Hilfsklassen in Verwendung". Nachgemessen sind es null. Es gibt kein einziges `class="ds-…"` in irgendeinem Template und keine einzige `.ds-*`-Regel im Stylesheet. Was aussieht wie 23 Hilfsklassen, sind die 23 **Tokennamen** selbst — sie erscheinen 159-mal als `var(--ds-…)` in Stilangaben.
+**Die `ds-`-Hilfsklassen gibt es nicht — die Komponentenschicht schon.** Der erste Entwurf nannte hier „24 `ds-`-Hilfsklassen in Verwendung". Davon existiert keine: kein `class="ds-…"` in irgendeinem Template, keine `.ds-*`-Regel im Stylesheet. Was danach aussah, sind die 23 **Tokennamen** selbst, 159-mal als `var(--ds-…)` in Stilangaben.
 
-Das ist keine Erbsenzählerei, es verschiebt die Aufgabe. Vorhanden ist eine **Farb- und Formschicht**; die Komponenten der Projektanweisung — Buttons, Formulare, Tabellen, Modals, Statusanzeigen, leere Zustände — existieren als wiederverwendbare Bausteine **gar nicht**. Sie sind heute in jedem Template neu aus Tailwind-Klassen zusammengesetzt. Die 468 Inline-`style`-Attribute sind genau das Symptom davon.
+**Das Präfix heisst aber `fw-`, nicht `ds-`, und darunter steht mehr, als die Zahl vermuten liess:**
 
-Für den Entwurf heisst das: Er beginnt bei den Komponenten nicht auf halbem Weg, sondern bei null — und muss dafür nichts abreissen, weil nichts da ist, das im Weg stünde.
+| | |
+|---|---|
+| in `base.html` definierte `.fw-*`-Klassen | **56** |
+| davon in Templates tatsächlich benutzt | **50** |
+| häufigste | `fw-phead` 86× · `fw-kv` 71× · `fw-chip` 51× · `fw-btn` 44× · `fw-num` 28× · `fw-card` 24× |
+
+Es gibt also Seitenkopf, Beschriftungspaare, Chips, Schaltflächen, Karten, Tabellen (`fw-table`, `fw-tablewrap`), Kennzahlen (`fw-kpi`, `fw-kpis`), Diagramme (`fw-donut`, `fw-chart`) und Zustandsfarben (`fw-good`, `fw-warn`, `fw-crit`) als benannte Bausteine.
+
+Für Phase 4b heisst das etwas anderes als „bei null anfangen": Die Aufgabe ist, eine **begonnene Umstellung zu Ende zu führen**. Das Vokabular steht und ist erprobt; daneben liegen 8'225 rohe Farbklassen und 468 Inline-`style`-Attribute in Templates, die noch nicht umgestellt sind. Der Entwurf sollte deshalb an `fw-*` anschliessen und es erweitern — nicht ein zweites Vokabular daneben stellen.
+
+> Diese Stelle war in der ersten Fassung dieses Dokuments falsch: Dort stand, eine Komponentenschicht existiere „gar nicht". Der Fehler entstand, weil nur nach dem Präfix `ds-` gesucht wurde — dem Präfix, das der Entwurf nannte — und aus dem Nullergebnis auf die ganze Frage geschlossen wurde. Ein Suchergebnis beantwortet nur die gestellte Frage.
 
 ---
 
@@ -122,6 +132,30 @@ Phase 4 hängt an keiner offenen Etappe. Sie kann parallel entworfen werden, wä
 Für die **Umsetzung** gilt aber: Die Token-Auslagerung (Punkt 1) sollte vor oder mit dem Entitlement-System kommen, sonst wird Branding zweimal gebaut.
 
 Und ein Hinweis aus Phase 2, der hier genauso zählt: **Ein Block pro PR, sofort gemergt.** 101 Templates auf einem langlebigen Zweig umzustellen ist derselbe Fehler wie ein Big-Bang bei `fw.py` — und die Erfahrung dort war eindeutig.
+
+---
+
+## Es gibt bereits eine Übergangsschicht — sie steht nur nicht so da
+
+Nachgetragen am 19.08.2026, nachdem ein Vorschlag für eine *zweite* Farbschicht geprüft und verworfen wurde.
+
+**`fw/base.html` enthält 53 handgeschriebene Dunkelmodus-Regeln**, die genau die fest verdrahteten Tailwind-Klassen umbiegen: `.bg-slate-50/100/200`, `.bg-white`, `.border-slate-100/200/300`, `.divide-slate-*`, die Zustandsfarben und die häufigsten Hover-Varianten. Das *ist* die Überbrückung zwischen Utilities und Tokens. Wer in 4b eine Übergangsschicht plant, baut sie nicht neu — er **ersetzt diese**.
+
+Eine zweite Schicht wäre ein zweiter Mechanismus für dieselbe Aufgabe, später in der Kaskade, der Teile der ersten still überschreibt. Der geprüfte Vorschlag hätte drei Dinge getan:
+
+- **Auf neun Tokens verwiesen, die es nicht gibt** (`--ds-brand-50…900`, `--ds-line-stark`). Ein `var()` ohne Rückfallwert auf eine undefinierte Variable macht die Deklaration ungültig, `!important` schlägt Tailwind trotzdem. In Chromium gemessen: `bg-indigo-100` wurde durchsichtig, `border-slate-300` nahm die Textfarbe an.
+- **Von einer Palette ausgegangen, die nicht existiert.** `--ds-brand` ist `#4f46e5` — Tailwind-Indigo-600. `--ds-bg`, `--ds-line`, `--ds-ink` sind die Slate-Werte. Die Tokens bilden heute die bestehende Palette ab; das Petrol-Konzept ist entworfen, aber nie in `base.html` gelandet. Wo Tokens existieren, änderte eine Umbiegeschicht deshalb nichts.
+- **Die Kontrastregel zurückgenommen**, siehe unten.
+
+**Reihenfolge für 4b, die sich daraus ergibt:** zuerst die Palette in `base.html` setzen — vollständig, hell und dunkel, mit allen Stufen, die Regeln später brauchen. Danach die 53 Regeln durch die neue Schicht ersetzen. Nicht umgekehrt: Eine Schicht auf eine unfertige Palette macht Flächen durchsichtig statt farbig.
+
+### Die Kontrastregel
+
+`base.html` zwingt `.text-slate-400` und `.text-slate-300` auf `var(--ds-muted)`, weil die Rohwerte WCAG AA verfehlen (2.34:1 und 1.48:1). Diese Regel muss jede Umgestaltung überleben — `--ds-faint` reicht mit 4.34:1 **nicht**.
+
+Beim Prüfen fiel dabei ein bestehender Fehler auf und wurde behoben: Zwei Dunkelmodus-Zeilen setzten dieselben Klassen auf feste Hexwerte und machten die Regel im Dunkeln wieder zunichte — `.text-slate-300` lag mit `#6b7193` bei 3.60:1 auf `--ds-surface`. Die Zeilen sind entfernt; das Token schaltet selbst um und liefert 6.62:1.
+
+`core/tests/test_farbschicht.py` bewacht beides: dass kein `var(--ds-…)` ohne Rückfallwert auf ein undefiniertes Token zeigt, und dass die Kontrastregel die letzte Aussage zu ihren Klassen bleibt.
 
 ---
 
