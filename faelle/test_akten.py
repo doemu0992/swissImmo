@@ -43,7 +43,7 @@ class RegisterTests(TestCase):
     #: gebaut wird. Der Vergleich war damit per Konstruktion immer wahr: Eine
     #: Gegenprobe, die die Reihenfolge in `REITER_FIX` vertauschte, blieb grün.
     #: Ein Test darf seine Erwartung nicht aus dem Prüfling ableiten.
-    VEREINBART = ('chronik', 'stammdaten', 'finanzen', 'dokumente', 'faelle')
+    VEREINBART = ('stammdaten', 'chronik', 'finanzen', 'dokumente', 'faelle')
 
     def test_die_fuenf_festen_reiter_sind_die_vereinbarten(self):
         self.assertEqual(REITER_FIX, self.VEREINBART,

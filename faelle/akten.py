@@ -32,7 +32,13 @@ stillschweigend aus der Oberfläche, und der Inhalt dahinter wäre unerreichbar.
 from dataclasses import dataclass, field
 
 #: Die fünf festen Reiter, in dieser Reihenfolge, für jeden Aktentyp.
-REITER_FIX = ('chronik', 'stammdaten', 'finanzen', 'dokumente', 'faelle')
+#:
+#: **Stammdaten steht vorn, nicht Chronik** (Entscheid 19.08.2026). Der erste
+#: Reiter ist zugleich der Landeplatz: Wer eine Akte aufschlägt, will wissen,
+#: *was* das ist — Konditionen, Fristen, Beteiligte —, nicht *wer zuletzt was
+#: getan hat*. Das Protokoll ist eine Nachschlagefläche und steht deshalb
+#: dahinter. `KONZEPT-UI.md` Abschnitt 2 (G6) und 4 sind mitgeändert.
+REITER_FIX = ('stammdaten', 'chronik', 'finanzen', 'dokumente', 'faelle')
 
 BEZEICHNUNGEN = {
     'chronik': 'Chronik',

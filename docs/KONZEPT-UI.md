@@ -60,7 +60,7 @@ zugleich Notfallkontakt für jemand anderen und früher Bewerberin gewesen sein.
 Fristen und Nebenkosten hängen am **Mietverhältnis**; Identität, Kontaktweg und
 Datenschutzrelevantes an der **Person**.
 
-**G6 — Ein Reitersatz für alle Aktentypen.** `Chronik · Stammdaten · Finanzen · Dokumente ·
+**G6 — Ein Reitersatz für alle Aktentypen.** `Stammdaten · Chronik · Finanzen · Dokumente ·
 Fälle`, plus höchstens ein typeigener Reiter. Wer eine Akte bedienen kann, kann alle.
 
 **G7 — Regeln statt Listen.** Eine Fristenliste warnt nicht. Eine Regel, die einen falschen
@@ -111,7 +111,7 @@ Eigentümerreporting, Leerstand und Ertrag, Debitorenspiegel, Mandatsrentabilit�
 
 | Typ | Fixe Reiter | Typeigener Reiter |
 |---|---|---|
-| Mandat | Chronik, Stammdaten, Finanzen, Dokumente, Fälle | Liegenschaften |
+| Mandat | Stammdaten, Chronik, Finanzen, Dokumente, Fälle | Liegenschaften |
 | Liegenschaft | dieselben | Einheiten |
 | Objekt | dieselben | Ausstattung (mit Lebensdauer) |
 | Mietverhältnis | dieselben | Nebenkosten |

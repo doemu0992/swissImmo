@@ -97,7 +97,7 @@
 {% include 'fw/_detail_tabs.html' with gruppe='vt' tabs=tab_liste %}
 
 <!-- ===== REITER: CHRONIK ===== -->
-<div data-panel="vt" id="vt-chronik">
+<div data-panel="vt" id="vt-chronik" class="hidden">
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div class="px-5 py-3 font-bold text-slate-800 text-sm border-b border-slate-100">Verlauf — wer hat was gemacht</div>
         <div class="divide-y divide-slate-50">
@@ -124,7 +124,7 @@
 </div>
 
 <!-- ===== REITER: STAMMDATEN ===== -->
-<div data-panel="vt" id="vt-stammdaten" class="hidden">
+<div data-panel="vt" id="vt-stammdaten">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
         <div class="fw-card fw-nomb">
             <div class="fw-h"><span class="fw-ic g"><i class="fa-solid fa-file-invoice-dollar"></i></span><span class="fw-t">Konditionen</span></div>
