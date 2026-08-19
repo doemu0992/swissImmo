@@ -398,3 +398,9 @@ class Zeiteintrag(OrganisationAusKette):
 
     def __str__(self):
         return f'{self.datum} · {self.minuten} Min.'
+
+# Die Regelwerksmodelle stehen in einer eigenen Datei, damit diese hier
+# lesbar bleibt. Django findet Modelle nur ueber `models`, deshalb der Import.
+from faelle.regelwerk_models import (  # noqa: E402,F401
+    Regel, Regelanwendung, Regelsatz,
+)

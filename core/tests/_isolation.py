@@ -184,6 +184,7 @@ class MandantenFixture:
         from crm.models import Handwerker, Kommunikation, Vorlage
         from core.models import Pendenz, Postfach
         from faelle.models import Fall, Fallart, Fallschritt, SchrittVorlage, Zeiteintrag
+        from faelle.regelwerk_models import Regel, Regelanwendung, Regelsatz
         from mietprozess.models import Mietbewerbung
         from portfolio.models import (Ausstattung, Dokument as PDokument, Geraet, Schluessel,
                                       SchluesselAusgabe, Sollmietzins, StaffelVorlage,
@@ -263,6 +264,25 @@ class MandantenFixture:
             fall=self.fall, vorlage=self.schrittvorlage, nr=1, etappe_nr=1,
             etappe='Kündigung', bezeichnung='Kündigung erfassen')
         self.zeiteintrag = Zeiteintrag.objects.create(fall=self.fall, minuten=30)
+
+        # Regelwerk (Phase 4a, Etappe 2) — aus demselben Grund wie oben. Die
+        # Regelanwendung ist dabei die wichtigste der drei: Sie trägt die
+        # geprüften Eingaben eines Mandanten, und ein Leck hier zeigte einer
+        # Verwaltung die Kündigungsprüfungen einer anderen.
+        self.regelsatz = Regelsatz.objects.create(
+            organisation=self.organisation, bezeichnung=f'Regelsatz {k}',
+            stand=date(2026, 8, 19))
+        self.regel = Regel.objects.create(
+            regelsatz=self.regelsatz, art=Regel.KUENDIGUNGSTERMIN,
+            parameter={'termine': ['31.03', '30.06', '30.09'], 'frist_monate': 3})
+        # Bewusst ein ÄLTERER Stand als der des Regelsatzes: So liegt diese
+        # Anwendung nicht in der Kohorte, die ein Test über einen bestimmten
+        # Stand abfragt — und sie bildet zugleich den realistischen Fall ab,
+        # dass Protokolleinträge aus früheren Regelfassungen stammen.
+        self.regelanwendung = Regelanwendung.objects.create(
+            organisation=self.organisation, art=Regel.KUENDIGUNGSTERMIN,
+            regel_stand=date(2026, 1, 15), fall=self.fall,
+            befund=Regelanwendung.BEANSTANDET, meldung=f'Prüfung {k}')
 
     def _benutzer(self):
         """Team-Benutzer dieses Mandanten — Gruppe UND Mitgliedschaft.
