@@ -1,0 +1,97 @@
+{% extends 'fw/base.html' %}
+{% block title %}Abwesenheiten — swissImmo{% endblock %}
+
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>Abwesenheiten</h1>
+        <p>Wer wann weg ist — und wer übernimmt. Umsetzung von G8:
+           Zuständigkeit statt Rolle, plus Vertretung.</p>
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-user-clock"></i></span>
+        <span class="fw-t">Zurzeit abwesend</span>
+        <span class="fw-neben">{{ laufend|length }}</span></div>
+    <details class="fw-aufklapp">
+        <summary>Abwesenheit erfassen</summary>
+        <div class="fw-aufklapp-inhalt">
+            <form method="post" action="/neu/abwesenheiten/neu/" class="grid grid-cols-1 sm:grid-cols-3 gap-3">{% csrf_token %}
+                <div><label class="fw-klein block mb-1">Wer</label>
+                    <select name="benutzer" class="fw-feld w-full">
+                        {% for p in leute %}<option value="{{ p.id }}">{{ p.get_full_name|default:p.username }}</option>{% endfor %}
+                    </select></div>
+                <div><label class="fw-klein block mb-1">Von *</label>
+                    <input type="date" name="von" required class="fw-feld w-full"></div>
+                <div><label class="fw-klein block mb-1">Bis (einschliesslich) *</label>
+                    <input type="date" name="bis" required class="fw-feld w-full"></div>
+                <div><label class="fw-klein block mb-1">Grund</label>
+                    <select name="grund" class="fw-feld w-full">
+                        {% for wert, bezeichnung in gruende %}<option value="{{ wert }}">{{ bezeichnung }}</option>{% endfor %}
+                    </select></div>
+                <div><label class="fw-klein block mb-1">Vertretung</label>
+                    <select name="vertreten_durch" class="fw-feld w-full">
+                        <option value="">— keine —</option>
+                        {% for p in leute %}<option value="{{ p.id }}">{{ p.get_full_name|default:p.username }}</option>{% endfor %}
+                    </select></div>
+                <div><label class="fw-klein block mb-1">Notiz</label>
+                    <input name="notiz" class="fw-feld w-full"></div>
+                <div class="sm:col-span-3"><button class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i>Erfassen</button></div>
+            </form>
+        </div>
+    </details>
+    {% for a in laufend %}
+    <div class="fw-zeile">
+        <span class="fw-marker {% if not a.vertreten_durch_id %}warn{% else %}brand{% endif %}"></span>
+        <span class="fw-avci">{{ a.benutzer.get_full_name|default:a.benutzer.username|slice:":2"|upper }}</span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ a.benutzer.get_full_name|default:a.benutzer.username }} — bis {{ a.bis|date:"d.m.Y" }}</div>
+            <div class="fw-s">{{ a.get_grund_display }}{% if a.notiz %} · {{ a.notiz }}{% endif %}
+                {% if a.offene_faelle == 1 %} · 1 offener Fall läuft weiter{% elif a.offene_faelle %} · {{ a.offene_faelle }} offene Fälle laufen weiter{% endif %}</div>
+        </div>
+        {% comment %} Ohne Vertretung ist keine Panne, aber eine Aussage — und
+           eine, die auffallen soll. Deshalb Warnfarbe statt Stille. {% endcomment %}
+        {% if a.vertreten_durch_id %}
+        <span class="fw-chip fw-brand">vertreten durch {{ a.vertreten_durch.get_full_name|default:a.vertreten_durch.username }}</span>
+        {% else %}
+        <span class="fw-chip fw-warn">ohne Vertretung</span>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p class="fw-leer">Niemand abwesend.</p>
+    {% endfor %}
+</div>
+
+<div class="fw-subhead">Geplant</div>
+<div class="fw-card">
+    {% for a in kommend %}
+    <div class="fw-zeile">
+        <span class="fw-ikon mut"><i class="fa-solid fa-plane-departure"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ a.benutzer.get_full_name|default:a.benutzer.username }}</div>
+            <div class="fw-s">{{ a.get_grund_display }}{% if a.vertreten_durch_id %} · Vertretung {{ a.vertreten_durch.get_full_name|default:a.vertreten_durch.username }}{% else %} · noch ohne Vertretung{% endif %}</div>
+        </div>
+        <div class="fw-zeit">{{ a.von|date:"d.m." }} – {{ a.bis|date:"d.m.Y" }}</div>
+    </div>
+    {% empty %}
+    <p class="fw-leer">Nichts geplant.</p>
+    {% endfor %}
+</div>
+
+<div class="fw-subhead">Vergangen</div>
+<div class="fw-card">
+    {% for a in vergangen %}
+    <div class="fw-zeile">
+        <span class="fw-ikon mut"><i class="fa-solid fa-clock-rotate-left"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ a.benutzer.get_full_name|default:a.benutzer.username }}</div>
+            <div class="fw-s">{{ a.get_grund_display }}</div>
+        </div>
+        <div class="fw-zeit">{{ a.von|date:"d.m." }} – {{ a.bis|date:"d.m.Y" }}</div>
+    </div>
+    {% empty %}
+    <p class="fw-leer">Nichts vergangen.</p>
+    {% endfor %}
+</div>
+{% endblock %}

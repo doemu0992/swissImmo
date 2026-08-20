@@ -504,19 +504,31 @@ class TermineTests(TestCase):
             self.assertEqual(len(treffer), 1)
             self.assertEqual(treffer[0]['titel'], 'Wohnungsabnahme')
 
-    def test_abgeschlossene_abnahme_erscheint_nicht(self):
+    def _abnahme_zeilen(self, protokoll):
+        """Nur die Zeilen DIESER Abnahme.
+
+        Beide Tests darunter filterten anfangs allein auf das Datum. Das ging
+        gut, solange am selben Tag nichts anderes lag — bis das Fixture mit
+        4b.8 einen eigenen Termin bekam, der zufällig auf denselben Tag fiel.
+        Der Test wurde rot und hatte recht: Er prüfte «an diesem Tag steht
+        nichts» statt «diese Abnahme steht nicht da».
+
+        Dieselbe Falle wie die Zählungen gegen ein Fixture, das selbst
+        Datensätze anlegt — nur über das Datum statt über die Menge.
+        """
         from faelle.arbeitsvorrat import termine
+        return [t for t in termine()
+                if t['ziel'].endswith(f'/{protokoll.vertrag_id}/')
+                and t['datum'] == protokoll.datum]
+
+    def test_abgeschlossene_abnahme_erscheint_nicht(self):
         with mandant(self.a.organisation):
-            protokoll = self._abnahme(2, abgeschlossen=True)
             self.assertEqual(
-                [t for t in termine() if t['datum'] == protokoll.datum], [])
+                self._abnahme_zeilen(self._abnahme(2, abgeschlossen=True)), [])
 
     def test_abnahme_jenseits_der_woche_erscheint_nicht(self):
-        from faelle.arbeitsvorrat import termine
         with mandant(self.a.organisation):
-            protokoll = self._abnahme(20)
-            self.assertEqual(
-                [t for t in termine() if t['datum'] == protokoll.datum], [])
+            self.assertEqual(self._abnahme_zeilen(self._abnahme(20)), [])
 
     def test_termine_sind_nach_zeit_sortiert(self):
         from faelle.arbeitsvorrat import termine
@@ -620,14 +632,19 @@ class ProtoypVollstaendigkeitTests(TestCase):
     """Was der Prototyp auf «Heute» zeigt, muss die Seite führen — oder der
     Grund muss dastehen.
 
-    `mockups/konzept-struktur.html` nennt fünf Abschnitte. Vier sind gebaut.
-    Der fünfte, «Vertretung», ist nicht rechenbar: `crm.Mitgliedschaft`
-    führt Benutzer, Organisation und Rolle — kein Abwesenheitsfeld, keine
-    Stellvertretung. Dieser Test hält beides fest: dass die vier da sind,
-    und dass die Lücke benannt ist statt erfunden.
+    `mockups/konzept-struktur.html` nennt fünf Abschnitte. Seit 4b.8 sind
+    **alle fünf** gebaut.
+
+    Bis dahin fehlte «Vertretung», weil sie nicht rechenbar war:
+    `crm.Mitgliedschaft` führt Benutzer, Organisation und Rolle — kein
+    Abwesenheitsfeld. `faelle.Abwesenheit` trägt es jetzt.
+
+    `NICHT_GEBAUT` ist deshalb leer und bleibt es hoffentlich. Der Eintrag
+    stand für eine benannte Lücke; eine Lücke, die niemand mehr benennt,
+    ist eine vergessene.
     """
 
-    NICHT_GEBAUT = {'Vertretung'}
+    NICHT_GEBAUT = set()
 
     @classmethod
     def setUpTestData(cls):
@@ -663,7 +680,8 @@ class ProtoypVollstaendigkeitTests(TestCase):
         gebaut = {'Was reisst': 'Was reisst',
                   'Posteingang': 'Zulauf',
                   'Termine': 'Termine',
-                  'Wartet auf mich': 'Wartet auf Freigabe'}
+                  'Wartet auf mich': 'Wartet auf Freigabe',
+                  'Vertretung': 'Vertretung'}
         for name in self._abschnitte_des_prototyps():
             with self.subTest(abschnitt=name):
                 if name in self.NICHT_GEBAUT:
@@ -675,11 +693,27 @@ class ProtoypVollstaendigkeitTests(TestCase):
                 else:
                     self.assertIn(gebaut[name], vorlagen)
 
-    def test_die_ausnahme_ist_noch_eine(self):
-        """Sobald ein Abwesenheitsmodell existiert, gehört sie gebaut."""
+    def test_es_gibt_keine_unbenannte_luecke_mehr(self):
+        """Die frühere Ausnahme ist aufgelöst — und der Test sagt es.
+
+        Bis 4b.8 stand hier: «Sobald ein Abwesenheitsmodell existiert, gehört
+        Vertretung gebaut», geprüft an einem Feld `abwesend_bis` auf
+        `crm.Mitgliedschaft`. Gebaut wurde stattdessen ein eigenes Modell,
+        `faelle.Abwesenheit` — der alte Test wäre also **grün geblieben und
+        bedeutungslos geworden**: Er hätte auf ein Feld gewartet, das nie
+        kommt, während die Sache längst erledigt war.
+
+        Diese Fassung prüft die Sache selbst: Das Modell ist da, es trägt
+        eine Vertretung, und `NICHT_GEBAUT` ist leer.
+        """
         from django.apps import apps
-        felder = {f.name for f in apps.get_model('crm', 'Mitgliedschaft')._meta.get_fields()}
-        self.assertNotIn(
-            'abwesend_bis', felder,
-            'Es gibt jetzt ein Abwesenheitsfeld — «Vertretung» ist rechenbar '
-            'geworden und gehört gebaut, statt weiter in NICHT_GEBAUT zu stehen.')
+
+        modell = apps.get_model('faelle', 'Abwesenheit')
+        felder = {f.name for f in modell._meta.get_fields()}
+        for pflicht in ('benutzer', 'von', 'bis', 'vertreten_durch'):
+            with self.subTest(feld=pflicht):
+                self.assertIn(pflicht, felder)
+        self.assertEqual(
+            self.NICHT_GEBAUT, set(),
+            'Es steht wieder eine Lücke in NICHT_GEBAUT — dann gehört der '
+            'Grund in die Vorlage und in KONZEPT-UI.md 3.1.')

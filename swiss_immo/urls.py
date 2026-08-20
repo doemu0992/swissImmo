@@ -87,6 +87,8 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_arbeit, fw_fall_detail, fw_fallschritt_erledigen,
+                           fw_termine, fw_termin_neu, fw_termin_status,
+                           fw_abwesenheiten, fw_abwesenheit_neu,
                            fw_laeufe, fw_zulauf, fw_zulauf_uebernehmen,
                            fw_dashboard, fw_finanzen, fw_berichte, fw_betriebskostenspiegel, fw_betriebsrechnung_pdf, fw_leerstand_verlauf, fw_auswertung, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_debitor_abschreiben, fw_liegenschaften, fw_mieterspiegel, fw_objekte,
                            fw_personen, fw_vertraege, fw_mieterwechsel, fw_vermarktung, fw_objekt_ausschreiben, fw_expose_pdf,
@@ -366,6 +368,13 @@ urlpatterns = [
     # Phase 4b: die Oberflaechen zu Phase 4a. Bis hierher hatten Fall,
     # Eingang und Lauf keine einzige URL.
     path('neu/arbeit/', fw_arbeit, name='fw_arbeit'),
+    # Phase 4b.8: Termine und Abwesenheiten — die beiden Abschnitte der
+    # Heute-Ansicht, fuer die bis dahin die Daten fehlten.
+    path('neu/termine/', fw_termine, name='fw_termine'),
+    path('neu/termine/neu/', fw_termin_neu, name='fw_termin_neu'),
+    path('neu/termine/<int:pk>/status/', fw_termin_status, name='fw_termin_status'),
+    path('neu/abwesenheiten/', fw_abwesenheiten, name='fw_abwesenheiten'),
+    path('neu/abwesenheiten/neu/', fw_abwesenheit_neu, name='fw_abwesenheit_neu'),
     path('neu/faelle/<int:pk>/', fw_fall_detail, name='fw_fall_detail'),
     path('neu/fallschritte/<int:pk>/erledigen/', fw_fallschritt_erledigen,
          name='fw_fallschritt_erledigen'),

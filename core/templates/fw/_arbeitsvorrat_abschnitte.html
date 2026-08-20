@@ -3,11 +3,10 @@
    gebaut, von Startseite UND Arbeit-Seite eingebunden — nicht zweimal
    geschrieben.
 
-   Der fünfte Abschnitt des Prototyps, «Vertretung», fehlt bewusst: Es gibt
-   kein Abwesenheits- oder Stellvertretungsmodell. `Mitgliedschaft` führt
-   Benutzer, Organisation und Rolle, sonst nichts. Eine erfundene Zeile
-   «Silvia R. abwesend bis 25.08.» wäre eine Behauptung über etwas, das
-   nirgends erfasst wird. {% endcomment %}
+   Seit 4b.8 auch «Vertretung». Bis dahin fehlte sie, weil es kein
+   Abwesenheitsmodell gab — `Mitgliedschaft` führt Benutzer, Organisation
+   und Rolle, sonst nichts. Jetzt trägt `faelle.Abwesenheit` die Angabe,
+   und «Termine» speist sich zusätzlich aus `faelle.Termin`. {% endcomment %}
 {% load chf %}
 
 {% if av_termine %}
@@ -62,5 +61,34 @@
         <a href="/neu/kreditoren/" class="fw-link">Alle Freigaben</a>
         <span>{% if av_liegezeit %}Ø Liegezeit {{ av_liegezeit }} Tage{% else %}ohne Datum — Liegezeit nicht berechenbar{% endif %}</span>
     </div>
+</div>
+{% endif %}
+
+{% if av_vertretung %}
+{% comment %} G8: «Zuständigkeit statt Rolle … plus Vertretung.» Eine
+   Abwesenheit OHNE Vertretung ist kein Fehler, sondern eine Aussage — und
+   eine, die auffallen soll. Sie steht deshalb in Warnfarbe, statt still wie
+   eine gedeckte auszusehen. {% endcomment %}
+<div class="fw-card">
+    <div class="fw-kopf">
+        <span class="fw-ikon"><i class="fa-solid fa-user-clock"></i></span>
+        <span class="fw-t">Vertretung</span>
+        <span class="fw-rechts"><a href="/neu/abwesenheiten/" class="fw-link">Abwesenheiten</a></span>
+    </div>
+    {% for v in av_vertretung %}
+    <div class="fw-zeile">
+        <span class="fw-marker {% if v.ungedeckt %}warn{% else %}brand{% endif %}"></span>
+        <span class="fw-avci">{{ v.wer|slice:":2"|upper }}</span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ v.wer }} — abwesend bis {{ v.bis|date:"d.m.Y" }}</div>
+            <div class="fw-s">{{ v.grund }}{% if v.faelle == 1 %} · 1 offener Fall läuft weiter{% elif v.faelle %} · {{ v.faelle }} offene Fälle laufen weiter{% endif %}</div>
+        </div>
+        {% if v.ungedeckt %}
+        <span class="fw-chip fw-warn">ohne Vertretung</span>
+        {% else %}
+        <span class="fw-chip fw-brand">vertreten durch {{ v.vertreter }}</span>
+        {% endif %}
+    </div>
+    {% endfor %}
 </div>
 {% endif %}

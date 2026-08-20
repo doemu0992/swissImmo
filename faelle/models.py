@@ -410,3 +410,6 @@ from faelle.zulauf_models import (  # noqa: E402,F401
 from faelle.lauf_models import (  # noqa: E402,F401
     Blockade, Lauf, Laufart,
 )
+from faelle.termin_models import (  # noqa: E402,F401
+    Abwesenheit, Termin,
+)

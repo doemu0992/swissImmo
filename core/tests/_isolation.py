@@ -18,6 +18,8 @@ darauf aufbauenden Tests bleiben, wie sie sind.
 """
 
 from datetime import date, timedelta
+
+from django.utils import timezone
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
@@ -171,6 +173,13 @@ class MandantenFixture:
 
         self._anlegen_weitere(plz, ort)
         self.benutzer = self._benutzer()
+        # Die Abwesenheit braucht den Benutzer und steht deshalb HIER, nicht
+        # in `_anlegen_weitere` — das laeuft eine Zeile frueher.
+        from faelle.termin_models import Abwesenheit
+        self.abwesenheit = Abwesenheit.objects.create(
+            organisation=self.organisation, benutzer=self.benutzer,
+            von=date.today(), bis=date.today() + timedelta(days=3),
+            grund=Abwesenheit.FERIEN)
 
     def _anlegen_weitere(self, plz, ort):
         """Die Objekte, die erst der Registrylauf einfordert.
@@ -187,6 +196,7 @@ class MandantenFixture:
         from faelle.regelwerk_models import Regel, Regelanwendung, Regelsatz
         from faelle.lauf_models import Blockade, Lauf, Laufart
         from faelle.zulauf_models import Eingang, Zuordnungsregel
+        from faelle.termin_models import Termin
         from mietprozess.models import Mietbewerbung
         from portfolio.models import (Ausstattung, Dokument as PDokument, Geraet, Schluessel,
                                       SchluesselAusgabe, Sollmietzins, StaffelVorlage,
@@ -266,6 +276,22 @@ class MandantenFixture:
             fall=self.fall, vorlage=self.schrittvorlage, nr=1, etappe_nr=1,
             etappe='Kündigung', bezeichnung='Kündigung erfassen')
         self.zeiteintrag = Zeiteintrag.objects.create(fall=self.fall, minuten=30)
+
+        # Termin und Abwesenheit (Phase 4b.8). Ohne sie fiele
+        # `fw_termin_status` durch den Sweep — die Selbstpruefung
+        # `test_jeder_parameter_ist_zugeordnet` hat genau das sofort
+        # gemeldet, zum zweiten Mal nach 4b.5.
+        # Bewusst ein EIGENTUEMERGESPRAECH, keine Abnahme: Abnahmen und
+        # Besichtigungen leitet der Arbeitsvorrat aus Vertrag und Bewerbung
+        # ab. Ein Fixture-Termin mit `art='abnahme'` saehe daneben wie eine
+        # Doppelung aus und machte den Test, der genau die ausschliesst,
+        # unbrauchbar. Das Gespraech ist zudem der Fall, der ohne dieses
+        # Modell gar nicht erfassbar war.
+        self.termin = Termin.objects.create(
+            organisation=self.organisation, titel=f'Eigentuemergespraech {k}',
+            art=Termin.GESPRAECH, beginn=timezone.now() + timedelta(days=2),
+            ort=f'Teststrasse {k}')
+
 
         # Regelwerk (Phase 4a, Etappe 2) — aus demselben Grund wie oben. Die
         # Regelanwendung ist dabei die wichtigste der drei: Sie trägt die
@@ -377,6 +403,8 @@ class MandantenFixture:
         # gemeldet: Ohne Eintrag hier waeren sie durch den Sweep gefallen,
         # ohne dass jemand es merkt. Genau dafuer gibt es sie.
         ('fallschritt',     'fallschritt'),
+        ('termin',          'termin'),
+        ('abwesenheit',     'abwesenheit'),
         ('fall_detail',     'fall'),
         ('zulauf_uebernehmen', 'eingang'),
         ('abnahme',         'abnahme'),

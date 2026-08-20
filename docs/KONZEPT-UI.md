@@ -81,6 +81,12 @@ Kündigungstermin gar nicht durchlässt, warnt. Regeln liegen als **Daten** vor,
 **G8 — Zuständigkeit statt Rolle.** In einer Verwaltung mit drei Personen hat niemand nur eine
 Rolle. Gefiltert wird nach Zuständigkeit für Mandat oder Liegenschaft, plus Vertretung.
 
+> **Vertretung umgesetzt in 4b.8.** `faelle.Abwesenheit` trägt Zeitraum, Grund und
+> `vertreten_durch`. Bis dahin war die Vertretung eine Absprache im Flur: Die Fälle der
+> abwesenden Person blieben in ihrem Namen liegen und niemand sah sie. Eine Abwesenheit **ohne**
+> Vertretung ist dabei kein Fehler, sondern eine Aussage — und wird als «ohne Vertretung»
+> ausdrücklich gemeldet, statt still wie eine gedeckte auszusehen.
+
 **G9 — Was fehlt, ist wichtiger als was da ist.** Eine Akte, die nur anzeigt, was erfasst
 wurde, spart keine Zeit. Eine, die merkt, was fehlt oder nicht zusammenpasst, schon.
 
@@ -108,15 +114,15 @@ eigene Spalte, rechts der Arbeitsvorrat.
 Zusätzlich: Filter nach Zuständigkeit (Person) und Mandat. **Keine Kennzahlen.**
 
 **Die Abschnitte der Heute-Ansicht.** Der Prototyp (`mockups/konzept-struktur.html`, Screen
-«Heute») nennt fünf. Vier sind gebaut, einer ist nicht rechenbar:
+«Heute») nennt fünf. Seit 4b.8 sind alle fünf gebaut:
 
 | Abschnitt (Prototyp) | in der Anwendung | Quelle |
 |---|---|---|
 | Was reisst | Was reisst | Fallschritte, Läufe, Pendenzen, Wartungsfristen |
 | Posteingang | Zulauf | `faelle.Eingang` mit Vorschlag |
-| Termine | Termine | `Abnahmeprotokoll`, `Mietbewerbung.besichtigung_am` |
+| Termine | Termine | `faelle.Termin` + abgeleitet: `Abnahmeprotokoll`, `Mietbewerbung.besichtigung_am` |
 | Wartet auf mich | **Wartet auf Freigabe** | Kreditoren `neu`, Handwerker-Offerten `ausstehend`, Vertragsentwürfe |
-| Vertretung | — **nicht gebaut** | kein Abwesenheitsmodell |
+| Vertretung | Vertretung | `faelle.Abwesenheit` |
 
 Zwei Abweichungen vom Prototyp, beide bewusst:
 
@@ -125,11 +131,10 @@ Zwei Abweichungen vom Prototyp, beide bewusst:
   `crm.Mitgliedschaft` kennt keine Zuständigkeit je Vorgang. In einem Büro mit zwei bis fünf
   Personen ist die Warteschlange ohnehin gemeinsam — die Überschrift darf sie nur nicht als
   persönlich ausgeben.
-- **«Vertretung» fehlt.** `crm.Mitgliedschaft` führt Benutzer, Organisation und Rolle — kein
-  Abwesenheitsfeld, keine Stellvertretung. Die Zeile «Silvia R. abwesend bis 25.08.» wäre eine
-  Behauptung über etwas, das nirgends erfasst wird. Der Grund steht in der Vorlage;
-  `ProtoypVollstaendigkeitTests` hält fest, dass die Lücke **benannt** bleibt und schlägt an,
-  sobald ein Abwesenheitsfeld existiert.
+- **Abnahmen und Besichtigungen werden abgeleitet, nicht erfasst.** Sie stehen am Vertrag und
+  an der Bewerbung. Würde das Erfassen einer Abnahme zusätzlich einen `Termin` anlegen, stünde
+  dieselbe Wohnungsabnahme zweimal im Tag — derselbe Fehler wie die Inbox-Doppelung in 4b.5,
+  nur eine Ebene tiefer. `test_abgeleitete_termine_werden_nicht_dupliziert` schliesst das aus.
 
 Ebenfalls weggelassen: der Verweis «Kalender» unter den Terminen — es gibt keine
 Kalenderansicht, und ein Knopf ins Leere ist schlechter als keiner.

@@ -49,6 +49,16 @@ log = logging.getLogger(__name__)
 #: abgelaufen ist.
 VORSCHAU_TAGE = 14
 
+#: Symbol je Terminart. Als Tabelle, damit eine neue Art eine Zeile kostet
+#: und nicht eine Verzweigung in der Vorlage.
+TERMIN_IKON = {
+    'abnahme': 'fa-clipboard-check',
+    'besichtigung': 'fa-key',
+    'gespraech': 'fa-handshake',
+    'begehung': 'fa-person-walking',
+    'sonstiges': 'fa-calendar-day',
+}
+
 #: Zeilen je Abschnitt auf der Startseite. Der Rest steht hinter «Alle …» —
 #: ein Arbeitsvorrat, den man scrollen muss, ist keiner.
 ZEILEN = 5
@@ -304,7 +314,64 @@ def termine(heute=None, tage=7):
     except Exception:
         log.exception('Termine: Besichtigungen konnten nicht geladen werden')
 
+    try:
+        from faelle.termin_models import Termin
+        von = timezone.make_aware(datetime.combine(heute, time.min))
+        nach = timezone.make_aware(datetime.combine(bis, time.max))
+        for t in (Termin.objects.offen().zeitraum(von, nach)
+                  .select_related('zustaendig')[:20]):
+            ortszeit = timezone.localtime(t.beginn)
+            zeilen.append({
+                'art': t.art, 'ikon': TERMIN_IKON.get(t.art, 'fa-calendar-day'),
+                'titel': t.titel,
+                'zeile': ' · '.join(x for x in (
+                    t.ort, str(t.akte) if t.akte_id else '',
+                    (t.zustaendig.get_full_name() or t.zustaendig.username)
+                    if t.zustaendig_id else '') if x),
+                'datum': ortszeit.date(), 'zeit': ortszeit.time(),
+                'ziel': '/neu/termine/', 'knopf': 'Termin',
+            })
+    except Exception:
+        log.exception('Termine: erfasste Termine konnten nicht geladen werden')
+
     zeilen.sort(key=lambda z: (z['datum'], z['zeit'] or time.min))
+    return zeilen
+
+
+def vertretung(heute=None):
+    """Wer abwesend ist — und was auf wen läuft.
+
+    Umsetzung von G8 («Zuständigkeit statt Rolle … plus Vertretung»). Bis
+    4b.7 war dieser Abschnitt des Prototyps nicht baubar: `Mitgliedschaft`
+    führt Benutzer, Organisation und Rolle, kein Abwesenheitsfeld. Jetzt
+    trägt `faelle.Abwesenheit` die Angabe.
+
+    **Eine Abwesenheit ohne Vertretung ist kein Fehler, sondern eine
+    Aussage** — und eine, die auffallen soll. Sie wird deshalb ausdrücklich
+    als ungedeckt gemeldet, statt still wie eine gedeckte auszusehen.
+    """
+    heute = heute or timezone.localdate()
+    try:
+        from faelle.termin_models import Abwesenheit
+    except Exception:
+        log.exception('Vertretung: Abwesenheiten konnten nicht geladen werden')
+        return []
+
+    zeilen = []
+    for a in (Abwesenheit.objects.laufend(heute)
+              .select_related('benutzer', 'vertreten_durch')[:10]):
+        name = a.benutzer.get_full_name() or a.benutzer.username
+        zeilen.append({
+            'abwesenheit': a,
+            'wer': name,
+            'bis': a.bis,
+            'grund': a.get_grund_display(),
+            'vertreter': ((a.vertreten_durch.get_full_name()
+                           or a.vertreten_durch.username)
+                          if a.vertreten_durch_id else None),
+            'faelle': a.offene_faelle,
+            'ungedeckt': a.vertreten_durch_id is None,
+        })
     return zeilen
 
 
@@ -413,4 +480,5 @@ def arbeitsvorrat(request, aktive_lg=None):
         'av_freigaben': freigaben[:ZEILEN],
         'av_freigaben_gesamt': len(freigaben),
         'av_liegezeit': liegezeit(freigaben),
+        'av_vertretung': vertretung(heute),
     }
