@@ -48,8 +48,20 @@ class _Pruefer(HTMLParser):
 
 def pruefen(pfad):
     roh = (WURZEL / pfad).read_text(encoding='utf-8')
-    # Django-Syntax entfernen: Der Parser soll HTML sehen, keine Template-Tags.
-    rein = re.sub(r'\{%.*?%\}|\{\{.*?\}\}|\{#.*?#\}', '', roh, flags=re.S)
+    # ZUERST die `{% comment %}`-BLOECKE mitsamt Inhalt entfernen, erst danach
+    # die einzelnen Template-Tags.
+    #
+    # WARUM DIESE REIHENFOLGE: Die frühere Fassung entfernte nur die Tags und
+    # liess den Text dazwischen stehen. In einem Kommentar steht aber Prosa
+    # ueber HTML — «die Klasse sm:col-span-4 auf dem <label> selbst». Der
+    # Parser las dieses `<label>` als echtes Tag, fand kein schliessendes und
+    # meldete vier Folgefehler in einer Datei, die in Ordnung war.
+    #
+    # Es ist das dritte Mal, dass eine Pruefung ihre eigene Erklaerung fuer
+    # eine Tatsache haelt (vorher: `test_gestapelte_tabellen` und der
+    # Favicon-Test). Deshalb steht es hier ausgeschrieben.
+    rein = re.sub(r'\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}', '', roh, flags=re.S)
+    rein = re.sub(r'\{%.*?%\}|\{\{.*?\}\}|\{#.*?#\}', '', rein, flags=re.S)
     p = _Pruefer()
     p.feed(rein)
     return p.stapel, p.fehler
@@ -67,6 +79,25 @@ class StrukturTests(TestCase):
                 self.assertEqual(
                     fehler, [],
                     f'{pfad}: falsch verschachtelt — {"; ".join(fehler[:3])}')
+
+    def test_prosa_im_kommentar_wird_nicht_als_html_gelesen(self):
+        """Gegenprobe zur Reihenfolge in `pruefen`.
+
+        Ohne das Entfernen der Kommentar-BLOECKE meldet der Parser hier ein
+        offenes `<label>` — in einer Datei, die einwandfrei ist.
+        """
+        import tempfile
+        inhalt = ('<div>{% comment %} die Klasse auf dem <label> selbst '
+                  '{% endcomment %}<p>Text</p></div>')
+        with tempfile.NamedTemporaryFile('w', suffix='.html', dir=WURZEL,
+                                         delete=False, encoding='utf-8') as f:
+            f.write(inhalt)
+            name = pathlib.Path(f.name).name
+        try:
+            offen, fehler = pruefen(name)
+            self.assertEqual((offen, fehler), ([], []))
+        finally:
+            (WURZEL / name).unlink()
 
     def test_der_pruefer_erkennt_ein_fehlendes_tag(self):
         """Gegenprobe. Ein Pruefer, der nie anschlaegt, besteht jede Datei."""

@@ -258,10 +258,13 @@ class VerhaeltnisseAblageTests(TestCase):
         self._dok('Mietvertrag (unterzeichnet)', vertrag=v)
         c = Client(); c.force_login(_team_user())
         body = c.get(f'/neu/objekte/{e.id}/').content.decode()
-        # Neuer Tab + Panel vorhanden, Historie-Panel weg
-        self.assertIn('id="obj-verhaeltnisse"', body)
+        # Seit 4b.11 stehen die Mietverhaeltnisse im Bereich «Chronik»: Es
+        # sind datierte Ereignisse, keine Eigenschaften des Objekts. Der alte
+        # eigene Reiter ist weg, der Inhalt derselbe.
+        self.assertIn('id="obj-chronik"', body)
+        self.assertNotIn('id="obj-verhaeltnisse"', body)
         self.assertNotIn('id="obj-historie"', body)
-        self.assertIn('Verhältnisse', body)
+        self.assertIn('Mietverhältnisse', body)
         # Mietername + Dokument sichtbar im Verhältnis-Bündel
         self.assertIn('Hans Muster', body)
         self.assertIn('Mietvertrag (unterzeichnet)', body)

@@ -566,7 +566,7 @@
             {% csrf_token %}
             <div><label class="fw-klein block mb-1">Raum *</label>
                 <input name="raum" list="raumliste" required placeholder="z.B. Küche" class="fw-feld w-full">
-                <datalist id="raumliste">{% for rt in raumtypen %}<option value="{{ rt }}">{% endfor %}{% for r in raeume %}<option value="{{ r.raum }}">{% endfor %}</datalist></div>
+                <datalist id="raumliste">{% for rt in raumtypen %}<option value="{{ rt }}"></option>{% endfor %}{% for r in raeume %}<option value="{{ r.raum }}"></option>{% endfor %}</datalist></div>
             <div><label class="fw-klein block mb-1">Kategorie *</label>
                 <input name="kategorie" required placeholder="z.B. Kochherd / Glaskeramik" class="fw-feld w-full"></div>
             <div><label class="fw-klein block mb-1">Bezeichnung / Detail</label>
@@ -699,7 +699,7 @@
     <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Ausstattung erfasst. Lade einen Raum aus dem Katalog oder erfasse ein Element — die Räume entstehen aus den Assets.</div>
     {% endif %}
 <div class="fw-subhead">Geräte</div>
-    <datalist id="geraetkat">{% for k in geraet_kategorien %}<option value="{{ k }}">{% endfor %}</datalist>
+    <datalist id="geraetkat">{% for k in geraet_kategorien %}<option value="{{ k }}"></option>{% endfor %}</datalist>
     <div class="fw-card">
         <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
             <thead><tr class="fw-kopfzeile">
@@ -782,7 +782,7 @@
         </form>
     </div>
 <div class="fw-subhead">Zähler</div>
-    <datalist id="zaehlertyp">{% for t in zaehler_typen %}<option value="{{ t }}">{% endfor %}</datalist>
+    <datalist id="zaehlertyp">{% for t in zaehler_typen %}<option value="{{ t }}"></option>{% endfor %}</datalist>
     <div class="fw-card">
         <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
             <thead><tr class="fw-kopfzeile">
@@ -906,7 +906,7 @@
             <input type="hidden" name="einheit_id" value="{{ e.id }}">
             <div><label class="fw-klein block mb-1">Typ <span class="fw-pflicht">*</span></label>
                 <input name="typ" list="schluesseltyp" required placeholder="z.B. Wohnung, Keller, Briefkasten" class="fw-feld w-full">
-                <datalist id="schluesseltyp"><option value="Wohnung"><option value="Haustüre"><option value="Keller"><option value="Briefkasten"><option value="Garage"><option value="Waschküche"></datalist></div>
+                <datalist id="schluesseltyp"><option value="Wohnung"></option><option value="Haustüre"></option><option value="Keller"></option><option value="Briefkasten"></option><option value="Garage"></option><option value="Waschküche"></option></datalist></div>
             <div><label class="fw-klein block mb-1">Schlüssel-Nr. <span class="fw-pflicht">*</span></label>
                 <input name="schluessel_nummer" required class="fw-feld w-full"></div>
             <div><label class="fw-klein block mb-1">Anzahl Exemplare</label>

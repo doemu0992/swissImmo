@@ -372,10 +372,18 @@ class SollmietzinsTests(TestCase):
         self.assertEqual(s.nebenkosten, Decimal('0.00'))
 
     def test_objekt_detail_zeigt_mietzins_tab(self):
+        """Der Sollmietzins steht seit 4b.11 im Bereich «Finanzen».
+
+        Bis dahin hatte er einen eigenen Reiter `obj-mietzins`. Das
+        Aktenregister fuehrt ihn auf `finanzen` — der Inhalt ist derselbe, der
+        Reiter ist es nicht mehr. Geprueft wird deshalb der neue Behaelter
+        UND, unveraendert, dass die Erfassung wirklich darin steht.
+        """
         _, e = self._obj()
         c = Client(); c.force_login(_team_user())
         body = c.get(f'/neu/objekte/{e.id}/').content.decode()
-        self.assertIn('id="obj-mietzins"', body)
+        self.assertIn('id="obj-finanzen"', body)
+        self.assertNotIn('id="obj-mietzins"', body)
         self.assertIn('/neu/sollmietzins/', body)
 
     def test_objekt_form_seedet_erste_zeile(self):
@@ -441,7 +449,7 @@ class MietzinsTabExtraTests(TestCase):
         c = Client(); c.force_login(_team_user())
         # Panels dürfen keine {% for m in meldung %}-Reste mehr rendern
         body = c.get(f'/neu/objekte/{e.id}/').content.decode()
-        self.assertIn('id="obj-mietzins"', body)  # Seite lädt sauber
+        self.assertIn('id="obj-finanzen"', body)  # Seite lädt sauber
 
 
 class StaffelImTabTests(TestCase):
