@@ -25,12 +25,18 @@
         <div style="min-width:0">
             <div class="fw-akte-typ">Mietverhältnis · MV-{{ v.id }}</div>
             <h1>{{ v.mieter.display_name }}</h1>
+            {% comment %} Eine Angabe je Zeile mit ausgerichteter Beschriftung
+               (Entscheid 20.08.2026). Vorher standen fuenf Angaben in zwei
+               Zeilen, mit «›» und «·» als Trennern — bei einem langen Objekt-
+               namen («Parkplatz (seitlich Denn)») brach die Kette an einer
+               beliebigen Stelle um, und was Beschriftung und was Wert war,
+               liess sich nicht mehr auf einen Blick sehen. {% endcomment %}
             <div class="fw-akte-pfad">
-                {% if kopf_eigentuemer %}Mandat <b>{{ kopf_eigentuemer }}</b> › {% endif %}Liegenschaft
-                <b>{{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.ort }}</b>
-                › Objekt <b>{{ v.einheit.bezeichnung }}</b><br>
-                Vertrag <b>{{ v.beginn|date:"d.m.Y" }}{% if v.ende %} – {{ v.ende|date:"d.m.Y" }}{% endif %}</b>
-                · Korrespondenzsprache <b>{{ v.mieter.get_sprache_display|default:"Deutsch" }}</b>
+                {% if kopf_eigentuemer %}<div class="fw-pz"><span>Mandat</span><b>{{ kopf_eigentuemer }}</b></div>{% endif %}
+                <div class="fw-pz"><span>Liegenschaft</span><b>{{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.ort }}</b></div>
+                <div class="fw-pz"><span>Objekt</span><b>{{ v.einheit.bezeichnung }}</b></div>
+                <div class="fw-pz"><span>Vertrag</span><b>{{ v.beginn|date:"d.m.Y" }}{% if v.ende %} – {{ v.ende|date:"d.m.Y" }}{% endif %}</b></div>
+                <div class="fw-pz"><span>Sprache</span><b>{{ v.mieter.get_sprache_display|default:"Deutsch" }}</b></div>
             </div>
             <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
                 {% for art, text in kopf_chips %}<span class="fw-chip fw-{{ art }}">{{ text }}</span>{% endfor %}
@@ -97,7 +103,7 @@
         <div>
             <div class="fw-l">Nächste Frist</div>
             <div class="fw-w{% if kopf_frist.ueberfaellig %} crit{% endif %}" style="font-size:15px">{% if kopf_frist %}{{ kopf_frist.p.faellig_am|date:"d.m.Y" }}{% else %}—{% endif %}</div>
-            <div class="fw-f">{% if kopf_frist %}{{ kopf_frist.p.titel|truncatechars:38 }}{% else %}keine laufende Frist{% endif %}</div>
+            <div class="fw-f fw-lang"{% if kopf_frist %} title="{{ kopf_frist.p.titel }}"{% endif %}>{% if kopf_frist %}{{ kopf_frist.p.titel }}{% else %}keine laufende Frist{% endif %}</div>
         </div>
     </div>
 

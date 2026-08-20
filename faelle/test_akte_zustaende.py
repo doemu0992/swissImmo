@@ -159,3 +159,129 @@ class KennzahlTests(TestCase):
         with mandant(self.a.organisation):
             frist = _kopf(self.a.vertrag, pendenzen=eintraege)['kopf_frist']
             self.assertEqual(frist['p'].faellig_am, date(2026, 9, 3))
+
+
+class FristTitelTests(TestCase):
+    """Der Titel der naechsten Frist muss ganz dastehen.
+
+    WARUM
+
+    Gemeldet am 20.08.2026 aus dem Browser: In der Kennzahlenleiste stand
+    «Art. 257d: Zahlungsfrist läuft ab – B…». Der Titel ist 48 Zeichen lang,
+    `truncatechars:38` schnitt ihn ab — ausgerechnet im Namen, also an der
+    Stelle, die sagt, um wen es geht.
+
+    Kein Test hatte das bemerkt: Die Zustands-Tests oben pruefen die
+    gerechneten Werte, nicht ihre Darstellung. Aufgefallen ist es einem
+    Menschen, wie schon beim Statusumschalter und bei den Kommentaren.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('T', '8000', 'Zürich')
+
+    def _seite(self):
+        from django.test import Client
+        c = Client()
+        c.force_login(self.a.benutzer)
+        with mandant(self.a.organisation):
+            antwort = c.get(f'/neu/vertraege/{self.a.vertrag.pk}/')
+        self.assertEqual(antwort.status_code, 200)
+        return antwort.content.decode()
+
+    def test_langer_fristtitel_erscheint_vollstaendig(self):
+        from core.models import Pendenz
+        titel = 'Art. 257d: Zahlungsfrist läuft ab – Behlül Piskin-Langenamen'
+        with mandant(self.a.organisation):
+            Pendenz.objects.create(
+                organisation=self.a.organisation, vertrag=self.a.vertrag,
+                titel=titel, faellig_am=date(2026, 9, 12), erledigt=False)
+        html = self._seite()
+        self.assertIn(titel, html,
+                      'Der Fristtitel steht gekuerzt oder gar nicht auf der Seite.')
+        self.assertNotIn('…', html.split('Nächste Frist')[-1][:400],
+                         'In der Kennzahlenleiste wird noch gekuerzt.')
+        # Zwei Zeilen sind die Obergrenze der CSS-Klammer; laenger als das
+        # wird doch abgeschnitten. Dann muss der volle Text wenigstens beim
+        # Darueberfahren lesbar bleiben. Ohne diese Zeile blieb eine
+        # Gegenprobe gruen, die das title-Attribut entfernte.
+        self.assertIn(f'title="{titel}"', html,
+                      'Der volle Titel fehlt im title-Attribut — bei mehr als '
+                      'zwei Zeilen waere er nicht mehr lesbar.')
+
+    def test_die_kennzahlenleiste_kuerzt_nirgends_per_filter(self):
+        """Gegenprobe an der Vorlage: `truncatechars` gehoert hier nicht hin.
+
+        Der Test oben braucht einen Titel, der laenger als die alte Grenze ist —
+        wuerde jemand die Grenze auf 80 heraufsetzen, bliebe er gruen und die
+        Kuerzung waere trotzdem zurueck.
+        """
+        import pathlib
+        quelle = pathlib.Path(
+            'core/templates/fw/vertrag_detail.html').read_text(encoding='utf-8')
+        kopf = quelle.split('class="fw-kzn"')[1].split('_detail_tabs.html')[0]
+        self.assertNotIn(
+            'truncatechars', kopf,
+            'In der Kennzahlenleiste wird wieder per Filter gekuerzt — der '
+            'Umbruch geschieht in CSS (.fw-kzn .fw-f.fw-lang).')
+
+
+class PfadTests(TestCase):
+    """Jede Angabe im Aktenkopf steht auf einer eigenen Zeile.
+
+    WARUM
+
+    Gemeldet am 20.08.2026: Mandat, Liegenschaft, Objekt, Vertrag und Sprache
+    standen als eine Kette in zwei Zeilen, getrennt durch «›» und «·». Bei
+    einem langen Objektnamen brach die Kette an beliebiger Stelle um, und
+    Beschriftung und Wert waren nicht mehr auseinanderzuhalten.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('P', '8000', 'Zürich')
+
+    def _seite(self):
+        from django.test import Client
+        c = Client()
+        c.force_login(self.a.benutzer)
+        with mandant(self.a.organisation):
+            antwort = c.get(f'/neu/vertraege/{self.a.vertrag.pk}/')
+        self.assertEqual(antwort.status_code, 200)
+        return antwort.content.decode()
+
+    #: `fw-akte-pfad` steht ZWEIMAL auf der Seite: einmal als Brotkrume ganz
+    #: oben, einmal im Aktenkopf. Die erste Fassung dieser Tests nahm
+    #: `split(...)[1]` und untersuchte damit die Brotkrume — die Zeilenpruefung
+    #: fand nichts, und die Trennzeichen-Pruefung bestand auf einem leeren
+    #: Ausschnitt, war also wertlos. Deshalb wird hier ueber `fw-pz` gesucht,
+    #: das es nur im Aktenkopf gibt.
+    def _pfadzeilen(self, html):
+        import re
+        return re.findall(r'<div class="fw-pz"><span>([^<]+)</span><b>([^<]*)', html)
+
+    def test_jede_angabe_hat_eine_eigene_zeile(self):
+        zeilen = dict(self._pfadzeilen(self._seite()))
+        self.assertTrue(zeilen, 'Es wurde keine einzige Pfadzeile gefunden.')
+        # Mandat nur, wenn ein Eigentuemer hinterlegt ist — die uebrigen immer.
+        for angabe in ('Liegenschaft', 'Objekt', 'Vertrag', 'Sprache'):
+            with self.subTest(angabe=angabe):
+                self.assertIn(angabe, zeilen)
+
+    def test_die_zeilen_tragen_auch_werte(self):
+        """Sonst bestuenden fuenf leere Beschriftungen die Pruefung oben."""
+        zeilen = dict(self._pfadzeilen(self._seite()))
+        for angabe in ('Liegenschaft', 'Objekt', 'Vertrag'):
+            with self.subTest(angabe=angabe):
+                self.assertTrue(zeilen.get(angabe, '').strip(),
+                                f'Die Zeile «{angabe}» hat keinen Wert.')
+
+    def test_keine_trennzeichen_mehr_in_der_kette(self):
+        """Gegenprobe: Der alte Aufbau ist an seinen Trennern erkennbar."""
+        html = self._seite()
+        kopf = html.split('class="fw-aktenkopf"')[1].split('class="fw-kzn"')[0]
+        for zeichen in ('›', 'Korrespondenzsprache'):
+            with self.subTest(zeichen=zeichen):
+                self.assertNotIn(
+                    zeichen, kopf,
+                    f'{zeichen!r} deutet auf die alte einzeilige Kette hin.')
