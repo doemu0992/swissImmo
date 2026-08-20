@@ -34,6 +34,12 @@ HEUTE = {
     'person': ['uebersicht', 'vertraege', 'finanzen', 'dokumente',
                'aktivitaet', 'verlauf'],
     'schaden': ['uebersicht', 'verlauf', 'handwerker', 'fotos'],
+    # Mandat und Dienstleister hatten bis 4b.12 GAR KEINE Detailseite und
+    # damit auch keine alten Reiter. Was hier steht, ist deshalb kein
+    # Ist-Zustand, sondern die Aufteilung, mit der die Seiten neu gebaut
+    # wurden — dieselben Schluessel, die `AKTENTYPEN[...].alt` kennt.
+    'mandat': ['uebersicht', 'abrechnung', 'kontokorrent', 'dokumente', 'verlauf'],
+    'dienstleister': ['uebersicht', 'auftraege', 'finanzen', 'dokumente', 'verlauf'],
 }
 
 

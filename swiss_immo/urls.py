@@ -89,6 +89,10 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
 from core.views.fw import (fw_arbeit, fw_fall_detail, fw_fallschritt_erledigen,
                            fw_termine, fw_termin_neu, fw_termin_status,
                            fw_abwesenheiten, fw_abwesenheit_neu,
+                           fw_regelwerk, fw_regelsatz_form, fw_regelsatz_loeschen,
+                           fw_regelwerk_protokoll, fw_regelanwendung_uebersteuern,
+                           fw_kuendigung_pruefen,
+                           fw_mandat_detail, fw_dienstleister_detail,
                            fw_laeufe, fw_zulauf, fw_zulauf_uebernehmen,
                            fw_dashboard, fw_finanzen, fw_berichte, fw_betriebskostenspiegel, fw_betriebsrechnung_pdf, fw_leerstand_verlauf, fw_auswertung, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_debitor_abschreiben, fw_liegenschaften, fw_mieterspiegel, fw_objekte,
                            fw_personen, fw_vertraege, fw_mieterwechsel, fw_vermarktung, fw_objekt_ausschreiben, fw_expose_pdf,
@@ -341,6 +345,7 @@ urlpatterns = [
     path('neu/schaeden/<int:pk>/antwort/', fw_schaden_antwort, name='fw_schaden_antwort'),
     path('neu/dienstleister/', fw_dienstleister, name='fw_dienstleister'),
     path('neu/dienstleister/neu/', fw_dienstleister_neu, name='fw_dienstleister_neu'),
+    path('neu/dienstleister/<int:pk>/', fw_dienstleister_detail, name='fw_dienstleister_detail'),
     path('neu/dienstleister/<int:pk>/bearbeiten/', fw_dienstleister_bearbeiten, name='fw_dienstleister_bearbeiten'),
     path('neu/dienstleister/<int:pk>/loeschen/', fw_dienstleister_loeschen, name='fw_dienstleister_loeschen'),
     path('neu/assets/', fw_assets, name='fw_assets'),
@@ -375,6 +380,18 @@ urlpatterns = [
     path('neu/termine/<int:pk>/status/', fw_termin_status, name='fw_termin_status'),
     path('neu/abwesenheiten/', fw_abwesenheiten, name='fw_abwesenheiten'),
     path('neu/abwesenheiten/neu/', fw_abwesenheit_neu, name='fw_abwesenheit_neu'),
+    # Phase 4b.10: Fristenwaechter. Die Reihenfolge ist bedeutsam — 'neu' und
+    # 'protokoll' muessen VOR '<int:pk>' stehen, sonst faengt der Int-Konverter
+    # sie zwar nicht ab, aber die Absicht bliebe unklar.
+    path('neu/regelwerk/', fw_regelwerk, name='fw_regelwerk'),
+    path('neu/regelwerk/neu/', fw_regelsatz_form, name='fw_regelsatz_neu'),
+    path('neu/regelwerk/protokoll/', fw_regelwerk_protokoll, name='fw_regelwerk_protokoll'),
+    path('neu/regelwerk/anwendung/<int:pk>/uebersteuern/', fw_regelanwendung_uebersteuern,
+         name='fw_regelanwendung_uebersteuern'),
+    path('neu/regelwerk/<int:pk>/', fw_regelsatz_form, name='fw_regelsatz_bearbeiten'),
+    path('neu/regelwerk/<int:pk>/loeschen/', fw_regelsatz_loeschen, name='fw_regelsatz_loeschen'),
+    path('neu/vertraege/<int:vertrag_id>/kuendigen/pruefen/', fw_kuendigung_pruefen,
+         name='fw_kuendigung_pruefen'),
     path('neu/faelle/<int:pk>/', fw_fall_detail, name='fw_fall_detail'),
     path('neu/fallschritte/<int:pk>/erledigen/', fw_fallschritt_erledigen,
          name='fw_fallschritt_erledigen'),
@@ -428,6 +445,9 @@ urlpatterns = [
     path('neu/rechtsgrundlagen/', fw_rechtsgrundlagen, name='fw_rechtsgrundlagen'),
     path('neu/mandate/', fw_eigentuemer_liste, name='fw_eigentuemer_liste'),
     path('neu/mandate/neu/', fw_eigentuemer_form, name='fw_eigentuemer_neu'),
+    # Phase 4b.12: die Mandatsakte. Muss NACH 'neu/' stehen, damit der
+    # Int-Konverter nicht zuerst greift.
+    path('neu/mandate/<int:pk>/', fw_mandat_detail, name='fw_mandat_detail'),
     path('neu/mandate/<int:pk>/bearbeiten/', fw_eigentuemer_form, name='fw_eigentuemer_bearbeiten'),
     path('neu/mandate/<int:pk>/loeschen/', fw_eigentuemer_loeschen, name='fw_eigentuemer_loeschen'),
     path('neu/mandate/<int:pk>/abrechnung/', fw_eigentuemer_abrechnung, name='fw_eigentuemer_abrechnung'),

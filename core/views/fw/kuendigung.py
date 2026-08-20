@@ -105,6 +105,38 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         termin = berechne_kuendigungstermin(v, eingang)
         gewuenscht = d('gewuenschtes_ende')
         ausserord = P.get('ausserordentlich') == 'on'
+
+        # ---- REGELWERK (Fristenwächter) ----
+        # Bis 4b.10 stand hier nur die Klemmung weiter unten. Sie fängt den zu
+        # FRÜHEN Termin, nicht aber ein Datum, das gar kein zulässiger Termin
+        # ist (der 15. eines Monats), und sie hinterlässt keine Spur, unter
+        # welcher Fassung entschieden wurde. Beides leistet das Regelwerk.
+        #
+        # Ausserordentliche Kündigungen laufen NICHT durch die Prüfung: Art.
+        # 257d, 266g und 271a haben eigene Fristen, die diese Regelart nicht
+        # rechnet. Eine Regel auf einen Fall anzuwenden, für den sie nicht
+        # gemacht ist, wäre schlechter als keine Regel.
+        regel_anwendung = None
+        if not ausserord:
+            from core.views.fw.regelwerk import folgekosten, pruefung_zum_vertrag
+            from faelle.regelwerk import sperrt
+            befund, regel_anwendung, regel = pruefung_zum_vertrag(
+                v, eingang, gewuenscht)
+            if not befund.ok:
+                kosten = folgekosten(befund, v)
+                text = befund.meldung
+                if kosten and kosten['betrag']:
+                    text += (f' Zwischen den beiden Terminen liegen '
+                             f'{kosten["monate"]} Monatszinse — rund CHF '
+                             f'{kosten["betrag"]:,.0f}'.replace(',', "'") + '.')
+                if regel and sperrt(regel, befund):
+                    # Geprüfte Regel mit Verbindlichkeit «Sperre»: nicht
+                    # speichern. Das ist der einzige Fall, in dem das Regelwerk
+                    # den Betrieb anhält — und er setzt voraus, dass jemand den
+                    # Regelsatz ausdrücklich als geprüft gekennzeichnet hat.
+                    messages.error(request, f'⛔ {text}')
+                    return redirect(f'/neu/vertraege/{v.id}/kuendigen/')
+                messages.warning(request, f'⚠️ {text}')
         # Wirksames Ende: ausserordentlich → gewünschtes Datum. Ordentlich: ein zu
         # FRÜH gewünschtes Ende gilt von Gesetzes wegen auf den nächstmöglichen
         # Termin (Art. 266a Abs. 2 OR) — serverseitig auf den berechneten
@@ -164,8 +196,16 @@ def fw_kuendigung_erfassen(request, vertrag_id):
                                          bemerkung=f"Automatisch aus Kündigung (Ende {per.strftime('%d.%m.%Y')})")
                 hinweis = " · Leerstand ab " + beginn.strftime('%d.%m.%Y') + " angelegt"
 
+        # Der Regelstand gehört in die Spur: Wird die Regel später berichtigt,
+        # ist das die Angabe, über die sich die betroffenen Kündigungen finden
+        # lassen, ohne jede Akte einzeln zu öffnen.
+        regel_spur = ''
+        if regel_anwendung is not None:
+            regel_spur = (f", Regel {regel_anwendung.art} Stand "
+                          f"{regel_anwendung.regel_stand:%d.%m.%Y} → "
+                          f"{regel_anwendung.get_befund_display().lower()}")
         log_aktion(request, "Kündigung erfasst", str(v.mieter),
-                   f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen{hinweis}", ziel=v)
+                   f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen{hinweis}{regel_spur}", ziel=v)
         if P.get('embed'):
             return render(request, 'fw/_modal_done.html', {
                 'msg': f"Kündigung erfasst · {n_pendenzen} Auszugs-Pendenzen"})

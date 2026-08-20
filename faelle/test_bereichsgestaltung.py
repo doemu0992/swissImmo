@@ -51,6 +51,15 @@ SEITEN = {
     'vertrag_detail.html': 'vt',
     'schaden_detail.html': 'sc',
     'person_detail.html': 'pd',
+    # 4b.11: Die Objektakte fehlte hier, seit es sie als umgestellte Akte
+    # gibt — der Wächter sah sie schlicht nicht an. Deshalb steht unten
+    # `test_jede_umgestellte_akte_wird_hier_gemessen`: Ein Typ, der als
+    # umgestellt gilt und in diesem Verzeichnis fehlt, ist ungemessen.
+    'objekt_detail.html': 'obj',
+    # 4b.12: von Anfang an auf der Komponentenschicht gebaut — die Deckel
+    # stehen deshalb auf 0 und halten sie dort.
+    'mandat_detail.html': 'md',
+    'dienstleister_detail.html': 'dl',
 }
 
 #: (Datei, Bereich) → erlaubte Höchstzahl alter Farbklassen.
@@ -72,19 +81,48 @@ DECKEL = {
     ('person_detail.html', 'chronik'): 0,
     ('person_detail.html', 'faelle'): 0,
 
-    ('schaden_detail.html', 'stammdaten'): 31,
-    ('schaden_detail.html', 'chronik'): 22,
+    # 4b.11: Von 109 auf 59 gesenkt — Felder, Beschriftungen, Knoepfe und
+    # Menuezeilen kommen jetzt aus der Komponentenschicht. Was bleibt, sind
+    # Einzelstuecke (Statusfarben in Bedingungen, Fototabellen), die eine
+    # Zeile-fuer-Zeile-Durchsicht brauchen.
+    ('schaden_detail.html', 'stammdaten'): 10,
+    ('schaden_detail.html', 'chronik'): 16,
     ('schaden_detail.html', 'finanzen'): 0,
     ('schaden_detail.html', 'faelle'): 0,
-    ('schaden_detail.html', 'handwerker'): 38,
-    ('schaden_detail.html', 'dokumente'): 13,
+    ('schaden_detail.html', 'handwerker'): 24,
+    ('schaden_detail.html', 'dokumente'): 8,
 
-    ('vertrag_detail.html', 'stammdaten'): 90,
+    # 4b.11: Von 179 auf 98 gesenkt.
+    ('vertrag_detail.html', 'stammdaten'): 42,
     ('vertrag_detail.html', 'chronik'): 1,
-    ('vertrag_detail.html', 'finanzen'): 22,
-    ('vertrag_detail.html', 'dokumente'): 25,
-    ('vertrag_detail.html', 'faelle'): 17,
+    ('vertrag_detail.html', 'finanzen'): 15,
+    ('vertrag_detail.html', 'dokumente'): 21,
+    ('vertrag_detail.html', 'faelle'): 10,
     ('vertrag_detail.html', 'nebenkosten'): 0,
+
+    # 4b.11: Von 478 auf 164 gesenkt, und der Bereich «Fälle» ist neu und
+    # deshalb von Anfang an auf 0. Die drei grossen Reste sind Tabellen mit
+    # vielen Formularzeilen (Sollmietzins, Raumbuch, Geraete/Zaehler).
+    ('objekt_detail.html', 'stammdaten'): 14,
+    ('objekt_detail.html', 'chronik'): 23,
+    ('objekt_detail.html', 'finanzen'): 54,
+    ('objekt_detail.html', 'dokumente'): 10,
+    ('objekt_detail.html', 'faelle'): 0,
+    ('objekt_detail.html', 'ausstattung'): 61,
+
+    ('mandat_detail.html', 'stammdaten'): 0,
+    ('mandat_detail.html', 'liegenschaften'): 0,
+    ('mandat_detail.html', 'finanzen'): 0,
+    ('mandat_detail.html', 'dokumente'): 0,
+    ('mandat_detail.html', 'faelle'): 0,
+    ('mandat_detail.html', 'chronik'): 0,
+
+    ('dienstleister_detail.html', 'stammdaten'): 0,
+    ('dienstleister_detail.html', 'auftraege'): 0,
+    ('dienstleister_detail.html', 'finanzen'): 0,
+    ('dienstleister_detail.html', 'dokumente'): 0,
+    ('dienstleister_detail.html', 'faelle'): 0,
+    ('dienstleister_detail.html', 'chronik'): 0,
 }
 
 #: Eingebundene Bausteine zählen in keiner Seite mit — sie brauchen einen
@@ -119,6 +157,47 @@ class BereichsgestaltungTests(TestCase):
                         f'{sorted(set(gefunden))[:5]}. Die Komponentenschicht in '
                         f'base.html deckt Karte, Zeile, Tabelle, Betrag, Feld und '
                         f'Knopf ab — bitte von dort nehmen.')
+
+    def test_jede_umgestellte_akte_wird_hier_gemessen(self):
+        """Der Wächter muss wissen, was er alles anzusehen hat.
+
+        Bis 4b.11 fehlte `objekt_detail.html` in SEITEN. Der Test war grün und
+        sagte damit nichts über die Objektakte — die mit 478 alten Farbklassen
+        die schlechteste von allen war. Dieselbe Falle wie beim Aktenkopf am
+        20.08.2026: Eine zweite, unabhängig gepflegte Liste, die still hinter
+        der ersten zurückbleibt.
+        """
+        from faelle.test_reiter_panels import TEMPLATES, UMGESTELLT
+        fehlend = sorted(
+            typ for typ in UMGESTELLT
+            if TEMPLATES[typ][0].removeprefix('fw/') not in SEITEN)
+        self.assertEqual(
+            fehlend, [],
+            f'Diese Akten gelten als umgestellt, ihre Bereichsgestaltung wird '
+            f'hier aber nie gemessen: {", ".join(fehlend)}')
+
+    def test_die_deckel_sind_nicht_veraltet(self):
+        """Ein zu hoher Deckel ist ein stiller Freibrief.
+
+        Die Zahlen sind eine Sperrklinke: Sie dürfen nur sinken. Wer einen
+        Bereich umbaut und den Deckel stehen lässt, gibt den frei gewordenen
+        Abstand als Guthaben für neue Tailwind-Klassen weiter. Diese Prüfung
+        verlangt, dass jeder Deckel dem Ist-Stand entspricht — bis auf eine
+        kleine Reserve, damit nicht jede Zeile Formatierung den Test rot macht.
+        """
+        RESERVE = 3
+        zu_hoch = []
+        for datei, praefix in sorted(SEITEN.items()):
+            for name, block in sorted(bereiche(datei, praefix).items()):
+                ist = len(ALT.findall(block))
+                deckel = DECKEL[(datei, name)]
+                if deckel > ist + RESERVE:
+                    zu_hoch.append(f'{datei}·{name}: Deckel {deckel}, ist {ist}')
+        self.assertEqual(
+            zu_hoch, [],
+            'Diese Deckel liegen deutlich über dem Ist-Stand und geben den '
+            'Abstand als Guthaben frei. Bitte auf den Ist-Wert setzen:\n  '
+            + '\n  '.join(zu_hoch))
 
     def test_bausteine_zaehlen_ebenfalls(self):
         for datei, erlaubt in sorted(BAUSTEINE.items()):

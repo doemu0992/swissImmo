@@ -1,0 +1,123 @@
+{% extends 'fw/base.html' %}
+{% block title %}Regelwerk — swissImmo{% endblock %}
+
+{% block content %}
+{% comment %} Der Fristenwächter aus mockups/konzept-v2.html. Die Rechenlogik
+   stand seit Phase 4a in faelle/regelwerk.py und wurde von nichts aufgerufen;
+   hier bekommt sie ihre Bedienung. {% endcomment %}
+
+<div class="fw-phead">
+    <div>
+        <h1>Regelwerk</h1>
+        <p>Fristen und Termine als Daten, nicht als Programmcode — damit eine
+           Berichtigung eine Eingabe ist und keine Auslieferung.</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="/neu/regelwerk/protokoll/" class="fw-btn"><i class="fa-solid fa-clock-rotate-left"></i>Protokoll</a>
+        <a href="/neu/regelwerk/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i>Regelsatz</a>
+    </div>
+</div>
+
+{% comment %} Der wichtigste Satz der Seite und deshalb der erste. Wer ein
+   Regelwerk sieht, nimmt an, es sei geprüft. {% endcomment %}
+<div class="fw-card">
+    <div class="fw-hinweis warn">
+        <span class="fw-hi"><i class="fa-solid fa-scale-balanced"></i></span>
+        <div class="fw-ht"><b>Die mitgelieferten Regeln sind nicht juristisch geprüft.</b>
+            Sie geben die gesetzliche Grundregel wieder — drei Monate auf einen
+            ortsüblichen Termin (Art. 266c OR). Ortsübliche Termine sind kantonal
+            verschieden, Geschäftsräume, befristete Verhältnisse und
+            ausserordentliche Kündigungen weichen ab. Solange ein Regelsatz nicht
+            als geprüft gekennzeichnet ist, <b>warnt</b> er nur und hält nichts an.
+            Erst das Kennzeichen «juristisch geprüft» schaltet eine Sperre scharf.</div>
+    </div>
+</div>
+
+{% if beanstandet %}
+<div class="fw-card">
+    <div class="fw-hinweis crit">
+        <span class="fw-hi"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <div class="fw-ht"><b>{{ beanstandet }} Beanstandung{{ beanstandet|pluralize:"en" }} ohne Übersteuerung</b>
+            Ein Befund wurde beanstandet und weder korrigiert noch mit Begründung
+            überstimmt.
+            <a href="/neu/regelwerk/protokoll/?befund=beanstandet" class="fw-link">Im Protokoll ansehen</a></div>
+    </div>
+</div>
+{% endif %}
+
+{% for s in saetze %}
+<div class="fw-card">
+    <div class="fw-kopf">
+        <span class="fw-ikon {% if s.satz.geprueft %}good{% else %}warn{% endif %}">
+            <i class="fa-solid {% if s.satz.geprueft %}fa-scale-balanced{% else %}fa-flask{% endif %}"></i></span>
+        <span class="fw-t">{{ s.satz.bezeichnung }}</span>
+        {% if s.satz.kanton %}<span class="fw-chip fw-brand">{{ s.satz.kanton }}</span>
+        {% else %}<span class="fw-chip fw-mut">alle Kantone</span>{% endif %}
+        {% if s.satz.geprueft %}<span class="fw-chip fw-good">geprüft</span>
+        {% else %}<span class="fw-chip fw-warn">ungeprüft — warnt nur</span>{% endif %}
+        {% if not s.satz.aktiv %}<span class="fw-chip fw-mut">inaktiv</span>{% endif %}
+        <span class="fw-rechts">
+            <a href="/neu/regelwerk/{{ s.satz.id }}/" class="fw-btn">Bearbeiten</a></span>
+    </div>
+
+    {% if s.satz.hinweis %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-s">{{ s.satz.hinweis }}</div></div></div>
+    {% endif %}
+
+    {% for r in s.regeln %}
+    <div class="fw-zeile">
+        <span class="fw-marker {% if r.sperrt %}crit{% elif r.rechnet %}brand{% endif %}"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ r.regel.get_art_display }}</div>
+            <div class="fw-s">
+                {% for schluessel, wert in r.regel.parameter.items %}{{ schluessel }}:
+                    {% if wert.0 %}{{ wert|join:", " }}{% else %}{{ wert }}{% endif %}{% if not forloop.last %} · {% endif %}
+                {% empty %}ohne eigene Parameter — es gilt, was im Vertrag steht{% endfor %}
+            </div>
+            {% if r.regel.begruendung %}<div class="fw-s">{{ r.regel.begruendung }}</div>{% endif %}
+        </div>
+        {% if not r.rechnet %}
+        {% comment %} Drei der vier Regelarten sind als Datenmodell vorhanden,
+           aber in faelle.regelwerk.pruefen noch nicht gerechnet. Das muss hier
+           stehen, sonst legt jemand eine Regel an, die nie etwas tut. {% endcomment %}
+        <span class="fw-chip fw-warn">prüft noch nichts</span>
+        {% elif r.sperrt %}<span class="fw-chip fw-crit">sperrt</span>
+        {% else %}<span class="fw-chip fw-mut">warnt</span>{% endif %}
+    </div>
+    {% empty %}
+    <p class="fw-leer">Dieser Regelsatz enthält keine Regel — er tut nichts.</p>
+    {% endfor %}
+</div>
+{% empty %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-scale-balanced"></i></span>
+        <span class="fw-t">Kein Regelsatz hinterlegt</span></div>
+    <p class="fw-leer">Ohne Regelsatz prüft die Kündigungserfassung nur gegen die
+        Angaben im einzelnen Vertrag — Frist und Termine, wie sie dort stehen.
+        Das ist keine Fehlfunktion, aber es gibt weder eine kantonale Fassung
+        noch eine Sperre.<br>
+        <a href="/neu/regelwerk/neu/" class="fw-btn fw-primary mt-3"><i class="fa-solid fa-plus"></i>Ersten Regelsatz anlegen</a></p>
+</div>
+{% endfor %}
+
+<div class="fw-subhead">Zuletzt angewendet</div>
+<div class="fw-card">
+    {% for a in letzte %}
+    <div class="fw-zeile">
+        <span class="fw-marker {% if a.befund == 'beanstandet' and not a.uebersteuert %}crit{% elif a.befund == 'beanstandet' %}warn{% else %}good{% endif %}"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ a.get_befund_display }}{% if a.uebersteuert %} · übersteuert{% endif %}</div>
+            <div class="fw-s">{{ a.meldung|truncatechars:150 }}</div>
+        </div>
+        <div class="fw-zeit">{{ a.zeitpunkt|date:"d.m.Y H:i" }}<br>
+            <span class="fw-klein">Stand {{ a.regel_stand|date:"d.m.Y" }}</span></div>
+    </div>
+    {% empty %}
+    <p class="fw-leer">Noch keine Regel angewendet.</p>
+    {% endfor %}
+    <div class="fw-fuss">
+        <a href="/neu/regelwerk/protokoll/" class="fw-link">Ganzes Protokoll</a>
+        <span>Jede Anwendung wird festgehalten — auch die ohne Beanstandung.</span>
+    </div>
+</div>
+{% endblock %}

@@ -43,7 +43,7 @@
                     <form method="post" action="/neu/schaeden/{{ t.id }}/loeschen/"
                           onsubmit="return confirm('Schadensmeldung #{{ t.id }} wirklich löschen? Fotos und Verlauf werden mitgelöscht.');">
                         {% csrf_token %}
-                        <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50"><i class="fa-solid fa-trash w-4"></i>Schadensmeldung löschen</button>
+                        <button class="fw-menuzeile crit"><i class="fa-solid fa-trash w-4"></i>Schadensmeldung löschen</button>
                     </form>
                 </div>
             </div>
@@ -98,13 +98,13 @@
         <div style="padding:13px 15px">
             <form method="post" action="/neu/schaeden/{{ t.id }}/status/" class="flex flex-wrap items-center gap-3">
                 {% csrf_token %}
-                <select name="status" class="bg-slate-100 rounded-lg text-sm px-3 py-2">
+                <select name="status" class="fw-feld">
                     {% for key, val in status_wahl.items %}
                     <option value="{{ key }}" {% if t.status == key %}selected{% endif %}>{{ val.0 }}</option>
                     {% endfor %}
                 </select>
-                <label class="flex items-center gap-2 text-xs text-slate-600">
-                    <input type="checkbox" name="melder_informieren" class="accent-indigo-600">Melder per E-Mail informieren
+                <label class="fw-s flex items-center gap-2">
+                    <input type="checkbox" name="melder_informieren" class="fw-haken">Melder per E-Mail informieren
                 </label>
                 <button class="fw-btn fw-primary" style="padding:6px 12px;font-size:12px">Status setzen</button>
             </form>
@@ -113,21 +113,21 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5">
-            <h3 class="font-bold text-slate-800 mb-3">Schadensbeschreibung</h3>
+            <h3 class="fw-t mb-3">Schadensbeschreibung</h3>
             <p class="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{{ t.beschreibung|default:"—" }}</p>
             {% if t.foto %}
             <div class="mt-4"><img src="{{ t.foto.url }}" alt="Schaden" class="rounded-lg max-h-80 border border-slate-200"></div>
             {% endif %}
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <h3 class="font-bold text-slate-800 mb-3">Meldung</h3>
+        <div class="fw-card" style="padding:20px">
+            <h3 class="fw-t mb-3">Meldung</h3>
             <dl class="text-sm space-y-2">
-                <div class="flex justify-between"><dt class="text-slate-500">Melder</dt><dd class="text-slate-800 font-medium text-right">{{ melder }}</dd></div>
-                {% if t.email_melder %}<div class="flex justify-between"><dt class="text-slate-500">E-Mail</dt><dd class="text-slate-800 font-medium text-right">{{ t.email_melder }}</dd></div>{% endif %}
-                {% if t.tel_melder %}<div class="flex justify-between"><dt class="text-slate-500">Telefon</dt><dd class="text-slate-800 font-medium">{{ t.tel_melder }}</dd></div>{% endif %}
-                {% if t.raum %}<div class="flex justify-between"><dt class="text-slate-500">Raum</dt><dd class="text-slate-800 font-medium">{{ t.raum }}</dd></div>{% endif %}
-                <div class="flex justify-between"><dt class="text-slate-500">Zutritt</dt><dd class="text-slate-800 font-medium">{{ t.get_zutritt_display }}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">Gemeldet</dt><dd class="text-slate-800 font-medium">{{ t.erstellt_am|date:"d.m.Y H:i" }}</dd></div>
+                <div class="flex justify-between"><dt class="fw-s">Melder</dt><dd class="fw-t text-right">{{ melder }}</dd></div>
+                {% if t.email_melder %}<div class="flex justify-between"><dt class="fw-s">E-Mail</dt><dd class="fw-t text-right">{{ t.email_melder }}</dd></div>{% endif %}
+                {% if t.tel_melder %}<div class="flex justify-between"><dt class="fw-s">Telefon</dt><dd class="fw-t">{{ t.tel_melder }}</dd></div>{% endif %}
+                {% if t.raum %}<div class="flex justify-between"><dt class="fw-s">Raum</dt><dd class="fw-t">{{ t.raum }}</dd></div>{% endif %}
+                <div class="flex justify-between"><dt class="fw-s">Zutritt</dt><dd class="fw-t">{{ t.get_zutritt_display }}</dd></div>
+                <div class="flex justify-between"><dt class="fw-s">Gemeldet</dt><dd class="fw-t">{{ t.erstellt_am|date:"d.m.Y H:i" }}</dd></div>
             </dl>
             <!-- Raumbuch-Element verknüpfen -->
             <div class="mt-4 pt-4 border-t border-slate-100">
@@ -135,16 +135,16 @@
                 {% if t.betroffene_einheit_id %}
                 <form method="post" action="/neu/schaeden/{{ t.id }}/ausstattung/" class="flex flex-col gap-2">
                     {% csrf_token %}
-                    <select name="ausstattung_id" class="bg-slate-100 rounded-lg text-sm px-3 py-2">
+                    <select name="ausstattung_id" class="fw-feld">
                         <option value="">— kein Element —</option>
                         {% for el in ausstattung_elemente %}<option value="{{ el.id }}" {% if t.ausstattung_id == el.id %}selected{% endif %}>{{ el.raum }} · {{ el.kategorie }}</option>{% endfor %}
                     </select>
                     <button class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 text-xs font-semibold px-3 py-1.5 rounded-lg self-start">Verknüpfen</button>
                 </form>
-                {% if t.ausstattung_id %}<p class="text-[11px] text-slate-400 mt-2">Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements. <a href="/neu/objekte/{{ t.betroffene_einheit_id }}/#obj-raumbuch" class="text-indigo-600 hover:underline">Raumbuch</a></p>{% endif %}
-                {% if not ausstattung_elemente %}<p class="text-[11px] text-slate-400 mt-1">Noch keine Ausstattung am Objekt erfasst.</p>{% endif %}
+                {% if t.ausstattung_id %}<p class="text-[11px] text-slate-400 mt-2">Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements. <a href="/neu/objekte/{{ t.betroffene_einheit_id }}/#obj-raumbuch" class="fw-link">Raumbuch</a></p>{% endif %}
+                {% if not ausstattung_elemente %}<p class="fw-klein mt-1">Noch keine Ausstattung am Objekt erfasst.</p>{% endif %}
                 {% else %}
-                <p class="text-xs text-slate-400">Kein Mietobjekt zugeordnet.</p>
+                <p class="fw-klein">Kein Mietobjekt zugeordnet.</p>
                 {% endif %}
             </div>
         </div>
@@ -155,15 +155,15 @@
 <div data-panel="sc" id="sc-chronik" class="hidden">
     <!-- Antwort an Melder -->
     <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
-        <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-reply text-indigo-500 mr-1.5"></i>Antwort an Melder{% if melder_email %} <span class="text-xs font-normal text-slate-400">({{ melder_email }})</span>{% endif %}</h3>
+        <h3 class="fw-t mb-3"><i class="fa-solid fa-reply text-indigo-500 mr-1.5"></i>Antwort an Melder{% if melder_email %} <span class="text-xs font-normal text-slate-400">({{ melder_email }})</span>{% endif %}</h3>
         <form method="post" action="/neu/schaeden/{{ t.id }}/antwort/">
             {% csrf_token %}
             <textarea name="text" rows="3" required placeholder="Ihre Nachricht an den Melder…" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 mb-3"></textarea>
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-paper-plane mr-1.5"></i>Senden</button>
+            <button class="fw-btn fw-primary"><i class="fa-solid fa-paper-plane mr-1.5"></i>Senden</button>
             {% if not melder_email %}<span class="text-xs text-amber-600 ml-2">Kein E-Mail des Melders — wird nur im Verlauf gespeichert.</span>{% endif %}
         </form>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <div class="fw-card" style="padding:20px">
         {% for n in nachrichten %}
         <div class="flex gap-3 pb-4 mb-4 border-b border-slate-50 last:border-0 last:mb-0 last:pb-0">
             <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0
@@ -172,9 +172,9 @@
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
-                    <span class="text-sm font-semibold text-slate-900">{{ n.absender_name }}</span>
+                    <span class="fw-t">{{ n.absender_name }}</span>
                     {% if n.is_intern %}<span class="text-[10px] font-bold uppercase bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">intern</span>{% endif %}
-                    <span class="text-xs text-slate-400">{{ n.erstellt_am|date:"d.m.Y H:i" }}</span>
+                    <span class="fw-klein">{{ n.erstellt_am|date:"d.m.Y H:i" }}</span>
                 </div>
                 <p class="text-sm text-slate-700 mt-1 whitespace-pre-line">{{ n.nachricht }}</p>
                 {% if n.datei %}<a href="{{ n.datei.url }}" target="_blank" rel="noopener" class="text-xs text-indigo-600 hover:underline mt-1 inline-block"><i class="fa-solid fa-paperclip mr-1"></i>Anhang</a>{% endif %}
@@ -261,8 +261,8 @@
         <form method="post" action="/neu/schaeden/{{ t.id }}/auftrag/" class="space-y-3">
             {% csrf_token %}
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Handwerker / Firma *</label>
-                <select name="handwerker_id" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <label class="fw-klein block mb-1">Handwerker / Firma *</label>
+                <select name="handwerker_id" required class="fw-feld w-full">
                     <option value="">— wählen —</option>
                     {% for hw in handwerker_liste %}
                     <option value="{{ hw.id }}">{{ hw.firma }}{% if hw.branche %} · {{ hw.get_branche_display }}{% endif %}{% if not hw.email %} (keine E-Mail){% endif %}</option>
@@ -270,14 +270,14 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Auftragstext (aus Vorlage, editierbar)</label>
-                <textarea name="auftragstext" rows="6" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">{{ auftrag_vorschlag }}</textarea>
-                <p class="text-[11px] text-slate-400 mt-1">Vorlagen bearbeitest du unter <a href="/neu/vorlagen/" class="text-indigo-600 hover:underline">Vorlagen</a> (Kategorie „Schaden – Auftrag an Handwerker").</p>
+                <label class="fw-klein block mb-1">Auftragstext (aus Vorlage, editierbar)</label>
+                <textarea name="auftragstext" rows="6" class="fw-feld w-full">{{ auftrag_vorschlag }}</textarea>
+                <p class="fw-klein mt-1">Vorlagen bearbeitest du unter <a href="/neu/vorlagen/" class="fw-link">Vorlagen</a> (Kategorie „Schaden – Auftrag an Handwerker").</p>
             </div>
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-paper-plane mr-1.5"></i>Beauftragen & Mails senden</button>
+            <button class="fw-btn fw-primary"><i class="fa-solid fa-paper-plane mr-1.5"></i>Beauftragen & Mails senden</button>
         </form>
         {% else %}
-        <p class="text-sm text-slate-500">Noch keine Handwerker erfasst — lege zuerst unter <a href="/neu/dienstleister/" class="text-indigo-600 hover:underline">Dienstleister</a> einen an.</p>
+        <p class="text-sm text-slate-500">Noch keine Handwerker erfasst — lege zuerst unter <a href="/neu/dienstleister/" class="fw-link">Dienstleister</a> einen an.</p>
         {% endif %}
     </div>
 
@@ -288,7 +288,7 @@
 
     <div class="space-y-4">
         {% for a in auftraege %}
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <div class="fw-card" style="padding:20px">
             <div class="flex items-start justify-between gap-3 mb-3">
                 <div>
                     <div class="font-semibold text-slate-900">{{ a.handwerker }}</div>
@@ -312,14 +312,14 @@
             </div>
             <form method="post" action="/neu/auftrag/{{ a.id }}/kosten/" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                 {% csrf_token %}
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kostenschätzung (CHF)</label>
-                    <input name="kosten_geschaetzt" value="{{ a.kosten_geschaetzt|default_if_none:'' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Effektive Kosten (CHF)</label>
-                    <input name="kosten_effektiv" value="{{ a.kosten_effektiv|default_if_none:'' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2"></div>
+                <div><label class="fw-klein block mb-1">Kostenschätzung (CHF)</label>
+                    <input name="kosten_geschaetzt" value="{{ a.kosten_geschaetzt|default_if_none:'' }}" class="fw-feld w-full"></div>
+                <div><label class="fw-klein block mb-1">Effektive Kosten (CHF)</label>
+                    <input name="kosten_effektiv" value="{{ a.kosten_effektiv|default_if_none:'' }}" class="fw-feld w-full"></div>
                 <div>
                     {% if not a.kreditoren_rechnung_id %}
                     <label class="flex items-center gap-2 text-xs text-slate-600 mb-2">
-                        <input type="checkbox" name="kreditor_erstellen" class="accent-indigo-600">Kreditorenrechnung erstellen
+                        <input type="checkbox" name="kreditor_erstellen" class="fw-haken">Kreditorenrechnung erstellen
                     </label>
                     {% endif %}
                     {% if a.freigabe_status == 'nicht_noetig' or a.freigabe_status == 'abgelehnt' %}
@@ -343,12 +343,12 @@
 <!-- FOTOS -->
 <div data-panel="sc" id="sc-dokumente" class="hidden">
     <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
-        <h3 class="font-bold text-slate-800 text-sm mb-3">Fotos hinzufügen</h3>
+        <h3 class="fw-t mb-3">Fotos hinzufügen</h3>
         <form method="post" action="/neu/schaeden/{{ t.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
             {% csrf_token %}
             <input name="fotos" type="file" accept="image/*" multiple required
                    class="text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold">
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-upload mr-1.5"></i>Hochladen</button>
+            <button class="fw-btn fw-primary"><i class="fa-solid fa-upload mr-1.5"></i>Hochladen</button>
         </form>
     </div>
 
@@ -356,14 +356,14 @@
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {% if t.foto %}
         <a href="{{ t.foto.url }}" target="_blank" rel="noopener" class="block group relative">
-            <img src="{{ t.foto.url }}" alt="Schaden" class="rounded-lg w-full h-40 object-cover border border-slate-200">
+            <img src="{{ t.foto.url }}" alt="Schaden" class="fw-bild">
             <span class="absolute bottom-1 left-1 text-[10px] bg-black/50 text-white px-1.5 py-0.5 rounded">Erstmeldung</span>
         </a>
         {% endif %}
         {% for f in fotos %}
         <div class="relative group">
             <a href="{{ f.bild.url }}" target="_blank" rel="noopener" title="Foto in voller Grösse öffnen" class="block">
-                <img src="{{ f.bild.url }}" alt="Foto" class="rounded-lg w-full h-40 object-cover border border-slate-200">
+                <img src="{{ f.bild.url }}" alt="Foto" class="fw-bild">
             </a>
             <form method="post" action="/neu/schaeden/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1"
                   onsubmit="return confirm('Foto löschen?');">

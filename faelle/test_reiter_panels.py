@@ -26,8 +26,6 @@ die eine Umstellung erzeugen würde.
 """
 import pathlib
 import re
-from unittest import expectedFailure
-
 from django.test import TestCase
 
 from faelle.akten import AKTENTYPEN, aus_alt
@@ -40,6 +38,9 @@ TEMPLATES = {
     'objekt': ('fw/objekt_detail.html', 'obj'),
     'person': ('fw/person_detail.html', 'pd'),
     'schaden': ('fw/schaden_detail.html', 'sc'),
+    # 4b.12: neu gebaut, deshalb von Anfang an vollstaendig.
+    'mandat': ('fw/mandat_detail.html', 'md'),
+    'dienstleister': ('fw/dienstleister_detail.html', 'dl'),
 }
 
 WURZEL = pathlib.Path('core/templates')
@@ -48,7 +49,8 @@ WURZEL = pathlib.Path('core/templates')
 #: Bei ihnen sind die ALTEN Panel-Namen absichtlich verschwunden — sie werden
 #: deshalb aus der Ist-Prüfung genommen und stattdessen streng gegen den NEUEN
 #: Satz geprüft. Wächst diese Menge, schrumpft die Arbeitsliste von 4b.
-UMGESTELLT = {'mietverhaeltnis', 'schaden', 'person', 'liegenschaft'}
+UMGESTELLT = {'mietverhaeltnis', 'schaden', 'person', 'liegenschaft', 'objekt',
+              'mandat', 'dienstleister'}
 
 
 def panels(template, praefix):
@@ -147,25 +149,23 @@ class PanelTests(TestCase):
                     f'{template} führt noch Panels, die kein Reiter mehr '
                     f'anspricht: {", ".join(uebrig)}')
 
-    @expectedFailure
     def test_umstellung_erzeugt_nur_erreichbare_reiter(self):
-        """Der eigentliche Wächter — **erwartet rot bis Phase 4b.**
+        """Der eigentliche Wächter — seit 4b.11 grün.
 
-        Solange die Templates die alten Panel-Namen führen, hat der neue
-        Reitersatz dort kein Ziel. Das ist kein Versehen, sondern der Stand:
-        Etappe 5a legt das Register an, die Templates folgen in 4b.
+        Er stand von Etappe 5a bis 4b.11 als `expectedFailure` und war in
+        dieser Zeit die **Arbeitsliste**: Seine Meldung nannte jedes fehlende
+        Panel je Template. Gemessen am 19.08.2026 fehlten Liegenschaft 4,
+        Mietverhältnis 4, Objekt 6, Person 4, Schaden 5 Panels.
 
-        `expectedFailure` statt Auskommentieren, aus zwei Gründen. Erstens
-        bleibt die Meldung sichtbar — sie nennt jedes fehlende Panel je
-        Template und ist damit die Arbeitsliste für 4b. Zweitens meldet Django
-        einen **unerwarteten Erfolg** als Fehlschlag: Sobald die Templates
-        umgestellt sind, wird der Lauf rot, und wer das behebt, muss diese
-        Zeile entfernen. Ein auskommentierter Test bliebe dagegen für immer
-        stumm.
+        Warum `expectedFailure` und nicht auskommentiert: Django meldet einen
+        **unerwarteten Erfolg** als Fehlschlag. Als die Objektakte in 4b.11
+        umgestellt war, wurde der Lauf rot — und zwang dazu, die Markierung zu
+        entfernen, statt sie stumm stehen zu lassen. Ein auskommentierter Test
+        wäre nie wieder aufgefallen.
 
-        Gemessen am 19.08.2026 fehlten: Liegenschaft 4, Mietverhältnis 4,
-        Objekt 6, Person 4, Schaden 5 Panels. Mietverhältnis ist seit Etappe
-        5b umgestellt und steht in `UMGESTELLT`; die übrigen vier fehlen noch.
+        Ab jetzt gilt er ohne Nachsicht: Wer einen neuen Aktentyp anlegt oder
+        einen Reiter umbenennt, ohne das Panel mitzuziehen, bekommt hier die
+        Liste.
         """
         from faelle.test_akten import HEUTE
         fehlend = {}
@@ -222,6 +222,9 @@ class GerenderteSeiteTests(TestCase):
             'schaden': (f'/neu/schaeden/{self.a.schaden.pk}/', 'sc'),
             'person': (f'/neu/personen/{self.a.mieter.pk}/', 'pd'),
             'liegenschaft': (f'/neu/liegenschaften/{self.a.liegenschaft.pk}/', 'lg'),
+            'objekt': (f'/neu/objekte/{self.a.einheit.pk}/', 'obj'),
+            'mandat': (f'/neu/mandate/{self.a.eigentuemer.pk}/', 'md'),
+            'dienstleister': (f'/neu/dienstleister/{self.a.handwerker.pk}/', 'dl'),
         }
 
     def test_jede_umgestellte_seite_wird_auch_gerendert(self):
@@ -300,6 +303,9 @@ class AktenkopfTests(TestCase):
             'schaden': f'/neu/schaeden/{self.a.schaden.pk}/',
             'person': f'/neu/personen/{self.a.mieter.pk}/',
             'liegenschaft': f'/neu/liegenschaften/{self.a.liegenschaft.pk}/',
+            'objekt': f'/neu/objekte/{self.a.einheit.pk}/',
+            'mandat': f'/neu/mandate/{self.a.eigentuemer.pk}/',
+            'dienstleister': f'/neu/dienstleister/{self.a.handwerker.pk}/',
         }
 
     def test_jede_umgestellte_akte_wird_hier_geprueft(self):

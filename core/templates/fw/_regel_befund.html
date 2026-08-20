@@ -1,0 +1,73 @@
+{% comment %} Das Ergebnis einer Regelprüfung. Eigenes Bruchstück, weil es an
+   zwei Stellen erscheint: laufend im Kündigungsformular (ohne Protokoll) und
+   in der Regelwerk-Übersicht als Vorschau.
+
+   Der Prototyp (mockups/konzept-v2.html, Screen «Fristenwächter») zeigt hier
+   die RECHNUNG, nicht nur das Urteil — Zugang, Frist, Fristende, nächster
+   Termin. Eine Warnung, die ihre Herleitung nicht zeigt, wird weggeklickt.
+{% endcomment %}
+{% load chf %}
+
+<div class="fw-befund {% if befund.ok %}good{% elif sperrt %}crit{% else %}warn{% endif %}">
+    <div class="fw-befund-kopf">
+        <span class="fw-ikon {% if befund.ok %}good{% elif sperrt %}crit{% else %}warn{% endif %}">
+            <i class="fa-solid {% if befund.ok %}fa-check{% elif sperrt %}fa-ban{% else %}fa-triangle-exclamation{% endif %}"></i>
+        </span>
+        <div class="fw-mitte">
+            <div class="fw-t">{% if befund.ok %}Termin trägt{% elif sperrt %}Termin wird nicht gespeichert{% else %}Termin beanstandet{% endif %}</div>
+            <div class="fw-s">{{ befund.meldung }}</div>
+        </div>
+    </div>
+
+    {% if kosten and kosten.betrag %}
+    <div class="fw-befund-kosten">
+        <span class="fw-betrag crit">CHF {{ kosten.betrag|chf }}</span>
+        <span class="fw-s">{{ kosten.monate }} Monatszins{{ kosten.monate|pluralize:"e" }} bis zum
+            nächsten zulässigen Termin. {% comment %} Ausdrücklich nicht «Verlust»:
+            ob die Wohnung in dieser Zeit weitervermietet wird, weiss hier
+            niemand. {% endcomment %}Das ist die Aussetzung, nicht der sichere
+            Verlust — bei Weitervermietung fällt sie kleiner aus.</span>
+    </div>
+    {% endif %}
+
+    {% if befund.rechnung %}
+    <details class="fw-aufklapp">
+        <summary>Rechnung anzeigen</summary>
+        <div class="fw-aufklapp-inhalt">
+            <table class="fw-table" data-stack>
+                <tbody>
+                    <tr><td data-label="Angabe">Zugang beim Empfänger</td>
+                        <td data-label="Wert">{{ befund.rechnung.zugang }}</td></tr>
+                    <tr><td data-label="Angabe">Kündigungsfrist</td>
+                        <td data-label="Wert">{{ befund.rechnung.frist_monate }} Monate</td></tr>
+                    <tr><td data-label="Angabe">Fristende</td>
+                        <td data-label="Wert">{{ befund.rechnung.fristende }}</td></tr>
+                    <tr><td data-label="Angabe">Zulässige Termine</td>
+                        <td data-label="Wert">{{ befund.rechnung.zulaessige_termine|join:", " }}</td></tr>
+                    <tr><td data-label="Angabe">Nächster möglicher Termin</td>
+                        <td data-label="Wert">{{ befund.rechnung.naechster_moeglicher|default:"—" }}</td></tr>
+                    {% if befund.rechnung.gewuenscht %}
+                    <tr><td data-label="Angabe">Genannter Termin</td>
+                        <td data-label="Wert">{{ befund.rechnung.gewuenscht }}</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </details>
+    {% endif %}
+
+    <div class="fw-befund-fuss">
+        {% if regel %}
+        <span class="fw-s">Geprüft nach «{{ regel.regelsatz }}», Stand
+            {{ regel.regelsatz.stand|date:"d.m.Y" }} ·
+            {% if regel.regelsatz.geprueft %}juristisch geprüft{% else %}<b>nicht juristisch geprüft</b>{% endif %}</span>
+        {% else %}
+        {% comment %} Kein Regelsatz hinterlegt. Das ist eine Aussage und keine
+           Panne — sie muss aber sichtbar sein, sonst hält jemand das Fehlen
+           einer Warnung für eine Unbedenklichkeitsbescheinigung. {% endcomment %}
+        <span class="fw-s">Für diese Organisation ist <b>kein Regelsatz</b> hinterlegt —
+            geprüft wurde nur gegen die Angaben im Vertrag.
+            <a href="/neu/regelwerk/" class="fw-link">Regelwerk einrichten</a></span>
+        {% endif %}
+    </div>
+</div>

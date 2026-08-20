@@ -1,0 +1,122 @@
+{% extends 'fw/base.html' %}
+{% block title %}{% if satz %}{{ satz.bezeichnung }}{% else %}Neuer Regelsatz{% endif %} — swissImmo{% endblock %}
+
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>{% if satz %}Regelsatz bearbeiten{% else %}Neuer Regelsatz{% endif %}</h1>
+        <p>Ein Satz je Kanton. Fehlt der Kanton, gilt der Satz für alle
+           Liegenschaften dieser Verwaltung.</p>
+    </div>
+    <a href="/neu/regelwerk/" class="fw-btn">Zurück</a>
+</div>
+
+<form method="post">{% csrf_token %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-scale-balanced"></i></span>
+        <span class="fw-t">Geltungsbereich</span></div>
+    <div class="fw-aufklapp-inhalt" style="background:var(--ds-surface)">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div><label class="fw-klein block mb-1">Bezeichnung *</label>
+                <input name="bezeichnung" required class="fw-feld w-full"
+                       placeholder="z.B. Grundsatz Wohnräume"
+                       value="{{ satz.bezeichnung|default:'' }}"></div>
+            <div><label class="fw-klein block mb-1">Kanton</label>
+                <input name="kanton" maxlength="2" class="fw-feld w-full" placeholder="ZH"
+                       value="{{ satz.kanton|default:'' }}">
+                <span class="fw-klein">Leer = gilt für alle Kantone.</span></div>
+            <div><label class="fw-klein block mb-1">Stand</label>
+                <input class="fw-feld w-full" disabled
+                       value="{% if satz %}{{ satz.stand|date:'d.m.Y' }}{% else %}wird beim Speichern gesetzt{% endif %}">
+                {% comment %} Nicht änderbar: Der Stand ist der Schlüssel, über den
+                   sich später die unter der alten Fassung geprüften Fälle finden
+                   lassen. Von Hand gesetzt wäre er wertlos. {% endcomment %}
+                <span class="fw-klein">Wird bei jedem Speichern auf heute gesetzt.</span></div>
+        </div>
+        <div class="mt-3">
+            <label class="fw-klein block mb-1">Hinweis</label>
+            <textarea name="hinweis" rows="2" class="fw-feld w-full"
+                      placeholder="Woher die Regeln stammen, wer sie geprüft hat, Vorbehalte.">{{ satz.hinweis|default:'' }}</textarea>
+        </div>
+        <div class="mt-3 flex flex-col gap-2">
+            <label class="flex items-center gap-2 fw-s">
+                <input type="checkbox" name="aktiv" {% if not satz or satz.aktiv %}checked{% endif %}>
+                Aktiv — wird bei der Prüfung herangezogen</label>
+            <label class="flex items-center gap-2 fw-s">
+                <input type="checkbox" name="geprueft" {% if satz.geprueft %}checked{% endif %}>
+                <b>Juristisch geprüft</b></label>
+        </div>
+        <div class="fw-hinweis warn mt-3" style="border:1px solid var(--ds-line);border-radius:var(--ds-radius)">
+            <span class="fw-hi"><i class="fa-solid fa-triangle-exclamation"></i></span>
+            <div class="fw-ht">Das Kennzeichen «geprüft» ist die einzige Stelle, an der
+                aus einer Warnung eine <b>Sperre</b> wird. Setze es erst, wenn jemand die
+                Regeln fachlich gegengelesen hat — eine falsche Sperre hält den Betrieb
+                an, eine falsche Warnung nicht.</div>
+        </div>
+    </div>
+</div>
+
+{% for z in zeilen %}
+<div class="fw-card">
+    <div class="fw-kopf">
+        <span class="fw-ikon {% if not z.rechnet %}mut{% endif %}"><i class="fa-solid fa-ruler"></i></span>
+        <span class="fw-t">{{ z.bezeichnung }}</span>
+        {% if not z.rechnet %}<span class="fw-chip fw-warn">prüft noch nichts</span>{% endif %}
+    </div>
+    <div class="fw-aufklapp-inhalt" style="background:var(--ds-surface)">
+        <label class="flex items-center gap-2 fw-s mb-3">
+            <input type="checkbox" name="aktiv_{{ z.art }}" {% if z.regel %}checked{% endif %}>
+            Diese Regel führen</label>
+
+        {% if not z.rechnet %}
+        <p class="fw-s mb-3">Diese Regelart ist als Datenmodell vorhanden, aber in
+            <code>faelle.regelwerk.pruefen</code> noch nicht gerechnet. Sie lässt sich
+            erfassen und dokumentieren, prüft aber nichts — ausdrücklich vermerkt,
+            damit niemand eine Absicherung annimmt, die es nicht gibt.</p>
+        {% endif %}
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {% for f in z.felder %}
+            <div>
+                <label class="fw-klein block mb-1">{{ f.bezeichnung }}</label>
+                <input name="{{ f.name }}" class="fw-feld w-full" value="{{ f.wert }}"
+                       {% if f.typ == 'zahl' %}type="number" min="0"{% endif %}>
+                <span class="fw-klein">{{ f.hilfe }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-3">
+            <label class="fw-klein block mb-1">Begründung / Fundstelle</label>
+            <input name="begruendung_{{ z.art }}" class="fw-feld w-full"
+                   placeholder="z.B. Art. 266c OR, Merkblatt Kanton ZH vom 03.2025"
+                   value="{{ z.regel.begruendung|default:'' }}">
+        </div>
+
+        <label class="flex items-center gap-2 fw-s mt-3">
+            <input type="checkbox" name="sperre_{{ z.art }}"
+                   {% if z.regel.verbindlichkeit == 'sperre' %}checked{% endif %}>
+            Verbindlichkeit <b>Sperre</b> statt Warnung
+            <span class="fw-klein">— wirkt erst, wenn der Regelsatz als geprüft gilt</span></label>
+    </div>
+</div>
+{% endfor %}
+
+<div class="fw-card">
+    <div class="fw-aufklapp-inhalt" style="background:var(--ds-surface)">
+        <div class="flex gap-2 flex-wrap">
+            <button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Speichern</button>
+            <a href="/neu/regelwerk/" class="fw-btn">Abbrechen</a>
+        </div>
+    </div>
+</div>
+</form>
+
+{% if satz %}
+<form method="post" action="/neu/regelwerk/{{ satz.id }}/loeschen/"
+      onsubmit="return confirm('Regelsatz löschen? Das Protokoll der bisherigen Anwendungen bleibt erhalten.')">
+    {% csrf_token %}
+    <button class="fw-btn gefahr"><i class="fa-solid fa-trash"></i>Regelsatz löschen</button>
+</form>
+{% endif %}
+{% endblock %}

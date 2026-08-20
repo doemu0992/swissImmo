@@ -55,6 +55,17 @@
             <p class="text-xs text-indigo-400 mt-0.5">Berechnet aus Eingang + {{ v.kuendigungsfrist_monate }} Monaten, auf den nächsten erlaubten Termin.</p>
         </div>
 
+        {% comment %} FRISTENWÄCHTER (Phase 4b.10). Die Prüfung läuft auf dem
+           Server gegen das Regelwerk der Organisation — nicht im Browser.
+           Der Grund: Das gleiche Ergebnis entscheidet beim Speichern darüber,
+           ob gesperrt wird. Zwei Rechnungen an zwei Orten wären zwei
+           Gelegenheiten, verschieden zu rechnen.
+
+           Sie protokolliert NICHT. Wer ein Datum tippt und wieder verwirft,
+           hat keine Regel angewendet; erst das Speichern schreibt ins
+           Protokoll. {% endcomment %}
+        <div id="regel-befund" data-vertrag="{{ v.id }}"></div>
+
         {% if ao_termin %}
         <!-- Ausserordentlicher Termin bei Zahlungsverzug (Art. 257d Abs. 2) -->
         <div class="bg-rose-50 border border-rose-100 rounded-lg px-4 py-3">
@@ -109,6 +120,31 @@ function syncZustellung(){
 // die exakte Berechnung dem Server; hier nur eine Live-Andeutung für das Eingangsdatum.
 function berechne(){ kuendigungCheck(); }
 
+// Fristenwächter: die Prüfung holt sich das Ergebnis vom Server, weil dieselbe
+// Rechnung beim Speichern über eine mögliche Sperre entscheidet. Ein zweiter,
+// im Browser nachgebauter Rechenweg wäre die Gelegenheit, verschieden zu rechnen.
+var regelLauf = null;
+function regelPruefen(){
+    var ziel = document.getElementById('regel-befund');
+    if (!ziel) return;
+    // Ausserordentliche Kündigungen laufen nicht durch diese Regelart — Art. 257d,
+    // 266g und 271a haben eigene Fristen, die sie nicht rechnet.
+    if (document.getElementById('s_ao').checked) { ziel.innerHTML = ''; return; }
+    var zugang = document.getElementById('s_eingang').value;
+    var termin = document.getElementById('s_gew_ende').value;
+    if (!zugang) { ziel.innerHTML = ''; return; }
+    clearTimeout(regelLauf);
+    regelLauf = setTimeout(function(){
+        fetch('/neu/vertraege/' + ziel.dataset.vertrag + '/kuendigen/pruefen/?zugang='
+              + encodeURIComponent(zugang) + '&termin=' + encodeURIComponent(termin || ''))
+            .then(function(a){ return a.ok ? a.text() : ''; })
+            .then(function(html){ ziel.innerHTML = html; })
+            // Fällt die Prüfung aus, bleibt das Feld leer statt eine
+            // Unbedenklichkeit zu behaupten, die niemand geprüft hat.
+            .catch(function(){ ziel.innerHTML = ''; });
+    }, 250);
+}
+
 // Mietrechtliche Live-Prüfung der Kündigung.
 var MIN_TERMIN = "{{ vorschau_termin|date:'Y-m-d' }}";
 var AO_MIN_TERMIN = "{{ ao_termin|date:'Y-m-d' }}";
@@ -140,6 +176,7 @@ function kuendigungCheck(){
     var box = document.getElementById('k-warn'), list = document.getElementById('k-warn-list');
     if (warns.length) { list.innerHTML = warns.map(function(w){ return '<li>'+w+'</li>'; }).join(''); box.classList.remove('hidden'); }
     else { box.classList.add('hidden'); }
+    regelPruefen();
 }
 kuendigungCheck();
 </script>

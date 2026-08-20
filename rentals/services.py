@@ -201,6 +201,25 @@ def berechne_kuendigungstermin(vertrag, eingang_datum: _dt.date) -> _dt.date:
     return fruehestens
 
 
+def termine_aus_vertrag(vertrag) -> list:
+    """Die Kündigungstermine des Vertrags als ['TT.MM', ...] für das Regelwerk.
+
+    DIE NAHTSTELLE ZWISCHEN FREITEXT UND REGEL
+
+    `Mietvertrag.kuendigungstermine` ist ein Freitextfeld («Ende jedes Monats
+    ausser Dezember»). `faelle.regelwerk.kuendigungstermin` erwartet dagegen
+    eine Liste konkreter Termine. Diese Funktion ist die einzige Stelle, an der
+    das eine ins andere übersetzt wird — die Freitext-Deutung bleibt damit bei
+    `_erlaubte_termin_monate` und wird nicht ein zweites Mal geschrieben.
+
+    Der Tag ist immer `31`. `regelwerk.termine_als_daten` klemmt ihn auf die
+    Monatslänge, aus `31.02` wird der 28. bzw. 29. Februar. Ein hier fest
+    verdrahteter 28. wäre in Schaltjahren falsch.
+    """
+    return [f'31.{monat:02d}' for monat in sorted(_erlaubte_termin_monate(
+        vertrag.kuendigungstermine))]
+
+
 def termin_257d(ab_datum: _dt.date) -> _dt.date:
     """Frühestmöglicher Kündigungstermin bei ausserordentlicher Kündigung wegen
     Zahlungsverzug (Art. 257d Abs. 2 OR): Frist von mindestens 30 Tagen auf Ende

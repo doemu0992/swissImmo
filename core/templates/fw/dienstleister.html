@@ -59,13 +59,15 @@
     {% for row in rows %}
     <div class="bg-white rounded-xl border border-slate-200 p-5">
         <div class="flex items-start justify-between gap-3 mb-4">
-            <div class="flex items-center gap-3">
+            {% comment %} Seit 4b.12 führt die Kachel zur Dienstleisterakte —
+               vorher gab es keine, und die Kachel führte nirgendwohin. {% endcomment %}
+            <a href="/neu/dienstleister/{{ row.h.id }}/" class="flex items-center gap-3">
                 <div class="w-11 h-11 rounded-lg {{ row.icon_cls }} flex items-center justify-center text-lg shrink-0"><i class="fa-solid {{ row.icon }}"></i></div>
                 <div>
                     <div class="font-semibold text-slate-900 leading-tight">{{ row.h.firma }}</div>
-                    <div class="text-xs text-slate-400">{{ row.branche }}</div>
+                    <div class="fw-klein">{{ row.branche }}</div>
                 </div>
-            </div>
+            </a>
             <div class="flex items-center gap-2 shrink-0">
                 {% if row.offene %}<span class="fw-chip bg-rose-50 text-rose-600 whitespace-nowrap">{{ row.offene }} offen</span>{% endif %}
                 <button type="button" onclick="document.getElementById('dledit-{{ row.h.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 text-sm" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>

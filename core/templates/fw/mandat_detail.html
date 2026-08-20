@@ -1,0 +1,228 @@
+{% extends 'fw/base.html' %}
+{% load chf %}
+{% block title %}{{ md.firma_oder_name }} — swissImmo{% endblock %}
+
+{% block content %}
+{% comment %} Die Mandatsakte. Sie fehlte bis 4b.12 vollständig — es gab eine
+   Liste, ein Formular und drei Spezialseiten (Abrechnung, Kontokorrent,
+   Auszahlung), aber keine Stelle, an der ein Eigentümer als Ganzes steht.
+
+   Die Rentabilitätskarte aus mockups/konzept-v2.html fehlt hier absichtlich:
+   Sie setzt Zeiterfassung pro Fall voraus, die es nicht gibt. Begründung im
+   Kopf von core/views/fw/akten_neu.py. {% endcomment %}
+
+<nav class="fw-akte-pfad" style="margin-bottom:10px">
+    <a href="/neu/mandate/">Mandate</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:9px"></i>
+    <b>{{ md.firma_oder_name }}</b>
+</nav>
+
+<div class="fw-aktenkopf">
+    <div class="fw-akte-oben">
+        <div class="fw-akte-bild"><i class="fa-solid fa-handshake"></i></div>
+        <div>
+            <div class="fw-akte-typ">Mandat · {{ mandat_nummer }}</div>
+            <h1>{{ md.firma_oder_name }}</h1>
+            <div class="fw-akte-pfad">
+                {% if md.kontaktperson %}<div class="fw-pz"><span>Kontakt</span><b>{{ md.kontaktperson }}</b></div>{% endif %}
+                {% if md.strasse %}<div class="fw-pz"><span>Adresse</span><b>{{ md.strasse }}, {{ md.plz }} {{ md.ort }}</b></div>{% endif %}
+                {% if md.email or md.telefon %}<div class="fw-pz"><span>Erreichbar</span><b>{{ md.email }}{% if md.email and md.telefon %} · {% endif %}{{ md.telefon }}</b></div>{% endif %}
+            </div>
+            <div class="flex flex-wrap gap-1.5 mt-2.5">
+                {% for c in mandat_chips %}<span class="fw-chip {{ c.ton }} fw-dot">{{ c.text }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="fw-akte-rechts">
+            <a href="/neu/mandate/{{ md.id }}/bearbeiten/" class="fw-btn"><i class="fa-solid fa-pen"></i>Bearbeiten</a>
+            <div class="relative">
+                <button type="button" onclick="document.getElementById('mdAktionen').classList.toggle('hidden'); event.stopPropagation();"
+                        class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
+                <div id="mdAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
+                    <a href="/neu/mandate/{{ md.id }}/abrechnung/" class="fw-menuzeile"><i class="fa-solid fa-file-invoice-dollar w-4"></i>Eigentümerabrechnung</a>
+                    <a href="/neu/mandate/{{ md.id }}/kontokorrent/" class="fw-menuzeile"><i class="fa-solid fa-scale-balanced w-4"></i>Kontokorrent</a>
+                    <a href="/neu/mandate/{{ md.id }}/auszahlung/" class="fw-menuzeile"><i class="fa-solid fa-money-bill-transfer w-4"></i>Auszahlung erfassen</a>
+                    <div class="fw-menutrenner"></div>
+                    <a href="/neu/mandate/{{ md.id }}/honorar/" class="fw-menuzeile"><i class="fa-solid fa-percent w-4"></i>Honorar</a>
+                    <a href="/neu/mandate/{{ md.id }}/mahnstufen/" class="fw-menuzeile"><i class="fa-solid fa-envelope-open-text w-4"></i>Mahnstufen</a>
+                    <a href="/neu/mandate/{{ md.id }}/portal-zugang/" class="fw-menuzeile"><i class="fa-solid fa-key w-4"></i>Portalzugang</a>
+                </div>
+            </div>
+            <script>
+              document.addEventListener('click', function (ev) {
+                var d = document.getElementById('mdAktionen');
+                if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
+              });
+            </script>
+        </div>
+    </div>
+
+    <div class="fw-kzn">
+        <div><div class="fw-l">Liegenschaften</div>
+            <div class="fw-w">{{ liegenschaften|length }}</div>
+            <div class="fw-f">verwaltet für dieses Mandat</div></div>
+        <div><div class="fw-l">Soll / Monat</div>
+            <div class="fw-w">CHF {{ soll_monat|chf }}</div>
+            <div class="fw-f">brutto aus aktiven Verträgen</div></div>
+        <div><div class="fw-l">Honorarsatz</div>
+            <div class="fw-w{% if not md.honorar_prozent %} warn{% endif %}">{% if md.honorar_prozent %}{{ md.honorar_prozent }} %{% else %}—{% endif %}</div>
+            <div class="fw-f fw-lang">{% if md.honorar_prozent %}vereinbart{% else %}Vorgabewert der Verwaltung{% endif %}</div></div>
+        <div><div class="fw-l">Auszahlungen</div>
+            <div class="fw-w">{{ auszahlungen|length }}</div>
+            <div class="fw-f fw-lang">{% if mandat_auszahlungen %}{{ mandat_auszahlungen }} noch nicht ausgeführt{% else %}alle ausgeführt{% endif %}</div></div>
+    </div>
+    {% include 'fw/_detail_tabs.html' with gruppe='md' tabs=tab_liste %}
+</div>
+
+{% if mandat_hinweise %}
+<div class="fw-card">
+    {% for h in mandat_hinweise %}
+    <div class="fw-hinweis {{ h.ton }}">
+        <span class="fw-hi"><i class="fa-solid {{ h.symbol }}"></i></span>
+        <div class="fw-ht"><b>{{ h.titel }}</b>{{ h.text }}
+            <div class="mt-1.5"><a href="{{ h.url }}" class="fw-link">{{ h.knopf }} →</a></div></div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ===== BEREICH: STAMMDATEN ===== -->
+<div data-panel="md" id="md-stammdaten">
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-address-card"></i></span>
+            <span class="fw-t">Angaben</span></div>
+        <table class="fw-table" data-stack>
+            <tbody>
+                <tr><td data-label="Feld">Firma / Name</td><td data-label="Wert">{{ md.firma_oder_name }}</td></tr>
+                <tr><td data-label="Feld">Kontaktperson</td><td data-label="Wert">{{ md.kontaktperson|default:"—" }}</td></tr>
+                <tr><td data-label="Feld">Adresse</td><td data-label="Wert">{% if md.strasse %}{{ md.strasse }}, {{ md.plz }} {{ md.ort }}{% else %}—{% endif %}</td></tr>
+                <tr><td data-label="Feld">E-Mail</td><td data-label="Wert">{{ md.email|default:"—" }}</td></tr>
+                <tr><td data-label="Feld">Telefon</td><td data-label="Wert">{{ md.telefon|default:"—" }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon{% if not md.iban %} warn{% endif %}"><i class="fa-solid fa-building-columns"></i></span>
+            <span class="fw-t">Bank und Honorar</span></div>
+        <table class="fw-table" data-stack>
+            <tbody>
+                <tr><td data-label="Feld">Bank</td><td data-label="Wert">{{ md.bank_name|default:"—" }}</td></tr>
+                <tr><td data-label="Feld">IBAN</td><td data-label="Wert">{% if md.iban %}<span class="font-mono">{{ md.iban }}</span>{% else %}<span class="fw-warnton">nicht erfasst</span>{% endif %}</td></tr>
+                <tr><td data-label="Feld">Honorarsatz</td><td data-label="Wert">{% if md.honorar_prozent %}{{ md.honorar_prozent }} %{% else %}Vorgabewert der Verwaltung{% endif %}</td></tr>
+                <tr><td data-label="Feld">Portalzugang</td><td data-label="Wert">{% if md.benutzer_id %}aktiv{% else %}nicht eingerichtet{% endif %}</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ===== BEREICH: LIEGENSCHAFTEN ===== -->
+<div data-panel="md" id="md-liegenschaften" class="hidden">
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-building"></i></span>
+            <span class="fw-t">Verwaltete Liegenschaften</span>
+            <span class="fw-neben">{{ liegenschaften|length }}</span></div>
+        {% for l in liegenschaften %}
+        <a href="/neu/liegenschaften/{{ l.lg.id }}/" class="fw-zeile klick">
+            <span class="fw-marker {% if l.leer %}warn{% else %}good{% endif %}"></span>
+            <span class="fw-ikon"><i class="fa-solid fa-building"></i></span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ l.lg.strasse }}</div>
+                <div class="fw-s">{{ l.lg.plz }} {{ l.lg.ort }} · {{ l.vermietet }} von {{ l.einheiten }} vermietet{% if l.leer %} · {{ l.leer }} leer{% endif %}</div>
+            </div>
+            <span class="fw-betrag">CHF {{ l.soll|chf }}</span>
+        </a>
+        {% empty %}
+        <p class="fw-leer">Diesem Mandat ist keine Liegenschaft zugeordnet.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ===== BEREICH: FINANZEN ===== -->
+<div data-panel="md" id="md-finanzen" class="hidden">
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-money-bill-transfer"></i></span>
+            <span class="fw-t">Auszahlungen</span>
+            <span class="fw-neben">{{ auszahlungen|length }}</span>
+            <span class="fw-rechts"><a href="/neu/mandate/{{ md.id }}/auszahlung/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i>Erfassen</a></span></div>
+        {% for a in auszahlungen %}
+        <div class="fw-zeile">
+            <span class="fw-marker {% if a.ausgefuehrt_am %}good{% else %}warn{% endif %}"></span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ a.datum|date:"d.m.Y" }}{% if a.bemerkung %} · {{ a.bemerkung }}{% endif %}</div>
+                <div class="fw-s">{% if a.ausgefuehrt_am %}ausgeführt am {{ a.ausgefuehrt_am|date:"d.m.Y" }}{% else %}noch nicht ausgeführt{% endif %}</div>
+            </div>
+            <span class="fw-betrag">CHF {{ a.betrag|chf }}</span>
+        </div>
+        {% empty %}
+        <p class="fw-leer">Keine Auszahlung erfasst.</p>
+        {% endfor %}
+        <div class="fw-fuss">
+            <a href="/neu/mandate/{{ md.id }}/kontokorrent/" class="fw-link">Kontokorrent</a>
+            <a href="/neu/mandate/{{ md.id }}/abrechnung/" class="fw-link">Eigentümerabrechnung</a>
+        </div>
+    </div>
+</div>
+
+<!-- ===== BEREICH: DOKUMENTE ===== -->
+<div data-panel="md" id="md-dokumente" class="hidden">
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-folder-open"></i></span>
+            <span class="fw-t">Dokumente</span><span class="fw-neben">{{ dokumente|length }}</span></div>
+        {% for d in dokumente %}
+        <div class="fw-zeile">
+            <span class="fw-ikon"><i class="fa-solid fa-file-lines"></i></span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ d.get_kategorie_display|default:d.kategorie }}</div>
+                <div class="fw-s">{% if d.datum %}{{ d.datum|date:"d.m.Y" }}{% endif %}</div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="fw-leer">Kein Dokument zu diesem Mandat.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ===== BEREICH: FÄLLE ===== -->
+<div data-panel="md" id="md-faelle" class="hidden">
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-folder-open"></i></span>
+            <span class="fw-t">Fälle</span><span class="fw-neben">{{ mandat_faelle|length }}</span></div>
+        {% for f in mandat_faelle %}
+        <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick">
+            <span class="fw-marker {% if f.ist_liegengeblieben %}crit{% elif f.status == 'wartet' %}warn{% endif %}"></span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ f.betreff|default:f.fallart.bezeichnung }}</div>
+                <div class="fw-s">{{ f.nummer }} · {{ f.get_status_display }}{% if f.zustaendig %} · {{ f.zustaendig.get_full_name|default:f.zustaendig.username }}{% endif %}</div>
+            </div>
+            <div class="fw-zeit">{{ f.eroeffnet_am|date:"d.m.Y" }}</div>
+        </a>
+        {% empty %}
+        <p class="fw-leer">Kein Fall zu diesem Mandat.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ===== BEREICH: CHRONIK ===== -->
+<div data-panel="md" id="md-chronik" class="hidden">
+    {% comment %} AktivitaetsLog kennt keinen Ziel-Typ fuer einen Eigentuemer.
+       Der belastbare Bezug fuehrt ueber die Vertraege seiner Liegenschaften —
+       derselbe Weg wie bei Liegenschaft und Objekt. {% endcomment %}
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+            <span class="fw-t">Protokoll</span>
+            <span class="fw-neben">Vorgänge an den Verträgen dieses Mandats</span></div>
+        {% for a in verlauf %}
+        <div class="fw-zeile">
+            <span class="fw-ikon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ a.aktion }}{% if a.objekt %} · {{ a.objekt }}{% endif %}</div>
+                <div class="fw-s">{{ a.details }}{% if a.benutzer %} · {{ a.benutzer.get_full_name|default:a.benutzer.username }}{% endif %}</div>
+            </div>
+            <div class="fw-zeit">{{ a.zeitpunkt|date:"d.m.Y H:i" }}</div>
+        </div>
+        {% empty %}
+        <p class="fw-leer">Kein Protokolleintrag.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -405,6 +405,13 @@ class MandantenFixture:
         ('fallschritt',     'fallschritt'),
         ('termin',          'termin'),
         ('abwesenheit',     'abwesenheit'),
+        # Phase 4b.10 — der Fristenwaechter. Wieder von der Selbstpruefung
+        # gemeldet, bevor der Sweep sie stillschweigend uebersprungen haette.
+        # Die Reihenfolge ist bedeutsam: 'regelanwendung' muss VOR 'regelsatz'
+        # stehen, sonst greift kein Muster fuer die Anwendung — beide enthalten
+        # 'regel'.
+        ('regelanwendung',  'regelanwendung'),
+        ('regelsatz',       'regelsatz'),
         ('fall_detail',     'fall'),
         ('zulauf_uebernehmen', 'eingang'),
         ('abnahme',         'abnahme'),

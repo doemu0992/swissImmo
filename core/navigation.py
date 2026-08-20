@@ -39,9 +39,19 @@ def nav_gruppen(modus):
     if modus == 'profi':
         return [
             _g('heute', 'Heute', 'fa-inbox', '/neu/', [
+                # Phase 4b.10: Die in 4b.5 bis 4b.8 gebauten Seiten standen
+                # hier NICHT und waren nur erreichbar, wer die Adresse tippte
+                # oder zufaellig auf einen Querverweis stiess. Derselbe Fehler,
+                # den das Regelwerk seit Phase 4a hatte — nur eine Ebene hoeher.
+                _i('Arbeit', '/neu/arbeit/', ['arbeit']),
+                _i('Zulauf', '/neu/zulauf/', ['zulauf']),
+                _i('Termine', '/neu/termine/', ['termine']),
+                _i('Abwesenheiten', '/neu/abwesenheiten/', ['abwesenheiten']),
+                _i('Läufe', '/neu/laeufe/', ['laeufe']),
                 _i('Pendenzen', '/neu/pendenzen/', ['pendenzen']),
                 _i('Fristen-Center', '/neu/fristen/', ['fristen']),
-            ], extra_keys=['dashboard']),
+                _i('Regelwerk', '/neu/regelwerk/', ['regelwerk']),
+            ], extra_keys=['dashboard', 'faelle']),
             _g('portfolio', 'Portfolio', 'fa-building', '/neu/liegenschaften/', [
                 _i('Liegenschaften', '/neu/liegenschaften/', ['liegenschaften']),
                 _i('Objekte', '/neu/objekte/', ['objekte']),
@@ -86,7 +96,11 @@ def nav_gruppen(modus):
         ]
     # ── Einfachmodus: Klartext, weniger Tiefe, Rest unter «Erweitert» ──
     return [
-        _g('heute', 'Heute', 'fa-inbox', '/neu/', extra_keys=['dashboard']),
+        _g('heute', 'Heute', 'fa-inbox', '/neu/', [
+            _i('Arbeit', '/neu/arbeit/', ['arbeit']),
+            _i('Zulauf', '/neu/zulauf/', ['zulauf']),
+            _i('Termine', '/neu/termine/', ['termine']),
+        ], extra_keys=['dashboard', 'faelle']),
         _g('portfolio', 'Meine Immobilien', 'fa-building', '/neu/liegenschaften/', [
             _i('Häuser', '/neu/liegenschaften/', ['liegenschaften']),
             _i('Wohnungen', '/neu/objekte/', ['objekte']),
@@ -131,6 +145,12 @@ def nav_gruppen(modus):
             _i('Eigentümer & Mandate', '/neu/mandate/', ['mandate']),
             _i('Pendenzen', '/neu/pendenzen/', ['pendenzen']),
             _i('Fristen-Center', '/neu/fristen/', ['fristen']),
+            # Im Einfachmodus unter «Erweitert»: Wer die Fristenregeln
+            # einstellt, arbeitet nicht im Einfachmodus — aber unerreichbar
+            # darf die Seite trotzdem nicht sein.
+            _i('Regelwerk (Fristen)', '/neu/regelwerk/', ['regelwerk']),
+            _i('Abwesenheiten', '/neu/abwesenheiten/', ['abwesenheiten']),
+            _i('Läufe', '/neu/laeufe/', ['laeufe']),
         ]),
     ]
 

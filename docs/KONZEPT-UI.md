@@ -165,9 +165,32 @@ Eigentümerreporting, Leerstand und Ertrag, Debitorenspiegel, Mandatsrentabilit�
 | Mietverhältnis | dieselben | Nebenkosten |
 | Person | dieselben | Rollen |
 | Dienstleister | dieselben | Aufträge |
+| Schaden | dieselben | Handwerker & Kosten |
+
+> **Der Schaden fehlte in dieser Tabelle** — bemerkt beim Bauen von 4b.12. `faelle/akten.py`
+> führt ihn seit Etappe 5a als vollwertigen Aktentyp, und seine Detailseite ist seit 4b.3
+> umgestellt. Die Tabelle nannte sechs Typen, das Register sieben. Vorrang des Bestands: Der
+> Code hatte recht, das Konzept war unvollständig.
 
 Jede Akte trägt eine Kennzahlenleiste aus **vier** Werten, die zusammen die Frage beantworten
 „steht diese Akte gut da". Beim Mietverhältnis: Bruttomiete, Saldo, Kaution, nächste Frist.
+
+> **Stand nach 4b.12: alle sieben gebaut.** Die Kennzahlen je Typ, wie sie tatsächlich
+> gerechnet werden:
+>
+> | Typ | Kennzahlenleiste | Gebaut in |
+> |---|---|---|
+> | Mietverhältnis | Bruttomiete · Saldo · Kaution · nächste Frist | 4b.2 |
+> | Schaden | (Kopf ohne Leiste) | 4b.3 |
+> | Person | (Kopf ohne Leiste — Konto, Saldo und Kaution hängen am Mietverhältnis, G5) | 4b.3 |
+> | Liegenschaft | Vermietung · Soll/Monat · Bruttorendite · nächste Frist | 4b.3 |
+> | Objekt | Vermietung · Soll/Monat · Fläche · Ausstattung | 4b.11 |
+> | Mandat | Liegenschaften · Soll/Monat · Honorarsatz · Auszahlungen | 4b.12 |
+> | Dienstleister | offene Aufträge · Aufträge gesamt · Kosten laufendes Jahr · Schlüssel | 4b.12 |
+>
+> Die Person trägt bewusst keine Leiste — vier Zahlen «zur Person» wären Summen, die anderswo
+> schon stehen. `AktenkopfTests.KOPF_OHNE_KENNZAHLEN` hält diese Ausnahme fest und prüft, dass
+> sie benannt bleibt statt sich stillschweigend auszubreiten.
 
 ---
 
@@ -271,6 +294,28 @@ Erfasste Regelfamilien:
 > endgültig, sondern warnen mit Begründung und lassen ein dokumentiertes Übersteuern zu; jedes
 > Übersteuern wird protokolliert.
 
+> **Stand nach 4b.10 — gebaut, aber nur eine Regelfamilie rechnet.**
+> Von den sieben Familien oben ist **eine** umgesetzt: der Kündigungstermin. Drei weitere
+> (`zahlungsfrist`, `mietzins_zustellung`, `kaution_hoechstbetrag`) stehen als Regelart im
+> Datenmodell und lassen sich erfassen — `faelle.regelwerk.pruefen` wirft für sie
+> `NotImplementedError`, und die Verwaltung schreibt an die Regel ausdrücklich «prüft noch
+> nichts». Das ist die einzige ehrliche Darstellung: Eine erfassbare Regel, die stillschweigend
+> nichts täte, wäre schlimmer als gar keine, weil sie wie eine Absicherung aussieht.
+>
+> Der vorgeschlagene Umgang mit dem Irrtum ist umgesetzt, und zwar strenger als vorgeschlagen:
+>
+> | Frage | Antwort im Code |
+> |---|---|
+> | Blockiert eine Regel? | Nur wenn `verbindlichkeit = sperre` **und** der Regelsatz als `geprueft` gekennzeichnet ist. `faelle.regelwerk.sperrt()` prüft beides. |
+> | Was tut eine ungeprüfte Regel? | Sie warnt. Ausgeliefert wird ungeprüft, also warnt zunächst alles. |
+> | Wie wird übersteuert? | `Regelanwendung.uebersteuern(benutzer, begruendung)` — ohne Begründung wirft die Methode, die Oberfläche verlangt das Feld. |
+> | Wie findet man die Fälle einer irrigen Fassung? | Jede Anwendung hält den **Stand** der Regel fest, auch die ohne Beanstandung. `/neu/regelwerk/protokoll/?stand=JJJJ-MM-TT` grenzt die Kohorte ab. |
+> | Wer legt Regeln an? | `/neu/regelwerk/`, Rolle Verwalter oder Inhaber. `manage.py regelwerk_grundsatz` legt einen Entwurf an — **ohne** ortsübliche Termine, weil die kantonal verschieden sind; dann gilt, was im einzelnen Vertrag steht. |
+>
+> Was weiterhin gegengelesen werden muss, steht unverändert: die **Inhalte**. Der Bau stellt
+> nur sicher, dass eine Berichtigung eine Eingabe ist und keine Auslieferung — und dass jede
+> falsch entschiedene Kündigung nachträglich auffindbar bleibt.
+
 ---
 
 ## 8. Rollen und Kompetenzen
@@ -364,7 +409,7 @@ siehe Abschnitt 15). Die Zuordnung zur neuen Struktur:
 
 | Modul | Views | Wird zu |
 |---|---|---|
-| `detailseiten` | 34 | **Akten** — verteilt auf die Reiter der sechs Aktentypen |
+| `detailseiten` | 34 | **Akten** — verteilt auf die Reiter der sieben Aktentypen |
 | `aktionen` | 32 | **Fallschritte** — je Aktion ein Schritt mit Auslöser |
 | `profil` | 22 | **Akten** (Person, Mietverhältnis) und Einstellungen |
 | `person` | 16 | **Akte Person** und Akte Mietverhältnis |
@@ -474,6 +519,49 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.7 | Die fehlenden Abschnitte der Heute-Ansicht: **Termine** und **Wartet auf Freigabe**, gebaut als `fw/_arbeitsvorrat_abschnitte.html` und von Startseite und Arbeit-Seite eingebunden | erledigt |
 | 4b.8 | **Termin- und Abwesenheitsmodul**: `faelle.Termin` und `faelle.Abwesenheit`, `/neu/termine/`, `/neu/abwesenheiten/`; damit stehen alle fünf Abschnitte aus 3.1 | erledigt |
 | 4b.9 | **Die drei Flächen, die 4b.6 verfehlt hat**: Seitenleiste, Dunkelmodus, eingebettete Hüllen; Palette als Baustein; Farbton-Wächter über die ganze Datei | erledigt |
+| 4b.10 | **Der Fristenwächter wird angeschlossen**: `faelle/regelwerk.py` bekommt Aufrufer, Verwaltung, Protokoll und Übersteuerung; dazu der Erreichbarkeits-Wächter und die Navigation für 4b.5–4b.10 | erledigt |
+| 4b.11 | **Die Objektakte** — der letzte umzustellende Aktentyp: Aktenkopf, acht Reiter auf sechs, neuer Bereich «Fälle»; Bereichsinhalte von Objekt (478→164), Vertrag (179→98) und Schaden (109→59) | erledigt |
+| 4b.12 | **Mandats- und Dienstleisterakte** — die beiden Aktentypen aus dem Register, die überhaupt keine Detailseite hatten | erledigt |
+
+> **Warum 4b.12 nötig war.** `faelle/akten.py` führt **sieben** Aktentypen. Nach 4b.11 hatten
+> fünf davon Aktenkopf und Reitersatz. Zwei hatten keine Seite: Das Mandat kannte nur Liste,
+> Formular und drei Spezialseiten (Abrechnung, Kontokorrent, Auszahlung) — wer wissen wollte,
+> was zu einem Eigentümer gehört, musste vier Seiten zusammensuchen. Der Dienstleister hatte
+> Liste und Formular; seine Aufträge hingen einzeln an ihren Schadensmeldungen und waren
+> nirgends zusammen zu sehen.
+>
+> Zwei Dinge sind dabei **nicht** entstanden, beide mit Grund. Die **Mandatsrentabilität** aus
+> `konzept-v2.html` setzt Zeiterfassung pro Fall voraus; der Prototyp sagt dazu selbst, das sei
+> «eine Zumutung an den Alltag» und nur vom Büro selbst zu entscheiden. Eine Kennzahl aus
+> geschätzten Stunden wäre schlimmer als keine — der Aktenkopf zeigt an ihrer Stelle, was
+> wirklich bekannt ist: Honorarsatz, verwaltete Liegenschaften, Sollmiete. Und **Dokumente am
+> Dienstleister** gibt es nicht, weil `crm.Handwerker` keine Dokumentenbeziehung führt; der
+> Bereich sagt das, statt einen Platzhalter zu zeigen.
+>
+> Nebenbefund aus den Tests: `HandwerkerAuftrag.beauftragt_am` trägt `auto_now_add=True`. Ein
+> nachträglich erfasster Auftrag lässt sich damit **nicht** auf sein wirkliches
+> Beauftragungsdatum setzen — die Jahreszahlen der Dienstleisterakte folgen dem Erfassungs-,
+> nicht dem Auftragsdatum.
+
+> **Warum 4b.10 dazwischenkam — dreimal derselbe Fehler.** Der Vergleich mit
+> `mockups/konzept-v2.html` (Screen «Fristenwächter») ergab, dass die Rechenlogik seit Phase 4a
+> vollständig vorlag: `kuendigungstermin()`, `Regelsatz` je Kanton, `Regel` mit Verbindlichkeit,
+> `Regelanwendung` als Protokoll mit Regelstand, und `sperrt()` mit genau der Zusicherung, die
+> der Prototyp verlangt — eine ungeprüfte Regel warnt, sie sperrt nie. **Aufgerufen wurde davon
+> nichts.** Die Kündigungserfassung rechnete mit `rentals.services.berechne_kuendigungstermin`,
+> richtig, aber ohne Protokoll, ohne kantonale Fassung, und sie prüfte nur die eine Hälfte: Ein
+> zu früher Termin wurde geklemmt, ein Datum, das gar kein zulässiger Termin ist, lief durch.
+>
+> Beim Beheben zeigte sich, dass derselbe Fehler zweimal aus **dieser** Arbeit stammt: Die in
+> 4b.5 und 4b.8 gebauten Seiten (`/neu/arbeit/`, `/neu/zulauf/`, `/neu/laeufe/`, `/neu/termine/`,
+> `/neu/abwesenheiten/`) standen in **keiner** Navigationsgruppe. Erreichbar war nur, wer die
+> Adresse tippte oder zufällig auf einen Querverweis stiess. Daraus entstand
+> `core/tests/test_erreichbarkeit.py`: Jede parameterlose `/neu/`-Adresse braucht einen Weg —
+> aus der Navigation, aus einer Vorlage oder aus einer Weiterleitung; ein Test, der die Adresse
+> aufruft, zählt ausdrücklich **nicht** als Weg. Beim ersten Lauf fand der Wächter einen
+> weiteren, älteren Fall: `/neu/kreditoren/pain001/` erzeugt eine gültige Zahlungsdatei aus
+> allen freigegebenen Rechnungen, ohne Auswahl und ohne Zahllauf-Buchung — überholt durch
+> `/neu/zahllauf/`, aber weiterhin antwortend.
 
 > **Warum 4b.5 dazwischenkam.** `Fall`, `Fallschritt`, `Eingang`, `Zuordnungsregel`, `Lauf`
 > und `Blockade` waren nach vier Etappen vollständig gebaut und vollständig getestet — und
@@ -481,10 +569,17 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 > ob ein Mensch die Sache je zu Gesicht bekommt. Die vier Seiten sind der Beleg, dass Phase 4a
 > trägt; die Verfallsregel aus Abschnitt 5.2 wird dort zum ersten Mal angezeigt.
 
-Der Wächter für 4b.3 steht bereits: `faelle/test_reiter_panels.py::test_umstellung_erzeugt_nur_
-erreichbare_reiter` ist als `expectedFailure` markiert und nennt in seiner Meldung jedes
-fehlende Panel je Vorlage. Er ist damit die Arbeitsliste — und schlägt um, sobald 4b.3 fertig
-ist, weil Django einen unerwarteten Erfolg als Fehlschlag meldet.
+Der Wächter für 4b.3 war `faelle/test_reiter_panels.py::test_umstellung_erzeugt_nur_
+erreichbare_reiter`, als `expectedFailure` markiert. Seine Meldung nannte jedes fehlende Panel
+je Vorlage und war damit die Arbeitsliste.
+
+**Er ist seit 4b.11 grün.** Als die Objektakte als letzte umgestellt war, meldete Django den
+unerwarteten Erfolg als Fehlschlag — genau wie beabsichtigt — und die Markierung wurde
+entfernt. Ab jetzt gilt er ohne Nachsicht. Beim Entfernen zeigten zwei weitere Wächter, dass
+sie die Objektakte gar nicht ansahen: `GerenderteSeiteTests._seiten` und `AktenkopfTests.
+_seiten` sind zweite, von Hand gepflegte Listen, und `test_bereichsgestaltung.SEITEN` war eine
+dritte. Alle drei tragen die Objektakte jetzt, und `test_jede_umgestellte_akte_wird_hier_
+gemessen` hält fest, dass keine vierte Liste zurückbleibt.
 
 > **Richtigstellung, 20.08.2026.** Bis heute stand in Zeile 4b.3 «Schaden und Person erledigt»
 > und in 4b.4 «die 178 Farbklassen **der Vertragsakte**». Beides war zu grosszügig. «Erledigt»

@@ -1,0 +1,99 @@
+{% extends 'fw/base.html' %}
+{% block title %}Regelprotokoll — swissImmo{% endblock %}
+
+{% block content %}
+{% comment %} Der Zweck dieser Seite ist der Filter nach STAND. Wird eine Regel
+   berichtigt, ist das die Abfrage, die alle unter der alten Fassung
+   entschiedenen Fälle findet — ohne sie wäre die Antwort auf «welche
+   Kündigungen haben wir falsch bestätigt» eine Handdurchsicht aller Akten.
+{% endcomment %}
+
+<div class="fw-phead">
+    <div>
+        <h1>Regelprotokoll</h1>
+        <p>Welche Regel hat wann was zu welcher Eingabe gesagt — auch dann,
+           wenn nichts zu beanstanden war.</p>
+    </div>
+    <a href="/neu/regelwerk/" class="fw-btn">Zum Regelwerk</a>
+</div>
+
+<div class="fw-card">
+    <div class="fw-aufklapp-inhalt" style="background:var(--ds-surface)">
+        <form method="get" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div><label class="fw-klein block mb-1">Regelart</label>
+                <select name="art" class="fw-feld w-full">
+                    <option value="">alle</option>
+                    {% for wert, bezeichnung in arten %}
+                    <option value="{{ wert }}" {% if f_art == wert %}selected{% endif %}>{{ bezeichnung }}</option>
+                    {% endfor %}
+                </select></div>
+            <div><label class="fw-klein block mb-1">Befund</label>
+                <select name="befund" class="fw-feld w-full">
+                    <option value="">alle</option>
+                    <option value="ok" {% if f_befund == 'ok' %}selected{% endif %}>ohne Beanstandung</option>
+                    <option value="beanstandet" {% if f_befund == 'beanstandet' %}selected{% endif %}>beanstandet</option>
+                </select></div>
+            <div><label class="fw-klein block mb-1">Stand der Regel</label>
+                <select name="stand" class="fw-feld w-full">
+                    <option value="">alle Stände</option>
+                    {% for s in staende %}
+                    <option value="{{ s|date:'Y-m-d' }}" {% if f_stand == s %}selected{% endif %}>{{ s|date:"d.m.Y" }}</option>
+                    {% endfor %}
+                </select></div>
+            <div class="flex items-end gap-2">
+                <label class="flex items-center gap-2 fw-s">
+                    <input type="checkbox" name="nur_ungeprueft" value="1" {% if f_ungeprueft %}checked{% endif %}>
+                    nur ungeprüfte Regeln</label>
+                <button class="fw-btn fw-primary">Filtern</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+        <span class="fw-t">Anwendungen</span>
+        <span class="fw-neben">{{ gesamt }}{% if gesamt > 200 %} — die neuesten 200 angezeigt{% endif %}</span></div>
+    {% for a in zeilen %}
+    <div class="fw-zeile">
+        <span class="fw-marker {% if a.befund == 'beanstandet' and not a.uebersteuert %}crit{% elif a.befund == 'beanstandet' %}warn{% else %}good{% endif %}"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ a.art }} · {{ a.get_befund_display }}
+                {% if not a.geprueft_war %}<span class="fw-chip fw-warn">Regel ungeprüft</span>{% endif %}
+                {% if a.uebersteuert %}<span class="fw-chip fw-mut">übersteuert</span>{% endif %}
+                {% if a.fall %}<a href="/neu/faelle/{{ a.fall_id }}/" class="fw-link">{{ a.fall.nummer }}</a>{% endif %}
+            </div>
+            <div class="fw-s">{{ a.meldung }}</div>
+            {% if a.uebersteuert %}
+            <div class="fw-s">Übersteuert von
+                {{ a.uebersteuert_von.get_full_name|default:a.uebersteuert_von.username|default:"—" }}:
+                {{ a.uebersteuert_begruendung }}</div>
+            {% endif %}
+        </div>
+        <div class="fw-zeit">{{ a.zeitpunkt|date:"d.m.Y H:i" }}<br>
+            <span class="fw-klein">Stand {{ a.regel_stand|date:"d.m.Y" }}</span></div>
+    </div>
+    {% if a.befund == 'beanstandet' and not a.uebersteuert %}
+    <details class="fw-aufklapp">
+        <summary>Mit Begründung übersteuern</summary>
+        <div class="fw-aufklapp-inhalt">
+            {% comment %} Die Begründung ist Pflicht — `Regelanwendung.uebersteuern()`
+               wirft ohne sie. Sonst wäre das Protokoll eine Liste von Klicks
+               statt von Entscheidungen. {% endcomment %}
+            <form method="post" action="/neu/regelwerk/anwendung/{{ a.id }}/uebersteuern/"
+                  class="flex gap-2 flex-wrap items-end">{% csrf_token %}
+                <input type="hidden" name="zurueck" value="{{ request.get_full_path }}">
+                <div class="flex-1" style="min-width:260px">
+                    <label class="fw-klein block mb-1">Begründung *</label>
+                    <input name="begruendung" required class="fw-feld w-full"
+                           placeholder="Warum der Befund hier nicht zutrifft."></div>
+                <button class="fw-btn">Übersteuern</button>
+            </form>
+        </div>
+    </details>
+    {% endif %}
+    {% empty %}
+    <p class="fw-leer">Keine Anwendung zu diesem Filter.</p>
+    {% endfor %}
+</div>
+{% endblock %}

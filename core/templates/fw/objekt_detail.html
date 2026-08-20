@@ -4,90 +4,95 @@
 
 {% block content %}
 
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/objekte/{{ lg_query }}" class="hover:text-indigo-600">Objekte</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <a href="/neu/liegenschaften/{{ e.liegenschaft_id }}/" class="hover:text-indigo-600">{{ e.liegenschaft.strasse }}</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <span class="text-slate-600 font-medium">{{ e.bezeichnung }}</span>
+<nav class="fw-akte-pfad" style="margin-bottom:10px">
+    <a href="/neu/objekte/{{ lg_query }}">Objekte</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:9px"></i>
+    <a href="/neu/liegenschaften/{{ e.liegenschaft_id }}/">{{ e.liegenschaft.strasse }}</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:9px"></i>
+    <b>{{ e.bezeichnung }}</b>
 </nav>
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-    <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-lg shadow-indigo-600/25">
-            <i class="fa-solid {% if e.typ == 'pp' or e.typ == 'gar' %}fa-square-parking{% elif e.typ == 'gew' %}fa-shop{% else %}fa-house{% endif %}"></i>
-        </div>
+{% comment %} Aktenkopf des Objekts (Etappe 4b.11) — der vierte und letzte
+   Aktentyp, der umgestellt wird. Damit tragen alle Detailseiten denselben
+   Kopf und denselben Reitersatz; die Arbeitsliste in
+   faelle/test_reiter_panels.py kann grün werden.
+
+   Die Kennzahlen sind GERECHNETE ZUSTÄNDE (Konzept 16.3), nicht die vier
+   Felder, die vorher hier standen (Zimmer · m² · Soll-Miete · Wertquote).
+   Zimmer und Wertquote beantworten keine Frage, die man vor einem Objekt
+   stellt — sie stehen jetzt in den Stammdaten, wo sie hingehören. {% endcomment %}
+<div class="fw-aktenkopf">
+    <div class="fw-akte-oben">
+        <div class="fw-akte-bild"><i class="fa-solid {% if e.typ == 'pp' or e.typ == 'gar' %}fa-square-parking{% elif e.typ == 'gew' %}fa-shop{% else %}fa-house{% endif %}"></i></div>
         <div>
-            <h1 class="text-2xl font-extrabold text-slate-900">{{ e.bezeichnung }}</h1>
-            <p class="text-sm text-slate-500">{{ e.get_typ_display }}{% if e.etage %} · {{ e.etage }}{% endif %} · {{ e.liegenschaft.strasse }}, {{ e.liegenschaft.ort }}</p>
-        </div>
-    </div>
-    <div class="flex flex-wrap items-center gap-2">
-        {% if aktiver_vertrag %}
-        <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ vertrag_pill.cls }}">{{ vertrag_pill.label }}</span>
-        {% else %}
-        <span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-amber-50 text-amber-700">Leerstand</span>
-        {% endif %}
-        <a href="/neu/objekte/{{ e.id }}/bearbeiten/" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
-            <i class="fa-solid fa-pen text-xs mr-1"></i>Bearbeiten
-        </a>
-        <div class="relative">
-            <button type="button" onclick="document.getElementById('oAktionen').classList.toggle('hidden'); event.stopPropagation();"
-                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
-                <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
-            </button>
-            <div id="oAktionen" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
-                {% if e.zur_ausschreibung %}
-                <form method="post" action="/neu/objekte/{{ e.id }}/ausschreiben/">
-                    {% csrf_token %}
-                    <input type="hidden" name="ziel" value="aus">
-                    <input type="hidden" name="weiter" value="/neu/objekte/{{ e.id }}/">
-                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-bullhorn w-4"></i>Ausschreibung beenden</button>
-                </form>
-                {% else %}
-                <form method="post" action="/neu/objekte/{{ e.id }}/ausschreiben/">
-                    {% csrf_token %}
-                    <input type="hidden" name="ziel" value="an">
-                    <input type="hidden" name="weiter" value="/neu/objekte/{{ e.id }}/">
-                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-bullhorn w-4"></i>Zur Vermarktung ausschreiben</button>
-                </form>
-                {% endif %}
-                <a href="/neu/vermarktung/{{ e.id }}/bewerber/" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-users w-4"></i>Bewerber vergleichen</a>
+            <div class="fw-akte-typ">Objekt · {{ objekt_nummer }}</div>
+            <h1>{{ e.bezeichnung }}</h1>
+            <div class="fw-akte-pfad">
+                <div class="fw-pz"><span>Liegenschaft</span><b><a href="/neu/liegenschaften/{{ e.liegenschaft_id }}/" class="fw-link">{{ e.liegenschaft.strasse }}, {{ e.liegenschaft.plz }} {{ e.liegenschaft.ort }}</a></b></div>
+                <div class="fw-pz"><span>Art</span><b>{{ e.get_typ_display }}{% if e.etage %} · {{ e.etage }}{% endif %}{% if e.zimmer %} · {{ e.zimmer }} Zimmer{% endif %}</b></div>
+                {% if e.ewid %}<div class="fw-pz"><span>EWID</span><b>{{ e.ewid }}</b></div>{% endif %}
+            </div>
+            <div class="flex flex-wrap gap-1.5 mt-2.5">
+                {% for c in objekt_chips %}<span class="fw-chip {{ c.ton }} fw-dot">{{ c.text }}</span>{% endfor %}
             </div>
         </div>
-        <script>
-          document.addEventListener('click', function (ev) {
-            var d = document.getElementById('oAktionen');
-            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
-          });
-        </script>
+        <div class="fw-akte-rechts">
+            <a href="/neu/objekte/{{ e.id }}/bearbeiten/" class="fw-btn"><i class="fa-solid fa-pen"></i>Bearbeiten</a>
+            <div class="relative">
+                <button type="button" onclick="document.getElementById('oAktionen').classList.toggle('hidden'); event.stopPropagation();"
+                        class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
+                <div id="oAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
+                    <form method="post" action="/neu/objekte/{{ e.id }}/ausschreiben/">
+                        {% csrf_token %}
+                        <input type="hidden" name="ziel" value="{% if e.zur_ausschreibung %}aus{% else %}an{% endif %}">
+                        <input type="hidden" name="weiter" value="/neu/objekte/{{ e.id }}/">
+                        <button class="fw-menuzeile"><i class="fa-solid fa-bullhorn w-4"></i>{% if e.zur_ausschreibung %}Ausschreibung beenden{% else %}Zur Vermarktung ausschreiben{% endif %}</button>
+                    </form>
+                    <a href="/neu/vermarktung/{{ e.id }}/bewerber/" class="fw-menuzeile"><i class="fa-solid fa-users w-4"></i>Bewerber vergleichen</a>
+                    <div class="fw-menutrenner"></div>
+                    <a href="/neu/liegenschaften/{{ e.liegenschaft_id }}/" class="fw-menuzeile"><i class="fa-solid fa-building w-4"></i>Zur Liegenschaft</a>
+                </div>
+            </div>
+            <script>
+              document.addEventListener('click', function (ev) {
+                var d = document.getElementById('oAktionen');
+                if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
+              });
+            </script>
+        </div>
     </div>
+
+    <div class="fw-kzn">
+        <div><div class="fw-l">Vermietung</div>
+            <div class="fw-w{% if aktiver_vertrag %} good{% else %} warn{% endif %}">{% if aktiver_vertrag %}vermietet{% else %}leer{% endif %}</div>
+            <div class="fw-f fw-lang">{% if aktiver_vertrag %}seit {{ aktiver_vertrag.beginn|date:"d.m.Y" }}{% elif e.zur_ausschreibung %}ausgeschrieben{% else %}nicht ausgeschrieben{% endif %}</div></div>
+        <div><div class="fw-l">Soll / Monat</div>
+            <div class="fw-w">{% if objekt_miete %}CHF {{ objekt_miete|chf }}{% else %}CHF {{ e.nettomiete_aktuell|chf }}{% endif %}</div>
+            <div class="fw-f">{% if objekt_miete %}brutto aus laufendem Vertrag{% else %}Sollmietzins, kein Vertrag{% endif %}</div></div>
+        <div><div class="fw-l">Fläche</div>
+            <div class="fw-w">{% if e.flaeche_m2 %}{{ e.flaeche_m2|floatformat:0 }} m²{% else %}—{% endif %}</div>
+            <div class="fw-f">{% if e.wertquote %}Wertquote {{ e.wertquote|floatformat:0 }}‰{% else %}keine Wertquote{% endif %}</div></div>
+        <div><div class="fw-l">Ausstattung</div>
+            <div class="fw-w{% if objekt_faellig %} warn{% endif %}">{{ ausst_count }}</div>
+            <div class="fw-f fw-lang">{% if objekt_faellig %}{{ objekt_faellig }} am Ende der Lebensdauer{% elif ausst_count %}Elemente erfasst{% else %}kein Raumbuch{% endif %}</div></div>
+    </div>
+    {% include 'fw/_detail_tabs.html' with gruppe='obj' tabs=tab_liste %}
 </div>
 
-<!-- KPI -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold text-indigo-600">{% if e.zimmer %}{{ e.zimmer }}{% else %}—{% endif %}</div>
-        <div class="text-sm text-slate-500">Zimmer</div>
+{% if objekt_hinweise %}
+<div class="fw-card">
+    {% for h in objekt_hinweise %}
+    <div class="fw-hinweis {{ h.ton }}">
+        <span class="fw-hi"><i class="fa-solid {{ h.symbol }}"></i></span>
+        <div class="fw-ht"><b>{{ h.titel }}</b>{{ h.text }}
+            <div class="mt-1.5"><a href="{{ h.url }}" class="fw-link">{{ h.knopf }} →</a></div></div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold text-slate-800">{% if e.flaeche_m2 %}{{ e.flaeche_m2|floatformat:0 }}{% else %}—{% endif %}</div>
-        <div class="text-sm text-slate-500">m² Fläche</div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold text-slate-800">CHF {{ e.nettomiete_aktuell|chf }}</div>
-        <div class="text-sm text-slate-500">Soll-Miete</div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold text-slate-800">{% if e.wertquote %}{{ e.wertquote|floatformat:0 }}‰{% else %}—{% endif %}</div>
-        <div class="text-sm text-slate-500">Wertquote</div>
-    </div>
+    {% endfor %}
 </div>
+{% endif %}
 
-{% include 'fw/_detail_tabs.html' with gruppe='obj' tabs=tab_liste %}
-
-<!-- ===== TAB: ÜBERSICHT ===== -->
-<div data-panel="obj" id="obj-uebersicht">
+<!-- ===== BEREICH: STAMMDATEN ===== -->
+<div data-panel="obj" id="obj-stammdaten">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
         <!-- Aktueller Mieter -->
         <div class="fw-card fw-nomb">
@@ -99,7 +104,7 @@
                     {{ aktiver_vertrag.mieter.display_name|slice:":2"|upper }}
                 </div>
                 <div><div class="font-semibold text-slate-900">{{ aktiver_vertrag.mieter.display_name }}</div>
-                    <div class="text-xs text-slate-400">seit {{ aktiver_vertrag.beginn|date:"d.m.Y" }}</div></div>
+                    <div class="fw-klein">seit {{ aktiver_vertrag.beginn|date:"d.m.Y" }}</div></div>
             </div>
             <a href="/neu/vertraege/{{ aktiver_vertrag.id }}/" class="text-sm text-indigo-600 font-medium hover:underline">Vertrag ansehen <i class="fa-solid fa-arrow-right ml-1 text-xs"></i></a>
             {% else %}
@@ -147,207 +152,20 @@
                 {% endfor %}
             </div>
             <label class="block text-xs font-semibold text-slate-500 mb-1 mt-4">Eigene Merkmale (mit Komma trennen)</label>
-            <input name="merkmale_eigene" placeholder="z.B. Weinkeller, Sauna, Cheminée-Ofen" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <input name="merkmale_eigene" placeholder="z.B. Weinkeller, Sauna, Cheminée-Ofen" class="fw-feld w-full">
             <div class="flex justify-end gap-2 mt-3">
-                <button type="button" onclick="document.getElementById('merkmale-edit').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
-                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                <button type="button" onclick="document.getElementById('merkmale-edit').classList.add('hidden')" class="fw-btn">Abbrechen</button>
+                <button class="fw-btn fw-primary"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- ===== TAB: FOTOS ===== -->
-<div data-panel="obj" id="obj-fotos" class="hidden">
-    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
-        <h3 class="font-bold text-slate-800 text-sm mb-1">Objekt-Fotos</h3>
-        <p class="text-xs text-slate-400 mb-3">Werden im Exposé, im Portal-Feed und in der Vermarktungsliste verwendet. Das erste Foto ist das Titelbild.</p>
-        <form method="post" action="/neu/objekte/{{ e.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
-            {% csrf_token %}
-            <input name="fotos" type="file" accept="image/*" multiple required
-                   class="text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold">
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-upload mr-1.5"></i>Hochladen</button>
-        </form>
-    </div>
-    {% if fotos %}
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {% for f in fotos %}
-        <div class="relative group">
-            <a href="{{ f.bild.url }}" target="_blank" rel="noopener" title="Foto in voller Grösse öffnen" class="block">
-                <img src="{{ f.bild.url }}" alt="Objektfoto" class="rounded-lg w-full h-40 object-cover border border-slate-200">
-            </a>
-            {% if forloop.first %}<span class="absolute bottom-1 left-1 text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded font-semibold">Titelbild</span>{% endif %}
-            <form method="post" action="/neu/objekte/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1" onsubmit="return confirm('Foto löschen?');">
-                {% csrf_token %}
-                <button class="w-7 h-7 rounded-full bg-white/90 hover:bg-rose-50 text-rose-600 text-xs shadow" title="Löschen"><i class="fa-solid fa-trash"></i></button>
-            </form>
-        </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Fotos.</div>
-    {% endif %}
-</div>
-
-<!-- ===== TAB: RAUMBUCH ===== -->
-<div data-panel="obj" id="obj-raumbuch" class="hidden">
-    <!-- Schnellerfassung ganzer Raum aus Katalog -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
-        <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-wand-magic-sparkles text-indigo-500 mr-1.5"></i>Raum aus Katalog anlegen</h3>
-        <p class="text-xs text-slate-400 mb-3">Lädt die typische Ausstattung eines Raumtyps mit Standard-Lebensdauern — danach Details je Element ergänzen. Die Räume entstehen aus den Elementen.</p>
-        <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/katalog/" class="flex flex-wrap items-end gap-3">
-            {% csrf_token %}
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Raumtyp</label>
-                <select name="raumtyp" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                    {% for rt in raumtypen %}<option value="{{ rt }}">{{ rt }}</option>{% endfor %}
-                </select></div>
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-layer-group mr-1.5"></i>Katalog laden</button>
-        </form>
-    </div>
-
-    <!-- Einzelnes Element erfassen -->
-    <div class="bg-white rounded-xl border border-indigo-200 p-5 mb-5">
-        <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-plus text-indigo-500 mr-1.5"></i>Ausstattungselement erfassen</h3>
-        <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {% csrf_token %}
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Raum *</label>
-                <input name="raum" list="raumliste" required placeholder="z.B. Küche" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                <datalist id="raumliste">{% for rt in raumtypen %}<option value="{{ rt }}">{% endfor %}{% for r in raeume %}<option value="{{ r.raum }}">{% endfor %}</datalist></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kategorie *</label>
-                <input name="kategorie" required placeholder="z.B. Kochherd / Glaskeramik" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bezeichnung / Detail</label>
-                <input name="bezeichnung" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Marke</label>
-                <input name="marke" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Modell</label>
-                <input name="modell" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Material</label>
-                <input name="material" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Einbau / Anschaffung</label>
-                <input type="date" name="einbau_datum" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Neuwert (CHF)</label>
-                <input name="neuwert" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Lebensdauer (Jahre)</label>
-                <input name="lebensdauer_jahre" inputmode="numeric" placeholder="aus Tabelle" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Zustand</label>
-                <select name="zustand" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                    {% for val, lbl in zustand_choices %}<option value="{{ val }}" {% if val == 'gut' %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
-                </select></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Garantie bis</label>
-                <input type="date" name="garantie_bis" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Menge</label>
-                <input name="menge" inputmode="numeric" value="1" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Notiz</label>
-                <input name="notiz" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Foto</label>
-                <input type="file" name="foto" accept="image/*" class="w-full text-xs text-slate-600 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold"></div>
-            <div class="sm:col-span-3 flex justify-end"><button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen</button></div>
-        </form>
-    </div>
-
-    <!-- Raumbuch (Räume aus Assets) -->
-    {% if raeume %}
-    <div class="space-y-4">
-        {% for r in raeume %}
-        <details class="group bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <summary class="px-5 py-3 bg-slate-50/60 flex items-center gap-2 cursor-pointer select-none hover:bg-slate-50 list-none">
-                <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform group-open:rotate-90"></i>
-                <i class="fa-solid fa-door-open text-indigo-500"></i>
-                <span class="font-bold text-slate-800">{{ r.raum }}</span>
-                <span class="text-xs text-slate-400">· {{ r.elemente|length }} Element{{ r.elemente|length|pluralize:",e" }}</span>
-            </summary>
-            <div class="border-t border-slate-100 overflow-x-auto">
-            <table class="w-full min-w-max text-sm">
-                <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                    <th class="px-5 py-2.5 font-semibold">Kategorie</th>
-                    <th class="px-5 py-2.5 font-semibold">Marke / Modell</th>
-                    <th class="px-5 py-2.5 font-semibold">Einbau</th>
-                    <th class="px-5 py-2.5 font-semibold text-right">Neuwert</th>
-                    <th class="px-5 py-2.5 font-semibold text-right">Zeitwert</th>
-                    <th class="px-5 py-2.5 font-semibold">Zustand</th>
-                    <th class="px-5 py-2.5"></th>
-                </tr></thead>
-                <tbody class="divide-y divide-slate-50">
-                {% for row in r.elemente %}
-                <tr class="hover:bg-slate-50/60">
-                    <td class="px-5 py-2.5">
-                        <div class="font-medium text-slate-900">{{ row.a.kategorie }}
-                            {% if row.ersatz_status == 'faellig' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-600">Ersatz fällig</span>{% elif row.ersatz_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-600">bald fällig</span>{% endif %}</div>
-                        {% if row.a.bezeichnung %}<div class="text-xs text-slate-400">{{ row.a.bezeichnung }}</div>{% endif %}
-                        <div class="flex items-center gap-2 mt-0.5">
-                            {% if row.a.foto %}<a href="{{ row.a.foto.url }}" target="_blank" rel="noopener" class="text-[11px] text-indigo-600 hover:underline"><i class="fa-solid fa-image mr-0.5"></i>Foto</a>{% endif %}
-                            {% if row.schaden_anzahl %}<span class="text-[11px] text-slate-500"><i class="fa-solid fa-screwdriver-wrench mr-0.5 text-slate-400"></i>{{ row.schaden_anzahl }} Reparatur{{ row.schaden_anzahl|pluralize:"en" }} · CHF {{ row.reparaturkosten|chf }}</span>{% endif %}
-                        </div>
-                    </td>
-                    <td class="px-5 py-2.5 text-slate-600">{% if row.a.marke or row.a.modell %}{{ row.a.marke }} {{ row.a.modell }}{% else %}—{% endif %}</td>
-                    <td class="px-5 py-2.5 text-slate-600 whitespace-nowrap">{% if row.a.einbau_datum %}{{ row.a.einbau_datum|date:"m.Y" }}{% else %}—{% endif %}{% if row.lebensdauer %} <span class="text-xs text-slate-400">· {{ row.lebensdauer }}J</span>{% endif %}</td>
-                    <td class="px-5 py-2.5 text-right text-slate-700 whitespace-nowrap">{% if row.a.neuwert %}{{ row.a.neuwert|chf }}{% else %}—{% endif %}</td>
-                    <td class="px-5 py-2.5 text-right whitespace-nowrap {% if row.zeitwert %}text-slate-900 font-semibold{% else %}text-slate-400{% endif %}">{% if row.zeitwert %}{{ row.zeitwert|chf }}{% else %}—{% endif %}</td>
-                    <td class="px-5 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold {% if row.a.zustand == 'defekt' %}bg-rose-50 text-rose-700{% elif row.a.zustand == 'gebraucht' %}bg-amber-50 text-amber-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ row.a.get_zustand_display }}</span></td>
-                    <td class="px-5 py-2.5 text-right whitespace-nowrap">
-                        <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 text-xs mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
-                        <form method="post" action="/neu/ausstattung/{{ row.a.id }}/loeschen/" class="inline" onsubmit="return confirm('Element löschen?');">
-                            {% csrf_token %}
-                            <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
-                        </form>
-                    </td>
-                </tr>
-                <!-- Inline-Bearbeitung -->
-                <tr id="edit-{{ row.a.id }}" class="hidden bg-indigo-50/40">
-                    <td colspan="7" class="px-5 py-4">
-                        <form method="post" action="/neu/ausstattung/{{ row.a.id }}/bearbeiten/" enctype="multipart/form-data" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            {% csrf_token %}
-                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Raum</label>
-                                <input name="raum" value="{{ row.a.raum }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Kategorie</label>
-                                <input name="kategorie" value="{{ row.a.kategorie }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Marke</label>
-                                <input name="marke" value="{{ row.a.marke }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Modell</label>
-                                <input name="modell" value="{{ row.a.modell }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Material</label>
-                                <input name="material" value="{{ row.a.material }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Bezeichnung / Detail</label>
-                                <input name="bezeichnung" value="{{ row.a.bezeichnung }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Einbau / Anschaffung</label>
-                                <input type="date" name="einbau_datum" value="{{ row.a.einbau_datum|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Neuwert (CHF)</label>
-                                <input name="neuwert" value="{{ row.a.neuwert|default_if_none:'' }}" inputmode="decimal" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Lebensdauer (J)</label>
-                                <input name="lebensdauer_jahre" value="{{ row.a.lebensdauer_jahre|default_if_none:'' }}" inputmode="numeric" placeholder="{{ row.lebensdauer|default_if_none:'aus Tabelle' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Zustand</label>
-                                <select name="zustand" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
-                                    {% for val, lbl in zustand_choices %}<option value="{{ val }}" {% if row.a.zustand == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
-                                </select></div>
-                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Garantie bis</label>
-                                <input type="date" name="garantie_bis" value="{{ row.a.garantie_bis|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                            <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Menge</label>
-                                <input name="menge" value="{{ row.a.menge }}" inputmode="numeric" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                            <div class="sm:col-span-2"><label class="block text-[11px] font-semibold text-slate-500 mb-1">Notiz</label>
-                                <input name="notiz" value="{{ row.a.notiz }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                            <div class="sm:col-span-2"><label class="block text-[11px] font-semibold text-slate-500 mb-1">Foto {% if row.a.foto %}<span class="text-slate-400">(ersetzt bestehendes)</span>{% endif %}</label>
-                                <input type="file" name="foto" accept="image/*" class="w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold"></div>
-                            <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
-                                <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
-                                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
-                            </div>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            </div>
-        </details>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Ausstattung erfasst. Lade einen Raum aus dem Katalog oder erfasse ein Element — die Räume entstehen aus den Assets.</div>
-    {% endif %}
-</div>
-
-<!-- ===== TAB: HISTORIE ===== -->
-<div data-panel="obj" id="obj-verhaeltnisse" class="hidden">
-    <p class="text-xs text-slate-400 mb-3"><i class="fa-solid fa-circle-info mr-1"></i>Jedes Mietverhältnis (aktiv und beendet) mit seinen Dokumenten — Mietvertrag, Mietzinsanpassung, Kündigung, Protokoll. Die Dokumente entstehen automatisch beim Generieren.</p>
+<!-- ===== BEREICH: CHRONIK ===== -->
+<div data-panel="obj" id="obj-chronik" class="hidden">
+{% comment %} Jedes Mietverhaeltnis an diesem Objekt, aktiv und beendet. Das gehoert in die Chronik und nicht in die Stammdaten: Es sind datierte Ereignisse, nicht Eigenschaften des Objekts. {% endcomment %}
+<div class="fw-subhead">Mietverhältnisse</div>
+    <p class="fw-klein mb-3"><i class="fa-solid fa-circle-info mr-1"></i>Jedes Mietverhältnis (aktiv und beendet) mit seinen Dokumenten — Mietvertrag, Mietzinsanpassung, Kündigung, Protokoll. Die Dokumente entstehen automatisch beim Generieren.</p>
     {% if verhaeltnisse %}
     <div class="space-y-3">
         {% for r in verhaeltnisse %}
@@ -356,16 +174,16 @@
                 <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform group-open:rotate-90"></i>
                 <div class="flex-1 min-w-0">
                     <div class="font-bold text-slate-800 truncate">{{ r.namen }}</div>
-                    <div class="text-xs text-slate-400">{{ r.v.beginn|date:"d.m.Y" }} – {% if r.v.ende %}{{ r.v.ende|date:"d.m.Y" }}{% else %}laufend{% endif %}</div>
+                    <div class="fw-klein">{{ r.v.beginn|date:"d.m.Y" }} – {% if r.v.ende %}{{ r.v.ende|date:"d.m.Y" }}{% else %}laufend{% endif %}</div>
                 </div>
                 {% if r.pill %}<span class="text-[11px] font-semibold rounded-full px-2 py-0.5 {{ r.pill.cls }}">{{ r.pill.label }}</span>{% endif %}
                 <span class="text-[11px] font-semibold bg-slate-100 text-slate-500 rounded-md px-1.5 py-0.5">{{ r.dokumente|length }} Dok.</span>
                 <a href="/neu/vertraege/{{ r.v.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0" onclick="event.stopPropagation()">Vertrag <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
             </summary>
             <div class="border-t border-slate-100 px-5 py-3 flex flex-wrap gap-2 bg-slate-50/40">
-                <a href="/neu/mietzins/{{ r.v.id }}/anfangsmietzins/" class="text-[11px] font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-file-invoice mr-1"></i>Anfangsmietzins</a>
+                <a href="/neu/mietzins/{{ r.v.id }}/anfangsmietzins/" class="fw-btn"><i class="fa-solid fa-file-invoice mr-1"></i>Anfangsmietzins</a>
                 {% if r.v.status == 'aktiv' %}
-                <a href="/neu/mietzins/{{ r.v.id }}/anpassung/" class="text-[11px] font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-arrow-trend-up mr-1"></i>Mietzinsanpassung</a>
+                <a href="/neu/mietzins/{{ r.v.id }}/anpassung/" class="fw-btn"><i class="fa-solid fa-arrow-trend-up mr-1"></i>Mietzinsanpassung</a>
                 <a href="/neu/vertraege/{{ r.v.id }}/kuendigen/" class="text-[11px] font-semibold text-rose-600 border border-rose-100 hover:bg-rose-50 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-file-circle-xmark mr-1"></i>Kündigung</a>
                 {% endif %}
                 <a href="/neu/vertraege/{{ r.v.id }}/" class="text-[11px] font-semibold text-slate-600 border border-slate-200 hover:bg-slate-100 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-arrow-right mr-1"></i>Vertrag öffnen</a>
@@ -375,7 +193,7 @@
                 <div class="flex items-center gap-3 px-5 py-3">
                     <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-paperclip"></i></div>
                     <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ d.bezeichnung|default:d.titel }}</div>
-                        <div class="text-xs text-slate-400">{{ d.get_kategorie_display }}{% if d.ablage_zeit %} · {{ d.ablage_zeit|date:"d.m.Y H:i" }}{% endif %}</div></div>
+                        <div class="fw-klein">{{ d.get_kategorie_display }}{% if d.ablage_zeit %} · {{ d.ablage_zeit|date:"d.m.Y H:i" }}{% endif %}</div></div>
                     {% if d.datei %}<a href="{{ d.datei.url }}" class="text-xs text-indigo-600 font-medium hover:underline shrink-0" target="_blank" rel="noopener">Öffnen</a>{% endif %}
                 </div>
                 {% empty %}
@@ -388,119 +206,48 @@
     {% else %}
     <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch kein Mietverhältnis an diesem Objekt.</div>
     {% endif %}
+{% comment %} AktivitaetsLog kennt keinen Ziel-Typ fuer ein Objekt. Der einzige belastbare Bezug fuehrt ueber seine Vertraege — genau wie bei der Liegenschaft. Ein Abgleich ueber die Bezeichnung waere geraten. {% endcomment %}
+<div class="fw-subhead">Protokoll</div>
+<div class="fw-card">
+    {% for a in verlauf %}
+    <div class="fw-zeile">
+        <span class="fw-ikon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ a.aktion }}{% if a.objekt %} · {{ a.objekt }}{% endif %}</div>
+            <div class="fw-s">{{ a.details }}{% if a.benutzer %} · {{ a.benutzer.get_full_name|default:a.benutzer.username }}{% endif %}</div>
+        </div>
+        <div class="fw-zeit">{{ a.zeitpunkt|date:"d.m.Y H:i" }}</div>
+    </div>
+    {% empty %}
+    <p class="fw-leer">Kein Protokolleintrag — dieses Objekt hatte noch keinen Vertrag mit erfassten Vorgängen.</p>
+    {% endfor %}
+</div>
 </div>
 
-<!-- ===== TAB: GERÄTE ===== -->
-<div data-panel="obj" id="obj-geraete" class="hidden">
-    <datalist id="geraetkat">{% for k in geraet_kategorien %}<option value="{{ k }}">{% endfor %}</datalist>
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Gerät</th><th class="px-5 py-3 font-semibold">Marke / Modell</th>
-                <th class="px-5 py-3 font-semibold">Installation</th><th class="px-5 py-3 font-semibold">Garantie bis</th><th class="px-5 py-3"></th>
-            </tr></thead>
-            <tbody class="divide-y divide-slate-50">
-            {% for g in geraete %}
-            <tr class="hover:bg-slate-50/60"><td class="px-5 py-3 font-medium text-slate-900">{{ g.kategorie }}{% if g.sonstiges_bezeichnung %} <span class="text-xs text-slate-400 font-normal">· {{ g.sonstiges_bezeichnung }}</span>{% endif %}
-                    {% if g.kapazitaet or g.seriennummer or g.standort %}<div class="text-xs text-slate-400 font-normal">{% if g.kapazitaet %}{{ g.kapazitaet }}{% endif %}{% if g.seriennummer %}{% if g.kapazitaet %} · {% endif %}SN: {{ g.seriennummer }}{% endif %}{% if g.standort %} · {{ g.standort }}{% endif %}</div>{% endif %}</td>
-                <td class="px-5 py-3 text-slate-600">{% if g.marke or g.modell %}{{ g.marke }} {{ g.modell }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{% if g.installations_datum %}{{ g.installations_datum|date:"m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{% if g.garantie_bis %}{{ g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right whitespace-nowrap">
-                    <button type="button" onclick="document.getElementById('gedit-{{ g.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 text-xs mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
-                    <form method="post" action="/neu/geraet/{{ g.id }}/loeschen/" class="inline" onsubmit="return confirm('Gerät löschen?');">{% csrf_token %}
-                        <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
-                    </form>
-                </td></tr>
-            <tr id="gedit-{{ g.id }}" class="hidden bg-indigo-50/40">
-                <td colspan="5" class="px-5 py-4">
-                    <form method="post" action="/neu/geraet/{{ g.id }}/bearbeiten/" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {% csrf_token %}
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Kategorie</label>
-                            <input name="kategorie" list="geraetkat" value="{{ g.kategorie }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Marke</label>
-                            <input name="marke" value="{{ g.marke }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Modell</label>
-                            <input name="modell" value="{{ g.modell }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Seriennummer</label>
-                            <input name="seriennummer" value="{{ g.seriennummer }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Kapazität / Leistung</label>
-                            <input name="kapazitaet" value="{{ g.kapazitaet }}" placeholder="z.B. 300 L" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Standort</label>
-                            <input name="standort" value="{{ g.standort }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Installations-Datum</label>
-                            <input type="date" name="installations_datum" value="{{ g.installations_datum|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Garantie bis</label>
-                            <input type="date" name="garantie_bis" value="{{ g.garantie_bis|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div class="col-span-2 sm:col-span-3"><label class="block text-[11px] font-semibold text-slate-500 mb-1">Notiz</label>
-                            <input name="notiz" value="{{ g.notiz }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div class="col-span-2 sm:col-span-3 flex items-center gap-2 justify-end">
-                            <button type="button" onclick="document.getElementById('gedit-{{ g.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
-                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
-                        </div>
-                    </form>
-                </td></tr>
-            {% empty %}
-            <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Geräte erfasst.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table></div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-plus text-indigo-500 mr-1.5"></i>Gerät erfassen</h3>
-        <form method="post" action="/neu/geraet/" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {% csrf_token %}
-            <input type="hidden" name="einheit_id" value="{{ e.id }}">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kategorie <span class="text-red-500">*</span></label>
-                <input name="kategorie" list="geraetkat" required placeholder="z.B. Waschmaschine, Boiler" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Marke</label>
-                <input name="marke" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Modell</label>
-                <input name="modell" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Seriennummer</label>
-                <input name="seriennummer" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kapazität / Leistung</label>
-                <input name="kapazitaet" placeholder="z.B. 300 L, 24 kW" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Standort</label>
-                <input name="standort" placeholder="z.B. Keller" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Installations-Datum</label>
-                <input type="date" name="installations_datum" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Garantie bis</label>
-                <input type="date" name="garantie_bis" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-3"><label class="block text-xs font-semibold text-slate-500 mb-1">Notiz</label>
-                <input name="notiz" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-3">
-                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- ===== TAB: ZÄHLER ===== -->
-<!-- ===== TAB: MIETZINS (Sollmietzins-Komponenten, datiert) ===== -->
-<div data-panel="obj" id="obj-mietzins" class="hidden">
+<!-- ===== BEREICH: FINANZEN ===== -->
+<div data-panel="obj" id="obj-finanzen" class="hidden">
     <div class="bg-indigo-50/60 border border-indigo-100 rounded-xl px-4 py-3 mb-4 text-[12px] text-indigo-800 leading-relaxed">
         <i class="fa-solid fa-circle-info mr-1"></i><b>Sollmietzins datiert («gültig ab»).</b> Der aktuell gültige Wert steuert die Soll-Miete; <b>neue Verträge</b> übernehmen ihn zum Mietbeginn automatisch, <b>bestehende bleiben unverändert</b> (Änderung nur via amtliches Formular, Art. 269d OR).
         <span class="block mt-1"><b>Gratismonate / Rabatt:</b> datierte Zeile mit Rabatt (oder «mietzinsfrei») erfassen — die <b>Referenz</b> bleibt die echte Sollmiete (Mieterspiegel/Bilanz korrekt), der Rabatt wird als Ertragsminderung gebucht.</span>
     </div>
     {% if not e.ist_einstellplatz %}
     <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
-        <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-sliders text-indigo-500 mr-1.5"></i>Nebenkosten-Abrechnungsart</h3>
+        <h3 class="fw-t mb-3"><i class="fa-solid fa-sliders text-indigo-500 mr-1.5"></i>Nebenkosten-Abrechnungsart</h3>
         <form method="post" action="/neu/objekte/{{ e.id }}/nkart/" class="flex flex-wrap items-end gap-3">
             {% csrf_token %}
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Abrechnungsart</label>
-                <select name="nk_abrechnungsart" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5 min-w-[16rem]">
+            <div><label class="fw-klein block mb-1">Abrechnungsart</label>
+                <select name="nk_abrechnungsart" class="fw-feld min-w-[16rem]">
                     <option value="akonto" {% if e.nk_abrechnungsart == 'akonto' %}selected{% endif %}>Akonto (Vorschuss mit Abrechnung)</option>
                     <option value="pauschal" {% if e.nk_abrechnungsart == 'pauschal' %}selected{% endif %}>Pauschal (fixer Betrag)</option>
                 </select></div>
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+            <button class="fw-btn fw-primary"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
         </form>
         <p class="text-[11px] text-slate-400 mt-2">Gilt als Standard-Abrechnungsart für neue Verträge dieses Objekts.</p>
     </div>
     {% endif %}
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
+    <div class="fw-card">
         <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+            <thead><tr class="fw-kopfzeile">
                 <th class="px-4 py-3 font-semibold">Gültig ab</th>
                 <th class="px-4 py-3 font-semibold text-right">Netto{% if not e.ist_einstellplatz %} / NK{% endif %}<br><span class="text-[9px] normal-case text-slate-300">Referenz</span></th>
                 <th class="px-4 py-3 font-semibold text-right">Rabatt</th>
@@ -509,9 +256,9 @@
                 <th class="px-4 py-3 font-semibold">Bemerkung</th>
                 <th class="px-4 py-3"></th>
             </tr></thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody class="">
             {% for s in sollmietzinse %}
-            <tr class="hover:bg-slate-50/60">
+            <tr class="fw-hover">
                 <td class="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">{{ s.gueltig_ab|date:"d.m.Y" }}
                     {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-emerald-50 text-emerald-700">aktuell</span>{% endif %}</td>
                 <td class="px-4 py-3 text-right text-slate-700 whitespace-nowrap">{{ s.netto_mietzins|chf }}{% if not e.ist_einstellplatz %} / {{ s.nebenkosten|chf }}{% endif %}</td>
@@ -524,39 +271,39 @@
                 <td class="px-4 py-3 text-slate-500 truncate max-w-[120px]">{{ s.notiz|default:"—" }}</td>
                 <td class="px-4 py-3 text-right whitespace-nowrap">
                     <form method="post" action="/neu/sollmietzins/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('Diese Sollmietzins-Zeile löschen?');">{% csrf_token %}
-                        <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                        <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash"></i></button>
                     </form>
                 </td></tr>
             {% empty %}
-            <tr><td colspan="7" class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch kein Sollmietzins erfasst.</td></tr>
+            <tr><td colspan="7" class="fw-leer">Noch kein Sollmietzins erfasst.</td></tr>
             {% endfor %}
             </tbody>
         </table></div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-plus text-indigo-500 mr-1.5"></i>Sollmietzins / Gratismonat erfassen</h3>
+    <div class="fw-card" style="padding:20px">
+        <h3 class="fw-t mb-3"><i class="fa-solid fa-plus mr-1.5"></i>Sollmietzins / Gratismonat erfassen</h3>
         <form method="post" action="/neu/sollmietzins/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             {% csrf_token %}
             <input type="hidden" name="einheit_id" value="{{ e.id }}">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gültig ab <span class="text-red-500">*</span></label>
-                <input name="gueltig_ab" type="date" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">{% if e.ist_einstellplatz %}Mietzins{% else %}Netto-Mietzins{% endif %} Referenz (CHF) <span class="text-red-500">*</span></label>
-                <input name="netto_mietzins" id="smz-netto" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="fw-klein block mb-1">Gültig ab <span class="fw-pflicht">*</span></label>
+                <input name="gueltig_ab" type="date" required class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">{% if e.ist_einstellplatz %}Mietzins{% else %}Netto-Mietzins{% endif %} Referenz (CHF) <span class="fw-pflicht">*</span></label>
+                <input name="netto_mietzins" id="smz-netto" inputmode="decimal" placeholder="0.00" class="fw-feld w-full"></div>
             {% if not e.ist_einstellplatz %}
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nebenkosten (CHF)</label>
-                <input name="nebenkosten" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="fw-klein block mb-1">Nebenkosten (CHF)</label>
+                <input name="nebenkosten" inputmode="decimal" placeholder="0.00" class="fw-feld w-full"></div>
             {% endif %}
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Rabatt Netto (CHF)</label>
-                <input name="rabatt_netto" id="smz-rabatt" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] text-slate-400 mt-1">Erlass dieser Periode</p></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Basis Ref.-Zinssatz (%)</label>
-                <input name="basis_referenzzinssatz" inputmode="decimal" value="{% localize off %}{{ aktueller_ref_zins }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] text-slate-400 mt-1">Indexbasis dieses Mietzinses</p></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Basis LIK (Punkte)</label>
-                <input name="basis_lik_punkte" inputmode="decimal" value="{% localize off %}{{ aktueller_lik }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] text-slate-400 mt-1">Neue Verträge übernehmen die Basis</p></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bemerkung</label>
-                <input name="notiz" placeholder="z.B. Gratismonat" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="fw-klein block mb-1">Rabatt Netto (CHF)</label>
+                <input name="rabatt_netto" id="smz-rabatt" inputmode="decimal" placeholder="0.00" class="fw-feld w-full">
+                <p class="fw-klein mt-1">Erlass dieser Periode</p></div>
+            <div><label class="fw-klein block mb-1">Basis Ref.-Zinssatz (%)</label>
+                <input name="basis_referenzzinssatz" inputmode="decimal" value="{% localize off %}{{ aktueller_ref_zins }}{% endlocalize %}" class="fw-feld w-full">
+                <p class="fw-klein mt-1">Indexbasis dieses Mietzinses</p></div>
+            <div><label class="fw-klein block mb-1">Basis LIK (Punkte)</label>
+                <input name="basis_lik_punkte" inputmode="decimal" value="{% localize off %}{{ aktueller_lik }}{% endlocalize %}" class="fw-feld w-full">
+                <p class="fw-klein mt-1">Neue Verträge übernehmen die Basis</p></div>
+            <div><label class="fw-klein block mb-1">Bemerkung</label>
+                <input name="notiz" placeholder="z.B. Gratismonat" class="fw-feld w-full"></div>
             <div class="sm:col-span-4">
                 {% comment %}
                     Die Schaltfläche trug bisher die Klasse sm:col-span-4 auf dem <label>
@@ -577,7 +324,7 @@
                 </p>
             </div>
             <div class="sm:col-span-4">
-                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Sollmietzins speichern</button>
+                <button class="fw-btn fw-primary"><i class="fa-solid fa-check mr-1.5"></i>Sollmietzins speichern</button>
             </div>
         </form>
         <script>
@@ -623,7 +370,7 @@
                     <th class="px-4 py-2 font-semibold">Bemerkung</th>
                     <th class="px-4 py-2"></th>
                 </tr></thead>
-                <tbody class="divide-y divide-slate-50">
+                <tbody class="">
                 {% for s in staffelvorlagen %}
                 <tr>
                     <td class="px-4 py-2 font-medium text-slate-800">{{ s.gueltig_ab|date:"d.m.Y" }}</td>
@@ -631,7 +378,7 @@
                     <td class="px-4 py-2 text-slate-500">{{ s.notiz|default:"—" }}</td>
                     <td class="px-4 py-2 text-right">
                         <form method="post" action="/neu/staffelvorlage/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('Diese Staffel-Vorlage-Zeile löschen?');">{% csrf_token %}
-                            <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                            <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash"></i></button>
                         </form>
                     </td>
                 </tr>
@@ -644,13 +391,13 @@
         <form method="post" action="/neu/staffelvorlage/" class="flex flex-wrap items-end gap-3">
             {% csrf_token %}
             <input type="hidden" name="einheit_id" value="{{ e.id }}">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gültig ab <span class="text-red-500">*</span></label>
-                <input name="gueltig_ab" type="date" required class="bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Netto-Mietzins ab Stichtag (CHF) <span class="text-red-500">*</span></label>
-                <input name="netto_mietzins" inputmode="decimal" placeholder="0.00" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5 w-44"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bemerkung</label>
-                <input name="notiz" placeholder="z.B. Jahresstaffel" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Stufe hinzufügen</button>
+            <div><label class="fw-klein block mb-1">Gültig ab <span class="fw-pflicht">*</span></label>
+                <input name="gueltig_ab" type="date" required class="fw-feld"></div>
+            <div><label class="fw-klein block mb-1">Netto-Mietzins ab Stichtag (CHF) <span class="fw-pflicht">*</span></label>
+                <input name="netto_mietzins" inputmode="decimal" placeholder="0.00" class="fw-feld w-44"></div>
+            <div><label class="fw-klein block mb-1">Bemerkung</label>
+                <input name="notiz" placeholder="z.B. Jahresstaffel" class="fw-feld"></div>
+            <button class="fw-btn fw-primary"><i class="fa-solid fa-check mr-1.5"></i>Stufe hinzufügen</button>
         </form>
     </div>
     {% endif %}
@@ -670,7 +417,7 @@
                     <th class="px-4 py-2 font-semibold text-right">Netto-Mietzins</th>
                     <th class="px-4 py-2"></th>
                 </tr></thead>
-                <tbody class="divide-y divide-slate-50">
+                <tbody class="">
                 <tr class="text-slate-500">
                     <td class="px-4 py-2">{{ aktiver_vertrag.beginn|date:"d.m.Y" }} <span class="text-[10px] text-slate-400">(Start)</span></td>
                     <td class="px-4 py-2 text-right">CHF {{ aktiver_vertrag.netto_mietzins|chf }}</td>
@@ -682,7 +429,7 @@
                     <td class="px-4 py-2 text-right font-semibold text-slate-900">CHF {{ s.netto_mietzins|chf }}</td>
                     <td class="px-4 py-2 text-right">
                         <form method="post" action="/neu/staffel/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('Staffelstufe löschen?');">{% csrf_token %}
-                            <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                            <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash"></i></button>
                         </form>
                     </td>
                 </tr>
@@ -695,102 +442,429 @@
         <form method="post" action="/neu/staffel/" class="flex flex-wrap items-end gap-3">
             {% csrf_token %}
             <input type="hidden" name="vertrag_id" value="{{ aktiver_vertrag.id }}">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gültig ab <span class="text-red-500">*</span></label>
-                <input name="ab_datum" type="date" required class="bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Netto-Mietzins ab Stichtag (CHF) <span class="text-red-500">*</span></label>
-                <input name="netto_mietzins" inputmode="decimal" placeholder="0.00" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5 w-44"></div>
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Stufe hinzufügen</button>
+            <div><label class="fw-klein block mb-1">Gültig ab <span class="fw-pflicht">*</span></label>
+                <input name="ab_datum" type="date" required class="fw-feld"></div>
+            <div><label class="fw-klein block mb-1">Netto-Mietzins ab Stichtag (CHF) <span class="fw-pflicht">*</span></label>
+                <input name="netto_mietzins" inputmode="decimal" placeholder="0.00" class="fw-feld w-44"></div>
+            <button class="fw-btn fw-primary"><i class="fa-solid fa-check mr-1.5"></i>Stufe hinzufügen</button>
         </form>
     </div>
     {% endif %}
 </div>
 
-<div data-panel="obj" id="obj-zaehler" class="hidden">
-    <datalist id="zaehlertyp">{% for t in zaehler_typen %}<option value="{{ t }}">{% endfor %}</datalist>
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
+<!-- ===== BEREICH: DOKUMENTE ===== -->
+<div data-panel="obj" id="obj-dokumente" class="hidden">
+<div class="fw-subhead">Fotos</div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+        <h3 class="font-bold text-slate-800 text-sm mb-1">Objekt-Fotos</h3>
+        <p class="fw-klein mb-3">Werden im Exposé, im Portal-Feed und in der Vermarktungsliste verwendet. Das erste Foto ist das Titelbild.</p>
+        <form method="post" action="/neu/objekte/{{ e.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
+            {% csrf_token %}
+            <input name="fotos" type="file" accept="image/*" multiple required
+                   class="text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold">
+            <button class="fw-btn fw-primary"><i class="fa-solid fa-upload mr-1.5"></i>Hochladen</button>
+        </form>
+    </div>
+    {% if fotos %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {% for f in fotos %}
+        <div class="relative group">
+            <a href="{{ f.bild.url }}" target="_blank" rel="noopener" title="Foto in voller Grösse öffnen" class="block">
+                <img src="{{ f.bild.url }}" alt="Objektfoto" class="fw-bild">
+            </a>
+            {% if forloop.first %}<span class="absolute bottom-1 left-1 text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded font-semibold">Titelbild</span>{% endif %}
+            <form method="post" action="/neu/objekte/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1" onsubmit="return confirm('Foto löschen?');">
+                {% csrf_token %}
+                <button class="w-7 h-7 rounded-full bg-white/90 hover:bg-rose-50 text-rose-600 text-xs shadow" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Fotos.</div>
+    {% endif %}
+{% comment %} Haengen per Fremdschluessel am Vertrag, nicht am Objekt. Sie stehen hier trotzdem, weil man sie am Objekt sucht — verlinkt, nicht kopiert. {% endcomment %}
+<div class="fw-subhead">Dokumente der Mietverhältnisse</div>
+<div class="fw-card">
+    {% for x in verhaeltnisse %}{% for d in x.dokumente %}
+    <div class="fw-zeile">
+        <span class="fw-ikon"><i class="fa-solid fa-file-lines"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ d.get_kategorie_display|default:d.kategorie }}</div>
+            <div class="fw-s">{{ x.namen }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}</div>
+        </div>
+        <a href="/neu/vertraege/{{ x.v.id }}/" class="fw-btn">Zum Vertrag</a>
+    </div>
+    {% endfor %}{% empty %}
+    <p class="fw-leer">Kein Vertragsdokument an diesem Objekt.</p>
+    {% endfor %}
+</div>
+</div>
+
+<!-- ===== BEREICH: FÄLLE ===== -->
+<div data-panel="obj" id="obj-faelle" class="hidden">
+{% comment %} Bis 4b.11 gab es diesen Bereich an der Objektakte nicht.
+   Faelle und Schaeden waren nur an der Liegenschaft zu sehen — wer vor einer
+   einzelnen Wohnung stand, sah nicht, was an ihr offen ist. {% endcomment %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-folder-open"></i></span>
+        <span class="fw-t">Fälle</span><span class="fw-neben">{{ objekt_faelle|length }}</span></div>
+    {% for f in objekt_faelle %}
+    <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick">
+        <span class="fw-marker {% if f.ist_liegengeblieben %}crit{% elif f.status == 'wartet' %}warn{% endif %}"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ f.betreff|default:f.fallart.bezeichnung }}</div>
+            <div class="fw-s">{{ f.nummer }} · {{ f.get_status_display }}{% if f.zustaendig %} · {{ f.zustaendig.get_full_name|default:f.zustaendig.username }}{% endif %}</div>
+        </div>
+        <div class="fw-zeit">{{ f.eroeffnet_am|date:"d.m.Y" }}</div>
+    </a>
+    {% empty %}
+    <p class="fw-leer">Kein Fall an diesem Objekt.</p>
+    {% endfor %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon{% if objekt_schaeden_offen %} warn{% endif %}"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <span class="fw-t">Schäden</span>
+        <span class="fw-neben">{{ objekt_schaeden_offen|length }} offen von {{ objekt_schaeden|length }}</span></div>
+    {% for s in objekt_schaeden %}
+    <a href="/neu/schaeden/{{ s.id }}/" class="fw-zeile klick">
+        <span class="fw-marker {% if s.status != 'erledigt' %}warn{% else %}good{% endif %}"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ s.titel|default:s.beschreibung|truncatechars:70 }}</div>
+            <div class="fw-s">{{ s.get_status_display }}{% if s.kategorie %} · {{ s.kategorie }}{% endif %}</div>
+        </div>
+        <div class="fw-zeit">{{ s.erstellt_am|date:"d.m.Y" }}</div>
+    </a>
+    {% empty %}
+    <p class="fw-leer">Kein Schaden erfasst.</p>
+    {% endfor %}
+</div>
+</div>
+
+<!-- ===== BEREICH: AUSSTATTUNG ===== -->
+<div data-panel="obj" id="obj-ausstattung" class="hidden">
+<div class="fw-subhead">Raumbuch</div>
+    <!-- Schnellerfassung ganzer Raum aus Katalog -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+        <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-wand-magic-sparkles text-indigo-500 mr-1.5"></i>Raum aus Katalog anlegen</h3>
+        <p class="fw-klein mb-3">Lädt die typische Ausstattung eines Raumtyps mit Standard-Lebensdauern — danach Details je Element ergänzen. Die Räume entstehen aus den Elementen.</p>
+        <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/katalog/" class="flex flex-wrap items-end gap-3">
+            {% csrf_token %}
+            <div><label class="fw-klein block mb-1">Raumtyp</label>
+                <select name="raumtyp" class="fw-feld">
+                    {% for rt in raumtypen %}<option value="{{ rt }}">{{ rt }}</option>{% endfor %}
+                </select></div>
+            <button class="fw-btn fw-primary"><i class="fa-solid fa-layer-group mr-1.5"></i>Katalog laden</button>
+        </form>
+    </div>
+
+    <!-- Einzelnes Element erfassen -->
+    <div class="bg-white rounded-xl border border-indigo-200 p-5 mb-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-plus mr-1.5"></i>Ausstattungselement erfassen</h3>
+        <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {% csrf_token %}
+            <div><label class="fw-klein block mb-1">Raum *</label>
+                <input name="raum" list="raumliste" required placeholder="z.B. Küche" class="fw-feld w-full">
+                <datalist id="raumliste">{% for rt in raumtypen %}<option value="{{ rt }}">{% endfor %}{% for r in raeume %}<option value="{{ r.raum }}">{% endfor %}</datalist></div>
+            <div><label class="fw-klein block mb-1">Kategorie *</label>
+                <input name="kategorie" required placeholder="z.B. Kochherd / Glaskeramik" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Bezeichnung / Detail</label>
+                <input name="bezeichnung" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Marke</label>
+                <input name="marke" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Modell</label>
+                <input name="modell" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Material</label>
+                <input name="material" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Einbau / Anschaffung</label>
+                <input type="date" name="einbau_datum" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Neuwert (CHF)</label>
+                <input name="neuwert" inputmode="decimal" placeholder="0.00" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Lebensdauer (Jahre)</label>
+                <input name="lebensdauer_jahre" inputmode="numeric" placeholder="aus Tabelle" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Zustand</label>
+                <select name="zustand" class="fw-feld w-full">
+                    {% for val, lbl in zustand_choices %}<option value="{{ val }}" {% if val == 'gut' %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                </select></div>
+            <div><label class="fw-klein block mb-1">Garantie bis</label>
+                <input type="date" name="garantie_bis" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Menge</label>
+                <input name="menge" inputmode="numeric" value="1" class="fw-feld w-full"></div>
+            <div class="sm:col-span-2"><label class="fw-klein block mb-1">Notiz</label>
+                <input name="notiz" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Foto</label>
+                <input type="file" name="foto" accept="image/*" class="w-full text-xs text-slate-600 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold"></div>
+            <div class="sm:col-span-3 flex justify-end"><button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen</button></div>
+        </form>
+    </div>
+
+    <!-- Raumbuch (Räume aus Assets) -->
+    {% if raeume %}
+    <div class="space-y-4">
+        {% for r in raeume %}
+        <details class="group bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <summary class="px-5 py-3 bg-slate-50/60 flex items-center gap-2 cursor-pointer select-none hover:bg-slate-50 list-none">
+                <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform group-open:rotate-90"></i>
+                <i class="fa-solid fa-door-open text-indigo-500"></i>
+                <span class="font-bold text-slate-800">{{ r.raum }}</span>
+                <span class="fw-klein">· {{ r.elemente|length }} Element{{ r.elemente|length|pluralize:",e" }}</span>
+            </summary>
+            <div class="border-t border-slate-100 overflow-x-auto">
+            <table class="w-full min-w-max text-sm">
+                <thead><tr class="fw-kopfzeile">
+                    <th class="px-5 py-2.5 font-semibold">Kategorie</th>
+                    <th class="px-5 py-2.5 font-semibold">Marke / Modell</th>
+                    <th class="px-5 py-2.5 font-semibold">Einbau</th>
+                    <th class="px-5 py-2.5 font-semibold text-right">Neuwert</th>
+                    <th class="px-5 py-2.5 font-semibold text-right">Zeitwert</th>
+                    <th class="px-5 py-2.5 font-semibold">Zustand</th>
+                    <th class="px-5 py-2.5"></th>
+                </tr></thead>
+                <tbody class="">
+                {% for row in r.elemente %}
+                <tr class="fw-hover">
+                    <td class="px-5 py-2.5">
+                        <div class="font-medium text-slate-900">{{ row.a.kategorie }}
+                            {% if row.ersatz_status == 'faellig' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-600">Ersatz fällig</span>{% elif row.ersatz_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-600">bald fällig</span>{% endif %}</div>
+                        {% if row.a.bezeichnung %}<div class="fw-klein">{{ row.a.bezeichnung }}</div>{% endif %}
+                        <div class="flex items-center gap-2 mt-0.5">
+                            {% if row.a.foto %}<a href="{{ row.a.foto.url }}" target="_blank" rel="noopener" class="text-[11px] text-indigo-600 hover:underline"><i class="fa-solid fa-image mr-0.5"></i>Foto</a>{% endif %}
+                            {% if row.schaden_anzahl %}<span class="text-[11px] text-slate-500"><i class="fa-solid fa-screwdriver-wrench mr-0.5 text-slate-400"></i>{{ row.schaden_anzahl }} Reparatur{{ row.schaden_anzahl|pluralize:"en" }} · CHF {{ row.reparaturkosten|chf }}</span>{% endif %}
+                        </div>
+                    </td>
+                    <td class="px-5 py-2.5 text-slate-600">{% if row.a.marke or row.a.modell %}{{ row.a.marke }} {{ row.a.modell }}{% else %}—{% endif %}</td>
+                    <td class="px-5 py-2.5 text-slate-600 whitespace-nowrap">{% if row.a.einbau_datum %}{{ row.a.einbau_datum|date:"m.Y" }}{% else %}—{% endif %}{% if row.lebensdauer %} <span class="fw-klein">· {{ row.lebensdauer }}J</span>{% endif %}</td>
+                    <td class="px-5 py-2.5 text-right text-slate-700 whitespace-nowrap">{% if row.a.neuwert %}{{ row.a.neuwert|chf }}{% else %}—{% endif %}</td>
+                    <td class="px-5 py-2.5 text-right whitespace-nowrap {% if row.zeitwert %}text-slate-900 font-semibold{% else %}text-slate-400{% endif %}">{% if row.zeitwert %}{{ row.zeitwert|chf }}{% else %}—{% endif %}</td>
+                    <td class="px-5 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold {% if row.a.zustand == 'defekt' %}bg-rose-50 text-rose-700{% elif row.a.zustand == 'gebraucht' %}bg-amber-50 text-amber-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ row.a.get_zustand_display }}</span></td>
+                    <td class="px-5 py-2.5 text-right whitespace-nowrap">
+                        <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.toggle('hidden')" class="fw-ikon mut mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
+                        <form method="post" action="/neu/ausstattung/{{ row.a.id }}/loeschen/" class="inline" onsubmit="return confirm('Element löschen?');">
+                            {% csrf_token %}
+                            <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                <!-- Inline-Bearbeitung -->
+                <tr id="edit-{{ row.a.id }}" class="hidden fw-markiert">
+                    <td colspan="7" class="px-5 py-4">
+                        <form method="post" action="/neu/ausstattung/{{ row.a.id }}/bearbeiten/" enctype="multipart/form-data" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {% csrf_token %}
+                            <div><label class="fw-klein block mb-1">Raum</label>
+                                <input name="raum" value="{{ row.a.raum }}" required class="fw-feld w-full"></div>
+                            <div><label class="fw-klein block mb-1">Kategorie</label>
+                                <input name="kategorie" value="{{ row.a.kategorie }}" required class="fw-feld w-full"></div>
+                            <div><label class="fw-klein block mb-1">Marke</label>
+                                <input name="marke" value="{{ row.a.marke }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-klein block mb-1">Modell</label>
+                                <input name="modell" value="{{ row.a.modell }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-klein block mb-1">Material</label>
+                                <input name="material" value="{{ row.a.material }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-klein block mb-1">Bezeichnung / Detail</label>
+                                <input name="bezeichnung" value="{{ row.a.bezeichnung }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-klein block mb-1">Einbau / Anschaffung</label>
+                                <input type="date" name="einbau_datum" value="{{ row.a.einbau_datum|date:'Y-m-d' }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-klein block mb-1">Neuwert (CHF)</label>
+                                <input name="neuwert" value="{{ row.a.neuwert|default_if_none:'' }}" inputmode="decimal" class="fw-feld w-full"></div>
+                            <div><label class="fw-klein block mb-1">Lebensdauer (J)</label>
+                                <input name="lebensdauer_jahre" value="{{ row.a.lebensdauer_jahre|default_if_none:'' }}" inputmode="numeric" placeholder="{{ row.lebensdauer|default_if_none:'aus Tabelle' }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-klein block mb-1">Zustand</label>
+                                <select name="zustand" class="fw-feld w-full">
+                                    {% for val, lbl in zustand_choices %}<option value="{{ val }}" {% if row.a.zustand == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                                </select></div>
+                            <div><label class="fw-klein block mb-1">Garantie bis</label>
+                                <input type="date" name="garantie_bis" value="{{ row.a.garantie_bis|date:'Y-m-d' }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-klein block mb-1">Menge</label>
+                                <input name="menge" value="{{ row.a.menge }}" inputmode="numeric" class="fw-feld w-full"></div>
+                            <div class="sm:col-span-2"><label class="fw-klein block mb-1">Notiz</label>
+                                <input name="notiz" value="{{ row.a.notiz }}" class="fw-feld w-full"></div>
+                            <div class="sm:col-span-2"><label class="fw-klein block mb-1">Foto {% if row.a.foto %}<span class="fw-mutet">(ersetzt bestehendes)</span>{% endif %}</label>
+                                <input type="file" name="foto" accept="image/*" class="w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold"></div>
+                            <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
+                                <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.add('hidden')" class="fw-btn">Abbrechen</button>
+                                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </details>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Ausstattung erfasst. Lade einen Raum aus dem Katalog oder erfasse ein Element — die Räume entstehen aus den Assets.</div>
+    {% endif %}
+<div class="fw-subhead">Geräte</div>
+    <datalist id="geraetkat">{% for k in geraet_kategorien %}<option value="{{ k }}">{% endfor %}</datalist>
+    <div class="fw-card">
         <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Typ</th><th class="px-5 py-3 font-semibold">Zähler-Nr.</th>
-                <th class="px-5 py-3 font-semibold">Standort</th><th class="px-5 py-3 font-semibold text-right">Stand</th><th class="px-5 py-3"></th>
+            <thead><tr class="fw-kopfzeile">
+                <th class="px-5 py-3 font-semibold">Gerät</th><th class="px-5 py-3 font-semibold">Marke / Modell</th>
+                <th class="px-5 py-3 font-semibold">Installation</th><th class="px-5 py-3 font-semibold">Garantie bis</th><th class="px-5 py-3"></th>
             </tr></thead>
-            <tbody class="divide-y divide-slate-50">
-            {% for z in zaehler %}
-            <tr class="hover:bg-slate-50/60"><td class="px-5 py-3 font-medium text-slate-900">{{ z.typ }}</td>
-                <td class="px-5 py-3 text-slate-600">{{ z.zaehler_nummer }}</td>
-                <td class="px-5 py-3 text-slate-600">{{ z.standort|default:"—" }}</td>
-                <td class="px-5 py-3 text-right text-slate-700">{{ z.aktueller_stand|floatformat:2 }}</td>
+            <tbody class="">
+            {% for g in geraete %}
+            <tr class="fw-hover"><td class="fw-t px-5 py-3">{{ g.kategorie }}{% if g.sonstiges_bezeichnung %} <span class="text-xs text-slate-400 font-normal">· {{ g.sonstiges_bezeichnung }}</span>{% endif %}
+                    {% if g.kapazitaet or g.seriennummer or g.standort %}<div class="text-xs text-slate-400 font-normal">{% if g.kapazitaet %}{{ g.kapazitaet }}{% endif %}{% if g.seriennummer %}{% if g.kapazitaet %} · {% endif %}SN: {{ g.seriennummer }}{% endif %}{% if g.standort %} · {{ g.standort }}{% endif %}</div>{% endif %}</td>
+                <td class="fw-s px-5 py-3">{% if g.marke or g.modell %}{{ g.marke }} {{ g.modell }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{% if g.installations_datum %}{{ g.installations_datum|date:"m.Y" }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{% if g.garantie_bis %}{{ g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-right whitespace-nowrap">
-                    <button type="button" onclick="document.getElementById('zedit-{{ z.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 text-xs mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
-                    <form method="post" action="/neu/zaehler/{{ z.id }}/loeschen/" class="inline" onsubmit="return confirm('Zähler löschen?');">{% csrf_token %}
-                        <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                    <button type="button" onclick="document.getElementById('gedit-{{ g.id }}').classList.toggle('hidden')" class="fw-ikon mut mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
+                    <form method="post" action="/neu/geraet/{{ g.id }}/loeschen/" class="inline" onsubmit="return confirm('Gerät löschen?');">{% csrf_token %}
+                        <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash"></i></button>
                     </form>
                 </td></tr>
-            <tr id="zedit-{{ z.id }}" class="hidden bg-indigo-50/40">
+            <tr id="gedit-{{ g.id }}" class="hidden fw-markiert">
                 <td colspan="5" class="px-5 py-4">
-                    <form method="post" action="/neu/zaehler/{{ z.id }}/bearbeiten/" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <form method="post" action="/neu/geraet/{{ g.id }}/bearbeiten/" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {% csrf_token %}
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Typ</label>
-                            <input name="typ" list="zaehlertyp" value="{{ z.typ }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Zähler-Nr.</label>
-                            <input name="zaehler_nummer" value="{{ z.zaehler_nummer }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Standort</label>
-                            <input name="standort" value="{{ z.standort }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Aktueller Stand</label>
-                            <input name="aktueller_stand" value="{{ z.aktueller_stand|floatformat:2 }}" inputmode="decimal" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
-                            <button type="button" onclick="document.getElementById('zedit-{{ z.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
+                        <div><label class="fw-klein block mb-1">Kategorie</label>
+                            <input name="kategorie" list="geraetkat" value="{{ g.kategorie }}" required class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Marke</label>
+                            <input name="marke" value="{{ g.marke }}" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Modell</label>
+                            <input name="modell" value="{{ g.modell }}" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Seriennummer</label>
+                            <input name="seriennummer" value="{{ g.seriennummer }}" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Kapazität / Leistung</label>
+                            <input name="kapazitaet" value="{{ g.kapazitaet }}" placeholder="z.B. 300 L" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Standort</label>
+                            <input name="standort" value="{{ g.standort }}" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Installations-Datum</label>
+                            <input type="date" name="installations_datum" value="{{ g.installations_datum|date:'Y-m-d' }}" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Garantie bis</label>
+                            <input type="date" name="garantie_bis" value="{{ g.garantie_bis|date:'Y-m-d' }}" class="fw-feld w-full"></div>
+                        <div class="col-span-2 sm:col-span-3"><label class="fw-klein block mb-1">Notiz</label>
+                            <input name="notiz" value="{{ g.notiz }}" class="fw-feld w-full"></div>
+                        <div class="col-span-2 sm:col-span-3 flex items-center gap-2 justify-end">
+                            <button type="button" onclick="document.getElementById('gedit-{{ g.id }}').classList.add('hidden')" class="fw-btn">Abbrechen</button>
                             <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
                         </div>
                     </form>
                 </td></tr>
             {% empty %}
-            <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Zähler erfasst.</td></tr>
+            <tr><td colspan="5" class="fw-leer">Keine Geräte erfasst.</td></tr>
             {% endfor %}
             </tbody>
         </table></div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-plus text-indigo-500 mr-1.5"></i>Zähler erfassen</h3>
-        <form method="post" action="/neu/zaehler/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+    <div class="fw-card" style="padding:20px">
+        <h3 class="fw-t mb-3"><i class="fa-solid fa-plus mr-1.5"></i>Gerät erfassen</h3>
+        <form method="post" action="/neu/geraet/" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {% csrf_token %}
             <input type="hidden" name="einheit_id" value="{{ e.id }}">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Typ <span class="text-red-500">*</span></label>
-                <input name="typ" list="zaehlertyp" required placeholder="z.B. Strom, Wasser kalt" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Zähler-Nr. <span class="text-red-500">*</span></label>
-                <input name="zaehler_nummer" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Standort</label>
-                <input name="standort" placeholder="z.B. Keller" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Aktueller Stand</label>
-                <input name="aktueller_stand" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-4">
-                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Zähler speichern</button>
+            <div><label class="fw-klein block mb-1">Kategorie <span class="fw-pflicht">*</span></label>
+                <input name="kategorie" list="geraetkat" required placeholder="z.B. Waschmaschine, Boiler" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Marke</label>
+                <input name="marke" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Modell</label>
+                <input name="modell" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Seriennummer</label>
+                <input name="seriennummer" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Kapazität / Leistung</label>
+                <input name="kapazitaet" placeholder="z.B. 300 L, 24 kW" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Standort</label>
+                <input name="standort" placeholder="z.B. Keller" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Installations-Datum</label>
+                <input type="date" name="installations_datum" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Garantie bis</label>
+                <input type="date" name="garantie_bis" class="fw-feld w-full"></div>
+            <div class="sm:col-span-3"><label class="fw-klein block mb-1">Notiz</label>
+                <input name="notiz" class="fw-feld w-full"></div>
+            <div class="sm:col-span-3">
+                <button class="fw-btn fw-primary"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
             </div>
         </form>
     </div>
-</div>
-
-<div data-panel="obj" id="obj-schluessel" class="hidden">
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
+<div class="fw-subhead">Zähler</div>
+    <datalist id="zaehlertyp">{% for t in zaehler_typen %}<option value="{{ t }}">{% endfor %}</datalist>
+    <div class="fw-card">
         <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+            <thead><tr class="fw-kopfzeile">
+                <th class="px-5 py-3 font-semibold">Typ</th><th class="px-5 py-3 font-semibold">Zähler-Nr.</th>
+                <th class="px-5 py-3 font-semibold">Standort</th><th class="px-5 py-3 font-semibold text-right">Stand</th><th class="px-5 py-3"></th>
+            </tr></thead>
+            <tbody class="">
+            {% for z in zaehler %}
+            <tr class="fw-hover"><td class="fw-t px-5 py-3">{{ z.typ }}</td>
+                <td class="fw-s px-5 py-3">{{ z.zaehler_nummer }}</td>
+                <td class="fw-s px-5 py-3">{{ z.standort|default:"—" }}</td>
+                <td class="px-5 py-3 text-right text-slate-700">{{ z.aktueller_stand|floatformat:2 }}</td>
+                <td class="px-5 py-3 text-right whitespace-nowrap">
+                    <button type="button" onclick="document.getElementById('zedit-{{ z.id }}').classList.toggle('hidden')" class="fw-ikon mut mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
+                    <form method="post" action="/neu/zaehler/{{ z.id }}/loeschen/" class="inline" onsubmit="return confirm('Zähler löschen?');">{% csrf_token %}
+                        <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </td></tr>
+            <tr id="zedit-{{ z.id }}" class="hidden fw-markiert">
+                <td colspan="5" class="px-5 py-4">
+                    <form method="post" action="/neu/zaehler/{{ z.id }}/bearbeiten/" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {% csrf_token %}
+                        <div><label class="fw-klein block mb-1">Typ</label>
+                            <input name="typ" list="zaehlertyp" value="{{ z.typ }}" required class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Zähler-Nr.</label>
+                            <input name="zaehler_nummer" value="{{ z.zaehler_nummer }}" required class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Standort</label>
+                            <input name="standort" value="{{ z.standort }}" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Aktueller Stand</label>
+                            <input name="aktueller_stand" value="{{ z.aktueller_stand|floatformat:2 }}" inputmode="decimal" class="fw-feld w-full"></div>
+                        <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
+                            <button type="button" onclick="document.getElementById('zedit-{{ z.id }}').classList.add('hidden')" class="fw-btn">Abbrechen</button>
+                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                        </div>
+                    </form>
+                </td></tr>
+            {% empty %}
+            <tr><td colspan="5" class="fw-leer">Keine Zähler erfasst.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+    </div>
+    <div class="fw-card" style="padding:20px">
+        <h3 class="fw-t mb-3"><i class="fa-solid fa-plus mr-1.5"></i>Zähler erfassen</h3>
+        <form method="post" action="/neu/zaehler/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            {% csrf_token %}
+            <input type="hidden" name="einheit_id" value="{{ e.id }}">
+            <div><label class="fw-klein block mb-1">Typ <span class="fw-pflicht">*</span></label>
+                <input name="typ" list="zaehlertyp" required placeholder="z.B. Strom, Wasser kalt" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Zähler-Nr. <span class="fw-pflicht">*</span></label>
+                <input name="zaehler_nummer" required class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Standort</label>
+                <input name="standort" placeholder="z.B. Keller" class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Aktueller Stand</label>
+                <input name="aktueller_stand" inputmode="decimal" placeholder="0.00" class="fw-feld w-full"></div>
+            <div class="sm:col-span-4">
+                <button class="fw-btn fw-primary"><i class="fa-solid fa-check mr-1.5"></i>Zähler speichern</button>
+            </div>
+        </form>
+    </div>
+<div class="fw-subhead">Schlüssel</div>
+    <div class="fw-card">
+        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
+            <thead><tr class="fw-kopfzeile">
                 <th class="px-5 py-3 font-semibold">Typ</th><th class="px-5 py-3 font-semibold">Schlüssel-Nr.</th>
                 <th class="px-5 py-3 font-semibold text-center">Bestand</th>
                 <th class="px-5 py-3 font-semibold">Ausgegeben an</th>
                 <th class="px-5 py-3 font-semibold">Ausgabe</th><th class="px-5 py-3"></th>
             </tr></thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody class="">
             {% for row in schluessel_rows %}
-            <tr class="hover:bg-slate-50/60">
-                <td class="px-5 py-3 font-medium text-slate-900">{{ row.s.typ }}</td>
-                <td class="px-5 py-3 text-slate-600">{{ row.s.schluessel_nummer }}</td>
+            <tr class="fw-hover">
+                <td class="fw-t px-5 py-3">{{ row.s.typ }}</td>
+                <td class="fw-s px-5 py-3">{{ row.s.schluessel_nummer }}</td>
                 <td class="px-5 py-3 text-center">
                     <span class="px-2 py-0.5 rounded-md text-xs font-semibold {% if row.verfuegbar %}bg-emerald-50 text-emerald-700{% else %}bg-amber-50 text-amber-700{% endif %}">{{ row.verfuegbar }}/{{ row.s.anzahl }} verfügbar</span>
                 </td>
-                <td class="px-5 py-3 text-slate-600">
+                <td class="fw-s px-5 py-3">
                     {% for a in row.offene %}
                     <div class="flex items-center gap-2 whitespace-nowrap text-xs {% if not forloop.first %}mt-1{% endif %}">
-                        <span>{% if a.mieter %}{{ a.mieter.display_name }}{% elif a.handwerker %}{{ a.handwerker.firma }} <span class="text-slate-400">(Handwerker)</span>{% endif %}
-                            <span class="text-slate-400">seit {{ a.ausgegeben_am|date:"d.m.Y" }}</span></span>
+                        <span>{% if a.mieter %}{{ a.mieter.display_name }}{% elif a.handwerker %}{{ a.handwerker.firma }} <span class="fw-mutet">(Handwerker)</span>{% endif %}
+                            <span class="fw-mutet">seit {{ a.ausgegeben_am|date:"d.m.Y" }}</span></span>
                         <form method="post" action="/neu/schluessel/ausgabe/{{ a.id }}/rueckgabe/" class="inline">{% csrf_token %}
                             <button class="text-indigo-600 hover:text-indigo-700 font-semibold" title="Rücknahme erfassen"><i class="fa-solid fa-rotate-left mr-0.5"></i>Rücknahme</button>
                         </form>
@@ -800,7 +874,7 @@
                 <td class="px-5 py-3 whitespace-nowrap">
                     {% if row.verfuegbar %}
                     <form method="post" action="/neu/schluessel/{{ row.s.id }}/ausgabe/" class="flex items-center gap-1.5">{% csrf_token %}
-                        <select name="empfaenger" required class="bg-slate-100 rounded-lg text-xs px-2 py-1.5 max-w-[160px]">
+                        <select name="empfaenger" required class="fw-feld max-w-[160px]">
                             <option value="">Empfänger …</option>
                             {% if schluessel_empfaenger.mieter %}<optgroup label="Mieter">
                                 {% for m in schluessel_empfaenger.mieter %}<option value="mieter:{{ m.id }}">{{ m.display_name }}</option>{% endfor %}
@@ -811,36 +885,37 @@
                         </select>
                         <button title="Schlüssel ausgeben" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
                     </form>
-                    {% else %}<span class="text-xs text-slate-400">Alle ausgegeben</span>{% endif %}
+                    {% else %}<span class="fw-klein">Alle ausgegeben</span>{% endif %}
                 </td>
                 <td class="px-5 py-3 text-right">
                     <form method="post" action="/neu/schluessel/{{ row.s.id }}/loeschen/" class="inline" onsubmit="return confirm('Schlüssel aus dem Register entfernen?');">{% csrf_token %}
-                        <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                        <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash"></i></button>
                     </form>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Schlüssel im Register — z.B. Wohnungs-, Keller-, Briefkasten- und Haustürschlüssel erfassen.</td></tr>
+            <tr><td colspan="6" class="fw-leer">Noch keine Schlüssel im Register — z.B. Wohnungs-, Keller-, Briefkasten- und Haustürschlüssel erfassen.</td></tr>
             {% endfor %}
             </tbody>
         </table></div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-plus text-indigo-500 mr-1.5"></i>Schlüssel erfassen</h3>
+    <div class="fw-card" style="padding:20px">
+        <h3 class="fw-t mb-3"><i class="fa-solid fa-plus mr-1.5"></i>Schlüssel erfassen</h3>
         <form method="post" action="/neu/schluessel/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             {% csrf_token %}
             <input type="hidden" name="einheit_id" value="{{ e.id }}">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Typ <span class="text-red-500">*</span></label>
-                <input name="typ" list="schluesseltyp" required placeholder="z.B. Wohnung, Keller, Briefkasten" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <div><label class="fw-klein block mb-1">Typ <span class="fw-pflicht">*</span></label>
+                <input name="typ" list="schluesseltyp" required placeholder="z.B. Wohnung, Keller, Briefkasten" class="fw-feld w-full">
                 <datalist id="schluesseltyp"><option value="Wohnung"><option value="Haustüre"><option value="Keller"><option value="Briefkasten"><option value="Garage"><option value="Waschküche"></datalist></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Schlüssel-Nr. <span class="text-red-500">*</span></label>
-                <input name="schluessel_nummer" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Anzahl Exemplare</label>
-                <input name="anzahl" type="number" min="1" value="3" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="fw-klein block mb-1">Schlüssel-Nr. <span class="fw-pflicht">*</span></label>
+                <input name="schluessel_nummer" required class="fw-feld w-full"></div>
+            <div><label class="fw-klein block mb-1">Anzahl Exemplare</label>
+                <input name="anzahl" type="number" min="1" value="3" class="fw-feld w-full"></div>
             <div class="sm:col-span-4">
-                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Schlüssel speichern</button>
+                <button class="fw-btn fw-primary"><i class="fa-solid fa-check mr-1.5"></i>Schlüssel speichern</button>
             </div>
         </form>
     </div>
 </div>
+
 {% endblock %}

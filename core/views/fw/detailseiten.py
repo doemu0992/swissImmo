@@ -113,6 +113,81 @@ def _liegenschaft_kopf(lg, gesamt, vermietet, soll_monat, wartungsfristen,
     }
 
 
+def _objekt_kopf(e, aktiver_vertrag, verhaeltnisse, raeume, ausst_rows,
+                 schluessel_offen, geraete, zaehler, faelle):
+    """Der Aktenkopf des Objekts — gerechnete Zustaende, keine Felder.
+
+    Umsetzung von G9 (KONZEPT-UI.md 16.3) fuer den vierten und letzten
+    Aktentyp. Die Kennzahlen beantworten, was man vor einem Objekt zuerst
+    wissen will: Ist es vermietet und zu welchem Zins, wie gross ist es, wie
+    alt ist die Ausstattung, und was steht als Naechstes an.
+
+    **Was hier bewusst NICHT steht.** Der Prototyp fuehrt beim Objekt einen
+    Chip «Sanierungsbedarf» mit einer Ampel. Dafuer gibt es keine belastbare
+    Grundlage: `Ausstattung.ersatz_status()` bewertet ein einzelnes Element,
+    nicht das Objekt, und eine Summe daraus waere eine erfundene Kennzahl.
+    Statt einer Ampel steht deshalb die tatsaechliche Zahl der ueberfaelligen
+    Elemente — die ist gezaehlt, nicht geschaetzt.
+    """
+    chips = []
+    if aktiver_vertrag:
+        chips.append({'text': f'vermietet an {aktiver_vertrag.mieter.display_name}',
+                      'ton': 'fw-good'})
+    else:
+        chips.append({'text': 'Leerstand', 'ton': 'fw-warn'})
+    if e.zur_ausschreibung:
+        chips.append({'text': 'ausgeschrieben', 'ton': 'fw-info'})
+    if schluessel_offen:
+        chips.append({'text': f'{schluessel_offen} Schlüssel ausgegeben', 'ton': 'fw-mut'})
+
+    # Ueberfaellige Ausstattung: gezaehlt aus `ersatz_status()`, nicht aus
+    # einem Mittelwert. `ersatz_status` liefert je Element eine Einstufung;
+    # 'faellig' heisst, die Lebensdauer ist ueberschritten.
+    faellig = [r for r in ausst_rows if r.get('ersatz_status') == 'faellig']
+    if faellig:
+        chips.append({'text': f'{len(faellig)} Element{"e" if len(faellig) > 1 else ""} '
+                              f'am Ende der Lebensdauer', 'ton': 'fw-warn'})
+    offene_faelle = [f for f in faelle if f.status not in ('abgeschlossen', 'abgebrochen')]
+    if offene_faelle:
+        chips.append({'text': f'{len(offene_faelle)} offene{"r" if len(offene_faelle) == 1 else ""} '
+                              f'Fall{"" if len(offene_faelle) == 1 else "Fälle"}'.replace('FallFälle', 'Fälle'),
+                      'ton': 'fw-warn'})
+
+    hinweise = []
+    if not aktiver_vertrag and not e.zur_ausschreibung:
+        hinweise.append({
+            'ton': 'warn', 'symbol': 'fa-bullhorn',
+            'titel': 'Leer und nicht ausgeschrieben',
+            'text': 'Das Objekt steht leer, ist aber nicht zur Vermarktung '
+                    'freigegeben — es sucht niemand einen Nachmieter.',
+            'url': f'/neu/objekte/{e.id}/', 'knopf': 'Ausschreiben'})
+    if not raeume:
+        hinweise.append({
+            'ton': 'info', 'symbol': 'fa-clipboard-list',
+            'titel': 'Kein Raumbuch erfasst',
+            'text': 'Ohne erfasste Ausstattung lässt sich bei der Rückgabe kein '
+                    'Lebensdaueranteil berechnen — die Mängelabrechnung wird '
+                    'dann Verhandlungssache.',
+            'url': '?tab=ausstattung', 'knopf': 'Ausstattung erfassen'})
+    if faellig:
+        hinweise.append({
+            'ton': 'warn', 'symbol': 'fa-hourglass-end',
+            'titel': f'{len(faellig)} Element{"e" if len(faellig) > 1 else ""} am '
+                     f'Ende der Lebensdauer',
+            'text': 'Bei einem Mieterwechsel trägt der Vermieter die Kosten '
+                    'vollständig — der Zeitwert ist aufgebraucht.',
+            'url': '?tab=ausstattung', 'knopf': 'Ersatzplanung'})
+
+    return {
+        'objekt_nummer': f'O-{e.id:06d}',
+        'objekt_chips': chips,
+        'objekt_hinweise': hinweise,
+        'objekt_miete': (aktiver_vertrag.brutto_mietzins if aktiver_vertrag else None),
+        'objekt_faellig': len(faellig),
+        'objekt_technik': geraete + zaehler,
+    }
+
+
 def _vertrag_status_pill(v):
     label, cls = VERTRAG_PILL.get(v.status, (v.status, 'bg-slate-100 text-slate-500'))
     return {'label': label, 'cls': cls}
@@ -534,7 +609,39 @@ def fw_objekt_detail(request, pk):
     }
     schluessel_offen_count = sum(len(r['offene']) for r in schluessel_rows)
 
-    tab_liste = [
+    # Etappe 4b.11: Reiter aus dem Aktenregister statt aus dieser View. Acht
+    # alte Reiter fallen auf sechs — `raumbuch`, `geraete`, `zaehler` und
+    # `schluessel` werden zu Abschnitten INNERHALB von «Ausstattung», ihre
+    # Zaehler addiert `aus_alt`. `fotos` fallen unter «Dokumente».
+    from django.contrib.contenttypes.models import ContentType
+
+    from core.models import AktivitaetsLog
+    from core.tenancy import aktuelle_organisation as _akt_org
+    from faelle.akten import aus_alt as _reiter_aus_alt
+    from faelle.models import Fall
+
+    objekt_faelle = list(
+        Fall.objects.filter(akte_typ=ContentType.objects.get_for_model(Einheit),
+                            akte_id=e.id)
+        .select_related('fallart', 'zustaendig').order_by('-eroeffnet_am'))
+
+    # Schaeden an diesem Objekt gehoeren in denselben Reiter: Ein Schaden ist
+    # ein Vorgang, kein Stammdatum. Bis 4b.11 waren sie auf der Objektakte
+    # ueberhaupt nicht zu sehen — sie standen nur an der Liegenschaft.
+    from tickets.models import SchadenMeldung
+    objekt_schaeden = list(SchadenMeldung.objects.filter(betroffene_einheit=e)
+                           .order_by('-erstellt_am')[:20])
+    objekt_schaeden_offen = [s for s in objekt_schaeden if s.status != 'erledigt']
+
+    # Chronik. `AktivitaetsLog` kennt den Ziel-Typ 'vertrag' — fuer ein Objekt
+    # fuehrt der belastbare Bezug ueber seine Vertraege, genau wie bei der
+    # Liegenschaft. Ein Abgleich ueber die Bezeichnung waere geraten.
+    _vids = [v.id for v in _vertraege]
+    verlauf = list(AktivitaetsLog.objects
+                   .filter(ziel_typ='vertrag', ziel_id__in=_vids)
+                   .select_related('benutzer')[:50]) if _vids else []
+
+    tab_liste = _reiter_aus_alt('objekt', [
         ('uebersicht', 'Übersicht', None),
         ('fotos', 'Fotos', len(fotos) or None),
         ('raumbuch', 'Raumbuch', ausst_count or None),
@@ -543,10 +650,20 @@ def fw_objekt_detail(request, pk):
         ('geraete', 'Geräte', geraete.count() or None),
         ('zaehler', 'Zähler', zaehler.count() or None),
         ('schluessel', 'Schlüssel', len(schluessel_rows) or None),
-    ]
+        ('dokumente', 'Dokumente', verhaeltnisse_dok_total or None),
+    ], organisation=getattr(request, 'organisation', None) or _akt_org())
+
+    _ausst_flach = [row for r in raeume for row in r['elemente']]
     from django.contrib import messages
     return render(request, 'fw/objekt_detail.html', {
         **basis, 'nav': 'objekte', 'e': e,
+        'objekt_faelle': objekt_faelle,
+        'objekt_schaeden': objekt_schaeden,
+        'objekt_schaeden_offen': objekt_schaeden_offen,
+        'verlauf': verlauf,
+        **_objekt_kopf(e, aktiver_vertrag, verhaeltnisse, raeume, _ausst_flach,
+                       schluessel_offen_count, geraete.count(), zaehler.count(),
+                       objekt_faelle),
         'aktiver_vertrag': aktiver_vertrag,
         'vertrag_pill': _vertrag_status_pill(aktiver_vertrag) if aktiver_vertrag else None,
         'verhaeltnisse': verhaeltnisse,

@@ -568,6 +568,52 @@
         .fw-hinweis .fw-ht{flex:1;font-size:13px;line-height:1.55;color:var(--ds-muted)}
         .fw-hinweis .fw-ht b{display:block;margin-bottom:3px;color:var(--ds-ink)}
 
+        /* Befund einer Regelpruefung (Fristenwaechter). Anders als .fw-hinweis
+           traegt er eine aufklappbare Rechnung und eine Fusszeile mit dem
+           Regelstand — der Rand links macht die Schwere ohne Farbflaeche
+           lesbar, auch bei Rot-Gruen-Schwaeche. */
+        .fw-befund{border:1px solid var(--ds-line);border-left-width:3px;
+            border-radius:var(--ds-radius);overflow:hidden;background:var(--ds-surface)}
+        .fw-befund.good{border-left-color:var(--ds-good);background:var(--ds-good-soft)}
+        .fw-befund.warn{border-left-color:var(--ds-warn);background:var(--ds-warn-soft)}
+        .fw-befund.crit{border-left-color:var(--ds-crit);background:var(--ds-crit-soft)}
+        .fw-befund-kopf{display:flex;gap:12px;align-items:flex-start;padding:13px 16px}
+        .fw-befund-kosten{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;
+            padding:0 16px 13px}
+        .fw-befund-kosten .fw-betrag{font-size:19px}
+        .fw-befund-fuss{padding:9px 16px;border-top:1px solid var(--ds-line);
+            background:var(--ds-surface)}
+        .fw-befund .fw-aufklapp{border-top:1px solid var(--ds-line);border-bottom:0}
+        .fw-befund .fw-aufklapp-inhalt{background:var(--ds-surface)}
+
+        /* Kleinteile, die beim Umstellen der Objektakte (4b.11) aus
+           Tailwind-Utilities wurden. Sie standen dort als je vier bis sechs
+           Klassen nebeneinander — an 170 Stellen. */
+        .fw-pflicht{color:var(--ds-crit)}                 /* das * hinter «Feld *» */
+        .fw-mutet{color:var(--ds-faint)}
+        .fw-kopfzeile{text-align:left;font-size:11px;text-transform:uppercase;
+            letter-spacing:.04em;color:var(--ds-faint);
+            border-bottom:1px solid var(--ds-line)}
+        .fw-hover:hover{background:var(--ds-surface-2)}
+        /* Die aktuell gueltige Zeile einer datierten Reihe (Sollmietzins,
+           Staffel). Weiche Markenflaeche, kein Rahmen — sie soll auffallen,
+           ohne wie ein Fehler auszusehen. */
+        .fw-markiert{background:var(--ds-brand-soft)}
+        /* Kontrollkaestchen und Auswahlknoepfe in Markenfarbe. Ersetzt
+           `accent-indigo-600` — die Utility trug die Farbe fest, statt sie aus
+           dem Token zu nehmen, und lief damit an der Palette vorbei. */
+        .fw-haken{accent-color:var(--ds-brand)}
+        .fw-punkt{width:8px;height:8px;border-radius:999px;flex-shrink:0;
+            background:var(--ds-faint)}
+        .fw-punkt.crit{background:var(--ds-crit)}
+        .fw-punkt.warn{background:var(--ds-warn)}
+        .fw-punkt.good{background:var(--ds-good)}
+        .fw-warnton{color:var(--ds-warn)}
+        .fw-bild{width:100%;height:160px;object-fit:cover;
+            border-radius:var(--ds-radius-sm);border:1px solid var(--ds-line)}
+        .fw-abtrenner{margin-top:12px;padding-top:12px;
+            border-top:1px solid var(--ds-line)}
+
     </style>
     <script>
         // Zustand vor dem ersten Paint anwenden (kein Flackern)

@@ -38,6 +38,12 @@ from .mahnwesen import *               # noqa: F401,F403
 from .mwst import *                    # noqa: F401,F403
 from .nebenkosten import *             # noqa: F401,F403
 from .pendenzen import *               # noqa: F401,F403
+# Phase 4b.12: Mandats- und Dienstleisterakte — die beiden Aktentypen aus
+# dem Register, die ueberhaupt keine Detailseite hatten.
+from .akten_neu import *                # noqa: F401,F403
+# Phase 4b.10: der Fristenwaechter. Die Rechenlogik lag seit Phase 4a in
+# faelle/regelwerk.py und hatte keinen Aufrufer.
+from .regelwerk import *               # noqa: F401,F403
 from .sollstellung import *            # noqa: F401,F403
 
 
