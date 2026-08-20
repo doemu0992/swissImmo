@@ -28,9 +28,18 @@ class DashboardCockpitTests(TestCase):
         c = Client(); c.force_login(u)
         r = c.get('/neu/')
         self.assertEqual(r.status_code, 200)
+        # Seit 4b.5 geteilt: Die Inbox fuehrt die SAMMELPOSTEN, der
+        # Arbeitsvorrat («Was reisst») die EINZELNEN datierten Vorgaenge.
+        # Die Wartungsfrist stand vorher in der Inbox — sie steht jetzt eine
+        # Karte darueber. Beide zusammen bilden EINE Liste (Konzept G2);
+        # zweimal darf sie nirgends erscheinen.
         inbox = r.context['inbox']
         self.assertTrue(any('Eigentümer-Freigabe' in x['titel'] for x in inbox))
-        self.assertTrue(any(x['titel'] == 'Heizungswartung' and x['typ'] == 'frist' for x in inbox))
+        vorrat = r.context['av_reisst']
+        self.assertTrue(any(x['titel'] == 'Heizungswartung' and x['art'] == 'wartung'
+                            for x in vorrat))
+        self.assertFalse(any(x['titel'] == 'Heizungswartung' for x in inbox),
+                         'Die Frist steht zweimal auf der Seite — G2 verletzt.')
 
 
 class TagesstartCockpitTests(TestCase):
@@ -44,8 +53,15 @@ class TagesstartCockpitTests(TestCase):
         team = _team_user(); c = Client(); c.force_login(team)
         r = c.get('/neu/')
         self.assertEqual(r.status_code, 200)
-        inbox = r.context['inbox']
-        self.assertTrue(any(x['titel'] == 'Rücknahme vorbereiten' for x in inbox))
+        # Wie oben: einzelne datierte Pendenz → Arbeitsvorrat, nicht Inbox.
+        # Wichtig bleibt, dass sie ihr Ziel behaelt — die Rücknahme oeffnet
+        # weiterhin im Popup. Ginge das beim Umzug verloren, waere aus einer
+        # Umstellung der Anzeige ein Funktionsverlust geworden.
+        vorrat = r.context['av_reisst']
+        self.assertTrue(any(x['titel'] == 'Rücknahme vorbereiten' for x in vorrat))
+        self.assertFalse(any(x['titel'] == 'Rücknahme vorbereiten'
+                             for x in r.context['inbox']),
+                         'Die Pendenz steht zweimal auf der Seite — G2 verletzt.')
         body = r.content.decode()
         self.assertIn('Inbox', body)
         self.assertIn(f'/neu/vertraege/{v.id}/abnahme/neu/?typ=auszug', body)
@@ -60,6 +76,8 @@ class TagesstartCockpitTests(TestCase):
         team = _team_user(); c = Client(); c.force_login(team)
         r = c.get('/neu/')
         self.assertFalse(any(x['titel'] == 'Weit weg' for x in r.context['inbox']))
+        self.assertFalse(any(x['titel'] == 'Weit weg' for x in r.context['av_reisst']),
+                         'Auch der Arbeitsvorrat schaut nur 14 Tage voraus.')
 
 
 class PendenzAktionTests(TestCase):

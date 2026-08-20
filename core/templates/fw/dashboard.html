@@ -12,6 +12,72 @@
     {% if aktive_lg %}<a href="/neu/" class="fw-btn">× Filter aufheben</a>{% endif %}
 </div>
 
+{% comment %} ===== ARBEITSVORRAT nach KONZEPT-UI.md 3.1 =====
+   Vorher stand hier zuoberst die Inbox. «Was reisst» steht jetzt darueber und
+   zeigt die EINZELNEN datierten Vorgaenge — Fallschritt, Pendenz,
+   Wartungsfrist, Lauf. Die Inbox darunter fuehrt nur noch die Sammelposten
+   («12 Rechnungen pruefen»).
+
+   Das ist keine zweite Liste: Die Pendenz- und Fristenbloecke sind aus
+   core/services/inbox.py hierher GEWANDERT, nicht kopiert. G2: «Ein
+   Arbeitsvorrat, nicht zwei Listen.» {% endcomment %}
+
+<div class="fw-card">
+    <div class="fw-kopf">
+        <span class="fw-ikon{% if av_ueberfaellig %} crit{% endif %}"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <span class="fw-t">Was reisst</span>
+        <span class="fw-neben">{% if av_reisst_gesamt %}{{ av_reisst_gesamt }} in den nächsten {{ av_vorschau_tage }} Tagen{% if av_ueberfaellig %} · {{ av_ueberfaellig }} überfällig{% endif %}{% else %}nichts Dringendes{% endif %}</span>
+        <span class="fw-rechts"><a href="/neu/arbeit/" class="fw-link">Alle Vorgänge</a></span>
+    </div>
+    {% for e in av_reisst %}
+    <div class="fw-zeile">
+        <span class="fw-marker {{ e.dringlichkeit }}"></span>
+        <span class="fw-ikon{% if e.dringlichkeit != 'neutral' %} {{ e.dringlichkeit }}{% endif %}"><i class="fa-solid {{ e.ikon }}"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ e.titel }}</div>
+            <div class="fw-s">{{ e.zeile }}</div>
+        </div>
+        <div class="fw-zeit">{{ e.datum|date:"d.m." }}<br>
+            <span class="fw-klein">{% if e.tage < 0 %}{{ e.tage|cut:"-" }} Tage über{% elif e.tage == 0 %}heute{% else %}in {{ e.tage }} Tag{{ e.tage|pluralize:"en" }}{% endif %}</span></div>
+        <a href="{{ e.ziel }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',false)"{% endif %} class="fw-btn">{{ e.knopf }}</a>
+    </div>
+    {% empty %}
+    <p class="fw-leer">Nichts überfällig und nichts in den nächsten {{ av_vorschau_tage }} Tagen.</p>
+    {% endfor %}
+    {% if av_reisst_weitere %}
+    <div class="fw-fuss">
+        <a href="/neu/arbeit/?ansicht=alle" class="fw-link">Alle Vorgänge</a>
+        <span>{{ av_reisst_weitere }} weitere in den nächsten {{ av_vorschau_tage }} Tagen</span>
+    </div>
+    {% endif %}
+</div>
+
+{% if av_eingaenge %}
+{% comment %} G4: «Der Zulauf ist die Startflaeche. In einem kleinen Buero
+   beginnt der Tag mit 40 Eingaengen; die Arbeit ist das Zuordnen.» {% endcomment %}
+<div class="fw-card">
+    <div class="fw-kopf">
+        <span class="fw-ikon"><i class="fa-solid fa-inbox"></i></span>
+        <span class="fw-t">Zulauf</span>
+        <span class="fw-neben">{{ av_eingaenge_gesamt }} nicht zugeordnet</span>
+        <span class="fw-rechts"><a href="/neu/zulauf/" class="fw-link">Ganzer Zulauf</a></span>
+    </div>
+    {% for z in av_eingaenge %}
+    <div class="fw-zeile">
+        <span class="fw-ikon{% if not z.sicher %} warn{% endif %}"><i class="fa-solid {% if z.eingang.quelle == 'mail' %}fa-envelope{% elif z.eingang.quelle == 'post' %}fa-envelope-open-text{% elif z.eingang.quelle == 'scan' %}fa-file-lines{% else %}fa-inbox{% endif %}"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ z.eingang.betreff|default:"Ohne Betreff" }}{% if z.eingang.absender %} — {{ z.eingang.absender }}{% endif %}</div>
+            <div class="fw-s">{{ z.eingang.eingegangen_am|date:"d.m. H:i" }} · {{ z.eingang.get_quelle_display }}</div>
+            <div class="fw-s" style="margin-top:4px;color:{% if z.sicher %}var(--ds-brand){% else %}var(--ds-warn){% endif %}">
+                {% if z.sicher %}Vorschlag: {{ z.ziel }}{% if z.fallart %} → Fall «{{ z.fallart }}» eröffnen{% endif %}{% else %}Kein sicherer Vorschlag — bitte zuordnen{% endif %}
+            </div>
+        </div>
+        <a href="/neu/zulauf/" class="fw-btn{% if z.sicher %} fw-primary{% endif %}">{% if z.sicher %}Übernehmen{% else %}Zuordnen{% endif %}</a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <!-- ================= DIE INBOX (eine Aufgabenliste statt vier Flächen) ================= -->
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
     <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-3 flex-wrap">

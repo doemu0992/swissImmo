@@ -86,7 +86,9 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
                                 mieter_konto_view, mieter_daten_view, mieter_passwort_view)
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
-from core.views.fw import (fw_dashboard, fw_finanzen, fw_berichte, fw_betriebskostenspiegel, fw_betriebsrechnung_pdf, fw_leerstand_verlauf, fw_auswertung, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_debitor_abschreiben, fw_liegenschaften, fw_mieterspiegel, fw_objekte,
+from core.views.fw import (fw_arbeit, fw_fall_detail, fw_fallschritt_erledigen,
+                           fw_laeufe, fw_zulauf, fw_zulauf_uebernehmen,
+                           fw_dashboard, fw_finanzen, fw_berichte, fw_betriebskostenspiegel, fw_betriebsrechnung_pdf, fw_leerstand_verlauf, fw_auswertung, fw_debitoren, fw_debitor_qr_pdf, fw_debitor_neu, fw_debitor_stornieren, fw_debitor_abschreiben, fw_liegenschaften, fw_mieterspiegel, fw_objekte,
                            fw_personen, fw_vertraege, fw_mieterwechsel, fw_vermarktung, fw_objekt_ausschreiben, fw_expose_pdf,
                            fw_liegenschaft_detail, fw_objekt_detail, fw_objekt_foto_upload, fw_objekt_foto_loeschen, fw_vertrag_detail,
                            fw_ausstattung_add, fw_ausstattung_edit, fw_ausstattung_katalog, fw_ausstattung_del, fw_lebensdauer,
@@ -361,6 +363,16 @@ urlpatterns = [
     path('neu/nebenkosten/<int:pk>/verbuchen/', fw_nebenkosten_verbuchen, name='fw_nebenkosten_verbuchen'),
     path('neu/nebenkosten/<int:pk>/versand/', fw_nebenkosten_versand, name='fw_nebenkosten_versand'),
     path('neu/nebenkosten/<int:pk>/akonto/', fw_akonto_anpassen, name='fw_akonto_anpassen'),
+    # Phase 4b: die Oberflaechen zu Phase 4a. Bis hierher hatten Fall,
+    # Eingang und Lauf keine einzige URL.
+    path('neu/arbeit/', fw_arbeit, name='fw_arbeit'),
+    path('neu/faelle/<int:pk>/', fw_fall_detail, name='fw_fall_detail'),
+    path('neu/fallschritte/<int:pk>/erledigen/', fw_fallschritt_erledigen,
+         name='fw_fallschritt_erledigen'),
+    path('neu/laeufe/', fw_laeufe, name='fw_laeufe'),
+    path('neu/zulauf/', fw_zulauf, name='fw_zulauf'),
+    path('neu/zulauf/<int:pk>/uebernehmen/', fw_zulauf_uebernehmen,
+         name='fw_zulauf_uebernehmen'),
     path('neu/pendenzen/', fw_pendenzen, name='fw_pendenzen'),
     path('neu/fristen/', fw_fristen, name='fw_fristen'),
     path('neu/fristen/export.ics', fw_fristen_ical, name='fw_fristen_ical'),

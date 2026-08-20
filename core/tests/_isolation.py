@@ -372,6 +372,13 @@ class MandantenFixture:
     #: gewinnt, deshalb stehen die spezifischeren Muster vorn.
     #: Abgelesen aus dem `get_object_or_404` der jeweiligen View, nicht geraten.
     NAME_MUSTER = (
+        # Phase 4b.5 — die ersten URLs zu Phase 4a. Die Selbstpruefung
+        # `test_jeder_parameter_ist_zugeordnet` hat sie beim Bauen sofort
+        # gemeldet: Ohne Eintrag hier waeren sie durch den Sweep gefallen,
+        # ohne dass jemand es merkt. Genau dafuer gibt es sie.
+        ('fallschritt',     'fallschritt'),
+        ('fall_detail',     'fall'),
+        ('zulauf_uebernehmen', 'eingang'),
         ('abnahme',         'abnahme'),
         ('akonto',          'periode'),
         ('anpassung',       'anpassung'),

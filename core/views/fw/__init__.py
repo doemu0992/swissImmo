@@ -25,6 +25,9 @@ from .bankkonten import *              # noqa: F401,F403
 from .benutzer import *                # noqa: F401,F403
 from .debitor_qr import *              # noqa: F401,F403
 from .dashboard import *               # noqa: F401,F403
+# Phase 4b: Arbeit, Fallakte, Laeufe, Zulauf — die ersten Oberflaechen
+# fuer die Bausteine aus Phase 4a.
+from .arbeit import *                  # noqa: F401,F403
 from .dienstleister import *           # noqa: F401,F403
 from .dokumente import *               # noqa: F401,F403
 from .eigentuemer import *             # noqa: F401,F403

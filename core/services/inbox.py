@@ -169,44 +169,35 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
                                   'Freigabe nachfassen oder selbst entscheiden',
                                   '/neu/schaeden/' + lg_query, 'Ansehen', ordnung=42))
 
-    # ---------- WARTUNGS-/VERSICHERUNGSFRISTEN (nächste 30 Tage) ----------
-    from portfolio.models import Wartungsfrist
-    wf = (Wartungsfrist.objects.filter(aktiv=True,
-                                       naechste_faelligkeit__lte=heute + timedelta(days=30))
-          .select_related('liegenschaft'))
+    # ---------- AUFGABEN OHNE FRIST (Sammelposten) ----------
+    #
+    # Hier standen bis zum 20.08.2026 zwei Blöcke: einzelne Pendenzen im
+    # 14-Tage-Fenster und Wartungsfristen im 30-Tage-Fenster. Beide sind in
+    # `faelle/arbeitsvorrat.py` gewandert — NICHT kopiert.
+    #
+    # Grund: Der neue Abschnitt «Was reisst» auf der Startseite zeigt genau
+    # dieselben Vorgänge. Nebeneinander stand dieselbe Pendenz zweimal auf
+    # einem Bildschirm. `KONZEPT-UI.md` G2 verbietet das: «Ein Arbeitsvorrat,
+    # nicht zwei Listen.»
+    #
+    # Die Arbeitsteilung: EINZELNE datierte Vorgänge gehören in den
+    # Arbeitsvorrat, SAMMELPOSTEN in die Inbox. Aufgaben **ohne** Frist sind
+    # deshalb hier geblieben — sie reissen nichts, sie liegen nur da. Ohne
+    # diesen Sammelposten wären sie beim Umbau ersatzlos verschwunden.
+    ohne_frist = (Pendenz.objects.filter(erledigt=False, faellig_am__isnull=True)
+                  .exclude(quelle__startswith='auto:kautionfreigabe:'))
     if aktive_lg:
-        wf = wf.filter(liegenschaft=aktive_lg)
-    for w in wf.order_by('naechste_faelligkeit')[:6]:
-        lg_name = w.liegenschaft.strasse if w.liegenschaft_id else ''
-        eintraege.append(_eintrag('frist', w.bezeichnung, lg_name,
-                                  (f'/neu/liegenschaften/{w.liegenschaft_id}/' if w.liegenschaft_id
-                                   else '/neu/fristen/' + lg_query),
-                                  'Ansehen',
-                                  dringend=bool(w.naechste_faelligkeit and w.naechste_faelligkeit < heute),
-                                  faellig=w.naechste_faelligkeit, ordnung=55))
-
-    # ---------- FRISTEN & AUFGABEN (einzelne Pendenzen, wie «Heute zu tun») ----------
-    grenze14 = heute + timedelta(days=14)
-    pq = Pendenz.objects.filter(erledigt=False).exclude(quelle__startswith='auto:kautionfreigabe:')
-    if aktive_lg:
-        pq = pq.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg)
-                       | Q(liegenschaft__isnull=True, vertrag__isnull=True))
-    faellige = (pq.filter(Q(faellig_am__lte=grenze14) | Q(faellig_am__isnull=True))
-                .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft')
-                .order_by('faellig_am'))
-    gesamt = faellige.count()
-    for p in faellige[:max_pendenzen]:
-        url, label, wide, modal = pendenz_ziel(p) if pendenz_ziel else ('', '', False, False)
-        obj = ''
-        if p.vertrag_id and p.vertrag and p.vertrag.einheit_id:
-            obj = p.vertrag.einheit.bezeichnung
-        elif p.liegenschaft_id:
-            obj = p.liegenschaft.strasse
-        typ = 'frist' if getattr(p, 'kategorie', '') == 'frist' else 'aufgabe'
-        eintraege.append(_eintrag(typ, p.titel, obj, url, label or 'Öffnen',
-                                  dringend=bool(p.faellig_am and p.faellig_am < heute),
-                                  faellig=p.faellig_am, modal=modal, wide=wide, ordnung=60))
-    mehr_pendenzen = max(gesamt - max_pendenzen, 0)
+        ohne_frist = ohne_frist.filter(
+            Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg)
+            | Q(liegenschaft__isnull=True, vertrag__isnull=True))
+    anzahl_ohne_frist = ohne_frist.count()
+    if anzahl_ohne_frist:
+        eintraege.append(_eintrag(
+            'aufgabe', f'{anzahl_ohne_frist} Aufgabe'
+                       f'{"n" if anzahl_ohne_frist > 1 else ""} ohne Frist',
+            'Liegen ohne Termin — im Pendenzen-Center datieren oder erledigen',
+            '/neu/pendenzen/' + lg_query, 'Ansehen', ordnung=60))
+    mehr_pendenzen = 0
 
     # ---------- Sortierung: dringend zuerst, dann Fälligkeit, dann Prozessreihenfolge ----------
     eintraege.sort(key=lambda e: (0 if e['dringend'] else 1,

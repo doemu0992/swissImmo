@@ -228,6 +228,16 @@ def fw_dashboard(request):
         'inbox_chips': inbox_chips,
         'inbox_dringend': inbox_dringend,
     }
+    # Phase 4b: Der Arbeitsvorrat steht UEBER den Kennzahlen. Er ist die
+    # erste Oberflaeche, auf der die Bausteine aus Phase 4a erscheinen — Fall,
+    # Eingang und Lauf hatten bis hierher keine View.
+    #
+    # Er ist KEINE zweite Liste neben der Inbox: Die einzelnen Pendenzen und
+    # die Wartungsfristen sind aus `core/services/inbox.py` hierher gewandert,
+    # nicht kopiert (KONZEPT-UI.md G2). Die Inbox fuehrt weiter die
+    # Sammelposten.
+    from faelle.arbeitsvorrat import arbeitsvorrat
+    context.update(arbeitsvorrat(request, aktive_lg=aktive_lg))
     return render(request, 'fw/dashboard.html', context)
 
 

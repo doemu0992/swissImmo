@@ -1,0 +1,62 @@
+{% extends 'fw/base.html' %}
+{% block title %}Zulauf — swissImmo{% endblock %}
+
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>Zulauf</h1>
+        <p>Jeder Eingang wird zu genau einem von drei Dingen: einer Akte zugeordnet,
+           Auslöser eines Falls, oder bewusst abgelegt.</p>
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-inbox"></i></span>
+        <span class="fw-t">Nicht zugeordnet</span>
+        <span class="fw-neben">{{ gesamt }}</span></div>
+    {% for z in zeilen %}
+    <div class="fw-zeile">
+        <span class="fw-ikon{% if not z.v %} warn{% endif %}"><i class="fa-solid {% if z.eingang.quelle == 'mail' %}fa-envelope{% elif z.eingang.quelle == 'post' %}fa-envelope-open-text{% elif z.eingang.quelle == 'scan' %}fa-file-lines{% else %}fa-inbox{% endif %}"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ z.eingang.betreff|default:"Ohne Betreff" }}{% if z.eingang.absender %} — {{ z.eingang.absender }}{% endif %}</div>
+            <div class="fw-s">{{ z.eingang.eingegangen_am|date:"d.m.Y H:i" }} · {{ z.eingang.get_quelle_display }}{% if z.eingang.referenz %} · {{ z.eingang.referenz }}{% endif %}</div>
+            {% comment %} Konzept 6: «Ein Vorschlag ohne ausreichende Sicherheit
+               wird als solcher gekennzeichnet — nicht geraten.» Deshalb steht
+               die Begruendung da, nicht nur ein Prozentwert. {% endcomment %}
+            <div class="fw-s" style="margin-top:4px;color:{% if z.v %}var(--ds-brand){% else %}var(--ds-warn){% endif %}">
+                {% if z.v %}Vorschlag: {{ z.v.ziel }}{% if z.v.fallart %} → Fall «{{ z.v.fallart }}» eröffnen{% endif %}{% endif %}
+                {{ z.v.begruendung }}
+            </div>
+        </div>
+        <form method="post" action="/neu/zulauf/{{ z.eingang.id }}/uebernehmen/" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">{% csrf_token %}
+            {% if z.v %}
+            <label class="fw-klein" title="Merkt sich das Merkmal für künftige Eingänge">
+                <input type="checkbox" name="regel_lernen" value="1"> Regel lernen</label>
+            <button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Übernehmen</button>
+            {% endif %}
+            <input name="ablegen" class="fw-feld" placeholder="Grund der Ablage" style="width:150px">
+            <button class="fw-btn">Ablegen</button>
+        </form>
+    </div>
+    {% empty %}
+    <p class="fw-leer">Nichts Unzugeordnetes. 🎉</p>
+    {% endfor %}
+</div>
+
+<div class="fw-subhead">Zuletzt erledigt</div>
+<div class="fw-card">
+    {% for e in erledigt %}
+    <div class="fw-zeile">
+        <span class="fw-ikon {% if e.status == 'abgelegt' %}mut{% else %}good{% endif %}">
+            <i class="fa-solid {% if e.status == 'abgelegt' %}fa-box-archive{% else %}fa-check{% endif %}"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ e.betreff|default:"Ohne Betreff" }}</div>
+            <div class="fw-s">{{ e.get_status_display }}{% if e.ablage_grund %} · {{ e.ablage_grund }}{% elif e.akte %} · {{ e.akte }}{% endif %}</div>
+        </div>
+        <div class="fw-zeit">{{ e.erledigt_am|date:"d.m.Y H:i" }}</div>
+    </div>
+    {% empty %}
+    <p class="fw-leer">Noch nichts erledigt.</p>
+    {% endfor %}
+</div>
+{% endblock %}

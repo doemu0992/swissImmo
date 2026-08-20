@@ -52,6 +52,14 @@ Wohnungen und eine Bewirtschafterin mit 350 haben nicht denselben Beruf. „Geld
 Vorgangsliste mit vorgefilterten Ansichten (Heute, Diese Woche, Wartet auf Dritte,
 Liegengeblieben, Alle).
 
+> **Umgesetzt in 4b.5 — und beinahe verletzt.** Ein Entwurf stellte den neuen Abschnitt
+> «Was reisst» **neben** die bestehende Inbox. Beide sammelten einzelne Pendenzen im
+> 14-Tage-Fenster; dieselbe Pendenz hätte zweimal auf einem Bildschirm gestanden. Die
+> Pendenz- und Wartungsfristen-Blöcke sind deshalb aus `core/services/inbox.py` in
+> `faelle/arbeitsvorrat.py` **gewandert**, nicht kopiert. Die Arbeitsteilung: EINZELNE
+> datierte Vorgänge in den Arbeitsvorrat, SAMMELPOSTEN («12 Rechnungen prüfen») in die
+> Inbox. `test_keine_doppelung_zwischen_inbox_und_vorrat` hält das fest.
+
 **G3 — Der Fall ist das zentrale Objekt.** Vorgänge mit Lebenszyklus, Schritten, Frist,
 Zuständigkeit und Verknüpfungen zu anderen Fällen.
 
@@ -76,9 +84,9 @@ Rolle. Gefiltert wird nach Zuständigkeit für Mandat oder Liegenschaft, plus Ve
 **G9 — Was fehlt, ist wichtiger als was da ist.** Eine Akte, die nur anzeigt, was erfasst
 wurde, spart keine Zeit. Eine, die merkt, was fehlt oder nicht zusammenpasst, schon.
 
-> Umgesetzt seit 4b.2 auf dem Mietverhältnis: `_akte_kopfzahlen()` in
-> `core/views/fw/detailseiten.py` rechnet Zustände statt Felder anzuzeigen (Abschnitt 16.3).
-> Die übrigen fünf Aktentypen führen G9 noch nicht.
+> Umgesetzt seit 4b.2 auf dem Mietverhältnis (`_akte_kopfzahlen()`), seit 4b.3 auf Person
+> (`_person_kopf()`) und Liegenschaft (`_liegenschaft_kopf()`), seit 4b.5 auf der Fallakte.
+> Offen: Objekt, Mandat, Dienstleister.
 
 ---
 
@@ -429,6 +437,13 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.2 | Kennzahlen, Chips und Hinweise als **gerechnete Zustände** (`_akte_kopfzahlen`); Stammdaten in vier Gruppen | erledigt (`301e81b`) |
 | 4b.3 | **Reitersatz und Aktenkopf** der vier übrigen Detailseiten — Schaden, Person und Liegenschaft erledigt, **Objekt** offen | **teilweise** |
 | 4b.4 | **Die Bereichsinhalte** auf die Komponentenschicht — Person und Liegenschaft erledigt, Schaden (104) und Vertrag (177) offen | **teilweise** |
+| 4b.5 | **Phase 4a wird bedienbar**: `/neu/arbeit/` (fünf Ansichten + Zulauf-Spalte), `/neu/faelle/<id>/` (Fallakte mit Verfallsregel), `/neu/laeufe/`, `/neu/zulauf/`; Arbeitsvorrat auf der Startseite | erledigt |
+
+> **Warum 4b.5 dazwischenkam.** `Fall`, `Fallschritt`, `Eingang`, `Zuordnungsregel`, `Lauf`
+> und `Blockade` waren nach vier Etappen vollständig gebaut und vollständig getestet — und
+> hatten **null Views, null URLs, null Templates**. Ein grüner Modelltest sagt nichts darüber,
+> ob ein Mensch die Sache je zu Gesicht bekommt. Die vier Seiten sind der Beleg, dass Phase 4a
+> trägt; die Verfallsregel aus Abschnitt 5.2 wird dort zum ersten Mal angezeigt.
 
 Der Wächter für 4b.3 steht bereits: `faelle/test_reiter_panels.py::test_umstellung_erzeugt_nur_
 erreichbare_reiter` ist als `expectedFailure` markiert und nennt in seiner Meldung jedes

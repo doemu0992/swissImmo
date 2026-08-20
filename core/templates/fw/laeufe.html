@@ -1,0 +1,56 @@
+{% extends 'fw/base.html' %}
+{% block title %}Läufe — swissImmo{% endblock %}
+
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>Läufe</h1>
+        <p>Wiederkehrende Verarbeitung mit Zustand — und dem, was sie blockiert.</p>
+    </div>
+</div>
+
+{% comment %} Konzept 3.3: «Jeder Lauf kennt fällig / läuft / abgeschlossen und
+   **was ihn blockiert**.» Der Grund steht als Text da, nicht das Wort
+   «blockiert»: Der Grund führt zu einer Handlung, das Wort zu einer
+   Rückfrage. {% endcomment %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-rotate"></i></span>
+        <span class="fw-t">Offen</span>
+        <span class="fw-neben">{{ offen|length }}</span></div>
+    {% for z in offen %}
+    <div class="fw-zeile">
+        <span class="fw-marker {% if z.blockaden %}crit{% elif z.tage < 0 %}crit{% elif z.tage <= 3 %}warn{% endif %}"></span>
+        <span class="fw-ikon{% if z.blockaden %} crit{% endif %}"><i class="fa-solid fa-rotate"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</div>
+            <div class="fw-s">
+                {% if z.blockaden %}{% for b in z.blockaden %}{{ b.grund }}{% if not forloop.last %} · {% endif %}{% endfor %}
+                {% else %}{{ z.lauf.get_status_display }} · Stichtag {{ z.lauf.faellig_am|date:"d.m.Y" }}{% endif %}
+            </div>
+        </div>
+        <div class="fw-zeit">{{ z.lauf.faellig_am|date:"d.m.Y" }}<br>
+            <span class="fw-klein">{% if z.tage < 0 %}{{ z.tage|cut:"-" }} Tage über{% elif z.tage == 0 %}heute{% else %}in {{ z.tage }} Tag{{ z.tage|pluralize:"en" }}{% endif %}</span></div>
+        {% if z.blockaden %}<span class="fw-chip fw-crit">{{ z.blockaden|length }} Blockade{{ z.blockaden|length|pluralize:"n" }}</span>{% endif %}
+    </div>
+    {% empty %}
+    <p class="fw-leer">Kein offener Lauf.</p>
+    {% endfor %}
+</div>
+
+<div class="fw-subhead">Zuletzt abgeschlossen</div>
+<div class="fw-card">
+    {% for z in erledigt %}
+    <div class="fw-zeile">
+        <span class="fw-marker good"></span>
+        <span class="fw-ikon good"><i class="fa-solid fa-check"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</div>
+            <div class="fw-s">{% for schluessel, wert in z.lauf.kennzahlen.items %}{{ schluessel }} {{ wert }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>
+        </div>
+        <div class="fw-zeit">{{ z.lauf.abgeschlossen_am|date:"d.m.Y" }}</div>
+    </div>
+    {% empty %}
+    <p class="fw-leer">Noch kein Lauf abgeschlossen.</p>
+    {% endfor %}
+</div>
+{% endblock %}
