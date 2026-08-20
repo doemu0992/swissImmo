@@ -282,6 +282,12 @@ def fw_schaden_detail(request, pk):
                             akte_id=t.id)
         .select_related('fallart', 'zustaendig').order_by('-eroeffnet_am'))
 
+    # Kennzahlen des Aktenkopfs (4b.3). Vier Werte, die zusammen sagen, ob
+    # dieser Schaden gut dasteht: was er kostet, wer dran ist, wie lange er
+    # laeuft und wann zuletzt etwas geschah.
+    offen_seit = (timezone.localdate() - t.erstellt_am.date()).days if t.erstellt_am else None
+    letzte_nachricht = nachrichten.last()
+
     tab_liste = _reiter_aus_alt('schaden', [
         ('uebersicht', 'Übersicht', None),
         ('verlauf', 'Verlauf', nachrichten.count() or None),
@@ -296,6 +302,7 @@ def fw_schaden_detail(request, pk):
         'kosten_geschaetzt': kosten_geschaetzt, 'kosten_effektiv': kosten_effektiv,
         'fotos': fotos,
         'schaden_faelle': schaden_faelle,
+        'offen_seit': offen_seit, 'letzte_nachricht': letzte_nachricht,
         'tab_liste': tab_liste,
         'ausstattung_elemente': ausstattung_elemente,
         'handwerker_liste': handwerker_liste, 'auftrag_vorschlag': auftrag_vorschlag,

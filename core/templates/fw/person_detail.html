@@ -4,88 +4,125 @@
 
 {% block content %}
 
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/personen/{{ lg_query }}" class="hover:text-indigo-600">Personen</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <span class="text-slate-600 font-medium">{{ m.display_name }}</span>
+<nav class="fw-akte-pfad" style="margin-bottom:10px">
+    <a href="/neu/personen/{{ lg_query }}">Personen</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:9px"></i>
+    <b>{{ m.display_name }}</b>
 </nav>
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-    <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-lg font-bold shadow-lg shadow-indigo-600/25">
-            {{ m.display_name|slice:":2"|upper }}
-        </div>
-        <div>
-            <h1 class="text-2xl font-extrabold text-slate-900">{{ m.display_name }}</h1>
-            <p class="text-sm text-slate-500">{{ m.get_typ_display }}{% if m.ort %} · {{ m.plz }} {{ m.ort }}{% endif %}</p>
-        </div>
-    </div>
-    <div class="flex flex-wrap items-center gap-2">
-        {% if anzahl_aktive %}<span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-emerald-50 text-emerald-700">{{ anzahl_aktive }} aktiver Vertrag{{ anzahl_aktive|pluralize:",e" }}</span>{% endif %}
-        {% if m.email %}
-        <a href="/neu/kommunikation/?mieter={{ m.id }}" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors" title="Mitteilung an {{ m.email }} verfassen (wird im Journal dokumentiert)">
-            <i class="fa-solid fa-envelope text-xs mr-1"></i>E-Mail
-        </a>
-        {% endif %}
-        <a href="/neu/personen/{{ m.id }}/bearbeiten/" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
-            <i class="fa-solid fa-pen text-xs mr-1"></i>Bearbeiten
-        </a>
-        <div class="relative">
-            <button type="button" onclick="document.getElementById('pAktionen').classList.toggle('hidden'); event.stopPropagation();"
-                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
-                <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
-            </button>
-            <div id="pAktionen" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
-                {% if not m.anonymisiert %}
-                <form method="post" action="/neu/personen/{{ m.id }}/dsg-loeschen/"
-                      onsubmit="return confirm('DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?');">
-                    {% csrf_token %}
-                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-amber-700 hover:bg-amber-50"><i class="fa-solid fa-user-shield w-4"></i>DSG-Löschung (anonymisieren)</button>
-                </form>
-                <div class="my-1 border-t border-slate-100"></div>
-                {% endif %}
-                <form method="post" action="/neu/personen/{{ m.id }}/loeschen/"
-                      onsubmit="return confirm('Person „{{ m.display_name|escapejs }}“ wirklich löschen?{% if anzahl_aktive %} Achtung: es besteht ein aktiver Vertrag – die Löschung wird blockiert.{% else %} Beendete/Entwurf-Verträge, Journal und Dokumente dieser Person werden mitgelöscht.{% endif %}');">
-                    {% csrf_token %}
-                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50"><i class="fa-solid fa-trash w-4"></i>Person löschen</button>
-                </form>
+{% comment %} ===== AKTENKOPF nach mockups/konzept-v3, Abschnitt «Person» =====
+   Die Person traegt KEINE Kennzahlenleiste. Der Prototyp zeigt fuer sie als
+   einzigen Aktentyp keine — und das ist stimmig: Konto, Saldo und Kaution
+   haengen am Mietverhaeltnis (G5). Vier Zahlen «zur Person» waeren entweder
+   Summen ueber Verhaeltnisse, die schon anderswo stehen, oder erfunden.
+   KONZEPT-UI.md Abschnitt 4 verlangt sie fuer «jede Akte»; der Widerspruch
+   ist dort vermerkt und zugunsten des Prototyps entschieden. {% endcomment %}
+<div class="fw-aktenkopf">
+    <div class="fw-akte-oben">
+        <div class="fw-akte-bild"><i class="fa-solid fa-user"></i></div>
+        <div style="min-width:0">
+            <div class="fw-akte-typ">Person · {{ pe_nummer }}</div>
+            <h1>{{ m.display_name }}</h1>
+            <div class="fw-akte-pfad">
+                {% if m.geburtsdatum %}<div class="fw-pz"><span>Geboren</span><b>{{ m.geburtsdatum|date:"d.m.Y" }}</b></div>{% endif %}
+                {% if m.nationalitaet %}<div class="fw-pz"><span>Nationalität</span><b>{{ m.nationalitaet }}</b></div>{% endif %}
+                <div class="fw-pz"><span>Telefon</span><b>{{ telefon|default:"—" }}</b></div>
+                <div class="fw-pz"><span>E-Mail</span><b>{{ m.email|default:"—" }}</b></div>
+                <div class="fw-pz"><span>Sprache</span><b>{{ m.get_sprache_display|default:"Deutsch" }}</b></div>
+            </div>
+            <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                {% for art, text in pe_chips %}<span class="fw-chip fw-{{ art }}">{{ text }}</span>{% endfor %}
+                {% if m.anonymisiert %}<span class="fw-chip fw-mut"><i class="fa-solid fa-user-shield"></i>DSG-anonymisiert {{ m.anonymisiert_am|date:"d.m.Y" }}</span>{% endif %}
             </div>
         </div>
-        <script>
-          document.addEventListener('click', function (ev) {
-            var d = document.getElementById('pAktionen');
-            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
-          });
-        </script>
+        <div class="fw-akte-rechts">
+            {% if m.email %}<a href="/neu/kommunikation/?mieter={{ m.id }}" class="fw-btn" style="padding:6px 12px;font-size:12px"><i class="fa-solid fa-envelope mr-1"></i>Nachricht</a>{% endif %}
+            <a href="/neu/personen/{{ m.id }}/bearbeiten/" class="fw-btn" style="padding:6px 12px;font-size:12px"><i class="fa-solid fa-pen-to-square mr-1"></i>Bearbeiten</a>
+            {% comment %} Löschen und DSG-Löschung standen im alten Kopf und wären
+               beim Umbau mit ihm verschwunden. `faelle/test_aktionen_vollstaendig.py`
+               hält sie jetzt fest — der Wächter deckte bis 20.08.2026 nur den
+               Vertrag ab und konnte den Verlust deshalb nicht melden. {% endcomment %}
+            <div class="relative">
+                <button type="button" onclick="document.getElementById('pAktionen').classList.toggle('hidden'); event.stopPropagation();"
+                        class="fw-btn" style="padding:6px 12px;font-size:12px">
+                    <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
+                </button>
+                <div id="pAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
+                    {% if not m.anonymisiert %}
+                    <form method="post" action="/neu/personen/{{ m.id }}/dsg-loeschen/"
+                          onsubmit="return confirm('DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?');">
+                        {% csrf_token %}
+                        <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-amber-700 hover:bg-amber-50"><i class="fa-solid fa-user-shield w-4"></i>DSG-Löschung (anonymisieren)</button>
+                    </form>
+                    <div class="my-1 border-t border-slate-100"></div>
+                    {% endif %}
+                    <form method="post" action="/neu/personen/{{ m.id }}/loeschen/"
+                          onsubmit="return confirm('Person „{{ m.display_name|escapejs }}“ wirklich löschen?{% if anzahl_aktive %} Achtung: es besteht ein aktiver Vertrag – die Löschung wird blockiert.{% else %} Beendete/Entwurf-Verträge, Journal und Dokumente dieser Person werden mitgelöscht.{% endif %}');">
+                        {% csrf_token %}
+                        <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50"><i class="fa-solid fa-trash w-4"></i>Person löschen</button>
+                    </form>
+                </div>
+            </div>
+            <script>
+              document.addEventListener('click', function (ev) {
+                var d = document.getElementById('pAktionen');
+                if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
+              });
+            </script>
+        </div>
     </div>
-</div>
-{% if m.anonymisiert %}
-<div class="mt-4 text-sm bg-slate-100 border border-slate-200 text-slate-600 rounded-lg px-4 py-2">
-    <i class="fa-solid fa-user-shield mr-1.5"></i>Diese Person wurde am {{ m.anonymisiert_am|date:"d.m.Y" }}
-    DSG-anonymisiert. Die Buchungsbelege bleiben aus Aufbewahrungsgründen (OR 958f) erhalten.
-</div>
-{% endif %}
 
-<!-- KPI -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold text-indigo-600">{{ anzahl_aktive }}</div><div class="text-sm text-slate-500">Aktive Verträge</div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold text-slate-800">CHF {{ brutto_monat|chf }}</div><div class="text-sm text-slate-500">Miete / Monat</div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold {% if total_offen %}text-rose-600{% else %}text-emerald-600{% endif %}">CHF {{ total_offen|chf }}</div><div class="text-sm text-slate-500">Offen</div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-lg font-bold text-slate-800 truncate">{{ telefon|default:"—" }}</div><div class="text-sm text-slate-500">Telefon</div>
-    </div>
-</div>
 
-{% include 'fw/_detail_tabs.html' with gruppe='pd' tabs=tab_liste %}
+    {% include 'fw/_detail_tabs.html' with gruppe='pd' tabs=tab_liste %}
+</div>
 
 <!-- ÜBERSICHT -->
 <div data-panel="pd" id="pd-stammdaten">
+<div class="fw-card">
+    <div class="fw-hinweis info">
+        <span class="fw-hi"><i class="fa-solid fa-circle-info"></i></span>
+        <div class="fw-ht"><b>Die Person ist die Klammer, nicht der Arbeitsort</b>
+            Konto, Fristen, Kaution und Nebenkosten hängen am Mietverhältnis — sonst wäre bei
+            zwei Mietverhältnissen nicht bestimmbar, welches Konto gemeint ist. Hier stehen
+            Identität, Kontaktweg und die Verbindungen über die Zeit.</div>
+    </div>
+</div>
+
+<div class="fw-grid2">
+  <div>
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-chart-simple"></i></span>
+            <span class="fw-t">Über alle Mietverhältnisse</span></div>
+        <div class="fw-zeile"><div class="fw-mitte">
+            <div class="fw-t">{% if pe_jahre %}{{ pe_jahre }} Jahre Mieter{% else %}Noch kein Mietverhältnis{% endif %}</div>
+            <div class="fw-s">{{ pe_anzahl_verhaeltnisse }} Verhältnis{{ pe_anzahl_verhaeltnisse|pluralize:"se" }}</div></div></div>
+        <div class="fw-zeile"><div class="fw-mitte">
+            <div class="fw-t">CHF {{ total_offen|chf }} offen</div>
+            <div class="fw-s">über alle Verhältnisse</div></div>
+            {% if total_offen %}<span class="fw-chip fw-crit">offen</span>{% else %}<span class="fw-chip fw-good">ausgeglichen</span>{% endif %}</div>
+        <div class="fw-fuss"><span>Kennzahlen zur Person, nicht zum Konto</span>
+            {% if anzahl_aktive %}<a href="?tab=rollen" class="fw-link">Zu den Mietverhältnissen</a>{% endif %}</div>
+    </div>
+  </div>
+  <div>
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-shield-halved"></i></span>
+            <span class="fw-t">Datenschutz</span></div>
+        <div class="fw-dz"><div class="fw-dl">Bearbeitungszweck</div><div class="fw-dv">Vertragsabwicklung
+            <small>Art. 31 Abs. 2 lit. a DSG</small></div></div>
+        <div class="fw-dz"><div class="fw-dl">Aufbewahrung</div><div class="fw-dv">
+            {% if pe_aufbewahrung %}bis {{ pe_aufbewahrung|date:"d.m.Y" }}<small>10 Jahre nach dem letzten Mietverhältnis (OR 958f)</small>
+            {% elif anzahl_aktive %}laufendes Mietverhältnis<small>Frist beginnt mit dessen Ende</small>
+            {% else %}<span style="color:var(--ds-faint)">nicht bestimmbar</span>{% endif %}</div></div>
+        {% comment %} Bonitätsdaten und Auskunftsbegehren zeigt der Prototyp ebenfalls.
+           Beides wird heute nirgends erfasst — eine Zeile «keine» wäre eine
+           Behauptung über etwas, das gar nicht geführt wird. {% endcomment %}
+        <div class="fw-fuss"><span>DSG-konform</span>
+            <a href="/neu/personen/{{ m.id }}/dsg-loeschen/" class="fw-link">Löschbegehren</a></div>
+    </div>
+  </div>
+</div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
         <div class="fw-card fw-nomb">
             <div class="fw-h"><span class="fw-ic b"><i class="fa-solid fa-address-book"></i></span><span class="fw-t">Kontakt</span></div>
@@ -283,6 +320,30 @@
 
 <!-- VERTRÄGE -->
 <div data-panel="pd" id="pd-rollen" class="hidden">
+{% comment %} «Rollen über die Zeit» nach dem Konzept. Enthalten sind nur
+   Beziehungen, die im Datenmodell wirklich stehen: Mieter, Mitmieter,
+   weiterer Mieter (WG) und Schadenmelder. Der Prototyp zeigt zusätzlich
+   «Bewerber» und «Notfallkontakt für X» — beides liesse sich nur über
+   Namensgleichheit erraten (siehe `_person_kopf`). {% endcomment %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-folder-open"></i></span>
+        <span class="fw-t">Rollen über die Zeit</span>
+        <span class="fw-neben">{{ pe_rollen|length }} Verbindung{{ pe_rollen|length|pluralize:"en" }}</span></div>
+    {% for r in pe_rollen %}
+    <a href="{{ r.url }}" class="fw-zeile klick">
+        <span class="fw-ikon{% if not r.aktiv %} " style="background:var(--ds-surface-2);color:var(--ds-muted){% endif %}">
+            <i class="fa-solid {% if r.art == 'Schadenmelder' %}fa-triangle-exclamation{% else %}fa-key{% endif %}"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ r.art }} — {{ r.ort }}</div>
+            <div class="fw-s">{% if r.mandat %}Mandat {{ r.mandat }} · {% endif %}{% if r.brutto %}CHF {{ r.brutto|chf }} brutto · {% endif %}{{ r.status }}</div>
+        </div>
+        <div class="fw-zeit">{% if r.von %}{{ r.von|date:"d.m.Y" }}{% endif %}{% if r.bis %}<br>– {{ r.bis|date:"d.m.Y" }}{% elif r.aktiv and r.von %}<br>– laufend{% endif %}</div>
+    </a>
+    {% empty %}
+    <p class="fw-leer">Keine Verbindungen erfasst.</p>
+    {% endfor %}
+</div>
+
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
             <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">

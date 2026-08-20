@@ -147,6 +147,7 @@ def fw_person_detail(request, pk):
         **basis, 'nav': 'personen', 'm': m, 'verlauf': verlauf,
         'vertrag_rows': vertrag_rows,
         'person_faelle': person_faelle,
+        **_person_kopf(m, list(vertraege), total_offen),
         'anzahl_aktive': len(aktive),
         'brutto_monat': sum((r['brutto'] for r in vertrag_rows if r['v'].status == 'aktiv'), Decimal('0.00')),
         'offene': offene, 'total_offen': total_offen, 'offene_vertraege': offene_vertraege,
@@ -851,3 +852,98 @@ def _finde_dubletten(typ, vorname, nachname, firmen_name, email, plz, exclude_id
     treffer = qs.filter(bedingung).distinct()[:5]
     return [{'id': t.id, 'name': t.display_name, 'email': t.email,
              'ort': f"{t.plz} {t.ort}".strip()} for t in treffer]
+
+
+def _person_kopf(m, vertraege, total_offen):
+    """Aktenkopf der Personenakte — Chips, Pfad, Rollen, Datenschutz.
+
+    Nach `mockups/konzept-v3.html`, Abschnitt «Person». Getrennt von der View,
+    damit die Rechnung pruefbar bleibt (wie `_akte_kopfzahlen` beim
+    Mietverhaeltnis).
+
+    WAS BEWUSST FEHLT
+
+    Der Prototyp zeigt drei Chips: «Mieter, aktiv», «Ehemaliger Mieter»,
+    «Ehemaliger Bewerber». Die ersten beiden sind aus den Vertraegen
+    rechenbar. Der dritte NICHT: `mietprozess.Mietbewerbung` hat keinen
+    Fremdschluessel auf `crm.Mieter`, nur Namens- und E-Mail-Felder. Ihn
+    ueber Namensgleichheit zu erraten hiesse, bei zwei «M. Meier» falsch zu
+    liegen — und zwar in einer Akte, die Datenschutzangaben traegt. Er
+    fehlt deshalb, bis es einen echten Bezug gibt.
+
+    Ebenso «Notfallkontakt fuer X»: `notfall_name` steht als Text AM Mieter
+    und zeigt nach aussen. Wer fuer wen Notfallkontakt ist, liesse sich nur
+    ueber den Namen zurueckverfolgen — dasselbe Problem.
+    """
+    from decimal import Decimal
+
+    from django.utils import timezone
+
+    aktive = [v for v in vertraege if v.status == 'aktiv']
+    frueher = [v for v in vertraege if v.status != 'aktiv']
+
+    chips = []
+    if aktive:
+        chips.append(('brand', f'Mieter, aktiv'))
+    if frueher:
+        chips.append(('mut', 'Ehemaliger Mieter'))
+    if total_offen:
+        chips.append(('crit', f'CHF {total_offen:,.2f}'.replace(',', "'") + ' offen'))
+
+    # --- Rollen ueber die Zeit: nur echte Beziehungen, keine Namenstreffer ---
+    rollen = []
+    for v in vertraege:
+        if v.mieter_id == m.id:
+            art = 'Mieter'
+        elif v.mitmieter_id == m.id:
+            art = 'Mitmieter'
+        else:
+            art = 'Weiterer Mieter (WG)'
+        e = v.einheit
+        ort = f'{e.bezeichnung} — {e.liegenschaft.strasse}, {e.liegenschaft.ort}' if e else '—'
+        eig = getattr(getattr(e, 'liegenschaft', None), 'eigentuemer', None)
+        rollen.append({
+            'art': art, 'aktiv': v.status == 'aktiv', 'ort': ort, 'mandat': eig,
+            'von': v.beginn, 'bis': v.ende, 'status': v.get_status_display(),
+            'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0')),
+            'url': f'/neu/vertraege/{v.id}/',
+        })
+    for t in m.gemeldete_schaeden.all()[:10]:
+        rollen.append({
+            'art': 'Schadenmelder', 'aktiv': t.status != 'erledigt',
+            'ort': t.titel, 'mandat': None,
+            'von': t.erstellt_am.date() if t.erstellt_am else None, 'bis': None,
+            'status': t.get_status_display(), 'brutto': None,
+            'url': f'/neu/schaeden/{t.id}/',
+        })
+
+    # --- Ueber alle Mietverhaeltnisse -------------------------------------
+    beginne = [v.beginn for v in vertraege if v.beginn]
+    enden = [v.ende for v in vertraege if v.ende]
+    heute = timezone.localdate()
+    letztes_ende = max(enden) if enden and not aktive else None
+    jahre = None
+    if beginne:
+        bis = letztes_ende or heute
+        jahre = round((bis - min(beginne)).days / 365.25, 1)
+
+    # --- Datenschutz: nur was das Modell wirklich weiss --------------------
+    # Aufbewahrung 10 Jahre nach dem letzten Mietverhaeltnis (OR 958f fuer die
+    # Buchhaltung; die Personendaten teilen die Frist, weil sie daran haengen).
+    aufbewahrung = None
+    if letztes_ende:
+        try:
+            aufbewahrung = letztes_ende.replace(year=letztes_ende.year + 10)
+        except ValueError:                       # 29.02. in einem Nichtschaltjahr
+            aufbewahrung = letztes_ende.replace(month=2, day=28,
+                                                year=letztes_ende.year + 10)
+
+    return {
+        'pe_chips': chips,
+        'pe_rollen': rollen,
+        'pe_jahre': jahre,
+        'pe_anzahl_verhaeltnisse': len([v for v in vertraege
+                                        if v.mieter_id == m.id or v.mitmieter_id == m.id]),
+        'pe_aufbewahrung': aufbewahrung,
+        'pe_nummer': f'P-{m.id:06d}',
+    }

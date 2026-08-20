@@ -1,74 +1,116 @@
 {% extends 'fw/base.html' %}
+{% load chf %}
 {% block title %}Ticket #{{ t.id }} — swissImmo{% endblock %}
 
 {% block content %}
 
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/schaeden/{{ lg_query }}" class="hover:text-indigo-600">Schadensfälle</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <span class="text-slate-600 font-medium">Ticket #{{ t.id }}</span>
+<nav class="fw-akte-pfad" style="margin-bottom:10px">
+    <a href="/neu/schaeden/{{ lg_query }}">Schadensfälle</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:9px"></i>
+    <b>Schaden #{{ t.id }}</b>
 </nav>
 
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-    <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-xl bg-rose-500 text-white flex items-center justify-center text-xl shadow-lg shadow-rose-500/25">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
-        <div>
-            <h1 class="text-2xl font-extrabold text-slate-900">{{ t.titel }}</h1>
-            <p class="text-sm text-slate-500">
-                {% if t.liegenschaft_id %}{{ t.liegenschaft.strasse }}, {{ t.liegenschaft.ort }}{% endif %}
-                {% if t.betroffene_einheit_id %} · {{ t.betroffene_einheit.bezeichnung }}{% endif %}
-                {% if t.kategorie %} · {{ t.kategorie }}{% endif %}
-            </p>
-        </div>
-    </div>
-    <div class="flex flex-wrap items-center gap-2">
-        <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ p_cls }}">{{ p_label }}</span>
-        <span class="px-3 py-1.5 rounded-lg text-sm font-semibold {{ s_cls }}">{{ s_label }}</span>
-        <div class="relative">
-            <button type="button" onclick="document.getElementById('sAktionen').classList.toggle('hidden'); event.stopPropagation();"
-                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
-                <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
-            </button>
-            <div id="sAktionen" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
-                <form method="post" action="/neu/schaeden/{{ t.id }}/loeschen/"
-                      onsubmit="return confirm('Schadensmeldung #{{ t.id }} wirklich löschen? Fotos und Verlauf werden mitgelöscht.');">
-                    {% csrf_token %}
-                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50"><i class="fa-solid fa-trash w-4"></i>Schadensmeldung löschen</button>
-                </form>
+{% comment %} ===== AKTENKOPF nach mockups/konzept-v3 =====
+   Der Prototyp zeigt keinen eigenen Schadensbildschirm; gebaut ist deshalb das
+   Muster, das er fuer alle uebrigen Aktentypen fuehrt: Typ, Titel, Pfad,
+   Zustands-Chips, darunter vier Kennzahlen, darunter die Reiter. {% endcomment %}
+<div class="fw-aktenkopf">
+    <div class="fw-akte-oben">
+        <div class="fw-akte-bild"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div style="min-width:0">
+            <div class="fw-akte-typ">Schaden · SC-{{ t.id|stringformat:"05d" }}</div>
+            <h1>{{ t.titel }}</h1>
+            <div class="fw-akte-pfad">
+                {% if t.liegenschaft_id %}<div class="fw-pz"><span>Liegenschaft</span><b>{{ t.liegenschaft.strasse }}, {{ t.liegenschaft.ort }}</b></div>{% endif %}
+                {% if t.betroffene_einheit_id %}<div class="fw-pz"><span>Objekt</span><b>{{ t.betroffene_einheit.bezeichnung }}</b></div>{% endif %}
+                {% if t.kategorie %}<div class="fw-pz"><span>Kategorie</span><b>{{ t.kategorie }}</b></div>{% endif %}
+                <div class="fw-pz"><span>Gemeldet von</span><b>{{ melder }}</b></div>
+                <div class="fw-pz"><span>Gemeldet am</span><b>{{ t.erstellt_am|date:"d.m.Y H:i" }}</b></div>
+            </div>
+            <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                <span class="fw-chip {{ s_cls }}">{{ s_label }}</span>
+                <span class="fw-chip {{ p_cls }}">Priorität {{ p_label }}</span>
+                {% if offen_seit > 30 and t.status != 'erledigt' %}<span class="fw-chip fw-crit">seit {{ offen_seit }} Tagen offen</span>{% endif %}
             </div>
         </div>
-        <script>
-          document.addEventListener('click', function (ev) {
-            var d = document.getElementById('sAktionen');
-            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
-          });
-        </script>
+        <div class="fw-akte-rechts">
+            <div class="relative">
+                <button type="button" onclick="document.getElementById('sAktionen').classList.toggle('hidden'); event.stopPropagation();"
+                        class="fw-btn" style="padding:6px 12px;font-size:12px">
+                    <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
+                </button>
+                <div id="sAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
+                    <form method="post" action="/neu/schaeden/{{ t.id }}/loeschen/"
+                          onsubmit="return confirm('Schadensmeldung #{{ t.id }} wirklich löschen? Fotos und Verlauf werden mitgelöscht.');">
+                        {% csrf_token %}
+                        <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50"><i class="fa-solid fa-trash w-4"></i>Schadensmeldung löschen</button>
+                    </form>
+                </div>
+            </div>
+            <script>
+              document.addEventListener('click', function (ev) {
+                var d = document.getElementById('sAktionen');
+                if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
+              });
+            </script>
+        </div>
     </div>
-</div>
 
-<!-- Status-Schnellwechsel -->
-<div class="mt-4 bg-white rounded-xl border border-slate-200 p-4">
-    <form method="post" action="/neu/schaeden/{{ t.id }}/status/" class="flex flex-wrap items-center gap-3">
-        {% csrf_token %}
-        <span class="text-xs font-semibold text-slate-500">Status:</span>
-        <select name="status" class="bg-slate-100 rounded-lg text-sm px-3 py-2">
-            {% for key, val in status_wahl.items %}
-            <option value="{{ key }}" {% if t.status == key %}selected{% endif %}>{{ val.0 }}</option>
-            {% endfor %}
-        </select>
-        <label class="flex items-center gap-2 text-xs text-slate-600">
-            <input type="checkbox" name="melder_informieren" class="accent-indigo-600">Melder per E-Mail informieren
-        </label>
-        <button class="bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-2 rounded-lg">Status setzen</button>
-    </form>
-</div>
+    <div class="fw-kzn">
+        <div>
+            <div class="fw-l">Kosten</div>
+            <div class="fw-w">CHF {{ kosten_effektiv|chf }}</div>
+            <div class="fw-f">{% if kosten_geschaetzt %}geschätzt {{ kosten_geschaetzt|chf }}{% else %}keine Schätzung{% endif %}</div>
+        </div>
+        <div>
+            <div class="fw-l">Aufträge</div>
+            <div class="fw-w">{{ auftraege|length }}</div>
+            <div class="fw-f">{% if auftraege %}an Handwerker vergeben{% else %}noch keiner vergeben{% endif %}</div>
+        </div>
+        <div>
+            <div class="fw-l">Offen seit</div>
+            <div class="fw-w{% if offen_seit > 30 and t.status != 'erledigt' %} crit{% elif offen_seit > 14 and t.status != 'erledigt' %} warn{% endif %}" style="font-size:15px">
+                {% if t.status == 'erledigt' %}erledigt{% else %}{{ offen_seit }} Tag{{ offen_seit|pluralize:"e" }}{% endif %}</div>
+            <div class="fw-f">gemeldet {{ t.erstellt_am|date:"d.m.Y" }}</div>
+        </div>
+        <div>
+            <div class="fw-l">Letzte Reaktion</div>
+            <div class="fw-w" style="font-size:15px">{% if letzte_nachricht %}{{ letzte_nachricht.erstellt_am|date:"d.m.Y" }}{% else %}—{% endif %}</div>
+            <div class="fw-f">{% if letzte_nachricht %}{{ nachrichten|length }} Nachricht{{ nachrichten|length|pluralize:"en" }}{% else %}noch keine Antwort{% endif %}</div>
+        </div>
+    </div>
 
-{% include 'fw/_detail_tabs.html' with gruppe='sc' tabs=tab_liste %}
+
+    {% include 'fw/_detail_tabs.html' with gruppe='sc' tabs=tab_liste %}
+</div>
 
 <!-- ÜBERSICHT -->
 <div data-panel="sc" id="sc-stammdaten">
+    {% comment %} Der Status-Schnellwechsel stand vor dem Umbau ueber der
+       Reiterleiste und waere mit dem alten Kopf verschwunden. Er sitzt jetzt
+       in den Stammdaten — dieselbe Entscheidung wie beim Vertrag: Der Status
+       gehoert zur Sache, nicht in eine Kopfzeile, die auf dem Handy hoch
+       wird. `faelle/test_aktionen_vollstaendig.py` haelt ihn fest. {% endcomment %}
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-flag"></i></span>
+            <span class="fw-t">Status</span>
+            <span class="fw-neben">steuert Sidebar-Zähler und Auswertungen</span></div>
+        <div style="padding:13px 15px">
+            <form method="post" action="/neu/schaeden/{{ t.id }}/status/" class="flex flex-wrap items-center gap-3">
+                {% csrf_token %}
+                <select name="status" class="bg-slate-100 rounded-lg text-sm px-3 py-2">
+                    {% for key, val in status_wahl.items %}
+                    <option value="{{ key }}" {% if t.status == key %}selected{% endif %}>{{ val.0 }}</option>
+                    {% endfor %}
+                </select>
+                <label class="flex items-center gap-2 text-xs text-slate-600">
+                    <input type="checkbox" name="melder_informieren" class="accent-indigo-600">Melder per E-Mail informieren
+                </label>
+                <button class="fw-btn fw-primary" style="padding:6px 12px;font-size:12px">Status setzen</button>
+            </form>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5">
             <h3 class="font-bold text-slate-800 mb-3">Schadensbeschreibung</h3>

@@ -22,27 +22,61 @@ WURZEL = pathlib.Path('core/templates')
 
 #: Aktionen, die die Vertragsakte fuehren MUSS. Abgeschrieben aus dem Stand
 #: vor dem Umbau. Wer eine streicht, muss das hier begruenden.
+#: **Das Objekt gehoert in die Angabe.** Ein blosses `/loeschen/` genuegt
+#: nicht: Fast jede Akte fuehrt irgendwo ein Loeschen — Dokument, Anpassung,
+#: Geraet. Eine Gegenprobe, die das Loeschen der PERSON entfernte, blieb
+#: deshalb gruen, weil das Loeschen eines DOKUMENTS die Bedingung erfuellte.
 PFLICHT = {
     'mietverhaeltnis': ('fw/vertrag_detail.html', [
-        '/status/',              # Entwurf / Aktiv / Inaktiv
-        '/bearbeiten/',
-        '/kuendigen/',
-        '/schlussabrechnung/',
-        '/abnahme/neu/',
-        '/maengelruege/',
-        '/untermiete/',
-        '/signieren/',
-        '/loeschen/',
-        '/kaution/',
-        '/wg-mieter/',
-        '/verzug/',
+        '/vertraege/{{ v.id }}/status/',      # Entwurf / Aktiv / Inaktiv
+        '/vertraege/{{ v.id }}/bearbeiten/',
+        '/vertraege/{{ v.id }}/kuendigen/',
+        '/vertraege/{{ v.id }}/schlussabrechnung/',
+        '/vertraege/{{ v.id }}/abnahme/neu/',
+        '/vertraege/{{ v.id }}/maengelruege/',
+        '/vertraege/{{ v.id }}/untermiete/',
+        '/vertraege/{{ v.id }}/signieren/',
+        '/vertraege/{{ v.id }}/loeschen/',
+        '/vertraege/{{ v.id }}/kaution/',
+        '/vertraege/{{ v.id }}/wg-mieter/',
+        '/vertraege/{{ v.id }}/verzug/',
+    ]),
+    # Ergaenzt 20.08.2026, nachdem der Umbau des Aktenkopfs bei BEIDEN Typen
+    # eine Aktion mitgenommen hatte: die Personenakte verlor «Loeschen» und
+    # «DSG-Loeschung», die Schadensakte den Status-Schnellwechsel. Der Waechter
+    # deckte bis dahin nur den Vertrag ab und konnte es deshalb nicht melden.
+    'person': ('fw/person_detail.html', [
+        '/personen/{{ m.id }}/bearbeiten/',
+        '/personen/{{ m.id }}/loeschen/',
+        '/personen/{{ m.id }}/dsg-loeschen/',
+        '/kommunikation/',
+    ]),
+    'schaden': ('fw/schaden_detail.html', [
+        '/schaeden/{{ t.id }}/status/',
+        '/schaeden/{{ t.id }}/auftrag/',
+        '/schaeden/{{ t.id }}/ausstattung/',
+        '/schaeden/{{ t.id }}/loeschen/',
     ]),
 }
 
 
 def ziele(pfad):
+    """Alle Zieladressen der Vorlage, ohne Abfrageteil."""
     quelle = (WURZEL / pfad).read_text(encoding='utf-8')
-    return set(re.findall(r'(?:action|href)="([^"]+)"', quelle))
+    return {z.split('?')[0]
+            for z in re.findall(r'(?:action|href)="([^"]+)"', quelle)}
+
+
+def fuehrt(vorhanden, teil):
+    """Traegt die Vorlage eine Adresse, die auf `teil` ENDET?
+
+    Nicht `teil in z`: Das war zu locker. `/loeschen/` steckt auch in
+    `/dsg-loeschen/` — die Pflichtaktion «Person loeschen» galt deshalb als
+    vorhanden, solange es die DSG-Loeschung gab, und ihre Gegenprobe blieb
+    gruen. Der Abfrageteil faellt vorher weg, damit
+    `/neu/kommunikation/?mieter=1` weiterhin auf `/kommunikation/` passt.
+    """
+    return any(z.endswith(teil) for z in vorhanden)
 
 
 class AktionenTests(TestCase):
@@ -52,11 +86,13 @@ class AktionenTests(TestCase):
             for teil in pflicht:
                 with self.subTest(typ=typ, aktion=teil):
                     self.assertTrue(
-                        any(teil in z for z in vorhanden),
+                        fuehrt(vorhanden, teil),
                         f'{pfad} fuehrt keine Adresse mit {teil!r} mehr — '
                         f'die Aktion ist ueber die Oberflaeche nicht ausloesbar.')
 
     def test_die_pruefung_wuerde_einen_verlust_bemerken(self):
         """Gegenprobe: eine erfundene Aktion darf nicht als vorhanden gelten."""
         vorhanden = ziele(PFLICHT['mietverhaeltnis'][0])
-        self.assertFalse(any('/gibtsnicht/' in z for z in vorhanden))
+        self.assertFalse(fuehrt(vorhanden, '/gibtsnicht/'))
+        # Und die Trennschaerfe, an der die erste Fassung scheiterte:
+        self.assertTrue(fuehrt(vorhanden, '/vertraege/{{ v.id }}/loeschen/'))

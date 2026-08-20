@@ -260,3 +260,119 @@ class GerenderteSeiteTests(TestCase):
                     sichtbar, reiter[:1],
                     f'Beim Laden ist {sichtbar} offen, aktiv markiert ist aber '
                     f'{reiter[:1]}.')
+
+
+class AktenkopfTests(TestCase):
+    """Eine umgestellte Akte muss den Aktenkopf tragen, nicht nur den Reitersatz.
+
+    WARUM ES DIESEN TEST GIBT
+
+    Am 20.08.2026 galten Vertrag, Schaden und Person als «umgestellt», weil
+    ihre Panels auf den einheitlichen Satz umbenannt waren. Die Personenakte
+    trug aber weiterhin den alten Kopf: Tailwind-Kachel mit Initialen, darunter
+    vier KPI-Kaesten. Vom Konzept war nichts zu sehen — kein `fw-aktenkopf`,
+    kein Typ, kein Pfad, keine Zustands-Chips.
+
+    Aufgefallen ist es dem Nutzer beim Vergleich mit dem Prototyp, nicht der
+    Suite: `test_reiter_panels` prueft Panel-IDs, `test_akte_zustaende` prueft
+    Rechnungen. Dass die Seite **aussieht** wie das Konzept, fragte niemand ab.
+
+    Der Test prueft die Bausteine, die der Prototyp fuer JEDE Akte zeigt:
+    Rahmen, Typzeile, Titel und Pfad. Die Kennzahlenleiste ist bewusst NICHT
+    dabei — der Prototyp fuehrt sie fuer die Person nicht (siehe
+    `KOPF_OHNE_KENNZAHLEN`).
+    """
+
+    #: Aktentypen, deren Prototyp keine Kennzahlenleiste zeigt. Fuer die Person
+    #: ist das stimmig: Konto, Saldo und Kaution haengen am Mietverhaeltnis
+    #: (G5). Vier Zahlen «zur Person» waeren Summen, die anderswo schon stehen.
+    KOPF_OHNE_KENNZAHLEN = {'person'}
+
+    @classmethod
+    def setUpTestData(cls):
+        from core.tests._isolation import MandantenFixture
+        cls.a = MandantenFixture('K', '8000', 'Zürich')
+
+    def _seiten(self):
+        return {
+            'mietverhaeltnis': f'/neu/vertraege/{self.a.vertrag.pk}/',
+            'schaden': f'/neu/schaeden/{self.a.schaden.pk}/',
+            'person': f'/neu/personen/{self.a.mieter.pk}/',
+        }
+
+    def _html(self, adresse):
+        from django.test import Client
+
+        from core.tenancy import organisation_kontext as mandant
+        c = Client()
+        c.force_login(self.a.benutzer)
+        with mandant(self.a.organisation):
+            antwort = c.get(adresse)
+        self.assertEqual(antwort.status_code, 200)
+        return antwort.content.decode()
+
+    @staticmethod
+    def _aktenkopf(html):
+        """Der Aktenkopf-Block allein — vom Rahmen bis zur Reiterleiste."""
+        if 'class="fw-aktenkopf"' not in html:
+            return ''
+        return html.split('class="fw-aktenkopf"', 1)[1].split('class="fw-reiter"', 1)[0]
+
+    def test_jede_umgestellte_akte_traegt_den_aktenkopf(self):
+        for typ, adresse in sorted(self._seiten().items()):
+            if typ not in UMGESTELLT:
+                continue
+            html = self._html(adresse)
+            # Auf das KLASSENATTRIBUT pruefen, nicht auf den blossen Namen:
+            # `base.html` traegt das Stylesheet inline, `fw-aktenkopf` steht
+            # dort als CSS-Regel. Die erste Fassung fragte nur den Namen ab und
+            # war damit auf jeder Seite wahr — sie bestand fuer die
+            # Schadensakte, die gar keinen Aktenkopf hatte.
+            for baustein, was in (('class="fw-aktenkopf"', 'der Rahmen'),
+                                  ('class="fw-akte-typ"', 'die Typzeile'),
+                                  ('class="fw-akte-oben"', 'der Kopfblock'),
+                                  ('class="fw-akte-pfad"', 'der Pfad')):
+                with self.subTest(typ=typ, baustein=baustein):
+                    self.assertIn(
+                        baustein, html,
+                        f'{was} fehlt — die Seite fuehrt den Reitersatz, sieht '
+                        f'aber nicht aus wie das Konzept.')
+
+    def test_der_alte_kachelkopf_ist_fort(self):
+        """Sonst stuenden beide Koepfe uebereinander und niemand merkte es."""
+        for typ, adresse in sorted(self._seiten().items()):
+            if typ not in UMGESTELLT:
+                continue
+            html = self._html(adresse)
+            with self.subTest(typ=typ):
+                self.assertNotIn(
+                    'text-2xl font-extrabold text-slate-900', html,
+                    'Der alte Tailwind-Kopf steht noch auf der Seite.')
+
+    def test_die_ausnahme_ist_benannt_und_stimmt(self):
+        """Wer eine Akte ohne Kennzahlen fuehrt, muss sie hier eintragen.
+
+        Ohne diese Pruefung koennte man eine fehlende Kennzahlenleiste
+        stillschweigend zur Ausnahme erklaeren.
+        """
+        for typ, adresse in sorted(self._seiten().items()):
+            if typ not in UMGESTELLT:
+                continue
+            html = self._html(adresse)
+            # NUR im Aktenkopf suchen. Die Schadensakte fuehrt im
+            # Finanzen-Reiter ebenfalls eine `fw-kzn` — eine Gegenprobe, die
+            # die Leiste aus dem KOPF entfernte, blieb deshalb gruen: der Test
+            # fand die andere. Ein Ausschnitt, der zu viel umfasst, prueft
+            # nicht mehr das, was er behauptet.
+            kopf = self._aktenkopf(html)
+            hat = 'class="fw-kzn"' in kopf
+            with self.subTest(typ=typ):
+                if typ in self.KOPF_OHNE_KENNZAHLEN:
+                    self.assertFalse(
+                        hat, f'{typ} steht als Ausnahme ohne Kennzahlenleiste, '
+                             f'fuehrt jetzt aber eine — Eintrag entfernen.')
+                else:
+                    self.assertTrue(
+                        hat, f'{typ} fuehrt keine Kennzahlenleiste. Wenn das '
+                             f'Absicht ist, in KOPF_OHNE_KENNZAHLEN eintragen '
+                             f'und im Konzept begruenden.')
