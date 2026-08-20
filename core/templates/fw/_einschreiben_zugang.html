@@ -11,40 +11,40 @@ Parameter (per {% include ... with %}):
 <div class="mt-2 flex items-center gap-2 flex-wrap text-[11px]">
     <a href="https://www.post.ch/swisspost-tracking?formattedParcelCodes={{ p.sendungsnummer|urlencode }}&p_language=de"
        target="_blank" rel="noopener"
-       class="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:underline">
+       class="fw-link inline-flex items-center gap-1">
         <i class="fa-solid fa-truck-fast"></i> Track &amp; Trace
-        <span class="font-mono text-slate-500">{{ p.sendungsnummer }}</span>
+        <span class="font-mono fw-klein">{{ p.sendungsnummer }}</span>
     </a>
     {% if p.zugang_am %}
-    <span class="inline-flex items-center gap-1 text-emerald-600 font-semibold">
+    <span class="fw-chip fw-good">
         <i class="fa-solid fa-circle-check"></i> Zugang {{ p.zugang_am|date:"d.m.Y" }}
     </span>
     {% else %}
     <form method="post" action="/neu/fristen/verzug/{{ p.id }}/zugang/" class="inline-flex items-center gap-1.5">
         {% csrf_token %}
         {% if zugang_next %}<input type="hidden" name="next" value="{{ zugang_next }}">{% endif %}
-        <label class="text-slate-500 font-semibold">Zustellung:</label>
+        <label class="fw-klein">Zustellung:</label>
         <input type="date" name="zugang_am" value="{{ zugang_heute }}" max="{{ zugang_heute }}"
                title="Tatsächliches Zustell-/Abholdatum aus Track & Trace (z. B. gestern) — ab hier laufen die 30 Tage"
-               class="bg-slate-100 rounded-md px-2 py-1 text-[11px]">
+               class="fw-feld">
         <button type="submit"
-                class="inline-flex items-center gap-1 font-semibold text-emerald-700 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-md whitespace-nowrap">
+                class="fw-btn">
             <i class="fa-solid fa-check"></i> Zugang bestätigen
         </button>
     </form>
     {% endif %}
     <details class="text-[11px]">
-        <summary class="cursor-pointer text-slate-400 hover:text-indigo-600 select-none"><i class="fa-solid fa-pen-to-square mr-0.5"></i>Nummer korrigieren</summary>
+        <summary class="fw-link cursor-pointer select-none"><i class="fa-solid fa-pen-to-square mr-0.5"></i>Nummer korrigieren</summary>
         <form method="post" action="/neu/fristen/verzug/{{ p.id }}/sendung/" class="mt-1.5 flex items-center gap-1.5 flex-wrap">
             {% csrf_token %}
             {% if zugang_next %}<input type="hidden" name="next" value="{{ zugang_next }}">{% endif %}
             <input type="text" name="sendungsnummer" value="{{ p.sendungsnummer }}" inputmode="numeric"
-                   placeholder="Sendungsnummer" class="bg-slate-100 rounded-md px-2 py-1 text-[11px] font-mono w-56 max-w-full">
+                   placeholder="Sendungsnummer" class="fw-feld font-mono w-56">
             {% if not p.zugang_am %}
             <input type="date" name="versand_am" value="{{ p.versand_am|date:'Y-m-d' }}" max="{{ zugang_heute }}"
-                   title="Versanddatum" class="bg-slate-100 rounded-md px-2 py-1 text-[11px]">
+                   title="Versanddatum" class="fw-feld">
             {% endif %}
-            <button type="submit" class="inline-flex items-center gap-1 font-semibold text-indigo-700 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-md whitespace-nowrap">
+            <button type="submit" class="fw-btn fw-primary">
                 <i class="fa-solid fa-check"></i> Speichern
             </button>
         </form>

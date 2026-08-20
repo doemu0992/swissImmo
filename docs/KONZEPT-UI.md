@@ -427,13 +427,24 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.0 | Aktenkopf und Reiterleiste aus Tokens statt Tailwind-Utilities; Komponentenschicht in `base.html` | erledigt (`b0e3757`) |
 | 4b.1 | Konzeptpalette Petrol in `:root`, beide Dunkelblöcke; Wächter `test_palette.py` | erledigt (`ce92c88`) |
 | 4b.2 | Kennzahlen, Chips und Hinweise als **gerechnete Zustände** (`_akte_kopfzahlen`); Stammdaten in vier Gruppen | erledigt (`301e81b`) |
-| 4b.3 | Die vier übrigen Detailseiten auf denselben Aufbau — **Schaden** und **Person** erledigt, Liegenschaft und Objekt offen | **teilweise** |
-| 4b.4 | Die 178 verbliebenen Tailwind-Farbklassen der Vertragsakte auf Komponenten | **offen** |
+| 4b.3 | **Reitersatz und Aktenkopf** der vier übrigen Detailseiten — Schaden und Person erledigt (`24d325b`, `44d5ea2`), Liegenschaft und Objekt offen | **teilweise** |
+| 4b.4 | **Die Bereichsinhalte** auf die Komponentenschicht — Person erledigt, Schaden und Vertrag offen | **teilweise** |
 
 Der Wächter für 4b.3 steht bereits: `faelle/test_reiter_panels.py::test_umstellung_erzeugt_nur_
 erreichbare_reiter` ist als `expectedFailure` markiert und nennt in seiner Meldung jedes
 fehlende Panel je Vorlage. Er ist damit die Arbeitsliste — und schlägt um, sobald 4b.3 fertig
 ist, weil Django einen unerwarteten Erfolg als Fehlschlag meldet.
+
+> **Richtigstellung, 20.08.2026.** Bis heute stand in Zeile 4b.3 «Schaden und Person erledigt»
+> und in 4b.4 «die 178 Farbklassen **der Vertragsakte**». Beides war zu grosszügig. «Erledigt»
+> meinte nur Reitersatz und Kopf; die Reiter*inhalte* waren unberührt. Eine Messung je Bereich
+> ergab: **drei von achtzehn** Bereichen waren gestalterisch umgestellt, **sechs** enthielten
+> keine einzige Komponentenklasse. Und der Rückstand lag nicht nur beim Vertrag — 177 Stellen
+> dort, 106 im Schaden, 171 bei Person, zusammen **454**. Kein Wächter hat das gemeldet, weil
+> keiner nach dem Aussehen eines Bereichs fragte; alle prüften die Verdrahtung. Diese Lücke
+> schliesst `faelle/test_bereichsgestaltung.py`: Er zählt je Bereich und hält jede Zahl unter
+> ihrem Deckel — 0 für die fertigen, der heutige Stand für die offenen. Die Deckel dürfen nur
+> sinken.
 
 ### 13.4 Neue Abhängigkeiten
 
@@ -572,6 +583,21 @@ Dunkelblöcke dieselben Farben führen.
 | `fw-aufklapp` | Erfassen in einer Leseansicht — zugeklappt bis gebraucht |
 | `fw-hinweis` | „Was auffällt", eingefärbt nach Dringlichkeit |
 | `fw-statuswahl` | Umschalter Entwurf · Aktiv · Inaktiv |
+
+Für die **Bereichsinhalte** kamen mit 4b.4 vier Bausteine dazu. Sie fehlten, und ihr Fehlen war
+der Grund, warum die Reiterinhalte weiter Tailwind trugen: Für Karte, Zeile und Tabelle gab es
+Komponenten, für Beträge, Formularfelder und Symbolknöpfe nicht.
+
+| Klasse | Zweck |
+|---|---|
+| `fw-betrag` | Geldbetrag, Ziffern gleich breit; `.crit` / `.good` / `.mut` als Ton |
+| `fw-feld` | Eingabefeld, Auswahl, Textfeld — erbt die Schrift des Fliesstexts |
+| `fw-ikon` als `<button>` | Symbolknopf; `.mut` im Ruhezustand, `.gefahr` färbt erst beim Darüberfahren |
+| `fw-menuzeile` / `fw-menutrenner` | Zeile in einem Aktionsmenü («Mehr»), `.warn` / `.crit` nach Tragweite |
+
+Geprüft von `faelle/test_bereichsgestaltung.py` — er zählt je Bereich, wie viele Tailwind-Farb\-
+klassen übrig sind, und lässt die Zahl nur sinken. **Gemessen wird Farbe, nicht Raster:**
+`flex`, `gap-2` und `lg:col-span-2` bleiben Tailwind, die Komponentenschicht regelt sie nicht.
 
 **Der Pfad führt eine Angabe je Zeile** (`fw-pz`), Beschriftungen ausgerichtet. Als Kette mit
 `›` und `·` brach er bei langen Objektnamen an beliebiger Stelle um.

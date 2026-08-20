@@ -375,6 +375,42 @@
         .fw-link{color:var(--ds-brand);font-weight:600;text-decoration:none;font-size:12.5px}
         .fw-link:hover{text-decoration:underline}
         .fw-klein{font-size:11.5px;color:var(--ds-faint)}
+
+        /* Bereichsinhalte (Phase 4b.4). Bis hierher deckte die Komponenten-
+           schicht nur den Aktenkopf ab; die Reiterinhalte blieben deshalb
+           Tailwind. Drei Bausteine fehlten und werden in jedem Bereich
+           gebraucht — Betrag, Eingabefeld, Symbolknopf. */
+        .fw-betrag{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ds-ink);
+            white-space:nowrap}
+        .fw-betrag.crit{color:var(--ds-crit)}
+        .fw-betrag.good{color:var(--ds-good)}
+        .fw-betrag.mut{color:var(--ds-muted);font-weight:500}
+        /* Ein Formularfeld, das nicht nach Fremdkoerper aussieht. `font:inherit`
+           ist Absicht: Ohne das erben `select` und `textarea` die Schriftart des
+           Betriebssystems und stehen neben dem Fliesstext. */
+        .fw-feld{background:var(--ds-surface-2);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius-sm);padding:8px 11px;font-size:13px;
+            color:var(--ds-ink);font-family:inherit;max-width:100%}
+        .fw-feld:focus{outline:2px solid var(--ds-brand);outline-offset:-1px}
+        /* `fw-ikon` war bisher nur Zierrat im Kartenkopf. Als Knopf braucht es
+           einen stummen Ruhezustand (`mut`) und, wo geloescht wird, eine
+           Warnfarbe erst beim Darueberfahren (`gefahr`) — ein dauerrotes
+           Papierkorbsymbol in jeder Zeile schreit ohne Anlass. */
+        /* Zeile in einem Aktionsmenue («Mehr»). Die Farbe sagt, wie weit die
+           Aktion reicht — `crit` loescht, `warn` greift ein. */
+        .fw-menuzeile{width:100%;text-align:left;display:flex;align-items:center;gap:10px;
+            padding:8px 16px;font-size:13px;font-weight:600;background:none;border:0;
+            cursor:pointer;color:var(--ds-ink)}
+        .fw-menuzeile:hover{background:var(--ds-surface-2)}
+        .fw-menuzeile.warn{color:var(--ds-warn)}
+        .fw-menuzeile.warn:hover{background:var(--ds-warn-soft)}
+        .fw-menuzeile.crit{color:var(--ds-crit)}
+        .fw-menuzeile.crit:hover{background:var(--ds-crit-soft)}
+        .fw-menutrenner{margin:5px 0;border-top:1px solid var(--ds-line)}
+        .fw-ikon.mut{background:var(--ds-surface-2);color:var(--ds-faint)}
+        button.fw-ikon{border:0;cursor:pointer;padding:0}
+        button.fw-ikon.gefahr:hover{background:var(--ds-crit-soft);color:var(--ds-crit)}
+
         .fw-gruppe{padding:12px 16px 5px;font-size:10px;font-weight:800;letter-spacing:.14em;
             text-transform:uppercase;color:var(--ds-brand);background:var(--ds-surface-2);
             border-top:1px solid var(--ds-line);border-bottom:1px solid var(--ds-line)}

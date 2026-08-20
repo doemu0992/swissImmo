@@ -90,6 +90,28 @@ class AktionenTests(TestCase):
                         f'{pfad} fuehrt keine Adresse mit {teil!r} mehr — '
                         f'die Aktion ist ueber die Oberflaeche nicht ausloesbar.')
 
+    def test_eingebundene_bausteine_bleiben_eingebunden(self):
+        """Aktionen in einem `{% include %}` sieht `ziele()` nicht.
+
+        Beim Zusammenlegen der doppelten Fristenliste (4b.4) wanderte der
+        Einschreiben-Baustein vom Finanz- in den Fallbereich der Personenakte.
+        Er traegt das einzige Bedienelement fuer «Zugang bestaetigen» (strikte
+        Empfangstheorie, Art. 257d OR). Faellt die Einbindung weg, verschwindet
+        die Funktion — und die Adressenpruefung oben merkt nichts davon, weil
+        `action=` in einer anderen Datei steht.
+        """
+        for pfad in ('fw/person_detail.html', 'fw/vertrag_detail.html', 'fw/fristen.html'):
+            quelle = (WURZEL / pfad).read_text(encoding='utf-8')
+            with self.subTest(vorlage=pfad):
+                self.assertIn(
+                    "include 'fw/_einschreiben_zugang.html'", quelle,
+                    f'{pfad} bindet den Einschreiben-Baustein nicht mehr ein — '
+                    f'«Zugang bestaetigen» ist dort nicht mehr ausloesbar.')
+        # Und der Baustein selbst muss die Aktion noch fuehren.
+        self.assertTrue(
+            fuehrt(ziele('fw/_einschreiben_zugang.html'), '/zugang/'),
+            'Der Baustein fuehrt kein /zugang/ mehr.')
+
     def test_die_pruefung_wuerde_einen_verlust_bemerken(self):
         """Gegenprobe: eine erfundene Aktion darf nicht als vorhanden gelten."""
         vorhanden = ziele(PFLICHT['mietverhaeltnis'][0])

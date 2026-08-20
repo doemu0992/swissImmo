@@ -52,14 +52,14 @@
                     <form method="post" action="/neu/personen/{{ m.id }}/dsg-loeschen/"
                           onsubmit="return confirm('DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?');">
                         {% csrf_token %}
-                        <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-amber-700 hover:bg-amber-50"><i class="fa-solid fa-user-shield w-4"></i>DSG-Löschung (anonymisieren)</button>
+                        <button class="fw-menuzeile warn"><i class="fa-solid fa-user-shield w-4"></i>DSG-Löschung (anonymisieren)</button>
                     </form>
-                    <div class="my-1 border-t border-slate-100"></div>
+                    <div class="fw-menutrenner"></div>
                     {% endif %}
                     <form method="post" action="/neu/personen/{{ m.id }}/loeschen/"
                           onsubmit="return confirm('Person „{{ m.display_name|escapejs }}“ wirklich löschen?{% if anzahl_aktive %} Achtung: es besteht ein aktiver Vertrag – die Löschung wird blockiert.{% else %} Beendete/Entwurf-Verträge, Journal und Dokumente dieser Person werden mitgelöscht.{% endif %}');">
                         {% csrf_token %}
-                        <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50"><i class="fa-solid fa-trash w-4"></i>Person löschen</button>
+                        <button class="fw-menuzeile crit"><i class="fa-solid fa-trash w-4"></i>Person löschen</button>
                     </form>
                 </div>
             </div>
@@ -239,80 +239,84 @@
             </dl>{% else %}<p class="text-sm italic" style="color:var(--ds-faint);padding:6px 0">Kein aktiver Vertrag.</p>{% endif %}
             </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5 lg:col-span-2">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="font-bold text-slate-800"><i class="fa-solid fa-map-location-dot text-indigo-500 mr-1.5"></i>Adressverlauf</h3>
-                <button type="button" onclick="document.getElementById('adr-neu-form').classList.toggle('hidden')"
-                        class="text-xs font-semibold text-indigo-600 hover:text-indigo-800"><i class="fa-solid fa-plus mr-1"></i>Adresse hinzufügen</button>
-            </div>
-            <p class="text-xs text-slate-400 mb-3">Datierte Adress-Zeilen («gültig ab») wie beim Sollmietzins. Die zum Stichtag
-                gültige Zeile ergibt die effektive Zustelladresse — eine Korrespondenzadresse hat dabei Vorrang vor der Wohnadresse.</p>
-            {% if adress_verlauf %}
-            <div class="overflow-x-auto">
-                <table class="w-full min-w-max text-sm">
-                    <thead><tr class="text-left text-xs text-slate-400 border-b border-slate-100">
-                        <th class="py-1.5 pr-3">Art</th><th class="py-1.5 pr-3">Gültig ab</th>
-                        <th class="py-1.5 pr-3">Adresse</th><th class="py-1.5 pr-3">Quelle</th><th></th></tr></thead>
-                    <tbody>
-                    {% for a in adress_verlauf %}
-                    <tr class="border-b border-slate-50 last:border-0">
-                        <td class="py-1.5 pr-3">
-                            {% if a.art == 'korrespondenz' %}<span class="inline-flex items-center rounded-md bg-amber-50 text-amber-700 px-2 py-0.5 text-xs font-semibold">Korrespondenz</span>
-                            {% else %}<span class="inline-flex items-center rounded-md bg-indigo-50 text-indigo-700 px-2 py-0.5 text-xs font-semibold">Wohnadresse</span>{% endif %}
-                        </td>
-                        <td class="py-1.5 pr-3 whitespace-nowrap font-medium text-slate-700">{{ a.gueltig_ab|date:"d.m.Y" }}</td>
-                        <td class="py-1.5 pr-3 text-slate-700">{{ a.einzeiler }}{% if a.notiz %}<span class="text-slate-400"> · {{ a.notiz }}</span>{% endif %}</td>
-                        <td class="py-1.5 pr-3 text-xs text-slate-400">{{ a.quelle }}</td>
-                        <td class="py-1.5 text-right">
-                            <form method="post" action="/neu/adresse/{{ a.id }}/loeschen/" onsubmit="return confirm('Diese Adress-Zeile entfernen?');">{% csrf_token %}
-                                <button title="Adresszeile löschen" class="text-xs text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}<p class="text-sm text-slate-400 italic">Noch keine datierten Adress-Zeilen.</p>{% endif %}
-            <form id="adr-neu-form" method="post" action="/neu/personen/{{ m.id }}/adresse/" class="hidden mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-6 gap-2">{% csrf_token %}
-                <select name="art" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2">
-                    <option value="wohn">Wohnadresse</option>
-                    <option value="korrespondenz">Korrespondenzadresse</option>
-                </select>
-                <input type="date" name="gueltig_ab" value="{{ heute }}" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2" required>
-                <input name="strasse" placeholder="Strasse & Nr. / c/o" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2">
-                <input name="adresszusatz" placeholder="Adresszusatz" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2">
-                <input name="plz" placeholder="PLZ" class="sm:col-span-1 bg-slate-100 rounded-lg text-sm px-3 py-2">
-                <input name="ort" placeholder="Ort" class="sm:col-span-3 bg-slate-100 rounded-lg text-sm px-3 py-2">
-                <button class="sm:col-span-6 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Adress-Zeile speichern</button>
-            </form>
+        <div class="fw-card fw-nomb lg:col-span-2">
+            <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-map-location-dot"></i></span>
+                <span class="fw-t">Adressverlauf</span></div>
+            <details class="fw-aufklapp">
+                <summary>Adresse hinzufügen</summary>
+                <div class="fw-aufklapp-inhalt">
+                    <form method="post" action="/neu/personen/{{ m.id }}/adresse/" class="grid grid-cols-1 sm:grid-cols-6 gap-2">{% csrf_token %}
+                        <select name="art" class="fw-feld sm:col-span-2">
+                            <option value="wohn">Wohnadresse</option>
+                            <option value="korrespondenz">Korrespondenzadresse</option>
+                        </select>
+                        <input type="date" name="gueltig_ab" value="{{ heute }}" class="fw-feld sm:col-span-2" required>
+                        <input name="strasse" placeholder="Strasse &amp; Nr. / c/o" class="fw-feld sm:col-span-2">
+                        <input name="adresszusatz" placeholder="Adresszusatz" class="fw-feld sm:col-span-2">
+                        <input name="plz" placeholder="PLZ" class="fw-feld sm:col-span-1">
+                        <input name="ort" placeholder="Ort" class="fw-feld sm:col-span-3">
+                        <button class="fw-btn fw-primary sm:col-span-6">Adress-Zeile speichern</button>
+                    </form>
+                </div>
+            </details>
+            <div class="fw-tablewrap"><table class="fw-table">
+                <thead><tr><th>Art</th><th>Gültig ab</th><th>Adresse</th><th>Quelle</th><th></th></tr></thead>
+                <tbody>
+                {% for a in adress_verlauf %}
+                <tr>
+                    <td>{% if a.art == 'korrespondenz' %}<span class="fw-chip fw-warn">Korrespondenz</span>
+                        {% else %}<span class="fw-chip fw-brand">Wohnadresse</span>{% endif %}</td>
+                    <td class="fw-num">{{ a.gueltig_ab|date:"d.m.Y" }}</td>
+                    <td>{{ a.einzeiler }}{% if a.notiz %}<span class="fw-klein"> · {{ a.notiz }}</span>{% endif %}</td>
+                    <td class="fw-klein">{{ a.quelle }}</td>
+                    <td class="fw-right">
+                        <form method="post" action="/neu/adresse/{{ a.id }}/loeschen/" onsubmit="return confirm('Diese Adress-Zeile entfernen?');">{% csrf_token %}
+                            <button title="Adresszeile löschen" class="fw-ikon mut gefahr"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5"><p class="fw-leer">Noch keine datierten Adress-Zeilen.</p></td></tr>
+                {% endfor %}
+                </tbody>
+            </table></div>
+            <div class="fw-fuss">Datierte Adress-Zeilen («gültig ab») wie beim Sollmietzins. Die zum Stichtag
+                gültige Zeile ergibt die effektive Zustelladresse — eine Korrespondenzadresse hat dabei
+                Vorrang vor der Wohnadresse.</div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5 lg:col-span-2">
-            <h3 class="font-bold text-slate-800 mb-3"><i class="fa-solid fa-key text-indigo-500 mr-1.5"></i>Mieterportal-Zugang</h3>
+        <div class="fw-card fw-nomb lg:col-span-2">
+            <div class="fw-kopf"><span class="fw-ikon {% if portal_user %}good{% else %}mut{% endif %}"><i class="fa-solid fa-key"></i></span>
+                <span class="fw-t">Mieterportal-Zugang</span>
+                {% if portal_user %}<span class="fw-chip {% if portal_user.is_active %}fw-good{% else %}fw-mut{% endif %}">{% if portal_user.is_active %}aktiv{% else %}deaktiviert{% endif %}</span>{% endif %}</div>
             {% if portal_user %}
-                <p class="text-sm text-slate-600 mb-1">Aktiv · Benutzername: <span class="font-mono font-semibold">{{ portal_user.username }}</span>
-                    {% if not portal_user.is_active %}<span class="text-rose-500">(deaktiviert)</span>{% endif %}</p>
-                <p class="text-xs text-slate-400 mb-3">Login unter <span class="font-mono">/login/</span>. „Passwort zurücksetzen" erzeugt ein neues Passwort und sendet es
-                    {% if m.email %}an <span class="font-semibold">{{ m.email }}</span>{% else %}<span class="text-amber-600">(keine E-Mail hinterlegt — wird angezeigt)</span>{% endif %}.</p>
-                <div class="flex gap-2">
+                <div class="fw-dz"><div class="fw-dl">Benutzername</div>
+                    <div class="fw-dv"><span class="font-mono">{{ portal_user.username }}</span>
+                    <small>Login unter <span class="font-mono">/login/</span>. „Passwort zurücksetzen" erzeugt ein neues
+                        Passwort und sendet es {% if m.email %}an {{ m.email }}{% else %}— keine E-Mail hinterlegt, es wird angezeigt{% endif %}.</small></div></div>
+                <div class="fw-fuss">
                     <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('Neues Passwort erzeugen und {% if m.email %}an den Mieter senden{% else %}anzeigen{% endif %}? Das alte wird ungültig.');">{% csrf_token %}
                         <input type="hidden" name="aktion" value="erstellen">
-                        <button class="text-xs font-semibold border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-lg">Passwort zurücksetzen &amp; senden</button>
+                        <button class="fw-btn">Passwort zurücksetzen &amp; senden</button>
                     </form>
                     <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('Portal-Zugang deaktivieren?');">{% csrf_token %}
                         <input type="hidden" name="aktion" value="entfernen">
-                        <button class="text-xs font-semibold border border-rose-100 text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-lg">Zugang deaktivieren</button>
+                        <button class="fw-btn">Zugang deaktivieren</button>
                     </form>
                 </div>
             {% else %}
-                <p class="text-sm text-slate-500 mb-1">Kein Portal-Zugang. Erstellen Sie einen Login, damit der Mieter Vertrag, offene Rechnungen (QR), Kontoauszug, Dokumente und Schadenmeldung online nutzen kann.</p>
-                <p class="text-xs text-slate-400 mb-3">
-                    {% if m.email %}Die Zugangsdaten werden automatisch an <span class="font-semibold">{{ m.email }}</span> gesendet.{% else %}<span class="text-amber-600">Keine E-Mail hinterlegt — die Zugangsdaten werden hier einmalig angezeigt.</span>{% endif %}
-                </p>
-                <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/">{% csrf_token %}
-                    <input type="hidden" name="aktion" value="erstellen">
-                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-key mr-1.5"></i>Portal-Zugang erstellen{% if m.email %} &amp; per E-Mail senden{% endif %}</button>
-                </form>
+                <div class="fw-zeile"><div class="fw-mitte">
+                    <div class="fw-t">Kein Portal-Zugang</div>
+                    <div class="fw-s">Erstellen Sie einen Login, damit der Mieter Vertrag, offene Rechnungen (QR),
+                        Kontoauszug, Dokumente und Schadenmeldung online nutzen kann.
+                        {% if m.email %}Die Zugangsdaten gehen automatisch an {{ m.email }}.{% else %}Keine E-Mail
+                        hinterlegt — die Zugangsdaten werden hier einmalig angezeigt.{% endif %}</div>
+                </div></div>
+                <div class="fw-fuss">
+                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/">{% csrf_token %}
+                        <input type="hidden" name="aktion" value="erstellen">
+                        <button class="fw-btn fw-primary"><i class="fa-solid fa-key"></i>Portal-Zugang erstellen{% if m.email %} &amp; per E-Mail senden{% endif %}</button>
+                    </form>
+                </div>
             {% endif %}
         </div>
     </div>
@@ -331,7 +335,11 @@
         <span class="fw-neben">{{ pe_rollen|length }} Verbindung{{ pe_rollen|length|pluralize:"en" }}</span></div>
     {% for r in pe_rollen %}
     <a href="{{ r.url }}" class="fw-zeile klick">
-        <span class="fw-ikon{% if not r.aktiv %} " style="background:var(--ds-surface-2);color:var(--ds-muted){% endif %}">
+        {% comment %} Vorher stand hier ein `{% if %}`, das mitten in einem
+           Attribut aufging und im Aus-Fall `" style="…` nachschob. Das lief,
+           war aber nicht lesbar. `fw-ikon.mut` (4b.4) macht daraus einen
+           Modifikator. {% endcomment %}
+        <span class="fw-ikon{% if not r.aktiv %} mut{% endif %}">
             <i class="fa-solid {% if r.art == 'Schadenmelder' %}fa-triangle-exclamation{% else %}fa-key{% endif %}"></i></span>
         <div class="fw-mitte">
             <div class="fw-t">{{ r.art }} — {{ r.ort }}</div>
@@ -344,24 +352,26 @@
     {% endfor %}
 </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Objekt</th><th class="px-5 py-3 font-semibold">Von</th><th class="px-5 py-3 font-semibold">Bis</th>
-                <th class="px-5 py-3 font-semibold text-right">Brutto</th><th class="px-5 py-3 font-semibold">Status</th><th class="px-5 py-3"></th>
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-file-signature"></i></span>
+            <span class="fw-t">Mietverhältnisse im Einzelnen</span></div>
+        <div class="fw-tablewrap"><table class="fw-table">
+            <thead><tr>
+                <th>Objekt</th><th>Von</th><th>Bis</th>
+                <th class="fw-right">Brutto</th><th>Status</th><th></th>
             </tr></thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody>
             {% for row in vertrag_rows %}
-            <tr class="hover:bg-slate-50/60 cursor-pointer" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
-                <td class="px-5 py-3"><a href="/neu/vertraege/{{ row.v.id }}/" class="font-medium text-slate-900" onclick="event.stopPropagation()">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</a></td>
-                <td class="px-5 py-3 text-slate-600">{{ row.v.beginn|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3 text-slate-600">{% if row.v.ende %}{{ row.v.ende|date:"d.m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right font-semibold text-slate-900">CHF {{ row.brutto|chf }}</td>
-                <td class="px-5 py-3"><span class="fw-chip {{ row.cls }}">● {{ row.label }}</span></td>
-                <td class="px-5 py-3 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
+            <tr class="cursor-pointer" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
+                <td><a href="/neu/vertraege/{{ row.v.id }}/" class="fw-strong" onclick="event.stopPropagation()">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</a></td>
+                <td class="fw-num">{{ row.v.beginn|date:"d.m.Y" }}</td>
+                <td class="fw-num">{% if row.v.ende %}{{ row.v.ende|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                <td class="fw-right"><span class="fw-betrag">CHF {{ row.brutto|chf }}</span></td>
+                <td><span class="fw-chip {{ row.cls }}">● {{ row.label }}</span></td>
+                <td class="fw-right"><i class="fa-solid fa-chevron-right fw-klein"></i></td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Verträge.</td></tr>
+            <tr><td colspan="6"><p class="fw-leer">Keine Verträge.</p></td></tr>
             {% endfor %}
             </tbody>
         </table></div>
@@ -370,80 +380,61 @@
 
 <!-- FINANZEN -->
 <div data-panel="pd" id="pd-finanzen" class="hidden">
-    <div class="flex justify-end gap-2 mb-3">
-        <a href="/neu/mieterkonten/{{ m.id }}/" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">
-            <i class="fa-solid fa-file-invoice-dollar"></i> Kontoblatt
-        </a>
-        <a href="/neu/personen/{{ m.id }}/kontoauszug/" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg">
-            <i class="fa-solid fa-file-pdf"></i> PDF
-        </a>
-    </div>
+    {% comment %} «Fristen & Pendenzen» stand bis 4b.4 hier UND unter Fälle —
+       zweimal dieselbe Liste, aber nur die hiesige trug den Einschreiben-Zugang.
+       Das Aktenregister bildet `fristen` auf `faelle` ab (faelle/akten.py); eine
+       Frist ist kein Finanzwert. Der Block steht jetzt einmal, unter Fälle, samt
+       Zugangserfassung. {% endcomment %}
     {% if total_offen > 0 %}
-    <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-4 flex items-start gap-3 flex-wrap">
-        <i class="fa-solid fa-triangle-exclamation text-rose-500 mt-0.5"></i>
-        <div class="flex-1 min-w-0">
-            <div class="text-sm font-bold text-rose-800">Offener Betrag: CHF {{ total_offen|chf }}</div>
-            <p class="text-xs text-rose-600 mt-0.5">Bei Zahlungsverzug: Frist ansetzen (Art. 257d OR) — Zahlungsaufforderung mit Kündigungsandrohung, danach ausserordentliche Kündigung möglich.</p>
-        </div>
-        {% for vt in offene_vertraege %}
-        <a href="/neu/vertraege/{{ vt.id }}/verzug/" class="shrink-0 inline-flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg">
-            <i class="fa-solid fa-gavel"></i> Zahlungsverzug 257d{% if offene_vertraege|length > 1 %} · {{ vt.einheit.bezeichnung }}{% endif %}
-        </a>
-        {% endfor %}
-    </div>
-    {% endif %}
-    {% if person_fristen %}
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
-        <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-            <div class="font-bold text-slate-800 text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-hourglass-half"></i></span>Fristen &amp; Pendenzen</div>
-            <a href="/neu/fristen/" class="text-xs font-semibold text-indigo-600 hover:underline">Fristen-Center</a>
-        </div>
-        <div class="divide-y divide-slate-50">
-            {% for e in person_fristen %}
-            <div class="px-5 py-3 hover:bg-slate-50/60">
-                <div class="flex items-center gap-3 flex-wrap sm:flex-nowrap">
-                    <span class="w-2 h-2 rounded-full shrink-0 {% if e.ueberfaellig %}bg-rose-500{% else %}bg-amber-400{% endif %}"></span>
-                    <div class="min-w-0 flex-1">
-                        <div class="text-sm font-medium text-slate-900 truncate">{{ e.p.titel }}</div>
-                        {% if e.p.beschreibung %}<div class="text-xs text-slate-500 leading-relaxed">{{ e.p.beschreibung }}</div>{% endif %}
-                    </div>
-                    <span class="text-xs font-semibold shrink-0 whitespace-nowrap {% if e.ueberfaellig %}text-rose-600{% else %}text-slate-500{% endif %}">
-                        {{ e.p.faellig_am|date:"d.m.Y" }}{% if e.p.sendungsnummer and not e.p.zugang_am %} · <span class="text-amber-600">provisorisch</span>{% endif %}
-                    </span>
+    <div class="fw-card">
+        <div class="fw-hinweis crit">
+            <span class="fw-hi"><i class="fa-solid fa-triangle-exclamation"></i></span>
+            <div class="fw-ht">
+                <b>Offener Betrag: CHF {{ total_offen|chf }}</b>
+                Bei Zahlungsverzug: Frist ansetzen (Art. 257d OR) — Zahlungsaufforderung mit
+                Kündigungsandrohung, danach ausserordentliche Kündigung möglich.
+                <div class="flex gap-2 flex-wrap mt-2.5">
+                    {% for vt in offene_vertraege %}
+                    <a href="/neu/vertraege/{{ vt.id }}/verzug/" class="fw-btn fw-primary">
+                        <i class="fa-solid fa-gavel"></i> Zahlungsverzug 257d{% if offene_vertraege|length > 1 %} · {{ vt.einheit.bezeichnung }}{% endif %}
+                    </a>
+                    {% endfor %}
                 </div>
-                {% if e.p.sendungsnummer %}<div class="ml-5">{% include 'fw/_einschreiben_zugang.html' with p=e.p zugang_heute=heute_iso zugang_next=pe_zugang_next %}</div>{% endif %}
             </div>
-            {% endfor %}
         </div>
     </div>
     {% endif %}
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
-        <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Offene Posten</div>
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Fällig</th><th class="px-5 py-3 font-semibold">Titel</th><th class="px-5 py-3 font-semibold text-right">Offen</th>
-            </tr></thead>
-            <tbody class="divide-y divide-slate-50">
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-file-invoice-dollar"></i></span>
+            <span class="fw-t">Offene Posten</span>
+            <span class="fw-rechts">
+                <a href="/neu/mieterkonten/{{ m.id }}/" class="fw-btn fw-primary"><i class="fa-solid fa-file-invoice-dollar"></i> Kontoblatt</a>
+                <a href="/neu/personen/{{ m.id }}/kontoauszug/" target="_blank" rel="noopener" class="fw-btn"><i class="fa-solid fa-file-pdf"></i> PDF</a>
+            </span></div>
+        <div class="fw-tablewrap"><table class="fw-table">
+            <thead><tr><th>Fällig</th><th>Titel</th><th class="fw-right">Offen</th></tr></thead>
+            <tbody>
             {% for r in offene %}
-            <tr><td class="px-5 py-3 text-slate-600">{{ r.faellig_am|date:"d.m.Y"|default:"—" }}</td>
-                <td class="px-5 py-3 text-slate-900">{{ r.titel }}</td>
-                <td class="px-5 py-3 text-right font-semibold text-rose-600">{{ r.offener_betrag|chf }}</td></tr>
+            <tr><td class="fw-num">{{ r.faellig_am|date:"d.m.Y"|default:"—" }}</td>
+                <td>{{ r.titel }}</td>
+                <td class="fw-right"><span class="fw-betrag crit">{{ r.offener_betrag|chf }}</span></td></tr>
             {% empty %}
-            <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine offenen Posten. 🎉</td></tr>
+            <tr><td colspan="3"><p class="fw-leer">Keine offenen Posten. 🎉</p></td></tr>
             {% endfor %}
             </tbody>
         </table></div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">Zahlungseingänge</div>
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <tbody class="divide-y divide-slate-50">
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon good"><i class="fa-solid fa-arrow-down-long"></i></span>
+            <span class="fw-t">Zahlungseingänge</span></div>
+        <div class="fw-tablewrap"><table class="fw-table">
+            <tbody>
             {% for z in zahlungen %}
-            <tr><td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3 text-slate-600">{{ z.bemerkung|default:"Zahlung" }}</td>
-                <td class="px-5 py-3 text-right font-medium text-emerald-600">+{{ z.betrag|chf }}</td></tr>
+            <tr><td class="fw-num">{{ z.datum_eingang|date:"d.m.Y" }}</td>
+                <td>{{ z.bemerkung|default:"Zahlung" }}</td>
+                <td class="fw-right"><span class="fw-betrag good">+{{ z.betrag|chf }}</span></td></tr>
             {% empty %}
-            <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Zahlungen.</td></tr>
+            <tr><td colspan="3"><p class="fw-leer">Noch keine Zahlungen.</p></td></tr>
             {% endfor %}
             </tbody>
         </table></div>
@@ -452,112 +443,115 @@
 
 <!-- DOKUMENTE -->
 <div data-panel="pd" id="pd-dokumente" class="hidden">
-    <p class="text-xs text-slate-400 mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Nach Mietverhältnis gruppiert. Das Auge steuert, ob der Mieter das Dokument im Portal sieht. Grün = sichtbar, grau = ausgeblendet.</p>
-    {% if dok_gruppen %}
-    <div class="space-y-3">
-        {% for g in dok_gruppen %}
-        <details class="group bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <summary class="px-5 py-3 flex items-center gap-3 cursor-pointer select-none hover:bg-slate-50/60 list-none">
-                <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform group-open:rotate-90"></i>
-                <i class="fa-solid {% if g.vertrag %}fa-file-signature{% else %}fa-user{% endif %} text-indigo-500"></i>
-                <span class="font-bold text-slate-800">{{ g.label }}</span>
-                <span class="text-[11px] font-semibold bg-slate-100 text-slate-500 rounded-md px-1.5 py-0.5">{{ g.dokumente|length }} Dokument{{ g.dokumente|length|pluralize:"e" }}</span>
-                {% if g.vertrag %}<a href="/neu/vertraege/{{ g.vertrag.id }}/" class="ml-auto text-xs text-indigo-600 font-medium hover:underline" onclick="event.stopPropagation()">Vertrag <i class="fa-solid fa-arrow-right text-[10px]"></i></a>{% elif g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="ml-auto text-xs text-indigo-600 font-medium hover:underline" onclick="event.stopPropagation()">Objekt <i class="fa-solid fa-arrow-right text-[10px]"></i></a>{% endif %}
-            </summary>
-            <div class="border-t border-slate-100 divide-y divide-slate-50">
-                {% for d in g.dokumente %}
-                <div class="flex items-center gap-3 px-5 py-3.5">
-                    <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-paperclip"></i></div>
-                    <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ d.bezeichnung|default:d.titel }}</div>
-                        <div class="text-xs text-slate-400">{{ d.get_kategorie_display }}{% if d.ablage_zeit %} · {{ d.ablage_zeit|date:"d.m.Y H:i" }}{% endif %}</div></div>
-                    <form method="post" action="/neu/dokument/{{ d.id }}/portal-sichtbar/" class="shrink-0" title="{% if d.im_portal_sichtbar %}Im Mieterportal sichtbar – klicken zum Ausblenden{% else %}Im Mieterportal ausgeblendet – klicken zum Anzeigen{% endif %}">
-                        {% csrf_token %}
-                        <button aria-label="{% if d.im_portal_sichtbar %}Im Mieterportal ausblenden{% else %}Im Mieterportal anzeigen{% endif %}"
-                                class="w-8 h-8 rounded-lg flex items-center justify-center {% if d.im_portal_sichtbar %}bg-emerald-50 text-emerald-600 hover:bg-emerald-100{% else %}bg-slate-100 text-slate-400 hover:bg-slate-200{% endif %}">
-                            <i class="fa-solid {% if d.im_portal_sichtbar %}fa-eye{% else %}fa-eye-slash{% endif %} text-xs"></i>
-                        </button>
-                    </form>
-                    {% if d.datei %}<a href="{{ d.datei.url }}" target="_blank" rel="noopener" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Öffnen</a>{% endif %}
-                    <form method="post" action="/neu/dokument/{{ d.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('Dokument «{{ d.bezeichnung|default:d.titel|escapejs }}» löschen?');">{% csrf_token %}
-                        <button class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="Löschen"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </form>
-                </div>
-                {% endfor %}
+    <p class="fw-klein mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Nach Mietverhältnis gruppiert. Das Auge steuert, ob der Mieter das Dokument im Portal sieht. Grün = sichtbar, grau = ausgeblendet.</p>
+    {% for g in dok_gruppen %}
+    <details class="fw-card group">
+        <summary class="fw-kopf cursor-pointer select-none list-none">
+            <i class="fa-solid fa-chevron-right fw-klein transition-transform group-open:rotate-90"></i>
+            <span class="fw-ikon"><i class="fa-solid {% if g.vertrag %}fa-file-signature{% else %}fa-user{% endif %}"></i></span>
+            <span class="fw-t">{{ g.label }}</span>
+            <span class="fw-chip fw-mut">{{ g.dokumente|length }} Dokument{{ g.dokumente|length|pluralize:"e" }}</span>
+            <span class="fw-rechts">
+            {% if g.vertrag %}<a href="/neu/vertraege/{{ g.vertrag.id }}/" class="fw-link" onclick="event.stopPropagation()">Vertrag <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
+            {% elif g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">Objekt <i class="fa-solid fa-arrow-right text-[10px]"></i></a>{% endif %}
+            </span>
+        </summary>
+        {% for d in g.dokumente %}
+        <div class="fw-zeile">
+            <span class="fw-ikon mut"><i class="fa-solid fa-paperclip"></i></span>
+            <div class="fw-mitte">
+                <div class="fw-t truncate">{{ d.bezeichnung|default:d.titel }}</div>
+                <div class="fw-s">{{ d.get_kategorie_display }}{% if d.ablage_zeit %} · {{ d.ablage_zeit|date:"d.m.Y H:i" }}{% endif %}</div>
             </div>
-        </details>
+            <form method="post" action="/neu/dokument/{{ d.id }}/portal-sichtbar/" class="shrink-0" title="{% if d.im_portal_sichtbar %}Im Mieterportal sichtbar – klicken zum Ausblenden{% else %}Im Mieterportal ausgeblendet – klicken zum Anzeigen{% endif %}">
+                {% csrf_token %}
+                <button aria-label="{% if d.im_portal_sichtbar %}Im Mieterportal ausblenden{% else %}Im Mieterportal anzeigen{% endif %}"
+                        class="fw-ikon {% if d.im_portal_sichtbar %}good{% else %}mut{% endif %}">
+                    <i class="fa-solid {% if d.im_portal_sichtbar %}fa-eye{% else %}fa-eye-slash{% endif %} text-xs"></i>
+                </button>
+            </form>
+            {% if d.datei %}<a href="{{ d.datei.url }}" target="_blank" rel="noopener" class="fw-link shrink-0">Öffnen</a>{% endif %}
+            <form method="post" action="/neu/dokument/{{ d.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('Dokument «{{ d.bezeichnung|default:d.titel|escapejs }}» löschen?');">{% csrf_token %}
+                <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash text-xs"></i></button>
+            </form>
+        </div>
         {% endfor %}
-    </div>
-    {% else %}
-    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Keine Dokumente hinterlegt.</div>
-    {% endif %}
+    </details>
+    {% empty %}
+    <div class="fw-card"><p class="fw-leer">Keine Dokumente hinterlegt.</p></div>
+    {% endfor %}
 </div>
 
 <!-- ===== JOURNAL / KOMMUNIKATION ===== -->
 <div data-panel="pd" id="pd-chronik" class="hidden">
-    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
-        <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-comment-dots text-indigo-500 mr-1.5"></i>Notiz / Kontakt erfassen</h3>
-        <form method="post" action="/neu/kommunikation/notiz/" class="space-y-3">
-            {% csrf_token %}
-            <input type="hidden" name="mieter_id" value="{{ m.id }}">
-            <div class="flex flex-wrap gap-2">
-                <select name="typ" class="bg-slate-100 rounded-lg text-sm px-3 py-2">
-                    <option value="telefon">Telefon</option><option value="email">E-Mail</option>
-                    <option value="brief">Brief</option><option value="persoenlich">Persönlich</option><option value="notiz">Notiz</option>
-                </select>
-                <select name="richtung" class="bg-slate-100 rounded-lg text-sm px-3 py-2">
-                    <option value="eingehend">Eingehend</option><option value="ausgehend">Ausgehend</option><option value="intern">Intern</option>
-                </select>
-                <input name="betreff" placeholder="Betreff (optional)" class="flex-1 min-w-[160px] bg-slate-100 rounded-lg text-sm px-3 py-2">
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-comment-dots"></i></span>
+            <span class="fw-t">Kontaktjournal</span>
+            <span class="fw-neben">{{ kommunikationen|length }}</span></div>
+        {% comment %} Erfassen gehoert nicht ueber die Leseansicht, sondern
+           aufgeklappt hinein — dieselbe Entscheidung wie in den Stammdaten
+           (Konzept 16.2, `fw-aufklapp`). Bis 4b.4 stand das Formular als erste,
+           groesste Karte des Reiters; wer die Chronik LESEN wollte, musste erst
+           daran vorbeiscrollen (im Bild vom 20.08. fuellte es den Schirm). {% endcomment %}
+        <details class="fw-aufklapp">
+            <summary>Notiz / Kontakt erfassen</summary>
+            <div class="fw-aufklapp-inhalt">
+                <form method="post" action="/neu/kommunikation/notiz/" class="space-y-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="mieter_id" value="{{ m.id }}">
+                    <div class="flex flex-wrap gap-2">
+                        <select name="typ" class="fw-feld">
+                            <option value="telefon">Telefon</option><option value="email">E-Mail</option>
+                            <option value="brief">Brief</option><option value="persoenlich">Persönlich</option><option value="notiz">Notiz</option>
+                        </select>
+                        <select name="richtung" class="fw-feld">
+                            <option value="eingehend">Eingehend</option><option value="ausgehend">Ausgehend</option><option value="intern">Intern</option>
+                        </select>
+                        <input name="betreff" placeholder="Betreff (optional)" class="fw-feld flex-1 min-w-[160px]">
+                    </div>
+                    <textarea name="inhalt" rows="2" required placeholder="Was wurde besprochen?" class="fw-feld w-full"></textarea>
+                    <button class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i>Erfassen</button>
+                </form>
             </div>
-            <textarea name="inhalt" rows="2" required placeholder="Was wurde besprochen?" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2"></textarea>
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Erfassen</button>
-        </form>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50">
+        </details>
         {% for k in kommunikationen %}
-        <div class="flex items-start gap-3 px-5 py-3.5">
-            <div class="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center
-                {% if k.typ == 'telefon' %}bg-emerald-50 text-emerald-600{% elif k.typ == 'email' %}bg-sky-50 text-sky-600{% elif k.typ == 'brief' %}bg-amber-50 text-amber-600{% else %}bg-slate-100 text-slate-500{% endif %}">
+        <div class="fw-zeile">
+            <span class="fw-ikon {% if k.typ == 'telefon' %}good{% elif k.typ == 'email' %}{% elif k.typ == 'brief' %}warn{% else %}mut{% endif %}">
                 <i class="fa-solid {% if k.typ == 'telefon' %}fa-phone{% elif k.typ == 'email' %}fa-envelope{% elif k.typ == 'brief' %}fa-file-lines{% elif k.typ == 'persoenlich' %}fa-user{% else %}fa-note-sticky{% endif %} text-xs"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="text-sm text-slate-900">{% if k.betreff %}<span class="font-semibold">{{ k.betreff }}</span> · {% endif %}{{ k.inhalt }}</div>
-                <div class="text-xs text-slate-400 mt-0.5">{{ k.get_typ_display }} · {{ k.get_richtung_display }} · {{ k.zeitpunkt|date:"d.m.Y H:i" }}{% if k.erstellt_von %} · {{ k.erstellt_von.username }}{% endif %}</div>
+            </span>
+            <div class="fw-mitte">
+                <div class="fw-t">{% if k.betreff %}{{ k.betreff }} · {% endif %}{{ k.inhalt }}</div>
+                <div class="fw-s">{{ k.get_typ_display }} · {{ k.get_richtung_display }} · {{ k.zeitpunkt|date:"d.m.Y H:i" }}{% if k.erstellt_von %} · {{ k.erstellt_von.username }}{% endif %}</div>
             </div>
             <form method="post" action="/neu/kommunikation/{{ k.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('Journal-Eintrag löschen?');">{% csrf_token %}
-                <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash text-xs"></i></button>
             </form>
         </div>
         {% empty %}
-        <p class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Einträge im Kontaktjournal.</p>
+        <p class="fw-leer">Noch keine Einträge im Kontaktjournal.</p>
         {% endfor %}
     </div>
 
-    <h3 class="mt-8 mb-4 text-sm font-bold text-slate-800">Verlauf</h3>
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div class="px-5 py-3 font-bold text-slate-800 text-sm border-b border-slate-100">Verlauf — Aktionen zu dieser Person &amp; ihren Verträgen</div>
-        <div class="divide-y divide-slate-50">
-            {% for e in verlauf %}
-            <div class="flex items-start gap-3 px-5 py-3.5">
-                <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
-                    {% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}<i class="fa-solid fa-robot"></i>{% endif %}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-slate-900">{{ e.aktion }}
-                        {% if e.ziel_typ == 'vertrag' and e.ziel_url %}<a href="{{ e.ziel_url }}" class="text-[11px] text-indigo-500 hover:underline ml-1">→ Vertrag</a>{% endif %}</div>
-                    {% if e.details %}<div class="text-xs text-slate-500">{{ e.details }}</div>{% endif %}
-                </div>
-                <div class="text-xs text-slate-400 whitespace-nowrap text-right shrink-0">
-                    {{ e.zeitpunkt|date:"d.m.Y H:i" }}<br>
-                    <span class="text-slate-400">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username }}{% else %}System{% endif %}</span>
-                </div>
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+            <span class="fw-t">Verlauf <small>Aktionen zu dieser Person &amp; ihren Verträgen</small></span></div>
+        {% for e in verlauf %}
+        <div class="fw-zeile">
+            <span class="fw-avci">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}<i class="fa-solid fa-robot"></i>{% endif %}</span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ e.aktion }}
+                    {% if e.ziel_typ == 'vertrag' and e.ziel_url %}<a href="{{ e.ziel_url }}" class="fw-link">→ Vertrag</a>{% endif %}</div>
+                <div class="fw-s">{% if e.details %}{{ e.details }}{% endif %}</div>
             </div>
-            {% empty %}
-            <p class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine protokollierten Aktionen zu dieser Person.</p>
-            {% endfor %}
+            <div class="fw-zeit">{{ e.zeitpunkt|date:"d.m.Y H:i" }}<br>
+                <span class="fw-klein">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username }}{% else %}System{% endif %}</span></div>
         </div>
+        {% empty %}
+        <p class="fw-leer">Noch keine protokollierten Aktionen zu dieser Person.</p>
+        {% endfor %}
+        <div class="fw-fuss">Vollständiges Logbuch aller Objekte unter
+            <a href="/neu/logbuch/" class="fw-link">Profil → Logbuch</a>.</div>
     </div>
-    <p class="text-xs text-slate-400 mt-3">Vollständiges Logbuch aller Objekte unter <a href="/neu/logbuch/" class="text-indigo-600 hover:underline">Profil → Logbuch</a>.</p>
 </div>
 
 <!-- ===== REITER: FAELLE ===== -->
@@ -584,14 +578,22 @@
        stehen hier trotzdem, weil sie am Kontakt gebraucht werden — wer anruft,
        fragt nach seiner Frist, nicht nach seinem Vertrag. Erzeugt werden sie
        weiterhin am Vertrag; das ist eine Anzeige, keine zweite Ablage. {% endcomment %}
-    <h3 class="mt-8 mb-4 text-sm font-bold text-slate-800">Offene Fristen aus den Mietverhältnissen</h3>
+    <div class="fw-subhead">Offene Fristen aus den Mietverhältnissen</div>
     <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon warn"><i class="fa-solid fa-hourglass-half"></i></span>
+            <span class="fw-t">Fristen &amp; Pendenzen</span>
+            <span class="fw-rechts"><a href="/neu/fristen/" class="fw-link">Fristen-Center</a></span></div>
         {% for e in person_fristen %}
         <div class="fw-zeile">
             <span class="fw-marker {% if e.ueberfaellig %}crit{% else %}warn{% endif %}"></span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ e.p.titel }}</div>
-                <div class="fw-s">{% if e.p.vertrag %}{{ e.p.vertrag.einheit.bezeichnung }} · {% endif %}{% if e.ueberfaellig %}überfällig{% else %}in {{ e.tage }} Tag{{ e.tage|pluralize:"en" }}{% endif %}</div>
+                <div class="fw-s">{% if e.p.vertrag %}{{ e.p.vertrag.einheit.bezeichnung }} · {% endif %}{% if e.ueberfaellig %}überfällig{% else %}in {{ e.tage }} Tag{{ e.tage|pluralize:"en" }}{% endif %}{% if e.p.beschreibung %} · {{ e.p.beschreibung }}{% endif %}{% if e.p.sendungsnummer and not e.p.zugang_am %} · provisorisch{% endif %}</div>
+                {% comment %} Einschreiben-Zugang: aus dem Finanzen-Bereich hierher
+                   gezogen. Er war dort die einzige Stelle, an der sich der Zugang
+                   erfassen liess — waere er beim Zusammenlegen mitgegangen, haette
+                   die strikte Empfangstheorie kein Bedienelement mehr. {% endcomment %}
+                {% if e.p.sendungsnummer %}{% include 'fw/_einschreiben_zugang.html' with p=e.p zugang_heute=heute_iso zugang_next=pe_zugang_next %}{% endif %}
             </div>
             <div class="fw-zeit">{{ e.p.faellig_am|date:"d.m.Y" }}</div>
         </div>
