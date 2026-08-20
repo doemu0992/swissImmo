@@ -121,17 +121,32 @@ def fw_person_detail(request, pk):
         _Q(ziel_typ='person', ziel_id=m.id) | _Q(ziel_typ='vertrag', ziel_id__in=_vids)
     ).select_related('benutzer')[:50])
 
-    tab_liste = [
+    # Etappe 4b.3: Reiter aus dem Aktenregister statt aus dieser View.
+    # `aktivitaet` und `verlauf` fallen beide auf `chronik` — ihre Zaehler
+    # werden von `aus_alt` addiert, nicht ueberschrieben.
+    from django.contrib.contenttypes.models import ContentType
+
+    from faelle.akten import aus_alt as _reiter_aus_alt
+    from faelle.models import Fall
+    from core.tenancy import aktuelle_organisation as _akt_org
+
+    person_faelle = list(
+        Fall.objects.filter(akte_typ=ContentType.objects.get_for_model(Mieter),
+                            akte_id=m.id)
+        .select_related('fallart', 'zustaendig').order_by('-eroeffnet_am'))
+
+    tab_liste = _reiter_aus_alt('person', [
         ('uebersicht', 'Übersicht', None),
         ('vertraege', 'Verträge', vertraege.count() or None),
         ('finanzen', 'Finanzen', offene.count() or None),
         ('dokumente', 'Dokumente', dok_total or None),
         ('aktivitaet', 'Journal', m.kommunikationen.count() or None),
         ('verlauf', 'Verlauf', len(verlauf) or None),
-    ]
+    ], organisation=getattr(request, 'organisation', None) or _akt_org())
     return render(request, 'fw/person_detail.html', {
         **basis, 'nav': 'personen', 'm': m, 'verlauf': verlauf,
         'vertrag_rows': vertrag_rows,
+        'person_faelle': person_faelle,
         'anzahl_aktive': len(aktive),
         'brutto_monat': sum((r['brutto'] for r in vertrag_rows if r['v'].status == 'aktiv'), Decimal('0.00')),
         'offene': offene, 'total_offen': total_offen, 'offene_vertraege': offene_vertraege,

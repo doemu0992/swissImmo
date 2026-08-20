@@ -48,7 +48,7 @@ WURZEL = pathlib.Path('core/templates')
 #: Bei ihnen sind die ALTEN Panel-Namen absichtlich verschwunden — sie werden
 #: deshalb aus der Ist-Prüfung genommen und stattdessen streng gegen den NEUEN
 #: Satz geprüft. Wächst diese Menge, schrumpft die Arbeitsliste von 4b.
-UMGESTELLT = {'mietverhaeltnis', 'schaden'}
+UMGESTELLT = {'mietverhaeltnis', 'schaden', 'person'}
 
 
 def panels(template, praefix):
@@ -220,6 +220,7 @@ class GerenderteSeiteTests(TestCase):
         return {
             'mietverhaeltnis': (f'/neu/vertraege/{self.a.vertrag.pk}/', 'vt'),
             'schaden': (f'/neu/schaeden/{self.a.schaden.pk}/', 'sc'),
+            'person': (f'/neu/personen/{self.a.mieter.pk}/', 'pd'),
         }
 
     def test_jede_umgestellte_seite_wird_auch_gerendert(self):
