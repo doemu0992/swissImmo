@@ -22,23 +22,33 @@
            präfixiert → keine Kollision mit Tailwind oder Bestand.
            Seiten werden Stück für Stück auf diese Klassen portiert.
            ============================================================ */
+        /* Palette nach mockups/konzept-v3 bis v6 (Phase 4b).
+           Der Bestand fuhr Indigo #4f46e5 auf Slate; das Konzept fuehrt Petrol
+           auf waermeren Blaugrautoenen. Radius 16 -> 10 px, weil die Prototypen
+           deutlich flachere Karten zeigen.
+
+           EINE ABWEICHUNG VOM PROTOTYP, bewusst: Dessen `--ds-faint` #7f959c
+           erreicht auf Weiss nur 3.14:1 und verfehlt WCAG AA. Die Prototypen
+           entstanden ohne Kontrastpruefung. Hier steht #5c757c (4.89:1) —
+           derselbe Petrolton, eine Stufe dunkler. Die Regel weiter unten haengt
+           text-slate-400/-300 an --ds-muted; das bleibt unveraendert. */
         :root{
-            --ds-bg:#f1f5f9;--ds-surface:#fff;--ds-surface-2:#f1f5f9;--ds-ink:#0f172a;--ds-muted:#475569;--ds-faint:#64748b;--ds-line:#e2e8f0;
-            --ds-brand:#4f46e5;--ds-brand-600:#4338ca;--ds-brand-soft:#eef2ff;
-            --ds-good:#16a34a;--ds-good-soft:#dcfce7;--ds-warn:#b45309;--ds-warn-soft:#fef3c7;--ds-crit:#dc2626;--ds-crit-soft:#fee2e2;--ds-info:#2563eb;--ds-info-soft:#dbeafe;
-            --ds-shadow-sm:0 1px 2px rgba(23,26,43,.06);--ds-shadow:0 1px 2px rgba(23,26,43,.05),0 6px 20px rgba(23,26,43,.06);
-            --ds-radius:16px;--ds-radius-sm:11px;--ds-pill:999px;
+            --ds-bg:#eff2f3;--ds-surface:#fff;--ds-surface-2:#f4f7f7;--ds-ink:#0e2227;--ds-muted:#4c6169;--ds-faint:#5c757c;--ds-line:#dde6e8;
+            --ds-brand:#0f6f6a;--ds-brand-600:#0b5450;--ds-brand-soft:#d9efed;
+            --ds-good:#166534;--ds-good-soft:#e0f2e5;--ds-warn:#a35a09;--ds-warn-soft:#fbeeda;--ds-crit:#b32133;--ds-crit-soft:#fbe6e9;--ds-info:#0b5c8f;--ds-info-soft:#e0eff8;
+            --ds-shadow-sm:0 1px 2px rgba(14,34,39,.06);--ds-shadow:0 1px 2px rgba(14,34,39,.05),0 6px 20px rgba(14,34,39,.05);
+            --ds-radius:10px;--ds-radius-sm:7px;--ds-pill:999px;
         }
         @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-            --ds-bg:#0e1020;--ds-surface:#171a2e;--ds-surface-2:#1e2138;--ds-ink:#e7e8f2;--ds-muted:#9aa0b8;--ds-faint:#6b7192;--ds-line:#262a44;
-            --ds-brand:#6366f1;--ds-brand-600:#818cf8;--ds-brand-soft:#20233d;
-            --ds-good:#34d399;--ds-good-soft:#12271f;--ds-warn:#fbbf24;--ds-warn-soft:#2a2113;--ds-crit:#f87171;--ds-crit-soft:#2b1618;--ds-info:#38bdf8;--ds-info-soft:#0e2430;
+            --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
+            --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
+            --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
             --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
         }}
         :root[data-theme="dark"]{
-            --ds-bg:#0e1020;--ds-surface:#171a2e;--ds-surface-2:#1e2138;--ds-ink:#e7e8f2;--ds-muted:#9aa0b8;--ds-faint:#6b7192;--ds-line:#262a44;
-            --ds-brand:#6366f1;--ds-brand-600:#818cf8;--ds-brand-soft:#20233d;
-            --ds-good:#34d399;--ds-good-soft:#12271f;--ds-warn:#fbbf24;--ds-warn-soft:#2a2113;--ds-crit:#f87171;--ds-crit-soft:#2b1618;--ds-info:#38bdf8;--ds-info-soft:#0e2430;
+            --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
+            --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
+            --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
             --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
         }
         .fw-num{font-variant-numeric:tabular-nums}
@@ -359,6 +369,11 @@
            Test core/tests/test_ds_tokens.py prueft das nach — eine frühere
            Fassung benutzte --ds-brand-100 und --ds-line-stark, die es nie
            gab, und machte die Regeln damit unwirksam. */
+                .fw-statuswahl{padding:5px 11px;border-radius:var(--ds-radius-sm);font-size:12px;
+            font-weight:600;color:var(--ds-muted);background:none;border:0;cursor:pointer}
+        .fw-statuswahl:hover{color:var(--ds-ink)}
+        .fw-statuswahl.an{background:var(--ds-surface);color:var(--ds-ink);box-shadow:var(--ds-shadow-sm)}
+        .fw-statuswahl.an.gut{background:var(--ds-good);color:#fff}
         .fw-aktenkopf{background:var(--ds-surface);border:1px solid var(--ds-line);
             border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);
             margin-bottom:16px;overflow:hidden}

@@ -30,29 +30,25 @@
             </div>
         </div>
         <div class="fw-akte-rechts">
-{% comment %} Statusumschalter. Beim Umbau auf den Aktenkopf (Phase 4b) war er ersatzlos
-   entfallen — die View `fw_vertrag_status` und ihre Route blieben bestehen,
-   aber kein Template rief sie mehr auf. Der Status steuert Sollstellung,
-   Mieterspiegel und Auswertungen; ohne diese Leiste liesse er sich in der
-   Oberflaeche nicht mehr aendern. `core/tests/test_vertrag.py` haelt das fest. {% endcomment %}
-<form method="post" action="/neu/vertraege/{{ v.id }}/status/" class="flex items-center bg-slate-100 rounded-lg p-0.5 gap-0.5"
-      onsubmit="return confirm('Vertragsstatus wirklich ändern? Der Status steuert Sollstellung, Mieterspiegel und Auswertungen.');">
-    {% csrf_token %}
-    <button name="status" value="entwurf" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'entwurf' %}bg-white text-slate-800 shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Entwurf</button>
-    <button name="status" value="aktiv" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'aktiv' %}bg-emerald-600 text-white shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Aktiv</button>
-    <button name="status" value="archiviert" class="px-3 py-1 rounded-md text-xs font-semibold {% if v.status == 'archiviert' or v.status == 'gekuendigt' %}bg-slate-600 text-white shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">Inaktiv</button>
-</form>
-<div class="flex flex-wrap items-center gap-2">
-            <a href="/neu/vertraege/{{ v.id }}/bearbeiten/" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors"><i class="fa-solid fa-pen-to-square mr-1"></i>Bearbeiten{% if v.status == 'entwurf' %} <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700">Entwurf</span>{% endif %}</a>
+            <!-- Status-Umschalter -->
+        <form method="post" action="/neu/vertraege/{{ v.id }}/status/" style="display:flex;align-items:center;background:var(--ds-surface-2);border-radius:var(--ds-radius-sm);padding:2px;gap:2px"
+              onsubmit="return confirm('Vertragsstatus wirklich ändern? Der Status steuert Sollstellung, Mieterspiegel und Auswertungen.');">
+            {% csrf_token %}
+            <button name="status" value="entwurf" class="fw-statuswahl{% if v.status == 'entwurf' %} an{% endif %}">Entwurf</button>
+            <button name="status" value="aktiv" class="fw-statuswahl{% if v.status == 'aktiv' %} an gut{% endif %}">Aktiv</button>
+            <button name="status" value="archiviert" class="fw-statuswahl{% if v.status == 'archiviert' or v.status == 'gekuendigt' %} an{% endif %}">Inaktiv</button>
+        </form>
+            <div class="flex flex-wrap items-center gap-2">
+            <a href="/neu/vertraege/{{ v.id }}/bearbeiten/" class="fw-btn" style="padding:6px 12px;font-size:12px"><i class="fa-solid fa-pen-to-square mr-1"></i>Bearbeiten{% if v.status == 'entwurf' %} <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700">Entwurf</span>{% endif %}</a>
             {% if v.status != 'gekuendigt' %}
-            <a href="/neu/vertraege/{{ v.id }}/kuendigen/" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 transition-colors"><i class="fa-solid fa-file-circle-xmark mr-1"></i>Kündigung erfassen</a>
+            <a href="/neu/vertraege/{{ v.id }}/kuendigen/" class="fw-btn" style="padding:6px 12px;font-size:12px;border-color:var(--ds-warn-soft);color:var(--ds-warn)"><i class="fa-solid fa-file-circle-xmark mr-1"></i>Kündigung erfassen</a>
             {% endif %}
             <div class="relative">
                 <button type="button" onclick="document.getElementById('vAktionen').classList.toggle('hidden'); event.stopPropagation();"
-                        class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+                        class="fw-btn" style="padding:6px 12px;font-size:12px">
                     <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
                 </button>
-                <div id="vAktionen" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
+                <div id="vAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
                     <a href="/neu/vertraege/{{ v.id }}/schlussabrechnung/" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-file-invoice-dollar text-indigo-500 w-4"></i>Schlussabrechnung</a>
                     <a href="/neu/vertraege/{{ v.id }}/abnahme/neu/" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-clipboard-check text-teal-500 w-4"></i>Wohnungsabnahme</a>
                     {% if kann_schreiben %}{# Erklärungen mit Rechtsfolgen — für «Lesend» ausgeblendet #}
