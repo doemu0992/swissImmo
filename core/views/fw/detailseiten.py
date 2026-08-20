@@ -1508,6 +1508,13 @@ def fw_vertrag_detail(request, pk):
     # die 257d-Frist + Track & Trace auch unter «Finanzen» direkt sichtbar ist.
     vertrag_fristen = [e for e in vertrag_pendenzen if e['p'].faellig_am]
 
+    # ---- Phase 4b: Was die Akte von selbst bemerken soll --------------
+    # Die Kennzahlenleiste und die Chips zeigen im Konzept KEINE Felder,
+    # sondern Zustaende. Alles hier stammt aus Feldern, die es laengst gibt —
+    # `mietzinspotenzial` etwa steht seit Langem im Modell und wurde auf der
+    # Vertragsakte nirgends abgefragt.
+    _kopf = _akte_kopfzahlen(v, total_offen, offene, vertrag_pendenzen)
+
     # Etappe 4a.5b: Reiter aus dem Aktenregister statt aus dieser View.
     # Die Panels in fw/vertrag_detail.html sind auf denselben Satz umbenannt —
     # beides muss gemeinsam wandern, sonst zeigt ein Reiter auf kein Panel und
@@ -1533,6 +1540,7 @@ def fw_vertrag_detail(request, pk):
         'rechnungs_rows': rechnungs_rows,
         'total_offen': total_offen,
         'anzahl_offen': len(offene),
+        **_kopf,
         'zahlungen': zahlungen,
         'anpassungen': anpassungen,
         'mietzins_komponenten': mietzins_komponenten,
@@ -1873,3 +1881,113 @@ def fw_schlussabrechnung(request, vertrag_id):
         'abnahmen': v.abnahmen.all(),
         'embed_base': ('fw/base_embed.html' if request.GET.get('embed') == '1' else None),
     })
+
+def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
+    """Kennzahlen, Chips und Hinweise der Vertragsakte.
+
+    Alles gerechnet, nichts neu gespeichert. Die Trennung von der View haelt
+    sie testbar und macht sichtbar, dass hier keine Abfrage dazukommt, die
+    nicht schon vorher lief.
+    """
+    from decimal import Decimal
+
+    from django.utils import timezone
+
+    brutto = (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0'))
+    heute = timezone.localdate()
+
+    # --- Saldo: Monat der aeltesten offenen Position und hoechste Mahnstufe --
+    aelteste = min((r for r in offene if getattr(r, 'faellig_am', None)),
+                   key=lambda r: r.faellig_am, default=None)
+    # `Mahnung` haengt direkt am Vertrag (FK `vertrag`), nicht ueber eine
+    # Rechnung. Die erste Fassung filterte auf `rechnung__vertrag` — ein Feld,
+    # das es nicht gibt. Django wirft dafuer FieldError, und ein blankes
+    # `except Exception` fing ihn ab: Die Stufe blieb IMMER 0, die Anzeige
+    # «Mahnstufe X» konnte nie erscheinen. Ein stummer except-Block ist in
+    # diesem Haus ohnehin verboten (Befund P6), deshalb faengt er jetzt nur
+    # noch den einen Fall, den es wirklich geben kann.
+    from finance.models import Mahnung
+    stufe = (Mahnung.objects.filter(vertrag=v)
+             .order_by('-stufe').values_list('stufe', flat=True).first() or 0)
+    monatsmieten = (total_offen / brutto) if brutto else Decimal('0')
+
+    # --- Kaution: Betrag und Herkunft in einer Zeile -------------------------
+    kaution_wert = f'CHF {v.kautions_betrag:,.2f}'.replace(',', "'") \
+        if v.kautions_betrag else 'keine'
+    if v.kautions_art == 'versicherung' and v.kautions_versicherer:
+        kaution_fuss = v.kautions_versicherer
+    elif v.kautions_konto:
+        kaution_fuss = f'Sperrkonto {v.kautions_konto[:8]}…'
+    else:
+        kaution_fuss = v.kautions_status_label
+    if v.kautions_betrag and brutto:
+        kaution_fuss += f' · {round(v.kautions_betrag / brutto, 1)} Monatsmieten'
+
+    # --- Naechste Frist: die frueheste offene, datierte Pendenz --------------
+    datiert = [e for e in pendenzen if e['p'].faellig_am]
+    naechste = min(datiert, key=lambda e: e['p'].faellig_am) if datiert else None
+
+    # --- Chips: gerechnete Zustaende, nicht das Statusfeld -------------------
+    chips = []
+    if v.status == 'gekuendigt' and v.ende:
+        chips.append(('crit', f'Gekündigt per {v.ende.strftime("%d.%m.%Y")}'))
+    elif v.status == 'aktiv':
+        chips.append(('good', 'Aktiv'))
+    elif v.status == 'entwurf':
+        chips.append(('warn', 'Entwurf'))
+    if monatsmieten >= 1:
+        _n = int(monatsmieten)
+        chips.append(('crit', f'{_n} Monatsmiete{"n" if _n >= 2 else ""} offen'))
+    elif total_offen:
+        chips.append(('warn', f'CHF {total_offen:,.2f}'.replace(',', "'") + ' offen'))
+    potenzial = v.mietzinspotenzial
+    if potenzial == 'decrease':
+        chips.append(('info', 'Senkungsanspruch offen'))
+    elif potenzial == 'increase':
+        chips.append(('info', 'Erhöhung möglich'))
+
+    # --- Hinweise: was die Akte bemerkt --------------------------------------
+    hinweise = []
+    if potenzial == 'decrease':
+        hinweise.append({
+            'art': 'info', 'ikon': 'fa-circle-info',
+            'titel': 'Offener Senkungsanspruch des Mieters',
+            'text': ('Der Referenzzinssatz ist seit der Festsetzung dieses '
+                     'Mietzinses gesunken. Ein Senkungsbegehren wäre begründet, '
+                     'solange Teuerung und Kostensteigerung es nicht aufwiegen.'),
+            'url': f'/neu/mietzins/{v.id}/anpassung/', 'knopf': 'Berechnung öffnen'})
+    elif potenzial == 'increase':
+        hinweise.append({
+            'art': 'info', 'ikon': 'fa-arrow-trend-up',
+            'titel': 'Erhöhung wäre begründbar',
+            'text': ('Referenzzins oder Teuerung liegen über der Basis dieses '
+                     'Mietzinses.'),
+            'url': f'/neu/mietzins/{v.id}/anpassung/', 'knopf': 'Berechnung öffnen'})
+    if v.kautions_art and v.kautions_art != 'keine' and not v.kautions_einbezahlt_am:
+        hinweise.append({
+            'art': 'warn', 'ikon': 'fa-shield-halved',
+            'titel': 'Kaution vereinbart, aber nicht bestätigt',
+            'text': ('Es ist eine Sicherheit vereinbart; Einzahlung oder '
+                     'Zertifikat sind nicht erfasst. Bis dahin fehlt der '
+                     'Nachweis nach Art. 257e OR.'),
+            'url': f'/neu/vertraege/{v.id}/#kaution', 'knopf': 'Erfassen'})
+    # KEIN Hinweis auf eine fehlende Referenzzins-Basis: `basis_referenzzinssatz`
+    # ist NOT NULL mit Vorgabewert aus `get_current_ref_zins`. Die Bedingung
+    # koennte nie zutreffen — ein Hinweis, der nie erscheint, ist toter Code.
+    # (Gefunden, weil der Test dazu mit IntegrityError abbrach.)
+
+    eigentuemer = getattr(getattr(v.einheit, 'liegenschaft', None), 'eigentuemer', None)
+    return {
+        'kopf_chips': chips,
+        'kopf_hinweise': hinweise,
+        'kopf_netto': v.netto_mietzins or Decimal('0'),
+        'kopf_nk': v.nebenkosten or Decimal('0'),
+        'kopf_saldo_monat': (aelteste.faellig_am.strftime('%B %Y')
+                             if aelteste is not None else ''),
+        'kopf_mahnstufe': stufe,
+        'kopf_kaution_wert': kaution_wert,
+        'kopf_kaution_fuss': kaution_fuss,
+        'kopf_frist': naechste,
+        'kopf_eigentuemer': eigentuemer,
+        'kopf_potenzial': potenzial,
+    }
