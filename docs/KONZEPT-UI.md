@@ -1,11 +1,15 @@
 # Konzept: Struktur und Oberfläche
 
-Stand 19.08.2026 · gilt ab Phase 4a · ersetzt keine bestehende Phasenvorgabe ausser der unten
+Stand 20.08.2026 · gilt ab Phase 4a · ersetzt keine bestehende Phasenvorgabe ausser der unten
 festgehaltenen Teilung von Phase 4.
 
-Dieses Dokument beschreibt, **wie swissImmo bedient wird** — nicht, wie es aussieht. Farben,
-Typografie und Komponenten folgen in Phase 4b. Die Prototypen unter `mockups/` sind
-absichtlich zurückhaltend gestaltet, damit die Anordnung beurteilt wird und nicht die Optik.
+Dieses Dokument beschreibt in den Abschnitten 1 bis 15, **wie swissImmo bedient wird**.
+Abschnitt 16 kam mit Phase 4b dazu und hält fest, **wie es aussieht** — Palette,
+Komponentenschicht und die Regel, dass der Aktenkopf gerechnete Zustände zeigt statt Felder.
+
+> Bis 20.08.2026 stand hier, Farben und Komponenten „folgen in Phase 4b". Sie waren zu dem
+> Zeitpunkt längst gebaut und durch `core/tests/test_palette.py` festgeschrieben, das seinerseits
+> auf dieses Dokument verwies. Nachgetragen, damit die Verweise wieder zusammenpassen.
 
 Zielkunde: **Verwaltung mit 2 bis 5 Personen**, 150 bis 800 Einheiten, mehrere
 Eigentümermandate, Buchhaltung im Haus. Alle Entwurfsentscheidungen sind an diesem Profil
@@ -71,6 +75,10 @@ Rolle. Gefiltert wird nach Zuständigkeit für Mandat oder Liegenschaft, plus Ve
 
 **G9 — Was fehlt, ist wichtiger als was da ist.** Eine Akte, die nur anzeigt, was erfasst
 wurde, spart keine Zeit. Eine, die merkt, was fehlt oder nicht zusammenpasst, schon.
+
+> Umgesetzt seit 4b.2 auf dem Mietverhältnis: `_akte_kopfzahlen()` in
+> `core/views/fw/detailseiten.py` rechnet Zustände statt Felder anzuzeigen (Abschnitt 16.3).
+> Die übrigen fünf Aktentypen führen G9 noch nicht.
 
 ---
 
@@ -409,7 +417,25 @@ Abodaten, ohne dass Aufrufstellen geändert werden.
 Vorgehen additiv: Die 235 bestehenden Views laufen unverändert weiter, während die Maschine
 daneben entsteht. Erst in 4a.6 wird umgehängt.
 
-### 13.3 Neue Abhängigkeiten
+### 13.3 Etappen 4b
+
+Anders als 4a war 4b nicht vorab in Etappen geschnitten — die Schritte entstanden aus dem
+Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
+
+| Nr | Inhalt | Stand |
+|---|---|---|
+| 4b.0 | Aktenkopf und Reiterleiste aus Tokens statt Tailwind-Utilities; Komponentenschicht in `base.html` | erledigt (`b0e3757`) |
+| 4b.1 | Konzeptpalette Petrol in `:root`, beide Dunkelblöcke; Wächter `test_palette.py` | erledigt (`ce92c88`) |
+| 4b.2 | Kennzahlen, Chips und Hinweise als **gerechnete Zustände** (`_akte_kopfzahlen`); Stammdaten in vier Gruppen | erledigt (`301e81b`) |
+| 4b.3 | Liegenschaft, Objekt, Person, Schaden auf denselben Aufbau | **offen** |
+| 4b.4 | Die 178 verbliebenen Tailwind-Farbklassen der Vertragsakte auf Komponenten | **offen** |
+
+Der Wächter für 4b.3 steht bereits: `faelle/test_reiter_panels.py::test_umstellung_erzeugt_nur_
+erreichbare_reiter` ist als `expectedFailure` markiert und nennt in seiner Meldung jedes
+fehlende Panel je Vorlage. Er ist damit die Arbeitsliste — und schlägt um, sobald 4b.3 fertig
+ist, weil Django einen unerwarteten Erfolg als Fehlschlag meldet.
+
+### 13.4 Neue Abhängigkeiten
 
 Keine erforderlich. DocuSeal (Signatur) und die bestehende OCR-Kette decken die
 Modulanforderungen ab. Sollte sich in 4a.3 zeigen, dass die Zuordnungsqualität ohne
@@ -420,8 +446,14 @@ umgesetzt.
 
 ## 14. Prototypen
 
-Unter `mockups/` liegen sieben klickbare HTML-Dateien. Sie sind Diskussionsgrundlage, kein
-Zielbild der Gestaltung.
+Unter `mockups/` liegen sieben klickbare HTML-Dateien. Sie sind Diskussionsgrundlage für
+Aufbau und Abläufe, kein Zielbild der Gestaltung.
+
+> **Eine Ausnahme, seit 4b.1.** Für die **Farben** gilt der Satz nicht mehr:
+> `core/tests/test_palette.py` pinnt die Palette aus `konzept-v3.html` fest und behandelt jede
+> Abweichung als Konzeptänderung. Bis 4b.1 stand hier ein Widerspruch — der Test nannte
+> `KONZEPT-UI.md` als Quelle, das Dokument führte aber gar keine Palette. Sie steht jetzt in
+> Abschnitt 16. Layout, Abstände und Wortlaut der Prototypen bleiben unverbindlich.
 
 | Datei | Inhalt |
 |---|---|
@@ -489,3 +521,91 @@ Die Zahlen altern. `core/views/fw/` wächst in Phase 4a additiv weiter (13.2: �
 unverändert weiter, während die Maschine daneben entsteht"), 173 Templates werden mehr. Wer
 sie im Text fortschreibt, ohne neu zu messen, baut denselben Fehler wieder ein. Sinnvoller ist,
 sie beim nächsten Etappenabschluss neu zu messen — der Messweg oben steht dafür da.
+
+---
+
+## 16. Gestaltung
+
+Nachgetragen am 20.08.2026. Bis dahin war die Gestaltung nur in den Prototypen und im Code
+belegt; `core/tests/test_palette.py` verwies auf dieses Dokument, das dazu nichts sagte.
+
+### 16.1 Palette
+
+Verbindlich, geprüft von `core/tests/test_palette.py`. Definiert in `core/templates/fw/base.html`
+unter `:root`, im `@media (prefers-color-scheme:dark)`-Block und unter `:root[data-theme="dark"]`.
+
+| Token | Hell | Dunkel | Rolle |
+|---|---|---|---|
+| `--ds-brand` | `#0f6f6a` | `#4fb3aa` | Petrol, Markenfarbe |
+| `--ds-brand-600` | `#0b5450` | `#6fcac2` | gedrückter Zustand |
+| `--ds-brand-soft` | `#d9efed` | `#0f2f2e` | Fläche hinter Markenfarbe |
+| `--ds-ink` | `#0e2227` | `#e4edee` | Fliesstext |
+| `--ds-muted` | `#4c6169` | `#a8c0c5` | Zweitrangiges |
+| `--ds-faint` | `#5c757c` | `#8ba4aa` | Beschriftungen |
+| `--ds-line` | `#dde6e8` | `#22404a` | Trennlinien |
+| `--ds-radius` / `-sm` | `10px` / `7px` | dieselben | Geometrie, im Dunkeln unverändert |
+
+Dazu `good` / `warn` / `crit` / `info`, jeweils mit `-soft`-Fläche.
+
+**Eine bewusste Abweichung vom Prototyp.** Dessen `--ds-faint` (`#7f959c`) erreicht auf Weiss
+nur **3.14:1** und verfehlt WCAG AA; die Prototypen entstanden ohne Kontrastprüfung. Hier steht
+`#5c757c` — derselbe Petrolton eine Stufe dunkler, **4.89:1**. Jeder andere Wert liegt ohnehin
+über AA; der knappste ist `--ds-warn` auf `--ds-warn-soft` mit **4.56:1**.
+
+Wer die Palette ändert, ändert das Konzept: Tabelle hier, Werte in `base.html` und Erwartung in
+`test_palette.py` gehören zusammen. Der Test rechnet den Kontrast selbst nach und hat dafür eine
+eigene Gegenprobe (`test_der_kontrastrechner_stimmt`).
+
+### 16.2 Komponentenschicht
+
+Alle Klassen `fw-`-präfixiert, alle Farben aus Tokens. `core/tests/test_ds_tokens.py` prüft, dass
+jedes benutzte `var(--ds-…)` definiert ist, dass kein Token tot herumsteht und dass **beide**
+Dunkelblöcke dieselben Farben führen.
+
+| Klasse | Zweck |
+|---|---|
+| `fw-aktenkopf` | Rahmen um Kopf, Kennzahlen und Reiter |
+| `fw-akte-oben` / `-bild` / `-typ` / `-pfad` / `-rechts` | Kopfzeile: Symbol, Typ, Titel, Pfad, Aktionen |
+| `fw-kzn` | Kennzahlenleiste, vier Spalten |
+| `fw-reiter` | Reiterleiste; aktiver Reiter trägt `hier` |
+| `fw-gruppe` / `fw-dz` / `fw-dl` / `fw-dv` | Leseansicht: Gruppentitel, Zeile, Bezeichnung, Wert |
+| `fw-aufklapp` | Erfassen in einer Leseansicht — zugeklappt bis gebraucht |
+| `fw-hinweis` | „Was auffällt", eingefärbt nach Dringlichkeit |
+| `fw-statuswahl` | Umschalter Entwurf · Aktiv · Inaktiv |
+
+**Der Pfad führt eine Angabe je Zeile** (`fw-pz`), Beschriftungen ausgerichtet. Als Kette mit
+`›` und `·` brach er bei langen Objektnamen an beliebiger Stelle um.
+
+### 16.3 Zustände statt Felder
+
+Die Umsetzung von **G9**. Der Aktenkopf zeigt nicht, was in der Datenbank steht, sondern was
+daraus folgt. Gerechnet in `_akte_kopfzahlen()`, geprüft von `faelle/test_akte_zustaende.py`.
+
+**Kennzahlen des Mietverhältnisses** — die vier aus Abschnitt 4:
+
+| Feld | Zeigt | Fusszeile |
+|---|---|---|
+| Bruttomiete | netto + NK | die Aufteilung |
+| Saldo Mieterkonto | offener Betrag | Monat der ältesten offenen Position, Mahnstufe |
+| Kaution | Betrag oder „keine" | Sperrkonto / Versicherer, Anzahl Monatsmieten |
+| Nächste Frist | Datum | Titel der Frist, **ungekürzt** |
+
+**Chips** sind gerechnet, nicht abgeschrieben: „2 Monatsmieten offen" statt des Statusfelds,
+„Senkungsanspruch offen" aus `Mietvertrag.mietzinspotenzial`.
+
+**Hinweise** — Regel: *jeder Hinweis führt zu einer Handlung.* Ein Hinweis ohne Ziel ist eine
+Beschwerde; `test_jeder_hinweis_fuehrt_zu_einer_handlung` hält das fest. Heute zwei:
+offener Senkungsanspruch, vereinbarte aber unbestätigte Kaution.
+
+Ein dritter („Referenzzins-Basis fehlt") war entworfen und wurde beim Bauen entfernt:
+`basis_referenzzinssatz` ist NOT NULL mit Vorgabewert, die Bedingung konnte nie zutreffen.
+
+### 16.4 Was hier bewusst nicht steht
+
+Das Erscheinungsbild ausserhalb des Aktenkopfs. **131 der 172 Vorlagen** tragen fest
+verdrahtete Tailwind-Indigo-Klassen — **1412 Stellen**, gemessen am 20.08.2026 mit
+`grep -ro 'indigo-[0-9]*' core/templates/ | wc -l`. (Eine erste Angabe „rund 950" zählte nur
+sieben ausgewählte Klassennamen und war deshalb zu niedrig.) Seitenleiste, Topbar und Favicon sind
+weiter Indigo. Die Palette wirkt nur dort, wo Tokens benutzt werden — die Anwendung ist
+zweifarbig, bis 4b.4 und die Folgeetappen das auflösen. Der Weg dorthin ist offen: Klassen
+schrittweise auf Tokens umstellen, oder Tailwind eine Petrol-Palette unterschieben.

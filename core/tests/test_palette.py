@@ -129,3 +129,50 @@ class PaletteTests(TestCase):
         self.assertAlmostEqual(kontrast('#000000', '#ffffff'), 21, places=1)
         self.assertAlmostEqual(kontrast('#ffffff', '#ffffff'), 1, places=1)
         self.assertLess(kontrast('#7f959c', '#ffffff'), MINDESTKONTRAST)
+
+
+class KonzeptTests(TestCase):
+    """Das Konzept ist die Quelle — also muss es auch gelesen werden.
+
+    WARUM
+
+    `KONZEPT` oben ist abgeschrieben aus `mockups/konzept-v3.html`, und der
+    Docstring dieser Datei sagt, wer die Werte aendert, muesse
+    `docs/KONZEPT-UI.md` mitziehen. Bis zum 20.08.2026 fuehrte das Dokument
+    aber ueberhaupt keine Palette: Der Test verwies auf eine Quelle, die
+    nichts sagte, und niemand haette es gemerkt.
+
+    Seit Abschnitt 16.1 steht die Tabelle dort. Dieser Test liest sie und
+    vergleicht sie mit `base.html` — damit die Zusage «wer die Palette
+    aendert, aendert das Konzept» geprueft ist statt nur behauptet.
+    """
+
+    DOKUMENT = pathlib.Path('docs/KONZEPT-UI.md')
+    ZEILE = re.compile(r'\| `(--ds-[a-z0-9-]+)` \| `(#[0-9a-f]{6})` \| `(#[0-9a-f]{6})` \|')
+
+    def _tabelle(self):
+        return self.ZEILE.findall(self.DOKUMENT.read_text(encoding='utf-8'))
+
+    def test_das_konzept_fuehrt_ueberhaupt_eine_palette(self):
+        """Ohne diese Pruefung bestuende der Test unten auf einer leeren Liste."""
+        self.assertGreaterEqual(
+            len(self._tabelle()), 5,
+            'In KONZEPT-UI.md wurde keine Palettentabelle gefunden — Abschnitt '
+            '16.1 umbenannt oder das Format geaendert?')
+
+    def test_konzept_und_base_html_stimmen_ueberein(self):
+        hell, dunkel = _block('hell'), _block('dunkel')
+        for token, soll_hell, soll_dunkel in self._tabelle():
+            with self.subTest(token=token, modus='hell'):
+                self.assertEqual(hell.get(token, '').strip().lower(), soll_hell)
+            with self.subTest(token=token, modus='dunkel'):
+                self.assertEqual(dunkel.get(token, '').strip().lower(), soll_dunkel)
+
+    def test_die_dokumentierte_abweichung_steht_auch_im_konzept(self):
+        """Die eine Stelle, an der bewusst vom Prototyp abgewichen wird."""
+        text = self.DOKUMENT.read_text(encoding='utf-8')
+        self.assertIn('#7f959c', text,
+                      'Der Prototypwert fehlt — dann ist nicht nachvollziehbar, '
+                      'wovon abgewichen wurde.')
+        self.assertIn('3.14', text,
+                      'Der gemessene Kontrast des Prototypwerts fehlt.')
