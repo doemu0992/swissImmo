@@ -125,6 +125,74 @@ class HinweisTests(TestCase):
                     self.assertTrue(h['url'] and h['knopf'])
 
 
+class LiegenschaftsKopfTests(TestCase):
+    """Dieselbe Regel fuer die Liegenschaftsakte (Etappe 4b.3).
+
+    Der Waechter oben deckte nur die Vertragsakte ab. Als die Liegenschaft am
+    20.08.2026 ihren Aktenkopf bekam, blieb eine Gegenprobe, die einem Hinweis
+    das Ziel wegnahm, deshalb gruen — die Regel aus KONZEPT-UI.md 16.3 galt
+    formal, wurde fuer den neuen Typ aber nirgends geprueft.
+
+    Die beiden Koepfe fuehren jetzt dieselben Schluessel (`url` / `knopf`).
+    Vorher hiessen sie in der Liegenschaft `ziel` / `ziel_text` — zwei Namen
+    fuer dieselbe Sache, und ein Waechter, der beide abdeckt, waere gar nicht
+    schreibbar gewesen.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('L', '8000', 'Zürich')
+
+    def _kopf(self):
+        from core.views.fw.detailseiten import _liegenschaft_kopf
+        lg = self.a.liegenschaft
+        # Ein Zustand, der sicher einen Hinweis erzeugt: kein Verkehrswert
+        # erfasst → Rendite nicht berechenbar.
+        return _liegenschaft_kopf(lg, gesamt=1, vermietet=1,
+                                  soll_monat=Decimal('1700'), wartungsfristen=[],
+                                  tickets=[], rendite={'bruttorendite': None})
+
+    def test_jeder_hinweis_fuehrt_zu_einer_handlung(self):
+        hinweise = self._kopf()['lg_hinweise']
+        self.assertTrue(hinweise, 'Ohne Verkehrswert muss ein Hinweis stehen.')
+        for h in hinweise:
+            with self.subTest(titel=h['titel']):
+                self.assertTrue(h.get('url') and h.get('knopf'),
+                                f'«{h["titel"]}» nennt kein Ziel — das ist eine '
+                                f'Beschwerde, keine Handlung.')
+
+    def test_beide_aktenkoepfe_fuehren_dieselben_schluessel(self):
+        """Sonst deckt der Waechter oben den einen Typ ab und den anderen nicht."""
+        with mandant(self.a.organisation):
+            v = self.a.vertrag
+            v.kautions_art = 'sperrkonto'
+            v.kautions_betrag = Decimal('4500')
+            v.kautions_einbezahlt_am = None
+            v.save()
+            vertrag_hinweise = _kopf(v)['kopf_hinweise']
+        self.assertTrue(vertrag_hinweise)
+        pflicht = {'titel', 'url', 'knopf'}
+        for h in list(vertrag_hinweise) + list(self._kopf()['lg_hinweise']):
+            with self.subTest(titel=h['titel']):
+                self.assertTrue(pflicht <= set(h),
+                                f'{sorted(pflicht - set(h))} fehlen in «{h["titel"]}».')
+
+    def test_der_chip_ist_gerechnet_nicht_abgeschrieben(self):
+        """G9: Der Kopf zeigt, was folgt — nicht, was in der Spalte steht."""
+        kopf = _liegenschaft_kopf_leerstand(self.a.liegenschaft)
+        texte = [c['text'] for c in kopf['lg_chips']]
+        self.assertIn('2 von 5 leer', texte)
+        self.assertEqual(kopf['lg_quote'], 60)
+
+
+def _liegenschaft_kopf_leerstand(lg):
+    from core.views.fw.detailseiten import _liegenschaft_kopf
+    return _liegenschaft_kopf(lg, gesamt=5, vermietet=3, soll_monat=Decimal('5100'),
+                              wartungsfristen=[], tickets=[],
+                              rendite={'bruttorendite': 3.2, 'wert': 1000000,
+                                       'wert_quelle': 'verkehrswert'})
+
+
 class KennzahlTests(TestCase):
     @classmethod
     def setUpTestData(cls):

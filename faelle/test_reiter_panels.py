@@ -48,7 +48,7 @@ WURZEL = pathlib.Path('core/templates')
 #: Bei ihnen sind die ALTEN Panel-Namen absichtlich verschwunden — sie werden
 #: deshalb aus der Ist-Prüfung genommen und stattdessen streng gegen den NEUEN
 #: Satz geprüft. Wächst diese Menge, schrumpft die Arbeitsliste von 4b.
-UMGESTELLT = {'mietverhaeltnis', 'schaden', 'person'}
+UMGESTELLT = {'mietverhaeltnis', 'schaden', 'person', 'liegenschaft'}
 
 
 def panels(template, praefix):
@@ -221,6 +221,7 @@ class GerenderteSeiteTests(TestCase):
             'mietverhaeltnis': (f'/neu/vertraege/{self.a.vertrag.pk}/', 'vt'),
             'schaden': (f'/neu/schaeden/{self.a.schaden.pk}/', 'sc'),
             'person': (f'/neu/personen/{self.a.mieter.pk}/', 'pd'),
+            'liegenschaft': (f'/neu/liegenschaften/{self.a.liegenschaft.pk}/', 'lg'),
         }
 
     def test_jede_umgestellte_seite_wird_auch_gerendert(self):
@@ -298,7 +299,24 @@ class AktenkopfTests(TestCase):
             'mietverhaeltnis': f'/neu/vertraege/{self.a.vertrag.pk}/',
             'schaden': f'/neu/schaeden/{self.a.schaden.pk}/',
             'person': f'/neu/personen/{self.a.mieter.pk}/',
+            'liegenschaft': f'/neu/liegenschaften/{self.a.liegenschaft.pk}/',
         }
+
+    def test_jede_umgestellte_akte_wird_hier_geprueft(self):
+        """Gegenprobe gegen die eigene Reichweite.
+
+        Diese Liste stand als zweite, unabhaengige Aufzaehlung neben der in
+        `GerenderteSeiteTests` — und ging beim Umbau der Liegenschaftsakte
+        prompt vergessen. Die Folge waere gewesen: Ein Aktentyp gilt als
+        umgestellt, sein Kopf wird nie geprueft, und eine Gegenprobe, die den
+        Kopf komplett entfernt, bleibt gruen. Genau so ist es passiert (Lauf
+        vom 20.08.2026, Mutation G5).
+        """
+        fehlend = sorted(UMGESTELLT - set(self._seiten()))
+        self.assertEqual(
+            fehlend, [],
+            f'Diese Typen gelten als umgestellt, ihr Aktenkopf wird hier aber '
+            f'nie geprueft: {", ".join(fehlend)}')
 
     def _html(self, adresse):
         from django.test import Client

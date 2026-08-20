@@ -4,163 +4,131 @@
 
 {% block content %}
 
-<!-- Breadcrumb -->
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5">
-    <a href="/neu/liegenschaften/{{ lg_query }}" class="hover:text-indigo-600">Liegenschaften</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <span class="text-slate-600 font-medium">{{ lg.strasse }}</span>
+<nav class="fw-akte-pfad" style="margin-bottom:10px">
+    <a href="/neu/liegenschaften/{{ lg_query }}">Liegenschaften</a>
+    <i class="fa-solid fa-chevron-right" style="font-size:9px"></i>
+    <b>{{ lg.strasse }}</b>
 </nav>
 
-<!-- Hero -->
-<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-    <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-lg shadow-indigo-600/25">
-            <i class="fa-solid fa-building"></i>
-        </div>
+<div class="fw-aktenkopf">
+    <div class="fw-akte-oben">
+        <div class="fw-akte-bild"><i class="fa-solid fa-building"></i></div>
         <div>
-            <h1 class="text-2xl font-extrabold text-slate-900">{{ lg.strasse }}</h1>
-            <p class="text-sm text-slate-500">{{ lg.plz }} {{ lg.ort }}{% if lg.baujahr %} · Baujahr {{ lg.baujahr }}{% endif %}{% if lg.kanton %} · {{ lg.kanton }}{% endif %}</p>
-        </div>
-    </div>
-    <div class="flex flex-wrap items-center gap-2">
-        <a href="/neu/liegenschaften/{{ lg.id }}/bearbeiten/" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
-            <i class="fa-solid fa-pen text-xs mr-1"></i>Bearbeiten
-        </a>
-        <div class="relative">
-            <button type="button" onclick="document.getElementById('lAktionen').classList.toggle('hidden'); event.stopPropagation();"
-                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
-                <i class="fa-solid fa-ellipsis mr-1"></i>Mehr
-            </button>
-            <div id="lAktionen" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
-                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/gwr-import/">
-                    {% csrf_token %}
-                    <button title="EGID ermitteln & Objekte aus dem GWR importieren" class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-cloud-arrow-down w-4"></i>GWR-Import (Objekte)</button>
-                </form>
-                <div class="my-1 border-t border-slate-100"></div>
-                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/loeschen/"
-                      onsubmit="return confirm('Liegenschaft {{ lg.strasse|escapejs }} inkl. aller Objekte wirklich löschen? Dies kann nicht rückgängig gemacht werden.');">
-                    {% csrf_token %}
-                    <button class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50"><i class="fa-solid fa-trash w-4"></i>Liegenschaft löschen</button>
-                </form>
+            <div class="fw-akte-typ">Liegenschaft · {{ lg_nummer }}</div>
+            <h1>{{ lg.strasse }}</h1>
+            {% comment %} Der Pfad fuehrt EINE Angabe je Zeile (Konzept 16.2).
+               Als Kette mit «›» brach er bei langen Strassen- und Mandatsnamen
+               an beliebiger Stelle um. {% endcomment %}
+            <div class="fw-akte-pfad">
+                {% if lg.eigentuemer %}
+                <div class="fw-pz"><span>Mandat</span><b><a href="/neu/mandate/{{ lg.eigentuemer_id }}/" class="fw-link">{{ lg.eigentuemer.firma_oder_name }}</a></b></div>
+                {% endif %}
+                <div class="fw-pz"><span>Adresse</span><b>{{ lg.plz }} {{ lg.ort }}{% if lg.kanton %} · {{ lg.kanton }}{% endif %}</b></div>
+                {% if lg.baujahr %}<div class="fw-pz"><span>Baujahr</span><b>{{ lg.baujahr }}{% if lg.egid %} · EGID {{ lg.egid }}{% endif %}</b></div>
+                {% elif lg.egid %}<div class="fw-pz"><span>EGID</span><b>{{ lg.egid }}</b></div>{% endif %}
+            </div>
+            <div class="flex flex-wrap gap-1.5 mt-2.5">
+                {% for c in lg_chips %}<span class="fw-chip {{ c.ton }} fw-dot">{{ c.text }}</span>{% endfor %}
             </div>
         </div>
-        <script>
-          document.addEventListener('click', function (ev) {
-            var d = document.getElementById('lAktionen');
-            if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
-          });
-        </script>
-    </div>
-</div>
-
-<!-- KPI-Reihe -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold text-indigo-600">{{ total_einheiten }}</div>
-        <div class="text-sm text-slate-500">Objekte</div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold text-emerald-600">{{ vermietet }}</div>
-        <div class="text-sm text-slate-500">Vermietet</div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold {% if leerstand %}text-amber-600{% else %}text-slate-800{% endif %}">{{ leerstand }}</div>
-        <div class="text-sm text-slate-500">Leerstand</div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold text-slate-800">CHF {{ soll_monat|chf }}</div>
-        <div class="text-sm text-slate-500">Soll / Monat</div>
-    </div>
-</div>
-
-<!-- Schnellzugriff auf Berichte dieser Liegenschaft -->
-<div class="flex flex-wrap gap-2 mt-4">
-    <a href="/neu/mieterspiegel/?lg={{ lg.id }}" class="text-xs font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-3 py-2"><i class="fa-solid fa-table-list mr-1.5"></i>Mieterspiegel</a>
-    {% if lg.eigentuemer_id %}
-    <a href="/neu/mandate/{{ lg.eigentuemer_id }}/abrechnung/" class="text-xs font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-3 py-2"><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i>Eigentümerabrechnung</a>
-    <a href="/neu/mandate/{{ lg.eigentuemer_id }}/kontokorrent/" class="text-xs font-semibold text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-lg px-3 py-2"><i class="fa-solid fa-scale-balanced mr-1.5"></i>Kontokorrent</a>
-    {% endif %}
-    <a href="/neu/hypotheken/" class="text-xs font-semibold text-slate-600 border border-slate-200 hover:bg-slate-100 rounded-lg px-3 py-2"><i class="fa-solid fa-landmark mr-1.5"></i>Hypotheken</a>
-</div>
-
-{% include 'fw/_detail_tabs.html' with gruppe='lg' tabs=tab_liste %}
-
-<!-- ===== TAB: OBJEKTE ===== -->
-<div data-panel="lg" id="lg-objekte">
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full min-w-max text-sm">
-                <thead>
-                <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                    <th class="px-5 py-3 font-semibold">Objekt</th>
-                    <th class="px-5 py-3 font-semibold">Typ</th>
-                    <th class="px-5 py-3 font-semibold text-center">Fläche</th>
-                    <th class="px-5 py-3 font-semibold">Status</th>
-                    <th class="px-5 py-3 font-semibold">Mieter</th>
-                    <th class="px-5 py-3"></th>
-                </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-50">
-                {% for row in einheiten_rows %}
-                <tr class="hover:bg-slate-50/60 cursor-pointer" onclick="window.location='/neu/objekte/{{ row.einheit.id }}/{{ lg_query }}'">
-                    <td class="px-5 py-3"><a href="/neu/objekte/{{ row.einheit.id }}/{{ lg_query }}" class="font-semibold text-slate-900" onclick="event.stopPropagation()">{{ row.einheit.bezeichnung }}{% if row.einheit.etage %} <span class="text-xs text-slate-400 font-normal">· {{ row.einheit.etage }}</span>{% endif %}</a></td>
-                    <td class="px-5 py-3 text-slate-600">{{ row.einheit.get_typ_display }}</td>
-                    <td class="px-5 py-3 text-center text-slate-600">{% if row.einheit.flaeche_m2 %}{{ row.einheit.flaeche_m2|floatformat:0 }} m²{% else %}—{% endif %}</td>
-                    <td class="px-5 py-3">
-                        {% if row.vertrag %}<span class="fw-chip bg-emerald-50 text-emerald-700">● Vermietet</span>
-                        {% else %}<span class="fw-chip bg-amber-50 text-amber-700">● Leerstand</span>{% endif %}
-                    </td>
-                    <td class="px-5 py-3 text-slate-600">{% if row.vertrag %}{{ row.vertrag.mieter.display_name }}{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
-                    <td class="px-5 py-3 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="6" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Objekte erfasst.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- ===== TAB: FINANZEN ===== -->
-<div data-panel="lg" id="lg-finanzen" class="hidden">
-    <!-- Rendite-Cockpit -->
-    <div class="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl p-5 mb-4 text-white">
-        <div class="flex items-start justify-between flex-wrap gap-3">
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1">
-                <div>
-                    <div class="text-2xl font-bold">CHF {{ rendite.jahres_netto|chf:0 }}</div>
-                    <div class="text-xs text-indigo-100">Soll-Nettomiete / Jahr</div>
-                </div>
-                <div>
-                    <div class="text-2xl font-bold">{% if rendite.bruttorendite is not None %}{{ rendite.bruttorendite|floatformat:2 }}%{% else %}—{% endif %}</div>
-                    <div class="text-xs text-indigo-100">Bruttorendite</div>
-                </div>
-                <div>
-                    <div class="text-2xl font-bold">{% if rendite.nettorendite is not None %}{{ rendite.nettorendite|floatformat:2 }}%{% else %}—{% endif %}</div>
-                    <div class="text-xs text-indigo-100">Nettorendite (12 Mt.)</div>
-                </div>
-                <div>
-                    <div class="text-2xl font-bold">{% if rendite.wert %}CHF {{ rendite.wert|chf:0 }}{% else %}—{% endif %}</div>
-                    <div class="text-xs text-indigo-100">{% if rendite.wert_quelle == 'verkehrswert' %}Verkehrswert{% elif rendite.wert_quelle == 'anlagekosten' %}Anlagekosten{% else %}Wert fehlt{% endif %}</div>
+        <div class="fw-akte-rechts">
+            <a href="/neu/liegenschaften/{{ lg.id }}/bearbeiten/" class="fw-btn"><i class="fa-solid fa-pen"></i>Bearbeiten</a>
+            <div class="relative">
+                <button type="button" onclick="document.getElementById('lAktionen').classList.toggle('hidden'); event.stopPropagation();"
+                        class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
+                <div id="lAktionen" class="hidden absolute right-0 mt-1.5 w-64 fw-card" style="margin-bottom:0;padding:6px 0;z-index:30">
+                    <a href="/neu/mieterspiegel/?lg={{ lg.id }}" class="fw-menuzeile"><i class="fa-solid fa-table-list w-4"></i>Mieterspiegel</a>
+                    {% if lg.eigentuemer_id %}
+                    <a href="/neu/mandate/{{ lg.eigentuemer_id }}/abrechnung/" class="fw-menuzeile"><i class="fa-solid fa-file-invoice-dollar w-4"></i>Eigentümerabrechnung</a>
+                    <a href="/neu/mandate/{{ lg.eigentuemer_id }}/kontokorrent/" class="fw-menuzeile"><i class="fa-solid fa-scale-balanced w-4"></i>Kontokorrent</a>
+                    {% endif %}
+                    <a href="/neu/hypotheken/" class="fw-menuzeile"><i class="fa-solid fa-landmark w-4"></i>Hypotheken</a>
+                    <div class="fw-menutrenner"></div>
+                    <form method="post" action="/neu/liegenschaften/{{ lg.id }}/gwr-import/">
+                        {% csrf_token %}
+                        <button title="EGID ermitteln & Objekte aus dem GWR importieren" class="fw-menuzeile"><i class="fa-solid fa-cloud-arrow-down w-4"></i>GWR-Import (Objekte)</button>
+                    </form>
+                    <div class="fw-menutrenner"></div>
+                    <form method="post" action="/neu/liegenschaften/{{ lg.id }}/loeschen/"
+                          onsubmit="return confirm('Liegenschaft {{ lg.strasse|escapejs }} inkl. aller Objekte wirklich löschen? Dies kann nicht rückgängig gemacht werden.');">
+                        {% csrf_token %}
+                        <button class="fw-menuzeile crit"><i class="fa-solid fa-trash w-4"></i>Liegenschaft löschen</button>
+                    </form>
                 </div>
             </div>
-        </div>
-        {% if rendite.bruttorendite is None %}
-        <p class="text-xs text-indigo-100 mt-3"><i class="fa-solid fa-circle-info mr-1"></i>Für die Rendite bitte den <b>Verkehrswert</b> (oder Anlagekosten) in den Stammdaten erfassen — der Versicherungswert taugt nicht als Nenner.</p>
-        {% endif %}
-        <div class="flex flex-wrap gap-2 mt-4">
-            <a href="/neu/liegenschaften/{{ lg.id }}/betriebsrechnung/" class="bg-white/15 hover:bg-white/25 text-white text-xs font-semibold px-3 py-2 rounded-lg"><i class="fa-solid fa-file-invoice mr-1.5"></i>Betriebsrechnung (PDF)</a>
-            <a href="/neu/berichte/leerstand-verlauf/" class="bg-white/15 hover:bg-white/25 text-white text-xs font-semibold px-3 py-2 rounded-lg"><i class="fa-solid fa-chart-column mr-1.5"></i>Leerstands-Verlauf</a>
+            <script>
+              document.addEventListener('click', function (ev) {
+                var d = document.getElementById('lAktionen');
+                if (d && !d.classList.contains('hidden') && !d.contains(ev.target)) d.classList.add('hidden');
+              });
+            </script>
         </div>
     </div>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 items-start">
+    {% comment %} Ende fw-akte-oben — ohne dieses schliessende div sitzt die
+       Kennzahlenleiste INNERHALB des Kopfblocks statt darunter. {% endcomment %}
+    <div class="fw-kzn">
+        <div><div class="fw-l">Vermietung</div>
+            <div class="fw-w{% if leerstand %} warn{% else %} good{% endif %}">{{ vermietet }} / {{ total_einheiten }}</div>
+            <div class="fw-f">{% if lg_quote is not None %}{{ lg_quote }} % belegt{% else %}keine Objekte erfasst{% endif %}</div></div>
+        <div><div class="fw-l">Soll / Monat</div>
+            <div class="fw-w">CHF {{ soll_monat|chf }}</div>
+            <div class="fw-f">brutto aus aktiven Verträgen</div></div>
+        <div><div class="fw-l">Bruttorendite</div>
+            <div class="fw-w">{% if rendite.bruttorendite is not None %}{{ rendite.bruttorendite|floatformat:2 }} %{% else %}—{% endif %}</div>
+            <div class="fw-f fw-lang">{% if rendite.bruttorendite is not None %}auf {% if rendite.wert_quelle == 'verkehrswert' %}Verkehrswert{% else %}Anlagekosten{% endif %} CHF {{ rendite.wert|chf:0 }}{% else %}Verkehrswert fehlt{% endif %}</div></div>
+        <div><div class="fw-l">Nächste Frist</div>
+            <div class="fw-w{% if lg_naechste_frist.ueberfaellig %} crit{% elif lg_naechste_frist.faellig_bald %} warn{% endif %}">{% if lg_naechste_frist %}{{ lg_naechste_frist.wf.naechste_faelligkeit|date:"d.m.Y" }}{% else %}—{% endif %}</div>
+            {% comment %} Titel UNGEKUERZT (Konzept 16.3). Ein `truncatechars`
+               schnitt hier frueher mitten im Namen ab; die CSS-Klasse
+               `fw-lang` bricht stattdessen auf zwei Zeilen um. {% endcomment %}
+            <div class="fw-f fw-lang" title="{% if lg_naechste_frist %}{{ lg_naechste_frist.wf.bezeichnung }}{% endif %}">{% if lg_naechste_frist %}{{ lg_naechste_frist.wf.bezeichnung }}{% else %}keine Frist erfasst{% endif %}</div></div>
+    </div>
+    {% include 'fw/_detail_tabs.html' with gruppe='lg' tabs=tab_liste %}
+</div>
+
+{% if lg_hinweise %}
+<div class="fw-card">
+    {% for h in lg_hinweise %}
+    <div class="fw-hinweis {{ h.ton }}">
+        <span class="fw-hi"><i class="fa-solid {{ h.symbol }}"></i></span>
+        <div class="fw-ht"><b>{{ h.titel }}</b>{{ h.text }}
+            <div class="mt-1.5"><a href="{{ h.url }}" class="fw-link">{{ h.knopf }} →</a></div></div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% comment %} Reiterinhalte nach dem Aktenregister (faelle/akten.py), Etappe
+   4b.3+4b.4. Die frueheren sieben Reiter fallen auf sechs:
+
+     objekte   → einheiten     technik   → stammdaten
+     finanzen  → finanzen      unterhalt → chronik
+     dokumente → dokumente     fristen   ┐
+                               schaeden  ┘→ faelle
+
+   `unterhalt` fiel bis 4b.3 auf `stammdaten`. Das war falsch: Unterhalt sind
+   datierte Ereignisse mit Kosten — «was geschehen ist», nicht «was das Objekt
+   ist». Begruendung in faelle/akten.py. {% endcomment %}
+
+<!-- ===== REITER: STAMMDATEN (Gebaeude, Werte, Technik, Kontakte) ===== -->
+<div data-panel="lg" id="lg-stammdaten">
+    <div class="fw-card">
+        <div class="fw-hinweis info">
+            <span class="fw-hi"><i class="fa-solid fa-circle-info"></i></span>
+            <div class="fw-ht"><b>Die Liegenschaft ist das Gebäude, nicht das Mietverhältnis</b>
+                Mietzins, Kaution und Nebenkostenabrechnung hängen am einzelnen Vertrag.
+                Hier steht, was für das ganze Haus gilt: Register, Bausubstanz, Werte,
+                Anlagen und wer im Notfall kommt.</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start mb-4">
         {% if lg.eigentuemer or lg.egid or lg.kataster_nummer %}
         <div class="fw-card fw-nomb">
             <div class="fw-h"><span class="fw-ic i"><i class="fa-solid fa-landmark"></i></span><span class="fw-t">Eigentum &amp; Register</span></div>
             <div class="fw-cbody"><dl>
                 {% if lg.eigentuemer %}<div class="fw-kv"><dt>Eigentümer</dt><dd>{{ lg.eigentuemer.firma_oder_name }}</dd></div>{% endif %}
-                {% if lg.egid %}<div class="fw-kv"><dt>EGID</dt><dd>{{ lg.egid }}</dd></div>{% endif %}
+                {% if lg.egid %}<div class="fw-kv"><dt>EGID</dt><dd class="mono">{{ lg.egid }}</dd></div>{% endif %}
                 {% if lg.kataster_nummer %}<div class="fw-kv"><dt>Kataster-Nr.</dt><dd>{{ lg.kataster_nummer }}</dd></div>{% endif %}
             </dl></div>
         </div>
@@ -174,6 +142,7 @@
                 {% if lg.heizsystem %}<div class="fw-kv"><dt>Heizsystem</dt><dd>{{ lg.get_heizsystem_display }}</dd></div>{% endif %}
                 {% if lg.warmwasser %}<div class="fw-kv"><dt>Warmwasser</dt><dd>{{ lg.get_warmwasser_display }}</dd></div>{% endif %}
                 {% if lg.geak_klasse or lg.geak_klasse_gesamt %}<div class="fw-kv"><dt>GEAK</dt><dd>{% if lg.geak_klasse %}Hülle {{ lg.geak_klasse }}{% endif %}{% if lg.geak_klasse_gesamt %} · Gesamt {{ lg.geak_klasse_gesamt }}{% endif %}</dd></div>{% endif %}
+                {% if lg.hkvo_aktiv %}<div class="fw-kv"><dt>Heizkosten</dt><dd>verbrauchsabhängig (HKVO)<small>Grundkosten-Anteil {{ lg.hkvo_grundkosten_prozent }} %</small></dd></div>{% endif %}
             </dl></div>
         </div>
         {% endif %}
@@ -183,7 +152,7 @@
             <div class="fw-cbody"><dl>
                 {% if lg.verkehrswert %}<div class="fw-kv"><dt>Verkehrswert</dt><dd>CHF {{ lg.verkehrswert|chf:0 }}</dd></div>{% endif %}
                 {% if lg.anlagekosten %}<div class="fw-kv"><dt>Anlagekosten</dt><dd>CHF {{ lg.anlagekosten|chf:0 }}</dd></div>{% endif %}
-                {% if lg.versicherungswert %}<div class="fw-kv"><dt>Versicherungswert</dt><dd>CHF {{ lg.versicherungswert|chf:0 }}</dd></div>{% endif %}
+                {% if lg.versicherungswert %}<div class="fw-kv"><dt>Versicherungswert</dt><dd>CHF {{ lg.versicherungswert|chf:0 }}<small>bemisst den Wiederaufbau — nicht als Renditenenner geeignet</small></dd></div>{% endif %}
             </dl></div>
         </div>
         {% endif %}
@@ -202,402 +171,478 @@
                 {% if lg.hauswart_name %}<div class="fw-kv"><dt>Hauswart</dt><dd>{{ lg.hauswart_name }}{% if lg.hauswart_telefon %} · {{ lg.hauswart_telefon }}{% endif %}</dd></div>{% endif %}
                 {% if lg.sanitaer_name %}<div class="fw-kv"><dt>Sanitär</dt><dd>{{ lg.sanitaer_name }}{% if lg.sanitaer_telefon %} · {{ lg.sanitaer_telefon }}{% endif %}</dd></div>{% endif %}
                 {% if lg.elektriker_name %}<div class="fw-kv"><dt>Elektriker</dt><dd>{{ lg.elektriker_name }}{% if lg.elektriker_telefon %} · {{ lg.elektriker_telefon }}{% endif %}</dd></div>{% endif %}
-                {% if not lg.hauswart_name and not lg.sanitaer_name and not lg.elektriker_name %}<p class="text-sm italic" style="color:var(--ds-faint);padding:6px 0">Noch keine Kontakte hinterlegt.</p>{% endif %}
+                {% if not lg.hauswart_name and not lg.sanitaer_name and not lg.elektriker_name %}<p class="fw-leer">Noch keine Kontakte hinterlegt.</p>{% endif %}
             </dl></div>
         </div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
-        <div class="flex items-center gap-2.5 mb-3">
-            <span class="fw-ic w"><i class="fa-solid fa-shield-halved"></i></span>
-            <h3 class="font-bold text-slate-800">Versicherungen</h3>
-            <button type="button" onclick="document.getElementById('vs-form').classList.toggle('hidden')" style="margin-left:auto" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800"><i class="fa-solid fa-plus mr-1"></i>Police hinzufügen</button>
-        </div>
-        {% if versicherungen %}
-        <div class="overflow-x-auto">
-            <table class="w-full min-w-max text-sm">
-                <thead><tr class="text-left text-xs text-slate-400 border-b border-slate-100">
-                    <th class="py-1.5 pr-3">Art</th><th class="py-1.5 pr-3">Gesellschaft</th>
-                    <th class="py-1.5 pr-3">Police</th><th class="py-1.5 pr-3 text-right">Summe</th>
-                    <th class="py-1.5 pr-3 text-right">Prämie</th><th class="py-1.5 pr-3">Ablauf</th><th></th></tr></thead>
-                <tbody>
-                {% for vs in versicherungen %}
-                <tr class="border-b border-slate-50 last:border-0">
-                    <td class="py-1.5 pr-3 font-medium text-slate-700">{{ vs.get_art_display }}</td>
-                    <td class="py-1.5 pr-3 text-slate-700">{{ vs.gesellschaft }}</td>
-                    <td class="py-1.5 pr-3 font-mono text-xs text-slate-500">{{ vs.policennummer }}</td>
-                    <td class="py-1.5 pr-3 text-right text-slate-700">{% if vs.versicherungssumme %}CHF {{ vs.versicherungssumme|chf:0 }}{% endif %}</td>
-                    <td class="py-1.5 pr-3 text-right text-slate-700">{% if vs.jahrespraemie %}CHF {{ vs.jahrespraemie|chf:0 }}{% endif %}</td>
-                    <td class="py-1.5 pr-3 text-slate-600">{% if vs.ablauf_datum %}{{ vs.ablauf_datum|date:"d.m.Y" }}{% endif %}</td>
-                    <td class="py-1.5 text-right">
-                        <form method="post" action="/neu/versicherung/{{ vs.id }}/loeschen/" onsubmit="return confirm('Police entfernen?');">{% csrf_token %}
-                            <button title="Police löschen" class="text-xs text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}<p class="text-sm text-slate-400 italic">Noch keine Versicherungen erfasst.</p>{% endif %}
-        <form id="vs-form" method="post" action="/neu/liegenschaften/{{ lg.id }}/versicherung/" class="hidden mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-6 gap-2">{% csrf_token %}
-            <select name="art" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2">
-                <option value="gebaeude">Gebäudeversicherung</option>
-                <option value="haftpflicht">Gebäude-Haftpflicht</option>
-                <option value="wasser">Wasser / Elementar</option>
-                <option value="glas">Glasbruch</option>
-                <option value="bauherren">Bauherren / Bau</option>
-                <option value="rechtsschutz">Rechtsschutz</option>
-                <option value="andere">Andere</option>
-            </select>
-            <input name="gesellschaft" placeholder="Gesellschaft" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2">
-            <input name="policennummer" placeholder="Policennummer" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2">
-            <input name="versicherungssumme" placeholder="Summe CHF" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2 tabular-nums">
-            <input name="jahrespraemie" placeholder="Prämie/Jahr CHF" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2 tabular-nums">
-            <input name="ablauf_datum" type="date" value="{{ heute_iso }}" class="sm:col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2">
-            <button class="sm:col-span-6 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Police speichern</button>
-        </form>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
-        <h3 class="font-bold text-slate-800 mb-3">Nebenkosten-Perioden</h3>
-        {% for p in perioden %}
-        <div class="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
-            <div>
-                <div class="text-sm font-medium text-slate-900">{{ p.bezeichnung }}</div>
-                <div class="text-xs text-slate-400">{{ p.start_datum|date:"d.m.Y" }} – {{ p.ende_datum|date:"d.m.Y" }}</div>
+
+    <div class="fw-subhead">Versicherungen</div>
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon warn"><i class="fa-solid fa-shield-halved"></i></span>
+            <span class="fw-t">Policen</span>
+            <span class="fw-neben">{{ versicherungen|length }}</span></div>
+        <details class="fw-aufklapp">
+            <summary>Police hinzufügen</summary>
+            <div class="fw-aufklapp-inhalt">
+                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/versicherung/" class="grid grid-cols-1 sm:grid-cols-6 gap-2">{% csrf_token %}
+                    <select name="art" class="fw-feld sm:col-span-2">
+                        <option value="gebaeude">Gebäudeversicherung</option>
+                        <option value="haftpflicht">Gebäude-Haftpflicht</option>
+                        <option value="wasser">Wasser / Elementar</option>
+                        <option value="glas">Glasbruch</option>
+                        <option value="bauherren">Bauherren / Bau</option>
+                        <option value="rechtsschutz">Rechtsschutz</option>
+                        <option value="andere">Andere</option>
+                    </select>
+                    <input name="gesellschaft" placeholder="Gesellschaft" class="fw-feld sm:col-span-2">
+                    <input name="policennummer" placeholder="Policennummer" class="fw-feld sm:col-span-2">
+                    <input name="versicherungssumme" placeholder="Summe CHF" class="fw-feld sm:col-span-2 tabular-nums">
+                    <input name="jahrespraemie" placeholder="Prämie/Jahr CHF" class="fw-feld sm:col-span-2 tabular-nums">
+                    <input name="ablauf_datum" type="date" value="{{ heute_iso }}" class="fw-feld sm:col-span-2">
+                    <button class="fw-btn fw-primary sm:col-span-6">Police speichern</button>
+                </form>
             </div>
-            <span class="fw-chip {% if p.abgeschlossen %}bg-emerald-50 text-emerald-700{% else %}bg-amber-50 text-amber-700{% endif %}">● 
-                {% if p.abgeschlossen %}Abgeschlossen{% else %}Offen{% endif %}
-            </span>
-        </div>
-        {% empty %}
-        <p class="text-sm text-slate-400 italic">Noch keine Abrechnungsperioden.</p>
-        {% endfor %}
-    </div>
-    <a href="/neu/nebenkosten/{% if lg %}?lg={{ lg.id }}{% endif %}" class="text-sm text-indigo-600 font-medium hover:underline"><i class="fa-solid fa-arrow-right mr-1"></i> Zur Nebenkosten-Abrechnung</a>
-</div>
-
-<!-- ===== TAB: TECHNIK (allgemeine Geräte + Zähler) ===== -->
-<div data-panel="lg" id="lg-technik" class="hidden">
-    <datalist id="lggeraetkat">{% for k in geraet_kategorien %}<option value="{{ k }}">{% endfor %}</datalist>
-    <datalist id="lgzaehlertyp">{% for t in zaehler_typen %}<option value="{{ t }}">{% endfor %}</datalist>
-
-    <!-- Allgemeine Geräte -->
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
-        <div class="px-5 py-3 border-b border-slate-100 bg-slate-50/60 flex items-center gap-2">
-            <i class="fa-solid fa-gears text-indigo-500"></i>
-            <span class="font-bold text-slate-800">Allgemeine Geräte</span>
-            <span class="text-xs text-slate-400">Heizung, Boiler, Lüftung, Aufzug …</span>
-        </div>
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Gerät</th><th class="px-5 py-3 font-semibold">Marke / Modell</th>
-                <th class="px-5 py-3 font-semibold">Installation</th><th class="px-5 py-3 font-semibold">Garantie bis</th><th class="px-5 py-3"></th>
-            </tr></thead>
-            <tbody class="divide-y divide-slate-50">
-            {% for g in lg_geraete %}
-            <tr class="hover:bg-slate-50/60"><td class="px-5 py-3 font-medium text-slate-900">{{ g.kategorie }}{% if g.sonstiges_bezeichnung %} <span class="text-xs text-slate-400 font-normal">· {{ g.sonstiges_bezeichnung }}</span>{% endif %}
-                    {% if g.kapazitaet or g.seriennummer or g.standort %}<div class="text-xs text-slate-400 font-normal">{% if g.kapazitaet %}{{ g.kapazitaet }}{% endif %}{% if g.seriennummer %}{% if g.kapazitaet %} · {% endif %}SN: {{ g.seriennummer }}{% endif %}{% if g.standort %} · {{ g.standort }}{% endif %}</div>{% endif %}</td>
-                <td class="px-5 py-3 text-slate-600">{% if g.marke or g.modell %}{{ g.marke }} {{ g.modell }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{% if g.installations_datum %}{{ g.installations_datum|date:"m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{% if g.garantie_bis %}{{ g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right whitespace-nowrap">
-                    <button type="button" onclick="document.getElementById('lggedit-{{ g.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 text-xs mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
-                    <form method="post" action="/neu/geraet/{{ g.id }}/loeschen/" class="inline" onsubmit="return confirm('Gerät löschen?');">{% csrf_token %}
-                        <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
-                    </form>
-                </td></tr>
-            <tr id="lggedit-{{ g.id }}" class="hidden bg-indigo-50/40">
-                <td colspan="5" class="px-5 py-4">
-                    <form method="post" action="/neu/geraet/{{ g.id }}/bearbeiten/" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {% csrf_token %}
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Kategorie</label>
-                            <input name="kategorie" list="lggeraetkat" value="{{ g.kategorie }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Marke</label>
-                            <input name="marke" value="{{ g.marke }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Modell</label>
-                            <input name="modell" value="{{ g.modell }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Seriennummer</label>
-                            <input name="seriennummer" value="{{ g.seriennummer }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Kapazität / Leistung</label>
-                            <input name="kapazitaet" value="{{ g.kapazitaet }}" placeholder="z.B. 300 L" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Standort</label>
-                            <input name="standort" value="{{ g.standort }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Installations-Datum</label>
-                            <input type="date" name="installations_datum" value="{{ g.installations_datum|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Garantie bis</label>
-                            <input type="date" name="garantie_bis" value="{{ g.garantie_bis|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div class="col-span-2 sm:col-span-3"><label class="block text-[11px] font-semibold text-slate-500 mb-1">Notiz</label>
-                            <input name="notiz" value="{{ g.notiz }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div class="col-span-2 sm:col-span-3 flex items-center gap-2 justify-end">
-                            <button type="button" onclick="document.getElementById('lggedit-{{ g.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
-                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
-                        </div>
-                    </form>
-                </td></tr>
-            {% empty %}
-            <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine allgemeinen Geräte erfasst.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table></div>
-        <div class="border-t border-slate-100 p-5 bg-slate-50/40">
-            <form method="post" action="/neu/geraet/" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {% csrf_token %}
-                <input type="hidden" name="liegenschaft_id" value="{{ lg.id }}">
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kategorie <span class="text-red-500">*</span></label>
-                    <input name="kategorie" list="lggeraetkat" required placeholder="z.B. Heizung, Boiler" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Marke</label>
-                    <input name="marke" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Modell</label>
-                    <input name="modell" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Seriennummer</label>
-                    <input name="seriennummer" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kapazität / Leistung</label>
-                    <input name="kapazitaet" placeholder="z.B. 300 L, 24 kW" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Standort</label>
-                    <input name="standort" placeholder="z.B. Technikraum" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Installations-Datum</label>
-                    <input type="date" name="installations_datum" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Garantie bis</label>
-                    <input type="date" name="garantie_bis" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Notiz</label>
-                    <input name="notiz" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5"></div>
-                <div class="sm:col-span-3">
-                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-plus mr-1.5"></i>Gerät erfassen</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Allgemeine Zähler -->
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div class="px-5 py-3 border-b border-slate-100 bg-slate-50/60 flex items-center gap-2">
-            <i class="fa-solid fa-gauge text-indigo-500"></i>
-            <span class="font-bold text-slate-800">Allgemeine Zähler</span>
-            <span class="text-xs text-slate-400">Allgemeinstrom, Hauptwasser …</span>
-        </div>
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Typ</th><th class="px-5 py-3 font-semibold">Zähler-Nr.</th>
-                <th class="px-5 py-3 font-semibold">Standort</th><th class="px-5 py-3 font-semibold text-right">Stand</th><th class="px-5 py-3"></th>
-            </tr></thead>
-            <tbody class="divide-y divide-slate-50">
-            {% for z in lg_zaehler %}
-            <tr class="hover:bg-slate-50/60"><td class="px-5 py-3 font-medium text-slate-900">{{ z.typ }}</td>
-                <td class="px-5 py-3 text-slate-600">{{ z.zaehler_nummer }}</td>
-                <td class="px-5 py-3 text-slate-600">{{ z.standort|default:"—" }}</td>
-                <td class="px-5 py-3 text-right text-slate-700">{{ z.aktueller_stand|floatformat:2 }}</td>
-                <td class="px-5 py-3 text-right whitespace-nowrap">
-                    <button type="button" onclick="document.getElementById('lgzedit-{{ z.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 text-xs mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
-                    <form method="post" action="/neu/zaehler/{{ z.id }}/loeschen/" class="inline" onsubmit="return confirm('Zähler löschen?');">{% csrf_token %}
-                        <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
-                    </form>
-                </td></tr>
-            <tr id="lgzedit-{{ z.id }}" class="hidden bg-indigo-50/40">
-                <td colspan="5" class="px-5 py-4">
-                    <form method="post" action="/neu/zaehler/{{ z.id }}/bearbeiten/" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        {% csrf_token %}
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Typ</label>
-                            <input name="typ" list="lgzaehlertyp" value="{{ z.typ }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Zähler-Nr.</label>
-                            <input name="zaehler_nummer" value="{{ z.zaehler_nummer }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Standort</label>
-                            <input name="standort" value="{{ z.standort }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Aktueller Stand</label>
-                            <input name="aktueller_stand" value="{{ z.aktueller_stand|floatformat:2 }}" inputmode="decimal" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
-                            <button type="button" onclick="document.getElementById('lgzedit-{{ z.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
-                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
-                        </div>
-                    </form>
-                </td></tr>
-            {% empty %}
-            <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine allgemeinen Zähler erfasst.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table></div>
-        <div class="border-t border-slate-100 p-5 bg-slate-50/40">
-            <form method="post" action="/neu/zaehler/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                {% csrf_token %}
-                <input type="hidden" name="liegenschaft_id" value="{{ lg.id }}">
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Typ <span class="text-red-500">*</span></label>
-                    <input name="typ" list="lgzaehlertyp" required placeholder="z.B. Allgemeinstrom" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Zähler-Nr. <span class="text-red-500">*</span></label>
-                    <input name="zaehler_nummer" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Standort</label>
-                    <input name="standort" placeholder="z.B. Technikraum" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Aktueller Stand</label>
-                    <input name="aktueller_stand" inputmode="decimal" placeholder="0.00" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2.5"></div>
-                <div class="sm:col-span-4">
-                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-plus mr-1.5"></i>Zähler erfassen</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- ===== TAB: UNTERHALT ===== -->
-<div data-panel="lg" id="lg-unterhalt" class="hidden">
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Datum</th><th class="px-5 py-3 font-semibold">Massnahme</th><th class="px-5 py-3 font-semibold text-right">Kosten</th>
-            </tr></thead>
-            <tbody class="divide-y divide-slate-50">
-            {% for u in unterhalt %}
-            <tr><td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ u.datum|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3 text-slate-900">{{ u.titel }}</td>
-                <td class="px-5 py-3 text-right text-slate-700">{% if u.kosten %}CHF {{ u.kosten|chf }}{% else %}—{% endif %}</td></tr>
-            {% empty %}
-            <tr><td colspan="3" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Unterhaltsarbeiten erfasst.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table></div>
-    </div>
-</div>
-
-<!-- ===== TAB: FRISTEN ===== -->
-<div data-panel="lg" id="lg-fristen" class="hidden">
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-5">
-        <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Art</th><th class="px-5 py-3 font-semibold">Bezeichnung</th>
-                <th class="px-5 py-3 font-semibold">Anbieter</th><th class="px-5 py-3 font-semibold">Nächste Fälligkeit</th>
-                <th class="px-5 py-3 font-semibold text-center">Intervall</th><th class="px-5 py-3"></th>
-            </tr></thead>
-            <tbody class="divide-y divide-slate-50">
-            {% for f in wartungsfristen %}
-            <tr class="hover:bg-slate-50/60">
-                <td class="px-5 py-3 whitespace-nowrap"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-600">{{ f.wf.get_art_display }}</span></td>
-                <td class="px-5 py-3 text-slate-900 font-medium">{{ f.wf.bezeichnung }}{% if f.wf.notiz %}<div class="text-xs text-slate-400 font-normal">{{ f.wf.notiz|truncatechars:60 }}</div>{% endif %}</td>
-                <td class="px-5 py-3 text-slate-600">{{ f.wf.anbieter|default:"—" }}</td>
-                <td class="px-5 py-3 whitespace-nowrap">
-                    {{ f.wf.naechste_faelligkeit|date:"d.m.Y" }}
-                    {% if f.ueberfaellig %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-50 text-red-600">überfällig</span>
-                    {% elif f.faellig_bald %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700">in {{ f.tage }} T</span>{% endif %}
-                </td>
-                <td class="px-5 py-3 text-center text-slate-500">{% if f.wf.intervall_monate %}{{ f.wf.intervall_monate }} Mt.{% else %}einmalig{% endif %}</td>
-                <td class="px-5 py-3 text-right whitespace-nowrap">
-                    <button type="button" onclick="document.getElementById('wfedit-{{ f.wf.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 mr-2" title="Bearbeiten"><i class="fa-solid fa-pen text-xs"></i></button>
-                    <form method="post" action="/neu/frist/{{ f.wf.id }}/loeschen/" class="inline" onsubmit="return confirm('Frist löschen?');">{% csrf_token %}
-                        <button title="Frist löschen" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash text-xs"></i></button>
+        </details>
+        <div class="fw-tablewrap"><table class="fw-table">
+            <thead><tr><th>Art</th><th>Gesellschaft</th><th>Police</th>
+                <th class="fw-right">Summe</th><th class="fw-right">Prämie</th><th>Ablauf</th><th></th></tr></thead>
+            <tbody>
+            {% for vs in versicherungen %}
+            <tr>
+                <td class="fw-strong">{{ vs.get_art_display }}</td>
+                <td>{{ vs.gesellschaft }}</td>
+                <td class="mono fw-klein">{{ vs.policennummer }}</td>
+                <td class="fw-right">{% if vs.versicherungssumme %}<span class="fw-betrag">CHF {{ vs.versicherungssumme|chf:0 }}</span>{% endif %}</td>
+                <td class="fw-right">{% if vs.jahrespraemie %}<span class="fw-betrag">CHF {{ vs.jahrespraemie|chf:0 }}</span>{% endif %}</td>
+                <td class="fw-num">{% if vs.ablauf_datum %}{{ vs.ablauf_datum|date:"d.m.Y" }}{% endif %}</td>
+                <td class="fw-right">
+                    <form method="post" action="/neu/versicherung/{{ vs.id }}/loeschen/" onsubmit="return confirm('Police entfernen?');">{% csrf_token %}
+                        <button title="Police löschen" class="fw-ikon mut gefahr"><i class="fa-solid fa-trash text-xs"></i></button>
                     </form>
                 </td>
             </tr>
-            <tr id="wfedit-{{ f.wf.id }}" class="hidden bg-indigo-50/40">
-                <td colspan="6" class="px-5 py-4">
+            {% empty %}
+            <tr><td colspan="7"><p class="fw-leer">Noch keine Versicherungen erfasst.</p></td></tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+    </div>
+
+    {% comment %} Technik: bis 4b.3 ein eigener Reiter. Geraete und Zaehler
+       beschreiben die Anlage — Stammdaten, nicht Verlauf. {% endcomment %}
+    <div class="fw-subhead">Technik</div>
+    <datalist id="lggeraetkat">{% for k in geraet_kategorien %}<option value="{{ k }}"></option>{% endfor %}</datalist>
+    <datalist id="lgzaehlertyp">{% for t in zaehler_typen %}<option value="{{ t }}"></option>{% endfor %}</datalist>
+
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-gears"></i></span>
+            <span class="fw-t">Allgemeine Geräte <small>Heizung, Boiler, Lüftung, Aufzug …</small></span>
+            <span class="fw-neben">{{ lg_geraete|length }}</span></div>
+        <details class="fw-aufklapp">
+            <summary>Gerät erfassen</summary>
+            <div class="fw-aufklapp-inhalt">
+                <form method="post" action="/neu/geraet/" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="liegenschaft_id" value="{{ lg.id }}">
+                    <div><label class="fw-klein block mb-1">Kategorie *</label>
+                        <input name="kategorie" list="lggeraetkat" required placeholder="z.B. Heizung, Boiler" class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Marke</label><input name="marke" class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Modell</label><input name="modell" class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Seriennummer</label><input name="seriennummer" class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Kapazität / Leistung</label>
+                        <input name="kapazitaet" placeholder="z.B. 300 L, 24 kW" class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Standort</label>
+                        <input name="standort" placeholder="z.B. Technikraum" class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Installations-Datum</label>
+                        <input type="date" name="installations_datum" class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Garantie bis</label>
+                        <input type="date" name="garantie_bis" class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Notiz</label><input name="notiz" class="fw-feld w-full"></div>
+                    <div class="sm:col-span-3"><button class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i>Gerät erfassen</button></div>
+                </form>
+            </div>
+        </details>
+        <div class="fw-tablewrap"><table class="fw-table">
+            <thead><tr><th>Gerät</th><th>Marke / Modell</th><th>Installation</th><th>Garantie bis</th><th></th></tr></thead>
+            <tbody>
+            {% for g in lg_geraete %}
+            <tr><td class="fw-strong">{{ g.kategorie }}{% if g.sonstiges_bezeichnung %} <span class="fw-klein">· {{ g.sonstiges_bezeichnung }}</span>{% endif %}
+                    {% if g.kapazitaet or g.seriennummer or g.standort %}<div class="fw-klein">{% if g.kapazitaet %}{{ g.kapazitaet }}{% endif %}{% if g.seriennummer %}{% if g.kapazitaet %} · {% endif %}SN: {{ g.seriennummer }}{% endif %}{% if g.standort %} · {{ g.standort }}{% endif %}</div>{% endif %}</td>
+                <td>{% if g.marke or g.modell %}{{ g.marke }} {{ g.modell }}{% else %}—{% endif %}</td>
+                <td class="fw-num">{% if g.installations_datum %}{{ g.installations_datum|date:"m.Y" }}{% else %}—{% endif %}</td>
+                <td class="fw-num">{% if g.garantie_bis %}{{ g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                <td class="fw-right whitespace-nowrap">
+                    <button type="button" onclick="document.getElementById('lggedit-{{ g.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="Bearbeiten"><i class="fa-solid fa-pen text-xs"></i></button>
+                    <form method="post" action="/neu/geraet/{{ g.id }}/loeschen/" class="inline" onsubmit="return confirm('Gerät löschen?');">{% csrf_token %}
+                        <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </form>
+                </td></tr>
+            <tr id="lggedit-{{ g.id }}" class="hidden">
+                <td colspan="5">
+                    <form method="post" action="/neu/geraet/{{ g.id }}/bearbeiten/" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {% csrf_token %}
+                        <div><label class="fw-klein block mb-1">Kategorie</label>
+                            <input name="kategorie" list="lggeraetkat" value="{{ g.kategorie }}" required class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Marke</label><input name="marke" value="{{ g.marke }}" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Modell</label><input name="modell" value="{{ g.modell }}" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Seriennummer</label><input name="seriennummer" value="{{ g.seriennummer }}" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Kapazität / Leistung</label>
+                            <input name="kapazitaet" value="{{ g.kapazitaet }}" placeholder="z.B. 300 L" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Standort</label><input name="standort" value="{{ g.standort }}" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Installations-Datum</label>
+                            <input type="date" name="installations_datum" value="{{ g.installations_datum|date:'Y-m-d' }}" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Garantie bis</label>
+                            <input type="date" name="garantie_bis" value="{{ g.garantie_bis|date:'Y-m-d' }}" class="fw-feld w-full"></div>
+                        <div class="col-span-2 sm:col-span-3"><label class="fw-klein block mb-1">Notiz</label>
+                            <input name="notiz" value="{{ g.notiz }}" class="fw-feld w-full"></div>
+                        <div class="col-span-2 sm:col-span-3 flex items-center gap-2 justify-end">
+                            <button type="button" onclick="document.getElementById('lggedit-{{ g.id }}').classList.add('hidden')" class="fw-btn">Abbrechen</button>
+                            <button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Speichern</button>
+                        </div>
+                    </form>
+                </td></tr>
+            {% empty %}
+            <tr><td colspan="5"><p class="fw-leer">Keine allgemeinen Geräte erfasst.</p></td></tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+    </div>
+
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-gauge"></i></span>
+            <span class="fw-t">Allgemeine Zähler <small>Allgemeinstrom, Hauptwasser …</small></span>
+            <span class="fw-neben">{{ lg_zaehler|length }}</span></div>
+        <details class="fw-aufklapp">
+            <summary>Zähler erfassen</summary>
+            <div class="fw-aufklapp-inhalt">
+                <form method="post" action="/neu/zaehler/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="liegenschaft_id" value="{{ lg.id }}">
+                    <div><label class="fw-klein block mb-1">Typ *</label>
+                        <input name="typ" list="lgzaehlertyp" required placeholder="z.B. Allgemeinstrom" class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Zähler-Nr. *</label>
+                        <input name="zaehler_nummer" required class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Standort</label>
+                        <input name="standort" placeholder="z.B. Technikraum" class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Aktueller Stand</label>
+                        <input name="aktueller_stand" inputmode="decimal" placeholder="0.00" class="fw-feld w-full"></div>
+                    <div class="sm:col-span-4"><button class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i>Zähler erfassen</button></div>
+                </form>
+            </div>
+        </details>
+        <div class="fw-tablewrap"><table class="fw-table">
+            <thead><tr><th>Typ</th><th>Zähler-Nr.</th><th>Standort</th><th class="fw-right">Stand</th><th></th></tr></thead>
+            <tbody>
+            {% for z in lg_zaehler %}
+            <tr><td class="fw-strong">{{ z.typ }}</td>
+                <td class="mono">{{ z.zaehler_nummer }}</td>
+                <td>{{ z.standort|default:"—" }}</td>
+                <td class="fw-right"><span class="fw-betrag mut">{{ z.aktueller_stand|floatformat:2 }}</span></td>
+                <td class="fw-right whitespace-nowrap">
+                    <button type="button" onclick="document.getElementById('lgzedit-{{ z.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="Bearbeiten"><i class="fa-solid fa-pen text-xs"></i></button>
+                    <form method="post" action="/neu/zaehler/{{ z.id }}/loeschen/" class="inline" onsubmit="return confirm('Zähler löschen?');">{% csrf_token %}
+                        <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </form>
+                </td></tr>
+            <tr id="lgzedit-{{ z.id }}" class="hidden">
+                <td colspan="5">
+                    <form method="post" action="/neu/zaehler/{{ z.id }}/bearbeiten/" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {% csrf_token %}
+                        <div><label class="fw-klein block mb-1">Typ</label>
+                            <input name="typ" list="lgzaehlertyp" value="{{ z.typ }}" required class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Zähler-Nr.</label>
+                            <input name="zaehler_nummer" value="{{ z.zaehler_nummer }}" required class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Standort</label>
+                            <input name="standort" value="{{ z.standort }}" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Aktueller Stand</label>
+                            <input name="aktueller_stand" value="{{ z.aktueller_stand|floatformat:2 }}" inputmode="decimal" class="fw-feld w-full"></div>
+                        <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
+                            <button type="button" onclick="document.getElementById('lgzedit-{{ z.id }}').classList.add('hidden')" class="fw-btn">Abbrechen</button>
+                            <button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Speichern</button>
+                        </div>
+                    </form>
+                </td></tr>
+            {% empty %}
+            <tr><td colspan="5"><p class="fw-leer">Keine allgemeinen Zähler erfasst.</p></td></tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+    </div>
+</div>
+
+<!-- ===== REITER: CHRONIK (Unterhalt + Protokoll) ===== -->
+<div data-panel="lg" id="lg-chronik" class="hidden">
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-hammer"></i></span>
+            <span class="fw-t">Unterhalt <small>ausgeführte Massnahmen</small></span>
+            <span class="fw-neben">{{ unterhalt|length }}</span></div>
+        <div class="fw-tablewrap"><table class="fw-table">
+            <thead><tr><th>Datum</th><th>Massnahme</th><th class="fw-right">Kosten</th></tr></thead>
+            <tbody>
+            {% for u in unterhalt %}
+            <tr><td class="fw-num">{{ u.datum|date:"d.m.Y" }}</td>
+                <td>{{ u.titel }}</td>
+                <td class="fw-right">{% if u.kosten %}<span class="fw-betrag">CHF {{ u.kosten|chf }}</span>{% else %}—{% endif %}</td></tr>
+            {% empty %}
+            <tr><td colspan="3"><p class="fw-leer">Keine Unterhaltsarbeiten erfasst.</p></td></tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+    </div>
+
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+            <span class="fw-t">Verlauf <small>Aktionen an den Mietverhältnissen dieser Liegenschaft</small></span></div>
+        {% for e in verlauf %}
+        <div class="fw-zeile">
+            <span class="fw-avci">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}<i class="fa-solid fa-robot"></i>{% endif %}</span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ e.aktion }}</div>
+                <div class="fw-s">{% if e.objekt %}{{ e.objekt }}{% endif %}{% if e.details %} · {{ e.details }}{% endif %}</div>
+            </div>
+            <div class="fw-zeit">{{ e.zeitpunkt|date:"d.m.Y H:i" }}<br>
+                <span class="fw-klein">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username }}{% else %}System{% endif %}</span></div>
+        </div>
+        {% empty %}
+        <p class="fw-leer">Noch keine protokollierten Aktionen.</p>
+        {% endfor %}
+        {% comment %} `AktivitaetsLog` kennt keinen Ziel-Typ 'liegenschaft'; der
+           einzige belastbare Bezug fuehrt ueber ihre Vertraege. Ein Abgleich
+           ueber den Strassennamen waere geraten. Das steht hier, damit die
+           Luecke nicht als Fehler gelesen wird. {% endcomment %}
+        <div class="fw-fuss"><span>Nur Vertrags-Aktionen — Ereignisse am Gebäude
+            werden heute nicht protokolliert.</span>
+            <a href="/neu/logbuch/" class="fw-link">Vollständiges Logbuch</a></div>
+    </div>
+</div>
+
+<!-- ===== REITER: FINANZEN ===== -->
+<div data-panel="lg" id="lg-finanzen" class="hidden">
+    <div class="fw-kpis">
+        <div class="fw-kpi fw-accent"><div class="fw-l">Soll-Nettomiete / Jahr</div>
+            <div class="fw-v">CHF {{ rendite.jahres_netto|chf:0 }}</div>
+            <div class="fw-f">aus den aktiven Verträgen hochgerechnet</div></div>
+        <div class="fw-kpi"><div class="fw-l">Bruttorendite</div>
+            <div class="fw-v">{% if rendite.bruttorendite is not None %}{{ rendite.bruttorendite|floatformat:2 }} %{% else %}—{% endif %}</div>
+            <div class="fw-f">Sollmiete ÷ Wert</div></div>
+        <div class="fw-kpi"><div class="fw-l">Nettorendite</div>
+            <div class="fw-v">{% if rendite.nettorendite is not None %}{{ rendite.nettorendite|floatformat:2 }} %{% else %}—{% endif %}</div>
+            <div class="fw-f">letzte 12 Monate, nach Aufwand</div></div>
+        <div class="fw-kpi"><div class="fw-l">{% if rendite.wert_quelle == 'verkehrswert' %}Verkehrswert{% elif rendite.wert_quelle == 'anlagekosten' %}Anlagekosten{% else %}Wert{% endif %}</div>
+            <div class="fw-v{% if not rendite.wert %} fw-warn{% endif %}">{% if rendite.wert %}CHF {{ rendite.wert|chf:0 }}{% else %}fehlt{% endif %}</div>
+            <div class="fw-f">Nenner der Rendite</div></div>
+    </div>
+    <div class="fw-card">
+        <div class="fw-fuss">
+            <a href="/neu/liegenschaften/{{ lg.id }}/betriebsrechnung/" class="fw-btn fw-primary"><i class="fa-solid fa-file-invoice"></i>Betriebsrechnung (PDF)</a>
+            <a href="/neu/berichte/leerstand-verlauf/" class="fw-btn"><i class="fa-solid fa-chart-column"></i>Leerstands-Verlauf</a>
+        </div>
+    </div>
+
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-fire-burner"></i></span>
+            <span class="fw-t">Nebenkosten-Perioden</span>
+            <span class="fw-rechts"><a href="/neu/nebenkosten/{% if lg %}?lg={{ lg.id }}{% endif %}" class="fw-link">Zur Abrechnung →</a></span></div>
+        {% for p in perioden %}
+        <div class="fw-zeile">
+            <span class="fw-marker {% if p.abgeschlossen %}good{% else %}warn{% endif %}"></span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ p.bezeichnung }}</div>
+                <div class="fw-s">{{ p.start_datum|date:"d.m.Y" }} – {{ p.ende_datum|date:"d.m.Y" }}</div>
+            </div>
+            <span class="fw-chip {% if p.abgeschlossen %}fw-good{% else %}fw-warn{% endif %} fw-dot">{% if p.abgeschlossen %}Abgeschlossen{% else %}Offen{% endif %}</span>
+        </div>
+        {% empty %}
+        <p class="fw-leer">Noch keine Abrechnungsperioden.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ===== REITER: DOKUMENTE (nach Objekt gruppiert) ===== -->
+<div data-panel="lg" id="lg-dokumente" class="hidden">
+    <p class="fw-klein mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Gebäude- und objektbezogene Dokumente (Versicherung, Pläne, Reglemente). Vertragsdokumente findest du beim jeweiligen Objekt unter «Chronik» und bei der Person.</p>
+    {% for g in dok_gruppen %}
+    <details class="fw-card group">
+        <summary class="fw-kopf cursor-pointer select-none list-none">
+            <i class="fa-solid fa-chevron-right fw-klein transition-transform group-open:rotate-90"></i>
+            <span class="fw-ikon"><i class="fa-solid {% if g.einheit %}fa-house{% else %}fa-building{% endif %}"></i></span>
+            <span class="fw-t">{{ g.label }}</span>
+            <span class="fw-chip fw-mut">{{ g.dokumente|length }} Dokument{{ g.dokumente|length|pluralize:"e" }}</span>
+            {% if g.einheit %}<span class="fw-rechts"><a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">Objekt <i class="fa-solid fa-arrow-right text-[10px]"></i></a></span>{% endif %}
+        </summary>
+        {% for d in g.dokumente %}
+        <div class="fw-zeile">
+            <span class="fw-ikon mut"><i class="fa-solid fa-file-lines"></i></span>
+            <div class="fw-mitte">
+                <div class="fw-t truncate">{{ d.titel }}</div>
+                {% comment %} Dokument.datum ist ein DateField — «H:i» darauf wirft
+                   TypeError und nimmt die ganze Seite mit. {% endcomment %}
+                <div class="fw-s">{{ d.kategorie }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}</div>
+            </div>
+            {% if d.url %}<a href="{{ d.url }}" target="_blank" rel="noopener" class="fw-link shrink-0">Öffnen</a>{% endif %}
+            {% if d.del_url %}
+            <form method="post" action="{{ d.del_url }}" class="shrink-0" onsubmit="return confirm('Dokument «{{ d.titel|escapejs }}» löschen?');">{% csrf_token %}
+                <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash text-xs"></i></button>
+            </form>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </details>
+    {% empty %}
+    <div class="fw-card"><p class="fw-leer">Keine Dokumente hinterlegt.</p></div>
+    {% endfor %}
+</div>
+
+<!-- ===== REITER: FAELLE (Fallmaschine + Fristen + Schaeden) ===== -->
+<div data-panel="lg" id="lg-faelle" class="hidden">
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-folder-tree"></i></span>
+            <span class="fw-t">Fälle zu dieser Liegenschaft</span>
+            <span class="fw-neben">{{ lg_faelle|length }}</span></div>
+        {% for f in lg_faelle %}
+        <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick">
+            <span class="fw-marker {% if f.status == 'offen' %}warn{% elif f.status == 'abgeschlossen' %}good{% else %}brand{% endif %}"></span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ f.betreff|default:f.fallart.bezeichnung }}</div>
+                <div class="fw-s">{{ f.nummer }} · {{ f.get_status_display }}{% if f.zustaendig %} · {{ f.zustaendig.get_full_name|default:f.zustaendig.username }}{% endif %}</div>
+            </div>
+            <div class="fw-zeit">{{ f.eroeffnet_am|date:"d.m.Y" }}</div>
+        </a>
+        {% empty %}
+        <p class="fw-leer">Zu dieser Liegenschaft läuft kein Fall.</p>
+        {% endfor %}
+    </div>
+
+    <div class="fw-subhead">Wartungs- und Versicherungsfristen</div>
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon warn"><i class="fa-solid fa-hourglass-half"></i></span>
+            <span class="fw-t">Fristen</span>
+            <span class="fw-neben">{{ wartungsfristen|length }}</span>
+            <span class="fw-rechts"><a href="/neu/fristen/" class="fw-link">Fristen-Center</a></span></div>
+        <details class="fw-aufklapp">
+            <summary>Neue Frist erfassen</summary>
+            <div class="fw-aufklapp-inhalt">
+                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/frist/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {% csrf_token %}
+                    <div><label class="fw-klein block mb-1">Art</label>
+                        <select name="art" class="fw-feld w-full">
+                            <option value="wartung">Wartung / Service</option>
+                            <option value="versicherung">Versicherung</option>
+                            <option value="kontrolle">Kontrolle / Prüfung</option>
+                            <option value="abo">Abonnement / Vertrag</option>
+                            <option value="sonstiges">Sonstiges</option>
+                        </select></div>
+                    <div><label class="fw-klein block mb-1">Bezeichnung *</label>
+                        <input name="bezeichnung" required placeholder="z.B. Heizungswartung, Gebäudeversicherung" class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Anbieter</label><input name="anbieter" class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Nächste Fälligkeit *</label>
+                        <input type="date" name="naechste_faelligkeit" required class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Intervall (Monate, 0 = einmalig)</label>
+                        <input type="number" name="intervall_monate" value="12" min="0" class="fw-feld w-full"></div>
+                    <div class="sm:col-span-2"><label class="fw-klein block mb-1">Notiz</label><input name="notiz" class="fw-feld w-full"></div>
+                    <div class="sm:col-span-2"><button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Frist speichern</button></div>
+                </form>
+            </div>
+        </details>
+        <div class="fw-tablewrap"><table class="fw-table">
+            <thead><tr><th>Art</th><th>Bezeichnung</th><th>Anbieter</th><th>Nächste Fälligkeit</th>
+                <th class="fw-right">Intervall</th><th></th></tr></thead>
+            <tbody>
+            {% for f in wartungsfristen %}
+            <tr>
+                <td><span class="fw-chip fw-mut">{{ f.wf.get_art_display }}</span></td>
+                <td class="fw-strong">{{ f.wf.bezeichnung }}{% if f.wf.notiz %}<div class="fw-klein">{{ f.wf.notiz }}</div>{% endif %}</td>
+                <td>{{ f.wf.anbieter|default:"—" }}</td>
+                <td class="fw-num">{{ f.wf.naechste_faelligkeit|date:"d.m.Y" }}
+                    {% if f.ueberfaellig %}<span class="fw-chip fw-crit">überfällig</span>
+                    {% elif f.faellig_bald %}<span class="fw-chip fw-warn">in {{ f.tage }} T</span>{% endif %}</td>
+                <td class="fw-right">{% if f.wf.intervall_monate %}{{ f.wf.intervall_monate }} Mt.{% else %}einmalig{% endif %}</td>
+                <td class="fw-right whitespace-nowrap">
+                    <button type="button" onclick="document.getElementById('wfedit-{{ f.wf.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="Bearbeiten"><i class="fa-solid fa-pen text-xs"></i></button>
+                    <form method="post" action="/neu/frist/{{ f.wf.id }}/loeschen/" class="inline" onsubmit="return confirm('Frist löschen?');">{% csrf_token %}
+                        <button title="Frist löschen" class="fw-ikon mut gefahr"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </form>
+                </td>
+            </tr>
+            <tr id="wfedit-{{ f.wf.id }}" class="hidden">
+                <td colspan="6">
                     <form method="post" action="/neu/frist/{{ f.wf.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {% csrf_token %}
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Art</label>
-                            <select name="art" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
+                        <div><label class="fw-klein block mb-1">Art</label>
+                            <select name="art" class="fw-feld w-full">
                                 <option value="wartung" {% if f.wf.art == 'wartung' %}selected{% endif %}>Wartung / Service</option>
                                 <option value="versicherung" {% if f.wf.art == 'versicherung' %}selected{% endif %}>Versicherung</option>
                                 <option value="kontrolle" {% if f.wf.art == 'kontrolle' %}selected{% endif %}>Kontrolle / Prüfung</option>
                                 <option value="abo" {% if f.wf.art == 'abo' %}selected{% endif %}>Abonnement / Vertrag</option>
                                 <option value="sonstiges" {% if f.wf.art == 'sonstiges' %}selected{% endif %}>Sonstiges</option>
                             </select></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Bezeichnung *</label>
-                            <input name="bezeichnung" value="{{ f.wf.bezeichnung }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Anbieter</label>
-                            <input name="anbieter" value="{{ f.wf.anbieter }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Nächste Fälligkeit *</label>
-                            <input type="date" name="naechste_faelligkeit" value="{{ f.wf.naechste_faelligkeit|date:'Y-m-d' }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Intervall (Monate, 0 = einmalig)</label>
-                            <input type="number" name="intervall_monate" value="{{ f.wf.intervall_monate }}" min="0" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Notiz</label>
-                            <input name="notiz" value="{{ f.wf.notiz }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label class="fw-klein block mb-1">Bezeichnung *</label>
+                            <input name="bezeichnung" value="{{ f.wf.bezeichnung }}" required class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Anbieter</label>
+                            <input name="anbieter" value="{{ f.wf.anbieter }}" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Nächste Fälligkeit *</label>
+                            <input type="date" name="naechste_faelligkeit" value="{{ f.wf.naechste_faelligkeit|date:'Y-m-d' }}" required class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Intervall (Monate, 0 = einmalig)</label>
+                            <input type="number" name="intervall_monate" value="{{ f.wf.intervall_monate }}" min="0" class="fw-feld w-full"></div>
+                        <div><label class="fw-klein block mb-1">Notiz</label>
+                            <input name="notiz" value="{{ f.wf.notiz }}" class="fw-feld w-full"></div>
                         <div class="sm:col-span-2 flex items-center gap-2 justify-end">
-                            <button type="button" onclick="document.getElementById('wfedit-{{ f.wf.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
-                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                            <button type="button" onclick="document.getElementById('wfedit-{{ f.wf.id }}').classList.add('hidden')" class="fw-btn">Abbrechen</button>
+                            <button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Speichern</button>
                         </div>
                     </form>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Wartungs-/Versicherungsfristen erfasst.</td></tr>
+            <tr><td colspan="6"><p class="fw-leer">Keine Wartungs-/Versicherungsfristen erfasst.</p></td></tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+        <div class="fw-fuss">Fällige Fristen erscheinen automatisch als Pendenz und rollen nach dem Intervall weiter.</div>
+    </div>
+
+    <div class="fw-subhead">Offene Schadensfälle</div>
+    <div class="fw-card">
+        {% for t in tickets %}
+        <a href="/neu/schaeden/{{ t.id }}/" class="fw-zeile klick">
+            <span class="fw-ikon crit"><i class="fa-solid fa-cloud-bolt"></i></span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ t.titel|default:t.beschreibung|truncatechars:60 }}</div>
+                <div class="fw-s">{{ t.get_status_display|default:t.status }}</div>
+            </div>
+            <div class="fw-zeit">{{ t.erstellt_am|date:"d.m.Y" }}</div>
+        </a>
+        {% empty %}
+        <p class="fw-leer">Keine offenen Schadensfälle. 🎉</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ===== REITER: EINHEITEN (frueher «Objekte») ===== -->
+<div data-panel="lg" id="lg-einheiten" class="hidden">
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-house"></i></span>
+            <span class="fw-t">Objekte</span>
+            <span class="fw-neben">{{ vermietet }} von {{ total_einheiten }} vermietet</span></div>
+        <div class="fw-tablewrap"><table class="fw-table">
+            <thead><tr><th>Objekt</th><th>Typ</th><th class="fw-right">Fläche</th><th>Status</th><th>Mieter</th><th></th></tr></thead>
+            <tbody>
+            {% for row in einheiten_rows %}
+            <tr class="cursor-pointer" onclick="window.location='/neu/objekte/{{ row.einheit.id }}/{{ lg_query }}'">
+                <td><a href="/neu/objekte/{{ row.einheit.id }}/{{ lg_query }}" class="fw-strong" onclick="event.stopPropagation()">{{ row.einheit.bezeichnung }}</a>{% if row.einheit.etage %}<div class="fw-klein">{{ row.einheit.etage }}</div>{% endif %}</td>
+                <td>{{ row.einheit.get_typ_display }}</td>
+                <td class="fw-right">{% if row.einheit.flaeche_m2 %}{{ row.einheit.flaeche_m2|floatformat:0 }} m²{% else %}—{% endif %}</td>
+                <td>{% if row.vertrag %}<span class="fw-chip fw-good fw-dot">Vermietet</span>
+                    {% else %}<span class="fw-chip fw-warn fw-dot">Leerstand</span>{% endif %}</td>
+                <td>{% if row.vertrag %}{{ row.vertrag.mieter.display_name }}{% else %}<span class="fw-klein">—</span>{% endif %}</td>
+                <td class="fw-right"><i class="fa-solid fa-chevron-right fw-klein"></i></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6"><p class="fw-leer">Keine Objekte erfasst.</p></td></tr>
             {% endfor %}
             </tbody>
         </table></div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-calendar-plus text-indigo-500 mr-1.5"></i>Neue Frist erfassen</h3>
-        <form method="post" action="/neu/liegenschaften/{{ lg.id }}/frist/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {% csrf_token %}
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Art</label>
-                <select name="art" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                    <option value="wartung">Wartung / Service</option>
-                    <option value="versicherung">Versicherung</option>
-                    <option value="kontrolle">Kontrolle / Prüfung</option>
-                    <option value="abo">Abonnement / Vertrag</option>
-                    <option value="sonstiges">Sonstiges</option>
-                </select></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bezeichnung <span class="text-red-500">*</span></label>
-                <input name="bezeichnung" required placeholder="z.B. Heizungswartung, Gebäudeversicherung" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Anbieter</label>
-                <input name="anbieter" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nächste Fälligkeit <span class="text-red-500">*</span></label>
-                <input type="date" name="naechste_faelligkeit" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Intervall (Monate, 0 = einmalig)</label>
-                <input type="number" name="intervall_monate" value="12" min="0" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Notiz</label>
-                <input name="notiz" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2">
-                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Frist speichern</button>
-            </div>
-        </form>
-        <p class="text-xs text-slate-400 mt-3">Fällige Fristen erscheinen automatisch als Pendenz und rollen nach dem Intervall weiter.</p>
-    </div>
 </div>
 
-<!-- ===== TAB: SCHÄDEN ===== -->
-<div data-panel="lg" id="lg-schaeden" class="hidden">
-    <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50">
-        {% for t in tickets %}
-        <div class="flex items-center gap-3 px-5 py-3.5">
-            <div class="w-9 h-9 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-cloud-bolt"></i></div>
-            <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900">{{ t.titel|default:t.beschreibung|truncatechars:60 }}</div>
-                <div class="text-xs text-slate-400">{{ t.erstellt_am|date:"d.m.Y" }} · {{ t.get_status_display|default:t.status }}</div></div>
-        </div>
-        {% empty %}
-        <p class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine offenen Schadensfälle. 🎉</p>
-        {% endfor %}
-    </div>
-</div>
-
-<!-- ===== TAB: DOKUMENTE (nach Objekt gruppiert) ===== -->
-<div data-panel="lg" id="lg-dokumente" class="hidden">
-    <p class="text-xs text-slate-400 mb-3"><i class="fa-solid fa-circle-info mr-1"></i>Gebäude- und objektbezogene Dokumente (Versicherung, Pläne, Reglemente). Vertragsdokumente findest du beim jeweiligen Objekt unter «Verhältnisse» und bei der Person.</p>
-    {% if dok_gruppen %}
-    <div class="space-y-3">
-        {% for g in dok_gruppen %}
-        <details class="group bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <summary class="px-5 py-3 flex items-center gap-3 cursor-pointer select-none hover:bg-slate-50/60 list-none">
-                <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform group-open:rotate-90"></i>
-                <i class="fa-solid {% if g.einheit %}fa-house{% else %}fa-building{% endif %} text-indigo-500"></i>
-                <span class="font-bold text-slate-800">{{ g.label }}</span>
-                <span class="text-[11px] font-semibold bg-slate-100 text-slate-500 rounded-md px-1.5 py-0.5">{{ g.dokumente|length }} Dokument{{ g.dokumente|length|pluralize:"e" }}</span>
-                {% if g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="ml-auto text-xs text-indigo-600 font-medium hover:underline" onclick="event.stopPropagation()">Objekt <i class="fa-solid fa-arrow-right text-[10px]"></i></a>{% endif %}
-            </summary>
-            <div class="border-t border-slate-100 divide-y divide-slate-50">
-                {% for d in g.dokumente %}
-                <div class="flex items-center gap-3 px-5 py-3.5">
-                    <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-lines"></i></div>
-                    <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ d.titel }}</div>
-                        <div class="text-xs text-slate-400">{{ d.kategorie }}{# Dokument.datum ist ein DateField — «H:i» darauf wirft TypeError und die ganze Seite stirbt #}
-                        {% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}</div></div>
-                    {% if d.url %}<a href="{{ d.url }}" target="_blank" rel="noopener" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Öffnen</a>{% endif %}
-                    {% if d.del_url %}
-                    <form method="post" action="{{ d.del_url }}" class="shrink-0" onsubmit="return confirm('Dokument «{{ d.titel|escapejs }}» löschen?');">{% csrf_token %}
-                        <button class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="Löschen"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </form>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-        </details>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Keine Dokumente hinterlegt.</div>
-    {% endif %}
-</div>
 {% endblock %}

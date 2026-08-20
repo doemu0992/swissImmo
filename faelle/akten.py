@@ -88,8 +88,15 @@ AKTENTYPEN = {
     'liegenschaft': Aktentyp(
         'liegenschaft', 'Liegenschaft', 'portfolio.Liegenschaft',
         eigener_reiter=('einheiten', 'Einheiten'),
+        # `unterhalt` fiel bis 4b.3 auf `stammdaten`. Beim Bauen der Reiter
+        # zeigte sich, dass das falsch ist: Unterhalt sind DATIERTE Ereignisse
+        # mit Kosten — «was geschehen ist», nicht «was das Objekt ist». Genau
+        # die Trennung, die Abschnitt 4 zwischen Stammdaten und Chronik zieht.
+        # Die Chronik der Liegenschaft waere sonst zudem fast leer:
+        # `AktivitaetsLog` kennt keinen Ziel-Typ 'liegenschaft', es bliebe nur
+        # der Umweg ueber ihre Vertraege.
         alt={'objekte': 'einheiten', 'finanzen': 'finanzen',
-             'technik': 'stammdaten', 'unterhalt': 'stammdaten',
+             'technik': 'stammdaten', 'unterhalt': 'chronik',
              'fristen': 'faelle', 'schaeden': 'faelle',
              'dokumente': 'dokumente', 'uebersicht': 'stammdaten',
              'verlauf': 'chronik'}),

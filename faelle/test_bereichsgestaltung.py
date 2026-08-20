@@ -47,6 +47,7 @@ ALT = re.compile(
 
 #: Datei → Reiterpräfix. Nur die Akten, die den neuen Reitersatz führen.
 SEITEN = {
+    'liegenschaft_detail.html': 'lg',
     'vertrag_detail.html': 'vt',
     'schaden_detail.html': 'sc',
     'person_detail.html': 'pd',
@@ -57,6 +58,13 @@ SEITEN = {
 #: Arbeitsliste: Jede Zahl darf nur sinken. Wer einen Bereich umstellt, setzt
 #: sie hier auf 0 — dann hält der Test ihn dort fest.
 DECKEL = {
+    ('liegenschaft_detail.html', 'stammdaten'): 0,
+    ('liegenschaft_detail.html', 'chronik'): 0,
+    ('liegenschaft_detail.html', 'finanzen'): 0,
+    ('liegenschaft_detail.html', 'dokumente'): 0,
+    ('liegenschaft_detail.html', 'faelle'): 0,
+    ('liegenschaft_detail.html', 'einheiten'): 0,
+
     ('person_detail.html', 'stammdaten'): 0,
     ('person_detail.html', 'rollen'): 0,
     ('person_detail.html', 'finanzen'): 0,

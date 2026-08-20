@@ -36,6 +36,83 @@ from ._basis import (_global_filter, _kaution_bilanziert, _num, _pendenz_ziel,
 # ETAPPE C: DETAILSEITEN MIT BREADCRUMB + TABS
 # ============================================================
 
+def _liegenschaft_kopf(lg, gesamt, vermietet, soll_monat, wartungsfristen,
+                       tickets, rendite):
+    """Der Aktenkopf der Liegenschaft — gerechnete Zustaende, keine Felder.
+
+    Umsetzung von G9 (KONZEPT-UI.md 16.3) fuer den dritten Aktentyp. Die
+    Kennzahlen beantworten die vier Fragen, die man vor einer Liegenschaft
+    zuerst stellt: Wie viel ist vermietet, was faellt monatlich an, was wirft
+    sie ab, und was steht als Naechstes an.
+
+    **Was hier bewusst NICHT steht.** Der Prototyp zeigt bei Liegenschaften
+    auch einen Chip «Sanierung geplant» und eine Kennzahl «Ruecklagen». Fuer
+    beides gibt es kein Feld: `portfolio.Liegenschaft` fuehrt weder einen
+    Sanierungsstatus noch einen Erneuerungsfonds. Ein aus `Unterhalt`
+    geschaetzter Wert waere geraten, nicht gewusst.
+    """
+    heute = timezone.localdate()
+    leerstand = gesamt - vermietet
+
+    chips = []
+    if gesamt:
+        quote = round(vermietet * 100 / gesamt)
+        if leerstand:
+            chips.append({'text': f'{leerstand} von {gesamt} leer', 'ton': 'fw-warn'})
+        else:
+            chips.append({'text': f'voll vermietet ({quote} %)', 'ton': 'fw-good'})
+    ueberfaellig = [f for f in wartungsfristen if f['ueberfaellig']]
+    if ueberfaellig:
+        chips.append({'text': f'{len(ueberfaellig)} Frist{"en" if len(ueberfaellig) > 1 else ""} überfällig',
+                      'ton': 'fw-crit'})
+    if tickets:
+        chips.append({'text': f'{len(tickets)} offene{"r" if len(tickets) == 1 else ""} Schaden'
+                              f'{"" if len(tickets) == 1 else "sfälle"}', 'ton': 'fw-warn'})
+    if lg.hkvo_aktiv:
+        chips.append({'text': 'HKVO verbrauchsabhängig', 'ton': 'fw-info'})
+
+    # Hinweise. Regel aus 16.3: Jeder Hinweis fuehrt zu einer Handlung —
+    # sonst ist er eine Beschwerde. Deshalb traegt jeder ein Ziel.
+    hinweise = []
+    if rendite.get('bruttorendite') is None:
+        hinweise.append({
+            'ton': 'info', 'symbol': 'fa-percent',
+            'titel': 'Rendite nicht berechenbar',
+            'text': 'Ohne Verkehrswert (ersatzweise Anlagekosten) fehlt der Nenner. '
+                    'Der Versicherungswert taugt dafür nicht — er bemisst den '
+                    'Wiederaufbau, nicht den Marktwert.',
+            'url': f'/neu/liegenschaften/{lg.id}/bearbeiten/', 'knopf': 'Wert erfassen'})
+    if ueberfaellig:
+        aelteste = min(ueberfaellig, key=lambda f: f['wf'].naechste_faelligkeit)
+        hinweise.append({
+            'ton': 'crit', 'symbol': 'fa-triangle-exclamation',
+            'titel': 'Wartungsfrist überfällig',
+            'text': f'«{aelteste["wf"].bezeichnung}» war am '
+                    f'{aelteste["wf"].naechste_faelligkeit.strftime("%d.%m.%Y")} fällig '
+                    f'({abs(aelteste["tage"])} Tage).',
+            'url': '?tab=faelle', 'knopf': 'Zu den Fristen'})
+    if not lg.hauswart_name and not lg.sanitaer_name and not lg.elektriker_name:
+        hinweise.append({
+            'ton': 'warn', 'symbol': 'fa-screwdriver-wrench',
+            'titel': 'Keine Notfallkontakte',
+            'text': 'Ohne Hauswart, Sanitär oder Elektriker steht bei einem '
+                    'Wasserschaden ausserhalb der Bürozeit niemand bereit.',
+            'url': f'/neu/liegenschaften/{lg.id}/bearbeiten/', 'knopf': 'Kontakte erfassen'})
+
+    # Naechste Frist als vierte Kennzahl. `wartungsfristen` ist bereits nach
+    # Faelligkeit sortiert; die erste ist die naechste.
+    naechste = wartungsfristen[0] if wartungsfristen else None
+
+    return {
+        'lg_nummer': f'L-{lg.id:06d}',
+        'lg_chips': chips,
+        'lg_hinweise': hinweise,
+        'lg_naechste_frist': naechste,
+        'lg_quote': round(vermietet * 100 / gesamt) if gesamt else None,
+        'lg_heute': heute,
+    }
+
+
 def _vertrag_status_pill(v):
     label, cls = VERTRAG_PILL.get(v.status, (v.status, 'bg-slate-100 text-slate-500'))
     return {'label': label, 'cls': cls}
@@ -127,7 +204,34 @@ def fw_liegenschaft_detail(request, pk):
     lg_zaehler = list(Zaehler.objects.filter(liegenschaft=lg).order_by('typ'))
     technik_count = len(lg_geraete) + len(lg_zaehler)
 
-    tab_liste = [
+    # Etappe 4b.3: Reiter aus dem Aktenregister statt aus dieser View.
+    # `technik` faellt auf `stammdaten`, `fristen` und `schaeden` fallen beide
+    # auf `faelle` — ihre Zaehler addiert `aus_alt`, statt den zweiten still
+    # zu ueberschreiben.
+    from django.contrib.contenttypes.models import ContentType
+
+    from core.models import AktivitaetsLog
+    from core.tenancy import aktuelle_organisation as _akt_org
+    from faelle.akten import aus_alt as _reiter_aus_alt
+    from faelle.models import Fall
+
+    lg_faelle = list(
+        Fall.objects.filter(akte_typ=ContentType.objects.get_for_model(Liegenschaft),
+                            akte_id=lg.id)
+        .select_related('fallart', 'zustaendig').order_by('-eroeffnet_am'))
+
+    # Chronik. `AktivitaetsLog` kennt nur die Ziel-Typen 'person' und
+    # 'vertrag' — fuer eine Liegenschaft gibt es keinen. Der einzige
+    # BELASTBARE Bezug fuehrt ueber ihre Vertraege; ein Abgleich ueber
+    # `objekt__icontains=strasse` waere geraten und traefe jede Liegenschaft
+    # mit aehnlichem Strassennamen mit. Darum nur die Vertraege.
+    _vids = list(Mietvertrag.objects.filter(einheit__liegenschaft=lg)
+                 .values_list('id', flat=True))
+    verlauf = list(AktivitaetsLog.objects
+                   .filter(ziel_typ='vertrag', ziel_id__in=_vids)
+                   .select_related('benutzer')[:50]) if _vids else []
+
+    tab_liste = _reiter_aus_alt('liegenschaft', [
         ('objekte', 'Objekte', len(einheiten_rows)),
         ('finanzen', 'Finanzen', None),
         ('technik', 'Technik', technik_count or None),
@@ -135,11 +239,15 @@ def fw_liegenschaft_detail(request, pk):
         ('fristen', 'Fristen', len(wartungsfristen) or None),
         ('schaeden', 'Schäden', tickets.count() or None),
         ('dokumente', 'Dokumente', dok_total or None),
-    ]
+    ], organisation=getattr(request, 'organisation', None) or _akt_org())
     from core.services.rendite import liegenschaft_rendite
     rendite = liegenschaft_rendite(lg)
     return render(request, 'fw/liegenschaft_detail.html', {
         **basis, 'nav': 'liegenschaften', 'lg': lg,
+        'lg_faelle': lg_faelle,
+        'verlauf': verlauf,
+        **_liegenschaft_kopf(lg, len(einheiten_rows), vermietet, soll_monat,
+                             wartungsfristen, list(tickets), rendite),
         'einheiten_rows': einheiten_rows,
         'total_einheiten': len(einheiten_rows),
         'vermietet': vermietet,

@@ -959,13 +959,21 @@ class GeraetZaehlerTests(TestCase):
         self.assertEqual(z.typ, 'Allgemeinstrom')
         self.assertIsNone(z.einheit_id)
 
-    def test_liegenschaft_technik_tab_sichtbar(self):
+    def test_liegenschaft_technik_sichtbar(self):
+        """Technik steht seit 4b.3 im Reiter «Stammdaten», nicht mehr eigenstaendig.
+
+        Der Test hiess `..._technik_tab_sichtbar` und suchte die Panel-ID
+        `lg-technik`. Sie gibt es nicht mehr: Das Aktenregister
+        (`faelle/akten.py`) bildet `technik` auf `stammdaten` ab — Geraete und
+        Zaehler beschreiben die Anlage, sie sind kein eigener Vorgang. Geprueft
+        wird weiterhin dasselbe: dass die Geraeteliste auf der Seite ankommt.
+        """
         from portfolio.models import Geraet
         lg, e, m, v = _basis_objekte()
         Geraet.objects.create(liegenschaft=lg, kategorie='Boiler')
         c = Client(); c.force_login(_team_user())
         r = c.get(f'/neu/liegenschaften/{lg.id}/')
-        self.assertContains(r, 'lg-technik')
+        self.assertContains(r, 'lg-stammdaten')
         self.assertContains(r, 'Allgemeine Geräte')
         self.assertContains(r, 'Boiler')
 

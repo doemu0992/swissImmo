@@ -51,6 +51,23 @@ PFLICHT = {
         '/personen/{{ m.id }}/dsg-loeschen/',
         '/kommunikation/',
     ]),
+    # Ergaenzt 20.08.2026 mit dem Umbau der Liegenschaftsakte (4b.3/4b.4).
+    # Die vier Berichtsverweise (Mieterspiegel, Eigentuemerabrechnung,
+    # Kontokorrent, Hypotheken) standen frueher als Knopfreihe unter dem Kopf
+    # und sind ins «Mehr»-Menue gewandert — sie stehen hier, damit sie beim
+    # naechsten Umbau nicht mit der Knopfreihe verschwinden.
+    'liegenschaft': ('fw/liegenschaft_detail.html', [
+        '/neu/liegenschaften/{{ lg.id }}/bearbeiten/',
+        '/neu/liegenschaften/{{ lg.id }}/loeschen/',
+        '/neu/liegenschaften/{{ lg.id }}/gwr-import/',
+        '/neu/liegenschaften/{{ lg.id }}/versicherung/',
+        '/neu/liegenschaften/{{ lg.id }}/frist/',
+        '/neu/liegenschaften/{{ lg.id }}/betriebsrechnung/',
+        '/neu/mieterspiegel/',
+        '/neu/hypotheken/',
+        '/neu/geraet/',
+        '/neu/zaehler/',
+    ]),
     'schaden': ('fw/schaden_detail.html', [
         '/schaeden/{{ t.id }}/status/',
         '/schaeden/{{ t.id }}/auftrag/',

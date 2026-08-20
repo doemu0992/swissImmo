@@ -427,8 +427,8 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.0 | Aktenkopf und Reiterleiste aus Tokens statt Tailwind-Utilities; Komponentenschicht in `base.html` | erledigt (`b0e3757`) |
 | 4b.1 | Konzeptpalette Petrol in `:root`, beide Dunkelblöcke; Wächter `test_palette.py` | erledigt (`ce92c88`) |
 | 4b.2 | Kennzahlen, Chips und Hinweise als **gerechnete Zustände** (`_akte_kopfzahlen`); Stammdaten in vier Gruppen | erledigt (`301e81b`) |
-| 4b.3 | **Reitersatz und Aktenkopf** der vier übrigen Detailseiten — Schaden und Person erledigt (`24d325b`, `44d5ea2`), Liegenschaft und Objekt offen | **teilweise** |
-| 4b.4 | **Die Bereichsinhalte** auf die Komponentenschicht — Person erledigt, Schaden und Vertrag offen | **teilweise** |
+| 4b.3 | **Reitersatz und Aktenkopf** der vier übrigen Detailseiten — Schaden, Person und Liegenschaft erledigt, **Objekt** offen | **teilweise** |
+| 4b.4 | **Die Bereichsinhalte** auf die Komponentenschicht — Person und Liegenschaft erledigt, Schaden (104) und Vertrag (177) offen | **teilweise** |
 
 Der Wächter für 4b.3 steht bereits: `faelle/test_reiter_panels.py::test_umstellung_erzeugt_nur_
 erreichbare_reiter` ist als `expectedFailure` markiert und nennt in seiner Meldung jedes
@@ -606,6 +606,13 @@ klassen übrig sind, und lässt die Zahl nur sinken. **Gemessen wird Farbe, nich
 
 Die Umsetzung von **G9**. Der Aktenkopf zeigt nicht, was in der Datenbank steht, sondern was
 daraus folgt. Gerechnet in `_akte_kopfzahlen()`, geprüft von `faelle/test_akte_zustaende.py`.
+
+**Kennzahlen der Liegenschaft** (seit 4b.3): Vermietung (belegt/gesamt, Quote), Soll/Monat,
+Bruttorendite (mit dem Wert, auf dem sie rechnet) und die nächste Frist — Titel **ungekürzt**.
+Chips sind gerechnet: «2 von 5 leer» statt eines Statusfelds. Hinweise: fehlender Verkehrswert,
+überfällige Wartungsfrist, keine Notfallkontakte — jeder mit Ziel. Nicht gebaut sind der
+Prototyp-Chip «Sanierung geplant» und die Kennzahl «Rücklagen»: `portfolio.Liegenschaft` führt
+weder einen Sanierungsstatus noch einen Erneuerungsfonds.
 
 **Kennzahlen des Mietverhältnisses** — die vier aus Abschnitt 4:
 
