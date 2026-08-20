@@ -465,3 +465,221 @@ class SeitenTests(TestCase):
         with mandant(b.organisation):
             antwort = c.get('/neu/')
         self.assertNotContains(antwort, 'Streng vertraulich Mandant A')
+
+
+class TermineTests(TestCase):
+    """Der dritte Abschnitt des Prototyps.
+
+    Ein Kalender, dem man nicht trauen kann, ist schlimmer als keiner —
+    deshalb prüft jeder Test hier, dass ein Termin **erscheint**, und
+    mindestens einer, dass ein erledigter oder ferner **verschwindet**.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _abnahme(self, tage, abgeschlossen=False):
+        from rentals.models import Abnahmeprotokoll
+        p = Abnahmeprotokoll(vertrag=self.a.vertrag, typ='auszug',
+                             datum=timezone.localdate() + timedelta(days=tage),
+                             abgeschlossen=abgeschlossen)
+        p.save()
+        return p
+
+    def test_anstehende_abnahme_erscheint(self):
+        """Geprüft wird der KONKRETE Termin, nicht die Anzahl.
+
+        `MandantenFixture` legt selbst ein `Abnahmeprotokoll` an (Zeile 199).
+        Eine Zählung war hier prompt falsch — derselbe Fehler, vor dem der
+        Docstring von `PosteingangTests` warnt und den ich hier trotzdem
+        gemacht habe.
+        """
+        from faelle.arbeitsvorrat import termine
+        with mandant(self.a.organisation):
+            protokoll = self._abnahme(2)
+            treffer = [t for t in termine()
+                       if t['ziel'].endswith(f'/{protokoll.vertrag_id}/')
+                       and t['datum'] == protokoll.datum]
+            self.assertEqual(len(treffer), 1)
+            self.assertEqual(treffer[0]['titel'], 'Wohnungsabnahme')
+
+    def test_abgeschlossene_abnahme_erscheint_nicht(self):
+        from faelle.arbeitsvorrat import termine
+        with mandant(self.a.organisation):
+            protokoll = self._abnahme(2, abgeschlossen=True)
+            self.assertEqual(
+                [t for t in termine() if t['datum'] == protokoll.datum], [])
+
+    def test_abnahme_jenseits_der_woche_erscheint_nicht(self):
+        from faelle.arbeitsvorrat import termine
+        with mandant(self.a.organisation):
+            protokoll = self._abnahme(20)
+            self.assertEqual(
+                [t for t in termine() if t['datum'] == protokoll.datum], [])
+
+    def test_termine_sind_nach_zeit_sortiert(self):
+        from faelle.arbeitsvorrat import termine
+        with mandant(self.a.organisation):
+            self._abnahme(5)
+            self._abnahme(1)
+            daten = [t['datum'] for t in termine()]
+            self.assertEqual(daten, sorted(daten))
+
+    def test_b_sieht_den_termin_von_a_nicht(self):
+        """B hat eigene Termine — geprüft wird, dass A's nicht dabei ist."""
+        from faelle.arbeitsvorrat import termine
+        b = MandantenFixture('B', '3000', 'Bern')
+        with mandant(self.a.organisation):
+            protokoll = self._abnahme(2)
+        with mandant(b.organisation):
+            ziele = [t['ziel'] for t in termine()]
+        self.assertNotIn(f'/neu/vertraege/{protokoll.vertrag_id}/', ziele)
+
+
+class FreigabenTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _rechnung(self, status='neu', tage_alt=3):
+        from finance.models import KreditorenRechnung
+        r = KreditorenRechnung(liegenschaft=self.a.liegenschaft, lieferant='Sanitär Meier AG',
+                               status=status, betrag=1240,
+                               datum=timezone.localdate() - timedelta(days=tage_alt))
+        r.save()
+        return r
+
+    def test_neue_rechnung_wartet_auf_freigabe(self):
+        from faelle.arbeitsvorrat import wartet_auf_freigabe
+        with mandant(self.a.organisation):
+            self._rechnung()
+            # Das Fixture legt selbst eine KreditorenRechnung an — also den
+            # konkreten Lieferanten prüfen, nicht die Anzahl.
+            treffer = [f for f in wartet_auf_freigabe()
+                       if 'Sanitär Meier AG' in f['titel']]
+            self.assertEqual(len(treffer), 1)
+            self.assertEqual(treffer[0]['tage'], 3)
+
+    def test_freigegebene_rechnung_wartet_nicht_mehr(self):
+        from faelle.arbeitsvorrat import wartet_auf_freigabe
+        with mandant(self.a.organisation):
+            self._rechnung(status='freigegeben')
+            self.assertEqual(
+                [f for f in wartet_auf_freigabe()
+                 if 'Sanitär Meier AG' in f['titel']], [])
+
+    def test_liegezeit_wird_gerechnet(self):
+        from faelle.arbeitsvorrat import liegezeit, wartet_auf_freigabe
+        with mandant(self.a.organisation):
+            self._rechnung(tage_alt=2)
+            self._rechnung(tage_alt=4)
+            zeilen = [f for f in wartet_auf_freigabe()
+                      if 'Sanitär Meier AG' in f['titel']]
+            self.assertEqual(liegezeit(zeilen), 3.0)
+
+    def test_liegezeit_ohne_datum_ist_keine_null(self):
+        """Sonst zöge ein fehlendes Feld den Schnitt gegen null."""
+        from faelle.arbeitsvorrat import liegezeit
+        self.assertIsNone(liegezeit([{'tage': None}, {'tage': None}]))
+        self.assertEqual(liegezeit([{'tage': None}, {'tage': 4}]), 4.0)
+
+    def test_jede_freigabe_fuehrt_zu_einem_ziel(self):
+        from faelle.arbeitsvorrat import wartet_auf_freigabe
+        with mandant(self.a.organisation):
+            self._rechnung()
+            zeilen = wartet_auf_freigabe()
+            self.assertTrue(zeilen)
+            for f in zeilen:
+                with self.subTest(titel=f['titel']):
+                    self.assertTrue(f['ziel'] and f['knopf'])
+
+    def test_freigaben_stehen_nicht_mehr_in_der_inbox(self):
+        """G2 — dieselbe Rechnung darf nicht zweimal auf der Seite stehen."""
+        from core.services.inbox import sammle_inbox
+        with mandant(self.a.organisation):
+            self._rechnung()
+            inbox, _mehr, _typen = sammle_inbox()
+        self.assertFalse(
+            any('freigeben' in e['titel'].lower() for e in inbox),
+            'Die Sammelzeile «Rechnungen prüfen & freigeben» steht wieder in '
+            'der Inbox — daneben zeigt «Wartet auf Freigabe» dieselben '
+            'Rechnungen einzeln.')
+
+    def test_der_zahllauf_bleibt_in_der_inbox(self):
+        """Gegenprobe: Er ist ein LAUF, kein Einzelentscheid — und muss bleiben."""
+        from core.services.inbox import sammle_inbox
+        with mandant(self.a.organisation):
+            self._rechnung(status='freigegeben')
+            inbox, _mehr, _typen = sammle_inbox()
+        self.assertTrue(any('bezahlen' in e['titel'].lower() for e in inbox),
+                        'Der Zahllauf ist mit den Freigaben mitgegangen.')
+
+
+class ProtoypVollstaendigkeitTests(TestCase):
+    """Was der Prototyp auf «Heute» zeigt, muss die Seite führen — oder der
+    Grund muss dastehen.
+
+    `mockups/konzept-struktur.html` nennt fünf Abschnitte. Vier sind gebaut.
+    Der fünfte, «Vertretung», ist nicht rechenbar: `crm.Mitgliedschaft`
+    führt Benutzer, Organisation und Rolle — kein Abwesenheitsfeld, keine
+    Stellvertretung. Dieser Test hält beides fest: dass die vier da sind,
+    und dass die Lücke benannt ist statt erfunden.
+    """
+
+    NICHT_GEBAUT = {'Vertretung'}
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _abschnitte_des_prototyps(self):
+        import pathlib
+        import re
+        q = pathlib.Path('mockups/konzept-struktur.html').read_text(encoding='utf-8')
+        # Zwischen den <h1>-ÜBERSCHRIFTEN, nicht zwischen den Navigations-
+        # eintraegen: `>Heute<` steht auch im Menue, dort aber ohne Inhalt
+        # dahinter — eine erste Fassung schnitt zwei Menuepunkte heraus und
+        # las folgerichtig NULL Abschnitte. `test_der_prototyp_fuehrt_wirklich_
+        # fuenf` hat das gemeldet.
+        def h1(text):
+            return re.search(rf'<h1[^>]*>\s*{text}', q).start()
+
+        heute = q[h1('Heute'):h1('Fälle')]
+        return [re.sub(r'<[^>]+>', '', m).strip()
+                for m in re.findall(r'<h2[^>]*>(.*?)</h2>', heute, re.S)]
+
+    def test_der_prototyp_fuehrt_wirklich_fuenf(self):
+        """Gegenprobe: Ohne diesen Test prüfte der nächste eine leere Liste."""
+        self.assertEqual(len(self._abschnitte_des_prototyps()), 5)
+
+    def test_jeder_abschnitt_ist_gebaut_oder_benannt(self):
+        import pathlib
+        vorlagen = '\n'.join(
+            pathlib.Path('core/templates/fw', d).read_text(encoding='utf-8')
+            for d in ('dashboard.html', '_arbeitsvorrat_abschnitte.html'))
+        # Der Prototyp nennt sie so, die Anwendung teils anders — die
+        # Zuordnung steht hier, damit sie nachlesbar ist.
+        gebaut = {'Was reisst': 'Was reisst',
+                  'Posteingang': 'Zulauf',
+                  'Termine': 'Termine',
+                  'Wartet auf mich': 'Wartet auf Freigabe'}
+        for name in self._abschnitte_des_prototyps():
+            with self.subTest(abschnitt=name):
+                if name in self.NICHT_GEBAUT:
+                    self.assertIn(
+                        name, vorlagen,
+                        f'«{name}» ist nicht gebaut — dann muss in der Vorlage '
+                        f'stehen, warum. Eine stumme Lücke liest sich als '
+                        f'Versehen.')
+                else:
+                    self.assertIn(gebaut[name], vorlagen)
+
+    def test_die_ausnahme_ist_noch_eine(self):
+        """Sobald ein Abwesenheitsmodell existiert, gehört sie gebaut."""
+        from django.apps import apps
+        felder = {f.name for f in apps.get_model('crm', 'Mitgliedschaft')._meta.get_fields()}
+        self.assertNotIn(
+            'abwesend_bis', felder,
+            'Es gibt jetzt ein Abwesenheitsfeld — «Vertretung» ist rechenbar '
+            'geworden und gehört gebaut, statt weiter in NICHT_GEBAUT zu stehen.')

@@ -44,7 +44,8 @@ ANSICHTEN = (
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_arbeit(request):
     """Der Arbeitsvorrat mit vorgefilterten Ansichten und dem Zulauf daneben."""
-    from faelle.arbeitsvorrat import posteingang, was_reisst
+    from faelle.arbeitsvorrat import (liegezeit, posteingang, termine,
+                                      wartet_auf_freigabe, was_reisst)
     from faelle.models import Fall
 
     basis = _global_filter(request)
@@ -76,7 +77,11 @@ def fw_arbeit(request):
         # allein füllt.
         vorrat = was_reisst(heute, grenze=365, aktive_lg=basis['aktive_lg'])
 
+    # Termine und Freigaben kommen aus derselben Quelle wie auf der
+    # Startseite — der eingebundene Baustein erwartet die `av_*`-Namen.
     eingaenge, eingaenge_gesamt = posteingang()
+    termin_zeilen = termine(heute)
+    freigaben = wartet_auf_freigabe()
     return render(request, 'fw/arbeit.html', {
         **basis, 'nav': 'arbeit',
         'heute': heute,
@@ -86,6 +91,11 @@ def fw_arbeit(request):
         'faelle': faelle,
         'av_eingaenge': eingaenge,
         'av_eingaenge_gesamt': eingaenge_gesamt,
+        'av_termine': termin_zeilen,
+        'av_termine_gesamt': len(termin_zeilen),
+        'av_freigaben': freigaben,
+        'av_freigaben_gesamt': len(freigaben),
+        'av_liegezeit': liegezeit(freigaben),
     })
 
 

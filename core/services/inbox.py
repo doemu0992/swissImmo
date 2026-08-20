@@ -95,13 +95,15 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
     if aktive_lg:
         kred_qs = kred_qs.filter(liegenschaft=aktive_lg)
     kred = list(kred_qs.prefetch_related('zahlungen'))
-    zur_freigabe = [k for k in kred if k.status == 'neu']
     zur_zahlung = [k for k in kred if k.status in ('freigegeben', 'teilbezahlt') and k.offener_betrag > 0]
-    if zur_freigabe:
-        eintraege.append(_eintrag('geld',
-                                  f"{len(zur_freigabe)} Rechnungen prüfen & freigeben",
-                                  'Neu eingegangene Lieferantenrechnungen',
-                                  '/neu/kreditoren/' + lg_query, 'Freigeben', ordnung=30))
+    # Die Sammelzeile «X Rechnungen prüfen & freigeben» stand hier bis zum
+    # 20.08.2026. Sie ist nach «Wartet auf Freigabe» gewandert (Prototyp
+    # `konzept-struktur.html`, Screen «Heute») und zeigt dort die EINZELNEN
+    # Rechnungen mit Betrag und Liegezeit statt einer Zahl. Zwei Listen
+    # nebeneinander verbietet G2 — und eine Zahl sagt nicht, welche Rechnung
+    # seit acht Tagen liegt.
+    #
+    # Der Zahllauf bleibt hier: Er ist ein LAUF, kein Einzelentscheid.
     if zur_zahlung:
         chf = sum((k.offener_betrag or Decimal('0.00') for k in zur_zahlung), Decimal('0.00'))
         dringend = any((k.faellig_am and k.faellig_am < heute) for k in zur_zahlung)

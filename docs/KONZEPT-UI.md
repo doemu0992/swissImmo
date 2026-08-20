@@ -107,6 +107,33 @@ eigene Spalte, rechts der Arbeitsvorrat.
 
 Zusätzlich: Filter nach Zuständigkeit (Person) und Mandat. **Keine Kennzahlen.**
 
+**Die Abschnitte der Heute-Ansicht.** Der Prototyp (`mockups/konzept-struktur.html`, Screen
+«Heute») nennt fünf. Vier sind gebaut, einer ist nicht rechenbar:
+
+| Abschnitt (Prototyp) | in der Anwendung | Quelle |
+|---|---|---|
+| Was reisst | Was reisst | Fallschritte, Läufe, Pendenzen, Wartungsfristen |
+| Posteingang | Zulauf | `faelle.Eingang` mit Vorschlag |
+| Termine | Termine | `Abnahmeprotokoll`, `Mietbewerbung.besichtigung_am` |
+| Wartet auf mich | **Wartet auf Freigabe** | Kreditoren `neu`, Handwerker-Offerten `ausstehend`, Vertragsentwürfe |
+| Vertretung | — **nicht gebaut** | kein Abwesenheitsmodell |
+
+Zwei Abweichungen vom Prototyp, beide bewusst:
+
+- **«Wartet auf mich» heisst «Wartet auf Freigabe».** Das Datenmodell trägt das «mich» nicht:
+  Weder `KreditorenRechnung` noch `HandwerkerAuftrag` führen einen Freigeber, und
+  `crm.Mitgliedschaft` kennt keine Zuständigkeit je Vorgang. In einem Büro mit zwei bis fünf
+  Personen ist die Warteschlange ohnehin gemeinsam — die Überschrift darf sie nur nicht als
+  persönlich ausgeben.
+- **«Vertretung» fehlt.** `crm.Mitgliedschaft` führt Benutzer, Organisation und Rolle — kein
+  Abwesenheitsfeld, keine Stellvertretung. Die Zeile «Silvia R. abwesend bis 25.08.» wäre eine
+  Behauptung über etwas, das nirgends erfasst wird. Der Grund steht in der Vorlage;
+  `ProtoypVollstaendigkeitTests` hält fest, dass die Lücke **benannt** bleibt und schlägt an,
+  sobald ein Abwesenheitsfeld existiert.
+
+Ebenfalls weggelassen: der Verweis «Kalender» unter den Terminen — es gibt keine
+Kalenderansicht, und ein Knopf ins Leere ist schlechter als keiner.
+
 ### 3.2 Akten
 
 `Mandat › Liegenschaft › Objekt › Mietverhältnis`, quer dazu `Person` und `Dienstleister`.

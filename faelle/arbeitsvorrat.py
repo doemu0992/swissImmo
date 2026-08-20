@@ -244,11 +244,159 @@ def posteingang():
     return zeilen, len(offen)
 
 
+def termine(heute=None, tage=7):
+    """Was in den nächsten Tagen im Kalender steht.
+
+    Der Prototyp (`mockups/konzept-struktur.html`, Screen «Heute») zeigt drei
+    Arten: Wohnungsabnahme, Besichtigung, Eigentümergespräch. Zwei davon sind
+    rechenbar:
+
+        Abnahme       `rentals.Abnahmeprotokoll` mit `datum` und
+                      `abgeschlossen = False`
+        Besichtigung  `mietprozess.Mietbewerbung.besichtigung_am`
+
+    **Das Eigentümergespräch nicht.** Es gibt kein Terminmodell — weder für
+    Gespräche noch für sonstige Verabredungen. Eine erfundene Zeile wäre hier
+    schlimmer als eine fehlende: Wer einen Kalender sieht, verlässt sich
+    darauf.
+    """
+    from datetime import datetime, time
+
+    heute = heute or timezone.localdate()
+    bis = heute + timedelta(days=tage)
+    zeilen = []
+
+    try:
+        from rentals.models import Abnahmeprotokoll
+        for a in (Abnahmeprotokoll.objects
+                  .filter(abgeschlossen=False, datum__gte=heute, datum__lte=bis)
+                  .select_related('vertrag__einheit__liegenschaft')
+                  .order_by('datum')[:20]):
+            einheit = getattr(a.vertrag, 'einheit', None)
+            zeilen.append({
+                'art': 'abnahme', 'ikon': 'fa-clipboard-check',
+                'titel': 'Wohnungsabnahme' if a.typ == 'auszug' else 'Übergabe',
+                'zeile': str(einheit) if einheit else '',
+                'datum': a.datum, 'zeit': None,
+                'ziel': f'/neu/vertraege/{a.vertrag_id}/', 'knopf': 'Vertrag',
+            })
+    except Exception:
+        log.exception('Termine: Abnahmen konnten nicht geladen werden')
+
+    try:
+        from mietprozess.models import Mietbewerbung
+        # `besichtigung_am` ist ein DateTimeField — der Vergleich läuft
+        # deshalb über den Tagesbeginn, nicht über das nackte Datum.
+        von = timezone.make_aware(datetime.combine(heute, time.min))
+        nach = timezone.make_aware(datetime.combine(bis, time.max))
+        for b in (Mietbewerbung.objects
+                  .filter(besichtigung_am__gte=von, besichtigung_am__lte=nach)
+                  .select_related('einheit__liegenschaft')
+                  .order_by('besichtigung_am')[:20]):
+            zeilen.append({
+                'art': 'besichtigung', 'ikon': 'fa-key',
+                'titel': 'Besichtigung',
+                'zeile': f'{b.einheit} · {b.vorname} {b.nachname}',
+                'datum': timezone.localtime(b.besichtigung_am).date(),
+                'zeit': timezone.localtime(b.besichtigung_am).time(),
+                'ziel': '/neu/bewerbungen/', 'knopf': 'Bewerbung',
+            })
+    except Exception:
+        log.exception('Termine: Besichtigungen konnten nicht geladen werden')
+
+    zeilen.sort(key=lambda z: (z['datum'], z['zeit'] or time.min))
+    return zeilen
+
+
+def wartet_auf_freigabe():
+    """Was ohne eine Entscheidung nicht weitergeht.
+
+    Der Prototyp zeigt drei Arten, alle drei sind rechenbar: Lieferanten-
+    rechnung, Handwerker-Offerte, Mietvertrag zur Unterschrift.
+
+    **Nicht «wartet auf MICH».** Der Prototyp nennt den Abschnitt so; das
+    Datenmodell trägt es nicht: Weder `KreditorenRechnung` noch
+    `HandwerkerAuftrag` führen einen Freigeber, und `Mitgliedschaft` kennt
+    keine Zuständigkeit je Vorgang. In einem Büro mit zwei bis fünf Personen
+    ist die Warteschlange ohnehin gemeinsam — aber die Überschrift darf das
+    nicht als persönlich ausgeben.
+    """
+    heute = timezone.localdate()
+    zeilen = []
+
+    def _alter(datum):
+        if datum is None:
+            return None
+        if hasattr(datum, 'date'):
+            datum = timezone.localtime(datum).date()
+        return (heute - datum).days
+
+    try:
+        from finance.models import KreditorenRechnung
+        for r in (KreditorenRechnung.objects.filter(status='neu')
+                  .select_related('liegenschaft').order_by('datum')[:10]):
+            zeilen.append({
+                'art': 'rechnung', 'ikon': 'fa-file-invoice',
+                'titel': f'Rechnung {r.lieferant}' if r.lieferant else 'Eingangsrechnung',
+                'zeile': str(r.liegenschaft or ''),
+                'betrag': r.betrag, 'tage': _alter(r.datum),
+                'ziel': '/neu/kreditoren/', 'knopf': 'Freigeben',
+            })
+    except Exception:
+        log.exception('Freigaben: Kreditoren konnten nicht geladen werden')
+
+    try:
+        from tickets.models import HandwerkerAuftrag
+        for a in (HandwerkerAuftrag.objects.filter(freigabe_status='ausstehend')
+                  .select_related('handwerker', 'ticket')[:10]):
+            zeilen.append({
+                'art': 'offerte', 'ikon': 'fa-file-signature',
+                'titel': f'Offerte {a.handwerker}' if a.handwerker_id else 'Offerte',
+                'zeile': str(getattr(a.ticket, 'titel', '') or ''),
+                'betrag': a.kosten_geschaetzt, 'tage': _alter(a.beauftragt_am),
+                'ziel': f'/neu/schaeden/{a.ticket_id}/', 'knopf': 'Entscheiden',
+            })
+    except Exception:
+        log.exception('Freigaben: Handwerker-Offerten konnten nicht geladen werden')
+
+    try:
+        from rentals.models import Mietvertrag
+        for v in (Mietvertrag.objects.filter(status='entwurf')
+                  .select_related('mieter', 'einheit__liegenschaft')
+                  .order_by('beginn')[:10]):
+            zeilen.append({
+                'art': 'vertrag', 'ikon': 'fa-pen-nib',
+                'titel': f'Mietvertrag {v.mieter.display_name}' if v.mieter_id
+                         else 'Mietvertrag',
+                'zeile': f'{v.einheit} · zur Unterschrift',
+                'betrag': None, 'tage': None,
+                'ziel': f'/neu/vertraege/{v.id}/signieren/', 'knopf': 'Signatur',
+            })
+    except Exception:
+        log.exception('Freigaben: Vertragsentwürfe konnten nicht geladen werden')
+
+    return zeilen
+
+
+def liegezeit(zeilen):
+    """Durchschnittliche Liegezeit der Freigaben, in Tagen.
+
+    Der Prototyp zeigt sie als Fusszeile («Ø Liegezeit 1.4 Tage»). Sie ist
+    die einzige Zahl, die sagt, ob der Stapel bearbeitet wird oder wächst.
+    Vorgänge ohne Datum zählen nicht mit — sonst zöge ein fehlendes Feld den
+    Schnitt gegen null.
+    """
+    alter = [z['tage'] for z in zeilen if z.get('tage') is not None]
+    return round(sum(alter) / len(alter), 1) if alter else None
+
+
 def arbeitsvorrat(request, aktive_lg=None):
     """Alles, was die Heute-Ansicht braucht — in einem Aufruf."""
     heute = timezone.localdate()
     reisst = was_reisst(heute, aktive_lg=aktive_lg)
     eingaenge, eingaenge_gesamt = posteingang()
+    termin_zeilen = termine(heute)
+    freigaben = wartet_auf_freigabe()
     return {
         'av_heute': heute,
         'av_reisst': reisst[:ZEILEN],
@@ -260,4 +408,9 @@ def arbeitsvorrat(request, aktive_lg=None):
         'av_vorschau_tage': VORSCHAU_TAGE,
         'av_eingaenge': eingaenge,
         'av_eingaenge_gesamt': eingaenge_gesamt,
+        'av_termine': termin_zeilen[:ZEILEN],
+        'av_termine_gesamt': len(termin_zeilen),
+        'av_freigaben': freigaben[:ZEILEN],
+        'av_freigaben_gesamt': len(freigaben),
+        'av_liegezeit': liegezeit(freigaben),
     }

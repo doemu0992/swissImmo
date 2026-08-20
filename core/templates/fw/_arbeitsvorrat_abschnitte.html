@@ -1,0 +1,66 @@
+{% comment %} Die beiden Abschnitte «Termine» und «Wartet auf Freigabe» aus
+   dem Prototyp (mockups/konzept-struktur.html, Screen «Heute»). Einmal
+   gebaut, von Startseite UND Arbeit-Seite eingebunden — nicht zweimal
+   geschrieben.
+
+   Der fünfte Abschnitt des Prototyps, «Vertretung», fehlt bewusst: Es gibt
+   kein Abwesenheits- oder Stellvertretungsmodell. `Mitgliedschaft` führt
+   Benutzer, Organisation und Rolle, sonst nichts. Eine erfundene Zeile
+   «Silvia R. abwesend bis 25.08.» wäre eine Behauptung über etwas, das
+   nirgends erfasst wird. {% endcomment %}
+{% load chf %}
+
+{% if av_termine %}
+<div class="fw-card">
+    <div class="fw-kopf">
+        <span class="fw-ikon"><i class="fa-solid fa-calendar-day"></i></span>
+        <span class="fw-t">Termine</span>
+        <span class="fw-neben">{{ av_termine_gesamt }} in den nächsten 7 Tagen</span>
+    </div>
+    {% for t in av_termine %}
+    <div class="fw-zeile">
+        <div class="fw-zeit" style="min-width:64px">
+            {% if t.zeit %}{{ t.zeit|time:"H:i" }}{% else %}{{ t.datum|date:"d.m." }}{% endif %}
+            {% if t.zeit %}<br><span class="fw-klein">{{ t.datum|date:"d.m." }}</span>{% endif %}
+        </div>
+        <span class="fw-ikon"><i class="fa-solid {{ t.ikon }}"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ t.titel }}</div>
+            <div class="fw-s">{{ t.zeile }}</div>
+        </div>
+        <a href="{{ t.ziel }}" class="fw-btn">{{ t.knopf }}</a>
+    </div>
+    {% endfor %}
+    {% comment %} Kein «Kalender»-Verweis wie im Prototyp: Es gibt keine
+       Kalenderansicht, und ein Knopf ins Leere ist schlechter als keiner. {% endcomment %}
+</div>
+{% endif %}
+
+{% if av_freigaben %}
+<div class="fw-card">
+    <div class="fw-kopf">
+        <span class="fw-ikon warn"><i class="fa-solid fa-hand"></i></span>
+        {% comment %} Der Prototyp nennt den Abschnitt «Wartet auf mich».
+           Das Datenmodell trägt das «mich» nicht: Weder KreditorenRechnung
+           noch HandwerkerAuftrag führen einen Freigeber. {% endcomment %}
+        <span class="fw-t">Wartet auf Freigabe</span>
+        <span class="fw-neben">{{ av_freigaben_gesamt }} Entscheid{{ av_freigaben_gesamt|pluralize:"e" }}</span>
+    </div>
+    {% for f in av_freigaben %}
+    <div class="fw-zeile">
+        <span class="fw-marker {% if f.tage and f.tage > 5 %}crit{% elif f.tage and f.tage > 2 %}warn{% endif %}"></span>
+        <span class="fw-ikon"><i class="fa-solid {{ f.ikon }}"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ f.titel }}</div>
+            <div class="fw-s">{{ f.zeile }}{% if f.tage %} · liegt seit {{ f.tage }} Tag{{ f.tage|pluralize:"en" }}{% endif %}</div>
+        </div>
+        {% if f.betrag %}<span class="fw-betrag">CHF {{ f.betrag|chf }}</span>{% endif %}
+        <a href="{{ f.ziel }}" class="fw-btn fw-primary">{{ f.knopf }}</a>
+    </div>
+    {% endfor %}
+    <div class="fw-fuss">
+        <a href="/neu/kreditoren/" class="fw-link">Alle Freigaben</a>
+        <span>{% if av_liegezeit %}Ø Liegezeit {{ av_liegezeit }} Tage{% else %}ohne Datum — Liegezeit nicht berechenbar{% endif %}</span>
+    </div>
+</div>
+{% endif %}
