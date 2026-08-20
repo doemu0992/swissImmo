@@ -31,6 +31,16 @@ from django.test import TestCase
 from core.tests.test_palette import kontrast, MINDESTKONTRAST, _block
 
 BASE = pathlib.Path('core/templates/fw/base.html')
+#: Seit 4b.9 steht die Rampe in einem eigenen Baustein, weil sie von mehreren
+#: Huellen gebraucht wird (base.html, base_embed.html, _modal_done.html).
+PALETTE = pathlib.Path('core/templates/fw/_tailwind_palette.html')
+#: Jede Huelle, die Tailwind vom CDN laedt und zur Anwendung gehoert. Die
+#: aussenstehenden Seiten (Portal, Bewerbung, oeffentliche Formulare,
+#: Fehlerseiten) fehlen hier absichtlich — siehe
+#: `HuellenTests.test_die_aussenseiten_sind_gezaehlt_statt_vergessen`.
+HUELLEN = ('core/templates/fw/base.html',
+           'core/templates/fw/base_embed.html',
+           'core/templates/fw/_modal_done.html')
 
 #: Wo eine Tailwind-Stufe einen Konzept-Token trifft, muss derselbe Wert
 #: stehen. Das ist die eigentliche Bindung — alles andere ist Zwischenton.
@@ -81,7 +91,7 @@ def rampen():
     `test_es_gibt_ueberhaupt_rampen` — verschwindet eine Rampe aus dem
     Ergebnis, schlägt er an, statt dass alles still grün bleibt.
     """
-    quelle = BASE.read_text(encoding='utf-8')
+    quelle = PALETTE.read_text(encoding='utf-8')
     anfang = quelle.index('tailwind.config')
     block = quelle[anfang:quelle.index('</script>', anfang)]
     block = ohne_kommentare(block)
@@ -216,3 +226,67 @@ class TailwindPaletteTests(TestCase):
         self.assertEqual(len(self.rampen['indigo']), 10)
         self.assertTrue(all(re.fullmatch(r'#[0-9a-f]{6}', w)
                             for w in self.rampen['indigo'].values()))
+
+
+class HuellenTests(TestCase):
+    """Jede Huelle der Anwendung muss die Palette auch wirklich laden.
+
+    WARUM
+
+    Bis 4b.9 stand die Rampe nur in `base.html`, und dieser Test las nur
+    `base.html`. Er bestaetigte damit die eine Stelle, an der aufgeraeumt
+    worden war, und sah die zwei anderen Huellen nie an: `base_embed.html`
+    und `_modal_done.html` laden dasselbe Tailwind vom CDN, aber ohne die
+    Umdefinition. Eingebettete Seiten und Modale — darunter die
+    Wohnungsabnahme — rendern deshalb in Tailwinds Voreinstellung: blaugraues
+    Slate, indigoblaue Akzente, mitten in einer petrolfarbenen Anwendung.
+
+    Die Pruefung ist bewusst eine Suche ueber das Dateisystem und keine feste
+    Liste allein: Eine neue Huelle taucht von selbst auf, statt still
+    danebenzustehen.
+    """
+
+    def _cdn_huellen(self):
+        """Alle Vorlagen, die Tailwind vom CDN laden."""
+        wurzel = pathlib.Path('core/templates')
+        return sorted(str(p) for p in wurzel.rglob('*.html')
+                      if 'cdn.tailwindcss.com' in p.read_text(encoding='utf-8'))
+
+    def test_die_suche_findet_ueberhaupt_huellen(self):
+        """Sonst pruefte der Test unten eine leere Liste."""
+        gefunden = self._cdn_huellen()
+        self.assertGreaterEqual(len(gefunden), 10, gefunden)
+        for pfad in HUELLEN:
+            self.assertIn(pfad, gefunden,
+                          f'{pfad} laedt Tailwind nicht mehr vom CDN — dann '
+                          f'gehoert der Eintrag aus HUELLEN entfernt.')
+
+    def test_jede_huelle_der_anwendung_laedt_die_palette(self):
+        for pfad in HUELLEN:
+            with self.subTest(huelle=pfad):
+                self.assertIn(
+                    "{% include 'fw/_tailwind_palette.html' %}",
+                    pathlib.Path(pfad).read_text(encoding='utf-8'),
+                    f'{pfad} laedt Tailwind ohne die Petrol-Rampe. Die Seite '
+                    f'rendert dann in Tailwinds Voreinstellung.')
+
+    def test_der_baustein_traegt_die_rampe_auch_wirklich(self):
+        """Gegenprobe: Ein leerer Baustein bestuende den Test darueber."""
+        text = PALETTE.read_text(encoding='utf-8')
+        self.assertIn('tailwind.config', text)
+        self.assertIn("'#0f6f6a'", text, 'Die Markenfarbe fehlt im Baustein.')
+
+    def test_die_aussenseiten_sind_gezaehlt_statt_vergessen(self):
+        """Was Mieter und Bewerber sehen, ist NOCH nicht umgestellt.
+
+        Das ist eine Entscheidung, keine Nachlaessigkeit: Die Palette dort
+        einzuziehen aendert das Erscheinungsbild gegenueber Dritten. Dieser
+        Test haelt die Zahl fest, damit die Luecke benannt bleibt und nicht
+        stillschweigend waechst.
+        """
+        offen = [p for p in self._cdn_huellen() if p not in HUELLEN]
+        self.assertGreater(len(offen), 0)
+        self.assertLessEqual(
+            len(offen), 12,
+            f'Es sind mehr Huellen ohne Palette geworden ({len(offen)}): '
+            f'{offen}. Neue Huellen binden `fw/_tailwind_palette.html` ein.')

@@ -470,6 +470,10 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.3 | **Reitersatz und Aktenkopf** der vier übrigen Detailseiten — Schaden, Person und Liegenschaft erledigt, **Objekt** offen | **teilweise** |
 | 4b.4 | **Die Bereichsinhalte** auf die Komponentenschicht — Person und Liegenschaft erledigt, Schaden (104) und Vertrag (177) offen | **teilweise** |
 | 4b.5 | **Phase 4a wird bedienbar**: `/neu/arbeit/` (fünf Ansichten + Zulauf-Spalte), `/neu/faelle/<id>/` (Fallakte mit Verfallsregel), `/neu/laeufe/`, `/neu/zulauf/`; Arbeitsvorrat auf der Startseite | erledigt |
+| 4b.6 | **Die Petrol-Palette unter Tailwind** (16.4): `tailwind.config` definiert die Farbrampen um, statt 7490 Klassen einzeln zu ändern | erledigt — Lücken in 4b.9 |
+| 4b.7 | Die fehlenden Abschnitte der Heute-Ansicht: **Termine** und **Wartet auf Freigabe**, gebaut als `fw/_arbeitsvorrat_abschnitte.html` und von Startseite und Arbeit-Seite eingebunden | erledigt |
+| 4b.8 | **Termin- und Abwesenheitsmodul**: `faelle.Termin` und `faelle.Abwesenheit`, `/neu/termine/`, `/neu/abwesenheiten/`; damit stehen alle fünf Abschnitte aus 3.1 | erledigt |
+| 4b.9 | **Die drei Flächen, die 4b.6 verfehlt hat**: Seitenleiste, Dunkelmodus, eingebettete Hüllen; Palette als Baustein; Farbton-Wächter über die ganze Datei | erledigt |
 
 > **Warum 4b.5 dazwischenkam.** `Fall`, `Fallschritt`, `Eingang`, `Zuordnungsregel`, `Lauf`
 > und `Blockade` waren nach vier Etappen vollständig gebaut und vollständig getestet — und
@@ -720,10 +724,36 @@ Rampe, Kontrast der gebrauchten Textfarben, Gleichlauf der Zwillingsfamilien.
 weiss, auch wenn die Tokens umschalten. Das war vorher so und ist es weiterhin. Der Weg dorthin
 ist die Komponentenschicht; die Aktenseiten gehen ihn bereits.
 
+> **Nachtrag 4b.9 — «überall» stimmte nicht.** Die Umdefinition wirkt nur dort, wo sie geladen
+> wird, und nur auf Klassennamen. Drei Flächen kamen daran vorbei und blieben Indigo:
+>
+> | Fläche | Warum vorbei | Umfang |
+> |---|---|---|
+> | **Seitenleiste** | stand als `from-[#15182e] to-[#0d0f1e]` in Tailwinds Notation für beliebige Werte | auf **jeder** Seite sichtbar |
+> | **Dunkelmodus** | überschreibt mit `!important` und festen Hexwerten | die **ganze** Anwendung, je nach Systemeinstellung |
+> | **Eingebettete Hüllen** | `fw/base_embed.html` und `fw/_modal_done.html` luden Tailwind ohne die Umdefinition | Modale, u. a. die Wohnungsabnahme |
+>
+> Gemerkt wurde es nicht, weil die Wächter nur den `:root`-Block und die Rampen lasen — also
+> genau die Stelle, an der aufgeräumt worden war. Seit 4b.9 gilt: die Seitenleiste trägt den
+> Prototyp-Verlauf `#122b31 → #0a1c20` (`--nav` aus `konzept-v2.html`); die Zustands- und
+> Markenfarben des Dunkelmodus stehen als `var(--ds-*)` und können nicht mehr auseinanderlaufen;
+> die neutrale Flächentreppe bleibt Hexwert, aber im Farbton 195° bei unveränderter Helligkeit
+> (Kontraständerung ≤ 1 Punkt, alle Werte über AA); die Rampe liegt als Baustein
+> `fw/_tailwind_palette.html` und wird von allen drei Hüllen eingebunden.
+> `core/tests/test_palette.py` misst **jeden** Farbwert der Datei auf seinen Farbton und lässt
+> keinen zwischen 215° und 300° durch.
+
+**Was die Palette weiterhin nicht abdeckt: die Aussenseiten.** Zwölf Vorlagen laden Tailwind vom
+CDN ohne den Baustein — Mieterportal, Bewerbungsformular (allein 79 der 92 verbliebenen
+Indigo-Klassen), öffentliches Ticket-Formular, Datenschutzseite, Fehlerseiten, Dossier. Das ist
+eine Entscheidung, keine Nachlässigkeit: Sie einzuziehen ändert, was **Mieter und Bewerber**
+sehen. Die Zahl ist in `test_tailwind_palette.py` festgehalten, damit die Lücke benannt bleibt
+und nicht stillschweigend wächst.
+
 ### 16.5 Was hier bewusst nicht steht
 
-Der **Aufbau** ausserhalb der Aktenseiten. Die Palette gilt seit 4b.6 überall (16.4) — Farbe ist
-damit erledigt. Karten, Zeilen, Tabellen und Formulare der übrigen Seiten laufen aber weiter auf
+Der **Aufbau** ausserhalb der Aktenseiten. Die Palette gilt seit 4b.6 in der Anwendung, seit
+4b.9 auch in Seitenleiste, Dunkelmodus und Modalen (16.4) — Farbe ist damit innen erledigt. Karten, Zeilen, Tabellen und Formulare der übrigen Seiten laufen aber weiter auf
 Tailwind-Utilities statt auf `fw-card`, `fw-zeile`, `fw-table`, `fw-feld`. Das ist kein
 Farbproblem mehr, sondern eines der Bausteine: Abstände, Radien, Schatten und Zustände weichen
 von Seite zu Seite ab.

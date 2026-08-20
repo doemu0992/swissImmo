@@ -7,156 +7,13 @@
     <script>/* Theme früh setzen (kein Flash) */(function(){try{var t=localStorage.getItem('fw-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%230f6f6a%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-    /* ============================================================
-       DIE PETROL-PALETTE UNTER TAILWIND (Phase 4b.6)
-       ============================================================
-
-       WARUM SO UND NICHT VORLAGE FÜR VORLAGE
-
-       Am 20.08.2026 gemessen: **7490** fest verdrahtete Farbklassen in
-       **176** Vorlagen — 4959 `slate`, 1250 `indigo`, dazu rose, emerald,
-       amber. Die Akten waren auf die Komponentenschicht umgestellt, der
-       Rest der Anwendung nicht: Seitenleiste, Topbar, Listen, Formulare,
-       Berichte blieben indigoblau. Die Anwendung war zweifarbig.
-
-       KONZEPT-UI.md 16.4 nennt genau zwei Wege dorthin: «Klassen
-       schrittweise auf Tokens umstellen, oder Tailwind eine
-       Petrol-Palette unterschieben.» Der erste Weg heisst 7490 Einzel-
-       änderungen über Wochen, mit einem zweifarbigen Zustand dazwischen.
-       Der zweite ist EINE Änderung und trifft alles zugleich.
-
-       WAS HIER PASSIERT
-
-       Tailwinds Farbrampen werden umdefiniert, nicht die Vorlagen. Aus
-       `bg-indigo-600` wird die Markenfarbe, aus `text-slate-500` das
-       petrolgetönte Grau des Konzepts. Die Klassennamen bleiben, was sie
-       sind — sie zeigen nur woanders hin.
-
-       DIE RAMPEN SIND AN DIE TOKENS GEBUNDEN, NICHT DANEBEN GEBAUT
-
-       An den Stellen, wo eine Rampe einen Konzept-Token trifft, steht
-       DERSELBE Wert: indigo-600 = --ds-brand, indigo-700 = --ds-brand-600,
-       indigo-50/100 = --ds-brand-soft, slate-200 = --ds-line,
-       slate-500 = --ds-faint, slate-600 = --ds-muted, slate-900 =
-       --ds-ink. `core/tests/test_palette.py` prüft das nach; ohne diese
-       Bindung wären es wieder zwei Paletten, nur beide petrolfarben.
-
-       DIE HELLIGKEITSTREPPE BLEIBT
-
-       Jede Stufe behält ungefähr die Helligkeit ihrer Tailwind-Vorlage.
-       Sonst kippt jede bestehende Gestaltung: `bg-slate-100` als
-       Chip-Fläche muss hell bleiben, `text-slate-700` dunkel. Verändert
-       wird der Farbton, nicht die Ordnung.
-
-       WAS DAS NICHT LÖST
-
-       Der Dunkelmodus. Tailwind-Klassen sind statisch; `bg-white` bleibt
-       weiss, auch wenn die Tokens umschalten. Das war vorher so und ist
-       es weiterhin — die Komponentenschicht (`fw-*`) ist der Weg dorthin,
-       und die Akten gehen ihn bereits.
-       ============================================================ */
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    /* Markenfarbe — Petrol. */
-                    indigo: {
-                        50:  '#eef7f6', 100: '#d9efed', 200: '#b3dedb',
-                        300: '#7fc6c1', 400: '#46a49d', 500: '#17847d',
-                        600: '#0f6f6a', 700: '#0b5450', 800: '#0a4441',
-                        900: '#093734',
-                    },
-                    /* `violet` steht im Bestand fast nur neben indigo
-                       (Verläufe im Aktenkopf, Hero-Kacheln). Eine Stufe
-                       kühler als die Marke, damit der Verlauf Verlauf
-                       bleibt statt einer Fläche. */
-                    violet: {
-                        50:  '#eef7f7', 100: '#d7eeef', 200: '#aeddde',
-                        300: '#79c3c6', 400: '#3fa0a6', 500: '#158088',
-                        600: '#0d6a74', 700: '#0a505a', 800: '#09414a',
-                        900: '#08343c',
-                    },
-                    /* Graustufen, petrolgetönt statt blaugrau. */
-                    slate: {
-                        50:  '#f4f7f7', 100: '#eaf0f0', 200: '#dde6e8',
-                        300: '#c2d2d4', 400: '#8ba4aa', 500: '#5c757c',
-                        600: '#4c6169', 700: '#33474d', 800: '#1c3239',
-                        900: '#0e2227',
-                    },
-                    /* `gray` und `zinc` werden im Bestand wie slate
-                       benutzt — dieselbe Rampe, damit nicht zwei Grautöne
-                       nebeneinander stehen. */
-                    gray: {
-                        50:  '#f4f7f7', 100: '#eaf0f0', 200: '#dde6e8',
-                        300: '#c2d2d4', 400: '#8ba4aa', 500: '#5c757c',
-                        600: '#4c6169', 700: '#33474d', 800: '#1c3239',
-                        900: '#0e2227',
-                    },
-                    /* Semantische Farben: dieselben Töne wie --ds-good,
-                       --ds-warn, --ds-crit, --ds-info. Rot/Grün/Gelb
-                       bleiben Rot/Grün/Gelb — eine Warnung in Petrol wäre
-                       keine Warnung mehr. Nur die Sättigung ist an die
-                       Konzeptwerte angeglichen. */
-                    emerald: {
-                        50:  '#e0f2e5', 100: '#c6e6cf', 200: '#9bd3ac',
-                        300: '#6bba81', 400: '#3f9d5b', 500: '#237a3d',
-                        600: '#166534', 700: '#11512a', 800: '#0e4123',
-                        900: '#0b341c',
-                    },
-                    green: {
-                        50:  '#e0f2e5', 100: '#c6e6cf', 200: '#9bd3ac',
-                        300: '#6bba81', 400: '#3f9d5b', 500: '#237a3d',
-                        600: '#166534', 700: '#11512a', 800: '#0e4123',
-                        900: '#0b341c',
-                    },
-                    amber: {
-                        50:  '#fbeeda', 100: '#f6ddb4', 200: '#ecc07c',
-                        300: '#dfa04a', 400: '#c97f20', 500: '#b06a10',
-                        600: '#a35a09', 700: '#834707', 800: '#693906',
-                        900: '#552e05',
-                    },
-                    orange: {
-                        50:  '#fbeeda', 100: '#f6ddb4', 200: '#ecc07c',
-                        300: '#dfa04a', 400: '#c97f20', 500: '#b06a10',
-                        600: '#a35a09', 700: '#834707', 800: '#693906',
-                        900: '#552e05',
-                    },
-                    rose: {
-                        50:  '#fbe6e9', 100: '#f6ccd2', 200: '#eb9ea9',
-                        300: '#de7080', 400: '#cf4459', 500: '#c22e43',
-                        600: '#b32133', 700: '#911a29', 800: '#751521',
-                        900: '#5e111b',
-                    },
-                    red: {
-                        50:  '#fbe6e9', 100: '#f6ccd2', 200: '#eb9ea9',
-                        300: '#de7080', 400: '#cf4459', 500: '#c22e43',
-                        600: '#b32133', 700: '#911a29', 800: '#751521',
-                        900: '#5e111b',
-                    },
-                    sky: {
-                        50:  '#e0eff8', 100: '#c2dff1', 200: '#8ec3e4',
-                        300: '#5aa5d3', 400: '#2a83bb', 500: '#0f6ba4',
-                        600: '#0b5c8f', 700: '#094a73', 800: '#083c5e',
-                        900: '#06304b',
-                    },
-                    blue: {
-                        50:  '#e0eff8', 100: '#c2dff1', 200: '#8ec3e4',
-                        300: '#5aa5d3', 400: '#2a83bb', 500: '#0f6ba4',
-                        600: '#0b5c8f', 700: '#094a73', 800: '#083c5e',
-                        900: '#06304b',
-                    },
-                },
-            },
-        },
-    };
-    </script>
+    {% include 'fw/_tailwind_palette.html' %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--ds-line); border-radius: 10px; }
 
         /* ============================================================
            DESIGN-SYSTEM (fw-*) — theme-fähige Komponenten-Ebene.
@@ -328,7 +185,7 @@
             table[data-stack] tr {
                 padding: 0.75rem 1rem;
                 border-top: 0 !important;
-                border-bottom: 8px solid #f1f5f9 !important;
+                border-bottom: 8px solid var(--ds-bg) !important;
             }
             table[data-stack] tr:last-child { border-bottom: 0 !important; }
             /* Die LETZTE Karte verlor alle Trennlinien in ihrem Innern.
@@ -356,7 +213,7 @@
                «divide-y» — nebeneinander sah das aus wie zwei verschiedene Regeln.
                Der Doppel-Selektor trifft genau diese Listen: nur mobil sichtbar UND
                unterteilt, das ist per Konstruktion eine Karten-Liste. */
-            .md\:hidden.divide-y > * + * { border-top: 8px solid #f1f5f9 !important; }
+            .md\:hidden.divide-y > * + * { border-top: 8px solid var(--ds-bg) !important; }
             /* Aufklapp-Gruppen (Objekte je Liegenschaft, Hypotheken je
                Liegenschaft) sitzen zu mehreren in EINER Karte und waren nur
                durch die Haarlinie von «border-b» getrennt — auf dem Handy las
@@ -365,7 +222,7 @@
                Eine Stufe dunkler als das Band zwischen einzelnen Einträgen:
                so bleibt die Hierarchie erkennbar, wenn eine Gruppe offen ist
                (Gruppengrenze deutlicher als die Trennung ihrer Zeilen). */
-            main details.group.border-b { border-bottom: 8px solid #e2e8f0 !important; }
+            main details.group.border-b { border-bottom: 8px solid var(--ds-line) !important; }
             main details.group.border-b:last-child { border-bottom-width: 0 !important; }
             /* «truncate» im Inhaltsbereich mobil aufheben.
 
@@ -394,7 +251,7 @@
                Eintrag («Dominik Gerber»), das Label davor wäre nur Rauschen. */
             table[data-stack] td[data-stack-titel] {
                 display: block; text-align: left !important;
-                font-size: 1rem; font-weight: 700; color: #0f172a;
+                font-size: 1rem; font-weight: 700; color: var(--ds-ink);
                 margin-bottom: 0.15rem;
             }
             table[data-stack] td[data-stack-titel]::before { content: none; }
@@ -414,7 +271,7 @@
                 flex: 0 0 auto;
                 text-align: left;
                 font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
-                text-transform: uppercase; color: #94a3b8;
+                text-transform: uppercase; color: var(--ds-faint);
             }
             /* Der Wert braucht einen eigenen Kasten mit min-width:0 — sonst
                schrumpft ein Flex-Element nie unter seine Inhaltsbreite und ein
@@ -429,7 +286,7 @@
             table[data-stack] td[data-leer] { display: none; }
             /* Zusammengefasste Zellen (Summenzeilen) über die volle Breite */
             table[data-stack] td[colspan]::before { content: none; }
-            table[data-stack] tfoot tr { background: #f8fafc; font-weight: 600; }
+            table[data-stack] tfoot tr { background: var(--ds-surface-2); font-weight: 600; }
         }
         /* ---- Tabellen am PC: in die Spalte passen statt quer scrollen ----
            «min-w-max» stammt aus der Zeit, als dieselbe Tabelle auch das Handy
@@ -730,71 +587,85 @@
     /* ===== Dark-Mode-Overlay — NUR aktiv bei <html data-theme="dark">.
        Remappt die im Cockpit genutzten Tailwind-Utilities auf dunkle Werte;
        der Hell-Modus bleibt dadurch komplett unverändert. Reine CSS-Schicht
-       (keine Funktions-Änderung). ===== */
-    html[data-theme="dark"] body.bg-slate-100 { background-color:#0e1020 !important; }
-    html[data-theme="dark"] body { color:#e7e8f2; }
-    html[data-theme="dark"] ::-webkit-scrollbar-thumb { background:#2c3150; }
+       (keine Funktions-Änderung).
 
-    html[data-theme="dark"] .bg-white { background-color:#171a2e !important; }
-    html[data-theme="dark"] .bg-slate-50 { background-color:#141728 !important; }
-    html[data-theme="dark"] .bg-slate-100 { background-color:#1e2138 !important; }
-    html[data-theme="dark"] .bg-slate-200 { background-color:#262a44 !important; }
-    html[data-theme="dark"] .bg-gray-50 { background-color:#141728 !important; }
-    html[data-theme="dark"] .bg-gray-100 { background-color:#1e2138 !important; }
+       PETROL, NICHT INDIGO (4b.9). Etappe 4b.6 hat die Tailwind-KONFIGURATION
+       auf die Petrol-Rampe umgestellt — das wirkt im Hellmodus. Diese Schicht
+       hier überschreibt mit !important und festen Hexwerten und blieb deshalb
+       stehen, wo sie war: der Dunkelmodus war weiterhin vollständig das alte
+       Indigo-Produkt, obwohl die :root-Tokens darüber längst Petrol führten.
+       Zwei Farbwelten in einer Anwendung, je nach Systemeinstellung.
 
-    html[data-theme="dark"] .text-slate-900 { color:#e7e8f2 !important; }
-    html[data-theme="dark"] .text-slate-800 { color:#dfe1ee !important; }
-    html[data-theme="dark"] .text-slate-700 { color:#cdd2e6 !important; }
-    html[data-theme="dark"] .text-slate-600 { color:#aeb4ca !important; }
-    html[data-theme="dark"] .text-slate-500 { color:#9aa0b8 !important; }
+       Zustands- und Markenfarben stehen jetzt als var(--ds-*) hier und können
+       gar nicht mehr auseinanderlaufen. Die neutrale Flächentreppe braucht
+       mehr Stufen als es Tokens gibt (Grund · slate-50 · weiss · -100 · -200 ·
+       -300) und bleibt deshalb als Hexwert — aber im selben Farbton 195° wie
+       --ds-surface, bei unveränderter Helligkeit und Sättigung. Die Kontraste
+       ändern sich dadurch um höchstens 1 Punkt und bleiben alle über AA.
+       Bewacht von core/tests/test_palette.py. ===== */
+    html[data-theme="dark"] body.bg-slate-100 { background-color:#0e1c20 !important; }
+    html[data-theme="dark"] body { color:#e7eff2; }
+    html[data-theme="dark"] ::-webkit-scrollbar-thumb { background:#2c4750; }
+
+    html[data-theme="dark"] .bg-white { background-color:#17282e !important; }
+    html[data-theme="dark"] .bg-slate-50 { background-color:#142328 !important; }
+    html[data-theme="dark"] .bg-slate-100 { background-color:#1e3238 !important; }
+    html[data-theme="dark"] .bg-slate-200 { background-color:#263c44 !important; }
+    html[data-theme="dark"] .bg-gray-50 { background-color:#142328 !important; }
+    html[data-theme="dark"] .bg-gray-100 { background-color:#1e3238 !important; }
+
+    html[data-theme="dark"] .text-slate-900 { color:#e7eff2 !important; }
+    html[data-theme="dark"] .text-slate-800 { color:#dfeaee !important; }
+    html[data-theme="dark"] .text-slate-700 { color:#cde0e6 !important; }
+    html[data-theme="dark"] .text-slate-600 { color:#aec3ca !important; }
+    html[data-theme="dark"] .text-slate-500 { color:#9ab0b8 !important; }
     {% comment %} .text-slate-400 und -300 stehen bewusst NICHT hier: Die Kontrastregel
-       oben setzt sie auf var(--ds-muted), und das Token schaltet selbst um
-       (hell #475569, dunkel #9aa0b8). Feste Hexwerte an dieser Stelle machten
-       die Regel im Dunkeln wieder zunichte — .text-slate-300 lag mit #6b7193
-       bei 3.60:1 auf --ds-surface und damit unter WCAG AA. Mit dem Token sind
-       es 6.62:1. {% endcomment %}
-    html[data-theme="dark"] .text-gray-900, html[data-theme="dark"] .text-gray-800 { color:#e7e8f2 !important; }
+       oben setzt sie auf var(--ds-muted), und das Token schaltet selbst um.
+       Ein fester Hexwert an dieser Stelle machte die Regel im Dunkeln wieder
+       zunichte — der Bestandswert lag unter WCAG AA. Mit dem Token sind es
+       8.4:1 auf --ds-surface. {% endcomment %}
+    html[data-theme="dark"] .text-gray-900, html[data-theme="dark"] .text-gray-800 { color:#e7eff2 !important; }
 
-    html[data-theme="dark"] .border-slate-200 { border-color:#262a44 !important; }
-    html[data-theme="dark"] .border-slate-100 { border-color:#20233c !important; }
-    html[data-theme="dark"] .border-slate-300 { border-color:#2c3150 !important; }
+    html[data-theme="dark"] .border-slate-200 { border-color:#263c44 !important; }
+    html[data-theme="dark"] .border-slate-100 { border-color:#20353c !important; }
+    html[data-theme="dark"] .border-slate-300 { border-color:#2c4750 !important; }
     html[data-theme="dark"] .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
-    html[data-theme="dark"] .divide-slate-50 > :not([hidden]) ~ :not([hidden]) { border-color:#20233c !important; }
+    html[data-theme="dark"] .divide-slate-50 > :not([hidden]) ~ :not([hidden]) { border-color:#20353c !important; }
 
-    html[data-theme="dark"] .bg-indigo-50 { background-color:#20233d !important; }
-    html[data-theme="dark"] .bg-rose-50 { background-color:#2b1618 !important; }
-    html[data-theme="dark"] .bg-emerald-50, html[data-theme="dark"] .bg-emerald-100 { background-color:#12271f !important; }
-    html[data-theme="dark"] .bg-amber-50 { background-color:#2a2113 !important; }
-    html[data-theme="dark"] .bg-sky-50 { background-color:#0e2430 !important; }
-    html[data-theme="dark"] .bg-green-50 { background-color:#12271f !important; }
-    html[data-theme="dark"] .bg-yellow-50 { background-color:#2a2610 !important; }
+    html[data-theme="dark"] .bg-indigo-50 { background-color:var(--ds-brand-soft) !important; }
+    html[data-theme="dark"] .bg-rose-50 { background-color:var(--ds-crit-soft) !important; }
+    html[data-theme="dark"] .bg-emerald-50, html[data-theme="dark"] .bg-emerald-100 { background-color:var(--ds-good-soft) !important; }
+    html[data-theme="dark"] .bg-amber-50 { background-color:var(--ds-warn-soft) !important; }
+    html[data-theme="dark"] .bg-sky-50 { background-color:var(--ds-info-soft) !important; }
+    html[data-theme="dark"] .bg-green-50 { background-color:var(--ds-good-soft) !important; }
+    html[data-theme="dark"] .bg-yellow-50 { background-color:var(--ds-warn-soft) !important; }
 
-    html[data-theme="dark"] .text-indigo-600 { color:#8b93f8 !important; }
-    html[data-theme="dark"] .text-indigo-700 { color:#a5b0ff !important; }
-    html[data-theme="dark"] .text-indigo-400, html[data-theme="dark"] .text-indigo-300 { color:#a5b0ff !important; }
-    html[data-theme="dark"] .text-rose-600, html[data-theme="dark"] .text-rose-700, html[data-theme="dark"] .text-rose-800 { color:#f87171 !important; }
-    html[data-theme="dark"] .text-emerald-600, html[data-theme="dark"] .text-emerald-700 { color:#34d399 !important; }
-    html[data-theme="dark"] .text-amber-600, html[data-theme="dark"] .text-amber-500 { color:#fbbf24 !important; }
-    html[data-theme="dark"] .text-sky-600 { color:#38bdf8 !important; }
+    html[data-theme="dark"] .text-indigo-600 { color:var(--ds-brand) !important; }
+    html[data-theme="dark"] .text-indigo-700 { color:var(--ds-brand-600) !important; }
+    html[data-theme="dark"] .text-indigo-400, html[data-theme="dark"] .text-indigo-300 { color:var(--ds-brand-600) !important; }
+    html[data-theme="dark"] .text-rose-600, html[data-theme="dark"] .text-rose-700, html[data-theme="dark"] .text-rose-800 { color:var(--ds-crit) !important; }
+    html[data-theme="dark"] .text-emerald-600, html[data-theme="dark"] .text-emerald-700 { color:var(--ds-good) !important; }
+    html[data-theme="dark"] .text-amber-600, html[data-theme="dark"] .text-amber-500 { color:var(--ds-warn) !important; }
+    html[data-theme="dark"] .text-sky-600 { color:var(--ds-info) !important; }
 
     /* Hover-Flächen: exakte Klassen UND Opacity-Varianten (…/60, …/70) abdecken —
        sonst scheint im Dunkeln der helle Tailwind-Grauton durch (viel zu hell). */
     html[data-theme="dark"] .hover\:bg-slate-50:hover,
-    html[data-theme="dark"] [class*="hover:bg-slate-50/"]:hover { background-color:#1e2138 !important; }
+    html[data-theme="dark"] [class*="hover:bg-slate-50/"]:hover { background-color:#1e3238 !important; }
     html[data-theme="dark"] .hover\:bg-slate-100:hover,
-    html[data-theme="dark"] [class*="hover:bg-slate-100/"]:hover { background-color:#262a44 !important; }
-    html[data-theme="dark"] .hover\:bg-slate-200:hover { background-color:#2c3150 !important; }
+    html[data-theme="dark"] [class*="hover:bg-slate-100/"]:hover { background-color:#263c44 !important; }
+    html[data-theme="dark"] .hover\:bg-slate-200:hover { background-color:#2c4750 !important; }
     html[data-theme="dark"] .hover\:bg-indigo-50:hover,
-    html[data-theme="dark"] [class*="hover:bg-indigo-50/"]:hover { background-color:#20233d !important; }
-    html[data-theme="dark"] .hover\:bg-indigo-100:hover { background-color:#262a55 !important; }
-    html[data-theme="dark"] .hover\:bg-rose-50:hover { background-color:#2b1618 !important; }
-    html[data-theme="dark"] .hover\:bg-amber-50:hover { background-color:#2a2113 !important; }
-    html[data-theme="dark"] .hover\:bg-emerald-50:hover { background-color:#12271f !important; }
-    html[data-theme="dark"] .hover\:bg-violet-50:hover { background-color:#20233d !important; }
+    html[data-theme="dark"] [class*="hover:bg-indigo-50/"]:hover { background-color:var(--ds-brand-soft) !important; }
+    html[data-theme="dark"] .hover\:bg-indigo-100:hover { background-color:#264955 !important; }
+    html[data-theme="dark"] .hover\:bg-rose-50:hover { background-color:var(--ds-crit-soft) !important; }
+    html[data-theme="dark"] .hover\:bg-amber-50:hover { background-color:var(--ds-warn-soft) !important; }
+    html[data-theme="dark"] .hover\:bg-emerald-50:hover { background-color:var(--ds-good-soft) !important; }
+    html[data-theme="dark"] .hover\:bg-violet-50:hover { background-color:var(--ds-brand-soft) !important; }
 
     html[data-theme="dark"] input, html[data-theme="dark"] select, html[data-theme="dark"] textarea {
-        background-color:#1e2138 !important; color:#e7e8f2 !important; border-color:#262a44 !important; }
-    html[data-theme="dark"] input::placeholder, html[data-theme="dark"] textarea::placeholder { color:#6b7193 !important; }
+        background-color:#1e3238 !important; color:#e7eff2 !important; border-color:#263c44 !important; }
+    html[data-theme="dark"] input::placeholder, html[data-theme="dark"] textarea::placeholder { color:#6b8993 !important; }
 
     html[data-theme="dark"] .shadow-sm, html[data-theme="dark"] .shadow, html[data-theme="dark"] .shadow-md,
     html[data-theme="dark"] .shadow-lg, html[data-theme="dark"] .shadow-xl {
@@ -808,7 +679,7 @@
     <div id="fwBackdrop" onclick="fwCloseMobileNav()" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"></div>
 
     <!-- ================= SIDEBAR (Fairwalter-Struktur) ================= -->
-    <aside id="fwSidebar" class="w-60 bg-gradient-to-b from-[#15182e] to-[#0d0f1e] text-white flex flex-col min-h-[100dvh] flex-shrink-0 fixed lg:static inset-y-0 left-0 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out">
+    <aside id="fwSidebar" class="w-60 bg-gradient-to-b from-[#122b31] to-[#0a1c20] text-white flex flex-col min-h-[100dvh] flex-shrink-0 fixed lg:static inset-y-0 left-0 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out">
 
         <div class="px-5 py-5 flex items-center gap-2.5 border-b border-white/5 sb-logo">
             <a href="/neu/" title="Zur Übersicht" class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-xs shadow-lg shadow-indigo-600/30 shrink-0">

@@ -407,7 +407,7 @@ class MieterkontoblattTests(TestCase):
         sah das aus wie zwei verschiedene Regeln."""
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/liegenschaften/').content.decode('utf-8')
-        self.assertIn(r'.md\:hidden.divide-y > * + * { border-top: 8px solid #f1f5f9 !important; }',
+        self.assertIn(r'.md\:hidden.divide-y > * + * { border-top: 8px solid var(--ds-bg) !important; }',
                       html)
         # und der Strassenname wird nicht mehr abgeschnitten
         self.assertNotIn('font-semibold text-slate-900 truncate">{{ row.lg.strasse', html)
@@ -417,21 +417,57 @@ class MieterkontoblattTests(TestCase):
         EINER Karte, getrennt nur durch die Haarlinie von «border-b» — gemeldet
         als «Keine Trennlinie» zwischen zwei Liegenschaften.
 
-        Eine Stufe dunkler (#e2e8f0) als das Band zwischen einzelnen Einträgen
-        (#f1f5f9): sonst wäre die Gruppengrenze nicht von der Trennung ihrer
-        eigenen Zeilen zu unterscheiden, sobald eine Gruppe offen ist.
+        Eine Stufe dunkler (--ds-line) als das Band zwischen einzelnen
+        Einträgen (--ds-bg): sonst wäre die Gruppengrenze nicht von der
+        Trennung ihrer eigenen Zeilen zu unterscheiden, sobald eine Gruppe
+        offen ist. Bis 4b.9 standen hier feste Hexwerte (#e2e8f0 / #f1f5f9)
+        aus Tailwinds Voreinstellung; sie waren die letzten blaugrauen Töne
+        in `base.html` und sind jetzt Tokens — damit schaltet das Band im
+        Dunkelmodus mit, statt als weisser Streifen stehenzubleiben. Dass
+        die Ordnung erhalten bleibt, prüft
+        `test_das_gruppenband_bleibt_dunkler_als_das_zeilenband`.
 
         Gemessen bei iPhone-Breite: 36 Gruppen je 8px rgb(226,232,240),
         letzte Gruppe 0px."""
         _basis_objekte()          # sonst rendert die Seite gar keine Gruppe
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/objekte/').content.decode('utf-8')
-        self.assertIn('main details.group.border-b { border-bottom: 8px solid #e2e8f0 !important; }',
+        self.assertIn('main details.group.border-b { border-bottom: 8px solid var(--ds-line) !important; }',
                       html)
         self.assertIn('main details.group.border-b:last-child { border-bottom-width: 0 !important; }',
                       html)
         # Die Gruppen tragen die Klassen, auf die die Regel zielt
         self.assertIn('<details class="group border-b border-slate-100 last:border-0">', html)
+
+    def test_das_gruppenband_bleibt_dunkler_als_das_zeilenband(self):
+        """Die Absicht hinter den zwei Bändern, nicht ihre Schreibweise.
+
+        Die drei Prüfungen darüber vergleichen Zeichenketten. Das hielt den
+        Wortlaut fest, aber nicht die Aussage: Als die festen Hexwerte in
+        4b.9 zu Tokens wurden, schlugen sie an, obwohl die Gestaltung
+        stimmte — und umgekehrt hätten sie ein Vertauschen der beiden Werte
+        nicht bemerkt, solange nur die richtigen Zeichen dastanden. Diese
+        Prüfung rechnet die Helligkeit aus den Tokens nach.
+        """
+        from core.tests.test_palette import _block
+        hell = _block('hell')
+
+        def helligkeit(hexwert):
+            teile = [int(hexwert.strip().lstrip('#')[i:i + 2], 16) / 255
+                     for i in (0, 2, 4)]
+            teile = [t / 12.92 if t <= 0.03928 else ((t + 0.055) / 1.055) ** 2.4
+                     for t in teile]
+            return 0.2126 * teile[0] + 0.7152 * teile[1] + 0.0722 * teile[2]
+
+        zeile, gruppe = helligkeit(hell['--ds-bg']), helligkeit(hell['--ds-line'])
+        self.assertLess(
+            gruppe, zeile,
+            'Das Gruppenband (--ds-line) ist nicht mehr dunkler als das '
+            'Zeilenband (--ds-bg). Dann ist die Grenze zwischen zwei '
+            'Liegenschaften nicht mehr von der Trennung ihrer eigenen '
+            'Zeilen zu unterscheiden.')
+        self.assertGreater(zeile - gruppe, 0.02,
+                           'Der Unterschied ist zu klein, um sichtbar zu sein.')
 
     def test_truncate_bricht_nicht_mitten_im_wort(self):
         """`overflow-wrap: anywhere` senkt auch die min-content-Breite auf ein
@@ -498,7 +534,7 @@ class MieterkontoblattTests(TestCase):
         was aber nur zufällig zum Datenbild passte."""
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/mieterkonten/').content.decode('utf-8')
-        self.assertIn('border-bottom: 8px solid #f1f5f9 !important', html)
+        self.assertIn('border-bottom: 8px solid var(--ds-bg) !important', html)
 
 
 class DebitorenAgingTests(TestCase):

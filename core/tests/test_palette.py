@@ -176,3 +176,115 @@ class KonzeptTests(TestCase):
                       'wovon abgewichen wurde.')
         self.assertIn('3.14', text,
                       'Der gemessene Kontrast des Prototypwerts fehlt.')
+
+
+def ohne_kommentare(quelle):
+    """Erklaerungen sind keine Farbwerte.
+
+    Zweimal ist an dieser Stelle schon ein Waechter auf den eigenen Kommentar
+    hereingefallen und hat die Beschreibung eines Alt-Wertes fuer den Wert
+    selbst gehalten. Deshalb fliegen Django- und CSS-Kommentare vorher raus.
+    """
+    quelle = re.sub(r'\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}', ' ',
+                    quelle, flags=re.S)
+    return re.sub(r'/\*.*?\*/', ' ', quelle, flags=re.S)
+
+
+def farbton(hexwert):
+    """Farbton in Grad (0-360). Grau (Saettigung ~0) hat keinen — dann None."""
+    r, g, b = [int(hexwert.lstrip('#')[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+    hoch, tief = max(r, g, b), min(r, g, b)
+    if hoch - tief < 0.04:
+        return None
+    if hoch == r:
+        ton = (g - b) / (hoch - tief) % 6
+    elif hoch == g:
+        ton = (b - r) / (hoch - tief) + 2
+    else:
+        ton = (r - g) / (hoch - tief) + 4
+    return ton * 60
+
+
+class EinFarbtonTests(TestCase):
+    """Die ganze Datei traegt Petrol — nicht nur der :root-Block.
+
+    WARUM DIESER TEST NOETIG WURDE
+
+    Etappe 4b.6 hiess «die Anwendung ist einfarbig» und stellte die
+    Tailwind-Konfiguration auf die Petrol-Rampe um. Die Pruefungen darueber
+    lasen den `:root`-Block und die Rampen — und waren gruen. Zwei grosse
+    Flaechen sahen sie nie an:
+
+        Die Seitenleiste   stand als `from-[#15182e] to-[#0d0f1e]` in der
+                           Tailwind-Notation fuer beliebige Werte, kam also an
+                           der Rampe vorbei. Sie ist auf JEDER Seite sichtbar.
+        Der Dunkelmodus    ueberschreibt weiter unten mit `!important` und
+                           festen Hexwerten. Er war vollstaendig das alte
+                           Indigo-Produkt, obwohl die Tokens darueber Petrol
+                           fuehrten — zwei Farbwelten, je nach Systemeinstellung.
+
+    Ein Test, der nur dort hinsieht, wo aufgeraeumt wurde, bestaetigt das
+    Aufraeumen und nicht das Ergebnis. Dieser hier misst jeden Farbwert der
+    Datei.
+    """
+
+    #: Indigo und Violett liegen zwischen 215 und 300 Grad, Petrol bei ~180-200.
+    #: Der Abstand ist gross genug, dass kein Grenzfall entscheidet.
+    VERBOTEN = (215, 300)
+    #: Unterhalb davon ist es Grau und der Farbton bedeutungslos.
+    MERKLICH = 0.12
+
+    def _hexwerte(self):
+        quelle = ohne_kommentare(BASE.read_text(encoding='utf-8'))
+        return sorted(set(m.group(0).lower()
+                          for m in re.finditer(r'#[0-9a-fA-F]{6}\b', quelle)))
+
+    @staticmethod
+    def _saettigung(hexwert):
+        r, g, b = [int(hexwert.lstrip('#')[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+        hoch, tief = max(r, g, b), min(r, g, b)
+        if hoch == tief:
+            return 0.0
+        helligkeit = (hoch + tief) / 2
+        return ((hoch - tief) / (hoch + tief) if helligkeit < 0.5
+                else (hoch - tief) / (2 - hoch - tief))
+
+    def test_es_gibt_ueberhaupt_farbwerte_zu_pruefen(self):
+        """Sonst pruefte der Test unten eine leere Liste."""
+        self.assertGreater(
+            len(self._hexwerte()), 50,
+            'In base.html wurden kaum Hexwerte gefunden — Format geaendert?')
+
+    def test_kein_indigo_und_kein_violett_mehr_in_base_html(self):
+        for wert in self._hexwerte():
+            ton = farbton(wert)
+            if ton is None or self._saettigung(wert) < self.MERKLICH:
+                continue
+            with self.subTest(farbe=wert):
+                self.assertFalse(
+                    self.VERBOTEN[0] <= ton <= self.VERBOTEN[1],
+                    f'{wert} liegt bei {ton:.0f}° und damit im Indigo-/Violett-'
+                    f'Bereich. Die Anwendung fuehrt Petrol (~180-200°).')
+
+    def test_die_messung_erkennt_indigo_auch(self):
+        """Gegenprobe. Ein Farbtonrechner, der immer None liefert, besteht alles."""
+        self.assertAlmostEqual(farbton('#4f46e5'), 244, delta=2)   # Alt-Marke
+        self.assertAlmostEqual(farbton('#15182e'), 232, delta=2)   # Alt-Seitenleiste
+        self.assertAlmostEqual(farbton('#0f6f6a'), 177, delta=2)   # Petrol
+        self.assertIsNone(farbton('#808080'))
+
+    def test_der_kommentarfilter_wirkt(self):
+        """Gegenprobe. Ohne ihn liest der Test seine eigene Erklaerung als Farbe."""
+        self.assertNotIn('#15182e', ohne_kommentare(
+            '{% comment %} frueher #15182e {% endcomment %}'))
+        self.assertNotIn('#15182e', ohne_kommentare('/* frueher #15182e */'))
+        self.assertIn('#15182e', ohne_kommentare('a{color:#15182e}'))
+
+    def test_die_seitenleiste_traegt_den_prototyp_verlauf(self):
+        """Der Verlauf steht in Tailwinds Notation fuer beliebige Werte und
+        kommt damit an der Farbrampe vorbei — er braucht eine eigene Pruefung.
+        Werte aus `mockups/konzept-v2.html`, Token `--nav`."""
+        quelle = ohne_kommentare(BASE.read_text(encoding='utf-8'))
+        self.assertIn('from-[#122b31] to-[#0a1c20]', quelle,
+                      'Die Seitenleiste fuehrt nicht mehr den Petrol-Verlauf '
+                      'des Prototyps.')
