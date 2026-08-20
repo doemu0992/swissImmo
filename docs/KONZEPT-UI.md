@@ -648,12 +648,56 @@ offener Senkungsanspruch, vereinbarte aber unbestätigte Kaution.
 Ein dritter („Referenzzins-Basis fehlt") war entworfen und wurde beim Bauen entfernt:
 `basis_referenzzinssatz` ist NOT NULL mit Vorgabewert, die Bedingung konnte nie zutreffen.
 
-### 16.4 Was hier bewusst nicht steht
+### 16.4 Die Palette unter Tailwind
 
-Das Erscheinungsbild ausserhalb des Aktenkopfs. **131 der 172 Vorlagen** tragen fest
-verdrahtete Tailwind-Indigo-Klassen — **1412 Stellen**, gemessen am 20.08.2026 mit
-`grep -ro 'indigo-[0-9]*' core/templates/ | wc -l`. (Eine erste Angabe „rund 950" zählte nur
-sieben ausgewählte Klassennamen und war deshalb zu niedrig.) Seitenleiste, Topbar und Favicon sind
-weiter Indigo. Die Palette wirkt nur dort, wo Tokens benutzt werden — die Anwendung ist
-zweifarbig, bis 4b.4 und die Folgeetappen das auflösen. Der Weg dorthin ist offen: Klassen
-schrittweise auf Tokens umstellen, oder Tailwind eine Petrol-Palette unterschieben.
+Bis 4b.5 war die Anwendung **zweifarbig**: Die Aktenseiten liefen auf der Komponentenschicht
+in Petrol, alles andere — Seitenleiste, Topbar, Listen, Formulare, Berichte — auf fest
+verdrahteten Tailwind-Klassen in Indigo. Gemessen am 20.08.2026: **7490 Farbklassen in 176
+Vorlagen** (4959 `slate`, 1250 `indigo`, dazu rose, emerald, amber).
+
+Von den beiden Wegen, die hier standen — «Klassen schrittweise auf Tokens umstellen, oder
+Tailwind eine Petrol-Palette unterschieben» — ist der **zweite** umgesetzt: `tailwind.config`
+in `base.html` definiert die Farbrampen um. Aus `bg-indigo-600` wird die Markenfarbe, aus
+`text-slate-500` das petrolgetönte Grau. Die Klassennamen bleiben; sie zeigen woanders hin.
+
+**Die Rampen hängen an den Tokens.** Wo eine Stufe einen Token trifft, steht derselbe Wert:
+
+| Tailwind | Token | Wert |
+|---|---|---|
+| `indigo-600` | `--ds-brand` | `#0f6f6a` |
+| `indigo-700` | `--ds-brand-600` | `#0b5450` |
+| `indigo-100` | `--ds-brand-soft` | `#d9efed` |
+| `slate-200` | `--ds-line` | `#dde6e8` |
+| `slate-500` | `--ds-faint` | `#5c757c` |
+| `slate-600` | `--ds-muted` | `#4c6169` |
+| `slate-900` | `--ds-ink` | `#0e2227` |
+| `emerald-600` / `-50` | `--ds-good` / `-soft` | `#166534` / `#e0f2e5` |
+| `amber-600` / `-50` | `--ds-warn` / `-soft` | `#a35a09` / `#fbeeda` |
+| `rose-600` / `-50` | `--ds-crit` / `-soft` | `#b32133` / `#fbe6e9` |
+| `sky-600` / `-50` | `--ds-info` / `-soft` | `#0b5c8f` / `#e0eff8` |
+
+Ohne diese Bindung wären es wieder zwei Paletten, nur beide petrolfarben. `gray`/`zinc` folgen
+`slate`, `green`/`orange`/`red`/`blue` ihren semantischen Geschwistern — sie werden im Bestand
+gleichbedeutend benutzt. **Rot bleibt Rot und Grün bleibt Grün:** Eine Warnung in Petrol wäre
+keine Warnung mehr; angeglichen ist nur die Sättigung.
+
+Geprüft von `core/tests/test_tailwind_palette.py`: Bindung an die Tokens, Helligkeitstreppe je
+Rampe, Kontrast der gebrauchten Textfarben, Gleichlauf der Zwillingsfamilien.
+
+**Was das nicht löst: den Dunkelmodus.** Tailwind-Klassen sind statisch — `bg-white` bleibt
+weiss, auch wenn die Tokens umschalten. Das war vorher so und ist es weiterhin. Der Weg dorthin
+ist die Komponentenschicht; die Aktenseiten gehen ihn bereits.
+
+### 16.5 Was hier bewusst nicht steht
+
+Der **Aufbau** ausserhalb der Aktenseiten. Die Palette gilt seit 4b.6 überall (16.4) — Farbe ist
+damit erledigt. Karten, Zeilen, Tabellen und Formulare der übrigen Seiten laufen aber weiter auf
+Tailwind-Utilities statt auf `fw-card`, `fw-zeile`, `fw-table`, `fw-feld`. Das ist kein
+Farbproblem mehr, sondern eines der Bausteine: Abstände, Radien, Schatten und Zustände weichen
+von Seite zu Seite ab.
+
+> **Richtigstellung, 20.08.2026.** Hier stand, das Erscheinungsbild ausserhalb des Aktenkopfs sei
+> ungeregelt, mit „**1412 Stellen** Indigo in 131 von 172 Vorlagen". Die Zahl war zu eng gefasst:
+> Sie zählte nur `indigo`. Über alle Farbfamilien waren es **7490 Klassen in 176 Vorlagen** —
+> 4959 davon `slate`. Genau diese Grössenordnung hat die Entscheidung in 16.4 erzwungen: 7490
+> Einzeländerungen sind kein Weg, eine Palettenumdefinition schon.
