@@ -68,7 +68,7 @@
 {% include 'fw/_detail_tabs.html' with gruppe='sc' tabs=tab_liste %}
 
 <!-- ÜBERSICHT -->
-<div data-panel="sc" id="sc-uebersicht">
+<div data-panel="sc" id="sc-stammdaten">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5">
             <h3 class="font-bold text-slate-800 mb-3">Schadensbeschreibung</h3>
@@ -110,7 +110,7 @@
 </div>
 
 <!-- VERLAUF -->
-<div data-panel="sc" id="sc-verlauf" class="hidden">
+<div data-panel="sc" id="sc-chronik" class="hidden">
     <!-- Antwort an Melder -->
     <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
         <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-reply text-indigo-500 mr-1.5"></i>Antwort an Melder{% if melder_email %} <span class="text-xs font-normal text-slate-400">({{ melder_email }})</span>{% endif %}</h3>
@@ -144,6 +144,70 @@
     </div>
 </div>
 
+<!-- ===== REITER: FINANZEN ===== -->
+<div data-panel="sc" id="sc-finanzen" class="hidden">
+    {% load chf %}
+    <div class="fw-kzn" style="border:1px solid var(--ds-line);border-radius:var(--ds-radius);background:var(--ds-surface);grid-template-columns:repeat(2,1fr);margin-bottom:16px">
+        <div>
+            <div class="fw-l">Kostenschätzung</div>
+            <div class="fw-w">CHF {{ kosten_geschaetzt|chf }}</div>
+            <div class="fw-f">über alle Aufträge</div>
+        </div>
+        <div>
+            <div class="fw-l">Effektive Kosten</div>
+            <div class="fw-w{% if kosten_effektiv > kosten_geschaetzt %} warn{% endif %}">CHF {{ kosten_effektiv|chf }}</div>
+            <div class="fw-f">{% if kosten_effektiv > kosten_geschaetzt %}über der Schätzung{% elif kosten_effektiv %}im Rahmen{% else %}noch nicht erfasst{% endif %}</div>
+        </div>
+    </div>
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-coins"></i></span>
+            <span class="fw-t">Kosten je Auftrag</span></div>
+        {% for a in auftraege %}
+        <div class="fw-zeile">
+            <div class="fw-mitte">
+                <div class="fw-t">{{ a.handwerker.firma }}</div>
+                <div class="fw-s">beauftragt {{ a.beauftragt_am|date:"d.m.Y" }}</div>
+            </div>
+            <div class="fw-zeit">
+                {% if a.kosten_effektiv %}CHF {{ a.kosten_effektiv|chf }}{% else %}<span style="color:var(--ds-faint)">offen</span>{% endif %}
+                {% if a.kosten_geschaetzt %}<br><span class="fw-klein">gesch. {{ a.kosten_geschaetzt|chf }}</span>{% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="fw-leer">Noch kein Auftrag vergeben — deshalb noch keine Kosten.</p>
+        {% endfor %}
+        {% if auftraege %}
+        <div class="fw-fuss">
+            <span>Erfasst werden die Beträge beim jeweiligen Auftrag.</span>
+            <a href="?tab=handwerker" class="fw-link">Zu den Aufträgen</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ===== REITER: FAELLE ===== -->
+<div data-panel="sc" id="sc-faelle" class="hidden">
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-folder-tree"></i></span>
+            <span class="fw-t">Fälle zu diesem Schaden</span>
+            <span class="fw-neben">{{ schaden_faelle|length }}</span></div>
+        {% for f in schaden_faelle %}
+        <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick">
+            <span class="fw-marker {% if f.status == 'offen' %}warn{% elif f.status == 'abgeschlossen' %}good{% else %}brand{% endif %}"></span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ f.betreff|default:f.fallart.bezeichnung }}</div>
+                <div class="fw-s">{{ f.nummer }} · {{ f.get_status_display }}{% if f.zustaendig %} · {{ f.zustaendig.get_full_name|default:f.zustaendig.username }}{% endif %}</div>
+            </div>
+            <div class="fw-zeit">{{ f.eroeffnet_am|date:"d.m.Y" }}</div>
+        </a>
+        {% empty %}
+        <p class="fw-leer">Zu diesem Schaden läuft kein Fall.<br>
+            <span class="fw-klein">Ein Schaden wird zum Fall, sobald er über mehrere Schritte läuft — Besichtigung, Offerte, Auftrag, Abnahme.</span></p>
+        {% endfor %}
+    </div>
+</div>
+
+
 <!-- HANDWERKER & KOSTEN -->
 <div data-panel="sc" id="sc-handwerker" class="hidden">
     {% load chf %}
@@ -175,15 +239,10 @@
         {% endif %}
     </div>
 
-    <!-- Kosten-Summe -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <div class="text-2xl font-bold text-slate-700">CHF {{ kosten_geschaetzt|chf }}</div><div class="text-sm text-slate-500">Kostenschätzung total</div>
-        </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <div class="text-2xl font-bold text-indigo-600">CHF {{ kosten_effektiv|chf }}</div><div class="text-sm text-slate-500">Effektive Kosten total</div>
-        </div>
-    </div>
+    {% comment %} Die Kostensummen sind nach «Finanzen» gewandert (4b.3). Hier
+       stehen die Auftraege — wer macht was, seit wann. Geld gehoert in den
+       Finanzen-Reiter, den jede Akte fuehrt. Die Felder je Auftrag bleiben
+       unten, wo der Auftrag steht: dort werden sie erfasst. {% endcomment %}
 
     <div class="space-y-4">
         {% for a in auftraege %}
@@ -240,7 +299,7 @@
 </div>
 
 <!-- FOTOS -->
-<div data-panel="sc" id="sc-fotos" class="hidden">
+<div data-panel="sc" id="sc-dokumente" class="hidden">
     <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
         <h3 class="font-bold text-slate-800 text-sm mb-3">Fotos hinzufügen</h3>
         <form method="post" action="/neu/schaeden/{{ t.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">

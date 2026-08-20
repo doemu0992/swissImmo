@@ -267,12 +267,27 @@ def fw_schaden_detail(request, pk):
     from portfolio.models import Ausstattung
     ausstattung_elemente = (list(Ausstattung.objects.filter(einheit=t.betroffene_einheit))
                             if t.betroffene_einheit_id else [])
-    tab_liste = [
+    # Etappe 4b.3: Reiter aus dem Aktenregister statt aus dieser View.
+    # Die Panels in fw/schaden_detail.html sind auf denselben Satz umbenannt —
+    # beides muss gemeinsam wandern, sonst zeigt ein Reiter auf kein Panel und
+    # der Klick hinterlaesst eine leere Seite (`faelle/test_reiter_panels.py`).
+    from django.contrib.contenttypes.models import ContentType
+
+    from faelle.akten import aus_alt as _reiter_aus_alt
+    from faelle.models import Fall
+    from core.tenancy import aktuelle_organisation as _akt_org
+
+    schaden_faelle = list(
+        Fall.objects.filter(akte_typ=ContentType.objects.get_for_model(SchadenMeldung),
+                            akte_id=t.id)
+        .select_related('fallart', 'zustaendig').order_by('-eroeffnet_am'))
+
+    tab_liste = _reiter_aus_alt('schaden', [
         ('uebersicht', 'Übersicht', None),
         ('verlauf', 'Verlauf', nachrichten.count() or None),
         ('handwerker', 'Handwerker & Kosten', len(auftraege) or None),
         ('fotos', 'Fotos', len(fotos) or None),
-    ]
+    ], organisation=getattr(request, 'organisation', None) or _akt_org())
     from django.contrib import messages
     return render(request, 'fw/schaden_detail.html', {
         **basis, 'nav': 'schadensfaelle', 't': t,
@@ -280,6 +295,7 @@ def fw_schaden_detail(request, pk):
         'nachrichten': nachrichten, 'auftraege': auftraege, 'melder': melder,
         'kosten_geschaetzt': kosten_geschaetzt, 'kosten_effektiv': kosten_effektiv,
         'fotos': fotos,
+        'schaden_faelle': schaden_faelle,
         'tab_liste': tab_liste,
         'ausstattung_elemente': ausstattung_elemente,
         'handwerker_liste': handwerker_liste, 'auftrag_vorschlag': auftrag_vorschlag,

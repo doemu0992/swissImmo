@@ -427,7 +427,7 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.0 | Aktenkopf und Reiterleiste aus Tokens statt Tailwind-Utilities; Komponentenschicht in `base.html` | erledigt (`b0e3757`) |
 | 4b.1 | Konzeptpalette Petrol in `:root`, beide Dunkelblöcke; Wächter `test_palette.py` | erledigt (`ce92c88`) |
 | 4b.2 | Kennzahlen, Chips und Hinweise als **gerechnete Zustände** (`_akte_kopfzahlen`); Stammdaten in vier Gruppen | erledigt (`301e81b`) |
-| 4b.3 | Liegenschaft, Objekt, Person, Schaden auf denselben Aufbau | **offen** |
+| 4b.3 | Die vier übrigen Detailseiten auf denselben Aufbau — **Schaden** erledigt, Liegenschaft, Objekt und Person offen | **teilweise** |
 | 4b.4 | Die 178 verbliebenen Tailwind-Farbklassen der Vertragsakte auf Komponenten | **offen** |
 
 Der Wächter für 4b.3 steht bereits: `faelle/test_reiter_panels.py::test_umstellung_erzeugt_nur_

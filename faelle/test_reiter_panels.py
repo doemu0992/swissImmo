@@ -48,7 +48,7 @@ WURZEL = pathlib.Path('core/templates')
 #: Bei ihnen sind die ALTEN Panel-Namen absichtlich verschwunden — sie werden
 #: deshalb aus der Ist-Prüfung genommen und stattdessen streng gegen den NEUEN
 #: Satz geprüft. Wächst diese Menge, schrumpft die Arbeitsliste von 4b.
-UMGESTELLT = {'mietverhaeltnis'}
+UMGESTELLT = {'mietverhaeltnis', 'schaden'}
 
 
 def panels(template, praefix):
@@ -212,28 +212,50 @@ class GerenderteSeiteTests(TestCase):
         from core.tests._isolation import MandantenFixture
         cls.a = MandantenFixture('A', '8000', 'Zürich')
 
-    def test_vertragsakte_jeder_reiter_findet_sein_panel(self):
+    #: Umgestellter Typ → (Adresse der Seite, Präfix). Waechst mit `UMGESTELLT`;
+    #: `test_jede_umgestellte_seite_wird_auch_gerendert` unten haelt fest, dass
+    #: keiner vergessen geht — sonst waere ein Typ «umgestellt», ohne dass je
+    #: eine fertige Seite davon geprueft wurde.
+    def _seiten(self):
+        return {
+            'mietverhaeltnis': (f'/neu/vertraege/{self.a.vertrag.pk}/', 'vt'),
+            'schaden': (f'/neu/schaeden/{self.a.schaden.pk}/', 'sc'),
+        }
+
+    def test_jede_umgestellte_seite_wird_auch_gerendert(self):
+        fehlend = sorted(UMGESTELLT - set(self._seiten()))
+        self.assertEqual(
+            fehlend, [],
+            f'Diese Typen gelten als umgestellt, werden hier aber nie '
+            f'aufgerufen: {", ".join(fehlend)}')
+
+    def test_jeder_reiter_findet_sein_panel(self):
         from django.test import Client
 
         from core.tenancy import organisation_kontext as mandant
-        c = Client()
-        c.force_login(self.a.benutzer)
-        with mandant(self.a.organisation):
-            antwort = c.get(f'/neu/vertraege/{self.a.vertrag.pk}/')
-        self.assertEqual(antwort.status_code, 200)
-        html = antwort.content.decode()
+        for typ, (adresse, praefix) in sorted(self._seiten().items()):
+            c = Client()
+            c.force_login(self.a.benutzer)
+            with mandant(self.a.organisation):
+                antwort = c.get(adresse)
+            with self.subTest(typ=typ):
+                self.assertEqual(antwort.status_code, 200)
+                html = antwort.content.decode()
 
-        reiter = re.findall(r'data-tab="vt" data-target="([a-z0-9_]+)"', html)
-        vorhanden = set(re.findall(r'id="vt-([a-z0-9_]+)"', html))
-        self.assertTrue(reiter, 'Die Seite rendert überhaupt keine Reiterleiste.')
-        self.assertEqual(
-            [r for r in reiter if r not in vorhanden], [],
-            'Diese Reiter erscheinen auf der Seite, ihr Panel aber nicht — '
-            'ein Klick blendet alles aus.')
+                reiter = re.findall(
+                    rf'data-tab="{praefix}" data-target="([a-z0-9_]+)"', html)
+                vorhanden = set(re.findall(rf'id="{praefix}-([a-z0-9_]+)"', html))
+                self.assertTrue(
+                    reiter, 'Die Seite rendert überhaupt keine Reiterleiste.')
+                self.assertEqual(
+                    [r for r in reiter if r not in vorhanden], [],
+                    'Diese Reiter erscheinen auf der Seite, ihr Panel aber '
+                    'nicht — ein Klick blendet alles aus.')
 
-        sichtbar = re.findall(
-            r'<div data-panel="vt" id="vt-([a-z0-9_]+)"(?![^>]*hidden)', html)
-        self.assertEqual(
-            sichtbar, reiter[:1],
-            f'Beim Laden ist {sichtbar} offen, aktiv markiert ist aber '
-            f'{reiter[:1]}.')
+                sichtbar = re.findall(
+                    rf'<div data-panel="{praefix}" id="{praefix}-([a-z0-9_]+)"(?![^>]*hidden)',
+                    html)
+                self.assertEqual(
+                    sichtbar, reiter[:1],
+                    f'Beim Laden ist {sichtbar} offen, aktiv markiert ist aber '
+                    f'{reiter[:1]}.')

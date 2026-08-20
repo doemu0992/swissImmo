@@ -147,7 +147,14 @@ class SchadenFotoTests(TestCase):
         r = c.get(f'/neu/schaeden/{t.id}/')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(len(r.context['fotos']), 1)
-        self.assertContains(r, 'sc-fotos')
+        # Etappe 4b.3: Das Panel heisst nicht mehr `sc-fotos`, sondern
+        # `sc-dokumente` — der Reitersatz ist seither fuer alle Aktentypen
+        # gleich. Der Inhalt ist derselbe, nur der Name hat gewechselt.
+        # Geprueft wird deshalb das Panel UND das Bild darin; nur den
+        # Panelnamen abzufragen bestuende auch bei leerem Reiter.
+        self.assertContains(r, 'sc-dokumente')
+        self.assertNotContains(r, 'sc-fotos')
+        self.assertContains(r, t.fotos.first().bild.url)
 
 
 class AuftragPdfTests(TestCase):
