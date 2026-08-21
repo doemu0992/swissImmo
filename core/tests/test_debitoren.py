@@ -1,7 +1,10 @@
 """Testmodul debitoren — aus core/tests.py herausgeloest (Etappe 1,
 siehe docs/ETAPPE-1-ZERLEGEN.md). 15 Klassen, unveraendert uebernommen."""
+import pathlib
 from datetime import date, timedelta
 from decimal import Decimal
+
+from django.conf import settings
 
 from django.test import TestCase, Client
 from ._helfer import (_test_organisation,
@@ -428,16 +431,58 @@ class MieterkontoblattTests(TestCase):
         `test_das_gruppenband_bleibt_dunkler_als_das_zeilenband`.
 
         Gemessen bei iPhone-Breite: 36 Gruppen je 8px rgb(226,232,240),
-        letzte Gruppe 0px."""
-        _basis_objekte()          # sonst rendert die Seite gar keine Gruppe
+        letzte Gruppe 0px.
+
+        NACHGEFUEHRT IN 4b.17 — DIE PRUEFUNG BLIEB, DIE ADRESSE WECHSELTE.
+        Die Objektliste erfuellt die Zusage seither anders: Jede
+        Liegenschaftsgruppe ist eine EIGENE `fw-card` mit vollem Rahmen und
+        16 px Abstand, statt einer Haarlinie innerhalb einer gemeinsamen
+        Karte. Das ist eine staerkere Trennung als das Band, nicht eine
+        schwaechere — die Regel selbst bleibt aber noetig, weil
+        `hypotheken.html` weiter Gruppen in EINER Karte stapelt.
+
+        Der Wortlaut-Test hing an der Vorfassung von `objekte.html` und
+        waere beim Umbau still falsch geworden. Er zeigt jetzt dorthin, wo
+        das Muster tatsaechlich noch steht, und die Objektliste wird auf
+        ihre eigene Trennung geprueft.
+        """
         c = Client(); c.force_login(_team_user())
-        html = c.get('/neu/objekte/').content.decode('utf-8')
+
+        # Die Regel selbst — sie bedient `hypotheken.html` und wird global
+        # ausgeliefert, ist also auf jeder Seite nachweisbar.
+        html = c.get('/neu/hypotheken/').content.decode('utf-8')
         self.assertIn('main details.group.border-b { border-bottom: 8px solid var(--ds-line) !important; }',
                       html)
         self.assertIn('main details.group.border-b:last-child { border-bottom-width: 0 !important; }',
                       html)
-        # Die Gruppen tragen die Klassen, auf die die Regel zielt
-        self.assertIn('<details class="group border-b border-slate-100 last:border-0">', html)
+        # Und die Vorlage, die auf die Regel zielt, traegt die Klassen noch.
+        vorlage = (pathlib.Path(settings.BASE_DIR)
+                   / 'core/templates/fw/hypotheken.html').read_text()
+        self.assertIn('details class="group border-b', vorlage)
+
+    def test_die_objektliste_trennt_ihre_gruppen_als_eigene_karten(self):
+        """Die Nachfolge des Trennbands auf /neu/objekte/ (4b.17).
+
+        Zwei Liegenschaften duerfen optisch nicht ineinanderlaufen — das war
+        die urspruengliche Meldung («Keine Trennlinie»). Statt einer Haarlinie
+        in einer gemeinsamen Karte bekommt jede Gruppe jetzt ihre eigene
+        `fw-card`; die traegt Rahmen und Abstand aus der Komponentenschicht.
+
+        Geprueft wird, dass es MEHRERE Karten sind — mit einer einzigen waere
+        jede Trennung trivial erfuellt und der Test wertlos.
+        """
+        lg, e, m, v = _basis_objekte()
+        from portfolio.models import Einheit, Liegenschaft
+        zweite = Liegenschaft.objects.create(
+            organisation=lg.organisation, eigentuemer=lg.eigentuemer,
+            strasse='Zweitweg 2', plz=lg.plz, ort=lg.ort)
+        Einheit.objects.create(liegenschaft=zweite, bezeichnung='Whg. Z',
+                               typ='whg')
+
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/objekte/').content.decode('utf-8')
+        self.assertGreaterEqual(html.count('<details class="fw-card"'), 2)
+        self.assertIn('Zweitweg 2', html)
 
     def test_das_gruppenband_bleibt_dunkler_als_das_zeilenband(self):
         """Die Absicht hinter den zwei Bändern, nicht ihre Schreibweise.
