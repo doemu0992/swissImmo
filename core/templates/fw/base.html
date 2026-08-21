@@ -544,6 +544,20 @@
         .fw-zeile .fw-s{font-size:11.5px;color:var(--ds-faint);margin-top:2px;line-height:1.45}
         .fw-zeile .fw-zeit{font-size:12.5px;font-weight:700;color:var(--ds-muted);
             font-variant-numeric:tabular-nums;white-space:nowrap}
+        /* Auf dem Handy bekommt der Titel die VOLLE Breite, alles andere
+           rutscht darunter.
+           Betrag, Datum und Knopf sind `white-space:nowrap` und geben keine
+           Breite ab; in einer einzeiligen Flexbox wird der Titel dazwischen
+           auf Handbreit zusammengedrueckt und die Zeile dadurch turmhoch —
+           bei 390 px gemessen: Titelbreite 55–95 px.
+           Dieselbe Loesung hatte die alte Inbox als Tailwind-Utilities am
+           einzelnen Element (`basis-full sm:basis-0`). Hier steht sie einmal
+           an `.fw-zeile` und gilt damit fuer jede Zeile der Anwendung —
+           Arbeitsvorrat, Termine, Freigaben, Mandate, Regelwerk. */
+        @media(max-width:640px){
+            .fw-zeile{flex-wrap:wrap}
+            .fw-zeile .fw-mitte{flex-basis:100%;min-width:0}
+        }
 
         .fw-marker{width:3px;align-self:stretch;border-radius:2px;background:var(--ds-line);
             flex:0 0 3px;min-height:32px}

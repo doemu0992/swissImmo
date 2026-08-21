@@ -99,7 +99,11 @@
         </div>
         <div class="fw-zeit">{{ e.datum|date:"d.m.Y" }}<br>
             <span class="fw-klein">{% if e.tage < 0 %}{{ e.tage|cut:"-" }} Tage über{% elif e.tage == 0 %}heute{% else %}in {{ e.tage }} Tag{{ e.tage|pluralize:"en" }}{% endif %}</span></div>
-        <a href="{{ e.ziel }}" class="fw-btn">{{ e.knopf }}</a>
+        {% comment %} `e.modal` kommt aus der Quelle (siehe `_pendenz_ziel`):
+           Die Zugangserfassung nach Art. 257d etwa gehoert ins Popup, damit
+           man die Liste nicht verlaesst. Ohne dieses Attribut waere aus einer
+           Umstellung der Anzeige ein Funktionsverlust geworden. {% endcomment %}
+        <a href="{{ e.ziel }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',false)"{% endif %} class="fw-btn">{{ e.knopf }}</a>
     </div>
     {% empty %}
     <p class="fw-leer">{% if ansicht == 'heute' %}Heute ist nichts fällig.{% elif ansicht == 'woche' %}Diese Woche ist nichts fällig.{% else %}Kein offener Vorgang.{% endif %}</p>
@@ -158,7 +162,7 @@
         </div>
         {% if e.chf %}<span class="fw-betrag">CHF {{ e.chf|chf }}</span>{% endif %}
         {% if e.faellig %}<div class="fw-zeit">{{ e.faellig|date:"d.m.Y" }}</div>{% endif %}
-        {% if e.url %}<a href="{{ e.url }}" class="fw-btn">{{ e.cta }}</a>{% endif %}
+        {% if e.url %}<a href="{{ e.url }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"{% endif %} class="fw-btn">{{ e.cta }}</a>{% endif %}
     </div>
     {% endfor %}
     <div class="fw-fuss">
@@ -220,5 +224,16 @@
         <a href="/neu/berichte/" class="fw-link">Alle Übersichten →</a>
     </div>
 </details>
+
+{% comment %} Der Popup-Behaelter. Die Inbox und der Arbeitsvorrat verlinken
+   Ziele mit `fwModalOpen(...)` — die 257d-Zugangserfassung etwa oeffnet im
+   Popup statt die Seite zu verlassen. Ohne diesen Baustein zeigt der Aufruf
+   ins Leere.
+
+   Beim Neuschreiben der Startseite fiel er weg; gemeldet hat es
+   `test_heute_zu_tun_zeigt_dringende_pendenz_mit_popup`, das ausdruecklich
+   auf `id="fwModal"` prueft. Ein Test, der nur den Link geprueft haette,
+   waere gruen geblieben. {% endcomment %}
+{% include 'fw/_fwmodal.html' %}
 
 {% endblock %}

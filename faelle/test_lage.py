@@ -443,3 +443,86 @@ class TrennungTests(TestCase):
         with mandant(self.b.organisation):
             antwort = c.get('/neu/')
         self.assertNotContains(antwort, 'Streng vertraulich Mandant A')
+
+
+class AbschnitteErreichenDieSeiteTests(TestCase):
+    """Die Abschnitte werden nicht nur berechnet, sondern auch gezeigt.
+
+    DIESE LÜCKE IST DER ANLASS DER GANZEN ETAPPE. Bis 4b.13 berechnete der
+    Arbeitsvorrat `av_termine`, `av_freigaben`, `av_vertretung` und
+    `av_liegezeit` — und auf `/neu/` wurde **keiner** davon angezeigt. Gebaut
+    in 4b.7 und 4b.8, auf der meistbesuchten Seite nie angekommen.
+
+    Aufgefallen ist es erst beim Vergleich zweier Startflächen, nicht durch
+    einen Test: Die Tests prüften die Funktionen, und die waren grün.
+
+    Beim Umbau wäre es beinahe wieder passiert — eine Gegenprobe, die den
+    Sammler aus dem Kontext nimmt, blieb grün. Deshalb dieser Test: Er
+    schreibt Daten und prüft die **gerenderte Seite**.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def _seite(self):
+        c = Client()
+        c.force_login(self.a.benutzer)
+        return c.get('/neu/').content.decode()
+
+    def test_termin_erscheint_auf_der_startseite(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from faelle.termin_models import Termin
+        with mandant(self.a.organisation):
+            Termin.objects.create(
+                titel='Eigentuemergespraech Blattner', art=Termin.GESPRAECH,
+                beginn=timezone.now() + timedelta(days=2))
+            inhalt = self._seite()
+        self.assertIn('Termine', inhalt)
+        self.assertIn('Eigentuemergespraech Blattner', inhalt,
+                      'Der Termin wird berechnet, aber nicht angezeigt.')
+
+    def test_freigabe_erscheint_auf_der_startseite(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from finance.models import KreditorenRechnung
+        with mandant(self.a.organisation):
+            KreditorenRechnung.objects.create(
+                liegenschaft=self.a.liegenschaft, lieferant='Sanitaer Widmer AG',
+                status='neu', betrag=880,
+                datum=timezone.localdate() - timedelta(days=3))
+            inhalt = self._seite()
+        self.assertIn('Wartet auf Freigabe', inhalt)
+        self.assertIn('Sanitaer Widmer AG', inhalt,
+                      'Die Freigabe wird berechnet, aber nicht angezeigt.')
+
+    def test_vertretung_erscheint_auf_der_startseite(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from faelle.termin_models import Abwesenheit
+        with mandant(self.a.organisation):
+            heute = timezone.localdate()
+            Abwesenheit.objects.create(
+                benutzer=self.a.benutzer, von=heute - timedelta(days=1),
+                bis=heute + timedelta(days=5), grund=Abwesenheit.FERIEN)
+            inhalt = self._seite()
+        self.assertIn('Vertretung', inhalt,
+                      'Die Abwesenheit wird berechnet, aber nicht angezeigt.')
+        self.assertIn('ohne Vertretung', inhalt,
+                      'Eine ungedeckte Abwesenheit muss als solche auffallen.')
+
+    def test_der_zulauf_erscheint_auf_der_startseite(self):
+        from faelle.zulauf_models import Eingang
+        with mandant(self.a.organisation):
+            Eingang.objects.create(quelle=Eingang.MAIL,
+                                   betreff='Heizung im Bad wieder kalt')
+            inhalt = self._seite()
+        self.assertIn('Heizung im Bad wieder kalt', inhalt,
+                      'Der Zulauf wird berechnet, aber nicht angezeigt.')

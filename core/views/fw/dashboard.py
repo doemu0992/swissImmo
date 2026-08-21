@@ -48,9 +48,7 @@ def fw_dashboard(request):
     abweicht». Wer die alten Auswertungen sucht, findet sie unter
     /neu/berichte/ — sie waren dort schon immer.
     """
-    from faelle.arbeitsvorrat import (liegezeit, posteingang, termine,
-                                      vertretung, wartet_auf_freigabe,
-                                      was_reisst)
+    from faelle.arbeitsvorrat import arbeitsvorrat, was_reisst
     from faelle.lage import lage
     from faelle.models import Fall
 
@@ -62,21 +60,29 @@ def fw_dashboard(request):
     if ansicht not in dict(ANSICHTEN):
         ansicht = 'heute'
 
+    # Die gemeinsamen Abschnitte kommen aus dem Sammler — Zulauf, Termine,
+    # Freigaben, Liegezeit, Vertretung unter den `av_*`-Namen, die der
+    # eingebundene Baustein erwartet. Sie hier ein zweites Mal
+    # zusammenzusuchen, war der erste Entwurf; damit haette `arbeitsvorrat()`
+    # ausser Tests keinen Aufrufer mehr gehabt — genau die Waise, die in
+    # dieser Phase schon dreimal aufgetaucht ist.
+    av = arbeitsvorrat(request, aktive_lg)
+
+    # EIN Durchgang fuer alle Fenster. `was_reisst(365)` ist die Obermenge;
+    # «Diese Woche» und «Heute» sind daraus gefiltert, statt die Sammelarbeit
+    # ueber alle vier Quellen zwei- oder dreimal zu leisten.
+    alle = was_reisst(heute, grenze=365, aktive_lg=aktive_lg)
+    woche = [e for e in alle if e['tage'] <= 7]
+    heute_faellig = [e for e in woche if e['tage'] <= 0]
+
     # Die Zahlen an den Reitern sind die eigentliche Aussage — «3
     # liegengeblieben» sieht man, ohne die Ansicht zu wechseln.
-    #
-    # `was_reisst` zweimal aufzurufen (Heute UND Woche) waere doppelte Arbeit:
-    # Die Woche enthaelt den heutigen Tag, also reicht EIN Durchgang und ein
-    # Abzaehlen. Der erste Entwurf rief zweimal auf und kostete damit die
-    # gesamte Sammelarbeit ueber alle vier Quellen ein zweites Mal.
-    woche = was_reisst(heute, grenze=7, aktive_lg=aktive_lg)
-    heute_faellig = [e for e in woche if e['tage'] <= 0]
     zaehler = {
         'heute': len(heute_faellig),
         'woche': len(woche),
         'liegen': Fall.objects.liegengeblieben().count(),
         'wartet': Fall.objects.filter(status=Fall.WARTET).count(),
-        'alle': None,
+        'alle': len(alle),
     }
 
     faelle = []
@@ -97,11 +103,7 @@ def fw_dashboard(request):
         # «Alle» heisst alle — ohne Fenster. Ein Jahr ist die Obergrenze,
         # damit eine versehentlich auf 2099 datierte Frist die Seite nicht
         # allein fuellt.
-        vorrat = was_reisst(heute, grenze=365, aktive_lg=aktive_lg)
-
-    eingaenge, eingaenge_gesamt = posteingang()
-    termin_zeilen = termine(heute)
-    freigaben = wartet_auf_freigabe()
+        vorrat = alle
 
     # DIE INBOX BLEIBT. Sie stand auf der alten Startseite und waere beim
     # Zusammenlegen fast verschwunden — nichts anderes rendert sie. Seit 4b.5
@@ -124,16 +126,10 @@ def fw_dashboard(request):
                       for k, b in ANSICHTEN],
         'vorrat': vorrat,
         'faelle': faelle,
-        'av_eingaenge': eingaenge,
-        'av_eingaenge_gesamt': eingaenge_gesamt,
-        'av_termine': termin_zeilen,
-        'av_termine_gesamt': len(termin_zeilen),
-        'av_freigaben': freigaben,
-        'av_freigaben_gesamt': len(freigaben),
-        'av_liegezeit': liegezeit(freigaben),
-        # Ohne diesen Eintrag bliebe der Abschnitt «Vertretung» im
-        # eingebundenen Baustein stumm — er ist da, zeigt aber nichts.
-        'av_vertretung': vertretung(heute),
+        # Zulauf, Termine, Freigaben, Liegezeit und Vertretung — aus dem
+        # Sammler. Ohne sie bliebe der eingebundene Baustein stumm: er ist da,
+        # zeigt aber nichts.
+        **av,
         'inbox': inbox,
         'inbox_mehr': inbox_mehr,
         **lage(heute, aktive_lg),

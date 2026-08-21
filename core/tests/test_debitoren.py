@@ -500,7 +500,16 @@ class MieterkontoblattTests(TestCase):
             faellig_am=date(2026, 1, 5), status='offen')
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/').content.decode('utf-8')
-        self.assertIn('class="min-w-0 basis-full sm:basis-0 flex-1', html)
+        # Die Inbox ist mit 4b.13 auf die Komponentenschicht umgestellt: Statt
+        # `basis-full sm:basis-0` am einzelnen Element steht die Regel jetzt
+        # EINMAL an `.fw-zeile` in base.html und gilt fuer jede Zeile der
+        # Anwendung. Die Messung von oben bleibt der Grund dafuer.
+        #
+        # Geprueft wird beides: dass die Zeile diese Bauform benutzt, UND dass
+        # die Regel existiert. Nur das eine zu pruefen liesse offen, ob der
+        # Titel mobil wirklich Platz bekommt.
+        self.assertIn('class="fw-zeile"', html)
+        self.assertIn('.fw-zeile .fw-mitte{flex-basis:100%', html)
 
     def test_truncate_wird_mobil_zentral_aufgehoben(self):
         """«truncate» schneidet auf dem Handy genau das weg, was die Zeile

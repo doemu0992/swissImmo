@@ -26,7 +26,13 @@ class DashboardCockpitTests(TestCase):
                                      naechste_faelligkeit=date.today() + timedelta(days=10))
         u = _team_user()
         c = Client(); c.force_login(u)
-        r = c.get('/neu/')
+        # ANSICHT «ALLE», nicht die Vorgabe: Seit 4b.13 fuehrt die Startseite
+        # die fuenf Ansichten aus Konzept 3.1, und die Vorgabe ist «Heute» —
+        # also nur, was heute oder frueher faellig ist. Eine Wartungsfrist in
+        # zehn Tagen steht dort zu Recht nicht. Geprueft wird hier die
+        # Doppelung (G2), nicht das Fenster; dafuer muss die Frist sichtbar
+        # sein.
+        r = c.get('/neu/?ansicht=alle')
         self.assertEqual(r.status_code, 200)
         # Seit 4b.5 geteilt: Die Inbox fuehrt die SAMMELPOSTEN, der
         # Arbeitsvorrat («Was reisst») die EINZELNEN datierten Vorgaenge.
@@ -35,7 +41,7 @@ class DashboardCockpitTests(TestCase):
         # zweimal darf sie nirgends erscheinen.
         inbox = r.context['inbox']
         self.assertTrue(any('Eigentümer-Freigabe' in x['titel'] for x in inbox))
-        vorrat = r.context['av_reisst']
+        vorrat = r.context['vorrat']
         self.assertTrue(any(x['titel'] == 'Heizungswartung' and x['art'] == 'wartung'
                             for x in vorrat))
         self.assertFalse(any(x['titel'] == 'Heizungswartung' for x in inbox),
@@ -57,7 +63,7 @@ class TagesstartCockpitTests(TestCase):
         # Wichtig bleibt, dass sie ihr Ziel behaelt — die Rücknahme oeffnet
         # weiterhin im Popup. Ginge das beim Umzug verloren, waere aus einer
         # Umstellung der Anzeige ein Funktionsverlust geworden.
-        vorrat = r.context['av_reisst']
+        vorrat = r.context['vorrat']
         self.assertTrue(any(x['titel'] == 'Rücknahme vorbereiten' for x in vorrat))
         self.assertFalse(any(x['titel'] == 'Rücknahme vorbereiten'
                              for x in r.context['inbox']),
@@ -76,8 +82,14 @@ class TagesstartCockpitTests(TestCase):
         team = _team_user(); c = Client(); c.force_login(team)
         r = c.get('/neu/')
         self.assertFalse(any(x['titel'] == 'Weit weg' for x in r.context['inbox']))
-        self.assertFalse(any(x['titel'] == 'Weit weg' for x in r.context['av_reisst']),
-                         'Auch der Arbeitsvorrat schaut nur 14 Tage voraus.')
+        self.assertFalse(any(x['titel'] == 'Weit weg' for x in r.context['vorrat']),
+                         'Die Vorgabe-Ansicht «Heute» zeigt nur, was heute faellig ist.')
+        # Gegenprobe: Unter «Alle» steht sie sehr wohl. Ohne diese Zeile
+        # bestuende der Test auch, wenn der Arbeitsvorrat gar nichts mehr
+        # faende — eine leere Liste enthaelt «Weit weg» ebenfalls nicht.
+        alle = c.get('/neu/?ansicht=alle')
+        self.assertTrue(any(x['titel'] == 'Weit weg' for x in alle.context['vorrat']),
+                        'Die ferne Pendenz ist nirgends mehr zu finden.')
 
 
 class PendenzAktionTests(TestCase):
@@ -435,27 +447,27 @@ class HotfixDashboardPerformanceTests(TestCase):
         self.assertLessEqual(len(ctx.captured_queries), 3)
 
 
-class DashboardGekuendigtJTests(TestCase):
-    """Live-Test J: «Gekündigt»-Zähler doppelte einen bereits abgelaufenen Vertrag."""
-
-    def test_j_abgelaufener_gekuendigter_zaehlt_nur_als_beendet(self):
-        from rentals.models import Mietvertrag
-        from portfolio.models import Einheit
-        from crm.models import Mieter
-        lg, e1, m1, v1 = _basis_objekte()
-        # v1: gekündigt, läuft noch (Ende in der Zukunft)
-        v1.status = 'gekuendigt'; v1.ende = date.today() + timedelta(days=60); v1.save()
-        # v2: gekündigt, aber Ende bereits vorbei → beendet, NICHT mehr «gekündigt»
-        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='2Zi', typ='wohnung',
-                                    nettomiete_aktuell=Decimal('1000'), nebenkosten_aktuell=Decimal('100'))
-        m2 = Mieter.objects.create(typ='person', vorname='Alt', nachname='Weg',
-                                   strasse='S', plz='8000', ort='Zürich')
-        Mietvertrag.objects.create(mieter=m2, einheit=e2, beginn=date(2022, 1, 1),
-                                   ende=date.today() - timedelta(days=10),
-                                   netto_mietzins=Decimal('1000'), nebenkosten=Decimal('100'),
-                                   status='gekuendigt')
-        c = Client(); c.force_login(_team_user('Verwaltung'))
-        r = c.get('/neu/')
-        self.assertEqual(r.context['v_gekuendigt'], 1)        # nur der laufende
-        self.assertEqual(r.context['gekuendigte_count'], 1)   # Liste konsistent
-        self.assertGreaterEqual(r.context['v_beendet'], 1)    # der abgelaufene ist beendet
+# ─────────────────────────────────────────────────────────────────────────────
+# ENTFERNT MIT 4b.13: DashboardGekuendigtJTests
+#
+# Der Test stammte aus einem Live-Befund («Gekündigt» zählte einen bereits
+# abgelaufenen Vertrag doppelt, 4 statt 5). Geprüft hat er die Kontextwerte
+# `v_gekuendigt`, `gekuendigte_count` und `v_beendet` der Startseiten-Kachel
+# «Verträge». Diese Kachel ist mit 4b.13 ersatzlos entfallen — zusammen mit
+# Mietertrag-Diagramm, Portfolio-Donut und Leerstandsliste.
+#
+# DIE REGEL HAT DAMIT KEINEN ORT MEHR. Gemessen am 21.08.2026: Die drei
+# Schlüssel kommen im ganzen Programmcode sonst nicht vor, und
+# `fw_vertraege` zählt roh nach `status` (`aktiv_count`), ohne die
+# Verfeinerung «gekündigt, aber Ende vorbei → beendet». Wer dort auf den
+# Statusfilter «gekündigt» klickt, sieht den abgelaufenen Vertrag wieder mit.
+#
+# Das ist ein OFFENER PUNKT und keine erledigte Sache. Er steht in
+# docs/KONZEPT-UI.md unter «Offene Punkte aus 4b.13»; ob die Unterscheidung
+# in der Vertragsliste auftauchen soll, ist eine fachliche Entscheidung und
+# nicht Teil des Startseiten-Umbaus.
+#
+# Der Test wurde nicht stillschweigend gelöscht: Er wäre nach dem Umbau mit
+# KeyError gescheitert, und ein grün gestellter Test ohne Gegenstand wäre
+# schlechter als dieser Kommentar.
+# ─────────────────────────────────────────────────────────────────────────────

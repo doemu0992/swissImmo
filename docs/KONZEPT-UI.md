@@ -586,6 +586,17 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 > `select_related`/`prefetch_related` umgestellt, das Ergebnis ist nachweislich identisch, und
 > `faelle/test_lage.py::AbfragezahlTests` hält die Grössenordnung fest.
 
+> **Offene Punkte aus 4b.13.** Mit den vier Kacheln ist eine **geprüfte Regel ohne Ort**
+> geblieben: «Ein gekündigter Vertrag, dessen Ende bereits vorbei ist, zählt als *beendet*,
+> nicht als *gekündigt*.» Sie stammt aus einem Live-Befund (der Zähler doppelte, 4 statt 5)
+> und wurde ausschliesslich in der Startseiten-Kachel «Verträge» angewandt; die Schlüssel
+> `v_gekuendigt`, `gekuendigte_count`, `v_beendet` kommen im übrigen Programmcode nicht vor.
+> `fw_vertraege` zählt roh nach `status` — wer dort auf den Filter «gekündigt» klickt, sieht
+> den abgelaufenen Vertrag wieder mit. Ob die Unterscheidung in der Vertragsliste auftauchen
+> soll, ist eine fachliche Entscheidung und war nicht Teil des Startseiten-Umbaus. Der
+> zugehörige Test ist entfernt, der Befund steht als Kommentar an seiner Stelle in
+> `core/tests/test_pendenzen.py`.
+
 > **Warum 4b.10 dazwischenkam — dreimal derselbe Fehler.** Der Vergleich mit
 > `mockups/konzept-v2.html` (Screen «Fristenwächter») ergab, dass die Rechenlogik seit Phase 4a
 > vollständig vorlag: `kuendigungstermin()`, `Regelsatz` je Kanton, `Regel` mit Verbindlichkeit,
