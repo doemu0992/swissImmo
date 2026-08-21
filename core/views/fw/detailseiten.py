@@ -189,7 +189,15 @@ def _objekt_kopf(e, aktiver_vertrag, verhaeltnisse, raeume, ausst_rows,
 
 
 def _vertrag_status_pill(v):
-    label, cls = VERTRAG_PILL.get(v.status, (v.status, 'bg-slate-100 text-slate-500'))
+    """Der Chip im Aktenkopf — nach ANZEIGE-Status.
+
+    Zeigte die Akte weiterhin «Gekuendigt», waehrend die Liste denselben
+    Vertrag als «Beendet» fuehrt, waere der Widerspruch schlimmer als die
+    urspruengliche Ungenauigkeit: Man wuesste nicht, welcher Seite zu
+    trauen ist.
+    """
+    anzeige = v.anzeige_status
+    label, cls = VERTRAG_PILL.get(anzeige, (anzeige, 'bg-slate-100 text-slate-500'))
     return {'label': label, 'cls': cls}
 
 
@@ -2153,12 +2161,20 @@ def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
     naechste = min(datiert, key=lambda e: e['p'].faellig_am) if datiert else None
 
     # --- Chips: gerechnete Zustaende, nicht das Statusfeld -------------------
+    # Der Zustandschip folgt dem ANZEIGE-Status. Sonst stuende auf der Akte
+    # «Gekuendigt per 14.08.», waehrend die Liste denselben Vertrag als
+    # «Beendet» fuehrt. Die Kuendigung bleibt in den Stammdaten sichtbar —
+    # sie ist geschehen, auch wenn der Vertrag heute beendet ist.
+    anzeige = v.anzeige_status
     chips = []
-    if v.status == 'gekuendigt' and v.ende:
+    if anzeige == v.ANZEIGE_BEENDET:
+        _per = f' per {v.ende.strftime("%d.%m.%Y")}' if v.ende else ''
+        chips.append(('mut', f'Beendet{_per}'))
+    elif anzeige == 'gekuendigt' and v.ende:
         chips.append(('crit', f'Gekündigt per {v.ende.strftime("%d.%m.%Y")}'))
-    elif v.status == 'aktiv':
+    elif anzeige == 'aktiv':
         chips.append(('good', 'Aktiv'))
-    elif v.status == 'entwurf':
+    elif anzeige == 'entwurf':
         chips.append(('warn', 'Entwurf'))
     if monatsmieten >= 1:
         _n = int(monatsmieten)

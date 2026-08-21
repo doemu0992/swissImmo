@@ -335,6 +335,11 @@ VERTRAG_PILL = {
     'entwurf':    ('Entwurf',    'bg-slate-100 text-slate-600'),
     'aktiv':      ('Aktiv',      'bg-emerald-50 text-emerald-700'),
     'gekuendigt': ('Gekündigt',  'bg-rose-50 text-rose-600'),
+    # «Beendet» ist kein gespeicherter Status, sondern der ANZEIGE-Status aus
+    # `Mietvertrag.anzeige_status`: archiviert, oder gekuendigt mit
+    # abgelaufenem Ende. Vorher zeigte die Liste einen solchen Vertrag
+    # weiterhin als «gekuendigt» — und der Filter «Gekuendigt» lieferte ihn mit.
+    'beendet':    ('Beendet',    'bg-slate-100 text-slate-500'),
     'archiviert': ('Archiviert', 'bg-slate-100 text-slate-500'),
 }
 

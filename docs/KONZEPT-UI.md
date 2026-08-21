@@ -539,6 +539,7 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.11 | **Die Objektakte** — der letzte umzustellende Aktentyp: Aktenkopf, acht Reiter auf sechs, neuer Bereich «Fälle»; Bereichsinhalte von Objekt (478→164), Vertrag (179→98) und Schaden (109→59) | erledigt |
 | 4b.12 | **Mandats- und Dienstleisterakte** — die beiden Aktentypen aus dem Register, die überhaupt keine Detailseite hatten | erledigt |
 | 4b.13 | **Zwei Startflächen werden eine**: `/neu/` führt die fünf Ansichten, dazu Lage-Streifen mit Vormonatsvergleich, Mandate nach Auffälligkeit und «Was abweicht»; `/neu/arbeit/` leitet um | erledigt |
+| 4b.14 | **Anzeigestatus des Mietvertrags**: `Mietvertrag.anzeige_status` — eine abgelaufene Kündigung gilt als beendet, in Liste, Filter, Aktenkopf und Statuspille; `status` und die Sollstellung bleiben unberührt | erledigt |
 
 > **Warum 4b.12 nötig war.** `faelle/akten.py` führt **sieben** Aktentypen. Nach 4b.11 hatten
 > fünf davon Aktenkopf und Reitersatz. Zwei hatten keine Seite: Das Mandat kannte nur Liste,
@@ -586,16 +587,24 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 > `select_related`/`prefetch_related` umgestellt, das Ergebnis ist nachweislich identisch, und
 > `faelle/test_lage.py::AbfragezahlTests` hält die Grössenordnung fest.
 
-> **Offene Punkte aus 4b.13.** Mit den vier Kacheln ist eine **geprüfte Regel ohne Ort**
-> geblieben: «Ein gekündigter Vertrag, dessen Ende bereits vorbei ist, zählt als *beendet*,
-> nicht als *gekündigt*.» Sie stammt aus einem Live-Befund (der Zähler doppelte, 4 statt 5)
-> und wurde ausschliesslich in der Startseiten-Kachel «Verträge» angewandt; die Schlüssel
-> `v_gekuendigt`, `gekuendigte_count`, `v_beendet` kommen im übrigen Programmcode nicht vor.
-> `fw_vertraege` zählt roh nach `status` — wer dort auf den Filter «gekündigt» klickt, sieht
-> den abgelaufenen Vertrag wieder mit. Ob die Unterscheidung in der Vertragsliste auftauchen
-> soll, ist eine fachliche Entscheidung und war nicht Teil des Startseiten-Umbaus. Der
-> zugehörige Test ist entfernt, der Befund steht als Kommentar an seiner Stelle in
-> `core/tests/test_pendenzen.py`.
+> **~~Offener Punkt aus 4b.13~~ — erledigt in 4b.14.** Mit den vier Kacheln war eine
+> **geprüfte Regel ohne Ort** geblieben: «Ein gekündigter Vertrag, dessen Ende bereits vorbei
+> ist, zählt als *beendet*, nicht als *gekündigt*.» Sie stammt aus einem Live-Befund (der
+> Zähler doppelte, 4 statt 5) und wurde ausschliesslich in der Startseiten-Kachel «Verträge»
+> angewandt.
+>
+> Sie steht jetzt in **`Mietvertrag.anzeige_status`** — an einer Stelle, für jeden Aufrufer.
+> Die Vertragsliste filtert und beschriftet danach, «Beendet» ist ein eigener Filter, und
+> «Archiviert» geht darin auf (zwei Auswahlpunkte für dieselbe Sache wären ein Bedienfehler).
+> Aktenkopf und Statuspille zeigen denselben Wert wie die Liste — stünde auf der Akte
+> «Gekündigt per 14.08.», während die Liste «Beendet» sagt, wüsste niemand, welcher Seite zu
+> trauen ist.
+>
+> **`status` bleibt unangetastet.** Er sagt, was verfügt wurde; `anzeige_status` sagt, was
+> heute gilt. Die **Sollstellung läuft weiter nach `status`** und grenzt selbst gegen den
+> Periodenbeginn ab (`exclude(ende__lt=start_date)`) — das ist Befund H4: Ein gekündigter
+> Vertrag wird bis zum Vertragsende verrechnet. Ein Test hält fest, dass dort kein
+> `anzeige_status` auftaucht; sonst fiele die letzte Monatsmiete stillschweigend aus.
 
 > **Warum 4b.10 dazwischenkam — dreimal derselbe Fehler.** Der Vergleich mit
 > `mockups/konzept-v2.html` (Screen «Fristenwächter») ergab, dass die Rechenlogik seit Phase 4a

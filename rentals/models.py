@@ -509,6 +509,43 @@ class Mietvertrag(OrganisationAusKette):
             'zurueckbezahlt': 'Police aufgelöst' if vers else 'Zurückbezahlt',
         }.get(st, st)
 
+    #: Der Status, wie er in Listen und Akten ERSCHEINEN soll.
+    #: Unterscheidet sich vom gespeicherten `status` in genau einem Punkt:
+    #: Ein gekuendigter Vertrag, dessen Ende bereits vorbei ist, ist beendet.
+    ANZEIGE_BEENDET = 'beendet'
+
+    @property
+    def anzeige_status(self):
+        """Gespeicherter Status, mit einer Ausnahme.
+
+        HERKUNFT DER REGEL: Ein Live-Befund zeigte auf der alten Startseite
+        eine Statussumme von 4 statt 5 Objekten — ein gekuendigter Vertrag mit
+        abgelaufenem Ende wurde zugleich als «gekuendigt» und als «beendet»
+        gezaehlt. Die Regel wurde damals NUR in jener Kachel angewandt; die
+        Vertragsliste zaehlte weiter roh nach `status`, und wer dort auf
+        «gekuendigt» klickte, sah den abgelaufenen Vertrag wieder mit.
+
+        Mit dem Wegfall der Kachel (Phase 4b.13) verlor die Regel ihren Ort.
+        Sie steht jetzt hier — an EINER Stelle, fuer jeden Aufrufer.
+
+        `status` selbst bleibt unangetastet: Er sagt, was verfuegt wurde.
+        `anzeige_status` sagt, was heute gilt. Beides zu verschmelzen hiesse,
+        die Kuendigung aus der Geschichte zu loeschen — und die Sollstellung
+        laeuft bewusst weiter nach `status` (Befund H4: ein gekuendigter
+        Vertrag wird bis zum Vertragsende verrechnet).
+
+        `<` und nicht `<=`: Am Endtag selbst laeuft das Verhaeltnis noch.
+        """
+        if self.status == 'archiviert':
+            return self.ANZEIGE_BEENDET
+        if self.ende and self.ende < timezone.localdate():
+            return self.ANZEIGE_BEENDET
+        return self.status
+
+    @property
+    def ist_beendet(self):
+        return self.anzeige_status == self.ANZEIGE_BEENDET
+
     @property
     def mietzinspotenzial(self):
         try:

@@ -1104,7 +1104,11 @@ def fw_objekte(request):
 
 # Design-System-Chip-Variante je Status (fw-chip fw-<variant>)
 VERTRAG_CHIP = {'aktiv': 'good', 'gekuendigt': 'crit',
-                'entwurf': 'mut', 'archiviert': 'mut'}
+                'entwurf': 'mut', 'archiviert': 'mut', 'beendet': 'mut'}
+
+#: In der Auswahl erscheint «Archiviert» nicht mehr eigenstaendig — es geht in
+#: «Beendet» auf, sonst haette der Nutzer zwei Filter fuer dieselbe Sache.
+VERTRAG_FILTER = ('entwurf', 'aktiv', 'gekuendigt', 'beendet')
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -1118,9 +1122,26 @@ def fw_vertraege(request):
     if aktive_lg:
         qs = qs.filter(einheit__liegenschaft=aktive_lg)
 
+    # Gefiltert wird nach dem ANZEIGE-Status, nicht nach dem gespeicherten.
+    # Ein gekuendigter Vertrag, dessen Ende vorbei ist, gehoert unter
+    # «Beendet» — und nicht mehr unter «Gekuendigt». Die Regel steht in
+    # `Mietvertrag.anzeige_status`; hier wird sie in eine Abfrage uebersetzt,
+    # damit die Datenbank filtert und nicht Python.
+    heute = timezone.localdate()
     status_filter = request.GET.get('status', '')
-    if status_filter in VERTRAG_PILL:
-        qs = qs.filter(status=status_filter)
+    if status_filter == 'beendet':
+        qs = qs.filter(Q(status='archiviert') | Q(ende__lt=heute))
+    elif status_filter in VERTRAG_FILTER:
+        # `exclude(ende__lt=heute)` deckt ALLE uebrigen Filter ab, auch
+        # «Gekuendigt»: Ein gekuendigter Vertrag mit abgelaufenem Ende faellt
+        # hier heraus und steht unter «Beendet».
+        #
+        # Ein eigener Zweig fuer «gekuendigt» stand hier zuerst und war
+        # ueberfluessig — die Gegenprobe (Zweig entfernen) blieb gruen und hat
+        # das gezeigt. Django nimmt NULL-Werte aus einem `exclude` heraus, eine
+        # Kuendigung ohne Enddatum bleibt also sichtbar; geprueft in
+        # `test_kuendigung_ohne_ende_bleibt_im_filter_gekuendigt`.
+        qs = qs.filter(status=status_filter).exclude(ende__lt=heute)
     q = (request.GET.get('q') or '').strip()
     if q:
         qs = qs.filter(Q(mieter__vorname__icontains=q) | Q(mieter__nachname__icontains=q)
@@ -1130,20 +1151,23 @@ def fw_vertraege(request):
 
     rows = []
     for v in qs:
-        label, pill_cls = VERTRAG_PILL.get(v.status, (v.status, 'bg-slate-100 text-slate-500'))
+        anzeige = v.anzeige_status
+        label, pill_cls = VERTRAG_PILL.get(
+            anzeige, (anzeige, 'bg-slate-100 text-slate-500'))
         rows.append({
             'v': v,
             'brutto': (v.netto_mietzins or Decimal('0')) + (v.nebenkosten or Decimal('0')),
             'status_label': label,
             'pill_cls': pill_cls,
-            'chip': VERTRAG_CHIP.get(v.status, 'mut'),
+            'chip': VERTRAG_CHIP.get(anzeige, 'mut'),
         })
 
     return render(request, 'fw/vertraege.html', {
         **basis, **_vermietung_pipeline('vertraege', basis['lg_query']), 'nav': 'vertraege', 'rows': rows,
         'status_filter': status_filter, 'q': q,
-        'status_chips': [('', 'Alle')] + [(k, v[0]) for k, v in VERTRAG_PILL.items()],
-        'aktiv_count': sum(1 for r in rows if r['v'].status == 'aktiv'),
+        'status_chips': [('', 'Alle')] + [(k, VERTRAG_PILL[k][0])
+                                          for k in VERTRAG_FILTER],
+        'aktiv_count': sum(1 for r in rows if r['v'].anzeige_status == 'aktiv'),
     })
 
 
