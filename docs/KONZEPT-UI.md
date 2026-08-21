@@ -547,6 +547,7 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.12 | **Mandats- und Dienstleisterakte** — die beiden Aktentypen aus dem Register, die überhaupt keine Detailseite hatten | erledigt |
 | 4b.13 | **Zwei Startflächen werden eine**: `/neu/` führt die fünf Ansichten, dazu Lage-Streifen mit Vormonatsvergleich, Mandate nach Auffälligkeit und «Was abweicht»; `/neu/arbeit/` leitet um | erledigt |
 | 4b.14 | **Anzeigestatus des Mietvertrags**: `Mietvertrag.anzeige_status` — eine abgelaufene Kündigung gilt als beendet, in Liste, Filter, Aktenkopf und Statuspille; `status` und die Sollstellung bleiben unberührt | erledigt |
+| 4b.15 | **Liegenschaftsliste: Befunde statt Bestand** — eine Zeile je Objekt statt einer Karte, sortiert nach Befund, mit Kennzahlenstreifen und Filterleiste; Leerstandsregel in `faelle/liegenschaften.py` | erledigt |
 
 > **Warum 4b.12 nötig war.** `faelle/akten.py` führt **sieben** Aktentypen. Nach 4b.11 hatten
 > fünf davon Aktenkopf und Reitersatz. Zwei hatten keine Seite: Das Mandat kannte nur Liste,
@@ -612,6 +613,44 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 > Periodenbeginn ab (`exclude(ende__lt=start_date)`) — das ist Befund H4: Ein gekündigter
 > Vertrag wird bis zum Vertragsende verrechnet. Ein Test hält fest, dass dort kein
 > `anzeige_status` auftaucht; sonst fiele die letzte Monatsmiete stillschweigend aus.
+
+> **Die Leerstandsregel (Entscheid 21.08.2026, aus 4b.15).** Die Liegenschaftsliste zeigte
+> Karten mit Einheitenzahl, Ist-Miete und Vermietungsbalken — **Bestand**. Bei einem ruhigen
+> Portfolio sehen alle Karten gleich aus; wer die Seite öffnet, muss jede einzeln lesen, um
+> zu merken, dass in der dritten seit zwei Monaten eine Wohnung leer steht. Jetzt eine Zeile
+> je Liegenschaft, **sortiert nach Befund**, mit «ohne Befund» als eigener Aussage.
+>
+> Drei Festlegungen tragen das, alle drei in `faelle/liegenschaften.py` begründet:
+>
+> 1. **Ein einziges leeres Objekt genügt.** Keine Prozentschwelle. Bei vier Wohnungen sind
+>    25 % Leerstand ein Alarm, bei vierzig sind 2.5 % dieselbe eine Wohnung — und beide kosten
+>    gleich viel Miete pro Monat. Die Quote steht im Streifen als Portfoliokennzahl, sie ist
+>    kein Auslöser.
+> 2. **Leer ist ein Objekt ab dem Ende der Kündigungsfrist, nicht ab dem Auszug.** Massgeblich
+>    ist `Mietvertrag.ende` (bei einem gekündigten unbefristeten Vertrag die `per_datum` der
+>    Kündigung), nicht das Abnahmeprotokoll. Wer drei Tage früher auszieht, macht das Objekt
+>    nicht früher vermietbar; wer nach Vertragsende nicht räumt, macht es nicht länger belegt.
+>    Dieselbe Trennung wie in 4b.14: was verfügt ist gegen was heute gilt.
+> 3. **Ein Nachmieter hebt den Befund auf** — auch ein Vertrag im Entwurf. Ohne diese Regel
+>    meldet die Liste genau die Objekte, um die sich schon jemand gekümmert hat.
+>
+> **Zwei Dinge stehen bewusst nicht in der Zeile.** *Laufblockaden*: Ein `Lauf` hängt über
+> `Laufart` an der Organisation und hat kein `liegenschaft`-Feld — ein offener Mahnlauf ist
+> Sache des ganzen Mandanten und gehört auf die Startseite. *Unterhalt über Budget*: Es gibt
+> kein Budgetfeld je Liegenschaft (null Treffer). Ob ein Unterhaltsbudget je Mandat oder je
+> Liegenschaft geführt wird, ist eine betriebliche Entscheidung — **offener Punkt**, nicht
+> plausibel zu ergänzen.
+>
+> **Nebenbefund: Die Ist-Miete war zu tief.** Die Karte summierte nur `status='aktiv'` und
+> liess jeden gekündigten, aber noch laufenden Vertrag aus dem Ertrag fallen — obwohl er bis
+> zum Vertragsende Miete schuldet (Befund H4 hat das für die Sollstellung längst so
+> festgelegt). Die Zahl steigt dadurch; sie war vorher falsch.
+>
+> **Zum vierten Mal las ein Wächter seine eigene Begründung.** Die Gegenprobe «die alte
+> Kartenansicht ist weg» suchte `fw-pcard` in der ganzen Seite und war rot — getroffen hat sie
+> den CSS-Kommentar in `base.html`, der erklärt, warum die Regeln entfernt wurden. Sie fragt
+> jetzt nur das Markup (`_ohne_stil`), und eine zweite Prüfung hält fest, dass dieser Schnitt
+> nicht zu viel wegnimmt. Muster wie bei `{% comment %}` in `test_template_struktur.py`.
 
 > **Warum 4b.10 dazwischenkam — dreimal derselbe Fehler.** Der Vergleich mit
 > `mockups/konzept-v2.html` (Screen «Fristenwächter») ergab, dass die Rechenlogik seit Phase 4a

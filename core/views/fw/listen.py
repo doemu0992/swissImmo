@@ -635,8 +635,41 @@ def fw_debitor_stornieren(request, pk):
     return redirect(ziel)
 
 
+#: Die Filterleiste ueber der Liegenschaftsliste. Die Schluessel sind dieselben
+#: Kategorien, die `faelle.liegenschaften` an die Chips haengt — deshalb steht
+#: dort auch die Zuordnung. Waere sie hier noch einmal gebaut, koennten Chip
+#: und Filter auseinanderlaufen, ohne dass ein Test es merkt.
+BEFUND_FILTER = {
+    'leer': 'Leerstand',
+    'frist': 'Fristen',
+    'ticket': 'Tickets',
+}
+
+
+def _befund_zaehler(rows):
+    """Wie viele Zeilen jeder Filter treffen wuerde — fuer die Zahl am Chip.
+
+    Ein Filter, der auf eine leere Liste fuehrt, ist eine Sackgasse: Man klickt,
+    sieht nichts und weiss nicht, ob der Filter kaputt ist oder der Bestand
+    sauber. Mit der Zahl daneben ist beides vorher sichtbar.
+    """
+    zaehler = {k: sum(1 for r in rows if k in r['kategorien'])
+               for k in BEFUND_FILTER}
+    zaehler['ohne'] = sum(1 for r in rows if r['ohne_befund'])
+    return zaehler
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_liegenschaften(request):
+    """Eine Zeile je Liegenschaft, sortiert nach Befund — nicht nach Adresse.
+
+    Das Rechnen steht in `faelle.liegenschaften`, nicht hier: Die Leerstands-
+    regel ist eine fachliche Festlegung (leer ab Ende der Kuendigungsfrist, ein
+    Objekt genuegt, Nachmieter hebt auf) und gehoert an eine Stelle, an der man
+    sie samt Begruendung findet und einzeln pruefen kann.
+    """
+    from faelle.liegenschaften import streifen, zeilen as befundzeilen
+
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
@@ -644,57 +677,26 @@ def fw_liegenschaften(request):
     if aktive_lg:
         liegenschaften = liegenschaften.filter(id=aktive_lg.id)
 
-    # Drei Abfragen für das ganze Portfolio statt fünf je Liegenschaft. Die
-    # Liste ist der Einstieg in die Bewirtschaftung und wurde bei 38
-    # Liegenschaften mit 195 Abfragen aufgebaut — das wächst linear mit dem
-    # Bestand und bremst auf einem Ein-Worker-Hosting spürbar.
-    lgs = list(liegenschaften)
-    lg_ids = [lg.id for lg in lgs]
+    alle = befundzeilen(liegenschaften)
+    # Der Streifen zaehlt das GANZE Portfolio, auch wenn die Liste darunter
+    # gefiltert ist. Sonst zeigt der Filter «Leerstand» eine Leerstandsquote
+    # von 100 % — richtig gerechnet und trotzdem irrefuehrend.
+    kennzahlen = streifen(alle)
 
-    einheiten_je_lg = defaultdict(list)
-    for e_id, e_lg in Einheit.objects.filter(
-            liegenschaft_id__in=lg_ids).values_list('id', 'liegenschaft_id'):
-        einheiten_je_lg[e_lg].append(e_id)
-
-    belegt_je_lg = defaultdict(set)
-    ertrag_je_lg = defaultdict(lambda: Decimal('0.00'))
-    vertraege_je_lg = defaultdict(int)
-    vertrag_lg = {}
-    for v_id, v_lg, e_id, netto, nk in Mietvertrag.objects.filter(
-            status='aktiv', einheit__liegenschaft_id__in=lg_ids).values_list(
-            'id', 'einheit__liegenschaft_id', 'einheit_id', 'netto_mietzins', 'nebenkosten'):
-        vertrag_lg[v_id] = v_lg
-        vertraege_je_lg[v_lg] += 1
-        ertrag_je_lg[v_lg] += (netto or Decimal('0')) + (nk or Decimal('0'))
-        if e_id:
-            belegt_je_lg[v_lg].add(e_id)
-
-    # Nebenobjekte (Parkplatz, Keller) zählen als belegt. Zugeordnet werden sie
-    # der Liegenschaft des HAUPTobjekts — wie bisher; ein Parkplatz in einer
-    # anderen Liegenschaft färbt deren Leerstand also nicht ein.
-    if vertrag_lg:
-        for v_id, neben_id in Mietvertrag.objects.filter(
-                id__in=vertrag_lg).values_list('id', 'nebenobjekte'):
-            if neben_id:
-                belegt_je_lg[vertrag_lg[v_id]].add(neben_id)
-
-    rows = []
-    for lg in lgs:
-        einheiten = einheiten_je_lg.get(lg.id, [])
-        belegte = belegt_je_lg.get(lg.id, set())
-        anzahl = len(einheiten)
-        leer = sum(1 for e_id in einheiten if e_id not in belegte)
-        belegt = anzahl - leer
-        rows.append({'lg': lg, 'einheiten_count': anzahl,
-                     'leer': leer, 'belegt': belegt,
-                     'verm_pct': round(belegt / anzahl * 100) if anzahl else 0,
-                     'mietertrag': ertrag_je_lg[lg.id],
-                     'vertraege_count': vertraege_je_lg[lg.id]})
+    befund = request.GET.get('befund', '')
+    if befund == 'ohne':
+        rows = [r for r in alle if r['ohne_befund']]
+    elif befund in BEFUND_FILTER:
+        rows = [r for r in alle if befund in r['kategorien']]
+    else:
+        befund = ''
+        rows = alle
 
     return render(request, 'fw/liegenschaften.html', {
-        **basis, 'nav': 'liegenschaften', 'rows': rows,
+        **basis, 'nav': 'liegenschaften', 'rows': rows, 'alle_rows': len(alle),
+        'kennzahlen': kennzahlen, 'befund': befund,
+        'filter_zaehler': _befund_zaehler(alle),
     })
-
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_berichte(request):

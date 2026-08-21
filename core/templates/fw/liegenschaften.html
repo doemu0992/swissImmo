@@ -7,7 +7,7 @@
 <div class="fw-phead">
     <div>
         <h1>{% if ui_modus == 'einfach' %}Meine Häuser{% else %}Liegenschaften{% endif %}</h1>
-        <p>{{ rows|length }} Liegenschaft(en) im Portfolio{% if aktive_lg %} · gefiltert <a href="/neu/liegenschaften/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+        <p>{{ alle_rows }} Liegenschaft(en) im Portfolio{% if aktive_lg %} · gefiltert <a href="/neu/liegenschaften/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
         <a href="/neu/liegenschaften/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Liegenschaft erfassen</a>
@@ -26,6 +26,43 @@
     </div>
 </div>
 
+{% if alle_rows %}
+{% comment %} Der Streifen zaehlt immer das GANZE Portfolio, auch bei gesetztem
+   Filter. Wuerde er mitfiltern, zeigte der Filter «Leerstand» eine
+   Leerstandsquote von 100 % — richtig gerechnet und trotzdem irrefuehrend.
+   Begruendung steht auch in core/views/fw/listen.py::fw_liegenschaften. {% endcomment %}
+<div class="fw-lage">
+    <div>
+        <div class="fw-l">Liegenschaften</div>
+        <div class="fw-w">{{ kennzahlen.objekte }}</div>
+        <div class="fw-f">{{ kennzahlen.mit_befund }} mit Befund</div>
+    </div>
+    <div>
+        <div class="fw-l">Objekte</div>
+        <div class="fw-w">{{ kennzahlen.einheiten }}</div>
+        <div class="fw-f">Wohnungen, Gewerbe, Nebenobjekte</div>
+    </div>
+    <div>
+        <div class="fw-l">Leer</div>
+        <div class="fw-w{% if kennzahlen.leer %} crit{% endif %}">{{ kennzahlen.leer }}</div>
+        <div class="fw-f">{{ kennzahlen.leer_quote }} % des Bestands</div>
+    </div>
+    <div>
+        <div class="fw-l">Ist-Miete</div>
+        <div class="fw-w">{{ kennzahlen.ertrag|chf }}</div>
+        <div class="fw-f">pro Monat, laufende Verträge</div>
+    </div>
+</div>
+
+<div class="fw-filters">
+    <a href="/neu/liegenschaften/{{ lg_query }}" class="fw-chip {% if not befund %}fw-brand{% else %}fw-mut{% endif %}">Alle {{ alle_rows }}</a>
+    <a href="?befund=leer{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'leer' %}fw-brand{% else %}fw-mut{% endif %}">Leerstand {{ filter_zaehler.leer }}</a>
+    <a href="?befund=frist{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'frist' %}fw-brand{% else %}fw-mut{% endif %}">Fristen {{ filter_zaehler.frist }}</a>
+    <a href="?befund=ticket{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'ticket' %}fw-brand{% else %}fw-mut{% endif %}">Tickets {{ filter_zaehler.ticket }}</a>
+    <a href="?befund=ohne{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'ohne' %}fw-brand{% else %}fw-mut{% endif %}">Ohne Befund {{ filter_zaehler.ohne }}</a>
+</div>
+{% endif %}
+
 <div class="mb-4">
     <div class="relative max-w-sm">
         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
@@ -36,18 +73,30 @@
 
 <div id="lgListe">
     {% if rows %}
-    <div class="fw-pcards">
+    <div class="fw-card">
         {% for row in rows %}
-        <a href="/neu/liegenschaften/{{ row.lg.id }}/" data-zeile class="fw-pcard">
-            <div class="fw-top"><div class="fw-adr">{{ row.lg.strasse }}<br><span style="font-weight:500;font-size:12px;color:var(--ds-muted)">{{ row.lg.plz }} {{ row.lg.ort }}</span></div></div>
-            <div class="fw-bd">
-                <div class="fw-row"><span class="fw-k">Einheiten</span><span class="fw-vv fw-num">{{ row.einheiten_count }}{% if row.leer %} · {{ row.leer }} leer{% endif %}</span></div>
-                <div class="fw-row"><span class="fw-k">Ist-Miete / Mt.</span><span class="fw-vv fw-num">CHF {{ row.mietertrag|chf }}</span></div>
-                <div class="fw-bar"><i style="width:{{ row.verm_pct }}%"></i></div>
-                <div class="fw-row"><span class="fw-k">Vermietung</span><span class="fw-vv fw-num">{{ row.verm_pct }} %</span></div>
+        <a href="/neu/liegenschaften/{{ row.lg.id }}/" data-zeile class="fw-zeile klick" style="text-decoration:none">
+            <span class="fw-marker {{ row.stufe }}"></span>
+            <div class="fw-mitte">
+                <div class="fw-t">{{ row.lg.strasse }}</div>
+                <div class="fw-s">{{ row.lg.plz }} {{ row.lg.ort }} · {{ row.einheiten }} Objekt{{ row.einheiten|pluralize:"e" }}{% if row.lg.eigentuemer %} · {{ row.lg.eigentuemer }}{% endif %}</div>
             </div>
+            {% for chip in row.chips %}
+            <span class="fw-chip fw-{{ chip.0 }}">{{ chip.1 }}</span>
+            {% empty %}
+            <span class="fw-chip fw-good">ohne Befund</span>
+            {% endfor %}
+            <div class="fw-zeit">CHF {{ row.ertrag|chf }}<br><span class="fw-klein">Ist / Mt.</span></div>
         </a>
         {% endfor %}
+        <div class="fw-fuss">
+            <span>Sortiert nach Befund, nicht nach Adresse.</span>
+            {% if befund %}<span><a href="/neu/liegenschaften/{{ lg_query }}" style="color:var(--ds-brand)">Filter aufheben</a></span>{% endif %}
+        </div>
+    </div>
+    {% elif alle_rows %}
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden px-4">
+        {% include 'fw/_empty.html' with icon='fa-check' titel='Keine Liegenschaft mit diesem Befund' subtext='Der Filter greift — hier gibt es nichts zu tun. Über «Alle» zurück zur ganzen Liste.' cta_url='/neu/liegenschaften/' cta_label='Alle anzeigen' %}
     </div>
     {% else %}
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden px-4">

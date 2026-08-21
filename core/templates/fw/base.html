@@ -107,19 +107,17 @@
         .fw-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
         .fw-fchip{font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:var(--ds-pill);border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-muted);cursor:pointer;text-decoration:none}
         .fw-fchip.fw-on{background:var(--ds-brand-soft);color:var(--ds-brand-600);border-color:transparent}
-        /* Raster + Portfolio-Karten */
+        /* Raster */
         .fw-grid2{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
         @media (max-width:860px){.fw-grid2{grid-template-columns:1fr}}
-        .fw-pcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-        .fw-pcard{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);overflow:hidden;display:block;color:inherit;text-decoration:none;transition:transform .15s,box-shadow .15s}
-        a.fw-pcard:hover{transform:translateY(-2px);box-shadow:0 1px 2px rgba(23,26,43,.05),0 14px 34px rgba(23,26,43,.12)}
-        .fw-pcard .fw-top{height:74px;background:linear-gradient(135deg,color-mix(in srgb,var(--ds-brand) 26%,var(--ds-surface)),color-mix(in srgb,var(--ds-brand-600) 12%,var(--ds-surface)));display:flex;align-items:flex-end;padding:12px 14px}
-        .fw-pcard .fw-top .fw-adr{font-weight:700;font-size:14px;color:var(--ds-ink)}
-        .fw-pcard .fw-bd{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
-        .fw-pcard .fw-row{display:flex;justify-content:space-between;font-size:12.5px}
-        .fw-pcard .fw-row .fw-k{color:var(--ds-muted)}.fw-pcard .fw-row .fw-vv{font-weight:700;color:var(--ds-ink)}
-        .fw-bar{height:6px;border-radius:999px;background:var(--ds-surface-2);overflow:hidden}
-        .fw-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--ds-brand),var(--ds-brand-600))}
+        /* Die Portfolio-Karten (`.fw-pcards`/`.fw-pcard`) und der Vermietungs-
+           balken (`.fw-bar`) standen bis Etappe 4b.15 hier. Ihre einzige
+           Verwendung war die Liegenschaftsliste; die zeigt jetzt eine Zeile je
+           Objekt statt einer Karte (siehe faelle/liegenschaften.py). Regeln
+           ohne Verwendung sind hier nicht harmlos: Diese Datei liefert ihr CSS
+           inline mit JEDER Seite aus. Wer die Karten zurueckholt, holt auch
+           die Regeln zurueck — aus der Versionsgeschichte, nicht aus einer
+           auskommentierten Leiche. */
         /* Chart + Donut */
         svg.fw-chart{width:100%;height:150px;display:block}
         .fw-donut{width:120px;height:120px;border-radius:50%;position:relative;flex:none}
