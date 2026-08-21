@@ -60,83 +60,75 @@
     </form>
 </div>
 
-<!-- KPI -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-cloud-bolt"></i></div>
-        <div><div class="text-2xl font-bold text-rose-600">{{ offen }}</div><div class="text-sm text-slate-500">Offen</div></div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-        <div><div class="text-2xl font-bold text-slate-800">{{ in_arbeit }}</div><div class="text-sm text-slate-500">In Bearbeitung</div></div>
-    </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-list"></i></div>
-        <div><div class="text-2xl font-bold text-slate-800">{{ anzahl }}</div><div class="text-sm text-slate-500">Total angezeigt</div></div>
-    </div>
+{% comment %} KENNZAHLEN — vier schmale Zahlen statt drei halbseitiger Kacheln.
+   «Total angezeigt» ist ersatzlos gestrichen: Es zaehlte, was der eigene
+   Filter uebriggelassen hat, und sagte ueber den Bestand nichts. An seiner
+   Stelle steht die Liegezeit der aeltesten offenen Meldung — die einzige der
+   vier Zahlen, die eine Verwaltung im Streitfall erklaeren muss.
+
+   Die Zahlen zeigen IMMER den ganzen Bestand, auch bei aktiver Sicht. {% endcomment %}
+<div class="fw-lage">
+    <div><div class="fw-l">Offen</div>
+        <div class="fw-w{% if kopf.offen_stufe %} {{ kopf.offen_stufe }}{% endif %}">{{ kopf.offen }}</div>
+        <div class="fw-f">nicht erledigt</div></div>
+    <div><div class="fw-l">Ungelesen</div>
+        <div class="fw-w{% if kopf.ungelesen_stufe %} {{ kopf.ungelesen_stufe }}{% endif %}">{{ kopf.ungelesen }}</div>
+        <div class="fw-f">noch niemand angesehen</div></div>
+    <div><div class="fw-l">Mit Befund</div>
+        <div class="fw-w{% if kopf.mit_befund %} warn{% endif %}">{{ kopf.mit_befund }}</div>
+        <div class="fw-f">brauchen eine Handlung</div></div>
+    <div><div class="fw-l">Älteste offen</div>
+        <div class="fw-w{% if kopf.aeltester_stufe %} {{ kopf.aeltester_stufe }}{% endif %}">{{ kopf.aeltester }}</div>
+        <div class="fw-f">Tage seit Meldung</div></div>
 </div>
 
-<!-- Tabelle -->
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
-        <div class="flex items-center gap-1.5 flex-wrap">
-            {% for wert, label in status_chips %}
-            <a href="?status={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                      {% if status_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
-            {% endfor %}
-        </div>
-        <form method="get" class="ml-auto relative">
-            {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
-            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input type="text" name="q" value="{{ q }}" placeholder="Titel, Kategorie, Objekt…"
-                   class="bg-slate-100 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-        </form>
-    </div>
+{% comment %} Sichten bilden die ARBEIT ab, nicht die Statustabelle. Der
+   Feinfilter der Vorfassung bleibt ueber `?status=` erreichbar. {% endcomment %}
+<div class="fw-filters">
+    {% for wert, label in sicht_chips %}
+    <a href="?sicht={{ wert }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
+       class="fw-fchip{% if sicht == wert %} fw-on{% endif %}">{{ label }}</a>
+    {% endfor %}
+    {% if status_filter %}
+    <a href="?{% if aktive_lg %}lg={{ aktive_lg.id }}{% endif %}" class="fw-fchip fw-on">Status «{{ status_filter }}» ×</a>
+    {% endif %}
+    {% if q %}
+    <a href="?{% if sicht %}sicht={{ sicht }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
+       class="fw-fchip fw-on">Suche «{{ q }}» ×</a>
+    {% endif %}
+</div>
 
-    <div class="overflow-x-auto">
-        <table class="w-full min-w-max text-sm">
-            <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                <th class="px-5 py-3 font-semibold">Schaden</th>
-                <th class="px-5 py-3 font-semibold">Objekt</th>
-                <th class="px-5 py-3 font-semibold">Melder</th>
-                <th class="px-5 py-3 font-semibold">Priorität</th>
-                <th class="px-5 py-3 font-semibold">Gemeldet</th>
-                <th class="px-5 py-3 font-semibold">Status</th>
-                <th class="px-5 py-3"></th>
-            </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-50">
-            {% for row in rows %}
-            <tr class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="fwModalOpenUrl('/neu/schaeden/{{ row.t.id }}/','Schaden #{{ row.t.id }}')">
-                <td class="px-5 py-3.5">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                        <div>
-                            <div class="font-semibold text-slate-900">{{ row.t.titel|truncatechars:48 }}</div>
-                            {% if row.t.kategorie %}<div class="text-xs text-slate-400">{{ row.t.kategorie }}{% if row.t.raum %} · {{ row.t.raum }}{% endif %}</div>{% endif %}
-                        </div>
-                    </div>
-                </td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.objekt }}</td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.melder }}</td>
-                <td class="px-5 py-3.5"><span class="fw-chip whitespace-nowrap {{ row.p_cls }}">● {{ row.p_label }}</span></td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.t.erstellt_am|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3.5"><span class="fw-chip whitespace-nowrap {{ row.s_cls }}">● {{ row.s_label }}</span></td>
-                <td class="px-5 py-3.5 text-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="7" class="px-5 py-12 text-center">
-                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-check"></i></div>
-                <p class="text-sm font-medium text-slate-700">Keine Schadensfälle</p>
-                <p class="text-xs text-slate-400 mt-1">{% if status_filter or q %}Keine Treffer für diesen Filter.{% else %}Aktuell sind keine Schäden gemeldet.{% endif %}</p>
-            </td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
+<div class="fw-card">
+    {% for row in rows %}
+    <div class="fw-zeile klick" onclick="fwModalOpenUrl('/neu/schaeden/{{ row.t.id }}/','Schaden #{{ row.t.id }}')">
+        <span class="fw-marker{% if row.stufe != 'good' %} {{ row.stufe }}{% endif %}"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ row.t.titel|truncatechars:70 }}</div>
+            <div class="fw-s">{{ row.objekt }}{% if row.t.kategorie %} · {{ row.t.kategorie }}{% endif %} · {{ row.melder }} · vor {{ row.alter }} Tag{{ row.alter|pluralize:"en" }}</div>
+            {% if row.befunde %}
+            <div class="fw-s" style="margin-top:4px">
+                {% for b in row.befunde %}
+                <span class="fw-chip fw-{{ b.stufe }} fw-dot" style="margin-right:5px">{{ b.text }}{% if b.titel %} — {{ b.titel }}{% endif %}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% if row.t.prioritaet|lower == 'hoch' %}<span class="fw-chip fw-crit">Hoch</span>{% endif %}
+        <span class="fw-chip fw-mut">{{ row.s_label }}</span>
+        <i class="fa-solid fa-chevron-right fw-klein"></i>
     </div>
+    {% empty %}
+    <div style="padding:0 16px">
+    {% if gefiltert or q or status_filter %}
+        {% include 'fw/_empty.html' with icon='fa-check' titel='Nichts zu tun' subtext='Für diese Sicht gibt es keine Meldung. Das ist eine gute Nachricht — oder die Sicht ist zu eng.' cta_url='/neu/schaeden/?sicht=' cta_label='Alle Meldungen zeigen' %}
+    {% else %}
+        {% include 'fw/_empty.html' with icon='fa-check' titel='Keine Schadensfälle' subtext='Aktuell ist nichts gemeldet. Telefonisch eingegangene Schäden erfassen Sie oben.' %}
+    {% endif %}
+    </div>
+    {% endfor %}
+    {% if rows %}
+    <div class="fw-fuss"><span>Sortiert nach Befund, dann Priorität, dann Alter — nicht nach Eingang.</span></div>
+    {% endif %}
 </div>
 {% endblock %}
 

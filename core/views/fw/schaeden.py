@@ -50,52 +50,84 @@ PRIO_PILL = {
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_schaeden(request):
+    """Schadensliste nach G9 — sortiert nach Befund, nicht nach Eingang.
+
+    Vorher stand `-erstellt_am` allein: Der Wasserschaden von heute Morgen
+    stand ueber der Meldung, die seit sechs Wochen ungelesen liegt.
+
+    Die Sichten oben bilden die ARBEIT ab, nicht die Statustabelle. «Neu» und
+    «In Bearbeitung» sind Systemzustaende; niemand beginnt den Tag mit «zeig
+    mir alle in Bearbeitung». Der Feinfilter bleibt ueber `?status=`
+    erreichbar — gespeicherte Adressen brechen also nicht.
+    """
+    from faelle.schaeden import streifen, zeilen
     from tickets.models import SchadenMeldung
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
-    qs = (SchadenMeldung.objects.select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von')
-          .order_by('-erstellt_am'))
+    # `prefetch_related` ist hier keine Feinabstimmung, sondern die Bedingung
+    # dafuer, dass die Seite ueberhaupt benutzbar bleibt: `_befunde` liest je
+    # Meldung die Auftraege UND die Nachrichten. Ohne Vorladen sind das zwei
+    # zusaetzliche Abfragen JE ZEILE.
+    qs = (SchadenMeldung.objects
+          .select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von')
+          .prefetch_related('handwerker_auftraege', 'nachrichten'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
 
+    # Der Feinfilter der Vorfassung bleibt erhalten (gespeicherte Adressen).
     status_filter = request.GET.get('status', '')
-    if status_filter == 'offen':
-        qs = qs.exclude(status='erledigt')
-    elif status_filter in TICKET_PILL:
+    if status_filter in TICKET_PILL:
         qs = qs.filter(status=status_filter)
     q = (request.GET.get('q') or '').strip()
     if q:
         qs = qs.filter(Q(titel__icontains=q) | Q(beschreibung__icontains=q)
                        | Q(kategorie__icontains=q) | Q(liegenschaft__strasse__icontains=q))
 
-    rows = []
-    offen = 0
-    in_arbeit = 0
-    for t in qs:
-        s_label, s_cls = TICKET_PILL.get(t.status, (t.status, 'bg-slate-100 text-slate-500'))
-        p_label, p_cls = PRIO_PILL.get((t.prioritaet or '').lower(), (t.prioritaet or 'Mittel', 'bg-slate-100 text-slate-500'))
-        if t.status != 'erledigt':
-            offen += 1
-        if t.status == 'in_bearbeitung':
-            in_arbeit += 1
-        melder = (t.gemeldet_von.display_name if t.gemeldet_von_id
-                  else f"{t.melder_vorname or ''} {t.melder_nachname or ''}".strip() or '—')
-        rows.append({
-            't': t, 's_label': s_label, 's_cls': s_cls, 'p_label': p_label, 'p_cls': p_cls,
-            'objekt': f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}" if t.liegenschaft_id else '—',
-            'melder': melder,
-        })
+    alle = zeilen(qs)
+    kopf = streifen(alle)
 
-    chips = [('', 'Alle'), ('offen', 'Offen')] + [(k, v[0]) for k, v in TICKET_PILL.items()]
-    liegenschaften = Liegenschaft.objects.order_by('strasse')
-    einheiten = Einheit.objects.select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung')
+    # Die Sicht wirkt NACH der Befundrechnung — der Kopf zeigt weiterhin den
+    # ganzen Bestand. Wuerde er mitfiltern, stuende unter «Mit Befund» bei
+    # aktiver Sicht immer die Zahl der gerade sichtbaren Zeilen.
+    sicht = request.GET.get('sicht', 'offen' if not status_filter else '')
+    if sicht == 'offen':
+        rows = [z for z in alle if z['offen']]
+    elif sicht == 'befund':
+        rows = [z for z in alle if z['befunde']]
+    elif sicht == 'wartet':
+        rows = [z for z in alle if z['wartet']]
+    elif sicht == 'erledigt':
+        rows = [z for z in alle if not z['offen']]
+    else:
+        sicht = ''
+        rows = alle
+
+    for zeile in rows:
+        t = zeile['t']
+        zeile['s_label'], zeile['s_cls'] = TICKET_PILL.get(
+            t.status, (t.status, 'bg-slate-100 text-slate-500'))
+        zeile['p_label'], zeile['p_cls'] = PRIO_PILL.get(
+            (t.prioritaet or '').lower(),
+            (t.prioritaet or 'Mittel', 'bg-slate-100 text-slate-500'))
+        zeile['objekt'] = (f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}"
+                           if t.liegenschaft_id else '—')
+        zeile['melder'] = (t.gemeldet_von.display_name if t.gemeldet_von_id
+                           else f"{t.melder_vorname or ''} {t.melder_nachname or ''}".strip()
+                           or '—')
+
     from django.contrib import messages
     return render(request, 'fw/schaeden.html', {
-        **basis, 'nav': 'schadensfaelle', 'rows': rows,
-        'status_filter': status_filter, 'status_chips': chips, 'q': q,
-        'anzahl': len(rows), 'offen': offen, 'in_arbeit': in_arbeit,
-        'liegenschaften': liegenschaften, 'einheiten': einheiten,
+        **basis, 'nav': 'schadensfaelle', 'rows': rows, 'kopf': kopf,
+        'sicht': sicht, 'status_filter': status_filter, 'q': q,
+        'gefiltert': len(rows) != len(alle),
+        'sicht_chips': [('offen', f'Offen ({kopf["offen"]})'),
+                        ('befund', f'Mit Befund ({kopf["mit_befund"]})'),
+                        ('wartet', f'Wartet auf Dritte ({kopf["wartet"]})'),
+                        ('erledigt', 'Erledigt'), ('', 'Alle')],
+        'liegenschaften': Liegenschaft.objects.order_by('strasse'),
+        'einheiten': Einheit.objects.select_related('liegenschaft')
+                     .order_by('liegenschaft__strasse', 'bezeichnung'),
         'meldung': list(messages.get_messages(request)),
     })
 

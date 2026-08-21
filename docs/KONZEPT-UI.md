@@ -550,6 +550,7 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.15 | **Liegenschaftsliste: Befunde statt Bestand** — eine Zeile je Objekt statt einer Karte, sortiert nach Befund, mit Kennzahlenstreifen und Filterleiste; Leerstandsregel in `faelle/liegenschaften.py` | erledigt |
 | 4b.16 | **Liegenschaftsbudget**: `portfolio.Liegenschaftsbudget` je Liegenschaft und Jahr, Befund «Unterhalt über Plan / überschritten» in Liste UND Akte aus derselben Funktion, Erfassung im Reiter Finanzen; Bruttorendite weicht im Aktenkopf | erledigt |
 | 4b.17 | **Objektliste nach G9**: Befunde je Einheit (leer seit wann, wird frei ab, kein Mietzins, nicht ausgeschrieben), Gruppen nach Befund geordnet statt nach Alphabet, eine Darstellung statt zwei; `KonsistenzTests` hält Objekt- und Liegenschaftsliste auf derselben Leerstandsregel | erledigt |
+| 4b.18 | **Schadensliste nach G9**: Befunde je Meldung (ungelesen, kein Auftrag, Freigabe ausstehend, Liegenbleiber, Melder ohne Rückmeldung), vier Arbeitssichten statt sieben Statuschips, sortiert nach Befund statt nach Eingang | erledigt |
 
 > **Warum 4b.12 nötig war.** `faelle/akten.py` führt **sieben** Aktentypen. Nach 4b.11 hatten
 > fünf davon Aktenkopf und Reitersatz. Zwei hatten keine Seite: Das Mandat kannte nur Liste,
@@ -759,6 +760,67 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 > fragt jetzt nur das Markup (`_nur_markup` schneidet `<script>` und `<style>`
 > weg), und eine zweite Prüfung hält fest, dass dieser Schnitt nicht zu viel
 > wegnimmt.
+
+> **Die Schadensliste zeigte drei Nullen (4b.18).** Am 21.08.2026 am Bestand
+> gesehen: drei Kacheln übereinander, jede einen halben Bildschirm hoch, jede
+> mit einer Null — «0 Offen», «0 In Bearbeitung», «0 Total angezeigt». Danach
+> sieben Filterchips über drei Zeilen und ein zweites Suchfeld. Die Arbeit
+> begann ausserhalb des Bildschirms.
+>
+> **«Total angezeigt» ist ersatzlos gestrichen.** Es zählte, was der eigene
+> Filter übriggelassen hat, und sagte über den Bestand nichts aus. An seiner
+> Stelle steht die Liegezeit der ältesten offenen Meldung — die einzige der
+> vier Zahlen, die eine Verwaltung im Streitfall erklären muss. Die sieben
+> Chips bildeten die **Statustabelle** ab, nicht die Arbeit; jetzt vier
+> Arbeitssichten (Offen · Mit Befund · Wartet auf Dritte · Erledigt · Alle),
+> der Feinfilter bleibt über `?status=` erreichbar. Und sortiert wurde nach
+> `-erstellt_am`: Der Wasserschaden von heute Morgen stand über der Meldung,
+> die seit sechs Wochen ungelesen liegt.
+>
+> **Das Versprechen im Untertitel wird jetzt gemessen.** Die Seite trägt den
+> Satz «Meldung → Auftrag → automatische Info an Melder». Ob er eingehalten
+> wurde, stand nirgends: Eine Meldung ohne eine einzige ausgehende Nachricht
+> sah aus wie eine, bei der alles lief. Der Befund «Melder ohne Rückmeldung»
+> prüft genau diese Zusage.
+>
+> **Und das Mass dafür war im gelieferten Entwurf falsch — in die gefährliche
+> Richtung.** Er prüfte den Nachrichten-TYP und liess vier Typen als Echo
+> gelten. Zwei davon bringen den Befund zum **Schweigen**, und das fällt
+> niemandem auf:
+>
+> * **`mail_antwort` ist EINGEHEND** — der Typ entsteht in `webhooks.py` und
+>   `fetch_replies.py`, wenn der MIETER auf die Ticket-Mail antwortet. Als Echo
+>   gewertet schwiege der Befund ausgerechnet dann, wenn jemand geschrieben hat
+>   und niemand geantwortet.
+> * **`system` ist überwiegend INTERN** — «Auftrag an X vergeben» und «Status
+>   geändert» tragen `is_intern=True`. Da eine Auftragsvergabe *immer* eine
+>   solche Notiz schreibt, hätte praktisch jede Meldung mit Handwerker als
+>   «Melder informiert» gegolten.
+>
+> Massgeblich ist jetzt, was den Mieter **tatsächlich erreicht** — und diese
+> Definition gab es im Haus bereits: Das Mieterportal zeigt den Verlauf als
+> `nachrichten.exclude(is_intern=True)`. Dazu kommen die zwei Systemnotizen,
+> die einen nachgewiesenen Versand protokollieren (sie entstehen nur nach
+> erfolgreichem `send_ticket_email`). Der dafür nötige Textabgleich ist
+> zerbrechlich und deshalb sichtbar gemacht: `ProtokollWortlautTests` liest
+> die beiden Erzeugerstellen im Produktivcode und wird rot, wenn jemand die
+> Formulierung ändert.
+>
+> **Zwei Prüfungen des Entwurfs waren blind, eine prüfte toten Code.** In allen
+> Sortiertests war die Meldung mit Befund zugleich die ältere — reine
+> Alterssortierung lieferte dieselbe Reihenfolge, der Test war grün ohne die
+> Regel zu prüfen. Der Abfragezahl-Test baute sein Queryset selbst und setzte
+> das `prefetch_related` von Hand; die VIEW war ungeprüft. Und ein `elif`
+> suggerierte eine Vorrangregel zwischen «Freigabe ausstehend» und «Kein
+> Auftrag», die keine ist — die Zweige schliessen sich ohnehin aus.
+>
+> **Der Abfragezahl-Wächter mass beim ersten Anlauf die Sitzung, nicht den
+> Abfrageplan.** Er verglich den ersten Seitenaufruf mit einem späteren und
+> meldete einen *Rückgang* von 19 auf 15 Abfragen — der erste Aufruf einer
+> Testsitzung baut Session und Berechtigungen auf. Er wärmt jetzt auf, bevor er
+> misst, und sichert **Konstanz** zu statt einer festen Zahl: Eine feste Zahl
+> bräche bei jeder unbeteiligten Änderung und sägte an ihrer eigenen
+> Glaubwürdigkeit.
 
 > **Warum 4b.10 dazwischenkam — dreimal derselbe Fehler.** Der Vergleich mit
 > `mockups/konzept-v2.html` (Screen «Fristenwächter») ergab, dass die Rechenlogik seit Phase 4a
