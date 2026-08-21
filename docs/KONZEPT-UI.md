@@ -111,6 +111,13 @@ eigene Spalte, rechts der Arbeitsvorrat.
 | Liegengeblieben | Fälle, die die Verfallsregel ausgelöst haben |
 | Alle | Vollständige Liste |
 
+> **Die Vorgabe ist «Heute» — bewusst.** Die Startseite zeigte vorher 14 Tage voraus; seit
+> 4b.13 steht sie in der Ansicht «Heute» und zeigt nur, was heute oder früher fällig ist.
+> Was in 8 bis 365 Tagen ansteht, erscheint damit weder unter «Heute» noch unter «Diese
+> Woche» (7 Tage), sondern erst unter «Alle». Am 21.08.2026 ausdrücklich so bestätigt: «Diese
+> Woche» bleibt bei 7 Tagen, die Lücke ist gewollt. Die Zähler an den Reitern machen den
+> Rest sichtbar, ohne dass man die Ansicht wechseln muss.
+
 Zusätzlich: Filter nach Zuständigkeit (Person) und Mandat.
 
 > ~~**Keine Kennzahlen.**~~ **Präzisiert in 4b.13.** Die Regel war gegen die vier Kacheln der
