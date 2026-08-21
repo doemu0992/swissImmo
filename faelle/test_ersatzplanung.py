@@ -251,3 +251,82 @@ class TrennungTests(TestCase):
             rows = berechne_ersatzplanung()['rows']
         marken = [r['g'].marke for r in rows if r['art'] == 'geraet']
         self.assertNotIn('NurBeiA', marken)
+
+
+class BudgetPdfTests(_Basis):
+    """Der Budget-Report muss Gerätezeilen aushalten — und sie zeigen.
+
+    BEFUND 21.08.2026, eingeschleppt von 4b.20 selbst: `ersatzplanung_pdf.py`
+    las je Zeile `r['a'].kategorie` und `r['a'].raum`. Seit 4b.20 stehen in
+    `rows` auch Geräte, und die tragen `'a': None` — der Schlüssel gehört der
+    Ausstattung. Sobald eine Verwaltung ein einziges Gerät erfasst hatte,
+    endete `/neu/ersatzplanung/?pdf=1` in einem `AttributeError`.
+
+    WARUM ES DURCHRUTSCHTE: Auf der Seite selbst passiert nichts. Die Vorlage
+    liest `bezeichnung`, das beide Zeilenarten führen — `test_das_geraet_-
+    erreicht_die_seite` weiter oben blieb die ganze Zeit grün. Nur der
+    PDF-Knopf starb, ausgerechnet bei dem Dokument, das der Eigentümer
+    bekommt. Kein Test zu 4b.20 rief das PDF auf.
+
+    GEPRÜFT WIRD DER INHALT, NICHT DER STATUSCODE. Ein Report, der Geräte
+    stillschweigend überspringt, antwortete ebenfalls mit 200 — und wäre der
+    schlimmere Fehler: Der Absturz ist sichtbar, die Lücke nicht. `pypdf`
+    liegt bereits im Bestand (requirements.txt), es kommt nichts Neues dazu.
+    """
+
+    def setUp(self):
+        self.c = Client()
+        self.c.force_login(self.a.benutzer)
+
+    def _pdf_text(self, antwort):
+        import io
+
+        from pypdf import PdfReader
+        return '\n'.join(s.extract_text() or ''
+                         for s in PdfReader(io.BytesIO(antwort.content)).pages)
+
+    def test_das_geraet_steht_im_budget_report(self):
+        with mandant(self.a.organisation):
+            self._lebensdauern()
+            self._geraet('Heizung', jahre_alt=40, marke='Viessmann')
+            antwort = self.c.get('/neu/ersatzplanung/?pdf=1')
+        self.assertEqual(antwort.status_code, 200)
+        self.assertEqual(antwort['Content-Type'], 'application/pdf')
+        text = self._pdf_text(antwort)
+        self.assertIn('Heizung', text)
+        self.assertIn('Viessmann', text)
+
+    def test_ein_geraet_ohne_datenbasis_bringt_den_report_nicht_um(self):
+        """Weder `ersatz_jahr` noch `rest` — wenn irgendwo blind gerechnet
+        wird, fällt es hier auf."""
+        with mandant(self.a.organisation):
+            self._geraet('Gartengerät')
+            antwort = self.c.get('/neu/ersatzplanung/?pdf=1')
+        self.assertEqual(antwort.status_code, 200)
+        self.assertIn('Gartengerät', self._pdf_text(antwort))
+
+    def test_ein_geraet_ohne_marke_beginnt_nicht_mit_einem_trenner(self):
+        """Ist nur die Kategorie erfasst, ist `detail` ein LEERER String —
+        ohne Ersatz begänne die Detailzeile mit einem herrenlosen « · »."""
+        with mandant(self.a.organisation):
+            self._lebensdauern()
+            self._geraet('Heizung', jahre_alt=40)
+            text = self._pdf_text(self.c.get('/neu/ersatzplanung/?pdf=1'))
+        self.assertNotIn('\n · ', text)
+        self.assertIn('—', text)
+
+    def test_geraet_und_ausstattung_gemischt(self):
+        """Der Normalfall einer echten Verwaltung: beide Zeilenarten in einem
+        Report, beide sichtbar."""
+        from portfolio.models import Ausstattung
+        with mandant(self.a.organisation):
+            self._lebensdauern()
+            self._geraet('Heizung', jahre_alt=40, marke='Viessmann')
+            Ausstattung.objects.create(
+                einheit=self.a.einheit, raum='Küche', kategorie='Backofen',
+                einbau_datum=date(HEUTE.year - 20, 1, 1),
+                neuwert=Decimal('1200'), lebensdauer_jahre=15)
+            text = self._pdf_text(self.c.get('/neu/ersatzplanung/?pdf=1'))
+        self.assertIn('Viessmann', text)
+        self.assertIn('Backofen', text)
+        self.assertIn('Küche', text)

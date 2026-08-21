@@ -868,6 +868,34 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 > Objektakte. Was **nicht** mehr gefordert wird, ist das portfolioweite
 > Objekt-Akkordeon — das war die Doppelung.
 >
+> **Nachtrag 21.08.2026 — 4b.20 hat den Budget-Report zerschossen.**
+> `ersatzplanung_pdf.py` las je Zeile `r['a'].kategorie` und `r['a'].raum`.
+> Der Schlüssel `a` gehört der Ausstattung; Gerätezeilen tragen dort `None`.
+> Sobald eine Verwaltung **ein einziges Gerät** erfasst hatte, endete
+> `/neu/ersatzplanung/?pdf=1` in einem `AttributeError` — ausgerechnet bei dem
+> Dokument, das der Eigentümer bekommt.
+>
+> **Warum es durchrutschte:** Die Seite blieb heil. Die Vorlage liest
+> `bezeichnung`, das beide Zeilenarten führen, und `test_das_geraet_erreicht_-
+> die_seite` war die ganze Zeit grün. Genau dafür war die gemeinsame
+> Zeilenform eingeführt worden — das PDF war nur nicht mitgezogen worden, und
+> kein Test zu 4b.20 rief es auf. Die Lehre ist nicht «mehr testen», sondern:
+> **Wer eine gemeinsame Form einführt, muss alle Leser zählen.** Es waren
+> zwei, die Vorlage und der Report.
+>
+> **Die Regressionstests prüfen den Inhalt, nicht den Statuscode.** Ein
+> Report, der Geräte stillschweigend überspringt, antwortet ebenfalls mit
+> 200 — und wäre der schlimmere Fehler: Der Absturz ist sichtbar, die Lücke
+> nicht. Gelesen wird mit `pypdf`, das bereits in `requirements.txt` steht.
+> Die Gegenprobe «Geräte überspringen» macht drei der vier Tests rot.
+>
+> **Nebenbefund, älter als 4b.20:** Ist nur die Kategorie erfasst, ist
+> `detail` ein leerer String, und die Detailzeile begann mit einem
+> herrenlosen Trenner (« · Musterstrasse 1»). Das betraf auch **Ausstattungen
+> ohne Raum** und stand schon vorher im Report. `or '—'` behebt beides. Die
+> Gegenprobe dazu ist rot — anders als zunächst angenommen trägt der Ersatz
+> eine Regel und ist nicht bloss Vorsorge.
+>
 > **Siebter Fall: Der Wächter fand sein Wort woanders.** Die erste Fassung von
 > `test_das_raumbuch_gruppiert_in_der_objektakte_nach_raum` suchte «Bad» in der
 > gerenderten Seite und blieb **grün**, als die Raum-Überschrift aus der

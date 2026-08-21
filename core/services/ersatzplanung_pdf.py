@@ -125,11 +125,26 @@ def generate_ersatzplanung_pdf(daten, lg_name, verwaltung=None, deckung=None):
     for r in daten['rows']:
         if y < 20 * mm:
             c.showPage(); y = h - 25 * mm
-        a = r['a']
+        # BEFUND 21.08.2026: Hier stand `a = r['a']` mit `a.kategorie` und
+        # `a.raum`. Seit Phase 4b.20 enthaelt `rows` auch GERAETE, und die
+        # tragen `'a': None` — der Schluessel gehoert der Ausstattung. Sobald
+        # eine Verwaltung ein einziges Geraet erfasst hatte, endete der
+        # Budget-Report in einem Serverfehler.
+        #
+        # Auf der Seite selbst fiel das nicht auf: Die Vorlage liest
+        # `bezeichnung`, und das fuehren BEIDE Zeilenarten. Nur der PDF-Knopf
+        # starb — ausgerechnet bei dem Dokument, das der Eigentuemer bekommt.
+        # Genau dafuer wurde die gemeinsame Zeilenform eingefuehrt; das PDF
+        # war nur nicht mitgezogen worden.
         c.setFont("Helvetica", 9); c.setFillColor(colors.black)
-        c.drawString(20 * mm, y, f"{a.kategorie}"[:44])
+        c.drawString(20 * mm, y, f"{r['bezeichnung']}"[:44])
         c.setFont("Helvetica", 7); c.setFillColor(grey)
-        c.drawString(20 * mm, y - 3.4 * mm, f"{a.raum} · {r['standort']}"[:70])
+        # `or '—'` faengt das LEERE Detail ab, nicht None: Ein Geraet, an dem
+        # nur die Kategorie erfasst ist, hat weder Marke noch Modell noch
+        # Standort. Ohne den Ersatz begaenne die Zeile mit einem
+        # herrenlosen Trenner (« · Musterstrasse 1»).
+        c.drawString(20 * mm, y - 3.4 * mm,
+                     f"{r['detail'] or '—'} · {r['standort']}"[:70])
         c.setFont("Helvetica", 9); c.setFillColor(colors.black)
         c.drawString(120 * mm, y, f"{r['rest']} J" if r['rest'] is not None else "—")
         stc = {'faellig': rose, 'bald': amber}.get(r['status'], colors.black)
