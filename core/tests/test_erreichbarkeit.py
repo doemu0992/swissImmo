@@ -57,6 +57,11 @@ OHNE_WEG = {
     # Entfernen ist eine Entscheidung des Betriebs, nicht des Umbaus.
     '/neu/kreditoren/pain001/': 'Überholt durch /neu/zahllauf/ — siehe Notiz, '
                                 'noch nicht entfernt.',
+
+    # Umleitung auf `/neu/`. Bewusst erreichbar gelassen, weil Lesezeichen und
+    # aeltere Verweise darauf zeigen koennen — eine Adresse, die einmal
+    # funktioniert hat, soll nicht ins Leere laufen.
+    '/neu/arbeit/': 'Leitet auf /neu/ um (4b.13); aus der Navigation entfernt.',
 }
 
 #: Verzeichnisse, in denen nach Verweisen gesucht wird.
@@ -155,7 +160,11 @@ class ErreichbarkeitTests(SimpleTestCase):
         einen Eintrag in der Navigation.
         """
         navigation = _navigationsziele()
-        for adresse in ('/neu/arbeit/', '/neu/zulauf/', '/neu/termine/',
+        # `/neu/arbeit/` steht seit 4b.13 NICHT mehr hier: Die Ansichten sind
+        # auf die Startseite gewandert, die Adresse leitet nur noch dorthin um.
+        # Ein Navigationseintrag neben «Heute», der auf dieselbe Seite fuehrt,
+        # waere kein Angebot, sondern eine Frage an den Benutzer.
+        for adresse in ('/neu/', '/neu/zulauf/', '/neu/termine/',
                         '/neu/abwesenheiten/', '/neu/laeufe/', '/neu/regelwerk/'):
             self.assertIn(adresse, navigation,
                           f'{adresse} steht in keiner Navigationsgruppe.')

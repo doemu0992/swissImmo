@@ -43,7 +43,11 @@ def nav_gruppen(modus):
                 # hier NICHT und waren nur erreichbar, wer die Adresse tippte
                 # oder zufaellig auf einen Querverweis stiess. Derselbe Fehler,
                 # den das Regelwerk seit Phase 4a hatte — nur eine Ebene hoeher.
-                _i('Arbeit', '/neu/arbeit/', ['arbeit']),
+                # «Arbeit» stand hier bis 4b.13 als eigener Eintrag. Seit die
+                # Startseite die Ansichten fuehrt, ist `/neu/arbeit/` eine
+                # Umleitung auf `/neu/` — und der Gruppenkopf «Heute» zeigt
+                # ohnehin dorthin. Zwei Eintraege auf dieselbe Seite sind kein
+                # Angebot, sondern eine Frage an den Benutzer.
                 _i('Zulauf', '/neu/zulauf/', ['zulauf']),
                 _i('Termine', '/neu/termine/', ['termine']),
                 _i('Abwesenheiten', '/neu/abwesenheiten/', ['abwesenheiten']),
@@ -97,7 +101,6 @@ def nav_gruppen(modus):
     # ── Einfachmodus: Klartext, weniger Tiefe, Rest unter «Erweitert» ──
     return [
         _g('heute', 'Heute', 'fa-inbox', '/neu/', [
-            _i('Arbeit', '/neu/arbeit/', ['arbeit']),
             _i('Zulauf', '/neu/zulauf/', ['zulauf']),
             _i('Termine', '/neu/termine/', ['termine']),
         ], extra_keys=['dashboard', 'faelle']),

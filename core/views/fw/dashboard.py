@@ -9,8 +9,6 @@
 # aufgeteilte" Restdatei mehr.
 
 import logging
-from collections import defaultdict
-from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
 from django.db.models import Q, Sum
@@ -18,227 +16,128 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, TEAM_ROLLEN
-from core.services.mahnstufen import (stufe_fuer_tage as _stufe_fuer_tage,
-                                      eigentuemer_von_rechnung as _eigentuemer_von_rechnung)
+# Die Ansichten stehen weiterhin in arbeit.py — dort liegen auch die uebrigen
+# Arbeitsflaechen. Eine zweite Definition hier waere die klassische Stelle, an
+# der zwei Listen auseinanderlaufen.
+from core.views.fw.arbeit import ANSICHTEN
 from finance.models import DebitorenRechnung
-from portfolio.models import Einheit, Liegenschaft
-from rentals.models import Mietvertrag
 
-from ._basis import _global_filter, _num, _pendenz_ziel, STATUS_PILL
+from ._basis import _global_filter, _pendenz_ziel
+
+# Elf Importe sind mit der alten Startseite weggefallen (Einheit, Liegenschaft,
+# Mietvertrag, defaultdict, date, STATUS_PILL, _pendenz_ziel, _num, die beiden
+# Mahnstufen-Helfer). Sie standen fuer den Portfolio-Donut, das Ertragsdiagramm
+# und die Leerstandsliste; `fw_finanzen` darunter braucht keinen davon.
 
 logger = logging.getLogger(__name__)
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_dashboard(request):
-    heute = timezone.localdate()
+    """Die Startseite: Arbeitsvorrat mit Ansichten, Lage, Mandate.
+
+    ZUSAMMENFUEHRUNG. Vorher gab es zwei Startflaechen: diese hier mit
+    «Was reisst», «Zulauf» und vier Kennzahlkacheln aus der Vorgaengerzeit —
+    und `/neu/arbeit/` mit denselben zwei Abschnitten plus Ansichten. Beide
+    taten dasselbe, und die aeltere gewann, weil sie unter `/neu/` lag.
+    `fw_arbeit` leitet jetzt hierher um.
+
+    Die vier alten Kacheln (Mietertrag-Diagramm, Portfolio-Donut, Belegung,
+    Leerstandsliste) sind ersatzlos entfallen. Sie zeigten den Bestand; an
+    ihre Stelle tritt der Lage-Streifen mit Vormonatsvergleich und «Was
+    abweicht». Wer die alten Auswertungen sucht, findet sie unter
+    /neu/berichte/ — sie waren dort schon immer.
+    """
+    from faelle.arbeitsvorrat import (liegezeit, posteingang, termine,
+                                      vertretung, wartet_auf_freigabe,
+                                      was_reisst)
+    from faelle.lage import lage
+    from faelle.models import Fall
+
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
+    heute = timezone.localdate()
 
-    einheiten = Einheit.objects.all()
-    vertraege = Mietvertrag.objects.all()
-    liegenschaften = Liegenschaft.objects.all()
-    if aktive_lg:
-        einheiten = einheiten.filter(liegenschaft=aktive_lg)
-        vertraege = vertraege.filter(einheit__liegenschaft=aktive_lg)
-        liegenschaften = liegenschaften.filter(id=aktive_lg.id)
+    ansicht = request.GET.get('ansicht', 'heute')
+    if ansicht not in dict(ANSICHTEN):
+        ansicht = 'heute'
 
-    # --- PORTFOLIO (Karte 2: Mietobjekte mit Breakdown) ---
-    typ_map = {'whg': 'wohnen', 'stwe': 'wohnen', 'pp': 'parkplatz', 'gar': 'parkplatz',
-               'gew': 'gewerbe', 'bas': 'weitere'}
-    breakdown = {'wohnen': 0, 'parkplatz': 0, 'gewerbe': 0, 'weitere': 0}
-    for e in einheiten:
-        breakdown[typ_map.get(e.typ, 'weitere')] += 1
-
-    # --- VERTRÄGE (Karte 3: Status-Breakdown wie Fairwalter) ---
-    v_beendet = vertraege.filter(status='archiviert').count() + \
-                vertraege.exclude(status='archiviert').filter(ende__lt=heute).count()
-    v_aktiv = vertraege.filter(status='aktiv').exclude(ende__lt=heute).count()
-    # «Gekündigt» = gekündigt UND noch laufend (ende in der Zukunft/offen). Ein
-    # gekündigter Vertrag, dessen Ende bereits vorbei ist, zählt als BEENDET
-    # (v_beendet oben) — sonst würde er doppelt gezählt und die Status-Summe
-    # stimmte nicht mit der Objektzahl überein (Live-Test J: «4 vs 5»).
-    v_gekuendigt = (vertraege.filter(status='gekuendigt')
-                    .filter(Q(ende__isnull=True) | Q(ende__gte=heute)).count())
-    v_zukuenftig = vertraege.filter(beginn__gt=heute).exclude(status__in=['archiviert', 'gekuendigt']).count()
-
-    # --- LEERSTAND-KARTE (Tabs: Leerstand / Gekündigt / Bevorstehend) ---
-    belegte_ids = set(vertraege.filter(status='aktiv').values_list('einheit_id', flat=True))
-    for neben_id in vertraege.filter(status='aktiv').values_list('nebenobjekte', flat=True):
-        if neben_id:
-            belegte_ids.add(neben_id)
-    leerstand_objekte = (einheiten.exclude(id__in=belegte_ids)
-                         .select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung'))
-    # Nur noch LAUFENDE gekündigte Verträge (Ende offen/künftig) — bereits
-    # abgelaufene sind beendet und gehören nicht in die «Gekündigt»-Liste
-    # (konsistent zu v_gekuendigt, Live-Test J).
-    gekuendigte = (vertraege.filter(status='gekuendigt')
-                   .filter(Q(ende__isnull=True) | Q(ende__gte=heute))
-                   .select_related('mieter', 'einheit__liegenschaft').order_by('ende'))
-    bevorstehende = (vertraege.filter(beginn__gt=heute)
-                     .exclude(status__in=['archiviert', 'gekuendigt'])
-                     .select_related('mieter', 'einheit__liegenschaft').order_by('beginn'))
-
-    # --- KPIs (Bewirtschafter-Kennzahlen) ---
-    objekte_total = einheiten.count()
-    leer_count = leerstand_objekte.count()
-    leerstandsquote = round(leer_count / objekte_total * 100, 1) if objekte_total else 0.0
-    # Soll-Miete/Monat (Potenzial = alle Objekte zu Soll-Miete) und Ist (nur belegte)
-    soll_potenzial = Decimal('0.00')
-    ist_miete = Decimal('0.00')
-    ausfall_leerstand = Decimal('0.00')
-    for e in einheiten:
-        miete = (e.nettomiete_aktuell or Decimal('0')) + (e.nebenkosten_aktuell or Decimal('0'))
-        soll_potenzial += miete
-        if e.id in belegte_ids:
-            ist_miete += miete
-        else:
-            ausfall_leerstand += miete
-    # ertragsgewichtete Leerstandsquote (Fr.-Ausfall / Potenzial)
-    leerstandsquote_ertrag = round(float(ausfall_leerstand) / float(soll_potenzial) * 100, 1) if soll_potenzial else 0.0
-    # Offene überfällige Forderungen (Mietzinsausfall/Debitorenrisiko)
-    _deb = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
-            .prefetch_related('zahlungseingaenge'))
-    if aktive_lg:
-        _deb = _deb.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
-    offen_ueberfaellig = sum((r.offener_betrag for r in _deb
-                              if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) < heute), Decimal('0.00'))
-    kpis = {
-        'leerstandsquote': leerstandsquote,
-        'leerstandsquote_ertrag': leerstandsquote_ertrag,
-        'soll_potenzial': soll_potenzial,
-        'ist_miete': ist_miete,
-        'ausfall_leerstand': ausfall_leerstand,
-        'offen_ueberfaellig': offen_ueberfaellig,
+    # Die Zahlen an den Reitern sind die eigentliche Aussage — «3
+    # liegengeblieben» sieht man, ohne die Ansicht zu wechseln.
+    #
+    # `was_reisst` zweimal aufzurufen (Heute UND Woche) waere doppelte Arbeit:
+    # Die Woche enthaelt den heutigen Tag, also reicht EIN Durchgang und ein
+    # Abzaehlen. Der erste Entwurf rief zweimal auf und kostete damit die
+    # gesamte Sammelarbeit ueber alle vier Quellen ein zweites Mal.
+    woche = was_reisst(heute, grenze=7, aktive_lg=aktive_lg)
+    heute_faellig = [e for e in woche if e['tage'] <= 0]
+    zaehler = {
+        'heute': len(heute_faellig),
+        'woche': len(woche),
+        'liegen': Fall.objects.liegengeblieben().count(),
+        'wartet': Fall.objects.filter(status=Fall.WARTET).count(),
+        'alle': None,
     }
-    # --- DIE EINE INBOX (ersetzt Cockpit-Widgets, «Heute zu tun» und Aufgaben) ---
-    from core.services.inbox import sammle_inbox, TYP_META
-    from core.navigation import aktueller_modus
-    ui_modus = aktueller_modus(request)
-    inbox, inbox_mehr, inbox_typen = sammle_inbox(
-        aktive_lg=aktive_lg, lg_query=basis['lg_query'], modus=ui_modus,
+
+    faelle = []
+    vorrat = []
+    if ansicht == 'heute':
+        vorrat = heute_faellig
+    elif ansicht == 'woche':
+        vorrat = woche
+    elif ansicht == 'wartet':
+        faelle = list(Fall.objects.filter(status=Fall.WARTET)
+                      .select_related('fallart', 'zustaendig')
+                      .order_by('letzte_bewegung'))
+    elif ansicht == 'liegen':
+        faelle = list(Fall.objects.liegengeblieben()
+                      .select_related('fallart', 'zustaendig')
+                      .order_by('letzte_bewegung'))
+    else:
+        # «Alle» heisst alle — ohne Fenster. Ein Jahr ist die Obergrenze,
+        # damit eine versehentlich auf 2099 datierte Frist die Seite nicht
+        # allein fuellt.
+        vorrat = was_reisst(heute, grenze=365, aktive_lg=aktive_lg)
+
+    eingaenge, eingaenge_gesamt = posteingang()
+    termin_zeilen = termine(heute)
+    freigaben = wartet_auf_freigabe()
+
+    # DIE INBOX BLEIBT. Sie stand auf der alten Startseite und waere beim
+    # Zusammenlegen fast verschwunden — nichts anderes rendert sie. Seit 4b.5
+    # fuehrt sie nur noch die Sammelposten: die Pendenzen und Wartungsfristen
+    # sind in den Arbeitsvorrat gewandert (G2, «ein Arbeitsvorrat, nicht zwei
+    # Listen»), was bleibt, sind vor allem die **undatierten** Aufgaben. Genau
+    # die haben sonst keinen Ort: Der Arbeitsvorrat nimmt nur, was eine Frist
+    # traegt.
+    from core.services.inbox import sammle_inbox
+    inbox, inbox_mehr, _typen = sammle_inbox(
+        aktive_lg=aktive_lg, lg_query=basis['lg_query'],
         pendenz_ziel=_pendenz_ziel)
-    inbox_chips = [{'key': k, 'label': TYP_META[k]['label'], 'n': inbox_typen.get(k, 0)}
-                   for k in ('geld', 'frist', 'schaden', 'prozess', 'aufgabe')
-                   if inbox_typen.get(k)]
-    inbox_dringend = sum(1 for e in inbox if e['dringend'])
 
-    # --- Analytics fürs Dashboard (rein additiv, DEFENSIV: dürfen das Cockpit
-    #     nie brechen — jede Auswertung ist in try/except gekapselt und liefert
-    #     im Fehlerfall einfach nichts, die Karte wird dann ausgeblendet). ---
-    dash_aktivitaet = []
-    try:
-        from core.models import AktivitaetsLog
-        dash_aktivitaet = list(AktivitaetsLog.objects.select_related('benutzer')
-                               .order_by('-id')[:6])
-    except Exception:
-        logger.debug("Dashboard-Aktivität übersprungen", exc_info=True)
-
-    belegung_conic = ''
-    try:
-        # Design-System-Tokens statt fester Hex-Werte → Donut-Segmente und
-        # Legenden-Swatches stimmen in Hell UND Dunkel exakt überein.
-        _cols = {'wohnen': 'var(--ds-brand)', 'parkplatz': 'var(--ds-info)',
-                 'gewerbe': 'var(--ds-warn)', 'weitere': 'var(--ds-faint)'}
-        _tot = sum(breakdown.values())
-        if _tot:
-            _stops = []
-            _acc = 0.0
-            for _k in ('wohnen', 'parkplatz', 'gewerbe', 'weitere'):
-                _pct = breakdown.get(_k, 0) / _tot * 100
-                _stops.append(f"{_cols[_k]} {_acc:.2f}% {_acc + _pct:.2f}%")
-                _acc += _pct
-            belegung_conic = "conic-gradient(" + ", ".join(_stops) + ")"
-    except Exception:
-        logger.debug("Dashboard-Belegung übersprungen", exc_info=True)
-
-    dash_chart = None
-    try:
-        from finance.models import Buchung
-        import calendar as _cal
-        # 12 Monate rückwärts inkl. aktuellem Monat
-        _months = []
-        _y, _m = heute.year, heute.month
-        for _ in range(12):
-            _months.append((_y, _m))
-            _m -= 1
-            if _m == 0:
-                _m = 12
-                _y -= 1
-        _months.reverse()
-        _first = date(_months[0][0], _months[0][1], 1)
-        # Ist-Mietertrag = Habenbuchungen auf 3000/3010 (ohne Storni), pro Monat
-        _bq = Buchung.objects.filter(ist_storno=False,
-                                     haben_konto__nummer__in=['3000', '3010'],
-                                     datum__gte=_first)
-        if aktive_lg:
-            _bq = _bq.filter(liegenschaft=aktive_lg)
-        _sums = {}
-        for _r in _bq.values('datum__year', 'datum__month').annotate(s=Sum('betrag')):
-            _sums[(_r['datum__year'], _r['datum__month'])] = float(_r['s'] or 0)
-        _ist = [_sums.get((yy, mm), 0.0) for (yy, mm) in _months]
-        _soll = float(soll_potenzial or 0)
-        _mx = max(_ist + [_soll, 1.0])
-        _W, _H, _P = 620.0, 210.0, 24.0
-
-        def _pt(i, val):
-            x = (i / 11.0) * _W
-            yv = _H - _P - (val / _mx) * (_H - 2 * _P)
-            return (x, yv)
-
-        _ist_pairs = [_pt(i, v) for i, v in enumerate(_ist)]
-        _ist_points = " ".join(f"{x:.1f},{y:.1f}" for (x, y) in _ist_pairs)
-        _soll_y = _H - _P - (_soll / _mx) * (_H - 2 * _P)
-        _area = ("M" + " ".join(f"{x:.1f},{y:.1f}" for (x, y) in _ist_pairs)
-                 + f" L{_W:.0f},{_H:.0f} L0,{_H:.0f} Z")
-        dash_chart = {
-            'ist_points': _ist_points,
-            'soll_y': f"{_soll_y:.1f}",
-            'area': _area,
-            'last_x': f"{_ist_pairs[-1][0]:.1f}",
-            'last_y': f"{_ist_pairs[-1][1]:.1f}",
-            'has_data': any(v > 0 for v in _ist),
-        }
-    except Exception:
-        logger.debug("Dashboard-Chart übersprungen", exc_info=True)
-        dash_chart = None
-
-    context = {
-        **basis,
-        'nav': 'dashboard',
-        'dash_aktivitaet': dash_aktivitaet,
-        'belegung_conic': belegung_conic,
-        'dash_chart': dash_chart,
-        'liegenschaften_count': liegenschaften.count(),
-        'objekte_count': einheiten.count(),
-        'breakdown': breakdown,
-        'vertraege_count': vertraege.count(),
-        'v_beendet': v_beendet, 'v_aktiv': v_aktiv,
-        'v_gekuendigt': v_gekuendigt, 'v_zukuenftig': v_zukuenftig,
-        'leerstand_objekte': leerstand_objekte[:20],
-        'leerstand_count': leerstand_objekte.count(),
-        'gekuendigte': gekuendigte[:20],
-        'gekuendigte_count': gekuendigte.count(),
-        'bevorstehende': bevorstehende[:20],
-        'bevorstehende_count': bevorstehende.count(),
-        'kpis': kpis,
+    return render(request, 'fw/dashboard.html', {
+        **basis, 'nav': 'dashboard',
         'heute': heute,
+        'ansicht': ansicht,
+        'ansicht_titel': dict(ANSICHTEN).get(ansicht, 'Heute'),
+        'ansichten': [(k, b, k == ansicht, zaehler.get(k))
+                      for k, b in ANSICHTEN],
+        'vorrat': vorrat,
+        'faelle': faelle,
+        'av_eingaenge': eingaenge,
+        'av_eingaenge_gesamt': eingaenge_gesamt,
+        'av_termine': termin_zeilen,
+        'av_termine_gesamt': len(termin_zeilen),
+        'av_freigaben': freigaben,
+        'av_freigaben_gesamt': len(freigaben),
+        'av_liegezeit': liegezeit(freigaben),
+        # Ohne diesen Eintrag bliebe der Abschnitt «Vertretung» im
+        # eingebundenen Baustein stumm — er ist da, zeigt aber nichts.
+        'av_vertretung': vertretung(heute),
         'inbox': inbox,
         'inbox_mehr': inbox_mehr,
-        'inbox_chips': inbox_chips,
-        'inbox_dringend': inbox_dringend,
-    }
-    # Phase 4b: Der Arbeitsvorrat steht UEBER den Kennzahlen. Er ist die
-    # erste Oberflaeche, auf der die Bausteine aus Phase 4a erscheinen — Fall,
-    # Eingang und Lauf hatten bis hierher keine View.
-    #
-    # Er ist KEINE zweite Liste neben der Inbox: Die einzelnen Pendenzen und
-    # die Wartungsfristen sind aus `core/services/inbox.py` hierher gewandert,
-    # nicht kopiert (KONZEPT-UI.md G2). Die Inbox fuehrt weiter die
-    # Sammelposten.
-    from faelle.arbeitsvorrat import arbeitsvorrat
-    context.update(arbeitsvorrat(request, aktive_lg=aktive_lg))
-    return render(request, 'fw/dashboard.html', context)
+        **lage(heute, aktive_lg),
+    })
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)

@@ -1,35 +1,95 @@
 {% extends 'fw/base.html' %}
 {% load chf %}
-{% block title %}Heute — swissImmo{% endblock %}
+{% block title %}{{ ansicht_titel }} — swissImmo{% endblock %}
 
 {% block content %}
+{% comment %} ===== STARTSEITE, ZUSAMMENGEFÜHRT (4b.13) =====
+
+   Vorher gab es ZWEI Startflächen: /neu/ zeigte «Was reisst» und «Zulauf»
+   plus vier Kacheln aus der Vorgängerzeit (Mietertrag, Portfolio-Donut,
+   Belegung, Leerstand), /neu/arbeit/ zeigte DIESELBEN zwei Abschnitte plus
+   Läufe und Ansichten. Beide taten dasselbe; die ältere gewann, weil sie
+   unter /neu/ lag. /neu/arbeit/ leitet jetzt hierher um.
+
+   Die alten vier Kacheln zeigten den BESTAND. An ihre Stelle tritt der
+   Lage-Streifen mit Vormonatsvergleich und darunter «Was abweicht» — wo
+   ruhige Kennzahlen ausdrücklich NICHT erscheinen.
+
+   Reihenfolge: Lage · Arbeitsvorrat mit Ansichten · Termine/Freigaben/
+   Vertretung · Zulauf · Mandate · Lage des Bestands.
+   ===== {% endcomment %}
 
 <div class="fw-phead">
     <div>
-        <h1>Heute</h1>
+        <h1>{{ ansicht_titel }}</h1>
         <p>{{ heute|date:"l, d. F Y" }}{% if aktive_lg %} · Gefiltert auf {{ aktive_lg.strasse }}, {{ aktive_lg.ort }}{% endif %}</p>
     </div>
-    {% if aktive_lg %}<a href="/neu/" class="fw-btn">× Filter aufheben</a>{% endif %}
+    <div style="margin-left:auto;display:flex;gap:7px;flex-wrap:wrap;align-items:center">
+        {% if aktive_lg %}<a href="/neu/" class="fw-btn">× Filter aufheben</a>{% endif %}
+        <a href="/neu/zulauf/" class="fw-btn"><i class="fa-solid fa-inbox"></i> Zulauf</a>
+    </div>
 </div>
 
-{% comment %} ===== ARBEITSVORRAT nach KONZEPT-UI.md 3.1 =====
-   Vorher stand hier zuoberst die Inbox. «Was reisst» steht jetzt darueber und
-   zeigt die EINZELNEN datierten Vorgaenge — Fallschritt, Pendenz,
-   Wartungsfrist, Lauf. Die Inbox darunter fuehrt nur noch die Sammelposten
-   («12 Rechnungen pruefen»).
-
-   Das ist keine zweite Liste: Die Pendenz- und Fristenbloecke sind aus
-   core/services/inbox.py hierher GEWANDERT, nicht kopiert. G2: «Ein
-   Arbeitsvorrat, nicht zwei Listen.» {% endcomment %}
+{% comment %} Vier Zahlen mit Vormonatspfeil. Der Pfeil ist die Aussage — eine
+   Zahl ohne Vergleich sagt nur, dass gemessen wurde. Ob ein Anstieg gut oder
+   schlecht ist, entscheidet `delta_gut_wenn`: Zahlungseingang hoch ist gut,
+   Leerstand hoch ist schlecht. {% endcomment %}
+<div class="fw-lage">
+    {% for k in lg_streifen %}
+    <div>
+        <div class="fw-l">{{ k.label }}</div>
+        <div class="fw-w{% if k.stufe %} {{ k.stufe }}{% endif %}">{{ k.wert }}</div>
+        <div class="fw-f">
+            {% if k.delta %}
+                {% if k.delta > 0 %}<span class="fw-trend {% if k.delta_gut_wenn == 'runter' %}hoch{% else %}runter{% endif %}">▲ {{ k.delta|floatformat:1 }}</span>
+                {% else %}<span class="fw-trend {% if k.delta_gut_wenn == 'runter' %}runter{% else %}hoch{% endif %}">▼ {{ k.delta|floatformat:1|cut:"-" }}</span>{% endif %}
+            {% endif %}
+            {{ k.fuss }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
 
 <div class="fw-card">
+    {% comment %} Der Kartenkopf heisst «Was reisst» und nicht «Vorgänge»: Er
+       zeigt Überfälliges und bald Fallendes, nicht den Bestand. Die
+       Überschrift der Seite nennt dagegen die gewählte Ansicht. {% endcomment %}
     <div class="fw-kopf">
-        <span class="fw-ikon{% if av_ueberfaellig %} crit{% endif %}"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <span class="fw-ikon{% if vorrat %} crit{% endif %}"><i class="fa-solid fa-triangle-exclamation"></i></span>
         <span class="fw-t">Was reisst</span>
-        <span class="fw-neben">{% if av_reisst_gesamt %}{{ av_reisst_gesamt }} in den nächsten {{ av_vorschau_tage }} Tagen{% if av_ueberfaellig %} · {{ av_ueberfaellig }} überfällig{% endif %}{% else %}nichts Dringendes{% endif %}</span>
-        <span class="fw-rechts"><a href="/neu/arbeit/" class="fw-link">Alle Vorgänge</a></span>
+        <span class="fw-neben">{% if ansicht == 'liegen' or ansicht == 'wartet' %}{{ faelle|length }}{% else %}{{ vorrat|length }}{% endif %} in dieser Ansicht</span>
     </div>
-    {% for e in av_reisst %}
+    <div class="fw-reiter">
+        {% for schluessel, bezeichnung, aktiv, anzahl in ansichten %}
+        <a href="?ansicht={{ schluessel }}" class="{% if aktiv %}hier{% endif %}">
+            {{ bezeichnung }}{% if anzahl %}<span class="fw-z">{{ anzahl }}</span>{% endif %}
+        </a>
+        {% endfor %}
+    </div>
+
+    {% if ansicht == 'wartet' or ansicht == 'liegen' %}
+    {% for f in faelle %}
+    <a href="/neu/faelle/{{ f.id }}/" class="fw-zeile klick" style="text-decoration:none">
+        <span class="fw-marker {% if ansicht == 'liegen' %}crit{% else %}warn{% endif %}"></span>
+        <span class="fw-ikon {% if ansicht == 'liegen' %}crit{% else %}warn{% endif %}"><i class="fa-solid fa-hourglass-half"></i></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ f.betreff|default:f.fallart.bezeichnung }}</div>
+            <div class="fw-s">{{ f.nummer }} · {{ f.get_status_display }}{% if f.zustaendig %} · {{ f.zustaendig.get_full_name|default:f.zustaendig.username }}{% endif %}</div>
+        </div>
+        <div class="fw-zeit">{{ f.tage_ohne_bewegung }} Tage<br><span class="fw-klein">ohne Bewegung</span></div>
+    </a>
+    {% empty %}
+    <p class="fw-leer">{% if ansicht == 'liegen' %}Nichts liegengeblieben — jeder Fall ist in Bewegung.{% else %}Kein Fall wartet auf Dritte.{% endif %}</p>
+    {% endfor %}
+    <div class="fw-fuss">
+        {% comment %} Die Regel steht da, wo sie wirkt. Sie stammt aus
+           `Fall.ist_liegengeblieben` und ist dort seit 4a.1 getestet —
+           hier nur wiedergegeben, nicht ein zweites Mal festgelegt. {% endcomment %}
+        <span>{% if ansicht == 'liegen' %}Verfallsregel: 14 Tage ohne Bewegung, 10 beim Warten auf Dritte.{% else %}Beim Warten auf Dritte ist das Nachfassen die Arbeit.{% endif %}</span>
+    </div>
+
+    {% else %}
+    {% for e in vorrat %}
     <div class="fw-zeile">
         <span class="fw-marker {{ e.dringlichkeit }}"></span>
         <span class="fw-ikon{% if e.dringlichkeit != 'neutral' %} {{ e.dringlichkeit }}{% endif %}"><i class="fa-solid {{ e.ikon }}"></i></span>
@@ -37,31 +97,22 @@
             <div class="fw-t">{{ e.titel }}</div>
             <div class="fw-s">{{ e.zeile }}</div>
         </div>
-        <div class="fw-zeit">{{ e.datum|date:"d.m." }}<br>
+        <div class="fw-zeit">{{ e.datum|date:"d.m.Y" }}<br>
             <span class="fw-klein">{% if e.tage < 0 %}{{ e.tage|cut:"-" }} Tage über{% elif e.tage == 0 %}heute{% else %}in {{ e.tage }} Tag{{ e.tage|pluralize:"en" }}{% endif %}</span></div>
-        <a href="{{ e.ziel }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',false)"{% endif %} class="fw-btn">{{ e.knopf }}</a>
+        <a href="{{ e.ziel }}" class="fw-btn">{{ e.knopf }}</a>
     </div>
     {% empty %}
-    <p class="fw-leer">Nichts überfällig und nichts in den nächsten {{ av_vorschau_tage }} Tagen.</p>
+    <p class="fw-leer">{% if ansicht == 'heute' %}Heute ist nichts fällig.{% elif ansicht == 'woche' %}Diese Woche ist nichts fällig.{% else %}Kein offener Vorgang.{% endif %}</p>
     {% endfor %}
-    {% if av_reisst_weitere %}
-    <div class="fw-fuss">
-        <a href="/neu/arbeit/?ansicht=alle" class="fw-link">Alle Vorgänge</a>
-        <span>{{ av_reisst_weitere }} weitere in den nächsten {{ av_vorschau_tage }} Tagen</span>
-    </div>
     {% endif %}
 </div>
 
-{% if av_eingaenge %}
-{% comment %} G4: «Der Zulauf ist die Startflaeche. In einem kleinen Buero
-   beginnt der Tag mit 40 Eingaengen; die Arbeit ist das Zuordnen.» {% endcomment %}
+{% include 'fw/_arbeitsvorrat_abschnitte.html' %}
+
 <div class="fw-card">
-    <div class="fw-kopf">
-        <span class="fw-ikon"><i class="fa-solid fa-inbox"></i></span>
+    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-inbox"></i></span>
         <span class="fw-t">Zulauf</span>
-        <span class="fw-neben">{{ av_eingaenge_gesamt }} nicht zugeordnet</span>
-        <span class="fw-rechts"><a href="/neu/zulauf/" class="fw-link">Ganzer Zulauf</a></span>
-    </div>
+        <span class="fw-neben">{{ av_eingaenge_gesamt }} nicht zugeordnet</span></div>
     {% for z in av_eingaenge %}
     <div class="fw-zeile">
         <span class="fw-ikon{% if not z.sicher %} warn{% endif %}"><i class="fa-solid {% if z.eingang.quelle == 'mail' %}fa-envelope{% elif z.eingang.quelle == 'post' %}fa-envelope-open-text{% elif z.eingang.quelle == 'scan' %}fa-file-lines{% else %}fa-inbox{% endif %}"></i></span>
@@ -69,333 +120,105 @@
             <div class="fw-t">{{ z.eingang.betreff|default:"Ohne Betreff" }}{% if z.eingang.absender %} — {{ z.eingang.absender }}{% endif %}</div>
             <div class="fw-s">{{ z.eingang.eingegangen_am|date:"d.m. H:i" }} · {{ z.eingang.get_quelle_display }}</div>
             <div class="fw-s" style="margin-top:4px;color:{% if z.sicher %}var(--ds-brand){% else %}var(--ds-warn){% endif %}">
-                {% if z.sicher %}Vorschlag: {{ z.ziel }}{% if z.fallart %} → Fall «{{ z.fallart }}» eröffnen{% endif %}{% else %}Kein sicherer Vorschlag — bitte zuordnen{% endif %}
-            </div>
+                {% if z.sicher %}Vorschlag: {{ z.ziel }}{% if z.fallart %} → Fall «{{ z.fallart }}»{% endif %}{% else %}Kein sicherer Vorschlag — bitte zuordnen{% endif %}</div>
         </div>
         <a href="/neu/zulauf/" class="fw-btn{% if z.sicher %} fw-primary{% endif %}">{% if z.sicher %}Übernehmen{% else %}Zuordnen{% endif %}</a>
     </div>
+    {% empty %}
+    <p class="fw-leer">Nichts Unzugeordnetes.</p>
     {% endfor %}
-</div>
-{% endif %}
-
-{% include 'fw/_arbeitsvorrat_abschnitte.html' %}
-
-<!-- ================= DIE INBOX (eine Aufgabenliste statt vier Flächen) ================= -->
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
-    <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-3 flex-wrap">
-        <div class="font-bold text-slate-800 text-sm flex items-center gap-2.5">
-            <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-inbox"></i></span>
-            Inbox
-            {% if inbox %}<span class="text-slate-400 font-medium">{{ inbox|length }} Aufgabe{{ inbox|length|pluralize:"n" }}{% if inbox_dringend %} · <span class="text-rose-600 font-semibold">{{ inbox_dringend }} dringend</span>{% endif %}</span>{% endif %}
-        </div>
-        {% if inbox_chips|length > 1 %}
-        <div class="flex items-center gap-1.5 flex-wrap ml-auto">
-            <button data-inbox-filter="" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-indigo-600 text-white">Alle</button>
-            {% for ch in inbox_chips %}
-            <button data-inbox-filter="{{ ch.key }}" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">{{ ch.label }} {{ ch.n }}</button>
-            {% endfor %}
-        </div>
-        {% endif %}
-    </div>
-    <div class="divide-y divide-slate-50" id="inboxListe">
-        {% for e in inbox %}
-        <div class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60 flex-wrap sm:flex-nowrap" data-inbox-typ="{{ e.typ }}">
-            <span class="w-2 h-2 rounded-full shrink-0 {% if e.dringend %}bg-rose-500{% else %}bg-slate-300{% endif %}"></span>
-            <span class="fw-chip shrink-0 {{ e.chip_cls }}">{{ e.typ_label }}</span>
-            {% if e.url %}
-            {% comment %}
-            basis-full auf dem Handy: Betrag und CTA sind nowrap und geben keine
-            Breite ab — der Titel wurde sonst auf eine Handbreit zusammengedrückt
-            und die Zeile dadurch turmhoch. Ab sm wieder eine Zeile.
-            {% endcomment %}
-            <a href="{{ e.url }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"{% endif %} class="min-w-0 basis-full sm:basis-0 flex-1 group">
-                <div class="text-sm font-medium text-slate-900 group-hover:text-indigo-600 truncate">{{ e.titel }}</div>
-                {% if e.sub %}<div class="text-xs text-slate-400 truncate">{{ e.sub }}</div>{% endif %}
-            </a>
-            {% else %}
-            <div class="min-w-0 basis-full sm:basis-0 flex-1">
-                <div class="text-sm font-medium text-slate-900 truncate">{{ e.titel }}</div>
-                {% if e.sub %}<div class="text-xs text-slate-400 truncate">{{ e.sub }}</div>{% endif %}
-            </div>
-            {% endif %}
-            {% if e.chf %}<span class="text-xs font-semibold text-slate-600 shrink-0 whitespace-nowrap">CHF {{ e.chf|chf }}</span>{% endif %}
-            {% if e.faellig %}<span class="text-xs font-semibold shrink-0 whitespace-nowrap {% if e.dringend %}text-rose-600{% else %}text-slate-500{% endif %}">{{ e.faellig|date:"d.m.Y" }}{% if e.dringend %} <i class="fa-solid fa-triangle-exclamation"></i>{% endif %}</span>{% endif %}
-            {% if e.url %}<a href="{{ e.url }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"{% endif %} class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-2.5 py-1 rounded-lg shrink-0 whitespace-nowrap">{{ e.cta }}</a>{% endif %}
-        </div>
-        {% empty %}
-        <div class="flex flex-col items-center justify-center px-6 py-12 text-center">
-            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-xl mb-3">
-                <i class="fa-solid fa-check"></i>
-            </div>
-            <p class="text-sm font-semibold text-slate-700">Alles erledigt</p>
-            <p class="text-xs text-slate-400 mt-1">Keine offenen Aufgaben — geniessen Sie den Tag.</p>
-        </div>
-        {% endfor %}
-    </div>
-    <div class="px-5 py-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
-        {% if inbox_mehr %}
-        <a href="/neu/pendenzen/{{ lg_query }}" class="font-semibold text-slate-500 hover:text-indigo-600">+ {{ inbox_mehr }} weitere Aufgaben</a>
-        {% else %}<span></span>{% endif %}
-        <span class="text-slate-400">
-            <a href="/neu/pendenzen/{{ lg_query }}" class="hover:text-indigo-600">Pendenzen</a> ·
-            <a href="/neu/fristen/{{ lg_query }}" class="hover:text-indigo-600">Fristen</a> ·
-            <a href="/neu/finanzen/{{ lg_query }}" class="hover:text-indigo-600">Finanz-Cockpit</a>
-        </span>
-    </div>
+    <div class="fw-fuss"><a href="/neu/zulauf/" class="fw-link">Ganzer Posteingang</a>
+        <span>{{ av_eingaenge_gesamt }} offen</span></div>
 </div>
 
-<!-- ================= KENNZAHLEN ================= -->
-<div class="fw-kpis">
-    <div class="fw-kpi">
-        <span class="fw-l">Leerstandsquote</span>
-        <span class="fw-v fw-num {% if kpis.leerstandsquote > 5 %}fw-crit{% elif kpis.leerstandsquote > 0 %}fw-warn{% else %}fw-good{% endif %}">{{ kpis.leerstandsquote }}%</span>
-        <span class="fw-f">ertragsgewichtet {{ kpis.leerstandsquote_ertrag }}%</span>
-    </div>
-    <div class="fw-kpi fw-accent">
-        <span class="fw-l">Ist-Miete / Monat</span>
-        <span class="fw-v fw-num">CHF {{ kpis.ist_miete|chf }}</span>
-        <span class="fw-f">Soll-Potenzial CHF {{ kpis.soll_potenzial|chf }}</span>
-    </div>
-    <div class="fw-kpi">
-        <span class="fw-l">Mietzinsausfall Leerstand</span>
-        <span class="fw-v fw-num {% if kpis.ausfall_leerstand > 0 %}fw-warn{% else %}fw-good{% endif %}">CHF {{ kpis.ausfall_leerstand|chf }}</span>
-        <span class="fw-f">pro Monat</span>
-    </div>
-    <a href="/neu/mahnwesen/" class="fw-kpi">
-        <span class="fw-l">Überfällige Forderungen</span>
-        <span class="fw-v fw-num {% if kpis.offen_ueberfaellig > 0 %}fw-crit{% else %}fw-good{% endif %}">CHF {{ kpis.offen_ueberfaellig|chf }}</span>
-        <span class="fw-f" style="color:var(--ds-brand-600)">→ Mahnwesen</span>
-    </a>
-</div>
+{% comment %} DIE INBOX BLEIBT — und zwar hier, unter dem Arbeitsvorrat.
 
-<!-- ================= MIETERTRAG-VERLAUF (Analytics) ================= -->
-{% if dash_chart and dash_chart.has_data %}
+   Seit 4b.5 führt sie nur noch die Sammelposten: Pendenzen und
+   Wartungsfristen sind in «Was reisst» gewandert (G2: ein Arbeitsvorrat,
+   nicht zwei Listen). Was bleibt, sind vor allem die **undatierten**
+   Aufgaben — und die haben sonst keinen Ort, weil der Arbeitsvorrat nur
+   nimmt, was eine Frist trägt.
+
+   Beim Zusammenlegen der beiden Startflächen wäre sie beinahe ersatzlos
+   entfallen: Der Entwurf für die neue Seite führte sie nicht mehr, und
+   nichts anderes rendert `sammle_inbox`. Aufgefallen ist es nur, weil die
+   alte Vorlage vor dem Überschreiben gelesen wurde. {% endcomment %}
+{% if inbox %}
 <div class="fw-card">
-    <div class="fw-h">
-        <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-chart-area"></i></span>
-        <span class="fw-t">Mietertrag — Soll vs. Ist <small>letzte 12 Monate</small></span>
-        <div class="fw-r"><span class="fw-chip fw-brand">Neu</span></div>
+    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-list-check"></i></span>
+        <span class="fw-t">Aufgaben</span>
+        <span class="fw-neben">{{ inbox|length }} ohne eigene Frist</span></div>
+    {% for e in inbox %}
+    <div class="fw-zeile">
+        <span class="fw-marker {% if e.dringend %}crit{% endif %}"></span>
+        <span class="fw-chip {{ e.chip_cls }}">{{ e.typ_label }}</span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ e.titel }}</div>
+            {% if e.sub %}<div class="fw-s">{{ e.sub }}</div>{% endif %}
+        </div>
+        {% if e.chf %}<span class="fw-betrag">CHF {{ e.chf|chf }}</span>{% endif %}
+        {% if e.faellig %}<div class="fw-zeit">{{ e.faellig|date:"d.m.Y" }}</div>{% endif %}
+        {% if e.url %}<a href="{{ e.url }}" class="fw-btn">{{ e.cta }}</a>{% endif %}
     </div>
-    <div style="padding:12px 12px 4px">
-        <svg viewBox="0 0 620 210" preserveAspectRatio="none" class="fw-chart" style="height:190px" aria-hidden="true">
-            <defs><linearGradient id="fwMietGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="var(--ds-brand)" stop-opacity="0.24"/>
-                <stop offset="1" stop-color="var(--ds-brand)" stop-opacity="0.02"/>
-            </linearGradient></defs>
-            <line x1="0" y1="45" x2="620" y2="45" stroke="var(--ds-line)"/>
-            <line x1="0" y1="105" x2="620" y2="105" stroke="var(--ds-line)"/>
-            <line x1="0" y1="165" x2="620" y2="165" stroke="var(--ds-line)"/>
-            <line x1="0" y1="{{ dash_chart.soll_y }}" x2="620" y2="{{ dash_chart.soll_y }}" stroke="var(--ds-faint)" stroke-width="1.6" stroke-dasharray="4 4"/>
-            <path d="{{ dash_chart.area }}" fill="url(#fwMietGrad)"/>
-            <polyline points="{{ dash_chart.ist_points }}" fill="none" stroke="var(--ds-brand)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="{{ dash_chart.last_x }}" cy="{{ dash_chart.last_y }}" r="3.6" fill="var(--ds-brand)"/>
-        </svg>
-    </div>
-    <div style="display:flex;gap:16px;padding:4px 18px 14px;font-size:12px;color:var(--ds-muted)">
-        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:var(--ds-brand)"></span>Ist-Mietertrag</span>
-        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:2px;background:var(--ds-faint)"></span>Soll-Potenzial</span>
+    {% endfor %}
+    <div class="fw-fuss">
+        <a href="/neu/pendenzen/{{ lg_query }}" class="fw-link">Alle Pendenzen</a>
+        {% if inbox_mehr %}<span>{{ inbox_mehr }} weitere</span>{% endif %}
     </div>
 </div>
 {% endif %}
 
-<!-- ================= PORTFOLIO ================= -->
-<div class="flex items-center gap-2 mt-4 mb-3">
-    <h2 class="text-lg font-bold text-slate-800">Portfolio</h2>
-    <i class="fa-regular fa-circle-question text-indigo-300 text-sm" title="Bestandsübersicht"></i>
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-
-    <!-- Spalte 1: Liegenschaften -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0">
-            <i class="fa-solid fa-building"></i>
+{% comment %} Sortiert nach Auffälligkeit, nicht nach Grösse. Wer die Liste von
+   oben liest, sieht zuerst, wo es klemmt. {% endcomment %}
+{% if lg_mandate %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon"><i class="fa-solid fa-building-user"></i></span>
+        <span class="fw-t">Mandate</span>
+        <span class="fw-neben">{{ lg_mandate|length }} · Stand heute</span></div>
+    {% for m in lg_mandate|slice:":8" %}
+    <div class="fw-zeile">
+        <span class="fw-marker {{ m.stufe }}"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ m.mandat }}</div>
+            <div class="fw-s">{{ m.objekte }} Objekt{{ m.objekte|pluralize:"e" }}{% if m.leer %} · {{ m.leer }} leer{% endif %}</div>
         </div>
-        <div>
-            <div class="text-2xl font-bold text-indigo-600">{{ liegenschaften_count }}</div>
-            <div class="text-sm text-slate-500">Liegenschaften</div>
-        </div>
+        {% if m.offen %}<span class="fw-chip fw-crit">CHF {{ m.offen|chf }} offen</span>
+        {% elif m.leer %}<span class="fw-chip fw-warn">{{ m.leer }} leer</span>
+        {% else %}<span class="fw-chip fw-good">ohne Befund</span>{% endif %}
+        <div class="fw-zeit">{{ m.belegung }} %<br><span class="fw-klein">belegt</span></div>
     </div>
-
-    <!-- Spalte 2 (breit): Mietobjekte mit Breakdown -->
-    <div class="md:col-span-2 bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-6">
-        <div class="flex items-center gap-4 shrink-0">
-            <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
-                <i class="fa-solid fa-house"></i>
-            </div>
-            <div>
-                <div class="text-2xl font-bold text-indigo-600">{{ objekte_count }}</div>
-                <div class="text-sm text-slate-500">Mietobjekte</div>
-            </div>
-        </div>
-        <div class="border-l border-slate-100 pl-6 space-y-1 text-sm">
-            <div><span class="font-bold text-indigo-600 mr-2">{{ breakdown.wohnen }}</span><span class="text-slate-500">Wohnen</span></div>
-            <div><span class="font-bold text-indigo-600 mr-2">{{ breakdown.parkplatz }}</span><span class="text-slate-500">Parkplatz</span></div>
-            <div><span class="font-bold text-indigo-600 mr-2">{{ breakdown.gewerbe }}</span><span class="text-slate-500">Gewerbe</span></div>
-        </div>
-    </div>
-
-    <!-- Spalte 3: Verträge mit Status-Breakdown -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-6">
-        <div class="flex items-center gap-4 shrink-0">
-            <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
-                <i class="fa-solid fa-file-lines"></i>
-            </div>
-            <div>
-                <div class="text-2xl font-bold text-indigo-600">{{ vertraege_count }}</div>
-                <div class="text-sm text-slate-500">Verträge</div>
-            </div>
-        </div>
-        <div class="border-l border-slate-100 pl-5 space-y-1 text-xs">
-            <div><span class="font-bold text-slate-700 mr-2">{{ v_beendet }}</span><span class="text-slate-500">Beendet</span></div>
-            <div><span class="font-bold text-emerald-600 mr-2">{{ v_aktiv }}</span><span class="text-slate-500">Aktiv</span></div>
-            <div><span class="font-bold text-rose-600 mr-2">{{ v_gekuendigt }}</span><span class="text-slate-500">Gekündigt</span></div>
-            <div><span class="font-bold text-amber-500 mr-2">{{ v_zukuenftig }}</span><span class="text-slate-500">Zukünftig</span></div>
-        </div>
+    {% endfor %}
+    <div class="fw-fuss">
+        <span>Sortiert nach Auffälligkeit, nicht nach Grösse.</span>
+        {% if lg_mandate|length > 8 %}<span>{{ lg_mandate|length|add:"-8" }} weitere</span>{% endif %}
     </div>
 </div>
+{% endif %}
 
-<!-- ================= BELEGUNG + AKTIVITÄT (Analytics) ================= -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
-
-    <!-- Belegung nach Nutzung (Donut aus breakdown) -->
-    <div class="fw-card">
-        <div class="fw-h">
-            <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-chart-pie"></i></span>
-            <span class="fw-t">Belegung nach Nutzung</span>
-            <div class="fw-r"><span class="fw-chip fw-brand">Neu</span></div>
+{% comment %} Zu ist der Normalfall — was ruhig ist, soll keinen Platz
+   beanspruchen. Nur wenn etwas abweicht, steht der Block offen. {% endcomment %}
+<details class="fw-klapp"{% if lg_abweichungen_anzahl %} open{% endif %}>
+    <summary>
+        <span class="fw-ikon{% if lg_abweichungen_anzahl %} warn{% endif %}"><i class="fa-solid fa-chart-line"></i></span>
+        Lage des Bestands
+        <span class="fw-klein">{% if lg_abweichungen_anzahl %}— {{ lg_abweichungen_anzahl }} Abweichung{{ lg_abweichungen_anzahl|pluralize:"en" }}{% else %}— keine Abweichung{% endif %}</span>
+    </summary>
+    {% for a in lg_abweichungen %}
+    <div class="fw-zeile">
+        <span class="fw-marker {{ a.stufe }}"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ a.titel }}</div>
+            <div class="fw-s">{{ a.text }}</div>
         </div>
-        <div style="padding:18px;display:flex;gap:18px;align-items:center;flex-wrap:wrap">
-            {% if belegung_conic %}
-            <div class="fw-donut" style="background:{{ belegung_conic }}">
-                <div class="fw-c"><div><div class="fw-b fw-num">{{ objekte_count }}</div><div class="fw-s">Einheiten</div></div></div>
-            </div>
-            {% endif %}
-            <div class="fw-dleg">
-                <div class="fw-r"><i style="background:var(--ds-brand)"></i>Wohnen<span class="fw-n fw-num">{{ breakdown.wohnen }}</span></div>
-                <div class="fw-r"><i style="background:var(--ds-info)"></i>Parkplatz<span class="fw-n fw-num">{{ breakdown.parkplatz }}</span></div>
-                <div class="fw-r"><i style="background:var(--ds-warn)"></i>Gewerbe<span class="fw-n fw-num">{{ breakdown.gewerbe }}</span></div>
-                <div class="fw-r"><i style="background:var(--ds-faint)"></i>Weitere<span class="fw-n fw-num">{{ breakdown.weitere }}</span></div>
-            </div>
-        </div>
+        <a href="{{ a.ziel }}" class="fw-btn">{{ a.knopf }}</a>
     </div>
-
-    <!-- Letzte Aktivität (aus AktivitaetsLog) -->
-    <div class="bg-white rounded-xl border border-slate-200">
-        <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-2.5">
-            <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-clock-rotate-left"></i></span>
-            <div class="font-bold text-slate-800 text-sm">Letzte Aktivität</div>
-            <span class="ml-auto fw-chip fw-brand">Neu</span>
-        </div>
-        <div class="divide-y divide-slate-50">
-            {% for a in dash_aktivitaet %}
-            <div class="flex items-start gap-3 px-5 py-2.5">
-                <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0 {% if a.kategorie == 'finanzen' %}bg-emerald-50 text-emerald-600{% elif a.kategorie == 'geloescht' %}bg-rose-50 text-rose-500{% elif a.kategorie == 'versand' %}bg-sky-50 text-sky-600{% elif a.kategorie == 'sicherheit' %}bg-slate-100 text-slate-500{% else %}bg-indigo-50 text-indigo-600{% endif %}">
-                    <i class="fa-solid {% if a.kategorie == 'finanzen' %}fa-coins{% elif a.kategorie == 'geloescht' %}fa-trash{% elif a.kategorie == 'versand' %}fa-paper-plane{% elif a.kategorie == 'bearbeitet' %}fa-pen{% else %}fa-plus{% endif %}"></i>
-                </div>
-                <div class="min-w-0">
-                    <div class="text-sm text-slate-800 truncate">{{ a.aktion }}{% if a.objekt %} — <span class="text-slate-500">{{ a.objekt }}</span>{% endif %}</div>
-                    <div class="text-[11px] text-slate-400">{{ a.zeitpunkt|date:"d.m. H:i" }}{% if a.benutzer %} · {{ a.benutzer.username }}{% endif %}</div>
-                </div>
-            </div>
-            {% empty %}
-            <p class="px-5 py-6 text-sm text-slate-400 italic">Noch keine Aktivität erfasst.</p>
-            {% endfor %}
-        </div>
+    {% empty %}
+    <p class="fw-leer">Nichts weicht ab. Ruhige Kennzahlen erscheinen hier nicht.</p>
+    {% endfor %}
+    <div class="fw-fuss">
+        <span>Ruhige Kennzahlen erscheinen hier nicht.</span>
+        <a href="/neu/berichte/" class="fw-link">Alle Übersichten →</a>
     </div>
-</div>
+</details>
 
-<!-- ================= LEERSTAND ================= -->
-<div class="mt-8">
-
-    <!-- LEERSTAND mit Tabs -->
-    <div class="bg-white rounded-xl border border-slate-200">
-        <div class="px-6 pt-5 flex items-center gap-2.5">
-            <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-door-open"></i></span>
-            <h2 class="text-lg font-bold text-slate-800">Leerstand</h2>
-            <i class="fa-regular fa-circle-question text-indigo-300 text-sm"></i>
-        </div>
-        <div class="px-6 mt-3 flex gap-5 sm:gap-6 border-b border-slate-100 text-sm font-medium overflow-x-auto">
-            <button onclick="zeigeTab('leerstand')" id="tabbtn-leerstand" class="pb-2.5 border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2 shrink-0 whitespace-nowrap">
-                Leerstand <span class="text-[11px] font-bold bg-indigo-600 text-white rounded-md px-1.5 py-0.5">{{ leerstand_count }}</span>
-            </button>
-            <button onclick="zeigeTab('gekuendigt')" id="tabbtn-gekuendigt" class="pb-2.5 border-b-2 border-transparent text-slate-500 flex items-center gap-2 shrink-0 whitespace-nowrap">
-                Gekündigt <span class="text-[11px] font-bold bg-slate-200 text-slate-600 rounded-md px-1.5 py-0.5">{{ gekuendigte_count }}</span>
-            </button>
-            <button onclick="zeigeTab('bevorstehend')" id="tabbtn-bevorstehend" class="pb-2.5 border-b-2 border-transparent text-slate-500 flex items-center gap-2 shrink-0 whitespace-nowrap">
-                Bevorstehend <span class="text-[11px] font-bold bg-slate-200 text-slate-600 rounded-md px-1.5 py-0.5">{{ bevorstehende_count }}</span>
-            </button>
-        </div>
-
-        <div id="tab-leerstand" class="divide-y divide-slate-50 max-h-80 overflow-y-auto">
-            {% for e in leerstand_objekte %}
-            <div class="flex items-center gap-3 px-6 py-3">
-                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-file-lines"></i></div>
-                <span class="text-sm flex-1 truncate">{{ e.liegenschaft.strasse }}, {{ e.liegenschaft.plz }} {{ e.liegenschaft.ort }} – {{ e.bezeichnung }}</span>
-                <a href="/neu/liegenschaften/{{ e.liegenschaft.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Ansehen</a>
-            </div>
-            {% empty %}
-            <p class="px-6 py-6 text-sm text-slate-400 italic">Kein Leerstand — alles vermietet. 🎉</p>
-            {% endfor %}
-        </div>
-
-        <div id="tab-gekuendigt" class="hidden divide-y divide-slate-50 max-h-80 overflow-y-auto">
-            {% for v in gekuendigte %}
-            <div class="flex items-center gap-3 px-6 py-3">
-                <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-file-lines"></i></div>
-                <span class="text-sm flex-1 truncate">{{ v.einheit }} – {{ v.mieter.display_name }}{% if v.ende %} · bis {{ v.ende|date:"d.m.Y" }}{% endif %}</span>
-                <a href="/neu/vertraege/{{ v.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Ansehen</a>
-            </div>
-            {% empty %}
-            <p class="px-6 py-6 text-sm text-slate-400 italic">Keine gekündigten Verträge.</p>
-            {% endfor %}
-        </div>
-
-        <div id="tab-bevorstehend" class="hidden divide-y divide-slate-50 max-h-80 overflow-y-auto">
-            {% for v in bevorstehende %}
-            <div class="flex items-center gap-3 px-6 py-3">
-                <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs shrink-0"><i class="fa-solid fa-file-lines"></i></div>
-                <span class="text-sm flex-1 truncate">{{ v.einheit }} – {{ v.mieter.display_name }} · ab {{ v.beginn|date:"d.m.Y" }}</span>
-                <a href="/neu/vertraege/{{ v.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0">Ansehen</a>
-            </div>
-            {% empty %}
-            <p class="px-6 py-6 text-sm text-slate-400 italic">Keine bevorstehenden Verträge.</p>
-            {% endfor %}
-        </div>
-    </div>
-
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-// Inbox nach Typ filtern (Chips im Kopf)
-document.querySelectorAll('[data-inbox-filter]').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        var typ = btn.getAttribute('data-inbox-filter');
-        document.querySelectorAll('[data-inbox-filter]').forEach(function(b) {
-            var aktiv = b === btn;
-            b.classList.toggle('bg-indigo-600', aktiv);
-            b.classList.toggle('text-white', aktiv);
-            b.classList.toggle('bg-slate-100', !aktiv);
-            b.classList.toggle('text-slate-600', !aktiv);
-        });
-        document.querySelectorAll('#inboxListe [data-inbox-typ]').forEach(function(row) {
-            row.classList.toggle('hidden', !!typ && row.getAttribute('data-inbox-typ') !== typ);
-        });
-    });
-});
-
-function zeigeTab(name) {
-    ['leerstand', 'gekuendigt', 'bevorstehend'].forEach(function(t) {
-        document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
-        var btn = document.getElementById('tabbtn-' + t);
-        btn.classList.toggle('border-indigo-600', t === name);
-        btn.classList.toggle('text-indigo-600', t === name);
-        btn.classList.toggle('border-transparent', t !== name);
-        btn.classList.toggle('text-slate-500', t !== name);
-    });
-}
-</script>
-{% include 'fw/_fwmodal.html' %}
 {% endblock %}

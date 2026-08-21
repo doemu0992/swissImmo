@@ -44,60 +44,24 @@ ANSICHTEN = (
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_arbeit(request):
-    """Der Arbeitsvorrat mit vorgefilterten Ansichten und dem Zulauf daneben."""
-    from faelle.arbeitsvorrat import (liegezeit, posteingang, termine,
-                                      wartet_auf_freigabe, was_reisst)
-    from faelle.models import Fall
+    """Leitet auf die Startseite um.
 
-    basis = _global_filter(request)
-    heute = timezone.localdate()
-    ansicht = request.GET.get('ansicht', 'heute')
-    if ansicht not in dict(ANSICHTEN):
-        ansicht = 'heute'
+    Bis zum 21.08.2026 war dies eine eigene Flaeche mit Arbeitsvorrat, Zulauf
+    und Ansichten — und `/neu/` zeigte DIESELBEN zwei Abschnitte plus vier
+    Kennzahlkacheln. Zwei Startflaechen mit derselben Aufgabe, von denen die
+    aeltere gewann, weil sie unter `/neu/` lag.
 
-    faelle = []
-    if ansicht == 'heute':
-        vorrat = [e for e in was_reisst(heute, grenze=0, aktive_lg=basis['aktive_lg'])]
-    elif ansicht == 'woche':
-        vorrat = was_reisst(heute, grenze=7, aktive_lg=basis['aktive_lg'])
-    elif ansicht == 'wartet':
-        # Fälle im Wartestatus tragen kein Datum, an dem etwas reisst — sie
-        # warten. Deshalb hier die FÄLLE, nicht der Fristenvorrat.
-        vorrat = []
-        faelle = list(Fall.objects.filter(status=Fall.WARTET)
-                      .select_related('fallart', 'zustaendig')
-                      .order_by('letzte_bewegung'))
-    elif ansicht == 'liegen':
-        vorrat = []
-        faelle = list(Fall.objects.liegengeblieben()
-                      .select_related('fallart', 'zustaendig')
-                      .order_by('letzte_bewegung'))
-    else:
-        # «Alle» heisst alle — ohne Fenster. Ein Jahr ist die Obergrenze,
-        # damit eine versehentlich auf 2099 datierte Frist die Seite nicht
-        # allein füllt.
-        vorrat = was_reisst(heute, grenze=365, aktive_lg=basis['aktive_lg'])
-
-    # Termine und Freigaben kommen aus derselben Quelle wie auf der
-    # Startseite — der eingebundene Baustein erwartet die `av_*`-Namen.
-    eingaenge, eingaenge_gesamt = posteingang()
-    termin_zeilen = termine(heute)
-    freigaben = wartet_auf_freigabe()
-    return render(request, 'fw/arbeit.html', {
-        **basis, 'nav': 'arbeit',
-        'heute': heute,
-        'ansicht': ansicht,
-        'ansichten': [(k, b, k == ansicht) for k, b in ANSICHTEN],
-        'vorrat': vorrat,
-        'faelle': faelle,
-        'av_eingaenge': eingaenge,
-        'av_eingaenge_gesamt': eingaenge_gesamt,
-        'av_termine': termin_zeilen,
-        'av_termine_gesamt': len(termin_zeilen),
-        'av_freigaben': freigaben,
-        'av_freigaben_gesamt': len(freigaben),
-        'av_liegezeit': liegezeit(freigaben),
-    })
+    Die Ansichten sind auf die Startseite gewandert; damit ist diese hier
+    ueberfluessig. Die URL bleibt bestehen, weil Lesezeichen darauf zeigen
+    koennen — sie leitet weiter, statt ins Leere zu laufen. Der
+    `ansicht`-Parameter wird mitgenommen; ohne ihn landete ein gespeicherter
+    Verweis auf «Liegengeblieben» wieder bei «Heute».
+    """
+    ziel = '/neu/'
+    ansicht = request.GET.get('ansicht')
+    if ansicht:
+        ziel += f'?ansicht={ansicht}'
+    return redirect(ziel)
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)

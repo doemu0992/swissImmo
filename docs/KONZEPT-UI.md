@@ -111,7 +111,23 @@ eigene Spalte, rechts der Arbeitsvorrat.
 | Liegengeblieben | Fälle, die die Verfallsregel ausgelöst haben |
 | Alle | Vollständige Liste |
 
-Zusätzlich: Filter nach Zuständigkeit (Person) und Mandat. **Keine Kennzahlen.**
+Zusätzlich: Filter nach Zuständigkeit (Person) und Mandat.
+
+> ~~**Keine Kennzahlen.**~~ **Präzisiert in 4b.13.** Die Regel war gegen die vier Kacheln der
+> alten Startseite gerichtet — Mietertrag-Diagramm, Portfolio-Donut, Belegung, Leerstandsliste.
+> Alle vier zeigten den **Bestand** und verdrängten die Arbeit; sie sind ersatzlos entfallen.
+> An ihrer Stelle steht ein schmaler vierteiliger Streifen, der **Vergleiche** trägt:
+> Zahlungseingang und Leerstand je gegen den Vormonat, dazu Ausstände und offene Fälle.
+> Es gilt also: Kennzahlen auf der Arbeitsfläche **nur schmal und nur mit Vergleich** —
+> «Leerstand 4.8 %» ist eine Zahl, «steigt den dritten Monat in Folge» eine Information.
+> Alles Ruhige steht im zugeklappten Block «Lage des Bestands» und erscheint dort
+> ausdrücklich **nicht**, solange es nicht abweicht. Der Wächter dazu heisst
+> `faelle/test_arbeitsvorrat.py::SeitenTests::test_die_kennzahlen_sind_ein_schmaler_streifen_und_keine_kacheln`.
+
+> **Eine Arbeitsfläche, nicht zwei (4b.13).** Bis dahin führten `/neu/` und `/neu/arbeit/`
+> dieselben Abschnitte nebeneinander; die Ansichten oben gab es nur auf der zweiten, die
+> aber niemand ansteuerte. Beide sind zusammengeführt — die Ansichten stehen auf `/neu/`,
+> `/neu/arbeit/` leitet dorthin um und nimmt den `ansicht`-Parameter mit.
 
 **Die Abschnitte der Heute-Ansicht.** Der Prototyp (`mockups/konzept-struktur.html`, Screen
 «Heute») nennt fünf. Seit 4b.8 sind alle fünf gebaut:
@@ -522,6 +538,7 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.10 | **Der Fristenwächter wird angeschlossen**: `faelle/regelwerk.py` bekommt Aufrufer, Verwaltung, Protokoll und Übersteuerung; dazu der Erreichbarkeits-Wächter und die Navigation für 4b.5–4b.10 | erledigt |
 | 4b.11 | **Die Objektakte** — der letzte umzustellende Aktentyp: Aktenkopf, acht Reiter auf sechs, neuer Bereich «Fälle»; Bereichsinhalte von Objekt (478→164), Vertrag (179→98) und Schaden (109→59) | erledigt |
 | 4b.12 | **Mandats- und Dienstleisterakte** — die beiden Aktentypen aus dem Register, die überhaupt keine Detailseite hatten | erledigt |
+| 4b.13 | **Zwei Startflächen werden eine**: `/neu/` führt die fünf Ansichten, dazu Lage-Streifen mit Vormonatsvergleich, Mandate nach Auffälligkeit und «Was abweicht»; `/neu/arbeit/` leitet um | erledigt |
 
 > **Warum 4b.12 nötig war.** `faelle/akten.py` führt **sieben** Aktentypen. Nach 4b.11 hatten
 > fünf davon Aktenkopf und Reitersatz. Zwei hatten keine Seite: Das Mandat kannte nur Liste,
@@ -542,6 +559,32 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 > nachträglich erfasster Auftrag lässt sich damit **nicht** auf sein wirkliches
 > Beauftragungsdatum setzen — die Jahreszahlen der Dienstleisterakte folgen dem Erfassungs-,
 > nicht dem Auftragsdatum.
+
+> **Warum 4b.13 dazwischenkam — und welche Konzeptregel dabei fällt.** Es gab **zwei
+> Startflächen mit derselben Aufgabe**: `/neu/` mit «Was reisst», «Zulauf» und vier
+> Kennzahlkacheln aus der Vorgängerzeit, und `/neu/arbeit/` (aus 4b.5) mit denselben zwei
+> Abschnitten plus den Ansichten. Die ältere gewann, weil sie unter `/neu/` lag — und der
+> Arbeitsvorrat berechnete `av_termine`, `av_freigaben`, `av_vertretung` und `av_liegezeit`,
+> von denen dort **keiner** angezeigt wurde. Aus 4b.7 und 4b.8 war also gebaut, was auf der
+> meistbesuchten Seite nicht ankam.
+>
+> Damit fällt eine Regel aus Abschnitt 3.1: dort stand wörtlich «**Keine Kennzahlen**» auf der
+> Arbeitsfläche. Sie war gegen die vier alten Kacheln gerichtet, die den *Bestand* zeigten und
+> die Arbeit verdrängten. Die Kacheln sind ersatzlos weg; an ihrer Stelle steht ein
+> vierteiliger Streifen, der **Vergleiche** trägt — Zahlungseingang und Leerstand je gegen den
+> Vormonat. Die Regel gilt sinngemäss weiter, präziser gefasst: Kennzahlen dürfen auf der
+> Arbeitsfläche stehen, wenn sie schmal sind und einen Vergleich tragen. Der Test heisst
+> entsprechend nicht mehr `test_arbeit_zeigt_keine_kennzahlen`, sondern
+> `test_die_kennzahlen_sind_ein_schmaler_streifen_und_keine_kacheln` und trägt die Begründung
+> in seinem Docstring.
+>
+> **Was beim Bauen auffiel und nicht im Auftrag stand:** Zwei Stellen der neuen Lage rechneten
+> je Datensatz statt je Menge — `mandate()` fragte je Eigentümer dreimal, die
+> Senkungsansprüche lasen je Vertrag Organisation und Anpassungen nach. Gemessen an einem
+> Bestand mit zwanzig Mandaten und hundert Verträgen: **64 statt 1** und **203 statt 2**
+> Abfragen, bei jedem Aufruf der Startseite. Beide sind auf `annotate` bzw.
+> `select_related`/`prefetch_related` umgestellt, das Ergebnis ist nachweislich identisch, und
+> `faelle/test_lage.py::AbfragezahlTests` hält die Grössenordnung fest.
 
 > **Warum 4b.10 dazwischenkam — dreimal derselbe Fehler.** Der Vergleich mit
 > `mockups/konzept-v2.html` (Screen «Fristenwächter») ergab, dass die Rechenlogik seit Phase 4a

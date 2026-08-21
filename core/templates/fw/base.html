@@ -614,6 +614,57 @@
         .fw-abtrenner{margin-top:12px;padding-top:12px;
             border-top:1px solid var(--ds-line)}
 
+        /* Lage-Streifen der Startseite (4b.13). Schmal und immer sichtbar —
+           vier Zahlen mit Vormonatspfeil. Er tritt an die Stelle der vier
+           alten Kacheln (Mietertrag, Portfolio-Donut, Belegung, Leerstand),
+           die den BESTAND zeigten. Ein Donut, der seit zwei Jahren gleich
+           aussieht, ist Dekoration; der Pfeil daneben ist die Aussage. */
+        .fw-lage{display:grid;grid-template-columns:repeat(4,1fr);
+            background:var(--ds-surface);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);
+            margin-bottom:14px;overflow:hidden}
+        .fw-lage>div{padding:10px 16px;border-right:1px solid var(--ds-line)}
+        .fw-lage>div:last-child{border-right:0}
+        .fw-lage .fw-l{font-size:10px;font-weight:700;letter-spacing:.1em;
+            text-transform:uppercase;color:var(--ds-faint)}
+        .fw-lage .fw-w{font-size:16px;font-weight:700;margin-top:2px;
+            font-variant-numeric:tabular-nums;color:var(--ds-ink)}
+        .fw-lage .fw-w.crit{color:var(--ds-crit)}
+        .fw-lage .fw-w.warn{color:var(--ds-warn)}
+        .fw-lage .fw-f{font-size:11px;color:var(--ds-faint);margin-top:1px}
+        /* Die Richtung allein sagt nichts: Ein steigender Zahlungseingang ist
+           gut, ein steigender Leerstand schlecht. Deshalb heissen die Klassen
+           nach der BEWERTUNG, nicht nach der Richtung — welche ein Pfeil
+           bekommt, entscheidet `delta_gut_wenn` in der Vorlage. */
+        .fw-trend{font-weight:700;margin-right:4px}
+        .fw-trend.hoch{color:var(--ds-crit)}
+        .fw-trend.runter{color:var(--ds-good)}
+        @media(max-width:820px){.fw-lage{grid-template-columns:1fr 1fr}}
+
+        /* Zugeklappter Block — «Lage des Bestands». Zu ist der Normalfall:
+           Was ruhig ist, soll keinen Platz beanspruchen. */
+        .fw-klapp{background:var(--ds-surface);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);
+            margin-bottom:14px;overflow:hidden}
+        .fw-klapp>summary{padding:11px 15px;font-size:13.5px;font-weight:700;
+            cursor:pointer;list-style:none;display:flex;align-items:center;
+            gap:10px;color:var(--ds-ink)}
+        .fw-klapp>summary::-webkit-details-marker{display:none}
+        .fw-klapp>summary::after{content:"\f078";font-family:"Font Awesome 6 Free";
+            font-weight:900;font-size:10px;color:var(--ds-faint);margin-left:auto}
+        .fw-klapp[open]>summary::after{content:"\f077"}
+        .fw-klapp>summary:hover{background:var(--ds-surface-2)}
+
+        /* Zahl am Reiter der Startseite. `.fw-reiter .fw-z` gibt es schon für
+           die Aktenreiter — dort sitzt sie an einem <button>, hier an einem
+           <a>. Derselbe Bauteil, deshalb keine zweite Klasse. */
+        .fw-reiter a{padding:10px 14px;font-size:13px;font-weight:600;
+            color:var(--ds-muted);text-decoration:none;
+            border-bottom:2px solid transparent;white-space:nowrap;
+            display:flex;align-items:center;gap:7px}
+        .fw-reiter a:hover{color:var(--ds-ink)}
+        .fw-reiter a.hier{color:var(--ds-brand);border-bottom-color:var(--ds-brand)}
+
     </style>
     <script>
         // Zustand vor dem ersten Paint anwenden (kein Flackern)

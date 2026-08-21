@@ -281,9 +281,17 @@ class DoppelungTests(TestCase):
     def test_aufgabe_ohne_frist_geht_nicht_verloren(self):
         """Sie reisst nichts, darf aber auch nicht verschwinden.
 
-        Beim Umbau wäre sie es beinahe: Der Arbeitsvorrat nimmt nur datierte
-        Vorgänge, und der alte Inbox-Block, der sie führte, ist entfernt. Sie
-        steht jetzt als Sammelposten in der Inbox.
+        Beim Umbau wäre sie es zweimal beinahe: Der Arbeitsvorrat nimmt nur
+        datierte Vorgänge, und der alte Inbox-Block, der sie führte, ist
+        entfernt. Sie steht jetzt als Sammelposten in der Inbox.
+
+        DIESER TEST WAR ZU SCHWACH. Er prüfte nur, dass `sammle_inbox()` den
+        Sammelposten LIEFERT — nicht, dass ihn jemand SIEHT. Beim
+        Zusammenlegen der beiden Startflächen am 21.08.2026 führte der Entwurf
+        für die neue Seite die Inbox nicht mehr, und nichts anderes rendert
+        sie. Der Test wäre grün geblieben, während die undatierten Aufgaben
+        aus der Anwendung verschwunden wären. Er prüft jetzt beides: die
+        Funktion UND die Seite.
         """
         from core.models import Pendenz
         from core.services.inbox import sammle_inbox
@@ -293,6 +301,13 @@ class DoppelungTests(TestCase):
             inbox, _mehr, _typen = sammle_inbox()
             self.assertTrue(any('ohne Frist' in e['titel'] for e in inbox),
                             'Undatierte Aufgaben tauchen nirgends mehr auf.')
+
+            c = Client()
+            c.force_login(self.a.benutzer)
+            inhalt = c.get('/neu/').content.decode()
+        self.assertIn('ohne Frist', inhalt,
+                      'Der Sammelposten wird berechnet, aber von keiner Seite '
+                      'angezeigt — fuer den Benutzer ist er damit weg.')
 
 
 class MandantentrennungTests(TestCase):
@@ -385,40 +400,64 @@ class SeitenTests(TestCase):
         self.assertContains(antwort, 'Tage über')
 
     def test_ohne_anlass_steht_der_leerzustand_da(self):
-        """Gegenprobe: kein Dauerlärm, wenn nichts ansteht."""
+        """Gegenprobe: kein Dauerlärm, wenn nichts ansteht.
+
+        Der Wortlaut hat sich mit der Zusammenfuehrung geaendert: Die
+        Startseite steht jetzt in der Ansicht «Heute» und sagt entsprechend
+        «Heute ist nichts faellig» statt «Nichts ueberfaellig».
+        """
         antwort = self._hole('/neu/')
-        self.assertContains(antwort, 'Nichts überfällig')
+        self.assertContains(antwort, 'nichts fällig')
 
     def test_arbeit_kennt_alle_fuenf_ansichten(self):
-        """Konzept 3.1 nennt genau diese fünf."""
-        antwort = self._hole('/neu/arbeit/')
+        """Konzept 3.1 nennt genau diese fünf.
+
+        Sie stehen seit der Zusammenfuehrung vom 21.08.2026 auf der
+        STARTSEITE; `/neu/arbeit/` leitet dorthin um.
+        """
+        antwort = self._hole('/neu/')
         self.assertEqual(antwort.status_code, 200)
         for bezeichnung in ('Heute', 'Diese Woche', 'Wartet auf Dritte',
                             'Liegengeblieben', 'Alle'):
             with self.subTest(ansicht=bezeichnung):
                 self.assertContains(antwort, bezeichnung)
 
-    def test_arbeit_zeigt_keine_kennzahlen(self):
-        """Konzept 3.1, wörtlich: «**Keine Kennzahlen.**»
+    def test_die_kennzahlen_sind_ein_schmaler_streifen_und_keine_kacheln(self):
+        """AUFGEHOBEN UND ERSETZT — die Begruendung gehoert hierher.
 
-        `'fw-kpis' in html` genügt NICHT: base.html liefert das Stylesheet
-        inline aus, der Klassenname steht also auf jeder Seite. Genau diese
-        Blindheit hatte schon `AktenkopfTests` (Gegenprobe vom 20.08.2026).
-        Geprüft wird deshalb die VERWENDUNG — `class="fw-kpis"`.
+        Konzept 3.1 sagte woertlich «**Keine Kennzahlen**» auf der
+        Arbeitsflaeche, und der Test hiess entsprechend
+        `test_arbeit_zeigt_keine_kennzahlen`. Die Regel entstand gegen die
+        alte Startseite mit Mietertrag-Diagramm, Portfolio-Donut, Belegung
+        und Leerstandsliste — vier Kacheln, die den BESTAND zeigten und die
+        Arbeit verdraengten.
+
+        Am 21.08.2026 wurde entschieden, Arbeit und Lage auf EINER Seite zu
+        fuehren. Die Regel bleibt dem Sinn nach bestehen, aber praeziser:
+        Kennzahlen duerfen dort stehen, wenn sie **schmal** sind und einen
+        **Vergleich** tragen. Die vier alten Kacheln sind ersatzlos
+        entfallen; an ihre Stelle tritt ein vierteiliger Streifen mit
+        Vormonatswert.
+
+        `'fw-lage' in html` genuegt als Pruefung NICHT: base.html liefert das
+        Stylesheet inline aus, der Klassenname steht also auf jeder Seite.
+        Diese Blindheit hatte schon `AktenkopfTests`. Geprueft wird die
+        VERWENDUNG — `class="fw-lage"`.
         """
-        inhalt = self._hole('/neu/arbeit/').content.decode()
+        inhalt = self._hole('/neu/').content.decode()
+        self.assertIn('class="fw-lage"', inhalt)
+        # Die alten Kacheln, namentlich:
         self.assertNotIn('class="fw-kpis"', inhalt)
-        self.assertNotIn('Leerstandsquote', inhalt)
-        # Gegenprobe zur Gegenprobe: Auf der Startseite stehen Kennzahlen
-        # sehr wohl — sonst prüfte die Zusicherung oben nur einen Tippfehler.
-        self.assertIn('class="fw-kpis"', self._hole('/neu/').content.decode())
+        self.assertNotIn('Belegung nach Nutzung', inhalt)
+        self.assertNotIn('Soll vs. Ist', inhalt)
+        self.assertNotIn('belegung_conic', inhalt)
 
     def test_liegengebliebener_fall_erscheint_unter_liegengeblieben(self):
         with mandant(self.a.organisation):
             fall, _s = _fall_mit_frist(self.a.organisation, -30, 'Vergessen')
             fall.letzte_bewegung = timezone.now() - timedelta(days=20)
             fall.save(update_fields=['letzte_bewegung'])
-        antwort = self._hole('/neu/arbeit/?ansicht=liegen')
+        antwort = self._hole('/neu/?ansicht=liegen')
         self.assertContains(antwort, 'Vergessen')
 
     def test_fallakte_zeigt_schritte_und_verfallsregel(self):
