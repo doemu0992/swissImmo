@@ -59,6 +59,7 @@
     <a href="?befund=leer{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'leer' %}fw-brand{% else %}fw-mut{% endif %}">Leerstand {{ filter_zaehler.leer }}</a>
     <a href="?befund=frist{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'frist' %}fw-brand{% else %}fw-mut{% endif %}">Fristen {{ filter_zaehler.frist }}</a>
     <a href="?befund=ticket{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'ticket' %}fw-brand{% else %}fw-mut{% endif %}">Tickets {{ filter_zaehler.ticket }}</a>
+    <a href="?befund=budget{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'budget' %}fw-brand{% else %}fw-mut{% endif %}">Unterhalt {{ filter_zaehler.budget }}</a>
     <a href="?befund=ohne{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-chip {% if befund == 'ohne' %}fw-brand{% else %}fw-mut{% endif %}">Ohne Befund {{ filter_zaehler.ohne }}</a>
 </div>
 {% endif %}
@@ -82,7 +83,7 @@
                 <div class="fw-s">{{ row.lg.plz }} {{ row.lg.ort }} · {{ row.einheiten }} Objekt{{ row.einheiten|pluralize:"e" }}{% if row.lg.eigentuemer %} · {{ row.lg.eigentuemer }}{% endif %}</div>
             </div>
             {% for chip in row.chips %}
-            <span class="fw-chip fw-{{ chip.0 }}">{{ chip.1 }}</span>
+            <span class="fw-chip fw-{{ chip.0 }}"{% if chip.3 %} title="{{ chip.3 }}"{% endif %}>{{ chip.1 }}</span>
             {% empty %}
             <span class="fw-chip fw-good">ohne Befund</span>
             {% endfor %}

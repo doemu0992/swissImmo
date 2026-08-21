@@ -130,7 +130,8 @@ from core.views.fw import (fw_arbeit, fw_fall_detail, fw_fallschritt_erledigen,
                            fw_kautionen, fw_kaution_aktion, fw_kaution_beleg, fw_maengelruege, fw_untermiete, fw_vertrag_wg, fw_mwst, fw_mwst_einstellungen, fw_mwst_estv_export,
                            fw_account, fw_datenreset, fw_hypotheken, fw_marktdaten_aktualisieren, fw_marktdaten_live,
                            fw_benutzer, fw_logbuch, fw_rechtsgrundlagen, fw_eigentuemer_liste, fw_vorlagen, fw_vorlagen_standard, fw_integrationen, fw_abonnemente,
-                           fw_liegenschaft_form, fw_liegenschaft_gwr, fw_liegenschaft_loeschen, fw_versicherung_add, fw_versicherung_loeschen, fw_objekt_form, fw_suche,
+                           fw_liegenschaft_form, fw_liegenschaft_gwr, fw_liegenschaft_loeschen, fw_versicherung_add, fw_versicherung_loeschen,
+                           fw_budget_speichern, fw_budget_loeschen, fw_objekt_form, fw_suche,
                            fw_modus_wechsel, fw_einstellungen, fw_mwst_verbuchen, fw_zahlung_stornieren,
                            fw_zahlung_zuordnen,
                            fw_zahlungen_sammel_zuordnen,
@@ -249,6 +250,11 @@ urlpatterns = [
     path('neu/vertraege/<int:pk>/bearbeiten/', fw_vertrag_bearbeiten, name='fw_vertrag_bearbeiten'),
     path('neu/liegenschaften/<int:pk>/', fw_liegenschaft_detail, name='fw_liegenschaft_detail'),
     path('neu/liegenschaften/<int:pk>/frist/', fw_wartungsfrist_neu, name='fw_wartungsfrist_neu'),
+    # Unterhaltsbudget: `pk` bedeutet hier VERSCHIEDENES — beim Speichern die
+    # Liegenschaft, beim Loeschen das Budget. Die Testregistry unterscheidet
+    # beide ueber NAME_MUSTER; dort muss 'budget_loeschen' vor 'budget' stehen.
+    path('neu/liegenschaften/<int:pk>/budget/', fw_budget_speichern, name='fw_budget_speichern'),
+    path('neu/budget/<int:pk>/loeschen/', fw_budget_loeschen, name='fw_budget_loeschen'),
     path('neu/frist/<int:pk>/bearbeiten/', fw_wartungsfrist_bearbeiten, name='fw_wartungsfrist_bearbeiten'),
     path('neu/frist/<int:pk>/loeschen/', fw_wartungsfrist_loeschen, name='fw_wartungsfrist_loeschen'),
     path('neu/objekte/<int:pk>/', fw_objekt_detail, name='fw_objekt_detail'),

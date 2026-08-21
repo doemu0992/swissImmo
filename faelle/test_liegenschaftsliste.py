@@ -374,7 +374,12 @@ class StreifenTests(_Basis):
 
 class AbfragezahlTests(_Basis):
     """Die Liste ist der Einstieg in die Bewirtschaftung und laeuft auf einem
-    Ein-Worker-Hosting. Sechs Abfragen fuer das ganze Portfolio, nicht je Zeile.
+    Ein-Worker-Hosting. NEUN Abfragen fuer das ganze Portfolio, nicht je Zeile.
+
+    Sechs bis zum Budget-Entscheid (21.08.2026), seither drei mehr: Budgets,
+    Unterhaltseintraege, Kreditorenrechnungen. Die letzten beiden laufen nur,
+    WENN ueberhaupt ein Budget hinterlegt ist — ohne Budget sind es sieben.
+    Das Fixture bringt eines mit, deshalb steht hier neun.
     """
 
     def test_zehn_liegenschaften_kosten_nicht_mehr_als_eine(self):
@@ -395,7 +400,7 @@ class AbfragezahlTests(_Basis):
                     netto_mietzins=Decimal('1000'), nebenkosten=Decimal('0'))
 
             liste = list(Liegenschaft.objects.all())
-            with self.assertNumQueries(6):
+            with self.assertNumQueries(9):
                 rows = zeilen(liste, self.heute)
         self.assertEqual(len(rows), 11)
 

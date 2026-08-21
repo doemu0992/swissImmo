@@ -643,6 +643,7 @@ BEFUND_FILTER = {
     'leer': 'Leerstand',
     'frist': 'Fristen',
     'ticket': 'Tickets',
+    'budget': 'Unterhalt',
 }
 
 

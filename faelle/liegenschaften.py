@@ -42,17 +42,23 @@ hat keinen Bezug zu einer Liegenschaft (geprueft: kein `liegenschaft`-Feld).
 Ein offener Mahnlauf ist eine Sache des ganzen Mandanten und gehoert auf die
 Startseite, nicht in jede Objektzeile.
 
-**Unterhalt ueber Budget.** Es gibt kein Budgetfeld je Liegenschaft (null
-Treffer im Bestand). Ob ein Unterhaltsbudget je Mandat oder je Liegenschaft
-gefuehrt wird, ist eine betriebliche Entscheidung und keine, die hier
-plausibel ergaenzt werden darf.
+WAS SEIT DEM BUDGET-ENTSCHEID DAZUGEKOMMEN IST
+
+**Unterhalt ueber Budget** stand hier als offene betriebliche Entscheidung:
+Es gab kein Budgetfeld, und ob eines je Mandat oder je Liegenschaft gefuehrt
+wird, war nicht zu erraten. Die Antwort ist **je Liegenschaft**
+(`portfolio.Liegenschaftsbudget`, Entscheid 21.08.2026): Unterhalt faellt am
+Gebaeude an, nicht am Eigentuemer — ein Mandat mit vier Liegenschaften hat
+vier Daecher. Die Summe je Mandat laesst sich aus den Einzelbudgets bilden,
+der umgekehrte Weg nicht. Siehe `_budget()`.
 
 ZUR ANZAHL DER ABFRAGEN
 
-Sechs Abfragen fuer das ganze Portfolio, unabhaengig von der Zahl der
-Liegenschaften — nicht sechs je Zeile. Die Vorgaengerversion lief mit drei
+Neun Abfragen fuer das ganze Portfolio, unabhaengig von der Zahl der
+Liegenschaften — nicht neun je Zeile. Die Vorgaengerversion lief mit drei
 Abfragen und wurde vorher von fuenf je Liegenschaft heruntergeholt; dieser
-Stand darf nicht wieder verloren gehen. Der Waechter dazu steht in
+Stand darf nicht wieder verloren gehen. (Sechs bis zum Budget-Entscheid,
+seither drei mehr fuer Budget, Unterhalt und Kreditoren.) Der Waechter dazu steht in
 `faelle/test_liegenschaftsliste.py::AbfragezahlTests`.
 """
 import logging
@@ -176,9 +182,12 @@ def _leerstand(lg_ids, stichtag):
 
 
 def _weitere_befunde(lg_ids, stichtag):
-    """Policen, Wartungen, offene Tickets — drei Abfragen fuer alle Objekte.
+    """Policen, Wartungen, Tickets, Budget — sechs Abfragen fuer alle Objekte.
 
-    Jeder Eintrag ist ein Tupel `(stufe, text, kategorie)`. Die Kategorie
+    Jeder Eintrag ist ein Tupel `(stufe, text, kategorie, titel)`. Der Titel
+    traegt die Zahlen, die den Chip belegen — beim Budget ist genau das der
+    Punkt: «Unterhalt überschritten» ist eine Behauptung, «CHF 34'800 von
+    31'000 bei 4 Monaten Restjahr» ist eine Aussage. Die Kategorie
     traegt die Filterleiste ueber der Liste; sie steht hier und nicht im View,
     damit Chip und Filter nicht auseinanderlaufen koennen. Die Reihenfolge
     innerhalb einer Zeile ergibt sich spaeter aus der Stufe, nicht aus der
@@ -198,9 +207,11 @@ def _weitere_befunde(lg_ids, stichtag):
             ablauf_datum__isnull=False, ablauf_datum__lte=grenze
             ).values_list('liegenschaft_id', 'ablauf_datum'):
         if ablauf < stichtag:
-            befunde[lg_id].append(('crit', 'Gebäudepolice abgelaufen', 'frist'))
+            befunde[lg_id].append(('crit', 'Gebäudepolice abgelaufen', 'frist',
+                               f'abgelaufen am {ablauf.strftime("%d.%m.%Y")}'))
         else:
-            befunde[lg_id].append(('warn', 'Police läuft ab', 'frist'))
+            befunde[lg_id].append(('warn', 'Police läuft ab', 'frist',
+                               f'läuft ab am {ablauf.strftime("%d.%m.%Y")}'))
 
     faellig = defaultdict(int)
     ueberfaellig = defaultdict(int)
@@ -215,11 +226,11 @@ def _weitere_befunde(lg_ids, stichtag):
     for lg_id, anzahl in ueberfaellig.items():
         befunde[lg_id].append(('crit', f'{anzahl} Wartung überfällig'
                                if anzahl == 1 else f'{anzahl} Wartungen überfällig',
-                               'frist'))
+                               'frist', ''))
     for lg_id, anzahl in faellig.items():
         befunde[lg_id].append(('warn', f'{anzahl} Wartung fällig'
                                if anzahl == 1 else f'{anzahl} Wartungen fällig',
-                               'frist'))
+                               'frist', f'innert {VORSCHAU_TAGE} Tagen'))
 
     tickets = defaultdict(int)
     for lg_id in SchadenMeldung.objects.filter(
@@ -228,9 +239,76 @@ def _weitere_befunde(lg_ids, stichtag):
         tickets[lg_id] += 1
     for lg_id, anzahl in tickets.items():
         befunde[lg_id].append(('warn', f'{anzahl} offenes Ticket' if anzahl == 1
-                               else f'{anzahl} offene Tickets', 'ticket'))
+                               else f'{anzahl} offene Tickets', 'ticket', ''))
+
+    for lg_id, eintrag in _budget(lg_ids, stichtag).items():
+        befunde[lg_id].append(eintrag)
 
     return befunde
+
+
+def _budget(lg_ids, stichtag):
+    """Unterhalt gegen Budget — mit Blick auf das Restjahr.
+
+    «CHF 34'800 von 31'000 verbraucht» ist eine Zahl. «34'800 von 31'000 bei
+    vier Monaten Restjahr» ist eine Aussage: Im Februar waeren 60 Prozent
+    Verbrauch alarmierend, im November unauffaellig. Der Titel des Chips nennt
+    deshalb immer beides.
+
+    OHNE HINTERLEGTES BUDGET WIRD NICHT GEMELDET. Ein Hinweis «kein Budget
+    erfasst» an jeder Liegenschaft waere die klassische Dauerbeschwerde — wer
+    keines fuehrt, will keines fuehren. Der Befund ist der Preis dafuer, eines
+    gesetzt zu haben, nicht eine Mahnung, eines zu setzen.
+
+    GEZAEHLT WERDEN UNTERHALT UND KREDITORENRECHNUNGEN. Unterhalt wird in
+    diesem Haus auf beiden Wegen erfasst: als `Unterhalt`-Eintrag und als
+    Eingangsrechnung an der Liegenschaft. Nur einen der beiden zu zaehlen
+    hiesse, je nach Arbeitsweise die Haelfte zu uebersehen.
+
+    Zwei Abfragen fuer das ganze Portfolio, plus eine fuer die Budgets.
+    """
+    from finance.models import KreditorenRechnung
+    from portfolio.models import Liegenschaftsbudget, Unterhalt
+
+    budgets = {b.liegenschaft_id: b for b in Liegenschaftsbudget.objects.filter(
+        liegenschaft_id__in=lg_ids, jahr=stichtag.year)}
+    if not budgets:
+        return {}
+
+    verbraucht = {lg_id: Decimal('0') for lg_id in budgets}
+    for lg_id, kosten in Unterhalt.objects.filter(
+            liegenschaft_id__in=budgets, datum__year=stichtag.year
+    ).values_list('liegenschaft_id', 'kosten'):
+        verbraucht[lg_id] += kosten or Decimal('0')
+    for lg_id, betrag in KreditorenRechnung.objects.filter(
+            liegenschaft_id__in=budgets, datum__year=stichtag.year
+    ).exclude(status='storniert').values_list('liegenschaft_id', 'betrag'):
+        verbraucht[lg_id] += betrag or Decimal('0')
+
+    # Der erwartete Verbrauch bis heute, linear ueber das Jahr. Grob, aber
+    # ehrlich grob — eine Heizungsreparatur im Januar verzerrt jede feinere
+    # Rechnung ohnehin. Deshalb meldet «ueber Plan» erst ab 15 Punkten
+    # Abstand: Unterhalt faellt in Schueben an, nicht in Tagesraten.
+    anteil = Decimal(stichtag.timetuple().tm_yday) / Decimal(365)
+    restmonate = max(0, 12 - stichtag.month)
+
+    ergebnis = {}
+    for lg_id, b in budgets.items():
+        ist = verbraucht[lg_id]
+        if not b.unterhalt:
+            continue
+        if ist > b.unterhalt:
+            stufe, wie = 'crit', 'überschritten'
+        elif ist / b.unterhalt > anteil + Decimal('0.15'):
+            stufe, wie = 'warn', 'über Plan'
+        else:
+            continue
+        rest = (f' bei {restmonate} Monat{"en" if restmonate != 1 else ""} Restjahr'
+                if restmonate else ' — Jahr fast vorbei')
+        ergebnis[lg_id] = (
+            stufe, f'Unterhalt {wie}', 'budget',
+            f'CHF {ist:,.0f} von {b.unterhalt:,.0f}{rest}'.replace(',', "'"))
+    return ergebnis
 
 
 def zeilen(lg_liste, stichtag=None):
@@ -255,15 +333,19 @@ def zeilen(lg_liste, stichtag=None):
                                      'wird_leer': 0, 'wird_leer_am': None,
                                      'ertrag': Decimal('0.00')})
         chips = []
+        gesamt_vorab = zahlen['gesamt']
         leer = zahlen['leer']
         if leer >= SCHWELLE_LEER:
-            chips.append(('crit', f'{leer} leer', 'leer'))
+            chips.append(('crit', f'{leer} leer', 'leer',
+                          f'von {gesamt_vorab} Objekt(en)' if gesamt_vorab else ''))
         if zahlen['wird_leer']:
-            chips.append(('warn', f"{zahlen['wird_leer']} wird frei", 'leer'))
+            chips.append(('warn', f"{zahlen['wird_leer']} wird frei", 'leer',
+                          f"ab {zahlen['wird_leer_am'].strftime('%d.%m.%Y')}"
+                          if zahlen['wird_leer_am'] else ''))
         chips.extend(weitere.get(lg.id, []))
 
         stufe = 'good'
-        for kennung, _text, _kat in chips:
+        for kennung, _text, _kat, _titel in chips:
             if RANG[kennung] < RANG[stufe]:
                 stufe = kennung
         gesamt = zahlen['gesamt']
@@ -276,7 +358,7 @@ def zeilen(lg_liste, stichtag=None):
             'ertrag': zahlen['ertrag'],
             'belegung': round(zahlen['belegt'] / gesamt * 100) if gesamt else 0,
             'chips': sorted(chips, key=lambda c: RANG[c[0]]),
-            'kategorien': {kat for _s, _t, kat in chips},
+            'kategorien': {kat for _s, _t, kat, _ti in chips},
             'stufe': stufe,
             'ohne_befund': not chips,
         })

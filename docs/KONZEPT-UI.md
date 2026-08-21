@@ -548,6 +548,7 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.13 | **Zwei Startflächen werden eine**: `/neu/` führt die fünf Ansichten, dazu Lage-Streifen mit Vormonatsvergleich, Mandate nach Auffälligkeit und «Was abweicht»; `/neu/arbeit/` leitet um | erledigt |
 | 4b.14 | **Anzeigestatus des Mietvertrags**: `Mietvertrag.anzeige_status` — eine abgelaufene Kündigung gilt als beendet, in Liste, Filter, Aktenkopf und Statuspille; `status` und die Sollstellung bleiben unberührt | erledigt |
 | 4b.15 | **Liegenschaftsliste: Befunde statt Bestand** — eine Zeile je Objekt statt einer Karte, sortiert nach Befund, mit Kennzahlenstreifen und Filterleiste; Leerstandsregel in `faelle/liegenschaften.py` | erledigt |
+| 4b.16 | **Liegenschaftsbudget**: `portfolio.Liegenschaftsbudget` je Liegenschaft und Jahr, Befund «Unterhalt über Plan / überschritten» in Liste UND Akte aus derselben Funktion, Erfassung im Reiter Finanzen; Bruttorendite weicht im Aktenkopf | erledigt |
 
 > **Warum 4b.12 nötig war.** `faelle/akten.py` führt **sieben** Aktentypen. Nach 4b.11 hatten
 > fünf davon Aktenkopf und Reitersatz. Zwei hatten keine Seite: Das Mandat kannte nur Liste,
@@ -651,6 +652,56 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 > den CSS-Kommentar in `base.html`, der erklärt, warum die Regeln entfernt wurden. Sie fragt
 > jetzt nur das Markup (`_ohne_stil`), und eine zweite Prüfung hält fest, dass dieser Schnitt
 > nicht zu viel wegnimmt. Muster wie bei `{% comment %}` in `test_template_struktur.py`.
+
+> **Der offene Punkt aus 4b.15 ist beantwortet: das Budget gehört an die
+> Liegenschaft (4b.16).** «Unterhalt über Budget» stand als offene betriebliche
+> Entscheidung im Code — es gab kein Budgetfeld, und ob eines je Mandat oder je
+> Liegenschaft geführt wird, war nicht zu erraten. Die Antwort: **je
+> Liegenschaft.** Unterhalt fällt am Gebäude an, nicht am Eigentümer; ein Mandat
+> mit vier Liegenschaften hat vier Dächer, vier Heizungen, vier Lifte. Ein
+> gemeinsamer Topf verwischt, welches Haus Geld kostet — und die Summe je Mandat
+> lässt sich aus den Einzelbudgets bilden, der umgekehrte Weg nicht.
+>
+> **Als Modell, nicht als Feld.** Ein Budget wechselt jährlich. Als Feld an der
+> Liegenschaft gäbe es immer nur den aktuellen Wert, und «wie war es letztes
+> Jahr» wäre nicht mehr zu beantworten — obwohl genau dieser Vergleich die
+> interessante Aussage ist.
+>
+> **Die Meldung nennt immer das Restjahr.** «CHF 34'800 von 31'000 verbraucht»
+> ist eine Zahl; «34'800 von 31'000 bei vier Monaten Restjahr» ist eine Aussage.
+> Im Februar wären 60 % Verbrauch alarmierend, im November unauffällig. Gezählt
+> werden `Unterhalt`-Einträge **und** Kreditorenrechnungen: In diesem Haus wird
+> Unterhalt auf beiden Wegen erfasst, und nur einen zu zählen hiesse, je nach
+> Arbeitsweise die Hälfte zu übersehen.
+>
+> **Ohne Budget schweigt der Befund.** Ein Hinweis «kein Budget erfasst» an
+> jeder Liegenschaft wäre die klassische Dauerbeschwerde — wer keines führt,
+> will keines führen. Der Befund ist der Preis dafür, eines gesetzt zu haben,
+> nicht eine Mahnung, eines zu setzen. Deshalb muss sich ein Budget auch wieder
+> **löschen** lassen: Sonst liesse sich ein versehentlich erfasstes nur noch
+> überschreiben, nie zurücknehmen.
+>
+> **Erfasst wird in der Akte, Reiter Finanzen** (nicht in den Stammdaten: ein
+> Budget ist eine Planzahl; nicht in den Mandatseinstellungen: wer es setzt,
+> schaut gerade auf diese Liegenschaft). Ein zweites Speichern desselben Jahres
+> **überschreibt**, statt zu scheitern — wer das Budget eintippt, will es
+> setzen, nicht anlegen. Schweizer Schreibweise («31'000.00») wird verstanden;
+> sie ist die Form, die auf derselben Seite ausgegeben wird.
+>
+> **Die Bruttorendite weicht im Aktenkopf** der Kennzahl «Unterhalt <Jahr>».
+> Eine Renditezahl, die mangels Verkehrswert «—» anzeigt, kostet dort nur Platz
+> — und ohne erfassten Wert ist das der Normalfall. Im Reiter Finanzen bleibt
+> sie; dort ist sie eine Auswertung.
+>
+> **Zwei Bestandswächter haben zugeschlagen, beide zu Recht.** `test_jedes_
+> modell_hat_einen_weg_zur_organisation` hätte ein Modell ohne
+> `ORGANISATION_PFAD` gefunden — ohne Weg zur Organisation könnte ein Mandant
+> die Budgetzahlen eines anderen sehen. Und `test_jeder_parameter_ist_
+> zugeordnet` meldete beide neuen URLs als nicht zuordenbar: Sie wären durch
+> den Fremd-Id-Sweep gefallen, ohne dass es jemand bemerkt. Achtung auf die
+> Reihenfolge in `NAME_MUSTER` — `budget_loeschen` muss vor `budget_speichern`
+> stehen, und `pk` bedeutet bei den beiden Verschiedenes (Budget bzw.
+> Liegenschaft).
 
 > **Warum 4b.10 dazwischenkam — dreimal derselbe Fehler.** Der Vergleich mit
 > `mockups/konzept-v2.html` (Screen «Fristenwächter») ergab, dass die Rechenlogik seit Phase 4a

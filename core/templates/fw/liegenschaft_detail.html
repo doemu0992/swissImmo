@@ -73,9 +73,21 @@
         <div><div class="fw-l">Soll / Monat</div>
             <div class="fw-w">CHF {{ soll_monat|chf }}</div>
             <div class="fw-f">brutto aus aktiven Verträgen</div></div>
-        <div><div class="fw-l">Bruttorendite</div>
-            <div class="fw-w">{% if rendite.bruttorendite is not None %}{{ rendite.bruttorendite|floatformat:2 }} %{% else %}—{% endif %}</div>
-            <div class="fw-f fw-lang">{% if rendite.bruttorendite is not None %}auf {% if rendite.wert_quelle == 'verkehrswert' %}Verkehrswert{% else %}Anlagekosten{% endif %} CHF {{ rendite.wert|chf:0 }}{% else %}Verkehrswert fehlt{% endif %}</div></div>
+        {% comment %} Hier stand die Bruttorendite. Sie ist in den Reiter
+           Finanzen gewichen: Eine Renditezahl, die mangels Verkehrswert «—»
+           anzeigt, kostet im Aktenkopf nur Platz — und ohne erfassten Wert ist
+           genau das der Normalfall. Im Reiter bleibt sie, dort ist sie eine
+           Auswertung. An ihrer Stelle steht die Zahl, die man beim Blick auf
+           eine Liegenschaft wirklich braucht. {% endcomment %}
+        <div><div class="fw-l">Unterhalt {{ lg_jahr }}</div>
+            {% if lg_budget %}
+            <div class="fw-w{% if lg_budget_stufe %} {{ lg_budget_stufe }}{% endif %}">CHF {{ lg_budget_ist|chf:0 }}</div>
+            <div class="fw-f fw-lang">von {{ lg_budget|chf:0 }} Budget{% if lg_budget_rest < 0 %} · überschritten{% else %} · CHF {{ lg_budget_rest|chf:0 }} offen{% endif %}</div>
+            {% else %}
+            <div class="fw-w" style="font-size:15px">kein Budget</div>
+            <div class="fw-f fw-lang">für {{ lg_jahr }} nicht erfasst</div>
+            {% endif %}
+        </div>
         <div><div class="fw-l">Nächste Frist</div>
             <div class="fw-w{% if lg_naechste_frist.ueberfaellig %} crit{% elif lg_naechste_frist.faellig_bald %} warn{% endif %}">{% if lg_naechste_frist %}{{ lg_naechste_frist.wf.naechste_faelligkeit|date:"d.m.Y" }}{% else %}—{% endif %}</div>
             {% comment %} Titel UNGEKUERZT (Konzept 16.3). Ein `truncatechars`
@@ -112,6 +124,24 @@
 
 <!-- ===== REITER: STAMMDATEN (Gebaeude, Werte, Technik, Kontakte) ===== -->
 <div data-panel="lg" id="lg-stammdaten">
+    {% comment %} Was die Akte von selbst bemerkt. Dieselbe Quelle wie die
+       Liegenschaftsliste (`faelle/liegenschaften.py`) — zwei getrennte
+       Rechnungen waeren die Stelle, an der Liste und Akte auseinanderlaufen,
+       und dann weiss niemand, welcher Seite zu trauen ist. {% endcomment %}
+    {% if lg_befunde %}
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon{% if lg_stufe != 'good' %} {{ lg_stufe }}{% endif %}"><i class="fa-solid fa-lightbulb"></i></span>
+            <span class="fw-t">Was auffällt</span>
+            <span class="fw-neben">{{ lg_befunde|length }}</span></div>
+        {% for b in lg_befunde %}
+        <div class="fw-hinweis {{ b.0 }}">
+            <span class="fw-hi"><i class="fa-solid fa-triangle-exclamation"></i></span>
+            <div class="fw-ht"><b>{{ b.1 }}</b>{% if b.3 %}{{ b.3 }}{% endif %}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="fw-card">
         <div class="fw-hinweis info">
             <span class="fw-hi"><i class="fa-solid fa-circle-info"></i></span>
@@ -437,6 +467,56 @@
             <a href="/neu/liegenschaften/{{ lg.id }}/betriebsrechnung/" class="fw-btn fw-primary"><i class="fa-solid fa-file-invoice"></i>Betriebsrechnung (PDF)</a>
             <a href="/neu/berichte/leerstand-verlauf/" class="fw-btn"><i class="fa-solid fa-chart-column"></i>Leerstands-Verlauf</a>
         </div>
+    </div>
+
+    {% comment %} Das Budget steht im Reiter Finanzen, nicht in den Stammdaten:
+       Es ist eine Planzahl, kein Stammdatum. Und in der Akte, nicht in den
+       Mandatseinstellungen — wer das Budget setzt, schaut gerade auf DIESE
+       Liegenschaft. Erfassen unter einem Aufklapper, damit die Leseansicht
+       Leseansicht bleibt. {% endcomment %}
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon{% if lg_budget_stufe %} {{ lg_budget_stufe }}{% endif %}"><i class="fa-solid fa-sack-dollar"></i></span>
+            <span class="fw-t">Unterhaltsbudget</span>
+            <span class="fw-neben">{% if lg_budget %}{{ lg_jahr }}: CHF {{ lg_budget_ist|chf }} von {{ lg_budget|chf }} verbraucht{% else %}für {{ lg_jahr }} nicht erfasst{% endif %}</span></div>
+
+        <details class="fw-aufklapp">
+            <summary>Budget erfassen oder ändern</summary>
+            <div class="fw-aufklapp-inhalt">
+                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/budget/"
+                      class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    {% csrf_token %}
+                    <div><label class="fw-klein block mb-1">Jahr *</label>
+                        <input type="number" name="jahr" value="{{ lg_jahr }}" min="2000" max="2100"
+                               required class="fw-feld w-full"></div>
+                    <div><label class="fw-klein block mb-1">Unterhaltsbudget CHF *</label>
+                        <input name="unterhalt" inputmode="decimal" placeholder="z.B. 31000"
+                               required class="fw-feld w-full"></div>
+                    <div class="sm:col-span-2"><label class="fw-klein block mb-1">Bemerkung</label>
+                        <input name="bemerkung" placeholder="z.B. ohne Dachsanierung" class="fw-feld w-full"></div>
+                    <div class="sm:col-span-4">
+                        <button class="fw-btn fw-primary"><i class="fa-solid fa-check"></i>Budget speichern</button>
+                        <span class="fw-klein" style="margin-left:10px">Ein bestehendes Budget desselben Jahres wird überschrieben.</span>
+                    </div>
+                </form>
+            </div>
+        </details>
+
+        {% for b in lg_budgets %}
+        <div class="fw-zeile">
+            <div class="fw-mitte">
+                <div class="fw-t">{{ b.jahr }}</div>
+                {% if b.bemerkung %}<div class="fw-s">{{ b.bemerkung }}</div>{% endif %}
+            </div>
+            <span class="fw-betrag">CHF {{ b.unterhalt|chf }}</span>
+            <form method="post" action="/neu/budget/{{ b.id }}/loeschen/"
+                  onsubmit="return confirm('Budget {{ b.jahr }} entfernen? Der Unterhaltsbefund verschwindet damit.');">
+                {% csrf_token %}
+                <button class="fw-ikon mut gefahr" title="Budget entfernen"><i class="fa-solid fa-trash text-xs"></i></button>
+            </form>
+        </div>
+        {% empty %}
+        <p class="fw-leer">Kein Budget erfasst. Ohne Budget meldet die Akte keinen Unterhaltsbefund.</p>
+        {% endfor %}
     </div>
 
     <div class="fw-card">

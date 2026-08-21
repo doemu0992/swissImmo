@@ -453,6 +453,58 @@ class Dokument(OrganisationAusKette):
         ]
 
 
+class Liegenschaftsbudget(OrganisationAusKette):
+    """Unterhaltsbudget einer Liegenschaft für ein Jahr.
+
+    WARUM EIN EIGENES MODELL UND KEIN FELD
+
+    Ein Budget ändert sich jährlich. Als Feld an der Liegenschaft gäbe es
+    immer nur den aktuellen Wert — und die Frage «wie war es letztes Jahr»
+    liesse sich nicht mehr beantworten, obwohl genau der Vergleich die
+    interessante Aussage ist.
+
+    WARUM JE LIEGENSCHAFT UND NICHT JE MANDAT (Entscheid 21.08.2026)
+
+    Unterhalt fällt am Gebäude an, nicht am Eigentümer. Ein Mandat mit vier
+    Liegenschaften hat vier verschiedene Dächer, Heizungen und Lifte; ein
+    gemeinsamer Topf verwischt, welches Haus Geld kostet. Die Summe je Mandat
+    lässt sich aus den Einzelbudgets bilden — der umgekehrte Weg nicht.
+
+    Der Punkt stand seit dem 21.08.2026 als offene betriebliche Entscheidung
+    in `faelle/liegenschaften.py`; dies ist die Antwort darauf.
+    """
+
+    # Ohne `ORGANISATION_PFAD` gäbe es keinen Weg zur Organisation, und ein
+    # Mandant könnte die Budgetzahlen eines anderen sehen. Der Bestandswächter
+    # `test_jedes_modell_hat_einen_weg_zur_organisation` prüft genau das.
+    ORGANISATION_PFAD = 'liegenschaft'
+
+    liegenschaft = models.ForeignKey(
+        Liegenschaft, on_delete=models.CASCADE, related_name='budgets')
+    jahr = models.PositiveSmallIntegerField('Jahr')
+    unterhalt = models.DecimalField(
+        'Unterhaltsbudget (CHF)', max_digits=12, decimal_places=2,
+        help_text='Geplanter Unterhalt für dieses Jahr, ohne wertvermehrende '
+                  'Investitionen.')
+    bemerkung = models.TextField('Bemerkung', blank=True, default='')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Liegenschaftsbudget'
+        verbose_name_plural = 'Liegenschaftsbudgets'
+        ordering = ('-jahr',)
+        constraints = [
+            # Je Liegenschaft und Jahr genau eines. Die Eindeutigkeit steht
+            # bewusst NICHT über der Organisation: `liegenschaft` gehört bereits
+            # genau einer, damit ist der Mandant impliziert.
+            models.UniqueConstraint(fields=('liegenschaft', 'jahr'),
+                                    name='budget_je_liegenschaft_und_jahr'),
+        ]
+
+    def __str__(self):
+        return f'{self.liegenschaft} {self.jahr}: CHF {self.unterhalt}'
+
+
 class Unterhalt(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE)

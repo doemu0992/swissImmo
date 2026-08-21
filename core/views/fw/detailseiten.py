@@ -336,6 +336,11 @@ def fw_liegenschaft_detail(request, pk):
         'vermietet': vermietet,
         'leerstand': len(einheiten_rows) - vermietet,
         'soll_monat': soll_monat,
+        # Was die Akte von selbst bemerkt — DIESELBE Quelle wie die Liste.
+        # Zwei getrennte Rechnungen waeren die klassische Stelle, an der Liste
+        # und Akte auseinanderlaufen; dann weiss niemand, welcher Seite zu
+        # trauen ist (dasselbe Argument wie beim Anzeigestatus, Etappe 4b.14).
+        **_lg_befunde(lg),
         'rendite': rendite,
         'tickets': tickets,
         'dok_gruppen': dok_gruppen,
@@ -424,6 +429,87 @@ ZAEHLER_TYPEN = [
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_budget_speichern(request, pk):
+    """Unterhaltsbudget einer Liegenschaft fuer ein Jahr erfassen oder aendern.
+
+    Ein bestehendes Budget desselben Jahres wird UEBERSCHRIEBEN, nicht
+    verdoppelt: Die Datenbank laesst je Liegenschaft und Jahr nur eines zu,
+    und ein Fehler statt einer Korrektur waere hier die falsche Antwort — wer
+    das Budget eintippt, will es setzen, nicht anlegen.
+
+    `pk` ist die LIEGENSCHAFT, nicht das Budget. Bei `fw_budget_loeschen` ist
+    es das Budget. Das ist unschoen und steht deshalb hier: Die Testregistry
+    (`core/tests/_isolation.py::NAME_MUSTER`) muss beide unterscheiden koennen.
+    """
+    from decimal import Decimal, InvalidOperation
+
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from portfolio.models import Liegenschaftsbudget
+
+    lg = get_object_or_404(Liegenschaft, id=pk)
+    ziel = f'/neu/liegenschaften/{lg.id}/?tab=finanzen'
+    if request.method != 'POST':
+        return redirect(ziel)
+
+    try:
+        jahr = int(request.POST.get('jahr') or 0)
+    except ValueError:
+        jahr = 0
+    if not 2000 <= jahr <= 2100:
+        messages.error(request, 'Bitte ein Jahr zwischen 2000 und 2100 angeben.')
+        return redirect(ziel)
+
+    # Schweizer Schreibweise: «31'000.00» ist die Form, die auf derselben
+    # Seite ausgegeben wird. Wer sie zurueckkopiert, darf nicht scheitern.
+    roh = (request.POST.get('unterhalt') or '').replace("'", '').replace(' ', '')
+    roh = roh.replace('’', '').replace(',', '.')
+    try:
+        betrag = Decimal(roh)
+    except (InvalidOperation, ValueError):
+        messages.error(request, 'Der Betrag ist keine gültige Zahl.')
+        return redirect(ziel)
+    if betrag < 0:
+        messages.error(request, 'Ein negatives Budget ergibt keinen Sinn.')
+        return redirect(ziel)
+
+    Liegenschaftsbudget.objects.update_or_create(
+        liegenschaft=lg, jahr=jahr,
+        defaults={'unterhalt': betrag,
+                  'bemerkung': (request.POST.get('bemerkung') or '').strip()})
+    log_aktion(request, 'Unterhaltsbudget gesetzt', str(lg), f'{jahr}: CHF {betrag}')
+    messages.success(request, f'Unterhaltsbudget {jahr}: CHF {betrag:,.2f}'
+                     .replace(',', "'"))
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_budget_loeschen(request, pk):
+    """Budget entfernen — damit der Unterhaltsbefund wieder schweigt.
+
+    Ohne Loeschen liesse sich ein versehentlich erfasstes Budget nur noch
+    ueberschreiben, nie zuruecknehmen. Der Befund meldet aber nur, WEIL ein
+    Budget da ist; wer keines fuehren will, muss es auch wieder loswerden.
+    """
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from portfolio.models import Liegenschaftsbudget
+
+    b = get_object_or_404(Liegenschaftsbudget, id=pk)
+    lg = b.liegenschaft
+    if request.method == 'POST':
+        jahr = b.jahr
+        b.delete()
+        log_aktion(request, 'Unterhaltsbudget entfernt', str(lg), str(jahr))
+        messages.success(request, f'Budget {jahr} entfernt.')
+    return redirect(f'/neu/liegenschaften/{lg.id}/?tab=finanzen')
+
+
 def fw_wartungsfrist_neu(request, pk):
     """Wartungs-/Versicherungsfrist zu einer Liegenschaft erfassen."""
     from django.shortcuts import redirect
@@ -2231,4 +2317,62 @@ def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
         'kopf_frist': naechste,
         'kopf_eigentuemer': eigentuemer,
         'kopf_potenzial': potenzial,
+    }
+
+
+def _lg_befunde(lg):
+    """Befunde und Budgetstand einer Liegenschaft fuer die Akte.
+
+    Ruft dieselbe Funktion auf wie die Liegenschaftsliste (`faelle.
+    liegenschaften.zeilen`). Der Aufwand dafuer ist eine Handvoll Abfragen fuer
+    EINE Liegenschaft — das ist der Preis dafuer, dass Liste und Akte nie
+    Verschiedenes sagen koennen.
+    """
+    from decimal import Decimal
+
+    from django.utils import timezone
+
+    from faelle.liegenschaften import zeilen
+
+    heute = timezone.localdate()
+    zeile = zeilen([lg], heute)[0]
+
+    budget = ist = None
+    from finance.models import KreditorenRechnung
+    from portfolio.models import Liegenschaftsbudget, Unterhalt
+    b = Liegenschaftsbudget.objects.filter(liegenschaft=lg, jahr=heute.year).first()
+    if b:
+        budget = b.unterhalt
+        ist = Decimal('0')
+        for kosten in Unterhalt.objects.filter(
+                liegenschaft=lg, datum__year=heute.year).values_list('kosten', flat=True):
+            ist += kosten or Decimal('0')
+        for betrag in KreditorenRechnung.objects.filter(
+                liegenschaft=lg, datum__year=heute.year
+        ).exclude(status='storniert').values_list('betrag', flat=True):
+            ist += betrag or Decimal('0')
+
+    # Die Einstufung gehoert HIERHER, nicht ins Template. Ein Versuch mit
+    # `{% if lg_budget_rest < lg_budget|floatformat:0|add:0 %}` rechnet nicht,
+    # er sieht nur so aus — Vergleichsoperatoren in Django-Templates arbeiten
+    # auf dem, was der letzte Filter zurueckgibt, und das ist hier eine
+    # Zeichenkette.
+    budget_stufe = ''
+    if budget and ist is not None:
+        if ist > budget:
+            budget_stufe = 'crit'
+        elif ist > budget * Decimal('0.8'):
+            budget_stufe = 'warn'
+
+    return {
+        'lg_budgets': list(Liegenschaftsbudget.objects.filter(liegenschaft=lg)),
+        'lg_jahr': heute.year,
+        'lg_budget_stufe': budget_stufe,
+        'lg_befunde': zeile['chips'],
+        'lg_stufe': zeile['stufe'],
+        'lg_leer': zeile['leer'],
+        'lg_budget': budget,
+        'lg_budget_ist': ist,
+        'lg_budget_rest': ((budget - ist)
+                           if (budget is not None and ist is not None) else None),
     }

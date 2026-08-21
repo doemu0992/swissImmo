@@ -171,6 +171,14 @@ class MandantenFixture:
             liegenschaft=self.liegenschaft, bezeichnung=f'Heizungsservice {k}',
             naechste_faelligkeit=date.today() + timedelta(days=30))
 
+        # Damit der Sweep die Budget-URLs mit einer ECHTEN fremden Id angehen
+        # kann. Ohne dieses Objekt haette er nichts zum Ausprobieren und waere
+        # gruen, ohne den Zugriff je versucht zu haben.
+        from portfolio.models import Liegenschaftsbudget
+        self.budget = Liegenschaftsbudget.objects.create(
+            liegenschaft=self.liegenschaft, jahr=date.today().year,
+            unterhalt=Decimal('30000'))
+
         self._anlegen_weitere(plz, ort)
         self.benutzer = self._benutzer()
         # Die Abwesenheit braucht den Benutzer und steht deshalb HIER, nicht
@@ -412,6 +420,19 @@ class MandantenFixture:
         # 'regel'.
         ('regelanwendung',  'regelanwendung'),
         ('regelsatz',       'regelsatz'),
+        # Phase 4b.16 — Liegenschaftsbudget. Die Selbstpruefung
+        # `test_jeder_parameter_ist_zugeordnet` hat sofort gemeldet, dass
+        # `fw_budget_loeschen` keinem Objekt zuzuordnen ist. Ohne diese
+        # Eintraege waeren beide URLs durch den Sweep gefallen: Ein Mandant
+        # haette moeglicherweise das Budget eines anderen loeschen koennen,
+        # und kein Test haette es bemerkt.
+        #
+        # DIE REIHENFOLGE IST BEDEUTSAM und `pk` bedeutet bei den beiden
+        # VERSCHIEDENES: 'budget_loeschen' traegt das BUDGET, 'budget_speichern'
+        # die LIEGENSCHAFT (abgelesen am `get_object_or_404` der Views, nicht
+        # geraten). Stuende 'budget' vorn, griffe es fuer beide.
+        ('budget_loeschen', 'budget'),
+        ('budget_speichern', 'liegenschaft'),
         ('fall_detail',     'fall'),
         ('zulauf_uebernehmen', 'eingang'),
         ('abnahme',         'abnahme'),
