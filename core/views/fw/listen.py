@@ -1052,57 +1052,61 @@ def fw_mieterspiegel(request):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_objekte(request):
+    """Objektliste nach G9 — sortiert nach Befund, gruppiert nach Liegenschaft.
+
+    Die Gruppierung nach Liegenschaft bleibt (Entscheid 21.08.2026), aber die
+    Gruppen folgen nicht mehr dem Alphabet, sondern dem Befund. Und die Filter
+    machen die Arbeit: «Mit Befund» reduziert zwoelf Liegenschaften auf die
+    drei, um die es geht.
+
+    Das zweite Suchfeld in der Karte ist entfallen — die Topbar hat eines, und
+    zwei Suchfelder auf einer Seite sind eine Frage zu viel. `q` wird
+    weiterhin entgegengenommen, damit gespeicherte Adressen nicht brechen.
+    """
+    from faelle.objekte import TYP_GRUPPEN, gruppen, streifen, zeilen
+
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
-    einheiten = Einheit.objects.select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung')
+    einheiten = Einheit.objects.select_related('liegenschaft')
     if aktive_lg:
         einheiten = einheiten.filter(liegenschaft=aktive_lg)
 
     typ_filter = request.GET.get('typ', '')
-    typ_gruppen = {'wohnen': ['whg', 'stwe'], 'parkplatz': ['pp', 'gar'], 'gewerbe': ['gew']}
-    if typ_filter in typ_gruppen:
-        einheiten = einheiten.filter(typ__in=typ_gruppen[typ_filter])
+    if typ_filter in TYP_GRUPPEN:
+        einheiten = einheiten.filter(typ__in=TYP_GRUPPEN[typ_filter])
     q = (request.GET.get('q') or '').strip()
     if q:
-        einheiten = einheiten.filter(Q(bezeichnung__icontains=q) | Q(liegenschaft__strasse__icontains=q))
+        einheiten = einheiten.filter(
+            Q(bezeichnung__icontains=q) | Q(liegenschaft__strasse__icontains=q))
 
-    aktive = Mietvertrag.objects.filter(status='aktiv').select_related('mieter')
-    mieter_je_einheit = {}
-    for v in aktive:
-        mieter_je_einheit[v.einheit_id] = (v.mieter.display_name, v.id)
-    for v in aktive.prefetch_related('nebenobjekte'):
-        for neben in v.nebenobjekte.all():
-            mieter_je_einheit.setdefault(neben.id, (v.mieter.display_name, v.id))
+    alle = zeilen(einheiten)
+    kopf = streifen(alle)
 
-    rows = []
-    vermietet_count = 0
-    for e in einheiten:
-        belegung = mieter_je_einheit.get(e.id)
-        if belegung:
-            vermietet_count += 1
-        rows.append({'e': e, 'mieter': belegung[0] if belegung else None,
-                     'vertrag_id': belegung[1] if belegung else None})
-
-    # Nach Liegenschaft gruppieren (Überschrift + Akkordeon je Liegenschaft)
-    gruppen = []
-    for row in rows:
-        lg = row['e'].liegenschaft
-        if gruppen and gruppen[-1]['lg'].id == lg.id:
-            gruppen[-1]['rows'].append(row)
-        else:
-            gruppen.append({'lg': lg, 'rows': [row]})
-    for g in gruppen:
-        g['anzahl'] = len(g['rows'])
-        g['belegt'] = sum(1 for r in g['rows'] if r['mieter'])
-        g['leer'] = g['anzahl'] - g['belegt']
+    # Der Zustandsfilter wirkt NACH der Befundrechnung — die Zahlen im Kopf
+    # zeigen weiterhin das ganze Portfolio. Wuerden sie mitfiltern, stuende
+    # dort bei aktivem Filter «2 von 2 mit Befund», und der Streifen waere
+    # wertlos (dasselbe Argument wie beim Streifen der Liegenschaftsliste).
+    zustand = request.GET.get('zustand', '')
+    if zustand == 'befund':
+        sichtbar = [z for z in alle if z['befunde']]
+    elif zustand == 'leer':
+        sichtbar = [z for z in alle if not z['versorgt']]
+    else:
+        zustand = ''
+        sichtbar = alle
 
     return render(request, 'fw/objekte.html', {
-        **basis, 'nav': 'objekte', 'rows': rows, 'gruppen': gruppen,
-        'typ_filter': typ_filter, 'q': q,
-        'typ_chips': [('', 'Alle'), ('wohnen', 'Wohnen'), ('parkplatz', 'Parkplatz'), ('gewerbe', 'Gewerbe')],
-        'vermietet_count': vermietet_count,
-        'leer_count': len(rows) - vermietet_count,
+        **basis, 'nav': 'objekte',
+        'gruppen': gruppen(sichtbar), 'kopf': kopf,
+        'typ_filter': typ_filter, 'zustand': zustand, 'q': q,
+        'gefiltert': len(sichtbar) != len(alle),
+        'sichtbar_anzahl': len(sichtbar),
+        'typ_chips': [('', 'Alle'), ('wohnen', 'Wohnen'),
+                      ('parkplatz', 'Parkplatz'), ('gewerbe', 'Gewerbe')],
+        'zustand_chips': [('', 'Alle Zustände'),
+                          ('befund', f'Mit Befund ({kopf["mit_befund"]})'),
+                          ('leer', f'Leerstand ({kopf["leer"]})')],
     })
 
 # Design-System-Chip-Variante je Status (fw-chip fw-<variant>)

@@ -549,6 +549,7 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.14 | **Anzeigestatus des Mietvertrags**: `Mietvertrag.anzeige_status` — eine abgelaufene Kündigung gilt als beendet, in Liste, Filter, Aktenkopf und Statuspille; `status` und die Sollstellung bleiben unberührt | erledigt |
 | 4b.15 | **Liegenschaftsliste: Befunde statt Bestand** — eine Zeile je Objekt statt einer Karte, sortiert nach Befund, mit Kennzahlenstreifen und Filterleiste; Leerstandsregel in `faelle/liegenschaften.py` | erledigt |
 | 4b.16 | **Liegenschaftsbudget**: `portfolio.Liegenschaftsbudget` je Liegenschaft und Jahr, Befund «Unterhalt über Plan / überschritten» in Liste UND Akte aus derselben Funktion, Erfassung im Reiter Finanzen; Bruttorendite weicht im Aktenkopf | erledigt |
+| 4b.17 | **Objektliste nach G9**: Befunde je Einheit (leer seit wann, wird frei ab, kein Mietzins, nicht ausgeschrieben), Gruppen nach Befund geordnet statt nach Alphabet, eine Darstellung statt zwei; `KonsistenzTests` hält Objekt- und Liegenschaftsliste auf derselben Leerstandsregel | erledigt |
 
 > **Warum 4b.12 nötig war.** `faelle/akten.py` führt **sieben** Aktentypen. Nach 4b.11 hatten
 > fünf davon Aktenkopf und Reitersatz. Zwei hatten keine Seite: Das Mandat kannte nur Liste,
@@ -702,6 +703,62 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 > Reihenfolge in `NAME_MUSTER` — `budget_loeschen` muss vor `budget_speichern`
 > stehen, und `pk` bedeutet bei den beiden Verschiedenes (Budget bzw.
 > Liegenschaft).
+
+> **Die Objektliste zeigte den Befund als Gedankenstrich (4b.17).** Am
+> 21.08.2026 am Bestand gesehen: Beide leeren Wohnungen an der Selzacherstrasse
+> standen mit «Soll-Miete —» in der Liste. Das IST die Nachricht der Seite —
+> zwei Wohnungen stehen leer und haben keinen Preis hinterlegt, man kann sie
+> also nicht ausschreiben — und sie stand dort als Strich.
+>
+> Dazu kam, was die Vorfassung sonst noch verschwieg: sortiert nach `strasse`
+> und `bezeichnung`, also nach Alphabet, wodurch ein vermieteter Parkplatz
+> gleichberechtigt neben zwei leeren Wohnungen stand; «Leerstand» ohne
+> Zeitangabe, sodass *seit acht Monaten leer* und *ab nächstem Monat frei*
+> denselben Chip trugen; `Einheit.zur_ausschreibung` gab es, ausgewertet wurde
+> es nirgends. Und der Objekttyp `bas` (Bastelraum) stand in **keiner**
+> Filtergruppe — über die Filterleiste war er unerreichbar.
+>
+> **Eine Darstellung statt zwei.** Karten (`md:hidden`) und Tabelle
+> (`hidden md:block`) standen nebeneinander: 133 Zeilen doppelte Pflege, und
+> die Chips in der Tabelle trugen noch `bg-emerald-50 text-emerald-700` statt
+> der Tokens — sie liefen also an der Petrol-Palette vorbei. Das zweite
+> Suchfeld in der Karte ist ebenfalls weg; die Topbar hat eines.
+>
+> **Die Gruppierung nach Liegenschaft bleibt** (Entscheid 21.08.2026), aber die
+> Gruppen sind nach BEFUND geordnet, nicht nach Alphabet, und die auffälligen
+> stehen offen. Die Filter machen den Rest: «Mit Befund» reduziert zwölf
+> Liegenschaften auf die drei, um die es geht. Der Kennzahlenstreifen zeigt
+> dabei immer das ganze Portfolio — sonst stünde bei aktivem Filter «2 von 2
+> mit Befund».
+>
+> **Was hier NICHT dupliziert werden durfte: die Leerstandsregel.** Das
+> gelieferte Konzept behauptete in seinem Docstring, `_belegung()` rufe
+> `liegenschaften._leerstand` auf — der Code implementierte sie ein zweites
+> Mal, und zwar mit einem anderen Statustest (`exclude(entwurf, archiviert)`
+> statt der benannten Listen). Genau die Drift, vor der derselbe Docstring
+> warnt. Vollständig teilen lässt sie sich nicht: `_leerstand` rechnet je
+> Liegenschaft und holt in derselben Schleife die Ist-Miete, die Objektliste
+> braucht den Zustand je einzelner Einheit samt «leer seit». Zwei Dinge halten
+> sie jetzt zusammen — die **Statuslisten sind importiert**, nicht
+> abgeschrieben, und **`KonsistenzTests`** stellt beide Module vor dieselben
+> Fälle und vergleicht das Urteil.
+>
+> **Und er hat beim ersten Lauf sofort etwas gefunden.** Eine heute leere
+> Wohnung mit Vertrag ab nächstem Monat trug in der Objektliste weiter «Steht
+> leer» und «Nicht ausgeschrieben» — zwei Rüffel für eine Wohnung, um die sich
+> längst jemand gekümmert hat —, während die Liegenschaftsliste sie korrekt
+> nicht als Leerstand zählte. Daraus folgte auch die Trennung von **`belegt`**
+> (physisch belegt, steuert die Zeile) und **`versorgt`** (belegt oder
+> Nachmieter, steuert die Leerstandszahl). Beide Seiten zeigen jetzt dieselbe
+> Zahl für denselben Bestand.
+>
+> **Zum sechsten Mal las ein Wächter seine eigene Erklärung.** «Die doppelte
+> Darstellung ist weg» suchte `bg-emerald-50` und `hidden md:block` in der
+> ganzen Seite — getroffen hat er den Kommentar im Palette-Skript und eine
+> JS-Erläuterung in `base.html`, die auf jeder Seite mitgeliefert werden. Er
+> fragt jetzt nur das Markup (`_nur_markup` schneidet `<script>` und `<style>`
+> weg), und eine zweite Prüfung hält fest, dass dieser Schnitt nicht zu viel
+> wegnimmt.
 
 > **Warum 4b.10 dazwischenkam — dreimal derselbe Fehler.** Der Vergleich mit
 > `mockups/konzept-v2.html` (Screen «Fristenwächter») ergab, dass die Rechenlogik seit Phase 4a

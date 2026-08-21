@@ -2,132 +2,117 @@
 {% load chf %}
 {% block title %}Objekte — swissImmo{% endblock %}
 
+{% comment %}
+    Objektliste nach G9 (Phase 4b.17). Was sich gegenueber der Vorfassung
+    geaendert hat und warum:
+
+    - EINE Darstellung statt zwei. Vorher standen Karten (md:hidden) und
+      Tabelle (hidden md:block) nebeneinander — 133 Zeilen doppelte Pflege,
+      und die Chips dort trugen `bg-emerald-50 text-emerald-700` statt der
+      Tokens, liefen also an der Petrol-Palette vorbei.
+    - SORTIERT NACH BEFUND, nicht nach Alphabet — Gruppen und Zeilen.
+    - KEIN ZWEITES SUCHFELD. Die Topbar hat eines.
+    - Der Kennzahlenstreifen ersetzt die Fliesstextzeile im Kopf.
+{% endcomment %}
+
 {% block content %}
 
 <div class="fw-phead">
     <div>
         <h1>{% if ui_modus == 'einfach' %}Wohnungen{% else %}Objekte{% endif %}</h1>
-        <p>{{ rows|length }} Mietobjekt(e) · <span style="color:var(--ds-good);font-weight:500">{{ vermietet_count }} vermietet</span> · <span style="font-weight:500;color:{% if leer_count %}var(--ds-warn){% else %}var(--ds-faint){% endif %}">{{ leer_count }} im Leerstand</span>{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/objekte/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
+        <p>{% if aktive_lg %}gefiltert auf {{ aktive_lg.strasse }}
+            <a href="/neu/objekte/" class="fw-link">× aufheben</a>{% else %}Nach Befund geordnet — was klemmt, steht oben.{% endif %}</p>
     </div>
     <a href="/neu/objekte/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Objekt erfassen</a>
 </div>
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+{% comment %} Die Zahlen zeigen IMMER das ganze Portfolio, auch bei aktivem
+   Zustandsfilter — sonst stuende dort «2 von 2 mit Befund». {% endcomment %}
+<div class="fw-lage">
+    <div><div class="fw-l">Objekte</div>
+        <div class="fw-w">{{ kopf.gesamt }}</div>
+        <div class="fw-f">im Bestand</div></div>
+    <div><div class="fw-l">Vermietet</div>
+        <div class="fw-w">{{ kopf.belegt }}</div>
+        <div class="fw-f">mit laufendem Vertrag</div></div>
+    <div><div class="fw-l">Leerstand</div>
+        <div class="fw-w{% if kopf.leer_stufe %} {{ kopf.leer_stufe }}{% endif %}">{{ kopf.leer }}</div>
+        <div class="fw-f">ohne Mieter und ohne Nachfolge</div></div>
+    <div><div class="fw-l">Mit Befund</div>
+        <div class="fw-w{% if kopf.befund_stufe %} {{ kopf.befund_stufe }}{% endif %}">{{ kopf.mit_befund }}</div>
+        <div class="fw-f">brauchen eine Handlung</div></div>
+</div>
 
-    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
-        <div class="flex items-center gap-1.5 flex-wrap">
-            {% for wert, label in typ_chips %}
-            <a href="?typ={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                      {% if typ_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
-            {% endfor %}
-        </div>
-        <form method="get" class="ml-auto relative">
-            {% if typ_filter %}<input type="hidden" name="typ" value="{{ typ_filter }}">{% endif %}
-            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input type="text" name="q" value="{{ q }}" placeholder="Objekt oder Strasse suchen…"
-                   class="bg-slate-100 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
-        </form>
-    </div>
-
-    {% for g in gruppen %}
-    <details class="group border-b border-slate-100 last:border-0">
-        <summary class="px-5 py-3 flex items-start gap-3 cursor-pointer select-none hover:bg-slate-50/60 list-none">
-            <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform group-open:rotate-90 mt-1 shrink-0"></i>
-            <i class="fa-solid fa-building text-indigo-500 mt-0.5 shrink-0"></i>
-            <div class="min-w-0 flex-1">
-                <div class="font-bold text-slate-800">{{ g.lg.strasse }}, {{ g.lg.plz }} {{ g.lg.ort }}</div>
-                <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
-                    <span class="text-[11px] font-semibold bg-slate-100 text-slate-500 rounded-md px-1.5 py-0.5">{{ g.anzahl }} Objekt{{ g.anzahl|pluralize:"e" }}</span>
-                    <span class="text-[11px] font-semibold bg-emerald-50 text-emerald-700 rounded-md px-1.5 py-0.5">{{ g.belegt }} vermietet</span>
-                    {% if g.leer %}<span class="text-[11px] font-semibold bg-amber-50 text-amber-700 rounded-md px-1.5 py-0.5">{{ g.leer }} Leerstand</span>{% endif %}
-                    <a href="/neu/liegenschaften/{{ g.lg.id }}/" class="ml-auto shrink-0 text-xs text-indigo-600 font-medium hover:underline" onclick="event.stopPropagation()">Liegenschaft <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
-                </div>
-            </div>
-        </summary>
-        <!-- Mobile: Karten -->
-        <div class="md:hidden border-t border-slate-100 divide-y divide-slate-100">
-            {% for row in g.rows %}
-            <a href="/neu/objekte/{{ row.e.id }}/" class="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50/60 transition-colors">
-                <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                    <i class="fa-solid {% if row.e.typ == 'pp' or row.e.typ == 'gar' %}fa-square-parking{% elif row.e.typ == 'gew' %}fa-shop{% else %}fa-house{% endif %}"></i>
-                </div>
-                <div class="min-w-0 flex-1">
-                    <div class="font-semibold text-slate-900 truncate">{{ row.e.bezeichnung }}</div>
-                    <div class="text-xs text-slate-500 truncate">{{ row.e.get_typ_display }}{% if row.mieter %} · {{ row.mieter }}{% endif %}</div>
-                    <div class="mt-1.5">
-                        {% if row.mieter %}
-                        <span class="fw-chip bg-emerald-50 text-emerald-700">● Vermietet</span>
-                        {% else %}
-                        <span class="fw-chip bg-amber-50 text-amber-700">● Leerstand</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="text-right shrink-0">
-                    <div class="font-semibold text-slate-800 whitespace-nowrap">{% if row.e.nettomiete_aktuell %}CHF {{ row.e.nettomiete_aktuell|chf }}{% else %}—{% endif %}</div>
-                    <div class="text-[11px] text-slate-400">Soll-Miete</div>
-                </div>
-                <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0"></i>
-            </a>
-            {% endfor %}
-        </div>
-
-        <!-- Desktop: Tabelle -->
-        <div class="overflow-x-auto border-t border-slate-100 hidden md:block">
-            <table class="w-full min-w-max text-sm">
-                <thead>
-                <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-slate-50/40">
-                    <th class="px-5 py-2.5 font-semibold">Objekt</th>
-                    <th class="px-5 py-2.5 font-semibold hidden lg:table-cell">Typ</th>
-                    <th class="px-5 py-2.5 font-semibold text-center hidden md:table-cell">Zimmer</th>
-                    <th class="px-5 py-2.5 font-semibold text-center hidden md:table-cell">Fläche</th>
-                    <th class="px-5 py-2.5 font-semibold text-right">Soll-Miete</th>
-                    <th class="px-5 py-2.5 font-semibold">Status</th>
-                    <th class="px-5 py-2.5 font-semibold hidden lg:table-cell">Mieter</th>
-                    <th class="px-5 py-2.5"></th>
-                </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-50">
-                {% for row in g.rows %}
-                <tr class="hover:bg-slate-50/60 transition-colors">
-                    <td class="px-5 py-3.5">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                                <i class="fa-solid {% if row.e.typ == 'pp' or row.e.typ == 'gar' %}fa-square-parking{% elif row.e.typ == 'gew' %}fa-shop{% else %}fa-house{% endif %}"></i>
-                            </div>
-                            <div>
-                                <a href="/neu/objekte/{{ row.e.id }}/" class="font-semibold text-slate-900 hover:text-indigo-600">{{ row.e.bezeichnung }}</a>
-                                {% if row.e.etage %}<div class="text-xs text-slate-400">{{ row.e.etage }}</div>{% endif %}
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap hidden lg:table-cell">{{ row.e.get_typ_display }}</td>
-                    <td class="px-5 py-3.5 text-center text-slate-600 hidden md:table-cell">{% if row.e.zimmer %}{{ row.e.zimmer }}{% else %}—{% endif %}</td>
-                    <td class="px-5 py-3.5 text-center text-slate-600 whitespace-nowrap hidden md:table-cell">{% if row.e.flaeche_m2 %}{{ row.e.flaeche_m2|floatformat:0 }} m²{% else %}—{% endif %}</td>
-                    <td class="px-5 py-3.5 text-right font-medium text-slate-800 whitespace-nowrap">{% if row.e.nettomiete_aktuell %}CHF {{ row.e.nettomiete_aktuell|chf }}{% else %}—{% endif %}</td>
-                    <td class="px-5 py-3.5">
-                        {% if row.mieter %}
-                        <span class="fw-chip bg-emerald-50 text-emerald-700">● Vermietet</span>
-                        {% else %}
-                        <span class="fw-chip bg-amber-50 text-amber-700">● Leerstand</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap hidden lg:table-cell">{% if row.mieter %}{{ row.mieter }}{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
-                    <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                        <a href="/neu/objekte/{{ row.e.id }}/" class="text-xs text-indigo-600 font-medium hover:underline">Ansehen</a>
-                        {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="text-xs text-indigo-600 font-medium hover:underline ml-3">Vertrag</a>{% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </details>
-    {% empty %}
-    <div>
-        {% if q or typ_filter %}{% include 'fw/_empty.html' with icon='fa-magnifying-glass' titel='Keine Treffer' subtext='Für diesen Filter wurden keine Objekte gefunden.' %}{% else %}{% include 'fw/_empty.html' with icon='fa-door-open' titel='Noch keine Objekte' subtext='Objekte gehören zu einer Liegenschaft — legen Sie zuerst eine Liegenschaft an oder importieren Sie die Wohnungen aus dem GWR.' cta_url='/neu/liegenschaften/neu/' cta_label='Liegenschaft erfassen' %}{% endif %}
-    </div>
+<div class="fw-filters">
+    {% for wert, label in zustand_chips %}
+    <a href="?zustand={{ wert }}{% if typ_filter %}&amp;typ={{ typ_filter }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
+       class="fw-fchip{% if zustand == wert %} fw-on{% endif %}">{{ label }}</a>
     {% endfor %}
 </div>
+<div class="fw-filters">
+    {% for wert, label in typ_chips %}
+    <a href="?typ={{ wert }}{% if zustand %}&amp;zustand={{ zustand }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
+       class="fw-fchip{% if typ_filter == wert %} fw-on{% endif %}">{{ label }}</a>
+    {% endfor %}
+    {% if q %}
+    <a href="?{% if typ_filter %}typ={{ typ_filter }}&amp;{% endif %}{% if zustand %}zustand={{ zustand }}{% endif %}"
+       class="fw-fchip fw-on">Suche «{{ q }}» ×</a>
+    {% endif %}
+</div>
+
+{% for g in gruppen %}
+<details class="fw-card"{% if g.offen %} open{% endif %}>
+    <summary class="fw-kopf" style="cursor:pointer;list-style:none">
+        <i class="fa-solid fa-chevron-right fw-klein" style="transition:transform .15s"></i>
+        <span class="fw-ikon{% if g.stufe != 'good' %} {{ g.stufe }}{% endif %}"><i class="fa-solid fa-building"></i></span>
+        <span class="fw-t">{{ g.lg.strasse }}<small>{{ g.lg.plz }} {{ g.lg.ort }}</small></span>
+        <span class="fw-rechts">
+            {% if g.leer %}<span class="fw-chip fw-warn fw-dot">{{ g.leer }} leer</span>{% endif %}
+            <span class="fw-chip fw-mut">{{ g.belegt }} / {{ g.anzahl }} vermietet</span>
+            <a href="/neu/liegenschaften/{{ g.lg.id }}/" class="fw-link" onclick="event.stopPropagation()">Liegenschaft →</a>
+        </span>
+    </summary>
+
+    {% for z in g.zeilen %}
+    <a href="/neu/objekte/{{ z.e.id }}/" class="fw-zeile klick" style="text-decoration:none">
+        <span class="fw-marker{% if z.stufe != 'good' %} {{ z.stufe }}{% endif %}"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ z.e.bezeichnung }}</div>
+            <div class="fw-s">{{ z.e.get_typ_display }}{% if z.e.zimmer %} · {{ z.e.zimmer }} Zi.{% endif %}{% if z.e.flaeche_m2 %} · {{ z.e.flaeche_m2|floatformat:0 }} m²{% endif %}{% if z.mieter %} · {{ z.mieter }}{% endif %}</div>
+            {% if z.befunde %}
+            <div class="fw-s" style="margin-top:4px">
+                {% for b in z.befunde %}
+                <span class="fw-chip fw-{{ b.stufe }} fw-dot" style="margin-right:5px">{{ b.text }}{% if b.titel %} — {{ b.titel }}{% endif %}</span>
+                {% endfor %}
+            </div>
+            {% elif z.nachmieter_ab %}
+            <div class="fw-s" style="margin-top:4px">
+                <span class="fw-chip fw-good fw-dot">Nachmieter ab {{ z.nachmieter_ab|date:"d.m.Y" }}</span>
+            </div>
+            {% endif %}
+        </div>
+        <div class="fw-zeit">
+            {% if z.e.nettomiete_aktuell %}CHF {{ z.e.nettomiete_aktuell|chf }}{% else %}<span class="fw-warnton">kein Zins</span>{% endif %}
+        </div>
+        <i class="fa-solid fa-chevron-right fw-klein"></i>
+    </a>
+    {% endfor %}
+</details>
+{% empty %}
+<div class="fw-card" style="padding:0 16px">
+{% if gefiltert or q or typ_filter %}
+    {% include 'fw/_empty.html' with icon='fa-check' titel='Nichts zu tun' subtext='Für diesen Filter gibt es kein Objekt. Das ist eine gute Nachricht — oder der Filter ist zu eng.' cta_url='/neu/objekte/' cta_label='Alle Objekte zeigen' %}
+{% else %}
+    {% include 'fw/_empty.html' with icon='fa-door-open' titel='Noch keine Objekte' subtext='Objekte gehören zu einer Liegenschaft — legen Sie zuerst eine Liegenschaft an oder importieren Sie die Wohnungen aus dem GWR.' cta_url='/neu/liegenschaften/neu/' cta_label='Liegenschaft erfassen' %}
+{% endif %}
+</div>
+{% endfor %}
+
+<style>
+    /* Der Pfeil dreht sich beim Aufklappen. `details[open]` statt einer
+       JS-Klasse — die Gruppe kennt ihren Zustand selbst. */
+    details[open] > summary > .fa-chevron-right { transform: rotate(90deg); }
+    summary::-webkit-details-marker { display: none; }
+</style>
+
 {% endblock %}
