@@ -62,6 +62,15 @@ OHNE_WEG = {
     # aeltere Verweise darauf zeigen koennen — eine Adresse, die einmal
     # funktioniert hat, soll nicht ins Leere laufen.
     '/neu/arbeit/': 'Leitet auf /neu/ um (4b.13); aus der Navigation entfernt.',
+
+    # Derselbe Fall (4b.20). Die Seite listete Geraete und Ausstattung auf und
+    # rechnete nichts; ihre CRUD-Pfade waren eine zweite Fassung von
+    # `/neu/geraet/*` auf demselben Modell. Aufgeloest zugunsten von
+    # `/neu/ersatzplanung/`, die dieselben Elemente rechnet und den Menueplatz
+    # geerbt hat. Die Adresse bleibt als Weiterleitung stehen, damit
+    # Lesezeichen halten.
+    '/neu/assets/': 'Leitet auf /neu/ersatzplanung/ um (4b.20); '
+                    'aus der Navigation entfernt.',
 }
 
 #: Verzeichnisse, in denen nach Verweisen gesucht wird.

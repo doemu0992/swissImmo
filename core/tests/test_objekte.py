@@ -309,21 +309,57 @@ class AusstattungRaumbuchTests(TestCase):
         self.assertContains(r, 'Raumbuch')
         self.assertContains(r, 'Backofen')
 
-    def test_assets_seite_zeigt_ausstattung(self):
+    # 4b.20: Die beiden folgenden Prüfungen waren eine — `/neu/assets/`.
+    # Diese Seite listete portfolioweit auf und rechnete nichts; sie ist
+    # aufgelöst. Ihre zwei Aufgaben hatten schon vorher je ein besseres
+    # Zuhause, und dort werden sie jetzt geprüft: die portfolioweite Sicht auf
+    # der Ersatzplanung (die dieselben Elemente RECHNET), die Gruppierung nach
+    # Raum in der Akte des Objekts, zu dem die Räume gehören.
+    #
+    # Zusammen decken sie ab, was die alte Prüfung abdeckte. Was sie NICHT
+    # mehr fordern, ist das portfolioweite Objekt-Akkordeon — das war die
+    # Doppelung.
+
+    def test_die_ausstattung_steht_in_der_ersatzplanung(self):
+        """Auch ohne Einbaudatum und Lebensdauer: Ein Element, das nirgends
+        auftaucht, ist so gut wie nicht erfasst. Es steht dort als «Keine
+        Datenbasis» — das ist der Befund, nicht das Weglassen."""
         from portfolio.models import Ausstattung
         _lg, e, _m, _v = _basis_objekte()
         Ausstattung.objects.create(einheit=e, raum='Bad', kategorie='Dusche', zustand='defekt')
         c = Client(); c.force_login(_team_user())
-        r = c.get('/neu/assets/')
+        r = c.get('/neu/ersatzplanung/')
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, 'Raumbuch / Ausstattung')
         self.assertContains(r, 'Dusche')
-        # Raumbuch pro Objekt gruppiert: Objekt-Akkordeon + Raum-Überschrift
-        self.assertContains(r, 'group-open:rotate-90')
-        self.assertContains(r, e.bezeichnung)
-        self.assertContains(r, 'Bad')
-        self.assertEqual(len(r.context['raumbuch_objekte']), 1)
-        self.assertEqual(r.context['raumbuch_objekte'][0]['einheit'].id, e.id)
+        # Raum und Standort über den Context, nicht über `assertContains`:
+        # «Bad» ist Teilstring von «Badge» und stünde auf fast jeder Seite.
+        zeile = next(z for z in r.context['rows'] if z['bezeichnung'] == 'Dusche')
+        self.assertEqual(zeile['detail'], 'Bad')
+        self.assertIn(e.bezeichnung, zeile['standort'])
+        self.assertEqual(zeile['status'], 'unbekannt')
+
+    def test_das_raumbuch_gruppiert_in_der_objektakte_nach_raum(self):
+        """Die Gruppierung gehört in die Akte des Objekts — dort steht der
+        Raum, zu dem das Element gehört.
+
+        GEPRÜFT WIRD DER CONTEXT, NICHT DAS HTML. Eine erste Fassung suchte
+        «Bad» in der gerenderten Seite und blieb grün, als die
+        Raum-Überschrift entfernt wurde: Das Wort steht auch im
+        Erfassungsformular darunter (`<input name="raum" value="…">`). Ein
+        Wächter, der seinen Fund woanders macht, prüft nichts. Die
+        Gruppenstruktur ist im Context eindeutig.
+        """
+        from portfolio.models import Ausstattung
+        _lg, e, _m, _v = _basis_objekte()
+        Ausstattung.objects.create(einheit=e, raum='Bad', kategorie='Dusche', zustand='defekt')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/neu/objekte/{e.id}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Raumbuch')
+        gruppen = {g['raum']: g for g in r.context['raeume']}
+        self.assertIn('Bad', gruppen)
+        self.assertEqual([z['a'].kategorie for z in gruppen['Bad']['elemente']],
+                         ['Dusche'])
 
 
 class AbnahmeLebensdauerTests(TestCase):

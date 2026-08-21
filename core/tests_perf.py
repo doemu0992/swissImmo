@@ -79,7 +79,7 @@ ROUTEN = [
     '/neu/kautionen/', '/neu/kreditoren/', '/neu/zahllauf/',
     '/neu/bankabgleich/', '/neu/bankkonten/', '/neu/buchhaltung/',
     '/neu/kontenplan/', '/neu/nebenkosten/', '/neu/anlagen/',
-    '/neu/schaeden/', '/neu/assets/', '/neu/dienstleister/',
+    '/neu/schaeden/', '/neu/ersatzplanung/', '/neu/dienstleister/',
     '/neu/berichte/', '/neu/auswertung/', '/neu/dokumente/',
 ]
 

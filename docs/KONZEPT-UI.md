@@ -551,6 +551,7 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.16 | **Liegenschaftsbudget**: `portfolio.Liegenschaftsbudget` je Liegenschaft und Jahr, Befund «Unterhalt über Plan / überschritten» in Liste UND Akte aus derselben Funktion, Erfassung im Reiter Finanzen; Bruttorendite weicht im Aktenkopf | erledigt |
 | 4b.17 | **Objektliste nach G9**: Befunde je Einheit (leer seit wann, wird frei ab, kein Mietzins, nicht ausgeschrieben), Gruppen nach Befund geordnet statt nach Alphabet, eine Darstellung statt zwei; `KonsistenzTests` hält Objekt- und Liegenschaftsliste auf derselben Leerstandsregel | erledigt |
 | 4b.18 | **Schadensliste nach G9**: Befunde je Meldung (ungelesen, kein Auftrag, Freigabe ausstehend, Liegenbleiber, Melder ohne Rückmeldung), vier Arbeitssichten statt sieben Statuschips, sortiert nach Befund statt nach Eingang | erledigt |
+| 4b.20 | **«Assets» aufgelöst**: Geräte kommen in die bestehende Ersatzplanung (Kategorienbrücke zur Lebensdauertabelle), die doppelten `fw_asset_*`-CRUD-Pfade entfallen, `/neu/assets/` wird Weiterleitung | erledigt |
 
 > **Warum 4b.12 nötig war.** `faelle/akten.py` führt **sieben** Aktentypen. Nach 4b.11 hatten
 > fünf davon Aktenkopf und Reitersatz. Zwei hatten keine Seite: Das Mandat kannte nur Liste,
@@ -821,6 +822,65 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 > misst, und sichert **Konstanz** zu statt einer festen Zahl: Eine feste Zahl
 > bräche bei jeder unbeteiligten Änderung und sägte an ihrer eigenen
 > Glaubwürdigkeit.
+
+> **«Assets» war eine Seite, die nichts erfasste und doppelt schrieb (4b.20).**
+> `/neu/assets/` listete Geräte und Raumbuch portfolioweit auf — beides wird
+> in der Liegenschafts- und der Objektakte längst vollständig erfasst. Ihre
+> CRUD-Pfade (`fw_asset_neu/bearbeiten/loeschen`) schrieben auf dasselbe Modell
+> `portfolio.Geraet` wie `/neu/geraet/*`: zwei Implementierungen derselben
+> Sache, die irgendwann auseinanderlaufen. Beide sind entfernt.
+>
+> **Gefehlt hat nicht die Seite, sondern eine Verbindung.**
+> `core/services/ersatzplanung.py` gab es bereits — mit Restnutzungsdauer,
+> Jahresbudget, Fondsdeckung und PDF-Report —, rechnete aber nur mit
+> `Ausstattung`. Ausgerechnet die Geräte, die teuren Posten, blieben aussen
+> vor. Jetzt tragen beide dieselbe Zeilenform und stehen in einer Rechnung.
+>
+> **Geräte tragen NICHTS zum Jahresbudget bei, und das ist Absicht.**
+> `Geraet` hat kein `neuwert`-Feld. Einen Preis zu schätzen wäre die
+> schlechtere Antwort als eine ehrliche Lücke: Ein erfundener Boilerpreis
+> wanderte über den PDF-Report direkt in die Fondsplanung des Eigentümers und
+> sähe dort aus wie eine Zahl. Die Seite nennt die Lücke ausdrücklich
+> («*n* Geräte stehen in der Liste, aber nicht im Budget»). Aus demselben
+> Grund hat der **Aufzug** keine Lebensdauer: Der Raumkatalog kennt keine, und
+> eine Frist zu behaupten, für die es keine Grundlage gibt, ist schlechter als
+> «Keine Datenbasis».
+>
+> **Die Kategorienbrücke** übersetzt zwischen den beiden Namensräumen — die
+> Lebensdauertabelle heisst «Heizung / Wärmeerzeuger», die Geräteliste
+> «Heizung». Identische Namen (Waschmaschine, Geschirrspüler, Backofen,
+> Rauchmelder) findet `Lebensdauer.fuer_kategorie` von selbst.
+>
+> **`/neu/assets/` bleibt als Weiterleitung** auf `/neu/ersatzplanung/`, mit
+> `query_string=True`, damit ein Lesezeichen mit `?lg=` seinen Filter behält.
+> Den **Menüplatz** erbt die Ersatzplanung («Ersatz & Ausstattung», nav-Key
+> `assets` unverändert) — sie stand bis dahin in **keiner** Navigationsgruppe
+> und war nur über die Brotkrume von `/neu/lebensdauer/` zu finden. Die
+> Weiterleitung selbst steht mit Begründung in `OHNE_WEG`
+> (`test_erreichbarkeit.py`): `urls.py` zählt dort ausdrücklich nicht als Weg,
+> sonst wäre jede Route automatisch «erreichbar».
+>
+> **Drei Wächter wurden umgehängt, nicht gelöscht.** `test_asset_loeschen`,
+> `test_asset_bearbeiten` und `test_assets_seite_zeigt_ausstattung` prüften
+> Dinge, die weiterhin gelten — nur die Adresse hat gewechselt. Die ersten
+> beiden zeigen jetzt auf `/neu/geraet/*`, der dritte ist in zwei zerlegt: die
+> portfolioweite Sicht auf der Ersatzplanung, die Gruppierung nach Raum in der
+> Objektakte. Was **nicht** mehr gefordert wird, ist das portfolioweite
+> Objekt-Akkordeon — das war die Doppelung.
+>
+> **Siebter Fall: Der Wächter fand sein Wort woanders.** Die erste Fassung von
+> `test_das_raumbuch_gruppiert_in_der_objektakte_nach_raum` suchte «Bad» in der
+> gerenderten Seite und blieb **grün**, als die Raum-Überschrift aus der
+> Vorlage entfernt wurde: Das Wort steht auch im Erfassungsformular darunter
+> (`<input name="raum" value="…">`). Beide Prüfungen lesen jetzt den Context
+> statt das HTML. Im Nachbartest wäre es noch stiller ausgegangen — «Bad» ist
+> Teilstring von «Badge» und stünde damit auf fast jeder Seite.
+>
+> **Ein Test zählte den Fixture-Bestand statt der Regel.** Die erste Fassung
+> von `test_ein_faelliges_geraet_erhoeht_das_budget_nicht` erwartete
+> `n_geraete == 1` — das `MandantenFixture` bringt selbst ein Gerät mit. Sie
+> zählt jetzt relativ (vorher + 1) und wird beim nächsten Fixture-Zuwachs nicht
+> aus dem falschen Grund rot.
 
 > **Warum 4b.10 dazwischenkam — dreimal derselbe Fehler.** Der Vergleich mit
 > `mockups/konzept-v2.html` (Screen «Fristenwächter») ergab, dass die Rechenlogik seit Phase 4a

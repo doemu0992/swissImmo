@@ -20,7 +20,9 @@
 # gar keine; der Modulname sagt ohnehin mehr.
 from .abnahme import *                 # noqa: F401,F403
 from .anlagen import *                 # noqa: F401,F403
-from .assets import *                  # noqa: F401,F403
+# `assets` ist in 4b.20 aufgegangen: Die Seite listete Geraete und Raumbuch
+# nur auf, ihre CRUD-Pfade waren eine zweite Fassung von `/neu/geraet/*`.
+# Gerechnet wird beides jetzt in `/neu/ersatzplanung/`.
 from .bankkonten import *              # noqa: F401,F403
 from .benutzer import *                # noqa: F401,F403
 from .debitor_qr import *              # noqa: F401,F403

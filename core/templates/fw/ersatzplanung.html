@@ -3,16 +3,11 @@
 {% block title %}Ersatzplanung — swissImmo{% endblock %}
 {% block content %}
 
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/assets/" class="hover:text-indigo-600">Assets</a>
-    <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <span class="text-slate-600 font-medium">Ersatzplanung</span>
-</nav>
 
 <div class="fw-phead">
     <div>
         <h1>Garantie- &amp; Ersatzplanung</h1>
-        <p>Raumbuch-Elemente nach Restnutzungsdauer (Lebensdauertabelle) mit Ersatzbudget je Jahr{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
+        <p>Raumbuch-Elemente <b>und Geräte</b> nach Restnutzungsdauer (Lebensdauertabelle) mit Ersatzbudget je Jahr{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</p>
     </div>
     <a href="/neu/ersatzplanung/?pdf=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener" class="fw-btn fw-primary"><i class="fa-solid fa-file-pdf"></i>Budget-PDF</a>
 </div>
@@ -124,18 +119,19 @@
             {% for r in rows %}
             <tr class="hover:bg-slate-50/60 transition-colors">
                 <td class="px-5 py-3">
-                    <div class="font-semibold text-slate-900">{{ r.a.kategorie }}</div>
-                    <div class="text-xs text-slate-400">{{ r.a.raum }}{% if r.a.einbau_datum %} · Einbau {{ r.a.einbau_datum|date:"m.Y" }}{% endif %}{% if r.a.effektive_lebensdauer %} · {{ r.a.effektive_lebensdauer }} J{% endif %}</div>
+                    <div class="font-semibold text-slate-900">{{ r.bezeichnung }}{% if r.art == 'geraet' %} <span class="fw-chip fw-mut">Gerät</span>{% endif %}</div>
+                    <div class="text-xs text-slate-400">{{ r.detail }}{% if r.einbau %} · Einbau {{ r.einbau|date:"m.Y" }}{% endif %}{% if r.lebensdauer %} · {{ r.lebensdauer }} J{% endif %}</div>
                 </td>
                 <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ r.standort }}</td>
                 <td class="px-5 py-3 text-right whitespace-nowrap {% if r.status == 'faellig' %}text-rose-600 font-semibold{% elif r.status == 'bald' %}text-amber-600 font-semibold{% else %}text-slate-600{% endif %}">
                     {% if r.rest is not None %}{{ r.rest }} J{% else %}—{% endif %}</td>
                 <td class="px-5 py-3"><span class="fw-chip whitespace-nowrap {{ r.status_cls }}">● {{ r.status_label }}</span></td>
-                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{% if r.a.garantie_bis %}{{ r.a.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{% if r.garantie_bis %}{{ r.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap {% if r.schaden_anzahl %}text-slate-900{% else %}text-slate-300{% endif %}">
                     {% if r.schaden_anzahl %}{{ r.schaden_anzahl }}× · CHF {{ r.reparaturkosten|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right tabular-nums font-semibold text-slate-900 whitespace-nowrap">CHF {{ r.lebenszyklus|chf }}</td>
-                <td class="px-5 py-3 text-right whitespace-nowrap"><a href="/neu/objekte/{{ r.a.einheit_id }}/#obj-raumbuch" class="text-xs text-indigo-600 font-medium hover:underline">Objekt</a></td>
+                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap {% if r.art == 'geraet' %}text-slate-300{% else %}font-semibold text-slate-900{% endif %}">
+                    {% if r.art == 'geraet' %}<span title="Geräte haben kein Neuwert-Feld — ein geschätzter Preis wanderte sonst über den PDF-Report in die Fondsplanung.">kein Neuwert</span>{% else %}CHF {{ r.lebenszyklus|chf }}{% endif %}</td>
+                <td class="px-5 py-3 text-right whitespace-nowrap"><a href="{{ r.ziel_url }}" class="text-xs text-indigo-600 font-medium hover:underline">{% if r.art == 'geraet' %}Gerät{% else %}Objekt{% endif %}</a></td>
             </tr>
             {% empty %}
             <tr><td colspan="8" class="px-5 py-12 text-center">
@@ -152,5 +148,6 @@
 <p class="text-xs text-slate-400 mt-4">
     <i class="fa-solid fa-circle-info mr-1"></i>
     Restdauer = Lebensdauer − Alter (aus der paritätischen Lebensdauertabelle). „Lebenszyklus" = Neuwert + aufgelaufene Reparaturkosten der verknüpften Schäden.
+    {% if budget_ohne_neuwert %}<br><b>{{ budget_ohne_neuwert }} Gerät{{ budget_ohne_neuwert|pluralize:"e" }}</b> stehen in der Liste, aber nicht im Budget: Geräte haben kein Neuwert-Feld. Ein geschätzter Preis wäre die schlechtere Antwort als diese Lücke — er wanderte über den PDF-Report in die Fondsplanung des Eigentümers.{% endif %}
 </p>
 {% endblock %}

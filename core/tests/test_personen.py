@@ -192,12 +192,16 @@ class LoeschbarkeitTests(TestCase):
         self.assertEqual(h.kontaktperson, 'Frau Muster')
         self.assertEqual(h.telefon, '079')
 
-    def test_asset_loeschen(self):
+    def test_geraet_loeschen(self):
+        # 4b.20: Lag bis dahin auf `/neu/assets/<pk>/loeschen/`. Diese Route
+        # war eine ZWEITE Fassung von `/neu/geraet/<pk>/loeschen/` auf
+        # demselben Modell und ist aufgeloest. Geprueft wird weiterhin
+        # dieselbe Sache: Ein Geraet muss loeschbar bleiben.
         from portfolio.models import Geraet
         lg, e, m, v = _basis_objekte()
         g = Geraet.objects.create(liegenschaft=lg, kategorie='Heizung')
         c = Client(); c.force_login(_team_user())
-        r = c.post(f'/neu/assets/{g.id}/loeschen/')
+        r = c.post(f'/neu/geraet/{g.id}/loeschen/')
         self.assertEqual(r.status_code, 302)
         self.assertFalse(Geraet.objects.filter(id=g.id).exists())
 
@@ -272,12 +276,14 @@ class LoeschbarkeitTests(TestCase):
         self.assertEqual(wf.art, 'versicherung')
         self.assertEqual(wf.intervall_monate, 24)
 
-    def test_asset_bearbeiten(self):
+    def test_geraet_bearbeiten(self):
+        # 4b.20: siehe `test_geraet_loeschen` — dieselbe Pruefung, der
+        # verbliebene der beiden Pfade.
         from portfolio.models import Geraet
         lg, e, m, v = _basis_objekte()
         g = Geraet.objects.create(liegenschaft=lg, kategorie='Boiler')
         c = Client(); c.force_login(_team_user())
-        r = c.post(f'/neu/assets/{g.id}/bearbeiten/', {
+        r = c.post(f'/neu/geraet/{g.id}/bearbeiten/', {
             'kategorie': 'Wärmepumpe', 'kapazitaet': '12 kW', 'seriennummer': 'X1'})
         self.assertEqual(r.status_code, 302)
         g.refresh_from_db()

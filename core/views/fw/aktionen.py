@@ -447,41 +447,6 @@ def fw_dienstleister_neu(request):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
-def fw_asset_neu(request):
-    """Gerät / Asset erfassen (Portfolio)."""
-    from django.shortcuts import redirect
-    from django.contrib import messages
-    from portfolio.models import Geraet, Einheit
-    from core.auth import log_aktion
-    if request.method != 'POST':
-        return redirect('fw_assets')
-    lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
-    if not lg:
-        messages.error(request, "Liegenschaft ist erforderlich.")
-        return redirect('fw_assets')
-    g = Geraet.objects.create(
-        liegenschaft=lg,
-        einheit=Einheit.objects.filter(id=request.POST.get('einheit_id') or None).first() if request.POST.get('einheit_id') else None,
-        kategorie=request.POST.get('kategorie', 'sonstiges'),
-        sonstiges_bezeichnung=(request.POST.get('sonstiges_bezeichnung') or '').strip(),
-        marke=(request.POST.get('marke') or '').strip(),
-        modell=(request.POST.get('modell') or '').strip(),
-        seriennummer=(request.POST.get('seriennummer') or '').strip(),
-        kapazitaet=(request.POST.get('kapazitaet') or '').strip(),
-        standort=(request.POST.get('standort') or '').strip(),
-        installations_datum=(date.fromisoformat(request.POST['installations_datum']) if request.POST.get('installations_datum') else None),
-        garantie_bis=(date.fromisoformat(request.POST['garantie_bis']) if request.POST.get('garantie_bis') else None),
-        notiz=(request.POST.get('notiz') or '').strip(),
-    )
-    log_aktion(request, "Asset erfasst", f"{g.marke} {g.modell}", str(lg))
-    messages.success(request, "✅ Asset / Gerät erfasst.")
-    ziel = '/neu/assets/'
-    if lgq := request.POST.get('lg'):
-        ziel += f'?lg={lgq}'
-    return redirect(ziel)
-
-
-@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_dokument_neu(request):
     """Dokument hochladen (Portfolio-Ablage)."""
     from django.shortcuts import redirect
@@ -592,66 +557,6 @@ def fw_dienstleister_loeschen(request, pk):
         log_aktion(request, "Dienstleister gelöscht", firma, '')
         messages.success(request, f"🗑️ Dienstleister '{firma}' gelöscht.")
     return redirect('fw_dienstleister')
-
-
-@rolle_erforderlich(*SCHREIB_ROLLEN)
-def fw_asset_bearbeiten(request, pk):
-    """Asset / Gerät (Portfolio-Assetliste) bearbeiten."""
-    from django.shortcuts import redirect
-    from django.contrib import messages
-    from portfolio.models import Geraet
-    from core.auth import log_aktion
-    g = get_object_or_404(Geraet, id=pk)
-    ziel = '/neu/assets/'
-    if lgq := request.POST.get('lg'):
-        ziel += f'?lg={lgq}'
-    if request.method != 'POST':
-        return redirect(ziel)
-
-    def _date(x):
-        try:
-            return date.fromisoformat(x)
-        except Exception:
-            return None
-
-    kategorie = (request.POST.get('kategorie') or '').strip()
-    if kategorie:
-        g.kategorie = kategorie
-    g.sonstiges_bezeichnung = (request.POST.get('sonstiges_bezeichnung') or '').strip()
-    g.marke = (request.POST.get('marke') or '').strip()
-    g.modell = (request.POST.get('modell') or '').strip()
-    g.seriennummer = (request.POST.get('seriennummer') or '').strip()
-    g.kapazitaet = (request.POST.get('kapazitaet') or '').strip()
-    g.standort = (request.POST.get('standort') or '').strip()
-    g.installations_datum = _date(request.POST.get('installations_datum'))
-    g.garantie_bis = _date(request.POST.get('garantie_bis'))
-    g.notiz = (request.POST.get('notiz') or '').strip()
-    g.save()
-    log_aktion(request, "Asset bearbeitet", f"{g.kategorie} {g.marke}".strip(), '')
-    messages.success(request, "✅ Asset aktualisiert.")
-    return redirect(ziel)
-
-
-@rolle_erforderlich(*SCHREIB_ROLLEN)
-def fw_asset_loeschen(request, pk):
-    """Asset / Gerät (Portfolio-Assetliste) löschen."""
-    from django.shortcuts import redirect
-    from django.contrib import messages
-    from portfolio.models import Geraet
-    from core.auth import log_aktion
-    g = get_object_or_404(Geraet, id=pk)
-    if request.method == 'POST':
-        from core.models import Pendenz
-        bez = f"{g.kategorie} {g.marke}".strip()
-        # Verwaiste Auto-Garantie-Pendenz mitlöschen (hängt nur über `quelle`).
-        Pendenz.objects.filter(quelle=f"auto:garantie:{g.id}").delete()
-        g.delete()
-        log_aktion(request, "Asset gelöscht", bez, '')
-        messages.success(request, "🗑️ Asset gelöscht.")
-    ziel = '/neu/assets/'
-    if lgq := request.POST.get('lg'):
-        ziel += f'?lg={lgq}'
-    return redirect(ziel)
 
 
 @rolle_erforderlich(ROLLE_VERWALTER)

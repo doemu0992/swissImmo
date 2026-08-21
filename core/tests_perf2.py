@@ -59,7 +59,7 @@ from django.db import connection
 
 from core.tests_perf import _seed
 
-VERDAECHTIG = ['/neu/debitoren/', '/neu/bankabgleich/', '/neu/', '/neu/assets/',
+VERDAECHTIG = ['/neu/debitoren/', '/neu/bankabgleich/', '/neu/', '/neu/ersatzplanung/',
                '/neu/mahnwesen/', '/neu/finanzen/', '/neu/objekte/']
 
 

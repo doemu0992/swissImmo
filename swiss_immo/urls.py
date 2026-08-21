@@ -4,6 +4,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views  # <-- Import für den Login
+from django.views.generic import RedirectView
 
 # ========================================================
 # 🚀 API SETUP (DJANGO NINJA)
@@ -114,11 +115,11 @@ from core.views.fw import (fw_arbeit, fw_fall_detail, fw_fallschritt_erledigen,
                            fw_kreditor_position_add, fw_kreditor_position_del,
                            fw_vertrag_mietzins_add, fw_vertrag_mietzins_del,
                            fw_kreditor_zahlung_zuruecksetzen, fw_kreditor_zahlung_stornieren,
-                           fw_dienstleister_neu, fw_dienstleister_bearbeiten, fw_dienstleister_loeschen, fw_asset_neu, fw_asset_bearbeiten, fw_asset_loeschen, fw_dokument_neu, fw_dokument_loeschen, fw_nebenkosten_neu, fw_nebenkosten_loeschen,
+                           fw_dienstleister_neu, fw_dienstleister_bearbeiten, fw_dienstleister_loeschen, fw_dokument_neu, fw_dokument_loeschen, fw_nebenkosten_neu, fw_nebenkosten_loeschen,
                            fw_buchung_neu, fw_buchung_stornieren, fw_kommunikation_senden, fw_serienbrief_pdf,
                            fw_schaeden, fw_schaden_kosten, fw_schaden_detail, fw_schaden_foto_upload, fw_schaden_foto_loeschen, fw_schaden_loeschen, fw_auftrag_kosten, fw_auftrag_pdf,
                            fw_schaden_auftrag, fw_schaden_status, fw_schaden_antwort, fw_schaden_neu,
-                           fw_dienstleister, fw_assets, fw_buchhaltung, fw_kontoblatt, fw_kontenplan, fw_buchhaltung_export, fw_buchhaltung_pdf, fw_anlagen,
+                           fw_dienstleister, fw_buchhaltung, fw_kontoblatt, fw_kontenplan, fw_buchhaltung_export, fw_buchhaltung_pdf, fw_anlagen,
                            fw_sollstellung, fw_sollstellung_run,
                            fw_nebenkosten, fw_nebenkosten_detail, fw_nebenkosten_verbuchen, fw_nebenkosten_versand, fw_akonto_anpassen,
                            fw_mietzins, fw_mietzins_anpassung, fw_mietzins_massenanpassung, fw_anfangsmietzins, fw_dokumente, fw_kommunikation,
@@ -354,10 +355,12 @@ urlpatterns = [
     path('neu/dienstleister/<int:pk>/', fw_dienstleister_detail, name='fw_dienstleister_detail'),
     path('neu/dienstleister/<int:pk>/bearbeiten/', fw_dienstleister_bearbeiten, name='fw_dienstleister_bearbeiten'),
     path('neu/dienstleister/<int:pk>/loeschen/', fw_dienstleister_loeschen, name='fw_dienstleister_loeschen'),
-    path('neu/assets/', fw_assets, name='fw_assets'),
-    path('neu/assets/neu/', fw_asset_neu, name='fw_asset_neu'),
-    path('neu/assets/<int:pk>/bearbeiten/', fw_asset_bearbeiten, name='fw_asset_bearbeiten'),
-    path('neu/assets/<int:pk>/loeschen/', fw_asset_loeschen, name='fw_asset_loeschen'),
+    # `/neu/assets/` ist in 4b.20 aufgeloest — die Seite listete Geraete und
+    # Raumbuch nur auf, gerechnet wird beides jetzt in der Ersatzplanung. Die
+    # Adresse bleibt als Weiterleitung, damit Lesezeichen halten.
+    path('neu/assets/', RedirectView.as_view(url='/neu/ersatzplanung/',
+                                             permanent=False, query_string=True),
+         name='fw_assets'),
     path('neu/finanzen/', fw_finanzen, name='fw_finanzen'),
     path('neu/buchhaltung/', fw_buchhaltung, name='fw_buchhaltung'),
     path('neu/buchhaltung/export/', fw_buchhaltung_export, name='fw_buchhaltung_export'),

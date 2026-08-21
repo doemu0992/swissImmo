@@ -407,6 +407,11 @@ def fw_ersatzplanung(request):
         'jahres_budget': daten['jahres_budget'], 'budget_total': daten['budget_total'],
         'horizont_jahre': daten['horizont_jahre'], 'deckung': deckung,
         'anzahl': len(rows),
+        # Wie viele Zeilen NICHT im Budget stehen, weil kein Neuwert erfasst
+        # ist (4b.20: Geraete). Die Zahl gehoert auf die Seite — ein Budget,
+        # dem die Heizung fehlt, sieht sonst aus wie ein vollstaendiges.
+        'budget_ohne_neuwert': daten['budget_ohne_neuwert'],
+        'n_geraete': daten['n_geraete'],
     })
 
 

@@ -60,7 +60,7 @@ def nav_gruppen(modus):
                 _i('Liegenschaften', '/neu/liegenschaften/', ['liegenschaften']),
                 _i('Objekte', '/neu/objekte/', ['objekte']),
                 _i('Schadensfälle', '/neu/schaeden/', ['schadensfaelle'], ),
-                _i('Assets & Ausstattung', '/neu/assets/', ['assets']),
+                _i('Ersatz & Ausstattung', '/neu/ersatzplanung/', ['assets']),
                 _i('Hypotheken', '/neu/hypotheken/', ['hypotheken']),
             ], badge='schaeden'),
             _g('vermietung', 'Vermietung', 'fa-key', '/neu/vertraege/', [
@@ -144,7 +144,11 @@ def nav_gruppen(modus):
             _i('MWST', '/neu/mwst/', ['mwst']),
             _i('Anlagen & Abschluss', '/neu/anlagen/', ['anlagen']),
             _i('Hypotheken', '/neu/hypotheken/', ['hypotheken']),
-            _i('Assets & Ausstattung', '/neu/assets/', ['assets']),
+            # 4b.20: `/neu/assets/` ist aufgeloest. Der Menueplatz gehoert der
+            # Seite, die die Sache RECHNET — die Ersatzplanung. Der nav-Key
+            # bleibt 'assets', den melden `fw_ersatzplanung` und
+            # `fw_lebensdauer` bereits.
+            _i('Ersatz & Ausstattung', '/neu/ersatzplanung/', ['assets']),
             _i('Eigentümer & Mandate', '/neu/mandate/', ['mandate']),
             _i('Pendenzen', '/neu/pendenzen/', ['pendenzen']),
             _i('Fristen-Center', '/neu/fristen/', ['fristen']),
