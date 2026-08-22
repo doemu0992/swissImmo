@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal-Login | SwissImmo</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%234f46e5%22/><text x=%2250%22 y=%2268%22 font-size=%2248%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>si</text></svg>">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
     <style>
         :root {
             --bg: #f6f7fb; --surface: #ffffff; --surface-2: #f1f2f8;
@@ -34,7 +33,7 @@
         }
         * { box-sizing: border-box; margin: 0; }
         body {
-            background: var(--bg); color: var(--ink); min-height: 100dvh; font-family: 'Inter', -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--ink); min-height: 100dvh; font-family: 'IBM Plex Sans', -apple-system, "Segoe UI", Roboto, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
         .shell { min-height: 100dvh; display: grid; grid-template-columns: 1.05fr 1fr; }
@@ -128,6 +127,7 @@
         a:focus-visible, button:focus-visible, .input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
     </style>
+    {% include 'core/_assets_schrift.html' %}
 </head>
 <body>
 <div class="shell">

@@ -1,0 +1,29 @@
+{% load static %}{% comment %}
+Stilbausteine der Anwendung — aus dem Repo, nicht aus dem Netz (E0.2).
+
+WAS SICH GEAENDERT HAT
+
+Bis hierher zog jede Huelle drei Fremdquellen: Tailwind als Browser-JIT von
+cdn.tailwindcss.com, Font Awesome von cdnjs, Inter von Google Fonts. Ohne
+Internet rendert die Anwendung dann voellig unformatiert — nachgestellt und
+gesehen. Dazu: drei Fremdaufrufe pro Seitenaufbau und die IP jedes Nutzers
+bei Dritten.
+
+Jetzt liegt alles unter static/. Der Tailwind-Bau erzeugt tailwind.css aus
+denselben Vorlagen, die ihn benutzen (siehe package.json, `npm run css`).
+
+ZWEI TAILWIND-DATEIEN, UND WARUM
+
+`tailwind.css` traegt die Petrol-Palette, `tailwind-aussen.css` Tailwinds
+Voreinstellung. Das ist kein Versehen: `_tailwind_palette.html` lag bewusst
+nur auf den fw-Huellen, nie auf Mieterportal, Bewerbungsformular und
+Fehlerseiten. Eine einzige Datei fuer alle wuerde diese Seiten nebenbei
+umfaerben — eine Gestaltungsentscheidung, die in E0 nichts zu suchen hat.
+Wer die Aussenseiten auf die Marke holen will, tauscht dort den Verweis;
+bis dahin sehen Mieter und Bewerber genau das, was sie vorher sahen.
+
+Bewacht von core/tests/test_keine_fremdquellen.py.
+{% endcomment %}
+<link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+<link rel="stylesheet" href="{% static 'css/schriften.css' %}">
+<link rel="stylesheet" href="{% static 'css/fontawesome.css' %}">

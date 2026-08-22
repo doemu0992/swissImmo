@@ -1,9 +1,10 @@
 # mietprozess/api.py
 #
 # Nach E1c ist hier nur noch EIN Endpunkt: das oeffentliche Bewerbungsformular.
-# Es wird von core/templates/core/bewerbung.html und
-# core/templates/core/public_bewerbung_form.html per fetch() aufgerufen; der
-# Pfad /api/mietprozess/public/bewerben darf sich deshalb nicht aendern.
+# Es wird von core/templates/core/public_bewerbung_form.html per fetch()
+# aufgerufen; der Pfad /api/mietprozess/public/bewerben darf sich deshalb
+# nicht aendern. (Die zweite Vorlage, core/bewerbung.html, war seit E1c von
+# keinem View mehr erreichbar und ist in E0.2 entfallen.)
 #
 # Die vier Admin-Endpunkte (Liste, Status, Loeschen, Nachricht) sind entfallen —
 # sie wurden ausschliesslich von der in E1b geloeschten Vue-Oberflaeche

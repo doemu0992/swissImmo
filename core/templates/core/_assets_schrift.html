@@ -1,0 +1,17 @@
+{% load static %}{% comment %}
+NUR die Schrift — kein Tailwind, kein Font Awesome (E0.2).
+
+Fuer Seiten, die ihr Aussehen vollstaendig in einem eigenen <style>-Block
+regeln und nie Tailwind geladen haben: Anmeldung, oeffentliche Startseite,
+Portal-Anmeldung. Sie zogen bisher einzig Inter von Google Fonts.
+
+WARUM NICHT DER GROSSE BAUSTEIN
+
+Tailwinds `preflight` setzt Raender, Schriftgroessen und Ueberschriften
+global zurueck. Diesen drei Seiten eine Tailwind-Datei unterzuschieben
+hiesse, ihr Aussehen zu aendern — waehrend die Etappe nur die Quelle der
+Dateien wechseln soll.
+
+Icons braucht keine der drei (nachgezaehlt: null `fa-`-Klassen).
+{% endcomment %}
+<link rel="stylesheet" href="{% static 'css/schriften.css' %}">

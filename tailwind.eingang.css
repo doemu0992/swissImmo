@@ -1,0 +1,6 @@
+/* Eingang für den Tailwind-Bau. Erzeugt static/css/tailwind.css (`npm run css`).
+   Eigene Regeln gehören NICHT hierher, sondern in die Komponentenschicht
+   (fw-*) in fw/base.html — sonst stehen Stile an zwei Orten. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

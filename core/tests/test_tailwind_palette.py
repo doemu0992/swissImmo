@@ -10,7 +10,7 @@ zweifarbig.
 
 `KONZEPT-UI.md` 16.4 nennt zwei Wege: Klassen einzeln umstellen oder Tailwind
 eine Petrol-Palette unterschieben. Gewählt ist der zweite — eine Änderung in
-`base.html` statt 7490 verteilter.
+der Bau-Konfiguration statt 7490 verteilter.
 
 WAS DIESER TEST HÄLT
 
@@ -31,16 +31,22 @@ from django.test import TestCase
 from core.tests.test_palette import kontrast, MINDESTKONTRAST, _block
 
 BASE = pathlib.Path('core/templates/fw/base.html')
-#: Seit 4b.9 steht die Rampe in einem eigenen Baustein, weil sie von mehreren
-#: Huellen gebraucht wird (base.html, base_embed.html, _modal_done.html).
-PALETTE = pathlib.Path('core/templates/fw/_tailwind_palette.html')
-#: Jede Huelle, die Tailwind vom CDN laedt und zur Anwendung gehoert. Die
-#: aussenstehenden Seiten (Portal, Bewerbung, oeffentliche Formulare,
-#: Fehlerseiten) fehlen hier absichtlich — siehe
+#: Seit E0.2 steht die Rampe in der Bau-Konfiguration statt in einem
+#: <script>-Block, den das Tailwind-CDN zur Laufzeit im Browser las. Derselbe
+#: Inhalt, nur zur Bauzeit — `npm run css` erzeugt daraus GEBAUT.
+PALETTE = pathlib.Path('tailwind.palette.js')
+#: Die gebaute Datei. Sie ist das, was der Browser wirklich bekommt; die
+#: Konfiguration allein sagt nichts darueber, ob der Bau auch gelaufen ist.
+GEBAUT = pathlib.Path('static/css/tailwind.css')
+#: Jede Huelle der Anwendung. Sie muessen den Stilbaustein mit der
+#: Petrol-Palette einbinden. Die aussenstehenden Seiten (Portal, Bewerbung,
+#: oeffentliche Formulare, Fehlerseiten) fehlen hier absichtlich — siehe
 #: `HuellenTests.test_die_aussenseiten_sind_gezaehlt_statt_vergessen`.
 HUELLEN = ('core/templates/fw/base.html',
            'core/templates/fw/base_embed.html',
            'core/templates/fw/_modal_done.html')
+#: Der Baustein, den eine Huelle der Anwendung tragen muss.
+BAUSTEIN = "{% include 'fw/_assets.html' %}"
 
 #: Wo eine Tailwind-Stufe einen Konzept-Token trifft, muss derselbe Wert
 #: stehen. Das ist die eigentliche Bindung — alles andere ist Zwischenton.
@@ -80,7 +86,7 @@ def ohne_kommentare(text):
 
 
 def rampen():
-    """Die Farbrampen aus `tailwind.config` in base.html.
+    """Die Farbrampen aus `tailwind.palette.js`.
 
     Gelesen wird der Text, nicht ausgeführtes JavaScript — der Test soll
     keine JS-Laufzeit brauchen. Eine erste Fassung übersetzte den Block nach
@@ -89,12 +95,13 @@ def rampen():
 
     Was das nicht kann: einen JavaScript-Syntaxfehler melden. Dagegen steht
     `test_es_gibt_ueberhaupt_rampen` — verschwindet eine Rampe aus dem
-    Ergebnis, schlägt er an, statt dass alles still grün bleibt.
+    Ergebnis, schlägt er an, statt dass alles still grün bleibt. Und seit
+    E0.2 steht darueber `test_der_bau_traegt_die_rampe_auch_wirklich`: Eine
+    fehlerhafte Konfiguration liefe im Bau auf die Nase, statt still eine
+    alte Datei stehen zu lassen.
     """
     quelle = PALETTE.read_text(encoding='utf-8')
-    anfang = quelle.index('tailwind.config')
-    block = quelle[anfang:quelle.index('</script>', anfang)]
-    block = ohne_kommentare(block)
+    block = ohne_kommentare(quelle[quelle.index('module.exports'):])
     farben = {}
     for m in re.finditer(r'(\w+):\s*\{([^{}]*)\}', block, re.S):
         paare = re.findall(r'(\d{2,3}):\s*\'(#[0-9a-f]{6})\'', m.group(2))
@@ -119,7 +126,7 @@ class TailwindPaletteTests(TestCase):
         self.assertIn('slate', self.rampen)
         self.assertGreaterEqual(len(self.rampen), 10,
                                 f'Nur {len(self.rampen)} Rampen gelesen — '
-                                f'Aufbau von tailwind.config geändert?')
+                                f'Aufbau von tailwind.palette.js geändert?')
         for name, stufen in self.rampen.items():
             with self.subTest(rampe=name):
                 self.assertEqual(sorted(stufen), [50, 100, 200, 300, 400,
@@ -200,9 +207,8 @@ class TailwindPaletteTests(TestCase):
         in `test_gestapelte_tabellen` am selben Tag — eine Prüfung, die die
         Erklärung eines Sachverhalts für den Sachverhalt hält.
         """
-        kopf = ohne_kommentare(
-            BASE.read_text(encoding='utf-8')[:BASE.read_text(
-                encoding='utf-8').index('</head>')]).lower()
+        text = BASE.read_text(encoding='utf-8')
+        kopf = ohne_kommentare(text[:text.index('</head>')]).lower()
         self.assertNotIn('4f46e5', kopf,
                          'Das alte Indigo steht noch im Kopfbereich.')
         self.assertIn('%230f6f6a', kopf, 'Das Favicon führt nicht die Markenfarbe.')
@@ -229,52 +235,117 @@ class TailwindPaletteTests(TestCase):
 
 
 class HuellenTests(TestCase):
-    """Jede Huelle der Anwendung muss die Palette auch wirklich laden.
+    """Jede Huelle der Anwendung muss die Petrol-Palette auch wirklich laden.
 
     WARUM
 
     Bis 4b.9 stand die Rampe nur in `base.html`, und dieser Test las nur
     `base.html`. Er bestaetigte damit die eine Stelle, an der aufgeraeumt
     worden war, und sah die zwei anderen Huellen nie an: `base_embed.html`
-    und `_modal_done.html` laden dasselbe Tailwind vom CDN, aber ohne die
+    und `_modal_done.html` luden dasselbe Tailwind, aber ohne die
     Umdefinition. Eingebettete Seiten und Modale — darunter die
     Wohnungsabnahme — rendern deshalb in Tailwinds Voreinstellung: blaugraues
     Slate, indigoblaue Akzente, mitten in einer petrolfarbenen Anwendung.
 
-    Die Pruefung ist bewusst eine Suche ueber das Dateisystem und keine feste
-    Liste allein: Eine neue Huelle taucht von selbst auf, statt still
-    danebenzustehen.
+    WAS SICH MIT E0.2 GEAENDERT HAT
+
+    Die Frage ist dieselbe geblieben, die Antwort liegt eine Ebene tiefer.
+    Vorher: «Laedt die Huelle Tailwind vom CDN — und gleich daneben den
+    Palette-Baustein?» Jetzt: «Bindet die Huelle den Stilbaustein ein — und
+    zwar den mit der Petrol-Palette?» Es gibt kein CDN mehr, das man
+    mitzaehlen koennte; die Farben stecken im Bau.
+
+    Die Gefahr ist damit nicht kleiner, sondern anders: Wer eine neue Huelle
+    baut und `core/_assets_aussen.html` einbindet (oder gar nichts), bekommt
+    Tailwind in der Voreinstellung — dasselbe zweifarbige Ergebnis wie
+    vorher, nur ueber einen anderen Weg.
     """
 
-    def _cdn_huellen(self):
-        """Alle Vorlagen, die Tailwind vom CDN laden."""
+    def _huellen_im_dateisystem(self):
+        """Alle Vorlagen, die einen Stilbaustein einbinden."""
         wurzel = pathlib.Path('core/templates')
         return sorted(str(p) for p in wurzel.rglob('*.html')
-                      if 'cdn.tailwindcss.com' in p.read_text(encoding='utf-8'))
+                      if '_assets' in p.read_text(encoding='utf-8')
+                      and not p.name.startswith('_assets'))
 
     def test_die_suche_findet_ueberhaupt_huellen(self):
         """Sonst pruefte der Test unten eine leere Liste."""
-        gefunden = self._cdn_huellen()
+        gefunden = self._huellen_im_dateisystem()
         self.assertGreaterEqual(len(gefunden), 10, gefunden)
         for pfad in HUELLEN:
             self.assertIn(pfad, gefunden,
-                          f'{pfad} laedt Tailwind nicht mehr vom CDN — dann '
-                          f'gehoert der Eintrag aus HUELLEN entfernt.')
+                          f'{pfad} bindet keinen Stilbaustein mehr ein — dann '
+                          f'laedt sie weder Tailwind noch Schrift noch Icons.')
 
     def test_jede_huelle_der_anwendung_laedt_die_palette(self):
         for pfad in HUELLEN:
             with self.subTest(huelle=pfad):
                 self.assertIn(
-                    "{% include 'fw/_tailwind_palette.html' %}",
-                    pathlib.Path(pfad).read_text(encoding='utf-8'),
+                    BAUSTEIN, pathlib.Path(pfad).read_text(encoding='utf-8'),
                     f'{pfad} laedt Tailwind ohne die Petrol-Rampe. Die Seite '
                     f'rendert dann in Tailwinds Voreinstellung.')
 
-    def test_der_baustein_traegt_die_rampe_auch_wirklich(self):
-        """Gegenprobe: Ein leerer Baustein bestuende den Test darueber."""
-        text = PALETTE.read_text(encoding='utf-8')
-        self.assertIn('tailwind.config', text)
-        self.assertIn("'#0f6f6a'", text, 'Die Markenfarbe fehlt im Baustein.')
+    def test_der_baustein_zeigt_auf_die_gebaute_datei(self):
+        """Gegenprobe: Ein Baustein, der ins Leere zeigt, bestuende oben.
+
+        Gelesen werden die <link>-Zeilen, nicht der Rohtext: Der Erklaerkopf
+        des Bausteins NENNT `tailwind-aussen.css`, um zu sagen, warum es die
+        zweite Datei gibt. Eine Suche im ganzen Text findet dieses Wort und
+        haelt die Erklaerung fuer die Sache — derselbe Fehler, den
+        `test_das_favicon_ist_nicht_mehr_indigo` schon einmal hatte.
+        """
+        text = pathlib.Path('core/templates/fw/_assets.html').read_text(encoding='utf-8')
+        verweise = re.findall(r'<link[^>]*>', text)
+        self.assertTrue(verweise, 'Der Baustein enthaelt keine <link>-Zeile.')
+        zusammen = ' '.join(verweise)
+        self.assertIn('css/tailwind.css', zusammen)
+        self.assertNotIn(
+            'tailwind-aussen.css', zusammen,
+            'Die Anwendung wuerde Tailwind OHNE die Markenpalette laden.')
+
+    def test_der_bau_traegt_die_rampe_auch_wirklich(self):
+        """Der Schritt, den es vorher nicht geben konnte.
+
+        Frueher uebersetzte das CDN die Konfiguration bei jedem Seitenaufruf
+        im Browser — Konfiguration und Ergebnis waren dasselbe. Jetzt liegt
+        eine gebaute Datei dazwischen, und die kann veralten: Wer die Palette
+        aendert und `npm run css` vergisst, hat eine richtige Konfiguration
+        und eine falsche Anwendung. Genau diese Luecke schliesst dieser Test.
+        """
+        css = GEBAUT.read_text(encoding='utf-8')
+        marke = rampen()['indigo'][600].lstrip('#')
+        r, g, b = (int(marke[i:i + 2], 16) for i in (0, 2, 4))
+        # `assertIn` mit der ganzen Datei als Heuhaufen wuerde im Fehlerfall
+        # 67 KB CSS in den Bericht schreiben. Eine Fehlermeldung, die niemand
+        # liest, ist so gut wie keine — deshalb erst suchen, dann urteilen.
+        gefunden = re.search(r'\.bg-indigo-600\{[^}]*?(\d+ \d+ \d+)', css)
+        self.assertIsNotNone(
+            gefunden,
+            f'In {GEBAUT} gibt es keine Regel `.bg-indigo-600` — wurde die '
+            f'Datei ueberhaupt gebaut? `npm run css` ausfuehren.')
+        self.assertEqual(
+            gefunden.group(1), f'{r} {g} {b}',
+            f'`bg-indigo-600` steht in {GEBAUT} auf rgb({gefunden.group(1)}), '
+            f'die Palette sagt #{marke} = rgb({r} {g} {b}). Die Palette wurde '
+            f'geaendert, aber nicht neu gebaut — `npm run css` ausfuehren.')
+
+    def test_die_aussen_datei_traegt_die_palette_bewusst_NICHT(self):
+        """Gegenprobe zum Test darueber — sonst prueft er nur, dass zwei
+        gleiche Dateien gleich sind.
+
+        Waeren beide Dateien identisch gebaut, waere die Trennung sinnlos und
+        die Aussenseiten waeren beim Umstellen nebenbei umgefaerbt worden.
+        """
+        aussen = pathlib.Path('static/css/tailwind-aussen.css').read_text(encoding='utf-8')
+        gefunden = re.search(r'\.bg-indigo-600\{[^}]*?(\d+ \d+ \d+)', aussen)
+        self.assertIsNotNone(gefunden, 'tailwind-aussen.css wurde nicht gebaut.')
+        marke = rampen()['indigo'][600].lstrip('#')
+        r, g, b = (int(marke[i:i + 2], 16) for i in (0, 2, 4))
+        self.assertNotEqual(
+            gefunden.group(1), f'{r} {g} {b}',
+            'Die Aussen-Datei traegt die Markenpalette. Damit waeren '
+            'Mieterportal, Bewerbungsformular und Fehlerseiten umgefaerbt — '
+            'eine Gestaltungsentscheidung, die E0.2 nicht treffen sollte.')
 
     def test_die_aussenseiten_sind_gezaehlt_statt_vergessen(self):
         """Was Mieter und Bewerber sehen, ist NOCH nicht umgestellt.
@@ -284,9 +355,9 @@ class HuellenTests(TestCase):
         Test haelt die Zahl fest, damit die Luecke benannt bleibt und nicht
         stillschweigend waechst.
         """
-        offen = [p for p in self._cdn_huellen() if p not in HUELLEN]
+        offen = [p for p in self._huellen_im_dateisystem() if p not in HUELLEN]
         self.assertGreater(len(offen), 0)
         self.assertLessEqual(
-            len(offen), 12,
+            len(offen), 15,
             f'Es sind mehr Huellen ohne Palette geworden ({len(offen)}): '
-            f'{offen}. Neue Huellen binden `fw/_tailwind_palette.html` ein.')
+            f'{offen}. Neue Huellen der Anwendung binden `fw/_assets.html` ein.')

@@ -560,6 +560,8 @@ Vergleich von Server und Prototyp. Nachgetragen, damit der Stand ablesbar ist:
 | 4b.17 | **Objektliste nach G9**: Befunde je Einheit (leer seit wann, wird frei ab, kein Mietzins, nicht ausgeschrieben), Gruppen nach Befund geordnet statt nach Alphabet, eine Darstellung statt zwei; `KonsistenzTests` hält Objekt- und Liegenschaftsliste auf derselben Leerstandsregel | erledigt |
 | 4b.18 | **Schadensliste nach G9**: Befunde je Meldung (ungelesen, kein Auftrag, Freigabe ausstehend, Liegenbleiber, Melder ohne Rückmeldung), vier Arbeitssichten statt sieben Statuschips, sortiert nach Befund statt nach Eingang | erledigt |
 | 4b.20 | **«Assets» aufgelöst**: Geräte kommen in die bestehende Ersatzplanung (Kategorienbrücke zur Lebensdauertabelle), die doppelten `fw_asset_*`-CRUD-Pfade entfallen, `/neu/assets/` wird Weiterleitung | erledigt |
+| E0.1 | **E2E-Seed läuft wieder**: `seed_e2e` spannt den Mandantenkontext selbst auf und legt die fehlende `Mitgliedschaft` an | erledigt |
+| E0.2 | **Keine Fremdquellen mehr**: Tailwind wird gebaut statt im Browser übersetzt, IBM Plex und Font Awesome liegen unter `static/`, 19 Vorlagen binden Stilbausteine ein, 12 tote Vorlagen entfallen | erledigt |
 
 > **Warum 4b.12 nötig war.** `faelle/akten.py` führt **sieben** Aktentypen. Nach 4b.11 hatten
 > fünf davon Aktenkopf und Reitersatz. Zwei hatten keine Seite: Das Mandat kannte nur Liste,
@@ -1162,9 +1164,28 @@ verdrahteten Tailwind-Klassen in Indigo. Gemessen am 20.08.2026: **7490 Farbklas
 Vorlagen** (4959 `slate`, 1250 `indigo`, dazu rose, emerald, amber).
 
 Von den beiden Wegen, die hier standen — «Klassen schrittweise auf Tokens umstellen, oder
-Tailwind eine Petrol-Palette unterschieben» — ist der **zweite** umgesetzt: `tailwind.config`
-in `base.html` definiert die Farbrampen um. Aus `bg-indigo-600` wird die Markenfarbe, aus
-`text-slate-500` das petrolgetönte Grau. Die Klassennamen bleiben; sie zeigen woanders hin.
+Tailwind eine Petrol-Palette unterschieben» — ist der **zweite** umgesetzt: die
+Tailwind-Konfiguration definiert die Farbrampen um. Aus `bg-indigo-600` wird die Markenfarbe,
+aus `text-slate-500` das petrolgetönte Grau. Die Klassennamen bleiben; sie zeigen woanders hin.
+
+> **Seit E0.2 steht die Palette in `tailwind.palette.js`, nicht mehr in `base.html`.**
+> Bis dahin lag sie in einem `<script>`-Block, den `cdn.tailwindcss.com` bei **jedem
+> Seitenaufruf im Browser** übersetzte. Jetzt läuft der Bau im Repo (`npm run css:alle`).
+> Derselbe Inhalt, nur zur Bauzeit.
+>
+> **Das erzeugt eine Lücke, die es vorher nicht geben konnte:** Beim CDN waren Konfiguration
+> und Ergebnis dasselbe. Jetzt liegt eine gebaute Datei dazwischen, und die kann veralten —
+> wer die Palette ändert und `npm run css` vergisst, hat eine richtige Konfiguration und eine
+> falsche Anwendung. `HuellenTests.test_der_bau_traegt_die_rampe_auch_wirklich` liest deshalb
+> die **gebaute** Datei, nicht die Konfiguration. Gegenprobe gelaufen: Palette auf `#aa1122`
+> ändern ohne Rebuild → rot mit der genauen Differenz.
+>
+> **Zwei gebaute Dateien.** `tailwind.css` trägt die Petrol-Palette, `tailwind-aussen.css`
+> Tailwinds Voreinstellung. Der Palette-Baustein lag nie auf Mieterportal, Bewerbungsformular
+> und Fehlerseiten; sie beim Umstellen nebenbei umzufärben wäre eine Gestaltungsentscheidung
+> gewesen, und die gehört nicht in eine Etappe, die nur Fremdquellen entfernt. Ein eigener
+> Test hält fest, dass die Aussen-Datei die Marke **bewusst nicht** trägt — ohne ihn prüfte
+> der Test darüber nur, dass zwei gleiche Dateien gleich sind.
 
 **Die Rampen hängen an den Tokens.** Wo eine Stufe einen Token trifft, steht derselbe Wert:
 
