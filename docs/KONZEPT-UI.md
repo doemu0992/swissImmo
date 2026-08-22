@@ -46,6 +46,14 @@ Wohnungen und eine Bewirtschafterin mit 350 haben nicht denselben Beruf. „Geld
 
 ## 2. Grundentscheidungen
 
+> **Abgelöst am 22.08.2026 durch `docs/ENTSCHEIDE-V7.md`.** D1 setzt **fünf**
+> Bereiche (`Heute · Akten · Läufe · Finanzen · Berichte`), D8 benennt zwei davon
+> um («Heute» statt «Arbeit», «Berichte» statt «Zahlen»). Wo dieses Dokument und
+> ENTSCHEIDE-V7 auseinandergehen, gilt ENTSCHEIDE-V7 — die übrigen
+> Grundentscheidungen (G2 ff.) bleiben unberührt. Der Hinweis steht hier, weil
+> `CLAUDE.md` auf dieses Dokument verweist: Wer nur hier liest, folgte sonst
+> weiter der alten Zahl.
+
 **G1 — Vier Bereiche statt sechs.** `Arbeit · Akten · Läufe · Zahlen`, dazu Einstellungen.
 
 **G2 — Ein Arbeitsvorrat, nicht zwei Listen.** „Heute" und „Fälle" sind dasselbe: eine

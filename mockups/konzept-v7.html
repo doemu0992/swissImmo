@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="de" data-rail="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>swissImmo · Konzept v7 — Zielbild</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   swissImmo · Konzept v7 — Tokens
+   Ein Akzent (--akzent) statt einer Indigo-Rampe: Mandanten-Branding
+   ist später genau ein Wert je Organisation. Schrift im Prototyp von
+   Google Fonts; in der Anwendung selbst gehostet (D3).
+   ============================================================ */
+:root{
+  --akzent:#0f6f6a; --akzent-2:#0b5450; --akzent-soft:#d9efed;
+  --bg:#f1f4f5; --surface:#ffffff; --surface-2:#f6f9f9;
+  --ink:#0e2227; --muted:#4c6169; --faint:#5c757c; --line:#dde6e8; --line-2:#eaf0f1;
+  --good:#166534; --good-soft:#e0f2e5; --warn:#a35a09; --warn-soft:#fbeeda;
+  --crit:#b32133; --crit-soft:#fbe6e9; --info:#0b5c8f; --info-soft:#e0eff8;
+  --r:10px; --r-sm:6px;
+  --sh:0 1px 2px rgba(14,34,39,.05),0 6px 20px rgba(14,34,39,.05);
+  --rail-bg:var(--surface); --rail-ink:var(--ink); --rail-muted:var(--muted); --rail-line:var(--line);
+  --rail-hover:var(--surface-2); --rail-active-bg:var(--akzent-soft); --rail-active-ink:var(--akzent-2);
+  --kzh:54px;
+}
+[data-rail="dark"]{
+  --rail-bg:#0f2327; --rail-ink:#e7f0f1; --rail-muted:#b7cdd1; --rail-line:#1f3a40;
+  --rail-hover:#173038; --rail-active-bg:var(--akzent); --rail-active-ink:#ffffff;
+}
+[data-theme="dark"]{
+  --bg:#0a1518; --surface:#12242a; --surface-2:#173038; --ink:#e4edee; --muted:#a8c0c5; --faint:#8ba4aa;
+  --line:#22404a; --line-2:#1c363e; --akzent:#4fb3aa; --akzent-2:#9adcd6; --akzent-soft:#0f2f2e;
+  --good:#4ec98a; --good-soft:#12312a; --warn:#e0a44a; --warn-soft:#33280f; --crit:#f08a90; --crit-soft:#341a1d;
+  --info:#5cb4e8; --info-soft:#0f2b3a; --sh:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+}
+[data-theme="dark"][data-rail="light"]{--rail-bg:#0e1f24;--rail-line:#1c363e;--rail-hover:#173038;--rail-active-bg:#0f2f2e;--rail-active-ink:#9adcd6;--rail-ink:#e4edee;--rail-muted:#a8c0c5}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:14px/1.5 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.93em}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--akzent);outline-offset:2px;border-radius:4px}
+svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.i.s{width:15px;height:15px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- Konzeptleiste (nur im Prototyp) ---------- */
+.kz{position:sticky;top:0;z-index:80;background:#0e1d21;color:#dfe9eb;display:flex;align-items:center;gap:10px;padding:8px 14px;flex-wrap:wrap;border-bottom:1px solid #1f3a40}
+.kz .t{font-weight:600;letter-spacing:.08em;font-size:11.5px;text-transform:uppercase;color:#9fc3c7;white-space:nowrap}
+.kz .scr{display:flex;gap:6px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none}
+.kz .scr::-webkit-scrollbar{display:none}
+.kz .scr button{white-space:nowrap;background:#18333a;border:1px solid #26474f;color:#dfe9eb;border-radius:7px;padding:6px 11px;font-size:12.5px;font-weight:500;cursor:pointer;min-height:32px}
+.kz .scr button[aria-current]{background:#fff;color:#0e1d21;border-color:#fff}
+.kz .sw{display:flex;gap:6px;align-items:center;font-size:12px;color:#9fc3c7}
+.kz .sw button{background:none;border:1px solid #26474f;color:#dfe9eb;border-radius:7px;padding:5px 9px;font-size:12px;cursor:pointer;min-height:32px}
+.kz .sw button[aria-pressed="true"]{background:#26474f}
+.kz-note{background:var(--surface);color:var(--muted);font-size:12.5px;padding:8px 24px;border-bottom:1px solid var(--line)}
+.kz-note b{color:var(--ink);font-weight:600}
+.kz-note span{display:none}
+.kz-note span.on{display:inline}
+
+/* ---------- Rahmen ---------- */
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr)}
+.rail{background:var(--rail-bg);color:var(--rail-ink);border-right:1px solid var(--rail-line);display:flex;flex-direction:column;position:sticky;top:var(--kzh);height:calc(100dvh - var(--kzh));overflow:auto}
+.org{display:flex;align-items:center;gap:10px;padding:14px 14px 12px;border-bottom:1px solid var(--rail-line);background:none;border-left:0;border-right:0;border-top:0;width:100%;text-align:left;cursor:pointer}
+.org .mark{width:30px;height:30px;border-radius:8px;background:var(--akzent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
+.org>span:nth-child(2){min-width:0;flex:1}
+.org b{font-weight:600;font-size:13.5px;display:block;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.org small{color:var(--rail-muted);font-size:11.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.org svg{margin-left:auto;color:var(--rail-muted)}
+.nav{padding:10px;display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-weight:500;color:var(--rail-ink);text-decoration:none;min-height:38px}
+.nav a:hover{background:var(--rail-hover)}
+.nav a[aria-current]{background:var(--rail-active-bg);color:var(--rail-active-ink);font-weight:600}
+.bd{margin-left:auto;background:var(--crit);color:#fff;font-size:11px;font-weight:600;border-radius:999px;padding:1px 7px;min-width:20px;text-align:center;line-height:16px}
+.bd.n{background:var(--rail-muted)}
+.sub{margin:2px 0 8px 28px;display:flex;flex-direction:column;gap:1px}
+.sub a{display:flex;align-items:center;padding:5px 10px;min-height:30px;font-size:13px;color:var(--rail-muted);text-decoration:none;border-radius:6px}
+.sub a:hover{background:var(--rail-hover)}
+.sub a[aria-current]{color:var(--rail-active-ink);font-weight:600}
+.sub a .c{margin-left:auto;font-size:11.5px;opacity:.8}
+.rail-foot{margin-top:auto;border-top:1px solid var(--rail-line);padding:10px}
+.abo{font-size:12px;color:var(--rail-muted);padding:9px 10px;border:1px solid var(--rail-line);border-radius:8px;margin-bottom:8px;display:block;text-decoration:none}
+.abo b{display:block;color:var(--rail-ink);font-weight:600}
+/* `display:block` ist nicht Kosmetik: als Inline-Element ignoriert der
+   Balken seine Hoehe und waechst auf die Zeilenhoehe des Inhalts. */
+.meter{display:block;height:4px;background:var(--rail-line);border-radius:2px;margin:6px 0;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--akzent)}
+.user{display:flex;align-items:center;gap:10px;padding:6px 10px;font-size:13px}
+.user small{display:block;color:var(--rail-muted);font-size:11.5px}
+.av{width:30px;height:30px;border-radius:50%;background:var(--akzent-soft);color:var(--akzent-2);font-weight:600;font-size:11.5px;display:grid;place-items:center;flex:none}
+.av.x{width:26px;height:26px;font-size:10.5px}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:10px;padding:10px 24px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:var(--kzh);z-index:30}
+.top .mob{display:none}
+.search{flex:1;max-width:560px;display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;color:var(--faint);min-height:38px;cursor:text}
+.search kbd{margin-left:auto;font:11px "IBM Plex Mono",monospace;border:1px solid var(--line);border-radius:4px;padding:1px 5px;background:var(--surface);color:var(--muted)}
+.sp{flex:1}
+.ib{width:38px;height:38px;border-radius:8px;border:1px solid transparent;background:none;display:grid;place-items:center;position:relative;cursor:pointer;color:var(--muted)}
+.ib:hover{background:var(--surface-2)}
+.ib .dot{position:absolute;top:7px;right:7px;width:8px;height:8px;background:var(--crit);border-radius:50%;border:2px solid var(--surface)}
+
+.screen{display:none}
+.screen.on{display:block}
+.page{padding:22px 24px 60px;max-width:1440px;width:100%}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.ph h1{font-size:22px;font-weight:600;margin:0;letter-spacing:-.01em;line-height:1.25}
+.ph .meta{color:var(--muted);font-size:13px;margin-top:3px}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.crumb{font-size:12.5px;color:var(--faint);margin-bottom:10px}
+.crumb b{color:var(--ink);font-weight:500}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.sel{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:13px;min-height:36px;cursor:pointer}
+.sel b{font-weight:600}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-weight:500;font-size:13px;cursor:pointer;min-height:36px;white-space:nowrap;text-decoration:none;color:var(--ink)}
+.btn:hover{background:var(--surface-2)}
+.btn.p{background:var(--akzent);border-color:var(--akzent);color:#fff}
+.btn.p:hover{background:var(--akzent-2);border-color:var(--akzent-2)}
+.btn.sm{padding:4px 9px;min-height:30px;font-size:12.5px}
+.btn.w{border-color:var(--warn);color:var(--warn)}
+.btn.c{border-color:var(--crit);color:var(--crit)}
+.btn.g{border-color:transparent;background:transparent;color:var(--akzent-2);padding-left:6px;padding-right:6px}
+
+/* ---------- Lage-Streifen (nur Vergleiche, 4b.13) ---------- */
+.strip{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:16px;overflow:hidden}
+.strip>div{padding:12px 16px;border-left:1px solid var(--line);min-width:0}
+.strip>div:first-child{border-left:none}
+.strip .v{font-size:18px;font-weight:600;margin-top:3px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.strip .d{font-size:12px;color:var(--muted);margin-top:2px}
+.tr{font-size:12px;font-weight:500}
+.tr.up{color:var(--crit)} .tr.dn{color:var(--good)} .tr.eq{color:var(--muted)}
+
+/* ---------- Karten, Register, Listen ---------- */
+.grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:16px;align-items:start}
+.grid.eq{grid-template-columns:1fr 1fr}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);min-width:0}
+.card.q{box-shadow:none}
+.ch{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.ch h2{font-size:15px;font-weight:600;margin:0}
+.ch .n{color:var(--faint);font-size:13px}
+.ch .r{margin-left:auto;display:flex;gap:6px;align-items:center}
+.cb{padding:12px 16px}
+.cf{padding:10px 16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.cf a{color:var(--akzent-2);font-weight:600;text-decoration:none}
+.tabs{display:flex;gap:2px;padding:0 8px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 10px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;display:flex;gap:6px;align-items:center;min-height:40px}
+.tabs button[aria-current]{color:var(--akzent-2);border-bottom-color:var(--akzent);font-weight:600}
+.tabs .c{font-size:11px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:0 6px;color:var(--muted);line-height:16px}
+.chips{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:12.5px;cursor:pointer;white-space:nowrap;color:var(--muted);min-height:28px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+[data-theme="dark"] .chip[aria-pressed="true"]{background:var(--akzent-soft);color:var(--akzent-2);border-color:var(--akzent)}
+
+.tag{font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:var(--surface-2);color:var(--muted);border:1px solid var(--line);white-space:nowrap;display:inline-block;line-height:16px;vertical-align:middle}
+.tag.c{background:var(--crit-soft);color:var(--crit);border-color:transparent}
+.tag.w{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.tag.i{background:var(--info-soft);color:var(--info);border-color:transparent}
+.tag.g{background:var(--good-soft);color:var(--good);border-color:transparent}
+.tag.a{background:var(--akzent-soft);color:var(--akzent-2);border-color:transparent}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:3px 10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.pill i{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+.pill.g{color:var(--good);background:var(--good-soft);border-color:transparent}
+.pill.w{color:var(--warn);background:var(--warn-soft);border-color:transparent}
+.pill.c{color:var(--crit);background:var(--crit-soft);border-color:transparent}
+.pill.i{color:var(--info);background:var(--info-soft);border-color:transparent}
+.pill.a{color:var(--akzent-2);background:var(--akzent-soft);border-color:transparent}
+
+/* Arbeitszeile: Marker · Inhalt · Stand · Frist · Zuständig · Handlung */
+.wl{list-style:none;margin:0;padding:0}
+.wl li{display:grid;grid-template-columns:4px minmax(0,1fr) 170px 118px 30px auto;gap:12px;align-items:center;padding:10px 16px 10px 0;border-bottom:1px solid var(--line-2)}
+.wl li:last-child{border-bottom:none}
+.wl .bar{align-self:stretch;border-radius:0 2px 2px 0;background:var(--line)}
+.wl .bar.c{background:var(--crit)} .wl .bar.w{background:var(--warn)} .wl .bar.i{background:var(--info)} .wl .bar.g{background:var(--good)}
+.wl .main{min-width:0}
+.wl .tl{display:flex;gap:8px;align-items:center;margin-bottom:2px;font-size:12px;color:var(--faint)}
+.wl .t{font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wl .s{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wl .st{font-size:12.5px;color:var(--muted);min-width:0}
+.wl .st b{display:block;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wl .fr{font-size:12px;color:var(--muted);text-align:right}
+.wl .fr b{display:block;font-weight:600;color:var(--ink);font-size:13px}
+.wl .fr.c b{color:var(--crit)} .wl .fr.w b{color:var(--warn)}
+
+/* Befunde (G9) */
+.bef{list-style:none;margin:0;padding:0}
+.bef li{display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line-2);align-items:flex-start}
+.bef li:last-child{border:none}
+.bef .dot{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:none;background:var(--line)}
+.bef .dot.c{background:var(--crit)} .bef .dot.w{background:var(--warn)} .bef .dot.i{background:var(--info)} .bef .dot.g{background:var(--good)}
+.bef .t{font-weight:600;font-size:13.5px}
+.bef .s{font-size:12.5px;color:var(--muted)}
+.bef .r{margin-left:auto;flex:none}
+
+/* Zulauf-Eingang */
+.zl li{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 16px;border-bottom:1px solid var(--line-2);list-style:none}
+.zl{margin:0;padding:0}
+.zl li:last-child{border:none}
+.zl .ic{width:36px;height:36px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted)}
+.zl .t{font-weight:600;font-size:13px}
+.zl .s{font-size:12.5px;color:var(--muted)}
+.zl .v{font-size:12.5px;margin-top:4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.zl .v b{font-weight:500}
+.conf{font-family:"IBM Plex Mono",monospace;font-size:11px;padding:1px 6px;border-radius:4px;background:var(--good-soft);color:var(--good)}
+.conf.w{background:var(--warn-soft);color:var(--warn)}
+
+/* Termine */
+.tm{list-style:none;margin:0;padding:0}
+.tm li{display:grid;grid-template-columns:52px 3px minmax(0,1fr);gap:10px;padding:9px 16px;border-bottom:1px solid var(--line-2);align-items:stretch}
+.tm li:last-child{border:none}
+.tm .z{font-weight:600;font-size:13px}
+.tm .z small{display:block;font-weight:400;color:var(--faint);font-size:11.5px}
+.tm .l{background:var(--akzent);border-radius:2px}
+.tm .l.w{background:var(--warn)}
+.tm .t{font-weight:500;font-size:13px}
+.tm .s{font-size:12.5px;color:var(--muted)}
+
+/* Aktenkopf = Deckblatt */
+.kopf{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:16px;overflow:hidden}
+.kopf .hd{display:flex;gap:16px;padding:18px 20px 14px;align-items:flex-start;flex-wrap:wrap}
+.kopf .ico{width:46px;height:46px;border-radius:10px;background:var(--akzent-soft);color:var(--akzent-2);display:grid;place-items:center;flex:none}
+.kopf .tx{flex:1;min-width:240px}
+.kopf h1{font-size:21px;font-weight:600;margin:2px 0 4px;letter-spacing:-.01em;line-height:1.25}
+.kopf .meta{font-size:13px;color:var(--muted)}
+.kopf .meta b{color:var(--ink);font-weight:500}
+.kopf .pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.kpis>div{padding:12px 20px;border-left:1px solid var(--line);min-width:0}
+.kpis>div:first-child{border-left:none}
+.kpis .v{font-size:19px;font-weight:600;margin-top:2px}
+.kpis .v.w{color:var(--warn)} .kpis .v.c{color:var(--crit)} .kpis .v.g{color:var(--good)}
+.kpis .d{font-size:12px;color:var(--muted)}
+.reg{display:flex;gap:4px;padding:10px 16px 0;background:var(--surface-2);border-top:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.reg::-webkit-scrollbar{display:none}
+.reg a{padding:9px 14px;font-weight:500;font-size:13.5px;color:var(--muted);text-decoration:none;border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;position:relative;top:1px;white-space:nowrap;min-height:40px;display:inline-flex;align-items:center}
+.reg a[aria-current]{background:var(--surface);color:var(--ink);border-color:var(--line);font-weight:600;box-shadow:inset 0 3px 0 var(--akzent)}
+.reg a .c{color:var(--faint);font-size:12px;margin-left:5px}
+
+/* Tabellen: Tabellenziffern, rechtsbündige Beträge */
+.tw{overflow-x:auto}
+table.tb{width:100%;border-collapse:collapse;font-size:13px}
+.tb th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:600;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tb td{padding:9px 12px;border-bottom:1px solid var(--line-2);vertical-align:middle;white-space:nowrap}
+.tb tr:last-child td{border-bottom:none}
+.tb td.r,.tb th.r{text-align:right}
+.tb tbody tr:hover td{background:var(--surface-2)}
+.tb .sub{display:block;font-size:12px;color:var(--muted);margin:0}
+.tb td.neg{color:var(--good)} .tb td.pos{color:var(--crit)}
+.tb tr.flag td{background:var(--warn-soft)}
+.tb tr.flag:hover td{background:var(--warn-soft)}
+.tb .ck{margin:0}
+
+/* Stufenband des Falls */
+.stage{display:grid;grid-template-columns:repeat(6,1fr);padding:16px 20px 12px;border-top:1px solid var(--line);position:relative}
+.stage::before{content:"";position:absolute;left:calc(8.33% + 12px);right:calc(8.33% + 12px);top:29px;height:2px;background:var(--line)}
+.stage>div{text-align:center;position:relative;font-size:12px;color:var(--muted)}
+.stage .c{width:26px;height:26px;border-radius:50%;margin:0 auto 6px;display:grid;place-items:center;background:var(--surface);border:2px solid var(--line);font-weight:600;font-size:12px;position:relative;color:var(--muted)}
+.stage .done .c{background:var(--akzent);border-color:var(--akzent);color:#fff}
+.stage .now .c{background:var(--warn);border-color:var(--warn);color:#fff}
+.stage b{display:block;color:var(--ink);font-weight:600;font-size:13px}
+.stage .now b{color:var(--warn)}
+
+.steps{list-style:none;margin:0;padding:0}
+.steps .grp{padding:7px 16px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--akzent-2);background:var(--surface-2);border-bottom:1px solid var(--line-2)}
+.steps li.s{display:flex;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line-2);align-items:flex-start}
+.steps li.s>div{min-width:0}
+.steps li.s:last-child{border-bottom:none}
+.steps .t{font-weight:500;font-size:13.5px}
+.steps .now .t{font-weight:600}
+.steps .d{font-size:12.5px;color:var(--muted)}
+.steps .w{margin-left:auto;text-align:right;font-size:12px;color:var(--faint);white-space:nowrap}
+.steps .w b{display:block;color:var(--ink)}
+.steps .now .w b{color:var(--warn)}
+.ck{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line);margin-top:2px;flex:none;display:grid;place-items:center;background:var(--surface)}
+.ck.on{background:var(--akzent);border-color:var(--akzent);color:#fff}
+.ck.now{border-color:var(--warn);border-width:2px}
+.regel{margin:6px 0 0;padding:8px 10px;border-radius:6px;background:var(--good-soft);font-size:12.5px;color:var(--good);display:flex;gap:8px;align-items:flex-start}
+/* Nicht `.regel.w`: `.steps .w` ist die Datumsspalte mit `nowrap` und haette
+   den Hinweiskasten in einer Zeile ueber den Rand gezogen. */
+.regel.achtung{background:var(--warn-soft);color:var(--warn)}
+
+/* Laufrahmen */
+.lsteps{display:flex;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.lsteps>div{flex:1;min-width:150px;padding:11px 16px;font-size:12.5px;color:var(--muted);border-right:1px solid var(--line);display:flex;gap:8px;align-items:center;white-space:nowrap}
+.lsteps>div:last-child{border-right:none}
+.lsteps .n{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:600;flex:none}
+.lsteps .done .n{background:var(--akzent);border-color:var(--akzent);color:#fff}
+.lsteps .now{color:var(--ink);font-weight:600;background:var(--akzent-soft)}
+.lsteps .now .n{border-color:var(--akzent);color:var(--akzent-2);background:var(--surface)}
+.block{background:var(--crit-soft);border-radius:var(--r);padding:12px 16px;margin-bottom:16px}
+.block h3{margin:0 0 6px;font-size:13.5px;color:var(--crit);display:flex;gap:8px;align-items:center}
+.block ul{margin:0;padding-left:18px;font-size:13px}
+.block li{margin:3px 0}
+.block li a{color:var(--akzent-2);font-weight:600;text-decoration:none;margin-left:6px}
+.hint{background:var(--warn-soft);border-radius:var(--r);padding:12px 16px;font-size:13px;margin-bottom:16px}
+.hint b{color:var(--warn)}
+.note{background:var(--info-soft);border-radius:var(--r);padding:12px 16px;font-size:13px;color:var(--ink)}
+.note b{color:var(--info)}
+.empty{padding:28px 16px;text-align:center;color:var(--muted);font-size:13px}
+.empty a{color:var(--akzent-2);font-weight:600;text-decoration:none}
+.kv{display:grid;grid-template-columns:140px minmax(0,1fr);gap:7px 12px;font-size:13px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:500}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.foot .n{font-size:12.5px;color:var(--muted)}
+
+/* Abo & Module */
+.use{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.use>div{font-size:12.5px;color:var(--muted);min-width:0}
+.use b{display:block;color:var(--ink);font-size:15px;font-weight:600}
+.use .meter{background:var(--line)}
+.tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tier{border:1px solid var(--line);border-radius:var(--r);padding:14px;background:var(--surface);position:relative}
+.tier.now{border-color:var(--akzent);box-shadow:inset 0 0 0 1px var(--akzent)}
+.tier .cur{position:absolute;top:-9px;left:12px;background:var(--akzent);color:#fff;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:1px 8px;border-radius:999px}
+.tier h3{margin:0;font-size:15px}
+.tier .pr{font-size:20px;font-weight:600;margin:4px 0 8px}
+.tier .pr small{font-size:12px;color:var(--muted);font-weight:400}
+.tier ul{list-style:none;padding:0;margin:0;font-size:12.5px;color:var(--muted)}
+.tier li{padding:4px 0;border-top:1px solid var(--line-2)}
+.tier li b{color:var(--ink);font-weight:500}
+.tog{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line-2)}
+.tog:last-child{border:none}
+.tog .t{font-weight:600;font-size:13.5px}
+.tog .s{font-size:12.5px;color:var(--muted)}
+.tog .r{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted)}
+.swt{width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;flex:none;border:0;cursor:pointer}
+.swt.on{background:var(--akzent)}
+.swt::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.swt.on::after{left:19px}
+.colorrow{display:flex;align-items:center;gap:12px;font-size:13px}
+.colorrow input{width:44px;height:32px;border:1px solid var(--line);border-radius:6px;background:none;padding:0;cursor:pointer}
+
+/* Vor Ort (Telefonrahmen) */
+.phone{max-width:430px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:24px;overflow:hidden;box-shadow:var(--sh)}
+.phone .pb{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.phone .pb b{font-size:14px;display:block}
+.phone .pb small{color:var(--muted);font-size:12px}
+.room{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line-2);min-height:52px}
+.room .t{font-weight:600;font-size:14px}
+.room .s{font-size:12.5px;color:var(--muted)}
+.room .r{margin-left:auto}
+.ring{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:600;flex:none;background:conic-gradient(var(--akzent) calc(var(--p)*1%),var(--line) 0)}
+.ring span{width:26px;height:26px;border-radius:50%;background:var(--surface);display:grid;place-items:center}
+.mangel{margin:0 16px 12px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:12.5px}
+.mangel .t{font-weight:600;font-size:13px;display:flex;gap:8px;align-items:center}
+.mangel .ph2{display:flex;gap:6px;margin:8px 0}
+.mangel .ph2 i{width:52px;height:40px;border-radius:6px;background:linear-gradient(135deg,var(--line),var(--surface-2));display:block}
+.pfoot{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:8px}
+.pfoot .btn{flex:1;justify-content:center}
+
+/* Mobile: Tab-Leiste, Stapel */
+.tabbar{display:none}
+@media (max-width:1023px){
+  :root{--kzh:0px}
+  .kz{position:static}
+  .kz-note{padding:8px 14px}
+  .shell{grid-template-columns:1fr}
+  .rail{display:none}
+  .top{top:0;padding:8px 12px}
+  .top .mob{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13.5px}
+  .top .mob .mark{width:28px;height:28px;border-radius:7px;background:var(--akzent);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+  .search{max-width:none}
+  .search .txt{display:none}
+  .search kbd{display:none}
+  /* Auf dem Telefon traegt die Kopfzeile Suche und eine Handlung. Hilfe und
+     Konto stehen im Menue — sonst draengt die Zeile ueber den Rand. */
+  .top .btn.p span,.top .btn.p .i:last-child{display:none}
+  .top .btn.p{padding:7px 10px}
+  .top .ib[aria-label="Hilfe"],.top>.av{display:none}
+  .page{padding:14px 14px 92px}
+  .grid,.grid.eq{grid-template-columns:1fr}
+  .strip,.kpis{grid-template-columns:1fr 1fr}
+  .strip>div:nth-child(3),.kpis>div:nth-child(3){border-left:none;border-top:1px solid var(--line)}
+  .strip>div:nth-child(4),.kpis>div:nth-child(4){border-top:1px solid var(--line)}
+  .wl li{grid-template-columns:4px minmax(0,1fr) auto;grid-template-areas:"bar main fr" "bar act act";gap:8px 12px}
+  .wl .bar{grid-area:bar} .wl .main{grid-area:main} .wl .fr{grid-area:fr}
+  .wl .st,.wl .av{display:none}
+  .wl .btn{grid-area:act;justify-self:start;margin-left:0}
+  .wl .t,.wl .s{white-space:normal}
+  .stage{grid-template-columns:repeat(3,1fr);gap:12px 0}
+  .stage::before{display:none}
+  .use{grid-template-columns:1fr 1fr}
+  .tiers{grid-template-columns:1fr 1fr}
+  .kv{grid-template-columns:110px minmax(0,1fr)}
+  .phone{max-width:none;border-radius:var(--r)}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--line);z-index:50;padding:6px 4px max(6px,env(safe-area-inset-bottom))}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--muted);text-decoration:none;min-height:48px;justify-content:center;border-radius:8px}
+  .tabbar a[aria-current]{color:var(--akzent-2);font-weight:600}
+  .tabbar a.mid svg{width:22px;height:22px}
+}
+@media (max-width:640px){
+  .tiers{grid-template-columns:1fr}
+  .ph h1{font-size:20px}
+  .kopf h1{font-size:18px}
+}
+</style>
+</head>
+<body>
+<!-- Icon-Satz: ~30 Zeichen mit fester Bedeutung (Lucide-Stil, Inline-Sprite). In der Anwendung: ein Sprite in base.html. -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-heute" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></symbol>
+  <symbol id="i-akten" viewBox="0 0 24 24"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
+  <symbol id="i-lauf" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M8 16H3v5"/></symbol>
+  <symbol id="i-finanzen" viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18M7 6h1v4M16.71 13.88l.7.71-2.82 2.82"/></symbol>
+  <symbol id="i-berichte" viewBox="0 0 24 24"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></symbol>
+  <symbol id="i-einst" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+  <symbol id="i-suche" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-updown" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7ZM14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+  <symbol id="i-haus" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></symbol>
+  <symbol id="i-objekt" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM9 22V12h6v10"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3ZM12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-7-7 7 7-7 7"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-mandat" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+  <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 22h18M6 18V9M10 18V9M14 18V9M18 18V9m-16 0 10-6 10 6Z"/></symbol>
+  <symbol id="i-offline" viewBox="0 0 24 24"><path d="M12 20h.01M8.5 16.43a5 5 0 0 1 7 0M5 12.86a10 10 0 0 1 5.17-2.69M19 12.86a10 10 0 0 0-2.01-1.52M2 8.82a15 15 0 0 1 4.18-2.64M22 8.82A15 15 0 0 0 10.71 5.06M2 2l20 20"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16M4 6h16M4 18h16"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 6h18M7 12h10M10 18h4"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12.83 2.18 8.18 3.64a1 1 0 0 1 0 1.83l-8.18 3.63a2 2 0 0 1-1.66 0L2.99 7.65a1 1 0 0 1 0-1.83l8.18-3.64a2 2 0 0 1 1.66 0ZM22 12.32l-8.19 3.64a2 2 0 0 1-1.62 0L3.98 12.32M22 17.32l-8.19 3.64a2 2 0 0 1-1.62 0L3.98 17.32"/></symbol>
+</svg>
+
+<!-- ================= Konzeptleiste (Prototyp) ================= -->
+<div class="kz" id="kz">
+  <span class="t">swissImmo · Konzept v7</span>
+  <div class="scr" role="tablist" aria-label="Bildschirme">
+    <button data-screen="heute" aria-current="true">Heute</button>
+    <button data-screen="akte">Akte Liegenschaft</button>
+    <button data-screen="fall">Fall Mieterwechsel</button>
+    <button data-screen="lauf">Lauf Mietzinsanpassung</button>
+    <button data-screen="bank">Finanzen · Bank</button>
+    <button data-screen="abo">Abo &amp; Module</button>
+    <button data-screen="vorort">Vor Ort · Abnahme</button>
+  </div>
+  <div class="sw">
+    <span>Leiste</span><button id="railBtn" aria-pressed="false" title="Seitenleiste hell oder dunkel (D2)">dunkel</button>
+    <button id="themeBtn" aria-pressed="false" title="Dunkelmodus">Nachtmodus</button>
+  </div>
+</div>
+<div class="kz-note" id="kzNote">
+  <span data-note="heute" class="on"><b>Heute.</b> Ein Arbeitsvorrat, fünf Ansichten, sechs Fallarten. Läufe, Fälle, Fristen und Zulauf aus derselben Quelle — kein zweites Cockpit. Kennzahlen nur mit Vergleich.</span>
+  <span data-note="akte"><b>Akte.</b> Deckblatt mit gerechneten Zuständen, «Was auffällt» vor dem Inhalt, ein Reitersatz für alle Typen plus ein typeigener Reiter. Tabellenziffern, Befundspalte, Zeile je Einheit.</span>
+  <span data-note="fall"><b>Fall.</b> Das zentrale Objekt: Stufenband, Schritte mit Regelwerk-Prüfung, Fristenkette, verknüpfte Fälle, Zeiterfassung für die Mandatsrentabilität.</span>
+  <span data-note="lauf"><b>Lauf.</b> Ein Rahmen für alle Läufe: Betroffene → Berechnen → Prüfen → Formulare → Protokoll. Blockaden stehen vorne. Geld und Recht brauchen vier Augen.</span>
+  <span data-note="bank"><b>Finanzen.</b> Register, kein Arbeitskorb. Der Bankabgleich zeigt Vorschläge mit Sicherheit und lernt Regeln — Handlungen führen in den Lauf.</span>
+  <span data-note="abo"><b>Abo &amp; Module.</b> Phase 3 sichtbar gemacht: Stufe, Kontingente, zubuchbare Module, Branding als ein Token, definiertes Verhalten bei Zahlungsausfall.</span>
+  <span data-note="vorort"><b>Vor Ort.</b> Die Abnahme auf dem Telefon: offline-fähig, Fotos, Mängel mit Lebensdauertabelle, Zähler, Schlüssel, zwei Unterschriften — aus derselben Anwendung.</span>
+</div>
+
+<div class="shell">
+<!-- ================= Seitenleiste ================= -->
+<aside class="rail" aria-label="Hauptnavigation">
+  <button class="org" type="button" title="Mandant wechseln — Dominik ist in zwei Organisationen Mitglied">
+    <span class="mark">KI</span>
+    <span><b>Keller Immobilien AG</b><small>Solothurn · 2 Organisationen</small></span>
+    <svg class="i s"><use href="#i-updown"/></svg>
+  </button>
+  <nav class="nav" id="nav">
+    <a href="#" data-area="heute" data-screen="heute"><svg class="i"><use href="#i-heute"/></svg>Heute<span class="bd">6</span></a>
+    <div class="sub" data-for="heute">
+      <a href="#" data-screen="heute">Arbeitsvorrat<span class="c">27</span></a>
+      <a href="#">Zulauf<span class="c">12</span></a>
+      <a href="#">Termine<span class="c">3</span></a>
+      <a href="#">Vertretung<span class="c">7</span></a>
+    </div>
+    <a href="#" data-area="akten" data-screen="akte"><svg class="i"><use href="#i-akten"/></svg>Akten</a>
+    <div class="sub" data-for="akten">
+      <a href="#">Mandate<span class="c">9</span></a>
+      <a href="#" data-screen="akte">Liegenschaften<span class="c">34</span></a>
+      <a href="#">Objekte<span class="c">312</span></a>
+      <a href="#">Mietverhältnisse<span class="c">298</span></a>
+      <a href="#">Personen<span class="c">541</span></a>
+      <a href="#">Dienstleister<span class="c">46</span></a>
+    </div>
+    <a href="#" data-area="laeufe" data-screen="lauf"><svg class="i"><use href="#i-lauf"/></svg>Läufe<span class="bd">2</span></a>
+    <div class="sub" data-for="laeufe">
+      <a href="#">Übersicht</a>
+      <a href="#">Monat<span class="c">2 fällig</span></a>
+      <a href="#">Nebenkosten</a>
+      <a href="#" data-screen="lauf">Mietzinsanpassung</a>
+      <a href="#">MWST &amp; Abschluss</a>
+    </div>
+    <a href="#" data-area="finanzen" data-screen="bank"><svg class="i"><use href="#i-finanzen"/></svg>Finanzen</a>
+    <div class="sub" data-for="finanzen">
+      <a href="#" data-screen="bank">Bank</a>
+      <a href="#">Mieterkonten</a>
+      <a href="#">Kreditoren<span class="c">4</span></a>
+      <a href="#">Kautionen</a>
+      <a href="#">Buchhaltung</a>
+      <a href="#">Hypotheken &amp; Anlagen</a>
+    </div>
+    <a href="#" data-area="berichte"><svg class="i"><use href="#i-berichte"/></svg>Berichte</a>
+    <div class="sub" data-for="berichte">
+      <a href="#">Eigentümer</a><a href="#">Leerstand &amp; Ertrag</a><a href="#">Debitoren</a><a href="#">Mandatsrentabilität</a><a href="#">Auswertungen</a>
+    </div>
+  </nav>
+  <div class="rail-foot">
+    <a class="abo" href="#" data-screen="abo"><b>Professional</b>312 von 500 Einheiten · 4 von 15 Nutzer<span class="meter"><i style="width:62%"></i></span></a>
+    <a href="#" class="nav" style="padding:0" data-screen="abo"><span style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-weight:500;min-height:38px"><svg class="i"><use href="#i-einst"/></svg>Einstellungen</span></a>
+    <div class="user"><span class="av">DM</span><span>Dominik M.<small>Inhaber · Vertretung für Lea F.</small></span></div>
+  </div>
+</aside>
+
+<!-- ================= Hauptbereich ================= -->
+<div class="main">
+  <header class="top">
+    <span class="mob"><span class="mark">KI</span>Keller Immobilien</span>
+    <div class="search" role="button" tabindex="0" aria-label="Suche öffnen">
+      <svg class="i s"><use href="#i-suche"/></svg>
+      <span class="txt">Akte, Person, Objekt, IBAN, Fall-Nr. oder Seite …</span>
+      <kbd>⌘K</kbd>
+    </div>
+    <span class="sp"></span>
+    <button class="btn p" type="button" aria-label="Neu anlegen"><svg class="i s"><use href="#i-plus"/></svg><span>Neu</span><svg class="i s"><use href="#i-chev"/></svg></button>
+    <button class="ib" type="button" aria-label="Benachrichtigungen, 3 neue"><svg class="i"><use href="#i-bell"/></svg><span class="dot"></span></button>
+    <button class="ib" type="button" aria-label="Hilfe"><svg class="i"><use href="#i-help"/></svg></button>
+    <span class="av" title="Dominik M.">DM</span>
+  </header>
+
+<!-- ================= SCREEN 1 · HEUTE ================= -->
+<section class="screen on" data-screen="heute" data-area="heute">
+<div class="page">
+  <div class="ph">
+    <div><h1>Heute</h1><div class="meta">Freitag, 21. August 2026 · KW 34 · Vertretung für Lea F. bis 29.08.</div></div>
+    <div class="acts">
+      <button class="sel" type="button">Zuständigkeit: <b>Alle</b><svg class="i s"><use href="#i-chev"/></svg></button>
+      <button class="sel" type="button">Mandat: <b>Alle 9</b><svg class="i s"><use href="#i-chev"/></svg></button>
+    </div>
+  </div>
+
+  <div class="strip" aria-label="Lage mit Vergleich zum Vormonat">
+    <div><div class="eyebrow">Zahlungseingang August</div><div class="v">CHF 184'320 <span class="tr dn">92 % des Solls</span></div><div class="d">Juli am gleichen Tag: 95 %</div></div>
+    <div><div class="eyebrow">Ausstände</div><div class="v">CHF 23'140 <span class="tr up">+2 Positionen</span></div><div class="d">11 Positionen, 3 in Mahnstufe 2</div></div>
+    <div><div class="eyebrow">Leerstand</div><div class="v">3.2 % <span class="tr up">3. Monat steigend</span></div><div class="d">10 Objekte, 4 ohne Ausschreibung</div></div>
+    <div><div class="eyebrow">Offene Fälle</div><div class="v">27 <span class="tr eq">4 liegengeblieben</span></div><div class="d">6 fällig heute</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="col">
+      <div class="card">
+        <div class="ch"><h2>Arbeitsvorrat</h2><span class="n">6 fällig heute</span>
+          <div class="r"><button class="btn sm" type="button"><svg class="i s"><use href="#i-filter"/></svg>Ansicht speichern</button></div></div>
+        <div class="tabs" role="tablist">
+          <button role="tab" aria-current="true">Heute <span class="c">6</span></button>
+          <button role="tab">Diese Woche <span class="c">14</span></button>
+          <button role="tab">Wartet auf Dritte <span class="c">9</span></button>
+          <button role="tab">Liegengeblieben <span class="c">4</span></button>
+          <button role="tab">Alle <span class="c">27</span></button>
+        </div>
+        <div class="chips" aria-label="Fallart">
+          <button class="chip" aria-pressed="true">Alle</button><button class="chip">Mieterwechsel</button><button class="chip">Schaden</button><button class="chip">Zahlungsverzug</button><button class="chip">Mietzinsanpassung</button><button class="chip">Kündigung</button><button class="chip">Lauf</button>
+        </div>
+        <ul class="wl">
+          <li><i class="bar c"></i>
+            <div class="main"><div class="tl"><span class="tag c">Lauf</span><span>Sollstellung September · blockiert</span></div><div class="t">3 Mietverhältnisse ohne gültigen Mietzins ab 01.09.</div><div class="s">Weststrasse 48 · 1.2, 3.1 · Jurastrasse 7 · 2.2 — Staffel abgelaufen, kein Folgewert</div></div>
+            <div class="st">Blockiert seit<b>2 Tagen</b></div>
+            <div class="fr c"><b>01.09.</b>in 11 Tagen</div>
+            <span class="av x">LF</span>
+            <button class="btn sm c" type="button">Blockade lösen</button></li>
+          <li><i class="bar w"></i>
+            <div class="main"><div class="tl"><span class="tag a">Mieterwechsel</span><span class="mono">F-2026-0184</span></div><div class="t">Bahnhofstrasse 12, 3.2 — Blaser → offen</div><div class="s">Schritt 3 von 6 · Ausschreibung · Besichtigung heute 14:00, 4 angemeldet</div></div>
+            <div class="st">Nächster Schritt<b>Besichtigung durchführen</b></div>
+            <div class="fr w"><b>Heute 14:00</b>Rückgabe 30.09.</div>
+            <span class="av x">DM</span>
+            <button class="btn sm" type="button" data-screen="fall">Öffnen</button></li>
+          <li><i class="bar w"></i>
+            <div class="main"><div class="tl"><span class="tag w">Schaden</span><span class="mono">F-2026-0191</span></div><div class="t">Weststrasse 48, 2.1 — Wasserschaden Bad</div><div class="s">Offerte Sanitär Müller ausstehend seit 5 Tagen · Mieterin informiert 16.08.</div></div>
+            <div class="st">Wartet auf<b>Sanitär Müller GmbH</b></div>
+            <div class="fr w"><b>Heute</b>Nachfassfrist</div>
+            <span class="av x">DM</span>
+            <button class="btn sm" type="button">Nachfassen</button></li>
+          <li><i class="bar c"></i>
+            <div class="main"><div class="tl"><span class="tag c">Zahlungsverzug</span><span class="mono">F-2026-0177</span></div><div class="t">Jurastrasse 7, 1.1 — Vignes</div><div class="s">Mahnstufe 2 · CHF 3'640 offen (Juli, August) · Frist nach Art. 257d abgelaufen</div></div>
+            <div class="st">Regelwerk<b>Kündigungsandrohung zulässig</b></div>
+            <div class="fr c"><b>Heute</b>Zahlungsfrist um</div>
+            <span class="av x">LF</span>
+            <button class="btn sm" type="button">Stufe 3 auslösen</button></li>
+          <li><i class="bar i"></i>
+            <div class="main"><div class="tl"><span class="tag i">Mietzinsanpassung</span><span>Lauf L-2026-09</span></div><div class="t">Referenzzinssatz 1.25 % → 1.00 % (BWO, 02.09.)</div><div class="s">41 Mietverhältnisse betroffen · Formulare bis 31.08. zustellen · 3 ohne Basis</div></div>
+            <div class="st">Stand<b>Berechnet, nicht geprüft</b></div>
+            <div class="fr"><b>31.08.</b>Zustellfrist</div>
+            <span class="av x">DM</span>
+            <button class="btn sm" type="button" data-screen="lauf">Prüfen</button></li>
+          <li><i class="bar g"></i>
+            <div class="main"><div class="tl"><span class="tag g">Kündigung</span><span class="mono">F-2026-0188</span></div><div class="t">Weststrasse 48, 4.2 — Hürlimann, Termin 30.09. geprüft</div><div class="s">Bestätigung versandt 19.08. · Regelwerk SO: Termin und Frist eingehalten</div></div>
+            <div class="st">Nächster Schritt<b>Ausschreibung starten</b></div>
+            <div class="fr"><b>Heute</b>geplant</div>
+            <span class="av x">DM</span>
+            <button class="btn sm" type="button">Starten</button></li>
+        </ul>
+        <div class="cf"><span>Sortiert nach Dringlichkeit, dann Frist. Liegengeblieben = Verfallsregel ausgelöst.</span><a href="#">Alle 27 Fälle</a></div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><h2>Läufe</h2><span class="n">2 fällig, 1 blockiert</span><div class="r"><a class="btn sm" href="#" data-screen="lauf">Übersicht</a></div></div>
+        <ul class="bef">
+          <li><span class="dot c"></span><div><div class="t">Sollstellung September — blockiert</div><div class="s">3 Mietverhältnisse ohne Mietzins · Stichtag 01.09.</div></div><span class="r pill c"><i></i>blockiert</span></li>
+          <li><span class="dot w"></span><div><div class="t">Zahllauf Kreditoren August</div><div class="s">4 freigegebene Rechnungen, CHF 12'480 · pain.001 an UBS</div></div><span class="r pill w"><i></i>fällig 25.08.</span></li>
+          <li><span class="dot g"></span><div><div class="t">Bankabgleich 21.08. — 31 von 38 automatisch</div><div class="s">5 Vorschläge warten, 2 unklar</div></div><a class="r btn sm" href="#" data-screen="bank">Weiter</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <div class="ch"><h2>Zulauf</h2><span class="n">5 nicht zugeordnet</span><div class="r"><button class="btn sm" type="button">Postfach abrufen</button></div></div>
+        <ul class="zl">
+          <li><span class="ic"><svg class="i"><use href="#i-doc"/></svg></span><div><div class="t">Rechnung Sanitär Müller GmbH · CHF 1'840.00</div><div class="s">PDF per E-Mail, 09:12 · QR-Referenz erkannt</div><div class="v">→ <b>Schaden Weststrasse 48, 2.1</b><span class="conf">92 %</span></div></div><button class="btn sm" type="button">Übernehmen</button></li>
+          <li><span class="ic"><svg class="i"><use href="#i-mail"/></svg></span><div><div class="t">Kündigung per Post · Absender M. Roth</div><div class="s">Scan, 08:40 · Datum 19.08., Termin 30.11.</div><div class="v">→ <b>MV Jurastrasse 7, 2.2</b><span class="conf">sicher</span> · Regelwerk: Termin unüblich</div></div><button class="btn sm" type="button">Fall eröffnen</button></li>
+          <li><span class="ic"><svg class="i"><use href="#i-bank"/></svg></span><div><div class="t">Kontoauszug camt.053 · UBS, 2 Konten</div><div class="s">Automatisch abgeholt 06:00 · 38 Bewegungen</div><div class="v">→ <b>Lauf Bankabgleich</b><span class="conf">sicher</span></div></div><button class="btn sm" type="button" data-screen="bank">Öffnen</button></li>
+          <li><span class="ic"><svg class="i"><use href="#i-mail"/></svg></span><div><div class="t">Bewerbung Whg. 3.2 · Familie Kunz</div><div class="s">Webformular, 07:55 · Unterlagen vollständig</div><div class="v">→ <b>Fall Mieterwechsel Blaser</b><span class="conf">88 %</span></div></div><button class="btn sm" type="button">Übernehmen</button></li>
+          <li><span class="ic"><svg class="i"><use href="#i-doc"/></svg></span><div><div class="t">Schreiben Mobiliar Versicherung</div><div class="s">Scan, gestern · Policennummer nicht gefunden</div><div class="v">→ <b>Liegenschaft Bahnhofstrasse 12?</b><span class="conf w">unsicher</span></div></div><button class="btn sm" type="button">Zuordnen</button></li>
+        </ul>
+        <div class="cf"><span>7 weitere bereits vorgeschlagen und geprüft</span><a href="#">Ganzer Zulauf (12)</a></div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><h2>Termine</h2><span class="n">heute 3</span><div class="r"><button class="btn sm" type="button">Woche</button></div></div>
+        <ul class="tm">
+          <li><div class="z">09:30<small>45 min</small></div><i class="l"></i><div><div class="t">Abnahme Jurastrasse 7, 3.1 — Ferrari → Kunz</div><div class="s">Vor-Ort-Modus · Schlüssel beim Hauswart · Zähler ablesen</div></div></li>
+          <li><div class="z">14:00<small>60 min</small></div><i class="l w"></i><div><div class="t">Besichtigung Bahnhofstrasse 12, 3.2</div><div class="s">4 angemeldet · Exposé aktualisiert · Fall F-2026-0184</div></div></li>
+          <li><div class="z">16:00<small>30 min</small></div><i class="l"></i><div><div class="t">Eigentümergespräch Erbengemeinschaft Blattner</div><div class="s">Quartalsreport Q3 liegt als Entwurf bereit</div></div></li>
+        </ul>
+      </div>
+
+      <div class="card q">
+        <div class="ch"><h2>Vertretung</h2></div>
+        <div class="cb" style="font-size:13px">Lea Frey ist bis <b>29.08.</b> abwesend. Du vertrittst <b>7 Fälle</b> und <b>3 Mandate</b>. Zwei davon sind heute fällig und stehen oben im Arbeitsvorrat.</div>
+        <div class="cf"><span>Abwesenheit ohne Vertretung würde hier rot gemeldet.</span><a href="#">Anzeigen</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= SCREEN 2 · AKTE LIEGENSCHAFT ================= -->
+<section class="screen" data-screen="akte" data-area="akten">
+<div class="page">
+  <div class="crumb">Akten › Liegenschaften › <b>Bahnhofstrasse 12, Solothurn</b></div>
+  <div class="kopf">
+    <div class="hd">
+      <span class="ico"><svg class="i" style="width:22px;height:22px"><use href="#i-haus"/></svg></span>
+      <div class="tx">
+        <div class="eyebrow">Liegenschaft · <span class="mono">L-0012</span> · Mandat Erbengemeinschaft Blattner</div>
+        <h1>Bahnhofstrasse 12, 4500 Solothurn</h1>
+        <div class="meta">Baujahr <b>1962</b>, saniert 2018 · <b>12 Objekte</b> (10 Wohnungen, 1 Gewerbe, 1 Einstellhalle) · verwaltet seit <b>2019</b> · zuständig <b>Dominik M.</b>, Stellvertretung Lea F.</div>
+        <div class="pills">
+          <span class="pill g"><i></i>Vollvermietet bis 30.09.</span>
+          <span class="pill w"><i></i>Unterhalt 84 % des Budgets</span>
+          <span class="pill"><i></i>Fernwärme · CO₂-Abgabe verrechnet</span>
+          <span class="pill i"><i></i>3 offene Fälle</span>
+        </div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button">Bearbeiten</button>
+        <button class="btn p" type="button"><svg class="i s"><use href="#i-plus"/></svg>Fall eröffnen<svg class="i s"><use href="#i-chev"/></svg></button>
+        <button class="ib" type="button" aria-label="Mehr"><svg class="i"><use href="#i-more"/></svg></button>
+      </div>
+    </div>
+    <div class="kpis">
+      <div><div class="eyebrow">Vermietung</div><div class="v">11 / 12</div><div class="d">3.2 wird frei ab 01.10. · kein Nachmieter</div></div>
+      <div><div class="eyebrow">Soll pro Monat</div><div class="v">CHF 21'480</div><div class="d">Ist August 21'480 · ausgeglichen</div></div>
+      <div><div class="eyebrow">Bruttorendite</div><div class="v">4.1 %</div><div class="d">Zielband Mandat 3.8–4.5 %</div></div>
+      <div><div class="eyebrow">Nächste Frist</div><div class="v w">30.09.</div><div class="d">Rückgabe 3.2 (Blaser) · Abnahme offen</div></div>
+    </div>
+    <nav class="reg" aria-label="Register">
+      <a href="#">Stammdaten</a><a href="#">Chronik<span class="c">184</span></a><a href="#">Finanzen</a><a href="#">Dokumente<span class="c">62</span></a><a href="#">Fälle<span class="c">3</span></a><a href="#" aria-current="true">Einheiten<span class="c">12</span></a>
+    </nav>
+  </div>
+
+  <div class="grid">
+    <div class="col">
+      <div class="card">
+        <div class="ch"><h2>Was auffällt</h2><span class="n">3 Befunde</span></div>
+        <ul class="bef">
+          <li><span class="dot c"></span><div><div class="t">Wohnung 3.2: kein Nachmieter, 40 Tage vor Rückgabe</div><div class="s">Leerstandsrisiko CHF 1'890 pro Monat · Ausschreibung läuft seit 15.08., 6 Bewerbungen, keine ausgewählt</div></div><a class="r btn sm" href="#" data-screen="fall">Fall öffnen</a></li>
+          <li><span class="dot w"></span><div><div class="t">Liftwartung: Vertrag Schindler läuft am 31.12. aus</div><div class="s">Keine Offerte eingeholt · Kündigungsfrist des Wartungsvertrags: 3 Monate, also bis 30.09.</div></div><button class="r btn sm" type="button">Fall eröffnen</button></li>
+          <li><span class="dot w"></span><div><div class="t">Heizkostenabrechnung 2025: Ablesung Techem fehlt</div><div class="s">Blockiert den Nebenkostenlauf 2025 für alle 12 Objekte · Frist für Versand 31.10.</div></div><button class="r btn sm" type="button">Nachfassen</button></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="ch"><h2>Einheiten</h2><span class="n">12 · sortiert nach Befund</span>
+          <div class="r"><button class="btn sm" type="button"><svg class="i s"><use href="#i-filter"/></svg>Filter</button><button class="btn sm" type="button">Spalten</button><button class="btn sm" type="button">CSV</button></div></div>
+        <div class="tw"><table class="tb">
+          <thead><tr><th><span class="vh">Auswahl</span></th><th>Objekt</th><th>Mietverhältnis</th><th class="r">Netto</th><th class="r">NK</th><th class="r">m²</th><th>Befund</th><th></th></tr></thead>
+          <tbody>
+            <tr class="flag"><td><span class="ck"></span></td><td><b>3.2</b><span class="sub">3.5 Zi · 2. OG</span></td><td>A. Blaser<span class="sub">gekündigt per 30.09.</span></td><td class="r">1'650</td><td class="r">240</td><td class="r">78</td><td><span class="tag c">Frei ab 01.10. · kein Nachmieter</span></td><td><a class="btn sm" href="#" data-screen="fall">Fall</a></td></tr>
+            <tr><td><span class="ck"></span></td><td><b>1.1</b><span class="sub">2.5 Zi · EG</span></td><td>S. Hürlimann<span class="sub">seit 01.04.2021</span></td><td class="r">1'200</td><td class="r">180</td><td class="r">55</td><td><span class="tag w">Mietzins 14 % unter Mietzinspotenzial</span></td><td><button class="btn sm" type="button">Öffnen</button></td></tr>
+            <tr><td><span class="ck"></span></td><td><b>4.2</b><span class="sub">3.5 Zi · 3. OG</span></td><td>R. Amstutz<span class="sub">seit 01.04.2024</span></td><td class="r">1'650</td><td class="r">240</td><td class="r">78</td><td><span class="tag w">Kaution vereinbart, nicht bestätigt</span></td><td><button class="btn sm" type="button">Öffnen</button></td></tr>
+            <tr><td><span class="ck"></span></td><td><b>EG-G</b><span class="sub">Gewerbe · 120 m²</span></td><td>Apotheke am Bahnhof AG<span class="sub">bis 31.12.2028, Option 5 J.</span></td><td class="r">3'400</td><td class="r">380</td><td class="r">120</td><td><span class="tag i">Indexklausel: LIK-Stand Okt. prüfen</span></td><td><button class="btn sm" type="button">Öffnen</button></td></tr>
+            <tr><td><span class="ck"></span></td><td><b>1.2</b><span class="sub">3.5 Zi · EG</span></td><td>M. Vignes<span class="sub">seit 01.04.2022</span></td><td class="r">1'500</td><td class="r">220</td><td class="r">73</td><td><span class="tag g">in Ordnung</span></td><td><button class="btn sm" type="button">Öffnen</button></td></tr>
+            <tr><td><span class="ck"></span></td><td><b>2.1</b><span class="sub">4.5 Zi · 1. OG</span></td><td>P. Schmid<span class="sub">seit 01.10.2019</span></td><td class="r">1'950</td><td class="r">260</td><td class="r">96</td><td><span class="tag g">in Ordnung</span></td><td><button class="btn sm" type="button">Öffnen</button></td></tr>
+            <tr><td><span class="ck"></span></td><td><b>2.2</b><span class="sub">3.5 Zi · 1. OG</span></td><td>D. Kunz<span class="sub">seit 01.07.2023</span></td><td class="r">1'620</td><td class="r">240</td><td class="r">78</td><td><span class="tag g">in Ordnung</span></td><td><button class="btn sm" type="button">Öffnen</button></td></tr>
+            <tr><td><span class="ck"></span></td><td><b>EH</b><span class="sub">Einstellhalle · 8 Plätze</span></td><td>8 Parkplatzverträge<span class="sub">1 frei</span></td><td class="r">1'120</td><td class="r">—</td><td class="r">—</td><td><span class="tag">1 Platz frei seit 12 Tagen</span></td><td><button class="btn sm" type="button">Öffnen</button></td></tr>
+          </tbody>
+        </table></div>
+        <div class="cf"><span>8 von 12 angezeigt · 4 weitere in Ordnung</span><a href="#">Alle anzeigen</a></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card q">
+        <div class="ch"><h2>Mandat</h2><div class="r"><a class="btn sm" href="#">Akte</a></div></div>
+        <div class="cb"><dl class="kv">
+          <dt>Eigentümer</dt><dd>Erbengemeinschaft Blattner<br><span style="font-weight:400;color:var(--muted)">Vertreterin: Ruth Blattner</span></dd>
+          <dt>Honorar</dt><dd>4.5 % der Nettomiete · Quartalsrechnung</dd>
+          <dt>Auszahlung</dt><dd>quartalsweise, nächste 05.10.</dd>
+          <dt>Kontokorrent</dt><dd class="mono">CHF 48'320.15</dd>
+          <dt>Portal</dt><dd><span class="pill g"><i></i>aktiv · zuletzt 18.08.</span></dd>
+        </dl></div>
+      </div>
+      <div class="card q">
+        <div class="ch"><h2>Dienstleister</h2><span class="n">5</span></div>
+        <ul class="bef">
+          <li><span class="dot g"></span><div><div class="t">Hauswartung Gerber</div><div class="s">Pauschale CHF 1'200/Mt · Schlüssel 3</div></div></li>
+          <li><span class="dot w"></span><div><div class="t">Schindler Aufzüge AG</div><div class="s">Wartungsvertrag bis 31.12. · keine Offerte</div></div></li>
+          <li><span class="dot g"></span><div><div class="t">Sanitär Müller GmbH</div><div class="s">2 Aufträge dieses Jahr · CHF 3'120</div></div></li>
+        </ul>
+        <div class="cf"><span></span><a href="#">Alle 5</a></div>
+      </div>
+      <div class="card q">
+        <div class="ch"><h2>Versicherung &amp; Gebäude</h2></div>
+        <div class="cb"><dl class="kv">
+          <dt>Gebäude</dt><dd>Mobiliar · Wert CHF 2'400'000 · Prämie fällig 01.11.</dd>
+          <dt>Haftpflicht</dt><dd>AXA · bis 31.12.2027</dd>
+          <dt>Heizung</dt><dd>Fernwärme Regio Energie · Ablesung Techem</dd>
+          <dt>Unterhalt 2026</dt><dd>CHF 38'400 von 45'600 (84 %)</dd>
+        </dl></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= SCREEN 3 · FALL MIETERWECHSEL ================= -->
+<section class="screen" data-screen="fall" data-area="heute">
+<div class="page">
+  <div class="crumb">Heute › Arbeitsvorrat › <b>F-2026-0184</b></div>
+  <div class="kopf">
+    <div class="hd">
+      <span class="ico"><svg class="i" style="width:22px;height:22px"><use href="#i-key"/></svg></span>
+      <div class="tx">
+        <div class="eyebrow">Fall · <span class="mono">F-2026-0184</span> · Mieterwechsel</div>
+        <h1>Bahnhofstrasse 12, 3.2 — Blaser → offen</h1>
+        <div class="meta">Akte <b>Mietverhältnis A. Blaser</b> · Mandat <b>Erbengemeinschaft Blattner</b> · zuständig <b>Dominik M.</b> · eröffnet 12.08. · Rückgabe 30.09. · voraussichtlich bis Ende Oktober</div>
+        <div class="pills">
+          <span class="pill w"><i></i>Nächste Frist heute 14:00</span>
+          <span class="pill c"><i></i>Verknüpfter Fall kollidiert</span>
+          <span class="pill"><i></i>Schritt 3 von 6</span>
+          <span class="pill"><i></i>2 h 40 erfasst</span>
+        </div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button">Übergeben</button>
+        <button class="btn" type="button">Warten auf …</button>
+        <button class="btn p" type="button">Schritt abschliessen<svg class="i s"><use href="#i-arrow"/></svg></button>
+      </div>
+    </div>
+    <div class="stage" aria-label="Stufen des Falls">
+      <div class="done"><span class="c"><svg class="i s"><use href="#i-check"/></svg></span><b>Kündigung</b>12.08.</div>
+      <div class="done"><span class="c"><svg class="i s"><use href="#i-check"/></svg></span><b>Bestätigung</b>14.08.</div>
+      <div class="now"><span class="c">3</span><b>Ausschreibung</b>läuft</div>
+      <div><span class="c">4</span><b>Neuer Vertrag</b>bis 31.08.</div>
+      <div><span class="c">5</span><b>Abnahme</b>30.09.</div>
+      <div><span class="c">6</span><b>Endabrechnung</b>bis 31.10.</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="col">
+      <div class="card">
+        <div class="ch"><h2>Schritte</h2><span class="n">9 von 21 erledigt</span><div class="r"><button class="btn sm" type="button">Schritt einfügen</button></div></div>
+        <ul class="steps">
+          <li class="grp">1–2 · Kündigung und Bestätigung — abgeschlossen</li>
+          <li class="s"><span class="ck on"><svg class="i s"><use href="#i-check"/></svg></span><div><div class="t">Kündigung erfasst, Termin geprüft</div><div class="d">Zugang 12.08. · dreimonatige Frist gewahrt · 30.09. ist vertraglicher Termin</div><div class="regel"><svg class="i s"><use href="#i-shield"/></svg>Regelwerk SO, Regelsatz «Kündigungstermine», geprüft — kein Übersteuern nötig.</div></div><div class="w">12.08.<b>DM</b></div></li>
+          <li class="s"><span class="ck on"><svg class="i s"><use href="#i-check"/></svg></span><div><div class="t">Bestätigung versandt, Rückgabe terminiert</div><div class="d">A-Post · PDF in Dokumente · Abnahme 30.09., 09:00 als Termin angelegt</div></div><div class="w">14.08.<b>DM</b></div></li>
+          <li class="grp">3 · Ausschreibung — läuft</li>
+          <li class="s"><span class="ck on"><svg class="i s"><use href="#i-check"/></svg></span><div><div class="t">Exposé erstellt, Fotos freigegeben</div><div class="d">Vormieterin hat der Verwendung der Fotos zugestimmt (DSG)</div></div><div class="w">15.08.<b>LF</b></div></li>
+          <li class="s"><span class="ck on"><svg class="i s"><use href="#i-check"/></svg></span><div><div class="t">Auf 3 Kanälen publiziert</div><div class="d">Eigene Website · Homegate · ImmoScout24 — 6 Bewerbungen eingegangen</div></div><div class="w">15.08.<b>LF</b></div></li>
+          <li class="s now"><span class="ck now"></span><div><div class="t">Besichtigung durchführen</div><div class="d">Sammeltermin heute 14:00 · 4 Interessenten angemeldet · Schlüssel beim Hauswart Gerber</div><div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm p" type="button" data-screen="vorort">Im Vor-Ort-Modus öffnen</button><button class="btn sm" type="button">Teilnehmerliste</button></div></div><div class="w">heute<b>14:00</b></div></li>
+          <li class="s"><span class="ck"></span><div><div class="t">Bewerbungen vergleichen und auswählen</div><div class="d">6 eingegangen · Kriterien am 13.08. mit Eigentümerin festgelegt · Bonität, Referenzen, Haushaltsgrösse</div></div><div class="w">bis<b>31.08.</b></div></li>
+          <li class="grp">4 · Neuer Vertrag — offen</li>
+          <li class="s"><span class="ck"></span><div><div class="t">Vertrag erstellen und zur Unterschrift senden</div><div class="d">Vorlage Wohnung SO 2026 · Anfangsmietzins-Formular nicht pflichtig (Kanton SO) · digitale Signatur</div><div class="regel achtung"><svg class="i s"><use href="#i-warn"/></svg>Mietzinspotenzial CHF 1'890: Erhöhung gegenüber Vormiete wäre 14.5 % — Begründung nach Art. 269 OR im Vertrag ausweisen.</div></div><div class="w">bis<b>05.09.</b></div></li>
+        </ul>
+        <div class="cf"><span>13 weitere Schritte in Stufen 4–6</span><a href="#">Alle Schritte</a></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card" style="border-color:var(--crit)">
+        <div class="ch"><h2>Verknüpfter Fall</h2></div>
+        <div class="cb" style="font-size:13px">
+          <div style="font-weight:600;margin-bottom:4px"><span class="tag c">Zahlungsverzug</span> F-2026-0177 kollidiert</div>
+          Der Mahnzyklus steht auf Stufe 2 mit Kündigungsandrohung. Eine Kündigung nach Art. 257d wäre gegenstandslos, weil das Verhältnis am 30.09. ohnehin endet. Der verknüpfte Fall ist deshalb auf <b>Verrechnung gegen die Kaution</b> umgestellt und läuft in Schritt 6 dieses Falls ein.
+        </div>
+        <div class="cf"><span>Automatisch erkannt beim Eröffnen</span><a href="#">Fall öffnen</a></div>
+      </div>
+
+      <div class="card q">
+        <div class="ch"><h2>Fristenkette</h2><span class="n">automatisch angelegt</span></div>
+        <ul class="tm">
+          <li><div class="z">22.08.</div><i class="l w"></i><div><div class="t">Besichtigung</div><div class="s">Sammeltermin, 4 angemeldet</div></div></li>
+          <li><div class="z">31.08.</div><i class="l"></i><div><div class="t">Zuschlag</div><div class="s">sonst Leerstandsrisiko ab 01.10.</div></div></li>
+          <li><div class="z">30.09.</div><i class="l"></i><div><div class="t">Rückgabe und Abnahme</div><div class="s">09:00 · Protokoll im Vor-Ort-Modus</div></div></li>
+          <li><div class="z">31.10.</div><i class="l"></i><div><div class="t">Endabrechnung</div><div class="s">Kaution · Nebenkosten pro rata · Mängel</div></div></li>
+        </ul>
+      </div>
+
+      <div class="card q">
+        <div class="ch"><h2>Chronik</h2><span class="n">letzte 3</span></div>
+        <ul class="bef">
+          <li><span class="dot"></span><div><div class="t">Bewerbung Familie Kunz aus Zulauf übernommen</div><div class="s">heute 07:58 · automatisch, 88 %</div></div></li>
+          <li><span class="dot"></span><div><div class="t">Exposé an Eigentümerin freigegeben</div><div class="s">15.08. · Lea F.</div></div></li>
+          <li><span class="dot"></span><div><div class="t">Fall eröffnet aus Kündigung</div><div class="s">12.08. · Dominik M.</div></div></li>
+        </ul>
+        <div class="cf"><span>Alle Änderungen protokolliert (Art. 8 DSG)</span><a href="#">Ganze Chronik</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= SCREEN 4 · LAUF MIETZINSANPASSUNG ================= -->
+<section class="screen" data-screen="lauf" data-area="laeufe">
+<div class="page">
+  <div class="crumb">Läufe › Mietzinsanpassung › <b>L-2026-09</b></div>
+  <div class="kopf">
+    <div class="hd">
+      <span class="ico"><svg class="i" style="width:22px;height:22px"><use href="#i-lauf"/></svg></span>
+      <div class="tx">
+        <div class="eyebrow">Lauf · <span class="mono">L-2026-09</span> · Mietzinsanpassung</div>
+        <h1>Referenzzinssatz 1.25 % → 1.00 %</h1>
+        <div class="meta">Publikation BWO <b>02.09.2026</b> · wirksam auf den nächsten Kündigungstermin · Zustellung der Mitteilung bis <b>31.08.</b> für Wirkung per 01.10. · angelegt von <b>Dominik M.</b> am 03.09.</div>
+        <div class="pills">
+          <span class="pill a"><i></i>Senkung — Mieter haben Anspruch</span>
+          <span class="pill c"><i></i>3 blockiert</span>
+          <span class="pill w"><i></i>7 mit Vorbehalt verrechnet</span>
+          <span class="pill"><i></i>Vier-Augen: Freigabe Inhaber ausstehend</span>
+        </div>
+      </div>
+      <div class="acts">
+        <button class="btn" type="button">Lauf pausieren</button>
+        <button class="btn p" type="button">Berechnung prüfen<svg class="i s"><use href="#i-arrow"/></svg></button>
+      </div>
+    </div>
+    <div class="lsteps" aria-label="Schritte des Laufs">
+      <div class="done"><span class="n"><svg class="i s"><use href="#i-check"/></svg></span>Betroffene ermitteln · 41</div>
+      <div class="done"><span class="n"><svg class="i s"><use href="#i-check"/></svg></span>Berechnen</div>
+      <div class="now"><span class="n">3</span>Prüfen und freigeben</div>
+      <div><span class="n">4</span>Formulare und Versand</div>
+      <div><span class="n">5</span>Protokoll und Wirkung</div>
+    </div>
+    <div class="kpis">
+      <div><div class="eyebrow">Betroffen</div><div class="v">41</div><div class="d">von 298 Mietverhältnissen · Basis 1.25 % oder höher</div></div>
+      <div><div class="eyebrow">Senkung Netto</div><div class="v">−2.91 %</div><div class="d">nach Verrechnung Teuerung 40 % und Kostensteigerung</div></div>
+      <div><div class="eyebrow">Effekt pro Monat</div><div class="v">CHF −1'412</div><div class="d">Mandate: Blattner −612 · PK Jura −800</div></div>
+      <div><div class="eyebrow">Formulare</div><div class="v">38 bereit</div><div class="d">SO 31 · BE 7 · 3 ohne Basis</div></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h3><svg class="i s"><use href="#i-warn"/></svg>3 Mietverhältnisse blockieren den Versand</h3>
+    <ul>
+      <li>Weststrasse 48, 1.2 (Hürlimann), Jurastrasse 7, 2.2 (Roth), Jurastrasse 7, 3.1 (Ferrari): <b>kein Referenzzins-Stand als Basis hinterlegt</b> — Verträge vor 2008, letzte Anpassung unbekannt. <a href="#">Basis erfassen</a></li>
+      <li>Mietverhältnisse mit Staffel oder Indexklausel (3) sind ausgeschlossen und stehen im Protokoll. <a href="#">Anzeigen</a></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="ch"><h2>Berechnung je Mietverhältnis</h2><span class="n">41 · 2 markiert</span>
+      <div class="r"><button class="btn sm" type="button"><svg class="i s"><use href="#i-filter"/></svg>Nur Abweichungen</button><button class="btn sm" type="button">CSV</button></div></div>
+    <div class="tw"><table class="tb">
+      <thead><tr><th><span class="vh">Auswahl</span></th><th>Mietverhältnis</th><th>Basis</th><th class="r">Netto bisher</th><th class="r">Netto neu</th><th class="r">Δ / Monat</th><th>Verrechnet</th><th>Formular</th><th>Stand</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ck on"><svg class="i s"><use href="#i-check"/></svg></span></td><td><b>Bahnhofstrasse 12, 1.2</b><span class="sub">M. Vignes · MV-0041</span></td><td>1.25 % · LIK 106.2<span class="sub">01.04.2022</span></td><td class="r">1'500.00</td><td class="r">1'462.00</td><td class="r neg">−38.00</td><td>Teuerung 0.9 %</td><td>SO 2025</td><td><span class="pill g"><i></i>bereit</span></td></tr>
+        <tr><td><span class="ck on"><svg class="i s"><use href="#i-check"/></svg></span></td><td><b>Bahnhofstrasse 12, 2.1</b><span class="sub">P. Schmid · MV-0019</span></td><td>1.50 % · LIK 101.8<span class="sub">01.10.2019</span></td><td class="r">1'950.00</td><td class="r">1'866.00</td><td class="r neg">−84.00</td><td>Teuerung 1.7 % · Kosten 0.5 %</td><td>SO 2025</td><td><span class="pill g"><i></i>bereit</span></td></tr>
+        <tr class="flag"><td><span class="ck on"><svg class="i s"><use href="#i-check"/></svg></span></td><td><b>Weststrasse 48, 3.1</b><span class="sub">L. Ferrari · MV-0083</span></td><td>1.25 % · LIK 104.4<span class="sub">01.07.2023</span></td><td class="r">1'720.00</td><td class="r">1'704.00</td><td class="r neg">−16.00</td><td>Teuerung 1.1 % <span class="tag w">Vorbehalt</span></td><td>SO 2025</td><td><span class="pill w"><i></i>prüfen</span></td></tr>
+        <tr><td><span class="ck on"><svg class="i s"><use href="#i-check"/></svg></span></td><td><b>Jurastrasse 7, 1.1</b><span class="sub">M. Vignes · MV-0112</span></td><td>1.25 % · LIK 106.2<span class="sub">01.04.2022</span></td><td class="r">1'200.00</td><td class="r">1'170.00</td><td class="r neg">−30.00</td><td>Teuerung 0.9 %</td><td>BE 2024</td><td><span class="pill g"><i></i>bereit</span></td></tr>
+        <tr class="flag"><td><span class="ck on"><svg class="i s"><use href="#i-check"/></svg></span></td><td><b>Jurastrasse 7, 4.1</b><span class="sub">U. Bieri · MV-0117</span></td><td>1.75 % · LIK 99.1<span class="sub">01.10.2017</span></td><td class="r">1'480.00</td><td class="r">1'389.00</td><td class="r neg">−91.00</td><td>Teuerung 3.2 % · Kosten 1.0 % <span class="tag w">Kosten ohne Beleg</span></td><td>BE 2024</td><td><span class="pill w"><i></i>prüfen</span></td></tr>
+        <tr><td><span class="ck on"><svg class="i s"><use href="#i-check"/></svg></span></td><td><b>Bahnhofstrasse 12, 2.2</b><span class="sub">D. Kunz · MV-0052</span></td><td>1.25 % · LIK 107.1<span class="sub">01.07.2023</span></td><td class="r">1'620.00</td><td class="r">1'582.00</td><td class="r neg">−38.00</td><td>Teuerung 0.3 %</td><td>SO 2025</td><td><span class="pill g"><i></i>bereit</span></td></tr>
+        <tr><td><span class="ck"></span></td><td><b>Weststrasse 48, 1.2</b><span class="sub">S. Hürlimann · MV-0071</span></td><td><span class="tag c">keine Basis</span></td><td class="r">1'200.00</td><td class="r">—</td><td class="r">—</td><td>—</td><td>—</td><td><span class="pill c"><i></i>blockiert</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="foot">
+      <span class="n">38 Mitteilungen gehen als eingeschriebener Brief oder ins Mieterportal (wo aktiviert). Jede Abweichung von der Berechnung wird mit Grund protokolliert.</span>
+      <div class="acts"><button class="btn" type="button">Zurück</button><button class="btn p" type="button">38 freigeben und an Inhaber zur Zweitfreigabe</button></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= SCREEN 5 · FINANZEN · BANK ================= -->
+<section class="screen" data-screen="bank" data-area="finanzen">
+<div class="page">
+  <div class="crumb">Finanzen › Bank › <b>Abgleich 21.08.2026</b></div>
+  <div class="ph">
+    <div><div class="eyebrow">UBS · CH93 0076 2011 6238 5295 7 · camt.053 vom 21.08., 06:00</div><h1>Bankabgleich</h1><div class="meta">38 Bewegungen · 31 automatisch zugeordnet · 5 Vorschläge · 2 unklar · Saldo <span class="mono">CHF 412'880.15</span></div></div>
+    <div class="acts">
+      <button class="sel" type="button">Konto: <b>UBS Mietzins</b><svg class="i s"><use href="#i-chev"/></svg></button>
+      <button class="btn" type="button">Datei hochladen</button>
+      <button class="btn p" type="button">31 sichere buchen</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="col">
+      <div class="card">
+        <div class="tabs" role="tablist">
+          <button role="tab">Alle <span class="c">38</span></button>
+          <button role="tab" aria-current="true">Vorschläge <span class="c">5</span></button>
+          <button role="tab">Unklar <span class="c">2</span></button>
+          <button role="tab">Gebucht <span class="c">31</span></button>
+        </div>
+        <div class="tw"><table class="tb">
+          <thead><tr><th>Valuta</th><th>Zahler / Text</th><th class="r">Betrag</th><th>Vorschlag</th><th></th></tr></thead>
+          <tbody>
+            <tr style="background:var(--akzent-soft)"><td>21.08.</td><td><b>Blaser Anna</b><span class="sub mono">QR 00 00012 00000 00000 00000 00184 7</span></td><td class="r">1'890.00</td><td>MV Bahnhofstrasse 12, 3.2 · Miete August <span class="conf">QR exakt</span></td><td><button class="btn sm p" type="button">Buchen</button></td></tr>
+            <tr><td>21.08.</td><td><b>Vignes Marco</b><span class="sub">Mitteilung «Miete Aug + Juli Rest»</span></td><td class="r">2'900.00</td><td>MV Jurastrasse 7, 1.1 · 2 offene Posten (1'380 + 1'520) <span class="conf">94 %</span></td><td><button class="btn sm" type="button">Prüfen</button></td></tr>
+            <tr><td>20.08.</td><td><b>Apotheke am Bahnhof AG</b><span class="sub">keine Referenz</span></td><td class="r">3'780.00</td><td>MV Bahnhofstrasse 12, EG-G · Miete + NK <span class="conf">Betrag exakt</span></td><td><button class="btn sm" type="button">Prüfen</button></td></tr>
+            <tr><td>20.08.</td><td><b>Kunz Daniel</b><span class="sub mono">QR 00 00012 … 00052 3</span></td><td class="r">1'860.00</td><td>MV Bahnhofstrasse 12, 2.2 · Miete 1'862 <span class="conf w">Differenz −2.00</span></td><td><button class="btn sm" type="button">Prüfen</button></td></tr>
+            <tr><td>19.08.</td><td><b>Roth Mia</b><span class="sub">«Kaution»</span></td><td class="r">4'800.00</td><td>MV Jurastrasse 7, 2.2 · Kaution vereinbart 4'800 <span class="conf">Betrag exakt</span> · Kautionskonto?</td><td><button class="btn sm" type="button">Prüfen</button></td></tr>
+          </tbody>
+        </table></div>
+        <div class="cf"><span>Sicher = QR-Referenz oder gelernte Regel. Vorschlag = Betrag, Name oder Mitteilung. Alles andere bleibt unklar und liegt beim Zulauf.</span><a href="#">Regeln (14)</a></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <div class="ch"><h2>Zahlung prüfen</h2><span class="n">21.08.</span></div>
+        <div class="cb">
+          <div style="font-size:20px;font-weight:600">CHF 1'890.00</div>
+          <div style="color:var(--muted);font-size:13px;margin-bottom:12px">Blaser Anna · UBS · Valuta 21.08.2026</div>
+          <dl class="kv">
+            <dt>Referenz</dt><dd class="mono">00 00012 00000 00000 00000 00184 7</dd>
+            <dt>Zuordnung</dt><dd>MV-0012 · A. Blaser · Bahnhofstrasse 12, 3.2</dd>
+            <dt>Offene Posten</dt><dd>Miete August 2026 · CHF 1'890.00 <span class="pill g"><i></i>deckt genau</span></dd>
+            <dt>Konto</dt><dd>1020 Bank → 1100 Debitoren</dd>
+            <dt>Mandat</dt><dd>Erbengemeinschaft Blattner</dd>
+          </dl>
+          <div class="note" style="margin-top:12px"><b>Hinweis:</b> Das Mietverhältnis endet am 30.09. — die Septembermiete ist die letzte Sollstellung; die Kaution (CHF 5'670) bleibt bis zur Endabrechnung in Fall F-2026-0184 gebunden.</div>
+        </div>
+        <div class="foot"><label class="colorrow" style="font-size:12.5px"><span class="swt on" role="switch" aria-checked="true"></span>Regel merken (Zahler → Mietverhältnis)</label><div class="acts"><button class="btn" type="button">Andere Zuordnung</button><button class="btn p" type="button">Buchen</button></div></div>
+      </div>
+      <div class="card q">
+        <div class="ch"><h2>Konten</h2></div>
+        <ul class="bef">
+          <li><span class="dot g"></span><div><div class="t">UBS Mietzins · CH93 0076 …</div><div class="s">Saldo 412'880.15 · abgeglichen bis 21.08.</div></div></li>
+          <li><span class="dot g"></span><div><div class="t">UBS Kreditoren · CH41 0076 …</div><div class="s">Saldo 38'102.40 · Zahllauf 25.08. bereit</div></div></li>
+          <li><span class="dot w"></span><div><div class="t">Raiffeisen Kautionen · CH12 8080 …</div><div class="s">kein Auszug seit 14.08. · manuelles Konto</div></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= SCREEN 6 · ABO & MODULE ================= -->
+<section class="screen" data-screen="abo" data-area="einstellungen">
+<div class="page">
+  <div class="crumb">Einstellungen › <b>Abo &amp; Module</b></div>
+  <div class="ph">
+    <div><h1>Abo &amp; Module</h1><div class="meta">Keller Immobilien AG · Kundennummer <span class="mono">K-1042</span> · Rechnung quartalsweise, nächste am 01.10.2026</div></div>
+    <div class="acts"><button class="btn" type="button">Rechnungen</button><button class="btn" type="button">Zahlungsmittel</button></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="ch"><h2>Verbrauch im laufenden Monat</h2><span class="n">Stufe Professional</span><div class="r"><span class="pill g"><i></i>bezahlt bis 30.09.</span></div></div>
+    <div class="cb"><div class="use">
+      <div><div class="eyebrow">Einheiten</div><b>312 / 500</b><span class="meter"><i style="width:62%"></i></span>62 % · +100 für CHF 45/Mt</div>
+      <div><div class="eyebrow">Nutzer</div><b>4 / 15</b><span class="meter"><i style="width:27%"></i></span>3 Verwalter, 1 Lesezugriff</div>
+      <div><div class="eyebrow">Speicher</div><b>38 / 150 GB</b><span class="meter"><i style="width:25%"></i></span>Dokumente 31 GB, Fotos 7 GB</div>
+      <div><div class="eyebrow">Belegerkennung</div><b>412 / 500</b><span class="meter"><i style="width:82%;background:var(--warn)"></i></span>darüber CHF 0.08 je Beleg</div>
+      <div><div class="eyebrow">Signaturen</div><b>9</b><span class="meter"><i style="width:100%"></i></span>nach Verbrauch · CHF 2.50 je Signatur</div>
+    </div></div>
+    <div class="cf"><span>Kontingente laufen mit dem Kalendermonat ab und werden nicht übertragen.</span><a href="#">Verbrauchsprotokoll</a></div>
+  </div>
+
+  <div class="grid eq">
+    <div class="col">
+      <div class="card">
+        <div class="ch"><h2>Stufe</h2><span class="n">Preise exkl. 8.1 % MWST</span></div>
+        <div class="cb"><div class="tiers">
+          <div class="tier"><h3>Start</h3><div class="pr">39.–<small>/Mt</small></div><ul><li><b>25</b> Einheiten</li><li><b>2</b> Nutzer</li><li>Akten, Fälle, Läufe</li><li>Nebenkosten</li></ul></div>
+          <div class="tier"><h3>Team</h3><div class="pr">119.–<small>/Mt</small></div><ul><li><b>150</b> Einheiten</li><li><b>5</b> Nutzer</li><li>+ Portale, Vor Ort</li><li>+ eigenes Logo</li></ul></div>
+          <div class="tier now"><span class="cur">aktuell</span><h3>Professional</h3><div class="pr">329.–<small>/Mt</small></div><ul><li><b>500</b> Einheiten</li><li><b>15</b> Nutzer</li><li>+ Mandatsrentabilität</li><li>+ pain.001, Branding</li></ul></div>
+          <div class="tier"><h3>Enterprise</h3><div class="pr">749.–<small>/Mt</small></div><ul><li><b>2'000</b> Einheiten</li><li>Nutzer unbegrenzt</li><li>+ API, SLA</li><li>+ Onboarding</li></ul></div>
+        </div></div>
+        <div class="foot"><span class="n">Ein Wechsel gilt ab der nächsten Rechnungsperiode. Beim Herabstufen bleiben alle Daten erhalten; gesperrte Funktionen werden nur schreibgeschützt, Export bleibt offen.</span><button class="btn p" type="button">Stufe wechseln</button></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <div class="ch"><h2>Zubuchbare Module</h2></div>
+        <div class="tog"><div><div class="t">Digitale Unterschrift</div><div class="s">Verträge und Protokolle zur Signatur senden · DocuSeal</div></div><div class="r">CHF 2.50 je Signatur<span class="swt on" role="switch" aria-checked="true" aria-label="Digitale Unterschrift"></span></div></div>
+        <div class="tog"><div><div class="t">Belegerkennung</div><div class="s">Kreditoren und Nebenkostenbelege automatisch auslesen</div></div><div class="r">500 inkl., dann 0.08<span class="swt on" role="switch" aria-checked="true" aria-label="Belegerkennung"></span></div></div>
+        <div class="tog"><div><div class="t">Erweiterte Auswertungen</div><div class="s">Eigene Berichte, Exportvorlagen, Vergleich über Mandate</div></div><div class="r">CHF 49/Mt<span class="swt" role="switch" aria-checked="false" aria-label="Erweiterte Auswertungen"></span></div></div>
+        <div class="tog"><div><div class="t">Stockwerkeigentum</div><div class="s">Versammlung, Beschlüsse, Wertquoten, Erneuerungsfonds</div><div style="margin-top:4px"><span class="tag i">Vorschlag — noch nicht gebaut</span></div></div><div class="r">—<span class="swt" role="switch" aria-checked="false" aria-label="Stockwerkeigentum"></span></div></div>
+        <div class="tog"><div><div class="t">Schnittstellen</div><div class="s">Buchhaltungsexport, Kalender-Feed, API · in Professional enthalten</div></div><div class="r"><span class="pill a"><i></i>enthalten</span></div></div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><h2>Erscheinungsbild</h2><span class="n">ab Professional</span></div>
+        <div class="cb">
+          <div class="colorrow" style="margin-bottom:12px"><input type="color" id="brandPick" value="#0f6f6a" aria-label="Akzentfarbe"><div><b>Akzentfarbe</b><div style="color:var(--muted);font-size:12.5px">Gilt in der Anwendung, in beiden Portalen und auf PDF-Vorlagen. Ändere sie hier — der ganze Entwurf zieht mit.</div></div></div>
+          <div class="colorrow"><span style="width:44px;height:32px;border-radius:6px;border:1px dashed var(--line);display:grid;place-items:center;color:var(--faint)"><svg class="i s"><use href="#i-plus"/></svg></span><div><b>Logo</b><div style="color:var(--muted);font-size:12.5px">PNG oder SVG, mindestens 240 px breit · erscheint auf Briefen, QR-Rechnungen und im Portal</div></div></div>
+        </div>
+        <div class="cf"><span>Kontrast wird geprüft: Farben unter 4.5:1 auf Weiss werden abgelehnt.</span><a href="#">Vorschau</a></div>
+      </div>
+
+      <div class="card q">
+        <div class="ch"><h2>Wenn eine Zahlung ausbleibt</h2></div>
+        <div class="cb" style="font-size:13px;color:var(--muted)">
+          <b style="color:var(--ink)">Tag 1–14:</b> Hinweis in der Anwendung, alles offen.<br>
+          <b style="color:var(--ink)">Tag 15–30:</b> Läufe und Versand gesperrt, Erfassen und Lesen offen.<br>
+          <b style="color:var(--ink)">Ab Tag 31:</b> nur noch Lesen und Export. <span style="color:var(--crit)">Es werden keine Daten gelöscht</span> — auch nach einer Kündigung bleiben sie 12 Monate abrufbar.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ================= SCREEN 7 · VOR ORT · ABNAHME ================= -->
+<section class="screen" data-screen="vorort" data-area="heute">
+<div class="page">
+  <div class="crumb">Heute › Termine › <b>Abnahme Jurastrasse 7, 3.1</b></div>
+  <div class="grid">
+    <div class="col">
+      <div class="phone">
+        <div class="pb">
+          <span class="ico" style="width:38px;height:38px;border-radius:9px;background:var(--akzent-soft);color:var(--akzent-2);display:grid;place-items:center"><svg class="i s"><use href="#i-pin"/></svg></span>
+          <div style="flex:1"><b>Abnahme 3.1 · Ferrari → Kunz</b><small>Jurastrasse 7, 2540 Grenchen · 09:30</small></div>
+          <span class="pill w" title="Offline: Eingaben liegen im Gerät und gehen los, sobald wieder Netz da ist"><svg class="i s" style="width:13px;height:13px"><use href="#i-offline"/></svg>offline</span>
+        </div>
+        <div style="padding:10px 16px;border-bottom:1px solid var(--line-2);display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--muted)">
+          <span class="ring" style="--p:45"><span>45%</span></span>
+          <div><b style="color:var(--ink);display:block;font-size:13px">4 von 9 Räumen erfasst</b>3 Mängel, 2 Fotos · zuletzt gespeichert 09:52</div>
+        </div>
+        <div class="room"><span class="ck on"><svg class="i s"><use href="#i-check"/></svg></span><div><div class="t">Küche</div><div class="s">2 Mängel · Backofentür, Silikonfuge</div></div><span class="r"><svg class="i s" style="color:var(--faint)"><use href="#i-chev"/></svg></span></div>
+        <div class="mangel">
+          <div class="t"><span class="tag w">Mangel</span>Backofentür schliesst nicht dicht</div>
+          <div class="ph2"><i></i><i></i></div>
+          <div style="color:var(--muted)">Gerät: Electrolux EOB, Einbau 2014 · Lebensdauer 15 Jahre · <b style="color:var(--ink)">Restwert 20 %</b></div>
+          <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span class="pill">Mieteranteil <b style="margin-left:4px">CHF 96.–</b></span>
+            <span class="pill">Reparatur geschätzt 480.–</span>
+          </div>
+        </div>
+        <div class="room"><span class="ck on"><svg class="i s"><use href="#i-check"/></svg></span><div><div class="t">Bad</div><div class="s">1 Mangel · Duschabtrennung verkalkt</div></div><span class="r"><svg class="i s" style="color:var(--faint)"><use href="#i-chev"/></svg></span></div>
+        <div class="room"><span class="ck on"><svg class="i s"><use href="#i-check"/></svg></span><div><div class="t">Wohnzimmer</div><div class="s">ohne Beanstandung</div></div><span class="r"><svg class="i s" style="color:var(--faint)"><use href="#i-chev"/></svg></span></div>
+        <div class="room" style="background:var(--warn-soft)"><span class="ck now"></span><div><div class="t">Zimmer 1</div><div class="s">wird gerade erfasst</div></div><span class="r"><button class="btn sm" type="button"><svg class="i s"><use href="#i-cam"/></svg>Foto</button></span></div>
+        <div class="room"><span class="ck"></span><div><div class="t">Zimmer 2 · Reduit · Keller · Balkon · Estrich</div><div class="s">5 Räume offen</div></div><span class="r"><svg class="i s" style="color:var(--faint)"><use href="#i-chev"/></svg></span></div>
+        <div class="room"><span class="ck"></span><div><div class="t">Zähler</div><div class="s">Strom, Warmwasser, Heizung — ablesen</div></div><span class="r"><button class="btn sm" type="button">Erfassen</button></span></div>
+        <div class="room"><span class="ck"></span><div><div class="t">Schlüssel</div><div class="s">Soll: 3 Wohnung, 2 Haus, 1 Briefkasten, 1 Keller</div></div><span class="r"><button class="btn sm" type="button">Zählen</button></span></div>
+        <div class="pfoot">
+          <button class="btn" type="button">Entwurf sichern</button>
+          <button class="btn p" type="button"><svg class="i s"><use href="#i-pen"/></svg>Unterschreiben</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <div class="ch"><h2>Was daraus entsteht</h2></div>
+        <ul class="bef">
+          <li><span class="dot i"></span><div><div class="t">Abnahmeprotokoll als PDF</div><div class="s">Zwei Unterschriften auf dem Gerät · geht an beide Parteien und in die Akte</div></div></li>
+          <li><span class="dot i"></span><div><div class="t">Mängel mit Kostenteilung</div><div class="s">Mieteranteil aus der Lebensdauertabelle gerechnet, nicht geschätzt · fliesst in die Endabrechnung</div></div></li>
+          <li><span class="dot i"></span><div><div class="t">Aufträge an Dienstleister</div><div class="s">Aus jedem Mangel ein Auftrag, mit Fotos · Offerte oder Direktauftrag bis Kostendach</div></div></li>
+          <li><span class="dot i"></span><div><div class="t">Zählerstände</div><div class="s">Stichtagswerte für die Nebenkostenabrechnung, ohne zweite Erfassung</div></div></li>
+          <li><span class="dot i"></span><div><div class="t">Schritt 5 des Falls abgeschlossen</div><div class="s">Der Mieterwechsel rückt auf Endabrechnung, Frist 31.10. steht</div></div></li>
+        </ul>
+      </div>
+      <div class="card q">
+        <div class="ch"><h2>Warum offline</h2></div>
+        <div class="cb" style="font-size:13px;color:var(--muted)">Im Keller und im Estrich gibt es kein Netz. Wer dort auf das Laden einer Seite wartet, schreibt wieder auf Papier — und tippt es abends ab. Die Erfassung liegt deshalb im Gerät und geht los, sobald wieder Empfang da ist; das Protokoll lässt sich auch ohne Netz unterschreiben und wird nachgereicht.</div>
+      </div>
+      <div class="card q">
+        <div class="ch"><h2>Dieselbe Anwendung</h2></div>
+        <div class="cb" style="font-size:13px;color:var(--muted)">Kein zweites Programm, keine getrennte Anmeldung: dieselben Adressen, dieselben Rechte, dieselbe Mandantentrennung — nur eine Ansicht, die für eine Hand und einen Daumen gebaut ist.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<nav class="tabbar" aria-label="Bereiche">
+  <a href="#" data-screen="heute" aria-current="true"><svg class="i"><use href="#i-heute"/></svg>Heute</a>
+  <a href="#" data-screen="akte"><svg class="i"><use href="#i-akten"/></svg>Akten</a>
+  <a href="#" class="mid" data-screen="fall"><svg class="i"><use href="#i-plus"/></svg>Neu</a>
+  <a href="#" data-screen="lauf"><svg class="i"><use href="#i-lauf"/></svg>Läufe</a>
+  <a href="#" data-screen="bank"><svg class="i"><use href="#i-finanzen"/></svg>Finanzen</a>
+</nav>
+
+<script>
+(function(){
+  var root = document.documentElement;
+
+  function zeige(name){
+    document.querySelectorAll('.screen').forEach(function(s){
+      s.classList.toggle('on', s.dataset.screen === name);
+    });
+    var area = (document.querySelector('.screen.on') || {}).dataset;
+    area = area ? area.area : 'heute';
+    document.querySelectorAll('#nav a[data-area]').forEach(function(a){
+      if (a.dataset.area === area) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
+    });
+    document.querySelectorAll('#nav .sub').forEach(function(s){
+      s.style.display = (s.dataset.for === area) ? 'flex' : 'none';
+      s.querySelectorAll('a').forEach(function(a){
+        if (a.dataset.screen === name) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
+      });
+    });
+    document.querySelectorAll('.kz .scr button').forEach(function(b){
+      if (b.dataset.screen === name) b.setAttribute('aria-current','true'); else b.removeAttribute('aria-current');
+    });
+    // «Neu» ist eine Handlung, kein Ort — es wird nie als aktueller Bereich markiert.
+    document.querySelectorAll('.tabbar a').forEach(function(a){
+      var ort = !a.classList.contains('mid') && a.dataset.screen === name;
+      if (ort) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
+    });
+    document.querySelectorAll('#kzNote span').forEach(function(s){
+      s.classList.toggle('on', s.dataset.note === name);
+    });
+    window.scrollTo({top:0});
+  }
+
+  document.addEventListener('click', function(e){
+    var el = e.target.closest('[data-screen]');
+    if (!el) return;
+    e.preventDefault();
+    zeige(el.dataset.screen);
+  });
+
+  // Reiter, Chips und Ansichten schalten im Entwurf nur die Markierung.
+  document.addEventListener('click', function(e){
+    var t = e.target.closest('.tabs button, .reg a');
+    if (t){
+      e.preventDefault();
+      var box = t.closest('.tabs, .reg');
+      box.querySelectorAll('button, a').forEach(function(x){ x.removeAttribute('aria-current'); });
+      t.setAttribute('aria-current','true');
+      return;
+    }
+    var c = e.target.closest('.chip');
+    if (c){
+      var g = c.closest('.chips');
+      g.querySelectorAll('.chip').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+      c.setAttribute('aria-pressed','true');
+      return;
+    }
+    var s = e.target.closest('.swt');
+    if (s){
+      var on = s.classList.toggle('on');
+      s.setAttribute('aria-checked', on ? 'true' : 'false');
+    }
+  });
+
+  // D2: Seitenleiste hell oder dunkel
+  var railBtn = document.getElementById('railBtn');
+  railBtn.addEventListener('click', function(){
+    var dunkel = root.getAttribute('data-rail') === 'dark';
+    root.setAttribute('data-rail', dunkel ? 'light' : 'dark');
+    railBtn.setAttribute('aria-pressed', dunkel ? 'false' : 'true');
+    railBtn.textContent = dunkel ? 'dunkel' : 'hell';
+  });
+
+  var themeBtn = document.getElementById('themeBtn');
+  themeBtn.addEventListener('click', function(){
+    var dunkel = root.getAttribute('data-theme') === 'dark';
+    if (dunkel) root.removeAttribute('data-theme'); else root.setAttribute('data-theme','dark');
+    themeBtn.setAttribute('aria-pressed', dunkel ? 'false' : 'true');
+    themeBtn.textContent = dunkel ? 'Nachtmodus' : 'Tagmodus';
+  });
+
+  // Branding: ein Token, die ganze Oberfläche zieht mit
+  function mische(hex, ziel, anteil){
+    function w(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+    var a=w(hex), b=w(ziel);
+    return '#' + a.map(function(v,i){
+      return Math.round(v + (b[i]-v)*anteil).toString(16).padStart(2,'0');
+    }).join('');
+  }
+  var pick = document.getElementById('brandPick');
+  if (pick) pick.addEventListener('input', function(){
+    root.style.setProperty('--akzent', pick.value);
+    root.style.setProperty('--akzent-2', mische(pick.value, '#000000', .25));
+    root.style.setProperty('--akzent-soft', mische(pick.value, '#ffffff', .86));
+  });
+
+  zeige('heute');
+})();
+</script>
+</body>
+</html>
