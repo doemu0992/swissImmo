@@ -9,7 +9,24 @@ Stand zu Beginn von E2.1: **7437 in 134 Vorlagen**. Nach der Umstellung von
 `pendenzen.html` (71) und `fristen.html` (53): 7313 in 132 Vorlagen.
 E2.2 nahm die drei dichtesten Seiten — `vertrag_neu.html` (275 → 2),
 `kreditoren.html` (233 → 8), `buchhaltung.html` (217 → 0):
-**STAND 6598 in 131 Vorlagen**.
+6598 in 131 Vorlagen.
+E2.3 nahm die fuenf naechsten fw-Seiten — `person_form.html` (187 → 5),
+`objekt_detail.html` (184 → 0), `bankabgleich.html` (170 → 6),
+`debitoren.html` (112 → 0), `vertrag_bearbeiten.html` (106 → 0):
+**STAND 5850 in 128 Vorlagen**.
+
+NICHT ANGERUEHRT, UND ZWAR MIT ABSICHT: die zwei dichtesten Vorlagen
+ueberhaupt. `schaden_melden.html` (264) und `public_bewerbung_form.html` (205)
+erben NICHT von `fw/base.html`, sondern laden `core/_assets_aussen.html` —
+dort gibt es keine einzige `fw-*`-Klasse. Beim ersten Versuch in E2.3 waren
+beide bereits umgestellt; die Seiten waeren vollstaendig unformatiert
+ausgeliefert worden, und zwar genau die zwei, die MIETER UND BEWERBER sehen.
+Zurueckgenommen vor dem Ausliefern.
+
+Wer sie angehen will, zieht zuerst die Komponentenschicht auf die
+Aussenseiten. Das ist eine eigene Entscheidung: Es aendert das Aussehen
+gegenueber Dritten (siehe `core/templates/fw/_assets.html`, wo dieselbe
+Trennung fuer die Palette begruendet ist).
 
 Die Zahl in Grossbuchstaben ist kein Schmuck — `test_der_stand_im_kopf_stimmt`
 liest sie aus diesem Text und vergleicht sie mit der Messung. Eine erste
@@ -124,7 +141,7 @@ OBERGRENZE = {
     'core/templates/fw/anfangsmietzins.html': 64,
     'core/templates/fw/anlagen.html': 87,
     'core/templates/fw/auswertung.html': 36,
-    'core/templates/fw/bankabgleich.html': 170,
+    'core/templates/fw/bankabgleich.html': 6,
     'core/templates/fw/bankkonten.html': 45,
     'core/templates/fw/base.html': 191,
     'core/templates/fw/base_embed.html': 8,
@@ -135,7 +152,6 @@ OBERGRENZE = {
     'core/templates/fw/bewerber_vergleich.html': 50,
     'core/templates/fw/bewerbung_detail.html': 91,
     'core/templates/fw/bewerbungen.html': 12,
-    'core/templates/fw/debitoren.html': 112,
     'core/templates/fw/debitoren_aging.html': 50,
     'core/templates/fw/dienstleister.html': 74,
     'core/templates/fw/dokumente.html': 50,
@@ -175,9 +191,8 @@ OBERGRENZE = {
     'core/templates/fw/nebenkosten.html': 68,
     'core/templates/fw/nebenkosten_detail.html': 82,
     'core/templates/fw/objekt_ausschreiben.html': 20,
-    'core/templates/fw/objekt_detail.html': 184,
     'core/templates/fw/objekt_form.html': 81,
-    'core/templates/fw/person_form.html': 187,
+    'core/templates/fw/person_form.html': 5,
     'core/templates/fw/personen.html': 18,
     'core/templates/fw/rechtsgrundlagen.html': 32,
     'core/templates/fw/schaden_detail.html': 73,
@@ -190,7 +205,6 @@ OBERGRENZE = {
     'core/templates/fw/untermiete.html': 20,
     'core/templates/fw/vermarktung.html': 47,
     'core/templates/fw/vertraege.html': 18,
-    'core/templates/fw/vertrag_bearbeiten.html': 106,
     'core/templates/fw/vertrag_detail.html': 102,
     'core/templates/fw/vertrag_neu.html': 2,
     'core/templates/fw/verzug_257d.html': 46,

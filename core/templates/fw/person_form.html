@@ -2,12 +2,12 @@
 {% block title %}{% if ist_neu %}Neue Person{% else %}{{ m.display_name }} bearbeiten{% endif %} — swissImmo{% endblock %}
 
 {% block content %}
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/personen/{{ lg_query }}" class="hover:text-indigo-600">Personen</a>
+<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/personen/{{ lg_query }}" class="hover:fw-marke">Personen</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    {% if not ist_neu %}<a href="/neu/personen/{{ m.id }}/" class="hover:text-indigo-600">{{ m.display_name }}</a>
+    {% if not ist_neu %}<a href="/neu/personen/{{ m.id }}/" class="hover:fw-marke">{{ m.display_name }}</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>{% endif %}
-    <span class="text-slate-600 font-medium">{% if ist_neu %}Neue Person{% else %}Bearbeiten{% endif %}</span>
+    <span class="fw-mutet font-medium">{% if ist_neu %}Neue Person{% else %}Bearbeiten{% endif %}</span>
 </nav>
 
 <div class="fw-phead">
@@ -21,32 +21,32 @@
     {% csrf_token %}
 
     {% if dublette_warnung %}
-    <div class="bg-amber-50 border border-amber-300 rounded-xl p-5">
+    <div class="fw-warn-flaeche border fw-linie-warn rounded-xl p-5">
         <div class="flex items-start gap-3">
-            <div class="text-amber-500 text-xl">⚠️</div>
+            <div class="fw-warnton text-xl">⚠️</div>
             <div class="flex-1">
-                <h3 class="font-bold text-amber-900 text-sm mb-1">Mögliche Dublette gefunden</h3>
-                <p class="text-sm text-amber-800 mb-3">Es existieren bereits ähnliche Personen. Bitte prüfen Sie, ob es sich um dieselbe Person handelt:</p>
+                <h3 class="font-bold fw-warnton text-sm mb-1">Mögliche Dublette gefunden</h3>
+                <p class="text-sm fw-warnton mb-3">Es existieren bereits ähnliche Personen. Bitte prüfen Sie, ob es sich um dieselbe Person handelt:</p>
                 <div class="space-y-1.5 mb-4">
                     {% for d in dubletten %}
-                    <a href="/neu/personen/{{ d.id }}/" class="flex items-center gap-2 text-sm bg-white rounded-lg px-3 py-2 border border-amber-200 hover:border-amber-400">
-                        <span class="font-semibold text-slate-800">{{ d.name }}</span>
-                        {% if d.email %}<span class="text-slate-400">· {{ d.email }}</span>{% endif %}
-                        {% if d.ort %}<span class="text-slate-400">· {{ d.ort }}</span>{% endif %}
-                        <span class="ml-auto text-indigo-600 text-xs font-semibold">Öffnen →</span>
+                    <a href="/neu/personen/{{ d.id }}/" class="flex items-center gap-2 text-sm fw-flaeche rounded-lg px-3 py-2 border fw-linie-warn hover:fw-linie-warn">
+                        <span class="font-semibold fw-strong">{{ d.name }}</span>
+                        {% if d.email %}<span class="fw-faint">· {{ d.email }}</span>{% endif %}
+                        {% if d.ort %}<span class="fw-faint">· {{ d.ort }}</span>{% endif %}
+                        <span class="ml-auto fw-marke text-xs font-semibold">Öffnen →</span>
                     </a>
                     {% endfor %}
                 </div>
                 <input type="hidden" name="dublette_ok" value="1">
-                <p class="text-xs text-amber-700">Ist es dennoch eine neue Person? Dann unten auf „Trotzdem speichern" klicken.</p>
+                <p class="text-xs fw-warnton">Ist es dennoch eine neue Person? Dann unten auf „Trotzdem speichern" klicken.</p>
             </div>
         </div>
     </div>
     {% endif %}
 
     <!-- Typ -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <label class="block text-xs font-semibold text-slate-500 mb-2">Kunden-Typ</label>
+    <div class="fw-card p-5">
+        <label class="block text-xs font-semibold fw-mutet mb-2">Kunden-Typ</label>
         <div class="flex flex-wrap gap-2" id="typWahl">
             {% for val, lbl in m.TYP_CHOICES %}{% endfor %}
             <button type="button" data-typ="person" onclick="setTyp('person')" class="typ-btn px-4 py-2 rounded-lg text-sm font-semibold">Privatperson</button>
@@ -57,26 +57,26 @@
     </div>
 
     <!-- Person -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4" id="box-person">
-        <h3 class="font-bold text-slate-800 text-sm">Person</h3>
+    <div class="fw-card p-5 space-y-4" id="box-person">
+        <h3 class="font-bold fw-strong text-sm">Person</h3>
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Anrede</label>
-                <select name="anrede" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Anrede</label>
+                <select name="anrede" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     {% for a in "Herr,Frau,Familie" %}{% endfor %}
                     <option {% if m.anrede == 'Herr' %}selected{% endif %}>Herr</option>
                     <option {% if m.anrede == 'Frau' %}selected{% endif %}>Frau</option>
                     <option {% if m.anrede == 'Familie' %}selected{% endif %}>Familie</option>
                 </select></div>
-            <div class="sm:col-span-1"><label class="block text-xs font-semibold text-slate-500 mb-1">Vorname</label>
-                <input name="vorname" value="{{ m.vorname }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Nachname <span class="text-red-500">*</span></label>
-                <input name="nachname" value="{{ m.nachname }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-1"><label class="block text-xs font-semibold fw-mutet mb-1">Vorname</label>
+                <input name="vorname" value="{{ m.vorname }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Nachname <span class="fw-kritisch">*</span></label>
+                <input name="nachname" value="{{ m.nachname }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Geburtsdatum</label>
-                <input type="date" name="geburtsdatum" value="{{ m.geburtsdatum|date:'Y-m-d' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Zivilstand</label>
-                <select name="zivilstand" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Geburtsdatum</label>
+                <input type="date" name="geburtsdatum" value="{{ m.geburtsdatum|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Zivilstand</label>
+                <select name="zivilstand" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     <option value="" {% if not m.zivilstand %}selected{% endif %}>—</option>
                     <option {% if m.zivilstand == 'ledig' %}selected{% endif %}>ledig</option>
                     <option {% if m.zivilstand == 'verheiratet' %}selected{% endif %}>verheiratet</option>
@@ -85,8 +85,8 @@
                     <option {% if m.zivilstand == 'verwitwet' %}selected{% endif %}>verwitwet</option>
                     <option {% if m.zivilstand == 'getrennt' %}selected{% endif %}>getrennt</option>
                 </select></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Korrespondenzsprache</label>
-                <select name="sprache" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Korrespondenzsprache</label>
+                <select name="sprache" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     <option value="de" {% if m.sprache == 'de' or not m.sprache %}selected{% endif %}>Deutsch</option>
                     <option value="fr" {% if m.sprache == 'fr' %}selected{% endif %}>Französisch</option>
                     <option value="it" {% if m.sprache == 'it' %}selected{% endif %}>Italienisch</option>
@@ -94,106 +94,106 @@
                 </select></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nationalität</label>
-                <input name="nationalitaet" value="{{ m.nationalitaet }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Heimatort / Geburtsort</label>
-                <input name="heimatort" value="{{ m.heimatort }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">AHV-Nummer</label>
-                <input name="ahv_nummer" value="{{ m.ahv_nummer }}" placeholder="756…" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Nationalität</label>
+                <input name="nationalitaet" value="{{ m.nationalitaet }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Heimatort / Geburtsort</label>
+                <input name="heimatort" value="{{ m.heimatort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">AHV-Nummer</label>
+                <input name="ahv_nummer" value="{{ m.ahv_nummer }}" placeholder="756…" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
         </div>
     </div>
 
     <!-- Firma -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4 hidden" id="box-firma">
-        <h3 class="font-bold text-slate-800 text-sm">Firma / Organisation</h3>
+    <div class="fw-card p-5 space-y-4 hidden" id="box-firma">
+        <h3 class="font-bold fw-strong text-sm">Firma / Organisation</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Firmenname <span class="text-red-500">*</span></label>
-                <input name="firmen_name" value="{{ m.firmen_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">UID / CHE-Nummer</label>
-                <input name="uid_nummer" value="{{ m.uid_nummer }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Kontaktperson</label>
-                <input name="kontaktperson" value="{{ m.kontaktperson }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Firmenname <span class="fw-kritisch">*</span></label>
+                <input name="firmen_name" value="{{ m.firmen_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">UID / CHE-Nummer</label>
+                <input name="uid_nummer" value="{{ m.uid_nummer }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Kontaktperson</label>
+                <input name="kontaktperson" value="{{ m.kontaktperson }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
 
     <!-- Kontakt -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Kontakt</h3>
+    <div class="fw-card p-5 space-y-4">
+        <h3 class="font-bold fw-strong text-sm">Kontakt</h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">E-Mail</label>
-                <input type="email" name="email" value="{{ m.email }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Telefon</label>
-                <input name="telefon_privat" value="{{ m.telefon_privat }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mobile</label>
-                <input name="mobile" value="{{ m.mobile }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Telefon Geschäft</label>
-                <input name="telefon_geschaeft" value="{{ m.telefon_geschaeft }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">E-Mail</label>
+                <input type="email" name="email" value="{{ m.email }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Telefon</label>
+                <input name="telefon_privat" value="{{ m.telefon_privat }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Mobile</label>
+                <input name="mobile" value="{{ m.mobile }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Telefon Geschäft</label>
+                <input name="telefon_geschaeft" value="{{ m.telefon_geschaeft }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
 
     <!-- Wohnadresse -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Wohnadresse</h3>
-        <p class="text-[11px] text-slate-400 -mt-2">Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den
+    <div class="fw-card p-5 space-y-4">
+        <h3 class="font-bold fw-strong text-sm">Wohnadresse</h3>
+        <p class="text-[11px] fw-faint -mt-2">Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den
             Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf siehst du auf der Personenseite.</p>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Strasse & Nr.</label>
-            <input name="strasse" value="{{ m.strasse }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Adresszusatz</label>
-            <input name="adresszusatz" value="{{ m.adresszusatz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Strasse & Nr.</label>
+            <input name="strasse" value="{{ m.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Adresszusatz</label>
+            <input name="adresszusatz" value="{{ m.adresszusatz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">PLZ</label>
-                <input name="plz" value="{{ m.plz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Ort</label>
-                <input name="ort" value="{{ m.ort }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Land</label>
-                <input name="land" value="{{ m.land|default:'Schweiz' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">PLZ</label>
+                <input name="plz" value="{{ m.plz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Ort</label>
+                <input name="ort" value="{{ m.ort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Land</label>
+                <input name="land" value="{{ m.land|default:'Schweiz' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
 
     <!-- Korrespondenzadresse (optional, hat Vorrang für die Zustellung) -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Korrespondenzadresse <span class="font-normal text-slate-400">(optional)</span></h3>
-        <p class="text-[11px] text-slate-400 -mt-2">Nur ausfüllen, wenn die Post an eine andere Adresse gehen soll
+    <div class="fw-card p-5 space-y-4">
+        <h3 class="font-bold fw-strong text-sm">Korrespondenzadresse <span class="font-normal fw-faint">(optional)</span></h3>
+        <p class="text-[11px] fw-faint -mt-2">Nur ausfüllen, wenn die Post an eine andere Adresse gehen soll
             (z.B. c/o, Postfach, Vertretung). Ist sie gesetzt, werden Briefe & amtliche Formulare dorthin adressiert.</p>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Strasse & Nr. / c/o</label>
-            <input name="k_strasse" value="{{ korr_adr.strasse }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Adresszusatz</label>
-            <input name="k_adresszusatz" value="{{ korr_adr.adresszusatz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Strasse & Nr. / c/o</label>
+            <input name="k_strasse" value="{{ korr_adr.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Adresszusatz</label>
+            <input name="k_adresszusatz" value="{{ korr_adr.adresszusatz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">PLZ</label>
-                <input name="k_plz" value="{{ korr_adr.plz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Ort</label>
-                <input name="k_ort" value="{{ korr_adr.ort }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">PLZ</label>
+                <input name="k_plz" value="{{ korr_adr.plz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Ort</label>
+                <input name="k_ort" value="{{ korr_adr.ort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
 
     <!-- Person-spezifische Sektionen (nur Privatperson) -->
     <div id="box-person-extra" class="space-y-5">
         <!-- Aufenthalt -->
-        <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-            <h3 class="font-bold text-slate-800 text-sm">Aufenthalt</h3>
-            <p class="text-[11px] text-slate-400 -mt-2">Bei Vermietung an ausländische Staatsangehörige Pflichtangabe.</p>
+        <div class="fw-card p-5 space-y-4">
+            <h3 class="font-bold fw-strong text-sm">Aufenthalt</h3>
+            <p class="text-[11px] fw-faint -mt-2">Bei Vermietung an ausländische Staatsangehörige Pflichtangabe.</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Aufenthaltsbewilligung</label>
-                    <select name="aufenthaltsbewilligung" id="f_bewilligung" onchange="bewilligungHinweis()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Aufenthaltsbewilligung</label>
+                    <select name="aufenthaltsbewilligung" id="f_bewilligung" onchange="bewilligungHinweis()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         {% for val, lbl in m.AUFENTHALT_CHOICES %}
                         <option value="{{ val }}" {% if m.aufenthaltsbewilligung == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                     </select></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bewilligung gültig bis</label>
-                    <input type="date" name="bewilligung_gueltig_bis" value="{{ m.bewilligung_gueltig_bis|date:'Y-m-d' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Bewilligung gültig bis</label>
+                    <input type="date" name="bewilligung_gueltig_bis" value="{{ m.bewilligung_gueltig_bis|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
             </div>
-            <div id="bewilligung_hinweis" class="hidden text-xs rounded-lg px-3 py-2.5 bg-sky-50 border border-sky-200 text-sky-800">
+            <div id="bewilligung_hinweis" class="hidden text-xs rounded-lg px-3 py-2.5 fw-info-flaeche border border-sky-200 text-sky-800">
                 <p id="bewilligung_hinweis_txt" class="font-medium"></p>
-                <p class="text-[11px] text-sky-600 mt-1">Mieten ist für alle Aufenthaltstitel zulässig (Privatrecht, Art. 253 ff. OR) — der Titel ist kein Mietverbot, sondern ein Risiko-/Verfahrenshinweis. Meldepflicht: Anmeldung bei der Einwohnerkontrolle binnen 14 Tagen (in einzelnen Kantonen zusätzlich Vermieter-Meldepflicht).</p>
+                <p class="text-[11px] fw-info mt-1">Mieten ist für alle Aufenthaltstitel zulässig (Privatrecht, Art. 253 ff. OR) — der Titel ist kein Mietverbot, sondern ein Risiko-/Verfahrenshinweis. Meldepflicht: Anmeldung bei der Einwohnerkontrolle binnen 14 Tagen (in einzelnen Kantonen zusätzlich Vermieter-Meldepflicht).</p>
             </div>
         </div>
 
         <!-- Beruf & Bonität -->
-        <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-            <h3 class="font-bold text-slate-800 text-sm">Beruf & Bonität</h3>
+        <div class="fw-card p-5 space-y-4">
+            <h3 class="font-bold fw-strong text-sm">Beruf & Bonität</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Erwerbsstatus</label>
-                    <select name="erwerbsstatus" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Erwerbsstatus</label>
+                    <select name="erwerbsstatus" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         <option value="" {% if not m.erwerbsstatus %}selected{% endif %}>—</option>
                         <option {% if m.erwerbsstatus == 'angestellt' %}selected{% endif %}>angestellt</option>
                         <option {% if m.erwerbsstatus == 'selbständig' %}selected{% endif %}>selbständig</option>
@@ -202,117 +202,117 @@
                         <option {% if m.erwerbsstatus == 'arbeitslos' %}selected{% endif %}>arbeitslos</option>
                         <option {% if m.erwerbsstatus == 'andere' %}selected{% endif %}>andere</option>
                     </select></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Beruf</label>
-                    <input name="beruf" value="{{ m.beruf }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Arbeitgeber</label>
-                    <input name="arbeitgeber" value="{{ m.arbeitgeber }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Jahreseinkommen (CHF)</label>
-                    <input name="einkommen_jahr" value="{{ m.einkommen_jahr }}" placeholder="z.B. 90'000" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Betreibungsauszug vom</label>
-                    <input type="date" name="bonitaet_datum" value="{{ m.bonitaet_datum|date:'Y-m-d' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Betreibungsauszug-Ergebnis</label>
-                    <select name="betreibung_ergebnis" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Beruf</label>
+                    <input name="beruf" value="{{ m.beruf }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Arbeitgeber</label>
+                    <input name="arbeitgeber" value="{{ m.arbeitgeber }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Jahreseinkommen (CHF)</label>
+                    <input name="einkommen_jahr" value="{{ m.einkommen_jahr }}" placeholder="z.B. 90'000" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Betreibungsauszug vom</label>
+                    <input type="date" name="bonitaet_datum" value="{{ m.bonitaet_datum|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Betreibungsauszug-Ergebnis</label>
+                    <select name="betreibung_ergebnis" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         {% for val, lbl in m.BETREIBUNG_CHOICES %}<option value="{{ val }}" {% if m.betreibung_ergebnis == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                     </select></div>
-                <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Referenz Vorvermieter (Name · Telefon · E-Mail)</label>
+                <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Referenz Vorvermieter (Name · Telefon · E-Mail)</label>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <input name="ref_vermieter_name" value="{{ m.ref_vermieter_name }}" placeholder="Name" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                        <input name="ref_vermieter_telefon" value="{{ m.ref_vermieter_telefon }}" placeholder="Telefon" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                        <input name="ref_vermieter_email" value="{{ m.ref_vermieter_email }}" placeholder="E-Mail" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                        <input name="ref_vermieter_name" value="{{ m.ref_vermieter_name }}" placeholder="Name" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                        <input name="ref_vermieter_telefon" value="{{ m.ref_vermieter_telefon }}" placeholder="Telefon" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                        <input name="ref_vermieter_email" value="{{ m.ref_vermieter_email }}" placeholder="E-Mail" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     </div></div>
             </div>
         </div>
 
         <!-- Vertretung / Beistand -->
-        <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-            <h3 class="font-bold text-slate-800 text-sm">Vertretung / Beistand <span class="font-normal text-slate-400">(optional)</span></h3>
+        <div class="fw-card p-5 space-y-4">
+            <h3 class="font-bold fw-strong text-sm">Vertretung / Beistand <span class="font-normal fw-faint">(optional)</span></h3>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Art</label>
-                    <select name="vertretung_art" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Art</label>
+                    <select name="vertretung_art" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         {% for val, lbl in m.VERTRETUNG_CHOICES %}<option value="{{ val }}" {% if m.vertretung_art == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                     </select></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Name / Behörde</label>
-                    <input name="vertretung_name" value="{{ m.vertretung_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kontakt</label>
-                    <input name="vertretung_kontakt" value="{{ m.vertretung_kontakt }}" placeholder="Telefon / E-Mail" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Name / Behörde</label>
+                    <input name="vertretung_name" value="{{ m.vertretung_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Kontakt</label>
+                    <input name="vertretung_kontakt" value="{{ m.vertretung_kontakt }}" placeholder="Telefon / E-Mail" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
             </div>
         </div>
 
         <!-- Haushalt -->
-        <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-            <h3 class="font-bold text-slate-800 text-sm">Haushalt</h3>
+        <div class="fw-card p-5 space-y-4">
+            <h3 class="font-bold fw-strong text-sm">Haushalt</h3>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Erwachsene</label>
-                    <input type="number" min="0" name="haushalt_erwachsene" value="{{ m.haushalt_erwachsene }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kinder</label>
-                    <input type="number" min="0" name="haushalt_kinder" value="{{ m.haushalt_kinder }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
-                <div class="flex items-end pb-1"><label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Erwachsene</label>
+                    <input type="number" min="0" name="haushalt_erwachsene" value="{{ m.haushalt_erwachsene }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Kinder</label>
+                    <input type="number" min="0" name="haushalt_kinder" value="{{ m.haushalt_kinder }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+                <div class="flex items-end pb-1"><label class="inline-flex items-center gap-2 text-sm fw-ink">
                     <input type="checkbox" name="haustiere" {% if m.haustiere %}checked{% endif %} class="rounded"> Haustiere</label></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Haustiere (Details)</label>
-                    <input name="haustiere_details" value="{{ m.haustiere_details }}" placeholder="z.B. 1 Katze" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Haustiere (Details)</label>
+                    <input name="haustiere_details" value="{{ m.haustiere_details }}" placeholder="z.B. 1 Katze" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
             </div>
         </div>
 
         <!-- Versicherung & Notfall -->
-        <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-            <h3 class="font-bold text-slate-800 text-sm">Versicherung & Notfallkontakt</h3>
+        <div class="fw-card p-5 space-y-4">
+            <h3 class="font-bold fw-strong text-sm">Versicherung & Notfallkontakt</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Haftpflicht-Versicherung</label>
-                    <input name="haftpflicht_gesellschaft" value="{{ m.haftpflicht_gesellschaft }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Policen-Nr.</label>
-                    <input name="haftpflicht_police" value="{{ m.haftpflicht_police }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Notfallkontakt / Bürge</label>
-                    <input name="notfall_name" value="{{ m.notfall_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Haftpflicht-Versicherung</label>
+                    <input name="haftpflicht_gesellschaft" value="{{ m.haftpflicht_gesellschaft }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Policen-Nr.</label>
+                    <input name="haftpflicht_police" value="{{ m.haftpflicht_police }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Notfallkontakt / Bürge</label>
+                    <input name="notfall_name" value="{{ m.notfall_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div><label class="block text-xs font-semibold text-slate-500 mb-1">Telefon</label>
-                        <input name="notfall_telefon" value="{{ m.notfall_telefon }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                    <div><label class="block text-xs font-semibold text-slate-500 mb-1">Beziehung</label>
-                        <input name="notfall_beziehung" value="{{ m.notfall_beziehung }}" placeholder="z.B. Elternteil" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                    <div><label class="block text-xs font-semibold fw-mutet mb-1">Telefon</label>
+                        <input name="notfall_telefon" value="{{ m.notfall_telefon }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                    <div><label class="block text-xs font-semibold fw-mutet mb-1">Beziehung</label>
+                        <input name="notfall_beziehung" value="{{ m.notfall_beziehung }}" placeholder="z.B. Elternteil" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Zahlungsverkehr -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Zahlungsverkehr</h3>
+    <div class="fw-card p-5 space-y-4">
+        <h3 class="font-bold fw-strong text-sm">Zahlungsverkehr</h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Zahlungsart</label>
-                <select name="zahlungsart" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Zahlungsart</label>
+                <select name="zahlungsart" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     {% for val, lbl in m.ZAHLUNGSART_CHOICES %}<option value="{{ val }}" {% if m.zahlungsart == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                 </select></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">eBill- / E-Rechnungs-Adresse</label>
-                <input name="ebill_email" value="{{ m.ebill_email }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">eBill- / E-Rechnungs-Adresse</label>
+                <input name="ebill_email" value="{{ m.ebill_email }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">IBAN</label>
-                <input name="iban" value="{{ m.iban }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono" placeholder="CH…"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bank</label>
-                <input name="bank_name" value="{{ m.bank_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">IBAN</label>
+                <input name="iban" value="{{ m.iban }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono" placeholder="CH…"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Bank</label>
+                <input name="bank_name" value="{{ m.bank_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
-        <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+        <label class="inline-flex items-center gap-2 text-sm fw-ink">
             <input type="checkbox" name="mahnsperre" {% if m.mahnsperre %}checked{% endif %} class="rounded"> Mahnsperre (laufende Zahlungsvereinbarung — kein automatischer Mahnlauf)</label>
-        <div class="pt-2 border-t border-slate-100">
-            <p class="text-xs font-semibold text-slate-500 mb-2">Abweichender Zahler / Kostenträger <span class="font-normal text-slate-400">(z.B. Sozialamt, Firma)</span></p>
+        <div class="pt-2 border-t fw-linie">
+            <p class="text-xs font-semibold fw-mutet mb-2">Abweichender Zahler / Kostenträger <span class="font-normal fw-faint">(z.B. Sozialamt, Firma)</span></p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <input name="zahler_name" value="{{ m.zahler_name }}" placeholder="Name" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                <input name="zahler_adresse" value="{{ m.zahler_adresse }}" placeholder="Adresse" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                <input name="zahler_iban" value="{{ m.zahler_iban }}" placeholder="IBAN" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono">
+                <input name="zahler_name" value="{{ m.zahler_name }}" placeholder="Name" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <input name="zahler_adresse" value="{{ m.zahler_adresse }}" placeholder="Adresse" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <input name="zahler_iban" value="{{ m.zahler_iban }}" placeholder="IBAN" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono">
             </div>
         </div>
     </div>
 
     <!-- Notizen -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Interne Notizen</h3>
-        <textarea name="notizen" rows="3" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">{{ m.notizen }}</textarea>
+    <div class="fw-card p-5 space-y-4">
+        <h3 class="font-bold fw-strong text-sm">Interne Notizen</h3>
+        <textarea name="notizen" rows="3" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{{ m.notizen }}</textarea>
     </div>
 
     <div class="flex items-center gap-3">
-        <button type="submit" class="{% if dublette_warnung %}bg-amber-500 hover:bg-amber-600{% else %}bg-indigo-600 hover:bg-indigo-700{% endif %} text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+        <button type="submit" class="{% if dublette_warnung %}fw-warn-flaeche0 hover:bg-amber-600{% else %}fw-balken-voll hover:fw-balken-voll{% endif %} text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             <i class="fa-solid fa-check mr-1.5"></i>{% if dublette_warnung %}Trotzdem speichern{% else %}Speichern{% endif %}
         </button>
-        <a href="{% if ist_neu or m.id == None %}/neu/personen/{% else %}/neu/personen/{{ m.id }}/{% endif %}" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
+        <a href="{% if ist_neu or m.id == None %}/neu/personen/{% else %}/neu/personen/{{ m.id }}/{% endif %}" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>
 </form>
 
@@ -321,10 +321,10 @@ function setTyp(t){
     document.getElementById('f_typ').value = t;
     document.querySelectorAll('.typ-btn').forEach(function(b){
         var aktiv = b.dataset.typ === t;
-        b.classList.toggle('bg-indigo-600', aktiv);
+        b.classList.toggle('fw-balken-voll', aktiv);
         b.classList.toggle('text-white', aktiv);
-        b.classList.toggle('bg-slate-100', !aktiv);
-        b.classList.toggle('text-slate-600', !aktiv);
+        b.classList.toggle('fw-flaeche2', !aktiv);
+        b.classList.toggle('fw-mutet', !aktiv);
     });
     document.getElementById('box-person').classList.toggle('hidden', t !== 'person');
     document.getElementById('box-person-extra').classList.toggle('hidden', t !== 'person');

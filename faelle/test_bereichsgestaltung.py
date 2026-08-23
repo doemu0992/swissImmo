@@ -103,12 +103,12 @@ DECKEL = {
     # 4b.11: Von 478 auf 164 gesenkt, und der Bereich «Fälle» ist neu und
     # deshalb von Anfang an auf 0. Die drei grossen Reste sind Tabellen mit
     # vielen Formularzeilen (Sollmietzins, Raumbuch, Geraete/Zaehler).
-    ('objekt_detail.html', 'stammdaten'): 14,
-    ('objekt_detail.html', 'chronik'): 23,
-    ('objekt_detail.html', 'finanzen'): 54,
-    ('objekt_detail.html', 'dokumente'): 10,
+    ('objekt_detail.html', 'stammdaten'): 0,
+    ('objekt_detail.html', 'chronik'): 0,
+    ('objekt_detail.html', 'finanzen'): 0,
+    ('objekt_detail.html', 'dokumente'): 0,
     ('objekt_detail.html', 'faelle'): 0,
-    ('objekt_detail.html', 'ausstattung'): 61,
+    ('objekt_detail.html', 'ausstattung'): 0,
 
     ('mandat_detail.html', 'stammdaten'): 0,
     ('mandat_detail.html', 'liegenschaften'): 0,

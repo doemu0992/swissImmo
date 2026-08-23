@@ -100,16 +100,16 @@
             <div class="fw-cbody" style="padding:14px 16px">
             {% if aktiver_vertrag %}
             <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                <div class="w-10 h-10 rounded-full fw-btn fw-primary flex items-center justify-center text-sm font-bold shrink-0">
                     {{ aktiver_vertrag.mieter.display_name|slice:":2"|upper }}
                 </div>
-                <div><div class="font-semibold text-slate-900">{{ aktiver_vertrag.mieter.display_name }}</div>
+                <div><div class="font-semibold fw-strong">{{ aktiver_vertrag.mieter.display_name }}</div>
                     <div class="fw-klein">seit {{ aktiver_vertrag.beginn|date:"d.m.Y" }}</div></div>
             </div>
-            <a href="/neu/vertraege/{{ aktiver_vertrag.id }}/" class="text-sm text-indigo-600 font-medium hover:underline">Vertrag ansehen <i class="fa-solid fa-arrow-right ml-1 text-xs"></i></a>
+            <a href="/neu/vertraege/{{ aktiver_vertrag.id }}/" class="text-sm fw-marke font-medium hover:underline">Vertrag ansehen <i class="fa-solid fa-arrow-right ml-1 text-xs"></i></a>
             {% else %}
-            <p class="text-sm text-slate-400 italic">Dieses Objekt steht aktuell leer.</p>
-            <a href="/neu/vertraege/neu/?einheit={{ e.id }}" class="text-sm text-indigo-600 font-medium hover:underline mt-2 inline-block">Vertrag erstellen <i class="fa-solid fa-arrow-right ml-1 text-xs"></i></a>
+            <p class="text-sm fw-faint italic">Dieses Objekt steht aktuell leer.</p>
+            <a href="/neu/vertraege/neu/?einheit={{ e.id }}" class="text-sm fw-marke font-medium hover:underline mt-2 inline-block">Vertrag erstellen <i class="fa-solid fa-arrow-right ml-1 text-xs"></i></a>
             {% endif %}
             </div>
         </div>
@@ -127,31 +127,31 @@
     </div>
 
     <!-- Ausstattungsmerkmale (schnelle Häkchen, ergänzt das Raumbuch) -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 mt-4">
+    <div class="fw-card p-5 mt-4">
         <div class="flex items-center gap-2.5 mb-3">
             <span class="fw-ic b"><i class="fa-solid fa-list-check"></i></span>
-            <h3 class="font-bold text-slate-800">Merkmale</h3>
-            <button type="button" onclick="document.getElementById('merkmale-edit').classList.toggle('hidden')" style="margin-left:auto" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-pen mr-1"></i>Bearbeiten</button>
+            <h3 class="font-bold fw-strong">Merkmale</h3>
+            <button type="button" onclick="document.getElementById('merkmale-edit').classList.toggle('hidden')" style="margin-left:auto" class="text-xs font-semibold fw-marke hover:underline"><i class="fa-solid fa-pen mr-1"></i>Bearbeiten</button>
         </div>
         {% if merkmale_gewaehlt %}
         <div class="flex flex-wrap gap-2">
             {% for m in merkmale_gewaehlt %}
-            <span class="fw-chip bg-indigo-50 text-indigo-700"><i class="fa-solid fa-check text-[10px] mr-1"></i>{{ m }}</span>
+            <span class="fw-chip fw-markenflaeche fw-marke"><i class="fa-solid fa-check text-[10px] mr-1"></i>{{ m }}</span>
             {% endfor %}
         </div>
         {% else %}
-        <p class="text-sm text-slate-400 italic">Noch keine Merkmale erfasst — auf „Bearbeiten" klicken.</p>
+        <p class="text-sm fw-faint italic">Noch keine Merkmale erfasst — auf „Bearbeiten" klicken.</p>
         {% endif %}
-        <form id="merkmale-edit" method="post" action="/neu/objekte/{{ e.id }}/merkmale/" class="hidden mt-4 border-t border-slate-100 pt-4">
+        <form id="merkmale-edit" method="post" action="/neu/objekte/{{ e.id }}/merkmale/" class="hidden mt-4 border-t fw-linie pt-4">
             {% csrf_token %}
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
                 {% for m in merkmale_optionen %}
-                <label class="flex items-center gap-2 text-sm text-slate-700">
-                    <input type="checkbox" name="merkmale" value="{{ m }}" {% if m in merkmale_gewaehlt %}checked{% endif %} class="accent-indigo-600"> {{ m }}
+                <label class="flex items-center gap-2 text-sm fw-ink">
+                    <input type="checkbox" name="merkmale" value="{{ m }}" {% if m in merkmale_gewaehlt %}checked{% endif %} class="fw-akzent"> {{ m }}
                 </label>
                 {% endfor %}
             </div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1 mt-4">Eigene Merkmale (mit Komma trennen)</label>
+            <label class="block text-xs font-semibold fw-mutet mb-1 mt-4">Eigene Merkmale (mit Komma trennen)</label>
             <input name="merkmale_eigene" placeholder="z.B. Weinkeller, Sauna, Cheminée-Ofen" class="fw-feld w-full">
             <div class="flex justify-end gap-2 mt-3">
                 <button type="button" onclick="document.getElementById('merkmale-edit').classList.add('hidden')" class="fw-btn">Abbrechen</button>
@@ -169,42 +169,42 @@
     {% if verhaeltnisse %}
     <div class="space-y-3">
         {% for r in verhaeltnisse %}
-        <details class="group bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <summary class="px-5 py-3.5 flex items-center gap-3 cursor-pointer select-none hover:bg-slate-50/60 list-none">
-                <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform group-open:rotate-90"></i>
+        <details class="group fw-card overflow-hidden">
+            <summary class="px-5 py-3.5 flex items-center gap-3 cursor-pointer select-none hover:fw-flaeche2 list-none">
+                <i class="fa-solid fa-chevron-right text-xs fw-faint transition-transform group-open:rotate-90"></i>
                 <div class="flex-1 min-w-0">
-                    <div class="font-bold text-slate-800 truncate">{{ r.namen }}</div>
+                    <div class="font-bold fw-strong truncate">{{ r.namen }}</div>
                     <div class="fw-klein">{{ r.v.beginn|date:"d.m.Y" }} – {% if r.v.ende %}{{ r.v.ende|date:"d.m.Y" }}{% else %}laufend{% endif %}</div>
                 </div>
                 {% if r.pill %}<span class="text-[11px] font-semibold rounded-full px-2 py-0.5 {{ r.pill.cls }}">{{ r.pill.label }}</span>{% endif %}
-                <span class="text-[11px] font-semibold bg-slate-100 text-slate-500 rounded-md px-1.5 py-0.5">{{ r.dokumente|length }} Dok.</span>
-                <a href="/neu/vertraege/{{ r.v.id }}/" class="text-xs text-indigo-600 font-medium hover:underline shrink-0" onclick="event.stopPropagation()">Vertrag <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
+                <span class="text-[11px] font-semibold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{{ r.dokumente|length }} Dok.</span>
+                <a href="/neu/vertraege/{{ r.v.id }}/" class="text-xs fw-marke font-medium hover:underline shrink-0" onclick="event.stopPropagation()">Vertrag <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
             </summary>
-            <div class="border-t border-slate-100 px-5 py-3 flex flex-wrap gap-2 bg-slate-50/40">
+            <div class="border-t fw-linie px-5 py-3 flex flex-wrap gap-2 fw-flaeche2/40">
                 <a href="/neu/mietzins/{{ r.v.id }}/anfangsmietzins/" class="fw-btn"><i class="fa-solid fa-file-invoice mr-1"></i>Anfangsmietzins</a>
                 {% if r.v.status == 'aktiv' %}
                 <a href="/neu/mietzins/{{ r.v.id }}/anpassung/" class="fw-btn"><i class="fa-solid fa-arrow-trend-up mr-1"></i>Mietzinsanpassung</a>
-                <a href="/neu/vertraege/{{ r.v.id }}/kuendigen/" class="text-[11px] font-semibold text-rose-600 border border-rose-100 hover:bg-rose-50 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-file-circle-xmark mr-1"></i>Kündigung</a>
+                <a href="/neu/vertraege/{{ r.v.id }}/kuendigen/" class="text-[11px] font-semibold fw-kritisch border fw-linie-krit hover:fw-krit-flaeche rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-file-circle-xmark mr-1"></i>Kündigung</a>
                 {% endif %}
-                <a href="/neu/vertraege/{{ r.v.id }}/" class="text-[11px] font-semibold text-slate-600 border border-slate-200 hover:bg-slate-100 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-arrow-right mr-1"></i>Vertrag öffnen</a>
+                <a href="/neu/vertraege/{{ r.v.id }}/" class="text-[11px] font-semibold fw-mutet border fw-linie hover:fw-flaeche2 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-arrow-right mr-1"></i>Vertrag öffnen</a>
             </div>
-            <div class="border-t border-slate-100 divide-y divide-slate-50">
+            <div class="border-t fw-linie fw-dv">
                 {% for d in r.dokumente %}
                 <div class="flex items-center gap-3 px-5 py-3">
-                    <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-paperclip"></i></div>
-                    <div class="flex-1 min-w-0"><div class="text-sm font-medium text-slate-900 truncate">{{ d.bezeichnung|default:d.titel }}</div>
+                    <div class="w-9 h-9 rounded-lg fw-flaeche2 fw-mutet flex items-center justify-center shrink-0"><i class="fa-solid fa-paperclip"></i></div>
+                    <div class="flex-1 min-w-0"><div class="text-sm font-medium fw-strong truncate">{{ d.bezeichnung|default:d.titel }}</div>
                         <div class="fw-klein">{{ d.get_kategorie_display }}{% if d.ablage_zeit %} · {{ d.ablage_zeit|date:"d.m.Y H:i" }}{% endif %}</div></div>
-                    {% if d.datei %}<a href="{{ d.datei.url }}" class="text-xs text-indigo-600 font-medium hover:underline shrink-0" target="_blank" rel="noopener">Öffnen</a>{% endif %}
+                    {% if d.datei %}<a href="{{ d.datei.url }}" class="text-xs fw-marke font-medium hover:underline shrink-0" target="_blank" rel="noopener">Öffnen</a>{% endif %}
                 </div>
                 {% empty %}
-                <div class="px-5 py-4 text-center text-xs text-slate-400 italic">Noch keine Dokumente zu diesem Verhältnis.</div>
+                <div class="px-5 py-4 text-center text-xs fw-faint italic">Noch keine Dokumente zu diesem Verhältnis.</div>
                 {% endfor %}
             </div>
         </details>
         {% endfor %}
     </div>
     {% else %}
-    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch kein Mietverhältnis an diesem Objekt.</div>
+    <div class="fw-card px-5 py-8 text-center text-sm fw-faint italic">Noch kein Mietverhältnis an diesem Objekt.</div>
     {% endif %}
 {% comment %} AktivitaetsLog kennt keinen Ziel-Typ fuer ein Objekt. Der einzige belastbare Bezug fuehrt ueber seine Vertraege — genau wie bei der Liegenschaft. Ein Abgleich ueber die Bezeichnung waere geraten. {% endcomment %}
 <div class="fw-subhead">Protokoll</div>
@@ -226,13 +226,13 @@
 
 <!-- ===== BEREICH: FINANZEN ===== -->
 <div data-panel="obj" id="obj-finanzen" class="hidden">
-    <div class="bg-indigo-50/60 border border-indigo-100 rounded-xl px-4 py-3 mb-4 text-[12px] text-indigo-800 leading-relaxed">
+    <div class="fw-markenflaeche/60 border fw-linie-marke rounded-xl px-4 py-3 mb-4 text-[12px] fw-marke leading-relaxed">
         <i class="fa-solid fa-circle-info mr-1"></i><b>Sollmietzins datiert («gültig ab»).</b> Der aktuell gültige Wert steuert die Soll-Miete; <b>neue Verträge</b> übernehmen ihn zum Mietbeginn automatisch, <b>bestehende bleiben unverändert</b> (Änderung nur via amtliches Formular, Art. 269d OR).
         <span class="block mt-1"><b>Gratismonate / Rabatt:</b> datierte Zeile mit Rabatt (oder «mietzinsfrei») erfassen — die <b>Referenz</b> bleibt die echte Sollmiete (Mieterspiegel/Bilanz korrekt), der Rabatt wird als Ertragsminderung gebucht.</span>
     </div>
     {% if not e.ist_einstellplatz %}
-    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
-        <h3 class="fw-t mb-3"><i class="fa-solid fa-sliders text-indigo-500 mr-1.5"></i>Nebenkosten-Abrechnungsart</h3>
+    <div class="fw-card p-5 mb-4">
+        <h3 class="fw-t mb-3"><i class="fa-solid fa-sliders fw-marke mr-1.5"></i>Nebenkosten-Abrechnungsart</h3>
         <form method="post" action="/neu/objekte/{{ e.id }}/nkart/" class="flex flex-wrap items-end gap-3">
             {% csrf_token %}
             <div><label class="fw-klein block mb-1">Abrechnungsart</label>
@@ -242,14 +242,14 @@
                 </select></div>
             <button class="fw-btn fw-primary"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
         </form>
-        <p class="text-[11px] text-slate-400 mt-2">Gilt als Standard-Abrechnungsart für neue Verträge dieses Objekts.</p>
+        <p class="text-[11px] fw-faint mt-2">Gilt als Standard-Abrechnungsart für neue Verträge dieses Objekts.</p>
     </div>
     {% endif %}
     <div class="fw-card">
         <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
             <thead><tr class="fw-kopfzeile">
                 <th class="px-4 py-3 font-semibold">Gültig ab</th>
-                <th class="px-4 py-3 font-semibold text-right">Netto{% if not e.ist_einstellplatz %} / NK{% endif %}<br><span class="text-[9px] normal-case text-slate-300">Referenz</span></th>
+                <th class="px-4 py-3 font-semibold text-right">Netto{% if not e.ist_einstellplatz %} / NK{% endif %}<br><span class="text-[9px] normal-case fw-faint">Referenz</span></th>
                 <th class="px-4 py-3 font-semibold text-right">Rabatt</th>
                 <th class="px-4 py-3 font-semibold text-right">zu zahlen</th>
                 <th class="px-4 py-3 font-semibold text-center">Basis</th>
@@ -259,16 +259,16 @@
             <tbody class="">
             {% for s in sollmietzinse %}
             <tr class="fw-hover">
-                <td class="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">{{ s.gueltig_ab|date:"d.m.Y" }}
-                    {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-emerald-50 text-emerald-700">aktuell</span>{% endif %}</td>
-                <td class="px-4 py-3 text-right text-slate-700 whitespace-nowrap">{{ s.netto_mietzins|chf }}{% if not e.ist_einstellplatz %} / {{ s.nebenkosten|chf }}{% endif %}</td>
-                <td class="px-4 py-3 text-right whitespace-nowrap {% if s.hat_rabatt %}text-amber-600 font-semibold{% else %}text-slate-300{% endif %}">
+                <td class="px-4 py-3 font-medium fw-strong whitespace-nowrap">{{ s.gueltig_ab|date:"d.m.Y" }}
+                    {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold fw-gut-flaeche fw-gut">aktuell</span>{% endif %}</td>
+                <td class="px-4 py-3 text-right fw-ink whitespace-nowrap">{{ s.netto_mietzins|chf }}{% if not e.ist_einstellplatz %} / {{ s.nebenkosten|chf }}{% endif %}</td>
+                <td class="px-4 py-3 text-right whitespace-nowrap {% if s.hat_rabatt %}fw-warnton font-semibold{% else %}fw-faint{% endif %}">
                     {% if s.hat_rabatt %}−{{ s.rabatt_gesamt|chf }}
-                    {% if s.ist_voller_erlass %}<span class="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-amber-50 text-amber-700 align-middle" title="Der Nettomietzins wurde für diese Periode vollständig erlassen (Gratismonat)">Gratismonat</span>{% endif %}
+                    {% if s.ist_voller_erlass %}<span class="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold fw-warn-flaeche fw-warnton align-middle" title="Der Nettomietzins wurde für diese Periode vollständig erlassen (Gratismonat)">Gratismonat</span>{% endif %}
                     {% else %}—{% endif %}</td>
-                <td class="px-4 py-3 text-right font-semibold whitespace-nowrap {% if s.verrechnet_brutto == 0 %}text-emerald-600{% else %}text-slate-900{% endif %}">CHF {{ s.verrechnet_brutto|chf }}{% if s.verrechnet_brutto == 0 %} <span class="text-[10px] font-normal">(frei)</span>{% endif %}</td>
-                <td class="px-4 py-3 text-center text-slate-500 whitespace-nowrap text-[11px]">{% localize off %}{% if s.basis_referenzzinssatz %}{{ s.basis_referenzzinssatz }}%{% else %}—{% endif %} / {% if s.basis_lik_punkte %}{{ s.basis_lik_punkte }}{% else %}—{% endif %}{% endlocalize %}</td>
-                <td class="px-4 py-3 text-slate-500 truncate max-w-[120px]">{{ s.notiz|default:"—" }}</td>
+                <td class="px-4 py-3 text-right font-semibold whitespace-nowrap {% if s.verrechnet_brutto == 0 %}fw-gut{% else %}fw-strong{% endif %}">CHF {{ s.verrechnet_brutto|chf }}{% if s.verrechnet_brutto == 0 %} <span class="text-[10px] font-normal">(frei)</span>{% endif %}</td>
+                <td class="px-4 py-3 text-center fw-mutet whitespace-nowrap text-[11px]">{% localize off %}{% if s.basis_referenzzinssatz %}{{ s.basis_referenzzinssatz }}%{% else %}—{% endif %} / {% if s.basis_lik_punkte %}{{ s.basis_lik_punkte }}{% else %}—{% endif %}{% endlocalize %}</td>
+                <td class="px-4 py-3 fw-mutet truncate max-w-[120px]">{{ s.notiz|default:"—" }}</td>
                 <td class="px-4 py-3 text-right whitespace-nowrap">
                     <form method="post" action="/neu/sollmietzins/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('Diese Sollmietzins-Zeile löschen?');">{% csrf_token %}
                         <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash"></i></button>
@@ -313,12 +313,12 @@
                     Jetzt: Klickfläche nur so breit wie Kästchen und Text (inline-flex),
                     und beim Ankreuzen wird der Rabatt sichtbar eingetragen.
                 {% endcomment %}
-                <label class="inline-flex items-start gap-2 text-xs text-slate-600 cursor-pointer">
+                <label class="inline-flex items-start gap-2 text-xs fw-mutet cursor-pointer">
                     <input type="checkbox" name="mietzinsfrei" value="1" id="smz-frei"
-                           class="mt-0.5 rounded border-slate-300 text-indigo-600">
+                           class="mt-0.5 rounded fw-linie fw-marke">
                     <span>{% if e.ist_einstellplatz %}Mietzins{% else %}Nettomietzins{% endif %} vollständig erlassen (Gratismonat) — setzt den Rabatt automatisch auf den vollen {% if e.ist_einstellplatz %}Mietzins{% else %}Netto-Referenzbetrag{% endif %}.</span>
                 </label>
-                <p id="smz-warnung" class="hidden mt-2 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                <p id="smz-warnung" class="hidden mt-2 text-xs font-semibold fw-warnton fw-warn-flaeche border fw-linie-warn rounded-lg px-3 py-2">
                     <i class="fa-solid fa-triangle-exclamation mr-1"></i>
                     Diese Zeile stellt den {% if e.ist_einstellplatz %}Mietzins{% else %}Nettomietzins{% endif %} <b>vollständig auf 0.00</b> — verrechnet wird nur noch <span id="smz-zuzahlen">die Nebenkosten</span>.
                 </p>
@@ -342,11 +342,11 @@
                 if (frei.checked) {
                     rabatt.value = netto.value || '';
                     rabatt.readOnly = true;
-                    rabatt.classList.add('text-amber-700', 'font-semibold');
+                    rabatt.classList.add('fw-warnton', 'font-semibold');
                     warnung.classList.remove('hidden');
                 } else {
                     rabatt.readOnly = false;
-                    rabatt.classList.remove('text-amber-700', 'font-semibold');
+                    rabatt.classList.remove('fw-warnton', 'font-semibold');
                     warnung.classList.add('hidden');
                 }
             }
@@ -359,12 +359,12 @@
 
     {% if zeige_staffelvorlage %}
     <!-- Objekt-Staffelmiete-Vorlage (Plan) — belegt neue Verträge vor, wie Sollmietzins -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 mt-6">
-        <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-layer-group text-indigo-500 mr-1.5"></i>Staffelmiete-Vorlage (Objekt)</h3>
-        <p class="text-[11px] text-slate-400 mb-3">Geplante, datierte Netto-Stufen für dieses Objekt. Ein <b>neuer Gewerbe-Vertrag</b> übernimmt sie automatisch als Staffelmiete (Art. 269c). Diese Vorlage wird selbst nicht verrechnet — die verrechnungswirksamen Stufen entstehen am konkreten Vertrag.</p>
-        <div class="border border-slate-200 rounded-lg overflow-hidden mb-3">
+    <div class="fw-card p-5 mt-6">
+        <h3 class="font-bold fw-strong text-sm mb-1"><i class="fa-solid fa-layer-group fw-marke mr-1.5"></i>Staffelmiete-Vorlage (Objekt)</h3>
+        <p class="text-[11px] fw-faint mb-3">Geplante, datierte Netto-Stufen für dieses Objekt. Ein <b>neuer Gewerbe-Vertrag</b> übernimmt sie automatisch als Staffelmiete (Art. 269c). Diese Vorlage wird selbst nicht verrechnet — die verrechnungswirksamen Stufen entstehen am konkreten Vertrag.</p>
+        <div class="border fw-linie rounded-lg overflow-hidden mb-3">
             <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-                <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
                     <th class="px-4 py-2 font-semibold">Gültig ab</th>
                     <th class="px-4 py-2 font-semibold text-right">Netto-Mietzins</th>
                     <th class="px-4 py-2 font-semibold">Bemerkung</th>
@@ -373,9 +373,9 @@
                 <tbody class="">
                 {% for s in staffelvorlagen %}
                 <tr>
-                    <td class="px-4 py-2 font-medium text-slate-800">{{ s.gueltig_ab|date:"d.m.Y" }}</td>
-                    <td class="px-4 py-2 text-right font-semibold text-slate-900">CHF {{ s.netto_mietzins|chf }}</td>
-                    <td class="px-4 py-2 text-slate-500">{{ s.notiz|default:"—" }}</td>
+                    <td class="px-4 py-2 font-medium fw-strong">{{ s.gueltig_ab|date:"d.m.Y" }}</td>
+                    <td class="px-4 py-2 text-right font-semibold fw-strong">CHF {{ s.netto_mietzins|chf }}</td>
+                    <td class="px-4 py-2 fw-mutet">{{ s.notiz|default:"—" }}</td>
                     <td class="px-4 py-2 text-right">
                         <form method="post" action="/neu/staffelvorlage/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('Diese Staffel-Vorlage-Zeile löschen?');">{% csrf_token %}
                             <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash"></i></button>
@@ -383,7 +383,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="px-4 py-4 text-center text-xs text-slate-400 italic">Noch keine Staffel-Vorlage — neue Verträge starten mit festem Mietzins.</td></tr>
+                <tr><td colspan="4" class="px-4 py-4 text-center text-xs fw-faint italic">Noch keine Staffel-Vorlage — neue Verträge starten mit festem Mietzins.</td></tr>
                 {% endfor %}
                 </tbody>
             </table></div>
@@ -404,29 +404,29 @@
 
     {% if zeige_staffel %}
     <!-- Staffelmiete (Art. 269c) — vertragsgebunden, treibt die Sollstellung -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 mt-6">
+    <div class="fw-card p-5 mt-6">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-stairs"></i></span>Staffelstufen des aktiven Vertrags</h3>
-            <a href="/neu/vertraege/{{ aktiver_vertrag.id }}/" class="text-xs text-indigo-600 hover:underline">Aktiver Vertrag</a>
+            <h3 class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0"><i class="fa-solid fa-stairs"></i></span>Staffelstufen des aktiven Vertrags</h3>
+            <a href="/neu/vertraege/{{ aktiver_vertrag.id }}/" class="text-xs fw-marke hover:underline">Aktiver Vertrag</a>
         </div>
-        <p class="text-[11px] text-slate-400 mb-3">Vorab vereinbarte Stufen des <b>aktiven Vertrags</b>. Ab dem Stichtag gilt der neue Netto-Mietzins automatisch im Mietenlauf (keine erneute Ankündigung). Zulässig bei fester Vertragsdauer ≥ 3 Jahren, max. 1 Erhöhung pro Jahr.</p>
-        <div class="border border-slate-200 rounded-lg overflow-hidden mb-3">
+        <p class="text-[11px] fw-faint mb-3">Vorab vereinbarte Stufen des <b>aktiven Vertrags</b>. Ab dem Stichtag gilt der neue Netto-Mietzins automatisch im Mietenlauf (keine erneute Ankündigung). Zulässig bei fester Vertragsdauer ≥ 3 Jahren, max. 1 Erhöhung pro Jahr.</p>
+        <div class="border fw-linie rounded-lg overflow-hidden mb-3">
             <div class="overflow-x-auto"><table class="w-full min-w-max text-sm">
-                <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
                     <th class="px-4 py-2 font-semibold">Gültig ab</th>
                     <th class="px-4 py-2 font-semibold text-right">Netto-Mietzins</th>
                     <th class="px-4 py-2"></th>
                 </tr></thead>
                 <tbody class="">
-                <tr class="text-slate-500">
-                    <td class="px-4 py-2">{{ aktiver_vertrag.beginn|date:"d.m.Y" }} <span class="text-[10px] text-slate-400">(Start)</span></td>
+                <tr class="fw-mutet">
+                    <td class="px-4 py-2">{{ aktiver_vertrag.beginn|date:"d.m.Y" }} <span class="text-[10px] fw-faint">(Start)</span></td>
                     <td class="px-4 py-2 text-right">CHF {{ aktiver_vertrag.netto_mietzins|chf }}</td>
                     <td class="px-4 py-2"></td>
                 </tr>
                 {% for s in staffelstufen %}
                 <tr>
-                    <td class="px-4 py-2 font-medium text-slate-800">{{ s.ab_datum|date:"d.m.Y" }}</td>
-                    <td class="px-4 py-2 text-right font-semibold text-slate-900">CHF {{ s.netto_mietzins|chf }}</td>
+                    <td class="px-4 py-2 font-medium fw-strong">{{ s.ab_datum|date:"d.m.Y" }}</td>
+                    <td class="px-4 py-2 text-right font-semibold fw-strong">CHF {{ s.netto_mietzins|chf }}</td>
                     <td class="px-4 py-2 text-right">
                         <form method="post" action="/neu/staffel/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('Staffelstufe löschen?');">{% csrf_token %}
                             <button class="fw-ikon mut gefahr" title="Löschen"><i class="fa-solid fa-trash"></i></button>
@@ -434,7 +434,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="3" class="px-4 py-4 text-center text-xs text-slate-400 italic">Noch keine Staffelstufen — Vertrag läuft mit festem Mietzins.</td></tr>
+                <tr><td colspan="3" class="px-4 py-4 text-center text-xs fw-faint italic">Noch keine Staffelstufen — Vertrag läuft mit festem Mietzins.</td></tr>
                 {% endfor %}
                 </tbody>
             </table></div>
@@ -455,13 +455,13 @@
 <!-- ===== BEREICH: DOKUMENTE ===== -->
 <div data-panel="obj" id="obj-dokumente" class="hidden">
 <div class="fw-subhead">Fotos</div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
-        <h3 class="font-bold text-slate-800 text-sm mb-1">Objekt-Fotos</h3>
+    <div class="fw-card p-5 mb-4">
+        <h3 class="font-bold fw-strong text-sm mb-1">Objekt-Fotos</h3>
         <p class="fw-klein mb-3">Werden im Exposé, im Portal-Feed und in der Vermarktungsliste verwendet. Das erste Foto ist das Titelbild.</p>
         <form method="post" action="/neu/objekte/{{ e.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
             {% csrf_token %}
             <input name="fotos" type="file" accept="image/*" multiple required
-                   class="text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold">
+                   class="text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold">
             <button class="fw-btn fw-primary"><i class="fa-solid fa-upload mr-1.5"></i>Hochladen</button>
         </form>
     </div>
@@ -472,16 +472,16 @@
             <a href="{{ f.bild.url }}" target="_blank" rel="noopener" title="Foto in voller Grösse öffnen" class="block">
                 <img src="{{ f.bild.url }}" alt="Objektfoto" class="fw-bild">
             </a>
-            {% if forloop.first %}<span class="absolute bottom-1 left-1 text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded font-semibold">Titelbild</span>{% endif %}
+            {% if forloop.first %}<span class="absolute bottom-1 left-1 text-[10px] fw-btn fw-primary px-1.5 py-0.5 rounded font-semibold">Titelbild</span>{% endif %}
             <form method="post" action="/neu/objekte/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1" onsubmit="return confirm('Foto löschen?');">
                 {% csrf_token %}
-                <button class="w-7 h-7 rounded-full bg-white/90 hover:bg-rose-50 text-rose-600 text-xs shadow" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                <button class="w-7 h-7 rounded-full fw-flaeche/90 hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="Löschen"><i class="fa-solid fa-trash"></i></button>
             </form>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Fotos.</div>
+    <div class="fw-card px-5 py-8 text-center text-sm fw-faint italic">Noch keine Fotos.</div>
     {% endif %}
 {% comment %} Haengen per Fremdschluessel am Vertrag, nicht am Objekt. Sie stehen hier trotzdem, weil man sie am Objekt sucht — verlinkt, nicht kopiert. {% endcomment %}
 <div class="fw-subhead">Dokumente der Mietverhältnisse</div>
@@ -546,8 +546,8 @@
 <div data-panel="obj" id="obj-ausstattung" class="hidden">
 <div class="fw-subhead">Raumbuch</div>
     <!-- Schnellerfassung ganzer Raum aus Katalog -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
-        <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-wand-magic-sparkles text-indigo-500 mr-1.5"></i>Raum aus Katalog anlegen</h3>
+    <div class="fw-card p-5 mb-4">
+        <h3 class="font-bold fw-strong text-sm mb-1"><i class="fa-solid fa-wand-magic-sparkles fw-marke mr-1.5"></i>Raum aus Katalog anlegen</h3>
         <p class="fw-klein mb-3">Lädt die typische Ausstattung eines Raumtyps mit Standard-Lebensdauern — danach Details je Element ergänzen. Die Räume entstehen aus den Elementen.</p>
         <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/katalog/" class="flex flex-wrap items-end gap-3">
             {% csrf_token %}
@@ -560,8 +560,8 @@
     </div>
 
     <!-- Einzelnes Element erfassen -->
-    <div class="bg-white rounded-xl border border-indigo-200 p-5 mb-5">
-        <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-plus mr-1.5"></i>Ausstattungselement erfassen</h3>
+    <div class="fw-flaeche rounded-xl border fw-linie-marke p-5 mb-5">
+        <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-plus mr-1.5"></i>Ausstattungselement erfassen</h3>
         <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {% csrf_token %}
             <div><label class="fw-klein block mb-1">Raum *</label>
@@ -594,8 +594,8 @@
             <div class="sm:col-span-2"><label class="fw-klein block mb-1">Notiz</label>
                 <input name="notiz" class="fw-feld w-full"></div>
             <div><label class="fw-klein block mb-1">Foto</label>
-                <input type="file" name="foto" accept="image/*" class="w-full text-xs text-slate-600 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold"></div>
-            <div class="sm:col-span-3 flex justify-end"><button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen</button></div>
+                <input type="file" name="foto" accept="image/*" class="w-full text-xs fw-mutet file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold"></div>
+            <div class="sm:col-span-3 flex justify-end"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen</button></div>
         </form>
     </div>
 
@@ -603,14 +603,14 @@
     {% if raeume %}
     <div class="space-y-4">
         {% for r in raeume %}
-        <details class="group bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <summary class="px-5 py-3 bg-slate-50/60 flex items-center gap-2 cursor-pointer select-none hover:bg-slate-50 list-none">
-                <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform group-open:rotate-90"></i>
-                <i class="fa-solid fa-door-open text-indigo-500"></i>
-                <span class="font-bold text-slate-800">{{ r.raum }}</span>
+        <details class="group fw-card overflow-hidden">
+            <summary class="px-5 py-3 fw-flaeche2 flex items-center gap-2 cursor-pointer select-none hover:fw-flaeche2 list-none">
+                <i class="fa-solid fa-chevron-right text-xs fw-faint transition-transform group-open:rotate-90"></i>
+                <i class="fa-solid fa-door-open fw-marke"></i>
+                <span class="font-bold fw-strong">{{ r.raum }}</span>
                 <span class="fw-klein">· {{ r.elemente|length }} Element{{ r.elemente|length|pluralize:",e" }}</span>
             </summary>
-            <div class="border-t border-slate-100 overflow-x-auto">
+            <div class="border-t fw-linie overflow-x-auto">
             <table class="w-full min-w-max text-sm">
                 <thead><tr class="fw-kopfzeile">
                     <th class="px-5 py-2.5 font-semibold">Kategorie</th>
@@ -625,19 +625,19 @@
                 {% for row in r.elemente %}
                 <tr class="fw-hover">
                     <td class="px-5 py-2.5">
-                        <div class="font-medium text-slate-900">{{ row.a.kategorie }}
-                            {% if row.ersatz_status == 'faellig' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-600">Ersatz fällig</span>{% elif row.ersatz_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-600">bald fällig</span>{% endif %}</div>
+                        <div class="font-medium fw-strong">{{ row.a.kategorie }}
+                            {% if row.ersatz_status == 'faellig' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold fw-krit-flaeche fw-kritisch">Ersatz fällig</span>{% elif row.ersatz_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold fw-warn-flaeche fw-warnton">bald fällig</span>{% endif %}</div>
                         {% if row.a.bezeichnung %}<div class="fw-klein">{{ row.a.bezeichnung }}</div>{% endif %}
                         <div class="flex items-center gap-2 mt-0.5">
-                            {% if row.a.foto %}<a href="{{ row.a.foto.url }}" target="_blank" rel="noopener" class="text-[11px] text-indigo-600 hover:underline"><i class="fa-solid fa-image mr-0.5"></i>Foto</a>{% endif %}
-                            {% if row.schaden_anzahl %}<span class="text-[11px] text-slate-500"><i class="fa-solid fa-screwdriver-wrench mr-0.5 text-slate-400"></i>{{ row.schaden_anzahl }} Reparatur{{ row.schaden_anzahl|pluralize:"en" }} · CHF {{ row.reparaturkosten|chf }}</span>{% endif %}
+                            {% if row.a.foto %}<a href="{{ row.a.foto.url }}" target="_blank" rel="noopener" class="text-[11px] fw-marke hover:underline"><i class="fa-solid fa-image mr-0.5"></i>Foto</a>{% endif %}
+                            {% if row.schaden_anzahl %}<span class="text-[11px] fw-mutet"><i class="fa-solid fa-screwdriver-wrench mr-0.5 fw-faint"></i>{{ row.schaden_anzahl }} Reparatur{{ row.schaden_anzahl|pluralize:"en" }} · CHF {{ row.reparaturkosten|chf }}</span>{% endif %}
                         </div>
                     </td>
-                    <td class="px-5 py-2.5 text-slate-600">{% if row.a.marke or row.a.modell %}{{ row.a.marke }} {{ row.a.modell }}{% else %}—{% endif %}</td>
-                    <td class="px-5 py-2.5 text-slate-600 whitespace-nowrap">{% if row.a.einbau_datum %}{{ row.a.einbau_datum|date:"m.Y" }}{% else %}—{% endif %}{% if row.lebensdauer %} <span class="fw-klein">· {{ row.lebensdauer }}J</span>{% endif %}</td>
-                    <td class="px-5 py-2.5 text-right text-slate-700 whitespace-nowrap">{% if row.a.neuwert %}{{ row.a.neuwert|chf }}{% else %}—{% endif %}</td>
-                    <td class="px-5 py-2.5 text-right whitespace-nowrap {% if row.zeitwert %}text-slate-900 font-semibold{% else %}text-slate-400{% endif %}">{% if row.zeitwert %}{{ row.zeitwert|chf }}{% else %}—{% endif %}</td>
-                    <td class="px-5 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold {% if row.a.zustand == 'defekt' %}bg-rose-50 text-rose-700{% elif row.a.zustand == 'gebraucht' %}bg-amber-50 text-amber-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ row.a.get_zustand_display }}</span></td>
+                    <td class="px-5 py-2.5 fw-mutet">{% if row.a.marke or row.a.modell %}{{ row.a.marke }} {{ row.a.modell }}{% else %}—{% endif %}</td>
+                    <td class="px-5 py-2.5 fw-mutet whitespace-nowrap">{% if row.a.einbau_datum %}{{ row.a.einbau_datum|date:"m.Y" }}{% else %}—{% endif %}{% if row.lebensdauer %} <span class="fw-klein">· {{ row.lebensdauer }}J</span>{% endif %}</td>
+                    <td class="px-5 py-2.5 text-right fw-ink whitespace-nowrap">{% if row.a.neuwert %}{{ row.a.neuwert|chf }}{% else %}—{% endif %}</td>
+                    <td class="px-5 py-2.5 text-right whitespace-nowrap {% if row.zeitwert %}fw-strong font-semibold{% else %}fw-faint{% endif %}">{% if row.zeitwert %}{{ row.zeitwert|chf }}{% else %}—{% endif %}</td>
+                    <td class="px-5 py-2.5"><span class="px-2 py-0.5 rounded text-xs font-semibold {% if row.a.zustand == 'defekt' %}fw-krit-flaeche fw-kritisch{% elif row.a.zustand == 'gebraucht' %}fw-warn-flaeche fw-warnton{% else %}fw-gut-flaeche fw-gut{% endif %}">{{ row.a.get_zustand_display }}</span></td>
                     <td class="px-5 py-2.5 text-right whitespace-nowrap">
                         <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.toggle('hidden')" class="fw-ikon mut mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
                         <form method="post" action="/neu/ausstattung/{{ row.a.id }}/loeschen/" class="inline" onsubmit="return confirm('Element löschen?');">
@@ -680,10 +680,10 @@
                             <div class="sm:col-span-2"><label class="fw-klein block mb-1">Notiz</label>
                                 <input name="notiz" value="{{ row.a.notiz }}" class="fw-feld w-full"></div>
                             <div class="sm:col-span-2"><label class="fw-klein block mb-1">Foto {% if row.a.foto %}<span class="fw-mutet">(ersetzt bestehendes)</span>{% endif %}</label>
-                                <input type="file" name="foto" accept="image/*" class="w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold"></div>
+                                <input type="file" name="foto" accept="image/*" class="w-full text-xs fw-mutet file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold"></div>
                             <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
                                 <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.add('hidden')" class="fw-btn">Abbrechen</button>
-                                <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                                <button class="fw-btn fw-primary text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
                             </div>
                         </form>
                     </td>
@@ -696,7 +696,7 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Ausstattung erfasst. Lade einen Raum aus dem Katalog oder erfasse ein Element — die Räume entstehen aus den Assets.</div>
+    <div class="fw-card px-5 py-8 text-center text-sm fw-faint italic">Noch keine Ausstattung erfasst. Lade einen Raum aus dem Katalog oder erfasse ein Element — die Räume entstehen aus den Assets.</div>
     {% endif %}
 <div class="fw-subhead">Geräte</div>
     <datalist id="geraetkat">{% for k in geraet_kategorien %}<option value="{{ k }}"></option>{% endfor %}</datalist>
@@ -708,11 +708,11 @@
             </tr></thead>
             <tbody class="">
             {% for g in geraete %}
-            <tr class="fw-hover"><td class="fw-t px-5 py-3">{{ g.kategorie }}{% if g.sonstiges_bezeichnung %} <span class="text-xs text-slate-400 font-normal">· {{ g.sonstiges_bezeichnung }}</span>{% endif %}
-                    {% if g.kapazitaet or g.seriennummer or g.standort %}<div class="text-xs text-slate-400 font-normal">{% if g.kapazitaet %}{{ g.kapazitaet }}{% endif %}{% if g.seriennummer %}{% if g.kapazitaet %} · {% endif %}SN: {{ g.seriennummer }}{% endif %}{% if g.standort %} · {{ g.standort }}{% endif %}</div>{% endif %}</td>
+            <tr class="fw-hover"><td class="fw-t px-5 py-3">{{ g.kategorie }}{% if g.sonstiges_bezeichnung %} <span class="text-xs fw-faint font-normal">· {{ g.sonstiges_bezeichnung }}</span>{% endif %}
+                    {% if g.kapazitaet or g.seriennummer or g.standort %}<div class="text-xs fw-faint font-normal">{% if g.kapazitaet %}{{ g.kapazitaet }}{% endif %}{% if g.seriennummer %}{% if g.kapazitaet %} · {% endif %}SN: {{ g.seriennummer }}{% endif %}{% if g.standort %} · {{ g.standort }}{% endif %}</div>{% endif %}</td>
                 <td class="fw-s px-5 py-3">{% if g.marke or g.modell %}{{ g.marke }} {{ g.modell }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{% if g.installations_datum %}{{ g.installations_datum|date:"m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{% if g.garantie_bis %}{{ g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3 fw-mutet whitespace-nowrap">{% if g.installations_datum %}{{ g.installations_datum|date:"m.Y" }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3 fw-mutet whitespace-nowrap">{% if g.garantie_bis %}{{ g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-right whitespace-nowrap">
                     <button type="button" onclick="document.getElementById('gedit-{{ g.id }}').classList.toggle('hidden')" class="fw-ikon mut mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
                     <form method="post" action="/neu/geraet/{{ g.id }}/loeschen/" class="inline" onsubmit="return confirm('Gerät löschen?');">{% csrf_token %}
@@ -743,7 +743,7 @@
                             <input name="notiz" value="{{ g.notiz }}" class="fw-feld w-full"></div>
                         <div class="col-span-2 sm:col-span-3 flex items-center gap-2 justify-end">
                             <button type="button" onclick="document.getElementById('gedit-{{ g.id }}').classList.add('hidden')" class="fw-btn">Abbrechen</button>
-                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                            <button class="fw-btn fw-primary text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
                         </div>
                     </form>
                 </td></tr>
@@ -794,7 +794,7 @@
             <tr class="fw-hover"><td class="fw-t px-5 py-3">{{ z.typ }}</td>
                 <td class="fw-s px-5 py-3">{{ z.zaehler_nummer }}</td>
                 <td class="fw-s px-5 py-3">{{ z.standort|default:"—" }}</td>
-                <td class="px-5 py-3 text-right text-slate-700">{{ z.aktueller_stand|floatformat:2 }}</td>
+                <td class="px-5 py-3 text-right fw-ink">{{ z.aktueller_stand|floatformat:2 }}</td>
                 <td class="px-5 py-3 text-right whitespace-nowrap">
                     <button type="button" onclick="document.getElementById('zedit-{{ z.id }}').classList.toggle('hidden')" class="fw-ikon mut mr-2" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
                     <form method="post" action="/neu/zaehler/{{ z.id }}/loeschen/" class="inline" onsubmit="return confirm('Zähler löschen?');">{% csrf_token %}
@@ -815,7 +815,7 @@
                             <input name="aktueller_stand" value="{{ z.aktueller_stand|floatformat:2 }}" inputmode="decimal" class="fw-feld w-full"></div>
                         <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
                             <button type="button" onclick="document.getElementById('zedit-{{ z.id }}').classList.add('hidden')" class="fw-btn">Abbrechen</button>
-                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                            <button class="fw-btn fw-primary text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
                         </div>
                     </form>
                 </td></tr>
@@ -858,7 +858,7 @@
                 <td class="fw-t px-5 py-3">{{ row.s.typ }}</td>
                 <td class="fw-s px-5 py-3">{{ row.s.schluessel_nummer }}</td>
                 <td class="px-5 py-3 text-center">
-                    <span class="px-2 py-0.5 rounded-md text-xs font-semibold {% if row.verfuegbar %}bg-emerald-50 text-emerald-700{% else %}bg-amber-50 text-amber-700{% endif %}">{{ row.verfuegbar }}/{{ row.s.anzahl }} verfügbar</span>
+                    <span class="px-2 py-0.5 rounded-md text-xs font-semibold {% if row.verfuegbar %}fw-gut-flaeche fw-gut{% else %}fw-warn-flaeche fw-warnton{% endif %}">{{ row.verfuegbar }}/{{ row.s.anzahl }} verfügbar</span>
                 </td>
                 <td class="fw-s px-5 py-3">
                     {% for a in row.offene %}
@@ -866,10 +866,10 @@
                         <span>{% if a.mieter %}{{ a.mieter.display_name }}{% elif a.handwerker %}{{ a.handwerker.firma }} <span class="fw-mutet">(Handwerker)</span>{% endif %}
                             <span class="fw-mutet">seit {{ a.ausgegeben_am|date:"d.m.Y" }}</span></span>
                         <form method="post" action="/neu/schluessel/ausgabe/{{ a.id }}/rueckgabe/" class="inline">{% csrf_token %}
-                            <button class="text-indigo-600 hover:text-indigo-700 font-semibold" title="Rücknahme erfassen"><i class="fa-solid fa-rotate-left mr-0.5"></i>Rücknahme</button>
+                            <button class="fw-marke hover:fw-marke font-semibold" title="Rücknahme erfassen"><i class="fa-solid fa-rotate-left mr-0.5"></i>Rücknahme</button>
                         </form>
                     </div>
-                    {% empty %}<span class="text-slate-300">—</span>{% endfor %}
+                    {% empty %}<span class="fw-faint">—</span>{% endfor %}
                 </td>
                 <td class="px-5 py-3 whitespace-nowrap">
                     {% if row.verfuegbar %}
@@ -883,7 +883,7 @@
                                 {% for h in schluessel_empfaenger.handwerker %}<option value="handwerker:{{ h.id }}">{{ h.firma }}</option>{% endfor %}
                             </optgroup>{% endif %}
                         </select>
-                        <button title="Schlüssel ausgeben" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+                        <button title="Schlüssel ausgeben" class="fw-btn fw-primary text-xs font-semibold px-2.5 py-1.5 rounded-lg"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
                     </form>
                     {% else %}<span class="fw-klein">Alle ausgegeben</span>{% endif %}
                 </td>
