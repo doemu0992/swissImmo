@@ -93,11 +93,11 @@ DECKEL = {
     ('schaden_detail.html', 'dokumente'): 8,
 
     # 4b.11: Von 179 auf 98 gesenkt.
-    ('vertrag_detail.html', 'stammdaten'): 42,
-    ('vertrag_detail.html', 'chronik'): 1,
-    ('vertrag_detail.html', 'finanzen'): 15,
-    ('vertrag_detail.html', 'dokumente'): 21,
-    ('vertrag_detail.html', 'faelle'): 10,
+    ('vertrag_detail.html', 'stammdaten'): 0,
+    ('vertrag_detail.html', 'chronik'): 0,
+    ('vertrag_detail.html', 'finanzen'): 0,
+    ('vertrag_detail.html', 'dokumente'): 0,
+    ('vertrag_detail.html', 'faelle'): 0,
     ('vertrag_detail.html', 'nebenkosten'): 0,
 
     # 4b.11: Von 478 auf 164 gesenkt, und der Bereich «Fälle» ist neu und
@@ -228,11 +228,29 @@ class BereichsgestaltungTests(TestCase):
         """Gegenprobe: Der Ausdruck muss alten Code auch erkennen.
 
         Stünde in `ALT` ein Tippfehler, wären alle Zahlen 0 und der Test grün
-        — die teuerste Art von grün. Also an einem Bereich nachweisen, der
-        nachweislich noch alt ist, und an einer erfundenen Zeile.
+        — die teuerste Art von grün.
+
+        DIE GEGENPROBE HING AM BESTAND, UND DAS WAR FALSCH
+
+        Sie las bis E2.5 einen echten Bereich (`vertrag_detail`·`stammdaten`)
+        und verlangte dort über 20 Treffer — «ein Bereich, der nachweislich
+        noch alt ist». Als genau der aufgeräumt wurde, schlug sie fehl: 0 statt
+        20. Die Meldung sah aus wie ein Fehler und war das Gegenteil.
+
+        Ein Test, der Fortschritt als Fehler meldet, wird beim ersten Mal
+        weggeklickt und danach nie wieder gelesen. Die Gegenprobe steht deshalb
+        jetzt auf erfundenem Text: Sie prüft den AUSDRUCK, nicht den Bestand —
+        und bleibt gültig, wenn irgendwann jede Zahl 0 ist. Das ist ja das Ziel.
         """
-        alt = bereiche('vertrag_detail.html', 'vt')['stammdaten']
-        self.assertGreater(len(ALT.findall(alt)), 20)
-        self.assertEqual(ALT.findall('class="flex gap-2 lg:col-span-2 mt-4"'), [])
-        self.assertEqual(ALT.findall('class="bg-indigo-600 text-slate-400"'),
-                         ['bg-indigo-600', 'text-slate-400'])
+        beispiel = ('<div class="bg-indigo-600 text-slate-400 border-slate-200">'
+                    '<span class="text-emerald-600">x</span></div>')
+        self.assertEqual(
+            sorted(ALT.findall(beispiel)),
+            ['bg-indigo-600', 'border-slate-200', 'text-emerald-600',
+             'text-slate-400'],
+            'Der Ausdruck erkennt fest verdrahtete Farbklassen nicht mehr — '
+            'dann sind alle Zahlen unten wertlos.')
+        self.assertEqual(ALT.findall('class="flex gap-2 lg:col-span-2 mt-4"'), [],
+                         'Der Ausdruck meldet Layout-Klassen als Farbe.')
+        self.assertEqual(ALT.findall('class="fw-card fw-mutet fw-linie"'), [],
+                         'Der Ausdruck meldet die Komponentenschicht als alt.')

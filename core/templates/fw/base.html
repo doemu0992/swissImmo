@@ -99,6 +99,17 @@
         .fw-btn:hover{border-color:var(--ds-brand)}
         .fw-btn.fw-primary{background:var(--ds-brand);color:#fff;border-color:transparent}
         .fw-btn.fw-primary:hover{background:var(--ds-brand-600);border-color:transparent}
+        /* Knoepfe mit Bedeutung. Ein Loeschknopf ist rot, weil Rot «Achtung»
+           heisst — nicht, weil `bg-rose-600` gerade zur Hand war. Ueber Tokens
+           folgen sie Dunkelmodus und Branding wie alles andere.
+           Die Schrift bleibt weiss: Sie steht auf einer gesaettigten Flaeche
+           und ist dort nicht tokenabhaengig. */
+        .fw-btn.fw-gefahr{background:var(--ds-crit);color:#fff;border-color:transparent}
+        .fw-btn.fw-gefahr:hover{filter:brightness(.92);border-color:transparent}
+        .fw-btn.fw-warnknopf{background:var(--ds-warn);color:#fff;border-color:transparent}
+        .fw-btn.fw-warnknopf:hover{filter:brightness(.92);border-color:transparent}
+        .fw-btn.fw-gutknopf{background:var(--ds-good);color:#fff;border-color:transparent}
+        .fw-btn.fw-gutknopf:hover{filter:brightness(.92);border-color:transparent}
         /* KPI-Kacheln */
         .fw-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:16px}
         .fw-kpi{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:14px;padding:15px 16px;box-shadow:var(--ds-shadow);display:flex;flex-direction:column;gap:2px}
@@ -499,10 +510,14 @@
 
            `core/tests/test_fw_klassen_wirken.py` haelt das fest: Jede
            `fw-`-Klasse in einer Vorlage muss von einer Regel getroffen
-           werden. */
+           werden. Genau dieser Waechter hat in E2.5 die drei Regeln
+           nachgefordert, die unten dazugekommen sind (`file:fw-flaeche2`,
+           `file:fw-ink`, `hover:fw-warn-flaeche`) — die neu umgestellten
+           Seiten brauchten sie. */
         .hover\:fw-flaeche2:hover{background:var(--ds-surface-2)}
         .hover\:fw-markenflaeche:hover{background:var(--ds-brand-soft)}
         .hover\:fw-krit-flaeche:hover{background:var(--ds-crit-soft)}
+        .hover\:fw-warn-flaeche:hover{background:var(--ds-warn-soft)}
         .hover\:fw-gut-flaeche:hover{background:var(--ds-good-soft)}
         .hover\:fw-marke:hover{color:var(--ds-brand)}
         .hover\:fw-kritisch:hover{color:var(--ds-crit)}
@@ -521,6 +536,8 @@
            Pseudoelement, an das weder Hintergrund- noch Textfarbe des
            Elternelements herankommt. */
         .file\:fw-marke::file-selector-button{color:var(--ds-brand)}
+        .file\:fw-flaeche2::file-selector-button{background:var(--ds-surface-2)}
+        .file\:fw-ink::file-selector-button{color:var(--ds-ink)}
         .file\:fw-markenflaeche::file-selector-button{background:var(--ds-brand-soft)}
         .file\:fw-balken-voll::file-selector-button{background:var(--ds-brand)}
         .hover\:file\:fw-balken-voll:hover::file-selector-button{background:var(--ds-brand)}

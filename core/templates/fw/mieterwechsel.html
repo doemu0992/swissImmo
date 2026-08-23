@@ -9,39 +9,39 @@
         <p>Gekündigte <span style="color:var(--ds-faint)">({{ gekuendigt_n }})</span> und auslaufende <span style="color:var(--ds-faint)">({{ auslaufend_n }})</span> Verträge — von Rücknahme bis Übergabe an den Nachmieter.</p>
     </div>
     <div class="flex gap-2">
-        <span class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm"><span class="font-bold text-slate-900">{{ offen }}</span> <span class="text-slate-400">offen</span></span>
-        <span class="px-3 py-2 rounded-xl bg-rose-50 border border-rose-100 text-sm"><span class="font-bold text-rose-700">{{ dringend }}</span> <span class="text-rose-500">≤ 60 Tage</span></span>
+        <span class="px-3 py-2 rounded-xl fw-flaeche border fw-linie text-sm"><span class="font-bold fw-strong">{{ offen }}</span> <span class="fw-faint">offen</span></span>
+        <span class="px-3 py-2 rounded-xl fw-krit-flaeche border fw-linie-krit text-sm"><span class="font-bold fw-kritisch">{{ dringend }}</span> <span class="fw-kritisch">≤ 60 Tage</span></span>
     </div>
 </div>
 
 <div class="flex items-center gap-2 mb-5 flex-wrap">
-    <span class="text-xs font-semibold text-slate-400 mr-1">Auslaufende Verträge im Horizont:</span>
-    <a href="?monate=3{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 3 %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-indigo-300{% endif %}">3 Mt.</a>
-    <a href="?monate=6{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 6 %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-indigo-300{% endif %}">6 Mt.</a>
-    <a href="?monate=12{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 12 %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-indigo-300{% endif %}">12 Mt.</a>
-    <a href="?monate=0{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 0 %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-indigo-300{% endif %}">Alle</a>
-    <span class="text-[11px] text-slate-400 ml-1">· gekündigte immer sichtbar</span>
+    <span class="text-xs font-semibold fw-faint mr-1">Auslaufende Verträge im Horizont:</span>
+    <a href="?monate=3{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 3 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">3 Mt.</a>
+    <a href="?monate=6{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 6 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">6 Mt.</a>
+    <a href="?monate=12{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 12 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">12 Mt.</a>
+    <a href="?monate=0{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if monate == 0 %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">Alle</a>
+    <span class="text-[11px] fw-faint ml-1">· gekündigte immer sichtbar</span>
 </div>
 
 {% if rows %}
 <div class="space-y-3">
     {% for r in rows %}
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+    <div class="fw-card p-5">
         <div class="flex items-start justify-between gap-4 flex-wrap">
             <div class="min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
-                    <a href="/neu/vertraege/{{ r.v.id }}/" class="font-bold text-slate-900 hover:text-indigo-600">{{ r.objekt }}</a>
+                    <a href="/neu/vertraege/{{ r.v.id }}/" class="font-bold fw-strong hover:fw-marke">{{ r.objekt }}</a>
                     <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-{{ r.farbe }}-100 text-{{ r.farbe }}-700">{{ r.stufe }}</span>
                 </div>
-                <div class="text-sm text-slate-500 mt-1">
-                    Aktuell: <span class="font-medium text-slate-700">{{ r.mieter }}</span>
-                    {% if r.nachmieter %}· Nachmieter: <span class="font-medium text-slate-700">{{ r.nachmieter }}</span>{% endif %}
+                <div class="text-sm fw-mutet mt-1">
+                    Aktuell: <span class="font-medium fw-ink">{{ r.mieter }}</span>
+                    {% if r.nachmieter %}· Nachmieter: <span class="font-medium fw-ink">{{ r.nachmieter }}</span>{% endif %}
                 </div>
             </div>
             <div class="text-right shrink-0">
-                {% if r.ende %}<div class="text-sm font-bold text-slate-900">frei ab {{ r.ende|date:"d.m.Y" }}</div>{% endif %}
+                {% if r.ende %}<div class="text-sm font-bold fw-strong">frei ab {{ r.ende|date:"d.m.Y" }}</div>{% endif %}
                 {% if r.tage != None %}
-                <div class="text-xs {% if r.tage <= 60 %}text-rose-600 font-semibold{% else %}text-slate-400{% endif %}">
+                <div class="text-xs {% if r.tage <= 60 %}fw-kritisch font-semibold{% else %}fw-faint{% endif %}">
                     {% if r.tage < 0 %}{{ r.tage|stringformat:"d"|cut:"-" }} Tage überfällig{% else %}noch {{ r.tage }} Tage{% endif %}
                 </div>{% endif %}
             </div>
@@ -49,37 +49,37 @@
 
         <!-- Pipeline -->
         <div class="mt-4 grid grid-cols-3 sm:grid-cols-6 gap-2 text-center text-[11px]">
-            <div class="rounded-lg py-2 bg-rose-50 text-rose-700 font-semibold"><i class="fa-solid fa-file-signature"></i><br>Gekündigt</div>
-            <div class="rounded-lg py-2 {% if r.auszug %}bg-emerald-50 text-emerald-700{% else %}bg-slate-50 text-slate-400{% endif %}">
+            <div class="rounded-lg py-2 fw-krit-flaeche fw-kritisch font-semibold"><i class="fa-solid fa-file-signature"></i><br>Gekündigt</div>
+            <div class="rounded-lg py-2 {% if r.auszug %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
                 <i class="fa-solid {% if r.auszug %}fa-circle-check{% else %}fa-box-open{% endif %}"></i><br>Rücknahme</div>
-            <div class="rounded-lg py-2 {% if r.bewerbungen %}bg-indigo-50 text-indigo-700{% else %}bg-slate-50 text-slate-400{% endif %}">
+            <div class="rounded-lg py-2 {% if r.bewerbungen %}fw-markenflaeche fw-marke{% else %}fw-flaeche2 fw-faint{% endif %}">
                 <i class="fa-solid fa-users"></i><br>{{ r.bewerbungen }} Bewerb.</div>
-            <div class="rounded-lg py-2 {% if r.nachmieter %}bg-emerald-50 text-emerald-700{% else %}bg-slate-50 text-slate-400{% endif %}">
+            <div class="rounded-lg py-2 {% if r.nachmieter %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
                 <i class="fa-solid {% if r.nachmieter %}fa-circle-check{% else %}fa-file-lines{% endif %}"></i><br>Neuer Vertrag</div>
-            <div class="rounded-lg py-2 {% if r.einzug %}bg-emerald-50 text-emerald-700{% else %}bg-slate-50 text-slate-400{% endif %}">
+            <div class="rounded-lg py-2 {% if r.einzug %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
                 <i class="fa-solid {% if r.einzug %}fa-circle-check{% else %}fa-key{% endif %}"></i><br>Übergabe</div>
-            <div class="rounded-lg py-2 {% if r.schluss_offen %}bg-amber-50 text-amber-700 font-semibold{% elif r.auszug and not r.schluss_offen %}bg-emerald-50 text-emerald-700{% else %}bg-slate-50 text-slate-400{% endif %}">
+            <div class="rounded-lg py-2 {% if r.schluss_offen %}fw-warn-flaeche fw-warnton font-semibold{% elif r.auszug and not r.schluss_offen %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-faint{% endif %}">
                 <i class="fa-solid {% if r.auszug and not r.schluss_offen %}fa-circle-check{% else %}fa-file-invoice-dollar{% endif %}"></i><br>Abrechnung</div>
         </div>
 
         {% if r.aktion != '—' %}
         <div class="mt-3 flex items-center justify-between gap-3 flex-wrap">
-            <div class="text-xs text-slate-500"><i class="fa-solid fa-arrow-right text-indigo-400"></i> Nächster Schritt: <span class="font-semibold text-slate-700">{{ r.aktion }}</span></div>
+            <div class="text-xs fw-mutet"><i class="fa-solid fa-arrow-right fw-marke"></i> Nächster Schritt: <span class="font-semibold fw-ink">{{ r.aktion }}</span></div>
             <div class="flex gap-2 flex-wrap">
-                {% if not r.auszug %}<a href="/neu/vertraege/{{ r.v.id }}/abnahme/neu/?typ=auszug" onclick="return fwModalOpen(this,'Wohnungsrücknahme')" class="text-xs font-semibold text-amber-700 border border-amber-200 hover:bg-amber-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-box-open mr-1"></i>Rücknahme starten</a>{% endif %}
-                {% if r.schluss_offen %}<a href="/neu/vertraege/{{ r.v.id }}/schlussabrechnung/{% if r.auszug_prot_id %}?abnahme={{ r.auszug_prot_id }}{% endif %}" onclick="return fwModalOpen(this,'Schlussabrechnung')" class="text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-file-invoice-dollar mr-1"></i>Schlussabrechnung</a>{% endif %}
+                {% if not r.auszug %}<a href="/neu/vertraege/{{ r.v.id }}/abnahme/neu/?typ=auszug" onclick="return fwModalOpen(this,'Wohnungsrücknahme')" class="text-xs font-semibold fw-warnton border fw-linie-warn hover:fw-warn-flaeche px-3 py-1.5 rounded-lg"><i class="fa-solid fa-box-open mr-1"></i>Rücknahme starten</a>{% endif %}
+                {% if r.schluss_offen %}<a href="/neu/vertraege/{{ r.v.id }}/schlussabrechnung/{% if r.auszug_prot_id %}?abnahme={{ r.auszug_prot_id }}{% endif %}" onclick="return fwModalOpen(this,'Schlussabrechnung')" class="text-xs font-semibold text-white fw-btn fw-warnknopf px-3 py-1.5 rounded-lg"><i class="fa-solid fa-file-invoice-dollar mr-1"></i>Schlussabrechnung</a>{% endif %}
                 {% if not r.nachmieter and r.einheit_id %}
                     {% if r.ausgeschrieben %}
-                    <a href="/neu/vermarktung/" class="text-xs font-semibold text-emerald-700 border border-emerald-200 hover:bg-emerald-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-bullhorn mr-1"></i>Ausgeschrieben</a>
+                    <a href="/neu/vermarktung/" class="text-xs font-semibold fw-gut border fw-linie-gut hover:fw-gut-flaeche px-3 py-1.5 rounded-lg"><i class="fa-solid fa-bullhorn mr-1"></i>Ausgeschrieben</a>
                     {% else %}
-                    <a href="/neu/objekte/{{ r.einheit_id }}/ausschreiben/" onclick="return fwModalOpen(this,'Objekt ausschreiben')" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-bullhorn mr-1"></i>Objekt ausschreiben</a>
+                    <a href="/neu/objekte/{{ r.einheit_id }}/ausschreiben/" onclick="return fwModalOpen(this,'Objekt ausschreiben')" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg"><i class="fa-solid fa-bullhorn mr-1"></i>Objekt ausschreiben</a>
                     {% endif %}
                 {% endif %}
-                {% if not r.nachmieter %}<a href="/neu/bewerbungen/" onclick="return fwModalOpen(this,'Bewerbungen')" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Bewerbungen</a>{% endif %}
+                {% if not r.nachmieter %}<a href="/neu/bewerbungen/" onclick="return fwModalOpen(this,'Bewerbungen')" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">Bewerbungen</a>{% endif %}
                 {% if r.nachmieter_vid %}
-                    {% if not r.einzug %}<a href="/neu/vertraege/{{ r.nachmieter_vid }}/abnahme/neu/?typ=einzug" onclick="return fwModalOpen(this,'Wohnungsübergabe')" class="text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-key mr-1"></i>Übergabe starten</a>{% endif %}
-                    <a href="/neu/vertraege/{{ r.nachmieter_vid }}/" onclick="return fwModalOpen(this,'Neuer Vertrag',true)" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Neuer Vertrag</a>
-                {% else %}<a href="/neu/vertraege/neu/{% if r.einheit_id %}?einheit={{ r.einheit_id }}{% endif %}" onclick="return fwModalOpen(this,'Vertrag erstellen',true)" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg">Vertrag erstellen</a>{% endif %}
+                    {% if not r.einzug %}<a href="/neu/vertraege/{{ r.nachmieter_vid }}/abnahme/neu/?typ=einzug" onclick="return fwModalOpen(this,'Wohnungsübergabe')" class="text-xs font-semibold text-white fw-btn fw-gutknopf px-3 py-1.5 rounded-lg"><i class="fa-solid fa-key mr-1"></i>Übergabe starten</a>{% endif %}
+                    <a href="/neu/vertraege/{{ r.nachmieter_vid }}/" onclick="return fwModalOpen(this,'Neuer Vertrag',true)" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">Neuer Vertrag</a>
+                {% else %}<a href="/neu/vertraege/neu/{% if r.einheit_id %}?einheit={{ r.einheit_id }}{% endif %}" onclick="return fwModalOpen(this,'Vertrag erstellen',true)" class="text-xs font-semibold text-white fw-btn fw-primary px-3 py-1.5 rounded-lg">Vertrag erstellen</a>{% endif %}
             </div>
         </div>
         {% endif %}
@@ -87,10 +87,10 @@
     {% endfor %}
 </div>
 {% else %}
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-10 text-center">
-    <span class="w-14 h-14 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-circle-check text-xl"></i></span>
-    <p class="font-semibold text-slate-700">Kein laufender Mieterwechsel</p>
-    <p class="text-sm text-slate-400 mt-1">Sobald eine Kündigung erfasst ist, erscheint hier der komplette Wechselprozess.</p>
+<div class="fw-card p-10 text-center">
+    <span class="w-14 h-14 rounded-xl fw-gut-flaeche fw-gut flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-circle-check text-xl"></i></span>
+    <p class="font-semibold fw-ink">Kein laufender Mieterwechsel</p>
+    <p class="text-sm fw-faint mt-1">Sobald eine Kündigung erfasst ist, erscheint hier der komplette Wechselprozess.</p>
 </div>
 {% endif %}
 {% endblock %}

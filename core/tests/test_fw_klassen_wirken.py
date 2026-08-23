@@ -41,6 +41,16 @@ vier Stellen sind entfernt; `fw-primary` bringt den Hover-Zustand schon mit.
 
 Der Wächter hätte das nicht gefunden. Er findet die tote Klasse, nicht die
 falsche — dafür braucht es weiterhin den Blick in den Browser.
+
+Ebenso wenig prüft er, ob eine Klasse ALLEIN wirkt. `fw-gefahr` (E2.5) ist nur
+als `.fw-btn.fw-gefahr` definiert; ohne `fw-btn` daneben bleibt der Knopf
+durchsichtig — im Browser nachgemessen: `rgba(0, 0, 0, 0)`. Für den Wächter
+ist die Klasse trotzdem «getroffen», weil ihr Name in einem Selektor steht.
+Das ist kein Versehen, sondern eine bewusste Grenze: **33** der `fw-`-Klassen
+sind reine Zusätze, die nur im Verbund gelten (`fw-primary`, `fw-mitte`,
+`fw-on`, `fw-zeit` …). Eine Regel «muss zusammen mit X stehen» bräuchte für
+jede von ihnen die Angabe, mit welchem X — und wäre damit eine zweite Liste,
+die altert. Wer eine neue Verbund-Klasse einführt, prüft sie im Browser.
 """
 import pathlib
 import re

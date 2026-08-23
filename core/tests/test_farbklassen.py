@@ -13,7 +13,10 @@ E2.2 nahm die drei dichtesten Seiten — `vertrag_neu.html` (275 → 2),
 E2.3 nahm die fuenf naechsten fw-Seiten — `person_form.html` (187 → 5),
 `objekt_detail.html` (184 → 0), `bankabgleich.html` (170 → 6),
 `debitoren.html` (112 → 0), `vertrag_bearbeiten.html` (106 → 0):
-**STAND 5850 in 128 Vorlagen**.
+5850 in 128 Vorlagen.
+E2.5 nahm drei weitere fw-Seiten — `vertrag_detail.html` (102 → 1),
+`mieterwechsel.html` (101 → 3), `liegenschaft_form.html` (93 → 0):
+**STAND 5558 in 127 Vorlagen**.
 
 NICHT ANGERUEHRT, UND ZWAR MIT ABSICHT: die zwei dichtesten Vorlagen
 ueberhaupt. `schaden_melden.html` (264) und `public_bewerbung_form.html` (205)
@@ -171,7 +174,6 @@ OBERGRENZE = {
     'core/templates/fw/leerstand_verlauf.html': 36,
     'core/templates/fw/lieferantenkonten.html': 25,
     'core/templates/fw/lieferantenkonto.html': 64,
-    'core/templates/fw/liegenschaft_form.html': 93,
     'core/templates/fw/liegenschaften.html': 13,
     'core/templates/fw/logbuch.html': 80,
     'core/templates/fw/maengelruege.html': 18,
@@ -183,7 +185,7 @@ OBERGRENZE = {
     'core/templates/fw/mieterkonto.html': 65,
     'core/templates/fw/mieterspiegel.html': 56,
     'core/templates/fw/mieterspiegel_auswahl.html': 21,
-    'core/templates/fw/mieterwechsel.html': 101,
+    'core/templates/fw/mieterwechsel.html': 3,
     'core/templates/fw/mietzins.html': 52,
     'core/templates/fw/mietzins_anpassung.html': 66,
     'core/templates/fw/mietzins_massen.html': 27,
@@ -205,7 +207,7 @@ OBERGRENZE = {
     'core/templates/fw/untermiete.html': 20,
     'core/templates/fw/vermarktung.html': 47,
     'core/templates/fw/vertraege.html': 18,
-    'core/templates/fw/vertrag_detail.html': 102,
+    'core/templates/fw/vertrag_detail.html': 1,
     'core/templates/fw/vertrag_neu.html': 2,
     'core/templates/fw/verzug_257d.html': 46,
     'core/templates/fw/vorlage_form.html': 25,

@@ -2,12 +2,12 @@
 {% load l10n %}
 {% block title %}{% if ist_neu %}Neue Liegenschaft{% else %}{{ lg.strasse }} bearbeiten{% endif %} — swissImmo{% endblock %}
 {% block content %}
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/liegenschaften/{{ lg_query }}" class="hover:text-indigo-600">Liegenschaften</a>
+<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/liegenschaften/{{ lg_query }}" class="hover:fw-marke">Liegenschaften</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    {% if not ist_neu %}<a href="/neu/liegenschaften/{{ lg.id }}/" class="hover:text-indigo-600">{{ lg.strasse }}</a>
+    {% if not ist_neu %}<a href="/neu/liegenschaften/{{ lg.id }}/" class="hover:fw-marke">{{ lg.strasse }}</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>{% endif %}
-    <span class="text-slate-600 font-medium">{% if ist_neu %}Neu{% else %}Bearbeiten{% endif %}</span>
+    <span class="fw-mutet font-medium">{% if ist_neu %}Neu{% else %}Bearbeiten{% endif %}</span>
 </nav>
 
 <div class="fw-phead">
@@ -19,131 +19,131 @@
 
 <form method="post" class="max-w-3xl space-y-5">
     {% csrf_token %}
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Adresse</h3>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Strasse & Nr. *</label>
-            <input name="strasse" required value="{{ lg.strasse }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+    <div class="fw-card p-5 space-y-4">
+        <h3 class="font-bold fw-strong text-sm">Adresse</h3>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Strasse & Nr. *</label>
+            <input name="strasse" required value="{{ lg.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">PLZ *</label>
-                <input name="plz" required value="{{ lg.plz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Ort *</label>
-                <input name="ort" required value="{{ lg.ort }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kanton</label>
-                <input name="kanton" maxlength="2" value="{{ lg.kanton }}" placeholder="SO" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">PLZ *</label>
+                <input name="plz" required value="{{ lg.plz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Ort *</label>
+                <input name="ort" required value="{{ lg.ort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Kanton</label>
+                <input name="kanton" maxlength="2" value="{{ lg.kanton }}" placeholder="SO" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Stammdaten</h3>
+    <div class="fw-card p-5 space-y-4">
+        <h3 class="font-bold fw-strong text-sm">Stammdaten</h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">EGID</label>
-                <input name="egid" value="{{ lg.egid|default:'' }}" placeholder="automatisch aus Adresse" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kataster-Nr.</label>
-                <input name="kataster_nummer" value="{{ lg.kataster_nummer }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Baujahr</label>
-                <input name="baujahr" type="number" value="{{ lg.baujahr|default:'' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">EGID</label>
+                <input name="egid" value="{{ lg.egid|default:'' }}" placeholder="automatisch aus Adresse" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Kataster-Nr.</label>
+                <input name="kataster_nummer" value="{{ lg.kataster_nummer }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Baujahr</label>
+                <input name="baujahr" type="number" value="{{ lg.baujahr|default:'' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Versicherungswert (CHF)</label>
-                <input name="versicherungswert" value="{% localize off %}{{ lg.versicherungswert|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Grundstücksfläche (m²)</label>
-                <input name="grundstuecksflaeche_m2" value="{% localize off %}{{ lg.grundstuecksflaeche_m2|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gebäudevolumen (m³)</label>
-                <input name="gebaeudevolumen_m3" value="{% localize off %}{{ lg.gebaeudevolumen_m3|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Versicherungswert (CHF)</label>
+                <input name="versicherungswert" value="{% localize off %}{{ lg.versicherungswert|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Grundstücksfläche (m²)</label>
+                <input name="grundstuecksflaeche_m2" value="{% localize off %}{{ lg.grundstuecksflaeche_m2|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Gebäudevolumen (m³)</label>
+                <input name="gebaeudevolumen_m3" value="{% localize off %}{{ lg.gebaeudevolumen_m3|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
         </div>
-        <p class="text-xs font-bold uppercase tracking-wider text-slate-400 pt-1">Bewertung (für Rendite)</p>
+        <p class="text-xs font-bold uppercase tracking-wider fw-faint pt-1">Bewertung (für Rendite)</p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Verkehrswert (CHF)</label>
-                <input name="verkehrswert" value="{% localize off %}{{ lg.verkehrswert|default:'' }}{% endlocalize %}" placeholder="Marktwert" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Anlagekosten (CHF)</label>
-                <input name="anlagekosten" value="{% localize off %}{{ lg.anlagekosten|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kaufpreis (CHF)</label>
-                <input name="kaufpreis" value="{% localize off %}{{ lg.kaufpreis|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Verkehrswert (CHF)</label>
+                <input name="verkehrswert" value="{% localize off %}{{ lg.verkehrswert|default:'' }}{% endlocalize %}" placeholder="Marktwert" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Anlagekosten (CHF)</label>
+                <input name="anlagekosten" value="{% localize off %}{{ lg.anlagekosten|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Kaufpreis (CHF)</label>
+                <input name="kaufpreis" value="{% localize off %}{{ lg.kaufpreis|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
         </div>
-        <p class="text-xs font-bold uppercase tracking-wider text-slate-400 pt-1">Energie & Gebäudetechnik (GEAK)</p>
+        <p class="text-xs font-bold uppercase tracking-wider fw-faint pt-1">Energie & Gebäudetechnik (GEAK)</p>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Heizsystem</label>
-                <select name="heizsystem" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Heizsystem</label>
+                <select name="heizsystem" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     <option value="">—</option>
                     {% for val, lab in heiz_choices %}<option value="{{ val }}" {% if lg.heizsystem == val %}selected{% endif %}>{{ lab }}</option>{% endfor %}
                 </select></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Warmwasser</label>
-                <select name="warmwasser" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Warmwasser</label>
+                <select name="warmwasser" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     <option value="">—</option>
                     {% for val, lab in warmwasser_choices %}<option value="{{ val }}" {% if lg.warmwasser == val %}selected{% endif %}>{{ lab }}</option>{% endfor %}
                 </select></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">GEAK Hülle</label>
-                <select name="geak_klasse" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">GEAK Hülle</label>
+                <select name="geak_klasse" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     <option value="">—</option>
                     {% for k in geak_klassen %}<option value="{{ k }}" {% if lg.geak_klasse == k %}selected{% endif %}>{{ k }}</option>{% endfor %}
                 </select></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">GEAK Gesamt</label>
-                <select name="geak_klasse_gesamt" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">GEAK Gesamt</label>
+                <select name="geak_klasse_gesamt" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     <option value="">—</option>
                     {% for k in geak_klassen %}<option value="{{ k }}" {% if lg.geak_klasse_gesamt == k %}selected{% endif %}>{{ k }}</option>{% endfor %}
                 </select></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Energieträger (Zusatz)</label>
-                <input name="energietraeger" value="{{ lg.energietraeger }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Energiebezugsfl. (m²)</label>
-                <input name="energiebezugsflaeche_m2" value="{% localize off %}{{ lg.energiebezugsflaeche_m2|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">GEAK ausgestellt</label>
-                <input name="geak_datum" type="date" value="{{ lg.geak_datum|date:'Y-m-d' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Energieträger (Zusatz)</label>
+                <input name="energietraeger" value="{{ lg.energietraeger }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Energiebezugsfl. (m²)</label>
+                <input name="energiebezugsflaeche_m2" value="{% localize off %}{{ lg.energiebezugsflaeche_m2|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 tabular-nums"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">GEAK ausgestellt</label>
+                <input name="geak_datum" type="date" value="{{ lg.geak_datum|date:'Y-m-d' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Eigentümer</label>
-            <select name="eigentuemer_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Eigentümer</label>
+            <select name="eigentuemer_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— kein Eigentümer —</option>
                 {% for md in eigentuemer %}<option value="{{ md.id }}" {% if lg.eigentuemer_id == md.id %}selected{% endif %}>{{ md.firma_oder_name }}</option>{% endfor %}
             </select></div>
         {% if ist_neu %}
-        <label class="flex items-start gap-2 text-sm text-slate-700 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2.5">
-            <input type="checkbox" name="gwr_import" checked class="accent-indigo-600 mt-0.5">
-            <span><span class="font-semibold text-indigo-700">Objekte automatisch importieren</span><br>
-            <span class="text-xs text-slate-500">Ermittelt die EGID aus der Adresse und lädt die Wohnungen automatisch aus dem eidgenössischen Gebäude- und Wohnungsregister (GWR).</span></span>
+        <label class="flex items-start gap-2 text-sm fw-ink fw-markenflaeche border fw-linie-marke rounded-lg px-3 py-2.5">
+            <input type="checkbox" name="gwr_import" checked class="fw-akzent mt-0.5">
+            <span><span class="font-semibold fw-marke">Objekte automatisch importieren</span><br>
+            <span class="text-xs fw-mutet">Ermittelt die EGID aus der Adresse und lädt die Wohnungen automatisch aus dem eidgenössischen Gebäude- und Wohnungsregister (GWR).</span></span>
         </label>
         {% endif %}
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Bank, Mietzinskonto & Notfallkontakte</h3>
+    <div class="fw-card p-5 space-y-4">
+        <h3 class="font-bold fw-strong text-sm">Bank, Mietzinskonto & Notfallkontakte</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bankname (Mietzinskonto)</label>
-                <input name="bank_name" value="{{ lg.bank_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">IBAN</label>
-                <input name="iban" value="{{ lg.iban }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Hauswart</label>
-                <input name="hauswart_name" value="{{ lg.hauswart_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Hauswart Telefon</label>
-                <input name="hauswart_telefon" value="{{ lg.hauswart_telefon }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Notfall Sanitär</label>
-                <input name="sanitaer_name" value="{{ lg.sanitaer_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Sanitär Telefon</label>
-                <input name="sanitaer_telefon" value="{{ lg.sanitaer_telefon }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Notfall Elektriker</label>
-                <input name="elektriker_name" value="{{ lg.elektriker_name }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Elektriker Telefon</label>
-                <input name="elektriker_telefon" value="{{ lg.elektriker_telefon }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Bankname (Mietzinskonto)</label>
+                <input name="bank_name" value="{{ lg.bank_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">IBAN</label>
+                <input name="iban" value="{{ lg.iban }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Hauswart</label>
+                <input name="hauswart_name" value="{{ lg.hauswart_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Hauswart Telefon</label>
+                <input name="hauswart_telefon" value="{{ lg.hauswart_telefon }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Notfall Sanitär</label>
+                <input name="sanitaer_name" value="{{ lg.sanitaer_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Sanitär Telefon</label>
+                <input name="sanitaer_telefon" value="{{ lg.sanitaer_telefon }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Notfall Elektriker</label>
+                <input name="elektriker_name" value="{{ lg.elektriker_name }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Elektriker Telefon</label>
+                <input name="elektriker_telefon" value="{{ lg.elektriker_telefon }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-        <h3 class="font-bold text-slate-800 text-sm">Nebenkosten / Heizung</h3>
-        <label class="flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" name="hkvo_aktiv" {% if lg.hkvo_aktiv %}checked{% endif %} onchange="document.getElementById('hkvo-box').classList.toggle('hidden', !this.checked)" class="accent-indigo-600">
+    <div class="fw-card p-5 space-y-3">
+        <h3 class="font-bold fw-strong text-sm">Nebenkosten / Heizung</h3>
+        <label class="flex items-center gap-2 text-sm fw-ink">
+            <input type="checkbox" name="hkvo_aktiv" {% if lg.hkvo_aktiv %}checked{% endif %} onchange="document.getElementById('hkvo-box').classList.toggle('hidden', !this.checked)" class="fw-akzent">
             Verbrauchsabhängige Heizkostenabrechnung (HKVO)
         </label>
         <div id="hkvo-box" class="{% if not lg.hkvo_aktiv %}hidden{% endif %} flex items-center gap-2 pl-6">
-            <label class="text-xs text-slate-500">Grundkosten-Anteil</label>
-            <input type="number" name="hkvo_grundkosten_prozent" value="{{ lg.hkvo_grundkosten_prozent|default:40 }}" min="0" max="100" class="w-20 bg-slate-100 rounded-lg text-sm px-2 py-1.5 text-right">
-            <span class="text-xs text-slate-400">% (Rest = Verbrauch, nach Wärmezähler)</span>
+            <label class="text-xs fw-mutet">Grundkosten-Anteil</label>
+            <input type="number" name="hkvo_grundkosten_prozent" value="{{ lg.hkvo_grundkosten_prozent|default:40 }}" min="0" max="100" class="w-20 fw-flaeche2 rounded-lg text-sm px-2 py-1.5 text-right">
+            <span class="text-xs fw-faint">% (Rest = Verbrauch, nach Wärmezähler)</span>
         </div>
-        <p class="text-xs text-slate-400">Bei aktiver HKVO werden die Heizkosten in Grundkosten (nach m³) und Verbrauchskosten (nach Zählerständen der Wärmezähler) aufgeteilt.</p>
+        <p class="text-xs fw-faint">Bei aktiver HKVO werden die Heizkosten in Grundkosten (nach m³) und Verbrauchskosten (nach Zählerständen der Wärmezähler) aufgeteilt.</p>
     </div>
 
     <div class="flex items-center gap-3">
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+        <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             <i class="fa-solid fa-check mr-1.5"></i>Speichern
         </button>
-        <a href="{% if ist_neu %}/neu/liegenschaften/{% else %}/neu/liegenschaften/{{ lg.id }}/{% endif %}" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
+        <a href="{% if ist_neu %}/neu/liegenschaften/{% else %}/neu/liegenschaften/{{ lg.id }}/{% endif %}" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>
 </form>
 {% endblock %}
