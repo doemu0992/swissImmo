@@ -1,88 +1,88 @@
 {% extends 'fw/base.html' %}
 {% block title %}{{ b.vorname }} {{ b.nachname }} — Bewerbung{% endblock %}
 {% block content %}
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/bewerbungen/" class="hover:text-indigo-600">Bewerbungen</a>
+<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/bewerbungen/" class="hover:fw-marke">Bewerbungen</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <span class="text-slate-600 font-medium">{{ b.vorname }} {{ b.nachname }}</span>
+    <span class="fw-mutet font-medium">{{ b.vorname }} {{ b.nachname }}</span>
 </nav>
 
 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-6">
     <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-lg shadow-indigo-600/25">
+        <div class="w-14 h-14 rounded-xl fw-btn fw-primary flex items-center justify-center text-xl shadow-lg fw-schatten-marke">
             <i class="fa-solid fa-user"></i>
         </div>
         <div>
-            <h1 class="text-2xl font-extrabold text-slate-900">{{ b.vorname }} {{ b.nachname }}</h1>
-            <p class="text-sm text-slate-500">{{ b.einheit.bezeichnung }} · {{ b.einheit.liegenschaft.strasse }}, {{ b.einheit.liegenschaft.ort }}</p>
+            <h1 class="text-2xl font-extrabold fw-strong">{{ b.vorname }} {{ b.nachname }}</h1>
+            <p class="text-sm fw-mutet">{{ b.einheit.bezeichnung }} · {{ b.einheit.liegenschaft.strasse }}, {{ b.einheit.liegenschaft.ort }}</p>
         </div>
     </div>
     <div class="flex flex-col items-end gap-2">
-        {% if b.hat_betreibungen %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Betreibungen vorhanden</span>
-        {% else %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700"><i class="fa-solid fa-circle-check mr-1"></i>Keine Betreibungen</span>{% endif %}
-        <span class="text-xs text-slate-400">Status: {{ status_label }}</span>
+        {% if b.hat_betreibungen %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-krit-flaeche fw-kritisch"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Betreibungen vorhanden</span>
+        {% else %}<span class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-gut-flaeche fw-gut"><i class="fa-solid fa-circle-check mr-1"></i>Keine Betreibungen</span>{% endif %}
+        <span class="text-xs fw-faint">Status: {{ status_label }}</span>
     </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
     <!-- Hauptdaten -->
     <div class="lg:col-span-2 space-y-5">
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <h3 class="font-bold text-slate-800 text-sm mb-3">Personalien & Kontakt</h3>
+        <div class="fw-card p-5">
+            <h3 class="font-bold fw-strong text-sm mb-3">Personalien & Kontakt</h3>
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-slate-500">Geburtsdatum</dt><dd class="text-slate-800">{{ b.geburtsdatum|date:"d.m.Y" }}</dd></div>
-                {% if b.zivilstand %}<div class="flex justify-between"><dt class="text-slate-500">Zivilstand</dt><dd class="text-slate-800">{{ b.get_zivilstand_display }}</dd></div>{% endif %}
-                <div class="flex justify-between"><dt class="text-slate-500">Nationalität</dt><dd class="text-slate-800">{{ b.nationalitaet }}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">Heimatort</dt><dd class="text-slate-800">{{ b.heimatort|default:"—" }}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">Mobil</dt><dd class="text-slate-800">{{ b.mobilnummer }}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">E-Mail</dt><dd class="text-slate-800 truncate">{{ b.email }}</dd></div>
-                <div class="flex justify-between col-span-2"><dt class="text-slate-500">Adresse</dt><dd class="text-slate-800">{{ b.adresse }}, {{ b.plz }} {{ b.ort }}</dd></div>
+                <div class="flex justify-between"><dt class="fw-mutet">Geburtsdatum</dt><dd class="fw-strong">{{ b.geburtsdatum|date:"d.m.Y" }}</dd></div>
+                {% if b.zivilstand %}<div class="flex justify-between"><dt class="fw-mutet">Zivilstand</dt><dd class="fw-strong">{{ b.get_zivilstand_display }}</dd></div>{% endif %}
+                <div class="flex justify-between"><dt class="fw-mutet">Nationalität</dt><dd class="fw-strong">{{ b.nationalitaet }}</dd></div>
+                <div class="flex justify-between"><dt class="fw-mutet">Heimatort</dt><dd class="fw-strong">{{ b.heimatort|default:"—" }}</dd></div>
+                <div class="flex justify-between"><dt class="fw-mutet">Mobil</dt><dd class="fw-strong">{{ b.mobilnummer }}</dd></div>
+                <div class="flex justify-between"><dt class="fw-mutet">E-Mail</dt><dd class="fw-strong truncate">{{ b.email }}</dd></div>
+                <div class="flex justify-between col-span-2"><dt class="fw-mutet">Adresse</dt><dd class="fw-strong">{{ b.adresse }}, {{ b.plz }} {{ b.ort }}</dd></div>
             </dl>
         </div>
 
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <h3 class="font-bold text-slate-800 text-sm mb-3">Beruf & Finanzen</h3>
+        <div class="fw-card p-5">
+            <h3 class="font-bold fw-strong text-sm mb-3">Beruf & Finanzen</h3>
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-slate-500">Erwerbsstatus</dt><dd class="text-slate-800">{{ b.get_erwerbsstatus_display }}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">Beruf</dt><dd class="text-slate-800">{{ b.beruf }}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">Arbeitgeber</dt><dd class="text-slate-800">{{ b.arbeitgeber|default:"—" }}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">Einkommen/Jahr</dt><dd class="text-slate-800">{{ b.einkommen_jahr }}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">Anstellung</dt><dd class="text-slate-800">{% if b.ist_unbefristet %}unbefristet{% else %}befristet{% endif %}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">Bezugstermin</dt><dd class="text-slate-800">{{ b.gewuenschter_bezugstermin|date:"d.m.Y"|default:"—" }}</dd></div>
+                <div class="flex justify-between"><dt class="fw-mutet">Erwerbsstatus</dt><dd class="fw-strong">{{ b.get_erwerbsstatus_display }}</dd></div>
+                <div class="flex justify-between"><dt class="fw-mutet">Beruf</dt><dd class="fw-strong">{{ b.beruf }}</dd></div>
+                <div class="flex justify-between"><dt class="fw-mutet">Arbeitgeber</dt><dd class="fw-strong">{{ b.arbeitgeber|default:"—" }}</dd></div>
+                <div class="flex justify-between"><dt class="fw-mutet">Einkommen/Jahr</dt><dd class="fw-strong">{{ b.einkommen_jahr }}</dd></div>
+                <div class="flex justify-between"><dt class="fw-mutet">Anstellung</dt><dd class="fw-strong">{% if b.ist_unbefristet %}unbefristet{% else %}befristet{% endif %}</dd></div>
+                <div class="flex justify-between"><dt class="fw-mutet">Bezugstermin</dt><dd class="fw-strong">{{ b.gewuenschter_bezugstermin|date:"d.m.Y"|default:"—" }}</dd></div>
             </dl>
         </div>
 
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <h3 class="font-bold text-slate-800 text-sm mb-3">Haushalt & Wünsche</h3>
+        <div class="fw-card p-5">
+            <h3 class="font-bold fw-strong text-sm mb-3">Haushalt & Wünsche</h3>
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-slate-500">Personen</dt><dd class="text-slate-800">{{ b.anzahl_erwachsene }} Erw.{% if b.anzahl_kinder %} + {{ b.anzahl_kinder }} Kinder{% endif %}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">Haustiere</dt><dd class="text-slate-800">{% if b.haustiere %}{{ b.haustiere_details|default:"ja" }}{% else %}nein{% endif %}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">Parkplatz</dt><dd class="text-slate-800">{% if b.interesse_parkplatz %}gewünscht{% else %}nein{% endif %}</dd></div>
-                <div class="flex justify-between"><dt class="text-slate-500">Kaution</dt><dd class="text-slate-800">{{ b.get_wunsch_kautions_typ_display }}</dd></div>
-                {% if b.schild_briefkasten %}<div class="flex justify-between col-span-2"><dt class="text-slate-500">Briefkasten-Schild</dt><dd class="text-slate-800">{{ b.schild_briefkasten }}</dd></div>{% endif %}
-                {% if b.schild_sonnerie %}<div class="flex justify-between col-span-2"><dt class="text-slate-500">Sonnerie-Schild</dt><dd class="text-slate-800">{{ b.schild_sonnerie }}</dd></div>{% endif %}
+                <div class="flex justify-between"><dt class="fw-mutet">Personen</dt><dd class="fw-strong">{{ b.anzahl_erwachsene }} Erw.{% if b.anzahl_kinder %} + {{ b.anzahl_kinder }} Kinder{% endif %}</dd></div>
+                <div class="flex justify-between"><dt class="fw-mutet">Haustiere</dt><dd class="fw-strong">{% if b.haustiere %}{{ b.haustiere_details|default:"ja" }}{% else %}nein{% endif %}</dd></div>
+                <div class="flex justify-between"><dt class="fw-mutet">Parkplatz</dt><dd class="fw-strong">{% if b.interesse_parkplatz %}gewünscht{% else %}nein{% endif %}</dd></div>
+                <div class="flex justify-between"><dt class="fw-mutet">Kaution</dt><dd class="fw-strong">{{ b.get_wunsch_kautions_typ_display }}</dd></div>
+                {% if b.schild_briefkasten %}<div class="flex justify-between col-span-2"><dt class="fw-mutet">Briefkasten-Schild</dt><dd class="fw-strong">{{ b.schild_briefkasten }}</dd></div>{% endif %}
+                {% if b.schild_sonnerie %}<div class="flex justify-between col-span-2"><dt class="fw-mutet">Sonnerie-Schild</dt><dd class="fw-strong">{{ b.schild_sonnerie }}</dd></div>{% endif %}
             </dl>
-            {% if b.bemerkungen %}<p class="text-sm text-slate-600 mt-3 pt-3 border-t border-slate-100">{{ b.bemerkungen }}</p>{% endif %}
+            {% if b.bemerkungen %}<p class="text-sm fw-mutet mt-3 pt-3 border-t fw-linie">{{ b.bemerkungen }}</p>{% endif %}
         </div>
     </div>
 
     <!-- Aktionen -->
     <div class="space-y-5">
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <h3 class="font-bold text-slate-800 text-sm mb-3">Dokumente</h3>
+        <div class="fw-card p-5">
+            <h3 class="font-bold fw-strong text-sm mb-3">Dokumente</h3>
             {% if dokumente %}
             <div class="space-y-2">
                 {% for d in dokumente %}
-                <a href="{{ d.url }}" target="_blank" rel="noopener" class="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700">
+                <a href="{{ d.url }}" target="_blank" rel="noopener" class="flex items-center gap-2 text-sm fw-marke hover:fw-marke">
                     <i class="fa-solid fa-file-pdf"></i>{{ d.label }}
                 </a>
                 {% endfor %}
             </div>
-            {% else %}<p class="text-sm text-slate-400 italic">Keine Dokumente hochgeladen.</p>{% endif %}
+            {% else %}<p class="text-sm fw-faint italic">Keine Dokumente hochgeladen.</p>{% endif %}
         </div>
 
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <h3 class="font-bold text-slate-800 text-sm mb-3">Status ändern</h3>
+        <div class="fw-card p-5">
+            <h3 class="font-bold fw-strong text-sm mb-3">Status ändern</h3>
             {% comment %}
                 Zweite Stufe des Bewerbungsverfahrens: Ausweis und
                 Einkommensnachweis werden im öffentlichen Formular bewusst
@@ -90,32 +90,32 @@
                 Hier trägt die Bewirtschaftung sie nach, wenn sie vorliegen.
             {% endcomment %}
             <form method="post" action="/neu/bewerbungen/{{ b.id }}/unterlagen/"
-                  enctype="multipart/form-data" class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+                  enctype="multipart/form-data" class="fw-card p-5 mb-4">
                 {% csrf_token %}
-                <h3 class="font-bold text-slate-800 mb-1">Unterlagen nachtragen</h3>
-                <p class="text-xs text-slate-500 mb-3">Ausweis und Einkommensnachweis werden erst
+                <h3 class="font-bold fw-strong mb-1">Unterlagen nachtragen</h3>
+                <p class="text-xs fw-mutet mb-3">Ausweis und Einkommensnachweis werden erst
                     in der engeren Auswahl verlangt — hier ablegen, sobald sie vorliegen.</p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <label class="text-xs text-slate-600">Ausweiskopie
+                    <label class="text-xs fw-mutet">Ausweiskopie
                         <input type="file" name="ausweiskopie" class="mt-1 w-full text-xs"></label>
-                    <label class="text-xs text-slate-600">Einkommensnachweis
+                    <label class="text-xs fw-mutet">Einkommensnachweis
                         <input type="file" name="lohnausweis" class="mt-1 w-full text-xs"></label>
-                    <label class="text-xs text-slate-600">Weitere Unterlagen
+                    <label class="text-xs fw-mutet">Weitere Unterlagen
                         <input type="file" name="weitere_dokumente" class="mt-1 w-full text-xs"></label>
                 </div>
-                <button class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">
+                <button class="mt-3 fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">
                     Ablegen
                 </button>
             </form>
 
             <form method="post" action="/neu/bewerbungen/{{ b.id }}/status/" class="flex items-center gap-2">
                 {% csrf_token %}
-                <select name="status" class="flex-1 bg-slate-100 rounded-lg text-sm px-3 py-2">
+                <select name="status" class="flex-1 fw-flaeche2 rounded-lg text-sm px-3 py-2">
                     {% for key, label, cls in status_wahl %}
                     <option value="{{ key }}" {% if b.status == key %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
-                <button class="bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-2 rounded-lg">Setzen</button>
+                <button class="fw-balken-voll hover:fw-balken-voll text-xs font-semibold px-3 py-2 rounded-lg">Setzen</button>
             </form>
         </div>
 
@@ -124,7 +124,7 @@
             <p class="text-xs text-indigo-100 mb-3">Legt einen Mieter aus dieser Bewerbung an und erstellt einen Vertragsentwurf auf {{ b.einheit.bezeichnung }}.</p>
             <form method="post" action="/neu/bewerbungen/{{ b.id }}/vertrag/" onsubmit="return confirm('Mieter anlegen und Vertragsentwurf erstellen?');">
                 {% csrf_token %}
-                <button class="w-full bg-white text-indigo-700 text-sm font-bold px-3 py-2.5 rounded-lg hover:bg-indigo-50">
+                <button class="w-full fw-flaeche fw-marke text-sm font-bold px-3 py-2.5 rounded-lg hover:fw-markenflaeche">
                     Mieter + Vertragsentwurf erstellen
                 </button>
             </form>

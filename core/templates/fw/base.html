@@ -99,6 +99,12 @@
         .fw-btn:hover{border-color:var(--ds-brand)}
         .fw-btn.fw-primary{background:var(--ds-brand);color:#fff;border-color:transparent}
         .fw-btn.fw-primary:hover{background:var(--ds-brand-600);border-color:transparent}
+        /* Farbiger Schatten unter einem Markenknopf. `shadow-indigo-600/25`
+           war zur Bauzeit auf Petrol festgeschrieben; ueber den Token folgt er
+           dem Dunkelmodus und spaeterem Branding. `color-mix` faellt in alten
+           Browsern still auf keinen Schatten zurueck — ein Schatten ist
+           Beiwerk, sein Fehlen kostet keine Information. */
+        .fw-schatten-marke{box-shadow:0 4px 14px color-mix(in srgb, var(--ds-brand) 25%, transparent)}
         /* Knoepfe mit Bedeutung. Ein Loeschknopf ist rot, weil Rot «Achtung»
            heisst — nicht, weil `bg-rose-600` gerade zur Hand war. Ueber Tokens
            folgen sie Dunkelmodus und Branding wie alles andere.

@@ -16,7 +16,11 @@ E2.3 nahm die fuenf naechsten fw-Seiten — `person_form.html` (187 → 5),
 5850 in 128 Vorlagen.
 E2.5 nahm drei weitere fw-Seiten — `vertrag_detail.html` (102 → 1),
 `mieterwechsel.html` (101 → 3), `liegenschaft_form.html` (93 → 0):
-**STAND 5558 in 127 Vorlagen**.
+5558 in 127 Vorlagen.
+E2.6 nahm sechs Seiten auf einmal — `bewerbung_detail.html` (91 → 3),
+`eigentuemer_kontokorrent.html` (88 → 0), `anlagen.html` (87 → 3),
+`ersatzplanung.html` (87 → 0), `zahllauf.html` (86 → 2),
+`nebenkosten_detail.html` (82 → 3): **STAND 5048 in 125 Vorlagen**.
 
 NICHT ANGERUEHRT, UND ZWAR MIT ABSICHT: die zwei dichtesten Vorlagen
 ueberhaupt. `schaden_melden.html` (264) und `public_bewerbung_form.html` (205)
@@ -142,7 +146,7 @@ OBERGRENZE = {
     'core/templates/fw/abonnement.html': 54,
     'core/templates/fw/account.html': 69,
     'core/templates/fw/anfangsmietzins.html': 64,
-    'core/templates/fw/anlagen.html': 87,
+    'core/templates/fw/anlagen.html': 3,
     'core/templates/fw/auswertung.html': 36,
     'core/templates/fw/bankabgleich.html': 6,
     'core/templates/fw/bankkonten.html': 45,
@@ -153,14 +157,12 @@ OBERGRENZE = {
     'core/templates/fw/berichte.html': 18,
     'core/templates/fw/betriebskostenspiegel.html': 32,
     'core/templates/fw/bewerber_vergleich.html': 50,
-    'core/templates/fw/bewerbung_detail.html': 91,
+    'core/templates/fw/bewerbung_detail.html': 3,
     'core/templates/fw/bewerbungen.html': 12,
     'core/templates/fw/debitoren_aging.html': 50,
     'core/templates/fw/dienstleister.html': 74,
     'core/templates/fw/dokumente.html': 50,
-    'core/templates/fw/eigentuemer_kontokorrent.html': 88,
     'core/templates/fw/einstellungen.html': 10,
-    'core/templates/fw/ersatzplanung.html': 87,
     'core/templates/fw/finanzen.html': 49,
     'core/templates/fw/hypotheken.html': 80,
     'core/templates/fw/integrationen.html': 48,
@@ -191,7 +193,7 @@ OBERGRENZE = {
     'core/templates/fw/mietzins_massen.html': 27,
     'core/templates/fw/mwst.html': 79,
     'core/templates/fw/nebenkosten.html': 68,
-    'core/templates/fw/nebenkosten_detail.html': 82,
+    'core/templates/fw/nebenkosten_detail.html': 3,
     'core/templates/fw/objekt_ausschreiben.html': 20,
     'core/templates/fw/objekt_form.html': 81,
     'core/templates/fw/person_form.html': 5,
@@ -214,7 +216,7 @@ OBERGRENZE = {
     'core/templates/fw/vorlagen.html': 28,
     'core/templates/fw/weiterverrechnung.html': 72,
     'core/templates/fw/zahler_zuordnungen.html': 32,
-    'core/templates/fw/zahllauf.html': 86,
+    'core/templates/fw/zahllauf.html': 2,
     'core/templates/modern_base.html': 5,
 }
 
