@@ -4,34 +4,34 @@
 <div class="fw-phead">
     <h1>Fristen-Center</h1>
     <div class="flex items-center gap-2 text-sm">
-        <a href="/neu/fristen/" class="px-3 py-2 rounded-lg font-semibold {% if not nur_frist %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">Alle</a>
-        <a href="/neu/fristen/?nur=frist" class="px-3 py-2 rounded-lg font-semibold {% if nur_frist %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">Nur gesetzliche Fristen</a>
+        <a href="/neu/fristen/" class="px-3 py-2 rounded-lg font-semibold {% if not nur_frist %}fw-btn fw-primary{% else %}fw-btn fw-linie fw-mutet hover:fw-flaeche2{% endif %}">Alle</a>
+        <a href="/neu/fristen/?nur=frist" class="px-3 py-2 rounded-lg font-semibold {% if nur_frist %}fw-btn fw-primary{% else %}fw-btn border fw-linie fw-mutet hover:fw-flaeche2{% endif %}">Nur gesetzliche Fristen</a>
         <button type="button" onclick="document.getElementById('kalender-box').classList.toggle('hidden')"
-                class="px-3 py-2 rounded-lg font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">
+                class="px-3 py-2 rounded-lg font-semibold fw-flaeche border fw-linie fw-mutet hover:fw-flaeche2">
             <i class="fa-regular fa-calendar-plus mr-1"></i>Kalender
         </button>
     </div>
 </div>
 
 <!-- Kalender-Export / Abo -->
-<div id="kalender-box" class="hidden bg-white rounded-xl border border-slate-200 p-4 mb-5">
+<div id="kalender-box" class="hidden fw-card p-4 mb-5">
     <div class="flex items-center gap-2 mb-3">
-        <a href="/neu/fristen/export.ics" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-3.5 py-2 rounded-lg">
+        <a href="/neu/fristen/export.ics" class="inline-flex items-center gap-1.5 fw-btn fw-primary text-sm font-semibold px-3.5 py-2 rounded-lg">
             <i class="fa-solid fa-download"></i> .ics herunterladen
         </a>
-        <span class="text-xs text-slate-400">einmaliger Import in Outlook / Apple / Google Calendar</span>
+        <span class="text-xs fw-faint">einmaliger Import in Outlook / Apple / Google Calendar</span>
     </div>
-    <label class="block text-xs font-semibold text-slate-500 mb-1">Kalender abonnieren (aktualisiert sich automatisch)</label>
+    <label class="block text-xs font-semibold fw-mutet mb-1">Kalender abonnieren (aktualisiert sich automatisch)</label>
     <div class="flex items-center gap-2">
         <input id="feed-url" readonly value="{{ request.scheme }}://{{ request.get_host }}/fristen.ics?token={{ feed_token|urlencode }}"
-               class="flex-1 bg-slate-100 rounded-lg text-xs px-3 py-2 font-mono text-slate-600">
+               class="flex-1 fw-flaeche2 rounded-lg text-xs px-3 py-2 font-mono fw-mutet">
         <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feed-url').value); this.textContent='Kopiert ✓';"
-                class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg whitespace-nowrap">Kopieren</button>
+                class="fw-flaeche border fw-linie hover:fw-flaeche2 fw-ink text-xs font-semibold px-3 py-2 rounded-lg whitespace-nowrap">Kopieren</button>
     </div>
-    <p class="text-[11px] text-slate-400 mt-1.5">Im Kalender „Abonnement/Kalender per URL hinzufügen" wählen und diese Adresse einfügen. Der Token ist geheim — nicht weitergeben.</p>
+    <p class="text-[11px] fw-faint mt-1.5">Im Kalender „Abonnement/Kalender per URL hinzufügen" wählen und diese Adresse einfügen. Der Token ist geheim — nicht weitergeben.</p>
 </div>
-<p class="text-sm text-slate-500 mb-6">Alle datierten offenen Fristen chronologisch — Kündigungstermine, Anfechtungs-,
-    Zahlungs- und Wartungsfristen, Referenzzins, Vertragsenden. {{ gesamt }} Fristen{% if ueberfaellig_n %} · <span class="text-rose-600 font-semibold">{{ ueberfaellig_n }} überfällig</span>{% endif %}.</p>
+<p class="text-sm fw-mutet mb-6">Alle datierten offenen Fristen chronologisch — Kündigungstermine, Anfechtungs-,
+    Zahlungs- und Wartungsfristen, Referenzzins, Vertragsenden. {{ gesamt }} Fristen{% if ueberfaellig_n %} · <span class="fw-kritisch font-semibold">{{ ueberfaellig_n }} überfällig</span>{% endif %}.</p>
 
 {% for b in buckets %}
 {% if b.items %}
@@ -39,29 +39,29 @@
     <div class="flex items-center gap-2 mb-2.5">
         <i class="fa-solid {{ b.icon }} {{ b.cls }}"></i>
         <h2 class="text-sm font-bold {{ b.cls }} uppercase tracking-wide">{{ b.titel }}</h2>
-        <span class="text-[11px] font-bold bg-slate-100 text-slate-500 rounded-md px-1.5 py-0.5">{{ b.items|length }}</span>
+        <span class="text-[11px] font-bold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{{ b.items|length }}</span>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-50 overflow-hidden">
+    <div class="fw-card fw-dv overflow-hidden">
         {% for e in b.items %}
         <div class="px-5 py-3.5">
           <div class="flex items-center gap-4">
             <div class="text-center shrink-0 w-16">
-                <div class="text-sm font-bold text-slate-900">{{ e.faellig|date:"d.m." }}</div>
-                <div class="text-[11px] {% if e.tage < 0 %}text-rose-500 font-semibold{% else %}text-slate-400{% endif %}">
+                <div class="text-sm font-bold fw-strong">{{ e.faellig|date:"d.m." }}</div>
+                <div class="text-[11px] {% if e.tage < 0 %}fw-kritisch font-semibold{% else %}fw-faint{% endif %}">
                     {% if e.tage < 0 %}{{ e.tage }} T{% elif e.tage == 0 %}heute{% else %}in {{ e.tage }} T{% endif %}
                 </div>
             </div>
             <div class="flex-1 min-w-0">
-                <div class="text-sm font-medium text-slate-900 truncate">{{ e.titel }}</div>
-                <div class="text-xs text-slate-400 truncate">
+                <div class="text-sm font-medium fw-strong truncate">{{ e.titel }}</div>
+                <div class="text-xs fw-faint truncate">
                     {% if e.bezug %}{{ e.bezug }}{% endif %}
-                    {% if e.art %}<span class="ml-1 text-indigo-500 font-semibold">· {{ e.art }}</span>{% endif %}
-                    {% if e.p.sendungsnummer and not e.p.zugang_am %}<span class="ml-1 text-amber-600 font-semibold">· Frist provisorisch</span>{% endif %}
+                    {% if e.art %}<span class="ml-1 fw-marke font-semibold">· {{ e.art }}</span>{% endif %}
+                    {% if e.p.sendungsnummer and not e.p.zugang_am %}<span class="ml-1 fw-warnton font-semibold">· Frist provisorisch</span>{% endif %}
                 </div>
             </div>
             {% if e.url %}
             <a href="{{ e.url }}" onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"
-               class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-2.5 py-1 rounded-lg shrink-0 whitespace-nowrap">{{ e.label }}</a>
+               class="fw-btn text-xs px-2.5 py-1 shrink-0 whitespace-nowrap">{{ e.label }}</a>
             {% endif %}
           </div>
           {% if e.p.sendungsnummer %}
@@ -78,15 +78,15 @@
 {% endfor %}
 
 {% if not gesamt %}
-<div class="bg-white rounded-xl border border-slate-200 p-10 text-center text-slate-400">
-    <i class="fa-solid fa-calendar-check text-3xl mb-3 text-slate-300"></i>
+<div class="fw-card p-10 text-center fw-faint">
+    <i class="fa-solid fa-calendar-check text-3xl mb-3 fw-faint"></i>
     <p class="text-sm">Keine offenen Fristen im gewählten Bereich.</p>
 </div>
 {% endif %}
 
-<p class="text-xs text-slate-400 mt-4 max-w-3xl">Fristen entstehen automatisch aus Kündigungen, Mietzinsanpassungen,
+<p class="text-xs fw-faint mt-4 max-w-3xl">Fristen entstehen automatisch aus Kündigungen, Mietzinsanpassungen,
     Zahlungsverzug, Wartungsverträgen und dem Referenzzinssatz — sowie aus manuell erfassten Pendenzen mit Fälligkeit.
-    Erledigen/abhaken im <a href="/neu/pendenzen/" class="text-indigo-600 hover:underline">Pendenzen-Center</a>.</p>
+    Erledigen/abhaken im <a href="/neu/pendenzen/" class="fw-marke hover:underline">Pendenzen-Center</a>.</p>
 
 {% include 'fw/_fwmodal.html' %}
 {% endblock %}

@@ -417,6 +417,36 @@
                 /* Leseansicht der Akte: Gruppen aus Bezeichnung und Wert (Phase 4b).
            Ersetzt die frueheren Karten-Paare mit eingestreuten Formularen. */
                 .fw-leer{padding:26px 16px;text-align:center;font-size:13px;color:var(--ds-faint);font-style:italic}
+        /* ===== GRUNDVOKABULAR DER SCHICHT (E2) =====================
+           Die kleinsten Bausteine: eine Flaeche, eine Linie, ein Textton.
+           Sie ersetzen die fest verdrahteten Tailwind-Farbklassen, von denen
+           es am 23.08.2026 noch 7444 in 135 Vorlagen gab
+           (`core/tests/test_farbklassen.py` zaehlt sie abwaerts).
+
+           WARUM ES SIE BRAUCHT
+           `bg-white` bleibt weiss — auch im Dunkelmodus, auch wenn ein Mandant
+           eine eigene Akzentfarbe hat. `fw-flaeche` zeigt auf ein Token und
+           folgt beidem. Dasselbe fuer Linien und Textstufen.
+
+           NAMEN AUF DEUTSCH, wie der Rest der Schicht (`fw-mutet`,
+           `fw-strong`, `fw-klein`): Wer eine Vorlage liest, soll nicht
+           zwischen zwei Sprachen springen.
+
+           `fw-linie` setzt NUR die Farbe — die Breite kommt weiterhin von
+           Tailwinds `border`, `border-t` &c. Das ist Absicht: Wo eine Linie
+           liegt, ist Layout und gehoert in die Vorlage; WELCHE Farbe sie hat,
+           ist Gestaltung und gehoert hierher.
+           ========================================================== */
+        .fw-flaeche{background:var(--ds-surface)}
+        .fw-flaeche2{background:var(--ds-surface-2)}
+        .fw-linie{border-color:var(--ds-line)}
+        .fw-ink{color:var(--ds-ink)}
+        .fw-faint{color:var(--ds-faint)}
+        .fw-marke{color:var(--ds-brand)}
+        .fw-markenflaeche{background:var(--ds-brand-soft)}
+        .fw-kritisch{color:var(--ds-crit)}
+        .fw-gut{color:var(--ds-good)}
+        .fw-linie-gut{border-color:var(--ds-good)}
         .fw-link{color:var(--ds-brand);font-weight:600;text-decoration:none;font-size:12.5px}
         .fw-link:hover{text-decoration:underline}
         .fw-klein{font-size:11.5px;color:var(--ds-faint)}

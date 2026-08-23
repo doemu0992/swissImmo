@@ -164,6 +164,16 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # NACH der Authentifizierung, weil die Sprache am Benutzer haengt und den
+    # erst diese Schicht kennt.
+    #
+    # Django empfiehlt Session -> Locale -> Common. Hier steht `Common` bereits
+    # davor, und das bleibt so: Ein Umbau der Reihenfolge beruehrt die
+    # Umleitungen (APPEND_SLASH) und die Wartungsschicht — Nebenwirkungen, die
+    # in einer i18n-Etappe nichts zu suchen haben. Praktisch heisst es: Eine
+    # Umleitung von `/neu` auf `/neu/` traegt noch keinen `Content-Language`.
+    # Sichtbar ist das nirgends, denn umgeleitet wird ohne Inhalt.
+    'django.middleware.locale.LocaleMiddleware',
     # Muss NACH AuthenticationMiddleware stehen — sie braucht `request.user`.
     # Und vor allem, was Mandantendaten liest: Ohne gesetzten Kontext wirft
     # der TenantManager, statt still den ganzen Bestand herauszugeben.
@@ -311,6 +321,33 @@ LANGUAGE_CODE = 'de-ch'
 TIME_ZONE = 'Europe/Zurich'
 USE_I18N = True
 USE_TZ = True
+
+# --- MEHRSPRACHIGKEIT (E2) ---
+# Die Schweiz hat vier Landessprachen, und eine Verwaltung in Freiburg oder
+# Lugano schreibt an ihre Mieter nicht auf Deutsch. Die Projektanweisung
+# verlangt DE/FR/IT/EN in Oberflaeche UND Dokumentvorlagen.
+#
+# STAND ZU BEGINN VON E2: Von 185 Vorlagen trug GENAU EINE `{% trans %}`.
+# `USE_I18N` stand zwar auf True, aber ohne `LANGUAGES`, ohne `LOCALE_PATHS`
+# und ohne Sprachordner — die Einstellung war eine Absichtserklaerung.
+#
+# WARUM DAS FUNDAMENT VOR DEM VORLAGENDURCHGANG KOMMT
+# E2 stellt 135 Vorlagen auf die Komponentenschicht um. Wer dabei nicht
+# gleichzeitig die Texte auszeichnet, fasst jede Datei zweimal an — und
+# `docs/KONZEPT-UI.md` (13.1) hat genau deshalb entschieden, beides in EINEM
+# Durchgang zu machen.
+LANGUAGES = [
+    ('de', 'Deutsch'),
+    ('fr', 'Français'),
+    ('it', 'Italiano'),
+    ('en', 'English'),
+]
+
+# `de-ch` faellt in Django auf `de` zurueck, wenn kein eigener `de-ch`-Ordner
+# existiert. Das ist gewollt: Schweizer Besonderheiten (Betrag mit
+# Hochkomma, «ss» statt «ß») stecken in den Formatierungen und im Text
+# selbst, nicht in einem zweiten Sprachordner.
+LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
 
 # --- BENUTZERMODELL ---
 # Eigenes Benutzermodell statt `auth.User`. Der Wechsel ist nach Produktivgang

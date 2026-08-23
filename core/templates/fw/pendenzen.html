@@ -13,85 +13,85 @@
     <!-- Linke Spalte: Fristen + Pendenzen -->
     <div class="lg:col-span-2 space-y-5">
         <!-- Automatische Fristen -->
-        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">
-                <i class="fa-solid fa-calendar-days text-indigo-500 mr-1.5"></i>Automatische Fristen (nächste 90 Tage)
+        <div class="fw-card overflow-hidden">
+            <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">
+                <i class="fa-solid fa-calendar-days fw-marke mr-1.5"></i>Automatische Fristen (nächste 90 Tage)
             </div>
-            <div class="divide-y divide-slate-50">
+            <div class="fw-dv">
                 {% for f in auto %}
-                <a href="{{ f.url }}" onclick="return fwModalOpen(this,'{{ f.titel|escapejs }}',true)" class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60">
+                <a href="{{ f.url }}" onclick="return fwModalOpen(this,'{{ f.titel|escapejs }}',true)" class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
                     <div class="w-9 h-9 rounded-lg bg-{{ f.farbe }}-50 text-{{ f.farbe }}-600 flex items-center justify-center text-sm shrink-0"><i class="fa-solid {{ f.icon }}"></i></div>
                     <div class="min-w-0 flex-1">
-                        <div class="text-sm font-medium text-slate-900 truncate">{{ f.titel }}</div>
-                        <div class="text-xs text-slate-500 truncate">{{ f.kategorie }} · {{ f.sub }}</div>
+                        <div class="text-sm font-medium fw-strong truncate">{{ f.titel }}</div>
+                        <div class="text-xs fw-mutet truncate">{{ f.kategorie }} · {{ f.sub }}</div>
                     </div>
                     <div class="text-right shrink-0">
-                        <div class="text-sm font-semibold {% if f.tage < 14 %}text-rose-600{% else %}text-slate-700{% endif %}">{{ f.faellig|date:"d.m.Y" }}</div>
-                        <div class="text-[11px] text-slate-400">in {{ f.tage }} Tg.</div>
+                        <div class="text-sm font-semibold {% if f.tage < 14 %}fw-kritisch{% else %}fw-ink{% endif %}">{{ f.faellig|date:"d.m.Y" }}</div>
+                        <div class="text-[11px] fw-faint">in {{ f.tage }} Tg.</div>
                     </div>
                 </a>
                 {% empty %}
-                <div class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Fristen in den nächsten 90 Tagen.</div>
+                <div class="px-5 py-8 text-center text-sm fw-faint italic">Keine Fristen in den nächsten 90 Tagen.</div>
                 {% endfor %}
             </div>
         </div>
 
         <!-- Offene Pendenzen — gruppiert nach Bezug (Auszug/Objekt) -->
         {% for g in gruppen %}
-        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-2.5">
-                <span class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs shrink-0"><i class="fa-solid {{ g.icon }}"></i></span>
+        <div class="fw-card overflow-hidden">
+            <div class="px-5 py-3 border-b fw-linie flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-xs shrink-0"><i class="fa-solid {{ g.icon }}"></i></span>
                 <div class="min-w-0 flex-1">
                     {% if g.url %}
-                    <a href="{{ g.url }}" class="font-bold text-slate-800 text-sm hover:text-indigo-600 truncate block">{{ g.titel }}</a>
-                    {% else %}<div class="font-bold text-slate-800 text-sm truncate">{{ g.titel }}</div>{% endif %}
-                    {% if g.sub %}<div class="text-xs text-slate-400 truncate">{{ g.sub }}</div>{% endif %}
+                    <a href="{{ g.url }}" class="font-bold fw-strong text-sm hover:fw-marke truncate block">{{ g.titel }}</a>
+                    {% else %}<div class="font-bold fw-strong text-sm truncate">{{ g.titel }}</div>{% endif %}
+                    {% if g.sub %}<div class="text-xs fw-faint truncate">{{ g.sub }}</div>{% endif %}
                 </div>
-                <span class="text-xs font-semibold text-slate-400 shrink-0">{{ g.pendenzen|length }}</span>
+                <span class="text-xs font-semibold fw-faint shrink-0">{{ g.pendenzen|length }}</span>
             </div>
-            <div class="divide-y divide-slate-50">
+            <div class="fw-dv">
                 {% for p in g.pendenzen %}
-                <div class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60">
+                <div class="flex items-center gap-3 px-5 py-3 hover:fw-flaeche2">
                     <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
-                        <button class="w-5 h-5 rounded border-2 border-slate-300 hover:border-emerald-500 flex items-center justify-center text-transparent hover:text-emerald-500" title="Als erledigt markieren"><i class="fa-solid fa-check text-[10px]"></i></button>
+                        <button class="w-5 h-5 rounded border-2 fw-linie hover:fw-linie-gut flex items-center justify-center text-transparent hover:fw-gut" title="Als erledigt markieren"><i class="fa-solid fa-check text-[10px]"></i></button>
                     </form>
                     {% if p.ziel_url %}
                     <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})"{% endif %} class="min-w-0 flex-1 group">
-                        <div class="text-sm font-medium text-slate-900 group-hover:text-indigo-600">{{ p.titel }}</div>
-                        <div class="text-xs text-slate-500">{{ p.get_kategorie_display }}</div>
+                        <div class="text-sm font-medium fw-strong group-hover:fw-marke">{{ p.titel }}</div>
+                        <div class="text-xs fw-mutet">{{ p.get_kategorie_display }}</div>
                     </a>
-                    <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})"{% endif %} class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-2.5 py-1 rounded-lg shrink-0 whitespace-nowrap">{{ p.ziel_label }}</a>
+                    <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})"{% endif %} class="fw-btn text-xs px-2.5 py-1 shrink-0 whitespace-nowrap">{{ p.ziel_label }}</a>
                     {% else %}
                     <div class="min-w-0 flex-1">
-                        <div class="text-sm font-medium text-slate-900">{{ p.titel }}</div>
-                        <div class="text-xs text-slate-500">{{ p.get_kategorie_display }}{% if p.beschreibung %} · {{ p.beschreibung|truncatechars:50 }}{% endif %}</div>
+                        <div class="text-sm font-medium fw-strong">{{ p.titel }}</div>
+                        <div class="text-xs fw-mutet">{{ p.get_kategorie_display }}{% if p.beschreibung %} · {{ p.beschreibung|truncatechars:50 }}{% endif %}</div>
                     </div>
                     {% endif %}
-                    {% if p.faellig_am %}<span class="text-xs font-semibold {% if p.ueberfaellig %}text-rose-600{% else %}text-slate-500{% endif %} shrink-0">{{ p.faellig_am|date:"d.m.Y" }}{% if p.ueberfaellig %} <i class="fa-solid fa-triangle-exclamation"></i>{% endif %}</span>{% endif %}
+                    {% if p.faellig_am %}<span class="text-xs font-semibold {% if p.ueberfaellig %}fw-kritisch{% else %}fw-mutet{% endif %} shrink-0">{{ p.faellig_am|date:"d.m.Y" }}{% if p.ueberfaellig %} <i class="fa-solid fa-triangle-exclamation"></i>{% endif %}</span>{% endif %}
                     <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" onsubmit="return confirm('Pendenz löschen?');">{% csrf_token %}
-                        <button class="text-slate-300 hover:text-rose-500 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                        <button class="fw-faint hover:fw-kritisch text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
                     </form>
                 </div>
                 {% endfor %}
             </div>
         </div>
         {% empty %}
-        <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Keine offenen Pendenzen.</div>
+        <div class="fw-card px-5 py-8 text-center text-sm fw-faint italic">Keine offenen Pendenzen.</div>
         {% endfor %}
 
         {% if erledigte %}
-        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-400 text-sm">Erledigt</div>
-            <div class="divide-y divide-slate-50">
+        <div class="fw-card overflow-hidden">
+            <div class="px-5 py-3 border-b fw-linie font-bold fw-faint text-sm">Erledigt</div>
+            <div class="fw-dv">
                 {% for p in erledigte %}
                 <div class="flex items-center gap-3 px-5 py-2.5">
                     <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
-                        <button class="w-5 h-5 rounded bg-emerald-500 text-white flex items-center justify-center" title="Wieder öffnen"><i class="fa-solid fa-check text-[10px]"></i></button>
+                        <button class="w-5 h-5 rounded fw-haken flex items-center justify-center" title="Wieder öffnen"><i class="fa-solid fa-check text-[10px]"></i></button>
                     </form>
-                    <span class="text-sm text-slate-400 line-through flex-1">{{ p.titel }}</span>
-                    <span class="text-xs text-slate-300">{{ p.erledigt_am|date:"d.m.Y" }}</span>
+                    <span class="text-sm fw-faint line-through flex-1">{{ p.titel }}</span>
+                    <span class="text-xs fw-faint">{{ p.erledigt_am|date:"d.m.Y" }}</span>
                     <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" onsubmit="return confirm('Pendenz löschen?');">{% csrf_token %}
-                        <button title="Pendenz löschen" class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        <button title="Pendenz löschen" class="fw-faint hover:fw-kritisch text-xs"><i class="fa-solid fa-trash"></i></button>
                     </form>
                 </div>
                 {% endfor %}
@@ -102,26 +102,26 @@
 
     <!-- Rechte Spalte: Neue Pendenz -->
     <div>
-        <div class="bg-white rounded-xl border border-slate-200 p-5 sticky top-4">
-            <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-plus text-indigo-500 mr-1.5"></i>Neue Pendenz</h3>
+        <div class="fw-card p-5 sticky top-4">
+            <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-plus fw-marke mr-1.5"></i>Neue Pendenz</h3>
             <form method="post" action="/neu/pendenzen/neu/" class="space-y-3">
                 {% csrf_token %}
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Titel *</label>
-                    <input name="titel" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kategorie</label>
-                    <select name="kategorie" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Titel *</label>
+                    <input name="titel" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Kategorie</label>
+                    <select name="kategorie" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         {% for key, label in kategorien %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
                     </select></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Fällig am</label>
-                    <input type="date" name="faellig_am" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft (optional)</label>
-                    <select name="liegenschaft_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Fällig am</label>
+                    <input type="date" name="faellig_am" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Liegenschaft (optional)</label>
+                    <select name="liegenschaft_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         <option value="">— keine —</option>
                         {% for lg in liegenschaften %}<option value="{{ lg.id }}">{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
                     </select></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Beschreibung</label>
-                    <textarea name="beschreibung" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></textarea></div>
-                <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Beschreibung</label>
+                    <textarea name="beschreibung" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea></div>
+                <button class="fw-btn fw-primary w-full justify-center">
                     <i class="fa-solid fa-check mr-1.5"></i>Pendenz erfassen
                 </button>
             </form>
