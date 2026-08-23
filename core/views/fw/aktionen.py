@@ -1363,3 +1363,56 @@ def fw_zahlung_stornieren(request, pk):
                f"CHF {z.betrag} · {z.vertrag.mieter if z.vertrag_id else 'ohne Vertrag'}")
     messages.success(request, f"✅ Zahlung über CHF {z.betrag} storniert — offener Posten wieder offen.")
     return redirect(request.POST.get('next') or '/neu/bankabgleich/')
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_mandant_wechseln(request):
+    """Wechselt die aktive Organisation — nur in eine eigene.
+
+    WARUM ES DAS BRAUCHT (E1.2)
+
+    `crm.Mitgliedschaft` erlaubt seit Etappe 4.1 mehrere Organisationen je
+    Person; die Middleware liest dafür längst einen Sessionwert. Was fehlte,
+    war die Auswahl: Wer für zwei Verwaltungen arbeitet, landete immer in der
+    ältesten. Die Middleware protokolliert das seither bei jeder Anfrage —
+    ein Hinweis, den niemand liest.
+
+    DER HEIKLE TEIL
+
+    Dieser View setzt den Mandantenkontext. Ein POST mit einer fremden
+    Organisations-ID darf ihn NICHT setzen, sonst ist die gesamte
+    Mandantentrennung mit einem Formularfeld auszuhebeln — sie hängt an
+    genau diesem Wert.
+
+    Geprüft wird deshalb nicht «gibt es diese Organisation?», sondern «hat
+    DIESER Benutzer dort eine Mitgliedschaft?». `alle_organisationen` ist hier
+    richtig und nicht etwa der Fehler: Die Abfrage bestimmt den Kontext erst,
+    kann ihn also nicht voraussetzen — deshalb ist sie auf `benutzer` und
+    `organisation_id` zugleich eingeschränkt.
+
+    ZWEITE SCHICHT: `core.middleware_tenancy._organisation_fuer` ehrt den
+    Sessionwert ohnehin nur, wenn er zu einer echten Mitgliedschaft passt.
+    Wird eine Mitgliedschaft später entzogen, greift der alte Sessionwert
+    also nicht mehr. Das ist Absicht — die obere Schicht umgeht irgendwann
+    jemand.
+
+    Bei einer unbekannten oder fremden ID passiert nichts: keine Änderung,
+    keine Fehlermeldung, die verrät, ob es die Organisation gibt.
+    """
+    from django.shortcuts import redirect
+    from crm.models import Mitgliedschaft
+    from core.middleware_tenancy import SESSION_SCHLUESSEL
+
+    if request.method == 'POST':
+        try:
+            gewuenscht = int(request.POST.get('organisation') or 0)
+        except (TypeError, ValueError):
+            gewuenscht = 0
+        if gewuenscht and Mitgliedschaft.alle_organisationen.filter(
+                benutzer=request.user, organisation_id=gewuenscht).exists():
+            request.session[SESSION_SCHLUESSEL] = gewuenscht
+            # Der globale Liegenschaftsfilter braucht hier nichts: Er steht im
+            # URL-Parameter `?lg=`, nicht in der Session (`_basis._global_filter`).
+            # Die Umleitung auf `/neu/` laesst ihn ohnehin fallen.
+
+    return redirect('/neu/')

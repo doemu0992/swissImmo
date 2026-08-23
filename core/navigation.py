@@ -217,5 +217,29 @@ def fw_navigation(request):
         {'label': 'Einstellungen', 'url': '/neu/einstellungen/'},
         {'label': 'Zwei-Faktor-Anmeldung', 'url': '/konto/zwei-faktor/'},
     ]
+    # Die Organisationen dieses Benutzers — fuer die Auswahl im Kopf der
+    # Leiste (E1.2). `alle_organisationen` ist hier notwendig und richtig: Die
+    # Frage lautet «wo ist diese Person Mitglied?», und die kann man nicht aus
+    # dem Mandanten heraus beantworten, in dem sie gerade steht.
+    mandanten = []
+    try:
+        from crm.models import Mitgliedschaft
+        mandanten = [m.organisation for m in
+                     Mitgliedschaft.alle_organisationen
+                     .filter(benutzer=user).select_related('organisation').order_by('pk')[:20]]
+    except Exception:
+        pass
+
+    # Welcher davon gerade gilt, weiss die Middleware — nicht diese Funktion.
+    # Sie hier neu herzuleiten hiesse, dieselbe Entscheidung an zwei Orten zu
+    # treffen; genau so entstehen Oberflaechen, die einen anderen Mandanten
+    # anzeigen als den, in dem gearbeitet wird.
+    from core.tenancy import aktuelle_organisation
+    try:
+        aktiv = aktuelle_organisation()
+    except Exception:
+        aktiv = None
+
     return {'fw_nav_gruppen': gruppen, 'fw_palette': palette,
-            'fw_einstellungen_keys': EINSTELLUNGEN_KEYS}
+            'fw_einstellungen_keys': EINSTELLUNGEN_KEYS,
+            'fw_mandanten': mandanten, 'fw_mandant': aktiv}

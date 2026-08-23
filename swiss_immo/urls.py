@@ -132,8 +132,8 @@ from core.views.fw import (fw_arbeit, fw_fall_detail, fw_fallschritt_erledigen,
                            fw_account, fw_datenreset, fw_hypotheken, fw_marktdaten_aktualisieren, fw_marktdaten_live,
                            fw_benutzer, fw_logbuch, fw_rechtsgrundlagen, fw_eigentuemer_liste, fw_vorlagen, fw_vorlagen_standard, fw_integrationen, fw_abonnemente,
                            fw_liegenschaft_form, fw_liegenschaft_gwr, fw_liegenschaft_loeschen, fw_versicherung_add, fw_versicherung_loeschen,
-                           fw_budget_speichern, fw_budget_loeschen, fw_objekt_form, fw_suche,
-                           fw_einstellungen, fw_mwst_verbuchen, fw_zahlung_stornieren,
+                           fw_budget_speichern, fw_budget_loeschen, fw_objekt_form, fw_suche, fw_palette_suche,
+                           fw_einstellungen, fw_mandant_wechseln, fw_mwst_verbuchen, fw_zahlung_stornieren,
                            fw_zahlung_zuordnen,
                            fw_zahlungen_sammel_zuordnen,
                            fw_zahler_zuordnungen, fw_zahler_zuordnung_speichern,
@@ -438,7 +438,11 @@ urlpatterns = [
     path('neu/dokumente/<int:pk>/loeschen/', fw_dokument_loeschen, name='fw_dokument_loeschen'),
     path('neu/dokument/<int:pk>/loeschen/', fw_rentals_dokument_loeschen, name='fw_rentals_dokument_loeschen'),
     # Profil-Menü
+    path('neu/mandant/', fw_mandant_wechseln, name='fw_mandant_wechseln'),
     path('neu/suche/', fw_suche, name='fw_suche'),
+    # JSON für die ⌘K-Palette (E1.2). Keine eigene Seite — deshalb steht
+    # die Adresse in OHNE_WEG von test_erreichbarkeit.
+    path('neu/palette/', fw_palette_suche, name='fw_palette_suche'),
     path('neu/einstellungen/', fw_einstellungen, name='fw_einstellungen'),
     path('neu/account/', fw_account, name='fw_account'),
     path('neu/datenreset/', fw_datenreset, name='fw_datenreset'),

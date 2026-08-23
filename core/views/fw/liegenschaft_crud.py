@@ -385,3 +385,112 @@ def fw_suche(request):
         'personen': personen, 'liegenschaften': liegenschaften,
         'objekte': objekte, 'vertraege': vertraege,
     })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_palette_suche(request):
+    """Datensätze für die ⌘K-Palette, als JSON.
+
+    WARUM ES DIESEN ENDPUNKT GIBT (B7, E1.2)
+
+    Die Palette kannte bis hierher nur SEITEN — sie war die flache Liste der
+    Menü-Labels. Wer «Blaser» tippte, bekam «Keine Seite gefunden» und musste
+    die Eingabe mit ↵ an `/neu/suche/` weiterreichen, also eine zweite Suche
+    starten und eine zweite Ergebnisseite lesen.
+
+    Für eine Verwaltung mit 300 Mietverhältnissen ist die Datensatzsuche aber
+    der Normalfall und die Seitensuche die Ausnahme: Man sucht Frau Blaser,
+    nicht die Seite «Mietverhältnisse». Ein Werkzeug hat dafür EIN Feld.
+
+    WAS ZURÜCKKOMMT
+
+    Höchstens 15 Treffer über vier Arten, mit Typ, Beschriftung, Zusatz und
+    Adresse. Wenig genug, um ohne Blättern lesbar zu sein — die vollständige
+    Trefferliste bleibt `/neu/suche/`, und die Palette verweist am Ende
+    dorthin.
+
+    MANDANTENTRENNUNG
+
+    Über die Manager der Modelle, wie überall: `Mieter.objects` &c. liefern
+    nur den eigenen Mandanten. Dieser Endpunkt enthält KEINE eigene
+    Organisationslogik — genau deshalb kann er sie auch nicht falsch machen.
+    `core/tests/test_palette_suche.py` prüft das mit einem zweiten Mandanten.
+    """
+    from django.http import JsonResponse
+
+    q = (request.GET.get('q') or '').strip()
+    if len(q) < 2:
+        # Ein einzelner Buchstabe trifft fast alles und kostet vier Abfragen
+        # bei jedem Tastendruck. Die Palette zeigt bis dahin die Seiten.
+        return JsonResponse({'treffer': [], 'q': q})
+
+    def ueber_felder(*felder):
+        """Jedes Wort der Eingabe muss in IRGENDEINEM der Felder vorkommen.
+
+        WARUM WORTWEISE UND NICHT AM STÜCK
+
+        Menschen tippen «Anna Blaser», das Programm speichert Vorname und
+        Nachname getrennt. Ein `icontains` über die ganze Eingabe prüft dann
+        «enthält der Vorname die Zeichenkette 'Anna Blaser'?» — nein, und
+        «enthält der Nachname sie?» — auch nicht. Die Suche fand die Person
+        also genau dann nicht, wenn man ihren vollen Namen kannte.
+
+        Jedes Wort einzeln, alle mit UND verknüpft: «Anna Blaser» findet die
+        Person, «Blaser Anna» ebenso, «Blaser Bahnhofstrasse» grenzt weiter
+        ein statt mehr zu liefern.
+        """
+        bedingung = Q()
+        for wort in q.split():
+            oder = Q()
+            for feld in felder:
+                oder |= Q(**{f'{feld}__icontains': wort})
+            bedingung &= oder
+        return bedingung
+
+    treffer = []
+
+    for m in (Mieter.objects.filter(
+            ueber_felder('vorname', 'nachname', 'firmen_name', 'email', 'ort'))
+            .order_by('nachname', 'firmen_name')[:5]):
+        treffer.append({
+            'art': 'Person',
+            'label': str(m),
+            'zusatz': m.ort or m.email or '',
+            'url': f'/neu/personen/{m.id}/',
+        })
+
+    for lg in (Liegenschaft.objects.filter(
+            ueber_felder('strasse', 'ort', 'plz'))
+            .order_by('strasse')[:4]):
+        treffer.append({
+            'art': 'Liegenschaft',
+            'label': lg.strasse,
+            'zusatz': f'{lg.plz} {lg.ort}'.strip(),
+            'url': f'/neu/liegenschaften/{lg.id}/',
+        })
+
+    for e in (Einheit.objects.select_related('liegenschaft').filter(
+            ueber_felder('bezeichnung', 'liegenschaft__strasse'))
+            .order_by('liegenschaft__strasse', 'bezeichnung')[:3]):
+        treffer.append({
+            'art': 'Objekt',
+            'label': e.bezeichnung,
+            'zusatz': e.liegenschaft.strasse if e.liegenschaft_id else '',
+            'url': f'/neu/objekte/{e.id}/',
+        })
+
+    for v in (Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft').filter(
+            ueber_felder('mieter__vorname', 'mieter__nachname', 'mieter__firmen_name',
+                         'einheit__liegenschaft__strasse', 'einheit__bezeichnung'))
+            .order_by('-beginn')[:3]):
+        ort = ''
+        if v.einheit_id and v.einheit.liegenschaft_id:
+            ort = f'{v.einheit.liegenschaft.strasse}, {v.einheit.bezeichnung}'
+        treffer.append({
+            'art': 'Mietverhältnis',
+            'label': str(v.mieter) if v.mieter_id else f'MV-{v.id}',
+            'zusatz': ort,
+            'url': f'/neu/vertraege/{v.id}/',
+        })
+
+    return JsonResponse({'treffer': treffer[:15], 'q': q})

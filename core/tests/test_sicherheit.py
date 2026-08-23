@@ -438,7 +438,18 @@ class RollentrennungTests(TestCase):
     #: entspricht: Eine Ausnahme für einen View, den es nicht gibt, ist ein
     #: offenes Tor ohne Tür — sie fällt niemandem auf und deckt beim nächsten
     #: gleichnamigen View stillschweigend etwas ab.
-    ERLAUBT_OHNE_SCHREIBSCHRANKE = {}
+    ERLAUBT_OHNE_SCHREIBSCHRANKE = {
+        # E1.2: Der Mandantenwechsel schreibt keine Fachdaten, sondern setzt
+        # einen Wert in der EIGENEN Session — welche der eigenen
+        # Mitgliedschaften gerade gilt. Auch wer nur lesen darf, muss waehlen
+        # koennen, in welcher Verwaltung er liest.
+        #
+        # Die Ausnahme ist eng: `fw_mandant_wechseln` prueft vorher, ob die
+        # Person in der gewuenschten Organisation ueberhaupt Mitglied ist —
+        # `core/tests/test_mandant_wechsel.py` versucht genau diesen Umweg mit
+        # einer fremden ID.
+        'fw_mandant_wechseln': 'setzt nur, welche der eigenen Mitgliedschaften gilt',
+    }
 
     def test_lesende_rolle_kann_nirgends_unbemerkt_schreiben(self):
         """Register-Prüfung: Jede View, die für alle Team-Rollen erreichbar ist

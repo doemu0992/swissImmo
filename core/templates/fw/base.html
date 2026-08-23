@@ -817,6 +817,39 @@
     <!-- ================= SIDEBAR (Fairwalter-Struktur) ================= -->
     <aside id="fwSidebar" class="w-60 bg-gradient-to-b from-[#122b31] to-[#0a1c20] text-white flex flex-col min-h-[100dvh] flex-shrink-0 fixed lg:static inset-y-0 left-0 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out">
 
+        {% if fw_mandant %}
+        {% comment %}
+        WELCHER MANDANT GERADE GILT (E1.2)
+
+        Bis hierher stand es nirgends. Wer fuer zwei Verwaltungen arbeitet, sah
+        zwei identische Oberflaechen und musste an den Daten erkennen, in
+        welcher er steckt — die Middleware nahm stillschweigend die aelteste
+        Mitgliedschaft und schrieb einen Hinweis ins Protokoll, den niemand
+        liest.
+
+        Bei einer Mitgliedschaft steht hier nur der Name: keine Auswahl, wo es
+        nichts zu waehlen gibt. Bei mehreren wird daraus eine Liste, die beim
+        Wechseln absendet. Die Pruefung, ob die Person dort ueberhaupt Mitglied
+        ist, macht `fw_mandant_wechseln` — nicht dieses Formular.
+        {% endcomment %}
+        <div class="px-5 py-3 border-b border-white/5 sb-filter">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Mandant</div>
+            {% if fw_mandanten|length > 1 %}
+            <form method="post" action="/neu/mandant/">{% csrf_token %}
+                <select name="organisation" onchange="this.form.submit()" aria-label="Mandant wechseln"
+                        class="w-full bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-sm text-white focus:outline-none focus:border-white/30 [&>option]:text-slate-900">
+                    {% for m in fw_mandanten %}
+                    <option value="{{ m.id }}" {% if fw_mandant and fw_mandant.id == m.id %}selected{% endif %}
+                            >{{ m.firma }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            {% else %}
+            <div class="text-sm font-semibold text-white truncate" title="{{ fw_mandant.firma }}">{{ fw_mandant.firma }}</div>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <div class="px-5 py-5 flex items-center gap-2.5 border-b border-white/5 sb-logo">
             <a href="/neu/" title="Zur Übersicht" class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-xs shadow-lg shadow-indigo-600/30 shrink-0">
                 <i class="fa-solid fa-building"></i>
@@ -986,13 +1019,13 @@
     <div class="relative max-w-lg mx-auto mt-[12vh] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
         <div class="flex items-center gap-3 px-4 border-b border-slate-100">
             <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
-            <input id="fwPaletteInput" type="text" placeholder="Seite oder Suchbegriff eingeben …" autocomplete="off"
+            <input id="fwPaletteInput" type="text" placeholder="Person, Objekt, Mietverhältnis oder Seite …" autocomplete="off"
                    class="flex-1 py-3.5 text-sm focus:outline-none placeholder:text-slate-400">
             <span class="text-[10px] font-semibold text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">ESC</span>
         </div>
         <div id="fwPaletteList" class="max-h-[50vh] overflow-y-auto py-1.5"></div>
         <div class="px-4 py-2 border-t border-slate-100 text-[11px] text-slate-400">
-            ↵ öffnen · Kein Treffer? ↵ sucht in Personen, Objekten &amp; Verträgen
+            ↵ öffnen · <span id="fwPaletteFuss">Tippen sucht in Akten und Seiten</span>
         </div>
     </div>
 </div>
@@ -1039,27 +1072,86 @@ function fwNavToggle(key) {
     try { data = JSON.parse(document.getElementById('fw-palette-data').textContent) || []; } catch (e) {}
 
     function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-    function render(q) {
-        var ql = (q || '').toLowerCase();
-        var hits = data.filter(function (d) {
+
+    // AKTEN VOR SEITEN (B7, E1.2)
+    //
+    // Bis E1.2 kannte die Palette nur die Menue-Labels. Wer «Blaser» tippte,
+    // las «Keine Seite gefunden» und musste die Eingabe mit ↵ an eine zweite
+    // Suche weiterreichen. Bei 300 Mietverhaeltnissen ist die Datensatzsuche
+    // aber der Normalfall — deshalb stehen Treffer aus den Akten oben und die
+    // Seiten darunter.
+    //
+    // Die Seiten kommen sofort (sie liegen im Browser), die Datensaetze
+    // nachgereicht. Ein Feld, das erst nach der Antwort des Servers etwas
+    // zeigt, fuehlt sich langsam an, auch wenn es schnell ist.
+    var akten = [];        // zuletzt vom Server geholte Datensaetze
+    var aktenFuer = '';    // zu welcher Eingabe sie gehoeren
+    var holen = null;      // laufender Zeitgeber
+
+    function seitenTreffer(ql) {
+        return data.filter(function (d) {
             return !ql || d.label.toLowerCase().indexOf(ql) !== -1
                 || (d.gruppe && d.gruppe.toLowerCase().indexOf(ql) !== -1);
-        }).slice(0, 12);
-        if (!hits.length) {
-            list.innerHTML = '<div class="px-4 py-3 text-sm text-slate-400">Keine Seite gefunden — ↵ startet die Suche nach «' + esc(q) + '»</div>';
+        });
+    }
+
+    function zeile(url, label, zusatz, art, aktiv) {
+        return '<a href="' + url + '" class="fw-pal-item flex items-center gap-3 px-4 py-2.5 text-sm ' +
+               (aktiv ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50') + '">' +
+               (art ? '<span class="text-[10px] font-semibold uppercase tracking-wide text-slate-400 w-[92px] shrink-0">' + esc(art) + '</span>'
+                    : '<i class="fa-solid fa-arrow-right text-[10px] text-slate-300 w-[92px] shrink-0"></i>') +
+               '<span class="flex-1 truncate">' + esc(label) + '</span>' +
+               (zusatz ? '<span class="text-[11px] text-slate-400 truncate max-w-[45%]">' + esc(zusatz) + '</span>' : '') +
+               '</a>';
+    }
+
+    function render(q) {
+        var ql = (q || '').toLowerCase();
+        var seiten = seitenTreffer(ql);
+        var meine = (aktenFuer === q.trim()) ? akten : [];
+        var stuecke = [];
+        var nr = 0;
+
+        if (meine.length) {
+            stuecke.push('<div class="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Akten</div>');
+            meine.forEach(function (t) { stuecke.push(zeile(t.url, t.label, t.zusatz, t.art, nr++ === 0)); });
+        }
+        if (seiten.length) {
+            if (meine.length) {
+                stuecke.push('<div class="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 border-t border-slate-100 mt-1">Seiten</div>');
+            }
+            seiten.slice(0, meine.length ? 5 : 12).forEach(function (d) {
+                stuecke.push(zeile(d.url, d.label, d.gruppe || '', '', nr++ === 0));
+            });
+        }
+        if (!stuecke.length) {
+            list.innerHTML = '<div class="px-4 py-3 text-sm text-slate-400">Nichts gefunden — ↵ sucht ausführlich nach «' + esc(q) + '»</div>';
             return;
         }
-        list.innerHTML = hits.map(function (d, i) {
-            return '<a href="' + d.url + '" class="fw-pal-item flex items-center gap-3 px-4 py-2.5 text-sm ' +
-                   (i === 0 ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50') + '">' +
-                   '<i class="fa-solid fa-arrow-right text-[10px] text-slate-300"></i>' +
-                   '<span class="flex-1">' + esc(d.label) + '</span>' +
-                   (d.gruppe ? '<span class="text-[11px] text-slate-400">' + esc(d.gruppe) + '</span>' : '') + '</a>';
-        }).join('');
+        list.innerHTML = stuecke.join('');
     }
-    window.fwPaletteOpen = function () { pal.classList.remove('hidden'); input.value = ''; render(''); setTimeout(function(){ input.focus(); }, 30); };
+
+    function aktenHolen(q) {
+        if (holen) { clearTimeout(holen); }
+        if (q.trim().length < 2) { akten = []; aktenFuer = ''; return; }
+        // Kurz warten: Wer «Blaser» tippt, loest sonst sechs Abfragen aus.
+        holen = setTimeout(function () {
+            var gefragt = q.trim();
+            fetch('/neu/palette/?q=' + encodeURIComponent(gefragt), {headers: {'X-Requested-With': 'fetch'}})
+                .then(function (r) { return r.ok ? r.json() : {treffer: []}; })
+                .then(function (d) {
+                    // Nur uebernehmen, wenn die Eingabe seither nicht weiterlief.
+                    if (input.value.trim() !== gefragt) { return; }
+                    akten = d.treffer || [];
+                    aktenFuer = gefragt;
+                    render(input.value);
+                })
+                .catch(function () { /* offline: die Seiten stehen weiterhin */ });
+        }, 160);
+    }
+    window.fwPaletteOpen = function () { pal.classList.remove('hidden'); input.value = ''; akten = []; aktenFuer = ''; render(''); setTimeout(function(){ input.focus(); }, 30); };
     window.fwPaletteClose = function () { pal.classList.add('hidden'); };
-    input.addEventListener('input', function () { render(input.value); });
+    input.addEventListener('input', function () { render(input.value); aktenHolen(input.value); });
     input.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -1262,5 +1354,46 @@ function fwSyncThemeButtons(){
 fwSyncThemeButtons();
 </script>
 {% block scripts %}{% endblock %}
+
+{% if fw_nav_gruppen %}
+{% comment %} ===== TAB-LEISTE (nur Handy, E1.2) =====================================
+   Bis hierher war die Navigation auf dem Telefon NUR über das Symbol in der
+   Kopfzeile erreichbar: antippen, Schublade fährt auf, Bereich suchen,
+   antippen, Schublade schliesst. Vier Handgriffe für einen Wechsel, den man
+   unterwegs zwanzigmal macht — und das Symbol sitzt oben links, also genau
+   dort, wo der Daumen einer Hand nicht hinkommt.
+
+   Die fünf Bereiche stehen deshalb unten, in Daumenreichweite. Die Schublade
+   bleibt: Sie führt die Untereinträge, die hier keinen Platz haben.
+
+   `env(safe-area-inset-bottom)` hält die Leiste über der Gestenzeile
+   neuerer Telefone; ohne das liegt der letzte Eintrag unter dem Balken.
+   ===================================================================== {% endcomment %}
+{% comment %} `w-screen` ist nicht doppelt gemoppelt zu `inset-x-0`, sondern noetig:
+   Ohne feste Breite entsteht eine Rueckkopplung. Die Leiste dehnt sich auf
+   ihre Mindestbreite (5 x 138 px = 690), macht damit das Dokument 690 breit —
+   und weil das Sichtfeld auf dem Telefon mitwaechst, richtet sich `right:0`
+   danach und die Leiste bleibt 690. Gemessen: 300 px Querlauf auf jeder
+   Seite. `100vw` bricht den Kreis, weil es am Sichtfeld haengt und nicht am
+   Inhalt. {% endcomment %}
+<nav class="lg:hidden fixed bottom-0 left-0 w-screen max-w-full z-40 bg-white border-t border-slate-200 grid grid-cols-5"
+     style="padding-bottom:max(4px,env(safe-area-inset-bottom))" aria-label="Bereiche">
+    {% for g in fw_nav_gruppen %}
+    <a href="{{ g.ziel }}{{ lg_query }}"
+       {% comment %} `min-w-0` ist die eigentliche Loesung: Ohne das ist die
+          Mindestbreite einer Rasterspalte die Breite ihres laengsten Wortes,
+          `truncate` greift nie, und fuenf Spalten brauchen 690 statt 390 px.
+          Erst damit darf die Spalte schmaler werden als ihr Inhalt. {% endcomment %}
+       class="flex flex-col items-center justify-center gap-1 py-2 min-h-[52px] min-w-0 text-[11px] transition-colors
+              {% if nav in g.alle_keys %}text-indigo-700 font-semibold{% else %}text-slate-500{% endif %}"
+       {% if nav in g.alle_keys %}aria-current="page"{% endif %}>
+        <i class="fa-solid {{ g.icon }} text-[15px]"></i>
+        <span class="truncate max-w-full px-0.5">{{ g.label }}</span>
+    </a>
+    {% endfor %}
+</nav>
+{# Platz, damit die Leiste den letzten Inhalt nicht verdeckt. #}
+<div class="lg:hidden" style="height:calc(56px + env(safe-area-inset-bottom))" aria-hidden="true"></div>
+{% endif %}
 </body>
 </html>

@@ -44,6 +44,8 @@ OHNE_WEG = {
     # Endpunkte, die nur eine andere Seite bedient (Bruchstücke, Downloads,
     # POST-Ziele ohne eigene Darstellung).
     '/neu/regelwerk/protokoll/': 'Aus /neu/regelwerk/ verlinkt (Kopfzeile).',
+    '/neu/palette/': 'JSON für die ⌘K-Palette, keine Seite. Wird aus '
+                     'base.html per fetch() gelesen.',
 
     # ÜBERHOLT, ABER NOCH ERREICHBAR — vom Wächter beim ersten Lauf gefunden.
     # `fw_kreditoren_pain001` erzeugt eine Zahlungsdatei aus ALLEN freigegebenen
