@@ -63,6 +63,7 @@ in 4.2, verschärft: Er prüft jetzt gegen die konkreten Datensätze von B.
 import unittest
 
 from django.apps import apps
+from django.db import transaction
 from django.test import Client, TestCase
 from django.urls import NoReverseMatch, get_resolver, reverse
 
@@ -171,6 +172,26 @@ def _bestandszaehlung():
     Über `alle_organisationen`, weil hier ausdrücklich der GANZE Bestand
     gemeint ist: Die Frage lautet „hat sich irgendwo etwas verändert", nicht
     „hat sich im eigenen Bestand etwas verändert".
+
+    JEDE ZÄHLUNG IN IHREM EIGENEN SICHERUNGSPUNKT (E0.3)
+    ----------------------------------------------------
+    Auf PostgreSQL vergiftet **eine einzige** fehlgeschlagene Abfrage die
+    ganze Transaktion: Jede weitere meldet danach nur noch «current
+    transaction is aborted». Diese Funktion fragt aber bewusst ALLE Modelle
+    ab — und im Gesamtlauf gehören dazu `core.Haus` und `core.Zimmer` aus
+    `test_tenant_manager.py`. Django trägt sie beim Import in die Registry
+    ein, eine Tabelle legt ihnen nie jemand an.
+
+    Ohne Sicherungspunkt passierte deshalb Folgendes: Der erste Aufruf zählte
+    bis `core.Haus` sauber und scheiterte ab dort. Der zweite Aufruf lief in
+    einer bereits vergifteten Transaktion und scheiterte von Anfang an. Die
+    Differenz sah aus wie ein Schreibfehler in genau der View, die zufällig
+    dazwischen lag — im Gesamtlauf war das `abrechnung_pdf`. Nachgestellt:
+    Zwei Zählungen hintereinander, **ohne jeden POST**, erzeugen exakt
+    dieselben sieben Meldungen.
+
+    Der Sicherungspunkt begrenzt den Schaden auf die eine Abfrage. Damit misst
+    die Funktion wieder das, was sie messen soll.
     """
     stand = {}
     nicht_zaehlbar = {}
@@ -179,7 +200,8 @@ def _bestandszaehlung():
             continue
         manager = getattr(modell, 'alle_organisationen', None) or modell._base_manager
         try:
-            stand[modell._meta.label] = manager.count()
+            with transaction.atomic():
+                stand[modell._meta.label] = manager.count()
         except Exception as fehler:                            # noqa: BLE001
             nicht_zaehlbar[modell._meta.label] = f'{type(fehler).__name__}: {fehler}'
     return stand, nicht_zaehlbar
@@ -315,17 +337,24 @@ class FremdeIdUeberUrlsTests(IsolationsBasis):
                 # WAS HIER STILL SEIN DARF UND WAS NICHT (E0.3)
                 #
                 # Einige Modelle sind DAUERHAFT nicht zaehlbar — `core.Haus`
-                # und `core.Zimmer` haben keine Tabelle (Modelle ohne
-                # Migration). Die zu melden waere Laerm; sie stehen vorher wie
+                # und `core.Zimmer` aus `test_tenant_manager.py` haben keine
+                # Tabelle. Die zu melden waere Laerm; sie stehen vorher wie
                 # nachher in derselben Liste.
                 #
                 # Etwas anderes ist es, wenn ein Modell ERST NACH dem POST
-                # unzaehlbar wird. Auf PostgreSQL heisst das: Der View hat
-                # einen Datenbankfehler geworfen, die Transaktion ist vergiftet,
-                # jede weitere Abfrage scheitert. Vorher verschluckte die
-                # Zaehlung das und der Test brach spaeter mit
-                # `KeyError: 'benutzer.Benutzer'` ab — eine Meldung, die weder
-                # Grund noch Stelle nennt. Jetzt steht der Grund hier.
+                # unzaehlbar wird. Dann hat der POST etwas hinterlassen, das
+                # eine vorher moegliche Abfrage unmoeglich macht.
+                #
+                # ACHTUNG — DIESE MELDUNG ZEIGTE SCHON EINMAL FALSCH.
+                # Ihre erste Fassung schloss daraus auf einen Fehler IM VIEW.
+                # Auf PostgreSQL war die Ursache aber die MESSUNG selbst:
+                # `_bestandszaehlung` lief ohne Sicherungspunkt, scheiterte an
+                # `core.Haus` und vergiftete damit die Transaktion — der
+                # zweite Aufruf scheiterte danach von Anfang an. Nachgestellt:
+                # zwei Zaehlungen hintereinander, OHNE jeden POST, ergaben
+                # exakt dieselbe Liste. Gemeldet wurde `abrechnung_pdf`, weil
+                # diese URL zufaellig dazwischen lag; die View war unschuldig.
+                # Seither zaehlt jede Abfrage in ihrem eigenen Sicherungspunkt.
                 neu_stumm = {k: v for k, v in nachher_stumm.items()
                              if k not in vorher_stumm}
                 self.assertEqual(
@@ -333,9 +362,10 @@ class FremdeIdUeberUrlsTests(IsolationsBasis):
                     f'{name}: Nach dem POST liessen sich Modelle nicht mehr '
                     f'zaehlen, vorher schon:\n  '
                     + '\n  '.join(f'{k}: {v}' for k, v in neu_stumm.items())
-                    + '\n\nAuf PostgreSQL ist das die Spur eines Fehlers IM '
-                      'View: Die Transaktion ist vergiftet. Der eigentliche '
-                      'Fehler steht oben.')
+                    + '\n\nBevor du die View verdaechtigst: Pruefe, ob die '
+                      'Zaehlung selbst stolpert (siehe `_bestandszaehlung`). '
+                      'Nur wenn sie sauber laeuft, ist das die Spur eines '
+                      'Fehlers im View.')
 
                 geaendert = {k: (vorher[k], nachher[k])
                              for k in vorher
@@ -1033,3 +1063,63 @@ class IsolationstestsSelbstpruefungTests(TestCase):
         self.assertEqual(ungeklaert, [],
                          f'{len(ungeklaert)} URLs ohne zuordenbares Objekt:\n' +
                          '\n'.join(ungeklaert[:12]))
+
+
+class BestandszaehlungTests(TestCase):
+    """Die Messung darf sich nicht selbst im Weg stehen.
+
+    BEFUND E0.3: `_bestandszaehlung` fragt bewusst ALLE Modelle ab. Im
+    Gesamtlauf gehören dazu `core.Haus` und `core.Zimmer` aus
+    `test_tenant_manager.py` — Django trägt sie beim Import in die Registry
+    ein, eine Tabelle legt ihnen nie jemand an.
+
+    Auf PostgreSQL vergiftet eine einzige fehlgeschlagene Abfrage die ganze
+    Transaktion. Ohne Sicherungspunkt zählte der erste Aufruf bis `core.Haus`
+    sauber und scheiterte ab dort, der zweite scheiterte von Anfang an. Die
+    Differenz sah aus wie ein Schreibfehler in der View, die zufällig
+    dazwischen lag. Sie war unschuldig.
+
+    Auf SQLite fällt das nicht auf — dort bleibt die Transaktion nach einem
+    Fehler benutzbar. Der Test läuft trotzdem auf beiden: Er prüft die
+    Eigenschaft «zwei Zählungen liefern dasselbe», und die muss überall
+    gelten.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def test_zwei_zaehlungen_ohne_dazwischen_liefern_dasselbe(self):
+        """Ohne POST darf sich nichts ändern — auch nicht, was zählbar ist."""
+        import core.tests.test_tenant_manager  # noqa: F401  registriert Haus/Zimmer
+
+        stand1, stumm1 = _bestandszaehlung()
+        stand2, stumm2 = _bestandszaehlung()
+
+        self.assertEqual(
+            set(stumm2) - set(stumm1), set(),
+            'Der zweite Lauf konnte Modelle nicht mehr zählen, die im ersten '
+            'noch gingen — ohne dass irgendetwas dazwischen passiert ist. '
+            'Die Zählung beschädigt ihre eigene Transaktion; ohne '
+            'Sicherungspunkt je Abfrage misst sie sich selbst statt der '
+            'Anwendung.')
+        self.assertEqual(stand1, stand2)
+
+    def test_die_zaehlung_sieht_ueberhaupt_etwas(self):
+        """Sonst wäre der Test darüber grün über zwei leeren Wörterbüchern.
+
+        Genau diese Blindheit hatte `AktenkopfTests`: eine Bedingung, die
+        immer erfüllt ist, weil sie ins Leere greift.
+        """
+        stand, _stumm = _bestandszaehlung()
+        self.assertGreaterEqual(
+            len(stand), 30,
+            f'Nur {len(stand)} Modelle gezählt — greift die Zählung noch?')
+
+    def test_tabellenlose_modelle_stehen_in_beiden_laeufen_gleich(self):
+        """Sie dürfen stumm bleiben — aber verlässlich, nicht mal so mal so."""
+        import core.tests.test_tenant_manager  # noqa: F401
+
+        _stand1, stumm1 = _bestandszaehlung()
+        _stand2, stumm2 = _bestandszaehlung()
+        self.assertEqual(sorted(stumm1), sorted(stumm2))
