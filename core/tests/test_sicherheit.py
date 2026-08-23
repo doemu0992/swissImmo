@@ -235,7 +235,7 @@ class MediaZugriffTests(TestCase):
         self.assertFalse(ist_objektfoto(alt))          # noch kein Objektfoto
 
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Fotoweg 1', plz='3000', ort='Bern')
-        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='1 Zi', typ='wohnung')
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='1 Zi', typ='whg')
         foto = EinheitFoto(einheit=e)
         foto.bild.name = alt                            # Alt-Pfad wie im Bestand
         foto.save()

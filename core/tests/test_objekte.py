@@ -542,7 +542,7 @@ class AusstattungLebenszyklusTests(TestCase):
         from tickets.models import SchadenMeldung
         from portfolio.models import Einheit
         lg, e, _m, _v = _basis_objekte()
-        andere = Einheit.objects.create(liegenschaft=lg, bezeichnung='Andere', typ='wohnung')
+        andere = Einheit.objects.create(liegenschaft=lg, bezeichnung='Andere', typ='whg')
         el_fremd = self._element(andere)
         s = SchadenMeldung.objects.create(liegenschaft=lg, betroffene_einheit=e,
                                           titel='x', beschreibung='y')

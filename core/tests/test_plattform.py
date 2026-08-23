@@ -13,7 +13,7 @@ class AbonnementTests(TestCase):
     def test_abo_seite_zeigt_drei_plaene(self):
         Einheit.objects.create(liegenschaft=Liegenschaft.objects.create(organisation=_test_organisation(), 
             strasse='A', plz='1', ort='X', versicherungswert=Decimal('1')),
-            bezeichnung='W1', typ='wohnung')
+            bezeichnung='W1', typ='whg')
         team = _team_user()
         c = Client(); c.force_login(team)
         r = c.get('/neu/abonnement/')
@@ -33,7 +33,7 @@ class AbonnementTests(TestCase):
         # 100 Einheiten Pro: monatlich 190, jährlich -15 % -> ~161/Mt
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='B', plz='1', ort='X', versicherungswert=Decimal('1'))
         for i in range(100):
-            Einheit.objects.create(liegenschaft=lg, bezeichnung=f'W{i}', typ='wohnung')
+            Einheit.objects.create(liegenschaft=lg, bezeichnung=f'W{i}', typ='whg')
         _test_organisation(firma='V AG')
         team = _team_user()
         c = Client(); c.force_login(team)

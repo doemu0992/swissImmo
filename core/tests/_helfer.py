@@ -131,7 +131,7 @@ def _basis_objekte():
     lg = Liegenschaft.objects.create(strasse='Teststrasse 1', plz='8000', ort='Zürich',
                                      organisation=_test_organisation(),
                                      versicherungswert=Decimal('1000000'))
-    e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='wohnung',
+    e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='whg',
                                nettomiete_aktuell=Decimal('1500'), nebenkosten_aktuell=Decimal('200'))
     m = Mieter.objects.create(typ='person', vorname='Hans', nachname='Muster',
                               email='hans@example.ch', strasse='Seeweg 3', plz='8000', ort='Zürich')

@@ -45,7 +45,7 @@ class LikVertragTests(TestCase):
         from rentals.models import Mietvertrag as MV
         from core.services.lik import aktueller_lik_wert
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Neu 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
-        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='wohnung')
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='whg')
         m = Mieter.objects.create(typ='person', nachname='Neu')
         team = _team_user()
         c = Client(); c.force_login(team)
@@ -61,7 +61,7 @@ class LikVertragTests(TestCase):
     def test_assistent_formular_override_stand(self):
         from rentals.models import Mietvertrag as MV
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Neu 2', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
-        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='wohnung')
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='whg')
         m = Mieter.objects.create(typ='person', nachname='Ovr')
         team = _team_user()
         c = Client(); c.force_login(team)

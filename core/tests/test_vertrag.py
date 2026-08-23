@@ -876,7 +876,7 @@ class BefristungTests(TestCase):
         # zweiter, echt befristeter Vertrag
         m2 = Mieter.objects.create(typ='person', vorname='Eva', nachname='Meier',
                                    strasse='Weg 2', plz='8000', ort='Zürich')
-        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='2.5 Zi', typ='wohnung',
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='2.5 Zi', typ='whg',
                                     nettomiete_aktuell=Decimal('1200'))
         vb = Mietvertrag.objects.create(mieter=m2, einheit=e2, beginn=date(2024, 1, 1),
                                         netto_mietzins=Decimal('1200'), nebenkosten=Decimal('0'),

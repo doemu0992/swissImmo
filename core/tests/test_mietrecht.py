@@ -21,7 +21,7 @@ class MieterKuendigungTests(TestCase):
         lg, e, m, v, u = self._login()
         # Fremdes Objekt + fremder aktiver Vertrag
         fremd_m = Mieter.objects.create(typ='person', nachname='Fremd')
-        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='FREMD-Whg', typ='wohnung')
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='FREMD-Whg', typ='whg')
         Mietvertrag.objects.create(mieter=fremd_m, einheit=e2, beginn=date(2020, 1, 1),
                                    netto_mietzins=Decimal('1'), nebenkosten=Decimal('0'), status='aktiv')
         c = Client(); c.force_login(u)
@@ -842,7 +842,7 @@ class FormularpflichtTests(TestCase):
         lg, e, m, _v = _basis_objekte()
         lg.kanton = 'BE'; lg.plz = '3000'; lg.ort = 'Bern'; lg.save()
         # frisches Objekt ohne bestehenden Vertrag für saubere Aktivierung
-        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='2.5 Zi', typ='wohnung',
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='2.5 Zi', typ='whg',
                                     nettomiete_aktuell=Decimal('1400'), nebenkosten_aktuell=Decimal('180'))
         c = Client(); c.force_login(_team_user())
         beginn = date.today().replace(day=1)

@@ -306,7 +306,7 @@ class AbleitungTests(TestCase):
 
     def test_einheit_erbt_von_liegenschaft(self):
         einheit = Einheit.objects.create(
-            liegenschaft=self.liegenschaft, bezeichnung='3.5 Zi', typ='wohnung',
+            liegenschaft=self.liegenschaft, bezeichnung='3.5 Zi', typ='whg',
             nettomiete_aktuell=Decimal('1500'), nebenkosten_aktuell=Decimal('200'))
         self.assertEqual(einheit.organisation_id, self.organisation.pk)
 
@@ -324,7 +324,7 @@ class AbleitungTests(TestCase):
         Beide Wege müssen tragen — sonst hätte das Tupel keinen Zweck.
         """
         einheit = Einheit.objects.create(
-            liegenschaft=self.liegenschaft, bezeichnung='1.5 Zi', typ='wohnung',
+            liegenschaft=self.liegenschaft, bezeichnung='1.5 Zi', typ='whg',
             nettomiete_aktuell=Decimal('900'), nebenkosten_aktuell=Decimal('100'))
 
         ueber_einheit = Dokument.objects.create(einheit=einheit, titel='Grundriss')
@@ -385,7 +385,7 @@ class AbleitungTests(TestCase):
         andere = Organisation.objects.create(
             firma='Zweite AG', strasse='Nebenweg 2', plz='3000', ort='Bern')
         einheit = Einheit(liegenschaft=self.liegenschaft, bezeichnung='2.5 Zi',
-                          typ='wohnung', nettomiete_aktuell=Decimal('1200'),
+                          typ='whg', nettomiete_aktuell=Decimal('1200'),
                           nebenkosten_aktuell=Decimal('150'))
         einheit.organisation = andere
         einheit.save()

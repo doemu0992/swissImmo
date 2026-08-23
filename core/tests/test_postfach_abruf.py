@@ -249,7 +249,7 @@ class AntwortenZweiVerwaltungenTests(TestCase):
         liegenschaft = Liegenschaft.objects.create(
             strasse=f'{titel} 1', plz='3000', ort='Bern', organisation=organisation)
         einheit = Einheit.objects.create(liegenschaft=liegenschaft, bezeichnung='EG',
-                                         typ='wohnung')
+                                         typ='whg')
         return SchadenMeldung.objects.create(
             liegenschaft=liegenschaft, betroffene_einheit=einheit,
             titel=titel, beschreibung='…')

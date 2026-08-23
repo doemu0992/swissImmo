@@ -124,7 +124,7 @@ def _seed_im_kontext(organisation):
     einheiten, mieter = [], []
     for lg in lgs:
         for j in range(1, EINHEITEN_PRO_LG + 1):
-            einheiten.append(Einheit(liegenschaft=lg, bezeichnung=f'Whg {j}', typ='wohnung',
+            einheiten.append(Einheit(liegenschaft=lg, bezeichnung=f'Whg {j}', typ='whg',
                                      nettomiete_aktuell=Decimal('1500'),
                                      nebenkosten_aktuell=Decimal('200'),
                                      organisation=organisation))

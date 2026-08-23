@@ -42,7 +42,7 @@ class NkRundungTests(TestCase):
                                          ort='SO', versicherungswert=Decimal('1'))
         for i in range(anzahl):
             e = Einheit.objects.create(liegenschaft=lg, bezeichnung=f'W{i:02d}',
-                                       typ='wohnung', flaeche_m2=Decimal('50'))
+                                       typ='whg', flaeche_m2=Decimal('50'))
             m = Mieter.objects.create(typ='person', vorname='M', nachname=str(i),
                                       strasse='W', plz='4500', ort='SO')
             Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
@@ -100,7 +100,7 @@ class NkAbrechnungVersandTests(TestCase):
     def _periode(self):
         from finance.models import AbrechnungsPeriode, NebenkostenBeleg
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='NK 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
-        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='wohnung', flaeche_m2=Decimal('80'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='whg', flaeche_m2=Decimal('80'))
         m = Mieter.objects.create(typ='person', vorname='Nina', nachname='Kosten',
                                   strasse='Weg 2', plz='8000', ort='ZH', email='nk@example.ch')
         v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2023, 1, 1),
@@ -160,7 +160,7 @@ class NkNachzahlungQrTests(TestCase):
         vw = _test_organisation(firma='V AG', strasse='W 1', plz='8000', ort='ZH',
                                 iban='CH9300762011623852957')
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='NKQ 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
-        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='wohnung', flaeche_m2=Decimal('80'))
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='whg', flaeche_m2=Decimal('80'))
         m = Mieter.objects.create(typ='person', nachname='Nach', email='n@example.ch')
         v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2023, 1, 1),
                                        netto_mietzins=Decimal('1500'), nebenkosten=Decimal('0'),
@@ -201,7 +201,7 @@ class NkAbrechnungSplitTests(TestCase):
         ensure_kontenplan()
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='NKweg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
-        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='W1', typ='wohnung',
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='W1', typ='whg',
                                    flaeche_m2=Decimal('100'), nettomiete_aktuell=Decimal('1000'))
         m = Mieter.objects.create(typ='person', vorname='Anna', nachname='NK',
                                   strasse='X', plz='8000', ort='Zürich')
@@ -272,7 +272,7 @@ class NkEndToEndTests(TestCase):
                                          versicherungswert=Decimal('1000000'))
         verts = []
         for name, m2 in [('A', Decimal('60')), ('B', Decimal('40'))]:
-            e = Einheit.objects.create(liegenschaft=lg, bezeichnung=name, typ='wohnung',
+            e = Einheit.objects.create(liegenschaft=lg, bezeichnung=name, typ='whg',
                                        flaeche_m2=m2, nettomiete_aktuell=Decimal('1000'))
             m = Mieter.objects.create(typ='person', vorname=name, nachname='E2E',
                                       strasse='X', plz='8000', ort='Zürich')
@@ -355,7 +355,7 @@ class NkVertragsStatusTests(TestCase):
         ensure_kontenplan()
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Statusweg 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
-        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='W1', typ='wohnung',
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='W1', typ='whg',
                                    flaeche_m2=Decimal('100'), nettomiete_aktuell=Decimal('1000'))
         p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='2025',
                                               start_datum=date(2025, 1, 1), ende_datum=date(2025, 12, 31))
@@ -463,7 +463,7 @@ class NebenkostenPersonenTests(TestCase):
                            nk_honorar_prozent=Decimal('0'))
         lg, e1, m1, v1 = _basis_objekte()
         v1.anzahl_personen = 1; v1.nebenkosten = Decimal('0'); v1.save()
-        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='B', typ='wohnung',
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='B', typ='whg',
                                     nettomiete_aktuell=Decimal('1500'), nebenkosten_aktuell=Decimal('0'),
                                     flaeche_m2=Decimal('50'))
         m2 = Mieter.objects.create(typ='person', vorname='Bea', nachname='Zweit',

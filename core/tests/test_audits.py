@@ -655,7 +655,7 @@ class NachtN1KritischeBugsTests(TestCase):
     def test_zusage_nach_vergleich_blockiert_umwandlung_nicht(self):
         from mietprozess.models import Mietbewerbung
         lg, e, m, v = _basis_objekte()
-        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='1.5 Zi', typ='wohnung',
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='1.5 Zi', typ='whg',
                                     nettomiete_aktuell=Decimal('900'))
         b = Mietbewerbung.objects.create(einheit=e2, vorname='Nina', nachname='Neu',
                                          email='nina@example.ch', status='zugesagt',
@@ -900,7 +900,7 @@ class ReviewNachbesserungTests(TestCase):
     def _bewerbung(self, **kw):
         from mietprozess.models import Mietbewerbung
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Prüfweg 1', plz='3000', ort='Bern')
-        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='wohnung',
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='whg',
                                    nettomiete_aktuell=Decimal('1500'),
                                    nebenkosten_aktuell=Decimal('200'))
         vorgabe = dict(einheit=e, vorname='Anna', nachname='Muster',
@@ -916,7 +916,7 @@ class ReviewNachbesserungTests(TestCase):
         weiter 'ledig' — jede Bewerbung hätte eine Angabe gespeichert, die
         niemand gemacht hat. «Nicht erhoben» muss leer bleiben."""
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Inserat 2', plz='3000', ort='Bern')
-        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='wohnung',
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='whg',
                                    zur_ausschreibung=True)
         html = Client().get(f'/bewerben/{e.id}/').content.decode()
         self.assertNotIn("zivilstand: 'ledig'", html)
@@ -1132,7 +1132,7 @@ class VertragMieterspiegelFTests(TestCase):
         from rentals.models import Mietvertrag
         from crm.models import Mieter
         lg, e, m, v = _basis_objekte()
-        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='Neu', typ='wohnung',
+        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='Neu', typ='whg',
                                         nettomiete_aktuell=Decimal('1000'), nebenkosten_aktuell=Decimal('100'))
         n_vor = Mietvertrag.objects.count(); m_vor = Mieter.objects.count()
         c = Client(); c.force_login(_team_user('Verwaltung'))
@@ -1143,7 +1143,7 @@ class VertragMieterspiegelFTests(TestCase):
     def test_f_ende_vor_beginn_wird_abgewiesen(self):
         from rentals.models import Mietvertrag
         lg, e, m, v = _basis_objekte()
-        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='Neu2', typ='wohnung',
+        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='Neu2', typ='whg',
                                         nettomiete_aktuell=Decimal('1000'), nebenkosten_aktuell=Decimal('100'))
         n_vor = Mietvertrag.objects.count()
         c = Client(); c.force_login(_team_user('Verwaltung'))
@@ -1154,7 +1154,7 @@ class VertragMieterspiegelFTests(TestCase):
         from rentals.models import Mietvertrag
         from crm.models import Mieter
         lg, e, m, v = _basis_objekte()
-        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='Neu3', typ='wohnung',
+        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='Neu3', typ='whg',
                                         nettomiete_aktuell=Decimal('1000'), nebenkosten_aktuell=Decimal('100'))
         n_vor = Mietvertrag.objects.count(); m_vor = Mieter.objects.count()
         c = Client(); c.force_login(_team_user('Verwaltung'))
@@ -1167,7 +1167,7 @@ class VertragMieterspiegelFTests(TestCase):
         # die Anlage darf nicht an einer Ende-vor-Beginn-Prüfung scheitern (Review).
         from rentals.models import Mietvertrag
         lg, e, m, v = _basis_objekte()
-        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='Unbef', typ='wohnung',
+        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='Unbef', typ='whg',
                                         nettomiete_aktuell=Decimal('1000'), nebenkosten_aktuell=Decimal('100'))
         n_vor = Mietvertrag.objects.count()
         c = Client(); c.force_login(_team_user('Verwaltung'))
@@ -1181,7 +1181,7 @@ class VertragMieterspiegelFTests(TestCase):
         # Gegenstück: ein sauberer Vertrag muss weiterhin durchgehen.
         from rentals.models import Mietvertrag
         lg, e, m, v = _basis_objekte()
-        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='OK', typ='wohnung',
+        e2 = e.__class__.objects.create(liegenschaft=lg, bezeichnung='OK', typ='whg',
                                         nettomiete_aktuell=Decimal('1000'), nebenkosten_aktuell=Decimal('100'))
         n_vor = Mietvertrag.objects.count()
         c = Client(); c.force_login(_team_user('Verwaltung'))

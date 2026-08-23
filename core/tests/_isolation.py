@@ -124,7 +124,7 @@ class MandantenFixture:
             strasse=f'{k}-Weg 7', plz=plz, ort=ort, eigentuemer=self.eigentuemer,
             organisation=self.organisation, versicherungswert=Decimal('1000000'))
         self.einheit = Einheit.objects.create(
-            liegenschaft=self.liegenschaft, bezeichnung=f'3.5 Zi {k}', typ='wohnung',
+            liegenschaft=self.liegenschaft, bezeichnung=f'3.5 Zi {k}', typ='whg',
             nettomiete_aktuell=Decimal('1500'), nebenkosten_aktuell=Decimal('200'))
         self.mieter = Mieter.objects.create(
             typ='person', vorname='Mieter', nachname=k, email=f'mieter-{k.lower()}@example.ch',

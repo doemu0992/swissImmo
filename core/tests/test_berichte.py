@@ -102,7 +102,7 @@ class SteuerauszugTests(TestCase):
 class SerienbriefMitmieterTests(TestCase):
     def _paar(self):
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Paar 9', plz='3000', ort='Bern', versicherungswert=Decimal('1'))
-        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='4.5 Zi', typ='wohnung')
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='4.5 Zi', typ='whg')
         m1 = Mieter.objects.create(typ='person', anrede='Herr', vorname='Hans', nachname='Erst',
                                    strasse='Weg 1', plz='3000', ort='Bern')
         m2 = Mieter.objects.create(typ='person', anrede='Frau', vorname='Anna', nachname='Zweit')

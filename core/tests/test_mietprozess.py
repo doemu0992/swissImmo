@@ -265,7 +265,7 @@ class MieterwechselCockpitTests(TestCase):
         # zweite Liegenschaft, die NICHT erscheinen darf
         lg2 = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Andere 9', plz='3000', ort='Bern',
                                           versicherungswert=Decimal('500000'))
-        Einheit.objects.create(liegenschaft=lg2, bezeichnung='2 Zi', typ='wohnung',
+        Einheit.objects.create(liegenschaft=lg2, bezeichnung='2 Zi', typ='whg',
                                nettomiete_aktuell=Decimal('900'))
         team = _team_user()
         c = Client(); c.force_login(team)
@@ -302,7 +302,7 @@ class MieterwechselE2ETests(TestCase):
         self._konten()
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Wechselweg 5', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
-        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='4.5 Zi', typ='wohnung',
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='4.5 Zi', typ='whg',
                                    nettomiete_aktuell=Decimal('1800'), nebenkosten_aktuell=Decimal('250'))
         m = Mieter.objects.create(typ='person', vorname='Alt', nachname='Mieter', email='alt@example.ch')
         v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2023, 1, 1),
@@ -681,7 +681,7 @@ class BewerbungNurAusgeschriebenTests(TestCase):
 
     def _einheit(self, ausgeschrieben):
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Inseratweg 3', plz='4500', ort='Solothurn')
-        return Einheit.objects.create(liegenschaft=lg, bezeichnung='2.5 Zi', typ='wohnung',
+        return Einheit.objects.create(liegenschaft=lg, bezeichnung='2.5 Zi', typ='whg',
                                       nettomiete_aktuell=Decimal('1200'),
                                       zur_ausschreibung=ausgeschrieben)
 
@@ -761,7 +761,7 @@ class BewerbungAufbewahrungTests(TestCase):
         self._ov = override_settings(MEDIA_ROOT=self._tmp.name)
         self._ov.enable()
         self.lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Bewerbweg 1', plz='3000', ort='Bern')
-        self.e = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='2.5 Zi', typ='wohnung')
+        self.e = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='2.5 Zi', typ='whg')
 
     def tearDown(self):
         self._ov.disable()
@@ -896,7 +896,7 @@ class BewerbungDatenschutzTests(TestCase):
     def setUp(self):
         self.lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Inserat 1', plz='3000', ort='Bern')
         self.e = Einheit.objects.create(liegenschaft=self.lg, bezeichnung='3.5 Zi',
-                                        typ='wohnung', zur_ausschreibung=True)
+                                        typ='whg', zur_ausschreibung=True)
 
     def _formular(self):
         return Client().get(f'/bewerben/{self.e.id}/').content.decode()

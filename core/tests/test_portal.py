@@ -120,7 +120,7 @@ class MieterPortalTests(TestCase):
         # Rechnung eines anderen Mieters
         m2 = Mieter.objects.create(typ='person', nachname='Fremd')
         v2 = Mietvertrag.objects.create(mieter=m2, einheit=v.einheit, beginn=date(2020, 1, 1),
-                                        netto_mietzins=Decimal('100'), nebenkosten=Decimal('0'), status='beendet')
+                                        netto_mietzins=Decimal('100'), nebenkosten=Decimal('0'), status='archiviert')
         fremd = DebitorenRechnung.objects.create(vertrag=v2, titel='Fremd', betrag=Decimal('50'), status='offen')
         c = Client(); c.force_login(u)
         self.assertEqual(c.get(f'/mieter/rechnung/{fremd.id}/').status_code, 404)
@@ -217,7 +217,7 @@ class MitmieterPortalTests(TestCase):
         from django.core.files.base import ContentFile
         from rentals.models import Dokument
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Paar 1', plz='3000', ort='Bern')
-        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='4.5 Zi', typ='wohnung')
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='4.5 Zi', typ='whg')
         m1 = Mieter.objects.create(typ='person', nachname='Erst')
         m2 = Mieter.objects.create(typ='person', nachname='Zweit')
         v = Mietvertrag.objects.create(mieter=m1, mitmieter=m2, einheit=e, beginn=date(2024, 1, 1),
@@ -881,7 +881,7 @@ class PortalFremdzugriffTests(TestCase):
             lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse=f'{kuerzel}-Weg 1', plz='3000', ort='Bern')
             md = Eigentuemer.objects.create(firma_oder_name=f'Eigentümer {kuerzel}')
             lg.eigentuemer = md; lg.save()
-            e = Einheit.objects.create(liegenschaft=lg, bezeichnung=f'{kuerzel}-Whg', typ='wohnung',
+            e = Einheit.objects.create(liegenschaft=lg, bezeichnung=f'{kuerzel}-Whg', typ='whg',
                                        nettomiete_aktuell=Decimal('1500'))
             m = Mieter.objects.create(typ='person', vorname=kuerzel, nachname='Test',
                                       email=f'{kuerzel}@example.ch')

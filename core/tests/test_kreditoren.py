@@ -713,7 +713,7 @@ class WeiterverrechnungVerteilenTests(TestCase):
                                          versicherungswert=Decimal('1000000'))
         daten = [('A', Decimal('50')), ('B', Decimal('100')), ('C', Decimal('50'))]  # m² 50/100/50 → 25/50/25%
         for name, m2 in daten:
-            e = Einheit.objects.create(liegenschaft=lg, bezeichnung=name, typ='wohnung',
+            e = Einheit.objects.create(liegenschaft=lg, bezeichnung=name, typ='whg',
                                        flaeche_m2=m2, nettomiete_aktuell=Decimal('1000'))
             m = Mieter.objects.create(typ='person', vorname=name, nachname='Test',
                                       strasse='X', plz='8000', ort='Zürich')

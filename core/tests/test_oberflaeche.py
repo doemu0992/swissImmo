@@ -398,7 +398,7 @@ class AbfrageSkalierungTests(TestCase):
         for i in range(ab, ab + n):
             lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse=f'Prüfweg {i}', plz='3000', ort='Bern',
                                              versicherungswert=Decimal('900000'))
-            e = Einheit.objects.create(liegenschaft=lg, bezeichnung=f'Whg {i}', typ='wohnung',
+            e = Einheit.objects.create(liegenschaft=lg, bezeichnung=f'Whg {i}', typ='whg',
                                        nettomiete_aktuell=Decimal('1400'),
                                        nebenkosten_aktuell=Decimal('180'))
             m = Mieter.objects.create(typ='person', vorname='Test', nachname=f'Nr{i}',

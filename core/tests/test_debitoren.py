@@ -101,7 +101,7 @@ class SollstellungTests(TestCase):
         from finance.models import DebitorenRechnung
         _seed_konten()
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='PR 1', plz='8000', ort='ZH', versicherungswert=Decimal('1'))
-        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='wohnung')
+        e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='whg')
         m = Mieter.objects.create(typ='person', nachname='Prorata')
         Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 3, 16),
                                    netto_mietzins=Decimal('3100'), nebenkosten=Decimal('0'), status='aktiv')

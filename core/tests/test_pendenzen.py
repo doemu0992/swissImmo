@@ -138,8 +138,8 @@ class PendenzAktionTests(TestCase):
         from core.models import Pendenz
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Bahnhofstrasse 1', plz='8000', ort='Zürich',
                                          versicherungswert=Decimal('1000000'))
-        e1 = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg A', typ='wohnung')
-        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg B', typ='wohnung')
+        e1 = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg A', typ='whg')
+        e2 = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg B', typ='whg')
         m1 = Mieter.objects.create(typ='person', nachname='Alpha')
         m2 = Mieter.objects.create(typ='person', nachname='Beta')
         v1 = Mietvertrag.objects.create(mieter=m1, einheit=e1, beginn=date(2024, 1, 1),
@@ -377,7 +377,7 @@ class PendenzModalTests(TestCase):
         from core.views.fw import _pendenz_ziel
         from core.models import Pendenz
         lg, e, m, v = _basis_objekte()
-        p = Pendenz.objects.create(titel='Rücknahme', kategorie='auszug', vertrag=v,
+        p = Pendenz.objects.create(titel='Rücknahme', kategorie='vertrag', vertrag=v,
                                    quelle=f'auto:ruecknahme:{v.id}')
         _url, _label, _wide, modal = _pendenz_ziel(p)
         self.assertTrue(modal)       # Aktions-Schritt → Popup
