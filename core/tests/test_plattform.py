@@ -78,7 +78,15 @@ class BackupCommandTests(TestCase):
         from core.management.commands import sicherung
 
         quelle = inspect.getsource(sicherung)
-        self.assertIn("connection.vendor == 'postgresql'", quelle)
+        # Seit E0.3 heisst die Verzweigung `_datenbankart()` statt
+        # `connection.vendor`. Der Grund steht dort ausfuehrlich: Die Art der
+        # Datenbank und ihre Zugangsdaten kamen aus zwei verschiedenen Quellen,
+        # was auf einem PostgreSQL-Rechner zehn Tests scheitern liess.
+        # Geprueft wird weiterhin dasselbe: dass BEIDE Motoren einen Weg haben
+        # und ein unbekannter abbricht statt still nichts zu tun.
+        self.assertIn('def _datenbankart', quelle)
+        self.assertIn("art == 'sqlite'", quelle)
+        self.assertIn("art == 'postgresql'", quelle)
         self.assertIn('pg_dump', quelle)
         self.assertIn('CommandError', quelle)
 

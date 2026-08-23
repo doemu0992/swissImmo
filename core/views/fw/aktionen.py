@@ -960,6 +960,17 @@ def fw_zahlungen_sammel_zuordnen(request):
     with transaction.atomic():
         # Zeilensperre wie bei der Einzelzuordnung: sonst bucht ein paralleler
         # Lauf dieselbe Forderung ein zweites Mal aus.
+        #
+        # HIER BRAUCHT ES KEIN `of=('self',)`, obwohl `Zahlungseingang.konto`
+        # optional ist. Der Grund ist der `filter` eine Zeile darunter: Eine
+        # Bedingung auf `konto__nummer` kann nur erfuellt sein, wenn ein Konto
+        # da ist, also joint Django INNER — und `select_related('konto')`
+        # benutzt denselben Join weiter. Auf PostgreSQL nachgemessen (E0.3):
+        # kein LEFT JOIN, die Sperre laeuft.
+        #
+        # Faellt der `konto__nummer`-Filter jemals weg, kippt der Join auf LEFT
+        # und PostgreSQL verweigert die Sperre. Dann gehoert `of=('self',)`
+        # dazu, wie bei den beiden Stellen, die es schon tragen.
         zahlungen = list(Zahlungseingang.objects.select_for_update()
                          .filter(id__in=ids, status='verbucht',
                                  konto__nummer__in=['1190', '2030'])
@@ -1322,7 +1333,7 @@ def fw_zahlung_stornieren(request, pk):
             # Zeilensperre: zwei parallele Stornos würden sonst doppelte
             # Gegenbuchungen erzeugen.
             z = get_object_or_404(
-                Zahlungseingang.objects.select_for_update()
+                Zahlungseingang.objects.select_for_update(of=('self',))
                 .select_related('debitoren_rechnung', 'vertrag__mieter'), id=pk)
             if z.status == 'storniert':
                 messages.info(request, "Diese Zahlung ist bereits storniert.")

@@ -74,13 +74,14 @@ class Command(BaseCommand):
         self.stdout.write(f'→ Ziel: {ziel}')
 
         erzeugt = []
-        if connection.vendor == 'sqlite':
+        art = self._datenbankart()
+        if art == 'sqlite':
             erzeugt.append(self._sqlite(ziel, stempel))
-        elif connection.vendor == 'postgresql':
+        elif art == 'postgresql':
             erzeugt.append(self._postgres(ziel, stempel))
         else:
             raise CommandError(
-                f'Für «{connection.vendor}» ist hier kein Weg hinterlegt. '
+                f'Für «{art}» ist hier kein Weg hinterlegt. '
                 f'Ohne geprüfte Sicherung bricht der Befehl lieber ab, als etwas '
                 f'zu erzeugen, dessen Wiederherstellbarkeit niemand kennt.')
 
@@ -98,6 +99,38 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('✓ Sicherung erstellt und gelesen.'))
 
     # --- SQLite ------------------------------------------------------------
+
+    # --- Welche Datenbank? -------------------------------------------------
+
+    def _datenbankart(self) -> str:
+        """Die Art der Datenbank — aus DERSELBEN Quelle wie ihre Zugangsdaten.
+
+        WARUM NICHT `connection.vendor`
+
+        Bis E0.3 entschied `connection.vendor` den Weg, waehrend `_postgres`
+        seine Zugangsdaten aus `settings.DATABASES['default']` las. Zwei
+        Quellen fuer eine Sache. In der Produktion sagen beide dasselbe, im
+        Test nicht: `test_sicherung` setzt per `override_settings` eine
+        SQLite-Datei ein, die offene Verbindung bleibt aber PostgreSQL. Der
+        Befehl lief deshalb auf einem PostgreSQL-Rechner in den pg_dump-Zweig
+        und griff dort die SQLite-Konfiguration ab — ohne Host, Port und
+        Benutzer. Ergebnis: `pg_dump` gegen localhost:5432, zehn rote Tests,
+        und die Vermutung, die Sicherung sei kaputt. Kaputt war die Messung.
+
+        Der Rueckfall auf `connection.vendor` bleibt fuer den Fall, dass eine
+        unbekannte ENGINE eingetragen ist — dann soll die Fehlermeldung den
+        tatsaechlichen Treiber nennen, nicht die Zeichenkette aus den Settings.
+        """
+        engine = str(self._konfig().get('ENGINE', ''))
+        if 'sqlite' in engine:
+            return 'sqlite'
+        if 'postgresql' in engine or 'postgis' in engine:
+            return 'postgresql'
+        return connection.vendor
+
+    def _konfig(self) -> dict:
+        """Die Zugangsdaten der zu sichernden Datenbank."""
+        return settings.DATABASES['default']
 
     def _sqlite(self, ziel: Path, stempel: str) -> Path:
         quelle = Path(str(settings.DATABASES['default']['NAME']))
@@ -142,7 +175,7 @@ class Command(BaseCommand):
     # --- PostgreSQL --------------------------------------------------------
 
     def _postgres(self, ziel: Path, stempel: str) -> Path:
-        konfig = settings.DATABASES['default']
+        konfig = self._konfig()
         umgebung = {**os.environ}
         if konfig.get('PASSWORD'):
             # Über die Umgebung, nicht über die Kommandozeile — Argumente

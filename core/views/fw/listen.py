@@ -488,7 +488,8 @@ def fw_debitor_abschreiben(request, pk):
         # Zeilensperre: ohne sie schreiben zwei parallele Requests denselben
         # Betrag zweimal ab (Aufwand + MWST-Korrektur doppelt).
         r = get_object_or_404(
-            DebitorenRechnung.objects.select_for_update().select_related('vertrag__mieter'), id=pk)
+            DebitorenRechnung.objects.select_for_update(of=('self',))
+            .select_related('vertrag__mieter'), id=pk)
         if r.status not in ('offen', 'teilbezahlt'):
             messages.info(request, "Nur offene oder teilbezahlte Forderungen können abgeschrieben werden.")
             return redirect('fw_debitoren')

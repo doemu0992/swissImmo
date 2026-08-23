@@ -4,6 +4,22 @@ Eine Sicherung, die niemand je zurückgespielt hat, ist eine Hoffnung. Diese
 Tests prüfen deshalb nicht nur, dass eine Datei entsteht, sondern dass sie
 lesbar ist, denselben Inhalt trägt, aus **einer** Datei besteht — und dass ein
 beschädigter Stand verworfen statt gemeldet wird.
+
+DER POSTGRESQL-WEG (E0.3)
+-------------------------
+Bis E0.3 pruefte diese Datei ausschliesslich den SQLite-Weg — und zwar auf
+JEDEM Rechner, auch auf einem mit PostgreSQL. Der Grund war ein Riss im Befehl:
+Der Zweig wurde ueber `connection.vendor` gewaehlt, die Zugangsdaten kamen aus
+`settings.DATABASES`. `override_settings` erreichte nur die zweite Haelfte. Auf
+einem PostgreSQL-Rechner lief der Befehl also in den pg_dump-Zweig und griff
+dort die SQLite-Konfiguration ab: `pg_dump` gegen localhost:5432, zehn rote
+Tests. Kaputt war nicht die Sicherung, sondern die Messung.
+
+Der Riss ist geschlossen (`Command._datenbankart`). Damit gilt: Die Tests oben
+pruefen den SQLite-Weg auf jeder Datenbank — und `PostgresWegTests` unten
+prueft den Weg, den die Produktion wirklich geht. Er wird uebersprungen, wo
+kein PostgreSQL und kein `pg_dump` vorhanden ist; das ist ehrlicher als ein
+Test, der so tut, als haette er etwas geprueft.
 """
 import sqlite3
 import tarfile
@@ -14,7 +30,16 @@ from pathlib import Path
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.test import SimpleTestCase, override_settings
+import re
+import shutil
+import subprocess
+from unittest import skipUnless
+from unittest.mock import patch
+
+from django.db import connection
+from django.test import SimpleTestCase, TransactionTestCase, override_settings
+
+from core.management.commands.sicherung import Command as SicherungBefehl
 
 
 def _quelldatenbank(ordner: Path, zeilen=25) -> Path:
@@ -167,3 +192,164 @@ class AufbewahrungTests(SimpleTestCase):
             call_command('sicherung', ziel=str(self.ziel), ohne_medien=True,
                          behalten=0, stdout=StringIO())
         self.assertEqual(len(list(self.ziel.glob('*-db.sqlite3'))), 6)
+
+
+class PostgresWegTests(TransactionTestCase):
+    """Der Weg, den die Produktion geht — und der bis E0.3 ungeprueft war.
+
+    Er sichert mit `pg_dump -Fc` und liest den Stand danach mit
+    `pg_restore --list` gegen. Beides ist bisher in keinem Test gelaufen: Bei
+    einer Sicherung ist ein unentdeckter Fehler der teuerste, den es gibt.
+
+    UEBERSPRUNGEN, WENN...
+      * die Testdatenbank kein PostgreSQL ist, oder
+      * `pg_dump` auf dem Rechner fehlt.
+
+    Der zweite Fall ist selbst ein Befund: Ohne `pg_dump` weicht der Befehl auf
+    `dumpdata` aus — das sichert die DATEN, aber weder Sequenzen noch Rechte.
+    Auf einem Server ohne `postgresql-client` bekommt man also eine schwaechere
+    Sicherung, als man denkt. Der Befehl warnt in der Ausgabe; dieser Test
+    haelt fest, dass die Warnung auch wirklich kommt.
+    """
+
+    @skipUnless(connection.vendor == 'postgresql',
+                'Testdatenbank ist kein PostgreSQL.')
+    @skipUnless(shutil.which('pg_dump'), 'pg_dump ist nicht installiert.')
+    def test_pg_dump_erzeugt_einen_lesbaren_stand(self):
+        ziel = Path(tempfile.mkdtemp()) / 'ziel'
+        raus = StringIO()
+        call_command('sicherung', ziel=str(ziel), ohne_medien=True, stdout=raus)
+
+        staende = list(ziel.glob('*-db.dump'))
+        self.assertEqual(len(staende), 1,
+                         f'Erwartet genau eine .dump-Datei, gefunden: {staende}')
+        self.assertGreater(staende[0].stat().st_size, 1000,
+                           'Der Stand ist verdaechtig klein.')
+
+        # Gegengelesen, nicht nur geschrieben: Eine Datei, die pg_restore nicht
+        # oeffnen kann, ist keine Sicherung.
+        pruef = subprocess.run(['pg_restore', '--list', str(staende[0])],
+                               capture_output=True, text=True)
+        self.assertEqual(pruef.returncode, 0, pruef.stderr)
+        eintraege = [z for z in pruef.stdout.splitlines()
+                     if z and not z.startswith(';')]
+        self.assertGreater(
+            len(eintraege), 50,
+            f'Nur {len(eintraege)} Objekte im Stand — bei ueber 70 Modellen '
+            f'waere das zu wenig; sichert der Befehl die richtige Datenbank?')
+        self.assertIn('pg_dump geprüft', raus.getvalue())
+
+    @skipUnless(connection.vendor == 'postgresql',
+                'Testdatenbank ist kein PostgreSQL.')
+    @skipUnless(shutil.which('pg_dump'), 'pg_dump ist nicht installiert.')
+    def test_der_stand_enthaelt_die_fachtabellen(self):
+        """Eine Sicherung ohne die Mietverhaeltnisse waere formal in Ordnung.
+
+        Die Tabellennamen werden aus den Modellen gelesen, nicht aufgeschrieben.
+        Eine erste Fassung raite sie aus den App-Namen — und lag falsch: Die
+        Modelle sind zwischen den Apps gewandert, ihre Tabellen heissen aber
+        weiterhin `core_mietvertrag`, `core_verwaltung`, `core_liegenschaft`.
+        Ein Test mit erfundenen Namen prueft die Sicherung nicht, sondern die
+        Vermutung des Autors.
+        """
+        from crm.models import Organisation
+        from portfolio.models import Liegenschaft
+        from rentals.models import Mietvertrag
+
+        ziel = Path(tempfile.mkdtemp()) / 'ziel'
+        call_command('sicherung', ziel=str(ziel), ohne_medien=True, stdout=StringIO())
+        stand = next(ziel.glob('*-db.dump'))
+        liste = subprocess.run(['pg_restore', '--list', str(stand)],
+                               capture_output=True, text=True).stdout
+        # Nur die Tabellennamen behalten: Der volle Bericht waere ueber 1000
+        # Zeilen lang und im Fehlerfall unlesbar.
+        vorhanden = set(re.findall(r'TABLE DATA public (\w+)', liste))
+
+        erwartet = {m._meta.db_table for m in (Mietvertrag, Organisation, Liegenschaft)}
+        erwartet.add('django_migrations')
+        fehlend = sorted(erwartet - vorhanden)
+        self.assertEqual(
+            fehlend, [],
+            f'Diese Tabellen fehlen im Stand: {fehlend}. '
+            f'Gesichert wurden {len(vorhanden)} Tabellen.')
+
+    @skipUnless(connection.vendor == 'postgresql',
+                'Testdatenbank ist kein PostgreSQL.')
+    def test_ohne_pg_dump_wird_gewarnt_statt_still_geschwaecht(self):
+        """Der Rueckfall auf `dumpdata` darf nicht unbemerkt bleiben."""
+        # Ohne Daten verwirft der Befehl den dumpdata-Stand zu Recht
+        # («lieferte praktisch nichts»). Fuer diesen Test soll er den Rueckfall
+        # gehen duerfen, also braucht die Datenbank etwas Inhalt.
+        from crm.models import Organisation
+        Organisation.objects.create(firma='Rueckfall-Test AG', strasse='Weg 1',
+                                    plz='3000', ort='Bern')
+
+        ziel = Path(tempfile.mkdtemp()) / 'ziel'
+        raus = StringIO()
+        # WARUM DER AUSGANG HIER OFFEN BLEIBT
+        #
+        # `dumpdata` laeuft ueber ALLE registrierten Modelle. Im Gesamtlauf
+        # gehoeren dazu die Modelle aus `test_tenant_manager.py` (`core.Haus`,
+        # `core.Zimmer`) — Django traegt sie beim Import in die App-Registry
+        # ein, eine Migration legt sie nie an. `dumpdata` bricht dann mit
+        # «relation "core_haus" does not exist» ab.
+        #
+        # Das ist ein Artefakt der Testumgebung, kein Produktionsfehler: Dort
+        # wird `core/tests/` nie importiert. Es haengt aber davon ab, welche
+        # Testmodule sonst noch geladen sind — ein Test, der daran scheitert,
+        # waere je nach Aufruf mal gruen und mal rot.
+        #
+        # Die eigentliche Aussage — dass der Rueckfall WARNT statt still
+        # schwaecher zu sichern — steht unabhaengig davon: Der Befehl schreibt
+        # sie, BEVOR `dumpdata` laeuft. Sie wird deshalb immer geprueft, die
+        # entstandene Datei nur dann, wenn der Lauf ueberhaupt durchkam.
+        vollstaendig = True
+        with patch('core.management.commands.sicherung.shutil.which',
+                   return_value=None):
+            try:
+                call_command('sicherung', ziel=str(ziel), ohne_medien=True,
+                             stdout=raus)
+            except CommandError as fehler:
+                vollstaendig = False
+                self.assertIn(
+                    'does not exist', str(fehler),
+                    'Der Rueckfall ist aus einem anderen Grund gescheitert als '
+                    'den tabellenlosen Testmodellen — das ist ein echter '
+                    f'Befund: {fehler}')
+
+        ausgabe = raus.getvalue()
+        self.assertIn('pg_dump ist auf diesem Rechner nicht vorhanden', ausgabe)
+        self.assertIn('dumpdata', ausgabe)
+        if vollstaendig:
+            self.assertEqual(len(list(ziel.glob('*-db.dumpdata.json'))), 1)
+
+
+class EineQuelleTests(SimpleTestCase):
+    """Zweigentscheidung und Zugangsdaten muessen aus derselben Quelle kommen.
+
+    Der strukturelle Waechter zu dem Riss, der die zehn Fehler erzeugt hat.
+    Wer `_datenbankart` wieder auf `connection.vendor` umstellt, waehrend
+    `_postgres` aus den Settings liest, bekommt hier eine Meldung — und nicht
+    erst dann, wenn jemand auf einem PostgreSQL-Rechner testet.
+    """
+
+    def test_die_art_folgt_der_konfiguration(self):
+        befehl = SicherungBefehl()
+        with override_settings(DATABASES={'default': {
+                'ENGINE': 'django.db.backends.sqlite3', 'NAME': ':memory:'}}):
+            self.assertEqual(befehl._datenbankart(), 'sqlite')
+        with override_settings(DATABASES={'default': {
+                'ENGINE': 'django.db.backends.postgresql', 'NAME': 'x'}}):
+            self.assertEqual(befehl._datenbankart(), 'postgresql')
+
+    def test_die_zugangsdaten_folgen_derselben_konfiguration(self):
+        befehl = SicherungBefehl()
+        with override_settings(DATABASES={'default': {
+                'ENGINE': 'django.db.backends.postgresql', 'NAME': 'meine_db',
+                'HOST': 'db.example.ch', 'PORT': '10054', 'USER': 'wer'}}):
+            konfig = befehl._konfig()
+            self.assertEqual(konfig['NAME'], 'meine_db')
+            self.assertEqual(konfig['PORT'], '10054',
+                             'PythonAnywhere betreibt PostgreSQL auf einem '
+                             'eigenen Port — faellt der weg, geht pg_dump '
+                             'gegen 5432 und findet nichts.')

@@ -21,8 +21,23 @@ beim Umzug an einer einzigen Zeile scheitern.
 
 Gelesen hätte man das nie gefunden — die Zeilen sehen im Code unauffällig aus.
 Nur ein Probelauf findet sie.
+
+WARUM DIESE TESTS AUF POSTGRESQL ÜBERSPRUNGEN WERDEN (E0.3)
+
+Sie legen absichtlich Daten an, die zu breit für ihre Spalte sind — genau die
+Daten, die der Befehl finden soll. Auf PostgreSQL lässt sich dieser Zustand
+nicht herstellen: Der Server weist schon das INSERT ab
+(`StringDataRightTruncation`, `numeric field overflow`). Die Tests scheiterten
+dort deshalb nicht am Befehl, sondern an ihrer eigenen Vorbereitung — fünf rote
+Zeilen, die aussahen wie ein Fehler und keiner waren.
+
+Dass sie auf PostgreSQL nicht laufen, ist kein Verlust, sondern der Beweis der
+Aussage: Der Zustand, gegen den der Befehl schützt, kann dort nicht entstehen.
+Geprüft wird er auf SQLite — also genau dort, wo der Bestand vor dem Umzug
+liegt.
 """
 from io import StringIO
+from unittest import skipIf
 
 from django.core.management import call_command
 from django.db import connection
@@ -31,6 +46,9 @@ from django.test import TestCase
 from ._isolation import MandantenFixture
 
 
+@skipIf(connection.vendor == 'postgresql',
+        'Zu breite Werte lassen sich auf PostgreSQL nicht anlegen — der '
+        'Zustand, den dieser Befehl findet, entsteht nur unter SQLite.')
 class UmzugPruefenTests(TestCase):
     @classmethod
     def setUpTestData(cls):

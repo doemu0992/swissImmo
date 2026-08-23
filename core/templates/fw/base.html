@@ -33,6 +33,16 @@
         :root{
             --ds-bg:#eff2f3;--ds-surface:#fff;--ds-surface-2:#f4f7f7;--ds-ink:#0e2227;--ds-muted:#4c6169;--ds-faint:#5c757c;--ds-line:#dde6e8;
             --ds-brand:#0f6f6a;--ds-brand-600:#0b5450;--ds-brand-soft:#d9efed;
+            /* Text auf der dunklen Seitenleiste (B4).
+               Der Wert ist in allen drei Bloecken DERSELBE, und das ist Absicht:
+               Die Leiste traegt ihren dunklen Verlauf unabhaengig vom Modus, es
+               gibt also keinen zweiten Grund, gegen den zu rechnen waere.
+               Trotzdem steht er ueberall — `test_ds_tokens` verlangt zu Recht,
+               dass jedes Token in jedem Block definiert ist. Ein Token, das nur
+               im Hellsatz steht, faellt im Dunkeln stillschweigend auf den
+               Hellwert zurueck; heute ist das derselbe Wert, morgen vielleicht
+               nicht mehr. Die Regel schuetzt vor genau diesem leisen Fehler. */
+            --ds-auf-dunkel:#a8c0c5;
             --ds-good:#166534;--ds-good-soft:#e0f2e5;--ds-warn:#a35a09;--ds-warn-soft:#fbeeda;--ds-crit:#b32133;--ds-crit-soft:#fbe6e9;--ds-info:#0b5c8f;--ds-info-soft:#e0eff8;
             --ds-shadow-sm:0 1px 2px rgba(14,34,39,.06);--ds-shadow:0 1px 2px rgba(14,34,39,.05),0 6px 20px rgba(14,34,39,.05);
             --ds-radius:10px;--ds-radius-sm:7px;--ds-pill:999px;
@@ -40,12 +50,14 @@
         @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
             --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
             --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
+            --ds-auf-dunkel:#a8c0c5;   /* gleicher Wert wie hell: die Leiste ist immer dunkel */
             --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
             --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
         }}
         :root[data-theme="dark"]{
             --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
             --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
+            --ds-auf-dunkel:#a8c0c5;   /* gleicher Wert wie hell: die Leiste ist immer dunkel */
             --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
             --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
         }
@@ -55,6 +67,24 @@
            Nur die Textfarbe auf --ds-muted (≥4.5:1, theme-aware) anheben — Border/BG unberührt. */
         .text-slate-400{color:var(--ds-muted)!important}
         .text-slate-300{color:var(--ds-muted)!important}
+        /* ABER NICHT IN DER SEITENLEISTE (B4, E0.3).
+           --ds-muted ist fuer helle Flaechen gerechnet: 8.4:1 auf --ds-surface.
+           Die Seitenleiste hat einen dunklen Verlauf (#122b31 -> #0a1c20); dort
+           erreicht derselbe Wert nur 2.28:1 — die Eintraege «Vermieten», «Geld»,
+           «Uebersichten» waren kaum lesbar. Die Regel oben war also richtig
+           gedacht und an einer Stelle falsch angewandt.
+           `text-slate-500` steht hier mit, weil die Leiste es benutzt (Gruppen-
+           knopf, Einstellungen) und die Regel oben es gar nicht erfasste: 3.03:1.
+           --ds-auf-dunkel erreicht 7.78:1 oben und 9.18:1 unten; Weiss bleibt
+           dem aktiven Eintrag vorbehalten (14.83:1), damit die Stufung sichtbar
+           bleibt. Bewacht von core/tests/test_kontrast_leiste.py. */
+        #fwSidebar .text-slate-300,
+        #fwSidebar .text-slate-400,
+        #fwSidebar .text-slate-500,
+        #fwSidebar .text-slate-600{color:var(--ds-auf-dunkel)!important}
+        /* Beim Ueberfahren wird es heller, nicht gleich hell: sonst waere der
+           Zustand `hover` von `normal` nicht zu unterscheiden. */
+        #fwSidebar .hover\:text-slate-300:hover{color:#ffffff!important}
         /* Sichtbarer Fokusring nur bei Tastaturnavigation (kein Maus-Klick-Ring) */
         a:focus-visible,button:focus-visible,summary:focus-visible,[role="button"]:focus-visible,
         input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{

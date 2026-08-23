@@ -173,15 +173,16 @@ def _bestandszaehlung():
     „hat sich im eigenen Bestand etwas verändert".
     """
     stand = {}
+    nicht_zaehlbar = {}
     for modell in apps.get_models():
         if modell._meta.app_label not in EIGENE_APPS:
             continue
         manager = getattr(modell, 'alle_organisationen', None) or modell._base_manager
         try:
             stand[modell._meta.label] = manager.count()
-        except Exception:                                      # noqa: BLE001
-            pass
-    return stand
+        except Exception as fehler:                            # noqa: BLE001
+            nicht_zaehlbar[modell._meta.label] = f'{type(fehler).__name__}: {fehler}'
+    return stand, nicht_zaehlbar
 
 
 def _urls_mit_einem_parameter():
@@ -307,11 +308,38 @@ class FremdeIdUeberUrlsTests(IsolationsBasis):
             except NoReverseMatch:
                 continue
             with self.subTest(url=name):
-                vorher = _bestandszaehlung()
+                vorher, vorher_stumm = _bestandszaehlung()
                 self.client.post(pfad, {})
-                nachher = _bestandszaehlung()
+                nachher, nachher_stumm = _bestandszaehlung()
+
+                # WAS HIER STILL SEIN DARF UND WAS NICHT (E0.3)
+                #
+                # Einige Modelle sind DAUERHAFT nicht zaehlbar — `core.Haus`
+                # und `core.Zimmer` haben keine Tabelle (Modelle ohne
+                # Migration). Die zu melden waere Laerm; sie stehen vorher wie
+                # nachher in derselben Liste.
+                #
+                # Etwas anderes ist es, wenn ein Modell ERST NACH dem POST
+                # unzaehlbar wird. Auf PostgreSQL heisst das: Der View hat
+                # einen Datenbankfehler geworfen, die Transaktion ist vergiftet,
+                # jede weitere Abfrage scheitert. Vorher verschluckte die
+                # Zaehlung das und der Test brach spaeter mit
+                # `KeyError: 'benutzer.Benutzer'` ab — eine Meldung, die weder
+                # Grund noch Stelle nennt. Jetzt steht der Grund hier.
+                neu_stumm = {k: v for k, v in nachher_stumm.items()
+                             if k not in vorher_stumm}
+                self.assertEqual(
+                    neu_stumm, {},
+                    f'{name}: Nach dem POST liessen sich Modelle nicht mehr '
+                    f'zaehlen, vorher schon:\n  '
+                    + '\n  '.join(f'{k}: {v}' for k, v in neu_stumm.items())
+                    + '\n\nAuf PostgreSQL ist das die Spur eines Fehlers IM '
+                      'View: Die Transaktion ist vergiftet. Der eigentliche '
+                      'Fehler steht oben.')
+
                 geaendert = {k: (vorher[k], nachher[k])
-                             for k in vorher if vorher[k] != nachher.get(k)}
+                             for k in vorher
+                             if k in nachher and vorher[k] != nachher[k]}
                 self.assertEqual(
                     geaendert, {},
                     f'{name} hat bei einem POST auf ein Objekt von B den Bestand '
