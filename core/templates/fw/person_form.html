@@ -309,7 +309,7 @@
     </div>
 
     <div class="flex items-center gap-3">
-        <button type="submit" class="{% if dublette_warnung %}fw-warn-flaeche0 hover:bg-amber-600{% else %}fw-balken-voll hover:fw-balken-voll{% endif %} text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+        <button type="submit" class="{% if dublette_warnung %}fw-warn-flaeche hover:bg-amber-600{% else %}fw-balken-voll hover:fw-balken-voll{% endif %} text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             <i class="fa-solid fa-check mr-1.5"></i>{% if dublette_warnung %}Trotzdem speichern{% else %}Speichern{% endif %}
         </button>
         <a href="{% if ist_neu or m.id == None %}/neu/personen/{% else %}/neu/personen/{{ m.id }}/{% endif %}" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>

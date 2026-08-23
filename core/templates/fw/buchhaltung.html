@@ -26,7 +26,7 @@
     {% if jahr != 'alle' %}
     <div class="ml-auto flex items-center gap-2 flex-wrap">
         <a href="/neu/buchhaltung/pdf/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" target="_blank" rel="noopener"
-           class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary hover:fw-btn fw-primary"><i class="fa-solid fa-file-pdf mr-1"></i>Erfolgsrechnung &amp; Bilanz (PDF)</a>
+           class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary fw-primary"><i class="fa-solid fa-file-pdf mr-1"></i>Erfolgsrechnung &amp; Bilanz (PDF)</a>
         <a href="/neu/buchhaltung/export/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
            class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary hover:fw-balken-voll"><i class="fa-solid fa-file-csv mr-1"></i>Journal-Export (CSV)</a>
     </div>
@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {% endcomment %}
         <div class="md:hidden fw-dv">
             {% for b in journal %}
-            <div class="px-4 py-3 {% if b.ist_storno or b.storniert_am %}fw-krit-flaeche/30{% endif %}">
+            <div class="px-4 py-3 {% if b.ist_storno or b.storniert_am %}fw-krit-flaeche{% endif %}">
                 <div class="flex items-start gap-3">
                     <div class="min-w-0 flex-1">
                         <div class="fw-strong {% if b.storniert_am %}line-through{% endif %}">
@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </thead>
                 <tbody class="fw-dv">
                 {% for b in journal %}
-                <tr class="hover:fw-flaeche2 {% if b.ist_storno or b.storniert_am %}fw-krit-flaeche/30{% endif %}">
+                <tr class="hover:fw-flaeche2 {% if b.ist_storno or b.storniert_am %}fw-krit-flaeche{% endif %}">
                     <td class="px-5 py-3 fw-mutet whitespace-nowrap">{{ b.datum|date:"d.m.Y" }}</td>
                     <td class="px-5 py-3 fw-ink max-w-[280px] truncate">
                         {% if b.ist_storno %}<span class="text-[10px] font-bold uppercase fw-krit-flaeche fw-kritisch px-1.5 py-0.5 rounded mr-1.5">Storno</span>{% endif %}

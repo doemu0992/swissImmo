@@ -185,7 +185,7 @@
                             {% for lg in alle_liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}</option>{% endfor %}
                         </select>
                     </label>
-                    <button class="bg-slate-800 hover:fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">Auf Konto buchen</button>
+                    <button class="bg-slate-800 fw-primary text-sm font-semibold px-4 py-2 rounded-lg">Auf Konto buchen</button>
                 </form>
                 <form method="post" action="/neu/bankabgleich/bewegung/"
                       onsubmit="return confirm('Diese Bewegung als nicht buchungsrelevant markieren?');">
@@ -208,7 +208,7 @@
 {% if geparkt %}
 <!-- Geparkte / ungeklärte Zahlungen (1190 + Mieterguthaben 2030) -->
 <div class="fw-flaeche rounded-xl border fw-linie-warn overflow-hidden mb-6">
-    <div class="px-5 py-3 border-b border-amber-100 fw-warn-flaeche/50 flex items-center justify-between flex-wrap gap-2">
+    <div class="px-5 py-3 border-b border-amber-100 fw-warn-flaeche flex items-center justify-between flex-wrap gap-2">
         <div class="font-bold fw-strong text-sm flex items-center gap-2.5"><span class="w-8 h-8 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center shrink-0"><i class="fa-solid fa-circle-question"></i></span>Ungeklärte Zahlungen &amp; Guthaben</div>
         <div class="text-xs fw-mutet">{{ geparkt|length }} Position(en)
             {% if geparkt_unklar %}· CHF {{ geparkt_unklar|chf }} ungeklärt (1190){% endif %}
@@ -233,7 +233,7 @@
         </label>
         <span class="text-xs fw-mutet" data-anzahl>0 ausgewählt</span>
         <select name="vertrag_id" required
-                class="fw-flaeche border fw-linie text-xs rounded-lg px-2.5 py-2 max-w-[260px] focus:outline-none focus:ring-2 focus:fw-fokusring">
+                class="fw-flaeche border fw-linie text-xs rounded-lg px-2.5 py-2 max-w-[260px] focus:outline-none focus:ring-2 fw-fokusring">
             <option value="">Mieter wählen…</option>
             {% for v in sammel_vertraege %}<option value="{{ v.id }}">{{ v.label }}</option>{% endfor %}
         </select>
@@ -286,7 +286,7 @@
             </div>
             <span class="text-sm font-semibold fw-strong whitespace-nowrap shrink-0">CHF {{ z.betrag|chf }}</span>
             <select name="rechnung_id" required
-                    class="fw-flaeche2 text-xs rounded-lg px-2.5 py-2 max-w-[240px] focus:outline-none focus:ring-2 focus:fw-fokusring">
+                    class="fw-flaeche2 text-xs rounded-lg px-2.5 py-2 max-w-[240px] focus:outline-none focus:ring-2 fw-fokusring">
                 <option value="">Offene Rechnung wählen…</option>
                 {% for row in rows %}
                 <option value="{{ row.r.id }}">{{ row.mieter }} · {{ row.r.titel }} (CHF {{ row.offen|chf }})</option>

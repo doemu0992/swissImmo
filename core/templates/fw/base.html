@@ -474,6 +474,57 @@
            richtig aus und fallen erst auf, wenn Branding kommt. */
         .fw-akzent{accent-color:var(--ds-brand)}
         .fw-fokusring:focus{outline:2px solid var(--ds-brand);outline-offset:2px}
+
+        /* ZUSTAENDE — NACHGETRAGEN, WEIL SIE SEIT E2.1 STILL FEHLTEN
+           ------------------------------------------------------------------
+           `hover:bg-slate-50` funktioniert, weil Tailwind die Regel dafuer
+           ERZEUGT. `hover:fw-flaeche2` funktioniert NICHT: `fw-flaeche2` ist
+           von Hand geschrieben, Tailwind kennt sie nicht und baut folglich
+           auch keine Varianten-Regel. Der Browser sieht dann eine Klasse
+           namens `hover:fw-flaeche2`, auf die keine einzige Regel passt.
+
+           Im Browser nachgemessen (Chromium, echte Seite, echte
+           Stylesheets): unter 292 geladenen Regeln passte KEINE auf
+           `hover:fw-*`, `focus:fw-*`, `file:fw-*` oder `group-hover:fw-*`.
+           Die Umstellung auf die Komponentenschicht hatte damit
+           funktionierende Hover-Zustaende durch tote Klassennamen ersetzt —
+           113 Vorkommen in 17 Vorlagen. Sichtbar wird das nie als Fehler,
+           nur als eine Oberflaeche, die sich nicht mehr regt.
+
+           Dieselbe Messung erklaert die Zeilen darunter ohne Modifikator:
+           `fw-markenflaeche/60` ergab `rgba(0,0,0,0)` — der Opazitaets-Zusatz
+           ist ebenfalls reine Tailwind-Syntax und macht aus einer gueltigen
+           Klasse einen toten Namen. Diese Stellen sind in den Vorlagen auf
+           die Grundklasse zurueckgesetzt.
+
+           `core/tests/test_fw_klassen_wirken.py` haelt das fest: Jede
+           `fw-`-Klasse in einer Vorlage muss von einer Regel getroffen
+           werden. */
+        .hover\:fw-flaeche2:hover{background:var(--ds-surface-2)}
+        .hover\:fw-markenflaeche:hover{background:var(--ds-brand-soft)}
+        .hover\:fw-krit-flaeche:hover{background:var(--ds-crit-soft)}
+        .hover\:fw-gut-flaeche:hover{background:var(--ds-good-soft)}
+        .hover\:fw-marke:hover{color:var(--ds-brand)}
+        .hover\:fw-kritisch:hover{color:var(--ds-crit)}
+        .hover\:fw-gut:hover{color:var(--ds-good)}
+        .hover\:fw-ink:hover{color:var(--ds-ink)}
+        .hover\:fw-mutet:hover{color:var(--ds-faint)}
+        .hover\:fw-linie-marke:hover{border-color:var(--ds-brand)}
+        .hover\:fw-linie-krit:hover{border-color:var(--ds-crit)}
+        .hover\:fw-linie-gut:hover{border-color:var(--ds-good)}
+        .hover\:fw-linie-warn:hover{border-color:var(--ds-warn)}
+        .hover\:fw-balken:hover{background:var(--ds-line)}
+        .hover\:fw-balken-voll:hover{background:var(--ds-brand)}
+        .focus-within\:fw-markenflaeche:focus-within{background:var(--ds-brand-soft)}
+        .group:hover .group-hover\:fw-marke{color:var(--ds-brand)}
+        /* Dateiwahl-Knopf: der Browser gestaltet ihn ueber ein eigenes
+           Pseudoelement, an das weder Hintergrund- noch Textfarbe des
+           Elternelements herankommt. */
+        .file\:fw-marke::file-selector-button{color:var(--ds-brand)}
+        .file\:fw-markenflaeche::file-selector-button{background:var(--ds-brand-soft)}
+        .file\:fw-balken-voll::file-selector-button{background:var(--ds-brand)}
+        .hover\:file\:fw-balken-voll:hover::file-selector-button{background:var(--ds-brand)}
+
         /* Balken und Fuellstaende (Fortschritt, Auslastung). */
         .fw-balken{background:var(--ds-line)}
         .fw-balken-voll{background:var(--ds-brand)}

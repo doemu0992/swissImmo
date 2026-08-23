@@ -194,7 +194,7 @@
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             <input type="number" step="0.05" min="0" name="betrag" value="{{ row.offen_betrag|stringformat:'.2f' }}"
                                    class="w-20 fw-flaeche2 rounded-lg text-xs px-2 py-1.5 text-right" title="Betrag (Teilzahlung möglich)">
-                            <button type="submit" class="inline-flex items-center gap-1.5 fw-balken-voll hover:fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                            <button type="submit" class="inline-flex items-center gap-1.5 fw-balken-voll fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
                                 <i class="fa-solid fa-check"></i> {% if row.in_zahlung %}Bestätigen{% else %}Bezahlen{% endif %}
                             </button>
                         </form>
@@ -215,7 +215,7 @@
                                 {% for k in aufwand_konten %}<option value="{{ k.id }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
                             </select>
                             {% endif %}
-                            <button type="submit" class="inline-flex items-center gap-1.5 fw-warn-flaeche0 hover:bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                            <button type="submit" class="inline-flex items-center gap-1.5 fw-warn-flaeche hover:bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
                                 <i class="fa-solid fa-check"></i> Freigeben
                             </button>
                         </form>
@@ -248,7 +248,7 @@
                 </td>
             </tr>
             {% if row.k.status == 'neu' %}
-            <tr id="kedit-{{ row.k.id }}" class="hidden fw-markenflaeche/40">
+            <tr id="kedit-{{ row.k.id }}" class="hidden fw-markenflaeche">
                 <td colspan="7" class="px-5 py-4">
                     {% if row.k.fehlermeldung %}
                     <div class="mb-3 rounded-lg border fw-linie-warn fw-warn-flaeche px-3 py-2 text-[12px] fw-warnton"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ row.k.fehlermeldung }}</div>
@@ -349,7 +349,7 @@
                             <div class="sm:col-span-2"><label for="ks-betrag-{{ row.k.id }}" class="block text-[10px] font-semibold fw-mutet mb-1">Betrag</label>
                                 <input id="ks-betrag-{{ row.k.id }}" name="betrag" inputmode="decimal" required class="w-full fw-flaeche border fw-linie rounded-lg text-xs px-2 py-1.5 text-right tabular-nums"></div>
                             <div class="sm:col-span-2 flex items-center pb-1.5"><label class="inline-flex items-center gap-1.5 text-[11px] fw-mutet cursor-pointer" title="In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">HNK</label></div>
-                            <div class="sm:col-span-1"><button class="w-full bg-slate-700 hover:fw-btn fw-primary text-xs font-semibold px-2 py-1.5 rounded-lg" title="Position hinzufügen"><i class="fa-solid fa-plus"></i></button></div>
+                            <div class="sm:col-span-1"><button class="w-full bg-slate-700 fw-primary text-xs font-semibold px-2 py-1.5 rounded-lg" title="Position hinzufügen"><i class="fa-solid fa-plus"></i></button></div>
                         </form>
                     </div>
                 </td>

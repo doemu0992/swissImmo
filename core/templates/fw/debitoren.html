@@ -130,7 +130,7 @@
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs"></i>
             <input type="text" name="q" value="{{ q }}" placeholder="Mieter oder Titel suchen…" aria-label="Debitoren nach Mieter oder Titel durchsuchen"
-                   class="fw-flaeche2 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:fw-fokusring">
+                   class="fw-flaeche2 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 fw-fokusring">
         </form>
     </div>
 
@@ -200,7 +200,7 @@
             </thead>
             <tbody class="fw-dv">
             {% for row in page %}
-            <tr class="hover:fw-markenflaeche/40 focus-within:fw-markenflaeche/40 transition-colors">
+            <tr class="hover:fw-markenflaeche focus-within:fw-markenflaeche transition-colors">
                 <td class="px-5 py-3.5 whitespace-nowrap hidden lg:table-cell {% if row.mahn %}font-semibold fw-kritisch{% else %}fw-mutet{% endif %}">
                     {{ row.faellig|date:"d.m.Y" }}
                 </td>

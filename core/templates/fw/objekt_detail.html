@@ -180,7 +180,7 @@
                 <span class="text-[11px] font-semibold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">{{ r.dokumente|length }} Dok.</span>
                 <a href="/neu/vertraege/{{ r.v.id }}/" class="text-xs fw-marke font-medium hover:underline shrink-0" onclick="event.stopPropagation()">Vertrag <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
             </summary>
-            <div class="border-t fw-linie px-5 py-3 flex flex-wrap gap-2 fw-flaeche2/40">
+            <div class="border-t fw-linie px-5 py-3 flex flex-wrap gap-2 fw-flaeche2">
                 <a href="/neu/mietzins/{{ r.v.id }}/anfangsmietzins/" class="fw-btn"><i class="fa-solid fa-file-invoice mr-1"></i>Anfangsmietzins</a>
                 {% if r.v.status == 'aktiv' %}
                 <a href="/neu/mietzins/{{ r.v.id }}/anpassung/" class="fw-btn"><i class="fa-solid fa-arrow-trend-up mr-1"></i>Mietzinsanpassung</a>
@@ -226,7 +226,7 @@
 
 <!-- ===== BEREICH: FINANZEN ===== -->
 <div data-panel="obj" id="obj-finanzen" class="hidden">
-    <div class="fw-markenflaeche/60 border fw-linie-marke rounded-xl px-4 py-3 mb-4 text-[12px] fw-marke leading-relaxed">
+    <div class="fw-markenflaeche border fw-linie-marke rounded-xl px-4 py-3 mb-4 text-[12px] fw-marke leading-relaxed">
         <i class="fa-solid fa-circle-info mr-1"></i><b>Sollmietzins datiert («gültig ab»).</b> Der aktuell gültige Wert steuert die Soll-Miete; <b>neue Verträge</b> übernehmen ihn zum Mietbeginn automatisch, <b>bestehende bleiben unverändert</b> (Änderung nur via amtliches Formular, Art. 269d OR).
         <span class="block mt-1"><b>Gratismonate / Rabatt:</b> datierte Zeile mit Rabatt (oder «mietzinsfrei») erfassen — die <b>Referenz</b> bleibt die echte Sollmiete (Mieterspiegel/Bilanz korrekt), der Rabatt wird als Ertragsminderung gebucht.</span>
     </div>
@@ -475,7 +475,7 @@
             {% if forloop.first %}<span class="absolute bottom-1 left-1 text-[10px] fw-btn fw-primary px-1.5 py-0.5 rounded font-semibold">Titelbild</span>{% endif %}
             <form method="post" action="/neu/objekte/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1" onsubmit="return confirm('Foto löschen?');">
                 {% csrf_token %}
-                <button class="w-7 h-7 rounded-full fw-flaeche/90 hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                <button class="w-7 h-7 rounded-full fw-flaeche hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="Löschen"><i class="fa-solid fa-trash"></i></button>
             </form>
         </div>
         {% endfor %}
