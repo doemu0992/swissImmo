@@ -10,7 +10,7 @@
 
 <div class="fw-phead">
     <h1>{% if edit_vertrag %}Vertrag (Entwurf) bearbeiten{% else %}Vertragserfassung{% endif %}</h1>
-    <a href="{% if edit_vertrag %}/neu/vertraege/{{ edit_vertrag.id }}/{% else %}/neu/vertraege/{{ lg_query }}{% endif %}" title="Erfassung schliessen" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></a>
+    <a href="{% if edit_vertrag %}/neu/vertraege/{{ edit_vertrag.id }}/{% else %}/neu/vertraege/{{ lg_query }}{% endif %}" title="Erfassung schliessen" class="fw-faint hover:fw-mutet"><i class="fa-solid fa-xmark text-xl"></i></a>
 </div>
 
 <form method="post" action="/neu/vertraege/neu/speichern/" id="vform" onsubmit="return vorSubmit()">
@@ -23,40 +23,40 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
     <!-- ========== LINKS: SCHRITTE + FORMULAR ========== -->
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="fw-card overflow-hidden">
         <div class="flex flex-col sm:flex-row">
             <!-- Schritt-Leiste (mobil: horizontale Scroll-Leiste oben) -->
-            <div class="w-full sm:w-40 sm:shrink-0 bg-slate-50 border-b sm:border-b-0 sm:border-r border-slate-100 py-3 px-3 sm:py-5">
+            <div class="w-full sm:w-40 sm:shrink-0 fw-flaeche2 border-b sm:border-b-0 sm:border-r fw-linie py-3 px-3 sm:py-5">
                 <div class="step-nav flex sm:block gap-1 overflow-x-auto sm:overflow-visible"></div>
             </div>
             <!-- Schritt-Inhalt -->
             <div class="flex-1 p-4 sm:p-6 min-h-[440px]">
                 <!-- S1 OBJEKT -->
                 <div class="vstep" data-step="0">
-                    <h3 class="text-lg font-bold text-slate-900 mb-1">Objekt</h3>
-                    <p class="text-sm text-slate-500 mb-4">Wählen Sie Liegenschaft und Objekt. Es werden nur verfügbare (leerstehende) Objekte angezeigt.</p>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft *</label>
-                    <select id="s_lg" onchange="lgChange()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                    <h3 class="text-lg font-bold fw-strong mb-1">Objekt</h3>
+                    <p class="text-sm fw-mutet mb-4">Wählen Sie Liegenschaft und Objekt. Es werden nur verfügbare (leerstehende) Objekte angezeigt.</p>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">Liegenschaft *</label>
+                    <select id="s_lg" onchange="lgChange()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-4 focus:outline-none focus:ring-2 focus:fw-fokusring">
                         <option value="">Liegenschaft auswählen…</option>
                     </select>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Objekt *</label>
-                    <select id="s_obj" onchange="objChange()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                    <label class="block text-xs font-semibold fw-mutet mb-1">Objekt *</label>
+                    <select id="s_obj" onchange="objChange()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:fw-fokusring">
                         <option value="">Zuerst Liegenschaft wählen…</option>
                     </select>
-                    <div id="obj-info" class="mt-4 text-sm text-slate-500 hidden bg-indigo-50/50 rounded-lg p-3"></div>
+                    <div id="obj-info" class="mt-4 text-sm fw-mutet hidden fw-markenflaeche/50 rounded-lg p-3"></div>
                 </div>
 
                 <!-- S2 PERSONEN -->
                 <div class="vstep hidden" data-step="1">
-                    <h3 class="text-lg font-bold text-slate-900 mb-1">Personen</h3>
-                    <p class="text-sm text-slate-500 mb-4">Mieter auswählen oder neu erfassen.</p>
+                    <h3 class="text-lg font-bold fw-strong mb-1">Personen</h3>
+                    <p class="text-sm fw-mutet mb-4">Mieter auswählen oder neu erfassen.</p>
                     <div class="flex gap-2 mb-4">
-                        <button type="button" id="tab-best" onclick="mieterTab('best')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white">Bestehende Person</button>
-                        <button type="button" id="tab-neu" onclick="mieterTab('neu')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600">Neue Person</button>
+                        <button type="button" id="tab-best" onclick="mieterTab('best')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary">Bestehende Person</button>
+                        <button type="button" id="tab-neu" onclick="mieterTab('neu')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet">Neue Person</button>
                     </div>
                     <div id="mieter-best">
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Mieter</label>
-                        <select id="s_mieter" onchange="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                        <label class="block text-xs font-semibold fw-mutet mb-1">Mieter</label>
+                        <select id="s_mieter" onchange="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:fw-fokusring">
                             <option value="">Person auswählen…</option>
                         </select>
                     </div>
@@ -68,150 +68,150 @@
                             <button type="button" data-ntyp="verein" onclick="setNeuTyp('verein')" class="ntyp-btn px-3 py-1.5 rounded-lg text-xs font-semibold">Verein / Stiftung</button>
                         </div>
                         <div id="neu-namen" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <select name="anrede" oninput="live()" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5"><option>Herr</option><option>Frau</option><option value="">—</option></select>
-                            <input name="vorname" oninput="live()" placeholder="Vorname" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                            <input name="nachname" oninput="live()" placeholder="Nachname" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                            <select name="anrede" oninput="live()" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5"><option>Herr</option><option>Frau</option><option value="">—</option></select>
+                            <input name="vorname" oninput="live()" placeholder="Vorname" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                            <input name="nachname" oninput="live()" placeholder="Nachname" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         </div>
                         <div id="neu-firma" class="hidden space-y-3">
-                            <input name="firmen_name" oninput="live()" placeholder="Firmen- / Organisationsname" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                            <input name="firmen_name" oninput="live()" placeholder="Firmen- / Organisationsname" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <input name="kontaktperson" placeholder="Kontaktperson" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                                <input name="uid_nummer" placeholder="UID / CHE-Nummer" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                                <input name="kontaktperson" placeholder="Kontaktperson" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                                <input name="uid_nummer" placeholder="UID / CHE-Nummer" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                             </div>
                         </div>
-                        <input name="m_strasse" oninput="live()" placeholder="Strasse & Nr." class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                        <input name="m_strasse" oninput="live()" placeholder="Strasse & Nr." class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <input name="m_plz" oninput="live()" placeholder="PLZ" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                            <input name="m_ort" oninput="live()" placeholder="Ort" class="col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                            <input name="m_plz" oninput="live()" placeholder="PLZ" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                            <input name="m_ort" oninput="live()" placeholder="Ort" class="col-span-2 fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         </div>
-                        <input name="m_email" oninput="live()" placeholder="E-Mail" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                        <input name="m_email" oninput="live()" placeholder="E-Mail" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     </div>
                     <!-- Zweiter Mieter (Ehepartner / solidarisch) — gleiche Erfassung wie 1. Person -->
-                    <div class="mt-4 border-t border-slate-100 pt-4">
-                        <label class="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-1">
-                            <input type="checkbox" id="zweiter_aktiv" onchange="toggleZweiter()" class="accent-indigo-600"> Zweiten Mieter hinzufügen
+                    <div class="mt-4 border-t fw-linie pt-4">
+                        <label class="flex items-center gap-2 text-sm font-semibold fw-ink mb-1">
+                            <input type="checkbox" id="zweiter_aktiv" onchange="toggleZweiter()" class="fw-akzent"> Zweiten Mieter hinzufügen
                         </label>
-                        <p class="text-xs text-slate-400 mb-3">z. B. Ehepartner — beide haften solidarisch und stehen im Vertrag.</p>
+                        <p class="text-xs fw-faint mb-3">z. B. Ehepartner — beide haften solidarisch und stehen im Vertrag.</p>
                         <div id="zweiter-felder" class="hidden">
                             <div class="flex gap-2 mb-3">
-                                <button type="button" id="tab2-best" onclick="mieter2Tab('best')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white">Bestehende Person</button>
-                                <button type="button" id="tab2-neu" onclick="mieter2Tab('neu')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600">Neue Person</button>
+                                <button type="button" id="tab2-best" onclick="mieter2Tab('best')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary">Bestehende Person</button>
+                                <button type="button" id="tab2-neu" onclick="mieter2Tab('neu')" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet">Neue Person</button>
                             </div>
                             <div id="mieter2-best">
-                                <label class="block text-xs font-semibold text-slate-500 mb-1">Mieter</label>
-                                <select id="s_mieter2" onchange="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                                <label class="block text-xs font-semibold fw-mutet mb-1">Mieter</label>
+                                <select id="s_mieter2" onchange="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:fw-fokusring">
                                     <option value="">Person auswählen…</option>
                                 </select>
                             </div>
                             <div id="mieter2-neu" class="hidden space-y-3">
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                    <select name="mit_anrede" oninput="live()" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5"><option>Frau</option><option>Herr</option><option value="">—</option></select>
-                                    <input name="mit_vorname" oninput="live()" placeholder="Vorname" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                                    <input name="mit_nachname" oninput="live()" placeholder="Nachname" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                                    <select name="mit_anrede" oninput="live()" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5"><option>Frau</option><option>Herr</option><option value="">—</option></select>
+                                    <input name="mit_vorname" oninput="live()" placeholder="Vorname" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                                    <input name="mit_nachname" oninput="live()" placeholder="Nachname" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                                 </div>
-                                <input name="mit_strasse" oninput="live()" placeholder="Strasse & Nr." class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                                <input name="mit_strasse" oninput="live()" placeholder="Strasse & Nr." class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                    <input name="mit_plz" oninput="live()" placeholder="PLZ" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                                    <input name="mit_ort" oninput="live()" placeholder="Ort" class="col-span-2 bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                                    <input name="mit_plz" oninput="live()" placeholder="PLZ" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                                    <input name="mit_ort" oninput="live()" placeholder="Ort" class="col-span-2 fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                                 </div>
-                                <input name="mit_email" oninput="live()" placeholder="E-Mail" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                                <input name="mit_email" oninput="live()" placeholder="E-Mail" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                             </div>
-                            <label class="flex items-center gap-2 text-sm text-slate-700 bg-amber-50/60 rounded-lg px-3 py-2.5 mt-3">
-                                <input type="checkbox" name="familienwohnung" id="familienwohnung" onchange="live()" class="accent-indigo-600">
+                            <label class="flex items-center gap-2 text-sm fw-ink fw-warn-flaeche/60 rounded-lg px-3 py-2.5 mt-3">
+                                <input type="checkbox" name="familienwohnung" id="familienwohnung" onchange="live()" class="fw-akzent">
                                 <span><b>Familienwohnung</b> (gemeinsame eheliche/eingetragene Wohnung)</span>
                             </label>
-                            <p class="text-xs text-slate-400 mt-1">Bei einer Familienwohnung muss eine Kündigung <b>beiden</b> Ehegatten separat mit amtlichem Formular zugestellt werden (Art. 266n OR).</p>
+                            <p class="text-xs fw-faint mt-1">Bei einer Familienwohnung muss eine Kündigung <b>beiden</b> Ehegatten separat mit amtlichem Formular zugestellt werden (Art. 266n OR).</p>
                         </div>
                     </div>
                     <input type="hidden" name="mit_mieter_id" id="f_mit_mieter_id">
                     <div class="mt-4">
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Anzahl Personen im Haushalt</label>
-                        <input name="anzahl_personen" id="s_personen" type="number" min="1" value="1" oninput="live()" class="w-40 bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                        <label class="block text-xs font-semibold fw-mutet mb-1">Anzahl Personen im Haushalt</label>
+                        <input name="anzahl_personen" id="s_personen" type="number" min="1" value="1" oninput="live()" class="w-40 fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     </div>
                 </div>
 
                 <!-- S3 KONDITIONEN -->
                 <div class="vstep hidden" data-step="2">
-                    <h3 class="text-lg font-bold text-slate-900 mb-1">Konditionen</h3>
-                    <p class="text-sm text-slate-500 mb-4">Mietdauer, Kündigungsmodalitäten und weitere Angaben zur Mietsache.</p>
+                    <h3 class="text-lg font-bold fw-strong mb-1">Konditionen</h3>
+                    <p class="text-sm fw-mutet mb-4">Mietdauer, Kündigungsmodalitäten und weitere Angaben zur Mietsache.</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mietbeginn *</label>
-                            <input name="beginn" id="s_beginn" type="date" oninput="applySollplan(); live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mietende</label>
-                            <input name="ende" id="s_ende" type="date" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                        <div><label class="block text-xs font-semibold fw-mutet mb-1">Mietbeginn *</label>
+                            <input name="beginn" id="s_beginn" type="date" oninput="applySollplan(); live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                        <div><label class="block text-xs font-semibold fw-mutet mb-1">Mietende</label>
+                            <input name="ende" id="s_ende" type="date" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                             <input type="hidden" name="ist_befristet" id="ist_befristet_hidden" value="0">
-                            <label class="text-xs text-slate-400 flex items-center gap-1 mt-1"><input type="checkbox" id="unbefristet" checked onchange="toggleEnde()"> unbefristet</label></div>
+                            <label class="text-xs fw-faint flex items-center gap-1 mt-1"><input type="checkbox" id="unbefristet" checked onchange="toggleEnde()"> unbefristet</label></div>
                     </div>
 
                     <div class="flex items-center justify-between mt-4 mb-2">
-                        <label class="block text-xs font-semibold text-slate-500">Kündigungsmonate *</label>
-                        <div class="text-xs"><button type="button" onclick="monateAusserDez()" class="text-indigo-600 font-semibold hover:underline">alle ausser Dezember</button>
-                            <span class="text-slate-300 mx-1">/</span><button type="button" onclick="monateStandard()" class="text-slate-400 hover:underline">Standard</button></div>
+                        <label class="block text-xs font-semibold fw-mutet">Kündigungsmonate *</label>
+                        <div class="text-xs"><button type="button" onclick="monateAusserDez()" class="fw-marke font-semibold hover:underline">alle ausser Dezember</button>
+                            <span class="fw-faint mx-1">/</span><button type="button" onclick="monateStandard()" class="fw-faint hover:underline">Standard</button></div>
                     </div>
                     <div id="monate-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5"></div>
                     <input type="hidden" name="kuendigungstermine" id="f_kuendigungstermine">
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                        <div id="frist-box"><label id="frist-label" class="block text-xs font-semibold text-slate-500 mb-1">Kündigungsfrist (Monate) *</label>
-                            <div class="flex items-center bg-slate-100 rounded-lg w-40">
-                                <button type="button" onclick="fristStep(-1)" class="px-3 py-2.5 text-indigo-600 font-bold">−</button>
+                        <div id="frist-box"><label id="frist-label" class="block text-xs font-semibold fw-mutet mb-1">Kündigungsfrist (Monate) *</label>
+                            <div class="flex items-center fw-flaeche2 rounded-lg w-40">
+                                <button type="button" onclick="fristStep(-1)" class="px-3 py-2.5 fw-marke font-bold">−</button>
                                 <input name="kuendigungsfrist" id="s_frist" type="number" value="3" min="1" oninput="live()" class="w-14 bg-transparent text-center text-sm py-2.5 focus:outline-none">
-                                <button type="button" onclick="fristStep(1)" class="px-3 py-2.5 text-indigo-600 font-bold">+</button>
+                                <button type="button" onclick="fristStep(1)" class="px-3 py-2.5 fw-marke font-bold">+</button>
                             </div></div>
-                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Erstmögliche Kündigung *</label>
-                            <input name="erstmals_kuendbar" type="date" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                        <div><label class="block text-xs font-semibold fw-mutet mb-1">Erstmögliche Kündigung *</label>
+                            <input name="erstmals_kuendbar" type="date" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
                     </div>
-                    <p id="frist-ep-note" class="hidden text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2 mt-2">
+                    <p id="frist-ep-note" class="hidden text-xs fw-marke fw-markenflaeche border fw-linie-marke rounded-lg px-3 py-2 mt-2">
                         <i class="fa-solid fa-circle-info mr-1"></i>Einstellplatz: gesetzliche Mindestfrist <b>2 Wochen auf Ende einer Monatsperiode</b> (Art. 266e OR) — kein amtliches Formular, keine Erstreckung. <b>0 = 2 Wochen</b>; eine <b>längere</b> Frist auf Monatsende (z.B. 1 oder 3 Monate) kann vereinbart werden.
                     </p>
 
-                    <label class="block text-xs font-semibold text-slate-500 mb-1 mt-4">Zur Mitbenützung</label>
-                    <textarea name="mitbenutzung" rows="2" oninput="live()" placeholder="z. B. Waschküche, Trockenraum, Veloraum" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></textarea>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Nebenräume</label>
-                    <textarea name="nebenraeume" rows="2" oninput="live()" placeholder="z. B. Kellerabteil Nr. 3, Estrich" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></textarea>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Besondere Bestimmungen</label>
-                    <textarea name="besondere_vereinbarungen" rows="2" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></textarea>
+                    <label class="block text-xs font-semibold fw-mutet mb-1 mt-4">Zur Mitbenützung</label>
+                    <textarea name="mitbenutzung" rows="2" oninput="live()" placeholder="z. B. Waschküche, Trockenraum, Veloraum" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea>
+                    <label class="block text-xs font-semibold fw-mutet mb-1 mt-3">Nebenräume</label>
+                    <textarea name="nebenraeume" rows="2" oninput="live()" placeholder="z. B. Kellerabteil Nr. 3, Estrich" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea>
+                    <label class="block text-xs font-semibold fw-mutet mb-1 mt-3">Besondere Bestimmungen</label>
+                    <textarea name="besondere_vereinbarungen" rows="2" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea>
                 </div>
 
                 <!-- S4 MIETZINS -->
                 <div class="vstep hidden" data-step="3">
-                    <h3 class="text-lg font-bold text-slate-900 mb-1">Mietzins</h3>
-                    <p class="text-sm text-slate-500 mb-4">Mietzins, Indexwerte und Zahlungsmodalitäten.</p>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Zahlungsmodus *</label>
-                    <select name="zahlungsrhythmus" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 mb-3">
+                    <h3 class="text-lg font-bold fw-strong mb-1">Mietzins</h3>
+                    <p class="text-sm fw-mutet mb-4">Mietzins, Indexwerte und Zahlungsmodalitäten.</p>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">Zahlungsmodus *</label>
+                    <select name="zahlungsrhythmus" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-3">
                         <option value="monatlich">Monatlich</option><option value="vierteljahr">Vierteljährlich</option>
                         <option value="halbjahr">Halbjährlich</option><option value="jahr">Jährlich</option>
                     </select>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div><label class="block text-xs font-semibold text-slate-500 mb-1"><span id="netto-label">Mietzins netto (CHF) *</span></label>
-                            <input name="netto_mietzins" id="s_netto" type="number" step="0.01" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-                        <div id="nk-field-box"><label class="block text-xs font-semibold text-slate-500 mb-1"><span id="nk-label">Nebenkosten (CHF) *</span></label>
-                            <input name="nebenkosten" id="s_nk" type="number" step="0.01" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                        <div><label class="block text-xs font-semibold fw-mutet mb-1"><span id="netto-label">Mietzins netto (CHF) *</span></label>
+                            <input name="netto_mietzins" id="s_netto" type="number" step="0.01" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+                        <div id="nk-field-box"><label class="block text-xs font-semibold fw-mutet mb-1"><span id="nk-label">Nebenkosten (CHF) *</span></label>
+                            <input name="nebenkosten" id="s_nk" type="number" step="0.01" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
                     </div>
                     <div id="brutto-box">
-                        <label class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Mietzins brutto (CHF)</label>
-                        <input id="s_brutto" type="text" readonly class="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2.5 mb-3 text-slate-600">
+                        <label class="block text-xs font-semibold fw-mutet mb-1 mt-3">Mietzins brutto (CHF)</label>
+                        <input id="s_brutto" type="text" readonly class="w-full fw-flaeche2 border fw-linie rounded-lg text-sm px-3 py-2.5 mb-3 fw-mutet">
                     </div>
                     <div class="flex items-center gap-3 mb-3 flex-wrap">
-                        <label class="flex items-center gap-2 text-sm text-slate-700">
-                            <input type="checkbox" name="mwst_pflichtig" id="s_mwst" onchange="document.getElementById('mwst-satz-box').classList.toggle('hidden', !this.checked); live()" class="accent-indigo-600"> MWST-pflichtig <span class="text-xs text-slate-400">(optiert, v. a. Gewerbe)</span>
+                        <label class="flex items-center gap-2 text-sm fw-ink">
+                            <input type="checkbox" name="mwst_pflichtig" id="s_mwst" onchange="document.getElementById('mwst-satz-box').classList.toggle('hidden', !this.checked); live()" class="fw-akzent"> MWST-pflichtig <span class="text-xs fw-faint">(optiert, v. a. Gewerbe)</span>
                         </label>
                         <div id="mwst-satz-box" class="hidden flex items-center gap-1.5">
-                            <input type="number" step="0.1" name="mwst_satz" value="8.1" oninput="live()" class="w-20 bg-slate-100 rounded-lg text-sm px-2 py-1.5 text-right">
-                            <span class="text-xs text-slate-400">% Satz</span>
+                            <input type="number" step="0.1" name="mwst_satz" value="8.1" oninput="live()" class="w-20 fw-flaeche2 rounded-lg text-sm px-2 py-1.5 text-right">
+                            <span class="text-xs fw-faint">% Satz</span>
                         </div>
                     </div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Mietzinsvorbehalte</label>
-                    <textarea name="weitere_vorbehalte" rows="2" oninput="live()" placeholder="z. B. Vorbehalt weiterer Referenzzins-/Teuerungsanpassungen" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 mb-4"></textarea>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">Mietzinsvorbehalte</label>
+                    <textarea name="weitere_vorbehalte" rows="2" oninput="live()" placeholder="z. B. Vorbehalt weiterer Referenzzins-/Teuerungsanpassungen" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-4"></textarea>
 
                     <!-- Geschäftsraum: Zweck + Mietzinsmodell (nur bei Gewerbe sichtbar) -->
-                    <div id="gewerbe-box" class="hidden border border-indigo-200 bg-indigo-50/40 rounded-xl p-4 mb-4">
-                        <h4 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-briefcase text-indigo-500 mr-1"></i>Geschäftsraum</h4>
-                        <p class="text-xs text-slate-400 mb-3">Zweckbestimmung und Mietzinsmodell für Geschäftsräume.</p>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Nutzungszweck</label>
-                        <input name="zweckbestimmung" id="s_zweck" oninput="live()" placeholder="z. B. Betrieb eines Coiffeursalons" class="w-full bg-white rounded-lg text-sm px-3 py-2.5 mb-3">
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Mietzinsmodell</label>
-                        <select name="mietzins_modell" id="s_modell" onchange="modellChange(); live()" class="w-full bg-white rounded-lg text-sm px-3 py-2.5">
+                    <div id="gewerbe-box" class="hidden border fw-linie-marke fw-markenflaeche/40 rounded-xl p-4 mb-4">
+                        <h4 class="font-bold fw-strong text-sm mb-1"><i class="fa-solid fa-briefcase fw-marke mr-1"></i>Geschäftsraum</h4>
+                        <p class="text-xs fw-faint mb-3">Zweckbestimmung und Mietzinsmodell für Geschäftsräume.</p>
+                        <label class="block text-xs font-semibold fw-mutet mb-1">Nutzungszweck</label>
+                        <input name="zweckbestimmung" id="s_zweck" oninput="live()" placeholder="z. B. Betrieb eines Coiffeursalons" class="w-full fw-flaeche rounded-lg text-sm px-3 py-2.5 mb-3">
+                        <label class="block text-xs font-semibold fw-mutet mb-1">Mietzinsmodell</label>
+                        <select name="mietzins_modell" id="s_modell" onchange="modellChange(); live()" class="w-full fw-flaeche rounded-lg text-sm px-3 py-2.5">
                             <option value="fest">Fester Mietzins</option>
                             <option value="index">Indexmiete (LIK, Art. 269b — Vertrag ≥ 5 Jahre)</option>
                             <option value="staffel">Staffelmiete (Art. 269c — Vertrag ≥ 3 Jahre)</option>
@@ -219,72 +219,72 @@
                         <!-- Staffelstufen -->
                         <div id="staffel-box" class="hidden mt-3">
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-                                <label class="block text-xs font-semibold text-slate-500">Staffelstufen</label>
-                                <button type="button" onclick="staffelAdd()" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-100 px-2.5 py-1 rounded-lg">+ Stufe</button>
+                                <label class="block text-xs font-semibold fw-mutet">Staffelstufen</label>
+                                <button type="button" onclick="staffelAdd()" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-2.5 py-1 rounded-lg">+ Stufe</button>
                             </div>
-                            <p class="text-[11px] text-slate-400 mb-2">Ab dem Stichtag gilt der neue Nettomietzins — automatisch im Mietenlauf.</p>
+                            <p class="text-[11px] fw-faint mb-2">Ab dem Stichtag gilt der neue Nettomietzins — automatisch im Mietenlauf.</p>
                             <div id="staffel-rows" class="space-y-2"></div>
                         </div>
-                        <p id="index-hint" class="hidden text-[11px] text-amber-700 bg-amber-50 rounded px-2 py-1 mt-3">Indexanpassungen werden mit amtlichem Formular (Art. 269d) angekündigt — das System erinnert automatisch, wenn der LIK gestiegen ist.</p>
+                        <p id="index-hint" class="hidden text-[11px] fw-warnton fw-warn-flaeche rounded px-2 py-1 mt-3">Indexanpassungen werden mit amtlichem Formular (Art. 269d) angekündigt — das System erinnert automatisch, wenn der LIK gestiegen ist.</p>
                     </div>
 
                     <!-- Indexwerte -->
-                    <div class="border border-slate-200 rounded-xl p-4">
+                    <div class="border fw-linie rounded-xl p-4">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-                            <h4 class="font-bold text-slate-800 text-sm">Indexwerte</h4>
-                            <button type="button" onclick="indexUebernehmen(this)" class="text-xs font-semibold text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg">Aktuelle Werte übernehmen</button>
+                            <h4 class="font-bold fw-strong text-sm">Indexwerte</h4>
+                            <button type="button" onclick="indexUebernehmen(this)" class="text-xs font-semibold fw-marke border fw-linie-marke hover:fw-markenflaeche px-3 py-1.5 rounded-lg">Aktuelle Werte übernehmen</button>
                         </div>
-                        <p class="text-xs text-slate-400 mb-3">Basiswerte, auf denen der Vertrag beruht — für spätere Mietzinsanpassungen.</p>
+                        <p class="text-xs fw-faint mb-3">Basiswerte, auf denen der Vertrag beruht — für spätere Mietzinsanpassungen.</p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Basis Konsumentenpreisindex (LIK)</label>
-                                <input name="basis_lik_punkte" id="s_lik" type="number" step="0.1" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                                <p class="text-[11px] text-slate-400 mt-1">Basis {{ lik_basis }}</p></div>
-                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">LIK Stand-Monat</label>
-                                <input name="basis_lik_stand" id="s_lik_stand" type="month" value="{{ aktueller_lik_stand_iso }}" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                                <p class="text-[11px] text-slate-400 mt-1">Monat, aus dem der LIK-Wert stammt</p></div>
+                            <div><label class="block text-xs font-semibold fw-mutet mb-1">Basis Konsumentenpreisindex (LIK)</label>
+                                <input name="basis_lik_punkte" id="s_lik" type="number" step="0.1" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                                <p class="text-[11px] fw-faint mt-1">Basis {{ lik_basis }}</p></div>
+                            <div><label class="block text-xs font-semibold fw-mutet mb-1">LIK Stand-Monat</label>
+                                <input name="basis_lik_stand" id="s_lik_stand" type="month" value="{{ aktueller_lik_stand_iso }}" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                                <p class="text-[11px] fw-faint mt-1">Monat, aus dem der LIK-Wert stammt</p></div>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-                            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Stand Referenzzinssatz (%)</label>
-                                <input name="basis_referenzzinssatz" id="s_ref" type="number" step="0.05" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+                            <div><label class="block text-xs font-semibold fw-mutet mb-1">Stand Referenzzinssatz (%)</label>
+                                <input name="basis_referenzzinssatz" id="s_ref" type="number" step="0.05" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
                         </div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Kostensteigerung ausgeglichen bis / Letzte Kostenaufrechnung</label>
-                        <input name="kostensteigerung_datum" type="date" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                        <label class="block text-xs font-semibold fw-mutet mb-1 mt-3">Kostensteigerung ausgeglichen bis / Letzte Kostenaufrechnung</label>
+                        <input name="kostensteigerung_datum" type="date" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     </div>
                 </div>
 
                 <!-- S5 KAUTION -->
                 <div class="vstep hidden" data-step="4">
-                    <h3 class="text-lg font-bold text-slate-900 mb-1">Kaution</h3>
-                    <p class="text-sm text-slate-500 mb-4">Höhe der Sicherheitsleistung (Mietzinsdepot nach OR 257e).</p>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Höhe der Sicherheitsleistung (CHF) *</label>
-                    <input name="kautions_betrag" id="s_kaution" type="number" step="0.01" value="0" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 mb-2">
+                    <h3 class="text-lg font-bold fw-strong mb-1">Kaution</h3>
+                    <p class="text-sm fw-mutet mb-4">Höhe der Sicherheitsleistung (Mietzinsdepot nach OR 257e).</p>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">Höhe der Sicherheitsleistung (CHF) *</label>
+                    <input name="kautions_betrag" id="s_kaution" type="number" step="0.01" value="0" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-2">
                     <div class="flex flex-wrap gap-2 mb-4">
-                        <button type="button" onclick="kautionSet(0)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white">Keine</button>
-                        <button type="button" onclick="kautionSet(1)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">1 Monat</button>
-                        <button type="button" onclick="kautionSet(2)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">2 Monate</button>
-                        <button type="button" onclick="kautionSet(3)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">3 Monate</button>
+                        <button type="button" onclick="kautionSet(0)" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-btn fw-primary">Keine</button>
+                        <button type="button" onclick="kautionSet(1)" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-balken">1 Monat</button>
+                        <button type="button" onclick="kautionSet(2)" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-balken">2 Monate</button>
+                        <button type="button" onclick="kautionSet(3)" class="px-3 py-1.5 rounded-lg text-xs font-semibold fw-flaeche2 fw-mutet hover:fw-balken">3 Monate</button>
                     </div>
-                    <p id="kaution-hint" class="text-xs text-slate-400 mb-3"></p>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Kautionskonto (IBAN)</label>
-                    <input name="kautions_konto" oninput="live()" placeholder="CH…" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono">
+                    <p id="kaution-hint" class="text-xs fw-faint mb-3"></p>
+                    <label class="block text-xs font-semibold fw-mutet mb-1">Kautionskonto (IBAN)</label>
+                    <input name="kautions_konto" oninput="live()" placeholder="CH…" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono">
                 </div>
 
                 <!-- S6 NEBENKOSTEN -->
                 <div class="vstep hidden" data-step="5">
-                    <h3 class="text-lg font-bold text-slate-900 mb-1">Nebenkosten</h3>
-                    <p class="text-sm text-slate-500 mb-4">Abrechnungsart und Verteilschlüssel. Der Akonto-Betrag wurde im Schritt Mietzins erfasst.</p>
-                    <div class="bg-slate-50 rounded-lg px-4 py-3 mb-4 text-sm flex items-center justify-between">
-                        <span class="text-slate-500">Nebenkosten / Monat</span><span id="nk-echo" class="font-semibold text-slate-800">CHF 0.00</span>
+                    <h3 class="text-lg font-bold fw-strong mb-1">Nebenkosten</h3>
+                    <p class="text-sm fw-mutet mb-4">Abrechnungsart und Verteilschlüssel. Der Akonto-Betrag wurde im Schritt Mietzins erfasst.</p>
+                    <div class="fw-flaeche2 rounded-lg px-4 py-3 mb-4 text-sm flex items-center justify-between">
+                        <span class="fw-mutet">Nebenkosten / Monat</span><span id="nk-echo" class="font-semibold fw-strong">CHF 0.00</span>
                     </div>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Abrechnungsart</label>
-                    <select name="nk_abrechnungsart" oninput="live()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 mb-3">
+                    <label class="block text-xs font-semibold fw-mutet mb-1">Abrechnungsart</label>
+                    <select name="nk_abrechnungsart" oninput="live()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-3">
                         <option value="akonto">Akonto (Vorschuss mit Abrechnung)</option>
                         <option value="pauschal">Pauschal (fixer Betrag)</option>
                         <option value="inbegriffen">Inbegriffen im Nettomietzins</option>
                         <option value="direkt">Direkt an Werke</option>
                     </select>
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Verteilschlüssel</label>
-                    <select name="verteilschluessel" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                    <label class="block text-xs font-semibold fw-mutet mb-1">Verteilschlüssel</label>
+                    <select name="verteilschluessel" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                         <option value="m2">Fläche (m²)</option><option value="m3">Volumen (m³)</option>
                         <option value="quote">Wertquote</option><option value="einheit">Pro Einheit / Pauschal</option>
                         <option value="individuell">Individuelle Zähler (VHKA)</option>
@@ -293,20 +293,20 @@
 
                 <!-- S7 ABSCHLUSS -->
                 <div class="vstep hidden" data-step="6">
-                    <h3 class="text-lg font-bold text-slate-900 mb-1">Abschluss</h3>
-                    <p class="text-sm text-slate-500 mb-4">Zusammenfassung prüfen und Vertrag erstellen.</p>
-                    <div id="summary" class="bg-slate-50 rounded-lg p-4 text-sm space-y-1.5 mb-4"></div>
-                    <label class="flex items-center gap-2 text-sm text-slate-700">
-                        <input type="checkbox" name="aktiv_setzen" checked class="accent-indigo-600"> Vertrag direkt als <b>aktiv</b> setzen (erscheint in Sollstellung &amp; Debitoren)
+                    <h3 class="text-lg font-bold fw-strong mb-1">Abschluss</h3>
+                    <p class="text-sm fw-mutet mb-4">Zusammenfassung prüfen und Vertrag erstellen.</p>
+                    <div id="summary" class="fw-flaeche2 rounded-lg p-4 text-sm space-y-1.5 mb-4"></div>
+                    <label class="flex items-center gap-2 text-sm fw-ink">
+                        <input type="checkbox" name="aktiv_setzen" checked class="fw-akzent"> Vertrag direkt als <b>aktiv</b> setzen (erscheint in Sollstellung &amp; Debitoren)
                     </label>
-                    <div class="mt-4 pt-4 border-t border-slate-100">
-                        <label class="flex items-center gap-2 text-sm text-slate-700">
-                            <input type="checkbox" name="abschluss" value="senden" class="accent-indigo-600"> Nach dem Erstellen <b>digital zur Unterschrift senden</b> (DocuSeal)
+                    <div class="mt-4 pt-4 border-t fw-linie">
+                        <label class="flex items-center gap-2 text-sm fw-ink">
+                            <input type="checkbox" name="abschluss" value="senden" class="fw-akzent"> Nach dem Erstellen <b>digital zur Unterschrift senden</b> (DocuSeal)
                         </label>
                         {% if docuseal_konfiguriert %}
-                        <p class="text-xs text-slate-400 mt-1 ml-6">Der Mieter erhält den Vertrag per E-Mail zur elektronischen Unterschrift. Der unterschriebene Vertrag wird automatisch überall abgelegt (Portal, Person, Objekt).</p>
+                        <p class="text-xs fw-faint mt-1 ml-6">Der Mieter erhält den Vertrag per E-Mail zur elektronischen Unterschrift. Der unterschriebene Vertrag wird automatisch überall abgelegt (Portal, Person, Objekt).</p>
                         {% else %}
-                        <p class="text-xs text-amber-600 mt-1 ml-6"><i class="fa-solid fa-circle-info mr-1"></i>DocuSeal ist noch nicht konfiguriert — der Vertrag wird trotzdem erstellt. API-Key unter <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.</p>
+                        <p class="text-xs fw-warnton mt-1 ml-6"><i class="fa-solid fa-circle-info mr-1"></i>DocuSeal ist noch nicht konfiguriert — der Vertrag wird trotzdem erstellt. API-Key unter <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.</p>
                         {% endif %}
                     </div>
                 </div>
@@ -314,14 +314,14 @@
         </div>
 
         <!-- Navigation -->
-        <div class="border-t border-slate-100 px-6 py-4 flex items-center justify-between bg-slate-50/50">
-            <button type="button" id="btn-back" onclick="stepMove(-1)" class="text-sm font-semibold text-slate-500 hover:text-slate-700 px-3 py-2 rounded-lg invisible">
+        <div class="border-t fw-linie px-6 py-4 flex items-center justify-between fw-flaeche2/50">
+            <button type="button" id="btn-back" onclick="stepMove(-1)" class="text-sm font-semibold fw-mutet hover:fw-ink px-3 py-2 rounded-lg invisible">
                 <i class="fa-solid fa-arrow-left mr-1"></i> Zurück
             </button>
-            <button type="button" id="btn-next" onclick="stepMove(1)" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
+            <button type="button" id="btn-next" onclick="stepMove(1)" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">
                 Weiter <i class="fa-solid fa-arrow-right ml-1"></i>
             </button>
-            <button type="submit" id="btn-save" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
+            <button type="submit" id="btn-save" class="hidden fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">
                 <i class="fa-solid fa-check mr-1"></i> Vertrag erstellen
             </button>
         </div>
@@ -329,15 +329,15 @@
 
     <!-- ========== RECHTS: LIVE-VERTRAGSVORSCHAU ========== -->
     <div class="lg:sticky lg:top-24">
-        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-2"><i class="fa-solid fa-file-contract"></i> Live-Vorschau</div>
-        <div id="mietrecht-warn" class="hidden mb-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[12.5px] text-amber-800">
+        <div class="text-xs font-semibold uppercase tracking-wider fw-faint mb-2 flex items-center gap-2"><i class="fa-solid fa-file-contract"></i> Live-Vorschau</div>
+        <div id="mietrecht-warn" class="hidden mb-2 rounded-xl border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
             <div class="font-bold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-scale-balanced"></i> Mietrechtlicher Hinweis</div>
             <ul id="mietrecht-warn-list" class="list-disc pl-5 space-y-0.5"></ul>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <iframe id="pvFrame" title="Vertrags-Vorschau" class="block bg-white w-full" style="height:75vh; border:0;"></iframe>
+        <div class="fw-card overflow-hidden">
+            <iframe id="pvFrame" title="Vertrags-Vorschau" class="block fw-flaeche w-full" style="height:75vh; border:0;"></iframe>
         </div>
-        <p class="text-[11px] text-slate-400 mt-1.5 text-center"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Ganze Vertragsbreite auf einen Blick · 1:1 wie das generierte PDF.</p>
+        <p class="text-[11px] fw-faint mt-1.5 text-center"><i class="fa-solid fa-circle-check fw-gut mr-1"></i>Ganze Vertragsbreite auf einen Blick · 1:1 wie das generierte PDF.</p>
     </div>
 </div>
 </form>
@@ -361,7 +361,7 @@ let cur = 0, mieterMode = 'best';
 
 // Kündigungsmonate-Checkboxen rendern (Standard: März, Juni, September)
 document.getElementById('monate-grid').innerHTML = MONATE.map((m,i)=>
-  `<label class="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" class="monat-cb accent-indigo-600" value="${m}" onchange="live()"> ${m}</label>`).join('');
+  `<label class="flex items-center gap-2 text-sm fw-ink"><input type="checkbox" class="monat-cb fw-akzent" value="${m}" onchange="live()"> ${m}</label>`).join('');
 function monateAusserDez(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = c.value!=='Dezember'); live(); }
 function monateStandard(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = ['März','Juni','September'].includes(c.value)); live(); }
 function setMonateAlle(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = true); live(); }
@@ -598,17 +598,17 @@ function staffelAdd(){
   const row = document.createElement('div');
   row.className = 'staffel-row flex items-center gap-2';
   row.innerHTML = `
-    <input type="date" name="staffel_ab" oninput="live()" class="flex-1 bg-white rounded-lg text-sm px-2 py-1.5">
-    <input type="number" step="0.01" name="staffel_netto" oninput="live()" placeholder="Netto CHF" class="w-28 bg-white rounded-lg text-sm px-2 py-1.5">
-    <button type="button" onclick="this.closest('.staffel-row').remove(); live()" title="Staffelstufe entfernen" class="text-slate-400 hover:text-rose-500 text-sm px-1"><i class="fa-solid fa-xmark"></i></button>`;
+    <input type="date" name="staffel_ab" oninput="live()" class="flex-1 fw-flaeche rounded-lg text-sm px-2 py-1.5">
+    <input type="number" step="0.01" name="staffel_netto" oninput="live()" placeholder="Netto CHF" class="w-28 fw-flaeche rounded-lg text-sm px-2 py-1.5">
+    <button type="button" onclick="this.closest('.staffel-row').remove(); live()" title="Staffelstufe entfernen" class="fw-faint hover:fw-kritisch text-sm px-1"><i class="fa-solid fa-xmark"></i></button>`;
   wrap.appendChild(row);
 }
 function mieterTab(m){
   mieterMode=m;
   document.getElementById('mieter-best').classList.toggle('hidden', m!=='best');
   document.getElementById('mieter-neu').classList.toggle('hidden', m!=='neu');
-  document.getElementById('tab-best').className='px-3 py-1.5 rounded-lg text-xs font-semibold '+(m==='best'?'bg-indigo-600 text-white':'bg-slate-100 text-slate-600');
-  document.getElementById('tab-neu').className='px-3 py-1.5 rounded-lg text-xs font-semibold '+(m==='neu'?'bg-indigo-600 text-white':'bg-slate-100 text-slate-600');
+  document.getElementById('tab-best').className='px-3 py-1.5 rounded-lg text-xs font-semibold '+(m==='best'?'fw-btn fw-primary':'fw-flaeche2 fw-mutet');
+  document.getElementById('tab-neu').className='px-3 py-1.5 rounded-lg text-xs font-semibold '+(m==='neu'?'fw-btn fw-primary':'fw-flaeche2 fw-mutet');
   document.getElementById('f_mieter_id').value = (m==='best')?document.getElementById('s_mieter').value:'';
   live();
 }
@@ -633,8 +633,8 @@ function mieter2Tab(m){
   mieter2Mode=m;
   document.getElementById('mieter2-best').classList.toggle('hidden', m!=='best');
   document.getElementById('mieter2-neu').classList.toggle('hidden', m!=='neu');
-  document.getElementById('tab2-best').className='px-3 py-1.5 rounded-lg text-xs font-semibold '+(m==='best'?'bg-indigo-600 text-white':'bg-slate-100 text-slate-600');
-  document.getElementById('tab2-neu').className='px-3 py-1.5 rounded-lg text-xs font-semibold '+(m==='neu'?'bg-indigo-600 text-white':'bg-slate-100 text-slate-600');
+  document.getElementById('tab2-best').className='px-3 py-1.5 rounded-lg text-xs font-semibold '+(m==='best'?'fw-btn fw-primary':'fw-flaeche2 fw-mutet');
+  document.getElementById('tab2-neu').className='px-3 py-1.5 rounded-lg text-xs font-semibold '+(m==='neu'?'fw-btn fw-primary':'fw-flaeche2 fw-mutet');
   document.getElementById('f_mit_mieter_id').value = (m==='best')?document.getElementById('s_mieter2').value:'';
   live();
 }
@@ -677,10 +677,10 @@ function setNeuTyp(t){
   document.getElementById('f_mieter_typ').value = t;
   document.querySelectorAll('.ntyp-btn').forEach(function(b){
     var aktiv = b.dataset.ntyp === t;
-    b.classList.toggle('bg-indigo-600', aktiv);
+    b.classList.toggle('fw-balken-voll', aktiv);
     b.classList.toggle('text-white', aktiv);
-    b.classList.toggle('bg-slate-100', !aktiv);
-    b.classList.toggle('text-slate-600', !aktiv);
+    b.classList.toggle('fw-flaeche2', !aktiv);
+    b.classList.toggle('fw-mutet', !aktiv);
   });
   document.getElementById('neu-namen').classList.toggle('hidden', t !== 'person');
   document.getElementById('neu-firma').classList.toggle('hidden', t === 'person');
@@ -716,8 +716,8 @@ function goStep(i){
     const idx=+el.dataset.i, dot=el.querySelector('.dot'), lbl=el.querySelector('.lbl');
     const active=idx===i, done=idx<i;
     dot.className='dot w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0 '+
-      (active?'bg-indigo-600 text-white':done?'bg-indigo-100 text-indigo-600':'bg-slate-200 text-slate-400');
-    lbl.className='lbl text-sm '+(active?'font-bold text-slate-900':'text-slate-400');
+      (active?'fw-btn fw-primary':done?'fw-markenflaeche fw-marke':'fw-balken fw-faint');
+    lbl.className='lbl text-sm '+(active?'font-bold fw-strong':'fw-faint');
   });
   document.getElementById('btn-back').classList.toggle('invisible', i===0);
   document.getElementById('btn-next').classList.toggle('hidden', i===6);
@@ -843,60 +843,60 @@ function live(){
   const secN = (function(){ let n=3; return function(t){ return `<div class="pvsec">${++n}. ${t}</div>`; }; })();
 
   document.getElementById('pv').innerHTML = `
-    <div class="text-[11px] text-slate-400 border-b border-slate-100 pb-2 mb-4">${vm.name} | ${vm.strasse} | ${vm.plz} ${vm.ort}</div>
+    <div class="text-[11px] fw-faint border-b fw-linie pb-2 mb-4">${vm.name} | ${vm.strasse} | ${vm.plz} ${vm.ort}</div>
     <div class="font-bold text-base mb-3">${o?o.vertrag_titel:'Mietvertrag für Wohnräume'}</div>
-    <p class="text-xs text-slate-500 mb-4">Einfachheitshalber wird auf die weiblichen Formen verzichtet und «Mieter, Vermieter» als Oberbegriff verwendet.</p>
+    <p class="text-xs fw-mutet mb-4">Einfachheitshalber wird auf die weiblichen Formen verzichtet und «Mieter, Vermieter» als Oberbegriff verwendet.</p>
 
     <div class="pvsec">1. Vertragsparteien</div>
-    <div class="mb-1 mt-2 font-semibold text-xs text-slate-500">Vermieter</div>
-    <div class="mb-3">${vm.name}<br>${vm.strasse}<br>${vm.plz} ${vm.ort}<br><span class="text-xs text-slate-400">Nachstehend «Vermieter» genannt.</span></div>
-    <div class="mb-1 font-semibold text-xs text-slate-500">Mieter</div>
+    <div class="mb-1 mt-2 font-semibold text-xs fw-mutet">Vermieter</div>
+    <div class="mb-3">${vm.name}<br>${vm.strasse}<br>${vm.plz} ${vm.ort}<br><span class="text-xs fw-faint">Nachstehend «Vermieter» genannt.</span></div>
+    <div class="mb-1 font-semibold text-xs fw-mutet">Mieter</div>
     <div class="mb-2">${m?m.name:'[Mieter auswählen]'}${m&&m.strasse?'<br>'+m.strasse:''}${m&&m.plz?'<br>'+m.plz+' '+(m.ort||''):''}</div>
     ${(function(){const m2=zweiterName()?curMieter2():null; return m2?`<div class="mb-2 pt-2 border-t border-slate-50">${m2.name}${m2.strasse?'<br>'+m2.strasse:''}${m2.plz?'<br>'+m2.plz+' '+(m2.ort||''):''}</div>`:'';})()}
-    <div class="mb-2"><span class="text-xs text-slate-400">Nachstehend «Mieter» genannt.</span></div>
-    ${document.getElementById('familienwohnung')&&document.getElementById('familienwohnung').checked?'<p class="text-xs text-amber-700 bg-amber-50 rounded px-2 py-1 mb-2">Es handelt sich um eine <b>Familienwohnung</b> (Art. 266n / 169 OR). Eine Kündigung ist beiden Ehegatten separat zuzustellen.</p>':''}
-    <p class="text-xs text-slate-400 mb-3">Alle aufgeführten Personen haften für sämtliche Verbindlichkeiten solidarisch.</p>
+    <div class="mb-2"><span class="text-xs fw-faint">Nachstehend «Mieter» genannt.</span></div>
+    ${document.getElementById('familienwohnung')&&document.getElementById('familienwohnung').checked?'<p class="text-xs fw-warnton fw-warn-flaeche rounded px-2 py-1 mb-2">Es handelt sich um eine <b>Familienwohnung</b> (Art. 266n / 169 OR). Eine Kündigung ist beiden Ehegatten separat zuzustellen.</p>':''}
+    <p class="text-xs fw-faint mb-3">Alle aufgeführten Personen haften für sämtliche Verbindlichkeiten solidarisch.</p>
 
     <div class="pvsec">2. Mietsache</div>
     <table class="w-full my-2 text-[13px]"><tbody>
-      <tr><td class="text-slate-500 py-0.5 w-2/5">Mietobjekt</td><td>${o?o.bezeichnung:'—'}</td></tr>
-      <tr><td class="text-slate-500 py-0.5">Stockwerk</td><td>${o&&o.etage?o.etage:'—'}</td></tr>
-      <tr><td class="text-slate-500 py-0.5">Adresse</td><td>${adr||'—'}</td></tr>
-      <tr><td class="text-slate-500 py-0.5">EGID / EWID</td><td>${l?l.egid||'—':'—'} / ${o&&o.ewid?o.ewid:'—'}</td></tr>
+      <tr><td class="fw-mutet py-0.5 w-2/5">Mietobjekt</td><td>${o?o.bezeichnung:'—'}</td></tr>
+      <tr><td class="fw-mutet py-0.5">Stockwerk</td><td>${o&&o.etage?o.etage:'—'}</td></tr>
+      <tr><td class="fw-mutet py-0.5">Adresse</td><td>${adr||'—'}</td></tr>
+      <tr><td class="fw-mutet py-0.5">EGID / EWID</td><td>${l?l.egid||'—':'—'} / ${o&&o.ewid?o.ewid:'—'}</td></tr>
     </tbody></table>
 
     <div class="pvsec">3. Mietdauer und Kündigung</div>
     <table class="w-full my-2 text-[13px]"><tbody>
-      <tr><td class="text-slate-500 py-0.5 w-2/5">Mietbeginn</td><td>${dstr(val('beginn'))||'—'}</td></tr>
-      <tr><td class="text-slate-500 py-0.5">Mietende</td><td>${unbef?'unbefristet':(dstr(val('ende'))||'—')}</td></tr>
-      <tr><td class="text-slate-500 py-0.5">Kündigungsfrist</td><td>${(o&&o.ist_einstellplatz)?((parseInt(val('kuendigungsfrist'))>0)?(val('kuendigungsfrist')+' Monate auf Monatsende'):'2 Wochen auf Ende einer Monatsperiode (Art. 266e OR)'):((val('kuendigungsfrist')||3)+' Monate')}</td></tr>
-      <tr><td class="text-slate-500 py-0.5">Kündigungstermine</td><td>${(o&&o.ist_einstellplatz)?'Ende jedes Monats':(val('kuendigungstermine')||'—')}</td></tr>
+      <tr><td class="fw-mutet py-0.5 w-2/5">Mietbeginn</td><td>${dstr(val('beginn'))||'—'}</td></tr>
+      <tr><td class="fw-mutet py-0.5">Mietende</td><td>${unbef?'unbefristet':(dstr(val('ende'))||'—')}</td></tr>
+      <tr><td class="fw-mutet py-0.5">Kündigungsfrist</td><td>${(o&&o.ist_einstellplatz)?((parseInt(val('kuendigungsfrist'))>0)?(val('kuendigungsfrist')+' Monate auf Monatsende'):'2 Wochen auf Ende einer Monatsperiode (Art. 266e OR)'):((val('kuendigungsfrist')||3)+' Monate')}</td></tr>
+      <tr><td class="fw-mutet py-0.5">Kündigungstermine</td><td>${(o&&o.ist_einstellplatz)?'Ende jedes Monats':(val('kuendigungstermine')||'—')}</td></tr>
     </tbody></table>
-    ${val('erstmals_kuendbar')?`<p class="text-xs text-slate-500 mb-2">Der Vertrag ist erstmals kündbar auf ${dstr(val('erstmals_kuendbar'))}.</p>`:''}
+    ${val('erstmals_kuendbar')?`<p class="text-xs fw-mutet mb-2">Der Vertrag ist erstmals kündbar auf ${dstr(val('erstmals_kuendbar'))}.</p>`:''}
 
     ${(val('mitbenutzung')||val('nebenraeume'))?`<table class="w-full my-2 text-[13px]"><tbody>
-      ${val('mitbenutzung')?`<tr><td class="text-slate-500 py-0.5 w-2/5">Zur Mitbenützung</td><td>${val('mitbenutzung')}</td></tr>`:''}
-      ${val('nebenraeume')?`<tr><td class="text-slate-500 py-0.5">Nebenräume</td><td>${val('nebenraeume')}</td></tr>`:''}
+      ${val('mitbenutzung')?`<tr><td class="fw-mutet py-0.5 w-2/5">Zur Mitbenützung</td><td>${val('mitbenutzung')}</td></tr>`:''}
+      ${val('nebenraeume')?`<tr><td class="fw-mutet py-0.5">Nebenräume</td><td>${val('nebenraeume')}</td></tr>`:''}
     </tbody></table>`:''}
 
     ${secN('Mietzins')}
     <table class="w-full my-2 text-[13px]"><tbody>
       ${eps
-        ? `<tr><td class="text-slate-500 py-0.5 w-2/5 font-semibold">Mietzins</td><td class="font-semibold">CHF ${fmt(netto)}${mwstIncl}</td></tr>`
-        : `<tr><td class="text-slate-500 py-0.5 w-2/5">Nettomietzins</td><td>CHF ${fmt(netto)}</td></tr>
-      <tr><td class="text-slate-500 py-0.5">Nebenkosten</td><td>CHF ${fmt(nk)}</td></tr>
-      <tr><td class="text-slate-500 py-0.5 font-semibold">Bruttomietzins</td><td class="font-semibold">CHF ${fmt(brutto)}${mwstIncl}</td></tr>`}
+        ? `<tr><td class="fw-mutet py-0.5 w-2/5 font-semibold">Mietzins</td><td class="font-semibold">CHF ${fmt(netto)}${mwstIncl}</td></tr>`
+        : `<tr><td class="fw-mutet py-0.5 w-2/5">Nettomietzins</td><td>CHF ${fmt(netto)}</td></tr>
+      <tr><td class="fw-mutet py-0.5">Nebenkosten</td><td>CHF ${fmt(nk)}</td></tr>
+      <tr><td class="fw-mutet py-0.5 font-semibold">Bruttomietzins</td><td class="font-semibold">CHF ${fmt(brutto)}${mwstIncl}</td></tr>`}
     </tbody></table>
-    <p class="text-xs text-slate-400 mb-2">Der Mietzins ist jeweils am 1. Tag des Monats (Verfalldatum) fällig. Zahlungsmodus: ${({monatlich:'monatlich',vierteljahr:'vierteljährlich',halbjahr:'halbjährlich',jahr:'jährlich'})[val('zahlungsrhythmus')]||'monatlich'}.</p>
-    <p class="text-xs text-slate-400 mb-1">Landesindex der Konsumentenpreise: Basis ${LIK_BASIS_NAME}${likStandLabel()?', Stand '+likStandLabel():''}: ${val('basis_lik_punkte')||'—'} Pkt. · Referenzzinssatz ${val('basis_referenzzinssatz')||'—'}%.</p>
-    ${val('weitere_vorbehalte')?`<p class="text-xs text-slate-500 mb-2"><b>Vorbehalte:</b> ${val('weitere_vorbehalte')}</p>`:''}
+    <p class="text-xs fw-faint mb-2">Der Mietzins ist jeweils am 1. Tag des Monats (Verfalldatum) fällig. Zahlungsmodus: ${({monatlich:'monatlich',vierteljahr:'vierteljährlich',halbjahr:'halbjährlich',jahr:'jährlich'})[val('zahlungsrhythmus')]||'monatlich'}.</p>
+    <p class="text-xs fw-faint mb-1">Landesindex der Konsumentenpreise: Basis ${LIK_BASIS_NAME}${likStandLabel()?', Stand '+likStandLabel():''}: ${val('basis_lik_punkte')||'—'} Pkt. · Referenzzinssatz ${val('basis_referenzzinssatz')||'—'}%.</p>
+    ${val('weitere_vorbehalte')?`<p class="text-xs fw-mutet mb-2"><b>Vorbehalte:</b> ${val('weitere_vorbehalte')}</p>`:''}
 
     ${secN('Mietzinsdepot')}
-    <p class="text-xs text-slate-500 my-2">Der Mieter leistet eine Sicherheit im Sinne von OR 257e von <b>CHF ${fmt(kaut)}</b>.${val('kautions_konto')?' Konto: '+val('kautions_konto'):''}</p>
+    <p class="text-xs fw-mutet my-2">Der Mieter leistet eine Sicherheit im Sinne von OR 257e von <b>CHF ${fmt(kaut)}</b>.${val('kautions_konto')?' Konto: '+val('kautions_konto'):''}</p>
 
-    ${eps ? '' : secN('Nebenkosten') + `<p class="text-xs text-slate-500 my-2">Abrechnungsart: ${({akonto:'Akonto (Vorschuss mit Abrechnung)',pauschal:'Pauschal',inbegriffen:'Im Nettomietzins inbegriffen',direkt:'Direkt an Werke'})[val('nk_abrechnungsart')]||'Akonto'}. Nebenkosten sind das Entgelt für Heizung, Warmwasser und Betriebskosten.</p>`}
+    ${eps ? '' : secN('Nebenkosten') + `<p class="text-xs fw-mutet my-2">Abrechnungsart: ${({akonto:'Akonto (Vorschuss mit Abrechnung)',pauschal:'Pauschal',inbegriffen:'Im Nettomietzins inbegriffen',direkt:'Direkt an Werke'})[val('nk_abrechnungsart')]||'Akonto'}. Nebenkosten sind das Entgelt für Heizung, Warmwasser und Betriebskosten.</p>`}
 
-    ${val('besondere_vereinbarungen')? secN('Besondere Bestimmungen')+`<p class="text-xs text-slate-500 my-2">${val('besondere_vereinbarungen')}</p>`:''}
+    ${val('besondere_vereinbarungen')? secN('Besondere Bestimmungen')+`<p class="text-xs fw-mutet my-2">${val('besondere_vereinbarungen')}</p>`:''}
 
     ${secN('Unterschriften')}
     ${(function(){
@@ -904,14 +904,14 @@ function live(){
       const m1=(m?m.name:'Mieter');
       if(z){
         // Zwei Mieter → beide unterschreiben (solidarisch / Familienwohnung)
-        return `<div class="grid grid-cols-2 gap-6 mt-4 text-xs text-slate-400">
+        return `<div class="grid grid-cols-2 gap-6 mt-4 text-xs fw-faint">
           <div>Vermieter<br><br>______________<br>Ort, Datum</div>
           <div>Mieter 1: ${m1}<br><br>______________<br>Ort, Datum</div>
           <div>&nbsp;</div>
           <div>Mieter 2: ${z}<br><br>______________<br>Ort, Datum</div>
         </div>`;
       }
-      return `<div class="grid grid-cols-2 gap-6 mt-4 text-xs text-slate-400">
+      return `<div class="grid grid-cols-2 gap-6 mt-4 text-xs fw-faint">
         <div>Vermieter<br><br>______________<br>Ort, Datum</div>
         <div>Mieter<br><br>______________<br>Ort, Datum</div>
       </div>`;
@@ -925,18 +925,18 @@ function buildSummary(){
     ? ((parseInt(val('kuendigungsfrist'))>0) ? (val('kuendigungsfrist')+' Monate auf Monatsende') : '2 Wochen auf Monatsende (Art. 266e OR)')
     : ((val('kuendigungsfrist')||3)+' Monate');
   document.getElementById('summary').innerHTML = `
-    <div class="flex justify-between"><span class="text-slate-500">Objekt</span><span class="font-medium text-right">${o?o.bezeichnung:'—'}${l?', '+l.strasse:''}</span></div>
-    <div class="flex justify-between"><span class="text-slate-500">Mieter</span><span class="font-medium">${m?m.name:'—'}</span></div>
-    ${zweiterName()?`<div class="flex justify-between"><span class="text-slate-500">Zweiter Mieter</span><span class="font-medium">${zweiterName()}${document.getElementById('familienwohnung').checked?' · Familienwohnung':''}</span></div>`:''}
-    <div class="flex justify-between"><span class="text-slate-500">Mietbeginn</span><span class="font-medium">${dstr(val('beginn'))||'—'}</span></div>
-    <div class="flex justify-between"><span class="text-slate-500">Mietende</span><span class="font-medium">${document.getElementById('unbefristet').checked?'unbefristet':(dstr(val('ende'))||'—')}</span></div>
-    <div class="flex justify-between"><span class="text-slate-500">Kündigungsmonate</span><span class="font-medium text-right">${eps?'Ende jedes Monats':(val('kuendigungstermine')||'—')}</span></div>
-    <div class="flex justify-between"><span class="text-slate-500">Kündigungsfrist</span><span class="font-medium text-right">${fristTxt}</span></div>
+    <div class="flex justify-between"><span class="fw-mutet">Objekt</span><span class="font-medium text-right">${o?o.bezeichnung:'—'}${l?', '+l.strasse:''}</span></div>
+    <div class="flex justify-between"><span class="fw-mutet">Mieter</span><span class="font-medium">${m?m.name:'—'}</span></div>
+    ${zweiterName()?`<div class="flex justify-between"><span class="fw-mutet">Zweiter Mieter</span><span class="font-medium">${zweiterName()}${document.getElementById('familienwohnung').checked?' · Familienwohnung':''}</span></div>`:''}
+    <div class="flex justify-between"><span class="fw-mutet">Mietbeginn</span><span class="font-medium">${dstr(val('beginn'))||'—'}</span></div>
+    <div class="flex justify-between"><span class="fw-mutet">Mietende</span><span class="font-medium">${document.getElementById('unbefristet').checked?'unbefristet':(dstr(val('ende'))||'—')}</span></div>
+    <div class="flex justify-between"><span class="fw-mutet">Kündigungsmonate</span><span class="font-medium text-right">${eps?'Ende jedes Monats':(val('kuendigungstermine')||'—')}</span></div>
+    <div class="flex justify-between"><span class="fw-mutet">Kündigungsfrist</span><span class="font-medium text-right">${fristTxt}</span></div>
     ${eps
-      ? `<div class="flex justify-between border-t border-slate-200 pt-1.5 mt-1.5"><span class="text-slate-500">Mietzins/Monat</span><span class="font-bold text-indigo-600">CHF ${fmt(netto)}</span></div>`
-      : `<div class="flex justify-between border-t border-slate-200 pt-1.5 mt-1.5"><span class="text-slate-500">Netto / NK</span><span class="font-medium">CHF ${fmt(netto)} / ${fmt(nk)}</span></div>
-    <div class="flex justify-between"><span class="text-slate-500">Brutto/Monat</span><span class="font-bold text-indigo-600">CHF ${fmt(netto+nk)}</span></div>`}
-    <div class="flex justify-between"><span class="text-slate-500">Kaution</span><span class="font-medium">CHF ${fmt(parseFloat(val('kautions_betrag'))||0)}</span></div>`;
+      ? `<div class="flex justify-between border-t fw-linie pt-1.5 mt-1.5"><span class="fw-mutet">Mietzins/Monat</span><span class="font-bold fw-marke">CHF ${fmt(netto)}</span></div>`
+      : `<div class="flex justify-between border-t fw-linie pt-1.5 mt-1.5"><span class="fw-mutet">Netto / NK</span><span class="font-medium">CHF ${fmt(netto)} / ${fmt(nk)}</span></div>
+    <div class="flex justify-between"><span class="fw-mutet">Brutto/Monat</span><span class="font-bold fw-marke">CHF ${fmt(netto+nk)}</span></div>`}
+    <div class="flex justify-between"><span class="fw-mutet">Kaution</span><span class="font-medium">CHF ${fmt(parseFloat(val('kautions_betrag'))||0)}</span></div>`;
 }
 // Init
 const stepStyle=document.createElement('style');

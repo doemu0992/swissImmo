@@ -6,7 +6,10 @@ Fest verdrahtete Tailwind-Farbklassen in Vorlagen — `bg-slate-50`,
 `text-indigo-600`, `border-white/10` und ihresgleichen.
 
 Stand zu Beginn von E2.1: **7437 in 134 Vorlagen**. Nach der Umstellung von
-`pendenzen.html` (71) und `fristen.html` (53): **STAND 7313 in 132 Vorlagen**.
+`pendenzen.html` (71) und `fristen.html` (53): 7313 in 132 Vorlagen.
+E2.2 nahm die drei dichtesten Seiten — `vertrag_neu.html` (275 → 2),
+`kreditoren.html` (233 → 8), `buchhaltung.html` (217 → 0):
+**STAND 6598 in 131 Vorlagen**.
 
 Die Zahl in Grossbuchstaben ist kein Schmuck — `test_der_stand_im_kopf_stimmt`
 liest sie aus diesem Text und vergleicht sie mit der Messung. Eine erste
@@ -132,7 +135,6 @@ OBERGRENZE = {
     'core/templates/fw/bewerber_vergleich.html': 50,
     'core/templates/fw/bewerbung_detail.html': 91,
     'core/templates/fw/bewerbungen.html': 12,
-    'core/templates/fw/buchhaltung.html': 217,
     'core/templates/fw/debitoren.html': 112,
     'core/templates/fw/debitoren_aging.html': 50,
     'core/templates/fw/dienstleister.html': 74,
@@ -147,7 +149,7 @@ OBERGRENZE = {
     'core/templates/fw/kommunikation.html': 74,
     'core/templates/fw/kontenplan.html': 75,
     'core/templates/fw/kontoblatt.html': 36,
-    'core/templates/fw/kreditoren.html': 233,
+    'core/templates/fw/kreditoren.html': 8,
     'core/templates/fw/kuendigung_form.html': 50,
     'core/templates/fw/lebensdauer.html': 33,
     'core/templates/fw/leerstand_verlauf.html': 36,
@@ -190,7 +192,7 @@ OBERGRENZE = {
     'core/templates/fw/vertraege.html': 18,
     'core/templates/fw/vertrag_bearbeiten.html': 106,
     'core/templates/fw/vertrag_detail.html': 102,
-    'core/templates/fw/vertrag_neu.html': 275,
+    'core/templates/fw/vertrag_neu.html': 2,
     'core/templates/fw/verzug_257d.html': 46,
     'core/templates/fw/vorlage_form.html': 25,
     'core/templates/fw/vorlagen.html': 28,

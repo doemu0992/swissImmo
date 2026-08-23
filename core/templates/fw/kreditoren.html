@@ -10,34 +10,34 @@
         <button type="button" onclick="document.getElementById('kredform').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Rechnung erfassen</button>
         <div class="relative" data-menu>
             <button type="button" data-menu-btn class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
-            <div data-menu-list class="hidden absolute right-0 mt-1.5 w-72 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
-                <button type="button" onclick="document.getElementById('scanform').classList.toggle('hidden')" class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-robot w-4 text-indigo-500"></i>Beleg scannen (KI)</button>
+            <div data-menu-list class="hidden absolute right-0 mt-1.5 w-72 fw-card shadow-lg py-1.5 z-30">
+                <button type="button" onclick="document.getElementById('scanform').classList.toggle('hidden')" class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2"><i class="fa-solid fa-robot w-4 fw-marke"></i>Beleg scannen (KI)</button>
                 {% if darf_bezahlen %}
-                <div class="my-1 border-t border-slate-100"></div>
-                <a href="/neu/zahllauf/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" title="Auswählen, pain.001 erzeugen, Lauf sammelverbuchen" class="flex items-center gap-2.5 px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50"><i class="fa-solid fa-money-bill-transfer w-4"></i>Zahllauf öffnen · {{ anzahl_zahlbar }} zahlbar</a>
+                <div class="my-1 border-t fw-linie"></div>
+                <a href="/neu/zahllauf/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" title="Auswählen, pain.001 erzeugen, Lauf sammelverbuchen" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-gut hover:fw-gut-flaeche"><i class="fa-solid fa-money-bill-transfer w-4"></i>Zahllauf öffnen · {{ anzahl_zahlbar }} zahlbar</a>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
-<p class="text-sm text-slate-500 mb-5">Rechnungseingang → Freigabe → Zahlung (Aufwand an Kreditoren, dann Kreditoren an Bank)
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/kreditoren/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+<p class="text-sm fw-mutet mb-5">Rechnungseingang → Freigabe → Zahlung (Aufwand an Kreditoren, dann Kreditoren an Bank)
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold fw-marke">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/kreditoren/" class="text-xs fw-faint hover:fw-marke">× aufheben</a>{% endif %}</p>
 
 <!-- KI-Rechnungsscanner: Upload → Beleg wird direkt gescannt und als Rechnung angelegt -->
-<div id="scanform" class="hidden bg-white rounded-xl border border-violet-200 p-5 mb-6">
-    <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-robot text-violet-500 mr-1.5"></i>KI-Rechnungsscanner</h3>
-    <p class="text-xs text-slate-400 mb-4">Belege (PDF oder Foto, <b>auch mehrere gleichzeitig</b>) hochladen — Lieferant, Betrag,
+<div id="scanform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
+    <h3 class="font-bold fw-strong text-sm mb-1"><i class="fa-solid fa-robot fw-info mr-1.5"></i>KI-Rechnungsscanner</h3>
+    <p class="text-xs fw-faint mb-4">Belege (PDF oder Foto, <b>auch mehrere gleichzeitig</b>) hochladen — Lieferant, Betrag,
         Datum, IBAN und QR-Referenz werden automatisch ausgelesen und je Beleg eine Rechnung mit Status «Neu» angelegt.
         Zeile anklicken, um die Werte neben der Beleg-Vorschau zu prüfen/korrigieren, dann freigeben.</p>
     {% if rechnungs_mail %}
-    <div class="mb-4 rounded-lg border border-violet-100 bg-violet-50/60 px-4 py-3 text-[12.5px] text-violet-800">
+    <div class="mb-4 rounded-lg border fw-linie fw-info-flaeche px-4 py-3 text-[12.5px] fw-info">
         <i class="fa-solid fa-envelope mr-1"></i><b>Rechnungen per E-Mail:</b> Handwerker/Lieferanten können ihre Rechnung direkt an
         <b>{{ rechnungs_mail }}</b> senden — PDF-/Foto-Anhänge werden automatisch gescannt und erscheinen hier als Status «Neu».
     </div>
     {% endif %}
     {% if not ki_aktiv %}
-    <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[12.5px] text-amber-800">
+    <div class="mb-4 rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
         <i class="fa-solid fa-circle-info mr-1"></i><b>KI nicht konfiguriert</b> — es läuft nur die regelbasierte Erkennung (IBAN/Betrag/Datum
         aus Text-PDFs; Foto-Belege werden nicht ausgelesen). Für die volle KI-Erkennung den <code>GROQ_API_KEY</code> unter
         <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.
@@ -46,15 +46,15 @@
     <form method="post" action="/neu/kreditoren/scan/" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3" onsubmit="fwScanStart(this)">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <div class="grow min-w-[220px]"><label for="up-beleg" class="block text-xs font-semibold text-slate-500 mb-1">Belege (PDF, JPG, PNG — Mehrfachauswahl möglich) *</label>
+        <div class="grow min-w-[220px]"><label for="up-beleg" class="block text-xs font-semibold fw-mutet mb-1">Belege (PDF, JPG, PNG — Mehrfachauswahl möglich) *</label>
             <input id="up-beleg" type="file" name="beleg_scan" required multiple accept=".pdf,.jpg,.jpeg,.png,.webp"
-                   class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white"></div>
-        <div><label for="up-lg" class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft (optional)</label>
-            <select id="up-lg" name="liegenschaft_id" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5 min-w-[14rem]">
+                   class="w-full text-xs fw-mutet file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:fw-balken-voll file:text-white"></div>
+        <div><label for="up-lg" class="block text-xs font-semibold fw-mutet mb-1">Liegenschaft (optional)</label>
+            <select id="up-lg" name="liegenschaft_id" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5 min-w-[14rem]">
                 <option value="">— später zuordnen —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
-        <button id="scan-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
+        <button id="scan-btn" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">
             <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Hochladen &amp; scannen
         </button>
     </form>
@@ -66,81 +66,81 @@
     </script>
 </div>
 
-<div id="kredform" class="hidden bg-white rounded-xl border border-indigo-200 p-5 mb-6">
-    <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-file-invoice text-indigo-500 mr-1.5"></i>Kreditorenrechnung erfassen</h3>
+<div id="kredform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
+    <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-file-invoice fw-marke mr-1.5"></i>Kreditorenrechnung erfassen</h3>
     <form method="post" action="/neu/kreditoren/neu/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <div class="sm:col-span-2"><label for="kr-lieferant" class="block text-xs font-semibold text-slate-500 mb-1">Lieferant *</label>
-            <input id="kr-lieferant" name="lieferant" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label for="kr-betrag" class="block text-xs font-semibold text-slate-500 mb-1">Betrag brutto (CHF) *</label>
-            <input id="kr-betrag" name="betrag" required inputmode="decimal" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 text-right tabular-nums"></div>
-        <div><label for="kr-lg" class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft</label>
-            <select id="kr-lg" name="liegenschaft_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div class="sm:col-span-2"><label for="kr-lieferant" class="block text-xs font-semibold fw-mutet mb-1">Lieferant *</label>
+            <input id="kr-lieferant" name="lieferant" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-betrag" class="block text-xs font-semibold fw-mutet mb-1">Betrag brutto (CHF) *</label>
+            <input id="kr-betrag" name="betrag" required inputmode="decimal" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 text-right tabular-nums"></div>
+        <div><label for="kr-lg" class="block text-xs font-semibold fw-mutet mb-1">Liegenschaft</label>
+            <select id="kr-lg" name="liegenschaft_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— keine —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
-        <div><label for="kr-konto" class="block text-xs font-semibold text-slate-500 mb-1">Aufwandskonto</label>
-            <select id="kr-konto" name="konto_id" onchange="fwHnkSync(this)" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label for="kr-konto" class="block text-xs font-semibold fw-mutet mb-1">Aufwandskonto</label>
+            <select id="kr-konto" name="konto_id" onchange="fwHnkSync(this)" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— bei Freigabe wählen —</option>
                 {% for k in aufwand_konten %}<option value="{{ k.id }}" {% if k.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
             </select></div>
-        <div><label for="kr-mwst" class="block text-xs font-semibold text-slate-500 mb-1">MWST-Satz (%)</label>
-            <input id="kr-mwst" name="mwst_satz" inputmode="decimal" placeholder="z.B. 8.1 (0 = keine)" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label for="kr-datum" class="block text-xs font-semibold text-slate-500 mb-1">Rechnungsdatum</label>
-            <input id="kr-datum" type="date" name="datum" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label for="kr-faellig" class="block text-xs font-semibold text-slate-500 mb-1">Fällig am</label>
-            <input id="kr-faellig" type="date" name="faellig_am" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label for="kr-referenz" class="block text-xs font-semibold text-slate-500 mb-1">Referenz</label>
-            <input id="kr-referenz" name="referenz" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label for="kr-iban" class="block text-xs font-semibold text-slate-500 mb-1">IBAN des Lieferanten</label>
-            <input id="kr-iban" name="iban" placeholder="CH.." class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono">
-            <span class="text-[11px] text-slate-400">Ohne IBAN kann die Rechnung nicht in den Zahllauf.</span></div>
-        <div><label for="kr-leist-von" class="block text-xs font-semibold text-slate-500 mb-1">Leistung von <span class="text-slate-300 font-normal">(HNK-Periode)</span></label>
-            <input id="kr-leist-von" type="date" name="leistungs_von" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label for="kr-leist-bis" class="block text-xs font-semibold text-slate-500 mb-1">Leistung bis</label>
-            <input id="kr-leist-bis" type="date" name="leistungs_bis" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label for="kr-beleg" class="block text-xs font-semibold text-slate-500 mb-1">Beleg (PDF/Bild)</label>
-            <input id="kr-beleg" type="file" name="beleg_scan" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white"></div>
+        <div><label for="kr-mwst" class="block text-xs font-semibold fw-mutet mb-1">MWST-Satz (%)</label>
+            <input id="kr-mwst" name="mwst_satz" inputmode="decimal" placeholder="z.B. 8.1 (0 = keine)" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-datum" class="block text-xs font-semibold fw-mutet mb-1">Rechnungsdatum</label>
+            <input id="kr-datum" type="date" name="datum" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-faellig" class="block text-xs font-semibold fw-mutet mb-1">Fällig am</label>
+            <input id="kr-faellig" type="date" name="faellig_am" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-referenz" class="block text-xs font-semibold fw-mutet mb-1">Referenz</label>
+            <input id="kr-referenz" name="referenz" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-iban" class="block text-xs font-semibold fw-mutet mb-1">IBAN des Lieferanten</label>
+            <input id="kr-iban" name="iban" placeholder="CH.." class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono">
+            <span class="text-[11px] fw-faint">Ohne IBAN kann die Rechnung nicht in den Zahllauf.</span></div>
+        <div><label for="kr-leist-von" class="block text-xs font-semibold fw-mutet mb-1">Leistung von <span class="fw-faint font-normal">(HNK-Periode)</span></label>
+            <input id="kr-leist-von" type="date" name="leistungs_von" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-leist-bis" class="block text-xs font-semibold fw-mutet mb-1">Leistung bis</label>
+            <input id="kr-leist-bis" type="date" name="leistungs_bis" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kr-beleg" class="block text-xs font-semibold fw-mutet mb-1">Beleg (PDF/Bild)</label>
+            <input id="kr-beleg" type="file" name="beleg_scan" class="w-full text-xs fw-mutet file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:fw-balken-voll file:text-white"></div>
         <div class="sm:col-span-2 flex items-center">
-            <label class="inline-flex items-center gap-2 text-sm text-slate-600 cursor-pointer"><input type="checkbox" name="is_hnk_relevant" class="accent-indigo-600">In Nebenkostenabrechnung einbeziehen (HNK)</label>
-            <span class="ml-2 text-[11px] text-slate-400">— wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, Kehricht, Versicherung) automatisch gesetzt</span></div>
-        <div class="sm:col-span-3"><button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen (Status: Neu)</button></div>
+            <label class="inline-flex items-center gap-2 text-sm fw-mutet cursor-pointer"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">In Nebenkostenabrechnung einbeziehen (HNK)</label>
+            <span class="ml-2 text-[11px] fw-faint">— wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, Kehricht, Versicherung) automatisch gesetzt</span></div>
+        <div class="sm:col-span-3"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen (Status: Neu)</button></div>
     </form>
 </div>
 
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-money-check-dollar"></i></div>
-        <div><div class="text-2xl font-bold text-sky-600">CHF {{ total_offen|chf }}</div><div class="text-sm text-slate-500">Freigegeben, offen</div></div>
+    <div class="fw-card p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-sky-50 fw-info flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-money-check-dollar"></i></div>
+        <div><div class="text-2xl font-bold fw-info">CHF {{ total_offen|chf }}</div><div class="text-sm fw-mutet">Freigegeben, offen</div></div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-inbox"></i></div>
-        <div><div class="text-2xl font-bold text-slate-800">{{ anzahl_neu }}</div><div class="text-sm text-slate-500">Neu / zu prüfen</div></div>
+    <div class="fw-card p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-inbox"></i></div>
+        <div><div class="text-2xl font-bold fw-strong">{{ anzahl_neu }}</div><div class="text-sm fw-mutet">Neu / zu prüfen</div></div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-list"></i></div>
-        <div><div class="text-2xl font-bold text-slate-800">{{ anzahl }}</div><div class="text-sm text-slate-500">Rechnungen total</div></div>
+    <div class="fw-card p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-list"></i></div>
+        <div><div class="text-2xl font-bold fw-strong">{{ anzahl }}</div><div class="text-sm fw-mutet">Rechnungen total</div></div>
     </div>
 </div>
 
 <!-- Tabelle -->
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+<div class="fw-card overflow-hidden">
+    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b fw-linie">
         <div class="flex items-center gap-1.5 flex-wrap">
             {% for wert, label in status_chips %}
             <a href="?status={{ wert }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                      {% if status_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+                      {% if status_filter == wert %}fw-btn fw-primary{% else %}fw-flaeche2 fw-mutet hover:fw-balken{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
         <form method="get" class="ml-auto flex items-center gap-2 flex-wrap">
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
             <input name="q" value="{{ suche }}" placeholder="Lieferant, Referenz, IBAN, Betrag …" aria-label="Kreditoren durchsuchen (Lieferant, Referenz, IBAN, Betrag)"
-                   class="bg-slate-100 rounded-lg text-xs px-3 py-2 w-56">
-            <select name="sort" aria-label="Sortierung" onchange="this.form.submit()" class="bg-slate-100 rounded-lg text-xs px-2 py-2">
+                   class="fw-flaeche2 rounded-lg text-xs px-3 py-2 w-56">
+            <select name="sort" aria-label="Sortierung" onchange="this.form.submit()" class="fw-flaeche2 rounded-lg text-xs px-2 py-2">
                 <option value="faellig" {% if sortierung == 'faellig' %}selected{% endif %}>Fällig ↑</option>
                 <option value="-faellig" {% if sortierung == '-faellig' %}selected{% endif %}>Fällig ↓</option>
                 <option value="-betrag" {% if sortierung == '-betrag' %}selected{% endif %}>Betrag ↓</option>
@@ -148,16 +148,16 @@
                 <option value="lieferant" {% if sortierung == 'lieferant' %}selected{% endif %}>Lieferant A–Z</option>
                 <option value="neu" {% if sortierung == 'neu' %}selected{% endif %}>Zuletzt erfasst</option>
             </select>
-            <button class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-lg">Suchen</button>
-            {% if suche %}<a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if aktive_lg %}lg={{ aktive_lg.id }}{% endif %}" class="text-xs text-slate-400 hover:text-indigo-600">× {{ suche }}</a>{% endif %}
-            <span class="text-xs text-slate-400">{{ anzahl }} Rechnung(en)</span>
+            <button class="fw-balken-voll hover:bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-lg">Suchen</button>
+            {% if suche %}<a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if aktive_lg %}lg={{ aktive_lg.id }}{% endif %}" class="text-xs fw-faint hover:fw-marke">× {{ suche }}</a>{% endif %}
+            <span class="text-xs fw-faint">{{ anzahl }} Rechnung(en)</span>
         </form>
     </div>
 
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">Lieferant</th>
                 <th class="px-5 py-3 font-semibold">Objekt</th>
                 <th class="px-5 py-3 font-semibold">Konto</th>
@@ -167,34 +167,34 @@
                 <th class="px-5 py-3 font-semibold text-right">Aktion</th>
             </tr>
             </thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody class="fw-dv">
             {% for row in rows %}
-            <tr class="hover:bg-slate-50/60 transition-colors{% if row.k.status == 'neu' %} cursor-pointer{% endif %}"
+            <tr class="hover:fw-flaeche2 transition-colors{% if row.k.status == 'neu' %} cursor-pointer{% endif %}"
                 {% if row.k.status == 'neu' %}onclick="fwKZeile(event, {{ row.k.id }})" title="Klicken zum Bearbeiten (mit Beleg-Vorschau)"{% endif %}>
-                <td class="px-5 py-3.5 font-medium text-slate-900 whitespace-nowrap">
+                <td class="px-5 py-3.5 font-medium fw-strong whitespace-nowrap">
                     {{ row.lieferant }}
-                    {% if row.k.referenz %}<div class="text-xs text-slate-400 font-normal">{{ row.k.referenz }}</div>{% endif %}
+                    {% if row.k.referenz %}<div class="text-xs fw-faint font-normal">{{ row.k.referenz }}</div>{% endif %}
                 </td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.objekt }}</td>
-                <td class="px-5 py-3.5 text-slate-500 text-xs whitespace-nowrap">{% if row.konto %}{{ row.konto }}{% else %}<span class="text-amber-500">nicht zugeordnet</span>{% endif %}{% comment %}
+                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{{ row.objekt }}</td>
+                <td class="px-5 py-3.5 fw-mutet text-xs whitespace-nowrap">{% if row.konto %}{{ row.konto }}{% else %}<span class="fw-warnton">nicht zugeordnet</span>{% endif %}{% comment %}
                     HNK entscheidet, ob diese Rechnung den Mietern weiterverrechnet
                     wird. Bisher stand das nur an den Teilpositionen — an der
                     Rechnung selbst war es unsichtbar, bis die NK-Abrechnung lief.
-                {% endcomment %}{% if row.k.is_hnk_relevant %} <span class="ml-1 text-[10px] font-semibold bg-amber-50 text-amber-700 rounded px-1.5 py-0.5" title="Wird in die Nebenkostenabrechnung einbezogen und den Mietern weiterverrechnet">HNK</span>{% endif %}</td>
-                <td class="px-5 py-3.5 whitespace-nowrap {% if row.ueberfaellig %}font-semibold text-rose-600{% else %}text-slate-600{% endif %}">{% if row.faellig %}{{ row.faellig|date:"d.m.Y" }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">{{ row.betrag|chf }}</td>
+                {% endcomment %}{% if row.k.is_hnk_relevant %} <span class="ml-1 text-[10px] font-semibold fw-warn-flaeche fw-warnton rounded px-1.5 py-0.5" title="Wird in die Nebenkostenabrechnung einbezogen und den Mietern weiterverrechnet">HNK</span>{% endif %}</td>
+                <td class="px-5 py-3.5 whitespace-nowrap {% if row.ueberfaellig %}font-semibold fw-kritisch{% else %}fw-mutet{% endif %}">{% if row.faellig %}{{ row.faellig|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3.5 text-right font-semibold fw-strong whitespace-nowrap">{{ row.betrag|chf }}</td>
                 <td class="px-5 py-3.5"><span class="fw-chip whitespace-nowrap {{ row.pill_cls }}">● {{ row.status_label }}</span></td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     <div class="inline-flex items-center gap-2">
-                        {% if row.beleg_url %}<a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="text-slate-400 hover:text-indigo-600" title="Beleg ansehen"><i class="fa-solid fa-paperclip"></i></a>{% endif %}
+                        {% if row.beleg_url %}<a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="fw-faint hover:fw-marke" title="Beleg ansehen"><i class="fa-solid fa-paperclip"></i></a>{% endif %}
                         {% if row.kann_bezahlen and darf_bezahlen %}
                         <form method="post" action="/neu/kreditoren/bezahlen/" onsubmit="return confirm('Zahlung an {{ row.lieferant|escapejs }} verbuchen?');" class="inline-flex items-center gap-1">
                             {% csrf_token %}
                             <input type="hidden" name="rechnung_id" value="{{ row.k.id }}">
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             <input type="number" step="0.05" min="0" name="betrag" value="{{ row.offen_betrag|stringformat:'.2f' }}"
-                                   class="w-20 bg-slate-100 rounded-lg text-xs px-2 py-1.5 text-right" title="Betrag (Teilzahlung möglich)">
-                            <button type="submit" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                                   class="w-20 fw-flaeche2 rounded-lg text-xs px-2 py-1.5 text-right" title="Betrag (Teilzahlung möglich)">
+                            <button type="submit" class="inline-flex items-center gap-1.5 fw-balken-voll hover:fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
                                 <i class="fa-solid fa-check"></i> {% if row.in_zahlung %}Bestätigen{% else %}Bezahlen{% endif %}
                             </button>
                         </form>
@@ -202,7 +202,7 @@
                         <form method="post" action="/neu/kreditoren/{{ row.k.id }}/zahlung-zuruecksetzen/" onsubmit="return confirm('Zahlung zurücksetzen — Rechnung kommt im nächsten Zahllauf wieder mit?');" class="inline">
                             {% csrf_token %}
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                            <button type="submit" class="text-slate-400 hover:text-slate-700 text-xs" title="Zahllauf zurücksetzen"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button type="submit" class="fw-faint hover:fw-ink text-xs" title="Zahllauf zurücksetzen"><i class="fa-solid fa-rotate-left"></i></button>
                         </form>
                         {% endif %}
                         {% elif row.k.status == 'neu' and darf_bezahlen %}
@@ -210,146 +210,146 @@
                             {% csrf_token %}
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             {% if not row.k.konto_id %}
-                            <select name="konto_id" required class="bg-slate-100 rounded-lg text-xs px-2 py-1.5">
+                            <select name="konto_id" required class="fw-flaeche2 rounded-lg text-xs px-2 py-1.5">
                                 <option value="">Aufwandskonto…</option>
                                 {% for k in aufwand_konten %}<option value="{{ k.id }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
                             </select>
                             {% endif %}
-                            <button type="submit" class="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                            <button type="submit" class="inline-flex items-center gap-1.5 fw-warn-flaeche0 hover:bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
                                 <i class="fa-solid fa-check"></i> Freigeben
                             </button>
                         </form>
                         {% elif row.k.status == 'bezahlt' %}
-                        <span class="text-emerald-600 text-xs"><i class="fa-solid fa-check-double"></i> erledigt</span>
+                        <span class="fw-gut text-xs"><i class="fa-solid fa-check-double"></i> erledigt</span>
                         {% endif %}
                         {% if row.letzte_zahlung and darf_bezahlen %}
                         <form method="post" action="/neu/kreditoren/zahlung/{{ row.letzte_zahlung.id }}/stornieren/" onsubmit="return confirm('Letzte Zahlung (CHF {{ row.letzte_zahlung.betrag|chf }}) an {{ row.lieferant|escapejs }} stornieren? Der offene Posten öffnet sich wieder.');" class="inline">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="/neu/kreditoren/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}">
-                            <button type="submit" class="text-slate-400 hover:text-rose-600 text-xs" title="Letzte Zahlung stornieren"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button type="submit" class="fw-faint hover:fw-kritisch text-xs" title="Letzte Zahlung stornieren"><i class="fa-solid fa-rotate-left"></i></button>
                         </form>
                         {% endif %}
                         {% if row.kann_weiterverrechnen %}
                         <a href="/neu/kreditoren/{{ row.k.id }}/weiterverrechnen/"
                            onclick="return fwModalOpen(this,'Weiterverrechnen',false)"
-                           class="inline-flex items-center gap-1.5 border border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                           class="inline-flex items-center gap-1.5 border fw-linie-marke fw-marke hover:fw-markenflaeche text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
                            title="Offen: CHF {{ row.offen_wv|chf }}">
                             <i class="fa-solid fa-share"></i> Weiterverrechnen
                         </a>
                         {% endif %}
                         {% if row.k.status == 'neu' %}
-                        <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.toggle('hidden')" class="text-slate-300 hover:text-indigo-600 text-xs" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
+                        <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.toggle('hidden')" class="fw-faint hover:fw-marke text-xs" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
                         <form method="post" action="/neu/kreditoren/{{ row.k.id }}/loeschen/" class="inline" onsubmit="return confirm('Kreditorenrechnung «{{ row.lieferant|escapejs }}» löschen? (nur solange nicht verbucht)');">{% csrf_token %}
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                            <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                            <button class="fw-faint hover:fw-kritisch text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
                         </form>
                         {% endif %}
                     </div>
                 </td>
             </tr>
             {% if row.k.status == 'neu' %}
-            <tr id="kedit-{{ row.k.id }}" class="hidden bg-indigo-50/40">
+            <tr id="kedit-{{ row.k.id }}" class="hidden fw-markenflaeche/40">
                 <td colspan="7" class="px-5 py-4">
                     {% if row.k.fehlermeldung %}
-                    <div class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] text-amber-800"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ row.k.fehlermeldung }}</div>
+                    <div class="mb-3 rounded-lg border fw-linie-warn fw-warn-flaeche px-3 py-2 text-[12px] fw-warnton"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ row.k.fehlermeldung }}</div>
                     {% endif %}
                     <div class="grid grid-cols-1 {% if row.beleg_url %}lg:grid-cols-2{% endif %} gap-5 items-start">
                     {% if row.beleg_url %}
                     <!-- Beleg-Vorschau: gescannte Rechnung neben den Feldern prüfen -->
                     <div>
-                        <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5"><i class="fa-solid fa-receipt mr-1"></i>Beleg-Vorschau</div>
+                        <div class="text-[11px] font-semibold uppercase tracking-wider fw-faint mb-1.5"><i class="fa-solid fa-receipt mr-1"></i>Beleg-Vorschau</div>
                         {% if row.beleg_ist_pdf %}
-                        <embed src="{{ row.beleg_url }}#toolbar=0" type="application/pdf" class="w-full h-[26rem] rounded-lg border border-slate-200 bg-white">
+                        <embed src="{{ row.beleg_url }}#toolbar=0" type="application/pdf" class="w-full h-[26rem] rounded-lg border fw-linie fw-flaeche">
                         {% else %}
-                        <img src="{{ row.beleg_url }}" alt="Beleg" class="max-h-[26rem] w-auto rounded-lg border border-slate-200 bg-white">
+                        <img src="{{ row.beleg_url }}" alt="Beleg" class="max-h-[26rem] w-auto rounded-lg border fw-linie fw-flaeche">
                         {% endif %}
-                        <a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="inline-block mt-1.5 text-[11px] text-indigo-600 hover:underline"><i class="fa-solid fa-up-right-from-square mr-1"></i>In neuem Tab öffnen</a>
+                        <a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="inline-block mt-1.5 text-[11px] fw-marke hover:underline"><i class="fa-solid fa-up-right-from-square mr-1"></i>In neuem Tab öffnen</a>
                     </div>
                     {% endif %}
                     <form method="post" action="/neu/kreditoren/{{ row.k.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {% csrf_token %}
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                        <div class="col-span-2"><label for="kc-lieferant-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Lieferant</label>
-                            <input id="kc-lieferant-{{ row.k.id }}" name="lieferant" value="{{ row.k.lieferant }}" required class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label for="kc-betrag-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Betrag brutto (CHF)</label>
-                            <input id="kc-betrag-{{ row.k.id }}" name="betrag" value="{% if row.k.betrag %}{{ row.k.betrag|stringformat:'.2f' }}{% endif %}" inputmode="decimal" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5 text-right tabular-nums"></div>
-                        <div><label for="kc-datum-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Rechnungsdatum</label>
-                            <input id="kc-datum-{{ row.k.id }}" type="date" name="datum" value="{{ row.k.datum|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label for="kc-faellig-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Fällig am</label>
-                            <input id="kc-faellig-{{ row.k.id }}" type="date" name="faellig_am" value="{{ row.k.faellig_am|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label for="kc-referenz-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Referenz</label>
-                            <input id="kc-referenz-{{ row.k.id }}" name="referenz" value="{{ row.k.referenz }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label for="kc-leist-von-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Leistung von <span class="text-slate-300 font-normal">(HNK)</span></label>
-                            <input id="kc-leist-von-{{ row.k.id }}" type="date" name="leistungs_von" value="{{ row.k.leistungs_von|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div><label for="kc-leist-bis-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Leistung bis</label>
-                            <input id="kc-leist-bis-{{ row.k.id }}" type="date" name="leistungs_bis" value="{{ row.k.leistungs_bis|date:'Y-m-d' }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5"></div>
-                        <div class="col-span-2"><label for="kc-iban-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">IBAN</label>
-                            <input id="kc-iban-{{ row.k.id }}" name="iban" value="{{ row.k.iban }}" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5 font-mono"></div>
-                        <div><label for="kc-lg-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Liegenschaft</label>
-                            <select id="kc-lg-{{ row.k.id }}" name="liegenschaft_id" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
+                        <div class="col-span-2"><label for="kc-lieferant-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">Lieferant</label>
+                            <input id="kc-lieferant-{{ row.k.id }}" name="lieferant" value="{{ row.k.lieferant }}" required class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label for="kc-betrag-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">Betrag brutto (CHF)</label>
+                            <input id="kc-betrag-{{ row.k.id }}" name="betrag" value="{% if row.k.betrag %}{{ row.k.betrag|stringformat:'.2f' }}{% endif %}" inputmode="decimal" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5 text-right tabular-nums"></div>
+                        <div><label for="kc-datum-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">Rechnungsdatum</label>
+                            <input id="kc-datum-{{ row.k.id }}" type="date" name="datum" value="{{ row.k.datum|date:'Y-m-d' }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label for="kc-faellig-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">Fällig am</label>
+                            <input id="kc-faellig-{{ row.k.id }}" type="date" name="faellig_am" value="{{ row.k.faellig_am|date:'Y-m-d' }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label for="kc-referenz-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">Referenz</label>
+                            <input id="kc-referenz-{{ row.k.id }}" name="referenz" value="{{ row.k.referenz }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label for="kc-leist-von-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">Leistung von <span class="fw-faint font-normal">(HNK)</span></label>
+                            <input id="kc-leist-von-{{ row.k.id }}" type="date" name="leistungs_von" value="{{ row.k.leistungs_von|date:'Y-m-d' }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
+                        <div><label for="kc-leist-bis-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">Leistung bis</label>
+                            <input id="kc-leist-bis-{{ row.k.id }}" type="date" name="leistungs_bis" value="{{ row.k.leistungs_bis|date:'Y-m-d' }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5"></div>
+                        <div class="col-span-2"><label for="kc-iban-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">IBAN</label>
+                            <input id="kc-iban-{{ row.k.id }}" name="iban" value="{{ row.k.iban }}" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5 font-mono"></div>
+                        <div><label for="kc-lg-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">Liegenschaft</label>
+                            <select id="kc-lg-{{ row.k.id }}" name="liegenschaft_id" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5">
                                 <option value="">— keine —</option>
                                 {% for lgx in liegenschaften %}<option value="{{ lgx.id }}" {% if row.k.liegenschaft_id == lgx.id %}selected{% endif %}>{{ lgx.strasse }}, {{ lgx.ort }}</option>{% endfor %}
                             </select></div>
-                        <div><label for="kc-konto-{{ row.k.id }}" class="block text-[11px] font-semibold text-slate-500 mb-1">Aufwandskonto</label>
-                            <select id="kc-konto-{{ row.k.id }}" name="konto_id" onchange="fwHnkSync(this)" class="w-full bg-white border border-slate-200 rounded-lg text-sm px-2 py-1.5">
+                        <div><label for="kc-konto-{{ row.k.id }}" class="block text-[11px] font-semibold fw-mutet mb-1">Aufwandskonto</label>
+                            <select id="kc-konto-{{ row.k.id }}" name="konto_id" onchange="fwHnkSync(this)" class="w-full fw-flaeche border fw-linie rounded-lg text-sm px-2 py-1.5">
                                 <option value="">— bei Freigabe wählen —</option>
                                 {% for kx in aufwand_konten %}<option value="{{ kx.id }}" {% if row.k.konto_id == kx.id %}selected{% endif %} {% if kx.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
                             </select></div>
                         <div class="col-span-2 flex items-center">
-                            <label class="inline-flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-                                <input type="checkbox" name="is_hnk_relevant" {% if row.k.is_hnk_relevant %}checked{% endif %} class="accent-indigo-600">
+                            <label class="inline-flex items-center gap-2 text-sm fw-mutet cursor-pointer">
+                                <input type="checkbox" name="is_hnk_relevant" {% if row.k.is_hnk_relevant %}checked{% endif %} class="fw-akzent">
                                 In Nebenkostenabrechnung einbeziehen (HNK)
                             </label>
-                            <span class="ml-2 text-[11px] text-slate-400">— bei NK-relevantem Konto automatisch aktiv</span>
+                            <span class="ml-2 text-[11px] fw-faint">— bei NK-relevantem Konto automatisch aktiv</span>
                         </div>
                         <div class="col-span-2 flex items-center gap-2 justify-end">
-                            <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.add('hidden')" class="text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5">Abbrechen</button>
-                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
+                            <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.add('hidden')" class="text-sm fw-mutet hover:fw-ink px-3 py-1.5">Abbrechen</button>
+                            <button class="fw-btn fw-primary text-sm font-semibold px-4 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Speichern</button>
                         </div>
                     </form>
                     </div>
 
                     <!-- ===== KOSTENAUFTEILUNG (Split) ===== -->
-                    <div class="mt-4 pt-4 border-t border-indigo-100">
+                    <div class="mt-4 pt-4 border-t fw-linie-marke">
                         <div class="flex items-center justify-between mb-2">
-                            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400"><i class="fa-solid fa-code-branch mr-1"></i>Kostenaufteilung (optional)</div>
+                            <div class="text-[11px] font-semibold uppercase tracking-wider fw-faint"><i class="fa-solid fa-code-branch mr-1"></i>Kostenaufteilung (optional)</div>
                             {% if row.positionen %}
-                            <div class="text-[11px] {% if row.pos_diff == 0 %}text-emerald-600{% else %}text-rose-600 font-semibold{% endif %}">
+                            <div class="text-[11px] {% if row.pos_diff == 0 %}fw-gut{% else %}fw-kritisch font-semibold{% endif %}">
                                 Summe CHF {{ row.pos_summe|chf }} / {{ row.k.betrag|chf }}
                                 {% if row.pos_diff != 0 %} · Differenz CHF {{ row.pos_diff|chf }}{% else %} · ✓ stimmt{% endif %}
                             </div>
                             {% endif %}
                         </div>
                         {% if row.positionen %}
-                        <div class="rounded-lg border border-slate-200 bg-white divide-y divide-slate-50 mb-2">
+                        <div class="rounded-lg border fw-linie fw-flaeche fw-dv mb-2">
                             {% for p in row.positionen %}
                             <div class="flex items-center gap-2 px-3 py-2 text-sm">
-                                <span class="font-medium text-slate-700">{{ p.konto.nummer }}</span>
-                                <span class="text-slate-500 truncate">{{ p.konto.bezeichnung }}{% if p.bezeichnung %} · {{ p.bezeichnung }}{% endif %}{% if p.einheit %} · {{ p.einheit.bezeichnung }}{% endif %}</span>
-                                {% if p.is_hnk_relevant %}<span class="text-[10px] font-semibold bg-amber-50 text-amber-700 rounded px-1.5 py-0.5">HNK</span>{% endif %}
-                                <span class="ml-auto font-semibold text-slate-800 whitespace-nowrap">CHF {{ p.betrag|chf }}</span>
+                                <span class="font-medium fw-ink">{{ p.konto.nummer }}</span>
+                                <span class="fw-mutet truncate">{{ p.konto.bezeichnung }}{% if p.bezeichnung %} · {{ p.bezeichnung }}{% endif %}{% if p.einheit %} · {{ p.einheit.bezeichnung }}{% endif %}</span>
+                                {% if p.is_hnk_relevant %}<span class="text-[10px] font-semibold fw-warn-flaeche fw-warnton rounded px-1.5 py-0.5">HNK</span>{% endif %}
+                                <span class="ml-auto font-semibold fw-strong whitespace-nowrap">CHF {{ p.betrag|chf }}</span>
                                 <form method="post" action="/neu/kreditoren/position/{{ p.id }}/loeschen/" class="inline" onsubmit="return confirm('Position entfernen?');">{% csrf_token %}
-                                    <button class="text-slate-300 hover:text-rose-600 text-xs" title="Entfernen"><i class="fa-solid fa-trash"></i></button>
+                                    <button class="fw-faint hover:fw-kritisch text-xs" title="Entfernen"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </div>
                             {% endfor %}
                         </div>
                         {% else %}
-                        <p class="text-[11px] text-slate-400 mb-2">Rechnung auf mehrere Konten/Objekte aufteilen (z.B. Sammelrechnung oder Unterhalt + HNK). Ohne Positionen wird das Aufwandskonto oben gebucht.</p>
+                        <p class="text-[11px] fw-faint mb-2">Rechnung auf mehrere Konten/Objekte aufteilen (z.B. Sammelrechnung oder Unterhalt + HNK). Ohne Positionen wird das Aufwandskonto oben gebucht.</p>
                         {% endif %}
                         <form method="post" action="/neu/kreditoren/{{ row.k.id }}/position/" class="grid grid-cols-2 sm:grid-cols-12 gap-2 items-end">
                             {% csrf_token %}
-                            <div class="col-span-2 sm:col-span-4"><label for="ks-konto-{{ row.k.id }}" class="block text-[10px] font-semibold text-slate-500 mb-1">Konto</label>
-                                <select id="ks-konto-{{ row.k.id }}" name="konto_id" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5">
+                            <div class="col-span-2 sm:col-span-4"><label for="ks-konto-{{ row.k.id }}" class="block text-[10px] font-semibold fw-mutet mb-1">Konto</label>
+                                <select id="ks-konto-{{ row.k.id }}" name="konto_id" required class="w-full fw-flaeche border fw-linie rounded-lg text-xs px-2 py-1.5">
                                     <option value="">Konto …</option>
                                     {% for kx in aufwand_konten %}<option value="{{ kx.id }}">{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
                                 </select></div>
-                            <div class="col-span-2 sm:col-span-3"><label for="ks-bez-{{ row.k.id }}" class="block text-[10px] font-semibold text-slate-500 mb-1">Bezeichnung</label>
-                                <input id="ks-bez-{{ row.k.id }}" name="bezeichnung" placeholder="optional" class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5"></div>
-                            <div class="sm:col-span-2"><label for="ks-betrag-{{ row.k.id }}" class="block text-[10px] font-semibold text-slate-500 mb-1">Betrag</label>
-                                <input id="ks-betrag-{{ row.k.id }}" name="betrag" inputmode="decimal" required class="w-full bg-white border border-slate-200 rounded-lg text-xs px-2 py-1.5 text-right tabular-nums"></div>
-                            <div class="sm:col-span-2 flex items-center pb-1.5"><label class="inline-flex items-center gap-1.5 text-[11px] text-slate-600 cursor-pointer" title="In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet"><input type="checkbox" name="is_hnk_relevant" class="accent-indigo-600">HNK</label></div>
-                            <div class="sm:col-span-1"><button class="w-full bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold px-2 py-1.5 rounded-lg" title="Position hinzufügen"><i class="fa-solid fa-plus"></i></button></div>
+                            <div class="col-span-2 sm:col-span-3"><label for="ks-bez-{{ row.k.id }}" class="block text-[10px] font-semibold fw-mutet mb-1">Bezeichnung</label>
+                                <input id="ks-bez-{{ row.k.id }}" name="bezeichnung" placeholder="optional" class="w-full fw-flaeche border fw-linie rounded-lg text-xs px-2 py-1.5"></div>
+                            <div class="sm:col-span-2"><label for="ks-betrag-{{ row.k.id }}" class="block text-[10px] font-semibold fw-mutet mb-1">Betrag</label>
+                                <input id="ks-betrag-{{ row.k.id }}" name="betrag" inputmode="decimal" required class="w-full fw-flaeche border fw-linie rounded-lg text-xs px-2 py-1.5 text-right tabular-nums"></div>
+                            <div class="sm:col-span-2 flex items-center pb-1.5"><label class="inline-flex items-center gap-1.5 text-[11px] fw-mutet cursor-pointer" title="In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">HNK</label></div>
+                            <div class="sm:col-span-1"><button class="w-full bg-slate-700 hover:fw-btn fw-primary text-xs font-semibold px-2 py-1.5 rounded-lg" title="Position hinzufügen"><i class="fa-solid fa-plus"></i></button></div>
                         </form>
                     </div>
                 </td>
@@ -357,16 +357,16 @@
             {% endif %}
             {% empty %}
             <tr><td colspan="7" class="px-5 py-12 text-center">
-                <div class="w-10 h-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-file-invoice"></i></div>
-                <p class="text-sm font-medium text-slate-700">Keine Kreditorenrechnungen</p>
-                <p class="text-xs text-slate-400 mt-1">{% if suche %}Kein Treffer für «{{ suche }}».{% elif status_filter %}Keine Rechnung in diesem Status.{% else %}Lade oben einen Beleg hoch («Beleg scannen») oder erfasse die Rechnung manuell.{% endif %}</p>
+                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-file-invoice"></i></div>
+                <p class="text-sm font-medium fw-ink">Keine Kreditorenrechnungen</p>
+                <p class="text-xs fw-faint mt-1">{% if suche %}Kein Treffer für «{{ suche }}».{% elif status_filter %}Keine Rechnung in diesem Status.{% else %}Lade oben einen Beleg hoch («Beleg scannen») oder erfasse die Rechnung manuell.{% endif %}</p>
             </td></tr>
             {% endfor %}
             </tbody>
             {% if rows %}
             <tfoot>
-            <tr class="border-t-2 border-slate-200 bg-slate-50/60 font-semibold text-slate-800">
-                <td class="px-5 py-3 text-xs uppercase tracking-wider text-slate-500" colspan="4">
+            <tr class="border-t-2 fw-linie fw-flaeche2 font-semibold fw-strong">
+                <td class="px-5 py-3 text-xs uppercase tracking-wider fw-mutet" colspan="4">
                     Offen (freigegeben/in Zahlung, diese Seite)
                 </td>
                 <td class="px-5 py-3 text-right whitespace-nowrap">{{ total_offen|chf }}</td>
@@ -377,23 +377,23 @@
         </table>
     </div>
     {% if seite.paginator.num_pages > 1 %}
-    <div class="px-5 py-3 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap text-xs text-slate-500">
+    <div class="px-5 py-3 border-t fw-linie flex items-center justify-between gap-3 flex-wrap text-xs fw-mutet">
         <span>Seite {{ seite.number }} von {{ seite.paginator.num_pages }} · {{ anzahl }} Rechnung(en)</span>
         <div class="flex items-center gap-2">
             {% if seite.has_previous %}
             <a href="?{{ query_ohne_seite }}{% if query_ohne_seite %}&{% endif %}seite={{ seite.previous_page_number }}"
-               class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">‹ Zurück</a>
+               class="px-3 py-1.5 rounded-lg fw-flaeche2 hover:fw-balken font-semibold">‹ Zurück</a>
             {% endif %}
             {% if seite.has_next %}
             <a href="?{{ query_ohne_seite }}{% if query_ohne_seite %}&{% endif %}seite={{ seite.next_page_number }}"
-               class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">Weiter ›</a>
+               class="px-3 py-1.5 rounded-lg fw-flaeche2 hover:fw-balken font-semibold">Weiter ›</a>
             {% endif %}
         </div>
     </div>
     {% endif %}
 </div>
 
-<p class="text-xs text-slate-400 mt-4">
+<p class="text-xs fw-faint mt-4">
     <i class="fa-solid fa-circle-info mr-1"></i>
     „Bezahlen" bucht die Zahlung (Kreditoren 2000 an Bank 1020) und setzt den Status auf bezahlt.
     Der KI-Scanner liest hochgeladene Belege automatisch aus (Lieferant, Betrag, IBAN, QR-Referenz) — Werte vor der Freigabe prüfen.

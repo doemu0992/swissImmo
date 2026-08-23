@@ -447,6 +447,36 @@
         .fw-kritisch{color:var(--ds-crit)}
         .fw-gut{color:var(--ds-good)}
         .fw-linie-gut{border-color:var(--ds-good)}
+        .fw-gut-flaeche{background:var(--ds-good-soft)}
+        .fw-krit-flaeche{background:var(--ds-crit-soft)}
+        .fw-warn-flaeche{background:var(--ds-warn-soft)}
+        .fw-info-flaeche{background:var(--ds-info-soft)}
+        .fw-linie-marke{border-color:var(--ds-brand)}
+        .fw-linie-krit{border-color:var(--ds-crit)}
+        .fw-linie-warn{border-color:var(--ds-warn)}
+        .fw-info{color:var(--ds-info)}
+        /* Bedienelemente: Haken, Schieber und Fokusringe faerbt der Browser
+           selbst — `accent-color` und `outline` sind die einzigen Wege dorthin.
+
+           NACHGEMESSEN, WEIL DIE ERSTE BEGRUENDUNG NICHT TRUG: Hier stand,
+           ohne diese zwei Zeilen blieben «indigoblaue Haken neben
+           petrolfarbenen Knoepfen» stehen. Das stimmt nicht — die Palette in
+           `tailwind.palette.js` definiert `indigo` auf die Marke um, und im
+           Bau steht tatsaechlich `.accent-indigo-600{accent-color:#0f6f6a}`.
+           Die Haken sind also laengst petrol.
+
+           Der Gewinn ist ein anderer, und er ist echt: `accent-indigo-600`
+           steht zur BAUZEIT auf einer festen Farbe. `var(--ds-brand)` folgt
+           dem Token — also dem Dunkelmodus und spaeter der Akzentfarbe je
+           Mandant (D3). Genau das kann die Palette nicht leisten.
+
+           `accent-indigo` steht noch in 17 weiteren Vorlagen. Sie sehen heute
+           richtig aus und fallen erst auf, wenn Branding kommt. */
+        .fw-akzent{accent-color:var(--ds-brand)}
+        .fw-fokusring:focus{outline:2px solid var(--ds-brand);outline-offset:2px}
+        /* Balken und Fuellstaende (Fortschritt, Auslastung). */
+        .fw-balken{background:var(--ds-line)}
+        .fw-balken-voll{background:var(--ds-brand)}
         .fw-link{color:var(--ds-brand);font-weight:600;text-decoration:none;font-size:12.5px}
         .fw-link:hover{text-decoration:underline}
         .fw-klein{font-size:11.5px;color:var(--ds-faint)}
