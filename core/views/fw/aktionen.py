@@ -839,20 +839,6 @@ def fw_serienbrief_pdf(request):
 # ══════════════════════════════════════════════════════════════
 # UI-MODUS (Einfach/Profi) + EINSTELLUNGEN-HUB
 # ══════════════════════════════════════════════════════════════
-
-@rolle_erforderlich(*TEAM_ROLLEN)
-def fw_modus_wechsel(request):
-    """Schaltet die Oberfläche zwischen Einfach- und Profi-Modus um (Session)."""
-    from django.shortcuts import redirect
-    from core.navigation import UI_MODI, SESSION_KEY
-    if request.method == 'POST':
-        modus = request.POST.get('modus')
-        if modus in UI_MODI:
-            request.session[SESSION_KEY] = modus
-    ziel = request.META.get('HTTP_REFERER') or '/neu/'
-    return redirect(ziel)
-
-
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_einstellungen(request):
     """Zentrale Einstellungen-Seite — bündelt die früheren 8 Profil-Dropdown-
@@ -871,6 +857,13 @@ def fw_einstellungen(request):
          'url': '/neu/postfaecher/', 'icon': 'fa-inbox'},
         {'titel': 'Logbuch', 'sub': 'Wer hat wann was geändert', 'url': '/neu/logbuch/', 'icon': 'fa-clock-rotate-left'},
         {'titel': 'Rechtsgrundlagen', 'sub': 'OR/VMWG-Artikel mit Anwendung im Programm', 'url': '/neu/rechtsgrundlagen/', 'icon': 'fa-scale-balanced'},
+        # E1.1: Das Regelwerk hing bis hierher unter «Erweitert» im
+        # Einfachmodus. Mit den fuenf Bereichen hat es dort keinen Platz mehr —
+        # Fristenregeln sind eine Einstellung, keine Tagesarbeit. Ohne diese
+        # Kachel waere die Seite beim Umbau unauffindbar geworden, wie schon
+        # einmal in Phase 4a (vier Etappen lang).
+        {'titel': 'Regelwerk (Fristen)', 'sub': 'Kuendigungstermine und Fristen je Kanton',
+         'url': '/neu/regelwerk/', 'icon': 'fa-scale-balanced'},
     ]
     return render(request, 'fw/einstellungen.html', {
         **basis, 'nav': 'einstellungen', 'karten': karten,

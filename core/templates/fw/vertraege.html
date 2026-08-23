@@ -8,7 +8,7 @@
 
 <div class="fw-phead">
     <div>
-        <h1>{% if ui_modus == 'einfach' %}Mieter &amp; Verträge{% else %}Verträge{% endif %}</h1>
+        <h1>Mietverhältnisse</h1>
         <p>{{ rows|length }} Vertrag/Verträge · <span style="color:var(--ds-good);font-weight:600">{{ aktiv_count }} aktiv</span>{% if aktive_lg %} · gefiltert auf {{ aktive_lg.strasse }} <a href="/neu/vertraege/" style="color:var(--ds-faint)">× aufheben</a>{% endif %}</p>
     </div>
     <a href="/neu/vertraege/neu/{{ lg_query }}" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Vertrag erstellen</a>

@@ -1,28 +1,96 @@
 """Zentrale Navigationsstruktur der /neu/-Oberfläche.
 
-6 Bereiche ("Türen") statt 34 flacher Menüpunkte — mit zwei Modi:
-  - 'einfach' (Standard): Klartext-Labels, Profi-Module hinter «Erweitert»
-  - 'profi':  volle Tiefe mit Fachbegriffen, thematisch gruppiert
+FÜNF BEREICHE: Heute · Akten · Läufe · Finanzen · Berichte
+(Einstellungen steht im Fuss der Leiste — es ist kein Arbeitsbereich.)
 
-Die Struktur wird per Context-Processor (fw_navigation) an base.html geliefert
-und dort generisch gerendert. Jede Seite meldet weiterhin ihren `nav`-Key —
-`keys` pro Eintrag verbindet die bestehenden Keys mit der neuen Struktur
-(kein View muss angepasst werden).
+WAS SICH MIT E1.1 GEÄNDERT HAT UND WARUM
+========================================
+
+Vorher standen hier sechs Bereiche in ZWEI MODI — «einfach» mit
+Klartext-Labels, «profi» mit Fachbegriffen. Beides ist entfallen.
+
+Der Modus löste das falsche Problem. Er fragte «wie viel Wortschatz hat diese
+Person?», während die eigentliche Frage lautet «was darf und was tut diese
+Person?». Das gehört in die Rolle und ins Entitlement
+(`core/funktionen.py`), nicht in einen Sessionschalter. Solange es ihn gab,
+hatte jede Seite zwei Namen, jede Änderung zwei Orte, und die Oberfläche zeigte
+je nach Schalterstellung ein anderes Produkt.
+
+Gemessen am 21.08.2026: Im Einfachmodus hingen 18 Einträge unter «Erweitert»,
+im Profimodus 16 unter «Finanzen». «Erweitert» war keine Kategorie, sondern ein
+Sammelbecken — es bedeutete «alles, wofür wir keinen Platz gefunden haben».
+Und die Läufe, seit 4b.5 gebaut, hatten im Einfachmodus nicht einmal einen
+markierten Menüpunkt.
+
+DIE FÜNF BEREICHE
+-----------------
+Heute     Was jetzt zu tun ist. Ein Arbeitsvorrat, nicht zwei Listen.
+Akten     Die Register: Mandat, Liegenschaft, Objekt, Mietverhältnis, Person,
+          Dienstleister — plus die laufenden Vorgänge dazu.
+Läufe     Wiederkehrende Verarbeitung mit Zustand: Sollstellung, Bankabgleich,
+          Mahnlauf, Zahllauf, Nebenkosten, Mietzins, MWST.
+Finanzen  Register und Konten. Bewusst OHNE eigenen Arbeitskorb — was zu tun
+          ist, steht unter Heute und Läufe, aus derselben Quelle
+          (`faelle.Lauf`). Zwei Arbeitskörbe widersprachen sich: Am 21.08.2026
+          meldete «Heute» drei überfällige Läufe, während das Finanz-Cockpit
+          auf derselben Datenbank «alles erledigt» sagte.
+Berichte  Auswertungen und was der Eigentümer zu sehen bekommt.
+
+Entscheide D1 und D8 (docs/ENTSCHEIDE-V7.md): fünf Bereiche statt der vier aus
+G1, weil die Buchhalterin einen anderen Tagesrhythmus hat als die
+Bewirtschafterin und 16 gebaute Finanzseiten sonst keinen Ort haben.
+
+WAS DIESE ETAPPE NOCH NICHT TUT
+-------------------------------
+Sie ordnet die vorhandenen Seiten neu, sie baut keine um. Das Finanz-Cockpit
+(`/neu/finanzen/`) ist deshalb weiterhin erreichbar und trägt seinen zweiten
+Arbeitskorb noch — es ist die Landeseite des Bereichs. Ihn abzulösen heisst,
+die Startseite zur einzigen Quelle zu machen; das ist eine eigene Etappe mit
+eigenem Wächter, keine Nebenwirkung einer Menüumstellung.
+
+Die Struktur wird per Context-Processor (`fw_navigation`) an base.html
+geliefert und dort generisch gerendert. Jede Seite meldet weiterhin ihren
+`nav`-Key; `keys` je Eintrag verbindet die bestehenden Keys mit der neuen
+Struktur, damit kein View angefasst werden muss.
 """
 
-UI_MODI = ('einfach', 'profi')
-UI_MODUS_DEFAULT = 'einfach'
-SESSION_KEY = 'ui_modus'
-
-# nav-Keys von Seiten, die den Einstellungen-Link (Sidebar-Fuss) aktiv schalten
+#: nav-Keys von Seiten, die den Einstellungen-Link (Fuss der Leiste) aktiv
+#: schalten. `regelwerk` steht hier, weil Fristenregeln eine Einstellung sind
+#: und keine Tagesarbeit.
 EINSTELLUNGEN_KEYS = ['einstellungen', 'account', 'abonnement', 'benutzer',
-                      'logbuch', 'vorlagen', 'integrationen', 'rechtsgrundlagen']
+                      'logbuch', 'vorlagen', 'integrationen', 'rechtsgrundlagen',
+                      'regelwerk']
+
+#: Die Seiten des Einstellungs-Bereichs.
+#:
+#: Sie stehen in keiner der fünf Gruppen, weil Einstellungen kein
+#: Arbeitsbereich ist — die Leiste rendert sie in ihrem Fuss, der Hub
+#: `/neu/einstellungen/` führt sie auf. Sie sind trotzdem NAVIGATION, und
+#: `core/tests/test_erreichbarkeit.py` liest diese Liste mit.
+#:
+#: Ohne sie wäre `/neu/regelwerk/` beim Umbau auf fünf Bereiche
+#: durchgerutscht: Es hing vorher unter «Erweitert», hat jetzt keinen
+#: Gruppeneintrag mehr — und genau diese Seite war schon einmal vier Etappen
+#: lang unauffindbar (Phase 4a).
+EINSTELLUNGEN_ZIELE = [
+    '/neu/einstellungen/',
+    '/neu/account/',
+    '/neu/benutzer/',
+    '/neu/abonnement/',
+    '/neu/vorlagen/',
+    '/neu/integrationen/',
+    '/neu/logbuch/',
+    '/neu/rechtsgrundlagen/',
+    '/neu/regelwerk/',
+]
 
 
 def _g(key, label, icon, ziel, items=None, badge=None, extra_keys=None):
-    """Gruppe ("Tür"): klick auf den Kopf navigiert zu `ziel`,
-    `items` klappen darunter aus. `extra_keys`: weitere nav-Keys von Seiten,
-    die diese Gruppe aktiv schalten (z.B. 'dashboard' → Heute)."""
+    """Bereich: Klick auf den Kopf führt zu `ziel`, `items` klappen darunter aus.
+
+    `extra_keys`: weitere nav-Keys von Seiten, die diesen Bereich aktiv
+    schalten, ohne einen eigenen Menüpunkt zu haben (Detailseiten, Umleitungen).
+    """
     items = items or []
     alle_keys = [key] + list(extra_keys or []) + [k for it in items for k in it['keys']]
     return {'key': key, 'label': label, 'icon': icon, 'ziel': ziel,
@@ -34,143 +102,90 @@ def _i(label, ziel, keys, section=None):
     return {'label': label, 'ziel': ziel, 'keys': keys, 'section': section}
 
 
-def nav_gruppen(modus):
-    """Die 6 Bereiche für den gegebenen Modus (+ «Erweitert» im Einfachmodus)."""
-    if modus == 'profi':
-        return [
-            _g('heute', 'Heute', 'fa-inbox', '/neu/', [
-                # Phase 4b.10: Die in 4b.5 bis 4b.8 gebauten Seiten standen
-                # hier NICHT und waren nur erreichbar, wer die Adresse tippte
-                # oder zufaellig auf einen Querverweis stiess. Derselbe Fehler,
-                # den das Regelwerk seit Phase 4a hatte — nur eine Ebene hoeher.
-                # «Arbeit» stand hier bis 4b.13 als eigener Eintrag. Seit die
-                # Startseite die Ansichten fuehrt, ist `/neu/arbeit/` eine
-                # Umleitung auf `/neu/` — und der Gruppenkopf «Heute» zeigt
-                # ohnehin dorthin. Zwei Eintraege auf dieselbe Seite sind kein
-                # Angebot, sondern eine Frage an den Benutzer.
-                _i('Zulauf', '/neu/zulauf/', ['zulauf']),
-                _i('Termine', '/neu/termine/', ['termine']),
-                _i('Abwesenheiten', '/neu/abwesenheiten/', ['abwesenheiten']),
-                _i('Läufe', '/neu/laeufe/', ['laeufe']),
-                _i('Pendenzen', '/neu/pendenzen/', ['pendenzen']),
-                _i('Fristen-Center', '/neu/fristen/', ['fristen']),
-                _i('Regelwerk', '/neu/regelwerk/', ['regelwerk']),
-            ], extra_keys=['dashboard', 'faelle']),
-            _g('portfolio', 'Portfolio', 'fa-building', '/neu/liegenschaften/', [
-                _i('Liegenschaften', '/neu/liegenschaften/', ['liegenschaften']),
-                _i('Objekte', '/neu/objekte/', ['objekte']),
-                _i('Schadensfälle', '/neu/schaeden/', ['schadensfaelle'], ),
-                _i('Ersatz & Ausstattung', '/neu/ersatzplanung/', ['assets']),
-                _i('Hypotheken', '/neu/hypotheken/', ['hypotheken']),
-            ], badge='schaeden'),
-            _g('vermietung', 'Vermietung', 'fa-key', '/neu/vertraege/', [
-                _i('Vermarktung', '/neu/vermarktung/', ['vermarktung']),
-                _i('Bewerbungen', '/neu/bewerbungen/', ['bewerbungen']),
-                _i('Verträge', '/neu/vertraege/', ['vertraege']),
-                _i('Mieterwechsel', '/neu/mieterwechsel/', ['mieterwechsel']),
-                _i('Mietzins', '/neu/mietzins/', ['mietzins']),
-            ]),
-            _g('finanzen', 'Finanzen', 'fa-coins', '/neu/finanzen/', [
-                _i('Finanz-Cockpit', '/neu/finanzen/', ['finanzen']),
-                _i('Bankabgleich', '/neu/bankabgleich/', ['bankabgleich'], section='Zahlungsverkehr'),
-                _i('Bankkonten', '/neu/bankkonten/', ['bankkonten']),
-                _i('Sollstellung', '/neu/sollstellung/', ['sollstellung'], section='Mieten'),
-                _i('Debitoren', '/neu/debitoren/', ['debitoren']),
-                _i('Mieterkonten', '/neu/mieterkonten/', ['mieterkonten']),
-                _i('Mahnwesen', '/neu/mahnwesen/', ['mahnwesen']),
-                _i('Kautionen', '/neu/kautionen/', ['kautionen']),
-                _i('Kreditoren', '/neu/kreditoren/', ['kreditoren'], section='Rechnungen'),
-                _i('Zahllauf', '/neu/zahllauf/', ['zahllauf']),
-                _i('Lieferantenkonten', '/neu/lieferantenkonten/', ['lieferantenkonten']),
-                _i('Buchhaltung', '/neu/buchhaltung/', ['buchhaltung'], section='Abschluss'),
-                _i('Kontenplan & Salden', '/neu/kontenplan/', ['kontenplan']),
-                _i('Nebenkosten', '/neu/nebenkosten/', ['nebenkosten']),
-                _i('MWST', '/neu/mwst/', ['mwst']),
-                _i('Anlagen & Abschluss', '/neu/anlagen/', ['anlagen']),
-            ]),
-            _g('berichte', 'Berichte', 'fa-chart-pie', '/neu/berichte/', [
-                _i('Berichte-Hub', '/neu/berichte/', ['berichte']),
-                _i('Auswertung', '/neu/auswertung/', ['auswertung']),
-            ]),
-            _g('kontakte', 'Kontakte', 'fa-user-group', '/neu/personen/', [
-                _i('Personen', '/neu/personen/', ['personen']),
-                _i('Dienstleister', '/neu/dienstleister/', ['dienstleister']),
-                _i('Eigentümer & Mandate', '/neu/mandate/', ['mandate']),
-            ]),
-        ]
-    # ── Einfachmodus: Klartext, weniger Tiefe, Rest unter «Erweitert» ──
+def nav_gruppen():
+    """Die fünf Bereiche der Anwendung.
+
+    Ohne Argument: Es gibt genau eine Navigation. Bis E1.1 nahm diese Funktion
+    einen `modus` entgegen und lieferte zwei verschiedene Strukturen.
+    """
     return [
+        # ── HEUTE ────────────────────────────────────────────────────────────
+        # Der Bereichskopf zeigt auf `/neu/` — die Startseite IST der
+        # Arbeitsvorrat (seit 4b.13). Ein zusätzlicher Eintrag «Arbeit» wäre ein
+        # zweiter Weg auf dieselbe Seite: keine Auswahl, sondern eine Frage, die
+        # der Benutzer nicht beantworten kann.
         _g('heute', 'Heute', 'fa-inbox', '/neu/', [
             _i('Zulauf', '/neu/zulauf/', ['zulauf']),
             _i('Termine', '/neu/termine/', ['termine']),
-        ], extra_keys=['dashboard', 'faelle']),
-        _g('portfolio', 'Meine Immobilien', 'fa-building', '/neu/liegenschaften/', [
-            _i('Häuser', '/neu/liegenschaften/', ['liegenschaften']),
-            _i('Wohnungen', '/neu/objekte/', ['objekte']),
-            _i('Schäden', '/neu/schaeden/', ['schadensfaelle']),
-        ], badge='schaeden'),
-        _g('vermietung', 'Vermieten', 'fa-key', '/neu/vertraege/', [
-            _i('Mieter & Verträge', '/neu/vertraege/', ['vertraege']),
-            _i('Wohnung ausschreiben', '/neu/vermarktung/', ['vermarktung']),
-            _i('Bewerbungen', '/neu/bewerbungen/', ['bewerbungen']),
-            _i('Mieterwechsel', '/neu/mieterwechsel/', ['mieterwechsel']),
-            _i('Miete anpassen', '/neu/mietzins/', ['mietzins']),
-        ]),
-        _g('finanzen', 'Geld', 'fa-coins', '/neu/mieterkonten/', [
-            _i('Wer hat bezahlt?', '/neu/mieterkonten/', ['mieterkonten']),
-            _i('Mahnungen', '/neu/mahnwesen/', ['mahnwesen']),
-            _i('Rechnungen bezahlen', '/neu/kreditoren/', ['kreditoren']),
-            _i('Nebenkosten', '/neu/nebenkosten/', ['nebenkosten']),
-        ]),
-        _g('berichte', 'Übersichten', 'fa-chart-pie', '/neu/berichte/', [
-            _i('Berichte', '/neu/berichte/', ['berichte']),
-            _i('Auswertung', '/neu/auswertung/', ['auswertung']),
-        ]),
-        _g('kontakte', 'Personen & Handwerker', 'fa-user-group', '/neu/personen/', [
+            _i('Pendenzen', '/neu/pendenzen/', ['pendenzen']),
+            _i('Fristen', '/neu/fristen/', ['fristen']),
+            # «Vertretung» statt «Abwesenheiten»: Die Seite wird aufgeschlagen,
+            # wenn jemand wissen will, wer für wen einspringt — nicht, wenn
+            # jemand Ferien einträgt.
+            _i('Vertretung', '/neu/abwesenheiten/', ['abwesenheiten']),
+        ], extra_keys=['dashboard', 'faelle', 'arbeit']),
+
+        # ── AKTEN ────────────────────────────────────────────────────────────
+        # Die Register in der Reihenfolge, in der man sie aufschlägt: vom
+        # Auftraggeber über das Haus zur einzelnen Person. Darunter die
+        # laufenden Vorgänge, die an diesen Akten hängen.
+        _g('akten', 'Akten', 'fa-folder-open', '/neu/liegenschaften/', [
+            _i('Mandate', '/neu/mandate/', ['mandate']),
+            _i('Liegenschaften', '/neu/liegenschaften/', ['liegenschaften']),
+            _i('Objekte', '/neu/objekte/', ['objekte']),
+            _i('Mietverhältnisse', '/neu/vertraege/', ['vertraege']),
             _i('Personen', '/neu/personen/', ['personen']),
-            _i('Handwerker', '/neu/dienstleister/', ['dienstleister']),
+            _i('Dienstleister', '/neu/dienstleister/', ['dienstleister']),
+            # Schaden und Mieterwechsel sind fachlich Fälle, keine Aktentypen.
+            # Ihre Listen bleiben, bis die Fallansicht sie ersetzt.
+            _i('Schäden', '/neu/schaeden/', ['schadensfaelle'], section='Vorgänge'),
+            _i('Mieterwechsel', '/neu/mieterwechsel/', ['mieterwechsel']),
+            _i('Vermarktung', '/neu/vermarktung/', ['vermarktung']),
+            _i('Bewerbungen', '/neu/bewerbungen/', ['bewerbungen']),
+            _i('Ersatz & Ausstattung', '/neu/ersatzplanung/', ['assets']),
+        ], badge='schaeden'),
+
+        # ── LÄUFE ────────────────────────────────────────────────────────────
+        # Alles, was einen Zustand hat und blockieren kann. Der Bereich fehlte
+        # im Einfachmodus vollständig, obwohl die Seiten seit 4b.5 stehen.
+        _g('laeufe', 'Läufe', 'fa-arrows-rotate', '/neu/laeufe/', [
+            _i('Sollstellung', '/neu/sollstellung/', ['sollstellung'], section='Monat'),
+            _i('Bankabgleich', '/neu/bankabgleich/', ['bankabgleich']),
+            _i('Mahnwesen', '/neu/mahnwesen/', ['mahnwesen']),
+            _i('Zahllauf', '/neu/zahllauf/', ['zahllauf']),
+            _i('Nebenkosten', '/neu/nebenkosten/', ['nebenkosten'], section='Periodisch'),
+            _i('Mietzins', '/neu/mietzins/', ['mietzins']),
+            _i('MWST', '/neu/mwst/', ['mwst']),
         ]),
-        # Profi-Module bleiben erreichbar, aber eingeklappt und optisch zurückgenommen.
-        _g('erweitert', 'Erweitert', 'fa-toolbox', '', [
-            _i('Finanz-Cockpit', '/neu/finanzen/', ['finanzen']),
+
+        # ── FINANZEN ─────────────────────────────────────────────────────────
+        # Register und Konten. Handlungen führen in den zugehörigen Lauf.
+        _g('finanzen', 'Finanzen', 'fa-coins', '/neu/finanzen/', [
+            _i('Mieterkonten', '/neu/mieterkonten/', ['mieterkonten'], section='Forderungen'),
+            _i('Debitoren', '/neu/debitoren/', ['debitoren']),
+            _i('Kautionen', '/neu/kautionen/', ['kautionen']),
+            _i('Kreditoren', '/neu/kreditoren/', ['kreditoren'], section='Verbindlichkeiten'),
+            _i('Lieferantenkonten', '/neu/lieferantenkonten/', ['lieferantenkonten']),
+            _i('Bankkonten', '/neu/bankkonten/', ['bankkonten'], section='Konten'),
             _i('Buchhaltung', '/neu/buchhaltung/', ['buchhaltung']),
             _i('Kontenplan & Salden', '/neu/kontenplan/', ['kontenplan']),
-            _i('Sollstellung', '/neu/sollstellung/', ['sollstellung']),
-            _i('Debitoren', '/neu/debitoren/', ['debitoren']),
-            _i('Bankabgleich', '/neu/bankabgleich/', ['bankabgleich']),
-            _i('Bankkonten', '/neu/bankkonten/', ['bankkonten']),
-            _i('Lieferantenkonten', '/neu/lieferantenkonten/', ['lieferantenkonten']),
-            _i('Kautionen', '/neu/kautionen/', ['kautionen']),
-            _i('MWST', '/neu/mwst/', ['mwst']),
             _i('Anlagen & Abschluss', '/neu/anlagen/', ['anlagen']),
             _i('Hypotheken', '/neu/hypotheken/', ['hypotheken']),
-            # 4b.20: `/neu/assets/` ist aufgeloest. Der Menueplatz gehoert der
-            # Seite, die die Sache RECHNET — die Ersatzplanung. Der nav-Key
-            # bleibt 'assets', den melden `fw_ersatzplanung` und
-            # `fw_lebensdauer` bereits.
-            _i('Ersatz & Ausstattung', '/neu/ersatzplanung/', ['assets']),
-            _i('Eigentümer & Mandate', '/neu/mandate/', ['mandate']),
-            _i('Pendenzen', '/neu/pendenzen/', ['pendenzen']),
-            _i('Fristen-Center', '/neu/fristen/', ['fristen']),
-            # Im Einfachmodus unter «Erweitert»: Wer die Fristenregeln
-            # einstellt, arbeitet nicht im Einfachmodus — aber unerreichbar
-            # darf die Seite trotzdem nicht sein.
-            _i('Regelwerk (Fristen)', '/neu/regelwerk/', ['regelwerk']),
-            _i('Abwesenheiten', '/neu/abwesenheiten/', ['abwesenheiten']),
-            _i('Läufe', '/neu/laeufe/', ['laeufe']),
+        ]),
+
+        # ── BERICHTE ─────────────────────────────────────────────────────────
+        _g('berichte', 'Berichte', 'fa-chart-pie', '/neu/berichte/', [
+            _i('Übersicht', '/neu/berichte/', ['berichte']),
+            _i('Auswertung', '/neu/auswertung/', ['auswertung']),
         ]),
     ]
 
 
-def aktueller_modus(request):
-    """UI-Modus aus der Session (Default: einfach)."""
-    m = request.session.get(SESSION_KEY) if hasattr(request, 'session') else None
-    return m if m in UI_MODI else UI_MODUS_DEFAULT
-
-
 def fw_navigation(request):
-    """Context-Processor: Navigationsstruktur + Modus für base.html.
-    Nur für eingeloggte Team-Mitglieder (Portal-Nutzer sehen die Sidebar nicht)."""
+    """Context-Processor: Navigationsstruktur für base.html.
+
+    Nur für angemeldete Team-Mitglieder — Portal-Nutzer sehen keine Leiste.
+    """
     user = getattr(request, 'user', None)
     if not user or not user.is_authenticated:
         return {}
@@ -180,9 +195,15 @@ def fw_navigation(request):
             return {}
     except Exception:
         return {}
-    modus = aktueller_modus(request)
-    gruppen = nav_gruppen(modus)
-    # Flache Liste für die ⌘K-Palette (Label → URL, inkl. Untereinträge)
+
+    gruppen = nav_gruppen()
+
+    # Flache Liste für die ⌘K-Palette (Label → URL, inkl. Untereinträge).
+    #
+    # NOCH NUR SEITEN, KEINE DATENSÄTZE: Wer «Blaser» tippt, findet hier nichts
+    # — die Datensatzsuche liegt getrennt in `fw_suche`. Das ist Befund B7 und
+    # die Aufgabe von E1.2. Bis dahin bleibt es bei zwei Suchen, und das ist
+    # hier vermerkt, damit es nicht als erledigt gilt.
     palette = []
     for g in gruppen:
         if g['ziel']:
@@ -192,8 +213,9 @@ def fw_navigation(request):
     palette += [
         {'label': 'Dokumente', 'url': '/neu/dokumente/'},
         {'label': 'Kommunikation', 'url': '/neu/kommunikation/'},
+        {'label': 'Regelwerk', 'url': '/neu/regelwerk/', 'gruppe': 'Einstellungen'},
         {'label': 'Einstellungen', 'url': '/neu/einstellungen/'},
         {'label': 'Zwei-Faktor-Anmeldung', 'url': '/konto/zwei-faktor/'},
     ]
-    return {'ui_modus': modus, 'fw_nav_gruppen': gruppen, 'fw_palette': palette,
+    return {'fw_nav_gruppen': gruppen, 'fw_palette': palette,
             'fw_einstellungen_keys': EINSTELLUNGEN_KEYS}

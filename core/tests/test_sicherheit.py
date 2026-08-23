@@ -430,9 +430,15 @@ class RollentrennungTests(TestCase):
 
     #: Views, die für alle Team-Rollen schreiben dürfen — mit Begründung.
     #: Wer hier etwas einträgt, trifft bewusst eine Entscheidung.
-    ERLAUBT_OHNE_SCHREIBSCHRANKE = {
-        'fw_modus_wechsel': 'setzt nur die eigene Ansicht (Einfach/Profi) in der Session',
-    }
+    #:
+    #: Seit E1.1 leer. Der einzige Eintrag war `fw_modus_wechsel` («setzt nur
+    #: die eigene Ansicht in der Session») — der View ist mit dem
+    #: Einfach-/Profimodus entfallen. `test_die_ausnahmeliste_ist_nicht_verwaist`
+    #: unten hält fest, dass hier kein Name stehen bleibt, dem nichts mehr
+    #: entspricht: Eine Ausnahme für einen View, den es nicht gibt, ist ein
+    #: offenes Tor ohne Tür — sie fällt niemandem auf und deckt beim nächsten
+    #: gleichnamigen View stillschweigend etwas ab.
+    ERLAUBT_OHNE_SCHREIBSCHRANKE = {}
 
     def test_lesende_rolle_kann_nirgends_unbemerkt_schreiben(self):
         """Register-Prüfung: Jede View, die für alle Team-Rollen erreichbar ist
@@ -468,6 +474,40 @@ class RollentrennungTests(TestCase):
                 offen.append(f'{knoten.name} ({pfad})')
         self.assertEqual(offen, [], 'Für ALLE Team-Rollen schreibbar, auch «Lesend»: '
                                     + ', '.join(offen))
+
+    def test_die_ausnahmeliste_ist_nicht_verwaist(self):
+        """Ein Name in der Ausnahmeliste, dem kein View mehr entspricht.
+
+        Bis E1.1 stand dort `fw_modus_wechsel`. Der View ist mit dem
+        Einfach-/Profimodus entfallen, der Eintrag wäre geblieben — der Test
+        oben liest die Liste nur nach, er räumt sie nicht auf.
+
+        Warum das mehr ist als Unordnung: Die Ausnahme greift über den
+        FUNKTIONSNAMEN. Schreibt jemand später einen neuen View, der zufällig
+        so heisst, ist er von der Schreibschranke befreit, ohne dass irgendwo
+        eine Entscheidung getroffen wurde. Eine Ausnahme muss auf etwas zeigen,
+        das es gibt.
+        """
+        import ast
+        import pathlib
+        vorhanden = set()
+        for pfad in pathlib.Path('core/views').rglob('*.py'):
+            try:
+                baum = ast.parse(pfad.read_text(encoding='utf-8'))
+            except SyntaxError:
+                continue
+            vorhanden.update(k.name for k in ast.walk(baum)
+                             if isinstance(k, ast.FunctionDef))
+
+        self.assertTrue(vorhanden, 'Keine einzige View gefunden — der Leser ist '
+                                   'kaputt, nicht die Anwendung.')
+        verwaist = sorted(set(self.ERLAUBT_OHNE_SCHREIBSCHRANKE) - vorhanden)
+        self.assertEqual(
+            verwaist, [],
+            f'Diese Ausnahmen zeigen auf Views, die es nicht mehr gibt: '
+            f'{verwaist}. Bitte streichen — sonst befreit der Name beim '
+            f'nächsten gleichnamigen View stillschweigend von der '
+            f'Schreibschranke.')
 
     def _lesend(self):
         c = Client(); c.force_login(_team_user('Lesend')); return c

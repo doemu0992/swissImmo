@@ -378,15 +378,15 @@ class Paket2PlatzierungTests(TestCase):
         self.assertIn(f'/neu/nebenkosten/?lg={lg.id}', html)
 
     def test_mandate_in_sidebar_verwaltung(self):
-        # Neue 6-Türen-Sidebar: Mandate liegen unter «Kontakte» (Profi) bzw.
-        # «Erweitert» (Einfach) — in beiden Modi als Link auf /neu/mandate/.
+        # Seit E1.1 gibt es EINE Navigation statt zweier Modi: Mandate stehen
+        # unter «Akten». Vorher lief dieser Test durch beide Modi — er musste
+        # es, weil derselbe Menüpunkt je nach Schalterstellung woanders hing
+        # (unter «Kontakte» oder unter «Erweitert»).
         _lg, _e, _m, _v = _basis_objekte()
         c = Client(); c.force_login(_team_user())
-        for modus in ('einfach', 'profi'):
-            c.post('/neu/modus/', {'modus': modus})
-            html = c.get('/neu/personen/').content.decode()
-            self.assertIn('/neu/mandate/', html)
-            self.assertIn('Mandate', html)
+        html = c.get('/neu/personen/').content.decode()
+        self.assertIn('/neu/mandate/', html)
+        self.assertIn('Mandate', html)
 
 
 class Paket3ZahlungBonitaetTests(TestCase):

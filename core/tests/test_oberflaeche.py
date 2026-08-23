@@ -193,36 +193,54 @@ class DetailAktionsleisteTests(TestCase):
         self.assertIn(f'action="/neu/personen/{m.id}/dsg-loeschen/"', body)
 
 
-class NavigationModusTests(TestCase):
-    """6-Türen-Sidebar: Einfach/Profi-Modus, Einstellungen-Hub, ⌘K-Palette."""
+class NavigationTests(TestCase):
+    """Die Leiste: fünf Bereiche, Einstellungen-Hub, ⌘K-Palette.
 
-    def test_default_ist_einfach(self):
+    Hiess bis E1.1 `NavigationModusTests` und prüfte den Einfach-/Profimodus.
+    Der Modus ist entfallen (Entscheid D1): Er fragte «wie viel Wortschatz hat
+    diese Person?», während die Frage «was darf und tut sie?» lautet — das
+    gehört in Rolle und Entitlement, nicht in einen Sessionschalter.
+    """
+
+    def test_jede_seite_ist_aus_der_leiste_erreichbar(self):
+        """Ersetzt `test_default_ist_einfach`.
+
+        Der alte Test hielt die Einfachmodus-Labels fest («Meine Immobilien»,
+        «Wer hat bezahlt?»). Was er dabei NICHT prüfte: ob dieselben Seiten im
+        anderen Modus auch erreichbar waren. Genau dort lag der Fehler — die
+        Läufe hatten im Einfachmodus keinen Menüpunkt.
+        """
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/').content.decode()
-        self.assertIn('Meine Immobilien', html)
-        self.assertIn('Wer hat bezahlt?', html)
-        # Profi-Module bleiben unter «Erweitert» erreichbar (eingeklappt)
-        self.assertIn('Erweitert', html)
-        self.assertIn('/neu/sollstellung/', html)
+        for ziel in ('/neu/sollstellung/', '/neu/laeufe/', '/neu/mandate/',
+                     '/neu/bankabgleich/', '/neu/vertraege/', '/neu/berichte/'):
+            with self.subTest(ziel=ziel):
+                self.assertIn(ziel, html, f'{ziel} steht in keiner Leiste.')
 
-    def test_modus_wechsel_und_profi_labels(self):
-        c = Client(); c.force_login(_team_user())
-        r = c.post('/neu/modus/', {'modus': 'profi'})
-        self.assertIn(r.status_code, (301, 302))
-        html = c.get('/neu/').content.decode()
-        self.assertIn('Portfolio', html)
-        self.assertIn('Sollstellung', html)
-        self.assertIn('Debitoren', html)
-        # zurück auf Einfach
-        c.post('/neu/modus/', {'modus': 'einfach'})
-        html = c.get('/neu/').content.decode()
-        self.assertIn('Meine Immobilien', html)
+    def test_die_fuenf_bereiche_stehen_in_der_leiste(self):
+        """Seit E1.1: eine Navigation, fünf Bereiche, kein Modus.
 
-    def test_ungueltiger_modus_ignoriert(self):
+        Ersetzt `test_modus_wechsel_und_profi_labels` und
+        `test_ungueltiger_modus_ignoriert`. Beide prüften einen Schalter, den
+        es nicht mehr gibt — sie hielten fest, dass dieselbe Seite je nach
+        Sitzung zwei verschiedene Namen trug.
+        """
         c = Client(); c.force_login(_team_user())
-        c.post('/neu/modus/', {'modus': 'hacker'})
         html = c.get('/neu/').content.decode()
-        self.assertIn('Meine Immobilien', html)   # bleibt Default
+        for bereich in ('Heute', 'Akten', 'Läufe', 'Finanzen', 'Berichte'):
+            with self.subTest(bereich=bereich):
+                self.assertIn(f'>{bereich}<', html,
+                              f'Der Bereich «{bereich}» fehlt in der Leiste.')
+
+    def test_kein_modusschalter_mehr(self):
+        """Gegenprobe: Der Schalter ist weg, nicht bloss versteckt."""
+        c = Client(); c.force_login(_team_user())
+        html = c.get('/neu/').content.decode()
+        self.assertNotIn('/neu/modus/', html)
+        self.assertNotIn('Erweitert', html,
+                         '«Erweitert» war keine Kategorie, sondern ein '
+                         'Sammelbecken für 18 Einträge ohne Ort.')
+        self.assertEqual(c.post('/neu/modus/', {'modus': 'profi'}).status_code, 404)
 
     def test_einstellungen_hub(self):
         c = Client(); c.force_login(_team_user())

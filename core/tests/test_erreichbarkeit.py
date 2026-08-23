@@ -36,7 +36,7 @@ from django.conf import settings
 from django.test import SimpleTestCase
 from django.urls import get_resolver
 
-from core.navigation import nav_gruppen
+from core.navigation import EINSTELLUNGEN_ZIELE, nav_gruppen
 
 
 #: Absichtlich ohne Weg in der Oberfläche — mit Grund.
@@ -98,12 +98,18 @@ def _sammle(muster, praefix, hinein):
 
 def _navigationsziele():
     ziele = set()
-    for modus in ('einfach', 'profi'):
-        for gruppe in nav_gruppen(modus):
-            if gruppe['ziel']:
-                ziele.add(gruppe['ziel'])
-            for eintrag in gruppe['items']:
-                ziele.add(eintrag['ziel'])
+    # Seit E1.1 gibt es genau EINE Navigation. Vorher lief diese Schleife über
+    # zwei Modi — und musste es: Eine Seite konnte im einen Modus verlinkt sein
+    # und im anderen nicht, war also für die Hälfte der Benutzer unerreichbar.
+    for gruppe in nav_gruppen():
+        if gruppe['ziel']:
+            ziele.add(gruppe['ziel'])
+        for eintrag in gruppe['items']:
+            ziele.add(eintrag['ziel'])
+    # Der Einstellungs-Bereich steht im Fuss der Leiste statt in einer der fünf
+    # Gruppen — Navigation ist er trotzdem. Ohne diese Zeile gälte jede
+    # Einstellungsseite als unerreichbar.
+    ziele.update(EINSTELLUNGEN_ZIELE)
     return ziele
 
 
