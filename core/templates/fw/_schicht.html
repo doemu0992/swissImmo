@@ -1,4 +1,4 @@
-/*
+{% comment %}
 DIE KOMPONENTENSCHICHT — Tokens und `fw-*`-Bausteine.
 
 WARUM SIE SEIT E2.10 IN EINER EIGENEN DATEI STEHT
@@ -22,7 +22,23 @@ Tailwinds Voreinstellung zu bleiben. Der Dunkelmodus folgt ihnen mit.
 
 DIESE DATEI IST REIN ADDITIV. Alle Klassen tragen `fw-`; sie kollidieren
 weder mit Tailwind noch mit dem Bestand.
-*/
+
+ACHTUNG — DIESER KOPF MUSS EIN DJANGO-KOMMENTAR BLEIBEN
+
+Er steht VOR dem `<style>`-Tag. Als CSS-Kommentar (`/* … */`) ist er dort
+kein Kommentar, sondern Text: Der Browser hat ihn oben auf jeder Seite
+ausgegeben, sichtbar auch auf dem oeffentlichen Ticketformular.
+
+Passiert beim Zurueckstellen einer Massenaenderung: Erst wurden alle
+CSS-Kommentare in Django-Kommentare umgewandelt (falsch — der schliessende Django-Kommentar
+enthaelt eine geschweifte Klammer und zerschneidet den Tokenblock fuer die
+Waechter), dann alle zurueck — und dabei auch dieser eine, der von Anfang an
+richtig war.
+
+Regel: INNERHALB von `<style>` gehoeren CSS-Kommentare hin, AUSSERHALB
+Django-Kommentare. Beides ist hier noetig, weil die Datei eine Vorlage ist
+und einen Stilblock enthaelt.
+{% endcomment %}
     <style>
         body { font-family: 'IBM Plex Sans', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -573,6 +589,8 @@ weder mit Tailwind noch mit dem Bestand.
            `file:fw-ink`, `hover:fw-warn-flaeche`) — die neu umgestellten
            Seiten brauchten sie. */
         .hover\:fw-flaeche2:hover{background:var(--ds-surface-2)}
+        .hover\:fw-flaeche:hover{background:var(--ds-surface)}
+        .focus\:fw-flaeche:focus{background:var(--ds-surface)}
         .hover\:fw-markenflaeche:hover{background:var(--ds-brand-soft)}
         .hover\:fw-krit-flaeche:hover{background:var(--ds-crit-soft)}
         .hover\:fw-warn-flaeche:hover{background:var(--ds-warn-soft)}

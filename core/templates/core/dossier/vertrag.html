@@ -1,50 +1,50 @@
 {% extends 'core/dossier/base.html' %}
 {% load chf %}
 {% block title %}Vertrag {{ v.mieter.display_name }}{% endblock %}
-{% block nav_rentals %}bg-indigo-600 text-white shadow-md{% endblock %}
+{% block nav_rentals %}fw-btn fw-primary shadow-md{% endblock %}
 {% block breadcrumb %}
-    <a href="/app/?tab=rentals" class="text-slate-400 hover:text-indigo-600 transition-colors">Mietverträge</a>
-    <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i>
-    <span class="font-semibold text-slate-700 truncate">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</span>
+    <a href="/app/?tab=rentals" class="fw-faint hover:fw-marke transition-colors">Mietverträge</a>
+    <i class="fa-solid fa-chevron-right text-[9px] fw-faint"></i>
+    <span class="font-semibold fw-ink truncate">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</span>
 {% endblock %}
 
 {% block content %}
 
 <!-- SEITENKOPF -->
-<div class="bg-white rounded-xl border border-slate-200 p-6">
+<div class="fw-card p-6">
     <div class="flex flex-col md:flex-row md:items-center gap-5">
-        <div class="w-14 h-14 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl shrink-0">
+        <div class="w-14 h-14 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center text-2xl shrink-0">
             <i class="fa-solid fa-file-signature"></i>
         </div>
         <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap mb-1">
-                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {% if v.status == 'aktiv' %}bg-emerald-50 text-emerald-700{% elif v.status == 'entwurf' %}bg-slate-100 text-slate-500{% else %}bg-amber-50 text-amber-700{% endif %}">{{ v.get_status_display }}</span>
-                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Signatur: {{ v.get_sign_status_display }}</span>
-                {% if v.mietzinspotenzial == 'decrease' %}<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-rose-50 text-rose-600">Senkungsanspruch</span>{% elif v.mietzinspotenzial == 'increase' %}<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">Erhöhungspotenzial</span>{% endif %}
+                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {% if v.status == 'aktiv' %}fw-gut-flaeche fw-gut{% elif v.status == 'entwurf' %}fw-flaeche2 fw-mutet{% else %}fw-warn-flaeche fw-warnton{% endif %}">{{ v.get_status_display }}</span>
+                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded fw-flaeche2 fw-mutet">Signatur: {{ v.get_sign_status_display }}</span>
+                {% if v.mietzinspotenzial == 'decrease' %}<span class="text-[10px] font-medium px-1.5 py-0.5 rounded fw-krit-flaeche fw-kritisch">Senkungsanspruch</span>{% elif v.mietzinspotenzial == 'increase' %}<span class="text-[10px] font-medium px-1.5 py-0.5 rounded fw-gut-flaeche fw-gut">Erhöhungspotenzial</span>{% endif %}
             </div>
-            <h1 class="text-2xl font-bold text-slate-900">
-                <a href="{% url 'dossier_mieter' v.mieter.id %}" class="hover:text-indigo-600 transition-colors">{{ v.mieter.display_name }}</a>
-                <span class="text-slate-300 font-light mx-1">·</span>
-                <a href="{% url 'dossier_liegenschaft' v.einheit.liegenschaft.id %}" class="hover:text-indigo-600 transition-colors">{{ v.einheit }}</a>
+            <h1 class="text-2xl font-bold fw-strong">
+                <a href="{% url 'dossier_mieter' v.mieter.id %}" class="hover:fw-marke transition-colors">{{ v.mieter.display_name }}</a>
+                <span class="fw-faint font-light mx-1">·</span>
+                <a href="{% url 'dossier_liegenschaft' v.einheit.liegenschaft.id %}" class="hover:fw-marke transition-colors">{{ v.einheit }}</a>
             </h1>
-            <p class="text-sm text-slate-500 mt-0.5">seit {{ v.beginn|date:"d.m.Y" }}{% if v.ende %} · bis {{ v.ende|date:"d.m.Y" }}{% endif %}{% if v.mitmieter_name %} · Mitmieter: {{ v.mitmieter_name }}{% endif %}</p>
+            <p class="text-sm fw-mutet mt-0.5">seit {{ v.beginn|date:"d.m.Y" }}{% if v.ende %} · bis {{ v.ende|date:"d.m.Y" }}{% endif %}{% if v.mitmieter_name %} · Mitmieter: {{ v.mitmieter_name }}{% endif %}</p>
         </div>
         <div class="text-right">
-            <div class="text-2xl font-bold text-slate-900">CHF {{ v.brutto_mietzins|chf }}</div>
-            <div class="text-xs text-slate-400">Brutto / Monat</div>
+            <div class="text-2xl font-bold fw-strong">CHF {{ v.brutto_mietzins|chf }}</div>
+            <div class="text-xs fw-faint">Brutto / Monat</div>
         </div>
     </div>
 
     <!-- AKTIONEN -->
-    <div class="flex flex-wrap gap-2 mt-5 pt-5 border-t border-slate-100">
-        <a href="/vertrag/{{ v.id }}/pdf/" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-file-pdf mr-1.5"></i>Vertrag PDF</a>
+    <div class="flex flex-wrap gap-2 mt-5 pt-5 border-t fw-linie">
+        <a href="/vertrag/{{ v.id }}/pdf/" class="border fw-linie fw-mutet hover:border-petrol-600 hover:fw-marke px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-file-pdf mr-1.5"></i>Vertrag PDF</a>
         {% if kann_schreiben %}
-        <a href="/vertrag/{{ v.id }}/qr/" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-qrcode mr-1.5"></i>QR-Rechnung</a>
-        <a href="/vertrag/{{ v.id }}/mahnung/" target="_blank" rel="noopener" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Mahnung PDF</a>
+        <a href="/vertrag/{{ v.id }}/qr/" class="border fw-linie fw-mutet hover:border-petrol-600 hover:fw-marke px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-qrcode mr-1.5"></i>QR-Rechnung</a>
+        <a href="/vertrag/{{ v.id }}/mahnung/" target="_blank" rel="noopener" class="border fw-linie fw-mutet hover:border-petrol-600 hover:fw-marke px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Mahnung PDF</a>
         {% endif %}
         {% if kann_verwalten %}
-        <a href="/mietzins/{{ v.id }}/" class="border border-slate-200 text-slate-600 hover:border-petrol-600 hover:text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-percent mr-1.5"></i>Mietzinsanpassung</a>
-        <a href="/vertrag/{{ v.id }}/senden/" onclick="return confirm('Vertrag jetzt via DocuSeal an {{ v.mieter.email|default:'den Mieter' }} senden?')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-colors shadow-sm"><i class="fa-solid fa-paper-plane mr-1.5"></i>Via DocuSeal senden</a>
+        <a href="/mietzins/{{ v.id }}/" class="border fw-linie fw-mutet hover:border-petrol-600 hover:fw-marke px-4 py-2 rounded-lg text-xs font-semibold transition-colors"><i class="fa-solid fa-percent mr-1.5"></i>Mietzinsanpassung</a>
+        <a href="/vertrag/{{ v.id }}/senden/" onclick="return confirm('Vertrag jetzt via DocuSeal an {{ v.mieter.email|default:'den Mieter' }} senden?')" class="fw-btn fw-primary px-4 py-2 rounded-lg text-xs font-semibold transition-colors shadow-sm"><i class="fa-solid fa-paper-plane mr-1.5"></i>Via DocuSeal senden</a>
         {% endif %}
     </div>
 </div>
@@ -53,49 +53,49 @@
 
     <!-- Konditionen & Kaution -->
     <div class="space-y-6">
-        <div class="bg-white rounded-xl border border-slate-200">
-            <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Konditionen</div>
+        <div class="fw-card">
+            <div class="px-5 py-3.5 border-b fw-linie text-sm font-semibold fw-ink">Konditionen</div>
             <dl class="p-5 space-y-2.5 text-sm">
-                <div class="flex justify-between gap-4"><dt class="text-slate-400">Nettomietzins</dt><dd class="font-medium">CHF {{ v.netto_mietzins|chf }}</dd></div>
-                <div class="flex justify-between gap-4"><dt class="text-slate-400">Nebenkosten</dt><dd class="font-medium">CHF {{ v.nebenkosten|chf }}</dd></div>
-                <div class="flex justify-between gap-4"><dt class="text-slate-400">NK-Art</dt><dd class="font-medium text-right">{{ v.get_nk_abrechnungsart_display|truncatechars:24 }}</dd></div>
-                <div class="flex justify-between gap-4"><dt class="text-slate-400">Zahlungsrhythmus</dt><dd class="font-medium">{{ v.get_zahlungsrhythmus_display }}</dd></div>
-                <div class="flex justify-between gap-4"><dt class="text-slate-400">Kündigungsfrist</dt><dd class="font-medium">{{ v.kuendigungsfrist_monate }} Monate</dd></div>
-                {% if v.erstmals_kuendbar_auf %}<div class="flex justify-between gap-4"><dt class="text-slate-400">Erstmals kündbar</dt><dd class="font-medium">{{ v.erstmals_kuendbar_auf|date:"d.m.Y" }}</dd></div>{% endif %}
-                <div class="flex justify-between gap-4"><dt class="text-slate-400">Personen</dt><dd class="font-medium">{{ v.anzahl_personen }}</dd></div>
-                {% if v.familienwohnung %}<div class="flex justify-between gap-4"><dt class="text-slate-400">Familienwohnung</dt><dd class="font-medium">Ja</dd></div>{% endif %}
-                <div class="flex justify-between gap-4"><dt class="text-slate-400">Basis Ref.-Zins</dt><dd class="font-medium">{{ v.basis_referenzzinssatz }}%</dd></div>
-                <div class="flex justify-between gap-4"><dt class="text-slate-400">Basis LIK</dt><dd class="font-medium">{{ v.basis_lik_punkte }}</dd></div>
+                <div class="flex justify-between gap-4"><dt class="fw-faint">Nettomietzins</dt><dd class="font-medium">CHF {{ v.netto_mietzins|chf }}</dd></div>
+                <div class="flex justify-between gap-4"><dt class="fw-faint">Nebenkosten</dt><dd class="font-medium">CHF {{ v.nebenkosten|chf }}</dd></div>
+                <div class="flex justify-between gap-4"><dt class="fw-faint">NK-Art</dt><dd class="font-medium text-right">{{ v.get_nk_abrechnungsart_display|truncatechars:24 }}</dd></div>
+                <div class="flex justify-between gap-4"><dt class="fw-faint">Zahlungsrhythmus</dt><dd class="font-medium">{{ v.get_zahlungsrhythmus_display }}</dd></div>
+                <div class="flex justify-between gap-4"><dt class="fw-faint">Kündigungsfrist</dt><dd class="font-medium">{{ v.kuendigungsfrist_monate }} Monate</dd></div>
+                {% if v.erstmals_kuendbar_auf %}<div class="flex justify-between gap-4"><dt class="fw-faint">Erstmals kündbar</dt><dd class="font-medium">{{ v.erstmals_kuendbar_auf|date:"d.m.Y" }}</dd></div>{% endif %}
+                <div class="flex justify-between gap-4"><dt class="fw-faint">Personen</dt><dd class="font-medium">{{ v.anzahl_personen }}</dd></div>
+                {% if v.familienwohnung %}<div class="flex justify-between gap-4"><dt class="fw-faint">Familienwohnung</dt><dd class="font-medium">Ja</dd></div>{% endif %}
+                <div class="flex justify-between gap-4"><dt class="fw-faint">Basis Ref.-Zins</dt><dd class="font-medium">{{ v.basis_referenzzinssatz }}%</dd></div>
+                <div class="flex justify-between gap-4"><dt class="fw-faint">Basis LIK</dt><dd class="font-medium">{{ v.basis_lik_punkte }}</dd></div>
             </dl>
             {% if nebenobjekte %}
             <div class="px-5 pb-5">
-                <div class="text-xs text-slate-400 mb-1.5 pt-3 border-t border-slate-100">Nebenobjekte</div>
+                <div class="text-xs fw-faint mb-1.5 pt-3 border-t fw-linie">Nebenobjekte</div>
                 {% for n in nebenobjekte %}<div class="text-sm font-medium">{{ n.bezeichnung }}</div>{% endfor %}
             </div>
             {% endif %}
         </div>
 
-        <div class="bg-white rounded-xl border {% if v.kautions_betrag and not v.kautions_einbezahlt_am %}border-amber-200{% else %}border-slate-200{% endif %}">
-            <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700"><i class="fa-solid fa-shield-halved text-slate-400 mr-1.5"></i>Kaution</div>
+        <div class="fw-flaeche rounded-xl border {% if v.kautions_betrag and not v.kautions_einbezahlt_am %}fw-linie-warn{% else %}fw-linie{% endif %}">
+            <div class="px-5 py-3.5 border-b fw-linie text-sm font-semibold fw-ink"><i class="fa-solid fa-shield-halved fw-faint mr-1.5"></i>Kaution</div>
             <div class="p-5">
             {% if v.kautions_betrag %}
                 <div class="text-xl font-bold mb-1.5">CHF {{ v.kautions_betrag|chf }}</div>
                 {% if v.kautions_einbezahlt_am %}
-                    <span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">Einbezahlt am {{ v.kautions_einbezahlt_am|date:"d.m.Y" }}</span>
+                    <span class="text-[10px] font-medium px-1.5 py-0.5 rounded fw-gut-flaeche fw-gut">Einbezahlt am {{ v.kautions_einbezahlt_am|date:"d.m.Y" }}</span>
                 {% else %}
-                    <span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">⚠ Noch nicht einbezahlt</span>
+                    <span class="text-[10px] font-medium px-1.5 py-0.5 rounded fw-warn-flaeche fw-warnton">⚠ Noch nicht einbezahlt</span>
                 {% endif %}
-                {% if v.kautions_konto %}<div class="text-xs text-slate-400 mt-2 font-mono">{{ v.kautions_konto }}</div>{% endif %}
+                {% if v.kautions_konto %}<div class="text-xs fw-faint mt-2 font-mono">{{ v.kautions_konto }}</div>{% endif %}
             {% else %}
-                <p class="text-sm text-slate-400 italic">Keine Kaution vereinbart.</p>
+                <p class="text-sm fw-faint italic">Keine Kaution vereinbart.</p>
             {% endif %}
             </div>
         </div>
 
         {% if v.besondere_vereinbarungen %}
-        <div class="bg-white rounded-xl border border-slate-200">
-            <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Besondere Vereinbarungen</div>
-            <p class="p-5 text-xs text-slate-600 whitespace-pre-line leading-relaxed">{{ v.besondere_vereinbarungen }}</p>
+        <div class="fw-card">
+            <div class="px-5 py-3.5 border-b fw-linie text-sm font-semibold fw-ink">Besondere Vereinbarungen</div>
+            <p class="p-5 text-xs fw-mutet whitespace-pre-line leading-relaxed">{{ v.besondere_vereinbarungen }}</p>
         </div>
         {% endif %}
     </div>
@@ -103,76 +103,76 @@
     <!-- Rechnungen, Zahlungen, Historie, Dokumente -->
     <div class="lg:col-span-2 space-y-6">
 
-        <div class="bg-white rounded-xl border {% if total_offen > 0 %}border-rose-100{% else %}border-slate-200{% endif %}">
-            <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700 flex justify-between">
+        <div class="fw-flaeche rounded-xl border {% if total_offen > 0 %}fw-linie-krit{% else %}fw-linie{% endif %}">
+            <div class="px-5 py-3.5 border-b fw-linie text-sm font-semibold fw-ink flex justify-between">
                 <span>Rechnungen (Sollstellungen)</span>
-                {% if total_offen > 0 %}<span class="text-rose-600">CHF {{ total_offen|chf }} offen</span>{% endif %}
+                {% if total_offen > 0 %}<span class="fw-kritisch">CHF {{ total_offen|chf }} offen</span>{% endif %}
             </div>
             <table class="w-full text-sm">
-                <tbody class="divide-y divide-slate-50">
+                <tbody class="fw-dv">
                 {% for r in rechnungen %}
                     <tr>
                         <td class="px-5 py-2.5 font-medium">{{ r.titel }}</td>
-                        <td class="py-2.5 text-slate-400 text-xs whitespace-nowrap">{% if r.faellig_am %}fällig {{ r.faellig_am|date:"d.m.Y" }}{% endif %}</td>
+                        <td class="py-2.5 fw-faint text-xs whitespace-nowrap">{% if r.faellig_am %}fällig {{ r.faellig_am|date:"d.m.Y" }}{% endif %}</td>
                         <td class="py-2.5 text-right font-semibold whitespace-nowrap">CHF {{ r.betrag|chf }}</td>
                         <td class="px-5 py-2.5 text-right">
-                            <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {% if r.status == 'bezahlt' %}bg-emerald-50 text-emerald-700{% elif r.status == 'teilbezahlt' %}bg-amber-50 text-amber-700{% else %}bg-rose-50 text-rose-600{% endif %}">{{ r.get_status_display }}</span>
+                            <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {% if r.status == 'bezahlt' %}fw-gut-flaeche fw-gut{% elif r.status == 'teilbezahlt' %}fw-warn-flaeche fw-warnton{% else %}fw-krit-flaeche fw-kritisch{% endif %}">{{ r.get_status_display }}</span>
                         </td>
                     </tr>
                 {% empty %}
-                    <tr><td class="px-5 py-4 text-slate-400 italic">Noch keine Rechnungen — Sollstellung im Finanz-Tab starten.</td></tr>
+                    <tr><td class="px-5 py-4 fw-faint italic">Noch keine Rechnungen — Sollstellung im Finanz-Tab starten.</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
 
-        <div class="bg-white rounded-xl border border-slate-200">
-            <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Zahlungen</div>
+        <div class="fw-card">
+            <div class="px-5 py-3.5 border-b fw-linie text-sm font-semibold fw-ink">Zahlungen</div>
             <table class="w-full text-sm">
-                <tbody class="divide-y divide-slate-50">
+                <tbody class="fw-dv">
                 {% for z in zahlungen %}
                     <tr>
-                        <td class="px-5 py-2.5 text-slate-400 text-xs whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</td>
+                        <td class="px-5 py-2.5 fw-faint text-xs whitespace-nowrap">{{ z.datum_eingang|date:"d.m.Y" }}</td>
                         <td class="py-2.5 font-medium">{{ z.bemerkung|default:"Miete/NK" }}</td>
-                        <td class="py-2.5 text-slate-400 text-xs whitespace-nowrap">für {{ z.buchungs_monat|date:"m/Y" }}</td>
-                        <td class="px-5 py-2.5 text-right font-semibold text-emerald-600 whitespace-nowrap">+ CHF {{ z.betrag|chf }}</td>
+                        <td class="py-2.5 fw-faint text-xs whitespace-nowrap">für {{ z.buchungs_monat|date:"m/Y" }}</td>
+                        <td class="px-5 py-2.5 text-right font-semibold fw-gut whitespace-nowrap">+ CHF {{ z.betrag|chf }}</td>
                     </tr>
                 {% empty %}
-                    <tr><td class="px-5 py-4 text-slate-400 italic">Noch keine Zahlungen erfasst.</td></tr>
+                    <tr><td class="px-5 py-4 fw-faint italic">Noch keine Zahlungen erfasst.</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white rounded-xl border border-slate-200">
-                <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Mietzins-Historie</div>
-                <div class="divide-y divide-slate-50">
+            <div class="fw-card">
+                <div class="px-5 py-3.5 border-b fw-linie text-sm font-semibold fw-ink">Mietzins-Historie</div>
+                <div class="fw-dv">
                 {% for a in anpassungen %}
                     <div class="px-5 py-2.5">
                         <div class="flex justify-between text-sm">
                             <span>ab {{ a.wirksam_ab|date:"d.m.Y" }}</span>
                             <span class="font-semibold">{% if a.alter_netto_mietzins %}{{ a.alter_netto_mietzins|chf:0 }} → {% endif %}{{ a.neuer_netto_mietzins|chf:0 }}</span>
                         </div>
-                        {% if a.begruendung %}<div class="text-xs text-slate-400 truncate">{{ a.begruendung }}</div>{% endif %}
+                        {% if a.begruendung %}<div class="text-xs fw-faint truncate">{{ a.begruendung }}</div>{% endif %}
                     </div>
                 {% empty %}
-                    <p class="px-5 py-4 text-sm text-slate-400 italic">Keine Anpassungen.</p>
+                    <p class="px-5 py-4 text-sm fw-faint italic">Keine Anpassungen.</p>
                 {% endfor %}
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl border border-slate-200">
-                <div class="px-5 py-3.5 border-b border-slate-100 text-sm font-semibold text-slate-700">Dokumente</div>
-                <div class="divide-y divide-slate-50">
+            <div class="fw-card">
+                <div class="px-5 py-3.5 border-b fw-linie text-sm font-semibold fw-ink">Dokumente</div>
+                <div class="fw-dv">
                 {% for d in dokumente %}
-                    <a {% if d.datei %}href="{{ d.datei.url }}" target="_blank" rel="noopener"{% endif %} class="flex items-center gap-3 px-5 py-2.5 hover:text-indigo-600 transition-colors">
-                        <i class="fa-solid fa-file-lines text-slate-300"></i>
+                    <a {% if d.datei %}href="{{ d.datei.url }}" target="_blank" rel="noopener"{% endif %} class="flex items-center gap-3 px-5 py-2.5 hover:fw-marke transition-colors">
+                        <i class="fa-solid fa-file-lines fw-faint"></i>
                         <span class="text-sm flex-1 truncate">{{ d.bezeichnung }}</span>
-                        <span class="text-xs text-slate-400">{{ d.datum|date:"d.m.y" }}</span>
+                        <span class="text-xs fw-faint">{{ d.datum|date:"d.m.y" }}</span>
                     </a>
                 {% empty %}
-                    <p class="px-5 py-4 text-sm text-slate-400 italic">Keine Dokumente.</p>
+                    <p class="px-5 py-4 text-sm fw-faint italic">Keine Dokumente.</p>
                 {% endfor %}
                 </div>
             </div>

@@ -32,7 +32,7 @@ E2.8 nahm acht Seiten — `kommunikation` (74 → 0), `mahnwesen` (74 → 0),
 E2.9 nahm sechs Seiten in EINEM Durchlauf — `abnahme_neu` (64 → 0),
 `anfangsmietzins` (64 → 0), `lieferantenkonto` (64 → 0), `mandat_form`
 (63 → 0), `schlussabrechnung` (58 → 0), `abnahme_detail` (57 → 0):
-**STAND 3178 in 106 Vorlagen**.
+**STAND 2743 in 103 Vorlagen**.
 
 Eins weniger als beim Herausloesen geplant: Der Absendeknopf des
 öffentlichen Bewerbungsformulars trug `fw-gut-flaeche0` (eine Klasse, die
@@ -128,9 +128,6 @@ OBERGRENZE = {
     'core/templates/core/_passwort_shell_bottom.html': 2,
     'core/templates/core/_passwort_shell_top.html': 8,
     'core/templates/core/dossier/base.html': 37,
-    'core/templates/core/dossier/liegenschaft.html': 90,
-    'core/templates/core/dossier/mieter.html': 108,
-    'core/templates/core/dossier/vertrag.html': 118,
     'core/templates/core/mieter_daten.html': 27,
     'core/templates/core/mieter_dokumente.html': 21,
     'core/templates/core/mieter_konto.html': 40,
@@ -152,7 +149,7 @@ OBERGRENZE = {
     'core/templates/core/public_bewerbung_form.html': 1,
     'core/templates/core/public_bewerbung_geschlossen.html': 7,
     'core/templates/core/public_datenschutz.html': 10,
-    'core/templates/core/public_ticket_form.html': 120,
+    'core/templates/core/public_ticket_form.html': 1,
     'core/templates/core/schaden_melden.html': 1,
     'core/templates/core/zweifaktor_codes.html': 14,
     'core/templates/core/zweifaktor_einrichten.html': 25,
