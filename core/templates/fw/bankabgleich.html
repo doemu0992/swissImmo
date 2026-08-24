@@ -31,7 +31,7 @@
         <div class="min-w-0 flex-1">
             <div class="text-sm font-semibold fw-ink mb-1.5">Kontoauszug importieren <span class="font-normal fw-faint">(camt.053-XML oder Bank-CSV)</span></div>
             <input type="file" name="camt_datei" accept=".xml,.csv,.txt,text/xml,application/xml,text/csv" required
-                   class="block w-full text-xs fw-mutet file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:fw-balken-voll file:text-white hover:file:fw-balken-voll file:cursor-pointer">
+                   class="block w-full text-xs fw-mutet file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:fw-balken-voll file:text-white file:fw-balken-voll file:cursor-pointer">
             {% if bankkonten|length > 1 %}
             {# Mehrere Bankkonten: vorher war «1020» im ganzen Import hart verdrahtet. #}
             <select name="bank_konto" class="mt-2 w-full fw-flaeche2 rounded-lg text-xs px-2 py-1.5">

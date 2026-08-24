@@ -24,7 +24,17 @@ E2.6 nahm sechs Seiten auf einmal — `bewerbung_detail.html` (91 → 3),
 E2.7 nahm sechs weitere Seiten — `objekt_form.html` (81 → 0),
 `hypotheken.html` (80 → 0), `logbuch.html` (80 → 0), `mwst.html` (79 → 0),
 `kontenplan.html` (75 → 0), `dienstleister.html` (74 → 0):
-**STAND 4579 in 119 Vorlagen**.
+4579 in 119 Vorlagen.
+E2.8 nahm acht Seiten — `kommunikation` (74 → 0), `mahnwesen` (74 → 0),
+`schaden_detail` (73 → 2), `weiterverrechnung` (72 → 0), `account` (69 → 0),
+`nebenkosten` (68 → 0), `mietzins_anpassung` (66 → 0), `mieterkonto` (65 → 0):
+**STAND 4020 in 112 Vorlagen**.
+
+WAS `text-white` HIER NOCH DARF: Weisse Schrift auf einer gesaettigten
+Flaeche — auf `fw-vorhang`, auf einem Markenknopf, auf `fw-krit-flaeche` —
+ist nicht tokenabhaengig: Diese Flaechen sind in JEDER Darstellung dunkel
+genug. Sie durch eine Schichtklasse zu ersetzen waere eine Umbenennung ohne
+Gewinn.
 
 NICHT ANGERUEHRT, UND ZWAR MIT ABSICHT: die zwei dichtesten Vorlagen
 ueberhaupt. `schaden_melden.html` (264) und `public_bewerbung_form.html` (205)
@@ -148,7 +158,6 @@ OBERGRENZE = {
     'core/templates/fw/abnahme_detail.html': 57,
     'core/templates/fw/abnahme_neu.html': 64,
     'core/templates/fw/abonnement.html': 54,
-    'core/templates/fw/account.html': 69,
     'core/templates/fw/anfangsmietzins.html': 64,
     'core/templates/fw/anlagen.html': 3,
     'core/templates/fw/auswertung.html': 36,
@@ -169,7 +178,6 @@ OBERGRENZE = {
     'core/templates/fw/finanzen.html': 49,
     'core/templates/fw/integrationen.html': 48,
     'core/templates/fw/kautionen.html': 28,
-    'core/templates/fw/kommunikation.html': 74,
     'core/templates/fw/kontoblatt.html': 36,
     'core/templates/fw/kreditoren.html': 8,
     'core/templates/fw/kuendigung_form.html': 50,
@@ -179,25 +187,21 @@ OBERGRENZE = {
     'core/templates/fw/lieferantenkonto.html': 64,
     'core/templates/fw/liegenschaften.html': 13,
     'core/templates/fw/maengelruege.html': 18,
-    'core/templates/fw/mahnwesen.html': 74,
     'core/templates/fw/mandat_abrechnung.html': 48,
     'core/templates/fw/mandat_form.html': 63,
     'core/templates/fw/mandate.html': 21,
     'core/templates/fw/mieterkonten.html': 37,
-    'core/templates/fw/mieterkonto.html': 65,
     'core/templates/fw/mieterspiegel.html': 56,
     'core/templates/fw/mieterspiegel_auswahl.html': 21,
     'core/templates/fw/mieterwechsel.html': 3,
     'core/templates/fw/mietzins.html': 52,
-    'core/templates/fw/mietzins_anpassung.html': 66,
     'core/templates/fw/mietzins_massen.html': 27,
-    'core/templates/fw/nebenkosten.html': 68,
     'core/templates/fw/nebenkosten_detail.html': 3,
     'core/templates/fw/objekt_ausschreiben.html': 20,
     'core/templates/fw/person_form.html': 5,
     'core/templates/fw/personen.html': 18,
     'core/templates/fw/rechtsgrundlagen.html': 32,
-    'core/templates/fw/schaden_detail.html': 73,
+    'core/templates/fw/schaden_detail.html': 2,
     'core/templates/fw/schaden_kosten.html': 40,
     'core/templates/fw/schaeden.html': 33,
     'core/templates/fw/schlussabrechnung.html': 58,
@@ -212,7 +216,6 @@ OBERGRENZE = {
     'core/templates/fw/verzug_257d.html': 46,
     'core/templates/fw/vorlage_form.html': 25,
     'core/templates/fw/vorlagen.html': 28,
-    'core/templates/fw/weiterverrechnung.html': 72,
     'core/templates/fw/zahler_zuordnungen.html': 32,
     'core/templates/fw/zahllauf.html': 2,
     'core/templates/modern_base.html': 5,

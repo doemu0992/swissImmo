@@ -8,58 +8,58 @@
     <div>
         <h1>Mahnwesen</h1>
         <p>Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt erzeugen
-            {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
-            <a href="/neu/mahnwesen/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
-        <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="inline-block mt-2 text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-chart-column mr-1"></i>Altersstruktur (OP-Aging) ansehen</a>
+            {% if aktive_lg %}· gefiltert auf <span class="font-semibold fw-marke">{{ aktive_lg.strasse }}</span>
+            <a href="/neu/mahnwesen/" class="text-xs fw-faint hover:fw-marke">× aufheben</a>{% endif %}</p>
+        <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="inline-block mt-2 text-xs font-semibold fw-marke hover:underline"><i class="fa-solid fa-chart-column mr-1"></i>Altersstruktur (OP-Aging) ansehen</a>
     </div>
     {% if anzahl_total %}
     <form method="post" action="/neu/mahnwesen/lauf/" onsubmit="return confirm('Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt.');" class="shrink-0 text-right">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         <button type="submit" class="fw-btn fw-primary" style="white-space:nowrap"><i class="fa-solid fa-bolt"></i>Mahnlauf ausführen</button>
-        <label class="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1.5 justify-end"><input type="checkbox" name="mit_zins" class="accent-indigo-600">Verzugszins (5%) berechnen</label>
-        <label class="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1 justify-end"><input type="checkbox" name="kein_versand" class="accent-indigo-600">Testlauf: nur erstellen, keine E-Mails versenden</label>
+        <label class="flex items-center gap-1.5 text-[11px] fw-mutet mt-1.5 justify-end"><input type="checkbox" name="mit_zins" class="fw-akzent">Verzugszins (5%) berechnen</label>
+        <label class="flex items-center gap-1.5 text-[11px] fw-mutet mt-1 justify-end"><input type="checkbox" name="kein_versand" class="fw-akzent">Testlauf: nur erstellen, keine E-Mails versenden</label>
     </form>
     {% endif %}
 </div>
 
 <!-- Stufen-KPI -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-envelope-open-text"></i></div>
-        <div><div class="text-2xl font-bold text-rose-600">CHF {{ total|chf }}</div><div class="text-sm text-slate-500">Total überfällig</div></div>
+    <div class="fw-card p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg fw-krit-flaeche fw-kritisch flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-envelope-open-text"></i></div>
+        <div><div class="text-2xl font-bold fw-kritisch">CHF {{ total|chf }}</div><div class="text-sm fw-mutet">Total überfällig</div></div>
     </div>
     {% for s in mahnstufen %}
     <a href="?stufe={{ s.stufe }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
-       class="bg-white rounded-xl border p-5 flex items-center gap-4 transition-colors
-              {% if stufe_filter == s.stufe|stringformat:'s' %}border-indigo-400 ring-1 ring-indigo-200{% else %}border-slate-200 hover:border-slate-300{% endif %}">
+       class="fw-flaeche rounded-xl border p-5 flex items-center gap-4 transition-colors
+              {% if stufe_filter == s.stufe|stringformat:'s' %}fw-linie-marke ring-1 fw-fokusring{% else %}fw-linie hover:fw-linie-stark{% endif %}">
         <div class="w-11 h-11 rounded-lg flex items-center justify-center text-lg shrink-0 {{ s.cls }}"><span class="font-bold">{{ s.stufe }}</span></div>
         <div>
-            <div class="text-2xl font-bold text-slate-800">{% if s.stufe == 3 %}{{ counts.3 }}{% elif s.stufe == 2 %}{{ counts.2 }}{% else %}{{ counts.1 }}{% endif %}</div>
-            <div class="text-sm text-slate-500">{{ s.label }}</div>
+            <div class="text-2xl font-bold fw-strong">{% if s.stufe == 3 %}{{ counts.3 }}{% elif s.stufe == 2 %}{{ counts.2 }}{% else %}{{ counts.1 }}{% endif %}</div>
+            <div class="text-sm fw-mutet">{{ s.label }}</div>
         </div>
     </a>
     {% endfor %}
 </div>
 
 <!-- Tabelle -->
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+<div class="fw-card overflow-hidden">
 
-    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b fw-linie">
         <div class="flex items-center gap-1.5 flex-wrap">
             {% for wert, label in stufe_chips %}
             <a href="?stufe={{ wert }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                      {% if stufe_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+                      {% if stufe_filter == wert %}fw-btn fw-primary{% else %}fw-flaeche2 fw-mutet hover:fw-balken{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
-        <div class="ml-auto text-xs text-slate-400">{{ rows|length }} Position(en)</div>
+        <div class="ml-auto text-xs fw-faint">{{ rows|length }} Position(en)</div>
     </div>
 
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">Stufe</th>
                 <th class="px-5 py-3 font-semibold">Mieter</th>
                 <th class="px-5 py-3 font-semibold">Objekt</th>
@@ -69,25 +69,25 @@
                 <th class="px-5 py-3 font-semibold text-right">Aktion</th>
             </tr>
             </thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody class="fw-dv">
             {% for row in rows %}
-            <tr class="hover:bg-slate-50/60 transition-colors">
+            <tr class="hover:fw-flaeche2 transition-colors">
                 <td class="px-5 py-3.5">
                     <span class="fw-chip whitespace-nowrap {{ row.stufe.cls }}">● {{ row.stufe.label }}</span>
                 </td>
-                <td class="px-5 py-3.5 font-medium text-slate-900 whitespace-nowrap">
-                    {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="hover:text-indigo-600">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
+                <td class="px-5 py-3.5 font-medium fw-strong whitespace-nowrap">
+                    {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="hover:fw-marke">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
                 </td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.objekt }}</td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.faellig|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3.5 text-center font-semibold text-rose-600">{{ row.tage }}</td>
-                <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">{{ row.offen|chf }}</td>
+                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{{ row.objekt }}</td>
+                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{{ row.faellig|date:"d.m.Y" }}</td>
+                <td class="px-5 py-3.5 text-center font-semibold fw-kritisch">{{ row.tage }}</td>
+                <td class="px-5 py-3.5 text-right font-semibold fw-strong whitespace-nowrap">{{ row.offen|chf }}</td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                    {% if row.letzte_mahnung %}<div class="text-[10px] text-slate-400 mb-1">zuletzt: {{ row.letzte_mahnung.stufe }}. Mahnung {{ row.letzte_mahnung.datum|date:"d.m.Y" }}</div>{% endif %}
+                    {% if row.letzte_mahnung %}<div class="text-[10px] fw-faint mb-1">zuletzt: {{ row.letzte_mahnung.stufe }}. Mahnung {{ row.letzte_mahnung.datum|date:"d.m.Y" }}</div>{% endif %}
                     <div class="inline-flex items-center gap-1.5">
                     {% if row.mahn_url %}
                     <a href="{{ row.mahn_url }}" target="_blank" rel="noopener"
-                       class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                       class="inline-flex items-center gap-1.5 fw-btn fw-primary text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
                         <i class="fa-solid fa-file-pdf"></i> PDF
                     </a>
                     <form method="post" action="/neu/mahnwesen/erfassen/" class="inline">
@@ -96,19 +96,19 @@
                         <input type="hidden" name="stufe" value="{{ row.stufe.stufe }}">
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                         <button type="submit" title="{{ row.stufe.label }} in Historie erfassen (inkl. Gebühr)"
-                           class="inline-flex items-center gap-1.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">
+                           class="inline-flex items-center gap-1.5 fw-balken-voll hover:fw-balken-voll text-xs font-semibold px-3 py-1.5 rounded-lg">
                             <i class="fa-solid fa-clock-rotate-left"></i> Erfassen
                         </button>
                     </form>
-                    {% else %}<span class="text-slate-300 text-xs">kein Vertrag</span>{% endif %}
+                    {% else %}<span class="fw-faint text-xs">kein Vertrag</span>{% endif %}
                     </div>
                 </td>
             </tr>
             {% empty %}
             <tr><td colspan="7" class="px-5 py-12 text-center">
-                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-check"></i></div>
-                <p class="text-sm font-medium text-slate-700">Keine offenen Mahnfälle</p>
-                <p class="text-xs text-slate-400 mt-1">{% if stufe_filter %}Keine Position in dieser Stufe.{% else %}Alle Forderungen sind aktuell oder noch nicht mahnfällig.{% endif %}</p>
+                <div class="w-10 h-10 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-check"></i></div>
+                <p class="text-sm font-medium fw-ink">Keine offenen Mahnfälle</p>
+                <p class="text-xs fw-faint mt-1">{% if stufe_filter %}Keine Position in dieser Stufe.{% else %}Alle Forderungen sind aktuell oder noch nicht mahnfällig.{% endif %}</p>
             </td></tr>
             {% endfor %}
             </tbody>
@@ -116,17 +116,17 @@
     </div>
 
     <!-- Stufen-Legende -->
-    <div class="px-5 py-3.5 border-t border-slate-100 flex flex-wrap gap-x-6 gap-y-1.5 text-xs text-slate-500">
+    <div class="px-5 py-3.5 border-t fw-linie flex flex-wrap gap-x-6 gap-y-1.5 text-xs fw-mutet">
         {% for s in mahnstufen %}
         <div class="flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full {{ s.dot }}"></span>
-            <span class="font-semibold text-slate-600">{{ s.label }}</span> ab {{ s.ab_tage }} Tagen — {{ s.unter }}
+            <span class="font-semibold fw-mutet">{{ s.label }}</span> ab {{ s.ab_tage }} Tagen — {{ s.unter }}
         </div>
         {% endfor %}
     </div>
 </div>
 
-<p class="text-xs text-slate-400 mt-3">
+<p class="text-xs fw-faint mt-3">
     <i class="fa-solid fa-circle-info mr-1"></i>
     Die Mahnstufe wird aus der Anzahl überfälliger Tage bestimmt. „PDF" öffnet die fertige Mahnung
     (inkl. QR-Rechnung und — ab Stufe 3 — Kündigungsandrohung nach Art. 257d OR). „Erfassen" schreibt den
@@ -134,13 +134,13 @@
 </p>
 
 <!-- Mahn-Historie (revisionssicher) -->
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden mt-6">
-    <div class="px-5 py-3 border-b border-slate-100 font-bold text-slate-800 text-sm">
-        <i class="fa-solid fa-clock-rotate-left text-slate-400 mr-1.5"></i>Mahn-Historie
+<div class="fw-card overflow-hidden mt-6">
+    <div class="px-5 py-3 border-b fw-linie font-bold fw-strong text-sm">
+        <i class="fa-solid fa-clock-rotate-left fw-faint mr-1.5"></i>Mahn-Historie
     </div>
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
-            <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+            <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">Datum</th>
                 <th class="px-5 py-3 font-semibold">Stufe</th>
                 <th class="px-5 py-3 font-semibold">Mieter</th>
@@ -148,18 +148,18 @@
                 <th class="px-5 py-3 font-semibold text-right">Offen</th>
                 <th class="px-5 py-3 font-semibold text-right">Gebühr</th>
             </tr></thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody class="fw-dv">
             {% for h in historie %}
-            <tr class="hover:bg-slate-50/60">
-                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ h.datum|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">{{ h.stufe }}. Mahnung</span></td>
-                <td class="px-5 py-3 text-slate-900 whitespace-nowrap">{% if h.vertrag_id %}{{ h.vertrag.mieter.display_name }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-slate-500 truncate max-w-[200px]">{% if h.debitoren_rechnung %}{{ h.debitoren_rechnung.titel }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right text-slate-700 whitespace-nowrap">{{ h.betrag_offen|chf }}</td>
-                <td class="px-5 py-3 text-right whitespace-nowrap {% if h.gebuehr > 0 %}text-rose-600 font-medium{% else %}text-slate-400{% endif %}">{{ h.gebuehr|chf }}</td>
+            <tr class="hover:fw-flaeche2">
+                <td class="px-5 py-3 fw-mutet whitespace-nowrap">{{ h.datum|date:"d.m.Y" }}</td>
+                <td class="px-5 py-3"><span class="px-2 py-0.5 rounded text-xs font-semibold fw-flaeche2 fw-ink">{{ h.stufe }}. Mahnung</span></td>
+                <td class="px-5 py-3 fw-strong whitespace-nowrap">{% if h.vertrag_id %}{{ h.vertrag.mieter.display_name }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3 fw-mutet truncate max-w-[200px]">{% if h.debitoren_rechnung %}{{ h.debitoren_rechnung.titel }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3 text-right fw-ink whitespace-nowrap">{{ h.betrag_offen|chf }}</td>
+                <td class="px-5 py-3 text-right whitespace-nowrap {% if h.gebuehr > 0 %}fw-kritisch font-medium{% else %}fw-faint{% endif %}">{{ h.gebuehr|chf }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Mahnungen erfasst.</td></tr>
+            <tr><td colspan="6" class="px-5 py-8 text-center text-sm fw-faint italic">Noch keine Mahnungen erfasst.</td></tr>
             {% endfor %}
             </tbody>
         </table>

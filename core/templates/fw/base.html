@@ -33,6 +33,9 @@
         :root{
             --ds-bg:#eff2f3;--ds-surface:#fff;--ds-surface-2:#f4f7f7;--ds-ink:#0e2227;--ds-muted:#4c6169;--ds-faint:#5c757c;--ds-line:#dde6e8;
             --ds-brand:#0f6f6a;--ds-brand-600:#0b5450;--ds-brand-soft:#d9efed;
+            /* Eine Stufe deutlicher als die Grundlinie: fuer Umrandungen,
+               die beim Ueberfahren hervortreten sollen. */
+            --ds-line-stark:#c2d2d4;
             /* Text auf der dunklen Seitenleiste (B4).
                Der Wert ist in allen drei Bloecken DERSELBE, und das ist Absicht:
                Die Leiste traegt ihren dunklen Verlauf unabhaengig vom Modus, es
@@ -50,6 +53,7 @@
         @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
             --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
             --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
+            --ds-line-stark:#33474d;
             --ds-auf-dunkel:#a8c0c5;   /* gleicher Wert wie hell: die Leiste ist immer dunkel */
             --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
             --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
@@ -57,6 +61,7 @@
         :root[data-theme="dark"]{
             --ds-bg:#0a1518;--ds-surface:#12242a;--ds-surface-2:#173038;--ds-ink:#e4edee;--ds-muted:#a8c0c5;--ds-faint:#8ba4aa;--ds-line:#22404a;
             --ds-brand:#4fb3aa;--ds-brand-600:#6fcac2;--ds-brand-soft:#0f2f2e;
+            --ds-line-stark:#33474d;
             --ds-auf-dunkel:#a8c0c5;   /* gleicher Wert wie hell: die Leiste ist immer dunkel */
             --ds-good:#4ec98a;--ds-good-soft:#12312a;--ds-warn:#e0a44a;--ds-warn-soft:#33280f;--ds-crit:#f08a90;--ds-crit-soft:#341a1d;--ds-info:#5cb4e8;--ds-info-soft:#0f2b3a;
             --ds-shadow-sm:0 1px 2px rgba(0,0,0,.3);--ds-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
@@ -457,6 +462,8 @@
         .fw-flaeche{background:var(--ds-surface)}
         .fw-flaeche2{background:var(--ds-surface-2)}
         .fw-linie{border-color:var(--ds-line)}
+        .fw-linie-stark{border-color:var(--ds-line-stark)}
+        .hover\:fw-linie-stark:hover{border-color:var(--ds-line-stark)}
         .fw-ink{color:var(--ds-ink)}
         .fw-faint{color:var(--ds-faint)}
         .fw-marke{color:var(--ds-brand)}
@@ -490,6 +497,16 @@
            `accent-indigo` steht noch in 17 weiteren Vorlagen. Sie sehen heute
            richtig aus und fallen erst auf, wenn Branding kommt. */
         .fw-akzent{accent-color:var(--ds-brand)}
+        /* Ein Haken, der Loeschen bedeutet, ist rot — auch der Haken selbst.
+           `accent-color` ist der einzige Weg dorthin (siehe fw-akzent). */
+        .fw-akzent-krit{accent-color:var(--ds-crit)}
+        .fw-akzent-warn{accent-color:var(--ds-warn)}
+        /* Warnring um ein Feld, das Aufmerksamkeit braucht. */
+        .fw-ring-warn{box-shadow:0 0 0 3px color-mix(in srgb, var(--ds-warn) 35%, transparent)}
+        /* Abdunkelung hinter einem Dialog. Bewusst KEIN Token: Ein Vorhang
+           ist in beiden Darstellungen dunkel — im Hellmodus, damit der Dialog
+           heraussticht, im Dunkelmodus, damit der Hintergrund zurueckfaellt. */
+        .fw-vorhang{background:rgba(6,20,23,.55)}
         .fw-fokusring:focus{outline:2px solid var(--ds-brand);outline-offset:2px}
 
         /* ZUSTAENDE — NACHGETRAGEN, WEIL SIE SEIT E2.1 STILL FEHLTEN

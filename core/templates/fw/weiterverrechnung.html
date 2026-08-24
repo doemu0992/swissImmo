@@ -12,7 +12,7 @@
 </div>
 
 {% if ist_hnk %}
-<div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 mb-5 text-[13px] text-rose-800">
+<div class="rounded-xl border fw-linie-krit fw-krit-flaeche px-4 py-3 mb-5 text-[13px] fw-kritisch">
     <div class="font-bold mb-0.5"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Achtung: HNK-relevante Rechnung</div>
     Diese Rechnung fliesst bereits über die <b>Nebenkostenabrechnung</b> an die Mieter. Eine zusätzliche direkte
     Weiterverrechnung würde <b>doppelt belasten</b>. Nur fortfahren, wenn du das bewusst willst — dann unten das
@@ -22,25 +22,25 @@
 
 {% if verteil_mieter and k.liegenschaft %}
 <!-- Verteilen auf alle Mieter der Liegenschaft nach Verteilschlüssel -->
-<form method="post" class="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+<form method="post" class="fw-card p-5 mb-6">
     {% csrf_token %}
     <input type="hidden" name="modus" value="verteilen">
-    <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-people-group text-indigo-500 mr-1.5"></i>Auf alle Mieter verteilen</h3>
-    <p class="text-[12px] text-slate-500 mb-3">Verteilt den offenen Betrag (CHF {{ offen_wv|chf }}) in einem Schritt auf die
+    <h3 class="font-bold fw-strong text-sm mb-1"><i class="fa-solid fa-people-group fw-marke mr-1.5"></i>Auf alle Mieter verteilen</h3>
+    <p class="text-[12px] fw-mutet mb-3">Verteilt den offenen Betrag (CHF {{ offen_wv|chf }}) in einem Schritt auf die
         <b>{{ verteil_mieter }}</b> aktiven Mietverhältnisse in {{ k.liegenschaft.strasse }} nach gewähltem Schlüssel.</p>
     <div class="flex flex-wrap items-end gap-3">
-        <div><label class="block text-[11px] font-semibold text-slate-500 mb-1">Verteilschlüssel</label>
-            <select name="schluessel" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label class="block text-[11px] font-semibold fw-mutet mb-1">Verteilschlüssel</label>
+            <select name="schluessel" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="m2">Fläche (m²)</option>
                 <option value="einheit">Pro Einheit (gleich)</option>
                 <option value="wertquote">Wertquote</option>
             </select></div>
-        <div class="flex-1 min-w-[12rem]"><label class="block text-[11px] font-semibold text-slate-500 mb-1">Titel</label>
-            <input name="titel" value="Weiterverrechnung: {{ k.lieferant }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div class="flex-1 min-w-[12rem]"><label class="block text-[11px] font-semibold fw-mutet mb-1">Titel</label>
+            <input name="titel" value="Weiterverrechnung: {{ k.lieferant }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         {% if ist_hnk %}
-        <label class="flex items-center gap-2 text-[12px] text-rose-700 pb-2.5"><input type="checkbox" name="hnk_override" class="accent-rose-600">Trotzdem direkt weiterverrechnen</label>
+        <label class="flex items-center gap-2 text-[12px] fw-kritisch pb-2.5"><input type="checkbox" name="hnk_override" class="fw-akzent-krit">Trotzdem direkt weiterverrechnen</label>
         {% endif %}
-        <button class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-lg"
+        <button class="fw-balken-voll hover:fw-balken-voll text-sm font-semibold px-4 py-2 rounded-lg"
                 onclick="return confirm('Offenen Betrag auf alle {{ verteil_mieter }} Mieter verteilen?');">
             <i class="fa-solid fa-share-nodes mr-1.5"></i>Verteilen
         </button>
@@ -55,19 +55,19 @@
     <script>if (window.self !== window.top) document.getElementById('wv_embed').value = '1';</script>
 
     <!-- Übersicht der Rechnung -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div><div class="text-xs text-slate-400">Rechnungsbetrag</div>
-            <div class="text-lg font-bold text-slate-800">CHF {{ k.betrag|chf }}</div></div>
-        <div><div class="text-xs text-slate-400">Bereits weiterverrechnet</div>
-            <div class="text-lg font-bold text-slate-500">CHF {{ k.weiterverrechnet_betrag|chf }}</div></div>
-        <div><div class="text-xs text-slate-400">Noch offen</div>
-            <div class="text-lg font-extrabold text-indigo-600">CHF {{ offen_wv|chf }}</div></div>
+    <div class="fw-card p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div><div class="text-xs fw-faint">Rechnungsbetrag</div>
+            <div class="text-lg font-bold fw-strong">CHF {{ k.betrag|chf }}</div></div>
+        <div><div class="text-xs fw-faint">Bereits weiterverrechnet</div>
+            <div class="text-lg font-bold fw-mutet">CHF {{ k.weiterverrechnet_betrag|chf }}</div></div>
+        <div><div class="text-xs fw-faint">Noch offen</div>
+            <div class="text-lg font-extrabold fw-marke">CHF {{ offen_wv|chf }}</div></div>
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+    <div class="fw-card p-5 space-y-4">
         <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Mieter / Vertrag *</label>
-            <select name="vertrag_id" required onchange="wvPreview()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <label class="block text-xs font-semibold fw-mutet mb-1">Mieter / Vertrag *</label>
+            <select name="vertrag_id" required onchange="wvPreview()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— wählen —</option>
                 {% for v in vertraege %}
                 <option value="{{ v.id }}">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}{% if v.einheit.liegenschaft %} ({{ v.einheit.liegenschaft.strasse }}){% endif %}</option>
@@ -75,30 +75,30 @@
             </select>
         </div>
         <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Titel</label>
-            <input name="titel" value="Weiterverrechnung: {{ k.lieferant }}" oninput="wvPreview()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <label class="block text-xs font-semibold fw-mutet mb-1">Titel</label>
+            <input name="titel" value="Weiterverrechnung: {{ k.lieferant }}" oninput="wvPreview()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Weiterzuverrechnen (CHF)</label>
+                <label class="block text-xs font-semibold fw-mutet mb-1">Weiterzuverrechnen (CHF)</label>
                 <input name="betrag" id="wv_betrag" oninput="wvCheck(); wvPreview()" value="{% localize off %}{{ offen_wv }}{% endlocalize %}"
-                       class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-semibold">
-                <p class="text-[11px] text-slate-400 mt-1">Fremdkosten — wird ertragsneutral über Konto 1190 durchgereicht.</p>
+                       class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-semibold">
+                <p class="text-[11px] fw-faint mt-1">Fremdkosten — wird ertragsneutral über Konto 1190 durchgereicht.</p>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Zuschlag (CHF, optional)</label>
-                <input name="zuschlag" id="wv_zuschlag" value="0" oninput="wvPreview()" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] text-slate-400 mt-1">Eigener Aufwand/Marge — wird als Ertrag (3600) gebucht.</p>
+                <label class="block text-xs font-semibold fw-mutet mb-1">Zuschlag (CHF, optional)</label>
+                <input name="zuschlag" id="wv_zuschlag" value="0" oninput="wvPreview()" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <p class="text-[11px] fw-faint mt-1">Eigener Aufwand/Marge — wird als Ertrag (3600) gebucht.</p>
             </div>
         </div>
 
-        <div id="wv-warn" class="hidden rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[12.5px] text-amber-800">
+        <div id="wv-warn" class="hidden rounded-lg border fw-linie-warn fw-warn-flaeche px-4 py-3 text-[12.5px] fw-warnton">
             <div class="font-bold mb-1"><i class="fa-solid fa-circle-info mr-1"></i>Hinweis</div>
             <span id="wv-warn-text"></span>
         </div>
 
-        <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 text-xs text-slate-600">
-            <i class="fa-solid fa-book text-indigo-500 mr-1"></i>
+        <div class="fw-markenflaeche border fw-linie-marke rounded-lg p-3 text-xs fw-mutet">
+            <i class="fa-solid fa-book fw-marke mr-1"></i>
             Buchung: Grundbetrag <b>1100 Debitor an 1190 Durchlauf</b> und <b>1190 an {{ aufwand_konto }} Aufwand</b>
             (ertragsneutral). Zuschlag <b>1100 an 3600 Ertrag</b>. Die neue Rechnung bleibt mit dieser
             Lieferantenrechnung verknüpft.
@@ -106,20 +106,20 @@
     </div>
 
     {% if ist_hnk %}
-    <label class="flex items-center gap-2 text-[12.5px] text-rose-700 font-medium"><input type="checkbox" name="hnk_override" class="accent-rose-600">Trotzdem direkt weiterverrechnen (HNK-Doppelbelastung bewusst in Kauf nehmen)</label>
+    <label class="flex items-center gap-2 text-[12.5px] fw-kritisch font-medium"><input type="checkbox" name="hnk_override" class="fw-akzent-krit">Trotzdem direkt weiterverrechnen (HNK-Doppelbelastung bewusst in Kauf nehmen)</label>
     {% endif %}
     <div class="flex items-center gap-3">
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+        <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             <i class="fa-solid fa-share mr-1.5"></i>Weiterverrechnen &amp; Debitor erstellen
         </button>
-        <a href="/neu/kreditoren/" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
+        <a href="/neu/kreditoren/" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>
 </form>
 
 <!-- RECHTS: Live-Vorschau der entstehenden Debitorenrechnung -->
 <div class="lg:sticky lg:top-24">
-    <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> Live-Vorschau</div>
-    <div id="wv-pv" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 text-[13px] text-slate-800 leading-relaxed"></div>
+    <div class="text-xs font-semibold uppercase tracking-wider fw-faint mb-2 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> Live-Vorschau</div>
+    <div id="wv-pv" class="fw-card p-6 text-[13px] fw-strong leading-relaxed"></div>
 </div>
 </div>
 
@@ -150,23 +150,23 @@ function wvPreview(){
     var vd = f.vertrag_id.value ? WV_VD[f.vertrag_id.value] : null;
     var empf = vd
       ? wvEsc(vd.mieter) + (vd.strasse?'<br>'+wvEsc(vd.strasse):'') + (vd.plz?'<br>'+wvEsc(vd.plz+' '+(vd.ort||'')):'')
-        + (vd.objekt?'<br><span class="text-xs text-slate-400">Objekt: '+wvEsc(vd.objekt)+(vd.adresse?', '+wvEsc(vd.adresse):'')+'</span>':'')
-      : '<span class="text-slate-400 italic">— Mieter/Vertrag wählen —</span>';
+        + (vd.objekt?'<br><span class="text-xs fw-faint">Objekt: '+wvEsc(vd.objekt)+(vd.adresse?', '+wvEsc(vd.adresse):'')+'</span>':'')
+      : '<span class="fw-faint italic">— Mieter/Vertrag wählen —</span>';
     document.getElementById('wv-pv').innerHTML =
-      '<div class="text-[11px] text-slate-400 border-b border-slate-100 pb-2 mb-4">'+(wvEsc(WV_ABS.firma)||'—')
+      '<div class="text-[11px] fw-faint border-b fw-linie pb-2 mb-4">'+(wvEsc(WV_ABS.firma)||'—')
         +(WV_ABS.strasse?' | '+wvEsc(WV_ABS.strasse):'')+(WV_ABS.plz?' | '+wvEsc(WV_ABS.plz+' '+(WV_ABS.ort||'')):'')+'</div>'
       +'<div class="font-bold text-base mb-1">Rechnung</div>'
-      +'<div class="text-xs text-slate-400 mb-4">Datum '+wvDstr("{{ heute_iso }}")+' · fällig '+wvDstr("{{ faellig_iso }}")+'</div>'
-      +'<div class="mb-1 font-semibold text-xs text-slate-500">Rechnungsempfänger</div>'
+      +'<div class="text-xs fw-faint mb-4">Datum '+wvDstr("{{ heute_iso }}")+' · fällig '+wvDstr("{{ faellig_iso }}")+'</div>'
+      +'<div class="mb-1 font-semibold text-xs fw-mutet">Rechnungsempfänger</div>'
       +'<div class="mb-4">'+empf+'</div>'
       +'<table class="w-full text-[13px] mb-3"><tbody>'
-      +'<tr class="border-b border-slate-100"><td class="py-1.5 text-slate-500">Position</td><td class="py-1.5 text-right font-medium">'+(wvEsc(titel)||'—')+'</td></tr>'
-      +'<tr class="border-b border-slate-100"><td class="py-1.5 text-slate-500">Fremdkosten ({{ k.lieferant }})</td><td class="py-1.5 text-right">CHF '+wvFmt(grund)+'</td></tr>'
-      +(zuschlag>0?'<tr class="border-b border-slate-100"><td class="py-1.5 text-slate-500">Zuschlag / Umtriebe</td><td class="py-1.5 text-right">CHF '+wvFmt(zuschlag)+'</td></tr>':'')
-      +'<tr><td class="py-2 font-semibold">Rechnungsbetrag</td><td class="py-2 text-right font-bold text-indigo-600">CHF '+wvFmt(total)+'</td></tr>'
+      +'<tr class="border-b fw-linie"><td class="py-1.5 fw-mutet">Position</td><td class="py-1.5 text-right font-medium">'+(wvEsc(titel)||'—')+'</td></tr>'
+      +'<tr class="border-b fw-linie"><td class="py-1.5 fw-mutet">Fremdkosten ({{ k.lieferant }})</td><td class="py-1.5 text-right">CHF '+wvFmt(grund)+'</td></tr>'
+      +(zuschlag>0?'<tr class="border-b fw-linie"><td class="py-1.5 fw-mutet">Zuschlag / Umtriebe</td><td class="py-1.5 text-right">CHF '+wvFmt(zuschlag)+'</td></tr>':'')
+      +'<tr><td class="py-2 font-semibold">Rechnungsbetrag</td><td class="py-2 text-right font-bold fw-marke">CHF '+wvFmt(total)+'</td></tr>'
       +'</tbody></table>'
-      +'<div class="mt-4 rounded-lg bg-slate-50 border border-dashed border-slate-200 px-3 py-2.5 text-[11px] text-slate-400 flex items-center gap-2">'
-      +'<i class="fa-solid fa-qrcode text-slate-300 text-base"></i>'
+      +'<div class="mt-4 rounded-lg fw-flaeche2 border border-dashed fw-linie px-3 py-2.5 text-[11px] fw-faint flex items-center gap-2">'
+      +'<i class="fa-solid fa-qrcode fw-faint text-base"></i>'
       +'<span>QR-Zahlteil mit Referenz wird nach dem Erstellen erzeugt'+(WV_ABS.iban?' · IBAN '+wvEsc(WV_ABS.iban):'')+'.</span></div>';
 }
 wvCheck();

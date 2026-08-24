@@ -112,11 +112,11 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5">
+        <div class="lg:col-span-2 fw-card p-5">
             <h3 class="fw-t mb-3">Schadensbeschreibung</h3>
-            <p class="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{{ t.beschreibung|default:"—" }}</p>
+            <p class="text-sm fw-ink whitespace-pre-line leading-relaxed">{{ t.beschreibung|default:"—" }}</p>
             {% if t.foto %}
-            <div class="mt-4"><img src="{{ t.foto.url }}" alt="Schaden" class="rounded-lg max-h-80 border border-slate-200"></div>
+            <div class="mt-4"><img src="{{ t.foto.url }}" alt="Schaden" class="rounded-lg max-h-80 border fw-linie"></div>
             {% endif %}
         </div>
         <div class="fw-card" style="padding:20px">
@@ -130,8 +130,8 @@
                 <div class="flex justify-between"><dt class="fw-s">Gemeldet</dt><dd class="fw-t">{{ t.erstellt_am|date:"d.m.Y H:i" }}</dd></div>
             </dl>
             <!-- Raumbuch-Element verknüpfen -->
-            <div class="mt-4 pt-4 border-t border-slate-100">
-                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i>Betroffenes Element</h4>
+            <div class="mt-4 pt-4 border-t fw-linie">
+                <h4 class="text-xs font-bold uppercase tracking-wider fw-faint mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i>Betroffenes Element</h4>
                 {% if t.betroffene_einheit_id %}
                 <form method="post" action="/neu/schaeden/{{ t.id }}/ausstattung/" class="flex flex-col gap-2">
                     {% csrf_token %}
@@ -139,9 +139,9 @@
                         <option value="">— kein Element —</option>
                         {% for el in ausstattung_elemente %}<option value="{{ el.id }}" {% if t.ausstattung_id == el.id %}selected{% endif %}>{{ el.raum }} · {{ el.kategorie }}</option>{% endfor %}
                     </select>
-                    <button class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 text-xs font-semibold px-3 py-1.5 rounded-lg self-start">Verknüpfen</button>
+                    <button class="fw-flaeche border fw-linie hover:fw-linie-marke fw-ink hover:fw-marke text-xs font-semibold px-3 py-1.5 rounded-lg self-start">Verknüpfen</button>
                 </form>
-                {% if t.ausstattung_id %}<p class="text-[11px] text-slate-400 mt-2">Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements. <a href="/neu/objekte/{{ t.betroffene_einheit_id }}/#obj-raumbuch" class="fw-link">Raumbuch</a></p>{% endif %}
+                {% if t.ausstattung_id %}<p class="text-[11px] fw-faint mt-2">Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements. <a href="/neu/objekte/{{ t.betroffene_einheit_id }}/#obj-raumbuch" class="fw-link">Raumbuch</a></p>{% endif %}
                 {% if not ausstattung_elemente %}<p class="fw-klein mt-1">Noch keine Ausstattung am Objekt erfasst.</p>{% endif %}
                 {% else %}
                 <p class="fw-klein">Kein Mietobjekt zugeordnet.</p>
@@ -154,34 +154,34 @@
 <!-- VERLAUF -->
 <div data-panel="sc" id="sc-chronik" class="hidden">
     <!-- Antwort an Melder -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
-        <h3 class="fw-t mb-3"><i class="fa-solid fa-reply text-indigo-500 mr-1.5"></i>Antwort an Melder{% if melder_email %} <span class="text-xs font-normal text-slate-400">({{ melder_email }})</span>{% endif %}</h3>
+    <div class="fw-card p-5 mb-4">
+        <h3 class="fw-t mb-3"><i class="fa-solid fa-reply fw-marke mr-1.5"></i>Antwort an Melder{% if melder_email %} <span class="text-xs font-normal fw-faint">({{ melder_email }})</span>{% endif %}</h3>
         <form method="post" action="/neu/schaeden/{{ t.id }}/antwort/">
             {% csrf_token %}
-            <textarea name="text" rows="3" required placeholder="Ihre Nachricht an den Melder…" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 mb-3"></textarea>
+            <textarea name="text" rows="3" required placeholder="Ihre Nachricht an den Melder…" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 mb-3"></textarea>
             <button class="fw-btn fw-primary"><i class="fa-solid fa-paper-plane mr-1.5"></i>Senden</button>
-            {% if not melder_email %}<span class="text-xs text-amber-600 ml-2">Kein E-Mail des Melders — wird nur im Verlauf gespeichert.</span>{% endif %}
+            {% if not melder_email %}<span class="text-xs fw-warnton ml-2">Kein E-Mail des Melders — wird nur im Verlauf gespeichert.</span>{% endif %}
         </form>
     </div>
     <div class="fw-card" style="padding:20px">
         {% for n in nachrichten %}
-        <div class="flex gap-3 pb-4 mb-4 border-b border-slate-50 last:border-0 last:mb-0 last:pb-0">
+        <div class="flex gap-3 pb-4 mb-4 border-b fw-linie last:border-0 last:mb-0 last:pb-0">
             <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0
-                        {% if n.is_von_verwaltung %}bg-indigo-600 text-white{% elif n.is_intern %}bg-slate-200 text-slate-600{% else %}bg-emerald-100 text-emerald-700{% endif %}">
+                        {% if n.is_von_verwaltung %}fw-btn fw-primary{% elif n.is_intern %}fw-balken fw-mutet{% else %}fw-gut-flaeche fw-gut{% endif %}">
                 {{ n.absender_name|slice:":2"|upper }}
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
                     <span class="fw-t">{{ n.absender_name }}</span>
-                    {% if n.is_intern %}<span class="text-[10px] font-bold uppercase bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">intern</span>{% endif %}
+                    {% if n.is_intern %}<span class="text-[10px] font-bold uppercase fw-flaeche2 fw-mutet px-1.5 py-0.5 rounded">intern</span>{% endif %}
                     <span class="fw-klein">{{ n.erstellt_am|date:"d.m.Y H:i" }}</span>
                 </div>
-                <p class="text-sm text-slate-700 mt-1 whitespace-pre-line">{{ n.nachricht }}</p>
-                {% if n.datei %}<a href="{{ n.datei.url }}" target="_blank" rel="noopener" class="text-xs text-indigo-600 hover:underline mt-1 inline-block"><i class="fa-solid fa-paperclip mr-1"></i>Anhang</a>{% endif %}
+                <p class="text-sm fw-ink mt-1 whitespace-pre-line">{{ n.nachricht }}</p>
+                {% if n.datei %}<a href="{{ n.datei.url }}" target="_blank" rel="noopener" class="text-xs fw-marke hover:underline mt-1 inline-block"><i class="fa-solid fa-paperclip mr-1"></i>Anhang</a>{% endif %}
             </div>
         </div>
         {% empty %}
-        <p class="text-center text-sm text-slate-400 italic py-6">Noch keine Nachrichten im Verlauf.</p>
+        <p class="text-center text-sm fw-faint italic py-6">Noch keine Nachrichten im Verlauf.</p>
         {% endfor %}
     </div>
 </div>
@@ -254,9 +254,9 @@
 <div data-panel="sc" id="sc-handwerker" class="hidden">
     {% load chf %}
     <!-- Handwerker beauftragen (automatisiert) -->
-    <div class="bg-white rounded-xl border border-indigo-200 p-5 mb-4">
-        <h3 class="font-bold text-slate-800 text-sm mb-1"><i class="fa-solid fa-screwdriver-wrench text-indigo-500 mr-1.5"></i>Handwerker beauftragen</h3>
-        <p class="text-xs text-slate-400 mb-4">Vergibt den Auftrag, mailt Handwerker <span class="font-medium">und</span> Melder automatisch und setzt den Status auf „In Bearbeitung".</p>
+    <div class="fw-flaeche rounded-xl border fw-linie-marke p-5 mb-4">
+        <h3 class="font-bold fw-strong text-sm mb-1"><i class="fa-solid fa-screwdriver-wrench fw-marke mr-1.5"></i>Handwerker beauftragen</h3>
+        <p class="text-xs fw-faint mb-4">Vergibt den Auftrag, mailt Handwerker <span class="font-medium">und</span> Melder automatisch und setzt den Status auf „In Bearbeitung".</p>
         {% if handwerker_liste %}
         <form method="post" action="/neu/schaeden/{{ t.id }}/auftrag/" class="space-y-3">
             {% csrf_token %}
@@ -277,7 +277,7 @@
             <button class="fw-btn fw-primary"><i class="fa-solid fa-paper-plane mr-1.5"></i>Beauftragen & Mails senden</button>
         </form>
         {% else %}
-        <p class="text-sm text-slate-500">Noch keine Handwerker erfasst — lege zuerst unter <a href="/neu/dienstleister/" class="fw-link">Dienstleister</a> einen an.</p>
+        <p class="text-sm fw-mutet">Noch keine Handwerker erfasst — lege zuerst unter <a href="/neu/dienstleister/" class="fw-link">Dienstleister</a> einen an.</p>
         {% endif %}
     </div>
 
@@ -291,22 +291,22 @@
         <div class="fw-card" style="padding:20px">
             <div class="flex items-start justify-between gap-3 mb-3">
                 <div>
-                    <div class="font-semibold text-slate-900">{{ a.handwerker }}</div>
-                    <div class="text-xs text-slate-500">Beauftragt {{ a.beauftragt_am|date:"d.m.Y" }} · Status: {{ a.status }}</div>
+                    <div class="font-semibold fw-strong">{{ a.handwerker }}</div>
+                    <div class="text-xs fw-mutet">Beauftragt {{ a.beauftragt_am|date:"d.m.Y" }} · Status: {{ a.status }}</div>
                     {% if a.freigabe_status == 'ausstehend' %}
-                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-700">⏳ Eigentümer-Freigabe ausstehend</span>
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold fw-warn-flaeche fw-warnton">⏳ Eigentümer-Freigabe ausstehend</span>
                     {% elif a.freigabe_status == 'freigegeben' %}
-                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700">✓ Freigegeben {{ a.freigabe_datum|date:"d.m.Y" }}</span>
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold fw-gut-flaeche fw-gut">✓ Freigegeben {{ a.freigabe_datum|date:"d.m.Y" }}</span>
                     {% elif a.freigabe_status == 'abgelehnt' %}
-                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-red-50 text-red-700">✗ Abgelehnt</span>
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[11px] font-semibold fw-krit-flaeche fw-kritisch">✗ Abgelehnt</span>
                     {% endif %}
-                    {% if a.freigabe_kommentar %}<div class="text-xs text-slate-500 mt-1 italic">„{{ a.freigabe_kommentar }}"</div>{% endif %}
-                    {% if a.bemerkung %}<div class="text-xs text-slate-500 mt-1">{{ a.bemerkung|truncatechars:100 }}</div>{% endif %}
+                    {% if a.freigabe_kommentar %}<div class="text-xs fw-mutet mt-1 italic">„{{ a.freigabe_kommentar }}"</div>{% endif %}
+                    {% if a.bemerkung %}<div class="text-xs fw-mutet mt-1">{{ a.bemerkung|truncatechars:100 }}</div>{% endif %}
                 </div>
                 <div class="flex items-center gap-3 shrink-0">
-                    <a href="/neu/auftrag/{{ a.id }}/pdf/" target="_blank" rel="noopener" class="text-xs font-semibold text-indigo-600 hover:underline"><i class="fa-solid fa-file-pdf mr-1"></i>Auftrags-PDF</a>
+                    <a href="/neu/auftrag/{{ a.id }}/pdf/" target="_blank" rel="noopener" class="text-xs font-semibold fw-marke hover:underline"><i class="fa-solid fa-file-pdf mr-1"></i>Auftrags-PDF</a>
                     {% if a.kreditoren_rechnung_id %}
-                    <a href="/neu/kreditoren/" class="text-xs font-semibold text-emerald-600 hover:underline"><i class="fa-solid fa-link mr-1"></i>Kreditor #{{ a.kreditoren_rechnung_id }}</a>
+                    <a href="/neu/kreditoren/" class="text-xs font-semibold fw-gut hover:underline"><i class="fa-solid fa-link mr-1"></i>Kreditor #{{ a.kreditoren_rechnung_id }}</a>
                     {% endif %}
                 </div>
             </div>
@@ -318,36 +318,36 @@
                     <input name="kosten_effektiv" value="{{ a.kosten_effektiv|default_if_none:'' }}" class="fw-feld w-full"></div>
                 <div>
                     {% if not a.kreditoren_rechnung_id %}
-                    <label class="flex items-center gap-2 text-xs text-slate-600 mb-2">
+                    <label class="flex items-center gap-2 text-xs fw-mutet mb-2">
                         <input type="checkbox" name="kreditor_erstellen" class="fw-haken">Kreditorenrechnung erstellen
                     </label>
                     {% endif %}
                     {% if a.freigabe_status == 'nicht_noetig' or a.freigabe_status == 'abgelehnt' %}
-                    <label class="flex items-center gap-2 text-xs text-slate-600 mb-2">
-                        <input type="checkbox" name="freigabe_anfordern" class="accent-amber-500">Eigentümer-Freigabe anfordern
+                    <label class="flex items-center gap-2 text-xs fw-mutet mb-2">
+                        <input type="checkbox" name="freigabe_anfordern" class="fw-akzent-warn">Eigentümer-Freigabe anfordern
                     </label>
                     {% endif %}
-                    <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg">Kosten speichern</button>
+                    <button class="w-full fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg">Kosten speichern</button>
                 </div>
             </form>
         </div>
         {% empty %}
-        <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch kein Handwerker beauftragt.</div>
+        <div class="fw-card px-5 py-8 text-center text-sm fw-faint italic">Noch kein Handwerker beauftragt.</div>
         {% endfor %}
     </div>
-    <p class="text-xs text-slate-400 mt-3"><i class="fa-solid fa-circle-info mr-1"></i>
+    <p class="text-xs fw-faint mt-3"><i class="fa-solid fa-circle-info mr-1"></i>
         Beim Anhaken von „Kreditorenrechnung erstellen" wird aus den effektiven Kosten eine Kreditorenrechnung (Status Neu)
         angelegt und mit diesem Auftrag verknüpft — Freigabe und Zahlung erfolgen im Kreditoren-Tab.</p>
 </div>
 
 <!-- FOTOS -->
 <div data-panel="sc" id="sc-dokumente" class="hidden">
-    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+    <div class="fw-card p-5 mb-4">
         <h3 class="fw-t mb-3">Fotos hinzufügen</h3>
         <form method="post" action="/neu/schaeden/{{ t.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
             {% csrf_token %}
             <input name="fotos" type="file" accept="image/*" multiple required
-                   class="text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold">
+                   class="text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold">
             <button class="fw-btn fw-primary"><i class="fa-solid fa-upload mr-1.5"></i>Hochladen</button>
         </form>
     </div>
@@ -357,7 +357,7 @@
         {% if t.foto %}
         <a href="{{ t.foto.url }}" target="_blank" rel="noopener" class="block group relative">
             <img src="{{ t.foto.url }}" alt="Schaden" class="fw-bild">
-            <span class="absolute bottom-1 left-1 text-[10px] bg-black/50 text-white px-1.5 py-0.5 rounded">Erstmeldung</span>
+            <span class="absolute bottom-1 left-1 text-[10px] fw-vorhang text-white px-1.5 py-0.5 rounded">Erstmeldung</span>
         </a>
         {% endif %}
         {% for f in fotos %}
@@ -368,14 +368,14 @@
             <form method="post" action="/neu/schaeden/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1"
                   onsubmit="return confirm('Foto löschen?');">
                 {% csrf_token %}
-                <button class="w-7 h-7 rounded-full bg-white/90 hover:bg-rose-50 text-rose-600 text-xs shadow" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                <button class="w-7 h-7 rounded-full fw-flaeche hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="Löschen"><i class="fa-solid fa-trash"></i></button>
             </form>
-            {% if f.hochgeladen_am %}<span class="absolute bottom-1 left-1 text-[10px] bg-black/50 text-white px-1.5 py-0.5 rounded">{{ f.hochgeladen_am|date:"d.m.Y" }}</span>{% endif %}
+            {% if f.hochgeladen_am %}<span class="absolute bottom-1 left-1 text-[10px] fw-vorhang text-white px-1.5 py-0.5 rounded">{{ f.hochgeladen_am|date:"d.m.Y" }}</span>{% endif %}
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="bg-white rounded-xl border border-slate-200 px-5 py-8 text-center text-sm text-slate-400 italic">Noch keine Fotos.</div>
+    <div class="fw-card px-5 py-8 text-center text-sm fw-faint italic">Noch keine Fotos.</div>
     {% endif %}
 </div>
 {% endblock %}

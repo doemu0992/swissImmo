@@ -8,63 +8,63 @@
     <h1>Nebenkosten</h1>
     <button type="button" onclick="document.getElementById('nkform').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Periode anlegen</button>
 </div>
-<p class="text-sm text-slate-500 mb-5">Heiz- und Nebenkosten-Abrechnungsperioden
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/nebenkosten/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}</p>
+<p class="text-sm fw-mutet mb-5">Heiz- und Nebenkosten-Abrechnungsperioden
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold fw-marke">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/nebenkosten/" class="text-xs fw-faint hover:fw-marke">× aufheben</a>{% endif %}</p>
 
 
-<div id="nkform" class="hidden bg-white rounded-xl border border-indigo-200 p-5 mb-6">
-    <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-bolt text-indigo-500 mr-1.5"></i>Neue Abrechnungsperiode</h3>
+<div id="nkform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
+    <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-bolt fw-marke mr-1.5"></i>Neue Abrechnungsperiode</h3>
     <form method="post" action="/neu/nebenkosten/neu/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {% csrf_token %}
-        <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft *</label>
-            <select name="liegenschaft_id" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Liegenschaft *</label>
+            <select name="liegenschaft_id" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— wählen —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
-        <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Bezeichnung *</label>
-            <input name="bezeichnung" required placeholder="z.B. Heizperiode 2025/2026" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Von *</label>
-            <input type="date" name="start_datum" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bis *</label>
-            <input type="date" name="ende_datum" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div class="sm:col-span-2"><button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Periode anlegen</button></div>
+        <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Bezeichnung *</label>
+            <input name="bezeichnung" required placeholder="z.B. Heizperiode 2025/2026" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Von *</label>
+            <input type="date" name="start_datum" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Bis *</label>
+            <input type="date" name="ende_datum" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div class="sm:col-span-2"><button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Periode anlegen</button></div>
     </form>
 </div>
 
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-bolt"></i></div>
-        <div><div class="text-2xl font-bold text-indigo-600">CHF {{ total_kosten_offen|chf }}</div><div class="text-sm text-slate-500">Kosten offene Perioden</div></div>
+    <div class="fw-card p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-bolt"></i></div>
+        <div><div class="text-2xl font-bold fw-marke">CHF {{ total_kosten_offen|chf }}</div><div class="text-sm fw-mutet">Kosten offene Perioden</div></div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-hourglass-half"></i></div>
-        <div><div class="text-2xl font-bold text-slate-800">{{ n_offen }}</div><div class="text-sm text-slate-500">Offene Perioden</div></div>
+    <div class="fw-card p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg fw-warn-flaeche fw-warnton flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div><div class="text-2xl font-bold fw-strong">{{ n_offen }}</div><div class="text-sm fw-mutet">Offene Perioden</div></div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-circle-check"></i></div>
-        <div><div class="text-2xl font-bold text-slate-800">{{ n_zu }}</div><div class="text-sm text-slate-500">Abgeschlossen</div></div>
+    <div class="fw-card p-5 flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg fw-gut-flaeche fw-gut flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-circle-check"></i></div>
+        <div><div class="text-2xl font-bold fw-strong">{{ n_zu }}</div><div class="text-sm fw-mutet">Abgeschlossen</div></div>
     </div>
 </div>
 
 <!-- Tabelle -->
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+<div class="fw-card overflow-hidden">
+    <div class="px-5 py-4 flex flex-wrap items-center gap-3 border-b fw-linie">
         <div class="flex items-center gap-1.5 flex-wrap">
             {% for wert, label in status_chips %}
             <a href="?status={{ wert }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                      {% if status_filter == wert %}bg-indigo-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+                      {% if status_filter == wert %}fw-btn fw-primary{% else %}fw-flaeche2 fw-mutet hover:fw-balken{% endif %}">{{ label }}</a>
             {% endfor %}
         </div>
-        <div class="ml-auto text-xs text-slate-400">{{ anzahl }} Periode(n)</div>
+        <div class="ml-auto text-xs fw-faint">{{ anzahl }} Periode(n)</div>
     </div>
 
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">Periode</th>
                 <th class="px-5 py-3 font-semibold">Liegenschaft</th>
                 <th class="px-5 py-3 font-semibold">Zeitraum</th>
@@ -74,36 +74,36 @@
                 <th class="px-5 py-3"></th>
             </tr>
             </thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody class="fw-dv">
             {% for row in rows %}
-            <tr class="hover:bg-slate-50/60 transition-colors cursor-pointer" onclick="window.location='/neu/nebenkosten/{{ row.p.id }}/'">
+            <tr class="hover:fw-flaeche2 transition-colors cursor-pointer" onclick="window.location='/neu/nebenkosten/{{ row.p.id }}/'">
                 <td class="px-5 py-3.5">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-                        <span class="font-semibold text-slate-900">{{ row.p.bezeichnung }}</span>
+                        <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        <span class="font-semibold fw-strong">{{ row.p.bezeichnung }}</span>
                     </div>
                 </td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.lg }}</td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ row.p.start_datum|date:"d.m.Y" }} – {{ row.p.ende_datum|date:"d.m.Y" }}</td>
-                <td class="px-5 py-3.5 text-center text-slate-600">{{ row.belege }}</td>
-                <td class="px-5 py-3.5 text-right font-semibold text-slate-900 whitespace-nowrap">CHF {{ row.kosten|chf }}</td>
+                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{{ row.lg }}</td>
+                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{{ row.p.start_datum|date:"d.m.Y" }} – {{ row.p.ende_datum|date:"d.m.Y" }}</td>
+                <td class="px-5 py-3.5 text-center fw-mutet">{{ row.belege }}</td>
+                <td class="px-5 py-3.5 text-right font-semibold fw-strong whitespace-nowrap">CHF {{ row.kosten|chf }}</td>
                 <td class="px-5 py-3.5">
-                    {% if row.p.abgeschlossen %}<span class="fw-chip bg-emerald-50 text-emerald-700">● Abgeschlossen</span>
-                    {% else %}<span class="fw-chip bg-amber-50 text-amber-700">● Offen</span>{% endif %}
+                    {% if row.p.abgeschlossen %}<span class="fw-chip fw-gut-flaeche fw-gut">● Abgeschlossen</span>
+                    {% else %}<span class="fw-chip fw-warn-flaeche fw-warnton">● Offen</span>{% endif %}
                 </td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
                     {% if not row.p.abgeschlossen %}
                     <form method="post" action="/neu/nebenkosten/{{ row.p.id }}/loeschen/" class="inline" onclick="event.stopPropagation();" onsubmit="return confirm('Abrechnungsperiode «{{ row.p.bezeichnung|escapejs }}» löschen?');">{% csrf_token %}
-                        <button class="text-slate-300 hover:text-rose-600 text-xs mr-2" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                        <button class="fw-faint hover:fw-kritisch text-xs mr-2" title="Löschen"><i class="fa-solid fa-trash"></i></button>
                     </form>
                     {% endif %}
-                    <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
+                    <i class="fa-solid fa-chevron-right fw-faint text-xs"></i></td>
             </tr>
             {% empty %}
             <tr><td colspan="7" class="px-5 py-12 text-center">
-                <div class="w-10 h-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-bolt"></i></div>
-                <p class="text-sm font-medium text-slate-700">{% if status_filter %}Keine Perioden in diesem Status{% else %}Noch keine Abrechnungsperioden{% endif %}</p>
-                <p class="text-xs text-slate-400 mt-1">Perioden werden in der klassischen Ansicht angelegt.</p>
+                <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-bolt"></i></div>
+                <p class="text-sm font-medium fw-ink">{% if status_filter %}Keine Perioden in diesem Status{% else %}Noch keine Abrechnungsperioden{% endif %}</p>
+                <p class="text-xs fw-faint mt-1">Perioden werden in der klassischen Ansicht angelegt.</p>
             </td></tr>
             {% endfor %}
             </tbody>

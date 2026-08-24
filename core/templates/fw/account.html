@@ -12,16 +12,16 @@
 
 <div class="max-w-3xl space-y-5">
     <!-- Marktdaten -->
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <div class="fw-card p-5">
         <div class="flex items-start justify-between gap-4 mb-4">
             <div>
-                <h3 class="font-bold text-slate-800 text-sm">Marktdaten (Referenzzinssatz & LIK)</h3>
-                <p class="text-xs text-slate-400 mt-0.5">Grundlage für „Aktuelle Werte übernehmen" im Vertragsassistenten.
+                <h3 class="font-bold fw-strong text-sm">Marktdaten (Referenzzinssatz & LIK)</h3>
+                <p class="text-xs fw-faint mt-0.5">Grundlage für „Aktuelle Werte übernehmen" im Vertragsassistenten.
                 {% if vw.letztes_update_marktdaten %}Zuletzt aktualisiert: {{ vw.letztes_update_marktdaten|date:"d.m.Y H:i" }}.{% else %}Noch nie aus dem Internet aktualisiert.{% endif %}</p>
             </div>
             <form method="post" action="/neu/marktdaten/aktualisieren/">
                 {% csrf_token %}
-                <button class="whitespace-nowrap bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg shadow-sm">
+                <button class="whitespace-nowrap fw-btn fw-primary text-xs font-semibold px-3.5 py-2 rounded-lg shadow-sm">
                     <i class="fa-solid fa-cloud-arrow-down mr-1.5"></i>Aus dem Internet aktualisieren
                 </button>
             </form>
@@ -35,74 +35,74 @@
             <input type="hidden" name="telefon" value="{{ vw.telefon }}">
             <input type="hidden" name="email" value="{{ vw.email }}">
             <input type="hidden" name="iban" value="{{ vw.iban }}">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Referenzzinssatz (%)</label>
-                <input name="aktueller_referenzzinssatz" type="number" step="0.05" value="{% localize off %}{{ vw.aktueller_referenzzinssatz }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Landesindex LIK (Punkte)</label>
-                <input name="aktueller_lik_punkte" type="number" step="0.1" value="{% localize off %}{{ vw.aktueller_lik_punkte }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">LIK-Basis</label>
-                <input name="lik_basis" type="text" value="{{ vw.lik_basis|default:'Dezember 2020' }}" placeholder="Dezember 2020" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] text-slate-400 mt-1">Aktuelle Basis des BFS: «Dezember 2020 = 100».</p></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">LIK Stand-Monat (abgelesen)</label>
-                <input name="aktueller_lik_stand" type="month" value="{{ vw.aktueller_lik_stand|date:'Y-m' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] text-slate-400 mt-1">Monat, aus dem die Punkte stammen — erscheint auf dem amtlichen Formular.</p></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">NK-Verwaltungshonorar (%)</label>
-                <input name="nk_honorar_prozent" type="number" step="0.25" min="0" max="10" value="{% localize off %}{{ vw.nk_honorar_prozent }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                <p class="text-[11px] text-slate-400 mt-1">Honorar auf die Nebenkosten-Abrechnung (üblich 3 %; 0 = kein Posten).</p></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Referenzzinssatz (%)</label>
+                <input name="aktueller_referenzzinssatz" type="number" step="0.05" value="{% localize off %}{{ vw.aktueller_referenzzinssatz }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Landesindex LIK (Punkte)</label>
+                <input name="aktueller_lik_punkte" type="number" step="0.1" value="{% localize off %}{{ vw.aktueller_lik_punkte }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">LIK-Basis</label>
+                <input name="lik_basis" type="text" value="{{ vw.lik_basis|default:'Dezember 2020' }}" placeholder="Dezember 2020" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <p class="text-[11px] fw-faint mt-1">Aktuelle Basis des BFS: «Dezember 2020 = 100».</p></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">LIK Stand-Monat (abgelesen)</label>
+                <input name="aktueller_lik_stand" type="month" value="{{ vw.aktueller_lik_stand|date:'Y-m' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <p class="text-[11px] fw-faint mt-1">Monat, aus dem die Punkte stammen — erscheint auf dem amtlichen Formular.</p></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">NK-Verwaltungshonorar (%)</label>
+                <input name="nk_honorar_prozent" type="number" step="0.25" min="0" max="10" value="{% localize off %}{{ vw.nk_honorar_prozent }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <p class="text-[11px] fw-faint mt-1">Honorar auf die Nebenkosten-Abrechnung (üblich 3 %; 0 = kein Posten).</p></div>
             <div class="sm:col-span-2">
-                <button class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold px-4 py-2 rounded-lg">Marktdaten manuell speichern</button>
+                <button class="fw-balken-voll hover:fw-balken-voll text-sm font-semibold px-4 py-2 rounded-lg">Marktdaten manuell speichern</button>
             </div>
         </form>
-        <p class="text-xs text-slate-400 mt-3">Hinweis: Der automatische Abruf holt die Werte von BWO (Referenzzins) und HEV (LIK).
+        <p class="text-xs fw-faint mt-3">Hinweis: Der automatische Abruf holt die Werte von BWO (Referenzzins) und HEV (LIK).
             Blockiert das Hosting (z. B. PythonAnywhere-Whitelist) den Zugriff, trage die Werte einfach manuell ein — sie gelten dann überall.</p>
     </div>
 
     <!-- Stammdaten -->
-    <form method="post" enctype="multipart/form-data" class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+    <form method="post" enctype="multipart/form-data" class="fw-card p-5 space-y-4">
         {% csrf_token %}
-        <h3 class="font-bold text-slate-800 text-sm">Verwaltung / Vermieter-Stammdaten</h3>
+        <h3 class="font-bold fw-strong text-sm">Verwaltung / Vermieter-Stammdaten</h3>
         <input type="hidden" name="aktueller_referenzzinssatz" value="{% localize off %}{{ vw.aktueller_referenzzinssatz }}{% endlocalize %}">
         <input type="hidden" name="aktueller_lik_punkte" value="{% localize off %}{{ vw.aktueller_lik_punkte }}{% endlocalize %}">
 
         <!-- Firmenlogo -->
         <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Firmenlogo <span class="font-normal text-slate-400">(erscheint auf Briefen)</span></label>
+            <label class="block text-xs font-semibold fw-mutet mb-1">Firmenlogo <span class="font-normal fw-faint">(erscheint auf Briefen)</span></label>
             <div class="flex items-center gap-4">
-                <div class="w-28 h-20 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                <div class="w-28 h-20 rounded-lg border fw-linie fw-flaeche2 flex items-center justify-center overflow-hidden shrink-0">
                     {% if logo_url %}<img src="{{ logo_url }}" alt="Logo" class="max-h-full max-w-full object-contain">
-                    {% else %}<span class="text-xs text-slate-300"><i class="fa-solid fa-image"></i></span>{% endif %}
+                    {% else %}<span class="text-xs fw-faint"><i class="fa-solid fa-image"></i></span>{% endif %}
                 </div>
                 <div class="flex-1">
                     <input type="file" name="logo" accept="image/png,image/jpeg,image/svg+xml"
-                           class="block w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
-                    <p class="text-xs text-slate-400 mt-1">PNG oder JPG, weisser Hintergrund wird transparent gemacht.</p>
-                    {% if logo_url %}<label class="flex items-center gap-1.5 text-xs text-rose-500 mt-1.5 cursor-pointer">
-                        <input type="checkbox" name="logo_entfernen" value="1" class="accent-rose-500"> Logo entfernen</label>{% endif %}
+                           class="block w-full text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:fw-markenflaeche file:fw-marke file:fw-markenflaeche">
+                    <p class="text-xs fw-faint mt-1">PNG oder JPG, weisser Hintergrund wird transparent gemacht.</p>
+                    {% if logo_url %}<label class="flex items-center gap-1.5 text-xs fw-kritisch mt-1.5 cursor-pointer">
+                        <input type="checkbox" name="logo_entfernen" value="1" class="fw-akzent-krit"> Logo entfernen</label>{% endif %}
                 </div>
             </div>
         </div>
 
-        <div class="border-t border-slate-100 pt-4"></div>
+        <div class="border-t fw-linie pt-4"></div>
         {% include 'fw/_unterschrift_feld.html' %}
-        <div class="border-t border-slate-100 pt-4"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Firmenname</label>
-            <input name="firma" value="{{ vw.firma }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Strasse & Nr.</label>
-            <input name="strasse" value="{{ vw.strasse }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+        <div class="border-t fw-linie pt-4"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Firmenname</label>
+            <input name="firma" value="{{ vw.firma }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Strasse & Nr.</label>
+            <input name="strasse" value="{{ vw.strasse }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">PLZ</label>
-                <input name="plz" value="{{ vw.plz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Ort</label>
-                <input name="ort" value="{{ vw.ort }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">PLZ</label>
+                <input name="plz" value="{{ vw.plz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Ort</label>
+                <input name="ort" value="{{ vw.ort }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Telefon</label>
-                <input name="telefon" value="{{ vw.telefon }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">E-Mail</label>
-                <input name="email" value="{{ vw.email }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Telefon</label>
+                <input name="telefon" value="{{ vw.telefon }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">E-Mail</label>
+                <input name="email" value="{{ vw.email }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">IBAN</label>
-            <input name="iban" value="{{ vw.iban }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
-        <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">IBAN</label>
+            <input name="iban" value="{{ vw.iban }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono"></div>
+        <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             <i class="fa-solid fa-check mr-1.5"></i>Stammdaten speichern
         </button>
     </form>
@@ -110,16 +110,16 @@
 
 {% if kann_reset %}
 <!-- Gefahrenzone -->
-<div id="gefahrenzone" class="bg-white rounded-xl border border-rose-200 p-5 mt-6">
-    <h3 class="font-bold text-rose-700 text-sm mb-1"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Gefahrenzone</h3>
-    <p class="text-sm text-slate-600 mb-4">Löscht <span class="font-semibold">alle</span> Daten (Liegenschaften, Objekte, Verträge, Personen, Buchungen, Rechnungen, Schäden, Vorlagen, Mandate und Verwaltungs-Stammdaten) und startet mit einer leeren Datenbank. Benutzerkonten und Rollen bleiben erhalten. <span class="font-semibold text-rose-700">Dieser Schritt kann nicht rückgängig gemacht werden.</span></p>
+<div id="gefahrenzone" class="fw-flaeche rounded-xl border fw-linie-krit p-5 mt-6">
+    <h3 class="font-bold fw-kritisch text-sm mb-1"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Gefahrenzone</h3>
+    <p class="text-sm fw-mutet mb-4">Löscht <span class="font-semibold">alle</span> Daten (Liegenschaften, Objekte, Verträge, Personen, Buchungen, Rechnungen, Schäden, Vorlagen, Mandate und Verwaltungs-Stammdaten) und startet mit einer leeren Datenbank. Benutzerkonten und Rollen bleiben erhalten. <span class="font-semibold fw-kritisch">Dieser Schritt kann nicht rückgängig gemacht werden.</span></p>
     <form method="post" action="/neu/datenreset/" onsubmit="return confirm('Wirklich ALLE Daten unwiderruflich löschen und von vorne beginnen?');" class="flex flex-wrap items-end gap-3">
         {% csrf_token %}
         <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Zum Bestätigen «LÖSCHEN» eingeben</label>
-            <input name="bestaetigung" autocomplete="off" placeholder="LÖSCHEN" class="bg-slate-100 rounded-lg text-sm px-3 py-2.5 w-48 border border-rose-200">
+            <label class="block text-xs font-semibold fw-mutet mb-1">Zum Bestätigen «LÖSCHEN» eingeben</label>
+            <input name="bestaetigung" autocomplete="off" placeholder="LÖSCHEN" class="fw-flaeche2 rounded-lg text-sm px-3 py-2.5 w-48 border fw-linie-krit">
         </div>
-        <button class="bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+        <button class="fw-btn fw-gefahr text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             <i class="fa-solid fa-trash-can mr-1.5"></i>Alles löschen &amp; neu beginnen
         </button>
     </form>

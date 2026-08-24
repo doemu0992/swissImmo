@@ -85,12 +85,12 @@ DECKEL = {
     # Menuezeilen kommen jetzt aus der Komponentenschicht. Was bleibt, sind
     # Einzelstuecke (Statusfarben in Bedingungen, Fototabellen), die eine
     # Zeile-fuer-Zeile-Durchsicht brauchen.
-    ('schaden_detail.html', 'stammdaten'): 10,
-    ('schaden_detail.html', 'chronik'): 16,
+    ('schaden_detail.html', 'stammdaten'): 0,
+    ('schaden_detail.html', 'chronik'): 0,
     ('schaden_detail.html', 'finanzen'): 0,
     ('schaden_detail.html', 'faelle'): 0,
-    ('schaden_detail.html', 'handwerker'): 24,
-    ('schaden_detail.html', 'dokumente'): 8,
+    ('schaden_detail.html', 'handwerker'): 0,
+    ('schaden_detail.html', 'dokumente'): 0,
 
     # 4b.11: Von 179 auf 98 gesenkt.
     ('vertrag_detail.html', 'stammdaten'): 0,
