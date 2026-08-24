@@ -32,7 +32,7 @@ E2.8 nahm acht Seiten — `kommunikation` (74 → 0), `mahnwesen` (74 → 0),
 E2.9 nahm sechs Seiten in EINEM Durchlauf — `abnahme_neu` (64 → 0),
 `anfangsmietzins` (64 → 0), `lieferantenkonto` (64 → 0), `mandat_form`
 (63 → 0), `schlussabrechnung` (58 → 0), `abnahme_detail` (57 → 0):
-**STAND 2108 in 97 Vorlagen**.
+**STAND 1998 in 97 Vorlagen**.
 
 Eins weniger als beim Herausloesen geplant: Der Absendeknopf des
 öffentlichen Bewerbungsformulars trug `fw-gut-flaeche0` (eine Klasse, die
@@ -189,7 +189,7 @@ OBERGRENZE = {
     'core/templates/fw/auswertung.html': 36,
     'core/templates/fw/bankabgleich.html': 6,
     'core/templates/fw/bankkonten.html': 45,
-    'core/templates/fw/base.html': 184,
+    'core/templates/fw/base.html': 74,
     'core/templates/fw/base_embed.html': 8,
     'core/templates/fw/benutzer.html': 19,
     'core/templates/fw/benutzer_form.html': 34,

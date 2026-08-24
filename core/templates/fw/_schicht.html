@@ -118,6 +118,14 @@ und einen Stilblock enthaelt.
         #fwSidebar .text-slate-300,
         #fwSidebar .text-slate-400,
         #fwSidebar .text-slate-500,
+        /* Die Schichtklassen brauchen dieselbe Ausnahme wie die
+           Tailwind-Klassen darueber: Auf dem dunklen Verlauf der Leiste sind
+           `--ds-muted` (8.4:1 auf hell) und `--ds-faint` nicht lesbar.
+           Gemessen in E0.3: 2.28:1. */
+        #fwSidebar .fw-mutet,
+        #fwSidebar .fw-faint,
+        #fwSidebar .fw-ink,
+        #fwSidebar .fw-strong{color:var(--ds-auf-dunkel)!important}
         #fwSidebar .text-slate-600{color:var(--ds-auf-dunkel)!important}
         /* Beim Ueberfahren wird es heller, nicht gleich hell: sonst waere der
            Zustand `hover` von `normal` nicht zu unterscheiden. */
@@ -645,6 +653,9 @@ und einen Stilblock enthaelt.
         /* Gesaettigtes Gruen als Flaeche — fuer Absendeknoepfe mit
            eigenen Massen, die `fw-btn` nicht mitnehmen koennen. */
         .fw-gut-voll{background:var(--ds-good);color:#fff}
+        .fw-krit-voll{background:var(--ds-crit)}
+        /* Neutraler Schatten — bisher `shadow-slate-300/40` im Profilmenue. */
+        .fw-schatten{box-shadow:var(--ds-shadow)}
         .fw-gut-voll:hover{filter:brightness(.92)}
         .fw-link{color:var(--ds-brand);font-weight:600;text-decoration:none;font-size:12.5px}
         .fw-link:hover{text-decoration:underline}

@@ -578,8 +578,16 @@ class MieterkontoblattTests(TestCase):
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/liegenschaften/').content.decode('utf-8')
         self.assertNotIn('\n            .truncate {', html)
-        # Der Benutzername in der Topbar trägt weiterhin truncate
-        self.assertIn('text-sm font-semibold text-slate-900 truncate', html)
+        # Der Benutzername in der Topbar trägt weiterhin truncate.
+        #
+        # Geprüft wird die SACHE, nicht die Zeichenkette: Seit E2.14 heisst die
+        # Farbklasse `fw-strong` statt `text-slate-900`, und der Test schlug
+        # an, obwohl `truncate` unverändert dastand. Ein Test, der an einer
+        # wörtlichen Klassenkette hängt, meldet jede Umbenennung als Fehler.
+        self.assertRegex(
+            html, r'text-sm font-semibold [\w-]+ truncate',
+            'Der Benutzername in der Topbar hat sein `truncate` verloren — '
+            'dann bricht ein langer Name die Kopfzeile um.')
 
     def test_trennband_gilt_fuer_jede_karte_nicht_nur_die_erste(self):
         """Tailwinds «divide-y» setzt auf jeder Zeile ausser der ersten

@@ -79,6 +79,22 @@ def _slate_klassen_in_der_leiste():
     return {int(n) for n in re.findall(r'text-slate-(\d{3})', block)}
 
 
+def _schichtklassen_in_der_leiste():
+    """Textklassen der Komponentenschicht auf dem dunklen Verlauf.
+
+    Seit E2.14 traegt die Leiste `fw-mutet`, `fw-faint`, `fw-ink`, `fw-strong`
+    statt `text-slate-*`. Die Gefahr ist dieselbe: Diese Toene sind fuer HELLE
+    Flaechen gerechnet — `--ds-muted` erreicht 8.4:1 auf `--ds-surface`, auf
+    dem Verlauf der Leiste waren es in E0.3 gemessene 2.28:1.
+
+    Der Waechter kannte sie zuerst nicht und meldete «Nur set() in der
+    Seitenleiste gefunden»: Seine Blindheitspruefung hat den Umbau angezeigt,
+    statt still gruen zu bleiben.
+    """
+    return set(re.findall(r'\bfw-(mutet|faint|ink|strong)\b', _leisten_block()))
+
+
+
 class KontrastSeitenleisteTest(SimpleTestCase):
 
     def test_die_suche_findet_ueberhaupt_klassen(self):
@@ -87,9 +103,13 @@ class KontrastSeitenleisteTest(SimpleTestCase):
         Dieselbe Blindheit wie in `AktenkopfTests`: eine Bedingung, die immer
         erfüllt ist, weil sie ins Leere greift.
         """
-        gefunden = _slate_klassen_in_der_leiste()
+        gefunden = _slate_klassen_in_der_leiste() | _schichtklassen_in_der_leiste()
+        # Zwei genuegen: Nach E2.14 traegt die Leiste noch `fw-mutet` und
+        # `fw-faint`. Die Schwelle steht gegen BLINDHEIT (leere Menge), nicht
+        # gegen Aufraeumen — sie darf Fortschritt nicht als Fehler melden,
+        # dieselbe Lehre wie bei `test_die_messung_findet_ueberhaupt_etwas`.
         self.assertGreaterEqual(
-            len(gefunden), 3,
+            len(gefunden), 2,
             f'Nur {gefunden} in der Seitenleiste gefunden — Aufbau geändert?')
 
     def test_der_token_fuer_dunkle_flaechen_ist_lesbar(self):
@@ -127,6 +147,41 @@ class KontrastSeitenleisteTest(SimpleTestCase):
                     f'Die Seitenleiste benutzt `text-slate-{stufe}`, die Regel '
                     f'deckt sie nicht ab. Auf dem dunklen Verlauf ist das '
                     f'unlesbar — Stufe in die Regel aufnehmen.')
+
+    def test_auch_die_schichtklassen_werden_umgesetzt(self):
+        """Die Lücke, die `…_wird_in_der_leiste_umgesetzt` offen liess.
+
+        Jener Test prüft nur den `text-slate-*`-Arm der Regel. Seit E2.14
+        trägt die Leiste `fw-mutet`, `fw-faint`, `fw-ink`, `fw-strong` — und
+        für die galt keine Prüfung.
+
+        NACHGEMESSEN, WEIL EINE GEGENPROBE GRÜN BLIEB: Entfernt man die vier
+        Zeilen `#fwSidebar .fw-mutet, … {color:var(--ds-auf-dunkel)!important}`,
+        so fallen im Browser **12 von 16** Beschriftungen unter AA — der
+        schlechteste Wert ist 3.03:1 (`--ds-faint`, für helle Flächen
+        gerechnet). Die gesamte Testdatei blieb dabei grün.
+
+        Ein Wächter, der den Wegfall dessen, was er schützt, nicht bemerkt,
+        schützt es nicht. Deshalb hier dieselbe Deckungsprüfung wie für die
+        Slate-Stufen, nur für die Klassen der Komponentenschicht.
+        """
+        quelle = _stilblock()
+        regel = re.search(
+            r'((?:#fwSidebar\s+\.fw-[a-z-]+,?\s*)+)\{color:var\(--ds-auf-dunkel\)',
+            quelle)
+        self.assertIsNotNone(
+            regel,
+            'Die Regel `#fwSidebar .fw-… {color:var(--ds-auf-dunkel)}` fehlt. '
+            'Ohne sie tragen die Beschriftungen der Leiste Töne, die für HELLE '
+            'Flächen gerechnet sind — gemessen 3.03:1 statt 7.78:1.')
+        abgedeckt = set(re.findall(r'\.fw-([a-z-]+)', regel.group(1)))
+
+        for klasse in sorted(_schichtklassen_in_der_leiste()):
+            with self.subTest(klasse=f'fw-{klasse}'):
+                self.assertIn(
+                    klasse, abgedeckt,
+                    f'Die Seitenleiste benutzt `fw-{klasse}`, die Regel deckt '
+                    f'sie nicht ab. Auf dem dunklen Verlauf ist das unlesbar.')
 
     def test_der_aktive_eintrag_hebt_sich_weiterhin_ab(self):
         """Lesbarkeit allein genügt nicht — die Stufung muss sichtbar bleiben.

@@ -111,11 +111,11 @@
         box-shadow:0 1px 2px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.4) !important; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-900">
+<body class="fw-flaeche2 fw-strong">
 <div class="flex min-h-[100dvh]">
 
     <!-- Backdrop für mobiles Menü -->
-    <div id="fwBackdrop" onclick="fwCloseMobileNav()" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"></div>
+    <div id="fwBackdrop" onclick="fwCloseMobileNav()" class="fixed inset-0 fw-vorhang z-40 hidden lg:hidden"></div>
 
     <!-- ================= SIDEBAR (Fairwalter-Struktur) ================= -->
     <aside id="fwSidebar" class="w-60 bg-gradient-to-b from-[#122b31] to-[#0a1c20] text-white flex flex-col min-h-[100dvh] flex-shrink-0 fixed lg:static inset-y-0 left-0 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out">
@@ -136,11 +136,11 @@
         ist, macht `fw_mandant_wechseln` — nicht dieses Formular.
         {% endcomment %}
         <div class="px-5 py-3 border-b border-white/5 sb-filter">
-            <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Mandant</div>
+            <div class="text-[10px] uppercase tracking-wider fw-faint mb-1">Mandant</div>
             {% if fw_mandanten|length > 1 %}
             <form method="post" action="/neu/mandant/">{% csrf_token %}
                 <select name="organisation" onchange="this.form.submit()" aria-label="Mandant wechseln"
-                        class="w-full bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-sm text-white focus:outline-none focus:border-white/30 [&>option]:text-slate-900">
+                        class="w-full fw-flaeche border border-white/10 rounded-md px-2 py-1.5 text-sm text-white focus:outline-none focus:border-white/30 [&>option]:text-slate-900">
                     {% for m in fw_mandanten %}
                     <option value="{{ m.id }}" {% if fw_mandant and fw_mandant.id == m.id %}selected{% endif %}
                             >{{ m.firma }}</option>
@@ -154,23 +154,23 @@
         {% endif %}
 
         <div class="px-5 py-5 flex items-center gap-2.5 border-b border-white/5 sb-logo">
-            <a href="/neu/" title="Zur Übersicht" class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-xs shadow-lg shadow-indigo-600/30 shrink-0">
+            <a href="/neu/" title="Zur Übersicht" class="w-8 h-8 rounded-lg fw-balken-voll flex items-center justify-center text-xs shadow-lg fw-schatten-marke shrink-0">
                 <i class="fa-solid fa-building"></i>
             </a>
             <a href="/neu/" class="font-extrabold tracking-wide text-sm uppercase sb-logotext flex-1">swissImmo</a>
-            <button onclick="fwToggleSidebar()" title="Menü ein-/ausklappen" class="hidden lg:block text-slate-400 hover:text-white transition-colors">
+            <button onclick="fwToggleSidebar()" title="Menü ein-/ausklappen" class="hidden lg:block fw-faint hover:text-white transition-colors">
                 <i class="fa-solid fa-angles-left text-xs sb-collapse-icon"></i>
             </button>
-            <button type="button" onclick="fwCloseMobileNav()" aria-label="Menü schliessen" class="lg:hidden text-slate-400 hover:text-white transition-colors">
+            <button type="button" onclick="fwCloseMobileNav()" aria-label="Menü schliessen" class="lg:hidden fw-faint hover:text-white transition-colors">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
 
         <!-- GLOBALER FILTER -->
-        <form method="get" class="px-4 py-3 bg-white/5 border-b border-white/5 sb-filter">
-            <label class="block text-[11px] font-semibold text-slate-300">Globaler Filter</label>
+        <form method="get" class="px-4 py-3 fw-flaeche border-b border-white/5 sb-filter">
+            <label class="block text-[11px] font-semibold fw-faint">Globaler Filter</label>
             <select name="lg" onchange="this.form.submit()"
-                    class="mt-1 w-full bg-transparent text-sm text-slate-400 focus:outline-none cursor-pointer [&>option]:text-slate-900">
+                    class="mt-1 w-full bg-transparent text-sm fw-faint focus:outline-none cursor-pointer [&>option]:text-slate-900">
                 <option value="">Liegenschaft auswählen</option>
                 {% for l in alle_liegenschaften %}
                 <option value="{{ l.id }}" {% if aktive_lg and aktive_lg.id == l.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>
@@ -184,32 +184,32 @@
                 {% if g.ziel %}
                 <a href="{{ g.ziel }}{{ lg_query }}" title="{{ g.label }}"
                    class="sb-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold transition-all
-                          {% if nav in g.alle_keys %}bg-indigo-600 text-white shadow-md{% else %}text-slate-300 hover:bg-white/5 hover:text-white{% endif %}">
+                          {% if nav in g.alle_keys %}fw-btn fw-primary shadow-md{% else %}fw-faint hover:fw-flaeche hover:text-white{% endif %}">
                     <i class="fa-solid {{ g.icon }} w-4 text-center text-[13px]"></i>
                     <span class="sb-label flex-1">{{ g.label }}</span>
-                    {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="sb-label min-w-[18px] text-center text-[10px] font-bold bg-rose-500 text-white rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
+                    {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="sb-label min-w-[18px] text-center text-[10px] font-bold fw-krit-voll text-white rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
                     {% if g.items %}
-                    <span class="sb-label sb-chev text-[10px] {% if nav in g.alle_keys %}text-indigo-200{% else %}text-slate-500{% endif %} p-1 -m-1"
+                    <span class="sb-label sb-chev text-[10px] {% if nav in g.alle_keys %}fw-faint{% else %}fw-mutet{% endif %} p-1 -m-1"
                           onclick="event.preventDefault();event.stopPropagation();fwNavToggle('{{ g.key }}')"><i class="fa-solid fa-chevron-right transition-transform"></i></span>
                     {% endif %}
                 </a>
                 {% else %}
                 <button type="button" onclick="fwNavToggle('{{ g.key }}')" title="{{ g.label }}"
-                        class="sb-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold text-slate-500 hover:bg-white/5 hover:text-slate-300 transition-all">
+                        class="sb-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold fw-mutet hover:fw-flaeche hover:text-white transition-all">
                     <i class="fa-solid {{ g.icon }} w-4 text-center text-[13px]"></i>
                     <span class="sb-label flex-1 text-left">{{ g.label }}</span>
-                    <span class="sb-label sb-chev text-[10px] text-slate-600 p-1 -m-1"><i class="fa-solid fa-chevron-right transition-transform"></i></span>
+                    <span class="sb-label sb-chev text-[10px] fw-mutet p-1 -m-1"><i class="fa-solid fa-chevron-right transition-transform"></i></span>
                 </button>
                 {% endif %}
                 {% if g.items %}
                 <div id="navsub-{{ g.key }}" class="sb-sub flex flex-col gap-0.5 pt-1 pb-1 pl-[26px] {% if nav not in g.alle_keys %}hidden{% endif %}">
                     {% for it in g.items %}
-                    {% if it.section %}<div class="pt-2 pb-0.5 px-3 text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">{{ it.section }}</div>{% endif %}
+                    {% if it.section %}<div class="pt-2 pb-0.5 px-3 text-[9px] font-bold uppercase tracking-[0.18em] fw-mutet">{{ it.section }}</div>{% endif %}
                     <a href="{{ it.ziel }}{{ lg_query }}"
                        class="flex items-center gap-2 px-3 py-1.5 rounded-md text-[13px] transition-colors
-                              {% if nav in it.keys %}bg-white/10 text-white font-semibold{% else %}text-slate-400 hover:bg-white/5 hover:text-white{% endif %}">
+                              {% if nav in it.keys %}fw-flaeche text-white font-semibold{% else %}fw-faint hover:fw-flaeche hover:text-white{% endif %}">
                         <span class="flex-1">{{ it.label }}</span>
-                        {% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="min-w-[18px] text-center text-[10px] font-bold bg-rose-500 text-white rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
+                        {% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="min-w-[18px] text-center text-[10px] font-bold fw-krit-voll text-white rounded-full px-1.5 py-0.5" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}
                     </a>
                     {% endfor %}
                 </div>
@@ -220,7 +220,7 @@
 
         <div class="px-3 pb-4 sb-filter">
             <a href="/neu/einstellungen/{{ lg_query }}"
-               class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] {% if nav in fw_einstellungen_keys %}bg-white/10 text-white{% else %}text-slate-500 hover:bg-white/5 hover:text-slate-300{% endif %} transition-colors">
+               class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] {% if nav in fw_einstellungen_keys %}fw-flaeche text-white{% else %}fw-mutet hover:fw-flaeche hover:text-white{% endif %} transition-colors">
                 <i class="fa-solid fa-gear w-4 text-center text-[12px]"></i> <span class="sb-label">Einstellungen</span>
             </a>
         </div>
@@ -231,53 +231,53 @@
     <div class="flex-1 min-w-0 flex flex-col">
 
         <!-- TOPBAR -->
-        <header class="h-16 px-6 md:px-8 flex items-center gap-4 bg-white border-b border-slate-200 sticky top-0 z-40">
-            <button type="button" onclick="fwOpenMobileNav()" aria-label="Menü öffnen" class="lg:hidden text-slate-600 hover:text-slate-900 text-lg -ml-1 p-1"><i class="fa-solid fa-bars"></i></button>
+        <header class="h-16 px-6 md:px-8 flex items-center gap-4 fw-flaeche border-b fw-linie sticky top-0 z-40">
+            <button type="button" onclick="fwOpenMobileNav()" aria-label="Menü öffnen" class="lg:hidden fw-mutet hover:fw-strong text-lg -ml-1 p-1"><i class="fa-solid fa-bars"></i></button>
             <form method="get" action="/neu/suche/" class="w-full max-w-md">
                 <div class="relative">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 fw-faint text-sm"></i>
                     <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Suche nach Person, Objekt, Vertrag …"
-                           class="w-full bg-slate-100 pl-11 pr-4 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 placeholder:text-slate-400">
+                           class="w-full fw-flaeche2 pl-11 pr-4 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 fw-fokusring placeholder:fw-faint">
                 </div>
             </form>
             <!-- Account ganz rechts aussen -->
             <div class="ml-auto flex items-center gap-2 md:gap-3">
             <a href="/neu/dokumente/{{ lg_query }}" title="Dokumente"
-               class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors {% if nav == 'dokumente' %}bg-indigo-50 text-indigo-600{% else %}text-slate-500 hover:bg-slate-100 hover:text-slate-700{% endif %}">
+               class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors {% if nav == 'dokumente' %}fw-markenflaeche fw-marke{% else %}fw-mutet hover:fw-flaeche2 hover:fw-ink{% endif %}">
                 <i class="fa-solid fa-folder-open text-[15px]"></i>
             </a>
             <a href="/neu/kommunikation/{{ lg_query }}" title="Kommunikation"
-               class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors {% if nav == 'kommunikation' %}bg-indigo-50 text-indigo-600{% else %}text-slate-500 hover:bg-slate-100 hover:text-slate-700{% endif %}">
+               class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors {% if nav == 'kommunikation' %}fw-markenflaeche fw-marke{% else %}fw-mutet hover:fw-flaeche2 hover:fw-ink{% endif %}">
                 <i class="fa-solid fa-comment text-[15px]"></i>
             </a>
             <div class="relative">
                 <button onclick="fwProfilMenu()" class="flex items-center gap-2.5 group">
-                    <span class="text-sm text-slate-500 hidden md:inline">Hallo, <span class="font-semibold text-slate-800">{{ request.user.first_name|default:request.user.username }}</span></span>
-                    <span class="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold group-hover:ring-2 ring-indigo-200 transition-all">
+                    <span class="text-sm fw-mutet hidden md:inline">Hallo, <span class="font-semibold fw-strong">{{ request.user.first_name|default:request.user.username }}</span></span>
+                    <span class="w-9 h-9 rounded-full fw-btn fw-primary flex items-center justify-center text-xs font-bold group-hover:ring-2 fw-fokusring transition-all">
                         {{ request.user.username|slice:":2"|upper }}
                     </span>
                 </button>
                 <!-- Dropdown -->
-                <div id="fwProfil" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-300/40 py-2 z-50">
-                    <div class="px-4 py-2 flex items-center gap-3 border-b border-slate-100 mb-1">
-                        <span class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold">{{ request.user.username|slice:":2"|upper }}</span>
+                <div id="fwProfil" class="hidden absolute right-0 mt-2 w-64 fw-card shadow-xl fw-schatten py-2 z-50">
+                    <div class="px-4 py-2 flex items-center gap-3 border-b fw-linie mb-1">
+                        <span class="w-10 h-10 rounded-full fw-btn fw-primary flex items-center justify-center text-sm font-bold">{{ request.user.username|slice:":2"|upper }}</span>
                         <div class="min-w-0">
-                            <div class="text-sm font-semibold text-slate-900 truncate">{{ request.user.get_full_name|default:request.user.username }}</div>
-                            <div class="text-xs text-slate-400 truncate">{{ request.user.email|default:request.user.username }}</div>
+                            <div class="text-sm font-semibold fw-strong truncate">{{ request.user.get_full_name|default:request.user.username }}</div>
+                            <div class="text-xs fw-faint truncate">{{ request.user.email|default:request.user.username }}</div>
                         </div>
                     </div>
                     
                     <div class="px-4 py-2">
-                        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Darstellung</div>
-                        <div class="flex bg-slate-100 rounded-lg p-0.5 gap-0.5">
-                            <button type="button" data-theme-btn="light" onclick="fwSetTheme('light')" class="flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors text-slate-500 hover:text-slate-700">Hell</button>
-                            <button type="button" data-theme-btn="dark" onclick="fwSetTheme('dark')" class="flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors text-slate-500 hover:text-slate-700">Dunkel</button>
+                        <div class="text-[11px] font-semibold fw-faint uppercase tracking-wider mb-1.5">Darstellung</div>
+                        <div class="flex fw-flaeche2 rounded-lg p-0.5 gap-0.5">
+                            <button type="button" data-theme-btn="light" onclick="fwSetTheme('light')" class="flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors fw-mutet hover:fw-ink">Hell</button>
+                            <button type="button" data-theme-btn="dark" onclick="fwSetTheme('dark')" class="flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors fw-mutet hover:fw-ink">Dunkel</button>
                         </div>
                     </div>
-                    <div class="border-t border-slate-100 my-1.5"></div>
+                    <div class="border-t fw-linie my-1.5"></div>
                     {% include 'fw/_menu_item.html' with ziel='/neu/einstellungen/' icon='fa-gear' label='Einstellungen' %}
-                    <div class="border-t border-slate-100 my-1.5"></div>
-                    <a href="/logout/" class="flex items-center gap-3 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50">
+                    <div class="border-t fw-linie my-1.5"></div>
+                    <a href="/logout/" class="flex items-center gap-3 px-4 py-2 text-sm fw-kritisch hover:fw-krit-flaeche">
                         <i class="fa-solid fa-right-from-bracket w-4 text-center"></i> Abmelden
                     </a>
                 </div>
@@ -289,11 +289,11 @@
         <div id="fw-toasts" class="fixed top-4 right-4 z-[100] w-[min(92vw,380px)] space-y-2">
             {% for m in messages %}
             <div class="fw-toast flex items-start gap-2 text-sm px-4 py-3 rounded-xl shadow-lg border
-                {% if 'error' in m.tags %}bg-rose-50 border-rose-200 text-rose-800{% elif 'warning' in m.tags %}bg-amber-50 border-amber-200 text-amber-800{% else %}bg-emerald-50 border-emerald-200 text-emerald-800{% endif %}"
+                {% if 'error' in m.tags %}fw-krit-flaeche fw-linie-krit fw-kritisch{% elif 'warning' in m.tags %}fw-warn-flaeche fw-linie-warn fw-warnton{% else %}fw-gut-flaeche fw-linie-gut fw-gut{% endif %}"
                 {% if 'error' in m.tags or 'warning' in m.tags %}data-persist="1"{% endif %}>
                 <i class="fa-solid {% if 'error' in m.tags %}fa-circle-exclamation{% elif 'warning' in m.tags %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %} mt-0.5"></i>
                 <div class="flex-1">{{ m }}</div>
-                <button type="button" onclick="this.closest('.fw-toast').remove()" title="Meldung schliessen" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="this.closest('.fw-toast').remove()" title="Meldung schliessen" class="fw-faint hover:fw-mutet"><i class="fa-solid fa-xmark"></i></button>
             </div>
             {% endfor %}
         </div>
@@ -319,15 +319,15 @@
 <!-- ⌘K Command-Palette -->
 <div id="fwPalette" class="hidden fixed inset-0 z-[110]">
     <div class="absolute inset-0 bg-black/40" onclick="fwPaletteClose()"></div>
-    <div class="relative max-w-lg mx-auto mt-[12vh] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-        <div class="flex items-center gap-3 px-4 border-b border-slate-100">
-            <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
+    <div class="relative max-w-lg mx-auto mt-[12vh] fw-flaeche rounded-2xl shadow-2xl border fw-linie overflow-hidden">
+        <div class="flex items-center gap-3 px-4 border-b fw-linie">
+            <i class="fa-solid fa-magnifying-glass fw-faint text-sm"></i>
             <input id="fwPaletteInput" type="text" placeholder="Person, Objekt, Mietverhältnis oder Seite …" autocomplete="off"
-                   class="flex-1 py-3.5 text-sm focus:outline-none placeholder:text-slate-400">
-            <span class="text-[10px] font-semibold text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">ESC</span>
+                   class="flex-1 py-3.5 text-sm focus:outline-none placeholder:fw-faint">
+            <span class="text-[10px] font-semibold fw-faint border fw-linie rounded px-1.5 py-0.5">ESC</span>
         </div>
         <div id="fwPaletteList" class="max-h-[50vh] overflow-y-auto py-1.5"></div>
-        <div class="px-4 py-2 border-t border-slate-100 text-[11px] text-slate-400">
+        <div class="px-4 py-2 border-t fw-linie text-[11px] fw-faint">
             ↵ öffnen · <span id="fwPaletteFuss">Tippen sucht in Akten und Seiten</span>
         </div>
     </div>
@@ -400,11 +400,11 @@ function fwNavToggle(key) {
 
     function zeile(url, label, zusatz, art, aktiv) {
         return '<a href="' + url + '" class="fw-pal-item flex items-center gap-3 px-4 py-2.5 text-sm ' +
-               (aktiv ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50') + '">' +
-               (art ? '<span class="text-[10px] font-semibold uppercase tracking-wide text-slate-400 w-[92px] shrink-0">' + esc(art) + '</span>'
-                    : '<i class="fa-solid fa-arrow-right text-[10px] text-slate-300 w-[92px] shrink-0"></i>') +
+               (aktiv ? 'fw-markenflaeche fw-marke' : 'fw-ink hover:fw-flaeche2 ') + '">' +
+               (art ? '<span class="text-[10px] font-semibold uppercase tracking-wide fw-faint w-[92px] shrink-0">' + esc(art) + '</span>'
+                    : '<i class="fa-solid fa-arrow-right text-[10px] fw-faint w-[92px] shrink-0"></i>') +
                '<span class="flex-1 truncate">' + esc(label) + '</span>' +
-               (zusatz ? '<span class="text-[11px] text-slate-400 truncate max-w-[45%]">' + esc(zusatz) + '</span>' : '') +
+               (zusatz ? '<span class="text-[11px] fw-faint truncate max-w-[45%]">' + esc(zusatz) + '</span>' : '') +
                '</a>';
     }
 
@@ -416,19 +416,19 @@ function fwNavToggle(key) {
         var nr = 0;
 
         if (meine.length) {
-            stuecke.push('<div class="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Akten</div>');
+            stuecke.push('<div class="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider fw-faint">Akten</div>');
             meine.forEach(function (t) { stuecke.push(zeile(t.url, t.label, t.zusatz, t.art, nr++ === 0)); });
         }
         if (seiten.length) {
             if (meine.length) {
-                stuecke.push('<div class="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 border-t border-slate-100 mt-1">Seiten</div>');
+                stuecke.push('<div class="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider fw-faint border-t fw-linie mt-1">Seiten</div>');
             }
             seiten.slice(0, meine.length ? 5 : 12).forEach(function (d) {
                 stuecke.push(zeile(d.url, d.label, d.gruppe || '', '', nr++ === 0));
             });
         }
         if (!stuecke.length) {
-            list.innerHTML = '<div class="px-4 py-3 text-sm text-slate-400">Nichts gefunden — ↵ sucht ausführlich nach «' + esc(q) + '»</div>';
+            list.innerHTML = '<div class="px-4 py-3 text-sm fw-faint">Nichts gefunden — ↵ sucht ausführlich nach «' + esc(q) + '»</div>';
             return;
         }
         list.innerHTML = stuecke.join('');
@@ -498,9 +498,9 @@ function fwTab(gruppe, name) {
         // Leiste benutzen — sie schaden der neuen nicht.
         b.classList.toggle('hier', aktiv);
         b.classList.toggle('border-indigo-600', aktiv);
-        b.classList.toggle('text-indigo-600', aktiv);
+        b.classList.toggle('fw-marke', aktiv);
         b.classList.toggle('border-transparent', !aktiv);
-        b.classList.toggle('text-slate-500', !aktiv);
+        b.classList.toggle('fw-mutet', !aktiv);
     });
 }
 
@@ -648,10 +648,10 @@ function fwSyncThemeButtons(){
     var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
     document.querySelectorAll('[data-theme-btn]').forEach(function(b){
         var on = b.getAttribute('data-theme-btn') === cur;
-        b.classList.toggle('bg-indigo-600', on);
+        b.classList.toggle('fw-balken-voll', on);
         b.classList.toggle('text-white', on);
         b.classList.toggle('shadow-sm', on);
-        b.classList.toggle('text-slate-500', !on);
+        b.classList.toggle('fw-mutet', !on);
     });
 }
 fwSyncThemeButtons();
@@ -679,7 +679,7 @@ fwSyncThemeButtons();
    danach und die Leiste bleibt 690. Gemessen: 300 px Querlauf auf jeder
    Seite. `100vw` bricht den Kreis, weil es am Sichtfeld haengt und nicht am
    Inhalt. {% endcomment %}
-<nav class="lg:hidden fixed bottom-0 left-0 w-screen max-w-full z-40 bg-white border-t border-slate-200 grid grid-cols-5"
+<nav class="lg:hidden fixed bottom-0 left-0 w-screen max-w-full z-40 fw-flaeche border-t fw-linie grid grid-cols-5"
      style="padding-bottom:max(4px,env(safe-area-inset-bottom))" aria-label="Bereiche">
     {% for g in fw_nav_gruppen %}
     <a href="{{ g.ziel }}{{ lg_query }}"
@@ -688,7 +688,7 @@ fwSyncThemeButtons();
           `truncate` greift nie, und fuenf Spalten brauchen 690 statt 390 px.
           Erst damit darf die Spalte schmaler werden als ihr Inhalt. {% endcomment %}
        class="flex flex-col items-center justify-center gap-1 py-2 min-h-[52px] min-w-0 text-[11px] transition-colors
-              {% if nav in g.alle_keys %}text-indigo-700 font-semibold{% else %}text-slate-500{% endif %}"
+              {% if nav in g.alle_keys %}fw-marke font-semibold{% else %}fw-mutet{% endif %}"
        {% if nav in g.alle_keys %}aria-current="page"{% endif %}>
         <i class="fa-solid {{ g.icon }} text-[15px]"></i>
         <span class="truncate max-w-full px-0.5">{{ g.label }}</span>
