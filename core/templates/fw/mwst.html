@@ -11,54 +11,54 @@
 
 <form method="get" class="flex flex-wrap items-end gap-3 mb-6">
     {% if request.GET.lg %}<input type="hidden" name="lg" value="{{ request.GET.lg }}">{% endif %}
-    <div><label class="block text-xs font-semibold text-slate-500 mb-1">Jahr</label>
-        <select name="jahr" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+    <div><label class="block text-xs font-semibold fw-mutet mb-1">Jahr</label>
+        <select name="jahr" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
             {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select></div>
-    <div><label class="block text-xs font-semibold text-slate-500 mb-1">Periode</label>
-        <select name="quartal" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+    <div><label class="block text-xs font-semibold fw-mutet mb-1">Periode</label>
+        <select name="quartal" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
             <option value="" {% if not quartal %}selected{% endif %}>Ganzes Jahr</option>
             {% for q in "1234" %}<option value="{{ q }}" {% if quartal == q|stringformat:'s' %}selected{% endif %}>{{ q }}. Quartal</option>{% endfor %}
         </select></div>
-    <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Anzeigen</button>
-    <a href="/neu/mwst/estv-export/?jahr={{ jahr }}&quartal={{ quartal }}" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-600 hover:text-indigo-600 text-sm font-semibold px-4 py-2 rounded-lg">
+    <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">Anzeigen</button>
+    <a href="/neu/mwst/estv-export/?jahr={{ jahr }}&quartal={{ quartal }}" class="fw-flaeche border fw-linie hover:fw-linie-marke fw-mutet hover:fw-marke text-sm font-semibold px-4 py-2 rounded-lg">
         <i class="fa-solid fa-file-csv mr-1.5"></i>ESTV-Export (CSV)
     </a>
 </form>
 
-<div class="max-w-xl bg-white rounded-xl border border-slate-200 overflow-hidden">
-    <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400 font-semibold">
+<div class="max-w-xl fw-card overflow-hidden">
+    <div class="px-5 py-3 fw-flaeche2 border-b fw-linie text-xs uppercase tracking-wide fw-faint font-semibold">
         Periode {{ von|date:"d.m.Y" }} – {{ bis|date:"d.m.Y" }}</div>
-    <div class="divide-y divide-slate-50">
+    <div class="fw-dv">
         <div class="flex items-center justify-between px-5 py-4">
-            <div><div class="text-sm font-medium text-slate-800">Geschuldete Umsatzsteuer</div>
-                <div class="text-xs text-slate-400">Konto 2200 · Ausgangs-MWST auf optierte Mieten</div></div>
-            <div class="text-lg font-bold text-slate-800 tabular-nums">CHF {{ umsatzsteuer|chf }}</div>
+            <div><div class="text-sm font-medium fw-strong">Geschuldete Umsatzsteuer</div>
+                <div class="text-xs fw-faint">Konto 2200 · Ausgangs-MWST auf optierte Mieten</div></div>
+            <div class="text-lg font-bold fw-strong tabular-nums">CHF {{ umsatzsteuer|chf }}</div>
         </div>
         <div class="flex items-center justify-between px-5 py-4">
-            <div><div class="text-sm font-medium text-slate-800">− Vorsteuer</div>
-                <div class="text-xs text-slate-400">Konto 1170 · abziehbare MWST auf Kreditoren</div></div>
-            <div class="text-lg font-bold text-emerald-600 tabular-nums">CHF {{ vorsteuer|chf }}</div>
+            <div><div class="text-sm font-medium fw-strong">− Vorsteuer</div>
+                <div class="text-xs fw-faint">Konto 1170 · abziehbare MWST auf Kreditoren</div></div>
+            <div class="text-lg font-bold fw-gut tabular-nums">CHF {{ vorsteuer|chf }}</div>
         </div>
         {% if mwst_methode == 'saldo' and saldo_vorteil %}
-        <div class="flex items-center justify-between px-5 py-3 border-t border-slate-100">
-            <div><div class="text-sm font-medium text-slate-800">Saldosteuersatz-Vorteil</div>
-                <div class="text-xs text-slate-400">Differenz Normalsatz ./. Saldosatz → Ertrag 3600</div></div>
-            <div class="text-lg font-bold text-emerald-600 tabular-nums">CHF {{ saldo_vorteil|chf }}</div>
+        <div class="flex items-center justify-between px-5 py-3 border-t fw-linie">
+            <div><div class="text-sm font-medium fw-strong">Saldosteuersatz-Vorteil</div>
+                <div class="text-xs fw-faint">Differenz Normalsatz ./. Saldosatz → Ertrag 3600</div></div>
+            <div class="text-lg font-bold fw-gut tabular-nums">CHF {{ saldo_vorteil|chf }}</div>
         </div>
         {% endif %}
-        <div class="flex items-center justify-between px-5 py-4 bg-indigo-50/40">
-            <div><div class="text-sm font-bold text-slate-900">Zahllast an ESTV</div>
-                <div class="text-xs text-slate-400">{% if mwst_methode == 'saldo' %}Brutto-Entgelt × Saldosatz{% else %}Umsatzsteuer − Vorsteuer{% endif %}</div></div>
-            <div class="text-2xl font-extrabold {% if zahllast >= 0 %}text-indigo-700{% else %}text-emerald-600{% endif %} tabular-nums">CHF {{ zahllast|chf }}</div>
+        <div class="flex items-center justify-between px-5 py-4 fw-markenflaeche">
+            <div><div class="text-sm font-bold fw-strong">Zahllast an ESTV</div>
+                <div class="text-xs fw-faint">{% if mwst_methode == 'saldo' %}Brutto-Entgelt × Saldosatz{% else %}Umsatzsteuer − Vorsteuer{% endif %}</div></div>
+            <div class="text-2xl font-extrabold {% if zahllast >= 0 %}fw-marke{% else %}fw-gut{% endif %} tabular-nums">CHF {{ zahllast|chf }}</div>
         </div>
         <!-- Abrechnung verbuchen: 2200 ausbuchen (sonst wächst das Konto endlos) -->
-        <div class="px-5 py-3 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+        <div class="px-5 py-3 border-t fw-linie flex items-center justify-between gap-3 flex-wrap">
             {% if mwst_verbucht %}
-            <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1"></i>Periode verbucht</span>
-            <span class="text-xs text-slate-400">Konto 2200 ist für diese Periode ausgebucht. Die Schuld steht auf 2201 (ESTV) bis zur Zahlung.</span>
+            <span class="text-xs font-semibold fw-gut fw-gut-flaeche px-3 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1"></i>Periode verbucht</span>
+            <span class="text-xs fw-faint">Konto 2200 ist für diese Periode ausgebucht. Die Schuld steht auf 2201 (ESTV) bis zur Zahlung.</span>
             {% else %}
-            <span class="text-xs text-slate-500">Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV){% if mwst_methode == 'saldo' %}, Saldosatz-Vorteil als Ertrag{% endif %}. Die Zahlung selbst wird später über den Bankabgleich gebucht.</span>
+            <span class="text-xs fw-mutet">Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV){% if mwst_methode == 'saldo' %}, Saldosatz-Vorteil als Ertrag{% endif %}. Die Zahlung selbst wird später über den Bankabgleich gebucht.</span>
             <form method="post" action="/neu/mwst/verbuchen/" onsubmit="return confirm('MWST-Abrechnung dieser Periode verbuchen?');">
                 {% csrf_token %}
                 <input type="hidden" name="jahr" value="{{ jahr }}">
@@ -68,7 +68,7 @@
                 sie dürfen nicht aus dem Formular kommen.
                 {% endcomment %}
                 {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap transition-colors">
+                <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap transition-colors">
                     <i class="fa-solid fa-check-double mr-1.5"></i>Abrechnung verbuchen
                 </button>
             </form>
@@ -77,21 +77,21 @@
     </div>
 </div>
 <!-- ESTV-Abrechnungsziffern -->
-<div class="max-w-xl bg-white rounded-xl border border-slate-200 overflow-hidden mt-6">
-    <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400 font-semibold flex items-center justify-between">
+<div class="max-w-xl fw-card overflow-hidden mt-6">
+    <div class="px-5 py-3 fw-flaeche2 border-b fw-linie text-xs uppercase tracking-wide fw-faint font-semibold flex items-center justify-between">
         <span>ESTV-Abrechnung ({% if mwst_methode == 'saldo' %}Saldosteuersatz {{ saldosteuersatz }} %{% else %}effektiv{% endif %})</span>
-        {% if mwst_uid %}<span class="normal-case text-slate-500">{{ mwst_uid }}</span>{% endif %}
+        {% if mwst_uid %}<span class="normal-case fw-mutet">{{ mwst_uid }}</span>{% endif %}
     </div>
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
-        <tbody class="divide-y divide-slate-50">
-            <tr><td class="px-5 py-2.5 text-slate-400 w-14 tabular-nums">200</td><td class="px-2 py-2.5 text-slate-700">Total vereinbarte Entgelte (Umsatz)</td><td class="px-5 py-2.5 text-right tabular-nums">{{ estv.z200|chf }}</td></tr>
-            <tr><td class="px-5 py-2.5 text-slate-400 tabular-nums">399</td><td class="px-2 py-2.5 text-slate-700">Total geschuldete Steuer</td><td class="px-5 py-2.5 text-right tabular-nums">{{ estv.z399|chf }}</td></tr>
+        <tbody class="fw-dv">
+            <tr><td class="px-5 py-2.5 fw-faint w-14 tabular-nums">200</td><td class="px-2 py-2.5 fw-ink">Total vereinbarte Entgelte (Umsatz)</td><td class="px-5 py-2.5 text-right tabular-nums">{{ estv.z200|chf }}</td></tr>
+            <tr><td class="px-5 py-2.5 fw-faint tabular-nums">399</td><td class="px-2 py-2.5 fw-ink">Total geschuldete Steuer</td><td class="px-5 py-2.5 text-right tabular-nums">{{ estv.z399|chf }}</td></tr>
             {% if mwst_methode != 'saldo' %}
-            <tr><td class="px-5 py-2.5 text-slate-400 tabular-nums">479</td><td class="px-2 py-2.5 text-slate-700">Total Vorsteuer</td><td class="px-5 py-2.5 text-right tabular-nums text-emerald-600">{{ estv.z479|chf }}</td></tr>
+            <tr><td class="px-5 py-2.5 fw-faint tabular-nums">479</td><td class="px-2 py-2.5 fw-ink">Total Vorsteuer</td><td class="px-5 py-2.5 text-right tabular-nums fw-gut">{{ estv.z479|chf }}</td></tr>
             {% endif %}
-            <tr class="bg-indigo-50/40"><td class="px-5 py-2.5 text-slate-400 tabular-nums font-bold">500</td><td class="px-2 py-2.5 font-bold text-slate-900">An die ESTV zu bezahlen</td><td class="px-5 py-2.5 text-right tabular-nums font-extrabold text-indigo-700">{{ estv.z500|chf }}</td></tr>
-            {% if estv.z510 %}<tr class="bg-emerald-50/40"><td class="px-5 py-2.5 text-slate-400 tabular-nums font-bold">510</td><td class="px-2 py-2.5 font-bold text-slate-900">Guthaben</td><td class="px-5 py-2.5 text-right tabular-nums font-extrabold text-emerald-600">{{ estv.z510|chf }}</td></tr>{% endif %}
+            <tr class="fw-markenflaeche"><td class="px-5 py-2.5 fw-faint tabular-nums font-bold">500</td><td class="px-2 py-2.5 font-bold fw-strong">An die ESTV zu bezahlen</td><td class="px-5 py-2.5 text-right tabular-nums font-extrabold fw-marke">{{ estv.z500|chf }}</td></tr>
+            {% if estv.z510 %}<tr class="fw-gut-flaeche"><td class="px-5 py-2.5 fw-faint tabular-nums font-bold">510</td><td class="px-2 py-2.5 font-bold fw-strong">Guthaben</td><td class="px-5 py-2.5 text-right tabular-nums font-extrabold fw-gut">{{ estv.z510|chf }}</td></tr>{% endif %}
         </tbody>
     </table>
 </div>
@@ -99,24 +99,24 @@
 
 <!-- MWST-Einstellungen -->
 <details class="max-w-xl mt-4">
-    <summary class="cursor-pointer text-sm font-semibold text-slate-600 hover:text-indigo-600"><i class="fa-solid fa-gear mr-1.5"></i>MWST-Einstellungen (Methode / Satz / Nummer)</summary>
-    <form method="post" action="/neu/mwst/einstellungen/" class="bg-white rounded-xl border border-slate-200 p-5 mt-2 space-y-3">
+    <summary class="cursor-pointer text-sm font-semibold fw-mutet hover:fw-marke"><i class="fa-solid fa-gear mr-1.5"></i>MWST-Einstellungen (Methode / Satz / Nummer)</summary>
+    <form method="post" action="/neu/mwst/einstellungen/" class="fw-card p-5 mt-2 space-y-3">
         {% csrf_token %}
         <input type="hidden" name="zurueck" value="/neu/mwst/?jahr={{ jahr }}&quartal={{ quartal }}">
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">MWST-Methode</label>
-            <select name="mwst_methode" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">MWST-Methode</label>
+            <select name="mwst_methode" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="effektiv" {% if mwst_methode == 'effektiv' %}selected{% endif %}>Effektive Methode (Umsatzsteuer − Vorsteuer)</option>
                 <option value="saldo" {% if mwst_methode == 'saldo' %}selected{% endif %}>Saldosteuersatz</option>
             </select></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Saldosteuersatz (%) — nur bei Saldo-Methode</label>
-            <input name="saldosteuersatz" value="{{ saldosteuersatz }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">MWST-Nummer (CHE-…)</label>
-            <input name="mwst_uid" value="{{ mwst_uid }}" placeholder="CHE-123.456.789 MWST" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Speichern</button>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Saldosteuersatz (%) — nur bei Saldo-Methode</label>
+            <input name="saldosteuersatz" value="{{ saldosteuersatz }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">MWST-Nummer (CHE-…)</label>
+            <input name="mwst_uid" value="{{ mwst_uid }}" placeholder="CHE-123.456.789 MWST" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">Speichern</button>
     </form>
 </details>
 
-<p class="text-xs text-slate-400 mt-4 max-w-xl">Hinweis: Die Vermietung ist grundsätzlich von der MWST ausgenommen —
+<p class="text-xs fw-faint mt-4 max-w-xl">Hinweis: Die Vermietung ist grundsätzlich von der MWST ausgenommen —
     MWST fällt nur bei <b>optierten</b> Objekten an (Option nach Art. 22 MWSTG, i. d. R. Gewerbe). Diese Auswertung
     dient der Vorbereitung; die effektive MWST-Deklaration erfolgt über das ESTV-Portal. Werte bitte mit dem Treuhänder prüfen.</p>
 {% endblock %}

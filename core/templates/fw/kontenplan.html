@@ -8,30 +8,30 @@
     <h1>Kontenplan &amp; Saldenliste</h1>
     <form method="get" class="flex items-center gap-2">
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <select name="jahr" onchange="this.form.submit()" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+        <select name="jahr" onchange="this.form.submit()" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
             {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select>
     </form>
 </div>
-<p class="text-sm text-slate-500 mb-5">
+<p class="text-sm fw-mutet mb-5">
     Alle Konten mit Soll, Haben und Saldo für {{ jahr }} — die Grundlage jedes Abschlusses.
-    {% if aktive_lg %}· gefiltert auf <span class="font-semibold text-indigo-600">{{ aktive_lg.strasse }}</span>
-    <a href="/neu/kontenplan/" class="text-xs text-slate-400 hover:text-indigo-600">× aufheben</a>{% endif %}
+    {% if aktive_lg %}· gefiltert auf <span class="font-semibold fw-marke">{{ aktive_lg.strasse }}</span>
+    <a href="/neu/kontenplan/" class="text-xs fw-faint hover:fw-marke">× aufheben</a>{% endif %}
 </p>
 
 <!-- Probe: Soll- und Habensumme müssen übereinstimmen -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <div class="text-2xl font-bold text-slate-800 tabular-nums">CHF {{ total_soll|chf }}</div>
-        <div class="text-sm text-slate-500">Summe Soll</div>
+    <div class="fw-card p-5">
+        <div class="text-2xl font-bold fw-strong tabular-nums">CHF {{ total_soll|chf }}</div>
+        <div class="text-sm fw-mutet">Summe Soll</div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <div class="text-2xl font-bold text-slate-800 tabular-nums">CHF {{ total_haben|chf }}</div>
-        <div class="text-sm text-slate-500">Summe Haben</div>
+    <div class="fw-card p-5">
+        <div class="text-2xl font-bold fw-strong tabular-nums">CHF {{ total_haben|chf }}</div>
+        <div class="text-sm fw-mutet">Summe Haben</div>
     </div>
-    <div class="bg-white rounded-xl border p-5 {% if differenz %}border-rose-300 bg-rose-50/40{% else %}border-emerald-200{% endif %}">
-        <div class="text-2xl font-bold tabular-nums {% if differenz %}text-rose-600{% else %}text-emerald-600{% endif %}">CHF {{ differenz|chf }}</div>
-        <div class="text-sm text-slate-500">
+    <div class="fw-flaeche rounded-xl border p-5 {% if differenz %}fw-linie-krit fw-krit-flaeche{% else %}fw-linie-gut{% endif %}">
+        <div class="text-2xl font-bold tabular-nums {% if differenz %}fw-kritisch{% else %}fw-gut{% endif %}">CHF {{ differenz|chf }}</div>
+        <div class="text-sm fw-mutet">
             {% if differenz %}<i class="fa-solid fa-triangle-exclamation mr-1"></i>Differenz — das Journal ist nicht ausgeglichen{% else %}<i class="fa-solid fa-check mr-1"></i>Soll = Haben{% endif %}
         </div>
     </div>
@@ -40,34 +40,34 @@
 {% if kann_schreiben %}
 <div class="mb-6">
     <button onclick="document.getElementById('kontoform').classList.toggle('hidden')"
-            class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">
+            class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">
         <i class="fa-solid fa-plus mr-1.5"></i>Neues Konto
     </button>
 </div>
-<div id="kontoform" class="hidden bg-white rounded-xl border border-indigo-200 p-5 mb-6">
-    <h3 class="font-bold text-slate-800 text-sm mb-4">Konto anlegen</h3>
+<div id="kontoform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
+    <h3 class="font-bold fw-strong text-sm mb-4">Konto anlegen</h3>
     <form method="post" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {% csrf_token %}
         <input type="hidden" name="aktion" value="neu">
-        <div><label for="kp-nummer" class="block text-xs font-semibold text-slate-500 mb-1">Nummer *</label>
-            <input id="kp-nummer" name="nummer" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 font-mono" placeholder="z.B. 4150"></div>
-        <div><label for="kp-bez" class="block text-xs font-semibold text-slate-500 mb-1">Bezeichnung *</label>
-            <input id="kp-bez" name="bezeichnung" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label for="kp-typ" class="block text-xs font-semibold text-slate-500 mb-1">Typ *</label>
-            <select id="kp-typ" name="typ" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label for="kp-nummer" class="block text-xs font-semibold fw-mutet mb-1">Nummer *</label>
+            <input id="kp-nummer" name="nummer" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 font-mono" placeholder="z.B. 4150"></div>
+        <div><label for="kp-bez" class="block text-xs font-semibold fw-mutet mb-1">Bezeichnung *</label>
+            <input id="kp-bez" name="bezeichnung" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label for="kp-typ" class="block text-xs font-semibold fw-mutet mb-1">Typ *</label>
+            <select id="kp-typ" name="typ" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 {% for wert, label in typen %}<option value="{{ wert }}">{{ label }}</option>{% endfor %}
             </select></div>
-        <div><label for="kp-schluessel" class="block text-xs font-semibold text-slate-500 mb-1">Verteilschlüssel</label>
-            <select id="kp-schluessel" name="schluessel" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label for="kp-schluessel" class="block text-xs font-semibold fw-mutet mb-1">Verteilschlüssel</label>
+            <select id="kp-schluessel" name="schluessel" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="m2">m²</option><option value="m3">m³</option>
                 <option value="einheit">pro Einheit</option><option value="personen">Personen</option>
             </select></div>
         <div class="lg:col-span-4 flex items-center gap-4 flex-wrap">
-            <label class="flex items-center gap-2 text-sm text-slate-600">
-                <input type="checkbox" name="hnk" class="accent-indigo-600">
+            <label class="flex items-center gap-2 text-sm fw-mutet">
+                <input type="checkbox" name="hnk" class="fw-akzent">
                 HNK-relevant (fliesst in die Nebenkostenabrechnung)
             </label>
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg">
+            <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg">
                 <i class="fa-solid fa-check mr-1.5"></i>Anlegen
             </button>
         </div>
@@ -75,11 +75,11 @@
 </div>
 {% endif %}
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+<div class="fw-card overflow-hidden">
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">Konto</th>
                 <th class="px-5 py-3 font-semibold">Bezeichnung</th>
                 <th class="px-5 py-3 font-semibold">Typ</th>
@@ -89,67 +89,67 @@
                 <th class="px-5 py-3"></th>
             </tr>
             </thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody class="fw-dv">
             {% for z in zeilen %}
-            <tr class="hover:bg-slate-50/60 {% if not z.bewegt %}text-slate-400{% endif %}">
+            <tr class="hover:fw-flaeche2 {% if not z.bewegt %}fw-faint{% endif %}">
                 <td class="px-5 py-3 font-mono whitespace-nowrap">
-                    <a href="/neu/buchhaltung/konto/{{ z.k.nummer }}/{{ lg_query }}" class="font-semibold text-indigo-600 hover:underline">{{ z.k.nummer }}</a>
+                    <a href="/neu/buchhaltung/konto/{{ z.k.nummer }}/{{ lg_query }}" class="font-semibold fw-marke hover:underline">{{ z.k.nummer }}</a>
                 </td>
                 <td class="px-5 py-3">{{ z.k.bezeichnung }}
-                    {% if z.k.is_hnk_relevant %}<span class="ml-1.5 text-[10px] font-bold uppercase bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">HNK</span>{% endif %}
+                    {% if z.k.is_hnk_relevant %}<span class="ml-1.5 text-[10px] font-bold uppercase fw-warn-flaeche fw-warnton px-1.5 py-0.5 rounded">HNK</span>{% endif %}
                 </td>
-                <td class="px-5 py-3 text-xs text-slate-500">{{ z.k.get_typ_display }}</td>
+                <td class="px-5 py-3 text-xs fw-mutet">{{ z.k.get_typ_display }}</td>
                 <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{% if z.soll %}{{ z.soll|chf }}{% else %}—{% endif %}</td>
                 <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{% if z.haben %}{{ z.haben|chf }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap font-semibold {% if z.saldo < 0 %}text-rose-600{% elif z.saldo > 0 %}text-slate-900{% endif %}">
+                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap font-semibold {% if z.saldo < 0 %}fw-kritisch{% elif z.saldo > 0 %}fw-strong{% endif %}">
                     {% if z.bewegt %}{{ z.saldo|chf }}{% else %}—{% endif %}
                 </td>
                 <td class="px-5 py-3 text-right whitespace-nowrap">
                     {% if kann_schreiben %}
                     <button onclick="document.getElementById('edit-{{ z.k.id }}').classList.toggle('hidden')"
                             title="Konto bearbeiten"
-                            class="text-xs font-semibold text-slate-500 hover:text-indigo-600">
+                            class="text-xs font-semibold fw-mutet hover:fw-marke">
                         <i class="fa-solid fa-pen"></i>
                     </button>
                     {% endif %}
                 </td>
             </tr>
             {% if kann_schreiben %}
-            <tr id="edit-{{ z.k.id }}" class="hidden bg-indigo-50/40">
+            <tr id="edit-{{ z.k.id }}" class="hidden fw-markenflaeche">
                 <td colspan="7" class="px-5 py-3">
                     <form method="post" class="flex items-end gap-3 flex-wrap">
                         {% csrf_token %}
                         <input type="hidden" name="aktion" value="bearbeiten">
                         <input type="hidden" name="konto_id" value="{{ z.k.id }}">
                         <label class="block">
-                            <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Bezeichnung</span>
-                            <input name="bezeichnung" value="{{ z.k.bezeichnung }}" class="mt-1 bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 w-64">
+                            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">Bezeichnung</span>
+                            <input name="bezeichnung" value="{{ z.k.bezeichnung }}" class="mt-1 fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2 w-64">
                         </label>
                         <label class="block">
-                            <span class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Typ</span>
-                            <select name="typ" class="mt-1 bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+                            <span class="text-[11px] uppercase tracking-wider fw-faint font-semibold">Typ</span>
+                            <select name="typ" class="mt-1 fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
                                 {% for wert, label in typen %}<option value="{{ wert }}" {% if z.k.typ == wert %}selected{% endif %}>{{ label }}</option>{% endfor %}
                             </select>
                         </label>
-                        <label class="flex items-center gap-2 text-sm text-slate-600 pb-2">
-                            <input type="checkbox" name="hnk" {% if z.k.is_hnk_relevant %}checked{% endif %} class="accent-indigo-600">HNK
+                        <label class="flex items-center gap-2 text-sm fw-mutet pb-2">
+                            <input type="checkbox" name="hnk" {% if z.k.is_hnk_relevant %}checked{% endif %} class="fw-akzent">HNK
                         </label>
-                        <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Speichern</button>
-                        <span class="text-xs text-slate-400 pb-2">Die Kontonummer bleibt unveränderlich — sie steckt in Belegtexten und Exporten.</span>
+                        <button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">Speichern</button>
+                        <span class="text-xs fw-faint pb-2">Die Kontonummer bleibt unveränderlich — sie steckt in Belegtexten und Exporten.</span>
                     </form>
                 </td>
             </tr>
             {% endif %}
             {% empty %}
-            <tr><td colspan="7" class="px-5 py-12 text-center text-sm text-slate-400 italic">Noch keine Konten.</td></tr>
+            <tr><td colspan="7" class="px-5 py-12 text-center text-sm fw-faint italic">Noch keine Konten.</td></tr>
             {% endfor %}
             </tbody>
             <tfoot>
-            <tr class="border-t-2 border-slate-200 bg-slate-50/60 font-semibold text-slate-800">
-                <td class="px-5 py-3 text-xs uppercase tracking-wider text-slate-500" colspan="3">Total</td>
+            <tr class="border-t-2 fw-linie fw-flaeche2 font-semibold fw-strong">
+                <td class="px-5 py-3 text-xs uppercase tracking-wider fw-mutet" colspan="3">Total</td>
                 <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{{ total_soll|chf }}</td>
                 <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap">{{ total_haben|chf }}</td>
-                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap {% if differenz %}text-rose-600{% endif %}">{{ differenz|chf }}</td>
+                <td class="px-5 py-3 text-right tabular-nums whitespace-nowrap {% if differenz %}fw-kritisch{% endif %}">{{ differenz|chf }}</td>
                 <td></td>
             </tr>
             </tfoot>
@@ -157,7 +157,7 @@
     </div>
 </div>
 
-<p class="text-xs text-slate-400 mt-4">
+<p class="text-xs fw-faint mt-4">
     <i class="fa-solid fa-circle-info mr-1"></i>
     Konten ohne Bewegung sind ausgegraut, bleiben aber sichtbar — anders als in Bilanz und
     Erfolgsrechnung, die nur bebuchte Konten zeigen. Klick auf die Nummer öffnet das Kontoblatt.

@@ -20,7 +20,11 @@ E2.5 nahm drei weitere fw-Seiten — `vertrag_detail.html` (102 → 1),
 E2.6 nahm sechs Seiten auf einmal — `bewerbung_detail.html` (91 → 3),
 `eigentuemer_kontokorrent.html` (88 → 0), `anlagen.html` (87 → 3),
 `ersatzplanung.html` (87 → 0), `zahllauf.html` (86 → 2),
-`nebenkosten_detail.html` (82 → 3): **STAND 5048 in 125 Vorlagen**.
+`nebenkosten_detail.html` (82 → 3): 5048 in 125 Vorlagen.
+E2.7 nahm sechs weitere Seiten — `objekt_form.html` (81 → 0),
+`hypotheken.html` (80 → 0), `logbuch.html` (80 → 0), `mwst.html` (79 → 0),
+`kontenplan.html` (75 → 0), `dienstleister.html` (74 → 0):
+**STAND 4579 in 119 Vorlagen**.
 
 NICHT ANGERUEHRT, UND ZWAR MIT ABSICHT: die zwei dichtesten Vorlagen
 ueberhaupt. `schaden_melden.html` (264) und `public_bewerbung_form.html` (205)
@@ -160,15 +164,12 @@ OBERGRENZE = {
     'core/templates/fw/bewerbung_detail.html': 3,
     'core/templates/fw/bewerbungen.html': 12,
     'core/templates/fw/debitoren_aging.html': 50,
-    'core/templates/fw/dienstleister.html': 74,
     'core/templates/fw/dokumente.html': 50,
     'core/templates/fw/einstellungen.html': 10,
     'core/templates/fw/finanzen.html': 49,
-    'core/templates/fw/hypotheken.html': 80,
     'core/templates/fw/integrationen.html': 48,
     'core/templates/fw/kautionen.html': 28,
     'core/templates/fw/kommunikation.html': 74,
-    'core/templates/fw/kontenplan.html': 75,
     'core/templates/fw/kontoblatt.html': 36,
     'core/templates/fw/kreditoren.html': 8,
     'core/templates/fw/kuendigung_form.html': 50,
@@ -177,7 +178,6 @@ OBERGRENZE = {
     'core/templates/fw/lieferantenkonten.html': 25,
     'core/templates/fw/lieferantenkonto.html': 64,
     'core/templates/fw/liegenschaften.html': 13,
-    'core/templates/fw/logbuch.html': 80,
     'core/templates/fw/maengelruege.html': 18,
     'core/templates/fw/mahnwesen.html': 74,
     'core/templates/fw/mandat_abrechnung.html': 48,
@@ -191,11 +191,9 @@ OBERGRENZE = {
     'core/templates/fw/mietzins.html': 52,
     'core/templates/fw/mietzins_anpassung.html': 66,
     'core/templates/fw/mietzins_massen.html': 27,
-    'core/templates/fw/mwst.html': 79,
     'core/templates/fw/nebenkosten.html': 68,
     'core/templates/fw/nebenkosten_detail.html': 3,
     'core/templates/fw/objekt_ausschreiben.html': 20,
-    'core/templates/fw/objekt_form.html': 81,
     'core/templates/fw/person_form.html': 5,
     'core/templates/fw/personen.html': 18,
     'core/templates/fw/rechtsgrundlagen.html': 32,

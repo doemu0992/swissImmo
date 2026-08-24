@@ -3,12 +3,12 @@
 {% load l10n %}
 {% block title %}{% if ist_neu %}Neues Objekt{% else %}{{ e.bezeichnung }} bearbeiten{% endif %} — swissImmo{% endblock %}
 {% block content %}
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/objekte/{{ lg_query }}" class="hover:text-indigo-600">Objekte</a>
+<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/objekte/{{ lg_query }}" class="hover:fw-marke">Objekte</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    {% if not ist_neu %}<a href="/neu/objekte/{{ e.id }}/" class="hover:text-indigo-600">{{ e.bezeichnung }}</a>
+    {% if not ist_neu %}<a href="/neu/objekte/{{ e.id }}/" class="hover:fw-marke">{{ e.bezeichnung }}</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>{% endif %}
-    <span class="text-slate-600 font-medium">{% if ist_neu %}Neu{% else %}Bearbeiten{% endif %}</span>
+    <span class="fw-mutet font-medium">{% if ist_neu %}Neu{% else %}Bearbeiten{% endif %}</span>
 </nav>
 
 <div class="fw-phead">
@@ -20,99 +20,99 @@
 
 <form method="post" class="max-w-3xl space-y-5">
     {% csrf_token %}
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Objekt</h3>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft *</label>
-            <select name="liegenschaft_id" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+    <div class="fw-card p-5 space-y-4">
+        <h3 class="font-bold fw-strong text-sm">Objekt</h3>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Liegenschaft *</label>
+            <select name="liegenschaft_id" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— wählen —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if e.liegenschaft_id == lg.id or vorwahl_lg == lg.id|stringformat:'s' %}selected{% endif %}>{{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</option>{% endfor %}
             </select></div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="sm:col-span-1"><label class="block text-xs font-semibold text-slate-500 mb-1">Bezeichnung *</label>
-                <input name="bezeichnung" required value="{{ e.bezeichnung }}" placeholder="z. B. 3.5-Zi EG" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Typ</label>
-                <select name="typ" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+            <div class="sm:col-span-1"><label class="block text-xs font-semibold fw-mutet mb-1">Bezeichnung *</label>
+                <input name="bezeichnung" required value="{{ e.bezeichnung }}" placeholder="z. B. 3.5-Zi EG" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Typ</label>
+                <select name="typ" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                     {% for val, lbl in typ_choices %}<option value="{{ val }}" {% if e.typ == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                 </select></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Etage</label>
-                <input name="etage" value="{{ e.etage }}" placeholder="EG / 1. OG" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Etage</label>
+                <input name="etage" value="{{ e.etage }}" placeholder="EG / 1. OG" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Fläche & Details</h3>
+    <div class="fw-card p-5 space-y-4">
+        <h3 class="font-bold fw-strong text-sm">Fläche & Details</h3>
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Zimmer</label>
-                <input name="zimmer" type="number" step="0.5" value="{% localize off %}{{ e.zimmer|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Fläche (m²)</label>
-                <input name="flaeche_m2" type="number" step="0.01" value="{% localize off %}{{ e.flaeche_m2|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Volumen (m³)</label>
-                <input name="volumen_m3" type="number" step="0.01" value="{% localize off %}{{ e.volumen_m3|default:'' }}{% endlocalize %}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Wertquote (‰)</label>
-                <input name="wertquote" type="number" step="0.01" value="{% localize off %}{{ e.wertquote|default:'' }}{% endlocalize %}" placeholder="STWE / NK-Verteilung" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Zimmer</label>
+                <input name="zimmer" type="number" step="0.5" value="{% localize off %}{{ e.zimmer|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Fläche (m²)</label>
+                <input name="flaeche_m2" type="number" step="0.01" value="{% localize off %}{{ e.flaeche_m2|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Volumen (m³)</label>
+                <input name="volumen_m3" type="number" step="0.01" value="{% localize off %}{{ e.volumen_m3|default:'' }}{% endlocalize %}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Wertquote (‰)</label>
+                <input name="wertquote" type="number" step="0.01" value="{% localize off %}{{ e.wertquote|default:'' }}{% endlocalize %}" placeholder="STWE / NK-Verteilung" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">EWID</label>
-                <input name="ewid" value="{{ e.ewid|default:'' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Kellerabteil</label>
-                <input name="keller" value="{{ e.keller }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Estrich</label>
-                <input name="estrich" value="{{ e.estrich }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">OTO-Dose (Glasfaser)</label>
-                <input name="oto_dose" value="{{ e.oto_dose }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">EWID</label>
+                <input name="ewid" value="{{ e.ewid|default:'' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Kellerabteil</label>
+                <input name="keller" value="{{ e.keller }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Estrich</label>
+                <input name="estrich" value="{{ e.estrich }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">OTO-Dose (Glasfaser)</label>
+                <input name="oto_dose" value="{{ e.oto_dose }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div class="sm:col-span-1"><label class="block text-xs font-semibold text-slate-500 mb-1">Bodenbelag (Wohnraum)</label>
-                <input name="bodenbelag" value="{{ e.bodenbelag }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div class="sm:col-span-1"><label class="block text-xs font-semibold text-slate-500 mb-1">Bodenbelag (Nassraum)</label>
-                <input name="bodenbelag_nassraum" value="{{ e.bodenbelag_nassraum }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Letzte Renovation (Jahr)</label>
-                <input name="letzte_renovation" type="number" value="{{ e.letzte_renovation|default:'' }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Standard-Kaution (Monate)</label>
-                <input name="standard_kautionsmonate" type="number" value="{{ e.standard_kautionsmonate|default:'' }}" placeholder="3" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-1"><label class="block text-xs font-semibold fw-mutet mb-1">Bodenbelag (Wohnraum)</label>
+                <input name="bodenbelag" value="{{ e.bodenbelag }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div class="sm:col-span-1"><label class="block text-xs font-semibold fw-mutet mb-1">Bodenbelag (Nassraum)</label>
+                <input name="bodenbelag_nassraum" value="{{ e.bodenbelag_nassraum }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Letzte Renovation (Jahr)</label>
+                <input name="letzte_renovation" type="number" value="{{ e.letzte_renovation|default:'' }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Standard-Kaution (Monate)</label>
+                <input name="standard_kautionsmonate" type="number" value="{{ e.standard_kautionsmonate|default:'' }}" placeholder="3" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
         {% if not ist_neu and hauptobjekte %}
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nebenobjekt von (Parkplatz/Keller → Hauptobjekt)</label>
-            <select name="gehoert_zu_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Nebenobjekt von (Parkplatz/Keller → Hauptobjekt)</label>
+            <select name="gehoert_zu_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— eigenständiges Objekt —</option>
                 {% for h in hauptobjekte %}<option value="{{ h.id }}" {% if e.gehoert_zu_id == h.id %}selected{% endif %}>{{ h.bezeichnung }}{% if h.etage %} · {{ h.etage }}{% endif %}</option>{% endfor %}
             </select>
-            <p class="text-[11px] text-slate-400 mt-1">Ordnet dieses Objekt (z. B. Einstellplatz) einem Hauptmietobjekt derselben Liegenschaft zu.</p></div>
+            <p class="text-[11px] fw-faint mt-1">Ordnet dieses Objekt (z. B. Einstellplatz) einem Hauptmietobjekt derselben Liegenschaft zu.</p></div>
         {% endif %}
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Soll-Mietzins</h3>
+    <div class="fw-card p-5 space-y-4">
+        <h3 class="font-bold fw-strong text-sm">Soll-Mietzins</h3>
         {% if ist_neu %}
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Anfangs-Nettomiete (CHF)</label>
-                <input name="nettomiete_aktuell" type="number" step="0.01" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Nebenkosten (CHF)</label>
-                <input name="nebenkosten_aktuell" type="number" step="0.01" placeholder="0.00" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-            <div><label class="block text-xs font-semibold text-slate-500 mb-1">Gültig ab</label>
-                <input name="soll_gueltig_ab" type="date" value="{{ heute_iso }}" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Anfangs-Nettomiete (CHF)</label>
+                <input name="nettomiete_aktuell" type="number" step="0.01" placeholder="0.00" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Nebenkosten (CHF)</label>
+                <input name="nebenkosten_aktuell" type="number" step="0.01" placeholder="0.00" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+            <div><label class="block text-xs font-semibold fw-mutet mb-1">Gültig ab</label>
+                <input name="soll_gueltig_ab" type="date" value="{{ heute_iso }}" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
         </div>
-        <p class="text-[11px] text-slate-400">Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfasst du danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, Mieterspiegel und Bilanz).</p>
+        <p class="text-[11px] fw-faint">Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfasst du danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, Mieterspiegel und Bilanz).</p>
         {% else %}
-        <p class="text-[12.5px] text-slate-500">Der Mietzins wird ausschliesslich als <b>datierter Sollmietzins</b> gepflegt (inkl. Gratismonate/Rabatt) — so bleiben Sollstellung, Mieterspiegel und Bilanz konsistent. Hier ist er nur zur Ansicht.</p>
+        <p class="text-[12.5px] fw-mutet">Der Mietzins wird ausschliesslich als <b>datierter Sollmietzins</b> gepflegt (inkl. Gratismonate/Rabatt) — so bleiben Sollstellung, Mieterspiegel und Bilanz konsistent. Hier ist er nur zur Ansicht.</p>
         {% if sollmietzinse %}
-        <div class="border border-slate-200 rounded-lg overflow-hidden">
+        <div class="border fw-linie rounded-lg overflow-hidden">
             <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
-                <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
                     <th class="px-4 py-2 font-semibold">Gültig ab</th>
                     <th class="px-4 py-2 font-semibold text-right">Netto</th>
                     {% if not e.ist_einstellplatz %}<th class="px-4 py-2 font-semibold text-right">NK</th>
                     <th class="px-4 py-2 font-semibold text-right">Brutto</th>{% endif %}
                 </tr></thead>
-                <tbody class="divide-y divide-slate-50">
+                <tbody class="fw-dv">
                 {% for s in sollmietzinse %}
                 <tr>
-                    <td class="px-4 py-2 font-medium text-slate-800">{{ s.gueltig_ab|date:"d.m.Y" }}
-                        {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 text-emerald-700">aktuell</span>{% endif %}</td>
-                    <td class="px-4 py-2 text-right text-slate-700">CHF {{ s.netto_mietzins|chf }}</td>
-                    {% if not e.ist_einstellplatz %}<td class="px-4 py-2 text-right text-slate-700">CHF {{ s.nebenkosten|chf }}</td>
-                    <td class="px-4 py-2 text-right font-semibold text-slate-900">CHF {{ s.brutto|chf }}</td>{% endif %}
+                    <td class="px-4 py-2 font-medium fw-strong">{{ s.gueltig_ab|date:"d.m.Y" }}
+                        {% if s.id == aktueller_soll_id %}<span class="ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold fw-gut-flaeche fw-gut">aktuell</span>{% endif %}</td>
+                    <td class="px-4 py-2 text-right fw-ink">CHF {{ s.netto_mietzins|chf }}</td>
+                    {% if not e.ist_einstellplatz %}<td class="px-4 py-2 text-right fw-ink">CHF {{ s.nebenkosten|chf }}</td>
+                    <td class="px-4 py-2 text-right font-semibold fw-strong">CHF {{ s.brutto|chf }}</td>{% endif %}
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -120,20 +120,20 @@
 </div>
         </div>
         {% else %}
-        <div class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-[12.5px] text-slate-500"><i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i>Noch kein Sollmietzins erfasst.</div>
+        <div class="fw-flaeche2 border fw-linie rounded-lg px-4 py-3 text-[12.5px] fw-mutet"><i class="fa-solid fa-circle-info fw-marke mr-1"></i>Noch kein Sollmietzins erfasst.</div>
         {% endif %}
-        <a href="/neu/objekte/{{ e.id }}/?tab=mietzins" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg"><i class="fa-solid fa-layer-group"></i>Mietzins verwalten (Gratismonate, Anpassungen)</a>
+        <a href="/neu/objekte/{{ e.id }}/?tab=mietzins" class="inline-flex items-center gap-1.5 fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg"><i class="fa-solid fa-layer-group"></i>Mietzins verwalten (Gratismonate, Anpassungen)</a>
         {% endif %}
 
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Interne Notizen</label>
-            <textarea name="notizen" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">{{ e.notizen }}</textarea></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Interne Notizen</label>
+            <textarea name="notizen" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">{{ e.notizen }}</textarea></div>
     </div>
 
     <div class="flex items-center gap-3">
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
+        <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm">
             <i class="fa-solid fa-check mr-1.5"></i>Speichern
         </button>
-        <a href="{% if ist_neu %}/neu/objekte/{% else %}/neu/objekte/{{ e.id }}/{% endif %}" class="text-sm text-slate-500 hover:text-slate-700 font-medium">Abbrechen</a>
+        <a href="{% if ist_neu %}/neu/objekte/{% else %}/neu/objekte/{{ e.id }}/{% endif %}" class="text-sm fw-mutet hover:fw-ink font-medium">Abbrechen</a>
     </div>
 </form>
 {% endblock %}

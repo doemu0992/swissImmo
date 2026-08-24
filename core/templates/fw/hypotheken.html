@@ -14,72 +14,72 @@
 </div>
 
 {% if kann_schreiben %}
-<div id="hypoform" class="hidden bg-white rounded-xl border border-indigo-200 p-5 mb-6">
-    <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-building-columns text-indigo-500 mr-1.5"></i>Hypothek erfassen</h3>
+<div id="hypoform" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
+    <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-building-columns fw-marke mr-1.5"></i>Hypothek erfassen</h3>
     <form method="post" action="/neu/hypotheken/" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {% csrf_token %}
         <input type="hidden" name="aktion" value="neu">
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft *</label>
-            <select name="liegenschaft_id" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Liegenschaft *</label>
+            <select name="liegenschaft_id" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— wählen —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bank / Gläubiger</label>
-            <input name="bank" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bezeichnung / Tranche</label>
-            <input name="bezeichnung" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Betrag (CHF) *</label>
-            <input name="betrag" inputmode="decimal" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 text-right"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Zinssatz (%)</label>
-            <input name="zinssatz" inputmode="decimal" placeholder="1.500" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5 text-right"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Typ</label>
-            <select name="typ" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Bank / Gläubiger</label>
+            <input name="bank" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Bezeichnung / Tranche</label>
+            <input name="bezeichnung" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Betrag (CHF) *</label>
+            <input name="betrag" inputmode="decimal" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 text-right"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Zinssatz (%)</label>
+            <input name="zinssatz" inputmode="decimal" placeholder="1.500" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5 text-right"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Typ</label>
+            <select name="typ" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="fest">Festhypothek</option><option value="saron">SARON</option><option value="variabel">Variabel</option>
             </select></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Beginn</label>
-            <input type="date" name="beginn" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Ablauf / Fälligkeit</label>
-            <input type="date" name="ablauf" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div class="flex items-end"><button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen</button></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Beginn</label>
+            <input type="date" name="beginn" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Ablauf / Fälligkeit</label>
+            <input type="date" name="ablauf" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div class="flex items-end"><button class="w-full fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Erfassen</button></div>
     </form>
 </div>
 {% endif %}
 
 <!-- KPI -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Hypothekarschuld</div>
-        <div class="text-xl font-bold text-slate-900 mt-0.5">CHF {{ total_schuld|chf }}</div>
+    <div class="fw-card p-5">
+        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">Hypothekarschuld</div>
+        <div class="text-xl font-bold fw-strong mt-0.5">CHF {{ total_schuld|chf }}</div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Zinskosten / Jahr</div>
-        <div class="text-xl font-bold text-slate-900 mt-0.5">CHF {{ total_zins|chf }}</div>
+    <div class="fw-card p-5">
+        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">Zinskosten / Jahr</div>
+        <div class="text-xl font-bold fw-strong mt-0.5">CHF {{ total_zins|chf }}</div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Ø Zinssatz</div>
-        <div class="text-xl font-bold text-slate-900 mt-0.5">{{ avg_zins }}%</div>
+    <div class="fw-card p-5">
+        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">Ø Zinssatz</div>
+        <div class="text-xl font-bold fw-strong mt-0.5">{{ avg_zins }}%</div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">Bald fällig (180 T)</div>
-        <div class="text-xl font-bold {% if n_ablaufend %}text-amber-600{% else %}text-slate-900{% endif %} mt-0.5">{{ n_ablaufend }}</div>
+    <div class="fw-card p-5">
+        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">Bald fällig (180 T)</div>
+        <div class="text-xl font-bold {% if n_ablaufend %}fw-warnton{% else %}fw-strong{% endif %} mt-0.5">{{ n_ablaufend }}</div>
     </div>
 </div>
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+<div class="fw-card overflow-hidden">
     {% for g in gruppen %}
-    <details class="group border-b border-slate-100 last:border-0">
-        <summary class="px-5 py-3 flex items-center gap-3 cursor-pointer select-none hover:bg-slate-50/60 list-none flex-wrap">
-            <i class="fa-solid fa-chevron-right text-xs text-slate-400 transition-transform group-open:rotate-90"></i>
-            <i class="fa-solid fa-building text-indigo-500"></i>
-            <span class="font-bold text-slate-800">{{ g.lg.strasse }}, {{ g.lg.plz }} {{ g.lg.ort }}</span>
-            <span class="text-[11px] font-semibold bg-slate-100 text-slate-600 rounded-md px-1.5 py-0.5">CHF {{ g.schuld|chf }}</span>
-            <span class="text-[11px] font-semibold bg-slate-100 text-slate-500 rounded-md px-1.5 py-0.5">Zins {{ g.zins|chf }}/J</span>
-            {% if g.belehnung is not None %}<span class="text-[11px] font-semibold bg-indigo-50 text-indigo-700 rounded-md px-1.5 py-0.5" title="gegenüber Versicherungswert">Belehnung ~{{ g.belehnung }}%</span>{% endif %}
+    <details class="group border-b fw-linie last:border-0">
+        <summary class="px-5 py-3 flex items-center gap-3 cursor-pointer select-none hover:fw-flaeche2 list-none flex-wrap">
+            <i class="fa-solid fa-chevron-right text-xs fw-faint transition-transform group-open:rotate-90"></i>
+            <i class="fa-solid fa-building fw-marke"></i>
+            <span class="font-bold fw-strong">{{ g.lg.strasse }}, {{ g.lg.plz }} {{ g.lg.ort }}</span>
+            <span class="text-[11px] font-semibold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">CHF {{ g.schuld|chf }}</span>
+            <span class="text-[11px] font-semibold fw-flaeche2 fw-mutet rounded-md px-1.5 py-0.5">Zins {{ g.zins|chf }}/J</span>
+            {% if g.belehnung is not None %}<span class="text-[11px] font-semibold fw-markenflaeche fw-marke rounded-md px-1.5 py-0.5" title="gegenüber Versicherungswert">Belehnung ~{{ g.belehnung }}%</span>{% endif %}
         </summary>
-        <div class="overflow-x-auto border-t border-slate-100">
+        <div class="overflow-x-auto border-t fw-linie">
             <table class="w-full min-w-max text-sm">
                 <thead>
-                <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-slate-50/40">
+                <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie fw-flaeche2">
                     <th class="px-5 py-2.5 font-semibold">Bank / Tranche</th>
                     <th class="px-5 py-2.5 font-semibold">Typ</th>
                     <th class="px-5 py-2.5 font-semibold text-right">Betrag</th>
@@ -89,29 +89,29 @@
                     <th class="px-5 py-2.5"></th>
                 </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-50">
+                <tbody class="fw-dv">
                 {% for r in g.rows %}
-                <tr class="hover:bg-slate-50/60">
+                <tr class="hover:fw-flaeche2">
                     <td class="px-5 py-3">
-                        <div class="font-medium text-slate-900">{{ r.hy.bank|default:"Hypothek" }}</div>
-                        {% if r.hy.bezeichnung %}<div class="text-xs text-slate-400">{{ r.hy.bezeichnung }}</div>{% endif %}
+                        <div class="font-medium fw-strong">{{ r.hy.bank|default:"Hypothek" }}</div>
+                        {% if r.hy.bezeichnung %}<div class="text-xs fw-faint">{{ r.hy.bezeichnung }}</div>{% endif %}
                     </td>
-                    <td class="px-5 py-3 text-slate-600">{{ r.hy.get_typ_display }}</td>
-                    <td class="px-5 py-3 text-right font-medium text-slate-900 whitespace-nowrap">{{ r.hy.betrag|chf }}</td>
-                    <td class="px-5 py-3 text-right text-slate-600 whitespace-nowrap">{{ r.hy.zinssatz }}%</td>
-                    <td class="px-5 py-3 text-right text-slate-700 whitespace-nowrap">{{ r.zins|chf }}</td>
+                    <td class="px-5 py-3 fw-mutet">{{ r.hy.get_typ_display }}</td>
+                    <td class="px-5 py-3 text-right font-medium fw-strong whitespace-nowrap">{{ r.hy.betrag|chf }}</td>
+                    <td class="px-5 py-3 text-right fw-mutet whitespace-nowrap">{{ r.hy.zinssatz }}%</td>
+                    <td class="px-5 py-3 text-right fw-ink whitespace-nowrap">{{ r.zins|chf }}</td>
                     <td class="px-5 py-3 whitespace-nowrap">
                         {% if r.hy.ablauf %}
-                        <span class="{% if r.ablauf_status == 'abgelaufen' %}text-rose-600 font-semibold{% elif r.ablauf_status == 'bald' %}text-amber-600 font-semibold{% else %}text-slate-600{% endif %}">{{ r.hy.ablauf|date:"d.m.Y" }}</span>
-                        {% if r.ablauf_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-600">bald fällig</span>{% elif r.ablauf_status == 'abgelaufen' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-600">abgelaufen</span>{% endif %}
-                        {% else %}<span class="text-slate-300">—</span>{% endif %}
+                        <span class="{% if r.ablauf_status == 'abgelaufen' %}fw-kritisch font-semibold{% elif r.ablauf_status == 'bald' %}fw-warnton font-semibold{% else %}fw-mutet{% endif %}">{{ r.hy.ablauf|date:"d.m.Y" }}</span>
+                        {% if r.ablauf_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold fw-warn-flaeche fw-warnton">bald fällig</span>{% elif r.ablauf_status == 'abgelaufen' %}<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold fw-krit-flaeche fw-kritisch">abgelaufen</span>{% endif %}
+                        {% else %}<span class="fw-faint">—</span>{% endif %}
                     </td>
                     <td class="px-5 py-3 text-right">
                         {% if kann_schreiben %}
                         <form method="post" action="/neu/hypotheken/" onsubmit="return confirm('Hypothek löschen?');">
                             {% csrf_token %}
                             <input type="hidden" name="aktion" value="loeschen"><input type="hidden" name="id" value="{{ r.hy.id }}">
-                            <button class="text-slate-300 hover:text-rose-600 text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                            <button class="fw-faint hover:fw-kritisch text-xs" title="Löschen"><i class="fa-solid fa-trash"></i></button>
                         </form>
                         {% endif %}
                     </td>
@@ -123,12 +123,12 @@
     </details>
     {% empty %}
     <div class="px-5 py-12 text-center">
-        <div class="w-10 h-10 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-building-columns"></i></div>
-        <p class="text-sm font-medium text-slate-700">Keine Hypotheken erfasst</p>
-        <p class="text-xs text-slate-400 mt-1">Erfasse die Finanzierung je Liegenschaft, um Zinskosten und Fälligkeiten im Blick zu behalten.</p>
+        <div class="w-10 h-10 fw-flaeche2 fw-faint rounded-full flex items-center justify-center text-lg mb-3 mx-auto"><i class="fa-solid fa-building-columns"></i></div>
+        <p class="text-sm font-medium fw-ink">Keine Hypotheken erfasst</p>
+        <p class="text-xs fw-faint mt-1">Erfasse die Finanzierung je Liegenschaft, um Zinskosten und Fälligkeiten im Blick zu behalten.</p>
     </div>
     {% endfor %}
 </div>
 
-<p class="text-xs text-slate-400 mt-4"><i class="fa-solid fa-circle-info mr-1"></i>„Belehnung" ist eine grobe Kennzahl gegenüber dem Versicherungswert (nicht dem Verkehrswert). „Bald fällig" umfasst Tranchen mit Ablauf in den nächsten 180 Tagen — rechtzeitig Refinanzierung/Verlängerung prüfen.</p>
+<p class="text-xs fw-faint mt-4"><i class="fa-solid fa-circle-info mr-1"></i>„Belehnung" ist eine grobe Kennzahl gegenüber dem Versicherungswert (nicht dem Verkehrswert). „Bald fällig" umfasst Tranchen mit Ablauf in den nächsten 180 Tagen — rechtzeitig Refinanzierung/Verlängerung prüfen.</p>
 {% endblock %}
