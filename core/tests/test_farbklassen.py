@@ -34,6 +34,18 @@ E2.9 nahm sechs Seiten in EINEM Durchlauf — `abnahme_neu` (64 → 0),
 (63 → 0), `schlussabrechnung` (58 → 0), `abnahme_detail` (57 → 0):
 **STAND 408 in 52 Vorlagen**.
 
+DIESE ZAHL IST NICHT DIE GANZE SCHULD
+-------------------------------------
+Sie zählt **Vorlagen**. Farbklassen entstehen aber auch im Python-Code und
+werden erst beim Rendern eingesetzt (`{'ton': 'bg-sky-50'}` in einem View).
+Gemessen am 24.08.2026: **221 weitere in 20 Dateien**, gezählt von
+`core/tests/test_farbklassen_python.py`.
+
+Aufgefallen ist das beim Aufräumen des Dunkelmodus-Overlays: Vierzehn Klassen
+hatten in keiner Vorlage mehr ein Gegenstück und sahen nach totem Code aus —
+neun von ihnen standen im Python-Code. Ihre Overlay-Regeln zu entfernen hätte
+den Dunkelmodus für sie lautlos abgeschaltet.
+
 Eins weniger als beim Herausloesen geplant: Der Absendeknopf des
 öffentlichen Bewerbungsformulars trug `fw-gut-flaeche0` (eine Klasse, die
 es nicht gibt) und daneben ein `hover:bg-emerald-600`, das zur neuen
