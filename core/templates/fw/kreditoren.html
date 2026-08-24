@@ -112,7 +112,7 @@
 <!-- KPI -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="fw-card p-5 flex items-center gap-4">
-        <div class="w-11 h-11 rounded-lg bg-sky-50 fw-info flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-money-check-dollar"></i></div>
+        <div class="w-11 h-11 rounded-lg fw-info-flaeche fw-info flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-money-check-dollar"></i></div>
         <div><div class="text-2xl font-bold fw-info">CHF {{ total_offen|chf }}</div><div class="text-sm fw-mutet">Freigegeben, offen</div></div>
     </div>
     <div class="fw-card p-5 flex items-center gap-4">
@@ -148,7 +148,7 @@
                 <option value="lieferant" {% if sortierung == 'lieferant' %}selected{% endif %}>Lieferant A–Z</option>
                 <option value="neu" {% if sortierung == 'neu' %}selected{% endif %}>Zuletzt erfasst</option>
             </select>
-            <button class="fw-balken-voll hover:bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-lg">Suchen</button>
+            <button class="fw-balken-voll fw-btn fw-primary text-xs font-semibold px-3 py-2 rounded-lg">Suchen</button>
             {% if suche %}<a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if aktive_lg %}lg={{ aktive_lg.id }}{% endif %}" class="text-xs fw-faint hover:fw-marke">× {{ suche }}</a>{% endif %}
             <span class="text-xs fw-faint">{{ anzahl }} Rechnung(en)</span>
         </form>
@@ -215,7 +215,7 @@
                                 {% for k in aufwand_konten %}<option value="{{ k.id }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
                             </select>
                             {% endif %}
-                            <button type="submit" class="inline-flex items-center gap-1.5 fw-warn-flaeche hover:bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                            <button type="submit" class="inline-flex items-center gap-1.5 fw-warn-flaeche hover:fw-warn-voll text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
                                 <i class="fa-solid fa-check"></i> Freigeben
                             </button>
                         </form>
@@ -349,7 +349,7 @@
                             <div class="sm:col-span-2"><label for="ks-betrag-{{ row.k.id }}" class="block text-[10px] font-semibold fw-mutet mb-1">Betrag</label>
                                 <input id="ks-betrag-{{ row.k.id }}" name="betrag" inputmode="decimal" required class="w-full fw-flaeche border fw-linie rounded-lg text-xs px-2 py-1.5 text-right tabular-nums"></div>
                             <div class="sm:col-span-2 flex items-center pb-1.5"><label class="inline-flex items-center gap-1.5 text-[11px] fw-mutet cursor-pointer" title="In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">HNK</label></div>
-                            <div class="sm:col-span-1"><button class="w-full bg-slate-700 fw-primary text-xs font-semibold px-2 py-1.5 rounded-lg" title="Position hinzufügen"><i class="fa-solid fa-plus"></i></button></div>
+                            <div class="sm:col-span-1"><button class="w-full fw-balken-voll fw-primary text-xs font-semibold px-2 py-1.5 rounded-lg" title="Position hinzufügen"><i class="fa-solid fa-plus"></i></button></div>
                         </form>
                     </div>
                 </td>

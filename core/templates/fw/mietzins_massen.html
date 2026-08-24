@@ -12,11 +12,11 @@
     <a href="/neu/mietzins/" class="fw-btn"><i class="fa-solid fa-arrow-left"></i>Zurück</a>
 </div>
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-5">
+<div class="fw-card overflow-hidden mb-5">
     <div class="overflow-x-auto">
         <table class="w-full min-w-max text-sm">
             <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">Mieter / Objekt</th>
                 <th class="px-5 py-3 font-semibold text-right">Netto aktuell</th>
                 <th class="px-5 py-3 font-semibold text-right">Netto neu</th>
@@ -25,28 +25,28 @@
                 <th class="px-5 py-3 font-semibold">Status</th>
             </tr>
             </thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody class="fw-dv">
             {% for r in rows %}
             <tr>
                 <td class="px-5 py-3.5">
-                    <div class="font-semibold text-slate-900">{{ r.v.mieter.display_name }}</div>
-                    <div class="text-xs text-slate-400">{{ r.v.einheit.liegenschaft.strasse }} · {{ r.v.einheit.bezeichnung }}</div>
+                    <div class="font-semibold fw-strong">{{ r.v.mieter.display_name }}</div>
+                    <div class="text-xs fw-faint">{{ r.v.einheit.liegenschaft.strasse }} · {{ r.v.einheit.bezeichnung }}</div>
                 </td>
-                <td class="px-5 py-3.5 text-right text-slate-700 whitespace-nowrap">{{ r.v.netto_mietzins|chf }}</td>
-                <td class="px-5 py-3.5 text-right font-semibold whitespace-nowrap {% if r.delta and r.delta > 0 %}text-emerald-600{% elif r.delta and r.delta < 0 %}text-rose-600{% else %}text-slate-500{% endif %}">
+                <td class="px-5 py-3.5 text-right fw-ink whitespace-nowrap">{{ r.v.netto_mietzins|chf }}</td>
+                <td class="px-5 py-3.5 text-right font-semibold whitespace-nowrap {% if r.delta and r.delta > 0 %}fw-gut{% elif r.delta and r.delta < 0 %}fw-kritisch{% else %}fw-mutet{% endif %}">
                     {% if r.neu_netto is not None %}{{ r.neu_netto|chf }}{% else %}—{% endif %}
                 </td>
-                <td class="px-5 py-3.5 text-right whitespace-nowrap text-xs {% if r.delta and r.delta > 0 %}text-emerald-600{% elif r.delta and r.delta < 0 %}text-rose-600{% else %}text-slate-400{% endif %}">
+                <td class="px-5 py-3.5 text-right whitespace-nowrap text-xs {% if r.delta and r.delta > 0 %}fw-gut{% elif r.delta and r.delta < 0 %}fw-kritisch{% else %}fw-faint{% endif %}">
                     {% if r.delta is not None %}{% if r.delta > 0 %}+{% endif %}{{ r.delta|chf }}{% endif %}
                 </td>
-                <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{% if r.termin %}{{ r.termin|date:"d.m.Y" }}{% endif %}</td>
+                <td class="px-5 py-3.5 fw-mutet whitespace-nowrap">{% if r.termin %}{{ r.termin|date:"d.m.Y" }}{% endif %}</td>
                 <td class="px-5 py-3.5 whitespace-nowrap">
                     {% if r.basis_fehlt %}
-                    <span class="fw-chip bg-amber-50 text-amber-700">● Basis fehlt — einzeln erfassen</span>
+                    <span class="fw-chip fw-warn-flaeche fw-warnton">● Basis fehlt — einzeln erfassen</span>
                     {% elif r.unveraendert %}
-                    <span class="fw-chip bg-slate-100 text-slate-500">● Kein Potenzial</span>
+                    <span class="fw-chip fw-flaeche2 fw-mutet">● Kein Potenzial</span>
                     {% else %}
-                    <span class="fw-chip bg-emerald-50 text-emerald-700">● Wird angepasst</span>
+                    <span class="fw-chip fw-gut-flaeche fw-gut">● Wird angepasst</span>
                     {% endif %}
                 </td>
             </tr>
@@ -60,10 +60,10 @@
     {% csrf_token %}
     <input type="hidden" name="aktion" value="ausfuehren">
     {% for r in rows %}<input type="hidden" name="vertrag_id" value="{{ r.v.id }}">{% endfor %}
-    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors" {% if not machbar %}disabled{% endif %}>
+    <button type="submit" class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors" {% if not machbar %}disabled{% endif %}>
         <i class="fa-solid fa-file-signature mr-1.5"></i>{{ machbar }} Anpassung(en) erfassen + amtliche Formulare (Sammel-PDF)
     </button>
-    <a href="/neu/mietzins/" class="text-sm text-slate-500 hover:text-slate-700">Abbrechen</a>
+    <a href="/neu/mietzins/" class="text-sm fw-mutet hover:fw-ink">Abbrechen</a>
 </form>
-<p class="text-xs text-slate-400 mt-3">Je Vertrag wird eine Mietzinsanpassung erfasst, das amtliche Formular in der Vertragsakte abgelegt und bei Erhöhungen eine Anfechtungsfrist-Pendenz (Art. 270b OR) erstellt. Verträge ohne Basisdaten oder ohne Potenzial werden übersprungen.</p>
+<p class="text-xs fw-faint mt-3">Je Vertrag wird eine Mietzinsanpassung erfasst, das amtliche Formular in der Vertragsakte abgelegt und bei Erhöhungen eine Anfechtungsfrist-Pendenz (Art. 270b OR) erstellt. Verträge ohne Basisdaten oder ohne Potenzial werden übersprungen.</p>
 {% endblock %}

@@ -14,12 +14,12 @@
 <!-- Sektionen -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     {% for k in karten %}
-    <a href="{{ k.url }}" class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all group">
-        <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+    <a href="{{ k.url }}" class="fw-card p-5 shadow-sm hover:fw-linie-marke hover:shadow-md transition-all group">
+        <div class="w-10 h-10 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center mb-3 group-hover:fw-balken-voll group-hover:text-white transition-colors">
             <i class="fa-solid {{ k.icon }}"></i>
         </div>
-        <div class="font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">{{ k.titel }}</div>
-        <div class="text-xs text-slate-500 mt-0.5">{{ k.sub }}</div>
+        <div class="font-bold fw-strong group-hover:fw-marke transition-colors">{{ k.titel }}</div>
+        <div class="text-xs fw-mutet mt-0.5">{{ k.sub }}</div>
     </a>
     {% endfor %}
 </div>

@@ -14,15 +14,15 @@
 </div>
 
 <div class="flex items-center gap-2 my-4">
-    <a href="/neu/lieferantenkonten/{{ lg_query }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if not filter_op %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-indigo-300{% endif %}">Alle ({{ anzahl }})</a>
-    <a href="/neu/lieferantenkonten/?filter=offen{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if filter_op %}bg-rose-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-rose-300{% endif %}">Nur mit offenem Saldo ({{ offen_n }})</a>
+    <a href="/neu/lieferantenkonten/{{ lg_query }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if not filter_op %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">Alle ({{ anzahl }})</a>
+    <a href="/neu/lieferantenkonten/?filter=offen{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if filter_op %}fw-krit-voll text-white{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-krit{% endif %}">Nur mit offenem Saldo ({{ offen_n }})</a>
 </div>
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+<div class="fw-card overflow-hidden">
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
         <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">Lieferant</th>
                 <th class="px-5 py-3 font-semibold text-center">Rechnungen</th>
                 <th class="px-5 py-3 font-semibold text-right">Volumen</th>
@@ -30,19 +30,19 @@
                 <th class="px-5 py-3"></th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-slate-50">
+        <tbody class="fw-dv">
         {% for g in rows %}
-            <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location='/neu/lieferantenkonto/?name={{ g.name|urlencode }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}'">
-                <td class="px-5 py-3 font-semibold text-slate-900">{{ g.name }}</td>
-                <td class="px-5 py-3 text-center text-slate-600">{{ g.anzahl }}</td>
-                <td class="px-5 py-3 text-right tabular-nums text-slate-600">CHF {{ g.volumen|chf }}</td>
-                <td class="px-5 py-3 text-right tabular-nums font-semibold {% if g.offen > 0 %}text-rose-600{% else %}text-slate-400{% endif %}">
+            <tr class="hover:fw-flaeche2 cursor-pointer" onclick="window.location='/neu/lieferantenkonto/?name={{ g.name|urlencode }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}'">
+                <td class="px-5 py-3 font-semibold fw-strong">{{ g.name }}</td>
+                <td class="px-5 py-3 text-center fw-mutet">{{ g.anzahl }}</td>
+                <td class="px-5 py-3 text-right tabular-nums fw-mutet">CHF {{ g.volumen|chf }}</td>
+                <td class="px-5 py-3 text-right tabular-nums font-semibold {% if g.offen > 0 %}fw-kritisch{% else %}fw-faint{% endif %}">
                     {% if g.offen > 0 %}CHF {{ g.offen|chf }}{% else %}bezahlt{% endif %}
                 </td>
-                <td class="px-5 py-3 text-right"><i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i></td>
+                <td class="px-5 py-3 text-right"><i class="fa-solid fa-chevron-right text-[10px] fw-faint"></i></td>
             </tr>
         {% empty %}
-            <tr><td colspan="5" class="px-5 py-10 text-center text-slate-400 text-sm">Keine Lieferantenkonten{% if filter_op %} mit offenem Saldo{% endif %}.</td></tr>
+            <tr><td colspan="5" class="px-5 py-10 text-center fw-faint text-sm">Keine Lieferantenkonten{% if filter_op %} mit offenem Saldo{% endif %}.</td></tr>
         {% endfor %}
         </tbody>
     </table>

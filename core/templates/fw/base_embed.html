@@ -11,12 +11,12 @@
         ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
+<body class="fw-flaeche2 fw-strong">
 <div class="p-5 sm:p-6 max-w-3xl mx-auto">
     {% if messages %}
     <div class="space-y-2 mb-4">
         {% for m in messages %}
-        <div class="text-sm px-4 py-2 rounded-xl {% if 'error' in m.tags %}bg-rose-50 text-rose-700 border border-rose-100{% else %}bg-emerald-50 text-emerald-700 border border-emerald-100{% endif %}">{{ m }}</div>
+        <div class="text-sm px-4 py-2 rounded-xl {% if 'error' in m.tags %}fw-krit-flaeche fw-kritisch border fw-linie-krit{% else %}fw-gut-flaeche fw-gut border fw-linie-gut{% endif %}">{{ m }}</div>
         {% endfor %}
     </div>
     {% endif %}

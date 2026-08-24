@@ -13,8 +13,8 @@
         <a href="/neu/liegenschaften/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Liegenschaft erfassen</a>
         <div class="relative">
             <button type="button" onclick="document.getElementById('lgListMenu').classList.toggle('hidden'); event.stopPropagation();" class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
-            <div id="lgListMenu" class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
-                <a href="/neu/mieterspiegel/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-table-list w-4"></i>Mieterspiegel (Rent Roll)</a>
+            <div id="lgListMenu" class="hidden absolute right-0 mt-1.5 w-64 fw-card shadow-lg py-1.5 z-30">
+                <a href="/neu/mieterspiegel/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2"><i class="fa-solid fa-table-list w-4"></i>Mieterspiegel (Rent Roll)</a>
             </div>
         </div>
         <script>
@@ -66,9 +66,9 @@
 
 <div class="mb-4">
     <div class="relative max-w-sm">
-        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 fw-faint text-sm"></i>
         <input data-suche="#lgListe" placeholder="Liegenschaft suchen (Strasse, Ort, PLZ) …"
-               class="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400">
+               class="w-full fw-flaeche border fw-linie rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 fw-fokusring focus:fw-linie-marke">
     </div>
 </div>
 
@@ -96,11 +96,11 @@
         </div>
     </div>
     {% elif alle_rows %}
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden px-4">
+    <div class="fw-card overflow-hidden px-4">
         {% include 'fw/_empty.html' with icon='fa-check' titel='Keine Liegenschaft mit diesem Befund' subtext='Der Filter greift — hier gibt es nichts zu tun. Über «Alle» zurück zur ganzen Liste.' cta_url='/neu/liegenschaften/' cta_label='Alle anzeigen' %}
     </div>
     {% else %}
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden px-4">
+    <div class="fw-card overflow-hidden px-4">
         {% include 'fw/_empty.html' with icon='fa-building' titel='Noch keine Liegenschaften' subtext='Erfassen Sie Ihre erste Liegenschaft — die Objekte können automatisch aus dem Gebäude- und Wohnungsregister (GWR) importiert werden.' cta_url='/neu/liegenschaften/neu/' cta_label='Erste Liegenschaft erfassen' %}
     </div>
     {% endif %}

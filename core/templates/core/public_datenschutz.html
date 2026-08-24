@@ -9,7 +9,7 @@
         body { font-family: 'IBM Plex Sans', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased">
+<body class="fw-flaeche2 fw-strong antialiased">
 {% comment %}
     Ohne Anmeldung erreichbar — sie wird aus dem öffentlichen Bewerbungsformular
     verlinkt und muss dort lesbar sein, bevor jemand Daten abschickt.
@@ -18,9 +18,9 @@
 {% endcomment %}
 <div class="max-w-3xl mx-auto px-4 py-12">
     <h1 class="text-3xl font-extrabold mb-2">Datenschutzerklärung</h1>
-    <p class="text-sm text-slate-500 mb-10">Stand: {{ stand|date:"d.m.Y" }}</p>
+    <p class="text-sm fw-mutet mb-10">Stand: {{ stand|date:"d.m.Y" }}</p>
 
-    <div class="bg-white rounded-2xl border border-slate-200 p-8 space-y-8 leading-relaxed text-sm">
+    <div class="fw-flaeche rounded-2xl border fw-linie p-8 space-y-8 leading-relaxed text-sm">
 
         <section>
             <h2 class="text-lg font-extrabold mb-2">1. Verantwortliche Stelle</h2>
@@ -62,21 +62,21 @@
             <h2 class="text-lg font-extrabold mb-2">3. Wie lange wir die Daten aufbewahren</h2>
             <table class="w-full text-left border-collapse mt-2">
                 <thead>
-                    <tr class="border-b border-slate-200">
+                    <tr class="border-b fw-linie">
                         <th class="py-2 pr-4 font-bold">Daten</th>
                         <th class="py-2 font-bold">Dauer</th>
                     </tr>
                 </thead>
                 <tbody class="align-top">
-                    <tr class="border-b border-slate-100">
+                    <tr class="border-b fw-linie">
                         <td class="py-2 pr-4">Unterlagen nicht berücksichtigter Bewerbungen</td>
                         <td class="py-2">Löschung nach dem Vermietungsentscheid</td>
                     </tr>
-                    <tr class="border-b border-slate-100">
+                    <tr class="border-b fw-linie">
                         <td class="py-2 pr-4">Übrige Angaben nicht berücksichtigter Bewerbungen</td>
                         <td class="py-2">Anonymisierung spätestens nach einem Jahr</td>
                     </tr>
-                    <tr class="border-b border-slate-100">
+                    <tr class="border-b fw-linie">
                         <td class="py-2 pr-4">Unterlagen der Mieterschaft</td>
                         <td class="py-2">Während der Dauer des Mietverhältnisses</td>
                     </tr>
@@ -119,7 +119,7 @@
         </section>
     </div>
 
-    <p class="text-center text-xs text-slate-400 mt-8">
+    <p class="text-center text-xs fw-faint mt-8">
         {% if not mehrdeutig %}{{ verwaltung.firma|default:"Immobilienverwaltung" }}{% endif %}
     </p>
 </div>

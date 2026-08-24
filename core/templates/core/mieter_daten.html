@@ -6,41 +6,41 @@
 
 {% block content %}
     <div class="mb-6">
-        <h1 class="text-2xl font-black tracking-tight text-slate-900">Meine Daten</h1>
-        <p class="text-slate-500 mt-1">Kontaktdaten prüfen und aktualisieren — Änderungen werden der Verwaltung automatisch gemeldet.</p>
+        <h1 class="text-2xl font-black tracking-tight fw-strong">Meine Daten</h1>
+        <p class="fw-mutet mt-1">Kontaktdaten prüfen und aktualisieren — Änderungen werden der Verwaltung automatisch gemeldet.</p>
     </div>
 
     <form method="post" class="space-y-5">
         {% csrf_token %}
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-            <h2 class="font-bold text-slate-900">Person</h2>
+        <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-4">
+            <h2 class="font-bold fw-strong">Person</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                <div><div class="text-xs font-semibold text-slate-400 mb-1">Name</div>
-                    <div class="font-semibold text-slate-800">{{ mieter.display_name }}</div></div>
-                <div><div class="text-xs font-semibold text-slate-400 mb-1">Aktuelle Adresse</div>
-                    <div class="font-semibold text-slate-800">{{ mieter.strasse }}{% if mieter.plz or mieter.ort %}, {{ mieter.plz }} {{ mieter.ort }}{% endif %}</div></div>
+                <div><div class="text-xs font-semibold fw-faint mb-1">Name</div>
+                    <div class="font-semibold fw-strong">{{ mieter.display_name }}</div></div>
+                <div><div class="text-xs font-semibold fw-faint mb-1">Aktuelle Adresse</div>
+                    <div class="font-semibold fw-strong">{{ mieter.strasse }}{% if mieter.plz or mieter.ort %}, {{ mieter.plz }} {{ mieter.ort }}{% endif %}</div></div>
             </div>
-            <p class="text-xs text-slate-400">Name und Adresse können nur durch die Verwaltung geändert werden — nutzen Sie dafür das Feld «Mitteilung» unten.</p>
+            <p class="text-xs fw-faint">Name und Adresse können nur durch die Verwaltung geändert werden — nutzen Sie dafür das Feld «Mitteilung» unten.</p>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-            <h2 class="font-bold text-slate-900">Kontakt</h2>
+        <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-4">
+            <h2 class="font-bold fw-strong">Kontakt</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Mobile</label>
-                    <input name="mobile" value="{{ mieter.mobile }}" placeholder="079 …" class="w-full bg-slate-100 rounded-xl text-sm px-3.5 py-2.5"></div>
-                <div><label class="block text-xs font-semibold text-slate-500 mb-1">Telefon</label>
-                    <input name="telefon_privat" value="{{ mieter.telefon_privat }}" class="w-full bg-slate-100 rounded-xl text-sm px-3.5 py-2.5"></div>
-                <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">E-Mail</label>
-                    <input name="email" type="email" value="{{ mieter.email }}" class="w-full bg-slate-100 rounded-xl text-sm px-3.5 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Mobile</label>
+                    <input name="mobile" value="{{ mieter.mobile }}" placeholder="079 …" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
+                <div><label class="block text-xs font-semibold fw-mutet mb-1">Telefon</label>
+                    <input name="telefon_privat" value="{{ mieter.telefon_privat }}" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
+                <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">E-Mail</label>
+                    <input name="email" type="email" value="{{ mieter.email }}" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
-            <h2 class="font-bold text-slate-900">Mitteilung an die Verwaltung <span class="text-slate-400 font-normal text-sm">(optional)</span></h2>
-            <textarea name="adresse_meldung" rows="3" placeholder="z.B. Namensänderung, Korrespondenzadresse, weitere Anliegen …" class="w-full bg-slate-100 rounded-xl text-sm px-3.5 py-2.5"></textarea>
+        <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-3">
+            <h2 class="font-bold fw-strong">Mitteilung an die Verwaltung <span class="fw-faint font-normal text-sm">(optional)</span></h2>
+            <textarea name="adresse_meldung" rows="3" placeholder="z.B. Namensänderung, Korrespondenzadresse, weitere Anliegen …" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></textarea>
         </div>
 
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-5 py-3 rounded-xl">
+        <button type="submit" class="fw-btn fw-primary text-sm font-bold px-5 py-3 rounded-xl">
             <i class="fa-solid fa-check mr-1.5"></i>Speichern &amp; melden
         </button>
     </form>

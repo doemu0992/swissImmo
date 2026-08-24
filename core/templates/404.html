@@ -10,20 +10,20 @@
         body { font-family: 'IBM Plex Sans', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex items-center justify-center px-4 py-10">
+<body class="fw-flaeche2 fw-strong antialiased min-h-screen flex items-center justify-center px-4 py-10">
     {% comment %}
         Django zeigt diese Seite bei Http404 (DEBUG=False). Bewusst ohne
         Angaben dazu, was an der Adresse liegen könnte — eine falsche URL soll
         nicht verraten, welche Objekte existieren.
     {% endcomment %}
-    <div class="w-full max-w-md bg-white rounded-2xl border border-slate-200 p-8 text-center">
-        <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-5 text-2xl">🔍</div>
+    <div class="w-full max-w-md fw-flaeche rounded-2xl border fw-linie p-8 text-center">
+        <div class="w-14 h-14 rounded-full fw-flaeche2 fw-faint flex items-center justify-center mx-auto mb-5 text-2xl">🔍</div>
         <h1 class="text-xl font-extrabold mb-3">Seite nicht gefunden</h1>
-        <p class="text-sm text-slate-500 leading-relaxed">
+        <p class="text-sm fw-mutet leading-relaxed">
             Diese Adresse gibt es nicht (mehr). Möglicherweise wurde der Eintrag
             entfernt oder der Link ist veraltet.
         </p>
-        <a href="/neu/" class="inline-block mt-6 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors">
+        <a href="/neu/" class="inline-block mt-6 fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors">
             Zur Übersicht
         </a>
     </div>

@@ -5,41 +5,41 @@
     <h1>Benutzer</h1>
     <a href="/neu/benutzer/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Benutzer erfassen</a>
 </div>
-<p class="text-sm text-slate-500 mb-6">{{ rows|length }} Team-Mitglied(er) mit Zugriff auf die Verwaltung.</p>
+<p class="text-sm fw-mutet mb-6">{{ rows|length }} Team-Mitglied(er) mit Zugriff auf die Verwaltung.</p>
 
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-x-auto">
+<div class="fw-card overflow-x-auto">
     <table class="w-full text-sm min-w-max">
-        <thead class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+        <thead class="text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
             <tr><th class="text-left px-5 py-3">Name</th><th class="text-left px-5 py-3">Rolle</th>
                 <th class="text-left px-5 py-3">E-Mail</th><th class="text-right px-5 py-3">Aktionen</th></tr>
         </thead>
-        <tbody class="divide-y divide-slate-50">
+        <tbody class="fw-dv">
             {% for row in rows %}
-            <tr class="hover:bg-slate-50/60 {% if not row.u.is_active %}opacity-50{% endif %}">
+            <tr class="hover:fw-flaeche2 {% if not row.u.is_active %}opacity-50{% endif %}">
                 <td class="px-5 py-3.5">
                     <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">{{ row.name|slice:":2"|upper }}</span>
-                        <span><span class="font-medium text-slate-900">{{ row.name }}</span>
-                            <span class="text-xs text-slate-400 block">{{ row.u.username }}{% if not row.u.is_active %} · inaktiv{% endif %}</span></span>
+                        <span class="w-8 h-8 rounded-full fw-btn fw-primary flex items-center justify-center text-xs font-bold">{{ row.name|slice:":2"|upper }}</span>
+                        <span><span class="font-medium fw-strong">{{ row.name }}</span>
+                            <span class="text-xs fw-faint block">{{ row.u.username }}{% if not row.u.is_active %} · inaktiv{% endif %}</span></span>
                     </a>
                 </td>
-                <td class="px-5 py-3.5"><span class="fw-chip bg-indigo-50 text-indigo-700">{{ row.rolle }}</span></td>
-                <td class="px-5 py-3.5 text-slate-500">{{ row.u.email|default:"—" }}</td>
+                <td class="px-5 py-3.5"><span class="fw-chip fw-markenflaeche fw-marke">{{ row.rolle }}</span></td>
+                <td class="px-5 py-3.5 fw-mutet">{{ row.u.email|default:"—" }}</td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                    <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="text-xs font-medium text-indigo-600 hover:underline mr-3"><i class="fa-solid fa-pen text-[10px] mr-0.5"></i>Bearbeiten</a>
+                    <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="text-xs font-medium fw-marke hover:underline mr-3"><i class="fa-solid fa-pen text-[10px] mr-0.5"></i>Bearbeiten</a>
                     <form method="post" action="/neu/benutzer/{{ row.u.id }}/loeschen/" class="inline"
                           onsubmit="return confirm('Benutzer {{ row.u.username|escapejs }} wirklich löschen?');">
                         {% csrf_token %}
-                        <button class="text-xs font-medium text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash text-[10px] mr-0.5"></i>Löschen</button>
+                        <button class="text-xs font-medium fw-kritisch hover:fw-kritisch"><i class="fa-solid fa-trash text-[10px] mr-0.5"></i>Löschen</button>
                     </form>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="px-5 py-8 text-center text-slate-400 italic">Keine Benutzer.</td></tr>
+            <tr><td colspan="4" class="px-5 py-8 text-center fw-faint italic">Keine Benutzer.</td></tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
-<p class="text-xs text-slate-400 mt-4 max-w-3xl">Rollen: <b>Inhaber</b> (Vollzugriff inkl. Abo und Organisation), <b>Verwalter</b> (Vollzugriff im Tagesgeschäft), <b>Sachbearbeiter</b> (schreibend), <b>Lesezugriff</b> (nur ansehen). Reine Eigentümer-Portal-Zugänge werden hier nicht angezeigt.</p>
+<p class="text-xs fw-faint mt-4 max-w-3xl">Rollen: <b>Inhaber</b> (Vollzugriff inkl. Abo und Organisation), <b>Verwalter</b> (Vollzugriff im Tagesgeschäft), <b>Sachbearbeiter</b> (schreibend), <b>Lesezugriff</b> (nur ansehen). Reine Eigentümer-Portal-Zugänge werden hier nicht angezeigt.</p>
 {% endblock %}

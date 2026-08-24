@@ -1,29 +1,29 @@
 {% include 'core/_passwort_shell_top.html' %}
 {% if validlink %}
-<h3 class="text-lg font-bold text-slate-800 mb-2">Neues Passwort setzen</h3>
-{% if form.errors %}<div class="bg-rose-50 border border-rose-100 text-rose-600 text-sm p-4 rounded-xl mb-4 font-medium">
+<h3 class="text-lg font-bold fw-strong mb-2">Neues Passwort setzen</h3>
+{% if form.errors %}<div class="fw-krit-flaeche border fw-linie-krit fw-kritisch text-sm p-4 rounded-xl mb-4 font-medium">
     {% for field in form %}{% for e in field.errors %}<p>{{ e }}</p>{% endfor %}{% endfor %}
     {% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}
 </div>{% endif %}
 <form method="post" class="space-y-5">
     {% csrf_token %}
     <div>
-        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Neues Passwort</label>
+        <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">Neues Passwort</label>
         <input type="password" name="new_password1" required autofocus autocomplete="new-password"
-               class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500">
+               class="w-full fw-flaeche2 border fw-linie px-4 py-3 rounded-xl text-sm font-bold fw-ink focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke">
     </div>
     <div>
-        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Passwort wiederholen</label>
+        <label class="block text-[10px] font-black uppercase tracking-widest fw-faint mb-1">Passwort wiederholen</label>
         <input type="password" name="new_password2" required autocomplete="new-password"
-               class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500">
+               class="w-full fw-flaeche2 border fw-linie px-4 py-3 rounded-xl text-sm font-bold fw-ink focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke">
     </div>
-    <button type="submit" class="w-full bg-indigo-600 text-white py-3.5 px-4 rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700">Passwort speichern</button>
+    <button type="submit" class="w-full fw-btn fw-primary py-3.5 px-4 rounded-xl text-sm font-bold shadow-lg fw-schatten-marke hover:fw-balken-voll">Passwort speichern</button>
 </form>
 {% else %}
 <div class="text-center py-4">
-    <span class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-link-slash text-xl"></i></span>
-    <h3 class="text-lg font-bold text-slate-800 mb-2">Link ungültig</h3>
-    <p class="text-sm text-slate-500">Der Link wurde bereits verwendet oder ist abgelaufen. <a href="/passwort/vergessen/" class="text-indigo-600 font-semibold">Neuen Link anfordern</a></p>
+    <span class="w-14 h-14 rounded-2xl fw-krit-flaeche fw-kritisch flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-link-slash text-xl"></i></span>
+    <h3 class="text-lg font-bold fw-strong mb-2">Link ungültig</h3>
+    <p class="text-sm fw-mutet">Der Link wurde bereits verwendet oder ist abgelaufen. <a href="/passwort/vergessen/" class="fw-marke font-semibold">Neuen Link anfordern</a></p>
 </div>
 {% endif %}
 {% include 'core/_passwort_shell_bottom.html' %}

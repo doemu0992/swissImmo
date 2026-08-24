@@ -12,23 +12,23 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-900">
+<body class="fw-flaeche2 fw-strong">
 <div class="flex min-h-[100dvh]">
 
     <!-- Backdrop (mobil) -->
-    <div id="pBackdrop" onclick="pCloseNav()" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"></div>
+    <div id="pBackdrop" onclick="pCloseNav()" class="fixed inset-0 fw-vorhang z-40 hidden lg:hidden"></div>
 
     <!-- ================= SIDEBAR ================= -->
     <aside id="pSidebar" class="w-60 bg-[#161926] text-white flex flex-col min-h-[100dvh] flex-shrink-0 fixed lg:static inset-y-0 left-0 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out">
         <div class="px-5 py-5 flex items-center gap-2.5 border-b border-white/5">
-            <span class="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30 shrink-0">
+            <span class="w-9 h-9 rounded-lg fw-balken-voll flex items-center justify-center shadow-lg fw-schatten-marke shrink-0">
                 <i class="fa-solid {% block brand_icon %}fa-key{% endblock %} text-white text-sm"></i>
             </span>
             <div class="leading-tight flex-1">
                 <div class="font-extrabold tracking-wide text-sm uppercase">{% block brand %}Mieterportal{% endblock %}</div>
-                <div class="text-[11px] text-slate-400">SwissImmo</div>
+                <div class="text-[11px] fw-faint">SwissImmo</div>
             </div>
-            <button type="button" onclick="pCloseNav()" aria-label="Menü schliessen" class="lg:hidden text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" onclick="pCloseNav()" aria-label="Menü schliessen" class="lg:hidden fw-faint hover:text-white"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto text-sm">
@@ -37,7 +37,7 @@
 
         <div class="px-3 py-4 border-t border-white/5">
             <form method="post" action="/logout/">{% csrf_token %}
-                <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-colors">
+                <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg fw-faint hover:fw-flaeche hover:text-white transition-colors">
                     <i class="fa-solid fa-right-from-bracket w-5 text-center"></i> Abmelden
                 </button>
             </form>
@@ -48,14 +48,14 @@
     <div class="flex-1 min-w-0 flex flex-col">
         <!-- Topbar (mobil) -->
         <header class="lg:hidden h-16 px-4 flex items-center gap-3 bg-[#161926] text-white sticky top-0 z-30">
-            <button type="button" onclick="pOpenNav()" aria-label="Menü öffnen" class="text-slate-300 hover:text-white text-lg p-1"><i class="fa-solid fa-bars"></i></button>
+            <button type="button" onclick="pOpenNav()" aria-label="Menü öffnen" class="fw-faint hover:text-white text-lg p-1"><i class="fa-solid fa-bars"></i></button>
             <span class="font-extrabold tracking-wide text-sm uppercase">{% block brand_mobile %}Mieterportal{% endblock %}</span>
         </header>
 
         <main class="p-4 sm:p-6 lg:p-10 w-full max-w-5xl mx-auto pb-24">
             {% if messages %}{% for m in messages %}
             <div class="flex items-start gap-2.5 text-sm px-4 py-3 rounded-xl border mb-4
-                {% if 'error' in m.tags %}bg-rose-50 border-rose-200 text-rose-800{% else %}bg-emerald-50 border-emerald-200 text-emerald-800{% endif %}">
+                {% if 'error' in m.tags %}fw-krit-flaeche fw-linie-krit fw-kritisch{% else %}fw-gut-flaeche fw-linie-gut fw-gut{% endif %}">
                 <i class="fa-solid {% if 'error' in m.tags %}fa-circle-exclamation{% else %}fa-circle-check{% endif %} mt-0.5"></i>
                 <div>{{ m }}</div>
             </div>
@@ -63,7 +63,7 @@
 
             {% block content %}{% endblock %}
 
-            <p class="text-center text-xs text-slate-400 mt-8">{% block footer %}SwissImmo Mieterportal · Alle Angaben ohne Gewähr{% endblock %}</p>
+            <p class="text-center text-xs fw-faint mt-8">{% block footer %}SwissImmo Mieterportal · Alle Angaben ohne Gewähr{% endblock %}</p>
         </main>
     </div>
 </div>

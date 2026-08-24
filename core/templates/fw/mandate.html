@@ -5,43 +5,43 @@
     <h1>Mandate</h1>
     <a href="/neu/mandate/neu/" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Eigentümer erfassen</a>
 </div>
-<p class="text-sm text-slate-500 mb-6">{{ rows|length }} Eigentümer, für die du Liegenschaften verwaltest.</p>
+<p class="text-sm fw-mutet mb-6">{{ rows|length }} Eigentümer, für die du Liegenschaften verwaltest.</p>
 
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden max-w-4xl">
+<div class="fw-card overflow-hidden max-w-4xl">
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
-        <thead class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+        <thead class="text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
             <tr><th class="text-left px-5 py-3">Eigentümer</th><th class="text-left px-5 py-3">Kontakt</th>
                 <th class="text-left px-5 py-3">Ort</th><th class="text-center px-5 py-3">Liegensch.</th>
                 <th class="text-right px-5 py-3">Aktionen</th></tr>
         </thead>
-        <tbody class="divide-y divide-slate-50">
+        <tbody class="fw-dv">
             {% for row in rows %}
-            <tr class="hover:bg-slate-50/60">
+            <tr class="hover:fw-flaeche2">
                 <td class="px-5 py-3.5">
                     <a href="/neu/mandate/{{ row.md.id }}/" class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-briefcase text-xs"></i></span>
-                        <span class="font-medium text-slate-900">{{ row.md.firma_oder_name }}</span>
+                        <span class="w-8 h-8 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center"><i class="fa-solid fa-briefcase text-xs"></i></span>
+                        <span class="font-medium fw-strong">{{ row.md.firma_oder_name }}</span>
                     </a>
                 </td>
-                <td class="px-5 py-3.5 text-slate-500">{{ row.md.kontaktperson|default:row.md.email|default:"—" }}</td>
-                <td class="px-5 py-3.5 text-slate-500">{% if row.md.ort %}{{ row.md.plz }} {{ row.md.ort }}{% else %}—{% endif %}</td>
-                <td class="px-5 py-3.5 text-center"><span class="fw-chip bg-slate-100 text-slate-700">{{ row.anzahl_lg }}</span></td>
+                <td class="px-5 py-3.5 fw-mutet">{{ row.md.kontaktperson|default:row.md.email|default:"—" }}</td>
+                <td class="px-5 py-3.5 fw-mutet">{% if row.md.ort %}{{ row.md.plz }} {{ row.md.ort }}{% else %}—{% endif %}</td>
+                <td class="px-5 py-3.5 text-center"><span class="fw-chip fw-flaeche2 fw-ink">{{ row.anzahl_lg }}</span></td>
                 <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                    <a href="/neu/mandate/{{ row.md.id }}/abrechnung/" class="text-xs font-medium text-emerald-600 hover:underline mr-3"><i class="fa-solid fa-file-invoice-dollar text-[10px] mr-0.5"></i>Abrechnung</a>
-                    <a href="/neu/mandate/{{ row.md.id }}/kontokorrent/" class="text-xs font-medium text-violet-600 hover:underline mr-3"><i class="fa-solid fa-scale-balanced text-[10px] mr-0.5"></i>Kontokorrent</a>
-                    <a href="/neu/mandate/{{ row.md.id }}/mahnstufen/" class="text-xs font-medium text-rose-600 hover:underline mr-3"><i class="fa-solid fa-gavel text-[10px] mr-0.5"></i>Mahnstufen</a>
-                    <a href="/neu/mandate/{{ row.md.id }}/bearbeiten/" class="text-xs font-medium text-indigo-600 hover:underline mr-3"><i class="fa-solid fa-pen text-[10px] mr-0.5"></i>Bearbeiten</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/abrechnung/" class="text-xs font-medium fw-gut hover:underline mr-3"><i class="fa-solid fa-file-invoice-dollar text-[10px] mr-0.5"></i>Abrechnung</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/kontokorrent/" class="text-xs font-medium fw-info hover:underline mr-3"><i class="fa-solid fa-scale-balanced text-[10px] mr-0.5"></i>Kontokorrent</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/mahnstufen/" class="text-xs font-medium fw-kritisch hover:underline mr-3"><i class="fa-solid fa-gavel text-[10px] mr-0.5"></i>Mahnstufen</a>
+                    <a href="/neu/mandate/{{ row.md.id }}/bearbeiten/" class="text-xs font-medium fw-marke hover:underline mr-3"><i class="fa-solid fa-pen text-[10px] mr-0.5"></i>Bearbeiten</a>
                     <form method="post" action="/neu/mandate/{{ row.md.id }}/loeschen/" class="inline"
                           onsubmit="return confirm('Eigentümer „{{ row.md.firma_oder_name|escapejs }}“ löschen?{% if row.anzahl_lg %}\n\nAchtung: {{ row.anzahl_lg }} Liegenschaft(en) zugeordnet — Löschen wird blockiert, bitte zuerst Zuordnung entfernen.{% endif %}');">
                         {% csrf_token %}
-                        <button class="text-xs font-medium text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash text-[10px] mr-0.5"></i>Löschen</button>
+                        <button class="text-xs font-medium fw-kritisch hover:fw-kritisch"><i class="fa-solid fa-trash text-[10px] mr-0.5"></i>Löschen</button>
                     </form>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="px-5 py-8 text-center text-slate-400 italic">Noch keine Eigentümer erfasst.</td></tr>
+            <tr><td colspan="5" class="px-5 py-8 text-center fw-faint italic">Noch keine Eigentümer erfasst.</td></tr>
             {% endfor %}
         </tbody>
     </table>

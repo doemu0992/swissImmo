@@ -23,32 +23,32 @@
         <form method="get" class="relative" style="margin-left:auto" onsubmit="return true;">
             {% if typ_filter %}<input type="hidden" name="typ" value="{{ typ_filter }}">{% endif %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs"></i>
             <input type="text" name="q" id="personSearch" value="{{ q }}" placeholder="Name, E-Mail oder Ort suchen…"
                    autocomplete="off" oninput="livePersonFilter(this.value)"
-                   class="bg-slate-100 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                   class="fw-flaeche2 pl-8 pr-3 py-2 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 fw-fokusring">
         </form>
     </div>
 
     <!-- Mobile: Karten -->
-    <div class="md:hidden divide-y divide-slate-100">
+    <div class="md:hidden fw-dv">
         {% for row in rows %}
         <a href="/neu/personen/{{ row.m.id }}/"
-           class="person-row flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50/60 transition-colors"
+           class="person-row flex items-center gap-3 px-4 py-3.5 hover:fw-flaeche2 transition-colors"
            data-suche="{{ row.m.display_name|lower }} {{ row.m.email|lower }} {{ row.m.ort|lower }} {{ row.m.plz }}">
-            <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+            <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">
                 <i class="fa-solid {% if row.m.typ == 'firma' %}fa-briefcase{% elif row.m.typ == 'verein' %}fa-people-group{% else %}fa-user{% endif %}"></i>
             </div>
             <div class="min-w-0 flex-1">
-                <div class="font-semibold text-slate-900 truncate">{{ row.m.display_name }}</div>
-                {% if row.m.email %}<div class="text-xs text-slate-500 truncate">{{ row.m.email }}</div>
-                {% elif row.telefon %}<div class="text-xs text-slate-500 truncate">{{ row.telefon }}</div>
-                {% else %}<div class="text-xs text-slate-400">{{ row.m.get_typ_display }}</div>{% endif %}
+                <div class="font-semibold fw-strong truncate">{{ row.m.display_name }}</div>
+                {% if row.m.email %}<div class="text-xs fw-mutet truncate">{{ row.m.email }}</div>
+                {% elif row.telefon %}<div class="text-xs fw-mutet truncate">{{ row.telefon }}</div>
+                {% else %}<div class="text-xs fw-faint">{{ row.m.get_typ_display }}</div>{% endif %}
                 {% if row.objekt %}
                 <div class="mt-1"><span class="fw-chip fw-good" style="max-width:100%;overflow:hidden;text-overflow:ellipsis">{{ row.objekt }}</span></div>
                 {% endif %}
             </div>
-            <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0"></i>
+            <i class="fa-solid fa-chevron-right fw-faint text-xs shrink-0"></i>
         </a>
         {% empty %}
         <div class="px-4">
@@ -74,7 +74,7 @@
             <tr class="person-row cursor-pointer" data-suche="{{ row.m.display_name|lower }} {{ row.m.email|lower }} {{ row.m.ort|lower }} {{ row.m.plz }}" onclick="window.location='/neu/personen/{{ row.m.id }}/'">
                 <td>
                     <a href="/neu/personen/{{ row.m.id }}/" class="flex items-center gap-3" onclick="event.stopPropagation()">
-                        <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                        <div class="w-9 h-9 rounded-lg fw-markenflaeche fw-marke flex items-center justify-center shrink-0">
                             <i class="fa-solid {% if row.m.typ == 'firma' %}fa-briefcase{% elif row.m.typ == 'verein' %}fa-people-group{% else %}fa-user{% endif %}"></i>
                         </div>
                         <div>
@@ -84,8 +84,8 @@
                     </a>
                 </td>
                 <td class="hidden md:table-cell">
-                    {% if row.m.email %}<div style="white-space:nowrap"><i class="fa-regular fa-envelope text-slate-300 mr-1.5 text-xs"></i>{{ row.m.email }}</div>{% endif %}
-                    {% if row.telefon %}<div class="fw-sub2" style="white-space:nowrap;margin-top:2px"><i class="fa-solid fa-phone text-slate-300 mr-1.5 text-[10px]"></i>{{ row.telefon }}</div>{% endif %}
+                    {% if row.m.email %}<div style="white-space:nowrap"><i class="fa-regular fa-envelope fw-faint mr-1.5 text-xs"></i>{{ row.m.email }}</div>{% endif %}
+                    {% if row.telefon %}<div class="fw-sub2" style="white-space:nowrap;margin-top:2px"><i class="fa-solid fa-phone fw-faint mr-1.5 text-[10px]"></i>{{ row.telefon }}</div>{% endif %}
                     {% if not row.m.email and not row.telefon %}<span class="fw-sub2">—</span>{% endif %}
                 </td>
                 <td class="hidden lg:table-cell" style="white-space:nowrap">
@@ -97,7 +97,7 @@
                     {% if row.aktive|length > 1 %}<span class="fw-sub2" style="margin-left:4px">+{{ row.aktive|length|add:"-1" }}</span>{% endif %}
                     {% else %}<span class="fw-sub2">—</span>{% endif %}
                 </td>
-                <td class="fw-right"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></td>
+                <td class="fw-right"><i class="fa-solid fa-chevron-right fw-faint text-xs"></i></td>
             </tr>
             {% empty %}
             <tr><td colspan="5">
@@ -106,7 +106,7 @@
             {% endfor %}
             </tbody>
         </table>
-        <div id="keinTreffer" class="hidden px-5 py-10 text-center text-sm text-slate-400 italic">Keine Treffer.</div>
+        <div id="keinTreffer" class="hidden px-5 py-10 text-center text-sm fw-faint italic">Keine Treffer.</div>
     </div>
     <script>
       function livePersonFilter(term){
