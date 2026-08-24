@@ -1,10 +1,10 @@
 {% extends 'fw/base.html' %}
 {% block title %}Betriebskostenspiegel {{ jahr }} — swissImmo{% endblock %}
 {% block content %}
-<nav class="text-xs text-slate-400 mb-3 flex items-center gap-1.5 flex-wrap">
-    <a href="/neu/berichte/" class="hover:text-indigo-600">Berichte</a>
+<nav class="text-xs fw-faint mb-3 flex items-center gap-1.5 flex-wrap">
+    <a href="/neu/berichte/" class="hover:fw-marke">Berichte</a>
     <i class="fa-solid fa-chevron-right text-[9px]"></i>
-    <span class="text-slate-600 font-medium">Betriebskostenspiegel</span>
+    <span class="fw-mutet font-medium">Betriebskostenspiegel</span>
 </nav>
 
 <div class="fw-phead">
@@ -13,7 +13,7 @@
         <p>Aufwand je Liegenschaft, umgelegt auf CHF/m² — quervergleichbar.</p>
     </div>
     <form method="get" class="shrink-0">
-        <select name="jahr" onchange="this.form.submit()" class="bg-slate-100 rounded-lg text-sm px-3 py-2">
+        <select name="jahr" onchange="this.form.submit()" class="fw-flaeche2 rounded-lg text-sm px-3 py-2">
             {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select>
         {% if lg_query %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
@@ -21,50 +21,50 @@
 </div>
 
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold text-slate-800">CHF {{ total_kosten|floatformat:0 }}</div>
-        <div class="text-sm text-slate-500">Aufwand total {{ jahr }}</div>
+    <div class="fw-card p-4">
+        <div class="text-2xl font-bold fw-strong">CHF {{ total_kosten|floatformat:0 }}</div>
+        <div class="text-sm fw-mutet">Aufwand total {{ jahr }}</div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold text-slate-800">{{ total_m2|floatformat:0 }} m²</div>
-        <div class="text-sm text-slate-500">Fläche total</div>
+    <div class="fw-card p-4">
+        <div class="text-2xl font-bold fw-strong">{{ total_m2|floatformat:0 }} m²</div>
+        <div class="text-sm fw-mutet">Fläche total</div>
     </div>
-    <div class="bg-white rounded-xl border border-slate-200 p-4">
-        <div class="text-2xl font-bold text-indigo-600">{% if schnitt %}CHF {{ schnitt|floatformat:2 }}{% else %}—{% endif %}</div>
-        <div class="text-sm text-slate-500">Ø CHF/m² (Portfolio)</div>
+    <div class="fw-card p-4">
+        <div class="text-2xl font-bold fw-marke">{% if schnitt %}CHF {{ schnitt|floatformat:2 }}{% else %}—{% endif %}</div>
+        <div class="text-sm fw-mutet">Ø CHF/m² (Portfolio)</div>
     </div>
 </div>
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+<div class="fw-card overflow-hidden">
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
-        <thead><tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+        <thead><tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
             <th class="px-5 py-3 font-semibold">Liegenschaft</th>
             <th class="px-5 py-3 font-semibold text-right">Aufwand {{ jahr }}</th>
             <th class="px-5 py-3 font-semibold text-right">Fläche</th>
             <th class="px-5 py-3 font-semibold text-right">CHF/m²</th>
             <th class="px-5 py-3 font-semibold text-right">vs. Ø</th>
         </tr></thead>
-        <tbody class="divide-y divide-slate-50">
+        <tbody class="fw-dv">
         {% for r in rows %}
         <tr>
-            <td class="px-5 py-3"><a href="/neu/liegenschaften/{{ r.lg.id }}/?tab=finanzen" class="font-medium text-slate-800 hover:text-indigo-600">{{ r.lg.strasse }}</a><div class="text-xs text-slate-400">{{ r.lg.plz }} {{ r.lg.ort }}</div></td>
-            <td class="px-5 py-3 text-right text-slate-700">CHF {{ r.kosten|floatformat:0 }}</td>
-            <td class="px-5 py-3 text-right text-slate-500">{{ r.m2|floatformat:0 }} m²</td>
-            <td class="px-5 py-3 text-right font-semibold text-slate-900">{% if r.pro_m2 is not None %}CHF {{ r.pro_m2|floatformat:2 }}{% else %}—{% endif %}</td>
+            <td class="px-5 py-3"><a href="/neu/liegenschaften/{{ r.lg.id }}/?tab=finanzen" class="font-medium fw-strong hover:fw-marke">{{ r.lg.strasse }}</a><div class="text-xs fw-faint">{{ r.lg.plz }} {{ r.lg.ort }}</div></td>
+            <td class="px-5 py-3 text-right fw-ink">CHF {{ r.kosten|floatformat:0 }}</td>
+            <td class="px-5 py-3 text-right fw-mutet">{{ r.m2|floatformat:0 }} m²</td>
+            <td class="px-5 py-3 text-right font-semibold fw-strong">{% if r.pro_m2 is not None %}CHF {{ r.pro_m2|floatformat:2 }}{% else %}—{% endif %}</td>
             <td class="px-5 py-3 text-right">
                 {% if r.abweichung is not None %}
-                    {% if r.abweichung > 0 %}<span class="text-rose-600 font-medium">+{{ r.abweichung|floatformat:2 }}</span>
-                    {% else %}<span class="text-emerald-600 font-medium">{{ r.abweichung|floatformat:2 }}</span>{% endif %}
-                {% else %}<span class="text-slate-300">—</span>{% endif %}
+                    {% if r.abweichung > 0 %}<span class="fw-kritisch font-medium">+{{ r.abweichung|floatformat:2 }}</span>
+                    {% else %}<span class="fw-gut font-medium">{{ r.abweichung|floatformat:2 }}</span>{% endif %}
+                {% else %}<span class="fw-faint">—</span>{% endif %}
             </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="px-5 py-8 text-center text-sm text-slate-400 italic">Keine Liegenschaften / keine Aufwandbuchungen im {{ jahr }}.</td></tr>
+        <tr><td colspan="5" class="px-5 py-8 text-center text-sm fw-faint italic">Keine Liegenschaften / keine Aufwandbuchungen im {{ jahr }}.</td></tr>
         {% endfor %}
         </tbody>
     </table>
 </div>
 </div>
-<p class="text-xs text-slate-400 mt-3">Basis: Buchungen auf Aufwandkonten (Soll) je Liegenschaft im gewählten Jahr, geteilt durch die Summe der erfassten Objektflächen.</p>
+<p class="text-xs fw-faint mt-3">Basis: Buchungen auf Aufwandkonten (Soll) je Liegenschaft im gewählten Jahr, geteilt durch die Summe der erfassten Objektflächen.</p>
 {% endblock %}

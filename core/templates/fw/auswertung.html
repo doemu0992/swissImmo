@@ -13,46 +13,46 @@
 <!-- Filter -->
 <form method="get" class="flex flex-wrap items-end gap-3 mb-6">
     <div>
-        <label class="block text-xs font-semibold text-slate-500 mb-1">Kennzahl</label>
-        <select name="typ" onchange="this.form.submit()" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+        <label class="block text-xs font-semibold fw-mutet mb-1">Kennzahl</label>
+        <select name="typ" onchange="this.form.submit()" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
             {% for key, label, _k in typen %}<option value="{{ key }}" {% if typ == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
     </div>
     <div>
-        <label class="block text-xs font-semibold text-slate-500 mb-1">Jahr</label>
-        <select name="jahr" onchange="this.form.submit()" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+        <label class="block text-xs font-semibold fw-mutet mb-1">Jahr</label>
+        <select name="jahr" onchange="this.form.submit()" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
             {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select>
     </div>
     <div>
-        <label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft</label>
-        <select name="lg" onchange="this.form.submit()" class="bg-white border border-slate-200 rounded-lg text-sm px-3 py-2">
+        <label class="block text-xs font-semibold fw-mutet mb-1">Liegenschaft</label>
+        <select name="lg" onchange="this.form.submit()" class="fw-flaeche border fw-linie rounded-lg text-sm px-3 py-2">
             <option value="">Alle Liegenschaften</option>
             {% for l in alle_liegenschaften %}<option value="{{ l.id }}" {% if aktive_lg and aktive_lg.id == l.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
         </select>
     </div>
-    <noscript><button class="bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg">Anzeigen</button></noscript>
+    <noscript><button class="fw-btn fw-primary text-sm font-semibold px-4 py-2 rounded-lg">Anzeigen</button></noscript>
 </form>
 
 <!-- Total -->
-<div class="bg-white rounded-xl border border-slate-200 px-5 py-4 mb-5 inline-flex items-center gap-6">
+<div class="fw-card px-5 py-4 mb-5 inline-flex items-center gap-6">
     <div>
-        <div class="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">{{ typ_label }} {{ jahr }}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</div>
-        <div class="text-2xl font-extrabold {% if total < 0 %}text-rose-600{% else %}text-slate-900{% endif %} mt-0.5">CHF {{ total|chf }}</div>
+        <div class="text-[11px] uppercase tracking-wide fw-faint font-semibold">{{ typ_label }} {{ jahr }}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</div>
+        <div class="text-2xl font-extrabold {% if total < 0 %}fw-kritisch{% else %}fw-strong{% endif %} mt-0.5">CHF {{ total|chf }}</div>
     </div>
-    <div class="text-xs text-slate-400">Ø {{ total|chf }}{% if total %} / 12 Monate{% endif %}</div>
+    <div class="text-xs fw-faint">Ø {{ total|chf }}{% if total %} / 12 Monate{% endif %}</div>
 </div>
 
 <!-- Monatsverlauf -->
-<div class="bg-white rounded-xl border border-slate-200 p-5 mb-6">
-    <h2 class="font-bold text-slate-800 text-sm mb-4">Monatsverlauf</h2>
+<div class="fw-card p-5 mb-6">
+    <h2 class="font-bold fw-strong text-sm mb-4">Monatsverlauf</h2>
     <div class="overflow-x-auto">
         <div class="flex items-end gap-2 h-52 min-w-[520px]">
             {% for m in monate %}
             <div class="flex-1 flex flex-col items-center justify-end h-full group">
-                <div class="text-[10px] font-semibold text-slate-500 mb-1 opacity-0 group-hover:opacity-100 whitespace-nowrap">{{ m.wert|chf }}</div>
-                <div class="w-full rounded-t {% if m.neg %}bg-rose-400{% else %}bg-indigo-500{% endif %}" style="height: {{ m.pct }}%; min-height: 2px;"></div>
-                <div class="text-[10px] text-slate-400 mt-1.5">{{ m.name }}</div>
+                <div class="text-[10px] font-semibold fw-mutet mb-1 opacity-0 group-hover:opacity-100 whitespace-nowrap">{{ m.wert|chf }}</div>
+                <div class="w-full rounded-t {% if m.neg %}fw-krit-voll{% else %}fw-balken-voll{% endif %}" style="height: {{ m.pct }}%; min-height: 2px;"></div>
+                <div class="text-[10px] fw-faint mt-1.5">{{ m.name }}</div>
             </div>
             {% endfor %}
         </div>
@@ -61,21 +61,21 @@
 
 <!-- Vergleich je Liegenschaft -->
 {% if lg_rows %}
-<div class="bg-white rounded-xl border border-slate-200 p-5">
-    <h2 class="font-bold text-slate-800 text-sm mb-4">Je Liegenschaft ({{ jahr }})</h2>
+<div class="fw-card p-5">
+    <h2 class="font-bold fw-strong text-sm mb-4">Je Liegenschaft ({{ jahr }})</h2>
     <div class="space-y-2.5">
         {% for r in lg_rows %}
         <div class="flex items-center gap-3">
-            <div class="w-48 shrink-0 text-sm text-slate-700 truncate">{{ r.lg.strasse }}, {{ r.lg.ort }}</div>
-            <div class="flex-1 bg-slate-100 rounded-full h-4 overflow-hidden">
-                <div class="h-full rounded-full {% if r.neg %}bg-rose-400{% else %}bg-indigo-500{% endif %}" style="width: {{ r.pct }}%"></div>
+            <div class="w-48 shrink-0 text-sm fw-ink truncate">{{ r.lg.strasse }}, {{ r.lg.ort }}</div>
+            <div class="flex-1 fw-flaeche2 rounded-full h-4 overflow-hidden">
+                <div class="h-full rounded-full {% if r.neg %}fw-krit-voll{% else %}fw-balken-voll{% endif %}" style="width: {{ r.pct }}%"></div>
             </div>
-            <div class="w-28 shrink-0 text-right text-sm font-semibold {% if r.neg %}text-rose-600{% else %}text-slate-900{% endif %}">CHF {{ r.wert|chf }}</div>
+            <div class="w-28 shrink-0 text-right text-sm font-semibold {% if r.neg %}fw-kritisch{% else %}fw-strong{% endif %}">CHF {{ r.wert|chf }}</div>
         </div>
         {% endfor %}
     </div>
 </div>
 {% elif not aktive_lg %}
-<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400 text-sm">Keine verbuchten Werte für {{ jahr }}.</div>
+<div class="fw-card p-8 text-center fw-faint text-sm">Keine verbuchten Werte für {{ jahr }}.</div>
 {% endif %}
 {% endblock %}

@@ -12,13 +12,13 @@
 <div class="max-w-3xl space-y-5">
     {% if messages %}{% for m in messages %}
     <div class="rounded-xl p-4 text-sm border
-                {% if m.tags == 'error' %}bg-red-50 border-red-200 text-red-700
-                {% elif m.tags == 'warning' %}bg-amber-50 border-amber-200 text-amber-900
-                {% else %}bg-emerald-50 border-emerald-200 text-emerald-800{% endif %}">{{ m }}</div>
+                {% if m.tags == 'error' %}fw-krit-flaeche fw-linie-krit fw-kritisch
+                {% elif m.tags == 'warning' %}fw-warn-flaeche fw-linie-warn fw-warnton
+                {% else %}fw-gut-flaeche fw-linie-gut fw-gut{% endif %}">{{ m }}</div>
     {% endfor %}{% endif %}
 
     {% if schluessel_fehlt %}
-    <div class="rounded-xl p-4 text-sm border bg-amber-50 border-amber-200 text-amber-900">
+    <div class="rounded-xl p-4 text-sm border fw-warn-flaeche fw-linie-warn fw-warnton">
         <strong>Auf dem Server fehlt {{ schluessel_name }}.</strong>
         Ohne diesen Schlüssel lassen sich Zugangsdaten nicht verschlüsselt ablegen —
         Speichern schlägt fehl. Bitte melden Sie sich bei uns.
@@ -26,30 +26,30 @@
     {% endif %}
 
     {% for zeile in zeilen %}
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
+    <div class="fw-card p-5">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <div class="flex items-center gap-2 mb-1">
                     {% if zeile.postfach and zeile.postfach.aktiv and not zeile.postfach.letzter_fehler %}
-                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span class="inline-block w-2 h-2 rounded-full fw-gut-voll"></span>
                     {% elif zeile.postfach and zeile.postfach.letzter_fehler %}
-                        <span class="inline-block w-2 h-2 rounded-full bg-red-500"></span>
+                        <span class="inline-block w-2 h-2 rounded-full fw-krit-voll"></span>
                     {% elif zeile.postfach %}
-                        <span class="inline-block w-2 h-2 rounded-full bg-amber-400"></span>
+                        <span class="inline-block w-2 h-2 rounded-full fw-warn-voll"></span>
                     {% else %}
-                        <span class="inline-block w-2 h-2 rounded-full bg-slate-300"></span>
+                        <span class="inline-block w-2 h-2 rounded-full fw-balken"></span>
                     {% endif %}
-                    <h3 class="font-bold text-slate-800 text-sm">{{ zeile.bezeichnung }}</h3>
+                    <h3 class="font-bold fw-strong text-sm">{{ zeile.bezeichnung }}</h3>
                 </div>
 
                 {% if zeile.postfach %}
-                    <p class="text-xs text-slate-600">
+                    <p class="text-xs fw-mutet">
                         {{ zeile.postfach.benutzer }}
                         {% if zeile.postfach.server %}· {{ zeile.postfach.server }}:{{ zeile.postfach.port }}{% endif %}
                         · {{ zeile.postfach.get_verfahren_display }}
-                        {% if not zeile.postfach.aktiv %}· <span class="text-amber-700 font-semibold">abgeschaltet</span>{% endif %}
+                        {% if not zeile.postfach.aktiv %}· <span class="fw-warnton font-semibold">abgeschaltet</span>{% endif %}
                     </p>
-                    <p class="text-xs text-slate-500 mt-2">
+                    <p class="text-xs fw-mutet mt-2">
                         {% if zeile.postfach.letzter_abruf %}
                             Letzter Abruf: {{ zeile.postfach.letzter_abruf|date:"d.m.Y H:i" }}
                         {% else %}
@@ -60,14 +60,14 @@
                         {% endif %}
                     </p>
                     {% if zeile.postfach.letzter_fehler %}
-                    <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-xs mt-3">
+                    <div class="fw-krit-flaeche border fw-linie-krit fw-kritisch rounded-lg p-3 text-xs mt-3">
                         <strong>Letzter Fehler{% if zeile.postfach.letzter_fehler_am %}
                             ({{ zeile.postfach.letzter_fehler_am|date:"d.m.Y H:i" }}){% endif %}:</strong><br>
                         {{ zeile.postfach.letzter_fehler }}
                     </div>
                     {% endif %}
                 {% else %}
-                    <p class="text-xs text-slate-500">
+                    <p class="text-xs fw-mutet">
                         Nicht eingerichtet — für diesen Zweck werden keine Mails abgeholt.
                     </p>
                 {% endif %}
@@ -76,19 +76,19 @@
             {% if darf_aendern %}
             <div class="flex flex-col gap-2 shrink-0">
                 <a href="{% url 'postfach_form' zeile.zweck %}"
-                   class="text-center bg-indigo-600 hover:bg-indigo-700 text-white text-sm
+                   class="text-center fw-btn fw-primary text-sm
                           font-semibold px-4 py-2 rounded-lg shadow-sm">
                     {% if zeile.postfach %}Bearbeiten{% else %}Einrichten{% endif %}</a>
                 {% if zeile.postfach %}
                 <form method="post" action="{% url 'postfach_test' zeile.zweck %}">
                     {% csrf_token %}
-                    <button class="w-full bg-white border border-slate-300 text-slate-700 text-sm
+                    <button class="w-full fw-flaeche border fw-linie fw-ink text-sm
                                    font-semibold px-4 py-2 rounded-lg">Verbindung prüfen</button>
                 </form>
                 <form method="post" action="{% url 'postfach_loeschen' zeile.zweck %}"
                       onsubmit="return confirm('Postfach «{{ zeile.bezeichnung }}» wirklich löschen? Der Abruf für diesen Zweck ist danach abgeschaltet.');">
                     {% csrf_token %}
-                    <button class="w-full bg-white border border-red-200 text-red-700 text-sm
+                    <button class="w-full fw-flaeche border fw-linie-krit fw-kritisch text-sm
                                    font-semibold px-4 py-2 rounded-lg">Löschen</button>
                 </form>
                 {% endif %}
@@ -99,7 +99,7 @@
     {% endfor %}
 
     {% if not darf_aendern %}
-    <p class="text-xs text-slate-500">
+    <p class="text-xs fw-mutet">
         Postfächer ändern dürfen Inhaber und Verwalter.
     </p>
     {% endif %}

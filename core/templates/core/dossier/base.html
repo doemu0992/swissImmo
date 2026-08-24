@@ -17,39 +17,39 @@
         ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
+<body class="fw-flaeche2 fw-strong">
 <div class="flex min-h-[100dvh]">
 
     <!-- SIDEBAR: identisch zur App, damit alles wie EINE Anwendung wirkt -->
-    <aside class="w-64 bg-slate-900 text-white flex-col min-h-[100dvh] hidden md:flex flex-shrink-0">
+    <aside class="w-64 fw-btn fw-primary flex-col min-h-[100dvh] hidden md:flex flex-shrink-0">
         <a href="/app/" class="p-8 text-2xl font-black flex items-center gap-3 tracking-tighter">
-            <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-sm shadow-lg shadow-indigo-600/40">
+            <div class="w-9 h-9 rounded-xl fw-balken-voll flex items-center justify-center text-sm shadow-lg fw-schatten-marke">
                 <i class="fa-solid fa-building"></i>
             </div>
             <span>swissImmo</span>
         </a>
         <nav class="flex-1 px-4 space-y-1">
-            <a href="/app/" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-white/5 hover:text-white transition-all">
+            <a href="/app/" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold fw-faint hover:fw-flaeche hover:text-white transition-all">
                 <i class="fa-solid fa-grid-2 w-5 text-center"></i> Dashboard
             </a>
-            <div class="pt-6 pb-2 px-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Portfolio</div>
-            <a href="/app/?tab=portfolio" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold {% block nav_portfolio %}text-slate-400 hover:bg-white/5 hover:text-white{% endblock %} transition-all">
+            <div class="pt-6 pb-2 px-4 text-[10px] font-bold uppercase tracking-widest fw-mutet">Portfolio</div>
+            <a href="/app/?tab=portfolio" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold {% block nav_portfolio %}fw-faint hover:fw-flaeche hover:text-white{% endblock %} transition-all">
                 <i class="fa-solid fa-city w-5 text-center"></i> Liegenschaften
             </a>
-            <a href="/app/?tab=rentals" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold {% block nav_rentals %}text-slate-400 hover:bg-white/5 hover:text-white{% endblock %} transition-all">
+            <a href="/app/?tab=rentals" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold {% block nav_rentals %}fw-faint hover:fw-flaeche hover:text-white{% endblock %} transition-all">
                 <i class="fa-solid fa-file-signature w-5 text-center"></i> Mietverträge
             </a>
-            <a href="/app/?tab=crm" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold {% block nav_crm %}text-slate-400 hover:bg-white/5 hover:text-white{% endblock %} transition-all">
+            <a href="/app/?tab=crm" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold {% block nav_crm %}fw-faint hover:fw-flaeche hover:text-white{% endblock %} transition-all">
                 <i class="fa-solid fa-users w-5 text-center"></i> Mieterstamm
             </a>
-            <div class="pt-6 pb-2 px-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Betrieb</div>
-            <a href="/app/?tab=finance" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-white/5 hover:text-white transition-all">
+            <div class="pt-6 pb-2 px-4 text-[10px] font-bold uppercase tracking-widest fw-mutet">Betrieb</div>
+            <a href="/app/?tab=finance" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold fw-faint hover:fw-flaeche hover:text-white transition-all">
                 <i class="fa-solid fa-sack-dollar w-5 text-center"></i> Finanzen
             </a>
-            <a href="/app/?tab=tickets" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-white/5 hover:text-white transition-all">
+            <a href="/app/?tab=tickets" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold fw-faint hover:fw-flaeche hover:text-white transition-all">
                 <i class="fa-solid fa-screwdriver-wrench w-5 text-center"></i> Tickets
             </a>
-            <a href="/app/?tab=mietprozess" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-white/5 hover:text-white transition-all">
+            <a href="/app/?tab=mietprozess" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold fw-faint hover:fw-flaeche hover:text-white transition-all">
                 <i class="fa-solid fa-handshake w-5 text-center"></i> Vermietung
             </a>
         </nav>
@@ -59,12 +59,12 @@
     <div class="flex-1 min-w-0 flex flex-col">
 
         <!-- TOPBAR mit Breadcrumb -->
-        <header class="h-16 px-6 md:px-10 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-40">
+        <header class="h-16 px-6 md:px-10 flex items-center justify-between border-b fw-linie fw-flaeche sticky top-0 z-40">
             <nav class="flex items-center gap-2 text-sm min-w-0">
-                <a href="/app/" class="text-slate-400 hover:text-indigo-600 transition-colors md:hidden"><i class="fa-solid fa-arrow-left"></i></a>
-                <a href="/app/" class="text-slate-400 hover:text-indigo-600 transition-colors hidden md:inline">Übersicht</a>
-                <i class="fa-solid fa-chevron-right text-[9px] text-slate-300 hidden md:inline"></i>
-                {% block breadcrumb %}<span class="font-semibold text-slate-700 truncate">Dossier</span>{% endblock %}
+                <a href="/app/" class="fw-faint hover:fw-marke transition-colors md:hidden"><i class="fa-solid fa-arrow-left"></i></a>
+                <a href="/app/" class="fw-faint hover:fw-marke transition-colors hidden md:inline">Übersicht</a>
+                <i class="fa-solid fa-chevron-right text-[9px] fw-faint hidden md:inline"></i>
+                {% block breadcrumb %}<span class="font-semibold fw-ink truncate">Dossier</span>{% endblock %}
             </nav>
             <div class="flex items-center gap-3">
                 {% block topbar_actions %}{% endblock %}

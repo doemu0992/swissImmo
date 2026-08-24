@@ -6,50 +6,50 @@
 
 {% block content %}
     <div class="mb-6">
-        <h1 class="text-2xl font-black tracking-tight text-slate-900">Schaden / Reparatur melden</h1>
-        <p class="text-slate-500 mt-1">Ihre Meldung geht direkt an die Verwaltung — Sie erhalten eine Bestätigung per E-Mail.</p>
+        <h1 class="text-2xl font-black tracking-tight fw-strong">Schaden / Reparatur melden</h1>
+        <p class="fw-mutet mt-1">Ihre Meldung geht direkt an die Verwaltung — Sie erhalten eine Bestätigung per E-Mail.</p>
     </div>
 
     {% if objekte %}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden">
         <form method="post" action="/mieter/schaden/" enctype="multipart/form-data" class="p-5 space-y-4">
             {% csrf_token %}
             {% if objekte|length > 1 %}
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5">Objekt</label>
-                <select name="vertrag_id" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500">
+                <label class="block text-xs font-semibold fw-mutet mb-1.5">Objekt</label>
+                <select name="vertrag_id" class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke">
                     {% for o in objekte %}<option value="{{ o.vertrag.id }}">{{ o.adresse }} · {{ o.einheit.bezeichnung }}</option>{% endfor %}
                 </select>
             </div>
             {% else %}<input type="hidden" name="vertrag_id" value="{{ objekte.0.vertrag.id }}">{% endif %}
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5">Was ist betroffen?</label>
+                <label class="block text-xs font-semibold fw-mutet mb-1.5">Was ist betroffen?</label>
                 <input name="titel" required placeholder="z.B. Wasserhahn tropft"
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 placeholder:text-slate-300">
+                       class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke placeholder:fw-faint">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5">Raum <span class="text-slate-300 font-normal">(optional)</span></label>
+                <label class="block text-xs font-semibold fw-mutet mb-1.5">Raum <span class="fw-faint font-normal">(optional)</span></label>
                 <input name="raum" placeholder="z.B. Badezimmer"
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 placeholder:text-slate-300">
+                       class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke placeholder:fw-faint">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5">Beschreibung</label>
+                <label class="block text-xs font-semibold fw-mutet mb-1.5">Beschreibung</label>
                 <textarea name="beschreibung" rows="5" required placeholder="Bitte beschreiben Sie das Problem möglichst genau."
-                          class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 placeholder:text-slate-300"></textarea>
+                          class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke placeholder:fw-faint"></textarea>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5">Fotos <span class="text-slate-400 font-normal">(optional, mehrere möglich)</span></label>
+                <label class="block text-xs font-semibold fw-mutet mb-1.5">Fotos <span class="fw-faint font-normal">(optional, mehrere möglich)</span></label>
                 <input type="file" name="fotos" multiple accept="image/*"
-                       class="w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-sm file:font-semibold hover:file:bg-indigo-100">
-                <p class="text-xs text-slate-400 mt-1">Ein Foto hilft der Verwaltung, das Problem schneller einzuschätzen.</p>
+                       class="w-full text-sm fw-mutet file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:fw-markenflaeche file:fw-marke file:text-sm file:font-semibold hover:file:fw-markenflaeche">
+                <p class="text-xs fw-faint mt-1">Ein Foto hilft der Verwaltung, das Problem schneller einzuschätzen.</p>
             </div>
-            <button type="submit" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 transition-colors text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-indigo-200 flex items-center justify-center gap-2">
+            <button type="submit" class="w-full sm:w-auto fw-balken-voll hover:fw-balken-voll transition-colors text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg fw-schatten-marke flex items-center justify-center gap-2">
                 <i class="fa-solid fa-paper-plane"></i> Meldung senden
             </button>
         </form>
     </div>
     {% else %}
-    <div class="rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 p-5 flex items-start gap-3">
+    <div class="rounded-2xl fw-warn-flaeche border fw-linie-warn fw-warnton p-5 flex items-start gap-3">
         <i class="fa-solid fa-circle-info mt-0.5"></i>
         <p class="text-sm">Ihrem Konto ist aktuell kein aktives Mietobjekt zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung.</p>
     </div>

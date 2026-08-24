@@ -8,60 +8,60 @@
 {% block content %}
     <div class="mb-6 flex items-start justify-between flex-wrap gap-3">
         <div>
-            <h1 class="text-2xl font-black tracking-tight text-slate-900">Mieterkonto</h1>
-            <p class="text-slate-500 mt-1">Alle Rechnungen und Ihre Zahlungen im Überblick.</p>
+            <h1 class="text-2xl font-black tracking-tight fw-strong">Mieterkonto</h1>
+            <p class="fw-mutet mt-1">Alle Rechnungen und Ihre Zahlungen im Überblick.</p>
         </div>
-        <a href="/mieter/kontoauszug/" target="_blank" rel="noopener" class="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 text-sm font-bold px-4 py-2 rounded-xl flex items-center gap-2">
-            <i class="fa-solid fa-file-pdf text-rose-500"></i> Kontoauszug (PDF)
+        <a href="/mieter/kontoauszug/" target="_blank" rel="noopener" class="fw-flaeche border fw-linie hover:fw-linie-marke fw-ink text-sm font-bold px-4 py-2 rounded-xl flex items-center gap-2">
+            <i class="fa-solid fa-file-pdf fw-kritisch"></i> Kontoauszug (PDF)
         </a>
     </div>
 
     <!-- Saldo-Karte, laienverständlich -->
-    <div class="rounded-2xl p-5 mb-6 border {% if endsaldo > 0 %}bg-rose-50 border-rose-200{% elif endsaldo < 0 %}bg-emerald-50 border-emerald-200{% else %}bg-emerald-50 border-emerald-200{% endif %}">
+    <div class="rounded-2xl p-5 mb-6 border {% if endsaldo > 0 %}fw-krit-flaeche fw-linie-krit{% elif endsaldo < 0 %}fw-gut-flaeche fw-linie-gut{% else %}fw-gut-flaeche fw-linie-gut{% endif %}">
         {% if endsaldo > 0 %}
-            <div class="text-sm font-bold text-rose-700"><i class="fa-solid fa-circle-exclamation mr-1.5"></i>Offener Betrag</div>
-            <div class="text-3xl font-black text-rose-700 mt-1">CHF {{ saldo_abs|chf }}</div>
-            <p class="text-sm text-rose-600 mt-1">Bitte begleichen Sie den offenen Betrag — den QR-Einzahlschein finden Sie unter «Rechnungen».</p>
+            <div class="text-sm font-bold fw-kritisch"><i class="fa-solid fa-circle-exclamation mr-1.5"></i>Offener Betrag</div>
+            <div class="text-3xl font-black fw-kritisch mt-1">CHF {{ saldo_abs|chf }}</div>
+            <p class="text-sm fw-kritisch mt-1">Bitte begleichen Sie den offenen Betrag — den QR-Einzahlschein finden Sie unter «Rechnungen».</p>
         {% elif endsaldo < 0 %}
-            <div class="text-sm font-bold text-emerald-700"><i class="fa-solid fa-circle-check mr-1.5"></i>Guthaben</div>
-            <div class="text-3xl font-black text-emerald-700 mt-1">CHF {{ saldo_abs|chf }}</div>
-            <p class="text-sm text-emerald-600 mt-1">Sie haben ein Guthaben — es wird mit der nächsten Miete verrechnet oder zurückerstattet.</p>
+            <div class="text-sm font-bold fw-gut"><i class="fa-solid fa-circle-check mr-1.5"></i>Guthaben</div>
+            <div class="text-3xl font-black fw-gut mt-1">CHF {{ saldo_abs|chf }}</div>
+            <p class="text-sm fw-gut mt-1">Sie haben ein Guthaben — es wird mit der nächsten Miete verrechnet oder zurückerstattet.</p>
         {% else %}
-            <div class="text-sm font-bold text-emerald-700"><i class="fa-solid fa-circle-check mr-1.5"></i>Alles bezahlt</div>
-            <div class="text-3xl font-black text-emerald-700 mt-1">CHF 0.00</div>
-            <p class="text-sm text-emerald-600 mt-1">Ihr Konto ist ausgeglichen — vielen Dank.</p>
+            <div class="text-sm font-bold fw-gut"><i class="fa-solid fa-circle-check mr-1.5"></i>Alles bezahlt</div>
+            <div class="text-3xl font-black fw-gut mt-1">CHF 0.00</div>
+            <p class="text-sm fw-gut mt-1">Ihr Konto ist ausgeglichen — vielen Dank.</p>
         {% endif %}
     </div>
 
     {% if zeilen %}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="px-5 py-4 border-b border-slate-100"><h2 class="font-bold text-slate-900">Bewegungen</h2></div>
-        <div class="divide-y divide-slate-100">
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b fw-linie"><h2 class="font-bold fw-strong">Bewegungen</h2></div>
+        <div class="fw-dv">
             {% for z in zeilen %}
             <div class="flex items-center justify-between gap-3 px-5 py-3">
                 <div class="flex items-center gap-3 min-w-0">
-                    <span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 {% if z.ist_zahlung %}bg-emerald-50 text-emerald-600{% else %}bg-slate-100 text-slate-500{% endif %}">
+                    <span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 {% if z.ist_zahlung %}fw-gut-flaeche fw-gut{% else %}fw-flaeche2 fw-mutet{% endif %}">
                         <i class="fa-solid {% if z.ist_zahlung %}fa-arrow-down{% else %}fa-file-invoice{% endif %} text-sm"></i>
                     </span>
                     <div class="min-w-0">
-                        <div class="font-semibold text-sm text-slate-800 truncate">{% if z.ist_zahlung %}Ihre Zahlung{% if z.text and z.text != 'Zahlungseingang' %} — {{ z.text }}{% endif %}{% else %}{{ z.text }}{% endif %}</div>
-                        <div class="text-xs text-slate-400 mt-0.5">{{ z.datum|date:"d.m.Y" }}</div>
+                        <div class="font-semibold text-sm fw-strong truncate">{% if z.ist_zahlung %}Ihre Zahlung{% if z.text and z.text != 'Zahlungseingang' %} — {{ z.text }}{% endif %}{% else %}{{ z.text }}{% endif %}</div>
+                        <div class="text-xs fw-faint mt-0.5">{{ z.datum|date:"d.m.Y" }}</div>
                     </div>
                 </div>
                 <div class="text-right shrink-0">
-                    <div class="text-sm font-bold {% if z.ist_zahlung %}text-emerald-600{% else %}text-slate-800{% endif %}">
+                    <div class="text-sm font-bold {% if z.ist_zahlung %}fw-gut{% else %}fw-strong{% endif %}">
                         {% if z.ist_zahlung %}−{% endif %} CHF {{ z.betrag|chf }}
                     </div>
-                    <div class="text-[11px] text-slate-400">Saldo CHF {{ z.saldo|chf }}</div>
+                    <div class="text-[11px] fw-faint">Saldo CHF {{ z.saldo|chf }}</div>
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
     {% else %}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 text-center">
-        <p class="font-semibold text-slate-700">Noch keine Bewegungen</p>
-        <p class="text-sm text-slate-400 mt-1">Sobald Rechnungen oder Zahlungen verbucht sind, erscheinen sie hier.</p>
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-10 text-center">
+        <p class="font-semibold fw-ink">Noch keine Bewegungen</p>
+        <p class="text-sm fw-faint mt-1">Sobald Rechnungen oder Zahlungen verbucht sind, erscheinen sie hier.</p>
     </div>
     {% endif %}
 {% endblock %}

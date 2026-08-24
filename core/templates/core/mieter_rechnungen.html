@@ -7,30 +7,30 @@
 
 {% block content %}
     <div class="mb-6">
-        <h1 class="text-2xl font-black tracking-tight text-slate-900">Rechnungen</h1>
-        <p class="text-slate-500 mt-1">Offene Rechnungen mit QR-Einzahlschein zum Herunterladen.</p>
+        <h1 class="text-2xl font-black tracking-tight fw-strong">Rechnungen</h1>
+        <p class="fw-mutet mt-1">Offene Rechnungen mit QR-Einzahlschein zum Herunterladen.</p>
     </div>
 
     {% if offene %}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-            <h2 class="font-bold text-slate-900">Offen</h2>
-            <span class="text-sm font-bold text-rose-600">CHF {{ total_offen|chf }}</span>
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-4 border-b fw-linie">
+            <h2 class="font-bold fw-strong">Offen</h2>
+            <span class="text-sm font-bold fw-kritisch">CHF {{ total_offen|chf }}</span>
         </div>
-        <div class="divide-y divide-slate-100">
+        <div class="fw-dv">
             {% for r in offene %}
             <div class="flex items-center justify-between gap-3 px-5 py-3.5">
                 <div class="min-w-0">
-                    <div class="font-semibold text-sm text-slate-800 truncate">{{ r.titel }}</div>
-                    <div class="text-xs text-slate-400 mt-0.5">
+                    <div class="font-semibold text-sm fw-strong truncate">{{ r.titel }}</div>
+                    <div class="text-xs fw-faint mt-0.5">
                         {% if r.faellig %}fällig {{ r.faellig|date:"d.m.Y" }}{% endif %}
-                        {% if r.ueberfaellig %}<span class="text-rose-600 font-semibold">· überfällig</span>{% endif %}
+                        {% if r.ueberfaellig %}<span class="fw-kritisch font-semibold">· überfällig</span>{% endif %}
                     </div>
                 </div>
                 <div class="flex items-center gap-3 shrink-0">
-                    <span class="text-sm font-bold text-slate-800 whitespace-nowrap">CHF {{ r.betrag|chf }}</span>
+                    <span class="text-sm font-bold fw-strong whitespace-nowrap">CHF {{ r.betrag|chf }}</span>
                     <a href="/mieter/rechnung/{{ r.id }}/" target="_blank" rel="noopener"
-                       class="bg-indigo-600 hover:bg-indigo-700 transition-colors text-white text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap flex items-center gap-1.5">
+                       class="fw-balken-voll hover:fw-balken-voll transition-colors text-white text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap flex items-center gap-1.5">
                         <i class="fa-solid fa-qrcode"></i> QR
                     </a>
                 </div>
@@ -39,30 +39,30 @@
         </div>
     </div>
     {% else %}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 text-center">
-        <span class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-circle-check text-xl"></i></span>
-        <p class="font-semibold text-slate-700">Keine offenen Rechnungen</p>
-        <p class="text-sm text-slate-400 mt-1">Aktuell ist alles bezahlt. Für eine Aufstellung nutzen Sie den Kontoauszug.</p>
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-10 text-center">
+        <span class="w-14 h-14 rounded-2xl fw-gut-flaeche fw-gut flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-circle-check text-xl"></i></span>
+        <p class="font-semibold fw-ink">Keine offenen Rechnungen</p>
+        <p class="text-sm fw-faint mt-1">Aktuell ist alles bezahlt. Für eine Aufstellung nutzen Sie den Kontoauszug.</p>
     </div>
     {% endif %}
 
     {% if bezahlte %}
-    <details class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-6">
+    <details class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mt-6">
         <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
-            <span class="font-bold text-slate-900">Bezahlte Rechnungen <span class="text-slate-400 font-normal text-sm">(letzte 24 Monate)</span></span>
-            <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+            <span class="font-bold fw-strong">Bezahlte Rechnungen <span class="fw-faint font-normal text-sm">(letzte 24 Monate)</span></span>
+            <i class="fa-solid fa-chevron-down fw-faint text-xs"></i>
         </summary>
-        <div class="divide-y divide-slate-100 border-t border-slate-100">
+        <div class="fw-dv border-t fw-linie">
             {% for r in bezahlte %}
             <div class="flex items-center justify-between gap-3 px-5 py-3">
                 <div class="min-w-0">
-                    <div class="font-semibold text-sm text-slate-700 truncate">{{ r.titel }}</div>
-                    <div class="text-xs text-slate-400 mt-0.5">{{ r.datum|date:"d.m.Y" }} · <span class="text-emerald-600 font-semibold">bezahlt</span></div>
+                    <div class="font-semibold text-sm fw-ink truncate">{{ r.titel }}</div>
+                    <div class="text-xs fw-faint mt-0.5">{{ r.datum|date:"d.m.Y" }} · <span class="fw-gut font-semibold">bezahlt</span></div>
                 </div>
                 <div class="flex items-center gap-3 shrink-0">
-                    <span class="text-sm font-semibold text-slate-600 whitespace-nowrap">CHF {{ r.betrag|chf }}</span>
+                    <span class="text-sm font-semibold fw-mutet whitespace-nowrap">CHF {{ r.betrag|chf }}</span>
                     <a href="/mieter/rechnung/{{ r.id }}/" target="_blank" rel="noopener"
-                       class="border border-slate-200 hover:border-indigo-400 text-slate-500 hover:text-indigo-600 text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap">
+                       class="border fw-linie hover:fw-linie-marke fw-mutet hover:fw-marke text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap">
                         <i class="fa-solid fa-file-pdf"></i> Beleg
                     </a>
                 </div>

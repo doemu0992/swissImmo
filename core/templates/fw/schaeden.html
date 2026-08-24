@@ -12,50 +12,50 @@
         <button type="button" onclick="document.getElementById('neuschaden').classList.toggle('hidden')" class="fw-btn fw-primary"><i class="fa-solid fa-plus"></i> Schaden erfassen</button>
         <div class="relative" data-menu>
             <button type="button" data-menu-btn class="fw-btn"><i class="fa-solid fa-ellipsis"></i>Mehr</button>
-            <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-1.5 z-30">
-                <a href="/neu/schaeden/kosten/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-coins w-4"></i>Kostenübersicht</a>
+            <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 fw-card shadow-lg py-1.5 z-30">
+                <a href="/neu/schaeden/kosten/{{ lg_query }}" class="flex items-center gap-2.5 px-4 py-2 text-sm fw-ink hover:fw-flaeche2"><i class="fa-solid fa-coins w-4"></i>Kostenübersicht</a>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Schaden intern erfassen -->
-<div id="neuschaden" class="hidden bg-white rounded-xl border border-indigo-200 p-5 mb-6">
-    <h3 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-triangle-exclamation text-rose-500 mr-1.5"></i>Schaden erfassen (z.B. telefonisch gemeldet)</h3>
+<div id="neuschaden" class="hidden fw-flaeche rounded-xl border fw-linie-marke p-5 mb-6">
+    <h3 class="font-bold fw-strong text-sm mb-4"><i class="fa-solid fa-triangle-exclamation fw-kritisch mr-1.5"></i>Schaden erfassen (z.B. telefonisch gemeldet)</h3>
     <form method="post" action="/neu/schaeden/neu/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {% csrf_token %}
-        <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Titel / Schaden *</label>
-            <input name="titel" required placeholder="z.B. Wasserhahn tropft" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Liegenschaft *</label>
-            <select name="liegenschaft_id" required class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Titel / Schaden *</label>
+            <input name="titel" required placeholder="z.B. Wasserhahn tropft" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Liegenschaft *</label>
+            <select name="liegenschaft_id" required class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— wählen —</option>
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}">{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Objekt (optional)</label>
-            <select name="einheit_id" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Objekt (optional)</label>
+            <select name="einheit_id" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="">— ganze Liegenschaft —</option>
                 {% for e in einheiten %}<option value="{{ e.id }}">{{ e.liegenschaft.strasse }} · {{ e.bezeichnung }}</option>{% endfor %}
             </select></div>
-        <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Beschreibung</label>
-            <textarea name="beschreibung" rows="2" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></textarea></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Melder Vor-/Nachname</label>
+        <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Beschreibung</label>
+            <textarea name="beschreibung" rows="2" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></textarea></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Melder Vor-/Nachname</label>
             <div class="flex gap-2">
-                <input name="melder_vorname" placeholder="Vorname" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
-                <input name="melder_nachname" placeholder="Nachname" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+                <input name="melder_vorname" placeholder="Vorname" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
+                <input name="melder_nachname" placeholder="Nachname" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
             </div></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Priorität</label>
-            <select name="prioritaet" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5">
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Priorität</label>
+            <select name="prioritaet" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5">
                 <option value="tief">Tief</option><option value="mittel" selected>Mittel</option><option value="hoch">Hoch</option>
             </select></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Melder E-Mail</label>
-            <input name="email_melder" type="email" placeholder="Für automatische Bestätigung" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Melder Telefon</label>
-            <input name="tel_melder" class="w-full bg-slate-100 rounded-lg text-sm px-3 py-2.5"></div>
-        <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-500 mb-1">Fotos (mehrere möglich)</label>
-            <input name="fotos" type="file" accept="image/*" multiple class="w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-xs file:font-semibold"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Melder E-Mail</label>
+            <input name="email_melder" type="email" placeholder="Für automatische Bestätigung" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div><label class="block text-xs font-semibold fw-mutet mb-1">Melder Telefon</label>
+            <input name="tel_melder" class="w-full fw-flaeche2 rounded-lg text-sm px-3 py-2.5"></div>
+        <div class="sm:col-span-2"><label class="block text-xs font-semibold fw-mutet mb-1">Fotos (mehrere möglich)</label>
+            <input name="fotos" type="file" accept="image/*" multiple class="w-full text-sm fw-mutet file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:fw-markenflaeche file:fw-marke file:text-xs file:font-semibold"></div>
         <div class="sm:col-span-2">
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Ticket erstellen</button>
-            <span class="text-xs text-slate-400 ml-2">Mit E-Mail erhält der Melder automatisch eine Eingangsbestätigung.</span>
+            <button class="fw-btn fw-primary text-sm font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-check mr-1.5"></i>Ticket erstellen</button>
+            <span class="text-xs fw-faint ml-2">Mit E-Mail erhält der Melder automatisch eine Eingangsbestätigung.</span>
         </div>
     </form>
 </div>

@@ -14,8 +14,8 @@
 </div>
 
 <div class="flex flex-wrap items-center gap-2 my-4">
-    <a href="/neu/mieterkonten/{{ lg_query }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if not filter_op %}bg-indigo-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-indigo-300{% endif %}">Alle ({{ anzahl }})</a>
-    <a href="/neu/mieterkonten/?filter=offen{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if filter_op %}bg-rose-600 text-white{% else %}bg-white border border-slate-200 text-slate-600 hover:border-rose-300{% endif %}">Nur mit offenem Saldo ({{ offen_n }})</a>
+    <a href="/neu/mieterkonten/{{ lg_query }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if not filter_op %}fw-btn fw-primary{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-marke{% endif %}">Alle ({{ anzahl }})</a>
+    <a href="/neu/mieterkonten/?filter=offen{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="text-xs font-semibold px-3 py-1.5 rounded-lg {% if filter_op %}fw-krit-voll text-white{% else %}fw-flaeche border fw-linie fw-mutet hover:fw-linie-krit{% endif %}">Nur mit offenem Saldo ({{ offen_n }})</a>
     {% comment %}
     Suchfeld: Bei mehr als einer Handvoll Mietern ist Scrollen keine Bedienung —
     gemeldet als «lange Liste, man kann die Mieter kaum unterscheiden».
@@ -23,24 +23,24 @@
     <form method="get" class="relative sm:ml-auto w-full sm:w-auto">
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         {% if filter_op %}<input type="hidden" name="filter" value="offen">{% endif %}
-        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs"></i>
         <input type="search" name="q" value="{{ q }}" placeholder="Mieter oder Objekt suchen…"
-               class="bg-white border border-slate-200 pl-8 pr-3 py-1.5 rounded-lg text-xs w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+               class="fw-flaeche border fw-linie pl-8 pr-3 py-1.5 rounded-lg text-xs w-full sm:w-64 focus:outline-none focus:ring-2 fw-fokusring">
     </form>
 </div>
 {% if q %}
-<p class="text-xs text-slate-500 -mt-2 mb-3">
+<p class="text-xs fw-mutet -mt-2 mb-3">
     {{ treffer_n }} Treffer für «{{ q }}» ·
     <a href="/neu/mieterkonten/{% if filter_op %}?filter=offen{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}{% else %}{{ lg_query }}{% endif %}"
-       class="text-indigo-600 font-semibold hover:underline">Suche aufheben</a>
+       class="fw-marke font-semibold hover:underline">Suche aufheben</a>
 </p>
 {% endif %}
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+<div class="fw-card overflow-hidden">
     <div class="overflow-x-auto">
 <table class="w-full min-w-max text-sm">
         <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+            <tr class="text-left text-[11px] uppercase tracking-wider fw-faint border-b fw-linie">
                 <th class="px-5 py-3 font-semibold">Mieter</th>
                 <th class="px-5 py-3 font-semibold">Objekt</th>
                 <th class="px-5 py-3 font-semibold text-center">Status</th>
@@ -48,24 +48,24 @@
                 <th class="px-5 py-3"></th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-slate-50">
+        <tbody class="fw-dv">
         {% for r in rows %}
-            <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location='/neu/mieterkonten/{{ r.m.id }}/{{ lg_query }}'">
-                <td class="px-5 py-3 font-semibold text-slate-900">{{ r.m.display_name }}</td>
-                <td class="px-5 py-3 text-slate-600">{{ r.objekt }}{% if r.objekte_n > 1 %} <span class="text-slate-400">+{{ r.objekte_n|add:"-1" }}</span>{% endif %}</td>
+            <tr class="hover:fw-flaeche2 cursor-pointer" onclick="window.location='/neu/mieterkonten/{{ r.m.id }}/{{ lg_query }}'">
+                <td class="px-5 py-3 font-semibold fw-strong">{{ r.m.display_name }}</td>
+                <td class="px-5 py-3 fw-mutet">{{ r.objekt }}{% if r.objekte_n > 1 %} <span class="fw-faint">+{{ r.objekte_n|add:"-1" }}</span>{% endif %}</td>
                 <td class="px-5 py-3 text-center">
-                    {% if r.aktiv %}<span class="text-[11px] font-semibold bg-emerald-50 text-emerald-700 rounded-md px-2 py-0.5">aktiv</span>
-                    {% else %}<span class="text-[11px] font-semibold bg-slate-100 text-slate-500 rounded-md px-2 py-0.5">beendet</span>{% endif %}
+                    {% if r.aktiv %}<span class="text-[11px] font-semibold fw-gut-flaeche fw-gut rounded-md px-2 py-0.5">aktiv</span>
+                    {% else %}<span class="text-[11px] font-semibold fw-flaeche2 fw-mutet rounded-md px-2 py-0.5">beendet</span>{% endif %}
                 </td>
-                <td class="px-5 py-3 text-right font-semibold {% if r.saldo > 0 %}text-rose-600{% elif r.saldo < 0 %}text-emerald-600{% else %}text-slate-400{% endif %}">
+                <td class="px-5 py-3 text-right font-semibold {% if r.saldo > 0 %}fw-kritisch{% elif r.saldo < 0 %}fw-gut{% else %}fw-faint{% endif %}">
                     {% if r.saldo > 0 %}CHF {{ r.saldo|chf }}
-                    {% elif r.saldo < 0 %}CHF {{ r.saldo|chf }}<div class="text-[10px] font-normal text-slate-400">Guthaben</div>
+                    {% elif r.saldo < 0 %}CHF {{ r.saldo|chf }}<div class="text-[10px] font-normal fw-faint">Guthaben</div>
                     {% else %}ausgeglichen{% endif %}
                 </td>
-                <td class="px-5 py-3 text-right"><i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i></td>
+                <td class="px-5 py-3 text-right"><i class="fa-solid fa-chevron-right text-[10px] fw-faint"></i></td>
             </tr>
         {% empty %}
-            <tr><td colspan="5" class="px-5 py-10 text-center text-slate-400 text-sm">Keine Mieterkonten{% if filter_op %} mit offenem Saldo{% endif %}.</td></tr>
+            <tr><td colspan="5" class="px-5 py-10 text-center fw-faint text-sm">Keine Mieterkonten{% if filter_op %} mit offenem Saldo{% endif %}.</td></tr>
         {% endfor %}
         </tbody>
     </table>

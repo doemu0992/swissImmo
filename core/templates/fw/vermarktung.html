@@ -9,63 +9,63 @@
         <p>Alle ausgeschriebenen Objekte für die Nachmietersuche auf einen Blick.</p>
     </div>
     <div class="flex gap-2">
-        <span class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-sm"><span class="font-bold text-slate-900">{{ anzahl }}</span> <span class="text-slate-400">ausgeschrieben</span></span>
-        <span class="px-3 py-2 rounded-xl bg-indigo-50 border border-indigo-100 text-sm"><span class="font-bold text-indigo-700">{{ summe_bewerbungen }}</span> <span class="text-indigo-500">Bewerbungen</span></span>
+        <span class="px-3 py-2 rounded-xl fw-flaeche border fw-linie text-sm"><span class="font-bold fw-strong">{{ anzahl }}</span> <span class="fw-faint">ausgeschrieben</span></span>
+        <span class="px-3 py-2 rounded-xl fw-markenflaeche border fw-linie-marke text-sm"><span class="font-bold fw-marke">{{ summe_bewerbungen }}</span> <span class="fw-marke">Bewerbungen</span></span>
     </div>
 </div>
 
 {% if rows %}
 <div class="grid gap-3 sm:grid-cols-2">
     {% for r in rows %}
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+    <div class="fw-card p-5">
         <div class="flex items-start justify-between gap-3">
             <div class="flex items-start gap-3 min-w-0">
                 {% if r.titelbild %}
-                <img src="{{ r.titelbild }}" alt="" class="w-16 h-16 rounded-lg object-cover border border-slate-200 shrink-0">
+                <img src="{{ r.titelbild }}" alt="" class="w-16 h-16 rounded-lg object-cover border fw-linie shrink-0">
                 {% else %}
-                <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center text-slate-300 shrink-0"><i class="fa-solid fa-image"></i></div>
+                <div class="w-16 h-16 rounded-lg fw-flaeche2 flex items-center justify-center fw-faint shrink-0"><i class="fa-solid fa-image"></i></div>
                 {% endif %}
                 <div class="min-w-0">
-                    <div class="font-bold text-slate-900 truncate">{{ r.objekt }}</div>
-                    <div class="text-sm text-slate-500">{{ r.bezeichnung }}</div>
-                    {% if r.fotos_n %}<div class="text-[11px] text-slate-400 mt-0.5"><i class="fa-solid fa-image mr-0.5"></i>{{ r.fotos_n }} Foto{{ r.fotos_n|pluralize:",s" }}</div>{% endif %}
+                    <div class="font-bold fw-strong truncate">{{ r.objekt }}</div>
+                    <div class="text-sm fw-mutet">{{ r.bezeichnung }}</div>
+                    {% if r.fotos_n %}<div class="text-[11px] fw-faint mt-0.5"><i class="fa-solid fa-image mr-0.5"></i>{{ r.fotos_n }} Foto{{ r.fotos_n|pluralize:",s" }}</div>{% endif %}
                 </div>
             </div>
             {% if r.frei %}
-            <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 shrink-0">frei</span>
+            <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full fw-gut-flaeche fw-gut shrink-0">frei</span>
             {% else %}
-            <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 shrink-0">ab {{ r.verfuegbar_ab|date:"d.m.y" }}</span>
+            <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full fw-warn-flaeche fw-warnton shrink-0">ab {{ r.verfuegbar_ab|date:"d.m.y" }}</span>
             {% endif %}
         </div>
 
         <div class="mt-3 grid grid-cols-3 gap-2 text-center">
-            <div class="rounded-lg bg-slate-50 py-2">
-                <div class="text-sm font-bold text-slate-900">{% if r.zimmer %}{{ r.zimmer }}{% else %}–{% endif %}</div>
-                <div class="text-[11px] text-slate-400">Zimmer</div>
+            <div class="rounded-lg fw-flaeche2 py-2">
+                <div class="text-sm font-bold fw-strong">{% if r.zimmer %}{{ r.zimmer }}{% else %}–{% endif %}</div>
+                <div class="text-[11px] fw-faint">Zimmer</div>
             </div>
-            <div class="rounded-lg bg-slate-50 py-2">
-                <div class="text-sm font-bold text-slate-900">{% if r.flaeche %}{{ r.flaeche|floatformat:0 }} m²{% else %}–{% endif %}</div>
-                <div class="text-[11px] text-slate-400">Fläche</div>
+            <div class="rounded-lg fw-flaeche2 py-2">
+                <div class="text-sm font-bold fw-strong">{% if r.flaeche %}{{ r.flaeche|floatformat:0 }} m²{% else %}–{% endif %}</div>
+                <div class="text-[11px] fw-faint">Fläche</div>
             </div>
-            <div class="rounded-lg bg-slate-50 py-2">
-                <div class="text-sm font-bold text-slate-900">{{ r.miete|floatformat:0 }}</div>
-                <div class="text-[11px] text-slate-400">CHF brutto</div>
+            <div class="rounded-lg fw-flaeche2 py-2">
+                <div class="text-sm font-bold fw-strong">{{ r.miete|floatformat:0 }}</div>
+                <div class="text-[11px] fw-faint">CHF brutto</div>
             </div>
         </div>
 
-        {% if r.notiz %}<p class="mt-3 text-xs text-slate-500 line-clamp-2">{{ r.notiz }}</p>{% endif %}
+        {% if r.notiz %}<p class="mt-3 text-xs fw-mutet line-clamp-2">{{ r.notiz }}</p>{% endif %}
 
         <div class="mt-4 flex items-center justify-between gap-3">
-            <a href="/neu/vermarktung/{{ r.e.id }}/bewerber/{{ lg_query }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700">
+            <a href="/neu/vermarktung/{{ r.e.id }}/bewerber/{{ lg_query }}" class="text-sm font-semibold fw-marke hover:fw-marke">
                 <i class="fa-solid fa-users mr-1"></i>{{ r.bewerbungen }} Bewerbung{{ r.bewerbungen|pluralize:",en" }}{% if r.bewerbungen %} vergleichen{% endif %}
             </a>
             <div class="flex items-center gap-2">
-                <a href="/neu/vermarktung/{{ r.e.id }}/expose/" target="_blank" rel="noopener" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-file-pdf mr-1"></i>Exposé</a>
+                <a href="/neu/vermarktung/{{ r.e.id }}/expose/" target="_blank" rel="noopener" class="text-xs font-semibold text-white fw-balken-voll hover:fw-balken-voll px-3 py-1.5 rounded-lg"><i class="fa-solid fa-file-pdf mr-1"></i>Exposé</a>
                 <form method="post" action="/neu/objekte/{{ r.e.id }}/ausschreiben/">
                     {% csrf_token %}
                     <input type="hidden" name="ziel" value="aus">
                     <input type="hidden" name="weiter" value="/neu/vermarktung/">
-                    <button class="text-xs font-semibold text-slate-500 border border-slate-200 hover:bg-slate-50 px-3 py-1.5 rounded-lg">Ausschreibung beenden</button>
+                    <button class="text-xs font-semibold fw-mutet border fw-linie hover:fw-flaeche2 px-3 py-1.5 rounded-lg">Ausschreibung beenden</button>
                 </form>
             </div>
         </div>
@@ -73,11 +73,11 @@
     {% endfor %}
 </div>
 {% else %}
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-10 text-center">
-    <span class="w-14 h-14 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-bullhorn text-xl"></i></span>
-    <p class="font-semibold text-slate-700">Kein Objekt in der Vermarktung</p>
-    <p class="text-sm text-slate-400 mt-1">Objekte lassen sich im Mieterwechsel-Cockpit mit einem Klick zur Nachmietersuche ausschreiben.</p>
-    <a href="/neu/mieterwechsel/" class="inline-block mt-4 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg">Zum Mieterwechsel-Cockpit</a>
+<div class="fw-card p-10 text-center">
+    <span class="w-14 h-14 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-bullhorn text-xl"></i></span>
+    <p class="font-semibold fw-ink">Kein Objekt in der Vermarktung</p>
+    <p class="text-sm fw-faint mt-1">Objekte lassen sich im Mieterwechsel-Cockpit mit einem Klick zur Nachmietersuche ausschreiben.</p>
+    <a href="/neu/mieterwechsel/" class="inline-block mt-4 text-sm font-semibold text-white fw-balken-voll hover:fw-balken-voll px-4 py-2 rounded-lg">Zum Mieterwechsel-Cockpit</a>
 </div>
 {% endif %}
 {% endblock %}
